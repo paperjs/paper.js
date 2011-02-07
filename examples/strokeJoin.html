@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../src/Item.js"></script>
+	<script type="text/javascript" src="../src/PathItem.js"></script>
+	<script type="text/javascript" src="../src/Point.js"></script>
+	<script type="text/javascript" src="../src/Rectangle.js"></script>
+	<script type="text/javascript" src="../src/Size.js"></script>
+	<script type="text/javascript" src="../src/Segment.js"></script>
+	<script type="text/javascript" src="../src/PathItem.js"></script>
+	<script type="text/javascript" src="../src/Path.js"></script>
+	<script type="text/javascript" src="../src/SegmentList.js"></script>
+	<script type="text/javascript" src="../src/Doc.js"></script>
+	<script>
+		var count = 0;
+		var doc;
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			doc = new Doc(canvas);
+			var path = new Path([100, 150], [150, 200], [200, 150]);
+			path.strokeColor = 'black';
+			path.strokeWidth = 30;
+			path.strokeJoin = 'bevel';
+			doc.children.push(path);
+			doc.draw();
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>

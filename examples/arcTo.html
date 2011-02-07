@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../src/Item.js"></script>
+	<script type="text/javascript" src="../src/PathItem.js"></script>
+	<script type="text/javascript" src="../src/Point.js"></script>
+	<script type="text/javascript" src="../src/Rectangle.js"></script>
+	<script type="text/javascript" src="../src/Size.js"></script>
+	<script type="text/javascript" src="../src/Segment.js"></script>
+	<script type="text/javascript" src="../src/PathItem.js"></script>
+	<script type="text/javascript" src="../src/Path.js"></script>
+	<script type="text/javascript" src="../src/SegmentList.js"></script>
+	<script type="text/javascript" src="../src/Doc.js"></script>
+	<script>
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			var doc = new Doc(canvas);
+
+			var point = new Point(1024, 768).divide(2);
+			for(var i = 0; i < 30; i++) {
+				var vector = new Point(10 + 20 * i, 0).rotate(i);
+				var l = vector.getLength();
+				var path = new Path();
+				path.fillColor = i % 2 ? 'red' : 'black';
+				path.closed = true;
+				for(var j = 0; j < 17; j++) {
+					vector = vector.rotate(45 / 2);
+					if(j == 0) {
+						path.add(point.add(vector));
+					} else {
+						path.arcTo(point.add(vector), true);
+					}
+				}
+				doc.children.push(path);
+			}
+			doc.children.reverse();
+
+			doc.draw();
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
