@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Item.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Point.js"></script>
+	<script type="text/javascript" src="../../src/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/Size.js"></script>
+	<script type="text/javascript" src="../../src/Segment.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Path.js"></script>
+	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script>
+		var count = 0;
+		var doc;
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			doc = new Doc(canvas);
+			var rect = new Rectangle([50, 50], [200, 100])
+			var path = new Path.RoundRectangle(rect, 200);
+			path.strokeColor = 'black';
+			console.log(path);
+			doc.children.push(path);
+
+			// var path = new Path.Rectangle(rect);
+			// path.strokeColor = 'black';
+			// doc.children.push(path);
+			doc.redraw();
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>

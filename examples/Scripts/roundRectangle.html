@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Item.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Point.js"></script>
+	<script type="text/javascript" src="../../src/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/Size.js"></script>
+	<script type="text/javascript" src="../../src/Segment.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Path.js"></script>
+	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script>
+		var count = 0;
+		var doc;
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			doc = new Doc(canvas);
+			setInterval(draw, 30);
+		}
+		function draw() {
+			count++;
+			doc.children = [];
+			var rect = new Rectangle([150, 150], [300, 300]);
+			var size = Math.abs(Math.sin(count / 40)) * 150 + 10;
+			var path = new Path.RoundRectangle(rect, size);
+			path.fillColor = 'black';
+			doc.children.push(path);
+			doc.redraw();
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
