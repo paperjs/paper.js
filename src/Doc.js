@@ -5,7 +5,7 @@ Doc = Base.extend({
 		this.size = new Size(canvas.offsetWidth, canvas.offsetHeight);
 		this.children = [];
 	},
-	draw: function() {
+	redraw: function() {
 		this.ctx.clearRect(0, 0, this.size.width, this.size.height);
 		for(var i = 0, l = this.children.length; i < l; i++) {
 			this.children[i].draw(this.ctx);
