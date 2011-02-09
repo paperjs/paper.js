@@ -101,74 +101,55 @@ ToolHandler = Base.extend({
 	},
 
 	onHandleEvent: function(type, pt, modifiers) {
-		try {
-			switch (type) {
-			case 'MOUSE_DOWN':
-				this.updateEvent(type, pt, null, null, true, false, false);
-				if(this.onMouseDown)
-					this.onMouseDown(new ToolEvent(this, type, modifiers));
-				break;
-			case 'MOUSE_DRAG':
-				// In order for idleInterval drag events to work, we need to
-				// not check the first call for a change of position. 
-				// Subsequent calls required by min/maxDistance functionality
-				// will require it, otherwise this might loop endlessly.
-				this.needsChange = false;
-				// If the mouse is moving faster than maxDistance, do not
-				// produce events for what is left after the first event is
-				// generated in case it is shorter than maxDistance, as this
-				// would produce weird results. matchMaxDistance controls this.
-				this.matchMaxDistance = false;
-				while (this.updateEvent(type, pt, this.minDistance,
-					this.maxDistance, false, this.needsChange, this.matchMaxDistance)) {
-					try {
-						if(this.onMouseDrag)
-							this.onMouseDrag(new ToolEvent(this, type, modifiers));
-					} catch (e) {
-						// ScriptographerEngine.reportError(e);
-					}
-					this.needsChange = true;
-					this.matchMaxDistance = true;
-				}
-				break;
-			case 'MOUSE_UP':
-				// If the last mouse drag happened in a different place, call
-				// mouse drag first, then mouse up.
-				if ((this.point.x != pt.x || this.point.y != pt.y) && this.updateEvent(
-						'MOUSE_DRAG', pt, this.minDistance, this.maxDistance, false, false, false)) {
-					try {
-						if(this.onMouseDrag)
-							this.onMouseDrag(new ToolEvent(this, type, modifiers));
-					} catch (e) {
-						// ScriptographerEngine.reportError(e);
-					}
-				}
-				this.updateEvent(type, pt, null, this.maxDistance, false,
-						false, false);
-				try {
-					this.onMouseUp(new ToolEvent(this, type, modifiers));
-				} catch (e) {
-					// ScriptographerEngine.reportError(e);
-				}
-				// Start with new values for TRACK_CURSOR
-				this.updateEvent(type, pt, null, null, true, false, false);
-				this.firstMove = true;
-				break;
-			case 'MOUSE_MOVE':
-				while (this.updateEvent(type, pt, this.minDistance,
-						this.maxDistance, this.firstMove, true, false)) {
-					try {
-						if(this.onMouseMove)
-							this.onMouseMove(new ToolEvent(this, type, modifiers));
-					} catch (e) {
-						// ScriptographerEngine.reportError(e);
-					}
-					this.firstMove = false;
-				}
-				break;
+		switch (type) {
+		case 'MOUSE_DOWN':
+			this.updateEvent(type, pt, null, null, true, false, false);
+			if(this.onMouseDown)
+				this.onMouseDown(new ToolEvent(this, type, modifiers));
+			break;
+		case 'MOUSE_DRAG':
+			// In order for idleInterval drag events to work, we need to
+			// not check the first call for a change of position. 
+			// Subsequent calls required by min/maxDistance functionality
+			// will require it, otherwise this might loop endlessly.
+			this.needsChange = false;
+			// If the mouse is moving faster than maxDistance, do not
+			// produce events for what is left after the first event is
+			// generated in case it is shorter than maxDistance, as this
+			// would produce weird results. matchMaxDistance controls this.
+			this.matchMaxDistance = false;
+			while (this.updateEvent(type, pt, this.minDistance,
+				this.maxDistance, false, this.needsChange, this.matchMaxDistance)) {
+				if(this.onMouseDrag)
+					this.onMouseDrag(new ToolEvent(this, type, modifiers));
+				this.needsChange = true;
+				this.matchMaxDistance = true;
 			}
-		} catch (e) {
-			//ScriptographerEngine.reportError(e);
+			break;
+		case 'MOUSE_UP':
+			// If the last mouse drag happened in a different place, call
+			// mouse drag first, then mouse up.
+			if ((this.point.x != pt.x || this.point.y != pt.y) && this.updateEvent(
+					'MOUSE_DRAG', pt, this.minDistance, this.maxDistance, false, false, false)) {
+				if(this.onMouseDrag)
+					this.onMouseDrag(new ToolEvent(this, type, modifiers));
+			}
+			this.updateEvent(type, pt, null, this.maxDistance, false,
+					false, false);
+			if(this.onMouseUp)
+				this.onMouseUp(new ToolEvent(this, type, modifiers));
+			// Start with new values for TRACK_CURSOR
+			this.updateEvent(type, pt, null, null, true, false, false);
+			this.firstMove = true;
+			break;
+		case 'MOUSE_MOVE':
+			while (this.updateEvent(type, pt, this.minDistance,
+					this.maxDistance, this.firstMove, true, false)) {
+				if(this.onMouseMove)
+					this.onMouseMove(new ToolEvent(this, type, modifiers));
+				this.firstMove = false;
+			}
+			break;
 		}
 	}
 });
