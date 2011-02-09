@@ -57,6 +57,9 @@ PathItem = Item.extend(new function() {
 				this.addSegment(segment);
 		},
 
+		insert: function(index, segment) {
+			this.segments.splice(index, 0, new Segment(segment));
+		},
 
 		moveTo: function() {
 			var segment = Segment.read(arguments);
@@ -361,7 +364,7 @@ PathItem = Item.extend(new function() {
 				}
 				cp1 = handleOut;
 			}
-			if(this.closed) {
+			if(this.closed && this.segments.length > 1) {
 				var segment = this.segments[0];
 				var point = segment.point;
 				var handleIn = segment.handleIn ? segment.handleIn.add(point) : point;
