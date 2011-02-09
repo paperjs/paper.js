@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Item.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Point.js"></script>
+	<script type="text/javascript" src="../../src/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/Size.js"></script>
+	<script type="text/javascript" src="../../src/Segment.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Path.js"></script>
+	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script type="text/javascript" src="../../src/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/Tool.js"></script>
+	<script>
+		window.onload = function() {
+			
+			var values = { size: 10 };
+			
+			var point, path;
+			
+			function getPos(pt) {
+				return (pt.divide(values.size)).round().multiply(values.size);
+			}
+			
+			var canvas = document.getElementById('canvas');
+			var doc = new Doc(canvas);
+			var point, path;
+			var tool = new Tool({
+				onMouseDown: function(event) {
+					point = getPos(event.getPoint());
+					path = new Path();
+					path.strokeColor = 'black';
+					path.add(point);
+					doc.children.push(path);
+				},
+				onMouseDrag: function(event) {
+					var p = getPos(event.getPoint());
+					if (!point.equals(p)) {
+						path.add(p);
+						point = p;
+					}
+				}
+			});
+			tool.setDocument(doc);
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>

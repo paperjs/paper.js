@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Item.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Point.js"></script>
+	<script type="text/javascript" src="../../src/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/Size.js"></script>
+	<script type="text/javascript" src="../../src/Segment.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Path.js"></script>
+	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script type="text/javascript" src="../../src/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/Tool.js"></script>
+	<script>
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			var doc = new Doc(canvas);
+			
+			var path;
+			var strokeEnds = 6;
+			
+			////////////////////////////////////////////////////////////////////////////////
+			// Mouse handling
+
+			var lastPoint;
+			
+			var tool = new Tool({
+				onMouseDown: function(event) {
+					path = new Path();
+					path.fillColor = event.getCount() % 2 ? 'red' : 'black';
+					doc.children.push(path);
+				},
+
+				onMouseDrag: function(event) {
+					// If this is the first drag event,
+					// add the strokes at the start:
+					if (event.getCount() == 1) {
+						addStrokes(event.getMiddlePoint(), event.getDelta().multiply(-1));
+					} else {
+						var step = event.getDelta().divide(2);
+						step.setAngle(step.getAngle() + 90);
+
+						// The top point: the middle point + the step rotated by 90 degrees:
+						//   -----*
+						//   |
+						//   ------
+						var top = event.getMiddlePoint().add(step);
+
+						// The bottom point: the middle point - the step rotated by 90 degrees:
+						//   ------
+						//   |
+						//   -----*
+						var bottom = event.getMiddlePoint().subtract(step);
+
+						path.add(top);
+						path.insert(0, bottom);
+					}
+					path.smooth();
+
+					lastPoint = event.getMiddlePoint();
+				},
+				
+				onMouseUp: function(event) {
+					var delta = event.getPoint().subtract(lastPoint);
+					delta.setLength(tool.getMaxDistance());
+					addStrokes(event.getPoint(), delta);
+					path.closed = true;
+					path.smooth();
+				}
+			});
+			
+			function addStrokes(point, delta) {
+				var step = delta.rotate(90);
+				var strokePoints = strokeEnds * 2 + 1;
+				point = point.subtract(step.divide(2));
+				step = step.divide(strokePoints - 1);
+				for(var i = 0; i < strokePoints; i++) {
+					var strokePoint = point.add(step.multiply(i));
+					var offset = delta.multiply(Math.random() * 0.3 + 0.1);
+					if (i % 2) {
+						offset = offset.multiply(-1);
+					}
+					strokePoint = strokePoint.add(offset);
+					path.insert(0, strokePoint);
+				}
+			}
+			
+			tool.setDocument(doc);
+			tool.setFixedDistance(40);
+			// tool.setMinDistance(values.minDistance);
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>

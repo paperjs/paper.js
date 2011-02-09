@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Item.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Point.js"></script>
+	<script type="text/javascript" src="../../src/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/Size.js"></script>
+	<script type="text/javascript" src="../../src/Segment.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Path.js"></script>
+	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script type="text/javascript" src="../../src/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/Tool.js"></script>
+	<script>
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			var doc = new Doc(canvas);
+			
+			var path;
+			var minSize = 5;
+			
+			var tool = new Tool({
+				onMouseDown: function(event) {
+					
+				},
+
+				onMouseDrag: function(event) {
+					// If the user dragged more then minSize:
+					if (event.getDelta().getLength() > minSize) {
+						// If there is no path, make one:
+						if (!path) {
+							path = new Path();
+							path.fillColor = 'black';
+							path.add(event.lastPoint);
+							doc.children.push(path);
+						}
+
+						var step = event.getDelta().divide(2);
+						step.setAngle(step.getAngle() + 90);
+
+						// The top point: the middle point + the step rotated by 90 degrees:
+						//   -----*
+						//   |
+						//   ------
+						var top = event.getMiddlePoint().add(step);
+
+						// The bottom point: the middle point - the step rotated by 90 degrees:
+						//   ------
+						//   |
+						//   -----*
+						var bottom = event.getMiddlePoint().subtract(step);
+
+						path.add(top);
+						path.insert(0, bottom);
+						path.smooth();
+					} else {
+						// If the user dragged too slowly:
+
+						// If there is currently a path, close it
+						if (path) {
+							path.add(event.getPoint());
+							path.closed = true;
+							path.smooth();
+
+							// Set path to null (nothing) so the path check above
+							// will force a new path next time the user drags fast enough:
+							path = null;
+						}
+					}
+				},
+				
+				onMouseUp: function(event) {
+					if (path) {
+						path.add(event.getPoint());
+						path.closed = true;
+						path.smooth();
+
+						// Set path to null (nothing) so the path check above
+						// will force a new path next time the user drags fast enough:
+						path = null;
+					}
+				}
+			});
+
+			tool.setDocument(doc);
+			tool.setMaxDistance(20);
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>

@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Item.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Point.js"></script>
+	<script type="text/javascript" src="../../src/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/Size.js"></script>
+	<script type="text/javascript" src="../../src/Segment.js"></script>
+	<script type="text/javascript" src="../../src/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/Path.js"></script>
+	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script type="text/javascript" src="../../src/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/Tool.js"></script>
+	<script>
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			var doc = new Doc(canvas);
+			
+			var values  = {
+				minDistance: 30,
+				varyThickness: true
+			};
+
+			////////////////////////////////////////////////////////////////////////////////
+			// Mouse handling
+
+			var worm;
+			
+			var tool = new Tool({
+				onMouseDown: function(event) {
+					worm = new Path();
+					worm.fillColor = '#ffffff';
+					worm.strokeColor = '#000000';
+					worm.add(event.getPoint());
+					doc.children.push(worm);
+				},
+
+				onMouseDrag: function(event) {
+					// the vector in the direction that the mouse moved
+					var step = event.getDelta();
+
+					// if the vary thickness checkbox is marked
+					// divide the length of the step vector by two:
+					if (values.varyThickness) {
+						step.setLength(step.getLength() / 2);
+					} else {
+						// otherwise set the length of the step vector to half of minDistance
+						step.setLength(values.minDistance / 2);
+					}
+
+					// the top point: the middle point + the step rotated by -90 degrees
+					//   -----*
+					//   |
+					//   ------
+					var top = event.getMiddlePoint().add(step.rotate(-90));
+
+					// the bottom point: the middle point + the step rotated by 90 degrees
+					//   ------
+					//   |
+					//   -----*
+					var bottom = event.getMiddlePoint().add(step.rotate(90));
+
+					// add the top point to the end of the path
+					worm.add(top);
+
+					// insert the bottom point in the beginning of the path
+					worm.insert(0, bottom);
+
+					// make a new line path from top to bottom
+					var line = new Path.Line(top, bottom);
+					line.strokeColor = '#000000';
+					doc.children.push(line);
+
+					// smooth the segments of the path
+					worm.smooth();
+				},
+				
+				onMouseUp: function(event) {
+					worm.closed = true;
+					worm.add(event.getPoint());
+					worm.smooth();
+				}
+			});
+			tool.setDocument(doc);
+			tool.setFixedDistance(3);
+			tool.setMinDistance(values.minDistance);
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
