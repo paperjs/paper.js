@@ -44,10 +44,15 @@ new function() { // Bootstrap scope
 
 	function define(obj, name, desc) {
 		if (_define)
-			try { return _define(obj, name, desc); } catch (e) {}
+			try {
+				// Fix Safari bug of redefining properties even if they are
+				// configurable
+				delete obj[name];
+				return _define(obj, name, desc);
+			} catch (e) {}
 		if ((desc.get || desc.set) && obj.__defineGetter__) {
-			if (desc.get) obj.__defineGetter__(obj, desc.get);
-			if (desc.set) obj.__defineSetter__(obj, desc.set);
+			if (desc.get) obj.__defineGetter__(name, desc.get);
+			if (desc.set) obj.__defineSetter__(name, desc.set);
 		} else {
 			obj[name] = desc.value;
 		}
