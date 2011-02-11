@@ -4,37 +4,38 @@ Path = PathItem.extend({
 	},
 	
 	statics: {
-		Line: PathItem.extend({
+		Line: Base.extend({
 			initialize: function() {
-				this.base();
+				var path = new Path();
 				if(arguments.length == 2) {
-					console.log(new Segment(arguments[0]));
-					this.addSegment(new Segment(arguments[0]));
-					this.addSegment(new Segment(arguments[1]));
+					path.addSegment(new Segment(arguments[0]));
+					path.addSegment(new Segment(arguments[1]));
 				} else if(arguments.length == 4) {
-					this.addSegment(Segment.read(arguments[0], arguments[1]));
-					this.addSegment(Segment.read(arguments[2], arguments[3]));
+					path.addSegment(Segment.read(arguments[0], arguments[1]));
+					path.addSegment(Segment.read(arguments[2], arguments[3]));
 				}
+				return path;
 			}
 		}),
 		
-		Rectangle: PathItem.extend({
+		Rectangle: Base.extend({
 			initialize: function() {
-				this.base();
-				this.closed = true;
+				var path = new Path();
+				path.closed = true;
 				var rectangle = Rectangle.read(arguments);
 				var corners = ['getBottomLeft', 'getTopLeft', 'getTopRight', 'getBottomRight'];
 				for(var i = 0; i < 4; i++) {
-					this.add(rectangle[corners[i]]());
+					path.add(rectangle[corners[i]]());
 				}
+				return path;
 			}
 		}),
 		
-		RoundRectangle: PathItem.extend(new function() {
+		RoundRectangle: Base.extend(new function() {
 			var u = 4 / 3 * (Math.sqrt(2) - 1);
 			return {
 				initialize: function() {
-					this.base();
+					var path = new Path();
 					var rect, size;
 					if(arguments.length == 2) {
 						rect = new Rectangle(arguments[0]);
@@ -48,27 +49,28 @@ Path = PathItem.extend({
 					uSize = size.multiply(u);
 
 					var bl = rect.getBottomLeft();
-					this.add(bl.add(size.width, 0), null, [-uSize.width, 0]);
-					this.add(bl.subtract(0, size.height), [0, uSize.height], null);
+					path.add(bl.add(size.width, 0), null, [-uSize.width, 0]);
+					path.add(bl.subtract(0, size.height), [0, uSize.height], null);
 
 					var tl = rect.getTopLeft();
-					this.add(tl.add(0, size.height), null, [0, -uSize.height]);
-					this.add(tl.add(size.width, 0), [-uSize.width, 0], null);
+					path.add(tl.add(0, size.height), null, [0, -uSize.height]);
+					path.add(tl.add(size.width, 0), [-uSize.width, 0], null);
 
 					var tr = rect.getTopRight();
-					this.add(tr.subtract(size.width, 0), null, [uSize.width, 0]);
-					this.add(tr.add(0, size.height), [0, -uSize.height], null);
+					path.add(tr.subtract(size.width, 0), null, [uSize.width, 0]);
+					path.add(tr.add(0, size.height), [0, -uSize.height], null);
 
 					var br = rect.getBottomRight();
-					this.add(br.subtract(0, size.height), null, [0, uSize.height]);
-					this.add(br.subtract(size.width, 0), [uSize.width, 0], null);
+					path.add(br.subtract(0, size.height), null, [0, uSize.height]);
+					path.add(br.subtract(size.width, 0), [uSize.width, 0], null);
 
-					this.closed = true;
+					path.closed = true;
+					return path;
 				}
 			}
 		}),
 		
-		Oval: PathItem.extend(new function() {
+		Oval: Base.extend(new function() {
 			var u = 2 / 3 * (Math.sqrt(2) - 1);
 			var segments = [
 				{ handleOut: [0, -u], handleIn: [0, u], point: [ 0, 0.5] },
@@ -78,7 +80,7 @@ Path = PathItem.extend({
 			];
 			return {
 				initialize: function() {
-					this.base();
+					var path = new Path();
 					var rect = Rectangle.read(arguments);
 					var topLeft = rect.getTopLeft();
 					var size = new Size(rect.width, rect.height);
@@ -87,16 +89,17 @@ Path = PathItem.extend({
 						segment.handleIn = segment.handleIn.multiply(size);
 						segment.handleOut = segment.handleOut.multiply(size);
 						segment.point = segment.point.multiply(size).add(topLeft);
-						this.segments.push(segment);
+						path.segments.push(segment);
 					}
-					this.closed = true;
+					path.closed = true;
+					return path;
 				}
 			}
 		}),
 		
-		Circle: PathItem.extend({
+		Circle: Base.extend({
 			initialize: function() {
-				this.base();
+				var path = new Path();
 				var center, radius;
 				if(arguments.length == 3) {
 					center = new Point(arguments[0], arguments[1]);
@@ -106,20 +109,22 @@ Path = PathItem.extend({
 					radius = arguments[1];
 				}
 				var left = center.subtract(radius, 0);
-				this.moveTo(left);
-				this.arcTo(center.add(radius, 0), true);
-				this.arcTo(left, true);
-				var last = this.segments.pop();
-				this.segments[0].handleIn = last.handleIn;
-				this.closed = true;
+				path.moveTo(left);
+				path.arcTo(center.add(radius, 0), true);
+				path.arcTo(left, true);
+				var last = path.segments.pop();
+				path.segments[0].handleIn = last.handleIn;
+				path.closed = true;
+				return path;
 			}
 		}),
 		
 		Arc: PathItem.extend({
 			initialize: function(from, through, to) {
-				this.base();
-				this.moveTo(from);
-				this.arcTo(through, to);
+				var path = new Path();
+				path.moveTo(from);
+				path.arcTo(through, to);
+				return path;
 			}
 		})
 	}
