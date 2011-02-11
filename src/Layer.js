@@ -4,9 +4,9 @@ Layer = Item.extend({
 		this.children = [];
 	},
 	
-	draw: function() {
+	draw: function(ctx) {
 		for(var i = 0, l = this.children.length; i < l; i++) {
-			this.children[i].draw();
+			this.children[i].draw(ctx);
 		}
 	}
 });
