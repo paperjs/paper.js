@@ -36,6 +36,8 @@ PathItem = Item.extend(new function() {
 	};
 	
 	return {
+		beans: true,
+		
 		initialize: function() {
 			this.closed = false;
 			this.segments = [];//new SegmentList(this);
@@ -61,6 +63,16 @@ PathItem = Item.extend(new function() {
 			this.segments.splice(index, 0, new Segment(segment));
 		},
 
+		/**
+		 * Helper method that returns the current segment and checks if we need to
+		 * execute a moveTo() command first.
+		 */
+		getCurrentSegment: function() {
+			if (this.segments.length == 0)
+				throw('Use a moveTo() command first');
+			return this.segments[this.segments.length - 1];
+		},
+
 		moveTo: function() {
 			var segment = Segment.read(arguments);
 			if(segment && !this.segments.length)
@@ -79,7 +91,7 @@ PathItem = Item.extend(new function() {
 		 */
 		cubicCurveTo: function(handle1, handle2, to) {
 			// First modify the current segment:
-			var current = getCurrentSegment();
+			var current = this.currentSegment;
 			// Convert to relative values:
 			current.handleOut.set(
 					handle1.x - current.point.x,
@@ -321,7 +333,7 @@ PathItem = Item.extend(new function() {
 				}
 			}
 			if (closed && handleIn != null) {
-				var segment = get(0);
+				var segment = this.segments[0];
 				segment.handleIn = handleIn.subtract(segment.point);
 			}
 		},

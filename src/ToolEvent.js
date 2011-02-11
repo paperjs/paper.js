@@ -45,6 +45,7 @@
  * @author lehni
  */
 ToolEvent = Base.extend({
+	beans: true,
 	initialize: function(tool, type, modifiers) {
 		// super(modifiers);
 		this.tool = tool;
@@ -53,9 +54,9 @@ ToolEvent = Base.extend({
 
 	toString: function() {
 		return '{ type: ' + type 
-		+ ', point: ' + this.getPoint()
-		+ ', count: ' + this.getCount()
-		+ ', modifiers: ' + this.getModifiers()
+		+ ', point: ' + this.point
+		+ ', count: ' + this.count
+		+ ', modifiers: ' + this.modifiers
 		+ ' }';
 	},
 
@@ -89,11 +90,11 @@ ToolEvent = Base.extend({
 	 * </code>
 	 */
 	getPoint: function() {
-		return this.choosePoint(this.point, this.tool.point);
+		return this.choosePoint(this._point, this.tool.point);
 	},
 
 	setPoint: function(point) {
-		this.point = point;
+		this._point = point;
 	},
 
 	/**
@@ -101,11 +102,11 @@ ToolEvent = Base.extend({
 	 * event was fired.
 	 */
 	getLastPoint: function() {
-		return this.choosePoint(this.lastPoint, this.tool.lastPoint);
+		return this.choosePoint(this._lastPoint, this.tool.lastPoint);
 	},
 
 	setLastPoint: function(lastPoint) {
-		this.lastPoint = lastPoint;
+		this._lastPoint = lastPoint;
 	},
 
 	/**
@@ -113,11 +114,11 @@ ToolEvent = Base.extend({
 	 * was last clicked.
 	 */
 	getDownPoint: function() {
-		return this.choosePoint(this.downPoint, this.tool.downPoint);
+		return this.choosePoint(this._downPoint, this.tool.downPoint);
 	},
 
 	setDownPoint: function(downPoint) {
-		this.downPoint = downPoint;
+		this._downPoint = downPoint;
 	},
 
 	/**
@@ -128,7 +129,7 @@ ToolEvent = Base.extend({
 	 */
 	getMiddlePoint: function() {
 		// For explanations, see getDelta()
-		if (this.middlePoint == null && this.tool.lastPoint != null) {
+		if (this._middlePoint == null && this.tool.lastPoint != null) {
 			// (point + lastPoint) / 2
 			return this.tool.point.add(this.tool.lastPoint).divide(2);
 		}
@@ -136,7 +137,7 @@ ToolEvent = Base.extend({
 	},
 
 	setMiddlePoint: function(middlePoint) {
-		this.middlePoint = middlePoint;
+		this._middlePoint = middlePoint;
 	},
 
 	/**
@@ -150,14 +151,14 @@ ToolEvent = Base.extend({
 		// Instead, keep calculating the delta each time, so the result can be
 		// directly modified by the script without changing the internal values.
 		// We could cache this and use clone, but this is almost as fast...
-		if (this.delta == null && this.tool.lastPoint != null) {
+		if (this._delta == null && this.tool.lastPoint != null) {
 			return this.tool.point.subtract(this.tool.lastPoint);
 		}
-		return this.delta;
+		return this._delta;
 	},
 
 	setDelta: function(delta) {
-		this.delta = delta;
+		this._delta = delta;
 	},
 
 	/**
@@ -201,14 +202,6 @@ ToolEvent = Base.extend({
 			break;
 		}
 	},
-
-	getType: function() {
-		return this.type;
-	},
-	
-	setType: function(type) {
-		this.type = type;
-	}
 
 	// TODO: implement hitTest first
 	// getItem: function() {

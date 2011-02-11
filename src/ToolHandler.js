@@ -1,4 +1,5 @@
 ToolHandler = Base.extend({
+	beans: true,
 	/**
 	 * Initializes the tool's settings, so a new tool can be assigned to it
 	 */
@@ -24,30 +25,30 @@ ToolHandler = Base.extend({
 	 * </code>
 	 */
 	getMinDistance: function() {
-		return this.minDistance;
+		return this._minDistance;
 	},
 
 	setMinDistance: function(minDistance) {
-		this.minDistance = minDistance;
-		if (this.minDistance != null && this.maxDistance != null
-				&& this.minDistance > this.maxDistance)
-			this.maxDistance = this.minDistance;
+		this._minDistance = minDistance;
+		if (this._minDistance != null && this._maxDistance != null
+				&& this._minDistance > this._maxDistance)
+			this._maxDistance = this._minDistance;
 	},
 
 	getMaxDistance: function() {
-		return this.maxDistance;
+		return this._maxDistance;
 	},
 
 	setMaxDistance: function(maxDistance) {
-		this.maxDistance = maxDistance;
-		if (this.minDistance != null && this.maxDistance != null
-				&& this.maxDistance < this.minDistance)
-			this.minDistance = maxDistance;
+		this._maxDistance = maxDistance;
+		if (this._minDistance != null && this._maxDistance != null
+				&& this._maxDistance < this._minDistance)
+			this._minDistance = maxDistance;
 	},
 
 	getFixedDistance: function() {
-		if (this.minDistance != null && this.minDistance.equals(this.maxDistance))
-			return this.minDistance;
+		if (this._minDistance != null && this._minDistance.equals(this._maxDistance))
+			return this._minDistance;
 		return null;
 	},
 

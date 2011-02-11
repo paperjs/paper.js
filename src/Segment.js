@@ -75,7 +75,7 @@ Segment = Base.extend({
 	},
 
 	getPath: function() {
-		return this.path;
+		return this._path;
 	},
 	
 	// todo
@@ -89,13 +89,13 @@ Segment = Base.extend({
 	// },
 	
 	getNext: function() {
-		var index = this.getIndex();
+		var index = this.index;
 		return this.path && index < this.path.segments.length - 1
 			? this.path.segments[index + 1] : null;
 	},
 	
 	getPrevious: function() {
-		return this.path != null && index > 0 ? this.segments[this.getIndex() - 1] : null;
+		return this.path != null && index > 0 ? this.segments[this.index - 1] : null;
 	},
 	
 	// todo
@@ -115,7 +115,7 @@ Segment = Base.extend({
 	
 	remove: function() {
 		if(this.segments)
-			return this.path.segments.unshift(this.getIndex(), 1);
+			return this.path.segments.unshift(this.index, 1);
 		return false;
 	},
 	

@@ -1,4 +1,5 @@
 var Point = Base.extend({
+	beans: true,
 	initialize: function() {
 		if(arguments.length == 2) {
 			this.x = arguments[0];
@@ -10,17 +11,17 @@ var Point = Base.extend({
 			} else if(first.x !== undefined) {
 				this.x = first.x;
 				this.y = first.y;
-				this.angle = first.angle;
+				this._angle = first.angle;
 			} else if(first.width !== undefined) {
 				this.x = first.width;
 				this.y = first.height;
-				this.angle = null;
+				this._angle = null;
 			} else if(first.length !== undefined) {
 				this.x = first[0];
 				this.y = first.length > 1 ? first[1] : first[0];
 			} else if(typeof first === 'number') {
 				this.x = this.y = first;
-				this.angle = null;
+				this._angle = null;
 			} else {
 				this.x = this.y = 0;
 			}
@@ -88,8 +89,8 @@ var Point = Base.extend({
 
 	setLength: function(length) {
 		if (this.isZero()) {
-			if (this.angle != null) {
-				var a = this.angle;
+			if (this._angle != null) {
+				var a = this._angle;
 				this.x = Math.cos(a) * length;
 				this.y = Math.sin(a) * length;
 			} else {
@@ -98,7 +99,7 @@ var Point = Base.extend({
 				// y is already 0
 			}
 		} else {
-			var scale = length / this.getLength();
+			var scale = length / this.length;
 			if (scale == 0.0) {
 				// Calculate angle now, so it will be preserved even when
 				// x and y are 0
@@ -112,11 +113,11 @@ var Point = Base.extend({
 	normalize: function(length) {
 		if (length === null)
 			length = 1;
-		var len = this.getLength();
+		var len = this.length;
 		var scale = len != 0 ? length / len : 0;
 		var res = new Point(this.x * scale, this.y * scale);
 		// Preserve angle.
-		res.angle = this.angle;
+		res._angle = this._angle;
 		return res;
 	},
 	
@@ -146,9 +147,9 @@ var Point = Base.extend({
 	},
 	
 	setAngle: function(angle) {
-		angle = this.angle = angle * Math.PI / 180;
+		angle = this._angle = angle * Math.PI / 180;
 		if(!this.isZero()) {
-			var length = this.getLength();
+			var length = this.length;
 			this.x = Math.cos(angle) * length;
 			this.y = Math.sin(angle) * length;
 		}
@@ -158,21 +159,21 @@ var Point = Base.extend({
 		var angle;
 		if(arguments.length) {
 			var point = Point.read(arguments);
-			var div = this.getLength() * point.getLength();
+			var div = this.length * point.length;
 			if(div == 0) {
 				return NaN;
 			} else {
 				angle = Math.acos(this.dot(point) / div);
 			}
 		} else {
-			angle = this.angle = Math.atan2(this.y, this.x);
+			angle = this._angle = Math.atan2(this.y, this.x);
 		}
 		return angle * 180 / Math.PI;
 	},
 
 	getDirectedAngle: function() {
 		var point = Point.read(arguments);
-		var angle = this.getAngle() - point.getAngle();
+		var angle = this.angle - point.angle;
 		var bounds = 180;
 		if(angle < - bounds) {
 			return angle + bounds * 2;
