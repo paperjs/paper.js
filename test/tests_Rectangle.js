@@ -1,5 +1,5 @@
 module('Rectangle');
-test('new Rectangle(new Point(10, 20), new Size(30, 40));', function(){
+test('new Rectangle(new Point(10, 20), new Size(30, 40));', function() {
 	var rect = new Rectangle(new Point(10, 20), new Size(30, 40));
 	equals(rect.x, 10);
 	equals(rect.y, 20);
@@ -7,7 +7,7 @@ test('new Rectangle(new Point(10, 20), new Size(30, 40));', function(){
 	equals(rect.height, 40);
 });
 
-test('new Rectangle([10, 20], [30, 40]);', function(){
+test('new Rectangle([10, 20], [30, 40]);', function() {
 	var rect = new Rectangle([10, 20], [30, 40]);
 	equals(rect.x, 10);
 	equals(rect.y, 20);
@@ -15,7 +15,7 @@ test('new Rectangle([10, 20], [30, 40]);', function(){
 	equals(rect.height, 40);
 });
 
-test('new Rectangle(new Point(10, 20), new Point(30, 40));', function(){
+test('new Rectangle(new Point(10, 20), new Point(30, 40));', function() {
 	var rect = new Rectangle(new Point(10, 20), new Point(30, 40));
 	equals(rect.x, 10);
 	equals(rect.y, 20);
@@ -23,7 +23,7 @@ test('new Rectangle(new Point(10, 20), new Point(30, 40));', function(){
 	equals(rect.height, 20);
 });
 
-test('new Rectangle(10, 20, 30, 40);', function(){
+test('new Rectangle(10, 20, 30, 40);', function() {
 	var rect = new Rectangle(10, 20, 30, 40);
 	equals(rect.x, 10);
 	equals(rect.y, 20);
@@ -31,7 +31,7 @@ test('new Rectangle(10, 20, 30, 40);', function(){
 	equals(rect.height, 40);
 });
 
-test('new Rectangle({x: 10, y: 20, width: 30, height: 40});', function(){
+test('new Rectangle({x: 10, y: 20, width: 30, height: 40});', function() {
 	var rect = new Rectangle({x: 10, y: 20, width: 30, height: 40});
 	equals(rect.x, 10);
 	equals(rect.y, 20);
@@ -39,134 +39,134 @@ test('new Rectangle({x: 10, y: 20, width: 30, height: 40});', function(){
 	equals(rect.height, 40);
 });
 
-test('getSize()', function(){
+test('get size', function() {
 	var rect = new Rectangle(10, 10, 20, 30);
-	equals(rect.getSize().equals([20, 30]), true);
+	equals(rect.size.equals([20, 30]), true);
 });
 
-test('setSize()', function(){
+test('set size', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	rect.setSize(new Size(30, 30))
+	rect.size = new Size(30, 30);
 	equals(rect.width, 30);
 	equals(rect.height, 30);
 });
 
-test('getTopLeft()', function(){
+test('topLeft', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	var point = rect.getTopLeft();
+	var point = rect.topLeft;
 	equals(point.x, 10);
 	equals(point.y, 10);
 });
 
-test('setTopLeft()', function(){
+test('set topLeft', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	rect.setTopLeft(10, 15);
-	var point = rect.getTopLeft();
+	rect.topLeft = [10, 15];
+	var point = rect.topLeft;
 	equals(point.x, 10);
 	equals(point.y, 15);
 });
 
-test('getTopRight()', function(){
+test('get topRight', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	var point = rect.getTopRight();
+	var point = rect.topRight;
 	equals(point.x, 30);
 	equals(point.y, 10);
 });
 
-test('setTopRight()', function(){
+test('set topRight', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	rect.setTopRight(10, 15);
-	var point = rect.getTopRight();
+	rect.topRight = [10, 15];
+	var point = rect.topRight;
 	equals(point.x, 10);
 	equals(point.y, 15);
 });
 
-test('getBottomLeft()', function(){
+test('get bottomLeft', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	var point = rect.getBottomLeft();
+	var point = rect.bottomLeft;
 	equals(point.x, 10);
 	equals(point.y, 30);
 });
 
-test('setBottomLeft()', function(){
+test('set bottomLeft', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	rect.setBottomLeft(10, 15);
-	var point = rect.getBottomLeft();
+	rect.bottomLeft = [10, 15];
+	var point = rect.bottomLeft;
 	equals(point.x, 10);
 	equals(point.y, 15);
 });
 
-test('getBottomRight()', function(){
+test('get bottomRight', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	var point = rect.getBottomRight();
+	var point = rect.bottomRight;
 	equals(point.x, 30);
 	equals(point.y, 30);
 });
 
-test('setBottomRight()', function(){
+test('set bottomRight', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	rect.setBottomRight(10, 15);
-	var point = rect.getBottomRight();
+	rect.bottomRight = [10, 15];
+	var point = rect.bottomRight;
 	equals(point.x, 10);
 	equals(point.y, 15);
 });
 
-test('getBottomCenter()', function(){
+test('get bottomCenter', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	var point = rect.getBottomCenter();
+	var point = rect.bottomCenter;
 	equals(point.x, 20);
 	equals(point.y, 30);
 });
 
-test('setBottomCenter()', function(){
+test('set bottomCenter', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	rect.setBottomCenter(10, 15);
-	var point = rect.getBottomCenter();
+	rect.bottomCenter = [10, 15];
+	var point = rect.bottomCenter;
 	equals(point.x, 10);
 	equals(point.y, 15);
 });
 
-test('getTopCenter()', function(){
+test('get topCenter', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	var point = rect.getTopCenter();
+	var point = rect.topCenter;
 	equals(point.x, 20);
 	equals(point.y, 10);
 });
 
-test('setTopCenter()', function(){
+test('set topCenter', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	rect.setTopCenter(10, 15);
-	var point = rect.getTopCenter();
+	rect.topCenter = [10, 15];
+	var point = rect.topCenter;
 	equals(point.x, 10);
 	equals(point.y, 15);
 });
 
-test('getLeftCenter()', function(){
+test('get leftCenter', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	var point = rect.getLeftCenter();
+	var point = rect.leftCenter;
 	equals(point.x, 10);
 	equals(point.y, 20);
 });
 
-test('setLeftCenter()', function(){
+test('set leftCenter', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	rect.setLeftCenter(10, 15);
-	var point = rect.getLeftCenter();
+	rect.leftCenter = [10, 15];
+	var point = rect.leftCenter;
 	equals(point.x, 10);
 	equals(point.y, 15);
 });
 
-test('getRightCenter()', function(){
+test('get rightCenter', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	var point = rect.getRightCenter();
+	var point = rect.rightCenter;
 	equals(point.x, 30);
 	equals(point.y, 20);
 });
 
-test('setRightCenter()', function(){
+test('set rightCenter', function() {
 	var rect = new Rectangle(10, 10, 20, 20);
-	rect.setRightCenter(10, 15);
-	var point = rect.getRightCenter();
+	rect.rightCenter = [10, 15];
+	var point = rect.rightCenter;
 	equals(point.x, 10);
 	equals(point.y, 15);
 });
