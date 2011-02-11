@@ -34,23 +34,36 @@ new function() { // Bootstrap scope
 	 * Object.prototype.has, as the local version then seems to be overriden
 	 * by that. Giving it a idfferent name fixes it.
 	 */
-	// Check if environment supports hasOwnProperty, and use a differnt version
-	// of has if ti does, for higher performance as checking on each has() call.
-	// All Browsers that need  (IE and Opera) have hasOwnProperty, so
-	// the version without hasOwnProperty does not need to check for __proto__
-	var has = {}.hasOwnProperty
-		? function(obj, name) {
-			return (!fix || name != '__proto__') && obj.hasOwnProperty(name);
+	function has(obj, name) {
+		return (!fix || name != '__proto__') && obj.hasOwnProperty(name);
+	}
+
+	// Support a mixed environment of some ECMAScript 5 features present,
+	// along with __defineGetter/Setter__ functions, as found in browsers today.
+	var _define = Object.defineProperty, _describe = Object.getOwnPropertyDescriptor;
+
+	function define(obj, name, desc) {
+		if (_define)
+			try { return _define(obj, name, desc); } catch (e) {}
+		if ((desc.get || desc.set) && obj.__defineGetter__) {
+			if (desc.get) obj.__defineGetter__(obj, desc.get);
+			if (desc.set) obj.__defineSetter__(obj, desc.set);
+		} else {
+			obj[name] = desc.value;
 		}
-		: function(obj, name) {
-			// We need to filter out what does not belong to the object itself.
-			// This is done by comparing the value with the value of the same
-			// name in the prototype. If the value is equal it's defined in one
-			// of the prototypes, not the object itself.
-			// Object.prototype is untouched, so we cannot assume __proto__ to
-			// always be defined on legacy browsers.
-			return obj[name] !== (obj.__proto__ || Object.prototype)[name];
-		};
+		return obj;
+	}
+
+	function describe(obj, name) {
+		if (_describe)
+			try { return _describe(obj, name); } catch (e) {}
+		var get = obj.__lookupGetter__ && obj.__lookupGetter__(name);
+		return get
+			? { enumerable: true, configurable: true, get: get, set: obj.__lookupSetter__(name) }
+			: has(obj, name)
+				? { enumerable: true, configurable: true, writable: true, value: obj[name] }
+				: null;
+	}
 
 	/**
 	 * Private function that injects functions from src into dest, overriding
@@ -62,9 +75,13 @@ new function() { // Bootstrap scope
 		/**
 		 * Private function that injects one field with given name
 		 */
-		function field(name, dontCheck, generics) {
-			var val = src[name], func = typeof val == 'function', res = val,
-				prev = dest[name];
+		function field(name, val, dontCheck, generics) {
+			// This does even work for prop: 0, as it will just be looked up
+			// again through describe...
+			if (!val)
+				val = (val = describe(src, name)) && (val.get ? val : val.value);
+			var type = typeof val, func = type == 'function', res = val,
+				prev = dest[name], bean;
 			// Make generics first, as we might jump out bellow in the
 			// val !== (src.__proto__ || Object.prototype)[name] check,
 			// e.g. when explicitely reinjecting Array.prototype methods
@@ -86,14 +103,37 @@ new function() { // Bootstrap scope
 							// Look up the base function each time if we can,
 							// to reflect changes to the base class after
 							// inheritance.
-							var tmp = this.base;
-							this.base = fromBase ? base[name] : prev;
+							var tmp = describe(this, 'base');
+							define(this, 'base', { value: fromBase ? base[name] : prev, configurable: true });
 							try { return val.apply(this, arguments); }
-							finally { tmp ? this.base = tmp : delete this.base; }
+							finally { tmp ? define(this, 'base', tmp) : delete this.base; }
 						}).pretend(val);
 					}
+					// Only set produce bean properties when getters are
+					// specified. This does not produce properties for setter-
+					// only properties which makes sense and also avoids double-
+					// injection for beans with both getters and setters.
+					if (src.beans && (bean = name.match(/^(get|is)(([A-Z])(.*))$/)))
+						try {
+							field(bean[3].toLowerCase() + bean[4], {
+								get: src['get' + bean[2]] || src['is' + bean[2]],
+								set: src['set' + bean[2]]
+							}, true);
+						} catch (e) {}
 				}
-				dest[name] = res;
+				// No need to look up getter if this is a function already.
+				// This also prevents _collection from becoming a getter, as
+				// DomElements is a constructor function and has both get / set
+				// generics for DomElement#get / #set.
+				if (!res || func || !res.get && !res.set)
+					res = { value: res, writable: true };
+				// Only set/change configurable and enumerable if this field is
+				// configurable
+				if ((describe(dest, name) || { configurable: true }).configurable) {
+					res.configurable = true;
+					res.enumerable = enumerable;
+				}
+				define(dest, name, res);
 			}
 		}
 		// Iterate through all definitions in src with an iteator function
@@ -105,8 +145,8 @@ new function() { // Bootstrap scope
 		// dest[name] then is set to either src[name] or the wrapped function.
 		if (src) {
 			for (var name in src)
-				if (has(src, name) && !/^(statics|generics|preserve|prototype|constructor|__proto__|toString|valueOf)$/.test(name))
-					field(name, true, generics);
+				if (has(src, name) && !/^(statics|generics|preserve|beans|prototype|__proto__|toString|valueOf)$/.test(name))
+					field(name, null, true, generics);
 			// IE (and some other browsers?) never enumerate these, even 
 			// if they are simply set on an object. Force their creation.
 			// Do not create generics for these, and check them for not
@@ -126,7 +166,7 @@ new function() { // Bootstrap scope
 		// if it is defined.
 		function ctor(dont) {
 			// Fix __proto__
-			if (fix) this.__proto__ = obj;
+			if (fix) define(this, '__proto__', { value: obj });
 			// Call the constructor function, if defined and we're not inheriting
 			// in which case ctor.dont would be set, see further bellow.
 			if (this.initialize && dont !== ctor.dont)
@@ -168,7 +208,8 @@ new function() { // Bootstrap scope
 			// Fix constructor
 			// TODO: Consider using Object.create instead of using this.dont if
 			// available?
-			var proto = new this(this.dont), ctor = proto.constructor = extend(proto);
+			var proto = new this(this.dont), ctor = extend(proto);
+			define(proto, 'constructor', { value: ctor, writable: true, configurable: true });
 			// An object to be passed as the first parameter in constructors
 			// when initialize should not be called. This needs to be a property
 			// of the created constructor, so that if .extend is called on native
@@ -254,6 +295,8 @@ new function() { // Bootstrap scope
 			// Expose some local privates as Base generics.
 			has: has,
 			each: each,
+			define: define,
+			describe: describe,
 
 			type: function(obj) {
 				// Handle elements, as needed by DomNode.js
@@ -590,11 +633,12 @@ Hash = Base.extend(Enumerable, {
 		// Do not use Object.keys for iteration as iterators might modify
 		// the object we're iterating over, making the hasOwnProperty still
 		// necessary.
-		// Rely on Base.has instead of hasOwnProperty directly.
-		var bind = bind || this, iter = Base.iterator(iter), has = Base.has;
+		// If  is used, we can fully rely on hasOwnProperty,
+		// as even for , define(this, '__proto__', {}) is used.
+		var bind = bind || this, iter = Base.iterator(iter);
 		try {
 			for (var i in this)
-				if (has(this, i))
+				if (this.hasOwnProperty(i))
 					iter.call(bind, this[i], i, this);
 		} catch (e) {
 			if (e !== Base.stop) throw e;
@@ -752,6 +796,7 @@ Array.inject({
 }, Enumerable, {
 	// TODO: this.each / this.findEntry / this.indexOf breaks many generics!
 	generics: true,
+	beans: true,
 
 	each: function(iter, bind) {
 		try {
@@ -1677,6 +1722,7 @@ DomNode = Base.extend(new function() {
 	var dont = {};
 
 	return {
+		beans: true,
 		// Tells Base.type the type to return when encountering an node.
 		_type: 'node',
 		_collection: DomNodes,
@@ -1934,6 +1980,7 @@ DomNode.inject(new function() {
 	}
 
 	var fields = {
+		beans: true,
 		_properties: ['text'],
 
 		set: function(name, value) {
@@ -2234,6 +2281,7 @@ DomElements = DomNodes.extend();
 // DomElement
 
 DomElement = DomNode.extend({
+	beans: true,
 	// Tells Base.type the type to return when encountering an element.
 	_type: 'element',
 	_collection: DomElements,
@@ -2309,6 +2357,7 @@ DomElement.inject(new function() {
 	}
 
 	return {
+		beans: true,
 		_properties: ['id'],
 
 		getTag: function() {
@@ -2393,6 +2442,7 @@ DomTextNode = DomNode.extend({
 // DomDocument
 
 DomDocument = DomElement.extend({
+	beans: true,
 	_type: 'document',
 
 	initialize: function() {
@@ -2445,6 +2495,7 @@ DomDocument = DomElement.extend({
 // Let Window point to DomWindow for now, so new Window(...) can be called.
 // This makese for nicer code, but might have to change in the future.
 Window = DomWindow = DomElement.extend({
+	beans: true,
 	_type: 'window',
 	// Don't automatically call this.base in overridden initialize methods
 	_initialize: false,
@@ -2565,6 +2616,7 @@ DomElement.inject(new function() {
 	var getScrollOffset = cumulate('scroll', 'parentNode');
 
 	var fields = {
+		beans: true,
 
 		getSize: function() {
 			return body(this)
@@ -2683,6 +2735,7 @@ DomElement.inject(new function() {
 [DomDocument, DomWindow].each(function(ctor) {
 	ctor.inject(this);
 }, {
+	beans: true,
 
 	getSize: function() {
 		if (Browser.PRESTO || Browser.WEBKIT) {
@@ -3248,6 +3301,7 @@ DomElement.inject(new function() {
 	}
 
 	return {
+		beans: true,
 
 		getElements: function(selectors, nowrap) {
 			var elements = nowrap ? [] : new this._collection();
@@ -3628,6 +3682,7 @@ HtmlElement = DomElement.extend({
 // Use the modified inject function from above which injects both into HtmlElement
 // and HtmlElements.
 HtmlElement.inject({
+	beans: true,
 	_properties: ['html'],
 
 	getClass: function() {
@@ -3813,6 +3868,7 @@ HtmlElement.inject(new function() {
 	});
 
 	var fields = {
+		beans: true,
 
 		getComputedStyle: function(name) {
 			if (this.$.currentStyle) return this.$.currentStyle[name.camelize()];
@@ -3957,6 +4013,7 @@ HtmlElement.inject(new function() {
 // HtmlForm related functions, but available in all elements:
 
 HtmlElement.inject({
+	beans: true,
 
 	getFormElements: function() {
 		return this.getElements(['input', 'select', 'textarea']);
@@ -3996,6 +4053,7 @@ HtmlElement.inject({
 });
 
 HtmlForm = HtmlElement.extend({
+	beans: true,
 	_tag: 'form',
 	_properties: ['action', 'method', 'target'],
 	_methods: ['submit'],
@@ -4014,6 +4072,7 @@ HtmlForm = HtmlElement.extend({
 });
 
 HtmlFormElement = HtmlElement.extend({
+	beans: true,
 	_properties: ['name', 'disabled'],
 	_methods: ['focus', 'blur'],
 
@@ -4026,6 +4085,7 @@ HtmlFormElement = HtmlElement.extend({
 });
 
 HtmlInput = HtmlFormElement.extend({
+	beans: true,
 	_tag: 'input',
 	_properties: ['type', 'checked', 'defaultChecked', 'readOnly', 'maxLength'],
 	_methods: ['click'],
@@ -4048,11 +4108,13 @@ HtmlInput = HtmlFormElement.extend({
 });
 
 HtmlTextArea = HtmlFormElement.extend({
+	beans: true,
 	_tag: 'textarea',
 	_properties: ['value']
 });
 
 HtmlSelect = HtmlFormElement.extend({
+	beans: true,
 	_tag: 'select',
 	_properties: ['type', 'selectedIndex'],
 
@@ -4086,6 +4148,7 @@ HtmlSelect = HtmlFormElement.extend({
 });
 
 HtmlOption = HtmlFormElement.extend({
+	beans: true,
 	_tag: 'option',
 	_properties: ['text', 'value', 'selected', 'defaultSelected', 'index']
 });
@@ -4165,6 +4228,7 @@ HtmlFormElement.inject({
 // HtmlImage
 
 HtmlImage = HtmlElement.extend({
+	beans: true,
 	_tag: 'img',
 	_properties: ['src', 'alt', 'title']
 });
@@ -5194,3 +5258,4 @@ Fx.Transitions.inject(['Quad', 'Cubic', 'Quart', 'Quint'].each(function(name, i)
 		return Math.pow(p, i + 2);
 	}
 }, {}));
+
