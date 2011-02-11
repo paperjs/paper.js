@@ -39,6 +39,7 @@ PathItem = Item.extend(new function() {
 		beans: true,
 		
 		initialize: function() {
+			this.base();
 			this.closed = false;
 			this.segments = [];//new SegmentList(this);
 			this.bounds = new Rectangle();
@@ -361,6 +362,7 @@ PathItem = Item.extend(new function() {
 		},
 		
 		draw: function(ctx) {
+			if(!this.visible) return;
 			ctx.beginPath();
 			var cp1;
 			for(var i = 0, l = this.segments.length; i < l; i++) {
