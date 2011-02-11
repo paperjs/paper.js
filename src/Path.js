@@ -23,9 +23,9 @@ Path = PathItem.extend({
 				var path = new Path();
 				path.closed = true;
 				var rectangle = Rectangle.read(arguments);
-				var corners = ['getBottomLeft', 'getTopLeft', 'getTopRight', 'getBottomRight'];
+				var corners = ['bottomLeft', 'topLeft', 'topRight', 'bottomRight'];
 				for(var i = 0; i < 4; i++) {
-					path.add(rectangle[corners[i]]());
+					path.add(rectangle[corners[i]]);
 				}
 				return path;
 			}
@@ -45,22 +45,22 @@ Path = PathItem.extend({
 							arguments[2], arguments[3]);
 						size = new Size(arguments[4], arguments[5]);
 					}
-					size = Size.min(size, rect.getSize().divide(2));
+					size = Size.min(size, rect.size.divide(2));
 					uSize = size.multiply(u);
 
-					var bl = rect.getBottomLeft();
+					var bl = rect.bottomLeft;
 					path.add(bl.add(size.width, 0), null, [-uSize.width, 0]);
 					path.add(bl.subtract(0, size.height), [0, uSize.height], null);
 
-					var tl = rect.getTopLeft();
+					var tl = rect.topLeft;
 					path.add(tl.add(0, size.height), null, [0, -uSize.height]);
 					path.add(tl.add(size.width, 0), [-uSize.width, 0], null);
 
-					var tr = rect.getTopRight();
+					var tr = rect.topRight;
 					path.add(tr.subtract(size.width, 0), null, [uSize.width, 0]);
 					path.add(tr.add(0, size.height), [0, -uSize.height], null);
 
-					var br = rect.getBottomRight();
+					var br = rect.bottomRight;
 					path.add(br.subtract(0, size.height), null, [0, uSize.height]);
 					path.add(br.subtract(size.width, 0), [uSize.width, 0], null);
 
@@ -82,7 +82,7 @@ Path = PathItem.extend({
 				initialize: function() {
 					var path = new Path();
 					var rect = Rectangle.read(arguments);
-					var topLeft = rect.getTopLeft();
+					var topLeft = rect.topLeft;
 					var size = new Size(rect.width, rect.height);
 					for(var i = 0; i < 4; i++) {
 						var segment = Segment.read([segments[i]]);
