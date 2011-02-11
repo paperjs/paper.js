@@ -41,20 +41,20 @@
 				},
 
 				onMouseDrag: function(event) {
-					var offset = event.getDelta();
-					offset.setAngle(offset.getAngle() + 90);
+					var offset = event.delta;
+					offset.angle = offset.angle + 90;
 					var lineSize = values.size / values.lines;
 					for (var i = 0; i < values.lines; i++) {
 						var path = paths[values.lines - 1 - i];
-						offset.setLength(lineSize * i + lineSize / 2);
-						path.add(event.getMiddlePoint().add(offset));
-						//path.insert(0, event.getMiddlePoint().subtract(offset));
+						offset.length = lineSize * i + lineSize / 2;
+						path.add(event.middlePoint.add(offset));
+						//path.insert(0, event.middlePoint.subtract(offset));
 						path.smooth();
 					}
 				}
 			});
-			tool.setDocument(doc);
-			tool.setFixedDistance(30);
+			tool.document = doc;
+			tool.fixedDistance = 30;
 		}
 	</script>
 </head>

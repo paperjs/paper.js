@@ -33,21 +33,21 @@
 			var point, path;
 			var tool = new Tool({
 				onMouseDown: function(event) {
-					point = getPos(event.getPoint());
+					point = getPos(event.point);
 					path = new Path();
 					path.strokeColor = 'black';
 					path.add(point);
 					doc.children.push(path);
 				},
 				onMouseDrag: function(event) {
-					var p = getPos(event.getPoint());
+					var p = getPos(event.point);
 					if (!point.equals(p)) {
 						path.add(p);
 						point = p;
 					}
 				}
 			});
-			tool.setDocument(doc);
+			tool.document = doc;
 		}
 	</script>
 </head>

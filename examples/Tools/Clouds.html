@@ -26,15 +26,18 @@
 				onMouseDown: function(event) {
 					path = new Path();
 					path.strokeColor = 'black';
-					path.add(event.getPoint());
+					path.strokeWidth = 5;
+					path.strokeJoin = 'round';
+					path.strokeCap = 'round';
+					path.add(event.point);
 					doc.children.push(path);
 				},
 				onMouseDrag: function(event) {
-					path.arcTo(event.getPoint(), true);
+					path.arcTo(event.point, true);
 				}
 			});
-			tool.setDocument(doc);
-			tool.setMinDistance(30);
+			tool.document = doc;
+			tool.minDistance = 30;
 		}
 	</script>
 </head>

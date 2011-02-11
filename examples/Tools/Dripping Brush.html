@@ -32,7 +32,7 @@
 
 				onMouseDrag: function(event) {
 					// If the user dragged more then minSize:
-					if (event.getDelta().getLength() > minSize) {
+					if (event.delta.length > minSize) {
 						// If there is no path, make one:
 						if (!path) {
 							path = new Path();
@@ -41,20 +41,20 @@
 							doc.children.push(path);
 						}
 
-						var step = event.getDelta().divide(2);
-						step.setAngle(step.getAngle() + 90);
+						var step = event.delta.divide(2);
+						step.angle = step.angle + 90;
 
 						// The top point: the middle point + the step rotated by 90 degrees:
 						//   -----*
 						//   |
 						//   ------
-						var top = event.getMiddlePoint().add(step);
+						var top = event.middlePoint.add(step);
 
 						// The bottom point: the middle point - the step rotated by 90 degrees:
 						//   ------
 						//   |
 						//   -----*
-						var bottom = event.getMiddlePoint().subtract(step);
+						var bottom = event.middlePoint.subtract(step);
 
 						path.add(top);
 						path.insert(0, bottom);
@@ -64,7 +64,7 @@
 
 						// If there is currently a path, close it
 						if (path) {
-							path.add(event.getPoint());
+							path.add(event.point);
 							path.closed = true;
 							path.smooth();
 
@@ -77,7 +77,7 @@
 				
 				onMouseUp: function(event) {
 					if (path) {
-						path.add(event.getPoint());
+						path.add(event.point);
 						path.closed = true;
 						path.smooth();
 
@@ -88,8 +88,8 @@
 				}
 			});
 
-			tool.setDocument(doc);
-			tool.setMaxDistance(20);
+			tool.document = doc;
+			tool.maxDistance = 20;
 		}
 	</script>
 </head>

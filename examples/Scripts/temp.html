@@ -18,18 +18,21 @@
 		var count = 0;
 		var doc;
 		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			doc = new Doc(canvas);
-			var rect = new Rectangle([50, 50], [200, 100])
-			var path = new Path.RoundRectangle(rect, 200);
-			path.strokeColor = 'black';
-			console.log(path);
-			doc.children.push(path);
-
-			// var path = new Path.Rectangle(rect);
+			var point = new Point(10, 0);
+			point.length = 100;
+			console.log(point);
+			// var canvas = document.getElementById('canvas');
+			// doc = new Doc(canvas);
+			// var rect = new Rectangle([50, 50], [200, 100])
+			// var path = new Path.RoundRectangle(rect, 200);
 			// path.strokeColor = 'black';
+			// console.log(path);
 			// doc.children.push(path);
-			doc.redraw();
+			// 
+			// // var path = new Path.Rectangle(rect);
+			// // path.strokeColor = 'black';
+			// // doc.children.push(path);
+			// doc.redraw();
 		}
 	</script>
 </head>

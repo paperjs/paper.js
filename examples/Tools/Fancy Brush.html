@@ -33,43 +33,43 @@
 			var tool = new Tool({
 				onMouseDown: function(event) {
 					path = new Path();
-					path.fillColor = event.getCount() % 2 ? 'red' : 'black';
+					path.fillColor = event.count % 2 ? 'red' : 'black';
 					doc.children.push(path);
 				},
 
 				onMouseDrag: function(event) {
 					// If this is the first drag event,
 					// add the strokes at the start:
-					if (event.getCount() == 1) {
-						addStrokes(event.getMiddlePoint(), event.getDelta().multiply(-1));
+					if (event.count == 1) {
+						addStrokes(event.middlePoint, event.delta.multiply(-1));
 					} else {
-						var step = event.getDelta().divide(2);
-						step.setAngle(step.getAngle() + 90);
+						var step = event.delta.divide(2);
+						step.angle = step.angle + 90;
 
 						// The top point: the middle point + the step rotated by 90 degrees:
 						//   -----*
 						//   |
 						//   ------
-						var top = event.getMiddlePoint().add(step);
+						var top = event.middlePoint.add(step);
 
 						// The bottom point: the middle point - the step rotated by 90 degrees:
 						//   ------
 						//   |
 						//   -----*
-						var bottom = event.getMiddlePoint().subtract(step);
+						var bottom = event.middlePoint.subtract(step);
 
 						path.add(top);
 						path.insert(0, bottom);
 					}
 					path.smooth();
 
-					lastPoint = event.getMiddlePoint();
+					lastPoint = event.middlePoint;
 				},
 				
 				onMouseUp: function(event) {
-					var delta = event.getPoint().subtract(lastPoint);
-					delta.setLength(tool.getMaxDistance());
-					addStrokes(event.getPoint(), delta);
+					var delta = event.point.subtract(lastPoint);
+					delta.length = tool.maxDistance;
+					addStrokes(event.point, delta);
 					path.closed = true;
 					path.smooth();
 				}
@@ -91,9 +91,9 @@
 				}
 			}
 			
-			tool.setDocument(doc);
-			tool.setFixedDistance(40);
-			// tool.setMinDistance(values.minDistance);
+			tool.document = doc;
+			tool.fixedDistance = 80;
+			// tool.minDistance = values.minDistance;
 		}
 	</script>
 </head>

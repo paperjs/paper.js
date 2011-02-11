@@ -24,16 +24,16 @@
 
 			var tool = new Tool({
 				onMouseDrag: function(event) {
-					if(event.getCount() != 1)
+					if(event.count != 1)
 						doc.children.pop();
-					var distance = event.getDownPoint().subtract(event.getPoint()).getLength();
-					var path = new Path.Circle(event.getDownPoint(), distance);
+					var distance = event.downPoint.subtract(event.point).length;
+					var path = new Path.Circle(event.downPoint, distance);
 					path.strokeColor = 'black';
 					path.fillColor = 'white';
 					doc.children.push(path);
 				}
 			});
-			tool.setDocument(doc);
+			tool.document = doc;
 		}
 	</script>
 </head>
