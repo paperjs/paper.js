@@ -14,6 +14,8 @@
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Path.js"></script>
 	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script type="text/javascript" src="../../src/Layer.js"></script>
+	<script type="text/javascript" src="../../src/Group.js"></script>
 	<script>
 		var count = 0;
 		var doc;
@@ -23,7 +25,7 @@
 			var path = new Path.Rectangle([50, 50], [100, 100]);
 			path.strokeColor = 'black';
 			console.log(path);
-			doc.children.push(path);
+			doc.activeLayer.appendTop(path);
 			doc.redraw();
 		}
 	</script>

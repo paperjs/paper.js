@@ -14,6 +14,8 @@
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Path.js"></script>
 	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script type="text/javascript" src="../../src/Layer.js"></script>
+	<script type="text/javascript" src="../../src/Group.js"></script>
 	<script type="text/javascript" src="../../src/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/ToolHandler.js"></script>
 	<script type="text/javascript" src="../../src/Tool.js"></script>
@@ -25,12 +27,12 @@
 			var tool = new Tool({
 				onMouseDrag: function(event) {
 					if(event.count != 1)
-						doc.children.pop();
+						doc.activeLayer.children.pop();
 					var distance = event.downPoint.subtract(event.point).length;
 					var path = new Path.Circle(event.downPoint, distance);
 					path.strokeColor = 'black';
 					path.fillColor = 'white';
-					doc.children.push(path);
+					doc.activeLayer.appendTop(path);
 				}
 			});
 			tool.document = doc;

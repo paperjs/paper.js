@@ -14,6 +14,8 @@
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Path.js"></script>
 	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script type="text/javascript" src="../../src/Layer.js"></script>
+	<script type="text/javascript" src="../../src/Group.js"></script>
 	<script>
 		window.onload = function() {
 			var canvas = document.getElementById('canvas');
@@ -36,7 +38,7 @@
 				new Segment(new Point(56.984375, 286.0546875), new Point(10.03076171875, 6.6875))
 			);
 			letterPath.fillColor = 'black';
-			doc.children.push(letterPath);
+			doc.activeLayer.appendTop(letterPath);
 			doc.redraw();
 		}
 	</script>

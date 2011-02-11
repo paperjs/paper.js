@@ -14,6 +14,8 @@
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Path.js"></script>
 	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script type="text/javascript" src="../../src/Layer.js"></script>
+	<script type="text/javascript" src="../../src/Group.js"></script>
 	<script>
 		var count = 0;
 		var doc;
@@ -25,13 +27,13 @@
 		
 		function draw() {
 			count++;
-			doc.children = [];
+			doc.activeLayer.children = [];
 			var point = new Point(1024, 768).divide(2);
 			var vector = new Point(100, 0);
 			for(var i = 0; i < 180; i++) {
 				var path = new Path.Line(point.add(vector.rotate(i * 2).normalize(30)), point.add(vector.rotate(i * 2).normalize(30 + Math.abs(Math.sin((i + count / 20)) * 300))));
 				path.strokeColor = i % 4 ? 'black' : 'red';
-				doc.children.push(path);
+				doc.activeLayer.appendTop(path);
 			}
 			doc.redraw();
 		}

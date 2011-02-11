@@ -14,6 +14,8 @@
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Path.js"></script>
 	<script type="text/javascript" src="../../src/Doc.js"></script>
+	<script type="text/javascript" src="../../src/Layer.js"></script>
+	<script type="text/javascript" src="../../src/Group.js"></script>
 	<script>
 		var count = 0;
 		var doc;
@@ -24,12 +26,12 @@
 		}
 		function draw() {
 			count++;
-			doc.children = [];
+			doc.activeLayer.children = [];
 			var rect = new Rectangle([150, 150], [300, 300]);
 			var size = Math.abs(Math.sin(count / 40)) * 150 + 10;
 			var path = new Path.RoundRectangle(rect, size);
 			path.fillColor = 'black';
-			doc.children.push(path);
+			doc.activeLayer.appendTop(path);
 			doc.redraw();
 		}
 	</script>
