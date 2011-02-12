@@ -290,14 +290,37 @@ Item = Base.extend({
 	 * @return {@true if it is inside the specified item}
 	 */
 	isDescendant: function(item) {
-		var parent = this, isDescendant = false;
+		var parent = this;
 		while(parent) {
-			if(parent == item) {
-				isDescendant = true;
-				break;
-			}
+			if(parent == item)
+				return true;
 			parent = parent.parent;
 		}
-		return isDescendant;
+		return false;
+	},
+	
+	/**
+	 * Checks if the item is an ancestor of the specified item.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var group = new Group();
+	 * var path = new Path();
+	 * group.appendChild(path);
+	 * print(group.isAncestor(path)); // true
+	 * print(path.isAncestor(group)); // false
+	 * </code>
+	 * 
+	 * @param item the item to check against
+	 * @return {@true if the item is an ancestor of the specified item}
+	 */
+	isAncestor: function(item) {
+		var parent = item;
+		while(parent) {
+			if(parent == this)
+				return true;
+			parent = parent.parent;
+		}
+		return false;
 	}
 });

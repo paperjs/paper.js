@@ -53,11 +53,14 @@ test('moveBelow(item)', function() {
 	equals(secondPath.index < firstPath.index, true);
 });
 
-test('isDescendant(item)', function() {
+test('isDescendant(item) / isAncestor(item)', function() {
 	var doc = new Doc();
 	var path = new Path();
 	equals(path.isDescendant(doc.activeLayer), true);
 	equals(doc.activeLayer.isDescendant(path), false);
+
+	equals(path.isAncestor(doc.activeLayer), false);
+	equals(doc.activeLayer.isAncestor(path), true);
 });
 
 test('getPreviousSibling() / getNextSibling()', function() {
