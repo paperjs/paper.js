@@ -115,15 +115,15 @@ Segment = Base.extend({
 	},
 	
 	remove: function() {
-		if(this.segments)
-			return this.path.segments.unshift(this.index, 1);
+		if(this.path && this.path.segments)
+			return this.path.segments.splice(this.index, 1);
 		return false;
 	},
 	
 	toString: function() {
 		return '{ point: ' + this.point.toString()
-				+ ', handleIn '+ this.handleIn.toString()
-				+ ', handleOut ' + this.handleOut.toString()
+				+ (this.handleIn ? ', handleIn '+ this.handleIn.toString() : '')
+				+ (this.handleOut ? ', handleOut ' + this.handleOut.toString() : '')
 				+ ' }';
 	},
 	

@@ -42,3 +42,12 @@ test('segment.clone()', function(){
 	equals(segment == clone, false);
 	compareSegments(segment, clone);
 });
+
+test('segment.remove()', function(){
+	var doc = new Doc();
+	var path = new Path([10, 10], [5, 5], [10, 10]);
+	console.log(path.segments);
+	path.segments[1].remove();
+	console.log(path.segments);
+	equals(path.segments.length, 2);
+});
