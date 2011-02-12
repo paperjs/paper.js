@@ -5,6 +5,38 @@ Item = Base.extend({
 		this.parent.children.push(this);
 	},
 	
+	
+	/**
+	 * When passed a document, copies the item to the document,
+	 * or duplicates it within the same document. When passed an item,
+	 * copies the item into the specified item.
+	 * 
+	 * @param document the document to copy the item to
+	 * @return the new copy of the item
+	 */
+	
+	copyTo: function(itemOrDocument) {
+		var copy = Base.clone(this);
+		if(itemOrDocument.layers) {
+			copy.parent = itemOrDocument.activeLayer;
+			itemOrDocument.activeLayer.appendTop(copy);
+		} else {
+			copy.parent = itemOrDocument;
+			itemOrDocument.appendTop(copy);
+		}
+		return copy;
+	},
+	
+	/**
+	 * Clones the item within the same document.
+	 * 
+	 * @return the newly cloned item
+	 */
+	
+	clone: function() {
+		return this.copyTo(this.parent);
+	},
+	
 	/**
 	 * Specifies whether the item is locked.
 	 * 
@@ -163,6 +195,33 @@ Item = Base.extend({
 	},
 	
 	/**
+	 * {@grouptitle Tests}
+	 * 
+	 * Checks if the item contains any children items.
+	 * 
+	 * @return {@true if it has one or more children}
+	 */
+	hasChildren: function() {
+		return this.children && this.children.length;
+	},
+	
+	/**
+	 * Checks whether the item is editable.
+	 * 
+	 * @return {@true when neither the item, nor it's parents are locked or
+	 * hidden}
+	 */
+	isEditable: function() {
+		var parent = this;
+		while(parent) {
+			if(parent.hidden || parent.locked)
+				return false;
+			parent = parent.parent;
+		}
+		return true;
+	},
+	
+	/**
 	 * {@grouptitle Hierarchy Operations}
 	 * 
 	 * Inserts the specified item as a child of the item by appending it to the
@@ -264,7 +323,6 @@ Item = Base.extend({
 		this.document = item.document;
 		return true;
 	},
-	
 	
 	// TODO: this is confusing the beans
 	// isParent: function(item) {

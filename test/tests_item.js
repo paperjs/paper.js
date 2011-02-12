@@ -1,5 +1,33 @@
 module('Item');
 
+test('copyTo(document)', function() {
+	var doc = new Doc();
+	var path = new Path();
+	var secondDoc = new Doc();
+	var copy = path.copyTo(secondDoc);
+	equals(secondDoc.activeLayer.children.indexOf(copy) != -1, true);
+	equals(doc.activeLayer.children.indexOf(copy) == -1, true);
+	equals(copy != path, true);
+});
+
+test('copyTo(layer)', function() {
+	var doc = new Doc();
+	var path = new Path();
+
+	var layer = new Layer();
+	var copy = path.copyTo(layer);
+	equals(layer.children.indexOf(copy) != -1, true);
+	equals(doc.layers[0].children.indexOf(copy) == -1, true);
+});
+
+test('clone()', function() {
+	var doc = new Doc();
+	var path = new Path();
+	var copy = path.clone();
+	equals(doc.activeLayer.children.length == 2, true);
+	equals(path != copy, true);
+});
+
 test('appendChild(item)', function() {
 	var doc = new Doc();
 	var path = new Path();
