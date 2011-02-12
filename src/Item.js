@@ -1,7 +1,8 @@
 Item = Base.extend({
 	beans: true,
 	initialize: function() {
-		
+		this.parent = Paper.document.activeLayer;
+		this.parent.children.push(this);
 	},
 	
 	/**
@@ -155,6 +156,13 @@ Item = Base.extend({
 	},
 	
 	/**
+	* Removes the item.
+	*/	
+	remove: function() {
+		this.removeFromParent();
+	},
+	
+	/**
 	 * {@grouptitle Hierarchy Operations}
 	 * 
 	 * Inserts the specified item as a child of the item by appending it to the
@@ -172,8 +180,10 @@ Item = Base.extend({
 	 * @param item The item that will be appended as a child
 	 */
 	appendTop: function(item) {
+		item.removeFromParent();
 		this.children.push(item);
 		item.parent = this;
+		item.document = this.document;
 	},
 	
 	/**
@@ -192,8 +202,10 @@ Item = Base.extend({
 	 * @param item The item that will be appended as a child
 	 */
 	appendBottom: function(item) {
+		item.removeFromParent();
 		this.children.splice(0, 0, item);
 		item.parent = this;
+		item.document = this.document;
 	},
 	
 	/**
@@ -225,6 +237,7 @@ Item = Base.extend({
 		this.removeFromParent();
 		item.parent.children.splice(item.index + 1, 0, this);
 		this.parent = item.parent;
+		this.document = item.document;
 		return true;
 	},
 	
@@ -248,6 +261,7 @@ Item = Base.extend({
 		this.removeFromParent();
 		item.parent.children.splice(item.index - 1, 0, this);
 		this.parent = item.parent;
+		this.document = item.document;
 		return true;
 	},
 	

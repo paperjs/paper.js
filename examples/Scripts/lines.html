@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/Item.js"></script>
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Point.js"></script>
@@ -33,7 +34,6 @@
 			for(var i = 0; i < 180; i++) {
 				var path = new Path.Line(point.add(vector.rotate(i * 2).normalize(30)), point.add(vector.rotate(i * 2).normalize(30 + Math.abs(Math.sin((i + count / 20)) * 300))));
 				path.strokeColor = i % 4 ? 'black' : 'red';
-				doc.activeLayer.appendTop(path);
 			}
 			doc.redraw();
 		}

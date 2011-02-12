@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/Item.js"></script>
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Point.js"></script>
@@ -28,10 +29,6 @@
 			var minSize = 5;
 			
 			var tool = new Tool({
-				onMouseDown: function(event) {
-					
-				},
-
 				onMouseDrag: function(event) {
 					// If the user dragged more then minSize:
 					if (event.delta.length > minSize) {
@@ -40,7 +37,6 @@
 							path = new Path();
 							path.fillColor = 'black';
 							path.add(event.lastPoint);
-							doc.activeLayer.appendTop(path);
 						}
 
 						var step = event.delta.divide(2);

@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/Item.js"></script>
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Point.js"></script>
@@ -31,7 +32,6 @@
 			var size = Math.abs(Math.sin(count / 40)) * 150 + 10;
 			var path = new Path.RoundRectangle(rect, size);
 			path.fillColor = 'black';
-			doc.activeLayer.appendTop(path);
 			doc.redraw();
 		}
 	</script>

@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/Item.js"></script>
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Point.js"></script>
@@ -23,7 +24,6 @@
 		window.onload = function() {
 			var canvas = document.getElementById('canvas');
 			var doc = new Doc(canvas);
-			
 			var values = {
 				curviness: 0.5,
 				distance: 10,
@@ -37,12 +37,10 @@
 				onMouseDown: function(event) {
 					path = new Path();
 					path.strokeColor = 'black';
-					doc.activeLayer.appendTop(path);
 				},
 
 				onMouseDrag: function(event) {
 					var step = event.delta.rotate(90 * mul);
-					
 					if (!values.mouseOffset)
 						step.length = values.offset;
 					var segment = new Segment(event.point.add(step));

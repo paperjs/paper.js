@@ -5,9 +5,16 @@ Doc = Base.extend({
 			this.ctx = this.canvas.getContext('2d');
 			this.size = new Size(canvas.offsetWidth, canvas.offsetHeight);
 		}
+		Paper.documents.push(this);
+		this.activate();
+		this.layers = [];
 		this.activeLayer = new Layer();
-		this.layers = [this.activeLayer];
 	},
+	
+	activate: function() {
+		Paper.activateDocument(this);
+	},
+	
 	redraw: function() {
 		if(this.canvas) {
 			this.ctx.clearRect(0, 0, this.size.width, this.size.height);

@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/Item.js"></script>
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Point.js"></script>
@@ -36,7 +37,6 @@
 				onMouseDown: function(event) {
 					path = new Path();
 					path.fillColor = event.count % 2 ? 'red' : 'black';
-					doc.activeLayer.appendTop(path);
 				},
 
 				onMouseDrag: function(event) {

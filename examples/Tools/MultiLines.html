@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/Item.js"></script>
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Point.js"></script>
@@ -37,7 +38,6 @@
 					for (var i = 0; i < values.lines; i++) {
 						var path = new Path();
 						path.strokeColor = '#000000';
-						doc.activeLayer.appendTop(path);
 						paths.push(path);
 					}
 				},
@@ -50,7 +50,6 @@
 						var path = paths[values.lines - 1 - i];
 						offset.length = lineSize * i + lineSize / 2;
 						path.add(event.middlePoint.add(offset));
-						//path.insert(0, event.middlePoint.subtract(offset));
 						path.smooth();
 					}
 				}

@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/Item.js"></script>
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Point.js"></script>
@@ -24,8 +25,6 @@
 			doc = new Doc(canvas);
 			var path = new Path.Rectangle([50, 50], [100, 100]);
 			path.strokeColor = 'black';
-			console.log(path);
-			doc.activeLayer.appendTop(path);
 			doc.redraw();
 		}
 	</script>

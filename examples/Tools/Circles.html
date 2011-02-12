@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/Item.js"></script>
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Point.js"></script>
@@ -23,16 +24,14 @@
 		window.onload = function() {
 			var canvas = document.getElementById('canvas');
 			var doc = new Doc(canvas);
-
+			var path;
 			var tool = new Tool({
 				onMouseDrag: function(event) {
-					if(event.count != 1)
-						doc.activeLayer.children.pop();
+					if(path) path.remove();
 					var distance = event.downPoint.subtract(event.point).length;
-					var path = new Path.Circle(event.downPoint, distance);
+					path = new Path.Circle(event.downPoint, distance);
 					path.strokeColor = 'black';
 					path.fillColor = 'white';
-					doc.activeLayer.appendTop(path);
 				}
 			});
 			tool.document = doc;

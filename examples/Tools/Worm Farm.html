@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../src/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/Item.js"></script>
 	<script type="text/javascript" src="../../src/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/Point.js"></script>
@@ -40,7 +41,6 @@
 					worm.fillColor = '#ffffff';
 					worm.strokeColor = '#000000';
 					worm.add(event.point);
-					doc.activeLayer.appendTop(worm);
 				},
 
 				onMouseDrag: function(event) {
@@ -77,7 +77,6 @@
 					// make a new line path from top to bottom
 					var line = new Path.Line(top, bottom);
 					line.strokeColor = '#000000';
-					doc.activeLayer.appendTop(line);
 
 					// smooth the segments of the path
 					worm.smooth();

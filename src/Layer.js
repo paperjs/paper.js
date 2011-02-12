@@ -1,7 +1,13 @@
 Layer = Item.extend({
 	initialize: function() {
-		this.base();
 		this.children = [];
+		this.document = this.parent = Paper.document;
+		this.document.layers.push(this);
+		this.activate();
+	},
+	
+	activate: function() {
+		this.document.activeLayer = this;
 	},
 	
 	draw: function(ctx) {
