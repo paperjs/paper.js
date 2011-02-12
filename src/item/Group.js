@@ -1,12 +1,18 @@
-GroupItem = Item.extend({
-	initialize: function() {
+Group = Item.extend({
+	initialize: function(items) {
+		this.base();
 		this.children = [];
+		if(items) {
+			for(var i = 0, l = items.length; i < l; i++) {
+				this.appendTop(items[i]);
+			}
+		}
 		this.clipped = false;
 	},
 	
-	draw: function() {
+	draw: function(ctx) {
 		for(var i = 0, l = this.children.length; i < l; i++) {
-			this.children[i].draw();
+			this.children[i].draw(ctx);
 		}
 	},
 	
