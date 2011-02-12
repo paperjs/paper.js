@@ -30,13 +30,14 @@ Segment = Base.extend({
 		} 
 	},
 	
-	insert: function() {
-		if(this.segments && this.segments.path) {
-			var path = this.segments.path;
-			path.checkValid();
-			
-		}
-	},
+	// TODO:
+	// insert: function() {
+	// 	if(this.segments && this.segments.path) {
+	// 		var path = this.segments.path;
+	// 		path.checkValid();
+	// 		
+	// 	}
+	// },
 	
 	getPoint: function() {
 		return this.point;
