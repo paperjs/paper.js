@@ -5,7 +5,6 @@ Item = Base.extend({
 		this.parent.children.push(this);
 	},
 	
-	
 	/**
 	 * When passed a document, copies the item to the document,
 	 * or duplicates it within the same document. When passed an item,
@@ -185,6 +184,7 @@ Item = Base.extend({
 	removeFromParent: function() {
 		if(this.parent)
 			this.parent.children.splice(this.index, 1);
+		this.parent = null;
 	},
 	
 	/**
