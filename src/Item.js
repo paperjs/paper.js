@@ -291,11 +291,12 @@ Item = Base.extend({
 	 */
 	isDescendant: function(item) {
 		var parent = this, isDescendant = false;
-		while(parent = parent.parent) {
-			if(parent.children.indexOf(item) != -1) {
+		while(parent) {
+			if(parent == item) {
 				isDescendant = true;
 				break;
 			}
+			parent = parent.parent;
 		}
 		return isDescendant;
 	}
