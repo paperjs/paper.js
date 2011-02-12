@@ -17,11 +17,9 @@
 	<script type="text/javascript" src="../../src/item/Layer.js"></script>
 	<script type="text/javascript" src="../../src/item/Group.js"></script>
 	<script>
-		var count = 0;
-		var doc;
 		window.onload = function() {
 			var canvas = document.getElementById('canvas');
-			doc = new Doc(canvas);
+			var doc = new Doc(canvas);
 			var path = new Path([100, 150], [150, 200], [200, 150]);
 			path.strokeColor = 'black';
 			path.strokeWidth = 30;
