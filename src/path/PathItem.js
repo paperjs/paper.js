@@ -98,7 +98,7 @@ PathItem = Item.extend(new function() {
 					handle1.x - current.point.x,
 					handle1.y - current.point.y);
 			// And add the new segment, with handleIn set to c2
-			this.segments.push(
+			this.addSegment(
 				new Segment(to, handle2.subtract(to), new Point())
 			);
 		},
@@ -226,7 +226,7 @@ PathItem = Item.extend(new function() {
 					var inPoint = new Point(
 							centerX + (relx + z * rely) * radius - pt.x,
 							centerY + (rely - z * relx) * radius - pt.y);
-					this.segments.push(new Segment(pt, inPoint, out));
+					this.addSegment(new Segment(pt, inPoint, out));
 				}
 				angle += inc;
 			}
