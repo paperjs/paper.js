@@ -31,6 +31,10 @@
 					path = new Path.Circle(event.downPoint, distance);
 					path.strokeColor = 'black';
 					path.fillColor = 'white';
+				},
+				
+				onMouseUp: function(event) {
+					path = null;
 				}
 			});
 			tool.document = doc;
