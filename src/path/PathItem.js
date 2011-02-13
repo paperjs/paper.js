@@ -42,7 +42,6 @@ PathItem = Item.extend(new function() {
 			this.base();
 			this.closed = false;
 			this._segments = [];
-			this.bounds = new Rectangle();
 			// Support both passing of segments as array or arguments
 			// TODO: Use better isArray check, i.e. the one from
 			// http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
@@ -65,6 +64,79 @@ PathItem = Item.extend(new function() {
 
 		setSegments: function(segments) {
 			this._segments = segments;
+		},
+
+		getBounds: function() {
+			var segments = this._segments;
+			var prev = segments[0];
+			if (!prev)
+				return null;
+			var p0 = prev.point;
+			var min = {
+				x: p0.x,
+				y: p0.y
+			};
+			var max = {
+				x: p0.x,
+				y: p0.y
+			}
+			var coords = ['x', 'y'];
+			for (var i = 1, l = segments.length; i < l; i++) {
+				var segment = segments[i];
+				var p1 = p0.add(prev.handleOut);
+				var p3 = segment.point;
+				var p2 = p3.add(segment.handleIn);
+				for (var j = 0; j < 2; j++) {
+					var c = coords[j];
+
+					function bounds(value) {
+						if (value < min[c]) {
+							min[c] = value;
+						} else if (value > max[c]) {
+							max[c] = value;
+						}
+					}
+					bounds(p3[c]);
+
+					function f(t) {
+						var omt = 1 - t;
+						return omt * omt * omt * p0[c] 
+								+ 3 * omt * omt * t * p1[c] 
+								+ 3 * omt * t * t * p2[c]
+								+ t * t * t * p3[c];
+					}
+
+					var b = 6 * p0[c] - 12 * p1[c] + 6 * p2[c];
+					var a = -3 * p0[c] + 9 * p1[c] - 9 * p2[c] + 3 * p3[c];
+					var c = 3 * p1[c] - 3 * p0[c];
+
+					if (a == 0) {
+						if (b == 0)
+						    continue;
+						var t = -c / b;
+						if (0 < t && t < 1)
+							bounds(f(t));
+						continue;
+					}
+
+					var b2ac = b * b - 4 * c * a;
+					if (b2ac < 0)
+						continue;
+					var t1 = (-b + Math.sqrt(b2ac)) / (2 * a);
+					if (0 < t1 && t1 < 1)
+						bounds(f(t1));
+					var t2 = (-b - Math.sqrt(b2ac)) / (2 * a);
+					if (0 < t2 && t2 < 1)
+						bounds(f(t2));
+				}
+				p0 = p3;
+				prev = segment;
+			}
+		    return new Rectangle(min.x, min.y, max.x - min.x , max.y - min.y);
+		},
+
+		setBounds: function(bounds) {
+			// TODO:
 		},
 
 		addSegment: function(segment) {
