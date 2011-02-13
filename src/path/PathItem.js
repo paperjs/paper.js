@@ -87,28 +87,28 @@ PathItem = Item.extend(new function() {
 				var p3 = segment.point;
 				var p2 = p3.add(segment.handleIn);
 				for (var j = 0; j < 2; j++) {
-					var c = coords[j];
+					var p = coords[j];
 
 					function bounds(value) {
-						if (value < min[c]) {
-							min[c] = value;
-						} else if (value > max[c]) {
-							max[c] = value;
+						if (value < min[p]) {
+							min[p] = value;
+						} else if (value > max[p]) {
+							max[p] = value;
 						}
 					}
-					bounds(p3[c]);
+					bounds(p3[p]);
 
 					function f(t) {
 						var omt = 1 - t;
-						return omt * omt * omt * p0[c] 
-								+ 3 * omt * omt * t * p1[c] 
-								+ 3 * omt * t * t * p2[c]
-								+ t * t * t * p3[c];
+						return omt * omt * omt * p0[p] 
+								+ 3 * omt * omt * t * p1[p] 
+								+ 3 * omt * t * t * p2[p]
+								+ t * t * t * p3[p];
 					}
 
-					var b = 6 * p0[c] - 12 * p1[c] + 6 * p2[c];
-					var a = -3 * p0[c] + 9 * p1[c] - 9 * p2[c] + 3 * p3[c];
-					var c = 3 * p1[c] - 3 * p0[c];
+					var b = 6 * p0[p] - 12 * p1[p] + 6 * p2[p];
+					var a = -3 * p0[p] + 9 * p1[p] - 9 * p2[p] + 3 * p3[p];
+					var c = 3 * p1[p] - 3 * p0[p];
 
 					if (a == 0) {
 						if (b == 0)
