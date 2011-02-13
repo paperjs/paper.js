@@ -471,8 +471,8 @@ PathItem = Item.extend(new function() {
 			for (var i = 0, l = this._segments.length; i < l; i++) {
 				var segment = this._segments[i];
 				var point = segment.point;
-				var handleIn = segment.handleIn ? segment.handleIn.add(point) : point;
-				var handleOut = segment.handleOut ? segment.handleOut.add(point) : point;
+				var handleIn = segment.handleIn.add(point);
+				var handleOut = segment.handleOut.add(point);
 				if (i == 0) {
 					ctx.moveTo(point.x, point.y);
 				} else {
@@ -484,7 +484,7 @@ PathItem = Item.extend(new function() {
 			if (this.closed && this._segments.length > 1) {
 				var segment = this._segments[0];
 				var point = segment.point;
-				var handleIn = segment.handleIn ? segment.handleIn.add(point) : point;
+				var handleIn = segment.handleIn.add(point);
 				ctx.bezierCurveTo(cp1.x, cp1.y, handleIn.x, handleIn.y,
 					point.x, point.y);
 				ctx.closePath();
