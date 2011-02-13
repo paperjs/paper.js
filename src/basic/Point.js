@@ -1,5 +1,6 @@
 var Point = Base.extend({
 	beans: true,
+
 	initialize: function() {
 		if (arguments.length == 2) {
 			this.x = arguments[0];

@@ -1,5 +1,6 @@
 Tool = ToolHandler.extend({
 	beans: true,
+
 	initialize: function(handlers, doc) {
 		this.base(handlers);
 	},

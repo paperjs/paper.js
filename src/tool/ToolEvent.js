@@ -46,6 +46,7 @@
  */
 ToolEvent = Base.extend({
 	beans: true,
+
 	initialize: function(tool, type, modifiers) {
 		// super(modifiers);
 		this.tool = tool;

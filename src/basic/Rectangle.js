@@ -1,5 +1,6 @@
 Rectangle = Base.extend({
 	beans: true,
+
 	initialize: function() {
 		if (arguments.length == 1) {
 			var rect = arguments[0];

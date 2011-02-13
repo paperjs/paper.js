@@ -1,5 +1,6 @@
 ToolHandler = Base.extend({
 	beans: true,
+
 	/**
 	 * Initializes the tool's settings, so a new tool can be assigned to it
 	 */
