@@ -85,29 +85,31 @@ PathItem = Item.extend(new function() {
 				var p1 = p0.add(prev.handleOut);
 				var p3 = segment.point;
 				var p2 = p3.add(segment.handleIn);
-				for (var j = 0; j < 2; j++) {
-					var p = coords[j];
+				for (var i = 0; i < 2; i++) {
+					var coord = coords[i];
+					var v0 = p0[coord], v1 = p1[coord],
+						v2 = p2[coord], v3 = p3[coord];
 
 					function bounds(value) {
-						if (value < min[p]) {
-							min[p] = value;
-						} else if (value > max[p]) {
-							max[p] = value;
+						if (value < min[coord]) {
+							min[coord] = value;
+						} else if (value > max[coord]) {
+							max[coord] = value;
 						}
 					}
-					bounds(p3[p]);
+					bounds(v3);
 
 					function f(t) {
 						var omt = 1 - t;
-						return omt * omt * omt * p0[p] 
-								+ 3 * omt * omt * t * p1[p] 
-								+ 3 * omt * t * t * p2[p]
-								+ t * t * t * p3[p];
+						return omt * omt * omt * v0
+								+ 3 * omt * omt * t * v1
+								+ 3 * omt * t * t * v2
+								+ t * t * t * v3;
 					}
 
-					var b = 6 * p0[p] - 12 * p1[p] + 6 * p2[p];
-					var a = -3 * p0[p] + 9 * p1[p] - 9 * p2[p] + 3 * p3[p];
-					var c = 3 * p1[p] - 3 * p0[p];
+					var b = 6 * v0 - 12 * v1 + 6 * v2;
+					var a = -3 * v0 + 9 * v1 - 9 * v2 + 3 * v3;
+					var c = 3 * v1 - 3 * v0;
 
 					if (a == 0) {
 						if (b == 0)
