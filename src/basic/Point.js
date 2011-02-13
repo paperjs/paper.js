@@ -11,17 +11,14 @@ var Point = Base.extend({
 			} else if(first.x !== undefined) {
 				this.x = first.x;
 				this.y = first.y;
-				this._angle = first.angle;
 			} else if(first.width !== undefined) {
 				this.x = first.width;
 				this.y = first.height;
-				this._angle = null;
 			} else if(first.length !== undefined) {
 				this.x = first[0];
 				this.y = first.length > 1 ? first[1] : first[0];
 			} else if(typeof first === 'number') {
 				this.x = this.y = first;
-				this._angle = null;
 			} else {
 				this.x = this.y = 0;
 			}
@@ -166,7 +163,9 @@ var Point = Base.extend({
 				angle = Math.acos(this.dot(point) / div);
 			}
 		} else {
-			angle = this._angle = Math.atan2(this.y, this.x);
+			if (this._angle == null)
+				this._angle = Math.atan2(this.y, this.x);
+			angle = this._angle;
 		}
 		return angle * 180 / Math.PI;
 	},
