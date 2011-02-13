@@ -24,7 +24,7 @@ var Point = Base.extend({
 				this.x = this.y = 0;
 			}
 		} else {
-			this.x = this.y = 0;	
+			this.x = this.y = 0;
 		}
 	},
 
@@ -107,7 +107,7 @@ var Point = Base.extend({
 			this.y *= scale;
 		}
 	},
-	
+
 	normalize: function(length) {
 		if (length === null)
 			length = 1;
@@ -118,16 +118,16 @@ var Point = Base.extend({
 		res._angle = this._angle;
 		return res;
 	},
-	
+
 	getAngleInRadians: function() {
 		return Math.atan2(this.y, this.x);
 	},
-	
+
 	getAngleInDegrees: function() {
 		return Math.atan2(this.y, this.x) * 180 / Math.PI;
 	},
-	
-	
+
+
 	getQuadrant: function() {
 		if (this.x >= 0) {
 			if (this.y >= 0) {
@@ -143,7 +143,7 @@ var Point = Base.extend({
 			}
 		}
 	},
-	
+
 	setAngle: function(angle) {
 		angle = this._angle = angle * Math.PI / 180;
 		if (!this.isZero()) {
@@ -183,7 +183,7 @@ var Point = Base.extend({
 			return angle;
 		}
 	},
-	
+
 	rotate: function(angle) {
 		angle = angle * Math.PI / 180;
 		var s = Math.sin(angle);

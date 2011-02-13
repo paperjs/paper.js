@@ -20,10 +20,10 @@ var Size = Base.extend({
 				this.width = this.height = 0;
 			}
 		} else {
-			this.width = this.height = 0;	
+			this.width = this.height = 0;
 		}
 	},
-	
+
 	add: function() {
 		var size = Size.read(arguments);
 		return new Size(this.width + size.width, this.height + size.height);
