@@ -118,13 +118,13 @@ Rectangle = Base.extend({
 	},
 
 	getCenter: function() {
-		return new Point(this.x - this.width / 2, this.y - this.height / 2);
+		return new Point(this.x + this.width * 0.5, this.y + this.height * 0.5);
 	},
 
 	setCenter: function() {
 		var center = Point.read(arguments);
-		this.x = center.x - this.width / 2;
-		this.y = center.y - this.height / 2;
+		this.x = center.x - this.width * 0.5;
+		this.y = center.y - this.height * 0.5;
 	},
 
 	getTopLeft: function() {
