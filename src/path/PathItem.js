@@ -109,7 +109,7 @@ PathItem = Item.extend(new function() {
 			// First modify the current segment:
 			var current = this.currentSegment;
 			// Convert to relative values:
-			current.handleOut.set(
+			current.handleOut = new Point(
 					handle1.x - current.point.x,
 					handle1.y - current.point.y);
 			// And add the new segment, with handleIn set to c2
@@ -128,10 +128,10 @@ PathItem = Item.extend(new function() {
 			// and the cubic is A B C D,
 			// B = E + 1/3 (A - E)
 			// C = E + 1/3 (D - E)
-			var current = this._segments[this._segments.length - 1];
+			var current = this.currentSegment;
 			var x1 = current.point.x;
 			var y1 = current.point.y;
-			cubicCurveTo(
+			this.cubicCurveTo(
 				handle.add(current.point.subtract(handle).multiply(1/3)),
 				handle.add(to.subtract(handle).multiply(1/3)),
 				to
@@ -143,7 +143,7 @@ PathItem = Item.extend(new function() {
 			to = new Point(to);
 			if(parameter == null)
 				parameter = 0.5;
-			var current = this._segments[this._segments.length - 1];
+			var current = this.currentSegment.point;
 			// handle = (through - (1 - t)^2 * current - t^2 * to) / (2 * (1 - t) * t)
 			var t1 = 1 - parameter;
 			var handle = through.subtract(
@@ -159,22 +159,21 @@ PathItem = Item.extend(new function() {
 		
 		arcTo: function(to, clockwise) {
 			var through, to;
+			// Get the start point:
+			var current = this.currentSegment;
 			if(arguments[1] && typeof arguments[1] != 'boolean') {
 				through = new Point(arguments[0]);
 				to = new Point(arguments[1]);
 			} else {
 				if(clockwise === null)
 					clockwise = true;
-				var current = this._segments[this._segments.length - 1].point;
-				var middle = current.add(to).divide(2);
-				var step = middle.subtract(current);
+				var middle = current.point.add(to).divide(2);
+				var step = middle.subtract(current.point);
 				through = clockwise 
 						? middle.subtract(-step.y, step.x)
 						: middle.add(-step.y, step.x);
 			}
 			
-			// Get the start point:
-			var current = this._segments[this._segments.length - 1];
 			var x1 = current.point.x, x2 = through.x, x3 = to.x;
 			var y1 = current.point.y, y2 = through.y, y3 = to.y;
 
@@ -250,7 +249,7 @@ PathItem = Item.extend(new function() {
 		lineBy: function() {
 			var vector = Point.read(arguments);
 			if(vector) {
-				var current = this._segments[this._segments.length - 1];
+				var current = this.currentSegment;
 				this.lineTo(current.point.add(vector));
 			}
 		},
@@ -357,14 +356,14 @@ PathItem = Item.extend(new function() {
 		curveBy: function(throughVector, toVector, parameter) {
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
-			var current = this._segments[this._segments.length - 1].point;
+			var current = this.currentSegment.point;
 			this.curveTo(current.add(throughVector), current.add(toVector), parameter);
 		},
 		
 		arcBy: function(throughVector, toVector) {
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
-			var current = this._segments[this._segments.length - 1].point;
+			var current = this.currentSegment.point;
 			this.arcBy(current.add(throughVector), current.add(toVector));
 		},
 		
