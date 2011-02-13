@@ -68,10 +68,10 @@ PathItem = Item.extend(new function() {
 
 		getBounds: function() {
 			var segments = this._segments;
-			var prev = segments[0];
-			if (!prev)
+			var first = segments[0];
+			if (!first)
 				return null;
-			var p0 = prev.point;
+			var p0 = first.point, prev = first;
 			var min = {
 				x: p0.x,
 				y: p0.y
@@ -81,8 +81,7 @@ PathItem = Item.extend(new function() {
 				y: p0.y
 			}
 			var coords = ['x', 'y'];
-			for (var i = 1, l = segments.length; i < l; i++) {
-				var segment = segments[i];
+			function processSegment(segment) {
 				var p1 = p0.add(prev.handleOut);
 				var p3 = segment.point;
 				var p2 = p3.add(segment.handleIn);
@@ -132,6 +131,10 @@ PathItem = Item.extend(new function() {
 				p0 = p3;
 				prev = segment;
 			}
+			for (var i = 1, l = segments.length; i < l; i++)
+				processSegment(segments[i]);
+			if (this.closed)
+				processSegment(first);
 		    return new Rectangle(min.x, min.y, max.x - min.x , max.y - min.y);
 		},
 
