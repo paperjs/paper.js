@@ -134,14 +134,17 @@ Segment = Base.extend({
 	},
 	
 	statics: {
-		read: function(args) {
-			if (args.length == 1 && args[0] instanceof Segment) {
-				return args[0];
-			} else if (args.length && args[0] != null) {
+		read: function(args, index) {
+			var index = index || 0, length = args.length - index;
+			if (length == 1 && args[index] instanceof Segment) {
+				return args[index];
+			} else if (length != 0) {
 				var segment = new Segment();
-				segment.initialize.apply(segment, args);
+				segment.initialize.apply(segment, index > 0
+						? Array.prototype.slice.call(args, index) : args);
 				return segment;
 			}
+			return null;
 		}
 	}
 });

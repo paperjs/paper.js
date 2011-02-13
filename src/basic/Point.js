@@ -271,14 +271,17 @@ var Point = Base.extend({
 	},
 
 	statics: {
-		read: function(args) {
-			if (args.length == 1 && args[0] instanceof Point) {
-				return args[0];
-			} else if (args.length) {
+		read: function(args, index) {
+			var index = index || 0, length = args.length - index;
+			if (length == 1 && args[index] instanceof Point) {
+				return args[index];
+			} else if (length != 0) {
 				var point = new Point();
-				point.initialize.apply(point, args);
+				point.initialize.apply(point, index > 0
+						? Array.prototype.slice.call(args, index) : args);
 				return point;
 			}
+			return null;
 		},
 
 		min: function(point1, point2) {

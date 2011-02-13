@@ -87,14 +87,17 @@ var Size = Base.extend({
 	},
 
 	statics: {
-		read: function(args) {
-			if (args.length == 1 && args[0] instanceof Size) {
-				return args[0];
-			} else if (args.length) {
+		read: function(args, index) {
+			var index = index || 0, length = args.length - index;
+			if (length == 1 && args[index] instanceof Size) {
+				return args[index];
+			} else if (length != 0) {
 				var size = new Size();
-				size.initialize.apply(size, args);
+				size.initialize.apply(size, index > 0
+						? Array.prototype.slice.call(args, index) : args);
 				return size;
 			}
+			return null;
 		},
 
 		min: function(Size1, Size2) {

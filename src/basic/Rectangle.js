@@ -277,14 +277,17 @@ Rectangle = Base.extend({
 	},
 	
 	statics: {
-		read: function(args) {
-			if (args.length == 1 && args[0] instanceof Rectangle) {
-				return args[0];
-			} else if (args.length) {
+		read: function(args, index) {
+			var index = index || 0, length = args.length - index;
+			if (length == 1 && args[index] instanceof Rectangle) {
+				return args[index];
+			} else if (length != 0) {
 				var rect = new Rectangle();
-				rect.initialize.apply(rect, args);
+				rect.initialize.apply(rect, index > 0
+						? Array.prototype.slice.call(args, index) : args);
 				return rect;
 			}
+			return null;
 		}
 	}
 });
