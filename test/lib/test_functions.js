@@ -19,16 +19,21 @@ function compareSegments(segment1, segment2) {
 	}
 }
 
-function comparePoints(point1, point2, message) {
-	equals(Math.round(point1.x * 100), Math.round(point2.x * 100),
-			message ? message + ' x' : undefined);
-	equals(Math.round(point1.y * 100), Math.round(point2.y * 100),
-			message ? message + ' y' : undefined);
+function compareNumbers(number1, number2, message) {
+	equals(Math.round(number1 * 100) / 100, Math.round(number2 * 100) / 100,
+			message);
 }
 
-function compareRectangles(rect1, rect2) {
-	equals(rect1.x, rect2.x);
-	equals(rect1.y, rect2.y);
-	equals(rect1.width, rect2.width);
-	equals(rect1.height, rect2.height);
+function comparePoints(point1, point2, message) {
+	compareNumbers(point1.x, point2.x, message ? message + ' x' : undefined);
+	compareNumbers(point1.y, point2.y, message ? message + ' y' : undefined);
+}
+
+function compareRectangles(rect1, rect2, message) {
+	compareNumbers(rect1.x, rect2.x, message ? message + ' x' : undefined);
+	compareNumbers(rect1.y, rect2.y, message ? message + ' y' : undefined);
+	compareNumbers(rect1.width, rect2.width,
+				message ? message + ' width' : undefined);
+	compareNumbers(rect1.height, rect2.height,
+				message ? message + ' height' : undefined);
 }
