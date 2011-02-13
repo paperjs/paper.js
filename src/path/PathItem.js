@@ -37,11 +37,11 @@ PathItem = Item.extend(new function() {
 	
 	return {
 		beans: true,
-		
+
 		initialize: function() {
 			this.base();
 			this.closed = false;
-			this.segments = [];//new SegmentList(this);
+			this._segments = [];//new SegmentList(this);
 			this.bounds = new Rectangle();
 			for(var i = 0, l = arguments.length; i < l; i++) {
 				var segment = new Segment(arguments[i]);
@@ -49,9 +49,20 @@ PathItem = Item.extend(new function() {
 			}
 		},
 
+		/**
+		 * The segments contained within the path.
+		 */
+		getSegments: function() {
+			return this._segments;
+		},
+
+		setSegments: function(segments) {
+			this._segments = segments;
+		},
+
 		addSegment: function(segment) {
 			segment.path = this;
-			this.segments.push(segment);
+			this._segments.push(segment);
 		},
 
 		add: function() {
@@ -61,28 +72,32 @@ PathItem = Item.extend(new function() {
 		},
 
 		insert: function(index, segment) {
-			this.segments.splice(index, 0, new Segment(segment));
+			this._segments.splice(index, 0, new Segment(segment));
 		},
+
+		/**
+		 *  PostScript-style drawing commands
+		 */
 
 		/**
 		 * Helper method that returns the current segment and checks if we need to
 		 * execute a moveTo() command first.
 		 */
 		getCurrentSegment: function() {
-			if (this.segments.length == 0)
+			if (this._segments.length == 0)
 				throw('Use a moveTo() command first');
-			return this.segments[this.segments.length - 1];
+			return this._segments[this._segments.length - 1];
 		},
 
 		moveTo: function() {
 			var segment = Segment.read(arguments);
-			if(segment && !this.segments.length)
+			if(segment && !this._segments.length)
 				this.addSegment(segment);
 		},
 
 		lineTo: function() {
 			var segment = Segment.read(arguments);
-			if(segment && this.segments.length)
+			if(segment && this._segments.length)
 				this.addSegment(segment);
 		},
 		
@@ -113,7 +128,7 @@ PathItem = Item.extend(new function() {
 			// and the cubic is A B C D,
 			// B = E + 1/3 (A - E)
 			// C = E + 1/3 (D - E)
-			var current = this.segments[this.segments.length - 1];
+			var current = this._segments[this._segments.length - 1];
 			var x1 = current.point.x;
 			var y1 = current.point.y;
 			cubicCurveTo(
@@ -128,7 +143,7 @@ PathItem = Item.extend(new function() {
 			to = new Point(to);
 			if(parameter == null)
 				parameter = 0.5;
-			var current = this.segments[this.segments.length - 1];
+			var current = this._segments[this._segments.length - 1];
 			// handle = (through - (1 - t)^2 * current - t^2 * to) / (2 * (1 - t) * t)
 			var t1 = 1 - parameter;
 			var handle = through.subtract(
@@ -150,7 +165,7 @@ PathItem = Item.extend(new function() {
 			} else {
 				if(clockwise === null)
 					clockwise = true;
-				var current = this.segments[this.segments.length - 1].point;
+				var current = this._segments[this._segments.length - 1].point;
 				var middle = current.add(to).divide(2);
 				var step = middle.subtract(current);
 				through = clockwise 
@@ -159,7 +174,7 @@ PathItem = Item.extend(new function() {
 			}
 			
 			// Get the start point:
-			var current = this.segments[this.segments.length - 1];
+			var current = this._segments[this._segments.length - 1];
 			var x1 = current.point.x, x2 = through.x, x3 = to.x;
 			var y1 = current.point.y, y2 = through.y, y3 = to.y;
 
@@ -235,13 +250,13 @@ PathItem = Item.extend(new function() {
 		lineBy: function() {
 			var vector = Point.read(arguments);
 			if(vector) {
-				var current = this.segments[this.segments.length - 1];
+				var current = this._segments[this._segments.length - 1];
 				this.lineTo(current.point.add(vector));
 			}
 		},
 		
 		smooth: function() {
-			var segments = this.segments;
+			var segments = this._segments;
 			
 			// This code is based on the work by Oleg V. Polikarpotchkin,
 			// http://ov-p.spaces.live.com/blog/cns!39D56F0C7A08D703!147.entry
@@ -334,7 +349,7 @@ PathItem = Item.extend(new function() {
 				}
 			}
 			if (closed && handleIn != null) {
-				var segment = this.segments[0];
+				var segment = this._segments[0];
 				segment.handleIn = handleIn.subtract(segment.point);
 			}
 		},
@@ -342,14 +357,14 @@ PathItem = Item.extend(new function() {
 		curveBy: function(throughVector, toVector, parameter) {
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
-			var current = this.segments[this.segments.length - 1].point;
+			var current = this._segments[this._segments.length - 1].point;
 			this.curveTo(current.add(throughVector), current.add(toVector), parameter);
 		},
 		
 		arcBy: function(throughVector, toVector) {
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
-			var current = this.segments[this.segments.length - 1].point;
+			var current = this._segments[this._segments.length - 1].point;
 			this.arcBy(current.add(throughVector), current.add(toVector));
 		},
 		
@@ -365,8 +380,8 @@ PathItem = Item.extend(new function() {
 			if(!this.visible) return;
 			ctx.beginPath();
 			var cp1;
-			for(var i = 0, l = this.segments.length; i < l; i++) {
-				var segment = this.segments[i];
+			for(var i = 0, l = this._segments.length; i < l; i++) {
+				var segment = this._segments[i];
 				var point = segment.point;
 				var handleIn = segment.handleIn ? segment.handleIn.add(point) : point;
 				var handleOut = segment.handleOut ? segment.handleOut.add(point) : point;
@@ -378,8 +393,8 @@ PathItem = Item.extend(new function() {
 				}
 				cp1 = handleOut;
 			}
-			if(this.closed && this.segments.length > 1) {
-				var segment = this.segments[0];
+			if(this.closed && this._segments.length > 1) {
+				var segment = this._segments[0];
 				var point = segment.point;
 				var handleIn = segment.handleIn ? segment.handleIn.add(point) : point;
 				ctx.bezierCurveTo(cp1.x, cp1.y, handleIn.x, handleIn.y,

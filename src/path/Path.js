@@ -89,7 +89,7 @@ Path = PathItem.extend({
 						segment.handleIn = segment.handleIn.multiply(size);
 						segment.handleOut = segment.handleOut.multiply(size);
 						segment.point = segment.point.multiply(size).add(topLeft);
-						path.segments.push(segment);
+						path._segments.push(segment);
 					}
 					path.closed = true;
 					return path;
@@ -112,8 +112,8 @@ Path = PathItem.extend({
 				path.moveTo(left);
 				path.arcTo(center.add(radius, 0), true);
 				path.arcTo(left, true);
-				var last = path.segments.pop();
-				path.segments[0].handleIn = last.handleIn;
+				var last = path._segments.pop();
+				path._segments[0].handleIn = last.handleIn;
 				path.closed = true;
 				return path;
 			}

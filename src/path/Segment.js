@@ -32,8 +32,8 @@ Segment = Base.extend({
 	
 	// TODO:
 	// insert: function() {
-	// 	if(this.segments && this.segments.path) {
-	// 		var path = this.segments.path;
+	// 	if(this._segments && this._segments.path) {
+	// 		var path = this._segments.path;
 	// 		path.checkValid();
 	// 		
 	// 	}
@@ -68,7 +68,7 @@ Segment = Base.extend({
 	},
 	
 	getIndex: function() {
-		var segments = this.path.segments;
+		var segments = this.path._segments;
 		for(var i = 0, l = segments.length; i < l; i++) {
 			if(segments[i] == this)
 				return i;
@@ -81,8 +81,8 @@ Segment = Base.extend({
 	
 	// todo
 	// getCurve: function() {
-	// 	if(this.segments && this.segments.path) {
-	// 		var curves = this.segments.path.getCurves();
+	// 	if(this._segments && this._segments.path) {
+	// 		var curves = this._segments.path.getCurves();
 	// 		// The curves list handles closing curves, so the curves.size
 	// 		// is adjusted accordingly. just check to be in the boundaries here:
 	// 		return index < curves.length ? curves[index] : null;
@@ -91,12 +91,13 @@ Segment = Base.extend({
 	
 	getNext: function() {
 		var index = this.index;
-		return this.path && index < this.path.segments.length - 1
-			? this.path.segments[index + 1] : null;
+		return this.path && index < this.path._segments.length - 1
+			? this.path._segments[index + 1] : null;
 	},
 	
 	getPrevious: function() {
-		return this.path != null && index > 0 ? this.segments[this.index - 1] : null;
+		return this.path != null && index > 0
+			? this.path._segments[this.index - 1] : null;
 	},
 	
 	// todo
@@ -115,8 +116,8 @@ Segment = Base.extend({
 	},
 	
 	remove: function() {
-		if(this.path && this.path.segments)
-			return this.path.segments.splice(this.index, 1);
+		if(this.path && this.path._segments)
+			return this.path._segments.splice(this.index, 1);
 		return false;
 	},
 	
