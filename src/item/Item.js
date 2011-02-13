@@ -1,5 +1,6 @@
 Item = Base.extend({
 	beans: true,
+
 	initialize: function() {
 		this.parent = Paper.document.activeLayer;
 		this.parent.children.push(this);
@@ -155,7 +156,7 @@ Item = Base.extend({
 	getNextSibling: function() {
 		if (this.parent) {
 			var index = this.index + 1;
-			if (index < this.parent.children.length)	
+			if (index < this.parent.children.length)
 				return this.parent.children[index];
 		}
 	},
@@ -175,6 +176,9 @@ Item = Base.extend({
 	 * The index of this item within the list of it's parent's children.
 	 */
 	getIndex: function() {
+		// TODO: Relying on indexOf() here is slow, especially since it is
+		// used for getPrevious/NextSibling(). 
+		// We need linked lists instead.
 		return this.parent.children.indexOf(this);
 	},
 	
