@@ -26,7 +26,7 @@
 			var path;
 			var tool = new Tool({
 				onMouseDrag: function(event) {
-					if(path) path.remove();
+					if (path) path.remove();
 					var distance = event.downPoint.subtract(event.point).length;
 					path = new Path.Circle(event.downPoint, distance);
 					path.strokeColor = 'black';

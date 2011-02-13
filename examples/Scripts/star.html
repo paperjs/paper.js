@@ -22,14 +22,14 @@
 			var doc = new Doc(canvas);
 
 			var point = new Point(1024, 768).divide(2);
-			for(var i = 0; i < 30; i++) {
+			for (var i = 0; i < 30; i++) {
 				var vector = new Point(1 + 10 * i, 0).rotate(i);
 				var l = vector.length;
 				var path = new Path();
 				// path.strokeColor = '#000000';
 				path.fillColor = i % 2 ? 'red' : 'black';
 				path.closed = true;
-				for(var j = 0; j < 32; j++) {
+				for (var j = 0; j < 32; j++) {
 					vector = vector.rotate(45 / 4);
 					var newPoint = point.add(vector).add(vector.rotate(-180).normalize(l * (j % 2 ? 0.1 : -0.1)));
 					path.add(newPoint);

@@ -30,7 +30,7 @@
 			doc.activeLayer.children = [];
 			var point = new Point(1024, 768).divide(2);
 			var vector = new Point(100, 0);
-			for(var i = 0; i < 180; i++) {
+			for (var i = 0; i < 180; i++) {
 				var path = new Path.Line(point.add(vector.rotate(i * 2).normalize(30)), point.add(vector.rotate(i * 2).normalize(30 + Math.abs(Math.sin((i + count / 20)) * 300))));
 				path.strokeColor = i % 4 ? 'black' : 'red';
 			}

@@ -1,29 +1,29 @@
 Segment = Base.extend({
 	initialize: function() {
-		if(arguments.length == 0) {
+		if (arguments.length == 0) {
 			this.point = new Point();
-		} else if(arguments.length == 1) {
-			if(arguments[0].point) {
+		} else if (arguments.length == 1) {
+			if (arguments[0].point) {
 				var segment = arguments[0];
 				this.point = new Point(segment.point);
-				if(segment.handleIn)
+				if (segment.handleIn)
 					this.handleIn = new Point(segment.handleIn);
-				if(segment.handleOut)
+				if (segment.handleOut)
 					this.handleOut = new Point(segment.handleOut);
 			} else {
 				this.point = new Point(arguments[0]);
 			}
-		} else if(arguments.length < 6) {
-			if(arguments.length == 2 && !arguments[1].x) {
+		} else if (arguments.length < 6) {
+			if (arguments.length == 2 && !arguments[1].x) {
 				this.point = new Point(arguments[0], arguments[1]);
 			} else {
 				this.point = new Point(arguments[0]);
-				if(arguments[1])
+				if (arguments[1])
 					this.handleIn = new Point(arguments[1]);
-				if(arguments[2])
+				if (arguments[2])
 					this.handleOut = new Point(arguments[2]);
 			}
-		} else if(arguments.length == 6) {
+		} else if (arguments.length == 6) {
 			this.point = new Point(arguments[0], arguments[1]);
 			this.handleIn = new Point(arguments[2], arguments[3]);
 			this.handleOut = new Point(arguments[4], arguments[5]);
@@ -36,7 +36,7 @@ Segment = Base.extend({
 	
 	// TODO:
 	// insert: function() {
-	// 	if(this._segments && this._segments.path) {
+	// 	if (this._segments && this._segments.path) {
 	// 		var path = this._segments.path;
 	// 		path.checkValid();
 	// 		
@@ -74,8 +74,8 @@ Segment = Base.extend({
 	getIndex: function() {
 		// TODO: Cache and update indices instead of searching?
 		var segments = this.path._segments;
-		for(var i = 0, l = segments.length; i < l; i++) {
-			if(segments[i] == this)
+		for (var i = 0, l = segments.length; i < l; i++) {
+			if (segments[i] == this)
 				return i;
 		}
 	},
@@ -86,7 +86,7 @@ Segment = Base.extend({
 	
 	// todo
 	// getCurve: function() {
-	// 	if(this._segments && this._segments.path) {
+	// 	if (this._segments && this._segments.path) {
 	// 		var curves = this._segments.path.getCurves();
 	// 		// The curves list handles closing curves, so the curves.size
 	// 		// is adjusted accordingly. just check to be in the boundaries here:
@@ -121,7 +121,7 @@ Segment = Base.extend({
 	},
 	
 	remove: function() {
-		if(this.path && this.path._segments)
+		if (this.path && this.path._segments)
 			return this.path._segments.splice(this.index, 1);
 		return false;
 	},
@@ -144,4 +144,4 @@ Segment = Base.extend({
 			}
 		}
 	}
-})
+});

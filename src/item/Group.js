@@ -2,8 +2,8 @@ Group = Item.extend({
 	initialize: function(items) {
 		this.base();
 		this.children = [];
-		if(items) {
-			for(var i = 0, l = items.length; i < l; i++) {
+		if (items) {
+			for (var i = 0, l = items.length; i < l; i++) {
 				this.appendTop(items[i]);
 			}
 		}
@@ -11,7 +11,7 @@ Group = Item.extend({
 	},
 	
 	draw: function(ctx) {
-		for(var i = 0, l = this.children.length; i < l; i++) {
+		for (var i = 0, l = this.children.length; i < l; i++) {
 			this.children[i].draw(ctx);
 		}
 	},
@@ -36,7 +36,7 @@ Group = Item.extend({
 	setClipped: function(clipped) {
 		this.clipped = clipped;
 		var child = this.firstChild;
-		if(child)
+		if (child)
 			child.setClipMask(clipped);
 	}
 });

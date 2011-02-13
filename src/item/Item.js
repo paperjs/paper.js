@@ -16,7 +16,7 @@ Item = Base.extend({
 	
 	copyTo: function(itemOrDocument) {
 		var copy = Base.clone(this);
-		if(itemOrDocument.layers) {
+		if (itemOrDocument.layers) {
 			copy.parent = itemOrDocument.activeLayer;
 			itemOrDocument.activeLayer.appendTop(copy);
 		} else {
@@ -127,7 +127,7 @@ Item = Base.extend({
 	
 	setClipMask: function(clipMask) {
 		this.clipMask = clipMask;
-		if(this.clipMask) {
+		if (this.clipMask) {
 			this.fillColor = null;
 			this.strokeColor = null;
 		}
@@ -137,7 +137,7 @@ Item = Base.extend({
 	 * The first item contained within this item.
 	 */
 	getFirstChild: function() {
-		if(this.children.length > 0)
+		if (this.children.length > 0)
 			return this.children[0];
 	},
 
@@ -145,7 +145,7 @@ Item = Base.extend({
 	 * The last item contained within this item.
 	 */
 	getLastChild: function() {
-		if(this.children.length > 0)
+		if (this.children.length > 0)
 			return this.children[this.children.length - 1];
 	},
 	
@@ -153,9 +153,9 @@ Item = Base.extend({
 	 * The next item on the same level as this item.
 	 */
 	getNextSibling: function() {
-		if(this.parent) {
+		if (this.parent) {
 			var index = this.index + 1;
-			if(index < this.parent.children.length)	
+			if (index < this.parent.children.length)	
 				return this.parent.children[index];
 		}
 	},
@@ -164,9 +164,9 @@ Item = Base.extend({
 	 * The previous item on the same level as this item.
 	 */
 	getPreviousSibling: function() {
-		if(this.parent) {
+		if (this.parent) {
 			var index = this.index - 1;
-			if(index <= 0)	
+			if (index <= 0)	
 				return this.parent.children[index];
 		}
 	},
@@ -182,7 +182,7 @@ Item = Base.extend({
 	* Removes the item from its parent's children list.
 	*/
 	removeFromParent: function() {
-		if(this.parent)
+		if (this.parent)
 			this.parent.children.splice(this.index, 1);
 		this.parent = null;
 	},
@@ -214,7 +214,7 @@ Item = Base.extend({
 	isEditable: function() {
 		var parent = this;
 		while(parent) {
-			if(parent.hidden || parent.locked)
+			if (parent.hidden || parent.locked)
 				return false;
 			parent = parent.parent;
 		}
@@ -350,7 +350,7 @@ Item = Base.extend({
 	isDescendant: function(item) {
 		var parent = this;
 		while(parent) {
-			if(parent == item)
+			if (parent == item)
 				return true;
 			parent = parent.parent;
 		}
@@ -375,7 +375,7 @@ Item = Base.extend({
 	isAncestor: function(item) {
 		var parent = item;
 		while(parent) {
-			if(parent == this)
+			if (parent == this)
 				return true;
 			parent = parent.parent;
 		}

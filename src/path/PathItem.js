@@ -51,7 +51,7 @@ PathItem = Item.extend(new function() {
 			if (!segments || segments.length === undefined
 					|| typeof segments[0] != 'object')
 				segments = arguments;
-			for(var i = 0, l = segments.length; i < l; i++)
+			for (var i = 0, l = segments.length; i < l; i++)
 				this.addSegment(new Segment(segments[i]));
 		},
 
@@ -156,7 +156,7 @@ PathItem = Item.extend(new function() {
 
 		add: function() {
 			var segment = Segment.read(arguments);
-			if(segment)
+			if (segment)
 				this.addSegment(segment);
 		},
 
@@ -180,13 +180,13 @@ PathItem = Item.extend(new function() {
 
 		moveTo: function() {
 			var segment = Segment.read(arguments);
-			if(segment && !this._segments.length)
+			if (segment && !this._segments.length)
 				this.addSegment(segment);
 		},
 
 		lineTo: function() {
 			var segment = Segment.read(arguments);
-			if(segment && this._segments.length)
+			if (segment && this._segments.length)
 				this.addSegment(segment);
 		},
 		
@@ -230,7 +230,7 @@ PathItem = Item.extend(new function() {
 		curveTo: function(through, to, parameter) {
 			through = new Point(through);
 			to = new Point(to);
-			if(parameter == null)
+			if (parameter == null)
 				parameter = 0.5;
 			var current = this.currentSegment.point;
 			// handle = (through - (1 - t)^2 * current - t^2 * to) / (2 * (1 - t) * t)
@@ -250,11 +250,11 @@ PathItem = Item.extend(new function() {
 			var through, to;
 			// Get the start point:
 			var current = this.currentSegment;
-			if(arguments[1] && typeof arguments[1] != 'boolean') {
+			if (arguments[1] && typeof arguments[1] != 'boolean') {
 				through = new Point(arguments[0]);
 				to = new Point(arguments[1]);
 			} else {
-				if(clockwise === null)
+				if (clockwise === null)
 					clockwise = true;
 				var middle = current.point.add(to).divide(2);
 				var step = middle.subtract(current.point);
@@ -337,7 +337,7 @@ PathItem = Item.extend(new function() {
 		
 		lineBy: function() {
 			var vector = Point.read(arguments);
-			if(vector) {
+			if (vector) {
 				var current = this.currentSegment;
 				this.lineTo(current.point.add(vector));
 			}
@@ -457,23 +457,23 @@ PathItem = Item.extend(new function() {
 		},
 		
 		setCtxStyles: function(ctx) {
-			for(var i in styleNames) {
+			for (var i in styleNames) {
 				var style;
-				if(style = this[i])
+				if (style = this[i])
 					ctx[styleNames[i]] = style;
 			}
 		},
 		
 		draw: function(ctx) {
-			if(!this.visible) return;
+			if (!this.visible) return;
 			ctx.beginPath();
 			var cp1;
-			for(var i = 0, l = this._segments.length; i < l; i++) {
+			for (var i = 0, l = this._segments.length; i < l; i++) {
 				var segment = this._segments[i];
 				var point = segment.point;
 				var handleIn = segment.handleIn ? segment.handleIn.add(point) : point;
 				var handleOut = segment.handleOut ? segment.handleOut.add(point) : point;
-				if(i == 0) {
+				if (i == 0) {
 					ctx.moveTo(point.x, point.y);
 				} else {
 					ctx.bezierCurveTo(cp1.x, cp1.y, handleIn.x, handleIn.y,
@@ -481,7 +481,7 @@ PathItem = Item.extend(new function() {
 				}
 				cp1 = handleOut;
 			}
-			if(this.closed && this._segments.length > 1) {
+			if (this.closed && this._segments.length > 1) {
 				var segment = this._segments[0];
 				var point = segment.point;
 				var handleIn = segment.handleIn ? segment.handleIn.add(point) : point;
@@ -490,8 +490,8 @@ PathItem = Item.extend(new function() {
 				ctx.closePath();
 			}
 			this.setCtxStyles(ctx);
-			if(this.fillColor) ctx.fill();
-			if(this.strokeColor) ctx.stroke();
+			if (this.fillColor) ctx.fill();
+			if (this.strokeColor) ctx.stroke();
 		}
 	};
 });

@@ -1,23 +1,23 @@
 var Point = Base.extend({
 	beans: true,
 	initialize: function() {
-		if(arguments.length == 2) {
+		if (arguments.length == 2) {
 			this.x = arguments[0];
 			this.y = arguments[1];
-		} else if(arguments.length == 1) {
+		} else if (arguments.length == 1) {
 			var first = arguments[0];
-			if(first == null) {
+			if (first == null) {
 				this.x = this.y = 0;
-			} else if(first.x !== undefined) {
+			} else if (first.x !== undefined) {
 				this.x = first.x;
 				this.y = first.y;
-			} else if(first.width !== undefined) {
+			} else if (first.width !== undefined) {
 				this.x = first.width;
 				this.y = first.height;
-			} else if(first.length !== undefined) {
+			} else if (first.length !== undefined) {
 				this.x = first[0];
 				this.y = first.length > 1 ? first[1] : first[0];
-			} else if(typeof first === 'number') {
+			} else if (typeof first === 'number') {
 				this.x = this.y = first;
 			} else {
 				this.x = this.y = 0;
@@ -145,7 +145,7 @@ var Point = Base.extend({
 	
 	setAngle: function(angle) {
 		angle = this._angle = angle * Math.PI / 180;
-		if(!this.isZero()) {
+		if (!this.isZero()) {
 			var length = this.length;
 			this.x = Math.cos(angle) * length;
 			this.y = Math.sin(angle) * length;
@@ -154,10 +154,10 @@ var Point = Base.extend({
 
 	getAngle: function() {
 		var angle;
-		if(arguments.length) {
+		if (arguments.length) {
 			var point = Point.read(arguments);
 			var div = this.length * point.length;
-			if(div == 0) {
+			if (div == 0) {
 				return NaN;
 			} else {
 				angle = Math.acos(this.dot(point) / div);
@@ -174,7 +174,7 @@ var Point = Base.extend({
 		var point = Point.read(arguments);
 		var angle = this.angle - point.angle;
 		var bounds = 180;
-		if(angle < - bounds) {
+		if (angle < - bounds) {
 			return angle + bounds * 2;
 		} else if (angle > bounds) {
 			return angle - bounds * 2;
@@ -255,7 +255,7 @@ var Point = Base.extend({
 
 	project: function() {
 		var point = Point.read(arguments);
-		if(point.isZero()) {
+		if (point.isZero()) {
 			return new Point(0, 0);
 		} else {
 			var scale = this.dot(point) / point.dot(point);

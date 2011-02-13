@@ -22,15 +22,15 @@
 			var doc = new Doc(canvas);
 
 			var point = new Point(1024, 768).divide(2);
-			for(var i = 0; i < 30; i++) {
+			for (var i = 0; i < 30; i++) {
 				var vector = new Point(10 + 20 * i, 0).rotate(i);
 				var l = vector.length;
 				var path = new Path();
 				path.fillColor = i % 2 ? 'red' : 'black';
 				path.closed = true;
-				for(var j = 0; j < 17; j++) {
+				for (var j = 0; j < 17; j++) {
 					vector = vector.rotate(45 / 2);
-					if(j == 0) {
+					if (j == 0) {
 						path.add(point.add(vector));
 					} else {
 						path.arcTo(point.add(vector), true);

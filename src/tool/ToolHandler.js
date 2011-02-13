@@ -7,7 +7,7 @@ ToolHandler = Base.extend({
 		this.firstMove = true;
 		this.count = 0;
 		this.downCount = 0;
-		for(var i in handlers) {
+		for (var i in handlers) {
 			this[i] = handlers[i];
 		}
 	},
@@ -105,7 +105,7 @@ ToolHandler = Base.extend({
 		switch (type) {
 		case 'MOUSE_DOWN':
 			this.updateEvent(type, pt, null, null, true, false, false);
-			if(this.onMouseDown)
+			if (this.onMouseDown)
 				this.onMouseDown(new ToolEvent(this, type, modifiers));
 			break;
 		case 'MOUSE_DRAG':
@@ -121,7 +121,7 @@ ToolHandler = Base.extend({
 			this.matchMaxDistance = false;
 			while (this.updateEvent(type, pt, this.minDistance,
 				this.maxDistance, false, this.needsChange, this.matchMaxDistance)) {
-				if(this.onMouseDrag)
+				if (this.onMouseDrag)
 					this.onMouseDrag(new ToolEvent(this, type, modifiers));
 				this.needsChange = true;
 				this.matchMaxDistance = true;
@@ -132,12 +132,12 @@ ToolHandler = Base.extend({
 			// mouse drag first, then mouse up.
 			if ((this.point.x != pt.x || this.point.y != pt.y) && this.updateEvent(
 					'MOUSE_DRAG', pt, this.minDistance, this.maxDistance, false, false, false)) {
-				if(this.onMouseDrag)
+				if (this.onMouseDrag)
 					this.onMouseDrag(new ToolEvent(this, type, modifiers));
 			}
 			this.updateEvent(type, pt, null, this.maxDistance, false,
 					false, false);
-			if(this.onMouseUp)
+			if (this.onMouseUp)
 				this.onMouseUp(new ToolEvent(this, type, modifiers));
 			// Start with new values for TRACK_CURSOR
 			this.updateEvent(type, pt, null, null, true, false, false);
@@ -146,7 +146,7 @@ ToolHandler = Base.extend({
 		case 'MOUSE_MOVE':
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, this.firstMove, true, false)) {
-				if(this.onMouseMove)
+				if (this.onMouseMove)
 					this.onMouseMove(new ToolEvent(this, type, modifiers));
 				this.firstMove = false;
 			}

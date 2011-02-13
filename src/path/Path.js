@@ -7,10 +7,10 @@ Path = PathItem.extend({
 		Line: Base.extend({
 			initialize: function() {
 				var path = new Path();
-				if(arguments.length == 2) {
+				if (arguments.length == 2) {
 					path.addSegment(new Segment(arguments[0]));
 					path.addSegment(new Segment(arguments[1]));
-				} else if(arguments.length == 4) {
+				} else if (arguments.length == 4) {
 					path.addSegment(Segment.read(arguments[0], arguments[1]));
 					path.addSegment(Segment.read(arguments[2], arguments[3]));
 				}
@@ -24,7 +24,7 @@ Path = PathItem.extend({
 				path.closed = true;
 				var rectangle = Rectangle.read(arguments);
 				var corners = ['bottomLeft', 'topLeft', 'topRight', 'bottomRight'];
-				for(var i = 0; i < 4; i++) {
+				for (var i = 0; i < 4; i++) {
 					path.add(rectangle[corners[i]]);
 				}
 				return path;
@@ -37,7 +37,7 @@ Path = PathItem.extend({
 				initialize: function() {
 					var path = new Path();
 					var rect, size;
-					if(arguments.length == 2) {
+					if (arguments.length == 2) {
 						rect = new Rectangle(arguments[0]);
 						size = new Size(arguments[1]);
 					} else {
@@ -84,7 +84,7 @@ Path = PathItem.extend({
 					var rect = Rectangle.read(arguments);
 					var topLeft = rect.topLeft;
 					var size = new Size(rect.width, rect.height);
-					for(var i = 0; i < 4; i++) {
+					for (var i = 0; i < 4; i++) {
 						var segment = Segment.read([segments[i]]);
 						segment.handleIn = segment.handleIn.multiply(size);
 						segment.handleOut = segment.handleOut.multiply(size);
@@ -101,7 +101,7 @@ Path = PathItem.extend({
 			initialize: function() {
 				var path = new Path();
 				var center, radius;
-				if(arguments.length == 3) {
+				if (arguments.length == 3) {
 					center = new Point(arguments[0], arguments[1]);
 					radius = arguments[2];
 				} else {
