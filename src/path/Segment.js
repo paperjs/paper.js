@@ -27,7 +27,11 @@ Segment = Base.extend({
 			this.point = new Point(arguments[0], arguments[1]);
 			this.handleIn = new Point(arguments[2], arguments[3]);
 			this.handleOut = new Point(arguments[4], arguments[5]);
-		} 
+		}
+		if (!this.handleIn)
+			this.handleIn = new Point();
+		if (!this.handleOut)
+			this.handleOut = new Point();
 	},
 	
 	// TODO:
@@ -68,6 +72,7 @@ Segment = Base.extend({
 	},
 	
 	getIndex: function() {
+		// TODO: Cache and update indices instead of searching?
 		var segments = this.path._segments;
 		for(var i = 0, l = segments.length; i < l; i++) {
 			if(segments[i] == this)
