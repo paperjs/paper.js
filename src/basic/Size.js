@@ -88,12 +88,15 @@ var Size = Base.extend({
 
 	statics: {
 		read: function(args) {
-			if(args.length) {
+			if (args.length == 1 && args[0] instanceof Size) {
+				return args[0];
+			} else if (args.length) {
 				var size = new Size();
 				size.initialize.apply(size, args);
 				return size;
 			}
 		},
+
 		min: function(Size1, Size2) {
 			return new Size(
 				Math.min(Size1.width, Size2.width),

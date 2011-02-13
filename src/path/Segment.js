@@ -135,7 +135,9 @@ Segment = Base.extend({
 	
 	statics: {
 		read: function(args) {
-			if(args.length && args[0] != null) {
+			if (args.length == 1 && args[0] instanceof Segment) {
+				return args[0];
+			} else if (args.length && args[0] != null) {
 				var segment = new Segment();
 				segment.initialize.apply(segment, args);
 				return segment;

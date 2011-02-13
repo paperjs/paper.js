@@ -278,7 +278,9 @@ Rectangle = Base.extend({
 	
 	statics: {
 		read: function(args) {
-			if(args.length) {
+			if (args.length == 1 && args[0] instanceof Rectangle) {
+				return args[0];
+			} else if (args.length) {
 				var rect = new Rectangle();
 				rect.initialize.apply(rect, args);
 				return rect;

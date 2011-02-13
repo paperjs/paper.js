@@ -273,12 +273,15 @@ var Point = Base.extend({
 
 	statics: {
 		read: function(args) {
-			if(args.length) {
+			if (args.length == 1 && args[0] instanceof Point) {
+				return args[0];
+			} else if (args.length) {
 				var point = new Point();
 				point.initialize.apply(point, args);
 				return point;
 			}
 		},
+
 		min: function(point1, point2) {
 			return new Point(
 				Math.min(point1.x, point2.x),
