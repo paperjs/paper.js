@@ -38,15 +38,22 @@ PathItem = Item.extend(new function() {
 	return {
 		beans: true,
 
-		initialize: function() {
+		initialize: function(segments) {
 			this.base();
 			this.closed = false;
-			this._segments = [];//new SegmentList(this);
+			this._segments = [];
 			this.bounds = new Rectangle();
-			for(var i = 0, l = arguments.length; i < l; i++) {
-				var segment = new Segment(arguments[i]);
-				this.addSegment(segment);
-			}
+			// Support both passing of segments as array or arguments
+			// TODO: Use better isArray check, i.e. the one from
+			// http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
+			// Or rely on Base.type()? in Bootstrap?
+			// If it is an array, it can also be a description of a point, so
+			// check its first entry for object as well
+			if (!segments || segments.length === undefined
+					|| typeof segments[0] != 'object')
+				segments = arguments;
+			for(var i = 0, l = segments.length; i < l; i++)
+				this.addSegment(new Segment(segments[i]));
 		},
 
 		/**
