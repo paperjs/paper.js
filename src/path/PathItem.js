@@ -66,7 +66,12 @@ PathItem = Item.extend(new function() {
 			this._segments = segments;
 		},
 
+		/*
+		 * The bounding rectangle of the item excluding stroke width.
+		 */
 		getBounds: function() {
+			// Code ported from:
+			// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
 			var segments = this._segments;
 			var first = segments[0];
 			if (!first)
