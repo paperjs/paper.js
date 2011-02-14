@@ -73,18 +73,14 @@ Segment = Base.extend({
 	
 	getIndex: function() {
 		// TODO: Cache and update indices instead of searching?
-		var segments = this.path._segments;
-		for (var i = 0, l = segments.length; i < l; i++) {
-			if (segments[i] == this)
-				return i;
-		}
+		return this.path._segments.indexOf(this);
 	},
 
 	getPath: function() {
 		return this._path;
 	},
 	
-	// todo
+	// TODO:
 	// getCurve: function() {
 	// 	if (this._segments && this._segments.path) {
 	// 		var curves = this._segments.path.getCurves();
@@ -105,7 +101,7 @@ Segment = Base.extend({
 			? this.path._segments[this.index - 1] : null;
 	},
 	
-	// todo
+	// TODO:
 	// isSelected: function() {
 	// 	
 	// }
