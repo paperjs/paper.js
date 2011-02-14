@@ -54,7 +54,7 @@ ToolEvent = Base.extend({
 	},
 
 	toString: function() {
-		return '{ type: ' + type 
+		return '{ type: ' + this.type 
 		+ ', point: ' + this.point
 		+ ', count: ' + this.count
 		+ ', modifiers: ' + this.modifiers
