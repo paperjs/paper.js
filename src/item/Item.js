@@ -387,7 +387,7 @@ Item = Base.extend({
 	},
 
 	getBounds: function() {
-		// TODO: Implement
+		// TODO: Implement for items other than paths
 		return new Rectangle();
 	},
 
@@ -409,7 +409,7 @@ Item = Base.extend({
 		center = bounds.center;
 		matrix.translate(-center.x, -center.y);
 		// Now execute the transformation:
-		transform(matrix);
+		this.transform(matrix);
 	},
 
 	/**
@@ -434,7 +434,7 @@ Item = Base.extend({
 	},
 
 	setPosition: function(point) {
-		translate(point.subtract(this.position));
+		this.translate(point.subtract(this.position));
 	},
 
 	/**
@@ -529,7 +529,7 @@ Item = Base.extend({
 	 * @see Matrix#shear(double, double)
 	 */
 	shear: function(shx, shy, center) {
-		// TODO: Add support for center ack to Scriptographer too!
+		// TODO: Add support for center back to Scriptographer too!
 		this.transform(new Matrix().shear(shx, shy, center || this.position));
 	}
 });
