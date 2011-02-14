@@ -394,6 +394,8 @@ Item = Base.extend({
 	setBounds: function(rect) {
 		var bounds = this.bounds;
 		rect = Rectangle.read(arguments);
+		if (!rect)
+			return;
 		var matrix = new Matrix();
 		// Read this from bottom to top:
 		// Translate to new center:
@@ -434,7 +436,10 @@ Item = Base.extend({
 	},
 
 	setPosition: function(point) {
-		this.translate(point.subtract(this.position));
+		point = Point.read(arguments);
+		if (point) {
+			this.translate(point.subtract(this.position));
+		}
 	},
 
 	/**
