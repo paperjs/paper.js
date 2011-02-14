@@ -145,8 +145,17 @@ PathItem = Item.extend(new function() {
 		    return new Rectangle(min.x, min.y, max.x - min.x , max.y - min.y);
 		},
 
-		setBounds: function(bounds) {
-			// TODO:
+		transformContent: function(matrix, flags) {
+			for (var i = 0, l = this._segments.length; i < l; i++) {
+				var segment = this._segments[i];
+				var point = segment.point;
+				var handleIn = segment.handleIn.add(point);
+				var handleOut = segment.handleOut.add(point);
+				point = matrix.transform(point);
+				segment.point = point;
+				segment.handleIn = matrix.transform(handleIn).subtract(point);
+				segment.handleOut = matrix.transform(handleOut).subtract(point);
+			}
 		},
 
 		addSegment: function(segment) {

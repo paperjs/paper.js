@@ -384,5 +384,152 @@ Item = Base.extend({
 			parent = parent.parent;
 		}
 		return false;
+	},
+
+	getBounds: function() {
+		// TODO: Implement
+		return new Rectangle();
+	},
+
+	setBounds: function(rect) {
+		var bounds = this.bounds;
+		rect = Rectangle.read(arguments);
+		var matrix = new Matrix();
+		// Read this from bottom to top:
+		// Translate to new center:
+		var center = rect.center;
+		matrix.translate(center);
+		// Scale to new Size, if size changes and avoid divisions by 0:
+		if (rect.width != bounds.width || rect.height != bounds.height) {
+			matrix.scale(
+					bounds.width != 0 ? rect.width / bounds.width : 1,
+					bounds.height != 0 ? rect.height / bounds.height : 1);
+		}
+		// Translate to center:
+		center = bounds.center;
+		matrix.translate(-center.x, -center.y);
+		// Now execute the transformation:
+		transform(matrix);
+	},
+
+	/**
+	 * The item's position within the art board. This is the
+	 * {@link Rectangle#getCenter()} of the {@link Item#getBounds()} rectangle.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * // Create a circle at position { x: 10, y: 10 }
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * 
+	 * // Move the circle to { x: 20, y: 20 }
+	 * circle.position = new Point(20, 20);
+	 * 
+	 * // Move the circle 10 points to the right
+	 * circle.position += new Point(10, 0);
+	 * print(circle.position); // { x: 30, y: 20 }
+	 * </code>
+	 */
+	getPosition: function() {
+		return this.bounds.center;
+	},
+
+	setPosition: function(point) {
+		translate(point.subtract(this.position));
+	},
+
+	/**
+	 * @param flags: Array of any of the following: 'objects', 'children',
+	 *     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
+	 *     Default: ['objects', 'children']
+	 */
+	transform: function(matrix, flags) {
+		// TODO: Walk DOM and call transform on chidren, depending on flags
+		// TODO: Handle flags, add TransformFlag class and convert to bit mask
+		// for quicker checking
+		if (this.transformContent)
+			this.transformContent(matrix, flags);
+		if (this.children) {
+			for (var i = 0, l = this.children.length; i < l; i++) {
+				var child = this.children[i];
+				child.transform(matrix, flags);
+			}
+		}
+	},
+
+/*
+	transformContent: function(matrix, flags) {
+		// The code that performs the actual transformation of content,
+		// if defined. Item itself does not define this.
+	},
+*/
+	/**
+	 * Translates (moves) the item by the given offset point.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * // Create a circle at position { x: 10, y: 10 } 
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.translate(new Point(5, 10));
+	 * print(circle.position); // {x: 15, y: 20}
+	 * </code>
+	 * 
+	 * Alternatively you can also add to the {@link #getPosition()} of the item:
+	 * <code>
+	 * // Create a circle at position { x: 10, y: 10 } 
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.position += new Point(5, 10);
+	 * print(circle.position); // {x: 15, y: 20}
+	 * </code>
+	 * 
+	 * @param delta
+	 */
+	translate: function(delta) {
+		var mx = new Matrix();
+		mx.translate.apply(mx, arguments);
+		this.transform(mx);
+	},
+
+	/**
+	 * {@grouptitle Transform Functions}
+	 * 
+	 * Scales the item by the given values from its center point, or optionally
+	 * by a supplied point.
+	 * 
+	 * @param sx
+	 * @param sy
+	 * @param center {@default the center point of the item}
+	 * 
+	 * @see Matrix#scale(double, double, Point center)
+	 */
+	scale: function(sx, sy /* | scale */, center) {
+		// TODO: Make single scale parameter work, and still pass center
+		// or position
+		this.transform(new Matrix().scale(sx, sy, center || this.position));
+	},
+
+	/**
+	 * Rotates the item by a given angle around the given point.
+	 * 
+	 * Angles are oriented clockwise and measured in degrees by default. Read
+	 * more about angle units and orientation in the description of the
+	 * {@link com.scriptographer.ai.Point#getAngle()} property.
+	 * 
+	 * @param angle the rotation angle
+	 * @see Matrix#rotate(double, Point)
+	 */
+	rotate: function(angle, center) {
+		this.transform(new Matrix().rotate(angle, center || this.position));
+	},
+
+	/**
+	 * Shears the item with a given amount around its center point.
+	 * 
+	 * @param shx
+	 * @param shy
+	 * @see Matrix#shear(double, double)
+	 */
+	shear: function(shx, shy, center) {
+		// TODO: Add support for center ack to Scriptographer too!
+		this.transform(new Matrix().shear(shx, shy, center || this.position));
 	}
 });
