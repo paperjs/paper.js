@@ -17,6 +17,11 @@ test('path.bounds', function() {
 	compareRectangles(path.bounds, { x: 114.82726, y: 275.06796, width: 155.66579, height: 148.12778 });
 	comparePoints(path.position, { x: 192.66016, y: 349.13184 });
 
+	// Scale the path by 0.5 and check bounds
 	path.scale(0.5, 0.5);
 	compareRectangles(path.bounds, { x: 153.7437, y: 312.09976, width: 77.8329, height: 74.06381 });
+
+	// Now move the path to another position and check bounds again
+	path.position = [100, 100];
+	compareRectangles(path.bounds, { x: 61.08355, y: 62.96797, width: 77.83289, height: 74.06384 });
 });
