@@ -145,6 +145,13 @@ PathItem = Item.extend(new function() {
 		    return new Rectangle(min.x, min.y, max.x - min.x , max.y - min.y);
 		},
 
+		setBounds: function() {
+			// Bootstrap needs setter redifiniton for now.
+			// TODO: Fix there instead of here
+			// TODO: this.base does not seem to work in beans either!
+			return Item.prototype.setBounds.apply(this, arguments);
+		},
+
 		transformContent: function(matrix, flags) {
 			for (var i = 0, l = this._segments.length; i < l; i++) {
 				var segment = this._segments[i];
