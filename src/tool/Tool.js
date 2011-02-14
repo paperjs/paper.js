@@ -31,6 +31,10 @@ Tool = ToolHandler.extend({
 					clearInterval(this.intervalId);
 				that.onHandleEvent('MOUSE_UP', new Point(e.offset), null, null);
 				that._document.redraw();
+			},
+			mousemove: function(e) {
+				that.onHandleEvent('MOUSE_MOVE', new Point(e.offset), null, null);
+				that._document.redraw();
 			}
 		};
 		$(doc.canvas).addEvents(events);

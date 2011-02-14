@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../lib/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
+	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/basic/Point.js"></script>
+	<script type="text/javascript" src="../../src/basic/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/basic/Size.js"></script>
+	<script type="text/javascript" src="../../src/basic/Matrix.js"></script>
+	<script type="text/javascript" src="../../src/path/Segment.js"></script>
+	<script type="text/javascript" src="../../src/path/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/path/Path.js"></script>
+	<script type="text/javascript" src="../../src/document/Doc.js"></script>
+	<script type="text/javascript" src="../../src/item/Layer.js"></script>
+	<script type="text/javascript" src="../../src/item/Group.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/tool/Tool.js"></script>
+	<script>
+		var doc, mousePoint, amount = 25;
+		var count = 0, paths = [];
+		var colors = ['red', 'white', 'blue', 'white'];
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			doc = new Doc(canvas);
+			mousePoint = doc.size.divide(2);
+			for(var i = 0; i < amount; i++) {
+				var rect = new Rectangle([0, 0], [25, 25]);
+				rect.center = mousePoint;
+				var path = new Path.RoundRectangle(rect, 6);
+				path.fillColor = colors[i % 4];
+				var scale = (1 - i / amount) * 20;
+				path.scale(scale, scale);
+				paths.push(path);
+			}
+			setInterval(draw, 30);
+			
+			var tool = new Tool({
+				onMouseMove: function(event) {
+					mousePoint = event.point;
+				}
+			})
+		}
+		
+		function draw() {
+			count++;
+			for(var i = 0; i < amount; i++) {
+				var path = paths[i];
+				path.rotate(Math.sin((count + i) / 10) * 3);
+				var position = path.position;
+				var delta = mousePoint.subtract(position);
+				path.position = position.add(delta.divide(i));
+			}
+			doc.redraw();
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
