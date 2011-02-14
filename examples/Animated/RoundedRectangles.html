@@ -40,7 +40,7 @@
 			setInterval(draw, 30);
 			
 			var tool = new Tool({
-				onMouseMove: function(event) {
+				onMouseDrag: function(event) {
 					mousePoint = event.point;
 				}
 			})
