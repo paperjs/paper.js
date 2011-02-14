@@ -4,6 +4,8 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 
 var Matrix = Base.extend({
+	beans: true,
+
 	/**
 	 * Creates a 2D affine transform. An affine transform performs a linear
 	 * mapping from 2D coordinates to other 2D coordinates that preserves the
