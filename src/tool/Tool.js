@@ -3,25 +3,37 @@ Tool = ToolHandler.extend({
 
 	initialize: function(handlers, doc) {
 		this.base(handlers);
+		if(Paper.document)
+			this.document = Paper.document;
 	},
 	
 	setDocument: function(doc) {
 		this._document = doc;
-		var that = this;
-		$(doc.canvas).addEvents({
+		var that = this, curPoint;
+		var events = {
 			mousedown: function(e) {
-				that.onHandleEvent('MOUSE_DOWN', new Point(e.offset), null, null);
+				curPoint = new Point(e.offset);
+				that.onHandleEvent('MOUSE_DOWN', curPoint, null, null);
 				that._document.redraw();
+				if(that.eventInterval != -1)
+					this.intervalId = setInterval(events.drag, that.eventInterval);
 			},
 			drag: function(e) {
-				that.onHandleEvent('MOUSE_DRAG', new Point(e.offset), null, null);
-				that._document.redraw();
+				if(e) curPoint = new Point(e.offset);
+				if(curPoint) {
+					that.onHandleEvent('MOUSE_DRAG', curPoint, null, null);
+					that._document.redraw();
+				}
 			},
 			dragend: function(e) {
+				curPoint = null;
+				if(this.eventInterval != -1)
+					clearInterval(this.intervalId);
 				that.onHandleEvent('MOUSE_UP', new Point(e.offset), null, null);
 				that._document.redraw();
 			}
-		});
+		};
+		$(doc.canvas).addEvents(events);
 	},
 	
 	/**
