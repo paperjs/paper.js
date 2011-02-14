@@ -30,11 +30,11 @@ Group = Item.extend({
 	 * @return {@true if the group item is to be clipped}
 	 */
 	isClipped: function() {
-		return this.clipped;
+		return this._clipped;
 	},
 	
 	setClipped: function(clipped) {
-		this.clipped = clipped;
+		this._clipped = clipped;
 		var child = this.firstChild;
 		if (child)
 			child.setClipMask(clipped);
