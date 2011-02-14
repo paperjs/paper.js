@@ -17,7 +17,7 @@ Tool = ToolHandler.extend({
 				that.onHandleEvent('MOUSE_DRAG', new Point(e.offset), null, null);
 				that._document.redraw();
 			},
-			mouseup: function(e) {
+			dragend: function(e) {
 				that.onHandleEvent('MOUSE_UP', new Point(e.offset), null, null);
 				that._document.redraw();
 			}
