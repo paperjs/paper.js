@@ -9,11 +9,14 @@ test('path.bounds', function() {
 	]);
 	// Test both closed and open paths, as the bounds for them differ
 	path.closed = false;
-	var bounds = path.bounds;
-	compareRectangles(bounds, { x: 121, y: 275.06796, width: 149.49304, height: 145.87686 });
+	compareRectangles(path.bounds, { x: 121, y: 275.06796, width: 149.49304, height: 145.87686 });
+	comparePoints(path.position, { x: 195.74652, y: 348.00641 });
 
 	// Test both closed and open paths, as the bounds for them differ
 	path.closed = true;
-	var bounds = path.bounds;
-	compareRectangles(bounds, { x: 114.82726, y: 275.06796, width: 155.66579, height: 148.12778 });
+	compareRectangles(path.bounds, { x: 114.82726, y: 275.06796, width: 155.66579, height: 148.12778 });
+	comparePoints(path.position, { x: 192.66016, y: 349.13184 });
+
+	path.scale(0.5, 0.5);
+	compareRectangles(path.bounds, { x: 153.7437, y: 312.09976, width: 77.8329, height: 74.06381 });
 });
