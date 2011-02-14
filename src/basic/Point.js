@@ -6,20 +6,20 @@ var Point = Base.extend({
 			this.x = arguments[0];
 			this.y = arguments[1];
 		} else if (arguments.length == 1) {
-			var first = arguments[0];
-			if (first == null) {
+			var arg = arguments[0];
+			if (arg == null) {
 				this.x = this.y = 0;
-			} else if (first.x !== undefined) {
-				this.x = first.x;
-				this.y = first.y;
-			} else if (first.width !== undefined) {
-				this.x = first.width;
-				this.y = first.height;
-			} else if (first.length !== undefined) {
-				this.x = first[0];
-				this.y = first.length > 1 ? first[1] : first[0];
-			} else if (typeof first === 'number') {
-				this.x = this.y = first;
+			} else if (arg.x !== undefined) {
+				this.x = arg.x;
+				this.y = arg.y;
+			} else if (arg.width !== undefined) {
+				this.x = arg.width;
+				this.y = arg.height;
+			} else if (arg.length !== undefined) { // TODO: Array check
+				this.x = arg[0];
+				this.y = arg.length > 1 ? arg[1] : arg[0];
+			} else if (typeof arg === 'number') {
+				this.x = this.y = arg;
 			} else {
 				this.x = this.y = 0;
 			}
