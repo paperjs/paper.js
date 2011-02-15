@@ -91,16 +91,14 @@ var Matrix = Base.extend({
 		// Check arguments.length and typeof arguments[1], if object, assume
 		// scale
 		center = Point.read(arguments, 2);
-		// TODO: Optimise calls to translate to not rely on point conversion
-		// use private translate function instead.
 		if (center)
-			this.translate(center.x, center.y);
+			this.translate(center);
 		this._m00 *= sx;
 		this._m10 *= sx;
 		this._m01 *= sy;
 		this._m11 *= sy;
 		if (center)
-			this.translate(-center.x, -center.y);
+			this.translate(center.negate());
 		return this;
 	},
 
@@ -145,10 +143,8 @@ var Matrix = Base.extend({
 	 */
 	shear: function(shx, shy, center) {
 		center = Point.read(arguments, 2);
-		// TODO: Optimise calls to translate to not rely on point conversion
-		// use private translate function instead.
 		if (center)
-			this.translate(center.x, center.y);
+			this.translate(center);
 		var m00 = this._m00;
 		var m10 = this._m10;
 		this._m00 += shy * this._m01;
@@ -156,7 +152,7 @@ var Matrix = Base.extend({
 		this._m01 += shx * m00;
 		this._m11 += shx * m10;
 		if (center)
-			this.translate(-center.x, -center.y);
+			this.translate(center.negate());
 		return this;
 	},
 
