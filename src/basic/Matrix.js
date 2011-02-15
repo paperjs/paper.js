@@ -161,9 +161,7 @@ var Matrix = Base.extend({
 	},
 
 	/**
-	 * @return {string} A string representation of this transform. The format of
-	 *		 of the string is compatible with SVG matrix notation, i.e.
-	 *		 "matrix(a,b,c,d,e,f)".
+	 * @return {string} A string representation of this transform.
 	 */
 	toString: function() {
 		return '[[' 
@@ -290,12 +288,12 @@ var Matrix = Base.extend({
 	 * @param {Point} point The point to be transformed.
 	 *
 	 * @param {Array} src The array containing the source points
-	 *		 as x, y value pairs.
+	 *        as x, y value pairs.
 	 * @param {number} srcOff The offset to the first point to be transformed.
 	 * @param {Array} dst The array into which to store the transformed
-	 *		 point pairs.
-	 * @param {number} dstOff The offset of the location of the first transformed
-	 *		 point in the destination array.
+	 *        point pairs.
+	 * @param {number} dstOff The offset of the location of the first
+	 *        transformed point in the destination array.
 	 * @param {number} numPts The number of points to tranform.
 	 */
 	transform: function(/* point | */ src, srcOff, dst, dstOff, numPts) {
@@ -339,8 +337,8 @@ var Matrix = Base.extend({
 	},
 
 	/**
-	 * Returns whether the transform is invertible. A transform is not invertible
-	 * if the determinant is 0 or any value is non-finite or NaN.
+	 * Returns whether the transform is invertible. A transform is not
+	 * invertible if the determinant is 0 or any value is non-finite or NaN.
 	 *
 	 * @return {boolean} Whether the transform is invertible.
 	 */
@@ -361,7 +359,8 @@ var Matrix = Base.extend({
 	},
 
 	/**
-	 * @return {Matrix} An Matrix object representing the inverse transformation.
+	 * @return {Matrix} An Matrix object representing the inverse
+	 *         transformation.
 	 */
 	createInverse: function() {
 		var det = this.getDeterminant();
@@ -444,7 +443,7 @@ var Matrix = Base.extend({
 		 * @param {number} sx The x-axis scaling factor.
 		 * @param {number} sy The y-axis scaling factor.
 		 * @return {Matrix} A transform representing a scaling
-		 *		 transformation.
+		 *         transformation.
 		 */
 		getScaleInstance: function(sx, sy) {
 			var mx = new Matrix();
@@ -456,8 +455,8 @@ var Matrix = Base.extend({
 		 *
 		 * @param {number} dx The distance to translate in the x direction.
 		 * @param {number} dy The distance to translate in the y direction.
-		 * @return {Matrix} A transform representing a
-		 *		 translation transformation.
+		 * @return {Matrix} A transform representing a translation
+		 *         transformation.
 		 */
 		getTranslateInstance: function(delta) {
 			var mx = new Matrix();
@@ -469,8 +468,7 @@ var Matrix = Base.extend({
 		 *
 		 * @param {number} shx The x-axis shear factor.
 		 * @param {number} shy The y-axis shear factor.
-		 * @return {Matrix} A transform representing a shearing
-		 *		 transformation.
+		 * @return {Matrix} A transform representing a shearing transformation.
 		 */
 		getShearInstance: function(shx, shy, center) {
 			var mx = new Matrix();
@@ -483,8 +481,7 @@ var Matrix = Base.extend({
 		 * @param {number} angle The angle of rotation measured in degrees.
 		 * @param {number} x The x coordinate of the anchor point.
 		 * @param {number} y The y coordinate of the anchor point.
-		 * @return {Matrix} A transform representing a rotation
-		 *		 transformation.
+		 * @return {Matrix} A transform representing a rotation transformation.
 		 */
 		getRotateInstance: function(angle, center) {
 			var mx = new Matrix();
