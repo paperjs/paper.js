@@ -13,7 +13,7 @@ var Size = Base.extend({
 			} else if (arg.x !== undefined) {
 				this.width = arg.x;
 				this.height = arg.y;
-			} else if (arg.length !== undefined) { // TODO: Array check
+			} else if (Array.isArray(arg)) {
 				this.width = arg[0];
 				this.height = arg.length > 1 ? arg[1] : arg[0];
 			} else if (typeof arg === 'number') {
