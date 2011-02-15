@@ -18,7 +18,7 @@ test('path.bounds', function() {
 	comparePoints(path.position, { x: 192.66016, y: 349.13184 });
 
 	// Scale the path by 0.5 and check bounds
-	path.scale(0.5, 0.5);
+	path.scale(0.5);
 	compareRectangles(path.bounds, { x: 153.7437, y: 312.09976, width: 77.8329, height: 74.06381 });
 
 	// Move the path to another position and check bounds

@@ -507,8 +507,11 @@ Item = Base.extend({
 	 * @see Matrix#scale(double, double, Point center)
 	 */
 	scale: function(sx, sy /* | scale */, center) {
-		// TODO: Make single scale parameter work, and still pass center
-		// or position
+		// See Matrix#scale for explanation of this:
+		if (arguments.length < 2 || typeof sy == 'object') {
+			center = sy;
+			sy = sx;
+		}
 		this.transform(new Matrix().scale(sx, sy, center || this.position));
 	},
 
@@ -535,6 +538,11 @@ Item = Base.extend({
 	 */
 	shear: function(shx, shy, center) {
 		// TODO: Add support for center back to Scriptographer too!
+		// See Matrix#scale for explanation of this:
+		if (arguments.length < 2 || typeof sy == 'object') {
+			center = shy;
+			shy = shx;
+		}
 		this.transform(new Matrix().shear(shx, shy, center || this.position));
 	}
 });

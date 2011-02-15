@@ -95,10 +95,15 @@ var Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	scale: function(sx, sy /* | scale */, center) {
-		// TODO: Make single scale parameter work with center points!
-		// Check arguments.length and typeof arguments[1], if object, assume
-		// scale
-		center = Point.read(arguments, 2);
+		if (arguments.length < 2 || typeof sy == 'object') {
+			// sx is the single scale parameter, representing both sx and sy
+			// Read center first from argument 1, then set sy = sx (thus
+			// modifing the content of argument 1!)
+			center = Point.read(arguments, 1);
+			sy = sx;
+		} else {
+			center = Point.read(arguments, 2);
+		}
 		if (center)
 			this.translate(center);
 		this._m00 *= sx;
@@ -150,7 +155,13 @@ var Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	shear: function(shx, shy, center) {
-		center = Point.read(arguments, 2);
+		// See #scale() for explanation of this:
+		if (arguments.length < 2 || typeof shy == 'object') {
+			center = Point.read(arguments, 1);
+			sy = sx;
+		} else {
+			center = Point.read(arguments, 2);
+		}
 		if (center)
 			this.translate(center);
 		var m00 = this._m00;
