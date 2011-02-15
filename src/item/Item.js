@@ -123,12 +123,12 @@ Item = Base.extend({
 	 * @return {@true if the item defines a clip mask}
 	 */
 	isClipMask: function() {
-		return this.clipMask;
+		return this._clipMask;
 	},
 	
 	setClipMask: function(clipMask) {
-		this.clipMask = clipMask;
-		if (this.clipMask) {
+		this._clipMask = clipMask;
+		if (this._clipMask) {
 			this.fillColor = null;
 			this.strokeColor = null;
 		}
