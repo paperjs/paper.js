@@ -90,7 +90,6 @@ Path = PathItem.extend(new function() {
 
 			Circle: function() {
 				var center, radius;
-				// TODO: Have Point.read() return consumed index somehow?
 				if (arguments.length == 3) {
 					center = new Point(arguments[0], arguments[1]);
 					radius = arguments[2];
