@@ -448,9 +448,9 @@ Item = Base.extend({
 	 *     Default: ['objects', 'children']
 	 */
 	transform: function(matrix, flags) {
-		// TODO: Walk DOM and call transform on chidren, depending on flags
 		// TODO: Handle flags, add TransformFlag class and convert to bit mask
 		// for quicker checking
+		// TODO: Call transform on chidren only if 'children' flag is provided
 		if (this.transformContent)
 			this.transformContent(matrix, flags);
 		if (this.children) {
