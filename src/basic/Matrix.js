@@ -35,18 +35,26 @@ var Matrix = Base.extend({
 	 * @constructor
 	 */
 	initialize: function(m00, m10, m01, m11, m02, m12) {
+		var ok = true;
 		if (arguments.length == 6) {
 			this.set(m00, m10, m01, m11, m02, m12);
 		} else if (arguments == 1) {
 			var mx = arguments[0];
-			// TODO: Check for array!
-			this.set(mx._m00, mx._m10, mx._m01, mx._m11, mx._m02, mx._m12);
+			if (mx instanceof Matrix) {
+				this.set(mx._m00, mx._m10, mx._m01, mx._m11, mx._m02, mx._m12);
+			} else if (Array.isArray(mx)) {
+				this.set.apply(this, mx);
+			} else {
+				ok = false;
+			} 
 		} else if (arguments.length) {
-			throw Error('Insufficient matrix parameters');
+			ok = false;
 		} else {
 			this._m00 = this._m11 = 1;
 			this._m10 = this._m01 = this._m02 = this._m12 = 0;
 		}
+		if (!ok)
+			throw Error('Unsupported matrix parameters');
 	},
 
 	/**
