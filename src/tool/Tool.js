@@ -13,7 +13,7 @@ Tool = ToolHandler.extend({
 		this._document = doc || Paper.document;
 		var that = this, curPoint;
 		var events = {
-			mousedown: function(e) {
+			dragstart: function(e) {
 				curPoint = new Point(e.offset);
 				that.onHandleEvent('MOUSE_DOWN', curPoint, null, null);
 				if(that.onMouseDown)
