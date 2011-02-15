@@ -166,9 +166,9 @@ var Matrix = Base.extend({
 	 *		 "matrix(a,b,c,d,e,f)".
 	 */
 	toString: function() {
-		// TODO: Make behave the same as in Scriptographer
-		return 'matrix(' + [this._m00, this._m10, this._m01, this._m11,
-				this._m02, this._m12].join(',') + ')';
+		return '[[' 
+			+ [this._m00, this._m10, this._m01].join(', ') + '], ['
+		 	+ [this._m11, this._m02, this._m12].join(', ') + ']]';
 	},
 
 	/**
