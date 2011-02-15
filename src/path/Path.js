@@ -30,7 +30,8 @@ Path = PathItem.extend(new function() {
 				var path = new Path();
 				path.closed = true;
 				var rectangle = Rectangle.read(arguments);
-				var corners = ['bottomLeft', 'topLeft', 'topRight', 'bottomRight'];
+				var corners = ['bottomLeft', 'topLeft', 'topRight',
+				 		'bottomRight'];
 				for (var i = 0; i < 4; i++) {
 					path.add(rectangle[corners[i]]);
 				}
