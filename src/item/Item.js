@@ -2,8 +2,8 @@ Item = Base.extend({
 	beans: true,
 
 	initialize: function() {
-		this.parent = Paper.document.activeLayer;
-		this.parent.children.push(this);
+		Paper.document.activeLayer.appendTop(this);
+		this.style = this.document.currentStyle;
 	},
 	
 	/**
@@ -448,9 +448,9 @@ Item = Base.extend({
 	 *     Default: ['objects', 'children']
 	 */
 	transform: function(matrix, flags) {
+		// TODO: Walk DOM and call transform on chidren, depending on flags
 		// TODO: Handle flags, add TransformFlag class and convert to bit mask
 		// for quicker checking
-		// TODO: Call transform on chidren only if 'children' flag is provided
 		if (this.transformContent)
 			this.transformContent(matrix, flags);
 		if (this.children) {
@@ -544,5 +544,26 @@ Item = Base.extend({
 			shy = shx;
 		}
 		this.transform(new Matrix().shear(shx, shy, center || this.position));
+	},
+		
+	/**
+	 * The path style of the item.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.style = {
+	 * 	fillColor: new RGBColor(1, 0, 0),
+	 * 	strokeColor: new RGBColor(0, 1, 0),
+	 * 	strokeWidth: 5
+	 * };
+	 * </code>
+	 */
+	getStyle: function() {
+		return this._style;
+	},
+	
+	setStyle: function(style) {
+		this._style = new PathStyle(this, style);
 	}
 });

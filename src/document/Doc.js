@@ -1,4 +1,6 @@
 Doc = Base.extend({
+	beans: true,
+
 	initialize: function(canvas) {
 		if (canvas) {
 			this.canvas = canvas;
@@ -9,12 +11,21 @@ Doc = Base.extend({
 		this.activate();
 		this.layers = [];
 		this.activeLayer = new Layer();
+		this.currentStyle = null;
 	},
-	
+
+	getCurrentStyle: function() {
+		return this._currentStyle;
+	},
+
+	setCurrentStyle: function(style) {
+		this._currentStyle = new PathStyle(this, style);
+	},
+
 	activate: function() {
 		Paper.activateDocument(this);
 	},
-	
+
 	redraw: function() {
 		if (this.canvas) {
 			this.ctx.clearRect(0, 0, this.size.width, this.size.height);
