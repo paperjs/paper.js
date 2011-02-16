@@ -1,4 +1,5 @@
 Group = Item.extend({
+	beans: true,
 	initialize: function(items) {
 		this.base();
 		this.children = [];
