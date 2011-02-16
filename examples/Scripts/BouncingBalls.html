@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../lib/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/tool/Tool.js"></script>
+	<script type="text/javascript" src="../../src/basic/Point.js"></script>
+	<script type="text/javascript" src="../../src/basic/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/basic/Size.js"></script>
+	<script type="text/javascript" src="../../src/basic/Matrix.js"></script>
+	<script type="text/javascript" src="../../src/document/Doc.js"></script>
+	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/item/Group.js"></script>
+	<script type="text/javascript" src="../../src/item/Layer.js"></script>
+	<script type="text/javascript" src="../../src/item/PathStyle.js"></script>
+	<script type="text/javascript" src="../../src/path/Segment.js"></script>
+	<script type="text/javascript" src="../../src/path/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/path/Path.js"></script>
+	<script>
+		var count = 0, balls = [];
+		var ball;
+		var doc, amount = 50, group;
+		window.onload = function() {
+			var Ball = Base.extend({
+				initialize: function(point, vector) {
+					this.vector = vector;
+					this.point = point;
+					this.dampen = 0.4;
+					this.gravity = 3;
+					this.bounce = -0.8;
+					this.radius = 50 * Math.random() + 10;
+					this.path = new Path.Circle(this.point, this.radius);
+					this.path.fillColor = 'black';
+					this.path.strokeColor = 'white';
+					this.path.strokeWidth = 3;
+					group.appendTop(this.path);
+				},
+
+				iterate: function() {
+					this.vector.y += this.gravity;
+					var pre = this.point.add(this.vector);
+					if(pre.x < this.radius || pre.x > doc.size.width - this.radius)
+						this.vector.x *= -this.dampen;
+					if(pre.y < this.radius || pre.y > doc.size.height - this.radius)
+						this.vector.y *= this.bounce;
+					this.point = this.point.add(this.vector);
+					if(Math.abs(this.vector.x) < 3) {
+						this.vector.x = Math.random() * 100 - 50;
+						this.vector.y = Math.random() * 50;
+					}
+					this.path.position = this.point;
+				}
+			});
+
+			var canvas = document.getElementById('canvas');
+			doc = new Doc(canvas);
+			group = new Group();
+			var lastPoint;
+			tool = new Tool({
+				onMouseDown: function(event) {
+					lastPoint = event.point;
+				},
+				onMouseDrag: function(event) {
+					lastPoint = event.point;
+				},
+				onMouseUp: function(event) {
+					balls.push(new Ball(event.point, lastPoint.subtract(event.point)));
+				}
+			});
+			setInterval(draw, 30);
+		}
+		var boundPath;
+		function draw() {
+			for(var i = 0, l = balls.length; i < l; i++) {
+				balls[i].iterate();
+			}
+			if(balls.length) {
+				if(boundPath)
+					boundPath.remove();
+				boundPath = new Path.Rectangle(group.bounds);
+				boundPath.strokeColor = 'black';
+				boundPath.strokeWidth = 5;
+				boundPath.strokeCap = 'round';
+				doc.redraw();
+			}
+		}
+	</script>
+</head>
+<body>
+	<p>Click to add circles:</p>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
