@@ -6,22 +6,29 @@
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/Bootstrap.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
-	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/tool/Tool.js"></script>
 	<script type="text/javascript" src="../../src/basic/Point.js"></script>
 	<script type="text/javascript" src="../../src/basic/Rectangle.js"></script>
 	<script type="text/javascript" src="../../src/basic/Size.js"></script>
+	<script type="text/javascript" src="../../src/basic/Matrix.js"></script>
+	<script type="text/javascript" src="../../src/document/Doc.js"></script>
+	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/item/Group.js"></script>
+	<script type="text/javascript" src="../../src/item/Layer.js"></script>
+	<script type="text/javascript" src="../../src/item/PathStyle.js"></script>
 	<script type="text/javascript" src="../../src/path/Segment.js"></script>
 	<script type="text/javascript" src="../../src/path/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/path/Path.js"></script>
-	<script type="text/javascript" src="../../src/document/Doc.js"></script>
-	<script type="text/javascript" src="../../src/item/Layer.js"></script>
-	<script type="text/javascript" src="../../src/item/Group.js"></script>
 	<script>
 		var canvas, doc;
 		var count = 0;
 		window.onload = function() {
 			canvas = document.getElementById('canvas');
 			doc = new Doc(canvas);
+			console.log(doc.currentStyle);
+			doc.currentStyle.fillColor = 'black';
 			setInterval(draw, 60);
 		}
 
@@ -34,7 +41,7 @@
 				var l = vector.length;
 				var path = new Path();
 				// path.strokeColor = '#000000';
-				path.fillColor = i % 2 ? 'red' : 'black';
+				//path.fillColor = i % 2 ? 'red' : 'black';
 				path.closed = true;
 				for (var j = 0; j < 32; j++) {
 					vector = vector.rotate(45 / 4);
