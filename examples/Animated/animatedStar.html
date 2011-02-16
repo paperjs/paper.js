@@ -27,8 +27,6 @@
 		window.onload = function() {
 			canvas = document.getElementById('canvas');
 			doc = new Doc(canvas);
-			console.log(doc.currentStyle);
-			doc.currentStyle.fillColor = 'black';
 			setInterval(draw, 60);
 		}
 
@@ -40,8 +38,7 @@
 				var vector = new Point(20 + 10 * i, 0).rotate(i * (360 / 35 * 2) * Math.sin(count / 150));
 				var l = vector.length;
 				var path = new Path();
-				// path.strokeColor = '#000000';
-				//path.fillColor = i % 2 ? 'red' : 'black';
+				path.fillColor = i % 2 ? 'red' : 'black';
 				path.closed = true;
 				for (var j = 0; j < 32; j++) {
 					vector = vector.rotate(45 / 4);
