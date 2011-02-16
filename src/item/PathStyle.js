@@ -34,10 +34,10 @@ new function() {
 			return style;
 		}
 	});
-	
-	
+
 	var pathStyleProps = { beans: true };
 	var itemProps = { beans: true };
+
 	function addStyleBean(key) {
 		pathStyleProps['set' + key.capitalize()] = function(value) {
 			if(this.item && this.item.children) {
@@ -54,6 +54,7 @@ new function() {
 			}
 		};
 	}
+
 	function addItemBean(key) {
 		itemProps['set' + key.capitalize()] = function(value) {
 			this.style[key] = value;
@@ -62,6 +63,7 @@ new function() {
 			return this.style[key];
 		};
 	}
+
 	for (var i = 0, l = keys.length; i < l; i++) {
 		var key = keys[i];
 		addStyleBean(key);
