@@ -1,4 +1,13 @@
 new function() {
+	
+	function getCurrentPath(compoundPath) {
+		if (compoundPath.children.length) {
+			return compoundPath.children[compoundPath.children.length - 1];
+		} else {
+			throw Error('Use a moveTo() command first');
+		}
+	}
+	
 	CompoundPath = PathItem.extend({
 		initialize: function(items) {
 			this.base();
@@ -15,7 +24,7 @@ new function() {
 				var firstChild = this.children[0];
 				// if (!child.visible) return;
 				ctx.beginPath();
-				for(var i = 0, l = this.children.length; i < l; i++) {
+				for (var i = 0, l = this.children.length; i < l; i++) {
 					var child = this.children[i];
 					child.draw(ctx, true);
 				}
@@ -24,7 +33,30 @@ new function() {
 				if (firstChild.strokeColor) ctx.stroke();
 			}
 		},
-
+		
+		/**
+		 * If this is a compound path with only one path inside,
+		 * the path is moved outside and the compound path is erased.
+		 * Otherwise, the compound path is returned unmodified.
+		 *
+		 * @return the simplified compound path.
+		 */
+		simplify: function() {
+			if(this.children.length == 1) {
+				var child = this.children[0];
+				child.moveAbove(this);
+				this.remove();
+				return child;
+			}
+			return this;
+		},
+		
+		smooth: function() {
+			for(var i = 0, l = this.children.length; i < l; i++) {
+				this.children[i].smooth();
+			}
+		},
+		
 		moveTo: function() {
 			var path = new Path();
 			this.appendTop(path);
@@ -32,21 +64,13 @@ new function() {
 		},
 		
 		moveBy: function() {
-			if(!arguments.length) {
+			if (!arguments.length) {
 				this.moveTo(0, 0);
 			} else {
 				var point = Point.read(arguments);
-				var curPath = this._getCurrentPath();
+				var curPath = this.getCurrentPath(this);
 				var current = curPath.segments[curPath.segments.length - 1].point;
 				this.moveTo(current.add(point));
-			}
-		},
-		
-		_getCurrentPath: function() {
-			if(this.children.length) {
-				return this.children[this.children.length - 1];
-			} else {
-				throw Error('Use a moveTo() command first');
 			}
 		}
 	});
@@ -57,7 +81,7 @@ new function() {
 
 	function addProp(key) {
 		props[key] = function() {
-			var curPath = this._getCurrentPath();
+			var curPath = getCurrentPath(this);
 			curPath[key].apply(curPath, arguments);
 		};
 	}
