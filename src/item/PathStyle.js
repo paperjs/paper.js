@@ -18,7 +18,7 @@ PathStyle = Base.extend(new function() {
 		}
 	}
 
-	var itemProps = { beans: true };
+	var itemFields = { beans: true };
 
 	Base.each(keys, function(key) {
 
@@ -49,16 +49,16 @@ PathStyle = Base.extend(new function() {
 			}
 		};
 
-		itemProps['set' + key.capitalize()] = function(value) {
+		itemFields['set' + key.capitalize()] = function(value) {
 			this.style[key] = value;
 		};
 
-		itemProps['get' + key.capitalize()] = function() {
+		itemFields['get' + key.capitalize()] = function() {
 			return this.style[key];
 		};
 	});
 
-	Item.inject(itemProps);
+	Item.inject(itemFields);
 
 	return fields;
 });
