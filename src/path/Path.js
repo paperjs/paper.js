@@ -367,11 +367,8 @@ Path = PathItem.extend({
 			if (this.strokeColor) ctx.stroke();
 		}
 	}
-});
-
-// Now inject methods that require scoped private functions and values.
-Path.inject(new function() {
- 	/**
+}, new function() { // inject methods that require scoped privates
+	/**
 	 * Solves a tri-diagonal system for one of coordinates (x or y) of first
 	 * bezier control points.
 	 * 
