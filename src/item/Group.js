@@ -14,6 +14,8 @@ Group = Item.extend({
 	draw: function(ctx) {
 		for (var i = 0, l = this.children.length; i < l; i++) {
 			this.children[i].draw(ctx);
+			if(this.clipped & i == 0)
+				ctx.clip();
 		}
 	},
 	
