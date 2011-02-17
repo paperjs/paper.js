@@ -1,9 +1,11 @@
-new function() {
-	var keys = ['windingRule', 'resolution', 'strokeColor',
-		'strokeWidth', 'strokeCap', 'strokeJoin', 'dashOffset','dashArray',
-		'miterLimit', 'strokeOverprint', 'fillColor', 'fillOverprint'];
+PathStyle = Base.extend(new function() {
+	var keys = ['windingRule', 'resolution', 'strokeColor', 'strokeWidth',
+			'strokeCap', 'strokeJoin', 'dashOffset','dashArray', 'miterLimit',
+			'strokeOverprint', 'fillColor', 'fillOverprint'];
 
-	PathStyle = Base.extend({
+	var fields = {
+		beans: true,
+
 		initialize: function(item, style) {
 			this.item = item;
 			if(style) {
@@ -33,42 +35,38 @@ new function() {
 			}
 			return style;
 		}
-	});
+	}
 
-	var pathStyleProps = { beans: true };
 	var itemProps = { beans: true };
 
-	function addStyleBean(key) {
-		pathStyleProps['set' + key.capitalize()] = function(value) {
+	Base.each(keys, function(key) {
+
+		fields['set' + key.capitalize()] = function(value) {
 			if(this.item && this.item.children) {
 				this._setChildrenStyle(key, value);
 			} else {
 				this['_' + key] = value;
 			}
 		};
-		pathStyleProps['get' + key.capitalize()] = function() {
+
+		fields['get' + key.capitalize()] = function() {
 			if(this.item && this.item.children) {
 				return this._getChildrenStyle(key);
 			} else {
 				return this['_' + key];
 			}
 		};
-	}
 
-	function addItemBean(key) {
 		itemProps['set' + key.capitalize()] = function(value) {
 			this.style[key] = value;
 		};
+
 		itemProps['get' + key.capitalize()] = function() {
 			return this.style[key];
 		};
-	}
+	});
 
-	for (var i = 0, l = keys.length; i < l; i++) {
-		var key = keys[i];
-		addStyleBean(key);
-		addItemBean(key);
-	}
-	PathStyle.inject(pathStyleProps);
 	Item.inject(itemProps);
-};
+
+	return fields;
+});
