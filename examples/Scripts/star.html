@@ -21,6 +21,7 @@
 	<script type="text/javascript" src="../../src/path/Segment.js"></script>
 	<script type="text/javascript" src="../../src/path/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/path/Path.js"></script>
+	<script type="text/javascript" src="../../src/path/Path.Constructors.js"></script>
 	<script>
 		window.onload = function() {
 			var canvas = document.getElementById('canvas');
@@ -31,7 +32,6 @@
 				var vector = new Point(1 + 10 * i, 0).rotate(i);
 				var l = vector.length;
 				var path = new Path();
-				// path.strokeColor = '#000000';
 				path.fillColor = i % 2 ? 'red' : 'black';
 				path.closed = true;
 				for (var j = 0; j < 32; j++) {
