@@ -16,7 +16,7 @@ new function() {
 		},
 
 		_setChildrenStyle: function(name, value) {
-			for(var i = 0, l = this.item.children.length; i < l; i++) {
+			for (var i = 0, l = this.item.children.length; i < l; i++) {
 				this.item.children[i].style[name] = value;
 			}
 		},

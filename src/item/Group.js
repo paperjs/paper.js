@@ -24,7 +24,7 @@ Group = Item.extend({
 			var y1 = rect.y;
 			var x2 = rect.x + rect.width;
 			var y2 = rect.y + rect.height;
-			for(var i = 1, l = this.children.length; i < l; i++) {
+			for (var i = 1, l = this.children.length; i < l; i++) {
 				var rect2 = this.children[i].bounds;
 				x1 = Math.min(rect2.x, x1);
 				y1 = Math.min(rect2.y, y1);

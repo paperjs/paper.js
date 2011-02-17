@@ -52,7 +52,7 @@ new function() {
 		},
 		
 		smooth: function() {
-			for(var i = 0, l = this.children.length; i < l; i++) {
+			for (var i = 0, l = this.children.length; i < l; i++) {
 				this.children[i].smooth();
 			}
 		},

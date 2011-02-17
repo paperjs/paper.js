@@ -30,7 +30,7 @@
 			var canvas = document.getElementById('canvas');
 			doc = new Doc(canvas);
 			mousePoint = doc.size.divide(2);
-			for(var i = 0; i < amount; i++) {
+			for (var i = 0; i < amount; i++) {
 				var rect = new Rectangle([0, 0], [25, 25]);
 				rect.center = mousePoint;
 				var path = new Path.RoundRectangle(rect, 6);
@@ -50,7 +50,7 @@
 		
 		function draw() {
 			count++;
-			for(var i = 0; i < amount; i++) {
+			for (var i = 0; i < amount; i++) {
 				var path = paths[i];
 				path.rotate(Math.sin((count + i) / 10) * 3);
 				var position = path.position;
