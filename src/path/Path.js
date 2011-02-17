@@ -334,7 +334,11 @@ Path = PathItem.extend({
 		var current = this.currentSegment.point;
 		this.arcBy(current.add(throughVector), current.add(toVector));
 	},
-	
+
+	closePath: function() {
+		this.closed = ture;
+	},
+
 	draw: function(ctx, compound) {
 		if (!this.visible) return;
 		if(!compound)

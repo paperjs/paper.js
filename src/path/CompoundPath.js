@@ -71,13 +71,18 @@ CompoundPath = PathItem.extend(new function() {
 				this.moveTo(0, 0);
 			} else {
 				var point = Point.read(arguments);
-				var curPath = getCurrentPath(this);
-				var current = curPath.segments[curPath.segments.length - 1].point;
+				var path = getCurrentPath(this);
+				var current = path.segments[path.segments.length - 1].point;
 				this.moveTo(current.add(point));
 			}
+		},
+
+		closePath: function() {
+			var path = getCurrentPath();
+			path.setClosed(true);
 		}
 	};
-	
+
 	var keys = ['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
 			'arcTo', 'lineBy', 'curveBy', 'arcBy'];
 	for (var i = 0, l = keys.length; i < l; i++) {
