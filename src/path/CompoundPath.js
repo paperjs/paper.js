@@ -83,14 +83,13 @@ CompoundPath = PathItem.extend(new function() {
 		}
 	};
 
-	var keys = ['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
-			'arcTo', 'lineBy', 'curveBy', 'arcBy'];
-	for (var i = 0, l = keys.length; i < l; i++) {
-		fields[keys[i]] = function() {
+	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
+			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
+		fields[key] = function() {
 			var path = getCurrentPath(this);
-			path[keys[i]].apply(path, arguments);
+			path[key].apply(path, arguments);
 		};
-	}
+	});
 
 	return fields;
 };
