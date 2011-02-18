@@ -18,9 +18,7 @@ PathStyle = Base.extend(new function() {
 		}
 	}
 
-	var itemFields = { beans: true };
-
-	Base.each(keys, function(key) {
+	Item.inject(Base.each(keys, function(key) {
 
 		fields['set' + key.capitalize()] = function(value) {
 			if(this.item && this.item.children) {
@@ -49,16 +47,14 @@ PathStyle = Base.extend(new function() {
 			}
 		};
 
-		itemFields['set' + key.capitalize()] = function(value) {
+		this['set' + key.capitalize()] = function(value) {
 			this.style[key] = value;
 		};
 
-		itemFields['get' + key.capitalize()] = function() {
+		this['get' + key.capitalize()] = function() {
 			return this.style[key];
 		};
-	});
-
-	Item.inject(itemFields);
+	}, { beans: true }));
 
 	return fields;
 });
