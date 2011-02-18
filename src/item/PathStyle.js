@@ -11,7 +11,7 @@ PathStyle = Base.extend(new function() {
 			if(style) {
 				for (var i = 0, l = keys.length; i < l; i++) {
 					var key = keys[i];
-					if(style[key])
+					if(style[key] !== undefined)
 						this[key] = style[key];
 				}
 			}
