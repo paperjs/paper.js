@@ -23,7 +23,7 @@ GrayColor = Color.extend({
 	},
 	
 	/**
-	 * A value between 0 and 1 that specifies the amount of red in the RGB color.
+	 * A value between 0 and 1 that specifies the amount of gray in the gray color.
 	 */
 	getGray: function() {
 		return this._gray;
@@ -35,10 +35,10 @@ GrayColor = Color.extend({
 	},
 	
 	/**
-	 * Checks if the component color values of the RGBColor are the
+	 * Checks if the component color values of the GrayColor are the
 	 * same as those of the supplied one.
 	 * 
-	 * @param obj the RGBColor to compare with
+	 * @param obj the GrayColor to compare with
 	 * @return {@true if the RGBColor is the same}
 	 */
 	equals: function(color) {
