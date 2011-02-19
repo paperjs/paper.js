@@ -367,6 +367,8 @@ Path = PathItem.extend({
 		}
 		if(!compound) {
 			this.setCtxStyles(ctx);
+			ctx.save();
+			ctx.globalAlpha = this.opacity;
 			if (this.fillColor) {
 				ctx.fillStyle = this.fillColor.getCssString();
 				ctx.fill();
@@ -375,6 +377,7 @@ Path = PathItem.extend({
 				ctx.strokeStyle = this.strokeColor.getCssString();
 				ctx.stroke();
 			}
+			ctx.restore();
 		}
 	}
 }, new function() { // inject methods that require scoped privates
