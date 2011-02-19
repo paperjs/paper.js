@@ -82,6 +82,7 @@ GrayColor = Color.extend({
 			return 1 - this._gray;
 		};
 		fields['set' + key.capitalize()] = function(value) {
+			this._cssString = null;
 			this._gray = this._gray * (1 - weight) + weight * (1 - value);
 		};
 	});

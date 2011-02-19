@@ -14,6 +14,7 @@ Color = Base.extend({
 		else if (this._alpha < 0) this._alpha = 0;
 		else if (alpha > 1) this._alpha = 1;
 		else this._alpha = alpha;
+		this._cssString = null;
 	},
 	
 	/**
