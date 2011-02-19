@@ -38,6 +38,8 @@ PathStyle = Base.extend(new function() {
 						style = this.item.children[i].style[key];
 					} else if(style != this.item.children[i].style[key]) {
 						// If there is another item with a different style:
+						// TODO: Shouldn't this be undefined instead? null often
+						// has meaning for styles.
 						return null;
 					}
 				}
