@@ -53,7 +53,7 @@ test('Get gray from RGBColor', function() {
 test('Gray Color', function() {
 	var color = new GrayColor(1);
 	compareNumbers(color.gray, 1);
-	compareNumbers(color.red, 1);
+	compareNumbers(color.red, 0);
 	
 	color.red = 0.5;
 	compareNumbers(color.gray, '0.84999');
