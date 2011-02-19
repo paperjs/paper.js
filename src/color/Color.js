@@ -26,6 +26,10 @@ Color = Base.extend({
 		return this._alpha != -1;
 	},
 	
+	getCanvasStyle: function() {
+		return this.cssString;
+	},
+	
 	statics: {
 		read: function(args, index) {
 			var index = index || 0, length = args.length - index;

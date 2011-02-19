@@ -370,11 +370,11 @@ Path = PathItem.extend({
 			ctx.save();
 			ctx.globalAlpha = this.opacity;
 			if (this.fillColor) {
-				ctx.fillStyle = this.fillColor.getCssString();
+				ctx.fillStyle = this.fillColor.getCanvasStyle(ctx);
 				ctx.fill();
 			}
 			if (this.strokeColor) {
-				ctx.strokeStyle = this.strokeColor.getCssString();
+				ctx.strokeStyle = this.strokeColor.getCanvasStyle(ctx);
 				ctx.stroke();
 			}
 			ctx.restore();
