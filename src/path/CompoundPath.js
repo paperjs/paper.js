@@ -92,4 +92,4 @@ CompoundPath = PathItem.extend(new function() {
 	});
 
 	return fields;
-};
+});
