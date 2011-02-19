@@ -39,7 +39,7 @@ GrayColor = Color.extend({
 	 * same as those of the supplied one.
 	 * 
 	 * @param obj the GrayColor to compare with
-	 * @return {@true if the RGBColor is the same}
+	 * @return {@true if the GrayColor is the same}
 	 */
 	equals: function(color) {
 		if (color instanceof GrayColor) {
