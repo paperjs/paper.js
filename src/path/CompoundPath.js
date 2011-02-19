@@ -29,8 +29,14 @@ CompoundPath = PathItem.extend(new function() {
 					child.draw(ctx, true);
 				}
 				firstChild.setCtxStyles(ctx);
-				if (firstChild.fillColor) ctx.fill();
-				if (firstChild.strokeColor) ctx.stroke();
+				if (firstChild.fillColor) {
+					ctx.fillStyle = firstChild.fillColor.getCssString();
+					ctx.fill();
+				}
+				if (firstChild.strokeColor) {
+					ctx.strokeStyle = firstChild.strokeColor.getCssString();
+					ctx.stroke();
+				}
 			}
 		},
 		

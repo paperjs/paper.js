@@ -45,7 +45,7 @@ Path = PathItem.extend({
 		var max = {
 			x: p0.x,
 			y: p0.y
-		}
+		};
 		var coords = ['x', 'y'];
 		function processSegment(segment) {
 			var p1 = p0.add(prev.handleOut);
@@ -367,8 +367,14 @@ Path = PathItem.extend({
 		}
 		if(!compound) {
 			this.setCtxStyles(ctx);
-			if (this.fillColor) ctx.fill();
-			if (this.strokeColor) ctx.stroke();
+			if (this.fillColor) {
+				ctx.fillStyle = this.fillColor.getCssString();
+				ctx.fill();
+			}
+			if (this.strokeColor) {
+				ctx.strokeStyle = this.strokeColor.getCssString();
+				ctx.stroke();
+			}
 		}
 	}
 }, new function() { // inject methods that require scoped privates
@@ -399,8 +405,6 @@ Path = PathItem.extend({
 	};
 
 	var styleNames = {
-		fillColor: 'fillStyle',
-		strokeColor: 'strokeStyle',
 		strokeWidth: 'lineWidth',
 		strokeJoin: 'lineJoin',
 		strokeCap: 'lineCap',
@@ -514,5 +518,5 @@ Path = PathItem.extend({
 					ctx[styleNames[i]] = style;
 			}
 		}
-	}
+	};
 });

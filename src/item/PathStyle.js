@@ -16,17 +16,18 @@ PathStyle = Base.extend(new function() {
 				}
 			}
 		}
-	}
+	};
 
 	Item.inject(Base.each(keys, function(key) {
 
+		var isColor = !!(key.match(/Color$/));
 		fields['set' + key.capitalize()] = function(value) {
 			if(this.item && this.item.children) {
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
 					this.item.children[i].style[key] = value;
 				}
 			} else {
-				this['_' + key] = value;
+				this['_' + key] = isColor ? Color.read(arguments) : value;
 			}
 		};
 
