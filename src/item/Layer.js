@@ -1,4 +1,4 @@
-Layer = Item.extend({
+Layer = Group.extend({
 	beans: true,
 
 	initialize: function() {
@@ -70,11 +70,5 @@ Layer = Item.extend({
 
 	activate: function() {
 		this.document.activeLayer = this;
-	},
-	
-	draw: function(ctx) {
-		for (var i = 0, l = this.children.length; i < l; i++) {
-			this.children[i].draw(ctx);
-		}
 	}
 });
