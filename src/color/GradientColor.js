@@ -3,10 +3,10 @@ GradientColor = Color.extend({
 
 	initialize: function(gradient, origin, destination, hilite) {
 		this.gradient = gradient || new Gradient();
-		this.origin = new Point(origin);
-		this.destination = new Point(destination);
+		this.origin = origin;
+		this.destination = destination;
 		if(hilite)
-			this.hilite = new Point(hilite);
+			this.hilite = hilite;
 	},
 	
 	getOrigin: function() {
