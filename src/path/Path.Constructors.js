@@ -1,4 +1,4 @@
-new function() {
+Path.inject({ statics: new function() {
 	var kappa = 2 / 3 * (Math.sqrt(2) - 1);
 
 	var ovalSegments = [
@@ -8,7 +8,7 @@ new function() {
 		new Segment([0.5, 1], [kappa, 0 ], [-kappa, 0])
 	];
 	
-	var constructors = {
+	return {
 		Line: function() {
 			var path = new Path();
 			if (arguments.length == 2) {
@@ -104,6 +104,4 @@ new function() {
 			return path;
 		}
 	};
-	
-	Path.inject({ statics: constructors });
-};
+}});

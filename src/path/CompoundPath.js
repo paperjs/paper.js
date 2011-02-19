@@ -1,5 +1,5 @@
-new function() {
-	
+CompoundPath = PathItem.extend(new function() {
+
 	function getCurrentPath(compoundPath) {
 		if (compoundPath.children.length) {
 			return compoundPath.children[compoundPath.children.length - 1];
@@ -8,7 +8,7 @@ new function() {
 		}
 	}
 	
-	CompoundPath = PathItem.extend({
+	var fields = {
 		initialize: function(items) {
 			this.base();
 			this.children = [];
@@ -56,38 +56,40 @@ new function() {
 				this.children[i].smooth();
 			}
 		},
-		
+
 		moveTo: function() {
 			var path = new Path();
 			this.appendTop(path);
 			path.moveTo.apply(path, arguments);
 		},
-		
+
 		moveBy: function() {
 			if (!arguments.length) {
+				// TODO: Shouldn't this be relative to the previous position
+				// in lack of an argument? This should then be corrected in
+				// Scriptographer too.
 				this.moveTo(0, 0);
 			} else {
 				var point = Point.read(arguments);
-				var curPath = this.getCurrentPath(this);
-				var current = curPath.segments[curPath.segments.length - 1].point;
+				var path = getCurrentPath(this);
+				var current = path.segments[path.segments.length - 1].point;
 				this.moveTo(current.add(point));
 			}
+		},
+
+		closePath: function() {
+			var path = getCurrentPath();
+			path.setClosed(true);
 		}
-	});
-	
-	var keys = ['lineTo', 'cubicCurveTo', 'curveTo', 'quadraticCurveTo',
-	'arcTo', 'lineBy', 'curveBy', 'arcBy'];
-	var props = {};
+	};
 
-	function addProp(key) {
-		props[key] = function() {
-			var curPath = getCurrentPath(this);
-			curPath[key].apply(curPath, arguments);
+	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
+			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
+		fields[key] = function() {
+			var path = getCurrentPath(this);
+			path[key].apply(path, arguments);
 		};
-	}
+	});
 
-	for (var i = 0, l = keys.length; i < l; i++) {
-		addProp(keys[i]);
-	}
-	CompoundPath.inject(props);
+	return fields;
 };
