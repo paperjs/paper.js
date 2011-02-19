@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../lib/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/tool/Tool.js"></script>
+	<script type="text/javascript" src="../../src/basic/Point.js"></script>
+	<script type="text/javascript" src="../../src/basic/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/basic/Size.js"></script>
+	<script type="text/javascript" src="../../src/basic/Matrix.js"></script>
+	<script type="text/javascript" src="../../src/document/Doc.js"></script>
+	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/item/Group.js"></script>
+	<script type="text/javascript" src="../../src/item/Layer.js"></script>
+	<script type="text/javascript" src="../../src/item/PathStyle.js"></script>
+	<script type="text/javascript" src="../../src/path/Segment.js"></script>
+	<script type="text/javascript" src="../../src/path/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/path/Path.js"></script>
+	<script type="text/javascript" src="../../src/path/Path.Constructors.js"></script>
+	<script type="text/javascript" src="../../src/color/Color.js"></script>
+	<script type="text/javascript" src="../../src/color/RGBColor.js"></script>
+	<script type="text/javascript" src="../../src/color/GrayColor.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
+	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
+	<script>
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			var doc = new Doc(canvas);
+			var vector = new Point(doc.size.height, 0);
+			var point = new Point(doc.size).divide(2);
+			var gradient = new Gradient();
+			gradient.type = 'radial';
+			var gradientColor = new GradientColor(gradient, point, point.add(vector));
+			
+			var colors = ['red', 'orange', 'yellow', 'green', 'blue'];
+			var stops = [];
+			for(var i = 0, l = colors.length; i < l * 15; i++) {
+				var stop = new GradientStop(colors[i % l], i / (l * 15));
+				stops.push(stop);
+			}
+			
+			gradient.stops = stops;
+			var path = new Path.Rectangle(new Rectangle([0, 0], doc.size));
+			path.fillColor = gradientColor;
+			var mouseDown = false;
+			var tool = new Tool({
+				onMouseDown: function(event) {
+					mouseDown = true;
+					gradientColor.hilite = event.point;
+				},
+				onMouseDrag: function(event) {
+					gradientColor.hilite = event.point;
+				},
+				onMouseUp: function(event) {
+					mouseDown = false;
+				}
+			});
+
+			setInterval(draw, 30);
+
+			var grow = false;
+			var vector = new Point(150, 0);
+			function draw() {
+				if(grow && vector.length > 300) {
+					grow = false;
+				} else if(!grow && vector.length < 75) {
+					grow = true;
+				}
+				vector.length += (grow ? 1 : -1);
+				vector.angle += 5;
+				if(!mouseDown) {
+					gradientColor.hilite = point.add(vector);
+					doc.redraw();
+				}
+			}
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
