@@ -354,31 +354,42 @@ Path = PathItem.extend({
 
 	draw: function(ctx, compound) {
 		if (!this.visible) return;
-		if(!compound)
+		if (!compound)
 			ctx.beginPath();
-		var cp1;
-		for (var i = 0, l = this._segments.length; i < l; i++) {
-			var segment = this._segments[i];
-			var point = segment.point;
-			var handleIn = segment.handleIn.add(point);
-			var handleOut = segment.handleOut.add(point);
+		
+		var segments = this._segments;
+		var length = segments.length;
+		for (var i = 0; i < length; i++) {
+			var segment = segments[i];
+			var x = segment.point.x;
+			var y = segment.point.y;
+			var handleIn = segment.handleIn;
 			if (i == 0) {
-				ctx.moveTo(point.x, point.y);
+				ctx.moveTo(x, y);
 			} else {
-				ctx.bezierCurveTo(cp1.x, cp1.y, handleIn.x, handleIn.y,
-					point.x, point.y);
+				if (handleOut.isZero() && handleIn.isZero()) {
+					ctx.lineTo(x, y);
+				} else {
+					ctx.bezierCurveTo(
+						outX, outY,
+						handleIn.x + x, handleIn.y + y,
+						x, y
+					);
+				}
 			}
-			cp1 = handleOut;
+			var handleOut = segment.handleOut;
+			var outX = handleOut.x + x;
+			var outY = handleOut.y + y;
 		}
-		if (this.closed && this._segments.length > 1) {
-			var segment = this._segments[0];
-			var point = segment.point;
-			var handleIn = segment.handleIn.add(point);
-			ctx.bezierCurveTo(cp1.x, cp1.y, handleIn.x, handleIn.y,
-				point.x, point.y);
+		if (this.closed && length > 1) {
+			var segment = segments[0];
+			var x = segment.point.x;
+			var y = segment.point.y;
+			var handleIn = segment.handleIn;
+			ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
 			ctx.closePath();
 		}
-		if(!compound) {
+		if (!compound) {
 			this.setCtxStyles(ctx);
 			ctx.save();
 			ctx.globalAlpha = this.opacity;
