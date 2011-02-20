@@ -202,7 +202,7 @@ ToolEvent = Base.extend({
 			this.tool.count = count;
 			break;
 		}
-	},
+	}
 
 	// TODO: implement hitTest first
 	// getItem: function() {
