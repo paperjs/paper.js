@@ -109,21 +109,28 @@ Path = PathItem.extend({
 	transformContent: function(matrix, flags) {
 		for (var i = 0, l = this._segments.length; i < l; i++) {
 			var segment = this._segments[i];
+			// Use matrix.transform version() that takes arrays of multiple
+			// points for largely improved performance, as no calls to
+			// Point.read() and Point constructors are necessary.
+			var point = segment.point;
+			var handleIn = segment.handleIn;
+			var handleOut = segment.handleOut;
+			var x = point.x, y = point.y;
 			// We need to convert handles to absolute coordinates in order
 			// to transform them.
 			// TODO: Is transformation even required if they are [0, 0]?
-			// TODO: Can we optimise this by using the matrix.transform()
-			// version that takes arrays as in and output values, and just
-			// modifying points rather than producing new ones? This would
-			// consume less memory for sure.
-			var point = segment.point;
-			var handleIn = segment.handleIn.add(point);
-			var handleOut = segment.handleOut.add(point);
-			point = matrix.transform(point);
-			segment.point = point;
-			// Convert handles back to relative values after transformation
-			segment.handleIn = matrix.transform(handleIn).subtract(point);
-			segment.handleOut = matrix.transform(handleOut).subtract(point);
+			var coords = [
+				x, y,
+				handleIn.x + x, handleIn.y + y,
+				handleOut.x + x, handleOut.y + y,
+			]
+			matrix.transform(coords, 0, coords, 0, 3);
+			point.x = x = coords[0];
+			point.y = y = coords[1];
+			handleIn.x = coords[2] - x;
+			handleIn.y = coords[3] - y;
+			handleOut.x = coords[4] - x;
+			handleOut.y = coords[5] - y;
 		}
 	},
 
