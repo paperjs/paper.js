@@ -34,27 +34,19 @@ Path = PathItem.extend({
 		// Code ported from:
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
 		var segments = this._segments;
-		var first = segments[0];
+		var first = segments[0], prev = first;
 		if (!first)
 			return null;
-		var p0 = first.point, prev = first;
-		var min = {
-			x: p0.x,
-			y: p0.y
-		};
-		var max = {
-			x: p0.x,
-			y: p0.y
-		};
+		var min = first.point.clone(), max = min.clone();
 		var coords = ['x', 'y'];
 		function processSegment(segment) {
-			var p1 = p0.add(prev.handleOut);
-			var p3 = segment.point;
-			var p2 = p3.add(segment.handleIn);
 			for (var i = 0; i < 2; i++) {
 				var coord = coords[i];
-				var v0 = p0[coord], v1 = p1[coord],
-					v2 = p2[coord], v3 = p3[coord];
+
+				var v0 = prev.point[coord],
+					v1 = v0 + prev.handleOut[coord],
+					v3 = segment.point[coord],
+					v2 = v3 + segment.handleIn[coord];
 
 				function bounds(value) {
 					if (value < min[coord]) {
@@ -96,7 +88,6 @@ Path = PathItem.extend({
 				if (0 < t2 && t2 < 1)
 					bounds(f(t2));
 			}
-			p0 = p3;
 			prev = segment;
 		}
 		for (var i = 1, l = segments.length; i < l; i++)
