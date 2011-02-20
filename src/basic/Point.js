@@ -211,10 +211,9 @@ var Point = Base.extend({
 		);
 	},
 
-	// TODO: Need to adapt Rectangle.java first
-	// isInside: function(rect) {
-	// 	return rect.contains(this);
-	// },
+	isInside: function(rect) {
+		return rect.contains(this);
+	},
 
 	isClose: function(point, tolerance) {
 		point = new Point(point);
