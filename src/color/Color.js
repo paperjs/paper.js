@@ -33,7 +33,6 @@ Color = Base.extend({
 	statics: {
 		read: function(args, index) {
 			var index = index || 0, length = args.length - index;
-			console.log(args, length);
 			if (length == 1 && args[index] instanceof Color) {
 				return args[index];
 			} else if (length != 0 && args[0] !== null) {
