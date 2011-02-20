@@ -14,7 +14,9 @@
 	<script type="text/javascript" src="../../src/basic/Size.js"></script>
 	<script type="text/javascript" src="../../src/basic/Matrix.js"></script>
 	<script type="text/javascript" src="../../src/document/Doc.js"></script>
+	<script type="text/javascript" src="../../src/document/Symbol.js"></script>
 	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/item/PlacedSymbol.js"></script>
 	<script type="text/javascript" src="../../src/item/Group.js"></script>
 	<script type="text/javascript" src="../../src/item/Layer.js"></script>
 	<script type="text/javascript" src="../../src/item/PathStyle.js"></script>
@@ -25,22 +27,26 @@
 	<script type="text/javascript" src="../../src/color/Color.js"></script>
 	<script type="text/javascript" src="../../src/color/RGBColor.js"></script>
 	<script type="text/javascript" src="../../src/color/GrayColor.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
+	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
 	<script>
-		var doc, mousePoint, amount = 25;
-		var count = 0, paths = [];
-		var colors = ['red', 'white', 'blue', 'white'];
 		window.onload = function() {
 			var canvas = document.getElementById('canvas');
-			doc = new Doc(canvas);
-			mousePoint = doc.size.divide(2);
+			var doc = new Doc(canvas);
+			var mousePoint = new Point(doc.size.divide(2));
+			
+			var amount = 25;
+			var colors = ['red', 'white', 'blue', 'white'];
+			
 			for (var i = 0; i < amount; i++) {
 				var rect = new Rectangle([0, 0], [25, 25]);
 				rect.center = mousePoint;
 				var path = new Path.RoundRectangle(rect, 6);
 				path.fillColor = colors[i % 4];
 				var scale = (1 - i / amount) * 20;
-				path.scale(scale, scale);
-				paths.push(path);
+				path.scale(scale);
+				new PlacedSymbol(path);
 			}
 			setInterval(draw, 30);
 			
@@ -48,19 +54,21 @@
 				onMouseDrag: function(event) {
 					mousePoint = event.point;
 				}
-			})
-		}
-		
-		function draw() {
-			count++;
-			for (var i = 0; i < amount; i++) {
-				var path = paths[i];
-				path.rotate(Math.sin((count + i) / 10) * 3);
-				var position = path.position;
-				var delta = mousePoint.subtract(position);
-				path.position = position.add(delta.divide(i));
+			});
+			
+			var children = Paper.document.activeLayer.children;
+			var count = 0;
+			function draw() {
+				count++;
+				for (var i = 0, l = children.length; i < l; i++) {
+					var item = children[i];
+					var delta = mousePoint.subtract(item.position).divide(i + 1);
+					item.rotate(Math.sin((count + i) / 10) * 7);
+					if(delta.length > 0.1)
+						item.translate(delta);
+				}
+				doc.redraw();
 			}
-			doc.redraw();
 		}
 	</script>
 </head>

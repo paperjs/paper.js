@@ -14,7 +14,9 @@
 	<script type="text/javascript" src="../../src/basic/Size.js"></script>
 	<script type="text/javascript" src="../../src/basic/Matrix.js"></script>
 	<script type="text/javascript" src="../../src/document/Doc.js"></script>
+	<script type="text/javascript" src="../../src/document/Symbol.js"></script>
 	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/item/PlacedSymbol.js"></script>
 	<script type="text/javascript" src="../../src/item/Group.js"></script>
 	<script type="text/javascript" src="../../src/item/Layer.js"></script>
 	<script type="text/javascript" src="../../src/item/PathStyle.js"></script>
@@ -25,45 +27,83 @@
 	<script type="text/javascript" src="../../src/color/Color.js"></script>
 	<script type="text/javascript" src="../../src/color/RGBColor.js"></script>
 	<script type="text/javascript" src="../../src/color/GrayColor.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
+	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
+	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
+	<script type="text/javascript" src="../../src/document/Symbol.js"></script>
+	<script type="text/javascript" src="../../src/item/PlacedSymbol.js"></script>
 	<script>
-		var count = 0, balls = [];
-		var ball;
-		var doc, amount = 50, group;
 		window.onload = function() {
+			
+			var canvas = document.getElementById('canvas');
+			var doc = new Doc(canvas);
+			
+			var balls = [];
+			
+			
+			var circlePath = new Path.Circle([0, 0], 10);
+			circlePath.fillColor = new GradientColor(null, [0, 0], [0, 12], [0, 2]);
+			circlePath.fillColor.gradient.type = 'radial';
+			
+			var symbol = new Symbol(circlePath);
+			
+			var group = new Group();
+			
 			var Ball = Base.extend({
 				initialize: function(point, vector) {
-					this.vector = vector;
+					if (vector.isZero()) {
+						this.vector = Point.random().multiply(5);
+					} else {
+						this.vector = vector;
+					}
 					this.point = point;
 					this.dampen = 0.4;
 					this.gravity = 3;
-					this.bounce = -0.8;
+					this.bounce = -0.6;
 					this.radius = 50 * Math.random() + 10;
-					this.path = new Path.Circle(this.point, this.radius);
-					this.path.fillColor = 'black';
-					this.path.strokeColor = 'white';
-					this.path.strokeWidth = 3;
-					group.appendTop(this.path);
+					this.item = new PlacedSymbol(symbol);
+					this.item.position = point;
+					this.item.scale(this.radius / 10);
+					group.appendTop(this.item);
 				},
-
+				
+				contrainPoint: function() {
+					var x = this.point.x;
+					var y = this.point.y;
+					var radius = this.radius;
+					this.point.x = Math.min(Math.max(radius, x), doc.size.width - radius);
+					this.point.y = Math.min(Math.max(radius, y), doc.size.height - radius);
+				},
+				
 				iterate: function() {
 					this.vector.y += this.gravity;
+					this.vector.x *= 0.99;
 					var pre = this.point.add(this.vector);
-					if(pre.x < this.radius || pre.x > doc.size.width - this.radius)
+					if (pre.x < this.radius || pre.x > doc.size.width - this.radius)
 						this.vector.x *= -this.dampen;
-					if(pre.y < this.radius || pre.y > doc.size.height - this.radius)
+					if (pre.y < this.radius || pre.y > doc.size.height - this.radius) {
+						if(Math.abs(this.vector.x) < 3) {
+							this.vector.x = Math.random() * 150 - 75;
+							this.vector.y = Math.random() * 100 + 20;
+						}
 						this.vector.y *= this.bounce;
-					this.point = this.point.add(this.vector);
-					if(Math.abs(this.vector.x) < 3) {
-						this.vector.x = Math.random() * 100 - 50;
-						this.vector.y = Math.random() * 50;
 					}
-					this.path.position = this.point;
+					this.point = this.point.add(this.vector);
+					this.contrainPoint();
+					this.item.position = this.point;
 				}
 			});
-
-			var canvas = document.getElementById('canvas');
-			doc = new Doc(canvas);
-			group = new Group();
+			
+			for(var i = 0; i < 10; i++) {
+				var position = Point.random().multiply(doc.size);
+				var vector = Point.random().subtract(0.5, 0).multiply(50, 100);
+				var ball = new Ball(position, vector);
+				balls.push(ball);
+			}
+			
 			var lastPoint;
 			tool = new Tool({
 				onMouseDown: function(event) {
@@ -73,23 +113,22 @@
 					lastPoint = event.point;
 				},
 				onMouseUp: function(event) {
-					balls.push(new Ball(event.point, lastPoint.subtract(event.point)));
+					var delta = lastPoint.subtract(event.point);
+					var ball = new Ball(event.point, delta);
+					balls.push(ball);
 				}
 			});
 			setInterval(draw, 30);
-		}
-		var boundPath;
-		function draw() {
-			for (var i = 0, l = balls.length; i < l; i++) {
-				balls[i].iterate();
-			}
-			if(balls.length) {
-				if(boundPath)
-					boundPath.remove();
-				boundPath = new Path.Rectangle(group.bounds);
-				boundPath.strokeColor = 'black';
-				boundPath.strokeWidth = 5;
-				boundPath.strokeCap = 'round';
+			
+			var boundPath = new Path.Rectangle([-10, -10], [-11, -11]);
+			boundPath.strokeColor = 'red';
+			boundPath.strokeWidth = 1;
+
+			function draw() {
+				for (var i = 0, l = balls.length; i < l; i++) {
+					balls[i].iterate();
+				}
+				boundPath.bounds = group.bounds;
 				doc.redraw();
 			}
 		}

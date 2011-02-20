@@ -14,7 +14,9 @@
 	<script type="text/javascript" src="../../src/basic/Size.js"></script>
 	<script type="text/javascript" src="../../src/basic/Matrix.js"></script>
 	<script type="text/javascript" src="../../src/document/Doc.js"></script>
+	<script type="text/javascript" src="../../src/document/Symbol.js"></script>
 	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/item/PlacedSymbol.js"></script>
 	<script type="text/javascript" src="../../src/item/Group.js"></script>
 	<script type="text/javascript" src="../../src/item/Layer.js"></script>
 	<script type="text/javascript" src="../../src/item/PathStyle.js"></script>
@@ -25,34 +27,51 @@
 	<script type="text/javascript" src="../../src/color/Color.js"></script>
 	<script type="text/javascript" src="../../src/color/RGBColor.js"></script>
 	<script type="text/javascript" src="../../src/color/GrayColor.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
+	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
 	<script>
-		var canvas, doc;
-		var count = 0;
 		window.onload = function() {
-			canvas = document.getElementById('canvas');
-			doc = new Doc(canvas);
-			setInterval(draw, 60);
-		}
-
-		function draw() {
-			count++;
-			doc.activeLayer.children = [];
-			var point = new Point(1024, 768).divide(2);
-			for (var i = 0; i < 35; i++) {
-				var vector = new Point(20 + 10 * i, 0).rotate(i * (360 / 35 * 2) * Math.sin(count / 150));
-				var l = vector.length;
+			var canvas = document.getElementById('canvas');
+			var doc = new Doc(canvas);
+			var layer = doc.activeLayer;
+			
+			var values = {
+				count: 34,
+				points: 32
+			}
+			
+			var center = new Point(doc.size).divide(2)
+			for (var i = 0; i < values.count; i++) {
+				var offset = new Point(20 + 10 * i, 0);
 				var path = new Path();
 				path.fillColor = i % 2 ? 'red' : 'black';
 				path.closed = true;
-				for (var j = 0; j < 32; j++) {
-					vector = vector.rotate(45 / 4);
-					var newPoint = point.add(vector).add(vector.rotate(-180).normalize(l * (j % 2 ? 0.1 : -0.1)));
-					path.add(newPoint);
+				
+				var l = offset.length;
+				for (var j = 0; j < values.points * 2; j++) {
+					offset.angle += 360 / values.points;
+					var vector = offset.clone()
+					vector.length = l * (j % 2 ? 0.1 : -0.1);
+					path.add(offset.add(vector));
 				}
 				path.smooth();
+				var placedSymbol = new PlacedSymbol(path);
+				placedSymbol.position = center;
+				layer.appendBottom(placedSymbol);
 			}
-			doc.activeLayer.children.reverse();
-			doc.redraw();
+			setInterval(draw, 30);
+
+			var count = 0;
+			function draw() {
+				count++;
+				for (var i = 0, l = layer.children.length; i < l; i++) {
+					var item = layer.children[i];
+					var angle = (values.count - i) * Math.sin(count / 128) / 10;
+					item.rotate(angle);
+				}
+				doc.redraw();
+			}
 		}
 	</script>
 </head>
