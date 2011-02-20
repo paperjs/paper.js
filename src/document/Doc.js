@@ -12,6 +12,7 @@ Doc = Base.extend({
 		this.layers = [];
 		this.activeLayer = new Layer();
 		this.currentStyle = null;
+		this.symbols = [];
 	},
 
 	getCurrentStyle: function() {
