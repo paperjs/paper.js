@@ -106,24 +106,37 @@ Path = PathItem.extend({
 			// Point.read() and Point constructors are necessary.
 			var point = segment.point;
 			var handleIn = segment.handleIn;
+			if (handleIn.isZero())
+				handleIn = null;
 			var handleOut = segment.handleOut;
+			if (handleOut.isZero())
+				handleOut = null;
 			var x = point.x, y = point.y;
-			// We need to convert handles to absolute coordinates in order
-			// to transform them.
-			// TODO: Is transformation even required if they are [0, 0]?
 			coords[0] = x;
 			coords[1] = y;
-			coords[2] = handleIn.x + x;
-			coords[3] = handleIn.y + y;
-			coords[4] = handleOut.x + x;
-			coords[5] = handleOut.y + y;
-			matrix.transform(coords, 0, coords, 0, 3);
-			point.x = x = coords[0];
-			point.y = y = coords[1];
-			handleIn.x = coords[2] - x;
-			handleIn.y = coords[3] - y;
-			handleOut.x = coords[4] - x;
-			handleOut.y = coords[5] - y;
+			var index = 2;
+			// We need to convert handles to absolute coordinates in order
+			// to transform them.
+			if (handleIn) {
+				coords[index++] = handleIn.x + x;
+				coords[index++] = handleIn.y + y;
+			}
+			if (handleOut) {
+				coords[index++] = handleOut.x + x;
+				coords[index++] = handleOut.y + y;
+			}
+			matrix.transform(coords, 0, coords, 0, index / 2);
+			x = point.x = coords[0];
+			y = point.y = coords[1];
+			index  = 2;
+			if (handleIn) {
+				handleIn.x = coords[index++] - x;
+				handleIn.y = coords[index++] - y;
+			}
+			if (handleOut) {
+				handleOut.x = coords[index++] - x;
+				handleOut.y = coords[index++] - y;
+			}
 		}
 	},
 
