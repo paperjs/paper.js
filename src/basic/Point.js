@@ -188,20 +188,17 @@ var Point = Base.extend({
 		}
 	},
 
-	rotate: function(angle) {
+	// TODO: Add center parameter support back to Scriptographer
+	rotate: function(angle, center) {
+		var point = center ? this.subtract(center) : this;
 		angle = angle * Math.PI / 180;
 		var s = Math.sin(angle);
 		var c = Math.cos(angle);
-		return Point.create(
-			this.x * c - this.y * s,
-			this.y * c + this.x * s
+		point = Point.create(
+			point.x * c - point.y * s,
+			point.y * c + point.x * s
 		);
-	},
-
-	// TODO: Shouldn't center just be the optional 2nd argument to rotate()?
-	rotateAround: function(angle, center) {
-		center = new Point(center);
-		return this.subtract(center).rotate(angle).add(this);
+		return center ? point.add(center) : point;
 	},
 
 	interpolate: function(point, t) {
