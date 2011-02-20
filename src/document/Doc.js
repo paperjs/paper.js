@@ -29,7 +29,7 @@ Doc = Base.extend({
 
 	redraw: function() {
 		if (this.canvas) {
-			this.ctx.clearRect(0, 0, this.size.width, this.size.height);
+			this.ctx.clearRect(0, 0, this.size.width + 1, this.size.height);
 			for (var i = 0, l = this.layers.length; i < l; i++) {
 				this.layers[i].draw(this.ctx);
 			}
