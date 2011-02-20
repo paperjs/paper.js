@@ -98,6 +98,7 @@ Path = PathItem.extend({
 	},
 
 	transformContent: function(matrix, flags) {
+		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++) {
 			var segment = this._segments[i];
 			// Use matrix.transform version() that takes arrays of multiple
@@ -110,11 +111,12 @@ Path = PathItem.extend({
 			// We need to convert handles to absolute coordinates in order
 			// to transform them.
 			// TODO: Is transformation even required if they are [0, 0]?
-			var coords = [
-				x, y,
-				handleIn.x + x, handleIn.y + y,
-				handleOut.x + x, handleOut.y + y,
-			]
+			coords[0] = x;
+			coords[1] = y;
+			coords[2] = handleIn.x + x;
+			coords[3] = handleIn.y + y;
+			coords[4] = handleOut.x + x;
+			coords[5] = handleOut.y + y;
 			matrix.transform(coords, 0, coords, 0, 3);
 			point.x = x = coords[0];
 			point.y = y = coords[1];
