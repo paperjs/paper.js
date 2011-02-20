@@ -213,7 +213,6 @@ var Point = Base.extend({
 	},
 
 	isClose: function(point, tolerance) {
-		point = new Point(point);
 		return this.getDistance(point) < tolerance;
 	},
 
