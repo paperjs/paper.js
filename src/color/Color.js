@@ -36,7 +36,7 @@ Color = Base.extend({
 			if (length == 1 && args[index] instanceof Color) {
 				return args[index];
 			} else if (length != 0) {
-				var rgbColor = new RGBColor();
+				var rgbColor = new RGBColor(RGBColor.dont);
 				rgbColor.initialize.apply(rgbColor, index > 0
 						? Array.prototype.slice.call(args, index) : args);
 				return rgbColor;

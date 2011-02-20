@@ -277,7 +277,7 @@ var Point = Base.extend({
 			if (length == 1 && args[index] instanceof Point) {
 				return args[index];
 			} else if (length != 0) {
-				var point = new Point();
+				var point = new Point(Point.dont);
 				point.initialize.apply(point, index > 0
 						? Array.prototype.slice.call(args, index) : args);
 				return point;

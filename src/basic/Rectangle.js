@@ -283,7 +283,7 @@ Rectangle = Base.extend({
 			if (length == 1 && args[index] instanceof Rectangle) {
 				return args[index];
 			} else if (length != 0) {
-				var rect = new Rectangle();
+				var rect = new Rectangle(Rectangle.dont);
 				rect.initialize.apply(rect, index > 0
 						? Array.prototype.slice.call(args, index) : args);
 				return rect;

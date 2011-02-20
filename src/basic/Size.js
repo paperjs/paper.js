@@ -94,7 +94,7 @@ var Size = Base.extend({
 			if (length == 1 && args[index] instanceof Size) {
 				return args[index];
 			} else if (length != 0) {
-				var size = new Size();
+				var size = new Size(Size.dont);
 				size.initialize.apply(size, index > 0
 						? Array.prototype.slice.call(args, index) : args);
 				return size;

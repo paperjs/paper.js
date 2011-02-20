@@ -135,7 +135,7 @@ Segment = Base.extend({
 			if (length == 1 && args[index] instanceof Segment) {
 				return args[index];
 			} else if (length != 0) {
-				var segment = new Segment();
+				var segment = new Segment(Segment.dont);
 				segment.initialize.apply(segment, index > 0
 						? Array.prototype.slice.call(args, index) : args);
 				return segment;
