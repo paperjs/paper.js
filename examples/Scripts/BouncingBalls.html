@@ -52,10 +52,10 @@
 
 			var Ball = Base.extend({
 				initialize: function(point, vector) {
-					if (vector.isZero()) {
+					if (!vector || vector.isZero()) {
 						this.vector = Point.random().multiply(5);
 					} else {
-						this.vector = vector;
+						this.vector = vector.multiply(1.5);
 					}
 					this.point = point;
 					this.dampen = 0.4;
@@ -102,18 +102,15 @@
 				balls.push(ball);
 			}
 
-			var lastPoint;
+			var lastDelta;
 			tool = new Tool({
-				onMouseDown: function(event) {
-					lastPoint = event.point;
-				},
 				onMouseDrag: function(event) {
-					lastPoint = event.point;
+					lastDelta = event.delta;
 				},
 				onMouseUp: function(event) {
-					var delta = lastPoint.subtract(event.point);
-					var ball = new Ball(event.point, delta);
+					var ball = new Ball(event.point, lastDelta);
 					balls.push(ball);
+					lastDelta = null;
 				}
 			});
 			setInterval(draw, 30);
