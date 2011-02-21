@@ -20,9 +20,10 @@ CompoundPath = PathItem.extend(new function() {
 		},
 
 		draw: function(ctx) {
+			if(!this.visible)
+				return;
 			if (this.children.length) {
 				var firstChild = this.children[0];
-				// if (!child.visible) return;
 				ctx.beginPath();
 				for (var i = 0, l = this.children.length; i < l; i++) {
 					var child = this.children[i];
