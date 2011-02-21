@@ -7,7 +7,7 @@ Raster = Item.extend({
 	// or wait for user to call such a function and only then do so?
 	initialize: function(image) {
 		this.base();
-		if(image) {
+		if (image) {
 			this.image = image;
 			var width = image.width;
 			var height = image.height;
@@ -48,21 +48,21 @@ Raster = Item.extend({
 		var ctx = tempCanvas.getContext('2d');
 		ctx.drawImage(this.image, 0, 0, size, size);
 		var pixels = ctx.getImageData(0.5, 0.5, size, size).data;
-		var rgba = [0, 0, 0];
+		var channels = [0, 0, 0];
 		
-		for(var i = 0; i < size; i++) {
+		for (var i = 0; i < size; i++) {
 			var offset = i * size;
 			var alpha = pixels[offset + 3] / 255;
-			rgba[0] += pixels[offset] * alpha;
-			rgba[1] += pixels[offset + 1] * alpha;
-			rgba[2] += pixels[offset + 2] * alpha;
+			channels[0] += pixels[offset] * alpha;
+			channels[1] += pixels[offset + 1] * alpha;
+			channels[2] += pixels[offset + 2] * alpha;
 		}
 		
-		for(var i = 0; i < 3; i++)
-			rgba[i] = rgba[i] / (size * 255);
+		for (var i = 0; i < 3; i++)
+			channels[i] /= size * 255;
 		
 		CanvasProvider.returnCanvas(tempCanvas);
-		return Color.read(rgba);
+		return Color.read(channels);
 	},
 	
 	// TODO: getPixel(point)
@@ -95,11 +95,7 @@ Raster = Item.extend({
 	
 	draw: function(ctx) {
 		ctx.save();
-		var matrix = this.matrix;
-		ctx.setTransform(
-			matrix._m00, matrix._m01, matrix._m10,
-			matrix._m11, matrix._m02, matrix._m12
-		);
+		this.matrix.applyToContext(ctx);
 		var image = this.image;
 		ctx.drawImage(this.image, -this.size.width / 2, -this.size.height / 2);
 		ctx.restore();

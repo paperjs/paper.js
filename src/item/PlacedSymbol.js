@@ -11,7 +11,7 @@ PlacedSymbol = Item.extend({
 		if (arguments.length > 1) {
 			var arg = arguments[1];
 			if (arg instanceof Matrix) {
-				this.matrix = arguments[2]
+				this.matrix = arguments[2];
 			} else {
 				var offset = Point.read(arguments, 1);
 				this.matrix = new Matrix().translate(offset);
@@ -41,11 +41,7 @@ PlacedSymbol = Item.extend({
 	draw: function(ctx) {
 		// TODO: we need to preserve strokewidth, but still transform the fill
 		ctx.save();
-		var matrix = this.matrix;
-		ctx.setTransform(
-			matrix._m00, matrix._m01, matrix._m10,
-			matrix._m11, matrix._m02, matrix._m12
-		);
+		this.matrix.applyToContext(ctx);
 		this.symbol.definition.draw(ctx);
 		ctx.restore();
 	}
