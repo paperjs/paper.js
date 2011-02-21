@@ -40,6 +40,8 @@ CompoundPath = PathItem.extend(new function() {
 			}
 		},
 		
+		// TODO: add getBounds
+		
 		/**
 		 * If this is a compound path with only one path inside,
 		 * the path is moved outside and the compound path is erased.
