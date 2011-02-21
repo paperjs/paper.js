@@ -39,9 +39,9 @@ Raster = Item.extend({
 	// TODO: drawImage
 	
 	// TODO: support getAverageColor paramaters: point, rect, path
-	// TODO: Idea for path: draw the path, then draw the image on top
-	// with globalCompositeOperation = 'xor' - then resize and count
-	// values.
+	// TODO: Idea for getAverageColor(path): set globalCompositeOperation = 'xor',
+	// then fillRect with black, then draw the path, then draw the image, then
+	// resize and count values.
 	getAverageColor: function() {
 		var size = 32;
 		var tempCanvas = CanvasProvider.getCanvas(size, size);
