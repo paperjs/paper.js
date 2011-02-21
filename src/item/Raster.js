@@ -3,8 +3,6 @@ Raster = Item.extend({
 
 	// TODO: implement url / type, width, height
 	// TODO: have PlacedSymbol & Raster inherit from a shared class?
-	// TODO: draw image directly onto a canvas, so we can use drawImage / setPixel
-	// or wait for user to call such a function and only then do so?
 	initialize: function(image) {
 		this.base();
 		if (image) {
@@ -68,7 +66,10 @@ Raster = Item.extend({
 	// TODO: getPixel(point)
 	// TODO: test this
 	getPixel: function(x, y) {
-		var channels = ctx.getImageData(x + 0.5, y + 0.5, 1, 1).data;
+		var pixels = this.context.getImageData(x + 0.5, y + 0.5, 1, 1).data;
+		var channels = [];
+		for(var i = 0; i < 4; i++)
+			channels.push(pixels[i] / 255);
 		return Color.read(channels);
 	},
 	
@@ -76,6 +77,31 @@ Raster = Item.extend({
 	// setPixel: function(x, y, color) {
 	// 	
 	// }
+	
+	getContext: function() {
+		if (!this._context)
+			this._context = this.canvas.getContext('2d');
+		return this._context;
+	},
+	
+	setContext: function(context) {
+		this._context = context;
+	},
+	
+	getCanvas: function() {
+		if (!this._canvas) {
+			this._canvas = CanvasProvider.getCanvas(this.size.width, this.size.height);
+			this.ctx = this._canvas.getContext('2d');
+			this.ctx.drawImage(this.image, 0, 0);
+		}
+		return this._canvas;
+	},
+	
+	setCanvas: function(canvas) {
+		CanvasProvider.returnCanvas(this._canvas);
+		this._ctx = null;
+		this._canvas = canvas;
+	},
 	
 	transformContent: function(matrix, flags) {
 		var bounds = this.bounds;
@@ -96,8 +122,8 @@ Raster = Item.extend({
 	draw: function(ctx) {
 		ctx.save();
 		this.matrix.applyToContext(ctx);
-		var image = this.image;
-		ctx.drawImage(this.image, -this.size.width / 2, -this.size.height / 2);
+		var image = this._canvas ? this._canvas : this.image;
+		ctx.drawImage(image, -this.size.width / 2, -this.size.height / 2);
 		ctx.restore();
 	}
 });
