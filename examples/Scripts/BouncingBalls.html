@@ -23,7 +23,6 @@
 	<script type="text/javascript" src="../../src/path/Segment.js"></script>
 	<script type="text/javascript" src="../../src/path/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/path/Path.js"></script>
-	<script type="text/javascript" src="../../src/path/CompoundPath.js"></script>
 	<script type="text/javascript" src="../../src/path/Path.Constructors.js"></script>
 	<script type="text/javascript" src="../../src/color/Color.js"></script>
 	<script type="text/javascript" src="../../src/color/RGBColor.js"></script>
@@ -38,30 +37,20 @@
 	<script type="text/javascript" src="../../src/item/PlacedSymbol.js"></script>
 	<script>
 		window.onload = function() {
-			
+
 			var canvas = document.getElementById('canvas');
 			var doc = new Doc(canvas);
-			
+
 			var balls = [];
-			
-			
+
 			var circlePath = new Path.Circle([0, 0], 10);
-			circlePath.fillColor = 'red';//new GradientColor(null, [0, 0], [0, 12], [0, 2]);
-			//circlePath.fillColor.gradient.type = 'radial';
-			
-			var smallerPath = new Path.Circle([0, 0], 5);
-			smallerPath.segments.reverse();
-			for (var i = 0, l = smallerPath.segments.length; i < l; i++) {
-				var segment = smallerPath.segments[i];
-				smallerPath.segments[i] = segment.reverse();
-			}
-			smallerPath.fillColor = 'red';
-			var compoundPath = new CompoundPath([circlePath, smallerPath]);
-			compoundPath.strokeColor = 'black';
-			var symbol = new Symbol(compoundPath);
-			
+			circlePath.fillColor = new GradientColor(null, [0, 0], [0, 12], [0, 2]);
+			circlePath.fillColor.gradient.type = 'radial';
+
+			var symbol = new Symbol(circlePath);
+
 			var group = new Group();
-			
+
 			var Ball = Base.extend({
 				initialize: function(point, vector) {
 					if (vector.isZero()) {
@@ -79,7 +68,7 @@
 					this.item.scale(this.radius / 10);
 					group.appendTop(this.item);
 				},
-				
+
 				contrainPoint: function() {
 					var x = this.point.x;
 					var y = this.point.y;
@@ -87,7 +76,7 @@
 					this.point.x = Math.min(Math.max(radius, x), doc.size.width - radius);
 					this.point.y = Math.min(Math.max(radius, y), doc.size.height - radius);
 				},
-				
+
 				iterate: function() {
 					this.vector.y += this.gravity;
 					this.vector.x *= 0.99;
@@ -106,14 +95,14 @@
 					this.item.position = this.point;
 				}
 			});
-			
+
 			for (var i = 0; i < 10; i++) {
 				var position = Point.random().multiply(doc.size);
 				var vector = Point.random().subtract(0.5, 0).multiply(50, 100);
 				var ball = new Ball(position, vector);
 				balls.push(ball);
 			}
-			
+
 			var lastPoint;
 			tool = new Tool({
 				onMouseDown: function(event) {
@@ -129,11 +118,11 @@
 				}
 			});
 			setInterval(draw, 30);
-			
+
 			var boundPath = new Path.Rectangle([-10, -10], [-11, -11]);
 			boundPath.strokeColor = 'red';
 			boundPath.strokeWidth = 1;
-			
+
 			function draw() {
 				for (var i = 0, l = balls.length; i < l; i++) {
 					balls[i].iterate();
