@@ -8,10 +8,10 @@ PathStyle = Base.extend(new function() {
 
 		initialize: function(item, style) {
 			this.item = item;
-			if(style) {
+			if (style) {
 				for (var i = 0, l = keys.length; i < l; i++) {
 					var key = keys[i];
-					if(style[key] !== undefined)
+					if (style[key] !== undefined)
 						this[key] = style[key];
 				}
 			}
@@ -22,7 +22,7 @@ PathStyle = Base.extend(new function() {
 
 		var isColor = !!(key.match(/Color$/));
 		fields['set' + key.capitalize()] = function(value) {
-			if(this.item && this.item.children) {
+			if (this.item && this.item.children) {
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
 					this.item.children[i].style[key] = value;
 				}
@@ -32,12 +32,12 @@ PathStyle = Base.extend(new function() {
 		};
 
 		fields['get' + key.capitalize()] = function() {
-			if(this.item && this.item.children) {
+			if (this.item && this.item.children) {
 				var style;
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
-					if(!style) {
+					if (!style) {
 						style = this.item.children[i].style[key];
-					} else if(style != this.item.children[i].style[key]) {
+					} else if (style != this.item.children[i].style[key]) {
 						// If there is another item with a different style:
 						// TODO: Shouldn't this be undefined instead? null often
 						// has meaning for styles.

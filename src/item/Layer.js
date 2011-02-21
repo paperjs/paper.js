@@ -17,7 +17,7 @@ Layer = Group.extend({
 	* or its parent's children list.
 	*/
 	removeFromParent: function() {
-		if(!this.parent) {
+		if (!this.parent) {
 			this.document.layers.splice(this.index, 1);
 		} else {
 			this.base();
@@ -26,7 +26,7 @@ Layer = Group.extend({
 	
 	moveAbove: function(item) {
 		// if the item is a layer and contained within Document#layers
-		if(item instanceof Layer && !item.parent) {
+		if (item instanceof Layer && !item.parent) {
 			this.removeFromParent();
 			item.document.layers.splice(item.index + 1, 0, this);
 			this.document = item.document;
@@ -38,7 +38,7 @@ Layer = Group.extend({
 	
 	moveBelow: function(item) {
 		// if the item is a layer and contained within Document#layers
-		if(item instanceof Layer && !item.parent) {
+		if (item instanceof Layer && !item.parent) {
 			this.removeFromParent();
 			item.document.layers.splice(item.index - 1, 0, this);
 			this.document = item.document;
@@ -49,7 +49,7 @@ Layer = Group.extend({
 	},
 	
 	getNextSibling: function() {
-		if(!this.parent) {
+		if (!this.parent) {
 			var index = this.index + 1;
 			if (index < this.document.layers.length)
 				return this.document.layers[index];
@@ -59,7 +59,7 @@ Layer = Group.extend({
 	},
 	
 	getPreviousSibling: function() {
-		if(!this.parent) {
+		if (!this.parent) {
 			var index = this.index - 1;
 			if (index <= 0)
 				return this.document.layers[index];

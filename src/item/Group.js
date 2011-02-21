@@ -12,12 +12,12 @@ Group = Item.extend({
 	},
 	
 	draw: function(ctx) {
-		if(!this.visible)
+		if (!this.visible)
 			return;
 		// If the group has an opacity of less then 1, draw its children on a
 		// temporary canvas, and then draw that canvas onto ctx afterwards
 		// with globalAlpha set.
-		if(this.opacity < 1) {
+		if (this.opacity < 1) {
 			var originalCtx = ctx;
 			var size = this.document.size;
 			var tempCanvas = CanvasProvider.getCanvas(size.width, size.height);
@@ -25,10 +25,10 @@ Group = Item.extend({
 		}
 		for (var i = 0, l = this.children.length; i < l; i++) {
 			this.children[i].draw(ctx);
-			if(this.clipped & i == 0)
+			if (this.clipped & i == 0)
 				ctx.clip();
 		}
-		if(tempCanvas) {
+		if (tempCanvas) {
 			originalCtx.globalAlpha = this.opacity;
 			originalCtx.drawImage(tempCanvas, 0, 0);
 			// Return the canvas, so it can be reused
@@ -37,7 +37,7 @@ Group = Item.extend({
 	},
 	
 	getBounds: function() {
-		if(this.children.length) {
+		if (this.children.length) {
 			var rect = this.children[0].bounds;
 			var x1 = rect.x;
 			var y1 = rect.y;

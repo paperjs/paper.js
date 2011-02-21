@@ -50,7 +50,7 @@ CompoundPath = PathItem.extend(new function() {
 		 * @return the simplified compound path.
 		 */
 		simplify: function() {
-			if(this.children.length == 1) {
+			if (this.children.length == 1) {
 				var child = this.children[0];
 				child.moveAbove(this);
 				this.remove();

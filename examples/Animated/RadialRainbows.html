@@ -42,7 +42,7 @@
 			
 			var colors = ['red', 'orange', 'yellow', 'green', 'blue'];
 			var stops = [];
-			for(var i = 0, l = colors.length; i < l * 15; i++) {
+			for (var i = 0, l = colors.length; i < l * 15; i++) {
 				var stop = new GradientStop(colors[i % l], i / (l * 15));
 				stops.push(stop);
 			}
@@ -69,14 +69,14 @@
 			var grow = false;
 			var vector = new Point(150, 0);
 			function draw() {
-				if(grow && vector.length > 300) {
+				if (grow && vector.length > 300) {
 					grow = false;
-				} else if(!grow && vector.length < 75) {
+				} else if (!grow && vector.length < 75) {
 					grow = true;
 				}
 				vector.length += (grow ? 1 : -1);
 				vector.angle += 5;
-				if(!mouseDown) {
+				if (!mouseDown) {
 					gradientColor.hilite = point.add(vector);
 					doc.redraw();
 				}

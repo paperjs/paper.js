@@ -23,6 +23,7 @@
 	<script type="text/javascript" src="../../src/path/Segment.js"></script>
 	<script type="text/javascript" src="../../src/path/PathItem.js"></script>
 	<script type="text/javascript" src="../../src/path/Path.js"></script>
+	<script type="text/javascript" src="../../src/path/CompoundPath.js"></script>
 	<script type="text/javascript" src="../../src/path/Path.Constructors.js"></script>
 	<script type="text/javascript" src="../../src/color/Color.js"></script>
 	<script type="text/javascript" src="../../src/color/RGBColor.js"></script>
@@ -45,10 +46,19 @@
 			
 			
 			var circlePath = new Path.Circle([0, 0], 10);
-			circlePath.fillColor = new GradientColor(null, [0, 0], [0, 12], [0, 2]);
-			circlePath.fillColor.gradient.type = 'radial';
+			circlePath.fillColor = 'red';//new GradientColor(null, [0, 0], [0, 12], [0, 2]);
+			//circlePath.fillColor.gradient.type = 'radial';
 			
-			var symbol = new Symbol(circlePath);
+			var smallerPath = new Path.Circle([0, 0], 5);
+			smallerPath.segments.reverse();
+			for (var i = 0, l = smallerPath.segments.length; i < l; i++) {
+				var segment = smallerPath.segments[i];
+				smallerPath.segments[i] = segment.reverse();
+			}
+			smallerPath.fillColor = 'red';
+			var compoundPath = new CompoundPath([circlePath, smallerPath]);
+			compoundPath.strokeColor = 'black';
+			var symbol = new Symbol(compoundPath);
 			
 			var group = new Group();
 			
@@ -85,7 +95,7 @@
 					if (pre.x < this.radius || pre.x > doc.size.width - this.radius)
 						this.vector.x *= -this.dampen;
 					if (pre.y < this.radius || pre.y > doc.size.height - this.radius) {
-						if(Math.abs(this.vector.x) < 3) {
+						if (Math.abs(this.vector.x) < 3) {
 							this.vector.x = Math.random() * 150 - 75;
 							this.vector.y = Math.random() * 100 + 20;
 						}
@@ -97,7 +107,7 @@
 				}
 			});
 			
-			for(var i = 0; i < 10; i++) {
+			for (var i = 0; i < 10; i++) {
 				var position = Point.random().multiply(doc.size);
 				var vector = Point.random().subtract(0.5, 0).multiply(50, 100);
 				var ball = new Ball(position, vector);
@@ -123,7 +133,7 @@
 			var boundPath = new Path.Rectangle([-10, -10], [-11, -11]);
 			boundPath.strokeColor = 'red';
 			boundPath.strokeWidth = 1;
-
+			
 			function draw() {
 				for (var i = 0, l = balls.length; i < l; i++) {
 					balls[i].iterate();
