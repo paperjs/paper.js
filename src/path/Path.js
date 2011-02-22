@@ -27,6 +27,10 @@ Path = PathItem.extend({
 		this._segments = segments;
 	},
 
+	// TODO: Consider adding getSubPath(a, b), returning a part of the current
+	// path, with the added benefit that b can be < a, and closed looping is
+	// taken into account.
+
 	/**
 	 * The bounding rectangle of the item excluding stroke width.
 	 */
@@ -65,10 +69,14 @@ Path = PathItem.extend({
 							+ t * t * t * v3;
 				}
 
+				// Calculate derivative of our bezier polynomial
 				var b = 6 * v0 - 12 * v1 + 6 * v2;
 				var a = -3 * v0 + 9 * v1 - 9 * v2 + 3 * v3;
 				var c = 3 * v1 - 3 * v0;
 
+				// Solve for derivative for quadratic roots. Each good root
+				// (meaning a solution 0 < t < 1) is an extrema in the cubic
+				// polynomial and thus a potential point defining the bounds
 				if (a == 0) {
 					if (b == 0)
 					    continue;
