@@ -122,8 +122,8 @@ Raster = Item.extend({
 	draw: function(ctx) {
 		ctx.save();
 		this.matrix.applyToContext(ctx);
-		var image = this._canvas ? this._canvas : this.image;
-		ctx.drawImage(image, -this.size.width / 2, -this.size.height / 2);
+		ctx.drawImage(this._canvas || this.image,
+				-this.size.width / 2, -this.size.height / 2);
 		ctx.restore();
 	}
 });
