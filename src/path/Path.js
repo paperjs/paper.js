@@ -52,22 +52,22 @@ Path = PathItem.extend({
 					v3 = segment.point[coord],
 					v2 = v3 + segment.handleIn[coord];
 
-				function bounds(value) {
+				function add(value, t) {
+					if (value == null) {
+						// Calculate bezier polynomial at t
+						var u = 1 - t;
+						value = u * u * u * v0
+								+ 3 * u * u * t * v1
+								+ 3 * u * t * t * v2
+								+ t * t * t * v3;
+					}
 					if (value < min[coord]) {
 						min[coord] = value;
 					} else if (value > max[coord]) {
 						max[coord] = value;
 					}
 				}
-				bounds(v3);
-
-				function f(t) {
-					var omt = 1 - t;
-					return omt * omt * omt * v0
-							+ 3 * omt * omt * t * v1
-							+ 3 * omt * t * t * v2
-							+ t * t * t * v3;
-				}
+				add(v3);
 
 				// Calculate derivative of our bezier polynomial
 				var b = 6 * v0 - 12 * v1 + 6 * v2;
@@ -82,19 +82,20 @@ Path = PathItem.extend({
 					    continue;
 					var t = -c / b;
 					if (0 < t && t < 1)
-						bounds(f(t));
+						add(null, t);
 					continue;
 				}
 
-				var b2ac = b * b - 4 * c * a;
+				var b2ac = b * b - 4 * a * c;
 				if (b2ac < 0)
 					continue;
-				var t1 = (-b + Math.sqrt(b2ac)) / (2 * a);
+				var sqrt = Math.sqrt(b2ac), f = 1 / (a * -2);
+				var t1 = (b - sqrt) * f;
 				if (0 < t1 && t1 < 1)
-					bounds(f(t1));
-				var t2 = (-b - Math.sqrt(b2ac)) / (2 * a);
+					add(null, t1);
+				var t2 = (b + sqrt) * f;
 				if (0 < t2 && t2 < 1)
-					bounds(f(t2));
+					add(null, t2);
 			}
 			prev = segment;
 		}
