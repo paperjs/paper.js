@@ -81,6 +81,7 @@ Path = PathItem.extend({
 					if (b == 0)
 					    continue;
 					var t = -c / b;
+					// Test for good root and add to bounds if good (same below)
 					if (0 < t && t < 1)
 						add(null, t);
 					continue;
@@ -89,11 +90,12 @@ Path = PathItem.extend({
 				var b2ac = b * b - 4 * a * c;
 				if (b2ac < 0)
 					continue;
-				var sqrt = Math.sqrt(b2ac), f = 1 / (a * -2);
-				var t1 = (b - sqrt) * f;
+				var sqrt = Math.sqrt(b2ac),
+					f = 1 / (a * -2),
+				 	t1 = (b - sqrt) * f,
+					t2 = (b + sqrt) * f;
 				if (0 < t1 && t1 < 1)
 					add(null, t1);
-				var t2 = (b + sqrt) * f;
 				if (0 < t2 && t2 < 1)
 					add(null, t2);
 			}
