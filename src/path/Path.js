@@ -69,10 +69,12 @@ Path = PathItem.extend({
 				}
 				add(v3);
 
-				// Calculate derivative of our bezier polynomial
-				var b = 6 * v0 - 12 * v1 + 6 * v2;
-				var a = -3 * v0 + 9 * v1 - 9 * v2 + 3 * v3;
-				var c = 3 * v1 - 3 * v0;
+				// Calculate derivative of our bezier polynomial, divided by 3.
+				// Dividing by 3 allows for simpler calculations of a, b, c and
+				// leads to the same quadratic roots below.
+				var b = 2 * (v0 + v2) - 4 * v1;
+				var a = 3 * (v1 - v2) - v0 + v3;
+				var c = v1 - v0;
 
 				// Solve for derivative for quadratic roots. Each good root
 				// (meaning a solution 0 < t < 1) is an extrema in the cubic
