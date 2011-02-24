@@ -157,7 +157,7 @@ RGBColor = Color.extend(new function() {
 
 		setGray: function(gray) {
 			this._cssString = null;
-			this._red = this._green = this._blue = gray;
+			this._red = this._green = this._blue = 1 - gray;
 		},
 
 		/**
