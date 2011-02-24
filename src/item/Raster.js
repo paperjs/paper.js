@@ -6,15 +6,15 @@ Raster = Item.extend({
 	initialize: function(object) {
 		var width, height;
 		this.base();
-		if (object instanceof Image) {
+		if (object.getContext) {
+			this.canvas = object;
+			width = this.canvas.width;
+			height = this.canvas.height;
+		} else {
 			this._image = object;
 			// TODO: cross browser compatible?
 			width = object.naturalWidth;
 			height = object.naturalHeight;
-		} else if (object.getContext) {
-			this.canvas = object;
-			width = this.canvas.width;
-			height = this.canvas.height;
 		}
 		this._size = new Size(width, height);
 		this._bounds = new Rectangle(-width / 2, -height / 2, width, height);
@@ -142,6 +142,8 @@ Raster = Item.extend({
 	setCanvas: function(canvas) {
 		if (this._canvas)
 			CanvasProvider.returnCanvas(this._canvas);
+		// TODO: should the width / height of the bounds be reset too?
+		this._size = new Size(canvas.width, canvas.height);
 		this._image = null;
 		this._ctx = null;
 		this._canvas = canvas;
