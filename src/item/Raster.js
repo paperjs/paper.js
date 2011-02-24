@@ -65,8 +65,8 @@ Raster = Item.extend({
 		var u = new Point(1, 0).transform(matrix).subtract(orig);
 		var v = new Point(0, 1).transform(matrix).subtract(orig);
 		return new Size(
-			72.0 / u.length,
-			72.0 / v.length
+			72 / u.length,
+			72 / v.length
 		);
 	},
 	
@@ -82,6 +82,8 @@ Raster = Item.extend({
 	getImage: function() {
 		return this._image || this.canvas;
 	},
+	
+	// TODO: setImage
 
 	// TODO: drawImage(image, point)
 	drawImage: function(image, x, y) {
@@ -140,6 +142,7 @@ Raster = Item.extend({
 	setCanvas: function(canvas) {
 		if (this._canvas)
 			CanvasProvider.returnCanvas(this._canvas);
+		this._image = null;
 		this._ctx = null;
 		this._canvas = canvas;
 	},
