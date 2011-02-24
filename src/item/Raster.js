@@ -25,7 +25,7 @@ Raster = Item.extend({
 	
 	setSize: function() {
 		var size = Size.read(arguments);
-		var canvas = CanvasProvider.getCanvas(size.width, size.height);
+		var canvas = CanvasProvider.getCanvas(size);
 		var context = canvas.getContext('2d');
 		context.drawImage(this._canvas ? this._canvas : this.image,
 			0, 0, size.width, size.height);
@@ -97,7 +97,7 @@ Raster = Item.extend({
 	
 	getCanvas: function() {
 		if (!this._canvas) {
-			this._canvas = CanvasProvider.getCanvas(this.size.width, this.size.height);
+			this._canvas = CanvasProvider.getCanvas(this.size);
 			this.ctx = this._canvas.getContext('2d');
 			this.ctx.drawImage(this.image, 0, 0);
 		}

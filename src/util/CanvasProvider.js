@@ -1,7 +1,6 @@
 CanvasProvider = {
 	canvases: [],
-	getCanvas: function() {
-		var size = Size.read(arguments);
+	getCanvas: function(size) {
 		var canvas = this.canvases.length
 			? this.canvases.pop()
 			: document.createElement('canvas');
