@@ -1,3 +1,8 @@
+/**
+ * The Point object represents a point in the two dimensional space of the
+ * Paper.js document. It is also used to represent two dimensional vector
+ * objects.
+ */
 var Point = Base.extend({
 	beans: true,
 
