@@ -91,17 +91,10 @@ CompoundPath = PathItem.extend(new function() {
 		},
 
 		moveBy: function() {
-			if (!arguments.length) {
-				// TODO: Shouldn't this be relative to the previous position
-				// in lack of an argument? This should then be corrected in
-				// Scriptographer too.
-				this.moveTo(0, 0);
-			} else {
-				var point = Point.read(arguments);
-				var path = getCurrentPath(this);
-				var current = path.segments[path.segments.length - 1].point;
-				this.moveTo(current.add(point));
-			}
+			var point = arguments.length ? Point.read(arguments) : new Point();
+			var path = getCurrentPath(this);
+			var current = path.segments[path.segments.length - 1].point;
+			this.moveTo(current.add(point));
 		},
 
 		closePath: function() {
