@@ -37,6 +37,9 @@ Item = Base.extend({
 		return this.copyTo(this.parent);
 	},
 	
+	// TODO: isSelected / setSelected
+	// TODO: isFullySelected / setFullySelected
+	
 	/**
 	 * Specifies whether the item is locked.
 	 * 
@@ -134,6 +137,13 @@ Item = Base.extend({
 		}
 	},
 	
+	// TODO: getBlendMode / setBlendMode
+	// TODO: getIsolated / setIsolated (print specific feature)
+	// TODO: get/setKnockout (print specific feature)
+	// TODO get/setAlphaIsShape
+	// TODO: get/setData
+	// TODO: reverseChildren
+	
 	/**
 	 * The first item contained within this item.
 	 */
@@ -224,6 +234,21 @@ Item = Base.extend({
 		}
 		return true;
 	},
+	
+	/**
+	 * Checks whether the item is valid, i.e. it hasn't been removed.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var path = new Path();
+	 * print(path.isValid()); // true
+	 * path.remove();
+	 * print(path.isValid()); // false
+	 * </code>
+	 * 
+	 * @return {@true if the item is valid}
+	 */
+	// TODO: isValid / checkValid
 	
 	/**
 	 * {@grouptitle Hierarchy Operations}
@@ -328,6 +353,40 @@ Item = Base.extend({
 		return true;
 	},
 	
+	/**
+	 * {@grouptitle Hierarchy Tests}
+	 * 
+	 * Checks if this item is above the specified item in the stacking order of
+	 * the document.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var firstPath = new Path();
+	 * var secondPath = new Path();
+	 * print(secondPath.isAbove(firstPath)); // true
+	 * </code>
+	 * 
+	 * @param item The item to check against
+	 * @return {@true if it is above the specified item}
+	 */
+	// TODO: isAbove
+	
+	/**
+	 * Checks if the item is below the specified item in the stacking order of
+	 * the document.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var firstPath = new Path();
+	 * var secondPath = new Path();
+	 * print(firstPath.isBelow(secondPath)); // true
+	 * </code>
+	 * 
+	 * @param item The item to check against
+	 * @return {@true if it is below the specified item}
+	 */
+	// TODO: isBelow
+	
 	// TODO: this is confusing the beans
 	// isParent: function(item) {
 	// 	return this.parent == item;
@@ -385,7 +444,15 @@ Item = Base.extend({
 		}
 		return false;
 	},
-
+	
+	/**
+	 * Checks whether the item is grouped with the specified item.
+	 * 
+	 * @param item
+	 * @return {@true if the items are grouped together}
+	 */
+	// TODO: isGroupedWith
+	
 	getBounds: function() {
 		// TODO: Implement for items other than paths
 		return new Rectangle();
@@ -413,7 +480,30 @@ Item = Base.extend({
 		// Now execute the transformation:
 		this.transform(matrix);
 	},
+	
+	/**
+	 * The bounding rectangle of the item including stroke width.
+	 */
+	// TODO: getStrokeBounds
 
+	/**
+	 * The bounding rectangle of the item including stroke width and controls.
+	 */
+	// TODO: getControlBounds
+	
+	/**
+	 * Rasterizes the item into a newly created Raster object. The item itself
+	 * is not removed after rasterization.
+	 * 
+	 * @param type the color mode of the raster {@default same as document}
+	 * @param resolution the resolution of the raster in dpi {@default 72}
+	 * @param antialiasing the amount of anti-aliasing {@default 4}
+	 * @param width {@default automatic}
+	 * @param height {@default automatic}
+	 * @return the newly created Raster item
+	 */
+	// TODO: rasterize
+	
 	/**
 	 * The item's position within the art board. This is the
 	 * {@link Rectangle#getCenter()} of the {@link Item#getBounds()} rectangle.
@@ -566,4 +656,6 @@ Item = Base.extend({
 	setStyle: function(style) {
 		this._style = new PathStyle(this, style);
 	}
+	
+	// TODO: toString
 });
