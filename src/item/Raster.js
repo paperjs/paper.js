@@ -7,28 +7,48 @@ Raster = Item.extend({
 		this.base();
 		if (image) {
 			this.image = image;
-			var width = image.width;
-			var height = image.height;
-			this.size = new Size(width, height);
+			// TODO: cross browser compatible?
+			var width = image.naturalWidth;
+			var height = image.naturalHeight;
+			this._size = new Size(width, height);
 			this._bounds = new Rectangle(-width / 2, -height / 2, width, height);
 			this.matrix = new Matrix();
 		}
 	},
+
+	/**
+	* The size of the raster in pixels.
+	*/
+	getSize: function() {
+		return this._size;
+	},
 	
-	// TODO: getSize / setSize
+	setSize: function() {
+		var size = Size.read(arguments);
+		var canvas = CanvasProvider.getCanvas(size.width, size.height);
+		var context = canvas.getContext('2d');
+		context.drawImage(this._canvas ? this._canvas : this.image,
+			0, 0, size.width, size.height);
+		// If we already had a canvas, return it to be reused.
+		if (this._canvas)
+			CanvasProvider.returnCanvas(this._canvas);
+		this._size = size;
+		this._context = null;
+		this._canvas = canvas;
+	},
 	
 	/**
 	 * The width of the raster in pixels.
 	 */
 	getWidth: function() {
-		return this.size.width;
+		return this._size.width;
 	},
 	
 	/**
 	 * The height of the raster in pixels.
 	 */
 	getHeight: function() {
-		return this.size.height;
+		return this._size.height;
 	},
 	
 	// TODO: getPpi
@@ -36,47 +56,34 @@ Raster = Item.extend({
 	// TODO: getImage
 	// TODO: drawImage
 	
-	// TODO: support getAverageColor paramaters: point, rect, path
-	// TODO: Idea for getAverageColor(path): set globalCompositeOperation = 'xor',
-	// then fillRect with black, then draw the path, then draw the image, then
-	// resize and count values.
-	getAverageColor: function() {
-		var size = 32;
-		var tempCanvas = CanvasProvider.getCanvas(size, size);
-		var ctx = tempCanvas.getContext('2d');
-		ctx.drawImage(this.image, 0, 0, size, size);
-		var pixels = ctx.getImageData(0.5, 0.5, size, size).data;
-		var channels = [0, 0, 0];
-		
-		for (var i = 0; i < size; i++) {
-			var offset = i * size;
-			var alpha = pixels[offset + 3] / 255;
-			channels[0] += pixels[offset] * alpha;
-			channels[1] += pixels[offset + 1] * alpha;
-			channels[2] += pixels[offset + 2] * alpha;
-		}
-		
-		for (var i = 0; i < 3; i++)
-			channels[i] /= size * 255;
-		
-		CanvasProvider.returnCanvas(tempCanvas);
-		return Color.read(channels);
-	},
-	
-	// TODO: getPixel(point)
-	// TODO: test this
-	getPixel: function(x, y) {
-		var pixels = this.context.getImageData(x + 0.5, y + 0.5, 1, 1).data;
+	/**
+	 * {@grouptitle Pixels}
+	 * 
+	 * Gets the color of a pixel in the raster.
+	 * @param x
+	 * @param y
+	 */
+	getPixel: function() {
+		var point = Point.read(arguments);
+		var ctx = this.context;
+		var pixels = ctx.getImageData(point.x + 0.5, point.y + 0.5, 1, 1).data;
 		var channels = [];
-		for(var i = 0; i < 4; i++)
+		for (var i = 0; i < 4; i++)
 			channels.push(pixels[i] / 255);
 		return Color.read(channels);
 	},
 	
 	// TODO: setPixel(point, color)
-	// setPixel: function(x, y, color) {
-	// 	
-	// }
+	setPixel: function(x, y, color) {
+		color = Color.read(arguments, 2);
+		var ctx = this.context;
+		var imageData = ctx.getImageData(x, y, 1, 1);
+		imageData.data[0] = color.red * 255;
+		imageData.data[1] = color.green * 255;
+		imageData.data[2] = color.blue * 255;
+		imageData.data[3] = color.alpha != -1 ? color.alpha * 255 : 255;
+		ctx.putImageData(imageData, x, y);
+	},
 	
 	getContext: function() {
 		if (!this._context)
@@ -125,5 +132,81 @@ Raster = Item.extend({
 		ctx.drawImage(this._canvas || this.image,
 				-this.size.width / 2, -this.size.height / 2);
 		ctx.restore();
+	}
+}, new function() {
+	function getAverageColor(pixels) {
+		var channels = [0, 0, 0];
+		var total = 0;
+		for (var i = 0, l = pixels.length / 4; i < l; i++) {
+			var offset = i * 4;
+			var alpha = pixels[offset + 3] / 255;
+			total += alpha;
+			channels[0] += pixels[offset] * alpha;
+			channels[1] += pixels[offset + 1] * alpha;
+			channels[2] += pixels[offset + 2] * alpha;
+		}
+		for (var i = 0; i < 3; i++)
+			channels[i] /= total * 255;
+		return total ? Color.read(channels) : null;
+	}
+	
+	return {
+		/**
+		 * {@grouptitle Average Color}
+		 * Calculates the average color of the image within the given path,
+		 * rectangle or point. This can be used for creating raster image
+		 * effects.
+		 * 
+		 * @param object
+		 * @return the average color contained in the area covered by the
+		 * specified path, rectangle or point.
+		 */
+		getAverageColor: function(object) {
+			var image;
+			if (object) {
+				var bounds, path;
+				if (object instanceof Path) {
+					// TODO: what if the path is smaller than 1 px?
+					// TODO: how about rounding of bounds.size?
+					// TODO: test with compound paths.
+					path = object;
+					bounds = object.bounds;
+				} else if (object.width) {
+					bounds = new Rectangle(object);
+				} else if (object.x) {
+					bounds = new Rectangle(object.x - 0.5, object.y - 0.5, 1, 1);
+				}
+				
+				var canvas = CanvasProvider.getCanvas(bounds.size);
+				var ctx = canvas.getContext('2d');
+				var delta = bounds.topLeft.multiply(-1);
+				ctx.translate(delta.x, delta.y);
+				if (path) {
+					var style = object.style;
+					path.draw(ctx);
+					ctx.clip();
+					path.style = style;
+				}
+				var matrix = this.matrix.clone();
+				var transMatrix = Matrix.getTranslateInstance(delta);
+				matrix.preConcatenate(transMatrix);
+				matrix.applyToContext(ctx);
+				ctx.drawImage(this._canvas || this.image,
+						-this.size.width / 2, -this.size.height / 2);
+				image = canvas;
+			} else {
+				image = this.image;
+			}
+			var size = 32;
+			var sampleCanvas = CanvasProvider.getCanvas(size);
+			var ctx = sampleCanvas.getContext('2d');
+			ctx.drawImage(image, 0, 0, size, size);
+			var pixels = context.getImageData(0.5, 0.5, size, size).data;
+			var color = getAverageColor(pixels);
+			CanvasProvider.returnCanvas(tempCanvas);
+			if(image instanceof HTMLCanvasElement)
+				CanvasProvider.returnCanvas(image);
+			return color;
+		}
 	}
 });
