@@ -201,9 +201,9 @@ Raster = Item.extend({
 			var sampleCanvas = CanvasProvider.getCanvas(size);
 			var ctx = sampleCanvas.getContext('2d');
 			ctx.drawImage(image, 0, 0, size, size);
-			var pixels = context.getImageData(0.5, 0.5, size, size).data;
+			var pixels = ctx.getImageData(0.5, 0.5, size, size).data;
 			var color = getAverageColor(pixels);
-			CanvasProvider.returnCanvas(tempCanvas);
+			CanvasProvider.returnCanvas(sampleCanvas);
 			if(image instanceof HTMLCanvasElement)
 				CanvasProvider.returnCanvas(image);
 			return color;
