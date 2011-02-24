@@ -133,3 +133,15 @@ test('hidden', function() {
 	firstPath.visible = false;
 	equals(firstPath.hidden, true);
 });
+
+test('reverseChildren()', function() {
+	var doc = new Doc();
+	var path = new Path();
+	var secondPath = new Path();
+	var thirdPath = new Path();
+	equals(doc.activeLayer.firstChild == path, true);
+	doc.activeLayer.reverseChildren();
+	equals(doc.activeLayer.firstChild == path, false);
+	equals(doc.activeLayer.firstChild == thirdPath, true);
+	equals(doc.activeLayer.lastChild == path, true);
+})

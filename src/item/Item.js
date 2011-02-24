@@ -142,7 +142,13 @@ Item = Base.extend({
 	// TODO: get/setKnockout (print specific feature)
 	// TODO get/setAlphaIsShape
 	// TODO: get/setData
-	// TODO: reverseChildren
+	
+	/**
+	 * Reverses the order of this item's children
+	 */
+	reverseChildren: function() {
+		this.children.reverse();
+	},
 	
 	/**
 	 * The first item contained within this item.
