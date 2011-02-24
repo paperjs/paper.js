@@ -509,14 +509,29 @@ Item = Base.extend({
 	 * Rasterizes the item into a newly created Raster object. The item itself
 	 * is not removed after rasterization.
 	 * 
-	 * @param type the color mode of the raster {@default same as document}
 	 * @param resolution the resolution of the raster in dpi {@default 72}
-	 * @param antialiasing the amount of anti-aliasing {@default 4}
-	 * @param width {@default automatic}
-	 * @param height {@default automatic}
 	 * @return the newly created Raster item
 	 */
-	// TODO: rasterize
+	rasterize: function(resolution) {
+		// TODO: why would we want to pass a size to rasterize? Seems to produce
+		// weird results on Scriptographer. Also we can't use antialiasing, since
+		// Canvas doesn't support it yet. Document colorMode is also out of the
+		// question for now.
+		if(!resolution)
+			resolution = 72;
+		// TODO: use strokebounds for this:
+		var bounds = this.bounds;
+		var scale = resolution / 72;
+		var canvas = CanvasProvider.getCanvas(bounds.size.multiply(scale));
+		var context = canvas.getContext('2d');
+		var matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
+		matrix.applyToContext(context);
+		this.draw(context);
+		var raster = new Raster(canvas);
+		raster.position = this.bounds.center;
+		raster.scale(1 / scale);
+		return raster;
+	},
 	
 	/**
 	 * The item's position within the art board. This is the
