@@ -411,7 +411,7 @@ Item = Base.extend({
 	 * @return {@true if it is inside the specified item}
 	 */
 	isDescendant: function(item) {
-		var parent = this;
+		var parent = this.parent;
 		while(parent) {
 			if (parent == item)
 				return true;
@@ -436,7 +436,7 @@ Item = Base.extend({
 	 * @return {@true if the item is an ancestor of the specified item}
 	 */
 	isAncestor: function(item) {
-		var parent = item;
+		var parent = item.parent;
 		while(parent) {
 			if (parent == this)
 				return true;
@@ -451,7 +451,21 @@ Item = Base.extend({
 	 * @param item
 	 * @return {@true if the items are grouped together}
 	 */
-	// TODO: isGroupedWith
+	isGroupedWith: function(item) {
+		var parent = this.parent;
+		while(parent) {
+			// Find group parents. Check for parent.parent, since don't want
+			// top level layers, because they also inherit from Group
+			console.log(parent.parent);
+			if(parent.parent
+				&& (parent instanceof Group || parent instanceof CompoundPath)
+				&& item.isDescendant(parent))
+					return true;
+			// Keep walking up otherwise
+			parent = parent.parent
+		}
+		return false;
+	},
 	
 	getBounds: function() {
 		// TODO: Implement for items other than paths
