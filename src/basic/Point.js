@@ -66,6 +66,10 @@ var Point = Base.extend({
 		return this.x == point.x && this.y == point.y;
 	},
 
+	transform: function(matrix) {
+		return matrix.transform(this);
+	},
+
 	getDistance: function() {
 		var point = Point.read(arguments);
 		var px = point.x - this.x;
