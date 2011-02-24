@@ -34,15 +34,6 @@ Segment = Base.extend({
 			this.handleOut = new Point();
 	},
 	
-	// TODO:
-	// insert: function() {
-	// 	if (this._segments && this._segments.path) {
-	// 		var path = this._segments.path;
-	// 		path.checkValid();
-	// 		
-	// 	}
-	// },
-	
 	getPoint: function() {
 		return this.point;
 	},
