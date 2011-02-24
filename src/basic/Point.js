@@ -33,6 +33,21 @@ var Point = Base.extend({
 		}
 	},
 
+	/**
+	 * Returns a copy of the point.
+	 * This is useful as the following code only generates a flat copy:
+	 * 
+	 * <code>
+	 * var point1 = new Point();
+	 * var point2 = point1;
+	 * point2.x = 1; // also changes point1.x
+	 * 
+	 * var point2 = point1.clone();
+	 * point2.x = 1; // doesn't change point1.x
+	 * </code>
+	 * 
+	 * @return the cloned point
+	 */
 	clone: function() {
 		return Point.create(this.x, this.y);
 	},
