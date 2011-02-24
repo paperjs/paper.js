@@ -3,17 +3,22 @@ Raster = Item.extend({
 
 	// TODO: implement url / type, width, height
 	// TODO: have PlacedSymbol & Raster inherit from a shared class?
-	initialize: function(image) {
+	initialize: function(object) {
+		var width, height;
 		this.base();
-		if (image) {
-			this.image = image;
+		if (object instanceof Image) {
+			this._image = object;
 			// TODO: cross browser compatible?
-			var width = image.naturalWidth;
-			var height = image.naturalHeight;
-			this._size = new Size(width, height);
-			this._bounds = new Rectangle(-width / 2, -height / 2, width, height);
-			this.matrix = new Matrix();
+			width = object.naturalWidth;
+			height = object.naturalHeight;
+		} else if (object.getContext) {
+			this.canvas = object;
+			width = this.canvas.width;
+			height = this.canvas.height;
 		}
+		this._size = new Size(width, height);
+		this._bounds = new Rectangle(-width / 2, -height / 2, width, height);
+		this.matrix = new Matrix();
 	},
 
 	/**
@@ -27,7 +32,7 @@ Raster = Item.extend({
 		var size = Size.read(arguments);
 		var canvas = CanvasProvider.getCanvas(size);
 		var context = canvas.getContext('2d');
-		context.drawImage(this._canvas ? this._canvas : this.image,
+		context.drawImage(this._canvas ? this._canvas : this._image,
 			0, 0, size.width, size.height);
 		// If we already had a canvas, return it to be reused.
 		if (this._canvas)
@@ -51,10 +56,38 @@ Raster = Item.extend({
 		return this._size.height;
 	},
 	
-	// TODO: getPpi
-	// TODO: getSubImage
-	// TODO: getImage
-	// TODO: drawImage
+	/**
+	 * Pixels per inch of the raster at it's current size.
+	 */
+	getPpi: function() {
+		var matrix = this.matrix;
+		var orig = new Point(0, 0).transform(matrix);
+		var u = new Point(1, 0).transform(matrix).subtract(orig);
+		var v = new Point(0, 1).transform(matrix).subtract(orig);
+		return new Size(
+			72.0 / u.length,
+			72.0 / v.length
+		);
+	},
+	
+	getSubImage: function(/* rectangle */) {
+		var rectangle = Rectangle.read(arguments);
+		var canvas = CanvasProvider.getCanvas(rectangle.size);
+		var context = canvas.getContext('2d');
+		context.drawImage(this.canvas, rectangle.x, rectangle.y,
+			canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+		return canvas;
+	},
+	
+	getImage: function() {
+		return this._image || this.canvas;
+	},
+
+	// TODO: drawImage(image, point)
+	drawImage: function(image, x, y) {
+		var point = center = Point.read(arguments, 1);
+		this.context.drawImage(image, x, y);
+	},
 	
 	/**
 	 * {@grouptitle Pixels}
@@ -99,13 +132,14 @@ Raster = Item.extend({
 		if (!this._canvas) {
 			this._canvas = CanvasProvider.getCanvas(this.size);
 			this.ctx = this._canvas.getContext('2d');
-			this.ctx.drawImage(this.image, 0, 0);
+			this.ctx.drawImage(this._image, 0, 0);
 		}
 		return this._canvas;
 	},
 	
 	setCanvas: function(canvas) {
-		CanvasProvider.returnCanvas(this._canvas);
+		if (this._canvas)
+			CanvasProvider.returnCanvas(this._canvas);
 		this._ctx = null;
 		this._canvas = canvas;
 	},
@@ -129,7 +163,7 @@ Raster = Item.extend({
 	draw: function(ctx) {
 		ctx.save();
 		this.matrix.applyToContext(ctx);
-		ctx.drawImage(this._canvas || this.image,
+		ctx.drawImage(this._canvas || this._image,
 				-this.size.width / 2, -this.size.height / 2);
 		ctx.restore();
 	}
@@ -191,7 +225,7 @@ Raster = Item.extend({
 				var transMatrix = Matrix.getTranslateInstance(delta);
 				matrix.preConcatenate(transMatrix);
 				matrix.applyToContext(ctx);
-				ctx.drawImage(this._canvas || this.image,
+				ctx.drawImage(this._canvas || this._image,
 						-this.size.width / 2, -this.size.height / 2);
 				image = canvas;
 			} else {
@@ -204,7 +238,7 @@ Raster = Item.extend({
 			var pixels = ctx.getImageData(0.5, 0.5, size.width, size.height).data;
 			var color = getAverageColor(pixels);
 			CanvasProvider.returnCanvas(sampleCanvas);
-			if(image instanceof HTMLCanvasElement)
+			if (image instanceof HTMLCanvasElement)
 				CanvasProvider.returnCanvas(image);
 			return color;
 		}
