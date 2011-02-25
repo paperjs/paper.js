@@ -1,12 +1,32 @@
 /*
- * BlendMode code ported from Pixastic Lib - Blend - v0.1.1
- * Copyright (c) 2008 Jacob Seidelin, jseidelin@nihilogic.dk, http://blog.nihilogic.dk/
- * License: [http://www.pixastic.com/lib/license.txt]
+ * BlendMode code ported from Context Blender JavaScript Library
+ * 
+ * Copyright © 2010 Gavin Kistner
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 BlendMode = {
-	// TODO: Should we remove some of the blend modes?
-	// TODO: Add missing blendmodes like hue / saturation.
+	// TODO: Should we remove the blend modes that are not in Scriptographer?
+	// TODO: Add missing blendmodes like hue / saturation / color / luminosity
+	// TODO: Clean up codespacing of original code, or keep it as is, so 
+	// we can easily encorporate changes?
 	process: function(documentContext, item, param) {
 		// TODO: use strokeBounds
 		var itemBounds = item.bounds;
@@ -18,478 +38,178 @@ BlendMode = {
 
 		var itemCanvas = CanvasProvider.getCanvas(size);
 		var itemContext = itemCanvas.getContext('2d');
-		itemContext.translate(-itemBounds.left, -itemBounds.top);
+		if(item.matrix) {
+			var matrix = item.matrix.clone();
+			var transMatrix = Matrix.getTranslateInstance(-left, -top);
+			matrix.preConcatenate(transMatrix);
+			// TODO: Profiling shows this as a hotspot
+			matrix.applyToContext(itemContext);
+		} else {
+			itemContext.translate(-itemBounds.left, -itemBounds.top);
+		}
 		param.ignoreBlendMode = true;
 		item.draw(itemContext, param);
 
-		var data = documentContext.getImageData(
+		var dstD = documentContext.getImageData(
 			left, top,
 			width, height
-		).data;
+		);
 		
-		var dataDesc2 = itemContext.getImageData(
+		var srcD = itemContext.getImageData(
 			0, 0,
 			width, height
 		);
-		var data2 = dataDesc2.data;
-		var p = size.width * size.height;
-		var pix = p * 4;
-		var pix1, pix2;
-		var r1, g1, b1;
-		var r2, g2, b2;
-		var r3, g3, b3;
-		var r4, g4, b4;
 
-		switch (item.blendMode) {
-			case 'normal' :
+		var src  = srcD.data;
+		var dst  = dstD.data;
+		var sA, dA, len=dst.length;
+		var sRA, sGA, sBA, dRA, dGA, dBA, dA2;
+		var demultiply;
+
+		for (var px=0;px<len;px+=4){
+			sA  = src[px+3]/255;
+			dA  = dst[px+3]/255;
+			dA2 = (sA + dA - sA*dA);
+			dst[px+3] = dA2*255;
+
+			sRA = src[px  ]/255*sA;
+			dRA = dst[px  ]/255*dA;
+			sGA = src[px+1]/255*sA;
+			dGA = dst[px+1]/255*dA;
+			sBA = src[px+2]/255*sA;
+			dBA = dst[px+2]/255*dA;
+			
+			demultiply = 255 / dA2;
+		
+			switch(item.blendMode){
+				// ******* Very close match to Photoshop
+				case 'normal':
+				case 'src-over':
+					dst[px  ] = (sRA + dRA - dRA*sA) * demultiply;
+					dst[px+1] = (sGA + dGA - dGA*sA) * demultiply;
+					dst[px+2] = (sBA + dBA - dBA*sA) * demultiply;
 				break;
 
-			case 'multiply' : 
-				while (p--) {
-					data2[pix -= 4] = data[pix] * data2[pix] / 255;
-					data2[pix1 = pix + 1] = data[pix1] * data2[pix1] / 255;
-					data2[pix2 = pix + 2] = data[pix2] * data2[pix2] / 255;
-				}
+				case 'screen':
+					dst[px  ] = (sRA + dRA - sRA*dRA) * demultiply;
+					dst[px+1] = (sGA + dGA - sGA*dGA) * demultiply;
+					dst[px+2] = (sBA + dBA - sBA*dBA) * demultiply;
 				break;
 
-			case 'lighten' : 
-				while (p--) {
-					if ((r1 = data[pix -= 4]) > data2[pix])
-						data2[pix] = r1;
-					if ((g1 = data[pix1 = pix + 1]) > data2[pix1])
-						data2[pix1] = g1;
-					if ((b1 = data[pix2 = pix + 2]) > data2[pix2])
-						data2[pix2] = b1;
-				}
+				case 'multiply':
+					dst[px  ] = (sRA*dRA + sRA*(1-dA) + dRA*(1-sA)) * demultiply;
+					dst[px+1] = (sGA*dGA + sGA*(1-dA) + dGA*(1-sA)) * demultiply;
+					dst[px+2] = (sBA*dBA + sBA*(1-dA) + dBA*(1-sA)) * demultiply;
 				break;
 
-			case 'darken' : 
-				while (p--) {
-					if ((r1 = data[pix -= 4]) < data2[pix])
-						data2[pix] = r1;
-					if ((g1 = data[pix1 = pix + 1]) < data2[pix1])
-						data2[pix1] = g1;
-					if ((b1 = data[pix2 = pix + 2]) < data2[pix2])
-						data2[pix2] = b1;
-
-				}
+				case 'difference':
+					dst[px  ] = (sRA + dRA - 2 * Math.min( sRA*dA, dRA*sA )) * demultiply;
+					dst[px+1] = (sGA + dGA - 2 * Math.min( sGA*dA, dGA*sA )) * demultiply;
+					dst[px+2] = (sBA + dBA - 2 * Math.min( sBA*dA, dBA*sA )) * demultiply;
 				break;
 
-			case 'darker-color' : 
-				while (p--) {
-					if (((r1 = data[pix -= 4]) * 0.3
-						+ (g1 = data[pix1 = pix + 1]) * 0.59
-						+ (b1 = data[pix2 = pix + 2]) * 0.11)
-						<= (data2[pix] * 0.3 + data2[pix1] * 0.59
-						+ data2[pix2] * 0.11)) {
-						data2[pix] = r1;
-						data2[pix1] = g1;
-						data2[pix2] = b1;
-					}
-				}
+				// ******* Slightly different from Photoshop, where alpha is concerned
+				case 'src-in':
+					// Only differs from Photoshop in low-opacity areas
+					dA2 = sA*dA;
+					demultiply = 255 / dA2;
+					dst[px+3] = dA2*255;
+					dst[px  ] = sRA*dA * demultiply;
+					dst[px+1] = sGA*dA * demultiply;
+					dst[px+2] = sBA*dA * demultiply;
 				break;
 
-			case 'lighter-color' : 
-				while (p--) {
-					if (((r1 = data[pix -= 4]) * 0.3
-						+ (g1 = data[pix1 = pix + 1])
-						* 0.59 + (b1 = data[pix2 = pix + 2]) * 0.11)
-						> (data2[pix] * 0.3 + data2[pix1] * 0.59
-						+ data2[pix2] * 0.11)) {
-						data2[pix] = r1;
-						data2[pix1] = g1;
-						data2[pix2] = b1;
-					}
-				}
+				case 'plus':
+				case 'add':
+					// Photoshop doesn't simply add the alpha channels; this might be correct wrt SVG 1.2
+					dA2 = Math.min(1,sA+dA);
+					dst[px+3] = dA2*255;
+					demultiply = 255 / dA2;
+					dst[px  ] = Math.min(sRA + dRA,1) * demultiply;
+					dst[px+1] = Math.min(sGA + dGA,1) * demultiply;
+					dst[px+2] = Math.min(sBA + dBA,1) * demultiply;
 				break;
 
-			case 'linear-dodge' : 
-				/*
-				otherdocumentContext.globalCompositeOperation = 'source-over';
-				otherdocumentContext.drawImage(params.canvas, 0, 0);
-				otherdocumentContext.globalCompositeOperation = 'lighter';
-				otherdocumentContext.drawImage(image, 0, 0);
-				*/
+				case 'overlay':
+					// Correct for 100% opacity case; colors get clipped as opacity falls
+					dst[px  ] = (dRA<=0.5) ? (2*src[px  ]*dRA/dA) : 255 - (2 - 2*dRA/dA) * (255-src[px  ]);
+					dst[px+1] = (dGA<=0.5) ? (2*src[px+1]*dGA/dA) : 255 - (2 - 2*dGA/dA) * (255-src[px+1]);
+					dst[px+2] = (dBA<=0.5) ? (2*src[px+2]*dBA/dA) : 255 - (2 - 2*dBA/dA) * (255-src[px+2]);
 
-				while (p--) {
-					if ((r3 = data[pix -= 4] + data2[pix]) > 255)
-						data2[pix] = 255;
-					else
-						data2[pix] = r3;
-					if ((g3 = data[pix1 = pix + 1] + data2[pix1]) > 255)
-						data2[pix1] = 255;
-					else
-						data2[pix1] = g3;
-					if ((b3 = data[pix2 = pix + 2] + data2[pix2]) > 255)
-						data2[pix2] = 255;
-					else
-						data2[pix2] = b3;
-				}
+					// http://dunnbypaul.net/blends/
+					// dst[px  ] = ( (dRA<=0.5) ? (2*sRA*dRA) : 1 - (1 - 2*(dRA-0.5)) * (1-sRA) ) * demultiply;
+					// dst[px+1] = ( (dGA<=0.5) ? (2*sGA*dGA) : 1 - (1 - 2*(dGA-0.5)) * (1-sGA) ) * demultiply;
+					// dst[px+2] = ( (dBA<=0.5) ? (2*sBA*dBA) : 1 - (1 - 2*(dBA-0.5)) * (1-sBA) ) * demultiply;
 
+					// http://www.barbato.us/2010/12/01/blimageblending-emulating-photoshops-blending-modes-opencv/#toc-blendoverlay
+					// dst[px  ] = ( (sRA<=0.5) ? (sRA*dRA + sRA*(1-dA) + dRA*(1-sA)) : (sRA + dRA - sRA*dRA) ) * demultiply;
+					// dst[px+1] = ( (sGA<=0.5) ? (sGA*dGA + sGA*(1-dA) + dGA*(1-sA)) : (sGA + dGA - sGA*dGA) ) * demultiply;
+					// dst[px+2] = ( (sBA<=0.5) ? (sBA*dBA + sBA*(1-dA) + dBA*(1-sA)) : (sBA + dBA - sBA*dBA) ) * demultiply;
+
+					// http://www.nathanm.com/photoshop-blending-math/
+					// dst[px  ] = ( (sRA < 0.5) ? (2 * dRA * sRA) : (1 - 2 * (1 - sRA) * (1 - dRA)) ) * demultiply;
+					// dst[px+1] = ( (sGA < 0.5) ? (2 * dGA * sGA) : (1 - 2 * (1 - sGA) * (1 - dGA)) ) * demultiply;
+					// dst[px+2] = ( (sBA < 0.5) ? (2 * dBA * sBA) : (1 - 2 * (1 - sBA) * (1 - dBA)) ) * demultiply;
 				break;
 
-			case 'linear-burn' : 
-				while (p--) {
-					if ((r3 = data[pix -= 4] + data2[pix]) < 255)
-						data2[pix] = 0;
-					else
-						data2[pix] = (r3 - 255);
-					if ((g3 = data[pix1 = pix + 1] + data2[pix1]) < 255)
-						data2[pix1] = 0;
-					else
-						data2[pix1] = (g3 - 255);
-					if ((b3 = data[pix2 = pix + 2] + data2[pix2]) < 255)
-						data2[pix2] = 0;
-					else
-						data2[pix2] = (b3 - 255);
-				}
+				case 'hardlight':
+					dst[px  ] = (sRA<=0.5) ? (2*dst[px  ]*sRA/dA) : 255 - (2 - 2*sRA/sA) * (255-dst[px  ]);
+					dst[px+1] = (sGA<=0.5) ? (2*dst[px+1]*sGA/dA) : 255 - (2 - 2*sGA/sA) * (255-dst[px+1]);
+					dst[px+2] = (sBA<=0.5) ? (2*dst[px+2]*sBA/dA) : 255 - (2 - 2*sBA/sA) * (255-dst[px+2]);
+				break;
+				
+				case 'color-dodge':
+				case 'dodge':
+					if ( src[px  ] == 255 && dRA==0) dst[px  ] = 255;
+					else dst[px  ] = Math.min(255, dst[px  ]/(255 - src[px  ])) * demultiply;
+
+					if ( src[px+1] == 255 && dGA==0) dst[px+1] = 255;
+					else dst[px+1] = Math.min(255, dst[px+1]/(255 - src[px+1])) * demultiply;
+
+					if ( src[px+2] == 255 && dBA==0) dst[px+2] = 255;
+					else dst[px+2] = Math.min(255, dst[px+2]/(255 - src[px+2])) * demultiply;
+				break;
+				
+				case 'color-burn':
+				case 'burn':
+					if ( src[px  ] == 0 && dRA==0) dst[px  ] = 0;
+					else dst[px  ] = (1 - Math.min(1, (1 - dRA)/sRA)) * demultiply;
+
+					if ( src[px+1] == 0 && dGA==0) dst[px+1] = 0;
+					else dst[px+1] = (1 - Math.min(1, (1 - dGA)/sGA)) * demultiply;
+
+					if ( src[px+2] == 0 && dBA==0) dst[px+2] = 0;
+					else dst[px+2] = (1 - Math.min(1, (1 - dBA)/sBA)) * demultiply;
+				break;
+				
+				case 'darken':
+				case 'darker':
+					dst[px  ] = (sRA>dRA ? dRA : sRA) * demultiply;
+					dst[px+1] = (sGA>dGA ? dGA : sGA) * demultiply;
+					dst[px+2] = (sBA>dBA ? dBA : sBA) * demultiply;
+				break;
+				
+				case 'lighten':
+				case 'lighter':
+					dst[px  ] = (sRA<dRA ? dRA : sRA) * demultiply;
+					dst[px+1] = (sGA<dGA ? dGA : sGA) * demultiply;
+					dst[px+2] = (sBA<dBA ? dBA : sBA) * demultiply;
 				break;
 
-			case 'difference' : 
-				while (p--) {
-					if ((r3 = data[pix -= 4] - data2[pix]) < 0)
-						data2[pix] = -r3;
-					else
-						data2[pix] = r3;
-					if ((g3 = data[pix1 = pix + 1] - data2[pix1]) < 0)
-						data2[pix1] = -g3;
-					else
-						data2[pix1] = g3;
-					if ((b3 = data[pix2 = pix + 2] - data2[pix2]) < 0)
-						data2[pix2] = -b3;
-					else
-						data2[pix2] = b3;
-				}
+				case 'exclusion':
+					dst[px  ] = (dRA+sRA - 2*dRA*sRA) * demultiply;
+					dst[px+1] = (dGA+sGA - 2*dGA*sGA) * demultiply;
+					dst[px+2] = (dBA+sBA - 2*dBA*sBA) * demultiply;
 				break;
 
-			case 'screen' : 
-				while (p--) {
-					data2[pix -= 4] = (255 - (((255 - data2[pix])
-						* (255 - data[pix])) >> 8));
-					data2[pix1 = pix + 1] = (255 - (((255 - data2[pix1])
-						* (255 - data[pix1])) >> 8));
-					data2[pix2 = pix + 2] = (255 - (((255 - data2[pix2])
-						* (255 - data[pix2])) >> 8));
-				}
-				break;
-
-			case 'exclusion' : 
-				var div_2_255 = 2 / 255;
-				while (p--) {
-					data2[pix -= 4] = (r1 = data[pix])
-						- (r1 * div_2_255 - 1) * data2[pix];
-					data2[pix1 = pix + 1] = (g1 = data[pix1])
-						- (g1 * div_2_255 - 1) * data2[pix1];
-					data2[pix2 = pix + 2] = (b1 = data[pix2])
-						- (b1 * div_2_255 - 1) * data2[pix2];
-				}
-				break;
-
-			case 'overlay' : 
-				var div_2_255 = 2 / 255;
-				while (p--) {
-					if ((r1 = data[pix -= 4]) < 128)
-						data2[pix] = data2[pix] * r1 * div_2_255;
-					else
-						data2[pix] = 255 - (255 - data2[pix]) * (255 - r1)
-							* div_2_255;
-
-					if ((g1 = data[pix1 = pix + 1]) < 128)
-						data2[pix1] = data2[pix1] * g1 * div_2_255;
-					else
-						data2[pix1] = 255 - (255 - data2[pix1]) * (255 - g1)
-							* div_2_255;
-
-					if ((b1 = data[pix2 = pix + 2]) < 128)
-						data2[pix2] = data2[pix2] * b1 * div_2_255;
-					else
-						data2[pix2] = 255 - (255 - data2[pix2]) * (255 - b1)
-							* div_2_255;
-
-				}
-				break;
-
-			case 'soft-light' : 
-				var div_2_255 = 2 / 255;
-				while (p--) {
-					if ((r1 = data[pix -= 4]) < 128)
-						data2[pix] = ((data2[pix] >> 1) + 64) * r1 * div_2_255;
-					else
-						data2[pix] = 255 - (191 - (data2[pix] >> 1))
-							* (255 - r1) * div_2_255;
-
-					if ((g1 = data[pix1 = pix + 1]) < 128)
-						data2[pix1] = ((data2[pix1] >> 1) + 64) * g1 * div_2_255;
-					else
-						data2[pix1] = 255 - (191 - (data2[pix1] >> 1))
-							* (255 - g1) * div_2_255;
-
-					if ((b1 = data[pix2 = pix + 2]) < 128)
-						data2[pix2] = ((data2[pix2] >> 1) + 64) * b1 * div_2_255;
-					else
-						data2[pix2] = 255 - (191 - (data2[pix2] >> 1))
-							* (255 - b1) * div_2_255;
-
-				}
-				break;
-
-			case 'hard-light' : 
-				var div_2_255 = 2 / 255;
-				while (p--) {
-					if ((r2 = data2[pix -= 4]) < 128)
-						data2[pix] = data[pix] * r2 * div_2_255;
-					else
-						data2[pix] = 255 - (255 - data[pix]) * (255 - r2)
-							* div_2_255;
-
-					if ((g2 = data2[pix1 = pix + 1]) < 128)
-						data2[pix1] = data[pix1] * g2 * div_2_255;
-					else
-						data2[pix1] = 255 - (255 - data[pix1]) * (255 - g2)
-							* div_2_255;
-
-					if ((b2 = data2[pix2 = pix + 2]) < 128)
-						data2[pix2] = data[pix2] * b2 * div_2_255;
-					else
-						data2[pix2] = 255 - (255 - data[pix2]) * (255 - b2)
-							* div_2_255;
-
-				}
-				break;
-
-			case 'color-dodge' : 
-				while (p--) {
-					if ((r3 = (data[pix -= 4] << 8) / (255 - (r2 = data2[pix])))
-						> 255 || r2 == 255)
-						data2[pix] = 255;
-					else
-						data2[pix] = r3;
-
-					if ((g3 = (data[pix1 = pix + 1] << 8) / (255
-							- (g2 = data2[pix1]))) > 255 || g2 == 255)
-						data2[pix1] = 255;
-					else
-						data2[pix1] = g3;
-
-					if ((b3 = (data[pix2 = pix + 2] << 8) / (255
-							- (b2 = data2[pix2]))) > 255 || b2 == 255)
-						data2[pix2] = 255;
-					else
-						data2[pix2] = b3;
-				}
-				break;
-
-			case 'color-burn' : 
-				while (p--) {
-					if ((r3 = 255 - ((255 - data[pix -= 4]) << 8) / data2[pix])
-						< 0 || data2[pix] == 0)
-						data2[pix] = 0;
-					else
-						data2[pix] = r3;
-
-					if ((g3 = 255 - ((255 - data[pix1 = pix + 1]) << 8) /
-						data2[pix1]) < 0 || data2[pix1] == 0)
-						data2[pix1] = 0;
-					else
-						data2[pix1] = g3;
-
-					if ((b3 = 255 - ((255 - data[pix2 = pix + 2]) << 8) /
-						data2[pix2]) < 0 || data2[pix2] == 0)
-						data2[pix2] = 0;
-					else
-						data2[pix2] = b3;
-				}
-				break;
-
-			case 'linear-light' : 
-				while (p--) {
-					if (((r3 = 2 * (r2 = data2[pix -= 4]) + data[pix] - 256)
-						< 0) || (r2 < 128 && r3 < 0)) {
-						data2[pix] = 0;
-					} else {
-						if (r3 > 255)
-							data2[pix] = 255;
-						else
-							data2[pix] = r3;
-					}
-					if (((g3 = 2 * (g2 = data2[pix1 = pix + 1]) + data[pix1]
-						- 256) < 0) || (g2 < 128 && g3 < 0)) {
-						data2[pix1] = 0;
-					} else {
-						if (g3 > 255)
-							data2[pix1] = 255;
-						else
-							data2[pix1] = g3;
-					}
-					if ( ((b3 = 2*(b2 = data2[pix2 = pix + 2])+ data[pix2]-256)
-						< 0) || (b2 < 128 && b3 < 0)) {
-						data2[pix2] = 0;
-					} else {
-						if (b3 > 255)
-							data2[pix2] = 255;
-						else
-							data2[pix2] = b3;
-					}
-				}
-				break;
-
-			case 'vivid-light' : 
-				while (p--) {
-					if ((r2 = data2[pix -= 4]) < 128) {
-						if (r2) {
-							if ((r3 = 255 - ((255 - data[pix]) << 8) /
-								(2 * r2)) < 0) 
-								data2[pix] = 0;
-							else
-								data2[pix] = r3;
-						} else {
-							data2[pix] = 0;
-						}
-					} else if ((r3 = (r4 = 2 * r2 - 256)) < 255) {
-						if ((r3 = (data[pix] << 8) / (255 - r4)) > 255) 
-							data2[pix] = 255;
-						else
-							data2[pix] = r3;
-					} else {
-						if (r3 < 0) 
-							data2[pix] = 0;
-						else
-							data2[pix] = r3;
-					}
-
-					if ((g2 = data2[pix1 = pix + 1]) < 128) {
-						if (g2) {
-							if ((g3 = 255 - ((255 - data[pix1]) << 8) /
-								(2 * g2)) < 0) 
-								data2[pix1] = 0;
-							else
-								data2[pix1] = g3;
-						} else {
-							data2[pix1] = 0;
-						}
-					} else if ((g3 = (g4 = 2 * g2 - 256)) < 255) {
-						if ((g3 = (data[pix1] << 8) / (255 - g4)) > 255)
-							data2[pix1] = 255;
-						else
-							data2[pix1] = g3;
-					} else {
-						if (g3 < 0) 
-							data2[pix1] = 0;
-						else
-							data2[pix1] = g3;
-					}
-
-					if ((b2 = data2[pix2 = pix + 2]) < 128) {
-						if (b2) {
-							if ((b3 = 255 - ((255 - data[pix2]) << 8) /
-								(2 * b2)) < 0) 
-								data2[pix2] = 0;
-							else
-								data2[pix2] = b3;
-						} else {
-							data2[pix2] = 0;
-						}
-					} else if ((b3 = (b4 = 2 * b2 - 256)) < 255) {
-						if ((b3 = (data[pix2] << 8) / (255 - b4)) > 255) 
-							data2[pix2] = 255;
-						else
-							data2[pix2] = b3;
-					} else {
-						if (b3 < 0) 
-							data2[pix2] = 0;
-						else
-							data2[pix2] = b3;
-					}
-				}
-				break;
-
-			case 'pin-light' : 
-				while (p--) {
-					if ((r2 = data2[pix -= 4]) < 128)
-						if ((r1 = data[pix]) < (r4 = 2 * r2))
-							data2[pix] = r1;
-						else
-							data2[pix] = r4;
-					else
-						if ((r1 = data[pix]) > (r4 = 2 * r2 - 256))
-							data2[pix] = r1;
-						else
-							data2[pix] = r4;
-
-					if ((g2 = data2[pix1 = pix + 1]) < 128)
-						if ((g1 = data[pix1]) < (g4 = 2 * g2))
-							data2[pix1] = g1;
-						else
-							data2[pix1] = g4;
-					else
-						if ((g1 = data[pix1]) > (g4 = 2 * g2 - 256))
-							data2[pix1] = g1;
-						else
-							data2[pix1] = g4;
-
-					if ((r2 = data2[pix2 = pix + 2]) < 128)
-						if ((r1 = data[pix2]) < (r4 = 2 * r2))
-							data2[pix2] = r1;
-						else
-							data2[pix2] = r4;
-					else
-						if ((r1 = data[pix2]) > (r4 = 2 * r2 - 256))
-							data2[pix2] = r1;
-						else
-							data2[pix2] = r4;
-				}
-				break;
-
-			case 'hard-mix' : 
-				while (p--) {
-					if ((r2 = data2[pix -= 4]) < 128)
-						if (255 - ((255 - data[pix]) << 8) / (2 * r2) < 128
-							|| r2 == 0)
-							data2[pix] = 0;
-						else
-							data2[pix] = 255;
-					else if ((r4 = 2 * r2 - 256) < 255
-						&& (data[pix] << 8) / (255 - r4) < 128)
-						data2[pix] = 0;
-					else
-						data2[pix] = 255;
-
-					if ((g2 = data2[pix1 = pix + 1]) < 128)
-						if (255 - ((255 - data[pix1]) << 8) / (2 * g2) < 128
-							|| g2 == 0)
-							data2[pix1] = 0;
-						else
-							data2[pix1] = 255;
-					else if ((g4 = 2 * g2 - 256) < 255
-						&& (data[pix1] << 8) / (255 - g4) < 128)
-						data2[pix1] = 0;
-					else
-						data2[pix1] = 255;
-
-					if ((b2 = data2[pix2 = pix + 2]) < 128)
-						if (255 - ((255 - data[pix2]) << 8) / (2 * b2) < 128
-							|| b2 == 0)
-							data2[pix2] = 0;
-						else
-							data2[pix2] = 255;
-					else if ((b4 = 2 * b2 - 256) < 255
-						&& (data[pix2] << 8) / (255 - b4) < 128)
-						data2[pix2] = 0;
-					else
-						data2[pix2] = 255;
-				}
-				break;
+				// ******* UNSUPPORTED
+				default:
+					dst[px] = dst[px+3] = 255;
+					dst[px+1] = px%8==0 ? 255 : 0;
+					dst[px+2] = px%8==0 ? 0 : 255;
+			}
 		}
-		
-		itemContext.putImageData(dataDesc2, 0, 0);
-		
-		documentContext.drawImage(
-			itemCanvas,
-			0, 0,
-			width, height,
-			left, top,
-			width, height
-		);
+		documentContext.putImageData(dstD, left, top);
 		CanvasProvider.returnCanvas(itemCanvas);
 	}
 };
