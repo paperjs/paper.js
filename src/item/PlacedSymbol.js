@@ -38,12 +38,17 @@ PlacedSymbol = Item.extend({
 		return this._bounds;
 	},
 	
-	draw: function(ctx) {
-		// TODO: we need to preserve strokewidth, but still transform the fill
-		ctx.save();
-		this.matrix.applyToContext(ctx);
-		this.symbol.definition.draw(ctx);
-		ctx.restore();
+	draw: function(ctx, param) {
+		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
+			BlendMode.process(ctx, this, param);
+		} else {
+			param.ignoreBlendMode = false;
+			// TODO: we need to preserve strokewidth, but still transform the fill
+			ctx.save();
+			this.matrix.applyToContext(ctx);
+			this.symbol.definition.draw(ctx);
+			ctx.restore();
+		}
 	}
 	// TODO:
 	// embed()

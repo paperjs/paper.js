@@ -352,57 +352,63 @@ Path = PathItem.extend({
 		this.closed = ture;
 	},
 
-	draw: function(ctx, compound) {
+	draw: function(ctx, param) {
 		if (!this.visible) return;
-		if (!compound)
-			ctx.beginPath();
-		
-		var segments = this._segments;
-		var length = segments.length;
-		for (var i = 0; i < length; i++) {
-			var segment = segments[i];
-			var x = segment.point.x;
-			var y = segment.point.y;
-			var handleIn = segment.handleIn;
-			if (i == 0) {
-				ctx.moveTo(x, y);
-			} else {
-				if (handleOut.isZero() && handleIn.isZero()) {
-					ctx.lineTo(x, y);
+		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
+			BlendMode.process(ctx, this, param);
+		} else {
+			param.ignoreBlendMode = false;
+			if (!param.compound)
+				ctx.beginPath();
+
+			var segments = this._segments;
+			var length = segments.length;
+			for (var i = 0; i < length; i++) {
+				var segment = segments[i];
+				var x = segment.point.x;
+				var y = segment.point.y;
+				var handleIn = segment.handleIn;
+				if (i == 0) {
+					ctx.moveTo(x, y);
 				} else {
-					ctx.bezierCurveTo(
-						outX, outY,
-						handleIn.x + x, handleIn.y + y,
-						x, y
-					);
+					if (handleOut.isZero() && handleIn.isZero()) {
+						ctx.lineTo(x, y);
+					} else {
+						ctx.bezierCurveTo(
+							outX, outY,
+							handleIn.x + x, handleIn.y + y,
+							x, y
+						);
+					}
 				}
+				var handleOut = segment.handleOut;
+				var outX = handleOut.x + x;
+				var outY = handleOut.y + y;
 			}
-			var handleOut = segment.handleOut;
-			var outX = handleOut.x + x;
-			var outY = handleOut.y + y;
-		}
-		if (this.closed && length > 1) {
-			var segment = segments[0];
-			var x = segment.point.x;
-			var y = segment.point.y;
-			var handleIn = segment.handleIn;
-			ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
-			ctx.closePath();
-		}
-		if (!compound) {
-			this.setCtxStyles(ctx);
-			ctx.save();
-			ctx.globalAlpha = this.opacity;
-			if (this.fillColor) {
-				ctx.fillStyle = this.fillColor.getCanvasStyle(ctx);
-				ctx.fill();
+			if (this.closed && length > 1) {
+				var segment = segments[0];
+				var x = segment.point.x;
+				var y = segment.point.y;
+				var handleIn = segment.handleIn;
+				ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
+				ctx.closePath();
 			}
-			if (this.strokeColor) {
-				ctx.strokeStyle = this.strokeColor.getCanvasStyle(ctx);
-				ctx.stroke();
+			if (!param.compound) {
+				this.setCtxStyles(ctx);
+				ctx.save();
+				ctx.globalAlpha = this.opacity;
+				if (this.fillColor) {
+					ctx.fillStyle = this.fillColor.getCanvasStyle(ctx);
+					ctx.fill();
+				}
+				if (this.strokeColor) {
+					ctx.strokeStyle = this.strokeColor.getCanvasStyle(ctx);
+					ctx.stroke();
+				}
+				ctx.restore();
 			}
-			ctx.restore();
 		}
+
 	}
 }, new function() { // inject methods that require scoped privates
 	/**
