@@ -159,6 +159,14 @@ Raster = Item.extend({
 		bounds.y = coords[1];
 		bounds.width = coords[2] - coords[0];
 		bounds.height = coords[3] - coords[1];
+		if (bounds.width < 0) {
+			bounds.x = coords[2];
+			bounds.width = -bounds.width;
+		}
+		if (bounds.height < 0) {
+			bounds.y = coords[3];
+			bounds.height = bounds.height;
+		}
 	},
 	
 	getBounds: function() {
@@ -169,12 +177,13 @@ Raster = Item.extend({
 		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
 			BlendMode.process(ctx, this, param);
 		} else {
-			param.ignoreBlendMode = false;
 			ctx.save();
-			this.matrix.applyToContext(ctx);
+			if(param.ignoreBlendMode !== true)
+				this.matrix.applyToContext(ctx);
 			ctx.drawImage(this._canvas || this._image,
 					-this.size.width / 2, -this.size.height / 2);
 			ctx.restore();
+			param.ignoreBlendMode = false;
 		}
 	}
 }, new function() {

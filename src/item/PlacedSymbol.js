@@ -32,6 +32,14 @@ PlacedSymbol = Item.extend({
 		bounds.y = coords[1];
 		bounds.width = coords[2] - coords[0];
 		bounds.height = coords[3] - coords[1];
+		if (bounds.width < 0) {
+			bounds.x = coords[2];
+			bounds.width = -bounds.width;
+		}
+		if (bounds.height < 0) {
+			bounds.y = coords[3];
+			bounds.height = bounds.height;
+		}
 	},
 	
 	getBounds: function() {
@@ -39,14 +47,14 @@ PlacedSymbol = Item.extend({
 	},
 	
 	draw: function(ctx, param) {
-		// TODO: BlendMode isn't working yet for PlacedSymbols.
 		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
 			BlendMode.process(ctx, this, param);
 		} else {
-			param.ignoreBlendMode = false;
 			// TODO: we need to preserve strokewidth, but still transform the fill
 			ctx.save();
-			this.matrix.applyToContext(ctx);
+			if(param.ignoreBlendMode !== true)
+				this.matrix.applyToContext(ctx);
+			param.ignoreBlendMode = false;
 			this.symbol.definition.draw(ctx, param);
 			ctx.restore();
 		}
