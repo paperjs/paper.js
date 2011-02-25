@@ -88,6 +88,20 @@ Item = Base.extend({
 	opacity: 1,
 	
 	/**
+	 * The blend mode of the item.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * print(circle.blendMode); // normal
+	 * 
+	 * // Change the blend mode of the path item:
+	 * circle.blendMode = 'multiply';
+	 * </code>
+	 */
+	blendMode: 'normal',
+	
+	/**
 	 * Specifies whether the item is hidden.
 	 * 
 	 * Sample code:
@@ -137,7 +151,6 @@ Item = Base.extend({
 		}
 	},
 	
-	// TODO: getBlendMode / setBlendMode
 	// TODO: getIsolated / setIsolated (print specific feature)
 	// TODO: get/setKnockout (print specific feature)
 	// TODO get/setAlphaIsShape

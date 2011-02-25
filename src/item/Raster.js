@@ -165,12 +165,17 @@ Raster = Item.extend({
 		return this._bounds;
 	},
 	
-	draw: function(ctx) {
-		ctx.save();
-		this.matrix.applyToContext(ctx);
-		ctx.drawImage(this._canvas || this._image,
-				-this.size.width / 2, -this.size.height / 2);
-		ctx.restore();
+	draw: function(ctx, param) {
+		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
+			BlendMode.process(ctx, this, param);
+		} else {
+			param.ignoreBlendMode = false;
+			ctx.save();
+			this.matrix.applyToContext(ctx);
+			ctx.drawImage(this._canvas || this._image,
+					-this.size.width / 2, -this.size.height / 2);
+			ctx.restore();
+		}
 	}
 }, new function() {
 	function getAverageColor(pixels) {
