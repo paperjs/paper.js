@@ -46,7 +46,7 @@ PlacedSymbol = Item.extend({
 			// TODO: we need to preserve strokewidth, but still transform the fill
 			ctx.save();
 			this.matrix.applyToContext(ctx);
-			this.symbol.definition.draw(ctx);
+			this.symbol.definition.draw(ctx, param);
 			ctx.restore();
 		}
 	}
