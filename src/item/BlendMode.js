@@ -8,6 +8,7 @@ BlendMode = {
 	// TODO: Should we remove some of the blend modes?
 	// TODO: Add missing blendmodes like hue / saturation.
 	process: function(documentContext, item, param) {
+		// TODO: use strokeBounds
 		var itemBounds = item.bounds;
 		var top = Math.floor(itemBounds.top);
 		var left = Math.floor(itemBounds.left);
