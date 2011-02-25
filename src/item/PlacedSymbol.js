@@ -39,6 +39,7 @@ PlacedSymbol = Item.extend({
 	},
 	
 	draw: function(ctx, param) {
+		// TODO: BlendMode isn't working yet for PlacedSymbols.
 		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
 			BlendMode.process(ctx, this, param);
 		} else {
