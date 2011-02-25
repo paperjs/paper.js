@@ -150,23 +150,33 @@ Raster = Item.extend({
 	},
 	
 	transformContent: function(matrix, flags) {
-		var bounds = this.bounds;
-		var coords = [bounds.x, bounds.y,
-			bounds.x + bounds.width, bounds.y + bounds.height];
-		matrix.transform(coords, 0, coords, 0, 2);
+		var width = this._size.width;
+		var height = this._size.height;
+		var x = width * -0.5;
+		var y = height * -0.5;
+		var coords = [
+			x, y,
+			x + width, y,
+			x + width, y + height,
+			x, y + height];
 		this.matrix.preConcatenate(matrix);
-		bounds.x = coords[0];
-		bounds.y = coords[1];
-		bounds.width = coords[2] - coords[0];
-		bounds.height = coords[3] - coords[1];
-		if (bounds.width < 0) {
-			bounds.x = coords[2];
-			bounds.width = -bounds.width;
-		}
-		if (bounds.height < 0) {
-			bounds.y = coords[3];
-			bounds.height = bounds.height;
-		}
+		this.matrix.transform(coords, 0, coords, 0, 4);
+		
+		var xMin = coords[0], xMax = coords[0];
+		var yMin = coords[1], yMax = coords[1];
+		for(var i = 2; i < 8; i += 2) {
+			var x = coords[i];
+			var y = coords[i + 1];
+			xMin = Math.min(x, xMin);
+			xMax = Math.max(x, xMax);
+			yMin = Math.min(y, yMin);
+			yMax = Math.max(y, yMax);
+		};
+		var bounds = this._bounds;
+		bounds.x = xMin;
+		bounds.y = yMin;
+		bounds.width = xMax - xMin;
+		bounds.height = yMax - yMin;
 	},
 	
 	getBounds: function() {
