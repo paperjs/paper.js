@@ -24,6 +24,7 @@ Group = Item.extend({
 			param.ignoreBlendMode = false;
 			if (this.opacity < 1) {
 				var originalCtx = ctx;
+				// TODO: use strokeBounds for this, when implemented:
 				tempCanvas = CanvasProvider.getCanvas(this.document.size);
 				ctx = tempCanvas.getContext('2d');
 			}
