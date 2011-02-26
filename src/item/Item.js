@@ -16,6 +16,9 @@ Item = Base.extend({
 	 */
 	
 	copyTo: function(itemOrDocument) {
+		// TODO: I don't think we can rely on Base.clone here, as right now it
+		// ownly produces a shallow clone, and gest confused over Path#length.
+		// How to handle this?
 		var copy = Base.clone(this);
 		if (itemOrDocument.layers) {
 			copy.parent = itemOrDocument.activeLayer;
