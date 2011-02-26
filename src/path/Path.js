@@ -177,7 +177,7 @@ Path = PathItem.extend({
 
 	lineTo: function() {
 		var segment = Segment.read(arguments);
-		if (segment && this._segments.length)
+		if (segment)
 			this.addSegment(segment);
 	},
 	
