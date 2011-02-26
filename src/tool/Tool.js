@@ -12,6 +12,7 @@ Tool = ToolHandler.extend({
 			$(this._document.canvas).removeEvents();
 		this._document = doc || Paper.document;
 		var that = this, curPoint;
+		var dragging = false;
 		var events = {
 			dragstart: function(e) {
 				curPoint = new Point(e.offset);
@@ -20,6 +21,7 @@ Tool = ToolHandler.extend({
 					that._document.redraw();
 				if (that.eventInterval != -1)
 					this.intervalId = setInterval(events.drag, that.eventInterval);
+				dragging = true;
 			},
 			drag: function(e) {
 				if (e) curPoint = new Point(e.offset);
@@ -36,12 +38,15 @@ Tool = ToolHandler.extend({
 				that.onHandleEvent('MOUSE_UP', new Point(e.offset), null, null);
 				if (that.onMouseUp)
 					that._document.redraw();
+				dragging = false;
+			},
+			mousemove: function(e) {
+				if(!dragging) {
+					that.onHandleEvent('MOUSE_MOVE', new Point(e.offset), null, null);
+					if (that.onMouseMove)
+						that._document.redraw();
+				}
 			}
-			// TODO: This is currently interfering with the drag code, needs fixing:
-			// mousemove: function(e) {
-			// 		that.onHandleEvent('MOUSE_MOVE', new Point(e.offset), null, null);
-			// 		that._document.redraw();
-			// }
 		};
 		$(doc.canvas).addEvents(events);
 	},

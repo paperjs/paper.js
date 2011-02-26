@@ -68,5 +68,11 @@ test('Converting Colors', function() {
 	
 	var color = new GrayColor(0.2);
 	var rgbColor = new RGBColor(color);
-	compareRGBColors(rgbColor, [ 0.8, 0.8, 0.8, 1 ]);
+	compareRGBColors(rgbColor, [ 0.8, 0.8, 0.8, 1]);
+});
+
+test('Setting RGBColor#gray', function() {
+	var color = new RGBColor(1, 0.5, 0.2);
+	color.gray = 0.1;
+	compareRGBColors(color, [ 0.9, 0.9, 0.9, 1]);	
 });

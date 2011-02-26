@@ -40,6 +40,9 @@ Item = Base.extend({
 		return this.copyTo(this.parent);
 	},
 	
+	// TODO: isSelected / setSelected
+	// TODO: isFullySelected / setFullySelected
+	
 	/**
 	 * Specifies whether the item is locked.
 	 * 
@@ -86,6 +89,20 @@ Item = Base.extend({
 	 */
 	
 	opacity: 1,
+	
+	/**
+	 * The blend mode of the item.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * print(circle.blendMode); // normal
+	 * 
+	 * // Change the blend mode of the path item:
+	 * circle.blendMode = 'multiply';
+	 * </code>
+	 */
+	blendMode: 'normal',
 	
 	/**
 	 * Specifies whether the item is hidden.
@@ -135,6 +152,18 @@ Item = Base.extend({
 			this.fillColor = null;
 			this.strokeColor = null;
 		}
+	},
+	
+	// TODO: getIsolated / setIsolated (print specific feature)
+	// TODO: get/setKnockout (print specific feature)
+	// TODO get/setAlphaIsShape
+	// TODO: get/setData
+	
+	/**
+	 * Reverses the order of this item's children
+	 */
+	reverseChildren: function() {
+		this.children.reverse();
 	},
 	
 	/**
@@ -227,6 +256,21 @@ Item = Base.extend({
 		}
 		return true;
 	},
+	
+	/**
+	 * Checks whether the item is valid, i.e. it hasn't been removed.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var path = new Path();
+	 * print(path.isValid()); // true
+	 * path.remove();
+	 * print(path.isValid()); // false
+	 * </code>
+	 * 
+	 * @return {@true if the item is valid}
+	 */
+	// TODO: isValid / checkValid
 	
 	/**
 	 * {@grouptitle Hierarchy Operations}
@@ -331,6 +375,40 @@ Item = Base.extend({
 		return true;
 	},
 	
+	/**
+	 * {@grouptitle Hierarchy Tests}
+	 * 
+	 * Checks if this item is above the specified item in the stacking order of
+	 * the document.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var firstPath = new Path();
+	 * var secondPath = new Path();
+	 * print(secondPath.isAbove(firstPath)); // true
+	 * </code>
+	 * 
+	 * @param item The item to check against
+	 * @return {@true if it is above the specified item}
+	 */
+	// TODO: isAbove
+	
+	/**
+	 * Checks if the item is below the specified item in the stacking order of
+	 * the document.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var firstPath = new Path();
+	 * var secondPath = new Path();
+	 * print(firstPath.isBelow(secondPath)); // true
+	 * </code>
+	 * 
+	 * @param item The item to check against
+	 * @return {@true if it is below the specified item}
+	 */
+	// TODO: isBelow
+	
 	// TODO: this is confusing the beans
 	// isParent: function(item) {
 	// 	return this.parent == item;
@@ -355,7 +433,7 @@ Item = Base.extend({
 	 * @return {@true if it is inside the specified item}
 	 */
 	isDescendant: function(item) {
-		var parent = this;
+		var parent = this.parent;
 		while(parent) {
 			if (parent == item)
 				return true;
@@ -380,7 +458,7 @@ Item = Base.extend({
 	 * @return {@true if the item is an ancestor of the specified item}
 	 */
 	isAncestor: function(item) {
-		var parent = item;
+		var parent = item.parent;
 		while(parent) {
 			if (parent == this)
 				return true;
@@ -388,7 +466,28 @@ Item = Base.extend({
 		}
 		return false;
 	},
-
+	
+	/**
+	 * Checks whether the item is grouped with the specified item.
+	 * 
+	 * @param item
+	 * @return {@true if the items are grouped together}
+	 */
+	isGroupedWith: function(item) {
+		var parent = this.parent;
+		while(parent) {
+			// Find group parents. Check for parent.parent, since don't want
+			// top level layers, because they also inherit from Group
+			if(parent.parent
+				&& (parent instanceof Group || parent instanceof CompoundPath)
+				&& item.isDescendant(parent))
+					return true;
+			// Keep walking up otherwise
+			parent = parent.parent
+		}
+		return false;
+	},
+	
 	getBounds: function() {
 		// TODO: Implement for items other than paths
 		return new Rectangle();
@@ -416,7 +515,45 @@ Item = Base.extend({
 		// Now execute the transformation:
 		this.transform(matrix);
 	},
+	
+	/**
+	 * The bounding rectangle of the item including stroke width.
+	 */
+	// TODO: getStrokeBounds
 
+	/**
+	 * The bounding rectangle of the item including stroke width and controls.
+	 */
+	// TODO: getControlBounds
+	
+	/**
+	 * Rasterizes the item into a newly created Raster object. The item itself
+	 * is not removed after rasterization.
+	 * 
+	 * @param resolution the resolution of the raster in dpi {@default 72}
+	 * @return the newly created Raster item
+	 */
+	rasterize: function(resolution) {
+		// TODO: why would we want to pass a size to rasterize? Seems to produce
+		// weird results on Scriptographer. Also we can't use antialiasing, since
+		// Canvas doesn't support it yet. Document colorMode is also out of the
+		// question for now.
+		if(!resolution)
+			resolution = 72;
+		// TODO: use strokebounds for this:
+		var bounds = this.bounds;
+		var scale = resolution / 72;
+		var canvas = CanvasProvider.getCanvas(bounds.size.multiply(scale));
+		var context = canvas.getContext('2d');
+		var matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
+		matrix.applyToContext(context);
+		this.draw(context);
+		var raster = new Raster(canvas);
+		raster.position = this.bounds.center;
+		raster.scale(1 / scale);
+		return raster;
+	},
+	
 	/**
 	 * The item's position within the art board. This is the
 	 * {@link Rectangle#getCenter()} of the {@link Item#getBounds()} rectangle.
@@ -569,4 +706,6 @@ Item = Base.extend({
 	setStyle: function(style) {
 		this._style = new PathStyle(this, style);
 	}
+	
+	// TODO: toString
 });

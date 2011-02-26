@@ -89,6 +89,33 @@ test('isDescendant(item) / isAncestor(item)', function() {
 
 	equals(path.isAncestor(doc.activeLayer), false);
 	equals(doc.activeLayer.isAncestor(path), true);
+	
+	// an item can't be its own descendant:
+	equals(doc.activeLayer.isDescendant(doc.activeLayer), false);
+
+	// an item can't be its own ancestor:
+	equals(doc.activeLayer.isAncestor(doc.activeLayer), false);
+});
+
+test('isGroupedWith', function() {
+	var doc = new Doc();
+	var path = new Path();
+	var secondPath = new Path();
+	var group = new Group([path]);
+	var secondGroup = new Group([secondPath]);
+	
+	equals(path.isGroupedWith(secondPath), false);
+	secondGroup.appendTop(path);
+	equals(path.isGroupedWith(secondPath), true);
+	equals(path.isGroupedWith(group), false);
+	equals(path.isDescendant(secondGroup), true);
+	equals(secondGroup.isDescendant(path), false);
+	equals(secondGroup.isDescendant(secondGroup), false);
+	equals(path.isGroupedWith(secondGroup), false);
+	Paper.document.activeLayer.appendTop(path);
+	equals(path.isGroupedWith(secondPath), false);
+	Paper.document.activeLayer.appendTop(secondPath);
+	equals(path.isGroupedWith(secondPath), false);
 });
 
 test('getPreviousSibling() / getNextSibling()', function() {
@@ -106,3 +133,15 @@ test('hidden', function() {
 	firstPath.visible = false;
 	equals(firstPath.hidden, true);
 });
+
+test('reverseChildren()', function() {
+	var doc = new Doc();
+	var path = new Path();
+	var secondPath = new Path();
+	var thirdPath = new Path();
+	equals(doc.activeLayer.firstChild == path, true);
+	doc.activeLayer.reverseChildren();
+	equals(doc.activeLayer.firstChild == path, false);
+	equals(doc.activeLayer.firstChild == thirdPath, true);
+	equals(doc.activeLayer.lastChild == path, true);
+})
