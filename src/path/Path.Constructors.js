@@ -102,6 +102,19 @@ Path.inject({ statics: new function() {
 			path.moveTo(from);
 			path.arcTo(through, to);
 			return path;
+		},
+		
+		RegularPolygon: function(center, numSides, radius) {
+			center = new Point(center);
+			var path = new Path();
+			var three = !(numSides % 3);
+			var vector = new Point(0, three ? -radius : radius);
+			for(var i = 0; i < numSides; i++) {
+				var angle = (360 / numSides) * (i + (three ? -1 : 0.5));
+				path.add(center.add(vector.rotate(angle)));
+			}
+			path.closed = true;
+			return path;
 		}
 	};
 }});

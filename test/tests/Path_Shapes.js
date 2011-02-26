@@ -38,3 +38,14 @@ test('new Path.Arc(from, through, to)', function() {
 	var expectedSegments = [{ point: { x: 50, y: 50 }, handleOut: { x: 10.11156, y: -10.11156 } }, { point: { x: 88.5299, y: 42.33593 }, handleIn: { x: -13.21138, y: -5.47233 }, handleOut: { x: 13.21138, y: 5.47233 } }, { point: { x: 110.35534, y: 75 }, handleIn: { x: 0, y: -14.2999 } }];
 	compareSegmentLists(path.segments, expectedSegments);
 });
+
+test('new Path.RegularPolygon(center, numSides, radius)', function() {
+	var doc = new Doc();
+	var path = new Path.RegularPolygon(new Point(50, 50), 3, 10);
+	var expectedSegments = [{ point: { x: 41.33984, y: 55 } }, { point: { x: 50, y: 40 } }, { point: { x: 58.66016, y: 55 } }];
+	compareSegmentLists(path.segments, expectedSegments);
+
+	var path = new Path.RegularPolygon(new Point(250, 250), 10, 100);
+	var expectedSegments = [{ point: { x: 219.09814, y: 345.10547 } }, { point: { x: 169.09814, y: 308.77832 } }, { point: { x: 150, y: 250 } }, { point: { x: 169.09814, y: 191.22168 } }, { point: { x: 219.09814, y: 154.89453 } }, { point: { x: 280.90186, y: 154.89453 } }, { point: { x: 330.90186, y: 191.22168 } }, { point: { x: 350, y: 250 } }, { point: { x: 330.90186, y: 308.77832 } }, { point: { x: 280.90186, y: 345.10547 } }];
+	compareSegmentLists(path.segments, expectedSegments);
+});
