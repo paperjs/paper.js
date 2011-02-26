@@ -20,4 +20,8 @@ test('Group bounds', function() {
 	var secondPath = new Path.Circle([175, 175], 85);
 	var group = new Group([path, secondPath]);
 	compareRectangles(group.bounds, { x: 90, y: 90, width: 170, height: 170 });
+	group.rotate(20);
+	compareRectangles(group.bounds, { x: 89.97681, y: 82.94095, width: 170.04639, height: 177.08224 });
+	group.rotate(20, new Point(50, 50));
+	compareRectangles(group.bounds, { x: 39.70692, y: 114.99196, width: 170.00412, height: 180.22401 });
 });

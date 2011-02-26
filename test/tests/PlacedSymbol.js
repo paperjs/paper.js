@@ -15,10 +15,10 @@ test('placedSymbol bounds', function() {
 	placedSymbol.scale(0.5);
 	compareRectangles(placedSymbol.bounds,
 		{ x: -25.5, y: -25.5, width: 51, height: 51 },
-		'Bounds after scale');
+		'Bounds after scale.');
 	
 	placedSymbol.rotate(40);
 	compareRectangles(placedSymbol.bounds,
 		{ x: -25.50049, y: -25.50049, width: 51.00098, height: 51.00098 },
-		'Bounds after rotation');
+		'Bounds after rotation.');
 });
