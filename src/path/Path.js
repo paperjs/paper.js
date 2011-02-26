@@ -35,10 +35,9 @@ Path = PathItem.extend({
 	 * The bounding rectangle of the item excluding stroke width.
 	 */
 	getBounds: function() {
-		// Code ported from:
+		// Code ported and further optimised from:
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-		var segments = this._segments;
-		var first = segments[0], prev = first;
+		var segments = this._segments, first = segments[0], prev = first;
 		if (!first)
 			return null;
 		var min = first.point.clone(), max = min.clone();
@@ -72,8 +71,8 @@ Path = PathItem.extend({
 				// Calculate derivative of our bezier polynomial, divided by 3.
 				// Dividing by 3 allows for simpler calculations of a, b, c and
 				// leads to the same quadratic roots below.
-				var b = 2 * (v0 + v2) - 4 * v1;
 				var a = 3 * (v1 - v2) - v0 + v3;
+				var b = 2 * (v0 + v2) - 4 * v1;
 				var c = v1 - v0;
 
 				// Solve for derivative for quadratic roots. Each good root
@@ -108,6 +107,45 @@ Path = PathItem.extend({
 		if (this.closed)
 			processSegment(first);
 	    return new Rectangle(min.x, min.y, max.x - min.x , max.y - min.y);
+	},
+
+	// Calculates arclength of a cubic using adaptive simpson integration.
+	getCurveLength: function(goal) {
+		var seg0 = this._segments[0], seg1 = this._segments[1];
+		var z0 = seg0.point,
+			z1 = seg1.point,
+			c0 = z0.add(seg0.handleOut),
+			c1 = z1.add(seg1.handleIn);
+		// TODO: Check for straight lines and handle separately.
+
+		// Calculate the coefficients of a Bezier derivative, divided by 3.
+		var ax = 3 * (c0.x - c1.x) - z0.x + z1.x;
+		var bx = 2 * (z0.x + c1.x) - 4 * c0.x;
+		var cx = c0.x - z0.x;
+
+		var ay = 3 * (c0.y - c1.y) - z0.y + z1.y;
+		var by = 2 * (z0.y + c1.y) - 4 * c0.y;
+		var cy = c0.y - z0.y;
+
+		function ds(t) {
+			// Calculate quadratic equations of derivatives for x and y
+			var dx = (ax * t + bx) * t + cx;
+			var dy = (ay * t + by) * t + cy;
+			return Math.sqrt(dx * dx + dy * dy);
+		}
+
+		var integral = MathUtils.simpson(ds, 0.0, 1.0, MathUtils.EPSILON, 1.0);
+		if (integral == null)
+			throw new Error('Nesting capacity exceeded in Path#getLenght()');
+		// Multiply by 3 again, as derivative was divided by 3
+		var length = 3 * integral;
+		if(goal == undefined || goal < 0 || goal >= length)
+			return length;
+		var result = MathUtils.unsimpson(goal, ds, 0, goal / integral,
+				100 * MathUtils.EPSILON, integral, Math.sqrt(MathUtils.EPSILON), 1);
+		if(!result)
+			throw new Error('Nesting capacity exceeded in computing arctime');
+		return -result.b;
 	},
 
 	transformContent: function(matrix, flags) {
