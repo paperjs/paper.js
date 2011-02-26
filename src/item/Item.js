@@ -475,7 +475,6 @@ Item = Base.extend({
 		while(parent) {
 			// Find group parents. Check for parent.parent, since don't want
 			// top level layers, because they also inherit from Group
-			console.log(parent.parent);
 			if(parent.parent
 				&& (parent instanceof Group || parent instanceof CompoundPath)
 				&& item.isDescendant(parent))
