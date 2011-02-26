@@ -109,8 +109,9 @@ Path.inject({ statics: new function() {
 			var path = new Path();
 			var three = !(numSides % 3);
 			var vector = new Point(0, three ? -radius : radius);
+			var offset = three ? -1 : 0.5;
 			for(var i = 0; i < numSides; i++) {
-				var angle = (360 / numSides) * (i + (three ? -1 : 0.5));
+				var angle = (360 / numSides) * (i + offset);
 				path.add(center.add(vector.rotate(angle)));
 			}
 			path.closed = true;
