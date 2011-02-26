@@ -23,7 +23,7 @@ CompoundPath = PathItem.extend(new function() {
 			if(!this.visible)
 				return;
 			if (this.children.length) {
-				if(this.blendMode && !param.ignoreBlendMode) {
+				if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
 					BlendMode.process(ctx, this, param);
 				} else {
 					var firstChild = this.children[0];
