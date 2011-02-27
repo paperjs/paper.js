@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../lib/Bootstrap.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/tool/Tool.js"></script>
+	<script type="text/javascript" src="../../src/basic/Point.js"></script>
+	<script type="text/javascript" src="../../src/basic/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/basic/Size.js"></script>
+	<script type="text/javascript" src="../../src/basic/Matrix.js"></script>
+	<script type="text/javascript" src="../../src/document/Doc.js"></script>
+	<script type="text/javascript" src="../../src/document/Symbol.js"></script>
+	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/item/PlacedSymbol.js"></script>
+	<script type="text/javascript" src="../../src/item/Group.js"></script>
+	<script type="text/javascript" src="../../src/item/Layer.js"></script>
+	<script type="text/javascript" src="../../src/item/PathStyle.js"></script>
+	<script type="text/javascript" src="../../src/path/Segment.js"></script>
+	<script type="text/javascript" src="../../src/path/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/path/Path.js"></script>
+	<script type="text/javascript" src="../../src/path/Path.Constructors.js"></script>
+	<script type="text/javascript" src="../../src/color/Color.js"></script>
+	<script type="text/javascript" src="../../src/color/RGBColor.js"></script>
+	<script type="text/javascript" src="../../src/color/GrayColor.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
+	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
+
+	<script>
+		window.onload = function() {
+			var canvas = document.getElementById('canvas');
+			var doc = new Doc(canvas);
+			doc.currentStyle = {
+				strokeColor: '#4f7aff',
+				strokeWidth: 1
+			};
+			
+			var path = new Path();
+			path.style = {
+				strokeColor: 'black',
+				strokeWidth: 1
+			};
+			var currentSegment;
+			var inLine = new Path([0, 0], [0, 0]);
+			var outLine = new Path([0, 0], [0, 0]);
+			var lastInLine = new Path([0, 0], [0, 0]);
+			lastInLine.visible = false;
+			
+			var rect = new Path.Rectangle([0.5, 0.5], [4, 4]);
+			rect.fillColor = 'white';
+			var rectSymbol = new Symbol(rect);
+			
+			var inRect = new PlacedSymbol(rectSymbol);
+			var outRect = new PlacedSymbol(rectSymbol);
+			var circle = new Path.Circle(0, 2);
+			circle.fillColor = '#4f7aff';
+			circle.strokeColor = null;
+			var circleSymbol = new Symbol(circle);
+			var inCircle = new PlacedSymbol(circleSymbol);
+			var outCircle = new PlacedSymbol(circleSymbol);
+			var lastInCircle = new PlacedSymbol(circleSymbol);
+
+			var curRect;
+			var tool = new Tool({
+				onMouseDown: function(event) {
+					if(event.count > 0) {
+						var first = lastInLine.segments.first;
+						first.point = inLine.segments.first.point;
+						var last = lastInLine.segments.last;
+						last.point = inLine.segments.last.point;
+						lastInLine.visible = true;
+						lastInCircle.position = last.point;
+					}
+					currentSegment = path.add(event.point);
+					inLine.segments.first.point = event.point;
+					outLine.segments.first.point = event.point;
+					inLine.segments.last.point = event.point;
+					outLine.segments.last.point = event.point;
+					inLine.visible = true;
+					outLine.visible = true;
+					
+					outCircle.position = event.point.round().add(0.5, 0.5);
+					inCircle.position = event.point.round().add(0.5, 0.5);
+					
+					var rect = new PlacedSymbol(rectSymbol);
+					rect.position = event.point.round().add(0.5, 0.5);
+					
+					curRect = new Path.Rectangle([0.5, 0.5], [4, 4]);
+					curRect.position = event.point.round();
+					curRect.fillColor = '#4f7aff';
+					curRect.strokeWidth = 0;
+				},
+				
+				onMouseDrag: function(event) {
+					var delta = event.point.subtract(event.downPoint);
+					currentSegment.handleOut = delta;
+					currentSegment.handleIn = delta.multiply(-1);
+					outLine.segments.last.point = currentSegment.handleIn.add(event.downPoint);
+					inLine.segments.last.point = currentSegment.handleOut.add(event.downPoint);
+					outCircle.position = outLine.segments.last.point;
+					inCircle.position = inLine.segments.last.point;
+				},
+				
+				onMouseUp: function(event) {
+					curRect.remove();
+				}
+			});
+		}
+	</script>
+</head>
+<body>
+	Click and drag to draw a path:
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
