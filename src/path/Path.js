@@ -200,8 +200,11 @@ Path = PathItem.extend({
 		var segment = Segment.read(arguments);
 		if (segment)
 			this.addSegment(segment);
+		return segment;
 	},
 
+	// TODO: make sure that if the segment belongs to another path, it clones
+	// the segment. Otherwise it returns the same segment.
 	insert: function(index, segment) {
 		this._segments.splice(index, 0, new Segment(segment));
 	},
