@@ -54,8 +54,6 @@
 			rect.fillColor = 'white';
 			var rectSymbol = new Symbol(rect);
 			
-			var inRect = new PlacedSymbol(rectSymbol);
-			var outRect = new PlacedSymbol(rectSymbol);
 			var circle = new Path.Circle(0, 2);
 			circle.fillColor = '#4f7aff';
 			circle.strokeColor = null;
@@ -63,11 +61,14 @@
 			var inCircle = new PlacedSymbol(circleSymbol);
 			var outCircle = new PlacedSymbol(circleSymbol);
 			var lastInCircle = new PlacedSymbol(circleSymbol);
+			inCircle.position = [-100, -100];
+			outCircle.position = [-100, -100];
+			lastInCircle.position = [-100, -100];
 
 			var curRect;
 			var tool = new Tool({
 				onMouseDown: function(event) {
-					if(event.count > 0) {
+					if(event.count > 1) {
 						var first = lastInLine.segments.first;
 						first.point = inLine.segments.first.point;
 						var last = lastInLine.segments.last;
