@@ -190,6 +190,8 @@ Raster = Item.extend({
 			BlendMode.process(ctx, this, param);
 		} else {
 			ctx.save();
+			// TODO: Documment what ignoreBlendMode is really doing, and why
+			// this is necessary?
 			if(param.ignoreBlendMode !== true)
 				this.matrix.applyToContext(ctx);
 			ctx.drawImage(this._canvas || this._image,
