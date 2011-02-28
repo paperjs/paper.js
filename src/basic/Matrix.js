@@ -454,11 +454,18 @@ var Matrix = Base.extend({
 	/**
 	 * Applies this matrix to the specified Canvas Context.
 	 */
-	applyToContext: function(context) {
-		context.setTransform(
-			this._m00, this._m01, this._m10,
-			this._m11, this._m02, this._m12
-		);
+	applyToContext: function(context, reset) {
+		if (reset) {
+			context.setTransform(
+				this._m00, this._m01, this._m10,
+				this._m11, this._m02, this._m12
+			);
+		} else {
+			context.transform(
+				this._m00, this._m01, this._m10,
+				this._m11, this._m02, this._m12
+			);
+		}
 	},
 
 	statics: {
