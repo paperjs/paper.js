@@ -33,6 +33,11 @@ var Point = Base.extend({
 		}
 	},
 
+	set: function(x, y) {
+		this.x = x;
+		this.y = y;
+	},
+
 	/**
 	 * Returns a copy of the point.
 	 * This is useful as the following code only generates a flat copy:

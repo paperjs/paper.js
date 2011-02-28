@@ -46,6 +46,13 @@ Rectangle = Base.extend({
 		}
 	},
 
+	set: function(x, y, width, height) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+	},
+
 	getPoint: function() {
 		return new Point(this.x, this.y);
 	},
