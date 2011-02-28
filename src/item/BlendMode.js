@@ -30,15 +30,18 @@ BlendMode = {
 	process: function(documentContext, item, param) {
 		// TODO: use strokeBounds
 		var itemBounds = item.bounds;
+		if (!itemBounds)
+			return;
 		var top = Math.floor(itemBounds.top);
 		var left = Math.floor(itemBounds.left);
-		var size = itemBounds.size.ceil();
+		var size = itemBounds.size.ceil().add(1, 1);
 		var width = size.width;
 		var height = size.height;
 
 		var itemCanvas = CanvasProvider.getCanvas(size);
 		var itemContext = itemCanvas.getContext('2d');
-		if(item.matrix) {
+		itemContext.save();
+		if (item.matrix) {
 			var matrix = item.matrix.clone();
 			var transMatrix = Matrix.getTranslateInstance(-left, -top);
 			matrix.preConcatenate(transMatrix);
@@ -210,6 +213,7 @@ BlendMode = {
 			}
 		}
 		documentContext.putImageData(dstD, left, top);
+		itemContext.restore();
 		CanvasProvider.returnCanvas(itemCanvas);
 	}
 };
