@@ -162,11 +162,11 @@ Raster = Item.extend({
 		var x = -width / 2;
 		var y = -height / 2;
 		var coords = [
-			x, y,
-			x + width, y,
-			x + width, y + height,
-			x, y + height];
-		this.matrix.preConcatenate(matrix);
+				x, y,
+				x + width, y,
+				x + width, y + height,
+				x, y + height
+		];
 		this.matrix.transform(coords, 0, coords, 0, 4);
 		
 		var xMin = coords[0], xMax = coords[0];
