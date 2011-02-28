@@ -18,7 +18,7 @@ Group = Item.extend({
 		// temporary canvas, and then draw that canvas onto ctx afterwards
 		// with globalAlpha set.
 		var tempCanvas, originalCtx;
-		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
+		if (this.blendMode != 'normal' && !param.ignoreBlendMode) {
 			BlendMode.process(ctx, this, param);
 		} else {
 			param.ignoreBlendMode = false;
@@ -27,6 +27,8 @@ Group = Item.extend({
 				// TODO: use strokeBounds for this, when implemented:
 				tempCanvas = CanvasProvider.getCanvas(this.document.size);
 				ctx = tempCanvas.getContext('2d');
+				ctx.save();
+				this.document.activeView.matrix.applyToContext(ctx);
 			}
 			for (var i = 0, l = this.children.length; i < l; i++) {
 				this.children[i].draw(ctx, param);
@@ -34,11 +36,18 @@ Group = Item.extend({
 					ctx.clip();
 			}
 			if (tempCanvas) {
+				// restore the activeView.matrix transformation,
+				// so we can draw the image without transformation.
+				originalCtx.restore();
 				originalCtx.save();
 				originalCtx.globalAlpha = this.opacity;
 				originalCtx.drawImage(tempCanvas, 0, 0);
 				originalCtx.restore();
-				// Return the canvas, so it can be reused
+				// apply the view transformation again.
+				this.document.activeView.matrix.applyToContext(ctx);
+				// Restore the state of the temp canvas:
+				ctx.restore();
+				// Return the temp canvas, so it can be reused
 				CanvasProvider.returnCanvas(tempCanvas);
 			}
 		}

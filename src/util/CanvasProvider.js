@@ -6,11 +6,11 @@
 CanvasProvider = {
 	canvases: [],
 	getCanvas: function(size) {
-		if(this.canvases.length) {
+		if (this.canvases.length) {
 			var canvas = this.canvases.pop();
 			// If they are not the same size, we don't need to clear them
 			// using clearRect and visa versa.
-			if((canvas.width != size.width) ||  (canvas.height != size.height)) {
+			if ((canvas.width != size.width) ||  (canvas.height != size.height)) {
 				canvas.width = size.width;
 				canvas.height = size.height;
 			} else {

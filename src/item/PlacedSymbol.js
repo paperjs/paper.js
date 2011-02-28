@@ -40,7 +40,7 @@ PlacedSymbol = Item.extend({
 		
 		var xMin = coords[0], xMax = coords[0];
 		var yMin = coords[1], yMax = coords[1];
-		for(var i = 2; i < 8; i += 2) {
+		for (var i = 2; i < 8; i += 2) {
 			var x = coords[i];
 			var y = coords[i + 1];
 			xMin = Math.min(x, xMin);
@@ -60,16 +60,42 @@ PlacedSymbol = Item.extend({
 	},
 	
 	draw: function(ctx, param) {
-		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
+		if (this.blendMode != 'normal' && !param.ignoreBlendMode) {
 			BlendMode.process(ctx, this, param);
 		} else {
+			var tempCanvas, originalCtx;
+			if (this.opacity < 1) {
+				originalCtx = ctx;
+				// TODO: use strokeBounds for this, when implemented:
+				tempCanvas = CanvasProvider.getCanvas(this.document.size);
+				ctx = tempCanvas.getContext('2d');
+				ctx.save();
+				this.document.activeView.matrix.applyToContext(ctx);
+			}
+			
 			// TODO: we need to preserve strokewidth, but still transform the fill
 			ctx.save();
-			if(param.ignoreBlendMode !== true)
+			if (param.ignoreBlendMode !== true)
 				this.matrix.applyToContext(ctx);
 			param.ignoreBlendMode = false;
 			this.symbol.definition.draw(ctx, param);
 			ctx.restore();
+			
+			if (tempCanvas) {
+				// restore the activeView.matrix transformation,
+				// so we can draw the image without transformation.
+				originalCtx.restore();
+				originalCtx.save();
+				originalCtx.globalAlpha = this.opacity;
+				originalCtx.drawImage(tempCanvas, 0, 0);
+				originalCtx.restore();
+				// apply the view transformation again.
+				this.document.activeView.matrix.applyToContext(ctx, true);
+				// Restore the state of the temp canvas:
+				ctx.restore();
+				// Return the temp canvas, so it can be reused
+				CanvasProvider.returnCanvas(tempCanvas);
+			}
 		}
 	}
 	// TODO:

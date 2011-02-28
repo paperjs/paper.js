@@ -20,10 +20,10 @@ CompoundPath = PathItem.extend(new function() {
 		},
 
 		draw: function(ctx, param) {
-			if(!this.visible)
+			if (!this.visible)
 				return;
 			if (this.children.length) {
-				if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
+				if (this.blendMode != 'normal' && !param.ignoreBlendMode) {
 					BlendMode.process(ctx, this, param);
 				} else {
 					var firstChild = this.children[0];

@@ -186,7 +186,7 @@ Raster = Item.extend({
 	},
 	
 	draw: function(ctx, param) {
-		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
+		if (this.blendMode != 'normal' && !param.ignoreBlendMode) {
 			BlendMode.process(ctx, this, param);
 		} else {
 			ctx.save();
