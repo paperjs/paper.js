@@ -150,6 +150,13 @@ Raster = Item.extend({
 	},
 	
 	transformContent: function(matrix, flags) {
+		// In order to set the right context transformation when drawing the
+		// raster, simply preconcatenate the internal matrix with the provided
+		// one.
+		this.matrix.preConcatenate(matrix);
+		// Now rotate the corner points of the image rectangle do find the 
+		// extremas that define our raster's bounds, and update them straight 
+		// away
 		var width = this._size.width;
 		var height = this._size.height;
 		var x = width * -0.5;
