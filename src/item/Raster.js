@@ -241,7 +241,8 @@ Raster = Item.extend({
 				} else if (object.width) {
 					bounds = new Rectangle(object);
 				} else if (object.x) {
-					bounds = new Rectangle(object.x - 0.5, object.y - 0.5, 1, 1);
+					bounds = new Rectangle(object.x - 0.5, object.y - 0.5,
+							1, 1);
 				}
 				
 				var canvas = CanvasProvider.getCanvas(bounds.size);
@@ -268,7 +269,8 @@ Raster = Item.extend({
 			var sampleCanvas = CanvasProvider.getCanvas(size);
 			var ctx = sampleCanvas.getContext('2d');
 			ctx.drawImage(image, 0, 0, size.width, size.height);
-			var pixels = ctx.getImageData(0.5, 0.5, size.width, size.height).data;
+			var pixels = ctx.getImageData(0.5, 0.5,
+					size.width, size.height).data;
 			var color = getAverageColor(pixels);
 			CanvasProvider.returnCanvas(sampleCanvas);
 			if (image instanceof HTMLCanvasElement)
