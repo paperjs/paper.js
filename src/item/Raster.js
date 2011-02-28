@@ -168,22 +168,17 @@ Raster = Item.extend({
 				x, y + height
 		];
 		this.matrix.transform(coords, 0, coords, 0, 4);
-		
-		var xMin = coords[0], xMax = coords[0];
-		var yMin = coords[1], yMax = coords[1];
-		for(var i = 2; i < 8; i += 2) {
-			var x = coords[i];
-			var y = coords[i + 1];
-			xMin = Math.min(x, xMin);
-			xMax = Math.max(x, xMax);
-			yMin = Math.min(y, yMin);
-			yMax = Math.max(y, yMax);
-		};
-		var bounds = this._bounds;
-		bounds.x = xMin;
-		bounds.y = yMin;
-		bounds.width = xMax - xMin;
-		bounds.height = yMax - yMin;
+		// Loop through all x and y coordinates and update min and max values.
+		// Start with the first coordinate pair for both (coords.slice(0, 2)).
+		var min = coords.slice(0, 2), max = min.slice(0);
+		for (var i = 2; i < 8; i++) {
+			var c = coords[i], j = i % 2;
+			if (c < min[j])
+				min[j] = c;
+			else if (c > max[j])
+				max[j] = c;
+		}
+		this._bounds.set(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 	
 	getBounds: function() {
