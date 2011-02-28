@@ -1,6 +1,6 @@
 Tool = ToolHandler.extend(new function() {
 	function viewToArtwork(event, document) {
-		var point = Point.read(event.offset.x, event.offset.y);
+		var point = Point.create(event.offset.x, event.offset.y);
 		// TODO: always the active view?
 		return document.activeView.viewToArtwork(point);
 	};
@@ -22,7 +22,7 @@ Tool = ToolHandler.extend(new function() {
 			var dragging = false;
 			var events = {
 				dragstart: function(e) {
-					curPoint = viewToArtwork(e);//new Point(e.offset);
+					curPoint = viewToArtwork(e, that._document);
 					that.onHandleEvent('MOUSE_DOWN', curPoint, null, null);
 					if (that.onMouseDown)
 						that._document.redraw();
@@ -31,7 +31,7 @@ Tool = ToolHandler.extend(new function() {
 					dragging = true;
 				},
 				drag: function(e) {
-					if (e) curPoint = viewToArtwork(e);//new Point(e.offset);
+					if (e) curPoint = viewToArtwork(e, that._document);
 					if (curPoint) {
 						that.onHandleEvent('MOUSE_DRAG', curPoint, null, null);
 						if (that.onMouseDrag)
@@ -42,14 +42,16 @@ Tool = ToolHandler.extend(new function() {
 					curPoint = null;
 					if (this.eventInterval != -1)
 						clearInterval(this.intervalId);
-					that.onHandleEvent('MOUSE_UP', viewToArtwork(e), null, null);
+					that.onHandleEvent('MOUSE_UP', 
+						viewToArtwork(e, that._document), null, null);
 					if (that.onMouseUp)
 						that._document.redraw();
 					dragging = false;
 				},
 				mousemove: function(e) {
 					if (!dragging) {
-						that.onHandleEvent('MOUSE_MOVE', viewToArtwork(e), null, null);
+						that.onHandleEvent('MOUSE_MOVE',
+							viewToArtwork(e, that._document), null, null);
 						if (that.onMouseMove)
 							that._document.redraw();
 					}
