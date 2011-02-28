@@ -39,7 +39,7 @@ Doc = Base.extend({
 		if (this.canvas) {
 			// Initial tests conclude that clearing the canvas using clearRect
 			// is always faster than setting canvas.width = canvas.width
-			// http://jsperf.com/clearrect-vs-setting-width/
+			// http://jsperf.com/clearrect-vs-setting-width/7
 			var view = this.activeView;
 			var bounds = view.bounds;
 			this.ctx.clearRect(0, 0, this.size.width + 1, this.size.height + 1);
