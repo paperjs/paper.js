@@ -547,7 +547,7 @@ Item = Base.extend({
 		var context = canvas.getContext('2d');
 		var matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(context);
-		this.draw(context);
+		this.draw(context, {});
 		var raster = new Raster(canvas);
 		raster.position = this.bounds.center;
 		raster.scale(1 / scale);
