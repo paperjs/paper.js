@@ -159,8 +159,8 @@ Raster = Item.extend({
 		// away
 		var width = this._size.width;
 		var height = this._size.height;
-		var x = width * -0.5;
-		var y = height * -0.5;
+		var x = -width / 2;
+		var y = -height / 2;
 		var coords = [
 			x, y,
 			x + width, y,
