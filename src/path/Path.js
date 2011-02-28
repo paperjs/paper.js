@@ -139,11 +139,11 @@ Path = PathItem.extend({
 			throw new Error('Nesting capacity exceeded in Path#getLenght()');
 		// Multiply by 3 again, as derivative was divided by 3
 		var length = 3 * integral;
-		if(goal == undefined || goal < 0 || goal >= length)
+		if (goal == undefined || goal < 0 || goal >= length)
 			return length;
 		var result = MathUtils.unsimpson(goal, ds, 0, goal / integral,
 				100 * MathUtils.EPSILON, integral, Math.sqrt(MathUtils.EPSILON), 1);
-		if(!result)
+		if (!result)
 			throw new Error('Nesting capacity exceeded in computing arctime');
 		return -result.b;
 	},
@@ -408,7 +408,7 @@ Path = PathItem.extend({
 
 	draw: function(ctx, param) {
 		if (!this.visible) return;
-		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
+		if (this.blendMode != 'normal' && !param.ignoreBlendMode) {
 			BlendMode.process(ctx, this, param);
 		} else {
 			param.ignoreBlendMode = false;

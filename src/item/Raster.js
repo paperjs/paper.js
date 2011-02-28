@@ -164,7 +164,7 @@ Raster = Item.extend({
 		
 		var xMin = coords[0], xMax = coords[0];
 		var yMin = coords[1], yMax = coords[1];
-		for(var i = 2; i < 8; i += 2) {
+		for (var i = 2; i < 8; i += 2) {
 			var x = coords[i];
 			var y = coords[i + 1];
 			xMin = Math.min(x, xMin);
@@ -184,11 +184,11 @@ Raster = Item.extend({
 	},
 	
 	draw: function(ctx, param) {
-		if(this.blendMode != 'normal' && !param.ignoreBlendMode) {
+		if (this.blendMode != 'normal' && !param.ignoreBlendMode) {
 			BlendMode.process(ctx, this, param);
 		} else {
 			ctx.save();
-			if(param.ignoreBlendMode !== true)
+			if (param.ignoreBlendMode !== true)
 				this.matrix.applyToContext(ctx);
 			ctx.drawImage(this._canvas || this._image,
 					-this.size.width / 2, -this.size.height / 2);

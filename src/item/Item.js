@@ -478,7 +478,7 @@ Item = Base.extend({
 		while(parent) {
 			// Find group parents. Check for parent.parent, since don't want
 			// top level layers, because they also inherit from Group
-			if(parent.parent
+			if (parent.parent
 				&& (parent instanceof Group || parent instanceof CompoundPath)
 				&& item.isDescendant(parent))
 					return true;
@@ -538,7 +538,7 @@ Item = Base.extend({
 		// weird results on Scriptographer. Also we can't use antialiasing, since
 		// Canvas doesn't support it yet. Document colorMode is also out of the
 		// question for now.
-		if(!resolution)
+		if (!resolution)
 			resolution = 72;
 		// TODO: use strokebounds for this:
 		var bounds = this.bounds;
