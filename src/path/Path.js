@@ -31,84 +31,6 @@ Path = PathItem.extend({
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
 
-	/**
-	 * The bounding rectangle of the item excluding stroke width.
-	 */
-	getBounds: function() {
-		// Code ported and further optimised from:
-		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-		var segments = this._segments, first = segments[0], prev = first;
-		if (!first)
-			return null;
-		var min = first.point.clone(), max = min.clone();
-		var coords = ['x', 'y'];
-		function processSegment(segment) {
-			for (var i = 0; i < 2; i++) {
-				var coord = coords[i];
-
-				var v0 = prev.point[coord],
-					v1 = v0 + prev.handleOut[coord],
-					v3 = segment.point[coord],
-					v2 = v3 + segment.handleIn[coord];
-
-				function add(value, t) {
-					if (value == null) {
-						// Calculate bezier polynomial at t
-						var u = 1 - t;
-						value = u * u * u * v0
-								+ 3 * u * u * t * v1
-								+ 3 * u * t * t * v2
-								+ t * t * t * v3;
-					}
-					if (value < min[coord]) {
-						min[coord] = value;
-					} else if (value > max[coord]) {
-						max[coord] = value;
-					}
-				}
-				add(v3);
-
-				// Calculate derivative of our bezier polynomial, divided by 3.
-				// Dividing by 3 allows for simpler calculations of a, b, c and
-				// leads to the same quadratic roots below.
-				var a = 3 * (v1 - v2) - v0 + v3;
-				var b = 2 * (v0 + v2) - 4 * v1;
-				var c = v1 - v0;
-
-				// Solve for derivative for quadratic roots. Each good root
-				// (meaning a solution 0 < t < 1) is an extrema in the cubic
-				// polynomial and thus a potential point defining the bounds
-				if (a == 0) {
-					if (b == 0)
-					    continue;
-					var t = -c / b;
-					// Test for good root and add to bounds if good (same below)
-					if (0 < t && t < 1)
-						add(null, t);
-					continue;
-				}
-
-				var b2ac = b * b - 4 * a * c;
-				if (b2ac < 0)
-					continue;
-				var sqrt = Math.sqrt(b2ac),
-					f = 1 / (a * -2),
-				 	t1 = (b - sqrt) * f,
-					t2 = (b + sqrt) * f;
-				if (0 < t1 && t1 < 1)
-					add(null, t1);
-				if (0 < t2 && t2 < 1)
-					add(null, t2);
-			}
-			prev = segment;
-		}
-		for (var i = 1, l = segments.length; i < l; i++)
-			processSegment(segments[i]);
-		if (this.closed)
-			processSegment(first);
-	    return new Rectangle(min.x, min.y, max.x - min.x , max.y - min.y);
-	},
-
 	// Calculates arclength of a cubic using adaptive simpson integration.
 	getCurveLength: function(goal) {
 		var seg0 = this._segments[0], seg1 = this._segments[1];
@@ -468,6 +390,82 @@ Path = PathItem.extend({
 
 	}
 }, new function() { // Inject methods that require scoped privates
+
+	function calculateBounds(that, includeStroke) {
+		// Code ported and further optimised from:
+		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
+		var segments = that._segments, first = segments[0], prev = first;
+		if (!first)
+			return null;
+		var min = first.point.clone(), max = min.clone();
+		var coords = ['x', 'y'];
+		function processSegment(segment) {
+			for (var i = 0; i < 2; i++) {
+				var coord = coords[i];
+
+				var v0 = prev.point[coord],
+					v1 = v0 + prev.handleOut[coord],
+					v3 = segment.point[coord],
+					v2 = v3 + segment.handleIn[coord];
+
+				function add(value, t) {
+					if (value == null) {
+						// Calculate bezier polynomial at t
+						var u = 1 - t;
+						value = u * u * u * v0
+								+ 3 * u * u * t * v1
+								+ 3 * u * t * t * v2
+								+ t * t * t * v3;
+					}
+					if (value < min[coord]) {
+						min[coord] = value;
+					} else if (value > max[coord]) {
+						max[coord] = value;
+					}
+				}
+				add(v3);
+
+				// Calculate derivative of our bezier polynomial, divided by 3.
+				// Dividing by 3 allows for simpler calculations of a, b, c and
+				// leads to the same quadratic roots below.
+				var a = 3 * (v1 - v2) - v0 + v3;
+				var b = 2 * (v0 + v2) - 4 * v1;
+				var c = v1 - v0;
+
+				// Solve for derivative for quadratic roots. Each good root
+				// (meaning a solution 0 < t < 1) is an extrema in the cubic
+				// polynomial and thus a potential point defining the bounds
+				if (a == 0) {
+					if (b == 0)
+					    continue;
+					var t = -c / b;
+					// Test for good root and add to bounds if good (same below)
+					if (0 < t && t < 1)
+						add(null, t);
+					continue;
+				}
+
+				var b2ac = b * b - 4 * a * c;
+				if (b2ac < 0)
+					continue;
+				var sqrt = Math.sqrt(b2ac),
+					f = 1 / (a * -2),
+				 	t1 = (b - sqrt) * f,
+					t2 = (b + sqrt) * f;
+				if (0 < t1 && t1 < 1)
+					add(null, t1);
+				if (0 < t2 && t2 < 1)
+					add(null, t2);
+			}
+			prev = segment;
+		}
+		for (var i = 1, l = segments.length; i < l; i++)
+			processSegment(segments[i]);
+		if (that.closed)
+			processSegment(first);
+	    return new Rectangle(min.x, min.y, max.x - min.x , max.y - min.y);
+	}
+
 	/**
 	 * Solves a tri-diagonal system for one of coordinates (x or y) of first
 	 * bezier control points.
@@ -502,6 +500,19 @@ Path = PathItem.extend({
 	};
 
 	return {
+		beans: true,
+
+		/**
+		 * The bounding rectangle of the item excluding stroke width.
+		 */
+		getBounds: function() {
+			return calculateBounds(this, false);
+		},
+
+		getStrokeBounds: function() {
+			return calculateBounds(this, true);
+		},
+
 		smooth: function() {
 			var segments = this._segments;
 
