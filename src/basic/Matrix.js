@@ -458,17 +458,10 @@ var Matrix = Base.extend({
 		// Canvas contexts seem to use another orientation: The scaleX (m00) and
 		// scaleY (m11) values need to be flipped to get correct behaviour e.g.
 		// when using rotation or shearing.
-		if (reset) {
-			context.setTransform(
-				-this._m00, this._m01, this._m10,
-				-this._m11, this._m02, this._m12
-			);
-		} else {
-			context.transform(
-				-this._m00, this._m01, this._m10,
-				-this._m11, this._m02, this._m12
-			);
-		}
+		context[reset ? 'setTransform' : 'transform'](
+			-this._m00, this._m01, this._m10,
+			-this._m11, this._m02, this._m12
+		);
 	},
 
 	statics: {
