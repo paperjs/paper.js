@@ -205,14 +205,15 @@ Raster = Item.extend({
 		var channels = [0, 0, 0];
 		var total = 0;
 		for (var i = 0, l = pixels.length; i < l; i += 4) {
-			var alpha = pixels[i + 3] / 255;
+			var alpha = pixels[i + 3];
 			total += alpha;
+			alpha /= 255;
 			channels[0] += pixels[i] * alpha;
 			channels[1] += pixels[i + 1] * alpha;
 			channels[2] += pixels[i + 2] * alpha;
 		}
 		for (var i = 0; i < 3; i++)
-			channels[i] /= total * 255;
+			channels[i] /= total;
 		return total ? Color.read(channels) : null;
 	}
 	
