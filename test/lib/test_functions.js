@@ -13,7 +13,8 @@ function compareSegments(segment1, segment2) {
 	segment2 = Segment.read([segment2]);
 	var points = ['point', 'handleIn', 'handleOut'];
 	for (var i = 0; i < 3; i++) {
-		equals(!!segment1[points[i]], !!segment2[points[i]], 'have ' + points[i]);
+		equals(!!segment1[points[i]], !!segment2[points[i]],
+				'have ' + points[i]);
 		if (segment1[points[i]] && segment2[points[i]])
 			comparePoints(segment1[points[i]], segment2[points[i]], points[i]);
 	}
