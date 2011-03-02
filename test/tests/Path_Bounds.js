@@ -29,7 +29,9 @@ test('path.bounds', function() {
 	path.bounds = { x: 100, y: 100, width: 200, height: 200 };
 	compareSegmentLists(path.segments, [{ point: { x: 107.93066, y: 179.56982 }, handleIn: { x: -24.41211, y: 51.30664 }, handleOut: { x: 39.52734, y: -83.08447 } }, { point: { x: 271.10107, y: 160.66553 }, handleIn: { x: -53.96289, y: -99.9126 }, handleOut: { x: 53.96143, y: 99.91406 } }, { point: { x: 215.85303, y: 296.96045 }, handleIn: { x: 85.81299, y: -17.18555 }, handleOut: { x: -101.49854, y: 20.32861 } }])
 
+	// Now rotate by 40 degrees and test bounds and segments again.
 	path.rotate(40);
-	compareRectangles(path.bounds, { x: 92.38155, y: 106.78981, width: 191.48048, height: 203.66789 });
-	compareSegmentLists(path.segments, [{ point: { x: 142.604, y: 125.16748 }, handleIn: { x: -51.6792, y: 23.61182 }, handleOut: { x: 83.68457, y: -38.23438 } }, { point: { x: 279.75, y: 215.57129 }, handleIn: { x: 22.88525, y: -111.22363 }, handleOut: { x: -22.88623, y: 111.22363 } }, { point: { x: 149.81982, y: 284.46729 }, handleIn: { x: 76.78223, y: 41.99219 }, handleOut: { x: -90.81885, y: -49.67139 } }]);
+	compareRectangles(path.bounds, { x: 92.38109, y: 106.78957, width: 191.4803, height: 203.66878 });
+
+	compareSegmentLists(path.segments, [{ point: { x: 142.60352, y: 125.16797 }, handleIn: { x: -51.67969, y: 23.6123 }, handleOut: { x: 83.68555, y: -38.23584 } }, { point: { x: 279.74902, y: 215.57178 }, handleIn: { x: 22.88672, y: -111.22461 }, handleOut: { x: -22.88623, y: 111.22412 } }, { point: { x: 149.82031, y: 284.4668 }, handleIn: { x: 76.78076, y: 41.99414 }, handleOut: { x: -90.81982, y: -49.66992 } }]);
 });
