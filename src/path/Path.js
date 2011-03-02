@@ -278,7 +278,8 @@ Path = PathItem.extend({
 		if (parameter == null)
 			parameter = 0.5;
 		var current = this.currentSegment.point;
-		// handle = (through - (1 - t)^2 * current - t^2 * to) / (2 * (1 - t) * t)
+		// handle = (through - (1 - t)^2 * current - t^2 * to) /
+		// (2 * (1 - t) * t)
 		var t1 = 1 - parameter;
 		var handle = through.subtract(
 				current.multiply(t1 * t1)).subtract(
@@ -392,7 +393,8 @@ Path = PathItem.extend({
 		throughVector = Point.read(throughVector);
 		toVector = Point.read(toVector);
 		var current = this.currentSegment.point;
-		this.curveTo(current.add(throughVector), current.add(toVector), parameter);
+		this.curveTo(current.add(throughVector), current.add(toVector),
+				parameter);
 	},
 	
 	arcBy: function(throughVector, toVector) {
@@ -444,7 +446,8 @@ Path = PathItem.extend({
 				var x = segment.point.x;
 				var y = segment.point.y;
 				var handleIn = segment.handleIn;
-				ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
+				ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y,
+						x, y);
 				ctx.closePath();
 			}
 			if (!param.compound) {
@@ -464,7 +467,7 @@ Path = PathItem.extend({
 		}
 
 	}
-}, new function() { // inject methods that require scoped privates
+}, new function() { // Inject methods that require scoped privates
 	/**
 	 * Solves a tri-diagonal system for one of coordinates (x or y) of first
 	 * bezier control points.
@@ -472,7 +475,7 @@ Path = PathItem.extend({
 	 * @param rhs right hand side vector.
 	 * @return Solution vector.
 	 */
-	var getFirstControlPoints = function(rhs) {
+	function getFirstControlPoints(rhs) {
 		var n = rhs.length;
 		var x = []; // Solution vector.
 		var tmp = []; // Temporary workspace.
