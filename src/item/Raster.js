@@ -157,16 +157,16 @@ Raster = Item.extend({
 		// Now rotate the corner points of the image rectangle do find the 
 		// extremas that define our raster's bounds, and update them straight 
 		// away
-		var width = this._size.width;
-		var height = this._size.height;
-		var x = -width / 2;
-		var y = -height / 2;
-		var coords = [
+		var width = this._size.width,
+			height = this._size.height,	
+			x = -width / 2,
+			y = -height / 2,
+			coords = [
 				x, y,
 				x + width, y,
 				x + width, y + height,
 				x, y + height
-		];
+			];
 		this.matrix.transform(coords, 0, coords, 0, 4);
 		// Loop through all x and y coordinates and update min and max values.
 		// Start with the first coordinate pair for both (coords.slice(0, 2)).
