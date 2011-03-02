@@ -454,7 +454,7 @@ var Matrix = Base.extend({
 	/**
 	 * Applies this matrix to the specified Canvas Context.
 	 */
-	applyToContext: function(context) {
+	applyToContext: function(context, reset) {
 		// Canvas contexts seem to use another orientation: The scaleX (m00) and
 		// scaleY (m11) values need to be flipped to get correct behaviour e.g.
 		// when using rotation or shearing.
@@ -469,7 +469,6 @@ var Matrix = Base.extend({
 				-this._m11, this._m02, this._m12
 			);
 		}
->>>>>>> origin/master
 	},
 
 	statics: {
