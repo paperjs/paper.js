@@ -10,11 +10,13 @@ CanvasProvider = {
 			var canvas = this.canvases.pop();
 			// If they are not the same size, we don't need to clear them
 			// using clearRect and visa versa.
-			if ((canvas.width != size.width) ||  (canvas.height != size.height)) {
+			if ((canvas.width != size.width)
+					|| (canvas.height != size.height)) {
 				canvas.width = size.width;
 				canvas.height = size.height;
 			} else {
 				var context = canvas.getContext('2d');
+				// +1 is needed on some browsers to really clear the borders
 				context.clearRect(0, 0, size.width + 1, size.height + 1);
 			}
 			return canvas;
