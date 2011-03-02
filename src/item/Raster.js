@@ -204,13 +204,12 @@ Raster = Item.extend({
 	function getAverageColor(pixels) {
 		var channels = [0, 0, 0];
 		var total = 0;
-		for (var i = 0, l = pixels.length / 4; i < l; i++) {
-			var offset = i * 4;
-			var alpha = pixels[offset + 3] / 255;
+		for (var i = 0, l = pixels.length; i < l; i += 4) {
+			var alpha = pixels[i + 3] / 255;
 			total += alpha;
-			channels[0] += pixels[offset] * alpha;
-			channels[1] += pixels[offset + 1] * alpha;
-			channels[2] += pixels[offset + 2] * alpha;
+			channels[0] += pixels[i] * alpha;
+			channels[1] += pixels[i + 1] * alpha;
+			channels[2] += pixels[i + 2] * alpha;
 		}
 		for (var i = 0; i < 3; i++)
 			channels[i] /= total * 255;
