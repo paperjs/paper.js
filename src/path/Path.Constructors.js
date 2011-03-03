@@ -12,11 +12,11 @@ Path.inject({ statics: new function() {
 		Line: function() {
 			var path = new Path();
 			if (arguments.length == 2) {
-				path.addSegment(new Segment(arguments[0]));
-				path.addSegment(new Segment(arguments[1]));
+				path._add(new Segment(arguments[0]));
+				path._add(new Segment(arguments[1]));
 			} else if (arguments.length == 4) {
-				path.addSegment(Segment.read(arguments[0], arguments[1]));
-				path.addSegment(Segment.read(arguments[2], arguments[3]));
+				path._add(Segment.read(arguments[0], arguments[1]));
+				path._add(Segment.read(arguments[2], arguments[3]));
 			}
 			return path;
 		},
@@ -74,7 +74,7 @@ Path.inject({ statics: new function() {
 			var size = new Size(rect.width, rect.height);
 			for (var i = 0; i < 4; i++) {
 				var segment = ovalSegments[i];
-				path.addSegment(new Segment(
+				path._add(new Segment(
 					segment.point.multiply(size).add(topLeft),
 					segment.handleIn.multiply(size),
 					segment.handleOut.multiply(size)

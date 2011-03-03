@@ -13,7 +13,7 @@ Path = PathItem.extend({
 				|| typeof segments[0] != 'object')
 			segments = arguments;
 		for (var i = 0, l = segments.length; i < l; i++)
-			this.addSegment(new Segment(segments[i]));
+			this._add(new Segment(segments[i]));
 	},
 
 	/**
@@ -113,7 +113,11 @@ Path = PathItem.extend({
 		}
 	},
 
-	addSegment: function(segment) {
+	/**
+	 * Private method that adds a segment to the segment list. It assumes that
+	 * the passed object is a segment already and does not perform any checks.
+	 */
+	_add: function(segment) {
 		segment.path = this;
 		this._segments.push(segment);
 	},
@@ -121,7 +125,7 @@ Path = PathItem.extend({
 	add: function() {
 		var segment = Segment.read(arguments);
 		if (segment)
-			this.addSegment(segment);
+			this._add(segment);
 		return segment;
 	},
 
@@ -148,13 +152,13 @@ Path = PathItem.extend({
 	moveTo: function() {
 		var segment = Segment.read(arguments);
 		if (segment && !this._segments.length)
-			this.addSegment(segment);
+			this._add(segment);
 	},
 
 	lineTo: function() {
 		var segment = Segment.read(arguments);
 		if (segment)
-			this.addSegment(segment);
+			this._add(segment);
 	},
 	
 	/**
@@ -169,7 +173,7 @@ Path = PathItem.extend({
 				handle1.x - current.point.x,
 				handle1.y - current.point.y);
 		// And add the new segment, with handleIn set to c2
-		this.addSegment(
+		this._add(
 			new Segment(to, handle2.subtract(to), new Point())
 		);
 	},
@@ -297,7 +301,7 @@ Path = PathItem.extend({
 				var inPoint = new Point(
 						centerX + (relx + z * rely) * radius - pt.x,
 						centerY + (rely - z * relx) * radius - pt.y);
-				this.addSegment(new Segment(pt, inPoint, out));
+				this._add(new Segment(pt, inPoint, out));
 			}
 			angle += inc;
 		}
