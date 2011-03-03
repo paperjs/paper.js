@@ -328,6 +328,63 @@ Path = PathItem.extend({
 
 	closePath: function() {
 		this.closed = ture;
+	},
+
+	draw: function(ctx, param) {
+		if (!param.compound)
+			ctx.beginPath();
+		var segments = this._segments;
+		var length = segments.length;
+		for (var i = 0; i < length; i++) {
+			var segment = segments[i];
+			var x = segment.point.x;
+			var y = segment.point.y;
+			var handleIn = segment.handleIn;
+			if (i == 0) {
+				ctx.moveTo(x, y);
+			} else {
+				if (handleOut.isZero() && handleIn.isZero()) {
+					ctx.lineTo(x, y);
+				} else {
+					ctx.bezierCurveTo(
+						outX, outY,
+						handleIn.x + x, handleIn.y + y,
+						x, y
+					);
+				}
+			}
+			var handleOut = segment.handleOut;
+			var outX = handleOut.x + x;
+			var outY = handleOut.y + y;
+		}
+		if (this.closed && length > 1) {
+			var segment = segments[0];
+			var x = segment.point.x;
+			var y = segment.point.y;
+			var handleIn = segment.handleIn;
+			ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
+			ctx.closePath();
+		}
+		// If the path is part of a compound path or doesn't have a fill or
+		// stroke, there is no need to continue.
+		if (!param.compound && (this.fillColor || this.strokeColor)) {
+			this.setCtxStyles(ctx);
+			ctx.save();
+			// If the path only defines a strokeColor or a fillColor,
+			// draw it directly with the globalAlpha set, otherwise
+			// we will do it later when we composite the temporary canvas.
+			if (!this.fillColor || !this.strokeColor)
+				ctx.globalAlpha = this.opacity;
+			if (this.fillColor) {
+				ctx.fillStyle = this.fillColor.getCanvasStyle(ctx);
+				ctx.fill();
+			}
+			if (this.strokeColor) {
+				ctx.strokeStyle = this.strokeColor.getCanvasStyle(ctx);
+				ctx.stroke();
+			}
+			ctx.restore();
+		}
 	}
 }, new function() { // Inject methods that require scoped privates
 

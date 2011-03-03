@@ -57,7 +57,16 @@ PlacedSymbol = Item.extend({
 	
 	getBounds: function() {
 		return this._bounds;
+	},
+
+	draw: function(ctx, param) {
+		// TODO: we need to preserve strokewidth
+		ctx.save();
+		this.matrix.applyToContext(ctx);
+		Item.draw(this.symbol.definition, ctx, param);
+		ctx.restore();
 	}
+
 	// TODO:
 	// embed()
 });

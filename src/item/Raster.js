@@ -183,6 +183,14 @@ Raster = Item.extend({
 	
 	getBounds: function() {
 		return this._bounds;
+	},
+
+	draw: function(ctx, param) {
+		ctx.save();
+		this.matrix.applyToContext(ctx);
+		ctx.drawImage(this._canvas || this._image,
+				-this.size.width / 2, -this.size.height / 2);
+		ctx.restore();
 	}
 }, new function() {
 	function getAverageColor(pixels) {

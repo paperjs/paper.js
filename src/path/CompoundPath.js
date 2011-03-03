@@ -90,4 +90,22 @@ CompoundPath = PathItem.extend(new function() {
 	});
 
 	return fields;
+}, {
+	draw: function(ctx, param) {
+		var firstChild = this.children[0];
+		ctx.beginPath();
+		param.compound = true;
+		for (var i = 0, l = this.children.length; i < l; i++) {
+			Item.draw(this.children[i], ctx, param);
+		}
+		firstChild.setCtxStyles(ctx);
+		if (firstChild.fillColor) {
+			ctx.fillStyle = firstChild.fillColor.getCssString();
+			ctx.fill();
+		}
+		if (firstChild.strokeColor) {
+			ctx.strokeStyle = firstChild.strokeColor.getCssString();
+			ctx.stroke();
+		}
+	}
 });

@@ -51,5 +51,13 @@ Group = Item.extend({
 		var child = this.firstChild;
 		if (child)
 			child.setClipMask(clipped);
+	},
+
+	draw: function(ctx, param) {
+		for (var i = 0, l = this.children.length; i < l; i++) {
+			Item.draw(this.children[i], ctx, param);
+			if (this.clipped && i == 0)
+				ctx.clip();
+		}
 	}
 });
