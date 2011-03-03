@@ -13,7 +13,7 @@ Path = PathItem.extend({
 				|| typeof segments[0] != 'object')
 			segments = arguments;
 		for (var i = 0, l = segments.length; i < l; i++)
-			this._add(Segment.read(segments[i]));
+			this._add(Segment.read(segments, i, 1));
 	},
 
 	/**
