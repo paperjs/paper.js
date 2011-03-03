@@ -1,4 +1,4 @@
-CompoundPath = PathItem.extend({
+var CompoundPath = PathItem.extend({
 	initialize: function(items) {
 		this.base();
 		this.children = [];

@@ -1,4 +1,4 @@
-Group = Item.extend({
+var Group = Item.extend({
 	beans: true,
 	initialize: function(items) {
 		this.base();

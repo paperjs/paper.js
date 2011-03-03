@@ -1,8 +1,7 @@
-Curve = Base.extend({
+var Curve = Base.extend({
 	initialize: function() {
 	},
-	
-	
+
 	statics: {
 		read: function(args, index, length) {
 			var index = index || 0, length = length || args.length - index;

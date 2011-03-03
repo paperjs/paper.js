@@ -1,4 +1,4 @@
-Gradient = Base.extend({
+var Gradient = Base.extend({
 	initialize: function() {
 		this.stops = [new GradientStop('white', 0), new GradientStop('black', 1)];
 		this.type = 'linear';

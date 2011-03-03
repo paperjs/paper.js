@@ -1,4 +1,4 @@
-ToolHandler = Base.extend({
+var ToolHandler = Base.extend({
 	beans: true,
 
 	/**

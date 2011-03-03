@@ -1,4 +1,4 @@
-Path = PathItem.extend({
+var Path = PathItem.extend({
 	beans: true,
 
 	initialize: function(/* segments */) {

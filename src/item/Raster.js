@@ -1,4 +1,4 @@
-Raster = Item.extend({
+var Raster = Item.extend({
 	beans: true,
 
 	// TODO: implement url / type, width, height

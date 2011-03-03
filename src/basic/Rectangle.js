@@ -1,4 +1,4 @@
-Rectangle = Base.extend({
+var Rectangle = Base.extend({
 	beans: true,
 
 	initialize: function() {

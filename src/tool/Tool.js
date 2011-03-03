@@ -1,4 +1,4 @@
-Tool = ToolHandler.extend(new function() {
+var Tool = ToolHandler.extend(new function() {
 	function viewToArtwork(event, document) {
 		var point = Point.create(event.offset.x, event.offset.y);
 		// TODO: always the active view?

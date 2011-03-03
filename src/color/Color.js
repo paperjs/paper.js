@@ -1,4 +1,4 @@
-Color = Base.extend({
+var Color = Base.extend({
 	beans: true,
 
 	/**

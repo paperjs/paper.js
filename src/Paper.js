@@ -1,4 +1,4 @@
-Paper = Base.extend({
+var Paper = Base.extend({
 	statics: {
 		documents: [],
 		activateDocument: function(doc) {

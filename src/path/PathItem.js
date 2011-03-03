@@ -1,4 +1,4 @@
-PathItem = Item.extend({
+var PathItem = Item.extend({
 	beans: true,
 
 	initialize: function() {

@@ -1,4 +1,4 @@
-Layer = Group.extend({
+var Layer = Group.extend({
 	beans: true,
 
 	initialize: function() {
