@@ -1,7 +1,7 @@
 module('Path Style');
 
 test('currentStyle', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	doc.currentStyle.fillColor = 'black';
 	var path = new Path();
 	compareRGBColors(path.fillColor, 'black');
@@ -13,7 +13,7 @@ test('currentStyle', function() {
 });
 
 test('setting currentStyle to an object', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	doc.currentStyle = {
 		fillColor: 'red',
 		strokeColor: 'green'
@@ -24,7 +24,7 @@ test('setting currentStyle to an object', function() {
 });
 
 test('setting path styles to an object', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	path.style = {
 		fillColor: 'red',
@@ -35,7 +35,7 @@ test('setting path styles to an object', function() {
 });
 
 test('setting group styles to an object', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var group = new Group();
 	var path = new Path();
 	group.appendTop(path);
@@ -48,7 +48,7 @@ test('setting group styles to an object', function() {
 });
 
 test('getting group styles', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var group = new Group();
 	var path = new Path();
 	path.fillColor = 'red';
@@ -70,7 +70,7 @@ test('getting group styles', function() {
 });
 
 test('setting group styles', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var group = new Group();
 	var path = new Path();
 	path.fillColor = 'red';
@@ -94,7 +94,7 @@ test('setting group styles', function() {
 });
 
 test('setting group styles 2', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var group = new Group();
 	var path = new Path();
 	path.fillColor = 'red';

@@ -44,7 +44,7 @@ test('segment.clone()', function() {
 });
 
 test('segment.remove()', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path([10, 10], [5, 5], [10, 10]);
 	path.segments[1].remove();
 	equals(path.segments.length, 2);

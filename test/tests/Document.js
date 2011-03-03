@@ -1,8 +1,8 @@
 module('Document');
 
 test('activate()', function() {
-	var doc = new Doc();
-	var secondDoc = new Doc();
+	var doc = new Document();
+	var secondDoc = new Document();
 	doc.activate();
 	var path = new Path();
 	equals(doc.activeLayer.children[0] == path, true);

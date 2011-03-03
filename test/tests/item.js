@@ -1,9 +1,9 @@
 module('Item');
 
 test('copyTo(document)', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
-	var secondDoc = new Doc();
+	var secondDoc = new Document();
 	var copy = path.copyTo(secondDoc);
 	equals(secondDoc.activeLayer.children.indexOf(copy) != -1, true);
 	equals(doc.activeLayer.children.indexOf(copy) == -1, true);
@@ -11,7 +11,7 @@ test('copyTo(document)', function() {
 });
 
 test('copyTo(layer)', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 
 	var layer = new Layer();
@@ -21,7 +21,7 @@ test('copyTo(layer)', function() {
 });
 
 test('clone()', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	var copy = path.clone();
 	equals(doc.activeLayer.children.length == 2, true);
@@ -29,15 +29,15 @@ test('clone()', function() {
 });
 
 test('appendChild(item)', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	doc.activeLayer.appendChild(path);
 	equals(doc.activeLayer.children.length, 1);
 });
 
 test('item.parent / item.isChild', function() {
-	var doc = new Doc();
-	var secondDoc = new Doc();
+	var doc = new Document();
+	var secondDoc = new Document();
 	var path = new Path();
 	doc.activeLayer.appendChild(path);
 	equals(doc.activeLayer.children.indexOf(path) != -1, true);
@@ -49,7 +49,7 @@ test('item.parent / item.isChild', function() {
 });
 
 test('item.lastChild / item.firstChild', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	var secondPath = new Path();
 	equals(doc.activeLayer.firstChild == path, true);
@@ -57,7 +57,7 @@ test('item.lastChild / item.firstChild', function() {
 });
 
 test('appendBottom(item)', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	var secondPath = new Path();
 	doc.activeLayer.appendBottom(secondPath);
@@ -65,7 +65,7 @@ test('appendBottom(item)', function() {
 });
 
 test('moveAbove(item)', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	var secondPath = new Path();
 	path.moveAbove(secondPath);
@@ -73,7 +73,7 @@ test('moveAbove(item)', function() {
 });
 
 test('moveBelow(item)', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var firstPath = new Path();
 	var secondPath = new Path();
 	equals(secondPath.index > firstPath.index, true);
@@ -82,7 +82,7 @@ test('moveBelow(item)', function() {
 });
 
 test('isDescendant(item) / isAncestor(item)', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	equals(path.isDescendant(doc.activeLayer), true);
 	equals(doc.activeLayer.isDescendant(path), false);
@@ -98,7 +98,7 @@ test('isDescendant(item) / isAncestor(item)', function() {
 });
 
 test('isGroupedWith', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	var secondPath = new Path();
 	var group = new Group([path]);
@@ -119,7 +119,7 @@ test('isGroupedWith', function() {
 });
 
 test('getPreviousSibling() / getNextSibling()', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var firstPath = new Path();
 	var secondPath = new Path();
 	equals(firstPath.nextSibling == secondPath, true);
@@ -128,14 +128,14 @@ test('getPreviousSibling() / getNextSibling()', function() {
 });
 
 test('hidden', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var firstPath = new Path();
 	firstPath.visible = false;
 	equals(firstPath.hidden, true);
 });
 
 test('reverseChildren()', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	var secondPath = new Path();
 	var thirdPath = new Path();

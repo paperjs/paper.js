@@ -1,7 +1,7 @@
 module('Compound Path');
 
 test('moveTo / lineTo', function() {
-	var doc = new Doc(canvas);
+	var doc = new Document(canvas);
 	var path = new CompoundPath();
 
 	var lists = [

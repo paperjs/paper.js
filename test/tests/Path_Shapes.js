@@ -40,7 +40,7 @@ test('new Path.Arc(from, through, to)', function() {
 });
 
 test('new Path.RegularPolygon(center, numSides, radius)', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path.RegularPolygon(new Point(50, 50), 3, 10);
 	var expectedSegments = [{ point: { x: 41.33984, y: 55 } }, { point: { x: 50, y: 40 } }, { point: { x: 58.66016, y: 55 } }];
 	compareSegmentLists(path.segments, expectedSegments);

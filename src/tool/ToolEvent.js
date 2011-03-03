@@ -207,7 +207,7 @@ ToolEvent = Base.extend({
 	// TODO: implement hitTest first
 	// getItem: function() {
 	// 	if (this.item == null) {
-	// 		var result = Doc.getActiveDocument().hitTest(this.getPoint());
+	// 		var result = Document.getActiveDocument().hitTest(this.getPoint());
 	// 		if (result != null) {
 	// 			this.item = result.getItem();
 	// 			// Find group parent

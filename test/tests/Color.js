@@ -1,7 +1,7 @@
 module('RGB Color');
 
 test('Set named color', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	path.fillColor = 'red';
 	compareRGBColors(path.fillColor, new RGBColor(1, 0, 0));
@@ -9,7 +9,7 @@ test('Set named color', function() {
 });
 
 test('Set color to hex', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	path.fillColor = '#ff0000';
 	compareRGBColors(path.fillColor, new RGBColor(1, 0, 0));
@@ -22,7 +22,7 @@ test('Set color to hex', function() {
 });
 
 test('Set color to object', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	path.fillColor = { red: 1, green: 0, blue: 1};
 	compareRGBColors(path.fillColor, new RGBColor(1, 0, 1));
@@ -35,7 +35,7 @@ test('Set color to object', function() {
 });
 
 test('Set color to array', function() {
-	var doc = new Doc();
+	var doc = new Document();
 	var path = new Path();
 	path.fillColor = [1, 0, 0];
 	compareRGBColors(path.fillColor, new RGBColor(1, 0, 0));
