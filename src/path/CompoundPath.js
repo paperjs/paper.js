@@ -77,16 +77,15 @@ CompoundPath = PathItem.extend({
 	}
 }, new function() {
 
-	function getCurrentPath(compoundPath) {
-		if (compoundPath.children.length) {
-			return compoundPath.children[compoundPath.children.length - 1];
+	function getCurrentPath(that) {
+		if (that.children.length) {
+			return that.children[that.children.length - 1];
 		} else {
 			throw Error('Use a moveTo() command first');
 		}
 	}
 
 	var fields = {
-
 		moveBy: function() {
 			var point = arguments.length ? Point.read(arguments) : new Point();
 			var path = getCurrentPath(this);
