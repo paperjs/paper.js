@@ -4,15 +4,15 @@ var paper = {
 
 	populate: function() {
 		// Inject all prototypes from the paper scope into the paper object.
-		Base.each(['Point', 'Size', 'Rectangle', 'Matrix', 'DocumentView',
+		// return this so build.js can use 'return paper.populate()'.
+		return Base.each(['Point', 'Size', 'Rectangle', 'Matrix', 'DocumentView',
 			'Doc', 'Symbol', 'Item', 'Group', 'Layer', 'Raster', 'PlacedSymbol',
 			'PathStyle', 'Segment', 'Curve', 'PathItem', 'Path', 'CompoundPath',
 			'Color', 'RGBColor', 'GrayColor', 'GradientColor', 'Gradient',
 			'GradientStop', 'ToolEvent', 'ToolHandler', 'Tool'],
 			function(name) {
-				paper[name] = eval(name);
-			}
-		);
+				this[name] = eval(name);
+			}, this);
 	},
 
 	install: function(scope) {

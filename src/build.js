@@ -1,4 +1,4 @@
-(function(scope) {
+var paper = new function() {
 
 #include "paper.js"
 
@@ -39,7 +39,6 @@
 #include "util/CanvasProvider.js"
 #include "util/MathUtils.js"
 
-paper.populate();
-paper.install(scope);
+return paper.populate();
 
-})(this);
+};
