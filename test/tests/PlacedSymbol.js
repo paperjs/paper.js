@@ -8,17 +8,17 @@ test('placedSymbol bounds', function() {
 	
 	// These tests currently fail because we haven't implemented
 	// Item#strokeBounds yet.
-	compareRectangles(placedSymbol.bounds,
+	compareRectangles(placedSymbol.strokeBounds,
 		new Rectangle(-50.5, -50.5, 101, 101),
 		'PlacedSymbol initial bounds.');
 	
 	placedSymbol.scale(0.5);
-	compareRectangles(placedSymbol.bounds,
+	compareRectangles(placedSymbol.strokeBounds,
 		{ x: -25.5, y: -25.5, width: 51, height: 51 },
 		'Bounds after scale.');
 	
 	placedSymbol.rotate(40);
-	compareRectangles(placedSymbol.bounds,
+	compareRectangles(placedSymbol.strokeBounds,
 		{ x: -25.50049, y: -25.50049, width: 51.00098, height: 51.00098 },
 		'Bounds after rotation.');
 });

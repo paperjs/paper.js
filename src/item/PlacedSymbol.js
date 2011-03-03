@@ -19,8 +19,7 @@ var PlacedSymbol = Item.extend({
 		} else {
 			this.matrix = new Matrix();
 		}
-		// TODO: this should use strokeBounds:
-		this._bounds = this.symbol.definition.bounds.clone();
+		this._bounds = this.symbol.definition.strokeBounds.clone();
 		// TODO: should size be cached here, or on Symbol?
 		this._size = this._bounds.size;
 	},
