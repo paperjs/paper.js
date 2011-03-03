@@ -1,5 +1,7 @@
 var PaperScript = new function() {
 	function compile(code) {
+		// TODO: Parse code and replace math operators with calls to methods
+		// that handle overloading.
 		return code;
 	}
 
@@ -43,7 +45,7 @@ var PaperScript = new function() {
 	}
 
 	if (window.addEventListener) {
-		addEventListener('DOMContentLoaded', runScripts, false);
+		addEventListener('load', runScripts, false);
 	} else {
 		attachEvent('onload', runScripts);
 	}
