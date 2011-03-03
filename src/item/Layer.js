@@ -3,7 +3,7 @@ var Layer = Group.extend({
 
 	initialize: function() {
 		this.children = [];
-		this.document = Paper.document;
+		this.document = paper.document;
 		this.document.layers.push(this);
 		this.activate();
 	},

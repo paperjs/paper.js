@@ -2,7 +2,7 @@ var Symbol = Base.extend({
 	beans: true,
 
 	initialize: function(item) {
-		this.document = Paper.document;
+		this.document = paper.document;
 		this.document.symbols.push(this);
 		this.definition = item;
 	},

@@ -10,14 +10,14 @@ var Tool = ToolHandler.extend(new function() {
 
 		initialize: function(handlers, doc) {
 			this.base(handlers);
-			if (Paper.document)
-				this.document = Paper.document;
+			if (paper.document)
+				this.document = paper.document;
 		},
 
 		setDocument: function(doc) {
 			if (this._document)
 				$(this._document.canvas).removeEvents();
-			this._document = doc || Paper.document;
+			this._document = doc || paper.document;
 			var that = this, curPoint;
 			var dragging = false;
 			var events = {

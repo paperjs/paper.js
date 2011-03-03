@@ -112,9 +112,9 @@ test('isGroupedWith', function() {
 	equals(secondGroup.isDescendant(path), false);
 	equals(secondGroup.isDescendant(secondGroup), false);
 	equals(path.isGroupedWith(secondGroup), false);
-	Paper.document.activeLayer.appendTop(path);
+	paper.document.activeLayer.appendTop(path);
 	equals(path.isGroupedWith(secondPath), false);
-	Paper.document.activeLayer.appendTop(secondPath);
+	paper.document.activeLayer.appendTop(secondPath);
 	equals(path.isGroupedWith(secondPath), false);
 });
 

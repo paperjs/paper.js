@@ -1,6 +1,6 @@
 (function(scope) {
 
-#include "Paper.js"
+#include "paper.js"
 
 #include "basic/Point.js"
 #include "basic/Size.js"
@@ -36,15 +36,7 @@
 #include "tool/ToolHandler.js"
 #include "tool/Tool.js"
 
-// Now inject all these local prototypes into the paper scope.
-Base.each(['Point', 'Size', 'Rectangle', 'Matrix', 'DocumentView', 'Doc',
-	'Symbol', 'Item', 'Group', 'Layer', 'Raster', 'PlacedSymbol', 'PathStyle',
-	'Segment', 'Curve', 'PathItem', 'Path', 'CompoundPath', 'Color', 'RGBColor',
-	'GrayColor', 'GradientColor', 'Gradient', 'GradientStop', 'ToolEvent',
-	'ToolHandler', 'Tool'],
-	function(name) {
-		scope[name] = eval(name);
-	}
-);
+paper.populate();
+paper.install(scope);
 
 })(this);

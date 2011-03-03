@@ -13,7 +13,7 @@ var Doc = Base.extend({
 		}
 		this.bounds = new Rectangle(new Point(0, 0), this.size);
 		this.ctx = this.canvas.getContext('2d');
-		Paper.documents.push(this);
+		paper.documents.push(this);
 		this.activate();
 		this.layers = [];
 		this.activeLayer = new Layer();
@@ -32,7 +32,12 @@ var Doc = Base.extend({
 	},
 
 	activate: function() {
-		Paper.activateDocument(this);
+		var index = paper.documents.indexOf(this);
+		if (index != -1) {
+			paper.document = this;
+			return true;
+		}
+		return false;
 	},
 
 	draw: function() {

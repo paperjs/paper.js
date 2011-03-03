@@ -2,7 +2,7 @@ var Item = Base.extend({
 	beans: true,
 
 	initialize: function() {
-		Paper.document.activeLayer.appendTop(this);
+		paper.document.activeLayer.appendTop(this);
 		this.style = this.document.currentStyle;
 	},
 	
