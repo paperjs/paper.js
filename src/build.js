@@ -39,6 +39,14 @@ var paper = new function() {
 #include "util/CanvasProvider.js"
 #include "util/MathUtils.js"
 
-return paper.populate();
+// Inject all prototypes from the paper scope into the paper object.
+return Base.each(['Point', 'Size', 'Rectangle', 'Matrix', 'DocumentView', 'Doc',
+	'Symbol', 'Item', 'Group', 'Layer', 'Raster', 'PlacedSymbol', 'PathStyle',
+	'Segment', 'Curve', 'PathItem', 'Path', 'CompoundPath', 'Color', 'RGBColor',
+	'GrayColor', 'GradientColor', 'Gradient', 'GradientStop', 'ToolEvent',
+	'ToolHandler', 'Tool'],
+	function(name) {
+		this[name] = eval(name);
+	}, paper);
 
 };
