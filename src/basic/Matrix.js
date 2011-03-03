@@ -54,7 +54,7 @@ var Matrix = Base.extend({
 			this._m10 = this._m01 = this._m02 = this._m12 = 0;
 		}
 		if (!ok)
-			throw Error('Unsupported matrix parameters');
+			throw new Error('Unsupported matrix parameters');
 	},
 
 	/**

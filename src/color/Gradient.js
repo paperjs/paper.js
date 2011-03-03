@@ -10,7 +10,7 @@ var Gradient = Base.extend({
 	
 	setStops: function(stops) {
 		if (stops.length < 2)
-			throw Error('Gradient stop list needs to contain at least two stops.');
+			throw new Error('Gradient stop list needs to contain at least two stops.');
 		this._stops = stops;
 	}
 });

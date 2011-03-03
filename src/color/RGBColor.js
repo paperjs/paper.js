@@ -64,7 +64,8 @@ var RGBColor = Color.extend(new function() {
 
 	function namedToComponents(name) {
 		var hex = namedColors[name];
-		if (!hex) throw Error('The named color "' + name + '" does not exist.');
+		if (!hex)
+			throw new Error('The named color "' + name + '" does not exist.');
 		return hex && hexToComponents(hex);
 	};
 	

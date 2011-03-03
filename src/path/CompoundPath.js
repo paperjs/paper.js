@@ -81,7 +81,7 @@ var CompoundPath = PathItem.extend({
 		if (that.children.length) {
 			return that.children[that.children.length - 1];
 		} else {
-			throw Error('Use a moveTo() command first');
+			throw new Error('Use a moveTo() command first');
 		}
 	}
 
