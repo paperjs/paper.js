@@ -460,7 +460,7 @@ var Matrix = Base.extend({
 		// when using rotation or shearing.
 		context[reset ? 'setTransform' : 'transform'](
 			this._m00, -this._m01, -this._m10,
-			this._m11, this._m02, this._m12
+			this._m11,  this._m02,  this._m12
 		);
 	},
 
