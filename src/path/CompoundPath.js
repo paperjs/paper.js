@@ -94,7 +94,7 @@ CompoundPath = PathItem.extend({
 		},
 
 		closePath: function() {
-			var path = getCurrentPath();
+			var path = getCurrentPath(this);
 			path.setClosed(true);
 		}
 	};
