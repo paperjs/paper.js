@@ -1,4 +1,4 @@
-MathUtils = {
+var MathUtils = {
 	// TODO: 64 bit: 53 digits, 32 bit: 24 digits
 	// TODO: Naming? What is MANT standing for?
 	MANT_DIGITS: 53,
@@ -211,4 +211,4 @@ MathUtils = {
 		}
 		return { b: b, area: area };
 	}
-}
+};
