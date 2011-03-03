@@ -726,7 +726,7 @@ var Item = Base.extend({
 			if (item.blendMode !== 'normal'
 				|| item.opacity < 1
 				&& !(item.segments && (!item.fillColor || !item.strokeColor))) {
-				var bounds = item.strokeBounds;
+				var bounds = item.strokeBounds || item.bounds;
 				if (!bounds.width || !bounds.height)
 					return;
 
