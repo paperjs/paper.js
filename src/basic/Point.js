@@ -477,8 +477,8 @@ var Point = Base.extend({
 			return point;
 		},
 
-		read: function(args, index) {
-			var index = index || 0, length = args.length - index;
+		read: function(args, index, length) {
+			var index = index || 0, length = length || args.length - index;
 			if (length == 1 && args[index] instanceof Point) {
 				return args[index];
 			} else if (length != 0) {
