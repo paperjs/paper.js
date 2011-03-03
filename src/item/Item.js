@@ -540,8 +540,7 @@ var Item = Base.extend({
 		// question for now.
 		if (!resolution)
 			resolution = 72;
-		// TODO: use strokebounds for this:
-		var bounds = this.bounds;
+		var bounds = this.strokeBounds;
 		var scale = resolution / 72;
 		var canvas = CanvasProvider.getCanvas(bounds.size.multiply(scale));
 		var context = canvas.getContext('2d');
