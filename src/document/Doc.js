@@ -36,19 +36,6 @@ Doc = Base.extend({
 	},
 
 	redraw: function() {
-		if (this.canvas) {
-			// Initial tests conclude that clearing the canvas using clearRect
-			// is always faster than setting canvas.width = canvas.width
-			// http://jsperf.com/clearrect-vs-setting-width/7
-			var view = this.activeView;
-			var bounds = view.bounds;
-			this.ctx.clearRect(0, 0, this.size.width + 1, this.size.height + 1);
-			this.ctx.save();
-			view.matrix.applyToContext(this.ctx, true);
-			for (var i = 0, l = this.layers.length; i < l; i++) {
-				this.layers[i].draw(this.ctx, {});
-			}
-			this.ctx.restore();
-		}
+		this._draw();
 	}
 });

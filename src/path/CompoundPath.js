@@ -18,34 +18,6 @@ CompoundPath = PathItem.extend(new function() {
 				}
 			}
 		},
-
-		draw: function(ctx, param) {
-			if (!this.visible)
-				return;
-			if (this.children.length) {
-				if (this.blendMode != 'normal' && !param.ignoreBlendMode) {
-					BlendMode.process(ctx, this, param);
-				} else {
-					var firstChild = this.children[0];
-					ctx.beginPath();
-					param.compound = true;
-					for (var i = 0, l = this.children.length; i < l; i++) {
-						var child = this.children[i];
-						child.draw(ctx, param);
-					}
-					param.compound = false;
-					firstChild.setCtxStyles(ctx);
-					if (firstChild.fillColor) {
-						ctx.fillStyle = firstChild.fillColor.getCssString();
-						ctx.fill();
-					}
-					if (firstChild.strokeColor) {
-						ctx.strokeStyle = firstChild.strokeColor.getCssString();
-						ctx.stroke();
-					}
-				}
-			}
-		},
 		
 		// TODO: have getBounds of Group / Layer / CompoundPath use the same
 		// code (from a utility script?)

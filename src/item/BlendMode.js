@@ -27,40 +27,16 @@ BlendMode = {
 	// TODO: Add missing blendmodes like hue / saturation / color / luminosity
 	// TODO: Clean up codespacing of original code, or keep it as is, so 
 	// we can easily encorporate changes?
-	process: function(documentContext, item, param) {
-		// TODO: use strokeBounds
-		var itemBounds = item.bounds;
-		if (!itemBounds)
-			return;
-		var top = Math.floor(itemBounds.top);
-		var left = Math.floor(itemBounds.left);
-		var size = itemBounds.size.ceil().add(1, 1);
-		var width = size.width;
-		var height = size.height;
-
-		var itemCanvas = CanvasProvider.getCanvas(size);
-		var itemContext = itemCanvas.getContext('2d');
-		itemContext.save();
-		if (item.matrix) {
-			var matrix = item.matrix.clone();
-			var transMatrix = Matrix.getTranslateInstance(-left, -top);
-			matrix.preConcatenate(transMatrix);
-			// TODO: Profiling shows this as a hotspot
-			matrix.applyToContext(itemContext);
-		} else {
-			itemContext.translate(-itemBounds.left, -itemBounds.top);
-		}
-		param.ignoreBlendMode = true;
-		item.draw(itemContext, param);
-
-		var dstD = documentContext.getImageData(
-			left, top,
-			width, height
+	process: function(blendMode, sourceContext, destContext, opacity, offset) {
+		var sourceCanvas = sourceContext.canvas;
+		var dstD = destContext.getImageData(
+			offset.x, offset.y,
+			sourceCanvas.width, sourceCanvas.height
 		);
-		
-		var srcD = itemContext.getImageData(
+
+		var srcD = sourceContext.getImageData(
 			0, 0,
-			width, height
+			sourceCanvas.width, sourceCanvas.height
 		);
 
 		var src  = srcD.data;
@@ -70,7 +46,7 @@ BlendMode = {
 		var demultiply;
 
 		for (var px=0;px<len;px+=4){
-			sA  = src[px+3]/255;
+			sA  = src[px+3]/255 * opacity;
 			dA  = dst[px+3]/255;
 			dA2 = (sA + dA - sA*dA);
 			dst[px+3] = dA2*255;
@@ -81,10 +57,10 @@ BlendMode = {
 			dGA = dst[px+1]/255*dA;
 			sBA = src[px+2]/255*sA;
 			dBA = dst[px+2]/255*dA;
-			
+
 			demultiply = 255 / dA2;
-		
-			switch(item.blendMode){
+
+			switch(blendMode){
 				// ******* Very close match to Photoshop
 				case 'normal':
 				case 'src-over':
@@ -155,12 +131,12 @@ BlendMode = {
 					// dst[px+2] = ( (sBA < 0.5) ? (2 * dBA * sBA) : (1 - 2 * (1 - sBA) * (1 - dBA)) ) * demultiply;
 				break;
 
-				case 'hardlight':
+				case 'hard-light':
 					dst[px  ] = (sRA<=0.5) ? (2*dst[px  ]*sRA/dA) : 255 - (2 - 2*sRA/sA) * (255-dst[px  ]);
 					dst[px+1] = (sGA<=0.5) ? (2*dst[px+1]*sGA/dA) : 255 - (2 - 2*sGA/sA) * (255-dst[px+1]);
 					dst[px+2] = (sBA<=0.5) ? (2*dst[px+2]*sBA/dA) : 255 - (2 - 2*sBA/sA) * (255-dst[px+2]);
 				break;
-				
+
 				case 'color-dodge':
 				case 'dodge':
 					if ( src[px  ] == 255 && dRA==0) dst[px  ] = 255;
@@ -172,7 +148,7 @@ BlendMode = {
 					if ( src[px+2] == 255 && dBA==0) dst[px+2] = 255;
 					else dst[px+2] = Math.min(255, dst[px+2]/(255 - src[px+2])) * demultiply;
 				break;
-				
+
 				case 'color-burn':
 				case 'burn':
 					if ( src[px  ] == 0 && dRA==0) dst[px  ] = 0;
@@ -184,14 +160,14 @@ BlendMode = {
 					if ( src[px+2] == 0 && dBA==0) dst[px+2] = 0;
 					else dst[px+2] = (1 - Math.min(1, (1 - dBA)/sBA)) * demultiply;
 				break;
-				
+
 				case 'darken':
 				case 'darker':
 					dst[px  ] = (sRA>dRA ? dRA : sRA) * demultiply;
 					dst[px+1] = (sGA>dGA ? dGA : sGA) * demultiply;
 					dst[px+2] = (sBA>dBA ? dBA : sBA) * demultiply;
 				break;
-				
+
 				case 'lighten':
 				case 'lighter':
 					dst[px  ] = (sRA<dRA ? dRA : sRA) * demultiply;
@@ -212,8 +188,6 @@ BlendMode = {
 					dst[px+2] = px%8==0 ? 0 : 255;
 			}
 		}
-		documentContext.putImageData(dstD, left, top);
-		itemContext.restore();
-		CanvasProvider.returnCanvas(itemCanvas);
+		destContext.putImageData(dstD, offset.x, offset.y);
 	}
 };

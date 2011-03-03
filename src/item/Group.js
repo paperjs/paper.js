@@ -11,48 +11,6 @@ Group = Item.extend({
 		this.clipped = false;
 	},
 	
-	draw: function(ctx, param) {
-		if (!this.visible)
-			return;
-		// If the group has an opacity of less then 1, draw its children on a
-		// temporary canvas, and then draw that canvas onto ctx afterwards
-		// with globalAlpha set.
-		var tempCanvas, originalCtx;
-		if (this.blendMode != 'normal' && !param.ignoreBlendMode) {
-			BlendMode.process(ctx, this, param);
-		} else {
-			param.ignoreBlendMode = false;
-			if (this.opacity < 1) {
-				var originalCtx = ctx;
-				// TODO: use strokeBounds for this, when implemented:
-				tempCanvas = CanvasProvider.getCanvas(this.document.size);
-				ctx = tempCanvas.getContext('2d');
-				ctx.save();
-				this.document.activeView.matrix.applyToContext(ctx);
-			}
-			for (var i = 0, l = this.children.length; i < l; i++) {
-				this.children[i].draw(ctx, param);
-				if (this.clipped & i == 0)
-					ctx.clip();
-			}
-			if (tempCanvas) {
-				// restore the activeView.matrix transformation,
-				// so we can draw the image without transformation.
-				originalCtx.restore();
-				originalCtx.save();
-				originalCtx.globalAlpha = this.opacity;
-				originalCtx.drawImage(tempCanvas, 0, 0);
-				originalCtx.restore();
-				// apply the view transformation again.
-				this.document.activeView.matrix.applyToContext(ctx);
-				// Restore the state of the temp canvas:
-				ctx.restore();
-				// Return the temp canvas, so it can be reused
-				CanvasProvider.returnCanvas(tempCanvas);
-			}
-		}
-	},
-	
 	getBounds: function() {
 		if (this.children.length) {
 			var rect = this.children[0].bounds;

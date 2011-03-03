@@ -183,22 +183,6 @@ Raster = Item.extend({
 	
 	getBounds: function() {
 		return this._bounds;
-	},
-	
-	draw: function(ctx, param) {
-		if (this.blendMode != 'normal' && !param.ignoreBlendMode) {
-			BlendMode.process(ctx, this, param);
-		} else {
-			ctx.save();
-			// TODO: Documment what ignoreBlendMode is really doing, and why
-			// this is necessary?
-			if(param.ignoreBlendMode !== true)
-				this.matrix.applyToContext(ctx);
-			ctx.drawImage(this._canvas || this._image,
-					-this.size.width / 2, -this.size.height / 2);
-			ctx.restore();
-			param.ignoreBlendMode = false;
-		}
 	}
 }, new function() {
 	function getAverageColor(pixels) {
