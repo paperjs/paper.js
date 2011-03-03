@@ -13,7 +13,7 @@ Path = PathItem.extend({
 				|| typeof segments[0] != 'object')
 			segments = arguments;
 		for (var i = 0, l = segments.length; i < l; i++)
-			this._add(new Segment(segments[i]));
+			this._add(Segment.read(segments[i]));
 	},
 
 	/**
@@ -117,22 +117,28 @@ Path = PathItem.extend({
 	 * Private method that adds a segment to the segment list. It assumes that
 	 * the passed object is a segment already and does not perform any checks.
 	 */
-	_add: function(segment) {
+	_add: function(segment, index) {
+		// If this segment belongs to another path already, clone it before
+		// adding.
+		if (segment.path)
+			segment = new Segment(segment);
 		segment.path = this;
-		this._segments.push(segment);
+		if (index == undefined) {
+			this._segments.push(segment);
+		} else {
+			this._segments.splice(index, 0, segment);
+		}
+		return segment;
 	},
 
 	add: function() {
 		var segment = Segment.read(arguments);
-		if (segment)
-			this._add(segment);
-		return segment;
+		return segment ? this._add(segment) : null;
 	},
 
-	// TODO: make sure that if the segment belongs to another path, it clones
-	// the segment. Otherwise it returns the same segment.
 	insert: function(index, segment) {
-		this._segments.splice(index, 0, new Segment(segment));
+		var segment = Segment.read(arguments, 1);
+		return segment ? this._add(segment, index) : null;
 	},
 
 	/**
