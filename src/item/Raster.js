@@ -172,7 +172,7 @@ Raster = Item.extend({
 		// Start with the first coordinate pair for both (coords.slice(0, 2)).
 		var min = coords.slice(0, 2), max = min.slice(0);
 		for (var i = 2; i < 8; i++) {
-			var c = coords[i], j = i % 2;
+			var c = coords[i], j = i & 1; // i & 1 == i % 2 == i modulo 2
 			if (c < min[j])
 				min[j] = c;
 			else if (c > max[j])
