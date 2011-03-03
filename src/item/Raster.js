@@ -27,7 +27,7 @@ var Raster = Item.extend({
 	getSize: function() {
 		return this._size;
 	},
-	
+
 	setSize: function() {
 		var size = Size.read(arguments);
 		var canvas = CanvasProvider.getCanvas(size);
@@ -41,21 +41,21 @@ var Raster = Item.extend({
 		this._context = null;
 		this._canvas = canvas;
 	},
-	
+
 	/**
 	 * The width of the raster in pixels.
 	 */
 	getWidth: function() {
 		return this._size.width;
 	},
-	
+
 	/**
 	 * The height of the raster in pixels.
 	 */
 	getHeight: function() {
 		return this._size.height;
 	},
-	
+
 	/**
 	 * Pixels per inch of the raster at it's current size.
 	 */
@@ -69,7 +69,7 @@ var Raster = Item.extend({
 			72 / v.length
 		);
 	},
-	
+
 	getSubImage: function(/* rectangle */) {
 		var rectangle = Rectangle.read(arguments);
 		var canvas = CanvasProvider.getCanvas(rectangle.size);
@@ -78,11 +78,11 @@ var Raster = Item.extend({
 			canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 		return canvas;
 	},
-	
+
 	getImage: function() {
 		return this._image || this.canvas;
 	},
-	
+
 	// TODO: setImage
 
 	// TODO: drawImage(image, point)
@@ -90,7 +90,7 @@ var Raster = Item.extend({
 		var point = center = Point.read(arguments, 1);
 		this.context.drawImage(image, x, y);
 	},
-	
+
 	/**
 	 * {@grouptitle Pixels}
 	 * 
@@ -107,7 +107,7 @@ var Raster = Item.extend({
 			channels.push(pixels[i] / 255);
 		return Color.read(channels);
 	},
-	
+
 	// TODO: setPixel(point, color)
 	setPixel: function(x, y, color) {
 		color = Color.read(arguments, 2);
@@ -119,17 +119,17 @@ var Raster = Item.extend({
 		imageData.data[3] = color.alpha != -1 ? color.alpha * 255 : 255;
 		ctx.putImageData(imageData, x, y);
 	},
-	
+
 	getContext: function() {
 		if (!this._context)
 			this._context = this.canvas.getContext('2d');
 		return this._context;
 	},
-	
+
 	setContext: function(context) {
 		this._context = context;
 	},
-	
+
 	getCanvas: function() {
 		if (!this._canvas) {
 			this._canvas = CanvasProvider.getCanvas(this.size);
@@ -138,7 +138,7 @@ var Raster = Item.extend({
 		}
 		return this._canvas;
 	},
-	
+
 	setCanvas: function(canvas) {
 		if (this._canvas)
 			CanvasProvider.returnCanvas(this._canvas);
@@ -148,7 +148,7 @@ var Raster = Item.extend({
 		this._ctx = null;
 		this._canvas = canvas;
 	},
-	
+
 	_transform: function(matrix, flags) {
 		// In order to set the right context transformation when drawing the
 		// raster, simply preconcatenate the internal matrix with the provided
@@ -158,7 +158,7 @@ var Raster = Item.extend({
 		// extremas that define our raster's bounds, and update them straight 
 		// away
 		var width = this._size.width,
-			height = this._size.height,	
+			height = this._size.height,
 			x = -width / 2,
 			y = -height / 2,
 			coords = [
@@ -180,7 +180,7 @@ var Raster = Item.extend({
 		}
 		this._bounds.set(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
-	
+
 	getBounds: function() {
 		return this._bounds;
 	},
@@ -208,7 +208,7 @@ var Raster = Item.extend({
 			channels[i] /= total;
 		return total ? Color.read(channels) : null;
 	}
-	
+
 	return {
 		/**
 		 * {@grouptitle Average Color}
@@ -236,7 +236,7 @@ var Raster = Item.extend({
 					bounds = new Rectangle(object.x - 0.5, object.y - 0.5,
 							1, 1);
 				}
-				
+
 				var canvas = CanvasProvider.getCanvas(bounds.size);
 				var ctx = canvas.getContext('2d');
 				var delta = bounds.topLeft.multiply(-1);

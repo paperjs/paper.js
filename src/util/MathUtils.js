@@ -4,8 +4,8 @@ var MathUtils = {
 	MANT_DIGITS: 53,
 	EPSILON: Math.pow(2, -52),
 
-	// Compute a numerical approximation to an integral via adaptive Simpson's Rule
-	// This routine ignores underflow.
+	// Compute a numerical approximation to an integral via adaptive Simpson's
+	// Rule This routine ignores underflow.
 
 	// Returns approximate value of the integral if successful.
 	// f: Pointer to function to be integrated.
@@ -53,10 +53,11 @@ var MathUtils = {
 
 			if (index >= table.length)
 				success = false;
-			if (!success || (Math.abs(diff) <= accuracy * Math.abs(area) && da <= dxmax)) {
+			if (!success || (Math.abs(diff) <= accuracy * Math.abs(area)
+					&& da <= dxmax)) {
 				// Accept approximate integral.
-				// If it was a right interval, add results to finish at this level.
-				// If it was a left interval, process right interval.
+				// If it was a right interval, add results to finish at this
+				// level. If it was a left interval, process right interval.
 				for (;;) {
 					if (!p.left) { // process right-half interval
 						alpha += da;
@@ -76,7 +77,8 @@ var MathUtils = {
 				}
 
 			} else {
-				// Raise level and store information for processing right-half interval.
+				// Raise level and store information for processing right-half
+				// interval.
 				p = table[++index] = {
 					left: false,
 					f1t: fv2,
@@ -145,7 +147,8 @@ var MathUtils = {
 					diff = est - sum;
 				area = parea + sum;
 				var b2 = alpha + da;
-				if (Math.abs(Math.abs(integral - area) - Math.abs(pdiff)) + Math.abs(diff) <= fv4 * accuracy * (b2 - a)) {
+				if (Math.abs(Math.abs(integral - area) - Math.abs(pdiff))
+						+ Math.abs(diff) <= fv4 * accuracy * (b2 - a)) {
 					return { b: b2, area: area };
 				}
 				if (Math.abs(integral - area) > Math.abs(pdiff + diff)) {
@@ -155,10 +158,12 @@ var MathUtils = {
 						p.left = true;
 						p.psum = parea;
 					} else {
-						if ((Math.abs(diff) <= fv4 * accuracy * da || dx <= dxmin) && da <= dxmax) {
+						if ((Math.abs(diff) <= fv4 * accuracy * da
+								|| dx <= dxmin) && da <= dxmax) {
 							// Accept approximate integral sum.
-							// If it was a right interval, add results to finish at this level.
-							// If it was a left interval, process right interval.
+							// If it was a right interval, add results to finish
+							// at this level. If it was a left interval, process
+							// right interval.
 							pdiff += diff;
 							for (;;) {
 								if (!p.left) { // process right-half interval
@@ -193,7 +198,8 @@ var MathUtils = {
 				}
 				if (index >= table.length)
 					return null;
-				// Raise level and store information for processing right-half interval.
+				// Raise level and store information for processing right-half
+				// interval.
 				da = dx;
 				est = estl;
 				p = table[++index] = {

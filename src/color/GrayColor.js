@@ -21,19 +21,20 @@ var GrayColor = Color.extend({
 	getComponents: function() {
 		return [this._gray, this._alpha];
 	},
-	
+
 	/**
-	 * A value between 0 and 1 that specifies the amount of gray in the gray color.
+	 * A value between 0 and 1 that specifies the amount of gray in the gray
+	 * color.
 	 */
 	getGray: function() {
 		return this._gray;
 	},
-	
+
 	setGray: function(gray) {
 		this._cssString = null;
 		this._gray = gray;
 	},
-	
+
 	/**
 	 * Checks if the component color values of the GrayColor are the
 	 * same as those of the supplied one.
@@ -48,13 +49,13 @@ var GrayColor = Color.extend({
 		}
 		return false;
 	},
-	
+
 	toString: function() {
 		return '{ gray: ' + this.gray
 			+ (this.alpha != -1 ? ', alpha: ' + this.alpha : '')
 			+ ' }';
 	},
-	
+
 	toCssString: function() {
 		if (!this._cssString) {
 			var component = Math.round((1 - this.gray) * 255) + ',';
@@ -67,7 +68,7 @@ var GrayColor = Color.extend({
 	}
 }, new function() {
 	var fields = { beans: true };
-	
+
 	// Using the standard NTSC conversion formula that is used for
 	// calculating the effective luminance of an RGB color:
 	// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU

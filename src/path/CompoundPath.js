@@ -8,7 +8,7 @@ var CompoundPath = PathItem.extend({
 			}
 		}
 	},
-	
+
 	// TODO: have getBounds of Group / Layer / CompoundPath use the same
 	// code (from a utility script?)
 	getBounds: function() {
@@ -28,7 +28,7 @@ var CompoundPath = PathItem.extend({
 		}
 		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
-	
+
 	/**
 	 * If this is a compound path with only one path inside,
 	 * the path is moved outside and the compound path is erased.
@@ -45,7 +45,7 @@ var CompoundPath = PathItem.extend({
 		}
 		return this;
 	},
-	
+
 	smooth: function() {
 		for (var i = 0, l = this.children.length; i < l; i++) {
 			this.children[i].smooth();

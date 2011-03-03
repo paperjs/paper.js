@@ -1,5 +1,4 @@
 var PaperScript = new function() {
-
 	// Handle Math Operators
 
 	var operators = {

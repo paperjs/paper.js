@@ -450,7 +450,7 @@ var Matrix = Base.extend({
 		}
 		return this;
 	},
-	
+
 	/**
 	 * Applies this matrix to the specified Canvas Context.
 	 */

@@ -1,6 +1,6 @@
 var PlacedSymbol = Item.extend({
 	beans: true,
-	
+
 	initialize: function() {
 		this.base();
 		if (arguments[0] instanceof Symbol) {
@@ -23,7 +23,7 @@ var PlacedSymbol = Item.extend({
 		// TODO: should size be cached here, or on Symbol?
 		this._size = this._bounds.size;
 	},
-	
+
 	_transform: function(matrix, flags) {
 		var width = this._size.width;
 		var height = this._size.height;
@@ -36,7 +36,7 @@ var PlacedSymbol = Item.extend({
 			x, y + height];
 		this.matrix.preConcatenate(matrix);
 		this.matrix.transform(coords, 0, coords, 0, 4);
-		
+
 		var xMin = coords[0], xMax = coords[0];
 		var yMin = coords[1], yMax = coords[1];
 		for (var i = 2; i < 8; i += 2) {
@@ -53,7 +53,7 @@ var PlacedSymbol = Item.extend({
 		bounds.width = xMax - xMin;
 		bounds.height = yMax - yMin;
 	},
-	
+
 	getBounds: function() {
 		return this._bounds;
 	},

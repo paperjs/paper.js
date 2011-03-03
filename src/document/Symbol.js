@@ -16,7 +16,7 @@ var Symbol = Base.extend({
 		this._definition.removeFromParent();
 		this._definition.position = new Point(0, 0);
 	}
-	
+
 	// TODO:
 	// remove()
 });

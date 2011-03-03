@@ -12,8 +12,7 @@ var ToolHandler = Base.extend({
 			this[i] = handlers[i];
 		}
 	},
-	
-	
+
 	/**
 	 * The minimum distance the mouse has to drag before firing the onMouseDrag
 	 * event, since the last onMouseDrag event.
@@ -48,7 +47,8 @@ var ToolHandler = Base.extend({
 	},
 
 	getFixedDistance: function() {
-		if (this._minDistance != null && this._minDistance.equals(this._maxDistance))
+		if (this._minDistance != null
+				&& this._minDistance.equals(this._maxDistance))
 			return this._minDistance;
 		return null;
 	},
@@ -121,7 +121,8 @@ var ToolHandler = Base.extend({
 			// would produce weird results. matchMaxDistance controls this.
 			this.matchMaxDistance = false;
 			while (this.updateEvent(type, pt, this.minDistance,
-				this.maxDistance, false, this.needsChange, this.matchMaxDistance)) {
+					this.maxDistance, false, this.needsChange,
+					this.matchMaxDistance)) {
 				if (this.onMouseDrag)
 					this.onMouseDrag(new ToolEvent(this, type, modifiers));
 				this.needsChange = true;
@@ -131,8 +132,9 @@ var ToolHandler = Base.extend({
 		case 'MOUSE_UP':
 			// If the last mouse drag happened in a different place, call
 			// mouse drag first, then mouse up.
-			if ((this.point.x != pt.x || this.point.y != pt.y) && this.updateEvent(
-					'MOUSE_DRAG', pt, this.minDistance, this.maxDistance, false, false, false)) {
+			if ((this.point.x != pt.x || this.point.y != pt.y)
+					&& this.updateEvent('MOUSE_DRAG', pt, this.minDistance,
+							this.maxDistance, false, false, false)) {
 				if (this.onMouseDrag)
 					this.onMouseDrag(new ToolEvent(this, type, modifiers));
 			}

@@ -4,7 +4,7 @@ var Tool = ToolHandler.extend(new function() {
 		// TODO: always the active view?
 		return document.activeView.viewToArtwork(point);
 	};
-	
+
 	return {
 		beans: true,
 
@@ -27,7 +27,8 @@ var Tool = ToolHandler.extend(new function() {
 					if (that.onMouseDown)
 						that._document.redraw();
 					if (that.eventInterval != -1)
-						this.intervalId = setInterval(events.drag, that.eventInterval);
+						this.intervalId = setInterval(events.drag,
+								that.eventInterval);
 					dragging = true;
 				},
 				drag: function(e) {
@@ -62,9 +63,9 @@ var Tool = ToolHandler.extend(new function() {
 
 		/**
 		 * The fixed time delay between each call to the {@link #onMouseDrag}
-		 * event. Setting this to an interval means the {@link #onMouseDrag} event
-		 * is called repeatedly after the initial {@link #onMouseDown} until the
-		 * user releases the mouse.
+		 * event. Setting this to an interval means the {@link #onMouseDrag}
+		 * event is called repeatedly after the initial {@link #onMouseDown}
+		 * until the user releases the mouse.
 		 * 
 		 * Sample code:
 		 * <code>

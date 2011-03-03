@@ -29,20 +29,20 @@ var Item = Base.extend({
 		}
 		return copy;
 	},
-	
+
 	/**
 	 * Clones the item within the same document.
 	 * 
 	 * @return the newly cloned item
 	 */
-	
+
 	clone: function() {
 		return this.copyTo(this.parent);
 	},
-	
+
 	// TODO: isSelected / setSelected
 	// TODO: isFullySelected / setFullySelected
-	
+
 	/**
 	 * Specifies whether the item is locked.
 	 * 
@@ -55,9 +55,9 @@ var Item = Base.extend({
 	 * 
 	 * @return {@true if the item is locked}
 	 */
-	
+
 	locked: false,
-	
+
 	/**
 	 * Specifies whether the item is visible.
 	 * 
@@ -70,9 +70,9 @@ var Item = Base.extend({
 	 * 
 	 * @return {@true if the item is visible}
 	 */
-	
+
 	visible: true,
-	
+
 	/**
 	 * The opacity of the item.
 	 * 
@@ -87,9 +87,9 @@ var Item = Base.extend({
 	 * 
 	 * @return the opacity of the item as a value between 0 and 1.
 	 */
-	
+
 	opacity: 1,
-	
+
 	/**
 	 * The blend mode of the item.
 	 * 
@@ -103,7 +103,7 @@ var Item = Base.extend({
 	 * </code>
 	 */
 	blendMode: 'normal',
-	
+
 	/**
 	 * Specifies whether the item is hidden.
 	 * 
@@ -118,15 +118,15 @@ var Item = Base.extend({
 	 * 
 	 * @jshide
 	 */
-	
+
 	isHidden: function() {
 		return !this.visible;
 	},
-	
+
 	setHidden: function(hidden) {
 		this.setVisible(!hidden);
 	},
-	
+
 	/**
 	 * Specifies whether the item defines a clip mask. This can only be set on
 	 * paths, compound paths, and text frame objects, and only if the item is
@@ -145,7 +145,7 @@ var Item = Base.extend({
 	isClipMask: function() {
 		return this._clipMask;
 	},
-	
+
 	setClipMask: function(clipMask) {
 		this._clipMask = clipMask;
 		if (this._clipMask) {
@@ -153,19 +153,19 @@ var Item = Base.extend({
 			this.strokeColor = null;
 		}
 	},
-	
+
 	// TODO: getIsolated / setIsolated (print specific feature)
 	// TODO: get/setKnockout (print specific feature)
 	// TODO get/setAlphaIsShape
 	// TODO: get/setData
-	
+
 	/**
 	 * Reverses the order of this item's children
 	 */
 	reverseChildren: function() {
 		this.children.reverse();
 	},
-	
+
 	/**
 	 * The first item contained within this item.
 	 */
@@ -181,7 +181,7 @@ var Item = Base.extend({
 		if (this.children.length > 0)
 			return this.children[this.children.length - 1];
 	},
-	
+
 	/**
 	 * The next item on the same level as this item.
 	 */
@@ -199,7 +199,7 @@ var Item = Base.extend({
 	getPreviousSibling: function() {
 		if (this.parent) {
 			var index = this.index - 1;
-			if (index <= 0)	
+			if (index <= 0)
 				return this.parent.children[index];
 		}
 	},
@@ -213,7 +213,7 @@ var Item = Base.extend({
 		// We need linked lists instead.
 		return this.parent.children.indexOf(this);
 	},
-	
+
 	/**
 	* Removes the item from its parent's children list.
 	*/
@@ -222,14 +222,14 @@ var Item = Base.extend({
 			this.parent.children.splice(this.index, 1);
 		this.parent = null;
 	},
-	
+
 	/**
 	* Removes the item.
-	*/	
+	*/
 	remove: function() {
 		this.removeFromParent();
 	},
-	
+
 	/**
 	 * {@grouptitle Tests}
 	 * 
@@ -240,7 +240,7 @@ var Item = Base.extend({
 	hasChildren: function() {
 		return this.children && this.children.length;
 	},
-	
+
 	/**
 	 * Checks whether the item is editable.
 	 * 
@@ -256,7 +256,7 @@ var Item = Base.extend({
 		}
 		return true;
 	},
-	
+
 	/**
 	 * Checks whether the item is valid, i.e. it hasn't been removed.
 	 * 
@@ -271,7 +271,7 @@ var Item = Base.extend({
 	 * @return {@true if the item is valid}
 	 */
 	// TODO: isValid / checkValid
-	
+
 	/**
 	 * {@grouptitle Hierarchy Operations}
 	 * 
@@ -295,7 +295,7 @@ var Item = Base.extend({
 		item.parent = this;
 		item.document = this.document;
 	},
-	
+
 	/**
 	 * Inserts the specified item as a child of this item by appending it to the
 	 * list of children and moving it below all other children. You can use this
@@ -317,7 +317,7 @@ var Item = Base.extend({
 		item.parent = this;
 		item.document = this.document;
 	},
-	
+
 	/**
 	 * A link to {@link #appendTop}
 	 * 
@@ -326,7 +326,7 @@ var Item = Base.extend({
 	appendChild: function(item) {
 		return this.appendTop(item);
 	},
-	
+
 	/**
 	 * Moves this item above the specified item.
 	 * 
@@ -350,7 +350,7 @@ var Item = Base.extend({
 		this.document = item.document;
 		return true;
 	},
-	
+
 	/**
 	 * Moves the item below the specified item.
 	 * 
@@ -374,7 +374,7 @@ var Item = Base.extend({
 		this.document = item.document;
 		return true;
 	},
-	
+
 	/**
 	 * {@grouptitle Hierarchy Tests}
 	 * 
@@ -392,7 +392,7 @@ var Item = Base.extend({
 	 * @return {@true if it is above the specified item}
 	 */
 	// TODO: isAbove
-	
+
 	/**
 	 * Checks if the item is below the specified item in the stacking order of
 	 * the document.
@@ -408,16 +408,16 @@ var Item = Base.extend({
 	 * @return {@true if it is below the specified item}
 	 */
 	// TODO: isBelow
-	
+
 	// TODO: this is confusing the beans
 	// isParent: function(item) {
 	// 	return this.parent == item;
 	// },
-	
+
 	isChild: function(item) {
 		return item.parent == this;
 	},
-	
+
 	/**
 	 * Checks if the item is contained within the specified item.
 	 * 
@@ -441,7 +441,7 @@ var Item = Base.extend({
 		}
 		return false;
 	},
-	
+
 	/**
 	 * Checks if the item is an ancestor of the specified item.
 	 * 
@@ -466,7 +466,7 @@ var Item = Base.extend({
 		}
 		return false;
 	},
-	
+
 	/**
 	 * Checks whether the item is grouped with the specified item.
 	 * 
@@ -487,7 +487,7 @@ var Item = Base.extend({
 		}
 		return false;
 	},
-	
+
 	getBounds: function() {
 		// TODO: Implement for items other than paths
 		return new Rectangle();
@@ -515,7 +515,7 @@ var Item = Base.extend({
 		// Now execute the transformation:
 		this.transform(matrix);
 	},
-	
+
 	/**
 	 * The bounding rectangle of the item including stroke width.
 	 */
@@ -525,7 +525,7 @@ var Item = Base.extend({
 	 * The bounding rectangle of the item including stroke width and controls.
 	 */
 	// TODO: getControlBounds
-	
+
 	/**
 	 * Rasterizes the item into a newly created Raster object. The item itself
 	 * is not removed after rasterization.
@@ -552,7 +552,7 @@ var Item = Base.extend({
 		raster.scale(1 / scale);
 		return raster;
 	},
-	
+
 	/**
 	 * The item's position within the art board. This is the
 	 * {@link Rectangle#getCenter()} of the {@link Item#getBounds()} rectangle.
@@ -684,7 +684,7 @@ var Item = Base.extend({
 		}
 		this.transform(new Matrix().shear(shx, shy, center || this.position));
 	},
-		
+
 	/**
 	 * The path style of the item.
 	 * 

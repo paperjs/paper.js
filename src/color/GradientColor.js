@@ -8,40 +8,41 @@ var GradientColor = Color.extend({
 		if (hilite)
 			this.hilite = hilite;
 	},
-	
+
 	getOrigin: function() {
 		return this._origin;
 	},
-	
+
 	setOrigin: function() {
 		this._origin = Point.read(arguments);
 		if (this._destination)
 			this._radius = this._destination.getDistance(this._origin);
 	},
-	
+
 	getDestination: function() {
 		return this._destination;
 	},
-	
+
 	setDestination: function() {
 		this._destination = Point.read(arguments);
 		this._radius = this._destination.getDistance(this._origin);
 	},
-	
+
 	getHilite: function() {
 		return this._hilite;
 	},
-	
+
 	setHilite: function() {
 		var hilite = Point.read(arguments);
 		var vector = hilite.subtract(this.origin);
 		if (vector.length > this._radius) {
-			this._hilite = this.origin.add(vector.normalize(this._radius - 0.1));
+			this._hilite = this.origin.add(vector.normalize(
+					this._radius - 0.1));
 		} else {
 			this._hilite = hilite;
 		}
 	},
-	
+
 	getCanvasStyle: function(ctx) {
 		var gradient;
 		if (this.gradient.type == 'linear') {

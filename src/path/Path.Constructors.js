@@ -7,7 +7,7 @@ Path.inject({ statics: new function() {
 		new Segment([1, 0.5], [0, -kappa], [0, kappa ]),
 		new Segment([0.5, 1], [kappa, 0 ], [-kappa, 0])
 	];
-	
+
 	return {
 		Line: function() {
 			var path = new Path();
@@ -103,7 +103,7 @@ Path.inject({ statics: new function() {
 			path.arcTo(through, to);
 			return path;
 		},
-		
+
 		RegularPolygon: function(center, numSides, radius) {
 			center = new Point(center);
 			var path = new Path();

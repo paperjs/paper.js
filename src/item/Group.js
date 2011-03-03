@@ -10,7 +10,7 @@ var Group = Item.extend({
 		}
 		this.clipped = false;
 	},
-	
+
 	getBounds: function() {
 		if (this.children.length) {
 			var rect = this.children[0].bounds;
@@ -28,7 +28,7 @@ var Group = Item.extend({
 		}
 		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
-	
+
 	/**
 	 * Specifies whether the group item is to be clipped.
 	 * When setting to true, the first child in the group is automatically
@@ -45,7 +45,7 @@ var Group = Item.extend({
 	isClipped: function() {
 		return this._clipped;
 	},
-	
+
 	setClipped: function(clipped) {
 		this._clipped = clipped;
 		var child = this.firstChild;

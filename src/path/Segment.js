@@ -33,20 +33,20 @@ var Segment = Base.extend({
 		if (!this.handleOut)
 			this.handleOut = new Point();
 	},
-	
+
 	getPoint: function() {
 		return this.point;
 	},
-	
+
 	setPoint: function() {
 		var point = Point.read(arguments);
 		this.point = point;
 	},
-	
+
 	getHandleIn: function() {
 		return this.handleIn;
 	},
-	
+
 	setHandleIn: function() {
 		var point = Point.read(arguments);
 		this.handleIn = point;
@@ -55,13 +55,13 @@ var Segment = Base.extend({
 	getHandleOut: function() {
 		return this.handleOut;
 	},
-	
+
 	setHandleOut: function() {
 		var point = Point.read(arguments);
 		this.handleOut = point;
 		this.corner = !handleIn.isParallel(handleOut);
 	},
-	
+
 	getIndex: function() {
 		// TODO: Cache and update indices instead of searching?
 		return this.path._segments.indexOf(this);
@@ -70,7 +70,7 @@ var Segment = Base.extend({
 	getPath: function() {
 		return this._path;
 	},
-	
+
 	// TODO:
 	// getCurve: function() {
 	// 	if (this._segments && this._segments.path) {
@@ -80,46 +80,46 @@ var Segment = Base.extend({
 	// 		return index < curves.length ? curves[index] : null;
 	// 	}
 	// },
-	
+
 	getNext: function() {
 		var index = this.index;
 		return this.path && index < this.path._segments.length - 1
 			? this.path._segments[index + 1] : null;
 	},
-	
+
 	getPrevious: function() {
 		return this.path != null && index > 0
 			? this.path._segments[this.index - 1] : null;
 	},
-	
+
 	// TODO:
 	// isSelected: function() {
-	// 	
+	// 
 	// }
 	// 
 	// setSelected: function(pt, selected)
-	
+
 	reverse: function() {
 		return new Segment(this.point, this.handleOut, this.handleIn);
 	},
-	
+
 	clone: function() {
 		return new Segment(this);
 	},
-	
+
 	remove: function() {
 		if (this.path && this.path._segments)
 			return this.path._segments.splice(this.index, 1);
 		return false;
 	},
-	
+
 	toString: function() {
 		return '{ point: ' + this.point
 				+ (this.handleIn ? ', handleIn '+ this.handleIn : '')
 				+ (this.handleOut ? ', handleOut ' + this.handleOut : '')
 				+ ' }';
 	},
-	
+
 	statics: {
 		read: function(args, index, length) {
 			var index = index || 0, length = length || args.length - index;

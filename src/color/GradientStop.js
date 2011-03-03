@@ -6,19 +6,19 @@ var GradientStop = Base.extend({
 		this._color = Color.read([color]);
 		this._rampPoint = rampPoint !== null ? rampPoint : 0;
 	},
-	
+
 	getRampPoint: function() {
 		return this._rampPoint;
 	},
-	
+
 	setRampPoint: function(rampPoint) {
 		this._rampPoint = rampPoint;
 	},
-	
+
 	getColor: function() {
 		return this._color;
 	},
-	
+
 	setColor: function() {
 		this._color = Color.read(arguments);
 	}

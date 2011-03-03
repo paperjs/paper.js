@@ -11,7 +11,7 @@ var Layer = Group.extend({
 	getIndex: function() {
 		return !this.parent ? this.document.layers.indexOf(this) : this.base();
 	},
-	
+
 	/**
 	* Removes the layer from its document's layers list
 	* or its parent's children list.
@@ -23,7 +23,7 @@ var Layer = Group.extend({
 			this.base();
 		}
 	},
-	
+
 	moveAbove: function(item) {
 		// if the item is a layer and contained within Document#layers
 		if (item instanceof Layer && !item.parent) {
@@ -35,7 +35,7 @@ var Layer = Group.extend({
 			this.base(item);
 		}
 	},
-	
+
 	moveBelow: function(item) {
 		// if the item is a layer and contained within Document#layers
 		if (item instanceof Layer && !item.parent) {
@@ -47,7 +47,7 @@ var Layer = Group.extend({
 			this.base(item);
 		}
 	},
-	
+
 	getNextSibling: function() {
 		if (!this.parent) {
 			var index = this.index + 1;
@@ -57,7 +57,7 @@ var Layer = Group.extend({
 			return this.base();
 		}
 	},
-	
+
 	getPreviousSibling: function() {
 		if (!this.parent) {
 			var index = this.index - 1;

@@ -8,12 +8,12 @@ var DocumentView = Base.extend({
 		this._zoom = 1;
 		this._center = this._bounds.center;
 	},
-	
+
 	// TODO: test this.
 	getCenter: function() {
 		return this._center;
 	},
-	
+
 	setCenter: function() {
 		var center = Point.read(arguments);
 		if (center) {
@@ -22,11 +22,11 @@ var DocumentView = Base.extend({
 			this._center = center;
 		}
 	},
-	
+
 	getZoom: function() {
 		return this._zoom;
 	},
-	
+
 	setZoom: function(zoom) {
 		// TODO: clamp the view between 1/32 and 64?
 		var mx = new Matrix();
@@ -34,22 +34,22 @@ var DocumentView = Base.extend({
 		this.transform(mx);
 		this._zoom = zoom;
 	},
-	
+
 	scrollBy: function() {
 		var point = Point.read(arguments).negate();
 		var mx = new Matrix().translate(point);
 		this.transform(mx);
 	},
-	
+
 	getBounds: function() {
 		return this._bounds;
 	},
-	
+
 	// TODO:
 	// setBounds: function(rect) {
 	// 
 	// },
-	
+
 	// TODO: getInvalidBounds
 	// TODO: invalidate(rect)
 	// TODO: style: artwork / preview / raster / opaque / ink
@@ -59,12 +59,12 @@ var DocumentView = Base.extend({
 	artworkToView: function(point) {
 		return this.matrix.transform(point);
 	},
-	
+
 	viewToArtwork: function(point) {
 		// TODO: cache the inverse matrix:
 		return this.matrix.createInverse().transform(point);
 	},
-	
+
 	// TODO: inherit this code somehow?
 	transform: function(matrix, flags) {
 		var width = this.document.bounds.width;

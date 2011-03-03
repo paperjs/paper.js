@@ -8,7 +8,7 @@ var Color = Base.extend({
 	getAlpha: function() {
 		return this._alpha;
 	},
-	
+
 	setAlpha: function(alpha) {
 		if (this._alpha == null || alpha == -1) this._alpha = -1;
 		else if (this._alpha < 0) this._alpha = 0;
@@ -16,7 +16,7 @@ var Color = Base.extend({
 		else this._alpha = alpha;
 		this._cssString = null;
 	},
-	
+
 	/**
 	 * Checks if the color has an alpha value.
 	 * 
@@ -25,11 +25,11 @@ var Color = Base.extend({
 	hasAlpha: function() {
 		return this._alpha != -1;
 	},
-	
+
 	getCanvasStyle: function() {
 		return this.cssString;
 	},
-	
+
 	statics: {
 		read: function(args, index, length) {
 			var index = index || 0, length = length || args.length - index;

@@ -166,7 +166,7 @@ var Path = PathItem.extend({
 		if (segment)
 			this._add(segment);
 	},
-	
+
 	/**
 	 * Adds a cubic bezier curve to the path, defined by two handles and a to
 	 * point.
@@ -183,7 +183,7 @@ var Path = PathItem.extend({
 			new Segment(to, handle2.subtract(to), new Point())
 		);
 	},
-	
+
 	/**
 	 * Adds a quadratic bezier curve to the path, defined by a handle and a to
 	 * point.
@@ -203,7 +203,7 @@ var Path = PathItem.extend({
 			to
 		);
 	},
-	
+
 	curveTo: function(through, to, parameter) {
 		through = new Point(through);
 		to = new Point(to);
@@ -223,7 +223,7 @@ var Path = PathItem.extend({
 					+ parameter);
 		this.quadraticCurveTo(handle, to);
 	},
-	
+
 	arcTo: function(to, clockwise) {
 		var through, to;
 		// Get the start point:
@@ -240,7 +240,7 @@ var Path = PathItem.extend({
 					? middle.subtract(-step.y, step.x)
 					: middle.add(-step.y, step.x);
 		}
-		
+
 		var x1 = current.point.x, x2 = through.x, x3 = to.x;
 		var y1 = current.point.y, y2 = through.y, y3 = to.y;
 
@@ -312,7 +312,7 @@ var Path = PathItem.extend({
 			angle += inc;
 		}
 	},
-	
+
 	lineBy: function() {
 		var vector = Point.read(arguments);
 		if (vector) {
@@ -320,7 +320,7 @@ var Path = PathItem.extend({
 			this.lineTo(current.point.add(vector));
 		}
 	},
-	
+
 	curveBy: function(throughVector, toVector, parameter) {
 		throughVector = Point.read(throughVector);
 		toVector = Point.read(toVector);
@@ -328,7 +328,7 @@ var Path = PathItem.extend({
 		this.curveTo(current.add(throughVector), current.add(toVector),
 				parameter);
 	},
-	
+
 	arcBy: function(throughVector, toVector) {
 		throughVector = Point.read(throughVector);
 		toVector = Point.read(toVector);
