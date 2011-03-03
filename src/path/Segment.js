@@ -114,9 +114,9 @@ Segment = Base.extend({
 	},
 	
 	toString: function() {
-		return '{ point: ' + this.point.toString()
-				+ (this.handleIn ? ', handleIn '+ this.handleIn.toString() : '')
-				+ (this.handleOut ? ', handleOut ' + this.handleOut.toString() : '')
+		return '{ point: ' + this.point
+				+ (this.handleIn ? ', handleIn '+ this.handleIn : '')
+				+ (this.handleOut ? ', handleOut ' + this.handleOut : '')
 				+ ' }';
 	},
 	
