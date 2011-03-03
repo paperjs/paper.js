@@ -591,8 +591,8 @@ Item = Base.extend({
 		// TODO: Handle flags, add TransformFlag class and convert to bit mask
 		// for quicker checking
 		// TODO: Call transform on chidren only if 'children' flag is provided
-		if (this.transformContent)
-			this.transformContent(matrix, flags);
+		if (this._transform)
+			this._transform(matrix, flags);
 		if (this.children) {
 			for (var i = 0, l = this.children.length; i < l; i++) {
 				var child = this.children[i];
@@ -602,7 +602,7 @@ Item = Base.extend({
 	},
 
 /*
-	transformContent: function(matrix, flags) {
+	_transform: function(matrix, flags) {
 		// The code that performs the actual transformation of content,
 		// if defined. Item itself does not define this.
 	},

@@ -149,7 +149,7 @@ Raster = Item.extend({
 		this._canvas = canvas;
 	},
 	
-	transformContent: function(matrix, flags) {
+	_transform: function(matrix, flags) {
 		// In order to set the right context transformation when drawing the
 		// raster, simply preconcatenate the internal matrix with the provided
 		// one.

@@ -70,7 +70,7 @@ Path = PathItem.extend({
 		return -result.b;
 	},
 
-	transformContent: function(matrix, flags) {
+	_transform: function(matrix, flags) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++) {
 			var segment = this._segments[i];

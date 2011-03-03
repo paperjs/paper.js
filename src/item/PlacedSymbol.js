@@ -25,7 +25,7 @@ PlacedSymbol = Item.extend({
 		this._size = this._bounds.size;
 	},
 	
-	transformContent: function(matrix, flags) {
+	_transform: function(matrix, flags) {
 		var width = this._size.width;
 		var height = this._size.height;
 		var x = width * -0.5;
