@@ -33,31 +33,31 @@ var Size = Base.extend({
 
 	add: function() {
 		var size = Size.read(arguments);
-		return new Size(this.width + size.width, this.height + size.height);
+		return Size.create(this.width + size.width, this.height + size.height);
 	},
 
 	subtract: function() {
 		var size = Size.read(arguments);
-		return new Size(this.width - size.width, this.height - size.height);
+		return Size.create(this.width - size.width, this.height - size.height);
 	},
 
 	multiply: function() {
 		var size = Size.read(arguments);
-		return new Size(this.width * size.width, this.height * size.height);
+		return Size.create(this.width * size.width, this.height * size.height);
 	},
 
 	divide: function() {
 		var size = Size.read(arguments);
-		return new Size(this.width / size.width, this.height / size.height);
+		return Size.create(this.width / size.width, this.height / size.height);
 	},
 
 	modulo: function() {
 		var size = Size.read(arguments);
-		return new Size(this.width % size.width, this.height % size.height);
+		return Size.create(this.width % size.width, this.height % size.height);
 	},
 
 	negate: function() {
-		return new Size(-this.width, -this.height);
+		return Size.create(-this.width, -this.height);
 	},
 
 	equals: function() {
@@ -70,19 +70,19 @@ var Size = Base.extend({
 	},
 
 	round: function() {
-		return new Size(Math.round(this.width), Math.round(this.height));
+		return Size.create(Math.round(this.width), Math.round(this.height));
 	},
 
 	ceil: function() {
-		return new Size(Math.ceil(this.width), Math.ceil(this.height));
+		return Size.create(Math.ceil(this.width), Math.ceil(this.height));
 	},
 
 	floor: function() {
-		return new Size(Math.floor(this.width), Math.floor(this.height));
+		return Size.create(Math.floor(this.width), Math.floor(this.height));
 	},
 
 	abs: function() {
-		return new Size(Math.abs(this.width), Math.abs(this.height));
+		return Size.create(Math.abs(this.width), Math.abs(this.height));
 	},
 
 	dot: function(Size) {
@@ -94,6 +94,14 @@ var Size = Base.extend({
 	},
 
 	statics: {
+		// See Point.create()
+		create: function(width, height) {
+			var size = new Size(Size.dont);
+			size.width = width;
+			size.height = height;
+			return size;
+		},
+
 		read: function(args, index, length) {
 			var index = index || 0, length = length || args.length - index;
 			if (length == 1 && args[index] instanceof Size) {
@@ -108,19 +116,19 @@ var Size = Base.extend({
 		},
 
 		min: function(Size1, Size2) {
-			return new Size(
+			return Size.create(
 				Math.min(Size1.width, Size2.width),
 				Math.min(Size1.height, Size2.height));
 		},
 
 		max: function(Size1, Size2) {
-			return new Size(
+			return Size.create(
 				Math.max(Size1.width, Size2.width),
 				Math.max(Size1.height, Size2.height));
 		},
 
 		random: function() {
-			return new Size(Math.random(), Math.random());
+			return Size.create(Math.random(), Math.random());
 		}
 	}
 });
