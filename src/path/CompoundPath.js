@@ -67,11 +67,11 @@ var CompoundPath = PathItem.extend({
 		}
 		firstChild.setCtxStyles(ctx);
 		if (firstChild.fillColor) {
-			ctx.fillStyle = firstChild.fillColor.getCssString();
+			ctx.fillStyle = firstChild.fillColor.toCssString();
 			ctx.fill();
 		}
 		if (firstChild.strokeColor) {
-			ctx.strokeStyle = firstChild.strokeColor.getCssString();
+			ctx.strokeStyle = firstChild.strokeColor.toCssString();
 			ctx.stroke();
 		}
 	}

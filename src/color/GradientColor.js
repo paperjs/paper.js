@@ -54,7 +54,7 @@ var GradientColor = Color.extend({
 		}
 		for (var i = 0, l = this.gradient.stops.length; i < l; i++) {
 			var stop = this.gradient.stops[i];
-			gradient.addColorStop(stop.rampPoint, stop.color.getCssString());
+			gradient.addColorStop(stop.rampPoint, stop.color.toCssString());
 		}
 		return gradient;
 	}

@@ -187,7 +187,7 @@ var RGBColor = Color.extend(new function() {
 				+ ' }';
 		},
 
-		getCssString: function() {
+		toCssString: function() {
 			if (!this._cssString) {
 				this._cssString = 'rgba('
 					+ (Math.round(this.red * 255)) + ', '

@@ -55,7 +55,7 @@ var GrayColor = Color.extend({
 			+ ' }';
 	},
 	
-	getCssString: function() {
+	toCssString: function() {
 		if (!this._cssString) {
 			var component = Math.round((1 - this.gray) * 255) + ',';
 			this._cssString = 'rgba('
