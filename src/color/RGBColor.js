@@ -48,8 +48,8 @@ var RGBColor = Color.extend(new function() {
 
 	function stringToComponents(string) {
 		return string.match(/^#[0-9a-f]{3,6}$/i)
-			? hexToComponents(string)
-			: namedToComponents(string);
+				? hexToComponents(string)
+				: namedToComponents(string);
 	};
 	
 	function hexToComponents(string) {
@@ -57,7 +57,8 @@ var RGBColor = Color.extend(new function() {
 		if (hex.length >= 4) {
 			var rgb = [];
 			for (var i = 1; i < 4; i++)
-				rgb.push((hex[i].length == 1 ? hex[i] + hex[i] : hex[i]).toInt(16) / 255);
+				rgb.push((hex[i].length == 1
+						? hex[i] + hex[i] : hex[i]).toInt(16) / 255);
 			return rgb;
 		}
 	};
@@ -85,7 +86,7 @@ var RGBColor = Color.extend(new function() {
 					this._red = arg[0];
 					this._green = arg[1];
 					this._blue = arg[2];
-					this.alpha = (arg.length > 3) ? arg[3] : -1;
+					this.alpha = arg.length > 3 ? arg[3] : -1;
 				} else if (arg.red !== undefined) {
 					this._red = arg.red;
 					this._blue = arg.blue;
@@ -99,7 +100,7 @@ var RGBColor = Color.extend(new function() {
 				this._red = arguments[0];
 				this._green = arguments[1];
 				this._blue = arguments[2];
-				this.alpha = (arguments.length > 3) ? arguments[3] : -1;
+				this.alpha = arguments.length > 3 ? arguments[3] : -1;
 			}
 		},
 
@@ -182,7 +183,7 @@ var RGBColor = Color.extend(new function() {
 			return '{ red: ' + this.red
 				+ ', green: ' + this.green
 				+ ', blue: ' + this.blue
-				+ ((this.alpha != -1) ? ', alpha: ' + this.alpha : '')
+				+ (this.alpha != -1 ? ', alpha: ' + this.alpha : '')
 				+ ' }';
 		},
 
@@ -192,7 +193,7 @@ var RGBColor = Color.extend(new function() {
 					+ (Math.round(this.red * 255)) + ', '
 					+ (Math.round(this.green * 255)) + ', '
 					+ (Math.round(this.blue * 255)) + ', '
-					+ ((this.alpha != -1) ? this.alpha : 1)
+					+ (this.alpha != -1 ? this.alpha : 1)
 					+ ')';
 			}
 			return this._cssString;

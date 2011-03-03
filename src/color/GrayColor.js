@@ -51,7 +51,7 @@ var GrayColor = Color.extend({
 	
 	toString: function() {
 		return '{ gray: ' + this.gray
-			+ ((this.alpha != -1) ? ', alpha: ' + this.alpha : '')
+			+ (this.alpha != -1 ? ', alpha: ' + this.alpha : '')
 			+ ' }';
 	},
 	
@@ -60,7 +60,7 @@ var GrayColor = Color.extend({
 			var component = Math.round((1 - this.gray) * 255) + ',';
 			this._cssString = 'rgba('
 				+ component + component + component
-				+ ((this.alpha != -1) ? this.alpha : 1)
+				+ (this.alpha != -1 ? this.alpha : 1)
 				+ ')';
 		}
 		return this._cssString;
