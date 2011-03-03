@@ -15,8 +15,8 @@ Path.inject({ statics: new function() {
 				path._add(new Segment(arguments[0]));
 				path._add(new Segment(arguments[1]));
 			} else if (arguments.length == 4) {
-				path._add(Segment.read(arguments[0], arguments[1]));
-				path._add(Segment.read(arguments[2], arguments[3]));
+				path._add(new Segment(arguments[0], arguments[1]));
+				path._add(new Segment(arguments[2], arguments[3]));
 			}
 			return path;
 		},
