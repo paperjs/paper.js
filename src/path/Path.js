@@ -509,8 +509,18 @@ Path = PathItem.extend({
 			return calculateBounds(this, false);
 		},
 
+		/**
+		 * The bounding rectangle of the item including stroke width.
+		 */
 		getStrokeBounds: function() {
 			return calculateBounds(this, true);
+		},
+
+		/**
+		 * The bounding rectangle of the item including handles.
+		 */
+		getControlBounds: function() {
+			// TODO: Implement!
 		},
 
 		smooth: function() {
