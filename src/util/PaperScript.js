@@ -4,7 +4,9 @@ var PaperScript = new function() {
 	}
 
 	function run(code) {
-		with (paper) {
+		// Use paper.extend() to create a paper scope within which the code is
+		// evaluated.
+		with (paper.extend()) {
 			return eval(compile(code));
 		}
 	}

@@ -1,4 +1,4 @@
-var paper = {
+var paper = new Base().inject({
 	document: null,
 	documents: [],
 
@@ -7,4 +7,4 @@ var paper = {
 			scope[i] = paper[i];
 		}
 	}
-};
+});
