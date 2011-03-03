@@ -17,7 +17,7 @@
 #	compressed		No comments and no whitespaces
 #	compiled		Uses Google Closure Compiler to reduce file size even more
 
-KEYWORD="#"
+KEYWORD="//#"
 
 case $4 in
 	stripped)
