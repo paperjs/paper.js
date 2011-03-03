@@ -36,6 +36,9 @@
 #include "tool/ToolHandler.js"
 #include "tool/Tool.js"
 
+#include "util/CanvasProvider.js"
+#include "util/MathUtils.js"
+
 paper.populate();
 paper.install(scope);
 
