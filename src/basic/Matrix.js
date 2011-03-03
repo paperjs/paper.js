@@ -517,4 +517,3 @@ var Matrix = Base.extend({
 		}
 	}
 });
-
