@@ -83,12 +83,12 @@ var ToolHandler = Base.extend({
 		this.lastPoint = this.point;
 		this.point = pt;
 		switch (type) {
-		case 'MOUSE_DOWN':
+		case 'mouse-down':
 			this.lastPoint = this.downPoint;
 			this.downPoint = this.point;
 			this.downCount++;
 			break;
-		case 'MOUSE_UP':
+		case 'mouse-up':
 			// Mouse up events return the down point for last point,
 			// so delta is spanning over the whole drag.
 			this.lastPoint = this.downPoint;
@@ -104,12 +104,12 @@ var ToolHandler = Base.extend({
 
 	onHandleEvent: function(type, pt, modifiers) {
 		switch (type) {
-		case 'MOUSE_DOWN':
+		case 'mouse-down':
 			this.updateEvent(type, pt, null, null, true, false, false);
 			if (this.onMouseDown)
 				this.onMouseDown(new ToolEvent(this, type, modifiers));
 			break;
-		case 'MOUSE_DRAG':
+		case 'mouse-drag':
 			// In order for idleInterval drag events to work, we need to
 			// not check the first call for a change of position. 
 			// Subsequent calls required by min/maxDistance functionality
@@ -129,11 +129,11 @@ var ToolHandler = Base.extend({
 				this.matchMaxDistance = true;
 			}
 			break;
-		case 'MOUSE_UP':
+		case 'mouse-up':
 			// If the last mouse drag happened in a different place, call
 			// mouse drag first, then mouse up.
 			if ((this.point.x != pt.x || this.point.y != pt.y)
-					&& this.updateEvent('MOUSE_DRAG', pt, this.minDistance,
+					&& this.updateEvent('mouse-drag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
 				if (this.onMouseDrag)
 					this.onMouseDrag(new ToolEvent(this, type, modifiers));
@@ -146,7 +146,7 @@ var ToolHandler = Base.extend({
 			this.updateEvent(type, pt, null, null, true, false, false);
 			this.firstMove = true;
 			break;
-		case 'MOUSE_MOVE':
+		case 'mouse-move':
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, this.firstMove, true, false)) {
 				if (this.onMouseMove)

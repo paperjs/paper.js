@@ -182,8 +182,8 @@ ToolEvent = Base.extend({
 	 */
 	getCount: function() {
 		switch (this.type) {
-		case 'MOUSE_DOWN':
-		case 'MOUSE_UP':
+		case 'mouse-down':
+		case 'mouse-up':
 			// Return downCount for both mouse down and up, since
 			// the count is the same.
 			return this.tool.downCount;
@@ -194,8 +194,8 @@ ToolEvent = Base.extend({
 
 	setCount: function(count) {
 		switch (this.type) {
-		case 'MOUSE_DOWN':
-		case 'MOUSE_UP':
+		case 'mouse-down':
+		case 'mouse-up':
 			this.tool.downCount = count;
 			break;
 		default:

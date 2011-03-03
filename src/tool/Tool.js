@@ -23,7 +23,7 @@ var Tool = ToolHandler.extend(new function() {
 			var events = {
 				dragstart: function(e) {
 					curPoint = viewToArtwork(e, that._document);
-					that.onHandleEvent('MOUSE_DOWN', curPoint, null, null);
+					that.onHandleEvent('mouse-down', curPoint, null, null);
 					if (that.onMouseDown)
 						that._document.redraw();
 					if (that.eventInterval != -1)
@@ -34,7 +34,7 @@ var Tool = ToolHandler.extend(new function() {
 				drag: function(e) {
 					if (e) curPoint = viewToArtwork(e, that._document);
 					if (curPoint) {
-						that.onHandleEvent('MOUSE_DRAG', curPoint, null, null);
+						that.onHandleEvent('mouse-drag', curPoint, null, null);
 						if (that.onMouseDrag)
 							that._document.redraw();
 					}
@@ -43,7 +43,7 @@ var Tool = ToolHandler.extend(new function() {
 					curPoint = null;
 					if (this.eventInterval != -1)
 						clearInterval(this.intervalId);
-					that.onHandleEvent('MOUSE_UP', 
+					that.onHandleEvent('mouse-up', 
 						viewToArtwork(e, that._document), null, null);
 					if (that.onMouseUp)
 						that._document.redraw();
@@ -51,7 +51,7 @@ var Tool = ToolHandler.extend(new function() {
 				},
 				mousemove: function(e) {
 					if (!dragging) {
-						that.onHandleEvent('MOUSE_MOVE',
+						that.onHandleEvent('mouse-move',
 							viewToArtwork(e, that._document), null, null);
 						if (that.onMouseMove)
 							that._document.redraw();
