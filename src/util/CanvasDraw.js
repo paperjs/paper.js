@@ -18,7 +18,7 @@ new function() {
 			&& !(item.segments && (!item.fillColor || !item.strokeColor))
 		) {
 			var bounds = item.strokeBounds;
-			if (!item.bounds.width || !item.bounds.height)
+			if (!bounds.width || !bounds.height)
 				return;
 			
 			// Floor the offset and ceil the size, so we don't cut off any
