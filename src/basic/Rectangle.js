@@ -54,7 +54,7 @@ var Rectangle = Base.extend({
 	},
 
 	getPoint: function() {
-		return new Point(this.x, this.y);
+		return Point.create(this.x, this.y);
 	},
 
 	setPoint: function() {
@@ -64,7 +64,7 @@ var Rectangle = Base.extend({
 	},
 
 	getSize: function() {
-		return new Size(this.width, this.height);
+		return Size.create(this.width, this.height);
 	},
 
 	setSize: function() {
@@ -125,7 +125,7 @@ var Rectangle = Base.extend({
 	},
 
 	getCenter: function() {
-		return new Point(this.x + this.width * 0.5, this.y + this.height * 0.5);
+		return Point.create(this.x + this.width * 0.5, this.y + this.height * 0.5);
 	},
 
 	setCenter: function() {
@@ -135,7 +135,7 @@ var Rectangle = Base.extend({
 	},
 
 	getTopLeft: function() {
-		return new Point(this.left, this.top);
+		return Point.create(this.left, this.top);
 	},
 
 	setTopLeft: function() {
@@ -145,7 +145,7 @@ var Rectangle = Base.extend({
 	},
 
 	getTopRight: function() {
-		return new Point(this.right, this.top);
+		return Point.create(this.right, this.top);
 	},
 
 	setTopRight: function() {
@@ -155,7 +155,7 @@ var Rectangle = Base.extend({
 	},
 
 	getBottomLeft: function() {
-		return new Point(this.left, this.bottom);
+		return Point.create(this.left, this.bottom);
 	},
 
 	setBottomLeft: function() {
@@ -165,7 +165,7 @@ var Rectangle = Base.extend({
 	},
 
 	getBottomRight: function() {
-		return new Point(this.right, this.bottom);
+		return Point.create(this.right, this.bottom);
 	},
 
 	setBottomRight: function() {
@@ -175,7 +175,7 @@ var Rectangle = Base.extend({
 	},
 
 	getLeftCenter: function() {
-		return new Point(this.left, this.centerY);
+		return Point.create(this.left, this.centerY);
 	},
 
 	setLeftCenter: function() {
@@ -185,7 +185,7 @@ var Rectangle = Base.extend({
 	},
 
 	getTopCenter: function() {
-		return new Point(this.centerX, this.top);
+		return Point.create(this.centerX, this.top);
 	},
 
 	setTopCenter: function() {
@@ -195,7 +195,7 @@ var Rectangle = Base.extend({
 	},
 
 	getRightCenter: function() {
-		return new Point(this.right, this.centerY);
+		return Point.create(this.right, this.centerY);
 	},
 
 	setRightCenter: function() {
@@ -205,7 +205,7 @@ var Rectangle = Base.extend({
 	},
 
 	getBottomCenter: function() {
-		return new Point(this.centerX, this.bottom);
+		return Point.create(this.centerX, this.bottom);
 	},
 
 	setBottomCenter: function() {

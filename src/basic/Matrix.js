@@ -327,7 +327,7 @@ var Matrix = Base.extend({
 			var point = Point.read(arguments);
 			if (point) {
 				var x = point.x, y = point.y;
-				return new Point(
+				return Point.create(
 					x * this._m00 + y * this._m01 + this._m02,
 					x * this._m10 + y * this._m11 + this._m12
 				);
