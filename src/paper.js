@@ -17,7 +17,8 @@ var paper = {
 
 	install: function(scope) {
 		for (var i in paper) {
-			scope[i] = paper[i];
+			if (!scope[i])
+				scope[i] = paper[i];
 		}
 	}
 };
