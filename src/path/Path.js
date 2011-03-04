@@ -33,6 +33,16 @@ var Path = this.Path = PathItem.extend({
 		}
 	},
 
+	// TODO: Add back to Scriptographer:
+
+	getFirstSegment: function() {
+		return this._segments[0];
+	},
+
+	getLastSegment: function() {
+		return this._segments[this._segments.length - 1];
+	},
+
 	// TODO: Consider adding getSubPath(a, b), returning a part of the current
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
