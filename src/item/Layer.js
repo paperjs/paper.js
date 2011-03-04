@@ -9,7 +9,7 @@ var Layer = this.Layer = Group.extend({
 	},
 
 	getIndex: function() {
-		return !this.parent ? this.document.layers.indexOf(this) : this.base();
+		return this.parent ? this.base() : this.document.layers.indexOf(this);
 	},
 
 	/**
@@ -18,9 +18,9 @@ var Layer = this.Layer = Group.extend({
 	*/
 	removeFromParent: function() {
 		if (!this.parent) {
-			this.document.layers.splice(this.index, 1);
+			return !!this.document.layers.splice(this.getIndex(), 1).length;
 		} else {
-			this.base();
+			return this.base();
 		}
 	},
 
@@ -28,11 +28,11 @@ var Layer = this.Layer = Group.extend({
 		// if the item is a layer and contained within Document#layers
 		if (item instanceof Layer && !item.parent) {
 			this.removeFromParent();
-			item.document.layers.splice(item.index + 1, 0, this);
+			item.document.layers.splice(item.getIndex() + 1, 0, this);
 			this.document = item.document;
 			return true;
 		} else {
-			this.base(item);
+			return this.base(item);
 		}
 	},
 
@@ -40,32 +40,22 @@ var Layer = this.Layer = Group.extend({
 		// if the item is a layer and contained within Document#layers
 		if (item instanceof Layer && !item.parent) {
 			this.removeFromParent();
-			item.document.layers.splice(item.index - 1, 0, this);
+			item.document.layers.splice(item.getIndex() - 1, 0, this);
 			this.document = item.document;
 			return true;
 		} else {
-			this.base(item);
+			return this.base(item);
 		}
 	},
 
 	getNextSibling: function() {
-		if (!this.parent) {
-			var index = this.index + 1;
-			if (index < this.document.layers.length)
-				return this.document.layers[index];
-		} else {
-			return this.base();
-		}
+		return this.parent ? this.base()
+				: this.document.layers[this.getIndex() + 1] || null;
 	},
 
 	getPreviousSibling: function() {
-		if (!this.parent) {
-			var index = this.index - 1;
-			if (index <= 0)
-				return this.document.layers[index];
-		} else {
-			return this.base();
-		}
+		return this.parent ? this.base()
+				: this.document.layers[this.getIndex() - 1] || null;
 	},
 
 	activate: function() {

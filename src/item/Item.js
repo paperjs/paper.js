@@ -156,45 +156,36 @@ var Item = this.Item = Base.extend({
 	 * Reverses the order of this item's children
 	 */
 	reverseChildren: function() {
-		this.children.reverse();
+		if (this.children)
+			this.children.reverse();
 	},
 
 	/**
 	 * The first item contained within this item.
 	 */
 	getFirstChild: function() {
-		if (this.children.length > 0)
-			return this.children[0];
+		return this.children && this.children[0] || null;
 	},
 
 	/**
 	 * The last item contained within this item.
 	 */
 	getLastChild: function() {
-		if (this.children.length > 0)
-			return this.children[this.children.length - 1];
+		return this.children && this.children[this.children.length - 1] || null;
 	},
 
 	/**
 	 * The next item on the same level as this item.
 	 */
 	getNextSibling: function() {
-		if (this.parent) {
-			var index = this.index + 1;
-			if (index < this.parent.children.length)
-				return this.parent.children[index];
-		}
+		return this.parent && this.parent.children[this.getIndex() + 1] || null;
 	},
 
 	/**
 	 * The previous item on the same level as this item.
 	 */
 	getPreviousSibling: function() {
-		if (this.parent) {
-			var index = this.index - 1;
-			if (index <= 0)
-				return this.parent.children[index];
-		}
+		return this.parent && this.parent.children[this.getIndex() - 1] || null;
 	},
 
 	/**
@@ -204,23 +195,26 @@ var Item = this.Item = Base.extend({
 		// TODO: Relying on indexOf() here is slow, especially since it is
 		// used for getPrevious/NextSibling(). 
 		// We need linked lists instead.
-		return this.parent.children.indexOf(this);
+		return this.parent ? this.parent.children.indexOf(this) : -1;
 	},
 
 	/**
 	* Removes the item from its parent's children list.
 	*/
 	removeFromParent: function() {
-		if (this.parent)
-			this.parent.children.splice(this.index, 1);
-		this.parent = null;
+		if (this.parent) {
+			var ok = !!this.parent.children.splice(this.getIndex(), 1).length;
+			this.parent = null;
+			return ok;
+		}
+		return false;
 	},
 
 	/**
 	* Removes the item.
 	*/
 	remove: function() {
-		this.removeFromParent();
+		return this.removeFromParent();
 	},
 
 	/**
@@ -231,7 +225,7 @@ var Item = this.Item = Base.extend({
 	 * @return {@true if it has one or more children}
 	 */
 	hasChildren: function() {
-		return this.children && this.children.length;
+		return this.children && this.children.length > 0;
 	},
 
 	/**
@@ -283,10 +277,14 @@ var Item = this.Item = Base.extend({
 	 * @param item The item that will be appended as a child
 	 */
 	appendTop: function(item) {
-		item.removeFromParent();
-		this.children.push(item);
-		item.parent = this;
-		item.document = this.document;
+		if (this.children) {
+			item.removeFromParent();
+			this.children.push(item);
+			item.parent = this;
+			item.document = this.document;
+			return true;
+		}
+		return false;
 	},
 
 	/**
@@ -305,10 +303,14 @@ var Item = this.Item = Base.extend({
 	 * @param item The item that will be appended as a child
 	 */
 	appendBottom: function(item) {
-		item.removeFromParent();
-		this.children.splice(0, 0, item);
-		item.parent = this;
-		item.document = this.document;
+		if (this.children) {
+			item.removeFromParent();
+			this.children.splice(0, 0, item);
+			item.parent = this;
+			item.document = this.document;
+			return true;
+		}
+		return false;
 	},
 
 	/**
@@ -337,11 +339,13 @@ var Item = this.Item = Base.extend({
 	 */
 	moveAbove: function(item) {
 		// first remove the item from its parent's children list
-		this.removeFromParent();
-		item.parent.children.splice(item.index + 1, 0, this);
-		this.parent = item.parent;
-		this.document = item.document;
-		return true;
+		if (item.parent && this.removeFromParent()) {
+			item.parent.children.splice(item.getIndex() + 1, 0, this);
+			this.parent = item.parent;
+			this.document = item.document;
+			return true;
+		}
+		return false;
 	},
 
 	/**
@@ -361,11 +365,13 @@ var Item = this.Item = Base.extend({
 	 */
 	moveBelow: function(item) {
 		// first remove the item from its parent's children list
-		this.removeFromParent();
-		item.parent.children.splice(item.index - 1, 0, this);
-		this.parent = item.parent;
-		this.document = item.document;
-		return true;
+		if (item.parent && this.removeFromParent()) {
+			item.parent.children.splice(item.getIndex() - 1, 0, this);
+			this.parent = item.parent;
+			this.document = item.document;
+			return true;
+		}
+		return false;
 	},
 
 	/**
