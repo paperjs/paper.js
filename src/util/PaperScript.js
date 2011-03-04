@@ -15,7 +15,7 @@ var PaperScript = new function() {
 		'!=': 'equals'
 	};
 
-	paper.handleOperator = function(operator, left, right) {
+	paper.handleOperator = function(left, operator, right) {
 		var handler = operators[operator];
 		if (left && left[handler]) {
 			var res = left[handler](right);
@@ -66,7 +66,7 @@ var PaperScript = new function() {
 		if (operators[operator] && isDynamic(left)) {
 			// Replace with paper.handleOperator(operator, left, right):
 			return ['call', ['dot', ['name', 'paper'], 'handleOperator'],
-					[['string', operator], left, right]];
+					[left, ['string', operator], right]];
 		}
 	}
 
