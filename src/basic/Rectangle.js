@@ -135,27 +135,27 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getTopLeft: function() {
-		return Point.create(this.left, this.top);
+		return Point.create(this.getLeft(), this.getTop());
 	},
 
 	setTopLeft: function() {
 		var topLeft = Point.read(arguments);
-		this.left = topLeft.x;
-		this.top = topLeft.y;
+		this.setLeft(topLeft.x);
+		this.setTop(topLeft.y);
 	},
 
 	getTopRight: function() {
-		return Point.create(this.right, this.top);
+		return Point.create(this.getRight(), this.getTop());
 	},
 
 	setTopRight: function() {
 		var topRight = Point.read(arguments);
-		this.right = topRight.x;
-		this.top = topRight.y;
+		this.setRight(topRight.x);
+		this.setTop(topRight.y);
 	},
 
 	getBottomLeft: function() {
-		return Point.create(this.left, this.bottom);
+		return Point.create(this.getLeft(), this.getBottom());
 	},
 
 	setBottomLeft: function() {
@@ -165,53 +165,53 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getBottomRight: function() {
-		return Point.create(this.right, this.bottom);
+		return Point.create(this.getRight(), this.getBottom());
 	},
 
 	setBottomRight: function() {
 		var bottomRight = Point.read(arguments);
-		this.bottom = bottomRight.y;
-		this.right = bottomRight.x;
+		this.setBottom(bottomRight.y);
+		this.setRight(bottomRight.x);
 	},
 
 	getLeftCenter: function() {
-		return Point.create(this.left, this.centerY);
+		return Point.create(this.getLeft(), this.getCenterY());
 	},
 
 	setLeftCenter: function() {
 		var leftCenter = Point.read(arguments);
-		this.left = leftCenter.x;
-		this.centerY = leftCenter.y;
+		this.setLeft(leftCenter.x);
+		this.setCenterY(leftCenter.y);
 	},
 
 	getTopCenter: function() {
-		return Point.create(this.centerX, this.top);
+		return Point.create(this.getCenterX(), this.getTop());
 	},
 
 	setTopCenter: function() {
 		var topCenter = Point.read(arguments);
-		this.centerX = topCenter.x;
-		this.top = topCenter.y;
+		this.setCenterX(topCenter.x);
+		this.setTop(topCenter.y);
 	},
 
 	getRightCenter: function() {
-		return Point.create(this.right, this.centerY);
+		return Point.create(this.getRight(), this.getCenterY());
 	},
 
 	setRightCenter: function() {
 		var rightCenter = Point.read(arguments);
-		this.right = rightCenter.x;
-		this.centerY = rightCenter.y;
+		this.setRight(rightCenter.x);
+		this.setCenterY(rightCenter.y);
 	},
 
 	getBottomCenter: function() {
-		return Point.create(this.centerX, this.bottom);
+		return Point.create(this.getCenterX(), this.getBottom());
 	},
 
 	setBottomCenter: function() {
 		var bottomCenter = Point.read(arguments);
-		this.bottom = bottomCenter.y;
-		this.centerX = bottomCenter.x;
+		this.setBottom(bottomCenter.y);
+		this.setCenterX(bottomCenter.x);
 	},
 
 	clone: function() {
