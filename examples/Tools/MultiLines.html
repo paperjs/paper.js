@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,41 +33,37 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-			
-			var values = {
-				lines: 5,
-				size: 40,
-				smooth: true
-			};
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		tool.fixedDistance = 30;
 
-			var paths;
-			var tool = new Tool({
-				onMouseDown: function(event) {
-					paths = [];
-					for (var i = 0; i < values.lines; i++) {
-						var path = new Path();
-						path.strokeColor = '#000000';
-						paths.push(path);
-					}
-				},
+		var values = {
+			lines: 5,
+			size: 40,
+			smooth: true
+		};
 
-				onMouseDrag: function(event) {
-					var offset = event.delta;
-					offset.angle = offset.angle + 90;
-					var lineSize = values.size / values.lines;
-					for (var i = 0; i < values.lines; i++) {
-						var path = paths[values.lines - 1 - i];
-						offset.length = lineSize * i + lineSize / 2;
-						path.add(event.middlePoint.add(offset));
-						path.smooth();
-					}
-				}
-			});
-			tool.fixedDistance = 30;
+		var paths;
+
+		function onMouseDown(event) {
+			paths = [];
+			for (var i = 0; i < values.lines; i++) {
+				var path = new Path();
+				path.strokeColor = '#000000';
+				paths.push(path);
+			}
+		}
+
+		function onMouseDrag(event) {
+			var offset = event.delta;
+			offset.angle = offset.angle + 90;
+			var lineSize = values.size / values.lines;
+			for (var i = 0; i < values.lines; i++) {
+				var path = paths[values.lines - 1 - i];
+				offset.length = lineSize * i + lineSize / 2;
+				path.add(event.middlePoint + offset);
+				path.smooth();
+			}
 		}
 	</script>
 </head>
