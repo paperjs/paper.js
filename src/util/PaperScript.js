@@ -112,7 +112,7 @@ var PaperScript = new function() {
 			return walk(ast);
 		});
 
-		return parse_js.stringify(ast);
+		return parse_js.stringify(ast, true);
 	}
 
 	function run(code) {
