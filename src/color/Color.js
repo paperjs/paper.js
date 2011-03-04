@@ -33,6 +33,6 @@ var Color = this.Color = Base.extend({
 	},
 
 	getCanvasStyle: function() {
-		return this.cssString;
+		return this._cssString;
 	}
 });
