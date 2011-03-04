@@ -102,19 +102,6 @@ var Size = Base.extend({
 			return size;
 		},
 
-		read: function(args, index, length) {
-			var index = index || 0, length = length || args.length - index;
-			if (length == 1 && args[index] instanceof Size) {
-				return args[index];
-			} else if (length != 0) {
-				var size = new Size(Size.dont);
-				size.initialize.apply(size, index > 0
-						? Array.prototype.slice.call(args, index) : args);
-				return size;
-			}
-			return null;
-		},
-
 		min: function(Size1, Size2) {
 			return Size.create(
 				Math.min(Size1.width, Size2.width),

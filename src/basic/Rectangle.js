@@ -282,20 +282,5 @@ var Rectangle = Base.extend({
 				+ ', width: ' + this.width
 				+ ', height: ' + this.height
 				+ ' }';
-	},
-
-	statics: {
-		read: function(args, index, length) {
-			var index = index || 0, length = length || args.length - index;
-			if (length == 1 && args[index] instanceof Rectangle) {
-				return args[index];
-			} else if (length != 0) {
-				var rect = new Rectangle(Rectangle.dont);
-				rect.initialize.apply(rect, index > 0
-						? Array.prototype.slice.call(args, index) : args);
-				return rect;
-			}
-			return null;
-		}
 	}
 });

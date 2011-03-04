@@ -1,6 +1,12 @@
 var Color = Base.extend({
 	beans: true,
 
+	initialize: function() {
+		var rgb = new RGBColor(RGBColor.dont);
+		rgb.initialize.apply(rgb, arguments);
+		return rgb;
+	},
+
 	/**
 	 * A value between 0 and 1 that specifies the color's alpha value.
 	 * All colors of the different subclasses support alpha values.
@@ -28,20 +34,5 @@ var Color = Base.extend({
 
 	getCanvasStyle: function() {
 		return this.cssString;
-	},
-
-	statics: {
-		read: function(args, index, length) {
-			var index = index || 0, length = length || args.length - index;
-			if (length == 1 && args[index] instanceof Color) {
-				return args[index];
-			} else if (length != 0 && args[0] !== null) {
-				var rgbColor = new RGBColor(RGBColor.dont);
-				rgbColor.initialize.apply(rgbColor, index > 0
-						? Array.prototype.slice.call(args, index) : args);
-				return rgbColor;
-			}
-			return null;
-		}
 	}
 });

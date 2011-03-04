@@ -118,20 +118,5 @@ var Segment = Base.extend({
 				+ (this.handleIn ? ', handleIn '+ this.handleIn : '')
 				+ (this.handleOut ? ', handleOut ' + this.handleOut : '')
 				+ ' }';
-	},
-
-	statics: {
-		read: function(args, index, length) {
-			var index = index || 0, length = length || args.length - index;
-			if (length == 1 && args[index] instanceof Segment) {
-				return args[index];
-			} else if (length != 0) {
-				var segment = new Segment(Segment.dont);
-				segment.initialize.apply(segment, index > 0
-						? Array.prototype.slice.call(args, index) : args);
-				return segment;
-			}
-			return null;
-		}
 	}
 });

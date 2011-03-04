@@ -477,19 +477,6 @@ var Point = Base.extend({
 			return point;
 		},
 
-		read: function(args, index, length) {
-			var index = index || 0, length = length || args.length - index;
-			if (length == 1 && args[index] instanceof Point) {
-				return args[index];
-			} else if (length != 0) {
-				var point = new Point(Point.dont);
-				point.initialize.apply(point, index > 0
-						? Array.prototype.slice.call(args, index) : args);
-				return point;
-			}
-			return null;
-		},
-
 		/**
 		 * Returns a new point object with the smallest {@link #x} and
 		 * {@link #y} of the supplied points.
