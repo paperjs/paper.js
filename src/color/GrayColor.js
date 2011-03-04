@@ -67,25 +67,17 @@ var GrayColor = this.GrayColor = Color.extend({
 		return this._cssString;
 	}
 }, new function() {
-	var fields = { beans: true };
-
 	// Using the standard NTSC conversion formula that is used for
 	// calculating the effective luminance of an RGB color:
 	// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
-	var componentWeights = {
-		red: 0.2989,
-		green: 0.5870,
-		blue: 0.114
-	};
-
-	Base.each(componentWeights, function(weight, key) {
-		fields['get' + Base.capitalize(key)] = function() {
-			return 1 - this._gray;
-		};
-		fields['set' + Base.capitalize(key)] = function(value) {
-			this._cssString = null;
-			this._gray = this._gray * (1 - weight) + weight * (1 - value);
-		};
-	});
-	return fields;
+	return Base.each({ red: 0.2989, green: 0.5870, blue: 0.114 },
+		function(weight, key) {
+			this['get' + Base.capitalize(key)] = function() {
+				return 1 - this._gray;
+			};
+			this['set' + Base.capitalize(key)] = function(value) {
+				this._cssString = null;
+				this._gray = this._gray * (1 - weight) + weight * (1 - value);
+			};
+		}, { beans: true });
 });
