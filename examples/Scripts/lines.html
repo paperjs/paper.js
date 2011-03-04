@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,25 +33,24 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
 		var count = 0;
-		var doc;
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			doc = new Document(canvas);
-			setInterval(draw, 20);
-		}
+		setInterval(draw, 20);
 		
 		function draw() {
 			count++;
-			doc.activeLayer.children = [];
-			var point = new Point(1024, 768).divide(2);
+			document.activeLayer.children = [];
+			var point = new Point(document.size) / 2;
 			var vector = new Point(100, 0);
 			for (var i = 0; i < 180; i++) {
-				var path = new Path.Line(point.add(vector.rotate(i * 2).normalize(30)), point.add(vector.rotate(i * 2).normalize(30 + Math.abs(Math.sin((i + count / 20)) * 300))));
+				var center = point + vector.rotate(i * 2).normalize(30);
+				var length = 30 + Math.abs(Math.sin((i + count / 20)) * 300);
+				var end = point + vector.rotate(i * 2).normalize(length);
+				var path = new Path.Line(center, end);
 				path.strokeColor = i % 4 ? 'black' : 'red';
 			}
-			doc.redraw();
+			document.redraw();
 		}
 	</script>
 </head>

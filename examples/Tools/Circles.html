@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,25 +33,20 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
 			var path;
-			var tool = new Tool({
-				onMouseDrag: function(event) {
-					if (path) path.remove();
-					var distance = event.downPoint.subtract(event.point).length;
-					path = new Path.Circle(event.downPoint, distance);
-					path.strokeColor = 'black';
-					path.fillColor = 'white';
-				},
-				
-				onMouseUp: function(event) {
-					path = null;
-				}
-			});
-		}
+			function onMouseDrag(event) {
+				if (path) path.remove();
+				var distance = (event.downPoint - event.point).length;
+				path = new Path.Circle(event.downPoint, distance);
+				path.strokeColor = 'black';
+				path.fillColor = 'white';
+			};
+
+			function onMouseUp(event) {
+				path = null;
+			}
 	</script>
 </head>
 <body>

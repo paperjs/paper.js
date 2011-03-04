@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,76 +33,78 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-			
-			var values  = {
-				minDistance: 30,
-				varyThickness: true
-			};
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		/////////////////////////////////////////////////////////////////////
+		// Values
 
-			////////////////////////////////////////////////////////////////////////////////
-			// Mouse handling
+		var values  = {
+			minDistance: 10,
+			varyThickness: true
+		};
 
-			var worm;
-			
-			var tool = new Tool({
-				onMouseDown: function(event) {
-					worm = new Path();
-					worm.fillColor = '#ffffff';
-					worm.strokeColor = '#000000';
-					worm.add(event.point);
-				},
+		/////////////////////////////////////////////////////////////////////
+		// Mouse handling
 
-				onMouseDrag: function(event) {
-					// the vector in the direction that the mouse moved
-					var step = event.delta;
+		tool.minDistance = values.minDistance;
 
-					// if the vary thickness checkbox is marked
-					// divide the length of the step vector by two:
-					if (values.varyThickness) {
-						step.length = step.length / 2;
-					} else {
-						// otherwise set the length of the step vector to half of minDistance
-						step.length = values.minDistance / 2;
-					}
+		var worm;
 
-					// the top point: the middle point + the step rotated by -90 degrees
-					//   -----*
-					//   |
-					//   ------
-					var top = event.middlePoint.add(step.rotate(-90));
+		// Every time the user clicks the mouse to drag we create a path
+		// and when a user drags the mouse we add points to it
+		function onMouseDown(event) {
+			worm = new Path();
+			worm.fillColor = '#ffffff';
+			worm.strokeColor = '#000000';
+			worm.add(event.point);
+		}
 
-					// the bottom point: the middle point + the step rotated by 90 degrees
-					//   ------
-					//   |
-					//   -----*
-					var bottom = event.middlePoint.add(step.rotate(90));
+		function onMouseDrag(event) {
+			// the vector in the direction that the mouse moved
+			var step = event.delta;
 
-					// add the top point to the end of the path
-					worm.add(top);
+			// if the vary thickness checkbox is marked
+			// divide the length of the step vector by two:
+			if (values.varyThickness) {
+				step.length = step.length / 2;
+			} else {
+				// otherwise set the length of the step vector to half of
+				// minDistance
+				step.length = values.minDistance / 2;
+			}
 
-					// insert the bottom point in the beginning of the path
-					worm.insert(0, bottom);
+			// the top point: the middle point + the step rotated by -90
+			// degrees
+			//   -----*
+			//   |
+			//   ------
+			var top = event.middlePoint + step.rotate(-90);
 
-					// make a new line path from top to bottom
-					var line = new Path.Line(top, bottom);
-					line.strokeColor = '#000000';
+			// the bottom point: the middle point + the step rotated by 90
+			// degrees
+			//   ------
+			//   |
+			//   -----*
+			var bottom = event.middlePoint + step.rotate(90);
 
-					// smooth the segments of the path
-					worm.smooth();
-				},
-				
-				onMouseUp: function(event) {
-					worm.closed = true;
-					worm.add(event.point);
-					worm.smooth();
-				}
-			});
-			tool.fixedDistance = 3;
-			tool.minDistance = values.minDistance;
+			// add the top point to the end of the path
+			worm.add(top);
+
+			// insert the bottom point in the beginning of the path
+			worm.insert(0, bottom);
+
+			// make a new line path from top to bottom
+			var line = new Path.Line(top, bottom);
+			line.strokeColor = '#000000';
+
+			// smooth the segments of the path
+			worm.smooth();
+		}
+
+		function onMouseUp(event) {
+			worm.closed = true;
+			worm.add(event.point);
+			worm.smooth();
 		}
 	</script>
 </head>

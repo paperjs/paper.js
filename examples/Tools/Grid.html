@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,35 +33,37 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			
-			var values = { size: 10 };
-			
-			var point, path;
-			
-			function getPos(pt) {
-				return (pt.divide(values.size)).round().multiply(values.size);
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		/////////////////////////////////////////////////////////////////////
+		// Values
+
+		tool.fixedDistance = 10;
+
+		var values = { size: tool.fixedDistance };
+
+		/////////////////////////////////////////////////////////////////////
+		// Mouse handling
+
+		var point, path;
+
+		function getPos(pt) {
+			return (pt / values.size).round() * values.size;
+		}
+
+		function onMouseDown(event) {
+			point = getPos(event.point);
+			path = new Path();
+			path.strokeColor = 'black';
+			path.add(point);
+		}
+
+		function onMouseDrag(event) {
+			var p = getPos(event.point);
+			if (point != p) {
+				path.add(p);
+				point = p;
 			}
-			
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-			var point, path;
-			var tool = new Tool({
-				onMouseDown: function(event) {
-					point = getPos(event.point);
-					path = new Path();
-					path.strokeColor = 'black';
-					path.add(point);
-				},
-				onMouseDrag: function(event) {
-					var p = getPos(event.point);
-					if (!point.equals(p)) {
-						path.add(p);
-						point = p;
-					}
-				}
-			});
 		}
 	</script>
 </head>

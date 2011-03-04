@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,22 +33,18 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
 		var count = 0;
-		var doc;
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			doc = new Document(canvas);
-			setInterval(draw, 30);
-		}
+		setInterval(draw, 30);
 		function draw() {
 			count++;
-			doc.activeLayer.children = [];
+			document.activeLayer.children = [];
 			var rect = new Rectangle([150, 150], [300, 300]);
 			var size = Math.abs(Math.sin(count / 40)) * 150 + 10;
 			var path = new Path.RoundRectangle(rect, size);
 			path.fillColor = 'black';
-			doc.redraw();
+			document.redraw();
 		}
 	</script>
 </head>

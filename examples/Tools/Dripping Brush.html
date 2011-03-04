@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,72 +33,65 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-			
-			var path;
-			var minSize = 5;
-			
-			var tool = new Tool({
-				onMouseDrag: function(event) {
-					// If the user dragged more then minSize:
-					if (event.delta.length > minSize) {
-						// If there is no path, make one:
-						if (!path) {
-							path = new Path();
-							path.fillColor = 'black';
-							path.add(event.lastPoint);
-						}
-
-						var step = event.delta.divide(2);
-						step.angle = step.angle + 90;
-
-						// The top point: the middle point + the step rotated by 90 degrees:
-						//   -----*
-						//   |
-						//   ------
-						var top = event.middlePoint.add(step);
-
-						// The bottom point: the middle point - the step rotated by 90 degrees:
-						//   ------
-						//   |
-						//   -----*
-						var bottom = event.middlePoint.subtract(step);
-
-						path.add(top);
-						path.insert(0, bottom);
-						path.smooth();
-					} else {
-						// If the user dragged too slowly:
-
-						// If there is currently a path, close it
-						if (path) {
-							path.add(event.point);
-							path.closed = true;
-							path.smooth();
-
-							// Set path to null (nothing) so the path check above
-							// will force a new path next time the user drags fast enough:
-							path = null;
-						}
-					}
-				},
-				
-				onMouseUp: function(event) {
-					if (path) {
-						path.add(event.point);
-						path.closed = true;
-						path.smooth();
-
-						// Set path to null (nothing) so the path check above
-						// will force a new path next time the user drags fast enough:
-						path = null;
-					}
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var path;
+		var minSize = 5;
+		tool.maxDistance = 20;
+		function onMouseDrag(event) {
+			// If the user dragged more then minSize:
+			if (event.delta.length > minSize) {
+				// If there is no path, make one:
+				if (!path) {
+					path = new Path();
+					path.fillColor = 'black';
+					path.add(event.lastPoint);
 				}
-			});
-			tool.maxDistance = 20;
+
+				var step = event.delta / 2;
+				step.angle = step.angle + 90;
+
+				// The top point: the middle point + the step rotated by 90 degrees:
+				//   -----*
+				//   |
+				//   ------
+				var top = event.middlePoint + step;
+
+				// The bottom point: the middle point - the step rotated by 90 degrees:
+				//   ------
+				//   |
+				//   -----*
+				var bottom = event.middlePoint - step;
+
+				path.add(top);
+				path.insert(0, bottom);
+				path.smooth();
+			} else {
+				// If the user dragged too slowly:
+
+				// If there is currently a path, close it
+				if (path) {
+					path.add(event.point);
+					path.closed = true;
+					path.smooth();
+
+					// Set path to null (nothing) so the path check above
+					// will force a new path next time the user drags fast enough:
+					path = null;
+				}
+			}
+		}
+	
+		function onMouseUp(event) {
+			if (path) {
+				path.add(event.point);
+				path.closed = true;
+				path.smooth();
+
+				// Set path to null (nothing) so the path check above
+				// will force a new path next time the user drags fast enough:
+				path = null;
+			}
 		}
 	</script>
 </head>

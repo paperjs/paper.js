@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,37 +33,40 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-			var values = {
-				curviness: 0.5,
-				distance: 10,
-				offset: 10,
-				mouseOffset: true
-			};
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		//////////////////////////////////////////////////////////////////////
+		// Values
 
-			var path;
-			var mul = 1;
-			var tool = new Tool({
-				onMouseDown: function(event) {
-					path = new Path();
-					path.strokeColor = 'black';
-				},
+		tool.minDistance = 10;
 
-				onMouseDrag: function(event) {
-					var step = event.delta.rotate(90 * mul);
-					if (!values.mouseOffset)
-						step.length = values.offset;
-					var segment = new Segment(event.point.add(step));
-					segment.handleIn = event.delta.multiply(-values.curviness);
-					segment.handleOut = event.delta.multiply(values.curviness);
-					path.add(segment);
-					mul *= -1;
-				}
-			});
-			tool.fixedDistance = 10;
+		var values = {
+			curviness: 0.5,
+			distance: tool.minDistance,
+			offset: 10,
+			mouseOffset: true
+		};
+
+		//////////////////////////////////////////////////////////////////////
+		// Mouse handling
+
+		var path;
+		function onMouseDown(event) {
+			path = new Path();
+		}
+
+		var mul = 1;
+		function onMouseDrag(event) {
+			var step = event.delta.rotate(90 * mul);
+
+			if (!values.mouseOffset)
+				step.length = values.offset;
+
+			var segment = new Segment(event.point + step);
+			segment.handleIn = -event.delta * values.curviness;
+			segment.handleOut = event.delta * values.curviness;
+			path.add(segment);
+			mul *= -1;
 		}
 	</script>
 </head>

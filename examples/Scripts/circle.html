@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,19 +33,14 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		var count = 0;
-		var doc;
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			doc = new Document(canvas);
-			var center = doc.size.divide(2);
-			for (var i = 0; i < 70; i++) {
-				var path = new Path.Circle(center, i * 5);
-				path.strokeColor = 'black';
-			}
-			doc.redraw();
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var center = document.bounds.center;
+		for (var i = 0; i < 70; i++) {
+			var path = new Path.Circle(center, i * 5);
+			path.strokeColor = 'black';
 		}
+		document.redraw();
 	</script>
 </head>
 <body>

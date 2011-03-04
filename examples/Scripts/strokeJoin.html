@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,45 +33,42 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-			var path = new Path([100, 150], [150, 200], [200, 150]);
-			path.strokeColor = 'black';
-			path.strokeWidth = 30;
-			path.strokeJoin = 'round';
-			
-			var path = new Path([240, 150], [290, 200], [340, 150]);
-			path.strokeColor = 'black';
-			path.strokeWidth = 30;
-			path.strokeJoin = 'bevel';
-			
-			var path = new Path([380, 150], [430, 200], [480, 150]);
-			path.strokeColor = 'black';
-			path.strokeWidth = 30;
-			path.strokeJoin = 'miter';
-			
-			var path = new Path([100, 250], [150, 300], [200, 250]);
-			path.strokeColor = 'black';
-			path.strokeWidth = 30;
-			path.strokeJoin = 'round';
-			path.strokeCap = 'round';
-			
-			var path = new Path([240, 250], [290, 300], [340, 250]);
-			path.strokeColor = 'black';
-			path.strokeWidth = 30;
-			path.strokeJoin = 'bevel';
-			path.strokeCap = 'square';
-			
-			var path = new Path([380, 250], [430, 300], [480, 250]);
-			path.strokeColor = 'black';
-			path.strokeWidth = 30;
-			path.strokeJoin = 'miter';
-			path.strokeCap = 'butt';
-			
-			doc.redraw();
-		}
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var path = new Path([100, 150], [150, 200], [200, 150]);
+		path.strokeColor = 'black';
+		path.strokeWidth = 30;
+		path.strokeJoin = 'round';
+		
+		var path = new Path([240, 150], [290, 200], [340, 150]);
+		path.strokeColor = 'black';
+		path.strokeWidth = 30;
+		path.strokeJoin = 'bevel';
+		
+		var path = new Path([380, 150], [430, 200], [480, 150]);
+		path.strokeColor = 'black';
+		path.strokeWidth = 30;
+		path.strokeJoin = 'miter';
+		
+		var path = new Path([100, 250], [150, 300], [200, 250]);
+		path.strokeColor = 'black';
+		path.strokeWidth = 30;
+		path.strokeJoin = 'round';
+		path.strokeCap = 'round';
+		
+		var path = new Path([240, 250], [290, 300], [340, 250]);
+		path.strokeColor = 'black';
+		path.strokeWidth = 30;
+		path.strokeJoin = 'bevel';
+		path.strokeCap = 'square';
+		
+		var path = new Path([380, 250], [430, 300], [480, 250]);
+		path.strokeColor = 'black';
+		path.strokeWidth = 30;
+		path.strokeJoin = 'miter';
+		path.strokeCap = 'butt';
+		console.log(path.segments);
+		document.redraw();
 	</script>
 </head>
 <body>

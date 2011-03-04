@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,79 +33,75 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-			
-			var path;
-			var strokeEnds = 6;
-			
-			////////////////////////////////////////////////////////////////////////////////
-			// Mouse handling
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		////////////////////////////////////////////////////////////////////////////////
+		// This script belongs to the following tutorial:
+		//
+		// http://scriptographer.org/tutorials/geometry/working-with-mouse-vectors/#adding-brush-stroke-ends
 
-			var lastPoint;
-			
-			var tool = new Tool({
-				onMouseDown: function(event) {
-					path = new Path();
-					path.fillColor = event.count % 2 ? 'red' : 'black';
-				},
+		tool.fixedDistance = 80;
 
-				onMouseDrag: function(event) {
-					// If this is the first drag event,
-					// add the strokes at the start:
-					if (event.count == 1) {
-						addStrokes(event.middlePoint, event.delta.multiply(-1));
-					} else {
-						var step = event.delta.divide(2);
-						step.angle = step.angle + 90;
+		var path;
+		var strokeEnds = 6;
 
-						// The top point: the middle point + the step rotated by 90 degrees:
-						//   -----*
-						//   |
-						//   ------
-						var top = event.middlePoint.add(step);
+		function onMouseDown(event) {
+			path = new Path();
+			path.fillColor = event.count % 2 ? 'red' : 'black';
+		}
 
-						// The bottom point: the middle point - the step rotated by 90 degrees:
-						//   ------
-						//   |
-						//   -----*
-						var bottom = event.middlePoint.subtract(step);
+		var lastPoint;
+		function onMouseDrag(event) {
+			// If this is the first drag event,
+			// add the strokes at the start:
+			if (event.count == 1) {
+				addStrokes(event.middlePoint, event.delta * -1);
+			} else {
+				var step = event.delta / 2;
+				step.angle += 90;
 
-						path.add(top);
-						path.insert(0, bottom);
-					}
-					path.smooth();
+				// The top point: the middle point + the step rotated by 90 degrees:
+				//   -----*
+				//   |
+				//   ------
+				var top = event.middlePoint + step;
 
-					lastPoint = event.middlePoint;
-				},
-				
-				onMouseUp: function(event) {
-					var delta = event.point.subtract(lastPoint);
-					delta.length = tool.maxDistance;
-					addStrokes(event.point, delta);
-					path.closed = true;
-					path.smooth();
-				}
-			});
-			
-			function addStrokes(point, delta) {
-				var step = delta.rotate(90);
-				var strokePoints = strokeEnds * 2 + 1;
-				point = point.subtract(step.divide(2));
-				step = step.divide(strokePoints - 1);
-				for (var i = 0; i < strokePoints; i++) {
-					var strokePoint = point.add(step.multiply(i));
-					var offset = delta.multiply(Math.random() * 0.3 + 0.1);
-					if (i % 2) {
-						offset = offset.multiply(-1);
-					}
-					strokePoint = strokePoint.add(offset);
-					path.insert(0, strokePoint);
-				}
+				// The bottom point: the middle point - the step rotated by 90 degrees:
+				//   ------
+				//   |
+				//   -----*
+				var bottom = event.middlePoint - step;
+
+				path.add(top);
+				path.insert(0, bottom);
 			}
-			tool.fixedDistance = 80;
+			path.smooth();
+
+			lastPoint = event.middlePoint;
+		}
+
+		function onMouseUp(event) {
+			var delta = event.point - lastPoint;
+			delta.length = tool.maxDistance;
+			addStrokes(event.point, delta);
+			path.closed = true;
+			path.smooth();
+		}
+
+		function addStrokes(point, delta) {
+			var step = delta.rotate(90);
+			var strokePoints = strokeEnds * 2 + 1;
+			point -= step / 2;
+			step /= strokePoints - 1;
+			for(var i = 0; i < strokePoints; i++) {
+				var strokePoint = point + step * i;
+				var offset = delta * (Math.random() * 0.3 + 0.1);
+				if (i % 2) {
+					offset *= -1;
+				}
+				strokePoint += offset;
+				path.insert(0, strokePoint);
+			}
 		}
 	</script>
 </head>

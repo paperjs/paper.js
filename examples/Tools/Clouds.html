@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,26 +33,21 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-			var path;
-			var tool = new Tool({
-				onMouseDown: function(event) {
-					path = new Path();
-					path.strokeColor = 'black';
-					path.strokeWidth = 5;
-					path.strokeJoin = 'round';
-					path.strokeCap = 'round';
-					path.add(event.point);
-				},
-				onMouseDrag: function(event) {
-					path.arcTo(event.point, true);
-				}
-			});
-			tool.minDistance = 30;
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var path;
+		function onMouseDown(event) {
+			path = new Path();
+			path.strokeColor = 'black';
+			path.strokeWidth = 5;
+			path.strokeJoin = 'round';
+			path.strokeCap = 'round';
+			path.add(event.point);
 		}
+		function onMouseDrag(event) {
+			path.arcTo(event.point, true);
+		}
+		tool.minDistance = 30;
 	</script>
 </head>
 <body>

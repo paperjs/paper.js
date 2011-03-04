@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,86 +33,81 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-			doc.currentStyle = {
-				strokeColor: '#4f7aff',
-				strokeWidth: 1
-			};
-			
-			var path = new Path();
-			path.style = {
-				strokeColor: 'black',
-				strokeWidth: 1
-			};
-			var currentSegment;
-			var inLine = new Path([0, 0], [0, 0]);
-			var outLine = new Path([0, 0], [0, 0]);
-			var lastInLine = new Path([0, 0], [0, 0]);
-			lastInLine.visible = false;
-			
-			var rect = new Path.Rectangle([0.5, 0.5], [4, 4]);
-			rect.fillColor = 'white';
-			var rectSymbol = new Symbol(rect);
-			
-			var circle = new Path.Circle(0, 2);
-			circle.fillColor = '#4f7aff';
-			circle.strokeColor = null;
-			var circleSymbol = new Symbol(circle);
-			var inCircle = new PlacedSymbol(circleSymbol);
-			var outCircle = new PlacedSymbol(circleSymbol);
-			var lastInCircle = new PlacedSymbol(circleSymbol);
-			inCircle.position = [-100, -100];
-			outCircle.position = [-100, -100];
-			lastInCircle.position = [-100, -100];
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		document.currentStyle = {
+			strokeColor: '#4f7aff',
+			strokeWidth: 1
+		};
+		
+		var path = new Path();
+		path.style = {
+			strokeColor: 'black',
+			strokeWidth: 1
+		};
+		var currentSegment;
+		var inLine = new Path([0, 0], [0, 0]);
+		var outLine = new Path([0, 0], [0, 0]);
+		var lastInLine = new Path([0, 0], [0, 0]);
+		lastInLine.visible = false;
+		
+		var rect = new Path.Rectangle([0.5, 0.5], [4, 4]);
+		rect.fillColor = 'white';
+		var rectSymbol = new Symbol(rect);
+		
+		var circle = new Path.Circle(0, 2);
+		circle.fillColor = '#4f7aff';
+		circle.strokeColor = null;
+		var circleSymbol = new Symbol(circle);
+		var inCircle = new PlacedSymbol(circleSymbol);
+		var outCircle = new PlacedSymbol(circleSymbol);
+		var lastInCircle = new PlacedSymbol(circleSymbol);
+		inCircle.position = [-100, -100];
+		outCircle.position = [-100, -100];
+		lastInCircle.position = [-100, -100];
 
-			var curRect;
-			var tool = new Tool({
-				onMouseDown: function(event) {
-					if (event.count > 1) {
-						var first = lastInLine.segments.first;
-						first.point = inLine.segments.first.point;
-						var last = lastInLine.segments.last;
-						last.point = inLine.segments.last.point;
-						lastInLine.visible = true;
-						lastInCircle.position = last.point;
-					}
-					currentSegment = path.add(event.point);
-					inLine.segments.first.point = event.point;
-					outLine.segments.first.point = event.point;
-					inLine.segments.last.point = event.point;
-					outLine.segments.last.point = event.point;
-					inLine.visible = true;
-					outLine.visible = true;
-					
-					outCircle.position = event.point.round().add(0.5, 0.5);
-					inCircle.position = event.point.round().add(0.5, 0.5);
-					
-					var rect = new PlacedSymbol(rectSymbol);
-					rect.position = event.point.round().add(0.5, 0.5);
-					
-					curRect = new Path.Rectangle([0.5, 0.5], [4, 4]);
-					curRect.position = event.point.round();
-					curRect.fillColor = '#4f7aff';
-					curRect.strokeWidth = 0;
-				},
-				
-				onMouseDrag: function(event) {
-					var delta = event.point.subtract(event.downPoint);
-					currentSegment.handleOut = delta;
-					currentSegment.handleIn = delta.multiply(-1);
-					outLine.segments.last.point = currentSegment.handleIn.add(event.downPoint);
-					inLine.segments.last.point = currentSegment.handleOut.add(event.downPoint);
-					outCircle.position = outLine.segments.last.point;
-					inCircle.position = inLine.segments.last.point;
-				},
-				
-				onMouseUp: function(event) {
-					curRect.remove();
-				}
-			});
+		var curRect;
+		function onMouseDown(event) {
+			if (event.count > 1) {
+				var first = lastInLine.segments.first;
+				first.point = inLine.segments.first.point;
+				var last = lastInLine.segments.last;
+				last.point = inLine.segments.last.point;
+				lastInLine.visible = true;
+				lastInCircle.position = last.point;
+			}
+			currentSegment = path.add(event.point);
+			inLine.segments.first.point = event.point;
+			outLine.segments.first.point = event.point;
+			inLine.segments.last.point = event.point;
+			outLine.segments.last.point = event.point;
+			inLine.visible = true;
+			outLine.visible = true;
+			
+			outCircle.position = event.point.round() + [0.5, 0.5];
+			inCircle.position = event.point.round() + [0.5, 0.5];
+			
+			var rect = new PlacedSymbol(rectSymbol);
+			rect.position = event.point.round() + [0.5, 0.5];
+			
+			curRect = new Path.Rectangle([0.5, 0.5], [4, 4]);
+			curRect.position = event.point.round();
+			curRect.fillColor = '#4f7aff';
+			curRect.strokeWidth = 0;
+		}
+			
+		function onMouseDrag(event) {
+			var delta = event.point - event.downPoint;
+			currentSegment.handleOut = delta;
+			currentSegment.handleIn = -delta;
+			outLine.segments.last.point = currentSegment.handleIn + event.downPoint;
+			inLine.segments.last.point = currentSegment.handleOut + event.downPoint;
+			outCircle.position = outLine.segments.last.point;
+			inCircle.position = inLine.segments.last.point;
+		}
+			
+		function onMouseUp(event) {
+			curRect.remove();
 		}
 	</script>
 </head>

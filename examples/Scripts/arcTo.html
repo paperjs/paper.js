@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
 	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
 	<script type="text/javascript" src="../../src/Paper.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
 	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
@@ -32,30 +33,26 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
-	<script>
-		window.onload = function() {
-			var canvas = document.getElementById('canvas');
-			var doc = new Document(canvas);
-
-			var point = new Point(1024, 768).divide(2);
-			for (var i = 0; i < 30; i++) {
-				var vector = new Point(10 + 20 * i, 0).rotate(i);
-				var l = vector.length;
-				var path = new Path();
-				path.fillColor = i % 2 ? 'red' : 'black';
-				path.closed = true;
-				for (var j = 0; j < 17; j++) {
-					vector = vector.rotate(45 / 2);
-					if (j == 0) {
-						path.add(point.add(vector));
-					} else {
-						path.arcTo(point.add(vector), true);
-					}
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var point = document.bounds.center;
+		for (var i = 0; i < 30; i++) {
+			var vector = new Point(10 + 20 * i, 0).rotate(i);
+			var l = vector.length;
+			var path = new Path();
+			path.fillColor = i % 2 ? 'red' : 'black';
+			path.closed = true;
+			for (var j = 0; j < 17; j++) {
+				vector = vector.rotate(45 / 2);
+				if (j == 0) {
+					path.add(point + vector);
+				} else {
+					path.arcTo(point + vector, true);
 				}
-				doc.activeLayer.appendBottom(path);
 			}
-			doc.redraw();
+			document.activeLayer.appendBottom(path);
 		}
+		document.redraw();
 	</script>
 </head>
 <body>
