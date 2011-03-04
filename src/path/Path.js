@@ -24,7 +24,11 @@ var Path = PathItem.extend({
 	},
 
 	setSegments: function(segments) {
-		this._segments = segments;
+		var l = segments.length;
+		this._segments = new Array(l);
+		for(var i = 0; i < l; i++) {
+			this._segments[i] = Segment.read(segments, i, 1);
+		}
 	},
 
 	// TODO: Consider adding getSubPath(a, b), returning a part of the current
