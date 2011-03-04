@@ -48,6 +48,7 @@ this.install = function(scope) {
 
 //#include "util/CanvasProvider.js"
 //#include "util/MathUtils.js"
+//#include "util/Events.js"
 //#include "util/PaperScript.js"
 
 };
