@@ -33,6 +33,7 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
+	<script type="text/javascript" src="../../src/util/Events.js"></script>
 	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		document.currentStyle = {
@@ -69,18 +70,18 @@
 		var curRect;
 		function onMouseDown(event) {
 			if (event.count > 1) {
-				var first = lastInLine.segments.first;
-				first.point = inLine.segments.first.point;
-				var last = lastInLine.segments.last;
-				last.point = inLine.segments.last.point;
+				var first = lastInLine.firstSegment;
+				first.point = inLine.firstSegment.point;
+				var last = lastInLine.lastSegment;
+				last.point = inLine.lastSegment.point;
 				lastInLine.visible = true;
 				lastInCircle.position = last.point;
 			}
 			currentSegment = path.add(event.point);
-			inLine.segments.first.point = event.point;
-			outLine.segments.first.point = event.point;
-			inLine.segments.last.point = event.point;
-			outLine.segments.last.point = event.point;
+			inLine.firstSegment.point = event.point;
+			outLine.firstSegment.point = event.point;
+			inLine.lastSegment.point = event.point;
+			outLine.lastSegment.point = event.point;
 			inLine.visible = true;
 			outLine.visible = true;
 			
@@ -100,10 +101,10 @@
 			var delta = event.point - event.downPoint;
 			currentSegment.handleOut = delta;
 			currentSegment.handleIn = -delta;
-			outLine.segments.last.point = currentSegment.handleIn + event.downPoint;
-			inLine.segments.last.point = currentSegment.handleOut + event.downPoint;
-			outCircle.position = outLine.segments.last.point;
-			inCircle.position = inLine.segments.last.point;
+			outLine.lastSegment.point = currentSegment.handleIn + event.downPoint;
+			inLine.lastSegment.point = currentSegment.handleOut + event.downPoint;
+			outCircle.position = outLine.lastSegment.point;
+			inCircle.position = inLine.lastSegment.point;
 		}
 			
 		function onMouseUp(event) {
