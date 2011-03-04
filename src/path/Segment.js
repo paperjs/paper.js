@@ -64,11 +64,7 @@ var Segment = this.Segment = Base.extend({
 
 	getIndex: function() {
 		// TODO: Cache and update indices instead of searching?
-		return this.path._segments.indexOf(this);
-	},
-
-	getPath: function() {
-		return this._path;
+		return this.path ? this.path._segments.indexOf(this) : -1;
 	},
 
 	// TODO:
@@ -82,14 +78,11 @@ var Segment = this.Segment = Base.extend({
 	// },
 
 	getNext: function() {
-		var index = this.index;
-		return this.path && index < this.path._segments.length - 1
-			? this.path._segments[index + 1] : null;
+		return this.path && this.path._segments[this.getIndex() + 1] || null;
 	},
 
 	getPrevious: function() {
-		return this.path != null && index > 0
-			? this.path._segments[this.index - 1] : null;
+		return this.path && this.path._segments[this.getIndex() - 1] || null;
 	},
 
 	// TODO:
@@ -109,7 +102,7 @@ var Segment = this.Segment = Base.extend({
 
 	remove: function() {
 		if (this.path && this.path._segments)
-			return this.path._segments.splice(this.index, 1);
+			return !!this.path._segments.splice(this.getIndex(), 1).length;
 		return false;
 	},
 
