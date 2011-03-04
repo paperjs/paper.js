@@ -144,6 +144,12 @@ var PaperScript = new function() {
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
 			if (script.type === 'text/paperscript') {
+				// If a canvas id is provided, create a document for it now, so
+				// the active document is defined.
+				var canvas = script.getAttribute('canvas');
+				if (canvas && (canvas = document.getElementById(canvas))) {
+					new Document(canvas);
+				}
 				if (script.src) {
 					load(script.src);
 				} else {
