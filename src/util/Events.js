@@ -24,5 +24,21 @@ var Events = {
 				obj.detachEvent('on' + type, func.bound);
 			}
 		}
+	},
+
+	getPoint: function(event) {
+		return Point.create(
+			event.pageX || event.clientX + document.documentElement.scrollLeft,
+			event.pageY || event.clientY + document.documentElement.scrollTop
+		);
+	},
+
+	getOffset: function(event) {
+		var point = Events.getPoint(event);
+		// Remove target offsets from page coordinates
+		for (var el = event.target || event.srcElement; el;
+				point.x -= el.offsetLeft, point.y -= el.offsetTop,
+				el = el.offsetParent);
+		return point;
 	}
 };

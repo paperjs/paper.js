@@ -1,9 +1,6 @@
 var Tool = this.Tool = ToolHandler.extend(new function() {
 	function viewToArtwork(event, document) {
-		var x = event.pageX || event.clientX + document.documentElement.scrollLeft;
-		var y = event.pageY || event.clientY + document.documentElement.scrollTop;
-		// TODO: Remove canvas offset
-		var point = Point.create(x, y);
+		var point = Events.getOffset(event);
 		// TODO: always the active view?
 		return document.activeView.viewToArtwork(point);
 	};
@@ -68,6 +65,7 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 		},
 
 		setDocument: function(doc) {
+			// Remove old events first.
 			if (this._document)
 				Events.remove(this._document.canvas, this.events);
 			this._document = doc || paper.document;
