@@ -51,11 +51,9 @@
 		}
 		setInterval(draw, 30);
 		
-		var tool = new Tool({
-			onMouseDrag: function(event) {
-				mousePoint = event.point;
-			}
-		});
+		function onMouseDrag(event) {
+			mousePoint = event.point;
+		}
 		
 		var children = document.activeLayer.children;
 		var count = 0;

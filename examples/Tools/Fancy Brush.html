@@ -93,7 +93,7 @@
 			var strokePoints = strokeEnds * 2 + 1;
 			point -= step / 2;
 			step /= strokePoints - 1;
-			for(var i = 0; i < strokePoints; i++) {
+			for (var i = 0; i < strokePoints; i++) {
 				var strokePoint = point + step * i;
 				var offset = delta * (Math.random() * 0.3 + 0.1);
 				if (i % 2) {

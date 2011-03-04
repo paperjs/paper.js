@@ -52,18 +52,19 @@
 		var path = new Path.Rectangle(new Rectangle([0, 0], document.size));
 		path.fillColor = gradientColor;
 		var mouseDown = false;
-		var tool = new Tool({
-			onMouseDown: function(event) {
-				mouseDown = true;
-				gradientColor.hilite = event.point;
-			},
-			onMouseDrag: function(event) {
-				gradientColor.hilite = event.point;
-			},
-			onMouseUp: function(event) {
-				mouseDown = false;
-			}
-		});
+		
+		function onMouseDown(event) {
+			mouseDown = true;
+			gradientColor.hilite = event.point;
+		}
+		
+		function onMouseDrag(event) {
+			gradientColor.hilite = event.point;
+		}
+		
+		function onMouseUp(event) {
+			mouseDown = false;
+		}
 
 		setInterval(draw, 30);
 

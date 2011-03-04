@@ -99,16 +99,15 @@
 		}
 
 		var lastDelta;
-		tool = new Tool({
-			onMouseDrag: function(event) {
-				lastDelta = event.delta;
-			},
-			onMouseUp: function(event) {
-				var ball = new Ball(event.point, lastDelta);
-				balls.push(ball);
-				lastDelta = null;
-			}
-		});
+		function onMouseDrag(event) {
+			lastDelta = event.delta;
+		}
+		
+		function onMouseUp(event) {
+			var ball = new Ball(event.point, lastDelta);
+			balls.push(ball);
+			lastDelta = null;
+		}
 		setInterval(draw, 30);
 
 		var boundPath = new Path.Rectangle([-10, -10], [-11, -11]);
