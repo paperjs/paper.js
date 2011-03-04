@@ -5,7 +5,7 @@ var Item = this.Item = Base.extend({
 		paper.document.activeLayer.appendTop(this);
 		this.style = this.document.currentStyle;
 	},
-	
+
 	/**
 	 * When passed a document, copies the item to the document,
 	 * or duplicates it within the same document. When passed an item,
@@ -14,17 +14,11 @@ var Item = this.Item = Base.extend({
 	 * @param document the document to copy the item to
 	 * @return the new copy of the item
 	 */
-	
 	copyTo: function(itemOrDocument) {
-		// TODO: I don't think we can rely on Base.clone here, as right now it
-		// ownly produces a shallow clone, and gest confused over Path#length.
-		// How to handle this?
-		var copy = Base.clone(this);
+		var copy = this.clone();
 		if (itemOrDocument.layers) {
-			copy.parent = itemOrDocument.activeLayer;
 			itemOrDocument.activeLayer.appendTop(copy);
 		} else {
-			copy.parent = itemOrDocument;
 			itemOrDocument.appendTop(copy);
 		}
 		return copy;
@@ -35,9 +29,12 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @return the newly cloned item
 	 */
-
 	clone: function() {
-		return this.copyTo(this.parent);
+		var copy = new this.constructor();
+		// TODO: Copy children and other things.
+		if (this.parent)
+			this.parent.appendTop(copy);
+		return copy;
 	},
 
 	// TODO: isSelected / setSelected
@@ -55,7 +52,6 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @return {@true if the item is locked}
 	 */
-
 	locked: false,
 
 	/**
@@ -70,7 +66,6 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @return {@true if the item is visible}
 	 */
-
 	visible: true,
 
 	/**
@@ -87,7 +82,6 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @return the opacity of the item as a value between 0 and 1.
 	 */
-
 	opacity: 1,
 
 	/**
@@ -118,7 +112,6 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @jshide
 	 */
-
 	isHidden: function() {
 		return !this.visible;
 	},
