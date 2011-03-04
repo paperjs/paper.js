@@ -60,8 +60,8 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 		if (hex.length >= 4) {
 			var rgb = [];
 			for (var i = 1; i < 4; i++)
-				rgb.push((hex[i].length == 1
-						? hex[i] + hex[i] : hex[i]).toInt(16) / 255);
+				rgb.push(parseInt(hex[i].length == 1
+						? hex[i] + hex[i] : hex[i], 16) / 255);
 			return rgb;
 		}
 	};
