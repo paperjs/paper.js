@@ -1,15 +1,4 @@
 var paper = new function() {
-// Inline Base core inside the paper scope first:
-//#include "../lib/bootstrap.js"
-
-// Expose Base object through paper too, so it can be used that for Bootstrap fun
-this.Base = Base;
-
-Base.capitalize = function(str) {
-	return str.replace(/\b[a-z]/g, function(match) {
-		return match.toUpperCase();
-	});
-};
 
 this.document = null;
 this.documents = [];
@@ -19,6 +8,9 @@ this.install = function(scope) {
 		scope[i] = this[i];
 	}
 };
+
+// Inline Base core inside the paper scope first:
+//#include "../lib/bootstrap.js"
 
 //#include "basic/Point.js"
 //#include "basic/Size.js"
