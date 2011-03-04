@@ -79,10 +79,10 @@ var GrayColor = this.GrayColor = Color.extend({
 	};
 
 	Base.each(componentWeights, function(weight, key) {
-		fields['get' + key.capitalize()] = function() {
+		fields['get' + Base.capitalize(key)] = function() {
 			return 1 - this._gray;
 		};
-		fields['set' + key.capitalize()] = function(value) {
+		fields['set' + Base.capitalize(key)] = function(value) {
 			this._cssString = null;
 			this._gray = this._gray * (1 - weight) + weight * (1 - value);
 		};

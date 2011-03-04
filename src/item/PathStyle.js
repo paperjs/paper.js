@@ -21,7 +21,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 	Item.inject(Base.each(keys, function(key) {
 
 		var isColor = !!(key.match(/Color$/));
-		fields['set' + key.capitalize()] = function(value) {
+		fields['set' + Base.capitalize(key)] = function(value) {
 			if (this.item && this.item.children) {
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
 					this.item.children[i].style[key] = value;
@@ -31,7 +31,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			}
 		};
 
-		fields['get' + key.capitalize()] = function() {
+		fields['get' + Base.capitalize(key)] = function() {
 			if (this.item && this.item.children) {
 				var style;
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
@@ -50,11 +50,11 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			}
 		};
 
-		this['set' + key.capitalize()] = function(value) {
+		this['set' + Base.capitalize(key)] = function(value) {
 			this.style[key] = value;
 		};
 
-		this['get' + key.capitalize()] = function() {
+		this['get' + Base.capitalize(key)] = function() {
 			return this.style[key];
 		};
 	}, { beans: true }));

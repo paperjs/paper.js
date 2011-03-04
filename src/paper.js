@@ -9,6 +9,12 @@ var paper = new function() {
 		}
 	};
 
+	Base.capitalize = function(str) {
+		return str.replace(/\b[a-z]/g, function(match) {
+			return match.toUpperCase();
+		});
+	};
+
 //#include "basic/Point.js"
 //#include "basic/Size.js"
 //#include "basic/Rectangle.js"
