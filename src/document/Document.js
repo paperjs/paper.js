@@ -1,4 +1,4 @@
-var Document = Base.extend({
+var Document = this.Document = Base.extend({
 	beans: true,
 
 	initialize: function(canvas) {

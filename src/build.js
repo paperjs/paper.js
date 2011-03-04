@@ -40,14 +40,4 @@ var paper = new function() {
 //#include "util/MathUtils.js"
 //#include "util/PaperScript.js"
 
-// Inject all prototypes from the paper scope into the paper object.
-return Base.each(['Point', 'Size', 'Rectangle', 'Matrix', 'DocumentView',
-	'Document', 'Symbol', 'Item', 'Group', 'Layer', 'Raster', 'PlacedSymbol',
-	'PathStyle', 'Segment', 'Curve', 'PathItem', 'Path', 'CompoundPath',
-	'Color', 'RGBColor', 'GrayColor', 'GradientColor', 'Gradient',
-	'GradientStop', 'ToolEvent', 'ToolHandler', 'Tool'],
-	function(name) {
-		this[name] = eval(name);
-	}, paper);
-
 };

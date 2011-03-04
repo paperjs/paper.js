@@ -1,4 +1,4 @@
-var GradientColor = Color.extend({
+var GradientColor = this.GradientColor = Color.extend({
 	beans: true,
 
 	initialize: function(gradient, origin, destination, hilite) {

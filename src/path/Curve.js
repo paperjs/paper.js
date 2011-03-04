@@ -1,4 +1,4 @@
-var Curve = Base.extend({
+var Curve = this.Curve = Base.extend({
 	initialize: function() {
 	}
 });

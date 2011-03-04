@@ -1,4 +1,4 @@
-var PlacedSymbol = Item.extend({
+var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	beans: true,
 
 	initialize: function() {

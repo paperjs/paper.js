@@ -114,9 +114,7 @@ var PaperScript = new function() {
 	}
 
 	function run(code) {
-		// Use paper.extend() to create a paper scope within which the code is
-		// evaluated.
-		with (paper.extend()) {
+		with (paper) {
 			var tool = /onMouse(?:Up|Down|Move|Drag)/.test(code) && new Tool();
 			var res = eval(compile(code));
 			if (tool) {

@@ -1,4 +1,4 @@
-var Size = Base.extend({
+var Size = this.Size = Base.extend({
 	initialize: function() {
 		if (arguments.length == 2) {
 			this.width = arguments[0];

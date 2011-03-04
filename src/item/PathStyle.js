@@ -1,4 +1,4 @@
-var PathStyle = Base.extend(new function() {
+var PathStyle = this.PathStyle = Base.extend(new function() {
 	var keys = ['windingRule', 'resolution', 'strokeColor', 'strokeWidth',
 			'strokeCap', 'strokeJoin', 'dashOffset','dashArray', 'miterLimit',
 			'strokeOverprint', 'fillColor', 'fillOverprint'];

@@ -1,4 +1,4 @@
-var RGBColor = Color.extend(new function() {
+var RGBColor = this.RGBColor = Color.extend(new function() {
 	// TODO: convert hex codes to [r,g,b]?
 	var namedColors = {
 		lightpink: 'ffb6c1', pink: 'ffc0cb', crimson: 'dc143c',

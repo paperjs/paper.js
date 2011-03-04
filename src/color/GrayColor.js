@@ -1,4 +1,4 @@
-var GrayColor = Color.extend({
+var GrayColor = this.GrayColor = Color.extend({
 	beans: true,
 
 	initialize: function() {

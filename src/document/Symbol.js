@@ -1,4 +1,4 @@
-var Symbol = Base.extend({
+var Symbol = this.Symbol = Base.extend({
 	beans: true,
 
 	initialize: function(item) {

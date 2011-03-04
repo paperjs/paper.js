@@ -1,4 +1,4 @@
-var Path = PathItem.extend({
+var Path = this.Path = PathItem.extend({
 	beans: true,
 
 	initialize: function(/* segments */) {
@@ -12,8 +12,10 @@ var Path = PathItem.extend({
 		if (!segments || !Array.isArray(segments)
 				|| typeof segments[0] != 'object')
 			segments = arguments;
-		for (var i = 0, l = segments.length; i < l; i++)
-			this._add(Segment.read(segments, i, 1));
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var seg = Segment.read(segments, i, 1);
+			this._add(seg);
+		}
 	},
 
 	/**

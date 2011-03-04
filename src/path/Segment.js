@@ -1,4 +1,4 @@
-var Segment = Base.extend({
+var Segment = this.Segment = Base.extend({
 	initialize: function() {
 		if (arguments.length == 0) {
 			this.point = new Point();

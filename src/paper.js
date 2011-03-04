@@ -1,10 +1,8 @@
-var paper = new Base().inject({
-	document: null,
-	documents: [],
+this.document = null;
+this.documents = [];
 
-	install: function(scope) {
-		for (var i in paper) {
-			scope[i] = paper[i];
-		}
+this.install = function(scope) {
+	for (var i in this) {
+		scope[i] = this[i];
 	}
-});
+};

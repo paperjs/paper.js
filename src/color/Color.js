@@ -1,4 +1,4 @@
-var Color = Base.extend({
+var Color = this.Color = Base.extend({
 	beans: true,
 
 	initialize: function() {

@@ -1,4 +1,4 @@
-var GradientStop = Base.extend({
+var GradientStop = this.GradientStop = Base.extend({
 	beans: true,
 
 	// TODO: support midPoint? (initial tests didn't look nice)

@@ -1,4 +1,4 @@
-var Item = Base.extend({
+var Item = this.Item = Base.extend({
 	beans: true,
 
 	initialize: function() {

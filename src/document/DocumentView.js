@@ -1,4 +1,4 @@
-var DocumentView = Base.extend({
+var DocumentView = this.DocumentView = Base.extend({
 	beans: true,
 
 	initialize: function(document) {
