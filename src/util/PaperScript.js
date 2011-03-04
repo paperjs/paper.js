@@ -119,18 +119,18 @@ var PaperScript = new function() {
 		// Use paper.extend() to create a paper scope within which the code is
 		// evaluated.
 		with (paper.extend()) {
-			// TODO: Only create tool if code contains reference to tool scripts!
-			var tool = new Tool();
+			var tool = /onMouse(?:Up|Down|Move|Drag)/.test(code) && new Tool();
 			var res = eval(compile(code));
-			// TODO: Again, only do this if we actually detected a tool script:
-			Base.each(['onEditOptions', 'onOptions', 'onSelect', 'onDeselect',
-				'onReselect', 'onMouseDown', 'onMouseUp', 'onMouseDrag',
-				'onMouseMove'], function(key) {
-				try {
-					tool[key] = eval(key);
-				} catch (e) {
-				}
-			});
+			if (tool) {
+				Base.each(['onEditOptions', 'onOptions', 'onSelect',
+					'onDeselect', 'onReselect', 'onMouseDown', 'onMouseUp',
+					'onMouseDrag', 'onMouseMove'], function(key) {
+					try {
+						tool[key] = eval(key);
+					} catch (e) {
+					}
+				});
+			}
 			return res;
 		}
 	}
