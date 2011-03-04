@@ -85,7 +85,7 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 					this._green = components[1];
 					this._blue = components[2];
 					this.alpha = -1;
-				} else if (Array.isArray(arg)) {
+				} else if (Base.isArray(arg)) {
 					this._red = arg[0];
 					this._green = arg[1];
 					this._blue = arg[2];

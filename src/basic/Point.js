@@ -20,7 +20,7 @@ var Point = this.Point = Base.extend({
 			} else if (arg.width !== undefined) {
 				this.x = arg.width;
 				this.y = arg.height;
-			} else if (Array.isArray(arg)) {
+			} else if (Base.isArray(arg)) {
 				this.x = arg[0];
 				this.y = arg.length > 1 ? arg[1] : arg[0];
 			} else if (typeof arg === 'number') {

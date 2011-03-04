@@ -42,7 +42,7 @@ var Matrix = this.Matrix = Base.extend({
 			var mx = arguments[0];
 			if (mx instanceof Matrix) {
 				this.set(mx._m00, mx._m10, mx._m01, mx._m11, mx._m02, mx._m12);
-			} else if (Array.isArray(mx)) {
+			} else if (Base.isArray(mx)) {
 				this.set.apply(this, mx);
 			} else {
 				ok = false;
