@@ -14,7 +14,7 @@ var PaperScript = new function() {
 		'!=': 'equals'
 	};
 
-	function $operator(left, operator, right) {
+	function $eval(left, operator, right) {
 		var handler = operators[operator];
 		if (left && left[handler]) {
 			var res = left[handler](right);
@@ -35,12 +35,12 @@ var PaperScript = new function() {
 
 	// Handle Sign Operators
 
-	var signs = {
+	var signOperators = {
 		'-': 'negate'
 	};
 
 	function $sign(operator, value) {
-		var handler = signs[operator];
+		var handler = signOperators[operator];
 		if (value && value[handler]) {
 			return value[handler]();
 		}
@@ -64,7 +64,7 @@ var PaperScript = new function() {
 		// is potentially an object.
 		if (operators[operator] && isDynamic(left)) {
 			// Replace with call to $operator(left, operator, right):
-			return ['call', ['name', '$operator'],
+			return ['call', ['name', '$eval'],
 					[left, ['string', operator], right]];
 		}
 	}
@@ -101,7 +101,7 @@ var PaperScript = new function() {
 			},
 
 			'unary-prefix': function(operator, exp) {
-				if (signs[operator] && isDynamic(exp)) {
+				if (signOperators[operator] && isDynamic(exp)) {
 					return ['call', ['name', '$sign'],
 							[['string', operator], walk(exp)]];
 				}
