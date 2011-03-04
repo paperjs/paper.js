@@ -47,8 +47,7 @@ var ToolHandler = this.ToolHandler = Base.extend({
 	},
 
 	getFixedDistance: function() {
-		if (this._minDistance != null
-				&& this._minDistance.equals(this._maxDistance))
+		if (this._minDistance == this._maxDistance)
 			return this._minDistance;
 		return null;
 	},
