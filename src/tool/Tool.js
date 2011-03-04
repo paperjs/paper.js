@@ -1,6 +1,9 @@
 var Tool = this.Tool = ToolHandler.extend(new function() {
 	function viewToArtwork(event, document) {
-		var point = Point.create(event.offset.x, event.offset.y);
+		var x = event.pageX || event.clientX + document.documentElement.scrollLeft;
+		var y = event.pageY || event.clientY + document.documentElement.scrollTop;
+		// TODO: Remove canvas offset
+		var point = Point.create(x, y);
 		// TODO: always the active view?
 		return document.activeView.viewToArtwork(point);
 	};
@@ -10,55 +13,65 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 
 		initialize: function(handlers, doc) {
 			this.base(handlers);
+			// Create events once, so they can be removed easily too.
+			var that = this, curPoint;
+			var dragging = false;
+			this.events = {
+				mousedown: function(event) {
+					curPoint = viewToArtwork(event, that._document);
+					that.onHandleEvent('mouse-down', curPoint, null, null);
+					if (that.onMouseDown)
+						that._document.redraw();
+					if (that.eventInterval != null) {
+						this.timer = setInterval(that.events.mousemove,
+								that.eventInterval);
+					}
+					dragging = true;
+				},
+
+				mousemove: function(event) {
+					var point = event && viewToArtwork(event, that._document);
+					if (dragging) {
+						curPoint = point || curPoint;
+						if (curPoint) {
+							that.onHandleEvent('mouse-drag', curPoint, null, null);
+							if (that.onMouseDrag)
+								that._document.redraw();
+						}
+					} else {
+						that.onHandleEvent('mouse-move', point, null, null);
+						if (that.onMouseMove)
+							that._document.redraw();
+					}
+				},
+
+				mouseup: function(event) {
+					if (dragging) {
+						curPoint = null;
+						if (this.eventInterval != null)
+							clearInterval(this.timer);
+						that.onHandleEvent('mouse-up',
+								viewToArtwork(event, that._document), null, null);
+						if (that.onMouseUp)
+							that._document.redraw();
+						dragging = false;
+					}
+				}
+			}
 			if (paper.document)
-				this.document = paper.document;
+				this.setDocument(paper.document);
+			
+		},
+
+		getDocument: function() {
+			return this._document;
 		},
 
 		setDocument: function(doc) {
 			if (this._document)
-				$(this._document.canvas).removeEvents();
+				Events.remove(this._document.canvas, this.events);
 			this._document = doc || paper.document;
-			var that = this, curPoint;
-			var dragging = false;
-			var events = {
-				dragstart: function(e) {
-					curPoint = viewToArtwork(e, that._document);
-					that.onHandleEvent('mouse-down', curPoint, null, null);
-					if (that.onMouseDown)
-						that._document.redraw();
-					if (that.eventInterval != -1)
-						this.intervalId = setInterval(events.drag,
-								that.eventInterval);
-					dragging = true;
-				},
-				drag: function(e) {
-					if (e) curPoint = viewToArtwork(e, that._document);
-					if (curPoint) {
-						that.onHandleEvent('mouse-drag', curPoint, null, null);
-						if (that.onMouseDrag)
-							that._document.redraw();
-					}
-				},
-				dragend: function(e) {
-					curPoint = null;
-					if (this.eventInterval != -1)
-						clearInterval(this.intervalId);
-					that.onHandleEvent('mouse-up', 
-						viewToArtwork(e, that._document), null, null);
-					if (that.onMouseUp)
-						that._document.redraw();
-					dragging = false;
-				},
-				mousemove: function(e) {
-					if (!dragging) {
-						that.onHandleEvent('mouse-move',
-							viewToArtwork(e, that._document), null, null);
-						if (that.onMouseMove)
-							that._document.redraw();
-					}
-				}
-			};
-			$(doc.canvas).addEvents(events);
+			Events.add(doc.canvas, this.events);
 		},
 
 		/**
@@ -76,10 +89,6 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 		 * 
 		 * @return the interval time in milliseconds
 		 */
-		eventInterval: -1,
-
-		getDocument: function() {
-			return this._document;
-		}
+		eventInterval: null
 	};
 });
