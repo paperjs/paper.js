@@ -40,14 +40,14 @@ var PaperScript = new function() {
 		'-': 'negate'
 	};
 
-	function $sign(operator, exp) {
+	function $sign(operator, value) {
 		var handler = signs[operator];
-		if (exp && exp[handler]) {
-			return exp[handler]();
+		if (value && value[handler]) {
+			return value[handler]();
 		}
 		switch (operator) {
-		case '+': return +exp;
-		case '-': return -exp;
+		case '+': return +value;
+		case '-': return -value;
 		default:
 			throw new Error('Implement Sign Operator: ' + operator);
 		}
