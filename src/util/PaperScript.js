@@ -61,10 +61,10 @@ var PaperScript = new function() {
 	}
 
 	function handleOperator(operator, left, right) {
-		// Only replace operators with calls to paper.handleOperator if
-		// the left hand side is potentially an object.
+		// Only replace operators with calls to $operator if the left hand side
+		// is potentially an object.
 		if (operators[operator] && isDynamic(left)) {
-			// Replace with paper.handleOperator(operator, left, right):
+			// Replace with call to $operator(left, operator, right):
 			return ['call', ['name', '$operator'],
 					[left, ['string', operator], right]];
 		}
