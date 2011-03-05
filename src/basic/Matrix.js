@@ -350,12 +350,7 @@ var Matrix = this.Matrix = Base.extend({
 			tr = bounds.getTopRight(),
 			br = bounds.getBottomRight(),
 			bl = bounds.getBottomLeft(),
-			coords = [
-				tl.x, tl.y,
-				tr.x, tr.y,
-				br.x, br.y,
-				bl.x, bl.y
-			];
+			coords = [ tl.x, tl.y, tr.x, tr.y, br.x, br.y, bl.x, bl.y ];
 		this.transform(coords, 0, coords, 0, 4);
 		// Loop through all x and y coordinates and update min and max values.
 		// Start with the first coordinate pair for both (coords.slice(0, 2)).
