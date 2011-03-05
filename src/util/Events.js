@@ -38,7 +38,7 @@ var Events = {
 		// Remove target offsets from page coordinates
 		for (var el = event.target || event.srcElement; el;
 				point.x -= el.offsetLeft, point.y -= el.offsetTop,
-				el = el.offsetParent);
+				el = el.offsetParent) {}
 		return point;
 	}
 };
