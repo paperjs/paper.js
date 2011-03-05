@@ -8,6 +8,9 @@ var Raster = this.Raster = Item.extend({
 		if (object.getContext) {
 			this.setCanvas(object);
 		} else {
+			// If it's a string, get the element with this id first.
+			if (typeof object == 'string')
+				object = document.getElementById(object);
 			this.setImage(object);
 		}
 		this.matrix = new Matrix();
@@ -108,7 +111,7 @@ var Raster = this.Raster = Item.extend({
 		var canvas = CanvasProvider.getCanvas(rectangle.getSize());
 		var context = canvas.getContext('2d');
 		context.drawImage(this.getCanvas(), rectangle.x, rectangle.y,
-			canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+				canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 		return canvas;
 	},
 
