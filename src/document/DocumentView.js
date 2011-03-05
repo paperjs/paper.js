@@ -30,7 +30,7 @@ var DocumentView = this.DocumentView = Base.extend({
 	setZoom: function(zoom) {
 		// TODO: clamp the view between 1/32 and 64?
 		var mx = new Matrix();
-		mx.scale(zoom / this._zoom, this.center);
+		mx.scale(zoom / this._zoom, this._center);
 		this.transform(mx);
 		this._zoom = zoom;
 	},

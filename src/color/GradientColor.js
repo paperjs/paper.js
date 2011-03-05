@@ -3,10 +3,10 @@ var GradientColor = this.GradientColor = Color.extend({
 
 	initialize: function(gradient, origin, destination, hilite) {
 		this.gradient = gradient || new Gradient();
-		this.origin = origin;
-		this.destination = destination;
+		this.setOrigin(origin);
+		this.setDestination(destination);
 		if (hilite)
-			this.hilite = hilite;
+			this.setHilite(hilite);
 	},
 
 	getOrigin: function() {
@@ -34,9 +34,9 @@ var GradientColor = this.GradientColor = Color.extend({
 
 	setHilite: function() {
 		var hilite = Point.read(arguments);
-		var vector = hilite.subtract(this.origin);
+		var vector = hilite.subtract(this._origin);
 		if (vector.length > this._radius) {
-			this._hilite = this.origin.add(vector.normalize(
+			this._hilite = this._origin.add(vector.normalize(
 					this._radius - 0.1));
 		} else {
 			this._hilite = hilite;
@@ -46,16 +46,16 @@ var GradientColor = this.GradientColor = Color.extend({
 	getCanvasStyle: function(ctx) {
 		var gradient;
 		if (this.gradient.type == 'linear') {
-			gradient = ctx.createLinearGradient(this.origin.x, this.origin.y,
+			gradient = ctx.createLinearGradient(this._origin.x, this._origin.y,
 				this.destination.x, this.destination.y);
 		} else {
-			var origin = this.hilite || this.origin;
+			var origin = this._hilite || this._origin;
 			gradient = ctx.createRadialGradient(origin.x, origin.y,
-				0, this.origin.x, this.origin.y, this._radius);
+				0, this._origin.x, this._origin.y, this._radius);
 		}
-		for (var i = 0, l = this.gradient.stops.length; i < l; i++) {
-			var stop = this.gradient.stops[i];
-			gradient.addColorStop(stop.rampPoint, stop.color.toCssString());
+		for (var i = 0, l = this.gradient._stops.length; i < l; i++) {
+			var stop = this.gradient._stops[i];
+			gradient.addColorStop(stop._rampPoint, stop.color.toCssString());
 		}
 		return gradient;
 	}

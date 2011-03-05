@@ -44,22 +44,22 @@ Path.inject({ statics: new function() {
 					arguments[2], arguments[3]);
 				size = new Size(arguments[4], arguments[5]);
 			}
-			size = Size.min(size, rect.size.divide(2));
+			size = Size.min(size, rect.getSize().divide(2));
 			uSize = size.multiply(kappa * 2);
 
-			var bl = rect.bottomLeft;
+			var bl = rect.getBottomLeft();
 			path.add(bl.add(size.width, 0), null, [-uSize.width, 0]);
 			path.add(bl.subtract(0, size.height), [0, uSize.height], null);
 
-			var tl = rect.topLeft;
+			var tl = rect.getTopLeft();
 			path.add(tl.add(0, size.height), null, [0, -uSize.height]);
 			path.add(tl.add(size.width, 0), [-uSize.width, 0], null);
 
-			var tr = rect.topRight;
+			var tr = rect.getTopRight();
 			path.add(tr.subtract(size.width, 0), null, [uSize.width, 0]);
 			path.add(tr.add(0, size.height), [0, -uSize.height], null);
 
-			var br = rect.bottomRight;
+			var br = rect.getBottomRight();
 			path.add(br.subtract(0, size.height), null, [0, uSize.height]);
 			path.add(br.subtract(size.width, 0), [uSize.width, 0], null);
 
@@ -70,7 +70,7 @@ Path.inject({ statics: new function() {
 		Oval: function() {
 			var path = new Path();
 			var rect = Rectangle.read(arguments);
-			var topLeft = rect.topLeft;
+			var topLeft = rect.getTopLeft();
 			var size = new Size(rect.width, rect.height);
 			for (var i = 0; i < 4; i++) {
 				var segment = ovalSegments[i];

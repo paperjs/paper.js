@@ -19,42 +19,24 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		} else {
 			this.matrix = new Matrix();
 		}
-		this._bounds = this.symbol.definition.strokeBounds.clone();
 		// TODO: should size be cached here, or on Symbol?
-		this._size = this._bounds.size;
+		this._size = this.symbol.getDefinition().getStrokeBounds().getSize();
 	},
 
 	_transform: function(matrix, flags) {
-		var width = this._size.width;
-		var height = this._size.height;
-		var x = width * -0.5;
-		var y = height * -0.5;
-		var coords = [
-			x, y,
-			x + width, y,
-			x + width, y + height,
-			x, y + height];
+		// In order to set the right context transformation when drawing the
+		// raster, simply preconcatenate the internal matrix with the provided
+		// one.
 		this.matrix.preConcatenate(matrix);
-		this.matrix.transform(coords, 0, coords, 0, 4);
-
-		var xMin = coords[0], xMax = coords[0];
-		var yMin = coords[1], yMax = coords[1];
-		for (var i = 2; i < 8; i += 2) {
-			var x = coords[i];
-			var y = coords[i + 1];
-			xMin = Math.min(x, xMin);
-			xMax = Math.max(x, xMax);
-			yMin = Math.min(y, yMin);
-			yMax = Math.max(y, yMax);
-		};
-		var bounds = this._bounds;
-		bounds.x = xMin;
-		bounds.y = yMin;
-		bounds.width = xMax - xMin;
-		bounds.height = yMax - yMin;
+		this._bounds = null;
 	},
 
 	getBounds: function() {
+		// TODO: Is this right here? Shouldn't we calculate the bounds of the
+		// symbol transformed by this.matrix?
+		if (!this._bounds) {
+			this._bounds = this.matrix.transformBounds(this._size);
+		}
 		return this._bounds;
 	},
 
@@ -62,7 +44,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		// TODO: we need to preserve strokewidth
 		ctx.save();
 		this.matrix.applyToContext(ctx);
-		Item.draw(this.symbol.definition, ctx, param);
+		Item.draw(this.symbol.getDefinition(), ctx, param);
 		ctx.restore();
 	}
 

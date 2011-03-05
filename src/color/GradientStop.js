@@ -3,8 +3,8 @@ var GradientStop = this.GradientStop = Base.extend({
 
 	// TODO: support midPoint? (initial tests didn't look nice)
 	initialize: function(color, rampPoint) {
-		this._color = Color.read([color]);
-		this._rampPoint = rampPoint !== null ? rampPoint : 0;
+		this.setColor(color);
+		this.setRampPoint(rampPoint);
 	},
 
 	getRampPoint: function() {
@@ -12,7 +12,7 @@ var GradientStop = this.GradientStop = Base.extend({
 	},
 
 	setRampPoint: function(rampPoint) {
-		this._rampPoint = rampPoint;
+		this._rampPoint = rampPoint !== null ? rampPoint : 0;
 	},
 
 	getColor: function() {

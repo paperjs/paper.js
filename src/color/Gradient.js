@@ -1,8 +1,10 @@
 var Gradient = this.Gradient = Base.extend({
+	beans: true,
+
 	initialize: function() {
-		this.stops = [
+		this.setStops([
 				new GradientStop('white', 0),
-				new GradientStop('black', 1)];
+				new GradientStop('black', 1)]);
 		this.type = 'linear';
 	},
 

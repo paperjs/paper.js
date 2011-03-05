@@ -8,18 +8,18 @@ var Group = this.Group = Item.extend({
 				this.appendTop(items[i]);
 			}
 		}
-		this.clipped = false;
+		this.setClipped(false);
 	},
 
 	getBounds: function() {
 		if (this.children.length) {
-			var rect = this.children[0].bounds;
+			var rect = this.children[0].getBounds();
 			var x1 = rect.x;
 			var y1 = rect.y;
 			var x2 = rect.x + rect.width;
 			var y2 = rect.y + rect.height;
 			for (var i = 1, l = this.children.length; i < l; i++) {
-				var rect2 = this.children[i].bounds;
+				var rect2 = this.children[i].getBounds();
 				x1 = Math.min(rect2.x, x1);
 				y1 = Math.min(rect2.y, y1);
 				x2 = Math.max(rect2.x + rect2.width, x1 + x2 - x1);
@@ -56,7 +56,7 @@ var Group = this.Group = Item.extend({
 	draw: function(ctx, param) {
 		for (var i = 0, l = this.children.length; i < l; i++) {
 			Item.draw(this.children[i], ctx, param);
-			if (this.clipped && i == 0)
+			if (this._clipped && i == 0)
 				ctx.clip();
 		}
 	}

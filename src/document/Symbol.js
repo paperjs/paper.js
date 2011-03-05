@@ -4,7 +4,7 @@ var Symbol = this.Symbol = Base.extend({
 	initialize: function(item) {
 		this.document = paper.document;
 		this.document.symbols.push(this);
-		this.definition = item;
+		this.setDefinition(item);
 	},
 
 	getDefinition: function() {
@@ -14,7 +14,7 @@ var Symbol = this.Symbol = Base.extend({
 	setDefinition: function(item) {
 		this._definition = item;
 		this._definition.removeFromParent();
-		this._definition.position = new Point(0, 0);
+		this._definition.setPosition(new Point(0, 0));
 	}
 
 	// TODO:

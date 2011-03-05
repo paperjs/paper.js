@@ -493,7 +493,7 @@ var Item = this.Item = Base.extend({
 	},
 
 	setBounds: function(rect) {
-		var bounds = this.bounds;
+		var bounds = this.getBounds();
 		rect = Rectangle.read(arguments);
 		if (!rect)
 			return;
@@ -539,15 +539,15 @@ var Item = this.Item = Base.extend({
 		// question for now.
 		if (!resolution)
 			resolution = 72;
-		var bounds = this.strokeBounds;
+		var bounds = this.getStrokeBounds();
 		var scale = resolution / 72;
-		var canvas = CanvasProvider.getCanvas(bounds.size.multiply(scale));
+		var canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale));
 		var context = canvas.getContext('2d');
 		var matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(context);
 		this.draw(context, {});
 		var raster = new Raster(canvas);
-		raster.position = this.bounds.center;
+		raster.setPosition(this.getBounds().getCenter());
 		raster.scale(1 / scale);
 		return raster;
 	},
@@ -570,7 +570,7 @@ var Item = this.Item = Base.extend({
 	 * </code>
 	 */
 	getPosition: function() {
-		return this.bounds.center;
+		return this.getBounds().getCenter();
 	},
 
 	setPosition: function(point) {
@@ -725,14 +725,14 @@ var Item = this.Item = Base.extend({
 			if (item.blendMode !== 'normal'
 				|| item.opacity < 1
 				&& !(item.segments && (!item.fillColor || !item.strokeColor))) {
-				var bounds = item.strokeBounds || item.bounds;
+				var bounds = item.getStrokeBounds() || item.getBounds();
 				if (!bounds.width || !bounds.height)
 					return;
 
 				// Floor the offset and ceil the size, so we don't cut off any
 				// antialiased pixels when drawing onto the temporary canvas.
-				var itemOffset = bounds.topLeft.floor();
-				var size = bounds.size.ceil().add(1, 1);
+				var itemOffset = bounds.getTopLeft().floor();
+				var size = bounds.getSize().ceil().add(1, 1);
 				tempCanvas = CanvasProvider.getCanvas(size);
 
 				// Save the parent context, so we can draw onto it later
