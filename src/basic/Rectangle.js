@@ -51,6 +51,7 @@ var Rectangle = this.Rectangle = Base.extend({
 		this.y = y;
 		this.width = width;
 		this.height = height;
+		return this;
 	},
 
 	getPoint: function() {
@@ -61,6 +62,7 @@ var Rectangle = this.Rectangle = Base.extend({
 		var point = Point.read(arguments);
 		this.x = point.x;
 		this.y = point.y;
+		return this;
 	},
 
 	getSize: function() {
@@ -71,6 +73,7 @@ var Rectangle = this.Rectangle = Base.extend({
 		var size = Size.read(arguments);
 		this.width = size.width;
 		this.height = size.height;
+		return this;
 	},
 
 	getLeft: function() {
@@ -81,6 +84,7 @@ var Rectangle = this.Rectangle = Base.extend({
 		// right should not move
 		this.width -= left - this.x;
 		this.x = left;
+		return this;
 	},
 
 	getTop: function() {
@@ -90,6 +94,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	setTop: function(top) {
 		this.height -= top - this.y;
 		this.y = top;
+		return this;
 	},
 
 	getRight: function() {
@@ -98,6 +103,7 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	setRight: function(right) {
 		this.width = right - this.x;
+		return this;
 	},
 
 	getBottom: function() {
@@ -106,6 +112,7 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	setBottom: function(bottom) {
 		this.height = bottom - this.y;
+		return this;
 	},
 
 	getCenterX: function() {
@@ -114,6 +121,7 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	setCenterX: function(x) {
 		this.x = x - this.width * 0.5;
+		return this;
 	},
 
 	getCenterY: function() {
@@ -122,6 +130,7 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	setCenterY: function(y) {
 		this.y = y - this.height * 0.5;
+		return this;
 	},
 
 	getCenter: function() {
@@ -129,9 +138,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setCenter: function() {
-		var center = Point.read(arguments);
-		this.setCenterX(center.x);
-		this.setCenterY(center.y);
+		var pt = Point.read(arguments);
+		return this.setCenterX(pt.x).setCenterY(pt.y);
 	},
 
 	getTopLeft: function() {
@@ -139,9 +147,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setTopLeft: function() {
-		var topLeft = Point.read(arguments);
-		this.setLeft(topLeft.x);
-		this.setTop(topLeft.y);
+		var pt = Point.read(arguments);
+		return this.setLeft(pt.x).setTop(pt.y);
 	},
 
 	getTopRight: function() {
@@ -149,9 +156,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setTopRight: function() {
-		var topRight = Point.read(arguments);
-		this.setRight(topRight.x);
-		this.setTop(topRight.y);
+		var pt = Point.read(arguments);
+		return this.setRight(pt.x).setTop(pt.y);
 	},
 
 	getBottomLeft: function() {
@@ -159,9 +165,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setBottomLeft: function() {
-		var bottomLeft = Point.read(arguments);
-		this.setLeft(bottomLeft.x);
-		this.setBottom(bottomLeft.y);
+		var pt = Point.read(arguments);
+		return this.setLeft(pt.x).setBottom(pt.y);
 	},
 
 	getBottomRight: function() {
@@ -169,9 +174,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setBottomRight: function() {
-		var bottomRight = Point.read(arguments);
-		this.setBottom(bottomRight.y);
-		this.setRight(bottomRight.x);
+		var pt = Point.read(arguments);
+		return this.setRight(pt.x).setBottom(pt.y);
 	},
 
 	getLeftCenter: function() {
@@ -179,9 +183,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setLeftCenter: function() {
-		var leftCenter = Point.read(arguments);
-		this.setLeft(leftCenter.x);
-		this.setCenterY(leftCenter.y);
+		var pt = Point.read(arguments);
+		return this.setLeft(pt.x).setCenterY(pt.y);
 	},
 
 	getTopCenter: function() {
@@ -189,9 +192,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setTopCenter: function() {
-		var topCenter = Point.read(arguments);
-		this.setCenterX(topCenter.x);
-		this.setTop(topCenter.y);
+		var pt = Point.read(arguments);
+		return this.setCenterX(pt.x).setTop(pt.y);
 	},
 
 	getRightCenter: function() {
@@ -199,9 +201,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setRightCenter: function() {
-		var rightCenter = Point.read(arguments);
-		this.setRight(rightCenter.x);
-		this.setCenterY(rightCenter.y);
+		var pt = Point.read(arguments);
+		return this.setRight(pt.x).setCenterY(pt.y);
 	},
 
 	getBottomCenter: function() {
@@ -209,9 +210,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setBottomCenter: function() {
-		var bottomCenter = Point.read(arguments);
-		this.setBottom(bottomCenter.y);
-		this.setCenterX(bottomCenter.x);
+		var pt = Point.read(arguments);
+		return this.setCenterX(pt.x).setBottom(pt.y);
 	},
 
 	clone: function() {
