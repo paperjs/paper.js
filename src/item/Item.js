@@ -260,121 +260,6 @@ var Item = this.Item = Base.extend({
 	// TODO: isValid / checkValid
 
 	/**
-	 * {@grouptitle Hierarchy Operations}
-	 * 
-	 * Inserts the specified item as a child of the item by appending it to the
-	 * list of children and moving it above all other children. You can use this
-	 * function for groups, compound paths and layers.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var group = new Group();
-	 * var path = new Path();
-	 * group.appendTop(path);
-	 * print(path.isDescendant(group)); // true
-	 * </code>
-	 * 
-	 * @param item The item that will be appended as a child
-	 */
-	appendTop: function(item) {
-		if (this.children) {
-			item.removeFromParent();
-			this.children.push(item);
-			item.parent = this;
-			item.document = this.document;
-			return true;
-		}
-		return false;
-	},
-
-	/**
-	 * Inserts the specified item as a child of this item by appending it to the
-	 * list of children and moving it below all other children. You can use this
-	 * function for groups, compound paths and layers.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var group = new Group();
-	 * var path = new Path();
-	 * group.appendBottom(path);
-	 * print(path.isDescendant(group)); // true
-	 * </code>
-	 * 
-	 * @param item The item that will be appended as a child
-	 */
-	appendBottom: function(item) {
-		if (this.children) {
-			item.removeFromParent();
-			this.children.splice(0, 0, item);
-			item.parent = this;
-			item.document = this.document;
-			return true;
-		}
-		return false;
-	},
-
-	/**
-	 * A link to {@link #appendTop}
-	 * 
-	 * @deprecated use {@link #appendTop} or {@link #appendBottom} instead.
-	 */
-	appendChild: function(item) {
-		return this.appendTop(item);
-	},
-
-	/**
-	 * Moves this item above the specified item.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var firstPath = new Path();
-	 * var secondPath = new Path();
-	 * print(firstPath.isAbove(secondPath)); // false
-	 * firstPath.moveAbove(secondPath);
-	 * print(firstPath.isAbove(secondPath)); // true
-	 * </code>
-	 * 
-	 * @param item The item above which it should be moved
-	 * @return true if it was moved, false otherwise
-	 */
-	moveAbove: function(item) {
-		// first remove the item from its parent's children list
-		if (item.parent && this.removeFromParent()) {
-			item.parent.children.splice(item.getIndex() + 1, 0, this);
-			this.parent = item.parent;
-			this.document = item.document;
-			return true;
-		}
-		return false;
-	},
-
-	/**
-	 * Moves the item below the specified item.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var firstPath = new Path();
-	 * var secondPath = new Path();
-	 * print(secondPath.isBelow(firstPath)); // false
-	 * secondPath.moveBelow(firstPath);
-	 * print(secondPath.isBelow(firstPath)); // true
-	 * </code>
-	 * 
-	 * @param item the item below which it should be moved
-	 * @return true if it was moved, false otherwise
-	 */
-	moveBelow: function(item) {
-		// first remove the item from its parent's children list
-		if (item.parent && this.removeFromParent()) {
-			item.parent.children.splice(item.getIndex() - 1, 0, this);
-			this.parent = item.parent;
-			this.document = item.document;
-			return true;
-		}
-		return false;
-	},
-
-	/**
 	 * {@grouptitle Hierarchy Tests}
 	 * 
 	 * Checks if this item is above the specified item in the stacking order of
@@ -783,5 +668,114 @@ var Item = this.Item = Base.extend({
 				CanvasProvider.returnCanvas(tempCanvas);
 			}
 		}
+	}
+}, new function() {
+
+	function append(top) {
+		return function(item) {
+			if (this.children) {
+				item.removeFromParent();
+				this.children.splice(top ? this.children.length : 0, 0, item);
+				item.parent = this;
+				item.document = this.document;
+				return true;
+			}
+			return false;
+		}
+	}
+
+	function move(above) {
+		return function(item) {
+			// first remove the item from its parent's children list
+			if (item.parent && this.removeFromParent()) {
+				item.parent.children.splice(item.getIndex()
+						+ (above ? 1 : -1), 0, this);
+				this.parent = item.parent;
+				this.document = item.document;
+				return true;
+			}
+			return false;
+		}
+	}
+
+	return {
+		/**
+		 * {@grouptitle Hierarchy Operations}
+		 * 
+		 * Inserts the specified item as a child of the item by appending it to the
+		 * list of children and moving it above all other children. You can use this
+		 * function for groups, compound paths and layers.
+		 * 
+		 * Sample code:
+		 * <code>
+		 * var group = new Group();
+		 * var path = new Path();
+		 * group.appendTop(path);
+		 * print(path.isDescendant(group)); // true
+		 * </code>
+		 * 
+		 * @param item The item that will be appended as a child
+		 */
+		appendTop: append(true),
+
+		/**
+		 * Inserts the specified item as a child of this item by appending it to the
+		 * list of children and moving it below all other children. You can use this
+		 * function for groups, compound paths and layers.
+		 * 
+		 * Sample code:
+		 * <code>
+		 * var group = new Group();
+		 * var path = new Path();
+		 * group.appendBottom(path);
+		 * print(path.isDescendant(group)); // true
+		 * </code>
+		 * 
+		 * @param item The item that will be appended as a child
+		 */
+		appendBottom: append(false),
+
+		/**
+		 * A link to {@link #appendTop}
+		 * 
+		 * @deprecated use {@link #appendTop} or {@link #appendBottom} instead.
+		 */
+		appendChild: function(item) {
+			return this.appendTop(item);
+		},
+
+		/**
+		 * Moves this item above the specified item.
+		 * 
+		 * Sample code:
+		 * <code>
+		 * var firstPath = new Path();
+		 * var secondPath = new Path();
+		 * print(firstPath.isAbove(secondPath)); // false
+		 * firstPath.moveAbove(secondPath);
+		 * print(firstPath.isAbove(secondPath)); // true
+		 * </code>
+		 * 
+		 * @param item The item above which it should be moved
+		 * @return true if it was moved, false otherwise
+		 */
+		moveAbove: move(true),
+
+		/**
+		 * Moves the item below the specified item.
+		 * 
+		 * Sample code:
+		 * <code>
+		 * var firstPath = new Path();
+		 * var secondPath = new Path();
+		 * print(secondPath.isBelow(firstPath)); // false
+		 * secondPath.moveBelow(firstPath);
+		 * print(secondPath.isBelow(firstPath)); // true
+		 * </code>
+		 * 
+		 * @param item the item below which it should be moved
+		 * @return true if it was moved, false otherwise
+		 */
+		moveBelow: move(false),
 	}
 });
