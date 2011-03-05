@@ -65,7 +65,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		for (var i = 0, l = this.children.length; i < l; i++) {
 			Item.draw(this.children[i], ctx, param);
 		}
-		firstChild.setCtxStyles(ctx);
+		firstChild.setContextStyles(ctx);
 		var fillColor = firstChild.getFillColor(),
 			strokeColor = firstChild.getStrokeColor();
 		if (fillColor) {

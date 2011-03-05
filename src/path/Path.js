@@ -396,7 +396,7 @@ var Path = this.Path = PathItem.extend({
 		var fillColor = this.getFillColor(),
 			strokeColor = this.getStrokeColor();
 		if (!param.compound && (fillColor || strokeColor)) {
-			this.setCtxStyles(ctx);
+			this.setContextStyles(ctx);
 			ctx.save();
 			// If the path only defines a strokeColor or a fillColor,
 			// draw it directly with the globalAlpha set, otherwise
@@ -647,7 +647,7 @@ var Path = this.Path = PathItem.extend({
 			}
 		},
 
-		setCtxStyles: function(context) {
+		setContextStyles: function(context) {
 			for (var i in styles) {
 				var style;
 				if (style = this[i]()) {
