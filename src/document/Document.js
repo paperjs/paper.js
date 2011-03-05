@@ -17,7 +17,7 @@ var Document = this.Document = Base.extend({
 		this.activate();
 		this.layers = [];
 		this.activeLayer = new Layer();
-		this.currentStyle = null;
+		this.setCurrentStyle(null);
 		this.symbols = [];
 		this.views = [new DocumentView(this)];
 		this.activeView = this.views[0];
