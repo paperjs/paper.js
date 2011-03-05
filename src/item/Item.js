@@ -142,8 +142,8 @@ var Item = this.Item = Base.extend({
 	setClipMask: function(clipMask) {
 		this._clipMask = clipMask;
 		if (this._clipMask) {
-			this.fillColor = null;
-			this.strokeColor = null;
+			this.setFillColor(null);
+			this.setStrokeColor(null);
 		}
 	},
 
@@ -723,8 +723,8 @@ var Item = this.Item = Base.extend({
 			// since otherwise their stroke is drawn half transparent over their
 			// fill.
 			if (item.blendMode !== 'normal'
-				|| item.opacity < 1
-				&& !(item.segments && (!item.fillColor || !item.strokeColor))) {
+					|| item.opacity < 1
+					&& !(item.segments && (!item.getFillColor() || !item.getStrokeColor()))) {
 				var bounds = item.getStrokeBounds() || item.getBounds();
 				if (!bounds.width || !bounds.height)
 					return;

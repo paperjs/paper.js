@@ -393,20 +393,22 @@ var Path = this.Path = PathItem.extend({
 		}
 		// If the path is part of a compound path or doesn't have a fill or
 		// stroke, there is no need to continue.
-		if (!param.compound && (this.fillColor || this.strokeColor)) {
+		var fillColor = this.getFillColor(),
+			strokeColor = this.getStrokeColor();
+		if (!param.compound && (fillColor || strokeColor)) {
 			this.setCtxStyles(ctx);
 			ctx.save();
 			// If the path only defines a strokeColor or a fillColor,
 			// draw it directly with the globalAlpha set, otherwise
 			// we will do it later when we composite the temporary canvas.
-			if (!this.fillColor || !this.strokeColor)
+			if (!fillColor || !strokeColor)
 				ctx.globalAlpha = this.opacity;
-			if (this.fillColor) {
-				ctx.fillStyle = this.fillColor.getCanvasStyle(ctx);
+			if (fillColor) {
+				ctx.fillStyle = fillColor.getCanvasStyle(ctx);
 				ctx.fill();
 			}
-			if (this.strokeColor) {
-				ctx.strokeStyle = this.strokeColor.getCanvasStyle(ctx);
+			if (strokeColor) {
+				ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
 				ctx.stroke();
 			}
 			ctx.restore();
@@ -515,11 +517,11 @@ var Path = this.Path = PathItem.extend({
 		return x;
 	};
 
-	var styleNames = {
-		strokeWidth: 'lineWidth',
-		strokeJoin: 'lineJoin',
-		strokeCap: 'lineCap',
-		miterLimit: 'miterLimit'
+	var styles = {
+		getStrokeWidth: 'lineWidth',
+		getStrokeJoin: 'lineJoin',
+		getStrokeCap: 'lineCap',
+		getMiterLimit: 'miterLimit'
 	};
 
 	return {
@@ -645,11 +647,12 @@ var Path = this.Path = PathItem.extend({
 			}
 		},
 
-		setCtxStyles: function(ctx) {
-			for (var i in styleNames) {
+		setCtxStyles: function(context) {
+			for (var i in styles) {
 				var style;
-				if (style = this[i])
-					ctx[styleNames[i]] = style;
+				if (style = this[i]()) {
+					context[styles[i]] = style;
+				}
 			}
 		}
 	};

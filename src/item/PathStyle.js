@@ -26,7 +26,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		fields[set] = function(value) {
 			if (this.item && this.item.children) {
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
-					this.item.children[i].getStyle()[set](value);
+					this.item.children[i]._style[set](value);
 				}
 			} else {
 				this['_' + key] = isColor ? Color.read(arguments) : value;
@@ -37,7 +37,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			if (this.item && this.item.children) {
 				var style;
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
-					var childStyle = this.item.children[i].getStyle()[get]();
+					var childStyle = this.item.children[i]._style[get]();
 					if (!style) {
 						style = childStyle;
 					} else if (style != childStyle) {
