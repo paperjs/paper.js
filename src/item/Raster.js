@@ -75,6 +75,17 @@ var Raster = this.Raster = Item.extend({
 		this._bounds = null;
 	},
 
+	getContext: function() {
+		if (!this._context) {
+			this._context = this.getCanvas().getContext('2d');
+		}
+		return this._context;
+	},
+
+	setContext: function(context) {
+		this._context = context;
+	},
+
 	getImage: function() {
 		return this._image || this.getCanvas();
 	},
@@ -132,17 +143,6 @@ var Raster = this.Raster = Item.extend({
 		imageData.data[2] = color.getBlue() * 255;
 		imageData.data[3] = alpha != null ? alpha * 255 : 255;
 		ctx.putImageData(imageData, x, y);
-	},
-
-	getContext: function() {
-		if (!this._context) {
-			this._context = this.getCanvas().getContext('2d');
-		}
-		return this._context;
-	},
-
-	setContext: function(context) {
-		this._context = context;
 	},
 
 	_transform: function(matrix, flags) {
