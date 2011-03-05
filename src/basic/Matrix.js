@@ -346,13 +346,6 @@ var Matrix = this.Matrix = Base.extend({
 		// Rotate the corner points of the image rectangle do find the 
 		// extremas that define our raster's bounds, and update them straight 
 		// away
-		// If a size is provided, assume it's defining a rectangle centered on
-		// the origin, as required by Matrix and PlacedSymbol
-		// TODO: Find a better way to handle this, as it is too specific for here.
-		if (bounds instanceof Size) {
-			bounds = new Rectangle(-bounds.width / 2, -bounds.height / 2,
-					bounds.width, bounds.height);
-		}
 		var tl = bounds.getTopLeft(),
 			tr = bounds.getTopRight(),
 			br = bounds.getBottomRight(),

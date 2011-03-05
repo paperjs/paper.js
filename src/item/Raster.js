@@ -160,7 +160,8 @@ var Raster = this.Raster = Item.extend({
 
 	getBounds: function() {
 		if (!this._bounds) {
-			this._bounds = this.matrix.transformBounds(this._size);
+			this._bounds = this.matrix.transformBounds(
+					new Rectangle(this._size).setCenter(0, 0));
 		}
 		return this._bounds;
 	},

@@ -35,7 +35,8 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		// TODO: Is this right here? Shouldn't we calculate the bounds of the
 		// symbol transformed by this.matrix?
 		if (!this._bounds) {
-			this._bounds = this.matrix.transformBounds(this._size);
+			this._bounds = this.matrix.transformBounds(
+					new Rectangle(this._size).setCenter(0, 0));
 		}
 		return this._bounds;
 	},
