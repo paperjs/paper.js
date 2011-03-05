@@ -9,7 +9,7 @@ var Path = this.Path = PathItem.extend({
 		// If it is an array, it can also be a description of a point, so
 		// check its first entry for object as well
 		var segments = arguments[0];
-		if (!segments || !Base.isArray(segments)
+		if (!segments || !Array.isArray(segments)
 				|| typeof segments[0] != 'object')
 			segments = arguments;
 		for (var i = 0, l = segments.length; i < l; i++) {
