@@ -29,6 +29,7 @@ var Size = this.Size = Base.extend({
 	set: function(width, height) {
 		this.width = width;
 		this.height = height;
+		return this;
 	},
 
 	add: function() {
