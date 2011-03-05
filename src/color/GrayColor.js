@@ -6,10 +6,9 @@ var GrayColor = this.GrayColor = Color.extend({
 			var arg = arguments[0];
 			if (typeof arg == 'number') {
 				this._gray = arg;
-				this.alpha = arg.alpha ? arg.alpha : -1;
 			} else if (arg instanceof Color) {
-				this._gray = arg.gray;
-				this.alpha = arg.alpha;
+				this._gray = arg.getGray();
+				this._alpha = arg.getAlpha();
 			}
 		}
 	},
@@ -44,25 +43,25 @@ var GrayColor = this.GrayColor = Color.extend({
 	 */
 	equals: function(color) {
 		if (color instanceof GrayColor) {
-			return this.gray == color.gray &&
-				this.alpha == color.alpha;
+			return this._gray == color._gray &&
+				this._alpha == color._alpha;
 		}
 		return false;
 	},
 
 	toString: function() {
-		return '{ gray: ' + this.gray
-			+ (this.alpha != -1 ? ', alpha: ' + this.alpha : '')
-			+ ' }';
+		return '{ gray: ' + this._gray
+				+ (this._alpha != null ? ', alpha: ' + this._alpha : '')
+				+ ' }';
 	},
 
 	toCssString: function() {
 		if (!this._cssString) {
-			var component = Math.round((1 - this.gray) * 255) + ',';
+			var component = Math.round((1 - this._gray) * 255) + ',';
 			this._cssString = 'rgba('
-				+ component + component + component
-				+ (this.alpha != -1 ? this.alpha : 1)
-				+ ')';
+					+ component + component + component
+					+ (this._alpha != null ? this.alpha : 1)
+					+ ')';
 		}
 		return this._cssString;
 	}

@@ -12,12 +12,11 @@ var Color = this.Color = Base.extend({
 	 * All colors of the different subclasses support alpha values.
 	 */
 	getAlpha: function() {
-		return this._alpha;
+		return this._alpha != null ? this._alpha : 1;
 	},
 
 	setAlpha: function(alpha) {
-		if (this._alpha == null || alpha == -1) this._alpha = -1;
-		else if (this._alpha < 0) this._alpha = 0;
+		if (alpha < 0) this._alpha = 0;
 		else if (alpha > 1) this._alpha = 1;
 		else this._alpha = alpha;
 		this._cssString = null;
@@ -29,7 +28,7 @@ var Color = this.Color = Base.extend({
 	 * @return {@true if the color has an alpha value}
 	 */
 	hasAlpha: function() {
-		return this._alpha != -1;
+		return this._alpha != null;
 	},
 
 	getCanvasStyle: function() {

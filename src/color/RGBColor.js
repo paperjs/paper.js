@@ -84,26 +84,29 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 					this._red = components[0];
 					this._green = components[1];
 					this._blue = components[2];
-					this.alpha = -1;
+					this._alpha = null;
 				} else if (Base.isArray(arg)) {
 					this._red = arg[0];
 					this._green = arg[1];
 					this._blue = arg[2];
-					this.alpha = arg.length > 3 ? arg[3] : -1;
+					this._alpha = arg.length > 3 ? arg[3] : null;
 				} else if (arg.red !== undefined) {
+					// TODO: If beans are not activated, this won't copy from
+					// an existing color. OK?
 					this._red = arg.red;
 					this._blue = arg.blue;
 					this._green = arg.green;
-					this.alpha = arg.alpha ? arg.alpha : -1;
+					this._alpha = arg.alpha ? arg.alpha : null;
 				} else if (arg.gray !== undefined) {
+					// TODO: Shouldn't this follow the NTSC convention as well?
 					this._red = this._green = this._blue = 1 - arg.gray;
-					this.alpha = arg.alpha ? arg.alpha : -1;
+					this._alpha = arg.alpha ? arg.alpha : null;
 				};
 			} else if (arguments.length >= 3) {
 				this._red = arguments[0];
 				this._green = arguments[1];
 				this._blue = arguments[2];
-				this.alpha = arguments.length > 3 ? arguments[3] : -1;
+				this._alpha = arguments.length > 3 ? arguments[3] : null;
 			}
 		},
 
@@ -177,29 +180,29 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 		 */
 		equals: function(color) {
 			if (color instanceof RGBColor) {
-				return this.red == color.red &&
-					this.green == color.green &&
-					this.blue == color.blue &&
-					this.alpha == color.alpha;
+				return this._red == color._red &&
+					this._green == color._green &&
+					this._blue == color._blue &&
+					this._alpha == color._alpha;
 			}
 			return false;
 		},
 
 		toString: function() {
-			return '{ red: ' + this.red
-				+ ', green: ' + this.green
-				+ ', blue: ' + this.blue
-				+ (this.alpha != -1 ? ', alpha: ' + this.alpha : '')
+			return '{ red: ' + this._red
+				+ ', green: ' + this._green
+				+ ', blue: ' + this._blue
+				+ (this._alpha != null ? ', alpha: ' + this._alpha : '')
 				+ ' }';
 		},
 
 		toCssString: function() {
 			if (!this._cssString) {
 				this._cssString = 'rgba('
-					+ (Math.round(this.red * 255)) + ', '
-					+ (Math.round(this.green * 255)) + ', '
-					+ (Math.round(this.blue * 255)) + ', '
-					+ (this.alpha != -1 ? this.alpha : 1)
+					+ (Math.round(this._red * 255)) + ', '
+					+ (Math.round(this._green * 255)) + ', '
+					+ (Math.round(this._blue * 255)) + ', '
+					+ (this._alpha != null ? this._alpha : 1)
 					+ ')';
 			}
 			return this._cssString;

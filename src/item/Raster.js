@@ -111,12 +111,13 @@ var Raster = this.Raster = Item.extend({
 	// TODO: setPixel(point, color)
 	setPixel: function(x, y, color) {
 		color = Color.read(arguments, 2);
-		var ctx = this.context;
-		var imageData = ctx.getImageData(x, y, 1, 1);
-		imageData.data[0] = color.red * 255;
-		imageData.data[1] = color.green * 255;
-		imageData.data[2] = color.blue * 255;
-		imageData.data[3] = color.alpha != -1 ? color.alpha * 255 : 255;
+		var ctx = this.context,
+			imageData = ctx.getImageData(x, y, 1, 1),
+			alpha = color.getAlpha();
+		imageData.data[0] = color.getRed() * 255;
+		imageData.data[1] = color.getGreen() * 255;
+		imageData.data[2] = color.getBlue() * 255;
+		imageData.data[3] = alpha != null ? alpha * 255 : 255;
 		ctx.putImageData(imageData, x, y);
 	},
 
