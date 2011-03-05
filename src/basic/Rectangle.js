@@ -125,13 +125,13 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getCenter: function() {
-		return Point.create(this.x + this.width * 0.5, this.y + this.height * 0.5);
+		return Point.create(this.getCenterX(), this.getCenterY());
 	},
 
 	setCenter: function() {
 		var center = Point.read(arguments);
-		this.x = center.x - this.width * 0.5;
-		this.y = center.y - this.height * 0.5;
+		this.setCenterX(center.x);
+		this.setCenterY(center.y);
 	},
 
 	getTopLeft: function() {
@@ -160,8 +160,8 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	setBottomLeft: function() {
 		var bottomLeft = Point.read(arguments);
-		this.left = bottomLeft.x;
-		this.bottom = bottomLeft.y;
+		this.setLeft(bottomLeft.x);
+		this.setBottom(bottomLeft.y);
 	},
 
 	getBottomRight: function() {
