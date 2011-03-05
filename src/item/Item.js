@@ -777,6 +777,6 @@ var Item = this.Item = Base.extend({
 		 * @param item the item below which it should be moved
 		 * @return true if it was moved, false otherwise
 		 */
-		moveBelow: move(false),
+		moveBelow: move(false)
 	}
 });
