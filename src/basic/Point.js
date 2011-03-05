@@ -36,6 +36,7 @@ var Point = this.Point = Base.extend({
 	set: function(x, y) {
 		this.x = x;
 		this.y = y;
+		return this;
 	},
 
 	/**
@@ -157,6 +158,7 @@ var Point = this.Point = Base.extend({
 			this.x *= scale;
 			this.y *= scale;
 		}
+		return this;
 	},
 
 	normalize: function(length) {
@@ -237,6 +239,7 @@ var Point = this.Point = Base.extend({
 			this.x = Math.cos(angle) * length;
 			this.y = Math.sin(angle) * length;
 		}
+		return this;
 	},
 
 	/**
