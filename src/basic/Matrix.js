@@ -193,6 +193,7 @@ var Matrix = this.Matrix = Base.extend({
 
 	setScaleX: function(scaleX) {
 		this._m00 = scaleX;
+		return this;
 	},
 
 	/**
@@ -204,6 +205,7 @@ var Matrix = this.Matrix = Base.extend({
 
 	setScaleY: function(scaleY) {
 		this._m11 = scaleY;
+		return this;
 	},
 
 	/**
@@ -215,6 +217,7 @@ var Matrix = this.Matrix = Base.extend({
 
 	setTranslateX: function(translateX) {
 		this._m02 = translateX;
+		return this;
 	},
 
 	/**
@@ -226,6 +229,7 @@ var Matrix = this.Matrix = Base.extend({
 
 	setTranslateY: function(translateY) {
 		this._m12 = translateY;
+		return this;
 	},
 
 	/**
@@ -237,6 +241,7 @@ var Matrix = this.Matrix = Base.extend({
 
 	setShearX: function(shearX) {
 		this._m01 = shearX;
+		return this;
 	},
 
 	/**
@@ -248,6 +253,7 @@ var Matrix = this.Matrix = Base.extend({
 
 	setShearY: function(shearY) {
 		this._m10 = shearY;
+		return this;
 	},
 
 	/**
@@ -448,7 +454,7 @@ var Matrix = this.Matrix = Base.extend({
 	setToTranslation: function(delta) {
 		delta = Point.read(arguments);
 		if (delta) {
-			return this.set(1, 0, 0, 1, delta.x, delta.y);
+			this.set(1, 0, 0, 1, delta.x, delta.y);
 		}
 		return this;
 	},
@@ -479,7 +485,7 @@ var Matrix = this.Matrix = Base.extend({
 			var x = center.x, y = center.y;
 			var cos = Math.cos(angle);
 			var sin = Math.sin(angle);
-			return this.set(cos, sin, -sin, cos,
+			this.set(cos, sin, -sin, cos,
 					x - x * cos + y * sin,
 					y - x * sin - y * cos);
 		}
@@ -497,6 +503,7 @@ var Matrix = this.Matrix = Base.extend({
 			this._m00, -this._m01, -this._m10,
 			this._m11,  this._m02,  this._m12
 		);
+		return this;
 	},
 
 	statics: {
