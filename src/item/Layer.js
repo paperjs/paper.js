@@ -24,30 +24,6 @@ var Layer = this.Layer = Group.extend({
 		}
 	},
 
-	moveAbove: function(item) {
-		// if the item is a layer and contained within Document#layers
-		if (item instanceof Layer && !item.parent) {
-			this.removeFromParent();
-			item.document.layers.splice(item.getIndex() + 1, 0, this);
-			this.document = item.document;
-			return true;
-		} else {
-			return this.base(item);
-		}
-	},
-
-	moveBelow: function(item) {
-		// if the item is a layer and contained within Document#layers
-		if (item instanceof Layer && !item.parent) {
-			this.removeFromParent();
-			item.document.layers.splice(item.getIndex() - 1, 0, this);
-			this.document = item.document;
-			return true;
-		} else {
-			return this.base(item);
-		}
-	},
-
 	getNextSibling: function() {
 		return this.parent ? this.base()
 				: this.document.layers[this.getIndex() + 1] || null;
@@ -61,4 +37,25 @@ var Layer = this.Layer = Group.extend({
 	activate: function() {
 		this.document.activeLayer = this;
 	}
+}, new function () {
+	function move(above) {
+		return function(item) {
+			// if the item is a layer and contained within Document#layers
+			if (item instanceof Layer && !item.parent) {
+				this.removeFromParent();
+				item.document.layers.splice(item.getIndex() + (above ? 1 : -1),
+						0, this);
+				this.document = item.document;
+				return true;
+			} else {
+				return this.base(item);
+			}
+		}
+	}
+
+	return {
+		moveAbove: move(true),
+
+		moveBelow: move(false)
+	};
 });
