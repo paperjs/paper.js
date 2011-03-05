@@ -35,7 +35,7 @@ var GradientColor = this.GradientColor = Color.extend({
 	setHilite: function() {
 		var hilite = Point.read(arguments);
 		var vector = hilite.subtract(this._origin);
-		if (vector.length > this._radius) {
+		if (vector.getLength() > this._radius) {
 			this._hilite = this._origin.add(vector.normalize(
 					this._radius - 0.1));
 		} else {

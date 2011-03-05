@@ -52,11 +52,11 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		};
 
 		this[set] = function(value) {
-			this.getStyle()[set](value);
+			this._style[set](value);
 		};
 
 		this[get] = function() {
-			return this.getStyle()[get]();
+			return this._style[get]();
 		};
 	}, { beans: true }));
 

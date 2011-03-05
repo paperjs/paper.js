@@ -22,9 +22,11 @@ var Raster = this.Raster = Item.extend({
 
 	setSize: function() {
 		var size = Size.read(arguments);
+		// Get reference to image before changing canvas
 		var image = this.getImage();
-		// Set canvas internally sets _size
+		// Setting canvas internally sets _size
 		this.setCanvas(CanvasProvider.getCanvas(size));
+		// Draw image back onto new canvas
 		this.drawImage(image, 0, 0);
 	},
 
@@ -51,9 +53,20 @@ var Raster = this.Raster = Item.extend({
 		var u = new Point(1, 0).transform(matrix).subtract(orig);
 		var v = new Point(0, 1).transform(matrix).subtract(orig);
 		return new Size(
-			72 / u.length,
-			72 / v.length
+			72 / u.getLength(),
+			72 / v.getLength()
 		);
+	},
+
+	getContext: function() {
+		if (!this._context) {
+			this._context = this.getCanvas().getContext('2d');
+		}
+		return this._context;
+	},
+
+	setContext: function(context) {
+		this._context = context;
 	},
 
 	getCanvas: function() {
@@ -73,17 +86,6 @@ var Raster = this.Raster = Item.extend({
 		this._image = null;
 		this._context = null;
 		this._bounds = null;
-	},
-
-	getContext: function() {
-		if (!this._context) {
-			this._context = this.getCanvas().getContext('2d');
-		}
-		return this._context;
-	},
-
-	setContext: function(context) {
-		this._context = context;
 	},
 
 	getImage: function() {

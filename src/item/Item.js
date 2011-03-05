@@ -609,7 +609,8 @@ var Item = this.Item = Base.extend({
 			// fill.
 			if (item.blendMode !== 'normal'
 					|| item.opacity < 1
-					&& !(item.segments && (!item.getFillColor() || !item.getStrokeColor()))) {
+					&& !(item.segments && (!item.getFillColor()
+							|| !item.getStrokeColor()))) {
 				var bounds = item.getStrokeBounds() || item.getBounds();
 				if (!bounds.width || !bounds.height)
 					return;
@@ -702,9 +703,9 @@ var Item = this.Item = Base.extend({
 		/**
 		 * {@grouptitle Hierarchy Operations}
 		 * 
-		 * Inserts the specified item as a child of the item by appending it to the
-		 * list of children and moving it above all other children. You can use this
-		 * function for groups, compound paths and layers.
+		 * Inserts the specified item as a child of the item by appending it to
+		 * the list of children and moving it above all other children. You can
+		 * use this function for groups, compound paths and layers.
 		 * 
 		 * Sample code:
 		 * <code>
@@ -719,9 +720,9 @@ var Item = this.Item = Base.extend({
 		appendTop: append(true),
 
 		/**
-		 * Inserts the specified item as a child of this item by appending it to the
-		 * list of children and moving it below all other children. You can use this
-		 * function for groups, compound paths and layers.
+		 * Inserts the specified item as a child of this item by appending it to
+		 * the list of children and moving it below all other children. You can
+		 * use this function for groups, compound paths and layers.
 		 * 
 		 * Sample code:
 		 * <code>
