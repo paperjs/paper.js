@@ -3,7 +3,7 @@ var Item = this.Item = Base.extend({
 
 	initialize: function() {
 		paper.document.activeLayer.appendTop(this);
-		this.style = this.document.getCurrentStyle();
+		this.setStyle(this.document.getCurrentStyle());
 	},
 
 	/**

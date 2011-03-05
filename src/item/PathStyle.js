@@ -19,29 +19,30 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 	};
 
 	Item.inject(Base.each(keys, function(key) {
+		var isColor = !!(key.match(/Color$/)),
+			set = 'set' + Base.capitalize(key),
+			get = 'get' + Base.capitalize(key);
 
-		var isColor = !!(key.match(/Color$/));
-		fields['set' + Base.capitalize(key)] = function(value) {
+		fields[set] = function(value) {
 			if (this.item && this.item.children) {
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
-					this.item.children[i].style[key] = value;
+					this.item.children[i].getStyle()[set](value);
 				}
 			} else {
 				this['_' + key] = isColor ? Color.read(arguments) : value;
 			}
 		};
 
-		fields['get' + Base.capitalize(key)] = function() {
+		fields[get] = function() {
 			if (this.item && this.item.children) {
 				var style;
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
+					var s = this.item.children[i].getStyle()[get]();
 					if (!style) {
-						style = this.item.children[i].style[key];
-					} else if (style != this.item.children[i].style[key]) {
+						style = s;
+					} else if (style != s) {
 						// If there is another item with a different style:
-						// TODO: Shouldn't this be undefined instead? null often
-						// has meaning for styles.
-						return null;
+						return undefined;
 					}
 				}
 				return style;
@@ -50,12 +51,12 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			}
 		};
 
-		this['set' + Base.capitalize(key)] = function(value) {
-			this.style[key] = value;
+		this[set] = function(value) {
+			this.getStyle()[set](value);
 		};
 
-		this['get' + Base.capitalize(key)] = function() {
-			return this.style[key];
+		this[get] = function() {
+			return this.getStyle()[get]();
 		};
 	}, { beans: true }));
 

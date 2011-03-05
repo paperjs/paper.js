@@ -243,10 +243,10 @@ var Raster = this.Raster = Item.extend({
 				var delta = bounds.topLeft.multiply(-1);
 				ctx.translate(delta.x, delta.y);
 				if (path) {
-					var style = object.style;
+					var style = object.getStyle();
 					path.draw(ctx);
 					ctx.clip();
-					path.style = style;
+					path.setStyle(style);
 				}
 				var matrix = this.matrix.clone();
 				var transMatrix = Matrix.getTranslateInstance(delta);
