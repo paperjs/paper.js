@@ -4,10 +4,11 @@ var Rectangle = this.Rectangle = Base.extend({
 	initialize: function() {
 		if (arguments.length == 1) {
 			var rect = arguments[0];
-			this.x = rect.x;
-			this.y = rect.y;
-			this.width = rect.width;
-			this.height = rect.height;
+			// Use 0 as defaults, in case we're reading from a Point or Size
+			this.x = rect.x || 0;
+			this.y = rect.y || 0;
+			this.width = rect.width || 0;
+			this.height = rect.height || 0;
 		} else if (arguments.length == 2) {
 			if (arguments[1].x !== undefined) {
 				// new Rectangle(point1, point2)
