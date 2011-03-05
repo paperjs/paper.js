@@ -37,10 +37,10 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			if (this.item && this.item.children) {
 				var style;
 				for (var i = 0, l = this.item.children.length; i < l; i++) {
-					var s = this.item.children[i].getStyle()[get]();
+					var childStyle = this.item.children[i].getStyle()[get]();
 					if (!style) {
-						style = s;
-					} else if (style != s) {
+						style = childStyle;
+					} else if (style != childStyle) {
 						// If there is another item with a different style:
 						return undefined;
 					}
