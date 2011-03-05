@@ -127,6 +127,9 @@ var PaperScript = new function() {
 					}
 				});
 			}
+			// Automatically redraw document at the end.
+			if (paper.document)
+				paper.document.redraw();
 			return res;
 		}
 	}
