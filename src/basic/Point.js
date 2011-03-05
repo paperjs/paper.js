@@ -148,7 +148,7 @@ var Point = this.Point = Base.extend({
 				// y is already 0
 			}
 		} else {
-			var scale = length / this.length;
+			var scale = length / this.getLength();
 			if (scale == 0.0) {
 				// Calculate angle now, so it will be preserved even when
 				// x and y are 0
@@ -162,7 +162,7 @@ var Point = this.Point = Base.extend({
 	normalize: function(length) {
 		if (length === null)
 			length = 1;
-		var len = this.length;
+		var len = this.getLength();
 		var scale = len != 0 ? length / len : 0;
 		var res = Point.create(this.x * scale, this.y * scale);
 		// Preserve angle.
@@ -216,7 +216,7 @@ var Point = this.Point = Base.extend({
 		var angle;
 		if (arguments.length) {
 			var point = Point.read(arguments);
-			var div = this.length * point.length;
+			var div = this.getLength() * point.getLength();
 			if (div == 0) {
 				return NaN;
 			} else {
@@ -233,7 +233,7 @@ var Point = this.Point = Base.extend({
 	setAngle: function(angle) {
 		angle = this._angle = angle * Math.PI / 180;
 		if (!this.isZero()) {
-			var length = this.length;
+			var length = this.getLength();
 			this.x = Math.cos(angle) * length;
 			this.y = Math.sin(angle) * length;
 		}
@@ -250,7 +250,7 @@ var Point = this.Point = Base.extend({
 	 */
 	getDirectedAngle: function() {
 		var point = Point.read(arguments);
-		var angle = this.angle - point.angle;
+		var angle = this.getAngle() - point.getAngle();
 		var bounds = 180;
 		if (angle < - bounds) {
 			return angle + bounds * 2;
