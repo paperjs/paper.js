@@ -12,6 +12,32 @@ this.install = function(scope) {
 // Inline Base core inside the paper scope first:
 //#include "../lib/bootstrap.js"
 
+Base.inject({
+	statics: {
+		read: function(args, index, length) {
+			var index = index || 0, length = length || args.length - index;
+			if (length <= 1) {
+				var arg = args[index];
+				// Return null when nothing was provided
+				if (arg instanceof this || arg == null)
+					return arg;
+			}
+			var obj = new this(this.dont);
+			obj = obj.initialize.apply(obj, index > 0 || length < args.length
+				? slice.call(args, index, index + length)
+				: args) || obj;
+			return obj;
+		},
+
+		capitalize: function(str) {
+			return str.replace(/\b[a-z]/g, function(match) {
+				return match.toUpperCase();
+			});
+		}
+	}
+});
+
+
 //#include "basic/Point.js"
 //#include "basic/Size.js"
 //#include "basic/Rectangle.js"
