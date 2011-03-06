@@ -1,34 +1,33 @@
 var Segment = this.Segment = Base.extend({
 	beans: true,
 
-	initialize: function() {
+	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
 		if (arguments.length == 0) {
 			this._point = new Point();
 		} else if (arguments.length == 1) {
 			// TODO: If beans are not activated, this won't copy from
 			// an existing segment. OK?
-			var arg = arguments[0];
-			if (arg.point) {
-				this._point = new Point(arg.point);
-				this._handleIn = new Point(arg.handleIn);
-				this._handleOut = new Point(arg.handleOut);
+			if (arg0.point) {
+				this._point = new Point(arg0.point);
+				this._handleIn = new Point(arg0.handleIn);
+				this._handleOut = new Point(arg0.handleOut);
 			} else {
-				this._point = new Point(arguments[0]);
+				this._point = new Point(arg0);
 			}
 		} else if (arguments.length < 6) {
-			if (arguments.length == 2 && !arguments[1].x) {
-				this._point = new Point(arguments[0], arguments[1]);
+			if (arguments.length == 2 && !arg1.x) {
+				this._point = new Point(arg0, arg1);
 			} else {
-				this._point = new Point(arguments[0]);
+				this._point = new Point(arg0);
 				// Doesn't matter if these arguments exist, it creates 0, 0
 				// points otherwise
-				this._handleIn = new Point(arguments[1]);
-				this._handleOut = new Point(arguments[2]);
+				this._handleIn = new Point(arg1);
+				this._handleOut = new Point(arg2);
 			}
 		} else if (arguments.length == 6) {
-			this._point = new Point(arguments[0], arguments[1]);
-			this._handleIn = new Point(arguments[2], arguments[3]);
-			this._handleOut = new Point(arguments[4], arguments[5]);
+			this._point = new Point(arg0, arg1);
+			this._handleIn = new Point(arg2, arg3);
+			this._handleOut = new Point(arg4, arg5);
 		}
 		if (!this._handleIn)
 			this._handleIn = new Point();
@@ -41,7 +40,10 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	setPoint: function() {
-		this._point = Point.read(arguments);
+		// Do not replace the internal object but update it instead, so
+		// references to it are kept alive.
+		var point = Point.read(arguments);
+		this._point.set(point.x, point.y);
 	},
 
 	getHandleIn: function() {
@@ -49,7 +51,9 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	setHandleIn: function() {
-		this._handleIn = Point.read(arguments);
+		// See #setPoint:
+		var point = Point.read(arguments);
+		this._handleIn.set(point.x, point.y);
 		// Update corner accordingly
 		// this.corner = !this._handleIn.isParallel(this._handleOut);
 	},
@@ -64,7 +68,9 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	setHandleOut: function() {
-		this._handleOut = Point.read(arguments);
+		// See #setPoint:
+		var point = Point.read(arguments);
+		this._handleOut.set(point.x, point.y);
 		// Update corner accordingly
 		// this.corner = !this._handleIn.isParallel(this._handleOut);
 	},
@@ -74,9 +80,13 @@ var Segment = this.Segment = Base.extend({
 			? null : this._handleOut;
 	},
 
+	getPath: function() {
+		return this._path;
+	},
+
 	getIndex: function() {
 		// TODO: Cache and update indices instead of searching?
-		return this.path ? this.path._segments.indexOf(this) : -1;
+		return this._path ? this._path._segments.indexOf(this) : -1;
 	},
 
 	// TODO:
@@ -90,11 +100,11 @@ var Segment = this.Segment = Base.extend({
 	// },
 
 	getNext: function() {
-		return this.path && this.path._segments[this.getIndex() + 1] || null;
+		return this._path && this._path._segments[this.getIndex() + 1] || null;
 	},
 
 	getPrevious: function() {
-		return this.path && this.path._segments[this.getIndex() - 1] || null;
+		return this._path && this._path._segments[this.getIndex() - 1] || null;
 	},
 
 	// TODO:
@@ -113,8 +123,8 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	remove: function() {
-		if (this.path && this.path._segments)
-			return !!this.path._segments.splice(this.getIndex(), 1).length;
+		if (this._path && this._path._segments)
+			return !!this._path._segments.splice(this.getIndex(), 1).length;
 		return false;
 	},
 
