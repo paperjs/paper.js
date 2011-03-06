@@ -95,14 +95,10 @@ var Path = this.Path = PathItem.extend({
 			// points for largely improved performance, as no calls to
 			// Point.read() and Point constructors are necessary.
 			var point = segment._point,
-				handleIn = segment._handleIn,
-				handleOut = segment._handleOut,
+				handleIn = segment.getHandleInIfSet(),
+				handleOut = segment.getHandleOutIfSet(),
 				x = point.x,
 				y = point.y;
-			if (handleIn.isZero())
-				handleIn = null;
-			if (handleOut.isZero())
-				handleOut = null;
 			coords[0] = x;
 			coords[1] = y;
 			var index = 2;
@@ -370,7 +366,8 @@ var Path = this.Path = PathItem.extend({
 				point = segment._point,
 				x = point.x,
 				y = point.y,
-				handleIn = segment._handleIn;
+				handleIn = segment._handleIn,
+				handleOut = segment._handleOut;
 			if (i == 0) {
 				ctx.moveTo(x, y);
 			} else {
@@ -384,7 +381,6 @@ var Path = this.Path = PathItem.extend({
 					);
 				}
 			}
-			handleOut = segment._handleOut;
 			outX = handleOut.x + x;
 			outY = handleOut.y + y;
 		}
