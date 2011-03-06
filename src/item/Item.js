@@ -482,6 +482,7 @@ var Item = this.Item = Base.extend({
 				child.transform(matrix, flags);
 			}
 		}
+		return this;
 	},
 
 /*
@@ -514,7 +515,7 @@ var Item = this.Item = Base.extend({
 	translate: function(delta) {
 		var mx = new Matrix();
 		mx.translate.apply(mx, arguments);
-		this.transform(mx);
+		return this.transform(mx);
 	},
 
 	/**
@@ -535,7 +536,8 @@ var Item = this.Item = Base.extend({
 			center = sy;
 			sy = sx;
 		}
-		this.transform(new Matrix().scale(sx, sy, center || this.position));
+		return this.transform(new Matrix().scale(sx, sy,
+				center || this.position));
 	},
 
 	/**
@@ -549,7 +551,8 @@ var Item = this.Item = Base.extend({
 	 * @see Matrix#rotate(double, Point)
 	 */
 	rotate: function(angle, center) {
-		this.transform(new Matrix().rotate(angle, center || this.position));
+		return this.transform(new Matrix().rotate(angle,
+				center || this.position));
 	},
 
 	/**
@@ -566,7 +569,8 @@ var Item = this.Item = Base.extend({
 			center = shy;
 			shy = shx;
 		}
-		this.transform(new Matrix().shear(shx, shy, center || this.position));
+		return this.transform(new Matrix().shear(shx, shy,
+				center || this.position));
 	},
 
 	/**
