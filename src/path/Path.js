@@ -362,8 +362,9 @@ var Path = this.Path = PathItem.extend({
 	draw: function(ctx, param) {
 		if (!param.compound)
 			ctx.beginPath();
-		var segments = this._segments;
-		var length = segments.length;
+		var segments = this._segments,
+			length = segments.length,
+			outX, outY;
 		for (var i = 0; i < length; i++) {
 			var segment = segments[i],
 				point = segment._point,
@@ -383,9 +384,9 @@ var Path = this.Path = PathItem.extend({
 					);
 				}
 			}
-			var handleOut = segment._handleOut,
-				outX = handleOut.x + x,
-				outY = handleOut.y + y;
+			handleOut = segment._handleOut;
+			outX = handleOut.x + x;
+			outY = handleOut.y + y;
 		}
 		if (this.closed && length > 1) {
 			var segment = segments[0],
