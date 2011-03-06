@@ -94,14 +94,15 @@ var Path = this.Path = PathItem.extend({
 			// Use matrix.transform version() that takes arrays of multiple
 			// points for largely improved performance, as no calls to
 			// Point.read() and Point constructors are necessary.
-			var point = segment.point;
-			var handleIn = segment.handleIn;
+			var point = segment.point,
+				handleIn = segment.handleIn,
+				handleOut = segment.handleOut,
+				x = point.x,
+				y = point.y;
 			if (handleIn.isZero())
 				handleIn = null;
-			var handleOut = segment.handleOut;
 			if (handleOut.isZero())
 				handleOut = null;
-			var x = point.x, y = point.y;
 			coords[0] = x;
 			coords[1] = y;
 			var index = 2;
