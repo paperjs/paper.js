@@ -22,6 +22,10 @@ var Point = this.Point = Base.extend({
 			} else if (Array.isArray(arg0)) {
 				this.x = arg0[0];
 				this.y = arg0.length > 1 ? arg0[1] : arg0[0];
+			} else if (arg0.angle) {
+				this.x = arg0.length;
+				this.y = 0;
+				this.setAngle(arg0.angle);
 			} else if (typeof arg0 === 'number') {
 				this.x = this.y = arg0;
 			} else {
@@ -171,18 +175,6 @@ var Point = this.Point = Base.extend({
 		return res;
 	},
 
-	getAngleInRadians: function() {
-		// TODO: Not sur we want this one, but if so, just rely on
-		// this.getAngle(), which caches values internally?
-		return Math.atan2(this.y, this.x);
-	},
-
-	getAngleInDegrees: function() {
-		// TODO: Not sur we want this one, but if so, just rely on
-		// this.getAngle(), which caches values internally?
-		return Math.atan2(this.y, this.x) * 180 / Math.PI;
-	},
-
 	getQuadrant: function() {
 		if (this.x >= 0) {
 			if (this.y >= 0) {
@@ -213,22 +205,8 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @param point
 	 */
-	getAngle: function() {
-		var angle;
-		if (arguments.length) {
-			var point = Point.read(arguments);
-			var div = this.getLength() * point.getLength();
-			if (div == 0) {
-				return NaN;
-			} else {
-				angle = Math.acos(this.dot(point) / div);
-			}
-		} else {
-			if (this._angle == null)
-				this._angle = Math.atan2(this.y, this.x);
-			angle = this._angle;
-		}
-		return angle * 180 / Math.PI;
+	getAngle: function(point) {
+		return this.getAngleInRadians(point) * 180 / Math.PI;
 	},
 
 	setAngle: function(angle) {
@@ -239,6 +217,26 @@ var Point = this.Point = Base.extend({
 			this.y = Math.sin(angle) * length;
 		}
 		return this;
+	},
+
+	getAngleInRadians: function(point) {
+		if (point != undefined) {
+			point = Point.read(arguments);
+			var div = this.getLength() * point.getLength();
+			if (div == 0) {
+				return NaN;
+			} else {
+				return Math.acos(this.dot(point) / div);
+			}
+		} else {
+			if (this._angle == null)
+				this._angle = Math.atan2(this.y, this.x);
+			return this._angle;
+		}
+	},
+
+	getAngleInDegrees: function(point) {
+		return this.getAngle(point);
 	},
 
 	/**
