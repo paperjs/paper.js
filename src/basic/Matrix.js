@@ -61,7 +61,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} A copy of this transform.
 	 */
 	clone: function() {
-		return new Matrix(this._m00, this._m10, this._m01,
+		return Matrix.create(this._m00, this._m10, this._m01,
 				this._m11, this._m02, this._m12);
 	},
 
@@ -410,7 +410,7 @@ var Matrix = this.Matrix = Base.extend({
 		var det = this.getDeterminant();
 		if (isFinite(det) && det != 0 && isFinite(this._m02)
 				&& isFinite(this._m12)) {
-			return new Matrix(
+			return Matrix.create(
 				this._m11 / det,
 				-this._m10 / det,
 				-this._m01 / det,
@@ -495,6 +495,11 @@ var Matrix = this.Matrix = Base.extend({
 	},
 
 	statics: {
+		// See Point.create()
+		create: function(m00, m10, m01, m11, m02, m12) {
+			return new Matrix(Matrix.dont).set(m00, m10, m01, m11, m02, m12);
+		},
+
 		/**
 		 * Creates a transform representing a scaling transformation.
 		 *
