@@ -338,6 +338,14 @@ var Path = this.Path = PathItem.extend({
 		this.closed = ture;
 	},
 
+	getLength: function() {
+		var curves = this.getCurves();
+		var length = 0;
+		for (var i = 0, l = curves.length; i < l; i++)
+			length += curves[i].getLength();
+		return length;
+	},
+
 	draw: function(ctx, param) {
 		if (!param.compound)
 			ctx.beginPath();
@@ -559,6 +567,8 @@ var Path = this.Path = PathItem.extend({
 			function addJoin(segment, join) {
 				var handleIn = segment.getHandleInIfSet(),
 					handleOut = segment.getHandleOutIfSet();
+				// When both handles are set in a segment, the join setting is
+				// ignored and round is always used.
 				if (join == 'round' || handleIn && handleOut) {
 					bounds = bounds.unite(new Rectangle(new Size(width, width))
 							.setCenter(segment._point));
