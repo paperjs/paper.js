@@ -31,6 +31,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			} else {
 				this['_' + key] = isColor ? Color.read(arguments) : value;
 			}
+			return this;
 		};
 
 		fields[get] = function() {
@@ -53,6 +54,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 
 		this[set] = function(value) {
 			this._style[set](value);
+			return this;
 		};
 
 		this[get] = function() {
