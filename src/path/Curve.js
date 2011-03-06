@@ -125,22 +125,21 @@ var Curve = this.Curve = Base.extend({
 				|| this._path.closed && curves[curves.length - 1]) || null;
 	},
 
-	// Calculates arclength of a cubic using adaptive simpson integration.
-	getLength: function(goal) {
+	getLength: function() {
 		var z0 = this._segment1._point,
 			z1 = this._segment2._point,
 			c0 = z0.add(this._segment1._handleOut),
 			c1 = z1.add(this._segment2._handleIn);
 		// TODO: Check for straight lines and handle separately.
 
-		// Calculate the coefficients of a Bezier derivative, divided by 3.
-		var ax = 3 * (c0.x - c1.x) - z0.x + z1.x,
-			bx = 2 * (z0.x + c1.x) - 4 * c0.x,
-			cx = c0.x - z0.x,
+		// Calculate the coefficients of a Bezier derivative.
+		var ax = 9 * (c0.x - c1.x) + 3 * (z1.x - z0.x),
+			bx = 6 * (z0.x + c1.x) - 12 * c0.x,
+			cx = 3 * (c0.x - z0.x),
 
-			ay = 3 * (c0.y - c1.y) - z0.y + z1.y,
-			by = 2 * (z0.y + c1.y) - 4 * c0.y,
-			cy = c0.y - z0.y;
+			ay = 9 * (c0.y - c1.y) + 3 * (z1.y - z0.y),
+			by = 6 * (z0.y + c1.y) - 12 * c0.y,
+			cy = 3 * (c0.y - z0.y);
 
 		function ds(t) {
 			// Calculate quadratic equations of derivatives for x and y
@@ -149,19 +148,41 @@ var Curve = this.Curve = Base.extend({
 			return Math.sqrt(dx * dx + dy * dy);
 		}
 
-		var integral = MathUtils.simpson(ds, 0.0, 1.0, MathUtils.EPSILON, 1.0);
-		if (integral == null)
-			throw new Error('Nesting capacity exceeded in Path#getLenght()');
-		// Multiply by 3 again, as derivative was divided by 3
-		var length = 3 * integral;
-		if (goal == undefined || goal < 0 || goal >= length)
-			return length;
-		var result = MathUtils.unsimpson(goal, ds, 0, goal / integral,
-				100 * MathUtils.EPSILON, integral, Math.sqrt(MathUtils.EPSILON), 1);
-		if (!result)
-			throw new Error('Nesting capacity exceeded in computing arctime');
-		return -result.b;
+		return MathUtils.gauss(ds, 0.0, 1.0, 8);
 	},
+
+	/**
+	 * Checks if this curve is linear, meaning it does not define any curve
+	 * handle.
+
+	 * @return {@true if the curve is linear}
+	 */
+	isLinear: function() {
+		return this._segment1._handleOut.isZero()
+				&& this._segment2._handleIn.isZero();
+	},
+
+	// TODO: getParameter(length)
+	// TODO: getParameter(point, precision)
+	// TODO: getLocation
+	// TODO: getIntersections
+	// TODO: adjustThroughPoint
+
+	transform: function(matrix) {
+		return new Curve(
+				matrix.transform(this._segment1._point),
+				matrix.transform(this._segment1._handleOut),
+				matrix.transform(this._segment2._handleIn),
+				matrix.transform(this._segment2._point));
+	},
+
+	reverse: function() {
+		return new Curve(this._segment2.reverse(), this._segment1.reverse());
+	},
+
+	// TODO: divide
+	// TODO: split
+	// TODO: getPartLength(fromParameter, toParameter)
 
 	clone: function() {
 		return new Curve(this._segment1, this._segment2);
