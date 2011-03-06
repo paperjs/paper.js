@@ -568,18 +568,25 @@ var Path = this.Path = PathItem.extend({
 					bounds = bounds.unite(joinBounds);
 			}
 
-			function addCap(segment, cap) {
-				var capBounds;
+			function addCap(segment, cap, t) {
 				switch (cap) {
 				case 'round':
 					return addJoin(segment, cap);
-				case 'square':
-					break;
 				case 'butt':
+				case 'square':
+					// Calculate the corner points of butt and square caps
+					var point = segment._point,
+						curve = segment.getCurve(),
+						normal = curve.getNormal(t).normalize(radius);
+					// For square caps, we need to step away from point in the
+					// direction of the tangent, which is the rotated normal
+					if (cap == 'square') {
+						point = point.add(-normal.y, normal.x);
+					}
+					bounds = bounds.include(point.add(normal));
+					bounds = bounds.include(point.subtract(normal));
 					break;
 				}
-				if (capBounds)
-					bounds = bounds.unite(capBounds);
 			}
 
 			for (var i = 1, l = length - (closed ? 0 : 1); i < l; i++) {
@@ -588,8 +595,8 @@ var Path = this.Path = PathItem.extend({
 			if (closed) {
 				addJoin(segments[0], join);
 			} else {
-				addCap(segments[0], cap);
-				addCap(segments[length - 1], cap);
+				addCap(segments[0], cap, 0);
+				addCap(segments[length - 1], cap, 1);
 			}
 
 			return bounds;
