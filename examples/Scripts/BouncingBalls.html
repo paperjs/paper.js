@@ -33,6 +33,7 @@
 	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
 	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
 	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
+	<script type="text/javascript" src="../../src/util/BlendMode.js"></script>
 	<script type="text/javascript" src="../../src/util/CanvasProvider.js"></script>
 	<script type="text/javascript" src="../../src/util/Events.js"></script>
 	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
@@ -44,8 +45,6 @@
 		circlePath.fillColor.gradient.type = 'radial';
 
 		var symbol = new Symbol(circlePath);
-		
-
 		var group = new Group();
 
 		var Ball = Base.extend({
@@ -62,8 +61,7 @@
 				this.radius = 50 * Math.random() + 10;
 				this.item = new PlacedSymbol(symbol);
 				this.item.position = point;
-				this.item.rotate(30);
-				this.item.scale(this.radius / 10, 0.6);
+				this.item.scale(this.radius / 10);
 
 				group.appendTop(this.item);
 			},
