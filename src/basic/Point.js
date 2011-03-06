@@ -6,25 +6,24 @@
 var Point = this.Point = Base.extend({
 	beans: true,
 
-	initialize: function() {
+	initialize: function(arg0, arg1) {
 		if (arguments.length == 2) {
-			this.x = arguments[0];
-			this.y = arguments[1];
+			this.x = arg0;
+			this.y = arg1;
 		} else if (arguments.length == 1) {
-			var arg = arguments[0];
-			if (arg == null) {
+			if (arg0 == null) {
 				this.x = this.y = 0;
-			} else if (arg.x !== undefined) {
-				this.x = arg.x;
-				this.y = arg.y;
-			} else if (arg.width !== undefined) {
-				this.x = arg.width;
-				this.y = arg.height;
-			} else if (Array.isArray(arg)) {
-				this.x = arg[0];
-				this.y = arg.length > 1 ? arg[1] : arg[0];
-			} else if (typeof arg === 'number') {
-				this.x = this.y = arg;
+			} else if (arg0.x !== undefined) {
+				this.x = arg0.x;
+				this.y = arg0.y;
+			} else if (arg0.width !== undefined) {
+				this.x = arg0.width;
+				this.y = arg0.height;
+			} else if (Array.isArray(arg0)) {
+				this.x = arg0[0];
+				this.y = arg0.length > 1 ? arg0[1] : arg0[0];
+			} else if (typeof arg0 === 'number') {
+				this.x = this.y = arg0;
 			} else {
 				this.x = this.y = 0;
 			}

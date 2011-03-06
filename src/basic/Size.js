@@ -1,23 +1,22 @@
 var Size = this.Size = Base.extend({
-	initialize: function() {
+	initialize: function(arg0, arg1) {
 		if (arguments.length == 2) {
-			this.width = arguments[0];
-			this.height = arguments[1];
+			this.width = arg0;
+			this.height = arg1;
 		} else if (arguments.length == 1) {
-			var arg = arguments[0];
-			if (arg == null) {
+			if (arg0 == null) {
 				this.width = this.height = 0;
-			} else if (arg.width !== undefined) {
-				this.width = arg.width;
-				this.height = arg.height;
-			} else if (arg.x !== undefined) {
-				this.width = arg.x;
-				this.height = arg.y;
-			} else if (Array.isArray(arg)) {
-				this.width = arg[0];
-				this.height = arg.length > 1 ? arg[1] : arg[0];
-			} else if (typeof arg === 'number') {
-				this.width = this.height = arg;
+			} else if (arg0.width !== undefined) {
+				this.width = arg0.width;
+				this.height = arg0.height;
+			} else if (arg0.x !== undefined) {
+				this.width = arg0.x;
+				this.height = arg0.y;
+			} else if (Array.isArray(arg0)) {
+				this.width = arg0[0];
+				this.height = arg0.length > 1 ? arg0[1] : arg0[0];
+			} else if (typeof arg0 === 'number') {
+				this.width = this.height = arg0;
 			} else {
 				this.width = this.height = 0;
 			}
