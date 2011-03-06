@@ -38,16 +38,16 @@ var Matrix = this.Matrix = Base.extend({
 		var ok = true;
 		if (arguments.length == 6) {
 			this.set(m00, m10, m01, m11, m02, m12);
-		} else if (arguments == 1) {
-			var mx = arguments[0];
-			if (mx instanceof Matrix) {
-				this.set(mx._m00, mx._m10, mx._m01, mx._m11, mx._m02, mx._m12);
-			} else if (Array.isArray(mx)) {
-				this.set.apply(this, mx);
+		} else if (arguments.length == 1) {
+			if (m00 instanceof Matrix) {
+				this.set(m00._m00, m00._m10, m00._m01,
+						m00._m11, m00._m02, m00._m12);
+			} else if (Array.isArray(m00)) {
+				this.set.apply(this, m00);
 			} else {
 				ok = false;
 			} 
-		} else if (arguments.length) {
+		} else if (arguments.length > 0) {
 			ok = false;
 		} else {
 			this._m00 = this._m11 = 1;
