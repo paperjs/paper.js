@@ -96,10 +96,7 @@ var Size = this.Size = Base.extend({
 	statics: {
 		// See Point.create()
 		create: function(width, height) {
-			var size = new Size(Size.dont);
-			size.width = width;
-			size.height = height;
-			return size;
+			return new Size(Size.dont).set(width, height);
 		},
 
 		min: function(Size1, Size2) {

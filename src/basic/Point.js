@@ -474,6 +474,10 @@ var Point = this.Point = Base.extend({
 		 * operations a lot.
 		 */
 		create: function(x, y) {
+			// Don't use the shorter form as we want absolute maximum
+			// performance here:
+			// return new Point(Point.dont).set(x, y);
+			// TODO: Benchmark and decide
 			var point = new Point(Point.dont);
 			point.x = x;
 			point.y = y;

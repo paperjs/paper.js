@@ -287,12 +287,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	statics: {
 		// See Point.create()
 		create: function(x, y, width, height) {
-			var rect = new Rectangle(Size.dont);
-			rect.x = x;
-			rect.y = y;
-			rect.width = width;
-			rect.height = height;
-			return rect;
+			return new Rectangle(Rectangle.dont).set(x, y, width, height);
 		}
 	}
 });
