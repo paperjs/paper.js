@@ -485,12 +485,9 @@ var Matrix = this.Matrix = Base.extend({
 	 * Applies this matrix to the specified Canvas Context.
 	 */
 	applyToContext: function(context, reset) {
-		// Canvas contexts seem to use another orientation: The shearX (m01) and
-		// shearY (m10) values need to be flipped to get correct behaviour e.g.
-		// when using rotation or shearing.
 		context[reset ? 'setTransform' : 'transform'](
-			this._m00, -this._m01, -this._m10,
-			this._m11,  this._m02,  this._m12
+			this._m00, this._m10, this._m01,
+			this._m11, this._m02, this._m12
 		);
 		return this;
 	},
