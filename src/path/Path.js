@@ -404,9 +404,7 @@ var Path = this.Path = PathItem.extend({
 	// Add some tolerance for good roots, as t = 0 / 1 are added seperately
 	// anyhow, and we don't want joins to be added with radiuses in
 	// calculateBounds
-	// TODO: Find out about the maximum precision of these calculations.
-	// -32 was chosen arbitrarily.
-	var epsilon = Math.pow(2, -32),
+	var epsilon = 10e-6,
 		tMin = epsilon,
 		tMax = 1 - epsilon;
 
@@ -543,7 +541,9 @@ var Path = this.Path = PathItem.extend({
 				radius = width / 2,
 				join = this.getStrokeJoin(),
 				cap = this.getStrokeCap(),
-				miter = this.getMiterLimit(),
+				// miter is relative to width. Divide it by 2 since we're
+				// measuring half the distance below
+				miter = this.getMiterLimit() * width / 2,
 				segments = this._segments,
 				length = segments.length,
 				closed= this.closed,
@@ -552,8 +552,9 @@ var Path = this.Path = PathItem.extend({
 			function addBevelJoin(curve, t) {
 				var point = curve.getPoint(t),
 					normal = curve.getNormal(t).normalize(radius);
+				// TODO: Both required? Check other directions
 				bounds = bounds.include(point.add(normal));
-				bounds = bounds.include(point.subtract(normal));
+//				bounds = bounds.include(point.subtract(normal));
 			}
 
 			function addJoin(segment, join) {
@@ -565,10 +566,29 @@ var Path = this.Path = PathItem.extend({
 				} else {
 					switch (join) {
 					case 'bevel':
-					case 'miter':
 						var curve = segment.getCurve();
 						addBevelJoin(curve, 0);
 						addBevelJoin(curve.getPrevious(), 1);
+						break;
+					case 'miter':
+						var curve2 = segment.getCurve(),
+							curve1 = curve2.getPrevious(),
+							point = curve2.getPoint(0),
+							normal1 = curve1.getNormal(1).normalize(radius),
+							normal2 = curve2.getNormal(0).normalize(radius),
+							// Intersect the two lines
+							line1 = new Line(point.add(normal1),
+								new Point(-normal1.y, normal1.x)),
+							line2 = new Line(point.subtract(normal2),
+								new Point(-normal2.y, normal2.x)),
+							corner = line1.intersect(line2);
+						// Now measure the distance from the segment to the
+						// intersection, which his half of the miter distance
+						if (!corner || point.getDistance(corner) > miter) {
+							addJoin(segment, 'bevel');
+						} else {
+							bounds = bounds.include(corner);
+						}
 						break;
 					}
 				}
@@ -587,7 +607,7 @@ var Path = this.Path = PathItem.extend({
 					// For square caps, we need to step away from point in the
 					// direction of the tangent, which is the rotated normal
 					if (cap == 'square') {
-						point = point.add(-normal.y, normal.x);
+						point = point.add(normal.y, -normal.x);
 					}
 					bounds = bounds.include(point.add(normal));
 					bounds = bounds.include(point.subtract(normal));
