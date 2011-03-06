@@ -37,19 +37,6 @@ var Curve = this.Curve = Base.extend({
 		}
 	},
 
-	getPath: function() {
-		return this._path;
-	},
-
-	getIndex: function() {
-		return this._index1;
-	},
-
-	_setIndex: function(index) {
-		this._index1 = index;
-		this._updateSegments();
-	},
-
 	/**
 	 * The first anchor point of the curve.
 	 */
@@ -110,6 +97,32 @@ var Curve = this.Curve = Base.extend({
 	 */
 	getSegment2: function() {
 		return this._segment2;
+	},
+
+	getPath: function() {
+		return this._path;
+	},
+
+	getIndex: function() {
+		return this._index1;
+	},
+
+	_setIndex: function(index) {
+		this._index1 = index;
+		this._updateSegments();
+	},
+
+	getNext: function() {
+		var curves = this._path && this._path._curves;
+		// TODO: Add cyclic looping when closed back to Scriptographer
+		return curves && (curves[this._index1 + 1]
+				|| this._path.closed && curves[0]) || null;
+	},
+
+	getPrevious: function() {
+		var curves = this._path && this._path._curves;
+		return curves && (curves[this._index1 - 1]
+				|| this._path.closed && curves[curves.length - 1]) || null;
 	},
 
 	// Calculates arclength of a cubic using adaptive simpson integration.
