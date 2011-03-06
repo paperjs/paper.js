@@ -137,207 +137,6 @@ var Path = this.Path = PathItem.extend({
 		return segment ? this._add(segment, index) : null;
 	},
 
-	/**
-	 *  PostScript-style drawing commands
-	 */
-
-	/**
-	 * Helper method that returns the current segment and checks if we need to
-	 * execute a moveTo() command first.
-	 */
-	getCurrentSegment: function() {
-		if (this._segments.length == 0)
-			throw('Use a moveTo() command first');
-		return this._segments[this._segments.length - 1];
-	},
-
-	moveTo: function() {
-		var segment = new Segment(Point.read(arguments));
-		if (segment && !this._segments.length)
-			this._add(segment);
-	},
-
-	lineTo: function() {
-		var segment = new Segment(Point.read(arguments));
-		if (segment)
-			this._add(segment);
-	},
-
-	/**
-	 * Adds a cubic bezier curve to the path, defined by two handles and a to
-	 * point.
-	 */
-	cubicCurveTo: function(handle1, handle2, to) {
-		// First modify the current segment:
-		var current = this.currentSegment;
-		// Convert to relative values:
-		current.setHandleOut(new Point(
-				handle1.x - current._point.x,
-				handle1.y - current._point.y));
-		// And add the new segment, with handleIn set to c2
-		this._add(
-			new Segment(to, handle2.subtract(to), new Point())
-		);
-	},
-
-	/**
-	 * Adds a quadratic bezier curve to the path, defined by a handle and a to
-	 * point.
-	 */
-	quadraticCurveTo: function(handle, to) {
-		// This is exact:
-		// If we have the three quad points: A E D,
-		// and the cubic is A B C D,
-		// B = E + 1/3 (A - E)
-		// C = E + 1/3 (D - E)
-		var current = this.currentSegment,
-			x1 = current._point.x,
-			y1 = current._point.y;
-		this.cubicCurveTo(
-			handle.add(current._point.subtract(handle).multiply(1/3)),
-			handle.add(to.subtract(handle).multiply(1/3)),
-			to
-		);
-	},
-
-	curveTo: function(through, to, parameter) {
-		through = new Point(through);
-		to = new Point(to);
-		if (parameter == null)
-			parameter = 0.5;
-		var current = this.currentSegment._point;
-		// handle = (through - (1 - t)^2 * current - t^2 * to) /
-		// (2 * (1 - t) * t)
-		var t1 = 1 - parameter;
-		var handle = through.subtract(
-				current.multiply(t1 * t1)).subtract(
-						to.multiply(parameter * parameter)).divide(
-								2.0 * parameter * t1);
-		if (handle.isNaN())
-			throw new Error(
-					"Cannot put a curve through points with parameter="
-					+ parameter);
-		this.quadraticCurveTo(handle, to);
-	},
-
-	arcTo: function(to, clockwise) {
-		var through, to;
-		// Get the start point:
-		var current = this.currentSegment;
-		if (arguments[1] && typeof arguments[1] != 'boolean') {
-			through = Point.read(arguments, 0, 1);
-			to = Point.read(arguments, 1, 1);
-		} else {
-			to = Point.read(arguments, 0, 1);
-			if (clockwise === null)
-				clockwise = true;
-			var middle = current._point.add(to).divide(2),
-				step = middle.subtract(current._point);
-			through = clockwise 
-					? middle.subtract(-step.y, step.x)
-					: middle.add(-step.y, step.x);
-		}
-
-		var x1 = current._point.x, x2 = through.x, x3 = to.x,
-			y1 = current._point.y, y2 = through.y, y3 = to.y,
-
-			f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
-				- y1 * y3 + y1 * y2,
-			g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
-			m = g == 0 ? 0 : f / g,
-
-			c = (m * y2) - x2 - x1 - (m * y1),
-			d = (m * x1) - y1 - y2 - (x2 * m),
-			e = (x1 * x2) + (y1 * y2) - (m * x1 * y2) + (m * x2 * y1),
-
-			centerX = -c / 2,
-			centerY = -d / 2,
-			radius = Math.sqrt(centerX * centerX + centerY * centerY - e),
-
-		// Note: reversing the Y equations negates the angle to adjust
-		// for the upside down coordinate system.
-			angle = Math.atan2(centerY - y1, x1 - centerX),
-			middle = Math.atan2(centerY - y2, x2 - centerX),
-			extent = Math.atan2(centerY - y3, x3 - centerX),
-
-			diff = middle - angle;
-
-		if (diff < -Math.PI)
-			diff += Math.PI * 2;
-		else if (diff > Math.PI)
-			diff -= Math.PI * 2;
-
-		extent -= angle;
-		if (extent <= 0.0)
-			extent += Math.PI * 2;
-
-		if (diff < 0) extent = Math.PI * 2 - extent;
-		else extent = -extent;
-		angle = -angle;
-
-		var ext = Math.abs(extent),
-			arcSegs;
-		if (ext >= 2 * Math.PI) arcSegs = 4;
-		else arcSegs = Math.ceil(ext * 2 / Math.PI);
-
-		var inc = extent;
-		if (inc > 2 * Math.PI) inc = 2 * Math.PI;
-		else if (inc < -2 * Math.PI) inc = -2 * Math.PI;
-		inc /= arcSegs;
-
-		var halfInc = inc / 2,
-			z = 4 / 3 * Math.sin(halfInc) / (1 + Math.cos(halfInc));
-
-		for (var i = 0; i <= arcSegs; i++) {
-			var relx = Math.cos(angle),
-				rely = Math.sin(angle),
-				pt = new Point(centerX + relx * radius,
-					centerY + rely * radius);
-			var out;
-			if (i == arcSegs) out = null;
-			else out = new Point(centerX + (relx - z * rely) * radius - pt.x,
-					centerY + (rely + z * relx) * radius - pt.y);
-			if (i == 0) {
-				// Modify startSegment
-				current.setHandleOut(out);
-			} else {
-				// Add new Segment
-				var inPoint = new Point(
-						centerX + (relx + z * rely) * radius - pt.x,
-						centerY + (rely - z * relx) * radius - pt.y);
-				this._add(new Segment(pt, inPoint, out));
-			}
-			angle += inc;
-		}
-	},
-
-	lineBy: function() {
-		var vector = Point.read(arguments);
-		if (vector) {
-			var current = this.currentSegment;
-			this.lineTo(current._point.add(vector));
-		}
-	},
-
-	curveBy: function(throughVector, toVector, parameter) {
-		throughVector = Point.read(throughVector);
-		toVector = Point.read(toVector);
-		var current = this.currentSegment._point;
-		this.curveTo(current.add(throughVector), current.add(toVector),
-				parameter);
-	},
-
-	arcBy: function(throughVector, toVector) {
-		throughVector = Point.read(throughVector);
-		toVector = Point.read(toVector);
-		var current = this.currentSegment._point;
-		this.arcBy(current.add(throughVector), current.add(toVector));
-	},
-
-	closePath: function() {
-		this.closed = ture;
-	},
-
 	getLength: function() {
 		var curves = this.getCurves();
 		var length = 0;
@@ -751,4 +550,205 @@ var Path = this.Path = PathItem.extend({
 			}
 		}
 	};
+}, {
+	/**
+	 *  PostScript-style drawing commands
+	 */
+
+	/**
+	 * Helper method that returns the current segment and checks if we need to
+	 * execute a moveTo() command first.
+	 */
+	getCurrentSegment: function() {
+		if (this._segments.length == 0)
+			throw('Use a moveTo() command first');
+		return this._segments[this._segments.length - 1];
+	},
+
+	moveTo: function() {
+		var segment = new Segment(Point.read(arguments));
+		if (segment && !this._segments.length)
+			this._add(segment);
+	},
+
+	lineTo: function() {
+		var segment = new Segment(Point.read(arguments));
+		if (segment)
+			this._add(segment);
+	},
+
+	/**
+	 * Adds a cubic bezier curve to the path, defined by two handles and a to
+	 * point.
+	 */
+	cubicCurveTo: function(handle1, handle2, to) {
+		// First modify the current segment:
+		var current = this.currentSegment;
+		// Convert to relative values:
+		current.setHandleOut(new Point(
+				handle1.x - current._point.x,
+				handle1.y - current._point.y));
+		// And add the new segment, with handleIn set to c2
+		this._add(
+			new Segment(to, handle2.subtract(to), new Point())
+		);
+	},
+
+	/**
+	 * Adds a quadratic bezier curve to the path, defined by a handle and a to
+	 * point.
+	 */
+	quadraticCurveTo: function(handle, to) {
+		// This is exact:
+		// If we have the three quad points: A E D,
+		// and the cubic is A B C D,
+		// B = E + 1/3 (A - E)
+		// C = E + 1/3 (D - E)
+		var current = this.currentSegment,
+			x1 = current._point.x,
+			y1 = current._point.y;
+		this.cubicCurveTo(
+			handle.add(current._point.subtract(handle).multiply(1/3)),
+			handle.add(to.subtract(handle).multiply(1/3)),
+			to
+		);
+	},
+
+	curveTo: function(through, to, parameter) {
+		through = new Point(through);
+		to = new Point(to);
+		if (parameter == null)
+			parameter = 0.5;
+		var current = this.currentSegment._point;
+		// handle = (through - (1 - t)^2 * current - t^2 * to) /
+		// (2 * (1 - t) * t)
+		var t1 = 1 - parameter;
+		var handle = through.subtract(
+				current.multiply(t1 * t1)).subtract(
+						to.multiply(parameter * parameter)).divide(
+								2.0 * parameter * t1);
+		if (handle.isNaN())
+			throw new Error(
+					"Cannot put a curve through points with parameter="
+					+ parameter);
+		this.quadraticCurveTo(handle, to);
+	},
+
+	arcTo: function(to, clockwise) {
+		var through, to;
+		// Get the start point:
+		var current = this.currentSegment;
+		if (arguments[1] && typeof arguments[1] != 'boolean') {
+			through = Point.read(arguments, 0, 1);
+			to = Point.read(arguments, 1, 1);
+		} else {
+			to = Point.read(arguments, 0, 1);
+			if (clockwise === null)
+				clockwise = true;
+			var middle = current._point.add(to).divide(2),
+				step = middle.subtract(current._point);
+			through = clockwise 
+					? middle.subtract(-step.y, step.x)
+					: middle.add(-step.y, step.x);
+		}
+
+		var x1 = current._point.x, x2 = through.x, x3 = to.x,
+			y1 = current._point.y, y2 = through.y, y3 = to.y,
+
+			f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
+				- y1 * y3 + y1 * y2,
+			g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
+			m = g == 0 ? 0 : f / g,
+
+			c = (m * y2) - x2 - x1 - (m * y1),
+			d = (m * x1) - y1 - y2 - (x2 * m),
+			e = (x1 * x2) + (y1 * y2) - (m * x1 * y2) + (m * x2 * y1),
+
+			centerX = -c / 2,
+			centerY = -d / 2,
+			radius = Math.sqrt(centerX * centerX + centerY * centerY - e),
+
+		// Note: reversing the Y equations negates the angle to adjust
+		// for the upside down coordinate system.
+			angle = Math.atan2(centerY - y1, x1 - centerX),
+			middle = Math.atan2(centerY - y2, x2 - centerX),
+			extent = Math.atan2(centerY - y3, x3 - centerX),
+
+			diff = middle - angle;
+
+		if (diff < -Math.PI)
+			diff += Math.PI * 2;
+		else if (diff > Math.PI)
+			diff -= Math.PI * 2;
+
+		extent -= angle;
+		if (extent <= 0.0)
+			extent += Math.PI * 2;
+
+		if (diff < 0) extent = Math.PI * 2 - extent;
+		else extent = -extent;
+		angle = -angle;
+
+		var ext = Math.abs(extent),
+			arcSegs;
+		if (ext >= 2 * Math.PI) arcSegs = 4;
+		else arcSegs = Math.ceil(ext * 2 / Math.PI);
+
+		var inc = extent;
+		if (inc > 2 * Math.PI) inc = 2 * Math.PI;
+		else if (inc < -2 * Math.PI) inc = -2 * Math.PI;
+		inc /= arcSegs;
+
+		var halfInc = inc / 2,
+			z = 4 / 3 * Math.sin(halfInc) / (1 + Math.cos(halfInc));
+
+		for (var i = 0; i <= arcSegs; i++) {
+			var relx = Math.cos(angle),
+				rely = Math.sin(angle),
+				pt = new Point(centerX + relx * radius,
+					centerY + rely * radius);
+			var out;
+			if (i == arcSegs) out = null;
+			else out = new Point(centerX + (relx - z * rely) * radius - pt.x,
+					centerY + (rely + z * relx) * radius - pt.y);
+			if (i == 0) {
+				// Modify startSegment
+				current.setHandleOut(out);
+			} else {
+				// Add new Segment
+				var inPoint = new Point(
+						centerX + (relx + z * rely) * radius - pt.x,
+						centerY + (rely - z * relx) * radius - pt.y);
+				this._add(new Segment(pt, inPoint, out));
+			}
+			angle += inc;
+		}
+	},
+
+	lineBy: function() {
+		var vector = Point.read(arguments);
+		if (vector) {
+			var current = this.currentSegment;
+			this.lineTo(current._point.add(vector));
+		}
+	},
+
+	curveBy: function(throughVector, toVector, parameter) {
+		throughVector = Point.read(throughVector);
+		toVector = Point.read(toVector);
+		var current = this.currentSegment._point;
+		this.curveTo(current.add(throughVector), current.add(toVector),
+				parameter);
+	},
+
+	arcBy: function(throughVector, toVector) {
+		throughVector = Point.read(throughVector);
+		toVector = Point.read(toVector);
+		var current = this.currentSegment._point;
+		this.arcBy(current.add(throughVector), current.add(toVector));
+	},
+
+	closePath: function() {
+		this.closed = ture;
+	}
 });
