@@ -255,7 +255,7 @@ var Rectangle = this.Rectangle = Base.extend({
 		var y1 = Math.max(this.y, rect.y);
 		var x2 = Math.min(this.x + this.width, rect.x + rect.width);
 		var y2 = Math.min(this.y + this.height, rect.y + rect.height);
-		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	unite: function() {
@@ -264,7 +264,7 @@ var Rectangle = this.Rectangle = Base.extend({
 		var y1 = Math.min(this.y, rect.y);
 		var x2 = Math.max(this.x + this.width, rect.x + rect.width);
 		var y2 = Math.max(this.y + this.height, rect.y + rect.height);
-		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	include: function() {
@@ -273,7 +273,7 @@ var Rectangle = this.Rectangle = Base.extend({
 		var y1 = Math.min(this.y, point.y);
 		var x2 = Math.max(this.x + this.width, point.x);
 		var y2 = Math.max(this.y + this.height, point.y);
-		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	toString: function() {
@@ -282,5 +282,17 @@ var Rectangle = this.Rectangle = Base.extend({
 				+ ', width: ' + this.width
 				+ ', height: ' + this.height
 				+ ' }';
+	},
+
+	statics: {
+		// See Point.create()
+		create: function(x, y, width, height) {
+			var rect = new Rectangle(Size.dont);
+			rect.x = x;
+			rect.y = y;
+			rect.width = width;
+			rect.height = height;
+			return rect;
+		}
 	}
 });
