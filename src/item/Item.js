@@ -461,7 +461,7 @@ var Item = this.Item = Base.extend({
 	setPosition: function(point) {
 		point = Point.read(arguments);
 		if (point) {
-			this.translate(point.subtract(this.position));
+			this.translate(point.subtract(this.getPosition()));
 		}
 	},
 
@@ -537,7 +537,7 @@ var Item = this.Item = Base.extend({
 			sy = sx;
 		}
 		return this.transform(new Matrix().scale(sx, sy,
-				center || this.position));
+				center || this.getPosition()));
 	},
 
 	/**
@@ -552,7 +552,7 @@ var Item = this.Item = Base.extend({
 	 */
 	rotate: function(angle, center) {
 		return this.transform(new Matrix().rotate(angle,
-				center || this.position));
+				center || this.getPosition()));
 	},
 
 	/**
@@ -570,7 +570,7 @@ var Item = this.Item = Base.extend({
 			shy = shx;
 		}
 		return this.transform(new Matrix().shear(shx, shy,
-				center || this.position));
+				center || this.getPosition()));
 	},
 
 	/**
