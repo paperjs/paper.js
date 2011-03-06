@@ -80,13 +80,25 @@ var Segment = this.Segment = Base.extend({
 			? null : this._handleOut;
 	},
 
+	getIndex: function() {
+		// TODO: Cache and update indices instead of searching?
+		return this._path ? this._path._segments.indexOf(this) : -1;
+	},
+
 	getPath: function() {
 		return this._path;
 	},
 
-	getIndex: function() {
-		// TODO: Cache and update indices instead of searching?
-		return this._path ? this._path._segments.indexOf(this) : -1;
+	getCurve: function() {
+		if (this._path != null) {
+			var index = this.getIndex();
+			// The last segment of an open path belongs to the last curve
+			// TODO: Port back to Scriptographer
+			if (!this._path.closed && index == this._path._segments.length - 1)
+				index--;
+			return this._path.getCurves()[index];
+		}
+		return null;
 	},
 
 	// TODO:
