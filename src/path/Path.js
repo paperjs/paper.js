@@ -559,7 +559,7 @@ var Path = this.Path = PathItem.extend({
 	 * Helper method that returns the current segment and checks if we need to
 	 * execute a moveTo() command first.
 	 */
-	getCurrentSegment: function() {
+	_getCurrentSegment: function() {
 		if (this._segments.length == 0)
 			throw('Use a moveTo() command first');
 		return this._segments[this._segments.length - 1];
@@ -583,7 +583,7 @@ var Path = this.Path = PathItem.extend({
 	 */
 	cubicCurveTo: function(handle1, handle2, to) {
 		// First modify the current segment:
-		var current = this.currentSegment;
+		var current = this._getCurrentSegment();
 		// Convert to relative values:
 		current.setHandleOut(new Point(
 				handle1.x - current._point.x,
@@ -604,7 +604,7 @@ var Path = this.Path = PathItem.extend({
 		// and the cubic is A B C D,
 		// B = E + 1/3 (A - E)
 		// C = E + 1/3 (D - E)
-		var current = this.currentSegment,
+		var current = this._getCurrentSegment(),
 			x1 = current._point.x,
 			y1 = current._point.y;
 		this.cubicCurveTo(
@@ -619,7 +619,7 @@ var Path = this.Path = PathItem.extend({
 		to = new Point(to);
 		if (parameter == null)
 			parameter = 0.5;
-		var current = this.currentSegment._point;
+		var current = this._getCurrentSegment()._point;
 		// handle = (through - (1 - t)^2 * current - t^2 * to) /
 		// (2 * (1 - t) * t)
 		var t1 = 1 - parameter;
@@ -637,7 +637,7 @@ var Path = this.Path = PathItem.extend({
 	arcTo: function(to, clockwise) {
 		var through, to;
 		// Get the start point:
-		var current = this.currentSegment;
+		var current = this._getCurrentSegment();
 		if (arguments[1] && typeof arguments[1] != 'boolean') {
 			through = Point.read(arguments, 0, 1);
 			to = Point.read(arguments, 1, 1);
@@ -728,7 +728,7 @@ var Path = this.Path = PathItem.extend({
 	lineBy: function() {
 		var vector = Point.read(arguments);
 		if (vector) {
-			var current = this.currentSegment;
+			var current = this._getCurrentSegment();
 			this.lineTo(current._point.add(vector));
 		}
 	},
@@ -736,7 +736,7 @@ var Path = this.Path = PathItem.extend({
 	curveBy: function(throughVector, toVector, parameter) {
 		throughVector = Point.read(throughVector);
 		toVector = Point.read(toVector);
-		var current = this.currentSegment._point;
+		var current = this._getCurrentSegment()._point;
 		this.curveTo(current.add(throughVector), current.add(toVector),
 				parameter);
 	},
@@ -744,7 +744,7 @@ var Path = this.Path = PathItem.extend({
 	arcBy: function(throughVector, toVector) {
 		throughVector = Point.read(throughVector);
 		toVector = Point.read(toVector);
-		var current = this.currentSegment._point;
+		var current = this._getCurrentSegment()._point;
 		this.arcBy(current.add(throughVector), current.add(toVector));
 	},
 
