@@ -30,7 +30,7 @@ var Raster = this.Raster = Item.extend({
 		// Setting canvas internally sets _size
 		this.setCanvas(CanvasProvider.getCanvas(size));
 		// Draw image back onto new canvas
-		this.drawImage(image, 0, 0);
+		this.getContext().drawImage(image, 0, 0, size.width, size.height);
 	},
 
 	/**
