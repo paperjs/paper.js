@@ -101,16 +101,6 @@ var Segment = this.Segment = Base.extend({
 		return null;
 	},
 
-	// TODO:
-	// getCurve: function() {
-	// 	if (this._segments && this._segments.path) {
-	// 		var curves = this._segments.path.getCurves();
-	// 		// The curves list handles closing curves, so the curves.size
-	// 		// is adjusted accordingly. just check to be in the boundaries here:
-	// 		return index < curves.length ? curves[index] : null;
-	// 	}
-	// },
-
 	getNext: function() {
 		return this._path && this._path._segments[this.getIndex() + 1] || null;
 	},
