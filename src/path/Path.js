@@ -552,10 +552,8 @@ var Path = this.Path = PathItem.extend({
 			}
 		}
 	};
-}, new function() {
-	/**
-	 *  PostScript-style drawing commands
-	 */
+}, new function() { // PostScript-style drawing commands
+
 	function getCurrentSegment(that) {
 		var segments = that._segments;
 		if (segments.length == 0)
@@ -711,18 +709,22 @@ var Path = this.Path = PathItem.extend({
 					pt = new Point(centerX + relx * radius,
 						centerY + rely * radius);
 				var out;
-				if (i == arcSegs) out = null;
-				else out = new Point(centerX + (relx - z * rely) * radius - pt.x,
+				if (i == arcSegs) {
+					out = null;
+				} else {
+					out = new Point(
+						centerX + (relx - z * rely) * radius - pt.x,
 						centerY + (rely + z * relx) * radius - pt.y);
+				}
 				if (i == 0) {
 					// Modify startSegment
 					current.setHandleOut(out);
 				} else {
 					// Add new Segment
-					var inPoint = new Point(
+					var handleIn = new Point(
 							centerX + (relx + z * rely) * radius - pt.x,
 							centerY + (rely - z * relx) * radius - pt.y);
-					this._add(new Segment(pt, inPoint, out));
+					this._add(new Segment(pt, handleIn, out));
 				}
 				angle += inc;
 			}
