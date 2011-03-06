@@ -335,6 +335,7 @@ var Point = this.Point = Base.extend({
 	 * @return {@true if it is parallel}
 	 */
 	isParallel: function(point) {
+		// TODO: Tolerance seems rather high!
 		return Math.abs(this.x / point.x - this.y / point.y) < 0.00001;
 	},
 
