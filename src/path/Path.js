@@ -221,8 +221,10 @@ var Path = this.Path = PathItem.extend({
 		var segments = that._segments, first = segments[0];
 		if (!first)
 			return null;
-		var min = first._point.clone(), max = min.clone(),
-			coords = ['x', 'y'], prev = first;
+		var min = first._point.clone(),
+			max = min.clone(),
+			prev = first,
+			coords = ['x', 'y'];
 		function processSegment(segment) {
 			for (var i = 0; i < 2; i++) {
 				var coord = coords[i];
