@@ -70,41 +70,10 @@ var Path = this.Path = PathItem.extend({
 	// taken into account.
 
 	_transform: function(matrix, flags) {
-		var coords = new Array(6);
-		for (var i = 0, l = this._segments.length; i < l; i++) {
-			var segment = this._segments[i];
-			// Use matrix.transform version() that takes arrays of multiple
-			// points for largely improved performance, as no calls to
-			// Point.read() and Point constructors are necessary.
-			var point = segment._point,
-				handleIn = segment.getHandleInIfSet(),
-				handleOut = segment.getHandleOutIfSet(),
-				x = point.x,
-				y = point.y;
-			coords[0] = x;
-			coords[1] = y;
-			var index = 2;
-			// We need to convert handles to absolute coordinates in order
-			// to transform them.
-			if (handleIn) {
-				coords[index++] = handleIn.x + x;
-				coords[index++] = handleIn.y + y;
-			}
-			if (handleOut) {
-				coords[index++] = handleOut.x + x;
-				coords[index++] = handleOut.y + y;
-			}
-			matrix.transform(coords, 0, coords, 0, index / 2);
-			x = point.x = coords[0];
-			y = point.y = coords[1];
-			index  = 2;
-			if (handleIn) {
-				handleIn.x = coords[index++] - x;
-				handleIn.y = coords[index++] - y;
-			}
-			if (handleOut) {
-				handleOut.x = coords[index++] - x;
-				handleOut.y = coords[index++] - y;
+		if (!matrix.isIdentity()) {
+			var coords = new Array(6);
+			for (var i = 0, l = this._segments.length; i < l; i++) {
+				this._segments[i]._transformCoordinates(matrix, coords, true);
 			}
 		}
 	},
@@ -215,27 +184,32 @@ var Path = this.Path = PathItem.extend({
 		tMin = epsilon,
 		tMax = 1 - epsilon;
 
-	function calculateBounds(that, strokeRadius) {
+	function calculateBounds(that, matrix, strokePadding) {
 		// Code ported and further optimised from:
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-		var segments = that._segments, first = segments[0];
+		var segments = that._segments,
+			first = segments[0];
 		if (!first)
 			return null;
-		var min = first._point.clone(),
-			max = min.clone(),
-			prev = first,
-			coords = ['x', 'y'];
+		var coords = new Array(6),
+			prevCoords = new Array(6);
+		// Make coordinates for first segment available in prevCoords.
+		if (matrix && matrix.isIdentity())
+			matrix = null;
+		first._transformCoordinates(matrix, prevCoords, false);
+		var min = prevCoords.slice(0, 2),
+			max = min.slice(0), // clone
 		function processSegment(segment) {
-			for (var i = 0; i < 2; i++) {
-				var coord = coords[i];
+			segment._transformCoordinates(matrix, coords, false);
 
-				var v0 = prev._point[coord],
-					v1 = v0 + prev._handleOut[coord],
-					v3 = segment._point[coord],
-					v2 = v3 + segment._handleIn[coord];
+			for (var i = 0; i < 2; i++) {
+				var v0 = prevCoords[i], // prev.point
+					v1 = prevCoords[i + 4], // prev.handleOut
+					v2 = coords[i + 2], // segment.handleIn
+					v3 = coords[i]; // segment.point
 
 				function add(value, t) {
-					var radius = 0;
+					var padding = 0;
 					if (value == null) {
 						// Calculate bezier polynomial at t
 						var u = 1 - t;
@@ -246,14 +220,14 @@ var Path = this.Path = PathItem.extend({
 						// Only add strokeWidth to bounds for points which lie
 						// within 0 < t < 1. The corner cases for cap and join
 						// are handled in getStrokeBounds()
-						radius = strokeRadius;
+						padding = strokePadding ? strokePadding[i] : 0;
 					}
-					var left = value - radius,
-						right = value + radius;
-					if (left < min[coord])
-						min[coord] = left;
-					if (right > max[coord])
-						max[coord] = right;
+					var left = value - padding,
+						right = value + padding;
+					if (left < min[i])
+						min[i] = left;
+					if (right > max[i])
+						max[i] = right;
 					
 				}
 				add(v3, null);
@@ -290,13 +264,16 @@ var Path = this.Path = PathItem.extend({
 				if (tMin < t2 && t2 < tMax)
 					add(null, t2);
 			}
-			prev = segment;
+			// Swap coordinate buffers
+			var tmp = prevCoords;
+			prevCoords = coords;
+			coords = tmp;
 		}
 		for (var i = 1, l = segments.length; i < l; i++)
 			processSegment(segments[i]);
 		if (that.closed)
 			processSegment(first);
-	    return new Rectangle(min.x, min.y, max.x - min.x , max.y - min.y);
+	    return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	}
 
 	/**
@@ -338,16 +315,17 @@ var Path = this.Path = PathItem.extend({
 		/**
 		 * The bounding rectangle of the item excluding stroke width.
 		 */
-		getBounds: function() {
-			return calculateBounds(this, 0);
+		getBounds: function(matrix) {
+			return calculateBounds(this, matrix);
 		},
 
 		/**
 		 * The bounding rectangle of the item including stroke width.
 		 */
-		getStrokeBounds: function() {
+		getStrokeBounds: function(matrix) {
 			var width = this.getStrokeWidth(),
 				radius = width / 2,
+				padding = [radius, radius],
 				join = this.getStrokeJoin(),
 				cap = this.getStrokeCap(),
 				// miter is relative to width. Divide it by 2 since we're
@@ -356,13 +334,60 @@ var Path = this.Path = PathItem.extend({
 				segments = this._segments,
 				length = segments.length,
 				closed= this.closed,
-				bounds = calculateBounds(this, radius);
+				bounds = calculateBounds(this, matrix, padding);
+
+			// If a matrix is provided, we need to rotate the stroke circle
+			// and calculate the bounding box of the resulting rotated elipse:
+			if (matrix) {
+				// Get rotated hor and ver vectors, and determine rotation angle
+				// and elipse values from them:
+				var mx = matrix.createShiftless(),
+					hor = mx.transform(new Point(radius, 0)),
+					ver = mx.transform(new Point(0, radius)),
+					phi = hor.getAngleInRadians(),
+					a = hor.getLength(),
+					b = ver.getLength();
+				// Formula for rotated ellipses:
+				// x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+				// y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+				// Derivates (by Wolfram Alpha):
+				// derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+				// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
+				// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+				// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
+				// this can be simplified to:
+				// tan(t) = -b * tan(phi) / a // x
+				// tan(t) = b * cot(phi) / a // y
+				// Solving for t gives:
+				// t = pi * n - arctan(b tan(phi)) // x
+				// t = pi * n + arctan(b cot(phi)) // y
+				var tx = - Math.atan(b * Math.tan(phi)),
+					ty = + Math.atan(b / Math.tan(phi)),
+					// Due to symetry, we don't need to cycle through pi * n
+					// solutions:
+					x = a * Math.cos(tx) * Math.cos(phi),
+						- b * Math.sin(tx) * Math.sin(phi),
+					y = b * Math.sin(ty) * Math.cos(phi)
+						+ a * Math.cos(ty) * Math.sin(phi);
+				// Now update the join / round padding, as required by
+				// calculateBounds() and code below.
+				padding = [Math.abs(x), Math.abs(y)];
+			}
+
+			// Create a rectangle of padding size, used for union with bounds
+			// further down
+			var joinBounds = new Rectangle(new Size(padding).multiply(2));
+
+			function add(point) {
+				bounds = bounds.include(matrix
+					? matrix.transform(point) : point);
+			}
 
 			function addBevelJoin(curve, t) {
 				var point = curve.getPoint(t),
 					normal = curve.getNormal(t).normalize(radius);
-				bounds = bounds.include(point.add(normal));
-				bounds = bounds.include(point.subtract(normal));
+				add(point.add(normal));
+				add(point.subtract(normal));
 			}
 
 			function addJoin(segment, join) {
@@ -371,8 +396,8 @@ var Path = this.Path = PathItem.extend({
 				// When both handles are set in a segment, the join setting is
 				// ignored and round is always used.
 				if (join == 'round' || handleIn && handleOut) {
-					bounds = bounds.unite(new Rectangle(new Size(width, width))
-							.setCenter(segment._point));
+					bounds = bounds.unite(joinBounds.setCenter(matrix
+						? matrix.transform(segment._point) : segment._point));
 				} else {
 					switch (join) {
 					case 'bevel':
@@ -397,7 +422,7 @@ var Path = this.Path = PathItem.extend({
 						if (!corner || point.getDistance(corner) > miter) {
 							addJoin(segment, 'bevel');
 						} else {
-							bounds = bounds.include(corner);
+							add(corner);
 						}
 						break;
 					}
@@ -418,8 +443,8 @@ var Path = this.Path = PathItem.extend({
 					// direction of the tangent, which is the rotated normal
 					if (cap == 'square')
 						point = point.add(normal.y, -normal.x);
-					bounds = bounds.include(point.add(normal));
-					bounds = bounds.include(point.subtract(normal));
+					add(point.add(normal));
+					add(point.subtract(normal));
 					break;
 				}
 			}

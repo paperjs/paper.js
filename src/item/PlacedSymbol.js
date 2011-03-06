@@ -19,8 +19,6 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		} else {
 			this.matrix = new Matrix();
 		}
-		// TODO: should size be cached here, or on Symbol?
-		this._size = this.symbol.getDefinition().getStrokeBounds().getSize();
 	},
 
 	_transform: function(matrix, flags) {
@@ -28,17 +26,14 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		// raster, simply preconcatenate the internal matrix with the provided
 		// one.
 		this.matrix.preConcatenate(matrix);
-		this._bounds = null;
 	},
 
 	getBounds: function() {
-		// TODO: Is this right here? Shouldn't we calculate the bounds of the
-		// symbol transformed by this.matrix?
-		if (!this._bounds) {
-			this._bounds = this.matrix.transformBounds(
-					new Rectangle(this._size).setCenter(0, 0));
-		}
-		return this._bounds;
+		return this.symbol._definition.getStrokeBounds(this.matrix);
+	},
+
+	getStrokeBounds: function() {
+		return this.getBounds();
 	},
 
 	draw: function(ctx, param) {

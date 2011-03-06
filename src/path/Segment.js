@@ -137,5 +137,63 @@ var Segment = this.Segment = Base.extend({
 				+ (this._handleOut.isZero()
 					? ', handleOut: ' + this._handleOut : '')
 				+ ' }';
+	},
+
+	_transformCoordinates: function(matrix, coords, change) {
+		// Use matrix.transform version() that takes arrays of multiple
+		// points for largely improved performance, as no calls to
+		// Point.read() and Point constructors are necessary.
+		var point = this._point,
+			// If a matrix is defined, only transform handles if they are set.
+			// This saves some computation time. If no matrix is set, always
+			// use the real handles, as we just want to receive a filled 
+			// coords array for _calculateBounds().
+			handleIn =  matrix && this.getHandleInIfSet() || this._handleIn,
+			handleOut = matrix && this.getHandleOutIfSet() || this._handleOut,
+			x = point.x,
+			y = point.y;
+		coords[0] = x;
+		coords[1] = y;
+		var index = 2;
+		// We need to convert handles to absolute coordinates in order
+		// to transform them.
+		if (handleIn) {
+			coords[index++] = handleIn.x + x;
+			coords[index++] = handleIn.y + y;
+		}
+		if (handleOut) {
+			coords[index++] = handleOut.x + x;
+			coords[index++] = handleOut.y + y;
+		}
+		if (matrix) {
+			matrix.transform(coords, 0, coords, 0, index / 2);
+			x = coords[0];
+			y = coords[1];
+			if (change) {
+				// If change is true, we need to set the new values back
+				point.x = x;
+				point.y = y;
+				index  = 2;
+				if (handleIn) {
+					handleIn.x = coords[index++] - x;
+					handleIn.y = coords[index++] - y;
+				}
+				if (handleOut) {
+					handleOut.x = coords[index++] - x;
+					handleOut.y = coords[index++] - y;
+				}
+			} else {
+				// We want to receive the results in coords, so make sure
+				// handleIn and out are defined too, even if they're 0
+				if (!handleIn) {
+					coords[index++] = x;
+					coords[index++] = y;
+				}
+				if (!handleOut) {
+					coords[index++] = x;
+					coords[index++] = y;
+				}
+			}
+		}
 	}
 });

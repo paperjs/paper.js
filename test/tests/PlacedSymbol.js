@@ -18,13 +18,13 @@ test('placedSymbol bounds', function() {
 		new Rectangle(-50.5, -50.5, 101, 101),
 		'PlacedSymbol initial bounds.');
 	
-	placedSymbol.scale(0.5);
+	placedSymbol.scale(1, 0.5);
 	compareRectangles(placedSymbol.bounds,
-		{ x: -25.25, y: -25.25, width: 50.5, height: 50.5 },
+		{ x: -50.5, y: -25.25, width: 101, height: 50.5 },
 		'Bounds after scale.');
-	
+
 	placedSymbol.rotate(40);
 	compareRectangles(placedSymbol.bounds,
-		{ x: -25.50049, y: -25.50049, width: 51.00098, height: 51.00098 },
+		{ x: -42.04736, y: -37.91846, width: 84.09473, height: 75.83691 },
 		'Bounds after rotation.');
 });
