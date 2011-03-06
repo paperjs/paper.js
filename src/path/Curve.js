@@ -148,6 +148,20 @@ var Curve = this.Curve = Base.extend({
 		if (!result)
 			throw new Error('Nesting capacity exceeded in computing arctime');
 		return -result.b;
+	},
+
+	clone: function() {
+		return new Curve(this._segment1, this._segment2);
+	},
+
+	toString: function() {
+		return '{ point1: ' + this._segment1._point
+				+ (!this._segment1._handleOut.isZero()
+					? ', handle1: ' + this._segment1._handleOut : '')
+				+ (this._segment2._handleIn.isZero()
+					? ', handle2: ' + this._segment2._handleIn : '')
+				+ ', point2: ' + this._segment2._point
+				+ ' }';
 	}
 }, new function() {
 	function evaluate(that, t, type) {
