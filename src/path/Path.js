@@ -170,13 +170,13 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	moveTo: function() {
-		var segment = Segment.read(arguments);
+		var segment = new Segment(Point.read(arguments));
 		if (segment && !this._segments.length)
 			this._add(segment);
 	},
 
 	lineTo: function() {
-		var segment = Segment.read(arguments);
+		var segment = new Segment(Point.read(arguments));
 		if (segment)
 			this._add(segment);
 	},
@@ -243,13 +243,14 @@ var Path = this.Path = PathItem.extend({
 		// Get the start point:
 		var current = this.currentSegment;
 		if (arguments[1] && typeof arguments[1] != 'boolean') {
-			through = new Point(arguments[0]);
-			to = new Point(arguments[1]);
+			through = Point.read(arguments, 0, 1);
+			to = Point.read(arguments, 1, 1);
 		} else {
+			to = Point.read(arguments, 0, 1);
 			if (clockwise === null)
 				clockwise = true;
-			var middle = current._point.add(to).divide(2);
-			var step = middle.subtract(current._point);
+			var middle = current._point.add(to).divide(2),
+				step = middle.subtract(current._point);
 			through = clockwise 
 					? middle.subtract(-step.y, step.x)
 					: middle.add(-step.y, step.x);
@@ -360,18 +361,17 @@ var Path = this.Path = PathItem.extend({
 			ctx.beginPath();
 		var segments = this._segments,
 			length = segments.length,
-			outX, outY;
+			handleOut, outX, outY;
 		for (var i = 0; i < length; i++) {
 			var segment = segments[i],
 				point = segment._point,
 				x = point.x,
 				y = point.y,
-				handleIn = segment._handleIn,
-				handleOut = segment._handleOut;
+				handleIn = segment._handleIn;
 			if (i == 0) {
 				ctx.moveTo(x, y);
 			} else {
-				if (handleOut.isZero() && handleIn.isZero()) {
+				if (handleIn.isZero() && handleOut.isZero()) {
 					ctx.lineTo(x, y);
 				} else {
 					ctx.bezierCurveTo(
@@ -381,6 +381,7 @@ var Path = this.Path = PathItem.extend({
 					);
 				}
 			}
+			handleOut = segment._handleOut;
 			outX = handleOut.x + x;
 			outY = handleOut.y + y;
 		}
