@@ -416,14 +416,14 @@ var Path = this.Path = PathItem.extend({
 	}
 }, new function() { // Inject methods that require scoped privates
 
-	function calculateBounds(that, includeStroke) {
+	function calculateBounds(that, strokeRadius) {
 		// Code ported and further optimised from:
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-		var segments = that._segments, first = segments[0], prev = first;
+		var segments = that._segments, first = segments[0];
 		if (!first)
 			return null;
-		var min = first.point.clone(), max = min.clone();
-		var coords = ['x', 'y'];
+		var min = first.point.clone(), max = min.clone(),
+			coords = ['x', 'y'], prev = first;
 		function processSegment(segment) {
 			for (var i = 0; i < 2; i++) {
 				var coord = coords[i];
@@ -434,6 +434,7 @@ var Path = this.Path = PathItem.extend({
 					v2 = v3 + segment.handleIn[coord];
 
 				function add(value, t) {
+					var radius = 0;
 					if (value == null) {
 						// Calculate bezier polynomial at t
 						var u = 1 - t;
@@ -441,14 +442,20 @@ var Path = this.Path = PathItem.extend({
 								+ 3 * u * u * t * v1
 								+ 3 * u * t * t * v2
 								+ t * t * t * v3;
+						// Only add strokeWidth to bounds for points which lie
+						// within 0 < t < 1. The corner cases for cap and join
+						// are handled in getStrokeBounds()
+						radius = strokeRadius;
 					}
-					if (value < min[coord]) {
-						min[coord] = value;
-					} else if (value > max[coord]) {
-						max[coord] = value;
-					}
+					var left = value - radius,
+						right = value + radius;
+					if (left < min[coord])
+						min[coord] = left;
+					if (right > max[coord])
+						max[coord] = right;
+					
 				}
-				add(v3);
+				add(v3, null);
 
 				// Calculate derivative of our bezier polynomial, divided by 3.
 				// Dividing by 3 allows for simpler calculations of a, b, c and
@@ -531,14 +538,21 @@ var Path = this.Path = PathItem.extend({
 		 * The bounding rectangle of the item excluding stroke width.
 		 */
 		getBounds: function() {
-			return calculateBounds(this, false);
+			return calculateBounds(this, 0);
 		},
 
 		/**
 		 * The bounding rectangle of the item including stroke width.
 		 */
 		getStrokeBounds: function() {
-			return calculateBounds(this, true);
+			var width = this.getStrokeWidth(),
+				radius = width / 2,
+				join = this.getStrokeJoin(),
+				cap = this.getStrokeCap(),
+				miter = this.getMiterLimit();
+			var bounds = calculateBounds(this, radius);
+			// TODO: Handle cap and join
+			return bounds;
 		},
 
 		/**
