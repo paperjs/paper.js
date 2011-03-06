@@ -421,6 +421,10 @@ var Matrix = this.Matrix = Base.extend({
 		return null;
 	},
 
+	createShiftless: function() {
+		return Matrix.create(this._m00, this._m10, this._m01, this._m11, 0, 0);
+	},
+
 	/**
 	 * Sets this transform to a scaling transformation.
 	 *
