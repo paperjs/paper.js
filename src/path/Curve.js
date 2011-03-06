@@ -44,10 +44,8 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	_setIndex: function(index) {
-		if (this._index1 != index) {
-			this._index1 = index;
-			this._updateSegments();
-		}
+		this._index1 = index;
+		this._updateSegments();
 	},
 
 	/**
