@@ -180,8 +180,8 @@ var Matrix = this.Matrix = Base.extend({
 	 */
 	toString: function() {
 		return '[[' 
-			+ [this._m00, this._m10, this._m01].join(', ') + '], ['
-		 	+ [this._m11, this._m02, this._m12].join(', ') + ']]';
+			+ [this._m00, this._m01, this._m02].join(', ') + '], ['
+		 	+ [this._m10, this._m11, this._m12].join(', ') + ']]';
 	},
 
 	/**
