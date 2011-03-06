@@ -117,7 +117,7 @@ var Item = this.Item = Base.extend({
 	},
 
 	setHidden: function(hidden) {
-		this.setVisible(!hidden);
+		this.visible = !hidden;
 	},
 
 	/**
