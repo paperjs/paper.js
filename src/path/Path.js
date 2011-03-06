@@ -198,7 +198,7 @@ var Path = this.Path = PathItem.extend({
 			matrix = null;
 		first._transformCoordinates(matrix, prevCoords, false);
 		var min = prevCoords.slice(0, 2),
-			max = min.slice(0), // clone
+			max = min.slice(0); // clone
 		function processSegment(segment) {
 			segment._transformCoordinates(matrix, coords, false);
 
@@ -365,7 +365,7 @@ var Path = this.Path = PathItem.extend({
 					ty = + Math.atan(b / Math.tan(phi)),
 					// Due to symetry, we don't need to cycle through pi * n
 					// solutions:
-					x = a * Math.cos(tx) * Math.cos(phi),
+					x = a * Math.cos(tx) * Math.cos(phi)
 						- b * Math.sin(tx) * Math.sin(phi),
 					y = b * Math.sin(ty) * Math.cos(phi)
 						+ a * Math.cos(ty) * Math.sin(phi);
