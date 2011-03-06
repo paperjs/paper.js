@@ -33,6 +33,28 @@ var Path = this.Path = PathItem.extend({
 		}
 	},
 
+	/**
+	 * The curves contained within the path.
+	 */
+	getCurves: function() {
+		var length = this._segments.length;
+		// Reduce length by one if it's an open path:
+		if (!this.closed && length > 0)
+			length--;
+		var curves = this._curves = this._curves || new Array(length);
+		curves.length = length;
+		for (var i = 0; i < length; i++) {
+			var curve = curves[i];
+			if (!curve) {
+				curve = curves[i] = new Curve(this, i);
+			} else {
+				// Make sure index is kept up to date.
+				curve._setIndex(i);
+			}
+		}
+		return curves;
+	},
+
 	// TODO: Add back to Scriptographer:
 
 	getFirstSegment: function() {
@@ -134,9 +156,9 @@ var Path = this.Path = PathItem.extend({
 	_add: function(segment, index) {
 		// If this segment belongs to another path already, clone it before
 		// adding.
-		if (segment.path)
+		if (segment._path)
 			segment = new Segment(segment);
-		segment.path = this;
+		segment._path = this;
 		if (index == undefined) {
 			this._segments.push(segment);
 		} else {
