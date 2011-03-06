@@ -235,9 +235,9 @@ var Path = this.Path = PathItem.extend({
 				// Calculate derivative of our bezier polynomial, divided by 3.
 				// Dividing by 3 allows for simpler calculations of a, b, c and
 				// leads to the same quadratic roots below.
-				var a = 3 * (v1 - v2) - v0 + v3;
-				var b = 2 * (v0 + v2) - 4 * v1;
-				var c = v1 - v0;
+				var a = 3 * (v1 - v2) - v0 + v3,
+					b = 2 * (v0 + v2) - 4 * v1,
+					c = v1 - v0;
 
 				// Solve for derivative for quadratic roots. Each good root
 				// (meaning a solution 0 < t < 1) is an extrema in the cubic
