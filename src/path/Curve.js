@@ -167,10 +167,10 @@ var Curve = this.Curve = Base.extend({
 	function evaluate(that, t, type) {
 		// Calculate the polynomial coefficients. caution: handles are relative
 		// to points
-		var point1 = this._segment1._point,
-			handle1 = this._segment1._handleOut,
-			handle2 = this._segment2._handleIn,
-			point2 = this._segment2._point,
+		var point1 = that._segment1._point,
+			handle1 = that._segment1._handleOut,
+			handle2 = that._segment2._handleIn,
+			point2 = that._segment2._point,
 			x, y;
 
 		// Handle special case at beginning / end of curve
