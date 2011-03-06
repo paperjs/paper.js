@@ -552,9 +552,8 @@ var Path = this.Path = PathItem.extend({
 			function addBevelJoin(curve, t) {
 				var point = curve.getPoint(t),
 					normal = curve.getNormal(t).normalize(radius);
-				// TODO: Both required? Check other directions
 				bounds = bounds.include(point.add(normal));
-//				bounds = bounds.include(point.subtract(normal));
+				bounds = bounds.include(point.subtract(normal));
 			}
 
 			function addJoin(segment, join) {
@@ -601,14 +600,13 @@ var Path = this.Path = PathItem.extend({
 				case 'butt':
 				case 'square':
 					// Calculate the corner points of butt and square caps
-					var point = segment._point,
-						curve = segment.getCurve(),
+					var curve = segment.getCurve(),
+						point = curve.getPoint(t),
 						normal = curve.getNormal(t).normalize(radius);
 					// For square caps, we need to step away from point in the
 					// direction of the tangent, which is the rotated normal
-					if (cap == 'square') {
+					if (cap == 'square')
 						point = point.add(normal.y, -normal.x);
-					}
 					bounds = bounds.include(point.add(normal));
 					bounds = bounds.include(point.subtract(normal));
 					break;
