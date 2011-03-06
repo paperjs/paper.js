@@ -3,6 +3,12 @@ module('Placed Symbol');
 test('placedSymbol bounds', function() {
 	var doc = new Document();
 	var path = new Path.Circle([50, 50], 50);
+	path.strokeWidth = 1;
+	path.strokeCap = 'round';
+	path.strokeJoin = 'round';
+	compareRectangles(path.strokeBounds,
+		new Rectangle(-0.5, -0.5, 101, 101),
+		'Path initial bounds.');
 	var symbol = new Symbol(path);
 	var placedSymbol = new PlacedSymbol(symbol);
 	
