@@ -7,7 +7,7 @@ test('placedSymbol bounds', function() {
 	path.strokeCap = 'round';
 	path.strokeJoin = 'round';
 	compareRectangles(path.strokeBounds,
-		new Rectangle(-0.5, -0.5, 101, 101),
+		{ x: -0.5, y: -0.5, width: 101, height: 101 },
 		'Path initial bounds.');
 	var symbol = new Symbol(path);
 	var placedSymbol = new PlacedSymbol(symbol);
@@ -20,7 +20,7 @@ test('placedSymbol bounds', function() {
 	
 	placedSymbol.scale(0.5);
 	compareRectangles(placedSymbol.bounds,
-		{ x: -25.5, y: -25.5, width: 51, height: 51 },
+		{ x: -25.25, y: -25.25, width: 50.5, height: 50.5 },
 		'Bounds after scale.');
 	
 	placedSymbol.rotate(40);
