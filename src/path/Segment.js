@@ -48,30 +48,30 @@ var Segment = this.Segment = Base.extend({
 		return this._handleIn;
 	},
 
-	getHandleInIfSet: function() {
-		return this._handleIn.x == this._handleIn.y == 0
-			? null : this._handleIn;
-	},
-
 	setHandleIn: function() {
 		this._handleIn = Point.read(arguments);
 		// Update corner accordingly
 		// this.corner = !this._handleIn.isParallel(this._handleOut);
 	},
 
-	getHandleOut: function() {
-		return this._handleOut;
+	getHandleInIfSet: function() {
+		return this._handleIn.x == 0 && this._handleIn.y == 0
+			? null : this._handleIn;
 	},
 
-	getHandleOutIfSet: function() {
-		return this._handleOut.x == this._handleOut.y == 0
-			? null : this._handleOut;
+	getHandleOut: function() {
+		return this._handleOut;
 	},
 
 	setHandleOut: function() {
 		this._handleOut = Point.read(arguments);
 		// Update corner accordingly
 		// this.corner = !this._handleIn.isParallel(this._handleOut);
+	},
+
+	getHandleOutIfSet: function() {
+		return this._handleOut.x == 0 && this._handleOut.y == 0
+			? null : this._handleOut;
 	},
 
 	getIndex: function() {
