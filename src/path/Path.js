@@ -51,10 +51,10 @@ var Path = this.Path = PathItem.extend({
 	getCurveLength: function(goal) {
 		var seg0 = this._segments[0],
 			seg1 = this._segments[1],
-			z0 = seg0.point,
-			z1 = seg1.point,
-			c0 = z0.add(seg0.handleOut),
-			c1 = z1.add(seg1.handleIn);
+			z0 = seg0._point,
+			z1 = seg1._point,
+			c0 = z0.add(seg0._handleOut),
+			c1 = z1.add(seg1._handleIn);
 		// TODO: Check for straight lines and handle separately.
 
 		// Calculate the coefficients of a Bezier derivative, divided by 3.
@@ -94,9 +94,9 @@ var Path = this.Path = PathItem.extend({
 			// Use matrix.transform version() that takes arrays of multiple
 			// points for largely improved performance, as no calls to
 			// Point.read() and Point constructors are necessary.
-			var point = segment.point,
-				handleIn = segment.handleIn,
-				handleOut = segment.handleOut,
+			var point = segment._point,
+				handleIn = segment._handleIn,
+				handleOut = segment._handleOut,
 				x = point.x,
 				y = point.y;
 			if (handleIn.isZero())
@@ -193,9 +193,9 @@ var Path = this.Path = PathItem.extend({
 		// First modify the current segment:
 		var current = this.currentSegment;
 		// Convert to relative values:
-		current.handleOut = new Point(
-				handle1.x - current.point.x,
-				handle1.y - current.point.y);
+		current.setHandleOut(new Point(
+				handle1.x - current._point.x,
+				handle1.y - current._point.y));
 		// And add the new segment, with handleIn set to c2
 		this._add(
 			new Segment(to, handle2.subtract(to), new Point())
@@ -213,10 +213,10 @@ var Path = this.Path = PathItem.extend({
 		// B = E + 1/3 (A - E)
 		// C = E + 1/3 (D - E)
 		var current = this.currentSegment,
-			x1 = current.point.x,
-			y1 = current.point.y;
+			x1 = current._point.x,
+			y1 = current._point.y;
 		this.cubicCurveTo(
-			handle.add(current.point.subtract(handle).multiply(1/3)),
+			handle.add(current._point.subtract(handle).multiply(1/3)),
 			handle.add(to.subtract(handle).multiply(1/3)),
 			to
 		);
@@ -227,7 +227,7 @@ var Path = this.Path = PathItem.extend({
 		to = new Point(to);
 		if (parameter == null)
 			parameter = 0.5;
-		var current = this.currentSegment.point;
+		var current = this.currentSegment._point;
 		// handle = (through - (1 - t)^2 * current - t^2 * to) /
 		// (2 * (1 - t) * t)
 		var t1 = 1 - parameter;
@@ -252,15 +252,15 @@ var Path = this.Path = PathItem.extend({
 		} else {
 			if (clockwise === null)
 				clockwise = true;
-			var middle = current.point.add(to).divide(2);
-			var step = middle.subtract(current.point);
+			var middle = current._point.add(to).divide(2);
+			var step = middle.subtract(current._point);
 			through = clockwise 
 					? middle.subtract(-step.y, step.x)
 					: middle.add(-step.y, step.x);
 		}
 
-		var x1 = current.point.x, x2 = through.x, x3 = to.x,
-			y1 = current.point.y, y2 = through.y, y3 = to.y,
+		var x1 = current._point.x, x2 = through.x, x3 = to.x,
+			y1 = current._point.y, y2 = through.y, y3 = to.y,
 
 			f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
 				- y1 * y3 + y1 * y2,
@@ -320,7 +320,7 @@ var Path = this.Path = PathItem.extend({
 					centerY + (rely + z * relx) * radius - pt.y);
 			if (i == 0) {
 				// Modify startSegment
-				current.handleOut = out;
+				current.setHandleOut(out);
 			} else {
 				// Add new Segment
 				var inPoint = new Point(
@@ -336,14 +336,14 @@ var Path = this.Path = PathItem.extend({
 		var vector = Point.read(arguments);
 		if (vector) {
 			var current = this.currentSegment;
-			this.lineTo(current.point.add(vector));
+			this.lineTo(current._point.add(vector));
 		}
 	},
 
 	curveBy: function(throughVector, toVector, parameter) {
 		throughVector = Point.read(throughVector);
 		toVector = Point.read(toVector);
-		var current = this.currentSegment.point;
+		var current = this.currentSegment._point;
 		this.curveTo(current.add(throughVector), current.add(toVector),
 				parameter);
 	},
@@ -351,7 +351,7 @@ var Path = this.Path = PathItem.extend({
 	arcBy: function(throughVector, toVector) {
 		throughVector = Point.read(throughVector);
 		toVector = Point.read(toVector);
-		var current = this.currentSegment.point;
+		var current = this.currentSegment._point;
 		this.arcBy(current.add(throughVector), current.add(toVector));
 	},
 
@@ -366,9 +366,10 @@ var Path = this.Path = PathItem.extend({
 		var length = segments.length;
 		for (var i = 0; i < length; i++) {
 			var segment = segments[i],
-				x = segment.point.x,
-				y = segment.point.y,
-				handleIn = segment.handleIn;
+				point = segment._point,
+				x = point.x,
+				y = point.y,
+				handleIn = segment._handleIn;
 			if (i == 0) {
 				ctx.moveTo(x, y);
 			} else {
@@ -382,15 +383,16 @@ var Path = this.Path = PathItem.extend({
 					);
 				}
 			}
-			var handleOut = segment.handleOut,
+			var handleOut = segment._handleOut,
 				outX = handleOut.x + x,
 				outY = handleOut.y + y;
 		}
 		if (this.closed && length > 1) {
 			var segment = segments[0],
-				x = segment.point.x,
-				y = segment.point.y,
-				handleIn = segment.handleIn;
+				point = segment._point,
+				x = point.x,
+				y = point.y,
+				handleIn = segment._handleIn;
 			ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
 			ctx.closePath();
 		}
@@ -425,16 +427,16 @@ var Path = this.Path = PathItem.extend({
 		var segments = that._segments, first = segments[0];
 		if (!first)
 			return null;
-		var min = first.point.clone(), max = min.clone(),
+		var min = first._point.clone(), max = min.clone(),
 			coords = ['x', 'y'], prev = first;
 		function processSegment(segment) {
 			for (var i = 0; i < 2; i++) {
 				var coord = coords[i];
 
-				var v0 = prev.point[coord],
-					v1 = v0 + prev.handleOut[coord],
-					v3 = segment.point[coord],
-					v2 = v3 + segment.handleIn[coord];
+				var v0 = prev._point[coord],
+					v1 = v0 + prev._handleOut[coord],
+					v3 = segment._point[coord],
+					v2 = v3 + segment._handleIn[coord];
 
 				function add(value, t) {
 					var radius = 0;
@@ -592,13 +594,13 @@ var Path = this.Path = PathItem.extend({
 			}
 			var knots = [];
 			for (var i = 0; i < size; i++)
-				knots[i + overlap] = segments[i].point;
+				knots[i + overlap] = segments[i]._point;
 			if (this.closed) {
 				// If we're averaging, add the 4 last points again at the
 				// beginning, and the 4 first ones at the end.
 				for (var i = 0; i < overlap; i++) {
-					knots[i] = segments[i + size - overlap].point;
-					knots[i + size + overlap] = segments[i].point;
+					knots[i] = segments[i + size - overlap]._point;
+					knots[i + size + overlap] = segments[i]._point;
 				}
 			} else {
 				n--;
@@ -643,11 +645,11 @@ var Path = this.Path = PathItem.extend({
 			// Now set the calculated handles
 			for (var i = overlap; i <= n - overlap; i++) {
 				var segment = segments[i - overlap];
-				if (handleIn != null)
-					segment.handleIn = handleIn.subtract(segment.point);
+				if (handleIn)
+					segment.setHandleIn(handleIn.subtract(segment._point));
 				if (i < n) {
-					segment.handleOut =
-							new Point(x[i], y[i]).subtract(segment.point);
+					segment.setHandleOut(
+							new Point(x[i], y[i]).subtract(segment._point));
 					if (i < n - 1)
 						handleIn = new Point(
 								2 * knots[i + 1].x - x[i + 1],
@@ -658,9 +660,9 @@ var Path = this.Path = PathItem.extend({
 								(knots[n].y + y[n - 1]) / 2);
 				}
 			}
-			if (closed && handleIn != null) {
+			if (closed && handleIn) {
 				var segment = this._segments[0];
-				segment.handleIn = handleIn.subtract(segment.point);
+				segment.setHandleIn(handleIn.subtract(segment._point));
 			}
 		},
 

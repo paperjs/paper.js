@@ -1,65 +1,77 @@
 var Segment = this.Segment = Base.extend({
+	beans: true,
+
 	initialize: function() {
 		if (arguments.length == 0) {
-			this.point = new Point();
+			this._point = new Point();
 		} else if (arguments.length == 1) {
-			if (arguments[0].point) {
-				var segment = arguments[0];
-				this.point = new Point(segment.point);
-				if (segment.handleIn)
-					this.handleIn = new Point(segment.handleIn);
-				if (segment.handleOut)
-					this.handleOut = new Point(segment.handleOut);
+			// TODO: If beans are not activated, this won't copy from
+			// an existing segment. OK?
+			var arg = arguments[0];
+			if (arg.point) {
+				this._point = new Point(arg.point);
+				this._handleIn = new Point(arg.handleIn);
+				this._handleOut = new Point(arg.handleOut);
 			} else {
-				this.point = new Point(arguments[0]);
+				this._point = new Point(arguments[0]);
 			}
 		} else if (arguments.length < 6) {
 			if (arguments.length == 2 && !arguments[1].x) {
-				this.point = new Point(arguments[0], arguments[1]);
+				this._point = new Point(arguments[0], arguments[1]);
 			} else {
-				this.point = new Point(arguments[0]);
-				if (arguments[1])
-					this.handleIn = new Point(arguments[1]);
-				if (arguments[2])
-					this.handleOut = new Point(arguments[2]);
+				this._point = new Point(arguments[0]);
+				// Doesn't matter if these arguments exist, it creates 0, 0
+				// points otherwise
+				this._handleIn = new Point(arguments[1]);
+				this._handleOut = new Point(arguments[2]);
 			}
 		} else if (arguments.length == 6) {
-			this.point = new Point(arguments[0], arguments[1]);
-			this.handleIn = new Point(arguments[2], arguments[3]);
-			this.handleOut = new Point(arguments[4], arguments[5]);
+			this._point = new Point(arguments[0], arguments[1]);
+			this._handleIn = new Point(arguments[2], arguments[3]);
+			this._handleOut = new Point(arguments[4], arguments[5]);
 		}
-		if (!this.handleIn)
-			this.handleIn = new Point();
-		if (!this.handleOut)
-			this.handleOut = new Point();
+		if (!this._handleIn)
+			this._handleIn = new Point();
+		if (!this._handleOut)
+			this._handleOut = new Point();
 	},
 
 	getPoint: function() {
-		return this.point;
+		return this._point;
 	},
 
 	setPoint: function() {
-		var point = Point.read(arguments);
-		this.point = point;
+		this._point = Point.read(arguments);
 	},
 
 	getHandleIn: function() {
-		return this.handleIn;
+		return this._handleIn;
+	},
+
+	getHandleInIfSet: function() {
+		return this._handleIn.x == this._handleIn.y == 0
+			? null : this._handleIn;
 	},
 
 	setHandleIn: function() {
-		var point = Point.read(arguments);
-		this.handleIn = point;
+		this._handleIn = Point.read(arguments);
+		// Update corner accordingly
+		// this.corner = !this._handleIn.isParallel(this._handleOut);
 	},
 
 	getHandleOut: function() {
-		return this.handleOut;
+		return this._handleOut;
+	},
+
+	getHandleOutIfSet: function() {
+		return this._handleOut.x == this._handleOut.y == 0
+			? null : this._handleOut;
 	},
 
 	setHandleOut: function() {
-		var point = Point.read(arguments);
-		this.handleOut = point;
-		this.corner = !handleIn.isParallel(handleOut);
+		this._handleOut = Point.read(arguments);
+		// Update corner accordingly
+		// this.corner = !this._handleIn.isParallel(this._handleOut);
 	},
 
 	getIndex: function() {
@@ -93,7 +105,7 @@ var Segment = this.Segment = Base.extend({
 	// setSelected: function(pt, selected)
 
 	reverse: function() {
-		return new Segment(this.point, this.handleOut, this.handleIn);
+		return new Segment(this._point, this._handleOut, this._handleIn);
 	},
 
 	clone: function() {
@@ -107,9 +119,9 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	toString: function() {
-		return '{ point: ' + this.point
-				+ (this.handleIn ? ', handleIn: ' + this.handleIn : '')
-				+ (this.handleOut ? ', handleOut: ' + this.handleOut : '')
+		return '{ point: ' + this._point
+				+ (this._handleIn ? ', handleIn: ' + this._handleIn : '')
+				+ (this._handleOut ? ', handleOut: ' + this._handleOut : '')
 				+ ' }';
 	}
 });

@@ -75,9 +75,9 @@ Path.inject({ statics: new function() {
 			for (var i = 0; i < 4; i++) {
 				var segment = ovalSegments[i];
 				path._add(new Segment(
-					segment.point.multiply(size).add(topLeft),
-					segment.handleIn.multiply(size),
-					segment.handleOut.multiply(size)
+					segment._point.multiply(size).add(topLeft),
+					segment._handleIn.multiply(size),
+					segment._handleOut.multiply(size)
 				));
 			}
 			path.closed = true;
