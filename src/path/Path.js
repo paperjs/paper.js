@@ -49,26 +49,27 @@ var Path = this.Path = PathItem.extend({
 
 	// Calculates arclength of a cubic using adaptive simpson integration.
 	getCurveLength: function(goal) {
-		var seg0 = this._segments[0], seg1 = this._segments[1];
-		var z0 = seg0.point,
+		var seg0 = this._segments[0],
+			seg1 = this._segments[1],
+			z0 = seg0.point,
 			z1 = seg1.point,
 			c0 = z0.add(seg0.handleOut),
 			c1 = z1.add(seg1.handleIn);
 		// TODO: Check for straight lines and handle separately.
 
 		// Calculate the coefficients of a Bezier derivative, divided by 3.
-		var ax = 3 * (c0.x - c1.x) - z0.x + z1.x;
-		var bx = 2 * (z0.x + c1.x) - 4 * c0.x;
-		var cx = c0.x - z0.x;
+		var ax = 3 * (c0.x - c1.x) - z0.x + z1.x,
+			bx = 2 * (z0.x + c1.x) - 4 * c0.x,
+			cx = c0.x - z0.x,
 
-		var ay = 3 * (c0.y - c1.y) - z0.y + z1.y;
-		var by = 2 * (z0.y + c1.y) - 4 * c0.y;
-		var cy = c0.y - z0.y;
+			ay = 3 * (c0.y - c1.y) - z0.y + z1.y,
+			by = 2 * (z0.y + c1.y) - 4 * c0.y,
+			cy = c0.y - z0.y;
 
 		function ds(t) {
 			// Calculate quadratic equations of derivatives for x and y
-			var dx = (ax * t + bx) * t + cx;
-			var dy = (ay * t + by) * t + cy;
+			var dx = (ax * t + bx) * t + cx,
+				dy = (ay * t + by) * t + cy;
 			return Math.sqrt(dx * dx + dy * dy);
 		}
 
@@ -210,9 +211,9 @@ var Path = this.Path = PathItem.extend({
 		// and the cubic is A B C D,
 		// B = E + 1/3 (A - E)
 		// C = E + 1/3 (D - E)
-		var current = this.currentSegment;
-		var x1 = current.point.x;
-		var y1 = current.point.y;
+		var current = this.currentSegment,
+			x1 = current.point.x,
+			y1 = current.point.y;
 		this.cubicCurveTo(
 			handle.add(current.point.subtract(handle).multiply(1/3)),
 			handle.add(to.subtract(handle).multiply(1/3)),
@@ -257,29 +258,30 @@ var Path = this.Path = PathItem.extend({
 					: middle.add(-step.y, step.x);
 		}
 
-		var x1 = current.point.x, x2 = through.x, x3 = to.x;
-		var y1 = current.point.y, y2 = through.y, y3 = to.y;
+		var x1 = current.point.x, x2 = through.x, x3 = to.x,
+			y1 = current.point.y, y2 = through.y, y3 = to.y,
 
-		var f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
-				- y1 * y3 + y1 * y2;
-		var g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1;
-		var m = g == 0 ? 0 : f / g;
+			f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
+				- y1 * y3 + y1 * y2,
+			g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
+			m = g == 0 ? 0 : f / g,
 
-		var c = (m * y2) - x2 - x1 - (m * y1);
-		var d = (m * x1) - y1 - y2 - (x2 * m);
-		var e = (x1 * x2) + (y1 * y2) - (m * x1 * y2) + (m * x2 * y1);
+			c = (m * y2) - x2 - x1 - (m * y1),
+			d = (m * x1) - y1 - y2 - (x2 * m),
+			e = (x1 * x2) + (y1 * y2) - (m * x1 * y2) + (m * x2 * y1),
 
-		var centerX = -c / 2;
-		var centerY = -d / 2;
-		var radius = Math.sqrt(centerX * centerX + centerY * centerY - e);
+			centerX = -c / 2,
+			centerY = -d / 2,
+			radius = Math.sqrt(centerX * centerX + centerY * centerY - e),
 
 		// Note: reversing the Y equations negates the angle to adjust
 		// for the upside down coordinate system.
-		var angle = Math.atan2(centerY - y1, x1 - centerX);
-		var middle = Math.atan2(centerY - y2, x2 - centerX);
-		var extent = Math.atan2(centerY - y3, x3 - centerX);
+			angle = Math.atan2(centerY - y1, x1 - centerX),
+			middle = Math.atan2(centerY - y2, x2 - centerX),
+			extent = Math.atan2(centerY - y3, x3 - centerX),
 
-		var diff = middle - angle;
+			diff = middle - angle;
+
 		if (diff < -Math.PI)
 			diff += Math.PI * 2;
 		else if (diff > Math.PI)
@@ -293,8 +295,8 @@ var Path = this.Path = PathItem.extend({
 		else extent = -extent;
 		angle = -angle;
 
-		var ext = Math.abs(extent);
-		var arcSegs;
+		var ext = Math.abs(extent),
+			arcSegs;
 		if (ext >= 2 * Math.PI) arcSegs = 4;
 		else arcSegs = Math.ceil(ext * 2 / Math.PI);
 
@@ -303,13 +305,13 @@ var Path = this.Path = PathItem.extend({
 		else if (inc < -2 * Math.PI) inc = -2 * Math.PI;
 		inc /= arcSegs;
 
-		var halfInc = inc / 2;
-		var z = 4 / 3 * Math.sin(halfInc) / (1 + Math.cos(halfInc));
+		var halfInc = inc / 2,
+			z = 4 / 3 * Math.sin(halfInc) / (1 + Math.cos(halfInc));
 
 		for (var i = 0; i <= arcSegs; i++) {
-			var relx = Math.cos(angle);
-			var rely = Math.sin(angle);
-			var pt = new Point(centerX + relx * radius,
+			var relx = Math.cos(angle),
+				rely = Math.sin(angle),
+				pt = new Point(centerX + relx * radius,
 					centerY + rely * radius);
 			var out;
 			if (i == arcSegs) out = null;
@@ -362,10 +364,10 @@ var Path = this.Path = PathItem.extend({
 		var segments = this._segments;
 		var length = segments.length;
 		for (var i = 0; i < length; i++) {
-			var segment = segments[i];
-			var x = segment.point.x;
-			var y = segment.point.y;
-			var handleIn = segment.handleIn;
+			var segment = segments[i],
+				x = segment.point.x,
+				y = segment.point.y,
+				handleIn = segment.handleIn;
 			if (i == 0) {
 				ctx.moveTo(x, y);
 			} else {
@@ -379,15 +381,15 @@ var Path = this.Path = PathItem.extend({
 					);
 				}
 			}
-			var handleOut = segment.handleOut;
-			var outX = handleOut.x + x;
-			var outY = handleOut.y + y;
+			var handleOut = segment.handleOut,
+				outX = handleOut.x + x,
+				outY = handleOut.y + y;
 		}
 		if (this.closed && length > 1) {
-			var segment = segments[0];
-			var x = segment.point.x;
-			var y = segment.point.y;
-			var handleIn = segment.handleIn;
+			var segment = segments[0],
+				x = segment.point.x,
+				y = segment.point.y,
+				handleIn = segment.handleIn;
 			ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
 			ctx.closePath();
 		}
