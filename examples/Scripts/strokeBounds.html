@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript" src="../../lib/bootstrap.js"></script>
+	<script type="text/javascript" src="../../lib/parse-js.js"></script>
+	<script type="text/javascript" src="../../src/Paper.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolEvent.js"></script>
+	<script type="text/javascript" src="../../src/tool/ToolHandler.js"></script>
+	<script type="text/javascript" src="../../src/tool/Tool.js"></script>
+	<script type="text/javascript" src="../../src/basic/Point.js"></script>
+	<script type="text/javascript" src="../../src/basic/Rectangle.js"></script>
+	<script type="text/javascript" src="../../src/basic/Size.js"></script>
+	<script type="text/javascript" src="../../src/basic/Matrix.js"></script>
+	<script type="text/javascript" src="../../src/basic/Line.js"></script>
+	<script type="text/javascript" src="../../src/document/DocumentView.js"></script>
+	<script type="text/javascript" src="../../src/document/Document.js"></script>
+	<script type="text/javascript" src="../../src/document/Symbol.js"></script>
+	<script type="text/javascript" src="../../src/item/Item.js"></script>
+	<script type="text/javascript" src="../../src/item/PlacedSymbol.js"></script>
+	<script type="text/javascript" src="../../src/item/Group.js"></script>
+	<script type="text/javascript" src="../../src/item/Layer.js"></script>
+	<script type="text/javascript" src="../../src/item/Raster.js"></script>
+	<script type="text/javascript" src="../../src/item/PathStyle.js"></script>
+	<script type="text/javascript" src="../../src/path/Segment.js"></script>
+	<script type="text/javascript" src="../../src/path/Curve.js"></script>
+	<script type="text/javascript" src="../../src/path/PathItem.js"></script>
+	<script type="text/javascript" src="../../src/path/Path.js"></script>
+	<script type="text/javascript" src="../../src/path/CompoundPath.js"></script>
+	<script type="text/javascript" src="../../src/path/Path.Constructors.js"></script>
+	<script type="text/javascript" src="../../src/color/Color.js"></script>
+	<script type="text/javascript" src="../../src/color/RGBColor.js"></script>
+	<script type="text/javascript" src="../../src/color/GrayColor.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientColor.js"></script>
+	<script type="text/javascript" src="../../src/color/Gradient.js"></script>
+	<script type="text/javascript" src="../../src/color/GradientStop.js"></script>
+	<script type="text/javascript" src="../../src/util/Events.js"></script>
+	<script type="text/javascript" src="../../src/util/PaperScript.js"></script>
+	<script type="text/javascript" src="../../src/util/MathUtils.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var paths = [];
+
+		function makePath() {
+			var path = new Path();
+			path.moveTo(200, 50);
+			path.lineTo(230, 100);
+			path.lineTo(250, 50);
+			path.lineTo(280, 110);
+			path.arcTo([250, 20]);
+			path.rotate(-5);
+			path.strokeWidth = 30;
+			paths.push(path);
+			path.miterLimit = 3;
+			return path;
+		}
+
+		var path = makePath();
+		path.strokeColor = 'black';
+		path.strokeCap = 'butt';
+		path.strokeJoin = 'round';
+
+		var path = makePath().translate(150, 0);
+		path.strokeColor = 'black';
+		path.strokeCap = 'butt';
+		path.strokeJoin = 'bevel';
+
+		var path = makePath().translate(300, 0);
+		path.strokeColor = 'black';
+		path.strokeCap = 'butt';
+		path.strokeJoin = 'miter';
+
+		var path = makePath().translate(0, 150);
+		path.strokeColor = 'black';
+		path.strokeCap = 'square';
+		path.strokeJoin = 'round';
+
+		var path = makePath().translate(150, 150);
+		path.strokeColor = 'black';
+		path.strokeCap = 'square';
+		path.strokeJoin = 'bevel';
+
+		var path = makePath().translate(300, 150);
+		path.strokeColor = 'black';
+		path.strokeCap = 'square';
+		path.strokeJoin = 'miter';
+
+		var path = makePath().translate(0, 300);
+		path.strokeColor = 'black';
+		path.strokeCap = 'round';
+		path.strokeJoin = 'round';
+
+		var path = makePath().translate(150, 300);
+		path.strokeColor = 'black';
+		path.strokeCap = 'round';
+		path.strokeJoin = 'bevel';
+
+		var path = makePath().translate(300, 300);
+		path.strokeColor = 'black';
+		path.strokeCap = 'round';
+		path.strokeJoin = 'miter';
+
+		var path = new Path.Circle([50, 50], 35);
+		path.strokeColor = 'black';
+		path.strokeWidth = 30;
+		path.strokeJoin = 'round';
+		path.strokeCap = 'round';
+//		path.scale(1, 0.5);
+		paths.push(path);
+
+		for(var i = 0; i < paths.length; i++) {
+			var path = paths[i];
+			path.scale(1.5, new Point(300, 0));
+			var rect = new Path.Rectangle(path.strokeBounds);
+			rect.strokeWidth = 0.25;
+			rect.strokeColor = 'black'
+			rect.fillColor = null;
+			var rect = new Path.Rectangle(path.bounds);
+			rect.strokeWidth = 0.25;
+			rect.strokeColor = 'red'
+			rect.fillColor = null;
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
