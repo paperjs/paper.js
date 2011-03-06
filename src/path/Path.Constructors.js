@@ -22,44 +22,44 @@ Path.inject({ statics: new function() {
 		},
 
 		Rectangle: function() {
-			var path = new Path();
-			path.closed = true;
-			var rectangle = Rectangle.read(arguments);
-			var corners = ['bottomLeft', 'topLeft', 'topRight',
-			 		'bottomRight'];
+			var path = new Path(),
+				rectangle = Rectangle.read(arguments),
+				corners = ['getBottomLeft', 'getTopLeft', 'getTopRight',
+						'getBottomRight'];
 			for (var i = 0; i < 4; i++) {
-				path.add(rectangle[corners[i]]);
+				path.add(rectangle[corners[i]]());
 			}
+			path.closed = true;
 			return path;
 		},
 
 		RoundRectangle: function() {
-			var path = new Path();
-			var rect, size;
+			var path = new Path(),
+				rect, size;
 			if (arguments.length == 2) {
-				rect = new Rectangle(arguments[0]);
-				size = new Size(arguments[1]);
-			} else {
-				rect = new Rectangle(arguments[0], arguments[1],
-					arguments[2], arguments[3]);
-				size = new Size(arguments[4], arguments[5]);
+				rect = Rectangle.read(arguments, 0, 1);
+				size = Size.read(arguments, 1, 1);
+			} else if (arguments.length == 6) {
+				rect = Rectangle.read(arguments, 0, 4);
+				size = Size.read(arguments, 4, 2);
 			}
 			size = Size.min(size, rect.getSize().divide(2));
-			uSize = size.multiply(kappa * 2);
+			var uSize = size.multiply(kappa * 2),
+				
+				bl = rect.getBottomLeft(),
+				tl = rect.getTopLeft(),
+				tr = rect.getTopRight(),
+				br = rect.getBottomRight();
 
-			var bl = rect.getBottomLeft();
 			path.add(bl.add(size.width, 0), null, [-uSize.width, 0]);
 			path.add(bl.subtract(0, size.height), [0, uSize.height], null);
 
-			var tl = rect.getTopLeft();
 			path.add(tl.add(0, size.height), null, [0, -uSize.height]);
 			path.add(tl.add(size.width, 0), [-uSize.width, 0], null);
 
-			var tr = rect.getTopRight();
 			path.add(tr.subtract(size.width, 0), null, [uSize.width, 0]);
 			path.add(tr.add(0, size.height), [0, -uSize.height], null);
 
-			var br = rect.getBottomRight();
 			path.add(br.subtract(0, size.height), null, [0, uSize.height]);
 			path.add(br.subtract(size.width, 0), [uSize.width, 0], null);
 
@@ -68,10 +68,10 @@ Path.inject({ statics: new function() {
 		},
 
 		Oval: function() {
-			var path = new Path();
-			var rect = Rectangle.read(arguments);
-			var topLeft = rect.getTopLeft();
-			var size = new Size(rect.width, rect.height);
+			var path = new Path(),
+				rect = Rectangle.read(arguments),
+				topLeft = rect.getTopLeft(),
+				size = new Size(rect.width, rect.height);
 			for (var i = 0; i < 4; i++) {
 				var segment = ovalSegments[i];
 				path._add(new Segment(
@@ -106,10 +106,10 @@ Path.inject({ statics: new function() {
 
 		RegularPolygon: function(center, numSides, radius) {
 			center = new Point(center);
-			var path = new Path();
-			var three = !(numSides % 3);
-			var vector = new Point(0, three ? -radius : radius);
-			var offset = three ? -1 : 0.5;
+			var path = new Path(),
+				three = !(numSides % 3),
+				vector = new Point(0, three ? -radius : radius),
+				offset = three ? -1 : 0.5;
 			for (var i = 0; i < numSides; i++) {
 				var angle = (360 / numSides) * (i + offset);
 				path.add(center.add(vector.rotate(angle)));
