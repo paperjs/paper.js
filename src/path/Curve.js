@@ -187,6 +187,8 @@ var Curve = this.Curve = Base.extend({
 			x, y;
 
 		// Handle special case at beginning / end of curve
+		// TODO: Port back to Scriptographer, so 0.000000000001 won't be
+		// required anymore
 		if (t == 0 || t == 1) {
 			var point;
 			switch (type) {
@@ -235,7 +237,9 @@ var Curve = this.Curve = Base.extend({
 			}
 		}
 		// The normal is simply the rotated tangent:
-		return type == 2 ? new Point(-y, x) : new Point(x, y);
+		// TODO: Rotate normals the other way in Scriptographer too?
+		// (Depending on orientation, I guess?)
+		return type == 2 ? new Point(y, -x) : new Point(x, y);
 	}
 
 	return {
