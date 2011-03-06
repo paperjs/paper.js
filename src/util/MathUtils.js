@@ -1,13 +1,6 @@
 var MathUtils = new function() {
 	var maxDepth = 53; // MANT_DIGITS: 64 bit: 53 digits, 32 bit: 24 digits
 
-	// Gauss-Legendre Numerical Integration, a Gauss.as port from Singularity:
-	//
-	// Copyright (c) 2006-2007, Jim Armstrong (www.algorithmist.net)
-	// All Rights Reserved.
-	//
-	// Simplified and further optimised by Juerg Lehni.
-
 	var abscissa = [
 		-0.5773502692, 0.5773502692,
 		-0.7745966692, 0.7745966692, 0,
@@ -31,6 +24,11 @@ var MathUtils = new function() {
 	return {
 		EPSILON: Math.pow(2, -maxDepth + 1),
 
+		// Gauss-Legendre Numerical Integration, a Gauss.as port from Singularity:
+		//
+		// Copyright (c) 2006-2007, Jim Armstrong (www.algorithmist.net)
+		// All Rights Reserved.
+
 		gauss: function(f, a, b, n) {
 			n = Math.min(Math.max(n, 2), 8);
 
@@ -42,6 +40,71 @@ var MathUtils = new function() {
 				sum += f(ab2 + mul * abscissa[l + i]) * weight[l + i];
 
 			return mul * sum;
+		},
+
+		// Van Wijngaarden–Dekker–Brent method for root finding
+		brent: function(f, a, b, tol) {
+			var c = b, d = 0, e = 0,
+				fa = f(a),
+				fb = f(b),
+				fc = fb;
+
+			for (var i = 1; i <= 16; i++) {
+				if ((fb > 0.0 && fc > 0.0) || (fb < 0.0 && fc < 0.0)) {
+					c = a;
+					fc = fa;
+					e = d = b - a;
+				}
+				if (Math.abs(fc) < Math.abs(fb)) {
+					a = b;
+					b = c;
+					c = a;
+					fa = fb;
+					fb = fc;
+					fc = fa;
+				}
+				var tol1 = 2 * MathUtils.EPSILON * Math.abs(b) + 0.5 * tol,
+					xm = 0.5 * (c - b);
+				if (Math.abs(xm) <= tol1 || fb == 0.0) {
+					return b;
+				}
+				if (Math.abs(e) >= tol1 && Math.abs(fa) > Math.abs(fb)) {
+					var p, q, r,
+						s = fb / fa;
+					if (a == c) {
+						p = 2.0 * xm * s;
+						q = 1.0 - s;
+					} else {
+						q = fa / fc;
+						r = fb / fc;
+						p = s * (2.0 * xm * q * (q - r) - (b - a) * (r - 1.0));
+						q = (q - 1.0) * (r - 1.0) * (s - 1.0);
+					}
+					if (p > 0.0)
+						q = -q;
+					p = Math.abs(p);
+					var min1 = 3.0 * xm * q - Math.abs(tol1 * q),
+					 	min2 = Math.abs(e * q);
+					if (2.0 * p < (min1 < min2 ? min1 : min2)) {
+						e = d;
+						d = p / q;
+					} else {
+						d = xm;
+						e = d;
+					}
+				} else {
+					d = xm;
+					e = d;
+				}
+				a = b;
+				fa = fb;
+				if (Math.abs(d) > tol1)
+					b += d;
+				else
+					b += xm >= 0.0 ? Math.abs(tol1) : -Math.abs(tol1);
+				fb = f(b);
+			}
+			return b;
 		}
 	}
 };
