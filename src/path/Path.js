@@ -69,46 +69,6 @@ var Path = this.Path = PathItem.extend({
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
 
-	// Calculates arclength of a cubic using adaptive simpson integration.
-	getCurveLength: function(goal) {
-		var seg0 = this._segments[0],
-			seg1 = this._segments[1],
-			z0 = seg0._point,
-			z1 = seg1._point,
-			c0 = z0.add(seg0._handleOut),
-			c1 = z1.add(seg1._handleIn);
-		// TODO: Check for straight lines and handle separately.
-
-		// Calculate the coefficients of a Bezier derivative, divided by 3.
-		var ax = 3 * (c0.x - c1.x) - z0.x + z1.x,
-			bx = 2 * (z0.x + c1.x) - 4 * c0.x,
-			cx = c0.x - z0.x,
-
-			ay = 3 * (c0.y - c1.y) - z0.y + z1.y,
-			by = 2 * (z0.y + c1.y) - 4 * c0.y,
-			cy = c0.y - z0.y;
-
-		function ds(t) {
-			// Calculate quadratic equations of derivatives for x and y
-			var dx = (ax * t + bx) * t + cx,
-				dy = (ay * t + by) * t + cy;
-			return Math.sqrt(dx * dx + dy * dy);
-		}
-
-		var integral = MathUtils.simpson(ds, 0.0, 1.0, MathUtils.EPSILON, 1.0);
-		if (integral == null)
-			throw new Error('Nesting capacity exceeded in Path#getLenght()');
-		// Multiply by 3 again, as derivative was divided by 3
-		var length = 3 * integral;
-		if (goal == undefined || goal < 0 || goal >= length)
-			return length;
-		var result = MathUtils.unsimpson(goal, ds, 0, goal / integral,
-				100 * MathUtils.EPSILON, integral, Math.sqrt(MathUtils.EPSILON), 1);
-		if (!result)
-			throw new Error('Nesting capacity exceeded in computing arctime');
-		return -result.b;
-	},
-
 	_transform: function(matrix, flags) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++) {
