@@ -440,7 +440,7 @@ var Point = this.Point = Base.extend({
 	 */
 	cross: function() {
 		var point = Point.read(arguments);
-		return this.x * point.y - this.y - point.x;
+		return this.x * point.y - this.y * point.x;
 	},
 
 	/**
