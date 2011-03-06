@@ -549,23 +549,29 @@ var Path = this.Path = PathItem.extend({
 				closed= this.closed,
 				bounds = calculateBounds(this, radius);
 
+			function addBevelJoin(curve, t) {
+				var point = curve.getPoint(t),
+					normal = curve.getNormal(t).normalize(radius);
+				bounds = bounds.include(point.add(normal));
+				bounds = bounds.include(point.subtract(normal));
+			}
+
 			function addJoin(segment, join) {
-				var joinBounds,
-					handleIn = segment.getHandleInIfSet(),
+				var handleIn = segment.getHandleInIfSet(),
 					handleOut = segment.getHandleOutIfSet();
 				if (join == 'round' || handleIn && handleOut) {
-					joinBounds = new Rectangle(new Size(width, width))
-							.setCenter(segment._point)
+					bounds = bounds.unite(new Rectangle(new Size(width, width))
+							.setCenter(segment._point));
 				} else {
 					switch (join) {
 					case 'bevel':
-						break;
 					case 'miter':
+						var curve = segment.getCurve();
+						addBevelJoin(curve, 0);
+						addBevelJoin(curve.getPrevious(), 1);
 						break;
 					}
 				}
-				if (joinBounds)
-					bounds = bounds.unite(joinBounds);
 			}
 
 			function addCap(segment, cap, t) {
