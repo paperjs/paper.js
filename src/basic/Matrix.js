@@ -263,8 +263,8 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	concatenate: function(mx) {
-		var m0 = this._m00;
-		var m1 = this._m01;
+		var m0 = this._m00,
+			m1 = this._m01;
 		this._m00 = mx._m00 * m0 + mx._m10 * m1;
 		this._m01 = mx._m01 * m0 + mx._m11 * m1;
 		this._m02 += mx._m02 * m0 + mx._m12 * m1;
@@ -284,8 +284,8 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	preConcatenate: function(mx) {
-		var m0 = this._m00;
-		var m1 = this._m10;
+		var m0 = this._m00,
+			m1 = this._m10;
 		this._m00 = mx._m00 * m0 + mx._m01 * m1;
 		this._m10 = mx._m10 * m0 + mx._m11 * m1;
 
@@ -319,9 +319,9 @@ var Matrix = this.Matrix = Base.extend({
 	 */
 	transform: function(/* point | */ src, srcOff, dst, dstOff, numPts) {
 		if (arguments.length == 5) {
-			var i = srcOff;
-			var j = dstOff;
-			var srcEnd = srcOff + 2 * numPts;
+			var i = srcOff,
+				j = dstOff,
+				srcEnd = srcOff + 2 * numPts;
 			while (i < srcEnd) {
 				var x = src[i++];
 				var y = src[i++];
@@ -470,9 +470,10 @@ var Matrix = this.Matrix = Base.extend({
 		center = Point.read(arguments, 1);
 		if (center) {
 			angle = angle * Math.PI / 180.0;
-			var x = center.x, y = center.y;
-			var cos = Math.cos(angle);
-			var sin = Math.sin(angle);
+			var x = center.x,
+				y = center.y,
+				cos = Math.cos(angle),
+				sin = Math.sin(angle);
 			this.set(cos, sin, -sin, cos,
 					x - x * cos + y * sin,
 					y - x * sin - y * cos);
