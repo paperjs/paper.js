@@ -419,6 +419,15 @@ var Path = this.Path = PathItem.extend({
 	}
 }, new function() { // Inject methods that require scoped privates
 
+	// Add some tolerance for good roots, as t = 0 / 1 are added seperately
+	// anyhow, and we don't want joins to be added with radiuses in
+	// calculateBounds
+	// TODO: Find out about the maximum precision of these calculations.
+	// -32 was chosen arbitrarily.
+	var epsilon = Math.pow(2, -32),
+		tMin = epsilon,
+		tMax = 1 - epsilon;
+
 	function calculateBounds(that, strokeRadius) {
 		// Code ported and further optimised from:
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
@@ -475,7 +484,7 @@ var Path = this.Path = PathItem.extend({
 					    continue;
 					var t = -c / b;
 					// Test for good root and add to bounds if good (same below)
-					if (0 < t && t < 1)
+					if (tMin < t && t < tMax)
 						add(null, t);
 					continue;
 				}
@@ -487,9 +496,9 @@ var Path = this.Path = PathItem.extend({
 					f = 1 / (a * -2),
 				 	t1 = (b - sqrt) * f,
 					t2 = (b + sqrt) * f;
-				if (0 < t1 && t1 < 1)
+				if (tMin < t1 && t1 < tMax)
 					add(null, t1);
-				if (0 < t2 && t2 < 1)
+				if (tMin < t2 && t2 < tMax)
 					add(null, t2);
 			}
 			prev = segment;
@@ -552,9 +561,55 @@ var Path = this.Path = PathItem.extend({
 				radius = width / 2,
 				join = this.getStrokeJoin(),
 				cap = this.getStrokeCap(),
-				miter = this.getMiterLimit();
-			var bounds = calculateBounds(this, radius);
-			// TODO: Handle cap and join
+				miter = this.getMiterLimit(),
+				segments = this._segments,
+				length = segments.length,
+				closed= this.closed,
+				bounds = calculateBounds(this, radius);
+
+			function addJoin(segment, join) {
+				var joinBounds,
+					handleIn = segment.getHandleInIfSet(),
+					handleOut = segment.getHandleOutIfSet();
+				if (join == 'round' || handleIn && handleOut) {
+					joinBounds = new Rectangle(new Size(width, width))
+							.setCenter(segment._point)
+				} else {
+					switch (join) {
+					case 'bevel':
+						break;
+					case 'miter':
+						break;
+					}
+				}
+				if (joinBounds)
+					bounds = bounds.unite(joinBounds);
+			}
+
+			function addCap(segment, cap) {
+				var capBounds;
+				switch (cap) {
+				case 'round':
+					return addJoin(segment, cap);
+				case 'square':
+					break;
+				case 'butt':
+					break;
+				}
+				if (capBounds)
+					bounds = bounds.unite(capBounds);
+			}
+
+			for (var i = 1, l = length - (closed ? 0 : 1); i < l; i++) {
+				addJoin(segments[i], join);
+			}
+			if (closed) {
+				addJoin(segments[0], join);
+			} else {
+				addCap(segments[0], cap);
+				addCap(segments[length - 1], cap);
+			}
+
 			return bounds;
 		},
 
