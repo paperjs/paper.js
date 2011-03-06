@@ -114,12 +114,10 @@ var Curve = this.Curve = Base.extend({
 
 	// Calculates arclength of a cubic using adaptive simpson integration.
 	getLength: function(goal) {
-		var seg0 = this._segment1,
-			seg1 = this._segment2,
-			z0 = seg0._point,
-			z1 = seg1._point,
-			c0 = z0.add(seg0._handleOut),
-			c1 = z1.add(seg1._handleIn);
+		var z0 = this._segment1._point,
+			z1 = this._segment2._point,
+			c0 = z0.add(this._segment1._handleOut),
+			c1 = z1.add(this._segment2._handleIn);
 		// TODO: Check for straight lines and handle separately.
 
 		// Calculate the coefficients of a Bezier derivative, divided by 3.
@@ -151,4 +149,79 @@ var Curve = this.Curve = Base.extend({
 			throw new Error('Nesting capacity exceeded in computing arctime');
 		return -result.b;
 	}
+}, new function() {
+	function evaluate(that, t, type) {
+		// Calculate the polynomial coefficients. caution: handles are relative
+		// to points
+		var point1 = this._segment1._point,
+			handle1 = this._segment1._handleOut,
+			handle2 = this._segment2._handleIn,
+			point2 = this._segment2._point,
+			x, y;
+
+		// Handle special case at beginning / end of curve
+		if (t == 0 || t == 1) {
+			var point;
+			switch (type) {
+			case 0: // point
+				point = t == 0 ? point1 : point2;
+				break;
+			case 1: // tangent
+			case 2: // normal
+				point = t == 0
+					? handle1.isZero()
+						? handle2.isZero()
+							? point2.subtract(point1)
+							: point2.add(handle2).subtract(point1)
+						: handle1
+					: handle2.isZero() // t == 1
+						? handle1.isZero()
+							? point1.subtract(point2)
+							: point1.add(handle1).subtract(point2)
+						: handle2;
+				break;
+			}
+			x = point.x;
+			y = point.y;
+		} else {
+			var dx = point2.x - point1.x,
+				cx = 3 * handle1.x,
+				bx = 3 * (dx + handle2.x - handle1.x) - cx,
+				ax = dx - cx - bx,
+
+				dy = point2.y - point1.y,
+				cy = 3.0 * handle1.y,
+				by = 3.0 * (dy + handle2.y - handle1.y) - cy,
+				ay = dy - cy - by;
+
+			switch (type) {
+			case 0: // point
+				x = ((ax * t + bx) * t + cx) * t + point1.x;
+				y = ((ay * t + by) * t + cy) * t + point1.y;
+				break;
+			case 1: // tangent
+			case 2: // normal
+				// Simply use the derivation of the bezier function for both
+				// the x and y coordinates:
+				x = (3 * ax * t + 2 * bx) * t + cx,
+				y = (3 * ay * t + 2 * by) * t + cy;
+			}
+		}
+		// The normal is simply the rotated tangent:
+		return type == 2 ? new Point(-y, x) : new Point(x, y);
+	}
+
+	return {
+		getPoint: function(parameter) {
+			return evaluate(this, parameter, 0);
+		},
+
+		getTangent: function(parameter) {
+			return evaluate(this, parameter, 1);
+		},
+
+		getNormal: function(parameter) {
+			return evaluate(this, parameter, 2);
+		}
+	};
 });
