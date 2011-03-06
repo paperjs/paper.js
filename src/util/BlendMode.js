@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-BlendMode = {
+var BlendMode = {
 	// TODO: Should we remove the blend modes that are not in Scriptographer?
 	// TODO: Add missing blendmodes like hue / saturation / color / luminosity
 	// TODO: Clean up codespacing of original code, or keep it as is, so 
