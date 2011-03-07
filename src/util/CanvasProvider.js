@@ -1,3 +1,16 @@
+/*
+ * Paper.js
+ *
+ * This file is part of Paper.js, a JavaScript Vector Graphics Library,
+ * based on Scriptographer.org and designed to be largely API compatible.
+ * http://scriptographer.org/
+ *
+ * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * http://lehni.org/ & http://jonathanpuckey.com/
+ *
+ * All rights reserved. See LICENSE file for details.
+ */
+
 // TODO: it might be better to make a ContextProvider class, since you
 // can always find the canvas through context.canvas. This saves code and 
 // speed by not having to do canvas.getContext('2d')
