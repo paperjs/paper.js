@@ -673,7 +673,7 @@ var Path = this.Path = PathItem.extend({
 				+ a * Math.cos(ty) * Math.sin(phi);
 		// Now update the join / round padding, as required by
 		// getBounds() and code below.
-		padding = [Math.abs(x), Math.abs(y)];
+		return [Math.abs(x), Math.abs(y)];
 	}
 
 	return {
@@ -701,7 +701,9 @@ var Path = this.Path = PathItem.extend({
 				segments = this._segments,
 				length = segments.length,
 				closed= this.closed,
-				bounds = getBounds(this, matrix, padding);
+				// It seems to be compatible with Ai we need to pass pen padding
+				// untransformed to getBounds()
+				bounds = getBounds(this, matrix, getPenPadding(radius));
 
 			// Create a rectangle of padding size, used for union with bounds
 			// further down
