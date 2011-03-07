@@ -196,78 +196,36 @@ var Matrix = this.Matrix = Base.extend({
 			+ [this._m00, this._m01, this._m02].join(', ') + '], ['
 		 	+ [this._m10, this._m11, this._m12].join(', ') + ']]';
 	},
-
+	
 	/**
 	 * @return {number} The scaling factor in the x-direction (m00).
 	 */
-	getScaleX: function() {
-		return this._m00;
-	},
-
-	setScaleX: function(scaleX) {
-		this._m00 = scaleX;
-		return this;
-	},
+	// scaleX
 
 	/**
 	 * @return {number} The scaling factor in the y-direction (m11).
 	 */
-	getScaleY: function() {
-		return this._m11;
-	},
-
-	setScaleY: function(scaleY) {
-		this._m11 = scaleY;
-		return this;
-	},
+	// scaleY
 
 	/**
 	 * @return {number} The translation in the x-direction (m02).
 	 */
-	getTranslateX: function() {
-		return this._m02;
-	},
-
-	setTranslateX: function(translateX) {
-		this._m02 = translateX;
-		return this;
-	},
+	// translateX
 
 	/**
 	 * @return {number} The translation in the y-direction (m12).
 	 */
-	getTranslateY: function() {
-		return this._m12;
-	},
-
-	setTranslateY: function(translateY) {
-		this._m12 = translateY;
-		return this;
-	},
+	// translateY
 
 	/**
 	 * @return {number} The shear factor in the x-direction (m01).
 	 */
-	getShearX: function() {
-		return this._m01;
-	},
-
-	setShearX: function(shearX) {
-		this._m01 = shearX;
-		return this;
-	},
+	// shearX
 
 	/**
 	 * @return {number} The shear factor in the y-direction (m10).
 	 */
-	getShearY: function() {
-		return this._m10;
-	},
-
-	setShearY: function(shearY) {
-		this._m10 = shearY;
-		return this;
-	},
+	// shearY
 
 	/**
 	 * Concatenates an affine transform to this transform.
@@ -566,4 +524,21 @@ var Matrix = this.Matrix = Base.extend({
 			return mx.setToRotation.apply(mx, arguments);
 		}
 	}
+}, new function() {
+	return Base.each({
+		scaleX: '_m00',
+		scaleY: '_m11',
+		translateX: '_m02',
+		translateY: '_m12',
+		shearX: '_m01',
+		shearY: '_m10'
+	}, function(prop, name) {
+		name = Base.capitalize(name);
+		this['get' + name] = function() {
+			return this[prop];
+		};
+		this['set' + name] = function(value) {
+			this[prop] = value;
+		};
+	}, { beans: true });
 });
