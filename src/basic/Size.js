@@ -98,7 +98,8 @@ var Size = this.Size = Base.extend({
 		return Size.create(Math.abs(this.width), Math.abs(this.height));
 	},
 
-	dot: function(Size) {
+	dot: function() {
+		var size = Size.read(arguments);
 		return this.width * size.width + this.height * size.height;
 	},
 
