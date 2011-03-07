@@ -212,6 +212,7 @@ var Curve = this.Curve = Base.extend({
 				+ ' }';
 	}
 }, new function() {
+
 	function evaluate(that, t, type) {
 		// Calculate the polynomial coefficients. caution: handles are relative
 		// to points
@@ -269,6 +270,7 @@ var Curve = this.Curve = Base.extend({
 				// the x and y coordinates:
 				x = (3 * ax * t + 2 * bx) * t + cx,
 				y = (3 * ay * t + 2 * by) * t + cy;
+				break;
 			}
 		}
 		// The normal is simply the rotated tangent:
