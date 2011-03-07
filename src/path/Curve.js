@@ -174,7 +174,7 @@ var Curve = this.Curve = Base.extend({
 	getParameter: function(length, t) {
 		var args = this.getCurveValues();
 		args.push(length);
-		args.push(t == undefined ? length < 0 ? 1 : 0 : t);
+		args.push(t === undefined ? length < 0 ? 1 : 0 : t);
 		return Curve.getParameter.apply(Curve, args);
 	},
 
@@ -310,9 +310,9 @@ var Curve = this.Curve = Base.extend({
 
 		statics: {
 			getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, a, b) {
-				if (a == undefined)
+				if (a === undefined)
 					a = 0;
-				if (b == undefined)
+				if (b === undefined)
 					b = 1;
 				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
 					// Straight line

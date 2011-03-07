@@ -101,7 +101,7 @@ var Path = this.Path = PathItem.extend({
 		if (segment._path)
 			segment = new Segment(segment);
 		segment._path = this;
-		if (index == undefined) {
+		if (index === undefined) {
 			this._segments.push(segment);
 		} else {
 			this._segments.splice(index, 0, segment);
