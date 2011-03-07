@@ -341,16 +341,18 @@ var Curve = this.Curve = Base.extend({
 				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
 				// solutions more reliably than with False Position Method.
 				// The precision of 5 iterations seems enough for this
-				// See if we're going backwards and handle case differently
-				var a, b, f,
-					forward = length > 0,
+				var forward = length > 0,
 					// Use integrand to calculate both range length and part
 					// lengths in f(t) below.
 					ds = getLengthIntegrand(
-							p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+							p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y),
+					a, b, f;
+				// See if we're going forward or backward, and handle cases
+				// differently
 				if (forward) { // Normal way
 					a = t;
 					b = 1;
+					// We're moving b to the right to find root for length
 					f = function(t) {
 						return length - Numerical.integrate(ds, a, t, 5);
 					}
@@ -358,6 +360,7 @@ var Curve = this.Curve = Base.extend({
 					a = 0;
 					b = t;
 					length = -length;
+					// We're moving a to the left to find root for length
 					f = function(t) {
 						return length - Numerical.integrate(ds, t, b, 5);
 					}
