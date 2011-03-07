@@ -21,9 +21,9 @@ var Numerical = new function() {
 		-0.9324695142, 0.9324695142, -0.6612093865, 0.6612093865, -0.2386191861, 0.2386191861,
 		-0.9491079123, 0.9491079123, -0.7415311856, 0.7415311856, -0.4058451514, 0.4058451514,  0.0000000000,
 		-0.9602898565, 0.9602898565, -0.7966664774, 0.7966664774, -0.5255324099, 0.5255324099, -0.1834346425, 0.1834346425
-	];
+	],
 
-	var weight = [
+	weight = [
 		1,            1,
 		0.5555555556, 0.5555555556, 0.8888888888,
 		0.3478548451, 0.3478548451, 0.6521451549, 0.6521451549,
@@ -31,7 +31,11 @@ var Numerical = new function() {
 		0.1713244924, 0.1713244924, 0.3607615730, 0.3607615730, 0.4679139346, 0.4679139346,
 		0.1294849662, 0.1294849662, 0.2797053915, 0.2797053915, 0.3818300505, 0.3818300505, 0.4179591837,
 		0.1012285363, 0.1012285363, 0.2223810345, 0.2223810345, 0.3137066459, 0.3137066459, 0.3626837834, 0.3626837834
-	];
+	],
+
+	max = Math.max,
+	min = Math.min,
+	abs = Math.abs;
 
 	return {
 		TOLERANCE: 10e-6,
@@ -43,7 +47,7 @@ var Numerical = new function() {
 		 * All Rights Reserved.
 		 */
 		integrate: function(f, a, b, n) {
-			n = Math.min(Math.max(n, 2), 8);
+			n = min(max(n, 2), 8);
 
 			var l = n == 2 ? 0 : n * (n - 1) / 2 - 1,
 				sum = 0,
@@ -71,7 +75,7 @@ var Numerical = new function() {
 					fc = fa;
 					e = d = b - a;
 				}
-				if (Math.abs(fc) < Math.abs(fb)) {
+				if (abs(fc) < abs(fb)) {
 					a = b;
 					b = c;
 					c = a;
@@ -79,12 +83,12 @@ var Numerical = new function() {
 					fb = fc;
 					fc = fa;
 				}
-				var tol1 = 2 * Number.MIN_VALUE * Math.abs(b) + 0.5 * tol,
+				var tol1 = 2 * Number.MIN_VALUE * abs(b) + 0.5 * tol,
 					xm = 0.5 * (c - b);
-				if (Math.abs(xm) <= tol1 || fb == 0) {
+				if (abs(xm) <= tol1 || fb == 0) {
 					return b;
 				}
-				if (Math.abs(e) >= tol1 && Math.abs(fa) > Math.abs(fb)) {
+				if (abs(e) >= tol1 && abs(fa) > abs(fb)) {
 					var p, q, r,
 						s = fb / fa;
 					if (a == c) {
@@ -98,9 +102,9 @@ var Numerical = new function() {
 					}
 					if (p > 0)
 						q = -q;
-					p = Math.abs(p);
-					var min1 = 3 * xm * q - Math.abs(tol1 * q),
-					 	min2 = Math.abs(e * q);
+					p = abs(p);
+					var min1 = 3 * xm * q - abs(tol1 * q),
+					 	min2 = abs(e * q);
 					if (2 * p < (min1 < min2 ? min1 : min2)) {
 						e = d;
 						d = p / q;
@@ -114,10 +118,10 @@ var Numerical = new function() {
 				}
 				a = b;
 				fa = fb;
-				if (Math.abs(d) > tol1)
+				if (abs(d) > tol1)
 					b += d;
 				else
-					b += xm >= 0 ? Math.abs(tol1) : -Math.abs(tol1);
+					b += xm >= 0 ? abs(tol1) : -abs(tol1);
 				fb = f(b);
 			}
 			return b;

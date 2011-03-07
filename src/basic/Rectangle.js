@@ -246,20 +246,20 @@ var Rectangle = this.Rectangle = Base.extend({
 			// by checking the first character for [R]ight or [L]eft;
 			var xFirst = /^[RL]/.test(key);
 			// Rename Center to CenterX or CenterY:
-			if (index >= 4) parts[1] += xFirst ? 'Y' : 'X';
-			var xIndex = xFirst ? 0 : 1,
-				yIndex = xFirst ? 1 : 0,
-				getX = 'get' + parts[xIndex],
-				getY = 'get' + parts[yIndex],
-				setX = 'set' + parts[xIndex],
-				setY = 'set' + parts[yIndex];
+			if (index >= 4)
+				parts[1] += xFirst ? 'Y' : 'X';
+			var x = parts[xFirst ? 0 : 1],
+				y = parts[xFirst ? 1 : 0],
+				getX = 'get' + x,
+				getY = 'get' + y,
+				setX = 'set' + x,
+				setY = 'set' + y;
 			this['get' + key] = function() {
 				return Point.create(this[getX](), this[getY]());
 			};
 			this['set' + key] = function(value) {
 				var pt = Point.read(arguments);
-				return this[setX](pt.x) // Note: chaining here!
-						   [setY](pt.y);
+				return this[setX](pt.x)[setY](pt.y); // Note: chaining here!
 			};
 		}, { beans: true });
 });

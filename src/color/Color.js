@@ -29,9 +29,8 @@ var Color = this.Color = Base.extend({
 	},
 
 	setAlpha: function(alpha) {
-		if (alpha < 0) this._alpha = 0;
-		else if (alpha > 1) this._alpha = 1;
-		else this._alpha = alpha;
+		this._alpha = Math.min(Math.max(alpha, 0), 1);
+		this._alpha = alpha < 0 ? 0 : alpha > 1 ? 1 : alpha;
 		this._cssString = null;
 	},
 
@@ -49,9 +48,14 @@ var Color = this.Color = Base.extend({
 	}
 }, new function() {
 	function colorToHsb(color) {
-		var r = color.getRed(), g = color.getGreen(), b = color.getBlue(),
-			max = Math.max(r, g, b), min = Math.min(r, g, b),
-			delta = max - min, hue, saturation = (max != 0) ? delta / max : 0,
+		var r = color.getRed(),
+			g = color.getGreen(),
+			b = color.getBlue(),
+			max = Math.max(r, g, b)
+			min = Math.min(r, g, b),
+			delta = max - min,
+			hue,
+			saturation = (max != 0) ? delta / max : 0,
 			brightness = max;
 		if (saturation == 0) {
 			hue = 0;
@@ -59,19 +63,24 @@ var Color = this.Color = Base.extend({
 			var rr = (max - r) / delta,
 				gr = (max - g) / delta,
 				br = (max - b) / delta;
-			if (r == max) hue = br - gr;
-			else if (g == max) hue = 2 + rr - br;
-			else hue = 4 + gr - rr;
+			hue = r == max
+				? br - gr
+				: g == max
+					? 2 + rr - br
+					: 4 + gr - rr;
 			hue /= 6;
-			if (hue < 0) hue++;
+			if (hue < 0)
+				hue++;
 		}
-		return [hue * 360, saturation, brightness ];
+		return [hue * 360, saturation, brightness];
 	}
 
 	function hsbToRgb(hue, saturation, brightness) {
-		if(hue < 0) hue += 360;
+		if (hue < 0)
+			hue += 360;
 		hue = hue % 360;
-		var f = hue % 60, p = (brightness * (1 - saturation)) / 1,
+		var f = hue % 60,
+			p = (brightness * (1 - saturation)) / 1,
 			q = (brightness * (60 - saturation * f)) / 60,
 			t = (brightness * (60 - saturation * (60 - f))) / 60;
 		switch (Math.floor(hue / 60)) {
