@@ -151,8 +151,13 @@ var Curve = this.Curve = Base.extend({
 		];
 	},
 
-	getLength: function() {
-		return Curve.getLength.apply(Curve, this.getCurveValues());
+	// TODO: Port back to Scriptographer, optionally suppporting from, to
+	// TODO: Replaces getPartLength(fromParameter, toParameter)?
+	getLength: function(from, to) {
+		var values = this.getCurveValues();
+		if (arguments.length > 0)
+			values.push(from, to);
+		return Curve.getLength.apply(Curve, values);
 	},
 
 	/**
@@ -190,7 +195,6 @@ var Curve = this.Curve = Base.extend({
 
 	// TODO: divide
 	// TODO: split
-	// TODO: getPartLength(fromParameter, toParameter)
 
 	clone: function() {
 		return new Curve(this._segment1, this._segment2);
@@ -204,91 +208,6 @@ var Curve = this.Curve = Base.extend({
 					? ', handle2: ' + this._segment2._handleIn : '')
 				+ ', point2: ' + this._segment2._point
 				+ ' }';
-	},
-
-	statics: {
-		getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
-			if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
-				// Straight line
-				var dx = p2x - p1x,
-					dy = p2y - p1y;
-				return Math.sqrt(dx * dx + dy * dy);
-			}
-
-			// Calculate the coefficients of a Bezier derivative.
-			var ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
-				bx = 6 * (p1x + c2x) - 12 * c1x,
-				cx = 3 * (c1x - p1x),
-
-				ay = 9 * (c1y - c2y) + 3 * (p2y - p1y),
-				by = 6 * (p1y + c2y) - 12 * c1y,
-				cy = 3 * (c1y - p1y);
-
-			function ds(t) {
-				// Calculate quadratic equations of derivatives for x and y
-				var dx = (ax * t + bx) * t + cx,
-					dy = (ay * t + by) * t + cy;
-				return Math.sqrt(dx * dx + dy * dy);
-			}
-
-			return Numerical.gauss(ds, 0.0, 1.0, 8);
-		},
-
-		subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
-			var u = 1 - t,
-				// Interpolate from 4 to 3 points
-				p3x = u * p1x + t * c1x,
-				p3y = u * p1y + t * c1y,
-				p4x = u * c1x + t * c2x,
-				p4y = u * c1y + t * c2y,
-				p5x = u * c2x + t * p2x,
-				p5y = u * c2y + t * p2y,
-				// Interpolate from 3 to 2 points
-				p6x = u * p3x + t * p4x,
-				p6y = u * p3y + t * p4y,
-				p7x = u * p4x + t * p5x,
-				p7y = u * p4y + t * p5y,
-				// Interpolate from 2 points to 1 point
-				p8x = u * p6x + t * p7x,
-				p8y = u * p6y + t * p7y;
-			// We now have all the values we need to build the subcurves
-			return [
-				[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
-				[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
-			];
-		},
-
-		getPartLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t, right) {
-			if (t == 0)
-				return 0;
-			var part;
-			if (t < 1) {
-				part = Curve.subdivide(p1x, p1y, c1x, c1y, c2x, c2y,
-						p2x, p2y, t)[right ? 1 : 0];
-			} else {
-				part = arguments;
-			}
-			return Curve.getLength.apply(Curve, part);
-		},
-
-		getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, length) {
-			if (length <= 0)
-				return 0;
-			var bezierLength = Curve.getLength(
-					p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
-			if (length >= bezierLength)
-				return 1;
-			// Let's use the Van Wijngaarden–Dekker–Brent Method to find
-			// solutions more reliably than with False Position Method.
-			function f(t) {
-				return length - Curve.getPartLength(
-						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t);
-			}
-			// Use length / bezierLength for an initial guess for b, to bring
-			// us closer:
-			return Numerical.brent(f, 0, length / bezierLength,
-					Numerical.TOLERANCE);
-		}
 	}
 }, new function() {
 	function evaluate(that, t, type) {
@@ -356,6 +275,24 @@ var Curve = this.Curve = Base.extend({
 		return type == 2 ? new Point(y, -x) : new Point(x, y);
 	}
 
+	function getLengthIntegrand(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+		// Calculate the coefficients of a Bezier derivative.
+		var ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
+			bx = 6 * (p1x + c2x) - 12 * c1x,
+			cx = 3 * (c1x - p1x),
+
+			ay = 9 * (c1y - c2y) + 3 * (p2y - p1y),
+			by = 6 * (p1y + c2y) - 12 * c1y,
+			cy = 3 * (c1y - p1y);
+
+		return function(t) {
+			// Calculate quadratic equations of derivatives for x and y
+			var dx = (ax * t + bx) * t + cx,
+				dy = (ay * t + by) * t + cy;
+			return Math.sqrt(dx * dx + dy * dy);
+		}
+	}
+
 	return {
 		getPoint: function(parameter) {
 			return evaluate(this, parameter, 0);
@@ -367,6 +304,71 @@ var Curve = this.Curve = Base.extend({
 
 		getNormal: function(parameter) {
 			return evaluate(this, parameter, 2);
+		},
+
+		statics: {
+			getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, a, b) {
+				if (a == undefined)
+					a = 0;
+				if (b == undefined)
+					b = 1;
+				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
+					// Straight line
+					var mul = (b - a),
+						dx = (p2x - p1x) * mul,
+						dy = (p2y - p1y) * mul;
+					return Math.sqrt(dx * dx + dy * dy);
+				}
+				var ds = getLengthIntegrand(
+						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+				return Numerical.gauss(ds, a, b, 8);
+			},
+
+			getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
+					length) {
+				if (length <= 0)
+					return 0;
+				// TODO: Optimise for straight lines
+				var bezierLength = Curve.getLength(
+						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, 0, 1);
+				if (length >= bezierLength)
+					return 1;
+				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
+				// solutions more reliably than with False Position Method.
+				var ds = getLengthIntegrand(
+						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+				function f(t) {
+					return length - Numerical.gauss(ds, 0, t, 5);
+				}
+				// Use length / bezierLength for an initial guess for b, to
+				// bring us closer:
+				return Numerical.brent(f, 0, length / bezierLength,
+						Numerical.TOLERANCE);
+			},
+
+			subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
+				var u = 1 - t,
+					// Interpolate from 4 to 3 points
+					p3x = u * p1x + t * c1x,
+					p3y = u * p1y + t * c1y,
+					p4x = u * c1x + t * c2x,
+					p4y = u * c1y + t * c2y,
+					p5x = u * c2x + t * p2x,
+					p5y = u * c2y + t * p2y,
+					// Interpolate from 3 to 2 points
+					p6x = u * p3x + t * p4x,
+					p6y = u * p3y + t * p4y,
+					p7x = u * p4x + t * p5x,
+					p7y = u * p4y + t * p5y,
+					// Interpolate from 2 points to 1 point
+					p8x = u * p6x + t * p7x,
+					p8y = u * p6y + t * p7y;
+				// We now have all the values we need to build the subcurves
+				return [
+					[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
+					[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
+				];
+			}
 		}
 	};
 });
