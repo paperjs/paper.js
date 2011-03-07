@@ -172,8 +172,9 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	getParameter: function(length) {
-		return Curve.getParameter.apply(Curve,
-				this.getCurveValues().concat(length));
+		var values = this.getCurveValues();
+		values.push(length)
+		return Curve.getParameter.apply(Curve, values);
 	},
 
 	// TODO: getParameter(point, precision)
