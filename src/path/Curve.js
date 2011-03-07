@@ -328,16 +328,23 @@ var Curve = this.Curve = Base.extend({
 					length) {
 				if (length <= 0)
 					return 0;
-				// TODO: Optimise for straight lines
-				var bezierLength = Curve.getLength(
-						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, 0, 1);
-				if (length >= bezierLength)
-					return 1;
+				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
+					// Straight line, calculate directly
+					var dx = p2x - p1x,
+						dy = p2y - p1y;
+					return Math.min(length / Math.sqrt(dx * dx + dy * dy), 1);
+				}
 				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
 				// solutions more reliably than with False Position Method.
 				var ds = getLengthIntegrand(
 						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+				// Use integrand both to calculate total length and part lengths
+				// in f(t) below.
+				var bezierLength = Numerical.gauss(ds, 0, 1, 8);
+				if (length >= bezierLength)
+					return 1;
 				function f(t) {
+					// The precision of 5 iterations seems enough for this
 					return length - Numerical.gauss(ds, 0, t, 5);
 				}
 				// Use length / bezierLength for an initial guess for b, to
