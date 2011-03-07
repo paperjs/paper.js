@@ -314,10 +314,9 @@ var Curve = this.Curve = Base.extend({
 					b = 1;
 				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
 					// Straight line
-					var mul = (b - a),
-						dx = (p2x - p1x) * mul,
-						dy = (p2y - p1y) * mul;
-					return Math.sqrt(dx * dx + dy * dy);
+					var dx = p2x - p1x,
+						dy = p2y - p1y;
+					return Math.sqrt(dx * dx + dy * dy) * (b - a);
 				}
 				var ds = getLengthIntegrand(
 						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
