@@ -374,7 +374,7 @@ var Curve = this.Curve = Base.extend({
 				return Numerical.findRoot(f,
 						forward ? a : b - guess, // a
 						forward ? a + guess : b, // b
-						Numerical.TOLERANCE);
+						16, Numerical.TOLERANCE);
 			},
 
 			subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {

@@ -59,13 +59,13 @@ var Numerical = new function() {
 		 * Van Wijngaarden–Dekker–Brent method for root finding, implementation
 		 * based on Numerical Recipes in C
 		 */
-		findRoot: function(f, a, b, tol) {
+		findRoot: function(f, a, b, n, tol) {
 			var c = b, d = 0, e = 0,
 				fa = f(a),
 				fb = f(b),
 				fc = fb;
 
-			for (var i = 1; i <= 64; i++) {
+			for (var i = 0; i < n; i++) {
 				if ((fb > 0 && fc > 0) || (fb < 0 && fc < 0)) {
 					c = a;
 					fc = fa;
