@@ -42,7 +42,7 @@ var Numerical = new function() {
 		 * Copyright (c) 2006-2007, Jim Armstrong (www.algorithmist.net)
 		 * All Rights Reserved.
 		 */
-		gauss: function(f, a, b, n) {
+		integrate: function(f, a, b, n) {
 			n = Math.min(Math.max(n, 2), 8);
 
 			var l = n == 2 ? 0 : n * (n - 1) / 2 - 1,
@@ -59,7 +59,7 @@ var Numerical = new function() {
 		 * Van Wijngaarden–Dekker–Brent method for root finding, implementation
 		 * based on Numerical Recipes in C
 		 */
-		brent: function(f, a, b, tol) {
+		findRoot: function(f, a, b, tol) {
 			var c = b, d = 0, e = 0,
 				fa = f(a),
 				fb = f(b),

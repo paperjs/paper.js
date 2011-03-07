@@ -15,7 +15,7 @@ var PaperScript = new function() {
 //TODO: Make sure there are all the correct copyrights for the inlined parse-js:
 //#include "../../lib/parse-js-min.js"
 
-	// Handle Math Operators
+	// Math Operators
 
 	var operators = {
 		'+': 'add',
@@ -46,7 +46,7 @@ var PaperScript = new function() {
 		}
 	};
 
-	// Handle Sign Operators
+	// Sign Operators
 
 	var signOperators = {
 		'-': 'negate'
@@ -150,7 +150,8 @@ var PaperScript = new function() {
 //#ifdef BROWSER
 	// Code borrowed from Coffee Script:
 	function load(url) {
-		var xhr = new (window.ActiveXObject || XMLHttpRequest)('Microsoft.XMLHTTP');
+		var xhr = new (window.ActiveXObject
+				|| XMLHttpRequest)('Microsoft.XMLHTTP');
 		xhr.open('GET', url, true);
 		if ('overrideMimeType' in xhr) {
 			xhr.overrideMimeType('text/plain');
@@ -169,8 +170,8 @@ var PaperScript = new function() {
 			for (var i = 0, l = scripts.length; i < l; i++) {
 				var script = scripts[i];
 				if (script.type === 'text/paperscript') {
-					// If a canvas id is provided, create a document for it now, so
-					// the active document is defined.
+					// If a canvas id is provided, create a document for it now,
+					// so the active document is defined.
 					var canvas = script.getAttribute('canvas');
 					if (canvas && (canvas = document.getElementById(canvas))) {
 						new Document(canvas);

@@ -321,7 +321,7 @@ var Curve = this.Curve = Base.extend({
 				}
 				var ds = getLengthIntegrand(
 						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
-				return Numerical.gauss(ds, a, b, 8);
+				return Numerical.integrate(ds, a, b, 8);
 			},
 
 			getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
@@ -339,18 +339,18 @@ var Curve = this.Curve = Base.extend({
 						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
 				// Use integrand both to calculate total length and part lengths
 				// in f(t) below.
-				var bezierLength = Numerical.gauss(ds, 0, 1, 8);
+				var bezierLength = Numerical.integrate(ds, 0, 1, 8);
 				if (length >= bezierLength)
 					return 1;
 				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
 				// solutions more reliably than with False Position Method.
 				function f(t) {
 					// The precision of 5 iterations seems enough for this
-					return length - Numerical.gauss(ds, 0, t, 5);
+					return length - Numerical.integrate(ds, 0, t, 5);
 				}
 				// Use length / bezierLength for an initial guess for b, to
 				// bring us closer:
-				return Numerical.brent(f, 0, length / bezierLength,
+				return Numerical.findRoot(f, 0, length / bezierLength,
 						Numerical.TOLERANCE);
 			},
 
