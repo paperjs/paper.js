@@ -261,13 +261,14 @@ var Curve = this.Curve = Base.extend({
 		getPartLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t, right) {
 			if (t == 0)
 				return 0;
+			var part;
 			if (t < 1) {
-				curve = Curve.subdivide(p1x, p1y, c1x, c1y, c2x, c2y,
+				part = Curve.subdivide(p1x, p1y, c1x, c1y, c2x, c2y,
 						p2x, p2y, t)[right ? 1 : 0];
 			} else {
-				curve = arguments;
+				part = arguments;
 			}
-			return Curve.getLength.apply(Curve, curve);
+			return Curve.getLength.apply(Curve, part);
 		},
 
 		getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, length) {
@@ -280,8 +281,8 @@ var Curve = this.Curve = Base.extend({
 			// Let's use the Van Wijngaarden–Dekker–Brent Method to find
 			// solutions more reliably than with False Position Method.
 			function f(t) {
-				return Curve.getPartLength(
-						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) - length;
+				return length - Curve.getPartLength(
+						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t);
 			}
 			// Use length / bezierLength for an initial guess for b, to bring
 			// us closer:
