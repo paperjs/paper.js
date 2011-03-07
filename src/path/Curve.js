@@ -208,7 +208,12 @@ var Curve = this.Curve = Base.extend({
 
 	statics: {
 		getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
-			// TODO: Check for straight lines and handle separately.
+			if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
+				// Straight line
+				var dx = p2x - p1x,
+					dy = p2y - p1y;
+				return Math.sqrt(dx * dx + dy * dy);
+			}
 
 			// Calculate the coefficients of a Bezier derivative.
 			var ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
@@ -327,8 +332,8 @@ var Curve = this.Curve = Base.extend({
 				ax = dx - cx - bx,
 
 				dy = point2.y - point1.y,
-				cy = 3.0 * handle1.y,
-				by = 3.0 * (dy + handle2.y - handle1.y) - cy,
+				cy = 3 * handle1.y,
+				by = 3 * (dy + handle2.y - handle1.y) - cy,
 				ay = dy - cy - by;
 
 			switch (type) {
