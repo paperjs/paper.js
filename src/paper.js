@@ -1,3 +1,20 @@
+/*
+ * Paper.js
+ *
+ * A JavaScript Vector Graphics Library, based on Scriptographer.org and
+ * designed to be largely API compatible.
+ * http://paperjs.org/
+ * http://scriptographer.org/
+ *
+ * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * http://lehni.org/ & http://jonathanpuckey.com/
+ *
+ * All rights reserved.
+ *
+ * Bootstrap is released under the MIT license.
+ * See LICENSE file for details.
+ */
+
 var paper = new function() {
 
 this.document = null;
@@ -41,6 +58,7 @@ Base.inject({
 //#include "basic/Size.js"
 //#include "basic/Rectangle.js"
 //#include "basic/Matrix.js"
+//#include "basic/Line.js"
 
 //#include "document/DocumentView.js"
 //#include "document/Document.js"
@@ -71,6 +89,7 @@ Base.inject({
 //#include "tool/ToolHandler.js"
 //#include "tool/Tool.js"
 
+//#include "util/BlendMode.js"
 //#include "util/CanvasProvider.js"
 //#include "util/Events.js"
 //#include "util/Numerical.js"
