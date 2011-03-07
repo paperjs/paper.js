@@ -142,6 +142,7 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 		setRed: function(red) {
 			this._cssString = null;
 			this._red = red;
+			return this;
 		},
 
 		/**
@@ -155,6 +156,7 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 		setGreen: function(green) {
 			this._cssString = null;
 			this._green = green;
+			return this;
 		},
 
 		/**
@@ -168,6 +170,7 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 		setBlue: function(blue) {
 			this._cssString = null;
 			this._blue = blue;
+			return this;
 		},
 
 		getGray: function() {
@@ -182,6 +185,7 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 		setGray: function(gray) {
 			this._cssString = null;
 			this._red = this._green = this._blue = 1 - gray;
+			return this;
 		},
 
 		/**

@@ -45,6 +45,7 @@ var GrayColor = this.GrayColor = Color.extend({
 	setGray: function(gray) {
 		this._cssString = null;
 		this._gray = gray;
+		return this;
 	},
 
 	/**
@@ -90,6 +91,7 @@ var GrayColor = this.GrayColor = Color.extend({
 			this['set' + Base.capitalize(key)] = function(value) {
 				this._cssString = null;
 				this._gray = this._gray * (1 - weight) + weight * (1 - value);
+				return this;
 			};
 		}, { beans: true });
 });
