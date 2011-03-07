@@ -192,28 +192,28 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	intersect: function() {
 		var rect = Rectangle.read(arguments);
-		var x1 = Math.max(this.x, rect.x);
-		var y1 = Math.max(this.y, rect.y);
-		var x2 = Math.min(this.x + this.width, rect.x + rect.width);
-		var y2 = Math.min(this.y + this.height, rect.y + rect.height);
+			x1 = Math.max(this.x, rect.x),
+			y1 = Math.max(this.y, rect.y),
+			x2 = Math.min(this.x + this.width, rect.x + rect.width),
+			y2 = Math.min(this.y + this.height, rect.y + rect.height);
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	unite: function() {
-		var rect = Rectangle.read(arguments);
-		var x1 = Math.min(this.x, rect.x);
-		var y1 = Math.min(this.y, rect.y);
-		var x2 = Math.max(this.x + this.width, rect.x + rect.width);
-		var y2 = Math.max(this.y + this.height, rect.y + rect.height);
+		var rect = Rectangle.read(arguments),
+			x1 = Math.min(this.x, rect.x),
+			y1 = Math.min(this.y, rect.y),
+			x2 = Math.max(this.x + this.width, rect.x + rect.width),
+			y2 = Math.max(this.y + this.height, rect.y + rect.height);
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	include: function() {
-		var point = Point.read(arguments);
-		var x1 = Math.min(this.x, point.x);
-		var y1 = Math.min(this.y, point.y);
-		var x2 = Math.max(this.x + this.width, point.x);
-		var y2 = Math.max(this.y + this.height, point.y);
+		var point = Point.read(arguments),
+			x1 = Math.min(this.x, point.x),
+			y1 = Math.min(this.y, point.y),
+			x2 = Math.max(this.x + this.width, point.x),
+			y2 = Math.max(this.y + this.height, point.y);
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
@@ -232,30 +232,34 @@ var Rectangle = this.Rectangle = Base.extend({
 		}
 	}
 }, new function() {
-	var keys = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
-		'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'];
+	var keys = [
+		['Top', 'Left'], ['Top', 'Right'],
+		['Bottom', 'Left'], ['Bottom', 'Right'],
+		['Left', 'Center'], ['Top', 'Center'],
+		['Right', 'Center'], ['Bottom', 'Center']
+	];
 	
 	return Base.each(keys,
-		function(key, index) {
-			// Split the string into words:
-			var parts = key.split(/(?=[A-Z])/);
+		function(parts, index) {
+			var key = parts.join('');
 			// find out if the first of the pair is an x or y property,
 			// by checking the first character for [R]ight or [L]eft;
 			var xFirst = /^[RL]/.test(key);
 			// Rename Center to CenterX or CenterY:
 			if (index >= 4) parts[1] += xFirst ? 'Y' : 'X';
-			// If the y property comes first, reverse the array:
-			if (!xFirst) parts.reverse();
+			var xIndex = xFirst ? 0 : 1,
+				yIndex = xFirst ? 1 : 0,
+				getX = 'get' + parts[xIndex],
+				getY = 'get' + parts[yIndex],
+				setX = 'set' + parts[xIndex],
+				setY = 'set' + parts[yIndex];
 			this['get' + key] = function() {
-				return Point.create(
-					this['get' + parts[0]](),
-					this['get' + parts[1]]()
-				);
+				return Point.create(this[getX](), this[getY]());
 			};
 			this['set' + key] = function(value) {
 				var pt = Point.read(arguments);
-				return this['set' + parts[0]](pt.x) // Note: chaining here!
-						   ['set' + parts[1]](pt.y);
+				return this[setX](pt.x) // Note: chaining here!
+						   [setY](pt.y);
 			};
 		}, { beans: true });
 });
