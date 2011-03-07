@@ -171,9 +171,10 @@ var Curve = this.Curve = Base.extend({
 				&& this._segment2._handleIn.isZero();
 	},
 
-	getParameter: function(length) {
+	// TODO: Port support for start parameter back to Scriptographer
+	getParameter: function(length, start) {
 		var args = this.getCurveValues();
-		args.push(length)
+		args.push(length, start !== undefined ? start : length < 0 ? 1 : 0);
 		return Curve.getParameter.apply(Curve, args);
 	},
 
@@ -309,15 +310,15 @@ var Curve = this.Curve = Base.extend({
 
 		statics: {
 			getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, a, b) {
-				if (a == undefined)
+				if (a === undefined)
 					a = 0;
-				if (b == undefined)
+				if (b === undefined)
 					b = 1;
 				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
 					// Straight line
 					var dx = p2x - p1x,
 						dy = p2y - p1y;
-					return Math.sqrt(dx * dx + dy * dy) * (b - a);
+					return (b - a) * Math.sqrt(dx * dx + dy * dy);
 				}
 				var ds = getLengthIntegrand(
 						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
@@ -325,33 +326,55 @@ var Curve = this.Curve = Base.extend({
 			},
 
 			getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
-					length) {
-				if (length <= 0)
-					return 0;
+					length, start) {
+				if (length == 0) {
+					return start;
+				}
 				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
 					// Straight line, calculate directly
 					// t = length / lineLength:
 					var dx = p2x - p1x,
 						dy = p2y - p1y;
-					return Math.min(length / Math.sqrt(dx * dx + dy * dy), 1);
+					return Math.max(Math.min(start
+							+ length / Math.sqrt(dx * dx + dy * dy), 0, 1));
 				}
-				var ds = getLengthIntegrand(
-						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
-				// Use integrand both to calculate total length and part lengths
-				// in f(t) below.
-				var bezierLength = Numerical.integrate(ds, 0, 1, 8);
-				if (length >= bezierLength)
-					return 1;
 				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
 				// solutions more reliably than with False Position Method.
-				function f(t) {
-					// The precision of 5 iterations seems enough for this
-					return length - Numerical.integrate(ds, 0, t, 5);
+				// The precision of 5 iterations seems enough for this
+				var forward = length > 0,
+					// Use integrand to calculate both range length and part
+					// lengths in f(t) below.
+					ds = getLengthIntegrand(
+							p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y),
+					a, b, f;
+				// See if we're going forward or backward, and handle cases
+				// differently
+				if (forward) { // Normal way
+					a = start;
+					b = 1;
+					// We're moving b to the right to find root for length
+					f = function(t) {
+						return length - Numerical.integrate(ds, a, t, 5);
+					}
+				} else { // Going backwards
+					a = 0;
+					b = start;
+					length = -length;
+					// We're moving a to the left to find root for length
+					f = function(t) {
+						return length - Numerical.integrate(ds, t, b, 5);
+					}
 				}
-				// Use length / bezierLength for an initial guess for b, to
+				var rangeLength = Numerical.integrate(ds, a, b, 8);
+				if (length >= rangeLength)
+					return forward ? b : a;
+				// Use length / rangeLength for an initial guess for t, to
 				// bring us closer:
-				return Numerical.findRoot(f, 0, length / bezierLength,
-						Numerical.TOLERANCE);
+				var guess = length / rangeLength;
+				return Numerical.findRoot(f,
+						forward ? a : b - guess, // a
+						forward ? a + guess : b, // b
+						16, Numerical.TOLERANCE);
 			},
 
 			subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
