@@ -147,7 +147,7 @@ var Segment = this.Segment = Base.extend({
 			// If a matrix is defined, only transform handles if they are set.
 			// This saves some computation time. If no matrix is set, always
 			// use the real handles, as we just want to receive a filled 
-			// coords array for _calculateBounds().
+			// coords array for getBounds().
 			handleIn =  matrix && this.getHandleInIfSet() || this._handleIn,
 			handleOut = matrix && this.getHandleOutIfSet() || this._handleOut,
 			x = point.x,

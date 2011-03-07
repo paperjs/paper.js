@@ -37,7 +37,6 @@ Base.inject({
 	}
 });
 
-
 //#include "basic/Point.js"
 //#include "basic/Size.js"
 //#include "basic/Rectangle.js"

@@ -177,105 +177,6 @@ var Path = this.Path = PathItem.extend({
 	}
 }, new function() { // Inject methods that require scoped privates
 
-	// Add some tolerance for good roots, as t = 0 / 1 are added seperately
-	// anyhow, and we don't want joins to be added with radiuses in
-	// calculateBounds
-	var epsilon = 10e-6,
-		tMin = epsilon,
-		tMax = 1 - epsilon;
-
-	function calculateBounds(that, matrix, strokePadding) {
-		// Code ported and further optimised from:
-		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-		var segments = that._segments,
-			first = segments[0];
-		if (!first)
-			return null;
-		var coords = new Array(6),
-			prevCoords = new Array(6);
-		// Make coordinates for first segment available in prevCoords.
-		if (matrix && matrix.isIdentity())
-			matrix = null;
-		first._transformCoordinates(matrix, prevCoords, false);
-		var min = prevCoords.slice(0, 2),
-			max = min.slice(0); // clone
-		function processSegment(segment) {
-			segment._transformCoordinates(matrix, coords, false);
-
-			for (var i = 0; i < 2; i++) {
-				var v0 = prevCoords[i], // prev.point
-					v1 = prevCoords[i + 4], // prev.handleOut
-					v2 = coords[i + 2], // segment.handleIn
-					v3 = coords[i]; // segment.point
-
-				function add(value, t) {
-					var padding = 0;
-					if (value == null) {
-						// Calculate bezier polynomial at t
-						var u = 1 - t;
-						value = u * u * u * v0
-								+ 3 * u * u * t * v1
-								+ 3 * u * t * t * v2
-								+ t * t * t * v3;
-						// Only add strokeWidth to bounds for points which lie
-						// within 0 < t < 1. The corner cases for cap and join
-						// are handled in getStrokeBounds()
-						padding = strokePadding ? strokePadding[i] : 0;
-					}
-					var left = value - padding,
-						right = value + padding;
-					if (left < min[i])
-						min[i] = left;
-					if (right > max[i])
-						max[i] = right;
-					
-				}
-				add(v3, null);
-
-				// Calculate derivative of our bezier polynomial, divided by 3.
-				// Dividing by 3 allows for simpler calculations of a, b, c and
-				// leads to the same quadratic roots below.
-				var a = 3 * (v1 - v2) - v0 + v3,
-					b = 2 * (v0 + v2) - 4 * v1,
-					c = v1 - v0;
-
-				// Solve for derivative for quadratic roots. Each good root
-				// (meaning a solution 0 < t < 1) is an extrema in the cubic
-				// polynomial and thus a potential point defining the bounds
-				if (a == 0) {
-					if (b == 0)
-					    continue;
-					var t = -c / b;
-					// Test for good root and add to bounds if good (same below)
-					if (tMin < t && t < tMax)
-						add(null, t);
-					continue;
-				}
-
-				var b2ac = b * b - 4 * a * c;
-				if (b2ac < 0)
-					continue;
-				var sqrt = Math.sqrt(b2ac),
-					f = 1 / (a * -2),
-				 	t1 = (b - sqrt) * f,
-					t2 = (b + sqrt) * f;
-				if (tMin < t1 && t1 < tMax)
-					add(null, t1);
-				if (tMin < t2 && t2 < tMax)
-					add(null, t2);
-			}
-			// Swap coordinate buffers
-			var tmp = prevCoords;
-			prevCoords = coords;
-			coords = tmp;
-		}
-		for (var i = 1, l = segments.length; i < l; i++)
-			processSegment(segments[i]);
-		if (that.closed)
-			processSegment(first);
-	    return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
-	}
-
 	/**
 	 * Solves a tri-diagonal system for one of coordinates (x or y) of first
 	 * bezier control points.
@@ -310,165 +211,6 @@ var Path = this.Path = PathItem.extend({
 	};
 
 	return {
-		beans: true,
-
-		/**
-		 * The bounding rectangle of the item excluding stroke width.
-		 */
-		getBounds: function(matrix) {
-			return calculateBounds(this, matrix);
-		},
-
-		/**
-		 * The bounding rectangle of the item including stroke width.
-		 */
-		getStrokeBounds: function(matrix) {
-			var width = this.getStrokeWidth(),
-				radius = width / 2,
-				padding = [radius, radius],
-				join = this.getStrokeJoin(),
-				cap = this.getStrokeCap(),
-				// miter is relative to width. Divide it by 2 since we're
-				// measuring half the distance below
-				miter = this.getMiterLimit() * width / 2,
-				segments = this._segments,
-				length = segments.length,
-				closed= this.closed,
-				bounds = calculateBounds(this, matrix, padding);
-
-			// If a matrix is provided, we need to rotate the stroke circle
-			// and calculate the bounding box of the resulting rotated elipse:
-			if (matrix) {
-				// Get rotated hor and ver vectors, and determine rotation angle
-				// and elipse values from them:
-				var mx = matrix.createShiftless(),
-					hor = mx.transform(new Point(radius, 0)),
-					ver = mx.transform(new Point(0, radius)),
-					phi = hor.getAngleInRadians(),
-					a = hor.getLength(),
-					b = ver.getLength();
-				// Formula for rotated ellipses:
-				// x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-				// y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-				// Derivates (by Wolfram Alpha):
-				// derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-				// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
-				// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-				// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
-				// this can be simplified to:
-				// tan(t) = -b * tan(phi) / a // x
-				// tan(t) = b * cot(phi) / a // y
-				// Solving for t gives:
-				// t = pi * n - arctan(b tan(phi)) // x
-				// t = pi * n + arctan(b cot(phi)) // y
-				var tx = - Math.atan(b * Math.tan(phi)),
-					ty = + Math.atan(b / Math.tan(phi)),
-					// Due to symetry, we don't need to cycle through pi * n
-					// solutions:
-					x = a * Math.cos(tx) * Math.cos(phi)
-						- b * Math.sin(tx) * Math.sin(phi),
-					y = b * Math.sin(ty) * Math.cos(phi)
-						+ a * Math.cos(ty) * Math.sin(phi);
-				// Now update the join / round padding, as required by
-				// calculateBounds() and code below.
-				padding = [Math.abs(x), Math.abs(y)];
-			}
-
-			// Create a rectangle of padding size, used for union with bounds
-			// further down
-			var joinBounds = new Rectangle(new Size(padding).multiply(2));
-
-			function add(point) {
-				bounds = bounds.include(matrix
-					? matrix.transform(point) : point);
-			}
-
-			function addBevelJoin(curve, t) {
-				var point = curve.getPoint(t),
-					normal = curve.getNormal(t).normalize(radius);
-				add(point.add(normal));
-				add(point.subtract(normal));
-			}
-
-			function addJoin(segment, join) {
-				var handleIn = segment.getHandleInIfSet(),
-					handleOut = segment.getHandleOutIfSet();
-				// When both handles are set in a segment, the join setting is
-				// ignored and round is always used.
-				if (join == 'round' || handleIn && handleOut) {
-					bounds = bounds.unite(joinBounds.setCenter(matrix
-						? matrix.transform(segment._point) : segment._point));
-				} else {
-					switch (join) {
-					case 'bevel':
-						var curve = segment.getCurve();
-						addBevelJoin(curve, 0);
-						addBevelJoin(curve.getPrevious(), 1);
-						break;
-					case 'miter':
-						var curve2 = segment.getCurve(),
-							curve1 = curve2.getPrevious(),
-							point = curve2.getPoint(0),
-							normal1 = curve1.getNormal(1).normalize(radius),
-							normal2 = curve2.getNormal(0).normalize(radius),
-							// Intersect the two lines
-							line1 = new Line(point.add(normal1),
-								new Point(-normal1.y, normal1.x)),
-							line2 = new Line(point.subtract(normal2),
-								new Point(-normal2.y, normal2.x)),
-							corner = line1.intersect(line2);
-						// Now measure the distance from the segment to the
-						// intersection, which his half of the miter distance
-						if (!corner || point.getDistance(corner) > miter) {
-							addJoin(segment, 'bevel');
-						} else {
-							add(corner);
-						}
-						break;
-					}
-				}
-			}
-
-			function addCap(segment, cap, t) {
-				switch (cap) {
-				case 'round':
-					return addJoin(segment, cap);
-				case 'butt':
-				case 'square':
-					// Calculate the corner points of butt and square caps
-					var curve = segment.getCurve(),
-						point = curve.getPoint(t),
-						normal = curve.getNormal(t).normalize(radius);
-					// For square caps, we need to step away from point in the
-					// direction of the tangent, which is the rotated normal
-					if (cap == 'square')
-						point = point.add(normal.y, -normal.x);
-					add(point.add(normal));
-					add(point.subtract(normal));
-					break;
-				}
-			}
-
-			for (var i = 1, l = length - (closed ? 0 : 1); i < l; i++) {
-				addJoin(segments[i], join);
-			}
-			if (closed) {
-				addJoin(segments[0], join);
-			} else {
-				addCap(segments[0], cap, 0);
-				addCap(segments[length - 1], cap, 1);
-			}
-
-			return bounds;
-		},
-
-		/**
-		 * The bounding rectangle of the item including handles.
-		 */
-		getControlBounds: function() {
-			// TODO: Implement!
-		},
-
 		smooth: function() {
 			var segments = this._segments;
 
@@ -576,7 +318,7 @@ var Path = this.Path = PathItem.extend({
 				}
 			}
 		}
-	};
+	}
 }, new function() { // PostScript-style drawing commands
 
 	function getCurrentSegment(that) {
@@ -780,6 +522,267 @@ var Path = this.Path = PathItem.extend({
 
 		closePath: function() {
 			this.closed = ture;
+		}
+	};
+}, new function() { // A dedicated scope for the tricky bounds calculations
+
+	// Add some tolerance for good roots, as t = 0 / 1 are added seperately
+	// anyhow, and we don't want joins to be added with radiuses in
+	// getBounds()
+	var tMin = 10e-6, tMax = 1 - 10e-6;
+
+	function getBounds(that, matrix, strokePadding) {
+		// Code ported and further optimised from:
+		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
+		var segments = that._segments,
+			first = segments[0];
+		if (!first)
+			return null;
+		var coords = new Array(6),
+			prevCoords = new Array(6);
+		// Make coordinates for first segment available in prevCoords.
+		if (matrix && matrix.isIdentity())
+			matrix = null;
+		first._transformCoordinates(matrix, prevCoords, false);
+		var min = prevCoords.slice(0, 2),
+			max = min.slice(0); // clone
+		function processSegment(segment) {
+			segment._transformCoordinates(matrix, coords, false);
+
+			for (var i = 0; i < 2; i++) {
+				var v0 = prevCoords[i], // prev.point
+					v1 = prevCoords[i + 4], // prev.handleOut
+					v2 = coords[i + 2], // segment.handleIn
+					v3 = coords[i]; // segment.point
+
+				function add(value, t) {
+					var padding = 0;
+					if (value == null) {
+						// Calculate bezier polynomial at t
+						var u = 1 - t;
+						value = u * u * u * v0
+								+ 3 * u * u * t * v1
+								+ 3 * u * t * t * v2
+								+ t * t * t * v3;
+						// Only add strokeWidth to bounds for points which lie
+						// within 0 < t < 1. The corner cases for cap and join
+						// are handled in getStrokeBounds()
+						padding = strokePadding ? strokePadding[i] : 0;
+					}
+					var left = value - padding,
+						right = value + padding;
+					if (left < min[i])
+						min[i] = left;
+					if (right > max[i])
+						max[i] = right;
+
+				}
+				add(v3, null);
+
+				// Calculate derivative of our bezier polynomial, divided by 3.
+				// Dividing by 3 allows for simpler calculations of a, b, c and
+				// leads to the same quadratic roots below.
+				var a = 3 * (v1 - v2) - v0 + v3,
+					b = 2 * (v0 + v2) - 4 * v1,
+					c = v1 - v0;
+
+				// Solve for derivative for quadratic roots. Each good root
+				// (meaning a solution 0 < t < 1) is an extrema in the cubic
+				// polynomial and thus a potential point defining the bounds
+				if (a == 0) {
+					if (b == 0)
+					    continue;
+					var t = -c / b;
+					// Test for good root and add to bounds if good (same below)
+					if (tMin < t && t < tMax)
+						add(null, t);
+					continue;
+				}
+
+				var b2ac = b * b - 4 * a * c;
+				if (b2ac < 0)
+					continue;
+				var sqrt = Math.sqrt(b2ac),
+					f = 1 / (a * -2),
+				 	t1 = (b - sqrt) * f,
+					t2 = (b + sqrt) * f;
+				if (tMin < t1 && t1 < tMax)
+					add(null, t1);
+				if (tMin < t2 && t2 < tMax)
+					add(null, t2);
+			}
+			// Swap coordinate buffers
+			var tmp = prevCoords;
+			prevCoords = coords;
+			coords = tmp;
+		}
+		for (var i = 1, l = segments.length; i < l; i++)
+			processSegment(segments[i]);
+		if (that.closed)
+			processSegment(first);
+	    return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+	}
+
+	function getPenPadding(radius, matrix) {
+		if (!matrix)
+			return [radius, radius];
+		// If a matrix is provided, we need to rotate the stroke circle
+		// and calculate the bounding box of the resulting rotated elipse:
+		// Get rotated hor and ver vectors, and determine rotation angle
+		// and elipse values from them:
+		var mx = matrix.createShiftless(),
+			hor = mx.transform(new Point(radius, 0)),
+			ver = mx.transform(new Point(0, radius)),
+			phi = hor.getAngleInRadians(),
+			a = hor.getLength(),
+			b = ver.getLength();
+		// Formula for rotated ellipses:
+		// x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+		// y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+		// Derivates (by Wolfram Alpha):
+		// derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+		// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
+		// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+		// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
+		// this can be simplified to:
+		// tan(t) = -b * tan(phi) / a // x
+		// tan(t) = b * cot(phi) / a // y
+		// Solving for t gives:
+		// t = pi * n - arctan(b tan(phi)) // x
+		// t = pi * n + arctan(b cot(phi)) // y
+		var tx = - Math.atan(b * Math.tan(phi)),
+			ty = + Math.atan(b / Math.tan(phi)),
+			// Due to symetry, we don't need to cycle through pi * n
+			// solutions:
+			x = a * Math.cos(tx) * Math.cos(phi)
+				- b * Math.sin(tx) * Math.sin(phi),
+			y = b * Math.sin(ty) * Math.cos(phi)
+				+ a * Math.cos(ty) * Math.sin(phi);
+		// Now update the join / round padding, as required by
+		// getBounds() and code below.
+		padding = [Math.abs(x), Math.abs(y)];
+	}
+
+	return {
+		beans: true,
+
+		/**
+		 * The bounding rectangle of the item excluding stroke width.
+		 */
+		getBounds: function(matrix) {
+			return getBounds(this, matrix);
+		},
+
+		/**
+		 * The bounding rectangle of the item including stroke width.
+		 */
+		getStrokeBounds: function(matrix) {
+			var width = this.getStrokeWidth(),
+				radius = width / 2,
+				padding = getPenPadding(radius, matrix),
+				join = this.getStrokeJoin(),
+				cap = this.getStrokeCap(),
+				// miter is relative to width. Divide it by 2 since we're
+				// measuring half the distance below
+				miter = this.getMiterLimit() * width / 2,
+				segments = this._segments,
+				length = segments.length,
+				closed= this.closed,
+				bounds = getBounds(this, matrix, padding);
+
+			// Create a rectangle of padding size, used for union with bounds
+			// further down
+			var joinBounds = new Rectangle(new Size(padding).multiply(2));
+
+			function add(point) {
+				bounds = bounds.include(matrix
+					? matrix.transform(point) : point);
+			}
+
+			function addBevelJoin(curve, t) {
+				var point = curve.getPoint(t),
+					normal = curve.getNormal(t).normalize(radius);
+				add(point.add(normal));
+				add(point.subtract(normal));
+			}
+
+			function addJoin(segment, join) {
+				var handleIn = segment.getHandleInIfSet(),
+					handleOut = segment.getHandleOutIfSet();
+				// When both handles are set in a segment, the join setting is
+				// ignored and round is always used.
+				if (join == 'round' || handleIn && handleOut) {
+					bounds = bounds.unite(joinBounds.setCenter(matrix
+						? matrix.transform(segment._point) : segment._point));
+				} else {
+					switch (join) {
+					case 'bevel':
+						var curve = segment.getCurve();
+						addBevelJoin(curve, 0);
+						addBevelJoin(curve.getPrevious(), 1);
+						break;
+					case 'miter':
+						var curve2 = segment.getCurve(),
+							curve1 = curve2.getPrevious(),
+							point = curve2.getPoint(0),
+							normal1 = curve1.getNormal(1).normalize(radius),
+							normal2 = curve2.getNormal(0).normalize(radius),
+							// Intersect the two lines
+							line1 = new Line(point.add(normal1),
+								new Point(-normal1.y, normal1.x)),
+							line2 = new Line(point.subtract(normal2),
+								new Point(-normal2.y, normal2.x)),
+							corner = line1.intersect(line2);
+						// Now measure the distance from the segment to the
+						// intersection, which his half of the miter distance
+						if (!corner || point.getDistance(corner) > miter) {
+							addJoin(segment, 'bevel');
+						} else {
+							add(corner);
+						}
+						break;
+					}
+				}
+			}
+
+			function addCap(segment, cap, t) {
+				switch (cap) {
+				case 'round':
+					return addJoin(segment, cap);
+				case 'butt':
+				case 'square':
+					// Calculate the corner points of butt and square caps
+					var curve = segment.getCurve(),
+						point = curve.getPoint(t),
+						normal = curve.getNormal(t).normalize(radius);
+					// For square caps, we need to step away from point in the
+					// direction of the tangent, which is the rotated normal
+					if (cap == 'square')
+						point = point.add(normal.y, -normal.x);
+					add(point.add(normal));
+					add(point.subtract(normal));
+					break;
+				}
+			}
+
+			for (var i = 1, l = length - (closed ? 0 : 1); i < l; i++) {
+				addJoin(segments[i], join);
+			}
+			if (closed) {
+				addJoin(segments[0], join);
+			} else {
+				addCap(segments[0], cap, 0);
+				addCap(segments[length - 1], cap, 1);
+			}
+
+			return bounds;
+		},
+
+		/**
+		 * The bounding rectangle of the item including handles.
+		 */
+		getControlBounds: function() {
+			// TODO: Implement!
 		}
 	};
 });
