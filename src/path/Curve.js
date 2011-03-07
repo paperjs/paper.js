@@ -171,9 +171,10 @@ var Curve = this.Curve = Base.extend({
 				&& this._segment2._handleIn.isZero();
 	},
 
-	getParameter: function(length) {
+	getParameter: function(length, t) {
 		var args = this.getCurveValues();
-		args.push(length)
+		args.push(length);
+		args.push(t == undefined ? length < 0 ? 1 : 0 : t);
 		return Curve.getParameter.apply(Curve, args);
 	},
 
@@ -317,7 +318,7 @@ var Curve = this.Curve = Base.extend({
 					// Straight line
 					var dx = p2x - p1x,
 						dy = p2y - p1y;
-					return Math.sqrt(dx * dx + dy * dy) * (b - a);
+					return (b - a) * Math.sqrt(dx * dx + dy * dy);
 				}
 				var ds = getLengthIntegrand(
 						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
@@ -325,32 +326,51 @@ var Curve = this.Curve = Base.extend({
 			},
 
 			getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
-					length) {
-				if (length <= 0)
-					return 0;
+					length, t) {
+				if (length == 0) {
+					return t;
+				}
 				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
 					// Straight line, calculate directly
 					// t = length / lineLength:
 					var dx = p2x - p1x,
 						dy = p2y - p1y;
-					return Math.min(length / Math.sqrt(dx * dx + dy * dy), 1);
+					return Math.max(Math.min(
+							t + length / Math.sqrt(dx * dx + dy * dy), 0, 1));
 				}
-				var ds = getLengthIntegrand(
-						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
-				// Use integrand both to calculate total length and part lengths
-				// in f(t) below.
-				var bezierLength = Numerical.integrate(ds, 0, 1, 8);
-				if (length >= bezierLength)
-					return 1;
 				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
 				// solutions more reliably than with False Position Method.
-				function f(t) {
-					// The precision of 5 iterations seems enough for this
-					return length - Numerical.integrate(ds, 0, t, 5);
+				// The precision of 5 iterations seems enough for this
+				// See if we're going backwards and handle case differently
+				var a, b, f,
+					forward = length > 0,
+					// Use integrand to calculate both range length and part
+					// lengths in f(t) below.
+					ds = getLengthIntegrand(
+							p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+				if (forward) { // Normal way
+					a = t;
+					b = 1;
+					f = function(t) {
+						return length - Numerical.integrate(ds, a, t, 5);
+					}
+				} else { // Going backwards
+					a = 0;
+					b = t;
+					length = -length;
+					f = function(t) {
+						return length - Numerical.integrate(ds, t, b, 5);
+					}
 				}
-				// Use length / bezierLength for an initial guess for b, to
+				var rangeLength = Numerical.integrate(ds, a, b, 8);
+				if (length >= rangeLength)
+					return forward ? b : a;
+				// Use length / rangeLength for an initial guess for t, to
 				// bring us closer:
-				return Numerical.findRoot(f, 0, length / bezierLength,
+				var guess = length / rangeLength;
+				return Numerical.findRoot(f,
+						forward ? a : b - guess, // a
+						forward ? a + guess : b, // b
 						Numerical.TOLERANCE);
 			},
 
