@@ -44,16 +44,21 @@
 		gradient.type = 'radial';
 		var gradientColor = new GradientColor(gradient, point, point + vector);
 		
-		var colors = ['red', 'orange', 'yellow', 'green', 'blue'];
 		var stops = [];
-		for (var i = 0, l = colors.length; i < l * 15; i++) {
-			var stop = new GradientStop(colors[i % l], i / (l * 15));
+		for (var i = 0, l = 60; i < l; i++) {
+			var color = new RGBColor(1, 0, 0);
+			var cycles = 4;
+			color.hue = i / l * cycles * 360;
+			var stop = new GradientStop(color, i / l);
 			stops.push(stop);
 		}
 		
 		gradient.stops = stops;
 		var path = new Path.Rectangle(new Rectangle([0, 0], document.size));
 		path.fillColor = gradientColor;
+		
+		tool.eventInterval = 30;
+		
 		var mouseDown = false;
 		
 		function onMouseDown(event) {
@@ -69,11 +74,12 @@
 			mouseDown = false;
 		}
 
-		setInterval(draw, 30);
-
 		var grow = false;
 		var vector = new Point(150, 0);
+		setInterval(draw, 30);
 		function draw() {
+			for(var i = 0, l = gradient.stops.length; i < l; i++)
+				gradient.stops[i].color.hue -= 20;
 			if (grow && vector.length > 300) {
 				grow = false;
 			} else if (!grow && vector.length < 75) {
