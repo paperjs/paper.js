@@ -73,8 +73,8 @@ Base.inject({
 //#include "tool/Tool.js"
 
 //#include "util/CanvasProvider.js"
-//#include "util/MathUtils.js"
 //#include "util/Events.js"
+//#include "util/Numerical.js"
 //#include "util/PaperScript.js"
 
 };

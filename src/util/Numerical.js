@@ -1,4 +1,4 @@
-var MathUtils = new function() {
+var Numerical = new function() {
 	var abscissa = [
 		-0.5773502692, 0.5773502692,
 		-0.7745966692, 0.7745966692, 0,

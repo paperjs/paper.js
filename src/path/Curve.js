@@ -213,7 +213,7 @@ var Curve = this.Curve = Base.extend({
 				return Math.sqrt(dx * dx + dy * dy);
 			}
 
-			return MathUtils.gauss(ds, 0.0, 1.0, 8);
+			return Numerical.gauss(ds, 0.0, 1.0, 8);
 		},
 
 		subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
@@ -267,8 +267,8 @@ var Curve = this.Curve = Base.extend({
 			}
 			// Use length / bezierLength for an initial guess for b, to bring
 			// us closer:
-			return MathUtils.brent(f, 0, length / bezierLength,
-					MathUtils.TOLERANCE);
+			return Numerical.brent(f, 0, length / bezierLength,
+					Numerical.TOLERANCE);
 		}
 	}
 }, new function() {
