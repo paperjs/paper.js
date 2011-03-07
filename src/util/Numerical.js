@@ -66,7 +66,7 @@ var Numerical = new function() {
 				fc = fb;
 
 			for (var i = 1; i <= 64; i++) {
-				if ((fb > 0.0 && fc > 0.0) || (fb < 0.0 && fc < 0.0)) {
+				if ((fb > 0 && fc > 0) || (fb < 0 && fc < 0)) {
 					c = a;
 					fc = fa;
 					e = d = b - a;
@@ -81,27 +81,27 @@ var Numerical = new function() {
 				}
 				var tol1 = 2 * Number.MIN_VALUE * Math.abs(b) + 0.5 * tol,
 					xm = 0.5 * (c - b);
-				if (Math.abs(xm) <= tol1 || fb == 0.0) {
+				if (Math.abs(xm) <= tol1 || fb == 0) {
 					return b;
 				}
 				if (Math.abs(e) >= tol1 && Math.abs(fa) > Math.abs(fb)) {
 					var p, q, r,
 						s = fb / fa;
 					if (a == c) {
-						p = 2.0 * xm * s;
-						q = 1.0 - s;
+						p = 2 * xm * s;
+						q = 1 - s;
 					} else {
 						q = fa / fc;
 						r = fb / fc;
-						p = s * (2.0 * xm * q * (q - r) - (b - a) * (r - 1.0));
-						q = (q - 1.0) * (r - 1.0) * (s - 1.0);
+						p = s * (2 * xm * q * (q - r) - (b - a) * (r - 1));
+						q = (q - 1) * (r - 1) * (s - 1);
 					}
-					if (p > 0.0)
+					if (p > 0)
 						q = -q;
 					p = Math.abs(p);
-					var min1 = 3.0 * xm * q - Math.abs(tol1 * q),
+					var min1 = 3 * xm * q - Math.abs(tol1 * q),
 					 	min2 = Math.abs(e * q);
-					if (2.0 * p < (min1 < min2 ? min1 : min2)) {
+					if (2 * p < (min1 < min2 ? min1 : min2)) {
 						e = d;
 						d = p / q;
 					} else {
@@ -117,7 +117,7 @@ var Numerical = new function() {
 				if (Math.abs(d) > tol1)
 					b += d;
 				else
-					b += xm >= 0.0 ? Math.abs(tol1) : -Math.abs(tol1);
+					b += xm >= 0 ? Math.abs(tol1) : -Math.abs(tol1);
 				fb = f(b);
 			}
 			return b;
