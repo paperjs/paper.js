@@ -171,10 +171,10 @@ var Curve = this.Curve = Base.extend({
 				&& this._segment2._handleIn.isZero();
 	},
 
-	getParameter: function(length, t) {
+	// TODO: Port support for start parameter back to Scriptographer
+	getParameter: function(length, start) {
 		var args = this.getCurveValues();
-		args.push(length);
-		args.push(t === undefined ? length < 0 ? 1 : 0 : t);
+		args.push(length, start !== undefined ? start : length < 0 ? 1 : 0);
 		return Curve.getParameter.apply(Curve, args);
 	},
 
@@ -326,17 +326,17 @@ var Curve = this.Curve = Base.extend({
 			},
 
 			getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
-					length, t) {
+					length, start) {
 				if (length == 0) {
-					return t;
+					return start;
 				}
 				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
 					// Straight line, calculate directly
 					// t = length / lineLength:
 					var dx = p2x - p1x,
 						dy = p2y - p1y;
-					return Math.max(Math.min(
-							t + length / Math.sqrt(dx * dx + dy * dy), 0, 1));
+					return Math.max(Math.min(start
+							+ length / Math.sqrt(dx * dx + dy * dy), 0, 1));
 				}
 				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
 				// solutions more reliably than with False Position Method.
@@ -350,7 +350,7 @@ var Curve = this.Curve = Base.extend({
 				// See if we're going forward or backward, and handle cases
 				// differently
 				if (forward) { // Normal way
-					a = t;
+					a = start;
 					b = 1;
 					// We're moving b to the right to find root for length
 					f = function(t) {
@@ -358,7 +358,7 @@ var Curve = this.Curve = Base.extend({
 					}
 				} else { // Going backwards
 					a = 0;
-					b = t;
+					b = start;
 					length = -length;
 					// We're moving a to the left to find root for length
 					f = function(t) {
