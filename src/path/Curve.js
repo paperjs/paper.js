@@ -125,30 +125,21 @@ var Curve = this.Curve = Base.extend({
 				|| this._path.closed && curves[curves.length - 1]) || null;
 	},
 
+	getCurveValues: function() {
+		var p1 = this._segment1._point,
+			h1 = this._segment1._handleOut,
+			h2 = this._segment2._handleIn,
+			p2 = this._segment2._point;
+		return [
+			p1.x, p1.y,
+			p1.x + h1.x, p1.y + h1.y,
+			p2.x + h2.x, p2.y + h2.y,
+			p2.x, p2.y
+		];
+	},
+
 	getLength: function() {
-		var z0 = this._segment1._point,
-			z1 = this._segment2._point,
-			c0 = z0.add(this._segment1._handleOut),
-			c1 = z1.add(this._segment2._handleIn);
-		// TODO: Check for straight lines and handle separately.
-
-		// Calculate the coefficients of a Bezier derivative.
-		var ax = 9 * (c0.x - c1.x) + 3 * (z1.x - z0.x),
-			bx = 6 * (z0.x + c1.x) - 12 * c0.x,
-			cx = 3 * (c0.x - z0.x),
-
-			ay = 9 * (c0.y - c1.y) + 3 * (z1.y - z0.y),
-			by = 6 * (z0.y + c1.y) - 12 * c0.y,
-			cy = 3 * (c0.y - z0.y);
-
-		function ds(t) {
-			// Calculate quadratic equations of derivatives for x and y
-			var dx = (ax * t + bx) * t + cx,
-				dy = (ay * t + by) * t + cy;
-			return Math.sqrt(dx * dx + dy * dy);
-		}
-
-		return MathUtils.gauss(ds, 0.0, 1.0, 8);
+		return Curve.getLength.apply(Curve, this.getCurveValues());
 	},
 
 	/**
@@ -162,7 +153,11 @@ var Curve = this.Curve = Base.extend({
 				&& this._segment2._handleIn.isZero();
 	},
 
-	// TODO: getParameter(length)
+	getParameter: function(length) {
+		return Curve.getParameter.apply(Curve,
+				this.getCurveValues().concat(length));
+	},
+
 	// TODO: getParameter(point, precision)
 	// TODO: getLocation
 	// TODO: getIntersections
@@ -196,6 +191,82 @@ var Curve = this.Curve = Base.extend({
 					? ', handle2: ' + this._segment2._handleIn : '')
 				+ ', point2: ' + this._segment2._point
 				+ ' }';
+	},
+
+	statics: {
+		getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+			// TODO: Check for straight lines and handle separately.
+
+			// Calculate the coefficients of a Bezier derivative.
+			var ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
+				bx = 6 * (p1x + c2x) - 12 * c1x,
+				cx = 3 * (c1x - p1x),
+
+				ay = 9 * (c1y - c2y) + 3 * (p2y - p1y),
+				by = 6 * (p1y + c2y) - 12 * c1y,
+				cy = 3 * (c1y - p1y);
+
+			function ds(t) {
+				// Calculate quadratic equations of derivatives for x and y
+				var dx = (ax * t + bx) * t + cx,
+					dy = (ay * t + by) * t + cy;
+				return Math.sqrt(dx * dx + dy * dy);
+			}
+
+			return MathUtils.gauss(ds, 0.0, 1.0, 8);
+		},
+
+		subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
+			var u = 1 - t,
+				// Interpolate from 4 to 3 points
+				p3x = u * p1x + t * c1x,
+				p3y = u * p1y + t * c1y,
+				p4x = u * c1x + t * c2x,
+				p4y = u * c1y + t * c2y,
+				p5x = u * c2x + t * p2x,
+				p5y = u * c2y + t * p2y,
+				// Interpolate from 3 to 2 points
+				p6x = u * p3x + t * p4x,
+				p6y = u * p3y + t * p4y,
+				p7x = u * p4x + t * p5x,
+				p7y = u * p4y + t * p5y,
+				// Interpolate from 2 points to 1 point
+				p8x = u * p6x + t * p7x,
+				p8y = u * p6y + t * p7y;
+			// We now have all the values we need to build the subcurves
+			return [
+				[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
+				[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
+			];
+		},
+
+		getPartLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t, right) {
+			if (t == 0)
+				return 0;
+			if (t < 1) {
+				curve = Curve.subdivide(p1x, p1y, c1x, c1y, c2x, c2y,
+						p2x, p2y, t)[right ? 1 : 0];
+			} else {
+				curve = arguments;
+			}
+			return Curve.getLength.apply(Curve, curve);
+		},
+
+		getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, length) {
+			if (length <= 0)
+				return 0;
+			var bezierLength = Curve.getLength(
+					p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+			if (length >= bezierLength)
+				return 1;
+			// Let's use the Van Wijngaarden–Dekker–Brent Method to find
+			// solutions more reliably than with False Position Method.
+			function f(t) {
+				return Curve.getPartLength(
+						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) - length;
+			}
+			return MathUtils.brent(f, 0, length / bezierLength, 10e-6);
+		}
 	}
 }, new function() {
 	function evaluate(that, t, type) {
