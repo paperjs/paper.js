@@ -163,34 +163,41 @@ var PaperScript = new function() {
 		};
 		return xhr.send(null);
 	}
-
-	Events.add(window, {
-		load: function() {
-			var scripts = document.getElementsByTagName('script');
-			for (var i = 0, l = scripts.length; i < l; i++) {
-				var script = scripts[i];
-				if (script.type === 'text/paperscript') {
-					// If a canvas id is provided, create a document for it now,
-					// so the active document is defined.
-					var canvas = script.getAttribute('canvas');
-					if (canvas && (canvas = document.getElementById(canvas))) {
-						new Document(canvas);
-					}
-					if (script.src) {
-						load(script.src);
-					} else {
-						run(script.innerHTML);
-					}
+	function install() {
+		var scripts = document.getElementsByTagName('script');
+		for (var i = 0, l = scripts.length; i < l; i++) {
+			var script = scripts[i];
+			if (script.type === 'text/paperscript') {
+				// If a canvas id is provided, create a document for it now,
+				// so the active document is defined.
+				var canvas = script.getAttribute('canvas');
+				if (canvas && (canvas = document.getElementById(canvas))) {
+					new Document(canvas);
+				}
+				if (script.src) {
+					load(script.src);
+				} else {
+					run(script.innerHTML);
 				}
 			}
-			return null;
 		}
-	});
+		return null;
+	}
 
-//#endif // BROWSER
+	Events.add(window, { load: install });
+
+	return {
+		compile: compile,
+		run: run,
+		install: install
+	};
+
+//#else // !BROWSER
 
 	return {
 		compile: compile,
 		run: run
 	};
+
+//#endif // !BROWSER
 };
