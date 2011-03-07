@@ -28,7 +28,7 @@
  * 
  * @author lehni
  */
-ToolEvent = Base.extend({
+var ToolEvent = this.ToolEvent = Base.extend({
 	beans: true,
 
 	initialize: function(tool, type, modifiers) {
