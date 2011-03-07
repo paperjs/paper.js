@@ -51,7 +51,7 @@ var Color = this.Color = Base.extend({
 		var r = color.getRed(),
 			g = color.getGreen(),
 			b = color.getBlue(),
-			max = Math.max(r, g, b)
+			max = Math.max(r, g, b),
 			min = Math.min(r, g, b),
 			delta = max - min,
 			hue,
