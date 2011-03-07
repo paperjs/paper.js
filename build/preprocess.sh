@@ -26,7 +26,7 @@
 #	commented		Preprocessed but still formated and commented (default)
 #	stripped		Formated but without comments
 #	compressed		No comments and no whitespaces
-#	compiled		Uses Google Closure Compiler to reduce file size even more
+#	uglified		Uses UglifyJS to further reduce file size
 
 KEYWORD="//#"
 
@@ -44,9 +44,9 @@ case $4 in
 			/./,/^$/!d
 			p' > $2
 		;;
-	compiled)
+	uglified)
 		./filepp.pl -kc $KEYWORD $3 $1 > temp.js
-		java -jar compiler.jar --js temp.js --js_output_file $2
+		../../uglifyjs/bin/uglifyjs temp.js --extra --unsafe --reserved-names "$eval,$sign" > $2
 		rm temp.js
 		;;
 esac
