@@ -1,4 +1,5 @@
 var Numerical = new function() {
+
 	var abscissa = [
 		-0.5773502692, 0.5773502692,
 		-0.7745966692, 0.7745966692,  0,
@@ -22,11 +23,12 @@ var Numerical = new function() {
 	return {
 		TOLERANCE: 10e-6,
 
-		// Gauss-Legendre Numerical Integration, a Gauss.as port from Singularity:
-		//
-		// Copyright (c) 2006-2007, Jim Armstrong (www.algorithmist.net)
-		// All Rights Reserved.
-
+		/**
+		 * Gauss-Legendre Numerical Integration, ported from Singularity:
+		 *
+		 * Copyright (c) 2006-2007, Jim Armstrong (www.algorithmist.net)
+		 * All Rights Reserved.
+		 */
 		gauss: function(f, a, b, n) {
 			n = Math.min(Math.max(n, 2), 8);
 
@@ -40,7 +42,10 @@ var Numerical = new function() {
 			return mul * sum;
 		},
 
-		// Van Wijngaarden–Dekker–Brent method for root finding
+		/**
+		 * Van Wijngaarden–Dekker–Brent method for root finding, implementation
+		 * based on Numerical Recipes in C
+		 */
 		brent: function(f, a, b, tol) {
 			var c = b, d = 0, e = 0,
 				fa = f(a),
