@@ -154,10 +154,10 @@ var Curve = this.Curve = Base.extend({
 	// TODO: Port back to Scriptographer, optionally suppporting from, to
 	// TODO: Replaces getPartLength(fromParameter, toParameter)?
 	getLength: function(from, to) {
-		var values = this.getCurveValues();
+		var args = this.getCurveValues();
 		if (arguments.length > 0)
-			values.push(from, to);
-		return Curve.getLength.apply(Curve, values);
+			args.push(from, to);
+		return Curve.getLength.apply(Curve, args);
 	},
 
 	/**
@@ -172,9 +172,9 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	getParameter: function(length) {
-		var values = this.getCurveValues();
-		values.push(length)
-		return Curve.getParameter.apply(Curve, values);
+		var args = this.getCurveValues();
+		args.push(length)
+		return Curve.getParameter.apply(Curve, args);
 	},
 
 	// TODO: getParameter(point, precision)
@@ -342,12 +342,12 @@ var Curve = this.Curve = Base.extend({
 				var bezierLength = Numerical.gauss(ds, 0, 1, 8);
 				if (length >= bezierLength)
 					return 1;
+				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
+				// solutions more reliably than with False Position Method.
 				function f(t) {
 					// The precision of 5 iterations seems enough for this
 					return length - Numerical.gauss(ds, 0, t, 5);
 				}
-				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
-				// solutions more reliably than with False Position Method.
 				// Use length / bezierLength for an initial guess for b, to
 				// bring us closer:
 				return Numerical.brent(f, 0, length / bezierLength,
@@ -371,7 +371,7 @@ var Curve = this.Curve = Base.extend({
 					// Interpolate from 2 points to 1 point
 					p8x = u * p6x + t * p7x,
 					p8y = u * p6y + t * p7y;
-				// We now have all the values we need to build the subcurves
+				// We now have all the values we need to build the subcurves:
 				return [
 					[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
 					[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
