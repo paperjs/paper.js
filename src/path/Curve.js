@@ -265,7 +265,10 @@ var Curve = this.Curve = Base.extend({
 				return Curve.getPartLength(
 						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) - length;
 			}
-			return MathUtils.brent(f, 0, length / bezierLength, 10e-6);
+			// Use length / bezierLength for an initial guess for b, to bring
+			// us closer:
+			return MathUtils.brent(f, 0, length / bezierLength,
+					MathUtils.TOLERANCE);
 		}
 	}
 }, new function() {
