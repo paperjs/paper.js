@@ -1,6 +1,4 @@
 var MathUtils = new function() {
-	var maxDepth = 53; // MANT_DIGITS: 64 bit: 53 digits, 32 bit: 24 digits
-
 	var abscissa = [
 		-0.5773502692, 0.5773502692,
 		-0.7745966692, 0.7745966692, 0,
@@ -22,7 +20,7 @@ var MathUtils = new function() {
 	];
 
 	return {
-		EPSILON: Math.pow(2, -maxDepth + 1),
+		TOLERANCE: 10e-6,
 
 		// Gauss-Legendre Numerical Integration, a Gauss.as port from Singularity:
 		//
@@ -49,7 +47,7 @@ var MathUtils = new function() {
 				fb = f(b),
 				fc = fb;
 
-			for (var i = 1; i <= 16; i++) {
+			for (var i = 1; i <= 64; i++) {
 				if ((fb > 0.0 && fc > 0.0) || (fb < 0.0 && fc < 0.0)) {
 					c = a;
 					fc = fa;
@@ -63,7 +61,7 @@ var MathUtils = new function() {
 					fb = fc;
 					fc = fa;
 				}
-				var tol1 = 2 * MathUtils.EPSILON * Math.abs(b) + 0.5 * tol,
+				var tol1 = 2 * Number.MIN_VALUE * Math.abs(b) + 0.5 * tol,
 					xm = 0.5 * (c - b);
 				if (Math.abs(xm) <= tol1 || fb == 0.0) {
 					return b;
