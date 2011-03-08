@@ -3,56 +3,13 @@
 <head>
 	<title>Paper.js Tests</title>
 	<link rel="stylesheet" href="lib/qunit/qunit.css" type="text/css" media="screen">
-	<!-- Libraries -->
-	<script type="text/javascript" src="../lib/bootstrap.js"></script>
-	<script type="text/javascript" src="../src/Paper.js"></script>
-	<script type="text/javascript" src="../src/tool/ToolEvent.js"></script>
-	<script type="text/javascript" src="../src/tool/ToolHandler.js"></script>
-	<script type="text/javascript" src="../src/tool/Tool.js"></script>
-	<script type="text/javascript" src="../src/basic/Point.js"></script>
-	<script type="text/javascript" src="../src/basic/Rectangle.js"></script>
-	<script type="text/javascript" src="../src/basic/Size.js"></script>
-	<script type="text/javascript" src="../src/basic/Matrix.js"></script>
-	<script type="text/javascript" src="../src/document/DocumentView.js"></script>
-	<script type="text/javascript" src="../src/document/Document.js"></script>
-	<script type="text/javascript" src="../src/document/Symbol.js"></script>
-	<script type="text/javascript" src="../src/item/Item.js"></script>
-	<script type="text/javascript" src="../src/item/Group.js"></script>
-	<script type="text/javascript" src="../src/item/Layer.js"></script>
-	<script type="text/javascript" src="../src/item/PlacedSymbol.js"></script>
-	<script type="text/javascript" src="../src/item/PathStyle.js"></script>
-	<script type="text/javascript" src="../src/path/Segment.js"></script>
-	<script type="text/javascript" src="../src/path/Curve.js"></script>
-	<script type="text/javascript" src="../src/path/PathItem.js"></script>
-	<script type="text/javascript" src="../src/path/Path.js"></script>
-	<script type="text/javascript" src="../src/path/Path.Constructors.js"></script>
-	<script type="text/javascript" src="../src/color/Color.js"></script>
-	<script type="text/javascript" src="../src/color/RGBColor.js"></script>
-	<script type="text/javascript" src="../src/color/GrayColor.js"></script>
-	<script type="text/javascript" src="../src/util/CanvasProvider.js"></script>
-	<script type="text/javascript" src="../src/util/Numerical.js"></script>
-	<script type="text/javascript" src="lib/qunit/qunit.js"></script>
-	
-	<!-- Test Helpers -->
-	<script type="text/javascript" src="lib/test_functions.js"></script>	
-	
-	<!-- Tests -->
-	<script type="text/javascript" src="tests/Point.js"></script>
-	<script type="text/javascript" src="tests/Size.js"></script>
-	<script type="text/javascript" src="tests/Rectangle.js"></script>
-	<script type="text/javascript" src="tests/Color.js"></script>
-	<script type="text/javascript" src="tests/Document.js"></script>
-	<script type="text/javascript" src="tests/Item.js"></script>
-	<script type="text/javascript" src="tests/Layer.js"></script>
-	<script type="text/javascript" src="tests/Group.js"></script>
-	<script type="text/javascript" src="tests/Segment.js"></script>
-	<script type="text/javascript" src="tests/Path.js"></script>
-	<script type="text/javascript" src="tests/Path_Shapes.js"></script>
-	<script type="text/javascript" src="tests/Path_Drawing_Commands.js"></script>
-	<script type="text/javascript" src="tests/Path_Bounds.js"></script>
-	<script type="text/javascript" src="tests/Path_Length.js"></script>
-	<script type="text/javascript" src="tests/PathStyle.js"></script>
-	<script type="text/javascript" src="tests/PlacedSymbol.js"></script>
+	<!-- Paper.js Loading -->
+	<script type="text/javascript">
+	var loadBase = '../',
+		loadTests = true;
+	</script>
+	<script type="text/javascript" src="../lib/load.js"></script>
+	<script type="text/javascript" src="../src/load.js"></script>
 </head>
 <body>
 	<h1 id="qunit-header">QUnit Test Suite</h1>
