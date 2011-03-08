@@ -17,13 +17,12 @@
 var Path = this.Path = PathItem.extend({
 	beans: true,
 
-	initialize: function(/* segments */) {
+	initialize: function(segments) {
 		this.base();
 		this.closed = false;
 		// Support both passing of segments as array or arguments
 		// If it is an array, it can also be a description of a point, so
 		// check its first entry for object as well
-		var segments = arguments[0];
 		this.setSegments(!segments || !Array.isArray(segments)
 				|| typeof segments[0] != 'object' ? arguments : segments);
 	},
