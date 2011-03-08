@@ -54,12 +54,10 @@ Base.inject({
 
 	read: function(args, index, length) {
 		var index = index || 0, length = length || args.length - index;
-		if (length <= 1) {
-			var arg = args[index];
-			// Return null when nothing was provided
-			if (arg instanceof this || arg == null)
-				return arg;
-		}
+		var arg = args[index];
+		// Return null when nothing was provided
+		if (arg instanceof this || arg == null && length <= 1)
+			return arg;
 		var obj = new this(this.dont);
 		obj = obj.initialize.apply(obj, index > 0 || length < args.length
 			? Array.prototype.slice.call(args, index, index + length)
