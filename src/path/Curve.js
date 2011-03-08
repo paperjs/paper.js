@@ -156,10 +156,11 @@ var Curve = this.Curve = Base.extend({
 
 	// TODO: Port back to Scriptographer, optionally suppporting from, to
 	// TODO: Replaces getPartLength(fromParameter, toParameter)?
-	getLength: function(from, to) {
+	getLength: function(/* from, to */) {
+		// Hide parameters from Bootstrap so it injects bean too
 		var args = this.getCurveValues();
 		if (arguments.length > 0)
-			args.push(from, to);
+			args.push(arguments[0], arguments[1]);
 		return Curve.getLength.apply(Curve, args);
 	},
 

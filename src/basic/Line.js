@@ -49,9 +49,9 @@ var Line = this.Line = Base.extend({
 			? this.point.add(this.vector.multiply(t1)) : null;
 	},
 
-	getSide: function(p) {
+	getSide: function(point) {
 		var v1 = this.vector,
-			v2 = p.subtract(this.point),
+			v2 = point.subtract(this.point),
 			ccw = v2.cross(v1);
 		if (ccw == 0.0) {
 			ccw = v2.dot(v1);

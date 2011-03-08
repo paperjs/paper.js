@@ -228,7 +228,7 @@ var Point = this.Point = Base.extend({
 	 * @param point
 	 */
 	getAngle: function(/* point */) {
-		// Hide point from Bootstrap so it injects bean too
+		// Hide parameters from Bootstrap so it injects bean too
 		return this.getAngleInRadians(arguments[0]) * 180 / Math.PI;
 	},
 
@@ -243,7 +243,7 @@ var Point = this.Point = Base.extend({
 	},
 
 	getAngleInRadians: function(/* point */) {
-		// Hide point from Bootstrap so it injects bean too
+		// Hide parameters from Bootstrap so it injects bean too
 		if (arguments[0] === undefined) {
 			if (this._angle == null)
 				this._angle = Math.atan2(this.y, this.x);
