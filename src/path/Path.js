@@ -42,9 +42,9 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	setSegments: function(segments) {
-		var l = segments.length;
-		this._segments = new Array(l);
-		for(var i = 0; i < l; i++) {
+		var length = segments.length;
+		this._segments.length = length;
+		for(var i = 0; i < length; i++) {
 			this._segments[i] = Segment.read(segments, i, 1);
 		}
 	},
