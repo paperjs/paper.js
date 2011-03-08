@@ -20,18 +20,12 @@ var Path = this.Path = PathItem.extend({
 	initialize: function(/* segments */) {
 		this.base();
 		this.closed = false;
-		this._segments = [];
 		// Support both passing of segments as array or arguments
 		// If it is an array, it can also be a description of a point, so
 		// check its first entry for object as well
 		var segments = arguments[0];
-		if (!segments || !Array.isArray(segments)
-				|| typeof segments[0] != 'object')
-			segments = arguments;
-		for (var i = 0, l = segments.length; i < l; i++) {
-			var seg = Segment.read(segments, i, 1);
-			this._add(seg);
-		}
+		this.setSegments(!segments || !Array.isArray(segments)
+				|| typeof segments[0] != 'object' ? arguments : segments);
 	},
 
 	/**
@@ -43,9 +37,13 @@ var Path = this.Path = PathItem.extend({
 
 	setSegments: function(segments) {
 		var length = segments.length;
-		this._segments.length = length;
+		if (!this._segments) {
+			this._segments = new Array(length);
+		} else {
+			this._segments.length = length;
+		}
 		for(var i = 0; i < length; i++) {
-			this._segments[i] = Segment.read(segments, i, 1);
+			this._add(Segment.read(segments, i, 1));
 		}
 	},
 
