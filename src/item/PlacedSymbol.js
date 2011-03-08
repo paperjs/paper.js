@@ -17,20 +17,18 @@
 var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	beans: true,
 
-	initialize: function() {
+	initialize: function(symbol, matrixOrOffset) {
 		this.base();
-		if (arguments[0] instanceof Symbol) {
-			this.symbol = arguments[0];
+		if (symbol instanceof Symbol) {
+			this.symbol = symbol;
 		} else {
-			this.symbol = new Symbol(arguments[0]);
+			this.symbol = new Symbol(symbol);
 		}
-		if (arguments.length > 1) {
-			var arg = arguments[1];
-			if (arg instanceof Matrix) {
-				this.matrix = arguments[2];
+		if (matrixOrOffset !== undefined) {
+			if (matrixOrOffset instanceof Matrix) {
+				this.matrix = matrixOrOffset;
 			} else {
-				var offset = Point.read(arguments, 1);
-				this.matrix = new Matrix().translate(offset);
+				this.matrix = new Matrix().translate(Point.read(arguments, 1));
 			}
 		} else {
 			this.matrix = new Matrix();
