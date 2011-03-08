@@ -16,9 +16,6 @@
 //
 // NOTE: Any files added as includes to paper.js also need to be listed here
 
-var loadBase = window.loadBase || '',
-	loadTests = window.loadTests;
-
 var sources = [
 	'lib/bootstrap.js',
 	'lib/parse-js.js',
@@ -68,7 +65,7 @@ var sources = [
 ];
 
 // Load unit tests after library if asked to do so
-if (loadTests) {
+if (window.tests) {
 	sources.push(
 		'test/lib/qunit/qunit.js',
 		'test/lib/helpers.js',
@@ -93,6 +90,6 @@ if (loadTests) {
 }
 
 for (var i = 0; i < sources.length; i++) {
-	document.write('<script type="text/javascript" src="' + loadBase 
+	document.write('<script type="text/javascript" src="' + (window.root || '') 
 			+ sources[i] + '"></script>');
 }
