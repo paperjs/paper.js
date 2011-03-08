@@ -35,7 +35,7 @@ var GradientStop = this.GradientStop = Base.extend({
 		return this._color;
 	},
 
-	setColor: function() {
+	setColor: function(color) {
 		this._color = Color.read(arguments);
 	}
 });

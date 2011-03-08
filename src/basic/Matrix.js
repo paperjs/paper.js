@@ -139,8 +139,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	translate: function(point) {
-		point = Point.read(arguments);
-		if (point) {
+		if (point = Point.read(arguments)) {
 			var x = point.x, y = point.y;
 			this._m02 += x * this._m00 + y * this._m01;
 			this._m12 += x * this._m10 + y * this._m11;
@@ -418,8 +417,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	setToTranslation: function(delta) {
-		delta = Point.read(arguments);
-		if (delta) {
+		if (delta = Point.read(arguments)) {
 			this.set(1, 0, 0, 1, delta.x, delta.y);
 		}
 		return this;
@@ -445,8 +443,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	setToRotation: function(angle, center) {
-		center = Point.read(arguments, 1);
-		if (center) {
+		if (center = Point.read(arguments, 1)) {
 			angle = angle * Math.PI / 180.0;
 			var x = center.x,
 				y = center.y,

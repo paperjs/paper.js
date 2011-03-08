@@ -77,38 +77,43 @@ var Point = this.Point = Base.extend({
 		return Point.create(this.x, this.y);
 	},
 
-	add: function() {
-		var point = Point.read(arguments);
-		return Point.create(this.x + point.x, this.y + point.y);
+	add: function(point) {
+		return (point = Point.read(arguments))
+			? Point.create(this.x + point.x, this.y + point.y)
+			: null;
 	},
 
-	subtract: function() {
-		var point = Point.read(arguments);
-		return Point.create(this.x - point.x, this.y - point.y);
+	subtract: function(point) {
+		return (point = Point.read(arguments))
+			? Point.create(this.x - point.x, this.y - point.y)
+			: null;
 	},
 
-	multiply: function() {
-		var point = Point.read(arguments);
-		return Point.create(this.x * point.x, this.y * point.y);
+	multiply: function(point) {
+		return (point = Point.read(arguments))
+			? Point.create(this.x * point.x, this.y * point.y)
+			: null;
 	},
 
-	divide: function() {
-		var point = Point.read(arguments);
-		return Point.create(this.x / point.x, this.y / point.y);
+	divide: function(point) {
+		return (point = Point.read(arguments))
+			? Point.create(this.x / point.x, this.y / point.y)
+			: null;
 	},
 
-	modulo: function() {
-		var point = Point.read(arguments);
-		return Point.create(this.x % point.x, this.y % point.y);
+	modulo: function(point) {
+		return (point = Point.read(arguments))
+			? Point.create(this.x % point.x, this.y % point.y)
+			: null;
 	},
 
 	negate: function() {
 		return Point.create(-this.x, -this.y);
 	},
 
-	equals: function() {
-		var point = Point.read(arguments);
-		return this.x == point.x && this.y == point.y;
+	equals: function(point) {
+		return (point = Point.read(arguments))
+				&& this.x == point.x && this.y == point.y;
 	},
 
 	transform: function(matrix) {
@@ -131,15 +136,17 @@ var Point = this.Point = Base.extend({
 	 * @param px
 	 * @param py
 	 */
-	getDistance: function() {
-		var point = Point.read(arguments);
+	getDistance: function(point) {
+		if (!(point = Point.read(arguments)))
+			return null;
 		var px = point.x - this.x;
 		var py = point.y - this.y;
 		return Math.sqrt(px * px + py * py);
 	},
 
-	getDistanceSquared: function() {
-		var point = Point.read(arguments);
+	getDistanceSquared: function(point) {
+		if (!(point = Point.read(arguments)))
+			return null;
 		var px = point.x - this.x;
 		var py = point.y - this.y;
 		return px * px + py * py;
@@ -152,7 +159,6 @@ var Point = this.Point = Base.extend({
 	 * Setting the length changes the location but keeps the vector's angle.
 	 */
 	getLength: function() {
-		var point = Point.read(arguments);
 		return Math.sqrt(this.x * this.x + this.y * this.y);
 	},
 
@@ -264,8 +270,9 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @param point
 	 */
-	getDirectedAngle: function() {
-		var point = Point.read(arguments);
+	getDirectedAngle: function(point) {
+		if (!(point = Point.read(arguments)))
+			return null;
 		var angle = this.getAngle() - point.getAngle();
 		var bounds = 180;
 		if (angle < - bounds) {
@@ -442,9 +449,10 @@ var Point = this.Point = Base.extend({
 	 * @param point
 	 * @return the dot product of the two points
 	 */
-	dot: function() {
-		var point = Point.read(arguments);
-		return this.x * point.x + this.y * point.y;
+	dot: function(point) {
+		return (point = Point.read(arguments))
+			? this.x * point.x + this.y * point.y
+			: null;
 	},
 
 	/**
@@ -452,9 +460,10 @@ var Point = this.Point = Base.extend({
 	 * @param point
 	 * @return the cross product of the two points
 	 */
-	cross: function() {
-		var point = Point.read(arguments);
-		return this.x * point.y - this.y * point.x;
+	cross: function(point) {
+		return (point = Point.read(arguments))
+			? this.x * point.y - this.y * point.x
+			: null;
 	},
 
 	/**
@@ -464,8 +473,9 @@ var Point = this.Point = Base.extend({
 	 * @param point
 	 * @return the project of the point on another point
 	 */
-	project: function() {
-		var point = Point.read(arguments);
+	project: function(point) {
+		if (!(point = Point.read(arguments)))
+			return null;
 		if (point.isZero()) {
 			return Point.create(0, 0);
 		} else {

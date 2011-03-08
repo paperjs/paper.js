@@ -74,8 +74,9 @@ var Rectangle = this.Rectangle = Base.extend({
 		return Point.create(this.x, this.y);
 	},
 
-	setPoint: function() {
-		var point = Point.read(arguments);
+	setPoint: function(point) {
+		if (!(point = Point.read(arguments)))
+			return this;
 		this.x = point.x;
 		this.y = point.y;
 		return this;
@@ -85,8 +86,9 @@ var Rectangle = this.Rectangle = Base.extend({
 		return Size.create(this.width, this.height);
 	},
 
-	setSize: function() {
-		var size = Size.read(arguments);
+	setSize: function(size) {
+		if (!(size = Size.read(arguments)))
+			return this;
 		this.width = size.width;
 		this.height = size.height;
 		return this;
@@ -153,18 +155,19 @@ var Rectangle = this.Rectangle = Base.extend({
 		return Point.create(this.getCenterX(), this.getCenterY());
 	},
 
-	setCenter: function() {
-		var pt = Point.read(arguments);
-		return this.setCenterX(pt.x).setCenterY(pt.y);
+	setCenter: function(point) {
+		if (!(point = Point.read(arguments)))
+			return this;
+		return this.setCenterX(point.x).setCenterY(point.y);
 	},
 
 	clone: function() {
 		return new Rectangle(this);
 	},
 
-	equals: function() {
-		var rect = Rectangle.read(arguments);
-		return this.x == rect.x && this.y == rect.y
+	equals: function(rect) {
+		rect = Rectangle.read(arguments);
+		return rect && this.x == rect.x && this.y == rect.y
 				&& this.width == rect.width && this.height == rect.height;
 	},
 
@@ -185,35 +188,38 @@ var Rectangle = this.Rectangle = Base.extend({
 		}
 	},
 
-	intersects: function() {
-		var rect = Rectangle.read(arguments);
-		return rect.x + rect.width > this.x
+	intersects: function(rect) {
+		rect = Rectangle.read(arguments);
+		return rect && rect.x + rect.width > this.x
 				&& rect.y + rect.height > this.y
 				&& rect.x < this.x + this.width
 				&& rect.y < this.y + this.height;
 	},
 
-	intersect: function() {
-		var rect = Rectangle.read(arguments);
-			x1 = Math.max(this.x, rect.x),
+	intersect: function(rect) {
+		if (!(rect = Rectangle.read(arguments)))
+			return null;
+		var x1 = Math.max(this.x, rect.x),
 			y1 = Math.max(this.y, rect.y),
 			x2 = Math.min(this.x + this.width, rect.x + rect.width),
 			y2 = Math.min(this.y + this.height, rect.y + rect.height);
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
-	unite: function() {
-		var rect = Rectangle.read(arguments),
-			x1 = Math.min(this.x, rect.x),
+	unite: function(rect) {
+		if (!(rect = Rectangle.read(arguments)))
+			return null;
+		var x1 = Math.min(this.x, rect.x),
 			y1 = Math.min(this.y, rect.y),
 			x2 = Math.max(this.x + this.width, rect.x + rect.width),
 			y2 = Math.max(this.y + this.height, rect.y + rect.height);
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
-	include: function() {
-		var point = Point.read(arguments),
-			x1 = Math.min(this.x, point.x),
+	include: function(point) {
+		if (!(point = Point.read(arguments)))
+			return null;
+		var x1 = Math.min(this.x, point.x),
 			y1 = Math.min(this.y, point.y),
 			x2 = Math.max(this.x + this.width, point.x),
 			y2 = Math.max(this.y + this.height, point.y);
@@ -235,14 +241,12 @@ var Rectangle = this.Rectangle = Base.extend({
 		}
 	}
 }, new function() {
-	var keys = [
-		['Top', 'Left'], ['Top', 'Right'],
-		['Bottom', 'Left'], ['Bottom', 'Right'],
-		['Left', 'Center'], ['Top', 'Center'],
-		['Right', 'Center'], ['Bottom', 'Center']
-	];
-	
-	return Base.each(keys,
+	return Base.each([
+			['Top', 'Left'], ['Top', 'Right'],
+			['Bottom', 'Left'], ['Bottom', 'Right'],
+			['Left', 'Center'], ['Top', 'Center'],
+			['Right', 'Center'], ['Bottom', 'Center']
+		],
 		function(parts, index) {
 			var key = parts.join('');
 			// find out if the first of the pair is an x or y property,
@@ -260,9 +264,10 @@ var Rectangle = this.Rectangle = Base.extend({
 			this['get' + key] = function() {
 				return Point.create(this[getX](), this[getY]());
 			};
-			this['set' + key] = function(value) {
-				var pt = Point.read(arguments);
-				return this[setX](pt.x)[setY](pt.y); // Note: chaining here!
+			this['set' + key] = function(point) {
+				if (!(point = Point.read(arguments)))
+					return this;
+				return this[setX](point.x)[setY](point.y); // Note: call chaining!
 			};
 		}, { beans: true });
 });
