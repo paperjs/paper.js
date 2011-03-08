@@ -37,17 +37,16 @@ var sources = [
 
 	'src/item/Item.js',
 	'src/item/Group.js',
+	'src/item/Layer.js',
 	'src/item/Raster.js',
 	'src/item/PlacedSymbol.js',
 	'src/item/PathStyle.js',
-	'src/path/PathItem.js',
+
 	'src/path/Segment.js',
 	'src/path/Curve.js',
-
-	'src/item/Layer.js',
+	'src/path/PathItem.js',
 	'src/path/Path.js',
 	'src/path/CompoundPath.js',
-
 	'src/path/Path.Constructors.js',
 
 	'src/color/Color.js',
@@ -63,8 +62,8 @@ var sources = [
 
 	'src/util/BlendMode.js',
 	'src/util/CanvasProvider.js',
-	'src/util/Numerical.js',
 	'src/util/Events.js',
+	'src/util/Numerical.js',
 	'src/util/PaperScript.js'
 ];
 
@@ -72,7 +71,8 @@ var sources = [
 if (loadTests) {
 	sources.push(
 		'test/lib/qunit/qunit.js',
-		'test/lib/test_functions.js',
+		'test/lib/helpers.js',
+
 		'test/tests/Point.js',
 		'test/tests/Size.js',
 		'test/tests/Rectangle.js',
