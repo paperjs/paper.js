@@ -38,6 +38,18 @@ var Path = this.Path = PathItem.extend({
 		var length = segments.length;
 		if (!this._segments) {
 			this._segments = new Array(length);
+			/*
+			this._segments = Base.each(
+				['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'],
+				function(name) {
+					var prev = this[name];
+					this[name] = function() {
+						return prev.apply(this, arguments);
+					}
+				},
+				new Array(length)
+			);
+			*/
 		} else {
 			this._segments.length = length;
 		}
