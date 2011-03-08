@@ -1,4 +1,5 @@
-/*
+/***
+ *
  * Paper.js
  *
  * A JavaScript Vector Graphics Library, based on Scriptographer.org and
@@ -6,14 +7,33 @@
  * http://paperjs.org/
  * http://scriptographer.org/
  *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * All rights reserved.
  *
- * Bootstrap is released under the MIT license.
- * See LICENSE file for details.
- */
+ ***
+ *
+ * Bootstrap.js JavaScript Framework.
+ * http://bootstrapjs.org/
+ *
+ * Distributed under the MIT license.
+ *
+ * Copyright (c) 2006 - 2011 Juerg Lehni
+ * http://lehni.org/
+ *
+ ***
+ *
+ * Parse-JS, A JavaScript tokenizer / parser / generator.
+ *
+ * Distributed under the BSD license.
+ *
+ * Copyright (c) 2010, Mihai Bazon <mihai.bazon@gmail.com>
+ * http://mihai.bazon.net/blog/
+ *
+ ***/
 
 var paper = new function() {
 
