@@ -227,8 +227,9 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @param point
 	 */
-	getAngle: function(point) {
-		return this.getAngleInRadians(point) * 180 / Math.PI;
+	getAngle: function(/* point */) {
+		// Hide point from Bootstrap so it injects bean too
+		return this.getAngleInRadians(arguments[0]) * 180 / Math.PI;
 	},
 
 	setAngle: function(angle) {
@@ -241,24 +242,25 @@ var Point = this.Point = Base.extend({
 		return this;
 	},
 
-	getAngleInRadians: function(point) {
-		if (point != undefined) {
-			point = Point.read(arguments);
-			var div = this.getLength() * point.getLength();
+	getAngleInRadians: function(/* point */) {
+		// Hide point from Bootstrap so it injects bean too
+		if (arguments[0] === undefined) {
+			if (this._angle == null)
+				this._angle = Math.atan2(this.y, this.x);
+			return this._angle;
+		} else {
+			var point = Point.read(arguments),
+				div = this.getLength() * point.getLength();
 			if (div == 0) {
 				return NaN;
 			} else {
 				return Math.acos(this.dot(point) / div);
 			}
-		} else {
-			if (this._angle == null)
-				this._angle = Math.atan2(this.y, this.x);
-			return this._angle;
 		}
 	},
 
-	getAngleInDegrees: function(point) {
-		return this.getAngle(point);
+	getAngleInDegrees: function(/* point */) {
+		return this.getAngle(arguments[0]);
 	},
 
 	/**

@@ -693,16 +693,20 @@ var Path = this.Path = PathItem.extend({
 
 		/**
 		 * The bounding rectangle of the item excluding stroke width.
+		 * @param matrix optional
 		 */
-		getBounds: function(matrix) {
-			return getBounds(this, matrix);
+		getBounds: function(/* matrix */) {
+			// Pass the matrix hidden from Bootstrap, so it still inject 
+			// getBounds as bean too.
+			return getBounds(this, arguments[0]);
 		},
 
 		/**
 		 * The bounding rectangle of the item including stroke width.
 		 */
-		getStrokeBounds: function(matrix) {
-			var width = this.getStrokeWidth(),
+		getStrokeBounds: function(/* matrix */) {
+			var matrix = arguments[0], // set #getBounds()
+				width = this.getStrokeWidth(),
 				radius = width / 2,
 				padding = getPenPadding(radius, matrix),
 				join = this.getStrokeJoin(),
