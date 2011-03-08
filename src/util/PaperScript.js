@@ -149,7 +149,7 @@ var PaperScript = new function() {
 
 //#ifdef BROWSER
 	// Code borrowed from Coffee Script:
-	function load(url) {
+	function request(url) {
 		var xhr = new (window.ActiveXObject
 				|| XMLHttpRequest)('Microsoft.XMLHTTP');
 		xhr.open('GET', url, true);
@@ -163,7 +163,8 @@ var PaperScript = new function() {
 		};
 		return xhr.send(null);
 	}
-	function install() {
+
+	function load() {
 		var scripts = document.getElementsByTagName('script');
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
@@ -175,7 +176,7 @@ var PaperScript = new function() {
 					new Document(canvas);
 				}
 				if (script.src) {
-					load(script.src);
+					request(script.src);
 				} else {
 					run(script.innerHTML);
 				}
@@ -184,12 +185,12 @@ var PaperScript = new function() {
 		return null;
 	}
 
-	Events.add(window, { load: install });
+	Events.add(window, { load: load });
 
 	return {
 		compile: compile,
 		run: run,
-		install: install
+		load: load
 	};
 
 //#else // !BROWSER
