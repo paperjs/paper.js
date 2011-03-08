@@ -40,9 +40,9 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	setSize: function() {
-		var size = Size.read(arguments);
-		// Get reference to image before changing canvas
-		var image = this.getImage();
+		var size = Size.read(arguments),
+			// Get reference to image before changing canvas
+			image = this.getImage();
 		// Setting canvas internally sets _size
 		this.setCanvas(CanvasProvider.getCanvas(size));
 		// Draw image back onto new canvas
@@ -68,9 +68,9 @@ var Raster = this.Raster = Item.extend({
 	 */
 	getPpi: function() {
 		var matrix = this.matrix;
-		var orig = new Point(0, 0).transform(matrix);
-		var u = new Point(1, 0).transform(matrix).subtract(orig);
-		var v = new Point(0, 1).transform(matrix).subtract(orig);
+			orig = new Point(0, 0).transform(matrix),
+			u = new Point(1, 0).transform(matrix).subtract(orig),
+			v = new Point(0, 1).transform(matrix).subtract(orig);
 		return new Size(
 			72 / u.getLength(),
 			72 / v.getLength()
@@ -123,9 +123,9 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	getSubImage: function(/* rectangle */) {
-		var rectangle = Rectangle.read(arguments);
-		var canvas = CanvasProvider.getCanvas(rectangle.getSize());
-		var context = canvas.getContext('2d');
+		var rectangle = Rectangle.read(arguments),
+			canvas = CanvasProvider.getCanvas(rectangle.getSize()),
+			context = canvas.getContext('2d');
 		context.drawImage(this.getCanvas(), rectangle.x, rectangle.y,
 				canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 		return canvas;
@@ -144,10 +144,10 @@ var Raster = this.Raster = Item.extend({
 	 * @param y
 	 */
 	getPixel: function() {
-		var point = Point.read(arguments);
-		var ctx = this.getContext();
-		var pixels = ctx.getImageData(point.x + 0.5, point.y + 0.5, 1, 1).data;
-		var channels = [];
+		var point = Point.read(arguments),
+			ctx = this.getContext(),
+			pixels = ctx.getImageData(point.x + 0.5, point.y + 0.5, 1, 1).data,
+			channels = [];
 		for (var i = 0; i < 4; i++)
 			channels.push(pixels[i] / 255);
 		return Color.read(channels);
@@ -191,8 +191,8 @@ var Raster = this.Raster = Item.extend({
 	}
 }, new function() {
 	function getAverageColor(pixels) {
-		var channels = [0, 0, 0];
-		var total = 0;
+		var channels = [0, 0, 0],
+			total = 0;
 		for (var i = 0, l = pixels.length; i < l; i += 4) {
 			var alpha = pixels[i + 3];
 			total += alpha;
@@ -234,9 +234,9 @@ var Raster = this.Raster = Item.extend({
 							1, 1);
 				}
 
-				var canvas = CanvasProvider.getCanvas(bounds.getSize());
-				var ctx = canvas.getContext('2d');
-				var delta = bounds.getTopLeft().multiply(-1);
+				var canvas = CanvasProvider.getCanvas(bounds.getSize()),
+					ctx = canvas.getContext('2d'),
+					delta = bounds.getTopLeft().multiply(-1);
 				ctx.translate(delta.x, delta.y);
 				if (path) {
 					var style = object.getStyle();
@@ -244,8 +244,8 @@ var Raster = this.Raster = Item.extend({
 					ctx.clip();
 					path.setStyle(style);
 				}
-				var matrix = this.matrix.clone();
-				var transMatrix = Matrix.getTranslateInstance(delta);
+				var matrix = this.matrix.clone(),
+					transMatrix = Matrix.getTranslateInstance(delta);
 				matrix.preConcatenate(transMatrix);
 				matrix.applyToContext(ctx);
 				ctx.drawImage(this._canvas || this._image,
@@ -254,13 +254,13 @@ var Raster = this.Raster = Item.extend({
 			} else {
 				image = this.image;
 			}
-			var size = new Size(32);
-			var sampleCanvas = CanvasProvider.getCanvas(size);
-			var ctx = sampleCanvas.getContext('2d');
+			var size = new Size(32),
+				sampleCanvas = CanvasProvider.getCanvas(size),
+				ctx = sampleCanvas.getContext('2d');
 			ctx.drawImage(image, 0, 0, size.width, size.height);
 			var pixels = ctx.getImageData(0.5, 0.5,
-					size.width, size.height).data;
-			var color = getAverageColor(pixels);
+					size.width, size.height).data,
+				color = getAverageColor(pixels);
 			CanvasProvider.returnCanvas(sampleCanvas);
 			if (image instanceof HTMLCanvasElement)
 				CanvasProvider.returnCanvas(image);
