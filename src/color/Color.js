@@ -63,32 +63,29 @@ var Color = this.Color = Base.extend(new function() {
 		lightgrey: 'd3d3d3', silver: 'c0c0c0', darkgray: 'a9a9a9',
 		gray: '808080', dimgray: '696969', black: '000000'
 	};
-
+	
+	function hexToRGB(hex) {
+		hex = hex.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
+		if (hex.length >= 4) {
+			var rgb = new Array(3);
+			for (var i = 0; i < 3; i++) {
+				var channel = hex[i + 1];
+				rgb[i] = parseInt(channel.length == 1
+						? channel + channel : channel, 16) / 255;
+			}
+			return rgb;
+		}
+	}
+	
 	function stringToRGB(string) {
 		if (string.match(/^#[0-9a-f]{3,6}$/i)) {
-			var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
-			if (hex.length >= 4) {
-				var rgb = [];
-				for (var i = 1; i < 4; i++)
-					rgb.push(parseInt(hex[i].length == 1
-							? hex[i] + hex[i] : hex[i], 16) / 255);
-				return rgb;
-			}
+			return hexToRGB(string);
 		} else { 
 			var hex = namedColors[string];
 			if (!hex)
 				throw new Error('The named color "' + string
 						+ '" does not exist.');
-			hex = hex.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
-			if (hex.length >= 4) {
-				var rgb = new Array(3);
-				for (var i = 0; i < 3; i++) {
-					var channel = hex[i + 1];
-					rgb[i] = parseInt(channel.length == 1
-							? channel + channel : channel, 16) / 255;
-				}
-				return rgb;
-			}
+			return hexToRGB(hex);
 		}
 	};
 	
