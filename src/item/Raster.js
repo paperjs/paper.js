@@ -146,11 +146,11 @@ var Raster = this.Raster = Item.extend({
 	getPixel: function() {
 		var point = Point.read(arguments),
 			ctx = this.getContext(),
-			pixels = ctx.getImageData(point.x + 0.5, point.y + 0.5, 1, 1).data,
-			channels = [];
+			pixels = ctx.getImageData(point.x, point.y, 1, 1).data,
+			channels = new Array(4);
 		for (var i = 0; i < 4; i++)
-			channels.push(pixels[i] / 255);
-		return Color.read(channels);
+			channels[i] = pixels[i] / 255;
+		return RGBColor.read(channels);
 	},
 
 	// TODO: setPixel(point, color)
