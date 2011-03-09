@@ -232,58 +232,34 @@ var Color = this.Color = Base.extend(new function() {
 		}
 	};
 }, new function() {
-	function rgbToHsb(r, g, b) {
-		var max = Math.max(r, g, b),
-			min = Math.min(r, g, b),
-			delta = max - min,
-			hue,
-			saturation = (max != 0) ? delta / max : 0,
-			brightness = max;
-		if (saturation == 0) {
-			hue = 0;
-		} else {
-			var rr = (max - r) / delta,
-				gr = (max - g) / delta,
-				br = (max - b) / delta;
-			hue = r == max
-				? br - gr
-				: g == max
-					? 2 + rr - br
-					: 4 + gr - rr;
-			hue /= 6;
-			if (hue < 0)
-				hue++;
-		}
-		return [hue * 360, saturation, brightness];
-	}
-
-	function colorToHsb(color) {
-		return rgbToHsb(color.getRed(), color.getGreen(), color.getBlue());
-	}
-
-	function hsbToRgb(hue, saturation, brightness) {
-		if (hue < 0)
-			hue += 360;
-		hue = hue % 360;
-		var f = hue % 60,
-			p = (brightness * (1 - saturation)) / 1,
-			q = (brightness * (60 - saturation * f)) / 60,
-			t = (brightness * (60 - saturation * (60 - f))) / 60;
-		switch (Math.floor(hue / 60)) {
-			case 0: return [brightness, t, p];
-			case 1: return [q, brightness, p];
-			case 2: return [p, brightness, t];
-			case 3: return [p, q, brightness];
-			case 4: return [t, p, brightness];
-			case 5: return [brightness, p, q];
-		}
-	}
-
 	var converters = {
 		'rgb-hsb': function(color) {
-			var components = rgbToHsb(color._red, color._green, color._blue);
-			components.push(color._alpha);
-			return HSBColor.read(components);
+			var r = color._red,
+				g = color._green,
+				b = color._blue,
+				alpha = color._alpha,
+				max = Math.max(r, g, b),
+				min = Math.min(r, g, b),
+				delta = max - min,
+				hue,
+				saturation = (max != 0) ? delta / max : 0,
+				brightness = max;
+			if (saturation == 0) {
+				hue = 0;
+			} else {
+				var rr = (max - r) / delta,
+					gr = (max - g) / delta,
+					br = (max - b) / delta;
+				hue = r == max
+					? br - gr
+					: g == max
+						? 2 + rr - br
+						: 4 + gr - rr;
+				hue /= 6;
+				if (hue < 0)
+					hue++;
+			}
+			return new HSBColor(hue * 360, saturation, brightness, alpha);
 		},
 
 		'rgb-gray': function(color) {
@@ -299,10 +275,22 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		'hsb-rgb': function(color) {
-			var components = hsbToRgb(color._hue, color._saturation,
-					color._brightness);
-			components.push(color._alpha);
-			return RGBColor.read(components);
+			var h = color._hue,
+				s = color._saturation,
+				b = color._brightness,
+				a = color._alpha;
+			var f = h % 60,
+				p = (b * (1 - s)) / 1,
+				q = (b * (60 - s * f)) / 60,
+				t = (b * (60 - s * (60 - f))) / 60;
+			switch (Math.floor(h / 60)) {
+				case 0: return new RGBColor(b, t, p, a);
+				case 1: return new RGBColor(q, b, p, a);
+				case 2: return new RGBColor(p, b, t, a);
+				case 3: return new RGBColor(p, q, b, a);
+				case 4: return new RGBColor(t, p, b, a);
+				case 5: return new RGBColor(b, p, q, a);
+			}
 		},
 
 		'hsb-gray': function(color) {
@@ -312,11 +300,11 @@ var Color = this.Color = Base.extend(new function() {
 
 		'gray-rgb': function(color) {
 			var component = 1 - color.getGray();
-			return new RGBColor(component, component, component);
+			return new RGBColor(component, component, component, color._alpha);
 		},
 
 		'gray-hsb': function(color) {
-			return new HSBColor(0, 0, 1 - color.getGray());
+			return new HSBColor(0, 0, 1 - color._gray, color._alpha);
 		}
 	};
 
