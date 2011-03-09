@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript">var root = '../../'</script>
+	<script type="text/javascript" src="../../src/load.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		/////////////////////////////////////////////////////////////////////
+		// Values
+
+		var values = {
+			radius: 10,
+			tolerance: 5
+		};
+
+		checkValues();
+
+		document.currentStyle = {
+			strokeColor: 'black',
+			strokeWidth: 5,
+			strokeCap: 'round'
+		};
+
+		/////////////////////////////////////////////////////////////////////
+		// Mouse handling
+
+		var handle;
+		function checkValues() {
+			var min = values.radius * 2;
+			if (values.tolerance < min) values.tolerance = min;
+			handle = values.radius * 0.5522847498; // kappa
+		}
+
+		var path;
+		function onMouseDown(event) {
+			path = new Path();
+			path.segments = [event.point, event.point];
+			prevPoint = path.firstSegment.point;
+			curPoint = path.lastSegment.point;
+			curHandleSeg = null;
+		}
+
+		function onMouseUp(event) {
+		//	path.pointsToCurves(0, 0, 1, 0.001);
+		}
+
+		var curPoint, prevPoint, curHandleSeg;
+		function onMouseDrag(event) {
+			var point = event.point;
+			var diff = (point - prevPoint).abs();
+			if (diff.x < diff.y) {
+				curPoint.x = prevPoint.x;
+				curPoint.y = point.y;
+			} else {
+				curPoint.x = point.x;
+				curPoint.y = prevPoint.y;
+			}
+			var normal = curPoint - prevPoint;
+			normal.length = 1;
+			if (curHandleSeg) {
+				curHandleSeg.point = prevPoint + (normal * values.radius);
+				curHandleSeg.handleIn = normal * -handle;
+			}
+			var minDiff = Math.min(diff.x, diff.y);
+			if (minDiff > values.tolerance) {
+				var point = curPoint - (normal * values.radius);
+				var segment = new Segment(point, null, normal * handle);
+				path.insert(path.segments.length - 1, segment);
+				curHandleSeg = path.lastSegment;
+				// clone as we want the unmodified one:
+				prevPoint = curHandleSeg.point.clone();
+				// TODO: potential bug - in SG we don't need to clone this
+				// point, why?
+				path.add(curHandleSeg.clone());
+				curPoint = path.lastSegment.point;
+			}
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
