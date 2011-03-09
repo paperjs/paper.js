@@ -51,7 +51,6 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	},
 
 	draw: function(ctx, param) {
-		// TODO: we need to preserve strokewidth
 		ctx.save();
 		this.matrix.applyToContext(ctx);
 		Item.draw(this.symbol.getDefinition(), ctx, param);

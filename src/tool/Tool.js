@@ -61,7 +61,7 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 				mouseup: function(event) {
 					if (dragging) {
 						curPoint = null;
-						if (this.eventInterval != null)
+						if (that.eventInterval != null)
 							clearInterval(this.timer);
 						that.onHandleEvent('mouse-up',
 								viewToArtwork(event, that._document), null, null);

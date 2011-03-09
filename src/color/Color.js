@@ -165,8 +165,7 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		setAlpha: function(alpha) {
-			// this._alpha = Math.min(Math.max(alpha, 0), 1);
-			this._alpha = alpha < 0 ? 0 : alpha > 1 ? 1 : alpha;
+			this._alpha = Math.min(Math.max(alpha, 0), 1);
 			this._cssString = null;
 		},
 
