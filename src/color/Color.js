@@ -65,27 +65,31 @@ var Color = this.Color = Base.extend(new function() {
 	};
 
 	function stringToRGB(string) {
-		return string.match(/^#[0-9a-f]{3,6}$/i)
-				? hexToRgb(string)
-				: namedToRgb(string);
-	};
-
-	function hexToRgb(string) {
-		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
-		if (hex.length >= 4) {
-			var rgb = [];
-			for (var i = 1; i < 4; i++)
-				rgb.push(parseInt(hex[i].length == 1
-						? hex[i] + hex[i] : hex[i], 16) / 255);
-			return rgb;
+		if (string.match(/^#[0-9a-f]{3,6}$/i)) {
+			var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
+			if (hex.length >= 4) {
+				var rgb = [];
+				for (var i = 1; i < 4; i++)
+					rgb.push(parseInt(hex[i].length == 1
+							? hex[i] + hex[i] : hex[i], 16) / 255);
+				return rgb;
+			}
+		} else { 
+			var hex = namedColors[string];
+			if (!hex)
+				throw new Error('The named color "' + string
+						+ '" does not exist.');
+			hex = hex.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
+			if (hex.length >= 4) {
+				var rgb = new Array(3);
+				for (var i = 0; i < 3; i++) {
+					var channel = hex[i + 1];
+					rgb[i] = parseInt(channel.length == 1
+							? channel + channel : channel, 16) / 255;
+				}
+				return rgb;
+			}
 		}
-	};
-
-	function namedToRgb(name) {
-		var hex = namedColors[name];
-		if (!hex)
-			throw new Error('The named color "' + name + '" does not exist.');
-		return hex && hexToRgb(hex);
 	};
 	
 	return {
@@ -146,7 +150,7 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		getType: function() {
-			return this._alpha == -1 ? this._colorType : 'a' + this._colorType;
+			return this._colorType;
 		},
 
 		getComponents: function() {
