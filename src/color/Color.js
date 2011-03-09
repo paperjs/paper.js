@@ -338,10 +338,9 @@ var Color = this.Color = Base.extend(new function() {
 				return this.convert(colorType)[component];
 			};
 			this['set' + Base.capitalize(component)] = function(value) {
-				// TODO: can this be optimized?
-				var convertedColor = this.convert(colorType);
-				convertedColor[component] = value;
-				var color = convertedColor.convert(this._colorType);
+				var color = this.convert(colorType);
+				color[component] = value;
+				color = color.convert(this._colorType);
 				for (var i = 0, l = this._components.length; i < l; i++) {
 					this[this._components[i]] = color[this._components[i]];
 				}
