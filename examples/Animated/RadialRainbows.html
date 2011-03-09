@@ -30,15 +30,18 @@
 		var mouseDown = false;
 		
 		function onMouseDown(event) {
+			point = point + vector;
 			mouseDown = true;
-			gradientColor.hilite = event.point;
 		}
 		
 		function onMouseDrag(event) {
-			gradientColor.hilite = event.point;
+			point = point + (event.point - point) / 10;
+			gradientColor.hilite = point;
+			iterate();
 		}
 		
 		function onMouseUp(event) {
+			vector.length = 10;
 			mouseDown = false;
 		}
 
@@ -46,6 +49,13 @@
 		var vector = new Point(150, 0);
 		setInterval(draw, 30);
 		function draw() {
+			if (!mouseDown) {
+				iterate();
+				document.redraw();
+			}
+		}
+		
+		function iterate() {
 			for(var i = 0, l = gradient.stops.length; i < l; i++)
 				gradient.stops[i].color.hue -= 20;
 			if (grow && vector.length > 300) {
@@ -55,10 +65,7 @@
 			}
 			vector.length += (grow ? 1 : -1);
 			vector.angle += 5;
-			if (!mouseDown) {
-				gradientColor.hilite = point + vector;
-				document.redraw();
-			}
+			gradientColor.hilite = mouseDown ? point : point + vector;
 		}
 	</script>
 </head>
