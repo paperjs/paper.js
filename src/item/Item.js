@@ -799,4 +799,80 @@ var Item = this.Item = Base.extend({
 		 */
 		moveBelow: move(false)
 	}
+}, new function() {
+	var sets = {
+		down: {}, drag: {}, up: {}
+	};
+
+	function removeAll(set) {
+		for(var id in set) {
+			var item = set[id];
+			item.remove();
+			for(var type in sets) {
+				var other = sets[type];
+				if(other != set && other[item.getId()])
+					delete other[item.getId()];
+			}
+		}
+	}
+
+	function installHandler(name) {
+		var handler = 'onMouse' + Base.capitalize(name);
+		// Inject a onMouse handler that performs all the behind the scene magic
+		// and calls the script's handler at the end, if defined.
+		var func = paper.tool[handler];
+		if (!func || !func._installed) {
+			var hash = {};
+			hash[handler] = function(event) {
+				// Always clear the drag set on mouse-up
+				if (name == 'up')
+					sets.drag = {};
+				removeAll(sets[name]);
+				sets[name] = {};
+				// Call the script's overridden handler, if defined
+				if(this.base)
+					this.base(event);
+			}
+			paper.tool.inject(hash);
+			// Only install this handler once, and mark it as installed,
+			// to prevent repeated installing.
+			paper.tool[handler]._installed = true;
+		}
+	}
+
+	return Base.each(['up', 'down', 'drag'], function(name) {
+		this['removeOn' + Base.capitalize(name)] = function() {
+			var hash = {};
+			hash[name] = true;
+			return this.removeOn(hash);
+		};
+	}, {
+		removeOn: function(obj) {
+			for (var name in obj) {
+				if (obj[name]) {
+					sets[name][this.getId()] = this;
+					// Since the drag set gets cleared in up, we need to make
+					// sure it's installed too
+					if (name == 'drag')
+						installHandler('up');
+					installHandler(name);
+				}
+			}
+			return this;
+		}
+	});
+}, new function() {
+	var id = 0;
+	return {
+		beans: true,
+		
+		/**
+		 * The unique id of the item.
+		 */
+		getId: function() {
+			if (this._id === undefined)
+				this._id = id++;
+			return this._id;
+		}
+	}
 });
