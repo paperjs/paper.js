@@ -63,7 +63,7 @@ var Color = this.Color = Base.extend(new function() {
 		lightgrey: 'd3d3d3', silver: 'c0c0c0', darkgray: 'a9a9a9',
 		gray: '808080', dimgray: '696969', black: '000000'
 	};
-	
+
 	function hexToRGB(hex) {
 		hex = hex.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
 		if (hex.length >= 4) {
@@ -76,7 +76,7 @@ var Color = this.Color = Base.extend(new function() {
 			return rgb;
 		}
 	}
-	
+
 	function stringToRGB(string) {
 		if (string.match(/^#[0-9a-f]{3,6}$/i)) {
 			return hexToRGB(string);
@@ -88,7 +88,7 @@ var Color = this.Color = Base.extend(new function() {
 			return hexToRGB(hex);
 		}
 	};
-	
+
 	return {
 		beans: true,
 
@@ -288,7 +288,7 @@ var Color = this.Color = Base.extend(new function() {
 			components.push(color._alpha);
 			return HSBColor.read(components);
 		},
-		
+
 		'rgb-gray': function(color) {
 			// Using the standard NTSC conversion formula that is used for
 			// calculating the effective luminance of an RGB color:
@@ -300,24 +300,24 @@ var Color = this.Color = Base.extend(new function() {
 					color._alpha
 				);
 		},
-		
+
 		'hsb-rgb': function(color) {
 			var components = hsbToRgb(color._hue, color._saturation,
 					color._brightness);
 			components.push(color._alpha);
 			return RGBColor.read(components);
 		},
-		
+
 		'hsb-gray': function(color) {
 			var rgbColor = converters['hsb-rgb'](color);
 			return converters['rgb-gray'](rgbColor);
 		},
-		
+
 		'gray-rgb': function(color) {
 			var component = 1 - color.getGray();
 			return new RGBColor(component, component, component);
 		},
-		
+
 		'gray-hsb': function(color) {
 			return new HSBColor(0, 0, 1 - color.getGray());
 		}

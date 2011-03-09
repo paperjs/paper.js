@@ -29,7 +29,9 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 				return this;
 			};
 		}
-	}, { beans: true,
+	}, {
+		beans: true,
 		_colorType: 'rgb',
-		_components: components});
+		_components: components
+	});
 });

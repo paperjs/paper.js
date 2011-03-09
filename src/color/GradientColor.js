@@ -84,3 +84,4 @@ var GradientColor = this.GradientColor = Color.extend({
 		return gradient;
 	}
 });
+

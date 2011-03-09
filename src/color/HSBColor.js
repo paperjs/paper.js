@@ -32,7 +32,8 @@ var HSBColor = this.HSBColor = Color.extend(new function() {
 				};
 			}
 		}
-	}, { beans: true,
+	}, {
+		beans: true,
 		_colorType: 'hsb',
 		_components: components,
 
