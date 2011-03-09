@@ -278,8 +278,8 @@ var Color = this.Color = Base.extend(new function() {
 			var h = color._hue,
 				s = color._saturation,
 				b = color._brightness,
-				a = color._alpha;
-			var f = h % 60,
+				a = color._alpha,
+				f = h % 60,
 				p = (b * (1 - s)) / 1,
 				q = (b * (60 - s * f)) / 60,
 				t = (b * (60 - s * (60 - f))) / 60;
