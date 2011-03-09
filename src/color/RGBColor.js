@@ -25,7 +25,8 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 			};
 			this['set' + name] = function(value) {
 				this._cssString = null;
-				this[internalName] = value;
+				// this[internalName] = Math.min(Math.max(value, 0), 1);
+				this[internalName] = value < 0 ? 0 : value > 1 ? 1 : value;
 				return this;
 			};
 		}

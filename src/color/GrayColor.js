@@ -28,9 +28,10 @@ var GrayColor = this.GrayColor = Color.extend({
 		return this._gray;
 	},
 
-	setGray: function(gray) {
+	setGray: function(value) {
 		this._cssString = null;
-		this._gray = gray;
+		// this._gray = Math.min(Math.max(value, 0), 1);
+		this._gray = value < 0 ? 0 : value > 1 ? 1 : value;
 		return this;
 	}
 });
