@@ -166,6 +166,24 @@ var Raster = this.Raster = Item.extend({
 		ctx.putImageData(imageData, x, y);
 	},
 
+	createData: function(size) {
+		size = Size.read(arguments);
+		return this.getContext().createImageData(size.width, size.height);
+	},
+
+	getData: function(/* [rect] */) {
+		var rect = Rectangle.read(arguments),
+			ctx = this.getContext();
+		rect = rect.isEmpty() ? new Rectangle(this.getSize()) : rect;
+		return ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
+	},
+
+	setData: function(data /* [, point] */) {
+		var point = Rectangle.read(arguments, 1),
+			ctx = this.getContext();
+		ctx.putImageData(data, point.x, point.y);
+	},
+
 	_transform: function(matrix, flags) {
 		// In order to set the right context transformation when drawing the
 		// raster, simply preconcatenate the internal matrix with the provided
