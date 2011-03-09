@@ -40,7 +40,7 @@ var HSBColor = this.HSBColor = Color.extend(new function() {
 			if (hue < 0)
 				hue = 360 + hue;
 			this._cssString = null;
-			this._hue = hue;
+			this._hue = hue % 360;
 			return this;
 		}
 	});
