@@ -14,8 +14,8 @@
  * All rights reserved.
  */
 
-var RGBColor = this.RGBColor = Color.extend(new function() {
-	var components = ['red', 'green', 'blue', 'alpha'];
+var HSBColor = this.HSBColor = Color.extend(new function() {
+	var components = ['hue', 'saturation', 'brightness', 'alpha'];
 	return Base.each(components, function(name) {
 		var internalName = '_' + name;
 		name = Base.capitalize(name);
@@ -23,13 +23,25 @@ var RGBColor = this.RGBColor = Color.extend(new function() {
 			this['get' + name] = function() {
 				return this[internalName];
 			};
-			this['set' + name] = function(value) {
-				this._cssString = null;
-				this[internalName] = value;
-				return this;
-			};
+			// Avoid overriding setHue:
+			if (!this['set' + name]) {
+				this['set' + name] = function(value) {
+					this._cssString = null;
+					this[internalName] = value;
+					return this;
+				};
+			}
 		}
 	}, { beans: true,
-		_colorType: 'rgb',
-		_components: components});
+		_colorType: 'hsb',
+		_components: components,
+
+		setHue: function(hue) {
+			if (hue < 0)
+				hue = 360 + hue;
+			this._cssString = null;
+			this._hue = hue;
+			return this;
+		}
+	});
 });
