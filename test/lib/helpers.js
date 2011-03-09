@@ -21,8 +21,11 @@ function compareSegments(segment1, segment2) {
 }
 
 function compareNumbers(number1, number2, message) {
-	equals(Math.round(number1 * 100) / 100, Math.round(number2 * 100) / 100,
-			message);
+	if(number1 !== 0)
+		number1 = Math.round(number1 * 100) / 100;
+	if(number2 !== 0)
+		number2 = Math.round(number2 * 100) / 100;
+	equals(number1, number2, message);
 }
 
 function comparePoints(point1, point2, message) {
@@ -43,8 +46,34 @@ function compareRGBColors(color1, color2, message) {
 	color1 = new RGBColor(color1);
 	color2 = new RGBColor(color2);
 	
-	equals(color1.red, color2.red, 'red');
-	equals(color1.green, color2.green, 'green');
-	equals(color1.blue, color2.blue, 'blue');
-	equals(color1.alpha, color2.alpha, 'alpha');
+	compareNumbers(color1.red, color2.red,
+				message ? message + ' red' : undefined);
+	compareNumbers(color1.green, color2.green,
+				message ? message + ' green' : undefined);
+	compareNumbers(color1.blue, color2.blue,
+				message ? message + ' blue' : undefined);
+	compareNumbers(color1.alpha, color2.alpha,
+				message ? message + ' alpha' : undefined);
+}
+
+function compareHSBColors(color1, color2, message) {
+	color1 = new HSBColor(color1);
+	color2 = new HSBColor(color2);
+	
+	compareNumbers(color1.hue, color2.hue,
+			message ? message + ' hue' : undefined);
+	compareNumbers(color1.saturation, color2.saturation,
+			message ? message + ' saturation' : undefined);
+	compareNumbers(color1.brightness, color2.brightness,
+			message ? message + ' brightness' : undefined);
+	compareNumbers(color1.alpha, color2.alpha,
+			message ? message + ' alpha' : undefined);
+}
+
+function compareGrayColors(color1, color2, message) {
+	color1 = new GrayColor(color1);
+	color2 = new GrayColor(color2);
+	
+	compareNumbers(color1.gray, color2.gray,
+			message ? message + ' gray' : undefined);
 }
