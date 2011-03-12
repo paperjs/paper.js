@@ -40,7 +40,7 @@
 		setInterval(draw, 30);
 		function draw() {
 			iterate();
-			var now = Date.now();
+			var now = new Date().getTime();
 			if(now - lastRedraw > 30) {
 				document.redraw();
 				lastRedraw = now;
