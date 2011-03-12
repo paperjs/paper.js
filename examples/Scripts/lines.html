@@ -14,8 +14,8 @@
 			path.closed = true;
 		}
 
-		var position = new Point(document.size) / 2;
-		var mousePos = position;		
+		var position = document.bounds.center;
+		var mousePos = position;
 		var children = document.activeLayer.children;
 		var count = 0;
 		
@@ -24,13 +24,14 @@
 			var delta = (mousePos - position);
 			position += delta / 10;
 			for (var i = 1; i < amount; i++) {
+				var path = children[i];
 				var length = Math.abs(Math.sin(i + count / 20) * 300);
-				children[i].segments = [
+				path.segments = [
 					position + delta / 1.5,
 					position + { angle: i * 2, length: length },
 					position + { angle: (i + 1) * 2, length: length }
 				];
-				children[i].fillColor.hue = count - length;
+				path.fillColor.hue = count - length;
 			}
 		}
 		
