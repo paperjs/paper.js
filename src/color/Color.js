@@ -133,7 +133,9 @@ var Color = this.Color = Base.extend(new function() {
 					Base.each(this._components,
 						function(name, i) {
 							var value = components[i];
-							this['_' + name] = value !== undefined
+							// TODO: should we call the setter?
+							// this['set' + name.capitalize()]
+							this[name] = value !== undefined
 									? value
 									// TODO: is this correct?
 									// Shouldn't alpha be set to -1?
