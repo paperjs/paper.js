@@ -15,65 +15,40 @@
  */
 
 var Color = this.Color = Base.extend(new function() {
-	var namedColors = {
-		lightpink: 'ffb6c1', pink: 'ffc0cb', crimson: 'dc143c',
-		lavenderblush: 'fff0f5', palevioletred: 'db7093', hotpink: 'ff69b4',
-		deeppink: 'ff1493', mediumvioletred: 'c71585', orchid: 'da70d6',
-		thistle: 'd8bfd8', plum: 'dda0dd', violet: 'ee82ee', fuchsia: 'ff00ff',
-		darkmagenta: '8b008b', purple: '800080', mediumorchid: 'ba55d3',
-		darkviolet: '9400d3', darkorchid: '9932cc', indigo: '4b0082',
-		blueviolet: '8a2be2', mediumpurple: '9370db', mediumslateblue: '7b68ee',
-		slateblue: '6a5acd', darkslateblue: '483d8b', ghostwhite: 'f8f8ff',
-		lavender: 'e6e6fa', blue: '0000ff', mediumblue: '0000cd',
-		darkblue: '00008b', navy: '000080', midnightblue: '191970',
-		royalblue: '4169e1', cornflowerblue: '6495ed', lightsteelblue: 'b0c4de',
-		lightslategray: '778899', slategray: '708090', dodgerblue: '1e90ff',
-		aliceblue: 'f0f8ff', steelblue: '4682b4', lightskyblue: '87cefa',
-		skyblue: '87ceeb', deepskyblue: '00bfff', lightblue: 'add8e6',
-		powderblue: 'b0e0e6', cadetblue: '5f9ea0', darkturquoise: '00ced1',
-		azure: 'f0ffff', lightcyan: 'e0ffff', paleturquoise: 'afeeee',
-		aqua: '00ffff', darkcyan: '008b8b', teal: '008080',
-		darkslategray: '2f4f4f', mediumturquoise: '48d1cc',
-		lightseagreen: '20b2aa', turquoise: '40e0d0', aquamarine: '7fffd4',
-		mediumaquamarine: '66cdaa', mediumspringgreen: '00fa9a',
-		mintcream: 'f5fffa', springgreen: '00ff7f', mediumseagreen: '3cb371',
-		seagreen: '2e8b57', honeydew: 'f0fff0', darkseagreen: '8fbc8f',
-		palegreen: '98fb98', lightgreen: '90ee90', limegreen: '32cd32',
-		lime: '00ff00', forestgreen: '228b22', green: '008000',
-		darkgreen: '006400', lawngreen: '7cfc00', chartreuse: '7fff00',
-		greenyellow: 'adff2f', darkolivegreen: '556b2f', yellowgreen: '9acd32',
-		olivedrab: '6b8e23', ivory: 'fffff0', beige: 'f5f5dc',
-		lightyellow: 'ffffe0', lightgoldenrodyellow: 'fafad2', yellow: 'ffff00',
-		olive: '808000', darkkhaki: 'bdb76b', palegoldenrod: 'eee8aa',
-		lemonchiffon: 'fffacd', khaki: 'f0e68c', gold: 'ffd700',
-		cornsilk: 'fff8dc', goldenrod: 'daa520', darkgoldenrod: 'b8860b',
-		floralwhite: 'fffaf0', oldlace: 'fdf5e6', wheat: 'f5deb3',
-		orange: 'ffa500', moccasin: 'ffe4b5', papayawhip: 'ffefd5',
-		blanchedalmond: 'ffebcd', navajowhite: 'ffdead', antiquewhite: 'faebd7',
-		tan: 'd2b48c', burlywood: 'deb887', darkorange: 'ff8c00',
-		bisque: 'ffe4c4', linen: 'faf0e6', peru: 'cd853f', peachpuff: 'ffdab9',
-		sandybrown: 'f4a460', chocolate: 'd2691e', saddlebrown: '8b4513',
-		seashell: 'fff5ee', sienna: 'a0522d', lightsalmon: 'ffa07a',
-		coral: 'ff7f50', orangered: 'ff4500', darksalmon: 'e9967a',
-		tomato: 'ff6347', salmon: 'fa8072', mistyrose: 'ffe4e1',
-		lightcoral: 'f08080', snow: 'fffafa', rosybrown: 'bc8f8f',
-		indianred: 'cd5c5c', red: 'ff0000', brown: 'a52a2a',
-		firebrick: 'b22222', darkred: '8b0000', maroon: '800000',
-		white: 'ffffff', whitesmoke: 'f5f5f5', gainsboro: 'dcdcdc',
-		lightgrey: 'd3d3d3', silver: 'c0c0c0', darkgray: 'a9a9a9',
-		gray: '808080', dimgray: '696969', black: '000000'
-	};
-
-	function stringToRGB(string) {
-		// If the string isn't a hex code, it is a named color whose hex code
-		// needs to be looked up in the namedColor object:
-		if (!string.match(/^#[0-9a-f]{3,6}$/i)) {
-			string = namedColors[string];
-			if (!string)
-				throw new Error('The named color "' + string
-						+ '" does not exist.');
+	var nameToRGBColor = new function() {
+		var cachedColors = {};
+		var context;
+		return function(name) {
+			var color = cachedColors[name];
+			if (color === undefined) {
+				if (!context) {
+					var canvas = CanvasProvider.getCanvas(Size.create(1, 1));
+					context = canvas.getContext('2d');
+					context.globalCompositeOperation = 'copy';
+				}
+				// Set the fillStyle of the context to the passed name
+				// and fill the canvas with it. Then retrieve the first pixel:
+				context.save();
+				context.fillStyle = name;
+				context.fillRect(0, 0, 1, 1);
+				context.restore();
+				var components = context.getImageData(0, 0, 1, 1).data;
+				var rgb = new Array(3);
+				for (var i = 0; i < 3; i++)
+					rgb[i] = components[i] / 255;
+				// If the name wasn't found, rgb is [0, 0, 0]
+				if ((rgb.join('') == '000' && name != 'black')) {
+					throw new Error('The named color "' + name
+							+ '" does not exist.');
+				} else {
+					color = cachedColors[name] = RGBColor.read(rgb);
+				}
+			}
+			return color;
 		}
-		// Now convert the hex code to [r, g, b]:
+	}
+	
+	function hexToRGBColor(string) {
 		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
 		if (hex.length >= 4) {
 			var rgb = new Array(3);
@@ -82,13 +57,12 @@ var Color = this.Color = Base.extend(new function() {
 				rgb[i] = parseInt(channel.length == 1
 						? channel + channel : channel, 16) / 255;
 			}
-			return rgb;
+			return RGBColor.read(rgb);
 		}
 	};
 
 	return {
 		beans: true,
-		_readNull: true,
 
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg);
@@ -114,7 +88,9 @@ var Color = this.Color = Base.extend(new function() {
 							: color;
 				}
 			} else if (typeof arg == 'string') {
-				var rgbColor = RGBColor.read(stringToRGB(arg));
+				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
+						? hexToRGBColor(arg)
+						: nameToRGBColor(arg);
 				return this._colorType
 						? rgbColor.convert(this._colorType)
 						: rgbColor;
