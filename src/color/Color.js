@@ -23,27 +23,23 @@ var Color = this.Color = Base.extend(new function() {
 		var color = colorCache[name];
 		if (color)
 			return color;
-		// Use a 1x1 Canvas to draw to with the given name and then
-		// retrieve the rgb values from. Build a cache for all these
-		// colors on a per use basis.
+		// Use a canvas to draw to with the given name and then retrieve the rgb
+		// values from. Build a cache for all these colors on a per use basis.
 		if (!colorContext) {
 			var canvas = CanvasProvider.getCanvas(Size.create(1, 1));
 			colorContext = canvas.getContext('2d');
 			colorContext.globalCompositeOperation = 'copy';
 		}
-		// Set the fillStyle of the context to the passed name
-		// and fill the canvas with it. Then retrieve the first pixel:
+		// Set the fillStyle of the context to the passed name and fill the
+		// canvas with it, then retrieve the data for the drawn pixel:
 		colorContext.fillStyle = name;
 		colorContext.fillRect(0, 0, 1, 1);
 		var data = colorContext.getImageData(0, 0, 1, 1).data,
-			rgb = [];
-		for (var i = 0; i < 3; i++)
-			rgb[i] = data[i] / 255;
+			rgb = [data[0] / 255, data[1] / 255, data[2] / 255];
 		// If the name wasn't found, rgb is [0, 0, 0]
-		if (rgb.join('') == '000' && name != 'black') {
+		if (rgb.join('') == '000' && name != 'black')
 			throw new Error('The named color "' + name
 					+ '" does not exist.');
-		}
 		return (colorCache[name] = RGBColor.read(rgb));
 	}
 
