@@ -20,8 +20,8 @@ var Color = this.Color = Base.extend(new function() {
 		var context;
 		return function(name) {
 			var color = cachedColors[name];
-			if(color === undefined) {
-				if(!context) {
+			if (color === undefined) {
+				if (!context) {
 					var canvas = CanvasProvider.getCanvas(Size.create(1, 1));
 					context = canvas.getContext('2d');
 					context.globalCompositeOperation = 'copy';
@@ -34,10 +34,10 @@ var Color = this.Color = Base.extend(new function() {
 				context.restore();
 				var components = context.getImageData(0, 0, 1, 1).data;
 				var rgb = new Array(3);
-				for(var i = 0; i < 3; i++)
+				for (var i = 0; i < 3; i++)
 					rgb[i] = components[i] / 255;
 				// If the name wasn't found, rgb is [0, 0, 0]
-				if((rgb.join('') == '000' && name != 'black')) {
+				if ((rgb.join('') == '000' && name != 'black')) {
 					throw new Error('The named color "' + name
 							+ '" does not exist.');
 				} else {
