@@ -240,18 +240,6 @@ var Color = this.Color = Base.extend(new function() {
 			return new HSBColor(hue * 360, saturation, brightness, alpha);
 		},
 
-		'rgb-gray': function(color) {
-			// Using the standard NTSC conversion formula that is used for
-			// calculating the effective luminance of an RGB color:
-			// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
-			return new GrayColor(1 -
-					(color._red * 0.2989
-					+ color._green * 0.587
-					+ color._blue * 0.114),
-					color._alpha
-				);
-		},
-
 		'hsb-rgb': function(color) {
 			var h = color._hue,
 				s = color._saturation,
@@ -271,14 +259,26 @@ var Color = this.Color = Base.extend(new function() {
 			}
 		},
 
-		'hsb-gray': function(color) {
-			var rgbColor = converters['hsb-rgb'](color);
-			return converters['rgb-gray'](rgbColor);
+		'rgb-gray': function(color) {
+			// Using the standard NTSC conversion formula that is used for
+			// calculating the effective luminance of an RGB color:
+			// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
+			return new GrayColor(1 -
+					(color._red * 0.2989
+					+ color._green * 0.587
+					+ color._blue * 0.114),
+					color._alpha
+				);
 		},
 
 		'gray-rgb': function(color) {
 			var component = 1 - color.getGray();
 			return new RGBColor(component, component, component, color._alpha);
+		},
+
+		'hsb-gray': function(color) {
+			var rgbColor = converters['hsb-rgb'](color);
+			return converters['rgb-gray'](rgbColor);
 		},
 
 		'gray-hsb': function(color) {
