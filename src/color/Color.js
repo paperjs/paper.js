@@ -16,11 +16,14 @@
 
 var Color = this.Color = Base.extend(new function() {
 	var nameToRGBColor = new function() {
-		var cachedColors = {};
-		var context;
+		var cache = {},
+			context;
 		return function(name) {
-			var color = cachedColors[name];
-			if (color === undefined) {
+			var color = cache[name];
+			if (!color) {
+				// Use a 1x1 Canvas to draw to with the given name and then
+				// retrieve the rgb values from. Build a cache for all these
+				// colors on a per use basis.
 				if (!context) {
 					var canvas = CanvasProvider.getCanvas(Size.create(1, 1));
 					context = canvas.getContext('2d');
@@ -28,26 +31,24 @@ var Color = this.Color = Base.extend(new function() {
 				}
 				// Set the fillStyle of the context to the passed name
 				// and fill the canvas with it. Then retrieve the first pixel:
-				context.save();
 				context.fillStyle = name;
 				context.fillRect(0, 0, 1, 1);
-				context.restore();
-				var components = context.getImageData(0, 0, 1, 1).data;
-				var rgb = new Array(3);
+				var data = context.getImageData(0, 0, 1, 1).data,
+					rgb = [];
 				for (var i = 0; i < 3; i++)
-					rgb[i] = components[i] / 255;
+					rgb[i] = data[i] / 255;
 				// If the name wasn't found, rgb is [0, 0, 0]
-				if ((rgb.join('') == '000' && name != 'black')) {
+				if (rgb.join('') == '000' && name != 'black') {
 					throw new Error('The named color "' + name
 							+ '" does not exist.');
 				} else {
-					color = cachedColors[name] = RGBColor.read(rgb);
+					color = cache[name] = RGBColor.read(rgb);
 				}
 			}
 			return color;
 		}
 	}
-	
+
 	function hexToRGBColor(string) {
 		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
 		if (hex.length >= 4) {
