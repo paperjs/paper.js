@@ -164,7 +164,7 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	equals: function(rect) {
 		rect = Rectangle.read(arguments);
-		return rect && this.x == rect.x && this.y == rect.y
+		return this.x == rect.x && this.y == rect.y
 				&& this.width == rect.width && this.height == rect.height;
 	},
 
@@ -187,7 +187,7 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	intersects: function(rect) {
 		rect = Rectangle.read(arguments);
-		return rect && rect.x + rect.width > this.x
+		return rect.x + rect.width > this.x
 				&& rect.y + rect.height > this.y
 				&& rect.x < this.x + this.width
 				&& rect.y < this.y + this.height;
