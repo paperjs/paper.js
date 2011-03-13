@@ -15,38 +15,38 @@
  */
 
 var Color = this.Color = Base.extend(new function() {
-	var nameToRGBColor = new function() {
-		var cache = {},
-			context;
-		return function(name) {
-			var color = cache[name];
-			if (!color) {
-				// Use a 1x1 Canvas to draw to with the given name and then
-				// retrieve the rgb values from. Build a cache for all these
-				// colors on a per use basis.
-				if (!context) {
-					var canvas = CanvasProvider.getCanvas(Size.create(1, 1));
-					context = canvas.getContext('2d');
-					context.globalCompositeOperation = 'copy';
-				}
-				// Set the fillStyle of the context to the passed name
-				// and fill the canvas with it. Then retrieve the first pixel:
-				context.fillStyle = name;
-				context.fillRect(0, 0, 1, 1);
-				var data = context.getImageData(0, 0, 1, 1).data,
-					rgb = [];
-				for (var i = 0; i < 3; i++)
-					rgb[i] = data[i] / 255;
-				// If the name wasn't found, rgb is [0, 0, 0]
-				if (rgb.join('') == '000' && name != 'black') {
-					throw new Error('The named color "' + name
-							+ '" does not exist.');
-				} else {
-					color = cache[name] = RGBColor.read(rgb);
-				}
+
+	var colorCache = {},
+		colorContext;
+
+	function nameToRGBColor(name) {
+		var color = colorCache[name];
+		if (!color) {
+			// Use a 1x1 Canvas to draw to with the given name and then
+			// retrieve the rgb values from. Build a cache for all these
+			// colors on a per use basis.
+			if (!colorContext) {
+				var canvas = CanvasProvider.getCanvas(Size.create(1, 1));
+				colorContext = canvas.getContext('2d');
+				colorContext.globalCompositeOperation = 'copy';
 			}
-			return color;
+			// Set the fillStyle of the context to the passed name
+			// and fill the canvas with it. Then retrieve the first pixel:
+			colorContext.fillStyle = name;
+			colorContext.fillRect(0, 0, 1, 1);
+			var data = colorContext.getImageData(0, 0, 1, 1).data,
+				rgb = [];
+			for (var i = 0; i < 3; i++)
+				rgb[i] = data[i] / 255;
+			// If the name wasn't found, rgb is [0, 0, 0]
+			if (rgb.join('') == '000' && name != 'black') {
+				throw new Error('The named color "' + name
+						+ '" does not exist.');
+			} else {
+				color = colorCache[name] = RGBColor.read(rgb);
+			}
 		}
+		return color;
 	}
 
 	function hexToRGBColor(string) {
