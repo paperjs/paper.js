@@ -6,25 +6,54 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
+		var amount = 180;
+		for(var i = 0; i < amount; i++) {
+			var path = new Path();
+			path.fillColor = new HSBColor(1, 1, Math.random());
+			path.strokeCap = 'round';
+			path.closed = true;
+		}
+
+		var position = document.bounds.center;
+		var mousePos = position;
+		var children = document.activeLayer.children;
 		var count = 0;
-		setInterval(draw, 20);
 		
-		function draw() {
+		function iterate() {
 			count++;
-			document.activeLayer.children = [];
-			var point = new Point(document.size) / 2;
-			var vector = new Point(100, 0);
-			for (var i = 0; i < 180; i++) {
-				var center = point + vector.rotate(i * 2).normalize(30);
-				var length = 30 + Math.abs(Math.sin((i + count / 20)) * 300);
-				var end = point + vector.rotate(i * 2).normalize(length);
-				var path = new Path.Line(center, end);
-				path.strokeColor = i % 4 ? 'black' : 'red';
+			var delta = (mousePos - position);
+			position += delta / 10;
+			for (var i = 1; i < amount; i++) {
+				var path = children[i];
+				var length = Math.abs(Math.sin(i + count / 20) * 300);
+				path.segments = [
+					position + delta / 1.5,
+					position + { angle: i * 2, length: length },
+					position + { angle: (i + 1) * 2, length: length }
+				];
+				path.fillColor.hue = count - length;
 			}
-			document.redraw();
+		}
+		
+		
+		var lastRedraw = 0;
+		setInterval(draw, 30);
+		function draw() {
+			iterate();
+			var now = new Date().getTime();
+			if(now - lastRedraw > 30) {
+				document.redraw();
+				lastRedraw = now;
+			}
+		}
+		
+		function onMouseMove(event) {
+			iterate();
+			lastRedraw = Date.now();
+			mousePos = event.point;
 		}
 	</script>
 </head>
-<body>
+<body style='background-color:black'>
 	<canvas id='canvas' width=1024 height=768></canvas>
 </body>

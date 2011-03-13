@@ -131,14 +131,14 @@ var PaperScript = new function() {
 
 	function run(code) {
 		with (paper) {
-			var tool = /onMouse(?:Up|Down|Move|Drag)/.test(code) && new Tool();
+			paper.tool = /onMouse(?:Up|Down|Move|Drag)/.test(code) && new Tool();
 			var res = eval(compile(code));
-			if (tool) {
+			if (paper.tool) {
 				Base.each(['onEditOptions', 'onOptions', 'onSelect',
 					'onDeselect', 'onReselect', 'onMouseDown', 'onMouseUp',
 					'onMouseDrag', 'onMouseMove'], function(key) {
 					try {
-						tool[key] = eval(key);
+						paper.tool[key] = eval(key);
 					} catch (e) {
 					}
 				});

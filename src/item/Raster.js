@@ -153,19 +153,18 @@ var Raster = this.Raster = Item.extend({
 		return RGBColor.read(channels);
 	},
 
-	// TODO: setPixel(point, color)
-	setPixel: function(x, y, color) {
-		color = Color.read(arguments, 2);
-		// TODO: Instead of getting image data, use context.createImageData()
-		// TODO: Cache imageData used for setting pixel, so it cna be reused.
+	setPixel: function(point, color) {
+		var hasPoint = arguments.length == 2;
+		point = Point.read(arguments, 0, hasPoint ? 1 : 2);
+		color = Color.read(arguments, hasPoint ? 1 : 2);
 		var ctx = this.getContext(),
-			imageData = ctx.getImageData(x, y, 1, 1),
+			imageData = ctx.createImageData(1, 1),
 			alpha = color.getAlpha();
 		imageData.data[0] = color.getRed() * 255;
 		imageData.data[1] = color.getGreen() * 255;
 		imageData.data[2] = color.getBlue() * 255;
 		imageData.data[3] = alpha != null ? alpha * 255 : 255;
-		ctx.putImageData(imageData, x, y);
+		ctx.putImageData(imageData, point.x, point.y);
 	},
 
 	createData: function(size) {
