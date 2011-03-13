@@ -23,7 +23,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		beans: true,
 
 		initialize: function(item, style) {
-			this.item = item;
+			this._item = item;
 			if (style) {
 				for (var i = 0, l = keys.length; i < l; i++) {
 					var key = keys[i];
@@ -40,9 +40,9 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			get = 'get' + Base.capitalize(key);
 
 		fields[set] = function(value) {
-			if (this.item && this.item.children) {
-				for (var i = 0, l = this.item.children.length; i < l; i++) {
-					this.item.children[i]._style[set](value);
+			if (this._item && this._item.children) {
+				for (var i = 0, l = this._item.children.length; i < l; i++) {
+					this._item.children[i]._style[set](value);
 				}
 			} else {
 				this['_' + key] = isColor ? Color.read(arguments) : value;
@@ -51,10 +51,10 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		};
 
 		fields[get] = function() {
-			if (this.item && this.item.children) {
+			if (this._item && this._item.children) {
 				var style;
-				for (var i = 0, l = this.item.children.length; i < l; i++) {
-					var childStyle = this.item.children[i]._style[get]();
+				for (var i = 0, l = this._item.children.length; i < l; i++) {
+					var childStyle = this._item.children[i]._style[get]();
 					if (!style) {
 						style = childStyle;
 					} else if (style != childStyle) {
