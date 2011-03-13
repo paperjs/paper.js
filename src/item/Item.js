@@ -394,14 +394,12 @@ var Item = this.Item = Base.extend({
 	},
 
 	setBounds: function(rect) {
-		var bounds = this.getBounds();
 		rect = Rectangle.read(arguments);
-		if (!rect)
-			return;
-		var matrix = new Matrix();
+		var bounds = this.getBounds(),
+			matrix = new Matrix(),
+			center = rect.center;
 		// Read this from bottom to top:
 		// Translate to new center:
-		var center = rect.center;
 		matrix.translate(center);
 		// Scale to new Size, if size changes and avoid divisions by 0:
 		if (rect.width != bounds.width || rect.height != bounds.height) {

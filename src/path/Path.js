@@ -529,12 +529,10 @@ var Path = this.Path = PathItem.extend({
 			}
 		},
 
-		lineBy: function() {
-			var vector = Point.read(arguments);
-			if (vector) {
-				var current = getCurrentSegment(this);
-				this.lineTo(current._point.add(vector));
-			}
+		lineBy: function(vector) {
+			vector = Point.read(arguments);
+			var current = getCurrentSegment(this);
+			this.lineTo(current._point.add(vector));
 		},
 
 		curveBy: function(throughVector, toVector, parameter) {

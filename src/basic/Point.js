@@ -78,33 +78,28 @@ var Point = this.Point = Base.extend({
 	},
 
 	add: function(point) {
-		return (point = Point.read(arguments))
-			? Point.create(this.x + point.x, this.y + point.y)
-			: null;
+		point = Point.read(arguments);
+		return Point.create(this.x + point.x, this.y + point.y);
 	},
 
 	subtract: function(point) {
-		return (point = Point.read(arguments))
-			? Point.create(this.x - point.x, this.y - point.y)
-			: null;
+		point = Point.read(arguments);
+		return Point.create(this.x - point.x, this.y - point.y);
 	},
 
 	multiply: function(point) {
-		return (point = Point.read(arguments))
-			? Point.create(this.x * point.x, this.y * point.y)
-			: null;
+		point = Point.read(arguments);
+		return Point.create(this.x * point.x, this.y * point.y);
 	},
 
 	divide: function(point) {
-		return (point = Point.read(arguments))
-			? Point.create(this.x / point.x, this.y / point.y)
-			: null;
+		point = Point.read(arguments);
+		return Point.create(this.x / point.x, this.y / point.y);
 	},
 
 	modulo: function(point) {
-		return (point = Point.read(arguments))
-			? Point.create(this.x % point.x, this.y % point.y)
-			: null;
+		point = Point.read(arguments);
+		return Point.create(this.x % point.x, this.y % point.y);
 	},
 
 	negate: function() {
@@ -112,8 +107,8 @@ var Point = this.Point = Base.extend({
 	},
 
 	equals: function(point) {
-		return (point = Point.read(arguments))
-				&& this.x == point.x && this.y == point.y;
+		point = Point.read(arguments);
+		return this.x == point.x && this.y == point.y;
 	},
 
 	transform: function(matrix) {
@@ -137,19 +132,17 @@ var Point = this.Point = Base.extend({
 	 * @param py
 	 */
 	getDistance: function(point) {
-		if (!(point = Point.read(arguments)))
-			return null;
-		var px = point.x - this.x;
-		var py = point.y - this.y;
-		return Math.sqrt(px * px + py * py);
+		point = Point.read(arguments);
+		var x = point.x - this.x,
+			y = point.y - this.y;
+		return Math.sqrt(x * x + y * y);
 	},
 
 	getDistanceSquared: function(point) {
-		if (!(point = Point.read(arguments)))
-			return null;
-		var px = point.x - this.x;
-		var py = point.y - this.y;
-		return px * px + py * py;
+		point = Point.read(arguments);
+		var x = point.x - this.x,
+			y = point.y - this.y;
+		return x * x + y * y;
 	},
 
 	/**
@@ -273,17 +266,15 @@ var Point = this.Point = Base.extend({
 	 * @param point
 	 */
 	getDirectedAngle: function(point) {
-		if (!(point = Point.read(arguments)))
-			return null;
+		point = Point.read(arguments);
 		var angle = this.getAngle() - point.getAngle();
 		var bounds = 180;
 		if (angle < - bounds) {
 			return angle + bounds * 2;
 		} else if (angle > bounds) {
 			return angle - bounds * 2;
-		} else {
-			return angle;
 		}
+		return angle;
 	},
 
 	/**
@@ -452,9 +443,8 @@ var Point = this.Point = Base.extend({
 	 * @return the dot product of the two points
 	 */
 	dot: function(point) {
-		return (point = Point.read(arguments))
-			? this.x * point.x + this.y * point.y
-			: null;
+		point = Point.read(arguments);
+		return this.x * point.x + this.y * point.y;
 	},
 
 	/**
@@ -463,9 +453,8 @@ var Point = this.Point = Base.extend({
 	 * @return the cross product of the two points
 	 */
 	cross: function(point) {
-		return (point = Point.read(arguments))
-			? this.x * point.y - this.y * point.x
-			: null;
+		point = Point.read(arguments);
+		return this.x * point.y - this.y * point.x;
 	},
 
 	/**
@@ -476,8 +465,7 @@ var Point = this.Point = Base.extend({
 	 * @return the project of the point on another point
 	 */
 	project: function(point) {
-		if (!(point = Point.read(arguments)))
-			return null;
+		point = Point.read(arguments);
 		if (point.isZero()) {
 			return Point.create(0, 0);
 		} else {

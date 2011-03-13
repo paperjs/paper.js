@@ -55,10 +55,10 @@ var Segment = this.Segment = Base.extend({
 		return this._point;
 	},
 
-	setPoint: function() {
+	setPoint: function(point) {
+		point = Point.read(arguments);
 		// Do not replace the internal object but update it instead, so
 		// references to it are kept alive.
-		var point = Point.read(arguments);
 		this._point.set(point.x, point.y);
 	},
 
@@ -66,9 +66,9 @@ var Segment = this.Segment = Base.extend({
 		return this._handleIn;
 	},
 
-	setHandleIn: function() {
+	setHandleIn: function(point) {
+		point = Point.read(arguments);
 		// See #setPoint:
-		var point = Point.read(arguments);
 		this._handleIn.set(point.x, point.y);
 		// Update corner accordingly
 		// this.corner = !this._handleIn.isParallel(this._handleOut);
@@ -83,9 +83,9 @@ var Segment = this.Segment = Base.extend({
 		return this._handleOut;
 	},
 
-	setHandleOut: function() {
+	setHandleOut: function(point) {
+		point = Point.read(arguments);
 		// See #setPoint:
-		var point = Point.read(arguments);
 		this._handleOut.set(point.x, point.y);
 		// Update corner accordingly
 		// this.corner = !this._handleIn.isParallel(this._handleOut);

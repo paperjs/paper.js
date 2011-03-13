@@ -60,8 +60,8 @@ var Curve = this.Curve = Base.extend({
 		return this._segment1._point;
 	},
 
-	setPoint1: function() {
-		var point = Point.read(arguments);
+	setPoint1: function(point) {
+		point = Point.read(arguments);
 		this._segment1._point.set(point.x, point.y);
 	},
 
@@ -72,8 +72,8 @@ var Curve = this.Curve = Base.extend({
 		return this._segment2._point;
 	},
 
-	setPoint2: function() {
-		var point = Point.read(arguments);
+	setPoint2: function(point) {
+		point = Point.read(arguments);
 		this._segment2._point.set(point.x, point.y);
 	},
 	
@@ -84,8 +84,8 @@ var Curve = this.Curve = Base.extend({
 		return this._segment1._handleOut;
 	},
 
-	setHandle1: function() {
-		var point = Point.read(arguments);
+	setHandle1: function(point) {
+		point = Point.read(arguments);
 		this._segment1._handleOut.set(point.x, point.y);
 	},
 
@@ -96,8 +96,8 @@ var Curve = this.Curve = Base.extend({
 		return this._segment2._handleIn;
 	},
 
-	setHandle2: function() {
-		var point = Point.read(arguments);
+	setHandle2: function(point) {
+		point = Point.read(arguments);
 		this._segment2._handleIn.set(point.x, point.y);
 	},
 

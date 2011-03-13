@@ -30,11 +30,10 @@ var GradientColor = this.GradientColor = Color.extend({
 	},
 
 	setOrigin: function(origin) {
-		if (origin = Point.read(arguments)) {
-			this._origin = origin;
-			if (this._destination)
-				this._radius = this._destination.getDistance(this._origin);
-		}
+		origin = Point.read(arguments);
+		this._origin = origin;
+		if (this._destination)
+			this._radius = this._destination.getDistance(this._origin);
 		return this;
 	},
 
@@ -43,10 +42,9 @@ var GradientColor = this.GradientColor = Color.extend({
 	},
 
 	setDestination: function(destination) {
-		if (destination = Point.read(arguments)) {
-			this._destination = destination;
-			this._radius = this._destination.getDistance(this._origin);
-		}
+		destination = Point.read(arguments);
+		this._destination = destination;
+		this._radius = this._destination.getDistance(this._origin);
 		return this;
 	},
 
@@ -55,14 +53,13 @@ var GradientColor = this.GradientColor = Color.extend({
 	},
 
 	setHilite: function(hilite) {
-		if (hilite = Point.read(arguments)) {
-			var vector = hilite.subtract(this._origin);
-			if (vector.getLength() > this._radius) {
-				this._hilite = this._origin.add(vector.normalize(
-						this._radius - 0.1));
-			} else {
-				this._hilite = hilite;
-			}
+		hilite = Point.read(arguments);
+		var vector = hilite.subtract(this._origin);
+		if (vector.getLength() > this._radius) {
+			this._hilite = this._origin.add(vector.normalize(
+					this._radius - 0.1));
+		} else {
+			this._hilite = hilite;
 		}
 		return this;
 	},

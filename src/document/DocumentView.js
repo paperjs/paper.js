@@ -30,13 +30,11 @@ var DocumentView = this.DocumentView = Base.extend({
 		return this._center;
 	},
 
-	setCenter: function() {
-		var center = Point.read(arguments);
-		if (center) {
-			var delta = center.subtract(this._center);
-			this.scrollBy(delta);
-			this._center = center;
-		}
+	setCenter: function(center) {
+		center = Point.read(arguments);
+		var delta = center.subtract(this._center);
+		this.scrollBy(delta);
+		this._center = center;
 	},
 
 	getZoom: function() {
@@ -51,10 +49,9 @@ var DocumentView = this.DocumentView = Base.extend({
 		this._zoom = zoom;
 	},
 
-	scrollBy: function() {
-		var point = Point.read(arguments).negate();
-		var mx = new Matrix().translate(point);
-		this.transform(mx);
+	scrollBy: function(point) {
+		point = Point.read(arguments);
+		this.transform(new Matrix().translate(point.negate()));
 	},
 
 	transform: function(matrix, flags) {

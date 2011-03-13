@@ -26,18 +26,15 @@ Path.inject({ statics: new function() {
 
 	return {
 		Line: function() {
-			if (arguments.length >= 2) {
-				var step = Math.floor(arguments.length / 2);
-				return new Path(
-					Segment.read(arguments, 0, step),
-					Segment.read(arguments, step, step)
-				);
-			}
+			var step = Math.floor(arguments.length / 2);
+			return new Path(
+				Segment.read(arguments, 0, step),
+				Segment.read(arguments, step, step)
+			);
 		},
 
 		Rectangle: function(rect) {
-			if (!(rect = Rectangle.read(arguments)))
-				return null;
+			rect = Rectangle.read(arguments);
 			var path = new Path(),
 				corners = ['getBottomLeft', 'getTopLeft', 'getTopRight',
 						'getBottomRight'];
@@ -56,8 +53,6 @@ Path.inject({ statics: new function() {
 				rect = Rectangle.read(arguments, 0, 4);
 				size = Size.read(arguments, 4, 2);
 			}
-			if (!rect || !size)
-				return null;
 			size = Size.min(size, rect.getSize().divide(2));
 			var path = new Path(),
 				uSize = size.multiply(kappa * 2),
@@ -84,8 +79,7 @@ Path.inject({ statics: new function() {
 		},
 
 		Oval: function(rect) {
-			if (!(rect = Rectangle.read(arguments)))
-				return null;
+			rect = Rectangle.read(arguments);
 			var path = new Path(),
 				topLeft = rect.getTopLeft(),
 				size = new Size(rect.width, rect.height);
@@ -108,8 +102,6 @@ Path.inject({ statics: new function() {
 			} else {
 				center = Point.read(arguments, 0, 1);
 			}
-			if (!center || !radius)
-				return null;
 			return Path.Oval(new Rectangle(center.subtract(radius),
 					new Size(radius * 2, radius * 2)));
 		},
@@ -122,8 +114,7 @@ Path.inject({ statics: new function() {
 		},
 
 		RegularPolygon: function(center, numSides, radius) {
-			if (!(center = Point.read(arguments, 0)))
-				return null;
+			center = Point.read(arguments, 0);
 			var path = new Path(),
 				three = !(numSides % 3),
 				vector = new Point(0, three ? -radius : radius),

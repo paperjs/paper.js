@@ -47,44 +47,38 @@ var Size = this.Size = Base.extend({
 		return this;
 	},
 
-	add: function() {
-		return (size = Size.read(arguments))
-			? Size.create(this.width + size.width, this.height + size.height)
-			: null;
+	add: function(size) {
+		size = Size.read(arguments);
+		return Size.create(this.width + size.width, this.height + size.height);
 	},
 
-	subtract: function() {
-		return (size = Size.read(arguments))
-			? Size.create(this.width - size.width, this.height - size.height)
-			: null;
-		;
+	subtract: function(size) {
+		size = Size.read(arguments);
+		return Size.create(this.width - size.width, this.height - size.height);
 	},
 
-	multiply: function() {
-		return (size = Size.read(arguments))
-			? Size.create(this.width * size.width, this.height * size.height)
-			: null;
+	multiply: function(size) {
+		size = Size.read(arguments);
+		return Size.create(this.width * size.width, this.height * size.height);
 	},
 
-	divide: function() {
-		return (size = Size.read(arguments))
-			? Size.create(this.width / size.width, this.height / size.height)
-			: null;
+	divide: function(size) {
+		size = Size.read(arguments);
+		return Size.create(this.width / size.width, this.height / size.height);
 	},
 
-	modulo: function() {
-		return (size = Size.read(arguments))
-			? Size.create(this.width % size.width, this.height % size.height)
-			: null;
+	modulo: function(size) {
+		size = Size.read(arguments);
+		return Size.create(this.width % size.width, this.height % size.height);
 	},
 
 	negate: function() {
 		return Size.create(-this.width, -this.height);
 	},
 
-	equals: function() {
-		return (size = Size.read(arguments))
-				&& this.width == size.width && this.height == size.height;
+	equals: function(size) {
+		size = Size.read(arguments);
+		return this.width == size.width && this.height == size.height;
 	},
 
 	isNaN: function() {

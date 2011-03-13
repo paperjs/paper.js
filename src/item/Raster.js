@@ -122,17 +122,17 @@ var Raster = this.Raster = Item.extend({
 		this._bounds = null;
 	},
 
-	getSubImage: function(/* rectangle */) {
-		var rectangle = Rectangle.read(arguments),
-			canvas = CanvasProvider.getCanvas(rectangle.getSize()),
+	getSubImage: function(rect) {
+		rect = Rectangle.read(arguments);
+		var canvas = CanvasProvider.getCanvas(rect.getSize()),
 			context = canvas.getContext('2d');
-		context.drawImage(this.getCanvas(), rectangle.x, rectangle.y,
+		context.drawImage(this.getCanvas(), rect.x, rect.y,
 				canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 		return canvas;
 	},
 
 	drawImage: function(image, point) {
-		var point = Point.read(arguments, 1);
+		point = Point.read(arguments, 1);
 		this.getContext().drawImage(image, point.x, point.y);
 	},
 
@@ -143,9 +143,9 @@ var Raster = this.Raster = Item.extend({
 	 * @param x
 	 * @param y
 	 */
-	getPixel: function() {
-		var point = Point.read(arguments),
-			ctx = this.getContext(),
+	getPixel: function(point) {
+		point = Point.read(arguments);
+		var ctx = this.getContext(),
 			pixels = ctx.getImageData(point.x, point.y, 1, 1).data,
 			channels = new Array(4);
 		for (var i = 0; i < 4; i++)
@@ -156,6 +156,8 @@ var Raster = this.Raster = Item.extend({
 	// TODO: setPixel(point, color)
 	setPixel: function(x, y, color) {
 		color = Color.read(arguments, 2);
+		// TODO: Instead of getting image data, use context.createImageData()
+		// TODO: Cache imageData used for setting pixel, so it cna be reused.
 		var ctx = this.getContext(),
 			imageData = ctx.getImageData(x, y, 1, 1),
 			alpha = color.getAlpha();
@@ -171,16 +173,16 @@ var Raster = this.Raster = Item.extend({
 		return this.getContext().createImageData(size.width, size.height);
 	},
 
-	getData: function(/* [rect] */) {
-		var rect = Rectangle.read(arguments),
-			ctx = this.getContext();
+	getData: function(rect) {
+		rect = Rectangle.read(arguments);
+		var ctx = this.getContext();
 		rect = rect.isEmpty() ? new Rectangle(this.getSize()) : rect;
 		return ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
 	},
 
-	setData: function(data /* [, point] */) {
-		var point = Rectangle.read(arguments, 1),
-			ctx = this.getContext();
+	setData: function(data, point) {
+		point = Point.read(arguments, 1);
+		var ctx = this.getContext();
 		ctx.putImageData(data, point.x, point.y);
 	},
 

@@ -55,8 +55,9 @@ Base.inject({
 	read: function(args, index, length) {
 		var index = index || 0, length = length || args.length - index;
 		var arg = args[index];
-		// Return null when nothing was provided
-		if (arg instanceof this || arg == null && length <= 1)
+		// If the class defines _readNull, return null when nothing was provided
+		if (arg instanceof this
+				|| this.prototype._readNull && arg == null && length <= 1)
 			return arg;
 		var obj = new this(this.dont);
 		obj = obj.initialize.apply(obj, index > 0 || length < args.length

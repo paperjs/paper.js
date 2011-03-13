@@ -139,11 +139,10 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	translate: function(point) {
-		if (point = Point.read(arguments)) {
-			var x = point.x, y = point.y;
-			this._m02 += x * this._m00 + y * this._m01;
-			this._m12 += x * this._m10 + y * this._m11;
-		}
+		point = Point.read(arguments);
+		var x = point.x, y = point.y;
+		this._m02 += x * this._m00 + y * this._m01;
+		this._m12 += x * this._m10 + y * this._m11;
 		return this;
 	},
 
@@ -303,14 +302,12 @@ var Matrix = this.Matrix = Base.extend({
 			}
 			return dst;
 		} else if (arguments.length > 0) {
-			var point = Point.read(arguments);
-			if (point) {
-				var x = point.x, y = point.y;
-				return Point.create(
-					x * this._m00 + y * this._m01 + this._m02,
-					x * this._m10 + y * this._m11 + this._m12
-				);
-			}
+			var point = Point.read(arguments),
+				x = point.x, y = point.y;
+			return Point.create(
+				x * this._m00 + y * this._m01 + this._m02,
+				x * this._m10 + y * this._m11 + this._m12
+			);
 		}
 		return null;
 	},
@@ -417,10 +414,8 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	setToTranslation: function(delta) {
-		if (delta = Point.read(arguments)) {
-			this.set(1, 0, 0, 1, delta.x, delta.y);
-		}
-		return this;
+		delta = Point.read(arguments);
+		return this.set(1, 0, 0, 1, delta.x, delta.y);
 	},
 
 	/**
@@ -443,17 +438,15 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	setToRotation: function(angle, center) {
-		if (center = Point.read(arguments, 1)) {
-			angle = angle * Math.PI / 180.0;
-			var x = center.x,
-				y = center.y,
-				cos = Math.cos(angle),
-				sin = Math.sin(angle);
-			this.set(cos, sin, -sin, cos,
-					x - x * cos + y * sin,
-					y - x * sin - y * cos);
-		}
-		return this;
+		center = Point.read(arguments, 1);
+		angle = angle * Math.PI / 180.0;
+		var x = center.x,
+			y = center.y,
+			cos = Math.cos(angle),
+			sin = Math.sin(angle);
+		return this.set(cos, sin, -sin, cos,
+				x - x * cos + y * sin,
+				y - x * sin - y * cos);
 	},
 
 	/**
