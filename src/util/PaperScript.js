@@ -148,10 +148,11 @@ var PaperScript = new function() {
 				var onFrameLoop = eval('onFrameLoop');
 				if (onFrameLoop) {
 					function loop() {
+						// Request next frame already
+						Event.requestAnimationFrame(loop, doc && doc.canvas);
 						onFrameLoop();
 						// Automatically redraw document each frame.
 						doc && doc.redraw();
-						Event.requestAnimationFrame(loop, doc && doc.canvas);
 					}
 					Event.requestAnimationFrame(loop, doc && doc.canvas);
 				}
