@@ -132,7 +132,8 @@ var PaperScript = new function() {
 	function run(code) {
 		with (paper) {
 			paper.tool = /onMouse(?:Up|Down|Move|Drag)/.test(code) && new Tool();
-			var res = eval(compile(code));
+			var res = eval(compile(code)),
+				doc = paper.document;
 			if (paper.tool) {
 				Base.each(['onEditOptions', 'onOptions', 'onSelect',
 					'onDeselect', 'onReselect', 'onMouseDown', 'onMouseUp',
@@ -143,9 +144,21 @@ var PaperScript = new function() {
 					}
 				});
 			}
+			try {
+				var onFrameLoop = eval('onFrameLoop');
+				if (onFrameLoop) {
+					function loop() {
+						onFrameLoop();
+						// Automatically redraw document each frame.
+						doc && doc.redraw();
+						Event.requestAnimationFrame(loop, doc && doc.canvas);
+					}
+					Event.requestAnimationFrame(loop, doc && doc.canvas);
+				}
+			} catch (e) {
+			}
 			// Automatically redraw document at the end.
-			if (paper.document)
-				paper.document.redraw();
+			doc && doc.redraw();
 			return res;
 		}
 	}

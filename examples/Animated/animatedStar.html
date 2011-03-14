@@ -33,20 +33,16 @@
 			placedSymbol.position = center;
 			layer.appendBottom(placedSymbol);
 		}
-//		setInterval(draw, 30);
 
 		var count = 0;
-		function draw() {
+		function onFrameLoop() {
 			count++;
 			for (var i = 0, l = layer.children.length; i < l; i++) {
 				var item = layer.children[i];
 				var angle = (values.count - i) * Math.sin(count / 128) / 10;
 				item.rotate(angle);
 			}
-			document.redraw();
-			Event.requestAnimationFrame(draw, document.canvas);
 		}
-		Event.requestAnimationFrame(draw, document.canvas);
 	</script>
 </head>
 <body>
