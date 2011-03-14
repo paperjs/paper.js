@@ -336,7 +336,7 @@ var Path = this.Path = PathItem.extend({
 								(knots[n].y + y[n - 1]) / 2);
 				}
 			}
-			if (closed && handleIn) {
+			if (this.closed && handleIn) {
 				var segment = this._segments[0];
 				segment.setHandleIn(handleIn.subtract(segment._point));
 			}
