@@ -188,7 +188,7 @@ var PaperScript = new function() {
 		return null;
 	}
 
-	Events.add(window, { load: load });
+	Event.add(window, { load: load });
 
 	return {
 		compile: compile,

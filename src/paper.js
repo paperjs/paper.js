@@ -110,7 +110,8 @@ Base.inject({
 
 //#include "util/BlendMode.js"
 //#include "util/CanvasProvider.js"
-//#include "util/Events.js"
+//#include "util/Element.js"
+//#include "util/Event.js"
 //#include "util/Numerical.js"
 //#include "util/PaperScript.js"
 

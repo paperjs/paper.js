@@ -63,7 +63,8 @@ var sources = [
 
 	'src/util/BlendMode.js',
 	'src/util/CanvasProvider.js',
-	'src/util/Events.js',
+	'src/util/Element.js',
+	'src/util/Event.js',
 	'src/util/Numerical.js',
 	'src/util/PaperScript.js'
 ];

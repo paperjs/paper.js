@@ -16,7 +16,7 @@
 
 var Tool = this.Tool = ToolHandler.extend(new function() {
 	function viewToArtwork(event, document) {
-		var point = Events.getOffset(event);
+		var point = Event.getOffset(event);
 		// TODO: always the active view?
 		return document.activeView.viewToArtwork(point);
 	};
@@ -83,9 +83,9 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 		setDocument: function(doc) {
 			// Remove old events first.
 			if (this._document)
-				Events.remove(this._document.canvas, this.events);
+				Event.remove(this._document.canvas, this.events);
 			this._document = doc || paper.document;
-			Events.add(doc.canvas, this.events);
+			Event.add(doc.canvas, this.events);
 		},
 
 		/**
