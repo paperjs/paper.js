@@ -108,14 +108,12 @@ Event.requestAnimationFrame = new function() {
 		focus: function() {
 			focused = true;
 			// Switch to falst checkCallback calls while window is focused.
-			if (timer)
-				setTimer(fastRate);
+			timer && setTimer(fastRate);
 		},
 		blur: function() {
 			focused = false;
 			// Switch to slow checkCallback calls while window is blured.
-			if (timer)
-				setTimer(slowRate);
+			timer && setTimer(slowRate);
 		}
 	});
 
@@ -123,7 +121,6 @@ Event.requestAnimationFrame = new function() {
 		if (request)
 			return request(callback, element);
 		callbacks.push([callback, element]);
-		if (!timer)
-			setTimer(fastRate);
+		!timer && setTimer(fastRate);
 	};
 };
