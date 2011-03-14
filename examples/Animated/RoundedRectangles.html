@@ -20,7 +20,7 @@
 			path.scale(scale);
 			new PlacedSymbol(path);
 		}
-		setInterval(draw, 30);
+//		setInterval(draw, 30);
 		
 		function onMouseDrag(event) {
 			mousePoint = event.point;
@@ -38,7 +38,9 @@
 					item.translate(delta);
 			}
 			document.redraw();
+			Event.requestAnimationFrame(draw, document.canvas);
 		}
+		Event.requestAnimationFrame(draw, document.canvas);
 	</script>
 </head>
 <body>
