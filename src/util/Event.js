@@ -81,28 +81,26 @@ Event.requestAnimationFrame = new function() {
 		slowRate = 1000,
 		timer;
 
-	// Checks all installed callbacks for element visibility and execute if
-	// needed.
-	function checkCallbacks() {
-		if (!focused)
-			return;
-		for (var i = callbacks.length - 1; i >= 0; i--) {
-			var entry = callbacks[i],
-				func = entry[0],
-				element = entry[1];
-			if (!element || Element.isVisible(element)) {
-				// Handle callback and remove it from callbacks list.
-				callbacks.splice(i, 1);
-				func(+new Date);
-			}
-		}
-	}
-
 	// Installs interval timer that checks all callbacks. This results in much
 	// faster animations than repeatedly installing timout timers.
 	function setTimer(timeout) {
 		window.clearInterval(timer);
-		timer = window.setInterval(checkCallbacks, timeout);
+		timer = window.setInterval(function() {
+			// Checks all installed callbacks for element visibility and execute
+			// if needed.
+			if (!focused)
+				return;
+			for (var i = callbacks.length - 1; i >= 0; i--) {
+				var entry = callbacks[i],
+					func = entry[0],
+					element = entry[1];
+				if (!element || Element.isVisible(element)) {
+					// Handle callback and remove it from callbacks list.
+					callbacks.splice(i, 1);
+					func(+new Date);
+				}
+			}
+		}, timeout);
 	}
 
 	var focused = true;
