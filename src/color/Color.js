@@ -66,15 +66,15 @@ var Color = this.Color = Base.extend(new function() {
 				if (!this._colorType) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
-					if (arg.red !== undefined) {
-						return new RGBColor(arg.red, arg.green, arg.blue,
-								arg.alpha);
-					} else if (arg.gray !== undefined) {
-						return new GrayColor(arg.gray, arg.alpha);
-					} else if (arg.hue !== undefined) {
-						return new HSBColor(arg.hue, arg.saturation,
-								arg.brightness, arg.alpha);
-					}
+					return arg.red !== undefined
+						? new RGBColor(arg.red, arg.green, arg.blue, arg.alpha)
+						: arg.gray !== undefined
+						? new GrayColor(arg.gray, arg.alpha)
+						: arg.hue !== undefined
+						? new HSBColor(arg.hue, arg.saturation, arg.brightness,
+								arg.alpha)
+						: new RGBColor(); // Fallback
+					
 				} else {
 					// Called on a subclass instance. Return the converted
 					// color.
