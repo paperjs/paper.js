@@ -22,25 +22,23 @@ var Color = this.Color = Base.extend(new function() {
 	function nameToRGBColor(name) {
 		var color = colorCache[name];
 		if (color)
-			return color;
-		// Use a canvas to draw to with the given name and then retrieve the rgb
-		// values from. Build a cache for all these colors on a per use basis.
+			return color; // TODO: return a clone of the color
+		// Use a canvas to draw to with the given name and then retrieve rgb
+		// values from. Build a cache for all the used colors.
 		if (!colorContext) {
 			var canvas = CanvasProvider.getCanvas(Size.create(1, 1));
 			colorContext = canvas.getContext('2d');
 			colorContext.globalCompositeOperation = 'copy';
 		}
+		// Set the current fillStyle to transparent:
+		colorContext.fillStyle = 'rgba(0, 0, 0, 0)';
 		// Set the fillStyle of the context to the passed name and fill the
 		// canvas with it, then retrieve the data for the drawn pixel:
 		colorContext.fillStyle = name;
 		colorContext.fillRect(0, 0, 1, 1);
 		var data = colorContext.getImageData(0, 0, 1, 1).data,
 			rgb = [data[0] / 255, data[1] / 255, data[2] / 255];
-		// If the name wasn't found, rgb is [0, 0, 0]
-		if (rgb.join('') == '000' && name != 'black')
-			throw new Error('The named color "' + name
-					+ '" does not exist.');
-		return (colorCache[name] = RGBColor.read(rgb));
+		return colorCache[name] = RGBColor.read(rgb); // TODO: return a clone
 	}
 
 	function hexToRGBColor(string) {
