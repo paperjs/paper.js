@@ -58,6 +58,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	return {
 		beans: true,
+		_readNull: true,
 
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg);
