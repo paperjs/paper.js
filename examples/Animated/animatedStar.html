@@ -18,7 +18,7 @@
 			var offset = new Point(20 + 10 * i, 0);
 			var path = new Path();
 			path.fillColor = i % 2 ? 'red' : 'black';
-			console.log(path.fillColor);
+			//console.log('color', path.fillColor);
 			path.closed = true;
 		
 			var l = offset.length;
@@ -33,7 +33,7 @@
 			placedSymbol.position = center;
 			layer.appendBottom(placedSymbol);
 		}
-		setInterval(draw, 30);
+//		setInterval(draw, 30);
 
 		var count = 0;
 		function draw() {
@@ -44,7 +44,9 @@
 				item.rotate(angle);
 			}
 			document.redraw();
+			Event.requestAnimationFrame(draw, document.canvas);
 		}
+		Event.requestAnimationFrame(draw, document.canvas);
 	</script>
 </head>
 <body>
