@@ -33,16 +33,20 @@ var Element = {
 		return new Rectangle(Element.getOffset(el), Element.getSize(el));
 	},
 
-	// Checks if element is visibile in current viewport
-	isVisible: function(el) {
+	getScrollBounds: function() {
 		var doc = document.getElementsByTagName(
 				document.compatMode == 'CSS1Compat' ? 'html' : 'body')[0];
-		// See if the two rectangle intersect
 		return Rectangle.create(
 			window.pageXOffset || doc.scrollLeft,
 			window.pageYOffset || doc.scrollTop,
 			window.innerWidth || doc.clientWidth,
 			window.innerHeight || doc.clientHeight
-		).intersects(Element.getBounds(el));
+		);
+	}
+
+	// Checks if element is visibile in current viewport
+	isVisible: function(el) {
+		// See if the two rectangle intersect
+		return Element.getScrollBounds().intersects(Element.getBounds(el));
 	}
 };
