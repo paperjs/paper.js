@@ -42,7 +42,7 @@ var Element = {
 			window.innerWidth || doc.clientWidth,
 			window.innerHeight || doc.clientHeight
 		);
-	}
+	},
 
 	// Checks if element is visibile in current viewport
 	isVisible: function(el) {
