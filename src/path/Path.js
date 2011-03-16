@@ -650,7 +650,8 @@ var Path = this.Path = PathItem.extend({
 			processSegment(segments[i]);
 		if (that.closed)
 			processSegment(first);
-	    return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+		return Rectangle.create(min[0], min[1],
+					max[0] - min[0], max[1] - min[1]);
 	}
 
 	function getPenPadding(radius, matrix) {
@@ -703,7 +704,9 @@ var Path = this.Path = PathItem.extend({
 		getBounds: function(/* matrix */) {
 			// Pass the matrix hidden from Bootstrap, so it still inject 
 			// getBounds as bean too.
-			return getBounds(this, arguments[0]);
+			var bounds = getBounds(this, arguments[0]);
+			return ObservedRectangle.create(this, 'setBounds',
+					bounds.x, bounds.y, bounds.width, bounds.height);
 		},
 
 		/**

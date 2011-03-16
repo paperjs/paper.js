@@ -42,7 +42,8 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 				y2 = Math.max(rect2.y + rect2.height, y1 + y2 - y1);
 			}
 		}
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return ObservedRectangle.create(this, 'setBounds',
+				x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**

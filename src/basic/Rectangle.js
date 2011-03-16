@@ -266,3 +266,80 @@ var Rectangle = this.Rectangle = Base.extend({
 			};
 		}, { beans: true });
 });
+
+var ObservedRectangle = Rectangle.extend({
+	beans: true,
+
+	set: function(x, y, width, height) {
+		this._x = x;
+		this._y = y;
+		this._width = width;
+		this._height = height;
+		if (this._observer)
+			this._observer[this._set](this);
+		return this;
+	},
+
+	// TODO: Use loop to create these?
+	getX: function() {
+		return this._x;
+	},
+
+	setX: function(x) {
+		this._x = x;
+		this._observer[this._set](this);
+	},
+
+	getY: function() {
+		return this._y;
+	},
+
+	setY: function(y) {
+		this._y = y;
+		this._observer[this._set](this);
+	},
+
+	getWidth: function() {
+		return this._width;
+	},
+
+	setWidth: function(width) {
+		this._width = width;
+		this._observer[this._set](this);
+	},
+
+	getHeight: function() {
+		return this._height;
+	},
+
+	setHeight: function(height) {
+		this._height = height;
+		this._observer[this._set](this);
+	},
+
+	// TODO: Implement for all properties on ObservedRectangle using loop
+	setCenter: function(center) {
+		Rectangle.prototype.setCenter.apply(this, center);
+		this._observer[this._set](this);
+		return this;
+	},
+
+	statics: {
+		/**
+		 * Provide a faster creator for Points out of two coordinates that
+		 * does not rely on Point#initialize at all. This speeds up all math
+		 * operations a lot.
+		 */
+		create: function(observer, set, x, y, width, height) {
+			// Don't use the shorter form as we want absolute maximum
+			// performance here:
+			// return new Point(Point.dont).set(x, y);
+			// TODO: Benchmark and decide
+			var rect = new ObservedRectangle(ObservedRectangle.dont).set(x, y,
+					width, height);
+			rect._observer = observer;
+			rect._set = set;
+			return rect;
+		}
+	}
+});
