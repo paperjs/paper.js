@@ -71,7 +71,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getPoint: function() {
-		return Point.create(this.x, this.y);
+		return ObservedPoint.create(this, 'setPoint', this.x, this.y);
 	},
 
 	setPoint: function(point) {
@@ -150,7 +150,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getCenter: function() {
-		return Point.create(this.getCenterX(), this.getCenterY());
+		return ObservedPoint.create(this, 'setCenter',
+				this.getCenterX(), this.getCenterY());
 	},
 
 	setCenter: function(point) {
@@ -242,10 +243,10 @@ var Rectangle = this.Rectangle = Base.extend({
 			['Right', 'Center'], ['Bottom', 'Center']
 		],
 		function(parts, index) {
-			var key = parts.join('');
+			var part = parts.join('');
 			// find out if the first of the pair is an x or y property,
 			// by checking the first character for [R]ight or [L]eft;
-			var xFirst = /^[RL]/.test(key);
+			var xFirst = /^[RL]/.test(part);
 			// Rename Center to CenterX or CenterY:
 			if (index >= 4)
 				parts[1] += xFirst ? 'Y' : 'X';
@@ -255,10 +256,11 @@ var Rectangle = this.Rectangle = Base.extend({
 				getY = 'get' + y,
 				setX = 'set' + x,
 				setY = 'set' + y;
-			this['get' + key] = function() {
-				return Point.create(this[getX](), this[getY]());
+			this['get' + part] = function() {
+				return ObservedPoint.create(this, 'set' + part,
+						this[getX](), this[getY]());
 			};
-			this['set' + key] = function(point) {
+			this['set' + part] = function(point) {
 				point = Point.read(arguments);
 				return this[setX](point.x)[setY](point.y); // Note: call chaining!
 			};

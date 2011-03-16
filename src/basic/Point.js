@@ -159,8 +159,12 @@ var Point = this.Point = Base.extend({
 		if (this.isZero()) {
 			if (this._angle != null) {
 				var a = this._angle;
-				this.x = Math.cos(a) * length;
-				this.y = Math.sin(a) * length;
+				// Use #set() instead of direct assignment, so ObservedPoint
+				// can optimise
+				this.set(
+					Math.cos(a) * length,
+					Math.sin(a) * length
+				);
 			} else {
 				// Assume angle = 0
 				this.x = length;
@@ -173,8 +177,12 @@ var Point = this.Point = Base.extend({
 				// x and y are 0
 				this.getAngle();
 			}
-			this.x *= scale;
-			this.y *= scale;
+			// Use #set() instead of direct assignment, so ObservedPoint
+			// can optimise
+			this.set(
+				this.x * scale,
+				this.y * scale
+			);
 		}
 		return this;
 	},
@@ -229,8 +237,12 @@ var Point = this.Point = Base.extend({
 		angle = this._angle = angle * Math.PI / 180;
 		if (!this.isZero()) {
 			var length = this.getLength();
-			this.x = Math.cos(angle) * length;
-			this.y = Math.sin(angle) * length;
+			// Use #set() instead of direct assignment, so ObservedPoint
+			// can optimise
+			this.set(
+				Math.cos(angle) * length,
+				Math.sin(angle) * length
+			);
 		}
 		return this;
 	},
@@ -557,6 +569,55 @@ var Point = this.Point = Base.extend({
 		 */
 		random: function() {
 			return Point.create(Math.random(), Math.random());
+		}
+	}
+});
+
+var ObservedPoint = Point.extend({
+	beans: true,
+
+	set: function(x, y) {
+		this._x = x;
+		this._y = y;
+		this._observer[this._set](this);
+		return this;
+	},
+
+	getX: function() {
+		return this._x;
+	},
+
+	setX: function(x) {
+		this._x = x;
+		this._observer[this._set](this);
+	},
+
+	getY: function() {
+		return this._y;
+	},
+
+	setY: function(y) {
+		this._y = y;
+		this._observer[this._set](this);
+	},
+
+	statics: {
+		/**
+		 * Provide a faster creator for Points out of two coordinates that
+		 * does not rely on Point#initialize at all. This speeds up all math
+		 * operations a lot.
+		 */
+		create: function(observer, set, x, y) {
+			// Don't use the shorter form as we want absolute maximum
+			// performance here:
+			// return new Point(Point.dont).set(x, y);
+			// TODO: Benchmark and decide
+			var point = new ObservedPoint(ObservedPoint.dont);
+			point._x = x;
+			point._y = y;
+			point._observer = observer;
+			point._set = set;
+			return point;
 		}
 	}
 });
