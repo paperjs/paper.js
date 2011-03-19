@@ -389,9 +389,7 @@ var Path = this.Path = PathItem.extend({
 					handle1.x - current._point.x,
 					handle1.y - current._point.y));
 			// And add the new segment, with handleIn set to c2
-			this._add(
-				new Segment(to, handle2.subtract(to), new Point())
-			);
+			this._add(new Segment(to, handle2.subtract(to), new Point()));
 		},
 
 		/**
@@ -399,14 +397,14 @@ var Path = this.Path = PathItem.extend({
 		 * to point.
 		 */
 		quadraticCurveTo: function(handle, to) {
+			handle = Point.read(arguments, 0, 1);
+			to = Point.read(arguments, 1, 1);
 			// This is exact:
 			// If we have the three quad points: A E D,
 			// and the cubic is A B C D,
 			// B = E + 1/3 (A - E)
 			// C = E + 1/3 (D - E)
-			var current = getCurrentSegment(this),
-				x1 = current._point.x,
-				y1 = current._point.y;
+			var current = getCurrentSegment(this);
 			this.cubicCurveTo(
 				handle.add(current._point.subtract(handle).multiply(1/3)),
 				handle.add(to.subtract(handle).multiply(1/3)),
@@ -415,22 +413,20 @@ var Path = this.Path = PathItem.extend({
 		},
 
 		curveTo: function(through, to, parameter) {
-			through = new Point(through);
-			to = new Point(to);
-			if (parameter == null)
-				parameter = 0.5;
+			through = Point.read(arguments, 0, 1);
+			to = Point.read(arguments, 1, 1);
+			var t = parameter;
+			if (t == null)
+				t = 0.5;
 			var current = getCurrentSegment(this)._point;
 			// handle = (through - (1 - t)^2 * current - t^2 * to) /
 			// (2 * (1 - t) * t)
-			var t1 = 1 - parameter;
-			var handle = through.subtract(
-					current.multiply(t1 * t1)).subtract(
-							to.multiply(parameter * parameter)).divide(
-									2.0 * parameter * t1);
+			var t1 = 1 - t;
+			var handle = through.subtract(current.multiply(t1 * t1)).subtract(
+					to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
-						"Cannot put a curve through points with parameter="
-						+ parameter);
+					"Cannot put a curve through points with parameter=" + t);
 			this.quadraticCurveTo(handle, to);
 		},
 
