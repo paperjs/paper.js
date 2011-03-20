@@ -301,6 +301,9 @@ var Curve = this.Curve = Base.extend({
 		}
 	}
 
+	// Amount of integral evaluations
+	var numEval = 16;
+
 	return {
 		getPoint: function(parameter) {
 			return evaluate(this, parameter, 0);
@@ -328,7 +331,7 @@ var Curve = this.Curve = Base.extend({
 				}
 				var ds = getLengthIntegrand(
 						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
-				return Numerical.integrate(ds, a, b, 8);
+				return Numerical.integrate(ds, a, b, numEval);
 			},
 
 			getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
@@ -360,7 +363,7 @@ var Curve = this.Curve = Base.extend({
 					b = 1;
 					// We're moving b to the right to find root for length
 					f = function(t) {
-						return Numerical.integrate(ds, a, t, 5) - length;
+						return Numerical.integrate(ds, a, t, numEval) - length;
 					}
 				} else { // Going backwards
 					a = 0;
@@ -368,10 +371,10 @@ var Curve = this.Curve = Base.extend({
 					length = -length;
 					// We're moving a to the left to find root for length
 					f = function(t) {
-						return Numerical.integrate(ds, t, b, 5) - length;
+						return Numerical.integrate(ds, t, b, numEval) - length;
 					}
 				}
-				var rangeLength = Numerical.integrate(ds, a, b, 8);
+				var rangeLength = Numerical.integrate(ds, a, b, numEval);
 				if (length >= rangeLength)
 					return forward ? b : a;
 				// Use length / rangeLength for an initial guess for t, to
