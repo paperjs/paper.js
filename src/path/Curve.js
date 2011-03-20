@@ -384,12 +384,6 @@ var Curve = this.Curve = Base.extend({
 						forward ? a : b - guess, // a
 						forward ? a + guess : b, // b
 						16, Numerical.TOLERANCE);
-				/*
-				return Numerical.findRootFalsePosition(f,
-						forward ? a : b - guess, // a
-						forward ? a + guess : b, // b
-						16, Numerical.TOLERANCE);
-				*/
 			},
 
 			subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
