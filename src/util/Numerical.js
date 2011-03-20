@@ -74,13 +74,20 @@ var Numerical = new function() {
 		},
 
 		/**
-		 * Newton-Raphson Method Using Derivative
+		 * Newton-Raphson Method Using Derivative. This is a special version
+		 * that clips results to 0 .. 1, as required by Paper.js iterative
+		 * approach for curve time parametrization: Ending up far outside
+		 * the bezier curve boundaries resulted in inprecision of added up
+		 * curve lengths.
 		 */
 		findRootNewton: function(f, fd, a, b, n, tol) {
 			var x = 0.5 * (a + b);
 			for (var i = 0; i < n; i++) {
 				var dx = f(x) / fd(x);
 				x -= dx;
+				// Clip to 0 .. t .. 1. See comment above
+				if (x < 0) x = 0;
+				else if (x > 1) x = 1;
 				if (Math.abs(dx) < tol)
 					return x;
 			}

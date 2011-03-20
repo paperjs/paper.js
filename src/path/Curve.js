@@ -302,7 +302,12 @@ var Curve = this.Curve = Base.extend({
 	}
 
 	// Amount of integral evaluations
-	var numEval = 16;
+	function getIterations(a, b) {
+		// Guess required precision based and size of range...
+		// TODO: There should be much better educated guesses for
+		// this. Also, what does this depend on? Required precision?
+		return Math.max(2, Math.min(16, Math.ceil(Math.abs(b - a) * 32)));
+	}
 
 	return {
 		getPoint: function(parameter) {
@@ -331,7 +336,7 @@ var Curve = this.Curve = Base.extend({
 				}
 				var ds = getLengthIntegrand(
 						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
-				return Numerical.integrate(ds, a, b, numEval);
+				return Numerical.integrate(ds, a, b, getIterations(a, b));
 			},
 
 			getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
@@ -347,39 +352,39 @@ var Curve = this.Curve = Base.extend({
 					return Math.max(Math.min(start
 							+ length / Math.sqrt(dx * dx + dy * dy), 0, 1));
 				}
-				// Let's use the Van Wijngaarden–Dekker–Brent Method to find
-				// solutions more reliably than with False Position Method.
-				// The precision of 5 iterations seems enough for this
+				// See if we're going forward or backward, and handle cases
+				// differently
 				var forward = length > 0,
+					a = forward ? start : 0,
+					b = forward ? 1 : start,
+					length = Math.abs(length),
 					// Use integrand to calculate both range length and part
 					// lengths in f(t) below.
 					ds = getLengthIntegrand(
 							p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y),
-					a, b, f;
-				// See if we're going forward or backward, and handle cases
-				// differently
-				if (forward) { // Normal way
-					a = start;
-					b = 1;
-					// We're moving b to the right to find root for length
-					f = function(t) {
-						return Numerical.integrate(ds, a, t, numEval) - length;
-					}
-				} else { // Going backwards
-					a = 0;
-					b = start;
-					length = -length;
-					// We're moving a to the left to find root for length
-					f = function(t) {
-						return Numerical.integrate(ds, t, b, numEval) - length;
-					}
-				}
-				var rangeLength = Numerical.integrate(ds, a, b, numEval);
+					// Get length of total range
+					rangeLength = Numerical.integrate(ds, a, b,
+							getIterations(a, b)),
+					// Use length / rangeLength for an initial guess for t, to
+					// bring us closer:
+					guess = length / rangeLength,
+					len = 0;
 				if (length >= rangeLength)
 					return forward ? b : a;
-				// Use length / rangeLength for an initial guess for t, to
-				// bring us closer:
-				var guess = length / rangeLength;
+				// Iteratively calculate curve range lengths, and add them up,
+				// using integration precision depending on the size of the
+				// range. This is much faster and also more precise than not
+				// modifing start and calculating total length each time.
+				function f(t) {
+					var count = getIterations(start, t);
+					if (start < t) {
+						len += Numerical.integrate(ds, start, t, count);
+					} else {
+						len -= Numerical.integrate(ds, t, start, count);
+					}
+					start = t;
+					return len - length;
+				}
 				return Numerical.findRootNewton(f, ds,
 						forward ? a : b - guess, // a
 						forward ? a + guess : b, // b
