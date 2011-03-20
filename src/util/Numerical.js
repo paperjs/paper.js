@@ -70,7 +70,6 @@ var Numerical = new function() {
 				var Ax = A * x[i];
 				sum += w[i++] * (f(B + Ax) + f(B - Ax));
 			}
-
 			return A * sum;
 		},
 
@@ -95,7 +94,7 @@ var Numerical = new function() {
 				fb = f(b),
 				dx = b - a,
 				del, x;
-			for (var i = 0; i <= n; i++) {
+			for (var i = 0; i < n; i++) {
 				x = a + dx * fa / (fa - fb);
 				var fx = f(x);
 				if (fx < 0) {
