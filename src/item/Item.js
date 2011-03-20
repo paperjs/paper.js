@@ -799,7 +799,7 @@ var Item = this.Item = Base.extend({
 	}
 }, new function() {
 	var sets = {
-		down: {}, drag: {}, up: {}
+		down: {}, drag: {}, up: {}, move: {}
 	};
 
 	function removeAll(set) {
@@ -838,7 +838,7 @@ var Item = this.Item = Base.extend({
 		}
 	}
 
-	return Base.each(['up', 'down', 'drag'], function(name) {
+	return Base.each(['down', 'drag', 'up', 'move'], function(name) {
 		this['removeOn' + Base.capitalize(name)] = function() {
 			var hash = {};
 			hash[name] = true;
