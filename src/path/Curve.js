@@ -360,7 +360,7 @@ var Curve = this.Curve = Base.extend({
 					b = 1;
 					// We're moving b to the right to find root for length
 					f = function(t) {
-						return length - Numerical.integrate(ds, a, t, 5);
+						return Numerical.integrate(ds, a, t, 5) - length;
 					}
 				} else { // Going backwards
 					a = 0;
@@ -368,7 +368,7 @@ var Curve = this.Curve = Base.extend({
 					length = -length;
 					// We're moving a to the left to find root for length
 					f = function(t) {
-						return length - Numerical.integrate(ds, t, b, 5);
+						return Numerical.integrate(ds, t, b, 5) - length;
 					}
 				}
 				var rangeLength = Numerical.integrate(ds, a, b, 8);
@@ -377,10 +377,16 @@ var Curve = this.Curve = Base.extend({
 				// Use length / rangeLength for an initial guess for t, to
 				// bring us closer:
 				var guess = length / rangeLength;
-				return Numerical.findRoot(f,
+				return Numerical.findRootNewton(f, ds,
 						forward ? a : b - guess, // a
 						forward ? a + guess : b, // b
 						16, Numerical.TOLERANCE);
+				/*
+				return Numerical.findRootFalsePosition(f,
+						forward ? a : b - guess, // a
+						forward ? a + guess : b, // b
+						16, Numerical.TOLERANCE);
+				*/
 			},
 
 			subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {

@@ -34,11 +34,7 @@ var Numerical = new function() {
 		0.1713244924, 0.1713244924, 0.3607615730, 0.3607615730, 0.4679139346, 0.4679139346,
 		0.1294849662, 0.1294849662, 0.2797053915, 0.2797053915, 0.3818300505, 0.3818300505, 0.4179591837,
 		0.1012285363, 0.1012285363, 0.2223810345, 0.2223810345, 0.3137066459, 0.3137066459, 0.3626837834, 0.3626837834
-	],
-
-	max = Math.max,
-	min = Math.min,
-	abs = Math.abs;
+	];
 
 	return {
 		TOLERANCE: 10e-6,
@@ -50,7 +46,7 @@ var Numerical = new function() {
 		 * All Rights Reserved.
 		 */
 		integrate: function(f, a, b, n) {
-			n = min(max(n, 2), 8);
+			n = Math.min(Math.max(n, 2), 8);
 
 			var l = n == 2 ? 0 : n * (n - 1) / 2 - 1,
 				sum = 0,
@@ -62,72 +58,39 @@ var Numerical = new function() {
 			return mul * sum;
 		},
 
-		/**
-		 * Van Wijngaarden–Dekker–Brent method for root finding, implementation
-		 * based on Numerical Recipes in C
-		 */
-		findRoot: function(f, a, b, n, tol) {
-			var c = b, d = 0, e = 0,
-				fa = f(a),
-				fb = f(b),
-				fc = fb;
-
+		findRootNewton: function(f, fd, a, b, n, tol) {
+			var x = 0.5 * (a + b);
 			for (var i = 0; i < n; i++) {
-				if ((fb > 0 && fc > 0) || (fb < 0 && fc < 0)) {
-					c = a;
-					fc = fa;
-					e = d = b - a;
-				}
-				if (abs(fc) < abs(fb)) {
-					a = b;
-					b = c;
-					c = a;
-					fa = fb;
-					fb = fc;
-					fc = fa;
-				}
-				var tol1 = 2 * Number.MIN_VALUE * abs(b) + 0.5 * tol,
-					xm = 0.5 * (c - b);
-				if (abs(xm) <= tol1 || fb == 0) {
-					return b;
-				}
-				if (abs(e) >= tol1 && abs(fa) > abs(fb)) {
-					var p, q, r,
-						s = fb / fa;
-					if (a == c) {
-						p = 2 * xm * s;
-						q = 1 - s;
-					} else {
-						q = fa / fc;
-						r = fb / fc;
-						p = s * (2 * xm * q * (q - r) - (b - a) * (r - 1));
-						q = (q - 1) * (r - 1) * (s - 1);
-					}
-					if (p > 0)
-						q = -q;
-					p = abs(p);
-					var min1 = 3 * xm * q - abs(tol1 * q),
-					 	min2 = abs(e * q);
-					if (2 * p < (min1 < min2 ? min1 : min2)) {
-						e = d;
-						d = p / q;
-					} else {
-						d = xm;
-						e = d;
-					}
-				} else {
-					d = xm;
-					e = d;
-				}
-				a = b;
-				fa = fb;
-				if (abs(d) > tol1)
-					b += d;
-				else
-					b += xm >= 0 ? abs(tol1) : -abs(tol1);
-				fb = f(b);
+				var dx = f(x) / fd(x);
+				x -= dx;
+				if (Math.abs(dx) < tol)
+					return x;
 			}
-			return b;
-		}
-	}
+			return x;
+		},
+
+		findRootFalsePosition: function(f, a, b, n, tol) {
+			var fa = f(a),
+				fb = f(b),
+				dx = b - a,
+				del, x;
+			for (var i = 0; i <= n; i++) {
+				x = a + dx * fa / (fa - fb);
+				var fx = f(x);
+				if (fx < 0) {
+					del = a - x;
+					a = x;
+					fa = fx;
+				} else {
+					del = b - x;
+					b = x;
+					fb = fx;
+				}
+				dx = b - a;
+				if (Math.abs(del) < tol || fx == 0)
+					return x;
+			}
+			return x;
+		},
+	};
 };
