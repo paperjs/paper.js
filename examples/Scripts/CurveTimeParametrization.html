@@ -12,20 +12,32 @@
 		path.strokeWidth = 1;
 		path.strokeColor = 'black';
 		var curve = path.curves[0];
+
 		function onMouseMove(event) {
-			curve.segment2.point = event.point;
+			modifyCurve(event.point, false, true);
+		}
+
+		function modifyCurve(point, iteratively, remove) {
+			curve.segment2.point = point;
 			var length = curve.length;
 			var step = 10;
-			var num = Math.round(length / step);
-			step = length / num;
+			var num = Math.floor(length / step);
+			var prev = 0;
 			for (var i = 0, pos = 0; i <= num; i++, pos += step) {
-				var t = curve.getParameter(pos);
+				var t = iteratively
+						? curve.getParameter(step, prev)
+						: curve.getParameter(pos);
 				var point = curve.getPoint(t);
-				var circle = new Path.Circle(point, 3);
+				var circle = new Path.Circle(point, step / 2);
 				circle.strokeColor = 'red';
-				circle.removeOnMove();
+				if (remove)
+					circle.removeOnMove();
+				prev = t;
 			}
 		}
+
+		// modifyCurve(new Point(400, 377), false, false);
+
 	</script>
 </head>
 <body>
