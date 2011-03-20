@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript">var root = '../../'</script>
+	<script type="text/javascript" src="../../src/load.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var path = new Path();
+		path.moveTo(200, 200);
+		path.curveTo([170, 50], [300, 200]);
+		path.strokeWidth = 1;
+		path.strokeColor = 'black';
+		var curve = path.curves[0];
+		function onMouseMove(event) {
+			curve.segment2.point = event.point;
+			var length = curve.length;
+			var step = 10;
+			var num = Math.round(length / step);
+			step = length / num;
+			for (var i = 0, pos = 0; i <= num; i++, pos += step) {
+				var t = curve.getParameter(pos);
+				var point = curve.getPoint(t);
+				var circle = new Path.Circle(point, 3);
+				circle.strokeColor = 'red';
+				circle.removeOnMove();
+			}
+		}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
