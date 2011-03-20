@@ -74,6 +74,9 @@ var Numerical = new function() {
 			return A * sum;
 		},
 
+		/**
+		 * Newton-Raphson Method Using Derivative
+		 */
 		findRootNewton: function(f, fd, a, b, n, tol) {
 			var x = 0.5 * (a + b);
 			for (var i = 0; i < n; i++) {
@@ -82,7 +85,9 @@ var Numerical = new function() {
 				if (Math.abs(dx) < tol)
 					return x;
 			}
-			return x;
+			// If we did not succeed, fall back on False Position method for
+			// accurate results.
+			return Numerical.findRootFalsePosition(f, a, b, n, tol);
 		},
 
 		findRootFalsePosition: function(f, a, b, n, tol) {
