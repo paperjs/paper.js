@@ -44,7 +44,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 
 	getBounds: function() {
 		var bounds = this.symbol._definition.getStrokeBounds(this.matrix, true);
-		return ObservedRectangle.create(this, 'setBounds',
+		return LinkedRectangle.create(this, 'setBounds',
 				bounds.x, bounds.y, bounds.width, bounds.height);
 	},
 

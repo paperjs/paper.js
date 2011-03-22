@@ -701,7 +701,7 @@ var Path = this.Path = PathItem.extend({
 			// Pass the matrix hidden from Bootstrap, so it still inject 
 			// getBounds as bean too.
 			var bounds = getBounds(this, arguments[0]);
-			return ObservedRectangle.create(this, 'setBounds',
+			return LinkedRectangle.create(this, 'setBounds',
 					bounds.x, bounds.y, bounds.width, bounds.height);
 		},
 

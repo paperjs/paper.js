@@ -71,7 +71,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getPoint: function() {
-		return ObservedPoint.create(this, 'setPoint', this.x, this.y);
+		return LinkedPoint.create(this, 'setPoint', this.x, this.y);
 	},
 
 	setPoint: function(point) {
@@ -149,7 +149,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getCenter: function() {
-		return ObservedPoint.create(this, 'setCenter',
+		return LinkedPoint.create(this, 'setCenter',
 				this.getCenterX(), this.getCenterY());
 	},
 
@@ -258,7 +258,7 @@ var Rectangle = this.Rectangle = Base.extend({
 				get = 'get' + part,
 				set = 'set' + part;
 			this[get] = function() {
-				return ObservedPoint.create(this, set,
+				return LinkedPoint.create(this, set,
 						this[getX](), this[getY]());
 			};
 			this[set] = function(point) {
@@ -269,7 +269,13 @@ var Rectangle = this.Rectangle = Base.extend({
 		}, { beans: true });
 });
 
-var ObservedRectangle = Rectangle.extend({
+/**
+ * An internal version of Rectangle that notifies its owner of each change
+ * through setting itself again on the setter that corresponds to the getter
+ * that produced this LinkedRectangle. See uses of LinkedRectangle.create()
+ * Note: This prototype is not exported.
+ */
+var LinkedRectangle = Rectangle.extend({
 	beans: true,
 
 	set: function(x, y, width, height) {
@@ -277,8 +283,8 @@ var ObservedRectangle = Rectangle.extend({
 		this._y = y;
 		this._width = width;
 		this._height = height;
-		if (this._observer)
-			this._observer[this._set](this);
+		if (this._owner)
+			this._owner[this._set](this);
 		return this;
 	},
 
@@ -288,14 +294,10 @@ var ObservedRectangle = Rectangle.extend({
 		 * does not rely on Point#initialize at all. This speeds up all math
 		 * operations a lot.
 		 */
-		create: function(observer, set, x, y, width, height) {
-			// Don't use the shorter form as we want absolute maximum
-			// performance here:
-			// return new Point(Point.dont).set(x, y);
-			// TODO: Benchmark and decide
-			var rect = new ObservedRectangle(ObservedRectangle.dont).set(x, y,
+		create: function(owner, set, x, y, width, height) {
+			var rect = new LinkedRectangle(LinkedRectangle.dont).set(x, y,
 					width, height);
-			rect._observer = observer;
+			rect._owner = owner;
 			rect._set = set;
 			return rect;
 		}
@@ -315,7 +317,7 @@ var ObservedRectangle = Rectangle.extend({
 			// Check if this setter is called from another one which sets 
 			// _dontNotify, as it will notify itself
 			if (!this._dontNotify)
-				this._observer[this._set](this);
+				this._owner[this._set](this);
 		}
 	}, Base.each(['Point', 'Size', 'Center',
 			'Left', 'Top', 'Right', 'Bottom', 'CenterX', 'CenterY',
@@ -325,12 +327,12 @@ var ObservedRectangle = Rectangle.extend({
 			var name = 'set' + key;
 			this[name] = function(value) {
 				// Make sure the above setters of x, y, width, height do not
-				// each notify the observer, as we're going to take care of this
+				// each notify the owner, as we're going to take care of this
 				// afterwards here, only once per change.
 				this._dontNotify = true;
 				proto[name].apply(this, arguments);
 				delete this._dontNotify;
-				this._observer[this._set](this);
+				this._owner[this._set](this);
 				return this;
 			}
 		}, { beans: true })
