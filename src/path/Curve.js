@@ -301,7 +301,7 @@ var Curve = this.Curve = Base.extend({
 		}
 	}
 
-	// Amount of integral evaluations
+	// Amount of integral evaluations for the interval 0 <= a < b <= 1
 	function getIterations(a, b) {
 		// Guess required precision based and size of range...
 		// TODO: There should be much better educated guesses for
