@@ -59,6 +59,15 @@ var Path = this.Path = PathItem.extend({
 		return this._segments[this._segments.length - 1];
 	},
 
+	getFirstCurve: function() {
+		return this.getCurves()[0];
+	},
+
+	getLastCurve: function() {
+		var curves = this.getCurves();
+		return curves[curves - 1];
+	},
+
 	// TODO: Consider adding getSubPath(a, b), returning a part of the current
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
