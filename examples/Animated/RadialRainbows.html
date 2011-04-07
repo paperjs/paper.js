@@ -8,20 +8,17 @@
 	<script type="text/paperscript" canvas="canvas">
 		var vector = new Point(document.size.height, 0);
 		var point = new Point(document.size) / 2;
-		var gradient = new Gradient();
-		gradient.type = 'radial';
-		var gradientColor = new GradientColor(gradient, point, point + vector);
 		
-		var stops = [];
+		var colors = [];
 		for (var i = 0, l = 60; i < l; i++) {
 			var color = new RGBColor(1, 0, 0);
 			var cycles = 4;
 			color.hue = i / l * cycles * 360;
-			var stop = new GradientStop(color, i / l);
-			stops.push(stop);
+			colors.push([color, i / (l - 1)]);
 		}
-		
-		gradient.stops = stops;
+
+		var gradient = new Gradient(colors, 'radial');
+		var gradientColor = new GradientColor(gradient, point, point + vector);
 		var path = new Path.Rectangle(new Rectangle([0, 0], document.size));
 		path.fillColor = gradientColor;
 		
