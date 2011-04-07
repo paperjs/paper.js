@@ -71,7 +71,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getPoint: function() {
-		return ObservedPoint.create(this, 'setPoint', this.x, this.y);
+		return LinkedPoint.create(this, 'setPoint', this.x, this.y);
 	},
 
 	setPoint: function(point) {
@@ -97,7 +97,6 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	setLeft: function(left) {
-		// right should not move
 		this.width -= left - this.x;
 		this.x = left;
 		return this;
@@ -150,7 +149,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getCenter: function() {
-		return ObservedPoint.create(this, 'setCenter',
+		return LinkedPoint.create(this, 'setCenter',
 				this.getCenterX(), this.getCenterY());
 	},
 
@@ -255,19 +254,28 @@ var Rectangle = this.Rectangle = Base.extend({
 				getX = 'get' + x,
 				getY = 'get' + y,
 				setX = 'set' + x,
-				setY = 'set' + y;
-			this['get' + part] = function() {
-				return ObservedPoint.create(this, 'set' + part,
+				setY = 'set' + y,
+				get = 'get' + part,
+				set = 'set' + part;
+			this[get] = function() {
+				return LinkedPoint.create(this, set,
 						this[getX](), this[getY]());
 			};
-			this['set' + part] = function(point) {
+			this[set] = function(point) {
 				point = Point.read(arguments);
-				return this[setX](point.x)[setY](point.y); // Note: call chaining!
+				// Note: call chaining happens here.
+				return this[setX](point.x)[setY](point.y);
 			};
 		}, { beans: true });
 });
 
-var ObservedRectangle = Rectangle.extend({
+/**
+ * An internal version of Rectangle that notifies its owner of each change
+ * through setting itself again on the setter that corresponds to the getter
+ * that produced this LinkedRectangle. See uses of LinkedRectangle.create()
+ * Note: This prototype is not exported.
+ */
+var LinkedRectangle = Rectangle.extend({
 	beans: true,
 
 	set: function(x, y, width, height) {
@@ -275,52 +283,8 @@ var ObservedRectangle = Rectangle.extend({
 		this._y = y;
 		this._width = width;
 		this._height = height;
-		if (this._observer)
-			this._observer[this._set](this);
-		return this;
-	},
-
-	// TODO: Use loop to create these?
-	getX: function() {
-		return this._x;
-	},
-
-	setX: function(x) {
-		this._x = x;
-		this._observer[this._set](this);
-	},
-
-	getY: function() {
-		return this._y;
-	},
-
-	setY: function(y) {
-		this._y = y;
-		this._observer[this._set](this);
-	},
-
-	getWidth: function() {
-		return this._width;
-	},
-
-	setWidth: function(width) {
-		this._width = width;
-		this._observer[this._set](this);
-	},
-
-	getHeight: function() {
-		return this._height;
-	},
-
-	setHeight: function(height) {
-		this._height = height;
-		this._observer[this._set](this);
-	},
-
-	// TODO: Implement for all properties on ObservedRectangle using loop
-	setCenter: function(center) {
-		Rectangle.prototype.setCenter.apply(this, center);
-		this._observer[this._set](this);
+		if (this._owner)
+			this._owner[this._set](this);
 		return this;
 	},
 
@@ -330,16 +294,47 @@ var ObservedRectangle = Rectangle.extend({
 		 * does not rely on Point#initialize at all. This speeds up all math
 		 * operations a lot.
 		 */
-		create: function(observer, set, x, y, width, height) {
-			// Don't use the shorter form as we want absolute maximum
-			// performance here:
-			// return new Point(Point.dont).set(x, y);
-			// TODO: Benchmark and decide
-			var rect = new ObservedRectangle(ObservedRectangle.dont).set(x, y,
+		create: function(owner, set, x, y, width, height) {
+			var rect = new LinkedRectangle(LinkedRectangle.dont).set(x, y,
 					width, height);
-			rect._observer = observer;
+			rect._owner = owner;
 			rect._set = set;
 			return rect;
 		}
 	}
+}, new function() {
+	var proto = Rectangle.prototype;
+
+	return Base.each(['x', 'y', 'width', 'height'], function(key) {
+		var part = Base.capitalize(key);
+		var internal = '_' + key;
+		this['get' + part] = function() {
+			return this[internal];
+		}
+
+		this['set' + part] = function(value) {
+			this[internal] = value;
+			// Check if this setter is called from another one which sets 
+			// _dontNotify, as it will notify itself
+			if (!this._dontNotify)
+				this._owner[this._set](this);
+		}
+	}, Base.each(['Point', 'Size', 'Center',
+			'Left', 'Top', 'Right', 'Bottom', 'CenterX', 'CenterY',
+			'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
+			'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'],
+		function(key) {
+			var name = 'set' + key;
+			this[name] = function(value) {
+				// Make sure the above setters of x, y, width, height do not
+				// each notify the owner, as we're going to take care of this
+				// afterwards here, only once per change.
+				this._dontNotify = true;
+				proto[name].apply(this, arguments);
+				delete this._dontNotify;
+				this._owner[this._set](this);
+				return this;
+			}
+		}, { beans: true })
+	);
 });
