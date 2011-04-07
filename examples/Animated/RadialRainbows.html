@@ -14,7 +14,7 @@
 			var color = new RGBColor(1, 0, 0);
 			var cycles = 4;
 			color.hue = i / l * cycles * 360;
-			colors.push([color, i / (l - 1)]);
+			colors.push(color);
 		}
 
 		var gradient = new Gradient(colors, 'radial');
