@@ -29,3 +29,14 @@ test('path.length', function() {
 	//	4: 0.22558508917324532
 	compareNumbers(param, 0.2255849553116685);
 });
+
+test('curve.getParameter with straight curve', function() {
+	var doc = new Document();
+	var path = new Path();
+	path.moveTo(100, 100);
+	path.lineTo(500, 500);
+	var curve = path.curves[0];
+	var length = curve.length;
+	var t = curve.getParameter(length / 3);
+	compareNumbers(t, 0.3869631475722452);
+});
