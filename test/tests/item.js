@@ -35,7 +35,7 @@ test('appendChild(item)', function() {
 	equals(doc.activeLayer.children.length, 1);
 });
 
-test('item.parent / item.isChild', function() {
+test('item.parent / item.isChild / item.isParent', function() {
 	var doc = new Document();
 	var secondDoc = new Document();
 	var path = new Path();
@@ -43,7 +43,10 @@ test('item.parent / item.isChild', function() {
 	equals(doc.activeLayer.children.indexOf(path) != -1, true);
 	secondDoc.activeLayer.appendTop(path);
 	equals(doc.activeLayer.isChild(path), false);
+	equals(path.isParent(doc.activeLayer), false);
 	equals(secondDoc.activeLayer.isChild(path), true);
+	equals(path.isParent(secondDoc.activeLayer), true);
+
 	equals(doc.activeLayer.children.indexOf(path) == -1, true);
 	equals(secondDoc.activeLayer.children.indexOf(path) == 0, true);
 });

@@ -309,10 +309,9 @@ var Item = this.Item = Base.extend({
 	 */
 	// TODO: isBelow
 
-	// TODO: this is confusing the beans
-	// isParent: function(item) {
-	// 	return this.parent == item;
-	// },
+	isParent: function(item) {
+		return this.parent == item;
+	},
 
 	isChild: function(item) {
 		return item.parent == this;
