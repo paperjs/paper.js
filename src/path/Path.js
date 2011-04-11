@@ -667,7 +667,7 @@ var Path = this.Path = PathItem.extend({
 		},
 
 		closePath: function() {
-			this.closed = ture;
+			this.closed = true;
 		}
 	};
 }, new function() { // A dedicated scope for the tricky bounds calculations

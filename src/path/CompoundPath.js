@@ -114,7 +114,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 
 		closePath: function() {
 			var path = getCurrentPath(this);
-			path.setClosed(true);
+			path.closed = true;
 		}
 	};
 
