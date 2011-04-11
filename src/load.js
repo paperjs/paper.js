@@ -44,6 +44,7 @@ var sources = [
 
 	'src/path/Segment.js',
 	'src/path/Curve.js',
+	'src/path/CurveLocation.js',
 	'src/path/PathItem.js',
 	'src/path/Path.js',
 	'src/path/CompoundPath.js',
