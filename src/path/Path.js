@@ -109,14 +109,6 @@ var Path = this.Path = PathItem.extend({
 		return segment ? this._add(segment, index) : null;
 	},
 
-	getLength: function() {
-		var curves = this.getCurves();
-		var length = 0;
-		for (var i = 0, l = curves.length; i < l; i++)
-			length += curves[i].getLength();
-		return length;
-	},
-
 	draw: function(ctx, param) {
 		if (!param.compound)
 			ctx.beginPath();
@@ -252,6 +244,79 @@ var Path = this.Path = PathItem.extend({
 	};
 
 	return {
+		beans: true,
+
+		// todo: getLocation(point, precision)
+		getLocation: function(length) {
+			var curves = this.getCurves();
+			var currentLength = 0;
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var startLength = currentLength;
+				var curve = curves[i];
+				currentLength += curve.getLength();
+				if(currentLength >= length) {
+					// found the segment within which the length lies
+					var t = curve.getParameter(length - startLength);
+					console.log(t, length - startLength, '??')
+					return new CurveLocation(curve, t);
+				}
+			}
+			// Todo: is this the case for paper.js too?
+			// it may be that through impreciseness of getLength, that the end
+			// of the curves was missed:
+			if (length <= this.getLength()) {
+				var curve = curves[curves.length - 1];
+				return new CurveLocation(curve, 1);
+			}
+			return null;
+		},
+		
+		getLength: function(/* location */) {
+			var location;
+			if(arguments.length)
+				location = arguments[0];
+			var curves = this.getCurves();
+			var index = location
+				? location.getIndex()
+				: curves.length;
+			if (index != -1) {
+				var length = 0;
+				for (var i = 0; i < index; i++)
+					length += curves[i].getLength();
+				var curve;
+				if (location) {
+					// Clone the curve as we're going to divide it to get the
+					// length. Without cloning it, this would modify the path.
+					curve = curves[index].clone();
+					curve.divide(location.getParameter());
+					length += curve.getLength();
+				}
+				return length;
+			}
+			return -1;
+		},
+		
+		/**
+		 * Returns the tangent to the path at the given length as a vector
+		 * point.
+		 */
+		getTangent: function(length) {
+			var loc = this.getLocation(length);
+			return loc
+				? loc.getCurve().getTangent(loc.getParameter())
+				: null;
+		},
+		
+		/**
+		 * Returns the normal to the path at the given length as a vector point.
+		 */
+		getNormal: function(length) {
+			var loc = this.getLocation(length);
+			return loc
+				? loc.getCurve().getNormal(loc.getParameter())
+				: null;
+		},
+		
 		smooth: function() {
 			var segments = this._segments;
 
