@@ -93,7 +93,7 @@ CurveLocation = Base.extend({
 	getParameter: function() {
 		if (this._parameter == -1 && this._point != null)
 			this._parameter = this._curve.getParameter(point);
-		return this._parameter != -1 ? parameter : null;
+		return this._parameter != -1 ? this._parameter : null;
 	},
 
 	/**
@@ -110,7 +110,7 @@ CurveLocation = Base.extend({
 	 * The item this curve belongs to, if any.
 	 */
 	getItem: function() {
-		return this._curve != null ? curve.getPath() : null;
+		return this._curve != null ? this._curve.getPath() : null;
 	},
 
 	toString: function() {
