@@ -114,7 +114,7 @@ Path.inject({ statics: new function() {
 		},
 
 		RegularPolygon: function(center, numSides, radius) {
-			center = Point.read(arguments, 0);
+			center = Point.read(arguments, 0, 1);
 			var path = new Path(),
 				three = !(numSides % 3),
 				vector = new Point(0, three ? -radius : radius),
@@ -128,17 +128,14 @@ Path.inject({ statics: new function() {
 		},
 		
 		Star: function(center, numPoints, radius1, radius2) {
-			center = Point.read(arguments, 0);
+			center = Point.read(arguments, 0, 1);
 			numPoints *= 2;
-			var inner = Math.min(radius1, radius2),
-				outer = Math.max(radius1, radius2),
-				angle = 360 / numPoints,
-				outerFirst = radius1 < radius2,
+			var angle = 360 / numPoints,
 				path = new Path();
 			for (var i = 0; i < numPoints; i++) {
 				path.add(center.add({
 					angle: -90 + angle * i,
-					length: i % 2 == outerFirst ? outer : inner
+					length: i % 2 ? radius2 : radius1
 				}));
 			}
 			path.closed = true;
