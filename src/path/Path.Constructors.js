@@ -125,6 +125,26 @@ Path.inject({ statics: new function() {
 			}
 			path.closed = true;
 			return path;
+		},
+		
+		Star: function(center, numPoints, radius1, radius2) {
+			center = Point.read(arguments, 0);
+			numPoints *= 2;
+			var inner = Math.min(radius1, radius2),
+				outer = Math.max(radius1, radius2),
+				angle = 360 / numPoints,
+				outerFirst = radius1 < radius2,
+				path = new Path();
+			for (var i = 0; i < numPoints; i++) {
+				var radius = i % 2 == outerFirst ? outer : inner,
+					vector = new Point({
+						angle: -90 + angle * i,
+						length: radius
+					});
+				path.add(center.add(vector));
+			}
+			path.closed = true;
+			return path;
 		}
 	};
 }});

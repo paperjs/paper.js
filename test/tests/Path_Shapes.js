@@ -49,3 +49,15 @@ test('new Path.RegularPolygon(center, numSides, radius)', function() {
 	var expectedSegments = [{ point: { x: 219.09814, y: 345.10547 } }, { point: { x: 169.09814, y: 308.77832 } }, { point: { x: 150, y: 250 } }, { point: { x: 169.09814, y: 191.22168 } }, { point: { x: 219.09814, y: 154.89453 } }, { point: { x: 280.90186, y: 154.89453 } }, { point: { x: 330.90186, y: 191.22168 } }, { point: { x: 350, y: 250 } }, { point: { x: 330.90186, y: 308.77832 } }, { point: { x: 280.90186, y: 345.10547 } }];
 	compareSegmentLists(path.segments, expectedSegments);
 });
+
+test('new Path.Star(center, numSides, radius1, radius2)', function() {
+	var doc = new Document();
+	var path = new Path.Star(new Point(100, 100), 10, 10, 20);
+	var expectedSegments = [new Segment(new Point(100, 90)), new Segment(new Point(106.18017578125, 80.97900390625)), new Segment(new Point(105.8779296875, 91.90966796875)), new Segment(new Point(116.18017578125, 88.244140625)), new Segment(new Point(109.5107421875, 96.90966796875)), new Segment(new Point(120, 100)), new Segment(new Point(109.5107421875, 103.09033203125)), new Segment(new Point(116.18017578125, 111.755859375)), new Segment(new Point(105.8779296875, 108.09033203125)), new Segment(new Point(106.18017578125, 119.02099609375)), new Segment(new Point(100, 110)), new Segment(new Point(93.81982421875, 119.02099609375)), new Segment(new Point(94.1220703125, 108.09033203125)), new Segment(new Point(83.81982421875, 111.755859375)), new Segment(new Point(90.4892578125, 103.09033203125)), new Segment(new Point(80, 100)), new Segment(new Point(90.4892578125, 96.90966796875)), new Segment(new Point(83.81982421875, 88.244140625)), new Segment(new Point(94.1220703125, 91.90966796875)), new Segment(new Point(93.81982421875, 80.97900390625))];
+	compareSegmentLists(path.segments, expectedSegments);
+
+	var doc = new Document();
+	var path = new Path.Star(new Point(100, 100), 5, 20, 10);	
+	var expectedSegments = [new Segment(new Point(100, 80)), new Segment(new Point(105.8779296875, 91.90966796875)), new Segment(new Point(119.02099609375, 93.81982421875)), new Segment(new Point(109.5107421875, 103.09033203125)), new Segment(new Point(111.755859375, 116.18017578125)), new Segment(new Point(100, 110)), new Segment(new Point(88.244140625, 116.18017578125)), new Segment(new Point(90.4892578125, 103.09033203125)), new Segment(new Point(80.97900390625, 93.81982421875)), new Segment(new Point(94.1220703125, 91.90966796875))];
+	compareSegmentLists(path.segments, expectedSegments);
+});
