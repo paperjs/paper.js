@@ -508,6 +508,9 @@ var Path = this.Path = PathItem.extend({
 		 * to point.
 		 */
 		cubicCurveTo: function(handle1, handle2, to) {
+			handle1 = Point.read(arguments, 0, 1);
+			handle2 = Point.read(arguments, 1, 1);
+			to = Point.read(arguments, 2, 1);
 			// First modify the current segment:
 			var current = getCurrentSegment(this);
 			// Convert to relative values:
