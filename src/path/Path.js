@@ -109,6 +109,12 @@ var Path = this.Path = PathItem.extend({
 		return segment ? this._add(segment, index) : null;
 	},
 	
+	// TODO: remove(index) / remove(segment) / remove(fromIndex, toIndex)
+	// TODO: pointsToCurves([tolerance[, threshold[, cornerRadius[, scale]]]])
+	// TODO: curvesToPoints([maxPointDistance[, flatness]])
+	// TODO: reduceSegments([flatness])
+	// TODO: split(length) / split(location) / split(index[, parameter])
+	
 	/**
 	 * Reverses the segments of the path.
 	 */
