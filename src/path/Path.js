@@ -948,5 +948,13 @@ var Path = this.Path = PathItem.extend({
 		getControlBounds: function() {
 			// TODO: Implement!
 		}
+		
+		// TODO: intersects(item)
+		// TODO: contains(item)
+		// TODO: contains(point)
+		// TODO: intersect(item)
+		// TODO: unite(item)
+		// TODO: exclude(item)
+		// TODO: getIntersections(path)
 	};
 });
