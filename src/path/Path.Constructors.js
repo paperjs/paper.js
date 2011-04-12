@@ -136,12 +136,10 @@ Path.inject({ statics: new function() {
 				outerFirst = radius1 < radius2,
 				path = new Path();
 			for (var i = 0; i < numPoints; i++) {
-				var radius = i % 2 == outerFirst ? outer : inner,
-					vector = new Point({
-						angle: -90 + angle * i,
-						length: radius
-					});
-				path.add(center.add(vector));
+				path.add(center.add({
+					angle: -90 + angle * i,
+					length: i % 2 == outerFirst ? outer : inner
+				}));
 			}
 			path.closed = true;
 			return path;
