@@ -38,7 +38,7 @@ var Point = this.Point = Base.extend({
 			} else if (Array.isArray(arg0)) {
 				this.x = arg0[0];
 				this.y = arg0.length > 1 ? arg0[1] : arg0[0];
-			} else if (arg0.angle) {
+			} else if (arg0.angle !== undefined) {
 				this.x = arg0.length;
 				this.y = 0;
 				this.setAngle(arg0.angle);
