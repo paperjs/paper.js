@@ -252,7 +252,7 @@ var Item = this.Item = Base.extend({
 	 */
 	isEditable: function() {
 		var parent = this;
-		while(parent) {
+		while (parent) {
 			if (parent.hidden || parent.locked)
 				return false;
 			parent = parent.parent;
@@ -333,7 +333,7 @@ var Item = this.Item = Base.extend({
 	 */
 	isDescendant: function(item) {
 		var parent = this.parent;
-		while(parent) {
+		while (parent) {
 			if (parent == item)
 				return true;
 			parent = parent.parent;
@@ -358,7 +358,7 @@ var Item = this.Item = Base.extend({
 	 */
 	isAncestor: function(item) {
 		var parent = item.parent;
-		while(parent) {
+		while (parent) {
 			if (parent == this)
 				return true;
 			parent = parent.parent;
@@ -374,7 +374,7 @@ var Item = this.Item = Base.extend({
 	 */
 	isGroupedWith: function(item) {
 		var parent = this.parent;
-		while(parent) {
+		while (parent) {
 			// Find group parents. Check for parent.parent, since don't want
 			// top level layers, because they also inherit from Group
 			if (parent.parent
