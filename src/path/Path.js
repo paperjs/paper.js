@@ -109,7 +109,25 @@ var Path = this.Path = PathItem.extend({
 		return segment ? this._add(segment, index) : null;
 	},
 	
-	// TODO: remove(index) / remove(segment) / remove(fromIndex, toIndex)
+	remove: function() {
+		if (!arguments.length) {
+			// remove()
+			this.base();
+		} else if (arguments.length == 1) {
+			if (arguments[0].point) {
+				// remove(segment)
+				arguments[0].remove();
+			} else {
+				// remove(index)
+				this._segments[arguments[0]].remove();
+			}
+		} else {
+			// remove(fromIndex, toIndex)
+			for(var i = arguments[1], l = arguments[0]; i >= l; i--)
+				this._segments[i].remove();
+		}
+	},
+	
 	// TODO: pointsToCurves([tolerance[, threshold[, cornerRadius[, scale]]]])
 	// TODO: curvesToPoints([maxPointDistance[, flatness]])
 	// TODO: reduceSegments([flatness])

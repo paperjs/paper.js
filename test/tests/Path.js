@@ -54,3 +54,25 @@ test('path.join(path)', function() {
 		new Segment(new Point(10, 5))]);
 	equals(path.closed, true);
 });
+
+test('path.remove()', function() {
+	var doc = new Document();
+	var path = new Path();
+	path.add(0, 0);
+	path.add(10, 0);
+	path.add(20, 0);
+	path.add(30, 0);
+	
+	path.remove(0);
+	equals(path.segments.length, 3);
+
+	path.remove(path.segments[0]);
+	equals(path.segments.length, 2);
+
+	path.remove(0, 1);
+	equals(path.segments.length, 0);
+
+	path.remove();
+	
+	equals(doc.activeLayer.children.length, 0);
+});
