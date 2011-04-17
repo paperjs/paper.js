@@ -99,13 +99,13 @@ var Path = this.Path = PathItem.extend({
 		return segment;
 	},
 
-	add: function() {
-		var segment = Segment.read(arguments);
+	add: function(segment) {
+		segment = Segment.read(arguments);
 		return segment ? this._add(segment) : null;
 	},
 
 	insert: function(index, segment) {
-		var segment = Segment.read(arguments, 1);
+		segment = Segment.read(arguments, 1);
 		return segment ? this._add(segment, index) : null;
 	},
 	
@@ -248,69 +248,127 @@ var Path = this.Path = PathItem.extend({
 		return loc
 			? loc.getCurve().getNormal(loc.getParameter())
 			: null;
-	},
-
-	draw: function(ctx, param) {
-		if (!param.compound)
-			ctx.beginPath();
-		var segments = this._segments,
-			length = segments.length,
-			handleOut, outX, outY;
-		for (var i = 0; i < length; i++) {
+	}
+}, new function() { // Scope for drawing
+	
+	function drawHandles(ctx, segments) {
+		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
-				point = segment._point,
-				x = point.x,
-				y = point.y,
-				handleIn = segment._handleIn;
-			if (i == 0) {
-				ctx.moveTo(x, y);
-			} else {
-				if (handleIn.isZero() && handleOut.isZero()) {
-					ctx.lineTo(x, y);
-				} else {
-					ctx.bezierCurveTo(
-						outX, outY,
-						handleIn.x + x, handleIn.y + y,
-						x, y
-					);
-				}
-			}
-			handleOut = segment._handleOut;
-			outX = handleOut.x + x;
-			outY = handleOut.y + y;
-		}
-		if (this.closed && length > 1) {
-			var segment = segments[0],
-				point = segment._point,
-				x = point.x,
-				y = point.y,
-				handleIn = segment._handleIn;
-			ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
-			ctx.closePath();
-		}
-		// If the path is part of a compound path or doesn't have a fill or
-		// stroke, there is no need to continue.
-		var fillColor = this.getFillColor(),
-			strokeColor = this.getStrokeColor();
-		if (!param.compound && (fillColor || strokeColor)) {
-			this.setContextStyles(ctx);
+				handleIn = segment.handleIn,
+				handleOut = segment.handleOut,
+				point = segment.point,
+				rounded = point.round();
+			// TODO: draw handles depending on selection state of
+			// segment.point and neighbouring segments.
+			drawHandle(ctx, point, handleIn);
+			drawHandle(ctx, point, handleOut);
+			// Draw a rectangle at segment.point:
 			ctx.save();
-			// If the path only defines a strokeColor or a fillColor,
-			// draw it directly with the globalAlpha set, otherwise
-			// we will do it later when we composite the temporary canvas.
-			if (!fillColor || !strokeColor)
-				ctx.globalAlpha = this.opacity;
-			if (fillColor) {
-				ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-				ctx.fill();
-			}
-			if (strokeColor) {
-				ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-				ctx.stroke();
-			}
+			ctx.beginPath();
+			ctx.rect(rounded.x - 2, rounded.y - 2, 4, 4);
+			ctx.fill();
+			// TODO: Only draw white rectangle if point.isSelected()
+			// is false:
+			ctx.beginPath();
+			ctx.rect(rounded.x - 1, rounded.y - 1, 2, 2);
+			ctx.fillStyle = '#ffffff';
+			ctx.fill();
 			ctx.restore();
 		}
 	}
+	
+	function drawHandle(ctx, point, handle) {
+		if (!handle.isZero()) {
+			handle = handle.add(point);
+			ctx.beginPath();
+			ctx.moveTo(point.x, point.y);
+			ctx.lineTo(handle.x, handle.y);
+			ctx.stroke();
+			ctx.beginPath();
+			var rounded = handle.round();
+			ctx.rect(rounded.x - 1, rounded.y - 1, 2, 2);
+			ctx.stroke();
+		}
+	}
+	
+	return {
+		draw: function(ctx, param) {
+			if (!param.compound)
+				ctx.beginPath();
+			var segments = this._segments,
+				length = segments.length,
+				handleOut, outX, outY;
+			for (var i = 0; i < length; i++) {
+				var segment = segments[i],
+					point = segment._point,
+					x = point.x,
+					y = point.y,
+					handleIn = segment._handleIn;
+				if (i == 0) {
+					ctx.moveTo(x, y);
+				} else {
+					if (handleIn.isZero() && handleOut.isZero()) {
+						ctx.lineTo(x, y);
+					} else {
+						ctx.bezierCurveTo(
+							outX, outY,
+							handleIn.x + x, handleIn.y + y,
+							x, y
+						);
+					}
+				}
+				handleOut = segment._handleOut;
+				outX = handleOut.x + x;
+				outY = handleOut.y + y;
+			}
+			if (this.closed && length > 1) {
+				var segment = segments[0],
+					point = segment._point,
+					x = point.x,
+					y = point.y,
+					handleIn = segment._handleIn;
+				ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
+				ctx.closePath();
+			}
+			// If the path is part of a compound path or doesn't have a fill or
+			// stroke, there is no need to continue.
+			var fillColor = this.getFillColor(),
+				strokeColor = this.getStrokeColor();
+			// If we are drawing onto the selection canvas, stroke the
+			// path and draw its handles.
+			if (param.selection) {
+				ctx.stroke();
+				drawHandles(ctx, this.segments);
+			} else {
+				if (!param.compound && (fillColor || strokeColor)) {
+					this.setContextStyles(ctx);
+					ctx.save();
+					// If the path only defines a strokeColor or a fillColor,
+					// draw it directly with the globalAlpha set, otherwise
+					// we will do it later when we composite the temporary canvas.
+					if (!fillColor || !strokeColor)
+						ctx.globalAlpha = this.opacity;
+					if (fillColor) {
+						ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+						ctx.fill();
+					}
+					if (strokeColor) {
+						ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+						ctx.stroke();
+					}
+					ctx.restore();
+				}
+				// If the path is selected, draw it again on the separate
+				// selection canvas, which will be composited onto the canvas
+				// after drawing of the document is complete.
+				if (this.getSelected()) {
+					param.selection = true;
+					this.draw(this.document.getSelectionContext(param), param);
+					param.selection = false;
+				}
+			}
+		}
+	};
 }, new function() { // Scope for segments list change detection
 
 	var segmentsFields = Base.each(

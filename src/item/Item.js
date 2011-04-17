@@ -53,7 +53,29 @@ var Item = this.Item = Base.extend({
 		return copy;
 	},
 
-	// TODO: isSelected / setSelected
+	setSelected: function(selected) {
+		if (this._children) {
+			for (var i = 0, l = this.children.length; i < l; i++) {
+				var child = this._children[i];
+				child.setSelected(selected);
+			}
+		} else {
+			this._selected = selected;
+		}
+	},
+	
+	getSelected: function() {
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				var child = this._children[i];
+				if (child.getSelected())
+					return true;
+			}
+		} else {
+			return !!this._selected;
+		}
+	},
+	
 	// TODO: isFullySelected / setFullySelected
 
 	/**
@@ -650,11 +672,14 @@ var Item = this.Item = Base.extend({
 				// on the temporary canvas.
 				context.translate(-itemOffset.x, -itemOffset.y);
 			}
-
-			item.draw(context, {
-				offset: itemOffset || param.offset,
-				compound: param.compound
-			});
+			var savedOffset;
+			if (itemOffset) {
+				savedOffset = param.offset;
+				param.offset = itemOffset;
+			}
+			item.draw(context, param);
+			if (itemOffset)
+				param.offset = savedOffset;
 
 			// If we created a temporary canvas before, composite it onto the
 			// parent canvas:
@@ -807,7 +832,7 @@ var Item = this.Item = Base.extend({
 			item.remove();
 			for(var type in sets) {
 				var other = sets[type];
-				if(other != set && other[item.getId()])
+				if (other != set && other[item.getId()])
 					delete other[item.getId()];
 			}
 		}
@@ -827,7 +852,7 @@ var Item = this.Item = Base.extend({
 				removeAll(sets[name]);
 				sets[name] = {};
 				// Call the script's overridden handler, if defined
-				if(this.base)
+				if (this.base)
 					this.base(event);
 			}
 			paper.tool.inject(hash);
