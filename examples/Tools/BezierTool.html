@@ -6,83 +6,81 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		document.currentStyle = {
-			strokeColor: '#4f7aff',
-			strokeWidth: 1
-		};
-		
-		var path = new Path();
-		path.style = {
-			strokeColor: 'black',
-			strokeWidth: 1
-		};
-		var currentSegment;
-		var inLine = new Path([0, 0], [0, 0]);
-		var outLine = new Path([0, 0], [0, 0]);
-		var lastInLine = new Path([0, 0], [0, 0]);
-		lastInLine.visible = false;
-		
-		var rect = new Path.Rectangle([0.5, 0.5], [4, 4]);
-		rect.fillColor = 'white';
-		var rectSymbol = new Symbol(rect);
-		
-		var circle = new Path.Circle(0, 2);
-		circle.fillColor = '#4f7aff';
-		circle.strokeColor = null;
-		var circleSymbol = new Symbol(circle);
-		var inCircle = new PlacedSymbol(circleSymbol);
-		var outCircle = new PlacedSymbol(circleSymbol);
-		var lastInCircle = new PlacedSymbol(circleSymbol);
-		inCircle.position = [-100, -100];
-		outCircle.position = [-100, -100];
-		lastInCircle.position = [-100, -100];
-
-		var curRect;
-		function onMouseDown(event) {
-			if (event.count > 1) {
-				var first = lastInLine.firstSegment;
-				first.point = inLine.firstSegment.point;
-				var last = lastInLine.lastSegment;
-				last.point = inLine.lastSegment.point;
-				lastInLine.visible = true;
-				lastInCircle.position = last.point;
+		var path;
+		var types = ['handleIn', 'handleOut', 'point'];
+		function findHandle(point) {
+			for (var i = 0, l = path.segments.length; i < l; i++) {
+				for (var j = 0; j < 3; j++) {
+					var type = types[j];
+					var segment = path.segments[i];
+					var segmentPoint = type == 'point'
+							? segment.point
+							: segment.point + segment[type];
+					var distance = (point - segmentPoint).length;
+					if (distance < 3) {
+						return {
+							type: type,
+							segment: segment
+						};
+					}
+				}
 			}
-			currentSegment = path.add(event.point);
-			inLine.firstSegment.point = event.point;
-			outLine.firstSegment.point = event.point;
-			inLine.lastSegment.point = event.point;
-			outLine.lastSegment.point = event.point;
-			inLine.visible = true;
-			outLine.visible = true;
+			return null;
+		}
+		
+		var currentSegment, mode, type;
+		function onMouseDown(event) {
+			mode = type = currentSegment = null;
 			
-			outCircle.position = event.point.round() + [0.5, 0.5];
-			inCircle.position = event.point.round() + [0.5, 0.5];
+			if (!path) {
+				path = new Path();
+				path.selected = true;
+				path.fillColor = new HSBColor(360 * Math.random(), 1, 1, 0.5);
+			}
 			
-			var rect = new PlacedSymbol(rectSymbol);
-			rect.position = event.point.round() + [0.5, 0.5];
+			var result = findHandle(event.point);
+			if (result) {
+				currentSegment = result.segment;
+				type = result.type;
+				if (path.segments.length > 1 && result.type == 'point'
+						&& result.segment.index == 0) {
+					mode = 'close';
+					path.closed = true;
+					path.selected = false;
+					path = null;
+				}
+			}
 			
-			curRect = new Path.Rectangle([0.5, 0.5], [4, 4]);
-			curRect.position = event.point.round();
-			curRect.fillColor = '#4f7aff';
-			curRect.strokeWidth = 0;
+			if (mode != 'close') {
+				mode = currentSegment ? 'move' : 'add';
+				if (!currentSegment)
+					currentSegment = path.add(event.point);
+			}
 		}
 			
 		function onMouseDrag(event) {
-			var delta = event.point - event.downPoint;
-			currentSegment.handleOut = delta;
-			currentSegment.handleIn = -delta;
-			outLine.lastSegment.point = currentSegment.handleIn + event.downPoint;
-			inLine.lastSegment.point = currentSegment.handleOut + event.downPoint;
-			outCircle.position = outLine.lastSegment.point;
-			inCircle.position = inLine.lastSegment.point;
-		}
-			
-		function onMouseUp(event) {
-			curRect.remove();
+			if (mode == 'move') {
+				if (type == 'point') {
+					currentSegment.point = event.point;
+				} else {
+					var delta = event.delta.clone();
+					if (type == 'handleOut')
+						delta = -delta;
+					currentSegment.handleIn += delta;
+					currentSegment.handleOut -= delta;
+				}
+			} else if (mode == 'add') {
+				var delta = event.point - event.downPoint;
+				currentSegment.handleOut = delta;
+				currentSegment.handleIn = -delta;
+			}
 		}
 	</script>
 </head>
 <body>
-	Click and drag to draw a path:
+	An emulation of a vector pen tool. 
+	Click and drag to add a point.<br/>
+	Click on segment handles and points to manipulate them. 
+	Close the path to start a new one.
 	<canvas id='canvas' width=1024 height=768></canvas>
 </body>
