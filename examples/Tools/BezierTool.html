@@ -59,20 +59,14 @@
 		}
 			
 		function onMouseDrag(event) {
-			if (mode == 'move') {
-				if (type == 'point') {
-					currentSegment.point = event.point;
-				} else {
-					var delta = event.delta.clone();
-					if (type == 'handleOut')
-						delta = -delta;
-					currentSegment.handleIn += delta;
-					currentSegment.handleOut -= delta;
-				}
-			} else if (mode == 'add') {
-				var delta = event.point - event.downPoint;
-				currentSegment.handleOut = delta;
-				currentSegment.handleIn = -delta;
+			if (mode == 'move' && type == 'point') {
+				currentSegment.point = event.point;
+			} else if (mode != 'close') {
+				var delta = event.delta.clone();
+				if (type == 'handleOut' || mode == 'add')
+					delta = -delta;
+				currentSegment.handleIn += delta;
+				currentSegment.handleOut -= delta;
 			}
 		}
 	</script>
