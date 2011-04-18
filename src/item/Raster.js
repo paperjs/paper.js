@@ -207,6 +207,11 @@ var Raster = this.Raster = Item.extend({
 		ctx.drawImage(this._canvas || this._image,
 				-this._size.width / 2, -this._size.height / 2);
 		ctx.restore();
+		if (this.getSelected()) {
+			var bounds = new Rectangle(this._size).setCenter(0, 0);
+			Item.drawSelectedBounds(bounds,
+					this.document.getSelectionContext(param), this.matrix);
+		}
 	}
 }, new function() {
 	function getAverageColor(pixels) {
@@ -285,5 +290,5 @@ var Raster = this.Raster = Item.extend({
 				CanvasProvider.returnCanvas(image);
 			return color;
 		}
-	}
+	};
 });

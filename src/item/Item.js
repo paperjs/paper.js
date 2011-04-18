@@ -404,7 +404,7 @@ var Item = this.Item = Base.extend({
 				&& item.isDescendant(parent))
 					return true;
 			// Keep walking up otherwise
-			parent = parent.parent
+			parent = parent.parent;
 		}
 		return false;
 	},
@@ -632,6 +632,35 @@ var Item = this.Item = Base.extend({
 	// TODO: toString
 
 	statics: {
+		drawSelectedBounds: function(bounds, context, matrix) {
+			var top = bounds.y,
+				bottom = bounds.y + bounds.height,
+				left = bounds.x,
+				right = bounds.x + bounds.width;
+				coords = [ 
+					left, top,
+					right, top,
+					right, bottom,
+					left, bottom
+				];
+			if (matrix)
+				matrix.transform(coords, 0, coords, 0, 4);
+			context.beginPath();
+			for (var i = 0; i < 8; i++)
+				context[i == 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
+			context.closePath();
+			context.stroke();
+			for (var i = 0; i < 8; i++) {
+				context.beginPath();
+				context.rect(
+					Math.round(coords[i]) - 2,
+					Math.round(coords[++i]) - 2,
+					4, 4
+				);
+				context.fill();
+			}
+		},
+
 		// TODO: Implement DocumentView into the drawing
 		// TODO: Optimize temporary canvas drawing to ignore parts that are
 		// outside of the visible view.
@@ -724,7 +753,7 @@ var Item = this.Item = Base.extend({
 				return true;
 			}
 			return false;
-		}
+		};
 	}
 
 	function move(above) {
@@ -738,7 +767,7 @@ var Item = this.Item = Base.extend({
 				return true;
 			}
 			return false;
-		}
+		};
 	}
 
 	return {
@@ -820,7 +849,7 @@ var Item = this.Item = Base.extend({
 		 * @return true if it was moved, false otherwise
 		 */
 		moveBelow: move(false)
-	}
+	};
 }, new function() {
 	var sets = {
 		down: {}, drag: {}, up: {}, move: {}
@@ -854,7 +883,7 @@ var Item = this.Item = Base.extend({
 				// Call the script's overridden handler, if defined
 				if (this.base)
 					this.base(event);
-			}
+			};
 			paper.tool.inject(hash);
 			// Only install this handler once, and mark it as installed,
 			// to prevent repeated installing.
@@ -896,5 +925,5 @@ var Item = this.Item = Base.extend({
 				this._id = id++;
 			return this._id;
 		}
-	}
+	};
 });

@@ -57,6 +57,10 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		this.matrix.applyToContext(ctx);
 		Item.draw(this.symbol.getDefinition(), ctx, param);
 		ctx.restore();
+		if (this.getSelected()) {
+			Item.drawSelectedBounds(this.symbol._definition.getStrokeBounds(),
+					this.document.getSelectionContext(param), this.matrix);
+		}
 	}
 
 	// TODO:
