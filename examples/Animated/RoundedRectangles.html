@@ -7,10 +7,9 @@
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		var mousePoint = document.bounds.center;
-		
 		var amount = 25;
 		var colors = ['red', 'white', 'blue', 'white'];
-		
+
 		for (var i = 0; i < amount; i++) {
 			var rect = new Rectangle([0, 0], [25, 25]);
 			rect.center = mousePoint;
@@ -20,27 +19,27 @@
 			path.scale(scale);
 			new PlacedSymbol(path);
 		}
-//		setInterval(draw, 30);
+
+		function onMouseDown(event) {
+			mousePoint = event.point;
+		}
 		
 		function onMouseDrag(event) {
 			mousePoint = event.point;
 		}
-		
+
 		var children = document.activeLayer.children;
-		var count = 0;
-		function draw() {
+		var count = 0;		
+		function onFrameLoop() {
 			count++;
 			for (var i = 0, l = children.length; i < l; i++) {
 				var item = children[i];
-				var delta = (mousePoint - item.position) / (i + 1);
+				var delta = (mousePoint - item.position) / (i + 5);
 				item.rotate(Math.sin((count + i) / 10) * 7);
 				if (delta.length > 0.1)
 					item.translate(delta);
 			}
-			document.redraw();
-			Event.requestAnimationFrame(draw, document.canvas);
 		}
-		Event.requestAnimationFrame(draw, document.canvas);
 	</script>
 </head>
 <body>
