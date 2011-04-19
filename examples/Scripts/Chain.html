@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript">var root = '../../'</script>
+	<script type="text/javascript" src="../../src/load.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		// Adapted from the following Processing example:
+		// http://processing.org/learning/topics/follow3.html
+		
+		var path = new Path();
+		path.strokeColor = 'purple';
+		path.strokeWidth = 20;
+		path.strokeCap = 'round';
+		var size = 20,
+			segments = path.segments,
+			center = document.bounds.center;
+		for(var i = 0; i < size; i++)
+			path.add(center + new Point(i * 100, 0));
+
+		onMouseMove = onMouseDrag = function(event) {
+			segments[0].point = event.point;
+			for(var i = 0; i < size - 1; i++) {
+				var nextSegment = segments[i + 1];
+				var position = path.segments[i].point;
+				var angle = (position - nextSegment.point).getAngleInRadians();
+				var vector = new Point(Math.cos(angle), Math.sin(angle)) * -25;
+				nextSegment.point = position + vector;
+			}
+			path.smooth();
+		}
+		
+		function onMouseDown(event) {
+			path.selected = true;
+		}
+		
+		function onMouseUp(event) {
+			path.selected = false;
+		}
+	</script>
+</head>
+<body style='background-color: black'>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
