@@ -6,6 +6,9 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
+		// Based on the Flocking Processing example by Daniel Schiffman:
+		// http://processing.org/learning/topics/flocking.html
+		
 		document.currentStyle = {
 			strokeColor: 'white',
 			strokeWidth: 2,
@@ -209,22 +212,22 @@
 			var position = Point.random() * document.size;
 			boids.push(new Boid(position, 10, 0.05));
 		}
-		var letterPath = new Path(
+		var heartPath = new Path(
 			new Segment(new Point(514.6962890625, 624.703125), new Point(7.0966796875, -26.3369140625), new Point(-7.10205078125, -27.0244140625)), new Segment(new Point(484.29052734375, 548.6025390625), new Point(13.16845703125, 23.7060546875), new Point(-13.173828125, -23.70703125)), new Segment(new Point(407.84619140625, 438.14453125), new Point(37.79296875, 49.935546875), new Point(-27.71630859375, -36.6435546875)), new Segment(new Point(356.654296875, 368.400390625), new Point(6.41015625, 9.8505859375), new Point(-10.53759765625, -16.02978515625)), new Segment(new Point(333.80712890625, 324.25146484375), new Point(4.69189453125, 13.3994140625), new Point(-4.697265625, -13.39892578125)), new Segment(new Point(326.76416015625, 283.53857421875), new Point(0, 13.74267578125), new Point(0, -25.42431640625)), new Segment(new Point(352.18798828125, 219.634765625), new Point(-16.95263671875, 17.17822265625), new Point(16.94775390625, -17.1787109375)), new Segment(new Point(415.0615234375, 193.8671875), new Point(-24.96826171875, 0), new Point(25.19287109375, 0)), new Segment(new Point(480.68310546875, 220.66552734375), new Point(-18.552734375, -17.86572265625), new Point(13.96826171875, 13.28662109375)), new Segment(new Point(514.6962890625, 280.10302734375), new Point(-8.70703125, -26.3369140625), new Point(7.55859375, -25.88037109375)), new Segment(new Point(546.6484375, 221.0087890625), new Point(-13.7431640625, 13.517578125), new Point(19.0087890625, -18.32177734375)), new Segment(new Point(612.61328125, 193.5234375), new Point(-24.9677734375, 0), new Point(24.7373046875, 0)), new Segment(new Point(675.486328125, 219.119140625), new Point(-17.177734375, -17.06005859375), new Point(17.1787109375, 17.06591796875)), new Segment(new Point(701.2548828125, 280.10302734375), new Point(0, -23.58837890625), new Point(0, 20.61376953125)), new Segment(new Point(686.1376953125, 344.52197265625), new Point(10.076171875, -22.33203125), new Point(-10.08203125, 22.33203125)), new Segment(new Point(627.73046875, 432.3046875), new Point(28.8603515625, -36.1875), new Point(-37.5673828125, 47.412109375)), new Segment(new Point(545.6171875, 549.1171875), new Point(17.1787109375, -30.458984375), new Point(-13.517578125, 24.0498046875))
 		);
-		letterPath.closed = true;
-		letterPath.position = document.bounds.center;
-		letterPath.strokeColor = null;
-		letterPath.scale(1.5);
+		heartPath.closed = true;
+		heartPath.position = document.bounds.center;
+		heartPath.strokeColor = null;
+		heartPath.scale(1.5);
 		var count = 0,
 			groupTogether = false,
-			pathLength = letterPath.length,
+			pathLength = heartPath.length,
 			mouseDown = false;
 		function onFrameLoop() {
 			count++;
 			for(var i = 0, l = boids.length; i < l; i++) {
 				if (groupTogether) {
-					var point = letterPath.getLocation(((i + count / 30) % l) / l * pathLength).point;
+					var point = heartPath.getLocation(((i + count / 30) % l) / l * pathLength).point;
 					boids[i].arrive(point);
 				}
 				boids[i].run(boids);
