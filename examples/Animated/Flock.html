@@ -222,7 +222,6 @@
 			mouseDown = false;
 		function onFrameLoop() {
 			count++;
-			groupTogether = mouseDown || count % 1500 > 500;
 			for(var i = 0, l = boids.length; i < l; i++) {
 				if (groupTogether) {
 					var point = letterPath.getLocation(((i + count / 30) % l) / l * pathLength).point;
@@ -232,12 +231,7 @@
 			}
 		}
 		function onMouseDown(event) {
-			mouseDown = true;
-		}
-		
-		function onMouseUp(event) {
-			mouseDown = false;
-			count = 0;
+			groupTogether = !groupTogether;
 		}
 	</script>
 </head>
