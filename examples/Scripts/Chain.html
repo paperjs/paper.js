@@ -24,8 +24,8 @@
 			for(var i = 0; i < size - 1; i++) {
 				var nextSegment = segments[i + 1];
 				var position = path.segments[i].point;
-				var angle = (position - nextSegment.point).getAngleInRadians();
-				var vector = new Point(Math.cos(angle), Math.sin(angle)) * -25;
+				var angle = (position - nextSegment.point).angle;
+				var vector = -new Point({ angle: angle, length: 25 });
 				nextSegment.point = position + vector;
 			}
 			path.smooth();
