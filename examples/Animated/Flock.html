@@ -6,7 +6,7 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		// Based on the Flocking Processing example by Daniel Schiffman:
+		// Adapted from Flocking Processing example by Daniel Schiffman:
 		// http://processing.org/learning/topics/flocking.html
 		
 		document.currentStyle = {
@@ -18,6 +18,11 @@
 			width = bounds.width,
 			height = bounds.height;
 
+		var head = new Path.Oval([0, 0], [13, 8]);
+		head.fillColor = 'white';
+		head.strokeColor = null;
+		var headSymbol = new Symbol(head);
+		
 		var Boid = Base.extend({
 			initialize: function(position, maxSpeed, maxForce) {
 				var strength = Math.random() * 0.5;
@@ -27,25 +32,28 @@
 				this.r = 30;
 				this.maxSpeed = maxSpeed + strength;
 				this.maxForce = maxForce + strength;
+				this.head = new PlacedSymbol(head);
 				this.path = new Path();
-				this.head = new Path.Circle(this.loc, 3);
-				this.head.style = {
-					fillColor: 'white',
-					strokeColor: null,
-				};
-
+				this.shortPath = new Path();
+				this.shortPath.strokeWidth = 3;
 				for(var i = 0, l = strength * 10 + 10; i < l; i++) {
 					this.path.add(this.loc);
+					if (i < 3)
+						this.shortPath.add(this.loc);
 				}
+				
 				this.firstSegment = this.path.segments[0];
-				this.lastRot = 0;
 				this.count = 0;
+				this.lastRot = 0;
 			},
 			
 			run: function(boids) {
 				this.lastLoc = this.loc.clone();
-				if(!groupTogether)
+				if(!groupTogether) {
 					this.flock(boids);
+				} else {
+					this.align(boids);
+				}
 				this.borders();
 
 				this.update();
@@ -64,6 +72,15 @@
 				}
 				this.path.smooth();
 				this.head.position = this.loc;
+				var vector = this.loc - this.lastLoc;
+				var rot = vector.angle;
+				this.head.rotate(rot - this.lastRot);
+				this.lastRot = rot;
+				
+				var shortSegments = this.shortPath.segments;
+				for (var i = 0; i < 3; i++) {
+					shortSegments[i] = segments[i].clone();
+				}
 			},
 			
 			// We accumulate a new acceleration each time based on three rules
@@ -159,19 +176,36 @@
 				var neighborDist = 25,
 					steer = new Point(0, 0),
 					count = 0,
-					nearest = 999;
+					nearest = 999,
+					closestPoint;
 				for (var i = 0, l = boids.length; i < l; i++) {
 					var other = boids[i];
 					var d = this.loc.getDistance(other.loc);
-					if(d > 0 && d < nearest)
+					if(d > 0 && d < nearest) {
+						closestPoint = other.loc;
 						nearest = d;
+					}
 					if(d > 0 && d < neighborDist) {
 						steer += other.vel;
 						count++;
 					}
 				}
-				this.head.fillColor = this.path.strokeColor = nearest < 40 ? 'red' : 'white';
-
+				
+				if (this.connectionPath) {
+					this.connectionPath.remove();
+					this.connectionPath = null;
+				}
+				
+				if (nearest < 50) {
+					var vector = closestPoint - this.loc;
+					var from = this.loc + vector * 0.2;
+					var to = this.loc + vector * 0.8;
+					this.connectionPath = new Path(from, to);
+					this.connectionPath.strokeColor = 'red';
+					this.connectionPath.strokeWidth = 1;
+					document.activeLayer.appendBottom(this.connectionPath);
+				}
+				
 				if (count > 0)
 					steer /= count;
 				if (steer.length > 0) {
@@ -208,12 +242,19 @@
 		
 		var boids = [],
 			center = document.bounds.center;
-		for (var i = 0; i < 40; i++) {
+		for (var i = 0; i < 30; i++) {
 			var position = Point.random() * document.size;
 			boids.push(new Boid(position, 10, 0.05));
 		}
 		var heartPath = new Path(
-			new Segment(new Point(514.6962890625, 624.703125), new Point(7.0966796875, -26.3369140625), new Point(-7.10205078125, -27.0244140625)), new Segment(new Point(484.29052734375, 548.6025390625), new Point(13.16845703125, 23.7060546875), new Point(-13.173828125, -23.70703125)), new Segment(new Point(407.84619140625, 438.14453125), new Point(37.79296875, 49.935546875), new Point(-27.71630859375, -36.6435546875)), new Segment(new Point(356.654296875, 368.400390625), new Point(6.41015625, 9.8505859375), new Point(-10.53759765625, -16.02978515625)), new Segment(new Point(333.80712890625, 324.25146484375), new Point(4.69189453125, 13.3994140625), new Point(-4.697265625, -13.39892578125)), new Segment(new Point(326.76416015625, 283.53857421875), new Point(0, 13.74267578125), new Point(0, -25.42431640625)), new Segment(new Point(352.18798828125, 219.634765625), new Point(-16.95263671875, 17.17822265625), new Point(16.94775390625, -17.1787109375)), new Segment(new Point(415.0615234375, 193.8671875), new Point(-24.96826171875, 0), new Point(25.19287109375, 0)), new Segment(new Point(480.68310546875, 220.66552734375), new Point(-18.552734375, -17.86572265625), new Point(13.96826171875, 13.28662109375)), new Segment(new Point(514.6962890625, 280.10302734375), new Point(-8.70703125, -26.3369140625), new Point(7.55859375, -25.88037109375)), new Segment(new Point(546.6484375, 221.0087890625), new Point(-13.7431640625, 13.517578125), new Point(19.0087890625, -18.32177734375)), new Segment(new Point(612.61328125, 193.5234375), new Point(-24.9677734375, 0), new Point(24.7373046875, 0)), new Segment(new Point(675.486328125, 219.119140625), new Point(-17.177734375, -17.06005859375), new Point(17.1787109375, 17.06591796875)), new Segment(new Point(701.2548828125, 280.10302734375), new Point(0, -23.58837890625), new Point(0, 20.61376953125)), new Segment(new Point(686.1376953125, 344.52197265625), new Point(10.076171875, -22.33203125), new Point(-10.08203125, 22.33203125)), new Segment(new Point(627.73046875, 432.3046875), new Point(28.8603515625, -36.1875), new Point(-37.5673828125, 47.412109375)), new Segment(new Point(545.6171875, 549.1171875), new Point(17.1787109375, -30.458984375), new Point(-13.517578125, 24.0498046875))
+			new Segment(new Point(514.6962890625, 624.703125), new Point(7.0966796875, -26.3369140625), new Point(-7.10205078125, -27.0244140625)),
+			new Segment(new Point(484.29052734375, 548.6025390625), new Point(13.16845703125, 23.7060546875), new Point(-13.173828125, -23.70703125)),
+			new Segment(new Point(407.84619140625, 438.14453125), new Point(37.79296875, 49.935546875), new Point(-27.71630859375, -36.6435546875)),
+			new Segment(new Point(356.654296875, 368.400390625), new Point(6.41015625, 9.8505859375), new Point(-10.53759765625, -16.02978515625)),
+			new Segment(new Point(333.80712890625, 324.25146484375), new Point(4.69189453125, 13.3994140625), new Point(-4.697265625, -13.39892578125)),
+			new Segment(new Point(326.76416015625, 283.53857421875), new Point(0, 13.74267578125), new Point(0, -25.42431640625)),
+			new Segment(new Point(352.18798828125, 219.634765625), new Point(-16.95263671875, 17.17822265625), new Point(16.94775390625, -17.1787109375)),
+			new Segment(new Point(415.0615234375, 193.8671875), new Point(-24.96826171875, 0), new Point(25.19287109375, 0)), new Segment(new Point(480.68310546875, 220.66552734375), new Point(-18.552734375, -17.86572265625), new Point(13.96826171875, 13.28662109375)), new Segment(new Point(514.6962890625, 280.10302734375), new Point(-8.70703125, -26.3369140625), new Point(7.55859375, -25.88037109375)), new Segment(new Point(546.6484375, 221.0087890625), new Point(-13.7431640625, 13.517578125), new Point(19.0087890625, -18.32177734375)), new Segment(new Point(612.61328125, 193.5234375), new Point(-24.9677734375, 0), new Point(24.7373046875, 0)), new Segment(new Point(675.486328125, 219.119140625), new Point(-17.177734375, -17.06005859375), new Point(17.1787109375, 17.06591796875)), new Segment(new Point(701.2548828125, 280.10302734375), new Point(0, -23.58837890625), new Point(0, 20.61376953125)), new Segment(new Point(686.1376953125, 344.52197265625), new Point(10.076171875, -22.33203125), new Point(-10.08203125, 22.33203125)), new Segment(new Point(627.73046875, 432.3046875), new Point(28.8603515625, -36.1875), new Point(-37.5673828125, 47.412109375)), new Segment(new Point(545.6171875, 549.1171875), new Point(17.1787109375, -30.458984375), new Point(-13.517578125, 24.0498046875))
 		);
 		heartPath.closed = true;
 		heartPath.position = document.bounds.center;
