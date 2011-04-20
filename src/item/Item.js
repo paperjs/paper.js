@@ -54,9 +54,9 @@ var Item = this.Item = Base.extend({
 	},
 
 	setSelected: function(selected) {
-		if (this._children) {
+		if (this.children) {
 			for (var i = 0, l = this.children.length; i < l; i++) {
-				var child = this._children[i];
+				var child = this.children[i];
 				child.setSelected(selected);
 			}
 		} else {
