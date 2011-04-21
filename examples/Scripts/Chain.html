@@ -19,18 +19,22 @@
 		for(var i = 0; i < size; i++)
 			path.add(center + new Point(i * 100, 0));
 
-		onMouseMove = onMouseDrag = function(event) {
+		function onMouseMove(event) {
 			segments[0].point = event.point;
 			for(var i = 0; i < size - 1; i++) {
 				var nextSegment = segments[i + 1];
 				var position = path.segments[i].point;
 				var angle = (position - nextSegment.point).angle;
-				var vector = -new Point({ angle: angle, length: 25 });
-				nextSegment.point = position + vector;
+				var vector = new Point({ angle: angle, length: 25 });
+				nextSegment.point = position - vector;
 			}
 			path.smooth();
 		}
-		
+
+		function onMouseDrag(event) {
+			onMouseMove(event);
+		}
+
 		function onMouseDown(event) {
 			path.selected = true;
 		}
