@@ -75,7 +75,7 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	getHandleInIfSet: function() {
-		return this._handleIn.x == 0 && this._handleIn.y == 0
+		return this._handleIn._x == 0 && this._handleIn._y == 0
 			? null : this._handleIn;
 	},
 
@@ -92,7 +92,7 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	getHandleOutIfSet: function() {
-		return this._handleOut.x == 0 && this._handleOut.y == 0
+		return this._handleOut._x == 0 && this._handleOut._y == 0
 			? null : this._handleOut;
 	},
 
@@ -166,20 +166,20 @@ var Segment = this.Segment = Base.extend({
 			// coords array for getBounds().
 			handleIn =  matrix && this.getHandleInIfSet() || this._handleIn,
 			handleOut = matrix && this.getHandleOutIfSet() || this._handleOut,
-			x = point.x,
-			y = point.y;
+			x = point._x,
+			y = point._y;
 		coords[0] = x;
 		coords[1] = y;
 		var index = 2;
 		// We need to convert handles to absolute coordinates in order
 		// to transform them.
 		if (handleIn) {
-			coords[index++] = handleIn.x + x;
-			coords[index++] = handleIn.y + y;
+			coords[index++] = handleIn._x + x;
+			coords[index++] = handleIn._y + y;
 		}
 		if (handleOut) {
-			coords[index++] = handleOut.x + x;
-			coords[index++] = handleOut.y + y;
+			coords[index++] = handleOut._x + x;
+			coords[index++] = handleOut._y + y;
 		}
 		if (matrix) {
 			matrix.transform(coords, 0, coords, 0, index / 2);
@@ -187,16 +187,16 @@ var Segment = this.Segment = Base.extend({
 			y = coords[1];
 			if (change) {
 				// If change is true, we need to set the new values back
-				point.x = x;
-				point.y = y;
+				point._x = x;
+				point._y = y;
 				index  = 2;
 				if (handleIn) {
-					handleIn.x = coords[index++] - x;
-					handleIn.y = coords[index++] - y;
+					handleIn._x = coords[index++] - x;
+					handleIn._y = coords[index++] - y;
 				}
 				if (handleOut) {
-					handleOut.x = coords[index++] - x;
-					handleOut.y = coords[index++] - y;
+					handleOut._x = coords[index++] - x;
+					handleOut._y = coords[index++] - y;
 				}
 			} else {
 				// We want to receive the results in coords, so make sure
