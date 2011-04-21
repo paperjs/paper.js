@@ -77,10 +77,10 @@ var Item = this.Item = Base.extend({
 		}
 	},
 	
-	getSelected: function() {
+	isSelected: function() {
 		if (this.children) {
 			for (var i = 0, l = this.children.length; i < l; i++) {
-				if (this.children[i].getSelected())
+				if (this.children[i].isSelected())
 					return true;
 			}
 		} else {
@@ -279,7 +279,7 @@ var Item = this.Item = Base.extend({
 	* Removes the item.
 	*/
 	remove: function() {
-		if(this.getSelected())
+		if(this.isSelected())
 			this.setSelected(false);
 		return this.removeFromParent();
 	},

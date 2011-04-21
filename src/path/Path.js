@@ -129,12 +129,12 @@ var Path = this.Path = PathItem.extend({
 		}
 	},
 	
-	getSelected: function() {
+	isSelected: function() {
 		return this._selectedSegmentCount > 0;
 	},
 	
 	setSelected: function(selected) {
-		var wasSelected = this.getSelected();
+		var wasSelected = this.isSelected();
 		var length = this._segments.length;
 		if (!wasSelected != !selected && length) {
 			var selectedItems = this._document._selectedItems;
@@ -291,16 +291,16 @@ var Path = this.Path = PathItem.extend({
 				pointSelected = segment._selectionState == SelectionState.POINT;
 			// TODO: draw handles depending on selection state of
 			// segment.point and neighbouring segments.
-				if (pointSelected || segment.getSelected(segment._handleIn))
+				if (pointSelected || segment.isSelected(segment._handleIn))
 					drawHandle(ctx, point, segment._handleIn);
-				if (pointSelected || segment.getSelected(segment._handleOut))
+				if (pointSelected || segment.isSelected(segment._handleOut))
 					drawHandle(ctx, point, segment._handleOut);
 			// Draw a rectangle at segment.point:
 			ctx.save();
 			ctx.beginPath();
 			ctx.rect(point._x - 2, point._y - 2, 4, 4);
 			ctx.fill();
-			// TODO: Only draw white rectangle if point.getSelected()
+			// TODO: Only draw white rectangle if point.isSelected()
 			// is false:
 			if (!pointSelected) {
 				ctx.beginPath();

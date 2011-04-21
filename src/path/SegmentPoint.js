@@ -34,8 +34,8 @@ var SegmentPoint = Point.extend({
 		this._segment.setSelected(this, selected);
 	},
 	
-	getSelected: function() {
-		return this._segment.getSelected(this);
+	isSelected: function() {
+		return this._segment.isSelected(this);
 	},
 	
 	statics: {

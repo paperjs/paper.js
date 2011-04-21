@@ -125,7 +125,7 @@ var Segment = this.Segment = Base.extend({
 		return this._path && this._path._segments[this.getIndex() - 1] || null;
 	},
 
-	getSelected: function(/* point */) {
+	isSelected: function(/* point */) {
 		var point = arguments.length ? arguments[0] : this.point;
 		var state = this._selectionState;
 		if (point == this.point) {
@@ -180,11 +180,11 @@ var Segment = this.Segment = Base.extend({
 					// instead depending on the selection state of their
 					// neighbors.
 					handleInSelected = previous != null
-							&& (previous._point.getSelected()
-							|| previous._handleOut.getSelected());
+							&& (previous._point.isSelected()
+							|| previous._handleOut.isSelected());
 					handleOutSelected = next != null
-						&& (next._point.getSelected()
-						|| next._handleOut.getSelected());
+						&& (next._point.isSelected()
+						|| next._handleOut.isSelected());
 				}
 				pointSelected = selected;
 			}
@@ -244,7 +244,7 @@ var Segment = this.Segment = Base.extend({
 	remove: function() {
 		if (this._path) {
 			this._path._segments.splice(this.getIndex(), 1);
-			if (this.getSelected())
+			if (this.isSelected())
 				this._path._selectedSegmentCount--;
 			return true;
 		}
