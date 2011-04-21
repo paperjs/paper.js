@@ -19,13 +19,13 @@ var Layer = this.Layer = Group.extend({
 
 	initialize: function() {
 		this.children = [];
-		this.document = paper.document;
-		this.document.layers.push(this);
+		this._document = paper.document;
+		this._document.layers.push(this);
 		this.activate();
 	},
 
 	getIndex: function() {
-		return this.parent ? this.base() : this.document.layers.indexOf(this);
+		return this.parent ? this.base() : this._document.layers.indexOf(this);
 	},
 
 	/**
@@ -34,7 +34,7 @@ var Layer = this.Layer = Group.extend({
 	*/
 	removeFromParent: function() {
 		if (!this.parent) {
-			return !!this.document.layers.splice(this.getIndex(), 1).length;
+			return !!this._document.layers.splice(this.getIndex(), 1).length;
 		} else {
 			return this.base();
 		}
@@ -42,16 +42,16 @@ var Layer = this.Layer = Group.extend({
 
 	getNextSibling: function() {
 		return this.parent ? this.base()
-				: this.document.layers[this.getIndex() + 1] || null;
+				: this._document.layers[this.getIndex() + 1] || null;
 	},
 
 	getPreviousSibling: function() {
 		return this.parent ? this.base()
-				: this.document.layers[this.getIndex() - 1] || null;
+				: this._document.layers[this.getIndex() - 1] || null;
 	},
 
 	activate: function() {
-		this.document.activeLayer = this;
+		this._document.activeLayer = this;
 	}
 }, new function () {
 	function move(above) {
@@ -59,9 +59,9 @@ var Layer = this.Layer = Group.extend({
 			// if the item is a layer and contained within Document#layers
 			if (item instanceof Layer && !item.parent) {
 				this.removeFromParent();
-				item.document.layers.splice(item.getIndex() + (above ? 1 : -1),
+				item._document.layers.splice(item.getIndex() + (above ? 1 : -1),
 						0, this);
-				this.document = item.document;
+				this.setDocument(item._document);
 				return true;
 			} else {
 				return this.base(item);

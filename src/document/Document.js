@@ -37,6 +37,7 @@ var Document = this.Document = Base.extend({
 		this.symbols = [];
 		this.views = [new DocumentView(this)];
 		this.activeView = this.views[0];
+		this._selectedItems = [];
 	},
 
 	getCurrentStyle: function() {
