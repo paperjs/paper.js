@@ -134,8 +134,8 @@ var Path = this.Path = PathItem.extend({
 	},
 	
 	setSelected: function(selected) {
-		var wasSelected = this.isSelected();
-		var length = this._segments.length;
+		var wasSelected = this.isSelected(),
+			length = this._segments.length;
 		if (!wasSelected != !selected && length)
 			this._document._selectItem(this, selected);
 		this._selectedSegmentCount = selected ? length : 0;
@@ -166,14 +166,14 @@ var Path = this.Path = PathItem.extend({
 	
 	join: function(path) {
 		if (path != null) {
-			var segments = path.segments;
-			var last1 = this.getLastSegment();
-			var last2 = path.getLastSegment();
+			var segments = path.segments,
+				last1 = this.getLastSegment(),
+				last2 = path.getLastSegment();
 			if (last1._point.equals(last2._point))
 				path.reverse();
 			var first2 = path.getFirstSegment();
 			if (last1._point.equals(first2._point)) {
-				last1.setHandleOut(first2.handleOut);
+				last1.setHandleOut(first2._handleOut);
 				for (var i = 1, l = segments.length; i < l; i++)
 					this._add(segments[i]);
 			} else {
@@ -206,13 +206,13 @@ var Path = this.Path = PathItem.extend({
 	
 	// todo: getLocation(point, precision)
 	getLocation: function(length) {
-		var curves = this.getCurves();
-		var currentLength = 0;
+		var curves = this.getCurves(),
+			currentLength = 0;
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var startLength = currentLength;
-			var curve = curves[i];
+			var startLength = currentLength,
+				curve = curves[i];
 			currentLength += curve.getLength();
-			if(currentLength >= length) {
+			if (currentLength >= length) {
 				// found the segment within which the length lies
 				var t = curve.getParameter(length - startLength);
 				return new CurveLocation(curve, t);
@@ -230,12 +230,12 @@ var Path = this.Path = PathItem.extend({
 	
 	getLength: function(/* location */) {
 		var location;
-		if(arguments.length)
+		if (arguments.length)
 			location = arguments[0];
-		var curves = this.getCurves();
-		var index = location
-			? location.getIndex()
-			: curves.length;
+		var curves = this.getCurves(),
+			index = location
+				? location.getIndex()
+				: curves.length;
 		if (index != -1) {
 			var length = 0;
 			for (var i = 0; i < index; i++)
@@ -434,10 +434,10 @@ var Path = this.Path = PathItem.extend({
 	 * @return Solution vector.
 	 */
 	function getFirstControlPoints(rhs) {
-		var n = rhs.length;
-		var x = []; // Solution vector.
-		var tmp = []; // Temporary workspace.
-		var b = 2;
+		var n = rhs.length,
+			x = [], // Solution vector.
+			tmp = [], // Temporary workspace.
+			b = 2;
 		x[0] = rhs[0] / b;
 		// Decomposition and forward substitution.
 		for (var i = 1; i < n; i++) {
@@ -463,8 +463,6 @@ var Path = this.Path = PathItem.extend({
 		beans: true,
 		
 		smooth: function() {
-			var segments = this._segments;
-
 			// This code is based on the work by Oleg V. Polikarpotchkin,
 			// http://ov-p.spaces.live.com/blog/cns!39D56F0C7A08D703!147.entry
 			// It was extended to support closed paths by averaging overlapping
@@ -472,13 +470,15 @@ var Path = this.Path = PathItem.extend({
 			// Polikarpotchkin's closed curve solution, but reuses the same
 			// algorithm as for open paths, and is probably executing faster as
 			// well, so it is preferred.
-			var size = segments.length;
+			var segments = this._segments,
+				size = segments.length,
+				n = size,
+				// Add overlapping ends for averaging handles in closed paths
+				overlap;
+
 			if (size <= 2)
 				return;
 
-			var n = size;
-			// Add overlapping ends for averaging handles in closed paths
-			var overlap;
 			if (this.closed) {
 				// Overlap up to 4 points since averaging beziers affect the 4
 				// neighboring points
@@ -643,8 +643,8 @@ var Path = this.Path = PathItem.extend({
 			var current = getCurrentSegment(this)._point;
 			// handle = (through - (1 - t)^2 * current - t^2 * to) /
 			// (2 * (1 - t) * t)
-			var t1 = 1 - t;
-			var handle = through.subtract(current.multiply(t1 * t1)).subtract(
+			var t1 = 1 - t,
+				handle = through.subtract(current.multiply(t1 * t1)).subtract(
 					to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
