@@ -254,23 +254,20 @@ var Path = this.Path = PathItem.extend({
 	function drawHandles(ctx, segments) {
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
-				handleIn = segment.handleIn,
-				handleOut = segment.handleOut,
-				point = segment.point,
-				rounded = point.round();
+				point = segment._point;
 			// TODO: draw handles depending on selection state of
 			// segment.point and neighbouring segments.
-			drawHandle(ctx, point, handleIn);
-			drawHandle(ctx, point, handleOut);
+			drawHandle(ctx, point, segment._handleIn);
+			drawHandle(ctx, point, segment._handleOut);
 			// Draw a rectangle at segment.point:
 			ctx.save();
 			ctx.beginPath();
-			ctx.rect(rounded.x - 2, rounded.y - 2, 4, 4);
+			ctx.rect(point._x - 2, point._y - 2, 4, 4);
 			ctx.fill();
 			// TODO: Only draw white rectangle if point.isSelected()
 			// is false:
 			ctx.beginPath();
-			ctx.rect(rounded.x - 1, rounded.y - 1, 2, 2);
+			ctx.rect(point._x - 1, point._y - 1, 2, 2);
 			ctx.fillStyle = '#ffffff';
 			ctx.fill();
 			ctx.restore();
@@ -281,12 +278,11 @@ var Path = this.Path = PathItem.extend({
 		if (!handle.isZero()) {
 			handle = handle.add(point);
 			ctx.beginPath();
-			ctx.moveTo(point.x, point.y);
+			ctx.moveTo(point._x, point._y);
 			ctx.lineTo(handle.x, handle.y);
 			ctx.stroke();
 			ctx.beginPath();
-			var rounded = handle.round();
-			ctx.rect(rounded.x - 1, rounded.y - 1, 2, 2);
+			ctx.rect(handle.x - 1, handle.y - 1, 2, 2);
 			ctx.stroke();
 		}
 	}
@@ -489,17 +485,17 @@ var Path = this.Path = PathItem.extend({
 
 			// Set right hand side X values
 			for (var i = 1; i < n - 1; i++)
-				rhs[i] = 4 * knots[i].x + 2 * knots[i + 1].x;
-			rhs[0] = knots[0].x + 2 * knots[1].x;
-			rhs[n - 1] = 3 * knots[n - 1].x;
+				rhs[i] = 4 * knots[i]._x + 2 * knots[i + 1]._x;
+			rhs[0] = knots[0]._x + 2 * knots[1]._x;
+			rhs[n - 1] = 3 * knots[n - 1]._x;
 			// Get first control points X-values
 			var x = getFirstControlPoints(rhs);
 
 			// Set right hand side Y values
 			for (var i = 1; i < n - 1; i++)
-				rhs[i] = 4 * knots[i].y + 2 * knots[i + 1].y;
-			rhs[0] = knots[0].y + 2 * knots[1].y;
-			rhs[n - 1] = 3 * knots[n - 1].y;
+				rhs[i] = 4 * knots[i]._y + 2 * knots[i + 1]._y;
+			rhs[0] = knots[0]._y + 2 * knots[1]._y;
+			rhs[n - 1] = 3 * knots[n - 1]._y;
 			// Get first control points Y-values
 			var y = getFirstControlPoints(rhs);
 
@@ -530,12 +526,12 @@ var Path = this.Path = PathItem.extend({
 							new Point(x[i], y[i]).subtract(segment._point));
 					if (i < n - 1)
 						handleIn = new Point(
-								2 * knots[i + 1].x - x[i + 1],
-								2 * knots[i + 1].y - y[i + 1]);
+								2 * knots[i + 1]._x - x[i + 1],
+								2 * knots[i + 1]._y - y[i + 1]);
 					else
 						handleIn = new Point(
-								(knots[n].x + x[n - 1]) / 2,
-								(knots[n].y + y[n - 1]) / 2);
+								(knots[n]._x + x[n - 1]) / 2,
+								(knots[n]._y + y[n - 1]) / 2);
 				}
 			}
 			if (this.closed && handleIn) {
@@ -591,8 +587,8 @@ var Path = this.Path = PathItem.extend({
 			var current = getCurrentSegment(this);
 			// Convert to relative values:
 			current.setHandleOut(new Point(
-					handle1.x - current._point.x,
-					handle1.y - current._point.y));
+					handle1.x - current._point._x,
+					handle1.y - current._point._y));
 			// And add the new segment, with handleIn set to c2
 			this._add(new Segment(to, handle2.subtract(to), new Point()));
 		},
@@ -653,8 +649,8 @@ var Path = this.Path = PathItem.extend({
 						: middle.add(-step.y, step.x);
 			}
 
-			var x1 = current._point.x, x2 = through.x, x3 = to.x,
-				y1 = current._point.y, y2 = through.y, y3 = to.y,
+			var x1 = current._point._x, x2 = through.x, x3 = to.x,
+				y1 = current._point._y, y2 = through.y, y3 = to.y,
 
 				f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
 					- y1 * y3 + y1 * y2,
