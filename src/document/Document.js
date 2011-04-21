@@ -57,6 +57,14 @@ var Document = this.Document = Base.extend({
 		return false;
 	},
 	
+	getSelectedItems: function() {
+		// TODO: return groups if their children are all selected,
+		// and filter out their children from the list.
+		return this._selectedItems;
+	},
+	
+	// TODO: implement setSelectedItems?
+	
 	draw: function() {
 		if (this.canvas) {
 			// Initial tests conclude that clearing the canvas using clearRect
