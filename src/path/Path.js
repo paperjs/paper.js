@@ -136,7 +136,7 @@ var Path = this.Path = PathItem.extend({
 	setSelected: function(selected) {
 		var wasSelected = this.getSelected();
 		var length = this._segments.length;
-		if (wasSelected != selected && length) {
+		if (!wasSelected != !selected && length) {
 			var selectedItems = this._document._selectedItems;
 			if (selected) {
 				selectedItems.push(this);
