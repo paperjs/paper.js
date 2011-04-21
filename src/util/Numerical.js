@@ -16,6 +16,9 @@
 
 var Numerical = new function() {
 
+	// Lookup tables for abscissas and weights with values for n = 2 .. 16.
+	// As values are symetric, only store half of them and addapt algorithm
+	// to factor in symetry.
 	var abscissas = [
 		[  0.5773502691896257645091488],
 		[0,0.7745966692414833770358531],
