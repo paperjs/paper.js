@@ -108,7 +108,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		moveBy: function() {
 			var point = arguments.length ? Point.read(arguments) : new Point();
 			var path = getCurrentPath(this);
-			var current = path.segments[path.segments.length - 1].point;
+			var current = path.segments[path.segments.length - 1]._point;
 			this.moveTo(current.add(point));
 		},
 

@@ -126,14 +126,14 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	isSelected: function(/* point */) {
-		var point = arguments.length ? arguments[0] : this.point;
+		var point = arguments.length ? arguments[0] : this._point;
 		var state = this._selectionState;
-		if (point == this.point) {
+		if (point == this._point) {
 			return state == SelectionState.POINT;
-		} else if (point == this.handleIn) {
+		} else if (point == this._handleIn) {
 			return (state & SelectionState.HANDLE_IN)
 					== SelectionState.HANDLE_IN;
-		} else if (point == this.handleOut) {
+		} else if (point == this._handleOut) {
 			return (state & SelectionState.HANDLE_OUT)
 					== SelectionState.HANDLE_OUT;
 		}
