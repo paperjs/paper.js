@@ -222,11 +222,11 @@ var Segment = this.Segment = Base.extend({
 			if (!this._selectionState) {
 				path._selectedSegmentCount--;
 				if (path._selectedSegmentCount == 0)
-					path._document._selectItem(path, true);
+					path._document._selectItem(path, false);
 			} else {
 				path._selectedSegmentCount++;
 				if (path._selectedSegmentCount == 1)
-					path._document._selectItem(path, false);
+					path._document._selectItem(path, true);
 			}
 		}	
 	},

@@ -72,7 +72,7 @@ var Document = this.Document = Base.extend({
 	
 	_selectItem: function(item, select) {
 		if (select) {
-			this.selectedItemCount++;
+			this._selectedItemCount++;
 			this._selectedItems[item.getId()] = item;
 		} else {
 			this._selectedItemCount--;
@@ -101,7 +101,7 @@ var Document = this.Document = Base.extend({
 				// Todo: use Layer#color
 				context.strokeStyle = context.fillStyle = '#4f7aff';
 				param = { selection: true };
-				Base.each(this.selectedItems, function(item) {
+				Base.each(this._selectedItems, function(item) {
 					item.draw(context, param);
 				});
 				context.restore();
