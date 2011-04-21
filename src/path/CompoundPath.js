@@ -19,9 +19,8 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		this.base();
 		this.children = [];
 		if (items) {
-			for (var i = 0, l = items.length; i < l; i++) {
+			for (var i = 0, l = items.length; i < l; i++)
 				this.appendTop(items[i]);
-			}
 		}
 	},
 
@@ -29,11 +28,11 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	// code (from a utility script?)
 	getBounds: function() {
 		if (this.children.length) {
-			var rect = this.children[0].getBounds();
-			var x1 = rect.x;
-			var y1 = rect.y;
-			var x2 = rect.x + rect.width;
-			var y2 = rect.y + rect.height;
+			var rect = this.children[0].getBounds(),
+				x1 = rect.x,
+				y1 = rect.y,
+				x2 = rect.x + rect.width,
+				y2 = rect.y + rect.height;
 			for (var i = 1, l = this.children.length; i < l; i++) {
 				var rect2 = this.children[i].getBounds();
 				x1 = Math.min(rect2.x, x1);
@@ -64,9 +63,8 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	},
 
 	smooth: function() {
-		for (var i = 0, l = this.children.length; i < l; i++) {
+		for (var i = 0, l = this.children.length; i < l; i++)
 			this.children[i].smooth();
-		}
 	},
 
 	moveTo: function() {
@@ -79,9 +77,8 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		var firstChild = this.children[0];
 		ctx.beginPath();
 		param.compound = true;
-		for (var i = 0, l = this.children.length; i < l; i++) {
+		for (var i = 0, l = this.children.length; i < l; i++)
 			Item.draw(this.children[i], ctx, param);
-		}
 		firstChild.setContextStyles(ctx);
 		var fillColor = firstChild.getFillColor(),
 			strokeColor = firstChild.getStrokeColor();
@@ -106,15 +103,14 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 
 	var fields = {
 		moveBy: function() {
-			var point = arguments.length ? Point.read(arguments) : new Point();
-			var path = getCurrentPath(this);
-			var current = path.segments[path.segments.length - 1]._point;
+			var point = arguments.length ? Point.read(arguments) : new Point(),
+				path = getCurrentPath(this),
+				current = path.segments[path.segments.length - 1]._point;
 			this.moveTo(current.add(point));
 		},
 
 		closePath: function() {
-			var path = getCurrentPath(this);
-			path.closed = true;
+			getCurrentPath(this).closed = true;
 		}
 	};
 
