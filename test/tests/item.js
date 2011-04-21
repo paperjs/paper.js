@@ -147,4 +147,39 @@ test('reverseChildren()', function() {
 	equals(doc.activeLayer.firstChild == path, false);
 	equals(doc.activeLayer.firstChild == thirdPath, true);
 	equals(doc.activeLayer.lastChild == path, true);
-})
+});
+
+test('Check item#document when moving items across documents', function() {
+	var doc1 = new Document();
+	var path = new Path();
+	var group = new Group();
+	group.appendTop(new Path());
+	
+	equals(path.document == doc1, true);
+	var doc2 = new Document();
+	doc2.activeLayer.appendTop(path);
+	equals(path.document == doc2, true);
+	
+	doc2.activeLayer.appendTop(group);
+	equals(group.children[0].document == doc2, true);
+});
+
+test('group.selected', function() {
+	var doc = new Document();
+	var path = new Path();
+	var path2 = new Path();
+	var group = new Group([path, path2]);
+	path.selected = true;
+	equals(group.selected, true);
+	
+	path.selected = false;
+	equals(group.selected, false);
+	
+	group.selected = true;
+	equals(path.selected, true);
+	equals(path2.selected, true);
+	
+	group.selected = false;
+	equals(path.selected, false);
+	equals(path2.selected, false);
+});
