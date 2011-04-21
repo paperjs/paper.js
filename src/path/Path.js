@@ -149,7 +149,8 @@ var Path = this.Path = PathItem.extend({
 		}
 		this._selectedSegmentCount = selected ? length : 0;
 		for (var i = 0; i < length; i++)
-			this._segments[i]._selectionState = selected ? 'point' : null;
+			this._segments[i]._selectionState = selected
+					? SelectionState.POINT : null;
 	},
 	
 	isFullySelected: function() {
@@ -287,7 +288,7 @@ var Path = this.Path = PathItem.extend({
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
 				point = segment._point,
-				pointSelected = segment._selectionState == 'point';
+				pointSelected = segment._selectionState == SelectionState.POINT;
 			// TODO: draw handles depending on selection state of
 			// segment.point and neighbouring segments.
 				if (pointSelected || segment.getSelected(segment._handleIn))

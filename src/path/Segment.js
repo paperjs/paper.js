@@ -129,11 +129,13 @@ var Segment = this.Segment = Base.extend({
 		var point = arguments.length ? arguments[0] : this.point;
 		var state = this._selectionState;
 		if (point == this.point) {
-			return state == 'point';
+			return state == SelectionState.POINT;
 		} else if (point == this.handleIn) {
-			return state == 'handle-in' || state == 'handle-both';
+			return (state & SelectionState.HANDLE_IN)
+					== SelectionState.HANDLE_IN;
 		} else if (point == this.handleOut) {
-			return state == 'handle-out' || state == 'handle-both';
+			return (state & SelectionState.HANDLE_OUT)
+					== SelectionState.HANDLE_OUT;
 		}
 		return false;
 	},
@@ -153,11 +155,11 @@ var Segment = this.Segment = Base.extend({
 			return;
 		var wasSelected = !!this._selectionState;
 		var state = this._selectionState,
-			pointSelected = state == 'point',
-			handleInSelected = state == 'handle-in'
-					|| state == 'handle-both',
-			handleOutSelected = state == 'handle-out'
-					|| state == 'handle-both',
+			pointSelected = state == SelectionState.POINT,
+			handleInSelected = (state & SelectionState.HANDLE_IN)
+					== SelectionState.HANDLE_IN,
+			handleOutSelected = (state & SelectionState.HANDLE_OUT)
+					== SelectionState.HANDLE_OUT,
 			previous = this.getPrevious(),
 			next = this.getNext(),
 			closed = this._path.closed,
@@ -202,13 +204,13 @@ var Segment = this.Segment = Base.extend({
 			}
 		}
 		this._selectionState = pointSelected
-			? 'point'
+			? SelectionState.POINT
 			: handleInSelected
 				? handleOutSelected
-					? 'handle-both'
-					: 'handle-in'
+					? SelectionState.HANDLE_BOTH
+					: SelectionState.HANDLE_IN
 				: handleOutSelected
-					? 'handle-out'
+					? SelectionState.HANDLE_OUT
 					: null;
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
@@ -228,8 +230,7 @@ var Segment = this.Segment = Base.extend({
 					selectedItems.push(path);
 				}
 			}
-		}
-			
+		}	
 	},
 
 	reverse: function() {
