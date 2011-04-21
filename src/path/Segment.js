@@ -19,36 +19,36 @@ var Segment = this.Segment = Base.extend({
 
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
 		if (arguments.length == 0) {
-			this._point = new Point();
+			this._point = SegmentPoint.create(this, 0, 0);
 		} else if (arguments.length == 1) {
 			// TODO: If beans are not activated, this won't copy from
 			// an existing segment. OK?
 			if (arg0.point) {
-				this._point = new Point(arg0.point);
-				this._handleIn = new Point(arg0.handleIn);
-				this._handleOut = new Point(arg0.handleOut);
+				this._point = SegmentPoint.create(this, arg0.point);
+				this._handleIn = SegmentPoint.create(this, arg0.handleIn);
+				this._handleOut = SegmentPoint.create(this, arg0.handleOut);
 			} else {
-				this._point = new Point(arg0);
+				this._point = SegmentPoint.create(this, arg0);
 			}
 		} else if (arguments.length < 6) {
 			if (arguments.length == 2 && !arg1.x) {
-				this._point = new Point(arg0, arg1);
+				this._point = SegmentPoint.create(this, arg0, arg1);
 			} else {
-				this._point = new Point(arg0);
+				this._point = SegmentPoint.create(this, arg0);
 				// Doesn't matter if these arguments exist, it creates 0, 0
 				// points otherwise
-				this._handleIn = new Point(arg1);
-				this._handleOut = new Point(arg2);
+				this._handleIn = SegmentPoint.create(this, arg1);
+				this._handleOut = SegmentPoint.create(this, arg2);
 			}
 		} else if (arguments.length == 6) {
-			this._point = new Point(arg0, arg1);
-			this._handleIn = new Point(arg2, arg3);
-			this._handleOut = new Point(arg4, arg5);
+			this._point = SegmentPoint.create(this, arg0, arg1);
+			this._handleIn = SegmentPoint.create(this, arg2, arg3);
+			this._handleOut = SegmentPoint.create(this, arg4, arg5);
 		}
 		if (!this._handleIn)
-			this._handleIn = new Point();
+			this._handleIn = SegmentPoint.create(this, 0, 0);
 		if (!this._handleOut)
-			this._handleOut = new Point();
+			this._handleOut = SegmentPoint.create(this, 0, 0);
 	},
 
 	getPoint: function() {

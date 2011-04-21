@@ -43,6 +43,7 @@ var sources = [
 	'src/item/PathStyle.js',
 
 	'src/path/Segment.js',
+	'src/path/SegmentPoint.js',
 	'src/path/Curve.js',
 	'src/path/CurveLocation.js',
 	'src/path/PathItem.js',
