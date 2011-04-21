@@ -177,19 +177,19 @@ var Path = this.Path = PathItem.extend({
 			var segments = path.segments;
 			var last1 = this.getLastSegment();
 			var last2 = path.getLastSegment();
-			if (last1.getPoint().equals(last2.getPoint()))
+			if (last1._point.equals(last2._point))
 				path.reverse();
 			var first2 = path.getFirstSegment();
-			if (last1.getPoint().equals(first2.getPoint())) {
-				last1.setHandleOut(first2.getHandleOut());
+			if (last1._point.equals(first2._point)) {
+				last1.setHandleOut(first2.handleOut);
 				for (var i = 1, l = segments.length; i < l; i++)
 					this._add(segments[i]);
 			} else {
 				var first1 = this.getFirstSegment();
-				if (first1.getPoint().equals(first2.getPoint()))
+				if (first1._point.equals(first2._point))
 					path.reverse();
-				if (first1.getPoint().equals(last2.getPoint())) {
-					first1.setHandleIn(last2.getHandleIn());
+				if (first1._point.equals(last2._point)) {
+					first1.setHandleIn(last2._handleIn);
 					// Prepend all segments from path except last one
 					for (var i = 0, l = segments.length - 1; i < l; i++)
 						this._add(segments[i], 0);
@@ -202,8 +202,8 @@ var Path = this.Path = PathItem.extend({
 			// Close if they touch in both places
 			var first1 = this.getFirstSegment();
 			last1 = this.getLastSegment();
-			if (last1.getPoint().equals(first1.getPoint())) {
-				first1.setHandleIn(last1.getHandleIn());
+			if (last1._point.equals(first1._point)) {
+				first1.setHandleIn(last1._handleIn);
 				last1.remove();
 				this.closed = true;
 			}
