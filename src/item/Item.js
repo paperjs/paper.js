@@ -279,7 +279,7 @@ var Item = this.Item = Base.extend({
 	* Removes the item.
 	*/
 	remove: function() {
-		if(this._selected)
+		if(this.getSelected())
 			this.setSelected(false);
 		return this.removeFromParent();
 	},

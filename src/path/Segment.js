@@ -125,12 +125,112 @@ var Segment = this.Segment = Base.extend({
 		return this._path && this._path._segments[this.getIndex() - 1] || null;
 	},
 
-	// TODO:
-	// isSelected: function() {
-	// 
-	// }
-	// 
-	// setSelected: function(pt, selected)
+	getSelected: function(/* point */) {
+		var point = arguments.length ? arguments[0] : this.point;
+		var state = this._selectionState;
+		if (point == this.point) {
+			return state == 'point';
+		} else if (point == this.handleIn) {
+			return state == 'handle-in' || state == 'handle-both';
+		} else if (point == this.handleOut) {
+			return state == 'handle-out' || state == 'handle-both';
+		}
+		return false;
+	},
+	
+	setSelected: function(/* pt, selected */) {
+		var pt, selected;
+		if (arguments.length == 2) {
+			// setSelected(pt, selected)
+			pt = arguments[0];
+			selected = arguments[1];
+		} else {
+			// setSelected(selected)
+			pt = this._point;
+			selected = arguments[0];
+		}
+		if (!this._path)
+			return;
+		var wasSelected = !!this._selectionState;
+		var state = this._selectionState,
+			pointSelected = state == 'point',
+			handleInSelected = state == 'handle-in'
+					|| state == 'handle-both',
+			handleOutSelected = state == 'handle-out'
+					|| state == 'handle-both',
+			previous = this.getPrevious(),
+			next = this.getNext(),
+			closed = this._path.closed,
+			segments = this._path._segments,
+			length = segments.length;
+		if (length > 1 && closed) {
+			if (previous == null)
+				previous = segments[length - 1];
+			if (next == null)
+				next = segments[0];
+		}
+		if (pt == this._point) {
+			if (pointSelected != selected) {
+				if (selected) {
+					handleInSelected = handleOutSelected = false;
+				} else {
+					// When deselecting a point, the handles get selected
+					// instead depending on the selection state of their
+					// neighbors.
+					handleInSelected = previous != null
+							&& (previous._point.getSelected()
+							|| previous._handleOut.getSelected());
+					handleOutSelected = next != null
+						&& (next._point.getSelected()
+						|| next._handleOut.getSelected());
+				}
+				pointSelected = selected;
+			}
+		} else if (pt == this._handleIn) {
+			if (handleInSelected != selected) {
+				// When selecting handles, the point get deselected.
+				if (selected)
+					pointSelected = false;
+				handleInSelected = selected;
+			}
+		} else if (pt == this._handleOut) {
+			if (handleOutSelected != selected) {
+				// When selecting handles, the point get deselected.
+				if (selected)
+					pointSelected = false;
+				handleOutSelected = selected;
+			}
+		}
+		this._selectionState = pointSelected
+			? 'point'
+			: handleInSelected
+				? handleOutSelected
+					? 'handle-both'
+					: 'handle-in'
+				: handleOutSelected
+					? 'handle-out'
+					: null;
+		// If the selection state of the segment has changed, we need to let
+		// it's path know and possibly add or remove it from
+		// document._selectedItems
+		if (wasSelected == !this._selectionState) {
+			var path = this._path,
+				selectedItems = path._document._selectedItems;
+			if (!this._selectionState) {
+				path._selectedSegmentCount--;
+				if (path._selectedSegmentCount == 0) {
+					var index = selectedItems.indexOf(this);
+					selectedItems.slice(index, 1);
+				}
+			} else {
+				path._selectedSegmentCount++;
+				if (path._selectedSegmentCount == 1) {
+					selectedItems.push(path);
+				}
+			}
+		}
+			
+	},
 
 	reverse: function() {
 		return new Segment(this._point, this._handleOut, this._handleIn);
@@ -141,8 +241,12 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	remove: function() {
-		if (this._path && this._path._segments)
-			return !!this._path._segments.splice(this.getIndex(), 1).length;
+		if (this._path) {
+			this._path._segments.splice(this.getIndex(), 1);
+			if (this.getSelected())
+				this._path._selectedSegmentCount--;
+			return true;
+		}
 		return false;
 	},
 

@@ -20,6 +20,7 @@ var Path = this.Path = PathItem.extend({
 	initialize: function(segments) {
 		this.base();
 		this.closed = false;
+		this._selectedSegmentCount = 0;
 		// Support both passing of segments as array or arguments
 		// If it is an array, it can also be a description of a point, so
 		// check its first entry for object as well
@@ -126,6 +127,37 @@ var Path = this.Path = PathItem.extend({
 			for(var i = arguments[1], l = arguments[0]; i >= l; i--)
 				this._segments[i].remove();
 		}
+	},
+	
+	getSelected: function() {
+		return this._selectedSegmentCount > 0;
+	},
+	
+	setSelected: function(selected) {
+		var wasSelected = this.getSelected();
+		var length = this._segments.length;
+		if (wasSelected != selected && length) {
+			var selectedItems = this._document._selectedItems;
+			if (selected) {
+				selectedItems.push(this);
+			} else {
+				// TODO: is there a faster way?
+				var index = selectedItems.indexOf(this);
+				if (index != -1)
+					selectedItems.splice(index, 1);
+			}
+		}
+		this._selectedSegmentCount = selected ? length : 0;
+		for (var i = 0; i < length; i++)
+			this._segments[i]._selectionState = selected ? 'point' : null;
+	},
+	
+	isFullySelected: function() {
+		return this._selectedSegmentCount == this._segments.length;
+	},
+	
+	setFullySelected: function(selected) {
+		this.setSelected(selected);
 	},
 	
 	// TODO: pointsToCurves([tolerance[, threshold[, cornerRadius[, scale]]]])
@@ -254,23 +286,28 @@ var Path = this.Path = PathItem.extend({
 	function drawHandles(ctx, segments) {
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
-				point = segment._point;
+				point = segment._point,
+				pointSelected = segment._selectionState == 'point';
 			// TODO: draw handles depending on selection state of
 			// segment.point and neighbouring segments.
-			drawHandle(ctx, point, segment._handleIn);
-			drawHandle(ctx, point, segment._handleOut);
+				if (pointSelected || segment.getSelected(segment._handleIn))
+					drawHandle(ctx, point, segment._handleIn);
+				if (pointSelected || segment.getSelected(segment._handleOut))
+					drawHandle(ctx, point, segment._handleOut);
 			// Draw a rectangle at segment.point:
 			ctx.save();
 			ctx.beginPath();
 			ctx.rect(point._x - 2, point._y - 2, 4, 4);
 			ctx.fill();
-			// TODO: Only draw white rectangle if point.isSelected()
+			// TODO: Only draw white rectangle if point.getSelected()
 			// is false:
-			ctx.beginPath();
-			ctx.rect(point._x - 1, point._y - 1, 2, 2);
-			ctx.fillStyle = '#ffffff';
-			ctx.fill();
-			ctx.restore();
+			if (!pointSelected) {
+				ctx.beginPath();
+				ctx.rect(point._x - 1, point._y - 1, 2, 2);
+				ctx.fillStyle = '#ffffff';
+				ctx.fill();
+				ctx.restore();
+			}
 		}
 	}
 	
