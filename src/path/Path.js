@@ -297,8 +297,8 @@ var Path = this.Path = PathItem.extend({
 			for (var i = 0; i < length; i++) {
 				var segment = segments[i],
 					point = segment._point,
-					x = point.x,
-					y = point.y,
+					x = point._x,
+					y = point._y,
 					handleIn = segment._handleIn;
 				if (i == 0) {
 					ctx.moveTo(x, y);
@@ -308,34 +308,34 @@ var Path = this.Path = PathItem.extend({
 					} else {
 						ctx.bezierCurveTo(
 							outX, outY,
-							handleIn.x + x, handleIn.y + y,
+							handleIn._x + x, handleIn._y + y,
 							x, y
 						);
 					}
 				}
 				handleOut = segment._handleOut;
-				outX = handleOut.x + x;
-				outY = handleOut.y + y;
+				outX = handleOut._x + x;
+				outY = handleOut._y + y;
 			}
 			if (this.closed && length > 1) {
 				var segment = segments[0],
 					point = segment._point,
-					x = point.x,
-					y = point.y,
+					x = point._x,
+					y = point._y,
 					handleIn = segment._handleIn;
-				ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
+				ctx.bezierCurveTo(outX, outY, handleIn._x + x, handleIn._y + y, x, y);
 				ctx.closePath();
 			}
-			// If the path is part of a compound path or doesn't have a fill or
-			// stroke, there is no need to continue.
-			var fillColor = this.getFillColor(),
-				strokeColor = this.getStrokeColor();
-			// If we are drawing onto the selection canvas, stroke the
-			// path and draw its handles.
+			// If we are drawing the selection of a path, stroke it and draw
+			// its handles:
 			if (param.selection) {
 				ctx.stroke();
-				drawHandles(ctx, this.segments);
+				drawHandles(ctx, this._segments);
 			} else {
+				// If the path is part of a compound path or doesn't have a fill or
+				// stroke, there is no need to continue.
+				var fillColor = this.getFillColor(),
+					strokeColor = this.getStrokeColor();
 				if (!param.compound && (fillColor || strokeColor)) {
 					this.setContextStyles(ctx);
 					ctx.save();
@@ -353,14 +353,6 @@ var Path = this.Path = PathItem.extend({
 						ctx.stroke();
 					}
 					ctx.restore();
-				}
-				// If the path is selected, draw it again on the separate
-				// selection canvas, which will be composited onto the canvas
-				// after drawing of the document is complete.
-				if (this.getSelected()) {
-					param.selection = true;
-					this.draw(this.document.getSelectionContext(param), param);
-					param.selection = false;
 				}
 			}
 		}
