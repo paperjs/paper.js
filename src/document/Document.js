@@ -37,7 +37,8 @@ var Document = this.Document = Base.extend({
 		this.symbols = [];
 		this.views = [new DocumentView(this)];
 		this.activeView = this.views[0];
-		this._selectedItems = [];
+		this._selectedItems = {};
+		this._selectedItemCount = 0;
 	},
 
 	getCurrentStyle: function() {
@@ -60,34 +61,50 @@ var Document = this.Document = Base.extend({
 	getSelectedItems: function() {
 		// TODO: return groups if their children are all selected,
 		// and filter out their children from the list.
-		return this._selectedItems;
+		var items = [];
+		Base.each(items, function(item) {
+			items.push(item);
+		});
+		return items;
 	},
-	
+
 	// TODO: implement setSelectedItems?
+	
+	_selectItem: function(item, select) {
+		if (select) {
+			this.selectedItemCount++;
+			this._selectedItems[item.getId()] = item;
+		} else {
+			this._selectedItemCount--;
+			delete this._selectedItems[item.getId()];
+		}
+	},
 	
 	draw: function() {
 		if (this.canvas) {
+			var context = this.context;
 			// Initial tests conclude that clearing the canvas using clearRect
 			// is always faster than setting canvas.width = canvas.width
 			// http://jsperf.com/clearrect-vs-setting-width/7
-			this.context.clearRect(0, 0,
+			context.clearRect(0, 0,
 					this.size.width + 1, this.size.height + 1);
-			this.context.save();
+			context.save();
 			var param = { offset: new Point(0, 0) };
 			for (var i = 0, l = this.layers.length; i < l; i++)
-				Item.draw(this.layers[i], this.context, param);
-			this.context.restore();
+				Item.draw(this.layers[i], context, param);
+			context.restore();
 
 			// Draw the selection of the selected items in the document:
-			var selectedItems = this._selectedItems,
-				length = selectedItems.length;
-			if (length) {
-				this.context.strokeWidth = 1;
+			if (this._selectedItemCount > 0) {
+				context.save();
+				context.strokeWidth = 1;
 				// Todo: use Layer#color
-				this.context.strokeStyle = this.context.fillStyle = '#4f7aff';
+				context.strokeStyle = context.fillStyle = '#4f7aff';
 				param = { selection: true };
-				for (var i = 0; i < length; i++)
-					selectedItems[i].draw(this.context, param);
+				Base.each(this.selectedItems, function(item) {
+					item.draw(context, param);
+				});
+				context.restore();
 			}
 		}
 	},

@@ -64,15 +64,7 @@ var Item = this.Item = Base.extend({
 				// TODO: when an item is removed or moved to another
 				// document, it needs to be removed from _selectedItems
 				this._selected = selected;
-				var selectedItems = this._document._selectedItems;
-				if (selected) {
-					selectedItems.push(this);
-				} else {
-					// TODO: is there a faster way?
-					var index = selectedItems.indexOf(this);
-					if (index != -1)
-						selectedItems.splice(index, 1);
-				}
+				this._document._selectItem(this, selected);
 			}
 		}
 	},

@@ -221,15 +221,12 @@ var Segment = this.Segment = Base.extend({
 				selectedItems = path._document._selectedItems;
 			if (!this._selectionState) {
 				path._selectedSegmentCount--;
-				if (path._selectedSegmentCount == 0) {
-					var index = selectedItems.indexOf(this);
-					selectedItems.slice(index, 1);
-				}
+				if (path._selectedSegmentCount == 0)
+					path._document._selectItem(path, true);
 			} else {
 				path._selectedSegmentCount++;
-				if (path._selectedSegmentCount == 1) {
-					selectedItems.push(path);
-				}
+				if (path._selectedSegmentCount == 1)
+					path._document._selectItem(path, false);
 			}
 		}	
 	},

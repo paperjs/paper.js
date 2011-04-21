@@ -136,17 +136,8 @@ var Path = this.Path = PathItem.extend({
 	setSelected: function(selected) {
 		var wasSelected = this.isSelected();
 		var length = this._segments.length;
-		if (!wasSelected != !selected && length) {
-			var selectedItems = this._document._selectedItems;
-			if (selected) {
-				selectedItems.push(this);
-			} else {
-				// TODO: is there a faster way?
-				var index = selectedItems.indexOf(this);
-				if (index != -1)
-					selectedItems.splice(index, 1);
-			}
-		}
+		if (!wasSelected != !selected && length)
+			this._document._selectItem(this, selected);
 		this._selectedSegmentCount = selected ? length : 0;
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
