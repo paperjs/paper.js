@@ -30,11 +30,12 @@
 		
 		var currentSegment, mode, type;
 		function onMouseDown(event) {
+			if (currentSegment)
+				currentSegment.selected = false;
 			mode = type = currentSegment = null;
 			
 			if (!path) {
 				path = new Path();
-				path.selected = true;
 				path.fillColor = new HSBColor(360 * Math.random(), 1, 1, 0.5);
 			}
 			
@@ -55,6 +56,7 @@
 				mode = currentSegment ? 'move' : 'add';
 				if (!currentSegment)
 					currentSegment = path.add(event.point);
+				currentSegment.selected = true;
 			}
 		}
 			
