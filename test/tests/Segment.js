@@ -49,3 +49,13 @@ test('segment.remove()', function() {
 	path.segments[1].remove();
 	equals(path.segments.length, 2);
 });
+
+test('segment.selected', function() {
+	var doc = new Document();
+	var path = new Path([10, 20], [50, 100]);
+	path.segments[0].point.selected = true;
+	equals(path.segments[0].point.selected, true);
+
+	path.segments[0].point.selected = false;
+	equals(path.segments[0].point.selected, false);
+});
