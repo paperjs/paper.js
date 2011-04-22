@@ -145,12 +145,12 @@ var PaperScript = new function() {
 				});
 			}
 			try {
-				var onFrameLoop = eval('onFrameLoop');
-				if (onFrameLoop) {
+				var onFrame = eval('onFrame');
+				if (onFrame) {
 					function loop() {
 						// Request next frame already
 						Event.requestAnimationFrame(loop, doc && doc.canvas);
-						onFrameLoop();
+						onFrame();
 						// Automatically redraw document each frame.
 						doc && doc.redraw();
 					}
