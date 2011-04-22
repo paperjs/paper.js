@@ -83,6 +83,9 @@ test('Is the path deselected after setting a new list of segments?', function() 
 	var path = new Path([0, 0]);
 	path.selected = true;
 	equals(path.selected, true);
+	equals(doc.selectedItems.length, 1);
+
 	path.segments = [[0, 10]];
 	equals(path.selected, false);
+	equals(doc.selectedItems.length, 0);
 });
