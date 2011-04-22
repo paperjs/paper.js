@@ -78,7 +78,7 @@ test('path.remove()', function() {
 });
 
 
-test('path.remove()', function() {
+test('Is the path deselected after setting a new list of segments?', function() {
 	var doc = new Document();
 	var path = new Path([0, 0]);
 	path.selected = true;
