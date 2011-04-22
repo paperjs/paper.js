@@ -166,8 +166,8 @@ test('Check item#document when moving items across documents', function() {
 
 test('group.selected', function() {
 	var doc = new Document();
-	var path = new Path();
-	var path2 = new Path();
+	var path = new Path([0, 0]);
+	var path2 = new Path([0, 0]);
 	var group = new Group([path, path2]);
 	path.selected = true;
 	equals(group.selected, true);
