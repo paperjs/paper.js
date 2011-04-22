@@ -202,15 +202,15 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	draw: function(ctx, param) {
-		ctx.save();
-		this.matrix.applyToContext(ctx);
-		ctx.drawImage(this._canvas || this._image,
-				-this._size.width / 2, -this._size.height / 2);
-		ctx.restore();
-		if (this.getSelected()) {
+		if (param.selection) {
 			var bounds = new Rectangle(this._size).setCenter(0, 0);
-			Item.drawSelectedBounds(bounds,
-					this.document.getSelectionContext(param), this.matrix);
+			Item.drawSelectedBounds(bounds, ctx, this.matrix);
+		} else {
+			ctx.save();
+			this.matrix.applyToContext(ctx);
+			ctx.drawImage(this._canvas || this._image,
+					-this._size.width / 2, -this._size.height / 2);
+			ctx.restore();
 		}
 	}
 }, new function() {

@@ -20,6 +20,7 @@ var Path = this.Path = PathItem.extend({
 	initialize: function(segments) {
 		this.base();
 		this.closed = false;
+		this._selectedSegmentCount = 0;
 		// Support both passing of segments as array or arguments
 		// If it is an array, it can also be a description of a point, so
 		// check its first entry for object as well
@@ -128,6 +129,29 @@ var Path = this.Path = PathItem.extend({
 		}
 	},
 	
+	isSelected: function() {
+		return this._selectedSegmentCount > 0;
+	},
+	
+	setSelected: function(selected) {
+		var wasSelected = this.isSelected(),
+			length = this._segments.length;
+		if (!wasSelected != !selected && length)
+			this._document._selectItem(this, selected);
+		this._selectedSegmentCount = selected ? length : 0;
+		for (var i = 0; i < length; i++)
+			this._segments[i]._selectionState = selected
+					? SelectionState.POINT : null;
+	},
+	
+	isFullySelected: function() {
+		return this._selectedSegmentCount == this._segments.length;
+	},
+	
+	setFullySelected: function(selected) {
+		this.setSelected(selected);
+	},
+	
 	// TODO: pointsToCurves([tolerance[, threshold[, cornerRadius[, scale]]]])
 	// TODO: curvesToPoints([maxPointDistance[, flatness]])
 	// TODO: reduceSegments([flatness])
@@ -142,22 +166,22 @@ var Path = this.Path = PathItem.extend({
 	
 	join: function(path) {
 		if (path != null) {
-			var segments = path.segments;
-			var last1 = this.getLastSegment();
-			var last2 = path.getLastSegment();
-			if (last1.getPoint().equals(last2.getPoint()))
+			var segments = path.segments,
+				last1 = this.getLastSegment(),
+				last2 = path.getLastSegment();
+			if (last1._point.equals(last2._point))
 				path.reverse();
 			var first2 = path.getFirstSegment();
-			if (last1.getPoint().equals(first2.getPoint())) {
-				last1.setHandleOut(first2.getHandleOut());
+			if (last1._point.equals(first2._point)) {
+				last1.setHandleOut(first2._handleOut);
 				for (var i = 1, l = segments.length; i < l; i++)
 					this._add(segments[i]);
 			} else {
 				var first1 = this.getFirstSegment();
-				if (first1.getPoint().equals(first2.getPoint()))
+				if (first1._point.equals(first2._point))
 					path.reverse();
-				if (first1.getPoint().equals(last2.getPoint())) {
-					first1.setHandleIn(last2.getHandleIn());
+				if (first1._point.equals(last2._point)) {
+					first1.setHandleIn(last2._handleIn);
 					// Prepend all segments from path except last one
 					for (var i = 0, l = segments.length - 1; i < l; i++)
 						this._add(segments[i], 0);
@@ -170,8 +194,8 @@ var Path = this.Path = PathItem.extend({
 			// Close if they touch in both places
 			var first1 = this.getFirstSegment();
 			last1 = this.getLastSegment();
-			if (last1.getPoint().equals(first1.getPoint())) {
-				first1.setHandleIn(last1.getHandleIn());
+			if (last1._point.equals(first1._point)) {
+				first1.setHandleIn(last1._handleIn);
 				last1.remove();
 				this.closed = true;
 			}
@@ -182,13 +206,13 @@ var Path = this.Path = PathItem.extend({
 	
 	// todo: getLocation(point, precision)
 	getLocation: function(length) {
-		var curves = this.getCurves();
-		var currentLength = 0;
+		var curves = this.getCurves(),
+			currentLength = 0;
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var startLength = currentLength;
-			var curve = curves[i];
+			var startLength = currentLength,
+				curve = curves[i];
 			currentLength += curve.getLength();
-			if(currentLength >= length) {
+			if (currentLength >= length) {
 				// found the segment within which the length lies
 				var t = curve.getParameter(length - startLength);
 				return new CurveLocation(curve, t);
@@ -206,12 +230,12 @@ var Path = this.Path = PathItem.extend({
 	
 	getLength: function(/* location */) {
 		var location;
-		if(arguments.length)
+		if (arguments.length)
 			location = arguments[0];
-		var curves = this.getCurves();
-		var index = location
-			? location.getIndex()
-			: curves.length;
+		var curves = this.getCurves(),
+			index = location
+				? location.getIndex()
+				: curves.length;
 		if (index != -1) {
 			var length = 0;
 			for (var i = 0; i < index; i++)
@@ -254,26 +278,28 @@ var Path = this.Path = PathItem.extend({
 	function drawHandles(ctx, segments) {
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
-				handleIn = segment.handleIn,
-				handleOut = segment.handleOut,
-				point = segment.point,
-				rounded = point.round();
+				point = segment._point,
+				pointSelected = segment._selectionState == SelectionState.POINT;
 			// TODO: draw handles depending on selection state of
 			// segment.point and neighbouring segments.
-			drawHandle(ctx, point, handleIn);
-			drawHandle(ctx, point, handleOut);
+				if (pointSelected || segment.isSelected(segment._handleIn))
+					drawHandle(ctx, point, segment._handleIn);
+				if (pointSelected || segment.isSelected(segment._handleOut))
+					drawHandle(ctx, point, segment._handleOut);
 			// Draw a rectangle at segment.point:
 			ctx.save();
 			ctx.beginPath();
-			ctx.rect(rounded.x - 2, rounded.y - 2, 4, 4);
+			ctx.rect(point._x - 2, point._y - 2, 4, 4);
 			ctx.fill();
 			// TODO: Only draw white rectangle if point.isSelected()
 			// is false:
-			ctx.beginPath();
-			ctx.rect(rounded.x - 1, rounded.y - 1, 2, 2);
-			ctx.fillStyle = '#ffffff';
-			ctx.fill();
-			ctx.restore();
+			if (!pointSelected) {
+				ctx.beginPath();
+				ctx.rect(point._x - 1, point._y - 1, 2, 2);
+				ctx.fillStyle = '#ffffff';
+				ctx.fill();
+				ctx.restore();
+			}
 		}
 	}
 	
@@ -281,12 +307,11 @@ var Path = this.Path = PathItem.extend({
 		if (!handle.isZero()) {
 			handle = handle.add(point);
 			ctx.beginPath();
-			ctx.moveTo(point.x, point.y);
+			ctx.moveTo(point._x, point._y);
 			ctx.lineTo(handle.x, handle.y);
 			ctx.stroke();
 			ctx.beginPath();
-			var rounded = handle.round();
-			ctx.rect(rounded.x - 1, rounded.y - 1, 2, 2);
+			ctx.rect(handle.x - 1, handle.y - 1, 2, 2);
 			ctx.stroke();
 		}
 	}
@@ -301,8 +326,8 @@ var Path = this.Path = PathItem.extend({
 			for (var i = 0; i < length; i++) {
 				var segment = segments[i],
 					point = segment._point,
-					x = point.x,
-					y = point.y,
+					x = point._x,
+					y = point._y,
 					handleIn = segment._handleIn;
 				if (i == 0) {
 					ctx.moveTo(x, y);
@@ -312,34 +337,34 @@ var Path = this.Path = PathItem.extend({
 					} else {
 						ctx.bezierCurveTo(
 							outX, outY,
-							handleIn.x + x, handleIn.y + y,
+							handleIn._x + x, handleIn._y + y,
 							x, y
 						);
 					}
 				}
 				handleOut = segment._handleOut;
-				outX = handleOut.x + x;
-				outY = handleOut.y + y;
+				outX = handleOut._x + x;
+				outY = handleOut._y + y;
 			}
 			if (this.closed && length > 1) {
 				var segment = segments[0],
 					point = segment._point,
-					x = point.x,
-					y = point.y,
+					x = point._x,
+					y = point._y,
 					handleIn = segment._handleIn;
-				ctx.bezierCurveTo(outX, outY, handleIn.x + x, handleIn.y + y, x, y);
+				ctx.bezierCurveTo(outX, outY, handleIn._x + x, handleIn._y + y, x, y);
 				ctx.closePath();
 			}
-			// If the path is part of a compound path or doesn't have a fill or
-			// stroke, there is no need to continue.
-			var fillColor = this.getFillColor(),
-				strokeColor = this.getStrokeColor();
-			// If we are drawing onto the selection canvas, stroke the
-			// path and draw its handles.
+			// If we are drawing the selection of a path, stroke it and draw
+			// its handles:
 			if (param.selection) {
 				ctx.stroke();
-				drawHandles(ctx, this.segments);
+				drawHandles(ctx, this._segments);
 			} else {
+				// If the path is part of a compound path or doesn't have a fill or
+				// stroke, there is no need to continue.
+				var fillColor = this.getFillColor(),
+					strokeColor = this.getStrokeColor();
 				if (!param.compound && (fillColor || strokeColor)) {
 					this.setContextStyles(ctx);
 					ctx.save();
@@ -357,14 +382,6 @@ var Path = this.Path = PathItem.extend({
 						ctx.stroke();
 					}
 					ctx.restore();
-				}
-				// If the path is selected, draw it again on the separate
-				// selection canvas, which will be composited onto the canvas
-				// after drawing of the document is complete.
-				if (this.getSelected()) {
-					param.selection = true;
-					this.draw(this.document.getSelectionContext(param), param);
-					param.selection = false;
 				}
 			}
 		}
@@ -400,6 +417,7 @@ var Path = this.Path = PathItem.extend({
 						this[name] = value;
 					}, []);
 			} else {
+				this.setSelected(false);
 				this._segments.length = 0;
 			}
 			for(var i = 0; i < length; i++) {
@@ -417,10 +435,10 @@ var Path = this.Path = PathItem.extend({
 	 * @return Solution vector.
 	 */
 	function getFirstControlPoints(rhs) {
-		var n = rhs.length;
-		var x = []; // Solution vector.
-		var tmp = []; // Temporary workspace.
-		var b = 2;
+		var n = rhs.length,
+			x = [], // Solution vector.
+			tmp = [], // Temporary workspace.
+			b = 2;
 		x[0] = rhs[0] / b;
 		// Decomposition and forward substitution.
 		for (var i = 1; i < n; i++) {
@@ -446,8 +464,6 @@ var Path = this.Path = PathItem.extend({
 		beans: true,
 		
 		smooth: function() {
-			var segments = this._segments;
-
 			// This code is based on the work by Oleg V. Polikarpotchkin,
 			// http://ov-p.spaces.live.com/blog/cns!39D56F0C7A08D703!147.entry
 			// It was extended to support closed paths by averaging overlapping
@@ -455,13 +471,15 @@ var Path = this.Path = PathItem.extend({
 			// Polikarpotchkin's closed curve solution, but reuses the same
 			// algorithm as for open paths, and is probably executing faster as
 			// well, so it is preferred.
-			var size = segments.length;
+			var segments = this._segments,
+				size = segments.length,
+				n = size,
+				// Add overlapping ends for averaging handles in closed paths
+				overlap;
+
 			if (size <= 2)
 				return;
 
-			var n = size;
-			// Add overlapping ends for averaging handles in closed paths
-			var overlap;
 			if (this.closed) {
 				// Overlap up to 4 points since averaging beziers affect the 4
 				// neighboring points
@@ -489,17 +507,17 @@ var Path = this.Path = PathItem.extend({
 
 			// Set right hand side X values
 			for (var i = 1; i < n - 1; i++)
-				rhs[i] = 4 * knots[i].x + 2 * knots[i + 1].x;
-			rhs[0] = knots[0].x + 2 * knots[1].x;
-			rhs[n - 1] = 3 * knots[n - 1].x;
+				rhs[i] = 4 * knots[i]._x + 2 * knots[i + 1]._x;
+			rhs[0] = knots[0]._x + 2 * knots[1]._x;
+			rhs[n - 1] = 3 * knots[n - 1]._x;
 			// Get first control points X-values
 			var x = getFirstControlPoints(rhs);
 
 			// Set right hand side Y values
 			for (var i = 1; i < n - 1; i++)
-				rhs[i] = 4 * knots[i].y + 2 * knots[i + 1].y;
-			rhs[0] = knots[0].y + 2 * knots[1].y;
-			rhs[n - 1] = 3 * knots[n - 1].y;
+				rhs[i] = 4 * knots[i]._y + 2 * knots[i + 1]._y;
+			rhs[0] = knots[0]._y + 2 * knots[1]._y;
+			rhs[n - 1] = 3 * knots[n - 1]._y;
 			// Get first control points Y-values
 			var y = getFirstControlPoints(rhs);
 
@@ -530,12 +548,12 @@ var Path = this.Path = PathItem.extend({
 							new Point(x[i], y[i]).subtract(segment._point));
 					if (i < n - 1)
 						handleIn = new Point(
-								2 * knots[i + 1].x - x[i + 1],
-								2 * knots[i + 1].y - y[i + 1]);
+								2 * knots[i + 1]._x - x[i + 1],
+								2 * knots[i + 1]._y - y[i + 1]);
 					else
 						handleIn = new Point(
-								(knots[n].x + x[n - 1]) / 2,
-								(knots[n].y + y[n - 1]) / 2);
+								(knots[n]._x + x[n - 1]) / 2,
+								(knots[n]._y + y[n - 1]) / 2);
 				}
 			}
 			if (this.closed && handleIn) {
@@ -591,8 +609,8 @@ var Path = this.Path = PathItem.extend({
 			var current = getCurrentSegment(this);
 			// Convert to relative values:
 			current.setHandleOut(new Point(
-					handle1.x - current._point.x,
-					handle1.y - current._point.y));
+					handle1.x - current._point._x,
+					handle1.y - current._point._y));
 			// And add the new segment, with handleIn set to c2
 			this._add(new Segment(to, handle2.subtract(to), new Point()));
 		},
@@ -626,8 +644,8 @@ var Path = this.Path = PathItem.extend({
 			var current = getCurrentSegment(this)._point;
 			// handle = (through - (1 - t)^2 * current - t^2 * to) /
 			// (2 * (1 - t) * t)
-			var t1 = 1 - t;
-			var handle = through.subtract(current.multiply(t1 * t1)).subtract(
+			var t1 = 1 - t,
+				handle = through.subtract(current.multiply(t1 * t1)).subtract(
 					to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
@@ -653,8 +671,8 @@ var Path = this.Path = PathItem.extend({
 						: middle.add(-step.y, step.x);
 			}
 
-			var x1 = current._point.x, x2 = through.x, x3 = to.x,
-				y1 = current._point.y, y2 = through.y, y3 = to.y,
+			var x1 = current._point._x, x2 = through.x, x3 = to.x,
+				y1 = current._point._y, y2 = through.y, y3 = to.y,
 
 				f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
 					- y1 * y3 + y1 * y2,

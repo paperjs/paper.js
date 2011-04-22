@@ -140,6 +140,17 @@ var Curve = this.Curve = Base.extend({
 		return curves && (curves[this._index1 - 1]
 				|| this._path.closed && curves[curves.length - 1]) || null;
 	},
+	
+	// TODO: port back to Scriptographer?
+	setSelected: function(selected) {
+		this.getHandle1().setSelected(selected);
+		this.getHandle2().setSelected(selected);
+	},
+
+	// TODO: port back to Scriptographer?	
+	isSelected: function() {
+		return this.getHandle1().isSelected() && this.getHandle2.isSelected();
+	},
 
 	getCurveValues: function() {
 		var p1 = this._segment1._point,

@@ -29,7 +29,15 @@ var SegmentPoint = Point.extend({
 		this._y = y;
 //		this._segment._markDirty(DirtyFlags.BOUNDS);
 	},
-
+	
+	setSelected: function(selected) {
+		this._segment.setSelected(this, selected);
+	},
+	
+	isSelected: function() {
+		return this._segment.isSelected(this);
+	},
+	
 	statics: {
 		create: function(segment, arg1, arg2) {
 			var point;

@@ -92,6 +92,7 @@ Base.inject({
 
 //#include "path/Segment.js"
 //#include "path/SegmentPoint.js"
+//#include "path/SelectionState.js"
 //#include "path/Curve.js"
 //#include "path/CurveLocation.js"
 //#include "path/PathItem.js"

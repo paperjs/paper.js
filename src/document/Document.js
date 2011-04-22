@@ -37,6 +37,8 @@ var Document = this.Document = Base.extend({
 		this.symbols = [];
 		this.views = [new DocumentView(this)];
 		this.activeView = this.views[0];
+		this._selectedItems = {};
+		this._selectedItemCount = 0;
 	},
 
 	getCurrentStyle: function() {
@@ -56,41 +58,53 @@ var Document = this.Document = Base.extend({
 		return false;
 	},
 	
-	getSelectionContext: function(param) {
-		var context = this._selectionContext;
-		if (!context) {
-			var canvas = CanvasProvider.getCanvas(this.size);
-			context = this._selectionContext = canvas.getContext('2d');
-			context.strokeWidth = 1;
+	getSelectedItems: function() {
+		// TODO: return groups if their children are all selected,
+		// and filter out their children from the list.
+		var items = [];
+		Base.each(this._selectedItems, function(item) {
+			items.push(item);
+		});
+		return items;
+	},
+
+	// TODO: implement setSelectedItems?
+	
+	_selectItem: function(item, select) {
+		if (select) {
+			this._selectedItemCount++;
+			this._selectedItems[item.getId()] = item;
+		} else {
+			this._selectedItemCount--;
+			delete this._selectedItems[item.getId()];
 		}
-		context.strokeStyle = context.fillStyle = param.layerColor;
-		return context;
 	},
 	
 	draw: function() {
 		if (this.canvas) {
+			var context = this.context;
 			// Initial tests conclude that clearing the canvas using clearRect
 			// is always faster than setting canvas.width = canvas.width
 			// http://jsperf.com/clearrect-vs-setting-width/7
-			this.context.clearRect(0, 0,
+			context.clearRect(0, 0,
 					this.size.width + 1, this.size.height + 1);
-			this.context.save();
+			context.save();
 			var param = { offset: new Point(0, 0) };
-			for (var i = 0, l = this.layers.length; i < l; i++) {
-				// TODO: use Layer#color:
-				param.layerColor = '#4f7aff';
-				Item.draw(this.layers[i], this.context, param);
-			}
-			this.context.restore();
-			
-			// If, during drawing, one of the paths was selected, there will
-			// be a selectionContext which needs to be composited onto the
-			// canvas:
-			if (this._selectionContext) {
-				var canvas = this._selectionContext.canvas;
-				this.context.drawImage(canvas, 0, 0);
-				CanvasProvider.returnCanvas(canvas);
-				this._selectionContext = null;
+			for (var i = 0, l = this.layers.length; i < l; i++)
+				Item.draw(this.layers[i], context, param);
+			context.restore();
+
+			// Draw the selection of the selected items in the document:
+			if (this._selectedItemCount > 0) {
+				context.save();
+				context.strokeWidth = 1;
+				// Todo: use Layer#color
+				context.strokeStyle = context.fillStyle = '#4f7aff';
+				param = { selection: true };
+				Base.each(this._selectedItems, function(item) {
+					item.draw(context, param);
+				});
+				context.restore();
 			}
 		}
 	},

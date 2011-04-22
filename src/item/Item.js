@@ -19,7 +19,7 @@ var Item = this.Item = Base.extend({
 
 	initialize: function() {
 		paper.document.activeLayer.appendTop(this);
-		this.setStyle(this.document.getCurrentStyle());
+		this.setStyle(this._document.getCurrentStyle());
 	},
 
 	/**
@@ -60,19 +60,38 @@ var Item = this.Item = Base.extend({
 				child.setSelected(selected);
 			}
 		} else {
-			this._selected = selected;
+			if (selected != this._selected) {
+				// TODO: when an item is removed or moved to another
+				// document, it needs to be removed from _selectedItems
+				this._selected = selected;
+				this._document._selectItem(this, selected);
+			}
 		}
 	},
 	
-	getSelected: function() {
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				var child = this._children[i];
-				if (child.getSelected())
+	isSelected: function() {
+		if (this.children) {
+			for (var i = 0, l = this.children.length; i < l; i++) {
+				if (this.children[i].isSelected())
 					return true;
 			}
 		} else {
 			return !!this._selected;
+		}
+		return false;
+	},
+	
+	getDocument: function() {
+		return this._document;
+	},
+	
+	setDocument: function(document) {
+		if (document != this._document) {
+			this._document = document;
+			if (this.children) {
+				for (var i = 0, l = this.children.length; i < l; i++)
+					this.children[i].setDocument(document);
+			}
 		}
 	},
 	
@@ -252,6 +271,8 @@ var Item = this.Item = Base.extend({
 	* Removes the item.
 	*/
 	remove: function() {
+		if(this.isSelected())
+			this.setSelected(false);
 		return this.removeFromParent();
 	},
 
@@ -749,7 +770,7 @@ var Item = this.Item = Base.extend({
 				item.removeFromParent();
 				this.children.splice(top ? this.children.length : 0, 0, item);
 				item.parent = this;
-				item.document = this.document;
+				item.setDocument(this._document);
 				return true;
 			}
 			return false;
@@ -763,7 +784,7 @@ var Item = this.Item = Base.extend({
 				item.parent.children.splice(item.getIndex()
 						+ (above ? 1 : -1), 0, this);
 				this.parent = item.parent;
-				this.document = item.document;
+				this.setDocument(item._document);
 				return true;
 			}
 			return false;
