@@ -76,3 +76,13 @@ test('path.remove()', function() {
 	
 	equals(doc.activeLayer.children.length, 0);
 });
+
+
+test('path.remove()', function() {
+	var doc = new Document();
+	var path = new Path([0, 0]);
+	path.selected = true;
+	equals(path.selected, true);
+	path.segments = [[0, 10]];
+	equals(path.selected, false);
+});
