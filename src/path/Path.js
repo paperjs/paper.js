@@ -417,7 +417,8 @@ var Path = this.Path = PathItem.extend({
 						this[name] = value;
 					}, []);
 			} else {
-				this._segments.length = this._selectedSegmentCount = 0;
+				this.setSelected(false);
+				this._segments.length = 0;
 			}
 			for(var i = 0; i < length; i++) {
 				this._add(Segment.read(segments, i, 1));

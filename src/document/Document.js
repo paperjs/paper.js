@@ -62,7 +62,7 @@ var Document = this.Document = Base.extend({
 		// TODO: return groups if their children are all selected,
 		// and filter out their children from the list.
 		var items = [];
-		Base.each(items, function(item) {
+		Base.each(this._selectedItems, function(item) {
 			items.push(item);
 		});
 		return items;
