@@ -61,6 +61,8 @@ var Document = this.Document = Base.extend({
 	getSelectedItems: function() {
 		// TODO: return groups if their children are all selected,
 		// and filter out their children from the list.
+		// TODO: the order of these items should be that of their
+		// drawing order.
 		var items = [];
 		Base.each(this._selectedItems, function(item) {
 			items.push(item);
