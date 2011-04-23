@@ -6,7 +6,7 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var width = document.bounds.width - 10;
+		var width = document.bounds.width;
 		var height = document.bounds.height / 2;
 		var pathHeight = document.bounds.height / 2;
 		var points = 10;
@@ -14,15 +14,17 @@
 		var smooth = true;
 		var center = document.bounds.center;
 		var path = new Path();
-		for (var i = 0; i < points; i++) {
-			var point = new Point(width / points * i + 5, center.y);
+		path.fillColor = 'black';
+		path.add(document.bounds.bottomLeft);
+		for (var i = 1; i < points; i++) {
+			var point = new Point(width / points * i, center.y);
 			path.add(point);
 		}
-		path.selected = true;
-		
+		path.add(document.bounds.bottomRight);
+		// path.selected = true;
 		function onFrame() {
 			count++;
-			for (var i = 0; i < points; i++) {
+			for (var i = 1; i < points; i++) {
 				var sinSeed = count + (i + i % 10) * 100 ;
 				var sinHeight = Math.sin(sinSeed / 200) * pathHeight;
 				var yPos = Math.sin(sinSeed / 100) * sinHeight + height;
@@ -41,7 +43,7 @@
 			if (!smooth) {
 				// If smooth has been turned off, we need to reset
 				// the handles of the path:
-				for (var i = 0; i < points; i++) {
+				for (var i = 0, l = path.segments.length; i < l; i++) {
 					var segment = path.segments[i];
 					segment.handleIn = segment.handleOut = null;
 				}
