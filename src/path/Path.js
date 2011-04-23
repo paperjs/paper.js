@@ -305,13 +305,14 @@ var Path = this.Path = PathItem.extend({
 	
 	function drawHandle(ctx, point, handle) {
 		if (!handle.isZero()) {
-			handle = handle.add(point);
+			var handleX = point._x + handle._x,
+				handleY = point._y + handle._y;
 			ctx.beginPath();
 			ctx.moveTo(point._x, point._y);
-			ctx.lineTo(handle.x, handle.y);
+			ctx.lineTo(handleX, handleY);
 			ctx.stroke();
 			ctx.beginPath();
-			ctx.rect(handle.x - 1, handle.y - 1, 2, 2);
+			ctx.rect(handleX - 1, handleY - 1, 2, 2);
 			ctx.stroke();
 		}
 	}
