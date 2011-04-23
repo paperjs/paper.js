@@ -191,21 +191,6 @@
 					}
 				}
 				
-				if (this.connectionPath) {
-					this.connectionPath.remove();
-					this.connectionPath = null;
-				}
-				
-				if (nearest < 50) {
-					var vector = closestPoint - this.loc;
-					var from = this.loc + vector * 0.2;
-					var to = this.loc + vector * 0.8;
-					this.connectionPath = new Path(from, to);
-					this.connectionPath.strokeColor = 'red';
-					this.connectionPath.strokeWidth = 1;
-					document.activeLayer.appendBottom(this.connectionPath);
-				}
-				
 				if (count > 0)
 					steer /= count;
 				if (steer.length > 0) {
