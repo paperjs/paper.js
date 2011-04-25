@@ -35,7 +35,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	beans: true,
 
 	initialize: function(tool, type, modifiers) {
-		// super(modifiers);
+		this.modifiers = modifiers;
 		this.tool = tool;
 		this.type = type;
 	},
