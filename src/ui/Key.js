@@ -43,6 +43,7 @@ var Key = new function() {
 			
 			if(paper.tool[toolHandler]) {
 				paper.tool[toolHandler]({
+					type: down ? 'key-down' : 'key-up',
 					keyCode: code,
 					character: key,
 					modifiers: modifiers
