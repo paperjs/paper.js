@@ -27,31 +27,26 @@ var Key = new function() {
 		capsLock: false
 	};
 	
-	function setActive(key, active) {
-		var keyIsActive = activeKeys[key];
-		if (!keyIsActive) {
-			if(active)
-				activeKeys[key] = true;
-		} else {
-			delete activeKeys[key];
-		}
-	}
-	
 	var eventHandlers = Base.each(['keyDown', 'keyUp'], function(type) {
 		var toolHandler = 'on' + Base.capitalize(type),
 			keyDown = type == 'keyDown';
 		this[type.toLowerCase()] = function(event) {
 			console.log(event.which || event.keyCode);
 			var code = event.which || event.keyCode,
-				key = keys[code] || String.fromCharCode(code).toLowerCase();
-			// Activate or deactivate the key:
-			setActive(key, keyDown);
+				key = keys[code] || String.fromCharCode(code).toLowerCase(),
+				keyActive = activeKeys[key];
+			if (!keyActive && keyDown) {
+				activeKeys[key] = true;
+			} else if (keyActive && !keyDown) {
+				delete activeKeys[key];
+			}
 			
 			// If the key is a modifier, update the modifiers:
 			if (modifiers[key] !== undefined)
 				modifiers[key] = keyDown;
 			
 			// Call the onKeyDown or onKeyUp handler if present:
+			// TODO: don't call the key handler if the key is a modifier?
 			if(paper.tool[toolHandler]) {
 				paper.tool[toolHandler]({
 					type: keyDown ? 'key-down' : 'key-up',
