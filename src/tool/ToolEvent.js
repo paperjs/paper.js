@@ -34,12 +34,12 @@
 var ToolEvent = this.ToolEvent = Base.extend({
 	beans: true,
 
-	initialize: function(tool, type, modifiers) {
-		this.modifiers = modifiers;
+	initialize: function(tool, type, event) {
+		this.event = event;
 		this.tool = tool;
 		this.type = type;
 	},
-
+	
 	toString: function() {
 		return '{ type: ' + this.type 
 		+ ', point: ' + this.point
@@ -189,6 +189,20 @@ var ToolEvent = this.ToolEvent = Base.extend({
 			this.tool.count = count;
 			break;
 		}
+	},
+	
+	getModifiers: function() {
+		if (!this._modifiers) {
+			var event = this.event;
+			this._modifiers = {
+				shift: event.shiftKey,
+				control: event.ctrlKey,
+				alt: event.altKey,
+				command: event.metaKey
+				// TODO: capslock
+			};
+		}
+		return this._modifiers;
 	}
 
 	// TODO: implement hitTest first

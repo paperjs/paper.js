@@ -63,8 +63,6 @@ var sources = [
 	'src/tool/ToolEvent.js',
 	'src/tool/ToolHandler.js',
 	'src/tool/Tool.js',
-	
-	'src/ui/KeyModifiers.js',
 
 	'src/util/BlendMode.js',
 	'src/util/CanvasProvider.js',

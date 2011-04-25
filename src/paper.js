@@ -111,8 +111,6 @@ Base.inject({
 //#include "tool/ToolHandler.js"
 //#include "tool/Tool.js"
 
-//#include "ui/KeyModifiers.js"
-
 //#include "util/BlendMode.js"
 //#include "util/CanvasProvider.js"
 //#include "util/Element.js"

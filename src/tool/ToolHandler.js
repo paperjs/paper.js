@@ -117,12 +117,12 @@ var ToolHandler = this.ToolHandler = Base.extend({
 		return true;
 	},
 
-	onHandleEvent: function(type, pt, modifiers) {
+	onHandleEvent: function(type, pt, event) {
 		switch (type) {
 		case 'mouse-down':
 			this.updateEvent(type, pt, null, null, true, false, false);
 			if (this.onMouseDown)
-				this.onMouseDown(new ToolEvent(this, type, modifiers));
+				this.onMouseDown(new ToolEvent(this, type, event));
 			break;
 		case 'mouse-drag':
 			// In order for idleInterval drag events to work, we need to
@@ -139,7 +139,7 @@ var ToolHandler = this.ToolHandler = Base.extend({
 					this.maxDistance, false, this.needsChange,
 					this.matchMaxDistance)) {
 				if (this.onMouseDrag)
-					this.onMouseDrag(new ToolEvent(this, type, modifiers));
+					this.onMouseDrag(new ToolEvent(this, type, event));
 				this.needsChange = true;
 				this.matchMaxDistance = true;
 			}
@@ -151,12 +151,12 @@ var ToolHandler = this.ToolHandler = Base.extend({
 					&& this.updateEvent('mouse-drag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
 				if (this.onMouseDrag)
-					this.onMouseDrag(new ToolEvent(this, type, modifiers));
+					this.onMouseDrag(new ToolEvent(this, type, event));
 			}
 			this.updateEvent(type, pt, null, this.maxDistance, false,
 					false, false);
 			if (this.onMouseUp)
-				this.onMouseUp(new ToolEvent(this, type, modifiers));
+				this.onMouseUp(new ToolEvent(this, type, event));
 			// Start with new values for TRACK_CURSOR
 			this.updateEvent(type, pt, null, null, true, false, false);
 			this.firstMove = true;
@@ -165,7 +165,7 @@ var ToolHandler = this.ToolHandler = Base.extend({
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, this.firstMove, true, false)) {
 				if (this.onMouseMove)
-					this.onMouseMove(new ToolEvent(this, type, modifiers));
+					this.onMouseMove(new ToolEvent(this, type, event));
 				this.firstMove = false;
 			}
 			break;
