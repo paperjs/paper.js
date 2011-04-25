@@ -31,7 +31,6 @@ var Key = new function() {
 		var toolHandler = 'on' + Base.capitalize(type),
 			keyDown = type == 'keyDown';
 		this[type.toLowerCase()] = function(event) {
-			console.log(event.which || event.keyCode);
 			var code = event.which || event.keyCode,
 				key = keys[code] || String.fromCharCode(code).toLowerCase(),
 				keyActive = activeKeys[key];
