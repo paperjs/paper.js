@@ -118,4 +118,5 @@ Base.inject({
 //#include "util/Numerical.js"
 //#include "util/PaperScript.js"
 
+//#include "ui/Key.js"
 };

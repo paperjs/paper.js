@@ -69,7 +69,9 @@ var sources = [
 	'src/util/Element.js',
 	'src/util/Event.js',
 	'src/util/Numerical.js',
-	'src/util/PaperScript.js'
+	'src/util/PaperScript.js',
+
+	'src/ui/Key.js'
 ];
 
 // Load unit tests after library if asked to do so

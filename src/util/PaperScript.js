@@ -131,13 +131,13 @@ var PaperScript = new function() {
 
 	function run(code) {
 		with (paper) {
-			paper.tool = /onMouse(?:Up|Down|Move|Drag)/.test(code) && new Tool();
+			paper.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code) && new Tool();
 			var res = eval(compile(code)),
 				doc = paper.document;
 			if (paper.tool) {
 				Base.each(['onEditOptions', 'onOptions', 'onSelect',
 					'onDeselect', 'onReselect', 'onMouseDown', 'onMouseUp',
-					'onMouseDrag', 'onMouseMove'], function(key) {
+					'onMouseDrag', 'onMouseMove', 'onKeyDown', 'onKeyUp'], function(key) {
 					try {
 						paper.tool[key] = eval(key);
 					} catch (e) {
