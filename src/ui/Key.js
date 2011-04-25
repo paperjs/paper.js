@@ -3,6 +3,10 @@ var Key = new function() {
 	var keys = {
 		 '8': 'backspace',
 		'13': 'enter',
+		'16': 'shift',
+		'17': 'control',
+		'19': 'alt',
+		'20': 'capsLock',
 		'27': 'escape',
 		'32': 'space',
 		'37': 'left',
@@ -10,40 +14,47 @@ var Key = new function() {
 		'39': 'right',
 		'40': 'down',
 		'46': 'delete',
-		
+		'91': 'command'
 	};
-	var modifierNames = [
-		'shift', 'shiftKey',
-		'control', 'ctrlKey',
-		'alt', 'altKey',
-		'command', 'metaKey'
-		// TODO: capslock
-	];
+
 	var activeKeys = {};
+	
+	var modifiers = this.modifiers = {
+		shift: false,
+		control: false,
+		alt: false,
+		command: false,
+		capsLock: false
+	};
+	
+	function setActive(key, active) {
+		var keyIsActive = activeKeys[key];
+		if (!keyIsActive) {
+			if(active)
+				activeKeys[key] = true;
+		} else {
+			delete activeKeys[key];
+		}
+	}
 	
 	var eventHandlers = Base.each(['keyDown', 'keyUp'], function(type) {
 		var toolHandler = 'on' + Base.capitalize(type),
-			down = type == 'keyDown';
+			keyDown = type == 'keyDown';
 		this[type.toLowerCase()] = function(event) {
+			console.log(event.which || event.keyCode);
 			var code = event.which || event.keyCode,
-				key = keys[code] || String.fromCharCode(code).toLowerCase(),
-				modifiers = {};
-			activeKeys[key] = down;
-			// Add the modifier keys to or remove from the activeKeys
-			// and construct the modifiers object to be passed to the
-			// key event
-			for (var i = 0, l = modifierNames.length; i < l; i += 2) {
-				var modifierKey = modifierNames[i];
-				if ((down && event[modifierNames[i + 1]])
-						|| (!down && modifierKey)) {
-					activeKeys[modifierKey] = down;
-				}
-				modifiers[modifierKey] = down;
-			}
+				key = keys[code] || String.fromCharCode(code).toLowerCase();
+			// Activate or deactivate the key:
+			setActive(key, keyDown);
 			
+			// If the key is a modifier, update the modifiers:
+			if (modifiers[key] !== undefined)
+				modifiers[key] = keyDown;
+			
+			// Call the onKeyDown or onKeyUp handler if present:
 			if(paper.tool[toolHandler]) {
 				paper.tool[toolHandler]({
-					type: down ? 'key-down' : 'key-up',
+					type: keyDown ? 'key-down' : 'key-up',
 					keyCode: code,
 					character: key,
 					modifiers: modifiers
@@ -51,7 +62,6 @@ var Key = new function() {
 			}
 		}
 	}, {});
-	
 	Event.add(document, eventHandlers);
 	
 	return {
