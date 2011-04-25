@@ -19,7 +19,7 @@ var Key = new function() {
 
 	var activeKeys = {};
 	
-	var modifiers = this.modifiers = {
+	var modifiers = {
 		shift: false,
 		control: false,
 		alt: false,
@@ -32,13 +32,8 @@ var Key = new function() {
 			keyDown = type == 'keyDown';
 		this[type.toLowerCase()] = function(event) {
 			var code = event.which || event.keyCode,
-				key = keys[code] || String.fromCharCode(code).toLowerCase(),
-				keyActive = activeKeys[key];
-			if (!keyActive && keyDown) {
-				activeKeys[key] = true;
-			} else if (keyActive && !keyDown) {
-				delete activeKeys[key];
-			}
+				key = keys[code] || String.fromCharCode(code).toLowerCase();
+			activeKeys[key] = keyDown;
 			
 			// If the key is a modifier, update the modifiers:
 			if (modifiers[key] !== undefined)
@@ -54,11 +49,12 @@ var Key = new function() {
 					modifiers: modifiers
 				});
 			}
-		}
+		};
 	}, {});
 	Event.add(document, eventHandlers);
 	
 	return {
+		modifiers: modifiers,
 		isDown: function(key) {
 			return !!activeKeys[key];
 		}

@@ -192,7 +192,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	},
 	
 	getModifiers: function() {
-		Key.modifiers;
+		return Key.modifiers;
 	}
 
 	// TODO: implement hitTest first
