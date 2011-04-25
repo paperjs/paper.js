@@ -1,5 +1,5 @@
 var Key = new function() {
-	// TODO: make sure the keys are called the same in Scriptographer
+	// TODO: make sure the keys are called the same as in Scriptographer
 	var keys = {
 		 '8': 'backspace',
 		'13': 'enter',
