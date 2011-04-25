@@ -47,7 +47,7 @@ var Key = new function() {
 			
 			// Call the onKeyDown or onKeyUp handler if present:
 			// TODO: don't call the key handler if the key is a modifier?
-			if(paper.tool[toolHandler]) {
+			if (paper.tool[toolHandler]) {
 				paper.tool[toolHandler]({
 					type: keyDown ? 'key-down' : 'key-up',
 					keyCode: code,

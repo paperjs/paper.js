@@ -192,17 +192,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	},
 	
 	getModifiers: function() {
-		if (!this._modifiers) {
-			var event = this.event;
-			this._modifiers = {
-				shift: event.shiftKey,
-				control: event.ctrlKey,
-				alt: event.altKey,
-				command: event.metaKey
-				// TODO: capslock
-			};
-		}
-		return this._modifiers;
+		Key.modifiers;
 	}
 
 	// TODO: implement hitTest first
