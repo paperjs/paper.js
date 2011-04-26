@@ -121,6 +121,6 @@ var Numerical = new function() {
 					return x;
 			}
 			return x;
-		},
+		}
 	};
 };
