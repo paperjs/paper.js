@@ -382,6 +382,7 @@ var Curve = this.Curve = Base.extend({
 					len = 0;
 				if (length >= rangeLength)
 					return forward ? b : a;
+
 				// Iteratively calculate curve range lengths, and add them up,
 				// using integration precision depending on the size of the
 				// range. This is much faster and also more precise than not
@@ -396,10 +397,9 @@ var Curve = this.Curve = Base.extend({
 					start = t;
 					return len - length;
 				}
-				return Numerical.findRootNewton(f, ds,
-						forward ? a : b - guess, // a
-						forward ? a + guess : b, // b
-						16, Numerical.TOLERANCE);
+				return Numerical.findRoot(f, ds,
+						forward ? a + guess : b - guess, // Initial guess for x
+						a, b, 16, Numerical.TOLERANCE);
 			},
 
 			subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {

@@ -77,50 +77,30 @@ var Numerical = new function() {
 		},
 
 		/**
-		 * Newton-Raphson Method Using Derivative. This is a special version
-		 * that clips results to 0 .. 1, as required by Paper.js iterative
-		 * approach for curve time parametrization: Ending up far outside
-		 * the bezier curve boundaries resulted in inprecision of added up
-		 * curve lengths.
+		 * Root finding using Newton-Raphson Method combined with Bisection.
 		 */
-		findRootNewton: function(f, fd, a, b, n, tol) {
-			var x = 0.5 * (a + b);
+		findRoot: function(f, df, x, a, b, n, tol) {
 			for (var i = 0; i < n; i++) {
-				var dx = f(x) / fd(x);
-				x -= dx;
-				// Clip to 0 .. t .. 1. See comment above
-				if (x < 0) x = 0;
-				else if (x > 1) x = 1;
+				var fx = f(x),
+					dx = fx / df(x);
 				if (Math.abs(dx) < tol)
 					return x;
-			}
-			// If we did not succeed, fall back on False Position method for
-			// accurate results.
-			return Numerical.findRootFalsePosition(f, a, b, n, tol);
-		},
-
-		findRootFalsePosition: function(f, a, b, n, tol) {
-			var fa = f(a),
-				fb = f(b),
-				dx = b - a,
-				del, x;
-			for (var i = 0; i < n; i++) {
-				x = a + dx * fa / (fa - fb);
-				var fx = f(x);
-				if (fx < 0) {
-					del = a - x;
-					a = x;
-					fa = fx;
-				} else {
-					del = b - x;
+				// Generate a candidate for Newton's method.
+				var nx = x - dx;
+				// Update the root-bounding interval and test for containment of
+				// the candidate. If candidate is outside the root-bounding
+				// interval, use bisection instead.
+				// There is no need to compare to lower / upper because the
+				// tangent line has positive slope, guaranteeing that the x-axis
+				// intercept is larger than lower / smaller than upper.
+				if (fx > 0) {
 					b = x;
-					fb = fx;
+					x = nx <= a ? 0.5 * (a + b) : nx;
+				} else {
+					a = x;
+					x = nx >= b ? 0.5 * (a + b) : nx;
 				}
-				dx = b - a;
-				if (Math.abs(del) < tol || fx == 0)
-					return x;
 			}
-			return x;
 		}
 	};
 };
