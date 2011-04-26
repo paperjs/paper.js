@@ -62,13 +62,13 @@ var Event = {
 
 Event.requestAnimationFrame = new function() {
 	var part = 'equestAnimationFrame',
-	// Chrome shipped without the time arg in m10
 		request = window['r' + part] || window['webkitR' + part]
 			|| window['mozR' + part] || window['oR' + part]
 			|| window['msR' + part];
 	if (request) {
-		// Check if time is defined in callbacks, and if not, clear request
-		// again so we won't use the faulty method.
+		// Chrome shipped without the time arg in m10. We need to check if time
+		// is defined in callbacks, and if not, clear request again so we won't
+		// use the faulty method.
 		request(function(time) {
 			if (time == undefined)
 				request = null;
