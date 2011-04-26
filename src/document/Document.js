@@ -129,7 +129,7 @@ var Document = this.Document = Base.extend({
 			if (this._selectedItemCount > 0) {
 				context.save();
 				context.strokeWidth = 1;
-				// Todo: use Layer#color
+				// TODO: use Layer#color
 				context.strokeStyle = context.fillStyle = '#4f7aff';
 				param = { selection: true };
 				Base.each(this._selectedItems, function(item) {

@@ -218,7 +218,7 @@ var Path = this.Path = PathItem.extend({
 				return new CurveLocation(curve, t);
 			}
 		}
-		// Todo: is this the case for paper.js too?
+		// TODO: is this the case for paper.js too?
 		// it may be that through impreciseness of getLength, that the end
 		// of the curves was missed:
 		if (length <= this.getLength()) {
