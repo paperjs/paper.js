@@ -452,8 +452,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Applies this matrix to the specified Canvas Context.
 	 */
-	applyToContext: function(context, reset) {
-		context[reset ? 'setTransform' : 'transform'](
+	applyToContext: function(ctx, reset) {
+		ctx[reset ? 'setTransform' : 'transform'](
 			this._m00, this._m10, this._m01,
 			this._m11, this._m02, this._m12
 		);

@@ -31,9 +31,9 @@ var CanvasProvider = {
 				canvas.width = size.width;
 				canvas.height = size.height;
 			} else {
-				var context = canvas.getContext('2d');
 				// +1 is needed on some browsers to really clear the borders
-				context.clearRect(0, 0, size.width + 1, size.height + 1);
+				canvas.getContext('2d').clearRect(0, 0,
+						size.width + 1, size.height + 1);
 			}
 			return canvas;
 		} else {

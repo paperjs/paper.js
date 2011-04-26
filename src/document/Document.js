@@ -84,8 +84,8 @@ var Document = this.Document = Base.extend({
 	
 	draw: function() {
 		if (this.canvas) {
-			var context = this.context;
-			context.save();
+			var ctx = this.context;
+			ctx.save();
 
 			var testDirtyRects = false;
 			if (testDirtyRects) {
@@ -93,49 +93,48 @@ var Document = this.Document = Base.extend({
 					top = this.size.height / 8;
 
 				function clear(rect) {
-					context.clearRect(rect.x, rect.y, rect.width, rect.height);
+					ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
 
 					if (true) {
-						context.moveTo(rect.x, rect.y);
-						context.lineTo(rect.x + rect.width, rect.y);
-						context.lineTo(rect.x + rect.width, rect.y + rect.height);
-						context.lineTo(rect.x, rect.y + rect.height);
+						ctx.moveTo(rect.x, rect.y);
+						ctx.lineTo(rect.x + rect.width, rect.y);
+						ctx.lineTo(rect.x + rect.width, rect.y + rect.height);
+						ctx.lineTo(rect.x, rect.y + rect.height);
 					}
 				}
 
-				context.beginPath();
+				ctx.beginPath();
 
 				clear(Rectangle.create(left, top, 2 * left, 2 * top));
 				clear(Rectangle.create(3 * left, 3 * top, 2 * left, 2 * top));
 
 //				clear(Rectangle.create(left, top, 4 * left, 4 * top));
 
-				context.closePath();
-				context.clip();
+				ctx.closePath();
+				ctx.clip();
 			} else {
 				// Initial tests conclude that clearing the canvas using clearRect
 				// is always faster than setting canvas.width = canvas.width
 				// http://jsperf.com/clearrect-vs-setting-width/7
-				context.clearRect(0, 0,
-						this.size.width + 1, this.size.height + 1);
+				ctx.clearRect(0, 0, this.size.width + 1, this.size.height + 1);
 			}
 
 			var param = { offset: new Point(0, 0) };
 			for (var i = 0, l = this.layers.length; i < l; i++)
-				Item.draw(this.layers[i], context, param);
-			context.restore();
+				Item.draw(this.layers[i], ctx, param);
+			ctx.restore();
 
 			// Draw the selection of the selected items in the document:
 			if (this._selectedItemCount > 0) {
-				context.save();
-				context.strokeWidth = 1;
+				ctx.save();
+				ctx.strokeWidth = 1;
 				// TODO: use Layer#color
-				context.strokeStyle = context.fillStyle = '#4f7aff';
+				ctx.strokeStyle = ctx.fillStyle = '#4f7aff';
 				param = { selection: true };
 				Base.each(this._selectedItems, function(item) {
-					item.draw(context, param);
+					item.draw(ctx, param);
 				});
-				context.restore();
+				ctx.restore();
 			}
 		}
 	},
