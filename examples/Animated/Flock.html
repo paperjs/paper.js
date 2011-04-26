@@ -35,7 +35,7 @@
 				this.head = new PlacedSymbol(head);
 				this.path = new Path();
 				this.shortPath = new Path();
-				this.shortPath.strokeWidth = 3;
+				this.shortPath.strokeWidth = 4;
 				for(var i = 0, l = strength * 10 + 10; i < l; i++) {
 					this.path.add(this.loc);
 					if (i < 3)
@@ -49,7 +49,7 @@
 			
 			run: function(boids) {
 				this.lastLoc = this.loc.clone();
-				if(!groupTogether) {
+				if (!groupTogether) {
 					this.flock(boids);
 				} else {
 					this.align(boids);
@@ -70,7 +70,6 @@
 					segment.point += rotated;
 					lastVector = vector;
 				}
-				this.path.smooth();
 				this.head.position = this.loc;
 				var vector = this.loc - this.lastLoc;
 				var rot = vector.angle;
@@ -78,9 +77,8 @@
 				this.lastRot = rot;
 				
 				var shortSegments = this.shortPath.segments;
-				for (var i = 0; i < 3; i++) {
+				for (var i = 0; i < 3; i++)
 					shortSegments[i] = segments[i].clone();
-				}
 			},
 			
 			// We accumulate a new acceleration each time based on three rules
@@ -139,7 +137,7 @@
 				if (loc.x > width + r) loc.x = -r;
 				if (loc.y > height + r) loc.y = -r;
 				var vector = this.loc - oldLoc;
-				if(!vector.isZero())
+				if (!vector.isZero())
 					this.path.position += vector;
 			},
 			
@@ -161,7 +159,7 @@
 				// Average -- divide by how many
 				if (count > 0)
 					steer /= count;
-				if(steer.length > 0) {
+				if (steer.length > 0) {
 					// Implement Reynolds: Steering = Desired - Velocity
 					steer.length = this.maxSpeed;
 					steer -= this.vel;
@@ -181,11 +179,11 @@
 				for (var i = 0, l = boids.length; i < l; i++) {
 					var other = boids[i];
 					var d = this.loc.getDistance(other.loc);
-					if(d > 0 && d < nearest) {
+					if (d > 0 && d < nearest) {
 						closestPoint = other.loc;
 						nearest = d;
 					}
-					if(d > 0 && d < neighborDist) {
+					if (d > 0 && d < neighborDist) {
 						steer += other.vel;
 						count++;
 					}
@@ -211,7 +209,7 @@
 				for (var i = 0, l = boids.length; i < l; i++) {
 					var other = boids[i];
 					var d = this.loc.getDistance(other.loc);
-					if(d > 0 && d < neighborDist) {
+					if (d > 0 && d < neighborDist) {
 						sum += other.loc; // Add location
 						count++;
 					}

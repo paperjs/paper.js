@@ -14,10 +14,10 @@
 			path.closed = true;
 		}
 
-		var position = document.bounds.center;
-		var mousePos = position;
-		var children = document.activeLayer.children;
-		var count = 0;
+		var position = document.bounds.center,
+			mousePos = position,
+			children = document.activeLayer.children,
+			count = 0;
 		
 		function iterate() {
 			count++;
@@ -35,21 +35,12 @@
 			}
 		}
 		
-		
-		var lastRedraw = 0;
-		setInterval(draw, 30);
-		function draw() {
+		function onFrame() {
 			iterate();
-			var now = new Date().getTime();
-			if(now - lastRedraw > 30) {
-				document.redraw();
-				lastRedraw = now;
-			}
 		}
 		
 		function onMouseMove(event) {
 			iterate();
-			lastRedraw = Date.now();
 			mousePos = event.point;
 		}
 	</script>
