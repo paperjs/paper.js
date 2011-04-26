@@ -273,7 +273,16 @@ var Path = this.Path = PathItem.extend({
 			: null;
 	}
 }, new function() { // Scope for drawing
-	
+
+	// Note that in the code below we're often accessing _x and _y on point
+	// objects that were read from segments. This is because the SegmentPoint
+	// class overrides the plain x / y properties with getter / setters and
+	// stores the values in these private properties internally. To avoid
+	// of getter functions all the time we directly access these private
+	// properties here. The distinction between normal Point objects and
+	// SegmentPoint objects maybe seem a bit tedious but is worth the
+	// performance benefit.
+
 	function drawHandles(ctx, segments) {
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
@@ -335,11 +344,9 @@ var Path = this.Path = PathItem.extend({
 					if (handleIn.isZero() && handleOut.isZero()) {
 						ctx.lineTo(x, y);
 					} else {
-						ctx.bezierCurveTo(
-							outX, outY,
-							handleIn._x + x, handleIn._y + y,
-							x, y
-						);
+						ctx.bezierCurveTo(outX, outY,
+								handleIn._x + x, handleIn._y + y,
+								x, y);
 					}
 				}
 				handleOut = segment._handleOut;
@@ -352,7 +359,8 @@ var Path = this.Path = PathItem.extend({
 					x = point._x,
 					y = point._y,
 					handleIn = segment._handleIn;
-				ctx.bezierCurveTo(outX, outY, handleIn._x + x, handleIn._y + y, x, y);
+				ctx.bezierCurveTo(outX, outY,
+						handleIn._x + x, handleIn._y + y, x, y);
 				ctx.closePath();
 			}
 			// If we are drawing the selection of a path, stroke it and draw
@@ -361,8 +369,8 @@ var Path = this.Path = PathItem.extend({
 				ctx.stroke();
 				drawHandles(ctx, this._segments);
 			} else {
-				// If the path is part of a compound path or doesn't have a fill or
-				// stroke, there is no need to continue.
+				// If the path is part of a compound path or doesn't have a fill
+				// or stroke, there is no need to continue.
 				var fillColor = this.getFillColor(),
 					strokeColor = this.getStrokeColor();
 				if (!param.compound && (fillColor || strokeColor)) {
@@ -370,7 +378,8 @@ var Path = this.Path = PathItem.extend({
 					ctx.save();
 					// If the path only defines a strokeColor or a fillColor,
 					// draw it directly with the globalAlpha set, otherwise
-					// we will do it later when we composite the temporary canvas.
+					// we will do it later when we composite the temporary
+					// canvas.
 					if (!fillColor || !strokeColor)
 						ctx.globalAlpha = this.opacity;
 					if (fillColor) {
@@ -724,15 +733,16 @@ var Path = this.Path = PathItem.extend({
 			for (var i = 0; i <= arcSegs; i++) {
 				var relx = Math.cos(angle),
 					rely = Math.sin(angle),
-					pt = new Point(centerX + relx * radius,
-						centerY + rely * radius);
+					pt = new Point(
+							centerX + relx * radius,
+							centerY + rely * radius);
 				var out;
 				if (i == arcSegs) {
 					out = null;
 				} else {
 					out = new Point(
-						centerX + (relx - z * rely) * radius - pt.x,
-						centerY + (rely + z * relx) * radius - pt.y);
+							centerX + (relx - z * rely) * radius - pt.x,
+							centerY + (rely + z * relx) * radius - pt.y);
 				}
 				if (i == 0) {
 					// Modify startSegment
@@ -987,9 +997,9 @@ var Path = this.Path = PathItem.extend({
 							normal2 = curve2.getNormal(0).normalize(radius),
 							// Intersect the two lines
 							line1 = new Line(point.add(normal1),
-								new Point(-normal1.y, normal1.x)),
+									new Point(-normal1.y, normal1.x)),
 							line2 = new Line(point.subtract(normal2),
-								new Point(-normal2.y, normal2.x)),
+									new Point(-normal2.y, normal2.x)),
 							corner = line1.intersect(line2);
 						// Now measure the distance from the segment to the
 						// intersection, which his half of the miter distance
