@@ -85,12 +85,41 @@ var Document = this.Document = Base.extend({
 	draw: function() {
 		if (this.canvas) {
 			var context = this.context;
-			// Initial tests conclude that clearing the canvas using clearRect
-			// is always faster than setting canvas.width = canvas.width
-			// http://jsperf.com/clearrect-vs-setting-width/7
-			context.clearRect(0, 0,
-					this.size.width + 1, this.size.height + 1);
 			context.save();
+
+			var testDirtyRects = false;
+			if (testDirtyRects) {
+				var left = this.size.width / 8,
+					top = this.size.height / 8;
+
+				function clear(rect) {
+					context.clearRect(rect.x, rect.y, rect.width, rect.height);
+
+					if (true) {
+						context.moveTo(rect.x, rect.y);
+						context.lineTo(rect.x + rect.width, rect.y);
+						context.lineTo(rect.x + rect.width, rect.y + rect.height);
+						context.lineTo(rect.x, rect.y + rect.height);
+					}
+				}
+
+				context.beginPath();
+
+				clear(Rectangle.create(left, top, 2 * left, 2 * top));
+				clear(Rectangle.create(3 * left, 3 * top, 2 * left, 2 * top));
+
+//				clear(Rectangle.create(left, top, 4 * left, 4 * top));
+
+				context.closePath();
+				context.clip();
+			} else {
+				// Initial tests conclude that clearing the canvas using clearRect
+				// is always faster than setting canvas.width = canvas.width
+				// http://jsperf.com/clearrect-vs-setting-width/7
+				context.clearRect(0, 0,
+						this.size.width + 1, this.size.height + 1);
+			}
+
 			var param = { offset: new Point(0, 0) };
 			for (var i = 0, l = this.layers.length; i < l; i++)
 				Item.draw(this.layers[i], context, param);
