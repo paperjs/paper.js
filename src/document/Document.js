@@ -87,6 +87,8 @@ var Document = this.Document = Base.extend({
 			var ctx = this.context;
 			ctx.save();
 
+			// TODO: Remove dirty rectangle test code once it's actually
+			// implemented.
 			var testDirtyRects = false;
 			if (testDirtyRects) {
 				var left = this.size.width / 8,

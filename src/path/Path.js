@@ -50,8 +50,7 @@ var Path = this.Path = PathItem.extend({
 		return curves;
 	},
 
-	// TODO: Add back to Scriptographer:
-
+	// TODO: Port back to Scriptographer:
 	getFirstSegment: function() {
 		return this._segments[0];
 	},
@@ -204,7 +203,7 @@ var Path = this.Path = PathItem.extend({
 		return false;
 	},
 	
-	// todo: getLocation(point, precision)
+	// TODO: getLocation(point, precision)
 	getLocation: function(length) {
 		var curves = this.getCurves(),
 			currentLength = 0;
