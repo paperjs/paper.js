@@ -366,13 +366,13 @@ var Curve = this.Curve = Base.extend({
 							p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y),
 					// Get length of total range
 					rangeLength = Numerical.integrate(ds, a, b,
-							getIterations(a, b)),
-					// Use length / rangeLength for an initial guess for t, to
-					// bring us closer:
-					guess = length / rangeLength,
-					len = 0;
+							getIterations(a, b));
 				if (length >= rangeLength)
 					return forward ? b : a;
+				// Use length / rangeLength for an initial guess for t, to
+				// bring us closer:
+				var guess = length / rangeLength,
+					len = 0;
 				// Iteratively calculate curve range lengths, and add them up,
 				// using integration precision depending on the size of the
 				// range. This is much faster and also more precise than not
