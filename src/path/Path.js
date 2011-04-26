@@ -65,7 +65,7 @@ var Path = this.Path = PathItem.extend({
 
 	getLastCurve: function() {
 		var curves = this.getCurves();
-		return curves[curves - 1];
+		return curves[curves.length - 1];
 	},
 
 	// TODO: Consider adding getSubPath(a, b), returning a part of the current
