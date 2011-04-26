@@ -14,13 +14,14 @@
 		var curve = path.curves[0];
 
 		function onMouseMove(event) {
-			modifyCurve(event.point, false, true);
+			modifyCurve(event.point, true);
 		}
 
-		function modifyCurve(point, iteratively, remove) {
+		function modifyCurve(point, remove) {
 			curve.segment2.point = point;
 			var length = curve.length;
 			var step = 10;
+			var iteratively = false;
 			var num = Math.floor(length / step);
 			var prev = 0;
 			for (var i = 0, pos = 0; i <= num; i++, pos += step) {
@@ -36,7 +37,7 @@
 			}
 		}
 
-		// modifyCurve(new Point(400, 377), false, false);
+		// modifyCurve(new Point(400, 377), false);
 
 	</script>
 </head>
