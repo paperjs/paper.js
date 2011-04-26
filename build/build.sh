@@ -16,7 +16,7 @@
 #	commented		Preprocessed but still formated and commented
 #	stripped		Formated but without comments (default)
 #	compressed		No comments and no whitespaces
-#	compiled		Uses Google Closure Compiler to reduce file size even more
+#	uglified		Uses UglifyJS to further reduce file size
 
 if [ $# -eq 0 ]
 then
