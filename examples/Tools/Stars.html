@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<script type="text/javascript">var root = '../../'</script>
+	<script type="text/javascript" src="../../src/load.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+			function onMouseDown(event) {
+				var hue = Math.random() * 360;
+				document.currentStyle.fillColor = new HSBColor(hue, 1, 1);
+			}
+			
+			function onMouseDrag(event) {
+				var delta = event.point - event.downPoint,
+					radius = delta.length,
+					points = 5 + Math.round(radius / 50),
+					position = event.downPoint,
+					path = new Path.Star(position, points, radius / 2, radius);
+				path.rotate(delta.angle);
+				// Remove the path automatically before the next mouse drag
+				// event:
+				path.removeOnDrag();
+			}
+	</script>
+</head>
+<body>
+	<canvas id='canvas' width=1024 height=768></canvas>
+</body>
