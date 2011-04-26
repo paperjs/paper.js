@@ -352,17 +352,8 @@ var Curve = this.Curve = Base.extend({
 
 			getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
 					length, start) {
-				if (length == 0) {
+				if (length == 0)
 					return start;
-				}
-				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
-					// Straight line, calculate directly
-					// t = length / lineLength:
-					var dx = p2x - p1x,
-						dy = p2y - p1y;
-					return Math.max(Math.min(start
-							+ length / Math.sqrt(dx * dx + dy * dy), 0, 1));
-				}
 				// See if we're going forward or backward, and handle cases
 				// differently
 				var forward = length > 0,
@@ -382,7 +373,6 @@ var Curve = this.Curve = Base.extend({
 					len = 0;
 				if (length >= rangeLength)
 					return forward ? b : a;
-
 				// Iteratively calculate curve range lengths, and add them up,
 				// using integration precision depending on the size of the
 				// range. This is much faster and also more precise than not
