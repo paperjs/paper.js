@@ -164,7 +164,7 @@ var Path = this.Path = PathItem.extend({
 	},
 	
 	join: function(path) {
-		if (path != null) {
+		if (path) {
 			var segments = path.segments,
 				last1 = this.getLastSegment(),
 				last2 = path.getLastSegment();
@@ -235,7 +235,7 @@ var Path = this.Path = PathItem.extend({
 			index = location
 				? location.getIndex()
 				: curves.length;
-		if (index != -1) {
+		if (index != null) {
 			var length = 0;
 			for (var i = 0; i < index; i++)
 				length += curves[i].getLength();

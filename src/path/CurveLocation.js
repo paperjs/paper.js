@@ -54,11 +54,18 @@ CurveLocation = Base.extend({
 	},
 
 	/**
+	 * The path on which the location is defined.
+	 */
+	getPath: function() {
+		return this._curve && this._curve.getPath();
+	},
+
+	/**
 	 * The index of the curve within the {@link Path#getCurves()} list, if the
 	 * curve is part of a {@link Path} item.
 	 */
 	getIndex: function() {
-		return this._curve ? this._curve.getIndex() : -1;
+		return this._curve && this._curve.getIndex();
 	},
 
 	/**
@@ -66,10 +73,8 @@ CurveLocation = Base.extend({
 	 * by this object.
 	 */
 	getLength: function() {
-		var path = this._curve.getPath();
-		if (path)
-			return path.getLength(this);
-		return path ? path.getLength(this) : null;
+		var path = this._curve && this._curve.getPath();
+		return path && path.getLength(this);
 	},
 
 	/**
@@ -77,7 +82,7 @@ CurveLocation = Base.extend({
 	 * by this object.
 	 */
 	getCurveLength: function() {
-		if (this.curve != null) {
+		if (this.curve) {
 			var parameter = this.getParameter();
 			return parameter != null
 				? curve.getLength(0, parameter)
@@ -91,9 +96,9 @@ CurveLocation = Base.extend({
 	 * the curve).
 	 */
 	getParameter: function() {
-		if (this._parameter == -1 && this._point != null)
+		if (this._parameter != null && this._point)
 			this._parameter = this._curve.getParameter(point);
-		return this._parameter != -1 ? this._parameter : null;
+		return this._parameter;
 	},
 
 	/**
@@ -110,20 +115,19 @@ CurveLocation = Base.extend({
 	 * The item this curve belongs to, if any.
 	 */
 	getItem: function() {
-		return this._curve != null ? this._curve.getPath() : null;
+		return this._curve && this._curve.getPath();
 	},
 
 	toString: function() {
-		var string = '';
+		var parts = [];
 		if (this._point)
-			string += ', point: ' + this.getPoint();
+			parts.push('point: ' + this.getPoint());
 		var index = this.getIndex();
 		if (index >= 0)
-			string += ', index: ' + index;
+			parts.push('index: ' + index);
 		var parameter = this.getParameter();
 		if (parameter != -1)
-			string += ', parameter: ' + parameter;
-		string[0] = '{';
-		return string + ' }';
+			parts.push('parameter: ' + parameter);
+		return '{ ' + parts.join(', ') + ' }'
 	}
 });
