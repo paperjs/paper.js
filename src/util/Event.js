@@ -79,6 +79,7 @@ Event.requestAnimationFrame = new function() {
 	var callbacks = [],
 		fastRate = 1000 / 60,
 		slowRate = 1000,
+		focused = true,
 		timer;
 
 	// Installs interval timer that checks all callbacks. This results in much
@@ -103,19 +104,20 @@ Event.requestAnimationFrame = new function() {
 		}, timeout);
 	}
 
-	var focused = true;
-	Event.add(window, {
-		focus: function() {
-			focused = true;
-			// Switch to falst checkCallback calls while window is focused.
-			timer && setTimer(fastRate);
-		},
-		blur: function() {
-			focused = false;
-			// Switch to slow checkCallback calls while window is blured.
-			timer && setTimer(slowRate);
-		}
-	});
+	if (!paper.debug) {
+		Event.add(window, {
+			focus: function() {
+				focused = true;
+				// Switch to falst checkCallback calls while window is focused.
+				timer && setTimer(fastRate);
+			},
+			blur: function() {
+				focused = false;
+				// Switch to slow checkCallback calls while window is blured.
+				timer && setTimer(slowRate);
+			}
+		});
+	}
 
 	return function(callback, element) {
 		if (request)
