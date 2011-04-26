@@ -18,11 +18,14 @@ test('path.length', function() {
 	//  5: 172.1100076851322
 	compareNumbers(length, 172.10122680664062);
 
+	var curve = path.curves[0];
 	var t = Date.now(), c = 1000;
 	for (var i = 0; i < c; i++) {
-		var param = path.curves[0].getParameter(length / 4);
+		var param = curve.getParameter(length / 4);
 	}
 	window.console.log(Date.now() - t, param);
+
+	var param = curve.getParameter(length / 4);
 	// ai: 0.2255849553116685
 	//  8: 0.22558507711602457
 	//  5: 0.22558507714028128
