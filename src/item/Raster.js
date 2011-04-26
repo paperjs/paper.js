@@ -124,9 +124,8 @@ var Raster = this.Raster = Item.extend({
 
 	getSubImage: function(rect) {
 		rect = Rectangle.read(arguments);
-		var canvas = CanvasProvider.getCanvas(rect.getSize()),
-			context = canvas.getContext('2d');
-		context.drawImage(this.getCanvas(), rect.x, rect.y,
+		var canvas = CanvasProvider.getCanvas(rect.getSize());
+		canvas.getContext('2d').drawImage(this.getCanvas(), rect.x, rect.y,
 				canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 		return canvas;
 	},
@@ -145,8 +144,7 @@ var Raster = this.Raster = Item.extend({
 	 */
 	getPixel: function(point) {
 		point = Point.read(arguments);
-		var ctx = this.getContext(),
-			pixels = ctx.getImageData(point.x, point.y, 1, 1).data,
+		var pixels = this.getContext().getImageData(point.x, point.y, 1, 1).data,
 			channels = new Array(4);
 		for (var i = 0; i < 4; i++)
 			channels[i] = pixels[i] / 255;
@@ -174,15 +172,15 @@ var Raster = this.Raster = Item.extend({
 
 	getData: function(rect) {
 		rect = Rectangle.read(arguments);
-		var ctx = this.getContext();
-		rect = rect.isEmpty() ? new Rectangle(this.getSize()) : rect;
-		return ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
+		if (rect.isEmpty())
+			rect = new Rectangle(this.getSize());
+		return this.getContext().getImageData(rect.x, rect.y,
+				rect.width, rect.height);
 	},
 
 	setData: function(data, point) {
 		point = Point.read(arguments, 1);
-		var ctx = this.getContext();
-		ctx.putImageData(data, point.x, point.y);
+		this.getContext().putImageData(data, point.x, point.y);
 	},
 
 	_transform: function(matrix, flags) {

@@ -483,10 +483,10 @@ var Item = this.Item = Base.extend({
 		var bounds = this.getStrokeBounds();
 		var scale = resolution / 72;
 		var canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale));
-		var context = canvas.getContext('2d');
+		var ctx = canvas.getContext('2d');
 		var matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
-		matrix.applyToContext(context);
-		this.draw(context, {});
+		matrix.applyToContext(ctx);
+		this.draw(ctx, {});
 		var raster = new Raster(canvas);
 		raster.setPosition(this.getBounds().getCenter());
 		raster.scale(1 / scale);
@@ -653,7 +653,7 @@ var Item = this.Item = Base.extend({
 	// TODO: toString
 
 	statics: {
-		drawSelectedBounds: function(bounds, context, matrix) {
+		drawSelectedBounds: function(bounds, ctx, matrix) {
 			var top = bounds.y,
 				bottom = bounds.y + bounds.height,
 				left = bounds.x,
@@ -666,30 +666,30 @@ var Item = this.Item = Base.extend({
 				];
 			if (matrix)
 				matrix.transform(coords, 0, coords, 0, 4);
-			context.beginPath();
+			ctx.beginPath();
 			for (var i = 0; i < 8; i++)
-				context[i == 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
-			context.closePath();
-			context.stroke();
+				ctx[i == 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
+			ctx.closePath();
+			ctx.stroke();
 			for (var i = 0; i < 8; i++) {
-				context.beginPath();
-				context.rect(
+				ctx.beginPath();
+				ctx.rect(
 					Math.round(coords[i]) - 2,
 					Math.round(coords[++i]) - 2,
 					4, 4
 				);
-				context.fill();
+				ctx.fill();
 			}
 		},
 
 		// TODO: Implement DocumentView into the drawing
 		// TODO: Optimize temporary canvas drawing to ignore parts that are
 		// outside of the visible view.
-		draw: function(item, context, param) {
+		draw: function(item, ctx, param) {
 			if (!item.visible || item.opacity == 0)
 				return;
 
-			var tempCanvas, parentContext;
+			var tempCanvas, parentCtx;
 			// If the item has a blendMode or is defining an opacity, draw it on
 			// a temporary canvas first and composite the canvas afterwards.
 			// Paths with an opacity < 1 that both define a fillColor
@@ -711,23 +711,23 @@ var Item = this.Item = Base.extend({
 				tempCanvas = CanvasProvider.getCanvas(size);
 
 				// Save the parent context, so we can draw onto it later
-				parentContext = context;
+				parentCtx = ctx;
 
-				// Set context to the context of the temporary canvas,
-				// so we draw onto it, instead of the parentContext
-				context = tempCanvas.getContext('2d');
-				context.save();
+				// Set ctx to the context of the temporary canvas,
+				// so we draw onto it, instead of the parentCtx
+				ctx = tempCanvas.getContext('2d');
+				ctx.save();
 
 				// Translate the context so the topLeft of the item is at (0, 0)
 				// on the temporary canvas.
-				context.translate(-itemOffset.x, -itemOffset.y);
+				ctx.translate(-itemOffset.x, -itemOffset.y);
 			}
 			var savedOffset;
 			if (itemOffset) {
 				savedOffset = param.offset;
 				param.offset = itemOffset;
 			}
-			item.draw(context, param);
+			item.draw(ctx, param);
 			if (itemOffset)
 				param.offset = savedOffset;
 
@@ -737,7 +737,7 @@ var Item = this.Item = Base.extend({
 
 				// Restore the temporary canvas to its state before the
 				// translation matrix was applied above.
-				context.restore();
+				ctx.restore();
 
 				// If the item has a blendMode, use BlendMode#process to
 				// composite its canvas on the parentCanvas.
@@ -745,16 +745,16 @@ var Item = this.Item = Base.extend({
 					// The pixel offset of the temporary canvas to the parent
 					// canvas.
 					var pixelOffset = itemOffset.subtract(param.offset);
-					BlendMode.process(item.blendMode, context, parentContext,
+					BlendMode.process(item.blendMode, ctx, parentCtx,
 						item.opacity, pixelOffset);
 				} else {
 				// Otherwise we just need to set the globalAlpha before drawing
 				// the temporary canvas on the parent canvas.
-					parentContext.save();
-					parentContext.globalAlpha = item.opacity;
-					parentContext.drawImage(tempCanvas,
+					parentCtx.save();
+					parentCtx.globalAlpha = item.opacity;
+					parentCtx.drawImage(tempCanvas,
 							itemOffset.x, itemOffset.y);
-					parentContext.restore();
+					parentCtx.restore();
 				}
 
 				// Return the temporary canvas, so it can be reused

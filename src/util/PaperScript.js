@@ -147,14 +147,14 @@ var PaperScript = new function() {
 			try {
 				var onFrame = eval('onFrame');
 				if (onFrame) {
-					function loop() {
+					function frame() {
 						// Request next frame already
-						Event.requestAnimationFrame(loop, doc && doc.canvas);
+						Event.requestAnimationFrame(frame, doc && doc.canvas);
 						onFrame();
 						// Automatically redraw document each frame.
 						doc && doc.redraw();
 					}
-					Event.requestAnimationFrame(loop, doc && doc.canvas);
+					Event.requestAnimationFrame(frame, doc && doc.canvas);
 				}
 			} catch (e) {
 			}
@@ -167,8 +167,8 @@ var PaperScript = new function() {
 //#ifdef BROWSER
 	// Code borrowed from Coffee Script:
 	function request(url) {
-		var xhr = new (window.ActiveXObject
-				|| XMLHttpRequest)('Microsoft.XMLHTTP');
+		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
+				'Microsoft.XMLHTTP');
 		xhr.open('GET', url, true);
 		if ('overrideMimeType' in xhr) {
 			xhr.overrideMimeType('text/plain');
