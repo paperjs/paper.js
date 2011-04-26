@@ -7,14 +7,16 @@
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		// http://en.wikipedia.org/wiki/Lenna
-		var raster = new Raster('lenna');
-		var count = 0, lastScale = 1;
-		setInterval(draw, 30);
-		function draw() {
+		var raster = new Raster('lenna'),
+			count = 0,
+			lastScale = 1,
+			center = document.bounds.center;
+
+		function onFrame() {
 			count++;
 			var scale = Math.sin(count / 15) + 1;
 			raster.scale(scale / lastScale);
-			raster.position = [Math.sin(count / 20) * 256 + 512, 384];
+			raster.position = center + [Math.sin(count / 20) * 256, 0];
 			raster.rotate(5);
 			document.redraw();
 			lastScale = scale;
