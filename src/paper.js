@@ -36,6 +36,9 @@
  ***/
 
 var paper = new function() {
+// Have a pointer to the paper object already during the 'bootstraping' so code
+// can rely on it being there all the time.
+var paper = this;
 
 this.document = null;
 this.documents = [];
