@@ -119,7 +119,6 @@ var Segment = this.Segment = Base.extend({
 
 	getNext: function() {
 		var segments = this._path && this._path._segments;
-		// TODO: Port cyclic looping when closed back to Scriptographer
 		return segments && (segments[this.getIndex() + 1]
 				|| this._path.closed && segments[0]) || null;
 	},
