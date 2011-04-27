@@ -50,7 +50,6 @@ var Path = this.Path = PathItem.extend({
 		return curves;
 	},
 
-	// TODO: Port back to Scriptographer:
 	getFirstSegment: function() {
 		return this._segments[0];
 	},
