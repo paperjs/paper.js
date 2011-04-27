@@ -252,6 +252,7 @@ var Item = this.Item = Base.extend({
 		// TODO: Relying on indexOf() here is slow, especially since it is
 		// used for getPrevious/NextSibling(). 
 		// We need linked lists instead.
+		// TODO: Return null instead of -1?
 		return this.parent ? this.parent.children.indexOf(this) : -1;
 	},
 

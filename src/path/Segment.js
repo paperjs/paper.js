@@ -98,6 +98,7 @@ var Segment = this.Segment = Base.extend({
 
 	getIndex: function() {
 		// TODO: Cache and update indices instead of searching?
+		// TODO: Return null instead of -1?
 		return this._path ? this._path._segments.indexOf(this) : -1;
 	},
 
