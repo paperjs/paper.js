@@ -110,10 +110,9 @@ var Segment = this.Segment = Base.extend({
 		if (this._path != null) {
 			var index = this.getIndex();
 			// The last segment of an open path belongs to the last curve
-			// TODO: Port back to Scriptographer
 			if (!this._path.closed && index == this._path._segments.length - 1)
 				index--;
-			return this._path.getCurves()[index];
+			return this._path.getCurves()[index] || null;
 		}
 		return null;
 	},
