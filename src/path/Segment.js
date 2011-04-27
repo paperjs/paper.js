@@ -144,46 +144,40 @@ var Segment = this.Segment = Base.extend({
 		var selected = !!selected, // convert to boolean
 			state = this._selectionState,
 			wasSelected = !!state,
-			pointSelected = !!(state & SelectionState.POINT),
-			handleInSelected = !!(state & SelectionState.HANDLE_IN),
-			handleOutSelected = !!(state & SelectionState.HANDLE_OUT);
+			// For performance reasons use array indices to access the various
+			// selection states: 0 = point, 1 = handleIn, 2 = handleOut
+			selection = [
+				!!(state & SelectionState.POINT),
+				!!(state & SelectionState.HANDLE_IN),
+				!!(state & SelectionState.HANDLE_OUT)
+			];
 		if (point == this._point) {
-			if (pointSelected != selected) {
-				if (selected) {
-					handleInSelected = handleOutSelected = false;
-				} else {
-					var previous = this.getPrevious(),
-						next = this.getNext();
-					// When deselecting a point, the handles get selected
-					// instead depending on the selection state of their
-					// neighbors.
-					handleInSelected = previous
-							&& (previous._point.isSelected()
-							|| previous._handleOut.isSelected());
-					handleOutSelected = next
-							&& (next._point.isSelected()
-							|| next._handleOut.isSelected());
-				}
-				pointSelected = selected;
+			if (selected) {
+				// We're selecting point, deselect the handles
+				selection[1] = selection[2] = false;
+			} else {
+				var previous = this.getPrevious(),
+					next = this.getNext();
+				// When deselecting a point, the handles get selected instead
+				// depending on the selection state of their neighbors.
+				selection[1] = previous && (previous._point.isSelected()
+						|| previous._handleOut.isSelected());
+				selection[2] = next && (next._point.isSelected()
+						|| next._handleIn.isSelected());
 			}
-		} else if (point == this._handleIn) {
-			if (handleInSelected != selected) {
+			selection[0] = selected;
+		} else {
+			var index = point == this._handleIn ? 1 : 2;
+			if (selection[index] != selected) {
 				// When selecting handles, the point get deselected.
 				if (selected)
-					pointSelected = false;
-				handleInSelected = selected;
-			}
-		} else if (point == this._handleOut) {
-			if (handleOutSelected != selected) {
-				// When selecting handles, the point get deselected.
-				if (selected)
-					pointSelected = false;
-				handleOutSelected = selected;
+					selection[0] = false;
+				selection[index] = selected;
 			}
 		}
-		this._selectionState = (pointSelected ? SelectionState.POINT : 0)
-				| (handleInSelected ? SelectionState.HANDLE_IN : 0)
-				| (handleOutSelected ? SelectionState.HANDLE_OUT : 0);
+		this._selectionState = (selection[0] ? SelectionState.POINT : 0)
+				| (selection[1] ? SelectionState.HANDLE_IN : 0)
+				| (selection[2] ? SelectionState.HANDLE_OUT : 0);
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
 		// document._selectedItems
