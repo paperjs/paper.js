@@ -89,3 +89,17 @@ test('Is the path deselected after setting a new list of segments?', function() 
 	equals(path.selected, false);
 	equals(doc.selectedItems.length, 0);
 });
+
+test('Path#reverse', function() {
+	var doc = new Document();
+	var path = new Path.Circle([100, 100], 30);
+	path.reverse();
+	compareSegmentLists(path.segments, [new Segment(new Point(100, 130),
+		new Point(-16.568359375, 0), new Point(16.568359375, 0)),
+		new Segment(new Point(130, 100), new Point(0, 16.568359375),
+		new Point(0, -16.568359375)), new Segment(new Point(100, 70),
+		new Point(16.568359375, 0), new Point(-16.568359375, 0)),
+		new Segment(new Point(70, 100), new Point(0, -16.568359375),
+		new Point(0, 16.568359375))]);
+});
+
