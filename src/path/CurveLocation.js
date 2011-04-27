@@ -30,17 +30,17 @@ CurveLocation = Base.extend({
 		if (!this._segment) {
 			var parameter = this.getParameter();
 			if (parameter == 0) {
-				this._segment = curve.getSegment1();
+				this._segment = curve._segment1;
 			} else if (parameter == 1) {
-				this._segment = curve.getSegment2();
+				this._segment = curve._segment2;
 			} else if (parameter == -1) {
 				return null;
 			} else {
 				// Determine the closest segment by comparing curve lengths
 				var rightCurve = curve.clone().divide(parameter);
 				this._segment = rightCurve.getLength() > curve.getLength() / 2
-					? curve.getSegment1()
-					: curve.getSegment2();
+					? curve._segment1
+					: curve._segment2;
 			}
 		}
 		return this._segment;
@@ -57,7 +57,7 @@ CurveLocation = Base.extend({
 	 * The item this curve belongs to, if any.
 	 */
 	getItem: function() {
-		return this._curve && this._curve.getPath();
+		return this._curve && this._curve._path;
 	},
 
 	/**
@@ -73,7 +73,7 @@ CurveLocation = Base.extend({
 	 * by this object.
 	 */
 	getOffset: function() {
-		var path = this._curve && this._curve.getPath();
+		var path = this._curve && this._curve._path;
 		return path && path._getOffset(this);
 	},
 
