@@ -42,7 +42,8 @@ var Key = new function() {
 			// Call the onKeyDown or onKeyUp handler if present:
 			// TODO: don't call the key handler if the key is a modifier?
 			if (paper.tool[toolHandler]) {
-				var preventDefault = paper.tool[toolHandler]({
+				// TODO: Introduce a class for this?
+				var keyEvent = {
 					type: keyDown ? 'key-down' : 'key-up',
 					keyCode: code,
 					character: key,
@@ -52,14 +53,19 @@ var Key = new function() {
 					// it into a function.
 					// TODO: Port to Scriptographer:
 					preventDefault: function() {
-						event.preventDefault()
+						if (event.preventDefault) {
+							event.preventDefault();
+						} else {
+							event.returnValue = false;
+						}
 					}
-				});
+				}
+				var res = paper.tool[toolHandler](keyEvent);
 				// TODO: Port to Scriptographer:
 				// When the handler function returns false, prevent the
 				// default behaviour of the key event:
-				if (preventDefault === false)
-					event.preventDefault();
+				if (res === false)
+					keyEvent.preventDefault();
 			}
 		};
 	}, {});
