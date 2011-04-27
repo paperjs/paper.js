@@ -190,22 +190,15 @@ var Segment = this.Segment = Base.extend({
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
 		// document._selectedItems
-		if (wasSelected == !this._selectionState) {
+		if (wasSelected != !!this._selectionState) {
 			var path = this._path,
-				selectedItems = path._document._selectedItems;
-			if (!this._selectionState) {
-				path._selectedSegmentCount--;
-				if (path._selectedSegmentCount == 0)
-					path._document._selectItem(path, false);
-			} else {
-				path._selectedSegmentCount++;
-				if (path._selectedSegmentCount == 1)
-					path._document._selectItem(path, true);
-			}
-		}	
+				count = path._selectedSegmentCount
+						+= this._selectionState ? 1 : -1;
+			if (count <= 1)
+				path._document._selectItem(path, count == 1);
+		}
 	},
 
-	// TODO: Port setSelected(selected) back to Scriptographer
 	isSelected: function() {
 		return this._isSelected(this._point);
 	},
