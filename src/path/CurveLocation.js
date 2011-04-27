@@ -37,10 +37,10 @@ CurveLocation = Base.extend({
 				return null;
 			} else {
 				// Determine the closest segment by comparing curve lengths
-				var rightCurve = curve.clone().divide(parameter);
-				this._segment = rightCurve.getLength() > curve.getLength() / 2
-					? curve._segment1
-					: curve._segment2;
+				this._segment = curve.getLength(0, parameter)
+					< curve.getLength(parameter, 1)
+						? curve._segment1
+						: curve._segment2;
 			}
 		}
 		return this._segment;
