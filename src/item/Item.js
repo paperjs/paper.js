@@ -221,28 +221,28 @@ var Item = this.Item = Base.extend({
 	 * The first item contained within this item.
 	 */
 	getFirstChild: function() {
-		return this.children && this.children[0] || null;
+		return this.children ? this.children[0] : null;
 	},
 
 	/**
 	 * The last item contained within this item.
 	 */
 	getLastChild: function() {
-		return this.children && this.children[this.children.length - 1] || null;
+		return this.children ? this.children[this.children.length - 1] : null;
 	},
 
 	/**
 	 * The next item on the same level as this item.
 	 */
 	getNextSibling: function() {
-		return this.parent && this.parent.children[this.getIndex() + 1] || null;
+		return this.parent ? this.parent.children[this.getIndex() + 1] : null;
 	},
 
 	/**
 	 * The previous item on the same level as this item.
 	 */
 	getPreviousSibling: function() {
-		return this.parent && this.parent.children[this.getIndex() - 1] || null;
+		return this.parent ? this.parent.children[this.getIndex() - 1] : null;
 	},
 
 	/**
@@ -478,10 +478,8 @@ var Item = this.Item = Base.extend({
 		// weird results on Scriptographer. Also we can't use antialiasing, since
 		// Canvas doesn't support it yet. Document colorMode is also out of the
 		// question for now.
-		if (!resolution)
-			resolution = 72;
 		var bounds = this.getStrokeBounds();
-		var scale = resolution / 72;
+		var scale = resolution ? resolution / 72 : 1;
 		var canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale));
 		var ctx = canvas.getContext('2d');
 		var matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
