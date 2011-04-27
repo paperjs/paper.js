@@ -210,30 +210,6 @@ var Path = this.Path = PathItem.extend({
 		return false;
 	},
 
-	// TODO: getLocation(point, precision)
-	getLocation: function(offset) {
-		var curves = this.getCurves(),
-			currentLength = 0;
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var startLength = currentLength,
-				curve = curves[i];
-			currentLength += curve.getLength();
-			if (currentLength >= length) {
-				// found the segment within which the length lies
-				var t = curve.getParameter(length - startLength);
-				return new CurveLocation(curve, t);
-			}
-		}
-		// TODO: is this the case for paper.js too?
-		// it may be that through impreciseness of getLength, that the end
-		// of the curves was missed:
-		if (length <= this.getLength()) {
-			var curve = curves[curves.length - 1];
-			return new CurveLocation(curve, 1);
-		}
-		return null;
-	},
-
 	getLength: function() {
 		var curves = this.getCurves();
 		var length = 0;
@@ -255,11 +231,39 @@ var Path = this.Path = PathItem.extend({
 		return null;
 	},
 
+	// TODO: getLocationAt(point, precision)
+	// TODO: Port back renaming and new isParameter argument to Scriptographer
+	getLocationAt: function(offset, isParameter) {
+		var curves = this.getCurves(),
+			length = 0;
+		if (isParameter) {
+			// offset consists of curve index and curve parameter, before and
+			// after the fractional digit.
+			var index = ~~offset; // = Math.floor()
+			return new CurveLocation(curves[index], offset - index);
+		}
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var start = length,
+				curve = curves[i];
+			length += curve.getLength();
+			if (length >= offset) {
+				// Found the segment within which the length lies
+				return new CurveLocation(curve,
+						curve.getParameter(offset - start));
+			}
+		}
+		// It may be that through impreciseness of getLength, that the end
+		// of the curves was missed:
+		if (offset <= this.getLength())
+			return new CurveLocation(curves[curves.length - 1], 1);
+		return null;
+	},
+
 	/**
 	 * Returns the point of the path at the given offset.
 	 */
-	getPoint: function(offset) {
-		var loc = this.getLocation(offset);
+	getPointAt: function(offset, isParameter) {
+		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getPoint();
 	},
 	
@@ -267,16 +271,16 @@ var Path = this.Path = PathItem.extend({
 	 * Returns the tangent to the path at the given offset as a vector
 	 * point.
 	 */
-	getTangent: function(offset) {
-		var loc = this.getLocation(offset);
+	getTangentAt: function(offset, isParameter) {
+		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getTangent();
 	},
 	
 	/**
 	 * Returns the normal to the path at the given offset as a vector point.
 	 */
-	getNormal: function(offset) {
-		var loc = this.getLocation(offset);
+	getNormalAt: function(offset, isParameter) {
+		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getNormal();
 	}
 }, new function() { // Scope for drawing

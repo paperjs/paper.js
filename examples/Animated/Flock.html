@@ -251,7 +251,7 @@
 			count++;
 			for(var i = 0, l = boids.length; i < l; i++) {
 				if (groupTogether) {
-					var point = heartPath.getLocation(((i + count / 30) % l) / l * pathLength).point;
+					var point = heartPath.getPointAt(((i + count / 30) % l) / l * pathLength);
 					boids[i].arrive(point);
 				}
 				boids[i].run(boids);
