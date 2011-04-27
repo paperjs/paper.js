@@ -153,15 +153,8 @@ var Segment = this.Segment = Base.extend({
 			handleOutSelected = !!(state & SelectionState.HANDLE_OUT);
 			previous = this.getPrevious(),
 			next = this.getNext(),
-			closed = this._path.closed,
 			segments = this._path._segments,
 			length = segments.length;
-		if (length > 1 && closed) {
-			if (previous == null)
-				previous = segments[length - 1];
-			if (next == null)
-				next = segments[0];
-		}
 		if (point == this._point) {
 			if (pointSelected != selected) {
 				if (selected) {
