@@ -140,7 +140,7 @@ var Segment = this.Segment = Base.extend({
 		return false;
 	},
 	
-	// TODO: port setSelected(selected) back to Scriptographer
+	// TODO: Port setSelected(selected) back to Scriptographer
 	setSelected: function(/* pt, selected */) {
 		var pt, selected;
 		if (arguments.length == 2) {

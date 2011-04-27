@@ -50,12 +50,12 @@ var Key = new function() {
 					// 'preventDefault: event.preventDefault' throws
 					// an error in Safari when called, so we have to wrap
 					// it into a function.
-					// TODO: port to Scriptographer.
+					// TODO: Port to Scriptographer:
 					preventDefault: function() {
 						event.preventDefault()
 					}
 				});
-				// TODO: port to Scriptographer:
+				// TODO: Port to Scriptographer:
 				// When the handler function returns false, prevent the
 				// default behaviour of the key event:
 				if (preventDefault === false)
