@@ -72,22 +72,18 @@ CurveLocation = Base.extend({
 	 * The length of the path from its beginning up to the location described
 	 * by this object.
 	 */
-	getLength: function() {
+	getOffset: function() {
 		var path = this._curve && this._curve.getPath();
-		return path && path.getLength(this);
+		return path && path._getOffset(this);
 	},
 
 	/**
 	 * The length of the curve from its beginning up to the location described
 	 * by this object.
 	 */
-	getCurveLength: function() {
-		if (this.curve) {
-			var parameter = this.getParameter();
-			return parameter != null
-				? curve.getLength(0, parameter)
-				: null;
-		}
+	getCurveOffset: function() {
+		var parameter = this._curve && this.getParameter();
+		return parameter != null ? this._curve.getLength(0, parameter) : null;
 	},
 
 	/**

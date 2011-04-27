@@ -233,30 +233,26 @@ var Path = this.Path = PathItem.extend({
 		}
 		return null;
 	},
-	
-	getLength: function(/* location */) {
-		var location;
-		if (arguments.length)
-			location = arguments[0];
-		var curves = this.getCurves(),
-			index = location
-				? location.getIndex()
-				: curves.length;
+
+	getLength: function() {
+		var curves = this.getCurves();
+		var length = 0;
+		for (var i = 0, l = curves.length; i < l; i++)
+			length += curves[i].getLength();
+		return length;
+	},
+
+	_getOffset: function(location) {
+		var index = location && location.getIndex();
 		if (index != null) {
-			var length = 0;
+			var curves = this.getCurves(),
+				offset = 0;
 			for (var i = 0; i < index; i++)
-				length += curves[i].getLength();
-			var curve;
-			if (location) {
-				// Clone the curve as we're going to divide it to get the
-				// length. Without cloning it, this would modify the path.
-				curve = curves[index].clone();
-				curve.divide(location.getParameter());
-				length += curve.getLength();
-			}
-			return length;
+				offset += curves[i].getLength();
+			var curve = curves[index];
+			return offset + curve.getLength(0, location.getParameter());
 		}
-		return -1;
+		return null;
 	},
 
 	/**
