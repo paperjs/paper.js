@@ -375,11 +375,10 @@ var Item = this.Item = Base.extend({
 	 * @return {@true if it is inside the specified item}
 	 */
 	isDescendant: function(item) {
-		var parent = this.parent;
-		while (parent) {
+		var parent = this;
+		while (parent = parent.parent) {
 			if (parent == item)
 				return true;
-			parent = parent.parent;
 		}
 		return false;
 	},
@@ -400,11 +399,10 @@ var Item = this.Item = Base.extend({
 	 * @return {@true if the item is an ancestor of the specified item}
 	 */
 	isAncestor: function(item) {
-		var parent = item.parent;
-		while (parent) {
+		var parent = item;
+		while (parent = parent.parent) {
 			if (parent == this)
 				return true;
-			parent = parent.parent;
 		}
 		return false;
 	},
