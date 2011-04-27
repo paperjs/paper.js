@@ -573,10 +573,9 @@ var Path = this.Path = PathItem.extend({
 
 		setContextStyles: function(ctx) {
 			for (var i in styles) {
-				var style;
-				if (style = this[i]()) {
+				var style = this[i]();
+				if (style)
 					ctx[styles[i]] = style;
-				}
 			}
 		}
 	};
