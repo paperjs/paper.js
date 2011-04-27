@@ -118,11 +118,16 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	getNext: function() {
-		return this._path && this._path._segments[this.getIndex() + 1] || null;
+		var segments = this._path && this._path._segments;
+		// TODO: Port cyclic looping when closed back to Scriptographer
+		return segments && (segments[this.getIndex() + 1]
+				|| this._path.closed && segments[0]) || null;
 	},
 
 	getPrevious: function() {
-		return this._path && this._path._segments[this.getIndex() - 1] || null;
+		var segments = this._path && this._path._segments;
+		return segments && (segments[this.getIndex() - 1]
+				|| this._path.closed && segments[segments.length - 1]) || null;
 	},
 
 	_isSelected: function(point) {
