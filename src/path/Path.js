@@ -258,6 +258,14 @@ var Path = this.Path = PathItem.extend({
 		}
 		return -1;
 	},
+
+	/**
+	 * Returns the point of the path at the given length.
+	 */
+	getPoint: function(length) {
+		var loc = this.getLocation(length);
+		return loc && loc.getPoint();
+	},
 	
 	/**
 	 * Returns the tangent to the path at the given length as a vector
