@@ -153,7 +153,7 @@ var Path = this.Path = PathItem.extend({
 	// TODO: pointsToCurves([tolerance[, threshold[, cornerRadius[, scale]]]])
 	// TODO: curvesToPoints([maxPointDistance[, flatness]])
 	// TODO: reduceSegments([flatness])
-	// TODO: split(length) / split(location) / split(index[, parameter])
+	// TODO: split(offset) / split(location) / split(index[, parameter])
 	
 	/**
 	 * Reverses the segments of the path.
@@ -169,7 +169,7 @@ var Path = this.Path = PathItem.extend({
 			segment._handleOut = handleIn;
 		}
 	},
-	
+
 	join: function(path) {
 		if (path) {
 			var segments = path.segments,
@@ -209,9 +209,9 @@ var Path = this.Path = PathItem.extend({
 		}
 		return false;
 	},
-	
+
 	// TODO: getLocation(point, precision)
-	getLocation: function(length) {
+	getLocation: function(offset) {
 		var curves = this.getCurves(),
 			currentLength = 0;
 		for (var i = 0, l = curves.length; i < l; i++) {
@@ -256,27 +256,27 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	/**
-	 * Returns the point of the path at the given length.
+	 * Returns the point of the path at the given offset.
 	 */
-	getPoint: function(length) {
-		var loc = this.getLocation(length);
+	getPoint: function(offset) {
+		var loc = this.getLocation(offset);
 		return loc && loc.getPoint();
 	},
 	
 	/**
-	 * Returns the tangent to the path at the given length as a vector
+	 * Returns the tangent to the path at the given offset as a vector
 	 * point.
 	 */
-	getTangent: function(length) {
-		var loc = this.getLocation(length);
+	getTangent: function(offset) {
+		var loc = this.getLocation(offset);
 		return loc && loc.getTangent();
 	},
 	
 	/**
-	 * Returns the normal to the path at the given length as a vector point.
+	 * Returns the normal to the path at the given offset as a vector point.
 	 */
-	getNormal: function(length) {
-		var loc = this.getLocation(length);
+	getNormal: function(offset) {
+		var loc = this.getLocation(offset);
 		return loc && loc.getNormal();
 	}
 }, new function() { // Scope for drawing
