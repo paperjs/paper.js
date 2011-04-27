@@ -159,7 +159,15 @@ var Path = this.Path = PathItem.extend({
 	 * Reverses the segments of the path.
 	 */
 	reverse: function() {
-		this._segments.reverse();
+		var segments = this._segments;
+		segments.reverse();
+		// Reverse the handles:
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var segment = segments[i];
+			var handleIn = segment._handleIn;
+			segment._handleIn = segment._handleOut;
+			segment._handleOut = handleIn;
+		}
 	},
 	
 	join: function(path) {
