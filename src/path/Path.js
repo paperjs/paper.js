@@ -139,7 +139,7 @@ var Path = this.Path = PathItem.extend({
 		this._selectedSegmentCount = selected ? length : 0;
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
-					? SelectionState.POINT : null;
+					? SelectionState.POINT : 0;
 	},
 	
 	isFullySelected: function() {
