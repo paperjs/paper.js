@@ -54,9 +54,9 @@ CurveLocation = Base.extend({
 	},
 
 	/**
-	 * The path on which the location is defined.
+	 * The item this curve belongs to, if any.
 	 */
-	getPath: function() {
+	getItem: function() {
 		return this._curve && this._curve.getPath();
 	},
 
@@ -109,13 +109,6 @@ CurveLocation = Base.extend({
 		if (!this._point && this._curve)
 			this._point = this._curve.getPoint(this._parameter);
 		return this._point;
-	},
-
-	/**
-	 * The item this curve belongs to, if any.
-	 */
-	getItem: function() {
-		return this._curve && this._curve.getPath();
 	},
 
 	toString: function() {
