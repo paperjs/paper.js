@@ -31,11 +31,11 @@ var SegmentPoint = Point.extend({
 	},
 	
 	setSelected: function(selected) {
-		this._segment.setSelected(this, selected);
+		this._segment._setSelected(this, selected);
 	},
 	
 	isSelected: function() {
-		return this._segment.isSelected(this);
+		return this._segment._isSelected(this);
 	},
 	
 	statics: {

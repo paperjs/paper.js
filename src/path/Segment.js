@@ -125,11 +125,10 @@ var Segment = this.Segment = Base.extend({
 		return this._path && this._path._segments[this.getIndex() - 1] || null;
 	},
 
-	isSelected: function(/* point */) {
-		var point = arguments.length ? arguments[0] : this._point;
+	_isSelected: function(point) {
 		var state = this._selectionState;
 		if (point == this._point) {
-			return state == SelectionState.POINT;
+			return !!(state & SelectionState.POINT);
 		} else if (point == this._handleIn) {
 			return !!(state & SelectionState.HANDLE_IN);
 		} else if (point == this._handleOut) {
@@ -138,23 +137,13 @@ var Segment = this.Segment = Base.extend({
 		return false;
 	},
 	
-	// TODO: Port setSelected(selected) back to Scriptographer
-	setSelected: function(/* point, selected */) {
-		var point, selected;
-		if (arguments.length == 2) {
-			// setSelected(point, selected)
-			point = arguments[0];
-			selected = !!arguments[1];
-		} else {
-			// setSelected(selected)
-			point = this._point;
-			selected = !!arguments[0];
-		}
+	_setSelected: function(point, selected) {
 		if (!this._path)
 			return;
-		var wasSelected = !!this._selectionState;
-		var state = this._selectionState,
-			pointSelected = state == SelectionState.POINT,
+		var selected = !!selected, // convert to boolean
+			state = this._selectionState,
+			wasSelected = !!state,
+			pointSelected = !!(state & SelectionState.POINT);
 			handleInSelected = !!(state & SelectionState.HANDLE_IN);
 			handleOutSelected = !!(state & SelectionState.HANDLE_OUT);
 			previous = this.getPrevious(),
@@ -180,8 +169,8 @@ var Segment = this.Segment = Base.extend({
 							&& (previous._point.isSelected()
 							|| previous._handleOut.isSelected());
 					handleOutSelected = next != null
-						&& (next._point.isSelected()
-						|| next._handleOut.isSelected());
+							&& (next._point.isSelected()
+							|| next._handleOut.isSelected());
 				}
 				pointSelected = selected;
 			}
@@ -200,10 +189,9 @@ var Segment = this.Segment = Base.extend({
 				handleOutSelected = selected;
 			}
 		}
-		this._selectionState =
-			(pointSelected ? SelectionState.POINT : 0)
-			| (handleInSelected ? SelectionState.HANDLE_IN : 0)
-			| (handleOutSelected ? SelectionState.HANDLE_OUT : 0);
+		this._selectionState = (pointSelected ? SelectionState.POINT : 0)
+				| (handleInSelected ? SelectionState.HANDLE_IN : 0)
+				| (handleOutSelected ? SelectionState.HANDLE_OUT : 0);
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
 		// document._selectedItems
@@ -220,6 +208,15 @@ var Segment = this.Segment = Base.extend({
 					path._document._selectItem(path, true);
 			}
 		}	
+	},
+
+	// TODO: Port setSelected(selected) back to Scriptographer
+	isSelected: function() {
+		return this._isSelected(this._point);
+	},
+
+	setSelected: function(selected) {
+		this._setSelected(this._point, selected);
 	},
 
 	reverse: function() {
