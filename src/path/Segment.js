@@ -132,14 +132,10 @@ var Segment = this.Segment = Base.extend({
 
 	_isSelected: function(point) {
 		var state = this._selectionState;
-		if (point == this._point) {
-			return !!(state & SelectionState.POINT);
-		} else if (point == this._handleIn) {
-			return !!(state & SelectionState.HANDLE_IN);
-		} else if (point == this._handleOut) {
-			return !!(state & SelectionState.HANDLE_OUT);
-		}
-		return false;
+		return point == this._point ? !!(state & SelectionState.POINT)
+			: point == this._handleIn ? !!(state & SelectionState.HANDLE_IN)
+			: point == this._handleOut ? !!(state & SelectionState.HANDLE_OUT)
+			: false;
 	},
 
 	_setSelected: function(point, selected) {
