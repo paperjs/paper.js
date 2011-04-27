@@ -141,32 +141,30 @@ var Segment = this.Segment = Base.extend({
 		}
 		return false;
 	},
-	
+
 	_setSelected: function(point, selected) {
 		if (!this._path)
 			return;
 		var selected = !!selected, // convert to boolean
 			state = this._selectionState,
 			wasSelected = !!state,
-			pointSelected = !!(state & SelectionState.POINT);
-			handleInSelected = !!(state & SelectionState.HANDLE_IN);
+			pointSelected = !!(state & SelectionState.POINT),
+			handleInSelected = !!(state & SelectionState.HANDLE_IN),
 			handleOutSelected = !!(state & SelectionState.HANDLE_OUT);
-			previous = this.getPrevious(),
-			next = this.getNext(),
-			segments = this._path._segments,
-			length = segments.length;
 		if (point == this._point) {
 			if (pointSelected != selected) {
 				if (selected) {
 					handleInSelected = handleOutSelected = false;
 				} else {
+					var previous = this.getPrevious(),
+						next = this.getNext();
 					// When deselecting a point, the handles get selected
 					// instead depending on the selection state of their
 					// neighbors.
-					handleInSelected = previous != null
+					handleInSelected = previous
 							&& (previous._point.isSelected()
 							|| previous._handleOut.isSelected());
-					handleOutSelected = next != null
+					handleOutSelected = next
 							&& (next._point.isSelected()
 							|| next._handleOut.isSelected());
 				}
