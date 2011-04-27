@@ -265,9 +265,7 @@ var Path = this.Path = PathItem.extend({
 	 */
 	getTangent: function(length) {
 		var loc = this.getLocation(length);
-		return loc
-			? loc.getCurve().getTangent(loc.getParameter())
-			: null;
+		return loc && loc.getTangent();
 	},
 	
 	/**
@@ -275,9 +273,7 @@ var Path = this.Path = PathItem.extend({
 	 */
 	getNormal: function(length) {
 		var loc = this.getLocation(length);
-		return loc
-			? loc.getCurve().getNormal(loc.getParameter())
-			: null;
+		return loc && loc.getNormal();
 	}
 }, new function() { // Scope for drawing
 

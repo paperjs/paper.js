@@ -114,6 +114,24 @@ CurveLocation = Base.extend({
 		return this._point;
 	},
 
+	/**
+	 * The tangential vector to the {@link #getCurve()} at the given location.
+	 */
+	getTangent: function() {
+		var parameter = this.getParameter();
+		return parameter != null && this._curve
+				&& this._curve.getTangent(parameter);
+	},
+	
+	/**
+	 * The normal vector to the {@link #getCurve()} at the given location.
+	 */
+	getNormal: function() {
+		var parameter = this.getParameter();
+		return parameter != null && this._curve
+				&& this._curve.getNormal(parameter);
+	},
+
 	toString: function() {
 		var parts = [];
 		var point = this.getPoint();
