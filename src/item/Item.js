@@ -60,7 +60,7 @@ var Item = this.Item = Base.extend({
 				child.setSelected(selected);
 			}
 		} else {
-			if (selected != this._selected) {
+			if ((selected = !!selected) != this._selected) {
 				// TODO: when an item is removed or moved to another
 				// document, it needs to be removed from _selectedItems
 				this._selected = selected;
