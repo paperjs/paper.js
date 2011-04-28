@@ -14,9 +14,6 @@
 			strokeWidth: 2,
 			strokeCap: 'round'
 		};
-		var bounds = document.bounds,
-			width = bounds.width,
-			height = bounds.height;
 
 		var head = new Path.Oval([0, 0], [13, 8]);
 		head.fillColor = 'white';
@@ -131,7 +128,9 @@
 			borders: function() {
 				var loc = this.loc,
 					r = this.r,
-					oldLoc = this.loc.clone();
+					oldLoc = this.loc.clone(),
+					width = document.size.width,
+					height = document.size.height;
 				if (loc.x < -r) loc.x = width + r;
 				if (loc.y < -r) loc.y = height + r;
 				if (loc.x > width + r) loc.x = -r;
@@ -273,8 +272,19 @@
 		function onMouseDown(event) {
 			groupTogether = !groupTogether;
 		}
+		
+		// Resize the document, whenever the window is resized, 
+		window.onresize = function(event) {
+			document.size = [window.innerWidth, window.innerHeight];
+			heartPath.position = document.bounds.center;
+			document.redraw();
+		}
+		
+		// Call straight away to resize the document to the current
+		// window size:
+		window.onresize();
 	</script>
 </head>
-<body style='background-color: black'>
-	<canvas id='canvas' width=1024 height=768></canvas>
+<body style='background-color: black; margin: 0; overflow: hidden'>
+	<canvas id='canvas'></canvas>
 </body>
