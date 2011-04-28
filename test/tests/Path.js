@@ -63,13 +63,13 @@ test('path.remove()', function() {
 	path.add(20, 0);
 	path.add(30, 0);
 	
-	path.remove(0);
+	path.removeSegment(0);
 	equals(path.segments.length, 3);
 
-	path.remove(path.segments[0]);
+	path.removeSegment(0);
 	equals(path.segments.length, 2);
 
-	path.remove(0, 1);
+	path.removeSegments(0, 1);
 	equals(path.segments.length, 0);
 
 	path.remove();
