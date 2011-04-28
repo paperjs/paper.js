@@ -396,10 +396,7 @@ var Point = this.Point = Base.extend({
 	 * print(roundPoint); // { x: 10.0, y: 11.0 }
 	 * </code>
 	 */
-	round: function() {
-		return Point.create(Math.round(this.x), Math.round(this.y));
-	},
-
+	
 	/**
 	 * Returns a new point with the nearest greater non-fractional values to the
 	 * specified {@link #x} and {@link #y} values. The object itself is not
@@ -412,10 +409,7 @@ var Point = this.Point = Base.extend({
 	 * print(ceilPoint); // { x: 11.0, y: 11.0 }
 	 * </code>
 	 */
-	ceil: function() {
-		return Point.create(Math.ceil(this.x), Math.ceil(this.y));
-	},
-
+	
 	/**
 	 * Returns a new point with the nearest smaller non-fractional values to the
 	 * specified {@link #x} and {@link #y} values. The object itself is not
@@ -428,10 +422,7 @@ var Point = this.Point = Base.extend({
 	 * print(floorPoint); // { x: 10.0, y: 10.0 }
 	 * </code>
 	 */
-	floor: function() {
-		return Point.create(Math.floor(this.x), Math.floor(this.y));
-	},
-
+	
 	/**
 	 * Returns a new point with the absolute values of the specified {@link #x}
 	 * and {@link #y} values. The object itself is not modified!
@@ -443,10 +434,7 @@ var Point = this.Point = Base.extend({
 	 * print(absPoint); // { x: 5.0, y: 10.0 }
 	 * </code>
 	 */
-	abs: function() {
-		return Point.create(Math.abs(this.x), Math.abs(this.y));
-	},
-
+	
 	/**
 	 * {@grouptitle Vectorial Math Functions}
 	 * 
@@ -571,6 +559,13 @@ var Point = this.Point = Base.extend({
 			return Point.create(Math.random(), Math.random());
 		}
 	}
+}, new function() { // Scope for injecting intersect, unite and include.
+	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
+		var op = Math[name];
+		this[name] = function() {
+			return Point.create(op(this.x), op(this.y));
+		};
+	}, {});
 });
 
 /**
