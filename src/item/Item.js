@@ -454,7 +454,7 @@ var Item = this.Item = Base.extend({
 				y2 = Math.max(rect.y + rect.height, y2);
 			}
 			return includeStroke
-				? Rectangle.create(x1, y1, x2 - x1, y2 - y1),
+				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
 				: LinkedRectangle.create(this, 'setBounds',
 						x1, y1, x2 - x1, y2 - y1);
 		}
