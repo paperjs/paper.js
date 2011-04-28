@@ -209,23 +209,24 @@ var Rectangle = this.Rectangle = Base.extend({
 	}
 }, new function() { // Scope for injecting intersect, unite and include.
 	return Base.each({
+		// 1st = intersect, 2nd = isPoint
 		intersect: [true, false],
 		unite: [false, false],
 		include: [false, true]
 	}, function(values, name) {
 		var intersect = values[0],
 			isPoint = values[1],
-			math1 = Math[intersect ? 'max' : 'min'],
-			math2 = Math[intersect ? 'min' : 'max'];
+			op1 = Math[intersect ? 'max' : 'min'],
+			op2 = Math[intersect ? 'min' : 'max'];
 		this[name] = function() {
 			var object = (isPoint ? Point : Rectangle).read(arguments),
-				x1 = math1(this.x, object.x),
-				y1 = math1(this.y, object.y),
-				x2 = math2(this.x + this.width,
+				x1 = op1(this.x, object.x),
+				y1 = op1(this.y, object.y),
+				x2 = op2(this.x + this.width,
 						object.x + (isPoint ? 0 : object.width)),
-				y2 = math2(this.y + this.height,
+				y2 = op2(this.y + this.height,
 						object.y + (isPoint ? 0 : object.height));
-				return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 		};
 	}, {});
 }, new function() {
