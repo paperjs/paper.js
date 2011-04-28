@@ -20,12 +20,16 @@ var Document = this.Document = Base.extend({
 	initialize: function(canvas) {
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this.canvas = canvas;
-			this.size = new Size(canvas.offsetWidth, canvas.offsetHeight);
+			this._size = Size.create(canvas.offsetWidth, 
+					canvas.offsetHeight);
 		} else {
-			this.size = Size.read(arguments) || new Size(1024, 768);
-			this.canvas = CanvasProvider.getCanvas(this.size);
+			this._size = Size.read(arguments) || new Size(1024, 768);
+			this.canvas = CanvasProvider.getCanvas(this._size);
 		}
-		this.bounds = new Rectangle(new Point(0, 0), this.size);
+		// TODO: currently we don't do anything with Document#bounds.. What
+		// does it mean to change the bounds of the document? (JP)
+		this.bounds = Rectangle.create(0, 0, this._size.width,
+				this._size.height);
 		this.context = this.canvas.getContext('2d');
 		paper.documents.push(this);
 		this.activate();
@@ -33,10 +37,24 @@ var Document = this.Document = Base.extend({
 		this.activeLayer = new Layer();
 		this.setCurrentStyle(null);
 		this.symbols = [];
-		this.views = [new DocumentView(this)];
-		this.activeView = this.views[0];
+		this.activeView = new DocumentView(this);
+		this.views = [this.activeView];
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
+	},
+	
+	getSize: function() {
+		return this._size;
+	},
+	
+	setSize: function(size) {
+		size = Size.read(arguments);
+		if (this.canvas) {
+			this.canvas.width = size.width;
+			this.canvas.height = size.height;
+		}
+		this._size = size;
+		this.bounds.setSize(size); 
 	},
 
 	getCurrentStyle: function() {
