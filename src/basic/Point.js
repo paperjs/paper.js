@@ -172,7 +172,7 @@ var Point = this.Point = Base.extend({
 			}
 		} else {
 			var scale = length / this.getLength();
-			if (scale == 0.0) {
+			if (scale == 0) {
 				// Calculate angle now, so it will be preserved even when
 				// x and y are 0
 				this.getAngle();
