@@ -116,8 +116,10 @@ var Path = this.Path = PathItem.extend({
 	
 	// TODO: Port back to Sg
 	removeSegments: function(from, to) {
-		for(var i = to; i >= from; i--)
-			this.removeSegment(i);
+		var i = Base.pick(to, this._segments.length),
+			from = from || 0;
+		while (i >= from)
+			this.removeSegment(i--);
 	},
 	
 	isSelected: function() {
