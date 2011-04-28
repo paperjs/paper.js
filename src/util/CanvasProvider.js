@@ -37,10 +37,15 @@ var CanvasProvider = {
 			}
 			return canvas;
 		} else {
+//#ifdef BROWSER
 			var canvas = document.createElement('canvas');
 			canvas.width = size.width;
 			canvas.height = size.height;
 			return canvas;
+//#else // !BROWSER
+			// TODO: Implement for server environments
+			return null;
+//#endif // !BROWSER
 		}
 	},
 
