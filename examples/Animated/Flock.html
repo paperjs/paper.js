@@ -282,7 +282,8 @@
 		
 		// Resize the document, whenever the window is resized, 
 		window.onresize = function(event) {
-			size = document.size = [window.innerWidth, window.innerHeight];
+			document.size = [window.innerWidth, window.innerHeight];
+			size = document.size;
 			heartPath.position = document.bounds.center;
 			document.redraw();
 		}
