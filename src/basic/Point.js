@@ -353,15 +353,25 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
-	 * Checks if the vector represented by this point is parallel (collinear) to
+	 * Checks if the vector represented by this point is colinear (parallel) to
 	 * another vector.
 	 * 
 	 * @param point the vector to check against
 	 * @return {@true if it is parallel}
 	 */
-	isParallel: function(point) {
-		// TODO: Tolerance seems rather high!
-		return Math.abs(this.x / point.x - this.y / point.y) < 0.00001;
+	isColinear: function(point) {
+		return this.cross(point) < Numerical.TOLERANCE;
+	},
+
+	/**
+	 * Checks if the vector represented by this point is orthogonal
+	 * (perpendicular) to another vector.
+	 * 
+	 * @param point the vector to check against
+	 * @return {@true if it is orthogonal}
+	 */
+	isOrthogonal: function(point) {
+		return this.dot(point) < Numerical.TOLERANCE;
 	},
 
 	/**
