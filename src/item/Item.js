@@ -428,20 +428,29 @@ var Item = this.Item = Base.extend({
 		}
 		return false;
 	},
-
+	
+	getStrokeBounds: function() {
+		return this._getBounds(true);
+	},
+	
 	getBounds: function() {
-		if (this.children && this.children.length) {
-			var rect = this.children[0].getBounds(),
-				x1 = rect.x,
-				y1 = rect.y,
-				x2 = rect.x + rect.width,
-				y2 = rect.y + rect.height;
-			for (var i = 1, l = this.children.length; i < l; i++) {
-				rect = this.children[i].getBounds();
+		return this._getBounds(false);
+	},
+	
+	_getBounds: function(includeStroke) {
+		var children = this.children;
+		if (children && children.length) {
+			var x1, x2;
+			var y1 = x1 = Infinity;
+			var y2 = x2 = -Infinity;
+			for (var i = 0, l = children.length; i < l; i++) {
+				var child = this.children[i],
+					rect = includeStroke ? child.getStrokeBounds()
+						: child.getBounds();
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
-				x2 = Math.max(rect.x + rect.width, x1 + x2 - x1);
-				y2 = Math.max(rect.y + rect.height, y1 + y2 - y1);
+				x2 = Math.max(rect.x + rect.width, x2);
+				y2 = Math.max(rect.y + rect.height, y2);
 			}
 			return LinkedRectangle.create(this, 'setBounds',
 					x1, y1, x2 - x1, y2 - y1);
