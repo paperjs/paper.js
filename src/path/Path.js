@@ -116,7 +116,7 @@ var Path = this.Path = PathItem.extend({
 	
 	// TODO: Port back to Sg
 	removeSegments: function(from, to) {
-		var i = Base.pick(to, this._segments.length),
+		var i = Base.pick(to, this._segments.length - 1),
 			from = from || 0;
 		while (i >= from)
 			this.removeSegment(i--);
