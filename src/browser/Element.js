@@ -35,7 +35,7 @@ var Element = {
 
 	getScrollBounds: function() {
 		var doc = document.getElementsByTagName(
-				document.compatMode == 'CSS1Compat' ? 'html' : 'body')[0];
+				document.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
 		return Rectangle.create(
 			window.pageXOffset || doc.scrollLeft,
 			window.pageYOffset || doc.scrollTop,

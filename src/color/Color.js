@@ -62,7 +62,7 @@ var Color = this.Color = Base.extend(new function() {
 
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg);
-			if (typeof arg == 'object' && !isArray) {
+			if (typeof arg === 'object' && !isArray) {
 				if (!this._colorType) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
@@ -83,7 +83,7 @@ var Color = this.Color = Base.extend(new function() {
 							? color.convert(this._colorType)
 							: color;
 				}
-			} else if (typeof arg == 'string') {
+			} else if (typeof arg === 'string') {
 				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
 						? hexToRGBColor(arg)
 						: nameToRGBColor(arg);
@@ -112,7 +112,7 @@ var Color = this.Color = Base.extend(new function() {
 									? value
 									// TODO: Is this correct?
 									// Shouldn't alpha be set to -1?
-									: name == 'alpha' ? 1 : null;
+									: name === 'alpha' ? 1 : null;
 						}, this);
 				}
 			}
@@ -177,7 +177,7 @@ var Color = this.Color = Base.extend(new function() {
 			for (var i = 0, l = this._components.length; i < l; i++) {
 				var component = this._components[i];
 				var value = this['_' + component];
-				if (component == 'alpha' && value == null)
+				if (component === 'alpha' && value == null)
 					value = 1;
 				string += (i > 0 ? ', ' : '') + component + ': ' + value;
 			}
@@ -186,7 +186,7 @@ var Color = this.Color = Base.extend(new function() {
 
 		toCssString: function() {
 			if (!this._cssString) {
-				var color = this._colorType == 'rgb'
+				var color = this._colorType === 'rgb'
 						? this
 						: this.convert('rgb');
 				var alpha = color.getAlpha();

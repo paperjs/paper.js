@@ -613,7 +613,7 @@ var Item = this.Item = Base.extend({
 	 */
 	scale: function(sx, sy /* | scale */, center) {
 		// See Matrix#scale for explanation of this:
-		if (arguments.length < 2 || typeof sy == 'object') {
+		if (arguments.length < 2 || typeof sy === 'object') {
 			center = sy;
 			sy = sx;
 		}
@@ -646,7 +646,7 @@ var Item = this.Item = Base.extend({
 	shear: function(shx, shy, center) {
 		// TODO: Add support for center back to Scriptographer too!
 		// See Matrix#scale for explanation of this:
-		if (arguments.length < 2 || typeof sy == 'object') {
+		if (arguments.length < 2 || typeof sy === 'object') {
 			center = shy;
 			shy = shx;
 		}
@@ -766,7 +766,7 @@ var Item = this.Item = Base.extend({
 
 				// If the item has a blendMode, use BlendMode#process to
 				// composite its canvas on the parentCanvas.
-				if (item.blendMode != 'normal') {
+				if (item.blendMode !== 'normal') {
 					// The pixel offset of the temporary canvas to the parent
 					// canvas.
 					var pixelOffset = itemOffset.subtract(param.offset);
@@ -922,7 +922,7 @@ var Item = this.Item = Base.extend({
 			var hash = {};
 			hash[handler] = function(event) {
 				// Always clear the drag set on mouse-up
-				if (name == 'up')
+				if (name === 'up')
 					sets.drag = {};
 				removeAll(sets[name]);
 				sets[name] = {};
@@ -950,7 +950,7 @@ var Item = this.Item = Base.extend({
 					sets[name][this.getId()] = this;
 					// Since the drag set gets cleared in up, we need to make
 					// sure it's installed too
-					if (name == 'drag')
+					if (name === 'drag')
 						installHandler('up');
 					installHandler(name);
 				}

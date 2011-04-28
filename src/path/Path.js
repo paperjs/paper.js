@@ -25,7 +25,7 @@ var Path = this.Path = PathItem.extend({
 		// If it is an array, it can also be a description of a point, so
 		// check its first entry for object as well
 		this.setSegments(!segments || !Array.isArray(segments)
-				|| typeof segments[0] != 'object' ? arguments : segments);
+				|| typeof segments[0] !== 'object' ? arguments : segments);
 	},
 
 	/**
@@ -674,7 +674,7 @@ var Path = this.Path = PathItem.extend({
 			// Get the start point:
 			var current = getCurrentSegment(this),
 				through;
-			if (arguments[1] && typeof arguments[1] != 'boolean') {
+			if (arguments[1] && typeof arguments[1] !== 'boolean') {
 				through = Point.read(arguments, 0, 1);
 				to = Point.read(arguments, 1, 1);
 			} else {
@@ -987,7 +987,7 @@ var Path = this.Path = PathItem.extend({
 					handleOut = segment.getHandleOutIfSet();
 				// When both handles are set in a segment, the join setting is
 				// ignored and round is always used.
-				if (join == 'round' || handleIn && handleOut) {
+				if (join === 'round' || handleIn && handleOut) {
 					bounds = bounds.unite(joinBounds.setCenter(matrix
 						? matrix.transform(segment._point) : segment._point));
 				} else {
@@ -1033,7 +1033,7 @@ var Path = this.Path = PathItem.extend({
 						normal = curve.getNormal(t).normalize(radius);
 					// For square caps, we need to step away from point in the
 					// direction of the tangent, which is the rotated normal
-					if (cap == 'square')
+					if (cap === 'square')
 						point = point.add(normal.y, -normal.x);
 					add(point.add(normal));
 					add(point.subtract(normal));

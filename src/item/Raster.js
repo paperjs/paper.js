@@ -25,7 +25,7 @@ var Raster = this.Raster = Item.extend({
 			this.setCanvas(object);
 		} else {
 			// If it's a string, get the element with this id first.
-			if (typeof object == 'string')
+			if (typeof object === 'string')
 				object = document.getElementById(object);
 			this.setImage(object);
 		}

@@ -111,7 +111,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {Matrix} This affine transform.
 	 */
 	scale: function(sx, sy /* | scale */, center) {
-		if (arguments.length < 2 || typeof sy == 'object') {
+		if (arguments.length < 2 || typeof sy === 'object') {
 			// sx is the single scale parameter, representing both sx and sy
 			// Read center first from argument 1, then set sy = sx (thus
 			// modifing the content of argument 1!)
@@ -170,7 +170,7 @@ var Matrix = this.Matrix = Base.extend({
 	 */
 	shear: function(shx, shy, center) {
 		// See #scale() for explanation of this:
-		if (arguments.length < 2 || typeof shy == 'object') {
+		if (arguments.length < 2 || typeof shy === 'object') {
 			center = Point.read(arguments, 1);
 			sy = sx;
 		} else {

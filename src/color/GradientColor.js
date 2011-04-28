@@ -66,7 +66,7 @@ var GradientColor = this.GradientColor = Color.extend({
 
 	getCanvasStyle: function(ctx) {
 		var gradient;
-		if (this.gradient.type == 'linear') {
+		if (this.gradient.type === 'linear') {
 			gradient = ctx.createLinearGradient(this._origin.x, this._origin.y,
 				this.destination.x, this.destination.y);
 		} else {

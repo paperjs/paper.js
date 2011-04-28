@@ -29,7 +29,7 @@ var Key = new function() {
 	
 	Event.add(document, Base.each(['keyDown', 'keyUp'], function(type) {
 		var toolHandler = 'on' + Base.capitalize(type),
-			keyDown = type == 'keyDown';
+			keyDown = type === 'keyDown';
 		this[type.toLowerCase()] = function(event) {
 			var code = event.which || event.keyCode,
 				key = keys[code] || String.fromCharCode(code).toLowerCase();
