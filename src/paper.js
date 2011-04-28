@@ -114,12 +114,17 @@ Base.inject({
 //#include "tool/ToolHandler.js"
 //#include "tool/Tool.js"
 
+//#ifdef BROWSER
+//#include "browser/Element.js"
+//#include "browser/Event.js"
+//#endif // BROWSER
+
 //#include "util/BlendMode.js"
 //#include "util/CanvasProvider.js"
-//#include "util/Element.js"
-//#include "util/Event.js"
 //#include "util/Numerical.js"
 //#include "util/PaperScript.js"
 
+//#ifdef BROWSER
 //#include "ui/Key.js"
+//#endif // BROWSER
 };
