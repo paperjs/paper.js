@@ -1,11 +1,13 @@
 var Key = new function() {
 	// TODO: make sure the keys are called the same as in Scriptographer
+	// Missing: tab, cancel, clear, pause, page-down, page-up, end, home, comma,
+	// minus, period, slash, etc etc etc.
 	var keys = {
 		 '8': 'backspace',
 		'13': 'enter',
 		'16': 'shift',
 		'17': 'control',
-		'19': 'alt',
+		'19': 'option', // was alt
 		'20': 'capsLock',
 		'27': 'escape',
 		'32': 'space',
@@ -15,19 +17,17 @@ var Key = new function() {
 		'40': 'down',
 		'46': 'delete',
 		'91': 'command'
-	};
-
-	var activeKeys = {};
-	
-	var modifiers = {
+	},
+	modifiers = {
 		shift: false,
 		control: false,
-		alt: false,
+		option: false,
 		command: false,
 		capsLock: false
-	};
+	},
+	activeKeys = {};
 	
-	var eventHandlers = Base.each(['keyDown', 'keyUp'], function(type) {
+	Event.add(document, Base.each(['keyDown', 'keyUp'], function(type) {
 		var toolHandler = 'on' + Base.capitalize(type),
 			keyDown = type == 'keyDown';
 		this[type.toLowerCase()] = function(event) {
@@ -41,7 +41,7 @@ var Key = new function() {
 			
 			// Call the onKeyDown or onKeyUp handler if present:
 			// TODO: don't call the key handler if the key is a modifier?
-			if (paper.tool[toolHandler]) {
+			if (paper.tool && paper.tool[toolHandler]) {
 				// TODO: Introduce a class for this?
 				var keyEvent = {
 					type: keyDown ? 'key-down' : 'key-up',
@@ -68,8 +68,7 @@ var Key = new function() {
 					keyEvent.preventDefault();
 			}
 		};
-	}, {});
-	Event.add(document, eventHandlers);
+	}, {}));
 	
 	return {
 		modifiers: modifiers,
