@@ -64,10 +64,11 @@ var sources = [
 	'src/tool/ToolHandler.js',
 	'src/tool/Tool.js',
 
+	'src/browser/Element.js',
+	'src/browser/Event.js',
+
 	'src/util/BlendMode.js',
 	'src/util/CanvasProvider.js',
-	'src/util/Element.js',
-	'src/util/Event.js',
 	'src/util/Numerical.js',
 	'src/util/PaperScript.js',
 
