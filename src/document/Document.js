@@ -80,6 +80,26 @@ var Document = this.Document = Base.extend({
 		}
 	},
 	
+	/**
+	 * Selects all items in the document.
+	 */
+	selectAll: function() {
+		// TODO: is using for var i in good practice?
+		// or should we use Base.each? (JP)
+		for (var i = 0, l = this.layers.length; i < l; i++)
+			this.layers[i].setSelected(true);
+	},
+
+	/**
+	 * Deselects all selected items in the document.
+	 */
+	deselectAll: function() {
+		// TODO: is using for var i in good practice?
+		// or should we use Base.each? (JP)
+		for (var i in this._selectedItems)
+			this._selectedItems[i].setSelected(false);
+	},
+	
 	draw: function() {
 		if (this.canvas) {
 			var ctx = this.context;
