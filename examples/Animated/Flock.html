@@ -224,8 +224,7 @@
 			}
 		});
 		
-		var boids = [],
-			center = document.bounds.center;
+		var boids = [];
 		for (var i = 0; i < 30; i++) {
 			var position = Point.random() * document.size;
 			boids.push(new Boid(position, 10, 0.05));
