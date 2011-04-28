@@ -107,24 +107,17 @@ var Path = this.Path = PathItem.extend({
 		segment = Segment.read(arguments, 1);
 		return segment ? this._add(segment, index) : null;
 	},
+
+	// TODO: Port back to Sg
+	removeSegment: function(index) {
+		var segment = this._segments[index]
+		return segment && segment.remove() ? segment : null;
+	},
 	
-	remove: function() {
-		if (!arguments.length) {
-			// remove()
-			this.base();
-		} else if (arguments.length == 1) {
-			if (arguments[0].point) {
-				// remove(segment)
-				arguments[0].remove();
-			} else {
-				// remove(index)
-				this._segments[arguments[0]].remove();
-			}
-		} else {
-			// remove(fromIndex, toIndex)
-			for(var i = arguments[1], l = arguments[0]; i >= l; i--)
-				this._segments[i].remove();
-		}
+	// TODO: Port back to Sg
+	removeSegments: function(from, to) {
+		for(var i = to; i >= from; i--)
+			this.removeSegment(i);
 	},
 	
 	isSelected: function() {
