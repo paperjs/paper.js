@@ -193,33 +193,6 @@ var Rectangle = this.Rectangle = Base.extend({
 				&& rect.y < this.y + this.height;
 	},
 
-	intersect: function(rect) {
-		rect = Rectangle.read(arguments);
-		var x1 = Math.max(this.x, rect.x),
-			y1 = Math.max(this.y, rect.y),
-			x2 = Math.min(this.x + this.width, rect.x + rect.width),
-			y2 = Math.min(this.y + this.height, rect.y + rect.height);
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	},
-
-	unite: function(rect) {
-		rect = Rectangle.read(arguments);
-		var x1 = Math.min(this.x, rect.x),
-			y1 = Math.min(this.y, rect.y),
-			x2 = Math.max(this.x + this.width, rect.x + rect.width),
-			y2 = Math.max(this.y + this.height, rect.y + rect.height);
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	},
-
-	include: function(point) {
-		point = Point.read(arguments);
-		var x1 = Math.min(this.x, point.x),
-			y1 = Math.min(this.y, point.y),
-			x2 = Math.max(this.x + this.width, point.x),
-			y2 = Math.max(this.y + this.height, point.y);
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	},
-
 	toString: function() {
 		return '{ x: ' + this.x
 				+ ', y: ' + this.y
@@ -234,6 +207,27 @@ var Rectangle = this.Rectangle = Base.extend({
 			return new Rectangle(Rectangle.dont).set(x, y, width, height);
 		}
 	}
+}, new function() { // Scope for injecting intersect, unite and include.
+	return Base.each({
+		intersect: [true, false],
+		unite: [false, false],
+		include: [false, true]
+	}, function(values, name) {
+		var intersect = values[0],
+			isPoint = values[1],
+			math1 = Math[intersect ? 'max' : 'min'],
+			math2 = Math[intersect ? 'min' : 'max'];
+		this[name] = function() {
+			var object = (isPoint ? Point : Rectangle).read(arguments),
+				x1 = math1(this.x, object.x),
+				y1 = math1(this.y, object.y),
+				x2 = math2(this.x + this.width,
+						object.x + (isPoint ? 0 : object.width)),
+				y2 = math2(this.y + this.height,
+						object.y + (isPoint ? 0 : object.height));
+				return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		};
+	}, {});
 }, new function() {
 	return Base.each([
 			['Top', 'Left'], ['Top', 'Right'],
