@@ -198,6 +198,10 @@ var Raster = this.Raster = Item.extend({
 		}
 		return this._bounds;
 	},
+	
+	getStrokeBounds: function() {
+		return this.getBounds();
+	},
 
 	draw: function(ctx, param) {
 		if (param.selection) {
