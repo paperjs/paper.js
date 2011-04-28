@@ -9,6 +9,14 @@
 		// Adapted from Flocking Processing example by Daniel Schiffman:
 		// http://processing.org/learning/topics/flocking.html
 		
+		// Resize the document, whenever the window is resized, 
+		window.onresize = function(event) {
+			document.size = [window.innerWidth, window.innerHeight];
+			size = document.size;
+			heartPath.position = document.bounds.center;
+			document.redraw();
+		}
+		
 		document.currentStyle = {
 			strokeColor: 'white',
 			strokeWidth: 2,
@@ -224,12 +232,6 @@
 			}
 		});
 		
-		var boids = [];
-		for (var i = 0; i < 30; i++) {
-			var position = Point.random() * document.size;
-			boids.push(new Boid(position, 10, 0.05));
-		}
-
 		var heartPath = new Path(
 			new Segment([514.6962890625, 624.703125], [7.0966796875, -26.3369140625], [-7.10205078125, -27.0244140625]),
 			new Segment([484.29052734375, 548.6025390625], [13.16845703125, 23.7060546875], [-13.173828125, -23.70703125]),
@@ -253,11 +255,21 @@
 		heartPath.position = document.bounds.center;
 		heartPath.strokeColor = null;
 		heartPath.scale(1.5);
-
+		
 		var count = 0,
 			groupTogether = false,
 			pathLength = heartPath.length,
-			mouseDown = false;
+			mouseDown = false,
+			boids = [];
+
+		// Call to resize the document to the current window size:
+		window.onresize();
+		
+		// Add the boids:
+		for (var i = 0; i < 30; i++) {
+			var position = Point.random() * document.size;
+			boids.push(new Boid(position, 10, 0.05));
+		}		
 
 		function onFrame() {
 			count++;
@@ -280,17 +292,6 @@
 				layer.selected = !layer.selected;
 		}
 		
-		// Resize the document, whenever the window is resized, 
-		window.onresize = function(event) {
-			document.size = [window.innerWidth, window.innerHeight];
-			size = document.size;
-			heartPath.position = document.bounds.center;
-			document.redraw();
-		}
-		
-		// Call straight away to resize the document to the current
-		// window size:
-		window.onresize();
 	</script>
 </head>
 <body style='background-color: black; margin: 0; overflow: hidden'>
