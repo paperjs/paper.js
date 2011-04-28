@@ -463,7 +463,7 @@ var Path = this.Path = PathItem.extend({
 		// Decomposition and forward substitution.
 		for (var i = 1; i < n; i++) {
 			tmp[i] = 1 / b;
-			b = (i < n - 1 ? 4.0 : 2.0) - tmp[i];
+			b = (i < n - 1 ? 4 : 2) - tmp[i];
 			x[i] = (rhs[i] - x[i - 1]) / b;
 		}
 		// Back-substitution.
@@ -718,7 +718,7 @@ var Path = this.Path = PathItem.extend({
 				diff -= Math.PI * 2;
 
 			extent -= angle;
-			if (extent <= 0.0)
+			if (extent <= 0)
 				extent += Math.PI * 2;
 
 			if (diff < 0) extent = Math.PI * 2 - extent;
