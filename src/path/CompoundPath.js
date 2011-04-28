@@ -24,27 +24,6 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		}
 	},
 
-	// TODO: have getBounds of Group / Layer / CompoundPath use the same
-	// code (from a utility script?)
-	getBounds: function() {
-		if (this.children.length) {
-			var rect = this.children[0].getBounds(),
-				x1 = rect.x,
-				y1 = rect.y,
-				x2 = rect.x + rect.width,
-				y2 = rect.y + rect.height;
-			for (var i = 1, l = this.children.length; i < l; i++) {
-				var rect2 = this.children[i].getBounds();
-				x1 = Math.min(rect2.x, x1);
-				y1 = Math.min(rect2.y, y1);
-				x2 = Math.max(rect2.x + rect2.width, x1 + x2 - x1);
-				y2 = Math.max(rect2.y + rect2.height, y1 + y2 - y1);
-			}
-		}
-		return LinkedRectangle.create(this, 'setBounds',
-				x1, y1, x2 - x1, y2 - y1);
-	},
-
 	/**
 	 * If this is a compound path with only one path inside,
 	 * the path is moved outside and the compound path is erased.

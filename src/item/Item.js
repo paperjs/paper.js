@@ -430,7 +430,24 @@ var Item = this.Item = Base.extend({
 	},
 
 	getBounds: function() {
-		// TODO: Implement for items other than paths
+		if (this.children && this.children.length) {
+			var rect = this.children[0].getBounds(),
+				x1 = rect.x,
+				y1 = rect.y,
+				x2 = rect.x + rect.width,
+				y2 = rect.y + rect.height;
+			for (var i = 1, l = this.children.length; i < l; i++) {
+				rect = this.children[i].getBounds();
+				x1 = Math.min(rect.x, x1);
+				y1 = Math.min(rect.y, y1);
+				x2 = Math.max(rect.x + rect.width, x1 + x2 - x1);
+				y2 = Math.max(rect.y + rect.height, y1 + y2 - y1);
+			}
+			return LinkedRectangle.create(this, 'setBounds',
+					x1, y1, x2 - x1, y2 - y1);
+		}
+		// TODO: What to return if nothing is defined, e.g. empty Groups?
+		// Scriptographer behaves weirdly then too.
 		return new Rectangle();
 	},
 
