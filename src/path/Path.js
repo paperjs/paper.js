@@ -646,9 +646,9 @@ var Path = this.Path = PathItem.extend({
 			// and the cubic is A B C D,
 			// B = E + 1/3 (A - E)
 			// C = E + 1/3 (D - E)
-			var current = getCurrentSegment(this);
+			var current = getCurrentSegment(this)._point;
 			this.cubicCurveTo(
-				handle.add(current._point.subtract(handle).multiply(1/3)),
+				handle.add(current.subtract(handle).multiply(1/3)),
 				handle.add(to.subtract(handle).multiply(1/3)),
 				to
 			);
@@ -657,15 +657,13 @@ var Path = this.Path = PathItem.extend({
 		curveTo: function(through, to, parameter) {
 			through = Point.read(arguments, 0, 1);
 			to = Point.read(arguments, 1, 1);
-			var t = parameter;
-			if (t == null)
-				t = 0.5;
-			var current = getCurrentSegment(this)._point;
-			// handle = (through - (1 - t)^2 * current - t^2 * to) /
-			// (2 * (1 - t) * t)
-			var t1 = 1 - t,
-				handle = through.subtract(current.multiply(t1 * t1)).subtract(
-					to.multiply(t * t)).divide(2 * t * t1);
+			var t = Base.pick(parameter, 0.5),
+				t1 = 1 - t,
+				current = getCurrentSegment(this)._point,
+				// handle = (through - (1 - t)^2 * current - t^2 * to) /
+				// (2 * (1 - t) * t)
+				handle = through.subtract(current.multiply(t1 * t1))
+					.subtract(to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
 					"Cannot put a curve through points with parameter=" + t);
@@ -673,9 +671,9 @@ var Path = this.Path = PathItem.extend({
 		},
 
 		arcTo: function(to, clockwise) {
-			var through, to;
 			// Get the start point:
-			var current = getCurrentSegment(this);
+			var current = getCurrentSegment(this),
+				through;
 			if (arguments[1] && typeof arguments[1] != 'boolean') {
 				through = Point.read(arguments, 0, 1);
 				to = Point.read(arguments, 1, 1);
