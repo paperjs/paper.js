@@ -221,28 +221,28 @@ var Item = this.Item = Base.extend({
 	 * The first item contained within this item.
 	 */
 	getFirstChild: function() {
-		return this.children ? this.children[0] : null;
+		return this.children && this.children[0] || null;
 	},
 
 	/**
 	 * The last item contained within this item.
 	 */
 	getLastChild: function() {
-		return this.children ? this.children[this.children.length - 1] : null;
+		return this.children && this.children[this.children.length - 1] || null;
 	},
 
 	/**
 	 * The next item on the same level as this item.
 	 */
 	getNextSibling: function() {
-		return this.parent ? this.parent.children[this.getIndex() + 1] : null;
+		return this.parent && this.parent.children[this.getIndex() + 1] || null;
 	},
 
 	/**
 	 * The previous item on the same level as this item.
 	 */
 	getPreviousSibling: function() {
-		return this.parent ? this.parent.children[this.getIndex() - 1] : null;
+		return this.parent && this.parent.children[this.getIndex() - 1] || null;
 	},
 
 	/**
@@ -252,8 +252,7 @@ var Item = this.Item = Base.extend({
 		// TODO: Relying on indexOf() here is slow, especially since it is
 		// used for getPrevious/NextSibling(). 
 		// We need linked lists instead.
-		// TODO: Return null instead of -1?
-		return this.parent ? this.parent.children.indexOf(this) : -1;
+		return this.parent && this.parent.children.indexOf(this) || null;
 	},
 
 	/**
@@ -272,7 +271,7 @@ var Item = this.Item = Base.extend({
 	* Removes the item.
 	*/
 	remove: function() {
-		if(this.isSelected())
+		if (this.isSelected())
 			this.setSelected(false);
 		return this.removeFromParent();
 	},
@@ -444,7 +443,7 @@ var Item = this.Item = Base.extend({
 			var y1 = x1 = Infinity;
 			var y2 = x2 = -Infinity;
 			for (var i = 0, l = children.length; i < l; i++) {
-				var child = this.children[i],
+				var child = children[i],
 					rect = includeStroke
 						? child.getStrokeBounds()
 						: child.getBounds();
@@ -506,11 +505,11 @@ var Item = this.Item = Base.extend({
 		// weird results on Scriptographer. Also we can't use antialiasing, since
 		// Canvas doesn't support it yet. Document colorMode is also out of the
 		// question for now.
-		var bounds = this.getStrokeBounds();
-		var scale = resolution ? resolution / 72 : 1;
-		var canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale));
-		var ctx = canvas.getContext('2d');
-		var matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
+		var bounds = this.getStrokeBounds(),
+			scale = (resolution || 72) / 72,
+			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
+			ctx = canvas.getContext('2d'),
+			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(ctx);
 		this.draw(ctx, {});
 		var raster = new Raster(canvas);
@@ -732,8 +731,8 @@ var Item = this.Item = Base.extend({
 
 				// Floor the offset and ceil the size, so we don't cut off any
 				// antialiased pixels when drawing onto the temporary canvas.
-				var itemOffset = bounds.getTopLeft().floor();
-				var size = bounds.getSize().ceil().add(1, 1);
+				var itemOffset = bounds.getTopLeft().floor(),
+					size = bounds.getSize().ceil().add(1, 1);
 				tempCanvas = CanvasProvider.getCanvas(size);
 
 				// Save the parent context, so we can draw onto it later
@@ -906,7 +905,7 @@ var Item = this.Item = Base.extend({
 		for(var id in set) {
 			var item = set[id];
 			item.remove();
-			for(var type in sets) {
+			for (var type in sets) {
 				var other = sets[type];
 				if (other != set && other[item.getId()])
 					delete other[item.getId()];
