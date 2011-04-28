@@ -208,8 +208,10 @@ var Segment = this.Segment = Base.extend({
 	remove: function() {
 		if (this._path) {
 			this._path._segments.splice(this.getIndex(), 1);
-			if (this.isSelected())
+			if (this._selectionState) {
 				this._path._selectedSegmentCount--;
+				this._selectionState = 0;
+			}
 			return true;
 		}
 		return false;
