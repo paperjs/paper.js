@@ -20,6 +20,8 @@
 		head.strokeColor = null;
 		var headSymbol = new Symbol(head);
 		
+		var size = document.size;
+		
 		var Boid = Base.extend({
 			initialize: function(position, maxSpeed, maxForce) {
 				var strength = Math.random() * 0.5;
@@ -129,8 +131,8 @@
 				var loc = this.loc,
 					r = this.r,
 					oldLoc = this.loc.clone(),
-					width = document.size.width,
-					height = document.size.height;
+					width = size.width,
+					height = size.height;
 				if (loc.x < -r) loc.x = width + r;
 				if (loc.y < -r) loc.y = height + r;
 				if (loc.x > width + r) loc.x = -r;
@@ -281,7 +283,7 @@
 		
 		// Resize the document, whenever the window is resized, 
 		window.onresize = function(event) {
-			document.size = [window.innerWidth, window.innerHeight];
+			size = document.size = [window.innerWidth, window.innerHeight];
 			heartPath.position = document.bounds.center;
 			document.redraw();
 		}
