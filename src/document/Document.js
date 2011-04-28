@@ -23,9 +23,7 @@ var Document = this.Document = Base.extend({
 			this.size = new Size(canvas.offsetWidth, canvas.offsetHeight);
 		} else {
 			this.size = Size.read(arguments) || new Size(1024, 768);
-			this.canvas = document.createElement('canvas');
-			this.canvas.width = this.size.width;
-			this.canvas.height = this.size.height;
+			this.canvas = CanvasProvider.getCanvas(this.size);
 		}
 		this.bounds = new Rectangle(new Point(0, 0), this.size);
 		this.context = this.canvas.getContext('2d');
