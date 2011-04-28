@@ -273,6 +273,12 @@
 			groupTogether = !groupTogether;
 		}
 		
+		var layer = document.activeLayer;
+		function onKeyDown(event) {
+			if (event.character == 'space')
+				layer.selected = !layer.selected;
+		}
+		
 		// Resize the document, whenever the window is resized, 
 		window.onresize = function(event) {
 			document.size = [window.innerWidth, window.innerHeight];
