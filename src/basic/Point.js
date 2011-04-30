@@ -138,13 +138,6 @@ var Point = this.Point = Base.extend({
 		return Math.sqrt(x * x + y * y);
 	},
 
-	getDistanceSquared: function(point) {
-		point = Point.read(arguments);
-		var x = point.x - this.x,
-			y = point.y - this.y;
-		return x * x + y * y;
-	},
-
 	/**
 	 * The length of the vector that is represented by this point's coordinates.
 	 * Each point can be interpreted as a vector that points from the origin
