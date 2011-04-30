@@ -273,13 +273,7 @@ var Point = this.Point = Base.extend({
 	getDirectedAngle: function(point) {
 		point = Point.read(arguments);
 		var angle = this.getAngle() - point.getAngle();
-		var bounds = 180;
-		if (angle < - bounds) {
-			return angle + bounds * 2;
-		} else if (angle > bounds) {
-			return angle - bounds * 2;
-		}
-		return angle;
+		return angle < -180 ? angle + 360 : angle > 180 ? angle - 360 : angle;
 	},
 
 	/**
