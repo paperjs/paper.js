@@ -110,7 +110,7 @@ var Segment = this.Segment = Base.extend({
 		if (this._path != null) {
 			var index = this.getIndex();
 			// The last segment of an open path belongs to the last curve
-			if (!this._path.closed && index == this._path._segments.length - 1)
+			if (!this._path._closed && index == this._path._segments.length - 1)
 				index--;
 			return this._path.getCurves()[index] || null;
 		}
@@ -120,13 +120,13 @@ var Segment = this.Segment = Base.extend({
 	getNext: function() {
 		var segments = this._path && this._path._segments;
 		return segments && (segments[this.getIndex() + 1]
-				|| this._path.closed && segments[0]) || null;
+				|| this._path._closed && segments[0]) || null;
 	},
 
 	getPrevious: function() {
 		var segments = this._path && this._path._segments;
 		return segments && (segments[this.getIndex() - 1]
-				|| this._path.closed && segments[segments.length - 1]) || null;
+				|| this._path._closed && segments[segments.length - 1]) || null;
 	},
 
 	_isSelected: function(point) {

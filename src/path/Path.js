@@ -19,7 +19,7 @@ var Path = this.Path = PathItem.extend({
 
 	initialize: function(segments) {
 		this.base();
-		this.closed = false;
+		this._closed = false;
 		this._selectedSegmentCount = 0;
 		// Support both passing of segments as array or arguments
 		// If it is an array, it can also be a description of a point, so
@@ -34,7 +34,7 @@ var Path = this.Path = PathItem.extend({
 	getCurves: function() {
 		var length = this._segments.length;
 		// Reduce length by one if it's an open path:
-		if (!this.closed && length > 0)
+		if (!this._closed && length > 0)
 			length--;
 		var curves = this._curves = this._curves || new Array(length);
 		curves.length = length;
@@ -48,6 +48,14 @@ var Path = this.Path = PathItem.extend({
 			}
 		}
 		return curves;
+	},
+
+	getClosed: function() {
+		return this._closed;
+	},
+
+	setClosed: function(closed) {
+		this._closed = closed;
 	},
 
 	getFirstSegment: function() {
@@ -198,7 +206,7 @@ var Path = this.Path = PathItem.extend({
 			if (last1._point.equals(first1._point)) {
 				first1.setHandleIn(last1._handleIn);
 				last1.remove();
-				this.closed = true;
+				this.setClosed(true);
 			}
 			return true;
 		}
@@ -359,7 +367,7 @@ var Path = this.Path = PathItem.extend({
 				outX = handleOut._x + x;
 				outY = handleOut._y + y;
 			}
-			if (this.closed && length > 1) {
+			if (this._closed && length > 1) {
 				var segment = segments[0],
 					point = segment._point,
 					x = point._x,
@@ -495,7 +503,7 @@ var Path = this.Path = PathItem.extend({
 			if (size <= 2)
 				return;
 
-			if (this.closed) {
+			if (this._closed) {
 				// Overlap up to 4 points since averaging beziers affect the 4
 				// neighboring points
 				overlap = Math.min(size, 4);
@@ -506,7 +514,7 @@ var Path = this.Path = PathItem.extend({
 			var knots = [];
 			for (var i = 0; i < size; i++)
 				knots[i + overlap] = segments[i]._point;
-			if (this.closed) {
+			if (this._closed) {
 				// If we're averaging, add the 4 last points again at the
 				// beginning, and the 4 first ones at the end.
 				for (var i = 0; i < overlap; i++) {
@@ -536,7 +544,7 @@ var Path = this.Path = PathItem.extend({
 			// Get first control points Y-values
 			var y = getFirstControlPoints(rhs);
 
-			if (this.closed) {
+			if (this._closed) {
 				// Do the actual averaging simply by linearly fading between the
 				// overlapping values.
 				for (var i = 0, j = size; i < overlap; i++, j++) {
@@ -571,7 +579,7 @@ var Path = this.Path = PathItem.extend({
 								(knots[n]._y + y[n - 1]) / 2);
 				}
 			}
-			if (this.closed && handleIn) {
+			if (this._closed && handleIn) {
 				var segment = this._segments[0];
 				segment.setHandleIn(handleIn.subtract(segment._point));
 			}
@@ -781,7 +789,7 @@ var Path = this.Path = PathItem.extend({
 		},
 
 		closePath: function() {
-			this.closed = true;
+			this.setClosed(true);
 		}
 	};
 }, new function() { // A dedicated scope for the tricky bounds calculations
@@ -878,7 +886,7 @@ var Path = this.Path = PathItem.extend({
 		}
 		for (var i = 1, l = segments.length; i < l; i++)
 			processSegment(segments[i]);
-		if (that.closed)
+		if (that._closed)
 			processSegment(first);
 		return Rectangle.create(min[0], min[1],
 					max[0] - min[0], max[1] - min[1]);
@@ -954,7 +962,6 @@ var Path = this.Path = PathItem.extend({
 				miter = this.getMiterLimit() * width / 2,
 				segments = this._segments,
 				length = segments.length,
-				closed= this.closed,
 				// It seems to be compatible with Ai we need to pass pen padding
 				// untransformed to getBounds()
 				bounds = getBounds(this, matrix, getPenPadding(radius));
@@ -1034,10 +1041,10 @@ var Path = this.Path = PathItem.extend({
 				}
 			}
 
-			for (var i = 1, l = length - (closed ? 0 : 1); i < l; i++) {
+			for (var i = 1, l = length - (this._closed ? 0 : 1); i < l; i++) {
 				addJoin(segments[i], join);
 			}
-			if (closed) {
+			if (this._closed) {
 				addJoin(segments[0], join);
 			} else {
 				addCap(segments[0], cap, 0);

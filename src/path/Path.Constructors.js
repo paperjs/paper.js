@@ -41,7 +41,7 @@ Path.inject({ statics: new function() {
 			for (var i = 0; i < 4; i++) {
 				path.add(rect[corners[i]]());
 			}
-			path.closed = true;
+			path.setClosed(true);
 			return path;
 		},
 
@@ -74,7 +74,7 @@ Path.inject({ statics: new function() {
 			path.add(br.subtract(0, size.height), null, [0, uSize.height]);
 			path.add(br.subtract(size.width, 0), [uSize.width, 0], null);
 
-			path.closed = true;
+			path.setClosed(true);
 			return path;
 		},
 
@@ -91,7 +91,7 @@ Path.inject({ statics: new function() {
 					segment._handleOut.multiply(size)
 				));
 			}
-			path.closed = true;
+			path.setClosed(true);
 			return path;
 		},
 
@@ -123,7 +123,7 @@ Path.inject({ statics: new function() {
 				var angle = (360 / numSides) * (i + offset);
 				path.add(center.add(vector.rotate(angle)));
 			}
-			path.closed = true;
+			path.setClosed(true);
 			return path;
 		},
 		
@@ -138,7 +138,7 @@ Path.inject({ statics: new function() {
 					length: i % 2 ? radius2 : radius1
 				}));
 			}
-			path.closed = true;
+			path.setClosed(true);
 			return path;
 		}
 	};

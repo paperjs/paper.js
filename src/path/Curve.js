@@ -132,13 +132,13 @@ var Curve = this.Curve = Base.extend({
 		// TODO: No need to call getCurves() here?
 		var curves = this._path && this._path._curves;
 		return curves && (curves[this._index1 + 1]
-				|| this._path.closed && curves[0]) || null;
+				|| this._path._closed && curves[0]) || null;
 	},
 
 	getPrevious: function() {
 		var curves = this._path && this._path._curves;
 		return curves && (curves[this._index1 - 1]
-				|| this._path.closed && curves[curves.length - 1]) || null;
+				|| this._path._closed && curves[curves.length - 1]) || null;
 	},
 	
 	setSelected: function(selected) {
