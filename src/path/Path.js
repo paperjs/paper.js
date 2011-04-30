@@ -622,9 +622,7 @@ var Path = this.Path = PathItem.extend({
 			// First modify the current segment:
 			var current = getCurrentSegment(this);
 			// Convert to relative values:
-			current.setHandleOut(new Point(
-					handle1.x - current._point._x,
-					handle1.y - current._point._y));
+			current.setHandleOut(handle1.subtract(current._point));
 			// And add the new segment, with handleIn set to c2
 			this._add(new Segment(to, handle2.subtract(to), new Point()));
 		},
