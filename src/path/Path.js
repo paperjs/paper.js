@@ -36,14 +36,16 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	setSegments: function(segments) {
-		var length = segments.length;
 		if (!this._segments) {
 			this._segments = [];
 		} else {
 			this.setSelected(false);
 			this._segments.length = 0;
+			// Make sure new curves are calculated next time we call getCurves()
+			if (this._curves)
+				this._curves = null;
 		}
-		for(var i = 0; i < length; i++)
+		for(var i = 0, l = segments.length; i < l; i++)
 			this._add(Segment.read(segments, i, 1));
 	},
 
@@ -51,22 +53,16 @@ var Path = this.Path = PathItem.extend({
 	 * The curves contained within the path.
 	 */
 	getCurves: function() {
-		var length = this._segments.length;
-		// Reduce length by one if it's an open path:
-		if (!this._closed && length > 0)
-			length--;
-		var curves = this._curves = this._curves || new Array(length);
-		curves.length = length;
-		for (var i = 0; i < length; i++) {
-			var curve = curves[i];
-			if (!curve) {
-				curve = curves[i] = Curve.create(this, i);
-			} else {
-				// Make sure index is kept up to date.
-				curve._setIndex(i);
-			}
+		if (!this._curves) {
+			var length = this._segments.length;
+			// Reduce length by one if it's an open path:
+			if (!this._closed && length > 0)
+				length--;
+			this._curves = new Array(length);
+			for (var i = 0; i < length; i++)
+				this._curves[i] = Curve.create(this, i);
 		}
-		return curves;
+		return this._curves;
 	},
 
 	getClosed: function() {
@@ -74,8 +70,22 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	setClosed: function(closed) {
-		this._closed = closed;
-		
+		// On-the-fly conversion to boolean:
+		if (this._closed != (closed = !!closed)) {
+			this._closed = closed;
+			// Update _curves length
+			if (this._curves) {
+				var length = this._segments.length,
+					i;
+				// Reduce length by one if it's an open path:
+				if (!closed && length > 0)
+					length--;
+				this._curves.length = length;
+				// If we were closing this path, we need to add a new curve now
+				if (closed)
+					this._curves[i = length - 1] = Curve.create(this, i);
+			}
+		}
 	},
 
 	getFirstSegment: function() {
@@ -126,11 +136,13 @@ var Path = this.Path = PathItem.extend({
 		return segment;
 	},
 
+	// TODO: Support multiple segments?
 	add: function(segment) {
 		segment = Segment.read(arguments);
 		return segment ? this._add(segment) : null;
 	},
 
+	// TODO: Support multiple segments?
 	insert: function(index, segment) {
 		segment = Segment.read(arguments, 1);
 		return segment ? this._add(segment, index) : null;
