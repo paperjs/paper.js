@@ -29,6 +29,25 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	/**
+	 * The segments contained within the path.
+	 */
+	getSegments: function() {
+		return this._segments;
+	},
+
+	setSegments: function(segments) {
+		var length = segments.length;
+		if (!this._segments) {
+			this._segments = [];
+		} else {
+			this.setSelected(false);
+			this._segments.length = 0;
+		}
+		for(var i = 0; i < length; i++)
+			this._add(Segment.read(segments, i, 1));
+	},
+
+	/**
 	 * The curves contained within the path.
 	 */
 	getCurves: function() {
@@ -406,45 +425,6 @@ var Path = this.Path = PathItem.extend({
 					}
 					ctx.restore();
 				}
-			}
-		}
-	};
-}, new function() { // Scope for segments list change detection
-
-	var segmentsFields = Base.each(
-		['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'],
-		function(name) {
-			var func = Array.prototype[name];
-			this[name] = function() {
-				return func.apply(this, arguments);
-			};
-		}, {});
-
-	return {
-		beans: true,
-
-		/**
-		 * The segments contained within the path.
-		 */
-		getSegments: function() {
-			return this._segments;
-		},
-
-		setSegments: function(segments) {
-			var length = segments.length;
-			if (!this._segments) {
-				// Enhance the _segments array with functions that watch for
-				// change.
-				this._segments = Base.each(segmentsFields,
-					function(value, name) {
-						this[name] = value;
-					}, []);
-			} else {
-				this.setSelected(false);
-				this._segments.length = 0;
-			}
-			for(var i = 0; i < length; i++) {
-				this._add(Segment.read(segments, i, 1));
 			}
 		}
 	};
