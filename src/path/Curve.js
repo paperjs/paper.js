@@ -27,14 +27,8 @@ var Curve = this.Curve = Base.extend({
 			this._segment1 = new Segment(arg0.segment1);
 			this._segment2 = new Segment(arg0.segment2);
 		} else if (arguments.length == 2) {
-			if (arg0 instanceof Path) {
-				this._path = arg0;
-				this._index1 = arg1;
-				this._updateSegments();
-			} else {
-				this._segment1 = new Segment(arg0);
-				this._segment2 = new Segment(arg1);
-			}
+			this._segment1 = new Segment(arg0);
+			this._segment2 = new Segment(arg1);
 		} else if (arguments.length == 4) {
 			this._segment1 = new Segment(arg0, null, arg1);
 			this._segment2 = new Segment(arg3, arg2, null);
@@ -221,6 +215,16 @@ var Curve = this.Curve = Base.extend({
 					? ', handle2: ' + this._segment2._handleIn : '')
 				+ ', point2: ' + this._segment2._point
 				+ ' }';
+	},
+
+	statics: {
+		create: function(path, index) {
+			var curve = new Curve(Curve.dont);
+			curve._path = path;
+			curve._index1 = index;
+			curve._updateSegments();
+			return curve;
+		}
 	}
 }, new function() {
 

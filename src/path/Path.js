@@ -60,7 +60,7 @@ var Path = this.Path = PathItem.extend({
 		for (var i = 0; i < length; i++) {
 			var curve = curves[i];
 			if (!curve) {
-				curve = curves[i] = new Curve(this, i);
+				curve = curves[i] = Curve.create(this, i);
 			} else {
 				// Make sure index is kept up to date.
 				curve._setIndex(i);
@@ -75,6 +75,7 @@ var Path = this.Path = PathItem.extend({
 
 	setClosed: function(closed) {
 		this._closed = closed;
+		
 	},
 
 	getFirstSegment: function() {
