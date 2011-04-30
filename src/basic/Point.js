@@ -288,10 +288,10 @@ var Point = this.Point = Base.extend({
 	 * @return the rotated point
 	 */
 	rotate: function(angle, center) {
-		var point = center ? this.subtract(center) : this;
 		angle = angle * Math.PI / 180;
-		var s = Math.sin(angle);
-		var c = Math.cos(angle);
+		var point = center ? this.subtract(center) : this,
+			s = Math.sin(angle),
+			c = Math.cos(angle);
 		point = Point.create(
 			point.x * c - point.y * s,
 			point.y * c + point.x * s
