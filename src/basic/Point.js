@@ -556,7 +556,7 @@ var Point = this.Point = Base.extend({
 			return Point.create(Math.random(), Math.random());
 		}
 	}
-}, new function() { // Scope for injecting intersect, unite and include.
+}, new function() { // Scope for injecting round, ceil, floor, abs:
 	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
 		var op = Math[name];
 		this[name] = function() {
