@@ -166,14 +166,14 @@ var Point = this.Point = Base.extend({
 	},
 
 	normalize: function(length) {
-		if (length === null)
+		if (length === undefined)
 			length = 1;
-		var len = this.getLength();
-		var scale = len != 0 ? length / len : 0;
-		var res = Point.create(this.x * scale, this.y * scale);
+		var current = this.getLength(),
+			scale = current != 0 ? length / current : 0,
+			point = Point.create(this.x * scale, this.y * scale);
 		// Preserve angle.
-		res._angle = this._angle;
-		return res;
+		point._angle = this._angle;
+		return point;
 	},
 
 	getQuadrant: function() {
