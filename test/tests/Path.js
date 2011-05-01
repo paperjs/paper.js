@@ -69,7 +69,7 @@ test('path.remove()', function() {
 	path.removeSegment(0);
 	equals(path.segments.length, 2);
 
-	path.removeSegments(0, 1);
+	path.removeSegments(0, 2);
 	equals(path.segments.length, 0);
 
 	path.remove();

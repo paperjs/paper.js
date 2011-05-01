@@ -49,6 +49,14 @@ var Path = this.Path = PathItem.extend({
 			this._add(Segment.read(segments, i, 1));
 	},
 
+	getFirstSegment: function() {
+		return this._segments[0];
+	},
+
+	getLastSegment: function() {
+		return this._segments[this._segments.length - 1];
+	},
+
 	/**
 	 * The curves contained within the path.
 	 */
@@ -63,6 +71,15 @@ var Path = this.Path = PathItem.extend({
 				this._curves[i] = Curve.create(this, i);
 		}
 		return this._curves;
+	},
+
+	getFirstCurve: function() {
+		return this.getCurves()[0];
+	},
+
+	getLastCurve: function() {
+		var curves = this.getCurves();
+		return curves[curves.length - 1];
 	},
 
 	getClosed: function() {
@@ -88,23 +105,6 @@ var Path = this.Path = PathItem.extend({
 		}
 	},
 
-	getFirstSegment: function() {
-		return this._segments[0];
-	},
-
-	getLastSegment: function() {
-		return this._segments[this._segments.length - 1];
-	},
-
-	getFirstCurve: function() {
-		return this.getCurves()[0];
-	},
-
-	getLastCurve: function() {
-		var curves = this.getCurves();
-		return curves[curves.length - 1];
-	},
-
 	// TODO: Consider adding getSubPath(a, b), returning a part of the current
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
@@ -121,28 +121,58 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * Private method that adds a segment to the segment list. It assumes that
 	 * the passed object is a segment already and does not perform any checks.
+	 * If a curves list was requested, it will kept in sync with the segments
+	 * list automatically.
 	 */
+	// TODO: Add support for adding multiple segments at once
 	_add: function(segment, index) {
 		// If this segment belongs to another path already, clone it before
 		// adding.
 		if (segment._path)
 			segment = new Segment(segment);
-		segment._path = this;
 		if (index === undefined) {
-			this._segments.push(segment);
+			// Insert at the end
+			index = this._segments.push(segment) - 1;
 		} else {
+			// Insert somewhere else
 			this._segments.splice(index, 0, segment);
+			// Adjust the indices of the segments above.
+			for (var i = index + 1, l = this._segments.length; i < l; i++)
+				this._segments[i]._index = i;
+		}
+		segment._path = this;
+		segment._index = index;
+		// Keep the curves list in sync all the time in case it as requested
+		// already. We need to step one index down from the inserted segment to
+		// get its curve:
+		if (this._curves && --index >= 0) {
+			// Insert a new curve as well and update the curves above
+			this._curves.splice(index, 0, Curve.create(this, index));
+			// Adjust indices now for the curves above this one.
+			for (var i = index + 1, l = this._curves.length; i < l; i++) {
+				var curve = this._curves[i];
+				curve._index1 = i;
+				// This is wrong for the last closing curve but it will be
+				// corrected further down.
+				curve._index2 = i + 1;
+			}
+			// The curve that comes right after will has changed beyond a simple
+			// shift in indices, so it needs an update:
+			this._curves[index + 1]._updateSegments();
+			// If this is a closed path, also update the closing curve
+			if (this._closed)
+				this._curves[l - 1]._updateSegments();
 		}
 		return segment;
 	},
 
-	// TODO: Support multiple segments?
+	// TODO: Add support for adding multiple segments at once
 	add: function(segment) {
 		segment = Segment.read(arguments);
 		return segment ? this._add(segment) : null;
 	},
 
-	// TODO: Support multiple segments?
+	// TODO: Add support for adding multiple segments at once
 	insert: function(index, segment) {
 		segment = Segment.read(arguments, 1);
 		return segment ? this._add(segment, index) : null;
@@ -150,16 +180,28 @@ var Path = this.Path = PathItem.extend({
 
 	// TODO: Port back to Sg
 	removeSegment: function(index) {
-		var segment = this._segments[index]
-		return segment && segment.remove() ? segment : null;
+		var segments = this.removeSegments(index, index + 1);
+		return segments ? segments[0] : null;
 	},
 	
 	// TODO: Port back to Sg
 	removeSegments: function(from, to) {
-		var i = Base.pick(to, this._segments.length - 1),
-			from = from || 0;
-		while (i >= from)
-			this.removeSegment(i--);
+		from = from || 0;
+	 	to = Base.pick(to, this._segments.length - 1);
+		var amount = to - from,
+			segments = this._segments.splice(from, amount);
+		if (segments.length == amount)  {
+			// TODO: Keep _curves in sync
+			for (var i = 0; i < amount; i++) {
+				var segment = segments[0];
+				if (segment._selectionState) {
+					this._selectedSegmentCount--;
+					segment._selectionState = 0;
+				}
+			}
+			return segments;
+		}
+		return null;
 	},
 	
 	isSelected: function() {

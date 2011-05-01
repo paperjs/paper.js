@@ -117,11 +117,6 @@ var Curve = this.Curve = Base.extend({
 		return this._index1;
 	},
 
-	_setIndex: function(index) {
-		this._index1 = index;
-		this._updateSegments();
-	},
-
 	getNext: function() {
 		// TODO: No need to call getCurves() here?
 		var curves = this._path && this._path._curves;

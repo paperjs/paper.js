@@ -21,8 +21,8 @@ var Segment = this.Segment = Base.extend({
 		if (arguments.length == 0) {
 			this._point = SegmentPoint.create(this, 0, 0);
 		} else if (arguments.length == 1) {
-			// TODO: If beans are not activated, this won't copy from
-			// an existing segment. OK?
+			// TODO: If beans are not activated, this won't copy from n existing
+			// segment. OK?
 			if (arg0.point) {
 				this._point = SegmentPoint.create(this, arg0.point);
 				this._handleIn = SegmentPoint.create(this, arg0.handleIn);
@@ -96,19 +96,17 @@ var Segment = this.Segment = Base.extend({
 			? null : this._handleOut;
 	},
 
-	getIndex: function() {
-		// TODO: Cache and update indices instead of searching?
-		// TODO: Return null instead of -1?
-		return this._path ? this._path._segments.indexOf(this) : -1;
-	},
-
 	getPath: function() {
 		return this._path;
 	},
 
+	getIndex: function() {
+		return this._index;
+	},
+
 	getCurve: function() {
 		if (this._path != null) {
-			var index = this.getIndex();
+			var index = this._index;
 			// The last segment of an open path belongs to the last curve
 			if (!this._path._closed && index == this._path._segments.length - 1)
 				index--;
@@ -119,13 +117,13 @@ var Segment = this.Segment = Base.extend({
 
 	getNext: function() {
 		var segments = this._path && this._path._segments;
-		return segments && (segments[this.getIndex() + 1]
+		return segments && (segments[this._index + 1]
 				|| this._path._closed && segments[0]) || null;
 	},
 
 	getPrevious: function() {
 		var segments = this._path && this._path._segments;
-		return segments && (segments[this.getIndex() - 1]
+		return segments && (segments[this._index - 1]
 				|| this._path._closed && segments[segments.length - 1]) || null;
 	},
 
@@ -206,15 +204,7 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	remove: function() {
-		if (this._path) {
-			this._path._segments.splice(this.getIndex(), 1);
-			if (this._selectionState) {
-				this._path._selectedSegmentCount--;
-				this._selectionState = 0;
-			}
-			return true;
-		}
-		return false;
+		return this._path ? !!this._path.removeSegment(this._index) : false;
 	},
 
 	toString: function() {
