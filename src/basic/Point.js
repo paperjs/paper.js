@@ -153,14 +153,20 @@ var Point = this.Point = Base.extend({
 		// so LinkedPoint does not report changes twice.
 		if (this.isZero()) {
 			var angle = this._angle || 0;
-			this.set(Math.cos(angle) * length, Math.sin(angle) * length);
+			this.set(
+				Math.cos(angle) * length,
+				Math.sin(angle) * length
+			);
 		} else {
 			var scale = length / this.getLength();
 			// Force calculation of angle now, so it will be preserved even when
 			// x and y are 0
 			if (scale == 0)
 				this.getAngle();
-			this.set(this.x * scale, this.y * scale);
+			this.set(
+				this.x * scale,
+				this.y * scale
+			);
 		}
 		return this;
 	},
@@ -203,8 +209,8 @@ var Point = this.Point = Base.extend({
 		angle = this._angle = angle * Math.PI / 180;
 		if (!this.isZero()) {
 			var length = this.getLength();
-			// Use #set() instead of direct assignment, so LinkedPoint
-			// can optimise
+			// Use #set() instead of direct assignment of x/y, so LinkedPoint
+			// does not report changes twice.
 			this.set(
 				Math.cos(angle) * length,
 				Math.sin(angle) * length
