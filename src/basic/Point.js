@@ -493,7 +493,8 @@ var Point = this.Point = Base.extend({
 		min: function(point1, point2) {
 			return Point.create(
 				Math.min(point1.x, point2.x),
-				Math.min(point1.y, point2.y));
+				Math.min(point1.y, point2.y)
+			);
 		},
 
 		/**
@@ -515,7 +516,8 @@ var Point = this.Point = Base.extend({
 		max: function(point1, point2) {
 			return Point.create(
 				Math.max(point1.x, point2.x),
-				Math.max(point1.y, point2.y));
+				Math.max(point1.y, point2.y)
+			);
 		},
 
 		/**
