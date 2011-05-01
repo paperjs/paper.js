@@ -71,7 +71,7 @@ var Segment = this.Segment = Base.extend({
 		// See #setPoint:
 		this._handleIn.set(point.x, point.y);
 		// Update corner accordingly
-		// this.corner = !this._handleIn.isParallel(this._handleOut);
+		// this.corner = !this._handleIn.isColinear(this._handleOut);
 	},
 
 	getHandleInIfSet: function() {
@@ -88,7 +88,7 @@ var Segment = this.Segment = Base.extend({
 		// See #setPoint:
 		this._handleOut.set(point.x, point.y);
 		// Update corner accordingly
-		// this.corner = !this._handleIn.isParallel(this._handleOut);
+		// this.corner = !this._handleIn.isColinear(this._handleOut);
 	},
 
 	getHandleOutIfSet: function() {
