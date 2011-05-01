@@ -177,19 +177,7 @@ var Point = this.Point = Base.extend({
 	},
 
 	getQuadrant: function() {
-		if (this.x >= 0) {
-			if (this.y >= 0) {
-				return 1;
-			} else {
-				return 4;
-			}
-		} else {
-			if (this.y >= 0) {
-				return 2;
-			} else {
-				return 3;
-			}
-		}
+		return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
 	},
 
 	/**
