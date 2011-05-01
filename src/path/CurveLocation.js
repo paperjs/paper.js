@@ -134,10 +134,10 @@ CurveLocation = Base.extend({
 		if (point)
 			parts.push('point: ' + point);
 		var index = this.getIndex();
-		if (index >= 0)
+		if (index != null)
 			parts.push('index: ' + index);
 		var parameter = this.getParameter();
-		if (parameter != -1)
+		if (parameter != null)
 			parts.push('parameter: ' + parameter);
 		return '{ ' + parts.join(', ') + ' }'
 	}
