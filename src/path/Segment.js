@@ -51,6 +51,28 @@ var Segment = this.Segment = Base.extend({
 			this._handleOut = SegmentPoint.create(this, 0, 0);
 	},
 
+	_changed: function(point) {
+		if (this._path) {
+			// Delegate changes to affected curves if they exist
+			if (this._path._curves) {
+				var curve = this.getCurve(), other;
+				if (curve) {
+					curve._changed();
+					// Get the other affected curve, which is the previous one
+					// for _point or _handleIn changing when this segment is 
+					// _segment1 of the curve, for all other cases it's the next
+					// (e.g. _handleOut or this segment == _segment2)
+					if (other = (curve[point == this._point
+						|| point == this._handleIn && curve._segment1 == this
+							? 'getPrevious' : 'getNext']())) {
+						other._changed();
+					}
+				}
+			}
+			this._path._changed();
+		}
+	},
+
 	getPoint: function() {
 		return this._point;
 	},
@@ -105,7 +127,7 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	getCurve: function() {
-		if (this._path != null) {
+		if (this._path) {
 			var index = this._index;
 			// The last segment of an open path belongs to the last curve
 			if (!this._path._closed && index == this._path._segments.length - 1)

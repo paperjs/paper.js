@@ -35,6 +35,11 @@ var Curve = this.Curve = Base.extend({
 		}
 	},
 
+	_changed: function() {
+		// Clear cached values.
+		delete this._length;
+	},
+
 	_updateSegments: function() {
 		if (this._path) {
 			this._index2 = this._index1 + 1;
@@ -153,11 +158,19 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	getLength: function(/* from, to */) {
+		var from = arguments[0],
+			to = arguments[1];
+			fullLength = arguments.length == 0 || from == 0 && to == 1;
+		if (fullLength && this._length != null)
+			return this._length;
 		// Hide parameters from Bootstrap so it injects bean too
 		var args = this.getCurveValues();
-		if (arguments.length > 0)
-			args.push(arguments[0], arguments[1]);
-		return Curve.getLength.apply(Curve, args);
+		if (!fullLength)
+			args.push(from, to);
+		var length = Curve.getLength.apply(Curve, args);
+		if (fullLength)
+			this._length = length;
+		return length;
 	},
 
 	/**

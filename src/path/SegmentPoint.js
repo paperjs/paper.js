@@ -8,7 +8,7 @@ var SegmentPoint = Point.extend({
 	set: function(x, y) {
 		this._x = x;
 		this._y = y;
-//		this._segment._markDirty(DirtyFlags.BOUNDS);
+		this._segment._changed(this);
 		return this;
 	},
 
@@ -18,7 +18,7 @@ var SegmentPoint = Point.extend({
 
 	setX: function(x) {
 		this._x = x;
-//		this._segment._markDirty(DirtyFlags.BOUNDS);
+		this._segment._changed(this);
 	},
 
 	getY: function() {
@@ -27,7 +27,7 @@ var SegmentPoint = Point.extend({
 
 	setY: function(y) {
 		this._y = y;
-//		this._segment._markDirty(DirtyFlags.BOUNDS);
+		this._segment._changed(this);
 	},
 	
 	setSelected: function(selected) {
@@ -39,15 +39,16 @@ var SegmentPoint = Point.extend({
 	},
 	
 	statics: {
-		create: function(segment, arg1, arg2) {
-			var point;
-			if (arguments.length == 2) {
-				point = new SegmentPoint(arg1);
-			} else {
-				point = new SegmentPoint(SegmentPoint.dont);
-				point._x = arg1;
-				point._y = arg2;
+		create: function(segment, x, y) {
+			if (y === undefined) {
+				// Use the normal point constructor to read in point values
+				var tmp = new Point(x);
+				x = tmp.x;
+				y = tmp.y;
 			}
+			var point = new SegmentPoint(SegmentPoint.dont);
+			point._x = x;
+			point._y = y;
 			point._segment = segment;
 			return point;
 		}
