@@ -33,7 +33,7 @@ CurveLocation = Base.extend({
 				this._segment = curve._segment1;
 			} else if (parameter == 1) {
 				this._segment = curve._segment2;
-			} else if (parameter == -1) {
+			} else if (parameter == null) {
 				return null;
 			} else {
 				// Determine the closest segment by comparing curve lengths
@@ -93,7 +93,7 @@ CurveLocation = Base.extend({
 	 */
 	getParameter: function() {
 		if (this._parameter == null && this._point)
-			this._parameter = this._curve.getParameter(point);
+			this._parameter = this._curve.getParameter(this._point);
 		return this._parameter;
 	},
 
