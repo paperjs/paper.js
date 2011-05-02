@@ -149,29 +149,20 @@ var Point = this.Point = Base.extend({
 	},
 
 	setLength: function(length) {
+		// Whenever setting x/y, use #set() instead of direct assignment,
+		// so LinkedPoint does not report changes twice.
 		if (this.isZero()) {
-			if (this._angle != null) {
-				var a = this._angle;
-				// Use #set() instead of direct assignment, so LinkedPoint
-				// can optimise
-				this.set(
-					Math.cos(a) * length,
-					Math.sin(a) * length
-				);
-			} else {
-				// Assume angle = 0
-				this.x = length;
-				// y is already 0
-			}
+			var angle = this._angle || 0;
+			this.set(
+				Math.cos(angle) * length,
+				Math.sin(angle) * length
+			);
 		} else {
 			var scale = length / this.getLength();
-			if (scale == 0) {
-				// Calculate angle now, so it will be preserved even when
-				// x and y are 0
+			// Force calculation of angle now, so it will be preserved even when
+			// x and y are 0
+			if (scale == 0)
 				this.getAngle();
-			}
-			// Use #set() instead of direct assignment, so LinkedPoint
-			// can optimise
 			this.set(
 				this.x * scale,
 				this.y * scale
@@ -181,30 +172,18 @@ var Point = this.Point = Base.extend({
 	},
 
 	normalize: function(length) {
-		if (length === null)
+		if (length === undefined)
 			length = 1;
-		var len = this.getLength();
-		var scale = len != 0 ? length / len : 0;
-		var res = Point.create(this.x * scale, this.y * scale);
+		var current = this.getLength(),
+			scale = current != 0 ? length / current : 0,
+			point = Point.create(this.x * scale, this.y * scale);
 		// Preserve angle.
-		res._angle = this._angle;
-		return res;
+		point._angle = this._angle;
+		return point;
 	},
 
 	getQuadrant: function() {
-		if (this.x >= 0) {
-			if (this.y >= 0) {
-				return 1;
-			} else {
-				return 4;
-			}
-		} else {
-			if (this.y >= 0) {
-				return 2;
-			} else {
-				return 3;
-			}
-		}
+		return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
 	},
 
 	/**
@@ -230,8 +209,8 @@ var Point = this.Point = Base.extend({
 		angle = this._angle = angle * Math.PI / 180;
 		if (!this.isZero()) {
 			var length = this.getLength();
-			// Use #set() instead of direct assignment, so LinkedPoint
-			// can optimise
+			// Use #set() instead of direct assignment of x/y, so LinkedPoint
+			// does not report changes twice.
 			this.set(
 				Math.cos(angle) * length,
 				Math.sin(angle) * length
@@ -514,7 +493,8 @@ var Point = this.Point = Base.extend({
 		min: function(point1, point2) {
 			return Point.create(
 				Math.min(point1.x, point2.x),
-				Math.min(point1.y, point2.y));
+				Math.min(point1.y, point2.y)
+			);
 		},
 
 		/**
@@ -536,7 +516,8 @@ var Point = this.Point = Base.extend({
 		max: function(point1, point2) {
 			return Point.create(
 				Math.max(point1.x, point2.x),
-				Math.max(point1.y, point2.y));
+				Math.max(point1.y, point2.y)
+			);
 		},
 
 		/**

@@ -51,6 +51,28 @@ var Segment = this.Segment = Base.extend({
 			this._handleOut = SegmentPoint.create(this, 0, 0);
 	},
 
+	_changed: function(point) {
+		if (this._path) {
+			// Delegate changes to affected curves if they exist
+			if (this._path._curves) {
+				var curve = this.getCurve(), other;
+				if (curve) {
+					curve._changed();
+					// Get the other affected curve, which is the previous one
+					// for _point or _handleIn changing when this segment is 
+					// _segment1 of the curve, for all other cases it's the next
+					// (e.g. _handleOut or this segment == _segment2)
+					if (other = (curve[point == this._point
+						|| point == this._handleIn && curve._segment1 == this
+							? 'getPrevious' : 'getNext']())) {
+						other._changed();
+					}
+				}
+			}
+			this._path._changed();
+		}
+	},
+
 	getPoint: function() {
 		return this._point;
 	},
@@ -71,7 +93,7 @@ var Segment = this.Segment = Base.extend({
 		// See #setPoint:
 		this._handleIn.set(point.x, point.y);
 		// Update corner accordingly
-		// this.corner = !this._handleIn.isParallel(this._handleOut);
+		// this.corner = !this._handleIn.isColinear(this._handleOut);
 	},
 
 	getHandleInIfSet: function() {
@@ -88,7 +110,7 @@ var Segment = this.Segment = Base.extend({
 		// See #setPoint:
 		this._handleOut.set(point.x, point.y);
 		// Update corner accordingly
-		// this.corner = !this._handleIn.isParallel(this._handleOut);
+		// this.corner = !this._handleIn.isColinear(this._handleOut);
 	},
 
 	getHandleOutIfSet: function() {
@@ -105,7 +127,7 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	getCurve: function() {
-		if (this._path != null) {
+		if (this._path) {
 			var index = this._index;
 			// The last segment of an open path belongs to the last curve
 			if (!this._path._closed && index == this._path._segments.length - 1)
@@ -208,12 +230,12 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	toString: function() {
-		return '{ point: ' + this._point
-				+ (!this._handleIn.isZero()
-					? ', handleIn: ' + this._handleIn : '')
-				+ (this._handleOut.isZero()
-					? ', handleOut: ' + this._handleOut : '')
-				+ ' }';
+		var parts = [ 'point: ' + this._point ];
+		if (!this._handleIn.isZero())
+			parts.push('handleIn: ' + this._handleIn);
+		if (!this._handleOut.isZero())
+			parts.push('handleOut: ' + this._handleOut);
+		return '{ ' + parts.join(', ') + ' }';
 	},
 
 	_transformCoordinates: function(matrix, coords, change) {
@@ -228,47 +250,47 @@ var Segment = this.Segment = Base.extend({
 			handleIn =  matrix && this.getHandleInIfSet() || this._handleIn,
 			handleOut = matrix && this.getHandleOutIfSet() || this._handleOut,
 			x = point._x,
-			y = point._y;
+			y = point._y,
+			i = 2;
 		coords[0] = x;
 		coords[1] = y;
-		var index = 2;
 		// We need to convert handles to absolute coordinates in order
 		// to transform them.
 		if (handleIn) {
-			coords[index++] = handleIn._x + x;
-			coords[index++] = handleIn._y + y;
+			coords[i++] = handleIn._x + x;
+			coords[i++] = handleIn._y + y;
 		}
 		if (handleOut) {
-			coords[index++] = handleOut._x + x;
-			coords[index++] = handleOut._y + y;
+			coords[i++] = handleOut._x + x;
+			coords[i++] = handleOut._y + y;
 		}
 		if (matrix) {
-			matrix.transform(coords, 0, coords, 0, index / 2);
+			matrix.transform(coords, 0, coords, 0, i / 2);
 			x = coords[0];
 			y = coords[1];
 			if (change) {
 				// If change is true, we need to set the new values back
 				point._x = x;
 				point._y = y;
-				index  = 2;
+				i  = 2;
 				if (handleIn) {
-					handleIn._x = coords[index++] - x;
-					handleIn._y = coords[index++] - y;
+					handleIn._x = coords[i++] - x;
+					handleIn._y = coords[i++] - y;
 				}
 				if (handleOut) {
-					handleOut._x = coords[index++] - x;
-					handleOut._y = coords[index++] - y;
+					handleOut._x = coords[i++] - x;
+					handleOut._y = coords[i++] - y;
 				}
 			} else {
 				// We want to receive the results in coords, so make sure
 				// handleIn and out are defined too, even if they're 0
 				if (!handleIn) {
-					coords[index++] = x;
-					coords[index++] = y;
+					coords[i++] = x;
+					coords[i++] = y;
 				}
 				if (!handleOut) {
-					coords[index++] = x;
-					coords[index++] = y;
+					coords[i++] = x;
+					coords[i++] = y;
 				}
 			}
 		}

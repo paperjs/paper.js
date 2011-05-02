@@ -173,15 +173,15 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		toString: function() {
-			var string = '';
+			var parts = [];
 			for (var i = 0, l = this._components.length; i < l; i++) {
 				var component = this._components[i];
 				var value = this['_' + component];
 				if (component === 'alpha' && value == null)
 					value = 1;
-				string += (i > 0 ? ', ' : '') + component + ': ' + value;
+				parts.push(component + ': ' + value);
 			}
-			return '{ ' + string + ' }';
+			return '{ ' + parts.join(', ') + ' }';
 		},
 
 		toCssString: function() {

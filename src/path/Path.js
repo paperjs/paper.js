@@ -28,6 +28,13 @@ var Path = this.Path = PathItem.extend({
 				|| typeof segments[0] !== 'object' ? arguments : segments);
 	},
 
+	_changed: function() {
+		// Clear cached values.
+		delete this._length;
+		delete this._bounds;
+		delete this._strokeBounds;
+	},
+
 	/**
 	 * The segments contained within the path.
 	 */
@@ -102,6 +109,7 @@ var Path = this.Path = PathItem.extend({
 				if (closed)
 					this._curves[i = length - 1] = Curve.create(this, i);
 			}
+			this._changed();
 		}
 	},
 
@@ -116,6 +124,7 @@ var Path = this.Path = PathItem.extend({
 				this._segments[i]._transformCoordinates(matrix, coords, true);
 			}
 		}
+		this._changed();
 	},
 
 	/**
@@ -163,6 +172,7 @@ var Path = this.Path = PathItem.extend({
 			if (this._closed)
 				this._curves[l - 1]._updateSegments();
 		}
+		this._changed();
 		return segment;
 	},
 
@@ -199,6 +209,7 @@ var Path = this.Path = PathItem.extend({
 					segment._selectionState = 0;
 				}
 			}
+			this._changed();
 			return segments;
 		}
 		return null;
@@ -245,6 +256,7 @@ var Path = this.Path = PathItem.extend({
 			segment._handleIn = segment._handleOut;
 			segment._handleOut = handleIn;
 		}
+		this._changed();
 	},
 
 	join: function(path) {
@@ -282,17 +294,20 @@ var Path = this.Path = PathItem.extend({
 				last1.remove();
 				this.setClosed(true);
 			}
+			this._changed();
 			return true;
 		}
 		return false;
 	},
 
 	getLength: function() {
-		var curves = this.getCurves();
-		var length = 0;
-		for (var i = 0, l = curves.length; i < l; i++)
-			length += curves[i].getLength();
-		return length;
+		if (this._length == null) {
+			var curves = this.getCurves();
+			this._length = 0;
+			for (var i = 0, l = curves.length; i < l; i++)
+				this._length += curves[i].getLength();
+		}
+		return this._length;
 	},
 
 	_getOffset: function(location) {
@@ -977,9 +992,12 @@ var Path = this.Path = PathItem.extend({
 		getBounds: function(/* matrix */) {
 			// Pass the matrix hidden from Bootstrap, so it still inject 
 			// getBounds as bean too.
-			var bounds = getBounds(this, arguments[0]);
-			return LinkedRectangle.create(this, 'setBounds',
-					bounds.x, bounds.y, bounds.width, bounds.height);
+			if (!this._bounds) {
+				var bounds = getBounds(this, arguments[0]);
+				this._bounds = LinkedRectangle.create(this, 'setBounds',
+						bounds.x, bounds.y, bounds.width, bounds.height);
+			}
+			return this._bounds;
 		},
 
 		/**
