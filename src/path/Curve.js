@@ -278,7 +278,7 @@ var Curve = this.Curve = Base.extend({
 			case 2: // normal
 				// Simply use the derivation of the bezier function for both
 				// the x and y coordinates:
-				x = (3 * ax * t + 2 * bx) * t + cx,
+				x = (3 * ax * t + 2 * bx) * t + cx;
 				y = (3 * ay * t + 2 * by) * t + cy;
 				break;
 			}
@@ -304,7 +304,7 @@ var Curve = this.Curve = Base.extend({
 			var dx = (ax * t + bx) * t + cx,
 				dy = (ay * t + by) * t + cy;
 			return Math.sqrt(dx * dx + dy * dy);
-		}
+		};
 	}
 
 	// Amount of integral evaluations for the interval 0 <= a < b <= 1

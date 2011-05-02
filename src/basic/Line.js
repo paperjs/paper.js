@@ -39,7 +39,7 @@ var Line = this.Line = Base.extend({
 		// Epsilon tolerance
 		if (Math.abs(cross) <= 10e-6)
 			return null;
-		var v = line.point.subtract(this.point)
+		var v = line.point.subtract(this.point),
 			t1 = v.cross(line.vector) / cross,
 			t2 = v.cross(this.vector) / cross;
 		// Check the ranges of t parameters if the line is not allowed to

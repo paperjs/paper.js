@@ -66,7 +66,7 @@ var Layer = this.Layer = Group.extend({
 			} else {
 				return this.base(item);
 			}
-		}
+		};
 	}
 
 	return {

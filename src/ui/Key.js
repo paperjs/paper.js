@@ -59,7 +59,7 @@ var Key = new function() {
 							event.returnValue = false;
 						}
 					}
-				}
+				};
 				var res = paper.tool[toolHandler](keyEvent);
 				// TODO: Port to Scriptographer:
 				// When the handler function returns false, prevent the

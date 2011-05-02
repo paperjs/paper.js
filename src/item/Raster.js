@@ -67,7 +67,7 @@ var Raster = this.Raster = Item.extend({
 	 * Pixels per inch of the raster at it's current size.
 	 */
 	getPpi: function() {
-		var matrix = this.matrix;
+		var matrix = this.matrix,
 			orig = new Point(0, 0).transform(matrix),
 			u = new Point(1, 0).transform(matrix).subtract(orig),
 			v = new Point(0, 1).transform(matrix).subtract(orig);

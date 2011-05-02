@@ -310,7 +310,7 @@ var LinkedRectangle = Rectangle.extend({
 		var internal = '_' + key;
 		this['get' + part] = function() {
 			return this[internal];
-		}
+		};
 
 		this['set' + part] = function(value) {
 			this[internal] = value;
@@ -318,7 +318,7 @@ var LinkedRectangle = Rectangle.extend({
 			// _dontNotify, as it will notify itself
 			if (!this._dontNotify)
 				this._owner[this._set](this);
-		}
+		};
 	}, Base.each(['Point', 'Size', 'Center',
 			'Left', 'Top', 'Right', 'Bottom', 'CenterX', 'CenterY',
 			'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
@@ -334,7 +334,7 @@ var LinkedRectangle = Rectangle.extend({
 				delete this._dontNotify;
 				this._owner[this._set](this);
 				return this;
-			}
+			};
 		}, { beans: true })
 	);
 });
