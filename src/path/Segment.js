@@ -250,47 +250,47 @@ var Segment = this.Segment = Base.extend({
 			handleIn =  matrix && this.getHandleInIfSet() || this._handleIn,
 			handleOut = matrix && this.getHandleOutIfSet() || this._handleOut,
 			x = point._x,
-			y = point._y;
+			y = point._y,
+			i = 2;
 		coords[0] = x;
 		coords[1] = y;
-		var index = 2;
 		// We need to convert handles to absolute coordinates in order
 		// to transform them.
 		if (handleIn) {
-			coords[index++] = handleIn._x + x;
-			coords[index++] = handleIn._y + y;
+			coords[i++] = handleIn._x + x;
+			coords[i++] = handleIn._y + y;
 		}
 		if (handleOut) {
-			coords[index++] = handleOut._x + x;
-			coords[index++] = handleOut._y + y;
+			coords[i++] = handleOut._x + x;
+			coords[i++] = handleOut._y + y;
 		}
 		if (matrix) {
-			matrix.transform(coords, 0, coords, 0, index / 2);
+			matrix.transform(coords, 0, coords, 0, i / 2);
 			x = coords[0];
 			y = coords[1];
 			if (change) {
 				// If change is true, we need to set the new values back
 				point._x = x;
 				point._y = y;
-				index  = 2;
+				i  = 2;
 				if (handleIn) {
-					handleIn._x = coords[index++] - x;
-					handleIn._y = coords[index++] - y;
+					handleIn._x = coords[i++] - x;
+					handleIn._y = coords[i++] - y;
 				}
 				if (handleOut) {
-					handleOut._x = coords[index++] - x;
-					handleOut._y = coords[index++] - y;
+					handleOut._x = coords[i++] - x;
+					handleOut._y = coords[i++] - y;
 				}
 			} else {
 				// We want to receive the results in coords, so make sure
 				// handleIn and out are defined too, even if they're 0
 				if (!handleIn) {
-					coords[index++] = x;
-					coords[index++] = y;
+					coords[i++] = x;
+					coords[i++] = y;
 				}
 				if (!handleOut) {
-					coords[index++] = x;
-					coords[index++] = y;
+					coords[i++] = x;
+					coords[i++] = y;
 				}
 			}
 		}
