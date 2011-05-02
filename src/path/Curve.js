@@ -40,18 +40,6 @@ var Curve = this.Curve = Base.extend({
 		delete this._length;
 	},
 
-	_updateSegments: function() {
-		if (this._path) {
-			this._index2 = this._index1 + 1;
-			// A closing curve?
-			var segments = this._path._segments;
-			if (this._index2 >= segments.length)
-				this._index2 = 0;
-			this._segment1 = segments[this._index1];
-			this._segment2 = segments[this._index2];
-		}
-	},
-
 	/**
 	 * The first anchor point of the curve.
 	 */
@@ -119,19 +107,18 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	getIndex: function() {
-		return this._index1;
+		return this._segment1._index;
 	},
 
 	getNext: function() {
-		// TODO: No need to call getCurves() here?
 		var curves = this._path && this._path._curves;
-		return curves && (curves[this._index1 + 1]
+		return curves && (curves[this._segment1._index + 1]
 				|| this._path._closed && curves[0]) || null;
 	},
 
 	getPrevious: function() {
 		var curves = this._path && this._path._curves;
-		return curves && (curves[this._index1 - 1]
+		return curves && (curves[this._segment1._index - 1]
 				|| this._path._closed && curves[curves.length - 1]) || null;
 	},
 	
@@ -226,11 +213,11 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	statics: {
-		create: function(path, index) {
+		create: function(path, segment1, segment2) {
 			var curve = new Curve(Curve.dont);
 			curve._path = path;
-			curve._index1 = index;
-			curve._updateSegments();
+			curve._segment1 = segment1;
+			curve._segment2 = segment2;
 			return curve;
 		}
 	}

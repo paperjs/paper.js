@@ -69,13 +69,16 @@ var Path = this.Path = PathItem.extend({
 	 */
 	getCurves: function() {
 		if (!this._curves) {
-			var length = this._segments.length;
+			var segments = this._segments,
+				length = segments.length;
 			// Reduce length by one if it's an open path:
 			if (!this._closed && length > 0)
 				length--;
 			this._curves = new Array(length);
 			for (var i = 0; i < length; i++)
-				this._curves[i] = Curve.create(this, i);
+				this._curves[i] = Curve.create(this, segments[i],
+					// Use first segment for segment2 of closing curve
+					segments[i + 1] || segments[0]);
 		}
 		return this._curves;
 	},
@@ -107,7 +110,8 @@ var Path = this.Path = PathItem.extend({
 				this._curves.length = length;
 				// If we were closing this path, we need to add a new curve now
 				if (closed)
-					this._curves[i = length - 1] = Curve.create(this, i);
+					this._curves[i = length - 1] = Curve.create(this,
+						this._segments[i], this._segments[0]);
 			}
 			this._changed();
 		}
@@ -135,42 +139,37 @@ var Path = this.Path = PathItem.extend({
 	 */
 	// TODO: Add support for adding multiple segments at once
 	_add: function(segment, index) {
+		// Local short-cuts:
+		var segments = this._segments,
+			curves = this._curves;
 		// If this segment belongs to another path already, clone it before
 		// adding.
 		if (segment._path)
 			segment = new Segment(segment);
 		if (index === undefined) {
 			// Insert at the end
-			index = this._segments.push(segment) - 1;
+			index = segments.push(segment) - 1;
 		} else {
 			// Insert somewhere else
-			this._segments.splice(index, 0, segment);
+			segments.splice(index, 0, segment);
 			// Adjust the indices of the segments above.
-			for (var i = index + 1, l = this._segments.length; i < l; i++)
-				this._segments[i]._index = i;
+			for (var i = index + 1, l = segments.length; i < l; i++)
+				segments[i]._index = i;
 		}
 		segment._path = this;
 		segment._index = index;
 		// Keep the curves list in sync all the time in case it as requested
 		// already. We need to step one index down from the inserted segment to
 		// get its curve:
-		if (this._curves && --index >= 0) {
+		if (curves && --index >= 0) {
 			// Insert a new curve as well and update the curves above
-			this._curves.splice(index, 0, Curve.create(this, index));
-			// Adjust indices now for the curves above this one.
-			for (var i = index + 1, l = this._curves.length; i < l; i++) {
-				var curve = this._curves[i];
-				curve._index1 = i;
-				// This is wrong for the last closing curve but it will be
-				// corrected further down.
-				curve._index2 = i + 1;
-			}
-			// The curve that comes right after will has changed beyond a simple
-			// shift in indices, so it needs an update:
-			this._curves[index + 1]._updateSegments();
-			// If this is a closed path, also update the closing curve
-			if (this._closed)
-				this._curves[l - 1]._updateSegments();
+			curves.splice(index, 0, Curve.create(this, segments[index],
+				segments[++index]));
+			// Adjust segment1 now for the curves above the inserted one
+			// (note the ++index in the statement above)/
+			var curve = curves[index];
+			if (curve)
+				curve._segment1 = segments[index];
 		}
 		this._changed();
 		return segment;
@@ -198,21 +197,40 @@ var Path = this.Path = PathItem.extend({
 	removeSegments: function(from, to) {
 		from = from || 0;
 	 	to = Base.pick(to, this._segments.length - 1);
-		var amount = to - from,
-			segments = this._segments.splice(from, amount);
-		if (segments.length == amount)  {
-			// TODO: Keep _curves in sync
-			for (var i = 0; i < amount; i++) {
-				var segment = segments[0];
-				if (segment._selectionState) {
-					this._selectedSegmentCount--;
-					segment._selectionState = 0;
-				}
+		var segments = this._segments,
+			curves = this._curves,
+			last = to >= segments.length,
+			removed = segments.splice(from, to - from),
+			amount = removed.length;
+		if (!amount)
+			return removed;
+		// Update selection state accordingly
+		for (var i = 0; i < amount; i++) {
+			var segment = removed[i];
+			if (segment._selectionState) {
+				this._selectedSegmentCount--;
+				segment._selectionState = 0;
 			}
-			this._changed();
-			return segments;
 		}
-		return null;
+		// Adjust the indices of the segments above.
+		for (var i = from, l = segments.length; i < l; i++)
+			segments[i]._index = i;
+		// Keep curves in sync
+		if (curves) {
+			curves.splice(from, amount);
+			// Adjust segments for the curves before and after the removed ones
+			var curve;
+			if (curve = curves[from - 1])
+				curve._segment2 = segments[from];
+			if (curve = curves[from])
+				curve._segment1 = segments[from];
+			// If the last segment of a closing path was removed, we need to
+			// readjust the last curve of the list now.
+			if (last && this._closed && (curve = curves[curves.length - 1]))
+				curve._segment2 = segments[0];
+		}
+		this._changed();
+		return removed;
 	},
 	
 	isSelected: function() {

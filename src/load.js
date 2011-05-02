@@ -93,6 +93,7 @@ if (window.tests) {
 		'test/tests/Path.js',
 		'test/tests/Path_Shapes.js',
 		'test/tests/Path_Drawing_Commands.js',
+		'test/tests/Path_Curves.js',
 		'test/tests/Path_Bounds.js',
 		'test/tests/Path_Length.js',
 		'test/tests/PathStyle.js',
