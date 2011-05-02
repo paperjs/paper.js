@@ -216,13 +216,13 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	toString: function() {
-		return '{ point1: ' + this._segment1._point
-				+ (!this._segment1._handleOut.isZero()
-					? ', handle1: ' + this._segment1._handleOut : '')
-				+ (this._segment2._handleIn.isZero()
-					? ', handle2: ' + this._segment2._handleIn : '')
-				+ ', point2: ' + this._segment2._point
-				+ ' }';
+		var parts = [ 'point1: ' + this._segment1._point ];
+		if (!this._segment1._handleOut.isZero())
+			parts.push('handle1: ' + this._segment1._handleOut);
+		if (!this._segment2._handleIn.isZero())
+			parts.push('handle2: ' + this._segment2._handleIn);
+		parts.push('point2: ' + this._segment2._point);
+		return '{ ' + parts.join(', ') + ' }';
 	},
 
 	statics: {

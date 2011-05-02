@@ -139,6 +139,6 @@ CurveLocation = Base.extend({
 		var parameter = this.getParameter();
 		if (parameter != null)
 			parts.push('parameter: ' + parameter);
-		return '{ ' + parts.join(', ') + ' }'
+		return '{ ' + parts.join(', ') + ' }';
 	}
 });

@@ -230,12 +230,12 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	toString: function() {
-		return '{ point: ' + this._point
-				+ (!this._handleIn.isZero()
-					? ', handleIn: ' + this._handleIn : '')
-				+ (this._handleOut.isZero()
-					? ', handleOut: ' + this._handleOut : '')
-				+ ' }';
+		var parts = [ 'point: ' + this._point ];
+		if (!this._handleIn.isZero())
+			parts.push('handleIn: ' + this._handleIn);
+		if (!this._handleOut.isZero())
+			parts.push('handleOut: ' + this._handleOut);
+		return '{ ' + parts.join(', ') + ' }';
 	},
 
 	_transformCoordinates: function(matrix, coords, change) {
