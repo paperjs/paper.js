@@ -85,22 +85,6 @@ var Size = this.Size = Base.extend({
 		return isNaN(this.width) || isNaN(this.height);
 	},
 
-	round: function() {
-		return Size.create(Math.round(this.width), Math.round(this.height));
-	},
-
-	ceil: function() {
-		return Size.create(Math.ceil(this.width), Math.ceil(this.height));
-	},
-
-	floor: function() {
-		return Size.create(Math.floor(this.width), Math.floor(this.height));
-	},
-
-	abs: function() {
-		return Size.create(Math.abs(this.width), Math.abs(this.height));
-	},
-
 	toString: function() {
 		return '{ x: ' + this.width + ', y: ' + this.height + ' }';
 	},
@@ -127,4 +111,11 @@ var Size = this.Size = Base.extend({
 			return Size.create(Math.random(), Math.random());
 		}
 	}
+}, new function() { // Scope for injecting round, ceil, floor, abs:
+	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
+		var op = Math[name];
+		this[name] = function() {
+			return Size.create(op(this.width), op(this.height));
+		};
+	}, {});
 });
