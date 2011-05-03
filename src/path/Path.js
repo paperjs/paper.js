@@ -279,7 +279,7 @@ var Path = this.Path = PathItem.extend({
 
 	join: function(path) {
 		if (path) {
-			var segments = path.segments,
+			var segments = path._segments,
 				last1 = this.getLastSegment(),
 				last2 = path.getLastSegment();
 			if (last1._point.equals(last2._point))
