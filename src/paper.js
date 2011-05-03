@@ -58,16 +58,15 @@ Base.inject({
 	read: function(list, start, length) {
 		var start = start || 0,
 			length = length || list.length - start;
-		var arg = list[start];
+		var obj = list[start];
 		// If the class defines _readNull, return null when nothing was provided
-		if (arg instanceof this
-				|| this.prototype._readNull && arg == null && length <= 1)
-			return arg;
-		var obj = new this(this.dont);
-		obj = obj.initialize.apply(obj, start > 0 || length < list.length
+		if (obj instanceof this
+				|| this.prototype._readNull && obj == null && length <= 1)
+			return obj;
+		obj = new this(this.dont);
+		return obj.initialize.apply(obj, start > 0 || length < list.length
 			? Array.prototype.slice.call(list, start, start + length)
 			: list) || obj;
-		return obj;
 	},
 
 	readAll: function(list, start) {
