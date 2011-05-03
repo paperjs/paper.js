@@ -61,7 +61,7 @@ var BlendMode = {
 		var sRA, sGA, sBA, dRA, dGA, dBA, dA2;
 		var demultiply;
 
-		for (var px=0;px<len;px+=4){
+		for (var px=0;px<len;px+=4) {
 			sA  = src[px+3]/255 * opacity;
 			dA  = dst[px+3]/255;
 			dA2 = (sA + dA - sA*dA);
@@ -76,7 +76,7 @@ var BlendMode = {
 
 			demultiply = 255 / dA2;
 
-			switch(blendMode){
+			switch(blendMode) {
 				// ******* Very close match to Photoshop
 				case 'normal':
 				case 'src-over':

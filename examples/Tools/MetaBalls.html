@@ -38,7 +38,7 @@
 
 		function generateConnections(paths) {
 			for (var i = 0, l = paths.length; i < l; i++) {
-				for (var j = i - 1; j >= 0; j--){
+				for (var j = i - 1; j >= 0; j--) {
 					var path = metaball(paths[i], paths[j], 0.5, handle_len_rate, 300);
 					if (path) {
 						path.removeOn({
@@ -51,7 +51,7 @@
 		}
 
 		// ---------------------------------------------
-		function metaball(ball1, ball2, v, handle_len_rate, maxDistance){
+		function metaball(ball1, ball2, v, handle_len_rate, maxDistance) {
 			var center1 = ball1.position,
 				center2 = ball2.position,
 				radius1 = ball1.bounds.width / 2,
