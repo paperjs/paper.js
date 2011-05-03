@@ -63,7 +63,7 @@
 			if (radius1 == 0 || radius2 == 0)
 				return;
 
-			if(d > maxDistance || d <= Math.abs(radius1 - radius2)) {
+			if (d > maxDistance || d <= Math.abs(radius1 - radius2)) {
 				return;
 			} else if (d < radius1 + radius2) { // case circles are overlapping
 				u1 = Math.acos((radius1 * radius1 + d * d - radius2 * radius2) / (2 * radius1 * d));

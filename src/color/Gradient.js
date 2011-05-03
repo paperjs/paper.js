@@ -20,7 +20,7 @@ var Gradient = this.Gradient = Base.extend({
 	// TODO: should type here be called 'radial' and have it
 	// receive a boolean value?
 	initialize: function(stops, type) {
-		if(!stops) {
+		if (!stops) {
 			stops = [new GradientStop('white', 0),
 					new GradientStop('black', 1)];
 		}
@@ -36,12 +36,12 @@ var Gradient = this.Gradient = Base.extend({
 		if (stops.length < 2)
 			throw new Error(
 					'Gradient stop list needs to contain at least two stops.');
-		if(!(stops[0] instanceof GradientStop)) {
+		if (!(stops[0] instanceof GradientStop)) {
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var rampPoint;
 				var stop = stops[i];
 				// If it is an array, the second argument is the rampPoint:
-				if(stop.length) {
+				if (stop.length) {
 					rampPoint = stop[1];
 					stop = stop[0];
 				} else {

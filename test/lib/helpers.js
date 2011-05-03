@@ -21,9 +21,9 @@ function compareSegments(segment1, segment2) {
 }
 
 function compareNumbers(number1, number2, message) {
-	if(number1 !== 0)
+	if (number1 !== 0)
 		number1 = Math.round(number1 * 100) / 100;
-	if(number2 !== 0)
+	if (number2 !== 0)
 		number2 = Math.round(number2 * 100) / 100;
 	equals(number1, number2, message);
 }
