@@ -52,7 +52,7 @@ var Path = this.Path = PathItem.extend({
 			if (this._curves)
 				this._curves = null;
 		}
-		for(var i = 0, l = segments.length; i < l; i++)
+		for (var i = 0, l = segments.length; i < l; i++)
 			this._add(Segment.read(segments, i, 1));
 	},
 

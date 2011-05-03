@@ -16,12 +16,12 @@
 		var size = 20,
 			segments = path.segments,
 			center = document.bounds.center;
-		for(var i = 0; i < size; i++)
+		for (var i = 0; i < size; i++)
 			path.add(center + new Point(i * 100, 0));
 
 		function onMouseMove(event) {
 			segments[0].point = event.point;
-			for(var i = 0; i < size - 1; i++) {
+			for (var i = 0; i < size - 1; i++) {
 				var nextSegment = segments[i + 1];
 				var position = path.segments[i].point;
 				var angle = (position - nextSegment.point).angle;

@@ -63,7 +63,7 @@
 				// var groups = document.getItems({
 				// 	type: Group
 				// });
-				// for(var i = 0, l = groups.length; i < l; i++) {
+				// for (var i = 0, l = groups.length; i < l; i++) {
 				// 	var group = groups[i];
 				// 	if(group.name == 'Voronoi') {
 				// 		this.group = group;
@@ -85,7 +85,7 @@
 			initPoints: function() {
 				this.points = [];
 				var segments = this.group.data.path.segments;
-				for(var i = 0, l = segments.length; i < l; i++) {
+				for (var i = 0, l = segments.length; i < l; i++) {
 					this.points.push(segments[i].point);
 				}
 			},
@@ -104,7 +104,7 @@
 			},
 
 			setPoints: function(points) {
-				for(var i = 0, l = points.length; i < l; i++) {
+				for (var i = 0, l = points.length; i < l; i++) {
 					points[i] = points[i].round();
 				}
 				this.points = points;
@@ -122,7 +122,7 @@
 
 			showPointsDown: function() {
 				var size = 2 / document.activeView.zoom;
-				for(var i = 0, l = this.points.length - 1; i < l; i++) {
+				for (var i = 0, l = this.points.length - 1; i < l; i++) {
 					new Path.Circle(this.points[i], size).removeOn({
 						up: true
 					});
@@ -160,7 +160,7 @@
 
 			removeSmallBits: function(path) {
 				var averageLength = path.length / path.segments.length;
-				for(var i = 0, l = path.segments.length; i < l; i++) {
+				for (var i = 0, l = path.segments.length; i < l; i++) {
 					var segment = path.segments[i];
 					var nextSegment = path.segments[i + 1 >= l ? (i + 1) % l : i + 1];
 					var length = (nextSegment.point - segment.point).length;
@@ -183,7 +183,7 @@
 			roundPath: function(path) {
 				var segments = path.segments.clone();
 				path.segments = [];
-				for(var i = 0, l = segments.length; i < l; i++) {
+				for (var i = 0, l = segments.length; i < l; i++) {
 					var curPoint = segments[i].point;
 					var nextPoint = segments[i + 1 == l ? 0 : i + 1].point;
 					var prevPoint = segments[i - 1 < 0 ? segments.length - 1 : i - 1].point;
@@ -197,7 +197,7 @@
 			},
 
 			redrawVoronoi: function(diagram, activePoint) {
-				for(var i = 0, l = diagram.sites.length; i < l; i++) {
+				for (var i = 0, l = diagram.sites.length; i < l; i++) {
 					this.drawCell(diagram, i);
 				}
 			},
@@ -210,7 +210,7 @@
 				var newCell = this.drawCell(diagram, this.points.length - 1, activePoint);
 				if(!activePoint && newCell) {
 					var checkPath = newCell.data.path;
-					for(var i = 0, l = this.vGroup.children.length; i < l; i++) {
+					for (var i = 0, l = this.vGroup.children.length; i < l; i++) {
 						var path = this.vGroup.children[i];
 						var toCheckPath = path.data.path;
 						if(toCheckPath && checkPath.bounds.intersects(toCheckPath.bounds)) {// && toCheckPath.intersects(checkPath)) {
@@ -233,7 +233,7 @@
 				if(hitResult) {
 					var point = hitResult.item.data.path.data.center;
 					var segments = this.group.data.path.segments;
-					for(var i = 0, l = segments.length; i < l; i++) {
+					for (var i = 0, l = segments.length; i < l; i++) {
 						var segment = segments[i];
 						if(point == segment.point.multiply(100).round()) {
 							i = l;
@@ -245,7 +245,7 @@
 			},
 
 			findIndex: function(point) {
-				for(var i = 0, l = this.points.length; i < l; i++) {
+				for (var i = 0, l = this.points.length; i < l; i++) {
 					if(point == this.points[i].multiply(100).round())
 						return i;
 				}
@@ -370,8 +370,8 @@
 			// 
 			// 		var size = new Size(this.columns, this.rows);
 			// 		var col = document.bounds.size / size;
-			// 		for(var i = -1; i < this.columns + 1; i++) {
-			// 			for(var j = -1; j < this.rows + 1; j++) {
+			// 		for (var i = -1; i < this.columns + 1; i++) {
+			// 			for (var j = -1; j < this.rows + 1; j++) {
 			// 				var point = new Point(i, j) / new Point(size) * document.bounds.size + col / 2;
 			// 				if(j % 4 == 2 || j% 4 == 3) {
 			// 					point += new Point(col.width / 2, 0);
@@ -399,8 +399,8 @@
 
 					var size = new Size(this.columns, this.rows);
 					var col = document.bounds.size / size;
-					for(var i = -1; i < this.columns + 1; i++) {
-						for(var j = -1; j < this.rows + 1; j++) {
+					for (var i = -1; i < this.columns + 1; i++) {
+						for (var j = -1; j < this.rows + 1; j++) {
 							var point = new Point(i, j) / new Point(size) * document.bounds.size + col / 2;
 							if(j % 2)
 								point += new Point(col.width / 2, 0);
@@ -427,8 +427,8 @@
 					this.rows = values.rows;
 					var size = new Size(this.columns, this.rows);
 					var col = document.bounds.size / size;
-					for(var i = -1; i < this.columns ; i++) {
-						for(var j = -1; j < this.rows; j++) {
+					for (var i = -1; i < this.columns ; i++) {
+						for (var j = -1; j < this.rows; j++) {
 
 							var point = new Point(i, j) / size * document.bounds.size + col / 2;
 							if(j % 2)
@@ -460,8 +460,8 @@
 
 					var size = new Size(this.columns, this.rows);
 					var col = document.bounds.size / size;
-					for(var i = -1; i < this.columns + 1; i++) {
-						for(var j = -1; j < this.rows + 1; j++) {
+					for (var i = -1; i < this.columns + 1; i++) {
+						for (var j = -1; j < this.rows + 1; j++) {
 							var point = new Point(i, j) / new Point(size) * document.bounds.size + col / 2;
 							if(this.loose)
 								point += (col / 4) * Point.random() - col / 4;
@@ -487,14 +487,14 @@
 
 					var size = new Size(this.columns, this.rows);
 					var col = document.bounds.size / size;
-					for(var i = -1; i < this.columns + 1; i++) {
-						for(var j = -1; j < this.rows + 1; j++) {
+					for (var i = -1; i < this.columns + 1; i++) {
+						for (var j = -1; j < this.rows + 1; j++) {
 							var point = new Point(i, j) / new Point(size) * document.bounds.size + col / 2;
 							if(j % 2)
 								point += new Point(col.width / 2, 0);
 							vPoints.push(point);
 							var offset = i % 2 ? 45 : 0;
-							for(var z = 0; z < this.parts; z++) {
+							for (var z = 0; z < this.parts; z++) {
 								var vector = new Point(col.width / 6, 0).rotate(offset + z / this.parts * 360 * (i % 2 ? 1 : -1) * (j % 2 ? -1 : 1));
 								vPoints.push(point + vector);
 							}
@@ -544,9 +544,9 @@
 
 					if(paths.length) {
 						voronoiDrawer.initialize();
-						for(var i = 0, l = paths.length; i < l; i++) {
+						for (var i = 0, l = paths.length; i < l; i++) {
 							var segments = paths[i].segments;
-							for(var j = 0, k = segments.length; j < k; j++) {
+							for (var j = 0, k = segments.length; j < k; j++) {
 								voronoiDrawer.addPoint(segments[j].point);
 							}
 						}
@@ -567,7 +567,7 @@
 				value: 'Add Random Points',
 				onClick: function() {
 					voronoiDrawer.initialize();
-					for(var i = 0, l = values.randomAmount; i < l; i++) {
+					for (var i = 0, l = values.randomAmount; i < l; i++) {
 						voronoiDrawer.addRandomPoint();
 					}
 					voronoiDrawer.initPoints();

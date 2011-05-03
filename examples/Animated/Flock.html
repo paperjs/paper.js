@@ -43,7 +43,7 @@
 				this.path = new Path();
 				this.shortPath = new Path();
 				this.shortPath.strokeWidth = 4;
-				for(var i = 0, l = strength * 10 + 10; i < l; i++) {
+				for (var i = 0, l = strength * 10 + 10; i < l; i++) {
 					this.path.add(this.loc);
 					if (i < 3)
 						this.shortPath.add(this.loc);
@@ -273,7 +273,7 @@
 
 		function onFrame() {
 			count++;
-			for(var i = 0, l = boids.length; i < l; i++) {
+			for (var i = 0, l = boids.length; i < l; i++) {
 				if (groupTogether) {
 					var point = heartPath.getPointAt(((i + count / 30) % l) / l * pathLength);
 					boids[i].arrive(point);

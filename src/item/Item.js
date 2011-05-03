@@ -903,7 +903,7 @@ var Item = this.Item = Base.extend({
 	};
 
 	function removeAll(set) {
-		for(var id in set) {
+		for (var id in set) {
 			var item = set[id];
 			item.remove();
 			for (var type in sets) {
