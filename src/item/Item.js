@@ -733,7 +733,7 @@ var Item = this.Item = Base.extend({
 				// Floor the offset and ceil the size, so we don't cut off any
 				// antialiased pixels when drawing onto the temporary canvas.
 				var itemOffset = bounds.getTopLeft().floor(),
-					size = bounds.getSize().ceil().add(1, 1);
+					size = bounds.getSize().ceil().add(new Size(1, 1));
 				tempCanvas = CanvasProvider.getCanvas(size);
 
 				// Save the parent context, so we can draw onto it later
