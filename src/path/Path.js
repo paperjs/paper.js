@@ -676,15 +676,15 @@ var Path = this.Path = PathItem.extend({
 	 */
 	return {
 		moveTo: function() {
-			var segment = new Segment(Point.read(arguments));
-			if (segment && !this._segments.length)
-				this._add(segment);
+			// Let's not be picky about calling moveTo() when not at the
+			// beginning of a path, just bail out:
+			if (!this._segments.length)
+				this._add(new Segment(Point.read(arguments)));
 		},
 
 		lineTo: function() {
-			var segment = new Segment(Point.read(arguments));
-			if (segment)
-				this._add(segment);
+			// Let's not be picky about calling moveTo() first:
+			this._add(new Segment(Point.read(arguments)));
 		},
 
 		/**
