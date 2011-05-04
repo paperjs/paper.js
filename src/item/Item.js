@@ -699,11 +699,7 @@ var Item = this.Item = Base.extend({
 			ctx.stroke();
 			for (var i = 0; i < 8; i++) {
 				ctx.beginPath();
-				ctx.rect(
-					Math.round(coords[i]) - 2,
-					Math.round(coords[++i]) - 2,
-					4, 4
-				);
+				ctx.rect(coords[i] - 2, coords[++i] - 2, 4, 4);
 				ctx.fill();
 			}
 		},
