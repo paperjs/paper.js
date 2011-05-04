@@ -27,11 +27,11 @@ test('path.bounds', function() {
 
 	// Set new bounds and check segment list as result of resizing / positioning
 	path.bounds = { x: 100, y: 100, width: 200, height: 200 };
-	compareSegmentLists(path.segments, [{ point: { x: 107.93066, y: 179.56982 }, handleIn: { x: -24.41211, y: 51.30664 }, handleOut: { x: 39.52734, y: -83.08447 } }, { point: { x: 271.10107, y: 160.66553 }, handleIn: { x: -53.96289, y: -99.9126 }, handleOut: { x: 53.96143, y: 99.91406 } }, { point: { x: 215.85303, y: 296.96045 }, handleIn: { x: 85.81299, y: -17.18555 }, handleOut: { x: -101.49854, y: 20.32861 } }])
+	equals(path.segments.toString(), '{ point: { x: 107.93077, y: 179.56917 }, handleIn: { x: -24.41127, y: 51.30707 }, handleOut: { x: 39.52904, y: -83.08194 } },{ point: { x: 271.10084, y: 160.66656 }, handleIn: { x: -53.96176, y: -99.91377 }, handleOut: { x: 53.96176, y: 99.91377 } },{ point: { x: 215.85428, y: 296.96086 }, handleIn: { x: 85.81084, y: -17.18521 }, handleOut: { x: -101.49949, y: 20.32729 } }');
 
 	// Now rotate by 40 degrees and test bounds and segments again.
 	path.rotate(40);
 	compareRectangles(path.bounds, { x: 92.38109, y: 106.78957, width: 191.4803, height: 203.66878 });
 
-	compareSegmentLists(path.segments, [{ point: { x: 142.60352, y: 125.16797 }, handleIn: { x: -51.67969, y: 23.6123 }, handleOut: { x: 83.68555, y: -38.23584 } }, { point: { x: 279.74902, y: 215.57178 }, handleIn: { x: 22.88672, y: -111.22461 }, handleOut: { x: -22.88623, y: 111.22412 } }, { point: { x: 149.82031, y: 284.4668 }, handleIn: { x: 76.78076, y: 41.99414 }, handleOut: { x: -90.81982, y: -49.66992 } }]);
+	equals(path.segments.toString(), '{ point: { x: 142.60356, y: 125.16811 }, handleIn: { x: -51.67967, y: 23.61224 }, handleOut: { x: 83.68504, y: -38.23568 } },{ point: { x: 279.74945, y: 215.57158 }, handleIn: { x: 22.88623, y: -111.22434 }, handleOut: { x: -22.88623, y: 111.22434 } },{ point: { x: 149.81984, y: 284.46726 }, handleIn: { x: 76.78135, y: 41.99351 }, handleOut: { x: -90.81925, y: -49.67101 } }');
 });
