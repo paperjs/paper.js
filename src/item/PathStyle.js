@@ -48,15 +48,16 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 	};
 
 	Item.inject(Base.each(keys, function(key) {
-		var isColor = !!(key.match(/Color$/)),
-			set = 'set' + Base.capitalize(key),
-			get = 'get' + Base.capitalize(key);
+		var isColor = !!key.match(/Color$/),
+			part = Base.capitalize(key),
+			set = 'set' + part,
+			get = 'get' + part;
 
 		fields[set] = function(value) {
-			if (this._item && this._item.children) {
-				for (var i = 0, l = this._item.children.length; i < l; i++) {
-					this._item.children[i]._style[set](value);
-				}
+			var children = this._item && this._item.children;
+			if (children) {
+				for (var i = 0, l = children.length; i < l; i++)
+					children[i]._style[set](value);
 			} else {
 				this['_' + key] = isColor ? Color.read(arguments) : value;
 			}
