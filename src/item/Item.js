@@ -439,9 +439,10 @@ var Item = this.Item = Base.extend({
 	_getBounds: function(includeStroke) {
 		var children = this.children;
 		if (children && children.length) {
-			var x1, x2;
-			var y1 = x1 = Infinity;
-			var y2 = x2 = -Infinity;
+			var x1 = Infinity,
+				x2 = -Infinity,
+				y1 = x1,
+				y2 = x2;
 			for (var i = 0, l = children.length; i < l; i++) {
 				var child = children[i],
 					rect = includeStroke
