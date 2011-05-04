@@ -173,13 +173,14 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		toString: function() {
-			var parts = [];
+			var parts = [],
+				format = Base.formatNumber;
 			for (var i = 0, l = this._components.length; i < l; i++) {
-				var component = this._components[i];
-				var value = this['_' + component];
+				var component = this._components[i],
+					value = this['_' + component];
 				if (component === 'alpha' && value == null)
 					value = 1;
-				parts.push(component + ': ' + value);
+				parts.push(component + ': ' + format(value));
 			}
 			return '{ ' + parts.join(', ') + ' }';
 		},
