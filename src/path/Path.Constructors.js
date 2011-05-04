@@ -37,11 +37,12 @@ Path.inject({ statics: new function() {
 			rect = Rectangle.read(arguments);
 			var path = new Path(),
 				corners = ['getBottomLeft', 'getTopLeft', 'getTopRight',
-						'getBottomRight'];
-			for (var i = 0; i < 4; i++) {
-				path.add(rect[corners[i]]());
-			}
-			path.setClosed(true);
+					'getBottomRight'],
+				segments = new Array(4);
+			for (var i = 0; i < 4; i++)
+				segments[i] = new Segment(rect[corners[i]]());
+			path._add(segments);
+			path._closed = true;
 			return path;
 		},
 
@@ -56,25 +57,24 @@ Path.inject({ statics: new function() {
 			size = Size.min(size, rect.getSize().divide(2));
 			var path = new Path(),
 				uSize = size.multiply(kappa * 2),
-				
 				bl = rect.getBottomLeft(),
 				tl = rect.getTopLeft(),
 				tr = rect.getTopRight(),
 				br = rect.getBottomRight();
+			path._add([
+				new Segment(bl.add(size.width, 0), null, [-uSize.width, 0]),
+				new Segment(bl.subtract(0, size.height), [0, uSize.height], null),
 
-			path.add(bl.add(size.width, 0), null, [-uSize.width, 0]);
-			path.add(bl.subtract(0, size.height), [0, uSize.height], null);
+				new Segment(tl.add(0, size.height), null, [0, -uSize.height]),
+				new Segment(tl.add(size.width, 0), [-uSize.width, 0], null),
 
-			path.add(tl.add(0, size.height), null, [0, -uSize.height]);
-			path.add(tl.add(size.width, 0), [-uSize.width, 0], null);
+				new Segment(tr.subtract(size.width, 0), null, [uSize.width, 0]),
+				new Segment(tr.add(0, size.height), [0, -uSize.height], null),
 
-			path.add(tr.subtract(size.width, 0), null, [uSize.width, 0]);
-			path.add(tr.add(0, size.height), [0, -uSize.height], null);
-
-			path.add(br.subtract(0, size.height), null, [0, uSize.height]);
-			path.add(br.subtract(size.width, 0), [uSize.width, 0], null);
-
-			path.setClosed(true);
+				new Segment(br.subtract(0, size.height), null, [0, uSize.height]),
+				new Segment(br.subtract(size.width, 0), [uSize.width, 0], null)
+			]);
+			path._closed = true;
 			return path;
 		},
 
@@ -82,16 +82,18 @@ Path.inject({ statics: new function() {
 			rect = Rectangle.read(arguments);
 			var path = new Path(),
 				topLeft = rect.getTopLeft(),
-				size = new Size(rect.width, rect.height);
+				size = new Size(rect.width, rect.height),
+				segments = new Array(4);
 			for (var i = 0; i < 4; i++) {
 				var segment = ovalSegments[i];
-				path._add(new Segment(
+				segments[i] = new Segment(
 					segment._point.multiply(size).add(topLeft),
 					segment._handleIn.multiply(size),
 					segment._handleOut.multiply(size)
-				));
+				);
 			}
-			path.setClosed(true);
+			path._add(segments);
+			path._closed = true;
 			return path;
 		},
 
@@ -116,29 +118,33 @@ Path.inject({ statics: new function() {
 		RegularPolygon: function(center, numSides, radius) {
 			center = Point.read(arguments, 0, 1);
 			var path = new Path(),
+				step = 360 / numSides,
 				three = !(numSides % 3),
 				vector = new Point(0, three ? -radius : radius),
-				offset = three ? -1 : 0.5;
+				offset = three ? -1 : 0.5,
+				segments = new Array(numSides);
 			for (var i = 0; i < numSides; i++) {
-				var angle = (360 / numSides) * (i + offset);
-				path.add(center.add(vector.rotate(angle)));
+				segments[i] = new Segment(center.add(
+					vector.rotate((i + offset) * step)));
 			}
-			path.setClosed(true);
+			path._add(segments);
+			path._closed = true;
 			return path;
 		},
 		
 		Star: function(center, numPoints, radius1, radius2) {
 			center = Point.read(arguments, 0, 1);
 			numPoints *= 2;
-			var angle = 360 / numPoints,
-				path = new Path();
+			var path = new Path(),
+				step = 360 / numPoints,
+				vector = new Point(0, -1),
+				segments = new Array(numPoints);
 			for (var i = 0; i < numPoints; i++) {
-				path.add(center.add({
-					angle: -90 + angle * i,
-					length: i % 2 ? radius2 : radius1
-				}));
+				segments[i] = new Segment(center.add(
+					vector.rotate(step * i).multiply(i % 2 ? radius2 : radius1)));
 			}
-			path.setClosed(true);
+			path._add(segments);
+			path._closed = true;
 			return path;
 		}
 	};
