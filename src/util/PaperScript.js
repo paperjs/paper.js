@@ -159,7 +159,8 @@ var PaperScript = new function() {
 			} catch (e) {
 			}
 			// Automatically redraw document at the end.
-			doc && doc.redraw();
+			if (doc)
+				doc.redraw();
 			return res;
 		}
 	}
