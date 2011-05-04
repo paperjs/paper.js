@@ -22,14 +22,23 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 	var fields = {
 		beans: true,
 
-		initialize: function(item, style) {
-			this._item = item;
+		initialize: function(style) {
 			if (style) {
 				for (var i = 0, l = keys.length; i < l; i++) {
-					var key = keys[i];
-					if (style[key] !== undefined)
-						this[key] = style[key];
+					var key = keys[i],
+						value = style[key];
+					if (value !== undefined)
+						this[key] = value;
 				}
+			}
+		},
+
+		statics: {
+			create: function(item, other) {
+				var style = new PathStyle(PathStyle.dont);
+				style._item = item;
+				style.initialize(other);
+				return style;
 			}
 		}
 	};

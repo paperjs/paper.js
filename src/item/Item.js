@@ -673,7 +673,7 @@ var Item = this.Item = Base.extend({
 	},
 
 	setStyle: function(style) {
-		this._style = new PathStyle(this, style);
+		this._style = PathStyle.create(this, style);
 	},
 
 	// TODO: toString
