@@ -52,8 +52,7 @@ var Path = this.Path = PathItem.extend({
 			if (this._curves)
 				this._curves = null;
 		}
-		for (var i = 0, l = segments.length; i < l; i++)
-			this._add(Segment.read(segments, i, 1));
+		this._add(Segment.readAll(segments));
 	},
 
 	getFirstSegment: function() {
@@ -137,60 +136,63 @@ var Path = this.Path = PathItem.extend({
 	 * If a curves list was requested, it will kept in sync with the segments
 	 * list automatically.
 	 */
-	// TODO: Add support for adding multiple segments at once
-	_add: function(segment, index) {
+	_add: function(segs, index) {
 		// Local short-cuts:
 		var segments = this._segments,
-			curves = this._curves;
-		// If this segment belongs to another path already, clone it before
-		// adding.
-		if (segment._path)
-			segment = new Segment(segment);
-		if (index === undefined) {
-			// Insert at the end
-			index = segments.push(segment) - 1;
+			curves = this._curves,
+			amount = segs.length,
+			append = index === undefined,
+			index = append ? segments.length : index;
+		for (var i = 0; i < amount; i++) {
+			var segment = segs[i];
+			// If the segments belong to another path already, clone them before
+			// adding:
+			if (segment._path)
+				segment = segs[i] = new Segment(segment);
+			// Set _path and _index references for these new segments now
+			segment._path = this;
+			segment._index = index + i;
+		}
+		if (append) {
+			// Append them all at the end by using push
+			segments.push.apply(segments, segs);
 		} else {
 			// Insert somewhere else
-			segments.splice(index, 0, segment);
+			segments.splice.apply(segments, [index, 0].concat(segs));
 			// Adjust the indices of the segments above.
-			for (var i = index + 1, l = segments.length; i < l; i++)
+			for (var i = index + amount, l = segments.length; i < l; i++)
 				segments[i]._index = i;
 		}
-		segment._path = this;
-		segment._index = index;
 		// Keep the curves list in sync all the time in case it as requested
 		// already. We need to step one index down from the inserted segment to
 		// get its curve:
 		if (curves && --index >= 0) {
 			// Insert a new curve as well and update the curves above
 			curves.splice(index, 0, Curve.create(this, segments[index],
-				segments[++index]));
+				segments[index + 1]));
 			// Adjust segment1 now for the curves above the inserted one
-			// (note the ++index in the statement above)/
-			var curve = curves[index];
+			var curve = curves[index + amount];
 			if (curve)
-				curve._segment1 = segments[index];
+				curve._segment1 = segments[index + amount];
 		}
 		this._changed();
-		return segment;
+		return segs;
 	},
 
-	// TODO: Add support for adding multiple segments at once
-	add: function(segment) {
-		segment = Segment.read(arguments);
-		return segment ? this._add(segment) : null;
+	// TODO: Port back support for adding multiple segments at once to Sg
+	add: function(segment1 /*, segment2, ... */) {
+		return this._add(Segment.readAll(arguments));
 	},
 
-	// TODO: Add support for adding multiple segments at once
-	insert: function(index, segment) {
-		segment = Segment.read(arguments, 1);
-		return segment ? this._add(segment, index) : null;
+	// TODO: Port back support for adding multiple segments at once to Sg
+	insert: function(index, segment1 /*, segment2, ... */) {
+		return this._add(Segment.readAll(arguments, 1), index);
 	},
 
 	// TODO: Port back to Sg
 	removeSegment: function(index) {
 		var segments = this.removeSegments(index, index + 1);
-		return segments ? segments[0] : null;
+		return segments[0] || null;
 	},
 	
 	// TODO: Port back to Sg
@@ -287,8 +289,7 @@ var Path = this.Path = PathItem.extend({
 			var first2 = path.getFirstSegment();
 			if (last1._point.equals(first2._point)) {
 				last1.setHandleOut(first2._handleOut);
-				for (var i = 1, l = segments.length; i < l; i++)
-					this._add(segments[i]);
+				this._add(segments.slice(1));
 			} else {
 				var first1 = this.getFirstSegment();
 				if (first1._point.equals(first2._point))
@@ -296,11 +297,10 @@ var Path = this.Path = PathItem.extend({
 				if (first1._point.equals(last2._point)) {
 					first1.setHandleIn(last2._handleIn);
 					// Prepend all segments from path except last one
-					for (var i = 0, l = segments.length - 1; i < l; i++)
-						this._add(segments[i], 0);
+					// TODO: Test if -1 (== all) or -2 (as described by comment)
+					this._add(segments.slice(0, segments.length - 2), 0);
 				} else {
-					for (var i = 0, l = segments.length; i < l; i++)
-						this._add(segments[i]);
+					this._add(segments.slice(0));
 				}
 			}
 			path.remove();
@@ -679,12 +679,12 @@ var Path = this.Path = PathItem.extend({
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
 			if (!this._segments.length)
-				this._add(new Segment(Point.read(arguments)));
+				this._add([new Segment(Point.read(arguments))]);
 		},
 
 		lineTo: function() {
 			// Let's not be picky about calling moveTo() first:
-			this._add(new Segment(Point.read(arguments)));
+			this._add([new Segment(Point.read(arguments))]);
 		},
 
 		/**
@@ -700,7 +700,7 @@ var Path = this.Path = PathItem.extend({
 			// Convert to relative values:
 			current.setHandleOut(handle1.subtract(current._point));
 			// And add the new segment, with handleIn set to c2
-			this._add(new Segment(to, handle2.subtract(to), new Point()));
+			this._add([new Segment(to, handle2.subtract(to), new Point())]);
 		},
 
 		/**
@@ -807,6 +807,7 @@ var Path = this.Path = PathItem.extend({
 			var halfInc = inc / 2,
 				z = 4 / 3 * Math.sin(halfInc) / (1 + Math.cos(halfInc));
 
+			var segments = [];
 			for (var i = 0; i <= arcSegs; i++) {
 				var relx = Math.cos(angle),
 					rely = Math.sin(angle),
@@ -829,10 +830,12 @@ var Path = this.Path = PathItem.extend({
 					var handleIn = new Point(
 							centerX + (relx + z * rely) * radius - pt.x,
 							centerY + (rely - z * relx) * radius - pt.y);
-					this._add(new Segment(pt, handleIn, out));
+					segments.push(new Segment(pt, handleIn, out));
 				}
 				angle += inc;
 			}
+			// Add all segments at once at the end for higher performance
+			this._add(segments);
 		},
 
 		lineBy: function(vector) {
