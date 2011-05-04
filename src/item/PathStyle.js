@@ -33,6 +33,10 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			}
 		},
 
+		clone: function() {
+			return new PathStyle(this);
+		},
+
 		statics: {
 			create: function(item, other) {
 				var style = new PathStyle(PathStyle.dont);
