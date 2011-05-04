@@ -64,14 +64,18 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		};
 
 		fields[get] = function() {
-			if (this._item && this._item.children) {
-				var style;
-				for (var i = 0, l = this._item.children.length; i < l; i++) {
-					var childStyle = this._item.children[i]._style[get]();
+			var children = this._item && this._item.children,
+				style;
+			// If this item has children, walk through all of them and see if
+			// they all have the same style.
+			if (children) {
+				for (var i = 0, l = children.length; i < l; i++) {
+					var childStyle = children[i]._style[get]();
 					if (!style) {
 						style = childStyle;
 					} else if (style != childStyle) {
-						// If there is another item with a different style:
+						// If there is another item with a different style,
+						// the style is not defined:
 						return undefined;
 					}
 				}
@@ -81,6 +85,8 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			}
 		};
 
+		// 'this' = the Base.each() side-car = the object that is injected into
+		// Item above:
 		this[set] = function(value) {
 			this._style[set](value);
 			return this;
