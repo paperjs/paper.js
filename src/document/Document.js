@@ -30,13 +30,15 @@ var Document = this.Document = Base.extend({
 				//	margin: 0;
 				//	overflow: hidden;
 				// }
-				this._size = Element.getScrollBounds().size;
+				this._size = Element.getScrollBounds().size
+						.subtract(Element.getOffset(this.canvas));
 				this.canvas.width = this._size.width;
 				this.canvas.height = this._size.height;
 				var that = this;
 				Event.add(window, {
 					resize: function(event) {
-						that.setSize(Element.getScrollBounds().size);
+						that.setSize(Element.getScrollBounds().size
+								.subtract(Element.getOffset(that.canvas)));
 						that.redraw();
 					}
 				});
