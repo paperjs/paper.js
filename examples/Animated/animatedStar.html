@@ -24,8 +24,7 @@
 			var l = offset.length;
 			for (var j = 0; j < values.points * 2; j++) {
 				offset.angle += 360 / values.points;
-				var vector = offset.clone();
-				vector.length = l * (j % 2 ? 0.1 : -0.1);
+				var vector = offset.normalize(l * (j % 2 ? 0.1 : -0.1));
 				path.add(offset + vector);
 			}
 			path.smooth();
