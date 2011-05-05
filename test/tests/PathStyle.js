@@ -111,8 +111,8 @@ test('setting group styles 2', function() {
 	compareRGBColors(secondPath.strokeColor, 'red', 'secondPath.strokeColor');
 
 	// By appending a path with a different fillcolor,
-	// the group's fillColor should return null:
-	equals(group.fillColor, null, 'group.fillColor');
+	// the group's fillColor should return undefined:
+	equals(group.fillColor, undefined, 'group.fillColor');
 	
 	// But, both paths have a red strokeColor, so:
 	compareRGBColors(group.strokeColor, 'red', 'group.strokeColor');
