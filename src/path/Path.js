@@ -801,8 +801,8 @@ var Path = this.Path = PathItem.extend({
 				centerY = -d / 2,
 				radius = Math.sqrt(centerX * centerX + centerY * centerY - e),
 
-			// Note: reversing the Y equations negates the angle to adjust
-			// for the upside down coordinate system.
+				// Note: reversing the Y equations negates the angle to adjust
+				// for the upside down coordinate system.
 				angle = Math.atan2(centerY - y1, x1 - centerX),
 				middle = Math.atan2(centerY - y2, x2 - centerX),
 				extent = Math.atan2(centerY - y3, x3 - centerX),
@@ -836,19 +836,20 @@ var Path = this.Path = PathItem.extend({
 				z = 4 / 3 * Math.sin(halfInc) / (1 + Math.cos(halfInc));
 
 			var segments = [];
+			// TODO: Use Point#setAngle() and Point vector algebra instead.
 			for (var i = 0; i <= arcSegs; i++) {
 				var relx = Math.cos(angle),
 					rely = Math.sin(angle),
 					pt = new Point(
 						centerX + relx * radius,
 						centerY + rely * radius
-					);
-				var out = i == arcSegs
-					? null
-					: new Point(
-						centerX + (relx - z * rely) * radius - pt.x,
-						centerY + (rely + z * relx) * radius - pt.y
-					);
+					),
+					out = i == arcSegs
+						? null
+						: new Point(
+							centerX + (relx - z * rely) * radius - pt.x,
+							centerY + (rely + z * relx) * radius - pt.y
+						);
 				if (i == 0) {
 					// Modify startSegment
 					current.setHandleOut(out);
