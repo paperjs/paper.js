@@ -454,7 +454,8 @@ var Point = this.Point = Base.extend({
 	},
 
 	toString: function() {
-		return '{ x: ' + this.x + ', y: ' + this.y + ' }';
+		var format = Base.formatNumber;
+		return '{ x: ' + format(this.x) + ', y: ' + format(this.y) + ' }';
 	},
 
 	statics: {

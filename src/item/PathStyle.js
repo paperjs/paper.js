@@ -22,43 +22,69 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 	var fields = {
 		beans: true,
 
-		initialize: function(item, style) {
-			this._item = item;
+		initialize: function(style) {
 			if (style) {
 				for (var i = 0, l = keys.length; i < l; i++) {
-					var key = keys[i];
-					if (style[key] !== undefined)
-						this[key] = style[key];
+					var key = keys[i],
+						value = style[key];
+					if (value !== undefined)
+						this[key] = value;
 				}
+			}
+		},
+
+		clone: function() {
+			return new PathStyle(this);
+		},
+
+		statics: {
+			create: function(item, other) {
+				var style = new PathStyle(PathStyle.dont);
+				style._item = item;
+				style.initialize(other);
+				return style;
 			}
 		}
 	};
 
 	Item.inject(Base.each(keys, function(key) {
-		var isColor = !!(key.match(/Color$/)),
-			set = 'set' + Base.capitalize(key),
-			get = 'get' + Base.capitalize(key);
+		var isColor = !!key.match(/Color$/),
+			part = Base.capitalize(key),
+			set = 'set' + part,
+			get = 'get' + part;
 
 		fields[set] = function(value) {
-			if (this._item && this._item.children) {
-				for (var i = 0, l = this._item.children.length; i < l; i++) {
-					this._item.children[i]._style[set](value);
-				}
+			var children = this._item && this._item.children;
+			value = isColor ? Color.read(arguments) : value;
+			if (children) {
+				for (var i = 0, l = children.length; i < l; i++)
+					children[i]._style[set](value);
 			} else {
-				this['_' + key] = isColor ? Color.read(arguments) : value;
+				var old = this['_' + key];
+				if (old != value && !(old && old.equals && old.equals(value))) {
+					this['_' + key] = value;
+					// TODO: Tell _item what exactly has changed. Maybe introduce
+					// ChangeFlags, e.g. STROKE, COLOR, FILL, GEOMETRY, etc?
+					if (this._item && this._item._changed)
+						this._item._changed();
+				}
 			}
 			return this;
 		};
 
 		fields[get] = function() {
-			if (this._item && this._item.children) {
-				var style;
-				for (var i = 0, l = this._item.children.length; i < l; i++) {
-					var childStyle = this._item.children[i]._style[get]();
+			var children = this._item && this._item.children,
+				style;
+			// If this item has children, walk through all of them and see if
+			// they all have the same style.
+			if (children) {
+				for (var i = 0, l = children.length; i < l; i++) {
+					var childStyle = children[i]._style[get]();
 					if (!style) {
 						style = childStyle;
 					} else if (style != childStyle) {
-						// If there is another item with a different style:
+						// If there is another item with a different style,
+						// the style is not defined:
 						return undefined;
 					}
 				}
@@ -68,6 +94,8 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			}
 		};
 
+		// 'this' = the Base.each() side-car = the object that is injected into
+		// Item above:
 		this[set] = function(value) {
 			this._style[set](value);
 			return this;

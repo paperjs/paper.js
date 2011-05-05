@@ -52,7 +52,7 @@ var Path = this.Path = PathItem.extend({
 			if (this._curves)
 				this._curves = null;
 		}
-		this._add(Segment.readAll(segments));
+		this._add(Segment.readAll(segments), true);
 	},
 
 	getFirstSegment: function() {
@@ -136,7 +136,7 @@ var Path = this.Path = PathItem.extend({
 	 * If a curves list was requested, it will kept in sync with the segments
 	 * list automatically.
 	 */
-	_add: function(segs, index) {
+	_add: function(segs, notify, index) {
 		// Local short-cuts:
 		var segments = this._segments,
 			curves = this._curves,
@@ -175,18 +175,19 @@ var Path = this.Path = PathItem.extend({
 			if (curve)
 				curve._segment1 = segments[index + amount];
 		}
-		this._changed();
+		if (notify)
+			this._changed();
 		return segs;
 	},
 
 	// TODO: Port back support for adding multiple segments at once to Sg
 	add: function(segment1 /*, segment2, ... */) {
-		return this._add(Segment.readAll(arguments));
+		return this._add(Segment.readAll(arguments), true);
 	},
 
 	// TODO: Port back support for adding multiple segments at once to Sg
 	insert: function(index, segment1 /*, segment2, ... */) {
-		return this._add(Segment.readAll(arguments, 1), index);
+		return this._add(Segment.readAll(arguments, 1), true, index);
 	},
 
 	// TODO: Port back to Sg
@@ -310,6 +311,7 @@ var Path = this.Path = PathItem.extend({
 			if (last1._point.equals(first1._point)) {
 				first1.setHandleIn(last1._handleIn);
 				last1.remove();
+				// TODO: Don't notify in setClosed... Use internal _setClosed?
 				this.setClosed(true);
 			}
 			this._changed();
@@ -441,8 +443,8 @@ var Path = this.Path = PathItem.extend({
 			ctx.lineTo(handleX, handleY);
 			ctx.stroke();
 			ctx.beginPath();
-			ctx.rect(handleX - 1, handleY - 1, 2, 2);
-			ctx.stroke();
+			ctx.arc(handleX, handleY, 1.75, 0, Math.PI * 2, true);
+			ctx.fill();
 		}
 	}
 	
@@ -679,12 +681,12 @@ var Path = this.Path = PathItem.extend({
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
 			if (!this._segments.length)
-				this._add([new Segment(Point.read(arguments))]);
+				this._add([ new Segment(Point.read(arguments)) ], true);
 		},
 
 		lineTo: function() {
 			// Let's not be picky about calling moveTo() first:
-			this._add([new Segment(Point.read(arguments))]);
+			this._add([ new Segment(Point.read(arguments)) ], true);
 		},
 
 		/**
@@ -700,7 +702,7 @@ var Path = this.Path = PathItem.extend({
 			// Convert to relative values:
 			current.setHandleOut(handle1.subtract(current._point));
 			// And add the new segment, with handleIn set to c2
-			this._add([new Segment(to, handle2.subtract(to), new Point())]);
+			this._add([ new Segment(to, handle2.subtract(to)) ], true);
 		},
 
 		/**
@@ -835,7 +837,7 @@ var Path = this.Path = PathItem.extend({
 				angle += inc;
 			}
 			// Add all segments at once at the end for higher performance
-			this._add(segments);
+			this._add(segments, true);
 		},
 
 		lineBy: function(vector) {
@@ -1011,10 +1013,13 @@ var Path = this.Path = PathItem.extend({
 		 * @param matrix optional
 		 */
 		getBounds: function(/* matrix */) {
+			var useCache = arguments.length == 0;
 			// Pass the matrix hidden from Bootstrap, so it still inject 
 			// getBounds as bean too.
-			if (!this._bounds) {
+			if (!useCache || !this._bounds) {
 				var bounds = getBounds(this, arguments[0]);
+				if (!useCache)
+					return bounds;
 				this._bounds = LinkedRectangle.create(this, 'setBounds',
 						bounds.x, bounds.y, bounds.width, bounds.height);
 			}
@@ -1025,6 +1030,9 @@ var Path = this.Path = PathItem.extend({
 		 * The bounding rectangle of the item including stroke width.
 		 */
 		getStrokeBounds: function(/* matrix */) {
+			var useCache = arguments.length == 0;
+			if (this._strokeBounds && useCache)
+				return this._strokeBounds;
 			var matrix = arguments[0], // set #getBounds()
 				width = this.getStrokeWidth(),
 				radius = width / 2,
@@ -1124,7 +1132,8 @@ var Path = this.Path = PathItem.extend({
 				addCap(segments[0], cap, 0);
 				addCap(segments[length - 1], cap, 1);
 			}
-
+			if (useCache)
+				this._strokeBounds = bounds;
 			return bounds;
 		},
 

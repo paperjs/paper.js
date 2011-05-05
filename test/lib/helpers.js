@@ -1,25 +1,3 @@
-function compareSegmentLists(list1, list2) {
-	equals(list1.length, list2.length, 'segment count');
-	if (list1.length == list2.length) {
-		for (var i = 0, l = list1.length; i < l; i++) {
-			compareSegments(list1[i], list2[i]);
-		}
-	}
-}
-
-function compareSegments(segment1, segment2) {
-	// Convert comparison value through Segment.read, to not have to provide
-	// all handles all the time.
-	segment2 = Segment.read([segment2]);
-	var points = ['point', 'handleIn', 'handleOut'];
-	for (var i = 0; i < 3; i++) {
-		equals(!!segment1[points[i]], !!segment2[points[i]],
-				'have ' + points[i]);
-		if (segment1[points[i]] && segment2[points[i]])
-			comparePoints(segment1[points[i]], segment2[points[i]], points[i]);
-	}
-}
-
 function compareNumbers(number1, number2, message) {
 	if (number1 !== 0)
 		number1 = Math.round(number1 * 100) / 100;
