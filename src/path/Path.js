@@ -337,7 +337,6 @@ var Path = this.Path = PathItem.extend({
 			if (last1._point.equals(first1._point)) {
 				first1.setHandleIn(last1._handleIn);
 				last1.remove();
-				// TODO: Don't notify in setClosed... Use internal _setClosed?
 				this.setClosed(true);
 			}
 			this._changed();
