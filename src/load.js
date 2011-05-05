@@ -72,7 +72,9 @@ var sources = [
 	'src/util/Numerical.js',
 	'src/util/PaperScript.js',
 
-	'src/ui/Key.js'
+	'src/ui/Key.js',
+	
+	'lib/Stats.js'
 ];
 
 // Load unit tests after library if asked to do so
