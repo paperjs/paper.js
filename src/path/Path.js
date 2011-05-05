@@ -1098,33 +1098,28 @@ var Path = this.Path = PathItem.extend({
 				if (join === 'round' || handleIn && handleOut) {
 					bounds = bounds.unite(joinBounds.setCenter(matrix
 						? matrix.transform(segment._point) : segment._point));
-				} else {
-					switch (join) {
-					case 'bevel':
-						var curve = segment.getCurve();
-						addBevelJoin(curve, 0);
-						addBevelJoin(curve.getPrevious(), 1);
-						break;
-					case 'miter':
-						var curve2 = segment.getCurve(),
-							curve1 = curve2.getPrevious(),
-							point = curve2.getPoint(0),
-							normal1 = curve1.getNormal(1).normalize(radius),
-							normal2 = curve2.getNormal(0).normalize(radius),
-							// Intersect the two lines
-							line1 = new Line(point.add(normal1),
-									new Point(-normal1.y, normal1.x)),
-							line2 = new Line(point.subtract(normal2),
-									new Point(-normal2.y, normal2.x)),
-							corner = line1.intersect(line2);
-						// Now measure the distance from the segment to the
-						// intersection, which his half of the miter distance
-						if (!corner || point.getDistance(corner) > miter) {
-							addJoin(segment, 'bevel');
-						} else {
-							add(corner);
-						}
-						break;
+				} else if (join == 'bevel') {
+					var curve = segment.getCurve();
+					addBevelJoin(curve, 0);
+					addBevelJoin(curve.getPrevious(), 1);
+				} else if (join == 'miter') {
+					var curve2 = segment.getCurve(),
+						curve1 = curve2.getPrevious(),
+						point = curve2.getPoint(0),
+						normal1 = curve1.getNormal(1).normalize(radius),
+						normal2 = curve2.getNormal(0).normalize(radius),
+						// Intersect the two lines
+						line1 = new Line(point.add(normal1),
+								new Point(-normal1.y, normal1.x)),
+						line2 = new Line(point.subtract(normal2),
+								new Point(-normal2.y, normal2.x)),
+						corner = line1.intersect(line2);
+					// Now measure the distance from the segment to the
+					// intersection, which his half of the miter distance
+					if (!corner || point.getDistance(corner) > miter) {
+						addJoin(segment, 'bevel');
+					} else {
+						add(corner);
 					}
 				}
 			}
