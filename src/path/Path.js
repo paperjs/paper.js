@@ -1011,10 +1011,13 @@ var Path = this.Path = PathItem.extend({
 		 * @param matrix optional
 		 */
 		getBounds: function(/* matrix */) {
+			var useCache = arguments.length == 0;
 			// Pass the matrix hidden from Bootstrap, so it still inject 
 			// getBounds as bean too.
-			if (!this._bounds) {
+			if (!useCache || !this._bounds) {
 				var bounds = getBounds(this, arguments[0]);
+				if (!useCache)
+					return bounds;
 				this._bounds = LinkedRectangle.create(this, 'setBounds',
 						bounds.x, bounds.y, bounds.width, bounds.height);
 			}
@@ -1025,6 +1028,9 @@ var Path = this.Path = PathItem.extend({
 		 * The bounding rectangle of the item including stroke width.
 		 */
 		getStrokeBounds: function(/* matrix */) {
+			var useCache = arguments.length == 0;
+			if (this._strokeBounds && useCache)
+				return this._strokeBounds;
 			var matrix = arguments[0], // set #getBounds()
 				width = this.getStrokeWidth(),
 				radius = width / 2,
@@ -1124,7 +1130,8 @@ var Path = this.Path = PathItem.extend({
 				addCap(segments[0], cap, 0);
 				addCap(segments[length - 1], cap, 1);
 			}
-
+			if (useCache)
+				this._strokeBounds = bounds;
 			return bounds;
 		},
 
