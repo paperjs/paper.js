@@ -52,7 +52,7 @@ var Path = this.Path = PathItem.extend({
 			if (this._curves)
 				this._curves = null;
 		}
-		this._add(Segment.readAll(segments), true);
+		this._add(Segment.readAll(segments));
 	},
 
 	getFirstSegment: function() {
@@ -136,7 +136,7 @@ var Path = this.Path = PathItem.extend({
 	 * If a curves list was requested, it will kept in sync with the segments
 	 * list automatically.
 	 */
-	_add: function(segs, notify, index) {
+	_add: function(segs, index) {
 		// Local short-cuts:
 		var segments = this._segments,
 			curves = this._curves,
@@ -175,8 +175,7 @@ var Path = this.Path = PathItem.extend({
 			if (curve)
 				curve._segment1 = segments[index + amount];
 		}
-		if (notify)
-			this._changed();
+		this._changed();
 		return segs;
 	},
 
@@ -184,38 +183,38 @@ var Path = this.Path = PathItem.extend({
 	add: function(segment1 /*, segment2, ... */) {
 		return arguments.length > 1 && typeof segment1 != 'number'
 			// addSegments
-			? this._add(Segment.readAll(arguments), true)
+			? this._add(Segment.readAll(arguments))
 			// addSegment
-			: this._add([ Segment.read(arguments) ], true)[0];
+			: this._add([ Segment.read(arguments) ])[0];
 	},
 
 	// TODO: Port back support for adding multiple segments at once to Sg
 	insert: function(index, segment1 /*, segment2, ... */) {
 		return arguments.length > 2 && typeof segment1 != 'number'
 			// insertSegments
-			? this._add(Segment.readAll(arguments, 1), true, index)
+			? this._add(Segment.readAll(arguments, 1), index)
 			// insertSegment
-			: this._add([ Segment.read(arguments, 1) ], true, index)[0];
+			: this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
 	// TODO: Port back to Sg
 	addSegment: function(segment) {
-		return this._add([ Segment.read(arguments) ], true)[0];
+		return this._add([ Segment.read(arguments) ])[0];
 	},
 
 	// TODO: Port back to Sg
 	insertSegment: function(index, segment) {
-		return this._add([ Segment.read(arguments, 1) ], true, index)[0];
+		return this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
 	// TODO: Port back to Sg
 	addSegments: function(segments) {
-		return this._add(Segment.readAll(segments), true);
+		return this._add(Segment.readAll(segments));
 	},
 
 	// TODO: Port back to Sg
 	insertSegments: function(index, segments) {
-		return this._add(Segment.readAll(segments), true, index);
+		return this._add(Segment.readAll(segments), index);
 	},
 
 	// TODO: Port back to Sg
@@ -708,12 +707,12 @@ var Path = this.Path = PathItem.extend({
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
 			if (!this._segments.length)
-				this._add([ new Segment(Point.read(arguments)) ], true);
+				this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
 		lineTo: function() {
 			// Let's not be picky about calling moveTo() first:
-			this._add([ new Segment(Point.read(arguments)) ], true);
+			this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
 		/**
@@ -729,7 +728,7 @@ var Path = this.Path = PathItem.extend({
 			// Convert to relative values:
 			current.setHandleOut(handle1.subtract(current._point));
 			// And add the new segment, with handleIn set to c2
-			this._add([ new Segment(to, handle2.subtract(to)) ], true);
+			this._add([ new Segment(to, handle2.subtract(to)) ]);
 		},
 
 		/**
@@ -864,7 +863,7 @@ var Path = this.Path = PathItem.extend({
 				angle += inc;
 			}
 			// Add all segments at once at the end for higher performance
-			this._add(segments, true);
+			this._add(segments);
 		},
 
 		lineBy: function(vector) {
