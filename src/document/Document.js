@@ -65,6 +65,18 @@ var Document = this.Document = Base.extend({
 		this.views = [this.activeView];
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
+		// TODO: test this on IE:
+		if (this.canvas.attributes.stats) {
+			this.stats = new Stats();
+			// Align top-left to the canvas
+			var element = this.stats.domElement,
+				style = element.style,
+				offset = Element.getOffset(this.canvas);
+			style.position = 'absolute';
+			style.left = offset.x + 'px';
+			style.top = offset.y + 'px';
+			document.body.appendChild(element);
+		}
 	},
 	
 	getSize: function() {
@@ -144,6 +156,8 @@ var Document = this.Document = Base.extend({
 	
 	draw: function() {
 		if (this.canvas) {
+			if (this.stats)
+				this.stats.update();
 			var ctx = this.context;
 			ctx.save();
 
