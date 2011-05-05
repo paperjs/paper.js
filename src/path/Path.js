@@ -326,8 +326,7 @@ var Path = this.Path = PathItem.extend({
 				if (first1._point.equals(last2._point)) {
 					first1.setHandleIn(last2._handleIn);
 					// Prepend all segments from path except last one
-					// TODO: Test if -1 (== all) or -2 (as described by comment)
-					this._add(segments.slice(0, segments.length - 2), 0);
+					this._add(segments.slice(0, segments.length - 1), 0);
 				} else {
 					this._add(segments.slice(0));
 				}
