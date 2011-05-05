@@ -161,8 +161,8 @@ var Color = this.Color = Base.extend(new function() {
 		 * @return {@true if the GrayColor is the same}
 		 */
 		equals: function(color) {
-			if (color && color._colorType == this._colorType) {
-				for (var i = 0, l = this._components; i < l; i++) {
+			if (color && color._colorType === this._colorType) {
+				for (var i = 0, l = this._components.length; i < l; i++) {
 					var component = '_' + this._components[i];
 					if (this[component] !== color[component])
 						return false;
