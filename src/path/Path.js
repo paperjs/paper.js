@@ -182,12 +182,40 @@ var Path = this.Path = PathItem.extend({
 
 	// TODO: Port back support for adding multiple segments at once to Sg
 	add: function(segment1 /*, segment2, ... */) {
-		return this._add(Segment.readAll(arguments), true);
+		return arguments.length > 1 && typeof segment1 != 'number'
+			// addSegments
+			? this._add(Segment.readAll(arguments), true)
+			// addSegment
+			: this._add([ Segment.read(arguments) ], true)[0];
 	},
 
 	// TODO: Port back support for adding multiple segments at once to Sg
 	insert: function(index, segment1 /*, segment2, ... */) {
-		return this._add(Segment.readAll(arguments, 1), true, index);
+		return arguments.length > 2 && typeof segment1 != 'number'
+			// insertSegments
+			? this._add(Segment.readAll(arguments, 1), true, index)
+			// insertSegment
+			: this._add([ Segment.read(arguments, 1) ], true, index)[0];
+	},
+
+	// TODO: Port back to Sg
+	addSegment: function(segment) {
+		return this._add([ Segment.read(arguments) ], true)[0];
+	},
+
+	// TODO: Port back to Sg
+	insertSegment: function(index, segment) {
+		return this._add([ Segment.read(arguments, 1) ], true, index)[0];
+	},
+
+	// TODO: Port back to Sg
+	addSegments: function(segments) {
+		return this._add(Segment.readAll(segments), true);
+	},
+
+	// TODO: Port back to Sg
+	insertSegments: function(index, segments) {
+		return this._add(Segment.readAll(segments), true, index);
 	},
 
 	// TODO: Port back to Sg
