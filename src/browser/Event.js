@@ -43,9 +43,14 @@ var Event = {
 	},
 
 	getPoint: function(event) {
+		var pos = event.targetTouches
+				? event.targetTouches.length
+					? event.targetTouches[0]
+					: event.changedTouches[0]
+				: event;
 		return Point.create(
-			event.pageX || event.clientX + document.documentElement.scrollLeft,
-			event.pageY || event.clientY + document.documentElement.scrollTop
+			pos.pageX || pos.clientX + document.documentElement.scrollLeft,
+			pos.pageY || pos.clientY + document.documentElement.scrollTop
 		);
 	},
 
