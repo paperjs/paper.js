@@ -3,6 +3,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Example</title>
+	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
@@ -10,12 +11,12 @@
 		// http://processing.org/learning/topics/flocking.html
 		
 		// Resize the document, whenever the window is resized, 
-		window.onresize = function(event) {
-			document.size = Element.getScrollBounds().size;
-			size = document.size;
-			heartPath.position = document.bounds.center;
-			document.redraw();
-		}
+		Event.add(window, {
+			resize: function(event) {
+				size = document.size;
+				heartPath.position = document.bounds.center;
+			}
+		});
 		
 		document.currentStyle = {
 			strokeColor: 'white',
@@ -263,9 +264,6 @@
 			mouseDown = false,
 			boids = [];
 
-		// Call to resize the document to the current window size:
-		window.onresize();
-		
 		// Add the boids:
 		for (var i = 0; i < 30; i++) {
 			var position = Point.random() * document.size;
@@ -296,11 +294,9 @@
 	<style>
 		body {
 			background: black;
-			margin: 0;
-			overflow: hidden;
 		}
 	</style>
 </head>
 <body>
-	<canvas id='canvas'></canvas>
+	<canvas id='canvas' resize='true'></canvas>
 </body>
