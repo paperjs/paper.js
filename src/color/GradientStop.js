@@ -37,5 +37,15 @@ var GradientStop = this.GradientStop = Base.extend({
 
 	setColor: function(color) {
 		this._color = Color.read(arguments);
+	},
+	
+	equals: function(stop) {
+		if (stop == this) {
+			return true;
+		} else if (stop instanceof GradientStop) {
+			return this._color.equals(stop._color)
+				&& rampPoint == stop.rampPoint;
+		}
+		return false;
 	}
 });

@@ -53,5 +53,16 @@ var Gradient = this.Gradient = Base.extend({
 			}
 		}
 		this._stops = stops;
+	},
+	
+	equals: function(gradient) {
+		if (this.stops.length == gradient.stops.length) {
+			for (var i = 0, l = this.stops.length; i < l; i++) {
+				if (!this.stops[i].equals(gradient.stops[i]))
+					return false;
+			}
+			return true;
+		}
+		return false;
 	}
 });
