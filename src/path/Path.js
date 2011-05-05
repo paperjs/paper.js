@@ -441,8 +441,8 @@ var Path = this.Path = PathItem.extend({
 			ctx.lineTo(handleX, handleY);
 			ctx.stroke();
 			ctx.beginPath();
-			ctx.rect(handleX - 1, handleY - 1, 2, 2);
-			ctx.stroke();
+			ctx.arc(handleX, handleY, 1.75, 0, Math.PI * 2, true);
+			ctx.fill();
 		}
 	}
 	
