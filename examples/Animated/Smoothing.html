@@ -7,22 +7,29 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var width = document.bounds.width;
-		var height = document.bounds.height / 2;
-		var pathHeight = document.bounds.height / 2;
+		var width, height, pathHeight, center;
+
 		var points = 10;
 		var count = 0;
 		var smooth = true;
-		var center = document.bounds.center;
 		var path = new Path();
 		path.fillColor = 'black';
-		path.add(document.bounds.bottomLeft);
-		for (var i = 1; i < points; i++) {
-			var point = new Point(width / points * i, center.y);
-			path.add(point);
+		initializePath();
+		
+		function initializePath() {
+			center = document.bounds.center;
+			width = document.bounds.width;
+			height = document.bounds.height / 2;
+			path.segments = [];
+			path.add(document.bounds.bottomLeft);
+			for (var i = 1; i < points; i++) {
+				var point = new Point(width / points * i, center.y);
+				path.add(point);
+			}
+			path.add(document.bounds.bottomRight);
+			path.selected = true;
 		}
-		path.add(document.bounds.bottomRight);
-		path.selected = true;
+		
 		function onFrame() {
 			count++;
 			for (var i = 1; i < points; i++) {
@@ -50,6 +57,15 @@
 				}
 			}
 		}
+		
+		// Reposition the path whenever the window is resized:
+		Event.add(window, {
+			resize: function(event) {
+				initializePath();
+				onFrame();
+				document.redraw();
+			}
+		});
 	</script>
 </head>
 <body>
