@@ -12,20 +12,19 @@
 		var values = {
 			count: 34,
 			points: 32
-		}
+		};
 	
 		var center = new Point(document.size) / 2;
 		for (var i = 0; i < values.count; i++) {
 			var offset = new Point(20 + 10 * i, 0);
 			var path = new Path();
 			path.fillColor = i % 2 ? 'red' : 'black';
-			//console.log('color', path.fillColor);
 			path.closed = true;
 		
 			var l = offset.length;
 			for (var j = 0; j < values.points * 2; j++) {
 				offset.angle += 360 / values.points;
-				var vector = offset.clone()
+				var vector = offset.clone();
 				vector.length = l * (j % 2 ? 0.1 : -0.1);
 				path.add(offset + vector);
 			}
@@ -44,6 +43,13 @@
 				item.rotate(angle);
 			}
 		}
+		
+		// Reposition the paths whenever the window is resized:
+		Event.add(window, {
+			resize: function(event) {
+				document.activeLayer.position = document.bounds.center;
+			}
+		});
 	</script>
 </head>
 <body>

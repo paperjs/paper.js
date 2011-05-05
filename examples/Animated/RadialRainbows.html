@@ -7,7 +7,6 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var vector = new Point(document.size.height, 0);
 		var point = new Point(document.size) / 2;
 		
 		var colors = [];
@@ -18,9 +17,10 @@
 			colors.push(color);
 		}
 
+		var path = new Path.Rectangle(document.bounds);
 		var gradient = new Gradient(colors, 'radial');
-		var gradientColor = new GradientColor(gradient, point, point + vector);
-		var path = new Path.Rectangle(new Rectangle([0, 0], document.size));
+		var radius = Math.max(document.size.height, document.size.width) * 0.75;
+		var gradientColor = new GradientColor(gradient, point, point + [radius, 0]);
 		path.fillColor = gradientColor;
 		
 		tool.eventInterval = 30;
@@ -65,6 +65,17 @@
 			vector.angle += 5;
 			gradientColor.hilite = mouseDown ? point : point + vector;
 		}
+		
+		Event.add(window, {
+			resize: function(event) {
+				point = new Point(document.size) / 2;
+				path.bounds = document.bounds;
+				var radius = Math.max(document.size.height, document.size.width) * 0.75;
+				var gradientColor = path.fillColor;
+				gradientColor.origin = point;
+				gradientColor.origin = point + radius;
+			}
+		});
 	</script>
 </head>
 <body>
