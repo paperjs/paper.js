@@ -840,25 +840,24 @@ var Path = this.Path = PathItem.extend({
 				var relx = Math.cos(angle),
 					rely = Math.sin(angle),
 					pt = new Point(
-							centerX + relx * radius,
-							centerY + rely * radius);
-				var out;
-				if (i == arcSegs) {
-					out = null;
-				} else {
-					out = new Point(
-							centerX + (relx - z * rely) * radius - pt.x,
-							centerY + (rely + z * relx) * radius - pt.y);
-				}
+						centerX + relx * radius,
+						centerY + rely * radius
+					);
+				var out = i == arcSegs
+					? null
+					: new Point(
+						centerX + (relx - z * rely) * radius - pt.x,
+						centerY + (rely + z * relx) * radius - pt.y
+					);
 				if (i == 0) {
 					// Modify startSegment
 					current.setHandleOut(out);
 				} else {
 					// Add new Segment
-					var handleIn = new Point(
-							centerX + (relx + z * rely) * radius - pt.x,
-							centerY + (rely - z * relx) * radius - pt.y);
-					segments.push(new Segment(pt, handleIn, out));
+					segments.push(new Segment(pt, new Point(
+						centerX + (relx + z * rely) * radius - pt.x,
+						centerY + (rely - z * relx) * radius - pt.y
+					), out));
 				}
 				angle += inc;
 			}
@@ -1073,7 +1072,6 @@ var Path = this.Path = PathItem.extend({
 				// It seems to be compatible with Ai we need to pass pen padding
 				// untransformed to getBounds()
 				bounds = getBounds(this, matrix, getPenPadding(radius));
-
 			// Create a rectangle of padding size, used for union with bounds
 			// further down
 			var joinBounds = new Rectangle(new Size(padding).multiply(2));
