@@ -20,7 +20,7 @@ var Document = this.Document = Base.extend({
 	initialize: function(canvas) {
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this.canvas = canvas;
-			if (canvas.getAttribute('resize')) {
+			if (canvas.attributes.resize) {
 				// If the canvas has a fullscreen attribute,
 				// resize the canvas to fill the window and resize it again
 				// whenever the user resizes the window.
