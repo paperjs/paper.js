@@ -79,6 +79,22 @@ var GradientColor = this.GradientColor = Color.extend({
 			gradient.addColorStop(stop._rampPoint, stop.color.toCssString());
 		}
 		return gradient;
-	}
+	},
+	
+	/**
+	 * Checks if the component color values of the color are the
+	 * same as those of the supplied one.
+	 * 
+	 * @param obj the GrayColor to compare with
+	 * @return {@true if the GrayColor is the same}
+	 */
+	equals: function(color) {
+		if (color && color._colorType === this._colorType) {
+			return this.gradient.equals(color.gradient)
+					&& this._origin.equals(color._origin)
+					&& this._destination.equals(color._destination);
+		}
+		return false;
+	},
 });
 
