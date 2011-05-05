@@ -86,7 +86,9 @@ var Size = this.Size = Base.extend({
 	},
 
 	toString: function() {
-		return '{ x: ' + this.width + ', y: ' + this.height + ' }';
+		var format = Base.formatNumber;
+		return '{ x: ' + format(this.width)
+				+ ', y: ' + format(this.height) + ' }';
 	},
 
 	statics: {

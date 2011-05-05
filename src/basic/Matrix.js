@@ -193,9 +193,11 @@ var Matrix = this.Matrix = Base.extend({
 	 * @return {string} A string representation of this transform.
 	 */
 	toString: function() {
-		return '[[' 
-			+ [this._m00, this._m01, this._m02].join(', ') + '], ['
-		 	+ [this._m10, this._m11, this._m12].join(', ') + ']]';
+		var format = Base.formatNumber;
+		return '[[' + [format(this._m00), format(this._m01),
+					format(this._m02)].join(', ') + '], ['
+				+ [format(this._m10), format(this._m11),
+					format(this._m12)].join(', ') + ']]';
 	},
 	
 	/**

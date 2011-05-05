@@ -43,7 +43,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	},
 
 	getBounds: function() {
-		var bounds = this.symbol._definition.getStrokeBounds(this.matrix, true);
+		var bounds = this.symbol._definition.getStrokeBounds(this.matrix);
 		return LinkedRectangle.create(this, 'setBounds',
 				bounds.x, bounds.y, bounds.width, bounds.height);
 	},

@@ -129,8 +129,8 @@ CurveLocation = Base.extend({
 	},
 
 	toString: function() {
-		var parts = [];
-		var point = this.getPoint();
+		var parts = [],
+			point = this.getPoint();
 		if (point)
 			parts.push('point: ' + point);
 		var index = this.getIndex();
@@ -138,7 +138,7 @@ CurveLocation = Base.extend({
 			parts.push('index: ' + index);
 		var parameter = this.getParameter();
 		if (parameter != null)
-			parts.push('parameter: ' + parameter);
+			parts.push('parameter: ' + Base.formatNumber(parameter));
 		return '{ ' + parts.join(', ') + ' }';
 	}
 });

@@ -161,7 +161,7 @@ var Color = this.Color = Base.extend(new function() {
 		 * @return {@true if the GrayColor is the same}
 		 */
 		equals: function(color) {
-			if (color._colorType == this._colorType) {
+			if (color && color._colorType == this._colorType) {
 				for (var i = 0, l = this._components; i < l; i++) {
 					var component = '_' + this._components[i];
 					if (this[component] !== color[component])
@@ -173,13 +173,14 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		toString: function() {
-			var parts = [];
+			var parts = [],
+				format = Base.formatNumber;
 			for (var i = 0, l = this._components.length; i < l; i++) {
-				var component = this._components[i];
-				var value = this['_' + component];
+				var component = this._components[i],
+					value = this['_' + component];
 				if (component === 'alpha' && value == null)
 					value = 1;
-				parts.push(component + ': ' + value);
+				parts.push(component + ': ' + format(value));
 			}
 			return '{ ' + parts.join(', ') + ' }';
 		},

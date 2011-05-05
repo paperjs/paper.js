@@ -221,10 +221,11 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	toString: function() {
-		return '{ x: ' + this.x
-				+ ', y: ' + this.y
-				+ ', width: ' + this.width
-				+ ', height: ' + this.height
+		var format = Base.formatNumber;
+		return '{ x: ' + format(this.x)
+				+ ', y: ' + format(this.y)
+				+ ', width: ' + format(this.width)
+				+ ', height: ' + format(this.height)
 				+ ' }';
 	},
 

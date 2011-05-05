@@ -11,8 +11,7 @@ test('path.join(path)', function() {
 	path2.add([20, 10]);
 	
 	path.join(path2);
-	compareSegmentLists(path.segments, [new Segment(new Point(0, 0)),
-		new Segment(new Point(10, 0)), new Segment(new Point(20, 10))]);
+	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } }');
 	equals(doc.activeLayer.children.length, 1);
 
 	var path = new Path();
@@ -23,8 +22,7 @@ test('path.join(path)', function() {
 	path2.add([20, 10]);
 	path2.add([10, 0]);
 	path.join(path2);
-	compareSegmentLists(path.segments, [new Segment(new Point(0, 0)),
-		new Segment(new Point(10, 0)), new Segment(new Point(20, 10))]);
+	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } }');
 		
 	var path = new Path();
 	path.add([0, 0]);
@@ -34,10 +32,8 @@ test('path.join(path)', function() {
 	path2.add([30, 10]);
 	path2.add([40, 0]);
 	path.join(path2);
-	compareSegmentLists(path.segments, [new Segment(new Point(0, 0)),
-		new Segment(new Point(10, 0)), new Segment(new Point(30, 10)),
-		new Segment(new Point(40, 0))]);
-	
+	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 30, y: 10 } },{ point: { x: 40, y: 0 } }');
+
 	var path = new Path();
 	path.add([0, 0]);
 	path.add([10, 0]);
@@ -49,9 +45,8 @@ test('path.join(path)', function() {
 	path2.add([20, 10]);
 	
 	path.join(path2);
-	compareSegmentLists(path.segments, [new Segment(new Point(0, 0)),
-		new Segment(new Point(10, 0)), new Segment(new Point(20, 10)),
-		new Segment(new Point(10, 5))]);
+	
+	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } },{ point: { x: 10, y: 5 } }');
 	equals(path.closed, true);
 });
 
@@ -94,12 +89,6 @@ test('Path#reverse', function() {
 	var doc = new Document();
 	var path = new Path.Circle([100, 100], 30);
 	path.reverse();
-	compareSegmentLists(path.segments, [new Segment(new Point(100, 130),
-		new Point(-16.568359375, 0), new Point(16.568359375, 0)),
-		new Segment(new Point(130, 100), new Point(0, 16.568359375),
-		new Point(0, -16.568359375)), new Segment(new Point(100, 70),
-		new Point(16.568359375, 0), new Point(-16.568359375, 0)),
-		new Segment(new Point(70, 100), new Point(0, -16.568359375),
-		new Point(0, 16.568359375))]);
+	equals(path.segments.toString(), '{ point: { x: 100, y: 130 }, handleIn: { x: -16.56854, y: 0 }, handleOut: { x: 16.56854, y: 0 } },{ point: { x: 130, y: 100 }, handleIn: { x: 0, y: 16.56854 }, handleOut: { x: 0, y: -16.56854 } },{ point: { x: 100, y: 70 }, handleIn: { x: 16.56854, y: 0 }, handleOut: { x: -16.56854, y: 0 } },{ point: { x: 70, y: 100 }, handleIn: { x: 0, y: -16.56854 }, handleOut: { x: 0, y: 16.56854 } }');
 });
 

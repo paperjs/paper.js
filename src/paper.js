@@ -83,6 +83,10 @@ Base.inject({
 		return str.replace(/\b[a-z]/g, function(match) {
 			return match.toUpperCase();
 		});
+	},
+
+	formatNumber: function(num) {
+		return (Math.round(num * 100000) / 100000).toString();
 	}
 });
 
