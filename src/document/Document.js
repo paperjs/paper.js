@@ -20,8 +20,30 @@ var Document = this.Document = Base.extend({
 	initialize: function(canvas) {
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this.canvas = canvas;
-			this._size = Size.create(canvas.offsetWidth, 
-					canvas.offsetHeight);
+			if (canvas.getAttribute('resize')) {
+				// If the canvas has a fullscreen attribute,
+				// resize the canvas to fill the window and resize it again
+				// whenever the user resizes the window.
+				// TODO: set the following styles on the body tag:
+				// body {
+				//	background: black;
+				//	margin: 0;
+				//	overflow: hidden;
+				// }
+				this._size = Element.getScrollBounds().size;
+				this.canvas.width = this._size.width;
+				this.canvas.height = this._size.height;
+				var that = this;
+				Event.add(window, {
+					resize: function(event) {
+						that.setSize(Element.getScrollBounds().size);
+						that.redraw();
+					}
+				});
+			} else {
+				this._size = Size.create(canvas.offsetWidth, 
+						canvas.offsetHeight);
+			}
 		} else {
 			this._size = Size.read(arguments) || new Size(1024, 768);
 			this.canvas = CanvasProvider.getCanvas(this._size);
