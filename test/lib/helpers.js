@@ -1,3 +1,6 @@
+// Let's be strict
+equals = strictEqual;
+
 function compareNumbers(number1, number2, message) {
 	if (number1 !== 0)
 		number1 = Math.round(number1 * 100) / 100;

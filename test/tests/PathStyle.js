@@ -61,8 +61,8 @@ test('getting group styles', function() {
 	group.appendTop(secondPath);
 	
 	// the group now contains two paths with different fillColors and therefore
-	// should return null:
-	equals(group.fillColor, null, 'group.fillColor');
+	// should return undefined:
+	equals(group.fillColor, undefined, 'group.fillColor');
 	
 	//If we remove the first path, it should now return 'black':
 	group.children[0].remove();
