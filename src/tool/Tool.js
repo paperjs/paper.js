@@ -43,19 +43,24 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 				},
 
 				mousemove: function(event) {
+					// If the event was triggered by a touch screen device,
+					// prevent the default behaviour, as it will otherwise
+					// scroll the page:
+					if (event.targetTouches)
+						event.preventDefault();
 					var point = event && viewToArtwork(event, that._document);
-					if (dragging) {
+					// If there is only an onMouseMove handler, call it when
+					// the user is dragging
+					var onlyMove = !!(!that.onMouseDrag && that.onMouseMove);
+					if (dragging && !onlyMove) {
 						curPoint = point || curPoint;
-						if (curPoint) {
+						if (curPoint)
 							that.onHandleEvent('mouse-drag', curPoint, event);
-							if (that.onMouseDrag)
-								that._document.redraw();
-						}
-					} else {
+					} else if (!dragging || onlyMove) {
 						that.onHandleEvent('mouse-move', point, event);
-						if (that.onMouseMove)
-							that._document.redraw();
 					}
+					if (that.onMouseMove || that.onMouseDrag)
+						that._document.redraw();
 				},
 
 				mouseup: function(event) {
@@ -69,8 +74,21 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 							that._document.redraw();
 						dragging = false;
 					}
+				},
+
+				touchmove: function(event) {
+					that.events.mousemove(event);
+				},
+
+				touchstart: function(event) {
+					that.events.mousedown(event);
+				},
+
+				touchend: function(event) {
+					that.events.mouseup(event);
 				}
-			}
+			};
+			
 			if (paper.document)
 				this.setDocument(paper.document);
 			
