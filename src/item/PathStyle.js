@@ -55,11 +55,19 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 
 		fields[set] = function(value) {
 			var children = this._item && this._item.children;
+			value = isColor ? Color.read(arguments) : value;
 			if (children) {
 				for (var i = 0, l = children.length; i < l; i++)
 					children[i]._style[set](value);
 			} else {
-				this['_' + key] = isColor ? Color.read(arguments) : value;
+				var old = this['_' + key];
+				if (old != value && !(old && old.equals && old.equals(value))) {
+					this['_' + key] = value;
+					// TODO: Tell _item what exactly has changed. Maybe introduce
+					// ChangeFlags, e.g. STROKE, COLOR, FILL, GEOMETRY, etc?
+					if (this._item && this._item._changed)
+						this._item._changed();
+				}
 			}
 			return this;
 		};
