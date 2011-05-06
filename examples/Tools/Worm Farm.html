@@ -73,7 +73,7 @@
 			worm.insert(1, bottom);
 
 			// make a new line path from top to bottom
-			var line = new Path.Line(top, bottom);
+			new Path(top, bottom);
 			
 			// This is the point at the front of the worm:
 			worm.firstSegment.point = event.point;
