@@ -12,13 +12,21 @@
 
 		var values  = {
 			minDistance: 10,
+			maxDistance: 30,
 			varyThickness: true
+		};
+
+		// All newly created items will inherit the following styles:
+		document.currentStyle = {
+			fillColor: 'white',
+			strokeColor: 'black'
 		};
 
 		/////////////////////////////////////////////////////////////////////
 		// Mouse handling
 
 		tool.minDistance = values.minDistance;
+		tool.maxDistance = values.maxDistance;
 
 		var worm;
 
@@ -26,9 +34,8 @@
 		// and when a user drags the mouse we add points to it
 		function onMouseDown(event) {
 			worm = new Path();
-			worm.fillColor = '#ffffff';
-			worm.strokeColor = '#000000';
-			worm.add(event.point);
+			worm.add(event.point, event.point);
+			worm.closed = true;
 		}
 
 		function onMouseDrag(event) {
@@ -62,20 +69,16 @@
 			// add the top point to the end of the path
 			worm.add(top);
 
-			// insert the bottom point in the beginning of the path
-			worm.insert(0, bottom);
+			// insert the bottom point after the first segment of the path
+			worm.insert(1, bottom);
 
 			// make a new line path from top to bottom
 			var line = new Path.Line(top, bottom);
-			line.strokeColor = '#000000';
+			
+			// This is the point at the front of the worm:
+			worm.firstSegment.point = event.point;
 
 			// smooth the segments of the path
-			worm.smooth();
-		}
-
-		function onMouseUp(event) {
-			worm.closed = true;
-			worm.add(event.point);
 			worm.smooth();
 		}
 	</script>
