@@ -124,7 +124,7 @@ var Path = this.Path = PathItem.extend({
 		if (!matrix.isIdentity()) {
 			var coords = new Array(6);
 			for (var i = 0, l = this._segments.length; i < l; i++) {
-				this._segments[i]._transformCoordinates(matrix, coords, true);
+				this._segments[i].__transformCoordinates(matrix, coords, true);
 			}
 		}
 		this._changed();
@@ -894,11 +894,11 @@ var Path = this.Path = PathItem.extend({
 		// Make coordinates for first segment available in prevCoords.
 		if (matrix && matrix.isIdentity())
 			matrix = null;
-		first._transformCoordinates(matrix, prevCoords, false);
+		first.__transformCoordinates(matrix, prevCoords, false);
 		var min = prevCoords.slice(0, 2),
 			max = min.slice(0); // clone
 		function processSegment(segment) {
-			segment._transformCoordinates(matrix, coords, false);
+			segment.__transformCoordinates(matrix, coords, false);
 
 			for (var i = 0; i < 2; i++) {
 				var v0 = prevCoords[i], // prev.point

@@ -265,7 +265,7 @@ var Segment = this.Segment = Base.extend({
 			coords[i++] = handleOut._y + y;
 		}
 		if (matrix) {
-			matrix.transform(coords, 0, coords, 0, i / 2);
+			matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
 			x = coords[0];
 			y = coords[1];
 			if (change) {

@@ -692,7 +692,7 @@ var Item = this.Item = Base.extend({
 					left, bottom
 				];
 			if (matrix)
-				matrix.transform(coords, 0, coords, 0, 4);
+				matrix._transformCoordinates(coords, 0, coords, 0, 4);
 			ctx.beginPath();
 			for (var i = 0; i < 8; i++)
 				ctx[i == 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
