@@ -22,6 +22,15 @@
 var sources = [
 	'lib/bootstrap.js',
 	'lib/parse-js.js',
+	'lib/stats.js',
+
+	'src/browser/Element.js',
+	'src/browser/Event.js',
+
+	'src/util/CanvasProvider.js',
+	'src/util/Numerical.js',
+	'src/util/PaperScript.js',
+	'src/util/BlendMode.js',
 
 	'src/paper.js',
 
@@ -64,17 +73,7 @@ var sources = [
 	'src/tool/ToolHandler.js',
 	'src/tool/Tool.js',
 
-	'src/browser/Element.js',
-	'src/browser/Event.js',
-
-	'src/util/BlendMode.js',
-	'src/util/CanvasProvider.js',
-	'src/util/Numerical.js',
-	'src/util/PaperScript.js',
-
-	'src/ui/Key.js',
-	
-	'lib/Stats.js'
+	'src/ui/Key.js'
 ];
 
 // Load unit tests after library if asked to do so

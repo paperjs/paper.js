@@ -90,6 +90,16 @@ Base.inject({
 	}
 });
 
+//#ifdef BROWSER
+//#include "browser/Element.js"
+//#include "browser/Event.js"
+//#endif // BROWSER
+
+//#include "util/CanvasProvider.js"
+//#include "util/Numerical.js"
+//#include "util/PaperScript.js"
+//#include "util/BlendMode.js"
+
 //#include "basic/Point.js"
 //#include "basic/Size.js"
 //#include "basic/Rectangle.js"
@@ -127,16 +137,6 @@ Base.inject({
 //#include "tool/ToolEvent.js"
 //#include "tool/ToolHandler.js"
 //#include "tool/Tool.js"
-
-//#ifdef BROWSER
-//#include "browser/Element.js"
-//#include "browser/Event.js"
-//#endif // BROWSER
-
-//#include "util/BlendMode.js"
-//#include "util/CanvasProvider.js"
-//#include "util/Numerical.js"
-//#include "util/PaperScript.js"
 
 //#ifdef BROWSER
 //#include "ui/Key.js"
