@@ -205,7 +205,7 @@ var Document = this.Document = Base.extend({
 				ctx.save();
 				ctx.strokeWidth = 1;
 				// TODO: use Layer#color
-				ctx.strokeStyle = ctx.fillStyle = '#4f7aff';
+				ctx.strokeStyle = ctx.fillStyle = '009dec';
 				param = { selection: true };
 				Base.each(this._selectedItems, function(item) {
 					item.draw(ctx, param);
