@@ -879,7 +879,8 @@ var Path = this.Path = PathItem.extend({
 	// Add some tolerance for good roots, as t = 0 / 1 are added seperately
 	// anyhow, and we don't want joins to be added with radiuses in
 	// getBounds()
-	var tMin = 10e-6, tMax = 1 - 10e-6;
+	var tMin = Numerical.TOLERANCE,
+		tMax = 1 - tMin;
 
 	function getBounds(that, matrix, strokePadding) {
 		// Code ported and further optimised from:
