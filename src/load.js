@@ -24,6 +24,8 @@ var sources = [
 	'lib/parse-js.js',
 	'lib/stats.js',
 
+	'src/paper.js',
+
 	'src/browser/Element.js',
 	'src/browser/Event.js',
 
@@ -31,8 +33,6 @@ var sources = [
 	'src/util/Numerical.js',
 	'src/util/PaperScript.js',
 	'src/util/BlendMode.js',
-
-	'src/paper.js',
 
 	'src/basic/Point.js',
 	'src/basic/Size.js',
