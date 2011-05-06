@@ -7,14 +7,12 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var balls = [];
-
-		var circlePath = new Path.Circle([0, 0], 10);
+		var balls = [],
+			group = new Group(),
+			circlePath = new Path.Circle([0, 0], 10),
+			symbol = new Symbol(circlePath);
 		circlePath.fillColor = new GradientColor(null, [0, 0], [0, 12], [0, 2]);
 		circlePath.fillColor.gradient.type = 'radial';
-
-		var symbol = new Symbol(circlePath);
-		var group = new Group();
 
 		var Ball = Base.extend({
 			initialize: function(point, vector) {
@@ -31,41 +29,31 @@
 				this.item = new PlacedSymbol(symbol);
 				this.item.position = point;
 				this.item.scale(this.radius / 10);
-
 				group.appendTop(this.item);
 			},
 
-			contrainPoint: function() {
-				var x = this.point.x;
-				var y = this.point.y;
-				var radius = this.radius;
-				this.point.x = Math.min(Math.max(radius, x), document.size.width - radius);
-				this.point.y = Math.min(Math.max(radius, y), document.size.height - radius);
-			},
-
 			iterate: function() {
+				var size = document.size;
 				this.vector.y += this.gravity;
 				this.vector.x *= 0.99;
 				var pre = this.point + this.vector;
-				if (pre.x < this.radius || pre.x > document.size.width - this.radius)
-					this.vector.x *= -this.dampen;
-				if (pre.y < this.radius || pre.y > document.size.height - this.radius) {
-					if (Math.abs(this.vector.x) < 3) {
-						this.vector.x = Math.random() * 150 - 75;
-						this.vector.y = Math.random() * 100 + 20;
-					}
+				if (pre.x < this.radius || pre.x > size.width - this.radius)
+					this.vector.x *= -this.dampen; 
+				if (pre.y < this.radius || pre.y > size.height - this.radius) {
+					if (Math.abs(this.vector.x) < 3)
+						this.vector = Point.random() * [150, 100] + [-75, 20];
 					this.vector.y *= this.bounce;
 				}
-				this.point = this.point + this.vector;
-				this.contrainPoint();
-				this.item.position = this.point;
+				
+				var max = Point.max(this.radius, this.point + this.vector);
+				this.item.position = this.point = Point.min(max, size - this.radius);
 			}
 		});
 
 		for (var i = 0; i < 10; i++) {
-			var position = Point.random() * document.size;
-			var vector = (Point.random() - [0.5, 0]) * [50, 100];
-			var ball = new Ball(position, vector);
+			var position = Point.random() * document.size,
+				vector = (Point.random() - [0.5, 0]) * [50, 100],
+				ball = new Ball(position, vector);
 			balls.push(ball);
 		}
 
@@ -79,22 +67,21 @@
 			balls.push(ball);
 			lastDelta = null;
 		}
-		setInterval(draw, 30);
 
 		var boundPath = new Path.Rectangle([-10, -10], [-11, -11]);
-		boundPath.strokeColor = 'red';
-		boundPath.strokeWidth = 1;
+		boundPath.style = {
+			strokeColor: 'red',
+			strokeWidth: 1
+		};
 
-		function draw() {
-			for (var i = 0, l = balls.length; i < l; i++) {
+		function onFrame() {
+			for (var i = 0, l = balls.length; i < l; i++)
 				balls[i].iterate();
-			}
 			boundPath.bounds = group.bounds;
-			document.redraw();
 		}
 	</script>
 </head>
 <body>
 	<p>Click to add circles:</p>
-	<canvas id='canvas' resize></canvas>
+	<canvas id='canvas' resize stats></canvas>
 </body>
