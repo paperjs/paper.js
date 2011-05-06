@@ -795,8 +795,6 @@ var Path = this.Path = PathItem.extend({
 				cx = (x1 + x2 - m * (y2 - y1)) / 2,
 				cy = (y1 + y2 - m * (x1 - x2)) / 2,
 				radius = Math.sqrt(cx * cx + cy * cy - e),
-				// Note: reversing the Y equations negates the angle to adjust
-				// for the upside down coordinate system.
 				angle = Math.atan2(y1 - cy, x1 - cx),
 				middle = Math.atan2(y2 - cy, x2 - cx),
 				extent = Math.atan2(y3 - cy, x3 - cx),
