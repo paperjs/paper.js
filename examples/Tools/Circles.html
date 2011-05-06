@@ -16,17 +16,13 @@
 
 			var path;
 			function onMouseDrag(event) {
-				if (path) path.remove();
 				// The radius is the distance between the position
 				// where the user clicked and the current position
 				// of the mouse.
 				var radius = (event.downPoint - event.point).length;
 				path = new Path.Circle(event.downPoint, radius);
+				path.removeOnDrag();
 			};
-
-			function onMouseUp(event) {
-				path = null;
-			}
 	</script>
 </head>
 <body>
