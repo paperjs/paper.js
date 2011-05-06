@@ -292,26 +292,34 @@ var Matrix = this.Matrix = Base.extend({
 	 * @param {number} numPts The number of points to tranform.
 	 */
 	transform: function(/* point | */ src, srcOff, dst, dstOff, numPts) {
-		if (arguments.length == 5) {
-			var i = srcOff,
-				j = dstOff,
-				srcEnd = srcOff + 2 * numPts;
-			while (i < srcEnd) {
-				var x = src[i++];
-				var y = src[i++];
-				dst[j++] = x * this._m00 + y * this._m01 + this._m02;
-				dst[j++] = x * this._m10 + y * this._m11 + this._m12;
-			}
-			return dst;
-		} else if (arguments.length > 0) {
-			var point = Point.read(arguments),
-				x = point.x, y = point.y;
-			return Point.create(
-				x * this._m00 + y * this._m01 + this._m02,
-				x * this._m10 + y * this._m11 + this._m12
-			);
+		return arguments.length < 5
+			? this._transformPoint(Point.read(arguments))
+			: this._transformCoordinates(src, srcOff, dst, dstOff, numPts);
+	},
+
+	/**
+	 * A faster version of transform that only takes one point and does not 
+	 * attempt to convert it.
+	 */
+	_transformPoint: function(point) {
+		var x = point.x,
+			y = point.y;
+		return Point.create(
+			x * this._m00 + y * this._m01 + this._m02,
+			x * this._m10 + y * this._m11 + this._m12
+		);
+	},
+
+	_transformCoordinates: function(src, srcOff, dst, dstOff, numPts) {
+		var i = srcOff, j = dstOff,
+			srcEnd = srcOff + 2 * numPts;
+		while (i < srcEnd) {
+			var x = src[i++];
+			var y = src[i++];
+			dst[j++] = x * this._m00 + y * this._m01 + this._m02;
+			dst[j++] = x * this._m10 + y * this._m11 + this._m12;
 		}
-		return null;
+		return dst;
 	},
 
 	transformBounds: function(bounds) {
@@ -323,7 +331,7 @@ var Matrix = this.Matrix = Base.extend({
 			br = bounds.getBottomRight(),
 			bl = bounds.getBottomLeft(),
 			coords = [ tl.x, tl.y, tr.x, tr.y, br.x, br.y, bl.x, bl.y ];
-		this.transform(coords, 0, coords, 0, 4);
+		this._transformCoordinates(coords, 0, coords, 0, 4);
 		// Loop through all x and y coordinates and update min and max values.
 		// Start with the first coordinate pair for both (coords.slice(0, 2)).
 		var min = coords.slice(0, 2), max = min.slice(0);

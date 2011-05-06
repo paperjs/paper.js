@@ -112,7 +112,7 @@ var Point = this.Point = Base.extend({
 	},
 
 	transform: function(matrix) {
-		return matrix.transform(this);
+		return matrix._transformPoint(this);
 	},
 
 	/**

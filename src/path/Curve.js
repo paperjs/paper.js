@@ -185,10 +185,10 @@ var Curve = this.Curve = Base.extend({
 
 	transform: function(matrix) {
 		return new Curve(
-				matrix.transform(this._segment1._point),
-				matrix.transform(this._segment1._handleOut),
-				matrix.transform(this._segment2._handleIn),
-				matrix.transform(this._segment2._point));
+				matrix._transformPoint(this._segment1._point),
+				matrix._transformPoint(this._segment1._handleOut),
+				matrix._transformPoint(this._segment2._handleIn),
+				matrix._transformPoint(this._segment2._point));
 	},
 
 	reverse: function() {

@@ -78,11 +78,11 @@ var DocumentView = this.DocumentView = Base.extend({
 	// TODO: getMousePoint
 	// TODO: artworkToView(rect)
 	artworkToView: function(point) {
-		return this.matrix.transform(point);
+		return this.matrix._transformPoint(point);
 	},
 
 	viewToArtwork: function(point) {
 		// TODO: cache the inverse matrix:
-		return this.matrix.createInverse().transform(point);
+		return this.matrix.createInverse()._transformPoint(point);
 	}
 });
