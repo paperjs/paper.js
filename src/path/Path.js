@@ -791,63 +791,49 @@ var Path = this.Path = PathItem.extend({
 					- y1 * y3 + y1 * y2,
 				g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
 				m = g == 0 ? 0 : f / g,
-
-				c = (m * y2) - x2 - x1 - (m * y1),
-				d = (m * x1) - y1 - y2 - (x2 * m),
-				e = (x1 * x2) + (y1 * y2) - (m * x1 * y2) + (m * x2 * y1),
-
-				centerX = -c / 2,
-				centerY = -d / 2,
-				radius = Math.sqrt(centerX * centerX + centerY * centerY - e),
-
+				e = x1 * x2 + y1 * y2 - m * (x1 * y2 - y1 * x2),
+				cx = (x1 + x2 - m * (y2 - y1)) / 2,
+				cy = (y1 + y2 - m * (x1 - x2)) / 2,
+				radius = Math.sqrt(cx * cx + cy * cy - e),
 				// Note: reversing the Y equations negates the angle to adjust
 				// for the upside down coordinate system.
-				angle = Math.atan2(centerY - y1, x1 - centerX),
-				middle = Math.atan2(centerY - y2, x2 - centerX),
-				extent = Math.atan2(centerY - y3, x3 - centerX),
+				angle = Math.atan2(y1 - cy, x1 - cx),
+				middle = Math.atan2(y2 - cy, x2 - cx),
+				extent = Math.atan2(y3 - cy, x3 - cx),
+				diff = middle - angle,
+				d90 = Math.PI, // = 90 degrees in radians
+				d180 = d90 * 2; // = 180 degrees in radians
 
-				diff = middle - angle;
-
-			if (diff < -Math.PI)
-				diff += Math.PI * 2;
-			else if (diff > Math.PI)
-				diff -= Math.PI * 2;
+			if (diff < -d90)
+				diff += d180;
+			else if (diff > d90)
+				diff -= d180;
 
 			extent -= angle;
 			if (extent <= 0)
-				extent += Math.PI * 2;
-
-			if (diff < 0) extent = Math.PI * 2 - extent;
-			else extent = -extent;
-			angle = -angle;
+				extent += d180;
+			if (diff < 0)
+				extent -= d180;
 
 			var ext = Math.abs(extent),
-				arcSegs;
-			if (ext >= 2 * Math.PI) arcSegs = 4;
-			else arcSegs = Math.ceil(ext * 2 / Math.PI);
-
-			var inc = extent;
-			if (inc > 2 * Math.PI) inc = 2 * Math.PI;
-			else if (inc < -2 * Math.PI) inc = -2 * Math.PI;
-			inc /= arcSegs;
-
-			var halfInc = inc / 2,
-				z = 4 / 3 * Math.sin(halfInc) / (1 + Math.cos(halfInc));
-
-			var segments = [];
+				arcSegs =  ext >= d180
+				 	? 4 : Math.ceil(ext * 2 / Math.PI),
+				inc = Math.min(Math.max(extent, -d180), d180) / arcSegs,
+				z = 4 / 3 * Math.sin(inc / 2) / (1 + Math.cos(inc / 2)),
+				segments = [];
 			// TODO: Use Point#setAngle() and Point vector algebra instead.
 			for (var i = 0; i <= arcSegs; i++) {
 				var relx = Math.cos(angle),
 					rely = Math.sin(angle),
 					pt = new Point(
-						centerX + relx * radius,
-						centerY + rely * radius
+						cx + relx * radius,
+						cy + rely * radius
 					),
 					out = i == arcSegs
 						? null
 						: new Point(
-							centerX + (relx - z * rely) * radius - pt.x,
-							centerY + (rely + z * relx) * radius - pt.y
+							cx + (relx - z * rely) * radius - pt.x,
+							cy + (rely + z * relx) * radius - pt.y
 						);
 				if (i == 0) {
 					// Modify startSegment
@@ -855,8 +841,8 @@ var Path = this.Path = PathItem.extend({
 				} else {
 					// Add new Segment
 					segments.push(new Segment(pt, new Point(
-						centerX + (relx + z * rely) * radius - pt.x,
-						centerY + (rely - z * relx) * radius - pt.y
+						cx + (relx + z * rely) * radius - pt.x,
+						cy + (rely - z * relx) * radius - pt.y
 					), out));
 				}
 				angle += inc;
