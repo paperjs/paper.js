@@ -171,7 +171,7 @@ var PaperScript = new function() {
 		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
 				'Microsoft.XMLHTTP');
 		xhr.open('GET', url, true);
-		if ('overrideMimeType' in xhr) {
+		if (xhr.overrideMimeType) {
 			xhr.overrideMimeType('text/plain');
 		}
 		xhr.onreadystatechange = function() {
