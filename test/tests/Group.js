@@ -3,15 +3,21 @@ module('Group');
 test('new Group()', function() {
 	var doc = new Document();
 	var group = new Group();
-	equals(doc.activeLayer.children[0] == group, true);
+	equals(function() {
+		return doc.activeLayer.children[0] == group;
+	}, true);
 });
 
 test('new Group([item])', function() {
 	var doc = new Document();
 	var path = new Path();
 	var group = new Group([path]);
-	equals(doc.activeLayer.children.length == 1, true);
-	equals(group.children[0] == path, true);
+	equals(function() {
+		return doc.activeLayer.children.length == 1;
+	}, true);
+	equals(function() {
+		return group.children[0] == path;
+	}, true);
 });
 
 test('Group bounds', function() {

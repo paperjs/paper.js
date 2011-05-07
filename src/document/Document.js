@@ -55,6 +55,7 @@ var Document = this.Document = Base.extend({
 		this.bounds = Rectangle.create(0, 0, this._size.width,
 				this._size.height);
 		this.context = this.canvas.getContext('2d');
+		// Push it onto paper.documents and adjust index in one:
 		Base.splice(paper.documents, [this]);
 		this.activate();
 		this.layers = [];

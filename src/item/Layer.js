@@ -20,12 +20,9 @@ var Layer = this.Layer = Group.extend({
 	initialize: function() {
 		this.children = [];
 		this._document = paper.document;
-		this._document.layers.push(this);
+		// Push it onto document.layers and adjust index in one:
+		Base.splice(this._document.layers, [this]);
 		this.activate();
-	},
-
-	getIndex: function() {
-		return this.parent ? this.base() : this._document.layers.indexOf(this);
 	},
 
 	/**
@@ -33,21 +30,18 @@ var Layer = this.Layer = Group.extend({
 	* or its parent's children list.
 	*/
 	_removeFromParent: function() {
-		if (!this.parent) {
-			return !!this._document.layers.splice(this.getIndex(), 1).length;
-		} else {
-			return this.base();
-		}
+		return this.parent ? this.base()
+			: !!Base.splice(this._document.layers, null, this._index, 1).length;
 	},
 
 	getNextSibling: function() {
 		return this.parent ? this.base()
-				: this._document.layers[this.getIndex() + 1] || null;
+				: this._document.layers[this._index + 1] || null;
 	},
 
 	getPreviousSibling: function() {
 		return this.parent ? this.base()
-				: this._document.layers[this.getIndex() - 1] || null;
+				: this._document.layers[this._index - 1] || null;
 	},
 
 	activate: function() {
@@ -58,14 +52,13 @@ var Layer = this.Layer = Group.extend({
 		return function(item) {
 			// if the item is a layer and contained within Document#layers
 			if (item instanceof Layer && !item.parent
-					&& this._removeFromParent()) {
-				item._document.layers.splice(item.getIndex() + (above ? 1 : -1),
-						0, this);
+						&& this._removeFromParent()) {
+				Base.splice(item._document.layers, [this],
+						item._index + (above ? 1 : -1), 0);
 				this._setDocument(item._document);
 				return true;
-			} else {
-				return this.base(item);
 			}
+			return this.base(item);
 		};
 	}
 

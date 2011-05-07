@@ -17,5 +17,6 @@
 var ChangeFlags = {
 	PATH: 1, // Path geometry
 	STROKE: 2, // Stroke geometry
-	STYLE: 4 // Fille style or stroke color / dash
+	STYLE: 4, // Fille style or stroke color / dash,
+	HIERARCHY: 8 // Change in item hierarchy
 };
