@@ -60,16 +60,16 @@ var Item = this.Item = Base.extend({
 	clone: function() {
 		var copy = new this.constructor();
 		// TODO: Copy children and other things.
-		if (this.parent)
+		if (this.parent) {
 			this.parent.appendTop(copy);
+		}
 		return copy;
 	},
 
 	setSelected: function(selected) {
 		if (this.children) {
 			for (var i = 0, l = this.children.length; i < l; i++) {
-				var child = this.children[i];
-				child.setSelected(selected);
+				this.children[i].setSelected(selected);
 			}
 		} else {
 			if ((selected = !!selected) != this._selected) {
@@ -84,8 +84,9 @@ var Item = this.Item = Base.extend({
 	isSelected: function() {
 		if (this.children) {
 			for (var i = 0, l = this.children.length; i < l; i++) {
-				if (this.children[i].isSelected())
+				if (this.children[i].isSelected()) {
 					return true;
+				}
 			}
 		} else {
 			return !!this._selected;
@@ -98,11 +99,12 @@ var Item = this.Item = Base.extend({
 	},
 
 	_setDocument: function(document) {
-		if (document != this._document) {
+		if (this._document != document) {
 			this._document = document;
 			if (this.children) {
-				for (var i = 0, l = this.children.length; i < l; i++)
+				for (var i = 0, l = this.children.length; i < l; i++) {
 					this.children[i]._setDocument(document);
+				}
 			}
 		}
 	},
