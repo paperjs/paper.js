@@ -18,5 +18,7 @@ test('moveTo / lineTo', function() {
 
 	path.fillColor = 'black';
 	
-	equals(path.children.length, 2);
+	equals(function() {
+		return path.children.length;
+	}, 2));
 });
