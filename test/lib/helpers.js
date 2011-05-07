@@ -1,5 +1,18 @@
 // Let's be strict
-equals = strictEqual;
+
+function equals(actual, expected, message) {
+	if (typeof actual === 'function') {
+		if (!message) {
+			message = actual.toString().match(
+				/^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
+					.replace(/    /g, '')
+					.replace(/^\s+|\s+$/g, '')
+					.replace(/^return /, '');
+		}
+		actual = actual();
+	}
+	return strictEqual(actual, expected, message);
+}
 
 function compareNumbers(number1, number2, message) {
 	if (number1 !== 0)
