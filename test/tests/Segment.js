@@ -33,8 +33,13 @@ test('segment.reverse()', function() {
 test('segment.clone()', function() {
 	var segment = new Segment(new Point(10, 10), new Point(5, 5), new Point(15, 15));
 	var clone = segment.clone();
-	equals(segment == clone, false);
-	equals(segment.toString(), clone.toString());
+	equals(function() {
+		return segment == clone;
+	}, false);
+
+	equals(function() {
+		return segment.toString();
+	}, clone.toString());
 });
 
 test('segment.remove()', function() {
@@ -46,8 +51,10 @@ test('segment.remove()', function() {
 test('segment.selected', function() {
 	var path = new Path([10, 20], [50, 100]);
 	path.segments[0].point.selected = true;
-	equals(path.segments[0].point.selected, true);
-
+	equals(function() {
+		return path.segments[0].point.selected;
+	}, true);
 	path.segments[0].point.selected = false;
-	equals(path.segments[0].point.selected, false);
-});
+	equals(function() {
+		return path.segments[0].point.selected;
+	}, false);});

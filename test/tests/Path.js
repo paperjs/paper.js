@@ -12,7 +12,9 @@ test('path.join(path)', function() {
 	
 	path.join(path2);
 	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } }');
-	equals(doc.activeLayer.children.length, 1);
+	equals(function() {
+		return doc.activeLayer.children.length;
+	}, 1);
 
 	var path = new Path();
 	path.add(0, 0);
@@ -47,7 +49,9 @@ test('path.join(path)', function() {
 	path.join(path2);
 	
 	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } },{ point: { x: 10, y: 5 } }');
-	equals(path.closed, true);
+	equals(function() {
+		return path.closed;
+	}, true);
 });
 
 test('path.remove()', function() {
@@ -59,17 +63,25 @@ test('path.remove()', function() {
 	path.add(30, 0);
 	
 	path.removeSegment(0);
-	equals(path.segments.length, 3);
+	equals(function() {
+		return path.segments.length;
+	}, 3);
 
 	path.removeSegment(0);
-	equals(path.segments.length, 2);
+	equals(function() {
+		return path.segments.length;
+	}, 2);
 
 	path.removeSegments(0, 2);
-	equals(path.segments.length, 0);
+	equals(function() {
+		return path.segments.length;
+	}, 0);
 
 	path.remove();
 	
-	equals(doc.activeLayer.children.length, 0);
+	equals(function() {
+		return doc.activeLayer.children.length;
+	}, 0);
 });
 
 
@@ -77,12 +89,20 @@ test('Is the path deselected after setting a new list of segments?', function() 
 	var doc = new Document();
 	var path = new Path([0, 0]);
 	path.selected = true;
-	equals(path.selected, true);
-	equals(doc.selectedItems.length, 1);
+	equals(function() {
+		return path.selected;
+	}, true);
+	equals(function() {
+		return doc.selectedItems.length;
+	}, 1);
 
 	path.segments = [[0, 10]];
-	equals(path.selected, false);
-	equals(doc.selectedItems.length, 0);
+	equals(function() {
+		return path.selected;
+	}, false);
+	equals(function() {
+		return doc.selectedItems.length;
+	}, 0);
 });
 
 test('Path#reverse', function() {

@@ -6,8 +6,12 @@ function equals(actual, expected, message) {
 			message = actual.toString().match(
 				/^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
 					.replace(/    /g, '')
-					.replace(/^\s+|\s+$/g, '')
-					.replace(/^return /, '');
+					.replace(/^\s+|\s+$/g, '');
+			if (/^return /.test(message)) {
+				message = message
+					.replace(/^return /, '')
+					.replace(/;$/, '');
+			}
 		}
 		actual = actual();
 	}
