@@ -14,39 +14,52 @@
  * All rights reserved.
  */
 
-var Element = {
-	getOffset: function(el) {
-		var x = 0, y = 0;
+var Element = new function() {
+	function cumulate(el, name, parent) {
+		var left = name + 'Left',
+			top = name + 'Top',
+			x = 0,
+			y = 0;
 		while (el) {
-			x += el.offsetLeft;
-			y += el.offsetTop;
-			el = el.offsetParent;
+			x += el[left] || 0;
+			y += el[top] || 0;
+			el = el[parent];
 		}
 		return Point.create(x, y);
-	},
-
-	getSize: function(el) {
-		return Size.create(el.offsetWidth, el.offsetHeight);
-	},
-
-	getBounds: function(el) {
-		return new Rectangle(Element.getOffset(el), Element.getSize(el));
-	},
-
-	getScrollBounds: function() {
-		var doc = document.getElementsByTagName(
-				document.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
-		return Rectangle.create(
-			window.pageXOffset || doc.scrollLeft,
-			window.pageYOffset || doc.scrollTop,
-			window.innerWidth || doc.clientWidth,
-			window.innerHeight || doc.clientHeight
-		);
-	},
-
-	// Checks if element is visibile in current viewport
-	isVisible: function(el) {
-		// See if the two rectangle intersect
-		return Element.getScrollBounds().intersects(Element.getBounds(el));
 	}
+
+	return {
+		getOffset: function(el, scroll) {
+			var point = cumulate(el, 'offset', 'offsetParent');
+			return scroll
+				? point.subtract(cumulate(el, 'scroll', 'parentNode'))
+				: point;
+		},
+
+		getSize: function(el) {
+			return Size.create(el.offsetWidth, el.offsetHeight);
+		},
+
+		getBounds: function(el, scroll) {
+			return new Rectangle(Element.getOffset(el, scroll),
+					Element.getSize(el));
+		},
+
+		getWindowSize: function() {
+			var doc = document.getElementsByTagName(
+					document.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
+			return Size.create(
+				window.innerWidth || doc.clientWidth,
+				window.innerHeight || doc.clientHeight
+			);
+		},
+
+		// Checks if element is visibile in current viewport
+		isVisible: function(el) {
+			// See if the scrolled bounds intersect with the windows rectangle
+			// which always starts at 0, 0
+			return new Rectangle([0, 0], Element.getWindowSize())
+					.intersects(Element.getBounds(el, true));
+		}
+	};
 };
