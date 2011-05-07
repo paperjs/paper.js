@@ -42,16 +42,14 @@
 			vector.length = 10;
 			mouseDown = false;
 		}
+		
+		function onFrame() {
+			if (!mouseDown)
+				iterate();
+		}
 
 		var grow = false;
 		var vector = new Point(150, 0);
-		setInterval(draw, 30);
-		function draw() {
-			if (!mouseDown) {
-				iterate();
-				document.redraw();
-			}
-		}
 		
 		function iterate() {
 			for (var i = 0, l = gradient.stops.length; i < l; i++)
@@ -73,7 +71,8 @@
 				var radius = Math.max(document.size.height, document.size.width) * 0.75;
 				var gradientColor = path.fillColor;
 				gradientColor.origin = point;
-				gradientColor.origin = point + radius;
+				var radius = Math.max(document.size.height, document.size.width) * 0.75;
+				gradientColor.destination = point + [radius, 0];
 			}
 		});
 	</script>
