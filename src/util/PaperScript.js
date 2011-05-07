@@ -14,7 +14,7 @@
  * All rights reserved.
  */
 
-var PaperScript = new function() {
+var PaperScript = this.PaperScript = new function() {
 //TODO: Make sure there are all the correct copyrights for the inlined parse-js:
 //#include "../../lib/parse-js-min.js"
 
@@ -226,3 +226,6 @@ var PaperScript = new function() {
 
 //#endif // !BROWSER
 };
+
+// Export load directly:
+this.load = PaperScript.load;
