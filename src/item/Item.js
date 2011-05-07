@@ -519,7 +519,7 @@ var Item = this.Item = Base.extend({
 		matrix.applyToContext(ctx);
 		this.draw(ctx, {});
 		var raster = new Raster(canvas);
-		raster.setPosition(this.getBounds().getCenter());
+		raster.setPosition(this.getPosition());
 		raster.scale(1 / scale);
 		return raster;
 	},
