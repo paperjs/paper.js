@@ -152,6 +152,7 @@ Base.inject({
 
 //#include "color/Color.js"
 //#include "color/RGBColor.js"
+//#include "color/HSBColor.js"
 //#include "color/GrayColor.js"
 //#include "color/GradientColor.js"
 //#include "color/Gradient.js"
