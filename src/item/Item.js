@@ -804,8 +804,7 @@ var Item = this.Item = Base.extend({
 
 	function append(top) {
 		return function(item) {
-			if (this.children) {
-				item.removeFromParent();
+			if (this.children && item.removeFromParent()) {
 				this.children.splice(top ? this.children.length : 0, 0, item);
 				// TODO: Reassign _index
 				item.parent = this;
