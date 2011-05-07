@@ -26,14 +26,6 @@ var sources = [
 
 	'src/paper.js',
 
-	'src/browser/Element.js',
-	'src/browser/Event.js',
-
-	'src/util/CanvasProvider.js',
-	'src/util/Numerical.js',
-	'src/util/PaperScript.js',
-	'src/util/BlendMode.js',
-
 	'src/basic/Point.js',
 	'src/basic/Size.js',
 	'src/basic/Rectangle.js',
@@ -72,6 +64,14 @@ var sources = [
 	'src/tool/ToolEvent.js',
 	'src/tool/ToolHandler.js',
 	'src/tool/Tool.js',
+
+	'src/browser/Element.js',
+	'src/browser/Event.js',
+
+	'src/util/CanvasProvider.js',
+	'src/util/Numerical.js',
+	'src/util/PaperScript.js',
+	'src/util/BlendMode.js',
 
 	'src/ui/Key.js'
 ];
