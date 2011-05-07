@@ -51,7 +51,7 @@ var Key = new function() {
 					// 'preventDefault: event.preventDefault' throws
 					// an error in Safari when called, so we have to wrap
 					// it into a function.
-					// TODO: Port to Scriptographer:
+					// PORT: Add to Sg
 					preventDefault: function() {
 						if (event.preventDefault) {
 							event.preventDefault();
@@ -61,7 +61,7 @@ var Key = new function() {
 					}
 				};
 				var res = paper.tool[toolHandler](keyEvent);
-				// TODO: Port to Scriptographer:
+				// PORT: Add to Sg
 				// When the handler function returns false, prevent the
 				// default behaviour of the key event:
 				if (res === false)

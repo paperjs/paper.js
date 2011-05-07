@@ -183,7 +183,7 @@ var Path = this.Path = PathItem.extend({
 		return segs;
 	},
 
-	// TODO: Port back support for adding multiple segments at once to Sg
+	// PORT: Add support for adding multiple segments at once to Sg
 	add: function(segment1 /*, segment2, ... */) {
 		return arguments.length > 1 && typeof segment1 != 'number'
 			// addSegments
@@ -192,7 +192,7 @@ var Path = this.Path = PathItem.extend({
 			: this._add([ Segment.read(arguments) ])[0];
 	},
 
-	// TODO: Port back support for adding multiple segments at once to Sg
+	// PORT: Add support for adding multiple segments at once to Sg
 	insert: function(index, segment1 /*, segment2, ... */) {
 		return arguments.length > 2 && typeof segment1 != 'number'
 			// insertSegments
@@ -201,33 +201,33 @@ var Path = this.Path = PathItem.extend({
 			: this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
-	// TODO: Port back to Sg
+	// PORT: Add to Sg
 	addSegment: function(segment) {
 		return this._add([ Segment.read(arguments) ])[0];
 	},
 
-	// TODO: Port back to Sg
+	// PORT: Add to Sg
 	insertSegment: function(index, segment) {
 		return this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
-	// TODO: Port back to Sg
+	// PORT: Add to Sg
 	addSegments: function(segments) {
 		return this._add(Segment.readAll(segments));
 	},
 
-	// TODO: Port back to Sg
+	// PORT: Add to Sg
 	insertSegments: function(index, segments) {
 		return this._add(Segment.readAll(segments), index);
 	},
 
-	// TODO: Port back to Sg
+	// PORT: Add to Sg
 	removeSegment: function(index) {
 		var segments = this.removeSegments(index, index + 1);
 		return segments[0] || null;
 	},
 	
-	// TODO: Port back to Sg
+	// PORT: Add to Sg
 	removeSegments: function(from, to) {
 		from = from || 0;
 	 	to = Base.pick(to, this._segments.length - 1);
@@ -372,7 +372,7 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	// TODO: getLocationAt(point, precision)
-	// TODO: Port back renaming and new isParameter argument to Scriptographer
+	// PORT: Rename functions and add new isParameter argument in Sg
 	getLocationAt: function(offset, isParameter) {
 		var curves = this.getCurves(),
 			length = 0;

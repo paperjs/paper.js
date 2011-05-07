@@ -110,7 +110,7 @@ for (var i = 0; i < sources.length; i++) {
 		// Activate paper.debug for code loaded through load.js, as we're in
 		// development mode.
 		document.write('<script type="text/javascript">'
-				+ 'paper.debug = true;'
+				+ 'paper.debug = false;'
 				+ '</script>');
 	}
 }
