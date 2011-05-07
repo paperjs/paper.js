@@ -602,8 +602,7 @@ var Item = this.Item = Base.extend({
 	 */
 	translate: function(delta) {
 		var mx = new Matrix();
-		mx.translate.apply(mx, arguments);
-		return this.transform(mx);
+		return this.transform(mx.translate.apply(mx, arguments));
 	},
 
 	/**
