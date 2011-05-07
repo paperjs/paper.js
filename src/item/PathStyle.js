@@ -91,7 +91,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 					} else if (style != childStyle) {
 						// If there is another item with a different style,
 						// the style is not defined:
-						// TODO: Port back to Sg (currently returns null)
+						// PORT: Change this in Sg (currently returns null)
 						return undefined;
 					}
 				}

@@ -580,7 +580,7 @@ var Item = this.Item = Base.extend({
 				child.transform(matrix, flags);
 			}
 		}
-		// TODO: Port return this in all chainable commands back to Sg
+		// PORT: Return 'this' in all chainable commands
 		return this;
 	},
 
