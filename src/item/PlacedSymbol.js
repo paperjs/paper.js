@@ -24,12 +24,14 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		} else {
 			this.symbol = new Symbol(symbol);
 		}
+		this._position = this.symbol._definition.getPosition();
 		if (matrixOrOffset !== undefined) {
 			if (matrixOrOffset instanceof Matrix) {
 				this.matrix = matrixOrOffset;
 			} else {
 				this.matrix = new Matrix().translate(Point.read(arguments, 1));
 			}
+			this._position = this.matrix._transformPoint(this._position);
 		} else {
 			this.matrix = new Matrix();
 		}
@@ -40,6 +42,12 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		// raster, simply preconcatenate the internal matrix with the provided
 		// one.
 		this.matrix.preConcatenate(matrix);
+		// Transform position as well
+		this._position = matrix._transformPoint(this._position);
+	},
+
+	getPosition: function() {
+		return this._position.clone();
 	},
 
 	getBounds: function() {
