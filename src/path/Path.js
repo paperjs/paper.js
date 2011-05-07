@@ -145,7 +145,7 @@ var Path = this.Path = PathItem.extend({
 		var segments = this._segments,
 			curves = this._curves,
 			amount = segs.length,
-			append = index === undefined,
+			append = index == null,
 			index = append ? segments.length : index;
 		// Scan through segments to add first, convert if necessary and set
 		// _path and _index references on them.

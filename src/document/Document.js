@@ -50,12 +50,12 @@ var Document = this.Document = Base.extend({
 			this._size = Size.read(arguments) || new Size(1024, 768);
 			this.canvas = CanvasProvider.getCanvas(this._size);
 		}
-		// TODO: currently we don't do anything with Document#bounds.. What
-		// does it mean to change the bounds of the document? (JP)
+		// TODO: Currently we don't do anything with Document#bounds.
+		// What does it mean to change the bounds of the document? (JP)
 		this.bounds = Rectangle.create(0, 0, this._size.width,
 				this._size.height);
 		this.context = this.canvas.getContext('2d');
-		paper.documents.push(this);
+		Base.splice(paper.documents, [this]);
 		this.activate();
 		this.layers = [];
 		this.activeLayer = new Layer();
@@ -65,7 +65,7 @@ var Document = this.Document = Base.extend({
 		this.views = [this.activeView];
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
-		// TODO: test this on IE:
+		// TODO: Test this on IE:
 		if (this.canvas.attributes.stats) {
 			this.stats = new Stats();
 			// Align top-left to the canvas
@@ -102,6 +102,7 @@ var Document = this.Document = Base.extend({
 	},
 
 	activate: function() {
+		// TODO: Remove indexOf()
 		var index = paper.documents.indexOf(this);
 		if (index != -1) {
 			paper.document = this;

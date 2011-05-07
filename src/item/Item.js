@@ -251,24 +251,21 @@ var Item = this.Item = Base.extend({
 	 * The next item on the same level as this item.
 	 */
 	getNextSibling: function() {
-		return this.parent && this.parent.children[this.getIndex() + 1] || null;
+		return this.parent && this.parent.children[this._index + 1] || null;
 	},
 
 	/**
 	 * The previous item on the same level as this item.
 	 */
 	getPreviousSibling: function() {
-		return this.parent && this.parent.children[this.getIndex() - 1] || null;
+		return this.parent && this.parent.children[this._index - 1] || null;
 	},
 
 	/**
 	 * The index of this item within the list of it's parent's children.
 	 */
 	getIndex: function() {
-		// TODO: Relying on indexOf() here is slow, especially since it is
-		// used for getPrevious/NextSibling(). 
-		// We need linked lists instead.
-		return this.parent && this.parent.children.indexOf(this) || null;
+		return this._index !== undefined ? this._index : null;
 	},
 
 	/**
@@ -276,8 +273,8 @@ var Item = this.Item = Base.extend({
 	*/
 	_removeFromParent: function() {
 		if (this.parent) {
-			var ok = !!this.parent.children.splice(this.getIndex(), 1).length;
-			// TODO: Reassign _index
+			var ok = !!Base.splice(this.parent.children, null,
+					this._index, 1).length;
 			this.parent = null;
 			return ok;
 		}
@@ -812,8 +809,7 @@ var Item = this.Item = Base.extend({
 		return function(item) {
 			item._removeFromParent();
 			if (this.children) {
-				this.children.splice(top ? this.children.length : 0, 0, item);
-				// TODO: Reassign _index
+				Base.splice(this.children, [item], top ? undefined : 0, 0);
 				item.parent = this;
 				item._setDocument(this._document);
 				return true;
@@ -826,9 +822,8 @@ var Item = this.Item = Base.extend({
 		return function(item) {
 			// first remove the item from its parent's children list
 			if (item.parent && this._removeFromParent()) {
-				item.parent.children.splice(item.getIndex()
-						+ (above ? 1 : -1), 0, this);
-				// TODO: Reassign _index
+				Base.splice(item.parent.children, [this],
+						item._index + (above ? 1 : -1), 0);
 				this.parent = item.parent;
 				this._setDocument(item._document);
 				return true;
