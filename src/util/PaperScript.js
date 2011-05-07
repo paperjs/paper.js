@@ -189,13 +189,13 @@ var PaperScript = new function() {
 		var scripts = document.getElementsByTagName('script');
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
-			if (script.type === 'text/paperscript') {
+			// Only load this cript if it not loaded already.
+			if (script.type === 'text/paperscript'
+					&& !script.getAttribute('loaded')) {
 				// If a canvas id is provided, create a document for it now,
 				// so the active document is defined.
 				var canvas = script.getAttribute('canvas');
-				if (canvas && (canvas = document.getElementById(canvas))) {
-//				var canvas = script.attributes.canvas;
-//				if (canvas = canvas && document.getElementById(canvas)) {
+				if (canvas = canvas && document.getElementById(canvas)) {
 					new Document(canvas);
 				}
 				if (script.src) {
@@ -203,9 +203,10 @@ var PaperScript = new function() {
 				} else {
 					run(script.innerHTML);
 				}
+				// Mark script as loaded now.
+				script.setAttribute('loaded', true);
 			}
 		}
-		return null;
 	}
 
 	Event.add(window, { load: load });
