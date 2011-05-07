@@ -69,7 +69,7 @@ var Segment = this.Segment = Base.extend({
 					}
 				}
 			}
-			this._path._changed();
+			this._path._changed(ChangeFlags.PATH);
 		}
 	},
 

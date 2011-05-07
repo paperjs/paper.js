@@ -22,6 +22,12 @@ var Item = this.Item = Base.extend({
 		this.setStyle(this._document.getCurrentStyle());
 	},
 
+	_changed: function(flags) {
+		if (flags & ChangeFlags.PATH) {
+			delete this._position;
+		}
+	},
+
 	/**
 	 * When passed a document, copies the item to the document,
 	 * or duplicates it within the same document. When passed an item,
@@ -542,14 +548,16 @@ var Item = this.Item = Base.extend({
 	 * </code>
 	 */
 	getPosition: function() {
-		return this.getBounds().getCenter();
+		// Cache position value
+		if (!this._position)
+			this._position = this.getBounds().getCenter();
+		return this._position.clone();
 	},
 
 	setPosition: function(point) {
 		point = Point.read(arguments);
-		if (point) {
+		if (point)
 			this.translate(point.subtract(this.getPosition()));
-		}
 	},
 
 	/**
@@ -563,6 +571,9 @@ var Item = this.Item = Base.extend({
 		// TODO: Call transform on chidren only if 'children' flag is provided
 		if (this._transform)
 			this._transform(matrix, flags);
+			// Transform position as well
+		if (this._position)
+			this._position = matrix._transformPoint(this._position);
 		if (this.children) {
 			for (var i = 0, l = this.children.length; i < l; i++) {
 				var child = this.children[i];
@@ -602,8 +613,7 @@ var Item = this.Item = Base.extend({
 	 */
 	translate: function(delta) {
 		var mx = new Matrix();
-		mx.translate.apply(mx, arguments);
-		return this.transform(mx);
+		return this.transform(mx.translate.apply(mx, arguments));
 	},
 
 	/**

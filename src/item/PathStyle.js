@@ -17,7 +17,13 @@
 var PathStyle = this.PathStyle = Base.extend(new function() {
 	var keys = ['windingRule', 'resolution', 'strokeColor', 'strokeWidth',
 			'strokeCap', 'strokeJoin', 'dashOffset','dashArray', 'miterLimit',
-			'strokeOverprint', 'fillColor', 'fillOverprint'];
+			'strokeOverprint', 'fillColor', 'fillOverprint'],
+		strokeFlags = {
+			strokeWidth: true,
+			strokeCap: true,
+			strokeJoin: true,
+			miterLimit: true
+		};
 
 	var fields = {
 		beans: true,
@@ -63,10 +69,10 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 				var old = this['_' + key];
 				if (old != value && !(old && old.equals && old.equals(value))) {
 					this['_' + key] = value;
-					// TODO: Tell _item what exactly has changed. Maybe introduce
-					// ChangeFlags, e.g. STROKE, COLOR, FILL, GEOMETRY, etc?
-					if (this._item && this._item._changed)
-						this._item._changed();
+					if (this._item) {
+						this._item._changed(ChangeFlags.STYLE
+							| (strokeFlags[key] ? ChangeFlags.STROKE : 0));
+					}
 				}
 			}
 			return this;
