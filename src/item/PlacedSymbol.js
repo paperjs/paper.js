@@ -32,12 +32,6 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		// raster, simply preconcatenate the internal matrix with the provided
 		// one.
 		this.matrix.preConcatenate(matrix);
-		// Transform position as well
-		this._position = matrix._transformPoint(this._position);
-	},
-
-	getPosition: function() {
-		return this._position.clone();
 	},
 
 	getBounds: function() {
