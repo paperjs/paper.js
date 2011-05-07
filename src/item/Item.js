@@ -542,14 +542,16 @@ var Item = this.Item = Base.extend({
 	 * </code>
 	 */
 	getPosition: function() {
-		return this.getBounds().getCenter();
+		// Cache position value
+		if (!this._position)
+			this._position = this.getBounds().getCenter();
+		return this._position.clone();
 	},
 
 	setPosition: function(point) {
 		point = Point.read(arguments);
-		if (point) {
+		if (point)
 			this.translate(point.subtract(this.getPosition()));
-		}
 	},
 
 	/**
@@ -563,6 +565,9 @@ var Item = this.Item = Base.extend({
 		// TODO: Call transform on chidren only if 'children' flag is provided
 		if (this._transform)
 			this._transform(matrix, flags);
+			// Transform position as well
+		if (this._position)
+			this._position = matrix._transformPoint(this._position);
 		if (this.children) {
 			for (var i = 0, l = this.children.length; i < l; i++) {
 				var child = this.children[i];

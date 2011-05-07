@@ -29,10 +29,12 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	_changed: function() {
-		// Clear cached values.
+		// TODO: Implement ChangeFlags, e.g. STROKE, COLOR, FILL, GEOMETRY,
+		// and only clear caches if affected by change.
 		delete this._length;
 		delete this._bounds;
 		delete this._strokeBounds;
+		delete this._position;
 	},
 
 	/**
