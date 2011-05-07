@@ -46,12 +46,6 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 			this.children[i].smooth();
 	},
 
-	moveTo: function() {
-		var path = new Path();
-		this.appendTop(path);
-		path.moveTo.apply(path, arguments);
-	},
-
 	draw: function(ctx, param) {
 		var firstChild = this.children[0];
 		ctx.beginPath();
@@ -70,8 +64,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 			ctx.stroke();
 		}
 	}
-}, new function() {
-
+}, new function() { // Injection scope for PostScript-like drawing functions
 	function getCurrentPath(that) {
 		if (that.children.length) {
 			return that.children[that.children.length - 1];
@@ -81,6 +74,12 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	}
 
 	var fields = {
+		moveTo: function() {
+			var path = new Path();
+			this.appendTop(path);
+			path.moveTo.apply(path, arguments);
+		},
+
 		moveBy: function() {
 			var point = arguments.length ? Point.read(arguments) : new Point(),
 				path = getCurrentPath(this),
@@ -93,6 +92,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		}
 	};
 
+	// Redirect all other drawing commands to the current path
 	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
 			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
 		fields[key] = function() {
