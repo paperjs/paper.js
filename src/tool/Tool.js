@@ -89,21 +89,17 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 				}
 			};
 			
-			if (paper.document)
-				this.setDocument(paper.document);
-			
+			if (paper.document) {
+				// Remove old events first.
+				if (this._document)
+					Event.remove(this._document.canvas, this.events);
+				this._document = doc || paper.document;
+				Event.add(doc.canvas, this.events);
+			}
 		},
 
 		getDocument: function() {
 			return this._document;
-		},
-
-		setDocument: function(doc) {
-			// Remove old events first.
-			if (this._document)
-				Event.remove(this._document.canvas, this.events);
-			this._document = doc || paper.document;
-			Event.add(doc.canvas, this.events);
 		},
 
 		/**
