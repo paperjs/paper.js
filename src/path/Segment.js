@@ -119,11 +119,11 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	getPath: function() {
-		return this._path;
+		return this._path || null;
 	},
 
 	getIndex: function() {
-		return this._index;
+		return this._index !== undefined ? this._index : null;
 	},
 
 	getCurve: function() {
