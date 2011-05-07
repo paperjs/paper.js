@@ -22,6 +22,12 @@ var Item = this.Item = Base.extend({
 		this.setStyle(this._document.getCurrentStyle());
 	},
 
+	/**
+	 * Private notifier that is called whenever a change occurs in this item or
+	 * its sub-elements, such as Segments, Curves, PathStyles, etc.
+	 *
+	 * @param {ChangeFlags} flags describes what exactly has changed.
+	 */
 	_changed: function(flags) {
 		if (flags & ChangeFlags.PATH) {
 			delete this._position;
