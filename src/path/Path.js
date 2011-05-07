@@ -147,13 +147,15 @@ var Path = this.Path = PathItem.extend({
 			amount = segs.length,
 			append = index === undefined,
 			index = append ? segments.length : index;
+		// Scan through segments to add first, convert if necessary and set
+		// _path and _index references on them.
 		for (var i = 0; i < amount; i++) {
 			var segment = segs[i];
 			// If the segments belong to another path already, clone them before
 			// adding:
-			if (segment._path)
+			if (segment._path) {
 				segment = segs[i] = new Segment(segment);
-			// Set _path and _index references for these new segments now
+			}
 			segment._path = this;
 			segment._index = index + i;
 		}
@@ -164,8 +166,9 @@ var Path = this.Path = PathItem.extend({
 			// Insert somewhere else
 			segments.splice.apply(segments, [index, 0].concat(segs));
 			// Adjust the indices of the segments above.
-			for (var i = index + amount, l = segments.length; i < l; i++)
+			for (var i = index + amount, l = segments.length; i < l; i++) {
 				segments[i]._index = i;
+			}
 		}
 		// Keep the curves list in sync all the time in case it as requested
 		// already. We need to step one index down from the inserted segment to
@@ -176,8 +179,9 @@ var Path = this.Path = PathItem.extend({
 				segments[index + 1]));
 			// Adjust segment1 now for the curves above the inserted one
 			var curve = curves[index + amount];
-			if (curve)
+			if (curve) {
 				curve._segment1 = segments[index + amount];
+			}
 		}
 		this._changed(ChangeFlags.PATH);
 		return segs;
