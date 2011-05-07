@@ -131,18 +131,21 @@ var PaperScript = new function() {
 
 	function run(code) {
 		with (paper) {
-			paper.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code) && new Tool();
-			var res = eval(compile(code)),
-				doc = paper.document;
-			if (paper.tool) {
+			var doc = paper.document,
+				tool = paper.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
+					&& new Tool(null, doc),
+				onEditOptions, onOptions, onSelect, onDeselect, onReselect,
+				onMouseDown, onMouseUp, onMouseDrag, onMouseMove, onKeyDown,
+				onKeyUp,
+				res = eval(compile(code));
+			if (tool) {
 				Base.each(['onEditOptions', 'onOptions', 'onSelect',
-					'onDeselect', 'onReselect', 'onMouseDown', 'onMouseUp',
-					'onMouseDrag', 'onMouseMove', 'onKeyDown', 'onKeyUp'], function(key) {
-					try {
-						paper.tool[key] = eval(key);
-					} catch (e) {
+						'onDeselect', 'onReselect', 'onMouseDown', 'onMouseUp',
+						'onMouseDrag', 'onMouseMove', 'onKeyDown', 'onKeyUp'],
+					function(key) {
+						tool[key] = eval(key);
 					}
-				});
+				);
 			}
 			try {
 				var onFrame = eval('onFrame');
@@ -191,6 +194,8 @@ var PaperScript = new function() {
 				// so the active document is defined.
 				var canvas = script.getAttribute('canvas');
 				if (canvas && (canvas = document.getElementById(canvas))) {
+//				var canvas = script.attributes.canvas;
+//				if (canvas = canvas && document.getElementById(canvas)) {
 					new Document(canvas);
 				}
 				if (script.src) {
