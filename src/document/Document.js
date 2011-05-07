@@ -98,7 +98,7 @@ var Document = this.Document = Base.extend({
 	},
 
 	setCurrentStyle: function(style) {
-		this._currentStyle = PathStyle.create(this, style);
+		this._currentStyle = PathStyle.create(null, style);
 	},
 
 	activate: function() {
