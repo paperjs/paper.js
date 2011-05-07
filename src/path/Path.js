@@ -876,12 +876,6 @@ var Path = this.Path = PathItem.extend({
 	};
 }, new function() { // A dedicated scope for the tricky bounds calculations
 
-	// Add some tolerance for good roots, as t = 0 / 1 are added seperately
-	// anyhow, and we don't want joins to be added with radiuses in
-	// getBounds()
-	var tMin = Numerical.TOLERANCE,
-		tMax = 1 - tMin;
-
 	function getBounds(that, matrix, strokePadding) {
 		// Code ported and further optimised from:
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
@@ -896,7 +890,12 @@ var Path = this.Path = PathItem.extend({
 			matrix = null;
 		first._transformCoordinates(matrix, prevCoords, false);
 		var min = prevCoords.slice(0, 2),
-			max = min.slice(0); // clone
+			max = min.slice(0), // clone
+			// Add some tolerance for good roots, as t = 0 / 1 are added
+			// seperately anyhow, and we don't want joins to be added with
+			// radiuses in getStrokeBounds()
+			tMin = Numerical.TOLERANCE,
+			tMax = 1 - tMin;
 		function processSegment(segment) {
 			segment._transformCoordinates(matrix, coords, false);
 
