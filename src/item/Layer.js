@@ -32,7 +32,7 @@ var Layer = this.Layer = Group.extend({
 	* Removes the layer from its document's layers list
 	* or its parent's children list.
 	*/
-	removeFromParent: function() {
+	_removeFromParent: function() {
 		if (!this.parent) {
 			return !!this._document.layers.splice(this.getIndex(), 1).length;
 		} else {
@@ -58,10 +58,10 @@ var Layer = this.Layer = Group.extend({
 		return function(item) {
 			// if the item is a layer and contained within Document#layers
 			if (item instanceof Layer && !item.parent
-					&& this.removeFromParent()) {
+					&& this._removeFromParent()) {
 				item._document.layers.splice(item.getIndex() + (above ? 1 : -1),
 						0, this);
-				this.setDocument(item._document);
+				this._setDocument(item._document);
 				return true;
 			} else {
 				return this.base(item);

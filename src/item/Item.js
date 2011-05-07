@@ -91,14 +91,12 @@ var Item = this.Item = Base.extend({
 		return this._document;
 	},
 
-	// TODO: This is dangerous, and should probably not be exposed, since 
-	// items would need to be removed from the DOM as well otherwise
-	setDocument: function(document) {
+	_setDocument: function(document) {
 		if (document != this._document) {
 			this._document = document;
 			if (this.children) {
 				for (var i = 0, l = this.children.length; i < l; i++)
-					this.children[i].setDocument(document);
+					this.children[i]._setDocument(document);
 			}
 		}
 	},
@@ -268,7 +266,7 @@ var Item = this.Item = Base.extend({
 	/**
 	* Removes the item from its parent's children list.
 	*/
-	removeFromParent: function() {
+	_removeFromParent: function() {
 		if (this.parent) {
 			var ok = !!this.parent.children.splice(this.getIndex(), 1).length;
 			// TODO: Reassign _index
@@ -284,7 +282,7 @@ var Item = this.Item = Base.extend({
 	remove: function() {
 		if (this.isSelected())
 			this.setSelected(false);
-		return this.removeFromParent();
+		return this._removeFromParent();
 	},
 
 	/**
@@ -804,11 +802,11 @@ var Item = this.Item = Base.extend({
 
 	function append(top) {
 		return function(item) {
-			if (this.children && item.removeFromParent()) {
+			if (this.children && item._removeFromParent()) {
 				this.children.splice(top ? this.children.length : 0, 0, item);
 				// TODO: Reassign _index
 				item.parent = this;
-				item.setDocument(this._document);
+				item._setDocument(this._document);
 				return true;
 			}
 			return false;
@@ -818,12 +816,12 @@ var Item = this.Item = Base.extend({
 	function move(above) {
 		return function(item) {
 			// first remove the item from its parent's children list
-			if (item.parent && this.removeFromParent()) {
+			if (item.parent && this._removeFromParent()) {
 				item.parent.children.splice(item.getIndex()
 						+ (above ? 1 : -1), 0, this);
 				// TODO: Reassign _index
 				this.parent = item.parent;
-				this.setDocument(item._document);
+				this._setDocument(item._document);
 				return true;
 			}
 			return false;

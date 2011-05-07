@@ -29,7 +29,7 @@ var Symbol = this.Symbol = Base.extend({
 
 	setDefinition: function(item) {
 		this._definition = item;
-		this._definition.removeFromParent();
+		this._definition._removeFromParent();
 		this._definition.setPosition(new Point(0, 0));
 	}
 
