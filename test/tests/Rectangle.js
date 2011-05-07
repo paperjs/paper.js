@@ -26,7 +26,9 @@ test('new Rectangle({x: 10, y: 20, width: 30, height: 40});', function() {
 
 test('get size', function() {
 	var rect = new Rectangle(10, 10, 20, 30);
-	equals(rect.size.equals([20, 30]), true);
+	equals(function() {
+		return rect.size.equals([20, 30]);
+	}, true);
 });
 
 test('set size', function() {
@@ -142,55 +144,72 @@ test('set rightCenter', function() {
 test('intersects(rect)', function() {
 	var rect1 = new Rectangle({ x: 160, y: 270, width: 20, height: 20 });
 	var rect2 = { x: 195, y: 301, width: 19, height: 19 };
-	equals(rect1.intersects(rect2), false);
-
+	equals(function() {
+		return rect1.intersects(rect2);
+	}, false);
 	rect1 = new Rectangle({ x: 160, y: 270, width: 20, height: 20 });
 	rect2 = { x: 170.5, y: 280.5, width: 19, height: 19 };
-	equals(rect1.intersects(rect2), true);
+	equals(function() {
+		return rect1.intersects(rect2);
+	}, true);
 });
 
 test('contains(rect)', function() {
 	var rect1 = new Rectangle({ x: 160, y: 270, width: 20, height: 20 });
 	var rect2 = { x: 195, y: 301, width: 19, height: 19 };
-	equals(rect1.contains(rect2), false);
-
+	equals(function() {
+		return rect1.contains(rect2);
+	}, false);
 	rect1 = new Rectangle({ x: 160, y: 270, width: 20, height: 20 });
 	rect2 = new Rectangle({ x: 170.5, y: 280.5, width: 19, height: 19 });
-	equals(rect1.contains(rect2), false);
-	
+	equals(function() {
+		return rect1.contains(rect2);
+	}, false);
+
 	rect1 = new Rectangle({ x: 299, y: 161, width: 137, height: 129 });
 	rect2 = new Rectangle({ x: 340, y: 197, width: 61, height: 61 });
-	equals(rect1.contains(rect2), true);
-	equals(rect2.contains(rect1), false);
-});
+	equals(function() {
+		return rect1.contains(rect2);
+	}, true);
+	equals(function() {
+		return rect2.contains(rect1);
+	}, false);});
 
 test('contains(point)', function() {
 	var rect = new Rectangle({ x: 160, y: 270, width: 20, height: 20 });
 	var point = new Point(166, 280);
-	equals(rect.contains(point), true);
-
+	equals(function() {
+		return rect.contains(point);
+	}, true);
 	var point = new Point(30, 30);
-	equals(rect.contains(point), false);
-});
+	equals(function() {
+		return rect.contains(point);
+	}, false);});
 
 test('intersect(rect)', function() {
 	var rect1 = new Rectangle({ x: 160, y: 270, width: 20, height: 20 });
 	var rect2 = { x: 170.5, y: 280.5, width: 19, height: 19 };
 	var intersected = rect1.intersect(rect2);
-	equals(intersected.equals({ x: 170.5, y: 280.5, width: 9.5, height: 9.5 }), true);
+	equals(function() {
+		return intersected.equals({ x: 170.5, y: 280.5, width: 9.5, height: 9.5 });
+	}, true);
 });
 
 test('unite(rect)', function() {
 	var rect1 = new Rectangle({ x: 160, y: 270, width: 20, height: 20 });
 	var rect2 = { x: 170.5, y: 280.5, width: 19, height: 19 };
 	var united = rect1.unite(rect2);
-	equals(united.equals({ x: 160, y: 270, width: 29.5, height: 29.5 }), true);
+	equals(function() {
+		return united.equals({ x: 160, y: 270, width: 29.5, height: 29.5 });
+	}, true);
 });
 
 test('include(point)', function() {
 	var rect1 = new Rectangle({ x: 95, y: 151, width: 20, height: 20 });
 	var included = rect1.include([50, 50]);
-	equals(included.equals({ x: 50, y: 50, width: 65, height: 121 }), true);
+	equals(function() {
+		return included.equals({ x: 50, y: 50, width: 65, height: 121 });
+	}, true);
 });
 
 test('toString()', function() {

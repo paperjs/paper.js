@@ -62,7 +62,9 @@ test('getting group styles', function() {
 	
 	// the group now contains two paths with different fillColors and therefore
 	// should return undefined:
-	equals(group.fillColor, undefined, 'group.fillColor');
+	equals(function() {
+		return group.fillColor;
+	}, undefined);
 	
 	//If we remove the first path, it should now return 'black':
 	group.children[0].remove();
@@ -112,7 +114,9 @@ test('setting group styles 2', function() {
 
 	// By appending a path with a different fillcolor,
 	// the group's fillColor should return undefined:
-	equals(group.fillColor, undefined, 'group.fillColor');
+	equals(function() {
+		return group.fillColor;
+	}, undefined);
 	
 	// But, both paths have a red strokeColor, so:
 	compareRGBColors(group.strokeColor, 'red', 'group.strokeColor');
