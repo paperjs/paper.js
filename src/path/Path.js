@@ -185,7 +185,7 @@ var Path = this.Path = PathItem.extend({
 
 	// PORT: Add support for adding multiple segments at once to Sg
 	add: function(segment1 /*, segment2, ... */) {
-		return arguments.length > 1 && typeof segment1 != 'number'
+		return arguments.length > 1 && typeof segment1 !== 'number'
 			// addSegments
 			? this._add(Segment.readAll(arguments))
 			// addSegment
@@ -194,7 +194,7 @@ var Path = this.Path = PathItem.extend({
 
 	// PORT: Add support for adding multiple segments at once to Sg
 	insert: function(index, segment1 /*, segment2, ... */) {
-		return arguments.length > 2 && typeof segment1 != 'number'
+		return arguments.length > 2 && typeof segment1 !== 'number'
 			// insertSegments
 			? this._add(Segment.readAll(arguments, 1), index)
 			// insertSegment
