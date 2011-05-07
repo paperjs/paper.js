@@ -36,6 +36,7 @@ var sources = [
 	'src/document/Document.js',
 	'src/document/Symbol.js',
 
+	'src/item/ChangeFlags.js',
 	'src/item/Item.js',
 	'src/item/Group.js',
 	'src/item/Layer.js',

@@ -22,6 +22,12 @@ var Item = this.Item = Base.extend({
 		this.setStyle(this._document.getCurrentStyle());
 	},
 
+	_changed: function(flags) {
+		if (flags & ChangeFlags.PATH) {
+			delete this._position;
+		}
+	},
+
 	/**
 	 * When passed a document, copies the item to the document,
 	 * or duplicates it within the same document. When passed an item,

@@ -28,13 +28,15 @@ var Path = this.Path = PathItem.extend({
 				|| typeof segments[0] !== 'object' ? arguments : segments);
 	},
 
-	_changed: function() {
-		// TODO: Implement ChangeFlags, e.g. STROKE, COLOR, FILL, GEOMETRY,
-		// and only clear caches if affected by change.
-		delete this._length;
-		delete this._bounds;
-		delete this._strokeBounds;
-		delete this._position;
+	_changed: function(flags) {
+		if (flags & ChangeFlags.PATH) {
+			delete this._length;
+			delete this._bounds;
+			delete this._position;
+			delete this._strokeBounds;
+		} else if (flags & ChangeFlags.STROKE) {
+			delete this._strokeBounds;
+		}
 	},
 
 	/**
@@ -114,7 +116,7 @@ var Path = this.Path = PathItem.extend({
 					this._curves[i = length - 1] = Curve.create(this,
 						this._segments[i], this._segments[0]);
 			}
-			this._changed();
+			this._changed(ChangeFlags.PATH);
 		}
 	},
 
@@ -129,7 +131,7 @@ var Path = this.Path = PathItem.extend({
 				this._segments[i]._transformCoordinates(matrix, coords, true);
 			}
 		}
-		this._changed();
+		this._changed(ChangeFlags.PATH);
 	},
 
 	/**
@@ -177,7 +179,7 @@ var Path = this.Path = PathItem.extend({
 			if (curve)
 				curve._segment1 = segments[index + amount];
 		}
-		this._changed();
+		this._changed(ChangeFlags.PATH);
 		return segs;
 	},
 
@@ -261,7 +263,7 @@ var Path = this.Path = PathItem.extend({
 			if (last && this._closed && (curve = curves[curves.length - 1]))
 				curve._segment2 = segments[0];
 		}
-		this._changed();
+		this._changed(ChangeFlags.PATH);
 		return removed;
 	},
 	
@@ -306,7 +308,6 @@ var Path = this.Path = PathItem.extend({
 			segment._handleIn = segment._handleOut;
 			segment._handleOut = handleIn;
 		}
-		this._changed();
 	},
 
 	join: function(path) {
@@ -341,7 +342,7 @@ var Path = this.Path = PathItem.extend({
 				last1.remove();
 				this.setClosed(true);
 			}
-			this._changed();
+			this._changed(ChangeFlags.PATH);
 			return true;
 		}
 		return false;
