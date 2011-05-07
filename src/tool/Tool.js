@@ -88,14 +88,12 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 					that.events.mouseup(event);
 				}
 			};
-			
-			if (paper.document) {
-				// Remove old events first.
-				if (this._document)
-					Event.remove(this._document.canvas, this.events);
-				this._document = doc || paper.document;
-				Event.add(doc.canvas, this.events);
-			}
+
+			// Remove old events first.
+			if (this._document)
+				Event.remove(this._document.canvas, this.events);
+			this._document = doc;
+			Event.add(doc.canvas, this.events);
 		},
 
 		getDocument: function() {
