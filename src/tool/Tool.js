@@ -46,7 +46,7 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 					// If the event was triggered by a touch screen device,
 					// prevent the default behaviour, as it will otherwise
 					// scroll the page:
-					if (event.targetTouches)
+					if (event && event.targetTouches)
 						event.preventDefault();
 					var point = event && viewToArtwork(event, that._document);
 					// If there is only an onMouseMove handler, call it when
