@@ -84,7 +84,9 @@ var Item = this.Item = Base.extend({
 	getDocument: function() {
 		return this._document;
 	},
-	
+
+	// TODO: This is dangerous, and should probably not be exposed, since 
+	// items would need to be removed from the DOM as well otherwise
 	setDocument: function(document) {
 		if (document != this._document) {
 			this._document = document;
@@ -213,8 +215,10 @@ var Item = this.Item = Base.extend({
 	 * Reverses the order of this item's children
 	 */
 	reverseChildren: function() {
-		if (this.children)
+		if (this.children) {
 			this.children.reverse();
+			// TODO: Reassign _index
+		}
 	},
 
 	/**
@@ -261,6 +265,7 @@ var Item = this.Item = Base.extend({
 	removeFromParent: function() {
 		if (this.parent) {
 			var ok = !!this.parent.children.splice(this.getIndex(), 1).length;
+			// TODO: Reassign _index
 			this.parent = null;
 			return ok;
 		}
@@ -792,6 +797,7 @@ var Item = this.Item = Base.extend({
 			if (this.children) {
 				item.removeFromParent();
 				this.children.splice(top ? this.children.length : 0, 0, item);
+				// TODO: Reassign _index
 				item.parent = this;
 				item.setDocument(this._document);
 				return true;
@@ -806,6 +812,7 @@ var Item = this.Item = Base.extend({
 			if (item.parent && this.removeFromParent()) {
 				item.parent.children.splice(item.getIndex()
 						+ (above ? 1 : -1), 0, this);
+				// TODO: Reassign _index
 				this.parent = item.parent;
 				this.setDocument(item._document);
 				return true;
