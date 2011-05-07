@@ -47,7 +47,7 @@ var Group = this.Group = Item.extend({
 
 	setClipped: function(clipped) {
 		this._clipped = clipped;
-		var child = this.firstChild;
+		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
 	},
