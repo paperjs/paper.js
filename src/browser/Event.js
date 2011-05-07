@@ -61,7 +61,7 @@ var Event = {
 	getOffset: function(event) {
 		// Remove target offsets from page coordinates
 		return Event.getPoint(event).subtract(
-				Element.getOffset(Event.getElement(event)));
+				Element.getOffset(Event.getElement(event), true));
 	}
 };
 
