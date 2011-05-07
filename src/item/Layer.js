@@ -57,8 +57,8 @@ var Layer = this.Layer = Group.extend({
 	function move(above) {
 		return function(item) {
 			// if the item is a layer and contained within Document#layers
-			if (item instanceof Layer && !item.parent) {
-				this.removeFromParent();
+			if (item instanceof Layer && !item.parent
+					&& this.removeFromParent()) {
 				item._document.layers.splice(item.getIndex() + (above ? 1 : -1),
 						0, this);
 				this.setDocument(item._document);
