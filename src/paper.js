@@ -100,6 +100,7 @@ Base.inject({
 //#include "document/Document.js"
 //#include "document/Symbol.js"
 
+//#include "item/ChangeFlags.js"
 //#include "item/Item.js"
 //#include "item/Group.js"
 //#include "item/Layer.js"
