@@ -25,7 +25,7 @@ var Group = this.Group = Item.extend({
 				this.appendTop(items[i]);
 			}
 		}
-		this.setClipped(false);
+		this._clipped = false;
 	},
 
 	/**
