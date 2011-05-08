@@ -163,8 +163,8 @@ Base.inject({
 //#include "tool/Tool.js"
 
 //#ifdef BROWSER
-//#include "browser/Element.js"
-//#include "browser/Event.js"
+//#include "browser/DomElement.js"
+//#include "browser/DomEvent.js"
 //#endif // BROWSER
 
 //#include "util/CanvasProvider.js"

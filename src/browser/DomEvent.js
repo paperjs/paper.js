@@ -14,7 +14,7 @@
  * All rights reserved.
  */
 
-var Event = {
+var DomEvent = {
 	add: function(el, events) {
 		for (var type in events) {
 			var func = events[type];
@@ -60,12 +60,12 @@ var Event = {
 
 	getOffset: function(event) {
 		// Remove target offsets from page coordinates
-		return Event.getPoint(event).subtract(
-				Element.getOffset(Event.getElement(event), true));
+		return DomEvent.getPoint(event).subtract(
+				DomElement.getOffset(DomEvent.getElement(event), true));
 	}
 };
 
-Event.requestAnimationFrame = new function() {
+DomEvent.requestAnimationFrame = new function() {
 	var part = 'equestAnimationFrame',
 		request = window['r' + part] || window['webkitR' + part]
 			|| window['mozR' + part] || window['oR' + part]
@@ -100,7 +100,7 @@ Event.requestAnimationFrame = new function() {
 				var entry = callbacks[i],
 					func = entry[0],
 					element = entry[1];
-				if (!element || Element.isVisible(element)) {
+				if (!element || DomElement.isVisible(element)) {
 					// Handle callback and remove it from callbacks list.
 					callbacks.splice(i, 1);
 					func(+new Date);
@@ -110,7 +110,7 @@ Event.requestAnimationFrame = new function() {
 	}
 
 	if (!paper.debug) {
-		Event.add(window, {
+		DomEvent.add(window, {
 			focus: function() {
 				focused = true;
 				// Switch to falst checkCallback calls while window is focused.

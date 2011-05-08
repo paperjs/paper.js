@@ -66,8 +66,8 @@ var sources = [
 	'src/tool/ToolHandler.js',
 	'src/tool/Tool.js',
 
-	'src/browser/Element.js',
-	'src/browser/Event.js',
+	'src/browser/DomElement.js',
+	'src/browser/DomEvent.js',
 
 	'src/util/CanvasProvider.js',
 	'src/util/Numerical.js',

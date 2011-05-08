@@ -59,7 +59,7 @@
 		}
 		
 		// Reposition the path whenever the window is resized:
-		Event.add(window, {
+		DomEvent.add(window, {
 			resize: function(event) {
 				initializePath();
 				onFrame();
