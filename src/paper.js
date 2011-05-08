@@ -118,6 +118,12 @@ Base.inject({
 		});
 	},
 
+	camelize: function(str) {
+		return str.replace(/-(\w)/g, function(all, chr) {
+			return chr.toUpperCase();
+		});
+	},
+
 	formatNumber: function(num) {
 		return (Math.round(num * 100000) / 100000).toString();
 	}
