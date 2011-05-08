@@ -59,8 +59,13 @@ Base.inject({
 		var start = start || 0,
 			length = length || list.length - start;
 		var obj = list[start];
-		// If the class defines _readNull, return null when nothing was provided
-		if (obj instanceof this
+		// As a convention, do not return objects that are owned, e.g.
+		// LinkedPoint or SegmentPoint, although they are instances of Point,
+		// since they override properties with beans. Convert these to pure
+		// Points instead, further down.
+		if (obj && !obj._owner && obj instanceof this
+				// If the class defines _readNull, return null when nothing
+				// was provided
 				|| this.prototype._readNull && obj == null && length <= 1)
 			return obj;
 		obj = new this(this.dont);
@@ -158,21 +163,23 @@ Base.inject({
 //#include "color/Gradient.js"
 //#include "color/GradientStop.js"
 
+//#ifdef BROWSER
+
+//#include "browser/DomElement.js"
+//#include "browser/DomEvent.js"
+
+//#include "ui/Event.js"
+//#include "ui/KeyEvent.js"
+//#include "ui/Key.js"
+
 //#include "tool/ToolEvent.js"
 //#include "tool/ToolHandler.js"
 //#include "tool/Tool.js"
 
-//#ifdef BROWSER
-//#include "browser/DomElement.js"
-//#include "browser/DomEvent.js"
 //#endif // BROWSER
 
 //#include "util/CanvasProvider.js"
 //#include "util/Numerical.js"
 //#include "util/PaperScript.js"
 //#include "util/BlendMode.js"
-
-//#ifdef BROWSER
-//#include "ui/Key.js"
-//#endif // BROWSER
 };

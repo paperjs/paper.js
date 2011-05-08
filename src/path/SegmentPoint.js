@@ -24,7 +24,7 @@ var SegmentPoint = Point.extend({
 	set: function(x, y) {
 		this._x = x;
 		this._y = y;
-		this._segment._changed(this);
+		this._owner._changed(this);
 		return this;
 	},
 
@@ -34,7 +34,7 @@ var SegmentPoint = Point.extend({
 
 	setX: function(x) {
 		this._x = x;
-		this._segment._changed(this);
+		this._owner._changed(this);
 	},
 
 	getY: function() {
@@ -43,15 +43,15 @@ var SegmentPoint = Point.extend({
 
 	setY: function(y) {
 		this._y = y;
-		this._segment._changed(this);
+		this._owner._changed(this);
 	},
 	
 	setSelected: function(selected) {
-		this._segment._setSelected(this, selected);
+		this._owner._setSelected(this, selected);
 	},
 	
 	isSelected: function() {
-		return this._segment._isSelected(this);
+		return this._owner._isSelected(this);
 	},
 	
 	statics: {
@@ -65,7 +65,7 @@ var SegmentPoint = Point.extend({
 			var point = new SegmentPoint(SegmentPoint.dont);
 			point._x = x;
 			point._y = y;
-			point._segment = segment;
+			point._owner = segment;
 			return point;
 		}
 	}
