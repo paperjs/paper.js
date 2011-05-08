@@ -130,6 +130,10 @@ var Path = this.Path = PathItem.extend({
 			for (var i = 0, l = this._segments.length; i < l; i++) {
 				this._segments[i]._transformCoordinates(matrix, coords, true);
 			}
+			if (this.fillColor && this.fillColor.transform)
+				this.fillColor.transform(matrix);
+			if (this.strokeColor && this.strokeColor.transform)
+				this.strokeColor.transform(matrix);
 		}
 		this._changed(ChangeFlags.PATH);
 	},
