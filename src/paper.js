@@ -59,11 +59,7 @@ Base.inject({
 		var start = start || 0,
 			length = length || list.length - start;
 		var obj = list[start];
-		// As a convention, do not return objects that are owned, e.g.
-		// LinkedPoint or SegmentPoint, although they are instances of Point,
-		// since they override properties with beans. Convert these to pure
-		// Points instead, further down.
-		if (obj && !obj._owner && obj instanceof this
+		if (obj instanceof this
 				// If the class defines _readNull, return null when nothing
 				// was provided
 				|| this.prototype._readNull && obj == null && length <= 1)
@@ -122,8 +118,28 @@ Base.inject({
 		});
 	},
 
+	camelize: function(str) {
+		return str.replace(/-(\w)/g, function(all, chr) {
+			return chr.toUpperCase();
+		});
+	},
+
+	/**
+	 * Utility function for rendering numbers to strings at a precision of up
+	 * to 5 fractional digits.
+	 */
 	formatNumber: function(num) {
 		return (Math.round(num * 100000) / 100000).toString();
+	},
+
+	/**
+	 * Utility function for rendering objects to strings, in object literal
+	 * notation.
+	 */
+	formatObject: function(obj) {
+		return '{ ' + Base.each(obj, function(value, key) {
+			this.push(key + ': ' + value);
+		}, []).join(', ') + ' }';
 	}
 });
 

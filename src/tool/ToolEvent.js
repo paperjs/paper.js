@@ -39,25 +39,13 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		this.type = type;
 		this.event = event;
 	},
-	
-	toString: function() {
-		return '{ type: ' + this.type 
-				+ ', point: ' + this.point
-				+ ', count: ' + this.count
-				+ ', modifiers: ' + this.modifiers
-				+ ' }';
-	},
 
 	/**
 	 * Convenience method to allow local overrides of point values.
 	 * See application below.
 	 */
-	choosePoint: function(point, toolPoint) {
-		if (point)
-			return point;
-		if (toolPoint)
-			return new Point(toolPoint);
-		return null;
+	_choosePoint: function(point, toolPoint) {
+		return point ? point : toolPoint ? toolPoint.clone() : null;
 	},
 
 	/**
@@ -78,7 +66,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * </code>
 	 */
 	getPoint: function() {
-		return this.choosePoint(this._point, this.tool.point);
+		return this._choosePoint(this._point, this.tool.point);
 	},
 
 	setPoint: function(point) {
@@ -90,7 +78,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * event was fired.
 	 */
 	getLastPoint: function() {
-		return this.choosePoint(this._lastPoint, this.tool.lastPoint);
+		return this._choosePoint(this._lastPoint, this.tool.lastPoint);
 	},
 
 	setLastPoint: function(lastPoint) {
@@ -102,7 +90,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * was last clicked.
 	 */
 	getDownPoint: function() {
-		return this.choosePoint(this._downPoint, this.tool.downPoint);
+		return this._choosePoint(this._downPoint, this.tool.downPoint);
 	},
 
 	setDownPoint: function(downPoint) {
@@ -117,7 +105,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 */
 	getMiddlePoint: function() {
 		// For explanations, see getDelta()
-		if (this._middlePoint == null && this.tool.lastPoint != null) {
+		if (!this._middlePoint && this.tool.lastPoint) {
 			// (point + lastPoint) / 2
 			return this.tool.point.add(this.tool.lastPoint).divide(2);
 		}
@@ -130,8 +118,8 @@ var ToolEvent = this.ToolEvent = Base.extend({
 
 	/**
 	 * The difference between the current position and the last position of the
-	 * mouse when the event was fired. In case of the mouse-up event, the
-	 * difference to the mouse-down position is returned.
+	 * mouse when the event was fired. In case of the mouseup event, the
+	 * difference to the mousedown position is returned.
 	 */
 	getDelta: function() {
 		// Do not put the calculated delta into delta, since this only reserved
@@ -139,10 +127,9 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		// Instead, keep calculating the delta each time, so the result can be
 		// directly modified by the script without changing the internal values.
 		// We could cache this and use clone, but this is almost as fast...
-		if (this._delta == null && this.tool.lastPoint != null) {
-			return this.tool.point.subtract(this.tool.lastPoint);
-		}
-		return this._delta;
+		return this._delta && this.tool.lastPoint
+		 		? this.tool.point.subtract(this.tool.lastPoint)
+				: this._delta;
 	},
 
 	setDelta: function(delta) {
@@ -168,32 +155,21 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * </code>
 	 */
 	getCount: function() {
-		switch (this.type) {
-		case 'mouse-down':
-		case 'mouse-up':
-			// Return downCount for both mouse down and up, since
-			// the count is the same.
-			return this.tool.downCount;
-		default:
-			return this.tool.count;
-		}
+		// Return downCount for both mouse down and up, since
+		// the count is the same.
+		return /^mouse(down|up)$/.test(this.type)
+			? this.tool.downCount
+			: this.tool.count;
 	},
 
 	setCount: function(count) {
-		switch (this.type) {
-		case 'mouse-down':
-		case 'mouse-up':
-			this.tool.downCount = count;
-			break;
-		default:
-			this.tool.count = count;
-			break;
-		}
+		this.tool[/^mouse(down|up)$/.test(this.type) ? 'downCount' : 'count']
+			= count;
 	},
 	
 	getModifiers: function() {
 		return Key.modifiers;
-	}
+	},
 
 	// TODO: implement hitTest first
 	// getItem: function() {
@@ -215,4 +191,12 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	// setItem: function(Item item) {
 	// 	this.item = item;
 	// }
+	
+	toString: function() {
+		return '{ type: ' + this.type 
+				+ ', point: ' + this.getPoint()
+				+ ', count: ' + this.getCount()
+				+ ', modifiers: ' + this.getModifiers()
+				+ ' }';
+	}
 });
