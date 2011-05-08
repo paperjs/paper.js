@@ -212,7 +212,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		return '{ type: ' + this.type 
 				+ ', point: ' + this.point
 				+ ', count: ' + this.count
-				+ ', modifiers: ' + this.modifiers
+				+ ', modifiers: ' + this.getModifiers(true)
 				+ ' }';
 	}
 });
