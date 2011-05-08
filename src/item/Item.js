@@ -937,7 +937,7 @@ var Item = this.Item = Base.extend({
 		if (!func || !func._installed) {
 			var hash = {};
 			hash[handler] = function(event) {
-				// Always clear the drag set on mouse-up
+				// Always clear the drag set on mouseup
 				if (name === 'up')
 					sets.drag = {};
 				removeAll(sets[name]);

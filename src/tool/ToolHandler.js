@@ -98,12 +98,12 @@ var ToolHandler = this.ToolHandler = Base.extend({
 		this.lastPoint = this.point;
 		this.point = pt;
 		switch (type) {
-		case 'mouse-down':
+		case 'mousedown':
 			this.lastPoint = this.downPoint;
 			this.downPoint = this.point;
 			this.downCount++;
 			break;
-		case 'mouse-up':
+		case 'mouseup':
 			// Mouse up events return the down point for last point,
 			// so delta is spanning over the whole drag.
 			this.lastPoint = this.downPoint;
@@ -119,12 +119,12 @@ var ToolHandler = this.ToolHandler = Base.extend({
 
 	onHandleEvent: function(type, pt, event) {
 		switch (type) {
-		case 'mouse-down':
+		case 'mousedown':
 			this.updateEvent(type, pt, null, null, true, false, false);
 			if (this.onMouseDown)
 				this.onMouseDown(new ToolEvent(this, type, event));
 			break;
-		case 'mouse-drag':
+		case 'mousedrag':
 			// In order for idleInterval drag events to work, we need to
 			// not check the first call for a change of position. 
 			// Subsequent calls required by min/maxDistance functionality
@@ -143,11 +143,11 @@ var ToolHandler = this.ToolHandler = Base.extend({
 				matchMaxDistance = true;
 			}
 			break;
-		case 'mouse-up':
+		case 'mouseup':
 			// If the last mouse drag happened in a different place, call
 			// mouse drag first, then mouse up.
 			if ((this.point.x != pt.x || this.point.y != pt.y)
-					&& this.updateEvent('mouse-drag', pt, this.minDistance,
+					&& this.updateEvent('mousedrag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
 				if (this.onMouseDrag)
 					this.onMouseDrag(new ToolEvent(this, type, event));
@@ -156,11 +156,11 @@ var ToolHandler = this.ToolHandler = Base.extend({
 					false, false);
 			if (this.onMouseUp)
 				this.onMouseUp(new ToolEvent(this, type, event));
-			// Start with new values for 'mouse-move'
+			// Start with new values for 'mousemove'
 			this.updateEvent(type, pt, null, null, true, false, false);
 			this.firstMove = true;
 			break;
-		case 'mouse-move':
+		case 'mousemove':
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, this.firstMove, true, false)) {
 				if (this.onMouseMove)
