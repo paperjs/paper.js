@@ -39,14 +39,6 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		this.type = type;
 		this.event = event;
 	},
-	
-	toString: function() {
-		return '{ type: ' + this.type 
-				+ ', point: ' + this.point
-				+ ', count: ' + this.count
-				+ ', modifiers: ' + this.modifiers
-				+ ' }';
-	},
 
 	/**
 	 * Convenience method to allow local overrides of point values.
@@ -215,4 +207,12 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	// setItem: function(Item item) {
 	// 	this.item = item;
 	// }
+	
+	toString: function() {
+		return '{ type: ' + this.type 
+				+ ', point: ' + this.point
+				+ ', count: ' + this.count
+				+ ', modifiers: ' + this.modifiers
+				+ ' }';
+	}
 });
