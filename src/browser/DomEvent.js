@@ -62,6 +62,23 @@ var DomEvent = {
 		// Remove target offsets from page coordinates
 		return DomEvent.getPoint(event).subtract(
 				DomElement.getOffset(DomEvent.getElement(event), true));
+	},
+
+	preventDefault: function(event) {
+		if (event.preventDefault) {
+			event.preventDefault();
+		} else {
+			// IE
+			event.returnValue = false;
+		}
+	},
+
+	stopPropagation: function(event) {
+		if (event.stopPropagation) {
+			event.stopPropagation();
+		} else {
+			event.cancelBubble = true;
+		}
 	}
 };
 
