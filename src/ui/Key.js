@@ -54,12 +54,14 @@ var Key = this.Key = new function() {
 	// actual onKeyDown event and maps the keydown keyCode to the keypress 
 	// charCode so keyup can do the right thing too.
 	charCodeMap = {}, // keyCode -> charCode mappings for pressed keys
+	keyMap = {}, // Map for currently pressed keys
 	downCode; // The last keyCode from keydown
 
 	function handleKey(down, keyCode, charCode, event) {
 		var character = String.fromCharCode(charCode),
 			key = keys[keyCode] || character.toLowerCase(),
 			handler = down ? 'onKeyDown' : 'onKeyUp';
+		keyMap[key] = down;
 		if (paper.tool && paper.tool[handler]) {
 			// Call the onKeyDown or onKeyUp handler if present
 			// When the handler function returns false, prevent the
@@ -97,7 +99,7 @@ var Key = this.Key = new function() {
 		},
 
 		keypress: function(event) {
-			if (downCode !== undefined) {
+			if (downCode != null) {
 				var code = event.which || event.keyCode;
 				// Link the downCode from keydown with the code form keypress, so
 				// keyup can retrieve that code again.
@@ -112,7 +114,7 @@ var Key = this.Key = new function() {
 				key = keys[code], name;
 			if (key && modifiers[name = Base.camelize(key)] !== undefined) {
 				modifiers[name] = false
-			} else if (charCodeMap[code] !== undefined) {
+			} else if (charCodeMap[code] != null) {
 				handleKey(false, code, charCodeMap[code], event);
 				delete charCodeMap[code];
 			}
@@ -123,7 +125,7 @@ var Key = this.Key = new function() {
 		modifiers: modifiers,
 
 		isDown: function(key) {
-			return !!activeKeys[key];
+			return !!keyMap[key];
 		}
 	};
 };
