@@ -16,8 +16,8 @@
 
 var Key = this.Key = new function() {
 	// TODO: make sure the keys are called the same as in Scriptographer
-	// Missing: tab, cancel, clear, pause, page-down, page-up, end, home, comma,
-	// minus, period, slash, etc etc etc.
+	// Missing: tab, cancel, clear, page-down, page-up, comma, minus, period,
+	// slash, etc etc etc.
 
 	var keys = {
 		 8: 'backspace',
@@ -74,11 +74,11 @@ var Key = this.Key = new function() {
 
 	DomEvent.add(document, {
 		keydown: function(event) {
-			downCode = event.which || event.keyCode;
+			var code = event.which || event.keyCode;
 			// If the keyCode is in keys, it needs to be handled by keydown and
-			// won't fire a keypress after.
-			var key = keys[downCode],
-				name;
+			// not in keypress after (arrows for example wont be triggering
+			// a keypress, but space would).
+			var key = keys[code], name;
 			if (key) {
 				// Do not fire handleKey for modifiers, but for other keys such
 				// ass arrows, delete, backspace, etc.
@@ -86,24 +86,30 @@ var Key = this.Key = new function() {
 					modifiers[name] = true;
 				} else {
 					// No char code for special keys, but mark as pressed
-					charCodeMap[downCode] = 0;
-					handleKey(true, downCode, null, event);
+					charCodeMap[code] = 0;
+					handleKey(true, code, null, event);
 				}
+				// Do not set downCode as we handled it already. Space would
+				// be handled twice otherwise, once here, once in keypress.
+			} else {
+				downCode = code;
 			}
 		},
 
 		keypress: function(event) {
-			var code = event.which || event.keyCode;
-			// Link the downCode from keydown with the code form keypress, so
-			// keyup can retrieve that code again.
-			charCodeMap[downCode] = code;
-			handleKey(true, downCode, code, event);
+			if (downCode !== undefined) {
+				var code = event.which || event.keyCode;
+				// Link the downCode from keydown with the code form keypress, so
+				// keyup can retrieve that code again.
+				charCodeMap[downCode] = code;
+				handleKey(true, downCode, code, event);
+				downCode = null;
+			}
 		},
 
 		keyup: function(event) {
 			var code = event.which || event.keyCode,
-				key = keys[code],
-				name;
+				key = keys[code], name;
 			if (key && modifiers[name = Base.camelize(key)] !== undefined) {
 				modifiers[name] = false
 			} else if (charCodeMap[code] !== undefined) {
