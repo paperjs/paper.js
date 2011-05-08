@@ -194,8 +194,8 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	
 	toString: function() {
 		return '{ type: ' + this.type 
-				+ ', point: ' + this.point
-				+ ', count: ' + this.count
+				+ ', point: ' + this.getPoint()
+				+ ', count: ' + this.getCount()
 				+ ', modifiers: ' + this.getModifiers()
 				+ ' }';
 	}
