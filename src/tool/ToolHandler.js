@@ -35,8 +35,8 @@ var ToolHandler = this.ToolHandler = Base.extend({
 	 * 
 	 * Sample code:
 	 * <code>
-	 * // Fire the onMouseDrag event after the user has dragged
-	 * // more then 5 points from the last onMouseDrag event:
+	 * // Fire the onMouseDrag event after the user has dragged more then 5
+	 * // points from the last onMouseDrag event:
 	 * tool.minDistance = 5;
 	 * </code>
 	 */
@@ -104,16 +104,12 @@ var ToolHandler = this.ToolHandler = Base.extend({
 			this.downCount++;
 			break;
 		case 'mouseup':
-			// Mouse up events return the down point for last point,
-			// so delta is spanning over the whole drag.
+			// Mouse up events return the down point for last point, so delta is
+			// spanning over the whole drag.
 			this.lastPoint = this.downPoint;
 			break;
 		}
-		if (start) {
-			this.count = 0;
-		} else {
-			this.count++;
-		}
+		this.count = start ? 0 : this.count + 1;
 		return true;
 	},
 
@@ -125,15 +121,15 @@ var ToolHandler = this.ToolHandler = Base.extend({
 				this.onMouseDown(new ToolEvent(this, type, event));
 			break;
 		case 'mousedrag':
-			// In order for idleInterval drag events to work, we need to
-			// not check the first call for a change of position. 
-			// Subsequent calls required by min/maxDistance functionality
-			// will require it, otherwise this might loop endlessly.
+			// In order for idleInterval drag events to work, we need to not
+			// check the first call for a change of position. Subsequent calls
+			// required by min/maxDistance functionality will require it,
+			// otherwise this might loop endlessly.
 			var needsChange = false,
-			// If the mouse is moving faster than maxDistance, do not
-			// produce events for what is left after the first event is
-			// generated in case it is shorter than maxDistance, as this
-			// would produce weird results. matchMaxDistance controls this.
+			// If the mouse is moving faster than maxDistance, do not produce
+			// events for what is left after the first event is generated in
+			// case it is shorter than maxDistance, as this would produce weird
+			// results. matchMaxDistance controls this.
 				matchMaxDistance = false;
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, false, needsChange, matchMaxDistance)) {
@@ -144,8 +140,8 @@ var ToolHandler = this.ToolHandler = Base.extend({
 			}
 			break;
 		case 'mouseup':
-			// If the last mouse drag happened in a different place, call
-			// mouse drag first, then mouse up.
+			// If the last mouse drag happened in a different place, call mouse
+			// drag first, then mouse up.
 			if ((this.point.x != pt.x || this.point.y != pt.y)
 					&& this.updateEvent('mousedrag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
