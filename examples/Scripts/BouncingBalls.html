@@ -8,11 +8,7 @@
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		var balls = [],
-			group = new Group(),
-			circlePath = new Path.Circle([0, 0], 10),
-			symbol = new Symbol(circlePath);
-		circlePath.fillColor = new GradientColor(null, [0, 0], [0, 12], [0, 2]);
-		circlePath.fillColor.gradient.type = 'radial';
+			group = new Group();
 
 		var Ball = Base.extend({
 			initialize: function(point, vector) {
@@ -25,10 +21,12 @@
 				this.dampen = 0.4;
 				this.gravity = 3;
 				this.bounce = -0.6;
-				this.radius = 50 * Math.random() + 10;
-				this.item = new PlacedSymbol(symbol);
-				this.item.position = point;
-				this.item.scale(this.radius / 10);
+				this.radius = 50 * Math.random() + 30;
+				this.item = new Path.Circle(point, this.radius);
+				var color = new HSBColor(Math.random() * 360, 1, 1);
+				var gradient = new Gradient([color, new RGBColor(0, 0, 0)], 'radial');
+				this.item.fillColor = new GradientColor(gradient, point,
+						point + this.radius, this.radius * 0.8);
 				group.appendTop(this.item);
 			},
 
@@ -47,6 +45,7 @@
 				
 				var max = Point.max(this.radius, this.point + this.vector);
 				this.item.position = this.point = Point.min(max, size - this.radius);
+				this.item.rotate(this.vector.x / 2);
 			}
 		});
 
