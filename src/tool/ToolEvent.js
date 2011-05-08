@@ -127,7 +127,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		// Instead, keep calculating the delta each time, so the result can be
 		// directly modified by the script without changing the internal values.
 		// We could cache this and use clone, but this is almost as fast...
-		return this._delta && this.tool.lastPoint
+		return !this._delta && this.tool.lastPoint
 		 		? this.tool.point.subtract(this.tool.lastPoint)
 				: this._delta;
 	},

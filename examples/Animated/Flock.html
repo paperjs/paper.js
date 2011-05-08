@@ -287,8 +287,10 @@
 		
 		var layer = document.activeLayer;
 		function onKeyDown(event) {
-			if (event.key == 'space')
+			if (event.key == 'space') {
 				layer.selected = !layer.selected;
+				return false;
+			}
 		}
 	</script>
 	<style>
