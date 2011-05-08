@@ -62,19 +62,21 @@ var sources = [
 	'src/color/Gradient.js',
 	'src/color/GradientStop.js',
 
+	'src/browser/DomElement.js',
+	'src/browser/DomEvent.js',
+
+	'src/ui/Event.js',
+	'src/ui/KeyEvent.js',
+	'src/ui/Key.js',
+
 	'src/tool/ToolEvent.js',
 	'src/tool/ToolHandler.js',
 	'src/tool/Tool.js',
 
-	'src/browser/DomElement.js',
-	'src/browser/DomEvent.js',
-
 	'src/util/CanvasProvider.js',
 	'src/util/Numerical.js',
 	'src/util/PaperScript.js',
-	'src/util/BlendMode.js',
-
-	'src/ui/Key.js'
+	'src/util/BlendMode.js'
 ];
 
 // Load unit tests after library if asked to do so
