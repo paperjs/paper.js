@@ -18,7 +18,7 @@ var KeyEvent = this.KeyEvent = Event.extend(new function() {
 	return {
 		initialize: function(down, key, character, event) {
 			this.base(event);
-			this.type = down ? 'key-down' : 'key-up';
+			this.type = down ? 'keydown' : 'keyup';
 			this.key = key;
 			this.character = character;
 		},

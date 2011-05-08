@@ -122,8 +122,8 @@ var ToolEvent = this.ToolEvent = Base.extend({
 
 	/**
 	 * The difference between the current position and the last position of the
-	 * mouse when the event was fired. In case of the mouse-up event, the
-	 * difference to the mouse-down position is returned.
+	 * mouse when the event was fired. In case of the mouseup event, the
+	 * difference to the mousedown position is returned.
 	 */
 	getDelta: function() {
 		// Do not put the calculated delta into delta, since this only reserved
@@ -161,8 +161,8 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 */
 	getCount: function() {
 		switch (this.type) {
-		case 'mouse-down':
-		case 'mouse-up':
+		case 'mousedown':
+		case 'mouseup':
 			// Return downCount for both mouse down and up, since
 			// the count is the same.
 			return this.tool.downCount;
@@ -173,8 +173,8 @@ var ToolEvent = this.ToolEvent = Base.extend({
 
 	setCount: function(count) {
 		switch (this.type) {
-		case 'mouse-down':
-		case 'mouse-up':
+		case 'mousedown':
+		case 'mouseup':
 			this.tool.downCount = count;
 			break;
 		default:
