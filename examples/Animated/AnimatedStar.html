@@ -44,7 +44,7 @@
 		}
 		
 		// Reposition the paths whenever the window is resized:
-		Event.add(window, {
+		DomEvent.add(window, {
 			resize: function(event) {
 				document.activeLayer.position = document.bounds.center;
 			}

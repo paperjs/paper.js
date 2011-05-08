@@ -35,9 +35,9 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	beans: true,
 
 	initialize: function(tool, type, event) {
-		this.event = event;
 		this.tool = tool;
 		this.type = type;
+		this.event = event;
 	},
 	
 	toString: function() {

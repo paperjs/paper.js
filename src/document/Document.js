@@ -30,15 +30,15 @@ var Document = this.Document = Base.extend({
 				//	margin: 0;
 				//	overflow: hidden;
 				// }
-				this._size = Element.getWindowSize()
-						.subtract(Element.getOffset(this.canvas));
+				this._size = DomElement.getWindowSize()
+						.subtract(DomElement.getOffset(this.canvas));
 				this.canvas.width = this._size.width;
 				this.canvas.height = this._size.height;
 				var that = this;
-				Event.add(window, {
+				DomEvent.add(window, {
 					resize: function(event) {
-						that.setSize(Element.getWindowSize()
-								.subtract(Element.getOffset(that.canvas)));
+						that.setSize(DomElement.getWindowSize()
+								.subtract(DomElement.getOffset(that.canvas)));
 						that.redraw();
 					}
 				});
@@ -72,7 +72,7 @@ var Document = this.Document = Base.extend({
 			// Align top-left to the canvas
 			var element = this.stats.domElement,
 				style = element.style,
-				offset = Element.getOffset(this.canvas);
+				offset = DomElement.getOffset(this.canvas);
 			style.position = 'absolute';
 			style.left = offset.x + 'px';
 			style.top = offset.y + 'px';

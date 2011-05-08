@@ -152,12 +152,12 @@ var PaperScript = this.PaperScript = new function() {
 				if (onFrame) {
 					function frame() {
 						// Request next frame already
-						Event.requestAnimationFrame(frame, doc && doc.canvas);
+						DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
 						onFrame();
 						// Automatically redraw document each frame.
 						doc && doc.redraw();
 					}
-					Event.requestAnimationFrame(frame, doc && doc.canvas);
+					DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
 				}
 			} catch (e) {
 			}
@@ -209,7 +209,7 @@ var PaperScript = this.PaperScript = new function() {
 		}
 	}
 
-	Event.add(window, { load: load });
+	DomEvent.add(window, { load: load });
 
 	return {
 		compile: compile,

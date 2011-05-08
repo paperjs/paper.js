@@ -64,7 +64,7 @@
 			gradientColor.hilite = mouseDown ? point : point + vector;
 		}
 		
-		Event.add(window, {
+		DomEvent.add(window, {
 			resize: function(event) {
 				point = new Point(document.size) / 2;
 				path.bounds = document.bounds;

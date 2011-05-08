@@ -14,7 +14,7 @@
  * All rights reserved.
  */
 
-var Element = new function() {
+var DomElement = new function() {
 	function cumulate(el, name, parent) {
 		var left = name + 'Left',
 			top = name + 'Top',
@@ -41,8 +41,8 @@ var Element = new function() {
 		},
 
 		getBounds: function(el, scroll) {
-			return new Rectangle(Element.getOffset(el, scroll),
-					Element.getSize(el));
+			return new Rectangle(DomElement.getOffset(el, scroll),
+					DomElement.getSize(el));
 		},
 
 		getWindowSize: function() {
@@ -58,8 +58,8 @@ var Element = new function() {
 		isVisible: function(el) {
 			// See if the scrolled bounds intersect with the windows rectangle
 			// which always starts at 0, 0
-			return new Rectangle([0, 0], Element.getWindowSize())
-					.intersects(Element.getBounds(el, true));
+			return new Rectangle([0, 0], DomElement.getWindowSize())
+					.intersects(DomElement.getBounds(el, true));
 		}
 	};
 };

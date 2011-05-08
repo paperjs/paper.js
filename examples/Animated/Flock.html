@@ -11,7 +11,7 @@
 		// http://processing.org/learning/topics/flocking.html
 		
 		// Reposition the heart path whenever the window is resized:
-		Event.add(window, {
+		DomEvent.add(window, {
 			resize: function(event) {
 				size = document.size;
 				heartPath.position = document.bounds.center;
