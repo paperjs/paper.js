@@ -35,7 +35,9 @@ var Event = this.Event = Base.extend({
 		this.preventDefault();
 	},
 
-	getModifiers: function() {
-		return Key.modifiers;
+	getModifiers: function(asString) {
+		return asString ? '{ ' + Base.each(Key.modifiers, function(value, key) {
+			this.push(key + ': ' + value);
+		}, []).join(', ') + ' }' : Key.modifiers;
 	}
 });

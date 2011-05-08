@@ -27,7 +27,7 @@ var KeyEvent = this.KeyEvent = Event.extend(new function() {
 			return '{ type: ' + this.type 
 					+ ', key: ' + this.key
 					+ ', character: ' + this.character
-					+ ', modifiers: ' + this.modifiers
+					+ ', modifiers: ' + this.getModifiers(true)
 					+ ' }';
 		}
 	};
