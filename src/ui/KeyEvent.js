@@ -16,11 +16,19 @@
 
 var KeyEvent = this.KeyEvent = Event.extend(new function() {
 	return {
-		initialize: function(down, keyCode, character, event) {
+		initialize: function(down, key, character, event) {
 			this.base(event);
-			this.type = down ? 'key-down' : 'key-up';
-			this.keyCode = keyCode;
+			this.type = down ? 'keydown' : 'keyup';
+			this.key = key;
 			this.character = character;
+		},
+	
+		toString: function() {
+			return '{ type: ' + this.type 
+					+ ', key: ' + this.key
+					+ ', character: ' + this.character
+					+ ', modifiers: ' + this.getModifiers()
+					+ ' }';
 		}
 	};
 });

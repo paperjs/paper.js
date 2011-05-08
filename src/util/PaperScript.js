@@ -134,14 +134,13 @@ var PaperScript = this.PaperScript = new function() {
 			var doc = paper.document,
 				tool = paper.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
 					&& new Tool(null, doc),
-				onEditOptions, onOptions, onSelect, onDeselect, onReselect,
-				onMouseDown, onMouseUp, onMouseDrag, onMouseMove, onKeyDown,
-				onKeyUp,
+				onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
+				onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp,
 				res = eval(compile(code));
 			if (tool) {
-				Base.each(['onEditOptions', 'onOptions', 'onSelect',
-						'onDeselect', 'onReselect', 'onMouseDown', 'onMouseUp',
-						'onMouseDrag', 'onMouseMove', 'onKeyDown', 'onKeyUp'],
+				Base.each(['onEditOptions', 'onSelect', 'onDeselect',
+						'onReselect', 'onMouseDown', 'onMouseUp', 'onMouseDrag',
+						'onMouseMove', 'onKeyDown', 'onKeyUp'],
 					function(key) {
 						tool[key] = eval(key);
 					}

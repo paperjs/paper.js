@@ -15,6 +15,8 @@
  */
 
 var Event = this.Event = Base.extend({
+	beans: true,
+
 	initialize: function(event) {
 		this.event = event;
 	},
