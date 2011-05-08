@@ -35,10 +35,14 @@ var Document = this.Document = Base.extend({
 				this.canvas.width = this._size.width;
 				this.canvas.height = this._size.height;
 				var that = this;
+				var offset = DomElement.getOffset(this.canvas);
 				DomEvent.add(window, {
 					resize: function(event) {
-						that.setSize(DomElement.getWindowSize()
-								.subtract(DomElement.getOffset(that.canvas)));
+						// Only get canvas offset if it's not invisible (size is
+						// 0, 0), as otherwise the offset would be wrong.
+						if (!DomElement.getSize(that.canvas).equals([0, 0]))
+							offset = DomElement.getOffset(that.canvas);
+						that.setSize(DomElement.getWindowSize().subtract(offset));
 						that.redraw();
 					}
 				});
