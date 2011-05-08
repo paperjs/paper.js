@@ -458,14 +458,16 @@ var Item = this.Item = Base.extend({
 				y1 = x1,
 				y2 = x2;
 			for (var i = 0, l = children.length; i < l; i++) {
-				var child = children[i],
-					rect = includeStroke
-						? child.getStrokeBounds()
-						: child.getBounds();
-				x1 = Math.min(rect.x, x1);
-				y1 = Math.min(rect.y, y1);
-				x2 = Math.max(rect.x + rect.width, x2);
-				y2 = Math.max(rect.y + rect.height, y2);
+				var child = children[i];
+				if (child.visible) {
+					var rect = includeStroke
+							? child.getStrokeBounds()
+							: child.getBounds();
+					x1 = Math.min(rect.x, x1);
+					y1 = Math.min(rect.y, y1);
+					x2 = Math.max(rect.x + rect.width, x2);
+					y2 = Math.max(rect.y + rect.height, y2);
+				}
 			}
 			return includeStroke
 				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
