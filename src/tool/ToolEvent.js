@@ -196,7 +196,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		return '{ type: ' + this.type 
 				+ ', point: ' + this.point
 				+ ', count: ' + this.count
-				+ ', modifiers: ' + this.getModifiers(true)
+				+ ', modifiers: ' + this.getModifiers()
 				+ ' }';
 	}
 });

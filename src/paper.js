@@ -124,8 +124,22 @@ Base.inject({
 		});
 	},
 
+	/**
+	 * Utility function for rendering numbers to strings at a precision of up
+	 * to 5 fractional digits.
+	 */
 	formatNumber: function(num) {
 		return (Math.round(num * 100000) / 100000).toString();
+	},
+
+	/**
+	 * Utility function for rendering objects to strings, in object literal
+	 * notation.
+	 */
+	formatObject: function(obj) {
+		return '{ ' + Base.each(obj, function(value, key) {
+			this.push(key + ': ' + value);
+		}, []).join(', ') + ' }';
 	}
 });
 
