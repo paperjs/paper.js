@@ -7,24 +7,35 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		document.currentStyle.fillColor = 'black';
-		var raster = new Raster('lenna');
+		var raster = new Raster('lenna'),
+			size = new Size(50, 50),
+			colSize = raster.size / size * 1.5,
+			fullSize = size * colSize;
+
 		raster.hidden = true;
-		var size = new Size(50, 50);
-		var colSize = raster.size / size * 1.5;
 		raster.size = size;
 		for (var x = 0; x < size.width; x++) {
 			for (var y = 0; y < size.height; y++) {
-				var gray = raster.getPixel(x, y).gray * 0.9;
+				var color = raster.getPixel(x, y),
+					gray = color.gray * 0.9;
 				if (gray > 0.1) {
-					var pos = new Point(x, y) * colSize + colSize / 2;
-					var rectSize = gray * colSize.width;
-					var path = new Path.Rectangle([0, 0], [rectSize, rectSize]);
+					var pos = new Point(x, y) * colSize + colSize / 2,
+						rectSize = gray * colSize.width,
+						path = new Path.Rectangle([0, 0], [rectSize, rectSize]);
+					path.fillColor = color;
 					path.position = pos;
 					path.rotate(gray * 180);
 				}
 			}
 		}
+		document.activeLayer.position = document.bounds.center;
+
+		// Reposition the paths whenever the window is resized:
+		DomEvent.add(window, {
+			resize: function(event) {
+				document.activeLayer.position = document.bounds.center;
+			}
+		});
 	</script>
 </head>
 <body>

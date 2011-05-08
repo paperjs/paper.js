@@ -154,15 +154,18 @@ var PaperScript = this.PaperScript = new function() {
 						DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
 						onFrame();
 						// Automatically redraw document each frame.
-						doc && doc.redraw();
-					}
-					DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
+						if (doc)
+							doc.redraw();
+					};
+					// Call the onFrame handler and redraw the document:
+					frame();
+				} else {
+					// Automatically redraw document at the end.
+					if (doc)
+						doc.redraw();
 				}
 			} catch (e) {
 			}
-			// Automatically redraw document at the end.
-			if (doc)
-				doc.redraw();
 			return res;
 		}
 	}
