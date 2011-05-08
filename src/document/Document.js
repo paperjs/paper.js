@@ -60,7 +60,7 @@ var Document = this.Document = Base.extend({
 		this.activate();
 		this.layers = [];
 		this.activeLayer = new Layer();
-		this.setCurrentStyle({ strokeColor: 'black' });
+		this.setCurrentStyle(null);
 		this.symbols = [];
 		this.activeView = new DocumentView(this);
 		this.views = [this.activeView];
