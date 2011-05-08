@@ -7,15 +7,16 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var width, height, pathHeight, center;
-
+		var width, height, center;
 		var points = 10;
 		var count = 0;
 		var smooth = true;
 		var path = new Path();
+		var mousePos = document.bounds.center / 2;
+		var pathHeight = mousePos.y;
 		path.fillColor = 'black';
 		initializePath();
-		
+
 		function initializePath() {
 			center = document.bounds.center;
 			width = document.bounds.width;
@@ -29,11 +30,12 @@
 			path.add(document.bounds.bottomRight);
 			path.selected = true;
 		}
-		
+
 		function onFrame() {
 			count++;
+			pathHeight += (center.y - mousePos.y - pathHeight) / 10;
 			for (var i = 1; i < points; i++) {
-				var sinSeed = count + (i + i % 10) * 100 ;
+				var sinSeed = count + (i + i % 10) * 100;
 				var sinHeight = Math.sin(sinSeed / 200) * pathHeight;
 				var yPos = Math.sin(sinSeed / 100) * sinHeight + height;
 				path.segments[i].point.y = yPos;
@@ -41,11 +43,11 @@
 			if (smooth)
 				path.smooth();
 		}
-		
+
 		function onMouseMove(event) {
-			pathHeight = center.y - event.point.y;
+			mousePos = event.point;
 		}
-		
+
 		function onMouseDown(event) {
 			smooth = !smooth;
 			if (!smooth) {
@@ -57,7 +59,7 @@
 				}
 			}
 		}
-		
+
 		// Reposition the path whenever the window is resized:
 		DomEvent.add(window, {
 			resize: function(event) {
