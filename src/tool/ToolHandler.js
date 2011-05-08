@@ -129,19 +129,18 @@ var ToolHandler = this.ToolHandler = Base.extend({
 			// not check the first call for a change of position. 
 			// Subsequent calls required by min/maxDistance functionality
 			// will require it, otherwise this might loop endlessly.
-			this.needsChange = false;
+			var needsChange = false,
 			// If the mouse is moving faster than maxDistance, do not
 			// produce events for what is left after the first event is
 			// generated in case it is shorter than maxDistance, as this
 			// would produce weird results. matchMaxDistance controls this.
-			this.matchMaxDistance = false;
+				matchMaxDistance = false;
 			while (this.updateEvent(type, pt, this.minDistance,
-					this.maxDistance, false, this.needsChange,
-					this.matchMaxDistance)) {
+					this.maxDistance, false, needsChange, matchMaxDistance)) {
 				if (this.onMouseDrag)
 					this.onMouseDrag(new ToolEvent(this, type, event));
-				this.needsChange = true;
-				this.matchMaxDistance = true;
+				needsChange = true;
+				matchMaxDistance = true;
 			}
 			break;
 		case 'mouse-up':
@@ -157,7 +156,7 @@ var ToolHandler = this.ToolHandler = Base.extend({
 					false, false);
 			if (this.onMouseUp)
 				this.onMouseUp(new ToolEvent(this, type, event));
-			// Start with new values for TRACK_CURSOR
+			// Start with new values for 'mouse-move'
 			this.updateEvent(type, pt, null, null, true, false, false);
 			this.firstMove = true;
 			break;
