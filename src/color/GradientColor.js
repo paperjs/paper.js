@@ -30,7 +30,8 @@ var GradientColor = this.GradientColor = Color.extend({
 	},
 
 	setOrigin: function(origin) {
-		origin = Point.read(arguments);
+		// PORT: add clone to Scriptographer
+		origin = Point.read(arguments).clone();
 		this._origin = origin;
 		if (this._destination)
 			this._radius = this._destination.getDistance(this._origin);
@@ -42,7 +43,8 @@ var GradientColor = this.GradientColor = Color.extend({
 	},
 
 	setDestination: function(destination) {
-		destination = Point.read(arguments);
+		// PORT: add clone to Scriptographer
+		destination = Point.read(arguments).clone();
 		this._destination = destination;
 		this._radius = this._destination.getDistance(this._origin);
 		return this;
@@ -53,7 +55,8 @@ var GradientColor = this.GradientColor = Color.extend({
 	},
 
 	setHilite: function(hilite) {
-		hilite = Point.read(arguments);
+		// PORT: add clone to Scriptographer
+		hilite = Point.read(arguments).clone();
 		var vector = hilite.subtract(this._origin);
 		if (vector.getLength() > this._radius) {
 			this._hilite = this._origin.add(vector.normalize(
