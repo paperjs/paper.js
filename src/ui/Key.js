@@ -44,7 +44,11 @@ var Key = this.Key = new function() {
 		control: false,
 		option: false,
 		command: false,
-		capsLock: false
+		capsLock: false,
+
+		toString: function() {
+			return Base.formatObject(this);
+		}
 	},
 
 	// Since only keypress gets proper keyCodes that are actually representing
