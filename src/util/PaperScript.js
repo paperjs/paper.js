@@ -149,13 +149,24 @@ var PaperScript = this.PaperScript = new function() {
 			try {
 				var onFrame = eval('onFrame');
 				if (onFrame) {
+					var lastTime;
+					var totalTime = 0;
 					function frame() {
 						// Request next frame already
 						DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
-						onFrame();
+						var time = Date.now() / 1000;
+						// Time elapsed since last redraw in seconds:
+						var delta = lastTime ? time - lastTime : 0;
+						// Time since first call of frame() in seconds:
+						totalTime += delta;
+						onFrame({
+							delta: delta,
+							time: totalTime
+						});
 						// Automatically redraw document each frame.
 						if (doc)
 							doc.redraw();
+						lastTime = time;
 					};
 					// Call the onFrame handler and redraw the document:
 					frame();
