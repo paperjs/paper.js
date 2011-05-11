@@ -158,8 +158,8 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		// Return downCount for both mouse down and up, since
 		// the count is the same.
 		return /^mouse(down|up)$/.test(this.type)
-			? this.tool.downCount
-			: this.tool.count;
+				? this.tool.downCount
+				: this.tool.count;
 	},
 
 	setCount: function(count) {
