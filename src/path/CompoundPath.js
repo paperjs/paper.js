@@ -56,11 +56,11 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		var fillColor = firstChild.getFillColor(),
 			strokeColor = firstChild.getStrokeColor();
 		if (fillColor) {
-			ctx.fillStyle = fillColor.toCssString();
+			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
 			ctx.fill();
 		}
 		if (strokeColor) {
-			ctx.strokeStyle = strokeColor.toCssString();
+			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
 			ctx.stroke();
 		}
 	}
