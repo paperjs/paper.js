@@ -19,7 +19,7 @@ var Group = this.Group = Item.extend({
 
 	initialize: function(items) {
 		this.base();
-		this.children = [];
+		this._children = [];
 		if (items) {
 			for (var i = 0, l = items.length; i < l; i++) {
 				this.appendTop(items[i]);
@@ -53,8 +53,8 @@ var Group = this.Group = Item.extend({
 	},
 
 	draw: function(ctx, param) {
-		for (var i = 0, l = this.children.length; i < l; i++) {
-			Item.draw(this.children[i], ctx, param);
+		for (var i = 0, l = this._children.length; i < l; i++) {
+			Item.draw(this._children[i], ctx, param);
 			if (this._clipped && i == 0)
 				ctx.clip();
 		}

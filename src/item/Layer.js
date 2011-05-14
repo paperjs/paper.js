@@ -18,7 +18,7 @@ var Layer = this.Layer = Group.extend({
 	beans: true,
 
 	initialize: function() {
-		this.children = [];
+		this._children = [];
 		this._document = paper.document;
 		// Push it onto document.layers and set index:
 		this._index = this._document.layers.push(this) - 1;

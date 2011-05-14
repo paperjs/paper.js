@@ -67,9 +67,9 @@ var Item = this.Item = Base.extend({
 	},
 
 	setSelected: function(selected) {
-		if (this.children) {
-			for (var i = 0, l = this.children.length; i < l; i++) {
-				this.children[i].setSelected(selected);
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				this._children[i].setSelected(selected);
 			}
 		} else {
 			if ((selected = !!selected) != this._selected) {
@@ -82,9 +82,9 @@ var Item = this.Item = Base.extend({
 	},
 	
 	isSelected: function() {
-		if (this.children) {
-			for (var i = 0, l = this.children.length; i < l; i++) {
-				if (this.children[i].isSelected()) {
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				if (this._children[i].isSelected()) {
 					return true;
 				}
 			}
@@ -101,9 +101,9 @@ var Item = this.Item = Base.extend({
 	_setDocument: function(document) {
 		if (this._document != document) {
 			this._document = document;
-			if (this.children) {
-				for (var i = 0, l = this.children.length; i < l; i++) {
-					this.children[i]._setDocument(document);
+			if (this._children) {
+				for (var i = 0, l = this._children.length; i < l; i++) {
+					this._children[i]._setDocument(document);
 				}
 			}
 		}
@@ -219,48 +219,10 @@ var Item = this.Item = Base.extend({
 		}
 	},
 
-	// TODO: getIsolated / setIsolated (print specific feature)
+	// TODO: get/setIsolated (print specific feature)
 	// TODO: get/setKnockout (print specific feature)
 	// TODO get/setAlphaIsShape
 	// TODO: get/setData
-
-	/**
-	 * Reverses the order of this item's children
-	 */
-	reverseChildren: function() {
-		if (this.children) {
-			this.children.reverse();
-			// TODO: Reassign _index
-		}
-	},
-
-	/**
-	 * The first item contained within this item.
-	 */
-	getFirstChild: function() {
-		return this.children && this.children[0] || null;
-	},
-
-	/**
-	 * The last item contained within this item.
-	 */
-	getLastChild: function() {
-		return this.children && this.children[this.children.length - 1] || null;
-	},
-
-	/**
-	 * The next item on the same level as this item.
-	 */
-	getNextSibling: function() {
-		return this._parent && this._parent.children[this._index + 1] || null;
-	},
-
-	/**
-	 * The previous item on the same level as this item.
-	 */
-	getPreviousSibling: function() {
-		return this._parent && this._parent.children[this._index - 1] || null;
-	},
 
 	/**
 	 * The item that this item is contained within.
@@ -268,6 +230,8 @@ var Item = this.Item = Base.extend({
 	getParent: function() {
 		return this._parent;
 	},
+
+	// TODO: #getLayer()
 
 	/**
 	 * The index of this item within the list of it's parent's children.
@@ -277,11 +241,58 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
+	 * The children items contained within this item.
+	 */
+	getChildren: function() {
+		return this._children;
+	},
+
+	// TODO: #setChildren()
+
+	/**
+	 * Reverses the order of this item's children
+	 */
+	reverseChildren: function() {
+			// TODO: Reassign _index
+		if (this._children) {
+			this._children.reverse();
+		}
+	},
+
+	/**
+	 * The first item contained within this item.
+	 */
+	getFirstChild: function() {
+		return this._children && this._children[0] || null;
+	},
+
+	/**
+	 * The last item contained within this item.
+	 */
+	getLastChild: function() {
+		return this._children && this._children[this._children.length - 1] || null;
+	},
+
+	/**
+	 * The next item on the same level as this item.
+	 */
+	getNextSibling: function() {
+		return this._parent && this._parent._children[this._index + 1] || null;
+	},
+
+	/**
+	 * The previous item on the same level as this item.
+	 */
+	getPreviousSibling: function() {
+		return this._parent && this._parent._children[this._index - 1] || null;
+	},
+
+	/**
 	* Removes the item from its parent's children list.
 	*/
 	_removeFromParent: function() {
 		if (this._parent) {
-			var ok = !!Base.splice(this._parent.children, null,
+			var ok = !!Base.splice(this._parent._children, null,
 					this._index, 1).length;
 			this._parent = null;
 			this._index = null;
@@ -307,7 +318,7 @@ var Item = this.Item = Base.extend({
 	 * @return {@true if it has one or more children}
 	 */
 	hasChildren: function() {
-		return this.children && this.children.length > 0;
+		return this._children && this._children.length > 0;
 	},
 
 	/**
@@ -460,7 +471,7 @@ var Item = this.Item = Base.extend({
 	},
 	
 	_getBounds: function(includeStroke) {
-		var children = this.children;
+		var children = this._children;
 		if (children && children.length) {
 			var x1 = Infinity,
 				x2 = -Infinity,
@@ -588,9 +599,9 @@ var Item = this.Item = Base.extend({
 			// Transform position as well
 		if (this._position)
 			this._position = matrix._transformPoint(this._position);
-		if (this.children) {
-			for (var i = 0, l = this.children.length; i < l; i++) {
-				var child = this.children[i];
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				var child = this._children[i];
 				child.transform(matrix, flags);
 			}
 		}
@@ -819,8 +830,8 @@ var Item = this.Item = Base.extend({
 	function append(top) {
 		return function(item) {
 			item._removeFromParent();
-			if (this.children) {
-				Base.splice(this.children, [item], top ? undefined : 0, 0);
+			if (this._children) {
+				Base.splice(this._children, [item], top ? undefined : 0, 0);
 				item._parent = this;
 				item._setDocument(this._document);
 				return true;
@@ -833,7 +844,7 @@ var Item = this.Item = Base.extend({
 		return function(item) {
 			// first remove the item from its parent's children list
 			if (item._parent && this._removeFromParent()) {
-				Base.splice(item._parent.children, [this],
+				Base.splice(item._parent._children, [this],
 						item._index + (above ? 1 : -1), 0);
 				this._parent = item._parent;
 				this._setDocument(item._document);
