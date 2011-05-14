@@ -131,7 +131,7 @@ DomEvent.requestAnimationFrame = new function() {
 							|| focused && DomElement.isVisible(element)) {
 						// Handle callback and remove it from callbacks list.
 						callbacks.splice(i, 1);
-						func(+new Date);
+						func(Date.now());
 					}
 				}
 			}, 1000 / 60);
