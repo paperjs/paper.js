@@ -110,7 +110,8 @@ var Item = this.Item = Base.extend({
 	},
 	
 	// TODO: isFullySelected / setFullySelected
-
+	// TODO: Change to getter / setters for these below that notify of changes
+	// through _changed()
 	/**
 	 * Specifies whether the item is locked.
 	 * 
