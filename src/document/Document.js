@@ -18,7 +18,7 @@ var Document = this.Document = Base.extend({
 	beans: true,
 
 	initialize: function(canvas) {
-		// Store reference to currently active global paper scope:
+		// Store reference to the currently active global paper scope:
 		this._scope = paper;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this.canvas = canvas;

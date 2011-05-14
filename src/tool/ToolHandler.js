@@ -21,6 +21,7 @@ var ToolHandler = this.ToolHandler = Base.extend({
 	 * Initializes the tool's settings, so a new tool can be assigned to it
 	 */
 	initialize: function(handlers, scope) {
+		this._scope = scope;
 		this._firstMove = true;
 		this._count = 0;
 		this._downCount = 0;
@@ -120,6 +121,7 @@ var ToolHandler = this.ToolHandler = Base.extend({
 	},
 
 	onHandleEvent: function(type, pt, event) {
+		PaperScope.set(this._scope);
 		switch (type) {
 		case 'mousedown':
 			this.updateEvent(type, pt, null, null, true, false, false);
@@ -176,5 +178,6 @@ var ToolHandler = this.ToolHandler = Base.extend({
 			}
 			break;
 		}
+		PaperScope.restore();
 	}
 });

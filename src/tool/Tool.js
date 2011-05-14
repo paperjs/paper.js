@@ -24,18 +24,22 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 		beans: true,
 
 		initialize: function(handlers, doc) {
-			this.base(handlers);
-			// Create events once, so they can be removed easily too.
-			var that = this, curPoint;
+			this.base(handlers, doc._scope);
+			this._document = doc;
+
+			var curPoint;
 			var dragging = false;
-			this.events = {
+			var that = this;
+			// TODO: Move event handling to DocumentView
+			var events = {
 				mousedown: function(event) {
 					curPoint = viewToArtwork(event, that._document);
 					that.onHandleEvent('mousedown', curPoint, event);
-					if (that.onMouseDown)
+					if (that.onMouseDown) {
 						that._document.redraw();
+					}
 					if (that.eventInterval != null) {
-						this.timer = setInterval(that.events.mousemove,
+						this.timer = setInterval(events.mousemove,
 								that.eventInterval);
 					}
 					dragging = true;
@@ -45,54 +49,55 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 					// If the event was triggered by a touch screen device,
 					// prevent the default behaviour, as it will otherwise
 					// scroll the page:
-					if (event && event.targetTouches)
-						event.preventDefault();
+					if (event && event.targetTouches) {
+						DomEvent.preventDefault(event);
+					}
 					var point = event && viewToArtwork(event, that._document);
 					// If there is only an onMouseMove handler, call it when
 					// the user is dragging
 					var onlyMove = !!(!that.onMouseDrag && that.onMouseMove);
 					if (dragging && !onlyMove) {
 						curPoint = point || curPoint;
-						if (curPoint)
+						if (curPoint) {
 							that.onHandleEvent('mousedrag', curPoint, event);
+						}
 					} else if (!dragging || onlyMove) {
 						that.onHandleEvent('mousemove', point, event);
 					}
-					if (that.onMouseMove || that.onMouseDrag)
+					if (that.onMouseMove || that.onMouseDrag) {
 						that._document.redraw();
+					}
 				},
 
 				mouseup: function(event) {
 					if (dragging) {
 						curPoint = null;
-						if (that.eventInterval != null)
+						if (that.eventInterval != null) {
 							clearInterval(this.timer);
+						}
 						that.onHandleEvent('mouseup',
 								viewToArtwork(event, that._document), event);
-						if (that.onMouseUp)
+						if (that.onMouseUp) {
 							that._document.redraw();
+						}
 						dragging = false;
 					}
 				},
 
 				touchmove: function(event) {
-					that.events.mousemove(event);
+					events.mousemove(event);
 				},
 
 				touchstart: function(event) {
-					that.events.mousedown(event);
+					events.mousedown(event);
 				},
 
 				touchend: function(event) {
-					that.events.mouseup(event);
+					events.mouseup(event);
 				}
 			};
 
-			// Remove old events first.
-			if (this._document)
-				DomEvent.remove(this._document.canvas, this.events);
-			this._document = doc;
-			DomEvent.add(doc.canvas, this.events);
+			DomEvent.add(doc.canvas, events);
 		},
 
 		getDocument: function() {

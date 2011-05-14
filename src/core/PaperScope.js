@@ -38,5 +38,19 @@ var PaperScope = this.PaperScope = Base.extend({
 		return Base.each(this, function(value, key) {
 			this[key] = value;
 		}, scope);
+	},
+
+	// Methods for setting and restoring paper scopes:
+	statics: {
+		scopes: [],
+
+		set: function(scope) {
+			this.scopes.push(paper);
+			paper = scope;
+		},
+
+		restore: function() {
+			paper = this.scopes.pop();
+		}
 	}
 });

@@ -129,14 +129,19 @@ var PaperScript = this.PaperScript = new function() {
 		return parse_js.stringify(ast, true);
 	}
 
-	function run(code) {
-		with (paper) {
-			var doc = paper.document,
-				tool = paper.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
-					&& new Tool(null, doc),
-				onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
-				onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp,
-				res = eval(compile(code));
+	function run(code, scope) {
+		try { with (scope) { // Safe one indentation by grouping try and with
+			PaperScope.set(scope);
+			var doc = scope.document;
+				// TODO: Add support for multiple tools
+			var tool = scope.tool =
+					/on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
+					&& new Tool(null, doc);
+			// Define variables for potential handlers, so eval() calls below to 
+			// fetch their values do not require try-catch around them.
+			var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
+				onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp, onFrame;
+			var res = eval(compile(code));
 			if (tool) {
 				Base.each(['onEditOptions', 'onSelect', 'onDeselect',
 						'onReselect', 'onMouseDown', 'onMouseUp', 'onMouseDrag',
@@ -146,44 +151,44 @@ var PaperScript = this.PaperScript = new function() {
 					}
 				);
 			}
-			try {
-				var onFrame = eval('onFrame');
-				if (onFrame) {
-					var lastTime;
-					var totalTime = 0;
-					function frame() {
-						// Request next frame already
-						DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
-						var time = Date.now() / 1000;
-						// Time elapsed since last redraw in seconds:
-						var delta = lastTime ? time - lastTime : 0;
-						// Time since first call of frame() in seconds:
-						totalTime += delta;
-						onFrame({
-							delta: delta,
-							time: totalTime
-						});
-						// Automatically redraw document each frame.
-						if (doc)
-							doc.redraw();
-						lastTime = time;
-					};
-					// Call the onFrame handler and redraw the document:
-					frame();
-				} else {
-					// Automatically redraw document at the end.
+			// TODO: Move onFrame support to DocumentView
+			var onFrame = eval('onFrame');
+			if (onFrame) {
+				var lastTime;
+				var totalTime = 0;
+				function frame() {
+					// Request next frame already
+					DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
+					var time = Date.now() / 1000;
+					// Time elapsed since last redraw in seconds:
+					var delta = lastTime ? time - lastTime : 0;
+					// Time since first call of frame() in seconds:
+					totalTime += delta;
+					onFrame({
+						delta: delta,
+						time: totalTime
+					});
+					// Automatically redraw document each frame.
 					if (doc)
 						doc.redraw();
-				}
-			} catch (e) {
+					lastTime = time;
+				};
+				// Call the onFrame handler and redraw the document:
+				frame();
+			} else {
+				// Automatically redraw document at the end.
+				if (doc)
+					doc.redraw();
 			}
 			return res;
+		} } finally {
+			PaperScope.restore();
 		}
 	}
 
 //#ifdef BROWSER
 	// Code borrowed from Coffee Script:
-	function request(url) {
+	function request(url, scope) {
 		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
 				'Microsoft.XMLHTTP');
 		xhr.open('GET', url, true);
@@ -192,7 +197,7 @@ var PaperScript = this.PaperScript = new function() {
 		}
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === 4) {
-				return run(xhr.responseText);
+				return run(xhr.responseText, scope);
 			}
 		};
 		return xhr.send(null);
@@ -205,16 +210,23 @@ var PaperScript = this.PaperScript = new function() {
 			// Only load this cript if it not loaded already.
 			if (script.type === 'text/paperscript'
 					&& !script.getAttribute('loaded')) {
+				// Produce a new PaperScope for this script now. Scopes are
+				// cheap so let's not worry about the initial one that was
+				// already created.
+				var scope = new PaperScope();
 				// If a canvas id is provided, create a document for it now,
 				// so the active document is defined.
 				var canvas = script.getAttribute('canvas');
 				if (canvas = canvas && document.getElementById(canvas)) {
+					// Create a Document for this canvas, using the right scope
+					PaperScope.set(scope);
 					new Document(canvas);
+					PaperScope.restore();
 				}
 				if (script.src) {
-					request(script.src);
+					request(script.src, scope);
 				} else {
-					run(script.innerHTML);
+					run(script.innerHTML, scope);
 				}
 				// Mark script as loaded now.
 				script.setAttribute('loaded', true);
