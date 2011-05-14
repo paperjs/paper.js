@@ -156,7 +156,9 @@ var PaperScript = this.PaperScript = new function() {
 			if (onFrame) {
 				var lastTime;
 				var totalTime = 0;
-				function frame() {
+				function frame(dontSwitch) {
+					if (!dontSwitch)
+						PaperScope.set(scope);
 					// Request next frame already
 					DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
 					var time = Date.now() / 1000;
@@ -172,9 +174,11 @@ var PaperScript = this.PaperScript = new function() {
 					if (doc)
 						doc.redraw();
 					lastTime = time;
+					if (!dontSwitch)
+						PaperScope.restore();
 				};
 				// Call the onFrame handler and redraw the document:
-				frame();
+				frame(true);
 			} else {
 				// Automatically redraw document at the end.
 				if (doc)
