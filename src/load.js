@@ -78,9 +78,9 @@ var sources = [
 
 	'src/util/CanvasProvider.js',
 	'src/util/Numerical.js',
-	'src/util/BlendMode.js'
+	'src/util/BlendMode.js',
 
-	'src/core/PaperScript.js',
+	'src/core/PaperScript.js'
 ];
 
 // Load unit tests after library if asked to do so
