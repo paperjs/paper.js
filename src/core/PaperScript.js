@@ -130,8 +130,8 @@ var PaperScript = this.PaperScript = new function() {
 	}
 
 	function run(code, scope) {
-		try { with (scope) { // Safe one indentation by grouping try and with
-			PaperScope.set(scope);
+		with (scope) { // Safe one indentation by grouping try and with
+			paper = scope;
 			var doc = scope.document;
 				// TODO: Add support for multiple tools
 			var tool = scope.tool =
@@ -158,7 +158,7 @@ var PaperScript = this.PaperScript = new function() {
 				var totalTime = 0;
 				function frame(dontSwitch) {
 					if (!dontSwitch)
-						PaperScope.set(scope);
+						paper = scope;
 					// Request next frame already
 					DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
 					var time = Date.now() / 1000;
@@ -174,8 +174,6 @@ var PaperScript = this.PaperScript = new function() {
 					if (doc)
 						doc.redraw();
 					lastTime = time;
-					if (!dontSwitch)
-						PaperScope.restore();
 				};
 				// Call the onFrame handler and redraw the document:
 				frame(true);
@@ -185,8 +183,6 @@ var PaperScript = this.PaperScript = new function() {
 					doc.redraw();
 			}
 			return res;
-		} } finally {
-			PaperScope.restore();
 		}
 	}
 
@@ -223,9 +219,8 @@ var PaperScript = this.PaperScript = new function() {
 				var canvas = script.getAttribute('canvas');
 				if (canvas = canvas && document.getElementById(canvas)) {
 					// Create a Document for this canvas, using the right scope
-					PaperScope.set(scope);
+					paper = scope;
 					new Document(canvas);
-					PaperScope.restore();
 				}
 				if (script.src) {
 					request(script.src, scope);
