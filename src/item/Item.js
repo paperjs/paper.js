@@ -253,9 +253,11 @@ var Item = this.Item = Base.extend({
 	 * Reverses the order of this item's children
 	 */
 	reverseChildren: function() {
-			// TODO: Reassign _index
 		if (this._children) {
 			this._children.reverse();
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				this._children[i]._index = i;
+			}
 		}
 	},
 
