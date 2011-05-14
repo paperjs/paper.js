@@ -36,27 +36,30 @@
  ***/
 
 var paper = new function() {
-// Have a pointer to the paper object already during the 'bootstraping' so code
-// can rely on it being there all the time.
-var paper = this;
-
-this.document = null;
-this.documents = [];
-
-/**
- * Installs the paper scope into any other given scope. Can be used for examle
- * to inject into the window's global scope:
- *
- * paper.install(window);
- */
-this.install = function(scope) {
-	for (var i in this) {
-		scope[i] = this[i];
-	}
-};
 
 // Inline Bootstrap core (the Base class) inside the paper scope first:
 //#include "../lib/bootstrap.js"
+
+var PaperScope = Base.extend({
+	initialize: function() {
+		this.document = null;
+		this.documents = [];
+		this.tools = [];
+	},
+
+	/**
+	 * Installs the paper scope into any other given scope. Can be used for
+	 * examle to inject the currently active PaperScope into the window's global
+	 * scope, to emulate PaperScript-style globally accessible Paper classes:
+	 *
+	 * paper.install(window);
+	 */
+	install: function(scope) {
+		for (var i in this) {
+			scope[i] = this[i];
+		}
+	}
+});
 
 // Extend Base with utility functions used across the library.
 Base.inject({
@@ -205,4 +208,8 @@ Base.inject({
 //#include "util/Numerical.js"
 //#include "util/PaperScript.js"
 //#include "util/BlendMode.js"
+
+// new create the first Paper scope and return it.
+
+return new PaperScope();
 };
