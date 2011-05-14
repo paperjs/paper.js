@@ -102,8 +102,7 @@ var paper = new function() {
 //#include "util/PaperScript.js"
 //#include "util/BlendMode.js"
 
-// Finally inject the classes set on 'this' into the PaperScope class.
-PaperScope.inject(this);
-// Create the first PaperScope and return it.
-return new PaperScope();
+// Finally inject the classes set on 'this' into the PaperScope class and create
+// the first PaperScope and return it, all in one statement.
+return new (PaperScope.inject(this));
 };
