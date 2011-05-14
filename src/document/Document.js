@@ -108,10 +108,6 @@ var Document = this.Document = Base.extend({
 		this._currentStyle = PathStyle.create(null, style);
 	},
 
-	getIndex: function() {
-		return this._index;
-	},
-
 	activate: function() {
 		if (this._index != null) {
 			this._scope.document = this;
@@ -119,7 +115,17 @@ var Document = this.Document = Base.extend({
 		}
 		return false;
 	},
-	
+
+	remove: function() {
+		var res = Base.splice(this._scope.documents, null, this._index, 1);
+		this._scope = this._index = null;
+		return !!res.length;
+	},
+
+	getIndex: function() {
+		return this._index;
+	},
+
 	getSelectedItems: function() {
 		// TODO: return groups if their children are all selected,
 		// and filter out their children from the list.

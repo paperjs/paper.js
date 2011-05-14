@@ -294,11 +294,9 @@ var Item = this.Item = Base.extend({
 	*/
 	_removeFromParent: function() {
 		if (this._parent) {
-			var ok = !!Base.splice(this._parent._children, null,
-					this._index, 1).length;
-			this._parent = null;
-			this._index = null;
-			return ok;
+			var res = Base.splice(this._parent._children, null, this._index, 1);
+			this._parent = this._index = null;
+			return !!res.length;
 		}
 		return false;
 	},
