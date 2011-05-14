@@ -18,7 +18,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	// PORT: port the reversing of segments and keepDirection flag
 	initialize: function(items, keepDirection) {
 		this.base();
-		this.children = [];
+		this._children = [];
 		if (items) {
 			for (var i = 0, l = items.length; i < l; i++) {
 				var item = items[i];
@@ -40,8 +40,8 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * @return the simplified compound path.
 	 */
 	simplify: function() {
-		if (this.children.length == 1) {
-			var child = this.children[0];
+		if (this._children.length == 1) {
+			var child = this._children[0];
 			child.moveAbove(this);
 			this.remove();
 			return child;
@@ -50,16 +50,16 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	},
 
 	smooth: function() {
-		for (var i = 0, l = this.children.length; i < l; i++)
-			this.children[i].smooth();
+		for (var i = 0, l = this._children.length; i < l; i++)
+			this._children[i].smooth();
 	},
 
 	draw: function(ctx, param) {
-		var firstChild = this.children[0];
+		var firstChild = this._children[0];
 		ctx.beginPath();
 		param.compound = true;
-		for (var i = 0, l = this.children.length; i < l; i++)
-			Item.draw(this.children[i], ctx, param);
+		for (var i = 0, l = this._children.length; i < l; i++)
+			Item.draw(this._children[i], ctx, param);
 		firstChild._setStyles(ctx);
 		var fillColor = firstChild.getFillColor(),
 			strokeColor = firstChild.getStrokeColor();
@@ -74,8 +74,8 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	}
 }, new function() { // Injection scope for PostScript-like drawing functions
 	function getCurrentPath(that) {
-		if (that.children.length) {
-			return that.children[that.children.length - 1];
+		if (that._children.length) {
+			return that._children[that._children.length - 1];
 		} else {
 			throw new Error('Use a moveTo() command first');
 		}

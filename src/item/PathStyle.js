@@ -60,7 +60,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			get = 'get' + part;
 
 		fields[set] = function(value) {
-			var children = this._item && this._item.children;
+			var children = this._item && this._item._children;
 			value = isColor ? Color.read(arguments) : value;
 			if (children) {
 				for (var i = 0, l = children.length; i < l; i++)
@@ -79,7 +79,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		};
 
 		fields[get] = function() {
-			var children = this._item && this._item.children,
+			var children = this._item && this._item._children,
 				style;
 			// If this item has children, walk through all of them and see if
 			// they all have the same style.
