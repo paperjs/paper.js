@@ -18,6 +18,8 @@ var Document = this.Document = Base.extend({
 	beans: true,
 
 	initialize: function(canvas) {
+		// Store reference to currently active global paper scope:
+		this._scope = paper;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this.canvas = canvas;
 			if (canvas.attributes.resize) {
@@ -59,8 +61,8 @@ var Document = this.Document = Base.extend({
 		this.bounds = Rectangle.create(0, 0, this._size.width,
 				this._size.height);
 		this.context = this.canvas.getContext('2d');
-		// Push it onto paper.documents and set index:
-		this._index = paper.documents.push(this) - 1;
+		// Push it onto this._scope.documents and set index:
+		this._index = this._scope.documents.push(this) - 1;
 		this.activate();
 		this.layers = [];
 		this.activeLayer = new Layer();
@@ -108,9 +110,9 @@ var Document = this.Document = Base.extend({
 
 	activate: function() {
 		// TODO: Remove indexOf()
-		var index = paper.documents.indexOf(this);
+		var index = this._scope.documents.indexOf(this);
 		if (index != -1) {
-			paper.document = this;
+			this._scope.document = this;
 			return true;
 		}
 		return false;
