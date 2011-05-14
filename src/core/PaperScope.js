@@ -42,15 +42,13 @@ var PaperScope = this.PaperScope = Base.extend({
 
 	// Methods for setting and restoring paper scopes:
 	statics: {
-		scopes: [],
-
 		set: function(scope) {
-			this.scopes.push(paper);
+			this.previous = paper;
 			paper = scope;
 		},
 
 		restore: function() {
-			paper = this.scopes.pop();
+			paper = this.previous;
 		}
 	}
 });
