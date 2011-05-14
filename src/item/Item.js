@@ -272,7 +272,7 @@ var Item = this.Item = Base.extend({
 	 * The index of this item within the list of it's parent's children.
 	 */
 	getIndex: function() {
-		return this._index !== undefined ? this._index : null;
+		return this._index;
 	},
 
 	/**
@@ -283,6 +283,7 @@ var Item = this.Item = Base.extend({
 			var ok = !!Base.splice(this._parent.children, null,
 					this._index, 1).length;
 			this._parent = null;
+			this._index = null;
 			return ok;
 		}
 		return false;
