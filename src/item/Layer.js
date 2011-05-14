@@ -20,8 +20,8 @@ var Layer = this.Layer = Group.extend({
 	initialize: function() {
 		this.children = [];
 		this._document = paper.document;
-		// Push it onto document.layers and adjust index in one:
-		Base.splice(this._document.layers, [this]);
+		// Push it onto document.layers and set index:
+		this._index = this._document.layers.push(this) - 1;
 		this.activate();
 	},
 
