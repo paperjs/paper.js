@@ -30,17 +30,17 @@ var Layer = this.Layer = Group.extend({
 	* or its parent's children list.
 	*/
 	_removeFromParent: function() {
-		return this.parent ? this.base()
+		return this._parent ? this.base()
 			: !!Base.splice(this._document.layers, null, this._index, 1).length;
 	},
 
 	getNextSibling: function() {
-		return this.parent ? this.base()
+		return this._parent ? this.base()
 				: this._document.layers[this._index + 1] || null;
 	},
 
 	getPreviousSibling: function() {
-		return this.parent ? this.base()
+		return this._parent ? this.base()
 				: this._document.layers[this._index - 1] || null;
 	},
 
@@ -51,7 +51,7 @@ var Layer = this.Layer = Group.extend({
 	function move(above) {
 		return function(item) {
 			// if the item is a layer and contained within Document#layers
-			if (item instanceof Layer && !item.parent
+			if (item instanceof Layer && !item._parent
 						&& this._removeFromParent()) {
 				Base.splice(item._document.layers, [this],
 						item._index + (above ? 1 : -1), 0);

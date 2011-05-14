@@ -60,8 +60,8 @@ var Item = this.Item = Base.extend({
 	clone: function() {
 		var copy = new this.constructor();
 		// TODO: Copy children and other things.
-		if (this.parent) {
-			this.parent.appendTop(copy);
+		if (this._parent) {
+			this._parent.appendTop(copy);
 		}
 		return copy;
 	},
@@ -251,14 +251,21 @@ var Item = this.Item = Base.extend({
 	 * The next item on the same level as this item.
 	 */
 	getNextSibling: function() {
-		return this.parent && this.parent.children[this._index + 1] || null;
+		return this._parent && this._parent.children[this._index + 1] || null;
 	},
 
 	/**
 	 * The previous item on the same level as this item.
 	 */
 	getPreviousSibling: function() {
-		return this.parent && this.parent.children[this._index - 1] || null;
+		return this._parent && this._parent.children[this._index - 1] || null;
+	},
+
+	/**
+	 * The item that this item is contained within.
+	 */
+	getParent: function() {
+		return this._parent;
 	},
 
 	/**
@@ -272,10 +279,10 @@ var Item = this.Item = Base.extend({
 	* Removes the item from its parent's children list.
 	*/
 	_removeFromParent: function() {
-		if (this.parent) {
-			var ok = !!Base.splice(this.parent.children, null,
+		if (this._parent) {
+			var ok = !!Base.splice(this._parent.children, null,
 					this._index, 1).length;
-			this.parent = null;
+			this._parent = null;
 			return ok;
 		}
 		return false;
@@ -312,7 +319,7 @@ var Item = this.Item = Base.extend({
 		while (parent) {
 			if (parent.hidden || parent.locked)
 				return false;
-			parent = parent.parent;
+			parent = parent._parent;
 		}
 		return true;
 	},
@@ -367,11 +374,11 @@ var Item = this.Item = Base.extend({
 	// TODO: isBelow
 
 	isParent: function(item) {
-		return this.parent == item;
+		return this._parent == item;
 	},
 
 	isChild: function(item) {
-		return item.parent == this;
+		return item._parent == this;
 	},
 
 	/**
@@ -390,7 +397,7 @@ var Item = this.Item = Base.extend({
 	 */
 	isDescendant: function(item) {
 		var parent = this;
-		while (parent = parent.parent) {
+		while (parent = parent._parent) {
 			if (parent == item)
 				return true;
 		}
@@ -414,7 +421,7 @@ var Item = this.Item = Base.extend({
 	 */
 	isAncestor: function(item) {
 		var parent = item;
-		while (parent = parent.parent) {
+		while (parent = parent._parent) {
 			if (parent == this)
 				return true;
 		}
@@ -428,16 +435,16 @@ var Item = this.Item = Base.extend({
 	 * @return {@true if the items are grouped together}
 	 */
 	isGroupedWith: function(item) {
-		var parent = this.parent;
+		var parent = this._parent;
 		while (parent) {
-			// Find group parents. Check for parent.parent, since don't want
+			// Find group parents. Check for parent._parent, since don't want
 			// top level layers, because they also inherit from Group
-			if (parent.parent
+			if (parent._parent
 				&& (parent instanceof Group || parent instanceof CompoundPath)
 				&& item.isDescendant(parent))
 					return true;
 			// Keep walking up otherwise
-			parent = parent.parent;
+			parent = parent._parent;
 		}
 		return false;
 	},
@@ -812,7 +819,7 @@ var Item = this.Item = Base.extend({
 			item._removeFromParent();
 			if (this.children) {
 				Base.splice(this.children, [item], top ? undefined : 0, 0);
-				item.parent = this;
+				item._parent = this;
 				item._setDocument(this._document);
 				return true;
 			}
@@ -823,10 +830,10 @@ var Item = this.Item = Base.extend({
 	function move(above) {
 		return function(item) {
 			// first remove the item from its parent's children list
-			if (item.parent && this._removeFromParent()) {
-				Base.splice(item.parent.children, [this],
+			if (item._parent && this._removeFromParent()) {
+				Base.splice(item._parent.children, [this],
 						item._index + (above ? 1 : -1), 0);
-				this.parent = item.parent;
+				this._parent = item._parent;
 				this._setDocument(item._document);
 				return true;
 			}
