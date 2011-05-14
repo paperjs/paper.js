@@ -113,9 +113,7 @@ var Document = this.Document = Base.extend({
 	},
 
 	activate: function() {
-		// TODO: Remove indexOf()
-		var index = this._scope.documents.indexOf(this);
-		if (index != -1) {
+		if (this._index != null) {
 			this._scope.document = this;
 			return true;
 		}
