@@ -66,7 +66,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * </code>
 	 */
 	getPoint: function() {
-		return this._choosePoint(this._point, this.tool.point);
+		return this._choosePoint(this._point, this.tool._point);
 	},
 
 	setPoint: function(point) {
@@ -78,7 +78,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * event was fired.
 	 */
 	getLastPoint: function() {
-		return this._choosePoint(this._lastPoint, this.tool.lastPoint);
+		return this._choosePoint(this._lastPoint, this.tool._lastPoint);
 	},
 
 	setLastPoint: function(lastPoint) {
@@ -90,7 +90,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * was last clicked.
 	 */
 	getDownPoint: function() {
-		return this._choosePoint(this._downPoint, this.tool.downPoint);
+		return this._choosePoint(this._downPoint, this.tool._downPoint);
 	},
 
 	setDownPoint: function(downPoint) {
@@ -105,9 +105,9 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 */
 	getMiddlePoint: function() {
 		// For explanations, see getDelta()
-		if (!this._middlePoint && this.tool.lastPoint) {
+		if (!this._middlePoint && this.tool._lastPoint) {
 			// (point + lastPoint) / 2
-			return this.tool.point.add(this.tool.lastPoint).divide(2);
+			return this.tool._point.add(this.tool._lastPoint).divide(2);
 		}
 		return this.middlePoint;
 	},
@@ -127,8 +127,8 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		// Instead, keep calculating the delta each time, so the result can be
 		// directly modified by the script without changing the internal values.
 		// We could cache this and use clone, but this is almost as fast...
-		return !this._delta && this.tool.lastPoint
-		 		? this.tool.point.subtract(this.tool.lastPoint)
+		return !this._delta && this.tool._lastPoint
+		 		? this.tool._point.subtract(this.tool._lastPoint)
 				: this._delta;
 	},
 
@@ -158,8 +158,8 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		// Return downCount for both mouse down and up, since
 		// the count is the same.
 		return /^mouse(down|up)$/.test(this.type)
-				? this.tool.downCount
-				: this.tool.count;
+				? this.tool._downCount
+				: this.tool._count;
 	},
 
 	setCount: function(count) {
