@@ -99,8 +99,9 @@ var paper = new function() {
 
 //#include "util/CanvasProvider.js"
 //#include "util/Numerical.js"
-//#include "util/PaperScript.js"
 //#include "util/BlendMode.js"
+
+//#include "core/PaperScript.js"
 
 // Finally inject the classes set on 'this' into the PaperScope class and create
 // the first PaperScope and return it, all in one statement.
