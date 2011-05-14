@@ -20,10 +20,10 @@ var ToolHandler = this.ToolHandler = Base.extend({
 	/**
 	 * Initializes the tool's settings, so a new tool can be assigned to it
 	 */
-	initialize: function(handlers) {
-		this.firstMove = true;
-		this.count = 0;
-		this.downCount = 0;
+	initialize: function(handlers, scope) {
+		this._firstMove = true;
+		this._count = 0;
+		this._downCount = 0;
 		for (var i in handlers) {
 			this[i] = handlers[i];
 		}
@@ -47,8 +47,9 @@ var ToolHandler = this.ToolHandler = Base.extend({
 	setMinDistance: function(minDistance) {
 		this._minDistance = minDistance;
 		if (this._minDistance != null && this._maxDistance != null
-				&& this._minDistance > this._maxDistance)
+				&& this._minDistance > this._maxDistance) {
 			this._maxDistance = this._minDistance;
+		}
 	},
 
 	getMaxDistance: function() {
@@ -58,19 +59,21 @@ var ToolHandler = this.ToolHandler = Base.extend({
 	setMaxDistance: function(maxDistance) {
 		this._maxDistance = maxDistance;
 		if (this._minDistance != null && this._maxDistance != null
-				&& this._maxDistance < this._minDistance)
+				&& this._maxDistance < this._minDistance) {
 			this._minDistance = maxDistance;
+		}
 	},
 
 	getFixedDistance: function() {
-		if (this._minDistance == this._maxDistance)
+		if (this._minDistance == this._maxDistance) {
 			return this._minDistance;
+		}
 		return null;
 	},
 
 	setFixedDistance: function(distance) {
-		this.minDistance = distance;
-		this.maxDistance = distance;
+		this._minDistance = distance;
+		this._maxDistance = distance;
 	},
 
 	updateEvent: function(type, pt, minDistance, maxDistance, start,
@@ -78,38 +81,41 @@ var ToolHandler = this.ToolHandler = Base.extend({
 		if (!start) {
 			if (minDistance != null || maxDistance != null) {
 				var minDist = minDistance != null ? minDistance : 0;
-				var vector = pt.subtract(this.point);
+				var vector = pt.subtract(this._point);
 				var distance = vector.getLength();
-				if (distance < minDist)
+				if (distance < minDist) {
 					return false;
+				}
 				// Produce a new point on the way to pt if pt is further away
 				// than maxDistance
 				var maxDist = maxDistance != null ? maxDistance : 0;
 				if (maxDist != 0) {
-					if (distance > maxDist)
-						pt = this.point.add(vector.normalize(maxDist));
-					else if (matchMaxDistance)
+					if (distance > maxDist) {
+						pt = this._point.add(vector.normalize(maxDist));
+					} else if (matchMaxDistance) {
 						return false;
+					}
 				}
 			}
-			if (needsChange && pt.equals(this.point))
+			if (needsChange && pt.equals(this._point)) {
 				return false;
+			}
 		}
-		this.lastPoint = this.point;
-		this.point = pt;
+		this._lastPoint = this._point;
+		this._point = pt;
 		switch (type) {
 		case 'mousedown':
-			this.lastPoint = this.downPoint;
-			this.downPoint = this.point;
-			this.downCount++;
+			this._lastPoint = this._downPoint;
+			this._downPoint = this._point;
+			this._downCount++;
 			break;
 		case 'mouseup':
 			// Mouse up events return the down point for last point, so delta is
 			// spanning over the whole drag.
-			this.lastPoint = this.downPoint;
+			this._lastPoint = this._downPoint;
 			break;
 		}
-		this.count = start ? 0 : this.count + 1;
+		this._count = start ? 0 : this._count + 1;
 		return true;
 	},
 
@@ -117,8 +123,9 @@ var ToolHandler = this.ToolHandler = Base.extend({
 		switch (type) {
 		case 'mousedown':
 			this.updateEvent(type, pt, null, null, true, false, false);
-			if (this.onMouseDown)
+			if (this.onMouseDown) {
 				this.onMouseDown(new ToolEvent(this, type, event));
+			}
 			break;
 		case 'mousedrag':
 			// In order for idleInterval drag events to work, we need to not
@@ -133,8 +140,9 @@ var ToolHandler = this.ToolHandler = Base.extend({
 				matchMaxDistance = false;
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, false, needsChange, matchMaxDistance)) {
-				if (this.onMouseDrag)
+				if (this.onMouseDrag) {
 					this.onMouseDrag(new ToolEvent(this, type, event));
+				}
 				needsChange = true;
 				matchMaxDistance = true;
 			}
@@ -142,26 +150,29 @@ var ToolHandler = this.ToolHandler = Base.extend({
 		case 'mouseup':
 			// If the last mouse drag happened in a different place, call mouse
 			// drag first, then mouse up.
-			if ((this.point.x != pt.x || this.point.y != pt.y)
+			if ((this._point.x != pt.x || this._point.y != pt.y)
 					&& this.updateEvent('mousedrag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
-				if (this.onMouseDrag)
+				if (this.onMouseDrag) {
 					this.onMouseDrag(new ToolEvent(this, type, event));
+				}
 			}
 			this.updateEvent(type, pt, null, this.maxDistance, false,
 					false, false);
-			if (this.onMouseUp)
+			if (this.onMouseUp) {
 				this.onMouseUp(new ToolEvent(this, type, event));
+			}
 			// Start with new values for 'mousemove'
 			this.updateEvent(type, pt, null, null, true, false, false);
-			this.firstMove = true;
+			this._firstMove = true;
 			break;
 		case 'mousemove':
 			while (this.updateEvent(type, pt, this.minDistance,
-					this.maxDistance, this.firstMove, true, false)) {
-				if (this.onMouseMove)
+					this.maxDistance, this._firstMove, true, false)) {
+				if (this.onMouseMove) {
 					this.onMouseMove(new ToolEvent(this, type, event));
-				this.firstMove = false;
+				}
+				this._firstMove = false;
 			}
 			break;
 		}
