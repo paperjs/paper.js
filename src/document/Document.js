@@ -108,6 +108,10 @@ var Document = this.Document = Base.extend({
 		this._currentStyle = PathStyle.create(null, style);
 	},
 
+	getIndex: function() {
+		return this._index;
+	},
+
 	activate: function() {
 		// TODO: Remove indexOf()
 		var index = this._scope.documents.indexOf(this);
