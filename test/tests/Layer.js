@@ -1,7 +1,7 @@
 module('Layer');
 
 test('previousSibling / nextSibling', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var firstLayer = doc.activeLayer;
 	var secondLayer = new Layer();
 	equals(function() {
@@ -40,7 +40,7 @@ test('previousSibling / nextSibling', function() {
 });
 
 test('moveAbove / moveBelow', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var firstLayer = doc.activeLayer;
 	var secondLayer = new Layer();
 	secondLayer.moveBelow(firstLayer);

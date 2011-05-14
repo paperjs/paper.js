@@ -1,28 +1,25 @@
 module('Group');
 
 test('new Group()', function() {
-	var doc = new Document();
 	var group = new Group();
 	equals(function() {
-		return doc.activeLayer.children[0] == group;
+		return paper.document.activeLayer.children[0] == group;
 	}, true);
 });
 
 test('new Group([item])', function() {
-	var doc = new Document();
 	var path = new Path();
 	var group = new Group([path]);
 	equals(function() {
-		return doc.activeLayer.children.length == 1;
-	}, true);
+		return paper.document.activeLayer.children.length;
+	}, 1);
 	equals(function() {
 		return group.children[0] == path;
 	}, true);
 });
 
 test('Group bounds', function() {
-	var doc = new Document();
-	doc.currentStyle = {
+	paper.document.currentStyle = {
 		strokeWidth: 5,
 		strokeColor: 'black'
 	};

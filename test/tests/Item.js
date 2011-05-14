@@ -1,7 +1,7 @@
 module('Item');
 
 test('copyTo(document)', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 	var secondDoc = new Document();
 	var copy = path.copyTo(secondDoc);
@@ -17,7 +17,7 @@ test('copyTo(document)', function() {
 });
 
 test('copyTo(layer)', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 
 	var layer = new Layer();
@@ -31,19 +31,19 @@ test('copyTo(layer)', function() {
 });
 
 test('clone()', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 	var copy = path.clone();
 	equals(function() {
-		return doc.activeLayer.children.length == 2;
-	}, true);
+		return doc.activeLayer.children.length;
+	}, 2);
 	equals(function() {
 		return path != copy;
 	}, true);
 });
 
 test('appendChild(item)', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 	doc.activeLayer.appendChild(path);
 	equals(function() {
@@ -52,7 +52,7 @@ test('appendChild(item)', function() {
 });
 
 test('item.parent / item.isChild / item.isParent', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var secondDoc = new Document();
 	var path = new Path();
 	doc.activeLayer.appendChild(path);
@@ -81,7 +81,7 @@ test('item.parent / item.isChild / item.isParent', function() {
 });
 
 test('item.lastChild / item.firstChild', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 	var secondPath = new Path();
 	equals(function() {
@@ -93,7 +93,7 @@ test('item.lastChild / item.firstChild', function() {
 });
 
 test('appendBottom(item)', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 	var secondPath = new Path();
 	doc.activeLayer.appendBottom(secondPath);
@@ -103,7 +103,7 @@ test('appendBottom(item)', function() {
 });
 
 test('moveAbove(item)', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 	var secondPath = new Path();
 	path.moveAbove(secondPath);
@@ -113,7 +113,7 @@ test('moveAbove(item)', function() {
 });
 
 test('moveBelow(item)', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var firstPath = new Path();
 	var secondPath = new Path();
 	equals(function() {
@@ -126,7 +126,7 @@ test('moveBelow(item)', function() {
 });
 
 test('isDescendant(item) / isAncestor(item)', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 	equals(function() {
 		return path.isDescendant(doc.activeLayer);
@@ -152,7 +152,7 @@ test('isDescendant(item) / isAncestor(item)', function() {
 });
 
 test('isGroupedWith', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 	var secondPath = new Path();
 	var group = new Group([path]);
@@ -191,7 +191,6 @@ test('isGroupedWith', function() {
 });
 
 test('getPreviousSibling() / getNextSibling()', function() {
-	var doc = new Document();
 	var firstPath = new Path();
 	var secondPath = new Path();
 	equals(function() {
@@ -206,7 +205,6 @@ test('getPreviousSibling() / getNextSibling()', function() {
 });
 
 test('hidden', function() {
-	var doc = new Document();
 	var firstPath = new Path();
 	firstPath.visible = false;
 	equals(function() {
@@ -215,7 +213,7 @@ test('hidden', function() {
 });
 
 test('reverseChildren()', function() {
-	var doc = new Document();
+	var doc = paper.document;
 	var path = new Path();
 	var secondPath = new Path();
 	var thirdPath = new Path();
@@ -235,6 +233,7 @@ test('reverseChildren()', function() {
 });
 
 test('Check item#document when moving items across documents', function() {
+	var doc = paper.document;
 	var doc1 = new Document();
 	var path = new Path();
 	var group = new Group();
@@ -256,7 +255,6 @@ test('Check item#document when moving items across documents', function() {
 });
 
 test('group.selected', function() {
-	var doc = new Document();
 	var path = new Path([0, 0]);
 	var path2 = new Path([0, 0]);
 	var group = new Group([path, path2]);

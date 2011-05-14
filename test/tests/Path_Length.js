@@ -1,7 +1,6 @@
 module('Path Length');
 
 test('path.length', function() {
-	var doc = new Document();
 	var path = new Path([
 		new Segment(new Point(121, 334), new Point(-19, 38), new Point(30.7666015625, -61.53369140625)),
 		new Segment(new Point(248, 320), new Point(-42, -74), new Point(42, 74))
@@ -15,7 +14,6 @@ test('path.length', function() {
 });
 
 test('curve.getParameter with straight curve', function() {
-	var doc = new Document();
 	var path = new Path();
 	path.moveTo(100, 100);
 	path.lineTo(500, 500);
