@@ -71,6 +71,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
 			ctx.stroke();
 		}
+		param.compound = false;
 	}
 }, new function() { // Injection scope for PostScript-like drawing functions
 	function getCurrentPath(that) {
