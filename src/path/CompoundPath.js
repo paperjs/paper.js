@@ -15,12 +15,20 @@
  */
 
 var CompoundPath = this.CompoundPath = PathItem.extend({
-	initialize: function(items) {
+	// PORT: port the reversing of segments and keepDirection flag
+	initialize: function(items, keepDirection) {
 		this.base();
 		this.children = [];
 		if (items) {
-			for (var i = 0, l = items.length; i < l; i++)
+			for (var i = 0, l = items.length; i < l; i++) {
+				var item = items[i];
+				// All paths except for the first one are reversed when
+				// creating a compound path, so that they draw holes.
+				// When keepDirection is set to true, child paths aren't reversed.
+				if (!keepDirection && i != l - 1)
+					item.reverse();
 				this.appendTop(items[i]);
+			}
 		}
 	},
 
