@@ -58,9 +58,11 @@ var PaperScope = Base.extend({
 	 * paper.install(window);
 	 */
 	install: function(scope) {
-		for (var i in this) {
-			scope[i] = this[i];
-		}
+		// Use scope as side-car (= 'this' inside iterator), and have it
+		// returned at the end.
+		return Base.each(this, function(value, key) {
+			this[key] = value;
+		}, scope);
 	}
 });
 
