@@ -20,7 +20,7 @@ var DocumentView = this.DocumentView = Base.extend({
 	initialize: function(document) {
 		this.document = document;
 		this._bounds = this.document.bounds.clone();
-		this.matrix = new Matrix();
+		this._matrix = new Matrix();
 		this._zoom = 1;
 		this._center = this._bounds.center;
 	},
@@ -55,13 +55,21 @@ var DocumentView = this.DocumentView = Base.extend({
 	},
 
 	transform: function(matrix, flags) {
-		this.matrix.preConcatenate(matrix);
+		this._matrix.preConcatenate(matrix);
 		this._bounds = null;
+		this._inverse = null;
+	},
+
+	_getInverse: function() {
+		if (!this._inverse) {
+			this._inverse = this._matrix.createInverse();
+		}
+		return this._inverse;
 	},
 
 	getBounds: function() {
 		if (!this._bounds) {
-			this._bounds = this.matrix.transformBounds(this.document.bounds);
+			this._bounds = this._matrix.transformBounds(this.document.bounds);
 		}
 		return this._bounds;
 	},
@@ -78,11 +86,10 @@ var DocumentView = this.DocumentView = Base.extend({
 	// TODO: getMousePoint
 	// TODO: artworkToView(rect)
 	artworkToView: function(point) {
-		return this.matrix._transformPoint(point);
+		return this._matrix._transformPoint(point);
 	},
 
 	viewToArtwork: function(point) {
-		// TODO: cache the inverse matrix:
-		return this.matrix.createInverse()._transformPoint(point);
+		return this._getInverse()._transformPoint(point);
 	}
 });
