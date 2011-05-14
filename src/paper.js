@@ -43,15 +43,22 @@ var paper = this;
 this.document = null;
 this.documents = [];
 
+/**
+ * Installs the paper scope into any other given scope. Can be used for examle
+ * to inject into the window's global scope:
+ *
+ * paper.install(window);
+ */
 this.install = function(scope) {
 	for (var i in this) {
 		scope[i] = this[i];
 	}
 };
 
-// Inline Base core inside the paper scope first:
+// Inline Bootstrap core (the Base class) inside the paper scope first:
 //#include "../lib/bootstrap.js"
 
+// Extend Base with utility functions used across the library.
 Base.inject({
 	statics: true,
 
