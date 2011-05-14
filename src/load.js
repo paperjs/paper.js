@@ -24,6 +24,9 @@ var sources = [
 	'lib/parse-js.js',
 	'lib/stats.js',
 
+	'src/core/Base.js',
+	'src/core/PaperScope.js',
+
 	'src/paper.js',
 
 	'src/basic/Point.js',
