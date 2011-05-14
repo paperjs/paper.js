@@ -36,10 +36,13 @@
  ***/
 
 var paper = new function() {
-
 // Inline Bootstrap core (the Base class) inside the paper scope first:
 //#include "../lib/bootstrap.js"
 
+/**
+ * Define internal PaperScope class that handles all the fields available on the
+ * global paper object, which simply is a pointer to the currently active scope.
+ */
 var PaperScope = Base.extend({
 	initialize: function() {
 		this.document = null;
@@ -209,7 +212,6 @@ Base.inject({
 //#include "util/PaperScript.js"
 //#include "util/BlendMode.js"
 
-// new create the first Paper scope and return it.
-
+// Now create the first PaperScope and return it.
 return new PaperScope();
 };
