@@ -39,7 +39,6 @@ test('new Path.Arc(from, through, to)', function() {
 });
 
 test('new Path.RegularPolygon(center, numSides, radius)', function() {
-	var doc = new Document();
 	var path = new Path.RegularPolygon(new Point(50, 50), 3, 10);
 	var expectedSegments = [{ point: { x: 41.33984, y: 55 } }, { point: { x: 50, y: 40 } }, { point: { x: 58.66016, y: 55 } }];
 	equals(path.segments.toString(), '{ point: { x: 41.33975, y: 55 } },{ point: { x: 50, y: 40 } },{ point: { x: 58.66025, y: 55 } }');
@@ -50,12 +49,10 @@ test('new Path.RegularPolygon(center, numSides, radius)', function() {
 });
 
 test('new Path.Star(center, numSides, radius1, radius2)', function() {
-	var doc = new Document();
 	var path = new Path.Star(new Point(100, 100), 10, 10, 20);
 	var expectedSegments = [new Segment(new Point(100, 90)), new Segment(new Point(106.18017578125, 80.97900390625)), new Segment(new Point(105.8779296875, 91.90966796875)), new Segment(new Point(116.18017578125, 88.244140625)), new Segment(new Point(109.5107421875, 96.90966796875)), new Segment(new Point(120, 100)), new Segment(new Point(109.5107421875, 103.09033203125)), new Segment(new Point(116.18017578125, 111.755859375)), new Segment(new Point(105.8779296875, 108.09033203125)), new Segment(new Point(106.18017578125, 119.02099609375)), new Segment(new Point(100, 110)), new Segment(new Point(93.81982421875, 119.02099609375)), new Segment(new Point(94.1220703125, 108.09033203125)), new Segment(new Point(83.81982421875, 111.755859375)), new Segment(new Point(90.4892578125, 103.09033203125)), new Segment(new Point(80, 100)), new Segment(new Point(90.4892578125, 96.90966796875)), new Segment(new Point(83.81982421875, 88.244140625)), new Segment(new Point(94.1220703125, 91.90966796875)), new Segment(new Point(93.81982421875, 80.97900390625))];
 	equals(path.segments.toString(), '{ point: { x: 100, y: 90 } },{ point: { x: 106.18034, y: 80.97887 } },{ point: { x: 105.87785, y: 91.90983 } },{ point: { x: 116.18034, y: 88.24429 } },{ point: { x: 109.51057, y: 96.90983 } },{ point: { x: 120, y: 100 } },{ point: { x: 109.51057, y: 103.09017 } },{ point: { x: 116.18034, y: 111.75571 } },{ point: { x: 105.87785, y: 108.09017 } },{ point: { x: 106.18034, y: 119.02113 } },{ point: { x: 100, y: 110 } },{ point: { x: 93.81966, y: 119.02113 } },{ point: { x: 94.12215, y: 108.09017 } },{ point: { x: 83.81966, y: 111.75571 } },{ point: { x: 90.48943, y: 103.09017 } },{ point: { x: 80, y: 100 } },{ point: { x: 90.48943, y: 96.90983 } },{ point: { x: 83.81966, y: 88.24429 } },{ point: { x: 94.12215, y: 91.90983 } },{ point: { x: 93.81966, y: 80.97887 } }');
 
-	var doc = new Document();
 	var path = new Path.Star(new Point(100, 100), 5, 20, 10);	
 	var expectedSegments = [new Segment(new Point(100, 80)), new Segment(new Point(105.8779296875, 91.90966796875)), new Segment(new Point(119.02099609375, 93.81982421875)), new Segment(new Point(109.5107421875, 103.09033203125)), new Segment(new Point(111.755859375, 116.18017578125)), new Segment(new Point(100, 110)), new Segment(new Point(88.244140625, 116.18017578125)), new Segment(new Point(90.4892578125, 103.09033203125)), new Segment(new Point(80.97900390625, 93.81982421875)), new Segment(new Point(94.1220703125, 91.90966796875))];
 	equals(path.segments.toString(), '{ point: { x: 100, y: 80 } },{ point: { x: 105.87785, y: 91.90983 } },{ point: { x: 119.02113, y: 93.81966 } },{ point: { x: 109.51057, y: 103.09017 } },{ point: { x: 111.75571, y: 116.18034 } },{ point: { x: 100, y: 110 } },{ point: { x: 88.24429, y: 116.18034 } },{ point: { x: 90.48943, y: 103.09017 } },{ point: { x: 80.97887, y: 93.81966 } },{ point: { x: 94.12215, y: 91.90983 } }');

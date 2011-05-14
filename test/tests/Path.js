@@ -1,7 +1,6 @@
 module('Path');
 
 test('path.join(path)', function() {
-	var doc = new Document();
 	var path = new Path();
 	path.add(0, 0);
 	path.add(10, 0);
@@ -13,7 +12,7 @@ test('path.join(path)', function() {
 	path.join(path2);
 	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } }');
 	equals(function() {
-		return doc.activeLayer.children.length;
+		return paper.document.activeLayer.children.length;
 	}, 1);
 
 	var path = new Path();
@@ -55,7 +54,6 @@ test('path.join(path)', function() {
 });
 
 test('path.remove()', function() {
-	var doc = new Document();
 	var path = new Path();
 	path.add(0, 0);
 	path.add(10, 0);
@@ -80,20 +78,19 @@ test('path.remove()', function() {
 	path.remove();
 	
 	equals(function() {
-		return doc.activeLayer.children.length;
+		return paper.document.activeLayer.children.length;
 	}, 0);
 });
 
 
 test('Is the path deselected after setting a new list of segments?', function() {
-	var doc = new Document();
 	var path = new Path([0, 0]);
 	path.selected = true;
 	equals(function() {
 		return path.selected;
 	}, true);
 	equals(function() {
-		return doc.selectedItems.length;
+		return paper.document.selectedItems.length;
 	}, 1);
 
 	path.segments = [[0, 10]];
@@ -101,12 +98,11 @@ test('Is the path deselected after setting a new list of segments?', function() 
 		return path.selected;
 	}, false);
 	equals(function() {
-		return doc.selectedItems.length;
+		return paper.document.selectedItems.length;
 	}, 0);
 });
 
 test('Path#reverse', function() {
-	var doc = new Document();
 	var path = new Path.Circle([100, 100], 30);
 	path.reverse();
 	equals(path.segments.toString(), '{ point: { x: 100, y: 130 }, handleIn: { x: -16.56854, y: 0 }, handleOut: { x: 16.56854, y: 0 } },{ point: { x: 130, y: 100 }, handleIn: { x: 0, y: 16.56854 }, handleOut: { x: 0, y: -16.56854 } },{ point: { x: 100, y: 70 }, handleIn: { x: 16.56854, y: 0 }, handleOut: { x: -16.56854, y: 0 } },{ point: { x: 70, y: 100 }, handleIn: { x: 0, y: -16.56854 }, handleOut: { x: 0, y: 16.56854 } }');

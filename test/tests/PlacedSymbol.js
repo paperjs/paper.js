@@ -1,7 +1,6 @@
 module('Placed Symbol');
 
 test('placedSymbol bounds', function() {
-	var doc = new Document();
 	var path = new Path.Circle([50, 50], 50);
 	path.strokeWidth = 1;
 	path.strokeCap = 'round';

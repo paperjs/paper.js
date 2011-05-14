@@ -1,5 +1,4 @@
-// Let's be strict
-
+// Override equals to convert functions to message and execute them as tests()
 function equals(actual, expected, message) {
 	if (typeof actual === 'function') {
 		if (!message) {
@@ -15,7 +14,16 @@ function equals(actual, expected, message) {
 		}
 		actual = actual();
 	}
+	// Let's be strict
 	return strictEqual(actual, expected, message);
+}
+
+function test(testName, expected) {
+	return QUnit.test(testName, function() {
+		var doc = new Document();
+		expected();
+		doc.remove();
+	});
 }
 
 function compareNumbers(number1, number2, message) {

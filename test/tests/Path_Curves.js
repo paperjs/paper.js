@@ -1,8 +1,6 @@
 module('Path Curves');
 
 test('path.curves Synchronisation', function() {
-
-	var doc = new Document();
 	var path = new Path();
 
 	path.add(new Point(0, 100));
