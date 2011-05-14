@@ -49,24 +49,24 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 					// If the event was triggered by a touch screen device,
 					// prevent the default behaviour, as it will otherwise
 					// scroll the page:
-					var touchDevice = event && event.targetTouches;
-					if (touchDevice) {
+					if (event && event.targetTouches) {
 						DomEvent.preventDefault(event);
 					}
 					var point = event && viewToArtwork(event, that._document);
-					// If there is only an onMouseMove handler, call it when
-					// the user is dragging
 					var onlyMove = !!(!that.onMouseDrag && that.onMouseMove);
 					if (dragging && !onlyMove) {
 						curPoint = point || curPoint;
 						if (curPoint) {
 							that.onHandleEvent('mousedrag', curPoint, event);
 						}
+						if (that.onMouseDrag)
+							that._document.redraw();
+					// PORT: If there is only an onMouseMove handler, also
+					// call it when the user is dragging:
 					} else if (!dragging || onlyMove) {
 						that.onHandleEvent('mousemove', point, event);
-					}
-					if (that.onMouseMove || touchDevice && that.onMouseDrag) {
-						that._document.redraw();
+						if (that.onMouseMove)
+							that._document.redraw();
 					}
 				},
 
