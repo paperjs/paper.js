@@ -108,12 +108,5 @@ if (window.tests) {
 for (var i = 0; i < sources.length; i++) {
 	document.write('<script type="text/javascript" src="' + (window.root || '') 
 			+ sources[i] + '"></script>');
-	if (sources[i] === 'src/paper.js') {
-		// Activate paper.debug for code loaded through load.js, as we're in
-		// development mode.
-		document.write('<script type="text/javascript">'
-				+ 'paper.debug = false;'
-				+ '</script>');
-	}
 }
 

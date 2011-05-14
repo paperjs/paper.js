@@ -99,52 +99,42 @@ DomEvent.requestAnimationFrame = new function() {
 
 	// So we need to fake it. Define helper functions first:
 	var callbacks = [],
-		fastRate = 1000 / 60,
-		slowRate = 1000,
 		focused = true,
 		timer;
 
-	// Installs interval timer that checks all callbacks. This results in much
-	// faster animations than repeatedly installing timout timers.
-	function setTimer(timeout) {
-		window.clearInterval(timer);
-		timer = window.setInterval(function() {
-			// Checks all installed callbacks for element visibility and execute
-			// if needed.
-			if (!focused)
-				return;
-			for (var i = callbacks.length - 1; i >= 0; i--) {
-				var entry = callbacks[i],
-					func = entry[0],
-					element = entry[1];
-				if (!element || DomElement.isVisible(element)) {
-					// Handle callback and remove it from callbacks list.
-					callbacks.splice(i, 1);
-					func(+new Date);
-				}
-			}
-		}, timeout);
-	}
-
-	if (!paper.debug) {
-		DomEvent.add(window, {
-			focus: function() {
-				focused = true;
-				// Switch to falst checkCallback calls while window is focused.
-				timer && setTimer(fastRate);
-			},
-			blur: function() {
-				focused = false;
-				// Switch to slow checkCallback calls while window is blured.
-				timer && setTimer(slowRate);
-			}
-		});
-	}
+	DomEvent.add(window, {
+		focus: function() {
+			focused = true;
+		},
+		blur: function() {
+			focused = false;
+		}
+	});
 
 	return function(callback, element) {
+		// See if we can handle natively first
 		if (request)
 			return request(callback, element);
+		// If not, do the callback handling ourself:
 		callbacks.push([callback, element]);
-		!timer && setTimer(fastRate);
+		if (!timer) {
+			// Installs interval timer that checks all callbacks. This results
+			// in faster animations than repeatedly installing timout timers.
+			timer = window.setInterval(function() {
+				// Checks all installed callbacks for element visibility and
+				// execute if needed.
+				for (var i = callbacks.length - 1; i >= 0; i--) {
+					var entry = callbacks[i],
+						func = entry[0],
+						element = entry[1];
+					if (!element || element.getAttribute('keepalive') == 'true'
+							|| focused && DomElement.isVisible(element)) {
+						// Handle callback and remove it from callbacks list.
+						callbacks.splice(i, 1);
+						func(+new Date);
+					}
+				}
+			}, 1000 / 60);
+		}
 	};
 };
