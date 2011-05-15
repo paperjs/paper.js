@@ -42,12 +42,17 @@ var PaperScope = this.PaperScope = Base.extend({
 		}, scope);
 	},
 
-	remove: function() {
+	clear: function() {
 		// Remove all documents and tools.
 		for (var i = this.documents.length - 1; i >= 0; i--)
 			this.documents[i].remove();
 		for (var i = this.tools.length - 1; i >= 0; i--)
 			this.tools[i].remove();
+	},
+
+	remove: function() {
+		this.clear();
+		delete PaperScope.scopes[this.id];
 	},
 
 	statics: {
