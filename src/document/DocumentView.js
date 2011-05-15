@@ -217,14 +217,14 @@ var DocumentView = this.DocumentView = Base.extend({
 			if (!dragging)
 				return;
 			dragging = false;
-			if (!tool)
-				return;
 			curPoint = null;
-			if (tool.eventInterval != null)
-				timer = clearInterval(timer);
-			tool.onHandleEvent('mouseup', viewToArtwork(event), event);
-			if (tool.onMouseUp)
-				that.draw();
+			if (tool) {
+				if (tool.eventInterval != null)
+					timer = clearInterval(timer);
+				tool.onHandleEvent('mouseup', viewToArtwork(event), event);
+				if (tool.onMouseUp)
+					that.draw();
+			}
 		}
 
 		return {
