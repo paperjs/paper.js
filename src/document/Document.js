@@ -118,7 +118,7 @@ var Document = this.Document = Base.extend({
 
 	remove: function() {
 		var res = Base.splice(this._scope.documents, null, this._index, 1);
-		this._scope = this._index = null;
+		this._scope = null;
 		return !!res.length;
 	},
 
