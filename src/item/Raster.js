@@ -136,8 +136,6 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	/**
-	 * {@grouptitle Pixels}
-	 * 
 	 * Gets the color of a pixel in the raster.
 	 * @param x
 	 * @param y
@@ -234,7 +232,6 @@ var Raster = this.Raster = Item.extend({
 
 	return {
 		/**
-		 * {@grouptitle Average Color}
 		 * Calculates the average color of the image within the given path,
 		 * rectangle or point. This can be used for creating raster image
 		 * effects.

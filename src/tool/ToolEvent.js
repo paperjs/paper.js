@@ -20,16 +20,6 @@
  * {@link Tool#getOnMouseMove()} and {@link Tool#getOnMouseUp()}. The ToolEvent
  * object is the only parameter passed to these functions and contains
  * information about the mouse event.
- * 
- * Sample code:
- * <code>
- * function onMouseUp(event) {
- * 	// the position of the mouse when it is released
- * 	print(event.point);
- * }
- * </code>
- * 
- * @author lehni
  */
 var ToolEvent = this.ToolEvent = Base.extend({
 	beans: true,
@@ -51,19 +41,6 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	/**
 	 * The position of the mouse in document coordinates when the event was
 	 * fired.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * function onMouseDrag(event) {
-	 * 	// the position of the mouse when it is dragged
-	 * 	print(event.point);
-	 * }
-	 * 
-	 * function onMouseUp(event) {
-	 * 	// the position of the mouse when it is released
-	 * 	print(event.point);
-	 * }
-	 * </code>
 	 */
 	getPoint: function() {
 		return this._choosePoint(this._point, this.tool._point);
@@ -138,21 +115,6 @@ var ToolEvent = this.ToolEvent = Base.extend({
 
 	/**
 	 * The number of times the mouse event was fired.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * function onMouseDrag(event) {
-	 * 	// the amount of times the onMouseDrag event was fired
-	 * 	// since the last onMouseDown event
-	 * 	print(event.count);
-	 * }
-	 * 
-	 * function onMouseUp(event) {
-	 * 	// the amount of times the onMouseUp event was fired
-	 * 	// since the tool was activated 
-	 * 	print(event.point);
-	 * }
-	 * </code>
 	 */
 	getCount: function() {
 		// Return downCount for both mouse down and up, since
