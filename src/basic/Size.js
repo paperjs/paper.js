@@ -81,6 +81,15 @@ var Size = this.Size = Base.extend({
 		return this.width == size.width && this.height == size.height;
 	},
 
+	/**
+	 * Checks if this size has both the width and height set to 0.
+	 * 
+	 * @return true if both width and height are 0, false otherwise.
+	 */
+	isZero: function() {
+		return this.width == 0 && this.width == 0;
+	},
+
 	isNaN: function() {
 		return isNaN(this.width) || isNaN(this.height);
 	},
