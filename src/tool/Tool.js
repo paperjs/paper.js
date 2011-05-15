@@ -98,7 +98,7 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 				}
 			};
 
-			DomEvent.add(doc.canvas, events);
+			DomEvent.add(doc.activeView._canvas, events);
 		},
 
 		getDocument: function() {
