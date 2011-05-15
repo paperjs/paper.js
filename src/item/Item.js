@@ -289,7 +289,7 @@ var Item = this.Item = Base.extend({
 			if (this._name)
 				this._removeFromNamed();
 			var res = Base.splice(this._parent._children, null, this._index, 1);
-			this._parent = this._index = null;
+			this._parent = null;
 			return !!res.length;
 		}
 		return false;
