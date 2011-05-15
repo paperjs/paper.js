@@ -35,6 +35,16 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
+	 * The unique id of the item.
+	 */
+	getId: function() {
+		if (this._id == null) {
+			this._id = Item._id = (Item._id || 0) + 1;
+		}
+		return this._id;
+	},
+
+	/**
 	 * When passed a document, copies the item to the document,
 	 * or duplicates it within the same document. When passed an item,
 	 * copies the item into the specified item.
@@ -996,18 +1006,4 @@ var Item = this.Item = Base.extend({
 			return this;
 		}
 	});
-}, new function() {
-	var id = 0;
-	return {
-		beans: true,
-		
-		/**
-		 * The unique id of the item.
-		 */
-		getId: function() {
-			if (this._id === undefined)
-				this._id = id++;
-			return this._id;
-		}
-	};
 });
