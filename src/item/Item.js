@@ -149,19 +149,6 @@ var Item = this.Item = Base.extend({
 	blendMode: 'normal',
 
 	/**
-	 * Specifies whether the item is hidden.
-	 * 
-	 * @return {@true if the item is hidden}
-	 */
-	isHidden: function() {
-		return !this.visible;
-	},
-
-	setHidden: function(hidden) {
-		this.visible = !hidden;
-	},
-
-	/**
 	 * Specifies whether the item defines a clip mask. This can only be set on
 	 * paths, compound paths, and text frame objects, and only if the item is
 	 * already contained within a clipping group.
