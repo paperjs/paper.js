@@ -136,7 +136,7 @@ var PaperScript = this.PaperScript = new function() {
 				// TODO: Add support for multiple tools
 			var tool = scope.tool =
 					/on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
-					&& new Tool(null, doc);
+					&& new Tool(null, scope);
 			// Define variables for potential handlers, so eval() calls below to 
 			// fetch their values do not require try-catch around them.
 			var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
