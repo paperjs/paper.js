@@ -169,8 +169,8 @@ var DocumentView = this.DocumentView = Base.extend({
 		this._onFrame = onFrame;
 		var that = this,
 			running = false,
-			lastTime,
-			totalTime = 0,
+			before,
+			time = 0,
 			count = 0;
 		function frame(dontSwitch) {
 			if (!that._onFrame) {
@@ -182,17 +182,16 @@ var DocumentView = this.DocumentView = Base.extend({
 			// Request next frame already
 			DomEvent.requestAnimationFrame(frame, that._canvas);
 			running = true;
-			var time = Date.now() / 1000,
-			 	delta = lastTime ? time - lastTime : 0;
-			totalTime += delta;
+			var now = Date.now() / 1000,
+			 	delta = before ? now - before : 0;
 			that._onFrame({
 				delta: delta, // Time elapsed since last redraw in seconds
-				time: totalTime, // Time since first call of frame() in seconds
+				time: time += delta, // Time since first call of frame() in seconds
 				count: count++
 			});
+			before = now;
 			// Automatically draw view on each frame.
 			that.draw();
-			lastTime = time;
 		};
 		// Call the onFrame handler straight away, initializing the sequence
 		// of onFrame calls.
