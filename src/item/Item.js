@@ -45,12 +45,12 @@ var Item = this.Item = Base.extend({
 	},
 	
 	_removeFromNamed: function() {
-		var children = this._parent._children;
-		var namedChildren = this._parent._namedChildren;
-		var name = this._name;
+		var children = this._parent._children,
+			namedChildren = this._parent._namedChildren,
+			name = this._name,
+			namedArray = namedChildren[name];
 		if (children[name] = this)
 			delete children[name];
-		var namedArray = namedChildren[name];
 		namedArray.splice(namedArray.indexOf(this), 1);
 		// If there are any items left in the named array, set
 		// the last of them to be this.parent.children[this.name]
@@ -66,29 +66,24 @@ var Item = this.Item = Base.extend({
 	* The name of the item.
 	*/
 	getName: function() {
-		if (this._name)
-			return this._name;
+		return this._name;
 	},
 	
 	setName: function(name) {
-		var children = this._parent.children;
-		var namedChildren = this._parent._namedChildren;
-		if (name != this.name) {
+		var children = this._parent._children,
+			namedChildren = this._parent._namedChildren;
+		if (name != this._name) {
 			// If the item already had a name,
 			// remove its property from the parent's children object:
 			if (this._name)
 				this._removeFromNamed();
-			this._name = name ? name : undefined;
+			this._name = name || undefined;
 		}
 		if (name) {
-			if (!namedChildren[name]) {
-				namedChildren[name] = [this];
-			} else {
-				namedChildren[name].push(this);
-			}
+			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
 		} else {
-			children[name] = undefined; 
+			delete children[name]; 
 		}
 	},
 
