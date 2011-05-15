@@ -97,11 +97,6 @@ var Point = this.Point = Base.extend({
 		return Point.create(-this.x, -this.y);
 	},
 
-	equals: function(point) {
-		point = Point.read(arguments);
-		return this.x == point.x && this.y == point.y;
-	},
-
 	transform: function(matrix) {
 		return matrix._transformPoint(this);
 	},
@@ -252,6 +247,11 @@ var Point = this.Point = Base.extend({
 			point.y * c + point.x * s
 		);
 		return center ? point.add(center) : point;
+	},
+
+	equals: function(point) {
+		point = Point.read(arguments);
+		return this.x == point.x && this.y == point.y;
 	},
 
 	/**
