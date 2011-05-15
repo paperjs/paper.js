@@ -195,7 +195,8 @@ var PaperScript = this.PaperScript = new function() {
 	}
 
 	function load() {
-		var scripts = document.getElementsByTagName('script');
+		var scripts = document.getElementsByTagName('script'),
+			count = 0;
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
 			// Only load this script if it not loaded already.
@@ -204,13 +205,22 @@ var PaperScript = this.PaperScript = new function() {
 				// Produce a new PaperScope for this script now. Scopes are
 				// cheap so let's not worry about the initial one that was
 				// already created.
-				var scope = new PaperScope(script.src || ('script-' + i));
+				// Define an id for each paperscript, so its scope can be
+				// retrieved through PaperScope.get().
+				var scope = new PaperScope(script.getAttribute('id')
+						|| script.src || ('paperscript-' + (count++)));
+				// Make sure the tag also has this id now. If it already had an
+				// id, we're not changing it, since it's the first option we're
+				// trying to get an id from above.
+				script.setAttribute('id', scope.id);
 				// If a canvas id is provided, create a document for it now,
 				// so the active document is defined.
 				var canvas = script.getAttribute('canvas');
 				if (canvas = canvas && document.getElementById(canvas)) {
 					// Create a Document for this canvas, using the right scope
 					paper = scope;
+					// XXX: Do not pass canvas to Document.
+					// Create DocumentView here instead.
 					new Document(canvas);
 				}
 				if (script.src) {

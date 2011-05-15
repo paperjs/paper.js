@@ -24,6 +24,7 @@ var PaperScope = this.PaperScope = Base.extend({
 		this.documents = [];
 		this.tools = [];
 		this.id = id;
+		PaperScope.scopes[id] = this;
 	},
 
 	/**
@@ -41,15 +42,19 @@ var PaperScope = this.PaperScope = Base.extend({
 		}, scope);
 	},
 
-	// Methods for setting and restoring paper scopes:
-	statics: {
-		set: function(scope) {
-			this.previous = paper;
-			paper = scope;
-		},
+	remove: function() {
+		// Remove all documents and tools.
+		for (var i = this.documents.length - 1; i >= 0; i--)
+			this.documents[i].remove();
+		for (var i = this.tools.length - 1; i >= 0; i--)
+			this.tools[i].remove();
+	},
 
-		restore: function() {
-			paper = this.previous;
+	statics: {
+		scopes: {},
+
+		get: function(id) {
+			return this.scopes[id] || null;
 		}
 	}
 });

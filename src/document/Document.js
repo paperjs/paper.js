@@ -78,8 +78,7 @@ var Document = this.Document = Base.extend({
 	remove: function() {
 		var res = Base.splice(this._scope.documents, null, this._index, 1);
 		this._scope = null;
-		// Remove all views. This also removes the event handlers installed for
-		// then.
+		// Remove all views. This also removes the installed event handlers.
 		for (var i = this.views.length - 1; i >= 0; i--)
 			this.views[i].remove();
 		return !!res.length;
