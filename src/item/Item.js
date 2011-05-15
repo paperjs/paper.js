@@ -671,7 +671,7 @@ var Item = this.Item = Base.extend({
 			// fill.
 			if (item.blendMode !== 'normal'
 					|| item.opacity < 1
-					&& !(item.segments && (!item.getFillColor()
+					&& !(item._segments && (!item.getFillColor()
 							|| !item.getStrokeColor()))) {
 				var bounds = item.getStrokeBounds() || item.getBounds();
 				if (!bounds.width || !bounds.height)
