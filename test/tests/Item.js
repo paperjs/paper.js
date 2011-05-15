@@ -204,14 +204,6 @@ test('getPreviousSibling() / getNextSibling()', function() {
 	}, true);
 });
 
-test('hidden', function() {
-	var firstPath = new Path();
-	firstPath.visible = false;
-	equals(function() {
-		return firstPath.hidden;
-	}, true);
-});
-
 test('reverseChildren()', function() {
 	var doc = paper.document;
 	var path = new Path();
