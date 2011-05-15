@@ -82,7 +82,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	getSize: function() {
-		return Size.create(this.width, this.height);
+		return LinkedSize.create(this, 'setSize', this.width, this.height);
 	},
 
 	setSize: function(size) {
