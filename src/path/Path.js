@@ -337,7 +337,7 @@ var Path = this.Path = PathItem.extend({
 			edge(point2._x + handle2._x, point2._y + handle2._y);
 			edge(point2._x, point2._y);
 		}
-		return this._clockwise = sum > 0;
+		return sum > 0;
 	},
 
 	setClockwise: function(clockwise) {
@@ -346,6 +346,7 @@ var Path = this.Path = PathItem.extend({
 			// Only revers the path if its clockwise orientation is not the same
 			// as what it is now demanded to be.
 			this.reverse();
+			this._clockwise = clockwise;
 		}
 	},
 
