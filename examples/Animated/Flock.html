@@ -138,11 +138,11 @@
 			},
 			
 			borders: function() {
-				var loc = this.loc,
-					r = this.r,
-					oldLoc = this.loc.clone(),
-					width = size.width,
-					height = size.height;
+				var loc = this.loc;
+				var r = this.r;
+				var oldLoc = this.loc.clone();
+				var width = size.width;
+				var height = size.height;
 				if (loc.x < -r) loc.x = width + r;
 				if (loc.y < -r) loc.y = height + r;
 				if (loc.x > width + r) loc.x = -r;
@@ -153,9 +153,9 @@
 			},
 			
 			separate: function(boids) {
-				var desiredSeperation = 60,
-					steer = new Point(0, 0),
-					count = 0;
+				var desiredSeperation = 60;
+				var steer = new Point(0, 0);
+				var count = 0;
 				// For every boid in the system, check if it's too close
 				for (var i = 0, l = boids.length; i < l; i++) {
 					var other = boids[i];
@@ -182,11 +182,11 @@
 			// Alignment
 			// For every nearby boid in the system, calculate the average velocity
 			align: function(boids) {
-				var neighborDist = 25,
-					steer = new Point(0, 0),
-					count = 0,
-					nearest = 999,
-					closestPoint;
+				var neighborDist = 25;
+				var steer = new Point(0, 0);
+				var count = 0;
+				var nearest = 999;
+				var closestPoint;
 				for (var i = 0, l = boids.length; i < l; i++) {
 					var other = boids[i];
 					var d = this.loc.getDistance(other.loc);
@@ -214,9 +214,9 @@
 			// Cohesion
 			// For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
 			cohesion: function(boids) {
-				var neighborDist = 100,
-					sum = new Point(0, 0),
-					count = 0;
+				var neighborDist = 100;
+				var sum = new Point(0, 0);
+				var count = 0;
 				for (var i = 0, l = boids.length; i < l; i++) {
 					var other = boids[i];
 					var d = this.loc.getDistance(other.loc);
@@ -258,11 +258,11 @@
 		heartPath.strokeColor = null;
 		heartPath.scale(1.5);
 		
-		var count = 0,
-			groupTogether = false,
-			pathLength = heartPath.length,
-			mouseDown = false,
-			boids = [];
+		var count = 0;
+		var groupTogether = false;
+		var pathLength = heartPath.length;
+		var mouseDown = false;
+		var boids = [];
 
 		// Add the boids:
 		for (var i = 0; i < 30; i++) {

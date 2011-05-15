@@ -8,10 +8,10 @@
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		// http://en.wikipedia.org/wiki/Lenna
-		var raster = new Raster('lenna'),
-			count = 0,
-			lastScale = 1,
-			center = document.bounds.center;
+		var raster = new Raster('lenna');
+		var count = 0;
+		var lastScale = 1;
+		var center = document.bounds.center;
 		function onFrame(event) {
 			count++;
 			var scale = (Math.sin(event.time * 2) + 1) / 2;
