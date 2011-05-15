@@ -141,7 +141,8 @@ var PaperScript = this.PaperScript = new function() {
 			// Define variables for potential handlers, so eval() calls below to 
 			// fetch their values do not require try-catch around them.
 			var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
-				onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp, onFrame;
+				onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp,
+				onFrame, onResize;
 			var res = eval(compile(code));
 			if (tool) {
 				Base.each(['onEditOptions', 'onSelect', 'onDeselect',
@@ -153,6 +154,7 @@ var PaperScript = this.PaperScript = new function() {
 				);
 			}
 			if (view) {
+				view.onResize = onResize;
 				if (onFrame) {
 					view.setOnFrame(onFrame);
 				} else {

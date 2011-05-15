@@ -86,9 +86,17 @@ var DocumentView = this.DocumentView = Base.extend({
 	},
 
 	setSize: function(size) {
+		var old = this._size;
 		this._size = Size.read(arguments);
 		this._canvas.width = this._size.width;
 		this._canvas.height = this._size.height;
+		// Call onResize handler on any size change
+		if (this.onResize) {
+			this.onResize({
+				size: this._size,
+				delta: this._size.subtract(old)
+			});
+		}
 	},
 
 	getBounds: function() {
@@ -164,6 +172,11 @@ var DocumentView = this.DocumentView = Base.extend({
 	viewToArtwork: function(point) {
 		return this._getInverse()._transformPoint(Point.read(arguments));
 	},
+
+	/**
+	 * Handler to be called whenever a view gets resized.
+	 */
+	onResize: null,
 
 	setOnFrame: function(onFrame) {
 		this._onFrame = onFrame;
