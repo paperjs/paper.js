@@ -165,13 +165,52 @@ var DocumentView = this.DocumentView = Base.extend({
 		return this._getInverse()._transformPoint(Point.read(arguments));
 	},
 
+	setOnFrame: function(onFrame) {
+		this._onFrame = onFrame;
+		var that = this,
+			running = false,
+			lastTime,
+			totalTime = 0,
+			count = 0;
+		function frame(dontSwitch) {
+			if (!that._onFrame) {
+				running = false;
+				return;
+			}
+			if (!dontSwitch)
+				paper = that._document._scope;
+			// Request next frame already
+			DomEvent.requestAnimationFrame(frame, that._canvas);
+			running = true;
+			var time = Date.now() / 1000,
+			 	delta = lastTime ? time - lastTime : 0;
+			totalTime += delta;
+			that._onFrame({
+				delta: delta, // Time elapsed since last redraw in seconds
+				time: totalTime, // Time since first call of frame() in seconds
+				count: count++
+			});
+			// Automatically draw view on each frame.
+			that.draw();
+			lastTime = time;
+		};
+		// Call the onFrame handler straight away, initializing the sequence
+		// of onFrame calls.
+		if (!running)
+			frame(true);
+	},
+
+	getOnFrame: function() {
+		return this._onFrame;
+	},
+
 	_createEvents: function() {
-		var scope = this._document._scope,
+		var that = this,
+			scope = this._document._scope,
 			tool,
 			timer,
 			curPoint,
-			dragging = false,
-			that = this;
+			dragging = false;
 
 		function viewToArtwork(event) {
 			return that.viewToArtwork(DomEvent.getOffset(event));

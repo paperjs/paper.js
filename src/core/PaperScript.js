@@ -132,11 +132,12 @@ var PaperScript = this.PaperScript = new function() {
 	function run(code, scope) {
 		with (scope) { // Safe one indentation by grouping try and with
 			paper = scope;
-			var doc = scope.document;
+			var doc = scope.document,
+				view = doc.activeView,
 				// TODO: Add support for multiple tools
-			var tool = scope.tool =
+				tool = scope.tool =
 					/on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
-					&& new Tool(null, scope);
+						&& new Tool(null, scope);
 			// Define variables for potential handlers, so eval() calls below to 
 			// fetch their values do not require try-catch around them.
 			var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
@@ -151,38 +152,13 @@ var PaperScript = this.PaperScript = new function() {
 					}
 				);
 			}
-			// TODO: Move onFrame support to DocumentView
-			var onFrame = eval('onFrame');
-			if (onFrame) {
-				var lastTime,
-					totalTime = 0,
-					count = 0;
-				function frame(dontSwitch) {
-					if (!dontSwitch)
-						paper = scope;
-					// Request next frame already
-					DomEvent.requestAnimationFrame(frame, doc && doc.canvas);
-					var time = Date.now() / 1000;
-					// Time elapsed since last redraw in seconds:
-					var delta = lastTime ? time - lastTime : 0;
-					// Time since first call of frame() in seconds:
-					totalTime += delta;
-					onFrame({
-						delta: delta,
-						time: totalTime,
-						count: count++
-					});
-					// Automatically redraw document each frame.
-					if (doc)
-						doc.redraw();
-					lastTime = time;
-				};
-				// Call the onFrame handler and redraw the document:
-				frame(true);
-			} else {
-				// Automatically redraw document at the end.
-				if (doc)
-					doc.redraw();
+			if (view) {
+				if (onFrame) {
+					view.setOnFrame(onFrame);
+				} else {
+					// Automatically draw view at the end.
+					view.draw();
+				}
 			}
 			return res;
 		}
