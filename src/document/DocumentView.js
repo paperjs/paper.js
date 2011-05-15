@@ -72,6 +72,8 @@ var DocumentView = this.DocumentView = Base.extend({
 		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
+		this._events = this._createEvents();
+		DomEvent.add(this._canvas, this._events);
 	},
 
 	getDocument: function() {
@@ -133,7 +135,9 @@ var DocumentView = this.DocumentView = Base.extend({
 
 	remove: function() {
 		var res = Base.splice(this._document.views, null, this._index, 1);
-		this._document = null;
+		// Uninstall event handlers again for this view.
+		DomEvent.remove(this._canvas, this._events);
+		this._document = this._canvas = this._events = null;
 		return !!res.length;
 	},
 
@@ -156,10 +160,81 @@ var DocumentView = this.DocumentView = Base.extend({
 	// TODO: getMousePoint
 	// TODO: artworkToView(rect)
 	artworkToView: function(point) {
-		return this._matrix._transformPoint(point);
+		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
 	viewToArtwork: function(point) {
-		return this._getInverse()._transformPoint(point);
+		return this._getInverse()._transformPoint(Point.read(arguments));
+	},
+
+	_createEvents: function() {
+		var scope = this._document._scope,
+			tool,
+			curPoint,
+			dragging = false,
+			that = this;
+
+		function viewToArtwork(event) {
+			return that.viewToArtwork(DomEvent.getOffset(event));
+		}
+
+		function mousedown(event) {
+			if (!(tool = scope.tool))
+				return;
+			curPoint = viewToArtwork(event);
+			tool.onHandleEvent('mousedown', curPoint, event);
+			if (tool.onMouseDown)
+				that._document.redraw();
+			if (that.eventInterval != null) {
+				this.timer = setInterval(events.mousemove, that.eventInterval);
+			}
+			dragging = true;
+		}
+
+		function mousemove(event) {
+			if (!(tool = scope.tool))
+				return;
+			// If the event was triggered by a touch screen device, prevent the
+			// default behaviour, as it will otherwise scroll the page:
+			if (event && event.targetTouches)
+				DomEvent.preventDefault(event);
+			var point = event && viewToArtwork(event);
+			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
+			if (dragging && !onlyMove) {
+				curPoint = point || curPoint;
+				if (curPoint)
+					tool.onHandleEvent('mousedrag', curPoint, event);
+				if (tool.onMouseDrag)
+					that._document.redraw();
+			// PORT: If there is only an onMouseMove handler, also call it when
+			// the user is dragging:
+			} else if (!dragging || onlyMove) {
+				tool.onHandleEvent('mousemove', point, event);
+				if (tool.onMouseMove)
+					that._document.redraw();
+			}
+		}
+
+		function mouseup(event) {
+			if (!dragging || !tool) {
+				dragging = false;
+				return;
+			}
+			curPoint = null;
+			if (that.eventInterval != null)
+				clearInterval(this.timer);
+			tool.onHandleEvent('mouseup', viewToArtwork(event), event);
+			if (tool.onMouseUp)
+				that._document.redraw();
+		}
+
+		return {
+			mousedown: mousedown,
+			mousemove: mousemove,
+			mouseup: mouseup,
+			touchstart: mousedown,
+			touchmove: mousemove,
+			touchend: mouseup
+		};
 	}
 });
