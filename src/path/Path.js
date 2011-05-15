@@ -855,20 +855,20 @@ var Path = this.Path = PathItem.extend({
 				inc = Math.min(Math.max(extent, -d180), d180) / arcSegs,
 				z = 4 / 3 * Math.sin(inc / 2) / (1 + Math.cos(inc / 2)),
 				segments = [];
-			// TODO: Use Point#setAngle() and Point vector algebra instead.
+			// TODO: Use Point#setAngle() and Point vector algebra instead?
 			for (var i = 0; i <= arcSegs; i++) {
 				var relx = Math.cos(angle),
-					rely = Math.sin(angle),
-					pt = new Point(
-						cx + relx * radius,
-						cy + rely * radius
-					),
-					out = i == arcSegs
-						? null
-						: new Point(
-							cx + (relx - z * rely) * radius - pt.x,
-							cy + (rely + z * relx) * radius - pt.y
-						);
+					rely = Math.sin(angle);
+				var pt = new Point(
+					cx + relx * radius,
+					cy + rely * radius
+				);
+				var out = i == arcSegs
+					? null
+					: new Point(
+						cx + (relx - z * rely) * radius - pt.x,
+						cy + (rely + z * relx) * radius - pt.y
+					);
 				if (i == 0) {
 					// Modify startSegment
 					current.setHandleOut(out);
