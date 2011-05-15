@@ -274,4 +274,147 @@ test('group.selected', function() {
 	}, false);
 	equals(function() {
 		return path2.selected;
-	}, false);});
+	}, false);
+});
+
+test('Check parent children object for named item', function() {
+	var path = new Path();
+	path.name = 'test';
+	equals(function() {
+		return paper.document.activeLayer.children['test'] == path;
+	}, true);
+	
+	var path2 = new Path();
+	path2.name = 'test';
+	
+	equals(function() {
+		return paper.document.activeLayer.children['test'] == path2;
+	}, true);
+	
+	path2.remove();
+	
+	equals(function() {
+		return paper.document.activeLayer.children['test'] == path;
+	}, true);
+	
+	path.remove();
+	
+	equals(function() {
+		return !paper.document.activeLayer.children['test'];
+	}, true);
+});
+
+test('Named child access', function() {
+	var path = new Path();
+	path.name = 'test';
+
+	var path2 = new Path();
+	path2.name = 'test';
+	
+	path.remove();
+	
+	equals(function() {
+		return paper.document.activeLayer.children['test'] == path2;
+	}, true);
+});
+
+test('Named child access 2', function() {
+	var path = new Path();
+	path.name = 'test';
+
+	var path2 = new Path();
+	path2.name = 'test';
+	
+	path.remove();
+	
+	equals(function() {
+		return paper.document.activeLayer.children['test'] == path2;
+	}, true);
+	
+	equals(function() {
+		return paper.document.activeLayer._namedChildren['test'].length == 1;
+	}, true);
+	
+	path2.remove();
+
+	equals(function() {
+		return !paper.document.activeLayer._namedChildren['test'];
+	}, true);
+	
+	equals(function() {
+		return paper.document.activeLayer.children['test'] === undefined;
+	}, true);
+});
+
+test('Named child access 2', function() {
+	var path = new Path();
+	path.name = 'test';
+
+	var path2 = new Path();
+	path2.name = 'test';
+	
+	var group = new Group();
+	
+	group.appendTop(path2);
+	
+	equals(function() {
+		return paper.document.activeLayer.children['test'] == path;
+	}, true);
+	
+	equals(function() {
+		return paper.document.activeLayer._namedChildren['test'].length == 1;
+	}, true);
+
+	equals(function() {
+		return group.children['test'] == path2;
+	}, true);
+	
+	equals(function() {
+		return group._namedChildren['test'].length == 1;
+	}, true);
+	
+	paper.document.activeLayer.appendTop(path2);
+
+	equals(function() {
+		return group._namedChildren['test'] === undefined;
+	}, true);
+	
+	equals(function() {
+		return paper.document.activeLayer._namedChildren['test'].length == 2;
+	}, true);
+});
+
+test('Setting name of child back to null', function() {
+	var path = new Path();
+	path.name = 'test';
+	
+	var path2 = new Path();
+	path2.name = 'test';
+	
+	path2.name = null;
+
+	equals(function() {
+		return paper.document.activeLayer.children['test'] == path;
+	}, true);
+	
+	path.name = null;
+	
+	equals(function() {
+		return paper.document.activeLayer.children['test'] === undefined;
+	}, true);
+});
+
+test('Renaming item', function() {
+	var path = new Path();
+	path.name = 'test';
+	
+	path.name = 'test2';
+	
+	equals(function() {
+		return paper.document.activeLayer.children['test'] === undefined;
+	}, true);
+	
+	equals(function() {
+		return paper.document.activeLayer.children['test2'] == path;
+	}, true);
+});
