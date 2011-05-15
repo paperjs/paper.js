@@ -247,7 +247,7 @@ var Raster = this.Raster = Item.extend({
 			var image;
 			if (object) {
 				var bounds, path;
-				if (object instanceof Path) {
+				if (object instanceof PathItem) {
 					// TODO: what if the path is smaller than 1 px?
 					// TODO: how about rounding of bounds.size?
 					// TODO: test with compound paths.
@@ -266,14 +266,11 @@ var Raster = this.Raster = Item.extend({
 				ctx.translate(delta.x, delta.y);
 				if (path) {
 					var style = object.getStyle();
-					path.draw(ctx);
+					path.draw(ctx, {});
 					ctx.clip();
 					path.setStyle(style);
 				}
-				var matrix = this.matrix.clone(),
-					transMatrix = Matrix.getTranslateInstance(delta);
-				matrix.preConcatenate(transMatrix);
-				matrix.applyToContext(ctx);
+				this.matrix.applyToContext(ctx);
 				ctx.drawImage(this._canvas || this._image,
 						-this._size.width / 2, -this._size.height / 2);
 				image = canvas;
