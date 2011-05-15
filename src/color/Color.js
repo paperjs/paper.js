@@ -92,7 +92,7 @@ var Color = this.Color = Base.extend(new function() {
 						: rgbColor;
 			} else {
 				var components = isArray ? arg
-						: arguments;//Array.prototype.slice.call(arguments);
+						: Array.prototype.slice.call(arguments);
 				if (!this._colorType) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
