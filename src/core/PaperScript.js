@@ -207,13 +207,13 @@ var PaperScript = this.PaperScript = new function() {
 		var scripts = document.getElementsByTagName('script');
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
-			// Only load this cript if it not loaded already.
+			// Only load this script if it not loaded already.
 			if (script.type === 'text/paperscript'
 					&& !script.getAttribute('loaded')) {
 				// Produce a new PaperScope for this script now. Scopes are
 				// cheap so let's not worry about the initial one that was
 				// already created.
-				var scope = new PaperScope();
+				var scope = new PaperScope(script.src || ('script-' + i));
 				// If a canvas id is provided, create a document for it now,
 				// so the active document is defined.
 				var canvas = script.getAttribute('canvas');
