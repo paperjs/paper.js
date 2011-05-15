@@ -74,7 +74,6 @@ var Color = this.Color = Base.extend(new function() {
 						? new HSBColor(arg.hue, arg.saturation, arg.brightness,
 								arg.alpha)
 						: new RGBColor(); // Fallback
-					
 				} else {
 					// Called on a subclass instance. Return the converted
 					// color.
@@ -91,7 +90,8 @@ var Color = this.Color = Base.extend(new function() {
 						? rgbColor.convert(this._colorType)
 						: rgbColor;
 			} else {
-				var components = isArray ? arg : arguments;
+				var components = isArray ? arg
+						: Array.prototype.slice.call(arguments);
 				if (!this._colorType) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
@@ -113,7 +113,8 @@ var Color = this.Color = Base.extend(new function() {
 									// TODO: Is this correct?
 									// Shouldn't alpha be set to -1?
 									: name === 'alpha' ? 1 : null;
-						}, this);
+						},
+					this);
 				}
 			}
 		},
