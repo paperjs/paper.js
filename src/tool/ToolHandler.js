@@ -121,7 +121,7 @@ var ToolHandler = this.ToolHandler = Base.extend({
 	},
 
 	onHandleEvent: function(type, pt, event) {
-		PaperScope.set(this._scope);
+		paper = this._scope;
 		switch (type) {
 		case 'mousedown':
 			this.updateEvent(type, pt, null, null, true, false, false);
@@ -178,6 +178,5 @@ var ToolHandler = this.ToolHandler = Base.extend({
 			}
 			break;
 		}
-		PaperScope.restore();
 	}
 });
