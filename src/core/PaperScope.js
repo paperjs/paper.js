@@ -19,10 +19,11 @@
  * global paper object, which simply is a pointer to the currently active scope.
  */
 var PaperScope = this.PaperScope = Base.extend({
-	initialize: function() {
+	initialize: function(id) {
 		this.document = null;
 		this.documents = [];
 		this.tools = [];
+		this.id = id;
 	},
 
 	/**
