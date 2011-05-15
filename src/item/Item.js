@@ -43,6 +43,54 @@ var Item = this.Item = Base.extend({
 		}
 		return this._id;
 	},
+	
+	_removeFromNamed: function() {
+		var children = this._parent._children;
+		var namedChildren = this._parent._namedChildren;
+		var name = this._name;
+		if (children[name] = this)
+			delete children[name];
+		var namedArray = namedChildren[name];
+		namedArray.splice(namedArray.indexOf(this), 1);
+		// If there are any items left in the named array, set
+		// the last of them to be this.parent.children[this.name]
+		if (namedArray.length) {
+			children[name] = namedArray[namedArray.length - 1];
+		} else {
+			// Otherwise delete the empty array
+			delete namedChildren[name];
+		}
+	},
+	
+	/**
+	* The name of the item.
+	*/
+	getName: function() {
+		if (this._name)
+			return this._name;
+	},
+	
+	setName: function(name) {
+		var children = this._parent.children;
+		var namedChildren = this._parent._namedChildren;
+		if (name != this.name) {
+			// If the item already had a name,
+			// remove its property from the parent's children object:
+			if (this._name)
+				this._removeFromNamed();
+			this._name = name ? name : undefined;
+		}
+		if (name) {
+			if (!namedChildren[name]) {
+				namedChildren[name] = [this];
+			} else {
+				namedChildren[name].push(this);
+			}
+			children[name] = this;
+		} else {
+			children[name] = undefined; 
+		}
+	},
 
 	/**
 	 * When passed a document, copies the item to the document,
@@ -243,6 +291,8 @@ var Item = this.Item = Base.extend({
 	*/
 	_removeFromParent: function() {
 		if (this._parent) {
+			if (this._name)
+				this._removeFromNamed();
 			var res = Base.splice(this._parent._children, null, this._index, 1);
 			this._parent = this._index = null;
 			return !!res.length;
@@ -699,6 +749,8 @@ var Item = this.Item = Base.extend({
 				Base.splice(this._children, [item], top ? undefined : 0, 0);
 				item._parent = this;
 				item._setDocument(this._document);
+				if (item._name)
+					item.setName(item._name);
 				return true;
 			}
 			return false;
@@ -713,6 +765,8 @@ var Item = this.Item = Base.extend({
 						item._index + (above ? 1 : -1), 0);
 				this._parent = item._parent;
 				this._setDocument(item._document);
+				if (item._name)
+					item.setName(item._name);
 				return true;
 			}
 			return false;
