@@ -387,10 +387,14 @@ test('Named child access 2', function() {
 test('Setting name of child back to null', function() {
 	var path = new Path();
 	path.name = 'test';
-	
+
 	var path2 = new Path();
 	path2.name = 'test';
-	
+
+	equals(function() {
+		return paper.document.activeLayer.children['test'] == path2;
+	}, true);
+
 	path2.name = null;
 
 	equals(function() {
