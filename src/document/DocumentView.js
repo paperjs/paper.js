@@ -178,6 +178,13 @@ var DocumentView = this.DocumentView = Base.extend({
 	 */
 	onResize: null,
 
+	/**
+	 * Handler to be called on each frame of an animation.
+	 */
+	getOnFrame: function() {
+		return this._onFrame;
+	},
+
 	setOnFrame: function(onFrame) {
 		this._onFrame = onFrame;
 		var that = this,
@@ -185,13 +192,13 @@ var DocumentView = this.DocumentView = Base.extend({
 			before,
 			time = 0,
 			count = 0;
-		function frame(dontSwitch) {
+		function frame() {
 			if (!that._onFrame) {
 				running = false;
 				return;
 			}
-			if (!dontSwitch)
-				paper = that._document._scope;
+			// Set the global paper object to the current scope
+			paper = that._document._scope;
 			// Request next frame already
 			DomEvent.requestAnimationFrame(frame, that._canvas);
 			running = true;
@@ -209,11 +216,7 @@ var DocumentView = this.DocumentView = Base.extend({
 		// Call the onFrame handler straight away, initializing the sequence
 		// of onFrame calls.
 		if (!running)
-			frame(true);
-	},
-
-	getOnFrame: function() {
-		return this._onFrame;
+			frame();
 	},
 
 	_createEvents: function() {
