@@ -29,7 +29,7 @@ var Item = this.Item = Base.extend({
 	 * @param {ChangeFlags} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
-		if (flags & ChangeFlags.PATH) {
+		if (flags & ChangeFlags.GEOMETRY) {
 			delete this._position;
 		}
 	},
