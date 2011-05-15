@@ -9,7 +9,6 @@
 	<script type="text/paperscript" canvas="canvas">
 		var width, height, center;
 		var points = 10;
-		var count = 0;
 		var smooth = true;
 		var path = new Path();
 		var mousePos = document.bounds.center / 2;
@@ -31,11 +30,10 @@
 			path.selected = true;
 		}
 
-		function onFrame() {
-			count++;
+		function onFrame(event) {
 			pathHeight += (center.y - mousePos.y - pathHeight) / 10;
 			for (var i = 1; i < points; i++) {
-				var sinSeed = count + (i + i % 10) * 100;
+				var sinSeed = event.count + (i + i % 10) * 100;
 				var sinHeight = Math.sin(sinSeed / 200) * pathHeight;
 				var yPos = Math.sin(sinSeed / 100) * sinHeight + height;
 				path.segments[i].point.y = yPos;

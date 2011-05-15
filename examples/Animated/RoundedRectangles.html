@@ -30,13 +30,11 @@
 		}
 
 		var children = document.activeLayer.children;
-		var count = 0;		
-		function onFrame() {
-			count++;
+		function onFrame(event) {
 			for (var i = 0, l = children.length; i < l; i++) {
 				var item = children[i];
 				var delta = (mousePoint - item.position) / (i + 5);
-				item.rotate(Math.sin((count + i) / 10) * 7);
+				item.rotate(Math.sin((event.count + i) / 10) * 7);
 				if (delta.length > 0.1)
 					item.translate(delta);
 			}

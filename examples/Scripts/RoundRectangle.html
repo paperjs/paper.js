@@ -7,18 +7,16 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var path,
-			count = 0,
-			rect = new Rectangle([150, 150], [300, 300]);
+		var path;
+		var rect = new Rectangle([150, 150], [300, 300]);
 		document.currentStyle.fillColor = 'black';
 		
-		function onFrame() {
+		function onFrame(event) {
 			if (path)
 				path.remove();
-			var size = Math.abs(Math.sin(count / 40)) * 150 + 10;
+			var size = Math.abs(Math.sin(event.count / 40)) * 150 + 10;
 			path = new Path.RoundRectangle(rect, size);
 			path.position = document.bounds.center;
-			count++;
 		}
 	</script>
 </head>
