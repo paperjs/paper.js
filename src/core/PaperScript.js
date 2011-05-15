@@ -145,6 +145,17 @@ var PaperScript = this.PaperScript = new function() {
 				onFrame, onResize;
 			var res = eval(compile(code));
 			if (tool) {
+				// We could do this instead to avoid eval(), but it's more code:
+				// tool.onEditOptions = onEditOptions;
+				// tool.onSelect = onSelect;
+				// tool.onDeselect = onDeselect;
+				// tool.onReselect = onReselect;
+				// tool.onMouseDown = onMouseDown;
+				// tool.onMouseUp = onMouseUp;
+				// tool.onMouseDrag = onMouseDrag;
+				// tool.onMouseMove = onMouseMove;
+				// tool.onKeyDown = onKeyDown;
+				// tool.onKeyUp = onKeyUp;
 				Base.each(['onEditOptions', 'onSelect', 'onDeselect',
 						'onReselect', 'onMouseDown', 'onMouseUp', 'onMouseDrag',
 						'onMouseMove', 'onKeyDown', 'onKeyUp'],
