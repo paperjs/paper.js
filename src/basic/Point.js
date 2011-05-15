@@ -255,23 +255,6 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
-	 * Returns the interpolation point between the point and another point.
-	 * The object itself is not modified!
-	 * 
-	 * @param point
-	 * @param t the position between the two points as a value between 0 and 1
-	 * @return the interpolation point
-	 * 
-	 * @jshide
-	 */
-	interpolate: function(point, t) {
-		return Point.create(
-			this.x * (1 - t) + point.x * t,
-			this.y * (1 - t) + point.y * t
-		);
-	},
-
-	/**
 	 * Checks whether the point is inside the boundaries of the rectangle.
 	 * 
 	 * @param rect the rectangle to check against
