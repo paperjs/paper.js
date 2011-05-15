@@ -356,6 +356,31 @@ var Path = this.Path = PathItem.extend({
 		return false;
 	},
 
+	getOrientation: function() {
+		var sum = 0;
+		var xPre, yPre;
+		function edge(x, y) {
+			if (xPre !== undefined) {
+				sum += (xPre - x) * (y + yPre);
+			}
+			xPre = x;
+			yPre = y;
+		}
+		for (var i = 0, l = this._segments.length; i < l; i++) {
+			var seg1 = this._segments[i];
+			var seg2 = this._segments[i + 1 < l ? i + 1 : 0];
+			var point1 = seg1._point;
+			var handle1 = seg1._handleOut;
+			var handle2 = seg2._handleIn;
+			var point2 = seg2._point;
+			edge(point1._x, point1._y);
+			edge(point1._x + handle1._x, point1._y + handle1._y);
+			edge(point2._x + handle2._x, point2._y + handle2._y);
+			edge(point2._x, point2._y);
+		}
+		return sum;
+	},
+
 	getLength: function() {
 		if (this._length == null) {
 			var curves = this.getCurves();
