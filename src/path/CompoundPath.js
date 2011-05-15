@@ -89,11 +89,9 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 			path.moveTo.apply(path, arguments);
 		},
 
-		moveBy: function() {
-			var point = arguments.length ? Point.read(arguments) : new Point(),
-				path = getCurrentPath(this),
-				current = path.segments[path.segments.length - 1]._point;
-			this.moveTo(current.add(point));
+		moveBy: function(point) {
+			this.moveTo(getCurrentPath(this).getLastSegment()._point.add(
+					Point.read(arguments)));
 		},
 
 		closePath: function() {
