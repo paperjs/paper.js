@@ -34,6 +34,8 @@ var Path = this.Path = PathItem.extend({
 			delete this._bounds;
 			delete this._position;
 			delete this._strokeBounds;
+			// Clockwise state becomes undefined as soon as geometry changes.
+			delete this._clockwise;
 		} else if (flags & ChangeFlags.STROKE) {
 			delete this._strokeBounds;
 		}
@@ -302,20 +304,66 @@ var Path = this.Path = PathItem.extend({
 	// TODO: curvesToPoints([maxPointDistance[, flatness]])
 	// TODO: reduceSegments([flatness])
 	// TODO: split(offset) / split(location) / split(index[, parameter])
-	
+
+	/**
+	 * Returns true if the path is oriented clock-wise, false otherwise.
+	 */
+	isClockwise: function() {
+		if (this._clockwise !== undefined)
+			return this._clockwise;
+		var sum = 0,
+			xPre, yPre;
+		function edge(x, y) {
+			if (xPre !== undefined)
+				sum += (xPre - x) * (y + yPre);
+			xPre = x;
+			yPre = y;
+		}
+		// Method derived from:
+		// http://stackoverflow.com/questions/1165647
+		// We treat the curve points and handles as the outline of a polygon of
+		// which we determine the orientation using the method of calculating
+		// the sum over the edges. This will work even with non-convex polygons,
+		// telling you whether it's mostly clockwise
+		for (var i = 0, l = this._segments.length; i < l; i++) {
+			var seg1 = this._segments[i],
+				seg2 = this._segments[i + 1 < l ? i + 1 : 0],
+				point1 = seg1._point,
+				handle1 = seg1._handleOut,
+				handle2 = seg2._handleIn,
+				point2 = seg2._point;
+			edge(point1._x, point1._y);
+			edge(point1._x + handle1._x, point1._y + handle1._y);
+			edge(point2._x + handle2._x, point2._y + handle2._y);
+			edge(point2._x, point2._y);
+		}
+		return this._clockwise = sum > 0;
+	},
+
+	setClockwise: function(clockwise) {
+		// On-the-fly conversion to boolean:
+		if (this.isClockwise() != (clockwise = !!clockwise)) {
+			// Only revers the path if its clockwise orientation is not the same
+			// as what it is now demanded to be.
+			this.reverse();
+		}
+	},
+
 	/**
 	 * Reverses the segments of the path.
 	 */
 	reverse: function() {
-		var segments = this._segments;
-		segments.reverse();
+		this._segments.reverse();
 		// Reverse the handles:
-		for (var i = 0, l = segments.length; i < l; i++) {
-			var segment = segments[i];
+		for (var i = 0, l = this._segments.length; i < l; i++) {
+			var segment = this._segments[i];
 			var handleIn = segment._handleIn;
 			segment._handleIn = segment._handleOut;
 			segment._handleOut = handleIn;
 		}
+		// Flip clockwise state if it's defined
+		if (this._clockwise !== undefined)
+			this._clockwise = !this._clockwise;
 	},
 
 	join: function(path) {
@@ -354,31 +402,6 @@ var Path = this.Path = PathItem.extend({
 			return true;
 		}
 		return false;
-	},
-
-	getOrientation: function() {
-		var sum = 0;
-		var xPre, yPre;
-		function edge(x, y) {
-			if (xPre !== undefined) {
-				sum += (xPre - x) * (y + yPre);
-			}
-			xPre = x;
-			yPre = y;
-		}
-		for (var i = 0, l = this._segments.length; i < l; i++) {
-			var seg1 = this._segments[i];
-			var seg2 = this._segments[i + 1 < l ? i + 1 : 0];
-			var point1 = seg1._point;
-			var handle1 = seg1._handleOut;
-			var handle2 = seg2._handleIn;
-			var point2 = seg2._point;
-			edge(point1._x, point1._y);
-			edge(point1._x + handle1._x, point1._y + handle1._y);
-			edge(point2._x + handle2._x, point2._y + handle2._y);
-			edge(point2._x, point2._y);
-		}
-		return sum;
 	},
 
 	getLength: function() {
