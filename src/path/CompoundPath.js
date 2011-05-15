@@ -83,7 +83,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	}
 
 	var fields = {
-		moveTo: function() {
+		moveTo: function(point) {
 			var path = new Path();
 			this.appendTop(path);
 			path.moveTo.apply(path, arguments);

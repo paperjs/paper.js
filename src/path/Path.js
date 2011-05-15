@@ -762,14 +762,14 @@ var Path = this.Path = PathItem.extend({
 	 * execute a moveTo() command first.
 	 */
 	return {
-		moveTo: function() {
+		moveTo: function(point) {
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
 			if (!this._segments.length)
 				this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
-		lineTo: function() {
+		lineTo: function(point) {
 			// Let's not be picky about calling moveTo() first:
 			this._add([ new Segment(Point.read(arguments)) ]);
 		},
