@@ -42,7 +42,7 @@ var Item = this.Item = Base.extend({
 			this._id = Item._id = (Item._id || 0) + 1;
 		}
 		return this._id;
-	}
+	},
 
 	/**
 	 * When passed a document, copies the item to the document,
