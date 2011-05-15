@@ -19,6 +19,7 @@ var Layer = this.Layer = Group.extend({
 
 	initialize: function() {
 		this._children = [];
+		this._namedChildren = {};
 		this._document = paper.document;
 		// Push it onto document.layers and set index:
 		this._index = this._document.layers.push(this) - 1;
