@@ -258,7 +258,7 @@ var Point = this.Point = Base.extend({
 	 * Checks whether the point is inside the boundaries of the rectangle.
 	 * 
 	 * @param rect the rectangle to check against
-	 * @return {@true if the point is inside the rectangle}
+	 * @return true if the point is inside the rectangle, false otherwise.
 	 */
 	isInside: function(rect) {
 		return rect.contains(this);
@@ -269,7 +269,7 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @param point the point to check against
 	 * @param tolerance the maximum distance allowed
-	 * @return {@true if it is within the given distance}
+	 * @return true if it is within the given distance, false otherwise.
 	 */
 	isClose: function(point, tolerance) {
 		return this.getDistance(point) < tolerance;
@@ -280,7 +280,7 @@ var Point = this.Point = Base.extend({
 	 * another vector.
 	 * 
 	 * @param point the vector to check against
-	 * @return {@true if it is parallel}
+	 * @return true if it is parallel, false otherwise.
 	 */
 	isColinear: function(point) {
 		return this.cross(point) < Numerical.TOLERANCE;
@@ -291,7 +291,7 @@ var Point = this.Point = Base.extend({
 	 * (perpendicular) to another vector.
 	 * 
 	 * @param point the vector to check against
-	 * @return {@true if it is orthogonal}
+	 * @return true if it is orthogonal, false otherwise.
 	 */
 	isOrthogonal: function(point) {
 		return this.dot(point) < Numerical.TOLERANCE;
@@ -300,7 +300,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Checks if this point has both the x and y coordinate set to 0. 
 	 * 
-	 * @return {@true if both x and y are 0}
+	 * @return true if both x and y are 0, false otherwise.
 	 */
 	isZero: function() {
 		return this.x == 0 && this.y == 0;
@@ -310,7 +310,7 @@ var Point = this.Point = Base.extend({
 	 * Checks if this point has an undefined value for at least one of its
 	 * coordinates.
 	 * 
-	 * @return {@true if either x or y are not a number}
+	 * @return true if either x or y are not a number, false otherwise.
 	 */
 	isNaN: function() {
 		return isNaN(this.x) || isNaN(this.y);

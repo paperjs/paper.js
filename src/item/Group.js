@@ -33,7 +33,7 @@ var Group = this.Group = Item.extend({
 	 * When setting to true, the first child in the group is automatically
 	 * defined as the clipping mask.
 	 *
-	 * @return {@true if the group item is to be clipped}
+	 * @return true if the group item is to be clipped, false otherwise.
 	 */
 	isClipped: function() {
 		return this._clipped;

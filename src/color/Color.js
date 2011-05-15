@@ -91,8 +91,7 @@ var Color = this.Color = Base.extend(new function() {
 						? rgbColor.convert(this._colorType)
 						: rgbColor;
 			} else {
-				var components = isArray ? arg
-						: Array.prototype.slice.call(arguments);
+				var components = isArray ? arg : arguments;
 				if (!this._colorType) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
@@ -148,7 +147,7 @@ var Color = this.Color = Base.extend(new function() {
 		/**
 		 * Checks if the color has an alpha value.
 		 *
-		 * @return {@true if the color has an alpha value}
+		 * @return true if the color has an alpha value, false otherwise.
 		 */
 		hasAlpha: function() {
 			return this._alpha != null;
@@ -159,7 +158,7 @@ var Color = this.Color = Base.extend(new function() {
 		 * same as those of the supplied one.
 		 * 
 		 * @param obj the GrayColor to compare with
-		 * @return {@true if the GrayColor is the same}
+		 * @return true if the GrayColor is the same, false otherwise.
 		 */
 		equals: function(color) {
 			if (color && color._colorType === this._colorType) {
