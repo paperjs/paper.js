@@ -24,6 +24,7 @@ var DocumentView = this.DocumentView = Base.extend({
 		// To go with the convention of never passing document to constructors,
 		// in all items, associate the view with the currently active document.
 		this._document = paper.document;
+		this._scope = this._document._scope;
 		// Push it onto document.views and set index:
 		this._index = this._document.views.push(this) - 1;
 		// Handle canvas argument
@@ -74,6 +75,9 @@ var DocumentView = this.DocumentView = Base.extend({
 		this._zoom = 1;
 		this._events = this._createEvents();
 		DomEvent.add(this._canvas, this._events);
+		// Make sure the first view is focused for keyboard input straight away
+		if (!DocumentView.focused)
+			DocumentView.focused = this;
 	},
 
 	getDocument: function() {
@@ -143,8 +147,9 @@ var DocumentView = this.DocumentView = Base.extend({
 		var res = Base.splice(this._document.views, null, this._index, 1);
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._canvas, this._events);
+		this._document = this._scope = this._canvas = this._events = null;
 		// Clearing _onFrame makes the frame handler stop automatically.
-		this._document = this._canvas = this._events = that._onFrame = null;
+		this._onFrame = null;
 		return !!res.length;
 	},
 
@@ -199,7 +204,7 @@ var DocumentView = this.DocumentView = Base.extend({
 				return;
 			}
 			// Set the global paper object to the current scope
-			paper = that._document._scope;
+			paper = that._scope;
 			// Request next frame already
 			DomEvent.requestAnimationFrame(frame, that._canvas);
 			running = true;
@@ -222,7 +227,6 @@ var DocumentView = this.DocumentView = Base.extend({
 
 	_createEvents: function() {
 		var that = this,
-			scope = this._document._scope,
 			tool,
 			timer,
 			curPoint,
@@ -233,7 +237,9 @@ var DocumentView = this.DocumentView = Base.extend({
 		}
 
 		function mousedown(event) {
-			if (!(tool = scope.tool))
+			// Tell the Key class which view should receive keyboard input.
+			DocumentView.focused = that;
+			if (!(tool = that._scope.tool))
 				return;
 			curPoint = viewToArtwork(event);
 			tool.onHandleEvent('mousedown', curPoint, event);
@@ -245,7 +251,7 @@ var DocumentView = this.DocumentView = Base.extend({
 		}
 
 		function mousemove(event) {
-			if (!(tool = scope.tool))
+			if (!(tool = that._scope.tool))
 				return;
 			// If the event was triggered by a touch screen device, prevent the
 			// default behaviour, as it will otherwise scroll the page:
