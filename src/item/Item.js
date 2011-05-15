@@ -125,14 +125,14 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Specifies whether the item is locked.
 	 * 
-	 * @return {@true if the item is locked}
+	 * @return true if the item is locked, false otherwise.
 	 */
 	locked: false,
 
 	/**
 	 * Specifies whether the item is visible.
 	 * 
-	 * @return {@true if the item is visible}
+	 * @return true if the item is visible, false otherwise.
 	 */
 	visible: true,
 
@@ -153,7 +153,7 @@ var Item = this.Item = Base.extend({
 	 * paths, compound paths, and text frame objects, and only if the item is
 	 * already contained within a clipping group.
 	 * 
-	 * @return {@true if the item defines a clip mask}
+	 * @return true if the item defines a clip mask, false otherwise.
 	 */
 	isClipMask: function() {
 		return this._clipMask;
@@ -262,7 +262,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks if the item contains any children items.
 	 * 
-	 * @return {@true if it has one or more children}
+	 * @return true if it has one or more children, false otherwise.
 	 */
 	hasChildren: function() {
 		return this._children && this._children.length > 0;
@@ -271,8 +271,8 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks whether the item is editable.
 	 * 
-	 * @return {@true when neither the item, nor it's parents are locked or
-	 * hidden}
+	 * @return true when neither the item, nor it's parents are locked or
+	 * hidden, false otherwise.
 	 */
 	isEditable: function() {
 		var parent = this;
@@ -287,7 +287,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks whether the item is valid, i.e. it hasn't been removed.
 	 * 
-	 * @return {@true if the item is valid}
+	 * @return true if the item is valid, false otherwise.
 	 */
 	// TODO: isValid / checkValid
 
@@ -296,7 +296,7 @@ var Item = this.Item = Base.extend({
 	 * the document.
 	 * 
 	 * @param item The item to check against
-	 * @return {@true if it is above the specified item}
+	 * @return true if it is above the specified item, false otherwise.
 	 */
 	// TODO: isAbove
 
@@ -305,7 +305,7 @@ var Item = this.Item = Base.extend({
 	 * the document.
 	 * 
 	 * @param item The item to check against
-	 * @return {@true if it is below the specified item}
+	 * @return true if it is below the specified item, false otherwise.
 	 */
 	// TODO: isBelow
 
@@ -321,7 +321,7 @@ var Item = this.Item = Base.extend({
 	 * Checks if the item is contained within the specified item.
 	 * 
 	 * @param item The item to check against
-	 * @return {@true if it is inside the specified item}
+	 * @return true if it is inside the specified item, false otherwise.
 	 */
 	isDescendant: function(item) {
 		var parent = this;
@@ -336,7 +336,7 @@ var Item = this.Item = Base.extend({
 	 * Checks if the item is an ancestor of the specified item.
 	 * 
 	 * @param item the item to check against
-	 * @return {@true if the item is an ancestor of the specified item}
+	 * @return true if the item is an ancestor of the specified item, false otherwise.
 	 */
 	isAncestor: function(item) {
 		var parent = item;
@@ -351,7 +351,7 @@ var Item = this.Item = Base.extend({
 	 * Checks whether the item is grouped with the specified item.
 	 * 
 	 * @param item
-	 * @return {@true if the items are grouped together}
+	 * @return true if the items are grouped together, false otherwise.
 	 */
 	isGroupedWith: function(item) {
 		var parent = this._parent;
