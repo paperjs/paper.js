@@ -14,9 +14,9 @@
 		path.strokeColor = 'purple';
 		path.strokeWidth = 20;
 		path.strokeCap = 'round';
-		var size = 20,
-			segments = path.segments,
-			center = document.bounds.center;
+		var size = 20;
+		var segments = path.segments;
+		var center = document.bounds.center;
 		for (var i = 0; i < size; i++)
 			path.add(center + new Point(i * 100, 0));
 
