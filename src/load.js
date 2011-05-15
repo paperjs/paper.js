@@ -99,12 +99,13 @@ if (window.tests) {
 		'test/tests/Group.js',
 		'test/tests/Segment.js',
 		'test/tests/Path.js',
+		'test/tests/PathStyle.js',
 		'test/tests/Path_Shapes.js',
 		'test/tests/Path_Drawing_Commands.js',
 		'test/tests/Path_Curves.js',
 		'test/tests/Path_Bounds.js',
 		'test/tests/Path_Length.js',
-		'test/tests/PathStyle.js',
+		'test/tests/CompoundPath.js',
 		'test/tests/PlacedSymbol.js'
 	);
 }
