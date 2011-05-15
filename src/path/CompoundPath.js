@@ -15,19 +15,19 @@
  */
 
 var CompoundPath = this.CompoundPath = PathItem.extend({
-	initialize: function(items) {
+	initialize: function(paths) {
 		this.base();
 		this._children = [];
-		if (items) {
-			for (var i = 0, l = items.length; i < l; i++) {
-				var item = items[i];
+		if (paths) {
+			for (var i = 0, l = paths.length; i < l; i++) {
+				var path = paths[i];
 				// All paths except for the top one (last one in list) are
 				// set to clockwise orientation when creating a compound path,
 				// so that they appear as holes, but only if their orientation
 				// was not already specified before (= _clockwise is defined).
-				if (item._clockwise === undefined)
-					item.setClockwise(i < l - 1);
-				this.appendTop(items[i]);
+				if (path._clockwise === undefined)
+					path.setClockwise(i < l - 1);
+				this.appendTop(path);
 			}
 		}
 	},
