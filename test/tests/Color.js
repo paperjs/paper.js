@@ -154,3 +154,8 @@ test('Setting HSBColor#gray', function() {
 	color.gray = 0.5;
 	compareHSBColors(color, [0, 0, 0.5, 1]);	
 });
+
+test('Color.read(channels)', function() {
+	var color = Color.read([0, 0, 1]);
+	compareRGBColors(color, [0, 0, 1, 1]);	
+});
