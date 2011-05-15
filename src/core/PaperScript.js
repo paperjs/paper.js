@@ -154,8 +154,9 @@ var PaperScript = this.PaperScript = new function() {
 			// TODO: Move onFrame support to DocumentView
 			var onFrame = eval('onFrame');
 			if (onFrame) {
-				var lastTime;
-				var totalTime = 0;
+				var lastTime,
+					totalTime = 0,
+					count = 0;
 				function frame(dontSwitch) {
 					if (!dontSwitch)
 						paper = scope;
@@ -168,7 +169,8 @@ var PaperScript = this.PaperScript = new function() {
 					totalTime += delta;
 					onFrame({
 						delta: delta,
-						time: totalTime
+						time: totalTime,
+						count: count++
 					});
 					// Automatically redraw document each frame.
 					if (doc)

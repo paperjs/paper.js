@@ -9,11 +9,9 @@
 	<script type="text/paperscript" canvas="canvas">
 		// http://en.wikipedia.org/wiki/Lenna
 		var raster = new Raster('lenna');
-		var count = 0;
 		var lastScale = 1;
 		var center = document.bounds.center;
 		function onFrame(event) {
-			count++;
 			var scale = (Math.sin(event.time * 2) + 1) / 2;
 			raster.scale(scale / lastScale);
 			lastScale = scale;

@@ -258,7 +258,6 @@
 		heartPath.strokeColor = null;
 		heartPath.scale(1.5);
 		
-		var count = 0;
 		var groupTogether = false;
 		var pathLength = heartPath.length;
 		var mouseDown = false;
@@ -270,11 +269,10 @@
 			boids.push(new Boid(position, 10, 0.05));
 		}		
 
-		function onFrame() {
-			count++;
+		function onFrame(event) {
 			for (var i = 0, l = boids.length; i < l; i++) {
 				if (groupTogether) {
-					var point = heartPath.getPointAt(((i + count / 30) % l) / l * pathLength);
+					var point = heartPath.getPointAt(((i + event.count / 30) % l) / l * pathLength);
 					boids[i].arrive(point);
 				}
 				boids[i].run(boids);
