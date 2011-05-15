@@ -130,3 +130,49 @@ var Size = this.Size = Base.extend({
 		};
 	}, {});
 });
+
+/**
+ * An internal version of Size that notifies its owner of each change through
+ * setting itself again on the setter that corresponds to the getter that
+ * produced this LinkedSize. See uses of LinkedSize.create()
+ * Note: This prototype is not exported.
+ */
+var LinkedSize = Size.extend({
+	beans: true,
+
+	set: function(width, height) {
+		this._width = width;
+		this._height = height;
+		this._owner[this._set](this);
+		return this;
+	},
+
+	getWidth: function() {
+		return this._width;
+	},
+
+	setWidth: function(width) {
+		this._width = width;
+		this._owner[this._set](this);
+	},
+
+	getHeight: function() {
+		return this._height;
+	},
+
+	setHeight: function(height) {
+		this._height = height;
+		this._owner[this._set](this);
+	},
+
+	statics: {
+		create: function(owner, set, width, height) {
+			var point = new LinkedSize(LinkedSize.dont);
+			point._width = width;
+			point._height = height;
+			point._owner = owner;
+			point._set = set;
+			return point;
+		}
+	}
+});
