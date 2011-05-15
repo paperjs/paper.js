@@ -61,14 +61,14 @@ var Item = this.Item = Base.extend({
 			delete namedChildren[name];
 		}
 	},
-	
+
 	/**
-	* The name of the item.
-	*/
+	 * The name of the item.
+	 */
 	getName: function() {
 		return this._name;
 	},
-	
+
 	setName: function(name) {
 		var children = this._parent._children,
 			namedChildren = this._parent._namedChildren;
@@ -83,7 +83,7 @@ var Item = this.Item = Base.extend({
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
 		} else {
-			delete children[name]; 
+			delete children[name];
 		}
 	},
 
