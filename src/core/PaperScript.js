@@ -129,7 +129,31 @@ var PaperScript = this.PaperScript = new function() {
 		return parse_js.stringify(ast, true);
 	}
 
+	// XXX: Move to PaperScope
 	function run(code, scope) {
+//#ifdef BROWSER
+		// See if it's a script tag or a string
+		if (typeof code !== 'string') {
+			// If a canvas id is provided, create a document for it now,
+			// so the active document is defined.
+			var canvas = code.getAttribute('canvas');
+			if (canvas = canvas && document.getElementById(canvas)) {
+				// Create a Document for this canvas, using the right scope
+				paper = scope;
+				// XXX: Do not pass canvas to Document.
+				// Create DocumentView here instead.
+				new Document(canvas);
+			}
+			if (code.src) {
+				// If we're loading from a source, request that first and then
+				// run later.
+				return request(code.src, scope);
+			} else {
+				// We can simply get the code form the script tag.
+				code = code.innerHTML;
+			}
+		}
+//#endif // BROWSER
 		with (scope) { // Safe one indentation by grouping try and with
 			paper = scope;
 			var doc = scope.document,
@@ -213,21 +237,7 @@ var PaperScript = this.PaperScript = new function() {
 				// id, we're not changing it, since it's the first option we're
 				// trying to get an id from above.
 				script.setAttribute('id', scope.id);
-				// If a canvas id is provided, create a document for it now,
-				// so the active document is defined.
-				var canvas = script.getAttribute('canvas');
-				if (canvas = canvas && document.getElementById(canvas)) {
-					// Create a Document for this canvas, using the right scope
-					paper = scope;
-					// XXX: Do not pass canvas to Document.
-					// Create DocumentView here instead.
-					new Document(canvas);
-				}
-				if (script.src) {
-					request(script.src, scope);
-				} else {
-					run(script.innerHTML, scope);
-				}
+				run(script, scope);
 				// Mark script as loaded now.
 				script.setAttribute('loaded', true);
 			}
