@@ -140,10 +140,11 @@ var Size = this.Size = Base.extend({
 var LinkedSize = Size.extend({
 	beans: true,
 
-	set: function(width, height) {
+	set: function(width, height, dontNotify) {
 		this._width = width;
 		this._height = height;
-		this._owner[this._set](this);
+		if (!dontNotify)
+			this._owner[this._setter](this);
 		return this;
 	},
 
@@ -153,7 +154,7 @@ var LinkedSize = Size.extend({
 
 	setWidth: function(width) {
 		this._width = width;
-		this._owner[this._set](this);
+		this._owner[this._setter](this);
 	},
 
 	getHeight: function() {
@@ -162,16 +163,16 @@ var LinkedSize = Size.extend({
 
 	setHeight: function(height) {
 		this._height = height;
-		this._owner[this._set](this);
+		this._owner[this._setter](this);
 	},
 
 	statics: {
-		create: function(owner, set, width, height) {
+		create: function(owner, setter, width, height) {
 			var point = new LinkedSize(LinkedSize.dont);
 			point._width = width;
 			point._height = height;
 			point._owner = owner;
-			point._set = set;
+			point._setter = setter;
 			return point;
 		}
 	}

@@ -279,13 +279,13 @@ var Rectangle = this.Rectangle = Base.extend({
 var LinkedRectangle = Rectangle.extend({
 	beans: true,
 
-	set: function(x, y, width, height) {
+	set: function(x, y, width, height, dontNotify) {
 		this._x = x;
 		this._y = y;
 		this._width = width;
 		this._height = height;
-		if (this._owner)
-			this._owner[this._set](this);
+		if (!dontNotify)
+			this._owner[this._setter](this);
 		return this;
 	},
 
@@ -295,11 +295,11 @@ var LinkedRectangle = Rectangle.extend({
 		 * does not rely on Point#initialize at all. This speeds up all math
 		 * operations a lot.
 		 */
-		create: function(owner, set, x, y, width, height) {
-			var rect = new LinkedRectangle(LinkedRectangle.dont).set(x, y,
-					width, height);
+		create: function(owner, setter, x, y, width, height) {
+			var rect = new LinkedRectangle(LinkedRectangle.dont).set(
+					x, y, width, height, true);
 			rect._owner = owner;
-			rect._set = set;
+			rect._setter = setter;
 			return rect;
 		}
 	}
@@ -318,7 +318,7 @@ var LinkedRectangle = Rectangle.extend({
 			// Check if this setter is called from another one which sets 
 			// _dontNotify, as it will notify itself
 			if (!this._dontNotify)
-				this._owner[this._set](this);
+				this._owner[this._setter](this);
 		};
 	}, Base.each(['Point', 'Size', 'Center',
 			'Left', 'Top', 'Right', 'Bottom', 'CenterX', 'CenterY',
@@ -333,7 +333,7 @@ var LinkedRectangle = Rectangle.extend({
 				this._dontNotify = true;
 				proto[name].apply(this, arguments);
 				delete this._dontNotify;
-				this._owner[this._set](this);
+				this._owner[this._setter](this);
 				return this;
 			};
 		}, { beans: true })

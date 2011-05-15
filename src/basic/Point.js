@@ -438,10 +438,11 @@ var Point = this.Point = Base.extend({
 var LinkedPoint = Point.extend({
 	beans: true,
 
-	set: function(x, y) {
+	set: function(x, y, dontNotify) {
 		this._x = x;
 		this._y = y;
-		this._owner[this._set](this);
+		if (!dontNotify)
+			this._owner[this._setter](this);
 		return this;
 	},
 
@@ -451,7 +452,7 @@ var LinkedPoint = Point.extend({
 
 	setX: function(x) {
 		this._x = x;
-		this._owner[this._set](this);
+		this._owner[this._setter](this);
 	},
 
 	getY: function() {
@@ -460,16 +461,16 @@ var LinkedPoint = Point.extend({
 
 	setY: function(y) {
 		this._y = y;
-		this._owner[this._set](this);
+		this._owner[this._setter](this);
 	},
 
 	statics: {
-		create: function(owner, set, x, y) {
+		create: function(owner, setter, x, y) {
 			var point = new LinkedPoint(LinkedPoint.dont);
 			point._x = x;
 			point._y = y;
 			point._owner = owner;
-			point._set = set;
+			point._setter = setter;
 			return point;
 		}
 	}
