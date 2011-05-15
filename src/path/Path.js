@@ -29,7 +29,7 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	_changed: function(flags) {
-		if (flags & ChangeFlags.PATH) {
+		if (flags & ChangeFlags.GEOMETRY) {
 			delete this._length;
 			delete this._bounds;
 			delete this._position;
@@ -118,7 +118,7 @@ var Path = this.Path = PathItem.extend({
 					this._curves[i = length - 1] = Curve.create(this,
 						this._segments[i], this._segments[0]);
 			}
-			this._changed(ChangeFlags.PATH);
+			this._changed(ChangeFlags.GEOMETRY);
 		}
 	},
 
@@ -137,7 +137,7 @@ var Path = this.Path = PathItem.extend({
 			if (this.strokeColor && this.strokeColor.transform)
 				this.strokeColor.transform(matrix);
 		}
-		this._changed(ChangeFlags.PATH);
+		this._changed(ChangeFlags.GEOMETRY);
 	},
 
 	/**
@@ -189,7 +189,7 @@ var Path = this.Path = PathItem.extend({
 				curve._segment1 = segments[index + amount];
 			}
 		}
-		this._changed(ChangeFlags.PATH);
+		this._changed(ChangeFlags.GEOMETRY);
 		return segs;
 	},
 
@@ -273,7 +273,7 @@ var Path = this.Path = PathItem.extend({
 			if (last && this._closed && (curve = curves[curves.length - 1]))
 				curve._segment2 = segments[0];
 		}
-		this._changed(ChangeFlags.PATH);
+		this._changed(ChangeFlags.GEOMETRY);
 		return removed;
 	},
 	
@@ -399,7 +399,7 @@ var Path = this.Path = PathItem.extend({
 				last1.remove();
 				this.setClosed(true);
 			}
-			this._changed(ChangeFlags.PATH);
+			this._changed(ChangeFlags.GEOMETRY);
 			return true;
 		}
 		return false;
