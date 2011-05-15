@@ -175,42 +175,13 @@ var Document = this.Document = Base.extend({
 			if (this.stats)
 				this.stats.update();
 			var ctx = this.context;
+
+			// Initial tests conclude that clearing the canvas using clearRect
+			// is always faster than setting canvas.width = canvas.width
+			// http://jsperf.com/clearrect-vs-setting-width/7
+			ctx.clearRect(0, 0, this.size.width + 1, this.size.height + 1);
+
 			ctx.save();
-
-			// TODO: Remove dirty rectangle test code once it's actually
-			// implemented.
-			var testDirtyRects = false;
-			if (testDirtyRects) {
-				var left = this.size.width / 8,
-					top = this.size.height / 8;
-
-				function clear(rect) {
-					ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
-
-					if (true) {
-						ctx.moveTo(rect.x, rect.y);
-						ctx.lineTo(rect.x + rect.width, rect.y);
-						ctx.lineTo(rect.x + rect.width, rect.y + rect.height);
-						ctx.lineTo(rect.x, rect.y + rect.height);
-					}
-				}
-
-				ctx.beginPath();
-
-				clear(Rectangle.create(left, top, 2 * left, 2 * top));
-				clear(Rectangle.create(3 * left, 3 * top, 2 * left, 2 * top));
-
-//				clear(Rectangle.create(left, top, 4 * left, 4 * top));
-
-				ctx.closePath();
-				ctx.clip();
-			} else {
-				// Initial tests conclude that clearing the canvas using clearRect
-				// is always faster than setting canvas.width = canvas.width
-				// http://jsperf.com/clearrect-vs-setting-width/7
-				ctx.clearRect(0, 0, this.size.width + 1, this.size.height + 1);
-			}
-
 			var param = { offset: new Point(0, 0) };
 			for (var i = 0, l = this.layers.length; i < l; i++)
 				Item.draw(this.layers[i], ctx, param);
