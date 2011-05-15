@@ -53,9 +53,8 @@ Base.inject({
 			append = index === undefined;
 		index = append ? list.length : index;
 		// Update _index on the items to be added first.
-		for (var i = 0; i < amount; i++) {
+		for (var i = 0; i < amount; i++)
 			items[i]._index = index + i;
-		}
 		if (append) {
 			// Append them all at the end by using push
 			list.push.apply(list, items);
@@ -67,10 +66,12 @@ Base.inject({
 			if (items)
 				args.push.apply(args, items);
 			var removed = list.splice.apply(list, args);
+			// Delete the indices of the removed items
+			for (var i = 0, l = removed.length; i < l; i++)
+				delete removed[i]._index;
 			// Adjust the indices of the items above.
-			for (var i = index + amount, l = list.length; i < l; i++) {
+			for (var i = index + amount, l = list.length; i < l; i++)
 				list[i]._index = i;
-			}
 			return removed;
 		}
 	},
