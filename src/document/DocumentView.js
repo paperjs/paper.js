@@ -143,7 +143,8 @@ var DocumentView = this.DocumentView = Base.extend({
 		var res = Base.splice(this._document.views, null, this._index, 1);
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._canvas, this._events);
-		this._document = this._canvas = this._events = null;
+		// Clearing _onFrame makes the frame handler stop automatically.
+		this._document = this._canvas = this._events = that._onFrame = null;
 		return !!res.length;
 	},
 
