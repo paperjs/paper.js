@@ -17,24 +17,86 @@
 var DocumentView = this.DocumentView = Base.extend({
 	beans: true,
 
-	initialize: function(document) {
-		this.document = document;
-		this._bounds = this.document.bounds.clone();
+	// TODO: Add bounds parameter that defines position within canvas?
+	// Find a good name for these bounds, since #bounds is already the artboard
+	// bounds of the visible area.
+	initialize: function(canvas) {
+		// To go with the convention of never passing document to constructors,
+		// in all items, associate the view with the currently active document.
+		this._document = paper.document;
+		// Push it onto document.views and set index:
+		this._index = this._document.views.push(this) - 1;
+		// Handle canvas argument
+		if (canvas && canvas instanceof HTMLCanvasElement) {
+			this._canvas = canvas;
+			var offset = DomElement.getOffset(canvas);
+			// If the canvas has the resize attribute, resize the it to fill the
+			// window and resize it again whenever the user resizes the window.
+			if (canvas.attributes.resize) {
+				this._size = DomElement.getWindowSize().subtract(offset);
+				canvas.width = this._size.width;
+				canvas.height = this._size.height;
+				var that = this;
+				DomEvent.add(window, {
+					resize: function(event) {
+						// Only get canvas offset if it's not invisible (size is
+						// 0, 0), as otherwise the offset would be wrong.
+						if (!DomElement.getSize(canvas).equals([0, 0]))
+							offset = DomElement.getOffset(canvas);
+						that.setSize(DomElement.getWindowSize().subtract(offset));
+						that.draw();
+					}
+				});
+			} else {
+				this._size = Size.create(
+						canvas.offsetWidth, canvas.offsetHeight);
+			}
+			// TODO: Test this on IE:
+			if (canvas.attributes.stats) {
+				this._stats = new Stats();
+				// Align top-left to the canvas
+				var element = this._stats.domElement,
+					style = element.style;
+				style.position = 'absolute';
+				style.left = offset.x + 'px';
+				style.top = offset.y + 'px';
+				document.body.appendChild(element);
+			}
+		} else {
+			// 2nd argument onwards could be view size, otherwise use default:
+			this._size = Size.read(arguments, 1);
+			if (this._size.isZero())
+				this._size = new Size(1024, 768);
+			this._canvas = CanvasProvider.getCanvas(this._size);
+		}
+		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
-		this._center = this._bounds.center;
 	},
 
-	// TODO: test this.
+	getDocument: function() {
+		return this._document;
+	},
+
+	getSize: function() {
+		return LinkedSize.create(this, 'setSize',
+				this._size.width, this._size.height);
+	},
+
+	setSize: function(size) {
+		this._size = Size.read(arguments);
+		this._canvas.width = this._size.width;
+		this._canvas.height = this._size.height;
+	},
+
+	getBounds: function() {
+		return this._bounds;
+	},
+
 	getCenter: function() {
-		return this._center;
 	},
 
 	setCenter: function(center) {
-		center = Point.read(arguments);
-		var delta = center.subtract(this._center);
-		this.scrollBy(delta);
-		this._center = center;
 	},
 
 	getZoom: function() {
@@ -42,7 +104,7 @@ var DocumentView = this.DocumentView = Base.extend({
 	},
 
 	setZoom: function(zoom) {
-		// TODO: clamp the view between 1/32 and 64?
+		// TODO: Clamp the view between 1/32 and 64, just like Illustrator?
 		var mx = new Matrix();
 		mx.scale(zoom / this._zoom, this._center);
 		this.transform(mx);
@@ -50,8 +112,29 @@ var DocumentView = this.DocumentView = Base.extend({
 	},
 
 	scrollBy: function(point) {
-		point = Point.read(arguments);
-		this.transform(new Matrix().translate(point.negate()));
+		this.transform(new Matrix().translate(Point.read(arguments).negate()));
+	},
+
+	draw: function() {
+		if (this._stats)
+			this._stats.update();
+
+		// Initial tests conclude that clearing the canvas using clearRect
+		// is always faster than setting canvas.width = canvas.width
+		// http://jsperf.com/clearrect-vs-setting-width/7
+		this._context.clearRect(0, 0, this._size.width + 1, this._size.height + 1);
+
+		this._document.draw(this._context);
+	},
+
+	activate: function() {
+		this._document.activeView = this;
+	},
+
+	remove: function() {
+		var res = Base.splice(this._document.views, null, this._index, 1);
+		this._document = null;
+		return !!res.length;
 	},
 
 	transform: function(matrix, flags) {
@@ -61,23 +144,10 @@ var DocumentView = this.DocumentView = Base.extend({
 	},
 
 	_getInverse: function() {
-		if (!this._inverse) {
+		if (!this._inverse)
 			this._inverse = this._matrix.createInverse();
-		}
 		return this._inverse;
 	},
-
-	getBounds: function() {
-		if (!this._bounds) {
-			this._bounds = this._matrix.transformBounds(this.document.bounds);
-		}
-		return this._bounds;
-	},
-
-	// TODO:
-	// setBounds: function(rect) {
-	// 
-	// },
 
 	// TODO: getInvalidBounds
 	// TODO: invalidate(rect)

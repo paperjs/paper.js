@@ -17,87 +17,46 @@
 var Document = this.Document = Base.extend({
 	beans: true,
 
+	// XXX: Add arguments to define pages, but do not pass canvas here
 	initialize: function(canvas) {
 		// Store reference to the currently active global paper scope:
 		this._scope = paper;
-		if (canvas && canvas instanceof HTMLCanvasElement) {
-			this.canvas = canvas;
-			if (canvas.attributes.resize) {
-				// If the canvas has a fullscreen attribute,
-				// resize the canvas to fill the window and resize it again
-				// whenever the user resizes the window.
-				// TODO: set the following styles on the body tag:
-				// body {
-				//	background: black;
-				//	margin: 0;
-				//	overflow: hidden;
-				// }
-				this._size = DomElement.getWindowSize()
-						.subtract(DomElement.getOffset(this.canvas));
-				this.canvas.width = this._size.width;
-				this.canvas.height = this._size.height;
-				var that = this;
-				var offset = DomElement.getOffset(this.canvas);
-				DomEvent.add(window, {
-					resize: function(event) {
-						// Only get canvas offset if it's not invisible (size is
-						// 0, 0), as otherwise the offset would be wrong.
-						if (!DomElement.getSize(that.canvas).equals([0, 0]))
-							offset = DomElement.getOffset(that.canvas);
-						that.setSize(DomElement.getWindowSize().subtract(offset));
-						that.redraw();
-					}
-				});
-			} else {
-				this._size = Size.create(canvas.offsetWidth, 
-						canvas.offsetHeight);
-			}
-		} else {
-			this._size = Size.read(arguments) || new Size(1024, 768);
-			this.canvas = CanvasProvider.getCanvas(this._size);
-		}
-		// TODO: Currently we don't do anything with Document#bounds.
-		// What does it mean to change the bounds of the document? (JP)
-		this.bounds = Rectangle.create(0, 0, this._size.width,
-				this._size.height);
-		this.context = this.canvas.getContext('2d');
 		// Push it onto this._scope.documents and set index:
 		this._index = this._scope.documents.push(this) - 1;
+		// Activate straight away so paper.document is set, as required by
+		// Layer and DoumentView constructors.
 		this.activate();
 		this.layers = [];
-		this.activeLayer = new Layer();
-		this.setCurrentStyle(null);
+		this.views = [];
 		this.symbols = [];
-		this.activeView = new DocumentView(this);
-		this.views = [this.activeView];
+		this.activeLayer = new Layer();
+		this.activeView = canvas ? new DocumentView(canvas) : null;
+		// XXX: Introduce pages and remove Document#bounds!
+		var size = this.activeView && this.activeView._size
+				|| new Size(1024, 768);
+		this._bounds = Rectangle.create(0, 0, size.width, size.height);
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
-		// TODO: Test this on IE:
-		if (this.canvas.attributes.stats) {
-			this.stats = new Stats();
-			// Align top-left to the canvas
-			var element = this.stats.domElement,
-				style = element.style,
-				offset = DomElement.getOffset(this.canvas);
-			style.position = 'absolute';
-			style.left = offset.x + 'px';
-			style.top = offset.y + 'px';
-			document.body.appendChild(element);
-		}
+		this.setCurrentStyle(null);
 	},
-	
+
+	getBounds: function() {
+		// TODO: Consider LinkedRectangle once it is required.
+		return this._bounds;
+	},
+
+	setBounds: function(rect) {
+		rect = Rectangle.read(arguments);
+		this._bounds.set(rect.x, rect.y, rect.width, rect.height);
+	},
+
 	getSize: function() {
-		return this._size;
+		return this._bounds.getSize();
 	},
 	
 	setSize: function(size) {
-		size = Size.read(arguments);
-		if (this.canvas) {
-			this.canvas.width = size.width;
-			this.canvas.height = size.height;
-		}
-		this._size = size;
-		this.bounds.setSize(size); 
+		// TODO: Once _bounds is a LinkedRectangle, this will recurse
+		this._bounds.setSize.apply(this._bounds, arguments); 
 	},
 
 	getCurrentStyle: function() {
@@ -170,39 +129,29 @@ var Document = this.Document = Base.extend({
 			this._selectedItems[i].setSelected(false);
 	},
 	
-	draw: function() {
-		if (this.canvas) {
-			if (this.stats)
-				this.stats.update();
-			var ctx = this.context;
+	draw: function(ctx) {
+		ctx.save();
+		var param = { offset: new Point(0, 0) };
+		for (var i = 0, l = this.layers.length; i < l; i++)
+			Item.draw(this.layers[i], ctx, param);
+		ctx.restore();
 
-			// Initial tests conclude that clearing the canvas using clearRect
-			// is always faster than setting canvas.width = canvas.width
-			// http://jsperf.com/clearrect-vs-setting-width/7
-			ctx.clearRect(0, 0, this.size.width + 1, this.size.height + 1);
-
+		// Draw the selection of the selected items in the document:
+		if (this._selectedItemCount > 0) {
 			ctx.save();
-			var param = { offset: new Point(0, 0) };
-			for (var i = 0, l = this.layers.length; i < l; i++)
-				Item.draw(this.layers[i], ctx, param);
+			ctx.strokeWidth = 1;
+			// TODO: use Layer#color
+			ctx.strokeStyle = ctx.fillStyle = '#009dec';
+			param = { selection: true };
+			Base.each(this._selectedItems, function(item) {
+				item.draw(ctx, param);
+			});
 			ctx.restore();
-
-			// Draw the selection of the selected items in the document:
-			if (this._selectedItemCount > 0) {
-				ctx.save();
-				ctx.strokeWidth = 1;
-				// TODO: use Layer#color
-				ctx.strokeStyle = ctx.fillStyle = '#009dec';
-				param = { selection: true };
-				Base.each(this._selectedItems, function(item) {
-					item.draw(ctx, param);
-				});
-				ctx.restore();
-			}
 		}
 	},
 
 	redraw: function() {
-		this.draw();
+		for (var i = 0, l = this.views.length; i < l; i++)
+			this.views[i].draw();
 	}
 });
