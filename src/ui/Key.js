@@ -64,17 +64,18 @@ var Key = this.Key = new function() {
 	function handleKey(down, keyCode, charCode, event) {
 		var character = String.fromCharCode(charCode),
 			key = keys[keyCode] || character.toLowerCase(),
-			handler = down ? 'onKeyDown' : 'onKeyUp';
+			handler = down ? 'onKeyDown' : 'onKeyUp',
+			scope = DocumentView.focused && DocumentView.focused._scope,
+			tool = scope && scope.tool;
 		keyMap[key] = down;
-		if (paper.tool && paper.tool[handler]) {
+		if (tool && tool[handler]) {
 			// Call the onKeyDown or onKeyUp handler if present
 			// When the handler function returns false, prevent the
 			// default behaviour of the key event:
 			// PORT: Add to Sg
 			var keyEvent = new KeyEvent(down, key, character, event);
-			if (paper.tool[handler](keyEvent) === false) {
+			if (tool[handler](keyEvent) === false)
 				keyEvent.preventDefault();
-			}
 		}
 	}
 
