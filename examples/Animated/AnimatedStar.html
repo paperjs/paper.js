@@ -33,12 +33,10 @@
 			layer.appendBottom(placedSymbol);
 		}
 
-		var count = 0;
-		function onFrame() {
-			count++;
+		function onFrame(event) {
 			for (var i = 0, l = layer.children.length; i < l; i++) {
 				var item = layer.children[i];
-				var angle = (values.count - i) * Math.sin(count / 128) / 10;
+				var angle = (values.count - i) * Math.sin(event.count / 128) / 10;
 				item.rotate(angle);
 			}
 		}
