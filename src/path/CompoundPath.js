@@ -77,11 +77,9 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	}
 }, new function() { // Injection scope for PostScript-like drawing functions
 	function getCurrentPath(that) {
-		if (that._children.length) {
-			return that._children[that._children.length - 1];
-		} else {
+		if (!that._children.length)
 			throw new Error('Use a moveTo() command first');
-		}
+		return that._children[that._children.length - 1];
 	}
 
 	var fields = {
