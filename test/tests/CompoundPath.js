@@ -1,7 +1,6 @@
 module('Compound Path');
 
 test('moveTo / lineTo', function() {
-	var doc = new Document(canvas);
 	var path = new CompoundPath();
 
 	var lists = [
@@ -20,5 +19,5 @@ test('moveTo / lineTo', function() {
 	
 	equals(function() {
 		return path.children.length;
-	}, 2));
+	}, 2);
 });
