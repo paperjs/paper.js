@@ -15,17 +15,6 @@
  */
 
 var Tool = this.Tool = ToolHandler.extend({
-	beans: true,
-
-	initialize: function(handlers, doc) {
-		this.base(handlers, doc._scope);
-		this._document = doc;
-	},
-
-	getDocument: function() {
-		return this._document;
-	},
-
 	/**
 	 * The fixed time delay between each call to the {@link #onMouseDrag}
 	 * event. Setting this to an interval means the {@link #onMouseDrag}
