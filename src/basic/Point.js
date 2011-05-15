@@ -298,7 +298,7 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
-	 * Checks if this point has both the x and y coordinate set to 0. 
+	 * Checks if this point has both the x and y coordinate set to 0.
 	 * 
 	 * @return true if both x and y are 0, false otherwise.
 	 */
