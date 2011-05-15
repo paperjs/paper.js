@@ -18,17 +18,19 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	initialize: function(paths) {
 		this.base();
 		this._children = [];
-		if (paths) {
-			for (var i = 0, l = paths.length; i < l; i++) {
-				var path = paths[i];
-				// All paths except for the top one (last one in list) are
-				// set to clockwise orientation when creating a compound path,
-				// so that they appear as holes, but only if their orientation
-				// was not already specified before (= _clockwise is defined).
-				if (path._clockwise === undefined)
-					path.setClockwise(i < l - 1);
-				this.appendTop(path);
-			}
+		// Do not reassign to paths, since arguments would get modified, which
+		// we potentially use as array, depending on what is passed.
+		var items = !paths || !Array.isArray(paths)
+				|| typeof paths[0] !== 'object' ? arguments : paths;
+		for (var i = 0, l = items.length; i < l; i++) {
+			var path = items[i];
+			// All paths except for the top one (last one in list) are set to
+			// clockwise orientation when creating a compound path, so that they
+			// appear as holes, but only if their orientation was not already
+			// specified before (= _clockwise is defined).
+			if (path._clockwise === undefined)
+				path.setClockwise(i < l - 1);
+			this.appendTop(path);
 		}
 	},
 
