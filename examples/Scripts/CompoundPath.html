@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Example</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript">var root = '../../'</script>
+	<script type="text/javascript" src="../../src/load.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		document.currentStyle.fillColor = 'black';
+		var path1 = new Path.Rectangle([200, 200], [100, 100]);
+		var path2 = new Path.Rectangle([50, 50], [200, 200]);
+		var path3 = new Path.Rectangle([0, 0], [400, 400]);
+		new CompoundPath(path1, path2, path3);
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize keepalive="true"></canvas>
+</body>
