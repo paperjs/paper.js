@@ -120,12 +120,10 @@ var DocumentView = this.DocumentView = Base.extend({
 	draw: function() {
 		if (this._stats)
 			this._stats.update();
-
 		// Initial tests conclude that clearing the canvas using clearRect
 		// is always faster than setting canvas.width = canvas.width
 		// http://jsperf.com/clearrect-vs-setting-width/7
 		this._context.clearRect(0, 0, this._size.width + 1, this._size.height + 1);
-
 		this._document.draw(this._context);
 	},
 
@@ -170,6 +168,7 @@ var DocumentView = this.DocumentView = Base.extend({
 	_createEvents: function() {
 		var scope = this._document._scope,
 			tool,
+			timer,
 			curPoint,
 			dragging = false,
 			that = this;
@@ -184,10 +183,9 @@ var DocumentView = this.DocumentView = Base.extend({
 			curPoint = viewToArtwork(event);
 			tool.onHandleEvent('mousedown', curPoint, event);
 			if (tool.onMouseDown)
-				that._document.redraw();
-			if (that.eventInterval != null) {
-				this.timer = setInterval(events.mousemove, that.eventInterval);
-			}
+				that.draw();
+			if (tool.eventInterval != null)
+				timer = setInterval(events.mousemove, tool.eventInterval);
 			dragging = true;
 		}
 
@@ -205,27 +203,28 @@ var DocumentView = this.DocumentView = Base.extend({
 				if (curPoint)
 					tool.onHandleEvent('mousedrag', curPoint, event);
 				if (tool.onMouseDrag)
-					that._document.redraw();
+					that.draw();
 			// PORT: If there is only an onMouseMove handler, also call it when
 			// the user is dragging:
 			} else if (!dragging || onlyMove) {
 				tool.onHandleEvent('mousemove', point, event);
 				if (tool.onMouseMove)
-					that._document.redraw();
+					that.draw();
 			}
 		}
 
 		function mouseup(event) {
-			if (!dragging || !tool) {
-				dragging = false;
+			if (!dragging)
 				return;
-			}
+			dragging = false;
+			if (!tool)
+				return;
 			curPoint = null;
-			if (that.eventInterval != null)
-				clearInterval(this.timer);
+			if (tool.eventInterval != null)
+				timer = clearInterval(timer);
 			tool.onHandleEvent('mouseup', viewToArtwork(event), event);
 			if (tool.onMouseUp)
-				that._document.redraw();
+				that.draw();
 		}
 
 		return {
