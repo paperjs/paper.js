@@ -111,13 +111,6 @@ var Tool = this.Tool = ToolHandler.extend(new function() {
 		 * event is called repeatedly after the initial {@link #onMouseDown}
 		 * until the user releases the mouse.
 		 * 
-		 * Sample code:
-		 * <code>
-		 * // Fire the onMouseDrag event once a second,
-		 * // while the mouse button is down
-		 * tool.eventInterval = 1000;
-		 * </code>
-		 * 
 		 * @return the interval time in milliseconds
 		 */
 		eventInterval: null

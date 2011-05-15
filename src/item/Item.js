@@ -125,26 +125,12 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Specifies whether the item is locked.
 	 * 
-	 * Sample code:
-	 * <code>
-	 * var path = new Path();
-	 * print(path.locked) // false
-	 * path.locked = true; // Locks the path
-	 * </code>
-	 * 
 	 * @return {@true if the item is locked}
 	 */
 	locked: false,
 
 	/**
 	 * Specifies whether the item is visible.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var path = new Path();
-	 * print(path.visible) // true
-	 * path.visible = false; // Hides the path
-	 * </code>
 	 * 
 	 * @return {@true if the item is visible}
 	 */
@@ -153,46 +139,19 @@ var Item = this.Item = Base.extend({
 	/**
 	 * The opacity of the item.
 	 * 
-	 * Sample code:
-	 * <code>
-	 * // Create a circle at position { x: 10, y: 10 } 
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * 
-	 * // Change the opacity of the circle to 50%:
-	 * circle.opacity = 0.5;
-	 * </code>
-	 * 
 	 * @return the opacity of the item as a value between 0 and 1.
 	 */
 	opacity: 1,
 
 	/**
 	 * The blend mode of the item.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var circle = new Path.Circle(new Point(50, 50), 10);
-	 * print(circle.blendMode); // normal
-	 * 
-	 * // Change the blend mode of the path item:
-	 * circle.blendMode = 'multiply';
-	 * </code>
 	 */
 	blendMode: 'normal',
 
 	/**
 	 * Specifies whether the item is hidden.
 	 * 
-	 * Sample code:
-	 * <code>
-	 * var path = new Path();
-	 * print(path.hidden); // false
-	 * path.hidden = true; // Hides the path
-	 * </code>
-	 * 
 	 * @return {@true if the item is hidden}
-	 * 
-	 * @jshide
 	 */
 	isHidden: function() {
 		return !this.visible;
@@ -206,14 +165,6 @@ var Item = this.Item = Base.extend({
 	 * Specifies whether the item defines a clip mask. This can only be set on
 	 * paths, compound paths, and text frame objects, and only if the item is
 	 * already contained within a clipping group.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var group = new Group();
-	 * group.appendChild(path);
-	 * group.clipped = true;
-	 * path.clipMask = true;
-	 * </code>
 	 * 
 	 * @return {@true if the item defines a clip mask}
 	 */
@@ -282,7 +233,8 @@ var Item = this.Item = Base.extend({
 	 * The last item contained within this item.
 	 */
 	getLastChild: function() {
-		return this._children && this._children[this._children.length - 1] || null;
+		return this._children && this._children[this._children.length - 1]
+				|| null;
 	},
 
 	/**
@@ -321,8 +273,6 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * {@grouptitle Tests}
-	 * 
 	 * Checks if the item contains any children items.
 	 * 
 	 * @return {@true if it has one or more children}
@@ -350,30 +300,13 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks whether the item is valid, i.e. it hasn't been removed.
 	 * 
-	 * Sample code:
-	 * <code>
-	 * var path = new Path();
-	 * print(path.isValid()); // true
-	 * path.remove();
-	 * print(path.isValid()); // false
-	 * </code>
-	 * 
 	 * @return {@true if the item is valid}
 	 */
 	// TODO: isValid / checkValid
 
 	/**
-	 * {@grouptitle Hierarchy Tests}
-	 * 
 	 * Checks if this item is above the specified item in the stacking order of
 	 * the document.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var firstPath = new Path();
-	 * var secondPath = new Path();
-	 * print(secondPath.isAbove(firstPath)); // true
-	 * </code>
 	 * 
 	 * @param item The item to check against
 	 * @return {@true if it is above the specified item}
@@ -383,13 +316,6 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks if the item is below the specified item in the stacking order of
 	 * the document.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var firstPath = new Path();
-	 * var secondPath = new Path();
-	 * print(firstPath.isBelow(secondPath)); // true
-	 * </code>
 	 * 
 	 * @param item The item to check against
 	 * @return {@true if it is below the specified item}
@@ -407,14 +333,6 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks if the item is contained within the specified item.
 	 * 
-	 * Sample code:
-	 * <code>
-	 * var group = new Group();
-	 * var path = new Path();
-	 * group.appendTop(path);
-	 * print(path.isDescendant(group)); // true
-	 * </code>
-	 * 
 	 * @param item The item to check against
 	 * @return {@true if it is inside the specified item}
 	 */
@@ -429,15 +347,6 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * Checks if the item is an ancestor of the specified item.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var group = new Group();
-	 * var path = new Path();
-	 * group.appendChild(path);
-	 * print(group.isAncestor(path)); // true
-	 * print(path.isAncestor(group)); // false
-	 * </code>
 	 * 
 	 * @param item the item to check against
 	 * @return {@true if the item is an ancestor of the specified item}
@@ -568,19 +477,6 @@ var Item = this.Item = Base.extend({
 	/**
 	 * The item's position within the art board. This is the
 	 * {@link Rectangle#getCenter()} of the {@link Item#getBounds()} rectangle.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * // Create a circle at position { x: 10, y: 10 }
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * 
-	 * // Move the circle to { x: 20, y: 20 }
-	 * circle.position = new Point(20, 20);
-	 * 
-	 * // Move the circle 10 points to the right
-	 * circle.position += new Point(10, 0);
-	 * print(circle.position); // { x: 30, y: 20 }
-	 * </code>
 	 */
 	getPosition: function() {
 		// Cache position value
@@ -628,22 +524,6 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Translates (moves) the item by the given offset point.
 	 * 
-	 * Sample code:
-	 * <code>
-	 * // Create a circle at position { x: 10, y: 10 } 
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * circle.translate(new Point(5, 10));
-	 * print(circle.position); // {x: 15, y: 20}
-	 * </code>
-	 * 
-	 * Alternatively you can also add to the {@link #getPosition()} of the item:
-	 * <code>
-	 * // Create a circle at position { x: 10, y: 10 } 
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * circle.position += new Point(5, 10);
-	 * print(circle.position); // {x: 15, y: 20}
-	 * </code>
-	 * 
 	 * @param delta
 	 */
 	translate: function(delta) {
@@ -652,8 +532,6 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * {@grouptitle Transform Functions}
-	 * 
 	 * Scales the item by the given values from its center point, or optionally
 	 * by a supplied point.
 	 * 
@@ -708,16 +586,6 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The path style of the item.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * circle.style = {
-	 * 	fillColor: new RGBColor(1, 0, 0),
-	 * 	strokeColor: new RGBColor(0, 1, 0),
-	 * 	strokeWidth: 5
-	 * };
-	 * </code>
 	 */
 	getStyle: function() {
 		return this._style;
@@ -866,20 +734,10 @@ var Item = this.Item = Base.extend({
 
 	return {
 		/**
-		 * {@grouptitle Hierarchy Operations}
-		 * 
 		 * Inserts the specified item as a child of the item by appending it to
 		 * the list of children and moving it above all other children. You can
 		 * use this function for groups, compound paths and layers.
-		 * 
-		 * Sample code:
-		 * <code>
-		 * var group = new Group();
-		 * var path = new Path();
-		 * group.appendTop(path);
-		 * print(path.isDescendant(group)); // true
-		 * </code>
-		 * 
+		 *
 		 * @param item The item that will be appended as a child
 		 */
 		appendTop: append(true),
@@ -888,14 +746,6 @@ var Item = this.Item = Base.extend({
 		 * Inserts the specified item as a child of this item by appending it to
 		 * the list of children and moving it below all other children. You can
 		 * use this function for groups, compound paths and layers.
-		 * 
-		 * Sample code:
-		 * <code>
-		 * var group = new Group();
-		 * var path = new Path();
-		 * group.appendBottom(path);
-		 * print(path.isDescendant(group)); // true
-		 * </code>
 		 * 
 		 * @param item The item that will be appended as a child
 		 */
@@ -913,15 +763,6 @@ var Item = this.Item = Base.extend({
 		/**
 		 * Moves this item above the specified item.
 		 * 
-		 * Sample code:
-		 * <code>
-		 * var firstPath = new Path();
-		 * var secondPath = new Path();
-		 * print(firstPath.isAbove(secondPath)); // false
-		 * firstPath.moveAbove(secondPath);
-		 * print(firstPath.isAbove(secondPath)); // true
-		 * </code>
-		 * 
 		 * @param item The item above which it should be moved
 		 * @return true if it was moved, false otherwise
 		 */
@@ -929,16 +770,7 @@ var Item = this.Item = Base.extend({
 
 		/**
 		 * Moves the item below the specified item.
-		 * 
-		 * Sample code:
-		 * <code>
-		 * var firstPath = new Path();
-		 * var secondPath = new Path();
-		 * print(secondPath.isBelow(firstPath)); // false
-		 * secondPath.moveBelow(firstPath);
-		 * print(secondPath.isBelow(firstPath)); // true
-		 * </code>
-		 * 
+		 *
 		 * @param item the item below which it should be moved
 		 * @return true if it was moved, false otherwise
 		 */

@@ -62,15 +62,6 @@ var Point = this.Point = Base.extend({
 	 * Returns a copy of the point.
 	 * This is useful as the following code only generates a flat copy:
 	 * 
-	 * <code>
-	 * var point1 = new Point();
-	 * var point2 = point1;
-	 * point2.x = 1; // also changes point1.x
-	 * 
-	 * var point2 = point1.clone();
-	 * point2.x = 1; // doesn't change point1.x
-	 * </code>
-	 * 
 	 * @return the cloned point
 	 */
 	clone: function() {
@@ -117,19 +108,6 @@ var Point = this.Point = Base.extend({
 
 	/**
 	 * Returns the distance between the point and another point.
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var firstPoint = new Point(5, 10);
-	 * var secondPoint = new Point(5, 20);
-	 * 
-	 * var distance = firstPoint.getDistance(secondPoint);
-	 * 
-	 * print(distance); // 10
-	 * </code>
-	 * 
-	 * @param px
-	 * @param py
 	 */
 	getDistance: function(point) {
 		point = Point.read(arguments);
@@ -187,8 +165,6 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
-	 * {@grouptitle Angle & Rotation}
-	 * 
 	 * The vector's angle, measured from the x-axis to the vector.
 	 * 
 	 * When supplied with a point, returns the smaller angle between two
@@ -296,8 +272,6 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
-	 * {@grouptitle Tests}
-	 * 
 	 * Checks whether the point is inside the boundaries of the rectangle.
 	 * 
 	 * @param rect the rectangle to check against
@@ -358,62 +332,8 @@ var Point = this.Point = Base.extend({
 	isNaN: function() {
 		return isNaN(this.x) || isNaN(this.y);
 	},
-
-	/**
-	 * {@grouptitle Math Functions}
-	 * 
-	 * Returns a new point with rounded {@link #x} and {@link #y} values. The
-	 * object itself is not modified!
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var point = new Point(10.2, 10.9);
-	 * var roundPoint = point.round();
-	 * print(roundPoint); // { x: 10.0, y: 11.0 }
-	 * </code>
-	 */
 	
 	/**
-	 * Returns a new point with the nearest greater non-fractional values to the
-	 * specified {@link #x} and {@link #y} values. The object itself is not
-	 * modified!
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var point = new Point(10.2, 10.9);
-	 * var ceilPoint = point.ceil();
-	 * print(ceilPoint); // { x: 11.0, y: 11.0 }
-	 * </code>
-	 */
-	
-	/**
-	 * Returns a new point with the nearest smaller non-fractional values to the
-	 * specified {@link #x} and {@link #y} values. The object itself is not
-	 * modified!
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var point = new Point(10.2, 10.9);
-	 * var floorPoint = point.floor();
-	 * print(floorPoint); // { x: 10.0, y: 10.0 }
-	 * </code>
-	 */
-	
-	/**
-	 * Returns a new point with the absolute values of the specified {@link #x}
-	 * and {@link #y} values. The object itself is not modified!
-	 * 
-	 * Sample code:
-	 * <code>
-	 * var point = new Point(-5, 10);
-	 * var absPoint = point.abs();
-	 * print(absPoint); // { x: 5.0, y: 10.0 }
-	 * </code>
-	 */
-	
-	/**
-	 * {@grouptitle Vectorial Math Functions}
-	 * 
 	 * Returns the dot product of the point and another point.
 	 * @param point
 	 * @return the dot product of the two points
@@ -479,14 +399,6 @@ var Point = this.Point = Base.extend({
 		 * Returns a new point object with the smallest {@link #x} and
 		 * {@link #y} of the supplied points.
 		 * 
-		 * Sample code:
-		 * <code>
-		 * var point1 = new Point(10, 100);
-		 * var point2 = new Point(200, 5);
-		 * var minPoint = Point.min(point1, point2);
-		 * print(minPoint); // { x: 10.0, y: 5.0 }
-		 * </code>
-		 * 
 		 * @param point1
 		 * @param point2
 		 * @return The newly created point object
@@ -504,14 +416,6 @@ var Point = this.Point = Base.extend({
 		 * Returns a new point object with the largest {@link #x} and
 		 * {@link #y} of the supplied points.
 		 * 
-		 * Sample code:
-		 * <code>
-		 * var point1 = new Point(10, 100);
-		 * var point2 = new Point(200, 5);
-		 * var maxPoint = Point.max(point1, point2);
-		 * print(maxPoint); // { x: 200.0, y: 100.0 }
-		 * </code>
-		 * 
 		 * @param point1
 		 * @param point2
 		 * @return The newly created point object
@@ -528,15 +432,6 @@ var Point = this.Point = Base.extend({
 		/**
 		 * Returns a point object with random {@link #x} and {@link #y} values
 		 * between {@code 0} and {@code 1}.
-		 * 
-		 * Sample code:
-		 * <code>
-		 * var maxPoint = new Point(100, 100);
-		 * var randomPoint = Point.random();
-		 * 
-		 * // A point between {x:0, y:0} and {x:100, y:100}:
-		 * var point = maxPoint * randomPoint;
-		 * </code>
 		 */
 		random: function() {
 			return Point.create(Math.random(), Math.random());
