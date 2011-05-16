@@ -21,12 +21,9 @@ var Group = this.Group = Item.extend({
 		this.base();
 		this._children = [];
 		this._namedChildren = {};
-		if (items) {
-			for (var i = 0, l = items.length; i < l; i++) {
-				this.appendTop(items[i]);
-			}
-		}
 		this._clipped = false;
+		this.setChildren(!items || !Array.isArray(items)
+				|| typeof items[0] !== 'object' ? arguments : items);
 	},
 
 	/**
