@@ -44,24 +44,6 @@ var Item = this.Item = Base.extend({
 		}
 		return this._id;
 	},
-	
-	_removeFromNamed: function() {
-		var children = this._parent._children,
-			namedChildren = this._parent._namedChildren,
-			name = this._name,
-			namedArray = namedChildren[name];
-		if (children[name] = this)
-			delete children[name];
-		namedArray.splice(namedArray.indexOf(this), 1);
-		// If there are any items left in the named array, set
-		// the last of them to be this.parent.children[this.name]
-		if (namedArray.length) {
-			children[name] = namedArray[namedArray.length - 1];
-		} else {
-			// Otherwise delete the empty array
-			delete namedChildren[name];
-		}
-	},
 
 	/**
 	 * The name of the item.
@@ -86,6 +68,47 @@ var Item = this.Item = Base.extend({
 		} else {
 			delete children[name];
 		}
+	},
+	
+	_removeFromNamed: function() {
+		var children = this._parent._children,
+			namedChildren = this._parent._namedChildren,
+			name = this._name,
+			namedArray = namedChildren[name];
+		if (children[name] = this)
+			delete children[name];
+		namedArray.splice(namedArray.indexOf(this), 1);
+		// If there are any items left in the named array, set
+		// the last of them to be this.parent.children[this.name]
+		if (namedArray.length) {
+			children[name] = namedArray[namedArray.length - 1];
+		} else {
+			// Otherwise delete the empty array
+			delete namedChildren[name];
+		}
+	},
+
+	/**
+	* Removes the item from its parent's children list.
+	*/
+	_removeFromParent: function() {
+		if (this._parent) {
+			if (this._name)
+				this._removeFromNamed();
+			var res = Base.splice(this._parent._children, null, this._index, 1);
+			this._parent = null;
+			return !!res.length;
+		}
+		return false;
+	},
+
+	/**
+	* Removes the item.
+	*/
+	remove: function() {
+		if (this.isSelected())
+			this.setSelected(false);
+		return this._removeFromParent();
 	},
 
 	/**
@@ -245,6 +268,14 @@ var Item = this.Item = Base.extend({
 			this.appendBottom(children[i]);
 	},
 
+	/**
+	 * Checks if the item contains any children items.
+	 * 
+	 * @return true if it has one or more children, false otherwise.
+	 */
+	hasChildren: function() {
+		return this._children && this._children.length > 0;
+	},
 
 	/**
 	 * Reverses the order of this item's children
@@ -297,38 +328,6 @@ var Item = this.Item = Base.extend({
 	 */
 	getPreviousSibling: function() {
 		return this._parent && this._parent._children[this._index - 1] || null;
-	},
-
-	/**
-	* Removes the item from its parent's children list.
-	*/
-	_removeFromParent: function() {
-		if (this._parent) {
-			if (this._name)
-				this._removeFromNamed();
-			var res = Base.splice(this._parent._children, null, this._index, 1);
-			this._parent = null;
-			return !!res.length;
-		}
-		return false;
-	},
-
-	/**
-	* Removes the item.
-	*/
-	remove: function() {
-		if (this.isSelected())
-			this.setSelected(false);
-		return this._removeFromParent();
-	},
-
-	/**
-	 * Checks if the item contains any children items.
-	 * 
-	 * @return true if it has one or more children, false otherwise.
-	 */
-	hasChildren: function() {
-		return this._children && this._children.length > 0;
 	},
 
 	/**
