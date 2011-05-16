@@ -20,43 +20,43 @@ var Layer = this.Layer = Group.extend({
 	initialize: function() {
 		this._children = [];
 		this._namedChildren = {};
-		this._document = paper.document;
-		// Push it onto document.layers and set index:
-		this._index = this._document.layers.push(this) - 1;
+		this._project = paper.project;
+		// Push it onto project.layers and set index:
+		this._index = this._project.layers.push(this) - 1;
 		this.activate();
 	},
 
 	/**
-	* Removes the layer from its document's layers list
+	* Removes the layer from its project's layers list
 	* or its parent's children list.
 	*/
 	_removeFromParent: function() {
 		return this._parent ? this.base()
-			: !!Base.splice(this._document.layers, null, this._index, 1).length;
+			: !!Base.splice(this._project.layers, null, this._index, 1).length;
 	},
 
 	getNextSibling: function() {
 		return this._parent ? this.base()
-				: this._document.layers[this._index + 1] || null;
+				: this._project.layers[this._index + 1] || null;
 	},
 
 	getPreviousSibling: function() {
 		return this._parent ? this.base()
-				: this._document.layers[this._index - 1] || null;
+				: this._project.layers[this._index - 1] || null;
 	},
 
 	activate: function() {
-		this._document.activeLayer = this;
+		this._project.activeLayer = this;
 	}
 }, new function () {
 	function move(above) {
 		return function(item) {
-			// if the item is a layer and contained within Document#layers
+			// if the item is a layer and contained within Project#layers
 			if (item instanceof Layer && !item._parent
 						&& this._removeFromParent()) {
-				Base.splice(item._document.layers, [this],
+				Base.splice(item._project.layers, [this],
 						item._index + (above ? 1 : -1), 0);
-				this._setDocument(item._document);
+				this._setProject(item._project);
 				return true;
 			}
 			return this.base(item);

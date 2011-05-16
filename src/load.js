@@ -35,9 +35,9 @@ var sources = [
 	'src/basic/Matrix.js',
 	'src/basic/Line.js',
 
-	'src/document/DocumentView.js',
-	'src/document/Document.js',
-	'src/document/Symbol.js',
+	'src/project/ProjectView.js',
+	'src/project/Project.js',
+	'src/project/Symbol.js',
 
 	'src/item/ChangeFlags.js',
 	'src/item/Item.js',
@@ -93,7 +93,7 @@ if (window.tests) {
 		'test/tests/Size.js',
 		'test/tests/Rectangle.js',
 		'test/tests/Color.js',
-		'test/tests/Document.js',
+		'test/tests/Project.js',
 		'test/tests/Item.js',
 		'test/tests/Layer.js',
 		'test/tests/Group.js',

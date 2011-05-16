@@ -10,7 +10,7 @@
 		// Adapted from Flocking Processing example by Daniel Schiffman:
 		// http://processing.org/learning/topics/flocking.html
 		
-		document.currentStyle = {
+		project.currentStyle = {
 			strokeColor: 'white',
 			strokeWidth: 2,
 			strokeCap: 'round'
@@ -281,7 +281,7 @@
 			groupTogether = !groupTogether;
 		}
 		
-		var layer = document.activeLayer;
+		var layer = project.activeLayer;
 		function onKeyDown(event) {
 			if (event.key == 'space') {
 				layer.selected = !layer.selected;

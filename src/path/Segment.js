@@ -199,13 +199,13 @@ var Segment = this.Segment = Base.extend({
 				| (selection[2] ? SelectionState.HANDLE_OUT : 0);
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
-		// document._selectedItems
+		// project._selectedItems
 		if (wasSelected != !!this._selectionState) {
 			var path = this._path,
 				count = path._selectedSegmentCount
 						+= this._selectionState ? 1 : -1;
 			if (count <= 1)
-				path._document._selectItem(path, count == 1);
+				path._project._selectItem(path, count == 1);
 		}
 	},
 

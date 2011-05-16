@@ -1,8 +1,8 @@
 module('Layer');
 
 test('previousSibling / nextSibling', function() {
-	var doc = paper.document;
-	var firstLayer = doc.activeLayer;
+	var proj = paper.project;
+	var firstLayer = proj.activeLayer;
 	var secondLayer = new Layer();
 	equals(function() {
 		return secondLayer.previousSibling == firstLayer;
@@ -30,18 +30,18 @@ test('previousSibling / nextSibling', function() {
 		return thirdLayer.previousSibling == path;
 	}, true);
 	equals(function() {
-		return doc.layers.length == 2;
+		return proj.layers.length == 2;
 	}, true);
 	
 	firstLayer.appendTop(secondLayer);
 	equals(function() {
-		return doc.layers.length == 1;
+		return proj.layers.length == 1;
 	}, true);
 });
 
 test('moveAbove / moveBelow', function() {
-	var doc = paper.document;
-	var firstLayer = doc.activeLayer;
+	var proj = paper.project;
+	var firstLayer = proj.activeLayer;
 	var secondLayer = new Layer();
 	secondLayer.moveBelow(firstLayer);
 	equals(function() {
@@ -64,6 +64,6 @@ test('moveAbove / moveBelow', function() {
 	}, true);
 	// There should now only be one layer left:
 	equals(function() {
-		return doc.layers.length;
+		return proj.layers.length;
 	}, 1);
 });

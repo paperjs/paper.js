@@ -39,7 +39,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	},
 
 	/**
-	 * The position of the mouse in document coordinates when the event was
+	 * The position of the mouse in project coordinates when the event was
 	 * fired.
 	 */
 	getPoint: function() {
@@ -51,7 +51,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	},
 
 	/**
-	 * The position of the mouse in document coordinates when the previous
+	 * The position of the mouse in project coordinates when the previous
 	 * event was fired.
 	 */
 	getLastPoint: function() {
@@ -63,7 +63,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	},
 
 	/**
-	 * The position of the mouse in document coordinates when the mouse button
+	 * The position of the mouse in project coordinates when the mouse button
 	 * was last clicked.
 	 */
 	getDownPoint: function() {
@@ -136,7 +136,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	// TODO: implement hitTest first
 	// getItem: function() {
 	// 	if (this.item == null) {
-	// 		var result = Document.getActiveDocument().hitTest(this.getPoint());
+	// 		var result = Project.getActiveProject().hitTest(this.getPoint());
 	// 		if (result != null) {
 	// 			this.item = result.getItem();
 	// 			// Find group parent

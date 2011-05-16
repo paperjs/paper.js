@@ -22,25 +22,22 @@ var PaperScope = this.PaperScope = Base.extend({
 	beans: true,
 
 	initialize: function(id) {
-		this.document = null;
-		this.documents = [];
+		this.project = null;
+		this.projects = [];
 		this.tools = [];
 		this.id = id;
 		PaperScope._scopes[id] = this;
 	},
 
 	/**
-	 * A short-cut to the currently active view of the active document.
+	 * A short-cut to the currently active view of the active project.
 	 */
 	getView: function() {
-		return this.document.activeView;
+		return this.project.activeView;
 	},
 
-	/**
-	 * A short-cut to the currently active layer of the active document.
-	 */
-	getLayer: function() {
-		return this.document.activeLayer;
+	getViews: function() {
+		return this.project.views;
 	},
 
 	evaluate: function(code) {
@@ -63,9 +60,9 @@ var PaperScope = this.PaperScope = Base.extend({
 	},
 
 	clear: function() {
-		// Remove all documents and tools.
-		for (var i = this.documents.length - 1; i >= 0; i--)
-			this.documents[i].remove();
+		// Remove all projects and tools.
+		for (var i = this.projects.length - 1; i >= 0; i--)
+			this.projects[i].remove();
 		for (var i = this.tools.length - 1; i >= 0; i--)
 			this.tools[i].remove();
 	},

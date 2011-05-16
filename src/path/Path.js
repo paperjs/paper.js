@@ -287,7 +287,7 @@ var Path = this.Path = PathItem.extend({
 		var wasSelected = this.isSelected(),
 			length = this._segments.length;
 		if (!wasSelected != !selected && length)
-			this._document._selectItem(this, selected);
+			this._project._selectItem(this, selected);
 		this._selectedSegmentCount = selected ? length : 0;
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected

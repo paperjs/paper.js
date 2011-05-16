@@ -24,9 +24,11 @@ var Raster = this.Raster = Item.extend({
 		if (object.getContext) {
 			this.setCanvas(object);
 		} else {
+//#ifdef BROWSER
 			// If it's a string, get the element with this id first.
 			if (typeof object === 'string')
 				object = document.getElementById(object);
+//#endif // BROWSER
 			this.setImage(object);
 		}
 		this.matrix = new Matrix();

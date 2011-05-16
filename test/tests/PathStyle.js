@@ -1,18 +1,18 @@
 module('Path Style');
 
 test('currentStyle', function() {
-	paper.document.currentStyle.fillColor = 'black';
+	paper.project.currentStyle.fillColor = 'black';
 	var path = new Path();
 	compareRGBColors(path.fillColor, 'black', 'path.fillColor');
 	
-	// When changing the current style of the document, the style of
-	// paths created using document.currentStyle should not change.
-	paper.document.currentStyle.fillColor = 'red';
+	// When changing the current style of the project, the style of
+	// paths created using project.currentStyle should not change.
+	paper.project.currentStyle.fillColor = 'red';
 	compareRGBColors(path.fillColor, 'black', 'path.fillColor');
 });
 
 test('setting currentStyle to an object', function() {
-	paper.document.currentStyle = {
+	paper.project.currentStyle = {
 		fillColor: 'red',
 		strokeColor: 'green'
 	};
