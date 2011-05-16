@@ -1,12 +1,12 @@
-module('Document');
+module('Project');
 
 test('activate()', function() {
-	var doc = new Document();
-	var secondDoc = new Document();
-	doc.activate();
+	var proj = new Project();
+	var secondDoc = new Project();
+	proj.activate();
 	var path = new Path();
 	equals(function() {
-		return doc.activeLayer.children[0] == path;
+		return proj.activeLayer.children[0] == path;
 	}, true);
 	equals(function() {
 		return secondDoc.activeLayer.children.length == 0;

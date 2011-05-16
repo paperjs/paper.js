@@ -1,15 +1,15 @@
 module('Item');
 
-test('copyTo(document)', function() {
-	var doc = paper.document;
+test('copyTo(project)', function() {
+	var proj = paper.project;
 	var path = new Path();
-	var secondDoc = new Document();
+	var secondDoc = new Project();
 	var copy = path.copyTo(secondDoc);
 	equals(function() {
 		return secondDoc.activeLayer.children.indexOf(copy) != -1;
 	}, true);
 	equals(function() {
-		return doc.activeLayer.children.indexOf(copy) == -1;
+		return proj.activeLayer.children.indexOf(copy) == -1;
 	}, true);
 	equals(function() {
 		return copy != path;
@@ -17,7 +17,7 @@ test('copyTo(document)', function() {
 });
 
 test('copyTo(layer)', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var path = new Path();
 
 	var layer = new Layer();
@@ -26,16 +26,16 @@ test('copyTo(layer)', function() {
 		return layer.children.indexOf(copy) != -1;
 	}, true);
 	equals(function() {
-		return doc.layers[0].children.indexOf(copy) == -1;
+		return proj.layers[0].children.indexOf(copy) == -1;
 	}, true);
 });
 
 test('clone()', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var path = new Path();
 	var copy = path.clone();
 	equals(function() {
-		return doc.activeLayer.children.length;
+		return proj.activeLayer.children.length;
 	}, 2);
 	equals(function() {
 		return path != copy;
@@ -43,28 +43,28 @@ test('clone()', function() {
 });
 
 test('appendChild(item)', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var path = new Path();
-	doc.activeLayer.appendChild(path);
+	proj.activeLayer.appendChild(path);
 	equals(function() {
-		return doc.activeLayer.children.length;
+		return proj.activeLayer.children.length;
 	},  1);
 });
 
 test('item.parent / item.isChild / item.isParent', function() {
-	var doc = paper.document;
-	var secondDoc = new Document();
+	var proj = paper.project;
+	var secondDoc = new Project();
 	var path = new Path();
-	doc.activeLayer.appendChild(path);
+	proj.activeLayer.appendChild(path);
 	equals(function() {
-		return doc.activeLayer.children.indexOf(path) != -1;
+		return proj.activeLayer.children.indexOf(path) != -1;
 	}, true);
 	secondDoc.activeLayer.appendTop(path);
 	equals(function() {
-		return doc.activeLayer.isChild(path);
+		return proj.activeLayer.isChild(path);
 	}, false);
 	equals(function() {
-		return path.isParent(doc.activeLayer);
+		return path.isParent(proj.activeLayer);
 	}, false);
 	equals(function() {
 		return secondDoc.activeLayer.isChild(path);
@@ -73,7 +73,7 @@ test('item.parent / item.isChild / item.isParent', function() {
 		return path.isParent(secondDoc.activeLayer);
 	}, true);
 	equals(function() {
-		return doc.activeLayer.children.indexOf(path) == -1;
+		return proj.activeLayer.children.indexOf(path) == -1;
 	}, true);
 	equals(function() {
 		return secondDoc.activeLayer.children.indexOf(path) == 0;
@@ -81,39 +81,39 @@ test('item.parent / item.isChild / item.isParent', function() {
 });
 
 test('item.lastChild / item.firstChild', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var path = new Path();
 	var secondPath = new Path();
 	equals(function() {
-		return doc.activeLayer.firstChild == path;
+		return proj.activeLayer.firstChild == path;
 	}, true);
 	equals(function() {
-		return doc.activeLayer.lastChild == secondPath;
+		return proj.activeLayer.lastChild == secondPath;
 	}, true);
 });
 
 test('appendBottom(item)', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var path = new Path();
 	var secondPath = new Path();
-	doc.activeLayer.appendBottom(secondPath);
+	proj.activeLayer.appendBottom(secondPath);
 	equals(function() {
 		return secondPath.index < path.index;
 	}, true);
 });
 
 test('moveAbove(item)', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var path = new Path();
 	var secondPath = new Path();
 	path.moveAbove(secondPath);
 	equals(function() {
-		return doc.activeLayer.lastChild == path;
+		return proj.activeLayer.lastChild == path;
 	}, true);
 });
 
 test('moveBelow(item)', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var firstPath = new Path();
 	var secondPath = new Path();
 	equals(function() {
@@ -126,33 +126,33 @@ test('moveBelow(item)', function() {
 });
 
 test('isDescendant(item) / isAncestor(item)', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var path = new Path();
 	equals(function() {
-		return path.isDescendant(doc.activeLayer);
+		return path.isDescendant(proj.activeLayer);
 	}, true);
 	equals(function() {
-		return doc.activeLayer.isDescendant(path);
+		return proj.activeLayer.isDescendant(path);
 	}, false);
 	equals(function() {
-		return path.isAncestor(doc.activeLayer);
+		return path.isAncestor(proj.activeLayer);
 	}, false);
 	equals(function() {
-		return doc.activeLayer.isAncestor(path);
+		return proj.activeLayer.isAncestor(path);
 	}, true);
 	
 	// an item can't be its own descendant:
 	equals(function() {
-		return doc.activeLayer.isDescendant(doc.activeLayer);
+		return proj.activeLayer.isDescendant(proj.activeLayer);
 	}, false);
 	// an item can't be its own ancestor:
 	equals(function() {
-		return doc.activeLayer.isAncestor(doc.activeLayer);
+		return proj.activeLayer.isAncestor(proj.activeLayer);
 	}, false);
 });
 
 test('isGroupedWith', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var path = new Path();
 	var secondPath = new Path();
 	var group = new Group([path]);
@@ -180,11 +180,11 @@ test('isGroupedWith', function() {
 	equals(function() {
 		return path.isGroupedWith(secondGroup);
 	}, false);
-	paper.document.activeLayer.appendTop(path);
+	paper.project.activeLayer.appendTop(path);
 	equals(function() {
 		return path.isGroupedWith(secondPath);
 	}, false);
-	paper.document.activeLayer.appendTop(secondPath);
+	paper.project.activeLayer.appendTop(secondPath);
 	equals(function() {
 		return path.isGroupedWith(secondPath);
 	}, false);
@@ -205,44 +205,44 @@ test('getPreviousSibling() / getNextSibling()', function() {
 });
 
 test('reverseChildren()', function() {
-	var doc = paper.document;
+	var proj = paper.project;
 	var path = new Path();
 	var secondPath = new Path();
 	var thirdPath = new Path();
 	equals(function() {
-		return doc.activeLayer.firstChild == path;
+		return proj.activeLayer.firstChild == path;
 	}, true);
-	doc.activeLayer.reverseChildren();
+	proj.activeLayer.reverseChildren();
 	equals(function() {
-		return doc.activeLayer.firstChild == path;
+		return proj.activeLayer.firstChild == path;
 	}, false);
 	equals(function() {
-		return doc.activeLayer.firstChild == thirdPath;
+		return proj.activeLayer.firstChild == thirdPath;
 	}, true);
 	equals(function() {
-		return doc.activeLayer.lastChild == path;
+		return proj.activeLayer.lastChild == path;
 	}, true);
 });
 
-test('Check item#document when moving items across documents', function() {
-	var doc = paper.document;
-	var doc1 = new Document();
+test('Check item#project when moving items across projects', function() {
+	var proj = paper.project;
+	var doc1 = new Project();
 	var path = new Path();
 	var group = new Group();
 	group.appendTop(new Path());
 	
 	equals(function() {
-		return path.document == doc1;
+		return path.project == doc1;
 	}, true);
-	var doc2 = new Document();
+	var doc2 = new Project();
 	doc2.activeLayer.appendTop(path);
 	equals(function() {
-		return path.document == doc2;
+		return path.project == doc2;
 	}, true);
 	
 	doc2.activeLayer.appendTop(group);
 	equals(function() {
-		return group.children[0].document == doc2;
+		return group.children[0].project == doc2;
 	}, true);
 });
 
@@ -281,26 +281,26 @@ test('Check parent children object for named item', function() {
 	var path = new Path();
 	path.name = 'test';
 	equals(function() {
-		return paper.document.activeLayer.children['test'] == path;
+		return paper.project.activeLayer.children['test'] == path;
 	}, true);
 	
 	var path2 = new Path();
 	path2.name = 'test';
 	
 	equals(function() {
-		return paper.document.activeLayer.children['test'] == path2;
+		return paper.project.activeLayer.children['test'] == path2;
 	}, true);
 	
 	path2.remove();
 	
 	equals(function() {
-		return paper.document.activeLayer.children['test'] == path;
+		return paper.project.activeLayer.children['test'] == path;
 	}, true);
 	
 	path.remove();
 	
 	equals(function() {
-		return !paper.document.activeLayer.children['test'];
+		return !paper.project.activeLayer.children['test'];
 	}, true);
 });
 
@@ -314,7 +314,7 @@ test('Named child access', function() {
 	path.remove();
 	
 	equals(function() {
-		return paper.document.activeLayer.children['test'] == path2;
+		return paper.project.activeLayer.children['test'] == path2;
 	}, true);
 });
 
@@ -328,21 +328,21 @@ test('Named child access 2', function() {
 	path.remove();
 	
 	equals(function() {
-		return paper.document.activeLayer.children['test'] == path2;
+		return paper.project.activeLayer.children['test'] == path2;
 	}, true);
 	
 	equals(function() {
-		return paper.document.activeLayer._namedChildren['test'].length == 1;
+		return paper.project.activeLayer._namedChildren['test'].length == 1;
 	}, true);
 	
 	path2.remove();
 
 	equals(function() {
-		return !paper.document.activeLayer._namedChildren['test'];
+		return !paper.project.activeLayer._namedChildren['test'];
 	}, true);
 	
 	equals(function() {
-		return paper.document.activeLayer.children['test'] === undefined;
+		return paper.project.activeLayer.children['test'] === undefined;
 	}, true);
 });
 
@@ -358,11 +358,11 @@ test('Named child access 2', function() {
 	group.appendTop(path2);
 	
 	equals(function() {
-		return paper.document.activeLayer.children['test'] == path;
+		return paper.project.activeLayer.children['test'] == path;
 	}, true);
 	
 	equals(function() {
-		return paper.document.activeLayer._namedChildren['test'].length == 1;
+		return paper.project.activeLayer._namedChildren['test'].length == 1;
 	}, true);
 
 	equals(function() {
@@ -373,14 +373,14 @@ test('Named child access 2', function() {
 		return group._namedChildren['test'].length == 1;
 	}, true);
 	
-	paper.document.activeLayer.appendTop(path2);
+	paper.project.activeLayer.appendTop(path2);
 
 	equals(function() {
 		return group._namedChildren['test'] === undefined;
 	}, true);
 	
 	equals(function() {
-		return paper.document.activeLayer._namedChildren['test'].length == 2;
+		return paper.project.activeLayer._namedChildren['test'].length == 2;
 	}, true);
 });
 
@@ -392,19 +392,19 @@ test('Setting name of child back to null', function() {
 	path2.name = 'test';
 
 	equals(function() {
-		return paper.document.activeLayer.children['test'] == path2;
+		return paper.project.activeLayer.children['test'] == path2;
 	}, true);
 
 	path2.name = null;
 
 	equals(function() {
-		return paper.document.activeLayer.children['test'] == path;
+		return paper.project.activeLayer.children['test'] == path;
 	}, true);
 	
 	path.name = null;
 	
 	equals(function() {
-		return paper.document.activeLayer.children['test'] === undefined;
+		return paper.project.activeLayer.children['test'] === undefined;
 	}, true);
 });
 
@@ -415,10 +415,10 @@ test('Renaming item', function() {
 	path.name = 'test2';
 	
 	equals(function() {
-		return paper.document.activeLayer.children['test'] === undefined;
+		return paper.project.activeLayer.children['test'] === undefined;
 	}, true);
 	
 	equals(function() {
-		return paper.document.activeLayer.children['test2'] == path;
+		return paper.project.activeLayer.children['test2'] == path;
 	}, true);
 });

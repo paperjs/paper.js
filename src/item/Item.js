@@ -18,8 +18,8 @@ var Item = this.Item = Base.extend({
 	beans: true,
 
 	initialize: function() {
-		paper.document.activeLayer.appendTop(this);
-		this.setStyle(this._document.getCurrentStyle());
+		paper.project.activeLayer.appendTop(this);
+		this.setStyle(this._project.getCurrentStyle());
 	},
 
 	/**
@@ -88,25 +88,25 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * When passed a document, copies the item to the document,
-	 * or duplicates it within the same document. When passed an item,
+	 * When passed a project, copies the item to the project,
+	 * or duplicates it within the same project. When passed an item,
 	 * copies the item into the specified item.
 	 * 
-	 * @param document the document to copy the item to
+	 * @param project the project to copy the item to
 	 * @return the new copy of the item
 	 */
-	copyTo: function(itemOrDocument) {
+	copyTo: function(itemOrProject) {
 		var copy = this.clone();
-		if (itemOrDocument.layers) {
-			itemOrDocument.activeLayer.appendTop(copy);
+		if (itemOrProject.layers) {
+			itemOrProject.activeLayer.appendTop(copy);
 		} else {
-			itemOrDocument.appendTop(copy);
+			itemOrProject.appendTop(copy);
 		}
 		return copy;
 	},
 
 	/**
-	 * Clones the item within the same document.
+	 * Clones the item within the same project.
 	 * 
 	 * @return the newly cloned item
 	 */
@@ -127,9 +127,9 @@ var Item = this.Item = Base.extend({
 		} else {
 			if ((selected = !!selected) != this._selected) {
 				// TODO: when an item is removed or moved to another
-				// document, it needs to be removed from _selectedItems
+				// project, it needs to be removed from _selectedItems
 				this._selected = selected;
-				this._document._selectItem(this, selected);
+				this._project._selectItem(this, selected);
 			}
 		}
 	},
@@ -147,16 +147,16 @@ var Item = this.Item = Base.extend({
 		return false;
 	},
 	
-	getDocument: function() {
-		return this._document;
+	getProject: function() {
+		return this._project;
 	},
 
-	_setDocument: function(document) {
-		if (this._document != document) {
-			this._document = document;
+	_setProject: function(project) {
+		if (this._project != project) {
+			this._project = project;
 			if (this._children) {
 				for (var i = 0, l = this._children.length; i < l; i++) {
-					this._children[i]._setDocument(document);
+					this._children[i]._setProject(project);
 				}
 			}
 		}
@@ -338,7 +338,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * Checks if this item is above the specified item in the stacking order of
-	 * the document.
+	 * the project.
 	 * 
 	 * @param item The item to check against
 	 * @return true if it is above the specified item, false otherwise.
@@ -347,7 +347,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * Checks if the item is below the specified item in the stacking order of
-	 * the document.
+	 * the project.
 	 * 
 	 * @param item The item to check against
 	 * @return true if it is below the specified item, false otherwise.
@@ -491,7 +491,7 @@ var Item = this.Item = Base.extend({
 	rasterize: function(resolution) {
 		// TODO: why would we want to pass a size to rasterize? Seems to produce
 		// weird results on Scriptographer. Also we can't use antialiasing, since
-		// Canvas doesn't support it yet. Document colorMode is also out of the
+		// Canvas doesn't support it yet. Project colorMode is also out of the
 		// question for now.
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || 72) / 72,
@@ -649,7 +649,7 @@ var Item = this.Item = Base.extend({
 			}
 		},
 
-		// TODO: Implement DocumentView into the drawing
+		// TODO: Implement ProjectView into the drawing
 		// TODO: Optimize temporary canvas drawing to ignore parts that are
 		// outside of the visible view.
 		draw: function(item, ctx, param) {
@@ -737,7 +737,7 @@ var Item = this.Item = Base.extend({
 			if (this._children) {
 				Base.splice(this._children, [item], top ? undefined : 0, 0);
 				item._parent = this;
-				item._setDocument(this._document);
+				item._setProject(this._project);
 				if (item._name)
 					item.setName(item._name);
 				return true;
@@ -753,7 +753,7 @@ var Item = this.Item = Base.extend({
 				Base.splice(item._parent._children, [this],
 						item._index + (above ? 1 : -1), 0);
 				this._parent = item._parent;
-				this._setDocument(item._document);
+				this._setProject(item._project);
 				if (item._name)
 					item.setName(item._name);
 				return true;

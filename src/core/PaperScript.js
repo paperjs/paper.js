@@ -133,15 +133,15 @@ var PaperScript = this.PaperScript = new function() {
 //#ifdef BROWSER
 		// See if it's a script tag or a string
 		if (typeof code !== 'string') {
-			// If a canvas id is provided, create a document for it now,
-			// so the active document is defined.
+			// If a canvas id is provided, create a project for it now,
+			// so the active project is defined.
 			var canvas = code.getAttribute('canvas');
 			if (canvas = canvas && document.getElementById(canvas)) {
-				// Create a Document for this canvas, using the right scope
+				// Create a Project for this canvas, using the right scope
 				paper = scope;
-				// XXX: Do not pass canvas to Document.
-				// Create DocumentView here instead.
-				new Document(canvas);
+				// XXX: Do not pass canvas to Project.
+				// Create ProjectView here instead.
+				new Project(canvas);
 			}
 			if (code.src) {
 				// If we're loading from a source, request that first and then
@@ -153,8 +153,8 @@ var PaperScript = this.PaperScript = new function() {
 			}
 		}
 //#endif // BROWSER
-		var doc = scope.document,
-			view = doc.activeView,
+		var proj = scope.project,
+			view = proj.activeView,
 			// TODO: Add support for multiple tools
 			tool = scope.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
 					&& new Tool(null, scope),

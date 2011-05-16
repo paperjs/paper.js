@@ -46,7 +46,7 @@ Base.inject({
 	/**
 	 * Utility function for adding and removing items from a list of which
 	 * each entry keeps a reference to its index in the list in the private
-	 * _index property. Used for PaperScope#documents and Item#children.
+	 * _index property. Used for PaperScope#projects and Item#children.
 	 */
 	splice: function(list, items, index, remove) {
 		var amount = items && items.length,

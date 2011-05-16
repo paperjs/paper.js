@@ -3,7 +3,7 @@ module('Group');
 test('new Group()', function() {
 	var group = new Group();
 	equals(function() {
-		return paper.document.activeLayer.children[0] == group;
+		return paper.project.activeLayer.children[0] == group;
 	}, true);
 });
 
@@ -11,7 +11,7 @@ test('new Group([item])', function() {
 	var path = new Path();
 	var group = new Group([path]);
 	equals(function() {
-		return paper.document.activeLayer.children.length;
+		return paper.project.activeLayer.children.length;
 	}, 1);
 	equals(function() {
 		return group.children[0] == path;
@@ -19,7 +19,7 @@ test('new Group([item])', function() {
 });
 
 test('Group bounds', function() {
-	paper.document.currentStyle = {
+	paper.project.currentStyle = {
 		strokeWidth: 5,
 		strokeColor: 'black'
 	};

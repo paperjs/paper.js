@@ -16,7 +16,7 @@
 
 /**
  * The Point object represents a point in the two dimensional space of the
- * Paper.js document. It is also used to represent two dimensional vector
+ * Paper.js project. It is also used to represent two dimensional vector
  * objects.
  */
 var Point = this.Point = Base.extend({
@@ -341,7 +341,7 @@ var Point = this.Point = Base.extend({
 	 * Both points are interpreted as vectors.
 	 * 
 	 * @param point
-	 * @return the project of the point on another point
+	 * @return the projection of the point on another point
 	 */
 	project: function(point) {
 		point = Point.read(arguments);

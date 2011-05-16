@@ -7,7 +7,7 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var layer = document.activeLayer;
+		var layer = project.activeLayer;
 
 		var values = {
 			count: 34,
@@ -42,7 +42,7 @@
 		
 		// Reposition the paths whenever the window is resized:
 		function onResize(event) {
-			document.activeLayer.position = view.center;
+			project.activeLayer.position = view.center;
 		}
 	</script>
 </head>

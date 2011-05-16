@@ -12,7 +12,7 @@ test('path.join(path)', function() {
 	path.join(path2);
 	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } }');
 	equals(function() {
-		return paper.document.activeLayer.children.length;
+		return paper.project.activeLayer.children.length;
 	}, 1);
 
 	var path = new Path();
@@ -78,7 +78,7 @@ test('path.remove()', function() {
 	path.remove();
 	
 	equals(function() {
-		return paper.document.activeLayer.children.length;
+		return paper.project.activeLayer.children.length;
 	}, 0);
 });
 
@@ -90,7 +90,7 @@ test('Is the path deselected after setting a new list of segments?', function() 
 		return path.selected;
 	}, true);
 	equals(function() {
-		return paper.document.selectedItems.length;
+		return paper.project.selectedItems.length;
 	}, 1);
 
 	path.segments = [[0, 10]];
@@ -98,7 +98,7 @@ test('Is the path deselected after setting a new list of segments?', function() 
 		return path.selected;
 	}, false);
 	equals(function() {
-		return paper.document.selectedItems.length;
+		return paper.project.selectedItems.length;
 	}, 0);
 });
 
