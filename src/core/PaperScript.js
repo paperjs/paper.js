@@ -167,7 +167,7 @@ var PaperScript = this.PaperScript = new function() {
 		// instead of window.
 		with (scope) {
 			// Within this, use a function scope, so local variables to not try
-			// and set themselves on the paper object.
+			// and set themselves on the scope object.
 			(function() {
 				var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
 					onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp,
