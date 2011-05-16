@@ -105,7 +105,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		matrix._transformPoint(this._destination, this._destination, true);
 		if (this._hilite)
 			matrix._transformPoint(this._hilite, this._hilite, true);
-		this._radius = destination.getDistance(origin);
+		this._radius = this._destination.getDistance(this._origin);
 	}
 });
 
