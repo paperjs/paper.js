@@ -19,7 +19,7 @@
 		var mousePos = position;
 		var children = project.activeLayer.children;
 		var count = 0;
-		
+
 		function iterate() {
 			count++;
 			var delta = (mousePos - position);
@@ -35,11 +35,11 @@
 				path.fillColor.hue = count - length;
 			}
 		}
-		
+
 		function onFrame() {
 			iterate();
 		}
-		
+
 		function onMouseMove(event) {
 			iterate();
 			mousePos = event.point;
