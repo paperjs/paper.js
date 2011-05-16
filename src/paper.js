@@ -92,7 +92,6 @@ var paper = new function() {
 
 //#include "browser/DomElement.js"
 //#include "browser/DomEvent.js"
-//#include "browser/Request.js"
 
 //#include "ui/Event.js"
 //#include "ui/KeyEvent.js"
