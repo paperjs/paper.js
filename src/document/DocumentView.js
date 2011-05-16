@@ -47,7 +47,6 @@ var DocumentView = this.DocumentView = Base.extend({
 							offset = DomElement.getOffset(canvas);
 						that.setViewSize(
 								DomElement.getWindowSize().subtract(offset));
-						that.draw();
 					}
 				});
 			} else {
@@ -109,6 +108,7 @@ var DocumentView = this.DocumentView = Base.extend({
 		}
 		// Force recalculation
 		this._bounds = null;
+		this.draw();
 	},
 
 	getViewSize: function() {
