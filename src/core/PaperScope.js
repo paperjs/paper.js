@@ -19,12 +19,28 @@
  * global paper object, which simply is a pointer to the currently active scope.
  */
 var PaperScope = this.PaperScope = Base.extend({
+	beans: true,
+
 	initialize: function(id) {
 		this.document = null;
 		this.documents = [];
 		this.tools = [];
 		this.id = id;
-		PaperScope.scopes[id] = this;
+		PaperScope._scopes[id] = this;
+	},
+
+	/**
+	 * A short-cut to the currently active view of the active document.
+	 */
+	getView: function() {
+		return this.document.activeView;
+	},
+
+	/**
+	 * A short-cut to the currently active layer of the active document.
+	 */
+	getLayer: function() {
+		return this.document.activeLayer;
 	},
 
 	evaluate: function(code) {
@@ -56,14 +72,17 @@ var PaperScope = this.PaperScope = Base.extend({
 
 	remove: function() {
 		this.clear();
-		delete PaperScope.scopes[this.id];
+		delete PaperScope._scopes[this.id];
 	},
 
 	statics: {
-		scopes: {},
+		_scopes: {},
 
 		get: function(id) {
-			return this.scopes[id] || null;
+			// If a script tag is passed, get the id from it.
+			if (typeof id === 'object')
+				id = id.getAttribute('id');
+			return this._scopes[id] || null;
 		}
 	}
 });
