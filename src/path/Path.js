@@ -255,6 +255,8 @@ var Path = this.Path = PathItem.extend({
 				this._selectedSegmentCount--;
 				segment._selectionState = 0;
 			}
+			// Clear the indices and path references of the removed segments
+			removed._index = removed._path = undefined;
 		}
 		// Adjust the indices of the segments above.
 		for (var i = from, l = segments.length; i < l; i++)
