@@ -16,7 +16,7 @@
 		path.strokeCap = 'round';
 		var size = 20;
 		var segments = path.segments;
-		var center = document.bounds.center;
+		var center = view.center;
 		for (var i = 0; i < size; i++)
 			path.add(center + new Point(i * 100, 0));
 

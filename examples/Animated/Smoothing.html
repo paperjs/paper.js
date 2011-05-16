@@ -11,22 +11,22 @@
 		var points = 10;
 		var smooth = true;
 		var path = new Path();
-		var mousePos = document.bounds.center / 2;
+		var mousePos = view.center / 2;
 		var pathHeight = mousePos.y;
 		path.fillColor = 'black';
 		initializePath();
 
 		function initializePath() {
-			center = document.bounds.center;
-			width = document.bounds.width;
-			height = document.bounds.height / 2;
+			center = view.center;
+			width = view.size.width;
+			height = view.size.height / 2;
 			path.segments = [];
-			path.add(document.bounds.bottomLeft);
+			path.add(view.bounds.bottomLeft);
 			for (var i = 1; i < points; i++) {
 				var point = new Point(width / points * i, center.y);
 				path.add(point);
 			}
-			path.add(document.bounds.bottomRight);
+			path.add(view.bounds.bottomRight);
 			path.selected = true;
 		}
 
@@ -59,13 +59,9 @@
 		}
 
 		// Reposition the path whenever the window is resized:
-		DomEvent.add(window, {
-			resize: function(event) {
-				initializePath();
-				onFrame();
-				document.redraw();
-			}
-		});
+		function onResize(event) {
+			initializePath();
+		}
 	</script>
 </head>
 <body>

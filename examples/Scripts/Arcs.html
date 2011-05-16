@@ -7,7 +7,7 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var point = document.bounds.center;
+		var point = view.center;
 		for (var i = 0; i < 30; i++) {
 			var vector = new Point(10 + 20 * i, 0).rotate(i);
 			var l = vector.length;

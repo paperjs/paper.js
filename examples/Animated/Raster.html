@@ -10,7 +10,7 @@
 		// http://en.wikipedia.org/wiki/Lenna
 		var raster = new Raster('lenna');
 		var lastScale = 1;
-		var center = document.bounds.center;
+		var center = view.center;
 		function onFrame(event) {
 			var scale = (Math.sin(event.time * 2) + 1) / 2;
 			raster.scale(scale / lastScale);

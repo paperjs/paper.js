@@ -35,13 +35,13 @@
 		var path1 = new Path();
 		path1.segments = segments;
 		path1.closed = true;
-		path1.position = document.bounds.center;
+		path1.position = view.center;
 		path1.scale(1.5);
 
 		var path2 = new Path();
 		path2.segments = segments;
 		path2.closed = true;
-		path2.position = document.bounds.center;
+		path2.position = view.center;
 		path2.scale(2);
 
 		var length1 = path1.length;
@@ -52,10 +52,10 @@
 				length: 100
 			});
 			path1.rotate(-0.5);
-			path1.position = document.bounds.center - vector;
+			path1.position = view.center - vector;
 
 			path2.rotate(-0.5);
-			path2.position = document.bounds.center + vector.normalize(50);
+			path2.position = view.center + vector.normalize(50);
 
 			for (var i = 0; i < lineCount; i++) {
 				var path = lineGroup.children[i];

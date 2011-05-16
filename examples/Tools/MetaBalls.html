@@ -17,7 +17,7 @@
 		var circlePaths = [];
 		var circlePath;
 		var radius = 50;
-		circlePaths.push(new Path.Circle(document.bounds.center, 100));
+		circlePaths.push(new Path.Circle(view.center, 100));
 		function onMouseDown(event) {
 			circlePath = null;
 			for (var i = 0, l = circlePaths.length; i < l; i++) {

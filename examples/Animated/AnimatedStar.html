@@ -8,13 +8,12 @@
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		var layer = document.activeLayer;
-	
+
 		var values = {
 			count: 34,
 			points: 32
 		};
 	
-		var center = new Point(document.size) / 2;
 		for (var i = 0; i < values.count; i++) {
 			var offset = new Point(20 + 10 * i, 0);
 			var path = new Path();
@@ -29,7 +28,7 @@
 			}
 			path.smooth();
 			var placedSymbol = new PlacedSymbol(path);
-			placedSymbol.position = center;
+			placedSymbol.position = view.center;
 			layer.appendBottom(placedSymbol);
 		}
 
@@ -43,7 +42,7 @@
 		
 		// Reposition the paths whenever the window is resized:
 		function onResize(event) {
-			document.activeLayer.position = event.size / 2;
+			document.activeLayer.position = view.center;
 		}
 	</script>
 </head>

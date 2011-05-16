@@ -10,14 +10,6 @@
 		// Adapted from Flocking Processing example by Daniel Schiffman:
 		// http://processing.org/learning/topics/flocking.html
 		
-		// Reposition the heart path whenever the window is resized:
-		DomEvent.add(window, {
-			resize: function(event) {
-				size = document.size;
-				heartPath.position = document.bounds.center;
-			}
-		});
-		
 		document.currentStyle = {
 			strokeColor: 'white',
 			strokeWidth: 2,
@@ -28,9 +20,9 @@
 		head.fillColor = 'white';
 		head.strokeColor = null;
 		var headSymbol = new Symbol(head);
-		
-		var size = document.size;
-		
+
+		var size = view.size;
+	
 		var Boid = Base.extend({
 			initialize: function(position, maxSpeed, maxForce) {
 				var strength = Math.random() * 0.5;
@@ -254,7 +246,7 @@
 			[[545.6171875, 549.1171875], [17.1787109375, -30.458984375], [-13.517578125, 24.0498046875]]
 		]);
 		heartPath.closed = true;
-		heartPath.position = document.bounds.center;
+		heartPath.position = view.center;
 		heartPath.strokeColor = null;
 		heartPath.scale(1.5);
 		
@@ -265,9 +257,9 @@
 
 		// Add the boids:
 		for (var i = 0; i < 30; i++) {
-			var position = Point.random() * document.size;
+			var position = Point.random() * size;
 			boids.push(new Boid(position, 10, 0.05));
-		}		
+		}
 
 		function onFrame(event) {
 			for (var i = 0, l = boids.length; i < l; i++) {
@@ -277,6 +269,12 @@
 				}
 				boids[i].run(boids);
 			}
+		}
+
+		// Reposition the heart path whenever the window is resized:
+		function onResize(event) {
+			size = view.size;
+			heartPath.position = view.center;
 		}
 
 		function onMouseDown(event) {
