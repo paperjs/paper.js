@@ -287,7 +287,7 @@ var DocumentView = this.DocumentView = Base.extend({
 			if (tool.onMouseDown)
 				that.draw();
 			if (tool.eventInterval != null)
-				timer = setInterval(events.mousemove, tool.eventInterval);
+				timer = setInterval(mousemove, tool.eventInterval);
 			dragging = true;
 		}
 
