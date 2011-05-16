@@ -33,7 +33,7 @@ var Project = this.Project = Base.extend({
 		this.activeView = canvas ? new ProjectView(canvas) : null;
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
-		this.setCurrentStyle(null);
+		this._currentStyle = PathStyle.create(null);
 	},
 
 	getCurrentStyle: function() {
@@ -41,7 +41,7 @@ var Project = this.Project = Base.extend({
 	},
 
 	setCurrentStyle: function(style) {
-		this._currentStyle = PathStyle.create(null, style);
+		this._currentStyle.initialize(style);
 	},
 
 	activate: function() {
