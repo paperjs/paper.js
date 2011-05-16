@@ -28,14 +28,12 @@
 				}
 			}
 		}
-		document.activeLayer.position = document.bounds.center;
+		document.activeLayer.position = view.center;
 
 		// Reposition the paths whenever the window is resized:
-		DomEvent.add(window, {
-			resize: function(event) {
-				document.activeLayer.position = document.bounds.center;
-			}
-		});
+		function onResize(event) {
+			document.activeLayer.position = view.center;
+		}
 	</script>
 </head>
 <body>

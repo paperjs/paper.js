@@ -7,7 +7,7 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var center = document.bounds.center;
+		var center = view.center;
 		for (var i = 0; i < 70; i++) {
 			var path = new Path.Circle(center, i * 5);
 			path.strokeColor = 'black';

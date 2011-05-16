@@ -7,7 +7,7 @@
 	<script type="text/javascript">var root = '../../'</script>
 	<script type="text/javascript" src="../../src/load.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var point = new Point(document.size) / 2;
+		var point = view.center;
 		
 		var colors = [];
 		for (var i = 0, l = 60; i < l; i++) {
@@ -17,9 +17,9 @@
 			colors.push(color);
 		}
 
-		var path = new Path.Rectangle(document.bounds);
+		var path = new Path.Rectangle(view.bounds);
 		var gradient = new Gradient(colors, 'radial');
-		var radius = Math.max(document.size.height, document.size.width) * 0.75;
+		var radius = Math.max(view.size.width, view.size.height) * 0.75;
 		var gradientColor = new GradientColor(gradient, point, point + [radius, 0]);
 		path.fillColor = gradientColor;
 		
@@ -64,17 +64,14 @@
 			gradientColor.hilite = mouseDown ? point : point + vector;
 		}
 		
-		DomEvent.add(window, {
-			resize: function(event) {
-				point = new Point(document.size) / 2;
-				path.bounds = document.bounds;
-				var radius = Math.max(document.size.height, document.size.width) * 0.75;
-				var gradientColor = path.fillColor;
-				gradientColor.origin = point;
-				var radius = Math.max(document.size.height, document.size.width) * 0.75;
-				gradientColor.destination = point + [radius, 0];
-			}
-		});
+		function onResize(event) {
+			point = view.center;
+			path.bounds = view.bounds;
+			var gradientColor = path.fillColor;
+			gradientColor.origin = point;
+			var radius = Math.max(view.size.width, view.size.height) * 0.75;
+			gradientColor.destination = point + [radius, 0];
+		}
 	</script>
 </head>
 <body>

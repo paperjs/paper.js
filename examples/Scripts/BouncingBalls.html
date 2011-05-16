@@ -31,7 +31,7 @@
 			},
 
 			iterate: function() {
-				var size = document.size;
+				var size = view.size;
 				this.vector.y += this.gravity;
 				this.vector.x *= 0.99;
 				var pre = this.point + this.vector;
@@ -50,7 +50,7 @@
 		});
 
 		for (var i = 0; i < 10; i++) {
-			var position = Point.random() * document.size;
+			var position = Point.random() * view.size;
 			var vector = (Point.random() - [0.5, 0]) * [50, 100];
 			var ball = new Ball(position, vector);
 			balls.push(ball);
