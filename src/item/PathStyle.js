@@ -44,13 +44,9 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		},
 
 		statics: {
-			create: function(item, other) {
+			create: function(item) {
 				var style = new PathStyle(PathStyle.dont);
-				// We need _item to be set before calling initialize(), since
-				// it is setting bean properties that propagate changes through
-				// all of item's children.
 				style._item = item;
-				style.initialize(other);
 				return style;
 			}
 		}

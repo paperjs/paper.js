@@ -19,6 +19,7 @@ var Item = this.Item = Base.extend({
 
 	initialize: function() {
 		paper.project.activeLayer.appendTop(this);
+		this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 	},
 
@@ -629,7 +630,7 @@ var Item = this.Item = Base.extend({
 	},
 
 	setStyle: function(style) {
-		this._style = PathStyle.create(this, style);
+		this._style.initialize(style);
 	},
 
 	// TODO: toString
