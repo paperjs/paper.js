@@ -17,7 +17,7 @@
 var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	initialize: function(style) {
 		this.fontSize = style.fontSize || 10;
-		this.font = style.font || 'Helvetica Regular';
+		this.font = style.font || 'sans-serif';
 		this.base(style);
 	},
 	
