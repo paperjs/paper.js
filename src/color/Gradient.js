@@ -41,7 +41,7 @@ var Gradient = this.Gradient = Base.extend({
 				var rampPoint;
 				var stop = stops[i];
 				// If it is an array, the second argument is the rampPoint:
-				if (stop.length) {
+				if (Array.isArray(stop)) {
 					rampPoint = stop[1];
 					stop = stop[0];
 				} else {
