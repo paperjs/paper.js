@@ -243,6 +243,27 @@ var Rectangle = this.Rectangle = Base.extend({
 				: coords;
 	},
 
+	/**
+	 * Returns the 'transformed' bounds rectangle by transforming each corner
+	 * point and finding the new bounding box to these points. This is not
+	 * really the transformed reactangle!
+	 */
+	transformBounds: function(matrix) {
+		var coords = this.transformCornerCoordinates(matrix),
+			min = coords.slice(0, 2),
+			max = coords.slice(0);
+		for (var i = 2; i < 8; i++) {
+			var val = coords[i],
+				j = i & 1;
+			if (val < min[i])
+				min[i] = val;
+			else if (val > max[i])
+				max[i] = val;
+		}
+		return Rectangle.create(min[0], min[1],
+				max[0] - min[0], max[1] - min[1]);
+	},
+
 	statics: {
 		// See Point.create()
 		create: function(x, y, width, height) {
