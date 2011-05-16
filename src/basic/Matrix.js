@@ -293,6 +293,7 @@ var Matrix = this.Matrix = Base.extend({
 	 */
 	transform: function(/* point | */ src, srcOff, dst, dstOff, numPts) {
 		return arguments.length < 5
+			// TODO: Check for rectangle and use _tranformBounds?
 			? this._transformPoint(Point.read(arguments))
 			: this._transformCoordinates(src, srcOff, dst, dstOff, numPts);
 	},
@@ -325,27 +326,25 @@ var Matrix = this.Matrix = Base.extend({
 		return dst;
 	},
 
-	transformBounds: function(bounds) {
-		// Rotate the corner points of the image rectangle do find the 
-		// extremas that define our raster's bounds, and update them straight 
-		// away
-		var tl = bounds.getTopLeft(),
-			tr = bounds.getTopRight(),
-			br = bounds.getBottomRight(),
-			bl = bounds.getBottomLeft(),
-			coords = [ tl.x, tl.y, tr.x, tr.y, br.x, br.y, bl.x, bl.y ];
-		this._transformCoordinates(coords, 0, coords, 0, 4);
-		// Loop through all x and y coordinates and update min and max values.
-		// Start with the first coordinate pair for both (coords.slice(0, 2)).
-		var min = coords.slice(0, 2), max = min.slice(0);
+	/**
+	 * Returns the 'transformed' bounds rectangle by transforming each corner
+	 * point and finding the new bounding box to these points. This is not
+	 * really the transformed reactangle!
+	 */
+	_transformBounds: function(bounds) {
+		var coords = bounds.transformCornerCoordinates(this),
+			min = coords.slice(0, 2),
+			max = coords.slice(0);
 		for (var i = 2; i < 8; i++) {
-			var c = coords[i], j = i & 1; // i & 1 == i % 2 == i modulo 2
-			if (c < min[j])
-				min[j] = c;
-			else if (c > max[j])
-				max[j] = c;
+			var val = coords[i],
+				j = i & 1;
+			if (val < min[j])
+				min[j] = val;
+			else if (val > max[j])
+				max[j] = val;
 		}
-		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+		return Rectangle.create(min[0], min[1],
+				max[0] - min[0], max[1] - min[1]);
 	},
 
 	/**
