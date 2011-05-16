@@ -326,13 +326,22 @@ var Matrix = this.Matrix = Base.extend({
 		return dst;
 	},
 
+	_transformCorners: function(rect) {
+		var x1 = rect.x,
+			y1 = rect.y,
+			x2 = x1 + rect.width,
+			y2 = y1 + rect.height,
+			coords = [ x1, y1, x2, y1, x2, y2, x1, y2 ];
+		return this._transformCoordinates(coords, 0, coords, 0, 4);
+	},
+
 	/**
 	 * Returns the 'transformed' bounds rectangle by transforming each corner
 	 * point and finding the new bounding box to these points. This is not
 	 * really the transformed reactangle!
 	 */
 	_transformBounds: function(bounds) {
-		var coords = bounds.transformCornerCoordinates(this),
+		var coords = this._transformCorners(bounds),
 			min = coords.slice(0, 2),
 			max = coords.slice(0);
 		for (var i = 2; i < 8; i++) {

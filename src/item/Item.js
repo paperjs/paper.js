@@ -636,7 +636,7 @@ var Item = this.Item = Base.extend({
 
 	statics: {
 		drawSelectedBounds: function(bounds, ctx, matrix) {
-			var coords = bounds.transformCornerCoordinates(matrix);
+			var coords = matrix._transformCorners(bounds);
 			ctx.beginPath();
 			for (var i = 0; i < 8; i++)
 				ctx[i == 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
