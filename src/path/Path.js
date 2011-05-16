@@ -643,8 +643,14 @@ var Path = this.Path = PathItem.extend({
 	};
 
 	return {
-		beans: true,
-		
+		_setStyles: function(ctx) {
+			for (var i in styles) {
+				var style = this._style[i]();
+				if (style)
+					ctx[styles[i]] = style;
+			}
+		},
+
 		smooth: function() {
 			// This code is based on the work by Oleg V. Polikarpotchkin,
 			// http://ov-p.spaces.live.com/blog/cns!39D56F0C7A08D703!147.entry
@@ -741,14 +747,6 @@ var Path = this.Path = PathItem.extend({
 			if (this._closed && handleIn) {
 				var segment = this._segments[0];
 				segment.setHandleIn(handleIn.subtract(segment._point));
-			}
-		},
-
-		_setStyles: function(ctx) {
-			for (var i in styles) {
-				var style = this._style[i]();
-				if (style)
-					ctx[styles[i]] = style;
 			}
 		}
 	};
