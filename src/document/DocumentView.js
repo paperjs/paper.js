@@ -28,15 +28,16 @@ var DocumentView = this.DocumentView = Base.extend({
 		// Push it onto document.views and set index:
 		this._index = this._document.views.push(this) - 1;
 		// Handle canvas argument
+		var size;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
 			var offset = DomElement.getOffset(canvas);
 			// If the canvas has the resize attribute, resize the it to fill the
 			// window and resize it again whenever the user resizes the window.
 			if (canvas.attributes.resize) {
-				this._size = DomElement.getWindowSize().subtract(offset);
-				canvas.width = this._size.width;
-				canvas.height = this._size.height;
+				size = DomElement.getWindowSize().subtract(offset);
+				canvas.width = size.width;
+				canvas.height = size.height;
 				var that = this;
 				DomEvent.add(window, {
 					resize: function(event) {
@@ -44,13 +45,13 @@ var DocumentView = this.DocumentView = Base.extend({
 						// 0, 0), as otherwise the offset would be wrong.
 						if (!DomElement.getSize(canvas).equals([0, 0]))
 							offset = DomElement.getOffset(canvas);
-						that.setSize(DomElement.getWindowSize().subtract(offset));
+						that.setViewSize(
+								DomElement.getWindowSize().subtract(offset));
 						that.draw();
 					}
 				});
 			} else {
-				this._size = Size.create(
-						canvas.offsetWidth, canvas.offsetHeight);
+				size = Size.create(canvas.offsetWidth, canvas.offsetHeight);
 			}
 			// TODO: Test this on IE:
 			if (canvas.attributes.stats) {
@@ -65,11 +66,13 @@ var DocumentView = this.DocumentView = Base.extend({
 			}
 		} else {
 			// 2nd argument onwards could be view size, otherwise use default:
-			this._size = Size.read(arguments, 1);
-			if (this._size.isZero())
-				this._size = new Size(1024, 768);
-			this._canvas = CanvasProvider.getCanvas(this._size);
+			size = Size.read(arguments, 1);
+			if (size.isZero())
+				size = new Size(1024, 768);
+			this._canvas = CanvasProvider.getCanvas(size);
 		}
+		this._viewBounds = LinkedRectangle.create(this, 'setViewBounds',
+				0, 0, size.width, size.height);
 		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
@@ -84,33 +87,54 @@ var DocumentView = this.DocumentView = Base.extend({
 		return this._document;
 	},
 
-	getSize: function() {
-		return LinkedSize.create(this, 'setSize',
-				this._size.width, this._size.height);
+	getViewBounds: function() {
+		return this._viewBounds;
 	},
 
-	setSize: function(size) {
-		var old = this._size;
-		this._size = Size.read(arguments);
-		this._canvas.width = this._size.width;
-		this._canvas.height = this._size.height;
+	setViewBounds: function(bounds) {
+		bounds = Rectangle.read(arguments);
+		var size = bounds.getSize(),
+			delta = size.subtract(this._viewBounds.getSize());
+		// TODO: Take into acount bounds.x/y and decide on what grounds to
+		// change canvas size. Also, if x/y is not 0, do we need to add that
+		// to transform, or is that up to the user?
+		this._canvas.width = size.width;
+		this._canvas.height = size.height;
 		// Call onResize handler on any size change
 		if (this.onResize) {
 			this.onResize({
-				size: this._size,
-				delta: this._size.subtract(old)
+				size: size,
+				delta: delta
 			});
 		}
+		// Force recalculation
+		this._bounds = null;
+	},
+
+	getViewSize: function() {
+		return this._viewBounds.getSize();
+	},
+
+	setViewSize: function(size) {
+		this._viewBounds.setSize.apply(this._viewBounds, arguments);
 	},
 
 	getBounds: function() {
+		if (!this._bounds)
+			this._bounds = this._matrix._transformBounds(this._viewBounds);
 		return this._bounds;
 	},
 
+	getSize: function() {
+		return this.getBounds().getSize();
+	},
+
 	getCenter: function() {
+		return this.getBounds().getCenter();
 	},
 
 	setCenter: function(center) {
+		this.scrollBy(Point.read(arguments).subtract(this.getCenter()));
 	},
 
 	getZoom: function() {
@@ -135,7 +159,10 @@ var DocumentView = this.DocumentView = Base.extend({
 		// Initial tests conclude that clearing the canvas using clearRect
 		// is always faster than setting canvas.width = canvas.width
 		// http://jsperf.com/clearrect-vs-setting-width/7
-		this._context.clearRect(0, 0, this._size.width + 1, this._size.height + 1);
+		var bounds = this._viewBounds;
+		this._context.clearRect(bounds._x, bounds._y,
+				// TODO: +1... what if we have multiple views in one canvas? 
+				bounds._width + 1, bounds._height + 1);
 		this._document.draw(this._context);
 	},
 
@@ -155,6 +182,7 @@ var DocumentView = this.DocumentView = Base.extend({
 
 	transform: function(matrix, flags) {
 		this._matrix.preConcatenate(matrix);
+		// Force recalculation of these values next time they are requested.
 		this._bounds = null;
 		this._inverse = null;
 	},
