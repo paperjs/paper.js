@@ -129,8 +129,7 @@ var PaperScript = this.PaperScript = new function() {
 		return parse_js.stringify(ast, true);
 	}
 
-	// XXX: Move to PaperScope
-	function run(code, scope) {
+	function evaluate(code, scope) {
 //#ifdef BROWSER
 		// See if it's a script tag or a string
 		if (typeof code !== 'string') {
@@ -212,7 +211,7 @@ var PaperScript = this.PaperScript = new function() {
 		}
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === 4) {
-				return run(xhr.responseText, scope);
+				return evaluate(xhr.responseText, scope);
 			}
 		};
 		return xhr.send(null);
@@ -237,7 +236,7 @@ var PaperScript = this.PaperScript = new function() {
 				// id, we're not changing it, since it's the first option we're
 				// trying to get an id from above.
 				script.setAttribute('id', scope.id);
-				run(script, scope);
+				evaluate(script, scope);
 				// Mark script as loaded now.
 				script.setAttribute('loaded', true);
 			}
@@ -248,7 +247,7 @@ var PaperScript = this.PaperScript = new function() {
 
 	return {
 		compile: compile,
-		run: run,
+		evaluate: evaluate,
 		load: load
 	};
 
@@ -256,7 +255,7 @@ var PaperScript = this.PaperScript = new function() {
 
 	return {
 		compile: compile,
-		run: run
+		evaluate: evaluate
 	};
 
 //#endif // !BROWSER
