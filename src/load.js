@@ -57,6 +57,11 @@ var sources = [
 	'src/path/CompoundPath.js',
 	'src/path/Path.Constructors.js',
 
+	'src/text/ParagraphStyle.js',
+	'src/text/CharacterStyle.js',
+	'src/text/TextItem.js',
+	'src/text/PointText.js',
+
 	'src/color/Color.js',
 	'src/color/RGBColor.js',
 	'src/color/HSBColor.js',
