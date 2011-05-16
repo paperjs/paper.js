@@ -746,7 +746,7 @@ var Path = this.Path = PathItem.extend({
 
 		_setStyles: function(ctx) {
 			for (var i in styles) {
-				var style = this[i]();
+				var style = this._style[i]();
 				if (style)
 					ctx[styles[i]] = style;
 			}
