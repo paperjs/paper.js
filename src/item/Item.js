@@ -512,9 +512,13 @@ var Item = this.Item = Base.extend({
 	 */
 	getPosition: function() {
 		// Cache position value
-		if (!this._position)
-			this._position = this.getBounds().getCenter();
-		return this._position.clone();
+		if (!this._position) {
+			// Center is a LinkedPoint as well, so we can use _x and _y
+			var center = this.getBounds().getCenter();
+			this._position = LinkedPoint.create(this, 'setPosition',
+					center._x, center._y);
+		}
+		return this._position;
 	},
 
 	setPosition: function(point) {
@@ -534,9 +538,10 @@ var Item = this.Item = Base.extend({
 		// TODO: Call transform on chidren only if 'children' flag is provided
 		if (this._transform)
 			this._transform(matrix, flags);
-			// Transform position as well
+		// Transform position as well. Do not modify _position directly,
+		// since it's a LinkedPoint and would cause recursion!
 		if (this._position)
-			this._position = matrix._transformPoint(this._position);
+			matrix._transformPoint(this._position, this._position, true);
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++) {
 				var child = this._children[i];
