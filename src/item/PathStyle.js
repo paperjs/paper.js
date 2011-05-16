@@ -30,6 +30,8 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 
 		initialize: function(style) {
 			if (style) {
+				// Note: This relies on bean setters that get implicetly
+				// called when setting values on this[key].
 				for (var i = 0, l = keys.length; i < l; i++) {
 					var key = keys[i],
 						value = style[key];
@@ -46,6 +48,9 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		statics: {
 			create: function(item, other) {
 				var style = new PathStyle(PathStyle.dont);
+				// We need _item to be set before calling initialize(), since
+				// it is setting bean properties that propagate changes through
+				// all of item's children.
 				style._item = item;
 				style.initialize(other);
 				return style;
@@ -101,8 +106,8 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			}
 		};
 
-		// 'this' = the Base.each() side-car = the object that is injected into
-		// Item above:
+		// 'this' = the Base.each() side-car = the object that is returned from
+		// Base.each and injected into Item above:
 		this[set] = function(value) {
 			this._style[set](value);
 			return this;
