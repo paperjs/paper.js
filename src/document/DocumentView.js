@@ -50,10 +50,10 @@ var DocumentView = this.DocumentView = Base.extend({
 								DomElement.getWindowSize().subtract(offset));
 						// If there's a _onFrameCallback, call it staight away,
 						// but without requesting another animation frame.
-						if (this._onFrameCallback) {
-							this._onFrameCallback(0, true);
+						if (that._onFrameCallback) {
+							that._onFrameCallback(0, true);
 						} else {
-							this.draw();
+							that.draw();
 						}
 					}
 				});
