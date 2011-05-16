@@ -29,15 +29,13 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		beans: true,
 
 		initialize: function(style) {
-			if (style) {
-				// Note: This relies on bean setters that get implicetly
-				// called when setting values on this[key].
-				for (var i = 0, l = keys.length; i < l; i++) {
-					var key = keys[i],
-						value = style[key];
-					if (value !== undefined)
-						this[key] = value;
-				}
+			// Note: This relies on bean setters that get implicetly
+			// called when setting values on this[key].
+			for (var i = 0, l = style && keys.length; i < l; i++) {
+				var key = keys[i],
+					value = style[key];
+				if (value !== undefined)
+					this[key] = value;
 			}
 		},
 
