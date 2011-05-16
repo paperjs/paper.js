@@ -229,6 +229,20 @@ var Rectangle = this.Rectangle = Base.extend({
 				+ ' }';
 	},
 
+	transformCornerCoordinates: function(matrix) {
+		var bottom = this.y + this.height,
+			right = this.x + this.width,
+			coords = [ 
+				this.x, this.y,
+				right, this.y,
+				right, bottom,
+				this.x, bottom
+			];
+		return matrix
+				? matrix._transformCoordinates(coords, 0, coords, 0, 4)
+				: coords;
+	},
+
 	statics: {
 		// See Point.create()
 		create: function(x, y, width, height) {
