@@ -301,14 +301,15 @@ var Matrix = this.Matrix = Base.extend({
 	 * A faster version of transform that only takes one point and does not 
 	 * attempt to convert it.
 	 */
-	_transformPoint: function(point, dest) {
+	_transformPoint: function(point, dest, dontNotify) {
 		var x = point.x,
 			y = point.y;
 		if (!dest)
 			dest = new Point(Point.dont);
 		return dest.set(
 			x * this._m00 + y * this._m01 + this._m02,
-			x * this._m10 + y * this._m11 + this._m12
+			x * this._m10 + y * this._m11 + this._m12,
+			dontNotify
 		);
 	},
 
