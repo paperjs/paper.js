@@ -153,51 +153,57 @@ var PaperScript = this.PaperScript = new function() {
 			}
 		}
 //#endif // BROWSER
-		with (scope) { // Safe one indentation by grouping try and with
-			paper = scope;
-			var doc = scope.document,
-				view = doc.activeView,
-				// TODO: Add support for multiple tools
-				tool = scope.tool =
-					/on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
-						&& new Tool(null, scope);
-			// Define variables for potential handlers, so eval() calls below to 
-			// fetch their values do not require try-catch around them.
-			var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
-				onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp,
-				onFrame, onResize;
-			var res = eval(compile(code));
-			if (tool) {
-				// We could do this instead to avoid eval(), but it's more code:
-				// tool.onEditOptions = onEditOptions;
-				// tool.onSelect = onSelect;
-				// tool.onDeselect = onDeselect;
-				// tool.onReselect = onReselect;
-				// tool.onMouseDown = onMouseDown;
-				// tool.onMouseUp = onMouseUp;
-				// tool.onMouseDrag = onMouseDrag;
-				// tool.onMouseMove = onMouseMove;
-				// tool.onKeyDown = onKeyDown;
-				// tool.onKeyUp = onKeyUp;
-				Base.each(['onEditOptions', 'onSelect', 'onDeselect',
+		var doc = scope.document,
+			view = doc.activeView,
+			// TODO: Add support for multiple tools
+			tool = scope.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
+					&& new Tool(null, scope),
+			res;
+		// Define variables for potential handlers, so eval() calls below to 
+		// fetch their values do not require try-catch around them.
+		// Set currently active scope.
+		paper = scope;
+		// Use with(){} in order to make the scope the current 'global' scope
+		// instead of window.
+		with (scope) {
+			// Within this, use a function scope, so local variables to not try
+			// and set themselves on the paper object.
+			(function() {
+				var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
+					onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp,
+					onFrame, onResize,
+					handlers = [ 'onEditOptions', 'onSelect', 'onDeselect',
 						'onReselect', 'onMouseDown', 'onMouseUp', 'onMouseDrag',
-						'onMouseMove', 'onKeyDown', 'onKeyUp'],
-					function(key) {
+						'onMouseMove', 'onKeyDown', 'onKeyUp'];
+				res = eval(compile(code));
+				if (tool) {
+					// We could do this instead to avoid eval(), but it's longer
+					// tool.onEditOptions = onEditOptions;
+					// tool.onSelect = onSelect;
+					// tool.onDeselect = onDeselect;
+					// tool.onReselect = onReselect;
+					// tool.onMouseDown = onMouseDown;
+					// tool.onMouseUp = onMouseUp;
+					// tool.onMouseDrag = onMouseDrag;
+					// tool.onMouseMove = onMouseMove;
+					// tool.onKeyDown = onKeyDown;
+					// tool.onKeyUp = onKeyUp;
+					Base.each(handlers, function(key) {
 						tool[key] = eval(key);
-					}
-				);
-			}
-			if (view) {
-				view.onResize = onResize;
-				if (onFrame) {
-					view.setOnFrame(onFrame);
-				} else {
-					// Automatically draw view at the end.
-					view.draw();
+					});
 				}
-			}
-			return res;
+				if (view) {
+					view.onResize = onResize;
+					if (onFrame) {
+						view.setOnFrame(onFrame);
+					} else {
+						// Automatically draw view at the end.
+						view.draw();
+					}
+				}
+			}).call(scope);
 		}
+		return res;
 	}
 
 //#ifdef BROWSER
