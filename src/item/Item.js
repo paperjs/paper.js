@@ -295,7 +295,7 @@ var Item = this.Item = Base.extend({
 	removeChildren: function() {
 		var removed = false;
 		if (this._children) {
-			for (var i = this._children.length; i >= 0 i--)
+			for (var i = this._children.length; i >= 0; i--)
 				removed = this._children[i].remove() || removed;
 		}
 		return removed;
