@@ -239,7 +239,12 @@ var Item = this.Item = Base.extend({
 		return this._children;
 	},
 
-	// TODO: #setChildren()
+	setChildren: function(children) {
+		this.removeChildren();
+		for (var i = 0, l = children && children.length; i < l; i++)
+			this.appendBottom(children[i]);
+	},
+
 
 	/**
 	 * Reverses the order of this item's children
@@ -251,6 +256,18 @@ var Item = this.Item = Base.extend({
 				this._children[i]._index = i;
 			}
 		}
+	},
+
+	/**
+	 * Removes all of the item's children, if it has any
+	 */
+	removeChildren: function() {
+		var removed = false;
+		if (this._children) {
+			for (var i = this._children.length; i >= 0 i--)
+				removed = this._children[i].remove() || removed;
+		}
+		return removed;
 	},
 
 	/**
