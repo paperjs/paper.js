@@ -798,15 +798,6 @@ var Item = this.Item = Base.extend({
 		appendBottom: append(false),
 
 		/**
-		 * A link to {@link #appendTop}
-		 * 
-		 * @deprecated use {@link #appendTop} or {@link #appendBottom} instead.
-		 */
-		appendChild: function(item) {
-			return this.appendTop(item);
-		},
-
-		/**
 		 * Moves this item above the specified item.
 		 * 
 		 * @param item The item above which it should be moved
