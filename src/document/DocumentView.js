@@ -45,8 +45,16 @@ var DocumentView = this.DocumentView = Base.extend({
 						// 0, 0), as otherwise the offset would be wrong.
 						if (!DomElement.getSize(canvas).equals([0, 0]))
 							offset = DomElement.getOffset(canvas);
+						// Set the size now, which internally calls onResize
 						that.setViewSize(
 								DomElement.getWindowSize().subtract(offset));
+						// If there's a _onFrameCallback, call it staight away,
+						// but without requesting another animation frame.
+						if (this._onFrameCallback) {
+							this._onFrameCallback(0, true);
+						} else {
+							this.draw();
+						}
 					}
 				});
 			} else {
@@ -108,7 +116,6 @@ var DocumentView = this.DocumentView = Base.extend({
 		}
 		// Force recalculation
 		this._bounds = null;
-		this.draw();
 	},
 
 	getViewSize: function() {
@@ -221,21 +228,27 @@ var DocumentView = this.DocumentView = Base.extend({
 
 	setOnFrame: function(onFrame) {
 		this._onFrame = onFrame;
+		if (!onFrame) {
+			delete this._onFrameCallback;
+			return;
+		}
 		var that = this,
-			running = false,
+			requested = false,
 			before,
 			time = 0,
 			count = 0;
-		function frame() {
-			if (!that._onFrame) {
-				running = false;
+		this._onFrameCallback = function(param, dontRequest) {
+			requested = false;
+			if (!that._onFrame)
 				return;
-			}
 			// Set the global paper object to the current scope
 			paper = that._scope;
 			// Request next frame already
-			DomEvent.requestAnimationFrame(frame, that._canvas);
-			running = true;
+			requested = true;
+			if (!dontRequest) {
+				DomEvent.requestAnimationFrame(that._onFrameCallback,
+						that._canvas);
+			}
 			var now = Date.now() / 1000,
 			 	delta = before ? now - before : 0;
 			that._onFrame({
@@ -249,8 +262,8 @@ var DocumentView = this.DocumentView = Base.extend({
 		};
 		// Call the onFrame handler straight away, initializing the sequence
 		// of onFrame calls.
-		if (!running)
-			frame();
+		if (!requested)
+			this._onFrameCallback();
 	},
 
 	_createEvents: function() {
