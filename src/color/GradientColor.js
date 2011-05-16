@@ -71,11 +71,11 @@ var GradientColor = this.GradientColor = Color.extend({
 		var gradient;
 		if (this.gradient.type === 'linear') {
 			gradient = ctx.createLinearGradient(this._origin.x, this._origin.y,
-				this.destination.x, this.destination.y);
+					this.destination.x, this.destination.y);
 		} else {
 			var origin = this._hilite || this._origin;
 			gradient = ctx.createRadialGradient(origin.x, origin.y,
-				0, this._origin.x, this._origin.y, this._radius);
+					0, this._origin.x, this._origin.y, this._radius);
 		}
 		for (var i = 0, l = this.gradient._stops.length; i < l; i++) {
 			var stop = this.gradient._stops[i];
@@ -101,25 +101,11 @@ var GradientColor = this.GradientColor = Color.extend({
 	},
 	
 	transform: function(matrix) {
-		var origin = this._origin,
-			destination = this._destination,
-			hilite = this._hilite,
-			coords = [ origin.x, origin.y, destination.x, destination.y];
-		if (hilite) {
-			coords[4] = hilite.x;
-			coords[5] = hilite.y;
-		}
-		matrix._transformCoordinates(coords, 0, coords, 0,
-				this._hilite ? 3 : 2);
-		origin.x = coords[0];
-		origin.y = coords[1];
-		destination.x = coords[2];
-		destination.y = coords[3];
+		matrix._transformPoint(this._origin, this._origin, true);
+		matrix._transformPoint(this._destination, this._destination, true);
+		if (this._hilite)
+			matrix._transformPoint(this._hilite, this._hilite, true);
 		this._radius = destination.getDistance(origin);
-		if (hilite) {
-			hilite.x = coords[4];
-			hilite.y = coords[5];
-		}
 	}
 });
 
