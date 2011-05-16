@@ -261,10 +261,10 @@ var Item = this.Item = Base.extend({
 		return this._children;
 	},
 
-	setChildren: function(children) {
+	setChildren: function(items) {
 		this.removeChildren();
-		for (var i = 0, l = children && children.length; i < l; i++)
-			this.appendBottom(children[i]);
+		for (var i = 0, l = items && items.length; i < l; i++)
+			this.appendTop(items[i]);
 	},
 
 	/**
