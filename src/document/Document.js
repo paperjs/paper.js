@@ -31,32 +31,9 @@ var Document = this.Document = Base.extend({
 		this.symbols = [];
 		this.activeLayer = new Layer();
 		this.activeView = canvas ? new DocumentView(canvas) : null;
-		// XXX: Introduce pages and remove Document#bounds!
-		var size = this.activeView && this.activeView._size
-				|| new Size(1024, 768);
-		this._bounds = Rectangle.create(0, 0, size.width, size.height);
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		this.setCurrentStyle(null);
-	},
-
-	getBounds: function() {
-		// TODO: Consider LinkedRectangle once it is required.
-		return this._bounds;
-	},
-
-	setBounds: function(rect) {
-		rect = Rectangle.read(arguments);
-		this._bounds.set(rect.x, rect.y, rect.width, rect.height);
-	},
-
-	getSize: function() {
-		return this._bounds.getSize();
-	},
-	
-	setSize: function(size) {
-		// TODO: Once _bounds is a LinkedRectangle, this will recurse
-		this._bounds.setSize.apply(this._bounds, arguments); 
 	},
 
 	getCurrentStyle: function() {
