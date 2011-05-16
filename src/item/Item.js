@@ -39,9 +39,8 @@ var Item = this.Item = Base.extend({
 	 * The unique id of the item.
 	 */
 	getId: function() {
-		if (this._id == null) {
+		if (this._id == null)
 			this._id = Item._id = (Item._id || 0) + 1;
-		}
 		return this._id;
 	},
 
