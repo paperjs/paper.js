@@ -17,8 +17,8 @@
 var Project = this.Project = Base.extend({
 	beans: true,
 
-	// XXX: Add arguments to define pages, but do not pass canvas here
-	initialize: function(canvas) {
+	// TODO: Add arguments to define pages
+	initialize: function() {
 		// Store reference to the currently active global paper scope:
 		this._scope = paper;
 		// Push it onto this._scope.projects and set index:
@@ -27,10 +27,8 @@ var Project = this.Project = Base.extend({
 		// Layer and DoumentView constructors.
 		this.activate();
 		this.layers = [];
-		this.views = [];
 		this.symbols = [];
 		this.activeLayer = new Layer();
-		this.activeView = canvas ? new ProjectView(canvas) : null;
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		this._currentStyle = PathStyle.create(null);
@@ -55,9 +53,6 @@ var Project = this.Project = Base.extend({
 	remove: function() {
 		var res = Base.splice(this._scope.projects, null, this._index, 1);
 		this._scope = null;
-		// Remove all views. This also removes the installed event handlers.
-		for (var i = this.views.length - 1; i >= 0; i--)
-			this.views[i].remove();
 		return !!res.length;
 	},
 
@@ -130,8 +125,10 @@ var Project = this.Project = Base.extend({
 		}
 	},
 
+	/**
+	 * @deprecated
+	 */
 	redraw: function() {
-		for (var i = 0, l = this.views.length; i < l; i++)
-			this.views[i].draw();
+		this._scope.view.draw();
 	}
 });

@@ -21,12 +21,10 @@ var ProjectView = this.ProjectView = Base.extend({
 	// Find a good name for these bounds, since #bounds is already the artboard
 	// bounds of the visible area.
 	initialize: function(canvas) {
-		// To go with the convention of never passing project to constructors,
-		// in all items, associate the view with the currently active project.
-		this._project = paper.project;
-		this._scope = this._project._scope;
+		// Associate this view with the active paper scope.
+		this._scope = paper;
 		// Push it onto project.views and set index:
-		this._index = this._project.views.push(this) - 1;
+		this._index = this._scope.views.push(this) - 1;
 		// Handle canvas argument
 		var size;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
@@ -88,10 +86,6 @@ var ProjectView = this.ProjectView = Base.extend({
 		// Make sure the first view is focused for keyboard input straight away
 		if (!ProjectView.focused)
 			ProjectView.focused = this;
-	},
-
-	getProject: function() {
-		return this._project;
 	},
 
 	getViewBounds: function() {
@@ -170,20 +164,20 @@ var ProjectView = this.ProjectView = Base.extend({
 		this._context.clearRect(bounds._x, bounds._y,
 				// TODO: +1... what if we have multiple views in one canvas? 
 				bounds._width + 1, bounds._height + 1);
-		this._project.draw(this._context);
+		// Just draw the active project for now
+		this._scope.project.draw(this._context);
 	},
 
 	activate: function() {
-		this._project.activeView = this;
+		this._scope.view = this;
 	},
 
 	remove: function() {
-		var res = Base.splice(this._project.views, null, this._index, 1);
+		var res = Base.splice(this._scope.views, null, this._index, 1);
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._canvas, this._events);
-		this._project = this._scope = this._canvas = this._events = null;
 		// Clearing _onFrame makes the frame handler stop automatically.
-		this._onFrame = null;
+		this._scope = this._canvas = this._events = this._onFrame = null;
 		return !!res.length;
 	},
 
