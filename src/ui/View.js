@@ -158,12 +158,17 @@ var View = this.View = Base.extend({
 		// Initial tests conclude that clearing the canvas using clearRect
 		// is always faster than setting canvas.width = canvas.width
 		// http://jsperf.com/clearrect-vs-setting-width/7
-		var bounds = this._viewBounds;
-		this._context.clearRect(bounds._x, bounds._y,
+		var ctx =this._context,
+			bounds = this._viewBounds;
+		ctx.clearRect(bounds._x, bounds._y,
 				// TODO: +1... what if we have multiple views in one canvas? 
 				bounds._width + 1, bounds._height + 1);
+
+		ctx.save();
+		this._matrix.applyToContext(ctx);
 		// Just draw the active project for now
-		this._scope.project.draw(this._context);
+		this._scope.project.draw(ctx);
+		ctx.restore();
 	},
 
 	activate: function() {
