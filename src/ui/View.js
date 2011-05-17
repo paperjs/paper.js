@@ -144,9 +144,7 @@ var View = this.View = Base.extend({
 
 	setZoom: function(zoom) {
 		// TODO: Clamp the view between 1/32 and 64, just like Illustrator?
-		var mx = new Matrix();
-		mx.scale(zoom / this._zoom, this._center);
-		this.transform(mx);
+		this.transform(new Matrix().scale(zoom / this._zoom, this.getCenter()));
 		this._zoom = zoom;
 	},
 
