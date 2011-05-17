@@ -35,7 +35,6 @@ var sources = [
 	'src/basic/Matrix.js',
 	'src/basic/Line.js',
 
-	'src/project/ProjectView.js',
 	'src/project/Project.js',
 	'src/project/Symbol.js',
 
@@ -73,6 +72,7 @@ var sources = [
 	'src/browser/DomElement.js',
 	'src/browser/DomEvent.js',
 
+	'src/ui/View.js',
 	'src/ui/Event.js',
 	'src/ui/KeyEvent.js',
 	'src/ui/Key.js',

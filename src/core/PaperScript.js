@@ -142,7 +142,7 @@ var PaperScript = this.PaperScript = new function() {
 				paper = scope;
 				new Project();
 				// Activate the newly created view straight away
-				new ProjectView(canvas).activate();
+				new View(canvas).activate();
 			}
 			if (code.src) {
 				// If we're loading from a source, request that first and then
