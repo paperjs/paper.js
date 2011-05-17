@@ -42,10 +42,10 @@ test('clone()', function() {
 	}, true);
 });
 
-test('appendChild(item)', function() {
+test('appendTop(item)', function() {
 	var proj = paper.project;
 	var path = new Path();
-	proj.activeLayer.appendChild(path);
+	proj.activeLayer.appendTop(path);
 	equals(function() {
 		return proj.activeLayer.children.length;
 	},  1);
@@ -55,7 +55,7 @@ test('item.parent / item.isChild / item.isParent', function() {
 	var proj = paper.project;
 	var secondDoc = new Project();
 	var path = new Path();
-	proj.activeLayer.appendChild(path);
+	proj.activeLayer.appendTop(path);
 	equals(function() {
 		return proj.activeLayer.children.indexOf(path) != -1;
 	}, true);
