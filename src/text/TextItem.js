@@ -19,7 +19,6 @@ var TextItem = this.TextItem = Item.extend({
 
 	initialize: function() {
 		this.base();
-		point = Point.read(arguments, 0, 1);
 		this.content = null;
 		this.setCharacterStyle(this._project.getCurrentStyle());
 		this.setParagraphStyle();
