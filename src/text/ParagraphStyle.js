@@ -15,8 +15,6 @@
  */
 
 var ParagraphStyle = this.ParagraphStyle = Base.extend({
-	beans: true,
-
 	initialize: function(style) {
 		this.justification = (style && style.justification) || 'left';
 	},
