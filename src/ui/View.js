@@ -144,12 +144,12 @@ var View = this.View = Base.extend({
 
 	setZoom: function(zoom) {
 		// TODO: Clamp the view between 1/32 and 64, just like Illustrator?
-		this.transform(new Matrix().scale(zoom / this._zoom, this.getCenter()));
+		this._transform(new Matrix().scale(zoom / this._zoom, this.getCenter()));
 		this._zoom = zoom;
 	},
 
 	scrollBy: function(point) {
-		this.transform(new Matrix().translate(Point.read(arguments).negate()));
+		this._transform(new Matrix().translate(Point.read(arguments).negate()));
 	},
 
 	draw: function() {
@@ -184,7 +184,7 @@ var View = this.View = Base.extend({
 		return !!res.length;
 	},
 
-	transform: function(matrix, flags) {
+	_transform: function(matrix, flags) {
 		this._matrix.preConcatenate(matrix);
 		// Force recalculation of these values next time they are requested.
 		this._bounds = null;
