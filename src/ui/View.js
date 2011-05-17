@@ -152,6 +152,13 @@ var View = this.View = Base.extend({
 		this._transform(new Matrix().translate(Point.read(arguments).negate()));
 	},
 
+	_transform: function(matrix, flags) {
+		this._matrix.preConcatenate(matrix);
+		// Force recalculation of these values next time they are requested.
+		this._bounds = null;
+		this._inverse = null;
+	},
+
 	draw: function() {
 		if (this._stats)
 			this._stats.update();
@@ -184,19 +191,6 @@ var View = this.View = Base.extend({
 		return !!res.length;
 	},
 
-	_transform: function(matrix, flags) {
-		this._matrix.preConcatenate(matrix);
-		// Force recalculation of these values next time they are requested.
-		this._bounds = null;
-		this._inverse = null;
-	},
-
-	_getInverse: function() {
-		if (!this._inverse)
-			this._inverse = this._matrix.createInverse();
-		return this._inverse;
-	},
-
 	// TODO: getInvalidBounds
 	// TODO: invalidate(rect)
 	// TODO: style: artwork / preview / raster / opaque / ink
@@ -211,6 +205,12 @@ var View = this.View = Base.extend({
 
 	viewToArtwork: function(point) {
 		return this._getInverse()._transformPoint(Point.read(arguments));
+	},
+
+	_getInverse: function() {
+		if (!this._inverse)
+			this._inverse = this._matrix.createInverse();
+		return this._inverse;
 	},
 
 	/**
