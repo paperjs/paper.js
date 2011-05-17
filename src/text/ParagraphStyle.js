@@ -16,11 +16,9 @@
 
 var ParagraphStyle = this.ParagraphStyle = Base.extend({
 	initialize: function(style) {
-		this.justification = (style && style.justification) || 'left';
-	},
-
-	clone: function() {
-		return new PathStyle(this);
+		Base.initialize(this, style, {
+			justification: 'left'
+		});
 	},
 
 	statics: {
