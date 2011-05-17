@@ -22,12 +22,11 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 		});
 		this.base(style);
 	},
-	
+
 	statics: {
-		create: function(item, other) {
+		create: function(item) {
 			var style = new CharacterStyle(CharacterStyle.dont);
 			style._item = item;
-			style.initialize(other);
 			return style;
 		}
 	}

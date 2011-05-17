@@ -22,10 +22,9 @@ var ParagraphStyle = this.ParagraphStyle = Base.extend({
 	},
 
 	statics: {
-		create: function(item, other) {
-			var style = new ParagraphStyle(PathStyle.dont);
+		create: function(item) {
+			var style = new CharacterStyle(CharacterStyle.dont);
 			style._item = item;
-			style.initialize(other);
 			return style;
 		}
 	}
