@@ -19,8 +19,7 @@ var PointText = this.PointText = TextItem.extend({
 
 	initialize: function(point) {
 		this.base();
-		point = Point.read(arguments, 0, 1);
-		this._point = point || new Point();
+		this._point = Point.read(arguments, 0);
 		this.matrix = new Matrix().translate(this._point);
 	},
 
