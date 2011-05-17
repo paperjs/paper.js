@@ -52,7 +52,6 @@ var paper = new function() {
 //#include "basic/Matrix.js"
 //#include "basic/Line.js"
 
-//#include "project/ProjectView.js"
 //#include "project/Project.js"
 //#include "project/Symbol.js"
 
@@ -93,6 +92,7 @@ var paper = new function() {
 //#include "browser/DomElement.js"
 //#include "browser/DomEvent.js"
 
+//#include "ui/View.js"
 //#include "ui/Event.js"
 //#include "ui/KeyEvent.js"
 //#include "ui/Key.js"

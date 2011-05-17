@@ -665,7 +665,7 @@ var Item = this.Item = Base.extend({
 			}
 		},
 
-		// TODO: Implement ProjectView into the drawing
+		// TODO: Implement View into the drawing
 		// TODO: Optimize temporary canvas drawing to ignore parts that are
 		// outside of the visible view.
 		draw: function(item, ctx, param) {

@@ -14,7 +14,7 @@
  * All rights reserved.
  */
 
-var ProjectView = this.ProjectView = Base.extend({
+var View = this.View = Base.extend({
 	beans: true,
 
 	// TODO: Add bounds parameter that defines position within canvas?
@@ -84,8 +84,8 @@ var ProjectView = this.ProjectView = Base.extend({
 		this._events = this._createEvents();
 		DomEvent.add(this._canvas, this._events);
 		// Make sure the first view is focused for keyboard input straight away
-		if (!ProjectView.focused)
-			ProjectView.focused = this;
+		if (!View.focused)
+			View.focused = this;
 	},
 
 	getViewBounds: function() {
@@ -273,7 +273,7 @@ var ProjectView = this.ProjectView = Base.extend({
 
 		function mousedown(event) {
 			// Tell the Key class which view should receive keyboard input.
-			ProjectView.focused = that;
+			View.focused = that;
 			if (!(tool = that._scope.tool))
 				return;
 			curPoint = viewToArtwork(event);

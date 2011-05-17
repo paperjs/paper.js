@@ -65,7 +65,7 @@ var Key = this.Key = new function() {
 		var character = String.fromCharCode(charCode),
 			key = keys[keyCode] || character.toLowerCase(),
 			handler = down ? 'onKeyDown' : 'onKeyUp',
-			scope = ProjectView.focused && ProjectView.focused._scope,
+			scope = View.focused && View.focused._scope,
 			tool = scope && scope.tool;
 		keyMap[key] = down;
 		if (tool && tool[handler]) {
