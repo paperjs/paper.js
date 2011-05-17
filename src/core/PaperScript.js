@@ -137,11 +137,12 @@ var PaperScript = this.PaperScript = new function() {
 			// so the active project is defined.
 			var canvas = code.getAttribute('canvas');
 			if (canvas = canvas && document.getElementById(canvas)) {
-				// Create a Project for this canvas, using the right scope
+				// Create an empty Project for this scope, and a view for the
+				// canvas, both using the right paper scope
 				paper = scope;
-				// XXX: Do not pass canvas to Project.
-				// Create ProjectView here instead.
-				new Project(canvas);
+				new Project();
+				// Activate the newly created view straight away
+				new ProjectView(canvas).activate();
 			}
 			if (code.src) {
 				// If we're loading from a source, request that first and then
@@ -154,7 +155,7 @@ var PaperScript = this.PaperScript = new function() {
 		}
 //#endif // BROWSER
 		var proj = scope.project,
-			view = proj.activeView,
+			view = scope.view,
 			// TODO: Add support for multiple tools
 			tool = scope.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
 					&& new Tool(null, scope),
