@@ -36,13 +36,13 @@ var PointText = this.PointText = TextItem.extend({
 		}
 	},
 	
+	// TODO: position should be the center point of the bounds
+	// but we currently don't support bounds for PointText.
 	getPosition: function() {
 		return this._point;
 	},
 	
 	setPosition: function(point) {
-		// TODO: position should be the center point of the bounds
-		// but we currently don't support bounds for PointText.
 		this.setPoint.apply(this, arguments);
 	},
 	
