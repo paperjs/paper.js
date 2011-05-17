@@ -203,6 +203,8 @@ var View = this.View = Base.extend({
 	// TODO: getShowGrid
 	// TODO: getMousePoint
 	// TODO: artworkToView(rect)
+
+	// TODO: Consider naming these projectToView, viewToProject
 	artworkToView: function(point) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
