@@ -249,7 +249,6 @@ var Raster = this.Raster = Item.extend({
 				if (object instanceof PathItem) {
 					// TODO: what if the path is smaller than 1 px?
 					// TODO: how about rounding of bounds.size?
-					// TODO: test with compound paths.
 					path = object;
 					bounds = object.getBounds();
 				} else if (object.width) {
@@ -258,30 +257,31 @@ var Raster = this.Raster = Item.extend({
 					bounds = new Rectangle(object.x - 0.5, object.y - 0.5,
 							1, 1);
 				}
-
-				var canvas = CanvasProvider.getCanvas(bounds.getSize()),
+				var size = bounds.getSize(),
+					canvas = CanvasProvider.getCanvas(size),
 					ctx = canvas.getContext('2d'),
-					delta = bounds.getTopLeft().multiply(-1);
-				ctx.translate(delta.x, delta.y);
+					delta = bounds.getTopLeft();
+				ctx.save();
+				ctx.translate(-delta.x, -delta.y);
 				if (path) {
-					var style = object.getStyle();
-					path.draw(ctx, {});
+					path.draw(ctx, { ignoreStyle: true });
 					ctx.clip();
-					path.setStyle(style);
 				}
 				this.matrix.applyToContext(ctx);
 				ctx.drawImage(this._canvas || this._image,
 						-this._size.width / 2, -this._size.height / 2);
 				image = canvas;
+				ctx.restore();
 			} else {
 				image = this.image;
 			}
-			var size = new Size(32),
-				sampleCanvas = CanvasProvider.getCanvas(size),
+			var sampleSize = Size.min(size, new Size(32, 32)),
+				width = sampleSize.width,
+				height = sampleSize.height,
+				sampleCanvas = CanvasProvider.getCanvas(sampleSize),
 				ctx = sampleCanvas.getContext('2d');
-			ctx.drawImage(image, 0, 0, size.width, size.height);
-			var pixels = ctx.getImageData(0.5, 0.5,
-					size.width, size.height).data,
+			ctx.drawImage(image, 0, 0, width, height);
+			var pixels = ctx.getImageData(0.5, 0.5, width, height).data,
 				color = getAverageColor(pixels);
 			CanvasProvider.returnCanvas(sampleCanvas);
 			if (image instanceof HTMLCanvasElement)
