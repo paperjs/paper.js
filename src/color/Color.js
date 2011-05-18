@@ -292,6 +292,10 @@ var Color = this.Color = Base.extend(new function() {
 		}
 	};
 }, new function() {
+	// Injection scope to produce conversion methods for the various color
+	// components known by the possible color types. Requesting any of these
+	// components on any color internally converts the color to the required
+	// type and then returns its component, using bean access.
 	return Base.each({
 		rgb: ['red', 'green', 'blue'],
 		hsb: ['hue', 'saturation', 'brightness'],
