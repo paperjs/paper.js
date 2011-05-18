@@ -71,7 +71,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		var gradient;
 		if (this.gradient.type === 'linear') {
 			gradient = ctx.createLinearGradient(this._origin.x, this._origin.y,
-					this.destination.x, this.destination.y);
+					this._destination.x, this._destination.y);
 		} else {
 			var origin = this._hilite || this._origin;
 			gradient = ctx.createRadialGradient(origin.x, origin.y,
