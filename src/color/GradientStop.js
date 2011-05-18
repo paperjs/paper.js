@@ -28,7 +28,7 @@ var GradientStop = this.GradientStop = Base.extend({
 	},
 
 	setRampPoint: function(rampPoint) {
-		this._rampPoint = rampPoint !== null ? rampPoint : 0;
+		this._rampPoint = rampPoint || 0;
 	},
 
 	getColor: function() {
