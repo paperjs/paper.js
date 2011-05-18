@@ -41,7 +41,5 @@ test('path.strokeBounds on path without stroke', function() {
 		new Segment(new Point(248, 320), new Point(-42, -74), new Point(42, 74)),
 		new Segment(new Point(205, 420.94482421875), new Point(66.7890625, -12.72802734375), new Point(-79, 15.05517578125))
 	]);
-	// Test both closed and open paths, as the bounds for them differ
-	path.closed = false;
 	compareRectangles(path.strokeBounds, { x: 121, y: 275.06796, width: 149.49304, height: 145.87686 });
 });
