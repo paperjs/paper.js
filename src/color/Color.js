@@ -198,6 +198,38 @@ var Color = this.Color = Base.extend(new function() {
 			return this._colorType == type
 				? this
 				: converters[this._colorType + '-' + type](this);
+		},
+
+		statics: {
+			/**
+			 * Override Color.extend() to produce getters and setters based
+			 * on the component types defined in _components.
+			 */
+			extend: function(src) {
+				src.beans = true;
+				return this.base(
+					Base.each(src._components || [], function(name) {
+						// Skip alpha since we have our own version already.
+						if (name === 'alpha')
+							return;
+						var part = Base.capitalize(name),
+							name = '_' + name,
+							set = 'set' + part;
+						this['get' + part] = function() {
+							return this[name];
+						};
+						// Only define setters if they are not provided already
+						// in a specialy required version, e.g. hue.
+						if (!this[set]) {
+							this[set] = function(value) {
+								this[name] = Math.min(Math.max(value, 0), 1);
+								this._cssString = null;
+								return this;
+							};
+						}
+					}, src)
+				);
+			}
 		}
 	};
 
@@ -254,6 +286,7 @@ var Color = this.Color = Base.extend(new function() {
 	setAlpha: function(alpha) {
 		this._alpha = Math.min(Math.max(alpha, 0), 1);
 		this._cssString = null;
+		return this;
 	},
 
 	/**
