@@ -580,7 +580,7 @@ var Path = this.Path = PathItem.extend({
 			if (param.selection) {
 				ctx.stroke();
 				drawHandles(ctx, this._segments);
-			} else {
+			} else if (!param.ignoreStyle) {
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
 				var fillColor = this.getFillColor(),
