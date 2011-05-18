@@ -206,16 +206,16 @@ var Color = this.Color = Base.extend(new function() {
 	// possible color types. Requesting any of these components on any color
 	// internally converts the color to the required type and then returns its
 	// component, using bean access.
-	return Base.each({
+	Base.each({
 		rgb: ['red', 'green', 'blue'],
 		hsb: ['hue', 'saturation', 'brightness'],
 		gray: ['gray']
 	}, function(components, colorType) {
 		Base.each(components, function(component) {
-			this['get' + Base.capitalize(component)] = function() {
+			fields['get' + Base.capitalize(component)] = function() {
 				return this.convert(colorType)[component];
 			};
-			this['set' + Base.capitalize(component)] = function(value) {
+			fields['set' + Base.capitalize(component)] = function(value) {
 				var color = this.convert(colorType);
 				color[component] = value;
 				color = color.convert(this._colorType);
@@ -223,8 +223,10 @@ var Color = this.Color = Base.extend(new function() {
 					this[this._components[i]] = color[this._components[i]];
 				}
 			};
-		}, this);
-	}, fields);
+		});
+	});
+
+	return fields;
 }, {
 	beans: true,
 
