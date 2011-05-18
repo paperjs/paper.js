@@ -54,160 +54,8 @@ var Color = this.Color = Base.extend(new function() {
 			}
 			return RGBColor.read(rgb);
 		}
-	};
+	}
 
-	return {
-		beans: true,
-		_readNull: true,
-
-		initialize: function(arg) {
-			var isArray = Array.isArray(arg);
-			if (typeof arg === 'object' && !isArray) {
-				if (!this._colorType) {
-					// Called on the abstract Color class. Guess color type
-					// from arg
-					return arg.red !== undefined
-						? new RGBColor(arg.red, arg.green, arg.blue, arg.alpha)
-						: arg.gray !== undefined
-						? new GrayColor(arg.gray, arg.alpha)
-						: arg.hue !== undefined
-						? new HSBColor(arg.hue, arg.saturation, arg.brightness,
-								arg.alpha)
-						: new RGBColor(); // Fallback
-				} else {
-					// Called on a subclass instance. Return the converted
-					// color.
-					var color = Color.read(arguments, 0, 1);
-					return this._colorType
-							? color.convert(this._colorType)
-							: color;
-				}
-			} else if (typeof arg === 'string') {
-				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
-						? hexToRGBColor(arg)
-						: nameToRGBColor(arg);
-				return this._colorType
-						? rgbColor.convert(this._colorType)
-						: rgbColor;
-			} else {
-				var components = isArray ? arg
-						: Array.prototype.slice.call(arguments);
-				if (!this._colorType) {
-					// Called on the abstract Color class. Guess color type
-					// from arg
-					//if (components.length >= 4)
-					//	return new CMYKColor(components);
-					if (components.length >= 3)
-						return new RGBColor(components);
-					return new GrayColor(components);
-				} else {
-					// Called on a subclass instance. Just copy over
-					// components.
-					Base.each(this._components,
-						function(name, i) {
-							var value = components[i];
-							// TODO: Should we call the setter?
-							// this['set' + name.capitalize()]
-							this[name] = value !== undefined
-									? value
-									// TODO: Is this correct?
-									// Shouldn't alpha be set to -1?
-									: name === 'alpha' ? 1 : null;
-						},
-					this);
-				}
-			}
-		},
-
-		getType: function() {
-			return this._colorType;
-		},
-
-		getComponents: function() {
-			var l = this._components.length;
-			var components = new Array(l);
-			for (var i = 0; i < l; i++) {
-				components[i] = this['_' + this._components[i]];
-			}
-			return components;
-		},
-
-		/**
-		 * A value between 0 and 1 that specifies the color's alpha value.
-		 * All colors of the different subclasses support alpha values.
-		 */
-		getAlpha: function() {
-			return this._alpha != null ? this._alpha : 1;
-		},
-
-		setAlpha: function(alpha) {
-			this._alpha = Math.min(Math.max(alpha, 0), 1);
-			this._cssString = null;
-		},
-
-		/**
-		 * Checks if the color has an alpha value.
-		 *
-		 * @return true if the color has an alpha value, false otherwise.
-		 */
-		hasAlpha: function() {
-			return this._alpha != null;
-		},
-
-		/**
-		 * Checks if the component color values of the color are the
-		 * same as those of the supplied one.
-		 * 
-		 * @param obj the GrayColor to compare with
-		 * @return true if the GrayColor is the same, false otherwise.
-		 */
-		equals: function(color) {
-			if (color && color._colorType === this._colorType) {
-				for (var i = 0, l = this._components.length; i < l; i++) {
-					var component = '_' + this._components[i];
-					if (this[component] !== color[component])
-						return false;
-				}
-				return true;
-			}
-			return false;
-		},
-
-		toString: function() {
-			var parts = [],
-				format = Base.formatNumber;
-			for (var i = 0, l = this._components.length; i < l; i++) {
-				var component = this._components[i],
-					value = this['_' + component];
-				if (component === 'alpha' && value == null)
-					value = 1;
-				parts.push(component + ': ' + format(value));
-			}
-			return '{ ' + parts.join(', ') + ' }';
-		},
-
-		toCssString: function() {
-			if (!this._cssString) {
-				var color = this._colorType === 'rgb'
-						? this
-						: this.convert('rgb');
-				var alpha = color.getAlpha();
-				var components = [
-					Math.round(color.getRed() * 255),
-					Math.round(color.getGreen() * 255),
-					Math.round(color.getBlue() * 255),
-					alpha != null ? this.alpha : 1
-				];
-				this._cssString = 'rgba(' + components.join(', ') + ')';
-			}
-			return this._cssString;
-		},
-
-		getCanvasStyle: function() {
-			return this.toCssString();
-		}
-	};
-}, new function() {
 	var converters = {
 		'rgb-hsb': function(color) {
 			var r = color._red,
@@ -284,18 +132,80 @@ var Color = this.Color = Base.extend(new function() {
 		}
 	};
 
-	return {
+	var fields = {
+		beans: true,
+		_readNull: true,
+
+		initialize: function(arg) {
+			var isArray = Array.isArray(arg);
+			if (typeof arg === 'object' && !isArray) {
+				if (!this._colorType) {
+					// Called on the abstract Color class. Guess color type
+					// from arg
+					return arg.red !== undefined
+						? new RGBColor(arg.red, arg.green, arg.blue, arg.alpha)
+						: arg.gray !== undefined
+						? new GrayColor(arg.gray, arg.alpha)
+						: arg.hue !== undefined
+						? new HSBColor(arg.hue, arg.saturation, arg.brightness,
+								arg.alpha)
+						: new RGBColor(); // Fallback
+				} else {
+					// Called on a subclass instance. Return the converted
+					// color.
+					var color = Color.read(arguments, 0, 1);
+					return this._colorType
+							? color.convert(this._colorType)
+							: color;
+				}
+			} else if (typeof arg === 'string') {
+				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
+						? hexToRGBColor(arg)
+						: nameToRGBColor(arg);
+				return this._colorType
+						? rgbColor.convert(this._colorType)
+						: rgbColor;
+			} else {
+				var components = isArray ? arg
+						: Array.prototype.slice.call(arguments);
+				if (!this._colorType) {
+					// Called on the abstract Color class. Guess color type
+					// from arg
+					//if (components.length >= 4)
+					//	return new CMYKColor(components);
+					if (components.length >= 3)
+						return new RGBColor(components);
+					return new GrayColor(components);
+				} else {
+					// Called on a subclass instance. Just copy over
+					// components.
+					Base.each(this._components,
+						function(name, i) {
+							var value = components[i];
+							// TODO: Should we call the setter?
+							// this['set' + name.capitalize()]
+							this[name] = value !== undefined
+									? value
+									// TODO: Is this correct?
+									// Shouldn't alpha be set to -1?
+									: name === 'alpha' ? 1 : null;
+						},
+					this);
+				}
+			}
+		},
+
 		convert: function(type) {
 			return this._colorType == type
 				? this
 				: converters[this._colorType + '-' + type](this);
 		}
 	};
-}, new function() {
-	// Injection scope to produce conversion methods for the various color
-	// components known by the possible color types. Requesting any of these
-	// components on any color internally converts the color to the required
-	// type and then returns its component, using bean access.
+
+	// Produce conversion methods for the various color components known by the
+	// possible color types. Requesting any of these components on any color
+	// internally converts the color to the required type and then returns its
+	// component, using bean access.
 	return Base.each({
 		rgb: ['red', 'green', 'blue'],
 		hsb: ['hue', 'saturation', 'brightness'],
@@ -314,5 +224,95 @@ var Color = this.Color = Base.extend(new function() {
 				}
 			};
 		}, this);
-	}, { beans: true });
+	}, fields);
+}, {
+	beans: true,
+
+	getType: function() {
+		return this._colorType;
+	},
+
+	getComponents: function() {
+		var l = this._components.length;
+		var components = new Array(l);
+		for (var i = 0; i < l; i++) {
+			components[i] = this['_' + this._components[i]];
+		}
+		return components;
+	},
+
+	/**
+	 * A value between 0 and 1 that specifies the color's alpha value.
+	 * All colors of the different subclasses support alpha values.
+	 */
+	getAlpha: function() {
+		return this._alpha != null ? this._alpha : 1;
+	},
+
+	setAlpha: function(alpha) {
+		this._alpha = Math.min(Math.max(alpha, 0), 1);
+		this._cssString = null;
+	},
+
+	/**
+	 * Checks if the color has an alpha value.
+	 *
+	 * @return true if the color has an alpha value, false otherwise.
+	 */
+	hasAlpha: function() {
+		return this._alpha != null;
+	},
+
+	/**
+	 * Checks if the component color values of the color are the
+	 * same as those of the supplied one.
+	 * 
+	 * @param obj the GrayColor to compare with
+	 * @return true if the GrayColor is the same, false otherwise.
+	 */
+	equals: function(color) {
+		if (color && color._colorType === this._colorType) {
+			for (var i = 0, l = this._components.length; i < l; i++) {
+				var component = '_' + this._components[i];
+				if (this[component] !== color[component])
+					return false;
+			}
+			return true;
+		}
+		return false;
+	},
+
+	toString: function() {
+		var parts = [],
+			format = Base.formatNumber;
+		for (var i = 0, l = this._components.length; i < l; i++) {
+			var component = this._components[i],
+				value = this['_' + component];
+			if (component === 'alpha' && value == null)
+				value = 1;
+			parts.push(component + ': ' + format(value));
+		}
+		return '{ ' + parts.join(', ') + ' }';
+	},
+
+	toCssString: function() {
+		if (!this._cssString) {
+			var color = this._colorType === 'rgb'
+					? this
+					: this.convert('rgb');
+			var alpha = color.getAlpha();
+			var components = [
+				Math.round(color.getRed() * 255),
+				Math.round(color.getGreen() * 255),
+				Math.round(color.getBlue() * 255),
+				alpha != null ? this.alpha : 1
+			];
+			this._cssString = 'rgba(' + components.join(', ') + ')';
+		}
+		return this._cssString;
+	},
+
+	getCanvasStyle: function() {
+		return this.toCssString();
+	}
 });
