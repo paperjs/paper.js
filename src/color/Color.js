@@ -212,10 +212,11 @@ var Color = this.Color = Base.extend(new function() {
 		gray: ['gray']
 	}, function(components, colorType) {
 		Base.each(components, function(component) {
-			fields['get' + Base.capitalize(component)] = function() {
+			var part = Base.capitalize(component);
+			fields['get' + part] = function() {
 				return this.convert(colorType)[component];
 			};
-			fields['set' + Base.capitalize(component)] = function(value) {
+			fields['set' + part] = function(value) {
 				var color = this.convert(colorType);
 				color[component] = value;
 				color = color.convert(this._colorType);
