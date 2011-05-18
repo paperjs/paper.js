@@ -18,6 +18,8 @@ var Layer = this.Layer = Group.extend({
 	beans: true,
 
 	initialize: function() {
+		// TODO: Isn't there a way to call this.base() here and then move the
+		// layer into layers instead?
 		this._children = [];
 		this._namedChildren = {};
 		this._project = paper.project;

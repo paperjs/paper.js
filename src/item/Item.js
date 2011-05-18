@@ -19,6 +19,7 @@ var Item = this.Item = Base.extend({
 
 	initialize: function() {
 		paper.project.activeLayer.appendTop(this);
+		this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 	},
 
@@ -38,28 +39,9 @@ var Item = this.Item = Base.extend({
 	 * The unique id of the item.
 	 */
 	getId: function() {
-		if (this._id == null) {
+		if (this._id == null)
 			this._id = Item._id = (Item._id || 0) + 1;
-		}
 		return this._id;
-	},
-	
-	_removeFromNamed: function() {
-		var children = this._parent._children,
-			namedChildren = this._parent._namedChildren,
-			name = this._name,
-			namedArray = namedChildren[name];
-		if (children[name] = this)
-			delete children[name];
-		namedArray.splice(namedArray.indexOf(this), 1);
-		// If there are any items left in the named array, set
-		// the last of them to be this.parent.children[this.name]
-		if (namedArray.length) {
-			children[name] = namedArray[namedArray.length - 1];
-		} else {
-			// Otherwise delete the empty array
-			delete namedChildren[name];
-		}
 	},
 
 	/**
@@ -85,6 +67,47 @@ var Item = this.Item = Base.extend({
 		} else {
 			delete children[name];
 		}
+	},
+	
+	_removeFromNamed: function() {
+		var children = this._parent._children,
+			namedChildren = this._parent._namedChildren,
+			name = this._name,
+			namedArray = namedChildren[name];
+		if (children[name] = this)
+			delete children[name];
+		namedArray.splice(namedArray.indexOf(this), 1);
+		// If there are any items left in the named array, set
+		// the last of them to be this.parent.children[this.name]
+		if (namedArray.length) {
+			children[name] = namedArray[namedArray.length - 1];
+		} else {
+			// Otherwise delete the empty array
+			delete namedChildren[name];
+		}
+	},
+
+	/**
+	* Removes the item from its parent's children list.
+	*/
+	_removeFromParent: function() {
+		if (this._parent) {
+			if (this._name)
+				this._removeFromNamed();
+			var res = Base.splice(this._parent._children, null, this._index, 1);
+			this._parent = null;
+			return !!res.length;
+		}
+		return false;
+	},
+
+	/**
+	* Removes the item.
+	*/
+	remove: function() {
+		if (this.isSelected())
+			this.setSelected(false);
+		return this._removeFromParent();
 	},
 
 	/**
@@ -238,7 +261,20 @@ var Item = this.Item = Base.extend({
 		return this._children;
 	},
 
-	// TODO: #setChildren()
+	setChildren: function(items) {
+		this.removeChildren();
+		for (var i = 0, l = items && items.length; i < l; i++)
+			this.appendTop(items[i]);
+	},
+
+	/**
+	 * Checks if the item contains any children items.
+	 * 
+	 * @return true if it has one or more children, false otherwise.
+	 */
+	hasChildren: function() {
+		return this._children && this._children.length > 0;
+	},
 
 	/**
 	 * Reverses the order of this item's children
@@ -250,6 +286,18 @@ var Item = this.Item = Base.extend({
 				this._children[i]._index = i;
 			}
 		}
+	},
+
+	/**
+	 * Removes all of the item's children, if it has any
+	 */
+	removeChildren: function() {
+		var removed = false;
+		if (this._children) {
+			for (var i = this._children.length - 1; i >= 0; i--)
+				removed = this._children[i].remove() || removed;
+		}
+		return removed;
 	},
 
 	/**
@@ -279,38 +327,6 @@ var Item = this.Item = Base.extend({
 	 */
 	getPreviousSibling: function() {
 		return this._parent && this._parent._children[this._index - 1] || null;
-	},
-
-	/**
-	* Removes the item from its parent's children list.
-	*/
-	_removeFromParent: function() {
-		if (this._parent) {
-			if (this._name)
-				this._removeFromNamed();
-			var res = Base.splice(this._parent._children, null, this._index, 1);
-			this._parent = null;
-			return !!res.length;
-		}
-		return false;
-	},
-
-	/**
-	* Removes the item.
-	*/
-	remove: function() {
-		if (this.isSelected())
-			this.setSelected(false);
-		return this._removeFromParent();
-	},
-
-	/**
-	 * Checks if the item contains any children items.
-	 * 
-	 * @return true if it has one or more children, false otherwise.
-	 */
-	hasChildren: function() {
-		return this._children && this._children.length > 0;
 	},
 
 	/**
@@ -629,7 +645,7 @@ var Item = this.Item = Base.extend({
 	},
 
 	setStyle: function(style) {
-		this._style = PathStyle.create(this, style);
+		this._style.initialize(style);
 	},
 
 	// TODO: toString
@@ -649,7 +665,7 @@ var Item = this.Item = Base.extend({
 			}
 		},
 
-		// TODO: Implement ProjectView into the drawing
+		// TODO: Implement View into the drawing
 		// TODO: Optimize temporary canvas drawing to ignore parts that are
 		// outside of the visible view.
 		draw: function(item, ctx, param) {
@@ -780,15 +796,6 @@ var Item = this.Item = Base.extend({
 		 * @param item The item that will be appended as a child
 		 */
 		appendBottom: append(false),
-
-		/**
-		 * A link to {@link #appendTop}
-		 * 
-		 * @deprecated use {@link #appendTop} or {@link #appendBottom} instead.
-		 */
-		appendChild: function(item) {
-			return this.appendTop(item);
-		},
 
 		/**
 		 * Moves this item above the specified item.

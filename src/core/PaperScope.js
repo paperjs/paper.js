@@ -19,25 +19,16 @@
  * global paper object, which simply is a pointer to the currently active scope.
  */
 var PaperScope = this.PaperScope = Base.extend({
-	beans: true,
 
 	initialize: function(id) {
 		this.project = null;
 		this.projects = [];
+		this.view = null;
+		this.views = [];
+		this.tool = null;
 		this.tools = [];
 		this.id = id;
 		PaperScope._scopes[id] = this;
-	},
-
-	/**
-	 * A short-cut to the currently active view of the active project.
-	 */
-	getView: function() {
-		return this.project.activeView;
-	},
-
-	getViews: function() {
-		return this.project.views;
 	},
 
 	evaluate: function(code) {
@@ -60,9 +51,12 @@ var PaperScope = this.PaperScope = Base.extend({
 	},
 
 	clear: function() {
-		// Remove all projects and tools.
+		// Remove all projects, views and tools.
 		for (var i = this.projects.length - 1; i >= 0; i--)
 			this.projects[i].remove();
+		// This also removes the installed event handlers.
+		for (var i = this.views.length - 1; i >= 0; i--)
+			this.views[i].remove();
 		for (var i = this.tools.length - 1; i >= 0; i--)
 			this.tools[i].remove();
 	},

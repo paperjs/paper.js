@@ -16,16 +16,17 @@
 
 var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	initialize: function(style) {
-		this.fontSize = style.fontSize || 10;
-		this.font = style.font || 'sans-serif';
+		Base.initialize(this, style, {
+			fontSize: 10,
+			font: 'sans-serif'
+		});
 		this.base(style);
 	},
-	
+
 	statics: {
-		create: function(item, other) {
+		create: function(item) {
 			var style = new CharacterStyle(CharacterStyle.dont);
 			style._item = item;
-			style.initialize(other);
 			return style;
 		}
 	}

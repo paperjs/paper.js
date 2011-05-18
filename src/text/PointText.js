@@ -19,8 +19,7 @@ var PointText = this.PointText = TextItem.extend({
 
 	initialize: function(point) {
 		this.base();
-		point = Point.read(arguments, 0, 1);
-		this._point = point || new Point();
+		this._point = Point.read(arguments, 0);
 		this.matrix = new Matrix().translate(this._point);
 	},
 
@@ -37,13 +36,13 @@ var PointText = this.PointText = TextItem.extend({
 		}
 	},
 	
+	// TODO: position should be the center point of the bounds
+	// but we currently don't support bounds for PointText.
 	getPosition: function() {
 		return this._point;
 	},
 	
 	setPosition: function(point) {
-		// TODO: position should be the center point of the bounds
-		// but we currently don't support bounds for PointText.
 		this.setPoint.apply(this, arguments);
 	},
 	
