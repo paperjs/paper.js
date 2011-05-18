@@ -34,3 +34,14 @@ test('path.bounds', function() {
 
 	equals(path.segments.toString(), '{ point: { x: 142.60356, y: 125.16811 }, handleIn: { x: -51.67967, y: 23.61224 }, handleOut: { x: 83.68504, y: -38.23568 } },{ point: { x: 279.74945, y: 215.57158 }, handleIn: { x: 22.88623, y: -111.22434 }, handleOut: { x: -22.88623, y: 111.22434 } },{ point: { x: 149.81984, y: 284.46726 }, handleIn: { x: 76.78135, y: 41.99351 }, handleOut: { x: -90.81925, y: -49.67101 } }');
 });
+
+test('path.strokeBounds on path without stroke', function() {
+	var path = new Path([
+		new Segment(new Point(121, 334), new Point(-19, 38), new Point(30.7666015625, -61.53369140625)),
+		new Segment(new Point(248, 320), new Point(-42, -74), new Point(42, 74)),
+		new Segment(new Point(205, 420.94482421875), new Point(66.7890625, -12.72802734375), new Point(-79, 15.05517578125))
+	]);
+	// Test both closed and open paths, as the bounds for them differ
+	path.closed = false;
+	compareRectangles(path.strokeBounds, { x: 121, y: 275.06796, width: 149.49304, height: 145.87686 });
+});
