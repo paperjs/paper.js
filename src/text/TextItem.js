@@ -19,9 +19,10 @@ var TextItem = this.TextItem = Item.extend({
 
 	initialize: function() {
 		this.base();
-		point = Point.read(arguments, 0, 1);
 		this.content = null;
+		this._characterStyle = CharacterStyle.create(this);
 		this.setCharacterStyle(this._project.getCurrentStyle());
+		this._paragraphStyle = ParagraphStyle.create(this);
 		this.setParagraphStyle();
 	},
 
@@ -30,7 +31,7 @@ var TextItem = this.TextItem = Item.extend({
 	},
 
 	setCharacterStyle: function(style) {
-		this._characterStyle = CharacterStyle.create(this, style);
+		this._characterStyle.initialize(style);
 	},
 	
 	getParagraphStyle: function() {
@@ -38,6 +39,6 @@ var TextItem = this.TextItem = Item.extend({
 	},
 
 	setParagraphStyle: function(style) {
-		this._paragraphStyle = ParagraphStyle.create(this, style);
+		this._paragraphStyle.initialize(style);
 	}
 });

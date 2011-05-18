@@ -15,21 +15,16 @@
  */
 
 var ParagraphStyle = this.ParagraphStyle = Base.extend({
-	beans: true,
-
 	initialize: function(style) {
-		this.justification = (style && style.justification) || 'left';
-	},
-
-	clone: function() {
-		return new PathStyle(this);
+		Base.initialize(this, style, {
+			justification: 'left'
+		});
 	},
 
 	statics: {
-		create: function(item, other) {
-			var style = new ParagraphStyle(PathStyle.dont);
+		create: function(item) {
+			var style = new CharacterStyle(CharacterStyle.dont);
 			style._item = item;
-			style.initialize(other);
 			return style;
 		}
 	}

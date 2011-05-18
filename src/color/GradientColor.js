@@ -71,7 +71,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		var gradient;
 		if (this.gradient.type === 'linear') {
 			gradient = ctx.createLinearGradient(this._origin.x, this._origin.y,
-					this.destination.x, this.destination.y);
+					this._destination.x, this._destination.y);
 		} else {
 			var origin = this._hilite || this._origin;
 			gradient = ctx.createRadialGradient(origin.x, origin.y,
@@ -79,7 +79,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		}
 		for (var i = 0, l = this.gradient._stops.length; i < l; i++) {
 			var stop = this.gradient._stops[i];
-			gradient.addColorStop(stop._rampPoint, stop.color.toCssString());
+			gradient.addColorStop(stop._rampPoint, stop._color.toCssString());
 		}
 		return gradient;
 	},
@@ -92,12 +92,10 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * @return true if the GrayColor is the same, false otherwise.
 	 */
 	equals: function(color) {
-		if (color && color._colorType === this._colorType) {
-			return this.gradient.equals(color.gradient)
-					&& this._origin.equals(color._origin)
-					&& this._destination.equals(color._destination);
-		}
-		return false;
+		return color == this || color && color._colorType === this._colorType
+				&& this.gradient.equals(color.gradient)
+				&& this._origin.equals(color._origin)
+				&& this._destination.equals(color._destination);
 	},
 	
 	transform: function(matrix) {

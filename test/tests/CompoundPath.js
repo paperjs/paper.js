@@ -37,10 +37,14 @@ test('clockwise', function() {
 		return path3.clockwise;
 	}, true);
 
-	new CompoundPath([
-		path1, path2, path3
-	]);
+	var compound = new CompoundPath(path1, path2, path3);
 
+	equals(function() {
+		return compound.lastChild == path3;
+	}, true);
+	equals(function() {
+		return compound.firstChild == path1;
+	}, true);
 	equals(function() {
 		return path1.clockwise;
 	}, true);

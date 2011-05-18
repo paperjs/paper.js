@@ -14,19 +14,17 @@
  * All rights reserved.
  */
 
-var ProjectView = this.ProjectView = Base.extend({
+var View = this.View = Base.extend({
 	beans: true,
 
 	// TODO: Add bounds parameter that defines position within canvas?
 	// Find a good name for these bounds, since #bounds is already the artboard
 	// bounds of the visible area.
 	initialize: function(canvas) {
-		// To go with the convention of never passing project to constructors,
-		// in all items, associate the view with the currently active project.
-		this._project = paper.project;
-		this._scope = this._project._scope;
+		// Associate this view with the active paper scope.
+		this._scope = paper;
 		// Push it onto project.views and set index:
-		this._index = this._project.views.push(this) - 1;
+		this._index = this._scope.views.push(this) - 1;
 		// Handle canvas argument
 		var size;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
@@ -86,12 +84,8 @@ var ProjectView = this.ProjectView = Base.extend({
 		this._events = this._createEvents();
 		DomEvent.add(this._canvas, this._events);
 		// Make sure the first view is focused for keyboard input straight away
-		if (!ProjectView.focused)
-			ProjectView.focused = this;
-	},
-
-	getProject: function() {
-		return this._project;
+		if (!View.focused)
+			View.focused = this;
 	},
 
 	getViewBounds: function() {
@@ -150,14 +144,19 @@ var ProjectView = this.ProjectView = Base.extend({
 
 	setZoom: function(zoom) {
 		// TODO: Clamp the view between 1/32 and 64, just like Illustrator?
-		var mx = new Matrix();
-		mx.scale(zoom / this._zoom, this._center);
-		this.transform(mx);
+		this._transform(new Matrix().scale(zoom / this._zoom, this.getCenter()));
 		this._zoom = zoom;
 	},
 
 	scrollBy: function(point) {
-		this.transform(new Matrix().translate(Point.read(arguments).negate()));
+		this._transform(new Matrix().translate(Point.read(arguments).negate()));
+	},
+
+	_transform: function(matrix, flags) {
+		this._matrix.preConcatenate(matrix);
+		// Force recalculation of these values next time they are requested.
+		this._bounds = null;
+		this._inverse = null;
 	},
 
 	draw: function() {
@@ -166,38 +165,30 @@ var ProjectView = this.ProjectView = Base.extend({
 		// Initial tests conclude that clearing the canvas using clearRect
 		// is always faster than setting canvas.width = canvas.width
 		// http://jsperf.com/clearrect-vs-setting-width/7
-		var bounds = this._viewBounds;
-		this._context.clearRect(bounds._x, bounds._y,
+		var ctx =this._context,
+			bounds = this._viewBounds;
+		ctx.clearRect(bounds._x, bounds._y,
 				// TODO: +1... what if we have multiple views in one canvas? 
 				bounds._width + 1, bounds._height + 1);
-		this._project.draw(this._context);
+
+		ctx.save();
+		this._matrix.applyToContext(ctx);
+		// Just draw the active project for now
+		this._scope.project.draw(ctx);
+		ctx.restore();
 	},
 
 	activate: function() {
-		this._project.activeView = this;
+		this._scope.view = this;
 	},
 
 	remove: function() {
-		var res = Base.splice(this._project.views, null, this._index, 1);
+		var res = Base.splice(this._scope.views, null, this._index, 1);
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._canvas, this._events);
-		this._project = this._scope = this._canvas = this._events = null;
 		// Clearing _onFrame makes the frame handler stop automatically.
-		this._onFrame = null;
+		this._scope = this._canvas = this._events = this._onFrame = null;
 		return !!res.length;
-	},
-
-	transform: function(matrix, flags) {
-		this._matrix.preConcatenate(matrix);
-		// Force recalculation of these values next time they are requested.
-		this._bounds = null;
-		this._inverse = null;
-	},
-
-	_getInverse: function() {
-		if (!this._inverse)
-			this._inverse = this._matrix.createInverse();
-		return this._inverse;
 	},
 
 	// TODO: getInvalidBounds
@@ -206,12 +197,20 @@ var ProjectView = this.ProjectView = Base.extend({
 	// TODO: getShowGrid
 	// TODO: getMousePoint
 	// TODO: artworkToView(rect)
+
+	// TODO: Consider naming these projectToView, viewToProject
 	artworkToView: function(point) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
 	viewToArtwork: function(point) {
 		return this._getInverse()._transformPoint(Point.read(arguments));
+	},
+
+	_getInverse: function() {
+		if (!this._inverse)
+			this._inverse = this._matrix.createInverse();
+		return this._inverse;
 	},
 
 	/**
@@ -279,7 +278,7 @@ var ProjectView = this.ProjectView = Base.extend({
 
 		function mousedown(event) {
 			// Tell the Key class which view should receive keyboard input.
-			ProjectView.focused = that;
+			View.focused = that;
 			if (!(tool = that._scope.tool))
 				return;
 			curPoint = viewToArtwork(event);
