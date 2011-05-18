@@ -1101,6 +1101,8 @@ var Path = this.Path = PathItem.extend({
 		 * The bounding rectangle of the item including stroke width.
 		 */
 		getStrokeBounds: function(/* matrix */) {
+			if (!this.style._strokeColor || !this.style._strokeWidth)
+				return this.getBounds();
 			var useCache = arguments.length == 0;
 			if (this._strokeBounds && useCache)
 				return this._strokeBounds;
