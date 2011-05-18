@@ -2,6 +2,7 @@ module('Placed Symbol');
 
 test('placedSymbol bounds', function() {
 	var path = new Path.Circle([50, 50], 50);
+	path.strokeColor = 'black';
 	path.strokeWidth = 1;
 	path.strokeCap = 'round';
 	path.strokeJoin = 'round';
