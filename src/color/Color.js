@@ -15,6 +15,12 @@
  */
 
 var Color = this.Color = Base.extend(new function() {
+	
+	var components = {
+		gray: ['gray'],
+		rgb: ['red', 'green', 'blue'],
+		hsb: ['hue', 'saturation', 'brightness']
+	};
 
 	var colorCache = {},
 		colorContext;
@@ -207,11 +213,11 @@ var Color = this.Color = Base.extend(new function() {
 			 */
 			extend: function(src) {
 				src.beans = true;
-				return this.base(
-					Base.each(src._components || [], function(name) {
-						// Skip alpha since we have our own version already.
-						if (name === 'alpha')
-							return;
+				if (src._colorType) {
+					var comps = components[src._colorType];
+					// Automatically produce the _components field, adding alpha
+					src._components = comps.concat(['alpha']);
+					Base.each(comps, function(name) {
 						var part = Base.capitalize(name),
 							name = '_' + name,
 							set = 'set' + part;
@@ -228,7 +234,8 @@ var Color = this.Color = Base.extend(new function() {
 							};
 						}
 					}, src)
-				);
+				}
+				return this.base(src);
 			}
 		}
 	};
@@ -237,12 +244,8 @@ var Color = this.Color = Base.extend(new function() {
 	// possible color types. Requesting any of these components on any color
 	// internally converts the color to the required type and then returns its
 	// component, using bean access.
-	Base.each({
-		rgb: ['red', 'green', 'blue'],
-		hsb: ['hue', 'saturation', 'brightness'],
-		gray: ['gray']
-	}, function(components, colorType) {
-		Base.each(components, function(component) {
+	Base.each(components, function(comps, colorType) {
+		Base.each(comps, function(component) {
 			var part = Base.capitalize(component);
 			fields['get' + part] = function() {
 				return this.convert(colorType)[component];
@@ -267,12 +270,11 @@ var Color = this.Color = Base.extend(new function() {
 	},
 
 	getComponents: function() {
-		var l = this._components.length;
-		var components = new Array(l);
-		for (var i = 0; i < l; i++) {
-			components[i] = this['_' + this._components[i]];
-		}
-		return components;
+		var length = this._components.length;
+		var comps = new Array(length);
+		for (var i = 0; i < length; i++)
+			comps[i] = this['_' + this._components[i]];
+		return comps;
 	},
 
 	/**

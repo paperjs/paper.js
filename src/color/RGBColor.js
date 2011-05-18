@@ -15,6 +15,5 @@
  */
 
 var RGBColor = this.RGBColor = Color.extend({
-	_colorType: 'rgb',
-	_components: ['red', 'green', 'blue', 'alpha']
+	_colorType: 'rgb'
 });

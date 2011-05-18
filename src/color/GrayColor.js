@@ -15,6 +15,5 @@
  */
 
 var GrayColor = this.GrayColor = Color.extend({
-	_colorType: 'gray',
-	_components: ['gray', 'alpha'],
+	_colorType: 'gray'
 });

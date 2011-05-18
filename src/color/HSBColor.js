@@ -16,7 +16,6 @@
 
 var HSBColor = this.HSBColor = Color.extend({
 	_colorType: 'hsb',
-	_components: ['hue', 'saturation', 'brightness', 'alpha'],
 
 	// Hue needs a special setter, bug getter is produced for it in Color.extend
 	// No need to set beans: true here since Color.extend() does that for us.
