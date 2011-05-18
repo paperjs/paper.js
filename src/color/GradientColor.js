@@ -92,12 +92,10 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * @return true if the GrayColor is the same, false otherwise.
 	 */
 	equals: function(color) {
-		if (color && color._colorType === this._colorType) {
-			return this.gradient.equals(color.gradient)
-					&& this._origin.equals(color._origin)
-					&& this._destination.equals(color._destination);
-		}
-		return false;
+		return color == this || color && color._colorType === this._colorType
+				&& this.gradient.equals(color.gradient)
+				&& this._origin.equals(color._origin)
+				&& this._destination.equals(color._destination);
 	},
 	
 	transform: function(matrix) {
