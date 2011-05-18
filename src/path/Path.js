@@ -1102,7 +1102,7 @@ var Path = this.Path = PathItem.extend({
 		 */
 		getStrokeBounds: function(/* matrix */) {
 			if (!this._style._strokeColor || !this._style._strokeWidth)
-				return this.getBounds();
+				return this.getBounds.apply(this, arguments);
 			var useCache = arguments.length == 0;
 			if (this._strokeBounds && useCache)
 				return this._strokeBounds;
