@@ -118,13 +118,12 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		'gray-rgb': function(color) {
-			var component = 1 - color.getGray();
-			return new RGBColor(component, component, component, color._alpha);
+			var comp = 1 - color.getGray();
+			return new RGBColor(comp, comp, comp, color._alpha);
 		},
 
 		'hsb-gray': function(color) {
-			var rgbColor = converters['hsb-rgb'](color);
-			return converters['rgb-gray'](rgbColor);
+			return converters['rgb-gray'](converters['hsb-rgb'](color));
 		},
 
 		'gray-hsb': function(color) {
