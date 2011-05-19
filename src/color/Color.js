@@ -219,20 +219,19 @@ var Color = this.Color = Base.extend(new function() {
 					src._components = comps.concat(['alpha']);
 					Base.each(comps, function(name) {
 						var part = Base.capitalize(name),
-							name = '_' + name,
-							set = 'set' + part;
+							name = '_' + name;
 						this['get' + part] = function() {
 							return this[name];
 						};
-						// Only define setters if they are not provided already
-						// in a specialy required version, e.g. hue.
-						if (!this[set]) {
-							this[set] = function(value) {
-								this[name] = Math.min(Math.max(value, 0), 1);
-								this._cssString = null;
-								return this;
-							};
-						}
+						this['set' + part] = function(value) {
+							this[name] = name === '_hue'
+								// Keep negative values within modulo 360 too:
+								? ((value % 360) + 360) % 360
+								// All other values are 0..1
+								: Math.min(Math.max(value, 0), 1);
+							this._cssString = null;
+							return this;
+						};
 					}, src)
 				}
 				return this.base(src);
@@ -352,4 +351,16 @@ var Color = this.Color = Base.extend(new function() {
 	getCanvasStyle: function() {
 		return this.toCssString();
 	}
+});
+
+var GrayColor = this.GrayColor = Color.extend({
+	_colorType: 'gray'
+});
+
+var RGBColor = this.RGBColor = Color.extend({
+	_colorType: 'rgb'
+});
+
+var HSBColor = this.HSBColor = Color.extend({
+	_colorType: 'hsb'
 });
