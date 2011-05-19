@@ -219,12 +219,13 @@ var Color = this.Color = Base.extend(new function() {
 					src._components = comps.concat(['alpha']);
 					Base.each(comps, function(name) {
 						var part = Base.capitalize(name),
-							name = '_' + name;
+							name = '_' + name,
+							isHue = name === '_hue';
 						this['get' + part] = function() {
 							return this[name];
 						};
 						this['set' + part] = function(value) {
-							this[name] = name === '_hue'
+							this[name] = isHue
 								// Keep negative values within modulo 360 too:
 								? ((value % 360) + 360) % 360
 								// All other values are 0..1
