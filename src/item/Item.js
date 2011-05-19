@@ -23,6 +23,36 @@ var Item = this.Item = Base.extend({
 		this.setStyle(this._project.getCurrentStyle());
 	},
 
+
+	/**
+	 * Clones the item within the same project.
+	 * 
+	 * @return the newly cloned item
+	 */
+	clone: function() {
+		var copy = new this.constructor();
+		copy.setStyle(this._style);
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++)
+				copy.appendTop(this._children[i].clone());
+		}
+		// Only copy over these fields if they are actually defined in 'this'
+		// TODO: Consider moving this to Base once it's useful in more than one
+		// place
+		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask'];
+		for (var i = 0, l = keys.length; i < l; i++) {
+			var key = keys[i];
+			if (this.hasOwnProperty(key))
+				copy[key] = this[key];
+		}
+		copy.moveAbove(this);
+		// Only set name once the copy is moved, to avoid setting and unsettting
+		// name related structures.
+		if (this._name)
+			copy.setName(this._name);
+		return copy;
+	},
+
 	/**
 	 * Private notifier that is called whenever a change occurs in this item or
 	 * its sub-elements, such as Segments, Curves, PathStyles, etc.
@@ -124,20 +154,6 @@ var Item = this.Item = Base.extend({
 			itemOrProject.activeLayer.appendTop(copy);
 		} else {
 			itemOrProject.appendTop(copy);
-		}
-		return copy;
-	},
-
-	/**
-	 * Clones the item within the same project.
-	 * 
-	 * @return the newly cloned item
-	 */
-	clone: function() {
-		var copy = new this.constructor();
-		// TODO: Copy children and other things.
-		if (this._parent) {
-			this._parent.appendTop(copy);
 		}
 		return copy;
 	},

@@ -29,10 +29,11 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	clone: function() {
-		var copy = new Path(this._segments);
-		copy.setStyle(this._style);
+		var copy = this.base();
+		copy.setSegments(this._segments);
 		copy._closed = this._closed;
-		copy.moveAbove(this);
+		if (this._clockwise !== undefined)
+			copy._clockwise = this._clockwise;
 		return copy;
 	},
 
