@@ -88,6 +88,10 @@
 				group.position += delta;
 			// Rotate the group of paths by 1 degree:
 			group.rotate(1);
+			// Rotate each path in the group by 2 degrees:
+			for (var i = 0, l = group.children.length; i < l; i++) {
+				group.children[i].rotate(2);
+			}
 			// Colorize the paths every other frame:
 			if (event.count % 2 == 0) {
 				colorizePaths();
