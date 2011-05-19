@@ -232,7 +232,7 @@ var Color = this.Color = Base.extend(new function() {
 							this._cssString = null;
 							return this;
 						};
-					}, src)
+					}, src);
 				}
 				return this.base(src);
 			}
