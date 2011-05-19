@@ -338,7 +338,7 @@ var Item = this.Item = Base.extend({
 	isEditable: function() {
 		var parent = this;
 		while (parent) {
-			if (parent.hidden || parent.locked)
+			if (!parent.visible || parent.locked)
 				return false;
 			parent = parent._parent;
 		}
