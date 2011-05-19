@@ -188,9 +188,14 @@ var Raster = this.Raster = Item.extend({
 		} else if (object.x) {
 			bounds = Rectangle.create(object.x - 0.5, object.y - 0.5, 1, 1);
 		}
+		// Use a sample size of max 32 x 32 pixels, into which the path is
+		// scaled as a clipping path, and then the actual image is drawn in and
+		// sampled.
 		var sampleSize = 32,
 			width = Math.min(bounds.width, sampleSize),
 			height = Math.min(bounds.height, sampleSize);
+		// Reuse the same sample context for speed. Memory consumption is low
+		// since it's only 32 x 32 pixels.
 		var ctx = Raster._sampleContext;
 		if (!ctx) {
 			ctx = Raster._sampleContext = CanvasProvider.getCanvas(
@@ -200,6 +205,7 @@ var Raster = this.Raster = Item.extend({
 			ctx.clearRect(0, 0, sampleSize, sampleSize);
 		}
 		ctx.save();
+		// Scale the context so that the bounds ends up at the given sample size
 		ctx.scale(width / bounds.width, height / bounds.height);
 		ctx.translate(-bounds.x, -bounds.y);
 		// If a path was passed, draw it as a clipping mask:
@@ -207,10 +213,13 @@ var Raster = this.Raster = Item.extend({
 			path.draw(ctx, { ignoreStyle: true });
 			ctx.clip();
 		}
+		// Now draw the image clipped into it.
 		this.matrix.applyToContext(ctx);
 		ctx.drawImage(this._canvas || this._image,
 				-this._size.width / 2, -this._size.height / 2);
 		ctx.restore();
+		// Get pixel data from the context and calculate the average color value
+		// from it, taking alpha into account.
 		var pixels = ctx.getImageData(0.5, 0.5, Math.ceil(width),
 				Math.ceil(height)).data,
 			channels = [0, 0, 0],
