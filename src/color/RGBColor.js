@@ -14,24 +14,6 @@
  * All rights reserved.
  */
 
-var RGBColor = this.RGBColor = Color.extend(new function() {
-	var components = ['red', 'green', 'blue', 'alpha'];
-	return Base.each(components, function(name) {
-		var internalName = '_' + name;
-		name = Base.capitalize(name);
-		if (name !== 'alpha') {
-			this['get' + name] = function() {
-				return this[internalName];
-			};
-			this['set' + name] = function(value) {
-				this._cssString = null;
-				this[internalName] = Math.min(Math.max(value, 0), 1);
-				return this;
-			};
-		}
-	}, {
-		beans: true,
-		_colorType: 'rgb',
-		_components: components
-	});
+var RGBColor = this.RGBColor = Color.extend({
+	_colorType: 'rgb'
 });

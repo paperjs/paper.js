@@ -14,35 +14,16 @@
  * All rights reserved.
  */
 
-var HSBColor = this.HSBColor = Color.extend(new function() {
-	var components = ['hue', 'saturation', 'brightness', 'alpha'];
-	return Base.each(components, function(name) {
-		var internalName = '_' + name;
-		name = Base.capitalize(name);
-		if (name !== 'alpha') {
-			this['get' + name] = function() {
-				return this[internalName];
-			};
-			// Avoid overriding setHue:
-			if (!this['set' + name]) {
-				this['set' + name] = function(value) {
-					this._cssString = null;
-					this[internalName] = Math.min(Math.max(value, 0), 1);
-					return this;
-				};
-			}
-		}
-	}, {
-		beans: true,
-		_colorType: 'hsb',
-		_components: components,
+var HSBColor = this.HSBColor = Color.extend({
+	_colorType: 'hsb',
 
-		setHue: function(hue) {
-			if (hue < 0)
-				hue = 360 + hue;
-			this._cssString = null;
-			this._hue = hue % 360;
-			return this;
-		}
-	});
+	// Hue needs a special setter, bug getter is produced for it in Color.extend
+	// No need to set beans: true here since Color.extend() does that for us.
+	setHue: function(hue) {
+		if (hue < 0)
+			hue = 360 + hue;
+		this._cssString = null;
+		this._hue = hue % 360;
+		return this;
+	}
 });
