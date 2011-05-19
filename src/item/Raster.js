@@ -188,27 +188,20 @@ var Raster = this.Raster = Item.extend({
 		} else if (object.x) {
 			bounds = Rectangle.create(object.x - 0.5, object.y - 0.5, 1, 1);
 		}
-		var width = bounds.width,
-			height = bounds.height,
-			sampleSize = 32,
-			scaleX = Math.min(sampleSize / width, 1),
-			scaleY = Math.min(sampleSize / height, 1),
-			top = bounds.y,
-			left = bounds.x;
-		width *= scaleX;
-		height *= scaleY;
-		var ctx;
-		if (!Raster._sampleContext) {
+		var sampleSize = 32,
+			width = Math.min(bounds.width, sampleSize),
+			height = Math.min(bounds.height, sampleSize);
+		var ctx = Raster._sampleContext;
+		if (!ctx) {
 			ctx = Raster._sampleContext = CanvasProvider.getCanvas(
 					new Size(sampleSize)).getContext('2d');
 		} else {
-			ctx = Raster._sampleContext;
 			// Clear the sample canvas:
 			ctx.clearRect(0, 0, sampleSize, sampleSize);
 		}
 		ctx.save();
-		ctx.scale(scaleX, scaleY)
-		ctx.translate(-left, -top);
+		ctx.scale(width / bounds.width, height / bounds.height);
+		ctx.translate(-bounds.x, -bounds.y);
 		// If a path was passed, draw it as a clipping mask:
 		if (path) {
 			path.draw(ctx, { ignoreStyle: true });
