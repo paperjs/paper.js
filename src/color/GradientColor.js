@@ -25,6 +25,11 @@ var GradientColor = this.GradientColor = Color.extend({
 			this.setHilite(hilite);
 	},
 
+	clone: function() {
+		return new GradientColor(thisgradient, this._origin, this._destination,
+				this._hilite);
+	},
+
 	getOrigin: function() {
 		return this._origin;
 	},
