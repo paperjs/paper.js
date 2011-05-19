@@ -42,9 +42,9 @@ var Gradient = this.Gradient = Base.extend({
 	},
 
 	equals: function(gradient) {
-		if (this.stops.length == gradient.stops.length) {
-			for (var i = 0, l = this.stops.length; i < l; i++) {
-				if (!this.stops[i].equals(gradient.stops[i]))
+		if (this._stops.length == gradient._stops.length) {
+			for (var i = 0, l = this._stops.length; i < l; i++) {
+				if (!this._stops[i].equals(gradient._stops[i]))
 					return false;
 			}
 			return true;
