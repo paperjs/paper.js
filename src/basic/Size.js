@@ -106,16 +106,16 @@ var Size = this.Size = Base.extend({
 			return new Size(Size.dont).set(width, height);
 		},
 
-		min: function(Size1, Size2) {
+		min: function(size1, size2) {
 			return Size.create(
-				Math.min(Size1.width, Size2.width),
-				Math.min(Size1.height, Size2.height));
+				Math.min(size1.width, size2.width),
+				Math.min(size1.height, size2.height));
 		},
 
-		max: function(Size1, Size2) {
+		max: function(size1, size2) {
 			return Size.create(
-				Math.max(Size1.width, Size2.width),
-				Math.max(Size1.height, Size2.height));
+				Math.max(size1.width, size2.width),
+				Math.max(size1.height, size2.height));
 		},
 
 		random: function() {
