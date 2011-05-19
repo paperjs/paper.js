@@ -26,6 +26,12 @@ var Group = this.Group = Item.extend({
 				|| typeof items[0] !== 'object' ? arguments : items);
 	},
 
+	clone: function() {
+		var copy = this.base();
+		copy._clipped = this._clipped;
+		return copy;
+	},
+
 	/**
 	 * Specifies whether the group item is to be clipped.
 	 * When setting to true, the first child in the group is automatically
