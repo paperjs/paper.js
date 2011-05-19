@@ -16,10 +16,10 @@
 
 var Size = this.Size = Base.extend({
 	initialize: function(arg0, arg1) {
-		if (arguments.length == 2) {
+		if (arg1 !== undefined) {
 			this.width = arg0;
 			this.height = arg1;
-		} else if (arguments.length == 1) {
+		} else if (arg0 !== undefined) {
 			if (arg0 == null) {
 				this.width = this.height = 0;
 			} else if (arg0.width !== undefined) {
