@@ -23,6 +23,11 @@ var PointText = this.PointText = TextItem.extend({
 		this.matrix = new Matrix().translate(this._point);
 	},
 
+	clone: function() {
+		// TODO: Implement!
+		return this.base();
+	},
+
 	getPoint: function() {
 		return this._point;
 	},
