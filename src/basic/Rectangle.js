@@ -18,14 +18,14 @@ var Rectangle = this.Rectangle = Base.extend({
 	beans: true,
 
 	initialize: function(arg0, arg1, arg2, arg3) {
-		if (arguments.length == 1) {
-			// Use 0 as defaults, in case we're reading from a Point or Size
-			this.x = arg0.x || 0;
-			this.y = arg0.y || 0;
-			this.width = arg0.width || 0;
-			this.height = arg0.height || 0;
+		if (arguments.length == 4) {
+			// new Rectangle(x, y, width, height)
+			this.x = arg0;
+			this.y = arg1;
+			this.width = arg2;
+			this.height = arg3;
 		} else if (arguments.length == 2) {
-			if (arg1.x !== undefined) {
+			if (arg1 && arg1.x !== undefined) {
 				// new Rectangle(point1, point2)
 				var point1 = Point.read(arguments, 0, 1);
 				var point2 = Point.read(arguments, 1, 1);
@@ -50,12 +50,12 @@ var Rectangle = this.Rectangle = Base.extend({
 				this.width = size.width;
 				this.height = size.height;
 			}
-		} else if (arguments.length == 4) {
-			// new Rectangle(x, y, width, height)
-			this.x = arg0;
-			this.y = arg1;
-			this.width = arg2;
-			this.height = arg3;
+		} else if (arg0) {
+			// Use 0 as defaults, in case we're reading from a Point or Size
+			this.x = arg0.x || 0;
+			this.y = arg0.y || 0;
+			this.width = arg0.width || 0;
+			this.height = arg0.height || 0;
 		} else {
 			// new Rectangle()
 			this.x = this.y = this.width = this.height = 0;

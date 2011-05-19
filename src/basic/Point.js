@@ -23,10 +23,10 @@ var Point = this.Point = Base.extend({
 	beans: true,
 
 	initialize: function(arg0, arg1) {
-		if (arguments.length == 2) {
+		if (arg1 !== undefined) {
 			this.x = arg0;
 			this.y = arg1;
-		} else if (arguments.length == 1) {
+		} else if (arg0 !== undefined) {
 			if (arg0 == null) {
 				this.x = this.y = 0;
 			} else if (arg0.x !== undefined) {
