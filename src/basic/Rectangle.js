@@ -158,10 +158,6 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this.setCenterX(point.x).setCenterY(point.y);
 	},
 
-	clone: function() {
-		return new Rectangle(this);
-	},
-
 	equals: function(rect) {
 		rect = Rectangle.read(arguments);
 		return this.x == rect.x && this.y == rect.y
