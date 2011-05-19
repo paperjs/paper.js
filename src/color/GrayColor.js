@@ -15,22 +15,5 @@
  */
 
 var GrayColor = this.GrayColor = Color.extend({
-	beans: true,
-
-	_colorType: 'gray',
-	_components: ['gray', 'alpha'],
-
-	/**
-	 * A value between 0 and 1 that specifies the amount of gray in the gray
-	 * color.
-	 */
-	getGray: function() {
-		return this._gray;
-	},
-
-	setGray: function(value) {
-		this._cssString = null;
-		this._gray = Math.min(Math.max(value, 0), 1);
-		return this;
-	}
+	_colorType: 'gray'
 });

@@ -28,10 +28,10 @@
 			}
 			path.smooth();
 			var placedSymbol = new PlacedSymbol(path);
-			placedSymbol.position = view.center;
 			layer.appendBottom(placedSymbol);
 		}
-
+		layer.position = view.center;
+		
 		function onFrame(event) {
 			for (var i = 0, l = layer.children.length; i < l; i++) {
 				var item = layer.children[i];
@@ -42,7 +42,7 @@
 
 		// Reposition the paths whenever the window is resized:
 		function onResize(event) {
-			project.activeLayer.position = view.center;
+			layer.position = view.center;
 		}
 	</script>
 </head>
