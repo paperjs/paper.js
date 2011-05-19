@@ -339,7 +339,7 @@ var Color = this.Color = Base.extend(new function() {
 					Math.round(color.getRed() * 255),
 					Math.round(color.getGreen() * 255),
 					Math.round(color.getBlue() * 255),
-					alpha != null ? this.alpha : 1
+					alpha != null ? alpha : 1
 				];
 			this._cssString = 'rgba(' + components.join(', ') + ')';
 		}
