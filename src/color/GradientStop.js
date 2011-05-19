@@ -14,13 +14,24 @@
  * All rights reserved.
  */
 
+// TODO: support midPoint? (initial tests didn't look nice)
 var GradientStop = this.GradientStop = Base.extend({
 	beans: true,
 
-	// TODO: support midPoint? (initial tests didn't look nice)
-	initialize: function(color, rampPoint) {
-		this.setColor(color);
-		this.setRampPoint(rampPoint);
+	initialize: function(arg0, arg1) {
+		if (arg1 === undefined && Array.isArray(arg0)) {
+			// [color, rampPoint]
+			this.setColor(arg0[0]);
+			this.setRampPoint(arg0[1]);
+		} else if (arg0.color) {
+			// stop
+			this.setColor(arg0.color);
+			this.setRampPoint(arg0.rampPoint);
+		} else {
+			// color [, rampPoint]
+			this.setColor(arg0);
+			this.setRampPoint(arg1);
+		}
 	},
 
 	getRampPoint: function() {
@@ -28,6 +39,7 @@ var GradientStop = this.GradientStop = Base.extend({
 	},
 
 	setRampPoint: function(rampPoint) {
+		this._defaultRamp = rampPoint == null;
 		this._rampPoint = rampPoint || 0;
 	},
 
