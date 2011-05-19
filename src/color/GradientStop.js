@@ -34,6 +34,10 @@ var GradientStop = this.GradientStop = Base.extend({
 		}
 	},
 
+	clone: function() {
+		return new GradientStop(this._color.clone(), this._rampPoint);
+	},
+
 	getRampPoint: function() {
 		return this._rampPoint;
 	},

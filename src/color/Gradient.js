@@ -24,6 +24,13 @@ var Gradient = this.Gradient = Base.extend({
 		this.type = type || 'linear';
 	},
 
+	clone: function() {
+		var stops = [];
+		for (var i = 0, l = this._stops.length; i < l; i++)
+			stops[i] = this._stops[i].clone();
+		return new Gradient(stops, this.type);
+	},
+
 	getStops: function() {
 		return this._stops;
 	},
