@@ -62,9 +62,6 @@ var sources = [
 	'src/text/PointText.js',
 
 	'src/color/Color.js',
-	'src/color/RGBColor.js',
-	'src/color/HSBColor.js',
-	'src/color/GrayColor.js',
 	'src/color/GradientColor.js',
 	'src/color/Gradient.js',
 	'src/color/GradientStop.js',
