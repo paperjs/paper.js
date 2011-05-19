@@ -27,6 +27,11 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 			: new Matrix();
 	},
 
+	clone: function() {
+		// TODO: Implement!
+		return this.base();
+	},
+
 	_transform: function(matrix, flags) {
 		// In order to set the right context transformation when drawing the
 		// raster, simply preconcatenate the internal matrix with the provided

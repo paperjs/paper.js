@@ -34,6 +34,11 @@ var Raster = this.Raster = Item.extend({
 		this.matrix = new Matrix();
 	},
 
+	clone: function() {
+		// TODO: Implement!
+		return this.base();
+	},
+
 	/**
 	* The size of the raster in pixels.
 	*/

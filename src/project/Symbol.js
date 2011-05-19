@@ -23,6 +23,11 @@ var Symbol = this.Symbol = Base.extend({
 		this.setDefinition(item);
 	},
 
+	clone: function() {
+		// TODO: Implement!
+		return this.base();
+	},
+
 	getDefinition: function() {
 		return this._definition;
 	},
