@@ -333,14 +333,14 @@ var Color = this.Color = Base.extend(new function() {
 
 	toCssString: function() {
 		if (!this._cssString) {
-			var color = this.convert('rgb');
-			var alpha = color.getAlpha();
-			var components = [
-				Math.round(color.getRed() * 255),
-				Math.round(color.getGreen() * 255),
-				Math.round(color.getBlue() * 255),
-				alpha != null ? this.alpha : 1
-			];
+			var color = this.convert('rgb'),
+				alpha = color.getAlpha(),
+				components = [
+					Math.round(color.getRed() * 255),
+					Math.round(color.getGreen() * 255),
+					Math.round(color.getBlue() * 255),
+					alpha != null ? this.alpha : 1
+				];
 			this._cssString = 'rgba(' + components.join(', ') + ')';
 		}
 		return this._cssString;
