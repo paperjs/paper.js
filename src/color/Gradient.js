@@ -36,25 +36,15 @@ var Gradient = this.Gradient = Base.extend({
 		if (stops.length < 2)
 			throw new Error(
 					'Gradient stop list needs to contain at least two stops.');
-		if (!(stops[0] instanceof GradientStop)) {
-			for (var i = 0, l = stops.length; i < l; i++) {
-				var rampPoint;
-				var stop = stops[i];
-				// If it is an array, the second argument is the rampPoint:
-				if (Array.isArray(stop)) {
-					rampPoint = stop[1];
-					stop = stop[0];
-				} else {
-				// Otherwise stops is an array of colors, and we need to
-				// calculate the midPoint:
-					rampPoint = i / (l - 1);
-				}
-				stops[i] = new GradientStop(stop, rampPoint);
-			}
+		this._stops = GradientStop.readAll(stops);
+		// Now reassign ramp points if they were not specified.
+		for (var i = 0, l = this._stops.length; i < l; i++) {
+			var stop = this._stops[i];
+			if (stop._defaultRamp)
+				stop.setRampPoint(i / (l - 1));
 		}
-		this._stops = stops;
 	},
-	
+
 	equals: function(gradient) {
 		if (this.stops.length == gradient.stops.length) {
 			for (var i = 0, l = this.stops.length; i < l; i++) {
