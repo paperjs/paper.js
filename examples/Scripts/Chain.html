@@ -9,16 +9,18 @@
 	<script type="text/paperscript" canvas="canvas">
 		// Adapted from the following Processing example:
 		// http://processing.org/learning/topics/follow3.html
-		
+
 		var path = new Path();
-		path.strokeColor = 'purple';
-		path.strokeWidth = 20;
-		path.strokeCap = 'round';
-		var size = 20;
+		path.style = {
+			strokeColor: '#E4141B',
+			strokeWidth: 20,
+			strokeCap: 'round'
+		};
+		var size = 25;
 		var segments = path.segments;
-		var center = view.center;
+		var start = view.center / [10, 1];
 		for (var i = 0; i < size; i++)
-			path.add(center + new Point(i * 100, 0));
+			path.add(start + new Point(i * 100, 0));
 
 		function onMouseMove(event) {
 			segments[0].point = event.point;
@@ -26,7 +28,7 @@
 				var nextSegment = segments[i + 1];
 				var position = path.segments[i].point;
 				var angle = (position - nextSegment.point).angle;
-				var vector = new Point({ angle: angle, length: 25 });
+				var vector = new Point({ angle: angle, length: 35 });
 				nextSegment.point = position - vector;
 			}
 			path.smooth();
@@ -34,13 +36,15 @@
 
 		function onMouseDown(event) {
 			path.selected = true;
+			path.strokeColor = '#e08285';
 		}
-		
+
 		function onMouseUp(event) {
 			path.selected = false;
+			path.strokeColor = '#e4141b';
 		}
 	</script>
 </head>
-<body style='background-color: black'>
+<body>
 	<canvas id="canvas" resize keepalive="true"></canvas>
 </body>
