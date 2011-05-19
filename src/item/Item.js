@@ -31,7 +31,9 @@ var Item = this.Item = Base.extend({
 	 */
 	clone: function() {
 		var copy = new this.constructor();
+		// Copy over style
 		copy.setStyle(this._style);
+		// If this item has children, clone and append each of them:
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++)
 				copy.appendTop(this._children[i].clone());
@@ -45,6 +47,7 @@ var Item = this.Item = Base.extend({
 			if (this.hasOwnProperty(key))
 				copy[key] = this[key];
 		}
+		// Move the clone above the original, at the same position.
 		copy.moveAbove(this);
 		// Only set name once the copy is moved, to avoid setting and unsettting
 		// name related structures.
