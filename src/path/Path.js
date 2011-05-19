@@ -28,6 +28,14 @@ var Path = this.Path = PathItem.extend({
 				|| typeof segments[0] !== 'object' ? arguments : segments);
 	},
 
+	clone: function() {
+		var copy = new Path(this._segments);
+		copy.setStyle(this._style);
+		copy._closed = this._closed;
+		copy.moveAbove(this);
+		return copy;
+	},
+
 	_changed: function(flags) {
 		if (flags & ChangeFlags.GEOMETRY) {
 			delete this._length;
