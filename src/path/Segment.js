@@ -221,10 +221,6 @@ var Segment = this.Segment = Base.extend({
 		return new Segment(this._point, this._handleOut, this._handleIn);
 	},
 
-	clone: function() {
-		return new Segment(this);
-	},
-
 	remove: function() {
 		return this._path ? !!this._path.removeSegment(this._index) : false;
 	},
