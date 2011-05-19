@@ -20,12 +20,8 @@ var Gradient = this.Gradient = Base.extend({
 	// TODO: should type here be called 'radial' and have it
 	// receive a boolean value?
 	initialize: function(stops, type) {
-		if (!stops) {
-			stops = [new GradientStop('white', 0),
-					new GradientStop('black', 1)];
-		}
-		this.setStops(stops);
-		this.type = type ? type : 'linear';
+		this.setStops(stops || ['white', 'black']);
+		this.type = type || 'linear';
 	},
 
 	getStops: function() {
