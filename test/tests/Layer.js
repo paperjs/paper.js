@@ -75,28 +75,27 @@ test('appendTop / appendBottom / nesting', function() {
 	// There should be two layers now in project.layers
 	equals(function() {
 		return project.layers.length;
-	}, 1);
+	}, 2);
 	firstLayer.appendTop(secondLayer);
 	equals(function() {
 		return secondLayer.parent == firstLayer;
 	}, true);
-	equals(function() {
-		return secondLayer.nextSibling == firstLayer;
-	}, true);
-	
-	var path = new Path();
-	firstLayer.appendTop(path);
-
-	// move the layer above the path, inside the firstLayer:
-	secondLayer.moveAbove(path);
-	equals(function() {
-		return secondLayer.previousSibling == path;
-	}, true);
-	equals(function() {
-		return secondLayer.parent == firstLayer;
-	}, true);
-	// There should now only be one layer left:
+	// There should only be the firsLayer now in project.layers
 	equals(function() {
 		return project.layers.length;
 	}, 1);
-});
+	equals(function() {
+		return project.layers[0] == firstLayer;
+	}, true);
+	// Now move secondLayer bellow the first again, in which case it should
+	// reappear in project.layers
+	secondLayer.moveBelow(firstLayer);
+	// There should be two layers now in project.layers again now
+	equals(function() {
+		return project.layers.length;
+	}, 2);
+	equals(function() {
+		return project.layers[0] == firstLayer
+			&& project.layers[1] == secondLayer;
+	}, true);
+);
