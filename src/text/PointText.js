@@ -26,8 +26,13 @@ var PointText = this.PointText = TextItem.extend({
 	},
 
 	clone: function() {
-		// TODO: Implement!
-		return this.base();
+		var copy = this.base();
+		copy.content = this.content;
+		// Change _point without causing notification
+		copy._point.set(this._point.x, this._point.y, true);
+		// Use Matrix#initialize to easily copy over values.
+		copy.matrix.initialize(this.matrix);
+		return copy;
 	},
 
 	getPoint: function() {
