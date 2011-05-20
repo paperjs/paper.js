@@ -28,8 +28,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	},
 
 	clone: function() {
-		// TODO: Implement!
-		return this.base();
+		return this._clone(new PlacedSymbol(symbol, this.matrix.clone()));
 	},
 
 	_transform: function(matrix, flags) {
