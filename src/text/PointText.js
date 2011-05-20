@@ -20,6 +20,7 @@ var PointText = this.PointText = TextItem.extend({
 	initialize: function(point) {
 		this.base();
 		var point = Point.read(arguments);
+		this.content = '';
 		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
 		this.matrix = new Matrix().translate(point);
 	},
