@@ -20,9 +20,9 @@ function equals(actual, expected, message) {
 
 function test(testName, expected) {
 	return QUnit.test(testName, function() {
-		var proj = new Project();
+		var project = new Project();
 		expected();
-		proj.remove();
+		project.remove();
 	});
 }
 
