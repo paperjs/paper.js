@@ -28,7 +28,7 @@ var Color = this.Color = Base.extend(new function() {
 	function nameToRGBColor(name) {
 		var color = colorCache[name];
 		if (color)
-			return color; // TODO: return a clone of the color
+			return color.clone();
 		// Use a canvas to draw to with the given name and then retrieve rgb
 		// values from. Build a cache for all the used colors.
 		if (!colorContext) {
@@ -46,7 +46,7 @@ var Color = this.Color = Base.extend(new function() {
 		colorContext.fillRect(0, 0, 1, 1);
 		var data = colorContext.getImageData(0, 0, 1, 1).data,
 			rgb = [data[0] / 255, data[1] / 255, data[2] / 255];
-		return colorCache[name] = RGBColor.read(rgb); // TODO: return a clone
+		return (colorCache[name] = RGBColor.read(rgb)).clone();
 	}
 
 	function hexToRGBColor(string) {
@@ -189,11 +189,7 @@ var Color = this.Color = Base.extend(new function() {
 							var value = components[i];
 							// TODO: Should we call the setter?
 							// this['set' + name.capitalize()]
-							this[name] = value !== undefined
-									? value
-									// TODO: Is this correct?
-									// Shouldn't alpha be set to -1?
-									: name === 'alpha' ? 1 : null;
+							this[name] = value !== undefined ? value : null;
 						},
 					this);
 				}
