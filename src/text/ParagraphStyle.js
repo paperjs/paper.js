@@ -23,7 +23,7 @@ var ParagraphStyle = this.ParagraphStyle = Base.extend({
 
 	statics: {
 		create: function(item) {
-			var style = new CharacterStyle(CharacterStyle.dont);
+			var style = new ParagraphStyle(ParagraphStyle.dont);
 			style._item = item;
 			return style;
 		}
