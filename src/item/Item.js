@@ -23,7 +23,6 @@ var Item = this.Item = Base.extend({
 		this.setStyle(this._project.getCurrentStyle());
 	},
 
-
 	/**
 	 * Clones the item within the same project.
 	 * 
