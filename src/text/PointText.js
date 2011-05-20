@@ -21,6 +21,9 @@ var PointText = this.PointText = TextItem.extend({
 		this.base();
 		var point = Point.read(arguments);
 		this.content = '';
+		// TODO: Since we're exposing matrix, we actually need to extract _point
+		// from it each time getPoint is called, as it could be modified other
+		// than through PointText#transform().
 		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
 		this.matrix = new Matrix().translate(point);
 	},
