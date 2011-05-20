@@ -19,7 +19,8 @@ var PointText = this.PointText = TextItem.extend({
 
 	initialize: function(point) {
 		this.base();
-		this._point = Point.read(arguments, 0);
+		var point = Point.read(arguments);
+		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
 		this.matrix = new Matrix().translate(this._point);
 	},
 
@@ -36,7 +37,7 @@ var PointText = this.PointText = TextItem.extend({
 		point = Point.read(arguments);
 		var delta = point.subtract(this._point);
 		this.matrix.preConcatenate(new Matrix().translate(delta));
-		this._point = point;
+		this._point.set(point.x, point.y, true);
 	},
 	
 	// TODO: position should be the center point of the bounds
@@ -51,7 +52,10 @@ var PointText = this.PointText = TextItem.extend({
 	
 	_transform: function(matrix, flags) {
 		this.matrix.preConcatenate(matrix);
-		matrix._transformPoint(this._point, this._point);
+		// We need to transform the LinkedPoint, passing true for dontNotify so
+		// chaning it won't trigger calls of setPoint(), leading to an endless
+		// recursion.
+		matrix._transformPoint(this._point, this._point, true);
 	},
 	
 	draw: function(ctx) {
