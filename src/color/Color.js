@@ -282,7 +282,7 @@ var Color = this.Color = Base.extend(new function() {
 	},
 
 	setAlpha: function(alpha) {
-		this._alpha = Math.min(Math.max(alpha, 0), 1);
+		this._alpha = alpha == null ? null : Math.min(Math.max(alpha, 0), 1);
 		this._cssString = null;
 		return this;
 	},
