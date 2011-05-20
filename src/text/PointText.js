@@ -34,8 +34,8 @@ var PointText = this.PointText = TextItem.extend({
 	},
 
 	setPoint: function(point) {
-		this._transform(new Matrix().translate(Point.read(arguments).subtract(
-				this._point)));
+		this._transform(new Matrix().translate(
+				Point.read(arguments).subtract(this._point)));
 	},
 	
 	// TODO: position should be the center point of the bounds
