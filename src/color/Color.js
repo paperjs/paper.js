@@ -187,9 +187,9 @@ var Color = this.Color = Base.extend(new function() {
 					Base.each(this._components,
 						function(name, i) {
 							var value = components[i];
-							// TODO: Should we call the setter?
-							// this['set' + name.capitalize()]
-							this[name] = value !== undefined ? value : null;
+							// Set internal propery directly
+							this['_' + name] = value !== undefined
+									? value : null;
 						},
 					this);
 				}
