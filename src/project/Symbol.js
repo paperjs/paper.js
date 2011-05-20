@@ -24,9 +24,10 @@ var Symbol = this.Symbol = Base.extend({
 	},
 
 	clone: function() {
-		// TODO: Implement!
-		return this.base();
+	 	return new Symbol(this._definition.clone());
 	},
+
+	// TODO: remove()
 
 	getDefinition: function() {
 		return this._definition;
@@ -35,9 +36,7 @@ var Symbol = this.Symbol = Base.extend({
 	setDefinition: function(item) {
 		this._definition = item;
 		item._removeFromParent();
+		// Move position to 0, 0. TODO: Why?
 		item.setPosition(new Point());
 	}
-
-	// TODO:
-	// remove()
 });
