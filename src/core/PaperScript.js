@@ -154,8 +154,7 @@ var PaperScript = this.PaperScript = new function() {
 			}
 		}
 //#endif // BROWSER
-		var proj = scope.project,
-			view = scope.view,
+		var view = scope.view,
 			// TODO: Add support for multiple tools
 			tool = scope.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
 					&& new Tool(null, scope),
