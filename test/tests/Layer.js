@@ -1,8 +1,8 @@
 module('Layer');
 
 test('previousSibling / nextSibling', function() {
-	var proj = paper.project;
-	var firstLayer = proj.activeLayer;
+	var project = paper.project;
+	var firstLayer = project.activeLayer;
 	var secondLayer = new Layer();
 	equals(function() {
 		return secondLayer.previousSibling == firstLayer;
@@ -30,18 +30,18 @@ test('previousSibling / nextSibling', function() {
 		return thirdLayer.previousSibling == path;
 	}, true);
 	equals(function() {
-		return proj.layers.length == 2;
+		return project.layers.length == 2;
 	}, true);
 	
 	firstLayer.appendTop(secondLayer);
 	equals(function() {
-		return proj.layers.length == 1;
+		return project.layers.length == 1;
 	}, true);
 });
 
 test('moveAbove / moveBelow', function() {
-	var proj = paper.project;
-	var firstLayer = proj.activeLayer;
+	var project = paper.project;
+	var firstLayer = project.activeLayer;
 	var secondLayer = new Layer();
 	secondLayer.moveBelow(firstLayer);
 	equals(function() {
@@ -64,6 +64,39 @@ test('moveAbove / moveBelow', function() {
 	}, true);
 	// There should now only be one layer left:
 	equals(function() {
-		return proj.layers.length;
+		return project.layers.length;
+	}, 1);
+});
+
+test('appendTop / appendBottom / nesting', function() {
+	var project = paper.project;
+	var firstLayer = project.activeLayer;
+	var secondLayer = new Layer();
+	// There should be two layers now in project.layers
+	equals(function() {
+		return project.layers.length;
+	}, 1);
+	firstLayer.appendTop(secondLayer);
+	equals(function() {
+		return secondLayer.parent == firstLayer;
+	}, true);
+	equals(function() {
+		return secondLayer.nextSibling == firstLayer;
+	}, true);
+	
+	var path = new Path();
+	firstLayer.appendTop(path);
+
+	// move the layer above the path, inside the firstLayer:
+	secondLayer.moveAbove(path);
+	equals(function() {
+		return secondLayer.previousSibling == path;
+	}, true);
+	equals(function() {
+		return secondLayer.parent == firstLayer;
+	}, true);
+	// There should now only be one layer left:
+	equals(function() {
+		return project.layers.length;
 	}, 1);
 });
