@@ -53,9 +53,7 @@ var PointText = this.PointText = TextItem.extend({
 	
 	_transform: function(matrix, flags) {
 		this.matrix.preConcatenate(matrix);
-		if (!matrix.isIdentity()) {
-			matrix._transformPoint(this._point);
-		}
+		matrix._transformPoint(this._point, this._point);
 	},
 	
 	draw: function(ctx) {
