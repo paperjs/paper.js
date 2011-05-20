@@ -115,7 +115,7 @@ function compareItems(item, item2) {
 	if (item._matrix) {
 		equals(function() {
 			return item._matrix != item2._matrix;
-		});
+		}, true);
 		equals(item._matrix.toString(), item2._matrix.toString(),
 				'item._matrix.toString() == item2._matrix.toString()');
 	}
