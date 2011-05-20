@@ -26,6 +26,12 @@ var TextItem = this.TextItem = Item.extend({
 		this.setParagraphStyle();
 	},
 
+	_clone: function(copy) {
+		copy.setCharacterStyle(this._characterStyle);
+		copy.setParagraphStyle(this._paragraphStyle);
+		return this.base(copy);
+	},
+
 	getCharacterStyle: function() {
 		return this._characterStyle;
 	},

@@ -97,6 +97,7 @@ if (window.tests) {
 		'test/tests/Color.js',
 		'test/tests/Project.js',
 		'test/tests/Item.js',
+		'test/tests/Item_Cloning.js',
 		'test/tests/Layer.js',
 		'test/tests/Group.js',
 		'test/tests/Segment.js',
