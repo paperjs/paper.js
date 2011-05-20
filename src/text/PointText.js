@@ -21,18 +21,15 @@ var PointText = this.PointText = TextItem.extend({
 		this.base();
 		var point = Point.read(arguments);
 		this.content = '';
-		// TODO: Since we're exposing matrix, we actually need to extract _point
-		// from it each time getPoint is called, as it could be modified other
-		// than through PointText#transform().
 		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
-		this.matrix = new Matrix().translate(point);
+		this._matrix = new Matrix().translate(point);
 	},
 
 	clone: function() {
 		var copy = this._clone(new PointText(this._point));
 		copy.content = this.content;
 		// Use Matrix#initialize to easily copy over values.
-		copy.matrix.initialize(this.matrix);
+		copy._matrix.initialize(this._matrix);
 		return copy;
 	},
 
@@ -56,7 +53,7 @@ var PointText = this.PointText = TextItem.extend({
 	},
 	
 	_transform: function(matrix, flags) {
-		this.matrix.preConcatenate(matrix);
+		this._matrix.preConcatenate(matrix);
 		// We need to transform the LinkedPoint, passing true for dontNotify so
 		// chaning it won't trigger calls of setPoint(), leading to an endless
 		// recursion.
@@ -70,7 +67,7 @@ var PointText = this.PointText = TextItem.extend({
 		ctx.font = this._characterStyle.fontSize + 'pt ' +
 				this._characterStyle.font;
 		ctx.textAlign = this._paragraphStyle.justification;
-		this.matrix.applyToContext(ctx);
+		this._matrix.applyToContext(ctx);
 		
 		var fillColor = this.getFillColor();
 		var strokeColor = this.getStrokeColor();
