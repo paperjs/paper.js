@@ -34,11 +34,9 @@ var PointText = this.PointText = TextItem.extend({
 
 	setPoint: function(point) {
 		point = Point.read(arguments);
-		if (point) {
-			var delta = point.subtract(this._point);
-			this.matrix.preConcatenate(new Matrix().translate(delta));
-			this._point = point;
-		}
+		var delta = point.subtract(this._point);
+		this.matrix.preConcatenate(new Matrix().translate(delta));
+		this._point = point;
 	},
 	
 	// TODO: position should be the center point of the bounds
