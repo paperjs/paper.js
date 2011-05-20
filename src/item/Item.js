@@ -30,7 +30,10 @@ var Item = this.Item = Base.extend({
 	 * @return the newly cloned item
 	 */
 	clone: function() {
-		var copy = new this.constructor();
+		return this._clone(new this.constructor());
+	},
+
+	_clone: function(copy) {
 		// Copy over style
 		copy.setStyle(this._style);
 		// If this item has children, clone and append each of them:
