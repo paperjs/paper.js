@@ -42,9 +42,9 @@ var Raster = this.Raster = Item.extend({
 			image = CanvasProvider.getCanvas(this._size);
 			image.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
-		var raster = new Raster(image);
-		raster.matrix = this.matrix.clone();
-		return raster;
+		var copy = new Raster(image);
+		copy.matrix = this.matrix.clone();
+		return this._clone(copy);
 	},
 
 	/**
