@@ -193,6 +193,44 @@ function compareParagraphStyles(paragraphStyle, paragraphStyle2, checkIdentity) 
 	});
 }
 
+function compareSegments(segment, segment2, checkIdentity) {
+	var keys = ['handleIn', 'handleOut', 'point'];
+	if (checkIdentity) {
+		equals(function() {
+			return segment !== segment2;
+		}, true);
+	}
+	
+	for (var i = 0, l = keys.length; i < l; i++) {
+		var key = keys[i];
+		if (checkIdentity) {
+			equals(function() {
+				return segment[key] !== segment2[key];
+			}, true, 'Strict compare Segment#' + key);
+		}
+		equals(segment[key] && segment[key].toString(),
+				segment2[key] && segment2[key].toString(),
+				'Compare Segment#' + key);
+	}
+}
+
+function compareSegmentLists(segmentList, segmentList2, checkIdentity) {
+	if (checkIdentity) {
+		equals(function() {
+			return segmentList !== segmentList2;
+		}, true);
+	}
+	equals(segmentList.toString(), segmentList2.toString(),
+			'Compare Item#segments');
+	if (checkIdentity) {
+		for (var i = 0, l = segmentList.length; i < l; i++) {
+			var segment = segmentList[i],
+				segment2 = segmentList2[i];
+			compareSegments(segment, segment2, checkIdentity);
+		}
+	}
+}
+
 function compareItems(item, item2, checkIdentity) {
 	if (checkIdentity) {
 		equals(function() {
