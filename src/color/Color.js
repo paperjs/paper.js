@@ -209,7 +209,7 @@ var Color = this.Color = Base.extend(new function() {
 
 		convert: function(type) {
 			return this._colorType == type
-				? this
+				? this.clone()
 				: converters[this._colorType + '-' + type](this);
 		},
 
