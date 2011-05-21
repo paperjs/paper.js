@@ -36,9 +36,8 @@ var Item = this.Item = Base.extend({
 	},
 
 	_clone: function(copy) {
-		// If this item has a pathStyle, copy it:
-		if (this._style)
-			copy.setStyle(this._style);
+		// Copy over style
+		copy.setStyle(this._style);
 		// If this item has children, clone and append each of them:
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++)
