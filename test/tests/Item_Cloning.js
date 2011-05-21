@@ -22,6 +22,17 @@ test('Path#clone()', function() {
 	cloneAndCompare(path);
 });
 
+test('Path#clone() with GradientColor', function() {
+	var colors = ['red', 'green', 'black'];
+	var gradient = new Gradient(colors, 'radial');
+	var color = new GradientColor(gradient, [0, 0], [20, 20], [10, 10]);
+	
+	var proj = paper.project;
+	var path = new Path([10, 20], [30, 40]);
+	path.fillColor = color;
+	cloneAndCompare(path);
+});
+
 test('CompoundPath#clone()', function() {
 	var path1 = new Path.Rectangle([200, 200], [100, 100]);
 	var path2 = new Path.Rectangle([50, 50], [200, 200]);
