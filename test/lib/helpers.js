@@ -168,9 +168,23 @@ function compareItems(item, item2) {
 			return item.symbol == item2.symbol;
 		}, true);
 	}
-	
-	// TODO: Raster specific
-	
+
+	// Raster specific
+	if (item instanceof Raster) {
+		if (item._canvas) {
+			equals(function() {
+				return item._canvas != item2._canvas;
+			}, true);
+		}
+		if (item._image) {
+			equals(function() {
+				return item._image = item2._image;
+			}, true);
+		}
+		equals(item._size.toString(), item2._size.toString(),
+				'item._size.toString() == item2._size.toString()');
+	}
+
 	// TextItem specific:
 	if (item instanceof TextItem) {
 		equals(item.content, item2.content, 'item.content == item2.content');
