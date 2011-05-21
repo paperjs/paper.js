@@ -178,6 +178,6 @@ test('Color#convert', function() {
 		return converted !== color;
 	}, true);
 	equals(function() {
-		return converted.equals(color)
+		return converted.equals(color);
 	}, true);
 });
