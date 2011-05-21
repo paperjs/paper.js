@@ -135,6 +135,14 @@ function compareItems(item, item2) {
 		equals(item._matrix.toString(), item2._matrix.toString(),
 				'item._matrix.toString() == item2._matrix.toString()');
 	}
+	
+	if (item.matrix) {
+		equals(function() {
+			return item.matrix != item2.matrix;
+		}, true);
+		equals(item.matrix.toString(), item2.matrix.toString(),
+				'item.matrix.toString() == item2.matrix.toString()');
+	}
 
 	if (item2.segments) {
 		equals(item.segments.toString(), item2.segments.toString(),
