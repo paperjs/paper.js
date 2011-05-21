@@ -17,14 +17,11 @@
 var Layer = this.Layer = Group.extend({
 	beans: true,
 
-	initialize: function() {
-		// TODO: Isn't there a way to call this.base() here and then move the
-		// layer into layers instead?
-		this._children = [];
-		this._namedChildren = {};
+	initialize: function(items) {
 		this._project = paper.project;
 		// Push it onto project.layers and set index:
 		this._index = this._project.layers.push(this) - 1;
+		this.base.apply(this, arguments);
 		this.activate();
 	},
 
