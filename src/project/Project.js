@@ -88,8 +88,6 @@ var Project = this.Project = Base.extend({
 	 * Selects all items in the project.
 	 */
 	selectAll: function() {
-		// TODO: is using for var i in good practice?
-		// or should we use Base.each? (JP)
 		for (var i = 0, l = this.layers.length; i < l; i++)
 			this.layers[i].setSelected(true);
 	},
