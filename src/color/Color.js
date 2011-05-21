@@ -198,7 +198,7 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		clone: function(color) {
-			var copy = new this.constructor(),
+			var copy = new this.constructor(this.constructor.dont),
 				components = this._components;
 			for (var i = 0, l = components.length; i < l; i++) {
 				var key = '_' + components[i];
