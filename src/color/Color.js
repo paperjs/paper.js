@@ -263,8 +263,8 @@ var Color = this.Color = Base.extend(new function() {
 				color[component] = value;
 				color = color.convert(this._colorType);
 				for (var i = 0, l = this._components.length; i < l; i++) {
-					var component = this._components[i];
-					this[component] = color[component];
+					var key = this._components[i];
+					this[key] = color[key];
 				}
 			};
 		});
