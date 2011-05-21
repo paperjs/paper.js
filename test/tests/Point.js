@@ -29,6 +29,11 @@ test('new Point({ width: 10, height: 20})', function() {
     equals(point.y, 20);
 });
 
+test('new Point({ angle: 45, length: 20})', function() {
+	var point = new Point({angle: 40, length: 20});
+	equals(point.toString(), '{ x: 15.32089, y: 12.85575 }');
+});
+
 module('Point vector operations');
 
 test('normalize(length)', function() {
