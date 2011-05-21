@@ -35,8 +35,16 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	clone: function() {
-		// TODO: Implement!
-		return this.base();
+		var image = this._image;
+		if (!image) {
+			// If the Raster contains a Canvas object, we need to create
+			// a new one and draw this raster's canvas on it.
+			image = CanvasProvider.getCanvas(this._size);
+			image.getContext('2d').drawImage(this._canvas, 0, 0);
+		}
+		var raster = new Raster(image);
+		raster.matrix = this.matrix.clone();
+		return raster;
 	},
 
 	/**
