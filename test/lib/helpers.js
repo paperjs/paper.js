@@ -227,9 +227,9 @@ function compareItems(item, item2) {
 		
 		Base.each(['fillColor', 'strokeColor'], function(key) {
 			if (item[key]) {
-				// The fillColor should not point to the same color object:
+				// The color should not point to the same color object:
 				equals(function() {
-					return item[key] != item2[key];
+					return item[key] !== item2[key];
 				}, true, 'The ' + key + ' should not point to the same color object:');
 				if (item[key] instanceof GradientColor) {
 					equals(function() {
