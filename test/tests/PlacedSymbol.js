@@ -32,6 +32,6 @@ test('Symbol definition selection', function() {
 	path.selected = true;
 	var symbol = new Symbol(path);
 	equals(function() {
-		return symbol.definition.selected = false;
+		return symbol.definition.selected == false;
 	}, true);
 });
