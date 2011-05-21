@@ -17,7 +17,7 @@ test('Path#clone()', function() {
 	path.locked = true;
 	path.visible = false;
 	path.blendMode = 'blend';
-	path._clipMask = true;
+	path.clipMask = true;
 	path.selected = true;
 	cloneAndCompare(path);
 });
