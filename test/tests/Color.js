@@ -159,3 +159,14 @@ test('Color.read(channels)', function() {
 	var color = Color.read([0, 0, 1]);
 	compareRGBColors(color, [0, 0, 1, 1]);	
 });
+
+test('Cloning colors', function() {
+	var color = new RGBColor(0, 0, 0);
+	equals(function() {
+		return color.clone() != color;
+	}, true);
+
+	equals(function() {
+		return new RGBColor(color) != color;
+	}, true);
+});
