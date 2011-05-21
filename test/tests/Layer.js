@@ -98,4 +98,4 @@ test('appendTop / appendBottom / nesting', function() {
 		return project.layers[0] == firstLayer
 			&& project.layers[1] == secondLayer;
 	}, true);
-);
+});
