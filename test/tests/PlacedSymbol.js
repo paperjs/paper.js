@@ -26,3 +26,12 @@ test('placedSymbol bounds', function() {
 		{ x: -42.04736, y: -37.91846, width: 84.09473, height: 75.83691 },
 		'Bounds after rotation.');
 });
+
+test('Symbol definition selection', function() {
+	var path = new Path.Circle([50, 50], 50);
+	path.selected = true;
+	var symbol = new Symbol(path);
+	equals(function() {
+		return symbol.definition.selected = false;
+	}, true);
+});
