@@ -111,7 +111,7 @@ function cloneAndCompare(item) {
 			return copy.parent.children[copy.name] == copy;
 		}, true);
 	}
-	compareItems(item, copy);
+	compareItems(item, copy, true);
 	// Remove the cloned item to restore the document:
 	copy.remove();
 }
@@ -150,7 +150,12 @@ function comparePathStyles(style, style2) {
 	}
 }
 
-function compareCharacterStyles(characterStyle, characterStyle2) {
+function compareCharacterStyles(characterStyle, characterStyle2, checkIdentity) {
+	if (checkIdentity) {
+		equals(function() {
+			return characterStyle != characterStyle2;
+		}, true);
+	}
 	var keys = ['fontSize', 'font'];
 	Base.each(keys, function(key) {
 		equals(function() {
@@ -160,7 +165,12 @@ function compareCharacterStyles(characterStyle, characterStyle2) {
 
 }
 
-function compareParagraphStyles(paragraphStyle, paragraphStyle2) {
+function compareParagraphStyles(paragraphStyle, paragraphStyle2, checkIdentity) {
+	if (checkIdentity) {
+		equals(function() {
+			return paragraphStyle != paragraphStyle2;
+		}, true);
+	}
 	var keys = ['justification'];
 	Base.each(keys, function(key) {
 		equals(function() {
@@ -169,10 +179,12 @@ function compareParagraphStyles(paragraphStyle, paragraphStyle2) {
 	});
 }
 
-function compareItems(item, item2) {
-	equals(function() {
-		return item != item2;
-	}, true);
+function compareItems(item, item2, checkIdentity) {
+	if (checkIdentity) {
+		equals(function() {
+			return item != item2;
+		}, true);
+	}
 
 	equals(function() {
 		return item.constructor == item2.constructor;
@@ -254,17 +266,18 @@ function compareItems(item, item2) {
 	// TextItem specific:
 	if (item instanceof TextItem) {
 		equals(item.content, item2.content, 'Compare Item#content');
-		compareCharacterStyles(item.characterStyle, item2.characterStyle);
+		compareCharacterStyles(item.characterStyle, item2.characterStyle,
+				checkIdentity);
 	}
 	
 	// PointText specific:
 	if (item instanceof PointText) {
-		equals(item.point.toString(), item2.point.toString());
+		equals(item.point.toString(), item2.point.toString(), checkIdentity);
 	}
 	
 	if (item.style) {
 		// Path Style
-		comparePathStyles(item.style, item2.style);
+		comparePathStyles(item.style, item2.style, checkIdentity);
 	}
 
 	// Check length of children and recursively compare them:
@@ -273,7 +286,7 @@ function compareItems(item, item2) {
 			return item.children.length == item2.children.length;
 		}, true);
 		for (var i = 0, l = item.children.length; i < l; i++) {
-			compareItems(item.children[i], item2.children[i]);
+			compareItems(item.children[i], item2.children[i], checkIdentity);
 		}
 	}
 }
