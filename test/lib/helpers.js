@@ -88,20 +88,20 @@ function compareGrayColors(color1, color2, message) {
 			(message || '') + ' gray');
 }
 
-function compareGradientColors(color1, color2) {
+function compareGradientColors(gradientColor, gradientColor2) {
 	Base.each(['origin', 'destination', 'hilite'], function(key) {
-		equals(color1[key].toString(), color2[key].toString(),
-			'color1[' + key + '].toString() == color2[' + key + '].toString()');
+		equals(gradientColor[key].toString(), gradientColor2[key].toString(),
+			'Compare GradientColor#' + key);
 	});
 	equals(function() {
-		return color1.gradient.equals(color2.gradient);
+		return gradientColor.gradient.equals(gradientColor2.gradient);
 	}, true);
 }
 
 function cloneAndCompare(item) {
 	var copy = item.clone();
 	equals(function() {
-		return item._parent == copy._parent;
+		return item.parent == copy.parent;
 	}, true);
 	equals(function() {
 		return item.nextSibling == copy;
@@ -116,9 +116,66 @@ function cloneAndCompare(item) {
 	copy.remove();
 }
 
+function comparePathStyles(style, style2) {
+	Base.each(['fillColor', 'strokeColor'], function(key) {
+		if (style[key]) {
+			// The color should not point to the same color object:
+			equals(function() {
+				return style[key] !== style2[key];
+			}, true, 'The ' + key + ' should not point to the same color object:');
+			if (style[key] instanceof GradientColor) {
+				equals(function() {
+					return style[key].gradient == style2[key].gradient;
+				}, true, 'The ' + key + '.gradient should point to the same object:');
+				compareGradientColors(style[key], style2[key]);
+			} else {
+				equals(style[key].toString(), style2[key].toString(),
+						'Compare PathStyle#' + key);
+			}
+		}
+	});
+
+	Base.each(['strokeCap', 'strokeJoin', 'dashOffset', 'miterLimit',
+	'strokeOverprint', 'fillOverprint'], function(key) {
+		if (style[key]) {
+			equals(function() {
+				return style[key] == style2[key];
+			}, true, 'Compare PathStyle#' + key);
+		}
+	});
+
+	if (style.dashArray) {
+		equals(style.dashArray.toString(), style2.dashArray.toString(),
+			'Compare CharacterStyle#dashArray');
+	}
+}
+
+function compareCharacterStyles(characterStyle, characterStyle2) {
+	var keys = ['fontSize', 'font'];
+	Base.each(keys, function(key) {
+		equals(function() {
+			return characterStyle[key] == characterStyle2[key];
+		}, true, 'Compare CharacterStyle#' + key);
+	});
+
+}
+
+function compareParagraphStyles(paragraphStyle, paragraphStyle2) {
+	var keys = ['justification'];
+	Base.each(keys, function(key) {
+		equals(function() {
+			return style[key] == style2[key];
+		}, true, 'Compare ParagraphStyle#' + key);
+	});
+}
+
 function compareItems(item, item2) {
 	equals(function() {
 		return item != item2;
+	}, true);
+
+	equals(function() {
+		return item.constructor == item2.constructor;
 	}, true);
 
 	var itemProperties = ['opacity', 'locked', 'visible', 'blendMode', 'name',
@@ -126,32 +183,27 @@ function compareItems(item, item2) {
 	Base.each(itemProperties, function(key) {
 		equals(function() {
 			return item[key] == item2[key];
-		}, true, 'item[\'' + key + '\'] == item2[\'' + key + '\']');
+		}, true, 'compare Item#' + key);
 	});
 
 	equals(function() {
 		return item.id != item2.id;
 	}, true);
 
-	if (item._matrix) {
-		equals(function() {
-			return item._matrix != item2._matrix;
-		}, true);
-		equals(item._matrix.toString(), item2._matrix.toString(),
-				'item._matrix.toString() == item2._matrix.toString()');
-	}
+	equals(item.bounds.toString(), item2.bounds.toString(),
+			'Compare Item#bounds');
 	
 	if (item.matrix) {
 		equals(function() {
 			return item.matrix != item2.matrix;
 		}, true);
 		equals(item.matrix.toString(), item2.matrix.toString(),
-				'item.matrix.toString() == item2.matrix.toString()');
+				'Compare Item#matrix');
 	}
 
 	if (item2.segments) {
 		equals(item.segments.toString(), item2.segments.toString(),
-				'item.segments.toString() == item2.segments.toString()');
+				'Compare Item#segments');
 	}
 
 	// Path specific
@@ -164,7 +216,7 @@ function compareItems(item, item2) {
 	// Group specific
 	if (item instanceof Group) {
 		equals(function() {
-			return item._clipped == item2._clipped;
+			return item.clipped == item2.clipped;
 		}, true);
 	}
 
@@ -184,6 +236,7 @@ function compareItems(item, item2) {
 
 	// Raster specific
 	if (item instanceof Raster) {
+		// TODO: remove access of private fields:
 		if (item._canvas) {
 			equals(function() {
 				return item._canvas != item2._canvas;
@@ -191,30 +244,17 @@ function compareItems(item, item2) {
 		}
 		if (item._image) {
 			equals(function() {
-				return item._image = item2._image;
+				return item._image == item2._image;
 			}, true);
 		}
 		equals(item._size.toString(), item2._size.toString(),
-				'item._size.toString() == item2._size.toString()');
+				'Compare Item#size');
 	}
 
 	// TextItem specific:
 	if (item instanceof TextItem) {
-		equals(item.content, item2.content, 'item.content == item2.content');
-		var characterStyleKeys = ['fontSize', 'font'];
-		Base.each(characterStyleKeys, function(key) {
-			equals(function() {
-				return item2.characterStyle[key];
-			}, item.characterStyle[key], 'item.characterStyle[\'' + key
-					+ '\'] == item2.characterStyle[\'' + key + '\']');
-		});
-		var paragraphStyleKeys = ['justification'];
-		Base.each(paragraphStyleKeys, function(key) {
-			equals(function() {
-				return item2.paragraphStyle[key];
-			}, item.paragraphStyle[key], 'item.paragraphStyle[\'' + key
-					+ '\'] == item2.paragraphStyle[\'' + key + '\']');
-		});
+		equals(item.content, item2.content, 'Compare Item#content');
+		compareCharacterStyles(item.characterStyle, item2.characterStyle);
 	}
 	
 	// PointText specific:
@@ -222,41 +262,9 @@ function compareItems(item, item2) {
 		equals(item.point.toString(), item2.point.toString());
 	}
 	
-	if (item._style) {
+	if (item.style) {
 		// Path Style
-		
-		Base.each(['fillColor', 'strokeColor'], function(key) {
-			if (item[key]) {
-				// The color should not point to the same color object:
-				equals(function() {
-					return item[key] !== item2[key];
-				}, true, 'The ' + key + ' should not point to the same color object:');
-				if (item[key] instanceof GradientColor) {
-					equals(function() {
-						return item[key].gradient == item2[key].gradient;
-					}, true, 'The ' + key + '.gradient should point to the same object:');
-					compareGradientColors(item[key], item2[key],
-							'Compare item[' + key + '] and item2[' + key + ']');
-				} else {
-					equals(item[key].toString(), item2[key].toString(),
-							'item[' + key + '] == item2[' + key + ']');
-				}
-			}
-		});
-
-		Base.each(['strokeCap', 'strokeJoin', 'dashOffset', 'miterLimit',
-		'strokeOverprint', 'fillOverprint'], function(key) {
-			if (item[key]) {
-				equals(function() {
-					return item[key] == item2[key];
-				}, true, 'item[\'' + key + '\'] == item2[\'' + key + '\']');
-			}
-		});
-
-		if (item.dashArray) {
-			equals(item.dashArray.toString(), item2.dashArray.toString(),
-				'item.dashArray.toString(), item2.dashArray.toString()');
-		}
+		comparePathStyles(item.style, item2.style);
 	}
 
 	// Check length of children and recursively compare them:
