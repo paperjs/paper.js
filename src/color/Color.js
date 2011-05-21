@@ -142,9 +142,10 @@ var Color = this.Color = Base.extend(new function() {
 		_readNull: true,
 
 		initialize: function(arg) {
-			var isArray = Array.isArray(arg);
+			var isArray = Array.isArray(arg),
+				colorType = this._colorType;
 			if (typeof arg === 'object' && !isArray) {
-				if (!this._colorType) {
+				if (!colorType) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
 					return arg.red !== undefined
@@ -160,21 +161,21 @@ var Color = this.Color = Base.extend(new function() {
 					// color.
 					var color = arg._colorType ? arg
 							: Color.read(arguments, 0, 1);
-					return (this._colorType !== color._colorType)
-							? color.convert(this._colorType)
+					return (colorType !== color._colorType)
+							? color.convert(colorType)
 							: color.clone();
 				}
 			} else if (typeof arg === 'string') {
 				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
 						? hexToRGBColor(arg)
 						: nameToRGBColor(arg);
-				return this._colorType
-						? rgbColor.convert(this._colorType)
+				return colorType
+						? rgbColor.convert(colorType)
 						: rgbColor;
 			} else {
 				var components = isArray ? arg
 						: Array.prototype.slice.call(arguments);
-				if (!this._colorType) {
+				if (!colorType) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
 					//if (components.length >= 4)
