@@ -127,7 +127,7 @@ function compareItems(item, item2) {
 	equals(function() {
 		return item.id != item2.id;
 	}, true);
-	
+
 	if (item._matrix) {
 		equals(function() {
 			return item._matrix != item2._matrix;
@@ -155,21 +155,21 @@ function compareItems(item, item2) {
 			return item._clockwise == item2._clockwise;
 		}, true);
 	}
-	
+
 	// Group specific
 	if (item instanceof Group) {
 		equals(function() {
 			return item._clipped == item2._clipped;
 		}, true);
 	}
-	
+
 	// Layer specific
 	if (item instanceof Layer) {
 		equals(function() {
 			return item.project == item2.project;
 		}, true);
 	}
-	
+
 	// PlacedSymbol specific
 	if (item instanceof PlacedSymbol) {
 		equals(function() {
