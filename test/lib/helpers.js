@@ -92,7 +92,7 @@ function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
 	Base.each(['origin', 'destination', 'hilite'], function(key) {
 		if (checkIdentity) {
 			equals(function() {
-				return gradientColor[key] != gradientColor2[key]
+				return gradientColor[key] != gradientColor2[key];
 			}, true, 'Strict compare GradientColor#' + key);
 		}
 		equals(gradientColor[key].toString(), gradientColor2[key].toString(),
