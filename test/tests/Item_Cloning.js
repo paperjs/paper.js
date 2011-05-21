@@ -45,6 +45,18 @@ test('Layer#clone()', function() {
 	cloneAndCompare(paper.project.activeLayer);
 });
 
+test('Layer#clone() - check activeLayer', function() {
+	var project = paper.project,
+		activeLayer = project.activeLayer,
+		layer = activeLayer.clone();
+	equals(function() {
+		return layer == project.activeLayer;
+	}, true);
+	equals(function() {
+		return activeLayer != project.activeLayer;
+	}, true);
+});
+
 test('Group#clone()', function() {
 	var path = new Path.Circle([150, 150], 60);
 	path.style = {
