@@ -158,10 +158,11 @@ var Color = this.Color = Base.extend(new function() {
 				} else {
 					// Called on a subclass instance. Return the converted
 					// color.
-					var color = Color.read(arguments, 0, 1);
-					return this._colorType
+					var color = arg._colorType ? arg
+							: Color.read(arguments, 0, 1);
+					return (this._colorType !== color._colorType)
 							? color.convert(this._colorType)
-							: color;
+							: color.clone();
 				}
 			} else if (typeof arg === 'string') {
 				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
@@ -194,6 +195,16 @@ var Color = this.Color = Base.extend(new function() {
 					this);
 				}
 			}
+		},
+
+		clone: function(color) {
+			var copy = new this.constructor(),
+				components = this._components;
+			for (var i = 0, l = components.length; i < l; i++) {
+				var key = '_' + components[i];
+				copy[key] = this[key];
+			}
+			return copy;
 		},
 
 		convert: function(type) {
