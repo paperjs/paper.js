@@ -35,7 +35,8 @@ var Symbol = this.Symbol = Base.extend({
 
 	setDefinition: function(item) {
 		this._definition = item;
-		item.selected = false;
+		// Deselect the item, as PlacedSymbol has its own selection.
+		item.setSelected(false);
 		item._removeFromParent();
 		// Move position to 0, 0. TODO: Why?
 		item.setPosition(new Point());
