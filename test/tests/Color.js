@@ -170,3 +170,14 @@ test('Cloning colors', function() {
 		return new RGBColor(color) != color;
 	}, true);
 });
+
+test('Color#convert', function() {
+	var color = new RGBColor(0, 0, 0);
+	var converted = color.convert('rgb');
+	equals(function() {
+		return converted !== color;
+	}, true);
+	equals(function() {
+		return converted.equals(color)
+	}, true);
+});
