@@ -63,7 +63,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			} else {
 				var old = this['_' + key];
 				if (old != value && !(old && old.equals && old.equals(value))) {
-					this['_' + key] = value;
+					this['_' + key] = value && value.clone ? value.clone() : value;
 					if (this._item) {
 						this._item._changed(ChangeFlags.STYLE
 							| (strokeFlags[key] ? ChangeFlags.STROKE : 0));
@@ -83,7 +83,8 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 					var childStyle = children[i]._style[get]();
 					if (!style) {
 						style = childStyle;
-					} else if (style != childStyle) {
+					} else if (style != childStyle && !(style && style.equals
+							&& style.equals(childStyle))) {
 						// If there is another item with a different style,
 						// the style is not defined:
 						// PORT: Change this in Sg (currently returns null)
@@ -96,6 +97,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			}
 		};
 
+		// Style-getters and setters for Item:
 		// 'this' = the Base.each() side-car = the object that is returned from
 		// Base.each and injected into Item above:
 		this[set] = function(value) {
