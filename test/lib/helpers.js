@@ -100,6 +100,12 @@ function compareGradientColors(color1, color2) {
 
 function cloneAndCompare(item) {
 	var copy = item.clone();
+	equals(function() {
+		return item._parent == copy._parent;
+	}, true);
+	equals(function() {
+		return item.nextSibling == copy;
+	}, true);
 	compareItems(item, copy);
 	// Remove the cloned item to restore the document:
 	copy.remove();
