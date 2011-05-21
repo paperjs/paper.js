@@ -119,3 +119,11 @@ test('Raster#clone()', function() {
 	raster.rotate(20).translate(100);
 	cloneAndCompare(raster);
 });
+
+test('Group with clipmask', function() {
+	var path = new Path.Circle([100, 100], 30),
+		path2 = new Path.Circle([100, 100], 20),
+		group = new Group([path, path2]);
+	group.clipped = true;
+	cloneAndCompare(group);
+});
