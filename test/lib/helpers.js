@@ -100,29 +100,31 @@ function compareItems(item, item2) {
 		return item != item2;
 	}, true);
 
+	equals(function() {
+		return item.id != item2.id;
+	}, true);
+
 	var itemProperties = ['opacity', 'locked', 'visible', 'blendMode', 'name',
 	 		'closed', 'selected'];
 	Base.each(itemProperties, function(key) {
 		equals(function() {
 			return item[key] == item2[key];
-		}, true, 'item[\'' + key + '\'] == item2[\'' + key + '\']');
+		}, true);
 	});
-
-	equals(function() {
-		return item.id != item2.id;
-	}, true);
 	
 	if (item._matrix) {
 		equals(function() {
 			return item._matrix != item2._matrix;
 		}, true);
-		equals(item._matrix.toString(), item2._matrix.toString(),
-				'item._matrix.toString() == item2._matrix.toString()');
+		equals(function() {
+			return item._matrix.toString() == item2._matrix.toString()
+		}, true);
 	}
 
 	if (item2.segments) {
-		equals(item.segments.toString(), item2.segments.toString(),
-				'item.segments.toString() == item2.segments.toString()');
+		equals(function() {
+			return item.segments.toString() == item2.segments.toString()
+		}, true);
 	}
 
 	// Path specific
@@ -157,20 +159,20 @@ function compareItems(item, item2) {
 	
 	// TextItem specific:
 	if (item instanceof TextItem) {
-		equals(item.content, item2.content, 'item.content == item2.content');
+		equals(function() {
+			return item.content == item2.content;
+		}, true);
 		var characterStyleKeys = ['fontSize', 'font'];
 		Base.each(characterStyleKeys, function(key) {
 			equals(function() {
-				return item2.characterStyle[key];
-			}, item.characterStyle[key], 'item.characterStyle[\'' + key
-					+ '\'] == item2.characterStyle[\'' + key + '\']');
+				return item.characterStyle[key] == item2.characterStyle[key];
+			}, true);
 		});
 		var paragraphStyleKeys = ['justification'];
 		Base.each(paragraphStyleKeys, function(key) {
 			equals(function() {
-				return item2.paragraphStyle[key];
-			}, item.paragraphStyle[key], 'item.paragraphStyle[\'' + key
-					+ '\'] == item2.paragraphStyle[\'' + key + '\']');
+				return item.paragraphStyle[key] == item2.paragraphStyle[key];
+			}, true);
 		});
 	}
 	
@@ -209,13 +211,14 @@ function compareItems(item, item2) {
 			if (item[key]) {
 				equals(function() {
 					return item[key] == item2[key];
-				}, true, 'item[\'' + key + '\'] == item2[\'' + key + '\']');
+				}, true);
 			}
 		});
 
 		if (item.dashArray) {
-			equals(item.dashArray.toString(), item2.dashArray.toString(),
-				'item.dashArray.toString(), item2.dashArray.toString()');
+			equals(function() {
+				return item.dashArray.toString() == item2.dashArray.toString();
+			}, true);
 		}
 	}
 
