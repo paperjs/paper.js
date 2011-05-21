@@ -273,21 +273,18 @@ function compareItems(item, item2, checkIdentity) {
 				'Compare Item#matrix');
 	}
 
-	if (item2.segments) {
-		if (checkIdentity) {
-			equals(function() {
-				return item.segments != item2.segments;
-			}, true);
-		}
-		equals(item.segments.toString(), item2.segments.toString(),
-				'Compare Item#segments');
-	}
 
-	// Path specific
+
+	// PathItem specific
 	if (item instanceof PathItem) {
 		equals(function() {
 			return item.clockwise == item2.clockwise;
 		}, true);
+	}
+	
+	// Path specific
+	if (item2 instanceof Path) {
+		compareSegmentLists(item.segments, item2.segments, checkIdentity);
 	}
 
 	// Group specific
