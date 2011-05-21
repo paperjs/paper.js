@@ -88,6 +88,16 @@ function compareGrayColors(color1, color2, message) {
 			(message || '') + ' gray');
 }
 
+function compareGradientColors(color1, color2) {
+	Base.each(['origin', 'destination', 'hilite'], function(key) {
+		equals(color1[key].toString(), color2[key].toString(),
+			'color1[' + key + '].toString() == color2[' + key + '].toString()');
+	});
+	equals(function() {
+		return color1.gradient.equals(color2.gradient);
+	}, true);
+}
+
 function cloneAndCompare(item) {
 	var copy = item.clone();
 	compareItems(item, copy);
