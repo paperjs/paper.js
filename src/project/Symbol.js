@@ -35,6 +35,7 @@ var Symbol = this.Symbol = Base.extend({
 
 	setDefinition: function(item) {
 		this._definition = item;
+		item.selected = false;
 		item._removeFromParent();
 		// Move position to 0, 0. TODO: Why?
 		item.setPosition(new Point());
