@@ -191,28 +191,26 @@ function compareItems(item, item2) {
 	
 	if (item._style) {
 		// Path Style
-		if (item.fillColor) {
-			// The fillColor should not point to the same color object:
-			equals(function() {
-				return item.fillColor != item2.fillColor;
-			}, true, 'The fillColor should not point to the same color object:');
-			if (item.fillColor instanceof GradientColor) {
-				// TODO!
-			} else {
-				equals(item.fillColor.toString(), item2.fillColor.toString());
+		
+		Base.each(['fillColor', 'strokeColor'], function(key) {
+			if (item[key]) {
+				// The fillColor should not point to the same color object:
+				equals(function() {
+					return item[key] != item2[key];
+				}, true, 'The ' + key + ' should not point to the same color object:');
+				if (item[key] instanceof GradientColor) {
+					// TODO!
+					equals(function() {
+						return item[key].gradient == item2[key].gradient;
+					}, true, 'The ' + key + '.gradient should point to the same object:');
+					compareGradientColors(item[key], item2[key],
+							'Compare item[' + key + '] and item2[' + key + ']');
+				} else {
+					equals(item[key].toString(), item2[key].toString(),
+							'item[' + key + '] == item2[' + key + ']');
+				}
 			}
-		}
-
-		if (item.strokeColor) {
-			equals(function() {
-				return item.strokeColor != item2.strokeColor;
-			}, true, 'The strokeColor should not point to the same color object:');
-			if (item.strokeColor instanceof GradientColor) {
-				// TODO
-			} else {
-				equals(item.strokeColor.toString(), item2.strokeColor.toString());
-			}
-		}
+		});
 
 		Base.each(['strokeCap', 'strokeJoin', 'dashOffset', 'miterLimit',
 		'strokeOverprint', 'fillOverprint'], function(key) {
