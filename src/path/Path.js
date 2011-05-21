@@ -519,8 +519,6 @@ var Path = this.Path = PathItem.extend({
 			ctx.beginPath();
 			ctx.rect(point._x - 2, point._y - 2, 4, 4);
 			ctx.fill();
-			// TODO: Only draw white rectangle if point.isSelected()
-			// is false:
 			if (!pointSelected) {
 				ctx.beginPath();
 				ctx.rect(point._x - 1, point._y - 1, 2, 2);
