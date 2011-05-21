@@ -88,8 +88,13 @@ function compareGrayColors(color1, color2, message) {
 			(message || '') + ' gray');
 }
 
-function compareGradientColors(gradientColor, gradientColor2) {
+function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
 	Base.each(['origin', 'destination', 'hilite'], function(key) {
+		if (checkIdentity) {
+			equals(function() {
+				return gradientColor[key] != gradientColor2[key]
+			}, true, 'Strict compare GradientColor#' + key);
+		}
 		equals(gradientColor[key].toString(), gradientColor2[key].toString(),
 			'Compare GradientColor#' + key);
 	});
@@ -116,18 +121,27 @@ function cloneAndCompare(item) {
 	copy.remove();
 }
 
-function comparePathStyles(style, style2) {
+function comparePathStyles(style, style2, checkIdentity) {
+	if (checkIdentity) {
+		equals(function() {
+			return style != style2;
+		}, true);
+	}
 	Base.each(['fillColor', 'strokeColor'], function(key) {
 		if (style[key]) {
 			// The color should not point to the same color object:
-			equals(function() {
-				return style[key] !== style2[key];
-			}, true, 'The ' + key + ' should not point to the same color object:');
-			if (style[key] instanceof GradientColor) {
+			if (checkIdentity) {
 				equals(function() {
-					return style[key].gradient == style2[key].gradient;
-				}, true, 'The ' + key + '.gradient should point to the same object:');
-				compareGradientColors(style[key], style2[key]);
+					return style[key] !== style2[key];
+				}, true, 'The ' + key + ' should not point to the same color object:');
+			}
+			if (style[key] instanceof GradientColor) {
+				if (checkIdentity) {
+					equals(function() {
+						return style[key].gradient == style2[key].gradient;
+					}, true, 'The ' + key + '.gradient should point to the same object:');
+				}
+				compareGradientColors(style[key], style2[key], checkIdentity);
 			} else {
 				equals(style[key].toString(), style2[key].toString(),
 						'Compare PathStyle#' + key);
@@ -184,6 +198,10 @@ function compareItems(item, item2, checkIdentity) {
 		equals(function() {
 			return item != item2;
 		}, true);
+		
+		equals(function() {
+			return item.id != item2.id;
+		}, true);
 	}
 
 	equals(function() {
@@ -198,22 +216,31 @@ function compareItems(item, item2, checkIdentity) {
 		}, true, 'compare Item#' + key);
 	});
 
-	equals(function() {
-		return item.id != item2.id;
-	}, true);
+	if (checkIdentity) {
+		equals(function() {
+			return item.bounds != item2.bounds;
+		}, true);
+	}
 
 	equals(item.bounds.toString(), item2.bounds.toString(),
 			'Compare Item#bounds');
 	
 	if (item.matrix) {
-		equals(function() {
-			return item.matrix != item2.matrix;
-		}, true);
+		if (checkIdentity) {
+			equals(function() {
+				return item.matrix != item2.matrix;
+			}, true);
+		}
 		equals(item.matrix.toString(), item2.matrix.toString(),
 				'Compare Item#matrix');
 	}
 
 	if (item2.segments) {
+		if (checkIdentity) {
+			equals(function() {
+				return item.segments != item2.segments;
+			}, true);
+		}
 		equals(item.segments.toString(), item2.segments.toString(),
 				'Compare Item#segments');
 	}
@@ -221,7 +248,7 @@ function compareItems(item, item2, checkIdentity) {
 	// Path specific
 	if (item instanceof PathItem) {
 		equals(function() {
-			return item._clockwise == item2._clockwise;
+			return item.clockwise == item2.clockwise;
 		}, true);
 	}
 
@@ -250,9 +277,11 @@ function compareItems(item, item2, checkIdentity) {
 	if (item instanceof Raster) {
 		// TODO: remove access of private fields:
 		if (item._canvas) {
-			equals(function() {
-				return item._canvas != item2._canvas;
-			}, true);
+			if (checkIdentity) {
+				equals(function() {
+					return item._canvas != item2._canvas;
+				}, true);
+			}
 		}
 		if (item._image) {
 			equals(function() {
@@ -272,6 +301,11 @@ function compareItems(item, item2, checkIdentity) {
 	
 	// PointText specific:
 	if (item instanceof PointText) {
+		if (checkIdentity) {
+			equals(function() {
+				return item.point != item2.point;
+			}, true);
+		}
 		equals(item.point.toString(), item2.point.toString(), checkIdentity);
 	}
 	
