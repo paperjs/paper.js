@@ -104,3 +104,14 @@ test('Symbol#clone()', function() {
 		return paper.project.symbols.length == 2;
 	}, true);
 });
+
+test('Raster#clone()', function() {
+	var path = new Path.Circle([150, 150], 60);
+	path.style = {
+		fillColor: new RGBColor(0, 0, 1),
+		strokeColor: new RGBColor(0, 0, 1)
+	};
+	var raster = path.rasterize();
+	raster.rotate(20).translate(100);
+	cloneAndCompare(raster);
+});
