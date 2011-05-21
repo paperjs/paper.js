@@ -18,7 +18,10 @@ var Item = this.Item = Base.extend({
 	beans: true,
 
 	initialize: function() {
-		paper.project.activeLayer.appendTop(this);
+		// If _project is already set, the item was already moved into the DOM
+		// hierarchy. Used by Layer, where it's added to project.layers instead
+		if (!this._project)
+			paper.project.activeLayer.appendTop(this);
 		this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 	},

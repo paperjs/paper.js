@@ -23,15 +23,15 @@ var Project = this.Project = Base.extend({
 		this._scope = paper;
 		// Push it onto this._scope.projects and set index:
 		this._index = this._scope.projects.push(this) - 1;
+		this._currentStyle = PathStyle.create(null);
+		this._selectedItems = {};
+		this._selectedItemCount = 0;
 		// Activate straight away so paper.project is set, as required by
 		// Layer and DoumentView constructors.
 		this.activate();
 		this.layers = [];
 		this.symbols = [];
 		this.activeLayer = new Layer();
-		this._selectedItems = {};
-		this._selectedItemCount = 0;
-		this._currentStyle = PathStyle.create(null);
 	},
 
 	getCurrentStyle: function() {
