@@ -112,6 +112,10 @@ test('Raster#clone()', function() {
 		strokeColor: new RGBColor(0, 0, 1)
 	};
 	var raster = path.rasterize();
+	raster.opacity = 0.5;
+	raster.locked = true;
+	raster.visible = false;
+	raster.blendMode = 'blend';
 	raster.rotate(20).translate(100);
 	cloneAndCompare(raster);
 });
