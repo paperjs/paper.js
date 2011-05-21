@@ -55,17 +55,20 @@ var SegmentPoint = Point.extend({
 	},
 	
 	statics: {
-		create: function(segment, x, y) {
+		create: function(segment, x, y, selected) {
 			if (y === undefined) {
 				// Use the normal point constructor to read in point values
-				var tmp = new Point(x);
-				x = tmp.x;
-				y = tmp.y;
+				var pt = x instanceof Point ? x : new Point(x);
+				x = pt.x;
+				y = pt.y;
+				selected = pt.selected;
 			}
 			var point = new SegmentPoint(SegmentPoint.dont);
 			point._x = x;
 			point._y = y;
 			point._owner = segment;
+			if (selected)
+				point.setSelected(true);
 			return point;
 		}
 	}
