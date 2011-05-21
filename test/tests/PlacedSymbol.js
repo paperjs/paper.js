@@ -34,4 +34,7 @@ test('Symbol definition selection', function() {
 	equals(function() {
 		return symbol.definition.selected == false;
 	}, true);
+	equals(function() {
+		return paper.project.selectedItems.length == 0;
+	}, true);
 });
