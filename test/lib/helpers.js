@@ -193,6 +193,21 @@ function compareParagraphStyles(paragraphStyle, paragraphStyle2, checkIdentity) 
 	});
 }
 
+function compareSegmentPoints(segmentPoint, segmentPoint2, checkIdentity) {
+	if (checkIdentity) {
+		equals(function() {
+			return segmentPoint !== segmentPoint2;
+		}, true);
+	}
+	var keys = ['selected', 'x', 'y'];
+	for (var i = 0, l = keys.length; i < l; i++) {
+		var key = keys[i];
+		equals(function() {
+			return segmentPoint[key] == segmentPoint2[key];
+		}, true, 'Compare SegmentPoint#' + key);
+	}
+}
+
 function compareSegments(segment, segment2, checkIdentity) {
 	var keys = ['handleIn', 'handleOut', 'point'];
 	if (checkIdentity) {
