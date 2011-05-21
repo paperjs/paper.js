@@ -22,6 +22,17 @@ test('Path#clone()', function() {
 	cloneAndCompare(path);
 });
 
+test('Path#clone() with GradientColor', function() {
+	var colors = ['red', 'green', 'black'];
+	var gradient = new Gradient(colors, 'radial');
+	var color = new GradientColor(gradient, [0, 0], [20, 20], [10, 10]);
+	
+	var proj = paper.project;
+	var path = new Path([10, 20], [30, 40]);
+	path.fillColor = color;
+	cloneAndCompare(path);
+});
+
 test('CompoundPath#clone()', function() {
 	var path1 = new Path.Rectangle([200, 200], [100, 100]);
 	var path2 = new Path.Rectangle([50, 50], [200, 200]);
@@ -92,4 +103,15 @@ test('Symbol#clone()', function() {
 	equals(function() {
 		return paper.project.symbols.length == 2;
 	}, true);
+});
+
+test('Raster#clone()', function() {
+	var path = new Path.Circle([150, 150], 60);
+	path.style = {
+		fillColor: new RGBColor(0, 0, 1),
+		strokeColor: new RGBColor(0, 0, 1)
+	};
+	var raster = path.rasterize();
+	raster.rotate(20).translate(100);
+	cloneAndCompare(raster);
 });

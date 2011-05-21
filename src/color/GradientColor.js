@@ -26,7 +26,7 @@ var GradientColor = this.GradientColor = Color.extend({
 	},
 
 	clone: function() {
-		return new GradientColor(thisgradient, this._origin, this._destination,
+		return new GradientColor(this.gradient, this._origin, this._destination,
 				this._hilite);
 	},
 
