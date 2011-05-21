@@ -232,7 +232,6 @@ function compareItems(item, item2) {
 					return item[key] != item2[key];
 				}, true, 'The ' + key + ' should not point to the same color object:');
 				if (item[key] instanceof GradientColor) {
-					// TODO!
 					equals(function() {
 						return item[key].gradient == item2[key].gradient;
 					}, true, 'The ' + key + '.gradient should point to the same object:');
