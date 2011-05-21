@@ -106,6 +106,11 @@ function cloneAndCompare(item) {
 	equals(function() {
 		return item.nextSibling == copy;
 	}, true);
+	if (item.name) {
+		equals(function() {
+			return copy.parent.children[copy.name] == copy;
+		}, true);
+	}
 	compareItems(item, copy);
 	// Remove the cloned item to restore the document:
 	copy.remove();
