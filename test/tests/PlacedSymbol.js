@@ -12,8 +12,6 @@ test('placedSymbol bounds', function() {
 	var symbol = new Symbol(path);
 	var placedSymbol = new PlacedSymbol(symbol);
 
-	// These tests currently fail because we haven't implemented
-	// Item#strokeBounds yet.
 	compareRectangles(placedSymbol.bounds,
 		new Rectangle(-50.5, -50.5, 101, 101),
 		'PlacedSymbol initial bounds.');
