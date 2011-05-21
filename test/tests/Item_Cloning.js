@@ -16,7 +16,7 @@ test('Path#clone()', function() {
 	path.opacity = 0.5;
 	path.locked = true;
 	path.visible = false;
-	path.blendMode = 'blend';
+	path.blendMode = 'multiply';
 	path.clipMask = true;
 	path.selected = true;
 	cloneAndCompare(path);
@@ -115,7 +115,7 @@ test('Raster#clone()', function() {
 	raster.opacity = 0.5;
 	raster.locked = true;
 	raster.visible = false;
-	raster.blendMode = 'blend';
+	raster.blendMode = 'multiply';
 	raster.rotate(20).translate(100);
 	cloneAndCompare(raster);
 });
