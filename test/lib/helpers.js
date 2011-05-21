@@ -215,17 +215,12 @@ function compareSegments(segment, segment2, checkIdentity) {
 			return segment !== segment2;
 		}, true);
 	}
-	
+	equals(function() {
+		return segment.selected == segment2.selected;
+	}, true);
 	for (var i = 0, l = keys.length; i < l; i++) {
 		var key = keys[i];
-		if (checkIdentity) {
-			equals(function() {
-				return segment[key] !== segment2[key];
-			}, true, 'Strict compare Segment#' + key);
-		}
-		equals(segment[key] && segment[key].toString(),
-				segment2[key] && segment2[key].toString(),
-				'Compare Segment#' + key);
+		compareSegmentPoints(segment[key], segment2[key]);
 	}
 }
 
@@ -262,7 +257,7 @@ function compareItems(item, item2, checkIdentity) {
 	}, true);
 
 	var itemProperties = ['opacity', 'locked', 'visible', 'blendMode', 'name',
-	 		'closed', 'selected'];
+	 		'selected', 'clipMask'];
 	Base.each(itemProperties, function(key) {
 		equals(function() {
 			return item[key] == item2[key];
@@ -277,6 +272,15 @@ function compareItems(item, item2, checkIdentity) {
 
 	equals(item.bounds.toString(), item2.bounds.toString(),
 			'Compare Item#bounds');
+
+	if (checkIdentity) {
+		equals(function() {
+			return item.position != item2.position;
+		}, true);
+	}
+
+	equals(item.position.toString(), item2.position.toString(),
+			'Compare Item#position');
 	
 	if (item.matrix) {
 		if (checkIdentity) {
@@ -288,17 +292,15 @@ function compareItems(item, item2, checkIdentity) {
 				'Compare Item#matrix');
 	}
 
-
-
-	// PathItem specific
-	if (item instanceof PathItem) {
-		equals(function() {
-			return item.clockwise == item2.clockwise;
-		}, true);
-	}
-	
 	// Path specific
 	if (item2 instanceof Path) {
+		var keys = ['closed', 'fullySelected', 'clockwise', 'length'];
+		for (var i = 0, l = keys.length; i < l; i++) {
+			var key = keys[i];
+			equals(function() {
+				return item[key] == item2[key];
+			}, true, 'Compare Path#' + key);
+		}
 		compareSegmentLists(item.segments, item2.segments, checkIdentity);
 	}
 
