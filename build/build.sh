@@ -33,3 +33,8 @@ fi
 
 ./preprocess.sh ../src/paper.js ../out/paper.js "-DBROWSER" $MODE
 ./preprocess.sh ../src/paper.js ../out/paper-server.js "-DSERVER" $MODE
+
+# Generate documentation
+# TODO: switch this on with a flag
+cd jsdoc-toolkit
+java -jar jsrun.jar app/run.js -c=conf/paperjs.conf
