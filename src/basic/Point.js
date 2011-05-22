@@ -32,15 +32,7 @@ var Point = this.Point = Base.extend({
 	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
-			/**
-			 * The x coordinate of the point
-			 * @type number
-			 */
 			this.x = arg0;
-			/**
-			 * The y coordinate of the point
-			 * @type number
-			 */
 			this.y = arg1;
 		} else if (arg0 !== undefined) {
 			if (arg0 == null) {
@@ -67,6 +59,20 @@ var Point = this.Point = Base.extend({
 			this.x = this.y = 0;
 		}
 	},
+
+	/**
+	 * The x coordinate of the point
+	 *
+	 * @name Point#x
+	 * @type number
+	 */
+
+	/**
+	 * The y coordinate of the point
+	 * 
+	 * @name Point#y
+	 * @type number
+	 */
 
 	set: function(x, y) {
 		this.x = x;
