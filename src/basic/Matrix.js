@@ -20,12 +20,23 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 
 var Matrix = this.Matrix = Base.extend({
+	/** @lends Matrix# */
 	beans: true,
 
 	/**
-	 * Creates a 2D affine transform. An affine transform performs a linear
-	 * mapping from 2D coordinates to other 2D coordinates that preserves the
-	 * "straightness" and "parallelness" of lines.
+	 * Creates a 2D affine transform.
+	 *
+	 * @constructs Matrix
+	 * @param {number} m00 The m00 coordinate of the transform.
+	 * @param {number} m10 The m10 coordinate of the transform.
+	 * @param {number} m01 The m01 coordinate of the transform.
+	 * @param {number} m11 The m11 coordinate of the transform.
+	 * @param {number} m02 The m02 coordinate of the transform.
+	 * @param {number} m12 The m12 coordinate of the transform.
+	 * 
+	 * @class An affine transform performs a linear mapping from 2D coordinates
+	 * to other 2D coordinates that preserves the "straightness" and
+	 * "parallelness" of lines.
 	 *
 	 * Such a coordinate transformation can be represented by a 3 row by 3
 	 * column matrix with an implied last row of [ 0 0 1 ]. This matrix
@@ -41,14 +52,6 @@ var Matrix = this.Matrix = Base.extend({
 	 * This class is optimized for speed and minimizes calculations based on its
 	 * knowledge of the underlying matrix (as opposed to say simply performing
 	 * matrix multiplication).
-	 *
-	 * @param {number} m00 The m00 coordinate of the transform.
-	 * @param {number} m10 The m10 coordinate of the transform.
-	 * @param {number} m01 The m01 coordinate of the transform.
-	 * @param {number} m11 The m11 coordinate of the transform.
-	 * @param {number} m02 The m02 coordinate of the transform.
-	 * @param {number} m12 The m12 coordinate of the transform.
-	 * @constructor
 	 */
 	initialize: function(m00, m10, m01, m11, m02, m12) {
 		var ok = true;
@@ -482,6 +485,8 @@ var Matrix = this.Matrix = Base.extend({
 	},
 
 	statics: {
+		/** @lends Matrix */
+
 		// See Point.create()
 		create: function(m00, m10, m01, m11, m02, m12) {
 			return new Matrix(Matrix.dont).set(m00, m10, m01, m11, m02, m12);
