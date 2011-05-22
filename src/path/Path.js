@@ -15,8 +15,32 @@
  */
 
 var Path = this.Path = PathItem.extend({
+	/** @lends Path# */
 	beans: true,
 
+	/**
+	 * Creates a new Path item and places it at the top of the active layer.
+	 * 
+	 * @example
+	 * var firstSegment = new Segment(30, 30);
+	 * var secondSegment = new Segment(100, 100);
+	 * var path = new Path([firstSegment, secondSegment]);
+	 * path.strokeColor = 'black';
+	 * 
+	 * @example
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.moveTo(30, 30);
+	 * path.lineTo(100, 100);
+	 * 
+	 * @param {array} [segments] An optional array of segments (or points to be
+	 * converted to segments) that will be added to the path.
+	 * 
+	 * @class The Path item represents a path in a Paper.js project.
+	 * @extends PathItem
+	 * @extends Item
+	 * @constructs Path
+	 */
 	initialize: function(segments) {
 		this.base();
 		this._closed = false;
@@ -51,6 +75,9 @@ var Path = this.Path = PathItem.extend({
 
 	/**
 	 * The segments contained within the path.
+	 * 
+	 * @type array
+	 * @bean
 	 */
 	getSegments: function() {
 		return this._segments;
@@ -69,16 +96,31 @@ var Path = this.Path = PathItem.extend({
 		this._add(Segment.readAll(segments));
 	},
 
+	/**
+	 * The first Segment contained within the path.
+	 * 
+	 * @type Segment
+	 * @bean
+	 */
 	getFirstSegment: function() {
 		return this._segments[0];
 	},
 
+	/**
+	 * The last Segment contained within the path.
+	 * 
+	 * @type Segment
+	 * @bean
+	 */
 	getLastSegment: function() {
 		return this._segments[this._segments.length - 1];
 	},
 
 	/**
 	 * The curves contained within the path.
+	 * 
+	 * @type array
+	 * @bean
 	 */
 	getCurves: function() {
 		if (!this._curves) {
@@ -96,15 +138,33 @@ var Path = this.Path = PathItem.extend({
 		return this._curves;
 	},
 
+	/**
+	 * The first Curve contained within the path.
+	 * 
+	 * @type Curve
+	 * @bean
+	 */
 	getFirstCurve: function() {
 		return this.getCurves()[0];
 	},
 
+	/**
+	 * The last Curve contained within the path.
+	 * 
+	 * @type Curve
+	 * @bean
+	 */
 	getLastCurve: function() {
 		var curves = this.getCurves();
 		return curves[curves.length - 1];
 	},
 
+	/**
+	 * Specifies whether the path is closed.
+	 * 
+	 * @type Boolean
+	 * @bean
+	 */
 	getClosed: function() {
 		return this._closed;
 	},
@@ -204,6 +264,13 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	// PORT: Add support for adding multiple segments at once to Sg
+	/**
+	 * Adds one or more segments to the end of the segment list of this path.
+	 * 
+	 * @param {Segment|Point} segment the segment or point to be added.
+	 * @return {Segment} the added segment. This is not necessarily the same
+	 * object, e.g. if the segment to be added already belongs to another path.
+	 */
 	add: function(segment1 /*, segment2, ... */) {
 		return arguments.length > 1 && typeof segment1 !== 'number'
 			// addSegments
@@ -213,6 +280,15 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	// PORT: Add support for adding multiple segments at once to Sg
+	/**
+	 * Inserts one or more segments at a given index in the list of this path's
+	 * segments.
+	 * 
+	 * @param {number} index the index at which to insert the segment.
+	 * @param {Segment|Point} segment the segment or point to be inserted.
+	 * @return {Segment} the added segment. This is not necessarily the same
+	 * object, e.g. if the segment to be added already belongs to another path.
+	 */
 	insert: function(index, segment1 /*, segment2, ... */) {
 		return arguments.length > 2 && typeof segment1 !== 'number'
 			// insertSegments
@@ -232,22 +308,39 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	// PORT: Add to Sg
+	// DOCS: document Path#addSegments
 	addSegments: function(segments) {
 		return this._add(Segment.readAll(segments));
 	},
 
 	// PORT: Add to Sg
+	// DOCS: document Path#insertSegments
 	insertSegments: function(index, segments) {
 		return this._add(Segment.readAll(segments), index);
 	},
 
 	// PORT: Add to Sg
+	/**
+	 * Removes the segment at the specified index of the path's
+	 * {@link #segments} array.
+	 * 
+	 * @param {number} index the index of the segment to be removed
+	 * @return {Segment} the removed segment
+	 */
 	removeSegment: function(index) {
 		var segments = this.removeSegments(index, index + 1);
 		return segments[0] || null;
 	},
 	
 	// PORT: Add to Sg
+	/**
+	 * Removes the segments from the specified 'from' index to the specified
+	 * 'to' index from the path's {@link #segments} array.
+	 * 
+	 * @param {number} from
+	 * @param {number} to
+	 * @return {array} an array containing the removed segments.
+	 */
 	removeSegments: function(from, to) {
 		from = from || 0;
 	 	to = Base.pick(to, this._segments.length - 1);
@@ -288,7 +381,7 @@ var Path = this.Path = PathItem.extend({
 		this._changed(ChangeFlags.GEOMETRY);
 		return removed;
 	},
-	
+
 	isSelected: function() {
 		return this._selectedSegmentCount > 0;
 	},
@@ -304,6 +397,12 @@ var Path = this.Path = PathItem.extend({
 					? SelectionState.POINT : 0;
 	},
 	
+	/**
+	 * Specifies whether all segments of the path are selected.
+	 * 
+	 * @type boolean
+	 * @bean
+	 */
 	isFullySelected: function() {
 		return this._selectedSegmentCount == this._segments.length;
 	},
@@ -318,7 +417,10 @@ var Path = this.Path = PathItem.extend({
 	// TODO: split(offset) / split(location) / split(index[, parameter])
 
 	/**
-	 * Returns true if the path is oriented clock-wise, false otherwise.
+	 * Specifies whether the path is oriented clock-wise.
+	 * 
+	 * @type boolean
+	 * @bean
 	 */
 	isClockwise: function() {
 		if (this._clockwise !== undefined)
@@ -379,6 +481,13 @@ var Path = this.Path = PathItem.extend({
 			this._clockwise = !this._clockwise;
 	},
 
+	// DOCS: document Path#join in more detail.
+	/**
+	* Joins the path with the specified path, which will be removed in the
+	* process.
+	* 
+	* @param {Path} path
+	*/
 	join: function(path) {
 		if (path) {
 			var segments = path._segments,
@@ -417,6 +526,12 @@ var Path = this.Path = PathItem.extend({
 		return false;
 	},
 
+	/**
+	 * The length of the perimeter of the path.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getLength: function() {
 		if (this._length == null) {
 			var curves = this.getCurves();
@@ -442,6 +557,11 @@ var Path = this.Path = PathItem.extend({
 
 	// TODO: getLocationAt(point, precision)
 	// PORT: Rename functions and add new isParameter argument in Sg
+	// DOCS: document Path#getLocationAt
+	/**
+	 * @param {number} offset
+	 * @param {boolean} [isParameter=false]
+	 */
 	getLocationAt: function(offset, isParameter) {
 		var curves = this.getCurves(),
 			length = 0;
@@ -468,8 +588,13 @@ var Path = this.Path = PathItem.extend({
 		return null;
 	},
 
+	// DOCS: improve Path#getPointAt documenation.
 	/**
-	 * Returns the point of the path at the given offset.
+	 * Get the point of the path at the given offset.
+	 * 
+	 * @param {number} offset
+	 * @param {boolean} [isParameter=false]
+	 * @return {Point} the point at the given offset
 	 */
 	getPointAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
@@ -477,8 +602,12 @@ var Path = this.Path = PathItem.extend({
 	},
 	
 	/**
-	 * Returns the tangent to the path at the given offset as a vector
+	 * Get the tangent to the path at the given offset as a vector
 	 * point.
+	 * 
+	 * @param {number} offset
+	 * @param {boolean} [isParameter=false]
+	 * @return {Point} the tangent vector at the given offset
 	 */
 	getTangentAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
@@ -486,7 +615,11 @@ var Path = this.Path = PathItem.extend({
 	},
 	
 	/**
-	 * Returns the normal to the path at the given offset as a vector point.
+	 * Get the normal to the path at the given offset as a vector point.
+	 * 
+	 * @param {number} offset
+	 * @param {boolean} [isParameter=false]
+	 * @return {Point} the normal vector at the given offset
 	 */
 	getNormalAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
@@ -649,6 +782,8 @@ var Path = this.Path = PathItem.extend({
 	};
 
 	return {
+		/** @lends Path# */
+
 		_setStyles: function(ctx) {
 			for (var i in styles) {
 				var style = this._style[i]();
@@ -657,6 +792,13 @@ var Path = this.Path = PathItem.extend({
 			}
 		},
 
+		/**
+		 * Smooth bezier curves without changing the amount of segments or their
+		 * points, by only smoothing and adjusting their handle points, for both
+		 * open ended and closed paths.
+		 * 
+		 * @author Oleg V. Polikarpotchkin
+		 */
 		smooth: function() {
 			// This code is based on the work by Oleg V. Polikarpotchkin,
 			// http://ov-p.spaces.live.com/blog/cns!39D56F0C7A08D703!147.entry
@@ -770,6 +912,12 @@ var Path = this.Path = PathItem.extend({
 	 * execute a moveTo() command first.
 	 */
 	return {
+		/** @lends Path# */
+
+		// DOCS: document moveTo
+		/**
+		 * @param {Point} point
+		 */
 		moveTo: function(point) {
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
@@ -777,6 +925,10 @@ var Path = this.Path = PathItem.extend({
 				this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
+		// DOCS: document lineTo
+		/**
+		 * @param {Point} point
+		 */
 		lineTo: function(point) {
 			// Let's not be picky about calling moveTo() first:
 			this._add([ new Segment(Point.read(arguments)) ]);
@@ -785,6 +937,10 @@ var Path = this.Path = PathItem.extend({
 		/**
 		 * Adds a cubic bezier curve to the path, defined by two handles and a
 		 * to point.
+		 *
+		 * @param {Point} handle1
+		 * @param {Point} handle2
+		 * @param {Point} to
 		 */
 		cubicCurveTo: function(handle1, handle2, to) {
 			handle1 = Point.read(arguments, 0, 1);
@@ -801,6 +957,9 @@ var Path = this.Path = PathItem.extend({
 		/**
 		 * Adds a quadratic bezier curve to the path, defined by a handle and a
 		 * to point.
+		 *
+		 * @param {Point} handle
+		 * @param {Point} to
 		 */
 		quadraticCurveTo: function(handle, to) {
 			handle = Point.read(arguments, 0, 1);
@@ -818,6 +977,12 @@ var Path = this.Path = PathItem.extend({
 			);
 		},
 
+		// DOCS: document curveTo
+		/**
+		 * @param {Point} through
+		 * @param {Point} to
+		 * @param {number} [parameter=0.5]
+		 */
 		curveTo: function(through, to, parameter) {
 			through = Point.read(arguments, 0, 1);
 			to = Point.read(arguments, 1, 1);
