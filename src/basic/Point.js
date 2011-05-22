@@ -14,17 +14,27 @@
  * All rights reserved.
  */
 
-/**
- * The Point object represents a point in the two dimensional space of the
- * Paper.js project. It is also used to represent two dimensional vector
- * objects.
- */
 var Point = this.Point = Base.extend({
+	/** @lends Point# */
 	beans: true,
 
+	/**
+	 * Creates a Point object with the given x and y coordinates.
+	 *
+	 * @class The Point object represents a point in the two dimensional space
+	 * of the Paper.js project. It is also used to represent two dimensional
+	 * vector objects.
+	 * @constructs Point
+	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
+			/**
+			 * The x coordinate of the point
+			 */
 			this.x = arg0;
+			/**
+			 * The y coordinate of the point
+			 */
 			this.y = arg1;
 		} else if (arg0 !== undefined) {
 			if (arg0 == null) {
@@ -62,7 +72,7 @@ var Point = this.Point = Base.extend({
 	 * Returns a copy of the point.
 	 * This is useful as the following code only generates a flat copy:
 	 * 
-	 * @return the cloned point
+	 * @returns {Point} the cloned point
 	 */
 	clone: function() {
 		return Point.create(this.x, this.y);
@@ -116,6 +126,7 @@ var Point = this.Point = Base.extend({
 	 * Each point can be interpreted as a vector that points from the origin
 	 * ({@code x = 0},{@code y = 0}) to the point's location.
 	 * Setting the length changes the location but keeps the vector's angle.
+	 * @bean
 	 */
 	getLength: function() {
 		return Math.sqrt(this.x * this.x + this.y * this.y);
@@ -166,10 +177,8 @@ var Point = this.Point = Base.extend({
 	 * vectors. The angle is unsigned, no information about rotational
 	 * direction is given.
 	 * 
-	 * Read more about angle units and orientation in the description of the
-	 * {@link #getAngle()} property.
-	 * 
-	 * @param point
+	 * @param {Point} point
+	 * @bean
 	 */
 	getAngle: function(/* point */) {
 		// Hide parameters from Bootstrap so it injects bean too
@@ -216,9 +225,9 @@ var Point = this.Point = Base.extend({
 	 * signed, giving information about the rotational direction.
 	 * 
 	 * Read more about angle units and orientation in the description of the
-	 * {@link #getAngle()} property.
+	 * {@link #angle} property.
 	 * 
-	 * @param point
+	 * @param {Point} point
 	 */
 	getDirectedAngle: function(point) {
 		point = Point.read(arguments);
@@ -231,11 +240,11 @@ var Point = this.Point = Base.extend({
 	 * The object itself is not modified.
 	 * 
 	 * Read more about angle units and orientation in the description of the
-	 * {@link #getAngle()} property.
+	 * {@link #angle} property.
 	 * 
-	 * @param angle the rotation angle
-	 * @param center the center point of the rotation
-	 * @return the rotated point
+	 * @param {Number} angle the rotation angle
+	 * @param {Point} center the center point of the rotation
+	 * @returns {Point} the rotated point
 	 */
 	rotate: function(angle, center) {
 		angle = angle * Math.PI / 180;
@@ -257,8 +266,9 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Checks whether the point is inside the boundaries of the rectangle.
 	 * 
-	 * @param rect the rectangle to check against
-	 * @return true if the point is inside the rectangle, false otherwise.
+	 * @param {Rectangle} rect the rectangle to check against
+	 * @returns {Boolean} true if the point is inside the rectangle, false
+	 * otherwise.
 	 */
 	isInside: function(rect) {
 		return rect.contains(this);
@@ -267,9 +277,10 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Checks if the point is within a given distance of another point.
 	 * 
-	 * @param point the point to check against
-	 * @param tolerance the maximum distance allowed
-	 * @return true if it is within the given distance, false otherwise.
+	 * @param {Point} point the point to check against
+	 * @param {Number} tolerance the maximum distance allowed
+	 * @returns {Boolean} true if it is within the given distance, false
+	 * otherwise.
 	 */
 	isClose: function(point, tolerance) {
 		return this.getDistance(point) < tolerance;
@@ -279,8 +290,8 @@ var Point = this.Point = Base.extend({
 	 * Checks if the vector represented by this point is colinear (parallel) to
 	 * another vector.
 	 * 
-	 * @param point the vector to check against
-	 * @return true if it is parallel, false otherwise.
+	 * @param {Point} point the vector to check against
+	 * @returns {Boolean} true if it is parallel, false otherwise.
 	 */
 	isColinear: function(point) {
 		return this.cross(point) < Numerical.TOLERANCE;
@@ -290,8 +301,8 @@ var Point = this.Point = Base.extend({
 	 * Checks if the vector represented by this point is orthogonal
 	 * (perpendicular) to another vector.
 	 * 
-	 * @param point the vector to check against
-	 * @return true if it is orthogonal, false otherwise.
+	 * @param {Point} point the vector to check against
+	 * @returns {Boolean} true if it is orthogonal, false otherwise.
 	 */
 	isOrthogonal: function(point) {
 		return this.dot(point) < Numerical.TOLERANCE;
@@ -300,7 +311,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Checks if this point has both the x and y coordinate set to 0.
 	 * 
-	 * @return true if both x and y are 0, false otherwise.
+	 * @returns {Boolean} true if both x and y are 0, false otherwise.
 	 */
 	isZero: function() {
 		return this.x == 0 && this.y == 0;
@@ -310,7 +321,8 @@ var Point = this.Point = Base.extend({
 	 * Checks if this point has an undefined value for at least one of its
 	 * coordinates.
 	 * 
-	 * @return true if either x or y are not a number, false otherwise.
+	 * @returns {Boolean} true if either x or y are not a number, false
+	 * otherwise.
 	 */
 	isNaN: function() {
 		return isNaN(this.x) || isNaN(this.y);
@@ -318,8 +330,8 @@ var Point = this.Point = Base.extend({
 	
 	/**
 	 * Returns the dot product of the point and another point.
-	 * @param point
-	 * @return the dot product of the two points
+	 * @param {Point} point
+	 * @returns {Number} the dot product of the two points
 	 */
 	dot: function(point) {
 		point = Point.read(arguments);
@@ -328,8 +340,8 @@ var Point = this.Point = Base.extend({
 
 	/**
 	 * Returns the cross product of the point and another point.
-	 * @param point
-	 * @return the cross product of the two points
+	 * @param {Point} point
+	 * @returns {Number} the cross product of the two points
 	 */
 	cross: function(point) {
 		point = Point.read(arguments);
@@ -340,8 +352,8 @@ var Point = this.Point = Base.extend({
 	 * Returns the projection of the point on another point.
 	 * Both points are interpreted as vectors.
 	 * 
-	 * @param point
-	 * @return the projection of the point on another point
+	 * @param {Point} point
+	 * @returns {Point} the projection of the point on another point
 	 */
 	project: function(point) {
 		point = Point.read(arguments);
@@ -362,10 +374,13 @@ var Point = this.Point = Base.extend({
 	},
 
 	statics: {
+		/** @lends Point */
+
 		/**
 		 * Provide a faster creator for Points out of two coordinates that
 		 * does not rely on Point#initialize at all. This speeds up all math
 		 * operations a lot.
+		 * @ignore
 		 */
 		create: function(x, y) {
 			// Don't use the shorter form as we want absolute maximum
@@ -382,9 +397,10 @@ var Point = this.Point = Base.extend({
 		 * Returns a new point object with the smallest {@link #x} and
 		 * {@link #y} of the supplied points.
 		 * 
-		 * @param point1
-		 * @param point2
-		 * @return The newly created point object
+		 * @static
+		 * @param {Point} point1
+		 * @param {Point} point2
+		 * @returns {Point} The newly created point object
 		 */
 		min: function(point1, point2) {
 			point1 = Point.read(arguments, 0, 1);
@@ -399,9 +415,10 @@ var Point = this.Point = Base.extend({
 		 * Returns a new point object with the largest {@link #x} and
 		 * {@link #y} of the supplied points.
 		 * 
-		 * @param point1
-		 * @param point2
-		 * @return The newly created point object
+		 * @static
+		 * @param {Point} point1
+		 * @param {Point} point2
+		 * @returns {Point} The newly created point object
 		 */
 		max: function(point1, point2) {
 			point1 = Point.read(arguments, 0, 1);
@@ -415,6 +432,9 @@ var Point = this.Point = Base.extend({
 		/**
 		 * Returns a point object with random {@link #x} and {@link #y} values
 		 * between {@code 0} and {@code 1}.
+		 * 
+		 * @returns {Point} The newly created point object
+		 * @static
 		 */
 		random: function() {
 			return Point.create(Math.random(), Math.random());
