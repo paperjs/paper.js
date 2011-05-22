@@ -21,10 +21,14 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Creates a Point object with the given x and y coordinates.
 	 *
+	 * @name Point
+	 * @constructor
+	 * @param {number} x the x coordinate
+	 * @param {number} y the y coordinate
+	 * 
 	 * @class The Point object represents a point in the two dimensional space
 	 * of the Paper.js project. It is also used to represent two dimensional
 	 * vector objects.
-	 * @constructs Point
 	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
@@ -73,6 +77,13 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Returns a copy of the point.
 	 * This is useful as the following code only generates a flat copy:
+	 * @example
+	 * var point1 = new Point();
+	 * var point2 = point1;
+	 * point2.x = 1; // also changes point1.x
+	 * 
+	 * var point2 = point1.clone();
+	 * point2.x = 1; // doesn't change point1.x
 	 * 
 	 * @returns {Point} the cloned point
 	 */
@@ -128,6 +139,7 @@ var Point = this.Point = Base.extend({
 	 * Each point can be interpreted as a vector that points from the origin
 	 * ({@code x = 0},{@code y = 0}) to the point's location.
 	 * Setting the length changes the location but keeps the vector's angle.
+	 * 
 	 * @type number
 	 * @bean
 	 */
@@ -335,6 +347,7 @@ var Point = this.Point = Base.extend({
 	
 	/**
 	 * Returns the dot product of the point and another point.
+	 * 
 	 * @param {Point} point
 	 * @returns {number} the dot product of the two points
 	 */
@@ -345,6 +358,7 @@ var Point = this.Point = Base.extend({
 
 	/**
 	 * Returns the cross product of the point and another point.
+	 * 
 	 * @param {Point} point
 	 * @returns {number} the cross product of the two points
 	 */
@@ -385,6 +399,7 @@ var Point = this.Point = Base.extend({
 		 * Provide a faster creator for Points out of two coordinates that
 		 * does not rely on Point#initialize at all. This speeds up all math
 		 * operations a lot.
+		 * 
 		 * @ignore
 		 */
 		create: function(x, y) {
