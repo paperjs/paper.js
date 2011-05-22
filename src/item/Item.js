@@ -14,7 +14,17 @@
  * All rights reserved.
  */
 
+ /**
+ * @name Item
+ * @class The Item type allows you to access and modify the items in
+ * Paper.js projects. Its functionality is inherited by different project
+ * item types such as {@link Path}, {@link CompoundPath}, {@link Group},
+ * {@link Layer} and {@link Raster}. They each add a layer of functionality that
+ * is unique to their type, but share the underlying properties and functions
+ * that they inherit from Item.
+ */
 var Item = this.Item = Base.extend({
+	/** @lends Item# */
 	beans: true,
 
 	initialize: function() {
@@ -75,6 +85,8 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The unique id of the item.
+	 * @type number
+	 * @bean
 	 */
 	getId: function() {
 		if (this._id == null)
@@ -84,6 +96,8 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The name of the item.
+	 * @type string
+	 * @bean
 	 */
 	getName: function() {
 		return this._name;
@@ -140,7 +154,7 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	* Removes the item.
+	* Removes the item from the project.
 	*/
 	remove: function() {
 		if (this.isSelected())
@@ -153,8 +167,9 @@ var Item = this.Item = Base.extend({
 	 * or duplicates it within the same project. When passed an item,
 	 * copies the item into the specified item.
 	 * 
-	 * @param project the project to copy the item to
-	 * @return the new copy of the item
+	 * @param {Project|Layer|Group|CompoundPath} item the item or project to
+	 * copy the item to
+	 * @return {Item} the new copy of the item
 	 */
 	copyTo: function(itemOrProject) {
 		var copy = this.clone();
@@ -164,6 +179,33 @@ var Item = this.Item = Base.extend({
 			itemOrProject.appendTop(copy);
 		}
 		return copy;
+	},
+
+	/**
+	 * Specifies whether an item is selected and will also return true if
+	 * the item is partially selected (groups with
+	 * some selected items/partially selected paths).
+	 * 
+	 * @example
+	 * console.log(project.selectedItems.length); // 0
+	 * var path = new Path.Circle(new Size(50, 50), 25);
+	 * path.selected = true; // Select the path
+	 * console.log(project.selectedItems.length) // 1
+	 *
+	 * @type boolean
+	 * @bean
+	 */	
+	isSelected: function() {
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				if (this._children[i].isSelected()) {
+					return true;
+				}
+			}
+		} else {
+			return !!this._selected;
+		}
+		return false;
 	},
 
 	setSelected: function(selected) {
@@ -180,20 +222,12 @@ var Item = this.Item = Base.extend({
 			}
 		}
 	},
-	
-	isSelected: function() {
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				if (this._children[i].isSelected()) {
-					return true;
-				}
-			}
-		} else {
-			return !!this._selected;
-		}
-		return false;
-	},
-	
+
+	/**
+	 * The project that this item belongs to.
+	 * @type Project
+	 * @bean
+	 */
 	getProject: function() {
 		return this._project;
 	},
@@ -215,26 +249,32 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Specifies whether the item is locked.
 	 * 
-	 * @return true if the item is locked, false otherwise.
+	 * @type boolean
+	 * @default false
 	 */
 	locked: false,
 
 	/**
 	 * Specifies whether the item is visible.
 	 * 
-	 * @return true if the item is visible, false otherwise.
+	 * @type boolean
+	 * @default false
 	 */
 	visible: true,
 
 	/**
-	 * The opacity of the item.
+	 * The opacity of the item as a value between 0 and 1.
 	 * 
-	 * @return the opacity of the item as a value between 0 and 1.
+	 * @type number
+	 * @default 1
 	 */
 	opacity: 1,
 
+	// DOCS: list the different blend modes that are possible.
 	/**
 	 * The blend mode of the item.
+	 * @type string
+	 * @default 'normal'
 	 */
 	blendMode: 'normal',
 
@@ -243,7 +283,9 @@ var Item = this.Item = Base.extend({
 	 * paths, compound paths, and text frame objects, and only if the item is
 	 * already contained within a clipping group.
 	 * 
-	 * @return true if the item defines a clip mask, false otherwise.
+	 * @type boolean
+	 * @default false
+	 * @bean
 	 */
 	isClipMask: function() {
 		return this._clipMask;
@@ -264,6 +306,8 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The item that this item is contained within.
+	 * @type Item
+	 * @bean
 	 */
 	getParent: function() {
 		return this._parent;
@@ -272,7 +316,9 @@ var Item = this.Item = Base.extend({
 	// TODO: #getLayer()
 
 	/**
-	 * The index of this item within the list of it's parent's children.
+	 * The index of this item within the list of its parent's children.
+	 * @type number
+	 * @bean
 	 */
 	getIndex: function() {
 		return this._index;
@@ -280,6 +326,8 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The children items contained within this item.
+	 * @type array
+	 * @bean
 	 */
 	getChildren: function() {
 		return this._children;
@@ -294,7 +342,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks if the item contains any children items.
 	 * 
-	 * @return true if it has one or more children, false otherwise.
+	 * @return {boolean} true if it has one or more children, false otherwise.
 	 */
 	hasChildren: function() {
 		return this._children && this._children.length > 0;
@@ -302,6 +350,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * Reverses the order of this item's children
+	 * @return {boolean} true if the children were removed, false otherwise.
 	 */
 	reverseChildren: function() {
 		if (this._children) {
@@ -326,6 +375,8 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The first item contained within this item.
+	 * @type Item
+	 * @bean
 	 */
 	getFirstChild: function() {
 		return this._children && this._children[0] || null;
@@ -333,6 +384,8 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The last item contained within this item.
+	 * @type Item
+	 * @bean
 	 */
 	getLastChild: function() {
 		return this._children && this._children[this._children.length - 1]
@@ -341,6 +394,8 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The next item on the same level as this item.
+	 * @type Item
+	 * @bean
 	 */
 	getNextSibling: function() {
 		return this._parent && this._parent._children[this._index + 1] || null;
@@ -348,6 +403,8 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The previous item on the same level as this item.
+	 * @type Item
+	 * @bean
 	 */
 	getPreviousSibling: function() {
 		return this._parent && this._parent._children[this._index - 1] || null;
@@ -356,8 +413,8 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks whether the item is editable.
 	 * 
-	 * @return true when neither the item, nor it's parents are locked or
-	 * hidden, false otherwise.
+	 * @return {boolean} true when neither the item, nor its parents are
+	 * locked or hidden, false otherwise.
 	 */
 	isEditable: function() {
 		var parent = this;
@@ -372,16 +429,17 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks whether the item is valid, i.e. it hasn't been removed.
 	 * 
-	 * @return true if the item is valid, false otherwise.
+	 * @return {boolean} true if the item is valid, false otherwise.
 	 */
 	// TODO: isValid / checkValid
 
 	/**
-	 * Checks if this item is above the specified item in the stacking order of
-	 * the project.
+	 * Checks if this item is above the specified item in the stacking order
+	 * of the project.
 	 * 
-	 * @param item The item to check against
-	 * @return true if it is above the specified item, false otherwise.
+	 * @param {Item} item The item to check against
+	 * @return {boolean} true if it is above the specified item, false
+	 * otherwise.
 	 */
 	// TODO: isAbove
 
@@ -389,15 +447,29 @@ var Item = this.Item = Base.extend({
 	 * Checks if the item is below the specified item in the stacking order of
 	 * the project.
 	 * 
-	 * @param item The item to check against
-	 * @return true if it is below the specified item, false otherwise.
+	 * @param {Item} item The item to check against
+	 * @return {boolean} true if it is below the specified item, false
+	 * otherwise.
 	 */
 	// TODO: isBelow
 
+	/**
+	 * Checks whether the specified item is the parent of the item.
+	 * 
+	 * @param {Item} item The item to check against
+	 * @return {boolean} true if it is the parent of the item, false
+	 * otherwise.
+	 */
 	isParent: function(item) {
 		return this._parent == item;
 	},
 
+	/**
+	 * Checks whether the specified item is a child of the item.
+	 * 
+	 * @param {Item} item The item to check against
+	 * @return {boolean} true if it is a child of the item, false otherwise.
+	 */
 	isChild: function(item) {
 		return item._parent == this;
 	},
@@ -405,8 +477,9 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks if the item is contained within the specified item.
 	 * 
-	 * @param item The item to check against
-	 * @return true if it is inside the specified item, false otherwise.
+	 * @param {Item} item The item to check against
+	 * @return {boolean} true if it is inside the specified item, false
+	 * otherwise.
 	 */
 	isDescendant: function(item) {
 		var parent = this;
@@ -420,8 +493,9 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks if the item is an ancestor of the specified item.
 	 * 
-	 * @param item the item to check against
-	 * @return true if the item is an ancestor of the specified item, false otherwise.
+	 * @param {Item} item the item to check against
+	 * @return {boolean} true if the item is an ancestor of the specified
+	 * item, false otherwise.
 	 */
 	isAncestor: function(item) {
 		var parent = item;
@@ -435,8 +509,9 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks whether the item is grouped with the specified item.
 	 * 
-	 * @param item
-	 * @return true if the items are grouped together, false otherwise.
+	 * @param {Item} item
+	 * @return {boolean} true if the items are grouped together, false
+	 * otherwise.
 	 */
 	isGroupedWith: function(item) {
 		var parent = this._parent;
@@ -452,15 +527,27 @@ var Item = this.Item = Base.extend({
 		}
 		return false;
 	},
-	
-	getStrokeBounds: function() {
-		return this._getBounds(true);
-	},
-	
+
+	/**
+	 * {@grouptitle Bounding Rectangles}
+	 * 
+	 * The bounding rectangle of the item excluding stroke width.
+	 * @type Rectangle
+	 * @bean
+	 */
 	getBounds: function() {
 		return this._getBounds(false);
 	},
-	
+
+	/**
+	 * The bounding rectangle of the item including stroke width.
+	 * @type Rectangle
+	 * @bean
+	 */
+	getStrokeBounds: function() {
+		return this._getBounds(true);
+	},
+
 	_getBounds: function(includeStroke) {
 		var children = this._children;
 		if (children && children.length) {
@@ -512,11 +599,6 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * The bounding rectangle of the item including stroke width.
-	 */
-	// TODO: getStrokeBounds
-
-	/**
 	 * The bounding rectangle of the item including stroke width and controls.
 	 */
 	// TODO: getControlBounds
@@ -525,8 +607,8 @@ var Item = this.Item = Base.extend({
 	 * Rasterizes the item into a newly created Raster object. The item itself
 	 * is not removed after rasterization.
 	 * 
-	 * @param resolution the resolution of the raster in dpi {@default 72}
-	 * @return the newly created Raster item
+	 * @param {number} [resolution=72] the resolution of the raster in dpi
+	 * @return {Raster} the newly created raster item
 	 */
 	rasterize: function(resolution) {
 		// TODO: why would we want to pass a size to rasterize? Seems to produce
@@ -547,8 +629,10 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * The item's position within the art board. This is the
-	 * {@link Rectangle#getCenter()} of the {@link Item#getBounds()} rectangle.
+	 * The item's position within the project. This is the
+	 * {@link Rectangle#center} of the {@link Item#bounds} rectangle.
+	 * @type Point
+	 * @bean
 	 */
 	getPosition: function() {
 		// Cache position value
@@ -571,6 +655,7 @@ var Item = this.Item = Base.extend({
 	 * @param flags: Array of any of the following: 'objects', 'children',
 	 *     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
 	 *     Default: ['objects', 'children']
+	 * @ignore
 	 */
 	transform: function(matrix, flags) {
 		// TODO: Handle flags, add TransformFlag class and convert to bit mask
@@ -601,22 +686,37 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Translates (moves) the item by the given offset point.
 	 * 
-	 * @param delta
+	 * @param {Point} delta the offset to translate the item by
 	 */
 	translate: function(delta) {
 		var mx = new Matrix();
 		return this.transform(mx.translate.apply(mx, arguments));
 	},
 
+	// DOCS: document the different arguments that this function can receive.
 	/**
-	 * Scales the item by the given values from its center point, or optionally
+	 * Scales the item by the given value from its center point, or optionally
 	 * by a supplied point.
 	 * 
-	 * @param sx
-	 * @param sy
-	 * @param center {@default the center point of the item}
+	 * @example
+	 * // Create a circle at position { x: 10, y: 10 } 
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * console.log(circle.bounds.width); // 20
 	 * 
-	 * @see Matrix#scale(double, double, Point center)
+	 * // Scale the path by 200% around its center point
+	 * circle.scale(2);
+	 * 
+	 * console.log(circle.bounds.width); // 40
+	 * 
+	 * @example
+	 * // Create a circle at position { x: 10, y: 10 } 
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * 
+	 * // Scale the path 200% from its bottom left corner
+	 * circle.scale(2, circle.bounds.bottomLeft);
+	 * 
+	 * @param {number} scale the scale factor
+	 * @param {Point} [center=the center point of the item]
 	 */
 	scale: function(sx, sy /* | scale */, center) {
 		// See Matrix#scale for explanation of this:
@@ -633,10 +733,11 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * Angles are oriented clockwise and measured in degrees by default. Read
 	 * more about angle units and orientation in the description of the
-	 * {@link com.scriptographer.ai.Point#getAngle()} property.
+	 * {@link Point#angle} property.
 	 * 
-	 * @param angle the rotation angle
-	 * @see Matrix#rotate(double, Point)
+	 * @param {number} angle the rotation angle
+	 * @param {Point} [center=the center point of the item]
+	 * @see Matrix#rotate
 	 */
 	rotate: function(angle, center) {
 		return this.transform(new Matrix().rotate(angle,
@@ -646,9 +747,10 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Shears the item with a given amount around its center point.
 	 * 
-	 * @param shx
-	 * @param shy
-	 * @see Matrix#shear(double, double)
+	 * @param {number} shx
+	 * @param {number} shy
+	 * @param {Point} [center=the center point of the item]
+	 * @see Matrix#shear
 	 */
 	shear: function(shx, shy, center) {
 		// TODO: Add support for center back to Scriptographer too!
@@ -663,6 +765,8 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The path style of the item.
+	 * @type PathStyle
+	 * @bean
 	 */
 	getStyle: function() {
 		return this._style;
@@ -803,12 +907,15 @@ var Item = this.Item = Base.extend({
 	}
 
 	return {
+		/** @lends Item# */
+
 		/**
 		 * Inserts the specified item as a child of the item by appending it to
 		 * the list of children and moving it above all other children. You can
 		 * use this function for groups, compound paths and layers.
 		 *
-		 * @param item The item that will be appended as a child
+		 * @function
+		 * @param {Item} item The item that will be appended as a child
 		 */
 		appendTop: append(true),
 
@@ -817,27 +924,56 @@ var Item = this.Item = Base.extend({
 		 * the list of children and moving it below all other children. You can
 		 * use this function for groups, compound paths and layers.
 		 * 
-		 * @param item The item that will be appended as a child
+		 * @function
+		 * @param {Item} item The item that will be appended as a child
 		 */
 		appendBottom: append(false),
 
 		/**
 		 * Moves this item above the specified item.
 		 * 
-		 * @param item The item above which it should be moved
-		 * @return true if it was moved, false otherwise
+		 * @function
+		 * @param {Item} item The item above which it should be moved
+		 * @return {boolean} true if it was moved, false otherwise
 		 */
 		moveAbove: move(true),
 
 		/**
 		 * Moves the item below the specified item.
 		 *
-		 * @param item the item below which it should be moved
-		 * @return true if it was moved, false otherwise
+		 * @function
+		 * @param {Item} item the item below which it should be moved
+		 * @return {boolean} true if it was moved, false otherwise
 		 */
 		moveBelow: move(false)
 	};
 }, new function() {
+	//DOCS: document removeOn(param)
+
+	/**
+	 * Removes the item when the next {@link Tool#onMouseDown} event is fired.
+	 * @name Item#removeOnDown
+	 * @function
+	 */
+
+	/**
+	 * Removes the item when the next {@link Tool#onMouseDrag} event is fired.
+	 * @name Item#removeOnDrag
+	 * @function
+	 */
+
+	/**
+	 * Removes the item when the next {@link Tool#onMouseMove} event is fired.
+	 * @name Item#removeOnMove
+	 * @function
+	 */
+
+	/**
+	 * Removes the item when the next {@link Tool#onMouseUp} event is fired.
+	 * @name Item#removeOnUp
+	 * @function
+	 */
+
 	var sets = {
 		down: {}, drag: {}, up: {}, move: {}
 	};
