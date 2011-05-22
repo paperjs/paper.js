@@ -242,7 +242,7 @@ var Point = this.Point = Base.extend({
 	 * Read more about angle units and orientation in the description of the
 	 * {@link #angle} property.
 	 * 
-	 * @param {Number} angle the rotation angle
+	 * @param {number} angle the rotation angle
 	 * @param {Point} center the center point of the rotation
 	 * @returns {Point} the rotated point
 	 */
@@ -267,7 +267,7 @@ var Point = this.Point = Base.extend({
 	 * Checks whether the point is inside the boundaries of the rectangle.
 	 * 
 	 * @param {Rectangle} rect the rectangle to check against
-	 * @returns {Boolean} true if the point is inside the rectangle, false
+	 * @returns {boolean} true if the point is inside the rectangle, false
 	 * otherwise.
 	 */
 	isInside: function(rect) {
@@ -278,8 +278,8 @@ var Point = this.Point = Base.extend({
 	 * Checks if the point is within a given distance of another point.
 	 * 
 	 * @param {Point} point the point to check against
-	 * @param {Number} tolerance the maximum distance allowed
-	 * @returns {Boolean} true if it is within the given distance, false
+	 * @param {number} tolerance the maximum distance allowed
+	 * @returns {boolean} true if it is within the given distance, false
 	 * otherwise.
 	 */
 	isClose: function(point, tolerance) {
@@ -291,7 +291,7 @@ var Point = this.Point = Base.extend({
 	 * another vector.
 	 * 
 	 * @param {Point} point the vector to check against
-	 * @returns {Boolean} true if it is parallel, false otherwise.
+	 * @returns {boolean} true if it is parallel, false otherwise.
 	 */
 	isColinear: function(point) {
 		return this.cross(point) < Numerical.TOLERANCE;
@@ -302,7 +302,7 @@ var Point = this.Point = Base.extend({
 	 * (perpendicular) to another vector.
 	 * 
 	 * @param {Point} point the vector to check against
-	 * @returns {Boolean} true if it is orthogonal, false otherwise.
+	 * @returns {boolean} true if it is orthogonal, false otherwise.
 	 */
 	isOrthogonal: function(point) {
 		return this.dot(point) < Numerical.TOLERANCE;
@@ -311,7 +311,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Checks if this point has both the x and y coordinate set to 0.
 	 * 
-	 * @returns {Boolean} true if both x and y are 0, false otherwise.
+	 * @returns {boolean} true if both x and y are 0, false otherwise.
 	 */
 	isZero: function() {
 		return this.x == 0 && this.y == 0;
@@ -321,7 +321,7 @@ var Point = this.Point = Base.extend({
 	 * Checks if this point has an undefined value for at least one of its
 	 * coordinates.
 	 * 
-	 * @returns {Boolean} true if either x or y are not a number, false
+	 * @returns {boolean} true if either x or y are not a number, false
 	 * otherwise.
 	 */
 	isNaN: function() {
@@ -331,7 +331,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Returns the dot product of the point and another point.
 	 * @param {Point} point
-	 * @returns {Number} the dot product of the two points
+	 * @returns {number} the dot product of the two points
 	 */
 	dot: function(point) {
 		point = Point.read(arguments);
@@ -341,7 +341,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Returns the cross product of the point and another point.
 	 * @param {Point} point
-	 * @returns {Number} the cross product of the two points
+	 * @returns {number} the cross product of the two points
 	 */
 	cross: function(point) {
 		point = Point.read(arguments);
