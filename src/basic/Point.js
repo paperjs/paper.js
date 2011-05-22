@@ -30,10 +30,12 @@ var Point = this.Point = Base.extend({
 		if (arg1 !== undefined) {
 			/**
 			 * The x coordinate of the point
+			 * @type number
 			 */
 			this.x = arg0;
 			/**
 			 * The y coordinate of the point
+			 * @type number
 			 */
 			this.y = arg1;
 		} else if (arg0 !== undefined) {
@@ -126,6 +128,7 @@ var Point = this.Point = Base.extend({
 	 * Each point can be interpreted as a vector that points from the origin
 	 * ({@code x = 0},{@code y = 0}) to the point's location.
 	 * Setting the length changes the location but keeps the vector's angle.
+	 * @type number
 	 * @bean
 	 */
 	getLength: function() {
@@ -170,6 +173,7 @@ var Point = this.Point = Base.extend({
 		return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
 	},
 
+	// DOCS: document function with point argument.
 	/**
 	 * The vector's angle, measured from the x-axis to the vector.
 	 * 
@@ -178,6 +182,7 @@ var Point = this.Point = Base.extend({
 	 * direction is given.
 	 * 
 	 * @param {Point} point
+	 * @type number
 	 * @bean
 	 */
 	getAngle: function(/* point */) {
