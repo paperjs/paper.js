@@ -21,8 +21,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * Creates a new compound path item and places it in the active layer.
 	 * 
 	 * @constructs CompoundPath
-	 * @param {Array} [paths] the paths that will be contained within the
-	 * compound path.
+	 * @param {Array} [paths] the paths to place within the compound path.
 	 *
 	 * @class A compound path contains two or more paths, holes are drawn
 	 * where the paths overlap. All the paths in a compound path take on the
