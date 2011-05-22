@@ -15,8 +15,21 @@
  */
 
 var Rectangle = this.Rectangle = Base.extend({
+	/** @lends Rectangle# */
 	beans: true,
 
+	/**
+	 * Creates a Rectangle object.
+	 *
+	 * @name Rectangle
+	 * @constructor
+	 * @param {Point} point the top-left point of the rectangle
+	 * @param {Size} size the size of the rectangle
+	 * 
+	 * @class A Rectangle specifies an area that is enclosed by it's top-left
+	 * point (x, y), its width, and its height. It should not be confused with a
+	 * rectangular path, it is not an item.
+	 */
 	initialize: function(arg0, arg1, arg2, arg3) {
 		if (arguments.length == 4) {
 			// new Rectangle(x, y, width, height)
@@ -62,6 +75,38 @@ var Rectangle = this.Rectangle = Base.extend({
 		}
 	},
 
+	/**
+	 * The x position of the rectangle.
+	 * 
+	 * @name Rectangle#x
+	 * @type number
+	 */
+
+	/**
+	 * The y position of the rectangle.
+	 * 
+	 * @name Rectangle#y
+	 * @type number
+	 */
+
+	/**
+	 * The width of the rectangle.
+	 * 
+	 * @name Rectangle#width
+	 * @type number
+	 */
+
+	/**
+	 * The height of the rectangle.
+	 * 
+	 * @name Rectangle#height
+	 * @type number
+	 */
+
+	// DOCS: why does jsdocs document this function, when there are no comments?
+	/**
+	 * @ignore
+	 */
 	set: function(x, y, width, height) {
 		this.x = x;
 		this.y = y;
@@ -70,6 +115,12 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
+	/*
+	 * The top-left point of the rectangle
+	 *
+	 * @type Point
+	 * @bean
+	 */
 	getPoint: function() {
 		return LinkedPoint.create(this, 'setPoint', this.x, this.y);
 	},
@@ -81,6 +132,12 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
+	/*
+	 * The size of the rectangle
+	 *
+	 * @type Size
+	 * @bean
+	 */
 	getSize: function() {
 		return LinkedSize.create(this, 'setSize', this.width, this.height);
 	},
@@ -92,6 +149,15 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
+	/**
+	 * {@grouptitle Side Positions}
+	 * 
+	 * The position of the left hand side of the rectangle. Note that this
+	 * doesn't move the whole rectangle; the right hand side stays where it was.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getLeft: function() {
 		return this.x;
 	},
@@ -102,6 +168,13 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
+	/**
+	 * The top coordinate of the rectangle. Note that this doesn't move the
+	 * whole rectangle: the bottom won't move.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getTop: function() {
 		return this.y;
 	},
@@ -112,6 +185,13 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
+	/**
+	 * The position of the right hand side of the rectangle. Note that this
+	 * doesn't move the whole rectangle; the left hand side stays where it was.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getRight: function() {
 		return this.x + this.width;
 	},
@@ -121,6 +201,13 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
+	/**
+	 * The bottom coordinate of the rectangle. Note that this doesn't move the
+	 * whole rectangle: the top won't move.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getBottom: function() {
 		return this.y + this.height;
 	},
@@ -130,6 +217,12 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
+	/**
+	 * The center-x coordinate of the rectangle.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getCenterX: function() {
 		return this.x + this.width * 0.5;
 	},
@@ -139,6 +232,12 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
+	/**
+	 * The center-y coordinate of the rectangle.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getCenterY: function() {
 		return this.y + this.height * 0.5;
 	},
@@ -148,6 +247,12 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
+	/**
+	 * The center point of the rectangle.
+	 * 
+	 * @type Point
+	 * @bean
+	 */
 	getCenter: function() {
 		return LinkedPoint.create(this, 'setCenter',
 				this.getCenterX(), this.getCenterY());
@@ -158,16 +263,45 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this.setCenterX(point.x).setCenterY(point.y);
 	},
 
+	// DOCS: Rectangle#topLeft, Rectangle#topRight etc.
+
+	// DOCS: Rectangle#equals
+	/**
+	 * @param {Rectangle} rect
+	 * @return {boolean}
+	 */
 	equals: function(rect) {
 		rect = Rectangle.read(arguments);
 		return this.x == rect.x && this.y == rect.y
 				&& this.width == rect.width && this.height == rect.height;
 	},
 
+	/**
+	 * @return {boolean} true if the rectangle is empty, false otherwise.
+	 */
 	isEmpty: function() {
 		return this.width == 0 || this.height == 0;
 	},
 
+	/**
+	 * {@grouptitle Geometric Tests}
+	 * 
+	 * Tests if the specified point is inside the boundary of the rectangle.
+	 * 
+	 * @name Rectangle#contains^2
+	 * @function
+	 * @param {Point} point the specified point
+	 * @return {boolean} true if the point is inside the rectangle's
+	 *                   boundary, false otherwise
+	 */
+	/**
+	 * Tests if the interior of the rectangle entirely contains the specified
+	 * rectangle.
+	 * 
+	 * @param {Rectangle} rect The specified rectangle
+	 * @return {boolean} true if the rectangle entirely contains the
+	 *                   specified rectangle, false otherwise
+	 */
 	contains: function(rect) {
 		if (rect.width !== undefined) {
 			return rect.x >= this.x && rect.y >= this.y
@@ -181,6 +315,14 @@ var Rectangle = this.Rectangle = Base.extend({
 		}
 	},
 
+	/**
+	 * Tests if the interior of this rectangle intersects the interior of
+	 * another rectangle.
+	 * 
+	 * @param {Rectangle} rect the specified rectangle
+	 * @return {boolean} true if the rectangle and the specified rectangle
+	 *                   intersect each other, false otherwise
+	 */
 	intersects: function(rect) {
 		rect = Rectangle.read(arguments);
 		return rect.x + rect.width > this.x
@@ -189,6 +331,17 @@ var Rectangle = this.Rectangle = Base.extend({
 				&& rect.y < this.y + this.height;
 	},
 
+	/**
+	 * {@grouptitle Boolean Operations}
+	 * 
+	 * Returns a new rectangle representing the intersection of this rectangle
+	 * with the specified rectangle.
+	 * 
+	 * @param {Rectangle} rect The rectangle to be intersected with this
+	 *                         rectangle
+	 * @return {Rectangle} The largest rectangle contained in both the specified
+	 *                     rectangle and in this rectangle.
+	 */
 	intersect: function(rect) {
 		rect = Rectangle.read(arguments);
 		var x1 = Math.max(this.x, rect.x),
@@ -198,6 +351,14 @@ var Rectangle = this.Rectangle = Base.extend({
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
+	/**
+	 * Returns a new rectangle representing the union of this rectangle with the
+	 * specified rectangle.
+	 * 
+	 * @param {Rectangle} rect the rectangle to be combined with this rectangle
+	 * @return {Rectangle} the smallest rectangle containing both the specified
+	 *                     rectangle and this rectangle.
+	 */
 	unite: function(rect) {
 		rect = Rectangle.read(arguments);
 		var x1 = Math.min(this.x, rect.x),
@@ -207,6 +368,20 @@ var Rectangle = this.Rectangle = Base.extend({
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
+	/**
+	 * Adds a point to this rectangle. The resulting rectangle is the
+	 * smallest rectangle that contains both the original rectangle and the
+	 * specified point.
+	 * 
+	 * After adding a point, a call to {@code contains} with the added
+	 * point as an argument does not necessarily return {@code true}.
+	 * The {@code contains} method does not return {@code true}
+	 * for points on the right or bottom edges of a rectangle. Therefore, if the
+	 * added point falls on the left or bottom edge of the enlarged rectangle,
+	 * {@code contains} returns {@code false} for that point.
+	 * 
+	 * @param {Point} point
+	 */
 	include: function(point) {
 		point = Point.read(arguments);
 		var x1 = Math.min(this.x, point.x),
@@ -216,6 +391,9 @@ var Rectangle = this.Rectangle = Base.extend({
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
+	/**
+	 * @return {string} A string representation of this rectangle.
+	 */
 	toString: function() {
 		var format = Base.formatNumber;
 		return '{ x: ' + format(this.x)
