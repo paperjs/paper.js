@@ -15,6 +15,22 @@
  */
 
 var CompoundPath = this.CompoundPath = PathItem.extend({
+	/** @lends CompoundPath# */
+
+	/**
+	 * Creates a new compound path item and places it in the active layer.
+	 * 
+	 * @constructs CompoundPath
+	 * @param {Array} [paths] the paths that will be contained within the
+	 * compound path.
+	 *
+	 * @class A compound path contains two or more paths, holes are drawn
+	 * where the paths overlap. All the paths in a compound path take on the
+	 * style of the backmost path.
+	 * 
+	 * @extends PathItem
+	 * @extends Item
+	 */
 	initialize: function(paths) {
 		this.base();
 		this._children = [];
@@ -40,7 +56,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * the path is moved outside and the compound path is erased.
 	 * Otherwise, the compound path is returned unmodified.
 	 *
-	 * @return the simplified compound path.
+	 * @return {CompoundPath|Path} the simplified compound path
 	 */
 	simplify: function() {
 		if (this._children.length == 1) {
@@ -52,6 +68,13 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		return this;
 	},
 
+	/**
+	 * Smooth bezier curves without changing the amount of segments or their
+	 * points, by only smoothing and adjusting their handle points, for both
+	 * open ended and closed paths.
+	 * 
+	 * @author Oleg V. Polikarpotchkin
+	 */
 	smooth: function() {
 		for (var i = 0, l = this._children.length; i < l; i++)
 			this._children[i].smooth();
@@ -84,22 +107,37 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	}
 
 	var fields = {
+		/** @lends CompoundPath# */
+
+		// DOCS: document moveTo
+		/**
+		 * @param {Point} point
+		 */
 		moveTo: function(point) {
 			var path = new Path();
 			this.appendTop(path);
 			path.moveTo.apply(path, arguments);
 		},
 
+		// DOCS: document moveBy
+		/**
+		 * @param {Point} point
+		 */
 		moveBy: function(point) {
 			this.moveTo(getCurrentPath(this).getLastSegment()._point.add(
 					Point.read(arguments)));
 		},
 
+		/**
+		 * Closes the path. If it is closed, Paper.js connects the first and
+		 * last segments.
+		 */
 		closePath: function() {
 			getCurrentPath(this).setClosed(true);
 		}
 	};
 
+	// DOCS: document CompoundPath#lineTo, CompoundPath#cubicCurveTo etc
 	// Redirect all other drawing commands to the current path
 	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
 			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
