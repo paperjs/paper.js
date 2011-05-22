@@ -15,8 +15,40 @@
  */
 
 var Segment = this.Segment = Base.extend({
+	/** @lends Segment# */
 	beans: true,
 
+	/**
+	 * Creates a new Segment object.
+	 * 
+	 * @example
+	 * var handleIn = new Point(-40, -50);
+	 * var handleOut = new Point(40, 50);
+	 *
+	 * var firstPoint = new Point(100, 50);
+	 * var firstSegment = new Segment(firstPoint, null, handleOut);
+	 *
+	 * var secondPoint = new Point(200, 50);
+	 * var secondSegment = new Segment(secondPoint, handleIn, null);
+	 *
+	 * var path = new Path();
+	 * path.segments = [firstSegment, secondSegment];
+	 * 
+	 * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
+	 * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
+	 *        anchor point of the segment that describes the in tangent of the
+	 *        segment.
+	 * @param {Point} [handleOut={x: 0, y: 0}] the handle point relative to the
+	 *        anchor point of the segment that describes the out tangent of the
+	 *        segment.
+	 * @name Segment
+	 * @constructor
+	 * 
+	 * @class The Segment object represents a part of a path which is
+	 * described by the {@link Path##segments} array. Every segment of a
+	 * path corresponds to an anchor point (anchor points are the path handles
+	 * that are visible when the path is selected).
+	 */
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var createSegmentPoint = SegmentPoint.create;
 		if (arguments.length == 0) {
@@ -74,6 +106,12 @@ var Segment = this.Segment = Base.extend({
 		}
 	},
 
+	/**
+	 * The anchor point of the segment.
+	 *
+	 * @type Point
+	 * @bean
+	 */
 	getPoint: function() {
 		return this._point;
 	},
@@ -85,6 +123,13 @@ var Segment = this.Segment = Base.extend({
 		this._point.set(point.x, point.y);
 	},
 
+	/**
+	 * The handle point relative to the anchor point of the segment that
+	 * describes the in tangent of the segment.
+	 *
+	 * @type Point
+	 * @bean
+	 */
 	getHandleIn: function() {
 		return this._handleIn;
 	},
@@ -102,6 +147,13 @@ var Segment = this.Segment = Base.extend({
 			? null : this._handleIn;
 	},
 
+	/**
+	 * The handle point relative to the anchor point of the segment that
+	 * describes the out tangent of the segment.
+	 *
+	 * @type Point
+	 * @bean
+	 */
 	getHandleOut: function() {
 		return this._handleOut;
 	},
@@ -119,14 +171,35 @@ var Segment = this.Segment = Base.extend({
 			? null : this._handleOut;
 	},
 
-	getPath: function() {
-		return this._path || null;
-	},
-
+	/**
+	 * {@grouptitle Hierarchy}
+	 * 
+	 * The index of the segment in the {@link Path#segments} array that the
+	 * segment belongs to.
+	 *
+	 * @type number
+	 * @bean
+	 */
 	getIndex: function() {
 		return this._index !== undefined ? this._index : null;
 	},
 
+	/**
+	 * The path that the segment belongs to.
+	 *
+	 * @type Path
+	 * @bean
+	 */
+	getPath: function() {
+		return this._path || null;
+	},
+
+	/**
+	 * The curve that the segment belongs to.
+	 *
+	 * @type Curve
+	 * @bean
+	 */
 	getCurve: function() {
 		if (this._path) {
 			var index = this._index;
@@ -138,12 +211,28 @@ var Segment = this.Segment = Base.extend({
 		return null;
 	},
 
+	/**
+	 * {@grouptitle Sibling Segments}
+	 * 
+	 * The next segment in the {@link Path#segments} array that the segment
+	 * belongs to.
+	 *
+	 * @type Segment
+	 * @bean
+	 */
 	getNext: function() {
 		var segments = this._path && this._path._segments;
 		return segments && (segments[this._index + 1]
 				|| this._path._closed && segments[0]) || null;
 	},
 
+	/**
+	 * The previous segment in the {@link Path#segments} array that the
+	 * segment belongs to.
+	 *
+	 * @type Segment
+	 * @bean
+	 */
 	getPrevious: function() {
 		var segments = this._path && this._path._segments;
 		return segments && (segments[this._index - 1]
@@ -210,6 +299,7 @@ var Segment = this.Segment = Base.extend({
 		}
 	},
 
+	// DOCS: Segment#selected
 	isSelected: function() {
 		return this._isSelected(this._point);
 	},
@@ -218,10 +308,17 @@ var Segment = this.Segment = Base.extend({
 		this._setSelected(this._point, selected);
 	},
 
+	/**
+	 * Returns the reversed the segment, without modifying the segment itself.
+	 * @return {Segment} the reversed segment
+	 */
 	reverse: function() {
 		return new Segment(this._point, this._handleOut, this._handleIn);
 	},
 
+	/**
+	 * Removes the segment from the path that it belongs to.
+	 */
 	remove: function() {
 		return this._path ? !!this._path.removeSegment(this._index) : false;
 	},
