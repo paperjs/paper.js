@@ -16,6 +16,7 @@
 
 var Path = this.Path = PathItem.extend({
 	/** @lends Path# */
+
 	beans: true,
 
 	/**
