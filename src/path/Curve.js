@@ -15,8 +15,20 @@
  */
 
 var Curve = this.Curve = Base.extend({
+	/** @lends Curve# */
+
 	beans: true,
 
+	/**
+	 * Creates a new curve object.
+	 *
+	 * @name Curve
+	 * @constructor
+	 * @param {Segment} segment1
+	 * @param {Segment} segment2
+	 *
+	 * @class The Curve object represents...
+	 */
 	initialize: function(arg0, arg1, arg2, arg3) {
 		if (arguments.length == 0) {
 			this._segment1 = new Segment();
@@ -42,6 +54,9 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The first anchor point of the curve.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getPoint1: function() {
 		return this._segment1._point;
@@ -54,6 +69,9 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The second anchor point of the curve.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getPoint2: function() {
 		return this._segment2._point;
@@ -66,6 +84,9 @@ var Curve = this.Curve = Base.extend({
 	
 	/**
 	 * The handle point that describes the tangent in the first anchor point.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getHandle1: function() {
 		return this._segment1._handleOut;
@@ -78,6 +99,9 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The handle point that describes the tangent in the second anchor point.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getHandle2: function() {
 		return this._segment2._handleIn;
@@ -90,6 +114,9 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The first segment of the curve.
+	 *
+	 * @type Segment
+	 * @bean
 	 */
 	getSegment1: function() {
 		return this._segment1;
@@ -97,38 +124,73 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The second segment of the curve.
+	 *
+	 * @type Segment
+	 * @bean
 	 */
 	getSegment2: function() {
 		return this._segment2;
 	},
 
+	/**
+	 * The path that the curve belongs to.
+	 *
+	 * @type Path
+	 * @bean
+	 */
 	getPath: function() {
 		return this._path;
 	},
 
+	/**
+	 * The index of the curve in the {@link Path#curves} array.
+	 *
+	 * @type number
+	 * @bean
+	 */
 	getIndex: function() {
 		return this._segment1._index;
 	},
 
+	/**
+	 * The next curve in the {@link Path#curves} array that the curve
+	 * belongs to.
+	 *
+	 * @type Curve
+	 * @bean
+	 */
 	getNext: function() {
 		var curves = this._path && this._path._curves;
 		return curves && (curves[this._segment1._index + 1]
 				|| this._path._closed && curves[0]) || null;
 	},
 
+	/**
+	 * The previous curve in the {@link Path#curves} array that the curve
+	 * belongs to.
+	 *
+	 * @type Curve
+	 * @bean
+	 */
 	getPrevious: function() {
 		var curves = this._path && this._path._curves;
 		return curves && (curves[this._segment1._index - 1]
 				|| this._path._closed && curves[curves.length - 1]) || null;
 	},
-	
+
+	/**
+	 * Specifies whether the handles of the curve are selected.
+	 *
+	 * @type boolean
+	 * @bean
+	 */
+	isSelected: function() {
+		return this.getHandle1().isSelected() && this.getHandle2().isSelected();
+	},
+
 	setSelected: function(selected) {
 		this.getHandle1().setSelected(selected);
 		this.getHandle2().setSelected(selected);
-	},
-
-	isSelected: function() {
-		return this.getHandle1().isSelected() && this.getHandle2().isSelected();
 	},
 
 	getCurveValues: function() {
@@ -144,6 +206,13 @@ var Curve = this.Curve = Base.extend({
 		];
 	},
 
+	// DOCS: document Curve#getLength(from, to)
+	/**
+	 * The approximated length of the curve in points.
+	 *
+	 * @type number
+	 * @bean
+	 */
 	getLength: function(/* from, to */) {
 		var from = arguments[0],
 			to = arguments[1];
@@ -164,7 +233,7 @@ var Curve = this.Curve = Base.extend({
 	 * Checks if this curve is linear, meaning it does not define any curve
 	 * handle.
 
-	 * @return true if the curve is linear, false otherwise.
+	 * @return {boolean} true if the curve is linear, false otherwise.
 	 */
 	isLinear: function() {
 		return this._segment1._handleOut.isZero()
@@ -172,6 +241,12 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	// PORT: Add support for start parameter to Sg
+	// DOCS: document Curve#getParameter(length, start)
+	/**
+	 * @param {number} length
+	 * @param {number} [start]
+	 * @return {boolean} true if the curve is linear, false otherwise.
+	 */
 	getParameter: function(length, start) {
 		var args = this.getCurveValues();
 		args.push(length, start !== undefined ? start : length < 0 ? 1 : 0);
@@ -183,6 +258,11 @@ var Curve = this.Curve = Base.extend({
 	// TODO: getIntersections
 	// TODO: adjustThroughPoint
 
+	// DOCS: document Curve#transform(matrix)
+	/**
+	 * @param {Matrix} matrix
+	 * @return {Curve}
+	 */
 	transform: function(matrix) {
 		return new Curve(
 				matrix._transformPoint(this._segment1._point),
@@ -191,6 +271,12 @@ var Curve = this.Curve = Base.extend({
 				matrix._transformPoint(this._segment2._point));
 	},
 
+	/**
+	 * Returns a reversed version of the curve, without modifying the curve
+	 * itself.
+	 *
+	 * @return {Curve} a reversed version of the curve
+	 */
 	reverse: function() {
 		return new Curve(this._segment2.reverse(), this._segment1.reverse());
 	},
@@ -198,10 +284,18 @@ var Curve = this.Curve = Base.extend({
 	// TODO: divide
 	// TODO: split
 
+	/**
+	 * Returns a copy of the curve.
+	 * 
+	 * @return {Curve}
+	 */
 	clone: function() {
 		return new Curve(this._segment1, this._segment2);
 	},
 
+	/**
+	 * @return {string} A string representation of the curve.
+	 */
 	toString: function() {
 		var parts = [ 'point1: ' + this._segment1._point ];
 		if (!this._segment1._handleOut.isZero())
@@ -316,14 +410,35 @@ var Curve = this.Curve = Base.extend({
 	}
 
 	return {
+		/** @lends Curve# */
+
+		/**
+		 * Returns the point on the curve at the specified position.
+		 * 
+		 * @param {number} parameter the position at which to find the point as
+		 *                 a value between 0 and 1.
+		 * @return {Point}
+		 */
 		getPoint: function(parameter) {
 			return evaluate(this, parameter, 0);
 		},
 
+		/**
+		 * Returns the tangent point on the curve at the specified position.
+		 * 
+		 * @param {number} parameter the position at which to find the tangent
+		 *                 point as a value between 0 and 1.
+		 */
 		getTangent: function(parameter) {
 			return evaluate(this, parameter, 1);
 		},
 
+		/**
+		 * Returns the normal point on the curve at the specified position.
+		 * 
+		 * @param {number} parameter the position at which to find the normal
+		 *                 point as a value between 0 and 1.
+		 */
 		getNormal: function(parameter) {
 			return evaluate(this, parameter, 2);
 		},
