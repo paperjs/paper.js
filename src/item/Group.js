@@ -15,8 +15,33 @@
  */
 
 var Group = this.Group = Item.extend({
+	/** @lends Group# */
+
 	beans: true,
 
+	/**
+	 * Creates a new Group item and places it at the top of the active layer.
+	 * 
+	 * @example
+	 * // Create an empty group:
+	 * var group = new Group();
+	 * // Append a path to the group:
+	 * var line = new Path.Line(new Point(10, 10), new Point(50, 50));
+	 * group.appendTop(line);
+	 * 
+	 * // Create a group containing a path:
+	 * var circle = new Path.Circle(new Point(10, 10), 100);
+	 * var circleGroup = new Group([circle]);
+	 * 
+	 * @param {array} [children] An optional array of children that will be
+	 * added to the newly created group.
+	 * 
+	 * @class A Group is a collection of items. When you transform a Group, its
+	 * children are treated as a single unit without changing their relative
+	 * positions.
+	 * @extends Item
+	 * @constructs Group
+	 */
 	initialize: function(items) {
 		this.base();
 		this._children = [];
@@ -37,7 +62,8 @@ var Group = this.Group = Item.extend({
 	 * When setting to true, the first child in the group is automatically
 	 * defined as the clipping mask.
 	 *
-	 * @return true if the group item is to be clipped, false otherwise.
+	 * @type boolean
+	 * @bean
 	 */
 	isClipped: function() {
 		return this._clipped;
