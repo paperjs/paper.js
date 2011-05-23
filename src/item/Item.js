@@ -86,6 +86,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The unique id of the item.
+	 * 
 	 * @type number
 	 * @bean
 	 */
@@ -97,6 +98,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The name of the item.
+	 * 
 	 * @type string
 	 * @bean
 	 */
@@ -226,6 +228,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The project that this item belongs to.
+	 * 
 	 * @type Project
 	 * @bean
 	 */
@@ -307,6 +310,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The item that this item is contained within.
+	 * 
 	 * @type Item
 	 * @bean
 	 */
@@ -318,6 +322,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The index of this item within the list of its parent's children.
+	 * 
 	 * @type number
 	 * @bean
 	 */
@@ -327,6 +332,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The children items contained within this item.
+	 * 
 	 * @type array
 	 * @bean
 	 */
@@ -351,6 +357,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * Reverses the order of this item's children
+	 * 
 	 * @return {boolean} true if the children were removed, false otherwise.
 	 */
 	reverseChildren: function() {
@@ -376,6 +383,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The first item contained within this item.
+	 * 
 	 * @type Item
 	 * @bean
 	 */
@@ -385,6 +393,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The last item contained within this item.
+	 * 
 	 * @type Item
 	 * @bean
 	 */
@@ -395,6 +404,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The next item on the same level as this item.
+	 * 
 	 * @type Item
 	 * @bean
 	 */
@@ -404,6 +414,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The previous item on the same level as this item.
+	 * 
 	 * @type Item
 	 * @bean
 	 */
@@ -542,6 +553,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The bounding rectangle of the item including stroke width.
+	 * 
 	 * @type Rectangle
 	 * @bean
 	 */
@@ -632,6 +644,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * The item's position within the project. This is the
 	 * {@link Rectangle#center} of the {@link Item#bounds} rectangle.
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -767,6 +780,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The path style of the item.
+	 * 
 	 * @type PathStyle
 	 * @bean
 	 */
@@ -954,24 +968,28 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * Removes the item when the next {@link Tool#onMouseMove} event is fired.
+	 * 
 	 * @name Item#removeOnMove
 	 * @function
 	 */
 
 	/**
 	 * Removes the item when the next {@link Tool#onMouseDown} event is fired.
+	 * 
 	 * @name Item#removeOnDown
 	 * @function
 	 */
 
 	/**
 	 * Removes the item when the next {@link Tool#onMouseDrag} event is fired.
+	 * 
 	 * @name Item#removeOnDrag
 	 * @function
 	 */
 
 	/**
 	 * Removes the item when the next {@link Tool#onMouseUp} event is fired.
+	 * 
 	 * @name Item#removeOnUp
 	 * @function
 	 */
