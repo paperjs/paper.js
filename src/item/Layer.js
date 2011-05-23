@@ -28,7 +28,7 @@ var Layer = this.Layer = Group.extend({
 	 * var layer = new Layer();
 	 * layer.name = 'the new layer';
 	 * 
-	 * @param {array} [children] An optional array of children that will be
+	 * @param {array} [children] An optional array of items that will be
 	 * added to the newly created layer.
 	 * 
 	 * @class The Layer item represents a layer in a Paper.js project.
