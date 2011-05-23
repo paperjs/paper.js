@@ -15,10 +15,23 @@
  */
 
 var Raster = this.Raster = Item.extend({
+	/** @lends Raster# */
+
 	beans: true,
 
 	// TODO: implement url / type, width, height
 	// TODO: have PlacedSymbol & Raster inherit from a shared class?
+	// DOCS: document Raster constructor
+	/**
+	 * Creates a new raster item and places it in the active layer.
+	 * 
+	 * @constructs Raster
+	 * @param {HTMLImageElement|Canvas|string} [object]
+	 *
+	 * @class The Raster item represents an image in a Paper.js project.
+	 * 
+	 * @extends Item
+	 */
 	initialize: function(object) {
 		this.base();
 		if (object.getContext) {
@@ -48,8 +61,11 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	/**
-	* The size of the raster in pixels.
-	*/
+	 * The size of the raster in pixels.
+	 *
+	 * @type Size
+	 * @bean
+	 */
 	getSize: function() {
 		return this._size;
 	},
@@ -66,6 +82,9 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * The width of the raster in pixels.
+	 *
+	 * @type number
+	 * @bean
 	 */
 	getWidth: function() {
 		return this._size.width;
@@ -73,6 +92,9 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * The height of the raster in pixels.
+	 *
+	 * @type number
+	 * @bean
 	 */
 	getHeight: function() {
 		return this._size.height;
@@ -80,6 +102,9 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * Pixels per inch of the raster at it's current size.
+	 *
+	 * @type Size
+	 * @bean
 	 */
 	getPpi: function() {
 		var matrix = this.matrix,
@@ -92,6 +117,12 @@ var Raster = this.Raster = Item.extend({
 		);
 	},
 
+	/**
+	 * The Canvas 2d drawing context of the raster.
+	 *
+	 * @type Context
+	 * @bean
+	 */
 	getContext: function() {
 		if (!this._context) {
 			this._context = this.getCanvas().getContext('2d');
@@ -122,10 +153,17 @@ var Raster = this.Raster = Item.extend({
 		this._bounds = null;
 	},
 
+	/**
+	 * The HTMLImageElement or Canvas of the raster.
+	 *
+	 * @type HTMLImageElement|Canvas
+	 * @bean
+	 */
 	getImage: function() {
 		return this._image || this.getCanvas();
 	},
 
+	// TODO: support string id of image element
 	setImage: function(image) {
 		if (this._canvas)
 			CanvasProvider.returnCanvas(this._canvas);
@@ -137,6 +175,11 @@ var Raster = this.Raster = Item.extend({
 		this._bounds = null;
 	},
 
+	// DOCS: document Raster#getSubImage
+	/**
+	 * @param {Rectangle} rect
+	 * @return {Canvas}
+	 */
 	getSubImage: function(rect) {
 		rect = Rectangle.read(arguments);
 		var canvas = CanvasProvider.getCanvas(rect.getSize());
@@ -145,6 +188,11 @@ var Raster = this.Raster = Item.extend({
 		return canvas;
 	},
 
+	// DOCS: document Raster#drawImage
+	/**
+	 * @param {HTMLImageELement|Canvas} image
+	 * @param {Point} point
+	 */
 	drawImage: function(image, point) {
 		point = Point.read(arguments, 1);
 		this.getContext().drawImage(image, point.x, point.y);
@@ -152,8 +200,17 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * Gets the color of a pixel in the raster.
-	 * @param x
-	 * @param y
+	 *
+	 * @name Raster#getPixel^2
+	 * @function
+	 * @param x the x offset of the pixel in pixel coordinates
+	 * @param y the y offset of the pixel in pixel coordinates
+	 * @return {RGBColor} the color of the pixel
+	 */
+	/**
+	 * Gets the color of a pixel in the raster.
+	 * @param point the offset of the pixel as a point in pixel coordinates
+	 * @return {RGBColor} the color of the pixel
 	 */
 	getPixel: function(point) {
 		point = Point.read(arguments);
@@ -164,6 +221,20 @@ var Raster = this.Raster = Item.extend({
 		return RGBColor.read(channels);
 	},
 
+	/**
+	 * Sets the color of the specified pixel to the specified color.
+	 *
+	 * @name Raster#setPixel^2
+	 * @function
+	 * @param x the x offset of the pixel in pixel coordinates
+	 * @param y the y offset of the pixel in pixel coordinates
+	 * @param color the color that the pixel will be set to
+	 */
+	/**
+	 * Sets the color of the specified pixel to the specified color.
+	 * @param point the offset of the pixel as a point in pixel coordinates
+	 * @param color the color that the pixel will be set to
+	 */
 	setPixel: function(point, color) {
 		var hasPoint = arguments.length == 2;
 		point = Point.read(arguments, 0, hasPoint ? 1 : 2);
@@ -183,8 +254,8 @@ var Raster = this.Raster = Item.extend({
 	 * rectangle or point. This can be used for creating raster image
 	 * effects.
 	 * 
-	 * @param object
-	 * @return the average color contained in the area covered by the
+	 * @param {Path|Rectangle|Point} object
+	 * @return {RGBColor} the average color contained in the area covered by the
 	 * specified path, rectangle or point.
 	 */
 	getAverageColor: function(object) {
