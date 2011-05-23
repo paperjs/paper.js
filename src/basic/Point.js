@@ -742,6 +742,7 @@ var Point = this.Point = Base.extend({
  * setting itself again on the setter that corresponds to the getter that
  * produced this LinkedPoint. See uses of LinkedPoint.create()
  * Note: This prototype is not exported.
+ *
  * @ignore
  */
 var LinkedPoint = Point.extend({

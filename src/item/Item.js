@@ -655,6 +655,7 @@ var Item = this.Item = Base.extend({
 	 * @param flags: Array of any of the following: 'objects', 'children',
 	 *     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
 	 *     Default: ['objects', 'children']
+	 *
 	 * @ignore
 	 */
 	transform: function(matrix, flags) {

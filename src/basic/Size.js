@@ -418,6 +418,7 @@ var Size = this.Size = Base.extend({
  * setting itself again on the setter that corresponds to the getter that
  * produced this LinkedSize. See uses of LinkedSize.create()
  * Note: This prototype is not exported.
+ *
  * @ignore
  */
 var LinkedSize = Size.extend({
