@@ -41,9 +41,6 @@
 						}
 						classType += "Namespace ";
 					}
-					else {
-						classType += "Class ";
-					}
 				!}
 				{+classType+}{+data.alias+}
 			</h1>
@@ -64,16 +61,12 @@
 				</if>
 			
 				{+resolveLinks(data.classDesc)+}
-				
-				<if test="!data.isBuiltin()">{# isn't defined in any file #}
-					<br /><i>Defined in: </i> {+new Link().toSrc(data.srcFile)+}.
-				</if>
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
 			<if test="!data.isBuiltin() && (data.isNamespace || data.is('CONSTRUCTOR'))">
 			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class {+data.alias+}.">
-				<caption>{+classType+}Summary</caption>
+				<caption>Constructor</caption>
 				<thead>
 					<tr>
 						<th scope="col">Constructor Attributes</th>
@@ -101,8 +94,8 @@
 			<if test="data.properties.length">
 				{! var ownProperties = data.properties.filter(function($){return $.memberOf == data.alias && !$.isNamespace}); !}
 				<if test="ownProperties.length">
-				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class {+data.alias+}.">
-					<caption>Field Summary</caption>
+				<table class="summaryTable" cellspacing="0" summary="A summary of the properties documented in the class {+data.alias+}.">
+					<caption>Properties</caption>
 					<thead>
 						<tr>
 							<th scope="col">Field Attributes</th>
@@ -139,7 +132,7 @@
 					borrowedMembers.map(function($) {if (contributers.indexOf($.memberOf) < 0) contributers.push($.memberOf)});
 					for (var i = 0, l = contributers.length; i < l; i++) {
 						output +=
-							"<dt>Fields borrowed from class "+new Link().toSymbol(contributers[i])+": </dt>"
+							"<dt>Functions inherited from "+new Link().toSymbol(contributers[i])+": </dt>"
 							+
 							"<dd>" +
 							borrowedMembers
@@ -163,11 +156,11 @@
 				{! var ownMethods = data.methods.filter(function($){return $.memberOf == data.alias  && !$.isNamespace}); !}
 				<if test="ownMethods.length">
 				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class {+data.alias+}.">
-					<caption>Method Summary</caption>
+					<caption>Functions</caption>
 					<thead>
 						<tr>
-							<th scope="col">Method Attributes</th>
-							<th scope="col">Method Name and Description</th>
+							<th scope="col">Function Attributes</th>
+							<th scope="col">Function Name and Description</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -197,7 +190,7 @@
 					borrowedMembers.map(function($) {if (contributers.indexOf($.memberOf) < 0) contributers.push($.memberOf)});
 					for (var i = 0, l = contributers.length; i < l; i++) {
 						output +=
-							"<dt>Methods borrowed from class "+new Link().toSymbol(contributers[i])+": </dt>"
+							"<dt>Methods inherited from "+new Link().toSymbol(contributers[i])+": </dt>"
 							+
 							"<dd>" +
 							borrowedMembers
@@ -255,7 +248,7 @@
 					borrowedMembers.map(function($) {if (contributers.indexOf($.memberOf) < 0) contributers.push($.memberOf)});
 					for (var i = 0, l = contributers.length; i < l; i++) {
 						output +=
-							"<dt>Events borrowed from class "+new Link().toSymbol(contributers[i])+": </dt>"
+							"<dt>Events inherited from "+new Link().toSymbol(contributers[i])+": </dt>"
 							+
 							"<dd>" +
 							borrowedMembers
@@ -279,7 +272,7 @@
 			<if test="!data.isBuiltin() && (data.isNamespace || data.is('CONSTRUCTOR'))">
 			<div class="details"><a name="constructor"> </a>
 				<div class="sectionTitle">
-					{+classType+}Detail
+					Constructor Detail
 				</div>
 				
 				<div class="fixedFont">{!
@@ -369,7 +362,7 @@
 <!-- ============================== field details ========================== -->		
 			<if test="defined(ownProperties) && ownProperties.length">
 				<div class="sectionTitle">
-					Field Detail
+					Properties Detail
 				</div>
 				<for each="member" in="ownProperties">
 					<a name="{+Link.symbolNameToLinkName(member)+}"> </a>
