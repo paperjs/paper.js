@@ -15,8 +15,33 @@
  */
 
 var Layer = this.Layer = Group.extend({
-	beans: true,
+	/** @lends Layer# */
 
+	beans: true,
+	
+	// DOCS: improve constructor code example.
+	/**
+	 * Creates a new Layer item and places it at the end of the
+	 * {@link Project#layers} array.
+	 * 
+	 * @example
+	 * var layer = new Layer();
+	 * layer.name = 'the new layer';
+	 * 
+	 * @param {array} [children] An optional array of children that will be
+	 * added to the newly created layer.
+	 * 
+	 * @class The Layer item represents a layer in a Paper.js project.
+	 * 
+	 * The layer which is currently active can be accessed through
+	 * {@link Project#activeLayer}.
+	 * An array of all layers in a project can be accessed through
+	 * {@link Project#layers}.
+	 * 
+	 * @extends Group
+	 * @extends Item
+	 * @constructs Layer
+	 */
 	initialize: function(items) {
 		this._project = paper.project;
 		// Push it onto project.layers and set index:
@@ -44,6 +69,15 @@ var Layer = this.Layer = Group.extend({
 				: this._project.layers[this._index - 1] || null;
 	},
 
+	/**
+	 * Activates the layer.
+	 * 
+	 * @example
+	 * var layer = new Layer();
+	 * layer.name = 'new layer';
+	 * layer.activate();
+	 * console.log(project.activeLayer.name) // 'new layer'
+	 */
 	activate: function() {
 		this._project.activeLayer = this;
 	}
