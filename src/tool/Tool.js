@@ -19,8 +19,39 @@ var Tool = this.Tool = Base.extend({
 
 	beans: true,
 
+	// DOCS: rewrite Tool constructor explanation
 	/**
 	 * Initializes the tool's settings, so a new tool can be assigned to it
+	 * 
+	 * @constructs Tool
+	 *
+	 * @class The Tool object refers to a script that the user can interact with
+	 * by using the mouse and keyboard and can be accessed through the global
+	 * {@code tool} variable. All its properties are also available in the paper
+	 * scope.
+	 * 
+	 * The global {@code tool} variable only exists in scripts that contain mouse
+	 * handler functions ({@link #onMouseMove}, {@link #onMouseDown},
+	 * {@link #onMouseDrag}, {@link #onMouseUp}) or a keyboard handler
+	 * function ({@link #onKeyDown}, {@link #onKeyUp}).
+	 * 
+	 * @example
+	 * var path;
+	 * 
+	 * // Only execute onMouseDrag when the mouse
+	 * // has moved at least 10 points:
+	 * tool.distanceThreshold = 10;
+	 * 
+	 * function onMouseDown(event) {
+	 * 	// Create a new path every time the mouse is clicked
+	 * 	path = new Path();
+	 * 	path.strokeColor = 'black';
+	 * }
+	 * 
+	 * function onMouseDrag(event) {
+	 * 	// Add a point to the path every time the mouse is dragged
+	 * 	path.lineTo(event.point);
+	 * }
 	 */
 	initialize: function(handlers, scope) {
 		this._scope = scope;
@@ -32,18 +63,21 @@ var Tool = this.Tool = Base.extend({
 	},
 
 	/**
-	 * The fixed time delay between each call to the {@link #onMouseDrag}
-	 * event. Setting this to an interval means the {@link #onMouseDrag}
-	 * event is called repeatedly after the initial {@link #onMouseDown}
-	 * until the user releases the mouse.
+	 * The fixed time delay in milliseconds between each call to the
+	 * {@link #onMouseDrag} event. Setting this to an interval means the
+	 * {@link #onMouseDrag} event is called repeatedly after the initial
+	 * {@link #onMouseDown} until the user releases the mouse.
 	 * 
-	 * @return the interval time in milliseconds
+	 * @type number
 	 */
 	eventInterval: null,
 
 	/**
 	 * The minimum distance the mouse has to drag before firing the onMouseDrag
 	 * event, since the last onMouseDrag event.
+	 * 
+	 * @type number
+	 * @bean
 	 */
 	getMinDistance: function() {
 		return this._minDistance;
@@ -57,6 +91,13 @@ var Tool = this.Tool = Base.extend({
 		}
 	},
 
+	/**
+	 * The maximum distance the mouse has to drag before firing the onMouseDrag
+	 * event, since the last onMouseDrag event.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getMaxDistance: function() {
 		return this._maxDistance;
 	},
@@ -69,6 +110,11 @@ var Tool = this.Tool = Base.extend({
 		}
 	},
 
+	// DOCS: document Tool#fixedDistance
+	/**
+	 * @type number
+	 * @bean
+	 */
 	getFixedDistance: function() {
 		return this._minDistance == this._maxDistance
 			? this._minDistance : null;
@@ -78,6 +124,87 @@ var Tool = this.Tool = Base.extend({
 		this._minDistance = distance;
 		this._maxDistance = distance;
 	},
+
+	/**
+	 * {@grouptitle Mouse Event Handlers}
+	 * 
+	 * The function to be called when the mouse button is pushed down. The
+	 * function receives a {@link ToolEvent} object which contains information
+	 * about the mouse event.
+	 * 
+	 * @example
+	 * function onMouseDown(event) {
+	 * 	// the position of the mouse in project coordinates:
+	 * 	console.log(event.point);
+	 * }
+	 * 
+	 * @name Tool#onMouseDown
+	 * @property
+	 * @type function
+	 */
+
+	/**
+	 * The function to be called when the mouse position changes while the mouse
+	 * is being dragged. The function receives a {@link ToolEvent} object which
+	 * contains information about the mouse event.
+	 * 
+	 * This function can also be called periodically while the mouse doesn't
+	 * move by setting the {@link #eventInterval}
+	 * 
+	 * @example
+	 * function onMouseDrag(event) {
+	 * 	// the position of the mouse in project coordinates
+	 * 	console.log(event.point);
+	 * }
+	 * 
+	 * @name Tool#onMouseDrag
+	 * @property
+	 * @type function
+	 */
+
+	/**
+	 * The function to be called when the tool is selected and the mouse moves
+	 * within the document. The function receives a {@link ToolEvent} object
+	 * which contains information about the mouse event.
+	 * 
+	 * @example
+	 * function onMouseMove(event) {
+	 * 	// the position of the mouse in project coordinates
+	 * 	console.log(event.point);
+	 * }
+	 * @name Tool#onMouseMove
+	 * @property
+	 * @type function
+	 */
+
+	/**
+	 * The function to be called when the mouse button is released. The function
+	 * receives a {@link ToolEvent} object which contains information about the
+	 * mouse event.
+	 * 
+	 * @example
+	 * function onMouseUp(event) {
+	 * 	// the position of the mouse in project coordinates
+	 * 	console.log(event.point);
+	 * }
+	 * @name Tool#onMouseUp
+	 * @property
+	 * @type function
+	 */
+
+	// DOCS: document Tool#onKeyDown
+	/**
+	 * @name Tool#onKeyDown
+	 * @property
+	 * @type function
+	 */
+
+	// DOCS: document Tool#onKeyUp
+	/**
+	 * @name Tool#onKeyUp
+	 * @property
+	 * @type function
+	 */
 
 	updateEvent: function(type, pt, minDistance, maxDistance, start,
 			needsChange, matchMaxDistance) {
