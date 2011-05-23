@@ -15,9 +15,26 @@
  */
 
 var Project = this.Project = Base.extend({
+	/** @lends Project# */
+
 	beans: true,
 
 	// TODO: Add arguments to define pages
+	// DOCS: document Project constructor and class
+	/**
+	 * Creates a Paper.js project
+	 *
+	 * @name Project
+	 * @constructor
+	 * 
+	 * @class The Project item refers to..
+	 * 
+	 * The currently active project can be accessed through the global {@code
+	 * project} variable.
+	 * 
+	 * An array of all open projects is accessible through the global {@code
+	 * projects} variable.
+	 */
 	initialize: function() {
 		// Store reference to the currently active global paper scope:
 		this._scope = paper;
@@ -34,14 +51,26 @@ var Project = this.Project = Base.extend({
 		this.activeLayer = new Layer();
 	},
 
+	/**
+	 * The currently active path style. All selected items and newly
+	 * created items will be styled with this style.
+	 * 
+	 * @type PathStyle
+	 * @bean
+	 */
 	getCurrentStyle: function() {
 		return this._currentStyle;
 	},
 
+	// TODO: style selected items with the style:
 	setCurrentStyle: function(style) {
 		this._currentStyle.initialize(style);
 	},
 
+	/**
+	 * Activates this project, so all newly created items will be placed
+	 * in it.
+	 */
 	activate: function() {
 		if (this._index != null) {
 			this._scope.project = this;
@@ -56,10 +85,22 @@ var Project = this.Project = Base.extend({
 		return !!res.length;
 	},
 
+	/**
+	 * The index of the project in the global projects array.
+	 *
+	 * @type number
+	 * @bean
+	 */
 	getIndex: function() {
 		return this._index;
 	},
 
+	/**
+	 * The selected items contained within the project.
+	 *
+	 * @type array
+	 * @bean
+	 */
 	getSelectedItems: function() {
 		// TODO: return groups if their children are all selected,
 		// and filter out their children from the list.
@@ -125,6 +166,7 @@ var Project = this.Project = Base.extend({
 
 	/**
 	 * @deprecated
+	 * @ignore
 	 */
 	redraw: function() {
 		this._scope.view.draw();
