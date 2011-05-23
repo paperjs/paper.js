@@ -258,7 +258,7 @@ var Item = this.Item = Base.extend({
 	 * Specifies whether the item is visible.
 	 * 
 	 * @type boolean
-	 * @default false
+	 * @default true
 	 */
 	visible: true,
 
