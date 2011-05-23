@@ -15,6 +15,27 @@
  */
 
 var CharacterStyle = this.CharacterStyle = PathStyle.extend({
+	/** @lends CharacterStyle# */
+
+	/**
+	 * CharacterStyle objects don't need to be created directly. Just pass an
+	 * object to {@link TextItem#characterStyle}, it will be converted to a
+	 * CharacterStyle object internally.
+	 *
+	 * @constructs CharacterStyle
+	 * @param {object} style
+	 * 
+	 * @constructs CharacterStyle
+	 *
+	 * @class The CharacterStyle object represents the character style of a text
+	 * item ({@link TextItem#characterStyle})
+	 * 
+	 * @example
+	 * var text = new PointText(new Point(50, 50));
+	 * text.fillColor = 'black';
+	 * text.content = 'Hello world.';
+	 * text.characterStyle.fontSize = 50;
+	 */
 	initialize: function(style) {
 		Base.initialize(this, style, {
 			fontSize: 10,
@@ -22,6 +43,22 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 		});
 		this.base(style);
 	},
+
+	/**
+	 * The font of the character style.
+	 *
+	 * @name CharacterStyle#font
+	 * @default 'sans-serif'
+	 * @type string
+	 */
+
+	/**
+	 * The font size of the character style in points.
+	 *
+	 * @name CharacterStyle#fontSize
+	 * @default 10
+	 * @type number
+	 */
 
 	statics: {
 		create: function(item) {
