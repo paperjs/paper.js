@@ -56,7 +56,6 @@
 				<if test="data.augments.length"><br />Extends
 					{+
 						data.augments
-						.sort()
 						.map(
 							function($) { return new Link().toSymbol($); }
 						)
@@ -147,7 +146,6 @@
 							.filter(
 								function($) { return $.memberOf == contributers[i] }
 							)
-							.sort(makeSortby("name"))
 							.map(
 								function($) { return new Link().toSymbol($.alias).withText($.name) }
 							)
@@ -206,7 +204,6 @@
 							.filter(
 								function($) { return $.memberOf == contributers[i] }
 							)
-							.sort(makeSortby("name"))
 							.map(
 								function($) { return new Link().toSymbol($.alias).withText($.name) }
 							)
@@ -221,7 +218,7 @@
 			</if>
 <!-- ============================== events summary ======================== -->
 			<if test="data.events.length">
-				{! var ownEvents = data.events.filter(function($){return $.memberOf == data.alias  && !$.isNamespace}).sort(makeSortby("name")); !}
+				{! var ownEvents = data.events.filter(function($){return $.memberOf == data.alias  && !$.isNamespace}); !}
 				<if test="ownEvents.length">
 				<table class="summaryTable" cellspacing="0" summary="A summary of the events documented in the class {+data.alias+}.">
 					<caption>Event Summary</caption>
@@ -265,7 +262,6 @@
 							.filter(
 								function($) { return $.memberOf == contributers[i] }
 							)
-							.sort(makeSortby("name"))
 							.map(
 								function($) { return new Link().toSymbol($.alias).withText($.name) }
 							)
