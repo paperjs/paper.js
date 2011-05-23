@@ -669,6 +669,66 @@ var Point = this.Point = Base.extend({
 		}
 	}
 }, new function() { // Scope for injecting round, ceil, floor, abs:
+	/**
+	 * {@grouptitle Math Functions}
+	 * 
+	 * Returns a new point with rounded {@link #x} and {@link #y} values. The
+	 * object itself is not modified!
+	 * 
+	 * @example
+	 * var point = new Point(10.2, 10.9);
+	 * var roundPoint = point.round();
+	 * console.log(roundPoint); // { x: 10.0, y: 11.0 }
+	 * 
+	 * @name Point#round
+	 * @function
+	 * @return {Point}
+	 */
+
+	/**
+	 * Returns a new point with the nearest greater non-fractional values to the
+	 * specified {@link #x} and {@link #y} values. The object itself is not
+	 * modified!
+	 * 
+	 * @example
+	 * var point = new Point(10.2, 10.9);
+	 * var ceilPoint = point.ceil();
+	 * console.log(ceilPoint); // { x: 11.0, y: 11.0 }
+	 * 
+	 * @name Point#ceil
+	 * @function
+	 * @return {Point}
+	 */
+
+	/**
+	 * Returns a new point with the nearest smaller non-fractional values to the
+	 * specified {@link #x} and {@link #y} values. The object itself is not
+	 * modified!
+	 * 
+	 * @example
+	 * var point = new Point(10.2, 10.9);
+	 * var floorPoint = point.floor();
+	 * console.log(floorPoint); // { x: 10.0, y: 10.0 }
+	 * 
+	 * @name Point#floor
+	 * @function
+	 * @return {Point}
+	 */
+
+	/**
+	 * Returns a new point with the absolute values of the specified {@link #x}
+	 * and {@link #y} values. The object itself is not modified!
+	 * 
+	 * @example
+	 * var point = new Point(-5, 10);
+	 * var absPoint = point.abs();
+	 * console.log(absPoint); // { x: 5.0, y: 10.0 }
+	 * 
+	 * @name Point#abs
+	 * @function
+	 * @return {Point}
+	 */
+
 	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
 		var op = Math[name];
 		this[name] = function() {
