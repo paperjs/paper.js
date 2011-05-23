@@ -295,7 +295,7 @@ var Size = this.Size = Base.extend({
 	},
 
 	statics: {
-		/** @lends Point */
+		/** @lends Size */
 
 		// See Point.create()
 		create: function(width, height) {
