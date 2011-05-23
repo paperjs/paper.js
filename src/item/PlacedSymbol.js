@@ -15,8 +15,51 @@
  */
 
 var PlacedSymbol = this.PlacedSymbol = Item.extend({
+	/** @lends PlacedSymbol# */
+
 	beans: true,
 
+	/**
+	 * Creates a new PlacedSymbol Item.
+	 * 
+	 * @example
+	 * var path = new Path.Star(new Point(0, 0), 6, 5, 13);
+	 * path.style = {
+	 *     fillColor: 'white',
+	 *     strokeColor: 'black'
+	 * };
+     * 
+	 * // Create a symbol from the path:
+	 * // (the original path is removed from the project)
+	 * var symbol = new Symbol(path);
+     * 
+	 * // Place 100 instances of the symbol:
+	 * for (var i = 0; i < 100; i++) {
+	 *     // Place an instance of the symbol in the project:
+	 *     var instance = new PlacedSymbol(symbol);
+     * 
+	 *     // Move the instance to a random position within the view:
+	 *     instance.position = Point.random() * view.size;
+     * 
+	 *     // Rotate the instance by a random amount between
+	 *     // 0 and 360 degrees:
+	 *     instance.rotate(Math.random() * 360);
+     * 
+	 *     // Scale the instance between 0.25 and 1:
+	 *     instance.scale(0.25 + Math.random() * 0.75);
+	 * }
+	 * 
+	 * @param {Symbol} symbol the symbol to place
+	 * @param {Point|Matrix} matrixOrOffset the center point of the placed
+	 * symbol or a {@link Matrix} transformation to transform the placed symbol
+	 * with.
+	 * 
+	 * @class A PlacedSymbol represents a symbol which has been placed in a
+	 * Paper.js project.
+	 *
+	 * @extends Item
+	 * @constructs PlacedSymbol
+	 */
 	initialize: function(symbol, matrixOrOffset) {
 		this.base();
 		this.symbol = symbol instanceof Symbol ? symbol : new Symbol(symbol);
@@ -26,6 +69,13 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 				: new Matrix().translate(Point.read(arguments, 1))
 			: new Matrix();
 	},
+
+	/**
+	 * The symbol contained within the placed symbol.
+	 *
+	 * @name PlacedSymbol#symbol
+	 * @type Symbol
+	 */
 
 	clone: function() {
 		return this._clone(new PlacedSymbol(this.symbol, this.matrix.clone()));
@@ -60,6 +110,5 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 		}
 	}
 
-	// TODO:
-	// embed()
+	// TODO: PlacedSymbol#embed()
 });
