@@ -14,6 +14,10 @@
  * All rights reserved.
  */
 
+/**
+ * @namespace
+ * @name Key
+ */
 var Key = this.Key = new function() {
 	// TODO: make sure the keys are called the same as in Scriptographer
 	// Missing: tab, cancel, clear, page-down, page-up, comma, minus, period,
@@ -127,8 +131,21 @@ var Key = this.Key = new function() {
 	});
 
 	return {
+		/** @lends Key */
+
 		modifiers: modifiers,
 
+		/**
+		 * Checks whether the specified key is pressed.
+		 * 
+		 * @example
+		 * function onMouseDown(event) {
+		 * 	if(Key.isDown('shift')) {
+		 * 		console.log('The shift key is currently pressed.')
+		 * 	}
+		 * }
+		 * @return {boolean} true if the key is pressed, false otherwise
+		 */
 		isDown: function(key) {
 			return !!keyMap[key];
 		}
