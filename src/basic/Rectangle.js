@@ -449,6 +449,7 @@ var Rectangle = this.Rectangle = Base.extend({
  * through setting itself again on the setter that corresponds to the getter
  * that produced this LinkedRectangle. See uses of LinkedRectangle.create()
  * Note: This prototype is not exported.
+ * @ignore
  */
 var LinkedRectangle = Rectangle.extend({
 	beans: true,
@@ -468,6 +469,7 @@ var LinkedRectangle = Rectangle.extend({
 		 * Provide a faster creator for Points out of two coordinates that
 		 * does not rely on Point#initialize at all. This speeds up all math
 		 * operations a lot.
+		 * @ignore
 		 */
 		create: function(owner, setter, x, y, width, height) {
 			var rect = new LinkedRectangle(LinkedRectangle.dont).set(

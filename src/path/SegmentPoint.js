@@ -17,6 +17,7 @@
 /**
  * An internal version of Point that notifies its segment of each change
  * Note: This prototype is not exported.
+ * @ignore
  */
 var SegmentPoint = Point.extend({
 	beans: true,
