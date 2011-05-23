@@ -94,7 +94,6 @@ var paper = new function() {
 //#include "ui/Key.js"
 
 //#include "tool/ToolEvent.js"
-//#include "tool/ToolHandler.js"
 //#include "tool/Tool.js"
 
 //#endif // BROWSER
