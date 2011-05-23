@@ -21,6 +21,7 @@
 
 var Matrix = this.Matrix = Base.extend({
 	/** @lends Matrix# */
+
 	beans: true,
 
 	/**
