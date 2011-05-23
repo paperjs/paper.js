@@ -33,10 +33,11 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 
 		// DOCS: why isn't the example code showing up?
 		/**
-		 * Creates a new PathStyle object.
+		 * PathStyle objects don't need to be created directly. Just pass an
+		 * object to {@link Item#style} or {@link Project#currentStyle}, it will
+		 * be converted to a PathStyle object internally.
 		 *
-		 * @name PathStyle
-		 * @constructor
+		 * @constructs PathStyle
 		 * @param {object} style
 		 * 
 		 * @class PathStyle is used for changing the visual styles of items
