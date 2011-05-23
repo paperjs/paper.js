@@ -37,7 +37,8 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * Clones the item within the same project.
+	 * Clones the item within the same project and places the copy above the
+	 * item.
 	 * 
 	 * @return the newly cloned item
 	 */
