@@ -15,6 +15,9 @@
  */
 
 var PathStyle = this.PathStyle = Base.extend(new function() {
+	/** @lends PathStyle# */
+
+	// TODO: remove windingRule / resolution / fillOverprint / strokeOverprint?
 	var keys = ['windingRule', 'resolution', 'strokeColor', 'strokeWidth',
 			'strokeCap', 'strokeJoin', 'dashOffset','dashArray', 'miterLimit',
 			'strokeOverprint', 'fillColor', 'fillOverprint'],
@@ -28,6 +31,35 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 	var fields = {
 		beans: true,
 
+		// DOCS: why isn't the example code showing up?
+		/**
+		 * Creates a new PathStyle object.
+		 *
+		 * @name PathStyle
+		 * @constructor
+		 * @param {object} style
+		 * 
+		 * @class PathStyle is used for changing the visual styles of items
+		 * contained within a Paper.js project and is returned by
+		 * {@link Item#style} and {@link Document#currentStyle}.
+		 * 
+		 * All properties of PathStyle are also reflected directly in {@link Item},
+		 * i.e.: {@link Item#fillColor}.
+		 * 
+		 * To set multiple style properties in one go, you can pass an object to
+		 * {@link Item#style}. This is a convenient way to define a style once and
+		 * apply it to a series of items:
+		 * 
+		 * @example
+		 * var circleStyle = {
+		 * 	fillColor: new RGBColor(1, 0, 0),
+		 * 	strokeColor: new GrayColor(1),
+		 * 	strokeWidth: 5
+		 * };
+		 * 
+		 * var path = new Path.Circle(new Point(50, 50), 50);
+		 * path.style = circleStyle;
+		 */
 		initialize: function(style) {
 			// Note: This relies on bean setters that get implicetly
 			// called when setting values on this[key].
@@ -112,3 +144,110 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 
 	return fields;
 });
+
+/**
+ * {@grouptitle Stroke Style}
+ * 
+ * The color of the stroke.
+ * 
+ * @example
+ * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
+ * var circle = new Path.Circle(new Point(50, 50), 10);
+ * 
+ * // Set the stroke color of the circle to RGB red:
+ * circle.strokeColor = new RGB(1, 0, 0);
+ * 
+ * @property
+ * @name PathStyle#strokeColor
+ * @type RGBColor|HSBColor|GrayColor
+ */
+
+/**
+ * The width of the stroke.
+ * 
+ * @example
+ * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
+ * var circle = new Path.Circle(new Point(50, 50), 10);
+ * 
+ * // Set the stroke width of the circle to 3pt:
+ * circle.strokeWidth = 3;
+ * 
+ * @property
+ * @name PathStyle#strokeWidth
+ * @type number
+ */
+
+// DOCS: PathStyle#strokeCap: describe the different options
+/**
+ * The cap of the stroke.
+ * 
+ * @example
+ * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
+ * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
+ * 
+ * // Set the stroke cap of the line to be round:
+ * line.strokeCap = 'round';
+ * 
+ * @property
+ * @name PathStyle#strokeCap
+ * @type string
+ */
+
+// DOCS: PathStyle#strokeJoin: describe the different options
+/**
+ * The join of the stroke.
+ * 
+ * @property
+ * @name PathStyle#strokeJoin
+ * @type string
+ */
+
+/**
+ * The dash offset of the stroke.
+ * 
+ * @property
+ * @name PathStyle#dashOffset
+ * @type string
+ */
+
+/**
+ * Specifies an array containing the dash and gap lengths of the stroke.
+ * 
+ * @example
+ * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
+ * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
+ * 
+ * line.strokeWidth = 3;
+ * 
+ * // Set the dashed stroke to [10pt dash, 5pt gap, 8pt dash, 10pt gap]:
+ * line.dashArray = [10, 5, 8, 10];
+ * 
+ * @property
+ * @name PathStyle#dashArray
+ * @type array
+ */
+
+/**
+ * The miter limit of the stroke.
+ * 
+ * @property
+ * @name PathStyle#miterLimit
+ * @type number
+ */
+
+/**
+ * {@grouptitle Fill Style}
+ * 
+ * The fill color.
+ * 
+ * @example
+ * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
+ * var circle = new Path.Circle(new Point(50, 50), 10);
+ * 
+ * // Set the fill color of the circle to RGB red:
+ * circle.fillColor = new RGBColor(1, 0, 0, );
+ * 
+ * @property
+ * @name PathStyle#fillColor
+ * @type RGBColor|HSBColor|GrayColor
+ */
