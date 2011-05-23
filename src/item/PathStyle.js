@@ -41,7 +41,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		 * 
 		 * @class PathStyle is used for changing the visual styles of items
 		 * contained within a Paper.js project and is returned by
-		 * {@link Item#style} and {@link Document#currentStyle}.
+		 * {@link Item#style} and {@link Project#currentStyle}.
 		 * 
 		 * All properties of PathStyle are also reflected directly in {@link Item},
 		 * i.e.: {@link Item#fillColor}.
