@@ -15,6 +15,8 @@
  */
 
 var ToolHandler = this.ToolHandler = Base.extend({
+	/** @lends ToolHandler# */
+
 	beans: true,
 
 	/**
