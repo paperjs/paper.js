@@ -15,8 +15,30 @@
  */
 
 CurveLocation = Base.extend({
+	/** @lends CurveLocation# */
+
 	beans: true,
 
+	/**
+	 * Creates a new CurveLocation object.
+	 *
+	 * @name CurveLocation
+	 * @constructor
+	 * @param {Curve} curve
+	 * @param {number} parameter
+	 * @param {Point} point
+	 *
+	 * @class CurveLocation objects describe a location on {@Curve} objects, as
+	 * defined by the curve {@link #parameter}, a value between {@code 0}
+	 * (beginning of the curve) and {@code 1} (end of the curve). If the curve is
+	 * part of a {@link Path} item, its {@link #index} inside the
+	 * {@link Path#curves} array is also provided.
+	 * 
+	 * The class is in use in many places, such as {@link Path#getLocationAt(length)},
+	 * {@link Path#getLength(CurveLocation)}, {@link Path#getPoint(length)},
+	 * {@link Path#split(CurveLocation)},
+	 * {@link PathItem#getIntersections(PathItem)}, etc.
+	 */
 	initialize: function(curve, parameter, point) {
 		this._curve = curve;
 		this._parameter = parameter;
@@ -25,6 +47,9 @@ CurveLocation = Base.extend({
 
 	/**
 	 * The segment of the curve which is closer to the described location.
+	 *
+	 * @type Segment
+	 * @bean
 	 */
 	getSegment: function() {
 		if (!this._segment) {
@@ -48,6 +73,9 @@ CurveLocation = Base.extend({
 
 	/**
 	 * The curve by which the location is defined.
+	 *
+	 * @type Curve
+	 * @bean
 	 */
 	getCurve: function() {
 		return this._curve;
@@ -55,6 +83,9 @@ CurveLocation = Base.extend({
 
 	/**
 	 * The item this curve belongs to, if any.
+	 *
+	 * @type Item
+	 * @bean
 	 */
 	getItem: function() {
 		return this._curve && this._curve._path;
@@ -63,6 +94,9 @@ CurveLocation = Base.extend({
 	/**
 	 * The index of the curve within the {@link Path#getCurves()} list, if the
 	 * curve is part of a {@link Path} item.
+	 *
+	 * @type Index
+	 * @bean
 	 */
 	getIndex: function() {
 		return this._curve && this._curve.getIndex();
@@ -71,6 +105,9 @@ CurveLocation = Base.extend({
 	/**
 	 * The length of the path from its beginning up to the location described
 	 * by this object.
+	 *
+	 * @type number
+	 * @bean
 	 */
 	getOffset: function() {
 		var path = this._curve && this._curve._path;
@@ -80,6 +117,9 @@ CurveLocation = Base.extend({
 	/**
 	 * The length of the curve from its beginning up to the location described
 	 * by this object.
+	 *
+	 * @type number
+	 * @bean
 	 */
 	getCurveOffset: function() {
 		var parameter = this._curve && this.getParameter();
@@ -90,6 +130,9 @@ CurveLocation = Base.extend({
 	 * The curve parameter, as used by various bezier curve calculations. It is
 	 * value between {@code 0} (beginning of the curve) and {@code 1} (end of
 	 * the curve).
+	 *
+	 * @type number
+	 * @bean
 	 */
 	getParameter: function() {
 		if (this._parameter == null && this._point)
@@ -98,8 +141,11 @@ CurveLocation = Base.extend({
 	},
 
 	/**
-	 * The point which is defined by the {@link #getCurve()} and
-	 * {@link #getParameter()}.
+	 * The point which is defined by the {@link #curve} and
+	 * {@link #parameter}.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getPoint: function() {
 		if (!this._point && this._curve) {
@@ -111,7 +157,10 @@ CurveLocation = Base.extend({
 	},
 
 	/**
-	 * The tangential vector to the {@link #getCurve()} at the given location.
+	 * The tangential vector to the {@link #curve} at the given location.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getTangent: function() {
 		var parameter = this.getParameter();
@@ -120,7 +169,10 @@ CurveLocation = Base.extend({
 	},
 	
 	/**
-	 * The normal vector to the {@link #getCurve()} at the given location.
+	 * The normal vector to the {@link #curve} at the given location.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getNormal: function() {
 		var parameter = this.getParameter();
@@ -128,6 +180,9 @@ CurveLocation = Base.extend({
 				&& this._curve.getNormal(parameter);
 	},
 
+	/**
+	 * @return {string} A string representation of the curve location.
+	 */
 	toString: function() {
 		var parts = [],
 			point = this.getPoint();
