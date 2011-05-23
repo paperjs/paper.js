@@ -97,26 +97,178 @@ var Point = this.Point = Base.extend({
 		return Point.create(this.x, this.y);
 	},
 
+	/**
+	 * Returns the addition of the supplied value to both coordinates of
+	 * the point as a new point.
+	 * The object itself is not modified!
+	 * 
+	 * @example
+	 * var point = new Point(5, 10);
+	 * var result = point + 20;
+	 * console.log(result); // { x: 25.0, y: 30.0 }
+	 * 
+	 * @name Point#add^2
+	 * @function
+	 * @param {number} number the number to add
+	 * @return {Point} the addition of the point and the value as a new point
+	 */
+	/**
+	 * Returns the addition of the supplied point to the point as a new
+	 * point.
+	 * The object itself is not modified!
+	 * 
+	 * @example
+	 * var point1 = new Point(5, 10);
+	 * var point2 = new Point(10, 20);
+	 * var result = point1 + point2;
+	 * console.log(result); // { x: 15.0, y: 30.0 }
+	 * 
+	 * @name Point#add
+	 * @function
+	 * @param {Point} point the point to add
+	 * @return {Point} the addition of the two points as a new point
+	 */
 	add: function(point) {
 		point = Point.read(arguments);
 		return Point.create(this.x + point.x, this.y + point.y);
 	},
 
+	/**
+	 * Returns the subtraction of the supplied value to both coordinates of
+	 * the point as a new point.
+	 * The object itself is not modified!
+	 * 
+	 * @example
+	 * var point = new Point(10, 20);
+	 * var result = point - 5;
+	 * console.log(result); // { x: 5.0, y: 15.0 }
+	 * 
+	 * @name Point#subtract^2
+	 * @function
+	 * @param {number} number the number to subtract
+	 * @return {Point} the subtraction of the point and the value as a new point
+	 */
+	/**
+	 * Returns the subtraction of the supplied point to the point as a new
+	 * point.
+	 * The object itself is not modified!
+	 * 
+	 * @example
+	 * var firstPoint = new Point(10, 20);
+	 * var secondPoint = new Point(5, 5);
+	 * var result = firstPoint - secondPoint;
+	 * console.log(result); // { x: 5.0, y: 15.0 }
+	 * 
+	 * @name Point#subtract
+	 * @function
+	 * @param {Point} point the point to subtract
+	 * @return {Point} the subtraction of the two points as a new point
+	 */
 	subtract: function(point) {
 		point = Point.read(arguments);
 		return Point.create(this.x - point.x, this.y - point.y);
 	},
 
+	/**
+	 * Returns the multiplication of the supplied value to both coordinates of
+	 * the point as a new point.
+	 * The object itself is not modified!
+	 * 
+	 * @example
+	 * var point = new Point(10, 20);
+	 * var result = point * 2;
+	 * console.log(result); // { x: 20.0, y: 40.0 }
+	 * 
+	 * @name Point#multiply^2
+	 * @function
+	 * @param {number} number the number to multiply by
+	 * @return {Point} the multiplication of the point and the value as a new point
+	 */
+	/**
+	 * Returns the multiplication of the supplied point to the point as a new
+	 * point.
+	 * The object itself is not modified!
+	 * 
+	 * @example
+	 * var firstPoint = new Point(5, 10);
+	 * var secondPoint = new Point(4, 2);
+	 * var result = firstPoint * secondPoint;
+	 * console.log(result); // { x: 20.0, y: 20.0 }
+	 * 
+	 * @name Point#multiply
+	 * @function
+	 * @param {Point} point the point to multiply by
+	 * @return {Point} the multiplication of the two points as a new point
+	 */
 	multiply: function(point) {
 		point = Point.read(arguments);
 		return Point.create(this.x * point.x, this.y * point.y);
 	},
 
+	/**
+	 * Returns the division of the supplied value to both coordinates of
+	 * the point as a new point.
+	 * The object itself is not modified!
+	 * 
+	 * @example
+	 * var point = new Point(10, 20);
+	 * var result = point / 2;
+	 * console.log(result); // { x: 5.0, y: 10.0 }
+	 * 
+	 * @name Point#divide^2
+	 * @function
+	 * @param {number} number the number to divide by
+	 * @return {Point} the division of the point and the value as a new point
+	 */
+	/**
+	 * Returns the division of the supplied point to the point as a new
+	 * point.
+	 * The object itself is not modified!
+	 * 
+	 * @example
+	 * var firstPoint = new Point(8, 10);
+	 * var secondPoint = new Point(2, 5);
+	 * var result = firstPoint / secondPoint;
+	 * console.log(result); // { x: 4.0, y: 2.0 }
+	 * 
+	 * @name Point#divide
+	 * @function
+	 * @param {Point} point the point to divide by
+	 * @return {Point} the division of the two points as a new point
+	 */
 	divide: function(point) {
 		point = Point.read(arguments);
 		return Point.create(this.x / point.x, this.y / point.y);
 	},
 
+	/**
+	 * The modulo operator returns the integer remainders of dividing the point
+	 * by the supplied value as a new point.
+	 * 
+	 * @example
+	 * var point = new Point(12, 6);
+	 * console.log(point % 5); // {x: 2, y: 1}
+	 * 
+	 * @name Point#modulo^2
+	 * @function
+	 * @param {number} value
+	 * @return {Point} the integer remainders of dividing the point by the value
+	 *                 as a new point
+	 */
+	/**
+	 * The modulo operator returns the integer remainders of dividing the point
+	 * by the supplied value as a new point.
+	 * 
+	 * @example
+	 * var point = new Point(12, 6);
+	 * console.log(point % new Point(5, 2)); // {x: 2, y: 0}
+	 * 
+	 * @name Point#modulo
+	 * @function
+	 * @param {Point} point
+	 * @return {Point} the integer remainders of dividing the points by each
+	 *                 other as a new point
+	 */
 	modulo: function(point) {
 		point = Point.read(arguments);
 		return Point.create(this.x % point.x, this.y % point.y);
@@ -132,6 +284,7 @@ var Point = this.Point = Base.extend({
 
 	/**
 	 * Returns the distance between the point and another point.
+	 * @return {number}
 	 */
 	getDistance: function(point) {
 		point = Point.read(arguments);
@@ -176,6 +329,11 @@ var Point = this.Point = Base.extend({
 		return this;
 	},
 
+	// DOCS: Point#length
+	/**
+	 * @param {number} length
+	 * @return {Point}
+	 */
 	normalize: function(length) {
 		if (length === undefined)
 			length = 1;
@@ -187,19 +345,29 @@ var Point = this.Point = Base.extend({
 		return point;
 	},
 
+	// DOCS: Point#getQuadrant
+	/**
+	 * @return {number}
+	 */
 	getQuadrant: function() {
 		return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
 	},
 
-	// DOCS: document function with point argument.
 	/**
-	 * The vector's angle, measured from the x-axis to the vector.
+	 * Returns the smaller angle between two vectors. The angle is unsigned, no
+	 * information about rotational direction is given.
 	 * 
-	 * When supplied with a point, returns the smaller angle between two
-	 * vectors. The angle is unsigned, no information about rotational
-	 * direction is given.
-	 * 
+	 * @name Point#getAngle
+	 * @function
 	 * @param {Point} point
+	 * @return {number} the angle in degrees
+	 */
+	/**
+	 * The vector's angle in degrees, measured from the x-axis to the vector.
+	 * 
+	 * The angle is unsigned, no information about rotational direction is
+	 * given.
+	 * 
 	 * @type number
 	 * @bean
 	 */
@@ -222,6 +390,24 @@ var Point = this.Point = Base.extend({
 		return this;
 	},
 
+	/**
+	 * Returns the smaller angle between two vectors in radians. The angle is
+	 * unsigned, no information about rotational direction is given.
+	 * 
+	 * @name Point#getAngleInRadians
+	 * @function
+	 * @param {Point} point
+	 * @return {number} the angle in radians
+	 */
+	/**
+	 * The vector's angle in radians, measured from the x-axis to the vector.
+	 * 
+	 * The angle is unsigned, no information about rotational direction is
+	 * given.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getAngleInRadians: function(/* point */) {
 		// Hide parameters from Bootstrap so it injects bean too
 		if (arguments[0] === undefined) {
@@ -281,6 +467,13 @@ var Point = this.Point = Base.extend({
 		return center ? point.add(center) : point;
 	},
 
+	/**
+	 * Checks whether the point has the same x and y values as the specified
+	 * point.
+	 *
+	 * @param {Point}
+	 * @return {boolean}
+	 */
 	equals: function(point) {
 		point = Point.read(arguments);
 		return this.x == point.x && this.y == point.y;
@@ -393,6 +586,9 @@ var Point = this.Point = Base.extend({
 		}
 	},
 
+	/**
+	 * @return {string} A string representation of the point.
+	 */
 	toString: function() {
 		var format = Base.formatNumber;
 		return '{ x: ' + format(this.x) + ', y: ' + format(this.y) + ' }';
