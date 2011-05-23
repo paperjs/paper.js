@@ -952,6 +952,12 @@ var Item = this.Item = Base.extend({
 	//DOCS: document removeOn(param)
 
 	/**
+	 * Removes the item when the next {@link Tool#onMouseMove} event is fired.
+	 * @name Item#removeOnMove
+	 * @function
+	 */
+
+	/**
 	 * Removes the item when the next {@link Tool#onMouseDown} event is fired.
 	 * @name Item#removeOnDown
 	 * @function
@@ -960,12 +966,6 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Removes the item when the next {@link Tool#onMouseDrag} event is fired.
 	 * @name Item#removeOnDrag
-	 * @function
-	 */
-
-	/**
-	 * Removes the item when the next {@link Tool#onMouseMove} event is fired.
-	 * @name Item#removeOnMove
 	 * @function
 	 */
 
