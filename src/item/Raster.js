@@ -177,7 +177,9 @@ var Raster = this.Raster = Item.extend({
 
 	// DOCS: document Raster#getSubImage
 	/**
-	 * @param {Rectangle} rect
+	 * @param {Rectangle} rect the boundaries of the sub image in pixel
+	 * coordinates
+	 * 
 	 * @return {Canvas}
 	 */
 	getSubImage: function(rect) {
@@ -188,10 +190,12 @@ var Raster = this.Raster = Item.extend({
 		return canvas;
 	},
 
-	// DOCS: document Raster#drawImage
 	/**
+	 * Draws an image on the raster.
+	 * 
 	 * @param {HTMLImageELement|Canvas} image
-	 * @param {Point} point
+	 * @param {Point} point the offset of the image as a point in pixel
+	 * coordinates
 	 */
 	drawImage: function(image, point) {
 		point = Point.read(arguments, 1);
@@ -321,11 +325,21 @@ var Raster = this.Raster = Item.extend({
 		return total ? Color.read(channels) : null;
 	},
 
+	// DOCS: document Raster#createData
+	/**
+	 * @param {Size} size
+	 * @return {ImageData}
+	 */
 	createData: function(size) {
 		size = Size.read(arguments);
 		return this.getContext().createImageData(size.width, size.height);
 	},
 
+	// DOCS: document Raster#getData
+	/**
+	 * @param {Rectangle} rect
+	 * @return {ImageData}
+	 */
 	getData: function(rect) {
 		rect = Rectangle.read(arguments);
 		if (rect.isEmpty())
@@ -334,6 +348,12 @@ var Raster = this.Raster = Item.extend({
 				rect.width, rect.height);
 	},
 
+	// DOCS: document Raster#setData
+	/**
+	 * @param {ImageData} data
+	 * @param {Point} point
+	 * @return {ImageData}
+	 */
 	setData: function(data, point) {
 		point = Point.read(arguments, 1);
 		this.getContext().putImageData(data, point.x, point.y);
