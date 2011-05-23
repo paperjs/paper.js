@@ -16,6 +16,7 @@
 
 var Point = this.Point = Base.extend({
 	/** @lends Point# */
+
 	beans: true,
 
 	/**
