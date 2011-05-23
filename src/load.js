@@ -75,7 +75,6 @@ var sources = [
 	'src/ui/Key.js',
 
 	'src/tool/ToolEvent.js',
-	'src/tool/ToolHandler.js',
 	'src/tool/Tool.js',
 
 	'src/util/CanvasProvider.js',
