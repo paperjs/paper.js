@@ -14,16 +14,22 @@
  * All rights reserved.
  */
 
-/**
- * The ToolEvent object is received by the {@link Tool}'s mouse event handlers
- * {@link Tool#getOnMouseDown()}, {@link Tool#getOnMouseDrag()},
- * {@link Tool#getOnMouseMove()} and {@link Tool#getOnMouseUp()}. The ToolEvent
- * object is the only parameter passed to these functions and contains
- * information about the mouse event.
- */
 var ToolEvent = this.ToolEvent = Base.extend({
+	/** @lends ToolEvent# */
+
 	beans: true,
 
+	/**
+	 *
+	 * @name ToolEvent
+	 * @constructor
+	 * 
+	 * @class ToolEvent The ToolEvent object is received by the {@link Tool}'s mouse event handlers
+	 * {@link Tool#onMouseDown}, {@link Tool#onMouseDrag},
+	 * {@link Tool#onMouseMove} and {@link Tool#onMouseUp}. The ToolEvent
+	 * object is the only parameter passed to these functions and contains
+	 * information about the mouse event.
+	 */
 	initialize: function(tool, type, event) {
 		this.tool = tool;
 		this.type = type;
@@ -41,6 +47,20 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	/**
 	 * The position of the mouse in project coordinates when the event was
 	 * fired.
+	 *
+	 * @example
+	 * function onMouseDrag(event) {
+	 * 	// the position of the mouse when it is dragged
+	 * 	console.log(event.point);
+	 * }
+	 * 
+	 * function onMouseUp(event) {
+	 * 	// the position of the mouse when it is released
+	 * 	console.log(event.point);
+	 * }
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getPoint: function() {
 		return this._choosePoint(this._point, this.tool._point);
@@ -53,6 +73,9 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	/**
 	 * The position of the mouse in project coordinates when the previous
 	 * event was fired.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getLastPoint: function() {
 		return this._choosePoint(this._lastPoint, this.tool._lastPoint);
@@ -65,6 +88,9 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	/**
 	 * The position of the mouse in project coordinates when the mouse button
 	 * was last clicked.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getDownPoint: function() {
 		return this._choosePoint(this._downPoint, this.tool._downPoint);
@@ -75,10 +101,13 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	},
 
 	/**
-	 * The point in the middle between {@link #getLastPoint()} and
-	 * {@link #getPoint()}. This is a useful position to use when creating
+	 * The point in the middle between {@link #lastPoint} and
+	 * {@link #point}. This is a useful position to use when creating
 	 * artwork based on the moving direction of the mouse, as returned by
-	 * {@link #getDelta()}.
+	 * {@link #delta}.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getMiddlePoint: function() {
 		// For explanations, see getDelta()
@@ -97,6 +126,9 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * The difference between the current position and the last position of the
 	 * mouse when the event was fired. In case of the mouseup event, the
 	 * difference to the mousedown position is returned.
+	 *
+	 * @type Point
+	 * @bean
 	 */
 	getDelta: function() {
 		// Do not put the calculated delta into delta, since this only reserved
@@ -115,6 +147,9 @@ var ToolEvent = this.ToolEvent = Base.extend({
 
 	/**
 	 * The number of times the mouse event was fired.
+	 *
+	 * @type number
+	 * @bean
 	 */
 	getCount: function() {
 		// Return downCount for both mouse down and up, since
@@ -128,7 +163,12 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		this.tool[/^mouse(down|up)$/.test(this.type) ? 'downCount' : 'count']
 			= count;
 	},
-	
+
+	// DOCS: document ToolEvent#modifiers
+	/**
+	 * @type object
+	 * @bean
+	 */
 	getModifiers: function() {
 		return Key.modifiers;
 	},
@@ -153,7 +193,10 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	// setItem: function(Item item) {
 	// 	this.item = item;
 	// }
-	
+
+	/**
+	 * @return {string} A string representation of the tool event.
+	 */
 	toString: function() {
 		return '{ type: ' + this.type 
 				+ ', point: ' + this.getPoint()
