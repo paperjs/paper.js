@@ -468,8 +468,14 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
-	 * Checks whether the point has the same x and y values as the specified
-	 * point.
+	 * Checks whether the coordinates of the point are equal to that of the
+	 * supplied point.
+	 * 
+	 * @example
+	 * var point = new Point(5, 10);
+	 * console.log(point == new Point(5, 10)); // true
+	 * console.log(point == new Point(1, 1)); // false
+	 * console.log(point != new Point(1, 1)); // true
 	 *
 	 * @param {Point}
 	 * @return {boolean}
