@@ -15,8 +15,21 @@
  */
 
 var GradientColor = this.GradientColor = Color.extend({
+	/** @lends GradientColor# */
+
 	beans: true,
 
+	/**
+	 * Creates a gradient color object.
+	 * 
+	 * @param {Gradient} gradient
+	 * @param {Point} origin
+	 * @param {Point} destination
+	 * @param {Point} [hilite]
+	 * @constructs GradientColor
+	 * 
+	 * @class The GradientColor object.
+	 */
 	initialize: function(gradient, origin, destination, hilite) {
 		this.gradient = gradient || new Gradient();
 		this.setOrigin(origin);
@@ -25,11 +38,20 @@ var GradientColor = this.GradientColor = Color.extend({
 			this.setHilite(hilite);
 	},
 
+	/**
+	 * @return {GradientColor} a copy of the gradient color
+	 */
 	clone: function() {
 		return new GradientColor(this.gradient, this._origin, this._destination,
 				this._hilite);
 	},
 
+	/**
+	 * The origin point of the gradient.
+	 * 
+	 * @type Point
+	 * @bean
+	 */
 	getOrigin: function() {
 		return this._origin;
 	},
@@ -43,6 +65,12 @@ var GradientColor = this.GradientColor = Color.extend({
 		return this;
 	},
 
+	/**
+	 * The destination point of the gradient.
+	 * 
+	 * @type Point
+	 * @bean
+	 */
 	getDestination: function() {
 		return this._destination;
 	},
@@ -55,6 +83,12 @@ var GradientColor = this.GradientColor = Color.extend({
 		return this;
 	},
 
+	/**
+	 * The hilite point of the gradient.
+	 * 
+	 * @type Point
+	 * @bean
+	 */
 	getHilite: function() {
 		return this._hilite;
 	},
@@ -88,13 +122,13 @@ var GradientColor = this.GradientColor = Color.extend({
 		}
 		return gradient;
 	},
-	
+
 	/**
-	 * Checks if the component color values of the color are the
-	 * same as those of the supplied one.
+	 * Checks if the gradient color has the same properties as that of the
+	 * supplied one.
 	 * 
-	 * @param obj the GrayColor to compare with
-	 * @return true if the GrayColor is the same, false otherwise.
+	 * @param {GradientColor} color
+	 * @return true if the GradientColor is the same, false otherwise
 	 */
 	equals: function(color) {
 		return color == this || color && color._colorType === this._colorType
@@ -102,7 +136,12 @@ var GradientColor = this.GradientColor = Color.extend({
 				&& this._origin.equals(color._origin)
 				&& this._destination.equals(color._destination);
 	},
-	
+
+	/**
+	 * Transform the gradient color by the specified matrix.
+	 * 
+	 * @param {Matrix} matrix the matrix to transform the gradient color by
+	 */
 	transform: function(matrix) {
 		matrix._transformPoint(this._origin, this._origin, true);
 		matrix._transformPoint(this._destination, this._destination, true);
