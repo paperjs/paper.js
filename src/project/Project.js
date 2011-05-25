@@ -142,7 +142,60 @@ var Project = this.Project = Base.extend({
 		for (var i in this._selectedItems)
 			this._selectedItems[i].setSelected(false);
 	},
-	
+
+	/**
+	 * {@grouptitle Project Hierarchy}
+	 * 
+	 * The layers contained within the document.
+	 * 
+	 * @example
+	 *  // When you create a new Document it always contains
+	 *  // a layer called 'Layer 1'
+	 *  console.log(document.layers); // Layer (Layer 1)
+	 *
+	 *  // Create a new layer called 'test' in the document
+	 *  var newLayer = new Layer();
+	 *  newLayer.name = 'test';
+	 *
+	 *  console.log(document.layers); // Layer (test), Layer (Layer 1)
+	 *  console.log(document.layers[0]); // Layer (test)
+	 *  console.log(document.layers.test); // Layer (test)
+	 *  console.log(document.layers['Layer 1']); // Layer (Layer 1)
+	 *
+	 * @name Project#layers
+	 * @type array
+	 */
+
+	/**
+	 * The layer which is currently active. The active layer is indicated in the
+	 * Layers palette by a black triangle. New items will be created on this
+	 * layer by default.
+	 *
+	 * @name Project#activeLayer
+	 * @type Layer
+	 */
+
+	/**
+	 * The symbols contained within the document.
+	 *
+	 * @name Project#symbols
+	 * @type array
+	 */
+
+	/**
+	 * The views contained within the project.
+	 *
+	 * @name Project#views
+	 * @type array
+	 */
+
+	/**
+	 * The view which is currently active.
+	 *
+	 * @name Project#activeView
+	 * @type View
+	 */
+
 	draw: function(ctx) {
 		ctx.save();
 		var param = { offset: new Point(0, 0) };
