@@ -146,29 +146,14 @@ var Project = this.Project = Base.extend({
 	/**
 	 * {@grouptitle Project Hierarchy}
 	 * 
-	 * The layers contained within the document.
-	 * 
-	 * @example
-	 *  // When you create a new Document it always contains
-	 *  // a layer called 'Layer 1'
-	 *  console.log(document.layers); // Layer (Layer 1)
-	 *
-	 *  // Create a new layer called 'test' in the document
-	 *  var newLayer = new Layer();
-	 *  newLayer.name = 'test';
-	 *
-	 *  console.log(document.layers); // Layer (test), Layer (Layer 1)
-	 *  console.log(document.layers[0]); // Layer (test)
-	 *  console.log(document.layers.test); // Layer (test)
-	 *  console.log(document.layers['Layer 1']); // Layer (Layer 1)
+	 * The layers contained within the project.
 	 *
 	 * @name Project#layers
 	 * @type array
 	 */
 
 	/**
-	 * The layer which is currently active. The active layer is indicated in the
-	 * Layers palette by a black triangle. New items will be created on this
+	 * The layer which is currently active. New items will be created on this
 	 * layer by default.
 	 *
 	 * @name Project#activeLayer
@@ -176,7 +161,7 @@ var Project = this.Project = Base.extend({
 	 */
 
 	/**
-	 * The symbols contained within the document.
+	 * The symbols contained within the project.
 	 *
 	 * @name Project#symbols
 	 * @type array
