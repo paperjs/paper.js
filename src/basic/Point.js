@@ -285,6 +285,8 @@ var Point = this.Point = Base.extend({
 
 	/**
 	 * Returns the distance between the point and another point.
+	 *
+	 * @param {Point} point
 	 * @return {number}
 	 */
 	getDistance: function(point) {
@@ -297,7 +299,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * The length of the vector that is represented by this point's coordinates.
 	 * Each point can be interpreted as a vector that points from the origin
-	 * ({@code x = 0},{@code y = 0}) to the point's location.
+	 * ({@code x = 0}, {@code y = 0}) to the point's location.
 	 * Setting the length changes the location but keeps the vector's angle.
 	 * 
 	 * @type number
@@ -478,7 +480,7 @@ var Point = this.Point = Base.extend({
 	 * console.log(point == new Point(1, 1)); // false
 	 * console.log(point != new Point(1, 1)); // true
 	 *
-	 * @param {Point}
+	 * @param {Point} point
 	 * @return {boolean}
 	 */
 	equals: function(point) {
