@@ -85,25 +85,23 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	_changed: function(point) {
-		if (this._path) {
-			// Delegate changes to affected curves if they exist
-			if (this._path._curves) {
-				var curve = this.getCurve(), other;
-				if (curve) {
-					curve._changed();
-					// Get the other affected curve, which is the previous one
-					// for _point or _handleIn changing when this segment is 
-					// _segment1 of the curve, for all other cases it's the next
-					// (e.g. _handleOut or this segment == _segment2)
-					if (other = (curve[point == this._point
-						|| point == this._handleIn && curve._segment1 == this
-							? 'getPrevious' : 'getNext']())) {
-						other._changed();
-					}
-				}
+		if (!this._path)
+			return;
+		// Delegate changes to affected curves if they exist
+		var curve = this._path._curves && this.getCurve(), other;
+		if (curve) {
+			curve._changed();
+			// Get the other affected curve, which is the previous one for
+			// _point or _handleIn changing when this segment is _segment1 of
+			// the curve, for all other cases it's the next (e.g. _handleOut
+			// when this segment is _segment2)
+			if (other = (curve[point == this._point
+					|| point == this._handleIn && curve._segment1 == this
+					? 'getPrevious' : 'getNext']())) {
+				other._changed();
 			}
-			this._path._changed(ChangeFlags.GEOMETRY);
 		}
+		this._path._changed(ChangeFlags.GEOMETRY);
 	},
 
 	/**
