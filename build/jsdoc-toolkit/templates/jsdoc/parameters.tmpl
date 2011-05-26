@@ -1,0 +1,11 @@
+<if test="data.params.length">
+	<ul><b>Parameters:</b>
+		<for each="parameter" in="data.params">
+			<li>
+				<tt>{+ parameter.name +}: </tt>
+				{+ new Link().toSymbol(parameter.type) +}
+				<if test="parameter.defaultValue">&mdash;&nbsp;optional, default: <tt>{+parameter.defaultValue+}</tt></if>
+				</li>
+		</for>
+	</ul>
+</if>

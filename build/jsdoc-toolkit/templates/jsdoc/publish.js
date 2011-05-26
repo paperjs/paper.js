@@ -1,11 +1,73 @@
+var templates;
+
+var Operator = new function() {
+	var operators = {
+		add: '+', subtract: '-', multiply: '*', divide: '/', equals: '==',
+		modulo: '%'
+	};
+	var operatorNames = {
+		add: 'Addition', subtract: 'Subtraction', multiply: 'Multiplication',
+		divide: 'Division', equals: 'Comparison', modulo: 'Modulo'
+	};
+	
+	var operatorClasses = {
+		Point: true,
+		Size: true
+	};
+	
+	return {
+		isOperator: function(symbol) {
+			// As a convention, only add non static bean properties to
+			// the documentation. static properties are all supposed to
+			// be uppercae and constants.
+			if (symbol.operator == 'none')
+				print(!(symbol.operator && symbol.operator != 'none'));
+			return symbol.params.length == 1 && !symbol.isStatic && (
+					/^(add|subtract|multiply|divide|modulo)(\^[0-9])*$/.test(symbol.name)
+					&& (symbol.operator != 'none')
+				) || ( // equals
+					symbol.name == 'equals'
+					&& symbol.returns.length && symbol.returns[0].type == 'boolean'
+				);
+		},
+
+		getOperator: function(symbol) {
+			return operators[symbol.name.replace(/\^[0-9]$/,'')];
+		}
+	}
+}
+
+var Helpers = {
+	getSymbolId: function(symbol) {
+		var id = [symbol.name.toLowerCase().replace(/[\^][0-9]/g, '')];
+		if (symbol.params) {
+			for (var i = 0, l = symbol.params.length; i < l; i++) {
+				var param = symbol.params[i];
+				if (!param.isOptional)
+					id.push(param.name);
+			}
+		}
+		return id.join('-');
+	}
+};
+
 /** Called automatically by JsDoc Toolkit. */
 function publish(symbolSet) {
 	publish.conf = {  // trailing slash expected for dirs
-		ext:         ".html",
-		outDir:      JSDOC.opt.d || SYS.pwd+"../out/jsdoc/",
+		ext:		 ".html",
+		outDir:	  JSDOC.opt.d || SYS.pwd+"../out/jsdoc/",
 		templatesDir: JSDOC.opt.t || SYS.pwd+"../templates/jsdoc/",
 		symbolsDir:  "symbols/",
-		srcDir:      "symbols/src/"
+		srcDir:	  "symbols/src/"
+	};
+	
+	templates = {
+		_class: new JSDOC.JsPlate(publish.conf.templatesDir + "class.tmpl"),
+		method: new JSDOC.JsPlate(publish.conf.templatesDir + "method.tmpl"),
+		property: new JSDOC.JsPlate(publish.conf.templatesDir + "property.tmpl"),
+		parameters: new JSDOC.JsPlate(publish.conf.templatesDir + "parameters.tmpl"),
+		operators: new JSDOC.JsPlate(publish.conf.templatesDir + "operators.tmpl"),
+		examples: new JSDOC.JsPlate(publish.conf.templatesDir + "examples.tmpl")
 	};
 	
 	// is source output is suppressed, just display the links to the source file
@@ -14,10 +76,13 @@ function publish(symbolSet) {
 			return "&lt;"+srcFilePath+"&gt;";
 		}
 	}
+
+	// Copy over the static files
+	copyDirectory(
+		new java.io.File(publish.conf.templatesDir + 'resources/'),
+		new java.io.File(publish.conf.outDir + 'resources/')
+	);
 	
-	// create the folders and subfolders to hold the output
-	IO.mkPath((publish.conf.outDir+"symbols/src").split("/"));
-		
 	// used to allow Link to check the details of things being linked to
 	Link.symbolSet = symbolSet;
 
@@ -41,11 +106,11 @@ function publish(symbolSet) {
 	
 	// create the hilited source code files
 	var files = JSDOC.opt.srcFiles;
- 	for (var i = 0, l = files.length; i < l; i++) {
- 		var file = files[i];
- 		var srcDir = publish.conf.outDir + "symbols/src/";
+	 	for (var i = 0, l = files.length; i < l; i++) {
+	 		var file = files[i];
+	 		var srcDir = publish.conf.outDir + "symbols/src/";
 		makeSrcFile(file, srcDir);
- 	}
+	 	}
  	
  	// get a list of all the classes in the symbolset
  	var classes = symbols.filter(isaClass).sort(makeSortby("alias"));
@@ -76,6 +141,10 @@ function publish(symbolSet) {
 		
 		symbol.events = symbol.getEvents();   // 1 order matters
 		symbol.methods = symbol.getMethods(); // 2
+		for (var j = 0; j < symbol.methods.length; j++) {
+			var method = symbol.methods[j];
+			method.isOperator = Operator.isOperator(method);
+		}
 		
 		Link.currentSymbol= symbol;
 		var output = "";
@@ -173,29 +242,80 @@ function makeSrcFile(path, srcDir, name) {
 /** Build output for displaying function parameters. */
 function makeSignature(params) {
 	if (!params) return "()";
-	var signature = "("
-	+
-	params.filter(
+	var postString = '';
+	var first = true;
+	params = params.filter(
 		function($) {
 			return $.name.indexOf(".") == -1; // don't show config params in signature
 		}
-	).map(
-		function($) {
-			return $.name;
+	);
+	var signature = '';
+	var postSignature = '';
+	for (var i = 0, l = params.length; i < l; i++) {
+		var param = params[i];
+		if (param.isOptional) {
+			signature += '[';
+			postSignature += ']';
 		}
-	).join(", ")
-	+
-	")";
-	return signature;
+		if (i > 0)
+			signature += ', ';
+		signature += param.name;
+	}
+	return '(' + signature + postSignature + ')';
 }
 
-/** Find symbol {@link ...} strings in text and turn into html links */
-function resolveLinks(str, from) {
+function processGroupTitle(str, symbol) {
+	// if (/grouptitle/.test(str))
+	// 	print('yeah');
+	// print(str);
+	var groupTitle = str.match(/\{@grouptitle ([^}]+)\}/);
+	if (groupTitle) {
+		symbol.groupTitle = groupTitle[1];
+		str = str.replace(/\{@grouptitle ([^}]+)\}/, '');
+	}
+	return str;
+}
+
+function processInlineTags(str) {
+
+	// {@link ...} -> html links
 	str = str.replace(/\{@link ([^} ]+) ?\}/gi,
 		function(match, symbolName) {
-			return new Link().toSymbol(symbolName);
+			return new Link().toSymbol(symbolName.replace(/[\^]/g, '-'));
 		}
 	);
-	
+	// {@code ...} -> code blocks
+	str = str.replace(/\{@code[\s]([^}]+)\}/gi,
+		function(match, code) {
+			return '<tt>' + code + '</tt>';
+		}
+	);
 	return str;
+}
+
+function copyStatic(dir) {
+	var dir = publish.conf.templatesDir + 'resources/';
+	
+}
+
+function copyDirectory(sourceLocation, targetLocation) {
+	if (sourceLocation.isDirectory()) {
+		if (!targetLocation.exists()) {
+			targetLocation.mkdir();
+		}
+		
+		var children = sourceLocation.list();
+		for (var i = 0; i < children.length; i++) {
+			copyDirectory(new File(sourceLocation, children[i]),
+					new File(targetLocation, children[i]));
+		}
+	} else {
+		// Copy the file with FileChannels:
+		targetLocation.createNewFile();
+		var src = new java.io.FileInputStream(sourceLocation).getChannel();
+		var dst = new java.io.FileOutputStream(targetLocation).getChannel();
+		var amount = dst.transferFrom(src, 0, src.size());
+		src.close();
+		dst.close();
+	}
 }

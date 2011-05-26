@@ -25,7 +25,7 @@
 			<for each="thisClass" in="data">
 			<div>
 				<h2>{+(new Link().toSymbol(thisClass.alias))+}</h2>
-				{+resolveLinks(summarize(thisClass.classDesc))+}
+				{+processInlineTags(summarize(thisClass.classDesc))+}
 			</div>
 			<hr />
 			</for>
