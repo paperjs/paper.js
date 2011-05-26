@@ -143,9 +143,9 @@ var Color = this.Color = Base.extend(new function() {
 
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg),
-				colorType = this._colorType;
+				type = this._colorType;
 			if (typeof arg === 'object' && !isArray) {
-				if (!colorType) {
+				if (!type) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
 					return arg.red !== undefined
@@ -160,19 +160,19 @@ var Color = this.Color = Base.extend(new function() {
 					// Called on a subclass instance. Return the converted
 					// color.
 					return (arg._colorType ? arg : Color.read(arguments))
-							.convert(colorType);
+							.convert(type);
 				}
 			} else if (typeof arg === 'string') {
 				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
 						? hexToRGBColor(arg)
 						: nameToRGBColor(arg);
-				return colorType
-						? rgbColor.convert(colorType)
+				return type
+						? rgbColor.convert(type)
 						: rgbColor;
 			} else {
 				var components = isArray ? arg
 						: Array.prototype.slice.call(arguments);
-				if (!colorType) {
+				if (!type) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
 					//if (components.length >= 4)
@@ -250,14 +250,14 @@ var Color = this.Color = Base.extend(new function() {
 	// possible color types. Requesting any of these components on any color
 	// internally converts the color to the required type and then returns its
 	// component, using bean access.
-	Base.each(components, function(comps, colorType) {
+	Base.each(components, function(comps, type) {
 		Base.each(comps, function(component) {
 			var part = Base.capitalize(component);
 			fields['get' + part] = function() {
-				return this.convert(colorType)[component];
+				return this.convert(type)[component];
 			};
 			fields['set' + part] = function(value) {
-				var color = this.convert(colorType);
+				var color = this.convert(type);
 				color[component] = value;
 				color = color.convert(this._colorType);
 				for (var i = 0, l = this._components.length; i < l; i++) {
