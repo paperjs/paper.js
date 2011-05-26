@@ -1,0 +1,45 @@
+{!
+	data.desc = processGroupTitle(data.desc, data);
+	
+	var memberId = Helpers.getSymbolId(data);
+	var title = '<b>' + data.name.replace(/\^\d+$/, '') + '</b>';
+	if (data.isStatic)
+		title = '<b>' + data.memberOf + '.</b>' + title;
+	
+!}
+<if test="defined(data.groupTitle)">
+	<h3>{+data.groupTitle+}</h3>
+</if>
+<div id="{+ memberId +}" class="member">
+<div id="{+ memberId +}-link" class="member-link">
+<a name="{+ memberId +}" href="#" onClick="return toggleMember('{+ memberId +}', false);"><tt>{+ title +}</tt></a>
+</div>
+<div id="{+ memberId +}-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('{+ memberId +}', false);"><tt>{+ title +}</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+ memberId +}', false);"></div>
+<div class="clear"></div>
+</div>
+<if test="data.type">
+	<div class="member-text"><p>
+		{+processInlineTags(data.desc)+}<if test="data.readOnly"> Read only.</if></p>
+		{+ new JSDOC.JsPlate(publish.conf.templatesDir+"examples.tmpl").process(data) +}
+	<if test="data.defaultValue">
+		<ul><b>Default:</b>
+		<li>
+		<tt>{+data.defaultValue+}</tt>
+		</li>
+		</ul>
+	</if>
+	<ul><b>Type:</b>
+	<li>
+	<tt>{+new Link().toSymbol(data.type)+}</tt>
+	</li>
+	</ul></div>
+</if>
+</div>
+</div>

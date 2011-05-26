@@ -37,42 +37,6 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * Clones the item within the same project and places the copy above the
-	 * item.
-	 * 
-	 * @return the newly cloned item
-	 */
-	clone: function() {
-		return this._clone(new this.constructor());
-	},
-
-	_clone: function(copy) {
-		// Copy over style
-		copy.setStyle(this._style);
-		// If this item has children, clone and append each of them:
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.appendTop(this._children[i].clone());
-		}
-		// Only copy over these fields if they are actually defined in 'this'
-		// TODO: Consider moving this to Base once it's useful in more than one
-		// place
-		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask'];
-		for (var i = 0, l = keys.length; i < l; i++) {
-			var key = keys[i];
-			if (this.hasOwnProperty(key))
-				copy[key] = this[key];
-		}
-		// Move the clone above the original, at the same position.
-		copy.moveAbove(this);
-		// Only set name once the copy is moved, to avoid setting and unsettting
-		// name related structures.
-		if (this._name)
-			copy.setName(this._name);
-		return copy;
-	},
-
-	/**
 	 * Private notifier that is called whenever a change occurs in this item or
 	 * its sub-elements, such as Segments, Curves, PathStyles, etc.
 	 *
@@ -97,7 +61,13 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * The name of the item.
+	 * The name of the item. If the item has a name, it can be accessed by name
+	 * through its parent's children list.
+	 * 
+	 * @example
+	 * var path = new Path();
+	 * path.name = 'example';
+	 * project.activeLayer.children['example'].remove();
 	 * 
 	 * @type string
 	 * @bean
@@ -123,7 +93,332 @@ var Item = this.Item = Base.extend({
 			delete children[name];
 		}
 	},
-	
+
+	/**
+	 * The item's position within the project. This is the
+	 * {@link Rectangle#center} of the {@link #bounds} rectangle.
+	 * 
+	 * @example
+	 * // Create a circle at position { x: 10, y: 10 }
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Move the circle to { x: 20, y: 20 }
+	 * circle.position = new Point(20, 20);
+	 * 
+	 * // Move the circle 10 points to the right and 10 points down
+	 * circle.position += new Point(10, 10);
+	 * console.log(circle.position); // { x: 30, y: 30 }
+	 *
+	 * @example
+	 * // Create a circle at position { x: 10, y: 10 }
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Move the circle 10 points to the right
+	 * circle.position.x += 10;
+	 * console.log(circle.position); // { x: 20, y: 10 }
+	 * 
+	 * @type Point
+	 * @bean
+	 */
+	getPosition: function() {
+		// Cache position value
+		if (!this._position) {
+			// Center is a LinkedPoint as well, so we can use _x and _y
+			var center = this.getBounds().getCenter();
+			this._position = LinkedPoint.create(this, 'setPosition',
+					center._x, center._y);
+		}
+		return this._position;
+	},
+
+	setPosition: function(point) {
+		point = Point.read(arguments);
+		if (point)
+			this.translate(point.subtract(this.getPosition()));
+	},
+
+	/**
+	 * The path style of the item.
+	 *
+	 * @example
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.style = {
+	 * 	fillColor: new RGBColor(1, 0, 0),
+	 * 	strokeColor: new RGBColor(0, 1, 0),
+	 * 	strokeWidth: 5
+	 * };
+	 * 
+	 * @type PathStyle
+	 * @bean
+	 */
+	getStyle: function() {
+		return this._style;
+	},
+
+	setStyle: function(style) {
+		this._style.initialize(style);
+	},
+
+	/**
+	 * Specifies whether an item is selected and will also return {@code true} if
+	 * the item is partially selected (groups with some selected items/partially
+	 * selected paths).
+	 *
+	 * Paper.js draws the visual outlines of selected items on top of your
+	 * project. This can be useful for debugging, as it allows you to see the
+	 * construction of paths, position of path curves, individual segment points
+	 * and bounding boxes of symbol and raster items.
+	 * 
+	 * @example
+	 * console.log(project.selectedItems.length); // 0
+	 * var path = new Path.Circle(new Size(50, 50), 25);
+	 * path.selected = true; // Select the path
+	 * console.log(project.selectedItems.length) // 1
+	 *
+	 * @type boolean true if the item is selected, false otherwise
+	 * @bean
+	 */	
+	isSelected: function() {
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				if (this._children[i].isSelected()) {
+					return true;
+				}
+			}
+		} else {
+			return !!this._selected;
+		}
+		return false;
+	},
+
+	setSelected: function(selected) {
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				this._children[i].setSelected(selected);
+			}
+		} else {
+			if ((selected = !!selected) != this._selected) {
+				this._selected = selected;
+				this._project._selectItem(this, selected);
+			}
+		}
+	},
+
+	// TODO: isFullySelected / setFullySelected
+	// TODO: Change to getter / setters for these below that notify of changes
+	// through _changed()
+
+	// TODO: Item#isLocked is currently ignored in the documentation, as
+	// locking an item currently has no effect
+	/**
+	 * Specifies whether the item is locked.
+	 * 
+	 * @type boolean
+	 * @default false
+	 * @ignore
+	 */
+	locked: false,
+
+	/**
+	 * Specifies whether the item is visible. When set to {@code false}, the
+	 * item won't be drawn.
+	 * 
+	 * @example
+	 * var path = new Path.Circle(new Point(50, 50), 20);
+	 * path.fillColor = 'red';
+	 * console.log(path.visible) // true
+	 * path.visible = false; // Hides the path
+	 * 
+	 * @type boolean true if the item is visible, false otherwise
+	 * @default true
+	 */
+	visible: true,
+
+	/**
+	 * Specifies whether the item defines a clip mask. This can only be set on
+	 * paths, compound paths, and text frame objects, and only if the item is
+	 * already contained within a clipping group.
+	 * 
+	 * @type boolean
+	 * @default false
+	 * @bean
+	 */
+	isClipMask: function() {
+		return this._clipMask;
+	},
+
+	setClipMask: function(clipMask) {
+		this._clipMask = clipMask;
+		if (this._clipMask) {
+			this.setFillColor(null);
+			this.setStrokeColor(null);
+		}
+	},
+
+	/**
+	 * The blend mode of the item.
+	 * 
+	 * @example
+	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Change the blend mode of the path item:
+	 * circle.blendMode = 'multiply';
+	 * 
+	 * @type String('normal','screen','multiply','difference','src-in','add','overlay','hard-light','dodge','burn','darken','lighten','exclusion')
+	 * @default 'normal'
+	 */
+	blendMode: 'normal',
+
+	/**
+	 * The opacity of the item as a value between 0 and 1.
+	 * 
+	 * @example
+	 * // Create a circle at position { x: 50, y: 50 } 
+	 * var circle = new Path.Circle(new Point(50, 50), 20);
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Change the opacity of the circle to 50%:
+	 * circle.opacity = 0.5;
+	 * 
+	 * @type number
+	 * @default 1
+	 */
+	opacity: 1,
+
+	// TODO: get/setIsolated (print specific feature)
+	// TODO: get/setKnockout (print specific feature)
+	// TODO: get/setAlphaIsShape
+	// TODO: get/setData
+
+	/**
+	 * {@grouptitle Project Hierarchy}
+	 * The project that this item belongs to.
+	 * 
+	 * @type Project
+	 * @bean
+	 */
+	getProject: function() {
+		return this._project;
+	},
+
+	_setProject: function(project) {
+		if (this._project != project) {
+			this._project = project;
+			if (this._children) {
+				for (var i = 0, l = this._children.length; i < l; i++) {
+					this._children[i]._setProject(project);
+				}
+			}
+		}
+	},
+
+	// TODO: #getLayer()
+
+	/**
+	 * The item that this item is contained within.
+	 * 
+	 * @example
+	 * var path = new Path();
+	 * // New items are placed in the active layer:
+	 * console.log(path.parent == project.activeLayer); // true
+	 * 
+	 * var group = new Group();
+	 * group.appendTop(path);
+	 * // Now the parent of the path has become the group:
+	 * console.log(path.parent == group); // true
+	 * 
+	 * @type Item
+	 * @bean
+	 */
+	getParent: function() {
+		return this._parent;
+	},
+
+	/**
+	 * The children items contained within this item. Items that define a
+	 * {@link #name} can also be accessed by name.
+	 *
+	 * @example
+	 * var path = new Path();
+	 * var group = new Group();
+	 * group.appendTop(path);
+	 *
+	 * // The path has been placed in the children list of the group:
+	 * console.log(group.children[0] == path);
+	 * 
+	 * path.name = 'example';
+	 * // Now the path can also be accessed by name:
+	 * console.log(group.children['example'] == path); // true
+	 * 
+	 * @type Item[]
+	 * @bean
+	 */
+	getChildren: function() {
+		return this._children;
+	},
+
+	setChildren: function(items) {
+		this.removeChildren();
+		for (var i = 0, l = items && items.length; i < l; i++)
+			this.appendTop(items[i]);
+	},
+
+	/**
+	 * The first item contained within this item. This is a shortcut for
+	 * accessing {@code item.children[0]}.
+	 * 
+	 * @type Item
+	 * @bean
+	 */
+	getFirstChild: function() {
+		return this._children && this._children[0] || null;
+	},
+
+	/**
+	 * The last item contained within this item.This is a shortcut for
+	 * accessing {@code item.children[item.children.length - 1]}.
+	 * 
+	 * @type Item
+	 * @bean
+	 */
+	getLastChild: function() {
+		return this._children && this._children[this._children.length - 1]
+				|| null;
+	},
+
+	/**
+	 * The next item on the same level as this item.
+	 * 
+	 * @type Item
+	 * @bean
+	 */
+	getNextSibling: function() {
+		return this._parent && this._parent._children[this._index + 1] || null;
+	},
+
+	/**
+	 * The previous item on the same level as this item.
+	 * 
+	 * @type Item
+	 * @bean
+	 */
+	getPreviousSibling: function() {
+		return this._parent && this._parent._children[this._index - 1] || null;
+	},
+
+	/**
+	 * The index of this item within the list of its parent's children.
+	 * 
+	 * @type number
+	 * @bean
+	 */
+	getIndex: function() {
+		return this._index;
+	},
+
 	_removeFromNamed: function() {
 		var children = this._parent._children,
 			namedChildren = this._parent._namedChildren,
@@ -157,12 +452,29 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	* Removes the item from the project.
+	* Removes the item from the project. If the item has children, they are also
+	* removed.
+	* 
+	* @return {boolean} true if the item was removed, false otherwise
 	*/
 	remove: function() {
 		if (this.isSelected())
 			this.setSelected(false);
 		return this._removeFromParent();
+	},
+
+	/**
+	 * Removes all of the item's children (if any).
+	 * 
+	 * @return {boolean} true if removing was successful, false otherwise
+	 */
+	removeChildren: function() {
+		var removed = false;
+		if (this._children) {
+			for (var i = this._children.length - 1; i >= 0; i--)
+				removed = this._children[i].remove() || removed;
+		}
+		return removed;
 	},
 
 	/**
@@ -185,172 +497,39 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * Specifies whether an item is selected and will also return true if
-	 * the item is partially selected (groups with
-	 * some selected items/partially selected paths).
+	 * Clones the item within the same project and places the copy above the
+	 * item.
 	 * 
-	 * @example
-	 * console.log(project.selectedItems.length); // 0
-	 * var path = new Path.Circle(new Size(50, 50), 25);
-	 * path.selected = true; // Select the path
-	 * console.log(project.selectedItems.length) // 1
-	 *
-	 * @type boolean
-	 * @bean
-	 */	
-	isSelected: function() {
+	 * @return {Item} the newly cloned item
+	 */
+	clone: function() {
+		return this._clone(new this.constructor());
+	},
+
+	_clone: function(copy) {
+		// Copy over style
+		copy.setStyle(this._style);
+		// If this item has children, clone and append each of them:
 		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				if (this._children[i].isSelected()) {
-					return true;
-				}
-			}
-		} else {
-			return !!this._selected;
+			for (var i = 0, l = this._children.length; i < l; i++)
+				copy.appendTop(this._children[i].clone());
 		}
-		return false;
-	},
-
-	setSelected: function(selected) {
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				this._children[i].setSelected(selected);
-			}
-		} else {
-			if ((selected = !!selected) != this._selected) {
-				this._selected = selected;
-				this._project._selectItem(this, selected);
-			}
+		// Only copy over these fields if they are actually defined in 'this'
+		// TODO: Consider moving this to Base once it's useful in more than one
+		// place
+		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask'];
+		for (var i = 0, l = keys.length; i < l; i++) {
+			var key = keys[i];
+			if (this.hasOwnProperty(key))
+				copy[key] = this[key];
 		}
-	},
-
-	/**
-	 * The project that this item belongs to.
-	 * 
-	 * @type Project
-	 * @bean
-	 */
-	getProject: function() {
-		return this._project;
-	},
-
-	_setProject: function(project) {
-		if (this._project != project) {
-			this._project = project;
-			if (this._children) {
-				for (var i = 0, l = this._children.length; i < l; i++) {
-					this._children[i]._setProject(project);
-				}
-			}
-		}
-	},
-	
-	// TODO: isFullySelected / setFullySelected
-	// TODO: Change to getter / setters for these below that notify of changes
-	// through _changed()
-	/**
-	 * Specifies whether the item is locked.
-	 * 
-	 * @type boolean
-	 * @default false
-	 */
-	locked: false,
-
-	/**
-	 * Specifies whether the item is visible.
-	 * 
-	 * @type boolean
-	 * @default true
-	 */
-	visible: true,
-
-	/**
-	 * The opacity of the item as a value between 0 and 1.
-	 * 
-	 * @type number
-	 * @default 1
-	 */
-	opacity: 1,
-
-	// DOCS: list the different blend modes that are possible.
-	/**
-	 * The blend mode of the item.
-	 * @type string
-	 * @default 'normal'
-	 */
-	blendMode: 'normal',
-
-	/**
-	 * Specifies whether the item defines a clip mask. This can only be set on
-	 * paths, compound paths, and text frame objects, and only if the item is
-	 * already contained within a clipping group.
-	 * 
-	 * @type boolean
-	 * @default false
-	 * @bean
-	 */
-	isClipMask: function() {
-		return this._clipMask;
-	},
-
-	setClipMask: function(clipMask) {
-		this._clipMask = clipMask;
-		if (this._clipMask) {
-			this.setFillColor(null);
-			this.setStrokeColor(null);
-		}
-	},
-
-	// TODO: get/setIsolated (print specific feature)
-	// TODO: get/setKnockout (print specific feature)
-	// TODO: get/setAlphaIsShape
-	// TODO: get/setData
-
-	/**
-	 * The item that this item is contained within.
-	 * 
-	 * @type Item
-	 * @bean
-	 */
-	getParent: function() {
-		return this._parent;
-	},
-
-	// TODO: #getLayer()
-
-	/**
-	 * The index of this item within the list of its parent's children.
-	 * 
-	 * @type number
-	 * @bean
-	 */
-	getIndex: function() {
-		return this._index;
-	},
-
-	/**
-	 * The children items contained within this item.
-	 * 
-	 * @type array
-	 * @bean
-	 */
-	getChildren: function() {
-		return this._children;
-	},
-
-	setChildren: function(items) {
-		this.removeChildren();
-		for (var i = 0, l = items && items.length; i < l; i++)
-			this.appendTop(items[i]);
-	},
-
-	/**
-	 * Checks if the item contains any children items.
-	 * 
-	 * @return {boolean} true if it has one or more children, false otherwise.
-	 */
-	hasChildren: function() {
-		return this._children && this._children.length > 0;
+		// Move the clone above the original, at the same position.
+		copy.moveAbove(this);
+		// Only set name once the copy is moved, to avoid setting and unsettting
+		// name related structures.
+		if (this._name)
+			copy.setName(this._name);
+		return copy;
 	},
 
 	/**
@@ -368,63 +547,48 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * Removes all of the item's children, if it has any
+	 * Rasterizes the item into a newly created Raster object. The item itself
+	 * is not removed after rasterization.
+	 * 
+	 * @param {number} [resolution=72] the resolution of the raster in dpi
+	 * @return {Raster} the newly created raster item
 	 */
-	removeChildren: function() {
-		var removed = false;
-		if (this._children) {
-			for (var i = this._children.length - 1; i >= 0; i--)
-				removed = this._children[i].remove() || removed;
-		}
-		return removed;
+	rasterize: function(resolution) {
+		// TODO: why would we want to pass a size to rasterize? Seems to produce
+		// weird results on Scriptographer. Also we can't use antialiasing, since
+		// Canvas doesn't support it yet. Project colorMode is also out of the
+		// question for now.
+		var bounds = this.getStrokeBounds(),
+			scale = (resolution || 72) / 72,
+			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
+			ctx = canvas.getContext('2d'),
+			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
+		matrix.applyToContext(ctx);
+		this.draw(ctx, {});
+		var raster = new Raster(canvas);
+		raster.setPosition(this.getPosition());
+		raster.scale(1 / scale);
+		return raster;
 	},
 
 	/**
-	 * The first item contained within this item.
+	 * {@grouptitle Tests}
+	 * Checks if the item contains any children items.
 	 * 
-	 * @type Item
-	 * @bean
+	 * @return {boolean} true if it has one or more children, false otherwise.
 	 */
-	getFirstChild: function() {
-		return this._children && this._children[0] || null;
+	hasChildren: function() {
+		return this._children && this._children.length > 0;
 	},
 
-	/**
-	 * The last item contained within this item.
-	 * 
-	 * @type Item
-	 * @bean
-	 */
-	getLastChild: function() {
-		return this._children && this._children[this._children.length - 1]
-				|| null;
-	},
-
-	/**
-	 * The next item on the same level as this item.
-	 * 
-	 * @type Item
-	 * @bean
-	 */
-	getNextSibling: function() {
-		return this._parent && this._parent._children[this._index + 1] || null;
-	},
-
-	/**
-	 * The previous item on the same level as this item.
-	 * 
-	 * @type Item
-	 * @bean
-	 */
-	getPreviousSibling: function() {
-		return this._parent && this._parent._children[this._index - 1] || null;
-	},
-
+	// TODO: Item#isEditable is currently ignored in the documentation, as
+	// locking an item currently has no effect
 	/**
 	 * Checks whether the item is editable.
 	 * 
 	 * @return {boolean} true when neither the item, nor its parents are
 	 * locked or hidden, false otherwise.
+	 * @ignore
 	 */
 	isEditable: function() {
 		var parent = this;
@@ -464,6 +628,7 @@ var Item = this.Item = Base.extend({
 	// TODO: isBelow
 
 	/**
+	 * {@grouptitle Hierarchy Tests}
 	 * Checks whether the specified item is the parent of the item.
 	 * 
 	 * @param {Item} item The item to check against
@@ -614,100 +779,10 @@ var Item = this.Item = Base.extend({
 	 */
 	// TODO: getControlBounds
 
-	/**
-	 * Rasterizes the item into a newly created Raster object. The item itself
-	 * is not removed after rasterization.
-	 * 
-	 * @param {number} [resolution=72] the resolution of the raster in dpi
-	 * @return {Raster} the newly created raster item
-	 */
-	rasterize: function(resolution) {
-		// TODO: why would we want to pass a size to rasterize? Seems to produce
-		// weird results on Scriptographer. Also we can't use antialiasing, since
-		// Canvas doesn't support it yet. Project colorMode is also out of the
-		// question for now.
-		var bounds = this.getStrokeBounds(),
-			scale = (resolution || 72) / 72,
-			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
-			ctx = canvas.getContext('2d'),
-			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
-		matrix.applyToContext(ctx);
-		this.draw(ctx, {});
-		var raster = new Raster(canvas);
-		raster.setPosition(this.getPosition());
-		raster.scale(1 / scale);
-		return raster;
-	},
-
-	/**
-	 * The item's position within the project. This is the
-	 * {@link Rectangle#center} of the {@link Item#bounds} rectangle.
-	 * 
-	 * @type Point
-	 * @bean
-	 */
-	getPosition: function() {
-		// Cache position value
-		if (!this._position) {
-			// Center is a LinkedPoint as well, so we can use _x and _y
-			var center = this.getBounds().getCenter();
-			this._position = LinkedPoint.create(this, 'setPosition',
-					center._x, center._y);
-		}
-		return this._position;
-	},
-
-	setPosition: function(point) {
-		point = Point.read(arguments);
-		if (point)
-			this.translate(point.subtract(this.getPosition()));
-	},
-
-	/**
-	 * @param flags: Array of any of the following: 'objects', 'children',
-	 *     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
-	 *     Default: ['objects', 'children']
-	 *
-	 * @ignore
-	 */
-	transform: function(matrix, flags) {
-		// TODO: Handle flags, add TransformFlag class and convert to bit mask
-		// for quicker checking
-		// TODO: Call transform on chidren only if 'children' flag is provided
-		if (this._transform)
-			this._transform(matrix, flags);
-		// Transform position as well. Do not modify _position directly,
-		// since it's a LinkedPoint and would cause recursion!
-		if (this._position)
-			matrix._transformPoint(this._position, this._position, true);
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				var child = this._children[i];
-				child.transform(matrix, flags);
-			}
-		}
-		// PORT: Return 'this' in all chainable commands
-		return this;
-	},
-
-/*
-	_transform: function(matrix, flags) {
-		// The code that performs the actual transformation of content,
-		// if defined. Item itself does not define this.
-	},
-*/
-	/**
-	 * Translates (moves) the item by the given offset point.
-	 * 
-	 * @param {Point} delta the offset to translate the item by
-	 */
-	translate: function(delta) {
-		var mx = new Matrix();
-		return this.transform(mx.translate.apply(mx, arguments));
-	},
-
 	// DOCS: document the different arguments that this function can receive.
 	/**
+	 * {@grouptitle Transform Functions}
+	 * 
 	 * Scales the item by the given value from its center point, or optionally
 	 * by a supplied point.
 	 * 
@@ -728,7 +803,34 @@ var Item = this.Item = Base.extend({
 	 * // Scale the path 200% from its bottom left corner
 	 * circle.scale(2, circle.bounds.bottomLeft);
 	 * 
+	 * @name Item#scale^1
+	 * @function
 	 * @param {number} scale the scale factor
+	 * @param {Point} [center=the center point of the item]
+	 */
+	/**
+	 * Scales the item by the given values from its center point, or optionally
+	 * by a supplied point.
+	 * 
+	 * @example
+	 * // Create a circle at position { x: 10, y: 10 } 
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * console.log(circle.bounds.width); // 20
+	 * 
+	 * // Scale the path horizontally by 200%
+	 * circle.scale(1, 2);
+	 * 
+	 * console.log(circle.bounds.width); // 40
+	 * 
+	 * @example
+	 * // Create a circle at position { x: 10, y: 10 } 
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * 
+	 * // Scale the path 200% horizontally from its bottom left corner
+	 * circle.scale(1, 2, circle.bounds.bottomLeft);
+	 * 
+	 * @param {number} sx the horizontal scale factor
+	 * @param {number} sy the vertical scale factor
 	 * @param {Point} [center=the center point of the item]
 	 */
 	scale: function(sx, sy /* | scale */, center) {
@@ -739,6 +841,16 @@ var Item = this.Item = Base.extend({
 		}
 		return this.transform(new Matrix().scale(sx, sy,
 				center || this.getPosition()));
+	},
+
+	/**
+	 * Translates (moves) the item by the given offset point.
+	 * 
+	 * @param {Point} delta the offset to translate the item by
+	 */
+	translate: function(delta) {
+		var mx = new Matrix();
+		return this.transform(mx.translate.apply(mx, arguments));
 	},
 
 	/**
@@ -777,18 +889,39 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * The path style of the item.
-	 * 
-	 * @type PathStyle
-	 * @bean
+	 * Transform the item.
+	 *
+	 * @param {Matrix} matrix
+	 * @param {array} flags Array of any of the following: 'objects', 'children',
+	 *     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
+	 *     Default: ['objects', 'children']
 	 */
-	getStyle: function() {
-		return this._style;
+	transform: function(matrix, flags) {
+		// TODO: Handle flags, add TransformFlag class and convert to bit mask
+		// for quicker checking
+		// TODO: Call transform on chidren only if 'children' flag is provided
+		if (this._transform)
+			this._transform(matrix, flags);
+		// Transform position as well. Do not modify _position directly,
+		// since it's a LinkedPoint and would cause recursion!
+		if (this._position)
+			matrix._transformPoint(this._position, this._position, true);
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				var child = this._children[i];
+				child.transform(matrix, flags);
+			}
+		}
+		// PORT: Return 'this' in all chainable commands
+		return this;
 	},
 
-	setStyle: function(style) {
-		this._style.initialize(style);
-	},
+	/*
+		_transform: function(matrix, flags) {
+			// The code that performs the actual transformation of content,
+			// if defined. Item itself does not define this.
+		},
+	*/
 
 	// TODO: toString
 
@@ -924,6 +1057,7 @@ var Item = this.Item = Base.extend({
 		/** @lends Item# */
 
 		/**
+		 * {@grouptitle Hierarchy Operations}
 		 * Inserts the specified item as a child of the item by appending it to
 		 * the list of children and moving it above all other children. You can
 		 * use this function for groups, compound paths and layers.
@@ -965,6 +1099,7 @@ var Item = this.Item = Base.extend({
 	//DOCS: document removeOn(param)
 
 	/**
+	 * {@grouptitle Remove On Event}
 	 * Removes the item when the next {@link Tool#onMouseMove} event is fired.
 	 * 
 	 * @name Item#removeOnMove

@@ -37,7 +37,6 @@ JSDOC.DocComment.prototype.parse = function(/**String*/comment) {
 		if (RegExp.$1) this.meta = RegExp.$1;
 		if (RegExp.$2) this.src = RegExp.$2;
 	}
-	
 	if (typeof JSDOC.PluginManager != "undefined") {
 		JSDOC.PluginManager.run("onDocCommentSrc", this);
 	}
@@ -50,7 +49,6 @@ JSDOC.DocComment.prototype.parse = function(/**String*/comment) {
 		this.src
 		.split(/(^|[\r\n])\s*@/)
 		.filter(function($){return $.match(/\S/)});
-	
 	/**
 		The tags found in the comment.
 		@type JSDOC.DocTag[]

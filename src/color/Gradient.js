@@ -15,15 +15,29 @@
  */
 
 var Gradient = this.Gradient = Base.extend({
+	/** @lends Gradient# */
+
 	beans: true,
 
 	// TODO: Should type here be called 'radial' and have it
 	// receive a boolean value?
+	/**
+	 * Creates a gradient object
+	 * 
+	 * @param {GradientStop[]} stops
+	 * @param {string} [type='linear'] 'linear' or 'radial'
+	 * @constructs Gradient
+	 * 
+	 * @class The Gradient object.
+	 */
 	initialize: function(stops, type) {
 		this.setStops(stops || ['white', 'black']);
 		this.type = type || 'linear';
 	},
 
+	/**
+	 * @return {Gradient} a copy of the gradient
+	 */
 	clone: function() {
 		var stops = [];
 		for (var i = 0, l = this._stops.length; i < l; i++)
@@ -31,6 +45,12 @@ var Gradient = this.Gradient = Base.extend({
 		return new Gradient(stops, this.type);
 	},
 
+	/**
+	 * The gradient stops on the gradient ramp.
+	 * 
+	 * @type GradientStop[]
+	 * @bean
+	 */
 	getStops: function() {
 		return this._stops;
 	},
@@ -48,6 +68,12 @@ var Gradient = this.Gradient = Base.extend({
 		}
 	},
 
+	/**
+	 * Checks whether the gradient is equal to the supplied gradient.
+	 *
+	 * @param {Gradient} gradient
+	 * @return {boolean} true if they are equal, false otherwise
+	 */
 	equals: function(gradient) {
 		if (gradient.type != this.type)
 			return false;

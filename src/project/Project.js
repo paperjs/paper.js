@@ -98,7 +98,7 @@ var Project = this.Project = Base.extend({
 	/**
 	 * The selected items contained within the project.
 	 *
-	 * @type array
+	 * @type Item[]
 	 * @bean
 	 */
 	getSelectedItems: function() {
@@ -142,7 +142,45 @@ var Project = this.Project = Base.extend({
 		for (var i in this._selectedItems)
 			this._selectedItems[i].setSelected(false);
 	},
-	
+
+	/**
+	 * {@grouptitle Project Hierarchy}
+	 * 
+	 * The layers contained within the project.
+	 *
+	 * @name Project#layers
+	 * @type Layer[]
+	 */
+
+	/**
+	 * The layer which is currently active. New items will be created on this
+	 * layer by default.
+	 *
+	 * @name Project#activeLayer
+	 * @type Layer
+	 */
+
+	/**
+	 * The symbols contained within the project.
+	 *
+	 * @name Project#symbols
+	 * @type Symbol[]
+	 */
+
+	/**
+	 * The views contained within the project.
+	 *
+	 * @name Project#views
+	 * @type View[]
+	 */
+
+	/**
+	 * The view which is currently active.
+	 *
+	 * @name Project#activeView
+	 * @type View
+	 */
+
 	draw: function(ctx) {
 		ctx.save();
 		var param = { offset: new Point(0, 0) };

@@ -15,11 +15,21 @@
  */
 
 var View = this.View = Base.extend({
+	/** @lends View# */
+
 	beans: true,
 
+	// DOCS: View: there is alot left to document
 	// TODO: Add bounds parameter that defines position within canvas?
 	// Find a good name for these bounds, since #bounds is already the artboard
 	// bounds of the visible area.
+	/**
+	 * Creates a view object
+	 * @param {Canvas} canvas
+	 * @constructs View
+	 * 
+	 * @class The View object..
+	 */
 	initialize: function(canvas) {
 		// Associate this view with the active paper scope.
 		this._scope = paper;
@@ -88,6 +98,13 @@ var View = this.View = Base.extend({
 			View.focused = this;
 	},
 
+	/**
+	 * The bounds of the view, i.e. the bounds of the part of the project which
+	 * is visible in the window.
+	 * 
+	 * @type Rectangle
+	 * @bean
+	 */
 	getViewBounds: function() {
 		return this._viewBounds;
 	},
@@ -112,6 +129,10 @@ var View = this.View = Base.extend({
 		this._bounds = null;
 	},
 
+	/**
+	 * @type Size
+	 * @bean
+	 */
 	getViewSize: function() {
 		return this._viewBounds.getSize();
 	},
@@ -120,16 +141,28 @@ var View = this.View = Base.extend({
 		this._viewBounds.setSize.apply(this._viewBounds, arguments);
 	},
 
+	/**
+	 * @type Size
+	 * @bean
+	 */
 	getBounds: function() {
 		if (!this._bounds)
 			this._bounds = this._matrix._transformBounds(this._viewBounds);
 		return this._bounds;
 	},
 
+	/**
+	 * @type Size
+	 * @bean
+	 */
 	getSize: function() {
 		return this.getBounds().getSize();
 	},
 
+	/**
+	 * @type Point
+	 * @bean
+	 */
 	getCenter: function() {
 		return this.getBounds().getCenter();
 	},
@@ -138,6 +171,10 @@ var View = this.View = Base.extend({
 		this.scrollBy(Point.read(arguments).subtract(this.getCenter()));
 	},
 
+	/**
+	 * @type number
+	 * @bean
+	 */
 	getZoom: function() {
 		return this._zoom;
 	},
@@ -148,6 +185,9 @@ var View = this.View = Base.extend({
 		this._zoom = zoom;
 	},
 
+	/**
+	 * @param {Point} point
+	 */
 	scrollBy: function(point) {
 		this._transform(new Matrix().translate(Point.read(arguments).negate()));
 	},
@@ -214,12 +254,17 @@ var View = this.View = Base.extend({
 	},
 
 	/**
-	 * Handler to be called whenever a view gets resized.
+	 * Handler function that is called whenever a view gets resized.
+	 * 
+	 * @type function
 	 */
 	onResize: null,
 
 	/**
-	 * Handler to be called on each frame of an animation.
+	 * Handler function to be called on each frame of an animation.
+	 * 
+	 * @type function
+	 * @bean
 	 */
 	getOnFrame: function() {
 		return this._onFrame;

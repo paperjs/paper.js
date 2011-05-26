@@ -27,6 +27,10 @@ function Link() {
 		return this;
 	}
 	this.toSymbol = function(alias) {
+		if(/\[\]$/.test(alias)) {
+			alias = alias.replace(/\[\]$/, '');
+			this.text = 'array of ' + alias + ' objects';
+		}
 		if (defined(alias)) this.alias = new String(alias);
 		return this;
 	}
@@ -141,10 +145,14 @@ Link.prototype._makeSymbolLink = function(alias) {
         
 	var linkText= this.text || alias;
     
-	var link = {linkPath: linkPath, linkText: linkText, linkInner: (this.innerName? "#"+this.innerName : "")};
+	var link = {linkPath: linkPath, linkText: linkText.replace(/^#/, ''), linkInner: (this.innerName? "#" + this.innerName : "")};
 	
 	if (typeof JSDOC.PluginManager != "undefined") {
 		JSDOC.PluginManager.run("onSymbolLink", link);
+	}
+	if (/^[A-Z].+\#/.test(link.linkText)) {
+		link.linkText = link.linkText.charAt(0).toLowerCase() + link.linkText.slice(1);
+		link.linkText = link.linkText.replace(/#/g, '.');
 	}
 	
 	return "<a href=\""+link.linkPath+link.linkInner+"\""+target+">"+link.linkText+"</a>";

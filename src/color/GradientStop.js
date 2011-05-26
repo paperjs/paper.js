@@ -16,8 +16,20 @@
 
 // TODO: Support midPoint? (initial tests didn't look nice)
 var GradientStop = this.GradientStop = Base.extend({
+	/** @lends GradientStop# */
+
 	beans: true,
 
+	/**
+	 * Creates a GradientStop object.
+	 * 
+	 * @param {Color} [color=new RGBColor(0, 0, 0)] the color of the stop
+	 * @param {number} [rampPoint=0] the position of the stop on the gradient
+	 *                               ramp {@default 0}
+	 * @constructs GradientStop
+	 * 
+	 * @class The GradientStop object.
+	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 === undefined && Array.isArray(arg0)) {
 			// [color, rampPoint]
@@ -34,10 +46,19 @@ var GradientStop = this.GradientStop = Base.extend({
 		}
 	},
 
+	/**
+	 * @return {GradientColor} a copy of the gradient-stop
+	 */
 	clone: function() {
 		return new GradientStop(this._color.clone(), this._rampPoint);
 	},
 
+	/**
+	 * The ramp-point of the gradient stop as a value between 0 and 1.
+	 * 
+	 * @type number
+	 * @bean
+	 */
 	getRampPoint: function() {
 		return this._rampPoint;
 	},
@@ -47,6 +68,12 @@ var GradientStop = this.GradientStop = Base.extend({
 		this._rampPoint = rampPoint || 0;
 	},
 
+	/**
+	 * The color of the gradient stop.
+	 * 
+	 * @type Color
+	 * @bean
+	 */
 	getColor: function() {
 		return this._color;
 	},
