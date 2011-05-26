@@ -77,7 +77,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * The segments contained within the path.
 	 * 
-	 * @type array
+	 * @type Segment[]
 	 * @bean
 	 */
 	getSegments: function() {
@@ -120,7 +120,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * The curves contained within the path.
 	 * 
-	 * @type array
+	 * @type Curve[]
 	 * @bean
 	 */
 	getCurves: function() {
