@@ -268,6 +268,13 @@ var Path = this.Path = PathItem.extend({
 		return segs;
 	},
 
+	_countSelectedSegment: function(segment) {
+		var count = this._selectedSegmentCount +=
+				segment._selectionState ? 1 : -1;
+		if (count <= 1)
+			this._project._selectItem(this, count == 1);
+	},
+
 	// PORT: Add support for adding multiple segments at once to Sg
 	/**
 	 * Adds one or more segments to the end of the segment list of this path.
@@ -400,13 +407,6 @@ var Path = this.Path = PathItem.extend({
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
 					? SelectionState.POINT : 0;
-	},
-
-	_countSelectedSegment: function(segment) {
-		var count = this._selectedSegmentCount +=
-				segment._selectionState ? 1 : -1;
-		if (count <= 1)
-			this._project._selectItem(this, count == 1);
 	},
 
 	/**
