@@ -98,7 +98,7 @@ var Project = this.Project = Base.extend({
 	/**
 	 * The selected items contained within the project.
 	 *
-	 * @type array
+	 * @type Item[]
 	 * @bean
 	 */
 	getSelectedItems: function() {
@@ -149,7 +149,7 @@ var Project = this.Project = Base.extend({
 	 * The layers contained within the project.
 	 *
 	 * @name Project#layers
-	 * @type array
+	 * @type Layer[]
 	 */
 
 	/**
@@ -164,14 +164,14 @@ var Project = this.Project = Base.extend({
 	 * The symbols contained within the project.
 	 *
 	 * @name Project#symbols
-	 * @type array
+	 * @type Symbol[]
 	 */
 
 	/**
 	 * The views contained within the project.
 	 *
 	 * @name Project#views
-	 * @type array
+	 * @type View[]
 	 */
 
 	/**
