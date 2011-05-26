@@ -99,6 +99,14 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
+	 * @return {string} A string representation of the point.
+	 */
+	toString: function() {
+		var format = Base.formatNumber;
+		return '{ x: ' + format(this.x) + ', y: ' + format(this.y) + ' }';
+	},
+
+	/**
 	 * Returns the addition of the supplied value to both coordinates of
 	 * the point as a new point.
 	 * The object itself is not modified!
@@ -279,11 +287,20 @@ var Point = this.Point = Base.extend({
 		return Point.create(-this.x, -this.y);
 	},
 
+	/**
+	 * Transforms the point by the matrix as a new point. The object itself
+	 * is not modified!
+	 *
+	 * @param {Matrix} matrix
+	 * @return {Point} the transformed point
+	 */
 	transform: function(matrix) {
 		return matrix._transformPoint(this);
 	},
 
 	/**
+	 * {@grouptitle Distance & Length}
+	 * 
 	 * Returns the distance between the point and another point.
 	 *
 	 * @param {Point} point
@@ -348,15 +365,8 @@ var Point = this.Point = Base.extend({
 		return point;
 	},
 
-	// DOCS: Point#getQuadrant
 	/**
-	 * @return {number}
-	 */
-	getQuadrant: function() {
-		return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
-	},
-
-	/**
+	 * {@grouptitle Angle & Rotation}
 	 * Returns the smaller angle between two vectors. The angle is unsigned, no
 	 * information about rotational direction is given.
 	 * 
@@ -432,6 +442,14 @@ var Point = this.Point = Base.extend({
 		return this.getAngle(arguments[0]);
 	},
 
+	// DOCS: Point#getQuadrant
+	/**
+	 * @return {number}
+	 */
+	getQuadrant: function() {
+		return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
+	},
+
 	/**
 	 * Returns the angle between two vectors. The angle is directional and
 	 * signed, giving information about the rotational direction.
@@ -490,6 +508,8 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
+	 * {@grouptitle Tests}
+	 * 
 	 * Checks whether the point is inside the boundaries of the rectangle.
 	 * 
 	 * @param {Rectangle} rect the rectangle to check against
@@ -555,6 +575,7 @@ var Point = this.Point = Base.extend({
 	},
 	
 	/**
+	 * {@grouptitle Vectorial Math Functions}
 	 * Returns the dot product of the point and another point.
 	 * 
 	 * @param {Point} point
@@ -597,12 +618,14 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
-	 * @return {string} A string representation of the point.
+	 * This property is only present if the point is an anchor or control point
+	 * of a {@link Segment} or a {@link Curve}. In this case, it returns
+	 * true if it is selected, false otherwise
+	 * 
+	 * @name Point#selected
+	 * @property
+	 * @return {boolean} true if the point is selected, false otherwise
 	 */
-	toString: function() {
-		var format = Base.formatNumber;
-		return '{ x: ' + format(this.x) + ', y: ' + format(this.y) + ' }';
-	},
 
 	statics: {
 		/** @lends Point */
