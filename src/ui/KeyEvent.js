@@ -39,22 +39,22 @@ var KeyEvent = this.KeyEvent = Event.extend(new function() {
 		/**
 		 * The type of key event.
 		 * 
-		 * @return {string} the type of key event: 'keydown' or 'keyup'
 		 * @name KeyEvent#type
+		 * @type String('keydown', 'keyup')
 		 */
 
 		/**
 		 * The string character of the key that caused this key event.
 		 * 
 		 * @name KeyEvent#character
-		 * @return {string} the key character.
+		 * @type string
 		 */
 
 		/**
-		 * Specifies the virtual key code of the key that caused this key event.
+		 * The key that caused this key event.
 		 * 
 		 * @name KeyEvent#key
-		 * @return the virtual key code.
+		 * @type string
 		 */
 
 		/**
