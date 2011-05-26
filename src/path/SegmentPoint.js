@@ -57,18 +57,25 @@ var SegmentPoint = Point.extend({
 	},
 	
 	statics: {
-		create: function(segment, x, y, selected) {
-			if (y === undefined) {
-				// Use the normal point constructor to read in point values
-				var pt = x instanceof Point ? x : new Point(x);
+		create: function(segment, key, pt) {
+			var point = new SegmentPoint(SegmentPoint.dont),
+				x, y, selected;
+			if (!pt) {
+				x = y = 0;
+			} else if (pt.x !== undefined) {
 				x = pt.x;
 				y = pt.y;
 				selected = pt.selected;
+			} else {
+				x = pt[0];
+				y = pt[1];
 			}
-			var point = new SegmentPoint(SegmentPoint.dont);
 			point._x = x;
 			point._y = y;
 			point._owner = segment;
+			// We need to set the point on the segment before copying over the
+			// selected state, as otherwise this won't actually select it.
+			segment[key] = point;
 			if (selected)
 				point.setSelected(true);
 			return point;

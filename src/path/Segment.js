@@ -50,38 +50,38 @@ var Segment = this.Segment = Base.extend({
 	 * that are visible when the path is selected).
 	 */
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
-		var createSegmentPoint = SegmentPoint.create;
+		var createPoint = SegmentPoint.create,
+			point, handleIn, handleOut;
 		if (arguments.length == 0) {
-			this._point = createSegmentPoint(this, 0, 0);
+			// Nothing
 		} else if (arguments.length == 1) {
-			// TODO: If beans are not activated, this won't copy from n existing
-			// segment. OK?
+			// TODO: If beans are not activated, this won't copy from existing
+			// segments. OK?
 			if (arg0.point) {
-				this._point = createSegmentPoint(this, arg0.point);
-				this._handleIn = createSegmentPoint(this, arg0.handleIn);
-				this._handleOut = createSegmentPoint(this, arg0.handleOut);
+				point = arg0.point;
+				handleIn = arg0.handleIn;
+				handleOut = arg0.handleOut;
 			} else {
-				this._point = createSegmentPoint(this, arg0);
+				point = arg0;
 			}
 		} else if (arguments.length < 6) {
 			if (arguments.length == 2 && !arg1.x) {
-				this._point = createSegmentPoint(this, arg0, arg1);
+				point = [ arg0, arg1 ];
 			} else {
-				this._point = createSegmentPoint(this, arg0);
-				// Doesn't matter if these arguments exist, it creates 0, 0
-				// points otherwise
-				this._handleIn = createSegmentPoint(this, arg1);
-				this._handleOut = createSegmentPoint(this, arg2);
+				point = arg0;
+				// Doesn't matter if these arguments exist, SegmentPointcreate
+				// produces creates points with (0, 0) otherwise
+				handleIn = arg1;
+				handleOut = arg2;
 			}
 		} else if (arguments.length == 6) {
-			this._point = createSegmentPoint(this, arg0, arg1);
-			this._handleIn = createSegmentPoint(this, arg2, arg3);
-			this._handleOut = createSegmentPoint(this, arg4, arg5);
+			point = [ arg0, arg1 ];
+			handleIn = [ arg2, arg3 ];
+			handleOut = [ arg4, arg5 ];
 		}
-		if (!this._handleIn)
-			this._handleIn = createSegmentPoint(this, 0, 0);
-		if (!this._handleOut)
-			this._handleOut = createSegmentPoint(this, 0, 0);
+		createPoint(this, '_point', point);
+		createPoint(this, '_handleIn', handleIn);
+		createPoint(this, '_handleOut', handleOut);
 	},
 
 	_changed: function(point) {
