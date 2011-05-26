@@ -238,7 +238,7 @@ var Path = this.Path = PathItem.extend({
 			// If parts of this segment are selected, adjust the internal
 			// _selectedSegmentCount now
 			if (segment._selectionState)
-				this._countSelectedSegment(segment);
+				this._updateSelection(segment);
 		}
 		if (append) {
 			// Append them all at the end by using push
@@ -268,7 +268,7 @@ var Path = this.Path = PathItem.extend({
 		return segs;
 	},
 
-	_countSelectedSegment: function(segment) {
+	_updateSelection: function(segment) {
 		var count = this._selectedSegmentCount +=
 				segment._selectionState ? 1 : -1;
 		if (count <= 1)
@@ -368,7 +368,7 @@ var Path = this.Path = PathItem.extend({
 			var segment = removed[i];
 			if (segment._selectionState) {
 				segment._selectionState = 0;
-				this._countSelectedSegment(segment);
+				this._updateSelection(segment);
 			}
 			// Clear the indices and path references of the removed segments
 			removed._index = removed._path = undefined;

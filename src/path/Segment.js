@@ -289,7 +289,7 @@ var Segment = this.Segment = Base.extend({
 		// it's path know and possibly add or remove it from
 		// project._selectedItems
 		if (path && wasSelected != !!this._selectionState)
-			path._countSelectedSegment(this);
+			path._updateSelection(this);
 	},
 
 	// DOCS: Segment#selected
