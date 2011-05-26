@@ -48,7 +48,7 @@ var Gradient = this.Gradient = Base.extend({
 	/**
 	 * The gradient stops on the gradient ramp.
 	 * 
-	 * @type {array}
+	 * @type GradientStop[]
 	 * @bean
 	 */
 	getStops: function() {
