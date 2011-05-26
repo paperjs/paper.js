@@ -14,7 +14,7 @@
  * All rights reserved.
  */
 
-// TODO: support midPoint? (initial tests didn't look nice)
+// TODO: Support midPoint? (initial tests didn't look nice)
 var GradientStop = this.GradientStop = Base.extend({
 	beans: true,
 
