@@ -146,16 +146,14 @@ function comparePathStyles(style, style2, checkIdentity) {
 	}
 }
 
-function compareObjects(name, keys, obj1, obj2, checkIdentity) {
+function compareObjects(name, keys, obj, obj2, checkIdentity) {
 	if (checkIdentity) {
 		equals(function() {
-			return obj1 != obj2;
+			return obj != obj2;
 		}, true);
 	}
 	Base.each(keys, function(key) {
-		equals(function() {
-			return obj1[key] == obj2[key];
-		}, true, 'Compare ' + name + '#' + key);
+		equals(obj[key], obj2[key], 'Compare ' + name + '#' + key);
 	});
 }
 
@@ -223,9 +221,7 @@ function compareItems(item, item2, checkIdentity) {
 	var itemProperties = ['opacity', 'locked', 'visible', 'blendMode', 'name',
 	 		'selected', 'clipMask'];
 	Base.each(itemProperties, function(key) {
-		equals(function() {
-			return item[key] == item2[key];
-		}, true, 'compare Item#' + key);
+		equals(item[key], item2[key], 'compare Item#' + key);
 	});
 
 	if (checkIdentity) {
@@ -261,9 +257,7 @@ function compareItems(item, item2, checkIdentity) {
 		var keys = ['closed', 'fullySelected', 'clockwise', 'length'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
-			equals(function() {
-				return item[key] == item2[key];
-			}, true, 'Compare Path#' + key);
+			equals(item[key], item2[key], 'Compare Path#' + key);
 		}
 		compareSegmentLists(item.segments, item2.segments, checkIdentity);
 	}
