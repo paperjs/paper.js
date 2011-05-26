@@ -20,7 +20,6 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	beans: true,
 
 	/**
-	 *
 	 * @name ToolEvent
 	 * @constructor
 	 * 

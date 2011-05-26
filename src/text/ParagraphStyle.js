@@ -15,11 +15,44 @@
  */
 
 var ParagraphStyle = this.ParagraphStyle = Base.extend({
+	/** @lends ParagraphStyle# */
+
+	/**
+	 * ParagraphStyle objects don't need to be created directly. Just pass an
+	 * object to {@link TextItem#paragraphStyle}, it will be converted to a
+	 * ParagraphStyle object internally.
+	 * 
+	 * Currently, the ParagraphStyle object may seem a bit empty, with just the
+	 * {@link #justification} property. Yet, we have lots in store for Paper.js
+	 * when it comes to typography. Please stay tuned.
+	 *
+	 * @constructs ParagraphStyle
+	 * @param {object} style
+	 * 
+	 * @constructs ParagraphStyle
+	 *
+	 * @class The ParagraphStyle object represents the paragraph style of a text
+	 * item ({@link TextItem#paragraphStyle})
+	 * 
+	 * @example
+	 * var text = new PointText(new Point(0,0));
+	 * text.fillColor = 'black';
+	 * text.content = 'Hello world.';
+	 * text.paragraphStyle.justification = 'center';
+	 */
 	initialize: function(style) {
 		Base.initialize(this, style, {
 			justification: 'left'
 		});
 	},
+
+	/**
+	 * The justification of the paragraph.
+	 *
+	 * @name ParagraphStyle#justification
+	 * @default 'left'
+	 * @type string
+	 */
 
 	statics: {
 		create: function(item) {

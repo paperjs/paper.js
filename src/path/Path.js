@@ -34,7 +34,7 @@ var Path = this.Path = PathItem.extend({
 	 * path.moveTo(30, 30);
 	 * path.lineTo(100, 100);
 	 * 
-	 * @param {array} [segments] An optional array of segments (or points to be
+	 * @param {Segment[]} [segments] An optional array of segments (or points to be
 	 * converted to segments) that will be added to the path.
 	 * 
 	 * @class The Path item represents a path in a Paper.js project.
@@ -77,7 +77,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * The segments contained within the path.
 	 * 
-	 * @type array
+	 * @type Segment[]
 	 * @bean
 	 */
 	getSegments: function() {
@@ -120,7 +120,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * The curves contained within the path.
 	 * 
-	 * @type array
+	 * @type Curve[]
 	 * @bean
 	 */
 	getCurves: function() {
@@ -282,6 +282,7 @@ var Path = this.Path = PathItem.extend({
 	 * @param {Segment|Point} segment the segment or point to be added.
 	 * @return {Segment} the added segment. This is not necessarily the same
 	 * object, e.g. if the segment to be added already belongs to another path.
+	 * @operator none
 	 */
 	add: function(segment1 /*, segment2, ... */) {
 		return arguments.length > 1 && typeof segment1 !== 'number'

@@ -15,8 +15,21 @@
  */
 
 var TextItem = this.TextItem = Item.extend({
+	/** @lends TextItem# */
+
 	beans: true,
 
+	/**
+	 * @constructs TextItem
+	 * 
+	 * @class The TextItem type allows you to create typography. Its
+	 * functionality is inherited by different text item types such as
+	 * {@link PointText}, and {@link AreaText} (coming soon). They each add a
+	 * layer of functionality that is unique to their type, but share the
+	 * underlying properties and functions that they inherit from TextItem.
+	 * 
+	 * @extends Item
+	 */
 	initialize: function() {
 		this.base();
 		this.content = null;
@@ -26,12 +39,27 @@ var TextItem = this.TextItem = Item.extend({
 		this.setParagraphStyle();
 	},
 
+	/**
+	 * The text contents of the text item.
+	 *
+	 * @name TextItem#content
+	 * @type string
+	 */
+
 	_clone: function(copy) {
 		copy.setCharacterStyle(this._characterStyle);
 		copy.setParagraphStyle(this._paragraphStyle);
 		return this.base(copy);
 	},
 
+	/**
+	 * {@grouptitle Style Properties}
+	 * 
+	 * The character style of the text item.
+	 * 
+	 * @type CharacterStyle
+	 * @bean
+	 */
 	getCharacterStyle: function() {
 		return this._characterStyle;
 	},
@@ -39,7 +67,13 @@ var TextItem = this.TextItem = Item.extend({
 	setCharacterStyle: function(style) {
 		this._characterStyle.initialize(style);
 	},
-	
+
+	/**
+	 * The paragraph style of the text item.
+	 * 
+	 * @type ParagraphStyle
+	 * @bean
+	 */
 	getParagraphStyle: function() {
 		return this._paragraphStyle;
 	},

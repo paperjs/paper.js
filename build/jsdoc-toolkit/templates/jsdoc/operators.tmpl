@@ -1,0 +1,52 @@
+{!
+	var operatorCount = 0;
+	var operatorTitle = [];
+	for (var i = 0, l = data.length; i < l; i++) {
+		var type = data[i].params[0].type;
+		type = type.charAt(0).toUpperCase() + type.slice(1);
+		operatorTitle.push('<tt><b>' + Operator.getOperator(data[i]) + '</b> ' + type + '</tt>');
+	}
+	operatorTitle = operatorTitle.join(', ');
+!}
+<for each="operator" in="data">
+{!
+	var type = operator.params[0].type;
+	type = type.charAt(0).toUpperCase() + type.slice(1);
+	var functionTitle = '<b>' + Operator.getOperator(operator) + '</b> ' + type;
+!}
+<if test="operatorCount == 0">
+	{!
+		var memberId = operator.name.toLowerCase().replace(/\^[0-9]$/,'');
+	!}
+	<div id="{+ memberId +}" class="member">
+	<div id="{+ memberId +}-link" class="member-link">
+	<a name="{+ memberId +}" href="#" onClick="return toggleMember('{+ memberId +}', false);"><tt>{+ operatorTitle +}</tt></a>
+	</div>
+	<div id="{+ memberId +}-description" class="member-description hidden">
+</if>
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('{+ memberId +}', false);"><tt>{+ functionTitle +}</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+ memberId +}', false);"></div>
+<div class="clear"></div>
+</div>
+<if test="operator.type">
+	<div class="member-text"><p>{+processInlineTags(operator.desc)+}</p>
+	{+ new JSDOC.JsPlate(publish.conf.templatesDir+"examples.tmpl").process(operator) +}
+	<ul><b>Returns:</b>
+	<for each="item" in="operator.returns">
+		<li>
+		<tt><if test="defined(item.type)">{+ new Link().toSymbol(item.type) +}&nbsp;&mdash;&nbsp;</if>{+processInlineTags(item.desc)+}</tt>
+		</li>
+	</for>
+	</ul></div>
+</if>
+<if test="operatorCount == data.length - 1">
+	</div>
+	</div>
+</if>
+{! operatorCount++; !}
+</for>
