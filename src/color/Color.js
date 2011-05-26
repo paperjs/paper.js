@@ -159,11 +159,8 @@ var Color = this.Color = Base.extend(new function() {
 				} else {
 					// Called on a subclass instance. Return the converted
 					// color.
-					var color = arg._colorType ? arg
-							: Color.read(arguments, 0, 1);
-					return (colorType !== color._colorType)
-							? color.convert(colorType)
-							: color.clone();
+					return (arg._colorType ? arg : Color.read(arguments))
+							.convert(colorType);
 				}
 			} else if (typeof arg === 'string') {
 				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
