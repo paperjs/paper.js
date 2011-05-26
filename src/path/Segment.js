@@ -50,11 +50,12 @@ var Segment = this.Segment = Base.extend({
 	 * that are visible when the path is selected).
 	 */
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
-		var createPoint = SegmentPoint.create,
+		var count = arguments.length,
+			createPoint = SegmentPoint.create,
 			point, handleIn, handleOut;
-		if (arguments.length == 0) {
+		if (count == 0) {
 			// Nothing
-		} else if (arguments.length == 1) {
+		} else if (count == 1) {
 			// TODO: If beans are not activated, this won't copy from existing
 			// segments. OK?
 			if (arg0.point) {
@@ -64,8 +65,8 @@ var Segment = this.Segment = Base.extend({
 			} else {
 				point = arg0;
 			}
-		} else if (arguments.length < 6) {
-			if (arguments.length == 2 && !arg1.x) {
+		} else if (count < 6) {
+			if (count == 2 && !arg1.x) {
 				point = [ arg0, arg1 ];
 			} else {
 				point = arg0;
@@ -74,7 +75,7 @@ var Segment = this.Segment = Base.extend({
 				handleIn = arg1;
 				handleOut = arg2;
 			}
-		} else if (arguments.length == 6) {
+		} else if (count == 6) {
 			point = [ arg0, arg1 ];
 			handleIn = [ arg2, arg3 ];
 			handleOut = [ arg4, arg5 ];
