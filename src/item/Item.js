@@ -218,8 +218,6 @@ var Item = this.Item = Base.extend({
 			}
 		} else {
 			if ((selected = !!selected) != this._selected) {
-				// TODO: when an item is removed or moved to another
-				// project, it needs to be removed from _selectedItems
 				this._selected = selected;
 				this._project._selectItem(this, selected);
 			}
@@ -305,7 +303,7 @@ var Item = this.Item = Base.extend({
 
 	// TODO: get/setIsolated (print specific feature)
 	// TODO: get/setKnockout (print specific feature)
-	// TODO get/setAlphaIsShape
+	// TODO: get/setAlphaIsShape
 	// TODO: get/setData
 
 	/**

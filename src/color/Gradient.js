@@ -17,7 +17,7 @@
 var Gradient = this.Gradient = Base.extend({
 	beans: true,
 
-	// TODO: should type here be called 'radial' and have it
+	// TODO: Should type here be called 'radial' and have it
 	// receive a boolean value?
 	initialize: function(stops, type) {
 		this.setStops(stops || ['white', 'black']);
