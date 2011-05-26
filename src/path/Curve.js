@@ -30,18 +30,19 @@ var Curve = this.Curve = Base.extend({
 	 * @class The Curve object represents...
 	 */
 	initialize: function(arg0, arg1, arg2, arg3) {
-		if (arguments.length == 0) {
+		var count = arguments.length;
+		if (count == 0) {
 			this._segment1 = new Segment();
 			this._segment2 = new Segment();
-		} else if (arguments.length == 1) {
+		} else if (count == 1) {
 			// TODO: If beans are not activated, this won't copy from
 			// an existing segment. OK?
 			this._segment1 = new Segment(arg0.segment1);
 			this._segment2 = new Segment(arg0.segment2);
-		} else if (arguments.length == 2) {
+		} else if (count == 2) {
 			this._segment1 = new Segment(arg0);
 			this._segment2 = new Segment(arg1);
-		} else if (arguments.length == 4) {
+		} else if (count == 4) {
 			this._segment1 = new Segment(arg0, null, arg1);
 			this._segment2 = new Segment(arg3, arg2, null);
 		}
