@@ -1,3 +1,21 @@
+function cloneAndCompare(item) {
+	var copy = item.clone();
+	equals(function() {
+		return item.parent == copy.parent;
+	}, true);
+	equals(function() {
+		return item.nextSibling == copy;
+	}, true);
+	if (item.name) {
+		equals(function() {
+			return copy.parent.children[copy.name] == copy;
+		}, true);
+	}
+	compareItems(item, copy, true);
+	// Remove the cloned item to restore the document:
+	copy.remove();
+}
+
 test('Path#clone()', function() {
 	var proj = paper.project;
 	var path = new Path([10, 20], [30, 40]);
