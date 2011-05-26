@@ -132,7 +132,7 @@ function comparePathStyles(style, style2, checkIdentity) {
 	});
 
 	Base.each(['strokeCap', 'strokeJoin', 'dashOffset', 'miterLimit',
-	'strokeOverprint', 'fillOverprint'], function(key) {
+			'strokeOverprint', 'fillOverprint'], function(key) {
 		if (style[key]) {
 			equals(function() {
 				return style[key] == style2[key];
@@ -146,52 +146,35 @@ function comparePathStyles(style, style2, checkIdentity) {
 	}
 }
 
-function compareCharacterStyles(characterStyle, characterStyle2, checkIdentity) {
+function compareObjects(name, keys, obj1, obj2, checkIdentity) {
 	if (checkIdentity) {
 		equals(function() {
-			return characterStyle != characterStyle2;
+			return obj1 != obj2;
 		}, true);
 	}
-	var keys = ['fontSize', 'font'];
 	Base.each(keys, function(key) {
 		equals(function() {
-			return characterStyle[key] == characterStyle2[key];
-		}, true, 'Compare CharacterStyle#' + key);
+			return obj1[key] == obj2[key];
+		}, true, 'Compare ' + name + '#' + key);
 	});
+}
 
+function compareCharacterStyles(characterStyle, characterStyle2, checkIdentity) {
+	compareObjects('CharacterStyle', ['fontSize', 'font'],
+			characterStyle, characterStyle2, checkIdentity);
 }
 
 function compareParagraphStyles(paragraphStyle, paragraphStyle2, checkIdentity) {
-	if (checkIdentity) {
-		equals(function() {
-			return paragraphStyle != paragraphStyle2;
-		}, true);
-	}
-	var keys = ['justification'];
-	Base.each(keys, function(key) {
-		equals(function() {
-			return style[key] == style2[key];
-		}, true, 'Compare ParagraphStyle#' + key);
-	});
+	compareObjects('ParagraphStyle', ['justification'],
+			paragraphStyle, paragraphStyle2, checkIdentity);
 }
 
 function compareSegmentPoints(segmentPoint, segmentPoint2, checkIdentity) {
-	if (checkIdentity) {
-		equals(function() {
-			return segmentPoint !== segmentPoint2;
-		}, true);
-	}
-	var keys = ['selected', 'x', 'y'];
-	for (var i = 0, l = keys.length; i < l; i++) {
-		var key = keys[i];
-		equals(function() {
-			return segmentPoint[key] == segmentPoint2[key];
-		}, true, 'Compare SegmentPoint#' + key);
-	}
+	compareObjects('ParagraphStyle', ['x', 'y', 'selected'],
+			segmentPoint, segmentPoint2, checkIdentity);
 }
 
 function compareSegments(segment, segment2, checkIdentity) {
-	var keys = ['handleIn', 'handleOut', 'point'];
 	if (checkIdentity) {
 		equals(function() {
 			return segment !== segment2;
@@ -200,10 +183,9 @@ function compareSegments(segment, segment2, checkIdentity) {
 	equals(function() {
 		return segment.selected == segment2.selected;
 	}, true);
-	for (var i = 0, l = keys.length; i < l; i++) {
-		var key = keys[i];
+	Base.each(['handleIn', 'handleOut', 'point'], function(key) {
 		compareSegmentPoints(segment[key], segment2[key]);
-	}
+	});
 }
 
 function compareSegmentLists(segmentList, segmentList2, checkIdentity) {
