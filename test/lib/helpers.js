@@ -170,7 +170,7 @@ function compareParagraphStyles(paragraphStyle, paragraphStyle2, checkIdentity) 
 }
 
 function compareSegmentPoints(segmentPoint, segmentPoint2, checkIdentity) {
-	compareObjects('ParagraphStyle', ['x', 'y', 'selected'],
+	compareObjects('SegmentPoint', ['x', 'y', 'selected'],
 			segmentPoint, segmentPoint2, checkIdentity);
 }
 
