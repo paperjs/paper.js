@@ -360,8 +360,8 @@ var Path = this.Path = PathItem.extend({
 		for (var i = 0; i < amount; i++) {
 			var segment = removed[i];
 			if (segment._selectionState) {
-				this._selectedSegmentCount--;
 				segment._selectionState = 0;
+				this._countSelectedSegment(segment);
 			}
 			// Clear the indices and path references of the removed segments
 			removed._index = removed._path = undefined;
