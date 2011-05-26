@@ -235,6 +235,10 @@ var Path = this.Path = PathItem.extend({
 			}
 			segment._path = this;
 			segment._index = index + i;
+			// If parts of this segment are selected, adjust the internal
+			// _selectedSegmentCount now
+			if (segment._selectionState)
+				this._countSelectedSegment(segment);
 		}
 		if (append) {
 			// Append them all at the end by using push
@@ -397,7 +401,14 @@ var Path = this.Path = PathItem.extend({
 			this._segments[i]._selectionState = selected
 					? SelectionState.POINT : 0;
 	},
-	
+
+	_countSelectedSegment: function(segment) {
+		var count = this._selectedSegmentCount +=
+				segment._selectionState ? 1 : -1;
+		if (count <= 1)
+			this._project._selectItem(this, count == 1);
+	},
+
 	/**
 	 * Specifies whether all segments of the path are selected.
 	 * 

@@ -248,9 +248,8 @@ var Segment = this.Segment = Base.extend({
 	},
 
 	_setSelected: function(point, selected) {
-		if (!this._path)
-			return;
-		var selected = !!selected, // convert to boolean
+		var path = this._path,
+			selected = !!selected, // convert to boolean
 			state = this._selectionState,
 			wasSelected = !!state,
 			// For performance reasons use array indices to access the various
@@ -290,13 +289,8 @@ var Segment = this.Segment = Base.extend({
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
 		// project._selectedItems
-		if (wasSelected != !!this._selectionState) {
-			var path = this._path,
-				count = path._selectedSegmentCount
-						+= this._selectionState ? 1 : -1;
-			if (count <= 1)
-				path._project._selectItem(path, count == 1);
-		}
+		if (path && wasSelected != !!this._selectionState)
+			path._countSelectedSegment(this);
 	},
 
 	// DOCS: Segment#selected
