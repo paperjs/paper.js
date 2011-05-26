@@ -36,7 +36,6 @@ JSDOC.DocTag.prototype.parse = function(src) {
 		if (JSDOC.PluginManager) {
 			JSDOC.PluginManager.run("onDocTagSynonym", this);
 		}
-		
 		src = this.nibbleType(src);
 		
 		// only some tags are allowed to have names.
@@ -122,7 +121,7 @@ JSDOC.DocTag.prototype.nibbleTitle = function(src) {
 JSDOC.DocTag.prototype.nibbleType = function(src) {
 	if (typeof src != "string") throw "src must be a string not "+(typeof src);
 	
-	if (src.match(/^\s*\{/)) {
+	if (src.match(/^\s*\{[^@]/)) {
 		var typeRange = src.balance("{", "}");
 		if (typeRange[1] == -1) {
 			throw "Malformed comment tag ignored. Tag type requires an opening { and a closing }: "+src;

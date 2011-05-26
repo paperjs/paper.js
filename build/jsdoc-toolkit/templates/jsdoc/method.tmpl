@@ -1,0 +1,43 @@
+{!
+	var memberId = Helpers.getSymbolId(data);
+	var functionTitle = '<b>' + data.name.replace(/\^\d+$/, '') + '</b>' + makeSignature(data.params);
+	if (data.isStatic)
+		functionTitle = '<b>' + data.memberOf + '.</b>' + functionTitle;
+!}
+
+<div id="{+ memberId +}" class="member">
+<div id="{+ memberId +}-link" class="member-link">
+<a name="{+ memberId +}" href="#" onClick="return toggleMember('{+ memberId +}', false);"><tt>{+ functionTitle +}</tt></a>
+</div>
+<div id="{+ memberId +}-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('{+ memberId +}', false);"><tt>{+ functionTitle +}</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+ memberId +}', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text"><p>{+processInlineTags(data.desc)+}</p>
+{+ new JSDOC.JsPlate(publish.conf.templatesDir+"examples.tmpl").process(data) +}
+{+ new JSDOC.JsPlate(publish.conf.templatesDir+"parameters.tmpl").process(data) +}
+<if test="data.returns.length">
+	<ul><b>Returns:</b>
+	<for each="item" in="data.returns">
+		<li>
+		<tt><if test="defined(item.type)">{+ new Link().toSymbol(item.type) +}<if test="item.desc">&nbsp;&mdash;&nbsp;</if></if>{+processInlineTags(item.desc)+}</tt>
+		</li>
+	</for>
+	</ul>
+</if>
+<if test="data.see.length">
+	<p><b>See also:</b>
+	<for each="item" in="data.see">
+		<tt>{+ new Link().toSymbol(item) +}</tt>
+	</for>
+	</p>
+</if>
+</div>
+</div>
+</div>

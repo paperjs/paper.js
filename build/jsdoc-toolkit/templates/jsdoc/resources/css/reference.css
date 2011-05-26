@@ -1,0 +1,120 @@
+.reference h1, .reference h2, .reference h3 {
+	font-size: 12px;
+	font-weight: normal;
+	display: block;
+	margin: 0 0 16px 0;
+	height: 17px; /* -1 for border */
+	border-bottom: 1px solid black;
+}
+
+.reference h3 {
+	margin-top: 16px;
+	border-bottom-style: dotted;
+}
+
+.reference a tt, .reference a tt b {
+	padding-bottom: 1px;
+}
+
+.reference pre {
+	margin: 0 0 18px 0;
+}
+
+.reference ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.reference-list ul, .reference-inherited ul {
+	margin-left: 16px;
+}
+
+.reference hr {
+	border: none;
+	border-bottom: 1px dotted #000;
+}
+
+.reference-packages {
+	margin-left: 0px;
+}
+
+.reference-packages h2, .reference-packages h3, .reference-packages hr {
+	margin: 10px 0 10px 0;
+}
+
+.reference-packages .first h2 {
+	margin-top: 0;
+}
+
+* html .reference-packages img {
+	margin-top: 5px;
+}
+.reference-packages li {
+	list-style: none;
+	list-style-image: none; /* needed for ie 6 */
+}
+
+.reference-end {
+	height: 600px;
+}
+
+.reference-members {
+	padding-bottom: 16px;
+}
+
+.member-group-text {
+	margin-bottom: 16px;
+}
+
+.member-description {
+	border: 1px solid #999;
+	/* .member-header defines border-top for operator lists */
+	border-top: 0;
+	margin: 16px 0 16px 0;
+}
+
+.member-header {
+	border-top: 1px solid #999;
+	padding: 10px;
+}
+
+.member-title {
+	float: left;
+	width: 400px;
+}
+
+.member-close {
+	float: right;
+}
+
+.member-text {
+	border-top: 1px dashed #999;
+	padding: 10px 10px 0 10px;
+}
+
+.member-link {
+	text-indent: -30px;
+	padding-left: 30px;
+}
+
+.reference-inherited ul li {
+	text-indent: -30px;
+	padding-left: 30px;
+}
+
+.member-text ul {
+	padding-bottom: 10px;
+}
+
+ul.package-classes {
+	padding-bottom: 4px;
+}
+
+.package-classes li {
+	margin-left: 10px;
+}
+
+.package-classes li h2 {
+	margin-left: -10px;
+}

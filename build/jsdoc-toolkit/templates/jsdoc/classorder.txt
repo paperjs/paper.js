@@ -1,0 +1,29 @@
+Point
+Rectangle
+Size
+Matrix
+Color
+	GrayColor
+	RGBColor
+	GradientColor
+Item
+	PathItem
+		Path
+		CompoundPath
+	TextItem
+		PointText
+	Raster
+	Group
+	Layer
+	PlacedItem
+	Symbol
+Project
+ProjectView
+Segment
+Curve
+PathStyle
+	CharacterStyle
+ParagraphStyle
+Gradient
+GradientStop
+Symbol
