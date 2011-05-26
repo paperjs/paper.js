@@ -440,6 +440,7 @@ var Point = this.Point = Base.extend({
 	 * {@link #angle} property.
 	 * 
 	 * @param {Point} point
+	 * @return {number} the angle between the two vectors
 	 */
 	getDirectedAngle: function(point) {
 		point = Point.read(arguments);
