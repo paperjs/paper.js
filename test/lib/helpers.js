@@ -103,24 +103,6 @@ function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
 	}, true);
 }
 
-function cloneAndCompare(item) {
-	var copy = item.clone();
-	equals(function() {
-		return item.parent == copy.parent;
-	}, true);
-	equals(function() {
-		return item.nextSibling == copy;
-	}, true);
-	if (item.name) {
-		equals(function() {
-			return copy.parent.children[copy.name] == copy;
-		}, true);
-	}
-	compareItems(item, copy, true);
-	// Remove the cloned item to restore the document:
-	copy.remove();
-}
-
 function comparePathStyles(style, style2, checkIdentity) {
 	if (checkIdentity) {
 		equals(function() {
