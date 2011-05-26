@@ -17,10 +17,13 @@
 var PathStyle = this.PathStyle = Base.extend(new function() {
 	/** @lends PathStyle# */
 
-	// TODO: remove windingRule / resolution / fillOverprint / strokeOverprint?
-	var keys = ['windingRule', 'resolution', 'strokeColor', 'strokeWidth',
-			'strokeCap', 'strokeJoin', 'dashOffset','dashArray', 'miterLimit',
-			'strokeOverprint', 'fillColor', 'fillOverprint'],
+	// windingRule / resolution / fillOverprint / strokeOverprint are currently
+	// not supported. The full list of properties would be:
+	//	['windingRule', 'resolution', 'strokeColor', 'strokeWidth',
+	//		'strokeCap', 'strokeJoin', 'miterLimit', 'dashOffset','dashArray',
+	//		'strokeOverprint', 'fillColor', 'fillOverprint'],
+	var keys = ['strokeColor', 'strokeWidth', 'strokeCap', 'strokeJoin',
+				'miterLimit', 'dashOffset','dashArray', 'fillColor'],
 		strokeFlags = {
 			strokeWidth: true,
 			strokeCap: true,
