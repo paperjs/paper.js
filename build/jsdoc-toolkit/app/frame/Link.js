@@ -127,13 +127,13 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 	var target = (this.targetName)? " target=\""+this.targetName+"\"" : "";
 	// if there is no symbol by that name just return the name unaltered
 	if (!linkTo) {
-	    return this.text || alias;
+	    return this.text || alias + (parameters || '');
 	} else {
 		// it's a symbol in another file
 		if (!linkTo.is("CONSTRUCTOR") && !linkTo.isNamespace) { // it's a method or property
 			linkPath= (Link.filemap) ? Link.filemap[linkTo.memberOf] :
 				      escape(linkTo.memberOf) || "_global_";
-				linkPath += publish.conf.ext + "#" + Link.symbolNameToLinkName(linkTo);
+				linkPath += publish.conf.ext + "#" + Link.symbolNameToLinkName(linkTo).toLowerCase();
 			if (parameters) {
 				linkPath += '-' + parameters.replace(/[()]+/g, '').split(', ').join('-').toLowerCase();
 			}
