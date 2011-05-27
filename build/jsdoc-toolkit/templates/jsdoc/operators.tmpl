@@ -34,12 +34,12 @@
 <div class="clear"></div>
 </div>
 <if test="operator.type">
-	<div class="member-text"><p>{+processInlineTags(operator.desc)+}</p>
+	<div class="member-text">{+processInlineTags(operator.desc)+}
 	{+ new JSDOC.JsPlate(publish.conf.templatesDir+"examples.tmpl").process(operator) +}
 	<ul><b>Returns:</b>
 	<for each="item" in="operator.returns">
 		<li>
-		<tt><if test="defined(item.type)">{+ new Link().toSymbol(item.type) +}&nbsp;&mdash;&nbsp;</if>{+processInlineTags(item.desc)+}</tt>
+		<tt><if test="defined(item.type)">{+ new Link().toSymbol(item.type) +}&nbsp;&mdash;&nbsp;</if>{+processInlineTags(item.desc, { stripParagraphs: true })+}</tt>
 		</li>
 	</for>
 	</ul></div>
