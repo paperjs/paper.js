@@ -1,10 +1,13 @@
 {!
+	data.desc = processGroupTitle(data.desc, data);
 	var memberId = Helpers.getSymbolId(data);
 	var functionTitle = '<b>' + data.name.replace(/\^\d+$/, '') + '</b>' + makeSignature(data.params);
 	if (data.isStatic)
 		functionTitle = '<b>' + data.memberOf + '.</b>' + functionTitle;
 !}
-
+<if test="defined(data.groupTitle)">
+	<h3>{+data.groupTitle+}</h3>
+</if>
 <div id="{+ memberId +}" class="member">
 <div id="{+ memberId +}-link" class="member-link">
 <a name="{+ memberId +}" href="#" onClick="return toggleMember('{+ memberId +}', false);"><tt>{+ functionTitle +}</tt></a>
