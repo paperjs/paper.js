@@ -15,6 +15,19 @@
  */
 
 var Line = this.Line = Base.extend({
+	/** @lends Line# */
+	
+	// DOCS: document Line class and constructor
+	/**
+	 * Creates a Line object.
+	 * 
+	 * @param {Point} point1
+	 * @param {Point} point2
+	 * @param {boolean} [infinite=true]
+	 * 
+	 * @class The Line object represents..
+	 * @constructs Line
+	 */
 	initialize: function(point1, point2, infinite) {
 		// Convention: With 3 parameters, both points are absolute, and infinite
 		// controls wether the line extends beyond the defining points, meaning
@@ -34,6 +47,31 @@ var Line = this.Line = Base.extend({
 		}
 	},
 
+	/**
+	 * The starting point of the line
+	 *
+	 * @name Line#point
+	 * @type Point
+	 */
+
+	/**
+	 * The vector of the line
+	 *
+	 * @name Line#vector
+	 * @type Point
+	 */
+
+	/**
+	 * Specifies whether the line extends infinitely
+	 *
+	 * @name Line#infinite
+	 * @type boolean
+	 */
+
+	/**
+	 * @param {Line} line
+	 * @return {Point} the intersection point of the lines
+	 */
 	intersect: function(line) {
 		var cross = this.vector.cross(line.vector);
 		// Epsilon tolerance
@@ -49,6 +87,11 @@ var Line = this.Line = Base.extend({
 			? this.point.add(this.vector.multiply(t1)) : null;
 	},
 
+	// DOCS: document Line#getSide(point)
+	/**
+	 * @param {Point} point
+	 * @return {number}
+	 */
 	getSide: function(point) {
 		var v1 = this.vector,
 			v2 = point.subtract(this.point),
