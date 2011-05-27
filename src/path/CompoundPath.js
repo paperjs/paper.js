@@ -25,7 +25,8 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 *
 	 * @class A compound path contains two or more paths, holes are drawn
 	 * where the paths overlap. All the paths in a compound path take on the
-	 * style of the backmost path.
+	 * style of the backmost path and can be accessed through its
+	 * {@link Item#children} list.
 	 * 
 	 * @extends PathItem
 	 * @extends Item
@@ -108,8 +109,10 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	var fields = {
 		/** @lends CompoundPath# */
 
-		// DOCS: document moveTo
+		// DOCS: document CompoundPath#moveTo
 		/**
+		 * {@grouptitle Postscript Style Drawing Commands}
+		 * 
 		 * @param {Point} point
 		 */
 		moveTo: function(point) {
@@ -118,7 +121,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 			path.moveTo.apply(path, arguments);
 		},
 
-		// DOCS: document moveBy
+		// DOCS: document CompoundPath#moveBy
 		/**
 		 * @param {Point} point
 		 */
