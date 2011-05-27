@@ -79,28 +79,28 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * The x position of the rectangle.
 	 * 
 	 * @name Rectangle#x
-	 * @type number
+	 * @type Number
 	 */
 
 	/**
 	 * The y position of the rectangle.
 	 * 
 	 * @name Rectangle#y
-	 * @type number
+	 * @type Number
 	 */
 
 	/**
 	 * The width of the rectangle.
 	 * 
 	 * @name Rectangle#width
-	 * @type number
+	 * @type Number
 	 */
 
 	/**
 	 * The height of the rectangle.
 	 * 
 	 * @name Rectangle#height
-	 * @type number
+	 * @type Number
 	 */
 
 	// DOCS: why does jsdocs document this function, when there are no comments?
@@ -155,7 +155,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * The position of the left hand side of the rectangle. Note that this
 	 * doesn't move the whole rectangle; the right hand side stays where it was.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getLeft: function() {
@@ -172,7 +172,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * The top coordinate of the rectangle. Note that this doesn't move the
 	 * whole rectangle: the bottom won't move.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getTop: function() {
@@ -189,7 +189,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * The position of the right hand side of the rectangle. Note that this
 	 * doesn't move the whole rectangle; the left hand side stays where it was.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getRight: function() {
@@ -205,7 +205,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * The bottom coordinate of the rectangle. Note that this doesn't move the
 	 * whole rectangle: the top won't move.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getBottom: function() {
@@ -220,7 +220,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	/**
 	 * The center-x coordinate of the rectangle.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 * @ignore
 	 */
@@ -236,7 +236,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	/**
 	 * The center-y coordinate of the rectangle.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 * @ignore
 	 */

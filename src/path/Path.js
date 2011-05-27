@@ -542,7 +542,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * The length of the perimeter of the path.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getLength: function() {

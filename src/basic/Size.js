@@ -75,14 +75,14 @@ var Size = this.Size = Base.extend({
 	 * The width of the size
 	 *
 	 * @name Size#width
-	 * @type number
+	 * @type Number
 	 */
 
 	/**
 	 * The height of the size
 	 *
 	 * @name Size#height
-	 * @type number
+	 * @type Number
 	 */
 
 	set: function(width, height) {

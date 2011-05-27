@@ -146,7 +146,7 @@ var Curve = this.Curve = Base.extend({
 	/**
 	 * The index of the curve in the {@link Path#curves} array.
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getIndex: function() {
@@ -211,7 +211,7 @@ var Curve = this.Curve = Base.extend({
 	/**
 	 * The approximated length of the curve in points.
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getLength: function(/* from, to */) {

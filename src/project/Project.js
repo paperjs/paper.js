@@ -88,7 +88,7 @@ var Project = this.Project = Base.extend({
 	/**
 	 * The index of the project in the global projects array.
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getIndex: function() {

@@ -107,7 +107,7 @@ CurveLocation = Base.extend({
 	 * The length of the path from its beginning up to the location described
 	 * by this object.
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getOffset: function() {
@@ -119,7 +119,7 @@ CurveLocation = Base.extend({
 	 * The length of the curve from its beginning up to the location described
 	 * by this object.
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getCurveOffset: function() {
@@ -132,7 +132,7 @@ CurveLocation = Base.extend({
 	 * value between {@code 0} (beginning of the curve) and {@code 1} (end of
 	 * the curve).
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getParameter: function() {

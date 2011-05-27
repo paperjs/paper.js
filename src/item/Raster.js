@@ -83,7 +83,7 @@ var Raster = this.Raster = Item.extend({
 	/**
 	 * The width of the raster in pixels.
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getWidth: function() {
@@ -93,7 +93,7 @@ var Raster = this.Raster = Item.extend({
 	/**
 	 * The height of the raster in pixels.
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getHeight: function() {

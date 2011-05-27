@@ -147,7 +147,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	/**
 	 * The number of times the mouse event was fired.
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getCount: function() {

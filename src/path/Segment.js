@@ -176,7 +176,7 @@ var Segment = this.Segment = Base.extend({
 	 * The index of the segment in the {@link Path#segments} array that the
 	 * segment belongs to.
 	 *
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getIndex: function() {
