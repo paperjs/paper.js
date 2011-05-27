@@ -774,6 +774,113 @@ var Item = this.Item = Base.extend({
 	 */
 	// TODO: getControlBounds
 
+	/**
+	 * {@grouptitle Stroke Style}
+	 * 
+	 * The color of the stroke.
+	 * 
+	 * @example
+	 * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
+	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * 
+	 * // Set the stroke color of the circle to RGB red:
+	 * circle.strokeColor = new RGB(1, 0, 0);
+	 * 
+	 * @property
+	 * @name Item#strokeColor
+	 * @type RGBColor|HSBColor|GrayColor
+	 */
+
+	/**
+	 * The width of the stroke.
+	 * 
+	 * @example
+	 * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
+	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * 
+	 * // Set the stroke width of the circle to 3pt:
+	 * circle.strokeWidth = 3;
+	 * 
+	 * @property
+	 * @name Item#strokeWidth
+	 * @type number
+	 */
+
+	// DOCS: Item#strokeCap: describe the different options
+	/**
+	 * The cap of the stroke.
+	 * 
+	 * @example
+	 * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
+	 * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
+	 * 
+	 * // Set the stroke cap of the line to be round:
+	 * line.strokeCap = 'round';
+	 * 
+	 * @property
+	 * @name Item#strokeCap
+	 * @type string
+	 */
+
+	// DOCS: Item#strokeJoin: describe the different options
+	/**
+	 * The join of the stroke.
+	 * 
+	 * @property
+	 * @name Item#strokeJoin
+	 * @type string
+	 */
+
+	/**
+	 * The dash offset of the stroke.
+	 * 
+	 * @property
+	 * @name Item#dashOffset
+	 * @type string
+	 */
+
+	/**
+	 * Specifies an array containing the dash and gap lengths of the stroke.
+	 * 
+	 * @example
+	 * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
+	 * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
+	 * 
+	 * line.strokeWidth = 3;
+	 * 
+	 * // Set the dashed stroke to [10pt dash, 5pt gap, 8pt dash, 10pt gap]:
+	 * line.dashArray = [10, 5, 8, 10];
+	 * 
+	 * @property
+	 * @name Item#dashArray
+	 * @type array
+	 */
+
+	/**
+	 * The miter limit of the stroke.
+	 * 
+	 * @property
+	 * @name Item#miterLimit
+	 * @type number
+	 */
+
+	/**
+	 * {@grouptitle Fill Style}
+	 * 
+	 * The fill color.
+	 * 
+	 * @example
+	 * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
+	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * 
+	 * // Set the fill color of the circle to RGB red:
+	 * circle.fillColor = new RGBColor(1, 0, 0, );
+	 * 
+	 * @property
+	 * @name Item#fillColor
+	 * @type RGBColor|HSBColor|GrayColor
+	 */
+
 	// DOCS: document the different arguments that this function can receive.
 	/**
 	 * {@grouptitle Transform Functions}
