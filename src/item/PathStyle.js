@@ -213,7 +213,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#dashOffset
- * @type string
+ * @type number
  */
 
 /**

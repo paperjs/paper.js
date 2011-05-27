@@ -836,7 +836,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @property
 	 * @name Item#dashOffset
-	 * @type string
+	 * @type number
 	 */
 
 	/**
