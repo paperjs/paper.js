@@ -277,6 +277,8 @@ function processGroupTitle(str, symbol) {
 }
 
 function processInlineTags(str) {
+	// <code>..</code> -> <pre>..</pre>
+	str = str.replace(/<(\/)*(code)>/g, '<$1pre>');
 
 	// {@link ...} -> html links
 	str = str.replace(/\{@link ([^} ]+) ?\}/gi,
