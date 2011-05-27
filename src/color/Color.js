@@ -138,9 +138,16 @@ var Color = this.Color = Base.extend(new function() {
 	};
 
 	var fields = {
+	/** @lends Color# */
+
 		beans: true,
 		_readNull: true,
 
+		// DOCS: write Color constructor and class documentation.
+		/**
+		 * @constructs Color
+		 * @class
+		 */
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg),
 				type = this._colorType;
@@ -194,7 +201,10 @@ var Color = this.Color = Base.extend(new function() {
 			}
 		},
 
-		clone: function(color) {
+		/**
+		 * @return {RGBColor|GrayColor|HSBColor} a copy of the color object
+		 */
+		clone: function() {
 			var ctor = this.constructor,
 				copy = new ctor(ctor.dont),
 				components = this._components;
@@ -269,8 +279,22 @@ var Color = this.Color = Base.extend(new function() {
 
 	return fields;
 }, {
+	/** @lends Color# */
+
 	beans: true,
 
+	/**
+	 * Returns the type of the color as a string.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var color = new RGBColor(1, 0, 0);
+	 * console.log(color.type); // 'rgb'
+	 * </code>
+	 * 
+	 * @type String
+	 * @bean
+	 */
 	getType: function() {
 		return this._colorType;
 	},
@@ -286,6 +310,9 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * A value between 0 and 1 that specifies the color's alpha value.
 	 * All colors of the different subclasses support alpha values.
+	 * 
+	 * @type Number
+	 * @bean
 	 */
 	getAlpha: function() {
 		return this._alpha != null ? this._alpha : 1;
@@ -300,7 +327,7 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * Checks if the color has an alpha value.
 	 *
-	 * @return {@true if the color has an alpha value}
+	 * @return {Boolean} {@true if the color has an alpha value}
 	 */
 	hasAlpha: function() {
 		return this._alpha != null;
@@ -310,8 +337,8 @@ var Color = this.Color = Base.extend(new function() {
 	 * Checks if the component color values of the color are the
 	 * same as those of the supplied one.
 	 * 
-	 * @param obj the GrayColor to compare with
-	 * @return {@true if the GrayColor is the same}
+	 * @param {Color} color the color to compare with
+	 * @return {Boolean} {@true if the colors are the same}
 	 */
 	equals: function(color) {
 		if (color && color._colorType === this._colorType) {
@@ -325,6 +352,10 @@ var Color = this.Color = Base.extend(new function() {
 		return false;
 	},
 
+	/**
+	 * {@grouptitle String Representations}
+	 * @return {String} A string representation of the color.
+	 */
 	toString: function() {
 		var parts = [],
 			format = Base.formatNumber;
@@ -338,6 +369,9 @@ var Color = this.Color = Base.extend(new function() {
 		return '{ ' + parts.join(', ') + ' }';
 	},
 
+	/**
+	 * @return {String} A css representation of the color.
+	 */
 	toCssString: function() {
 		if (!this._cssString) {
 			var color = this.convert('rgb'),
@@ -356,16 +390,128 @@ var Color = this.Color = Base.extend(new function() {
 	getCanvasStyle: function() {
 		return this.toCssString();
 	}
+	
+	/**
+	 * {@grouptitle RGB Components}
+	 *
+	 * The amount of red in the color as a value between {@code 0} and
+	 * {@code 1}.
+	 * 
+	 * @name Color#red
+	 * @property
+	 * @type Number
+	 */
+
+	/**
+	 * The amount of green in the color as a value between {@code 0} and
+	 * {@code 1}.
+	 * 
+	 * @name Color#green
+	 * @property
+	 * @type Number
+	 */
+
+	/**
+	 * The amount of blue in the color as a value between {@code 0} and
+	 * {@code 1}.
+	 * 
+	 * @name Color#blue
+	 * @property
+	 * @type Number
+	 */
+
+	/**
+	 * {@grouptitle Gray Components}
+	 *
+	 * The amount of gray in the color as a value between {@code 0} and
+	 * {@code 1}.
+	 * 
+	 * @name Color#gray
+	 * @property
+	 * @type Number
+	 */
+
+	/**
+	 * {@grouptitle HSB Components}
+	 *
+	 * The hue of the color as a value in degrees between {@code 0} and
+	 * {@code 360}.
+	 * 
+	 * @name Color#hue
+	 * @property
+	 * @type Number
+	 */
+
+	/**
+	 * The saturation of the color as a value between {@code 0} and {@code 1}.
+	 * 
+	 * @name Color#saturation
+	 * @property
+	 * @type Number
+	 */
+
+	/**
+	 * The brightness of the color as a value between {@code 0} and {@code 1}.
+	 * 
+	 * @name Color#brightness
+	 * @property
+	 * @type Number
+	 */
+
 });
 
-var GrayColor = this.GrayColor = Color.extend({
+var GrayColor = this.GrayColor = Color.extend(/** @scope GrayColor */{
+	/**
+	 * Creates a GrayColor object
+	 * 
+	 * @param {Number} gray the amount of gray in the color as a value
+	 * between {@code 0} and {@code 1}
+	 * @constructor
+	 * @name GrayColor
+	 * 
+	 * @class A GrayColor object is used to represent any gray color value.
+	 * @extends Color
+	 */
+
 	_colorType: 'gray'
 });
 
-var RGBColor = this.RGBColor = Color.extend({
+var RGBColor = this.RGBColor = Color.extend(/** @scope RGBColor */{
+	/**
+	 * Creates an RGBColor object
+	 * 
+	 * @param {Number} red the amount of red in the color as a value
+	 * between {@code 0} and {@code 1}
+	 * @param {Number} green the amount of green in the color as a value
+	 * between {@code 0} and {@code 1}
+	 * @param {Number} blue the amount of blue in the color as a value
+	 * between {@code 0} and {@code 1}
+	 * @constructor
+	 * @name RGBColor
+	 * 
+	 * @class An RGBColor object is used to represent any RGB color value.
+	 * @extends Color
+	 */
+
 	_colorType: 'rgb'
 });
 
-var HSBColor = this.HSBColor = Color.extend({
+var HSBColor = this.HSBColor = Color.extend(/** @scope HSBColor */{
+	/**
+	 * Creates an HSBColor object
+	 * 
+	 * @param {Number} hue the hue of the color as a value in degrees between
+	 * {@code 0} and {@code 360}.
+	 * @param {Number} saturation the saturation of the color as a value
+	 * between {@code 0} and {@code 1}
+	 * @param {Number} brightness the brightness of the color as a value
+	 * between {@code 0} and {@code 1}
+	 * @constructor
+	 * @name HSBColor
+	 * 
+	 * @class An HSBColor object is used to represent any HSB color value.
+	 * @extends Color
+	 */
+
 	_colorType: 'hsb'
 });
