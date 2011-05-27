@@ -19,6 +19,12 @@ CurveLocation = Base.extend({
 
 	beans: true,
 
+	// DOCS: CurveLocation class description: add this comment back when the
+	// mentioned functioned have been added:
+	// The class is in use in many places, such as {@link Path#getLocationAt(offset)},
+	// {@link Path#getLength(CurveLocation)}, {@link Path#getPoint(length)},
+	// {@link Path#split(CurveLocation)},
+	// {@link PathItem#getIntersections(PathItem)}, etc.
 	/**
 	 * Creates a new CurveLocation object.
 	 *
@@ -28,16 +34,11 @@ CurveLocation = Base.extend({
 	 * @param {number} parameter
 	 * @param {Point} point
 	 *
-	 * @class CurveLocation objects describe a location on {@Curve} objects, as
-	 * defined by the curve {@link #parameter}, a value between {@code 0}
-	 * (beginning of the curve) and {@code 1} (end of the curve). If the curve is
-	 * part of a {@link Path} item, its {@link #index} inside the
+	 * @class CurveLocation objects describe a location on {@link Curve}
+	 * objects, as defined by the curve {@link #parameter}, a value between
+	 * {@code 0} (beginning of the curve) and {@code 1} (end of the curve). If
+	 * the curve is part of a {@link Path} item, its {@link #index} inside the
 	 * {@link Path#curves} array is also provided.
-	 * 
-	 * The class is in use in many places, such as {@link Path#getLocationAt(length)},
-	 * {@link Path#getLength(CurveLocation)}, {@link Path#getPoint(length)},
-	 * {@link Path#split(CurveLocation)},
-	 * {@link PathItem#getIntersections(PathItem)}, etc.
 	 */
 	initialize: function(curve, parameter, point) {
 		this._curve = curve;
@@ -92,7 +93,7 @@ CurveLocation = Base.extend({
 	},
 
 	/**
-	 * The index of the curve within the {@link Path#getCurves()} list, if the
+	 * The index of the curve within the {@link Path#curves} list, if the
 	 * curve is part of a {@link Path} item.
 	 *
 	 * @type Index
