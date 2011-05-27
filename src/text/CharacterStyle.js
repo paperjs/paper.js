@@ -30,11 +30,15 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	 * @class The CharacterStyle object represents the character style of a text
 	 * item ({@link TextItem#characterStyle})
 	 * 
-	 * @example
+	 * Sample code:
+	 * <pre>
 	 * var text = new PointText(new Point(50, 50));
 	 * text.fillColor = 'black';
 	 * text.content = 'Hello world.';
 	 * text.characterStyle.fontSize = 50;
+	 * </pre>
+	 * 
+	 * @extends PathStyle
 	 */
 	initialize: function(style) {
 		Base.initialize(this, style, {
