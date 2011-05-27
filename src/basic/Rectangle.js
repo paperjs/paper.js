@@ -344,7 +344,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	/**
-	 * @return {string} A string representation of this rectangle.
+	 * @return {String} A string representation of this rectangle.
 	 */
 	toString: function() {
 		var format = Base.formatNumber;

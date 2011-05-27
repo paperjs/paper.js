@@ -31,7 +31,7 @@ CurveLocation = Base.extend({
 	 * @name CurveLocation
 	 * @constructor
 	 * @param {Curve} curve
-	 * @param {number} parameter
+	 * @param {Number} parameter
 	 * @param {Point} point
 	 *
 	 * @class CurveLocation objects describe a location on {@link Curve}
@@ -182,7 +182,7 @@ CurveLocation = Base.extend({
 	},
 
 	/**
-	 * @return {string} A string representation of the curve location.
+	 * @return {String} A string representation of the curve location.
 	 */
 	toString: function() {
 		var parts = [],

@@ -194,7 +194,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	// }
 
 	/**
-	 * @return {string} A string representation of the tool event.
+	 * @return {String} A string representation of the tool event.
 	 */
 	toString: function() {
 		return '{ type: ' + this.type 

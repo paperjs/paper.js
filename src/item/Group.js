@@ -33,7 +33,7 @@ var Group = this.Group = Item.extend({
 	 * var circle = new Path.Circle(new Point(10, 10), 100);
 	 * var circleGroup = new Group([circle]);
 	 * 
-	 * @param {array} [children] An optional array of children that will be
+	 * @param {Array} [children] An optional array of children that will be
 	 * added to the newly created group.
 	 * 
 	 * @class A Group is a collection of items. When you transform a Group, its

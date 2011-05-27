@@ -550,7 +550,7 @@ var Item = this.Item = Base.extend({
 	 * Rasterizes the item into a newly created Raster object. The item itself
 	 * is not removed after rasterization.
 	 * 
-	 * @param {number} [resolution=72] the resolution of the raster in dpi
+	 * @param {Number} [resolution=72] the resolution of the raster in dpi
 	 * @return {Raster} the newly created raster item
 	 */
 	rasterize: function(resolution) {
@@ -853,7 +853,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @property
 	 * @name Item#dashArray
-	 * @type array
+	 * @type Array
 	 */
 
 	/**
@@ -907,7 +907,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @name Item#scale^1
 	 * @function
-	 * @param {number} scale the scale factor
+	 * @param {Number} scale the scale factor
 	 * @param {Point} [center=the center point of the item]
 	 */
 	/**
@@ -931,8 +931,8 @@ var Item = this.Item = Base.extend({
 	 * // Scale the path 200% horizontally from its bottom left corner
 	 * circle.scale(1, 2, circle.bounds.bottomLeft);
 	 * 
-	 * @param {number} sx the horizontal scale factor
-	 * @param {number} sy the vertical scale factor
+	 * @param {Number} sx the horizontal scale factor
+	 * @param {Number} sy the vertical scale factor
 	 * @param {Point} [center=the center point of the item]
 	 */
 	scale: function(sx, sy /* | scale */, center) {
@@ -962,7 +962,7 @@ var Item = this.Item = Base.extend({
 	 * more about angle units and orientation in the description of the
 	 * {@link Point#angle} property.
 	 * 
-	 * @param {number} angle the rotation angle
+	 * @param {Number} angle the rotation angle
 	 * @param {Point} [center=the center point of the item]
 	 * @see Matrix#rotate
 	 */
@@ -974,8 +974,8 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Shears the item with a given amount around its center point.
 	 * 
-	 * @param {number} shx
-	 * @param {number} shy
+	 * @param {Number} shx
+	 * @param {Number} shy
 	 * @param {Point} [center=the center point of the item]
 	 * @see Matrix#shear
 	 */
@@ -994,7 +994,7 @@ var Item = this.Item = Base.extend({
 	 * Transform the item.
 	 *
 	 * @param {Matrix} matrix
-	 * @param {array} flags Array of any of the following: 'objects', 'children',
+	 * @param {Array} flags Array of any of the following: 'objects', 'children',
 	 *     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
 	 *     Default: ['objects', 'children']
 	 */

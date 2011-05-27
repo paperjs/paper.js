@@ -90,7 +90,7 @@ var Line = this.Line = Base.extend({
 	// DOCS: document Line#getSide(point)
 	/**
 	 * @param {Point} point
-	 * @return {number}
+	 * @return {Number}
 	 */
 	getSide: function(point) {
 		var v1 = this.vector,

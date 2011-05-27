@@ -23,8 +23,8 @@ var Size = this.Size = Base.extend({
 	 *
 	 * @name Size
 	 * @constructor
-	 * @param {number} width the width
-	 * @param {number} height the height
+	 * @param {Number} width the width
+	 * @param {Number} height the height
 	 * 
 	 * @class The Size object represents the size of something.
 	 * 
@@ -63,7 +63,7 @@ var Size = this.Size = Base.extend({
 	},
 
 	/**
-	 * @return {string} A string representation of the size.
+	 * @return {String} A string representation of the size.
 	 */
 	toString: function() {
 		var format = Base.formatNumber;
@@ -102,7 +102,7 @@ var Size = this.Size = Base.extend({
 	 * 
 	 * @name Size#add^2
 	 * @function
-	 * @param {number} number the number to add
+	 * @param {Number} number the number to add
 	 * @return {Size} the addition of the size and the value as a new size
 	 */
 	/**
@@ -137,7 +137,7 @@ var Size = this.Size = Base.extend({
 	 * 
 	 * @name Size#subtract^2
 	 * @function
-	 * @param {number} number the number to subtract
+	 * @param {Number} number the number to subtract
 	 * @return {Size} the subtraction of the size and the value as a new size
 	 */
 	/**
@@ -171,7 +171,7 @@ var Size = this.Size = Base.extend({
 	 * 
 	 * @name Size#multiply^2
 	 * @function
-	 * @param {number} number the number to multiply by
+	 * @param {Number} number the number to multiply by
 	 * @return {Size} the multiplication of the size and the value as a new size
 	 */
 	/**
@@ -205,7 +205,7 @@ var Size = this.Size = Base.extend({
 	 * 
 	 * @name Size#divide^2
 	 * @function
-	 * @param {number} number the number to divide by
+	 * @param {Number} number the number to divide by
 	 * @return {Size} the division of the size and the value as a new size
 	 */
 	/**
@@ -238,7 +238,7 @@ var Size = this.Size = Base.extend({
 	 * 
 	 * @name Size#modulo^2
 	 * @function
-	 * @param {number} value
+	 * @param {Number} value
 	 * @return {Size} the integer remainders of dividing the size by the value
 	 *                 as a new size
 	 */
