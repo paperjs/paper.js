@@ -144,7 +144,11 @@ var Key = this.Key = new function() {
 		 * 		console.log('The shift key is currently pressed.')
 		 * 	}
 		 * }
-		 * @return {boolean} true if the key is pressed, false otherwise
+		 * 
+		 * @param {string} key One of: 'backspace', 'enter', 'shift', 'control',
+		 * 'option', 'pause', 'caps-lock', 'escape', 'space', 'end', 'home',
+		 * 'left', 'up', 'right', 'down', 'delete', 'command'
+		 * @return {boolean} {@true if the key is pressed}
 		 */
 		isDown: function(key) {
 			return !!keyMap[key];

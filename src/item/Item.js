@@ -177,7 +177,7 @@ var Item = this.Item = Base.extend({
 	 * path.selected = true; // Select the path
 	 * console.log(project.selectedItems.length) // 1
 	 *
-	 * @type boolean true if the item is selected, false otherwise
+	 * @type boolean {@true the item is selected}
 	 * @bean
 	 */	
 	isSelected: function() {
@@ -231,7 +231,7 @@ var Item = this.Item = Base.extend({
 	 * console.log(path.visible) // true
 	 * path.visible = false; // Hides the path
 	 * 
-	 * @type boolean true if the item is visible, false otherwise
+	 * @type boolean {@true the item is visible}
 	 * @default true
 	 */
 	visible: true,
@@ -455,7 +455,7 @@ var Item = this.Item = Base.extend({
 	* Removes the item from the project. If the item has children, they are also
 	* removed.
 	* 
-	* @return {boolean} true if the item was removed, false otherwise
+	* @return {boolean} {@true the item was removed}
 	*/
 	remove: function() {
 		if (this.isSelected())
@@ -466,7 +466,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Removes all of the item's children (if any).
 	 * 
-	 * @return {boolean} true if removing was successful, false otherwise
+	 * @return {boolean} {@true removing was successful}
 	 */
 	removeChildren: function() {
 		var removed = false;
@@ -535,7 +535,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Reverses the order of this item's children
 	 * 
-	 * @return {boolean} true if the children were removed, false otherwise.
+	 * @return {boolean} {@true the children were removed}
 	 */
 	reverseChildren: function() {
 		if (this._children) {
@@ -575,7 +575,7 @@ var Item = this.Item = Base.extend({
 	 * {@grouptitle Tests}
 	 * Checks if the item contains any children items.
 	 * 
-	 * @return {boolean} true if it has one or more children, false otherwise.
+	 * @return {boolean} {@true it has one or more children}
 	 */
 	hasChildren: function() {
 		return this._children && this._children.length > 0;
@@ -586,8 +586,8 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks whether the item is editable.
 	 * 
-	 * @return {boolean} true when neither the item, nor its parents are
-	 * locked or hidden, false otherwise.
+	 * @return {boolean} {@true when neither the item, nor its parents are
+	 * locked or hidden}
 	 * @ignore
 	 */
 	isEditable: function() {
@@ -603,7 +603,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Checks whether the item is valid, i.e. it hasn't been removed.
 	 * 
-	 * @return {boolean} true if the item is valid, false otherwise.
+	 * @return {boolean} {@true the item is valid}
 	 */
 	// TODO: isValid / checkValid
 
@@ -612,8 +612,7 @@ var Item = this.Item = Base.extend({
 	 * of the project.
 	 * 
 	 * @param {Item} item The item to check against
-	 * @return {boolean} true if it is above the specified item, false
-	 * otherwise.
+	 * @return {boolean} {@true if it is above the specified item}
 	 */
 	// TODO: isAbove
 
@@ -622,8 +621,7 @@ var Item = this.Item = Base.extend({
 	 * the project.
 	 * 
 	 * @param {Item} item The item to check against
-	 * @return {boolean} true if it is below the specified item, false
-	 * otherwise.
+	 * @return {boolean} {@true if it is below the specified item}
 	 */
 	// TODO: isBelow
 
@@ -632,8 +630,7 @@ var Item = this.Item = Base.extend({
 	 * Checks whether the specified item is the parent of the item.
 	 * 
 	 * @param {Item} item The item to check against
-	 * @return {boolean} true if it is the parent of the item, false
-	 * otherwise.
+	 * @return {boolean} {@true if it is the parent of the item}
 	 */
 	isParent: function(item) {
 		return this._parent == item;
@@ -643,7 +640,7 @@ var Item = this.Item = Base.extend({
 	 * Checks whether the specified item is a child of the item.
 	 * 
 	 * @param {Item} item The item to check against
-	 * @return {boolean} true if it is a child of the item, false otherwise.
+	 * @return {boolean} {@true it is a child of the item}
 	 */
 	isChild: function(item) {
 		return item._parent == this;
@@ -653,8 +650,7 @@ var Item = this.Item = Base.extend({
 	 * Checks if the item is contained within the specified item.
 	 * 
 	 * @param {Item} item The item to check against
-	 * @return {boolean} true if it is inside the specified item, false
-	 * otherwise.
+	 * @return {boolean} {@true if it is inside the specified item}
 	 */
 	isDescendant: function(item) {
 		var parent = this;
@@ -669,8 +665,8 @@ var Item = this.Item = Base.extend({
 	 * Checks if the item is an ancestor of the specified item.
 	 * 
 	 * @param {Item} item the item to check against
-	 * @return {boolean} true if the item is an ancestor of the specified
-	 * item, false otherwise.
+	 * @return {boolean} {@true if the item is an ancestor of the specified
+	 * item}
 	 */
 	isAncestor: function(item) {
 		var parent = item;
@@ -685,8 +681,7 @@ var Item = this.Item = Base.extend({
 	 * Checks whether the item is grouped with the specified item.
 	 * 
 	 * @param {Item} item
-	 * @return {boolean} true if the items are grouped together, false
-	 * otherwise.
+	 * @return {boolean} {@true if the items are grouped together}
 	 */
 	isGroupedWith: function(item) {
 		var parent = this._parent;
@@ -1082,7 +1077,7 @@ var Item = this.Item = Base.extend({
 		 * 
 		 * @function
 		 * @param {Item} item The item above which it should be moved
-		 * @return {boolean} true if it was moved, false otherwise
+		 * @return {boolean} {@true it was moved}
 		 */
 		moveAbove: move(true),
 
@@ -1091,7 +1086,7 @@ var Item = this.Item = Base.extend({
 		 *
 		 * @function
 		 * @param {Item} item the item below which it should be moved
-		 * @return {boolean} true if it was moved, false otherwise
+		 * @return {boolean} {@true it was moved}
 		 */
 		moveBelow: move(false)
 	};

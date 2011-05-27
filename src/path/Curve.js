@@ -234,7 +234,7 @@ var Curve = this.Curve = Base.extend({
 	 * Checks if this curve is linear, meaning it does not define any curve
 	 * handle.
 
-	 * @return {boolean} true if the curve is linear, false otherwise.
+	 * @return {boolean} {@true the curve is linear}
 	 */
 	isLinear: function() {
 		return this._segment1._handleOut.isZero()
@@ -246,7 +246,7 @@ var Curve = this.Curve = Base.extend({
 	/**
 	 * @param {number} length
 	 * @param {number} [start]
-	 * @return {boolean} true if the curve is linear, false otherwise.
+	 * @return {boolean} {@true the curve is linear}
 	 */
 	getParameter: function(length, start) {
 		var args = this.getCurveValues();

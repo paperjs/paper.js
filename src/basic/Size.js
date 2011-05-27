@@ -287,7 +287,7 @@ var Size = this.Size = Base.extend({
 	 * {@grouptitle Tests}
 	 * Checks if this size has both the width and height set to 0.
 	 * 
-	 * @return {boolean} true if both width and height are 0, false otherwise.
+	 * @return {boolean} {@true both width and height are 0}
 	 */
 	isZero: function() {
 		return this.width == 0 && this.width == 0;
@@ -296,8 +296,7 @@ var Size = this.Size = Base.extend({
 	/**
 	 * Checks if the width or the height of the size are NaN.
 	 * 
-	 * @return {boolean} true if the width or height of the size are NaN, false
-	 * otherwise.
+	 * @return {boolean} {@true if the width or height of the size are NaN}
 	 */
 	isNaN: function() {
 		return isNaN(this.width) || isNaN(this.height);

@@ -337,7 +337,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	/**
-	 * @return {boolean} true if the rectangle is empty, false otherwise.
+	 * @return {boolean} {@true the rectangle is empty}
 	 */
 	isEmpty: function() {
 		return this.width == 0 || this.height == 0;
@@ -363,16 +363,15 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * @name Rectangle#contains^2
 	 * @function
 	 * @param {Point} point the specified point
-	 * @return {boolean} true if the point is inside the rectangle's
-	 *                   boundary, false otherwise
+	 * @return {boolean} {@true if the point is inside the rectangle's boundary}
 	 */
 	/**
 	 * Tests if the interior of the rectangle entirely contains the specified
 	 * rectangle.
 	 * 
 	 * @param {Rectangle} rect The specified rectangle
-	 * @return {boolean} true if the rectangle entirely contains the
-	 *                   specified rectangle, false otherwise
+	 * @return {boolean} {@true if the rectangle entirely contains the specified
+	 *                   rectangle}
 	 */
 	contains: function(rect) {
 		if (rect.width !== undefined) {
@@ -392,8 +391,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * another rectangle.
 	 * 
 	 * @param {Rectangle} rect the specified rectangle
-	 * @return {boolean} true if the rectangle and the specified rectangle
-	 *                   intersect each other, false otherwise
+	 * @return {boolean} {@true if the rectangle and the specified rectangle
+	 *                   intersect each other}
 	 */
 	intersects: function(rect) {
 		rect = Rectangle.read(arguments);

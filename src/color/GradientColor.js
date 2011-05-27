@@ -128,7 +128,7 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * supplied one.
 	 * 
 	 * @param {GradientColor} color
-	 * @return true if the GradientColor is the same, false otherwise
+	 * @return {@true the GradientColor is the same}
 	 */
 	equals: function(color) {
 		return color == this || color && color._colorType === this._colorType
