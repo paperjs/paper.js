@@ -45,7 +45,7 @@ var Segment = this.Segment = Base.extend({
 	 * @constructor
 	 * 
 	 * @class The Segment object represents a part of a path which is
-	 * described by the {@link Path##segments} array. Every segment of a
+	 * described by the {@link Path#segments} array. Every segment of a
 	 * path corresponds to an anchor point (anchor points are the path handles
 	 * that are visible when the path is selected).
 	 */
@@ -214,7 +214,8 @@ var Segment = this.Segment = Base.extend({
 	 * {@grouptitle Sibling Segments}
 	 * 
 	 * The next segment in the {@link Path#segments} array that the segment
-	 * belongs to.
+	 * belongs to. If the segments belongs to a closed path, the first segment
+	 * is returned for the last segment of the path.
 	 *
 	 * @type Segment
 	 * @bean
@@ -227,7 +228,8 @@ var Segment = this.Segment = Base.extend({
 
 	/**
 	 * The previous segment in the {@link Path#segments} array that the
-	 * segment belongs to.
+	 * segment belongs to. If the segments belongs to a closed path, the last
+	 * segment is returned for the first segment of the path.
 	 *
 	 * @type Segment
 	 * @bean

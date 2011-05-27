@@ -35,7 +35,8 @@ var Tool = this.Tool = Base.extend({
 	 * {@link #onMouseDrag}, {@link #onMouseUp}) or a keyboard handler
 	 * function ({@link #onKeyDown}, {@link #onKeyUp}).
 	 * 
-	 * @example
+	 * Example code:
+	 * <pre>
 	 * var path;
 	 * 
 	 * // Only execute onMouseDrag when the mouse
@@ -52,6 +53,7 @@ var Tool = this.Tool = Base.extend({
 	 * 	// Add a point to the path every time the mouse is dragged
 	 * 	path.lineTo(event.point);
 	 * }
+	 * </pre>
 	 */
 	initialize: function(handlers, scope) {
 		this._scope = scope;
@@ -194,6 +196,8 @@ var Tool = this.Tool = Base.extend({
 
 	// DOCS: document Tool#onKeyDown
 	/**
+	 * {@grouptitle Keyboard Event Handlers}
+	 * 
 	 * @name Tool#onKeyDown
 	 * @property
 	 * @type function

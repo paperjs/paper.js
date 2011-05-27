@@ -203,57 +203,6 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	/**
-	 * Gets the color of a pixel in the raster.
-	 *
-	 * @name Raster#getPixel^2
-	 * @function
-	 * @param x the x offset of the pixel in pixel coordinates
-	 * @param y the y offset of the pixel in pixel coordinates
-	 * @return {RGBColor} the color of the pixel
-	 */
-	/**
-	 * Gets the color of a pixel in the raster.
-	 * @param point the offset of the pixel as a point in pixel coordinates
-	 * @return {RGBColor} the color of the pixel
-	 */
-	getPixel: function(point) {
-		point = Point.read(arguments);
-		var pixels = this.getContext().getImageData(point.x, point.y, 1, 1).data,
-			channels = new Array(4);
-		for (var i = 0; i < 4; i++)
-			channels[i] = pixels[i] / 255;
-		return RGBColor.read(channels);
-	},
-
-	/**
-	 * Sets the color of the specified pixel to the specified color.
-	 *
-	 * @name Raster#setPixel^2
-	 * @function
-	 * @param x the x offset of the pixel in pixel coordinates
-	 * @param y the y offset of the pixel in pixel coordinates
-	 * @param color the color that the pixel will be set to
-	 */
-	/**
-	 * Sets the color of the specified pixel to the specified color.
-	 * @param point the offset of the pixel as a point in pixel coordinates
-	 * @param color the color that the pixel will be set to
-	 */
-	setPixel: function(point, color) {
-		var hasPoint = arguments.length == 2;
-		point = Point.read(arguments, 0, hasPoint ? 1 : 2);
-		color = Color.read(arguments, hasPoint ? 1 : 2);
-		var ctx = this.getContext(),
-			imageData = ctx.createImageData(1, 1),
-			alpha = color.getAlpha();
-		imageData.data[0] = color.getRed() * 255;
-		imageData.data[1] = color.getGreen() * 255;
-		imageData.data[2] = color.getBlue() * 255;
-		imageData.data[3] = alpha != null ? alpha * 255 : 255;
-		ctx.putImageData(imageData, point.x, point.y);
-	},
-
-	/**
 	 * Calculates the average color of the image within the given path,
 	 * rectangle or point. This can be used for creating raster image
 	 * effects.
@@ -325,8 +274,61 @@ var Raster = this.Raster = Item.extend({
 		return total ? Color.read(channels) : null;
 	},
 
+	/**
+	 * {@grouptitle Pixels}
+	 * Gets the color of a pixel in the raster.
+	 *
+	 * @name Raster#getPixel^2
+	 * @function
+	 * @param x the x offset of the pixel in pixel coordinates
+	 * @param y the y offset of the pixel in pixel coordinates
+	 * @return {RGBColor} the color of the pixel
+	 */
+	/**
+	 * Gets the color of a pixel in the raster.
+	 * @param point the offset of the pixel as a point in pixel coordinates
+	 * @return {RGBColor} the color of the pixel
+	 */
+	getPixel: function(point) {
+		point = Point.read(arguments);
+		var pixels = this.getContext().getImageData(point.x, point.y, 1, 1).data,
+			channels = new Array(4);
+		for (var i = 0; i < 4; i++)
+			channels[i] = pixels[i] / 255;
+		return RGBColor.read(channels);
+	},
+
+	/**
+	 * Sets the color of the specified pixel to the specified color.
+	 *
+	 * @name Raster#setPixel^2
+	 * @function
+	 * @param x the x offset of the pixel in pixel coordinates
+	 * @param y the y offset of the pixel in pixel coordinates
+	 * @param color the color that the pixel will be set to
+	 */
+	/**
+	 * Sets the color of the specified pixel to the specified color.
+	 * @param point the offset of the pixel as a point in pixel coordinates
+	 * @param color the color that the pixel will be set to
+	 */
+	setPixel: function(point, color) {
+		var hasPoint = arguments.length == 2;
+		point = Point.read(arguments, 0, hasPoint ? 1 : 2);
+		color = Color.read(arguments, hasPoint ? 1 : 2);
+		var ctx = this.getContext(),
+			imageData = ctx.createImageData(1, 1),
+			alpha = color.getAlpha();
+		imageData.data[0] = color.getRed() * 255;
+		imageData.data[1] = color.getGreen() * 255;
+		imageData.data[2] = color.getBlue() * 255;
+		imageData.data[3] = alpha != null ? alpha * 255 : 255;
+		ctx.putImageData(imageData, point.x, point.y);
+	},
+
 	// DOCS: document Raster#createData
 	/**
+	 * {@grouptitle Image Data}
 	 * @param {Size} size
 	 * @return {ImageData}
 	 */

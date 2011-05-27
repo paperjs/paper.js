@@ -115,7 +115,7 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
-	/*
+	/**
 	 * The top-left point of the rectangle
 	 *
 	 * @type Point
@@ -132,7 +132,7 @@ var Rectangle = this.Rectangle = Base.extend({
 		return this;
 	},
 
-	/*
+	/**
 	 * The size of the rectangle
 	 *
 	 * @type Size
@@ -222,6 +222,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * 
 	 * @type number
 	 * @bean
+	 * @ignore
 	 */
 	getCenterX: function() {
 		return this.x + this.width * 0.5;
@@ -237,6 +238,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * 
 	 * @type number
 	 * @bean
+	 * @ignore
 	 */
 	getCenterY: function() {
 		return this.y + this.height * 0.5;
@@ -248,6 +250,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	/**
+	 * {@grouptitle Corner and Center Point Positions}
+	 * 
 	 * The center point of the rectangle.
 	 * 
 	 * @type Point
@@ -265,6 +269,62 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	// DOCS: Rectangle#topLeft, Rectangle#topRight etc.
 
+	/**
+	 * The top-left point of the rectangle.
+	 * 
+	 * @name Rectangle#topLeft
+	 * @type Point
+	 */
+
+	/**
+	 * The top-right point of the rectangle.
+	 * 
+	 * @name Rectangle#topRight
+	 * @type Point
+	 */
+
+	/**
+	 * The bottom-left point of the rectangle.
+	 * 
+	 * @name Rectangle#bottomLeft
+	 * @type Point
+	 */
+
+	/**
+	 * The bottom-right point of the rectangle.
+	 * 
+	 * @name Rectangle#bottomRight
+	 * @type Point
+	 */
+
+	/**
+	 * The left-center point of the rectangle.
+	 * 
+	 * @name Rectangle#leftCenter
+	 * @type Point
+	 */
+
+	/**
+	 * The top-center point of the rectangle.
+	 * 
+	 * @name Rectangle#topCenter
+	 * @type Point
+	 */
+
+	/**
+	 * The right-center point of the rectangle.
+	 * 
+	 * @name Rectangle#rightCenter
+	 * @type Point
+	 */
+
+	/**
+	 * The bottom-center point of the rectangle.
+	 * 
+	 * @name Rectangle#bottomCenter
+	 * @type Point
+	 */
+
 	// DOCS: Rectangle#equals
 	/**
 	 * @param {Rectangle} rect
@@ -281,6 +341,18 @@ var Rectangle = this.Rectangle = Base.extend({
 	 */
 	isEmpty: function() {
 		return this.width == 0 || this.height == 0;
+	},
+
+	/**
+	 * @return {string} A string representation of this rectangle.
+	 */
+	toString: function() {
+		var format = Base.formatNumber;
+		return '{ x: ' + format(this.x)
+				+ ', y: ' + format(this.y)
+				+ ', width: ' + format(this.width)
+				+ ', height: ' + format(this.height)
+				+ ' }';
 	},
 
 	/**
@@ -389,18 +461,6 @@ var Rectangle = this.Rectangle = Base.extend({
 			x2 = Math.max(this.x + this.width, point.x),
 			y2 = Math.max(this.y + this.height, point.y);
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	},
-
-	/**
-	 * @return {string} A string representation of this rectangle.
-	 */
-	toString: function() {
-		var format = Base.formatNumber;
-		return '{ x: ' + format(this.x)
-				+ ', y: ' + format(this.y)
-				+ ', width: ' + format(this.width)
-				+ ', height: ' + format(this.height)
-				+ ' }';
 	},
 
 	statics: {

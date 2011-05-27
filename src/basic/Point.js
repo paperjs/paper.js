@@ -30,6 +30,14 @@ var Point = this.Point = Base.extend({
 	 * @class The Point object represents a point in the two dimensional space
 	 * of the Paper.js project. It is also used to represent two dimensional
 	 * vector objects.
+	 * 
+	 * Sample code:
+	 * <pre>
+	 * // Create a point at x: 10, y: 5
+	 * var point = new Point(10, 5);
+	 * console.log(point.x); // 10
+	 * console.log(point.y); // 5
+	 * </pre>
 	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {

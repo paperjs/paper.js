@@ -54,7 +54,8 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		 * {@link Item#style}. This is a convenient way to define a style once and
 		 * apply it to a series of items:
 		 * 
-		 * @example
+		 * Sample Code:
+		 * <pre>
 		 * var circleStyle = {
 		 * 	fillColor: new RGBColor(1, 0, 0),
 		 * 	strokeColor: new GrayColor(1),
@@ -63,6 +64,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		 * 
 		 * var path = new Path.Circle(new Point(50, 50), 50);
 		 * path.style = circleStyle;
+		 * </pre>
 		 */
 		initialize: function(style) {
 			// Note: This relies on bean setters that get implicetly
