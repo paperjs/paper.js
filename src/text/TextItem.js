@@ -43,7 +43,7 @@ var TextItem = this.TextItem = Item.extend({
 	 * The text contents of the text item.
 	 *
 	 * @name TextItem#content
-	 * @type string
+	 * @type String
 	 */
 
 	_clone: function(copy) {

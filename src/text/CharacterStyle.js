@@ -53,7 +53,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	 *
 	 * @name CharacterStyle#font
 	 * @default 'sans-serif'
-	 * @type string
+	 * @type String
 	 */
 
 	/**
@@ -61,7 +61,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	 *
 	 * @name CharacterStyle#fontSize
 	 * @default 10
-	 * @type number
+	 * @type Number
 	 */
 
 	statics: {

@@ -51,7 +51,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * The unique id of the item.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getId: function() {
@@ -69,7 +69,7 @@ var Item = this.Item = Base.extend({
 	 * path.name = 'example';
 	 * project.activeLayer.children['example'].remove();
 	 * 
-	 * @type string
+	 * @type String
 	 * @bean
 	 */
 	getName: function() {
@@ -283,7 +283,7 @@ var Item = this.Item = Base.extend({
 	 * // Change the opacity of the circle to 50%:
 	 * circle.opacity = 0.5;
 	 * 
-	 * @type number
+	 * @type Number
 	 * @default 1
 	 */
 	opacity: 1,
@@ -412,7 +412,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * The index of this item within the list of its parent's children.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getIndex: function() {
@@ -803,7 +803,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @property
 	 * @name Item#strokeWidth
-	 * @type number
+	 * @type Number
 	 */
 
 	// DOCS: Item#strokeCap: describe the different options
@@ -819,7 +819,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @property
 	 * @name Item#strokeCap
-	 * @type string
+	 * @type String
 	 */
 
 	// DOCS: Item#strokeJoin: describe the different options
@@ -828,7 +828,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @property
 	 * @name Item#strokeJoin
-	 * @type string
+	 * @type String
 	 */
 
 	/**
@@ -836,7 +836,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @property
 	 * @name Item#dashOffset
-	 * @type number
+	 * @type Number
 	 */
 
 	/**
@@ -861,7 +861,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @property
 	 * @name Item#miterLimit
-	 * @type number
+	 * @type Number
 	 */
 
 	/**

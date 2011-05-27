@@ -47,14 +47,14 @@ var KeyEvent = this.KeyEvent = Event.extend(new function() {
 		 * The string character of the key that caused this key event.
 		 * 
 		 * @name KeyEvent#character
-		 * @type string
+		 * @type String
 		 */
 
 		/**
 		 * The key that caused this key event.
 		 * 
 		 * @name KeyEvent#key
-		 * @type string
+		 * @type String
 		 */
 
 		/**

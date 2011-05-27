@@ -172,7 +172,7 @@ var View = this.View = Base.extend({
 	},
 
 	/**
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getZoom: function() {

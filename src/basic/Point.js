@@ -73,14 +73,14 @@ var Point = this.Point = Base.extend({
 	 * The x coordinate of the point
 	 *
 	 * @name Point#x
-	 * @type number
+	 * @type Number
 	 */
 
 	/**
 	 * The y coordinate of the point
 	 * 
 	 * @name Point#y
-	 * @type number
+	 * @type Number
 	 */
 
 	set: function(x, y) {
@@ -327,7 +327,7 @@ var Point = this.Point = Base.extend({
 	 * ({@code x = 0}, {@code y = 0}) to the point's location.
 	 * Setting the length changes the location but keeps the vector's angle.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getLength: function() {
@@ -389,7 +389,7 @@ var Point = this.Point = Base.extend({
 	 * The angle is unsigned, no information about rotational direction is
 	 * given.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getAngle: function(/* point */) {
@@ -426,7 +426,7 @@ var Point = this.Point = Base.extend({
 	 * The angle is unsigned, no information about rotational direction is
 	 * given.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getAngleInRadians: function(/* point */) {

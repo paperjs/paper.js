@@ -70,7 +70,7 @@ var Tool = this.Tool = Base.extend({
 	 * {@link #onMouseDrag} event is called repeatedly after the initial
 	 * {@link #onMouseDown} until the user releases the mouse.
 	 * 
-	 * @type number
+	 * @type Number
 	 */
 	eventInterval: null,
 
@@ -78,7 +78,7 @@ var Tool = this.Tool = Base.extend({
 	 * The minimum distance the mouse has to drag before firing the onMouseDrag
 	 * event, since the last onMouseDrag event.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getMinDistance: function() {
@@ -97,7 +97,7 @@ var Tool = this.Tool = Base.extend({
 	 * The maximum distance the mouse has to drag before firing the onMouseDrag
 	 * event, since the last onMouseDrag event.
 	 * 
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getMaxDistance: function() {
@@ -114,7 +114,7 @@ var Tool = this.Tool = Base.extend({
 
 	// DOCS: document Tool#fixedDistance
 	/**
-	 * @type number
+	 * @type Number
 	 * @bean
 	 */
 	getFixedDistance: function() {

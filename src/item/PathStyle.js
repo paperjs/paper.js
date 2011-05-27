@@ -180,7 +180,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#strokeWidth
- * @type number
+ * @type Number
  */
 
 // DOCS: PathStyle#strokeCap: describe the different options
@@ -196,7 +196,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#strokeCap
- * @type string
+ * @type String
  */
 
 // DOCS: PathStyle#strokeJoin: describe the different options
@@ -205,7 +205,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#strokeJoin
- * @type string
+ * @type String
  */
 
 /**
@@ -213,7 +213,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#dashOffset
- * @type number
+ * @type Number
  */
 
 /**
@@ -238,7 +238,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#miterLimit
- * @type number
+ * @type Number
  */
 
 /**
