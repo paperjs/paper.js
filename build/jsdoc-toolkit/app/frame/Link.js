@@ -27,6 +27,7 @@ function Link() {
 		return this;
 	}
 	this.toSymbol = function(alias) {
+		// 'Class[]' to 'array of Class objects'
 		if(/\[\]$/.test(alias)) {
 			alias = alias.replace(/\[\]$/, '');
 			this.text = 'array of ' + alias + ' objects';
@@ -48,13 +49,13 @@ function Link() {
 		var thisLink = this;
 
 		if (this.alias) {
-			linkString = this.alias.replace(/(^|[^a-z$0-9_#.:^-])([|a-z$0-9_#.:^-]+)($|[^a-z$0-9_#.:^-])/i,
-				function(match, prematch, symbolName, postmatch) {
+			linkString = this.alias.replace(/(^|[^a-z$0-9_#.:^-])([|a-z$0-9_#.:^-]+)(\([^)]+\))*($|[^a-z$0-9_#.:^-])/i,
+				function(match, prematch, symbolName, parameters, postmatch) {
 					var symbolNames = symbolName.split("|");
 					var links = [];
 					for (var i = 0, l = symbolNames.length; i < l; i++) {
 						thisLink.alias = symbolNames[i];
-						links.push(thisLink._makeSymbolLink(symbolNames[i]));
+						links.push(thisLink._makeSymbolLink(symbolNames[i], parameters));
 					}
 					return prematch+links.join("|")+postmatch;
 				}
@@ -119,33 +120,37 @@ Link.getSymbol= function(alias) {
 }
 
 /** Create a link to another symbol. */
-Link.prototype._makeSymbolLink = function(alias) {
+Link.prototype._makeSymbolLink = function(alias, parameters) {
 	var linkBase = Link.base+publish.conf.symbolsDir;
 	var linkTo = Link.getSymbol(alias);
 	var linkPath;
 	var target = (this.targetName)? " target=\""+this.targetName+"\"" : "";
-
 	// if there is no symbol by that name just return the name unaltered
-	if (!linkTo)
+	if (!linkTo) {
 	    return this.text || alias;
-	
-	// it's a symbol in another file
-	else {
+	} else {
+		// it's a symbol in another file
 		if (!linkTo.is("CONSTRUCTOR") && !linkTo.isNamespace) { // it's a method or property
 			linkPath= (Link.filemap) ? Link.filemap[linkTo.memberOf] :
 				      escape(linkTo.memberOf) || "_global_";
 				linkPath += publish.conf.ext + "#" + Link.symbolNameToLinkName(linkTo);
-		}
-		else {
+			if (parameters) {
+				linkPath += '-' + parameters.replace(/[()]+/g, '').split(', ').join('-').toLowerCase();
+			}
+		} else {
 			linkPath = (Link.filemap)? Link.filemap[linkTo.alias] : escape(linkTo.alias);
 			linkPath += publish.conf.ext;// + (this.classLink? "":"#" + Link.hashPrefix + "constructor");
 		}
 		linkPath = linkBase + linkPath
 	}
         
-	var linkText= this.text || alias;
+	var linkText= (this.text || alias) + (parameters || '');
     
-	var link = {linkPath: linkPath, linkText: linkText.replace(/^#/, ''), linkInner: (this.innerName? "#" + this.innerName : "")};
+	var link = {
+		linkPath: linkPath,
+		linkText: linkText.replace(/^#/, ''),
+		linkInner: (this.innerName? "#" + this.innerName : "")
+	};
 	
 	if (typeof JSDOC.PluginManager != "undefined") {
 		JSDOC.PluginManager.run("onSymbolLink", link);
