@@ -1,5 +1,3 @@
-var templates;
-
 var Operator = new function() {
 	var operators = {
 		add: '+', subtract: '-', multiply: '*', divide: '/', equals: '==',
@@ -51,6 +49,7 @@ var Helpers = {
 	}
 };
 
+var templates;
 /** Called automatically by JsDoc Toolkit. */
 function publish(symbolSet) {
 	publish.conf = {  // trailing slash expected for dirs
@@ -276,7 +275,9 @@ function processGroupTitle(str, symbol) {
 	return str;
 }
 
-function processInlineTags(str) {
+function processInlineTags(str, param) {
+	if (!param)
+		param = {};
 	// <code>..</code> -> <pre>..</pre>
 	str = str.replace(/<(\/)*(code)>/g, '<$1pre>');
 
@@ -292,7 +293,57 @@ function processInlineTags(str) {
 			return '<tt>' + code + '</tt>';
 		}
 	);
+	
+	var lineBreak = java.lang.System.getProperty('line.separator');
+	
+	// Convert any type of lineBreak to the one we're using now:
+	str = str.replace(/(\r\n|\n|\r)/g, function(match, lineBreak) {
+		return lineBreak;
+	});
+
+	// Replace inline <code></code> with <tt></tt>
+	str = str.replace(/<code>[ \t]*([^\n\r]*?)[ \t]*<\/code>/g, function(match, content) {
+		return '<tt>' + content + '</tt>';
+	});
+
+	// Put code and pre tags on the same line as the content, as white-space: pre is set:
+	str = str.replace(/(<(?:code|pre)>)\s*([\u0000-\uffff]*?)\s*(<\/(?:code|pre)>)/g, function(match, open, content, close) {
+		// Filter out the first white space at the beginning of each line, since
+		// that stems from the space after the * in the comment and replace <code>
+		// with <pre>, to fix a IE problem where lighter.js does not receive
+		// linebreaks from code tags weven when white-space: pre is set.
+		return '<pre>' + content.replace(/(\r\n|\n|\r) /mg, function(match, lineBreak) {
+			return lineBreak;
+		}) + '</pre>';
+	});
+	// Empty lines -> Paragraphs
+	if (!param.stripParagraphs) {
+		if (param.wrapInParagraphs === undefined || param.wrapInParagraphs)
+			str = '<p>' + str.trim() + '</p>';
+		str = str.trim().replace(/(\r\n|\n|\r)\s*(\r\n|\n|\r)/g, function(match, lineBreak) {
+			return '</p>' + lineBreak + '<p>';
+		});
+		// Automatically put </p><p> at the end of sentences with line breaks.
+		// Match following </p> and <p> tags and swallow them. This happens when
+		// the original content contains these.
+		str = str.trim().replace(/([.:?!;])\s*(\r\n|\n|\r)(\s*)(<\/p>|<p>|)/g, function(match, before, lineBreak, whiteSpace, after) {
+			// Include following whiteSpace as well, since for code blocks they are relevant (e.g. indentation on new line)
+			return before + '</p>' + lineBreak + whiteSpace + '<p>';
+		});
+		// Filter out <p> tags within and around <code> and <pre> blocks again
+		str = str.replace(/((?:<p>\s*|)<(?:code|pre)[^>]*>[\u0000-\uffff]*<\/(?:code|pre)>(?:\s*<\/p>|))/g, function(match, code) {
+			return stripTags(code, 'p');
+		});
+		// Filter out empty paragraphs
+		str = str.replace(/<p><\/p>/g, '');
+	}
+	
 	return str;
+}
+
+function stripTags(str, tag) {
+	var tag = tag || '.*?'; // Default: all tags
+	return str.replace(new RegExp('<' + tag + '>|</' + tag + '>', 'g'), '');
 }
 
 function copyStatic(dir) {

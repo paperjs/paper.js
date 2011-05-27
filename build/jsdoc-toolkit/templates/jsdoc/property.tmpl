@@ -25,8 +25,9 @@
 <div class="clear"></div>
 </div>
 <if test="data.type">
-	<div class="member-text"><p>
-		{+processInlineTags(data.desc)+}<if test="data.readOnly"> Read only.</if></p>
+	<div class="member-text">
+		{+processInlineTags(data.desc)+}
+		<if test="data.readOnly"> Read only.</if>
 		{+ new JSDOC.JsPlate(publish.conf.templatesDir+"examples.tmpl").process(data) +}
 	<if test="data.defaultValue">
 		<ul><b>Default:</b>

@@ -59,7 +59,7 @@
 <if test="inheritedClassLinks.length">
 <p> Extends {+ inheritedClassLinks.join(', ') +}</p>
 </if>
-<p>{+processInlineTags(data.classDesc)+}</p>
+{+processInlineTags(data.classDesc)+}
 </div>
 <!-- ============================== constructors ========================= -->
 <if test="!/(Event|Style)/.test(data.alias)">
@@ -78,7 +78,7 @@
 	<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+data.classId+}', false);"></div>
 	<div class="clear"></div>
 	</div>
-	<div class="member-text"><p>{+processInlineTags(data.desc)+}</p>
+	<div class="member-text">{+processInlineTags(data.desc)+}
 		<if test="data.example.length">
 		<for each="example" in="data.example">
 		<pre>{+example+}</pre>
@@ -89,7 +89,7 @@
 			<ul><b>Returns:</b>
 			<li>
 			<for each="item" in="data.returns">
-					<dd>{+((item.type)?"<span class=\"light fixedFont\">{"+(new Link().toSymbol(item.type))+"}</span> " : "")+}{+processInlineTags(item.desc)+}</dd>
+					<dd>{+((item.type)?"<span class=\"light fixedFont\">{"+(new Link().toSymbol(item.type))+"}</span> " : "")+}{+processInlineTags(item.desc, { stripParagraphs: true })+}</dd>
 			</for>
 			</li>
 			</ul>
