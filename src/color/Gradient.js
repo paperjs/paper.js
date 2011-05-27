@@ -25,7 +25,7 @@ var Gradient = this.Gradient = Base.extend({
 	 * Creates a gradient object
 	 * 
 	 * @param {GradientStop[]} stops
-	 * @param {string} [type='linear'] 'linear' or 'radial'
+	 * @param {String} [type='linear'] 'linear' or 'radial'
 	 * @constructs Gradient
 	 * 
 	 * @class The Gradient object.

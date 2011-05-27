@@ -181,7 +181,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Circle(new Point(100, 100), 50);
 		 * 
 		 * @param {Point} center the center point of the circle
-		 * @param {number} radius the radius of the circle
+		 * @param {Number} radius the radius of the circle
 		 * @return {Path} the newly created path
 		 */
 		Circle: function(center, radius) {
@@ -225,8 +225,8 @@ Path.inject({ statics: new function() {
 		 * var decahedron = new Path.RegularPolygon(new Point(200, 100), 10, 50);
 		 * 
 		 * @param {Point} center the center point of the polygon
-		 * @param {number} numSides the number of sides of the polygon
-		 * @param {number} radius the radius of the polygon
+		 * @param {Number} numSides the number of sides of the polygon
+		 * @param {Number} radius the radius of the polygon
 		 * @return {Path} the newly created path
 		 */
 		RegularPolygon: function(center, numSides, radius) {
@@ -261,9 +261,9 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Star(center, points, innerRadius, outerRadius);
 		 * 
 		 * @param {Point} center the center point of the star
-		 * @param {number} numPoints the number of points of the star
-		 * @param {number} radius1
-		 * @param {number} radius2
+		 * @param {Number} numPoints the number of points of the star
+		 * @param {Number} radius1
+		 * @param {Number} radius2
 		 * @return {Path} the newly created path
 		 */	
 		Star: function(center, numPoints, radius1, radius2) {

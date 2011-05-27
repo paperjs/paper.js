@@ -24,7 +24,7 @@ var GradientStop = this.GradientStop = Base.extend({
 	 * Creates a GradientStop object.
 	 * 
 	 * @param {Color} [color=new RGBColor(0, 0, 0)] the color of the stop
-	 * @param {number} [rampPoint=0] the position of the stop on the gradient
+	 * @param {Number} [rampPoint=0] the position of the stop on the gradient
 	 *                               ramp {@default 0}
 	 * @constructs GradientStop
 	 * 

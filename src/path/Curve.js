@@ -244,8 +244,8 @@ var Curve = this.Curve = Base.extend({
 	// PORT: Add support for start parameter to Sg
 	// DOCS: document Curve#getParameter(length, start)
 	/**
-	 * @param {number} length
-	 * @param {number} [start]
+	 * @param {Number} length
+	 * @param {Number} [start]
 	 * @return {boolean} {@true the curve is linear}
 	 */
 	getParameter: function(length, start) {
@@ -295,7 +295,7 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	/**
-	 * @return {string} A string representation of the curve.
+	 * @return {String} A string representation of the curve.
 	 */
 	toString: function() {
 		var parts = [ 'point1: ' + this._segment1._point ];
@@ -416,7 +416,7 @@ var Curve = this.Curve = Base.extend({
 		/**
 		 * Returns the point on the curve at the specified position.
 		 * 
-		 * @param {number} parameter the position at which to find the point as
+		 * @param {Number} parameter the position at which to find the point as
 		 *                 a value between 0 and 1.
 		 * @return {Point}
 		 */
@@ -427,7 +427,7 @@ var Curve = this.Curve = Base.extend({
 		/**
 		 * Returns the tangent point on the curve at the specified position.
 		 * 
-		 * @param {number} parameter the position at which to find the tangent
+		 * @param {Number} parameter the position at which to find the tangent
 		 *                 point as a value between 0 and 1.
 		 */
 		getTangent: function(parameter) {
@@ -437,7 +437,7 @@ var Curve = this.Curve = Base.extend({
 		/**
 		 * Returns the normal point on the curve at the specified position.
 		 * 
-		 * @param {number} parameter the position at which to find the normal
+		 * @param {Number} parameter the position at which to find the normal
 		 *                 point as a value between 0 and 1.
 		 */
 		getNormal: function(parameter) {

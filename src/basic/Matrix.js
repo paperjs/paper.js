@@ -28,12 +28,12 @@ var Matrix = this.Matrix = Base.extend({
 	 * Creates a 2D affine transform.
 	 *
 	 * @constructs Matrix
-	 * @param {number} m00 The m00 coordinate of the transform.
-	 * @param {number} m10 The m10 coordinate of the transform.
-	 * @param {number} m01 The m01 coordinate of the transform.
-	 * @param {number} m11 The m11 coordinate of the transform.
-	 * @param {number} m02 The m02 coordinate of the transform.
-	 * @param {number} m12 The m12 coordinate of the transform.
+	 * @param {Number} m00 The m00 coordinate of the transform.
+	 * @param {Number} m10 The m10 coordinate of the transform.
+	 * @param {Number} m01 The m01 coordinate of the transform.
+	 * @param {Number} m11 The m11 coordinate of the transform.
+	 * @param {Number} m02 The m02 coordinate of the transform.
+	 * @param {Number} m12 The m12 coordinate of the transform.
 	 * 
 	 * @class An affine transform performs a linear mapping from 2D coordinates
 	 * to other 2D coordinates that preserves the "straightness" and
@@ -88,12 +88,12 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Sets this transform to the matrix specified by the 6 values.
 	 *
-	 * @param {number} m00 The m00 coordinate of the transform.
-	 * @param {number} m10 The m10 coordinate of the transform.
-	 * @param {number} m01 The m01 coordinate of the transform.
-	 * @param {number} m11 The m11 coordinate of the transform.
-	 * @param {number} m02 The m02 coordinate of the transform.
-	 * @param {number} m12 The m12 coordinate of the transform.
+	 * @param {Number} m00 The m00 coordinate of the transform.
+	 * @param {Number} m10 The m10 coordinate of the transform.
+	 * @param {Number} m01 The m01 coordinate of the transform.
+	 * @param {Number} m11 The m11 coordinate of the transform.
+	 * @param {Number} m02 The m02 coordinate of the transform.
+	 * @param {Number} m12 The m12 coordinate of the transform.
 	 * @return {Matrix} This affine transform.
 	 */
 	set: function(m00, m10, m01, m11, m02, m12) {
@@ -109,8 +109,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Concatentates this transform with a scaling transformation.
 	 *
-	 * @param {number} sx The x-axis scaling factor.
-	 * @param {number} sy The y-axis scaling factor.
+	 * @param {Number} sx The x-axis scaling factor.
+	 * @param {Number} sy The y-axis scaling factor.
 	 * @param {Point} center The optional center for the scaling transformation.
 	 * @return {Matrix} This affine transform.
 	 */
@@ -138,8 +138,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Concatentates this transform with a translate transformation.
 	 *
-	 * @param {number} dx The distance to translate in the x direction.
-	 * @param {number} dy The distance to translate in the y direction.
+	 * @param {Number} dx The distance to translate in the x direction.
+	 * @param {Number} dy The distance to translate in the y direction.
 	 * @return {Matrix} This affine transform.
 	 */
 	translate: function(point) {
@@ -154,9 +154,9 @@ var Matrix = this.Matrix = Base.extend({
 	 * Concatentates this transform with a rotation transformation around an
 	 * anchor point.
 	 *
-	 * @param {number} angle The angle of rotation measured in degrees.
-	 * @param {number} x The x coordinate of the anchor point.
-	 * @param {number} y The y coordinate of the anchor point.
+	 * @param {Number} angle The angle of rotation measured in degrees.
+	 * @param {Number} x The x coordinate of the anchor point.
+	 * @param {Number} y The y coordinate of the anchor point.
 	 * @return {Matrix} This affine transform.
 	 */
 	rotate: function(angle, center) {
@@ -167,8 +167,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Concatentates this transform with a shear transformation.
 	 *
-	 * @param {number} shx The x shear factor.
-	 * @param {number} shy The y shear factor.
+	 * @param {Number} shx The x shear factor.
+	 * @param {Number} shy The y shear factor.
 	 * @param {Point} center The optional center for the shear transformation.
 	 * @return {Matrix} This affine transform.
 	 */
@@ -194,7 +194,7 @@ var Matrix = this.Matrix = Base.extend({
 	},
 
 	/**
-	 * @return {string} A string representation of this transform.
+	 * @return {String} A string representation of this transform.
 	 */
 	toString: function() {
 		var format = Base.formatNumber;
@@ -205,32 +205,32 @@ var Matrix = this.Matrix = Base.extend({
 	},
 	
 	/**
-	 * @return {number} The scaling factor in the x-direction (m00).
+	 * @return {Number} The scaling factor in the x-direction (m00).
 	 */
 	// scaleX
 
 	/**
-	 * @return {number} The scaling factor in the y-direction (m11).
+	 * @return {Number} The scaling factor in the y-direction (m11).
 	 */
 	// scaleY
 
 	/**
-	 * @return {number} The translation in the x-direction (m02).
+	 * @return {Number} The translation in the x-direction (m02).
 	 */
 	// translateX
 
 	/**
-	 * @return {number} The translation in the y-direction (m12).
+	 * @return {Number} The translation in the y-direction (m12).
 	 */
 	// translateY
 
 	/**
-	 * @return {number} The shear factor in the x-direction (m01).
+	 * @return {Number} The shear factor in the x-direction (m01).
 	 */
 	// shearX
 
 	/**
-	 * @return {number} The shear factor in the y-direction (m10).
+	 * @return {Number} The shear factor in the y-direction (m10).
 	 */
 	// shearY
 
@@ -288,12 +288,12 @@ var Matrix = this.Matrix = Base.extend({
 	 *
 	 * @param {Array} src The array containing the source points
 	 *        as x, y value pairs.
-	 * @param {number} srcOff The offset to the first point to be transformed.
+	 * @param {Number} srcOff The offset to the first point to be transformed.
 	 * @param {Array} dst The array into which to store the transformed
 	 *        point pairs.
-	 * @param {number} dstOff The offset of the location of the first
+	 * @param {Number} dstOff The offset of the location of the first
 	 *        transformed point in the destination array.
-	 * @param {number} numPts The number of points to tranform.
+	 * @param {Number} numPts The number of points to tranform.
 	 */
 	transform: function(/* point | */ src, srcOff, dst, dstOff, numPts) {
 		return arguments.length < 5
@@ -361,7 +361,7 @@ var Matrix = this.Matrix = Base.extend({
 	},
 
 	/**
-	 * @return {number} The determinant of this transform.
+	 * @return {Number} The determinant of this transform.
 	 */
 	getDeterminant: function() {
 		return this._m00 * this._m11 - this._m01 * this._m10;
@@ -423,8 +423,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Sets this transform to a scaling transformation.
 	 *
-	 * @param {number} sx The x-axis scaling factor.
-	 * @param {number} sy The y-axis scaling factor.
+	 * @param {Number} sx The x-axis scaling factor.
+	 * @param {Number} sy The y-axis scaling factor.
 	 * @return {Matrix} This affine transform.
 	 */
 	setToScale: function(sx, sy) {
@@ -434,8 +434,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Sets this transform to a translation transformation.
 	 *
-	 * @param {number} dx The distance to translate in the x direction.
-	 * @param {number} dy The distance to translate in the y direction.
+	 * @param {Number} dx The distance to translate in the x direction.
+	 * @param {Number} dy The distance to translate in the y direction.
 	 * @return {Matrix} This affine transform.
 	 */
 	setToTranslation: function(delta) {
@@ -446,8 +446,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Sets this transform to a shearing transformation.
 	 *
-	 * @param {number} shx The x-axis shear factor.
-	 * @param {number} shy The y-axis shear factor.
+	 * @param {Number} shx The x-axis shear factor.
+	 * @param {Number} shy The y-axis shear factor.
 	 * @return {Matrix} This affine transform.
 	 */
 	setToShear: function(shx, shy) {
@@ -457,9 +457,9 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Sets this transform to a rotation transformation.
 	 *
-	 * @param {number} angle The angle of rotation measured in degrees.
-	 * @param {number} x The x coordinate of the anchor point.
-	 * @param {number} y The y coordinate of the anchor point.
+	 * @param {Number} angle The angle of rotation measured in degrees.
+	 * @param {Number} x The x coordinate of the anchor point.
+	 * @param {Number} y The y coordinate of the anchor point.
 	 * @return {Matrix} This affine transform.
 	 */
 	setToRotation: function(angle, center) {
@@ -496,8 +496,8 @@ var Matrix = this.Matrix = Base.extend({
 		/**
 		 * Creates a transform representing a scaling transformation.
 		 *
-		 * @param {number} sx The x-axis scaling factor.
-		 * @param {number} sy The y-axis scaling factor.
+		 * @param {Number} sx The x-axis scaling factor.
+		 * @param {Number} sy The y-axis scaling factor.
 		 * @return {Matrix} A transform representing a scaling
 		 *         transformation.
 		 */
@@ -509,8 +509,8 @@ var Matrix = this.Matrix = Base.extend({
 		/**
 		 * Creates a transform representing a translation transformation.
 		 *
-		 * @param {number} dx The distance to translate in the x direction.
-		 * @param {number} dy The distance to translate in the y direction.
+		 * @param {Number} dx The distance to translate in the x direction.
+		 * @param {Number} dy The distance to translate in the y direction.
 		 * @return {Matrix} A transform representing a translation
 		 *         transformation.
 		 */
@@ -522,8 +522,8 @@ var Matrix = this.Matrix = Base.extend({
 		/**
 		 * Creates a transform representing a shearing transformation.
 		 *
-		 * @param {number} shx The x-axis shear factor.
-		 * @param {number} shy The y-axis shear factor.
+		 * @param {Number} shx The x-axis shear factor.
+		 * @param {Number} shy The y-axis shear factor.
 		 * @return {Matrix} A transform representing a shearing transformation.
 		 */
 		getShearInstance: function(shx, shy, center) {
@@ -534,9 +534,9 @@ var Matrix = this.Matrix = Base.extend({
 		/**
 		 * Creates a transform representing a rotation transformation.
 		 *
-		 * @param {number} angle The angle of rotation measured in degrees.
-		 * @param {number} x The x coordinate of the anchor point.
-		 * @param {number} y The y coordinate of the anchor point.
+		 * @param {Number} angle The angle of rotation measured in degrees.
+		 * @param {Number} x The x coordinate of the anchor point.
+		 * @param {Number} y The y coordinate of the anchor point.
 		 * @return {Matrix} A transform representing a rotation transformation.
 		 */
 		getRotateInstance: function(angle, center) {

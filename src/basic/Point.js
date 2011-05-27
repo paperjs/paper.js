@@ -24,8 +24,8 @@ var Point = this.Point = Base.extend({
 	 *
 	 * @name Point
 	 * @constructor
-	 * @param {number} x the x coordinate
-	 * @param {number} y the y coordinate
+	 * @param {Number} x the x coordinate
+	 * @param {Number} y the y coordinate
 	 * 
 	 * @class The Point object represents a point in the two dimensional space
 	 * of the Paper.js project. It is also used to represent two dimensional
@@ -107,7 +107,7 @@ var Point = this.Point = Base.extend({
 	},
 
 	/**
-	 * @return {string} A string representation of the point.
+	 * @return {String} A string representation of the point.
 	 */
 	toString: function() {
 		var format = Base.formatNumber;
@@ -126,7 +126,7 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @name Point#add^2
 	 * @function
-	 * @param {number} number the number to add
+	 * @param {Number} number the number to add
 	 * @return {Point} the addition of the point and the value as a new point
 	 */
 	/**
@@ -162,7 +162,7 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @name Point#subtract^2
 	 * @function
-	 * @param {number} number the number to subtract
+	 * @param {Number} number the number to subtract
 	 * @return {Point} the subtraction of the point and the value as a new point
 	 */
 	/**
@@ -198,7 +198,7 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @name Point#multiply^2
 	 * @function
-	 * @param {number} number the number to multiply by
+	 * @param {Number} number the number to multiply by
 	 * @return {Point} the multiplication of the point and the value as a new point
 	 */
 	/**
@@ -234,7 +234,7 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @name Point#divide^2
 	 * @function
-	 * @param {number} number the number to divide by
+	 * @param {Number} number the number to divide by
 	 * @return {Point} the division of the point and the value as a new point
 	 */
 	/**
@@ -268,7 +268,7 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @name Point#modulo^2
 	 * @function
-	 * @param {number} value
+	 * @param {Number} value
 	 * @return {Point} the integer remainders of dividing the point by the value
 	 *                 as a new point
 	 */
@@ -312,7 +312,7 @@ var Point = this.Point = Base.extend({
 	 * Returns the distance between the point and another point.
 	 *
 	 * @param {Point} point
-	 * @return {number}
+	 * @return {Number}
 	 */
 	getDistance: function(point) {
 		point = Point.read(arguments);
@@ -359,7 +359,7 @@ var Point = this.Point = Base.extend({
 
 	// DOCS: Point#length
 	/**
-	 * @param {number} length
+	 * @param {Number} length
 	 * @return {Point}
 	 */
 	normalize: function(length) {
@@ -381,7 +381,7 @@ var Point = this.Point = Base.extend({
 	 * @name Point#getAngle
 	 * @function
 	 * @param {Point} point
-	 * @return {number} the angle in degrees
+	 * @return {Number} the angle in degrees
 	 */
 	/**
 	 * The vector's angle in degrees, measured from the x-axis to the vector.
@@ -418,7 +418,7 @@ var Point = this.Point = Base.extend({
 	 * @name Point#getAngleInRadians
 	 * @function
 	 * @param {Point} point
-	 * @return {number} the angle in radians
+	 * @return {Number} the angle in radians
 	 */
 	/**
 	 * The vector's angle in radians, measured from the x-axis to the vector.
@@ -452,7 +452,7 @@ var Point = this.Point = Base.extend({
 
 	// DOCS: Point#getQuadrant
 	/**
-	 * @return {number}
+	 * @return {Number}
 	 */
 	getQuadrant: function() {
 		return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
@@ -466,7 +466,7 @@ var Point = this.Point = Base.extend({
 	 * {@link #angle} property.
 	 * 
 	 * @param {Point} point
-	 * @return {number} the angle between the two vectors
+	 * @return {Number} the angle between the two vectors
 	 */
 	getDirectedAngle: function(point) {
 		point = Point.read(arguments);
@@ -481,7 +481,7 @@ var Point = this.Point = Base.extend({
 	 * Read more about angle units and orientation in the description of the
 	 * {@link #angle} property.
 	 * 
-	 * @param {number} angle the rotation angle
+	 * @param {Number} angle the rotation angle
 	 * @param {Point} center the center point of the rotation
 	 * @returns {Point} the rotated point
 	 */
@@ -531,7 +531,7 @@ var Point = this.Point = Base.extend({
 	 * Checks if the point is within a given distance of another point.
 	 * 
 	 * @param {Point} point the point to check against
-	 * @param {number} tolerance the maximum distance allowed
+	 * @param {Number} tolerance the maximum distance allowed
 	 * @returns {boolean} {@true if it is within the given distance}
 	 */
 	isClose: function(point, tolerance) {
@@ -584,7 +584,7 @@ var Point = this.Point = Base.extend({
 	 * Returns the dot product of the point and another point.
 	 * 
 	 * @param {Point} point
-	 * @returns {number} the dot product of the two points
+	 * @returns {Number} the dot product of the two points
 	 */
 	dot: function(point) {
 		point = Point.read(arguments);
@@ -595,7 +595,7 @@ var Point = this.Point = Base.extend({
 	 * Returns the cross product of the point and another point.
 	 * 
 	 * @param {Point} point
-	 * @returns {number} the cross product of the two points
+	 * @returns {Number} the cross product of the two points
 	 */
 	cross: function(point) {
 		point = Point.read(arguments);

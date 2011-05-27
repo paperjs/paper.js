@@ -230,7 +230,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#dashArray
- * @type array
+ * @type Array
  */
 
 /**

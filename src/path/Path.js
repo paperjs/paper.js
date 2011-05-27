@@ -297,7 +297,7 @@ var Path = this.Path = PathItem.extend({
 	 * Inserts one or more segments at a given index in the list of this path's
 	 * segments.
 	 * 
-	 * @param {number} index the index at which to insert the segment.
+	 * @param {Number} index the index at which to insert the segment.
 	 * @param {Segment|Point} segment the segment or point to be inserted.
 	 * @return {Segment} the added segment. This is not necessarily the same
 	 * object, e.g. if the segment to be added already belongs to another path.
@@ -337,7 +337,7 @@ var Path = this.Path = PathItem.extend({
 	 * Removes the segment at the specified index of the path's
 	 * {@link #segments} array.
 	 * 
-	 * @param {number} index the index of the segment to be removed
+	 * @param {Number} index the index of the segment to be removed
 	 * @return {Segment} the removed segment
 	 */
 	removeSegment: function(index) {
@@ -350,9 +350,9 @@ var Path = this.Path = PathItem.extend({
 	 * Removes the segments from the specified 'from' index to the specified
 	 * 'to' index from the path's {@link #segments} array.
 	 * 
-	 * @param {number} from
-	 * @param {number} to
-	 * @return {array} an array containing the removed segments.
+	 * @param {Number} from
+	 * @param {Number} to
+	 * @return {Array} an array containing the removed segments.
 	 */
 	removeSegments: function(from, to) {
 		from = from || 0;
@@ -572,7 +572,7 @@ var Path = this.Path = PathItem.extend({
 	// PORT: Rename functions and add new isParameter argument in Sg
 	// DOCS: document Path#getLocationAt
 	/**
-	 * @param {number} offset
+	 * @param {Number} offset
 	 * @param {boolean} [isParameter=false]
 	 */
 	getLocationAt: function(offset, isParameter) {
@@ -605,7 +605,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * Get the point of the path at the given offset.
 	 * 
-	 * @param {number} offset
+	 * @param {Number} offset
 	 * @param {boolean} [isParameter=false]
 	 * @return {Point} the point at the given offset
 	 */
@@ -618,7 +618,7 @@ var Path = this.Path = PathItem.extend({
 	 * Get the tangent to the path at the given offset as a vector
 	 * point.
 	 * 
-	 * @param {number} offset
+	 * @param {Number} offset
 	 * @param {boolean} [isParameter=false]
 	 * @return {Point} the tangent vector at the given offset
 	 */
@@ -630,7 +630,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * Get the normal to the path at the given offset as a vector point.
 	 * 
-	 * @param {number} offset
+	 * @param {Number} offset
 	 * @param {boolean} [isParameter=false]
 	 * @return {Point} the normal vector at the given offset
 	 */
@@ -996,7 +996,7 @@ var Path = this.Path = PathItem.extend({
 		/**
 		 * @param {Point} through
 		 * @param {Point} to
-		 * @param {number} [parameter=0.5]
+		 * @param {Number} [parameter=0.5]
 		 */
 		curveTo: function(through, to, parameter) {
 			through = Point.read(arguments, 0, 1);
@@ -1116,7 +1116,7 @@ var Path = this.Path = PathItem.extend({
 		/**
 		 * @param {Point} throughVector
 		 * @param {Point} toVector
-		 * @param {number} [parameter=0.5]
+		 * @param {Number} [parameter=0.5]
 		 */
 		curveBy: function(throughVector, toVector, parameter) {
 			throughVector = Point.read(throughVector);
