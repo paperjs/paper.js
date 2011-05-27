@@ -300,7 +300,7 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * Checks if the color has an alpha value.
 	 *
-	 * @return true if the color has an alpha value, false otherwise.
+	 * @return {@true if the color has an alpha value}
 	 */
 	hasAlpha: function() {
 		return this._alpha != null;
@@ -311,7 +311,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * same as those of the supplied one.
 	 * 
 	 * @param obj the GrayColor to compare with
-	 * @return true if the GrayColor is the same, false otherwise.
+	 * @return {@true if the GrayColor is the same}
 	 */
 	equals: function(color) {
 		if (color && color._colorType === this._colorType) {

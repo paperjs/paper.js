@@ -521,8 +521,7 @@ var Point = this.Point = Base.extend({
 	 * Checks whether the point is inside the boundaries of the rectangle.
 	 * 
 	 * @param {Rectangle} rect the rectangle to check against
-	 * @returns {boolean} true if the point is inside the rectangle, false
-	 * otherwise.
+	 * @returns {boolean} {@true if the point is inside the rectangle}
 	 */
 	isInside: function(rect) {
 		return rect.contains(this);
@@ -533,8 +532,7 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @param {Point} point the point to check against
 	 * @param {number} tolerance the maximum distance allowed
-	 * @returns {boolean} true if it is within the given distance, false
-	 * otherwise.
+	 * @returns {boolean} {@true if it is within the given distance}
 	 */
 	isClose: function(point, tolerance) {
 		return this.getDistance(point) < tolerance;
@@ -545,7 +543,7 @@ var Point = this.Point = Base.extend({
 	 * another vector.
 	 * 
 	 * @param {Point} point the vector to check against
-	 * @returns {boolean} true if it is parallel, false otherwise.
+	 * @returns {boolean} {@true it is parallel}
 	 */
 	isColinear: function(point) {
 		return this.cross(point) < Numerical.TOLERANCE;
@@ -556,7 +554,7 @@ var Point = this.Point = Base.extend({
 	 * (perpendicular) to another vector.
 	 * 
 	 * @param {Point} point the vector to check against
-	 * @returns {boolean} true if it is orthogonal, false otherwise.
+	 * @returns {boolean} {@true it is orthogonal}
 	 */
 	isOrthogonal: function(point) {
 		return this.dot(point) < Numerical.TOLERANCE;
@@ -565,7 +563,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Checks if this point has both the x and y coordinate set to 0.
 	 * 
-	 * @returns {boolean} true if both x and y are 0, false otherwise.
+	 * @returns {boolean} {@true both x and y are 0}
 	 */
 	isZero: function() {
 		return this.x == 0 && this.y == 0;
@@ -575,8 +573,7 @@ var Point = this.Point = Base.extend({
 	 * Checks if this point has an undefined value for at least one of its
 	 * coordinates.
 	 * 
-	 * @returns {boolean} true if either x or y are not a number, false
-	 * otherwise.
+	 * @returns {boolean} {@true if either x or y are not a number}
 	 */
 	isNaN: function() {
 		return isNaN(this.x) || isNaN(this.y);
@@ -628,11 +625,11 @@ var Point = this.Point = Base.extend({
 	/**
 	 * This property is only present if the point is an anchor or control point
 	 * of a {@link Segment} or a {@link Curve}. In this case, it returns
-	 * true if it is selected, false otherwise
+	 * {@true it is selected}
 	 * 
 	 * @name Point#selected
 	 * @property
-	 * @return {boolean} true if the point is selected, false otherwise
+	 * @return {boolean} {@true the point is selected}
 	 */
 
 	statics: {
