@@ -293,6 +293,13 @@ function processInlineTags(str, param) {
 			return '<tt>' + code + '</tt>';
 		}
 	);
+
+	// {@true ...} -> true if.. false otherwise..
+	str = str.replace(/\{@true[\s]([^}]+)\}/gi,
+		function(match, text) {
+			return '<tt>true</tt> ' + text + ', <tt>false</tt> otherwise';
+		}
+	);
 	
 	var lineBreak = java.lang.System.getProperty('line.separator');
 	
