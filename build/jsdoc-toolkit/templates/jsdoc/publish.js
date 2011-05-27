@@ -17,9 +17,7 @@ var Operator = new function() {
 		isOperator: function(symbol) {
 			// As a convention, only add non static bean properties to
 			// the documentation. static properties are all supposed to
-			// be uppercae and constants.
-			if (symbol.operator == 'none')
-				print(!(symbol.operator && symbol.operator != 'none'));
+			// be uppercase and constants.
 			return symbol.params.length == 1 && !symbol.isStatic && (
 					/^(add|subtract|multiply|divide|modulo)(\^[0-9])*$/.test(symbol.name)
 					&& (symbol.operator != 'none')
