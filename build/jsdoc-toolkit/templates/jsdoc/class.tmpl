@@ -34,6 +34,7 @@
 <p>{+processInlineTags(data.classDesc)+}</p>
 </div>
 <!-- ============================== constructors ========================= -->
+<if test="!/(Event|Style)/.test(data.alias)">
 <div class="reference-members"><h2>Constructors</h2>
 	<div id="{+data.classId+}" class="member">
 	<div id="{+data.classId+}-link" class="member-link">
@@ -69,6 +70,7 @@
 	</div>
 	</div>
 </div>
+</if>
 
 <!-- ============================== properties ========================= -->
 <if test="defined(operators)">
