@@ -22,25 +22,6 @@ var Symbol = this.Symbol = Base.extend({
 	/**
 	 * Creates a Symbol item.
 	 * 
-	 * Sample code:
-	 * @example
-	 * var circlePath = new Path.Circle(new Point(100, 100), 50);
-	 * circlePath.fillColor = 'red';
-	 * 
-	 * var circleSymbol = new Symbol(circlePath);
-	 * circleSymbol.name = 'Circle';
-	 * 
-	 * // The original item is still contained in the document:
-	 * circlePath.remove();
-	 * 
-	 * // The symbol can now also be accessed
-	 * // through project.symbols:
-	 * console.log(project.symbols['Circle']);
-	 * 
-	 * // To place instances of the symbol in the document:
-	 * var placedCircle = new PlacedSymbol(circleSymbol);
-	 * placedCircle.position = new Point(150, 150);
-	 * 
 	 * @param {Item} item the source item which is copied as the definition of
 	 *               the symbol
 	 *
@@ -53,6 +34,21 @@ var Symbol = this.Symbol = Base.extend({
 	 *        around complex objects, since internal properties such as segment
 	 *        lists and gradient positions don't need to be updated with every
 	 *        transformation.
+	 * 
+	 * Sample code:
+	 * <pre>
+	 * var circlePath = new Path.Circle(new Point(100, 100), 50);
+	 * circlePath.fillColor = 'red';
+	 * 
+	 * var circleSymbol = new Symbol(circlePath);
+	 * 
+	 * // The original item is still contained in the document:
+	 * circlePath.remove();
+	 * 
+	 * // To place instances of the symbol in the document:
+	 * var placedCircle = new PlacedSymbol(circleSymbol);
+	 * placedCircle.position = new Point(150, 150);
+	 * </pre>
 	 */
 	initialize: function(item) {
 		this.project = paper.project;
@@ -60,7 +56,16 @@ var Symbol = this.Symbol = Base.extend({
 		this.setDefinition(item);
 	},
 
-	// TODO: remove()
+	// TODO: Symbol#remove()
+	// TODO: Size#name (accessible by name through project#symbols)
+
+	/**
+	 * The project that this symbol belongs to.
+	 * 
+	 * @type Project
+	 * @readonly
+	 * @name Symbol#project
+	 */
 
 	/**
 	 * The symbol definition.

@@ -929,6 +929,8 @@ var Path = this.Path = PathItem.extend({
 
 		// DOCS: document moveTo
 		/**
+		 * {@grouptitle Postscript Style Drawing Commands}
+		 * 
 		 * @param {Point} point
 		 */
 		moveTo: function(point) {
@@ -990,7 +992,7 @@ var Path = this.Path = PathItem.extend({
 			);
 		},
 
-		// DOCS: document curveTo
+		// DOCS: document Path#curveTo
 		/**
 		 * @param {Point} through
 		 * @param {Point} to
@@ -1012,6 +1014,11 @@ var Path = this.Path = PathItem.extend({
 			this.quadraticCurveTo(handle, to);
 		},
 
+		// DOCS: document Path#arcTo
+		/**
+		 * @param {Point} to
+		 * @param {boolean} [clockwise=true]
+		 */
 		arcTo: function(to, clockwise) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
@@ -1095,12 +1102,22 @@ var Path = this.Path = PathItem.extend({
 			this._add(segments);
 		},
 
+		// DOCS: document Path#lineBy
+		/**
+		 * @param {Point} vector
+		 */
 		lineBy: function(vector) {
 			vector = Point.read(arguments);
 			var current = getCurrentSegment(this);
 			this.lineTo(current._point.add(vector));
 		},
 
+		// DOCS: document Path#curveBy
+		/**
+		 * @param {Point} throughVector
+		 * @param {Point} toVector
+		 * @param {number} [parameter=0.5]
+		 */
 		curveBy: function(throughVector, toVector, parameter) {
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
@@ -1109,6 +1126,11 @@ var Path = this.Path = PathItem.extend({
 					parameter);
 		},
 
+		// DOCS: document Path#arcBy
+		/**
+		 * @param {Point} throughVector
+		 * @param {Point} toVector
+		 */
 		arcBy: function(throughVector, toVector) {
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
@@ -1116,6 +1138,10 @@ var Path = this.Path = PathItem.extend({
 			this.arcBy(current.add(throughVector), current.add(toVector));
 		},
 
+		/**
+		 * Closes the path. When closed, Paper.js connects the first and last
+		 * segments.
+		 */
 		closePath: function() {
 			this.setClosed(true);
 		}

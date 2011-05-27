@@ -22,7 +22,8 @@ var Layer = this.Layer = Group.extend({
 	// DOCS: improve constructor code example.
 	/**
 	 * Creates a new Layer item and places it at the end of the
-	 * {@link Project#layers} array.
+	 * {@link Project#layers} array. The newly created layer will be activated,
+	 * so all newly created items will be placed within it.
 	 * 
 	 * @example
 	 * var layer = new Layer();
@@ -69,14 +70,14 @@ var Layer = this.Layer = Group.extend({
 				: this._project.layers[this._index - 1] || null;
 	},
 
+	// DOCS: improve Layer#activate() example.
 	/**
 	 * Activates the layer.
 	 * 
 	 * @example
 	 * var layer = new Layer();
-	 * layer.name = 'new layer';
 	 * layer.activate();
-	 * console.log(project.activeLayer.name) // 'new layer'
+	 * console.log(project.activeLayer == layer); // true
 	 */
 	activate: function() {
 		this._project.activeLayer = this;

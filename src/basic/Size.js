@@ -27,6 +27,14 @@ var Size = this.Size = Base.extend({
 	 * @param {number} height the height
 	 * 
 	 * @class The Size object represents the size of something.
+	 * 
+	 * Sample code:
+	 * <pre>
+	 * // Create a size that is 10pt wide and 5pt height
+	 * var size = new Size(10, 5);
+	 * console.log(size.width); // 10
+	 * console.log(size.height); // 5
+	 * </pre>
 	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
@@ -52,6 +60,15 @@ var Size = this.Size = Base.extend({
 		} else {
 			this.width = this.height = 0;
 		}
+	},
+
+	/**
+	 * @return {string} A string representation of the size.
+	 */
+	toString: function() {
+		var format = Base.formatNumber;
+		return '{ width: ' + format(this.width)
+				+ ', height: ' + format(this.height) + ' }';
 	},
 
 	/**
@@ -254,9 +271,9 @@ var Size = this.Size = Base.extend({
 	 * 
 	 * @example
 	 * var size = new Size(5, 10);
-	 * print(size == new Size(5, 10)); // true
-	 * print(size == new Size(1, 1)); // false
-	 * print(size != new Size(1, 1)); // true
+	 * console.log(size == new Size(5, 10)); // true
+	 * console.log(size == new Size(1, 1)); // false
+	 * console.log(size != new Size(1, 1)); // true
 	 *
 	 * @param {Size}
 	 * @return {boolean}
@@ -267,6 +284,7 @@ var Size = this.Size = Base.extend({
 	},
 
 	/**
+	 * {@grouptitle Tests}
 	 * Checks if this size has both the width and height set to 0.
 	 * 
 	 * @return {boolean} true if both width and height are 0, false otherwise.
@@ -285,15 +303,6 @@ var Size = this.Size = Base.extend({
 		return isNaN(this.width) || isNaN(this.height);
 	},
 
-	/**
-	 * @return {string} A string representation of the size.
-	 */
-	toString: function() {
-		var format = Base.formatNumber;
-		return '{ width: ' + format(this.width)
-				+ ', height: ' + format(this.height) + ' }';
-	},
-
 	statics: {
 		/** @lends Size */
 
@@ -305,6 +314,12 @@ var Size = this.Size = Base.extend({
 		/**
 		 * Returns a new size object with the smallest {@link #width} and
 		 * {@link #height} of the supplied sizes.
+		 * 
+		 * @example
+		 * var size1 = new Size(10, 100);
+		 * var size2 = new Size(200, 5);
+		 * var minSize = Size.min(size1, size2);
+		 * console.log(minSize); // { width: 10.0, height: 5.0 }
 		 * 
 		 * @static
 		 * @param {Size} size1
@@ -321,6 +336,12 @@ var Size = this.Size = Base.extend({
 		 * Returns a new size object with the largest {@link #width} and
 		 * {@link #height} of the supplied sizes.
 		 * 
+		 * @example
+		 * var size1 = new Size(10, 100);
+		 * var size2 = new Size(200, 5);
+		 * var maxSize = Size.max(size1, size2);
+		 * console.log(maxSize); // { width: 200.0, height: 100.0 }
+		 * 
 		 * @static
 		 * @param {Size} size1
 		 * @param {Size} size2
@@ -335,6 +356,11 @@ var Size = this.Size = Base.extend({
 		/**
 		 * Returns a size object with random {@link #width} and {@link #height}
 		 * values between {@code 0} and {@code 1}.
+		 * 
+		 * @example
+		 * var maxSize = new Size(100, 100);
+		 * var randomSize = Size.random();
+		 * var size = maxSize * randomSize;
 		 * 
 		 * @returns {Size} The newly created size object
 		 * @static

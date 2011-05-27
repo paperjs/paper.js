@@ -22,12 +22,6 @@ var PointText = this.PointText = TextItem.extend({
 	/**
 	 * Creates a point text item
 	 * 
-	 * @example
-	 * var text = new PointText(new Point(50, 100));
-	 * text.paragraphStyle.justification = 'center';
-	 * text.content = 'The contents of the point text';
-	 * text.fillColor = 'black';
-	 * 
 	 * @param {Point} point the position where the text will start
 	 * 
 	 * @constructs PointText
@@ -35,6 +29,14 @@ var PointText = this.PointText = TextItem.extend({
 	 * @class A PointText item represents a piece of typography in your Paper.js
 	 * project which starts from a certain point and extends by the amount of
 	 * characters contained in it.
+	 * 
+	 * Sample code:
+	 * <pre>
+	 * var text = new PointText(new Point(50, 100));
+	 * text.paragraphStyle.justification = 'center';
+	 * text.content = 'The contents of the point text';
+	 * text.fillColor = 'black';
+	 * </pre>
 	 * 
 	 * @extends TextItem
 	 * @extends Item
