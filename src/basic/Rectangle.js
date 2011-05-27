@@ -444,12 +444,12 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * smallest rectangle that contains both the original rectangle and the
 	 * specified point.
 	 * 
-	 * After adding a point, a call to {@code contains} with the added
+	 * After adding a point, a call to {@link #contains(point)} with the added
 	 * point as an argument does not necessarily return {@code true}.
-	 * The {@code contains} method does not return {@code true}
+	 * The {@link Rectangle#contains(point)} method does not return {@code true}
 	 * for points on the right or bottom edges of a rectangle. Therefore, if the
 	 * added point falls on the left or bottom edge of the enlarged rectangle,
-	 * {@code contains} returns {@code false} for that point.
+	 * {@link Rectangle#contains(point)} returns {@code false} for that point.
 	 * 
 	 * @param {Point} point
 	 */
