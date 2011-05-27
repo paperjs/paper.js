@@ -15,6 +15,31 @@
 			operators[name].push(operator);
 		}
 	}
+	
+	var inheritedProperties = data.properties.filter(function($) {return $.memberOf != data.alias});
+	var inheritedMethods = data.methods.filter(function($) {return $.memberOf != data.alias});
+	var inheritedClasses = {};
+	var inheritedClassLinks = [];
+	inheritedProperties.concat(inheritedMethods).map(function($) {
+		if (!inheritedClasses[$.memberOf]) {
+			inheritedClassLinks.push(new Link().toSymbol($.memberOf));
+			inheritedClasses[$.memberOf] = {
+				className: $.memberOf,
+				properties: [],
+				methods: []
+			};
+		}
+	});
+	
+	for (var i = 0, l = inheritedProperties.length; i < l; i++) {
+		var symbol = inheritedProperties[i];
+		inheritedClasses[symbol.memberOf].properties.push(symbol);
+	}
+	
+	for (var i = 0, l = inheritedMethods.length; i < l; i++) {
+		var symbol = inheritedMethods[i];
+		inheritedClasses[symbol.memberOf].methods.push(symbol);
+	}
 !}
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
@@ -31,6 +56,9 @@
 <body class="reference">
 <div class="reference-class">
 <h1>{+data.alias+}</h1>
+<if test="inheritedClassLinks.length">
+<p> Extends {+ inheritedClassLinks.join(', ') +}</p>
+</if>
 <p>{+processInlineTags(data.classDesc)+}</p>
 </div>
 <!-- ============================== constructors ========================= -->
@@ -93,10 +121,6 @@
 <if test="defined(ownMethods) && ownMethods.length">
 	<div class="reference-members"><h2>Functions</h2>
 		<for each="member" in="ownMethods">
-			{! member.desc = processGroupTitle(member.desc, member) !}
-			<if test="defined(member.groupTitle)">
-				<h3>{+member.groupTitle+}</h3>
-			</if>
 			{+ templates.method.process(member) +}
 		</for>
 	</div>
@@ -108,5 +132,22 @@
 		</for>
 	</div>
 </if>
-
+<for each="inheritedClass" in="inheritedClasses">
+	<!-- ============================== properties ========================= -->
+	<if test="inheritedClass.properties.length">
+		<div class="reference-members"><h2>Inherited properties from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
+			<for each="member" in="inheritedClass.properties">
+				{+ templates.property.process(member) +}
+			</for>
+		</div>
+	</if>
+	<!-- ============================== properties ========================= -->
+	<if test="inheritedClass.methods.length">
+		<div class="reference-members"><h2>Inherited functions from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
+			<for each="member" in="inheritedClass.methods">
+				{+ templates.method.process(member) +}
+			</for>
+		</div>
+	</if>
+</for>
 </body>
