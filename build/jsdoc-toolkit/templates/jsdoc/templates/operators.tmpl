@@ -34,8 +34,9 @@
 <div class="clear"></div>
 </div>
 <if test="operator.type">
-	<div class="member-text">{+processInlineTags(operator.desc)+}
-	{+ new JSDOC.JsPlate(publish.conf.templatesDir+"examples.tmpl").process(operator) +}
+	<div class="member-text">
+		{+processInlineTags(operator.desc)+}
+		{+ publish.templates.examples.process(operator) +}
 	<ul><b>Returns:</b>
 	<for each="item" in="operator.returns">
 		<li>
