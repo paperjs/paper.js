@@ -44,6 +44,19 @@ var Helpers = {
 			}
 		}
 		return id.join('-');
+	},
+	
+	getConstructorId: function(symbol) {
+		var id = [symbol.alias.replace(/([#].+$|[\^][0-9])/g, '').toLowerCase()
+				.replace(/[.]/, '-')];
+		if (symbol.params) {
+			for (var i = 0, l = symbol.params.length; i < l; i++) {
+				var param = symbol.params[i];
+				if (!param.isOptional)
+					id.push(param.name);
+			}
+		}
+		return id.join('-');
 	}
 };
 
@@ -64,7 +77,8 @@ function publish(symbolSet) {
 		property: new JSDOC.JsPlate(publish.conf.templatesDir + "property.tmpl"),
 		parameters: new JSDOC.JsPlate(publish.conf.templatesDir + "parameters.tmpl"),
 		operators: new JSDOC.JsPlate(publish.conf.templatesDir + "operators.tmpl"),
-		examples: new JSDOC.JsPlate(publish.conf.templatesDir + "examples.tmpl")
+		examples: new JSDOC.JsPlate(publish.conf.templatesDir + "examples.tmpl"),
+		constructor: new JSDOC.JsPlate(publish.conf.templatesDir + "constructor.tmpl")		
 	};
 	
 	// is source output is suppressed, just display the links to the source file
@@ -262,9 +276,6 @@ function makeSignature(params) {
 }
 
 function processGroupTitle(str, symbol) {
-	// if (/grouptitle/.test(str))
-	// 	print('yeah');
-	// print(str);
 	var groupTitle = str.match(/\{@grouptitle ([^}]+)\}/);
 	if (groupTitle) {
 		symbol.groupTitle = groupTitle[1];
