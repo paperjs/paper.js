@@ -643,7 +643,7 @@ var Item = this.Item = Base.extend({
 	 * @return {boolean} {@true it is a child of the item}
 	 */
 	isChild: function(item) {
-		return item._parent == this;
+		return item && item._parent == this;
 	},
 
 	/**
