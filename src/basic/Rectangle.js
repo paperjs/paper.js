@@ -30,6 +30,30 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * point (x, y), its width, and its height. It should not be confused with a
 	 * rectangular path, it is not an item.
 	 */
+	/**
+	 * Creates a rectangle object.
+	 * 
+	 * @name Rectangle#initialize
+	 * @param {Number} x the left coordinate
+	 * @param {Number} y the top coordinate
+	 * @param {Number} width
+	 * @param {Number} height
+	 */
+	/**
+	 * Creates a rectangle object from the passed points. These do not
+	 * necessarily need to be the top left and bottom right corners, the
+	 * constructor figures out how to fit a rectangle between them.
+	 * 
+	 * @name Rectangle#initialize
+	 * @param {Point} point1 The first point defining the rectangle
+	 * @param {Point} point2 The second point defining the rectangle
+	 */
+	/**
+	 * Creates a new rectangle object from the passed rectangle object.
+	 * 
+	 * @name Rectangle#initialize
+	 * @param {Rectangle} rt
+	 */
 	initialize: function(arg0, arg1, arg2, arg3) {
 		if (arguments.length == 4) {
 			// new Rectangle(x, y, width, height)

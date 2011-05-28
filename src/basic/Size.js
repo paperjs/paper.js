@@ -19,12 +19,11 @@ var Size = this.Size = Base.extend({
 
 	// DOCS: improve Size class description
 	/**
-	 * Creates a Size object with the given width and height values.
-	 *
-	 * @name Size
+	 * Creates a Size object using the coordinates of the given Size object.
+	 * 
 	 * @constructor
-	 * @param {Number} width the width
-	 * @param {Number} height the height
+	 * @name Size
+	 * @param {Size} size
 	 * 
 	 * @class The Size object represents the size of something.
 	 * 
@@ -35,6 +34,28 @@ var Size = this.Size = Base.extend({
 	 * console.log(size.width); // 10
 	 * console.log(size.height); // 5
 	 * </pre>
+	 */
+	/**
+	 * Creates a Point object using the x and y values of the given Point
+	 * object.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * var point = new Point(50, 50);
+	 * var size = new Size(point);
+	 * console.log(size.width); // 50
+	 * console.log(size.height); // 50
+	 * </code>
+	 * 
+	 * @name Size#initialize
+	 * @param {Point} point
+	 */
+	/**
+	 * Creates a Size object with the given width and height values.
+	 *
+	 * @name Size#initialize
+	 * @param {Number} width the width
+	 * @param {Number} height the height
 	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
