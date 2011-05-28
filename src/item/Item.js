@@ -669,12 +669,7 @@ var Item = this.Item = Base.extend({
 	 * item}
 	 */
 	isAncestor: function(item) {
-		var parent = item;
-		while (parent = parent._parent) {
-			if (parent == this)
-				return true;
-		}
-		return false;
+		return item ? item.isDescendant(this) : false;
 	},
 
 	/**
