@@ -1,10 +1,11 @@
 {! data.classId = data.alias.toLowerCase() !}
 {!
-	var ownProperties = data.properties.filter(function($){return $.memberOf == data.alias && !$.isNamespace && !$.isStatic});
-	var staticProperties = data.properties.filter(function($){return $.memberOf == data.alias && !$.isNamespace && $.isStatic});
-	var ownMethods = data.methods.filter(function($){return $.memberOf == data.alias  && !$.isNamespace && !$.isStatic && !$.isOperator});
-	var staticMethods = data.methods.filter(function($){return $.memberOf == data.alias && !$.isNamespace && $.isStatic && !$.isOperator});
-	var operatorMethods = data.methods.filter(function($){return $.memberOf == data.alias  && !$.isNamespace && !$.isStatic && $.isOperator});
+	var constructors = data.methods.filter(function($){return $.memberOf == data.alias && $.isConstructor});
+	var ownProperties = data.properties.filter(function($){return $.memberOf == data.alias && !$.isNamespace && !$.isStatic && !$.isConstructor});
+	var staticProperties = data.properties.filter(function($){return $.memberOf == data.alias && !$.isNamespace && $.isStatic && !$.isConstructor});
+	var ownMethods = data.methods.filter(function($){return $.memberOf == data.alias  && !$.isNamespace && !$.isStatic && !$.isOperator && !$.isConstructor});
+	var staticMethods = data.methods.filter(function($){return $.memberOf == data.alias && !$.isNamespace && $.isStatic && !$.isOperator && !$.isConstructor});
+	var operatorMethods = data.methods.filter(function($){return $.memberOf == data.alias  && !$.isNamespace && !$.isStatic && !$.isConstructor && $.isOperator});
 	if (operatorMethods.length) {
 		var operators = {};
 		for (var i = 0, l = operatorMethods.length; i < l; i++) {
@@ -62,41 +63,12 @@
 {+processInlineTags(data.classDesc)+}
 </div>
 <!-- ============================== constructors ========================= -->
-<if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace">
+<if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace && !data.ignore">
 <div class="reference-members"><h2>Constructors</h2>
-	<div id="{+data.classId+}" class="member">
-	<div id="{+data.classId+}-link" class="member-link">
-	<a name="{+data.classId+}" href="#" onClick="return toggleMember('{+data.classId+}', false);"><tt><b>{+ data.alias +}</b>{+ makeSignature(data.params) +}</tt></a>
-	</div>
-	<div id="{+data.classId+}-description" class="member-description hidden">
-	<div class="member-header">
-	<div class="member-title">
-	<div class="member-link">
-	<a href="#" onClick="return toggleMember('{+data.classId+}', false);"><tt><b>{+ data.alias +}</b>{+ makeSignature(data.params) +}</tt></a>
-	</div>
-	</div>
-	<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+data.classId+}', false);"></div>
-	<div class="clear"></div>
-	</div>
-	<div class="member-text">{+processInlineTags(data.desc)+}
-		<if test="data.example.length">
-		<for each="example" in="data.example">
-		<pre>{+example+}</pre>
-		</for>
-		</if>
-		{+ templates.parameters.process(data) +}
-		<if test="data.returns.length">
-			<ul><b>Returns:</b>
-			<li>
-			<for each="item" in="data.returns">
-					<dd>{+((item.type)?"<span class=\"light fixedFont\">{"+(new Link().toSymbol(item.type))+"}</span> " : "")+}{+processInlineTags(item.desc, { stripParagraphs: true })+}</dd>
-			</for>
-			</li>
-			</ul>
-		</if>
-	</div>
-	</div>
-	</div>
+	{+ templates.constructor.process(data) +}
+	<for each="constructor" in="constructors">
+		{+ templates.constructor.process(constructor) +}
+	</for>
 </div>
 </if>
 

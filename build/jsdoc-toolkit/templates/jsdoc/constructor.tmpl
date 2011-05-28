@@ -1,0 +1,45 @@
+{!
+	var constructorId = Helpers.getConstructorId(data);
+	var name = data.alias.replace(/(#|\^).+$/, '');
+	data.desc = processGroupTitle(data.desc, data);
+	if (data.returns.length == 0)
+		data.returns = [{type: data.memberOf ? data.memberOf : data.alias, desc: ''}];
+!}
+<if test="defined(data.groupTitle)">
+	<h3>{+data.groupTitle+}</h3>
+</if>
+<div id="{+constructorId+}" class="member">
+<div id="{+constructorId+}-link" class="member-link">
+<a name="{+constructorId+}" href="#" onClick="return toggleMember('{+constructorId+}', false);"><tt><b>{+ name +}</b>{+ makeSignature(data.params) +}</tt></a>
+</div>
+<div id="{+constructorId+}-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('{+constructorId+}', false);"><tt><b>{+ name +}</b>{+ makeSignature(data.params) +}</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+constructorId+}', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">{+processInlineTags(data.desc)+}
+	<if test="data.example.length">
+	<for each="example" in="data.example">
+	<pre>{+example+}</pre>
+	</for>
+	</if>
+	{+ templates.parameters.process(data) +}
+	<if test="data.returns.length">
+		<ul><b>Returns:</b>
+		<li>
+		<for each="item" in="data.returns">
+			<li>
+			<tt><if test="defined(item.type)">{+ new Link().toSymbol(item.type) +}<if test="item.desc">&nbsp;&mdash;&nbsp;</if></if>{+processInlineTags(item.desc, { stripParagraphs: true })+}</tt>
+			</li>
+		</for>
+		</li>
+		</ul>
+	</if>
+</div>
+</div>
+</div>
