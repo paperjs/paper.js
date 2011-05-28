@@ -53,8 +53,7 @@ Path.inject({ statics: new function() {
 		 * var rectangle = new Rectangle(new Point(100, 100), new Size(100, 100));
 		 * var path = new Path.Rectangle(rectangle);
 		 * 
-		 * @name Path.Rectangle^3
-		 * @function
+		 * @name Path.Rectangle
 		 * @param {Point} point
 		 * @param {Size} size
 		 * @return {Path} the newly created path
@@ -67,8 +66,7 @@ Path.inject({ statics: new function() {
 		 * @example
 		 * var path = new Path.Rectangle(new Point(100, 100), new Point(200, 300));
 		 * 
-		 * @name Path.Rectangle^2
-		 * @function
+		 * @name Path.Rectangle
 		 * @param {Point} point1 The first point defining the rectangle
 		 * @param {Point} point2 The second point defining the rectangle
 		 * @return {Path} the newly created path

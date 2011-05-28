@@ -100,7 +100,7 @@ var Size = this.Size = Base.extend({
 	 * var result = size + 20;
 	 * console.log(result); // { width: 25.0, height: 30.0 }
 	 * 
-	 * @name Size#add^2
+	 * @name Size#add
 	 * @function
 	 * @param {Number} number the number to add
 	 * @return {Size} the addition of the size and the value as a new size
@@ -135,7 +135,7 @@ var Size = this.Size = Base.extend({
 	 * var result = size - 5;
 	 * console.log(result); // { width: 5.0, height: 15.0 }
 	 * 
-	 * @name Size#subtract^2
+	 * @name Size#subtract
 	 * @function
 	 * @param {Number} number the number to subtract
 	 * @return {Size} the subtraction of the size and the value as a new size
@@ -169,7 +169,7 @@ var Size = this.Size = Base.extend({
 	 * var result = size * 2;
 	 * console.log(result); // { width: 20.0, height: 40.0 }
 	 * 
-	 * @name Size#multiply^2
+	 * @name Size#multiply
 	 * @function
 	 * @param {Number} number the number to multiply by
 	 * @return {Size} the multiplication of the size and the value as a new size
@@ -203,7 +203,7 @@ var Size = this.Size = Base.extend({
 	 * var result = size / 2;
 	 * console.log(result); // { width: 5.0, height: 10.0 }
 	 * 
-	 * @name Size#divide^2
+	 * @name Size#divide
 	 * @function
 	 * @param {Number} number the number to divide by
 	 * @return {Size} the division of the size and the value as a new size
@@ -236,7 +236,7 @@ var Size = this.Size = Base.extend({
 	 * var size = new Size(12, 6);
 	 * console.log(size % 5); // {width: 2, height: 1}
 	 * 
-	 * @name Size#modulo^2
+	 * @name Size#modulo
 	 * @function
 	 * @param {Number} value
 	 * @return {Size} the integer remainders of dividing the size by the value
