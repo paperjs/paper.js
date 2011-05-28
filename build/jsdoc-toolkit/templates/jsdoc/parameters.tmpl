@@ -5,7 +5,7 @@
 				<tt>{+ parameter.name +}: </tt>
 				{+ new Link().toSymbol(parameter.type) +}
 				<if test="parameter.desc">&mdash;&nbsp;{+processInlineTags(parameter.desc, {stripParagraphs: true})+}</if>
-				<if test="parameter.defaultValue">&mdash;&nbsp;optional, default: <tt>{+parameter.defaultValue+}</tt></if>
+				<if test="parameter.isOptional">&mdash;&nbsp;optional</if><if test="parameter.defaultValue">, default: <tt>{+parameter.defaultValue+}</tt></if>
 				</li>
 		</for>
 	</ul>
