@@ -125,6 +125,11 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 	var linkTo = Link.getSymbol(alias);
 	var linkPath;
 	var target = (this.targetName)? " target=\""+this.targetName+"\"" : "";
+	// Expand (parameter,parameter) to (parameter, parameter)
+	if (parameters) {
+		parameters = parameters.replace(/\,([^\s])/, ', $1')
+	}
+
 	// if there is no symbol by that name just return the name unaltered
 	if (!linkTo) {
 	    return this.text || alias + (parameters || '');
