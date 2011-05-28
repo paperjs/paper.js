@@ -466,6 +466,8 @@ var GrayColor = this.GrayColor = Color.extend(/** @scope GrayColor */{
 	 * 
 	 * @param {Number} gray the amount of gray in the color as a value
 	 * between {@code 0} and {@code 1}
+	 * @param {Number} [alpha] the alpha of the color as a value between
+	 * {@code 0} and {@code 1}
 	 * @constructor
 	 * @name GrayColor
 	 * 
@@ -486,6 +488,8 @@ var RGBColor = this.RGBColor = Color.extend(/** @scope RGBColor */{
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} blue the amount of blue in the color as a value
 	 * between {@code 0} and {@code 1}
+	 * @param {Number} [alpha] the alpha of the color as a value between
+	 * {@code 0} and {@code 1}
 	 * @constructor
 	 * @name RGBColor
 	 * 
@@ -506,6 +510,8 @@ var HSBColor = this.HSBColor = Color.extend(/** @scope HSBColor */{
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} brightness the brightness of the color as a value
 	 * between {@code 0} and {@code 1}
+	 * @param {Number} [alpha] the alpha of the color as a value between
+	 * {@code 0} and {@code 1}
 	 * @constructor
 	 * @name HSBColor
 	 * 
