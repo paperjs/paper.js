@@ -905,7 +905,7 @@ var Item = this.Item = Base.extend({
 	 * // Scale the path 200% from its bottom left corner
 	 * circle.scale(2, circle.bounds.bottomLeft);
 	 * 
-	 * @name Item#scale^1
+	 * @name Item#scale
 	 * @function
 	 * @param {Number} scale the scale factor
 	 * @param {Point} [center=the center point of the item]

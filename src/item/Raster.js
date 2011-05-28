@@ -278,7 +278,7 @@ var Raster = this.Raster = Item.extend({
 	 * {@grouptitle Pixels}
 	 * Gets the color of a pixel in the raster.
 	 *
-	 * @name Raster#getPixel^2
+	 * @name Raster#getPixel
 	 * @function
 	 * @param x the x offset of the pixel in pixel coordinates
 	 * @param y the y offset of the pixel in pixel coordinates
@@ -301,7 +301,7 @@ var Raster = this.Raster = Item.extend({
 	/**
 	 * Sets the color of the specified pixel to the specified color.
 	 *
-	 * @name Raster#setPixel^2
+	 * @name Raster#setPixel
 	 * @function
 	 * @param x the x offset of the pixel in pixel coordinates
 	 * @param y the y offset of the pixel in pixel coordinates

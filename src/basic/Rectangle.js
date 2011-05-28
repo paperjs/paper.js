@@ -360,7 +360,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * 
 	 * Tests if the specified point is inside the boundary of the rectangle.
 	 * 
-	 * @name Rectangle#contains^2
+	 * @name Rectangle#contains
 	 * @function
 	 * @param {Point} point the specified point
 	 * @return {boolean} {@true if the point is inside the rectangle's boundary}

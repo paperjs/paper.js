@@ -124,7 +124,7 @@ var Point = this.Point = Base.extend({
 	 * var result = point + 20;
 	 * console.log(result); // { x: 25.0, y: 30.0 }
 	 * 
-	 * @name Point#add^2
+	 * @name Point#add
 	 * @function
 	 * @param {Number} number the number to add
 	 * @return {Point} the addition of the point and the value as a new point
@@ -160,7 +160,7 @@ var Point = this.Point = Base.extend({
 	 * var result = point - 5;
 	 * console.log(result); // { x: 5.0, y: 15.0 }
 	 * 
-	 * @name Point#subtract^2
+	 * @name Point#subtract
 	 * @function
 	 * @param {Number} number the number to subtract
 	 * @return {Point} the subtraction of the point and the value as a new point
@@ -196,7 +196,7 @@ var Point = this.Point = Base.extend({
 	 * var result = point * 2;
 	 * console.log(result); // { x: 20.0, y: 40.0 }
 	 * 
-	 * @name Point#multiply^2
+	 * @name Point#multiply
 	 * @function
 	 * @param {Number} number the number to multiply by
 	 * @return {Point} the multiplication of the point and the value as a new point
@@ -232,7 +232,7 @@ var Point = this.Point = Base.extend({
 	 * var result = point / 2;
 	 * console.log(result); // { x: 5.0, y: 10.0 }
 	 * 
-	 * @name Point#divide^2
+	 * @name Point#divide
 	 * @function
 	 * @param {Number} number the number to divide by
 	 * @return {Point} the division of the point and the value as a new point
@@ -266,7 +266,7 @@ var Point = this.Point = Base.extend({
 	 * var point = new Point(12, 6);
 	 * console.log(point % 5); // {x: 2, y: 1}
 	 * 
-	 * @name Point#modulo^2
+	 * @name Point#modulo
 	 * @function
 	 * @param {Number} value
 	 * @return {Point} the integer remainders of dividing the point by the value
