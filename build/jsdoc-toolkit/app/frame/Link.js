@@ -82,7 +82,7 @@ Link.symbolNameToLinkName = function(symbol) {
 	var linker = "",
 		ns = "";
 	
-	if (symbol.isStatic) linker = ".";
+	if (symbol.isStatic) linker = "-";
 	else if (symbol.isInner) linker = "-";
 	
 	if (symbol.isEvent && !/^event:/.test(symbol.name)) {
@@ -137,7 +137,7 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 		// it's a symbol in another file
 		if (!linkTo.is("CONSTRUCTOR") && !linkTo.isNamespace) { // it's a method or property
 			linkPath= (Link.filemap) ? Link.filemap[linkTo.memberOf] :
-				      escape(linkTo.memberOf) || "_global_";
+				      escape(linkTo.memberOf) || "global";
 				linkPath += publish.conf.ext + "#" + Link.symbolNameToLinkName(linkTo).toLowerCase();
 			if (parameters) {
 				linkPath += '-' + parameters.replace(/[()]+/g, '').split(', ').join('-').toLowerCase();
