@@ -42,19 +42,6 @@
 		inheritedClasses[symbol.memberOf].methods.push(symbol);
 	}
 !}
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
-<head>
-<title>{+data.alias+}</title>
-<base target="classFrame">
-<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
-<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
-<link rel="stylesheet" href="../resources/css/lighter.css" type="text/css">
-<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
-<script src="../resources/js/lighter.js" type="text/javascript"></script>
-<script src="../resources/js/reference.js" type="text/javascript"></script>
-</head>
-<body class="reference">
 <div class="reference-class">
 <h1>{+data.alias+}</h1>
 <if test="inheritedClassLinks.length">
@@ -65,9 +52,9 @@
 <!-- ============================== constructors ========================= -->
 <if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace && !data.ignore">
 <div class="reference-members"><h2>Constructors</h2>
-	{+ templates.constructor.process(data) +}
+	{+ publish.templates.constructor.process(data) +}
 	<for each="constructor" in="constructors">
-		{+ templates.constructor.process(constructor) +}
+		{+ publish.templates.constructor.process(constructor) +}
 	</for>
 </div>
 </if>
@@ -76,7 +63,7 @@
 <if test="defined(operators)">
 	<div class="reference-members"><h2>Operators</h2>
 		<for each="member" in="operators">
-			{+ templates.operators.process(member) +}
+			{+ publish.templates.operators.process(member) +}
 		</for>
 	</div>
 </if>
@@ -84,7 +71,7 @@
 <if test="defined(ownProperties) && ownProperties.length">
 	<div class="reference-members"><h2>Properties</h2>
 		<for each="member" in="ownProperties">
-			{+ templates.property.process(member) +}
+			{+ publish.templates.property.process(member) +}
 		</for>
 	</div>
 </if>
@@ -93,14 +80,14 @@
 <if test="defined(ownMethods) && ownMethods.length">
 	<div class="reference-members"><h2>Functions</h2>
 		<for each="member" in="ownMethods">
-			{+ templates.method.process(member) +}
+			{+ publish.templates.method.process(member) +}
 		</for>
 	</div>
 </if>
 <if test="defined(staticMethods) && staticMethods.length">
 	<div class="reference-members"><h2>Static Functions</h2>
 		<for each="member" in="staticMethods">
-			{+ templates.method.process(member) +}
+			{+ publish.templates.method.process(member) +}
 		</for>
 	</div>
 </if>
@@ -109,7 +96,7 @@
 	<if test="inheritedClass.properties.length">
 		<div class="reference-members"><h2>Inherited properties from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
 			<for each="member" in="inheritedClass.properties">
-				{+ templates.property.process(member) +}
+				{+ publish.templates.property.process(member) +}
 			</for>
 		</div>
 	</if>
@@ -117,9 +104,8 @@
 	<if test="inheritedClass.methods.length">
 		<div class="reference-members"><h2>Inherited functions from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
 			<for each="member" in="inheritedClass.methods">
-				{+ templates.method.process(member) +}
+				{+ publish.templates.method.process(member) +}
 			</for>
 		</div>
 	</if>
 </for>
-</body>

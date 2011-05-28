@@ -22,9 +22,10 @@
 <div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+ memberId +}', false);"></div>
 <div class="clear"></div>
 </div>
-<div class="member-text">{+processInlineTags(data.desc)+}
-{+ new JSDOC.JsPlate(publish.conf.templatesDir+"examples.tmpl").process(data) +}
-{+ new JSDOC.JsPlate(publish.conf.templatesDir+"parameters.tmpl").process(data) +}
+<div class="member-text">
+	{+ processInlineTags(data.desc) +}
+	{+ publish.templates.examples.process(data) +}
+	{+ publish.templates.parameters.process(data) +}
 <if test="data.returns.length">
 	<ul><b>Returns:</b>
 	<for each="item" in="data.returns">
