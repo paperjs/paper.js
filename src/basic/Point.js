@@ -39,6 +39,28 @@ var Point = this.Point = Base.extend({
 	 * console.log(point.y); // 5
 	 * </pre>
 	 */
+	/**
+	 * Creates a Point object using the width and height values of the given
+	 * Size object.
+	 * 
+	 * Sample code:
+	 * <code>
+	 * // Create a Size with a width of 100pt and a height of 50pt
+	 * var size = new Size(100, 50);
+	 * console.log(size); // { width: 100, height: 50 }
+	 * var point = new Point(size);
+	 * console.log(point); // { x: 100, y: 50 }
+	 * </code>
+	 * 
+	 * @name Point#initialize
+	 * @param {Size} size
+	 */
+	/**
+	 * Creates a Point object using the coordinates of the given Point object.
+	 * 
+	 * @param {Point} point
+	 * @name Point#initialize
+	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
 			this.x = arg0;
