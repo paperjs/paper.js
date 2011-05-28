@@ -63,13 +63,13 @@ var Helpers = {
 function publish(symbolSet) {
 	publish.conf = {  // trailing slash expected for dirs
 		ext: '.html',
-		outDir:	  JSDOC.opt.d || SYS.pwd + '../out/jsdoc/',
+		outDir: JSDOC.opt.d || SYS.pwd + '../out/jsdoc/',
 		templateDir: JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/',
-		resourcesDir:  (JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/') + 'resources/',
-		symbolsDir:  'symbols/',
-		srcDir:	  'symbols/src/'
+		staticDir: (JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/') + 'static/',
+		symbolsDir: 'symbols/',
+		srcDir: 'symbols/src/'
 	};
-
+	publish.conf.packagesDir = publish.conf.outDir + 'packages/';
 	var templatesDir = publish.conf.templateDir + 'templates/';
 	publish.templates = {
 		_class: 'class.tmpl',
@@ -81,7 +81,7 @@ function publish(symbolSet) {
 		constructor: 'constructor.tmpl',
 		html: 'html.tmpl',
 		allClasses: 'allClasses.tmpl',
-		classesIndex: 'index.tmpl'
+		menu: 'packages.tmpl'
 	};
 
 	for (var i in publish.templates) {
@@ -91,8 +91,8 @@ function publish(symbolSet) {
 
 	// Copy over the static files
 	copyDirectory(
-		new java.io.File(publish.conf.resourcesDir),
-		new java.io.File(publish.conf.outDir + 'resources/')
+		new java.io.File(publish.conf.staticDir),
+		new java.io.File(publish.conf.outDir)
 	);
 
 	// used to allow Link to check the details of things being linked to
@@ -143,15 +143,53 @@ function publish(symbolSet) {
 		})
 		var name = ((JSDOC.opt.u)? Link.filemap[symbol.alias] : symbol.alias)
 				+ publish.conf.ext;
-		IO.saveFile(publish.conf.outDir + 'symbols/', name, html);
+		IO.saveFile(publish.conf.packagesDir, name, html);
 	}
 	
-	// regenerate the index with different relative links, used in the index pages
-	Link.base = '';
-	publish.conf.classesIndex = publish.templates.allClasses.process(classes);
+	publishMenu();
+}
+
+function publishMenu() {
+	load(JSDOC.opt.t + 'classLayout.js');
+	function parseClassNames(classNames) {
+		var out = '';
+		for (var i = 0, l = classNames.length; i < l; i++) {
+			if (typeof classNames[i] == 'string') {
+				var name = classNames[i];
+				out += (name == 'ruler') ? getRuler() : getLink(name);
+			} else {
+				for (var j in classNames[i]) {
+					out += getHeading(j);
+					out += parseClassNames(classNames[i][j]);
+				}
+			}
+		}
+		return out;
+	}
+	function getLink(name) {
+		return '<li><a href="' + name + '.html">' + name + '</a></li>';
+	}
 	
-	var classesIndex = publish.templates.classesIndex.process(classes);
-	IO.saveFile(publish.conf.outDir, 'index' + publish.conf.ext, classesIndex);
+	function getRuler() {
+		return '<li><hr /></li>';
+	}
+	
+	function getHeading(title) {
+		return '<li><h3>' + title + '</h3></li>';
+	}
+	var first = true,
+		out = '<ul class="package-classes">';
+	for (var i in classLayout) {
+		out += '<li' + (first ? ' class="first">' : '>');
+		out += '<h2>' + i + '</h2>';
+		out += parseClassNames(classLayout[i]);
+		out += '</li>';
+		first = false;
+	}
+	out += '</ul';
+	
+	var classesIndex = publish.templates.menu.process(out);
+	IO.saveFile(publish.conf.packagesDir, 'packages.html', classesIndex);
 }
 
 /** Make a symbol sorter by some attribute. */
