@@ -294,7 +294,11 @@ var Segment = this.Segment = Base.extend({
 			path._updateSelection(this);
 	},
 
-	// DOCS: Segment#selected
+	/**
+	 * Specifies whether the {@link #point} of the segment is selected.
+	 * @type Boolean
+	 * @bean
+	 */
 	isSelected: function() {
 		return this._isSelected(this._point);
 	},
@@ -318,6 +322,9 @@ var Segment = this.Segment = Base.extend({
 		return this._path ? !!this._path.removeSegment(this._index) : false;
 	},
 
+	/**
+	 * @return {String} A string representation of the segment.
+	 */
 	toString: function() {
 		var parts = [ 'point: ' + this._point ];
 		if (!this._handleIn.isZero())
