@@ -608,13 +608,41 @@ var Item = this.Item = Base.extend({
 	// TODO: isValid / checkValid
 
 	/**
+	 * Returns -1 if 'this' is above 'item', 1 if below, 0 if their order is not
+	 * defined in such a way, e.g. if one is a descendant of the other.
+	 */
+	_getOrder: function(item) {
+		// Private method that prodces a list of anchestors, starting with the
+		// root and the actual element as the last entry.
+		function getList(item) {
+			var list = [];
+			do {
+				list.unshift(item);
+			} while (item = item._parent)
+			return list;
+		}
+		var list1 = getList(this),
+			list2 = getList(item);
+		for (var i = 0, l = Math.min(list1.length, list2.length); i < l; i++) {
+			if (list1[i] != list2[i]) {
+				// Found the position in the parents list where the two start
+				// to differ. Look at who's above who.
+				return list1[i]._index < list2[i]._index ? 1 : -1;
+			}
+		}
+		return 0;
+	},
+
+	/**
 	 * Checks if this item is above the specified item in the stacking order
 	 * of the project.
 	 * 
 	 * @param {Item} item The item to check against
 	 * @return {boolean} {@true if it is above the specified item}
 	 */
-	// TODO: isAbove
+	isAbove: function(item) {
+		return this._getOrder(item) == -1;
+	},
 
 	/**
 	 * Checks if the item is below the specified item in the stacking order of
@@ -623,7 +651,9 @@ var Item = this.Item = Base.extend({
 	 * @param {Item} item The item to check against
 	 * @return {boolean} {@true if it is below the specified item}
 	 */
-	// TODO: isBelow
+	isBelow: function(item) {
+		return this._getOrder(item) == 1;
+	},
 
 	/**
 	 * {@grouptitle Hierarchy Tests}
@@ -652,6 +682,7 @@ var Item = this.Item = Base.extend({
 	 * @param {Item} item The item to check against
 	 * @return {boolean} {@true if it is inside the specified item}
 	 */
+	// TODO: Consider naming this isInside?
 	isDescendant: function(item) {
 		var parent = this;
 		while (parent = parent._parent) {
@@ -668,6 +699,7 @@ var Item = this.Item = Base.extend({
 	 * @return {boolean} {@true if the item is an ancestor of the specified
 	 * item}
 	 */
+	// TODO: Consider naming this contains?
 	isAncestor: function(item) {
 		return item ? item.isDescendant(this) : false;
 	},
