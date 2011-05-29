@@ -25,7 +25,8 @@ var Size = this.Size = Base.extend({
 	 * @name Size
 	 * @param {Size} size
 	 * 
-	 * @class The Size object represents the size of something.
+	 * @class The Size object is used to describe the size of something, through
+	 * its {@link #width} and {@link #height} properties.
 	 * 
 	 * Sample code:
 	 * <pre>
