@@ -6,8 +6,6 @@ test('Item Order', function() {
 	var circle = new Path.Circle([50, 50], 50);
 	circle.name = 'circle';
 
-	window.console.log(circle._getOrder(line), circle.isAbove(line));
-
 	var group = new Group([circle]);
 	group.name = 'group';
 
