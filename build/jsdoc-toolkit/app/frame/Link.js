@@ -164,8 +164,13 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 		link.linkText = link.linkText.charAt(0).toLowerCase() + link.linkText.slice(1);
 		link.linkText = link.linkText.replace(/#/g, '.');
 	}
-	
-	return "<a href=\""+link.linkPath+link.linkInner+"\""+target+">"+link.linkText+"</a>";
+	var onClick = '';
+	// If linking to a member of the same class, we also need to toggle it:
+	if (alias.charAt(0) == '#') {
+		var linkName = link.linkPath.replace(/^[^#]+#/, '');
+		onClick = " onclick=\"return toggleMember('" + linkName + "', true);\"";
+	}
+	return "<a href=\""+link.linkPath+link.linkInner+"\""+target+onClick+">"+link.linkText+"</a>";
 }
 
 /** Create a link to a source file. */
