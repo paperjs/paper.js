@@ -109,9 +109,11 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	var fields = {
 		/** @lends CompoundPath# */
 
-		// DOCS: document CompoundPath#moveTo
 		/**
 		 * {@grouptitle Postscript Style Drawing Commands}
+		 * 
+		 * Creates a new path in the compound-path and adds the point
+		 * as its first segment.
 		 * 
 		 * @param {Point} point
 		 */
@@ -121,8 +123,11 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 			path.moveTo.apply(path, arguments);
 		},
 
-		// DOCS: document CompoundPath#moveBy
 		/**
+		 * Creates a new path in the compound-path and adds the point as its
+		 * first segment relative to the position of the last segment of the
+		 * current path.
+		 * 
 		 * @param {Point} point
 		 */
 		moveBy: function(point) {
