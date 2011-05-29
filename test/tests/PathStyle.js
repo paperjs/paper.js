@@ -3,6 +3,9 @@ module('Path Style');
 test('style defaults', function() {
 	var path = new Path();
 	equals(function() {
+		return path.strokeWidth;
+	}, 1);
+	equals(function() {
 		return path.strokeCap;
 	}, 'butt');
 	equals(function() {
@@ -12,8 +15,11 @@ test('style defaults', function() {
 		return path.miterLimit;
 	}, 10);
 	equals(function() {
-		return path.strokeWidth;
-	}, 1);
+		return path.dashOffset;
+	}, 0);
+	equals(function() {
+		return path.dashArray + '';
+	}, [] + '');
 });
 
 test('currentStyle', function() {
