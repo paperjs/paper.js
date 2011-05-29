@@ -183,7 +183,6 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * @type Number
  */
 
-// DOCS: PathStyle#strokeCap: describe the different options
 /**
  * The cap of the stroke.
  * 
@@ -196,16 +195,15 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#strokeCap
- * @type String
+ * @type String('round', 'square', 'butt')
  */
 
-// DOCS: PathStyle#strokeJoin: describe the different options
 /**
  * The join of the stroke.
  * 
  * @property
  * @name PathStyle#strokeJoin
- * @type String
+ * @type String ('miter', 'round', 'bevel')
  */
 
 /**

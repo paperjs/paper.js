@@ -801,7 +801,6 @@ var Item = this.Item = Base.extend({
 	 * @type Number
 	 */
 
-	// DOCS: Item#strokeCap: describe the different options
 	/**
 	 * The cap of the stroke.
 	 * 
@@ -814,16 +813,15 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @property
 	 * @name Item#strokeCap
-	 * @type String
+	 * @type String('round', 'square', 'butt')
 	 */
 
-	// DOCS: Item#strokeJoin: describe the different options
 	/**
 	 * The join of the stroke.
 	 * 
 	 * @property
 	 * @name Item#strokeJoin
-	 * @type String
+	 * @type String ('miter', 'round', 'bevel')
 	 */
 
 	/**
