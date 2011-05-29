@@ -591,11 +591,11 @@ var Item = this.Item = Base.extend({
 	 * @ignore
 	 */
 	isEditable: function() {
-		var parent = this;
-		while (parent) {
-			if (!parent.visible || parent.locked)
+		var item = this;
+		while (item) {
+			if (!item.visible || item.locked)
 				return false;
-			parent = parent._parent;
+			item = item._parent;
 		}
 		return true;
 	},
