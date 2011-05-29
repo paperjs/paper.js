@@ -379,10 +379,15 @@ var Point = this.Point = Base.extend({
 		return this;
 	},
 
-	// DOCS: Point#length
 	/**
-	 * @param {Number} length
-	 * @return {Point}
+	 * Normalize modifies the {@link #length} of the vector to {@code 1} without
+	 * changing its angle and returns it as a new point. The optional
+	 * {@code length} parameter defines the length to normalize to.
+	 * The object itself is not modified!
+	 * 
+	 * @param {Number} [length=1] the length of the normalized vector
+	 * @return {Point} the normalized vector of the vector that is represented
+	 *                 by this point's coordinates.
 	 */
 	normalize: function(length) {
 		if (length === undefined)
@@ -472,9 +477,32 @@ var Point = this.Point = Base.extend({
 		return this.getAngle(arguments[0]);
 	},
 
-	// DOCS: Point#getQuadrant
 	/**
-	 * @return {Number}
+	 * The quadrant of the {@link #angle} of the point.
+	 * 
+	 * Angles between 0 and 90 degrees are in quadrant {@code 1}. Angles between
+	 * 90 and 180 degrees are in quadrant {@code 2}, angles between 180 and 270
+	 * degrees are in quadrant {@code 3} and angles between 270 and 360 degrees
+	 * are in quadrant {@code 4}.
+	 * 
+	 * @example
+	 * var point = new Point({
+	 * 	angle: 10,
+	 * 	length: 20
+	 * });
+	 * console.log(point.quadrant); // 1
+	 * 
+	 * point.angle = 100;
+	 * console.log(point.quadrant); // 2
+	 * 
+	 * point.angle = 190;
+	 * console.log(point.quadrant); // 3
+	 * 
+	 * point.angle = 280;
+	 * console.log(point.quadrant); // 4
+	 * 
+	 * @type Number
+	 * @bean
 	 */
 	getQuadrant: function() {
 		return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
