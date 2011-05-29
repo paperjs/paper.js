@@ -276,6 +276,7 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	// PORT: Add support for adding multiple segments at once to Sg
+	// DOCS: find a way to document the variable segment parameters of Path#add
 	/**
 	 * Adds one or more segments to the end of the segment list of this path.
 	 * 
