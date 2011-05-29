@@ -109,9 +109,20 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Concatentates this transform with a scaling transformation.
 	 *
+	 * @name Matrix#scale
+	 * @function
+	 * @param {Number} scale The scaling factor.
+	 * @param {Point} [center] The optional center for the scaling
+	 * transformation.
+	 * @return {Matrix} This affine transform.
+	 */
+	/**
+	 * Concatentates this transform with a scaling transformation.
+	 *
 	 * @param {Number} sx The x-axis scaling factor.
 	 * @param {Number} sy The y-axis scaling factor.
-	 * @param {Point} center The optional center for the scaling transformation.
+	 * @param {Point} [center] The optional center for the scaling
+	 * transformation.
 	 * @return {Matrix} This affine transform.
 	 */
 	scale: function(sx, sy /* | scale */, center) {
