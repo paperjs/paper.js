@@ -3,17 +3,17 @@ module('Path Style');
 test('style defaults', function() {
 	var path = new Path();
 	equals(function() {
-		return path.strokeCap == 'butt';
-	}, true);
+		return path.strokeCap;
+	}, 'butt');
 	equals(function() {
-		return path.strokeJoin == 'miter';
-	}, true);
+		return path.strokeJoin;
+	}, 'miter');
 	equals(function() {
-		return path.miterLimit == 10;
-	}, true);
+		return path.miterLimit;
+	}, 10);
 	equals(function() {
-		return path.strokeWidth == 1;
-	}, true);
+		return path.strokeWidth;
+	}, 1);
 });
 
 test('currentStyle', function() {
