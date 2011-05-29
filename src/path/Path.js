@@ -275,7 +275,7 @@ var Path = this.Path = PathItem.extend({
 			this._project._selectItem(this, count == 1);
 	},
 
-	// PORT: Add support for adding multiple segments at once to Sg
+	// PORT: Add support for adding multiple segments at once to Scriptographer
 	// DOCS: find a way to document the variable segment parameters of Path#add
 	/**
 	 * Adds one or more segments to the end of the segment list of this path.
@@ -293,7 +293,7 @@ var Path = this.Path = PathItem.extend({
 			: this._add([ Segment.read(arguments) ])[0];
 	},
 
-	// PORT: Add support for adding multiple segments at once to Sg
+	// PORT: Add support for adding multiple segments at once to Scriptographer
 	/**
 	 * Inserts one or more segments at a given index in the list of this path's
 	 * segments.
@@ -311,17 +311,17 @@ var Path = this.Path = PathItem.extend({
 			: this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
-	// PORT: Add to Sg
+	// PORT: Add to Scriptographer
 	addSegment: function(segment) {
 		return this._add([ Segment.read(arguments) ])[0];
 	},
 
-	// PORT: Add to Sg
+	// PORT: Add to Scriptographer
 	insertSegment: function(index, segment) {
 		return this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
-	// PORT: Add to Sg
+	// PORT: Add to Scriptographer
 	/**
 	 * Adds an array of segments (or types that can be converted to segments)
 	 * to the end of the {@link #segments} array.
@@ -340,7 +340,7 @@ var Path = this.Path = PathItem.extend({
 		return this._add(Segment.readAll(segments));
 	},
 
-	// PORT: Add to Sg
+	// PORT: Add to Scriptographer
 	/**
 	 * Inserts an array of segments at a given index in the path's
 	 * {@link #segments} array.
@@ -355,7 +355,7 @@ var Path = this.Path = PathItem.extend({
 		return this._add(Segment.readAll(segments), index);
 	},
 
-	// PORT: Add to Sg
+	// PORT: Add to Scriptographer
 	/**
 	 * Removes the segment at the specified index of the path's
 	 * {@link #segments} array.
@@ -368,7 +368,7 @@ var Path = this.Path = PathItem.extend({
 		return segments[0] || null;
 	},
 	
-	// PORT: Add to Sg
+	// PORT: Add to Scriptographer
 	/**
 	 * Removes the segments from the specified 'from' index to the specified
 	 * 'to' index from the path's {@link #segments} array.
@@ -592,7 +592,7 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	// TODO: getLocationAt(point, precision)
-	// PORT: Rename functions and add new isParameter argument in Sg
+	// PORT: Rename functions and add new isParameter argument in Scriptographer
 	// DOCS: document Path#getLocationAt
 	/**
 	 * @param {Number} offset

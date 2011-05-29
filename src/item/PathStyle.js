@@ -125,7 +125,8 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 							&& style.equals(childStyle))) {
 						// If there is another item with a different style,
 						// the style is not defined:
-						// PORT: Change this in Sg (currently returns null)
+						// PORT: Change this in Scriptographer
+						// (currently returns null)
 						return undefined;
 					}
 				}

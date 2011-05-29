@@ -14,10 +14,6 @@
  * All rights reserved.
  */
 
-/**
- * @namespace
- * @name Key
- */
 var Key = this.Key = new function() {
 	// TODO: make sure the keys are called the same as in Scriptographer
 	// Missing: tab, cancel, clear, page-down, page-up, comma, minus, period,
@@ -76,7 +72,7 @@ var Key = this.Key = new function() {
 			// Call the onKeyDown or onKeyUp handler if present
 			// When the handler function returns false, prevent the
 			// default behaviour of the key event:
-			// PORT: Add to Sg
+			// PORT: Add to Scriptographer
 			var keyEvent = new KeyEvent(down, key, character, event);
 			if (tool[handler](keyEvent) === false)
 				keyEvent.preventDefault();
@@ -131,25 +127,8 @@ var Key = this.Key = new function() {
 	});
 
 	return {
-		/** @lends Key */
-
 		modifiers: modifiers,
 
-		/**
-		 * Checks whether the specified key is pressed.
-		 * 
-		 * @example
-		 * function onMouseDown(event) {
-		 * 	if(Key.isDown('shift')) {
-		 * 		console.log('The shift key is currently pressed.')
-		 * 	}
-		 * }
-		 * 
-		 * @param {String} key One of: 'backspace', 'enter', 'shift', 'control',
-		 * 'option', 'pause', 'caps-lock', 'escape', 'space', 'end', 'home',
-		 * 'left', 'up', 'right', 'down', 'delete', 'command'
-		 * @return {boolean} {@true if the key is pressed}
-		 */
 		isDown: function(key) {
 			return !!keyMap[key];
 		}

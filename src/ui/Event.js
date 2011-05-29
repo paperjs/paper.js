@@ -21,7 +21,7 @@ var Event = this.Event = Base.extend({
 		this.event = event;
 	},
 
-	// PORT: Add to Sg
+	// PORT: Add to Scriptographer
 	preventDefault: function() {
 		DomEvent.preventDefault(this.event);
 	},
