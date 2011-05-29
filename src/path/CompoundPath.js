@@ -144,6 +144,75 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		}
 	};
 
+	// DOCS: document CompoundPath#lineTo
+	/**
+	 * @name CompoundPath#lineTo
+	 * @function
+	 * @param {Point} point
+	 */
+
+	/**
+	 * Adds a cubic bezier curve to the current path, defined by two handles and
+	 * a to point.
+	 *
+	 * @name CompoundPath#cubicCurveTo
+	 * @function
+	 * @param {Point} handle1
+	 * @param {Point} handle2
+	 * @param {Point} to
+	 */
+
+	/**
+	 * Adds a quadratic bezier curve to the current path, defined by a handle
+	 * and a to point.
+	 *
+	 * @name CompoundPath#quadraticCurveTo
+	 * @function
+	 * @param {Point} handle
+	 * @param {Point} to
+	 */
+
+	// DOCS: document CompoundPath#curveTo
+	/**
+	 * @name CompoundPath#curveTo
+	 * @function
+	 * @param {Point} through
+	 * @param {Point} to
+	 * @param {Number} [parameter=0.5]
+	 */
+
+	// DOCS: document CompoundPath#arcTo
+	/**
+	 * @name CompoundPath#arcTo
+	 * @function
+	 * @param {Point} to
+	 * @param {boolean} [clockwise=true]
+	 */
+
+	// DOCS: document CompoundPath#lineBy
+	/**
+	 * @name CompoundPath#lineBy
+	 * @function
+	 * @param {Point} vector
+	 */
+
+	// DOCS: document CompoundPath#curveBy
+	/**
+	 * @name CompoundPath#curveBy
+	 * @function
+	 * @param {Point} throughVector
+	 * @param {Point} toVector
+	 * @param {Number} [parameter=0.5]
+	 */
+	
+	// DOCS: document CompoundPath#arcBy
+	/**
+	 * @name CompoundPath#arcBy
+	 * @function
+	 * @param {Point} throughVector
+	 * @param {Point} toVector
+	 */
+
 	// DOCS: document CompoundPath#lineTo, CompoundPath#cubicCurveTo etc
 	// Redirect all other drawing commands to the current path
 	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
