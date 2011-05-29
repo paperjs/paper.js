@@ -824,30 +824,30 @@ var Item = this.Item = Base.extend({
 	 * @type String ('miter', 'round', 'bevel')
 	 */
 
-	/**
-	 * The dash offset of the stroke.
-	 * 
-	 * @property
-	 * @name Item#dashOffset
-	 * @type Number
-	 */
+	// /**
+	//  * The dash offset of the stroke.
+	//  * 
+	//  * @property
+	//  * @name Item#dashOffset
+	//  * @type Number
+	//  */
 
-	/**
-	 * Specifies an array containing the dash and gap lengths of the stroke.
-	 * 
-	 * @example
-	 * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
-	 * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
-	 * 
-	 * line.strokeWidth = 3;
-	 * 
-	 * // Set the dashed stroke to [10pt dash, 5pt gap, 8pt dash, 10pt gap]:
-	 * line.dashArray = [10, 5, 8, 10];
-	 * 
-	 * @property
-	 * @name Item#dashArray
-	 * @type Array
-	 */
+	// /**
+	//  * Specifies an array containing the dash and gap lengths of the stroke.
+	//  * 
+	//  * @example
+	//  * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
+	//  * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
+	//  * 
+	//  * line.strokeWidth = 3;
+	//  * 
+	//  * // Set the dashed stroke to [10pt dash, 5pt gap, 8pt dash, 10pt gap]:
+	//  * line.dashArray = [10, 5, 8, 10];
+	//  * 
+	//  * @property
+	//  * @name Item#dashArray
+	//  * @type Array
+	//  */
 
 	/**
 	 * The miter limit of the stroke.
