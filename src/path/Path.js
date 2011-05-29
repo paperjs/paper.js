@@ -322,13 +322,35 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	// PORT: Add to Sg
-	// DOCS: document Path#addSegments
+	/**
+	 * Adds an array of segments (or types that can be converted to segments)
+	 * to the end of the {@link #segments} array.
+	 * 
+	 * @example
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * var points = [new Point(10, 10), new Point(50, 50)];
+	 * path.addSegments(points);
+	 * @param {Segment[]} segments
+	 * @return {Segment[]} an array of the added segments. These segments are
+	 * not necessarily the same objects, e.g. if the segment to be added already
+	 * belongs to another path.
+	 */
 	addSegments: function(segments) {
 		return this._add(Segment.readAll(segments));
 	},
 
 	// PORT: Add to Sg
-	// DOCS: document Path#insertSegments
+	/**
+	 * Inserts an array of segments at a given index in the path's
+	 * {@link #segments} array.
+	 * 
+	 * @param {Number} index the index at which to insert the segments.
+	 * @param {Segment[]} segments the segments to be inserted.
+	 * @return {Segment[]} an array of the added segments. These segments are
+	 * not necessarily the same objects, e.g. if the segment to be added already
+	 * belongs to another path.
+	 */
 	insertSegments: function(index, segments) {
 		return this._add(Segment.readAll(segments), index);
 	},
