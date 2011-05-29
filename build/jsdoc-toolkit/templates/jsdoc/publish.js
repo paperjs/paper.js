@@ -66,7 +66,7 @@ function publish(symbolSet) {
 		outDir: JSDOC.opt.d || SYS.pwd + '../out/jsdoc/',
 		templateDir: JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/',
 		staticDir: (JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/') + 'static/',
-		symbolsDir: 'symbols/',
+		symbolsDir: 'packages/',
 		srcDir: 'symbols/src/'
 	};
 	publish.conf.packagesDir = publish.conf.outDir + 'packages/';
@@ -121,10 +121,8 @@ function publish(symbolSet) {
 		}
 	}
 	
-	// create a class index, displayed in the left-hand column of every class page
 	Link.base = '../';
- 	publish.conf.classesIndex = publish.templates.allClasses.process(classes); // kept in memory
-	
+
 	// create each of the class pages
 	for (var i = 0, l = classes.length; i < l; i++) {
 		var symbol = classes[i];
