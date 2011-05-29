@@ -28,7 +28,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * 
 	 * @class A Rectangle specifies an area that is enclosed by it's top-left
 	 * point (x, y), its width, and its height. It should not be confused with a
-	 * rectangular path ({@link Path.Rectangle(point,size)}), it is not an item.
+	 * rectangular path, it is not an item.
 	 */
 	/**
 	 * Creates a rectangle object.
@@ -347,10 +347,12 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * @type Point
 	 */
 
-	// DOCS: Rectangle#equals
 	/**
+	 * Checks whether the coordinates and size of the rectangle are equal to
+	 * that of the supplied rectangle.
+	 * 
 	 * @param {Rectangle} rect
-	 * @return {boolean}
+	 * @return {boolean} {@true if the rectangles are equal}
 	 */
 	equals: function(rect) {
 		rect = Rectangle.read(arguments);

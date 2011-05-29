@@ -558,7 +558,7 @@ var Point = this.Point = Base.extend({
 	 * console.log(point != new Point(1, 1)); // true
 	 *
 	 * @param {Point} point
-	 * @return {boolean}
+	 * @return {boolean} {@true if the points are equal}
 	 */
 	equals: function(point) {
 		point = Point.read(arguments);
