@@ -1,5 +1,21 @@
 module('Path Style');
 
+test('style defaults', function() {
+	var path = new Path();
+	equals(function() {
+		return path.strokeCap == 'butt';
+	}, true);
+	equals(function() {
+		return path.strokeJoin == 'miter';
+	}, true);
+	equals(function() {
+		return path.miterLimit == 10;
+	}, true);
+	equals(function() {
+		return path.strokeWidth == 1;
+	}, true);
+});
+
 test('currentStyle', function() {
 	paper.project.currentStyle.fillColor = 'black';
 	var path = new Path();
