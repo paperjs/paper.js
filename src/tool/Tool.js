@@ -194,20 +194,47 @@ var Tool = this.Tool = Base.extend({
 	 * @type function
 	 */
 
-	// DOCS: document Tool#onKeyDown
 	/**
 	 * {@grouptitle Keyboard Event Handlers}
 	 * 
+	 * The function to be called when the user presses a key on the keyboard.
+	 * The function receives a {@link KeyEvent} object which contains
+	 * information about the keyboard event.
+	 * If the function returns {@code false}, the keyboard event will be
+	 * prevented from bubbling up. This can be used for example to stop the
+	 * window from scrolling, when you need the user to interact with arrow
+	 * keys.
+	 * 
+	 * @example
+	 * function onKeyDown(event) {
+	 * 	if(event.key == 'space') {
+	 * 		console.log('The spacebar was pressed!');
+	 * 	}
+	 * }
 	 * @name Tool#onKeyDown
 	 * @property
-	 * @type function
+	 * @type Function
 	 */
 
-	// DOCS: document Tool#onKeyUp
 	/**
+	 * The function to be called when the user releases a key on the keyboard.
+	 * The function receives a {@link KeyEvent} object which contains
+	 * information about the keyboard event.
+	 * If the function returns {@code false}, the keyboard event will be
+	 * prevented from bubbling up. This can be used for example to stop the
+	 * window from scrolling, when you need the user to interact with arrow
+	 * keys.
+	 * 
+	 * @example
+	 * function onKeyUp(event) {
+	 * 	if(event.key == 'space') {
+	 * 		console.log('The spacebar was released!');
+	 * 	}
+	 * }
+	 *
 	 * @name Tool#onKeyUp
 	 * @property
-	 * @type function
+	 * @type Function
 	 */
 
 	updateEvent: function(type, pt, minDistance, maxDistance, start,
