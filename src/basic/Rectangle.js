@@ -28,7 +28,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * 
 	 * @class A Rectangle specifies an area that is enclosed by it's top-left
 	 * point (x, y), its width, and its height. It should not be confused with a
-	 * rectangular path, it is not an item.
+	 * rectangular path ({@link Path.Rectangle(point,size)}), it is not an item.
 	 */
 	/**
 	 * Creates a rectangle object.
@@ -290,8 +290,6 @@ var Rectangle = this.Rectangle = Base.extend({
 		point = Point.read(arguments);
 		return this.setCenterX(point.x).setCenterY(point.y);
 	},
-
-	// DOCS: Rectangle#topLeft, Rectangle#topRight etc.
 
 	/**
 	 * The top-left point of the rectangle.
