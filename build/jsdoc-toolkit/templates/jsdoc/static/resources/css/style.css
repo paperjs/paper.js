@@ -15,7 +15,7 @@ select, input, textarea {
 	color: #000;
 }
 
-p tt, pre {
+tt, pre {
 	font-family: Menlo, Consolas, "Vera Mono", monospace;
 	font-size: 11px;
 	line-height: 19px;
