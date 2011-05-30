@@ -93,13 +93,19 @@ if (window.tests) {
 		'test/tests/Point.js',
 		'test/tests/Size.js',
 		'test/tests/Rectangle.js',
+
 		'test/tests/Color.js',
+
 		'test/tests/Project.js',
+
 		'test/tests/Item.js',
 		'test/tests/Item_Cloning.js',
+		'test/tests/Item_Order.js',
+
 		'test/tests/Layer.js',
 		'test/tests/Group.js',
 		'test/tests/Segment.js',
+
 		'test/tests/Path.js',
 		'test/tests/PathStyle.js',
 		'test/tests/Path_Shapes.js',
@@ -108,6 +114,7 @@ if (window.tests) {
 		'test/tests/Path_Bounds.js',
 		'test/tests/Path_Length.js',
 		'test/tests/CompoundPath.js',
+
 		'test/tests/PlacedSymbol.js'
 	);
 }

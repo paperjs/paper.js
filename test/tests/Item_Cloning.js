@@ -17,7 +17,6 @@ function cloneAndCompare(item) {
 }
 
 test('Path#clone()', function() {
-	var proj = paper.project;
 	var path = new Path([10, 20], [30, 40]);
 	path.closed = true;
 	path.name = 'test';
@@ -45,7 +44,6 @@ test('Path#clone() with GradientColor', function() {
 	var gradient = new Gradient(colors, 'radial');
 	var color = new GradientColor(gradient, [0, 0], [20, 20], [10, 10]);
 	
-	var proj = paper.project;
 	var path = new Path([10, 20], [30, 40]);
 	path.fillColor = color;
 	cloneAndCompare(path);
