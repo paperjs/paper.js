@@ -1,7 +1,7 @@
 {!
-	data.desc = processGroupTitle(data.desc, data);
-	var memberId = Helpers.getSymbolId(data);
-	var functionTitle = '<b>' + data.name.replace(/\^\d+$/, '') + '</b>' + makeSignature(data.params);
+	data.desc = Utils.processGroupTitle(data.desc, data);
+	var memberId = Utils.getSymbolId(data);
+	var functionTitle = '<b>' + data.name.replace(/\^\d+$/, '') + '</b>' + Utils.makeSignature(data.params);
 	if (data.isStatic)
 		functionTitle = '<b>' + data.memberOf + '.</b>' + functionTitle;
 !}
@@ -23,11 +23,11 @@
 <div class="clear"></div>
 </div>
 <div class="member-text">
-	{+ processInlineTags(data.desc) +}
+	{+ Utils.processInlineTags(data.desc) +}
 	{+ publish.templates.parameters.process(data) +}
 	{+ publish.templates.returns.process(data) +}
 	{+ publish.templates.seeAlsos.process(data) +}
-	{+ Helpers.parseExamples(data) +}
+	{+ Utils.parseExamples(data) +}
 </div>
 </div>
 </div>

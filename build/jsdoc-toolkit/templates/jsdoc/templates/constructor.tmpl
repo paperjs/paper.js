@@ -1,7 +1,7 @@
 {!
-	var constructorId = Helpers.getConstructorId(data);
+	var constructorId = Utils.getConstructorId(data);
 	var name = data.alias.replace(/(#|\^).+$/, '');
-	data.desc = processGroupTitle(data.desc, data);
+	data.desc = Utils.processGroupTitle(data.desc, data);
 	if (data.returns.length == 0)
 		data.returns = [{type: data.memberOf ? data.memberOf : data.alias, desc: ''}];
 !}
@@ -10,22 +10,22 @@
 </if>
 <div id="{+constructorId+}" class="member">
 <div id="{+constructorId+}-link" class="member-link">
-<a name="{+constructorId+}" href="#" onClick="return toggleMember('{+constructorId+}', false);"><tt><b>{+ name +}</b>{+ makeSignature(data.params) +}</tt></a>
+<a name="{+constructorId+}" href="#" onClick="return toggleMember('{+constructorId+}', false);"><tt><b>{+ name +}</b>{+ Utils.makeSignature(data.params) +}</tt></a>
 </div>
 <div id="{+constructorId+}-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('{+constructorId+}', false);"><tt><b>{+ name +}</b>{+ makeSignature(data.params) +}</tt></a>
+<a href="#" onClick="return toggleMember('{+constructorId+}', false);"><tt><b>{+ name +}</b>{+ Utils.makeSignature(data.params) +}</tt></a>
 </div>
 </div>
 <div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+constructorId+}', false);"></div>
 <div class="clear"></div>
 </div>
-<div class="member-text">{+processInlineTags(data.desc)+}
+<div class="member-text">{+Utils.processInlineTags(data.desc)+}
 	{+ publish.templates.parameters.process(data) +}
 	{+ publish.templates.returns.process(data) +}
-	{+ Helpers.parseExamples(data) +}
+	{+ Utils.parseExamples(data) +}
 	{+ publish.templates.seeAlsos.process(data) +}
 </div>
 

@@ -47,7 +47,7 @@
 <if test="inheritedClassLinks.length">
 <p> Extends {+ inheritedClassLinks.join(', ') +}</p>
 </if>
-{+processInlineTags(data.classDesc)+}
+{+Utils.processInlineTags(data.classDesc)+}
 </div>
 <!-- ============================== constructors ========================= -->
 <if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace && !data.ignore && data.desc.length">
