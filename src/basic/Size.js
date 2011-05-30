@@ -35,7 +35,7 @@ var Size = this.Size = Base.extend({
 	 * @class The Size object is used to describe the size of something, through
 	 * its {@link #width} and {@link #height} properties.
 	 * 
-	 * Sample code:
+	 * Example:
 	 * <pre>
 	 * // Create a size that is 10pt wide and 5pt high
 	 * var size = new Size(10, 5);

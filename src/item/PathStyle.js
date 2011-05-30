@@ -54,7 +54,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		 * {@link Item#style}. This is a convenient way to define a style once and
 		 * apply it to a series of items:
 		 * 
-		 * Sample Code:
+		 * Example:
 		 * <pre>
 		 * var circleStyle = {
 		 * 	fillColor: new RGBColor(1, 0, 0),
