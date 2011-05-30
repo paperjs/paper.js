@@ -783,6 +783,12 @@ var Point = this.Point = Base.extend({
 		 * @param {Point} point1
 		 * @param {Point} point2
 		 * @returns {Point} The newly created point object
+		 * 
+		 * @example
+		 * var point1 = new Point(10, 100);
+		 * var point2 = new Point(200, 5);
+		 * var minPoint = Point.min(point1, point2);
+		 * console.log(minPoint); // { x: 10.0, y: 5.0 }
 		 */
 		min: function(point1, point2) {
 			point1 = Point.read(arguments, 0, 1);
@@ -801,6 +807,12 @@ var Point = this.Point = Base.extend({
 		 * @param {Point} point1
 		 * @param {Point} point2
 		 * @returns {Point} The newly created point object
+		 * 
+		 * @example
+		 * var point1 = new Point(10, 100);
+		 * var point2 = new Point(200, 5);
+		 * var maxPoint = Point.max(point1, point2);
+		 * console.log(maxPoint); // { x: 200.0, y: 100.0 }
 		 */
 		max: function(point1, point2) {
 			point1 = Point.read(arguments, 0, 1);
@@ -817,6 +829,13 @@ var Point = this.Point = Base.extend({
 		 * 
 		 * @returns {Point} The newly created point object
 		 * @static
+		 *
+		 * @example
+		 * var maxPoint = new Point(100, 100);
+		 * var randomPoint = Point.random();
+		 * 
+		 * // A point between {x:0, y:0} and {x:100, y:100}:
+		 * var point = maxPoint * randomPoint;
 		 */
 		random: function() {
 			return Point.create(Math.random(), Math.random());
