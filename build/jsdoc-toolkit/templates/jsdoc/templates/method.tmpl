@@ -24,24 +24,10 @@
 </div>
 <div class="member-text">
 	{+ processInlineTags(data.desc) +}
-	{+ publish.templates.examples.process(data) +}
 	{+ publish.templates.parameters.process(data) +}
-<if test="data.returns.length">
-	<ul><b>Returns:</b>
-	<for each="item" in="data.returns">
-		<li>
-		<tt><if test="defined(item.type)">{+ new Link().toSymbol(item.type) +}<if test="item.desc">&nbsp;&mdash;&nbsp;</if></if>{+processInlineTags(item.desc, { stripParagraphs: true })+}</tt>
-		</li>
-	</for>
-	</ul>
-</if>
-<if test="data.see.length">
-	<p><b>See also:</b>
-	<for each="item" in="data.see">
-		<tt>{+ new Link().toSymbol(item) +}</tt>
-	</for>
-	</p>
-</if>
+	{+ publish.templates.returns.process(data) +}
+	{+ publish.templates.seeAlsos.process(data) +}
+	{+ Helpers.parseExamples(data) +}
 </div>
 </div>
 </div>

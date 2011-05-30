@@ -35,15 +35,11 @@
 </div>
 <if test="operator.type">
 	<div class="member-text">
-		{+processInlineTags(operator.desc)+}
-		{+ publish.templates.examples.process(operator) +}
-	<ul><b>Returns:</b>
-	<for each="item" in="operator.returns">
-		<li>
-		<tt><if test="defined(item.type)">{+ new Link().toSymbol(item.type) +}&nbsp;&mdash;&nbsp;</if>{+processInlineTags(item.desc, { stripParagraphs: true })+}</tt>
-		</li>
-	</for>
-	</ul></div>
+		{+ processInlineTags(operator.desc) +}
+		{+ publish.templates.returns.process(operator) +}
+		{+ publish.templates.seeAlsos.process(operator) +}
+		{+ Helpers.parseExamples(operator) +}
+	</div>
 </if>
 <if test="operatorCount == data.length - 1">
 	</div>

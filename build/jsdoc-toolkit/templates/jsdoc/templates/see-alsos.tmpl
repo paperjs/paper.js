@@ -1,0 +1,7 @@
+<if test="data.see.length">
+	<p><b>See also:</b>
+	<for each="item" in="data.see">
+		<tt>{+ new Link().toSymbol(item) +}</tt>
+	</for>
+	</p>
+</if>
