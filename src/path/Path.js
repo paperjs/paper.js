@@ -22,20 +22,21 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 * 
-	 * @example
-	 * var firstSegment = new Segment(30, 30);
-	 * var secondSegment = new Segment(100, 100);
-	 * var path = new Path([firstSegment, secondSegment]);
-	 * path.strokeColor = 'black';
-	 * 
-	 * @example
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
-	 * path.moveTo(30, 30);
-	 * path.lineTo(100, 100);
-	 * 
 	 * @param {Segment[]} [segments] An optional array of segments (or points to be
 	 * converted to segments) that will be added to the path.
+	 *
+	 * @example
+	 * // Create an empty path and add segments to it:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.add(new Point(30, 30));
+	 * path.add(new Point(100, 100));
+	 * 
+	 * @example
+	 * // Create a path with two segments:
+	 * var segments = [new Point(30, 30), new Point(100, 100)];
+	 * var path = new Path(segments);
+	 * path.strokeColor = 'black';
 	 * 
 	 * @class The Path item represents a path in a Paper.js project.
 	 * @extends PathItem
@@ -326,15 +327,16 @@ var Path = this.Path = PathItem.extend({
 	 * Adds an array of segments (or types that can be converted to segments)
 	 * to the end of the {@link #segments} array.
 	 * 
+	 * @param {Segment[]} segments
+	 * @return {Segment[]} an array of the added segments. These segments are
+	 * not necessarily the same objects, e.g. if the segment to be added already
+	 * belongs to another path.
+	 * 
 	 * @example
 	 * var path = new Path();
 	 * path.strokeColor = 'black';
 	 * var points = [new Point(10, 10), new Point(50, 50)];
 	 * path.addSegments(points);
-	 * @param {Segment[]} segments
-	 * @return {Segment[]} an array of the added segments. These segments are
-	 * not necessarily the same objects, e.g. if the segment to be added already
-	 * belongs to another path.
 	 */
 	addSegments: function(segments) {
 		return this._add(Segment.readAll(segments));
@@ -436,7 +438,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * Specifies whether all segments of the path are selected.
 	 * 
-	 * @type boolean
+	 * @type Boolean
 	 * @bean
 	 */
 	isFullySelected: function() {
@@ -455,7 +457,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * Specifies whether the path is oriented clock-wise.
 	 * 
-	 * @type boolean
+	 * @type Boolean
 	 * @bean
 	 */
 	isClockwise: function() {
@@ -596,7 +598,7 @@ var Path = this.Path = PathItem.extend({
 	// DOCS: document Path#getLocationAt
 	/**
 	 * @param {Number} offset
-	 * @param {boolean} [isParameter=false]
+	 * @param {Boolean} [isParameter=false]
 	 */
 	getLocationAt: function(offset, isParameter) {
 		var curves = this.getCurves(),
@@ -629,7 +631,7 @@ var Path = this.Path = PathItem.extend({
 	 * Get the point of the path at the given offset.
 	 * 
 	 * @param {Number} offset
-	 * @param {boolean} [isParameter=false]
+	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the point at the given offset
 	 */
 	getPointAt: function(offset, isParameter) {
@@ -642,7 +644,7 @@ var Path = this.Path = PathItem.extend({
 	 * point.
 	 * 
 	 * @param {Number} offset
-	 * @param {boolean} [isParameter=false]
+	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the tangent vector at the given offset
 	 */
 	getTangentAt: function(offset, isParameter) {
@@ -654,7 +656,7 @@ var Path = this.Path = PathItem.extend({
 	 * Get the normal to the path at the given offset as a vector point.
 	 * 
 	 * @param {Number} offset
-	 * @param {boolean} [isParameter=false]
+	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the normal vector at the given offset
 	 */
 	getNormalAt: function(offset, isParameter) {
@@ -1040,7 +1042,7 @@ var Path = this.Path = PathItem.extend({
 		// DOCS: document Path#arcTo
 		/**
 		 * @param {Point} to
-		 * @param {boolean} [clockwise=true]
+		 * @param {Boolean} [clockwise=true]
 		 */
 		arcTo: function(to, clockwise) {
 			// Get the start point:
