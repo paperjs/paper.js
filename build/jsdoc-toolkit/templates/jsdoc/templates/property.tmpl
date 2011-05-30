@@ -25,10 +25,11 @@
 <div class="clear"></div>
 </div>
 <if test="data.type">
-	<div class="member-text">
-		{+ processInlineTags(data.desc) +}
-		<if test="data.readOnly"><p>Read only.</p></if>
-		{+ publish.templates.examples.process(data) +}
+<div class="member-text">
+	{+ processInlineTags(data.desc) +}
+	<if test="data.readOnly">
+		<p>Read only.</p>
+	</if>
 	<if test="data.defaultValue">
 		<ul><b>Default:</b>
 		<li>
@@ -38,9 +39,12 @@
 	</if>
 	<ul><b>Type:</b>
 	<li>
-	<tt>{+new Link().toSymbol(data.type)+}</tt>
+		<tt>{+new Link().toSymbol(data.type)+}</tt>
 	</li>
-	</ul></div>
+	</ul>
+	{+ publish.templates.seeAlsos.process(data) +}
+	{+ Helpers.parseExamples(data) +}
+</div>
 </if>
 </div>
 </div>

@@ -56,6 +56,25 @@ var Helpers = {
 	
 	isaClass: function(symbol) {
 		return symbol.is('CONSTRUCTOR') || symbol.isNamespace
+	},
+	
+	parseExamples: function(symbol) {
+		var out = [],
+			examples = symbol.example;
+		for (var i = 0, l = examples.length; i < l; i++) {
+			var example = examples[i],
+				lines = example.toString().split('\n'),
+				description = [];
+			// The description is the first commented lines:
+			while (/^[\/]{2}/.test(lines[0])) {
+				description.push(lines.shift().replace('// ', ''));
+			}
+			out.push(publish.templates.example.process({
+				description: description.join(' ').trim(),
+				code: lines.join('\n').trim()
+			}));
+		}
+		return out.join('\n');
 	}
 };
 
@@ -77,7 +96,9 @@ function publish(symbolSet) {
 		property: 'property.tmpl',
 		parameters: 'parameters.tmpl',
 		operators: 'operators.tmpl',
-		examples: 'examples.tmpl',
+		returns: 'returns.tmpl',
+		seeAlsos: 'see-alsos.tmpl',
+		example: 'example.tmpl',
 		constructor: 'constructor.tmpl',
 		html: 'html.tmpl',
 		allClasses: 'allClasses.tmpl',
