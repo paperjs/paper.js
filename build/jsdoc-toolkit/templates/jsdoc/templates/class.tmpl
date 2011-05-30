@@ -50,7 +50,7 @@
 {+processInlineTags(data.classDesc)+}
 </div>
 <!-- ============================== constructors ========================= -->
-<if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace && !data.ignore">
+<if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace && !data.ignore && data.desc.length">
 <div class="reference-members"><h2>Constructors</h2>
 	{+ publish.templates.constructor.process(data) +}
 	<for each="constructor" in="constructors">
