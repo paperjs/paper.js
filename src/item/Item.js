@@ -612,8 +612,8 @@ var Item = this.Item = Base.extend({
 	 * defined in such a way, e.g. if one is a descendant of the other.
 	 */
 	_getOrder: function(item) {
-		// Private method that prodces a list of anchestors, starting with the
-		// root and the actual element as the last entry.
+		// Private method that produces a list of anchestors, starting with the
+		// root and ending with the actual element as the last entry.
 		function getList(item) {
 			var list = [];
 			do {
