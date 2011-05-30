@@ -70,8 +70,8 @@ var Project = this.Project = Base.extend({
 		return this._currentStyle;
 	},
 
-	// TODO: style selected items with the style:
 	setCurrentStyle: function(style) {
+		// TODO: style selected items with the style:
 		this._currentStyle.initialize(style);
 	},
 
