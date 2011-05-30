@@ -236,12 +236,11 @@ var Utils = {
 			out = '<ul class="package-classes">';
 		for (var i in classLayout) {
 			out += '<li' + (first ? ' class="first">' : '>');
-			out += '<h2>' + i + '</h2>';
+			out += '<h2>' + i + '</h2></li>';
 			out += parseClassNames(classLayout[i]);
-			out += '</li>';
 			first = false;
 		}
-		out += '</ul';
+		out += '</ul>';
 
 		var classesIndex = publish.templates.menu.process(out);
 		IO.saveFile(publish.conf.packagesDir, 'packages.html', classesIndex);
