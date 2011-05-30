@@ -12,15 +12,15 @@ new function() {
 			return obj[name] !== (obj.__proto__ || Object.prototype)[name];
 		};
 
-	function inject(dest, src, enumerable, base, generics) {
+	function inject(dest, src, enumerable, base, preserve, generics) {
+
 		function field(name, dontCheck, generics) {
-			var val = src[name], func = typeof val == 'function', res = val,
-				prev = dest[name];
-			if (generics && func && (!src.preserve || !generics[name])) generics[name] = function(bind) {
+			var val = src[name], func = typeof val == 'function', res = val, prev = dest[name];
+			if (generics && func && (!preserve || !generics[name])) generics[name] = function(bind) {
 				return bind && dest[name].apply(bind,
 					Array.prototype.slice.call(arguments, 1));
 			}
-			if ((dontCheck || val !== undefined && has(src, name)) && (!prev || !src.preserve)) {
+			if ((dontCheck || val !== undefined && has(src, name)) && (!preserve || !prev)) {
 				if (func) {
 					if (prev && /\bthis\.base\b/.test(val)) {
 						var fromBase = base && base[name] == prev;
@@ -61,8 +61,8 @@ new function() {
 		inject: function(src) {
 			if (src) {
 				var proto = this.prototype, base = proto.__proto__ && proto.__proto__.constructor;
-				inject(proto, src, false, base && base.prototype, src.generics && this);
-				inject(this, src.statics, true, base);
+				inject(proto, src, false, base && base.prototype, src.preserve, src.generics && this);
+				inject(this, src.statics, true, base, src.preserve);
 			}
 			for (var i = 1, l = arguments.length; i < l; i++)
 				this.inject(arguments[i]);
@@ -196,8 +196,8 @@ Enumerable = {
 		return entry && entry.result;
 	},
 
-	contains: function(obj) {
-		return !!this.findEntry(obj);
+	contains: function(iter) {
+		return !!this.findEntry(iter);
 	},
 
 	remove: function(iter, bind) {
@@ -244,7 +244,7 @@ Enumerable = {
 	},
 
 	max: function(iter, bind) {
-		var that = this;
+		var that = this, iter = Base.iterator(iter);
 		return Base.each(this, function(val, i) {
 			val = iter.call(bind, val, i, that);
 			if (val >= (this.max || val)) this.max = val;
@@ -252,7 +252,7 @@ Enumerable = {
 	},
 
 	min: function(iter, bind) {
-		var that = this;
+		var that = this, iter = Base.iterator(iter);
 		return Base.each(this, function(val, i) {
 			val = iter.call(bind, val, i, that);
 			if (val <= (this.min || val)) this.min = val;
@@ -266,7 +266,7 @@ Enumerable = {
 	},
 
 	sortBy: function(iter, bind) {
-		var that = this;
+		var that = this, iter = Base.iterator(iter);
 		return this.map(function(val, i) {
 			return { value: val, compare: iter.call(bind, val, i, that) };
 		}, bind).sort(function(left, right) {
@@ -418,6 +418,12 @@ Array.inject({
 		for (var l = this.length; i < l; i++)
 			value = fn.call(null, value, this[i], i, this);
 		return value;
+	},
+
+	statics: {
+		isArray: function(obj) {
+			return Object.prototype.toString.call(obj) === '[object Array]';
+		}
 	}
 }, Enumerable, {
 	generics: true,
@@ -449,13 +455,6 @@ Array.inject({
 
 	remove: function(iter, bind) {
 		var entry = this.findEntry(iter, bind);
-		if (entry.key != null)
-			this.splice(entry.key, 1);
-		return entry.value;
-	},
-
-	remove: function(iter, bind) {
-		var entry = this.findEntry(iter, bind);
 		if (entry) {
 			this.splice(entry.key, 1);
 			return entry.value;
@@ -483,19 +482,6 @@ Array.inject({
 	append: function(items) {
 		for (var i = 0, l = items.length; i < l; i++)
 			this[this.length++] = items[i];
-		return this;
-	},
-
-	subtract: function(items) {
-		for (var i = 0, l = items.length; i < l; i++)
-			Array.remove(this, items[i]);
-		return this;
-	},
-
-	intersect: function(items) {
-		for (var i = this.length - 1; i >= 0; i--)
-			if (!items.find(this[i]))
-				this.splice(i, 1);
 		return this;
 	},
 
@@ -557,6 +543,22 @@ Array.inject({
 
 	getLast: function() {
 		return this[this.length - 1];
+	}
+}, new function() {
+	function combine(subtract) {
+		return function(items) {
+			var res = new this.constructor();
+			for (var i = this.length - 1; i >= 0; i--)
+				if (subtract == !Array.find(items, this[i]))
+					res.push(this[i]);
+			return res;
+		}
+	}
+
+	return {
+		subtract: combine(true),
+
+		intersect: combine(false)
 	}
 });
 
@@ -854,7 +856,11 @@ Json = function(JSON) {
 	var special = { '\b': '\\b', '\t': '\\t', '\n': '\\n', '\f': '\\f', '\r': '\\r', '"' : '\\"', "'" : "\\'", '\\': '\\\\' };
 	return {
 		encode: JSON
-			? JSON.stringify
+			? function(obj, properties) {
+				return JSON.stringify(obj, properties || Browser.TRIDENT && function(key, value) {
+					return key == '__proto__' ? undefined : value;
+				});
+			}
 			: function(obj, properties) {
 				if (Base.type(properties) == 'array') {
 					properties = properties.each(function(val) {
@@ -1384,6 +1390,12 @@ DomNode.inject(new function() {
 			return DomNode.wrap(clone);
 		},
 
+		hasProperty: function(name) {
+			var key = properties[name];
+			key = key && typeof key == 'function' ? key(this) : key;
+			return key ? this.$[key] !== undefined : this.$.hasAttribute(name);
+		},
+
 		getProperty: function(name) {
 			var key = properties[name], value;
 			key = key && typeof key == 'function' ? key(this) : key;
@@ -1614,7 +1626,7 @@ DomDocument = DomElement.extend({
 	_type: 'document',
 
 	initialize: function() {
-		if(Browser.TRIDENT && Browser.VERSION < 7)
+		if (Browser.TRIDENT && Browser.VERSION < 7)
 			try {
 				this.$.execCommand('BackgroundImageCache', false, true);
 			} catch (e) {}
@@ -1710,7 +1722,7 @@ DomElement.inject(new function() {
 		}
 	}
 
-	function bounds(fields, offset) {
+	function setBounds(fields, offset) {
 		return function(values) {
 			var vals = /^(object|array)$/.test(Base.type(values)) ? values : arguments;
 			if (offset) {
@@ -1725,7 +1737,7 @@ DomElement.inject(new function() {
 		}
 	}
 
-	function body(that) {
+	function isBody(that) {
 		return that.getTag() == 'body';
 	}
 
@@ -1742,13 +1754,13 @@ DomElement.inject(new function() {
 	var fields = {
 
 		getSize: function() {
-			return body(this)
+			return isBody(this)
 				? this.getWindow().getSize()
 				: { width: this.$.offsetWidth, height: this.$.offsetHeight };
 		},
 
-		getOffset: function(relative) {
-			if (body(this))
+		getOffset: function(relative, scroll) {
+			if (isBody(this))
 				return this.getWindow().getOffset();
 		 	if (relative && !DomNode.isNode(relative))
 				return getPositioned(this);
@@ -1757,25 +1769,31 @@ DomElement.inject(new function() {
 				var rel = getAbsolute(DomNode.wrap(relative));
 				off = { x: off.x - rel.x, y: off.y - rel.y };
 			}
+			if (scroll) {
+				scroll = this.getScrollOffset();
+				off.x -= scroll.x;
+				off.y -= scroll.y;
+			}
 			return off;
 		},
 
 		getScrollOffset: function() {
-			return body(this)
+			return isBody(this)
 				? this.getWindow().getScrollOffset()
-			 	: getScrollOffset(this);
+				: getScrollOffset(this);
 		},
 
 		getScrollSize: function() {
-			return body(this)
+			return isBody(this)
 				? this.getWindow().getScrollSize()
 				: { width: this.$.scrollWidth, height: this.$.scrollHeight };
 		},
 
-		getBounds: function(relative) {
-			if (body(this))
+		getBounds: function(relative, scroll) {
+			if (isBody(this))
 				return this.getWindow().getBounds();
-			var off = this.getOffset(relative), el = this.$;
+			var off = this.getOffset(relative, scroll),
+				el = this.$;
 			return {
 				left: off.x,
 				top: off.y,
@@ -1786,14 +1804,14 @@ DomElement.inject(new function() {
 			};
 		},
 
-		setBounds: bounds(['left', 'top', 'width', 'height', 'clip'], true),
+		setBounds: setBounds(['left', 'top', 'width', 'height', 'clip'], true),
 
-		setOffset: bounds(['left', 'top'], true),
+		setOffset: setBounds(['left', 'top'], true),
 
-		setSize: bounds(['width', 'height', 'clip']),
+		setSize: setBounds(['width', 'height', 'clip']),
 
 		setScrollOffset: function(x, y) {
-			if (body(this)) {
+			if (isBody(this)) {
 				this.getWindow().setScrollOffset(x, y);
 			} else {
 				var off = typeof x == 'object' ? x : { x: x, y: y };
@@ -1811,6 +1829,17 @@ DomElement.inject(new function() {
 			var bounds = this.getBounds();
 			return pos.x >= bounds.left && pos.x < bounds.right &&
 				pos.y >= bounds.top && pos.y < bounds.bottom;
+		},
+
+		isVisible: function(fully) {
+			var win = this.getWindow(), top = win.getScrollOffset().y,
+				bottom = top + win.getSize().height,
+				bounds = this.getBounds(false, true);
+			return (bounds.height > 0 || bounds.width > 0) 
+					&& (bounds.top >= top && bounds.bottom <= bottom 
+						|| (fully && bounds.top <= top && bounds.bottom >= bottom) 
+						|| !fully && (bounds.top <= top && bounds.bottom >= top 
+							|| bounds.top <= bottom && bounds.bottom >= bottom)); 
 		}
 	};
 
@@ -1925,7 +1954,7 @@ DomEvent = Base.extend(new function() {
 			this.type = event.type;
 			this.target = DomNode.wrap(event.target || event.srcElement);
 			if (this.target && this.target.$.nodeType == 3)
-				this.target = this.target.getParent(); 
+				this.target = this.target.getParentNode(); 
 			this.shift = event.shiftKey;
 			this.control = event.ctrlKey;
 			this.alt = event.altKey;
@@ -2260,7 +2289,7 @@ DomElement.inject(new function() {
 
 	function parse(selector) {
 		var params = { tag: '*', id: null, classes: [], attributes: [], pseudos: [] };
-		selector.replace(/:([^:(]+)*(?:\((["']?)(.*?)\2\))?|\[(\w+)(?:([!*^$~|]?=)(["']?)(.*?)\6)?\]|\.[\w-]+|#[\w-]+|\w+|\*/g, function(part) {
+		selector.replace(/:([^:(]+)*(?:\((["']?)(.*?)\2\))?|\[([\w-]+)(?:([!*^$~|]?=)(["']?)(.*?)\6)?\]|\.[\w-]+|#[\w-]+|\w+|\*/g, function(part) {
 			switch (part.charAt(0)) {
 				case '.': params.classes.push(part.slice(1)); break;
 				case '#': params.id = part.slice(1); break;
@@ -2962,7 +2991,7 @@ HtmlElement.inject({
 	}
 });
 
-Form = HtmlElement.extend({
+HtmlForm = HtmlElement.extend({
 	_tag: 'form',
 	_properties: ['action', 'method', 'target'],
 	_methods: ['submit'],
@@ -2980,7 +3009,7 @@ Form = HtmlElement.extend({
 	}
 });
 
-FormElement = HtmlElement.extend({
+HtmlFormElement = HtmlElement.extend({
 	_properties: ['name', 'disabled'],
 	_methods: ['focus', 'blur'],
 
@@ -2992,7 +3021,7 @@ FormElement = HtmlElement.extend({
 	}
 });
 
-Input = FormElement.extend({
+HtmlInput = HtmlFormElement.extend({
 	_tag: 'input',
 	_properties: ['type', 'checked', 'defaultChecked', 'readOnly', 'maxLength'],
 	_methods: ['click'],
@@ -3010,12 +3039,12 @@ Input = FormElement.extend({
 	}
 });
 
-TextArea = FormElement.extend({
+HtmlTextArea = HtmlFormElement.extend({
 	_tag: 'textarea',
 	_properties: ['value']
 });
 
-Select = FormElement.extend({
+HtmlSelect = HtmlFormElement.extend({
 	_tag: 'select',
 	_properties: ['type', 'selectedIndex'],
 
@@ -3048,16 +3077,16 @@ Select = FormElement.extend({
 	}
 });
 
-SelectOption = FormElement.extend({
+HtmlOption = HtmlFormElement.extend({
 	_tag: 'option',
 	_properties: ['text', 'value', 'selected', 'defaultSelected', 'index']
 });
 
-FormElement.inject({
+HtmlFormElement.inject({
 	setSelection: function(start, end) {
 		var sel = end == undefined ? start : { start: start, end: end };
 		this.focus();
-		if(this.$.setSelectionRange) {
+		if (this.$.setSelectionRange) {
 			this.$.setSelectionRange(sel.start, sel.end);
 		} else {
 			var value = this.getValue();
@@ -3104,7 +3133,7 @@ FormElement.inject({
 		var range = this.getSelection(), current = this.getValue();
 		var top = this.$.scrollTop, height = this.$.scrollHeight;
 		this.setValue(current.substring(0, range.start) + value + current.substring(range.end, current.length));
-		if(top != null)
+		if (top != null)
 			this.$.scrollTop = top + this.$.scrollHeight - height;
 		return select || select == undefined
 			? this.setSelection(range.start, range.start + value.length)
@@ -3118,6 +3147,11 @@ FormElement.inject({
 	setCaret: function(pos) {
 		return this.setSelection(pos, pos);
 	}
+});
+
+HtmlImage = HtmlElement.extend({
+	_tag: 'img',
+	_properties: ['src', 'alt', 'title']
 });
 
 $document = Browser.document = DomNode.wrap(document);
@@ -3460,7 +3494,7 @@ Request = Base.extend(Chain, Callback, new function() {
 	};
 });
 
-Form.inject({
+HtmlForm.inject({
 	send: function(url) {
 		if (!this.sender)
 			this.sender = new Request({ link: 'cancel' });
@@ -3677,8 +3711,8 @@ Fx.Scroll = Fx.extend({
 		var offsetSize = this.element.getSize(),
 			scrollSize = this.element.getScrollSize(),
 			scroll = this.element.getScrollOffset(),
-			values = { x: x, y: y };
-		var lookup = { x: 'width', y: 'height' };
+			values = { x: x, y: y },
+			lookup = { x: 'width', y: 'height' };
 		for (var i in values) {
 			var s = lookup[i];
 			var max = scrollSize[s] - offsetSize[s];
@@ -3707,9 +3741,12 @@ Fx.Scroll = Fx.extend({
 		return this.start(false, 'bottom');
 	},
 
-	toElement: function(el) {
-		var offset = DomElement.get(el).getOffset();
-		return this.start(offset.x, offset.y);
+	toElement: function(el, options) {
+		var el = DomElement.get(el), offset = el.getOffset(),
+			current = el.getWindow().getScrollOffset();
+		return this.start(
+				!options || options.x ? offset.x : current.x,
+				!options || options.y ? offset.y : current.y);
 	}
 });
 
