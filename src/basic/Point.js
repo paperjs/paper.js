@@ -27,6 +27,12 @@ var Point = this.Point = Base.extend({
 	 * @param {Number} x the x coordinate
 	 * @param {Number} y the y coordinate
 	 * 
+	 * @example
+	 * // Create a point at x: 10, y: 5
+	 * var point = new Point(10, 5);
+	 * console.log(point.x); // 10
+	 * console.log(point.y); // 5
+	 * 
 	 * @class The Point object represents a point in the two dimensional space
 	 * of the Paper.js project. It is also used to represent two dimensional
 	 * vector objects.
@@ -40,20 +46,86 @@ var Point = this.Point = Base.extend({
 	 * </pre>
 	 */
 	/**
+	 * Creates a Point object using the numbers in the given array as
+	 * coordinates.
+	 *
+	 * @name Point#initialize
+	 * @param {array} array
+	 * 
+	 * @example
+	 * // Creating a point at x: 10, y: 5 using an array of numbers:
+	 * var array = [10, 5];
+	 * var point = new Point(array);
+	 * console.log(point.x); // 10
+	 * console.log(point.y); // 5
+	 *
+	 * @example
+	 * // Passing an array to a functionality that expects a point:
+	 * 
+	 * // Create a circle shaped path at x: 50, y: 50
+	 * // with a radius of 30:
+	 * var path = new Path.Circle([50, 50], 30);
+	 * path.fillColor = 'red';
+	 * 
+	 * // Which is the same as doing:
+	 * var path = new Path.Circle(new Point(50, 50), 30);
+	 * path.fillColor = 'red';
+	 */
+	/**
+	 * Creates a Point object using the properties in the given object.
+	 *
+	 * @name Point#initialize
+	 * @param {object} object
+	 * 
+	 * @example
+	 * // Creating a point using an object literal with length and angle
+	 * // properties:
+	 * 
+	 * var point = new Point({
+	 * 	length: 10,
+	 * 	angle: 90
+	 * });
+	 * console.log(point.length); // 10
+	 * console.log(point.angle); // 90
+	 * 
+	 * @example
+	 * // Creating a point at x: 10, y: 20 using an object literal:
+	 * 
+	 * var point = new Point({
+	 * 	x: 10,
+	 * 	y: 20
+	 * });
+	 * console.log(point.x); // 10
+	 * console.log(point.y); // 20
+	 * 
+	 * @example
+	 * // Passing an object to a functionality that expects a point:
+	 * 
+	 * var center = {
+	 * 	x: 50,
+	 * 	y: 50
+	 * };
+	 * 
+	 * // Creates a circle shaped path at x: 50, y: 50
+	 * // with a radius of 30:
+	 * var path = new Path.Circle(center, 30);
+	 * path.fillColor = 'red';
+	 */
+	/**
 	 * Creates a Point object using the width and height values of the given
 	 * Size object.
 	 * 
-	 * Sample code:
-	 * <code>
+	 * @name Point#initialize
+	 * @param {Size} size
+	 * 
+	 * @example
+	 * // Creating a point using a size object.
+	 * 
 	 * // Create a Size with a width of 100pt and a height of 50pt
 	 * var size = new Size(100, 50);
 	 * console.log(size); // { width: 100, height: 50 }
 	 * var point = new Point(size);
 	 * console.log(point); // { x: 100, y: 50 }
-	 * </code>
-	 * 
-	 * @name Point#initialize
-	 * @param {Size} size
 	 */
 	/**
 	 * Creates a Point object using the coordinates of the given Point object.
@@ -113,7 +185,7 @@ var Point = this.Point = Base.extend({
 
 	/**
 	 * Returns a copy of the point.
-	 * This is useful as the following code only generates a flat copy:
+	 * 
 	 * @example
 	 * var point1 = new Point();
 	 * var point2 = point1;
@@ -141,31 +213,31 @@ var Point = this.Point = Base.extend({
 	 * the point as a new point.
 	 * The object itself is not modified!
 	 * 
-	 * @example
-	 * var point = new Point(5, 10);
-	 * var result = point + 20;
-	 * console.log(result); // { x: 25.0, y: 30.0 }
-	 * 
 	 * @name Point#add
 	 * @function
 	 * @param {Number} number the number to add
 	 * @return {Point} the addition of the point and the value as a new point
+	 * 
+	 * @example
+	 * var point = new Point(5, 10);
+	 * var result = point + 20;
+	 * console.log(result); // { x: 25.0, y: 30.0 }
 	 */
 	/**
 	 * Returns the addition of the supplied point to the point as a new
 	 * point.
 	 * The object itself is not modified!
 	 * 
+	 * @name Point#add
+	 * @function
+	 * @param {Point} point the point to add
+	 * @return {Point} the addition of the two points as a new point
+	 * 
 	 * @example
 	 * var point1 = new Point(5, 10);
 	 * var point2 = new Point(10, 20);
 	 * var result = point1 + point2;
 	 * console.log(result); // { x: 15.0, y: 30.0 }
-	 * 
-	 * @name Point#add
-	 * @function
-	 * @param {Point} point the point to add
-	 * @return {Point} the addition of the two points as a new point
 	 */
 	add: function(point) {
 		point = Point.read(arguments);
@@ -177,31 +249,31 @@ var Point = this.Point = Base.extend({
 	 * the point as a new point.
 	 * The object itself is not modified!
 	 * 
-	 * @example
-	 * var point = new Point(10, 20);
-	 * var result = point - 5;
-	 * console.log(result); // { x: 5.0, y: 15.0 }
-	 * 
 	 * @name Point#subtract
 	 * @function
 	 * @param {Number} number the number to subtract
 	 * @return {Point} the subtraction of the point and the value as a new point
+	 * 
+	 * @example
+	 * var point = new Point(10, 20);
+	 * var result = point - 5;
+	 * console.log(result); // { x: 5.0, y: 15.0 }
 	 */
 	/**
 	 * Returns the subtraction of the supplied point to the point as a new
 	 * point.
 	 * The object itself is not modified!
 	 * 
+	 * @name Point#subtract
+	 * @function
+	 * @param {Point} point the point to subtract
+	 * @return {Point} the subtraction of the two points as a new point
+	 * 
 	 * @example
 	 * var firstPoint = new Point(10, 20);
 	 * var secondPoint = new Point(5, 5);
 	 * var result = firstPoint - secondPoint;
 	 * console.log(result); // { x: 5.0, y: 15.0 }
-	 * 
-	 * @name Point#subtract
-	 * @function
-	 * @param {Point} point the point to subtract
-	 * @return {Point} the subtraction of the two points as a new point
 	 */
 	subtract: function(point) {
 		point = Point.read(arguments);
@@ -213,31 +285,31 @@ var Point = this.Point = Base.extend({
 	 * the point as a new point.
 	 * The object itself is not modified!
 	 * 
-	 * @example
-	 * var point = new Point(10, 20);
-	 * var result = point * 2;
-	 * console.log(result); // { x: 20.0, y: 40.0 }
-	 * 
 	 * @name Point#multiply
 	 * @function
 	 * @param {Number} number the number to multiply by
 	 * @return {Point} the multiplication of the point and the value as a new point
+	 * 
+	 * @example
+	 * var point = new Point(10, 20);
+	 * var result = point * 2;
+	 * console.log(result); // { x: 20.0, y: 40.0 }
 	 */
 	/**
 	 * Returns the multiplication of the supplied point to the point as a new
 	 * point.
 	 * The object itself is not modified!
 	 * 
+	 * @name Point#multiply
+	 * @function
+	 * @param {Point} point the point to multiply by
+	 * @return {Point} the multiplication of the two points as a new point
+	 * 
 	 * @example
 	 * var firstPoint = new Point(5, 10);
 	 * var secondPoint = new Point(4, 2);
 	 * var result = firstPoint * secondPoint;
 	 * console.log(result); // { x: 20.0, y: 20.0 }
-	 * 
-	 * @name Point#multiply
-	 * @function
-	 * @param {Point} point the point to multiply by
-	 * @return {Point} the multiplication of the two points as a new point
 	 */
 	multiply: function(point) {
 		point = Point.read(arguments);
@@ -249,31 +321,31 @@ var Point = this.Point = Base.extend({
 	 * the point as a new point.
 	 * The object itself is not modified!
 	 * 
-	 * @example
-	 * var point = new Point(10, 20);
-	 * var result = point / 2;
-	 * console.log(result); // { x: 5.0, y: 10.0 }
-	 * 
 	 * @name Point#divide
 	 * @function
 	 * @param {Number} number the number to divide by
 	 * @return {Point} the division of the point and the value as a new point
+	 * 
+	 * @example
+	 * var point = new Point(10, 20);
+	 * var result = point / 2;
+	 * console.log(result); // { x: 5.0, y: 10.0 }
 	 */
 	/**
 	 * Returns the division of the supplied point to the point as a new
 	 * point.
 	 * The object itself is not modified!
 	 * 
+	 * @name Point#divide
+	 * @function
+	 * @param {Point} point the point to divide by
+	 * @return {Point} the division of the two points as a new point
+	 * 
 	 * @example
 	 * var firstPoint = new Point(8, 10);
 	 * var secondPoint = new Point(2, 5);
 	 * var result = firstPoint / secondPoint;
 	 * console.log(result); // { x: 4.0, y: 2.0 }
-	 * 
-	 * @name Point#divide
-	 * @function
-	 * @param {Point} point the point to divide by
-	 * @return {Point} the division of the two points as a new point
 	 */
 	divide: function(point) {
 		point = Point.read(arguments);
@@ -284,29 +356,29 @@ var Point = this.Point = Base.extend({
 	 * The modulo operator returns the integer remainders of dividing the point
 	 * by the supplied value as a new point.
 	 * 
-	 * @example
-	 * var point = new Point(12, 6);
-	 * console.log(point % 5); // {x: 2, y: 1}
-	 * 
 	 * @name Point#modulo
 	 * @function
 	 * @param {Number} value
 	 * @return {Point} the integer remainders of dividing the point by the value
 	 *                 as a new point
+	 * 
+	 * @example
+	 * var point = new Point(12, 6);
+	 * console.log(point % 5); // {x: 2, y: 1}
 	 */
 	/**
 	 * The modulo operator returns the integer remainders of dividing the point
 	 * by the supplied value as a new point.
-	 * 
-	 * @example
-	 * var point = new Point(12, 6);
-	 * console.log(point % new Point(5, 2)); // {x: 2, y: 0}
 	 * 
 	 * @name Point#modulo
 	 * @function
 	 * @param {Point} point
 	 * @return {Point} the integer remainders of dividing the points by each
 	 *                 other as a new point
+	 * 
+	 * @example
+	 * var point = new Point(12, 6);
+	 * console.log(point % new Point(5, 2)); // {x: 2, y: 0}
 	 */
 	modulo: function(point) {
 		point = Point.read(arguments);
@@ -485,6 +557,9 @@ var Point = this.Point = Base.extend({
 	 * degrees are in quadrant {@code 3} and angles between 270 and 360 degrees
 	 * are in quadrant {@code 4}.
 	 * 
+	 * @type Number
+	 * @bean
+	 * 
 	 * @example
 	 * var point = new Point({
 	 * 	angle: 10,
@@ -500,9 +575,6 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * point.angle = 280;
 	 * console.log(point.quadrant); // 4
-	 * 
-	 * @type Number
-	 * @bean
 	 */
 	getQuadrant: function() {
 		return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
@@ -551,14 +623,14 @@ var Point = this.Point = Base.extend({
 	 * Checks whether the coordinates of the point are equal to that of the
 	 * supplied point.
 	 * 
+	 * @param {Point} point
+	 * @return {Boolean} {@true if the points are equal}
+	 * 
 	 * @example
 	 * var point = new Point(5, 10);
 	 * console.log(point == new Point(5, 10)); // true
 	 * console.log(point == new Point(1, 1)); // false
 	 * console.log(point != new Point(1, 1)); // true
-	 *
-	 * @param {Point} point
-	 * @return {boolean} {@true if the points are equal}
 	 */
 	equals: function(point) {
 		point = Point.read(arguments);
@@ -571,7 +643,7 @@ var Point = this.Point = Base.extend({
 	 * Checks whether the point is inside the boundaries of the rectangle.
 	 * 
 	 * @param {Rectangle} rect the rectangle to check against
-	 * @returns {boolean} {@true if the point is inside the rectangle}
+	 * @returns {Boolean} {@true if the point is inside the rectangle}
 	 */
 	isInside: function(rect) {
 		return rect.contains(this);
@@ -582,7 +654,7 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @param {Point} point the point to check against
 	 * @param {Number} tolerance the maximum distance allowed
-	 * @returns {boolean} {@true if it is within the given distance}
+	 * @returns {Boolean} {@true if it is within the given distance}
 	 */
 	isClose: function(point, tolerance) {
 		return this.getDistance(point) < tolerance;
@@ -593,7 +665,7 @@ var Point = this.Point = Base.extend({
 	 * another vector.
 	 * 
 	 * @param {Point} point the vector to check against
-	 * @returns {boolean} {@true it is parallel}
+	 * @returns {Boolean} {@true it is parallel}
 	 */
 	isColinear: function(point) {
 		return this.cross(point) < Numerical.TOLERANCE;
@@ -604,7 +676,7 @@ var Point = this.Point = Base.extend({
 	 * (perpendicular) to another vector.
 	 * 
 	 * @param {Point} point the vector to check against
-	 * @returns {boolean} {@true it is orthogonal}
+	 * @returns {Boolean} {@true it is orthogonal}
 	 */
 	isOrthogonal: function(point) {
 		return this.dot(point) < Numerical.TOLERANCE;
@@ -613,7 +685,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Checks if this point has both the x and y coordinate set to 0.
 	 * 
-	 * @returns {boolean} {@true both x and y are 0}
+	 * @returns {Boolean} {@true both x and y are 0}
 	 */
 	isZero: function() {
 		return this.x == 0 && this.y == 0;
@@ -623,7 +695,7 @@ var Point = this.Point = Base.extend({
 	 * Checks if this point has an undefined value for at least one of its
 	 * coordinates.
 	 * 
-	 * @returns {boolean} {@true if either x or y are not a number}
+	 * @returns {Boolean} {@true if either x or y are not a number}
 	 */
 	isNaN: function() {
 		return isNaN(this.x) || isNaN(this.y);
@@ -679,7 +751,7 @@ var Point = this.Point = Base.extend({
 	 * 
 	 * @name Point#selected
 	 * @property
-	 * @return {boolean} {@true the point is selected}
+	 * @return {Boolean} {@true the point is selected}
 	 */
 
 	statics: {
@@ -757,14 +829,14 @@ var Point = this.Point = Base.extend({
 	 * Returns a new point with rounded {@link #x} and {@link #y} values. The
 	 * object itself is not modified!
 	 * 
+	 * @name Point#round
+	 * @function
+	 * @return {Point}
+	 * 
 	 * @example
 	 * var point = new Point(10.2, 10.9);
 	 * var roundPoint = point.round();
 	 * console.log(roundPoint); // { x: 10.0, y: 11.0 }
-	 * 
-	 * @name Point#round
-	 * @function
-	 * @return {Point}
 	 */
 
 	/**
@@ -772,14 +844,14 @@ var Point = this.Point = Base.extend({
 	 * specified {@link #x} and {@link #y} values. The object itself is not
 	 * modified!
 	 * 
+	 * @name Point#ceil
+	 * @function
+	 * @return {Point}
+	 * 
 	 * @example
 	 * var point = new Point(10.2, 10.9);
 	 * var ceilPoint = point.ceil();
 	 * console.log(ceilPoint); // { x: 11.0, y: 11.0 }
-	 * 
-	 * @name Point#ceil
-	 * @function
-	 * @return {Point}
 	 */
 
 	/**
@@ -787,28 +859,28 @@ var Point = this.Point = Base.extend({
 	 * specified {@link #x} and {@link #y} values. The object itself is not
 	 * modified!
 	 * 
+	 * @name Point#floor
+	 * @function
+	 * @return {Point}
+	 * 
 	 * @example
 	 * var point = new Point(10.2, 10.9);
 	 * var floorPoint = point.floor();
 	 * console.log(floorPoint); // { x: 10.0, y: 10.0 }
-	 * 
-	 * @name Point#floor
-	 * @function
-	 * @return {Point}
 	 */
 
 	/**
 	 * Returns a new point with the absolute values of the specified {@link #x}
 	 * and {@link #y} values. The object itself is not modified!
 	 * 
+	 * @name Point#abs
+	 * @function
+	 * @return {Point}
+	 * 
 	 * @example
 	 * var point = new Point(-5, 10);
 	 * var absPoint = point.abs();
 	 * console.log(absPoint); // { x: 5.0, y: 10.0 }
-	 * 
-	 * @name Point#abs
-	 * @function
-	 * @return {Point}
 	 */
 
 	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {

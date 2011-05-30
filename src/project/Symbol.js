@@ -28,15 +28,7 @@ var Symbol = this.Symbol = Base.extend({
 	 * @name Symbol
 	 * @constructor
 	 * 
-	 * @class Symbols allow you to place multiple instances of an item in your
-	 *        project. This can save memory, since all instances of a symbol
-	 *        simply refer to the original item and it can speed up moving
-	 *        around complex objects, since internal properties such as segment
-	 *        lists and gradient positions don't need to be updated with every
-	 *        transformation.
-	 * 
-	 * Sample code:
-	 * <pre>
+	 * @example
 	 * var circlePath = new Path.Circle(new Point(100, 100), 50);
 	 * circlePath.fillColor = 'red';
 	 * 
@@ -45,10 +37,18 @@ var Symbol = this.Symbol = Base.extend({
 	 * // The original item is still contained in the document:
 	 * circlePath.remove();
 	 * 
-	 * // To place instances of the symbol in the document:
+	 * // Place an instance of the symbol in the document:
 	 * var placedCircle = new PlacedSymbol(circleSymbol);
+	 * 
+	 * // Move the placed symbol to {x: 150, y: 150}:
 	 * placedCircle.position = new Point(150, 150);
-	 * </pre>
+	 * 
+	 * @class Symbols allow you to place multiple instances of an item in your
+	 *        project. This can save memory, since all instances of a symbol
+	 *        simply refer to the original item and it can speed up moving
+	 *        around complex objects, since internal properties such as segment
+	 *        lists and gradient positions don't need to be updated with every
+	 *        transformation.
 	 */
 	initialize: function(item) {
 		this.project = paper.project;

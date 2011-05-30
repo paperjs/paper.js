@@ -23,7 +23,7 @@ var Line = this.Line = Base.extend({
 	 * 
 	 * @param {Point} point1
 	 * @param {Point} point2
-	 * @param {boolean} [infinite=true]
+	 * @param {Boolean} [infinite=true]
 	 * 
 	 * @class The Line object represents..
 	 * @constructs Line
@@ -65,7 +65,7 @@ var Line = this.Line = Base.extend({
 	 * Specifies whether the line extends infinitely
 	 *
 	 * @name Line#infinite
-	 * @type boolean
+	 * @type Boolean
 	 */
 
 	/**

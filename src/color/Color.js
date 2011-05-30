@@ -292,7 +292,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * console.log(color.type); // 'rgb'
 	 * </code>
 	 * 
-	 * @type String
+	 * @type String('rgb', 'hsb', 'gray')
 	 * @bean
 	 */
 	getType: function() {

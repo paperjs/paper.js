@@ -381,7 +381,7 @@ var Matrix = this.Matrix = Base.extend({
 	},
 
 	/**
-	 * @return {boolean} Whether this transform is the identity transform.
+	 * @return {Boolean} Whether this transform is the identity transform.
 	 */
 	isIdentity: function() {
 		return this._m00 == 1 && this._m10 == 0 && this._m01 == 0 &&
@@ -392,7 +392,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * Returns whether the transform is invertible. A transform is not
 	 * invertible if the determinant is 0 or any value is non-finite or NaN.
 	 *
-	 * @return {boolean} Whether the transform is invertible.
+	 * @return {Boolean} Whether the transform is invertible.
 	 */
 	isInvertible: function() {
 		var det = this.getDeterminant();
@@ -404,7 +404,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * Checks whether the matrix is singular or not. Singular matrices cannot be
 	 * inverted.
 	 * 
-	 * @return {boolean} Whether the matrix is singular.
+	 * @return {Boolean} Whether the matrix is singular.
 	 */
 	isSingular: function() {
 		return !this.isInvertible();
