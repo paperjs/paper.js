@@ -35,10 +35,10 @@
 </div>
 <if test="operator.type">
 	<div class="member-text">
-		{+ processInlineTags(operator.desc) +}
+		{+ Utils.processInlineTags(operator.desc) +}
 		{+ publish.templates.returns.process(operator) +}
 		{+ publish.templates.seeAlsos.process(operator) +}
-		{+ Helpers.parseExamples(operator) +}
+		{+ Utils.parseExamples(operator) +}
 	</div>
 </if>
 <if test="operatorCount == data.length - 1">

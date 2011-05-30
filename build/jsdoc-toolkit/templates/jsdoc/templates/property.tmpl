@@ -1,7 +1,7 @@
 {!
-	data.desc = processGroupTitle(data.desc, data);
+	data.desc = Utils.processGroupTitle(data.desc, data);
 	
-	var memberId = Helpers.getSymbolId(data);
+	var memberId = Utils.getSymbolId(data);
 	var title = '<b>' + data.name.replace(/\^\d+$/, '') + '</b>';
 	if (data.isStatic)
 		title = '<b>' + data.memberOf + '.</b>' + title;
@@ -26,7 +26,7 @@
 </div>
 <if test="data.type">
 <div class="member-text">
-	{+ processInlineTags(data.desc) +}
+	{+ Utils.processInlineTags(data.desc) +}
 	<if test="data.readOnly">
 		<p>Read only.</p>
 	</if>
@@ -43,7 +43,7 @@
 	</li>
 	</ul>
 	{+ publish.templates.seeAlsos.process(data) +}
-	{+ Helpers.parseExamples(data) +}
+	{+ Utils.parseExamples(data) +}
 </div>
 </if>
 </div>
