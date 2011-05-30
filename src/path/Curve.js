@@ -241,7 +241,7 @@ var Curve = this.Curve = Base.extend({
 				&& this._segment2._handleIn.isZero();
 	},
 
-	// PORT: Add support for start parameter to Sg
+	// PORT: Add support for start parameter to Scriptographer
 	// DOCS: document Curve#getParameter(length, start)
 	/**
 	 * @param {Number} length
@@ -328,7 +328,7 @@ var Curve = this.Curve = Base.extend({
 			x, y;
 
 		// Handle special case at beginning / end of curve
-		// PORT: Change in Sg too, so 0.000000000001 won't be
+		// PORT: Change in Scriptographer too, so 0.000000000001 won't be
 		// required anymore
 		if (t == 0 || t == 1) {
 			var point;
