@@ -23,7 +23,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	 * Creates a new PlacedSymbol Item.
 	 * 
 	 * @param {Symbol} symbol the symbol to place
-	 * @param {Point|Matrix} matrixOrOffset the center point of the placed
+	 * @param {Point|Matrix} [matrixOrOffset] the center point of the placed
 	 * symbol or a {@link Matrix} transformation to transform the placed symbol
 	 * with.
 	 * 
