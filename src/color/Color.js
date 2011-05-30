@@ -286,7 +286,7 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * Returns the type of the color as a string.
 	 * 
-	 * Sample code:
+	 * Example:
 	 * <code>
 	 * var color = new RGBColor(1, 0, 0);
 	 * console.log(color.type); // 'rgb'

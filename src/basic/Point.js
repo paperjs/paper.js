@@ -37,7 +37,7 @@ var Point = this.Point = Base.extend({
 	 * of the Paper.js project. It is also used to represent two dimensional
 	 * vector objects.
 	 * 
-	 * Sample code:
+	 * Example:
 	 * <pre>
 	 * // Create a point at x: 10, y: 5
 	 * var point = new Point(10, 5);
