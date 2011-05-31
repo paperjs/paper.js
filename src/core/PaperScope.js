@@ -17,18 +17,107 @@
 /**
  * Define internal PaperScope class that handles all the fields available on the
  * global paper object, which simply is a pointer to the currently active scope.
+ * @ignore
  */
 var PaperScope = this.PaperScope = Base.extend({
 
 	initialize: function(id) {
+		/** @lends _global_# */
+		
+		/**
+		 * The global active project.
+		 * @type Project
+		 */
 		this.project = null;
+
+		/**
+		 * The global projects array.
+		 * @type Project[]
+		 */
 		this.projects = [];
+
+		/**
+		 * The active view of the active project.
+		 * @type View
+		 */
 		this.view = null;
 		this.views = [];
+
+		/**
+		 * The reference to the tool object.
+		 * @type Tool
+		 */
 		this.tool = null;
 		this.tools = [];
 		this.id = id;
 		PaperScope._scopes[id] = this;
+
+		// DOCS: should the different event handlers be in here?
+		/**
+		 * {@grouptitle View Event Handlers}
+		 * A reference to the {@link View#onFrame} handler function.
+		 * 
+		 * @name onFrame
+		 * @property
+		 * @type Function
+		 */
+
+		/**
+		 * A reference to the {@link View#onResize} handler function.
+		 * 
+		 * @name onResize
+		 * @property
+		 * @type Function
+		 */
+
+		/**
+		 * {@grouptitle Mouse Event Handlers}
+		 * A reference to the {@link Tool#onMouseDown} handler function.
+		 * @name onMouseDown
+		 * @property
+		 * @type Function
+		 */
+
+		/**
+		 * A reference to the {@link Tool#onMouseDrag} handler function.
+		 * 
+		 * @name onMouseDrag
+		 * @property
+		 * @type Function
+		 */
+
+		/**
+		 * A reference to the {@link Tool#onMouseMove} handler function.
+		 * 
+		 * @name onMouseMove
+		 * @property
+		 * @type Function
+		 */
+
+		/**
+		 * A reference to the {@link Tool#onMouseUp} handler function.
+		 * 
+		 * @name onMouseUp
+		 * @property
+		 * @type Function
+		 */
+
+		/**
+		 * {@grouptitle Keyboard Event Handlers}
+		 * A reference to the {@link Tool#onKeyDown} handler function.
+		 * 
+		 * @name onKeyDown
+		 * @property
+		 * @type Function
+		 */
+
+		/**
+		 * A reference to the {@link Tool#onKeyUp} handler function.
+		 * 
+		 * @name onKeyUp
+		 * @property
+		 * @type Function
+		 */
 	},
 
 	evaluate: function(code) {
@@ -41,6 +130,7 @@ var PaperScope = this.PaperScope = Base.extend({
 	 * scope, to emulate PaperScript-style globally accessible Paper classes:
 	 *
 	 * paper.install(window);
+	 * @ignore
 	 */
 	install: function(scope) {
 		// Use scope as side-car (= 'this' inside iterator), and have it
