@@ -417,7 +417,7 @@ var Curve = this.Curve = Base.extend({
 		 * Returns the point on the curve at the specified position.
 		 * 
 		 * @param {Number} parameter the position at which to find the point as
-		 *                 a value between 0 and 1.
+		 *                 a value between {@code 0} and {@code 1}.
 		 * @return {Point}
 		 */
 		getPoint: function(parameter) {
@@ -428,7 +428,7 @@ var Curve = this.Curve = Base.extend({
 		 * Returns the tangent point on the curve at the specified position.
 		 * 
 		 * @param {Number} parameter the position at which to find the tangent
-		 *                 point as a value between 0 and 1.
+		 *                 point as a value between {@code 0} and {@code 1}.
 		 */
 		getTangent: function(parameter) {
 			return evaluate(this, parameter, 1);
@@ -438,7 +438,7 @@ var Curve = this.Curve = Base.extend({
 		 * Returns the normal point on the curve at the specified position.
 		 * 
 		 * @param {Number} parameter the position at which to find the normal
-		 *                 point as a value between 0 and 1.
+		 *                 point as a value between {@code 0} and {@code 1}.
 		 */
 		getNormal: function(parameter) {
 			return evaluate(this, parameter, 2);

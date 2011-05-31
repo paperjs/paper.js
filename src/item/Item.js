@@ -279,7 +279,7 @@ var Item = this.Item = Base.extend({
 	blendMode: 'normal',
 
 	/**
-	 * The opacity of the item as a value between 0 and 1.
+	 * The opacity of the item as a value between {@code 0} and {@code 1}.
 	 * 
 	 * @example
 	 * // Making an item 50% transparent:
@@ -470,7 +470,7 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * Removes all of the item's children (if any).
+	 * Removes all of the item's {@link #children} (if any).
 	 * 
 	 * @return {Boolean} {@true removing was successful}
 	 */
