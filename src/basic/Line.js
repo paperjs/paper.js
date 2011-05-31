@@ -96,14 +96,14 @@ var Line = this.Line = Base.extend({
 		var v1 = this.vector,
 			v2 = point.subtract(this.point),
 			ccw = v2.cross(v1);
-		if (ccw == 0.0) {
+		if (ccw == 0) {
 			ccw = v2.dot(v1);
-			if (ccw > 0.0) {
+			if (ccw > 0) {
 				ccw = (v2 - v1).dot(v1);
-				if (ccw < 0.0)
-				    ccw = 0.0;
+				if (ccw < 0)
+				    ccw = 0;
 			}
 		}
-		return ccw < 0.0 ? -1 : ccw > 0.0 ? 1 : 0;
+		return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
 	}
 });
