@@ -159,7 +159,7 @@ var Size = this.Size = Base.extend({
 	 * @example
 	 * var size = new Size(5, 10);
 	 * var result = size + 20;
-	 * console.log(result); // { width: 25.0, height: 30.0 }
+	 * console.log(result); // {width: 25, height: 30}
 	 */
 	/**
 	 * Returns the addition of the width and height of the supplied size to the
@@ -174,7 +174,7 @@ var Size = this.Size = Base.extend({
 	 * var size1 = new Size(5, 10);
 	 * var size2 = new Size(10, 20);
 	 * var result = size1 + size2;
-	 * console.log(result); // { width: 15.0, height: 30.0 }
+	 * console.log(result); // {width: 15, height: 30}
 	 */
 	add: function(size) {
 		size = Size.read(arguments);
@@ -194,7 +194,7 @@ var Size = this.Size = Base.extend({
 	 * @example
 	 * var size = new Size(10, 20);
 	 * var result = size - 5;
-	 * console.log(result); // { width: 5.0, height: 15.0 }
+	 * console.log(result); // {width: 5, height: 15}
 	 */
 	/**
 	 * Returns the subtraction of the width and height of the supplied size from
@@ -209,7 +209,7 @@ var Size = this.Size = Base.extend({
 	 * var firstSize = new Size(10, 20);
 	 * var secondSize = new Size(5, 5);
 	 * var result = firstSize - secondSize;
-	 * console.log(result); // { width: 5.0, height: 15.0 }
+	 * console.log(result); // {width: 5, height: 15}
 	 */
 	subtract: function(size) {
 		size = Size.read(arguments);
@@ -228,7 +228,7 @@ var Size = this.Size = Base.extend({
 	 * @example
 	 * var size = new Size(10, 20);
 	 * var result = size * 2;
-	 * console.log(result); // { width: 20.0, height: 40.0 }
+	 * console.log(result); // {width: 20, height: 40}
 	 */
 	/**
 	 * Returns the multiplication of the width and height of the supplied size
@@ -243,7 +243,7 @@ var Size = this.Size = Base.extend({
 	 * var firstSize = new Size(5, 10);
 	 * var secondSize = new Size(4, 2);
 	 * var result = firstSize * secondSize;
-	 * console.log(result); // { width: 20.0, height: 20.0 }
+	 * console.log(result); // {width: 20, height: 20}
 	 */
 	multiply: function(size) {
 		size = Size.read(arguments);
@@ -262,7 +262,7 @@ var Size = this.Size = Base.extend({
 	 * @example
 	 * var size = new Size(10, 20);
 	 * var result = size / 2;
-	 * console.log(result); // { width: 5.0, height: 10.0 }
+	 * console.log(result); // {width: 5, height: 10}
 	 */
 	/**
 	 * Returns the division of the width and height of the supplied size by the
@@ -277,7 +277,7 @@ var Size = this.Size = Base.extend({
 	 * var firstSize = new Size(8, 10);
 	 * var secondSize = new Size(2, 5);
 	 * var result = firstSize / secondSize;
-	 * console.log(result); // { width: 4.0, height: 2.0 }
+	 * console.log(result); // {width: 4, height: 2}
 	 */
 	divide: function(size) {
 		size = Size.read(arguments);
@@ -379,7 +379,7 @@ var Size = this.Size = Base.extend({
 		 * var size1 = new Size(10, 100);
 		 * var size2 = new Size(200, 5);
 		 * var minSize = Size.min(size1, size2);
-		 * console.log(minSize); // { width: 10.0, height: 5.0 }
+		 * console.log(minSize); // {width: 10, height: 5}
 		 */
 		min: function(size1, size2) {
 			return Size.create(
@@ -400,7 +400,7 @@ var Size = this.Size = Base.extend({
 		 * var size1 = new Size(10, 100);
 		 * var size2 = new Size(200, 5);
 		 * var maxSize = Size.max(size1, size2);
-		 * console.log(maxSize); // { width: 200.0, height: 100.0 }
+		 * console.log(maxSize); // {width: 200, height: 100}
 		 */
 		max: function(size1, size2) {
 			return Size.create(
@@ -439,7 +439,7 @@ var Size = this.Size = Base.extend({
 	 * @example
 	 * var size = new Size(10.2, 10.9);
 	 * var roundSize = size.round();
-	 * console.log(roundSize); // { x: 10.0, y: 11.0 }
+	 * console.log(roundSize); // {x: 10, y: 11}
 	 */
 
 	/**
@@ -454,7 +454,7 @@ var Size = this.Size = Base.extend({
 	 * @example
 	 * var size = new Size(10.2, 10.9);
 	 * var ceilSize = size.ceil();
-	 * console.log(ceilSize); // { x: 11.0, y: 11.0 }
+	 * console.log(ceilSize); // {x: 11, y: 11}
 	 */
 
 	/**
@@ -469,7 +469,7 @@ var Size = this.Size = Base.extend({
 	 * @example
 	 * var size = new Size(10.2, 10.9);
 	 * var floorSize = size.floor();
-	 * console.log(floorSize); // { x: 10.0, y: 10.0 }
+	 * console.log(floorSize); // {x: 10, y: 10}
 	 */
 
 	/**
@@ -483,7 +483,7 @@ var Size = this.Size = Base.extend({
 	 * @example
 	 * var size = new Size(-5, 10);
 	 * var absSize = size.abs();
-	 * console.log(absSize); // { x: 5.0, y: 10.0 }
+	 * console.log(absSize); // {x: 5, y: 10}
 	 */
 
 	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
