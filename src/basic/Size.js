@@ -53,7 +53,7 @@ var Size = this.Size = Base.extend({
 	 * @example
 	 * // Creating a size of width: 320, height: 240 using an array of numbers:
 	 * var array = [320, 240];
-	 * var size = new Point(array);
+	 * var size = new Size(array);
 	 * console.log(size.width); // 320
 	 * console.log(size.height); // 240
 	 */
@@ -80,8 +80,8 @@ var Size = this.Size = Base.extend({
 	 * @param {Size} size
 	 */
 	/**
-	 * Creates a Size object using the x and y values of the given Point
-	 * object.
+	 * Creates a Size object using the {@link Point#x} and {@link Point#y}
+	 * values of the given Point object.
 	 * 
 	 * @name Size#initialize
 	 * @param {Point} point
