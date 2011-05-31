@@ -254,14 +254,29 @@ var View = this.View = Base.extend({
 	},
 
 	/**
-	 * Handler function that is called whenever a view gets resized.
-	 * 
-	 * @type function
-	 */
-	onResize: null,
-
-	/**
+	 * {@grouptitle Event Handlers}
 	 * Handler function to be called on each frame of an animation.
+	 * The function receives an event object which contains information about
+	 * the frame event:
+	 * 
+	 * <b>event.count</b>: the number of times the frame event was fired.
+	 * <b>event.time</b>: the total amount of time passed since the first frame
+	 * event in seconds.
+	 * <b>event.delta</b>: the time passed in seconds since the last frame
+	 * event.
+	 * 
+	 * @example
+	 * // Creating an animation:
+	 * 
+	 * // Create a rectangle shaped path between {x: 20, y: 20}
+	 * // and {x: 50, y: 50}:
+	 * var path = new Path.Rectangle([20, 20], [50, 50]);
+	 * path.fillColor = 'black';
+	 * 
+	 * function onFrame(event) {
+	 * 	// Every frame, rotate the path by 1 degree:
+	 * 	path.rotate(1);
+	 * }
 	 * 
 	 * @type function
 	 * @bean
@@ -309,6 +324,25 @@ var View = this.View = Base.extend({
 		if (!requested)
 			this._onFrameCallback();
 	},
+
+	/**
+	 * Handler function that is called whenever a view is resized.
+	 * 
+	 * @example
+	 * // Repositioning items when a view is resized:
+	 * 
+	 * // Create a circle shaped path in the center of the view:
+	 * var path = new Path.Circle(view.bounds.center, 30);
+	 * path.fillColor = 'red';
+	 * 
+	 * function onResize(event) {
+	 * 	// Whenever the view is resized, move the path to its center:
+	 * 	path.position = view.center;
+	 * }
+	 * 
+	 * @type function
+	 */
+	onResize: null,
 
 	_createEvents: function() {
 		var that = this,
