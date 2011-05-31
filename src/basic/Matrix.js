@@ -502,7 +502,7 @@ var Matrix = this.Matrix = Base.extend({
 	 */
 	setToRotation: function(angle, center) {
 		center = Point.read(arguments, 1);
-		angle = angle * Math.PI / 180.0;
+		angle = angle * Math.PI / 180;
 		var x = center.x,
 			y = center.y,
 			cos = Math.cos(angle),
