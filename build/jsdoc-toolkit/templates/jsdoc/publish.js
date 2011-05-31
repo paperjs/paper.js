@@ -228,21 +228,21 @@ var Utils = {
 				name = names[0];
 				link = names[1];
 			}
-			return '<li><a href="' + link + '.html">' + name + '</a></li>';
+			return '<li><a href="' + link + '.html">' + name + '</a></li>\n';
 		}
 
 		function getRuler() {
-			return '<li><hr /></li>';
+			return '<li><hr /></li>\n';
 		}
 
 		function getHeading(title) {
-			return '<li><h3>' + title + '</h3></li>';
+			return '<li><h3>' + title + '</h3></li>\n';
 		}
 		var first = true,
 			out = '<ul class="package-classes">';
 		for (var i in classLayout) {
 			out += '<li' + (first ? ' class="first">' : '>');
-			out += '<h2>' + i + '</h2></li>';
+			out += '<h2>' + i + '</h2></li>\n';
 			out += parseClassNames(classLayout[i]);
 			first = false;
 		}
