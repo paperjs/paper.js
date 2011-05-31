@@ -146,7 +146,14 @@ var Matrix = this.Matrix = Base.extend({
 		return this;
 	},
 
-	// DOCS: Matrix#translate(point)
+	/**
+	 * Concatentates this transform with a translate transformation.
+	 *
+	 * @name Matrix#translate
+	 * @function
+	 * @param {Point} point The vector to translate by.
+	 * @return {Matrix} This affine transform.
+	 */
 	/**
 	 * Concatentates this transform with a translate transformation.
 	 *
@@ -162,7 +169,16 @@ var Matrix = this.Matrix = Base.extend({
 		return this;
 	},
 
-	// DOCS: Matrix#rotate(angle, center)
+	/**
+	 * Concatentates this transform with a rotation transformation around an
+	 * anchor point.
+	 *
+	 * @name Matrix#rotate
+	 * @function
+	 * @param {Number} angle The angle of rotation measured in degrees.
+	 * @param {Point} center The anchor point to rotate around.
+	 * @return {Matrix} This affine transform.
+	 */
 	/**
 	 * Concatentates this transform with a rotation transformation around an
 	 * anchor point.
@@ -177,6 +193,15 @@ var Matrix = this.Matrix = Base.extend({
 				Matrix.getRotateInstance.apply(Matrix, arguments));
 	},
 
+	/**
+	 * Concatentates this transform with a shear transformation.
+	 *
+	 * @name Matrix#shear
+	 * @function
+	 * @param {Point} point The shear factor in x and y direction.
+	 * @param {Point} [center] The optional center for the shear transformation.
+	 * @return {Matrix} This affine transform.
+	 */
 	/**
 	 * Concatentates this transform with a shear transformation.
 	 *
@@ -381,7 +406,7 @@ var Matrix = this.Matrix = Base.extend({
 	},
 
 	/**
-	 * @return {boolean} Whether this transform is the identity transform.
+	 * @return {Boolean} Whether this transform is the identity transform.
 	 */
 	isIdentity: function() {
 		return this._m00 == 1 && this._m10 == 0 && this._m01 == 0 &&
@@ -392,7 +417,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * Returns whether the transform is invertible. A transform is not
 	 * invertible if the determinant is 0 or any value is non-finite or NaN.
 	 *
-	 * @return {boolean} Whether the transform is invertible.
+	 * @return {Boolean} Whether the transform is invertible.
 	 */
 	isInvertible: function() {
 		var det = this.getDeterminant();
@@ -404,7 +429,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * Checks whether the matrix is singular or not. Singular matrices cannot be
 	 * inverted.
 	 * 
-	 * @return {boolean} Whether the matrix is singular.
+	 * @return {Boolean} Whether the matrix is singular.
 	 */
 	isSingular: function() {
 		return !this.isInvertible();
@@ -477,7 +502,7 @@ var Matrix = this.Matrix = Base.extend({
 	 */
 	setToRotation: function(angle, center) {
 		center = Point.read(arguments, 1);
-		angle = angle * Math.PI / 180.0;
+		angle = angle * Math.PI / 180;
 		var x = center.x,
 			y = center.y,
 			cos = Math.cos(angle),
@@ -489,6 +514,9 @@ var Matrix = this.Matrix = Base.extend({
 
 	/**
 	 * Applies this matrix to the specified Canvas Context.
+	 * 
+	 * @param {CanvasRenderingContext2D} ctx
+	 * @param {Boolean} [reset=false]
 	 */
 	applyToContext: function(ctx, reset) {
 		ctx[reset ? 'setTransform' : 'transform'](

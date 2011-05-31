@@ -352,7 +352,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * that of the supplied rectangle.
 	 * 
 	 * @param {Rectangle} rect
-	 * @return {boolean} {@true if the rectangles are equal}
+	 * @return {Boolean} {@true if the rectangles are equal}
 	 */
 	equals: function(rect) {
 		rect = Rectangle.read(arguments);
@@ -361,7 +361,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	},
 
 	/**
-	 * @return {boolean} {@true the rectangle is empty}
+	 * @return {Boolean} {@true the rectangle is empty}
 	 */
 	isEmpty: function() {
 		return this.width == 0 || this.height == 0;
@@ -387,14 +387,14 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * @name Rectangle#contains
 	 * @function
 	 * @param {Point} point the specified point
-	 * @return {boolean} {@true if the point is inside the rectangle's boundary}
+	 * @return {Boolean} {@true if the point is inside the rectangle's boundary}
 	 */
 	/**
 	 * Tests if the interior of the rectangle entirely contains the specified
 	 * rectangle.
 	 * 
 	 * @param {Rectangle} rect The specified rectangle
-	 * @return {boolean} {@true if the rectangle entirely contains the specified
+	 * @return {Boolean} {@true if the rectangle entirely contains the specified
 	 *                   rectangle}
 	 */
 	contains: function(rect) {
@@ -415,7 +415,7 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * another rectangle.
 	 * 
 	 * @param {Rectangle} rect the specified rectangle
-	 * @return {boolean} {@true if the rectangle and the specified rectangle
+	 * @return {Boolean} {@true if the rectangle and the specified rectangle
 	 *                   intersect each other}
 	 */
 	intersects: function(rect) {

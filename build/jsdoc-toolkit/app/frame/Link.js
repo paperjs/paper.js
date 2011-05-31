@@ -170,7 +170,7 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 		var linkName = link.linkPath.replace(/^[^#]+#/, '');
 		onClick = " onclick=\"return toggleMember('" + linkName + "', true);\"";
 	}
-	return "<a href=\""+link.linkPath+link.linkInner+"\""+target+onClick+">"+link.linkText+"</a>";
+	return "<a href=\""+link.linkPath+link.linkInner+"\""+target+onClick+"><tt>"+link.linkText+"</tt></a>";
 }
 
 /** Create a link to a source file. */

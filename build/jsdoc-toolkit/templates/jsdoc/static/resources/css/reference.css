@@ -118,3 +118,13 @@ ul.package-classes {
 .package-classes li h2 {
 	margin-left: -10px;
 }
+
+.reference-members h2 a {
+	border-bottom: none;
+	font-weight: bold;
+}
+
+.CodeMirror {
+	margin-bottom: 16px;
+	margin-top: 8px;
+}

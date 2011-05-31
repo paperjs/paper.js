@@ -54,15 +54,15 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		 * {@link Item#style}. This is a convenient way to define a style once and
 		 * apply it to a series of items:
 		 * 
-		 * Sample Code:
+		 * Example:
 		 * <pre>
 		 * var circleStyle = {
 		 * 	fillColor: new RGBColor(1, 0, 0),
-		 * 	strokeColor: new GrayColor(1),
+		 * 	strokeColor: 'black',
 		 * 	strokeWidth: 5
 		 * };
 		 * 
-		 * var path = new Path.Circle(new Point(50, 50), 50);
+		 * var path = new Path.Circle(new Point(50, 50), 30);
 		 * path.style = circleStyle;
 		 * </pre>
 		 */
@@ -157,46 +157,57 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * The color of the stroke.
  * 
- * @example
- * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
- * var circle = new Path.Circle(new Point(50, 50), 10);
- * 
- * // Set the stroke color of the circle to RGB red:
- * circle.strokeColor = new RGB(1, 0, 0);
- * 
  * @property
  * @name PathStyle#strokeColor
  * @type RGBColor|HSBColor|GrayColor
+ * 
+ * @example
+ * // Setting an item's stroke color:
+ * 
+ * // Create a circle shaped path at { x: 50, y: 50 }
+ * // with a radius of 10:
+ * var circle = new Path.Circle(new Point(50, 50), 10);
+ * 
+ * // Set its stroke color to RGB red:
+ * circle.strokeColor = new RGBColor(1, 0, 0);
  */
 
 /**
  * The width of the stroke.
  * 
- * @example
- * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
- * var circle = new Path.Circle(new Point(50, 50), 10);
- * 
- * // Set the stroke width of the circle to 3pt:
- * circle.strokeWidth = 3;
- * 
  * @property
  * @name PathStyle#strokeWidth
+ * @default 1
  * @type Number
+ * 
+ * @example
+ * // Setting an item's stroke width:
+ * 
+ * // Create a circle shaped path at { x: 50, y: 50 }
+ * // with a radius of 10:
+ * var circle = new Path.Circle(new Point(50, 50), 10);
+ * 
+ * // Set its stroke width to 3pt:
+ * circle.strokeWidth = 3;
  */
 
 /**
  * The cap of the stroke.
  * 
+ * @property
+ * @name PathStyle#strokeCap
+ * @default 'butt'
+ * @type String('round', 'square', 'butt')
+ * 
  * @example
+ * // Setting an item's stroke color:
+ * 
  * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
  * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
+ * line.strokeColor = 'black';
  * 
  * // Set the stroke cap of the line to be round:
  * line.strokeCap = 'round';
- * 
- * @property
- * @name PathStyle#strokeCap
- * @type String('round', 'square', 'butt')
  */
 
 /**
@@ -204,6 +215,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#strokeJoin
+ * @default 'miter'
  * @type String ('miter', 'round', 'bevel')
  */
 
@@ -212,6 +224,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 //  * 
 //  * @property
 //  * @name PathStyle#dashOffset
+//  * @default 0
 //  * @type Number
 //  */
 
@@ -229,6 +242,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 //  * 
 //  * @property
 //  * @name PathStyle#dashArray
+//  * @default []
 //  * @type Array
 //  */
 
@@ -237,6 +251,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * @property
  * @name PathStyle#miterLimit
+ * @default 10
  * @type Number
  */
 
@@ -245,14 +260,17 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * 
  * The fill color.
  * 
- * @example
- * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
- * var circle = new Path.Circle(new Point(50, 50), 10);
- * 
- * // Set the fill color of the circle to RGB red:
- * circle.fillColor = new RGBColor(1, 0, 0, );
- * 
  * @property
  * @name PathStyle#fillColor
  * @type RGBColor|HSBColor|GrayColor
+ * 
+ * @example
+ * // Setting the fill color of an item:
+ * 
+ * // Create a circle shaped path at { x: 50, y: 50 }
+ * // with a radius of 10:
+ * var circle = new Path.Circle(new Point(50, 50), 10);
+ * 
+ * // Set its fill color to RGB red:
+ * circle.fillColor = new RGBColor(1, 0, 0, );
  */

@@ -22,19 +22,33 @@ var Group = this.Group = Item.extend({
 	/**
 	 * Creates a new Group item and places it at the top of the active layer.
 	 * 
-	 * @example
-	 * // Create an empty group:
-	 * var group = new Group();
-	 * // Append a path to the group:
-	 * var line = new Path.Line(new Point(10, 10), new Point(50, 50));
-	 * group.appendTop(line);
-	 * 
-	 * // Create a group containing a path:
-	 * var circle = new Path.Circle(new Point(10, 10), 100);
-	 * var circleGroup = new Group([circle]);
-	 * 
 	 * @param {Array} [children] An optional array of children that will be
 	 * added to the newly created group.
+	 * 
+	 * @example
+	 * // Create an empty group and append a path to the top of its children
+	 * // array:
+	 * 
+	 * // Create an empty group:
+	 * var group = new Group();
+	 * 
+	 * var path = new Path([new Point(10, 10), new Point(50, 50)]);
+	 * path.strokeColor = 'black';
+	 * 
+	 * // Append the path to the group:
+	 * group.appendTop(path);
+	 * 
+	 * // Set the stroke color of all items in the group:
+	 * circleGroup.strokeColor = 'black';
+	 * 
+	 * @example
+	 * // Create a group containing two paths:
+	 * var circle = new Path.Circle(new Point(30, 50), 10);
+	 * var circle2 = new Path.Circle(new Point(50, 50), 10);
+	 * 
+	 * var circleGroup = new Group([circle, circle2]);
+	 * // Set the fill color of all items in the group:
+	 * circleGroup.fillColor = 'black';
 	 * 
 	 * @class A Group is a collection of items. When you transform a Group, its
 	 * children are treated as a single unit without changing their relative
@@ -59,10 +73,10 @@ var Group = this.Group = Item.extend({
 
 	/**
 	 * Specifies whether the group item is to be clipped.
-	 * When setting to true, the first child in the group is automatically
-	 * defined as the clipping mask.
+	 * When setting to {@code true}, the first child in the group is
+	 * automatically defined as the clipping mask.
 	 *
-	 * @type boolean
+	 * @type Boolean
 	 * @bean
 	 */
 	isClipped: function() {

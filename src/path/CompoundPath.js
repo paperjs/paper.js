@@ -22,6 +22,16 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * 
 	 * @constructs CompoundPath
 	 * @param {Array} [paths] the paths to place within the compound path.
+	 * 
+	 * @example
+	 * // Create a donut shaped compound path:
+	 * var circle = new Path.Circle(new Point(50, 50), 30);
+	 * var innerCircle = new Path.Circle(new Point(50, 50), 10);
+	 * var compoundPath = new CompoundPath([circle, innerCircle]);
+	 * compoundPath.fillColor = 'red';
+	 * 
+	 * // Move the inner circle 5pt to the right:
+	 * compoundPath.children[1].position.x += 5;
 	 *
 	 * @class A compound path contains two or more paths, holes are drawn
 	 * where the paths overlap. All the paths in a compound path take on the
@@ -186,7 +196,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * @name CompoundPath#arcTo
 	 * @function
 	 * @param {Point} to
-	 * @param {boolean} [clockwise=true]
+	 * @param {Boolean} [clockwise=true]
 	 */
 
 	// DOCS: document CompoundPath#lineBy

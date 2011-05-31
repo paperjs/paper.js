@@ -22,7 +22,13 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	/**
 	 * Creates a new PlacedSymbol Item.
 	 * 
+	 * @param {Symbol} symbol the symbol to place
+	 * @param {Point|Matrix} [matrixOrOffset] the center point of the placed
+	 * symbol or a {@link Matrix} transformation to transform the placed symbol
+	 * with.
+	 * 
 	 * @example
+	 * // Placing 100 instances of a symbol:
 	 * var path = new Path.Star(new Point(0, 0), 6, 5, 13);
 	 * path.style = {
 	 *     fillColor: 'white',
@@ -49,13 +55,8 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	 *     instance.scale(0.25 + Math.random() * 0.75);
 	 * }
 	 * 
-	 * @param {Symbol} symbol the symbol to place
-	 * @param {Point|Matrix} matrixOrOffset the center point of the placed
-	 * symbol or a {@link Matrix} transformation to transform the placed symbol
-	 * with.
-	 * 
-	 * @class A PlacedSymbol represents a symbol which has been placed in a
-	 * Paper.js project.
+	 * @class A PlacedSymbol represents an instance of a symbol which has been
+	 * placed in a Paper.js project.
 	 *
 	 * @extends Item
 	 * @constructs PlacedSymbol
@@ -71,7 +72,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	},
 
 	/**
-	 * The symbol contained within the placed symbol.
+	 * The symbol that the placed symbol refers to:
 	 *
 	 * @name PlacedSymbol#symbol
 	 * @type Symbol

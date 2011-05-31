@@ -14,6 +14,10 @@
  * All rights reserved.
  */
 
+/**
+ * @namespace
+ * @name Key
+ */
 var Key = this.Key = new function() {
 	// TODO: make sure the keys are called the same as in Scriptographer
 	// Missing: tab, cancel, clear, page-down, page-up, comma, minus, period,
@@ -72,7 +76,7 @@ var Key = this.Key = new function() {
 			// Call the onKeyDown or onKeyUp handler if present
 			// When the handler function returns false, prevent the
 			// default behaviour of the key event:
-			// PORT: Add to Scriptographer
+			// PORT: Add to Sg
 			var keyEvent = new KeyEvent(down, key, character, event);
 			if (tool[handler](keyEvent) === false)
 				keyEvent.preventDefault();
@@ -118,7 +122,7 @@ var Key = this.Key = new function() {
 			var code = event.which || event.keyCode,
 				key = keys[code], name;
 			if (key && modifiers[name = Base.camelize(key)] !== undefined) {
-				modifiers[name] = false
+				modifiers[name] = false;
 			} else if (charCodeMap[code] != null) {
 				handleKey(false, code, charCodeMap[code], event);
 				delete charCodeMap[code];
@@ -127,8 +131,30 @@ var Key = this.Key = new function() {
 	});
 
 	return {
+		/** @lends Key */
+
 		modifiers: modifiers,
 
+		/**
+		 * Checks whether the specified key is pressed.
+		 * 
+		 * @param {String} key One of: 'backspace', 'enter', 'shift', 'control',
+		 * 'option', 'pause', 'caps-lock', 'escape', 'space', 'end', 'home',
+		 * 'left', 'up', 'right', 'down', 'delete', 'command'
+		 * @return {Boolean} {@true if the key is pressed}
+		 * 
+		 * @example
+		 * // Whenever the user clicks, create a circle shaped path. If the
+		 * // shift key is down, fill it with red, otherwise fill it with blue:
+		 * function onMouseDown(event) {
+		 * 	var path = new Path.Circle(event.point, 10);
+		 * 	if(Key.isDown('shift')) {
+		 * 		path.fillColor = 'red';
+		 * 	} else {
+		 * 		path.fillColor = 'blue';
+		 * 	}
+		 * }
+		 */
 		isDown: function(key) {
 			return !!keyMap[key];
 		}
