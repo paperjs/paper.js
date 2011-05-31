@@ -54,7 +54,8 @@ var GradientStop = this.GradientStop = Base.extend({
 	},
 
 	/**
-	 * The ramp-point of the gradient stop as a value between 0 and 1.
+	 * The ramp-point of the gradient stop as a value between {@code 0} and
+	 * {@code 1}.
 	 * 
 	 * @type Number
 	 * @bean
