@@ -813,45 +813,51 @@ var Item = this.Item = Base.extend({
 	 * The color of the stroke.
 	 * 
 	 * @example
-	 * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
+	 * // Setting an item's stroke color:
+	 * 
+	 * // Create a circle shaped path at { x: 50, y: 50 }
+	 * // with a radius of 10:
 	 * var circle = new Path.Circle(new Point(50, 50), 10);
 	 * 
-	 * // Set the stroke color of the circle to RGB red:
+	 * // Set its stroke color to RGB red:
 	 * circle.strokeColor = new RGBColor(1, 0, 0);
-	 * 
-	 * @property
-	 * @name Item#strokeColor
-	 * @type RGBColor|HSBColor|GrayColor
 	 */
 
 	/**
 	 * The width of the stroke.
 	 * 
-	 * @example
-	 * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
-	 * var circle = new Path.Circle(new Point(50, 50), 10);
-	 * 
-	 * // Set the stroke width of the circle to 3pt:
-	 * circle.strokeWidth = 3;
-	 * 
 	 * @property
 	 * @name Item#strokeWidth
 	 * @type Number
+	 * 
+	 * @example
+	 * // Setting an item's stroke width:
+	 * 
+	 * // Create a circle shaped path at { x: 50, y: 50 }
+	 * // with a radius of 10:
+	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * 
+	 * // Set its stroke width to 3pt:
+	 * circle.strokeWidth = 3;
 	 */
 
 	/**
 	 * The cap of the stroke.
 	 * 
+	 * @property
+	 * @name Item#strokeCap
+	 * @default 'butt'
+	 * @type String('round', 'square', 'butt')
+	 * 
 	 * @example
+	 * // Setting an item's stroke color:
+	 * 
 	 * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
 	 * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
+	 * line.strokeColor = 'black';
 	 * 
 	 * // Set the stroke cap of the line to be round:
 	 * line.strokeCap = 'round';
-	 * 
-	 * @property
-	 * @name Item#strokeCap
-	 * @type String('round', 'square', 'butt')
 	 */
 
 	/**
@@ -859,6 +865,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @property
 	 * @name Item#strokeJoin
+	 * @default 'miter'
 	 * @type String ('miter', 'round', 'bevel')
 	 */
 
@@ -891,6 +898,7 @@ var Item = this.Item = Base.extend({
 	 * The miter limit of the stroke.
 	 * 
 	 * @property
+	 * @default 10
 	 * @name Item#miterLimit
 	 * @type Number
 	 */
