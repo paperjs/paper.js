@@ -308,8 +308,8 @@ var Color = this.Color = Base.extend(new function() {
 	},
 
 	/**
-	 * A value between 0 and 1 that specifies the color's alpha value.
-	 * All colors of the different subclasses support alpha values.
+	 * A value between {@code 0} and {@code 1} that specifies the color's alpha
+	 * value. All colors of the different subclasses support alpha values.
 	 * 
 	 * @type Number
 	 * @bean

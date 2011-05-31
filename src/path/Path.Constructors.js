@@ -157,10 +157,10 @@ Path.inject({ statics: new function() {
 		* Creates an oval shaped Path Item.
 		 * 
 		 * @param {Rectangle} rect
-		 * @param {Boolean} [circumscribed=false] if this is set to true the
+		 * @param {Boolean} [circumscribed=false] when set to {@code true} the
 		 *        oval shaped path will be created so the rectangle fits into
-		 *        it. If it's set to false the oval path will fit within the
-		 *        rectangle.
+		 *        it. When set to {@code false} the oval path will fit within
+		 *        the rectangle.
 		 * @return {Path} the newly created path
 		 * 
 		 * @example
