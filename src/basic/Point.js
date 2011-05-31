@@ -221,7 +221,7 @@ var Point = this.Point = Base.extend({
 	 * @example
 	 * var point = new Point(5, 10);
 	 * var result = point + 20;
-	 * console.log(result); // { x: 25.0, y: 30.0 }
+	 * console.log(result); // {x: 25, y: 30}
 	 */
 	/**
 	 * Returns the addition of the supplied point to the point as a new
@@ -237,7 +237,7 @@ var Point = this.Point = Base.extend({
 	 * var point1 = new Point(5, 10);
 	 * var point2 = new Point(10, 20);
 	 * var result = point1 + point2;
-	 * console.log(result); // { x: 15.0, y: 30.0 }
+	 * console.log(result); // {x: 15, y: 30}
 	 */
 	add: function(point) {
 		point = Point.read(arguments);
@@ -257,7 +257,7 @@ var Point = this.Point = Base.extend({
 	 * @example
 	 * var point = new Point(10, 20);
 	 * var result = point - 5;
-	 * console.log(result); // { x: 5.0, y: 15.0 }
+	 * console.log(result); // {x: 5, y: 15}
 	 */
 	/**
 	 * Returns the subtraction of the supplied point to the point as a new
@@ -273,7 +273,7 @@ var Point = this.Point = Base.extend({
 	 * var firstPoint = new Point(10, 20);
 	 * var secondPoint = new Point(5, 5);
 	 * var result = firstPoint - secondPoint;
-	 * console.log(result); // { x: 5.0, y: 15.0 }
+	 * console.log(result); // {x: 5, y: 15}
 	 */
 	subtract: function(point) {
 		point = Point.read(arguments);
@@ -293,7 +293,7 @@ var Point = this.Point = Base.extend({
 	 * @example
 	 * var point = new Point(10, 20);
 	 * var result = point * 2;
-	 * console.log(result); // { x: 20.0, y: 40.0 }
+	 * console.log(result); // {x: 20, y: 40}
 	 */
 	/**
 	 * Returns the multiplication of the supplied point to the point as a new
@@ -309,7 +309,7 @@ var Point = this.Point = Base.extend({
 	 * var firstPoint = new Point(5, 10);
 	 * var secondPoint = new Point(4, 2);
 	 * var result = firstPoint * secondPoint;
-	 * console.log(result); // { x: 20.0, y: 20.0 }
+	 * console.log(result); // {x: 20, y: 20}
 	 */
 	multiply: function(point) {
 		point = Point.read(arguments);
@@ -329,7 +329,7 @@ var Point = this.Point = Base.extend({
 	 * @example
 	 * var point = new Point(10, 20);
 	 * var result = point / 2;
-	 * console.log(result); // { x: 5.0, y: 10.0 }
+	 * console.log(result); // {x: 5, y: 10}
 	 */
 	/**
 	 * Returns the division of the supplied point to the point as a new
@@ -345,7 +345,7 @@ var Point = this.Point = Base.extend({
 	 * var firstPoint = new Point(8, 10);
 	 * var secondPoint = new Point(2, 5);
 	 * var result = firstPoint / secondPoint;
-	 * console.log(result); // { x: 4.0, y: 2.0 }
+	 * console.log(result); // {x: 4, y: 2}
 	 */
 	divide: function(point) {
 		point = Point.read(arguments);
@@ -788,7 +788,7 @@ var Point = this.Point = Base.extend({
 		 * var point1 = new Point(10, 100);
 		 * var point2 = new Point(200, 5);
 		 * var minPoint = Point.min(point1, point2);
-		 * console.log(minPoint); // { x: 10.0, y: 5.0 }
+		 * console.log(minPoint); // {x: 10, y: 5}
 		 */
 		min: function(point1, point2) {
 			point1 = Point.read(arguments, 0, 1);
@@ -812,7 +812,7 @@ var Point = this.Point = Base.extend({
 		 * var point1 = new Point(10, 100);
 		 * var point2 = new Point(200, 5);
 		 * var maxPoint = Point.max(point1, point2);
-		 * console.log(maxPoint); // { x: 200.0, y: 100.0 }
+		 * console.log(maxPoint); // {x: 200, y: 100}
 		 */
 		max: function(point1, point2) {
 			point1 = Point.read(arguments, 0, 1);
@@ -855,7 +855,7 @@ var Point = this.Point = Base.extend({
 	 * @example
 	 * var point = new Point(10.2, 10.9);
 	 * var roundPoint = point.round();
-	 * console.log(roundPoint); // { x: 10.0, y: 11.0 }
+	 * console.log(roundPoint); // {x: 10, y: 11}
 	 */
 
 	/**
@@ -870,7 +870,7 @@ var Point = this.Point = Base.extend({
 	 * @example
 	 * var point = new Point(10.2, 10.9);
 	 * var ceilPoint = point.ceil();
-	 * console.log(ceilPoint); // { x: 11.0, y: 11.0 }
+	 * console.log(ceilPoint); // {x: 11, y: 11}
 	 */
 
 	/**
@@ -885,7 +885,7 @@ var Point = this.Point = Base.extend({
 	 * @example
 	 * var point = new Point(10.2, 10.9);
 	 * var floorPoint = point.floor();
-	 * console.log(floorPoint); // { x: 10.0, y: 10.0 }
+	 * console.log(floorPoint); // {x: 10, y: 10}
 	 */
 
 	/**
@@ -899,7 +899,7 @@ var Point = this.Point = Base.extend({
 	 * @example
 	 * var point = new Point(-5, 10);
 	 * var absPoint = point.abs();
-	 * console.log(absPoint); // { x: 5.0, y: 10.0 }
+	 * console.log(absPoint); // {x: 5, y: 10}
 	 */
 
 	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
