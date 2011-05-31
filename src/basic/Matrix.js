@@ -489,6 +489,9 @@ var Matrix = this.Matrix = Base.extend({
 
 	/**
 	 * Applies this matrix to the specified Canvas Context.
+	 * 
+	 * @param {CanvasRenderingContext2D} ctx
+	 * @param {Boolean} [reset=false]
 	 */
 	applyToContext: function(ctx, reset) {
 		ctx[reset ? 'setTransform' : 'transform'](
