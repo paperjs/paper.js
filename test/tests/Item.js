@@ -422,3 +422,9 @@ test('Renaming item', function() {
 		return paper.project.activeLayer.children['test2'] == path;
 	}, true);
 });
+
+test('Changing item#position.x', function() {
+	var path = new Path.Circle(new Point(50, 50), 50);
+	path.position.x += 5;
+	equals(path.position.toString(), '{ x: 55, y: 50 }', 'path.position.x += 5');
+});

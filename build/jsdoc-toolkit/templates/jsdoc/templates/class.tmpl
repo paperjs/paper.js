@@ -47,10 +47,10 @@
 <if test="inheritedClassLinks.length">
 <p> Extends {+ inheritedClassLinks.join(', ') +}</p>
 </if>
-{+processInlineTags(data.classDesc)+}
+{+Utils.processInlineTags(data.classDesc)+}
 </div>
 <!-- ============================== constructors ========================= -->
-<if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace && !data.ignore">
+<if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace && !data.ignore && data.desc.length">
 <div class="reference-members"><h2>Constructors</h2>
 	{+ publish.templates.constructor.process(data) +}
 	<for each="constructor" in="constructors">
@@ -109,3 +109,4 @@
 		</div>
 	</if>
 </for>
+<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>

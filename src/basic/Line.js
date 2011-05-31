@@ -23,7 +23,7 @@ var Line = this.Line = Base.extend({
 	 * 
 	 * @param {Point} point1
 	 * @param {Point} point2
-	 * @param {boolean} [infinite=true]
+	 * @param {Boolean} [infinite=true]
 	 * 
 	 * @class The Line object represents..
 	 * @constructs Line
@@ -65,7 +65,7 @@ var Line = this.Line = Base.extend({
 	 * Specifies whether the line extends infinitely
 	 *
 	 * @name Line#infinite
-	 * @type boolean
+	 * @type Boolean
 	 */
 
 	/**
@@ -96,14 +96,14 @@ var Line = this.Line = Base.extend({
 		var v1 = this.vector,
 			v2 = point.subtract(this.point),
 			ccw = v2.cross(v1);
-		if (ccw == 0.0) {
+		if (ccw == 0) {
 			ccw = v2.dot(v1);
-			if (ccw > 0.0) {
+			if (ccw > 0) {
 				ccw = (v2 - v1).dot(v1);
-				if (ccw < 0.0)
-				    ccw = 0.0;
+				if (ccw < 0)
+				    ccw = 0;
 			}
 		}
-		return ccw < 0.0 ? -1 : ccw > 0.0 ? 1 : 0;
+		return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
 	}
 });
