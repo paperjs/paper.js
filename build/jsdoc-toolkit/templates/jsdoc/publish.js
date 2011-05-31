@@ -80,7 +80,7 @@ function publish(symbolSet) {
 		var html = publish.templates.html.process({
 			content: publish.templates._class.process(symbol),
 			title: symbol.alias
-		})
+		});
 		var name = ((JSDOC.opt.u)? Link.filemap[symbol.alias] : symbol.alias)
 				+ publish.conf.ext;
 		IO.saveFile(publish.conf.packagesDir, name, html);
@@ -116,8 +116,8 @@ var Operator = new function() {
 		getOperator: function(symbol) {
 			return operators[symbol.name.replace(/\^[0-9]$/,'')];
 		}
-	}
-}
+	};
+};
 
 var Utils = {
 	getSymbolId: function(symbol) {
@@ -146,7 +146,7 @@ var Utils = {
 	},
 	
 	isaClass: function(symbol) {
-		return symbol.is('CONSTRUCTOR') || symbol.isNamespace
+		return symbol.is('CONSTRUCTOR') || symbol.isNamespace;
 	},
 	
 	parseExamples: function(symbol) {
@@ -261,7 +261,7 @@ var Utils = {
 				if (a > b) return 1;
 				return 0;
 			}
-		}
+		};
 	},
 
 	/** Pull in the contents of an external file at the given path. */
