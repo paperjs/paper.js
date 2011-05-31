@@ -222,7 +222,13 @@ var Utils = {
 			return out;
 		}
 		function getLink(name) {
-			return '<li><a href="' + name + '.html">' + name + '</a></li>';
+			var link = name;
+			if (name.indexOf(':') > 0) {
+				var names = name.split(':');
+				name = names[0];
+				link = names[1];
+			}
+			return '<li><a href="' + link + '.html">' + name + '</a></li>';
 		}
 
 		function getRuler() {

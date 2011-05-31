@@ -1,5 +1,5 @@
 var classLayout = {
-	'Paper.js': ['global'],
+	'Paper.js': ['global paper scope:_global_'],
 	'Basic Types': ['Point', 'Size', 'Rectangle', 'Matrix'],
 	'Items': ['Item', 'Layer', 'Group', 'Raster', 'PlacedSymbol'],
 	'Paths': ['Path', 'CompoundPath', 'Segment', 'Curve', 'PathStyle', 'ruler',
