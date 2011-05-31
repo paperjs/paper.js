@@ -146,7 +146,14 @@ var Matrix = this.Matrix = Base.extend({
 		return this;
 	},
 
-	// DOCS: Matrix#translate(point)
+	/**
+	 * Concatentates this transform with a translate transformation.
+	 *
+	 * @name Matrix#translate
+	 * @function
+	 * @param {Point} point The vector to translate by.
+	 * @return {Matrix} This affine transform.
+	 */
 	/**
 	 * Concatentates this transform with a translate transformation.
 	 *
@@ -162,7 +169,16 @@ var Matrix = this.Matrix = Base.extend({
 		return this;
 	},
 
-	// DOCS: Matrix#rotate(angle, center)
+	/**
+	 * Concatentates this transform with a rotation transformation around an
+	 * anchor point.
+	 *
+	 * @name Matrix#rotate
+	 * @function
+	 * @param {Number} angle The angle of rotation measured in degrees.
+	 * @param {Point} center The anchor point to rotate around.
+	 * @return {Matrix} This affine transform.
+	 */
 	/**
 	 * Concatentates this transform with a rotation transformation around an
 	 * anchor point.
@@ -177,6 +193,15 @@ var Matrix = this.Matrix = Base.extend({
 				Matrix.getRotateInstance.apply(Matrix, arguments));
 	},
 
+	/**
+	 * Concatentates this transform with a shear transformation.
+	 *
+	 * @name Matrix#shear
+	 * @function
+	 * @param {Point} point The shear factor in x and y direction.
+	 * @param {Point} [center] The optional center for the shear transformation.
+	 * @return {Matrix} This affine transform.
+	 */
 	/**
 	 * Concatentates this transform with a shear transformation.
 	 *
