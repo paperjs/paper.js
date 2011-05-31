@@ -21,6 +21,16 @@ var Segment = this.Segment = Base.extend({
 	/**
 	 * Creates a new Segment object.
 	 * 
+	 * @name Segment
+	 * @constructor
+	 * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
+	 * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
+	 *        anchor point of the segment that describes the in tangent of the
+	 *        segment.
+	 * @param {Point} [handleOut={x: 0, y: 0}] the handle point relative to the
+	 *        anchor point of the segment that describes the out tangent of the
+	 *        segment.
+	 * 
 	 * @example
 	 * var handleIn = new Point(-40, -50);
 	 * var handleOut = new Point(40, 50);
@@ -33,16 +43,7 @@ var Segment = this.Segment = Base.extend({
 	 *
 	 * var path = new Path();
 	 * path.segments = [firstSegment, secondSegment];
-	 * 
-	 * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
-	 * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
-	 *        anchor point of the segment that describes the in tangent of the
-	 *        segment.
-	 * @param {Point} [handleOut={x: 0, y: 0}] the handle point relative to the
-	 *        anchor point of the segment that describes the out tangent of the
-	 *        segment.
-	 * @name Segment
-	 * @constructor
+	 * path.strokeColor = 'black';
 	 * 
 	 * @class The Segment object represents a part of a path which is
 	 * described by the {@link Path#segments} array. Every segment of a
@@ -170,6 +171,73 @@ var Segment = this.Segment = Base.extend({
 			? null : this._handleOut;
 	},
 
+	_isSelected: function(point) {
+		var state = this._selectionState;
+		return point == this._point ? !!(state & SelectionState.POINT)
+			: point == this._handleIn ? !!(state & SelectionState.HANDLE_IN)
+			: point == this._handleOut ? !!(state & SelectionState.HANDLE_OUT)
+			: false;
+	},
+
+	_setSelected: function(point, selected) {
+		var path = this._path,
+			selected = !!selected, // convert to boolean
+			state = this._selectionState,
+			wasSelected = !!state,
+			// For performance reasons use array indices to access the various
+			// selection states: 0 = point, 1 = handleIn, 2 = handleOut
+			selection = [
+				!!(state & SelectionState.POINT),
+				!!(state & SelectionState.HANDLE_IN),
+				!!(state & SelectionState.HANDLE_OUT)
+			];
+		if (point == this._point) {
+			if (selected) {
+				// We're selecting point, deselect the handles
+				selection[1] = selection[2] = false;
+			} else {
+				var previous = this.getPrevious(),
+					next = this.getNext();
+				// When deselecting a point, the handles get selected instead
+				// depending on the selection state of their neighbors.
+				selection[1] = previous && (previous._point.isSelected()
+						|| previous._handleOut.isSelected());
+				selection[2] = next && (next._point.isSelected()
+						|| next._handleIn.isSelected());
+			}
+			selection[0] = selected;
+		} else {
+			var index = point == this._handleIn ? 1 : 2;
+			if (selection[index] != selected) {
+				// When selecting handles, the point get deselected.
+				if (selected)
+					selection[0] = false;
+				selection[index] = selected;
+			}
+		}
+		this._selectionState = (selection[0] ? SelectionState.POINT : 0)
+				| (selection[1] ? SelectionState.HANDLE_IN : 0)
+				| (selection[2] ? SelectionState.HANDLE_OUT : 0);
+		// If the selection state of the segment has changed, we need to let
+		// it's path know and possibly add or remove it from
+		// project._selectedItems
+		if (path && wasSelected != !!this._selectionState)
+			path._updateSelection(this);
+	},
+
+	/**
+	 * Specifies whether the {@link #point} of the segment is selected.
+	 * @type Boolean
+	 * @bean
+	 */
+	isSelected: function() {
+		return this._isSelected(this._point);
+	},
+
+	setSelected: function(selected) {
+		this._setSelected(this._point, selected);
+	},
+
 	/**
 	 * {@grouptitle Hierarchy}
 	 * 
@@ -238,73 +306,6 @@ var Segment = this.Segment = Base.extend({
 		var segments = this._path && this._path._segments;
 		return segments && (segments[this._index - 1]
 				|| this._path._closed && segments[segments.length - 1]) || null;
-	},
-
-	_isSelected: function(point) {
-		var state = this._selectionState;
-		return point == this._point ? !!(state & SelectionState.POINT)
-			: point == this._handleIn ? !!(state & SelectionState.HANDLE_IN)
-			: point == this._handleOut ? !!(state & SelectionState.HANDLE_OUT)
-			: false;
-	},
-
-	_setSelected: function(point, selected) {
-		var path = this._path,
-			selected = !!selected, // convert to boolean
-			state = this._selectionState,
-			wasSelected = !!state,
-			// For performance reasons use array indices to access the various
-			// selection states: 0 = point, 1 = handleIn, 2 = handleOut
-			selection = [
-				!!(state & SelectionState.POINT),
-				!!(state & SelectionState.HANDLE_IN),
-				!!(state & SelectionState.HANDLE_OUT)
-			];
-		if (point == this._point) {
-			if (selected) {
-				// We're selecting point, deselect the handles
-				selection[1] = selection[2] = false;
-			} else {
-				var previous = this.getPrevious(),
-					next = this.getNext();
-				// When deselecting a point, the handles get selected instead
-				// depending on the selection state of their neighbors.
-				selection[1] = previous && (previous._point.isSelected()
-						|| previous._handleOut.isSelected());
-				selection[2] = next && (next._point.isSelected()
-						|| next._handleIn.isSelected());
-			}
-			selection[0] = selected;
-		} else {
-			var index = point == this._handleIn ? 1 : 2;
-			if (selection[index] != selected) {
-				// When selecting handles, the point get deselected.
-				if (selected)
-					selection[0] = false;
-				selection[index] = selected;
-			}
-		}
-		this._selectionState = (selection[0] ? SelectionState.POINT : 0)
-				| (selection[1] ? SelectionState.HANDLE_IN : 0)
-				| (selection[2] ? SelectionState.HANDLE_OUT : 0);
-		// If the selection state of the segment has changed, we need to let
-		// it's path know and possibly add or remove it from
-		// project._selectedItems
-		if (path && wasSelected != !!this._selectionState)
-			path._updateSelection(this);
-	},
-
-	/**
-	 * Specifies whether the {@link #point} of the segment is selected.
-	 * @type Boolean
-	 * @bean
-	 */
-	isSelected: function() {
-		return this._isSelected(this._point);
-	},
-
-	setSelected: function(selected) {
-		this._setSelected(this._point, selected);
 	},
 
 	/**

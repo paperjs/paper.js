@@ -182,7 +182,7 @@ var Curve = this.Curve = Base.extend({
 	/**
 	 * Specifies whether the handles of the curve are selected.
 	 *
-	 * @type boolean
+	 * @type Boolean
 	 * @bean
 	 */
 	isSelected: function() {
@@ -234,19 +234,19 @@ var Curve = this.Curve = Base.extend({
 	 * Checks if this curve is linear, meaning it does not define any curve
 	 * handle.
 
-	 * @return {boolean} {@true the curve is linear}
+	 * @return {Boolean} {@true the curve is linear}
 	 */
 	isLinear: function() {
 		return this._segment1._handleOut.isZero()
 				&& this._segment2._handleIn.isZero();
 	},
 
-	// PORT: Add support for start parameter to Scriptographer
+	// PORT: Add support for start parameter to Sg
 	// DOCS: document Curve#getParameter(length, start)
 	/**
 	 * @param {Number} length
 	 * @param {Number} [start]
-	 * @return {boolean} {@true the curve is linear}
+	 * @return {Boolean} {@true the curve is linear}
 	 */
 	getParameter: function(length, start) {
 		var args = this.getCurveValues();
@@ -328,7 +328,7 @@ var Curve = this.Curve = Base.extend({
 			x, y;
 
 		// Handle special case at beginning / end of curve
-		// PORT: Change in Scriptographer too, so 0.000000000001 won't be
+		// PORT: Change in Sg too, so 0.000000000001 won't be
 		// required anymore
 		if (t == 0 || t == 1) {
 			var point;
@@ -417,7 +417,7 @@ var Curve = this.Curve = Base.extend({
 		 * Returns the point on the curve at the specified position.
 		 * 
 		 * @param {Number} parameter the position at which to find the point as
-		 *                 a value between 0 and 1.
+		 *                 a value between {@code 0} and {@code 1}.
 		 * @return {Point}
 		 */
 		getPoint: function(parameter) {
@@ -428,7 +428,7 @@ var Curve = this.Curve = Base.extend({
 		 * Returns the tangent point on the curve at the specified position.
 		 * 
 		 * @param {Number} parameter the position at which to find the tangent
-		 *                 point as a value between 0 and 1.
+		 *                 point as a value between {@code 0} and {@code 1}.
 		 */
 		getTangent: function(parameter) {
 			return evaluate(this, parameter, 1);
@@ -438,7 +438,7 @@ var Curve = this.Curve = Base.extend({
 		 * Returns the normal point on the curve at the specified position.
 		 * 
 		 * @param {Number} parameter the position at which to find the normal
-		 *                 point as a value between 0 and 1.
+		 *                 point as a value between {@code 0} and {@code 1}.
 		 */
 		getNormal: function(parameter) {
 			return evaluate(this, parameter, 2);

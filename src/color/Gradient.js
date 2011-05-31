@@ -72,7 +72,7 @@ var Gradient = this.Gradient = Base.extend({
 	 * Checks whether the gradient is equal to the supplied gradient.
 	 *
 	 * @param {Gradient} gradient
-	 * @return {boolean} {@true they are equal}
+	 * @return {Boolean} {@true they are equal}
 	 */
 	equals: function(gradient) {
 		if (gradient.type != this.type)

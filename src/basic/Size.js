@@ -19,44 +19,78 @@ var Size = this.Size = Base.extend({
 
 	// DOCS: improve Size class description
 	/**
-	 * Creates a Size object using the coordinates of the given Size object.
+	 * Creates a Size object with the given width and height values.
 	 * 
 	 * @constructor
 	 * @name Size
-	 * @param {Size} size
+	 * @param {Number} width the width
+	 * @param {Number} height the height
+	 * 
+	 * @example
+	 * // Create a size that is 10pt wide and 5pt high
+	 * var size = new Size(10, 5);
+	 * console.log(size.width); // 10
+	 * console.log(size.height); // 5
 	 * 
 	 * @class The Size object is used to describe the size of something, through
 	 * its {@link #width} and {@link #height} properties.
 	 * 
-	 * Sample code:
+	 * Example:
 	 * <pre>
-	 * // Create a size that is 10pt wide and 5pt height
+	 * // Create a size that is 10pt wide and 5pt high
 	 * var size = new Size(10, 5);
 	 * console.log(size.width); // 10
 	 * console.log(size.height); // 5
 	 * </pre>
 	 */
 	/**
-	 * Creates a Point object using the x and y values of the given Point
-	 * object.
+	 * Creates a Size object using the numbers in the given array as
+	 * dimensions.
+	 *
+	 * @name Size#initialize
+	 * @param {array} array
 	 * 
-	 * Sample code:
-	 * <code>
+	 * @example
+	 * // Creating a size of width: 320, height: 240 using an array of numbers:
+	 * var array = [320, 240];
+	 * var size = new Size(array);
+	 * console.log(size.width); // 320
+	 * console.log(size.height); // 240
+	 */
+	/**
+	 * Creates a Size object using the properties in the given object.
+	 *
+	 * @name Size#initialize
+	 * @param {object} object
+	 * 
+	 * @example
+	 * // Creating a size of width: 10, height: 20 using an object literal:
+	 * 
+	 * var size = new Size({
+	 * 	width: 10,
+	 * 	height: 20
+	 * });
+	 * console.log(size.width); // 10
+	 * console.log(size.height); // 20
+	 */
+	/**
+	 * Creates a Size object using the coordinates of the given Size object.
+	 *
+	 * @name Size#initialize
+	 * @param {Size} size
+	 */
+	/**
+	 * Creates a Size object using the {@link Point#x} and {@link Point#y}
+	 * values of the given Point object.
+	 * 
+	 * @name Size#initialize
+	 * @param {Point} point
+	 * 
+	 * @example
 	 * var point = new Point(50, 50);
 	 * var size = new Size(point);
 	 * console.log(size.width); // 50
 	 * console.log(size.height); // 50
-	 * </code>
-	 * 
-	 * @name Size#initialize
-	 * @param {Point} point
-	 */
-	/**
-	 * Creates a Size object with the given width and height values.
-	 *
-	 * @name Size#initialize
-	 * @param {Number} width the width
-	 * @param {Number} height the height
 	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
@@ -117,30 +151,30 @@ var Size = this.Size = Base.extend({
 	 * Returns the addition of the supplied value to the width and height of the
 	 * size as a new size. The object itself is not modified!
 	 * 
-	 * @example
-	 * var size = new Size(5, 10);
-	 * var result = size + 20;
-	 * console.log(result); // { width: 25.0, height: 30.0 }
-	 * 
 	 * @name Size#add
 	 * @function
 	 * @param {Number} number the number to add
 	 * @return {Size} the addition of the size and the value as a new size
+	 * 
+	 * @example
+	 * var size = new Size(5, 10);
+	 * var result = size + 20;
+	 * console.log(result); // {width: 25, height: 30}
 	 */
 	/**
 	 * Returns the addition of the width and height of the supplied size to the
 	 * size as a new size. The object itself is not modified!
 	 * 
-	 * @example
-	 * var size1 = new Size(5, 10);
-	 * var size2 = new Size(10, 20);
-	 * var result = size1 + size2;
-	 * console.log(result); // { width: 15.0, height: 30.0 }
-	 * 
 	 * @name Size#add
 	 * @function
 	 * @param {Size} size the size to add
 	 * @return {Size} the addition of the two sizes as a new size
+	 * 
+	 * @example
+	 * var size1 = new Size(5, 10);
+	 * var size2 = new Size(10, 20);
+	 * var result = size1 + size2;
+	 * console.log(result); // {width: 15, height: 30}
 	 */
 	add: function(size) {
 		size = Size.read(arguments);
@@ -152,30 +186,30 @@ var Size = this.Size = Base.extend({
 	 * of the size as a new size. The object itself is not modified!
 	 * The object itself is not modified!
 	 * 
-	 * @example
-	 * var size = new Size(10, 20);
-	 * var result = size - 5;
-	 * console.log(result); // { width: 5.0, height: 15.0 }
-	 * 
 	 * @name Size#subtract
 	 * @function
 	 * @param {Number} number the number to subtract
 	 * @return {Size} the subtraction of the size and the value as a new size
+	 * 
+	 * @example
+	 * var size = new Size(10, 20);
+	 * var result = size - 5;
+	 * console.log(result); // {width: 5, height: 15}
 	 */
 	/**
 	 * Returns the subtraction of the width and height of the supplied size from
 	 * the size as a new size. The object itself is not modified!
 	 * 
-	 * @example
-	 * var firstSize = new Size(10, 20);
-	 * var secondSize = new Size(5, 5);
-	 * var result = firstSize - secondSize;
-	 * console.log(result); // { width: 5.0, height: 15.0 }
-	 * 
 	 * @name Size#subtract
 	 * @function
 	 * @param {Size} size the size to subtract
 	 * @return {Size} the subtraction of the two sizes as a new size
+	 * 
+	 * @example
+	 * var firstSize = new Size(10, 20);
+	 * var secondSize = new Size(5, 5);
+	 * var result = firstSize - secondSize;
+	 * console.log(result); // {width: 5, height: 15}
 	 */
 	subtract: function(size) {
 		size = Size.read(arguments);
@@ -186,30 +220,30 @@ var Size = this.Size = Base.extend({
 	 * Returns the multiplication of the supplied value with the width and
 	 * height of the size as a new size. The object itself is not modified!
 	 * 
-	 * @example
-	 * var size = new Size(10, 20);
-	 * var result = size * 2;
-	 * console.log(result); // { width: 20.0, height: 40.0 }
-	 * 
 	 * @name Size#multiply
 	 * @function
 	 * @param {Number} number the number to multiply by
 	 * @return {Size} the multiplication of the size and the value as a new size
+	 * 
+	 * @example
+	 * var size = new Size(10, 20);
+	 * var result = size * 2;
+	 * console.log(result); // {width: 20, height: 40}
 	 */
 	/**
 	 * Returns the multiplication of the width and height of the supplied size
 	 * with the size as a new size. The object itself is not modified!
 	 * 
-	 * @example
-	 * var firstSize = new Size(5, 10);
-	 * var secondSize = new Size(4, 2);
-	 * var result = firstSize * secondSize;
-	 * console.log(result); // { width: 20.0, height: 20.0 }
-	 * 
 	 * @name Size#multiply
 	 * @function
 	 * @param {Size} size the size to multiply by
 	 * @return {Size} the multiplication of the two sizes as a new size
+	 * 
+	 * @example
+	 * var firstSize = new Size(5, 10);
+	 * var secondSize = new Size(4, 2);
+	 * var result = firstSize * secondSize;
+	 * console.log(result); // {width: 20, height: 20}
 	 */
 	multiply: function(size) {
 		size = Size.read(arguments);
@@ -220,30 +254,30 @@ var Size = this.Size = Base.extend({
 	 * Returns the division of the supplied value by the width and height of the
 	 * size as a new size. The object itself is not modified!
 	 * 
-	 * @example
-	 * var size = new Size(10, 20);
-	 * var result = size / 2;
-	 * console.log(result); // { width: 5.0, height: 10.0 }
-	 * 
 	 * @name Size#divide
 	 * @function
 	 * @param {Number} number the number to divide by
 	 * @return {Size} the division of the size and the value as a new size
+	 * 
+	 * @example
+	 * var size = new Size(10, 20);
+	 * var result = size / 2;
+	 * console.log(result); // {width: 5, height: 10}
 	 */
 	/**
 	 * Returns the division of the width and height of the supplied size by the
 	 * size as a new size. The object itself is not modified!
 	 * 
-	 * @example
-	 * var firstSize = new Size(8, 10);
-	 * var secondSize = new Size(2, 5);
-	 * var result = firstSize / secondSize;
-	 * console.log(result); // { width: 4.0, height: 2.0 }
-	 * 
 	 * @name Size#divide
 	 * @function
 	 * @param {Size} size the size to divide by
 	 * @return {Size} the division of the two sizes as a new size
+	 * 
+	 * @example
+	 * var firstSize = new Size(8, 10);
+	 * var secondSize = new Size(2, 5);
+	 * var result = firstSize / secondSize;
+	 * console.log(result); // {width: 4, height: 2}
 	 */
 	divide: function(size) {
 		size = Size.read(arguments);
@@ -254,29 +288,29 @@ var Size = this.Size = Base.extend({
 	 * The modulo operator returns the integer remainders of dividing the size
 	 * by the supplied value as a new size.
 	 * 
-	 * @example
-	 * var size = new Size(12, 6);
-	 * console.log(size % 5); // {width: 2, height: 1}
-	 * 
 	 * @name Size#modulo
 	 * @function
 	 * @param {Number} value
 	 * @return {Size} the integer remainders of dividing the size by the value
 	 *                 as a new size
+	 * 
+	 * @example
+	 * var size = new Size(12, 6);
+	 * console.log(size % 5); // {width: 2, height: 1}
 	 */
 	/**
 	 * The modulo operator returns the integer remainders of dividing the size
 	 * by the supplied size as a new size.
-	 * 
-	 * @example
-	 * var size = new Size(12, 6);
-	 * console.log(size % new Size(5, 2)); // {width: 2, height: 0}
 	 * 
 	 * @name Size#modulo
 	 * @function
 	 * @param {Size} size
 	 * @return {Size} the integer remainders of dividing the sizes by each
 	 *                 other as a new size
+	 * 
+	 * @example
+	 * var size = new Size(12, 6);
+	 * console.log(size % new Size(5, 2)); // {width: 2, height: 0}
 	 */
 	modulo: function(size) {
 		size = Size.read(arguments);
@@ -290,15 +324,15 @@ var Size = this.Size = Base.extend({
 	/**
 	 * Checks whether the width and height of the size are equal to those of the
 	 * supplied size.
+	 *
+	 * @param {Size}
+	 * @return {Boolean}
 	 * 
 	 * @example
 	 * var size = new Size(5, 10);
 	 * console.log(size == new Size(5, 10)); // true
 	 * console.log(size == new Size(1, 1)); // false
 	 * console.log(size != new Size(1, 1)); // true
-	 *
-	 * @param {Size}
-	 * @return {boolean}
 	 */
 	equals: function(size) {
 		size = Size.read(arguments);
@@ -309,7 +343,7 @@ var Size = this.Size = Base.extend({
 	 * {@grouptitle Tests}
 	 * Checks if this size has both the width and height set to 0.
 	 * 
-	 * @return {boolean} {@true both width and height are 0}
+	 * @return {Boolean} {@true both width and height are 0}
 	 */
 	isZero: function() {
 		return this.width == 0 && this.width == 0;
@@ -318,7 +352,7 @@ var Size = this.Size = Base.extend({
 	/**
 	 * Checks if the width or the height of the size are NaN.
 	 * 
-	 * @return {boolean} {@true if the width or height of the size are NaN}
+	 * @return {Boolean} {@true if the width or height of the size are NaN}
 	 */
 	isNaN: function() {
 		return isNaN(this.width) || isNaN(this.height);
@@ -336,16 +370,16 @@ var Size = this.Size = Base.extend({
 		 * Returns a new size object with the smallest {@link #width} and
 		 * {@link #height} of the supplied sizes.
 		 * 
-		 * @example
-		 * var size1 = new Size(10, 100);
-		 * var size2 = new Size(200, 5);
-		 * var minSize = Size.min(size1, size2);
-		 * console.log(minSize); // { width: 10.0, height: 5.0 }
-		 * 
 		 * @static
 		 * @param {Size} size1
 		 * @param {Size} size2
 		 * @returns {Size} The newly created size object
+		 * 
+		 * @example
+		 * var size1 = new Size(10, 100);
+		 * var size2 = new Size(200, 5);
+		 * var minSize = Size.min(size1, size2);
+		 * console.log(minSize); // {width: 10, height: 5}
 		 */
 		min: function(size1, size2) {
 			return Size.create(
@@ -357,16 +391,16 @@ var Size = this.Size = Base.extend({
 		 * Returns a new size object with the largest {@link #width} and
 		 * {@link #height} of the supplied sizes.
 		 * 
-		 * @example
-		 * var size1 = new Size(10, 100);
-		 * var size2 = new Size(200, 5);
-		 * var maxSize = Size.max(size1, size2);
-		 * console.log(maxSize); // { width: 200.0, height: 100.0 }
-		 * 
 		 * @static
 		 * @param {Size} size1
 		 * @param {Size} size2
 		 * @returns {Size} The newly created size object
+		 * 
+		 * @example
+		 * var size1 = new Size(10, 100);
+		 * var size2 = new Size(200, 5);
+		 * var maxSize = Size.max(size1, size2);
+		 * console.log(maxSize); // {width: 200, height: 100}
 		 */
 		max: function(size1, size2) {
 			return Size.create(
@@ -378,13 +412,13 @@ var Size = this.Size = Base.extend({
 		 * Returns a size object with random {@link #width} and {@link #height}
 		 * values between {@code 0} and {@code 1}.
 		 * 
+		 * @returns {Size} The newly created size object
+		 * @static
+		 * 
 		 * @example
 		 * var maxSize = new Size(100, 100);
 		 * var randomSize = Size.random();
 		 * var size = maxSize * randomSize;
-		 * 
-		 * @returns {Size} The newly created size object
-		 * @static
 		 */
 		random: function() {
 			return Size.create(Math.random(), Math.random());
@@ -398,14 +432,14 @@ var Size = this.Size = Base.extend({
 	 * Returns a new size with rounded {@link #width} and {@link #height} values.
 	 * The object itself is not modified!
 	 * 
-	 * @example
-	 * var size = new Size(10.2, 10.9);
-	 * var roundSize = size.round();
-	 * console.log(roundSize); // { x: 10.0, y: 11.0 }
-	 * 
 	 * @name Size#round
 	 * @function
 	 * @return {Size}
+	 * 
+	 * @example
+	 * var size = new Size(10.2, 10.9);
+	 * var roundSize = size.round();
+	 * console.log(roundSize); // {x: 10, y: 11}
 	 */
 
 	/**
@@ -413,14 +447,14 @@ var Size = this.Size = Base.extend({
 	 * specified {@link #width} and {@link #height} values. The object itself is not
 	 * modified!
 	 * 
-	 * @example
-	 * var size = new Size(10.2, 10.9);
-	 * var ceilSize = size.ceil();
-	 * console.log(ceilSize); // { x: 11.0, y: 11.0 }
-	 * 
 	 * @name Size#ceil
 	 * @function
 	 * @return {Size}
+	 * 
+	 * @example
+	 * var size = new Size(10.2, 10.9);
+	 * var ceilSize = size.ceil();
+	 * console.log(ceilSize); // {x: 11, y: 11}
 	 */
 
 	/**
@@ -428,28 +462,28 @@ var Size = this.Size = Base.extend({
 	 * specified {@link #width} and {@link #height} values. The object itself is not
 	 * modified!
 	 * 
-	 * @example
-	 * var size = new Size(10.2, 10.9);
-	 * var floorSize = size.floor();
-	 * console.log(floorSize); // { x: 10.0, y: 10.0 }
-	 * 
 	 * @name Size#floor
 	 * @function
 	 * @return {Size}
+	 * 
+	 * @example
+	 * var size = new Size(10.2, 10.9);
+	 * var floorSize = size.floor();
+	 * console.log(floorSize); // {x: 10, y: 10}
 	 */
 
 	/**
 	 * Returns a new size with the absolute values of the specified {@link #width}
 	 * and {@link #height} values. The object itself is not modified!
 	 * 
-	 * @example
-	 * var size = new Size(-5, 10);
-	 * var absSize = size.abs();
-	 * console.log(absSize); // { x: 5.0, y: 10.0 }
-	 * 
 	 * @name Size#abs
 	 * @function
 	 * @return {Size}
+	 * 
+	 * @example
+	 * var size = new Size(-5, 10);
+	 * var absSize = size.abs();
+	 * console.log(absSize); // {x: 5, y: 10}
 	 */
 
 	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {

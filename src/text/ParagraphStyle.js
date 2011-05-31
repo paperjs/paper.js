@@ -34,7 +34,7 @@ var ParagraphStyle = this.ParagraphStyle = Base.extend({
 	 * {@link #justification} property. Yet, we have lots in store for Paper.js
 	 * when it comes to typography. Please stay tuned.
 	 * 
-	 * Sample code:
+	 * Example:
 	 * <pre>
 	 * var text = new PointText(new Point(0,0));
 	 * text.fillColor = 'black';

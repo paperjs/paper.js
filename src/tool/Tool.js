@@ -46,12 +46,13 @@ var Tool = this.Tool = Base.extend({
 	 * function onMouseDown(event) {
 	 * 	// Create a new path every time the mouse is clicked
 	 * 	path = new Path();
+	 * 	path.add(event.point);
 	 * 	path.strokeColor = 'black';
 	 * }
 	 * 
 	 * function onMouseDrag(event) {
 	 * 	// Add a point to the path every time the mouse is dragged
-	 * 	path.lineTo(event.point);
+	 * 	path.add(event.point);
 	 * }
 	 * </pre>
 	 */
@@ -134,15 +135,18 @@ var Tool = this.Tool = Base.extend({
 	 * function receives a {@link ToolEvent} object which contains information
 	 * about the mouse event.
 	 * 
-	 * @example
-	 * function onMouseDown(event) {
-	 * 	// the position of the mouse in project coordinates:
-	 * 	console.log(event.point);
-	 * }
-	 * 
 	 * @name Tool#onMouseDown
 	 * @property
 	 * @type function
+	 * 
+	 * @example
+	 * // Creating circle shaped paths where the user presses the mouse button:
+	 * function onMouseDown(event) {
+	 * 	// Create a new circle shaped path with a radius of 10
+	 * 	// at the position of the mouse (event.point):
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * }
 	 */
 
 	/**
@@ -153,30 +157,44 @@ var Tool = this.Tool = Base.extend({
 	 * This function can also be called periodically while the mouse doesn't
 	 * move by setting the {@link #eventInterval}
 	 * 
-	 * @example
-	 * function onMouseDrag(event) {
-	 * 	// the position of the mouse in project coordinates
-	 * 	console.log(event.point);
-	 * }
-	 * 
 	 * @name Tool#onMouseDrag
 	 * @property
 	 * @type function
+	 * 
+	 * @example
+	 * // Draw a line by adding a segment to a path on every mouse drag event:
+	 * 
+	 * // Create an empty path:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * 
+	 * function onMouseDrag(event) {
+	 * 	// Add a segment to the path at the position of the mouse:
+	 * 	path.add(event.point);
+	 * }
 	 */
 
 	/**
-	 * The function to be called when the tool is selected and the mouse moves
-	 * within the document. The function receives a {@link ToolEvent} object
-	 * which contains information about the mouse event.
+	 * The function to be called the mouse moves within the project view. The
+	 * function receives a {@link ToolEvent} object which contains information
+	 * about the mouse event.
 	 * 
-	 * @example
-	 * function onMouseMove(event) {
-	 * 	// the position of the mouse in project coordinates
-	 * 	console.log(event.point);
-	 * }
 	 * @name Tool#onMouseMove
 	 * @property
 	 * @type function
+	 * 
+	 * @example
+	 * // Moving a path to the position of the mouse:
+	 *
+	 * // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
+	 * var path = new Path.Circle([0, 0], 10);
+	 * path.fillColor = 'black';
+	 * 
+	 * function onMouseMove(event) {
+	 * 	// Whenever the user moves the mouse, move the path
+	 * 	// to that position:
+	 * 	path.position = event.point;
+	 * }
 	 */
 
 	/**
@@ -184,14 +202,18 @@ var Tool = this.Tool = Base.extend({
 	 * receives a {@link ToolEvent} object which contains information about the
 	 * mouse event.
 	 * 
-	 * @example
-	 * function onMouseUp(event) {
-	 * 	// the position of the mouse in project coordinates
-	 * 	console.log(event.point);
-	 * }
 	 * @name Tool#onMouseUp
 	 * @property
 	 * @type function
+	 * 
+	 * @example
+	 * // Creating circle shaped paths where the user releases the mouse:
+	 * function onMouseUp(event) {
+	 * 	// Create a new circle shaped path with a radius of 10
+	 * 	// at the position of the mouse (event.point):
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * }
 	 */
 
 	/**
@@ -205,15 +227,26 @@ var Tool = this.Tool = Base.extend({
 	 * window from scrolling, when you need the user to interact with arrow
 	 * keys.
 	 * 
-	 * @example
-	 * function onKeyDown(event) {
-	 * 	if(event.key == 'space') {
-	 * 		console.log('The spacebar was pressed!');
-	 * 	}
-	 * }
 	 * @name Tool#onKeyDown
 	 * @property
 	 * @type Function
+	 * 
+	 * @example
+	 * // Scaling a path whenever the user presses the space bar:
+	 * 
+	 * // Create a circle shaped path:
+	 * var path = new Path.Circle(new Point(50, 50), 30);
+	 * path.fillColor = 'red';
+	 * 
+	 * function onKeyDown(event) {
+	 * 	if(event.key == 'space') {
+	 * 		// Scale the path by 110%:
+	 * 		path.scale(1.1);
+	 * 
+	 * 		// Prevent the key event from bubbling
+	 * 		return false;
+	 * 	}
+	 * }
 	 */
 
 	/**
@@ -224,6 +257,10 @@ var Tool = this.Tool = Base.extend({
 	 * prevented from bubbling up. This can be used for example to stop the
 	 * window from scrolling, when you need the user to interact with arrow
 	 * keys.
+	 *
+	 * @name Tool#onKeyUp
+	 * @property
+	 * @type Function
 	 * 
 	 * @example
 	 * function onKeyUp(event) {
@@ -231,10 +268,6 @@ var Tool = this.Tool = Base.extend({
 	 * 		console.log('The spacebar was released!');
 	 * 	}
 	 * }
-	 *
-	 * @name Tool#onKeyUp
-	 * @property
-	 * @type Function
 	 */
 
 	updateEvent: function(type, pt, minDistance, maxDistance, start,
