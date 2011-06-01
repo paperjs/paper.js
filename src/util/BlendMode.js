@@ -143,22 +143,21 @@ var BlendMode = {
 				// Only differs from Photoshop in low - opacity areas
 				dA2 = sA * dA;
 				demultiply = 255 / dA2;
-				dst[i + 3] = dA2 * 255;
 				dst[i]     = sRA * dA * demultiply;
 				dst[i + 1] = sGA * dA * demultiply;
 				dst[i + 2] = sBA * dA * demultiply;
 			},
 
 			add: function(i) {
-				// Photoshop doesn't simply add the alpha channels; this might be correct wrt SVG 1.2
+				// Photoshop doesn't simply add the alpha channels,
+				// this might be correct wrt SVG 1.2
 				dA2 = min(1, sA + dA);
-				dst[i + 3] = dA2 * 255;
 				demultiply = 255 / dA2;
 				dst[i]     = min(sRA + dRA, 1) * demultiply;
 				dst[i + 1] = min(sGA + dGA, 1) * demultiply;
 				dst[i + 2] = min(sBA + dBA, 1) * demultiply;
 			}
-		}
+		};
 
 		var process = modes[blendMode] || modes.unsupported;
 
