@@ -64,12 +64,12 @@ var Color = this.Color = Base.extend(new function() {
 
 	var converters = {
 		'rgb-hsb': function(color) {
-			var hsb = Color.RGBtoHSB(color._red, color._green, color._blue);
+			var hsb = Color.rgbToHsb(color._red, color._green, color._blue);
 			return new HSBColor(hsb[0] * 360, hsb[1], hsb[2], color._alpha);
 		},
 
 		'hsb-rgb': function(color) {
-			var rgb = Color.HSBtoRGB(color._hue / 360, color._saturation,
+			var rgb = Color.hsbToRgb(color._hue / 360, color._saturation,
 					color._brightness);
 			return new RGBColor(rgb[0], rgb[1], rgb[2], color._alpha);
 		},
@@ -216,39 +216,34 @@ var Color = this.Color = Base.extend(new function() {
 			},
 
 			// Expose HSB converters since they are required in BlendMode:
-			RGBtoHSB: function(r, g, b) {
+			rgbToHsb: function(r, g, b) {
 				var max = Math.max(r, g, b),
 					min = Math.min(r, g, b),
 					delta = max - min,
-					hue,
-					saturation = (max != 0) ? delta / max : 0,
-					brightness = max;
-				if (saturation == 0) {
-					hue = 0;
+					h,
+					s = max == 0 ? 0 : delta / max,
+					v = max;
+				if (delta == 0) {
+					h = 0; // Achromatic
 				} else {
-					var rr = (max - r) / delta,
-						gr = (max - g) / delta,
-						br = (max - b) / delta;
-					hue = r == max
-						? br - gr
-						: g == max
-							? 2 + rr - br
-							: 4 + gr - rr;
-					hue /= 6;
-					if (hue < 0)
-						hue++;
+					switch (max) {
+					case r: h = (g - b) / delta + (g < b ? 6 : 0); break;
+					case g: h = (b - r) / delta + 2; break;
+					case b: h = (r - g) / delta + 4; break;
+					}
+					h /= 6;
 				}
-				return [hue, saturation, brightness];
+				return [h, s, v];
 			},
 
-			HSBtoRGB: function(h, s, b) {
-				h = (h - Math.floor(h)) * 6;
-				var r = Math.floor(h),
-					f = h - r,
+			hsbToRgb: function(h, s, b) {
+				h *= 6;
+				var i = Math.floor(h),
+					f = h - i,
 					p = b * (1 - s),
 					q = b * (1 - s * f),
 					t = b * (1 - s * (1 - f));
-				switch (r) {
+				switch (i) {
 				case 0: return [b, t, p];
 				case 1: return [q, b, p];
 				case 2: return [p, b, t];
