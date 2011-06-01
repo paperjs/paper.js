@@ -1,31 +1,24 @@
-{!
-	var constructorId = Utils.getConstructorId(data);
-	var name = data.alias.replace(/(#|\^).+$/, '');
-	data.desc = Utils.processGroupTitle(data.desc, data);
-	if (data.returns.length == 0)
-		data.returns = [{type: data.memberOf ? data.memberOf : data.alias, desc: ''}];
-!}
-<if test="defined(data.groupTitle)"><h3>{+data.groupTitle+}</h3></if>
-<div id="{+constructorId+}" class="member">
-<div id="{+constructorId+}-link" class="member-link">
-<a name="{+constructorId+}" href="#" onClick="return toggleMember('{+constructorId+}', false);"><tt><b>{+ name +}</b>{+ Utils.makeSignature(data.params) +}</tt></a>
+<if test="defined(data.groupTitle)"><h3>{+data.symbol.groupTitle+}</h3></if>
+<div id="{+ data.id +}" class="member">
+<div id="{+ data.id +}-link" class="member-link">
+<a name="{+ data.id +}" href="#" onClick="return toggleMember('{+ data.id +}', false);"><tt><b>{+ data.name +}</b>{+ data.signature +}</tt></a>
 </div>
-<div id="{+constructorId+}-description" class="member-description hidden">
+<div id="{+ data.id +}-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('{+constructorId+}', false);"><tt><b>{+ name +}</b>{+ Utils.makeSignature(data.params) +}</tt></a>
+<a href="#" onClick="return toggleMember('{+ data.id +}', false);"><tt><b>{+ data.name +}</b>{+ data.signature +}</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+constructorId+}', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+ data.id +}', false);"></div>
 <div class="clear"></div>
 </div>
-<div class="member-text">{+Utils.processInlineTags(data.desc)+}
-{+ publish.templates.parameters.process(data) +}
-{+ publish.templates.returns.process(data) +}
-{+ Utils.parseExamples(data) +}
-{+ publish.templates.seeAlsos.process(data) +}
+<div class="member-text">
+{+ data.description +}
+{+ data.parameters +}
+{+ data.returns +}
+{+ data.examples +}
+{+ data.seeAlsos +}
 </div>
-
 </div>
 </div>

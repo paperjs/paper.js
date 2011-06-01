@@ -1,12 +1,7 @@
 <if test="data.params.length">
-	<ul><b>Parameters:</b>
-		<for each="parameter" in="data.params">
-			<li>
-				<tt>{+ parameter.name +}:</tt> 
-				{+ new Link().toSymbol(parameter.type) +}
-				<if test="parameter.desc">&mdash;&nbsp;{+Utils.processInlineTags(parameter.desc, {stripParagraphs: true})+}</if>
-				<if test="parameter.isOptional">&mdash;&nbsp;optional</if><if test="parameter.defaultValue">, default: <tt>{+parameter.defaultValue+}</tt></if>
-				</li>
-		</for>
-	</ul>
+<ul><b>Parameters:</b>
+<for each="parameter" in="data.params">
+{+ Render.parameter(parameter) +}
+</for>
+</ul>
 </if>

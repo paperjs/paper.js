@@ -1,102 +1,57 @@
-{!
-	data.classId = data.alias.toLowerCase();
-	var constructors = data.methods.filter(function($){return $.memberOf == data.alias && $.isConstructor});
-	var ownProperties = data.properties.filter(function($){return $.memberOf == data.alias && !$.isNamespace && !$.isStatic && !$.isConstructor});
-	var staticProperties = data.properties.filter(function($){return $.memberOf == data.alias && !$.isNamespace && $.isStatic && !$.isConstructor});
-	var ownMethods = data.methods.filter(function($){return $.memberOf == data.alias  && !$.isNamespace && !$.isStatic && !$.isOperator && !$.isConstructor});
-	var staticMethods = data.methods.filter(function($){return $.memberOf == data.alias && !$.isNamespace && $.isStatic && !$.isOperator && !$.isConstructor});
-	var operatorMethods = data.methods.filter(function($){return $.memberOf == data.alias  && !$.isNamespace && !$.isStatic && !$.isConstructor && $.isOperator});
-	if (operatorMethods.length) {
-		var operators = {};
-		for (var i = 0, l = operatorMethods.length; i < l; i++) {
-			var operator = operatorMethods[i];
-			var name = operator.name.replace(/\^[0-9]$/, '');
-			if (!operators[name])
-				operators[name] = [];
-			operators[name].push(operator);
-		}
-	}
-	
-	var inheritedProperties = data.properties.filter(function($) {return $.memberOf != data.alias});
-	var inheritedMethods = data.methods.filter(function($) {return $.memberOf != data.alias});
-	var inheritedClasses = {};
-	var inheritedClassLinks = [];
-	inheritedProperties.concat(inheritedMethods).map(function($) {
-		if (!inheritedClasses[$.memberOf]) {
-			inheritedClassLinks.push(new Link().toSymbol($.memberOf));
-			inheritedClasses[$.memberOf] = {
-				className: $.memberOf,
-				properties: [],
-				methods: []
-			};
-		}
-	});
-	
-	for (var i = 0, l = inheritedProperties.length; i < l; i++) {
-		var symbol = inheritedProperties[i];
-		inheritedClasses[symbol.memberOf].properties.push(symbol);
-	}
-	
-	for (var i = 0, l = inheritedMethods.length; i < l; i++) {
-		var symbol = inheritedMethods[i];
-		inheritedClasses[symbol.memberOf].methods.push(symbol);
-	}
-!}
 <div class="reference-class">
-<if test="publish.conf.renderMode == 'docs'"><h1>{+data.alias+}</h1></if>
-<if test="inheritedClassLinks.length">
-<p> Extends {+ inheritedClassLinks.join(', ') +}</p>
+<if test="publish.conf.renderMode == 'docs'"><h1>{+ data.name +}</h1></if>
+<if test="data.inheritedLinks">
+<p> Extends {+ data.inheritedLinks +}</p>
 </if>
-{+Utils.processInlineTags(data.classDesc)+}
+{+ data.description +}
 </div>
-<if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace && !data.ignore && data.desc.length">
+<if test="data.showConstructors">
 <!-- ============================== constructors ========================= -->
 <div class="reference-members"><h2>Constructors</h2>
-	{+ publish.templates.constructor.process(data) +}
-	<for each="constructor" in="constructors">
-		{+ publish.templates.constructor.process(constructor) +}
+	<for each="constructor" in="data.constructors">
+		{+ Render.constructor(constructor) +}
 	</for>
 </div>
 </if>
 
-<if test="defined(operators)">
+<if test="defined(data.operators)">
 <!-- ============================== properties ========================= -->
 	<div class="reference-members"><h2>Operators</h2>
-		<for each="member" in="operators">
-			{+ publish.templates.operators.process(member) +}
+		<for each="operator" in="data.operators">
+			{+ Render.operators(operator) +}
 		</for>
 	</div>
 </if>
 
-<if test="defined(ownProperties) && ownProperties.length">
+<if test="defined(data.properties) && data.properties.length">
 	<div class="reference-members"><h2>Properties</h2>
-		<for each="member" in="ownProperties">
-			{+ publish.templates.property.process(member) +}
+		<for each="member" in="data.properties">
+			{+ Render.property(member) +}
 		</for>
 	</div>
 </if>
 
-<if test="defined(ownMethods) && ownMethods.length">
+<if test="defined(data.methods) && data.methods.length">
 <!-- ============================== methods ================================ -->
 	<div class="reference-members"><h2>Functions</h2>
-		<for each="member" in="ownMethods">
-			{+ publish.templates.method.process(member) +}
+		<for each="member" in="data.methods">
+			{+ Render.method(member) +}
 		</for>
 	</div>
 </if>
-<if test="defined(staticMethods) && staticMethods.length">
+<if test="defined(data.staticMethods) && data.staticMethods.length">
 	<div class="reference-members"><h2>Static Functions</h2>
-		<for each="member" in="staticMethods">
-			{+ publish.templates.method.process(member) +}
+		<for each="member" in="data.staticMethods">
+			{+ Render.method(member) +}
 		</for>
 	</div>
 </if>
-<for each="inheritedClass" in="inheritedClasses">
+<for each="inheritedClass" in="data.inheritedClasses">
 <if test="inheritedClass.properties.length">
 <!-- =========================== inherited properties ====================== -->
 <div class="reference-members"><h2>Properties inherited from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
 <for each="member" in="inheritedClass.properties">
-	{+ publish.templates.property.process(member) +}
+	{+ Render.property(member, true) +}
 </for>
 </div>
 </if>
@@ -104,7 +59,7 @@
 <!-- =========================== inherited methods ========================= -->
 <div class="reference-members"><h2>Functions inherited from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
 <for each="member" in="inheritedClass.methods">
-	{+ publish.templates.method.process(member) +}
+	{+ Render.method(member, true) +}
 </for>
 </div>
 </if>

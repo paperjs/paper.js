@@ -1,0 +1,17 @@
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('{+ data.id +}', false);"><tt><b>{+ data.name +}</b> {+ data.type +}</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+ data.id +}', false);"></div>
+<div class="clear"></div>
+</div>
+<if test="data.symbol.type">
+	<div class="member-text">
+		{+ data.description +}
+		{+ Render.returns(data.symbol) +}
+		{+ Render.seeAlsos(data.symbol) +}
+		{+ Render.examples(data.symbol) +}
+	</div>
+</if>
