@@ -1043,8 +1043,8 @@ var Item = this.Item = Base.extend({
 	 */
 	transform: function(matrix, flags) {
 		// TODO: Handle flags, add TransformFlag class and convert to bit mask
-		// for quicker checking
-		// TODO: Call transform on chidren only if 'children' flag is provided
+		// for quicker checking.
+		// TODO: Call transform on chidren only if 'children' flag is provided.
 		if (this._transform)
 			this._transform(matrix, flags);
 		// Transform position as well. Do not modify _position directly,
@@ -1085,7 +1085,7 @@ var Item = this.Item = Base.extend({
 			}
 		},
 
-		// TODO: Implement View into the drawing
+		// TODO: Implement View into the drawing.
 		// TODO: Optimize temporary canvas drawing to ignore parts that are
 		// outside of the visible view.
 		draw: function(item, ctx, param) {
@@ -1241,8 +1241,6 @@ var Item = this.Item = Base.extend({
 		moveBelow: move(false)
 	};
 }, new function() {
-	//DOCS: document removeOn(param)
-
 	/**
 	 * {@grouptitle Remove On Event}
 	 * Removes the item when the next {@link Tool#onMouseMove} event is fired.

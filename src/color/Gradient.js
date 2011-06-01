@@ -19,8 +19,8 @@ var Gradient = this.Gradient = Base.extend({
 
 	beans: true,
 
-	// TODO: Should type here be called 'radial' and have it
-	// receive a boolean value?
+	// TODO: Should type here be called 'radial' and have it receive a
+	// boolean value?
 	/**
 	 * Creates a gradient object
 	 * 

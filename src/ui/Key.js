@@ -19,7 +19,7 @@
  * @name Key
  */
 var Key = this.Key = new function() {
-	// TODO: make sure the keys are called the same as in Scriptographer
+	// TODO: Make sure the keys are called the same as in Scriptographer
 	// Missing: tab, cancel, clear, page-down, page-up, comma, minus, period,
 	// slash, etc etc etc.
 
