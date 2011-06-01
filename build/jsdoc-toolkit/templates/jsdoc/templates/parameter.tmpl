@@ -1,0 +1,6 @@
+<li>
+<tt>{+ data.name +}:</tt> 
+{+ data.typeLink +}
+<if test="data.description">&mdash;&nbsp;{+ data.description +}</if>
+<if test="data.symbol.isOptional">&mdash;&nbsp;optional</if><if test="data.symbol.defaultValue">, default: <tt>{+data.symbol.defaultValue+}</tt></if>
+</li>
