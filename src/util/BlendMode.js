@@ -39,7 +39,7 @@
  */
 
 var BlendMode = {
-	process: function(blendMode, sourceContext, destContext, opacity, offset) {
+	process: function(blendMode, sourceContext, destContext, alpha, offset) {
 		var sourceCanvas = sourceContext.canvas,
 			dstData = destContext.getImageData(offset.x, offset.y,
 					sourceCanvas.width, sourceCanvas.height),
@@ -206,12 +206,12 @@ var BlendMode = {
 			sa = src[i + 3];
 			ba = dst[i + 3];
 			process();
-			var a1 = sa * opacity / 255,
+			var a1 = sa * alpha / 255,
 				a2 = 1 - a1;
 			dst[i] = a1 * dr + a2 * br;
 			dst[i + 1] = a1 * dg + a2 * bg;
 			dst[i + 2] = a1 * db + a2 * bb;
-			dst[i + 3] = sa * opacity + a2 * ba;
+			dst[i + 3] = sa * alpha + a2 * ba;
 		}
 		destContext.putImageData(dstData, offset.x, offset.y);
 	}
