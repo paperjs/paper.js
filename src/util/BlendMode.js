@@ -39,10 +39,6 @@
  */
 
 var BlendMode = {
-	// TODO: Should we remove the blend modes that are not in Scriptographer?
-	// TODO: Add missing blendmodes like hue / saturation / color / luminosity
-	// TODO: Clean up codespacing of original code, or keep it as is, so 
-	// we can easily encorporate changes?
 	process: function(blendMode, sourceContext, destContext, opacity, offset) {
 		var sourceCanvas = sourceContext.canvas,
 			dstData = destContext.getImageData(offset.x, offset.y,
@@ -51,131 +47,114 @@ var BlendMode = {
 			src  = sourceContext.getImageData(0, 0,
 					sourceCanvas.width, sourceCanvas.height).data,
 			min = Math.min,
-			sA, dA, sAM, dAM, dA2, sRA, sGA, sBA, dRA, dGA, dBA, demultiply;
+			sA, dA, rA, sM, dM, demultiply;
 
 		// TODO: Some blend modes seem broken at the moment, e.g.
 		// dodge, burn
-		// TODO: This could be optimised by not diving everything by 255 and
-		// keeping it integer instead, with one divide at the end.
 		var modes = {
-			unsupported: function(i) {
-				// Render checker pattern
-				dA2 = 1;
-				dst[i] = 255;
-				dst[i + 1] = i % 8 == 0 ? 255 : 0;
-				dst[i + 2] = i % 8 == 0 ? 0 : 255;
-			},
-
 			normal: function(i) {
-				dst[i]     = (sRA + dRA - dRA * sA) * demultiply;
-				dst[i + 1] = (sGA + dGA - dGA * sA) * demultiply;
-				dst[i + 2] = (sBA + dBA - dBA * sA) * demultiply;
+				var s = src[i] * sM, d = dst[i] * dM;
+				dst[i] = (s + d * (1 - sA)) * demultiply;
 			},
 
 			multiply: function(i) {
-				dst[i]     = (sRA * dRA + sRA * (1 - dA) + dRA * (1 - sA)) * demultiply;
-				dst[i + 1] = (sGA * dGA + sGA * (1 - dA) + dGA * (1 - sA)) * demultiply;
-				dst[i + 2] = (sBA * dBA + sBA * (1 - dA) + dBA * (1 - sA)) * demultiply;
+				var s = src[i] * sM, d = dst[i] * dM;
+				dst[i] = (s * d + s * (1 - dA) + d * (1 - sA)) * demultiply;
 			},
 
 			screen: function(i) {
-				dst[i]     = (sRA + dRA - sRA * dRA) * demultiply;
-				dst[i + 1] = (sGA + dGA - sGA * dGA) * demultiply;
-				dst[i + 2] = (sBA + dBA - sBA * dBA) * demultiply;
+				var s = src[i] * sM, d = dst[i] * dM;
+				dst[i] = (s * (1 - d) + d) * demultiply;
 			},
 
 			overlay: function(i) {
 				// Correct for 100% opacity case; colors get clipped as opacity falls
-				dst[i]     = dRA <= 0.5 ? (2 * src[i]     * dRA / dA) : 255 - (2 - 2 * dRA / dA) * (255 - src[i]);
-				dst[i + 1] = dGA <= 0.5 ? (2 * src[i + 1] * dGA / dA) : 255 - (2 - 2 * dGA / dA) * (255 - src[i + 1]);
-				dst[i + 2] = dBA <= 0.5 ? (2 * src[i + 2] * dBA / dA) : 255 - (2 - 2 * dBA / dA) * (255 - src[i + 2]);
+				var s = src[i], d = dst[i] * dM; // src is unmultiplied
+				dst[i] = d <= 0.5 ? (2 * s * d / dA) : 255 - (2 - 2 * d / dA) * (255 - s);
 			},
 
 			// TODO: Missing: soft-light
 
 			'hard-light': function(i) {
-				dst[i]     = sRA <= 0.5 ? (2 * dst[i]     * sRA / dA) : 255 - (2 - 2 * sRA / sA) * (255 - dst[i]);
-				dst[i + 1] = sGA <= 0.5 ? (2 * dst[i + 1] * sGA / dA) : 255 - (2 - 2 * sGA / sA) * (255 - dst[i + 1]);
-				dst[i + 2] = sBA <= 0.5 ? (2 * dst[i + 2] * sBA / dA) : 255 - (2 - 2 * sBA / sA) * (255 - dst[i + 2]);
+				var s = src[i] * sM, d = dst[i]; // dst is unmultiplied
+				dst[i] = s <= 0.5 ? (2 * d * s / dA) : 255 - (2 - 2 * s / sA) * (255 - d);
 			},
 
 			'color-dodge': function(i) {
-				dst[i]     = src[i]     == 255 && dRA == 0 ? 255 : min(255, dst[i]     / (255 - src[i]    )) * demultiply;
-				dst[i + 1] = src[i + 1] == 255 && dGA == 0 ? 255 : min(255, dst[i + 1] / (255 - src[i + 1])) * demultiply;
-				dst[i + 2] = src[i + 2] == 255 && dBA == 0 ? 255 : min(255, dst[i + 2] / (255 - src[i + 2])) * demultiply;
+				var s = src[i], d = dst[i]; // both unmultiplied
+				dst[i] = s == 255 && d * dM == 0 ? 255 : min(255, d / (255 - s)) * demultiply;
 			},
 
 			'color-burn': function(i) {
-				dst[i]     = src[i]     == 0 && dRA == 0 ? 0 : (1 - min(1, (1 - dRA) / sRA)) * demultiply;
-				dst[i + 1] = src[i + 1] == 0 && dGA == 0 ? 0 : (1 - min(1, (1 - dGA) / sGA)) * demultiply;
-				dst[i + 2] = src[i + 2] == 0 && dBA == 0 ? 0 : (1 - min(1, (1 - dBA) / sBA)) * demultiply;
+				var s = src[i] * sM, d = dst[i] * dM;
+				dst[i] = src[i] == 0 && d == 0 ? 0 : (1 - min(1, (1 - d) / s)) * demultiply;
 			},
 
 			darken: function(i) {
-				dst[i]     = (sRA > dRA ? dRA : sRA) * demultiply;
-				dst[i + 1] = (sGA > dGA ? dGA : sGA) * demultiply;
-				dst[i + 2] = (sBA > dBA ? dBA : sBA) * demultiply;
+				var s = src[i] * sM, d = dst[i] * dM;
+				dst[i] = (s > d ? d : s) * demultiply;
 			},
 
 			lighten: function(i) {
-				dst[i]     = (sRA < dRA ? dRA : sRA) * demultiply;
-				dst[i + 1] = (sGA < dGA ? dGA : sGA) * demultiply;
-				dst[i + 2] = (sBA < dBA ? dBA : sBA) * demultiply;
+				var s = src[i] * sM, d = dst[i] * dM;
+				dst[i] = (s < d ? d : s) * demultiply;
 			},
 
 			difference: function(i) {
-				dst[i]     = (sRA + dRA - 2 * min(sRA * dA, dRA * sA)) * demultiply;
-				dst[i + 1] = (sGA + dGA - 2 * min(sGA * dA, dGA * sA)) * demultiply;
-				dst[i + 2] = (sBA + dBA - 2 * min(sBA * dA, dBA * sA)) * demultiply;
+				var s = src[i] * sM, d = dst[i] * dM;
+				dst[i] = (s + d - 2 * min(s * dA, d * sA)) * demultiply;
 			},
 
 			exclusion: function(i) {
-				dst[i]     = (dRA + sRA - 2 * dRA * sRA) * demultiply;
-				dst[i + 1] = (dGA + sGA - 2 * dGA * sGA) * demultiply;
-				dst[i + 2] = (dBA + sBA - 2 * dBA * sBA) * demultiply;
+				var s = src[i] * sM, d = dst[i] * dM;
+				dst[i] = (d + s - 2 * d * s) * demultiply;
 			},
 
 			// TODO: Missing: hue, saturation, color, luminosity
 
-			// Not in Illustrator:
-			
+			// TODO: Not in Illustrator. Remove these?
 			'src-in': function(i) {
 				// Only differs from Photoshop in low - opacity areas
-				dA2 = sA * dA;
-				demultiply = 255 / dA2;
-				dst[i]     = sRA * dA * demultiply;
-				dst[i + 1] = sGA * dA * demultiply;
-				dst[i + 2] = sBA * dA * demultiply;
+				dst[i] = sRA * dA * demultiply;
 			},
 
 			add: function(i) {
 				// Photoshop doesn't simply add the alpha channels,
 				// this might be correct wrt SVG 1.2
-				dA2 = min(1, sA + dA);
-				demultiply = 255 / dA2;
-				dst[i]     = min(sRA + dRA, 1) * demultiply;
-				dst[i + 1] = min(sGA + dGA, 1) * demultiply;
-				dst[i + 2] = min(sBA + dBA, 1) * demultiply;
+				dst[i] = min(sRA + dRA, 1) * demultiply;
 			}
 		};
 
-		var process = modes[blendMode] || modes.unsupported;
+		var alphas = {
+			'src-in': function(sA, dA) {
+				return sA * dA;
+			},
+
+			add: function(sA, dA) {
+				return min(1, sA + dA);
+			}
+		};
+
+		var process = modes[blendMode];
+		var alpha = alphas[blendMode];
+		if (!process)
+			return;
+		// Divide opacity by 255 so it can be multiplied straight into pixel
+		// values to get 0 .. 1 range.
 		opacity /= 255;
 		for (var i = 0, l = dst.length; i < l; i += 4) {
 			sA  = src[i + 3] * opacity;
 			dA  = dst[i + 3] / 255;
-			dA2 = sA + dA - sA * dA;
-			sAM = sA / 255;
-			dAM = dA / 255;
-			sRA = src[i] * sAM;
-			dRA = dst[i] * dAM;
-			sGA = src[i + 1] * sAM;
-			dGA = dst[i + 1] * dAM;
-			sBA = src[i + 2] * sAM;
-			dBA = dst[i + 2] * dAM;
-			demultiply = 255 / dA2;
+			// Result alpha:
+			rA = alpha ? alpha(sA, dA) : sA + dA - sA * dA;
+			demultiply = 255 / rA;
+			// Multipliers:
+			sM = sA / 255;
+			dM = dA / 255;
 			process(i);
-			dst[i + 3] = dA2 * 255;
+			process(i + 1);
+			process(i + 2);
+			dst[i + 3] = rA * 255;
 		}
 		destContext.putImageData(dstData, offset.x, offset.y);
 	}
