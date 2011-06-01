@@ -52,13 +52,6 @@ var BlendMode = {
 
 		// TODO: Some blend modes seem broken at the moment, e.g. dodge, burn
 		var modes = {
-			normal: function(i) {
-				var sA1 = 1 - sA;
-				dst[i]     = (sRA + dRA * sA1) * rM;
-				dst[i + 1] = (sGA + dGA * sA1) * rM;
-				dst[i + 2] = (sBA + dRA * sA1) * rM;
-			},
-
 			multiply: function(i) {
 				var sA1 = 1 - sA, dA1 = 1 - dA;
 				dst[i]     = (sRA * dRA + sRA * dA1 + dRA * sA1) * rM;
