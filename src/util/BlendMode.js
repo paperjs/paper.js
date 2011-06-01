@@ -94,31 +94,31 @@ var BlendMode = {
 			// TODO: Missing: soft-light
 
 			'hard-light': function(i) {
-				dst[i] =     sRA <= 0.5 ? (2 * dst[i]     * sRA / dA) : 255 - (2 - 2 * sRA / sA) * (255 - dst[i]);
+				dst[i]     = sRA <= 0.5 ? (2 * dst[i]     * sRA / dA) : 255 - (2 - 2 * sRA / sA) * (255 - dst[i]);
 				dst[i + 1] = sGA <= 0.5 ? (2 * dst[i + 1] * sGA / dA) : 255 - (2 - 2 * sGA / sA) * (255 - dst[i + 1]);
 				dst[i + 2] = sBA <= 0.5 ? (2 * dst[i + 2] * sBA / dA) : 255 - (2 - 2 * sBA / sA) * (255 - dst[i + 2]);
 			},
 
 			'color-dodge': function(i) {
-				dst[i] =     src[i]     == 255 && dRA == 0 ? 255 : min(255, dst[i]     / (255 - src[i]    )) * demultiply;
+				dst[i]     = src[i]     == 255 && dRA == 0 ? 255 : min(255, dst[i]     / (255 - src[i]    )) * demultiply;
 				dst[i + 1] = src[i + 1] == 255 && dGA == 0 ? 255 : min(255, dst[i + 1] / (255 - src[i + 1])) * demultiply;
 				dst[i + 2] = src[i + 2] == 255 && dBA == 0 ? 255 : min(255, dst[i + 2] / (255 - src[i + 2])) * demultiply;
 			},
 
 			'color-burn': function(i) {
-				dst[i] =     src[i]     == 0 && dRA == 0 ? 0 : (1 - min(1, (1 - dRA) / sRA)) * demultiply;
+				dst[i]     = src[i]     == 0 && dRA == 0 ? 0 : (1 - min(1, (1 - dRA) / sRA)) * demultiply;
 				dst[i + 1] = src[i + 1] == 0 && dGA == 0 ? 0 : (1 - min(1, (1 - dGA) / sGA)) * demultiply;
 				dst[i + 2] = src[i + 2] == 0 && dBA == 0 ? 0 : (1 - min(1, (1 - dBA) / sBA)) * demultiply;
 			},
 
 			darken: function(i) {
-				dst[i] =     (sRA > dRA ? dRA : sRA) * demultiply;
+				dst[i]     = (sRA > dRA ? dRA : sRA) * demultiply;
 				dst[i + 1] = (sGA > dGA ? dGA : sGA) * demultiply;
 				dst[i + 2] = (sBA > dBA ? dBA : sBA) * demultiply;
 			},
 
 			lighten: function(i) {
-				dst[i] =     (sRA < dRA ? dRA : sRA) * demultiply;
+				dst[i]     = (sRA < dRA ? dRA : sRA) * demultiply;
 				dst[i + 1] = (sGA < dGA ? dGA : sGA) * demultiply;
 				dst[i + 2] = (sBA < dBA ? dBA : sBA) * demultiply;
 			},
@@ -130,7 +130,7 @@ var BlendMode = {
 			},
 
 			exclusion: function(i) {
-				dst[i] =     (dRA + sRA - 2 * dRA * sRA) * demultiply;
+				dst[i]     = (dRA + sRA - 2 * dRA * sRA) * demultiply;
 				dst[i + 1] = (dGA + sGA - 2 * dGA * sGA) * demultiply;
 				dst[i + 2] = (dBA + sBA - 2 * dBA * sBA) * demultiply;
 			},
