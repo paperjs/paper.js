@@ -51,14 +51,6 @@ var BlendMode = {
 
 		// TODO: Some blend modes seem broken at the moment, e.g. dodge, burn
 		var modes = {
-			unsupported: function(i) {
-				// Render checker pattern
-				rA = 1;
-				dst[i] = 255;
-				dst[i + 1] = i % 8 == 0 ? 255 : 0;
-				dst[i + 2] = i % 8 == 0 ? 0 : 255;
-			},
-
 			normal: function(i) {
 				dst[i]     = (sRA + dRA - dRA * sA) * rM;
 				dst[i + 1] = (sGA + dGA - dGA * sA) * rM;
@@ -152,7 +144,9 @@ var BlendMode = {
 			}
 		};
 
-		var process = modes[blendMode] || modes.unsupported;
+		var process = modes[blendMode];
+		if (!process)
+			return;
 		opacity /= 255;
 		for (var i = 0, l = dst.length; i < l; i += 4) {
 			sA  = src[i + 3] * opacity;
