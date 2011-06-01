@@ -51,7 +51,6 @@ var BlendMode = {
 			src  = sourceContext.getImageData(0, 0,
 					sourceCanvas.width, sourceCanvas.height).data,
 			min = Math.min,
-			opacity = opacity / 255,
 			sA, dA, sAM, dAM, dA2, sRA, sGA, sBA, dRA, dGA, dBA, demultiply;
 
 		// TODO: Some blend modes seem broken at the moment, e.g.
@@ -161,7 +160,7 @@ var BlendMode = {
 		};
 
 		var process = modes[blendMode] || modes.unsupported;
-
+		opacity /= 255;
 		for (var i = 0, l = dst.length; i < l; i += 4) {
 			sA  = src[i + 3] * opacity;
 			dA  = dst[i + 3] / 255;
