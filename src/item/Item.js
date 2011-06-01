@@ -688,7 +688,6 @@ var Item = this.Item = Base.extend({
 	 * @param {Item} item The item to check against
 	 * @return {Boolean} {@true if it is inside the specified item}
 	 */
-	// TODO: Consider naming this isInside?
 	isDescendant: function(item) {
 		var parent = this;
 		while (parent = parent._parent) {
@@ -705,7 +704,6 @@ var Item = this.Item = Base.extend({
 	 * @return {Boolean} {@true if the item is an ancestor of the specified
 	 * item}
 	 */
-	// TODO: Consider naming this contains?
 	isAncestor: function(item) {
 		return item ? item.isDescendant(this) : false;
 	},
@@ -1023,7 +1021,7 @@ var Item = this.Item = Base.extend({
 	 * @see Matrix#shear
 	 */
 	shear: function(shx, shy, center) {
-		// TODO: Add support for center back to Scriptographer too!
+		// PORT: Add support for center back to Scriptographer too!
 		// See Matrix#scale for explanation of this:
 		if (arguments.length < 2 || typeof sy === 'object') {
 			center = shy;
