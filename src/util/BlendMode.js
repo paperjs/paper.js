@@ -53,15 +53,17 @@ var BlendMode = {
 		// TODO: Some blend modes seem broken at the moment, e.g. dodge, burn
 		var modes = {
 			normal: function(i) {
-				dst[i]     = (sRA + dRA - dRA * sA) * rM;
-				dst[i + 1] = (sGA + dGA - dGA * sA) * rM;
-				dst[i + 2] = (sBA + dBA - dBA * sA) * rM;
+				var sA1 = 1 - sA;
+				dst[i]     = (sRA + dRA * sA1) * rM;
+				dst[i + 1] = (sGA + dGA * sA1) * rM;
+				dst[i + 2] = (sBA + dRA * sA1) * rM;
 			},
 
 			multiply: function(i) {
-				dst[i]     = (sRA * dRA + sRA * (1 - dA) + dRA * (1 - sA)) * rM;
-				dst[i + 1] = (sGA * dGA + sGA * (1 - dA) + dGA * (1 - sA)) * rM;
-				dst[i + 2] = (sBA * dBA + sBA * (1 - dA) + dBA * (1 - sA)) * rM;
+				var sA1 = 1 - sA, dA1 = 1 - dA;
+				dst[i]     = (sRA * dRA + sRA * dA1 + dRA * sA1) * rM;
+				dst[i + 1] = (sGA * dGA + sGA * dA1 + dGA * sA1) * rM;
+				dst[i + 2] = (sBA * dBA + sBA * dA1 + dBA * sA1) * rM;
 			},
 
 			screen: function(i) {
