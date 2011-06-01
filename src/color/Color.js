@@ -86,7 +86,7 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		'gray-rgb': function(color) {
-			var comp = 1 - color.getGray();
+			var comp = 1 - color._gray;
 			return new RGBColor(comp, comp, comp, color._alpha);
 		},
 
