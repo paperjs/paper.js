@@ -63,6 +63,8 @@ var BlendMode = {
 			}[blendMode];
 
 		function processHsb() {
+			// Convert both source and backdrop to HSB and then use hsbIndices
+			// to decide from which one to pick before converting back to RGB.
 			hsb[0] = Color.RGBtoHSB(sr / 255, sg / 255, sb / 255);
 			hsb[1] = Color.RGBtoHSB(br / 255, bg / 255, bb / 255);
 			var rgb = Color.HSBtoRGB(
@@ -88,7 +90,6 @@ var BlendMode = {
 			},
 
 			overlay: function() {
-				// = Reverse of hard-light
 				dr = br < 128 ? 2 * br * sr / 255 : 255 - 2 * (255 - br) * (255 - sr) / 255;
 				dg = bg < 128 ? 2 * bg * sg / 255 : 255 - 2 * (255 - bg) * (255 - sg) / 255;
 				db = bb < 128 ? 2 * bb * sb / 255 : 255 - 2 * (255 - bb) * (255 - sb) / 255;
@@ -104,6 +105,7 @@ var BlendMode = {
 			},
 
 			'hard-light': function() {
+				// = Reverse of overlay
 				dr = sr < 128 ? 2 * sr * br / 255 : 255 - 2 * (255 - sr) * (255 - br) / 255;
 				dg = sg < 128 ? 2 * sg * bg / 255 : 255 - 2 * (255 - sg) * (255 - bg) / 255;
 				db = sb < 128 ? 2 * sb * bb / 255 : 255 - 2 * (255 - sb) * (255 - bb) / 255;
@@ -151,8 +153,7 @@ var BlendMode = {
 				db = bb + sb * (255 - bb - bb) / 255;
 			},
 
-			// HSB modes:
-
+			// HSB Modes:
 			hue: processHsb,
 			saturation: processHsb,
 			luminosity: processHsb,
