@@ -73,6 +73,7 @@ var BlendMode = {
 			},
 
 			overlay: function(i) {
+				// = Reverse of hard-light
 				// Correct for 100% opacity case; colors get clipped as opacity falls
 				dst[i]     = dRA <= 0.5 ? (2 * src[i]     * dRA / dA) : 255 - (2 - 2 * dRA / dA) * (255 - src[i]);
 				dst[i + 1] = dGA <= 0.5 ? (2 * src[i + 1] * dGA / dA) : 255 - (2 - 2 * dGA / dA) * (255 - src[i + 1]);
