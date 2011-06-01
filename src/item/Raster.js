@@ -19,9 +19,9 @@ var Raster = this.Raster = Item.extend({
 
 	beans: true,
 
-	// TODO: implement url / type, width, height
-	// TODO: have PlacedSymbol & Raster inherit from a shared class?
-	// DOCS: document Raster constructor
+	// TODO: Implement url / type, width, height.
+	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
+	// DOCS: Document Raster constructor.
 	/**
 	 * Creates a new raster item and places it in the active layer.
 	 * 
@@ -163,12 +163,12 @@ var Raster = this.Raster = Item.extend({
 		return this._image || this.getCanvas();
 	},
 
-	// TODO: support string id of image element
+	// TODO: Support string id of image element.
 	setImage: function(image) {
 		if (this._canvas)
 			CanvasProvider.returnCanvas(this._canvas);
 		this._image = image;
-		// TODO: cross browser compatible?
+		// TODO: Cross browser compatible?
 		this._size = new Size(image.naturalWidth, image.naturalHeight);
 		this._canvas = null;
 		this._context = null;
@@ -216,8 +216,8 @@ var Raster = this.Raster = Item.extend({
 			object = this.getBounds();
 		var bounds, path;
 		if (object instanceof PathItem) {
-			// TODO: what if the path is smaller than 1 px?
-			// TODO: how about rounding of bounds.size?
+			// TODO: What if the path is smaller than 1 px?
+			// TODO: How about rounding of bounds.size?
 			path = object;
 			bounds = object.getBounds();
 		} else if (object.width) {

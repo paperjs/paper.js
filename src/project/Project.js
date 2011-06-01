@@ -20,7 +20,7 @@ var Project = this.Project = Base.extend({
 	beans: true,
 
 	// TODO: Add arguments to define pages
-	// DOCS: document Project constructor and class
+	// DOCS: Document Project constructor and class
 	/**
 	 * Creates a Paper.js project
 	 *
@@ -90,7 +90,7 @@ var Project = this.Project = Base.extend({
 	},
 
 	setCurrentStyle: function(style) {
-		// TODO: style selected items with the style:
+		// TODO: Style selected items with the style:
 		this._currentStyle.initialize(style);
 	},
 
@@ -129,9 +129,9 @@ var Project = this.Project = Base.extend({
 	 * @bean
 	 */
 	getSelectedItems: function() {
-		// TODO: return groups if their children are all selected,
+		// TODO: Return groups if their children are all selected,
 		// and filter out their children from the list.
-		// TODO: the order of these items should be that of their
+		// TODO: The order of these items should be that of their
 		// drawing order.
 		var items = [];
 		Base.each(this._selectedItems, function(item) {
@@ -140,7 +140,7 @@ var Project = this.Project = Base.extend({
 		return items;
 	},
 
-	// TODO: implement setSelectedItems?
+	// TODO: Implement setSelectedItems?
 	
 	_selectItem: function(item, select) {
 		if (select) {

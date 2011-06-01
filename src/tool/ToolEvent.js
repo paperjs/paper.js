@@ -172,7 +172,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 		return Key.modifiers;
 	},
 
-	// TODO: implement hitTest first
+	// TODO: Implement hitTest first
 	// getItem: function() {
 	// 	if (this.item == null) {
 	// 		var result = Project.getActiveProject().hitTest(this.getPoint());
