@@ -47,6 +47,7 @@ var BlendMode = {
 			src  = sourceContext.getImageData(0, 0,
 					sourceCanvas.width, sourceCanvas.height).data,
 			min = Math.min,
+			max = Math.max,
 			sA, dA, rA, sM, dM, rM, sRA, sGA, sBA, dRA, dGA, dBA;
 
 		// TODO: Some blend modes seem broken at the moment, e.g. dodge, burn
@@ -97,15 +98,15 @@ var BlendMode = {
 			},
 
 			darken: function(i) {
-				dst[i]     = (sRA > dRA ? dRA : sRA) * rM;
-				dst[i + 1] = (sGA > dGA ? dGA : sGA) * rM;
-				dst[i + 2] = (sBA > dBA ? dBA : sBA) * rM;
+				dst[i]     = min(sRA, dRA) * rM;
+				dst[i + 1] = min(sGA, dGA) * rM;
+				dst[i + 2] = min(sBA, dBA) * rM;
 			},
 
 			lighten: function(i) {
-				dst[i]     = (sRA < dRA ? dRA : sRA) * rM;
-				dst[i + 1] = (sGA < dGA ? dGA : sGA) * rM;
-				dst[i + 2] = (sBA < dBA ? dBA : sBA) * rM;
+				dst[i]     = max(sRA, dRA) * rM;
+				dst[i + 1] = max(sGA, dGA) * rM;
+				dst[i + 2] = max(sBA, dBA) * rM;
 			},
 
 			difference: function(i) {
