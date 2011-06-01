@@ -14,8 +14,8 @@
  * All rights reserved.
  */
 
-// TODO: it might be better to make a ContextProvider class, since you
-// can always find the canvas through context.canvas. This saves code and 
+// TODO: It might be better to make a ContextProvider class, since you
+// can always find the canvas through context.canvas. This saves code and
 // speed by not having to do canvas.getContext('2d')
 // TODO: Run through the canvas array to find a canvas with the requested
 // width / height, so we don't need to resize it?
