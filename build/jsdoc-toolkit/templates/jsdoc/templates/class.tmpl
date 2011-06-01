@@ -1,5 +1,5 @@
-{! data.classId = data.alias.toLowerCase() !}
 {!
+	data.classId = data.alias.toLowerCase();
 	var constructors = data.methods.filter(function($){return $.memberOf == data.alias && $.isConstructor});
 	var ownProperties = data.properties.filter(function($){return $.memberOf == data.alias && !$.isNamespace && !$.isStatic && !$.isConstructor});
 	var staticProperties = data.properties.filter(function($){return $.memberOf == data.alias && !$.isNamespace && $.isStatic && !$.isConstructor});
@@ -43,14 +43,14 @@
 	}
 !}
 <div class="reference-class">
-<h1>{+data.alias+}</h1>
+<if test="publish.conf.renderMode == 'docs'"><h1>{+data.alias+}</h1></if>
 <if test="inheritedClassLinks.length">
 <p> Extends {+ inheritedClassLinks.join(', ') +}</p>
 </if>
 {+Utils.processInlineTags(data.classDesc)+}
 </div>
-<!-- ============================== constructors ========================= -->
 <if test="!/(Event|Style)/.test(data.alias) && !data.isNamespace && !data.ignore && data.desc.length">
+<!-- ============================== constructors ========================= -->
 <div class="reference-members"><h2>Constructors</h2>
 	{+ publish.templates.constructor.process(data) +}
 	<for each="constructor" in="constructors">
@@ -59,8 +59,8 @@
 </div>
 </if>
 
-<!-- ============================== properties ========================= -->
 <if test="defined(operators)">
+<!-- ============================== properties ========================= -->
 	<div class="reference-members"><h2>Operators</h2>
 		<for each="member" in="operators">
 			{+ publish.templates.operators.process(member) +}
@@ -76,8 +76,8 @@
 	</div>
 </if>
 
-<!-- ============================== method details ========================= -->		
 <if test="defined(ownMethods) && ownMethods.length">
+<!-- ============================== methods ================================ -->
 	<div class="reference-members"><h2>Functions</h2>
 		<for each="member" in="ownMethods">
 			{+ publish.templates.method.process(member) +}
@@ -92,21 +92,24 @@
 	</div>
 </if>
 <for each="inheritedClass" in="inheritedClasses">
-	<!-- ============================== properties ========================= -->
-	<if test="inheritedClass.properties.length">
-		<div class="reference-members"><h2>Properties inherited from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
-			<for each="member" in="inheritedClass.properties">
-				{+ publish.templates.property.process(member) +}
-			</for>
-		</div>
-	</if>
-	<!-- ============================== properties ========================= -->
-	<if test="inheritedClass.methods.length">
-		<div class="reference-members"><h2>Functions inherited from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
-			<for each="member" in="inheritedClass.methods">
-				{+ publish.templates.method.process(member) +}
-			</for>
-		</div>
-	</if>
+<if test="inheritedClass.properties.length">
+<!-- =========================== inherited properties ====================== -->
+<div class="reference-members"><h2>Properties inherited from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
+<for each="member" in="inheritedClass.properties">
+	{+ publish.templates.property.process(member) +}
 </for>
+</div>
+</if>
+<if test="inheritedClass.methods.length">
+<!-- =========================== inherited methods ========================= -->
+<div class="reference-members"><h2>Functions inherited from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
+<for each="member" in="inheritedClass.methods">
+	{+ publish.templates.method.process(member) +}
+</for>
+</div>
+</if>
+</for>
+<if test="publish.conf.renderMode == 'docs'">
+<!-- =========================== copyright notice ========================= -->
 <p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+</if>

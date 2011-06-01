@@ -1,14 +1,16 @@
 /** Called automatically by JsDoc Toolkit. */
 function publish(symbolSet) {
+	var renderMode = JSDOC.opt.D.renderMode;
 	publish.conf = {  // trailing slash expected for dirs
-		ext: '.html',
+		ext: renderMode == 'docs' ? '.html' : '.jstl',
 		outDir: JSDOC.opt.d || SYS.pwd + '../out/jsdoc/',
 		templateDir: JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/',
 		staticDir: (JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/') + 'static/',
-		symbolsDir: 'packages/',
-		srcDir: 'symbols/src/'
+		symbolsDir: renderMode == 'docs' ? 'packages/' : 'paper/',
+		srcDir: 'symbols/src/',
+		renderMode: renderMode
 	};
-	publish.conf.packagesDir = publish.conf.outDir + 'packages/';
+	publish.conf.packagesDir = publish.conf.outDir + publish.conf.symbolsDir;
 	var templatesDir = publish.conf.templateDir + 'templates/';
 	publish.templates = {
 		_class: 'class.tmpl',
@@ -29,12 +31,17 @@ function publish(symbolSet) {
 		publish.templates[i] = new JSDOC.JsPlate(templatesDir +
 				publish.templates[i]);
 	}
-
-	// Copy over the static files
-	Utils.copyDirectory(
-		new java.io.File(publish.conf.staticDir),
-		new java.io.File(publish.conf.outDir)
-	);
+	
+	if (renderMode == 'docs') {
+		// Copy over the static files
+		Utils.copyDirectory(
+			new java.io.File(publish.conf.staticDir),
+			new java.io.File(publish.conf.outDir)
+		);
+	} else {
+		Utils.deleteFiles(new File(publish.conf.outDir));
+		new java.io.File(publish.conf.outDir + 'paper/').mkdirs();
+	}
 
 	// used to allow Link to check the details of things being linked to
 	Link.symbolSet = symbolSet;
@@ -77,16 +84,19 @@ function publish(symbolSet) {
 		}
 		
 		Link.currentSymbol= symbol;
-		var html = publish.templates.html.process({
-			content: publish.templates._class.process(symbol),
-			title: symbol.alias
-		});
+		var html = publish.templates._class.process(symbol);
 		var name = ((JSDOC.opt.u)? Link.filemap[symbol.alias] : symbol.alias)
 				+ publish.conf.ext;
+		if (renderMode == 'docs') {
+			html = publish.templates.html.process({
+				content: html,
+				title: symbol.alias
+			});
+		}
 		IO.saveFile(publish.conf.packagesDir, name, html);
 	}
-	
-	Utils.publishMenu();
+	if (renderMode == 'docs')
+		Utils.publishMenu();
 }
 
 var Operator = new function() {
@@ -193,6 +203,17 @@ var Utils = {
 			src.close();
 			dst.close();
 		}
+	},
+
+	deleteFiles: function(path) {
+		if (path.isDirectory()) {
+			var files = path.listFiles();
+			for (var i = 0, l = files.length; i < l; i++) {
+				Utils.deleteFiles(files[i]);
+			}
+		}
+		if (!path['delete']())
+			throw Error('Could not delete ' + path);
 	},
 
 	processGroupTitle: function(str, symbol) {
