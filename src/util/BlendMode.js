@@ -52,8 +52,8 @@ var BlendMode = {
 			src  = srcD.data,
 			dst  = dstD.data,
 			min = Math.min,
-			sA, dA, dA2, sRA, sGA, sBA, dRA, dGA, dBA, demultiply;
 			opacity = opacity / 255,
+			sA, dA, sAM, dAM, dA2, sRA, sGA, sBA, dRA, dGA, dBA, demultiply;
 
 		// TODO: Some blend modes seem broken at the moment, e.g.
 		// dodge, burn
@@ -166,12 +166,14 @@ var BlendMode = {
 			sA  = src[i + 3] * opacity;
 			dA  = dst[i + 3] / 255;
 			dA2 = sA + dA - sA * dA;
-			sRA = src[i] / 255 * sA;
-			dRA = dst[i] / 255 * dA;
-			sGA = src[i + 1] / 255 * sA;
-			dGA = dst[i + 1] / 255 * dA;
-			sBA = src[i + 2] / 255 * sA;
-			dBA = dst[i + 2] / 255 * dA;
+			sAM = sA / 255;
+			dAM = dA / 255;
+			sRA = src[i] * sAM;
+			dRA = dst[i] * dAM;
+			sGA = src[i + 1] * sAM;
+			dGA = dst[i + 1] * dAM;
+			sBA = src[i + 2] * sAM;
+			dBA = dst[i + 2] * dAM;
 			demultiply = 255 / dA2;
 			process(i);
 			dst[i + 3] = dA2 * 255;
