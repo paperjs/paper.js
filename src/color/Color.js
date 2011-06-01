@@ -39,7 +39,7 @@ var Color = this.Color = Base.extend(new function() {
 		// Set the current fillStyle to transparent, so that it will be
 		// transparent instead of the previously set color in case the new color
 		// can not be interpreted.
-		colorContext.fillStyle = 'rgba(0, 0, 0, 0)';
+		colorContext.fillStyle = 'rgba(0,0,0,0)';
 		// Set the fillStyle of the context to the passed name and fill the
 		// canvas with it, then retrieve the data for the drawn pixel:
 		colorContext.fillStyle = name;
