@@ -47,24 +47,24 @@ var BlendMode = {
 			src  = sourceContext.getImageData(0, 0,
 					sourceCanvas.width, sourceCanvas.height).data,
 			min = Math.min,
-			sA, dA, rA, sM, dM, demultiply;
+			sA, dA, rA, sM, dM, rM;
 
 		// TODO: Some blend modes seem broken at the moment, e.g.
 		// dodge, burn
 		var modes = {
 			normal: function(i) {
 				var s = src[i] * sM, d = dst[i] * dM;
-				dst[i] = (s + d * (1 - sA)) * demultiply;
+				dst[i] = (s + d * (1 - sA)) * rM;
 			},
 
 			multiply: function(i) {
 				var s = src[i] * sM, d = dst[i] * dM;
-				dst[i] = (s * d + s * (1 - dA) + d * (1 - sA)) * demultiply;
+				dst[i] = (s * d + s * (1 - dA) + d * (1 - sA)) * rM;
 			},
 
 			screen: function(i) {
 				var s = src[i] * sM, d = dst[i] * dM;
-				dst[i] = (s * (1 - d) + d) * demultiply;
+				dst[i] = (s * (1 - d) + d) * rM;
 			},
 
 			overlay: function(i) {
@@ -82,32 +82,32 @@ var BlendMode = {
 
 			'color-dodge': function(i) {
 				var s = src[i], d = dst[i]; // both unmultiplied
-				dst[i] = s == 255 && d * dM == 0 ? 255 : min(255, d / (255 - s)) * demultiply;
+				dst[i] = s == 255 && d * dM == 0 ? 255 : min(255, d / (255 - s)) * rM;
 			},
 
 			'color-burn': function(i) {
 				var s = src[i] * sM, d = dst[i] * dM;
-				dst[i] = src[i] == 0 && d == 0 ? 0 : (1 - min(1, (1 - d) / s)) * demultiply;
+				dst[i] = src[i] == 0 && d == 0 ? 0 : (1 - min(1, (1 - d) / s)) * rM;
 			},
 
 			darken: function(i) {
 				var s = src[i] * sM, d = dst[i] * dM;
-				dst[i] = (s > d ? d : s) * demultiply;
+				dst[i] = (s > d ? d : s) * rM;
 			},
 
 			lighten: function(i) {
 				var s = src[i] * sM, d = dst[i] * dM;
-				dst[i] = (s < d ? d : s) * demultiply;
+				dst[i] = (s < d ? d : s) * rM;
 			},
 
 			difference: function(i) {
 				var s = src[i] * sM, d = dst[i] * dM;
-				dst[i] = (s + d - 2 * min(s * dA, d * sA)) * demultiply;
+				dst[i] = (s + d - 2 * min(s * dA, d * sA)) * rM;
 			},
 
 			exclusion: function(i) {
 				var s = src[i] * sM, d = dst[i] * dM;
-				dst[i] = (d + s - 2 * d * s) * demultiply;
+				dst[i] = (d + s - 2 * d * s) * rM;
 			},
 
 			// TODO: Missing: hue, saturation, color, luminosity
@@ -115,13 +115,13 @@ var BlendMode = {
 			// TODO: Not in Illustrator. Remove these?
 			'src-in': function(i) {
 				// Only differs from Photoshop in low - opacity areas
-				dst[i] = sRA * dA * demultiply;
+				dst[i] = sRA * dA * rM;
 			},
 
 			add: function(i) {
 				// Photoshop doesn't simply add the alpha channels,
 				// this might be correct wrt SVG 1.2
-				dst[i] = min(sRA + dRA, 1) * demultiply;
+				dst[i] = min(sRA + dRA, 1) * rM;
 			}
 		};
 
@@ -147,7 +147,7 @@ var BlendMode = {
 			dA  = dst[i + 3] / 255;
 			// Result alpha:
 			rA = alpha ? alpha(sA, dA) : sA + dA - sA * dA;
-			demultiply = 255 / rA;
+			rM = 255 / rA;
 			// Multipliers:
 			sM = sA / 255;
 			dM = dA / 255;
