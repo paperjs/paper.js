@@ -23,5 +23,5 @@ else
 fi
 
 cd jsdoc-toolkit
-java -jar jsrun.jar app/run.js -c=conf/$MODE.conf
+java -jar jsrun.jar app/run.js -c=conf/$MODE.conf -D="renderMode:$MODE"
 cd ..
