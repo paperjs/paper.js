@@ -10,7 +10,18 @@
 # All rights reserved. See LICENSE file for details.
 
 # Generate documentation
+#
+# MODE:
+#	docs			Generates the JS API docs
+#	templatedocs	Generates the website templates for the online JS API docs
+
+if [ $# -eq 0 ]
+then
+	MODE="docs"
+else
+	MODE=$1
+fi
 
 cd jsdoc-toolkit
-java -jar jsrun.jar app/run.js -c=conf/paperjs.conf
+java -jar jsrun.jar app/run.js -c=conf/$MODE.conf -D="renderMode:$MODE"
 cd ..
