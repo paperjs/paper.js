@@ -61,7 +61,8 @@ var BlendMode = {
 		var modes = {
 			unsupported: function(i) {
 				// Render checker pattern
-				dst[i] = dst[i + 3] = 255;
+				dA2 = 1;
+				dst[i] = 255;
 				dst[i + 1] = i % 8 == 0 ? 255 : 0;
 				dst[i + 2] = i % 8 == 0 ? 0 : 255;
 			},
