@@ -14,8 +14,8 @@ JSDOC.TokenReader = function() {
  */
 JSDOC.TokenReader.prototype.tokenize = function(/**JSDOC.TextStream*/stream) {
 	var tokens = [];
-	/**@ignore*/ tokens.last    = function() { return tokens[tokens.length-1]; }
-	/**@ignore*/ tokens.lastSym = function() {
+	tokens.last    = function() { return tokens[tokens.length-1]; }
+	tokens.lastSym = function() {
 		for (var i = tokens.length-1; i >= 0; i--) {
 			if (!(tokens[i].is("WHIT") || tokens[i].is("COMM"))) return tokens[i];
 		}
