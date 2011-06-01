@@ -54,7 +54,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 			// clockwise orientation when creating a compound path, so that they
 			// appear as holes, but only if their orientation was not already
 			// specified before (= _clockwise is defined).
-			// TODO: This should really be handled in appendTop / Bottom, right?
+			// TODO: Should this be handled in appendTop / Bottom instead?
 			if (path._clockwise === undefined)
 				path.setClockwise(i < l - 1);
 			this.appendTop(path);

@@ -69,8 +69,8 @@ var PointText = this.PointText = TextItem.extend({
 				Point.read(arguments).subtract(this._point)));
 	},
 	
-	// TODO: position should be the center point of the bounds
-	// but we currently don't support bounds for PointText.
+	// TODO: Position should be the center point of the bounds but we currently
+	// don't support bounds for PointText.
 	getPosition: function() {
 		return this._point;
 	},

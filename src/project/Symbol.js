@@ -57,7 +57,7 @@ var Symbol = this.Symbol = Base.extend({
 	},
 
 	// TODO: Symbol#remove()
-	// TODO: Size#name (accessible by name through project#symbols)
+	// TODO: Symbol#name (accessible by name through project#symbols)
 
 	/**
 	 * The project that this symbol belongs to.
