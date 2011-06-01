@@ -1,49 +1,40 @@
-{!
-	data.desc = Utils.processGroupTitle(data.desc, data);
-	
-	var memberId = Utils.getSymbolId(data);
-	var title = '<b>' + data.name.replace(/\^\d+$/, '') + '</b>';
-	if (data.isStatic)
-		title = '<b>' + data.memberOf + '.</b>' + title;
-	
-!}
 <if test="defined(data.groupTitle)">
-	<h3>{+data.groupTitle+}</h3>
+	<h3>{+ data.groupTitle +}</h3>
 </if>
-<div id="{+ memberId +}" class="member">
-<div id="{+ memberId +}-link" class="member-link">
-<a name="{+ memberId +}" href="#" onClick="return toggleMember('{+ memberId +}', false);"><tt>{+ title +}</tt></a>
+<div id="{+ data.id +}" class="member">
+<div id="{+ data.id +}-link" class="member-link">
+<a name="{+ data.id +}" href="#" onClick="return toggleMember('{+ data.id +}', false);"><tt><b>{+ data.name +}</b></tt></a>
 </div>
-<div id="{+ memberId +}-description" class="member-description hidden">
+<div id="{+ data.id +}-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('{+ memberId +}', false);"><tt>{+ title +}</tt></a>
+<a href="#" onClick="return toggleMember('{+ data.id +}', false);"><tt><b>{+ data.name +}</b></tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+ memberId +}', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('{+ data.id +}', false);"></div>
 <div class="clear"></div>
 </div>
-<if test="data.type">
+<if test="data.symbol.type">
 <div class="member-text">
-	{+ Utils.processInlineTags(data.desc) +}
+	{+ data.description +}
 	<if test="data.readOnly">
 		<p>Read only.</p>
 	</if>
-	<if test="data.defaultValue">
+	<if test="data.symbol.defaultValue">
 		<ul><b>Default:</b>
 		<li>
-		<tt>{+data.defaultValue+}</tt>
+		<tt>{+ data.symbol.defaultValue +}</tt>
 		</li>
 		</ul>
 	</if>
 	<ul><b>Type:</b>
 	<li>
-		<tt>{+new Link().toSymbol(data.type)+}</tt>
+		<tt>{+new Link().toSymbol(data.symbol.type)+}</tt>
 	</li>
 	</ul>
-	{+ publish.templates.seeAlsos.process(data) +}
-	{+ Utils.parseExamples(data) +}
+	{+ Render.seeAlsos(data.symbol) +}
+	{+ Render.examples(data.symbol) +}
 </div>
 </if>
 </div>
