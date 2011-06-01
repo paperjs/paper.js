@@ -80,10 +80,9 @@ var Color = this.Color = Base.extend(new function() {
 			// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
 			return new GrayColor(1 -
 					(color._red * 0.2989
-					+ color._green * 0.587
-					+ color._blue * 0.114),
-					color._alpha
-				);
+					+ color._green * 0.5866
+					+ color._blue * 0.1145),
+					color._alpha);
 		},
 
 		'gray-rgb': function(color) {
