@@ -48,118 +48,143 @@ var BlendMode = {
 					sourceCanvas.width, sourceCanvas.height).data,
 			min = Math.min,
 			max = Math.max,
-			sA, dA, rA, sM, dM, rM, sRA, sGA, sBA, dRA, dGA, dBA;
+			abs = Math.abs,
+			sr, sb, sg, sa, // source
+			br, bb, bg, ba, // backdrop
+			dr, dg, db;     // destination
 
-		// TODO: Some blend modes seem broken at the moment, e.g. dodge, burn
 		var modes = {
-			multiply: function(i) {
-				var sA1 = 1 - sA, dA1 = 1 - dA;
-				dst[i]     = (sRA * dRA + sRA * dA1 + dRA * sA1) * rM;
-				dst[i + 1] = (sGA * dGA + sGA * dA1 + dGA * sA1) * rM;
-				dst[i + 2] = (sBA * dBA + sBA * dA1 + dBA * sA1) * rM;
+			multiply: function() {
+				dr = br * sr / 255;
+				dg = bg * sg / 255;
+				db = bb * sb / 255;
 			},
 
-			screen: function(i) {
-				dst[i]     = (sRA + dRA - sRA * dRA) * rM;
-				dst[i + 1] = (sGA + dGA - sGA * dGA) * rM;
-				dst[i + 2] = (sBA + dBA - sBA * dBA) * rM;
+			screen: function() {
+				dr = 255 - (255 - br) * (255 - sr) / 255;
+				dg = 255 - (255 - bg) * (255 - sg) / 255;
+				db = 255 - (255 - bb) * (255 - sb) / 255;
 			},
 
-			overlay: function(i) {
+			overlay: function() {
 				// = Reverse of hard-light
-				// Correct for 100% opacity case; colors get clipped as opacity falls
-				dst[i]     = dRA <= 0.5 ? (2 * src[i]     * dRA / dA) : 255 - (2 - 2 * dRA / dA) * (255 - src[i]);
-				dst[i + 1] = dGA <= 0.5 ? (2 * src[i + 1] * dGA / dA) : 255 - (2 - 2 * dGA / dA) * (255 - src[i + 1]);
-				dst[i + 2] = dBA <= 0.5 ? (2 * src[i + 2] * dBA / dA) : 255 - (2 - 2 * dBA / dA) * (255 - src[i + 2]);
+				dr = br < 128 ? 2 * br * sr / 255 : 255 - 2 * (255 - br) * (255 - sr) / 255;
+				dg = bg < 128 ? 2 * bg * sg / 255 : 255 - 2 * (255 - bg) * (255 - sg) / 255;
+				db = bb < 128 ? 2 * bb * sb / 255 : 255 - 2 * (255 - bb) * (255 - sb) / 255;
 			},
 
-			// TODO: Missing: soft-light
-
-			'hard-light': function(i) {
-				dst[i]     = sRA <= 0.5 ? (2 * dst[i]     * sRA / dA) : 255 - (2 - 2 * sRA / sA) * (255 - dst[i]);
-				dst[i + 1] = sGA <= 0.5 ? (2 * dst[i + 1] * sGA / dA) : 255 - (2 - 2 * sGA / sA) * (255 - dst[i + 1]);
-				dst[i + 2] = sBA <= 0.5 ? (2 * dst[i + 2] * sBA / dA) : 255 - (2 - 2 * sBA / sA) * (255 - dst[i + 2]);
+			'soft-light': function() {
+				var d = sr * br / 255;
+				dr = d + br * (255 - (255 - br) * (255 - sr) / 255 - d) / 255;
+				d = sg * bg / 255;
+				dg = d + bg * (255 - (255 - bg) * (255 - sg) / 255 - d) / 255;
+				d = sb * bb / 255;
+				db = d + bb * (255 - (255 - bb) * (255 - sb) / 255 - d) / 255;
 			},
 
-			'color-dodge': function(i) {
-				dst[i]     = src[i]     == 255 && dRA == 0 ? 255 : min(255, dst[i]     / (255 - src[i]    )) * rM;
-				dst[i + 1] = src[i + 1] == 255 && dGA == 0 ? 255 : min(255, dst[i + 1] / (255 - src[i + 1])) * rM;
-				dst[i + 2] = src[i + 2] == 255 && dBA == 0 ? 255 : min(255, dst[i + 2] / (255 - src[i + 2])) * rM;
+			'hard-light': function() {
+				dr = sr < 128 ? 2 * sr * br / 255 : 255 - 2 * (255 - sr) * (255 - br) / 255;
+				dg = sg < 128 ? 2 * sg * bg / 255 : 255 - 2 * (255 - sg) * (255 - bg) / 255;
+				db = sb < 128 ? 2 * sb * bb / 255 : 255 - 2 * (255 - sb) * (255 - bb) / 255;
 			},
 
-			'color-burn': function(i) {
-				dst[i]     = src[i]     == 0 && dRA == 0 ? 0 : (1 - min(1, (1 - dRA) / sRA)) * rM;
-				dst[i + 1] = src[i + 1] == 0 && dGA == 0 ? 0 : (1 - min(1, (1 - dGA) / sGA)) * rM;
-				dst[i + 2] = src[i + 2] == 0 && dBA == 0 ? 0 : (1 - min(1, (1 - dBA) / sBA)) * rM;
+			'color-dodge': function() {
+				dr = sr == 255 ? sr : min(255, br * 255 / (255 - sr));
+				dg = sg == 255 ? sg : min(255, bg * 255 / (255 - sg));
+				db = sb == 255 ? sb : min(255, bb * 255 / (255 - sb));
 			},
 
-			darken: function(i) {
-				dst[i]     = min(sRA, dRA) * rM;
-				dst[i + 1] = min(sGA, dGA) * rM;
-				dst[i + 2] = min(sBA, dBA) * rM;
+			'color-burn': function() {
+				dr = sr == 0 ? 0 : max(255 - ((255 - br) * 255) / sr, 0);
+				dg = sg == 0 ? 0 : max(255 - ((255 - bg) * 255) / sg, 0);
+				db = sb == 0 ? 0 : max(255 - ((255 - bb) * 255) / sb, 0);
 			},
 
-			lighten: function(i) {
-				dst[i]     = max(sRA, dRA) * rM;
-				dst[i + 1] = max(sGA, dGA) * rM;
-				dst[i + 2] = max(sBA, dBA) * rM;
+			darken: function() {
+				dr = br < sr ? br : sr;
+				dg = bg < sg ? bg : sg;
+				db = bb < sb ? bb : sb;
 			},
 
-			difference: function(i) {
-				dst[i]     = (sRA + dRA - 2 * min(sRA * dA, dRA * sA)) * rM;
-				dst[i + 1] = (sGA + dGA - 2 * min(sGA * dA, dGA * sA)) * rM;
-				dst[i + 2] = (sBA + dBA - 2 * min(sBA * dA, dBA * sA)) * rM;
+			lighten: function() {
+				dr = br > sr ? br : sr;
+				dg = bg > sg ? bg : sg;
+				db = bb > sb ? bb : sb;
 			},
 
-			exclusion: function(i) {
-				dst[i]     = (dRA + sRA - 2 * dRA * sRA) * rM;
-				dst[i + 1] = (dGA + sGA - 2 * dGA * sGA) * rM;
-				dst[i + 2] = (dBA + sBA - 2 * dBA * sBA) * rM;
+			difference: function() {
+				dr = br - sr;
+				if (dr < 0)
+					dr = -dr;
+				dg = bg - sg;
+				if (dg < 0)
+					dg = -dg;
+				db = bb - sb;
+				if (db < 0)
+					db = -db;
+			},
+
+			exclusion: function() {
+				dr = br + sr * (255 - br - br) / 255;
+				dg = bg + sg * (255 - bg - bg) / 255;
+				db = bb + sb * (255 - bb - bb) / 255;
 			},
 
 			// TODO: Missing: hue, saturation, color, luminosity
 
-			// Not in Illustrator:
-			
-			'src-in': function(i) {
-				// Only differs from Photoshop in low - opacity areas
-				rA = sA * dA;
-				rM = 255 / rA;
-				dst[i]     = sRA * dA * rM;
-				dst[i + 1] = sGA * dA * rM;
-				dst[i + 2] = sBA * dA * rM;
+			// TODO: Not in Illustrator:
+			add: function() {
+				dr = min(br + sr, 255);
+				dg = min(bg + sg, 255);
+				db = min(bb + sb, 255);
 			},
 
-			add: function(i) {
-				// Photoshop doesn't simply add the alpha channels,
-				// this might be correct wrt SVG 1.2
-				rA = min(1, sA + dA);
-				rM = 255 / rA;
-				dst[i]     = min(sRA + dRA, 1) * rM;
-				dst[i + 1] = min(sGA + dGA, 1) * rM;
-				dst[i + 2] = min(sBA + dBA, 1) * rM;
+			subtract: function() {
+				dr = max(br - sr, 0);
+				dg = max(bg - sg, 0);
+				db = max(bb - sb, 0);
+			},
+
+			average: function() {
+				dr = (br + sr) / 2;
+				dg = (bg + sg) / 2;
+				db = (bb + sb) / 2;
+			},
+
+			'pin-light': function() {
+				var op = sr < 128 ? min : max;
+				dr = op(sr, br);
+				dg = op(sg, bg);
+				db = op(sb, bb);
+			},
+
+			negation: function() {
+				dr = 255 - abs(255 - sr - br);
+				dg = 255 - abs(255 - sg - bg);
+				db = 255 - abs(255 - sb - bb);
 			}
 		};
 
 		var process = modes[blendMode];
 		if (!process)
 			return;
-		opacity /= 255;
+
 		for (var i = 0, l = dst.length; i < l; i += 4) {
-			sA  = src[i + 3] * opacity;
-			dA  = dst[i + 3] / 255;
-			rA = sA + dA - sA * dA;
-			sM = sA / 255;
-			dM = dA / 255;
-			sRA = src[i] * sM;
-			dRA = dst[i] * dM;
-			sGA = src[i + 1] * sM;
-			dGA = dst[i + 1] * dM;
-			sBA = src[i + 2] * sM;
-			dBA = dst[i + 2] * dM;
-			rM = 255 / rA;
-			process(i);
-			dst[i + 3] = rA * 255;
+			sr = src[i];
+			br = dst[i];
+			sg = src[i + 1];
+			bg = dst[i + 1];
+			sb = src[i + 2];
+			bb = dst[i + 2];
+			sa = src[i + 3];
+			ba = dst[i + 3];
+			process();
+			var a1 = sa * opacity / 255,
+				a2 = 1 - a1;
+			dst[i] = a1 * dr + a2 * br;
+			dst[i + 1] = a1 * dg + a2 * bg;
+			dst[i + 2] = a1 * db + a2 * bb;
+			dst[i + 3] = sa * opacity + a2 * ba;
 		}
 		destContext.putImageData(dstData, offset.x, offset.y);
 	}
