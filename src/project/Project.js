@@ -164,8 +164,6 @@ var Project = this.Project = Base.extend({
 	 * Deselects all selected items in the project.
 	 */
 	deselectAll: function() {
-		// TODO: is using for var i in good practice?
-		// or should we use Base.each? (JP)
 		for (var i in this._selectedItems)
 			this._selectedItems[i].setSelected(false);
 	},

@@ -15,7 +15,6 @@
  */
 
 var PaperScript = this.PaperScript = new function() {
-//TODO: Make sure there are all the correct copyrights for the inlined parse-js:
 //#include "../../lib/parse-js-min.js"
 
 	// Math Operators
