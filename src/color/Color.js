@@ -63,77 +63,39 @@ var Color = this.Color = Base.extend(new function() {
 	}
 
 	var converters = {
-		'rgb-hsb': function(color) {
-			var r = color._red,
-				g = color._green,
-				b = color._blue,
-				alpha = color._alpha,
-				max = Math.max(r, g, b),
-				min = Math.min(r, g, b),
-				delta = max - min,
-				hue,
-				saturation = (max != 0) ? delta / max : 0,
-				brightness = max;
-			if (saturation == 0) {
-				hue = 0;
-			} else {
-				var rr = (max - r) / delta,
-					gr = (max - g) / delta,
-					br = (max - b) / delta;
-				hue = r == max
-					? br - gr
-					: g == max
-						? 2 + rr - br
-						: 4 + gr - rr;
-				hue /= 6;
-				if (hue < 0)
-					hue++;
-			}
-			return new HSBColor(hue * 360, saturation, brightness, alpha);
+		'rgb-hsb': function(col) {
+			var hsb = Color.RGBtoHSB(col._red, col._green, col._blue);
+			return new HSBColor(hsb[0] * 360, hsb[1], hsb[2], col._alpha);
 		},
 
-		'hsb-rgb': function(color) {
-			var h = color._hue,
-				s = color._saturation,
-				b = color._brightness,
-				a = color._alpha,
-				f = h % 60,
-				p = (b * (1 - s)) / 1,
-				q = (b * (60 - s * f)) / 60,
-				t = (b * (60 - s * (60 - f))) / 60;
-			switch (Math.floor(h / 60)) {
-				case 0: return new RGBColor(b, t, p, a);
-				case 1: return new RGBColor(q, b, p, a);
-				case 2: return new RGBColor(p, b, t, a);
-				case 3: return new RGBColor(p, q, b, a);
-				case 4: return new RGBColor(t, p, b, a);
-				case 5: return new RGBColor(b, p, q, a);
-			}
+		'hsb-rgb': function(col) {
+			var rgb = Color.HSBtoRGB(col._hue / 360, col._saturation, col._brightness);
+			return new RGBColor(rgb[0], rgb[1], rgb[2], col._alpha);
 		},
 
-		'rgb-gray': function(color) {
+		'rgb-gray': function(col) {
 			// Using the standard NTSC conversion formula that is used for
 			// calculating the effective luminance of an RGB color:
 			// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
 			return new GrayColor(1 -
-					(color._red * 0.2989
-					+ color._green * 0.587
-					+ color._blue * 0.114),
-					color._alpha
+					(col._red * 0.2989
+					+ col._green * 0.587
+					+ col._blue * 0.114),
+					col._alpha
 				);
 		},
 
-		'gray-rgb': function(color) {
-			var comp = 1 - color.getGray();
-			return new RGBColor(comp, comp, comp, color._alpha);
+		'gray-rgb': function(col) {
+			var comp = 1 - col.getGray();
+			return new RGBColor(comp, comp, comp, col._alpha);
 		},
 
-		'hsb-gray': function(color) {
-			return converters['rgb-gray'](converters['hsb-rgb'](color));
+		'hsb-gray': function(col) {
+			return converters['rgb-gray'](converters['hsb-rgb'](col));
 		},
 
-		'gray-hsb': function(color) {
-			return new HSBColor(0, 0, 1 - color._gray, color._alpha);
+		'gray-hsb': function(col) {
+			return new HSBColor(0, 0, 1 - col._gray, col._alpha);
 		}
 	};
 
@@ -251,6 +213,49 @@ var Color = this.Color = Base.extend(new function() {
 					}, src);
 				}
 				return this.base(src);
+			},
+
+			// Expose HSB converters since they are required in BlendMode:
+			RGBtoHSB: function(r, g, b) {
+				var max = Math.max(r, g, b),
+					min = Math.min(r, g, b),
+					delta = max - min,
+					hue,
+					saturation = (max != 0) ? delta / max : 0,
+					brightness = max;
+				if (saturation == 0) {
+					hue = 0;
+				} else {
+					var rr = (max - r) / delta,
+						gr = (max - g) / delta,
+						br = (max - b) / delta;
+					hue = r == max
+						? br - gr
+						: g == max
+							? 2 + rr - br
+							: 4 + gr - rr;
+					hue /= 6;
+					if (hue < 0)
+						hue++;
+				}
+				return [hue, saturation, brightness];
+			},
+
+			HSBtoRGB: function(h, s, b) {
+				h = (h - Math.floor(h)) * 6;
+				var r = Math.floor(h),
+					f = h - r,
+					p = b * (1 - s),
+					q = b * (1 - s * f),
+					t = b * (1 - s * (1 - f));
+				switch (r) {
+				case 0: return [b, t, p];
+				case 1: return [q, b, p];
+				case 2: return [p, b, t];
+				case 3: return [p, q, b];
+				case 4: return [t, p, b];
+				case 5: return [b, p, q];
+				}
 			}
 		}
 	};
