@@ -45,12 +45,11 @@ var BlendMode = {
 	// we can easily encorporate changes?
 	process: function(blendMode, sourceContext, destContext, opacity, offset) {
 		var sourceCanvas = sourceContext.canvas,
-			dstD = destContext.getImageData(offset.x, offset.y,
+			dstData = destContext.getImageData(offset.x, offset.y,
 					sourceCanvas.width, sourceCanvas.height),
-			srcD = sourceContext.getImageData(0, 0,
-					sourceCanvas.width, sourceCanvas.height),
-			src  = srcD.data,
-			dst  = dstD.data,
+			dst  = dstData.data,
+			src  = sourceContext.getImageData(0, 0,
+					sourceCanvas.width, sourceCanvas.height).data,
 			min = Math.min,
 			opacity = opacity / 255,
 			sA, dA, sAM, dAM, dA2, sRA, sGA, sBA, dRA, dGA, dBA, demultiply;
@@ -178,6 +177,6 @@ var BlendMode = {
 			process(i);
 			dst[i + 3] = dA2 * 255;
 		}
-		destContext.putImageData(dstD, offset.x, offset.y);
+		destContext.putImageData(dstData, offset.x, offset.y);
 	}
 };
