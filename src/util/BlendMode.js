@@ -49,9 +49,30 @@ var BlendMode = {
 			min = Math.min,
 			max = Math.max,
 			abs = Math.abs,
-			sr, sb, sg, sa, // source
-			br, bb, bg, ba, // backdrop
-			dr, dg, db;     // destination
+			sr, sg, sb, sa, // source
+			br, bg, bb, ba, // backdrop
+			dr, dg, db,     // destination
+			hsb = [],
+			// lookup table with indices for each hsb blend mode and hsb
+			// component inside the hsb table: 0 = source, 1 = backdrop
+			hsbIndices = { 
+				hue: [0, 1, 1],
+				saturation: [1, 0, 1],
+				luminosity: [1, 1, 0],
+				color: [0, 0, 1]
+			}[blendMode];
+
+		function processHsb() {
+			hsb[0] = Color.RGBtoHSB(sr / 255, sg / 255, sb / 255);
+			hsb[1] = Color.RGBtoHSB(br / 255, bg / 255, bb / 255);
+			var rgb = Color.HSBtoRGB(
+					hsb[hsbIndices[0]][0],
+					hsb[hsbIndices[1]][1],
+					hsb[hsbIndices[2]][2]);
+			dr = rgb[0] * 255;
+			dg = rgb[1] * 255;
+			db = rgb[2] * 255;
+		}
 
 		var modes = {
 			multiply: function() {
@@ -74,12 +95,12 @@ var BlendMode = {
 			},
 
 			'soft-light': function() {
-				var d = sr * br / 255;
-				dr = d + br * (255 - (255 - br) * (255 - sr) / 255 - d) / 255;
-				d = sg * bg / 255;
-				dg = d + bg * (255 - (255 - bg) * (255 - sg) / 255 - d) / 255;
-				d = sb * bb / 255;
-				db = d + bb * (255 - (255 - bb) * (255 - sb) / 255 - d) / 255;
+				var t = sr * br / 255;
+				dr = t + br * (255 - (255 - br) * (255 - sr) / 255 - t) / 255;
+				t = sg * bg / 255;
+				dg = t + bg * (255 - (255 - bg) * (255 - sg) / 255 - t) / 255;
+				t = sb * bb / 255;
+				db = t + bb * (255 - (255 - bb) * (255 - sb) / 255 - t) / 255;
 			},
 
 			'hard-light': function() {
@@ -130,7 +151,12 @@ var BlendMode = {
 				db = bb + sb * (255 - bb - bb) / 255;
 			},
 
-			// TODO: Missing: hue, saturation, color, luminosity
+			// HSB modes:
+
+			hue: processHsb,
+			saturation: processHsb,
+			luminosity: processHsb,
+			color: processHsb,
 
 			// TODO: Not in Illustrator:
 			add: function() {
