@@ -267,7 +267,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * The blend mode of the item.
 	 * 
-	 * @type String('normal','screen','multiply','difference','src-in','add','overlay','hard-light','dodge','burn','darken','lighten','exclusion')
+	 * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light', 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten', 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color', 'add', 'subtract', 'average', 'pin-light', 'negation')
 	 * @default 'normal'
 	 * 
 	 * @example
@@ -810,6 +810,10 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * The color of the stroke.
 	 * 
+	 * @property
+	 * @name Item#strokeColor
+	 * @type RGBColor|HSBColor|GrayColor
+	 * 
 	 * @example
 	 * // Setting an item's stroke color:
 	 * 
@@ -840,7 +844,8 @@ var Item = this.Item = Base.extend({
 	 */
 
 	/**
-	 * The cap of the stroke.
+	 * The shape to be used at the end of open {@link Path} items, when they
+	 * have a stroke.
 	 * 
 	 * @property
 	 * @name Item#strokeCap
@@ -848,7 +853,7 @@ var Item = this.Item = Base.extend({
 	 * @type String('round', 'square', 'butt')
 	 * 
 	 * @example
-	 * // Setting an item's stroke color:
+	 * // Setting an item's stroke cap:
 	 * 
 	 * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
 	 * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
@@ -859,7 +864,7 @@ var Item = this.Item = Base.extend({
 	 */
 
 	/**
-	 * The join of the stroke.
+	 * The shape to be used at the corners of paths when they have a stroke.
 	 * 
 	 * @property
 	 * @name Item#strokeJoin
@@ -894,6 +899,10 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The miter limit of the stroke.
+	 * When two line segments meet at a sharp angle and miter joins have been
+	 * specified for {@link #strokeJoin}, it is possible for the miter to extend
+	 * far beyond the {@link #strokeWidth} of the path. The miterLimit imposes a
+	 * limit on the ratio of the miter length to the {@link #strokeWidth}.
 	 * 
 	 * @property
 	 * @default 10
@@ -913,7 +922,8 @@ var Item = this.Item = Base.extend({
 	 * @example
 	 * // Setting the fill color of a path to red:
 	 * 
-	 * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
+	 * // Create a circle shaped path at { x: 50, y: 50 }
+	 * // with a radius of 10:
 	 * var circle = new Path.Circle(new Point(50, 50), 10);
 	 * 
 	 * // Set the fill color of the circle to RGB red:
@@ -937,6 +947,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * // Create a circle at position { x: 10, y: 10 } 
 	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.fillColor = 'black';
 	 * console.log(circle.bounds.width); // 20
 	 * 
 	 * // Scale the path by 200% from its center point
@@ -949,6 +960,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * // Create a circle at position { x: 10, y: 10 } 
 	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.fillColor = 'black';
 	 * 
 	 * // Scale the path 200% from its bottom left corner
 	 * circle.scale(2, circle.bounds.bottomLeft);
@@ -1249,17 +1261,74 @@ var Item = this.Item = Base.extend({
 }, new function() {
 	/**
 	 * {@grouptitle Remove On Event}
+	 * 
+	 * Removes the item when the events specified in the passed object literal
+	 * occur.
+	 * The object literal can contain the following values:
+	 * Remove the item when the next {@link Tool#onMouseMove} event is
+	 * fired: {@code object.move = true}
+	 * 
+	 * Remove the item when the next {@link Tool#onMouseDrag} event is
+	 * fired: {@code object.drag = true}
+	 * 
+	 * Remove the item when the next {@link Tool#onMouseDown} event is
+	 * fired: {@code object.down = true}
+	 * 
+	 * Remove the item when the next {@link Tool#onMouseUp} event is
+	 * fired: {@code object.up = true}
+	 * 
+	 * @name Item#removeOn
+	 * @function
+	 * @param {Object} object
+	 * 
+	 * @example
+	 * function onMouseDrag(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * 	
+	 * 	// Remove the path on the next onMouseDrag or onMouseUp event:
+	 * 	path.removeOn({
+	 * 		drag: true,
+	 * 		up: true
+	 * 	});
+	 * }
+	 */
+
+	/**
 	 * Removes the item when the next {@link Tool#onMouseMove} event is fired.
 	 * 
 	 * @name Item#removeOnMove
 	 * @function
+	 * 
+	 * @example
+	 * function onMouseMove(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * 	
+	 * 	// On the next move event, automatically remove the path:
+	 * 	path.removeOnMove();
+	 * }
 	 */
 
 	/**
 	 * Removes the item when the next {@link Tool#onMouseDown} event is fired.
-	 * 
+	 *
 	 * @name Item#removeOnDown
 	 * @function
+	 * 
+	 * @example
+	 * function onMouseDown(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 
+	 * 	// Remove the path, next time the mouse is pressed:
+	 * 	path.removeOnDown();
+	 * }
 	 */
 
 	/**
@@ -1267,6 +1336,17 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @name Item#removeOnDrag
 	 * @function
+	 * 
+	 * @example
+	 * function onMouseDrag(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * 	
+	 * 	// On the next drag event, automatically remove the path:
+	 * 	path.removeOnDrag();
+	 * }
 	 */
 
 	/**
@@ -1274,6 +1354,17 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @name Item#removeOnUp
 	 * @function
+	 * 
+	 * @example
+	 * function onMouseDown(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * 	
+	 * 	// Remove the path, when the mouse is released:
+	 * 	path.removeOnUp();
+	 * }
 	 */
 
 	var sets = {
@@ -1316,6 +1407,7 @@ var Item = this.Item = Base.extend({
 		}
 	}
 
+	// TODO: implement Item#removeOnFrame
 	return Base.each(['down', 'drag', 'up', 'move'], function(name) {
 		this['removeOn' + Base.capitalize(name)] = function() {
 			var hash = {};

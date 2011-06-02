@@ -1,8 +1,8 @@
 /** Called automatically by JsDoc Toolkit. */
-load(JSDOC.opt.t + 'Symbol.js');
-load(JSDOC.opt.t + 'Utils.js');
-load(JSDOC.opt.t + 'Operator.js');
-load(JSDOC.opt.t + 'Render.js');
+load(JSDOC.opt.t + 'src/Symbol.js');
+load(JSDOC.opt.t + 'src/Utils.js');
+load(JSDOC.opt.t + 'src/Operator.js');
+load(JSDOC.opt.t + 'src/Render.js');
 
 function publish(symbolSet) {
 	var renderMode = JSDOC.opt.D.renderMode;
