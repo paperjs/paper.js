@@ -14,7 +14,6 @@ var Render = new function() {
 		example: 'example.tmpl',
 		constructor: 'constructor.tmpl',
 		html: 'html.tmpl',
-		allClasses: 'allClasses.tmpl',
 		menu: 'packages.tmpl',
 		operator: 'operator.tmpl',
 		packagesjs: 'packagesjs.tmpl'
@@ -300,9 +299,6 @@ var Render = new function() {
 		},
 		html: function(content) {
 			return templates.html.process(content);
-		},
-		allClasses: function(symbol) {
-			return templates.allClasses.process(symbol);
 		},
 		menu: function(html) {
 			return templates.menu.process(html);
