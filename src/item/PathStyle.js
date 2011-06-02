@@ -192,15 +192,16 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  */
 
 /**
- * The cap of the stroke.
+ * The shape to be used at the end of open {@link Path} items, when they
+ * have a stroke.
  * 
  * @property
- * @name PathStyle#strokeCap
+ * @name Item#strokeCap
  * @default 'butt'
  * @type String('round', 'square', 'butt')
  * 
  * @example
- * // Setting an item's stroke color:
+ * // Setting an item's stroke cap:
  * 
  * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
  * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
@@ -211,7 +212,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  */
 
 /**
- * The join of the stroke.
+ * The shape to be used at the corners of paths when they have a stroke.
  * 
  * @property
  * @name PathStyle#strokeJoin
@@ -248,10 +249,14 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 
 /**
  * The miter limit of the stroke.
+ * When two line segments meet at a sharp angle and miter joins have been
+ * specified for {@link #strokeJoin}, it is possible for the miter to extend
+ * far beyond the {@link #strokeWidth} of the path. The miterLimit imposes a
+ * limit on the ratio of the miter length to the {@link #strokeWidth}.
  * 
  * @property
- * @name PathStyle#miterLimit
  * @default 10
+ * @name PathStyle#miterLimit
  * @type Number
  */
 
