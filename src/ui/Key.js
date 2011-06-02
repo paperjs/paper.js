@@ -145,10 +145,10 @@ var Key = this.Key = new function() {
 		 * 
 		 * @example
 		 * // Whenever the user clicks, create a circle shaped path. If the
-		 * // shift key is down, fill it with red, otherwise fill it with blue:
+		 * // 'a' key is pressed, fill it with red, otherwise fill it with blue:
 		 * function onMouseDown(event) {
 		 * 	var path = new Path.Circle(event.point, 10);
-		 * 	if(Key.isDown('shift')) {
+		 * 	if(Key.isDown('a')) {
 		 * 		path.fillColor = 'red';
 		 * 	} else {
 		 * 		path.fillColor = 'blue';
