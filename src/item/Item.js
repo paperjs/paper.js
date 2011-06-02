@@ -810,6 +810,10 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * The color of the stroke.
 	 * 
+	 * @property
+	 * @name Item#strokeColor
+	 * @type RGBColor|HSBColor|GrayColor
+	 * 
 	 * @example
 	 * // Setting an item's stroke color:
 	 * 
@@ -840,7 +844,8 @@ var Item = this.Item = Base.extend({
 	 */
 
 	/**
-	 * The cap of the stroke.
+	 * The shape to be used at the end of open {@link Path} items, when they
+	 * have a stroke.
 	 * 
 	 * @property
 	 * @name Item#strokeCap
@@ -848,7 +853,7 @@ var Item = this.Item = Base.extend({
 	 * @type String('round', 'square', 'butt')
 	 * 
 	 * @example
-	 * // Setting an item's stroke color:
+	 * // Setting an item's stroke cap:
 	 * 
 	 * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
 	 * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
@@ -859,7 +864,7 @@ var Item = this.Item = Base.extend({
 	 */
 
 	/**
-	 * The join of the stroke.
+	 * The shape to be used at the corner of paths when they have a stroke.
 	 * 
 	 * @property
 	 * @name Item#strokeJoin
@@ -894,6 +899,10 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The miter limit of the stroke.
+	 * When two line segments meet at a sharp angle and miter joins have been
+	 * specified for {@link #strokeJoin}, it is possible for the miter to extend
+	 * far beyond the {@link #strokeWidth} of the path. The miterLimit imposes a
+	 * limit on the ratio of the miter length to the {@link #strokeWidth}.
 	 * 
 	 * @property
 	 * @default 10
@@ -913,7 +922,8 @@ var Item = this.Item = Base.extend({
 	 * @example
 	 * // Setting the fill color of a path to red:
 	 * 
-	 * // Create a circle shaped path at { x: 50, y: 50 } with a radius of 10:
+	 * // Create a circle shaped path at { x: 50, y: 50 }
+	 * // with a radius of 10:
 	 * var circle = new Path.Circle(new Point(50, 50), 10);
 	 * 
 	 * // Set the fill color of the circle to RGB red:
