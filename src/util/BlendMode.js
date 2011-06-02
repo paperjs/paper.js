@@ -14,30 +14,6 @@
  * All rights reserved.
  */
 
-/*
- * BlendMode code ported from Context Blender JavaScript Library
- * 
- * Copyright © 2010 Gavin Kistner
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 var BlendMode = {
 	process: function(blendMode, sourceContext, destContext, alpha, offset) {
 		var sourceCanvas = sourceContext.canvas,
@@ -98,6 +74,7 @@ var BlendMode = {
 			// Determine the index in col that is not used yet by min and max,
 			// and assign it to mid:
 			md = min(mn, mx) == 0 ? max(mn, mx) == 1 ? 2 : 1 : 0;
+			// Now perform the actual algorithm
 			if (col[mx] > col[mn]) {
 				col[md] = (col[md] - col[mn]) * s / (col[mx] - col[mn]);
 				col[mx] = s;
@@ -105,6 +82,7 @@ var BlendMode = {
 				col[md] = col[mx] = 0;
 			}
 			col[mn] = 0;
+			// Finally write out the values
 			dr = col[0];
 			dg = col[1];
 			db = col[2];
