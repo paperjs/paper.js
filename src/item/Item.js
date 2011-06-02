@@ -864,7 +864,7 @@ var Item = this.Item = Base.extend({
 	 */
 
 	/**
-	 * The shape to be used at the corner of paths when they have a stroke.
+	 * The shape to be used at the corners of paths when they have a stroke.
 	 * 
 	 * @property
 	 * @name Item#strokeJoin
