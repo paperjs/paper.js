@@ -123,7 +123,7 @@ var Render = new function() {
 		}
 		return '(' + signature + postSignature + ')';
 	};
-
+	var paperScriptId = 0;
 	return {
 		_class: function(symbol) {
 			var param = {
@@ -280,16 +280,41 @@ var Render = new function() {
 			var out = [],
 				examples = symbol.example;
 			for (var i = 0, l = examples.length; i < l; i++) {
-				var example = examples[i],
-					lines = example.toString().split('\n'),
+				var example = examples[i].toString();
+				
+				// Parse {@paperscript} inline tags
+				var paperScript;
+				example = example.replace(/\{@paperscript[\s]*([^}]+)*\}/,
+					function(tag, content) {
+						paperScript = {
+							width: 520,
+							height: 320,
+							id: paperScriptId++
+						};
+						var pairs = tag.match(/[\S]+=[^\s}]+/g);
+						if (pairs) {
+							for (var i = 0, l = pairs.length; i < l; i++) {
+								var pair = pairs[i].split('=');
+								paperScript[pair[0]] = pair[1];
+							}
+						}
+						paperScript.mode = paperScript.split == 'true' ? 'split'
+								: paperScript.source == 'true' ? 'source' : null;
+						return '';
+					}
+				);
+
+				var lines = example.split('\n'),
 					description = [];
 				// The description is the first commented lines:
 				while (/^[\/]{2}/.test(lines[0])) {
 					description.push(lines.shift().replace('// ', ''));
 				}
+				
 				out.push(Render.example({
 					description: description.join(' ').trim(),
-					code: lines.join('\n').trim()
+					code: lines.join('\n').trim(),
+					paperScript: paperScript
 				}));
 			}
 			return out.join('\n');
