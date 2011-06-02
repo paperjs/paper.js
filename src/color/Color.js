@@ -98,7 +98,7 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		'hsb-rgb': function(color) {
-			var h = color._hue / 60, // Scale to 0..6
+			var h = (color._hue / 60) % 6, // Scale to 0..6
 				s = color._saturation,
 				b = color._brightness,
 				i = Math.floor(h), // 0..5
