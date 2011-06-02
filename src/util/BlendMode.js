@@ -15,13 +15,13 @@
  */
 
 var BlendMode = {
-	process: function(blendMode, sourceContext, destContext, alpha, offset) {
-		var sourceCanvas = sourceContext.canvas,
-			dstData = destContext.getImageData(offset.x, offset.y,
-					sourceCanvas.width, sourceCanvas.height),
+	process: function(blendMode, srcContext, dstContext, alpha, offset) {
+		var srcCanvas = srcContext.canvas,
+			dstData = dstContext.getImageData(offset.x, offset.y,
+					srcCanvas.width, srcCanvas.height),
 			dst  = dstData.data,
-			src  = sourceContext.getImageData(0, 0,
-					sourceCanvas.width, sourceCanvas.height).data,
+			src  = srcContext.getImageData(0, 0,
+					srcCanvas.width, srcCanvas.height).data,
 			min = Math.min,
 			max = Math.max,
 			abs = Math.abs,
@@ -238,6 +238,6 @@ var BlendMode = {
 			dst[i + 2] = a1 * db + a2 * bb;
 			dst[i + 3] = sa * alpha + a2 * ba;
 		}
-		destContext.putImageData(dstData, offset.x, offset.y);
+		dstContext.putImageData(dstData, offset.x, offset.y);
 	}
 };
