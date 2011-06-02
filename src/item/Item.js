@@ -937,6 +937,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * // Create a circle at position { x: 10, y: 10 } 
 	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.fillColor = 'black';
 	 * console.log(circle.bounds.width); // 20
 	 * 
 	 * // Scale the path by 200% from its center point
@@ -949,6 +950,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * // Create a circle at position { x: 10, y: 10 } 
 	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.fillColor = 'black';
 	 * 
 	 * // Scale the path 200% from its bottom left corner
 	 * circle.scale(2, circle.bounds.bottomLeft);
