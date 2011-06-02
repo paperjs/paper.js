@@ -128,19 +128,18 @@ var Item = this.Item = Base.extend({
 	 */
 	getPosition: function() {
 		// Cache position value
-		if (!this._position) {
-			// Center is a LinkedPoint as well, so we can use _x and _y
-			var center = this.getBounds().getCenter();
-			this._position = LinkedPoint.create(this, 'setPosition',
-					center._x, center._y);
-		}
-		return this._position;
+		var pos = this._position
+				|| (this._position = this.getBounds().getCenter());
+		// this._position is a LinkedPoint as well, so we can use _x and _y.
+		// Do not cache LinkedPoints directly, since we would not be able to
+		// use them to calculate the difference in #setPosition, as when it is
+		// modified, it would hold new values already and only then cause the
+		// calling of #setPosition.
+		return LinkedPoint.create(this, 'setPosition', pos._x, pos._y);
 	},
 
 	setPosition: function(point) {
-		point = Point.read(arguments);
-		if (point)
-			this.translate(point.subtract(this.getPosition()));
+		this.translate(Point.read(arguments).subtract(this.getPosition()));
 	},
 
 	/**
