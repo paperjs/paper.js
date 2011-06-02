@@ -27,7 +27,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	 * symbol or a {@link Matrix} transformation to transform the placed symbol
 	 * with.
 	 * 
-	 * @example
+	 * @example {@paperscript split=true}
 	 * // Placing 100 instances of a symbol:
 	 * var path = new Path.Star(new Point(0, 0), 6, 5, 13);
 	 * path.style = {
