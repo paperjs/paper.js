@@ -203,13 +203,6 @@ var BlendMode = {
 				db = (bb + sb) / 2;
 			},
 
-			'pin-light': function() {
-				var op = sr < 128 ? min : max;
-				dr = op(sr, br);
-				dg = op(sg, bg);
-				db = op(sb, bb);
-			},
-
 			negation: function() {
 				dr = 255 - abs(255 - sr - br);
 				dg = 255 - abs(255 - sg - bg);
