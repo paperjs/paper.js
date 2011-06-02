@@ -267,7 +267,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * The blend mode of the item.
 	 * 
-	 * @type String('normal','screen','multiply','difference','src-in','add','overlay','hard-light','dodge','burn','darken','lighten','exclusion')
+	 * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light', 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten', 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color', 'add', 'subtract', 'average', 'pin-light', 'negation')
 	 * @default 'normal'
 	 * 
 	 * @example
