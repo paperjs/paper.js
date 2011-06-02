@@ -1251,17 +1251,74 @@ var Item = this.Item = Base.extend({
 }, new function() {
 	/**
 	 * {@grouptitle Remove On Event}
+	 * 
+	 * Removes the item when the events specified in the passed object literal
+	 * occur.
+	 * The object literal can contain the following values:
+	 * Remove the item when the next {@link Tool#onMouseMove} event is
+	 * fired: {@code object.move = true}
+	 * 
+	 * Remove the item when the next {@link Tool#onMouseDrag} event is
+	 * fired: {@code object.drag = true}
+	 * 
+	 * Remove the item when the next {@link Tool#onMouseDown} event is
+	 * fired: {@code object.down = true}
+	 * 
+	 * Remove the item when the next {@link Tool#onMouseUp} event is
+	 * fired: {@code object.up = true}
+	 * 
+	 * @name Item#removeOn
+	 * @function
+	 * @param {Object} object
+	 * 
+	 * @example
+	 * function onMouseDrag(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * 	
+	 * 	// Remove the path on the next onMouseDrag or onMouseUp event:
+	 * 	path.removeOn({
+	 * 		drag: true,
+	 * 		up: true
+	 * 	});
+	 * }
+	 */
+
+	/**
 	 * Removes the item when the next {@link Tool#onMouseMove} event is fired.
 	 * 
 	 * @name Item#removeOnMove
 	 * @function
+	 * 
+	 * @example
+	 * function onMouseMove(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * 	
+	 * 	// On the next move event, automatically remove the path:
+	 * 	path.removeOnMove();
+	 * }
 	 */
 
 	/**
 	 * Removes the item when the next {@link Tool#onMouseDown} event is fired.
-	 * 
+	 *
 	 * @name Item#removeOnDown
 	 * @function
+	 * 
+	 * @example
+	 * function onMouseDown(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 
+	 * 	// Remove the path, next time the mouse is pressed:
+	 * 	path.removeOnDown();
+	 * }
 	 */
 
 	/**
@@ -1269,6 +1326,17 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @name Item#removeOnDrag
 	 * @function
+	 * 
+	 * @example
+	 * function onMouseDrag(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * 	
+	 * 	// On the next drag event, automatically remove the path:
+	 * 	path.removeOnDrag();
+	 * }
 	 */
 
 	/**
@@ -1276,6 +1344,17 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @name Item#removeOnUp
 	 * @function
+	 * 
+	 * @example
+	 * function onMouseDown(event) {
+	 * 	// Create a circle shaped path at the mouse position,
+	 * 	// with a radius of 10:
+	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
+	 * 	
+	 * 	// Remove the path, when the mouse is released:
+	 * 	path.removeOnUp();
+	 * }
 	 */
 
 	var sets = {
@@ -1318,6 +1397,7 @@ var Item = this.Item = Base.extend({
 		}
 	}
 
+	// TODO: implement Item#removeOnFrame
 	return Base.each(['down', 'drag', 'up', 'move'], function(name) {
 		this['removeOn' + Base.capitalize(name)] = function() {
 			var hash = {};
