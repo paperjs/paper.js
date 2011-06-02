@@ -14,7 +14,6 @@ var Render = new function() {
 		example: 'example.tmpl',
 		constructor: 'constructor.tmpl',
 		html: 'html.tmpl',
-		allClasses: 'allClasses.tmpl',
 		menu: 'packages.tmpl',
 		operator: 'operator.tmpl',
 		packagesjs: 'packagesjs.tmpl'
@@ -23,16 +22,6 @@ var Render = new function() {
 	for (var i in templates) {
 		templates[i] = new JSDOC.JsPlate(templatesDir + templates[i]);
 	}
-
-	var processGroupTitle = function(symbol) {
-		var matches = symbol.desc.match(/\{@grouptitle ([^}]+)\}/),
-			groupTitle;
-		if (matches) {
-			groupTitle = matches[1];
-			symbol.desc = symbol.desc.replace(/\{@grouptitle ([^}]+)\}/, '');
-		}
-		return groupTitle;
-	};
 
 	var processInlineTags = function(str, param) {
 		if (!param)
@@ -183,7 +172,6 @@ var Render = new function() {
 		constructor: function(symbol) {
 			var param = {
 				symbol: symbol,
-				groupTitle: processGroupTitle(symbol),
 				id: symbol.getId(),
 				name: symbol.alias.replace(/(#|\^).+$/, ''),
 				description: processInlineTags(symbol.desc),
@@ -209,7 +197,6 @@ var Render = new function() {
 				name = symbol.memberOf + '.' + name;
 			var param = {
 				name: name,
-				groupTitle: processGroupTitle(symbol),
 				id: symbol.getId(),
 				signature: makeSignature(symbol.params),
 				description: processInlineTags(symbol.desc),
@@ -227,7 +214,6 @@ var Render = new function() {
 				name = symbol.memberOf + '.' + name;
 			var param = {
 				name: name,
-				groupTitle: processGroupTitle(symbol),
 				id: symbol.getId(),
 				description: processInlineTags(symbol.desc),
 				symbol: symbol
@@ -313,9 +299,6 @@ var Render = new function() {
 		},
 		html: function(content) {
 			return templates.html.process(content);
-		},
-		allClasses: function(symbol) {
-			return templates.allClasses.process(symbol);
 		},
 		menu: function(html) {
 			return templates.menu.process(html);

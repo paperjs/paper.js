@@ -259,10 +259,10 @@ var View = this.View = Base.extend({
 	 * The function receives an event object which contains information about
 	 * the frame event:
 	 * 
-	 * <b>event.count</b>: the number of times the frame event was fired.
-	 * <b>event.time</b>: the total amount of time passed since the first frame
+	 * <b>{@code event.count}</b>: the number of times the frame event was fired.
+	 * <b>{@code event.time}</b>: the total amount of time passed since the first frame
 	 * event in seconds.
-	 * <b>event.delta</b>: the time passed in seconds since the last frame
+	 * <b>{@code event.delta}</b>: the time passed in seconds since the last frame
 	 * event.
 	 * 
 	 * @example
