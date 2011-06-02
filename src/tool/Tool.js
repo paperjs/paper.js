@@ -295,7 +295,7 @@ var Tool = this.Tool = Base.extend({
 		}
 		// Make sure mousemove events have lastPoint set even for the first move
 		// so event.delta is always defined for them.
-		this._lastPoint = first && type == 'mousemove' ? pt : this._point;
+		this._lastPoint = start && type == 'mousemove' ? pt : this._point;
 		this._point = pt;
 		switch (type) {
 		case 'mousedown':
