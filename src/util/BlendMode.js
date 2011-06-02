@@ -51,29 +51,63 @@ var BlendMode = {
 			abs = Math.abs,
 			sr, sg, sb, sa, // source
 			br, bg, bb, ba, // backdrop
-			dr, dg, db,     // destination
-			hsb = [],
-			// lookup table with indices for each hsb blend mode and hsb
-			// component inside the hsb table: 0 = source, 1 = backdrop
-			hsbIndices = { 
-				hue: [0, 1, 1],
-				saturation: [1, 0, 1],
-				luminosity: [1, 1, 0],
-				color: [0, 0, 1]
-			}[blendMode];
+			dr, dg, db;     // destination
 
-		function processHsb() {
-			// Convert both source and backdrop to HSB and then use hsbIndices
-			// to decide from which one to pick before converting back to RGB.
-			hsb[0] = Color.RGBtoHSB(sr / 255, sg / 255, sb / 255);
-			hsb[1] = Color.RGBtoHSB(br / 255, bg / 255, bb / 255);
-			var rgb = Color.HSBtoRGB(
-					hsb[hsbIndices[0]][0],
-					hsb[hsbIndices[1]][1],
-					hsb[hsbIndices[2]][2]);
-			dr = rgb[0] * 255;
-			dg = rgb[1] * 255;
-			db = rgb[2] * 255;
+		// Conversion methods for HSL modes, as described by
+		// http://www.aiim.org/documents/standards/pdf/blend_modes.pdf
+		// The setters modify the variables dr, dg, db directly.
+
+		function getLum(r, g, b) {
+			return 0.2989 * r + 0.587 * g + 0.114 * b;
+		}
+
+		function setLum(r, g, b, l) {
+			var d = l - getLum(r, g, b);
+			dr = r + d;
+			dg = g + d;
+			db = b + d;
+			var l = getLum(dr, dg, db),
+				mn = min(dr, dg, db),
+				mx = max(dr, dg, db);
+			if (mn < 0) {
+				var lmn = l - mn;
+				dr = l + (dr - l) * l / lmn;
+				dg = l + (dg - l) * l / lmn;
+				db = l + (db - l) * l / lmn;
+			}
+			if (mx > 255) {
+				var ln = 255 - l, mxl = mx - l;
+				dr = l + (dr - l) * ln / mxl;
+				dg = l + (dg - l) * ln / mxl;
+				db = l + (db - l) * ln / mxl;
+			}
+		}
+
+		function getSat(r, g, b) {
+			return max(r, g, b) - min(r, g, b);
+		}
+
+		function setSat(r, g, b, s) {
+			var col = [r, g, b],
+				mx = max(r, g, b), // max
+				mn = min(r, g, b), // min
+				md; // mid
+			// Determine indices for min and max in col:
+			mn = mn == r ? 0 : mn == g ? 1 : 2;
+			mx = mx == r ? 0 : mx == g ? 1 : 2;
+			// Determine the index in col that is not used yet by min and max,
+			// and assign it to mid:
+			md = min(mn, mx) == 0 ? max(mn, mx) == 1 ? 2 : 1 : 0;
+			if (col[mx] > col[mn]) {
+				col[md] = (col[md] - col[mn]) * s / (col[mx] - col[mn]);
+				col[mx] = s;
+			} else {
+				col[md] = col[mx] = 0;
+			}
+			col[mn] = 0;
+			dr = col[0];
+			dg = col[1];
+			db = col[2];
 		}
 
 		var modes = {
@@ -153,11 +187,24 @@ var BlendMode = {
 				db = bb + sb * (255 - bb - bb) / 255;
 			},
 
-			// HSB Modes:
-			hue: processHsb,
-			saturation: processHsb,
-			luminosity: processHsb,
-			color: processHsb,
+			// HSL Modes:
+			hue: function() {
+				setSat(sr, sg, sb, getSat(br, bg, bb));
+				setLum(dr, dg, db, getLum(br, bg, bb));
+			},
+
+			saturation: function() {
+				setSat(br, bg, bb, getSat(sr, sg, sb));
+				setLum(dr, dg, db, getLum(br, bg, bb));
+			},
+
+			luminosity: function() {
+				setLum(br, bg, bb, getLum(sr, sg, sb));
+			},
+
+			color: function() {
+				setLum(sr, sg, sb, getLum(br, bg, bb));
+			},
 
 			// TODO: Not in Illustrator:
 			add: function() {
