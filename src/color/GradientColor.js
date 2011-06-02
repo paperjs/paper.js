@@ -98,8 +98,8 @@ var GradientColor = this.GradientColor = Color.extend({
 		hilite = Point.read(arguments).clone();
 		var vector = hilite.subtract(this._origin);
 		if (vector.getLength() > this._radius) {
-			this._hilite = this._origin.add(vector.normalize(
-					this._radius - 0.1));
+			this._hilite = this._origin.add(
+					vector.normalize(this._radius - 0.1));
 		} else {
 			this._hilite = hilite;
 		}
