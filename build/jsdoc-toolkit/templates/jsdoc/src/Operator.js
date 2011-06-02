@@ -18,7 +18,8 @@ var Operator = new function() {
 					&& (symbol.operator != 'none')
 				) || ( // equals
 					symbol.name == 'equals'
-					&& symbol.returns.length && symbol.returns[0].type == 'boolean'
+					&& symbol.returns.length
+					&& symbol.returns[0].type.toLowerCase() == 'boolean'
 				);
 		},
 
