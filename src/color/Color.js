@@ -62,16 +62,55 @@ var Color = this.Color = Base.extend(new function() {
 		}
 	}
 
+	// For hsb-rgb conversion, used to lookup the right parameters in the
+	// values array.
+	var hsbIndices = [
+		[0, 3, 1], // 0
+		[2, 0, 1], // 1
+		[1, 0, 3], // 2
+		[1, 2, 0], // 3
+		[3, 1, 0], // 4
+		[0, 1, 2]  // 5
+	];
+
 	var converters = {
 		'rgb-hsb': function(color) {
-			var hsb = Color.rgbToHsb(color._red, color._green, color._blue);
-			return new HSBColor(hsb[0] * 360, hsb[1], hsb[2], color._alpha);
+			var r = color._red,
+				g = color._green,
+				b = color._blue,
+				max = Math.max(r, g, b),
+				min = Math.min(r, g, b),
+				delta = max - min,
+				h,
+				s = max == 0 ? 0 : delta / max,
+				v = max; // = brightness, also called value
+			if (delta == 0) {
+				h = 0; // Achromatic
+			} else {
+				switch (max) {
+				case r: h = (g - b) / delta + (g < b ? 6 : 0); break;
+				case g: h = (b - r) / delta + 2; break;
+				case b: h = (r - g) / delta + 4; break;
+				}
+				h /= 6;
+			}
+			return new HSBColor(h * 360, s, v, color._alpha);
 		},
 
 		'hsb-rgb': function(color) {
-			var rgb = Color.hsbToRgb(color._hue / 360, color._saturation,
-					color._brightness);
-			return new RGBColor(rgb[0], rgb[1], rgb[2], color._alpha);
+			var h = color._hue / 60, // Scale to 0..6
+				s = color._saturation,
+				b = color._brightness,
+				i = Math.floor(h), // 0..5
+				f = h - i,
+				i = hsbIndices[i],
+				v = [
+					b, 						// b, index 0
+					b * (1 - s),			// p, index 1
+					b * (1 - s * f),		// q, index 2
+					b * (1 - s * (1 - f))	// t, index 3
+				];
+			return new RGBColor(v[i[0]], v[i[1]], v[i[2]], color._alpha);
 		},
 
 		'rgb-gray': function(color) {
@@ -210,44 +249,6 @@ var Color = this.Color = Base.extend(new function() {
 					}, src);
 				}
 				return this.base(src);
-			},
-
-			// Expose HSB converters since they are required in BlendMode:
-			rgbToHsb: function(r, g, b) {
-				var max = Math.max(r, g, b),
-					min = Math.min(r, g, b),
-					delta = max - min,
-					h,
-					s = max == 0 ? 0 : delta / max,
-					v = max;
-				if (delta == 0) {
-					h = 0; // Achromatic
-				} else {
-					switch (max) {
-					case r: h = (g - b) / delta + (g < b ? 6 : 0); break;
-					case g: h = (b - r) / delta + 2; break;
-					case b: h = (r - g) / delta + 4; break;
-					}
-					h /= 6;
-				}
-				return [h, s, v];
-			},
-
-			hsbToRgb: function(h, s, b) {
-				h *= 6;
-				var i = Math.floor(h),
-					f = h - i,
-					p = b * (1 - s),
-					q = b * (1 - s * f),
-					t = b * (1 - s * (1 - f));
-				switch (i) {
-				case 0: return [b, t, p];
-				case 1: return [q, b, p];
-				case 2: return [p, b, t];
-				case 3: return [p, q, b];
-				case 4: return [t, p, b];
-				case 5: return [b, p, q];
-				}
 			}
 		}
 	};
