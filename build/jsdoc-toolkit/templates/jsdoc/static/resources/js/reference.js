@@ -14,14 +14,14 @@ Code = HtmlElement.extend({
 	_class: 'code',
 
 	initialize: function() {
-		// Only format this element if it is visible, otherwise wait until
-		// it is made visible and then call format() manually.
 		if (this.getBounds().height != 0) {
-			this.format();
+			this.setup();
 		}
 	},
 
-	format: function() {
+	// Only setup this element if it is visible, otherwise wait until
+	// it is made visible and then call setup() manually.
+	setup: function() {
 		var that = this;
 		var start = this.getProperty('start');
 		var highlight = this.getProperty('highlight');
@@ -56,14 +56,14 @@ PaperScript = HtmlElement.extend({
 	_class: 'paperscript',
 
 	initialize: function() {
-		// Only format this element if it is visible, otherwise wait until
-		// it is made visible and then call format() manually.
+		// Only setup this element if it is visible, otherwise wait until
+		// it is made visible and then call setup() manually.
 		if (this.getBounds().height != 0) {
-			this.format();
+			this.setup();
 		}
 	},
 
-	format: function() {
+	setup: function() {
 		var script = $('script', this),
 			button = $('.button', this);
 		if (!script || !button)
@@ -194,7 +194,7 @@ function toggleMember(id, scrollTo) {
 		desc.modifyClass('hidden', !v);
 		if (!desc.editor && v) {
 			desc.editor = $$('pre.code, .paperscript', desc).each(function(code) {
-				code.format();
+				code.setup();
 			});
 		}
 		if (scrollTo)
