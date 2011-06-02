@@ -1,2 +1,13 @@
 <b>Example</b> <if test="data.description.length">{+ '&mdash; ' + data.description +}</if>
-<pre class="code">{+data.code+}</pre>
+<if test="data.paperScript">
+<div class="paperscript <if test="data.paperScript.mode">{+ data.paperScript.mode +}</if>">
+<if test="data.paperScript.source != 'false'"><div class="button">{+ data.paperScript.mode == 'source' ? 'Source' : 'Run' +}</div></if>
+<script type="text/paperscript" canvas="canvas{+ data.paperScript.id +}">
+{+ data.code +}
+</script>
+<div class="canvas"><canvas width="{+ Number(data.paperScript.width) - 4 +}" height="{+ data.paperScript.height +}" id="canvas{+ data.paperScript.id +}"></canvas></div>
+</div>
+</if>
+<if test="!data.paperScript">
+<pre class="code">{+ data.code +}</pre>
+</if>
