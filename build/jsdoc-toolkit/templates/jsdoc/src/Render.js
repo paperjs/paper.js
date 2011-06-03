@@ -283,12 +283,13 @@ var Render = new function() {
 				var example = examples[i].toString();
 				
 				// Parse {@paperscript} inline tags
-				var paperScript;
+				var paperScript = null;
 				example = example.replace(/\{@paperscript[\s]*([^}]+)*\}/,
 					function(tag, content) {
 						paperScript = {
 							width: 520,
-							height: 320,
+							height: 100,
+							split: 'true',
 							id: paperScriptId++
 						};
 						var pairs = tag.match(/[\S]+=[^\s}]+/g);
@@ -302,7 +303,7 @@ var Render = new function() {
 								: paperScript.source == 'true' ? 'source' : null;
 						return '';
 					}
-				);
+				).trim();
 
 				var lines = example.split('\n'),
 					description = [];
