@@ -681,15 +681,17 @@ var Path = this.Path = PathItem.extend({
 				pointSelected = segment._selectionState == SelectionState.POINT;
 			// TODO: draw handles depending on selection state of
 			// segment.point and neighbouring segments.
-				if (pointSelected || segment.isSelected(segment._handleIn))
+				if (pointSelected || segment._isSelected(segment._handleIn))
 					drawHandle(ctx, point, segment._handleIn);
-				if (pointSelected || segment.isSelected(segment._handleOut))
+				if (pointSelected || segment._isSelected(segment._handleOut))
 					drawHandle(ctx, point, segment._handleOut);
 			// Draw a rectangle at segment.point:
 			ctx.save();
 			ctx.beginPath();
 			ctx.rect(point._x - 2, point._y - 2, 4, 4);
 			ctx.fill();
+			// If the point is not selected, draw a white square that is 1 px
+			// smaller on all sides:
 			if (!pointSelected) {
 				ctx.beginPath();
 				ctx.rect(point._x - 1, point._y - 1, 2, 2);
