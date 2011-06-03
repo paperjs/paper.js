@@ -14,14 +14,10 @@ Code = HtmlElement.extend({
 	_class: 'code',
 
 	initialize: function() {
-		if (this.getBounds().height != 0) {
-			this.setup();
-		}
-	},
-
-	// Only setup this element if it is visible, otherwise wait until
-	// it is made visible and then call setup() manually.
-	setup: function() {
+		// Only format this element if it is visible, otherwise wait until
+		// it is made visible and then call initialize() manually.
+		if (this.initialized || this.getBounds().height == 0)
+			return;
 		var that = this;
 		var start = this.getProperty('start');
 		var highlight = this.getProperty('highlight');
@@ -48,22 +44,19 @@ Code = HtmlElement.extend({
 				}
 			}
 		}
-		return editor;
+		this.initialized = true;
 	}
 });
+
 
 PaperScript = HtmlElement.extend({
 	_class: 'paperscript',
 
 	initialize: function() {
-		// Only setup this element if it is visible, otherwise wait until
-		// it is made visible and then call setup() manually.
-		if (this.getBounds().height != 0) {
-			this.setup();
-		}
-	},
-
-	setup: function() {
+		// Only format this element if it is visible, otherwise wait until
+		// it is made visible and then call initialize() manually.
+		if (this.initialized || this.getBounds().height == 0)
+			return;
 		var script = $('script', this),
 			button = $('.button', this);
 		if (!script || !button)
@@ -71,7 +64,9 @@ PaperScript = HtmlElement.extend({
 		var source = button.injectAfter('div', {
 			className: 'source hidden'
 		});
-		var canvas = $('canvas', this),
+		var that = this,
+			canvas = $('canvas', this),
+			hasResize = canvas.getProperty('resize'),
 			showSplit = this.hasClass('split'),
 			sourceFirst = this.hasClass('source'),
 			width, height,
@@ -110,17 +105,20 @@ PaperScript = HtmlElement.extend({
 		}
 
 		function resize() {
-			if (canvas.hasClass('hidden')) {
+			if (!canvas.hasClass('hidden')) {
+				width = canvas.getWidth();
+				height = canvas.getHeight();
+			} else if (hasResize) {
 				// Can't get correct dimensions from hidden canvas,
 				// so calculate again.
 				var size = $window.getScrollSize();
 				var offset = source.getOffset();
 				width = size.width - offset.x;
 				height = size.height - offset.y;
-			} else {
-				width = canvas.getWidth();
-				height = canvas.getHeight();
 			}
+			// Resize the main element as well, so that the float:right button
+			// is always positioned correctly.
+			that.set({ width: width, height: height });
 			source.set({
 				width: width - (hasBorders ? 2 : 1),
 				height: height - (hasBorders ? 2 : 0)
@@ -140,10 +138,14 @@ PaperScript = HtmlElement.extend({
 					? 24 : 8);
 		}
 
-		if (canvas.getProperty('resize')) {
-			$window.addEvents({
-				resize: resize
-			});
+		if (hasResize) {
+			// Delay the installing of the resize event, so paper.js installs
+			// its own before us.
+			(function() {
+				$window.addEvents({
+					resize: resize
+				});
+			}).delay(1);
 			hasBorders = false;
 			source.setStyles({
 				borderWidth: '0 0 0 1px'
@@ -170,6 +172,7 @@ PaperScript = HtmlElement.extend({
 				event.stop();
 			}
 		});
+		this.initialized = true;
 	}
 });
 
@@ -194,7 +197,7 @@ function toggleMember(id, scrollTo) {
 		desc.modifyClass('hidden', !v);
 		if (!desc.editor && v) {
 			desc.editor = $$('pre.code, .paperscript', desc).each(function(code) {
-				code.setup();
+				code.initialize();
 			});
 		}
 		if (scrollTo)
