@@ -15,12 +15,15 @@
  */
 
 var DomElement = new function() {
-	function cumulate(el, name, parent) {
+	function cumulate(el, name, parent, positioned) {
 		var left = name + 'Left',
 			top = name + 'Top',
 			x = 0,
 			y = 0;
-		while (el) {
+			// If we're asked to calculate positioned offset, stop at any
+			// parent element that has relative or absolute position.
+			while (el && (!positioned
+					|| !/^(relative|absolute)$/.test(el.style.position))) {
 			x += el[left] || 0;
 			y += el[top] || 0;
 			el = el[parent];
@@ -29,8 +32,8 @@ var DomElement = new function() {
 	}
 
 	return {
-		getOffset: function(el, scroll) {
-			var point = cumulate(el, 'offset', 'offsetParent');
+		getOffset: function(el, positioned, scroll) {
+			var point = cumulate(el, 'offset', 'offsetParent', positioned);
 			return scroll
 				? point.subtract(cumulate(el, 'scroll', 'parentNode'))
 				: point;
@@ -40,8 +43,8 @@ var DomElement = new function() {
 			return Size.create(el.offsetWidth, el.offsetHeight);
 		},
 
-		getBounds: function(el, scroll) {
-			return new Rectangle(DomElement.getOffset(el, scroll),
+		getBounds: function(el, positioned, scroll) {
+			return new Rectangle(DomElement.getOffset(el, positioned, scroll),
 					DomElement.getSize(el));
 		},
 
@@ -59,7 +62,7 @@ var DomElement = new function() {
 			// See if the scrolled bounds intersect with the windows rectangle
 			// which always starts at 0, 0
 			return new Rectangle([0, 0], DomElement.getWindowSize())
-					.intersects(DomElement.getBounds(el, true));
+					.intersects(DomElement.getBounds(el, false, true));
 		}
 	};
 };
