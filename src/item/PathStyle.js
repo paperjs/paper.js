@@ -67,13 +67,18 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		 * </pre>
 		 */
 		initialize: function(style) {
-			// Note: This relies on bean setters that get implicetly
-			// called when setting values on this[key].
+			// If the passed style object is a PathStyle, clone its clonable
+			// fields rather than simply copying them.
+			var clone = style instanceof PathStyle;
+			// Note: This relies on bean getters and setters that get implicetly
+			// called when getting from style[key] and setting on this[key].
 			for (var i = 0, l = style && keys.length; i < l; i++) {
 				var key = keys[i],
 					value = style[key];
-				if (value !== undefined)
-					this[key] = value;
+				if (value !== undefined) {
+					this[key] = value && clone && value.clone
+							? value.clone() : value;
+				}
 			}
 		},
 
@@ -101,7 +106,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 			} else {
 				var old = this['_' + key];
 				if (old != value && !(old && old.equals && old.equals(value))) {
-					this['_' + key] = value && value.clone ? value.clone() : value;
+					this['_' + key] = value;
 					if (this._item) {
 						this._item._changed(ChangeFlags.STYLE
 							| (strokeFlags[key] ? ChangeFlags.STROKE : 0));
