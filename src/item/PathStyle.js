@@ -23,13 +23,14 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 	//		'strokeCap', 'strokeJoin', 'miterLimit', 'dashOffset','dashArray',
 	//		'strokeOverprint', 'fillColor', 'fillOverprint'],
 	var keys = ['strokeColor', 'strokeWidth', 'strokeCap', 'strokeJoin',
-				'miterLimit', 'dashOffset','dashArray', 'fillColor'],
-		strokeFlags = {
-			strokeWidth: true,
-			strokeCap: true,
-			strokeJoin: true,
-			miterLimit: true
-		};
+				'miterLimit', 'dashOffset','dashArray', 'fillColor'];
+
+	var strokeFlags = {
+		strokeWidth: true,
+		strokeCap: true,
+		strokeJoin: true,
+		miterLimit: true
+	};
 
 	var fields = {
 		beans: true,
