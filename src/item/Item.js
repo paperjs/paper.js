@@ -67,10 +67,17 @@ var Item = this.Item = Base.extend({
 	 * @type String
 	 * @bean
 	 * 
-	 * @example
-	 * var path = new Path();
+	 * @example {@paperscript}
+	 * var path = new Path.Circle(new Point(80, 50), 35);
+	 * // Set the name of the path:
 	 * path.name = 'example';
-	 * project.activeLayer.children['example'].remove();
+	 * 
+	 * // Create a group and move path into it:
+	 * var group = new Group();
+	 * group.appendTop(path);
+	 * 
+	 * // The path can be accessed by name:
+	 * group.children['example'].fillColor = 'red';
 	 */
 	getName: function() {
 		return this._name;
@@ -96,12 +103,12 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * The item's position within the project. This is the
-	 * {@link Rectangle#center} of the {@link #bounds} rectangle.
+	 * {@link Rectangle#center} of the item's {@link #bounds} rectangle.
 	 * 
 	 * @type Point
 	 * @bean
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Changing the position of a path:
 	 * 
 	 * // Create a circle at position { x: 10, y: 10 }
@@ -111,20 +118,18 @@ var Item = this.Item = Base.extend({
 	 * // Move the circle to { x: 20, y: 20 }
 	 * circle.position = new Point(20, 20);
 	 * 
-	 * // Move the circle 10 points to the right and 10 points down
-	 * circle.position += new Point(10, 10);
-	 * console.log(circle.position); // { x: 30, y: 30 }
+	 * // Move the circle 100 points to the right and 50 points down
+	 * circle.position += new Point(100, 50);
 	 *
-	 * @example
+	 * @example {@paperscript split=true height=100}
 	 * // Changing the x coordinate of an item's position:
 	 * 
-	 * // Create a circle at position { x: 10, y: 10 }
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * // Create a circle at position { x: 20, y: 20 }
+	 * var circle = new Path.Circle(new Point(20, 20), 10);
 	 * circle.fillColor = 'red';
 	 * 
-	 * // Move the circle 10 points to the right
-	 * circle.position.x += 10;
-	 * console.log(circle.position); // { x: 20, y: 10 }
+	 * // Move the circle 100 points to the right
+	 * circle.position.x += 100;
 	 */
 	getPosition: function() {
 		// Cache position value
@@ -148,15 +153,38 @@ var Item = this.Item = Base.extend({
 	 * @type PathStyle
 	 * @bean
 	 *
-	 * @example
+	 * @example {@paperscript}
 	 * // Applying several styles to an item in one go, by passing an object
 	 * // to its style property:
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
 	 * circle.style = {
-	 * 	fillColor: new RGBColor(1, 0, 0),
-	 * 	strokeColor: new RGBColor(0, 1, 0),
+	 * 	fillColor: 'blue',
+	 * 	strokeColor: 'red',
 	 * 	strokeWidth: 5
 	 * };
+	 * 
+	 * @example {@paperscript split=true height=100}
+	 * // Copying the style of another item:
+	 * var path = new Path.Circle(new Point(50, 50), 30);
+	 * path.fillColor = 'red';
+	 * 
+	 * var path2 = new Path.Circle(new Point(180, 50), 20);
+	 * // Copy the path style of path:
+	 * path2.style = path.style;
+	 * 
+	 * @example {@paperscript}
+	 * // Applying the same style object to multiple items:
+	 * var myStyle = {
+	 * 	fillColor: 'red',
+	 * 	strokeColor: 'blue',
+	 * 	strokeWidth: 4
+	 * };
+	 * 
+	 * var path = new Path.Circle(new Point(80, 50), 30);
+	 * path.style = myStyle;
+	 * 
+	 * var path2 = new Path.Circle(new Point(150, 50), 20);
+	 * path2.style = myStyle;
 	 */
 	getStyle: function() {
 		return this._style;
@@ -178,13 +206,14 @@ var Item = this.Item = Base.extend({
 	 *
 	 * @type Boolean
 	 * @bean
+	 * @see Project#selectedItems
+	 * @see Segment#selected
+	 * @see Point#selected
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Selecting an item:
-	 * console.log(project.selectedItems.length); // 0
-	 * var path = new Path.Circle(new Size(50, 50), 25);
+	 * var path = new Path.Circle(new Size(80, 50), 35);
 	 * path.selected = true; // Select the path
-	 * console.log(project.selectedItems.length); // 1
 	 */	
 	isSelected: function() {
 		if (this._children) {
@@ -234,11 +263,13 @@ var Item = this.Item = Base.extend({
 	 * @type Boolean
 	 * @default true
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Hiding an item:
 	 * var path = new Path.Circle(new Point(50, 50), 20);
 	 * path.fillColor = 'red';
-	 * path.visible = false; // Hides the path
+	 * 
+	 * // Hide the path:
+	 * path.visible = false;
 	 */
 	visible: true,
 
@@ -269,24 +300,42 @@ var Item = this.Item = Base.extend({
 	 * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light', 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten', 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color', 'add', 'subtract', 'average', 'pin-light', 'negation')
 	 * @default 'normal'
 	 * 
-	 * @example
-	 * // Setting an item's blend mode to 'multiply':
-	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * @example {@paperscript}
+	 * // Setting an item's blend mode:
+	 * 
+	 * // Create a white rectangle in the background
+	 * // with the same dimensions as the view:
+	 * var background = new Path.Rectangle(view.bounds);
+	 * background.fillColor = 'white';
+	 * 
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
 	 * circle.fillColor = 'red';
-	 * circle.blendMode = 'multiply';
+	 * 
+	 * var circle2 = new Path.Circle(new Point(120, 50), 35);
+	 * circle2.fillColor = 'blue';
+	 * 
+	 * // Set the blend mode of circle2:
+	 * circle2.blendMode = 'multiply';
 	 */
 	blendMode: 'normal',
 
 	/**
 	 * The opacity of the item as a value between {@code 0} and {@code 1}.
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Making an item 50% transparent:
-	 * 
-	 * // Create a circle at position { x: 50, y: 50 } 
-	 * var circle = new Path.Circle(new Point(50, 50), 20);
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
 	 * circle.fillColor = 'red';
-	 * circle.opacity = 0.5;
+     * 
+	 * var circle2 = new Path.Circle(new Point(120, 50), 35);
+	 * circle2.style = {
+	 * 	fillColor: 'blue',
+	 * 	strokeColor: 'green',
+	 * 	strokeWidth: 10
+	 * };
+	 * 
+	 * // Make circle2 50% transparent:
+	 * circle2.opacity = 0.5;
 	 * 
 	 * @type Number
 	 * @default 1
@@ -330,11 +379,13 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @example
 	 * var path = new Path();
+	 * 
 	 * // New items are placed in the active layer:
 	 * console.log(path.parent == project.activeLayer); // true
 	 * 
 	 * var group = new Group();
 	 * group.appendTop(path);
+	 * 
 	 * // Now the parent of the path has become the group:
 	 * console.log(path.parent == group); // true
 	 */
@@ -342,6 +393,8 @@ var Item = this.Item = Base.extend({
 		return this._parent;
 	},
 
+	// DOCS: add comment to Item#children about not playing around with the
+	// array directly - use appendTop etc instead.
 	/**
 	 * The children items contained within this item. Items that define a
 	 * {@link #name} can also be accessed by name.
@@ -349,17 +402,39 @@ var Item = this.Item = Base.extend({
 	 * @type Item[]
 	 * @bean
 	 *
-	 * @example
-	 * var path = new Path();
+	 * @example {@paperscript}
+	 * // Accessing items in the children array:
+	 * var path = new Path.Circle(new Point(80, 50), 35);
+	 * 
+	 * // Create a group and move the path into it:
 	 * var group = new Group();
 	 * group.appendTop(path);
 	 *
-	 * // The path has been placed in the children list of the group:
-	 * console.log(group.children[0] == path);
+	 * // Access the path through the group's children array:
+	 * group.children[0].fillColor = 'red';
 	 * 
+	 * @example {@paperscript}
+	 * // Accessing children by name:
+	 * var path = new Path.Circle(new Point(80, 50), 35);
+	 * // Set the name of the path:
 	 * path.name = 'example';
-	 * // Now the path can also be accessed by name:
-	 * console.log(group.children['example'] == path); // true
+	 * 
+	 * // Create a group and move the path into it:
+	 * var group = new Group();
+	 * group.appendTop(path);
+	 * 
+	 * // The path can be accessed by name:
+	 * group.children['example'].fillColor = 'orange';
+	 * 
+	 * @example {@paperscript}
+	 * // Passing an array of items to item.children:
+	 * var path = new Path.Circle(new Point(80, 50), 35);
+	 * 
+	 * var group = new Group();
+	 * group.children = [path];
+	 * 
+	 * // The path is the first child of the group:
+	 * group.firstChild.fillColor = 'green';
 	 */
 	getChildren: function() {
 		return this._children;
@@ -506,6 +581,19 @@ var Item = this.Item = Base.extend({
 	 * item.
 	 * 
 	 * @return {Item} the newly cloned item
+	 * 
+	 * @example {@paperscript}
+	 * // Cloning items:
+	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Make 20 copies of the circle:
+	 * for (var i = 0; i < 20; i++) {
+	 * 	var copy = circle.clone();
+	 * 
+	 * 	// Move the copies horizontally, so we can see them:
+	 * 	copy.position.x += i * copy.bounds.width;
+	 * }
 	 */
 	clone: function() {
 		return this._clone(new this.constructor());
@@ -538,9 +626,7 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * Reverses the order of this item's children
-	 * 
-	 * @return {Boolean} {@true the children were removed}
+	 * Reverses the order of the item's children
 	 */
 	reverseChildren: function() {
 		if (this._children) {
@@ -557,6 +643,21 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @param {Number} [resolution=72] the resolution of the raster in dpi
 	 * @return {Raster} the newly created raster item
+	 * 
+	 * @example {@paperscript}
+	 * // Rasterizing an item:
+	 * var circle = new Path.Circle(new Point(80, 50), 5);
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Create a rasterized version of the path:
+	 * var raster = circle.rasterize();
+	 * 
+	 * // Move it 100pt to the right:
+	 * raster.position.x += 100;
+	 * 
+	 * // Scale the path and the raster by 300%, so we can compare them:
+	 * circle.scale(5);
+	 * raster.scale(5);
 	 */
 	rasterize: function(resolution) {
 		// TODO: why would we want to pass a size to rasterize? Seems to produce
@@ -813,12 +914,12 @@ var Item = this.Item = Base.extend({
 	 * @name Item#strokeColor
 	 * @type RGBColor|HSBColor|GrayColor
 	 * 
-	 * @example
-	 * // Setting an item's stroke color:
+	 * @example {@paperscript}
+	 * // Setting the stroke color of a path:
 	 * 
-	 * // Create a circle shaped path at { x: 50, y: 50 }
-	 * // with a radius of 10:
-	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
 	 * 
 	 * // Set its stroke color to RGB red:
 	 * circle.strokeColor = new RGBColor(1, 0, 0);
@@ -831,15 +932,18 @@ var Item = this.Item = Base.extend({
 	 * @name Item#strokeWidth
 	 * @type Number
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Setting an item's stroke width:
 	 * 
-	 * // Create a circle shaped path at { x: 50, y: 50 }
-	 * // with a radius of 10:
-	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
 	 * 
-	 * // Set its stroke width to 3pt:
-	 * circle.strokeWidth = 3;
+	 * // Set its stroke color to black:
+	 * circle.strokeColor = 'black';
+	 * 
+	 * // Set its stroke width to 10:
+	 * circle.strokeWidth = 10;
 	 */
 
 	/**
@@ -851,15 +955,28 @@ var Item = this.Item = Base.extend({
 	 * @default 'butt'
 	 * @type String('round', 'square', 'butt')
 	 * 
-	 * @example
-	 * // Setting an item's stroke cap:
+	 * @example {@paperscript height=200}
+	 * // A look at the different stroke caps:
 	 * 
-	 * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
-	 * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
+	 * var line = new Path(new Point(80, 50), new Point(420, 50));
 	 * line.strokeColor = 'black';
+	 * line.strokeWidth = 20;
+	 * 
+	 * // Select the path, so we can see where the stroke is formed:
+	 * line.selected = true;
 	 * 
 	 * // Set the stroke cap of the line to be round:
 	 * line.strokeCap = 'round';
+	 * 
+	 * // Copy the path and set its stroke cap to be square:
+	 * var line2 = line.clone();
+	 * line2.position.y += 50;
+	 * line2.strokeCap = 'square';
+	 * 
+	 * // Make another copy and set its stroke cap to be butt:
+	 * var line2 = line.clone();
+	 * line2.position.y += 100;
+	 * line2.strokeCap = 'butt';
 	 */
 
 	/**
@@ -869,6 +986,27 @@ var Item = this.Item = Base.extend({
 	 * @name Item#strokeJoin
 	 * @default 'miter'
 	 * @type String ('miter', 'round', 'bevel')
+	 * 
+	 * 
+	 * @example {@paperscript height=120}
+	 * // A look at the different stroke joins:
+	 * var path = new Path();
+	 * path.add(new Point(80, 100));
+	 * path.add(new Point(120, 40));
+	 * path.add(new Point(160, 100));
+	 * path.strokeColor = 'black';
+	 * path.strokeWidth = 20;
+	 * 
+	 * // Select the path, so we can see where the stroke is formed:
+	 * path.selected = true;
+     * 
+	 * var path2 = path.clone();
+	 * path2.position.x += path2.bounds.width * 1.5;
+	 * path2.strokeJoin = 'round';
+     * 
+	 * var path3 = path2.clone();
+	 * path3.position.x += path3.bounds.width * 1.5;
+	 * path3.strokeJoin = 'bevel';
 	 */
 
 	// /**
@@ -882,7 +1020,7 @@ var Item = this.Item = Base.extend({
 	// /**
 	//  * Specifies an array containing the dash and gap lengths of the stroke.
 	//  * 
-	//  * @example
+	//  * @example {@paperscript}
 	//  * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
 	//  * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
 	//  * 
@@ -918,15 +1056,15 @@ var Item = this.Item = Base.extend({
 	 * @name Item#fillColor
 	 * @type RGBColor|HSBColor|GrayColor
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Setting the fill color of a path to red:
 	 * 
-	 * // Create a circle shaped path at { x: 50, y: 50 }
-	 * // with a radius of 10:
-	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
 	 * 
 	 * // Set the fill color of the circle to RGB red:
-	 * circle.fillColor = new RGBColor(1, 0, 0, );
+	 * circle.fillColor = new RGBColor(1, 0, 0);
 	 */
 
 	// DOCS: document the different arguments that this function can receive.
@@ -934,66 +1072,53 @@ var Item = this.Item = Base.extend({
 	 * {@grouptitle Transform Functions}
 	 * 
 	 * Scales the item by the given value from its center point, or optionally
-	 * by a supplied point.
+	 * from a supplied point.
 	 * 
 	 * @name Item#scale
 	 * @function
 	 * @param {Number} scale the scale factor
 	 * @param {Point} [center=the center point of the item]
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Scaling an item from its center point:
 	 * 
-	 * // Create a circle at position { x: 10, y: 10 } 
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * circle.fillColor = 'black';
-	 * console.log(circle.bounds.width); // 20
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 20:
+	 * var circle = new Path.Circle(new Point(80, 50), 20);
+	 * circle.fillColor = 'red';
 	 * 
-	 * // Scale the path by 200% from its center point
-	 * circle.scale(2);
+	 * // Scale the path by 150% from its center point
+	 * circle.scale(1.5);
 	 * 
-	 * console.log(circle.bounds.width); // 40
-	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Scaling an item from a specific point:
 	 * 
-	 * // Create a circle at position { x: 10, y: 10 } 
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * circle.fillColor = 'black';
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 20:
+	 * var circle = new Path.Circle(new Point(80, 50), 20);
+	 * circle.fillColor = 'red';
 	 * 
-	 * // Scale the path 200% from its bottom left corner
-	 * circle.scale(2, circle.bounds.bottomLeft);
+	 * // Scale the path 150% from its bottom left corner
+	 * circle.scale(1.5, circle.bounds.bottomLeft);
 	 */
 	/**
 	 * Scales the item by the given values from its center point, or optionally
-	 * by a supplied point.
+	 * from a supplied point.
 	 * 
 	 * @param {Number} sx the horizontal scale factor
 	 * @param {Number} sy the vertical scale factor
 	 * @param {Point} [center=the center point of the item]
 	 * 
-	 * @example
-	 * // Scaling an item horizontally by 200%:
+	 * @example {@paperscript}
+	 * // Scaling an item horizontally by 300%:
 	 * 
-	 * // Create a circle at position { x: 10, y: 10 } 
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * circle.fillColor = 'black';
-	 * console.log(circle.bounds.width); // 20
-	 * 
-	 * // Scale the path horizontally by 200%
-	 * circle.scale(1, 2);
-	 * 
-	 * console.log(circle.bounds.width); // 40
-	 * 
-	 * @example
-	 * // Scaling an item horizontally by 200% from its bottom left corner:
-	 * 
-	 * // Create a circle at position { x: 10, y: 10 } 
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * circle.fillColor = 'black';
-	 * 
-	 * // Scale the path 200% horizontally from its bottom left corner
-	 * circle.scale(1, 2, circle.bounds.bottomLeft);
+	 * // Create a circle shaped path at { x: 100, y: 50 }
+	 * // with a radius of 20:
+	 * var circle = new Path.Circle(new Point(100, 50), 20);
+	 * circle.fillColor = 'red';
+     * 
+	 * // Scale the path horizontally by 300%
+	 * circle.scale(3, 1);
 	 */
 	scale: function(sx, sy /* | scale */, center) {
 		// See Matrix#scale for explanation of this:
@@ -1018,21 +1143,58 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Rotates the item by a given angle around the given point.
 	 * 
-	 * Angles are oriented clockwise and measured in degrees by default. Read
-	 * more about angle units and orientation in the description of the
-	 * {@link Point#angle} property.
+	 * Angles are oriented clockwise and measured in degrees.
 	 * 
 	 * @param {Number} angle the rotation angle
 	 * @param {Point} [center=the center point of the item]
 	 * @see Matrix#rotate
+	 * 
+	 * @example {@paperscript}
+	 * // Rotating an item:
+	 * 
+	 * // Create a rectangle shaped path with its top left
+	 * // point at {x: 80, y: 25} and a size of {width: 50, height: 50}:
+	 * var path = new Path.Rectangle(new Point(80, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+     * 
+	 * // Rotate the path by 30 degrees:
+	 * path.rotate(30);
+	 * 
+	 * @example {@paperscript height=200}
+	 * // Rotating an item around a specific point:
+	 * 
+	 * // Create a rectangle shaped path with its top left
+	 * // point at {x: 180, y: 125} and a size of {width: 20, height: 20}:
+	 * var topLeft = new Point(180, 125);
+	 * var size = new Size(20, 20);
+	 * var path = new Path.Rectangle(topLeft, size);
+	 * path.fillColor = 'black';
+	 * 
+	 * // Each frame rotate the path 3 degrees around the center point
+	 * // of the view:
+	 * function onFrame(event) {
+	 * 	path.rotate(3, view.center);
+	 * }
 	 */
 	rotate: function(angle, center) {
 		return this.transform(new Matrix().rotate(angle,
 				center || this.getPosition()));
 	},
 
+	// TODO: add test for item shearing, as it might be behaving oddly.
 	/**
-	 * Shears the item with a given amount around its center point.
+	 * Shears the item by the given value from its center point, or optionally
+	 * by a supplied point.
+	 * 
+	 * @name Item#shear
+	 * @function
+	 * @param {Point} point
+	 * @param {Point} [center=the center point of the item]
+	 * @see Matrix#shear
+	 */
+	/**
+	 * Shears the item by the given values from its center point, or optionally
+	 * by a supplied point.
 	 * 
 	 * @param {Number} shx
 	 * @param {Number} shy
@@ -1280,17 +1442,18 @@ var Item = this.Item = Base.extend({
 	 * @function
 	 * @param {Object} object
 	 * 
-	 * @example
+	 * @example {@paperscript height=200}
+	 * // Click and drag below:
 	 * function onMouseDrag(event) {
 	 * 	// Create a circle shaped path at the mouse position,
 	 * 	// with a radius of 10:
 	 * 	var path = new Path.Circle(event.point, 10);
 	 * 	path.fillColor = 'black';
 	 * 	
-	 * 	// Remove the path on the next onMouseDrag or onMouseUp event:
+	 * 	// Remove the path on the next onMouseDrag or onMouseDown event:
 	 * 	path.removeOn({
 	 * 		drag: true,
-	 * 		up: true
+	 * 		down: true
 	 * 	});
 	 * }
 	 */
@@ -1301,7 +1464,8 @@ var Item = this.Item = Base.extend({
 	 * @name Item#removeOnMove
 	 * @function
 	 * 
-	 * @example
+	 * @example {@paperscript height=200}
+	 * // Move your mouse below:
 	 * function onMouseMove(event) {
 	 * 	// Create a circle shaped path at the mouse position,
 	 * 	// with a radius of 10:
@@ -1319,11 +1483,13 @@ var Item = this.Item = Base.extend({
 	 * @name Item#removeOnDown
 	 * @function
 	 * 
-	 * @example
+	 * @example {@paperscript height=200}
+	 * // Click a few times below:
 	 * function onMouseDown(event) {
 	 * 	// Create a circle shaped path at the mouse position,
 	 * 	// with a radius of 10:
 	 * 	var path = new Path.Circle(event.point, 10);
+	 * 	path.fillColor = 'black';
 	 * 
 	 * 	// Remove the path, next time the mouse is pressed:
 	 * 	path.removeOnDown();
@@ -1336,7 +1502,8 @@ var Item = this.Item = Base.extend({
 	 * @name Item#removeOnDrag
 	 * @function
 	 * 
-	 * @example
+	 * @example {@paperscript height=200}
+	 * // Click and drag below:
 	 * function onMouseDrag(event) {
 	 * 	// Create a circle shaped path at the mouse position,
 	 * 	// with a radius of 10:
@@ -1354,7 +1521,8 @@ var Item = this.Item = Base.extend({
 	 * @name Item#removeOnUp
 	 * @function
 	 * 
-	 * @example
+	 * @example {@paperscript height=200}
+	 * // Click a few times below:
 	 * function onMouseDown(event) {
 	 * 	// Create a circle shaped path at the mouse position,
 	 * 	// with a radius of 10:
