@@ -283,7 +283,7 @@ var Render = new function() {
 				var example = examples[i].toString();
 				
 				// Parse {@paperscript} inline tags
-				var paperScript;
+				var paperScript = null;
 				example = example.replace(/\{@paperscript[\s]*([^}]+)*\}/,
 					function(tag, content) {
 						paperScript = {
