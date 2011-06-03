@@ -166,6 +166,16 @@ var Path = this.Path = PathItem.extend({
 	 * 
 	 * @type Boolean
 	 * @bean
+	 * 
+	 * @example
+	 * var myPath = new Path();
+	 * myPath.strokeColor = 'black';
+	 * myPath.add(new Point(40, 90));
+	 * myPath.add(new Point(90, 40));
+	 * myPath.add(new Point(140, 90));
+	 * 
+	 * // Close the path:
+	 * myPath.closed = true;
 	 */
 	getClosed: function() {
 		return this._closed;
