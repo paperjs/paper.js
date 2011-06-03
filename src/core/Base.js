@@ -14,8 +14,9 @@
  * All rights reserved.
  */
 
-// Extend Base with utility functions used across the library.
-Base.inject({
+// Extend Base with utility functions used across the library. Also set
+// this.Base, since bootstrap.js ommits that.
+this.Base = Base.inject({
 
 	clone: function() {
 		return new this.constructor(this);

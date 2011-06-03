@@ -43,8 +43,8 @@ var CanvasProvider = {
 			canvas.height = size.height;
 			return canvas;
 //#else // !BROWSER
-			// TODO: Implement for server environments
-			return null;
+			// Only rhino-canvas for now:
+			return new Image(size.width, size.height);
 //#endif // !BROWSER
 		}
 	},
