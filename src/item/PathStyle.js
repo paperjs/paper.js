@@ -167,12 +167,12 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * @name PathStyle#strokeColor
  * @type RGBColor|HSBColor|GrayColor
  * 
- * @example
- * // Setting an item's stroke color:
+ * @example {@paperscript}
+ * // Setting the stroke color of a path:
  * 
- * // Create a circle shaped path at { x: 50, y: 50 }
- * // with a radius of 10:
- * var circle = new Path.Circle(new Point(50, 50), 10);
+ * // Create a circle shaped path at { x: 80, y: 50 }
+ * // with a radius of 35:
+ * var circle = new Path.Circle(new Point(80, 50), 35);
  * 
  * // Set its stroke color to RGB red:
  * circle.strokeColor = new RGBColor(1, 0, 0);
@@ -186,15 +186,18 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * @default 1
  * @type Number
  * 
- * @example
+ * @example {@paperscript}
  * // Setting an item's stroke width:
  * 
- * // Create a circle shaped path at { x: 50, y: 50 }
- * // with a radius of 10:
- * var circle = new Path.Circle(new Point(50, 50), 10);
+ * // Create a circle shaped path at { x: 80, y: 50 }
+ * // with a radius of 35:
+ * var circle = new Path.Circle(new Point(80, 50), 35);
  * 
- * // Set its stroke width to 3pt:
- * circle.strokeWidth = 3;
+ * // Set its stroke color to black:
+ * circle.strokeColor = 'black';
+ * 
+ * // Set its stroke width to 10:
+ * circle.strokeWidth = 10;
  */
 
 /**
@@ -206,15 +209,28 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * @default 'butt'
  * @type String('round', 'square', 'butt')
  * 
- * @example
- * // Setting an item's stroke cap:
+ * @example {@paperscript height=200}
+ * // A look at the different stroke caps:
  * 
- * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
- * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
+ * var line = new Path(new Point(80, 50), new Point(420, 50));
  * line.strokeColor = 'black';
+ * line.strokeWidth = 20;
+ * 
+ * // Select the path, so we can see where the stroke is formed:
+ * line.selected = true;
  * 
  * // Set the stroke cap of the line to be round:
  * line.strokeCap = 'round';
+ * 
+ * // Copy the path and set its stroke cap to be square:
+ * var line2 = line.clone();
+ * line2.position.y += 50;
+ * line2.strokeCap = 'square';
+ * 
+ * // Make another copy and set its stroke cap to be butt:
+ * var line2 = line.clone();
+ * line2.position.y += 100;
+ * line2.strokeCap = 'butt';
  */
 
 /**
@@ -224,6 +240,26 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * @name PathStyle#strokeJoin
  * @default 'miter'
  * @type String ('miter', 'round', 'bevel')
+ * 
+ * @example {@paperscript height=120}
+ * // A look at the different stroke joins:
+ * var path = new Path();
+ * path.add(new Point(80, 100));
+ * path.add(new Point(120, 40));
+ * path.add(new Point(160, 100));
+ * path.strokeColor = 'black';
+ * path.strokeWidth = 20;
+ * 
+ * // Select the path, so we can see where the stroke is formed:
+ * path.selected = true;
+ * 
+ * var path2 = path.clone();
+ * path2.position.x += path2.bounds.width * 1.5;
+ * path2.strokeJoin = 'round';
+ * 
+ * var path3 = path2.clone();
+ * path3.position.x += path3.bounds.width * 1.5;
+ * path3.strokeJoin = 'bevel';
  */
 
 // /**
@@ -275,13 +311,13 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
  * @name PathStyle#fillColor
  * @type RGBColor|HSBColor|GrayColor
  * 
- * @example
- * // Setting the fill color of an item:
+ * @example {@paperscript}
+ * // Setting the fill color of a path to red:
  * 
- * // Create a circle shaped path at { x: 50, y: 50 }
- * // with a radius of 10:
- * var circle = new Path.Circle(new Point(50, 50), 10);
+ * // Create a circle shaped path at { x: 80, y: 50 }
+ * // with a radius of 35:
+ * var circle = new Path.Circle(new Point(80, 50), 35);
  * 
- * // Set its fill color to RGB red:
- * circle.fillColor = new RGBColor(1, 0, 0, );
+ * // Set the fill color of the circle to RGB red:
+ * circle.fillColor = new RGBColor(1, 0, 0);
  */
