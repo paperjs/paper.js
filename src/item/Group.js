@@ -40,7 +40,7 @@ var Group = this.Group = Item.extend({
 	 * // Move the group to the center of the view:
 	 * group.position = view.center;
 	 * 
-	 * @example {@paperscript split=true}
+	 * @example {@paperscript split=true height=320}
 	 * // Click in the view to add a path to the group, which in turn is rotated
 	 * // every frame:
 	 * var group = new Group();
