@@ -67,10 +67,17 @@ var Item = this.Item = Base.extend({
 	 * @type String
 	 * @bean
 	 * 
-	 * @example
-	 * var path = new Path();
+	 * @example {@paperscript height=200 source=true}
+	 * var path = new Path.Circle(new Point(50, 50), 30);
+	 * // Set the name of the path:
 	 * path.name = 'example';
-	 * project.activeLayer.children['example'].remove();
+	 * 
+	 * // Create a group and move path into it:
+	 * var group = new Group();
+	 * group.appendTop(path);
+	 * 
+	 * // The path can be accessed by name:
+	 * group.children['example'].fillColor = 'black';
 	 */
 	getName: function() {
 		return this._name;
@@ -101,7 +108,7 @@ var Item = this.Item = Base.extend({
 	 * @type Point
 	 * @bean
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Changing the position of a path:
 	 * 
 	 * // Create a circle at position { x: 10, y: 10 }
@@ -111,20 +118,18 @@ var Item = this.Item = Base.extend({
 	 * // Move the circle to { x: 20, y: 20 }
 	 * circle.position = new Point(20, 20);
 	 * 
-	 * // Move the circle 10 points to the right and 10 points down
-	 * circle.position += new Point(10, 10);
-	 * console.log(circle.position); // { x: 30, y: 30 }
+	 * // Move the circle 100 points to the right and 50 points down
+	 * circle.position += new Point(100, 50);
 	 *
-	 * @example
+	 * @example {@paperscript split=true height=100}
 	 * // Changing the x coordinate of an item's position:
 	 * 
-	 * // Create a circle at position { x: 10, y: 10 }
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * // Create a circle at position { x: 20, y: 20 }
+	 * var circle = new Path.Circle(new Point(20, 20), 10);
 	 * circle.fillColor = 'red';
 	 * 
-	 * // Move the circle 10 points to the right
-	 * circle.position.x += 10;
-	 * console.log(circle.position); // { x: 20, y: 10 }
+	 * // Move the circle 100 points to the right
+	 * circle.position.x += 100;
 	 */
 	getPosition: function() {
 		// Cache position value
@@ -148,15 +153,38 @@ var Item = this.Item = Base.extend({
 	 * @type PathStyle
 	 * @bean
 	 *
-	 * @example
+	 * @example {@paperscript}
 	 * // Applying several styles to an item in one go, by passing an object
 	 * // to its style property:
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * var circle = new Path.Circle(new Point(50, 50), 30);
 	 * circle.style = {
-	 * 	fillColor: new RGBColor(1, 0, 0),
-	 * 	strokeColor: new RGBColor(0, 1, 0),
+	 * 	fillColor: 'blue',
+	 * 	strokeColor: 'red',
 	 * 	strokeWidth: 5
 	 * };
+	 * 
+	 * @example {@paperscript split=true height=100}
+	 * // Copying the style of another item:
+	 * var path = new Path.Circle(new Point(50, 50), 30);
+	 * path.fillColor = 'red';
+	 * 
+	 * var path2 = new Path.Circle(new Point(150, 50), 20);
+	 * // Copy the path style of path:
+	 * path2.style = path.style;
+	 * 
+	 * @example {@paperscript}
+	 * // Applying the same style object to multiple items:
+	 * var myStyle = {
+	 * 	fillColor: 'red',
+	 * 	strokeColor: 'blue',
+	 * 	strokeWidth: 4
+	 * };
+	 * 
+	 * var path = new Path.Circle(new Point(50, 50), 30);
+	 * path.style = myStyle;
+	 * 
+	 * var path2 = new Path.Circle(new Point(150, 50), 20);
+	 * path2.style = myStyle;
 	 */
 	getStyle: function() {
 		return this._style;
@@ -178,13 +206,14 @@ var Item = this.Item = Base.extend({
 	 *
 	 * @type Boolean
 	 * @bean
+	 * @see Project#selectedItems
+	 * @see Segment#selected
+	 * @see Point#selected
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Selecting an item:
-	 * console.log(project.selectedItems.length); // 0
-	 * var path = new Path.Circle(new Size(50, 50), 25);
+	 * var path = new Path.Circle(new Size(100, 50), 35);
 	 * path.selected = true; // Select the path
-	 * console.log(project.selectedItems.length); // 1
 	 */	
 	isSelected: function() {
 		if (this._children) {
@@ -234,11 +263,13 @@ var Item = this.Item = Base.extend({
 	 * @type Boolean
 	 * @default true
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Hiding an item:
 	 * var path = new Path.Circle(new Point(50, 50), 20);
 	 * path.fillColor = 'red';
-	 * path.visible = false; // Hides the path
+	 * 
+	 * // Hide the path:
+	 * path.visible = false;
 	 */
 	visible: true,
 
@@ -269,24 +300,42 @@ var Item = this.Item = Base.extend({
 	 * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light', 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten', 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color', 'add', 'subtract', 'average', 'pin-light', 'negation')
 	 * @default 'normal'
 	 * 
-	 * @example
-	 * // Setting an item's blend mode to 'multiply':
-	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * @example {@paperscript}
+	 * // Setting an item's blend mode:
+	 * 
+	 * // Create a white rectangle in the background
+	 * // with the same dimensions as the view:
+	 * var background = new Path.Rectangle(view.bounds);
+	 * background.fillColor = 'white';
+	 * 
+	 * var circle = new Path.Circle(new Point(50, 50), 40);
 	 * circle.fillColor = 'red';
-	 * circle.blendMode = 'multiply';
+	 * 
+	 * var circle2 = new Path.Circle(new Point(100, 50), 40);
+	 * circle2.fillColor = 'blue';
+	 * 
+	 * // Set the blend mode of circle2:
+	 * circle2.blendMode = 'multiply';
 	 */
 	blendMode: 'normal',
 
 	/**
 	 * The opacity of the item as a value between {@code 0} and {@code 1}.
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Making an item 50% transparent:
-	 * 
-	 * // Create a circle at position { x: 50, y: 50 } 
-	 * var circle = new Path.Circle(new Point(50, 50), 20);
+	 * var circle = new Path.Circle(new Point(50, 50), 40);
 	 * circle.fillColor = 'red';
-	 * circle.opacity = 0.5;
+	 * 
+	 * var circle2 = new Path.Circle(new Point(100, 50), 40);
+	 * circle2.style = {
+	 * 	fillColor: 'blue',
+	 * 	strokeColor: 'green',
+	 * 	strokeWidth: 10
+	 * };
+	 * 
+	 * // Make circle2 50% transparent:
+	 * circle2.opacity = 0.5;
 	 * 
 	 * @type Number
 	 * @default 1
