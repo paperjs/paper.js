@@ -139,7 +139,7 @@ var Tool = this.Tool = Base.extend({
 	 * @property
 	 * @type function
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Creating circle shaped paths where the user presses the mouse button:
 	 * function onMouseDown(event) {
 	 * 	// Create a new circle shaped path with a radius of 10
@@ -161,7 +161,7 @@ var Tool = this.Tool = Base.extend({
 	 * @property
 	 * @type function
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Draw a line by adding a segment to a path on every mouse drag event:
 	 * 
 	 * // Create an empty path:
@@ -183,7 +183,7 @@ var Tool = this.Tool = Base.extend({
 	 * @property
 	 * @type function
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Moving a path to the position of the mouse:
 	 *
 	 * // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
@@ -206,7 +206,7 @@ var Tool = this.Tool = Base.extend({
 	 * @property
 	 * @type function
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Creating circle shaped paths where the user releases the mouse:
 	 * function onMouseUp(event) {
 	 * 	// Create a new circle shaped path with a radius of 10
@@ -231,7 +231,7 @@ var Tool = this.Tool = Base.extend({
 	 * @property
 	 * @type Function
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Scaling a path whenever the user presses the space bar:
 	 * 
 	 * // Create a circle shaped path:
