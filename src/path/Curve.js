@@ -195,16 +195,7 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	getCurveValues: function() {
-		var p1 = this._segment1._point,
-			h1 = this._segment1._handleOut,
-			h2 = this._segment2._handleIn,
-			p2 = this._segment2._point;
-		return [
-			p1.x, p1.y,
-			p1.x + h1.x, p1.y + h1.y,
-			p2.x + h2.x, p2.y + h2.y,
-			p2.x, p2.y
-		];
+		return Curve.getCurveValues(this._segment1, this._segment2);
 	},
 
 	// DOCS: document Curve#getLength(from, to)
@@ -445,6 +436,19 @@ var Curve = this.Curve = Base.extend({
 		},
 
 		statics: {
+			getCurveValues: function(segment1, segment2) {
+				var p1 = segment1._point,
+					h1 = segment1._handleOut,
+					h2 = segment2._handleIn,
+					p2 = segment2._point;
+				return [
+					p1.x, p1.y,
+					p1.x + h1.x, p1.y + h1.y,
+					p2.x + h2.x, p2.y + h2.y,
+					p2.x, p2.y
+				];
+			},
+
 			getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, a, b) {
 				if (a === undefined)
 					a = 0;
@@ -527,6 +531,25 @@ var Curve = this.Curve = Base.extend({
 					[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
 					[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
 				];
+			},
+
+			// TODO: Find better name
+			getPart: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, from, to) {
+				var curve = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
+				if (from > 0) {
+					// 8th argument of Curve.subdivide() == t, and values can be
+					// directly used as arguments list for apply().
+					curve[8] = from;
+					curve = Curve.subdivide.apply(Curve, curve)[1]; // right
+				}
+				if (to < 1) {
+					// Se above about curve[8].
+					// Interpolate the  parameter at 'to' in the new curve and
+					// cut there
+					curve[8] = (to - from) / (1 - from);
+					curve = Curve.subdivide.apply(Curve, curve)[0]; // left
+				}
+				return curve;
 			},
 
 			isSufficientlyFlat: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
