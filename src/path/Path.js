@@ -723,37 +723,34 @@ var Path = this.Path = PathItem.extend({
 			var segments = this._segments,
 				length = segments.length,
 				handleOut, outX, outY;
-			for (var i = 0; i < length; i++) {
+
+			function drawSegment(i) {
 				var segment = segments[i],
 					point = segment._point,
 					x = point._x,
 					y = point._y,
 					handleIn = segment._handleIn;
-				if (i == 0) {
+				if (!handleOut) {
 					ctx.moveTo(x, y);
 				} else {
 					if (handleIn.isZero() && handleOut.isZero()) {
 						ctx.lineTo(x, y);
 					} else {
 						ctx.bezierCurveTo(outX, outY,
-								handleIn._x + x, handleIn._y + y,
-								x, y);
+								handleIn._x + x, handleIn._y + y, x, y);
 					}
 				}
 				handleOut = segment._handleOut;
 				outX = handleOut._x + x;
 				outY = handleOut._y + y;
 			}
-			if (this._closed && length > 1) {
-				var segment = segments[0],
-					point = segment._point,
-					x = point._x,
-					y = point._y,
-					handleIn = segment._handleIn;
-				ctx.bezierCurveTo(outX, outY,
-						handleIn._x + x, handleIn._y + y, x, y);
-				ctx.closePath();
-			}
+
+			for (var i = 0; i < length; i++)
+				drawSegment(i);
+			// Close path by drawing first segment again
+			if (this._closed && length > 1)
+				drawSegment(0);
+
 			// If we are drawing the selection of a path, stroke it and draw
 			// its handles:
 			if (param.selection) {
