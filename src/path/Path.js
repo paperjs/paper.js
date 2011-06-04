@@ -166,6 +166,16 @@ var Path = this.Path = PathItem.extend({
 	 * 
 	 * @type Boolean
 	 * @bean
+	 * 
+	 * @example {@paperscript}
+	 * var myPath = new Path();
+	 * myPath.strokeColor = 'black';
+	 * myPath.add(new Point(40, 90));
+	 * myPath.add(new Point(90, 40));
+	 * myPath.add(new Point(140, 90));
+	 * 
+	 * // Close the path:
+	 * myPath.closed = true;
 	 */
 	getClosed: function() {
 		return this._closed;
@@ -597,8 +607,11 @@ var Path = this.Path = PathItem.extend({
 	// PORT: Rename functions and add new isParameter argument in Scriptographer
 	// DOCS: document Path#getLocationAt
 	/**
+	 * {@grouptitle Positions on Paths and Curves}
+	 * 
 	 * @param {Number} offset
 	 * @param {Boolean} [isParameter=false]
+	 * @return CurveLocation
 	 */
 	getLocationAt: function(offset, isParameter) {
 		var curves = this.getCurves(),
@@ -876,7 +889,11 @@ var Path = this.Path = PathItem.extend({
 			}
 		},
 
+		// DOCS: implement @movebefore tag and move the Path#smooth function up
+		// in the documentation.
 		/**
+		 * {@grouptitle Path Smoothing}
+		 * 
 		 * Smooth bezier curves without changing the amount of segments or their
 		 * points, by only smoothing and adjusting their handle points, for both
 		 * open ended and closed paths.

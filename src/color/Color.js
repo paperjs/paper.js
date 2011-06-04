@@ -306,11 +306,25 @@ var Color = this.Color = Base.extend(new function() {
 	},
 
 	/**
-	 * A value between {@code 0} and {@code 1} that specifies the color's alpha
-	 * value. All colors of the different subclasses support alpha values.
+	 * The color's alpha value as a number between {@code 0} and {@code 1}. All
+	 * colors of the different subclasses support alpha values.
 	 * 
 	 * @type Number
 	 * @bean
+	 * 
+	 * @example {@paperscript}
+	 * // A filled path with a half transparent stroke:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * 
+	 * // Fill the circle with red and give it a 20pt green stroke:
+	 * circle.style = {
+	 * 	fillColor: 'red',
+	 * 	strokeColor: 'green',
+	 * 	strokeWidth: 20
+	 * };
+	 * 
+	 * // Make the stroke half transparent:
+	 * circle.strokeColor.alpha = 0.5;
 	 */
 	getAlpha: function() {
 		return this._alpha != null ? this._alpha : 1;
@@ -368,7 +382,7 @@ var Color = this.Color = Base.extend(new function() {
 	},
 
 	/**
-	 * @return {String} A css representation of the color.
+	 * @return {String} A css string representation of the color.
 	 */
 	toCssString: function() {
 		if (!this._cssString) {
@@ -398,6 +412,14 @@ var Color = this.Color = Base.extend(new function() {
 	 * @name Color#red
 	 * @property
 	 * @type Number
+	 * 
+	 * @example {@paperscript}
+	 * // Changing the amount of red in a color:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * circle.fillColor = 'blue';
+	 * 
+	 * // Blue + red = purple:
+	 * circle.fillColor.red = 1;
 	 */
 
 	/**
@@ -407,6 +429,16 @@ var Color = this.Color = Base.extend(new function() {
 	 * @name Color#green
 	 * @property
 	 * @type Number
+	 * 
+	 * @example {@paperscript}
+	 * // Changing the amount of green in a color:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * 
+	 * // First we set the fill color to red:
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Red + green = yellow:
+	 * circle.fillColor.green = 1;
 	 */
 
 	/**
@@ -416,6 +448,16 @@ var Color = this.Color = Base.extend(new function() {
 	 * @name Color#blue
 	 * @property
 	 * @type Number
+	 * 
+	 * @example {@paperscript}
+	 * // Changing the amount of blue in a color:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * 
+	 * // First we set the fill color to red:
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Red + blue = purple:
+	 * circle.fillColor.blue = 1;
 	 */
 
 	/**
@@ -438,6 +480,24 @@ var Color = this.Color = Base.extend(new function() {
 	 * @name Color#hue
 	 * @property
 	 * @type Number
+	 * 
+	 * @example {@paperscript}
+	 * // Changing the hue of a color:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * circle.fillColor = 'red';
+	 * circle.fillColor.hue += 30;
+	 * 
+	 * @example {@paperscript}
+	 * // Hue cycling:
+	 * 
+	 * // Create a rectangle shaped path, using the dimensions
+	 * // of the view:
+	 * var path = new Path.Rectangle(view.bounds);
+	 * path.fillColor = 'red';
+	 * 
+	 * function onFrame(event) {
+	 * 	path.fillColor.hue += 0.5;
+	 * }
 	 */
 
 	/**
