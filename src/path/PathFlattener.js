@@ -16,13 +16,18 @@
 
 var PathFlattener = Base.extend({
 	initialize: function(path) {
-		this.parts = [];
-		this.curves = [];
-		this.length = 0;
+		this.curves = []; // The curve values as returned by getCurveValues()
+		this.parts = []; // The calculated, subdivided parts of the path
+		this.length = 0; // The total length of the path
 		// Keep a current index from the part where we last where in
 		// getParameter(), to optimise for iterator-like usage of the flattener.
 		this.index = 0;
 
+		// Instead of relying on path.curves, we only use segments here and
+		// get the curve values from them.
+		
+		// Now walk through all curves and compute the parts for each of them,
+		// by recursively calling _computeParts().
 		var segments = path._segments,
 			segment1 = segments[0],
 			segment2,
