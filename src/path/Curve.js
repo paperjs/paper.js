@@ -504,6 +504,8 @@ var Curve = this.Curve = Base.extend({
 			},
 
 			subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
+				if (t === undefined)
+					t = 0.5;
 				var u = 1 - t,
 					// Interpolate from 4 to 3 points
 					p3x = u * p1x + t * c1x,
