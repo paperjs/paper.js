@@ -1037,9 +1037,10 @@ var Item = this.Item = Base.extend({
 	/**
 	 * The miter limit of the stroke.
 	 * When two line segments meet at a sharp angle and miter joins have been
-	 * specified for {@link #strokeJoin}, it is possible for the miter to extend
-	 * far beyond the {@link #strokeWidth} of the path. The miterLimit imposes a
-	 * limit on the ratio of the miter length to the {@link #strokeWidth}.
+	 * specified for {@link Item#strokeJoin}, it is possible for the miter to
+	 * extend far beyond the {@link Item#strokeWidth} of the path. The
+	 * miterLimit imposes a limit on the ratio of the miter length to the
+	 * {@link Item#strokeWidth}.
 	 * 
 	 * @property
 	 * @default 10
@@ -1164,11 +1165,16 @@ var Item = this.Item = Base.extend({
 	 * // Rotating an item around a specific point:
 	 * 
 	 * // Create a rectangle shaped path with its top left
-	 * // point at {x: 180, y: 125} and a size of {width: 20, height: 20}:
-	 * var topLeft = new Point(180, 125);
-	 * var size = new Size(20, 20);
+	 * // point at {x: 175, y: 50} and a size of {width: 100, height: 100}:
+	 * var topLeft = new Point(175, 50);
+	 * var size = new Size(100, 100);
 	 * var path = new Path.Rectangle(topLeft, size);
 	 * path.fillColor = 'black';
+	 * 
+	 * // Draw a circle shaped path in the center of the view,
+	 * // to show the rotation point:
+	 * var circle = new Path.Circle(view.center, 5);
+	 * circle.fillColor = 'white';
 	 * 
 	 * // Each frame rotate the path 3 degrees around the center point
 	 * // of the view:
