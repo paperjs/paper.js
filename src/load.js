@@ -50,6 +50,7 @@ var sources = [
 	'src/path/SegmentPoint.js',
 	'src/path/SelectionState.js',
 	'src/path/Curve.js',
+	'src/path/CurveFlattener.js',
 	'src/path/CurveLocation.js',
 	'src/path/PathItem.js',
 	'src/path/Path.js',
