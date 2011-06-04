@@ -246,10 +246,8 @@ var Raster = this.Raster = Item.extend({
 		ctx.scale(width / bounds.width, height / bounds.height);
 		ctx.translate(-bounds.x, -bounds.y);
 		// If a path was passed, draw it as a clipping mask:
-		if (path) {
-			path.draw(ctx, { ignoreStyle: true });
-			ctx.clip();
-		}
+		if (path)
+			path.draw(ctx, { clip: true });
 		// Now draw the image clipped into it.
 		this.matrix.applyToContext(ctx);
 		ctx.drawImage(this._canvas || this._image,

@@ -104,6 +104,7 @@ var Group = this.Group = Item.extend({
 	draw: function(ctx, param) {
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			Item.draw(this._children[i], ctx, param);
+			// TODO: Shouldn't clipping paths not be filled / stroked?
 			if (this._clipped && i == 0)
 				ctx.clip();
 		}
