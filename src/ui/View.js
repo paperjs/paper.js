@@ -98,6 +98,10 @@ var View = this.View = Base.extend({
 			View.focused = this;
 	},
 
+	getCanvas: function() {
+		return this._canvas;
+	},
+
 	/**
 	 * The bounds of the view, i.e. the bounds of the part of the project which
 	 * is visible in the window.
