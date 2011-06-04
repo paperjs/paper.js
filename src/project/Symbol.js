@@ -28,20 +28,35 @@ var Symbol = this.Symbol = Base.extend({
 	 * @name Symbol
 	 * @constructor
 	 * 
-	 * @example
-	 * var circlePath = new Path.Circle(new Point(100, 100), 50);
-	 * circlePath.fillColor = 'red';
+	 * @example {@paperscript split=true height=240}
+	 * // Placing 100 instances of a symbol:
+	 * var path = new Path.Star(new Point(0, 0), 6, 5, 13);
+	 * path.style = {
+	 *     fillColor: 'white',
+	 *     strokeColor: 'black'
+	 * };
+     * 
+	 * // Create a symbol from the path:
+	 * var symbol = new Symbol(path);
 	 * 
-	 * var circleSymbol = new Symbol(circlePath);
-	 * 
-	 * // The original item is still contained in the document:
-	 * circlePath.remove();
-	 * 
-	 * // Place an instance of the symbol in the document:
-	 * var placedCircle = new PlacedSymbol(circleSymbol);
-	 * 
-	 * // Move the placed symbol to {x: 150, y: 150}:
-	 * placedCircle.position = new Point(150, 150);
+	 * // Remove the path:
+	 * path.remove();
+     * 
+	 * // Place 100 instances of the symbol:
+	 * for (var i = 0; i < 100; i++) {
+	 *     // Place an instance of the symbol in the project:
+	 *     var instance = symbol.place();
+     * 
+	 *     // Move the instance to a random position within the view:
+	 *     instance.position = Point.random() * view.size;
+     * 
+	 *     // Rotate the instance by a random amount between
+	 *     // 0 and 360 degrees:
+	 *     instance.rotate(Math.random() * 360);
+     * 
+	 *     // Scale the instance between 0.25 and 1:
+	 *     instance.scale(0.25 + Math.random() * 0.75);
+	 * }
 	 * 
 	 * @class Symbols allow you to place multiple instances of an item in your
 	 *        project. This can save memory, since all instances of a symbol
@@ -84,6 +99,16 @@ var Symbol = this.Symbol = Base.extend({
 		item._removeFromParent();
 		// Move position to 0, 0. TODO: Why?
 		item.setPosition(new Point());
+	},
+
+	/**
+	 * Places in instance of the symbol in the project.
+	 * 
+	 * @param [position] The position of the placed symbol.
+	 * @return {PlacedSymbol}
+	 */
+	place: function(position) {
+		return new PlacedSymbol(this, position);
 	},
 
 	/**

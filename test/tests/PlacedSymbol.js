@@ -38,3 +38,29 @@ test('Symbol definition selection', function() {
 		return paper.project.selectedItems.length == 0;
 	}, true);
 });
+
+test('Symbol#place()', function() {
+	var path = new Path.Circle([50, 50], 50);
+	var symbol = new Symbol(path);
+	var placedSymbol = symbol.place();
+	equals(function() {
+		return placedSymbol.parent == paper.project.activeLayer;
+	}, true);
+
+	equals(function() {
+		return placedSymbol.symbol == symbol;
+	}, true);
+
+	equals(function() {
+		return placedSymbol.position.toString();
+	}, '{ x: 0, y: 0 }');
+});
+
+test('Symbol#place(position)', function() {
+	var path = new Path.Circle([50, 50], 50);
+	var symbol = new Symbol(path);
+	var placedSymbol = symbol.place(new Point(100, 100));
+	equals(function() {
+		return placedSymbol.position.toString();
+	}, '{ x: 100, y: 100 }');
+});

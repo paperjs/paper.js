@@ -702,7 +702,7 @@ var Point = this.Point = Base.extend({
 	},
 	
 	/**
-	 * {@grouptitle Vectorial Math Functions}
+	 * {@grouptitle Vector Math Functions}
 	 * Returns the dot product of the point and another point.
 	 * 
 	 * @param {Point} point
