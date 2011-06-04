@@ -562,7 +562,8 @@ var Curve = this.Curve = Base.extend({
 					ux = vx;
 				if (uy < vy)
 					uy = vy;
-				return ux + uy <= 16 * Numerical.TOLERNACE * Numerical.TOLERNACE; // tolerance is 16 * tol ^ 2
+				// Tolerance is 16 * tol ^ 2
+				return ux + uy <= 16 * Numerical.TOLERNACE * Numerical.TOLERNACE;
 				*/
 			}
 		}
