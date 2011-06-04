@@ -167,7 +167,7 @@ var Path = this.Path = PathItem.extend({
 	 * @type Boolean
 	 * @bean
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * var myPath = new Path();
 	 * myPath.strokeColor = 'black';
 	 * myPath.add(new Point(40, 90));
