@@ -88,7 +88,10 @@ var PathFlattener = Base.extend({
 		for (var l = this.parts.length; i < l; i++) {
 			var part = this.parts[i];
 			if (part.length >= length) {
+				// Found the right part, remember current position
 				this.index = i;
+				// Now get the previous part so we can linearly interpolate
+				// the curve parameter
 				var prev = this.parts[i - 1];
 				// Make sure we only use the previous parameter value if its 
 				// for the same curve, by checking index. Use 0 otherwise.
@@ -110,17 +113,15 @@ var PathFlattener = Base.extend({
 		};
 	},
 
-	drawPart: function(ctx, from, to, moveTo) {
+	drawPart: function(ctx, from, to) {
 		from = this.getParameter(from);
 		to = this.getParameter(to);
 		for (var i = from.index; i <= to.index; i++) {
 			var curve = Curve.getPart.apply(Curve, this.curves[i].concat(
 					i == from.index ? from.value : 0,
 					i == to.index ? to.value : 1));
-			if (moveTo) {
+			if (i = from.index)
 				ctx.moveTo(curve[0], curve[1]);
-				moveTo = false;
-			}
 			ctx.bezierCurveTo.apply(ctx, curve.slice(2));
 		}
 	}
