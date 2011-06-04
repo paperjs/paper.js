@@ -1,3 +1,19 @@
+/*
+ * Paper.js
+ *
+ * This file is part of Paper.js, a JavaScript Vector Graphics Library,
+ * based on Scriptographer.org and designed to be largely API compatible.
+ * http://paperjs.org/
+ * http://scriptographer.org/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * http://lehni.org/ & http://jonathanpuckey.com/
+ *
+ * All rights reserved.
+ */
+
 var CurveFlattener = Base.extend({
 	initialize: function(curve) {
 		this.parts = [];
@@ -6,10 +22,10 @@ var CurveFlattener = Base.extend({
 		// optimise for iterator-like usage of the flattener.
 		this.index = 0;
 		this.curve = curve.getCurveValues();
-		this._computeSegments(this.curve, 0, 1);
+		this._computeParts(this.curve, 0, 1);
 	},
 
-	_computeSegments: function(values, minT, maxT) {
+	_computeParts: function(values, minT, maxT) {
 		// Check if the t-span is big enough for subdivision.
 		// We're not subdividing more than 32 times...
 		if ((maxT - minT) > 1 / 32
@@ -17,8 +33,8 @@ var CurveFlattener = Base.extend({
 			var curves = Curve.subdivide.apply(Curve, values);
 			var halfT = (minT + maxT) / 2;
 			// Recursively subdive and compute parts again.
-			this._computeSegments(curves[0], minT, halfT);
-			this._computeSegments(curves[1], halfT, maxT);
+			this._computeParts(curves[0], minT, halfT);
+			this._computeParts(curves[1], halfT, maxT);
 		} else {
 			// Calculate distance between p1 and p2
 			var x = values[6] - values[0],

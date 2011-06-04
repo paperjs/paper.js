@@ -834,8 +834,8 @@ var Path = this.Path = PathItem.extend({
 						// We cannot use the path created by drawSegments above
 						// Use CurveFlatteners to draw dashed paths:
 						ctx.beginPath();
-						var curves = this.getCurves();
-						drawDashes(ctx, curves, dashArray, this.getDashOffset());
+						drawDashes(ctx, this.getCurves(), dashArray,
+								this.getDashOffset());
 					}
 					ctx.stroke();
 				}
