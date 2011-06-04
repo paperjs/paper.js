@@ -67,6 +67,7 @@ var paper = new function() {
 //#include "path/SegmentPoint.js"
 //#include "path/SelectionState.js"
 //#include "path/Curve.js"
+//#include "path/CurveFlattener.js"
 //#include "path/CurveLocation.js"
 //#include "path/PathItem.js"
 //#include "path/Path.js"
