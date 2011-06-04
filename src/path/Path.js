@@ -766,7 +766,7 @@ var Path = this.Path = PathItem.extend({
 			i = 0;
 		while (from < flattener.length) {
 			to = from + dashArray[(i++) % dashArray.length];
-			flattener.drawPart(ctx, from, to, true);
+			flattener.drawPart(ctx, from, to);
 			from = to + dashArray[(i++) % dashArray.length];
 		}
 	}
