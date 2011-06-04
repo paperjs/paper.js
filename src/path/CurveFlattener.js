@@ -1,9 +1,12 @@
 var CurveFlattener = Base.extend({
 	initialize: function(curve) {
-		this.curve = curve;
-		this.segments = [];
+		this.parts = [];
 		this.length = 0;
-		this._computeSegments(curve.getCurveValues(), 0, 1);
+		// Keep a current index from where we last where in getParameter(), to
+		// optimise for iterator-like usage of the flattener.
+		this.index = 0;
+		this.curve = curve.getCurveValues();
+		this._computeSegments(this.curve, 0, 1);
 	},
 
 	_computeSegments: function(values, minT, maxT) {
@@ -13,7 +16,7 @@ var CurveFlattener = Base.extend({
 				&& !Curve.isSufficientlyFlat.apply(Curve, values)) {
 			var curves = Curve.subdivide.apply(Curve, values);
 			var halfT = (minT + maxT) / 2;
-			// Recursively subdive and compute segments again.
+			// Recursively subdive and compute parts again.
 			this._computeSegments(curves[0], minT, halfT);
 			this._computeSegments(curves[1], halfT, maxT);
 		} else {
@@ -23,7 +26,7 @@ var CurveFlattener = Base.extend({
 				dist = Math.sqrt(x * x + y * y);
 			if (dist > Numerical.TOLERANCE) {
 				this.length += dist;
-				this.segments.push({
+				this.parts.push({
 					length: this.length,
 					value: maxT
 				});
@@ -32,12 +35,21 @@ var CurveFlattener = Base.extend({
 	},
 
 	getParameter: function(length) {
+		// Make sure we're not beyond the requested length already. Search the
+		// start position backwards from where to then process the loop below.
+		var i, j = this.index;
+		for (;;) {
+			i = j;
+			if (j == 0 || this.parts[--j].length < length)
+				break;
+		}
 		// Find the segment that succeeds the given length, then interpolate
 		// with the previous segment
-		for (var i = 0, l = this.segments.length; i < l; i++) {
-			var segment = this.segments[i];
+		for (var l = this.parts.length; i < l; i++) {
+			var segment = this.parts[i];
 			if (segment.length >= length) {
-				var prev = this.segments[i - 1],
+				this.index = i;
+				var prev = this.parts[i - 1],
 					prevValue = prev ? prev.value : 0,
 					prevLength = prev ? prev.length : 0;
 				// Interpolate
@@ -46,5 +58,27 @@ var CurveFlattener = Base.extend({
 			}
 		}
 		return 1;
+	},
+
+	drawDash: function(ctx, from, to, moveTo) {
+		from = this.getParameter(from);
+		to = this.getParameter(to);
+		var curve = this.curve;
+		if (from > 0) {
+			// 8th argument of Curve.subdivide() == t, and values can be
+			// directly used as arguments list for apply().
+			curve[8] = from; // See above
+			curve = Curve.subdivide.apply(Curve, curve)[1]; // right
+		}
+		if (moveTo) {
+			ctx.moveTo(curve[0], curve[1]);
+		}
+		if (to < 1) {
+			// Se above about curve[8].
+			// Interpolate the  parameter at 'to' in the new curve and cut there
+			curve[8] = (to - from) / (1 - from);
+			curve = Curve.subdivide.apply(Curve, curve)[0]; // left
+		}
+		ctx.bezierCurveTo.apply(ctx, curve.slice(2));
 	}
 });
