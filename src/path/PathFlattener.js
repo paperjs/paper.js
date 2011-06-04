@@ -120,7 +120,7 @@ var PathFlattener = Base.extend({
 			var curve = Curve.getPart.apply(Curve, this.curves[i].concat(
 					i == from.index ? from.value : 0,
 					i == to.index ? to.value : 1));
-			if (i = from.index)
+			if (i == from.index)
 				ctx.moveTo(curve[0], curve[1]);
 			ctx.bezierCurveTo.apply(ctx, curve.slice(2));
 		}
