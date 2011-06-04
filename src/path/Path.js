@@ -760,34 +760,14 @@ var Path = this.Path = PathItem.extend({
 			drawSegment(0);
 	}
 
-	function drawDashes(ctx, curves, dashArray, dashOffset) {
-		var length = 0,
+	function drawDashes(ctx, path, dashArray, dashOffset) {
+		var flattener = new PathFlattener(path),
 			from = dashOffset, to,
-			open = false;
-		for (var i = 0, j = 0, l = curves.length; i < l; i++) {
-			var curve = curves[i];
-			var flattener = new CurveFlattener(curve);
-			length = flattener.length;
-			while (true) {
-				if (open) {
-					flattener.drawDash(ctx, from, to, false);
-					from = to + dashArray[(j++) % dashArray.length];
-					open = false;
-				}
-				to = from + dashArray[(j++) % dashArray.length];
-				flattener.drawDash(ctx, from, to, true);
-				if (to > length) {
-					from = 0;
-					to -= length;
-					open = true;
-					break;
-				}
-				from = to + dashArray[(j++) % dashArray.length];
-				if (from >= length) {
-					from -= length;
-					break;
-				}
-			}
+			i = 0;
+		while (from < flattener.length) {
+			to = from + dashArray[(i++) % dashArray.length];
+			flattener.drawPart(ctx, from, to, true);
+			from = to + dashArray[(i++) % dashArray.length];
 		}
 	}
 
@@ -834,8 +814,7 @@ var Path = this.Path = PathItem.extend({
 						// We cannot use the path created by drawSegments above
 						// Use CurveFlatteners to draw dashed paths:
 						ctx.beginPath();
-						drawDashes(ctx, this.getCurves(), dashArray,
-								this.getDashOffset());
+						drawDashes(ctx, this, dashArray, this.getDashOffset());
 					}
 					ctx.stroke();
 				}
