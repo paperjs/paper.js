@@ -717,8 +717,7 @@ var Path = this.Path = PathItem.extend({
 	}
 
 	function drawSegments(ctx, segments) {
-		var length = segments.length,
-			handleOut, outX, outY;
+		var handleOut, outX, outY;
 
 		function drawSegment(i) {
 			var segment = segments[i],
@@ -741,11 +740,42 @@ var Path = this.Path = PathItem.extend({
 			outY = handleOut._y + y;
 		}
 
-		for (var i = 0; i < length; i++)
+		for (var i = 0, l = segments.length; i < l; i++)
 			drawSegment(i);
 		// Close path by drawing first segment again
 		if (this._closed && length > 1)
 			drawSegment(0);
+	}
+
+	function drawDashes(ctx, curves, dashArray, dashOffset) {
+		var length = 0,
+			from = dashOffset, to,
+			open = false;
+		for (var i = 0, j = 0, l = curves.length; i < l; i++) {
+			var curve = curves[i];
+			var flattener = new CurveFlattener(curve);
+			length = flattener.length;
+			while (true) {
+				if (open) {
+					flattener.drawDash(ctx, from, to, false);
+					from = to + dashArray[(j++) % dashArray.length];
+					open = false;
+				}
+				to = from + dashArray[(j++) % dashArray.length];
+				flattener.drawDash(ctx, from, to, true);
+				if (to > length) {
+					from = 0;
+					to -= length;
+					open = true;
+					break;
+				}
+				from = to + dashArray[(j++) % dashArray.length];
+				if (from >= length) {
+					from -= length;
+					break;
+				}
+			}
+		}
 	}
 
 	return {
@@ -754,9 +784,12 @@ var Path = this.Path = PathItem.extend({
 				ctx.beginPath();
 
 			var fillColor = this.getFillColor(),
-				strokeColor = this.getStrokeColor();
+				strokeColor = this.getStrokeColor(),
+				dashArray = this.getDashArray() || [], // TODO: Always defined?
+				hasDash = !!dashArray.length;
 
-			if (param.compound || param.selection || param.clip || fillColor || strokeColor) {
+			if (param.compound || param.selection || param.clip || fillColor
+					|| strokeColor && !hasDash) {
 				drawSegments(ctx, this._segments);
 			}
 
@@ -784,6 +817,13 @@ var Path = this.Path = PathItem.extend({
 				}
 				if (strokeColor) {
 					ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+					if (hasDash) {
+						// We cannot use the path created by drawSegments above
+						// Use CurveFlatteners to draw dashed paths:
+						ctx.beginPath();
+						var curves = this.getCurves();
+						drawDashes(ctx, curves, dashArray, this.getDashOffset());
+					}
 					ctx.stroke();
 				}
 				ctx.restore();
