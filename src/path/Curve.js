@@ -527,6 +527,43 @@ var Curve = this.Curve = Base.extend({
 					[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
 					[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
 				];
+			},
+
+			isSufficientlyFlat: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+				// Inspired by Skia, but to be tested:
+				// Calculate 1/3 (m1) and 2/3 (m2) along the line between start
+				// (p1) and end (p2), measure distance from there the control
+				// points and see if they are further away than 1/2.
+				// Seems all very inaccurate, especially since the distance
+				// measurement is just the bigger one of x / y...
+				// TODO: Find a more accurate and still fast way to determine
+				// this.
+				var vx = (p2x - p1x) / 3,
+					vy = (p2y - p1y) / 3,
+					m1x = p1x + vx,
+					m1y = p1y + vy,
+					m2x = p2x - vx,
+					m2y = p2y - vy;
+				return Math.max(
+						Math.abs(m1x - c1x), Math.abs(m1y - c1y),
+						Math.abs(m2x - c1x), Math.abs(m1y - c1y)) < 1 / 2;
+				/*
+				// Thanks to Kaspar Fischer for the following:
+				// http://www.inf.ethz.ch/personal/fischerk/pubs/bez.pdf
+				var ux = 3 * c1x - 2 * p1x - p2x;
+				ux *= ux;
+				var uy = 3 * c1y - 2 * p1y - p2y;
+				uy *= uy;
+				var vx = 3 * c2x - 2 * p2x - p1x;
+				vx *= vx;
+				var vy = 3 * c2y - 2 * p2y - p1y;
+				vy *= vy;
+				if (ux < vx)
+					ux = vx;
+				if (uy < vy)
+					uy = vy;
+				return ux + uy <= 16 * Numerical.TOLERNACE * Numerical.TOLERNACE; // tolerance is 16 * tol ^ 2
+				*/
 			}
 		}
 	};
