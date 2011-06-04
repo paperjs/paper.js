@@ -715,71 +715,78 @@ var Path = this.Path = PathItem.extend({
 			ctx.fill();
 		}
 	}
-	
+
+	function drawSegments(ctx, segments) {
+		var length = segments.length,
+			handleOut, outX, outY;
+
+		function drawSegment(i) {
+			var segment = segments[i],
+				point = segment._point,
+				x = point._x,
+				y = point._y,
+				handleIn = segment._handleIn;
+			if (!handleOut) {
+				ctx.moveTo(x, y);
+			} else {
+				if (handleIn.isZero() && handleOut.isZero()) {
+					ctx.lineTo(x, y);
+				} else {
+					ctx.bezierCurveTo(outX, outY,
+							handleIn._x + x, handleIn._y + y, x, y);
+				}
+			}
+			handleOut = segment._handleOut;
+			outX = handleOut._x + x;
+			outY = handleOut._y + y;
+		}
+
+		for (var i = 0; i < length; i++)
+			drawSegment(i);
+		// Close path by drawing first segment again
+		if (this._closed && length > 1)
+			drawSegment(0);
+	}
+
 	return {
 		draw: function(ctx, param) {
 			if (!param.compound)
 				ctx.beginPath();
-			var segments = this._segments,
-				length = segments.length,
-				handleOut, outX, outY;
 
-			function drawSegment(i) {
-				var segment = segments[i],
-					point = segment._point,
-					x = point._x,
-					y = point._y,
-					handleIn = segment._handleIn;
-				if (!handleOut) {
-					ctx.moveTo(x, y);
-				} else {
-					if (handleIn.isZero() && handleOut.isZero()) {
-						ctx.lineTo(x, y);
-					} else {
-						ctx.bezierCurveTo(outX, outY,
-								handleIn._x + x, handleIn._y + y, x, y);
-					}
-				}
-				handleOut = segment._handleOut;
-				outX = handleOut._x + x;
-				outY = handleOut._y + y;
+			var fillColor = this.getFillColor(),
+				strokeColor = this.getStrokeColor();
+
+			if (param.compound || param.selection || param.clip || fillColor || strokeColor) {
+				drawSegments(ctx, this._segments);
 			}
-
-			for (var i = 0; i < length; i++)
-				drawSegment(i);
-			// Close path by drawing first segment again
-			if (this._closed && length > 1)
-				drawSegment(0);
 
 			// If we are drawing the selection of a path, stroke it and draw
 			// its handles:
 			if (param.selection) {
 				ctx.stroke();
 				drawHandles(ctx, this._segments);
-			} else if (!param.ignoreStyle) {
+			} else if (param.clip) {
+				ctx.clip();
+			} else if (!param.compound && (fillColor || strokeColor)) {
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
-				var fillColor = this.getFillColor(),
-					strokeColor = this.getStrokeColor();
-				if (!param.compound && (fillColor || strokeColor)) {
-					this._setStyles(ctx);
-					ctx.save();
-					// If the path only defines a strokeColor or a fillColor,
-					// draw it directly with the globalAlpha set, otherwise
-					// we will do it later when we composite the temporary
-					// canvas.
-					if (!fillColor || !strokeColor)
-						ctx.globalAlpha = this.opacity;
-					if (fillColor) {
-						ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-						ctx.fill();
-					}
-					if (strokeColor) {
-						ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-						ctx.stroke();
-					}
-					ctx.restore();
+				ctx.save();
+				this._setStyles(ctx);
+				// If the path only defines a strokeColor or a fillColor,
+				// draw it directly with the globalAlpha set, otherwise
+				// we will do it later when we composite the temporary
+				// canvas.
+				if (!fillColor || !strokeColor)
+					ctx.globalAlpha = this.opacity;
+				if (fillColor) {
+					ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+					ctx.fill();
 				}
+				if (strokeColor) {
+					ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+					ctx.stroke();
+				}
+				ctx.restore();
 			}
 		}
 	};
