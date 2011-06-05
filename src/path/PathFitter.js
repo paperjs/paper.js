@@ -222,8 +222,8 @@ var PathFitter = Base.extend({
 			u[i - first] = u[i - first - 1]
 					+ this.points[i].getDistance(this.points[i - 1]);
 		}
-		for (var i = first + 1; i <= last; i++) {
-			u[i - first] = u[i - first] / u[last - first];
+		for (var i = 1, m = last - first; i <= m; i++) {
+			u[i] /= u[m];
 		}
 		return u;
 	},
