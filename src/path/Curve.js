@@ -221,6 +221,14 @@ var Curve = this.Curve = Base.extend({
 		return length;
 	},
 
+/* TODO: Implement this, but convert result to new Curve object again?
+	getPart: function(from, to) {
+		var args = this.getCurveValues();
+		args.push(from, to);
+		return Curve.getPart.apply(Curve, args);
+	},
+*/
+
 	/**
 	 * Checks if this curve is linear, meaning it does not define any curve
 	 * handle.
