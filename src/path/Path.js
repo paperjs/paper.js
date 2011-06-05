@@ -333,6 +333,24 @@ var Path = this.Path = PathItem.extend({
 	 * // Add two segments in one go at {x: 100, y: 20}
 	 * // and {x: 170, y: 75}:
 	 * path.add({x: 100, y: 20}, {x: 170, y: 75});
+	 * 
+	 * @example {@paperscript}
+	 * // Adding a segment with handles to a path:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * 
+	 * path.add(new Point(30, 75));
+	 * 
+	 * // Add a segment with handles:
+	 * var point = new Point(100, 20);
+	 * var handleIn = new Point(-50, 0);
+	 * var handleOut = new Point(50, 0);
+	 * var added = path.add(new Segment(point, handleIn, handleOut));
+	 * 
+	 * // Select the added segment, so we can see its handles:
+	 * added.selected = true;
+	 * 
+	 * path.add(new Point(170, 75));
 	 */
 	add: function(segment1 /*, segment2, ... */) {
 		return arguments.length > 1 && typeof segment1 !== 'number'
