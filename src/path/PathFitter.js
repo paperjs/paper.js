@@ -93,15 +93,14 @@ var PathFitter = Base.extend({
 
 	// Use least-squares method to find Bezier control points for region.
 	generateBezier: function(first, last, uPrime, tan1, tan2) {
-		var nPts = last - first + 1,
+		var epsilon = Numerical.TOLERANCE,
 			pt1 = this.points[first],
-			pt2 = this.points[last];
-
-		// Create the C and X matrices
-		var C = [[0, 0], [0, 0]],
+			pt2 = this.points[last],
+			// Create the C and X matrices
+		 	C = [[0, 0], [0, 0]],
 			X = [0, 0];
 
-		for (var i = 0; i < nPts; i++) {
+		for (var i = 0, l = last - first + 1; i < l; i++) {
 			var u = uPrime[i],
 				t = 1 - u,
 				b = 3 * u * t,
@@ -124,46 +123,46 @@ var PathFitter = Base.extend({
 		}
 
 		// Compute the determinants of C and X
-		var det_C0_C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
-			alpha_l, alpha_r;
-		if (Math.abs(det_C0_C1) > Numerical.TOLERANCE) {
+		var detC0C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
+			alpha1, alpha2;
+		if (Math.abs(detC0C1) > epsilon) {
 			// Kramer's rule
-			var det_C0_X  = C[0][0] * X[1]    - C[1][0] * X[0],
-				det_X_C1  = X[0]    * C[1][1] - X[1]    * C[0][1];
+			var detC0X  = C[0][0] * X[1]    - C[1][0] * X[0],
+				detXC1  = X[0]    * C[1][1] - X[1]    * C[0][1];
 			// Derive alpha values
-			alpha_l = det_X_C1 / det_C0_C1;
-			alpha_r = det_C0_X / det_C0_C1;
+			alpha1 = detXC1 / detC0C1;
+			alpha2 = detC0X / detC0C1;
 		} else {
-			// Matrix is under-determined, try assuming alpha_l == alpha_r
+			// Matrix is under-determined, try assuming alpha1 == alpha2
 			var c0 = C[0][0] + C[0][1],
 				c1 = C[1][0] + C[1][1];
-			if (Math.abs(c0) > Numerical.TOLERANCE) {
-				alpha_l = alpha_r = X[0] / c0;
-			} else if (Math.abs(c0) > Numerical.TOLERANCE) {
-				alpha_l = alpha_r = X[1] / c1;
+			if (Math.abs(c0) > epsilon) {
+				alpha1 = alpha2 = X[0] / c0;
+			} else if (Math.abs(c0) > epsilon) {
+				alpha1 = alpha2 = X[1] / c1;
 			} else {
 				// Handle below
-				alpha_l = alpha_r = 0.;
+				alpha1 = alpha2 = 0.;
 			}
 		}
 
 		// If alpha negative, use the Wu/Barsky heuristic (see text)
 		// (if alpha is 0, you get coincident control points that lead to
 		// divide by zero in any subsequent NewtonRaphsonRootFind() call.
-		var segLength = pt2.getDistance(pt1),
-			epsilon = Numerical.TOLERANCE * segLength;
-		if (alpha_l < epsilon || alpha_r < epsilon) {
+		var segLength = pt2.getDistance(pt1);
+		epsilon *= segLength;
+		if (alpha1 < epsilon || alpha2 < epsilon) {
 			// fall back on standard (probably inaccurate) formula, 
 			// and subdivide further if needed.
-			alpha_l = alpha_r = segLength / 3;
+			alpha1 = alpha2 = segLength / 3;
 		}
 
 		// First and last control points of the Bezier curve are
 		// positioned exactly at the first and last data points
 		// Control points 1 and 2 are positioned an alpha distance out
 		// on the tangent vectors, left and right, respectively
-		return [pt1, pt1.add(tan1.normalize(alpha_l)),
-				pt2.add(tan2.normalize(alpha_r)), pt2];
+		return [pt1, pt1.add(tan1.normalize(alpha1)),
+				pt2.add(tan2.normalize(alpha2)), pt2];
 	},
 
 	// Given set of points and their parameterization, try to find
