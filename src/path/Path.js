@@ -162,7 +162,8 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	/**
-	 * Specifies whether the path is closed.
+	 * Specifies whether the path is closed. If it is closed, Paper.js connects
+	 * the first and last segments.
 	 * 
 	 * @type Boolean
 	 * @bean
@@ -170,9 +171,9 @@ var Path = this.Path = PathItem.extend({
 	 * @example {@paperscript}
 	 * var myPath = new Path();
 	 * myPath.strokeColor = 'black';
-	 * myPath.add(new Point(40, 90));
-	 * myPath.add(new Point(90, 40));
-	 * myPath.add(new Point(140, 90));
+	 * myPath.add(new Point(50, 75));
+	 * myPath.add(new Point(100, 25));
+	 * myPath.add(new Point(150, 75));
 	 * 
 	 * // Close the path:
 	 * myPath.closed = true;
@@ -289,12 +290,49 @@ var Path = this.Path = PathItem.extend({
 	// PORT: Add support for adding multiple segments at once to Scriptographer
 	// DOCS: find a way to document the variable segment parameters of Path#add
 	/**
-	 * Adds one or more segments to the end of the segment list of this path.
+	 * Adds one or more segments to the end of the {@link #segments} array of
+	 * this path.
 	 * 
 	 * @param {Segment|Point} segment the segment or point to be added.
 	 * @return {Segment} the added segment. This is not necessarily the same
 	 * object, e.g. if the segment to be added already belongs to another path.
 	 * @operator none
+	 * 
+	 * @example {@paperscript}
+	 * // Adding segments to a path using point objects:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * 
+	 * // Add a segment at {x: 30, y: 75}
+	 * path.add(new Point(30, 75));
+	 * 
+	 * // Add two segments in one go at {x: 100, y: 20}
+	 * // and {x: 170, y: 75}:
+	 * path.add(new Point(100, 20), new Point(170, 75));
+	 * 
+	 * @example {@paperscript}
+	 * // Adding segments to a path using arrays containing number pairs:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * 
+	 * // Add a segment at {x: 30, y: 75}
+	 * path.add([30, 75]);
+	 * 
+	 * // Add two segments in one go at {x: 100, y: 20}
+	 * // and {x: 170, y: 75}:
+	 * path.add([100, 20], [170, 75]);
+	 * 
+	 * @example {@paperscript}
+	 * // Adding segments to a path using objects:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * 
+	 * // Add a segment at {x: 30, y: 75}
+	 * path.add({x: 30, y: 75});
+	 * 
+	 * // Add two segments in one go at {x: 100, y: 20}
+	 * // and {x: 170, y: 75}:
+	 * path.add({x: 100, y: 20}, {x: 170, y: 75});
 	 */
 	add: function(segment1 /*, segment2, ... */) {
 		return arguments.length > 1 && typeof segment1 !== 'number'
@@ -313,6 +351,33 @@ var Path = this.Path = PathItem.extend({
 	 * @param {Segment|Point} segment the segment or point to be inserted.
 	 * @return {Segment} the added segment. This is not necessarily the same
 	 * object, e.g. if the segment to be added already belongs to another path.
+	 * 
+	 * @example {@paperscript}
+	 * // Inserting a segment:
+	 * var myPath = new Path();
+	 * myPath.strokeColor = 'black';
+	 * myPath.add(new Point(50, 75));
+	 * myPath.add(new Point(150, 75));
+	 * 
+	 * // Insert a new segment into myPath at index 1:
+	 * myPath.insert(1, new Point(100, 25));
+	 * 
+	 * // Select the segment which we just inserted:
+	 * myPath.segments[1].selected = true;
+	 * 
+	 * @example {@paperscript}
+	 * // Inserting multiple segments:
+	 * var myPath = new Path();
+	 * myPath.strokeColor = 'black';
+	 * myPath.add(new Point(50, 75));
+	 * myPath.add(new Point(150, 75));
+	 * 
+	 * // Insert two segments into myPath at index 1:
+	 * myPath.insert(1, [80, 25], [120, 25]);
+	 * 
+	 * // Select the segments which we just inserted:
+	 * myPath.segments[1].selected = true;
+	 * myPath.segments[2].selected = true;
 	 */
 	insert: function(index, segment1 /*, segment2, ... */) {
 		return arguments.length > 2 && typeof segment1 !== 'number'
@@ -342,11 +407,35 @@ var Path = this.Path = PathItem.extend({
 	 * not necessarily the same objects, e.g. if the segment to be added already
 	 * belongs to another path.
 	 * 
-	 * @example
+	 * @example {@paperscript}
+	 * // Adding an array of Point objects:
 	 * var path = new Path();
 	 * path.strokeColor = 'black';
-	 * var points = [new Point(10, 10), new Point(50, 50)];
+	 * var points = [new Point(30, 50), new Point(170, 50)];
 	 * path.addSegments(points);
+	 * 
+	 * @example {@paperscript}
+	 * // Adding an array of [x, y] arrays:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * var array = [[30, 75], [100, 20], [170, 75]];
+	 * path.addSegments(array);
+	 * 
+	 * @example {@paperscript}
+	 * // Adding segments from one path to another:
+	 * 
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.addSegments([[30, 75], [100, 20], [170, 75]]);
+	 * 
+	 * var path2 = new Path();
+	 * path2.strokeColor = 'red';
+	 * 
+	 * // Add the second and third segments of path to path2:
+	 * path2.add(path.segments[1], path.segments[2]);
+	 * 
+	 * // Move path2 30pt to the right:
+	 * path2.position.x += 30;
 	 */
 	addSegments: function(segments) {
 		return this._add(Segment.readAll(segments));
@@ -374,6 +463,20 @@ var Path = this.Path = PathItem.extend({
 	 * 
 	 * @param {Number} index the index of the segment to be removed
 	 * @return {Segment} the removed segment
+	 * 
+	 * @example {@paperscript}
+	 * // Removing a segment from a path:
+	 * 
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var path = new Path.Circle(new Point(80, 50), 35);
+	 * path.strokeColor = 'black';
+	 * 
+	 * // Remove its second segment:
+	 * path.removeSegment(1);
+	 * 
+	 * // Select the path, so we can see its segments:
+	 * path.selected = true;
 	 */
 	removeSegment: function(index) {
 		var segments = this.removeSegments(index, index + 1);
@@ -388,6 +491,20 @@ var Path = this.Path = PathItem.extend({
 	 * @param {Number} from
 	 * @param {Number} to
 	 * @return {Array} an array containing the removed segments.
+	 * 
+	 * @example {@paperscript}
+	 * // Removing segments from a path:
+	 * 
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var path = new Path.Circle(new Point(80, 50), 35);
+	 * path.strokeColor = 'black';
+	 * 
+	 * // Remove the segments from index 1 till index 2:
+	 * path.removeSegments(1, 2);
+	 * 
+	 * // Select the path, so we can see its segments:
+	 * path.selected = true;
 	 */
 	removeSegments: function(from, to) {
 		from = from || 0;
@@ -430,6 +547,40 @@ var Path = this.Path = PathItem.extend({
 		return removed;
 	},
 
+	/**
+	 * Specifies whether an path is selected and will also return {@code true}
+	 * if the path is partially selected, i.e. one or more of its segments is
+	 * selected.
+	 *
+	 * Paper.js draws the visual outlines of selected items on top of your
+	 * project. This can be useful for debugging, as it allows you to see the
+	 * construction of paths, position of path curves, individual segment points
+	 * and bounding boxes of symbol and raster items.
+	 *
+	 * @type Boolean
+	 * @bean
+	 * @see Project#selectedItems
+	 * @see Segment#selected
+	 * @see Point#selected
+	 * 
+	 * @example {@paperscript}
+	 * // Selecting an item:
+	 * var path = new Path.Circle(new Size(80, 50), 35);
+	 * path.selected = true; // Select the path
+	 * 
+	 * @example {@paperscript}
+	 * // A path is selected, if one or more of its segments is selected:
+	 * var path = new Path.Circle(new Size(80, 50), 35);
+	 * 
+	 * // Select the second segment of the path:
+	 * path.segments[1].selected = true;
+	 * 
+	 * // If the path is selected (which it is), set its fill color to red:
+	 * if (path.selected) {
+	 * 	path.fillColor = 'red';
+	 * }
+	 * 
+	 */
 	isSelected: function() {
 		return this._selectedSegmentCount > 0;
 	},
@@ -450,6 +601,30 @@ var Path = this.Path = PathItem.extend({
 	 * 
 	 * @type Boolean
 	 * @bean
+	 * 
+	 * @example {@paperscript}
+	 * // A path is fully selected, if all of its segments are selected:
+	 * var path = new Path.Circle(new Size(80, 50), 35);
+	 * path.selected = true;
+	 * 
+	 * var path2 = new Path.Circle(new Size(180, 50), 35);
+	 * path2.selected = true;
+	 * 
+	 * // Deselect the second segment of the second path:
+	 * path2.segments[1].selected = false;
+	 * 
+	 * // If the path is fully selected (which it is),
+	 * // set its fill color to red:
+	 * if (path.fullySelected) {
+	 * 	path.fillColor = 'red';
+	 * }
+	 *
+	 * // If the second path is fully selected (which it isn't, since we just
+	 * // deselected its second segment),
+	 * // set its fill color to red:
+	 * if (path2.fullySelected) {
+	 * 	path2.fillColor = 'red';
+	 * }
 	 */
 	isFullySelected: function() {
 		return this._selectedSegmentCount == this._segments.length;
@@ -459,6 +634,31 @@ var Path = this.Path = PathItem.extend({
 		this.setSelected(selected);
 	},
 
+	/**
+	 * Converts the curves in the path to straight lines.
+	 * 
+	 * @param {Number} maxDistance the maximum distance between the points
+	 * 
+	 * @example {@paperscript}
+	 * // Straightening the curves of a circle:
+	 * 
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var path = new Path.Circle(new Size(80, 50), 35);
+	 * 
+	 * // Select the path, so we can inspect its segments:
+	 * path.selected = true;
+	 * 
+	 * // Create a copy of the path and move it 150 points to the right:
+	 * var copy = path.clone();
+	 * copy.position.x += 150;
+	 * 
+	 * // Convert its curves to points, with a max distance of 20:
+	 * copy.curvesToPoints(20);
+	 * 
+	 * // Select the copy, so we can inspect its segments:
+	 * copy.selected = true;
+	 */
 	curvesToPoints: function(maxDistance) {
 		var flattener = new PathFlattener(this),
 			pos = 0;
