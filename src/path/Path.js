@@ -1304,6 +1304,56 @@ var Path = this.Path = PathItem.extend({
 		 * @function
 		 * @param {Point} through
 		 * @param {Point} to
+		 * 
+		 * @example {@paperscript}
+		 * var path = new Path();
+		 * path.strokeColor = 'black';
+		 * 
+		 * var firstPoint = new Point(30, 75);
+		 * path.add(firstPoint);
+		 * 
+		 * // The point through which we will create the arc:
+		 * var throughPoint = new Point(40, 40);
+		 * 
+		 * // The point at which the arc will end:
+		 * var toPoint = new Point(130, 75);
+		 * 
+		 * // Draw an arc through 'throughPoint' to 'toPoint'
+		 * path.arcTo(throughPoint, toPoint);
+		 * 
+		 * // Add a red circle shaped path at the position of 'throughPoint':
+		 * var circle = new Path.Circle(throughPoint, 3);
+		 * circle.fillColor = 'red';
+		 * 
+		 * @example {@paperscript height=300}
+		 * // Interactive example. Click and drag in the view below:
+		 * 
+		 * var myPath;
+		 * function onMouseDrag(event) {
+		 * 	// If we created a path before, remove it:
+		 * 	if (myPath) {
+		 * 	    myPath.remove();
+		 * 	}
+		 * 	
+		 * 	// Create a new path and add a segment point to it
+		 * 	// at {x: 150, y: 150):
+		 * 	myPath = new Path();
+		 * 	myPath.add(150, 150);
+		 * 	
+		 * 	// Draw an arc through the position of the mouse to 'toPoint'
+		 * 	var toPoint = new Point(350, 150);
+		 * 	myPath.arcTo(event.point, toPoint);
+		 * 	
+		 * 	// Select the path, so we can see its segments:
+		 * 	myPath.selected = true;
+		 * }
+		 * 
+		 * // When the mouse is released, deselect the path
+		 * // and fill it with black.
+		 * function onMouseUp(event) {
+		 * 	myPath.selected = false;
+		 * 	myPath.fillColor = 'black';
+		 * }
 		 */
 		/**
 		 * @param {Point} to
