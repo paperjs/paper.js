@@ -1085,6 +1085,12 @@ var Path = this.Path = PathItem.extend({
 
 		// DOCS: document Path#arcTo
 		/**
+		 * @name Path#arcTo
+		 * @function
+		 * @param {Point} through
+		 * @param {Point} to
+		 */
+		/**
 		 * @param {Point} to
 		 * @param {Boolean} [clockwise=true]
 		 */
