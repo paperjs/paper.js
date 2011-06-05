@@ -119,8 +119,8 @@ var PathFitter = Base.extend({
 			// C[1][0] += a1.dot(a2);
 			C[1][0] = C[0][1];
 			C[1][1] += a2.dot(a2);
-			X[0] += A[i][0].dot(tmp);
-			X[1] += A[i][1].dot(tmp);
+			X[0] += a1.dot(tmp);
+			X[1] += a2.dot(tmp);
 		}
 
 		// Compute the determinants of C and X
