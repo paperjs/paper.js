@@ -30,7 +30,6 @@ var PathFitter = Base.extend({
 			}
 		}
 		this.error = error;
-		this.iterationError = error * error;
 	},
 
 	fit: function() {
@@ -57,24 +56,24 @@ var PathFitter = Base.extend({
 		}
 		// Parameterize points, and attempt to fit curve
 		var uPrime = this.chordLengthParameterize(first, last),
-			prevMaxError = this.iterationError,
+			maxError = Math.max(this.error, this.error * this.error),
 			error,
 			split;
 		// Try 4 iterations
-		for (var i = 0; i < 4; i++) {
+		for (var i = 0; i <= 4; i++) {
 			var curve = this.generateBezier(first, last, uPrime, tan1, tan2);
 			//	Find max deviation of points to fitted curve
 			var max = this.findMaxError(first, last, curve, uPrime);
-			if (max.error < this.error) { 
+			if (max.error < this.error) {
 				this.addCurve(curve);
 				return;
 			}
 			split = max.index;
-			// If error not too large, try some reparameterization and iteration
-			if (max.error >= this.iterationError || max.error >= prevMaxError)
+			// If error not too large, try reparameterization and iteration
+			if (max.error >= maxError)
 				break;
-			uPrime = this.reparameterize(first, last, uPrime, curve);
-			prevMaxError = max.error;
+			this.reparameterize(first, last, uPrime, curve);
+			maxError = max.error;
 		}
 		// Fitting failed -- split at max error point and fit recursively
 		var V1 = this.points[split - 1].subtract(this.points[split]),
@@ -168,12 +167,9 @@ var PathFitter = Base.extend({
 	// Given set of points and their parameterization, try to find
 	// a better parameterization.
 	reparameterize: function(first, last, u, curve) {
-		var uPrime = [];
 		for (var i = first; i <= last; i++) {
-			uPrime[i - first] = this.findRoot(curve, this.points[i],
-					u[i - first]);
+			u[i - first] = this.findRoot(curve, this.points[i], u[i - first]);
 		}
-		return uPrime;
 	},
 
 	// Use Newton-Raphson iteration to find better root.
