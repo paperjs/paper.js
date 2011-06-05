@@ -97,37 +97,28 @@ var PathFitter = Base.extend({
 			pt1 = this.points[first],
 			pt2 = this.points[last];
 
-		var A = [];
-		// Compute the A's 
-		for (var i = 0; i < nPts; i++) {
-			var u = uPrime[i],
-				t = 1 - u,
-				b = 3 * u * t;
-			A[i] = [
-				tHat1.normalize(b * t), // b1
-				tHat2.normalize(b * u)  // b2
-			];
-		}
-
 		// Create the C and X matrices
 		var C = [[0, 0], [0, 0]],
 			X = [0, 0];
 
 		for (var i = 0; i < nPts; i++) {
-			C[0][0] += A[i][0].dot(A[i][0]);
-			C[0][1] += A[i][0].dot(A[i][1]);
-			// C[1][0] += A[i][0].dot(A[i][1]);
-			C[1][0] = C[0][1];
-			C[1][1] += A[i][1].dot(A[i][1]);
-
 			var u = uPrime[i],
 				t = 1 - u,
 				b = 3 * u * t,
+				b0 = t * t * t,
+				b1 = b * t,
+				b2 = b * u,
+				b3 = u * u * u,
+				a1 = tHat1.normalize(b1),
+				a2 = tHat2.normalize(b2),
 				tmp = this.points[first + i]
-					.subtract(pt1.multiply(t * t * t) // b0
-						.add(pt1.multiply(b * t)) // b1
-						.add(pt2.multiply(b * u)) // b2
-						.add(pt2.multiply(u * u * u))); // b3
+					.subtract(pt1.multiply(b0 + b1))
+					.subtract(pt2.multiply(b2 + b3));
+			C[0][0] += a1.dot(a1);
+			C[0][1] += a1.dot(a2);
+			// C[1][0] += a1.dot(a2);
+			C[1][0] = C[0][1];
+			C[1][1] += a2.dot(a2);
 			X[0] += A[i][0].dot(tmp);
 			X[1] += A[i][1].dot(tmp);
 		}
