@@ -126,7 +126,7 @@ var PathFitter = Base.extend({
 		// Compute the determinants of C and X
 		var det_C0_C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
 			alpha_l, alpha_r;
-		if (Math.abs(det_C0_C1) < Numerical.TOLERANCE) {
+		if (Math.abs(det_C0_C1) > Numerical.TOLERANCE) {
 			// Kramer's rule
 			var det_C0_X  = C[0][0] * X[1]    - C[1][0] * X[0],
 				det_X_C1  = X[0]    * C[1][1] - X[1]    * C[0][1];
