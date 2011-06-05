@@ -22,9 +22,15 @@ var PathFitter = Base.extend({
 		//console.log(path.segments + '');
 		this.maxIterations = 4;
 		this.points = [];
-		var segments = path._segments;
-		for (var i = 0, l = segments.length; i < l; i++)
-			this.points[i] = segments[i].point.clone();
+		var segments = path._segments,
+			prev;
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var point = segments[i].point.clone();
+			if (!prev || !prev.equals(point)) {
+				this.points[i] = point;
+				prev = point;
+			}
+		}
 		this.error = error;
 		this.iterationError = error * error;
 	},
