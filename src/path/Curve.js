@@ -410,8 +410,8 @@ var Curve = this.Curve = Base.extend({
 						} else { // handle2
 							px = c2x; py = c2y;
 						}
-						x = px - p2x;
-						y = py - p2y;
+						x = p2x - px;
+						y = p2y - py;
 					}
 					break;
 				}
