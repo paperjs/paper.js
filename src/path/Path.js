@@ -641,11 +641,53 @@ var Path = this.Path = PathItem.extend({
 
 	// DOCS: improve Path#getPointAt documenation.
 	/**
-	 * Get the point of the path at the given offset.
+	 * Get the point on the path at the given offset.
 	 * 
 	 * @param {Number} offset
 	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the point at the given offset
+	 * 
+	 * @example {@paperscript height=150}
+	 * // Finding the point on a path at a given offset:
+	 * 
+	 * // Create an arc shaped path:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 * 
+	 * // We're going to be working with a third of the length
+	 * // of the path as the offset:
+	 * var offset = path.length / 3;
+	 * 
+	 * // Find the point on the path:
+	 * var point = path.getPointAt(offset);
+	 * 
+	 * // Create a small circle shaped path at the point:
+	 * var circle = new Path.Circle(point, 3);
+	 * circle.fillColor = 'red';
+	 * 
+	 * @example {@paperscript height=150}
+	 * // Iterating over the length of a path:
+	 * 
+	 * // Create an arc shaped path:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 * 
+	 * var amount = 5;
+	 * var length = path.length;
+	 * for (var i = 0; i < amount + 1; i++) {
+	 * 	var offset = i / amount * length;
+	 * 	
+	 * 	// Find the point on the path at the given offset:
+	 * 	var point = path.getPointAt(offset);
+	 * 	
+	 * 	// Create a small circle shaped path at the point:
+	 * 	var circle = new Path.Circle(point, 3);
+	 * 	circle.fillColor = 'red';
+	 * }
 	 */
 	getPointAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
@@ -659,6 +701,62 @@ var Path = this.Path = PathItem.extend({
 	 * @param {Number} offset
 	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the tangent vector at the given offset
+	 * 
+	 * @example {@paperscript height=150}
+	 * // Working with the tangent vector at a given offset:
+	 * 
+	 * // Create an arc shaped path:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 * 
+	 * // We're going to be working with a third of the length
+	 * // of the path as the offset:
+	 * var offset = path.length / 3;
+	 * 
+	 * // Find the point on the path:
+	 * var point = path.getPointAt(offset);
+	 * 
+	 * // Find the tangent vector at the given offset:
+	 * var tangent = path.getTangentAt(offset);
+	 * 
+	 * // Make the tangent vector 60pt long:
+	 * tangent.length = 60;
+	 * 
+	 * var path = new Path();
+	 * path.strokeColor = 'red';
+	 * path.add(point);
+	 * path.add(point + tangent);
+	 * 
+	 * @example {@paperscript height=200}
+	 * // Iterating over the length of a path:
+	 * 
+	 * // Create an arc shaped path:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 * 
+	 * var amount = 6;
+	 * var length = path.length;
+	 * for (var i = 0; i < amount + 1; i++) {
+	 * 	var offset = i / amount * length;
+	 * 
+	 * 	// Find the point on the path at the given offset:
+	 * 	var point = path.getPointAt(offset);
+	 * 	
+	 * 	// Find the normal vector on the path at the given offset:
+	 * 	var tangent = path.getTangentAt(offset);
+	 * 	
+	 * 	// Make the tangent vector 60pt long:
+	 * 	tangent.length = 60;
+	 * 	
+	 * 	var line = new Path();
+	 * 	line.strokeColor = 'red';
+	 * 	line.add(point);
+	 * 	line.add(point + tangent);
+	 * }
 	 */
 	getTangentAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
@@ -671,6 +769,62 @@ var Path = this.Path = PathItem.extend({
 	 * @param {Number} offset
 	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the normal vector at the given offset
+	 *
+	 * @example {@paperscript height=150}
+	 * // Working with the normal vector at a given offset:
+	 * 
+	 * // Create an arc shaped path:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 * 
+	 * // We're going to be working with a third of the length
+	 * // of the path as the offset:
+	 * var offset = path.length / 3;
+	 * 
+	 * // Find the point on the path:
+	 * var point = path.getPointAt(offset);
+	 * 
+	 * // Find the normal vector at the given offset:
+	 * var normal = path.getNormalAt(offset);
+	 * 
+	 * // Make the normal vector 30pt long:
+	 * normal.length = 30;
+	 * 
+	 * var path = new Path();
+	 * path.strokeColor = 'red';
+	 * path.add(point);
+	 * path.add(point + normal);
+	 * 
+	 * @example {@paperscript height=200}
+	 * // Iterating over the length of a path:
+	 * 
+	 * // Create an arc shaped path:
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 * 
+	 * var amount = 10;
+	 * var length = path.length;
+	 * for (var i = 0; i < amount + 1; i++) {
+	 * 	var offset = i / amount * length;
+	 * 	
+	 * 	// Find the point on the path at the given offset:
+	 * 	var point = path.getPointAt(offset);
+	 * 	
+	 * 	// Find the normal vector on the path at the given offset:
+	 * 	var normal = path.getNormalAt(offset);
+	 * 	
+	 * 	// Make the normal vector 30pt long:
+	 * 	normal.length = 30;
+	 * 	
+	 * 	var line = new Path();
+	 * 	line.strokeColor = 'red';
+	 * 	line.add(point);
+	 * 	line.add(point + normal);
+	 * }
 	 */
 	getNormalAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
