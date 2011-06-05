@@ -23,3 +23,18 @@ test('path.curves Synchronisation', function() {
 	equals(path.segments.toString(), "{ point: { x: 0, y: 100 } },{ point: { x: 100, y: 100 } }", "path.segments: path.add(new Point(100, 100));\npath.removeSegments(1, 2);");
 	equals(path.curves.toString(), "{ point1: { x: 0, y: 100 }, point2: { x: 100, y: 100 } },{ point1: { x: 100, y: 100 }, point2: { x: 0, y: 100 } }", "path.curves: path.add(new Point(100, 100));\npath.removeSegments(1, 2);");
 });
+
+test('path.curvesToPoints(maxDistance)', function() {
+	var path = new Path.Circle(new Size(80, 50), 35);
+
+	// Convert its curves to points, with a max distance of 20:
+	path.curvesToPoints(20);
+
+	equals(function() {
+		return path.lastSegment.point.equals(path.firstSegment.point);
+	}, false, 'The points of the last and first segments should not be the same.');
+	
+	equals(function() {
+		return path.lastSegment.point.toString() != path.segments[path.segments.length - 2].point.toString();
+	}, true, 'The points of the last and before last segments should not be so close, that calling toString on them returns the same string value.');
+});
