@@ -66,7 +66,7 @@ var Segment = this.Segment = Base.extend({
 				point = arg0;
 			}
 		} else if (count < 6) {
-			if (count == 2 && !arg1.x) {
+			if (count == 2 && arg1.x === undefined) {
 				point = [ arg0, arg1 ];
 			} else {
 				point = arg0;

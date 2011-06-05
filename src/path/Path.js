@@ -93,7 +93,7 @@ var Path = this.Path = PathItem.extend({
 			this._segments.length = 0;
 			// Make sure new curves are calculated next time we call getCurves()
 			if (this._curves)
-				this._curves = null;
+				delete this._curves;
 		}
 		this._add(Segment.readAll(segments));
 	},
@@ -679,19 +679,25 @@ var Path = this.Path = PathItem.extend({
 	 */
 	curvesToPoints: function(maxDistance) {
 		var flattener = new PathFlattener(this),
-			pos = 0;
-		var step = flattener.length / Math.ceil(flattener.length / maxDistance);
-		this.segments = [];
+			pos = 0,
+			// Adapt step = maxDistance so the points distribute evenly.
+			step = flattener.length / Math.ceil(flattener.length / maxDistance),
+			// Add half of step to end, so imprecisions are ok too.
+			end = flattener.length + step / 2;
 		// Iterate over path and evaluate and add points at given offsets
-		do {
-			this._add([ new Segment(flattener.evaluate(pos, 0)) ]);
-		} while ((pos += step) < flattener.length);
-		// Add last one
-		this._add([ new Segment(flattener.evaluate(flattener.length, 0)) ]);
-		this._changed(ChangeFlags.GEOMETRY);
+		var segments = [];
+		while (pos <= end) {
+			segments.push(new Segment(flattener.evaluate(pos, 0)));
+			pos += step;
+		}
+		this.setSegments(segments);
 	},
 
-	// TODO: pointsToCurves([tolerance[, threshold[, cornerRadius[, scale]]]])
+	pointsToCurves: function(tolerance) {
+		var fitter = new PathFitter(this, tolerance || 2.5);
+		this.setSegments(fitter.fit());
+	},
+
 	// TODO: reduceSegments([flatness])
 	// TODO: split(offset) / split(location) / split(index[, parameter])
 
