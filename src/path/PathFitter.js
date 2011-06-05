@@ -45,14 +45,14 @@ var PathFitter = Base.extend({
 	},
 
 	// Fit a Bezier curve to a (sub)set of digitized points
-	fitCubic: function(first, last, tHat1, tHat2) {
+	fitCubic: function(first, last, tan1, tan2) {
 		//	Use heuristic if region only has two points in it
 		if (last - first == 1) {
 			var pt1 = this.points[first],
 				pt2 = this.points[last],
 				dist = pt1.getDistance(pt2) / 3;
-			this.addCurve([pt1, pt1.add(tHat1.normalize(dist)),
-					pt2.add(tHat2.normalize(dist)), pt2]);
+			this.addCurve([pt1, pt1.add(tan1.normalize(dist)),
+					pt2.add(tan2.normalize(dist)), pt2]);
 			return;
 		}
 		// Parameterize points, and attempt to fit curve
@@ -62,37 +62,37 @@ var PathFitter = Base.extend({
 			split;
 		// Try 4 iterations
 		for (var i = 0; i < 4; i++) {
-			var bezCurve = this.generateBezier(first, last, uPrime, tHat1, tHat2);
+			var curve = this.generateBezier(first, last, uPrime, tan1, tan2);
 			//	Find max deviation of points to fitted curve
-			var max = this.findMaxError(first, last, bezCurve, uPrime);
+			var max = this.findMaxError(first, last, curve, uPrime);
 			if (max.error < this.error) { 
-				this.addCurve(bezCurve);
+				this.addCurve(curve);
 				return;
 			}
 			split = max.index;
 			// If error not too large, try some reparameterization and iteration
 			if (max.error >= this.iterationError || max.error >= prevMaxError)
 				break;
-			uPrime = this.reparameterize(first, last, uPrime, bezCurve);
+			uPrime = this.reparameterize(first, last, uPrime, curve);
 			prevMaxError = max.error;
 		}
 		// Fitting failed -- split at max error point and fit recursively
 		var V1 = this.points[split - 1].subtract(this.points[split]),
 			V2 = this.points[split].subtract(this.points[split + 1]),
-			tHatCenter = V1.add(V2).divide(2).normalize();
-		this.fitCubic(first, split, tHat1, tHatCenter);
-		this.fitCubic(split, last, tHatCenter.negate(), tHat2);
+			tanCenter = V1.add(V2).divide(2).normalize();
+		this.fitCubic(first, split, tan1, tanCenter);
+		this.fitCubic(split, last, tanCenter.negate(), tan2);
 	},
 
-	addCurve: function(bezCurve) {
+	addCurve: function(curve) {
 		var prev = this.segments[this.segments.length - 1];
-		prev.setHandleOut(bezCurve[1].subtract(bezCurve[0]));
+		prev.setHandleOut(curve[1].subtract(curve[0]));
 		this.segments.push(
-				new Segment(bezCurve[3], bezCurve[2].subtract(bezCurve[3])));
+				new Segment(curve[3], curve[2].subtract(curve[3])));
 	},
 
 	// Use least-squares method to find Bezier control points for region.
-	generateBezier: function(first, last, uPrime, tHat1, tHat2) {
+	generateBezier: function(first, last, uPrime, tan1, tan2) {
 		var nPts = last - first + 1,
 			pt1 = this.points[first],
 			pt2 = this.points[last];
@@ -109,8 +109,8 @@ var PathFitter = Base.extend({
 				b1 = b * t,
 				b2 = b * u,
 				b3 = u * u * u,
-				a1 = tHat1.normalize(b1),
-				a2 = tHat2.normalize(b2),
+				a1 = tan1.normalize(b1),
+				a2 = tan2.normalize(b2),
 				tmp = this.points[first + i]
 					.subtract(pt1.multiply(b0 + b1))
 					.subtract(pt2.multiply(b2 + b3));
@@ -162,40 +162,40 @@ var PathFitter = Base.extend({
 		// positioned exactly at the first and last data points
 		// Control points 1 and 2 are positioned an alpha distance out
 		// on the tangent vectors, left and right, respectively
-		return [pt1, pt1.add(tHat1.normalize(alpha_l)),
-				pt2.add(tHat2.normalize(alpha_r)), pt2];
+		return [pt1, pt1.add(tan1.normalize(alpha_l)),
+				pt2.add(tan2.normalize(alpha_r)), pt2];
 	},
 
 	// Given set of points and their parameterization, try to find
 	// a better parameterization.
-	reparameterize: function(first, last, u, bezCurve) {
+	reparameterize: function(first, last, u, curve) {
 		var uPrime = [];
 		for (var i = first; i <= last; i++) {
-			uPrime[i - first] = this.findRoot(bezCurve, this.points[i],
+			uPrime[i - first] = this.findRoot(curve, this.points[i],
 					u[i - first]);
 		}
 		return uPrime;
 	},
 
 	// Use Newton-Raphson iteration to find better root.
-	findRoot: function(Q, P, u) {
-		var Q1 = [],
-			Q2 = [];
+	findRoot: function(curve, point, u) {
+		var curve1 = [],
+			curve2 = [];
 		// Generate control vertices for Q'
 		for (var i = 0; i <= 2; i++) {
-			Q1[i] = Q[i + 1].subtract(Q[i]).multiply(3);
+			curve1[i] = curve[i + 1].subtract(curve[i]).multiply(3);
 		}
 		// Generate control vertices for Q''
 		for (var i = 0; i <= 1; i++) {
-			Q2[i] = Q1[i + 1].subtract(Q1[i]).multiply(2);
+			curve2[i] = curve1[i + 1].subtract(curve1[i]).multiply(2);
 		}
 		// Compute Q(u), Q'(u) and Q''(u)
-		Q_u = this.evaluate(3, Q, u);
-		Q1_u = this.evaluate(2, Q1, u);
-		Q2_u = this.evaluate(1, Q2, u);
-		// Compute f(u)/f'(u)
-		var V = Q_u.subtract(P),
-			df = Q1_u.dot(Q1_u) + V.dot(Q2_u);
+		var pt = this.evaluate(3, curve, u),
+		 	pt1 = this.evaluate(2, curve1, u),
+		 	pt2 = this.evaluate(1, curve2, u),
+		 	diff = pt.subtract(point),
+			df = pt1.dot(pt1) + diff.dot(pt2);
+		// Compute f(u) / f'(u)
 		if (Math.abs(df) < Numerical.TOLERANCE)
 			return u;
 		// u = u - f(u) / f'(u)
@@ -203,16 +203,16 @@ var PathFitter = Base.extend({
 	},
 
 	// Evaluate a Bezier curve at a particular parameter value
-	evaluate: function(degree, V, t) {
+	evaluate: function(degree, curve, t) {
 		// Copy array
-		var Vtemp = V.slice();
+		var tmp = curve.slice();
 		// Triangle computation
 		for (var i = 1; i <= degree; i++) {
 			for (var j = 0; j <= degree - i; j++) {
-				Vtemp[j] = Vtemp[j].multiply(1 - t).add(Vtemp[j + 1].multiply(t));
+				tmp[j] = tmp[j].multiply(1 - t).add(tmp[j + 1].multiply(t));
 			}
 		}
-		return Vtemp[0];
+		return tmp[0];
 	},
 
 	// Assign parameter values to digitized points 
@@ -230,11 +230,11 @@ var PathFitter = Base.extend({
 	},
 
 	// Find the maximum squared distance of digitized points to fitted curve.
-	findMaxError: function(first, last, bezCurve, u) {
+	findMaxError: function(first, last, curve, u) {
 		var index = Math.floor((last - first + 1) / 2),
 			maxDist = 0;
 		for (var i = first + 1; i < last; i++) {
-			var P = this.evaluate(3, bezCurve, u[i - first]);
+			var P = this.evaluate(3, curve, u[i - first]);
 			var v = P.subtract(this.points[i]);
 			var dist = v.x * v.x + v.y * v.y; // squared
 			if (dist >= maxDist) {
