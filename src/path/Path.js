@@ -1276,11 +1276,45 @@ var Path = this.Path = PathItem.extend({
 			);
 		},
 
-		// DOCS: document Path#curveTo
+		// DOCS: document Path#curveTo 'paramater' param.
 		/**
-		 * @param {Point} through
-		 * @param {Point} to
+		 * Draws a curve from the position of the last segment point in
+		 * the path that goes through the specified {@code through} point,
+		 * to the specified {@code to} point by adding one segment to the path.
+		 * 
+		 * @param {Point} through the point through which the curve should go
+		 * @param {Point} to the point where the curve should end
 		 * @param {Number} [parameter=0.5]
+		 * 
+		 * @example {@paperscript height=300}
+		 * // Interactive example. Click and drag in the view below:
+		 * 
+		 * var myPath;
+		 * function onMouseDrag(event) {
+		 * 	// If we created a path before, remove it:
+		 * 	if (myPath) {
+		 * 	    myPath.remove();
+		 * 	}
+		 * 
+		 * 	// Create a new path and add a segment point to it
+		 * 	// at {x: 150, y: 150):
+		 * 	myPath = new Path();
+		 * 	myPath.add(150, 150);
+		 * 
+		 * 	// Draw a curve through the position of the mouse to 'toPoint'
+		 * 	var toPoint = new Point(350, 150);
+		 * 	myPath.curveTo(event.point, toPoint);
+		 * 
+		 * 	// Select the path, so we can see its segments:
+		 * 	myPath.selected = true;
+		 * }
+	     * 
+		 * // When the mouse is released, deselect the path
+		 * // and set its stroke-color to black:
+		 * function onMouseUp(event) {
+		 * 	myPath.selected = false;
+		 * 	myPath.strokeColor = 'black';
+		 * }
 		 */
 		curveTo: function(through, to, parameter) {
 			through = Point.read(arguments, 0, 1);
@@ -1298,12 +1332,16 @@ var Path = this.Path = PathItem.extend({
 			this.quadraticCurveTo(handle, to);
 		},
 
-		// DOCS: document Path#arcTo
 		/**
+		 * Draws an arc from the position of the last segment point in
+		 * the path that goes through the specified {@code through} point,
+		 * to the specified {@code to} point by adding one or more segments to
+		 * the path.
+		 *
 		 * @name Path#arcTo
 		 * @function
-		 * @param {Point} through
-		 * @param {Point} to
+		 * @param {Point} through the point where the arc should pass through
+		 * @param {Point} to the point where the arc should end
 		 * 
 		 * @example {@paperscript}
 		 * var path = new Path();
@@ -1356,8 +1394,50 @@ var Path = this.Path = PathItem.extend({
 		 * }
 		 */
 		/**
-		 * @param {Point} to
-		 * @param {Boolean} [clockwise=true]
+		 * Draws an arc from the position of the last segment point in
+		 * the path to the specified point by adding one or more segments to the
+		 * path.
+		 * 
+		 * @param {Point} point
+		 * @param {Boolean} [clockwise=true] specifies whether the arc should
+		 *                                   be drawn in clockwise direction.
+		 * 
+		 * @example {@paperscript}
+		 * var path = new Path();
+		 * path.strokeColor = 'black';
+		 * 
+		 * path.add(new Point(30, 75));
+		 * path.arcTo(new Point(130, 75));
+		 * 
+		 * var path2 = new Path();
+		 * path2.strokeColor = 'red';
+		 * path2.add(new Point(180, 25));
+		 * 
+		 * // To draw an arc in anticlockwise direction,
+		 * // we pass 'false' as the second argument to arcTo:
+		 * path2.arcTo(new Point(280, 25), false);
+		 * 
+		 * @example {@paperscript height=300}
+		 * // Interactive example. Click and drag in the view below:
+		 * var myPath;
+		 * 
+		 * // The mouse has to move at least 20 points before
+		 * // the next mouse drag event is fired:
+		 * tool.minDistance = 20;
+		 * 
+		 * // When the user clicks, create a new path and add
+		 * // the current mouse position to it as its first segment:
+		 * function onMouseDown(event) {
+		 * 	myPath = new Path();
+		 * 	myPath.strokeColor = 'black';
+		 * 	myPath.add(event.point);
+		 * }
+		 * 
+		 * // On each mouse drag event, draw an arc to the current
+		 * // position of the mouse:
+		 * function onMouseDrag(event) {
+		 * 	myPath.arcTo(event.point);
+		 * }
 		 */
 		arcTo: function(to, clockwise) {
 			// Get the start point:
