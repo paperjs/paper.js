@@ -136,11 +136,12 @@ var PathFitter = Base.extend({
 		// Compute the determinants of C and X
 		var det_C0_C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
 			det_C0_X  = C[0][0] * X[1]    - C[1][0] * X[0],
-			det_X_C1  = X[0]    * C[1][1] - X[1]    * C[0][1];
+			det_X_C1  = X[0]    * C[1][1] - X[1]    * C[0][1],
+			singularity = det_C0_C1 < Numerical.TOLERANCE;
 
 		// Finally, derive alpha values
-		var alpha_l = (det_C0_C1 == 0) ? 0.0 : det_X_C1 / det_C0_C1,
-			alpha_r = (det_C0_C1 == 0) ? 0.0 : det_C0_X / det_C0_C1;
+		var alpha_l = singularity ? 0 : det_X_C1 / det_C0_C1,
+			alpha_r = singularity ? 0 : det_C0_X / det_C0_C1;
 
 		// If alpha negative, use the Wu/Barsky heuristic (see text)
 		// (if alpha is 0, you get coincident control points that lead to
