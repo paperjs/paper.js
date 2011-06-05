@@ -342,23 +342,23 @@ var Curve = this.Curve = Base.extend({
 						: handle2;
 				break;
 			}
-			x = point.x;
-			y = point.y;
+			x = point._x;
+			y = point._y;
 		} else {
-			var dx = point2.x - point1.x,
-				cx = 3 * handle1.x,
-				bx = 3 * (dx + handle2.x - handle1.x) - cx,
+			var dx = point2._x - point1._x,
+				cx = 3 * handle1._x,
+				bx = 3 * (dx + handle2._x - handle1._x) - cx,
 				ax = dx - cx - bx,
 
-				dy = point2.y - point1.y,
-				cy = 3 * handle1.y,
-				by = 3 * (dy + handle2.y - handle1.y) - cy,
+				dy = point2._y - point1._y,
+				cy = 3 * handle1._y,
+				by = 3 * (dy + handle2._y - handle1._y) - cy,
 				ay = dy - cy - by;
 
 			switch (type) {
 			case 0: // point
-				x = ((ax * t + bx) * t + cx) * t + point1.x;
-				y = ((ay * t + by) * t + cy) * t + point1.y;
+				x = ((ax * t + bx) * t + cx) * t + point1._x;
+				y = ((ay * t + by) * t + cy) * t + point1._y;
 				break;
 			case 1: // tangent
 			case 2: // normal
@@ -442,10 +442,10 @@ var Curve = this.Curve = Base.extend({
 					h2 = segment2._handleIn,
 					p2 = segment2._point;
 				return [
-					p1.x, p1.y,
-					p1.x + h1.x, p1.y + h1.y,
-					p2.x + h2.x, p2.y + h2.y,
-					p2.x, p2.y
+					p1._x, p1._y,
+					p1._x + h1._x, p1._y + h1._y,
+					p2._x + h2._x, p2._y + h2._y,
+					p2._x, p2._y
 				];
 			},
 
