@@ -73,6 +73,7 @@ var paper = new function() {
 //#include "path/CompoundPath.js"
 //#include "path/Path.Constructors.js"
 //#include "path/PathFlattener.js"
+//#include "path/PathFitter.js"
 
 //#include "text/ParagraphStyle.js"
 //#include "text/CharacterStyle.js"

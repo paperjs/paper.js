@@ -74,8 +74,7 @@ var Line = this.Line = Base.extend({
 	 */
 	intersect: function(line) {
 		var cross = this.vector.cross(line.vector);
-		// Epsilon tolerance
-		if (Math.abs(cross) <= 10e-6)
+		if (Math.abs(cross) <= Numerical.TOLERANCE)
 			return null;
 		var v = line.point.subtract(this.point),
 			t1 = v.cross(line.vector) / cross,
@@ -105,5 +104,20 @@ var Line = this.Line = Base.extend({
 			}
 		}
 		return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
+	},
+
+	// DOCS: document Line#getDistance(point)
+	/**
+	 * @param {Point} point
+	 * @return {Number}
+	 */
+	getDistance: function(point) {
+		var m = this.vector.y / this.vector.x, // slope
+			b = this.point.y - (m * this.point.x); // y offset
+		// Distance to the linear equation
+		var dist = Math.abs(point.y - (m * point.x) - b) / Math.sqrt(m * m + 1);
+		return this.infinite ? dist : Math.min(dist,
+				point.getDistance(this.point),
+				point.getDistance(this.point.add(this.vector)));
 	}
 });
