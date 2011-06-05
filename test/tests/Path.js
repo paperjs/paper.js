@@ -70,7 +70,9 @@ test('path.remove()', function() {
 		return path.segments.length;
 	}, 2);
 
-	path.removeSegments(0, 2);
+	// TODO: shouldn't this remove two segments? The segments from index 0 till
+	// index 1?
+	path.removeSegments(0, 1);
 	equals(function() {
 		return path.segments.length;
 	}, 0);
@@ -82,6 +84,18 @@ test('path.remove()', function() {
 	}, 0);
 });
 
+test('path.removeSegments()', function() {
+	var path = new Path();
+	path.add(0, 0);
+	path.add(10, 0);
+	path.add(20, 0);
+	path.add(30, 0);
+
+	path.removeSegments();
+	equals(function() {
+		return path.segments.length;
+	}, 0);
+});
 
 test('Is the path deselected after setting a new list of segments?', function() {
 	var path = new Path([0, 0]);
