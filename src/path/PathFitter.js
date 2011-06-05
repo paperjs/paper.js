@@ -22,6 +22,7 @@ var PathFitter = Base.extend({
 		this.points = [];
 		var segments = path._segments,
 			prev;
+		// Copy over points from path and filter out adjacent duplicates.
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var point = segments[i].point.clone();
 			if (!prev || !prev.equals(point)) {
