@@ -113,6 +113,12 @@ var PathFlattener = Base.extend({
 		};
 	},
 
+	evaluate: function(offset, type) {
+		var param = this.getParameter(offset);
+		return Curve.evaluate.apply(Curve,
+				this.curves[param.index].concat([param.value, type]));
+	},
+
 	drawPart: function(ctx, from, to) {
 		from = this.getParameter(from);
 		to = this.getParameter(to);
