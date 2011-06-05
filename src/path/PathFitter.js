@@ -19,8 +19,6 @@
 // from "Graphics Gems", Academic Press, 1990
 var PathFitter = Base.extend({
 	initialize: function(path, error) {
-		//console.log(path.segments + '');
-		this.maxIterations = 4;
 		this.points = [];
 		var segments = path._segments,
 			prev;
@@ -62,7 +60,8 @@ var PathFitter = Base.extend({
 			prevMaxError = this.iterationError,
 			error,
 			split;
-		for (var i = 0; i < this.maxIterations; i++) {
+		// Try 4 iterations
+		for (var i = 0; i < 4; i++) {
 			var bezCurve = this.generateBezier(first, last, uPrime, tHat1, tHat2);
 			//	Find max deviation of points to fitted curve
 			var max = this.findMaxError(first, last, bezCurve, uPrime);
@@ -225,8 +224,7 @@ var PathFitter = Base.extend({
 		return u;
 	},
 
-	// Find the maximum squared distance of digitized points
-	// to fitted curve.
+	// Find the maximum squared distance of digitized points to fitted curve.
 	findMaxError: function(first, last, bezCurve, u) {
 		var index = Math.floor((last - first + 1) / 2),
 			maxDist = 0;
