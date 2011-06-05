@@ -125,13 +125,27 @@ var PathFitter = Base.extend({
 
 		// Compute the determinants of C and X
 		var det_C0_C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
-			det_C0_X  = C[0][0] * X[1]    - C[1][0] * X[0],
-			det_X_C1  = X[0]    * C[1][1] - X[1]    * C[0][1],
-			singularity = det_C0_C1 < Numerical.TOLERANCE;
-
-		// Finally, derive alpha values
-		var alpha_l = singularity ? 0 : det_X_C1 / det_C0_C1,
-			alpha_r = singularity ? 0 : det_C0_X / det_C0_C1;
+			alpha_l, alpha_r;
+		if (Math.abs(det_C0_C1) < Numerical.TOLERANCE) {
+			// Kramer's rule
+			var det_C0_X  = C[0][0] * X[1]    - C[1][0] * X[0],
+				det_X_C1  = X[0]    * C[1][1] - X[1]    * C[0][1];
+			// Derive alpha values
+			alpha_l = det_X_C1 / det_C0_C1;
+			alpha_r = det_C0_X / det_C0_C1;
+		} else {
+			// Matrix is under-determined, try assuming alpha_l == alpha_r
+			var c0 = C[0][0] + C[0][1],
+				c1 = C[1][0] + C[1][1];
+			if (Math.abs(c0) > Numerical.TOLERANCE) {
+				alpha_l = alpha_r = X[0] / c0;
+			} else if (Math.abs(c0) > Numerical.TOLERANCE) {
+				alpha_l = alpha_r = X[1] / c1;
+			} else {
+				// Handle below
+				alpha_l = alpha_r = 0.;
+			}
+		}
 
 		// If alpha negative, use the Wu/Barsky heuristic (see text)
 		// (if alpha is 0, you get coincident control points that lead to
