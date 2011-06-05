@@ -196,7 +196,7 @@ var PathFitter = Base.extend({
 		// Compute f(u)/f'(u)
 		var V = Q_u.subtract(P),
 			df = Q1_u.dot(Q1_u) + V.dot(Q2_u);
-		if (df == 0)
+		if (Math.abs(df) < Numerical.TOLERANCE)
 			return u;
 		// u = u - f(u) / f'(u)
 		return u - V.dot(Q1_u) / df;
