@@ -56,6 +56,7 @@ var sources = [
 	'src/path/CompoundPath.js',
 	'src/path/Path.Constructors.js',
 	'src/path/PathFlattener.js',
+	'src/path/PathFitter.js',
 
 	'src/text/ParagraphStyle.js',
 	'src/text/CharacterStyle.js',
