@@ -31,7 +31,6 @@ var PathFitter = Base.extend({
 				prev = point;
 			}
 		}
-		this.points = this.reducePoints(this.points, 1);
 		this.error = error;
 		this.iterationError = error * error;
 	},
@@ -45,28 +44,6 @@ var PathFitter = Base.extend({
 				this.points[this.points.length - 2].subtract(
 					this.points[this.points.length - 1]).normalize());
 		return this.segments;
-	},
-
-	// Douglas–Peucker algorithm
-	reducePoints: function(points, tolerance) {
-		var line = new Line(points[0], points[points.length - 1], false);
-		var maxDistance = 0,
-			maxIndex = 0;
-		for (var i = 1; i < points.length - 1; i++) {
-			var distance = line.getDistance(points[i]);
-			if(distance > maxDistance) {
-				maxDistance = distance;
-				maxIndex = i;
-			}
-		}
-		if (maxDistance >= tolerance) {
-			var pts = this.reducePoints(
-					points.slice(0, maxIndex + 1), tolerance);
-			pts.pop();
-			return pts.concat(this.reducePoints(
-					points.slice(maxIndex, points.length), tolerance));
-		}
-		return [points[0], points[points.length - 1]];
 	},
 
 	// Fit a Bezier curve to a (sub)set of digitized points
