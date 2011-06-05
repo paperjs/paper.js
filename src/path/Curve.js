@@ -46,7 +46,7 @@ var Curve = this.Curve = Base.extend({
 			this._segment1 = new Segment(arg0, null, arg1);
 			this._segment2 = new Segment(arg3, arg2, null);
 		} else if (count == 8) {
-			// An array as returned by getCurveValues
+			// An array as returned by getValues
 			var p1 = Point.create(arg0, arg1),
 				p2 = Point.create(arg6, arg7);
 			p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y
@@ -203,8 +203,8 @@ var Curve = this.Curve = Base.extend({
 		this.getHandle2().setSelected(selected);
 	},
 
-	getCurveValues: function() {
-		return Curve.getCurveValues(this._segment1, this._segment2);
+	getValues: function() {
+		return Curve.getValues(this._segment1, this._segment2);
 	},
 
 	// DOCS: document Curve#getLength(from, to)
@@ -221,7 +221,7 @@ var Curve = this.Curve = Base.extend({
 		if (fullLength && this._length != null)
 			return this._length;
 		// Hide parameters from Bootstrap so it injects bean too
-		var args = this.getCurveValues();
+		var args = this.getValues();
 		if (!fullLength)
 			args.push(from, to);
 		var length = Curve.getLength.apply(Curve, args);
@@ -231,7 +231,7 @@ var Curve = this.Curve = Base.extend({
 	},
 
 	getPart: function(from, to) {
-		var args = this.getCurveValues();
+		var args = this.getValues();
 		args.push(from, to);
 		return new Curve(Curve.getPart.apply(Curve, args));
 	},
@@ -255,13 +255,13 @@ var Curve = this.Curve = Base.extend({
 	 * @return {Boolean} {@true the curve is linear}
 	 */
 	getParameter: function(length, start) {
-		var args = this.getCurveValues();
+		var args = this.getValues();
 		args.push(length, start !== undefined ? start : length < 0 ? 1 : 0);
 		return Curve.getParameter.apply(Curve, args);
 	},
 
 	_evaluate: function(parameter, type) {
-		var args = this.getCurveValues();
+		var args = this.getValues();
 		args.push(parameter, type);
 		return Curve.evaluate.apply(Curve, args);
 	},
@@ -359,7 +359,7 @@ var Curve = this.Curve = Base.extend({
 			return curve;
 		},
 
-		getCurveValues: function(segment1, segment2) {
+		getValues: function(segment1, segment2) {
 			var p1 = segment1._point,
 				h1 = segment1._handleOut,
 				h2 = segment2._handleIn,
@@ -528,7 +528,7 @@ var Curve = this.Curve = Base.extend({
 			*/
 		}
 	}
-}, new function() {
+}, new function() { // Scope for methods that require numerical integration
 
 	function getLengthIntegrand(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
 		// Calculate the coefficients of a Bezier derivative.
