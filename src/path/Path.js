@@ -1097,7 +1097,7 @@ var Path = this.Path = PathItem.extend({
 				to = Point.read(arguments, 1, 1);
 			} else {
 				to = Point.read(arguments, 0, 1);
-				if (clockwise === null)
+				if (clockwise === undefined)
 					clockwise = true;
 				var middle = current._point.add(to).divide(2),
 					step = middle.subtract(current._point);
