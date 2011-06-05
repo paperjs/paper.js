@@ -1295,6 +1295,49 @@ var Path = this.Path = PathItem.extend({
 		 * open ended and closed paths.
 		 * 
 		 * @author Oleg V. Polikarpotchkin
+		 * 
+		 * @example {@paperscript}
+		 * // Smoothing a closed shape:
+		 * 
+		 * // Create a rectangular path with its top-left point at
+		 * // {x: 30, y: 25} and a size of {width: 50, height: 50}:
+		 * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
+		 * path.strokeColor = 'black';
+		 * 
+		 * // Select the path, so we can see its handles:
+		 * path.selected = true;
+		 * 
+		 * // Create a copy of the path and move it 100pt to the right:
+		 * var copy = path.clone();
+		 * copy.position.x += 100;
+		 * 
+		 * // Smooth the segments of the copy:
+		 * copy.smooth();
+		 * 
+		 * @example {@paperscript height=220}
+		 * var path = new Path();
+		 * path.strokeColor = 'black';
+		 * 
+		 * path.add(new Point(30, 50));
+		 * 
+		 * var y = 5;
+		 * var x = 3;
+		 * 
+		 * for (var i = 0; i < 28; i++) {
+		 *     y *= -1.1;
+		 *     x *= 1.1;
+		 *     path.lineBy(x, y);
+		 * }
+		 * 
+		 * // Create a copy of the path and move it 100pt down:
+		 * var copy = path.clone();
+		 * copy.position.y += 120;
+		 * 
+		 * // Set its stroke color to red:
+		 * copy.strokeColor = 'red';
+		 * 
+		 * // Smooth the segments of the copy:
+		 * copy.smooth();
 		 */
 		smooth: function() {
 			// This code is based on the work by Oleg V. Polikarpotchkin,
