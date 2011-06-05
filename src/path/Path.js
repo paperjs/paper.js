@@ -729,8 +729,10 @@ var Path = this.Path = PathItem.extend({
 		}
 	}
 
-	function drawSegments(ctx, segments) {
-		var handleOut, outX, outY;
+	function drawSegments(ctx, path) {
+		var segments = path._segments,
+			length = segments.length,
+			handleOut, outX, outY;
 
 		function drawSegment(i) {
 			var segment = segments[i],
@@ -753,10 +755,10 @@ var Path = this.Path = PathItem.extend({
 			outY = handleOut._y + y;
 		}
 
-		for (var i = 0, l = segments.length; i < l; i++)
+		for (var i = 0; i < length; i++)
 			drawSegment(i);
 		// Close path by drawing first segment again
-		if (this._closed && length > 1)
+		if (path._closed && length > 1)
 			drawSegment(0);
 	}
 
@@ -783,7 +785,7 @@ var Path = this.Path = PathItem.extend({
 
 			if (param.compound || param.selection || param.clip || fillColor
 					|| strokeColor && !hasDash) {
-				drawSegments(ctx, this._segments);
+				drawSegments(ctx, this);
 			}
 
 			// If we are drawing the selection of a path, stroke it and draw
