@@ -260,6 +260,43 @@ var Curve = this.Curve = Base.extend({
 		return Curve.getParameter.apply(Curve, args);
 	},
 
+	_evaluate: function(parameter, type) {
+		var args = this.getCurveValues();
+		args.push(parameter, type);
+		return Curve.evaluate.apply(Curve, args);
+	},
+
+	/**
+	 * Returns the point on the curve at the specified position.
+	 * 
+	 * @param {Number} parameter the position at which to find the point as
+	 *                 a value between {@code 0} and {@code 1}.
+	 * @return {Point}
+	 */
+	getPoint: function(parameter) {
+		return this._evaluate(parameter, 0);
+	},
+
+	/**
+	 * Returns the tangent point on the curve at the specified position.
+	 * 
+	 * @param {Number} parameter the position at which to find the tangent
+	 *                 point as a value between {@code 0} and {@code 1}.
+	 */
+	getTangent: function(parameter) {
+		return this._evaluate(parameter, 1);
+	},
+
+	/**
+	 * Returns the normal point on the curve at the specified position.
+	 * 
+	 * @param {Number} parameter the position at which to find the normal
+	 *                 point as a value between {@code 0} and {@code 1}.
+	 */
+	getNormal: function(parameter) {
+		return this._evaluate(parameter, 2);
+	},
+
 	// TODO: getParameter(point, precision)
 	// TODO: getLocation
 	// TODO: getIntersections
@@ -320,75 +357,178 @@ var Curve = this.Curve = Base.extend({
 			curve._segment1 = segment1;
 			curve._segment2 = segment2;
 			return curve;
+		},
+
+		getCurveValues: function(segment1, segment2) {
+			var p1 = segment1._point,
+				h1 = segment1._handleOut,
+				h2 = segment2._handleIn,
+				p2 = segment2._point;
+			return [
+				p1._x, p1._y,
+				p1._x + h1._x, p1._y + h1._y,
+				p2._x + h2._x, p2._y + h2._y,
+				p2._x, p2._y
+			];
+		},
+
+		evaluate: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t, type) {
+			var x, y;
+
+			// Handle special case at beginning / end of curve
+			// PORT: Change in Sg too, so 0.000000000001 won't be
+			// required anymore
+			if (t == 0 || t == 1) {
+				var point;
+				switch (type) {
+				case 0: // point
+					x = t == 0 ? p1x : p2x;
+					y = t == 0 ? p1y : p2y;
+					break;
+				case 1: // tangent
+				case 2: // normal
+					var px, py;
+					if (t == 0) {
+						if (c1x == p1x && c1y == p1y) { // handle1 = 0
+							if (c2x == p2x && c2y == p2y) { // handle2 = 0
+								px = p2x; py = p2y; // p2
+							} else {
+								px = c2x; py = c2y; // c2
+							}
+						} else {
+							px = c1x; py = c1y; // handle1
+						}
+						x = px - p1x;
+						y = py - p1y;
+					} else {
+						if (c2x == p2x && c2y == p2y) { // handle2 = 0
+							if (c1x == p1x && c1y == p1y) { // handle1 = 0
+								px = p1x; py = p1y; // p1
+							} else {
+								px = c1x; py = c1y; // c1
+							}
+						} else { // handle2
+							px = c2x; py = c2y;
+						}
+						x = px - p2x;
+						y = py - p2y;
+					}
+					break;
+				}
+			} else {
+				// Calculate the polynomial coefficients.
+				var cx = 3 * (c1x - p1x),
+					bx = 3 * (c2x - c1x) - cx,
+					ax = p2x - p1x - cx - bx,
+
+					cy = 3 * (c1y - p1y),
+					by = 3 * (c2y - c1y) - cy,
+					ay = p2y - p1y - cy - by;
+					
+				switch (type) {
+				case 0: // point
+					// Calculate the curve point at parameter value t
+					x = ((ax * t + bx) * t + cx) * t + p1x;
+					y = ((ay * t + by) * t + cy) * t + p1y;
+					break;
+				case 1: // tangent
+				case 2: // normal
+					// Simply use the derivation of the bezier function for both
+					// the x and y coordinates:
+					x = (3 * ax * t + 2 * bx) * t + cx;
+					y = (3 * ay * t + 2 * by) * t + cy;
+					break;
+				}
+			}
+			// The normal is simply the rotated tangent:
+			// TODO: Rotate normals the other way in Scriptographer too?
+			// (Depending on orientation, I guess?)
+			return type == 2 ? new Point(y, -x) : new Point(x, y);
+		},
+
+		subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
+			if (t === undefined)
+				t = 0.5;
+			var u = 1 - t,
+				// Interpolate from 4 to 3 points
+				p3x = u * p1x + t * c1x,
+				p3y = u * p1y + t * c1y,
+				p4x = u * c1x + t * c2x,
+				p4y = u * c1y + t * c2y,
+				p5x = u * c2x + t * p2x,
+				p5y = u * c2y + t * p2y,
+				// Interpolate from 3 to 2 points
+				p6x = u * p3x + t * p4x,
+				p6y = u * p3y + t * p4y,
+				p7x = u * p4x + t * p5x,
+				p7y = u * p4y + t * p5y,
+				// Interpolate from 2 points to 1 point
+				p8x = u * p6x + t * p7x,
+				p8y = u * p6y + t * p7y;
+			// We now have all the values we need to build the subcurves:
+			return [
+				[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
+				[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
+			];
+		},
+
+		// TODO: Find better name
+		getPart: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, from, to) {
+			var curve = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
+			if (from > 0) {
+				// 8th argument of Curve.subdivide() == t, and values can be
+				// directly used as arguments list for apply().
+				curve[8] = from;
+				curve = Curve.subdivide.apply(Curve, curve)[1]; // right
+			}
+			if (to < 1) {
+				// Se above about curve[8].
+				// Interpolate the  parameter at 'to' in the new curve and
+				// cut there
+				curve[8] = (to - from) / (1 - from);
+				curve = Curve.subdivide.apply(Curve, curve)[0]; // left
+			}
+			return curve;
+		},
+
+		isSufficientlyFlat: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+			// Inspired by Skia, but to be tested:
+			// Calculate 1/3 (m1) and 2/3 (m2) along the line between start (p1)
+			// and end (p2), measure distance from there the control points and
+			// see if they are further away than 1/2.
+			// Seems all very inaccurate, especially since the distance
+			// measurement is just the bigger one of x / y...
+			// TODO: Find a more accurate and still fast way to determine this.
+			var vx = (p2x - p1x) / 3,
+				vy = (p2y - p1y) / 3,
+				m1x = p1x + vx,
+				m1y = p1y + vy,
+				m2x = p2x - vx,
+				m2y = p2y - vy;
+			return Math.max(
+					Math.abs(m1x - c1x), Math.abs(m1y - c1y),
+					Math.abs(m2x - c1x), Math.abs(m1y - c1y)) < 1 / 2;
+			/*
+			// Thanks to Kaspar Fischer for the following:
+			// http://www.inf.ethz.ch/personal/fischerk/pubs/bez.pdf
+			var ux = 3 * c1x - 2 * p1x - p2x;
+			ux *= ux;
+			var uy = 3 * c1y - 2 * p1y - p2y;
+			uy *= uy;
+			var vx = 3 * c2x - 2 * p2x - p1x;
+			vx *= vx;
+			var vy = 3 * c2y - 2 * p2y - p1y;
+			vy *= vy;
+			if (ux < vx)
+				ux = vx;
+			if (uy < vy)
+				uy = vy;
+			// Tolerance is 16 * tol ^ 2
+			return ux + uy <= 16 * Numerical.TOLERNACE * Numerical.TOLERNACE;
+			*/
 		}
 	}
 }, new function() {
-
-	function evaluate(that, t, type) {
-		// Calculate the polynomial coefficients. caution: handles are relative
-		// to points
-		var point1 = that._segment1._point,
-			handle1 = that._segment1._handleOut,
-			handle2 = that._segment2._handleIn,
-			point2 = that._segment2._point,
-			x, y;
-
-		// Handle special case at beginning / end of curve
-		// PORT: Change in Sg too, so 0.000000000001 won't be
-		// required anymore
-		if (t == 0 || t == 1) {
-			var point;
-			switch (type) {
-			case 0: // point
-				point = t == 0 ? point1 : point2;
-				break;
-			case 1: // tangent
-			case 2: // normal
-				point = t == 0
-					? handle1.isZero()
-						? handle2.isZero()
-							? point2.subtract(point1)
-							: point2.add(handle2).subtract(point1)
-						: handle1
-					: handle2.isZero() // t == 1
-						? handle1.isZero()
-							? point1.subtract(point2)
-							: point1.add(handle1).subtract(point2)
-						: handle2;
-				break;
-			}
-			x = point._x;
-			y = point._y;
-		} else {
-			var dx = point2._x - point1._x,
-				cx = 3 * handle1._x,
-				bx = 3 * (dx + handle2._x - handle1._x) - cx,
-				ax = dx - cx - bx,
-
-				dy = point2._y - point1._y,
-				cy = 3 * handle1._y,
-				by = 3 * (dy + handle2._y - handle1._y) - cy,
-				ay = dy - cy - by;
-
-			switch (type) {
-			case 0: // point
-				x = ((ax * t + bx) * t + cx) * t + point1._x;
-				y = ((ay * t + by) * t + cy) * t + point1._y;
-				break;
-			case 1: // tangent
-			case 2: // normal
-				// Simply use the derivation of the bezier function for both
-				// the x and y coordinates:
-				x = (3 * ax * t + 2 * bx) * t + cx;
-				y = (3 * ay * t + 2 * by) * t + cy;
-				break;
-			}
-		}
-		// The normal is simply the rotated tangent:
-		// TODO: Rotate normals the other way in Scriptographer too?
-		// (Depending on orientation, I guess?)
-		return type == 2 ? new Point(y, -x) : new Point(x, y);
-	}
 
 	function getLengthIntegrand(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
 		// Calculate the coefficients of a Bezier derivative.
@@ -417,193 +557,64 @@ var Curve = this.Curve = Base.extend({
 	}
 
 	return {
-		/** @lends Curve# */
+		statics: true,
 
-		/**
-		 * Returns the point on the curve at the specified position.
-		 * 
-		 * @param {Number} parameter the position at which to find the point as
-		 *                 a value between {@code 0} and {@code 1}.
-		 * @return {Point}
-		 */
-		getPoint: function(parameter) {
-			return evaluate(this, parameter, 0);
-		},
-
-		/**
-		 * Returns the tangent point on the curve at the specified position.
-		 * 
-		 * @param {Number} parameter the position at which to find the tangent
-		 *                 point as a value between {@code 0} and {@code 1}.
-		 */
-		getTangent: function(parameter) {
-			return evaluate(this, parameter, 1);
-		},
-
-		/**
-		 * Returns the normal point on the curve at the specified position.
-		 * 
-		 * @param {Number} parameter the position at which to find the normal
-		 *                 point as a value between {@code 0} and {@code 1}.
-		 */
-		getNormal: function(parameter) {
-			return evaluate(this, parameter, 2);
-		},
-
-		statics: {
-			getCurveValues: function(segment1, segment2) {
-				var p1 = segment1._point,
-					h1 = segment1._handleOut,
-					h2 = segment2._handleIn,
-					p2 = segment2._point;
-				return [
-					p1._x, p1._y,
-					p1._x + h1._x, p1._y + h1._y,
-					p2._x + h2._x, p2._y + h2._y,
-					p2._x, p2._y
-				];
-			},
-
-			getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, a, b) {
-				if (a === undefined)
-					a = 0;
-				if (b === undefined)
-					b = 1;
-				if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
-					// Straight line
-					var dx = p2x - p1x,
-						dy = p2y - p1y;
-					return (b - a) * Math.sqrt(dx * dx + dy * dy);
-				}
-				var ds = getLengthIntegrand(
-						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
-				return Numerical.integrate(ds, a, b, getIterations(a, b));
-			},
-
-			getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
-					length, start) {
-				if (length == 0)
-					return start;
-				// See if we're going forward or backward, and handle cases
-				// differently
-				var forward = length > 0,
-					a = forward ? start : 0,
-					b = forward ? 1 : start,
-					length = Math.abs(length),
-					// Use integrand to calculate both range length and part
-					// lengths in f(t) below.
-					ds = getLengthIntegrand(
-							p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y),
-					// Get length of total range
-					rangeLength = Numerical.integrate(ds, a, b,
-							getIterations(a, b));
-				if (length >= rangeLength)
-					return forward ? b : a;
-				// Use length / rangeLength for an initial guess for t, to
-				// bring us closer:
-				var guess = length / rangeLength,
-					len = 0;
-				// Iteratively calculate curve range lengths, and add them up,
-				// using integration precision depending on the size of the
-				// range. This is much faster and also more precise than not
-				// modifing start and calculating total length each time.
-				function f(t) {
-					var count = getIterations(start, t);
-					if (start < t) {
-						len += Numerical.integrate(ds, start, t, count);
-					} else {
-						len -= Numerical.integrate(ds, t, start, count);
-					}
-					start = t;
-					return len - length;
-				}
-				return Numerical.findRoot(f, ds,
-						forward ? a + guess : b - guess, // Initial guess for x
-						a, b, 16, Numerical.TOLERANCE);
-			},
-
-			subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
-				if (t === undefined)
-					t = 0.5;
-				var u = 1 - t,
-					// Interpolate from 4 to 3 points
-					p3x = u * p1x + t * c1x,
-					p3y = u * p1y + t * c1y,
-					p4x = u * c1x + t * c2x,
-					p4y = u * c1y + t * c2y,
-					p5x = u * c2x + t * p2x,
-					p5y = u * c2y + t * p2y,
-					// Interpolate from 3 to 2 points
-					p6x = u * p3x + t * p4x,
-					p6y = u * p3y + t * p4y,
-					p7x = u * p4x + t * p5x,
-					p7y = u * p4y + t * p5y,
-					// Interpolate from 2 points to 1 point
-					p8x = u * p6x + t * p7x,
-					p8y = u * p6y + t * p7y;
-				// We now have all the values we need to build the subcurves:
-				return [
-					[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
-					[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
-				];
-			},
-
-			// TODO: Find better name
-			getPart: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, from, to) {
-				var curve = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
-				if (from > 0) {
-					// 8th argument of Curve.subdivide() == t, and values can be
-					// directly used as arguments list for apply().
-					curve[8] = from;
-					curve = Curve.subdivide.apply(Curve, curve)[1]; // right
-				}
-				if (to < 1) {
-					// Se above about curve[8].
-					// Interpolate the  parameter at 'to' in the new curve and
-					// cut there
-					curve[8] = (to - from) / (1 - from);
-					curve = Curve.subdivide.apply(Curve, curve)[0]; // left
-				}
-				return curve;
-			},
-
-			isSufficientlyFlat: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
-				// Inspired by Skia, but to be tested:
-				// Calculate 1/3 (m1) and 2/3 (m2) along the line between start
-				// (p1) and end (p2), measure distance from there the control
-				// points and see if they are further away than 1/2.
-				// Seems all very inaccurate, especially since the distance
-				// measurement is just the bigger one of x / y...
-				// TODO: Find a more accurate and still fast way to determine
-				// this.
-				var vx = (p2x - p1x) / 3,
-					vy = (p2y - p1y) / 3,
-					m1x = p1x + vx,
-					m1y = p1y + vy,
-					m2x = p2x - vx,
-					m2y = p2y - vy;
-				return Math.max(
-						Math.abs(m1x - c1x), Math.abs(m1y - c1y),
-						Math.abs(m2x - c1x), Math.abs(m1y - c1y)) < 1 / 2;
-				/*
-				// Thanks to Kaspar Fischer for the following:
-				// http://www.inf.ethz.ch/personal/fischerk/pubs/bez.pdf
-				var ux = 3 * c1x - 2 * p1x - p2x;
-				ux *= ux;
-				var uy = 3 * c1y - 2 * p1y - p2y;
-				uy *= uy;
-				var vx = 3 * c2x - 2 * p2x - p1x;
-				vx *= vx;
-				var vy = 3 * c2y - 2 * p2y - p1y;
-				vy *= vy;
-				if (ux < vx)
-					ux = vx;
-				if (uy < vy)
-					uy = vy;
-				// Tolerance is 16 * tol ^ 2
-				return ux + uy <= 16 * Numerical.TOLERNACE * Numerical.TOLERNACE;
-				*/
+		getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, a, b) {
+			if (a === undefined)
+				a = 0;
+			if (b === undefined)
+				b = 1;
+			if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
+				// Straight line
+				var dx = p2x - p1x,
+					dy = p2y - p1y;
+				return (b - a) * Math.sqrt(dx * dx + dy * dy);
 			}
+			var ds = getLengthIntegrand(
+					p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+			return Numerical.integrate(ds, a, b, getIterations(a, b));
+		},
+
+		getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
+				length, start) {
+			if (length == 0)
+				return start;
+			// See if we're going forward or backward, and handle cases
+			// differently
+			var forward = length > 0,
+				a = forward ? start : 0,
+				b = forward ? 1 : start,
+				length = Math.abs(length),
+				// Use integrand to calculate both range length and part
+				// lengths in f(t) below.
+				ds = getLengthIntegrand(
+						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y),
+				// Get length of total range
+				rangeLength = Numerical.integrate(ds, a, b,
+						getIterations(a, b));
+			if (length >= rangeLength)
+				return forward ? b : a;
+			// Use length / rangeLength for an initial guess for t, to
+			// bring us closer:
+			var guess = length / rangeLength,
+				len = 0;
+			// Iteratively calculate curve range lengths, and add them up,
+			// using integration precision depending on the size of the
+			// range. This is much faster and also more precise than not
+			// modifing start and calculating total length each time.
+			function f(t) {
+				var count = getIterations(start, t);
+				if (start < t) {
+					len += Numerical.integrate(ds, start, t, count);
+				} else {
+					len -= Numerical.integrate(ds, t, start, count);
+				}
+				start = t;
+				return len - length;
+			}
+			return Numerical.findRoot(f, ds,
+					forward ? a + guess : b - guess, // Initial guess for x
+					a, b, 16, Numerical.TOLERANCE);
 		}
 	};
 });
