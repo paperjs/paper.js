@@ -35,7 +35,7 @@ var PathFitter = Base.extend({
 		this.iterationError = error * error;
 	},
 
-	process: function() {
+	fit: function() {
 		this.segments = [new Segment(this.points[0])];
 		this.fitCubic(0, this.points.length - 1,
 				// Left Tangent
