@@ -16,7 +16,7 @@
 
 var PathFlattener = Base.extend({
 	initialize: function(path) {
-		this.curves = []; // The curve values as returned by getCurveValues()
+		this.curves = []; // The curve values as returned by getValues()
 		this.parts = []; // The calculated, subdivided parts of the path
 		this.length = 0; // The total length of the path
 		// Keep a current index from the part where we last where in
@@ -34,7 +34,7 @@ var PathFlattener = Base.extend({
 			that = this;
 
 		function addCurve(segment1, segment2) {
-			var curve = Curve.getCurveValues(segment1, segment2);
+			var curve = Curve.getValues(segment1, segment2);
 			that.curves.push(curve);
 			that._computeParts(curve, segment1._index, 0, 1);
 		}
