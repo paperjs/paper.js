@@ -611,7 +611,7 @@ var Path = this.Path = PathItem.extend({
 	 * 
 	 * @param {Number} offset
 	 * @param {Boolean} [isParameter=false]
-	 * @return CurveLocation
+	 * @return {CurveLocation}
 	 */
 	getLocationAt: function(offset, isParameter) {
 		var curves = this.getCurves(),
