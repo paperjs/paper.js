@@ -66,7 +66,7 @@ var PathFlattener = Base.extend({
 			if (dist > Numerical.TOLERANCE) {
 				this.length += dist;
 				this.parts.push({
-					length: this.length,
+					offset: this.length,
 					value: maxT,
 					index: index
 				});
@@ -74,20 +74,20 @@ var PathFlattener = Base.extend({
 		}
 	},
 
-	getParameter: function(length) {
-		// Make sure we're not beyond the requested length already. Search the
+	getParameter: function(offset) {
+		// Make sure we're not beyond the requested offset already. Search the
 		// start position backwards from where to then process the loop below.
 		var i, j = this.index;
 		for (;;) {
 			i = j;
-			if (j == 0 || this.parts[--j].length < length)
+			if (j == 0 || this.parts[--j].offset < offset)
 				break;
 		}
-		// Find the part that succeeds the given length, then interpolate
+		// Find the part that succeeds the given offset, then interpolate
 		// with the previous part
 		for (var l = this.parts.length; i < l; i++) {
 			var part = this.parts[i];
-			if (part.length >= length) {
+			if (part.offset >= offset) {
 				// Found the right part, remember current position
 				this.index = i;
 				// Now get the previous part so we can linearly interpolate
@@ -96,11 +96,11 @@ var PathFlattener = Base.extend({
 				// Make sure we only use the previous parameter value if its 
 				// for the same curve, by checking index. Use 0 otherwise.
 				var prevVal = prev && prev.index == part.index ? prev.value : 0,
-					prevLen = prev ? prev.length : 0;
+					prevLen = prev ? prev.offset : 0;
 				return {
 					// Interpolate
 					value: prevVal + (part.value - prevVal)
-						* (length - prevLen) /  (part.length - prevLen),
+						* (offset - prevLen) /  (part.offset - prevLen),
 					index: part.index
 				};
 			}
