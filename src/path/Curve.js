@@ -29,7 +29,7 @@ var Curve = this.Curve = Base.extend({
 	 *
 	 * @class The Curve object represents...
 	 */
-	initialize: function(arg0, arg1, arg2, arg3) {
+	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
 		if (count == 0) {
 			this._segment1 = new Segment();
@@ -45,6 +45,15 @@ var Curve = this.Curve = Base.extend({
 		} else if (count == 4) {
 			this._segment1 = new Segment(arg0, null, arg1);
 			this._segment2 = new Segment(arg3, arg2, null);
+		} else if (count == 8) {
+			// An array as returned by getCurveValues
+			var p1 = Point.create(arg0, arg1),
+				p2 = Point.create(arg6, arg7);
+			p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y
+			this._segment1 = new Segment(p1, null,
+					Point.create(arg2, arg3).subtract(p1));
+			this._segment2 = new Segment(p2,
+					Point.create(arg4, arg5).subtract(p2), null);
 		}
 	},
 
@@ -221,13 +230,11 @@ var Curve = this.Curve = Base.extend({
 		return length;
 	},
 
-/* TODO: Implement this, but convert result to new Curve object again?
 	getPart: function(from, to) {
 		var args = this.getCurveValues();
 		args.push(from, to);
-		return Curve.getPart.apply(Curve, args);
+		return new Curve(Curve.getPart.apply(Curve, args));
 	},
-*/
 
 	/**
 	 * Checks if this curve is linear, meaning it does not define any curve
