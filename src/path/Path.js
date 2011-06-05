@@ -477,7 +477,7 @@ var Path = this.Path = PathItem.extend({
 
 	pointsToCurves: function(tolerance) {
 		var fitter = new PathFitter(this, tolerance || 2.5);
-		this.setSegments(fitter.process());
+		this.setSegments(fitter.fit());
 	},
 
 	// TODO: reduceSegments([flatness])
