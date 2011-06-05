@@ -302,19 +302,6 @@ var Curve = this.Curve = Base.extend({
 	// TODO: getIntersections
 	// TODO: adjustThroughPoint
 
-	// DOCS: document Curve#transform(matrix)
-	/**
-	 * @param {Matrix} matrix
-	 * @return {Curve}
-	 */
-	transform: function(matrix) {
-		return new Curve(
-				matrix._transformPoint(this._segment1._point),
-				matrix._transformPoint(this._segment1._handleOut),
-				matrix._transformPoint(this._segment2._handleIn),
-				matrix._transformPoint(this._segment2._point));
-	},
-
 	/**
 	 * Returns a reversed version of the curve, without modifying the curve
 	 * itself.

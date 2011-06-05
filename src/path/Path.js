@@ -458,9 +458,22 @@ var Path = this.Path = PathItem.extend({
 	setFullySelected: function(selected) {
 		this.setSelected(selected);
 	},
-	
+
+	curvesToPoints: function(maxDistance) {
+		var flattener = new PathFlattener(this),
+			pos = 0;
+		var step = flattener.length / Math.ceil(flattener.length / maxDistance);
+		this.segments = [];
+		// Iterate over path and evaluate and add points at given offsets
+		do {
+			this._add([ new Segment(flattener.evaluate(pos, 0)) ]);
+		} while ((pos += step) < flattener.length);
+		// Add last one
+		this._add([ new Segment(flattener.evaluate(flattener.length, 0)) ]);
+		this._changed(ChangeFlags.GEOMETRY);
+	},
+
 	// TODO: pointsToCurves([tolerance[, threshold[, cornerRadius[, scale]]]])
-	// TODO: curvesToPoints([maxPointDistance[, flatness]])
 	// TODO: reduceSegments([flatness])
 	// TODO: split(offset) / split(location) / split(index[, parameter])
 
