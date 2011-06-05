@@ -23,18 +23,32 @@
 			var length = curve.length;
 			var step = 10;
 			var iteratively = false;
+			var curvesToPoints = true;
 			var num = Math.floor(length / step);
 			var prev = 0;
-			for (var i = 0, pos = 0; i <= num; i++, pos += step) {
-				var t = iteratively
-						? curve.getParameter(step, prev)
-						: curve.getParameter(pos);
-				var point = curve.getPoint(t);
-				var circle = new Path.Circle(point, step / 2);
-				circle.strokeColor = 'red';
-				if (remove)
-					circle.removeOnMove();
-				prev = t;
+			if (curvesToPoints) {
+				var clone = path.clone();
+				clone.curvesToPoints(step);
+				for (var i = 0; i < clone.segments.length; i++) {
+					var point = clone.segments[i].point;
+					var circle = new Path.Circle(point, step / 2);
+					circle.strokeColor = 'red';
+					if (remove)
+						circle.removeOnMove();
+				}
+				clone.remove();
+			} else {
+				for (var i = 0, pos = 0; i <= num; i++, pos += step) {
+					var t = iteratively
+							? curve.getParameter(step, prev)
+							: curve.getParameter(pos);
+					var point = curve.getPoint(t);
+					var circle = new Path.Circle(point, step / 2);
+					circle.strokeColor = 'red';
+					if (remove)
+						circle.removeOnMove();
+					prev = t;
+				}
 			}
 		}
 
