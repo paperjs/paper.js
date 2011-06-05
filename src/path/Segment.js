@@ -31,18 +31,17 @@ var Segment = this.Segment = Base.extend({
 	 *        anchor point of the segment that describes the out tangent of the
 	 *        segment.
 	 * 
-	 * @example
-	 * var handleIn = new Point(-40, -50);
-	 * var handleOut = new Point(40, 50);
-	 *
+	 * @example {@paperscript}
+	 * var handleIn = new Point(-80, -100);
+	 * var handleOut = new Point(80, 100);
+	 * 
 	 * var firstPoint = new Point(100, 50);
 	 * var firstSegment = new Segment(firstPoint, null, handleOut);
-	 *
-	 * var secondPoint = new Point(200, 50);
+	 * 
+	 * var secondPoint = new Point(300, 50);
 	 * var secondSegment = new Segment(secondPoint, handleIn, null);
-	 *
-	 * var path = new Path();
-	 * path.segments = [firstSegment, secondSegment];
+	 * 
+	 * var path = new Path(firstSegment, secondSegment);
 	 * path.strokeColor = 'black';
 	 * 
 	 * @class The Segment object represents a part of a path which is
