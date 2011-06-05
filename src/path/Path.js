@@ -544,11 +544,58 @@ var Path = this.Path = PathItem.extend({
 
 	// DOCS: document Path#join in more detail.
 	/**
-	* Joins the path with the specified path, which will be removed in the
-	* process.
-	* 
-	* @param {Path} path
-	*/
+	 * Joins the path with the specified path, which will be removed in the
+	 * process.
+	 * 
+	 * @param {Path} path
+	 * 
+	 * @example {@paperscript}
+	 * // Joining two paths:
+	 * var path = new Path([30, 25], [30, 75]);
+	 * path.strokeColor = 'black';
+	 * 
+	 * var path2 = new Path([200, 25], [200, 75]);
+	 * path2.strokeColor = 'black';
+	 * 
+	 * // Join the paths:
+	 * path.join(path2);
+	 * 
+	 * @example {@paperscript}
+	 * // Joining two paths that share a point at the start or end of their
+	 * // segments array:
+	 * var path = new Path([30, 25], [30, 75]);
+	 * path.strokeColor = 'black';
+	 * 
+	 * var path2 = new Path([30, 25], [80, 25]);
+	 * path2.strokeColor = 'black';
+	 * 
+	 * // Join the paths:
+	 * path.join(path2);
+	 * 
+	 * // After joining, path with have 3 segments, since it
+	 * // shared its first segment point with the first
+	 * // segment point of path2.
+	 * 
+	 * // Select the path to show that they have joined:
+	 * path.selected = true;
+	 * 
+	 * @example {@paperscript}
+	 * // Joining two paths that connect at two points:
+	 * var path = new Path([30, 25], [80, 25], [80, 75]);
+	 * path.strokeColor = 'black';
+	 * 
+	 * var path2 = new Path([30, 25], [30, 75], [80, 75]);
+	 * path2.strokeColor = 'black';
+	 * 
+	 * // Join the paths:
+	 * path.join(path2);
+	 * 
+	 * // Because the paths were joined at two points, the path is closed
+	 * // and has 4 segments.
+	 * 
+	 * // Select the path to show that they have joined:
+	 * path.selected = true;
+	 */
 	join: function(path) {
 		if (path) {
 			var segments = path._segments,
