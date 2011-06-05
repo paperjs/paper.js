@@ -564,9 +564,10 @@ var Path = this.Path = PathItem.extend({
 				var first1 = this.getFirstSegment();
 				if (first1._point.equals(first2._point))
 					path.reverse();
+				last2 = path.getLastSegment();
 				if (first1._point.equals(last2._point)) {
 					first1.setHandleIn(last2._handleIn);
-					// Prepend all segments from path except last one
+					// Prepend all segments from path except the last one
 					this._add(segments.slice(0, segments.length - 1), 0);
 				} else {
 					this._add(segments.slice(0));
