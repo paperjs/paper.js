@@ -59,7 +59,7 @@ function Link() {
 						thisLink.alias = symbolNames[i];
 						links.push(thisLink._makeSymbolLink(symbolNames[i], parameters));
 					}
-					return prematch+links.join("|")+postmatch;
+					return prematch+links.join(" / ")+postmatch;
 				}
 			);
 		}
