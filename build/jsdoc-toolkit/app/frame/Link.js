@@ -27,10 +27,12 @@ function Link() {
 		return this;
 	}
 	this.toSymbol = function(alias) {
-		// 'Class[]' to 'array of Class objects'
+		// 'Class[]' to 'Array of Class objects'
 		if(/\[\]$/.test(alias)) {
 			alias = alias.replace(/\[\]$/, '');
-			this.text = 'array of ' + alias + ' objects';
+			this.prefix = 'Array of ';
+			this.text = alias;
+			this.suffix = ' objects';
 		}
 		if (defined(alias)) this.alias = new String(alias);
 		return this;
@@ -170,7 +172,10 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 		var linkName = link.linkPath.replace(/^[^#]+#/, '');
 		onClick = " onclick=\"return toggleMember('" + linkName + "', true);\"";
 	}
-	return "<a href=\""+link.linkPath+link.linkInner+"\""+target+onClick+"><tt>"+link.linkText+"</tt></a>";
+	var html = "<a href=\""+link.linkPath+link.linkInner+"\""+target+onClick+"><tt>"+link.linkText+"</tt></a>";
+	if (this.prefix || this.suffix)
+		html = (this.prefix || '') + html + (this.suffix || '');
+	return html;
 }
 
 /** Create a link to a source file. */
