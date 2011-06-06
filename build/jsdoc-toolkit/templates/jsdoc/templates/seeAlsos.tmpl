@@ -1,7 +1,5 @@
 <if test="data.see.length">
 	<p><b>See also:</b>
-	<for each="item" in="data.see">
-		<tt>{+ new Link().toSymbol(item) +}</tt>
-	</for>
+	<for each="item" in="data.see"><if test="$item_i > 0">, </if><tt>{+ new Link().toSymbol(item) +}</tt></for>
 	</p>
 </if>
