@@ -83,6 +83,8 @@ var Numerical = new function() {
 			for (var i = 0; i < n; i++) {
 				var fx = f(x),
 					dx = fx / df(x);
+				// See if we can trust the Newton-Raphson result. If not we use
+				// bisection to find another candiate for Newton's method.
 				if (Math.abs(dx) < tol)
 					return x;
 				// Generate a candidate for Newton's method.
