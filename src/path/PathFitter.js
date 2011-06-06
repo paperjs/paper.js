@@ -195,7 +195,7 @@ var PathFitter = Base.extend({
 		if (Math.abs(df) < Numerical.TOLERANCE)
 			return u;
 		// u = u - f(u) / f'(u)
-		return u - pt.dot(pt1) / df;
+		return u - diff.dot(pt1) / df;
 	},
 
 	// Evaluate a Bezier curve at a particular parameter value
