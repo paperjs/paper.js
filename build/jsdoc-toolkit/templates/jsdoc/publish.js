@@ -12,17 +12,19 @@ function publish(symbolSet) {
 	var outDir = JSDOC.opt.d || SYS.pwd + '../out/jsdoc/';
 
 	publish.conf = {  // trailing slash expected for dirs
-		symbolsDir: renderMode == 'docs' ? 'packages/' : 'paper/',
 		// Use no extensions in links for templatedocs
 		ext: templatedocs ? '' : extension,
 		outDir: outDir,
 		templateDir: templateDir,
 		staticDir: templateDir + 'static/',
 		classesDir: outDir + 'classes/',
+		symbolsDir: templatedocs ? 'reference/' : 'classes/',
 		srcDir: 'symbols/src/',
 		renderMode: renderMode,
 		globalName: 'Global Scope'
 	};
+	
+	Link.base = templatedocs ? '/' : '../';
 
 	if (renderMode == 'docs') {
 		// Copy over the static files
@@ -64,8 +66,6 @@ function publish(symbolSet) {
 					? linkAlias + '_' + filemapCounts[lcAlias] : linkAlias;
 		}
 	}
-	
-	Link.base = '../';
 
 	// create each of the class pages
 	for (var i = 0, l = classes.length; i < l; i++) {
