@@ -6,12 +6,15 @@ load(JSDOC.opt.t + 'src/Render.js');
 
 function publish(symbolSet) {
 	var renderMode = JSDOC.opt.D.renderMode;
+	var templatedocs = renderMode == 'templatedocs';
+	var extension = templatedocs ? '.jstl' : '.html';
 	publish.conf = {  // trailing slash expected for dirs
-		ext: renderMode == 'docs' ? '.html' : '.jstl',
 		outDir: JSDOC.opt.d || SYS.pwd + '../out/jsdoc/',
 		templateDir: JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/',
 		staticDir: (JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/') + 'static/',
 		symbolsDir: renderMode == 'docs' ? 'packages/' : 'paper/',
+		// Use no extensions in links for templatedocs
+		ext: templatedocs ? '' : extension,
 		srcDir: 'symbols/src/',
 		renderMode: renderMode,
 		globalName: 'Global Scope'
@@ -75,7 +78,7 @@ function publish(symbolSet) {
 		Link.currentSymbol= symbol;
 		var html = Render._class(symbol);
 		var name = ((JSDOC.opt.u)? Link.filemap[symbol.alias] : symbol.alias)
-				+ publish.conf.ext;
+				+ extension;
 		if (renderMode == 'docs') {
 			html = Render.html({
 				content: html,
