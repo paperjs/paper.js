@@ -208,7 +208,7 @@ function toggleMember(id, scrollTo) {
 }
 
 function scrollToElement(id) {
-	var e = $('#' + id);
+	var e = $('#' + id + '-member');
 	if (e) {
 		var offs = e.getOffset();
 		$window.setScrollOffset(offs);
