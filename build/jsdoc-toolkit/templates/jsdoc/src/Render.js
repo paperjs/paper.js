@@ -157,11 +157,13 @@ var Render = new function() {
 					param.operators[name].push(operator);
 				}
 			}
+			var name = param.name == '_global_'
+					? publish.conf.globalName : param.name;
 			publish.curClass = {
-				name: symbol.alias,
+				name: name,
 				index: {
 					'class': {
-						title: param.name,
+						title: name,
 						text: param.description
 					}
 				}
