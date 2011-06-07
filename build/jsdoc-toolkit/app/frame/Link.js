@@ -123,7 +123,7 @@ Link.getSymbol= function(alias) {
 
 /** Create a link to another symbol. */
 Link.prototype._makeSymbolLink = function(alias, parameters) {
-	var linkBase = Link.base+publish.conf.symbolsDir;
+	var linkBase = Link.base + publish.conf.symbolsDir;
 	var linkTo = Link.getSymbol(alias);
 	var linkPath;
 	var target = (this.targetName)? " target=\""+this.targetName+"\"" : "";
