@@ -14,9 +14,9 @@ var Render = new function() {
 		example: 'example.tmpl',
 		constructor: 'constructor.tmpl',
 		html: 'html.tmpl',
-		menu: 'packages.tmpl',
-		operator: 'operator.tmpl',
-		packagesjs: 'packagesjs.tmpl'
+		index: 'index.tmpl',
+		indexjs: 'indexjs.tmpl',
+		operator: 'operator.tmpl'
 	};
 	publish.classes = [];
 	for (var i in templates) {
@@ -328,11 +328,64 @@ var Render = new function() {
 		html: function(content) {
 			return templates.html.process(content);
 		},
-		menu: function(html) {
-			return templates.menu.process(html);
+		classes: function() {
+			// TODO: Use Template instead?
+			var renderMode = publish.conf.renderMode;
+			load(JSDOC.opt.t + 'classLayout.js');
+			function parseClassNames(classNames) {
+				var out = '';
+				for (var i = 0, l = classNames.length; i < l; i++) {
+					if (typeof classNames[i] == 'string') {
+						var name = classNames[i];
+						out += (name == 'ruler') ? getRuler() : getLink(name);
+					} else {
+						for (var j in classNames[i]) {
+							out += getHeading(j);
+							out += parseClassNames(classNames[i][j]);
+						}
+					}
+				}
+				return out;
+			}
+			function getLink(name) {
+				var link = name;
+				if (name.indexOf(':') > 0) {
+					var names = name.split(':');
+					name = names[0];
+					link = names[1];
+				}
+				if (renderMode == 'docs') {
+					link += '.html';
+				} else if (renderMode == 'templatedocs') {
+					link = link.toLowerCase();
+					link = '/reference/' + (link == '_global_' ? 'global' : link);
+				}
+				return '<li><a href="' + link + '">' + name + '</a></li>\n';
+			}
+
+			function getRuler() {
+				return '<li><hr /></li>\n';
+			}
+
+			function getHeading(title) {
+				return '<li><h3>' + title + '</h3></li>\n';
+			}
+			var first = true,
+				out = '<ul class="package-classes">';
+			for (var i in classLayout) {
+				out += '<li' + (first ? ' class="first">' : '>');
+				out += '<h2>' + i + '</h2></li>\n';
+				out += parseClassNames(classLayout[i]);
+				first = false;
+			}
+			out += '</ul>';
+			return out;
 		},
-		packagesjs: function() {
-			return templates.packagesjs.process(publish.classes);
+		index: function(html) {
+			return templates.index.process(html);
+		},
+		indexjs: function() {
+			return templates.indexjs.process(publish.classes);
 		}
 	};
 };
