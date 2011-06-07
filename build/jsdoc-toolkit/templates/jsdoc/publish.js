@@ -8,18 +8,21 @@ function publish(symbolSet) {
 	var renderMode = JSDOC.opt.D.renderMode;
 	var templatedocs = renderMode == 'templatedocs';
 	var extension = templatedocs ? '.jstl' : '.html';
+	var templateDir = JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/';
+	var outDir = JSDOC.opt.d || SYS.pwd + '../out/jsdoc/';
+
 	publish.conf = {  // trailing slash expected for dirs
-		outDir: JSDOC.opt.d || SYS.pwd + '../out/jsdoc/',
-		templateDir: JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/',
-		staticDir: (JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/') + 'static/',
 		symbolsDir: renderMode == 'docs' ? 'packages/' : 'paper/',
 		// Use no extensions in links for templatedocs
 		ext: templatedocs ? '' : extension,
+		outDir: outDir,
+		templateDir: templateDir,
+		staticDir: templateDir + 'static/',
+		classesDir: outDir + 'classes/',
 		srcDir: 'symbols/src/',
 		renderMode: renderMode,
 		globalName: 'Global Scope'
 	};
-	publish.conf.packagesDir = publish.conf.outDir + publish.conf.symbolsDir;
 
 	if (renderMode == 'docs') {
 		// Copy over the static files
@@ -29,7 +32,7 @@ function publish(symbolSet) {
 		);
 	} else {
 		Utils.deleteFiles(new File(publish.conf.outDir));
-		new java.io.File(publish.conf.outDir + 'paper/').mkdirs();
+		new java.io.File(publish.conf.classesDir).mkdirs();
 	}
 
 	// used to allow Link to check the details of things being linked to
@@ -85,7 +88,7 @@ function publish(symbolSet) {
 				title: symbol.alias
 			});
 		}
-		IO.saveFile(publish.conf.packagesDir, name, html);
+		IO.saveFile(publish.conf.classesDir, name, html);
 	}
 	if (templatedocs) {
 		IO.saveFile(publish.conf.outDir, 'packages.js', Render.indexjs());
