@@ -1,5 +1,5 @@
 <div class="reference-class">
-<if test="publish.conf.renderMode == 'docs'"><h1>{+ data.name +}</h1></if>
+<if test="publish.conf.renderMode == 'docs'"><h1>{+ data.name == '_global_' ? publish.conf.globalName : data.name +}</h1></if>
 <if test="data.inheritedLinks">
 <p> Extends {+ data.inheritedLinks +}</p>
 </if>

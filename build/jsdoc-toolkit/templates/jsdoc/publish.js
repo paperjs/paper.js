@@ -13,7 +13,8 @@ function publish(symbolSet) {
 		staticDir: (JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/') + 'static/',
 		symbolsDir: renderMode == 'docs' ? 'packages/' : 'paper/',
 		srcDir: 'symbols/src/',
-		renderMode: renderMode
+		renderMode: renderMode,
+		globalName: 'Global Scope'
 	};
 	publish.conf.packagesDir = publish.conf.outDir + publish.conf.symbolsDir;
 
