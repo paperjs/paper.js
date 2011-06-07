@@ -1,10 +1,12 @@
+/* These styles are shared with the server version of docs */
+
 .reference h1, .reference h2, .reference h3 {
 	font-size: 12px;
 	font-weight: normal;
 	display: block;
+	height: 17px;
 	margin: 0 0 16px 0;
-	height: 17px; /* -1 for border */
-	border-bottom: 1px solid black;
+	border-bottom: 1px solid;
 }
 
 .reference h3 {
@@ -12,12 +14,13 @@
 	border-bottom-style: dotted;
 }
 
-.reference a tt, .reference a tt b {
+.reference a tt,
+.reference a tt b {
 	padding-bottom: 1px;
 }
 
 .reference pre {
-	margin: 0 0 18px 0;
+	margin: 0 0 20px 0;
 }
 
 .reference ul {
@@ -32,7 +35,7 @@
 
 .reference hr {
 	border: none;
-	border-bottom: 1px dotted #000;
+	border-bottom: 1px dotted;
 }
 
 .reference-packages {
@@ -119,7 +122,6 @@ ul.package-classes {
 	margin-left: -10px;
 }
 
-.reference-members h2 a {
-	border-bottom: none;
+.reference h2 a {
 	font-weight: bold;
 }
