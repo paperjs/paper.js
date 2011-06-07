@@ -84,9 +84,9 @@ function publish(symbolSet) {
 		}
 		IO.saveFile(publish.conf.packagesDir, name, html);
 	}
-	if (renderMode == 'docs')
-		Utils.publishMenu();
-	if (renderMode == 'templatedocs') {
-		IO.saveFile(publish.conf.outDir, 'packages.js', Render.packagesjs());
+	if (templatedocs) {
+		IO.saveFile(publish.conf.outDir, 'packages.js', Render.indexjs());
+	} else {
+		IO.saveFile(publish.conf.classesDir, 'index.html', Render.index());
 	}
 }

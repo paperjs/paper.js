@@ -41,54 +41,6 @@ var Utils = {
 			throw Error('Could not delete ' + path);
 	},
 
-	publishMenu: function() {
-		load(JSDOC.opt.t + 'classLayout.js');
-		function parseClassNames(classNames) {
-			var out = '';
-			for (var i = 0, l = classNames.length; i < l; i++) {
-				if (typeof classNames[i] == 'string') {
-					var name = classNames[i];
-					out += (name == 'ruler') ? getRuler() : getLink(name);
-				} else {
-					for (var j in classNames[i]) {
-						out += getHeading(j);
-						out += parseClassNames(classNames[i][j]);
-					}
-				}
-			}
-			return out;
-		}
-		function getLink(name) {
-			var link = name;
-			if (name.indexOf(':') > 0) {
-				var names = name.split(':');
-				name = names[0];
-				link = names[1];
-			}
-			return '<li><a href="' + link + '.html">' + name + '</a></li>\n';
-		}
-
-		function getRuler() {
-			return '<li><hr /></li>\n';
-		}
-
-		function getHeading(title) {
-			return '<li><h3>' + title + '</h3></li>\n';
-		}
-		var first = true,
-			out = '<ul class="package-classes">';
-		for (var i in classLayout) {
-			out += '<li' + (first ? ' class="first">' : '>');
-			out += '<h2>' + i + '</h2></li>\n';
-			out += parseClassNames(classLayout[i]);
-			first = false;
-		}
-		out += '</ul>';
-
-		var classesIndex = Render.menu(out);
-		IO.saveFile(publish.conf.packagesDir, 'packages.html', classesIndex);
-	},
-
 	makeSortby: function(attribute) {
 		return function(a, b) {
 			if (a[attribute] != undefined && b[attribute] != undefined) {
