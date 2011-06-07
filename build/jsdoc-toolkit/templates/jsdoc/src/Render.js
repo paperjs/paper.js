@@ -142,7 +142,7 @@ var Render = new function() {
 			};
 			param.inheritedLinks = [];
 			for (var i in param.inheritedClasses) {
-				param.inheritedLinks.push(new Link().toSymbol(i));
+				param.inheritedLinks.push('<b>' + new Link().toSymbol(i) + '</b>');
 			}
 			param.inheritedLinks = param.inheritedLinks.join(', ');
 			// Add the grouped operators to param:
