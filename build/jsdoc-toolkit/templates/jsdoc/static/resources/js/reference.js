@@ -218,19 +218,3 @@ function scrollToElement(id) {
 		document.location.hash = id;
 	}
 }
-
-function togglePackage(id, def) {
-	var e = $('#package-' + id);
-	if (e) {
-		var v = !e.hasClass('hidden');
-		e.modifyClass('hidden', v);
-		var img = document.images['arrow-' + id];
-		if (img) img.src = img.src.replace(/open|close/, v ? 'close' : 'open');
-	}
-	return false;
-}
-
-function toggleThumbnail(id, over) {
-	$('#' + id).modifyClass('hidden', over);
-	$('#' + id + '_over').modifyClass('hidden', !over);
-}
