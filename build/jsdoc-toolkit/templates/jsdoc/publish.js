@@ -39,20 +39,23 @@ function publish(symbolSet) {
  		classes = symbols.filter(Utils.isaClass).sort(aliasSort);
 	
 	// create a filemap in which outfiles must be to be named uniquely, ignoring case
-	if (JSDOC.opt.u) {
+	// Since we want lowercase links in templatedocs, we always use this
+	if (JSDOC.opt.u || templatedocs) {
 		var filemapCounts = {};
 		Link.filemap = {};
 		for (var i = 0, l = classes.length; i < l; i++) {
-			var lcAlias = classes[i].alias.toLowerCase();
+			var alias = classes[i].alias,
+				lcAlias = alias.toLowerCase();
 			
 			if (!filemapCounts[lcAlias]) {
 				filemapCounts[lcAlias] = 1;
 			} else {
 				filemapCounts[lcAlias]++;
 			}
-			
-			Link.filemap[classes[i].alias] =  (filemapCounts[lcAlias] > 1) ?
-				lcAlias + '_' + filemapCounts[lcAlias] : lcAlias;
+			// Use lowercase links for templatedocs
+			var linkAlias = templatedocs ? lcAlias : alias;
+			Link.filemap[alias] = filemapCounts[lcAlias] > 1
+					? linkAlias + '_' + filemapCounts[lcAlias] : linkAlias;
 		}
 	}
 	
