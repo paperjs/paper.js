@@ -157,8 +157,8 @@ var Render = new function() {
 					param.operators[name].push(operator);
 				}
 			}
-			var name = param.name == '_global_'
-					? publish.conf.globalName : param.name;
+			var name = param.name == '_global_' && publish.conf.globalName
+					|| param.name;
 			publish.curClass = {
 				name: name,
 				index: {
