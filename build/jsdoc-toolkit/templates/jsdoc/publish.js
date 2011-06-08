@@ -32,13 +32,11 @@ function publish(symbolSet) {
 			new java.io.File(publish.conf.staticDir),
 			new java.io.File(publish.conf.outDir)
 		);
-		
-		// Create the classes directory
-		new java.io.File(publish.conf.classesDir).mkdir();
 	} else {
 		Utils.deleteFiles(new File(publish.conf.outDir));
-		new java.io.File(publish.conf.classesDir).mkdirs();
 	}
+	// Create the classes directory
+	new java.io.File(publish.conf.classesDir).mkdirs();
 
 	// used to allow Link to check the details of things being linked to
 	Link.symbolSet = symbolSet;
