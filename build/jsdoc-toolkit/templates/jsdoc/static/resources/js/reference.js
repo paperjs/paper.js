@@ -48,7 +48,6 @@ Code = HtmlElement.extend({
 	}
 });
 
-
 PaperScript = HtmlElement.extend({
 	_class: 'paperscript',
 
@@ -176,45 +175,56 @@ PaperScript = HtmlElement.extend({
 	}
 });
 
-$document.addEvent('domready', function() {
-	var h = unescape(document.location.hash);
-	if (h) scrollToElement(h.substring(1));
-});
-
 var lastMemberId = null;
-function toggleMember(id, scrollTo) {
+function toggleMember(id, scrollTo, dontScroll) {
+	var link = $('#' + id + '-link');
+	if (!link)
+		return true;
+	var desc = $('#' + id + '-description');
+	var v = !link.hasClass('hidden');
+	// Retrieve y-offset before any changes, so we can correct scrolling after
+	var offset = (v ? link : desc).getOffset().y;
 	if (lastMemberId && lastMemberId != id) {
 		var prevId = lastMemberId;
 		lastMemberId = null;
-		toggleMember(prevId);
+		toggleMember(prevId, false, true);
 	}
-	var link = $('#' + id + '-link');
-	if (link) {
-		var desc = $('#' + id + '-description');
-		var v = !link.hasClass('hidden');
-		lastMemberId = v && id;
-		link.modifyClass('hidden', v);
-		desc.modifyClass('hidden', !v);
-		if (!desc.editor && v) {
-			desc.editor = $$('pre.code, .paperscript', desc).each(function(code) {
-				code.initialize();
-			});
-		}
-		if (scrollTo)
-			scrollToMember(id);
-		return false;
+	lastMemberId = v && id;
+	link.modifyClass('hidden', v);
+	desc.modifyClass('hidden', !v);
+	if (!dontScroll) {
+		// Correct scrolling relatively to where we are, by checking the amount
+		// the element has shifted due to the above toggleMember call, and
+		// correcting by 11px offset, caused by 1px border and 10px padding.
+		var scroll = $window.getScrollOffset();
+		$window.setScrollOffset(scroll.x, scroll.y
+				+ (v ? desc : link).getOffset().y - offset + 11 * (v ? 1 : -1));
 	}
-	return true;
+	if (!desc.editor && v) {
+		desc.editor = $$('pre.code, .paperscript', desc).each(function(code) {
+			code.initialize();
+		});
+	}
+	if (scrollTo)
+		scrollToMember(id);
+	return false;
 }
 
 function scrollToElement(id) {
 	var e = $('#' + id + '-member');
 	if (e) {
-		var offs = e.getOffset();
-		$window.setScrollOffset(offs);
 		if (e.hasClass('member'))
 			toggleMember(id);
+		var offs = e.getOffset();
+		$window.setScrollOffset(offs);
 	} else {
-		document.location.hash = id;
+		window.location.hash = id;
 	}
 }
+
+$document.addEvent('domready', function() {
+	var h = unescape(document.location.hash);
+	if (h) scrollToElement(h.substring(1));
+	if (window.paper)
+		paper.load();
+});

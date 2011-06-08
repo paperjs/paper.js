@@ -1,12 +1,12 @@
 /* These styles are shared with the server version of docs */
 
 .reference h1, .reference h2, .reference h3 {
-	font-size: 12px;
+	font-size: 13px;
 	font-weight: normal;
-	display: block;
-	height: 17px;
-	margin: 0 0 16px 0;
+	height: 18px; /* -2px so border-bottom aligns with contained links */
 	border-bottom: 1px solid;
+	margin-top: 0;
+	margin-bottom: 16px;
 }
 
 .reference h3 {
@@ -14,13 +14,18 @@
 	border-bottom-style: dotted;
 }
 
+.reference a tt {
+	line-height: 18px;
+}
+/*
 .reference a tt,
 .reference a tt b {
 	padding-bottom: 1px;
 }
+*/
 
-.reference pre {
-	margin: 0 0 20px 0;
+.reference p {
+	margin: 0 0 16px 0;
 }
 
 .reference ul {
@@ -58,12 +63,8 @@
 	list-style-image: none; /* needed for ie 6 */
 }
 
-.reference-end {
-	height: 600px;
-}
-
 .reference-members {
-	padding-bottom: 16px;
+	margin-bottom: 16px;
 }
 
 .member-group-text {
@@ -94,14 +95,14 @@
 .member-text {
 	border-top: 1px dashed #999;
 	padding: 10px 10px 0 10px;
-	margin-bottom: -10px; /* Compensate half of 20px margins of p and ul */
+	margin-bottom: -6px; /* Compensate margins of p and ul to end up with 10px */
 }
 
 .reference ul,
 .reference .paperscript,
 .reference .CodeMirror {
-	margin-top: -10px; /* Move half way up close to previous paragraph */
-	margin-bottom: 20px;
+	margin-top: -8px; /* Move half way up close to previous paragraph */
+	margin-bottom: 16px;
 }
 
 .reference ul {
@@ -118,12 +119,13 @@
 	padding-left: 30px;
 }
 
-ul.package-classes {
+.package-classes {
 	padding-bottom: 4px;
 }
 
 .package-classes ul {
 	margin-left: 10px;
+	margin-bottom: 10px;
 }
 
 .reference h2 a {
