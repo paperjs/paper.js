@@ -1,4 +1,6 @@
+<p>
 <b>Example</b> <if test="data.description.length">{+ '&mdash; ' + data.description +}</if>
+</p>
 <if test="data.paperScript">
 <div class="paperscript <if test="data.paperScript.mode">{+ data.paperScript.mode +}</if>">
 <if test="data.paperScript.source != 'false'"><div class="button">{+ data.paperScript.mode == 'source' ? 'Source' : 'Run' +}</div></if>
