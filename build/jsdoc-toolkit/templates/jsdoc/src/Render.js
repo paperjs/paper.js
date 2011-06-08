@@ -329,7 +329,7 @@ var Render = new function() {
 			return templates.html.process(content);
 		},
 		classes: function() {
-			// TODO: Use Template instead?
+			// TODO: Use a template instead?
 			var renderMode = publish.conf.renderMode;
 			load(JSDOC.opt.t + 'classLayout.js');
 			function parseClassNames(classNames) {
@@ -354,13 +354,7 @@ var Render = new function() {
 					name = names[0];
 					link = names[1];
 				}
-				if (renderMode == 'docs') {
-					link += '.html';
-				} else if (renderMode == 'templatedocs') {
-					link = link.toLowerCase();
-					link = '/reference/' + (link == '_global_' ? 'global' : link);
-				}
-				return '<li><a href="' + link + '">' + name + '</a></li>\n';
+				return '<li>' + new Link(false).toSymbol(link) + '</li>\n';
 			}
 
 			function getRuler() {
