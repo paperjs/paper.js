@@ -32,6 +32,9 @@ function publish(symbolSet) {
 			new java.io.File(publish.conf.staticDir),
 			new java.io.File(publish.conf.outDir)
 		);
+		
+		// Create the classes directory
+		new java.io.File(publish.conf.classesDir).mkdir();
 	} else {
 		Utils.deleteFiles(new File(publish.conf.outDir));
 		new java.io.File(publish.conf.classesDir).mkdirs();
