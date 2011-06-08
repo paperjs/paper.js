@@ -35,7 +35,7 @@ var Render = new function() {
 		// {@link ...} -> html links
 		str = str.replace(/\{@link ([^} ]+) ?\}/gi,
 			function(match, symbolName) {
-				return new Link().toSymbol(symbolName.replace(/[\^]/g, '-'));
+				return new Link(true).toSymbol(symbolName.replace(/[\^]/g, '-'));
 			}
 		);
 		// {@code ...} -> code blocks
@@ -142,7 +142,7 @@ var Render = new function() {
 			};
 			param.inheritedLinks = [];
 			for (var i in param.inheritedClasses) {
-				param.inheritedLinks.push('<b>' + new Link().toSymbol(i) + '</b>');
+				param.inheritedLinks.push('<b>' + new Link(true).toSymbol(i) + '</b>');
 			}
 			param.inheritedLinks = param.inheritedLinks.join(', ');
 			// Add the grouped operators to param:
@@ -234,7 +234,7 @@ var Render = new function() {
 				name: symbol.name,
 				description: processInlineTags(symbol.desc,
 						{stripParagraphs: true}),
-				typeLink: new Link().toSymbol(symbol.type),
+				typeLink: new Link(true).toSymbol(symbol.type),
 				symbol: symbol
 			});
 		},
@@ -271,7 +271,7 @@ var Render = new function() {
 				name: symbol.name,
 				description: processInlineTags(symbol.desc,
 						{stripParagraphs: true}),
-				typeLink: new Link().toSymbol(symbol.type),
+				typeLink: new Link(true).toSymbol(symbol.type),
 				symbol: symbol
 			});
 		},
