@@ -87,10 +87,6 @@ ol {
 
 /* PaperScript */
 
-.paperscript {
-	margin-bottom: 20px;
-}
-
 .paperscript .button {
 	display: none;
 	position: relative; /* position (top / right) relative to paperscriptcontainer */
@@ -120,6 +116,10 @@ ol {
 .paperscript .button:hover {
 	background: #ddd;
 	cursor: pointer;
+}
+
+.paperscript .CodeMirror {
+	margin-bottom: 0; /* Override any potential bottom margins again */
 }
 
 .paperscript .CodeMirror-gutter-text,
