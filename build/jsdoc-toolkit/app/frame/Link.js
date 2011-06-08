@@ -132,10 +132,13 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 	if (parameters) {
 		parameters = parameters.replace(/\,([^\s])/, ', $1')
 	}
-
+	
+	var linkText = (this.text || (alias == '_global_' && publish.conf.globalName
+			|| alias)) + (parameters || '');
+	
 	// if there is no symbol by that name just return the name unaltered
 	if (!linkTo) {
-	    return this.text || alias + (parameters || '');
+	    return linkText;
 	} else {
 		// it's a symbol in another file
 		if (!linkTo.is("CONSTRUCTOR") && !linkTo.isNamespace) { // it's a method or property
@@ -151,8 +154,6 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 		}
 		linkPath = linkBase + linkPath
 	}
-        
-	var linkText= (this.text || alias) + (parameters || '');
     
 	var link = {
 		linkPath: linkPath,
