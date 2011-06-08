@@ -6,25 +6,25 @@ load(JSDOC.opt.t + 'src/Render.js');
 
 function publish(symbolSet) {
 	var renderMode = JSDOC.opt.D.renderMode;
-	var templatedocs = renderMode == 'templatedocs';
-	var extension = templatedocs ? '.jstl' : '.html';
+	var templates = renderMode == 'templates';
+	var extension = templates ? '.jstl' : '.html';
 	var templateDir = JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/';
 	var outDir = JSDOC.opt.d || SYS.pwd + '../out/jsdoc/';
 
 	publish.conf = {  // trailing slash expected for dirs
-		// Use no extensions in links for templatedocs
-		ext: templatedocs ? '' : extension,
+		// Use no extensions in links for templates
+		ext: templates ? '' : extension,
 		outDir: outDir,
 		templateDir: templateDir,
 		staticDir: templateDir + 'static/',
 		classesDir: outDir + 'classes/',
-		symbolsDir: templatedocs ? 'reference/' : 'classes/',
+		symbolsDir: templates ? 'reference/' : 'classes/',
 		srcDir: 'symbols/src/',
 		renderMode: renderMode,
 		globalName: 'Global Scope'
 	};
 	
-	Link.base = templatedocs ? '/' : '../';
+	Link.base = templates ? '/' : '../';
 
 	if (renderMode == 'docs') {
 		// Copy over the static files
@@ -48,7 +48,7 @@ function publish(symbolSet) {
  		classes = symbols.filter(Utils.isaClass).sort(aliasSort);
 	
 	// create a filemap in which outfiles must be to be named uniquely, ignoring case
-	// Since we want lowercase links in templatedocs, we always use this
+	// Since we want lowercase links in templates, we always use this
 	var filemapCounts = {};
 	Link.filemap = {};
 	for (var i = 0, l = classes.length; i < l; i++) {
@@ -60,8 +60,8 @@ function publish(symbolSet) {
 		} else {
 			filemapCounts[lcAlias]++;
 		}
-		// Use lowercase links for templatedocs
-		var linkAlias = templatedocs ? lcAlias : alias;
+		// Use lowercase links for templates
+		var linkAlias = templates ? lcAlias : alias;
 		// Rename _global_.html to global.html
 		if (linkAlias == '_global_')
 			linkAlias = 'global';
@@ -80,7 +80,7 @@ function publish(symbolSet) {
 			method.isOperator = Operator.isOperator(method);
 		}
 		
-		Link.currentSymbol= symbol;
+		Link.currentSymbol = symbol;
 		var html = Render._class(symbol);
 		var name = Link.filemap[symbol.alias] + extension;
 		if (renderMode == 'docs') {
@@ -91,7 +91,7 @@ function publish(symbolSet) {
 		}
 		IO.saveFile(publish.conf.classesDir, name, html);
 	}
-	if (templatedocs) {
+	if (templates) {
 		IO.saveFile(publish.conf.outDir, 'packages.js', Render.packages());
 	} else {
 		IO.saveFile(publish.conf.classesDir, 'index.html', Render.index());
