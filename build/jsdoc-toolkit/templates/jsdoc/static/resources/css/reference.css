@@ -114,12 +114,8 @@ ul.package-classes {
 	padding-bottom: 4px;
 }
 
-.package-classes li {
+.package-classes ul {
 	margin-left: 10px;
-}
-
-.package-classes li h2 {
-	margin-left: -10px;
 }
 
 .reference h2 a {
