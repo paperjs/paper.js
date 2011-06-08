@@ -94,6 +94,18 @@
 .member-text {
 	border-top: 1px dashed #999;
 	padding: 10px 10px 0 10px;
+	margin-bottom: -10px; /* Compensate half of 20px margins of p and ul */
+}
+
+.reference ul,
+.reference .paperscript,
+.reference .CodeMirror {
+	margin-top: -10px; /* Move half way up close to previous paragraph */
+	margin-bottom: 20px;
+}
+
+.reference ul {
+	margin-top: 0; /* Clear the above -10px for ul again */
 }
 
 .member-link {
@@ -104,10 +116,6 @@
 .reference-inherited ul li {
 	text-indent: -30px;
 	padding-left: 30px;
-}
-
-.member-text ul {
-	padding-bottom: 10px;
 }
 
 ul.package-classes {
