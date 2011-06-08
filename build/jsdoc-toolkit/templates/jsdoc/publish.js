@@ -51,23 +51,24 @@ function publish(symbolSet) {
 	
 	// create a filemap in which outfiles must be to be named uniquely, ignoring case
 	// Since we want lowercase links in templatedocs, we always use this
-	if (JSDOC.opt.u || templatedocs) {
-		var filemapCounts = {};
-		Link.filemap = {};
-		for (var i = 0, l = classes.length; i < l; i++) {
-			var alias = classes[i].alias,
-				lcAlias = alias.toLowerCase();
-			
-			if (!filemapCounts[lcAlias]) {
-				filemapCounts[lcAlias] = 1;
-			} else {
-				filemapCounts[lcAlias]++;
-			}
-			// Use lowercase links for templatedocs
-			var linkAlias = templatedocs ? lcAlias : alias;
-			Link.filemap[alias] = filemapCounts[lcAlias] > 1
-					? linkAlias + '_' + filemapCounts[lcAlias] : linkAlias;
+	var filemapCounts = {};
+	Link.filemap = {};
+	for (var i = 0, l = classes.length; i < l; i++) {
+		var alias = classes[i].alias,
+			lcAlias = alias.toLowerCase();
+		
+		if (!filemapCounts[lcAlias]) {
+			filemapCounts[lcAlias] = 1;
+		} else {
+			filemapCounts[lcAlias]++;
 		}
+		// Use lowercase links for templatedocs
+		var linkAlias = templatedocs ? lcAlias : alias;
+		// Rename _global_.html to global.html
+		if (linkAlias == '_global_')
+			linkAlias = 'global';
+		Link.filemap[alias] = filemapCounts[lcAlias] > 1
+				? linkAlias + '_' + filemapCounts[lcAlias] : linkAlias;
 	}
 
 	// create each of the class pages
@@ -83,8 +84,7 @@ function publish(symbolSet) {
 		
 		Link.currentSymbol= symbol;
 		var html = Render._class(symbol);
-		var name = ((JSDOC.opt.u)? Link.filemap[symbol.alias] : symbol.alias)
-				+ extension;
+		var name = Link.filemap[symbol.alias] + extension;
 		if (renderMode == 'docs') {
 			html = Render.html({
 				content: html,
