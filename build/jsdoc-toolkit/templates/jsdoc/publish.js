@@ -92,7 +92,7 @@ function publish(symbolSet) {
 		IO.saveFile(publish.conf.classesDir, name, html);
 	}
 	if (templatedocs) {
-		IO.saveFile(publish.conf.outDir, 'packages.js', Render.indexjs());
+		IO.saveFile(publish.conf.outDir, 'packages.js', Render.packages());
 	} else {
 		IO.saveFile(publish.conf.classesDir, 'index.html', Render.index());
 	}

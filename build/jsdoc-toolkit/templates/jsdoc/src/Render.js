@@ -15,7 +15,7 @@ var Render = new function() {
 		constructor: 'constructor.tmpl',
 		html: 'html.tmpl',
 		index: 'index.tmpl',
-		indexjs: 'indexjs.tmpl',
+		packages: 'packages.tmpl',
 		operator: 'operator.tmpl'
 	};
 	publish.classes = [];
@@ -387,8 +387,8 @@ var Render = new function() {
 		index: function(html) {
 			return templates.index.process(html);
 		},
-		indexjs: function() {
-			return templates.indexjs.process(publish.classes);
+		packages: function() {
+			return templates.packages.process(publish.classes);
 		}
 	};
 };
