@@ -44,7 +44,7 @@ p {
 ul {
 	padding: 0;
 	margin: 0 0 20px 16px;
-	list-style: disc outside url(../assets/bullet.gif);
+	list-style: disc outside url(assets/bullet.gif);
 }
 
 ol {
