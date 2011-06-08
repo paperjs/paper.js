@@ -331,6 +331,8 @@ var Render = new function() {
 		classes: function() {
 			// TODO: Use a template instead?
 			var renderMode = publish.conf.renderMode;
+			var out = '<ul class="package-classes">';
+
 			load(JSDOC.opt.t + 'classLayout.js');
 			function parseClassNames(classNames) {
 				var out = '';
@@ -347,6 +349,7 @@ var Render = new function() {
 				}
 				return out;
 			}
+
 			function getLink(name) {
 				var link = name;
 				if (name.indexOf(':') > 0) {
@@ -364,16 +367,22 @@ var Render = new function() {
 			function getHeading(title) {
 				return '<li><h3>' + title + '</h3></li>\n';
 			}
-			var first = true,
-				out = '<ul class="package-classes">';
+
+			var first = true;
 			for (var i in classLayout) {
-				out += '<li' + (first ? ' class="first">' : '>');
-				out += '<h2>' + i + '</h2></li>\n';
+				if (i != '_global_') {
+					out += '<li' + (first ? ' class="first">' : '>\n');
+					out += '<h2>' + i + '</h2>\n';
+					out += '<ul>\n';
+				} 
 				out += parseClassNames(classLayout[i]);
+				if (i != '_global_') {
+					out += '</ul>\n';
+				}
 				first = false;
 			}
-			out += '</ul>';
-			return out;
+
+			return out + '</ul>';
 		},
 		index: function(html) {
 			return templates.index.process(html);
