@@ -156,7 +156,7 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * // and fill it with a radial gradient color:
 	 * var path = new Path.Circle(view.center, view.bounds.height * 0.4);
 	 * 
-	 * var gradient = new Gradient(['yellow', 'red', 'blue'], 'radial');
+	 * var gradient = new Gradient(['yellow', 'red', 'black'], 'radial');
 	 * var from = view.center;
 	 * var to = view.bounds.bottomRight;
 	 * var gradientColor = new GradientColor(gradient, from, to);
