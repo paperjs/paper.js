@@ -1,7 +1,7 @@
 /** Handle the creation of HTML links to documented symbols.
 	@constructor
 */
-function Link() {
+function Link(asCode) {
 	this.alias = "";
 	this.src = "";
 	this.file = "";
@@ -9,6 +9,7 @@ function Link() {
 	this.innerName = "";
 	this.classLink = false;
 	this.targetName = "";
+	this.asCode = asCode;
 	
 	this.target = function(targetName) {
 		if (defined(targetName)) this.targetName = targetName;
@@ -131,15 +132,18 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 	if (parameters) {
 		parameters = parameters.replace(/\,([^\s])/, ', $1')
 	}
-
+	
+	var linkText = (this.text || (alias == '_global_' && publish.conf.globalName
+			|| alias)) + (parameters || '');
+	
 	// if there is no symbol by that name just return the name unaltered
 	if (!linkTo) {
-	    return this.text || alias + (parameters || '');
+	    return linkText;
 	} else {
 		// it's a symbol in another file
 		if (!linkTo.is("CONSTRUCTOR") && !linkTo.isNamespace) { // it's a method or property
 			linkPath= (Link.filemap) ? Link.filemap[linkTo.memberOf] :
-				      escape(linkTo.memberOf) || "global";
+				      escape(linkTo.memberOf) || "_global_";
 				linkPath += publish.conf.ext + "#" + Link.symbolNameToLinkName(linkTo).toLowerCase();
 			if (parameters) {
 				linkPath += '-' + parameters.replace(/[()]+/g, '').split(', ').join('-').toLowerCase();
@@ -150,8 +154,6 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 		}
 		linkPath = linkBase + linkPath
 	}
-        
-	var linkText= (this.text || alias) + (parameters || '');
     
 	var link = {
 		linkPath: linkPath,
@@ -172,7 +174,12 @@ Link.prototype._makeSymbolLink = function(alias, parameters) {
 		var linkName = link.linkPath.replace(/^[^#]+#/, '');
 		onClick = " onclick=\"return toggleMember('" + linkName + "', true);\"";
 	}
-	var html = "<a href=\""+link.linkPath+link.linkInner+"\""+target+onClick+"><tt>"+link.linkText+"</tt></a>";
+	var text = link.linkText;
+	// TODO: tt is gone in HTML5. Instead we should give these links and code 
+	// elements a special class so they can be styled through CSS.
+	if (this.asCode)
+		text = "<tt>" + text + "</tt>";
+	var html = "<a href=\""+link.linkPath+link.linkInner+"\""+target+onClick+">" + text + "</a>";
 	if (this.prefix || this.suffix)
 		html = (this.prefix || '') + html + (this.suffix || '');
 	return html;

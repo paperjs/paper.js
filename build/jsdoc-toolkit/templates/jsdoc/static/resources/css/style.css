@@ -12,7 +12,7 @@ body {
 }
 
 select, input, textarea {
-	font-size: 12px;
+	font-size: 11px;
 	margin: 0;
 	color: #000;
 }
@@ -44,7 +44,7 @@ p {
 ul {
 	padding: 0;
 	margin: 0 0 20px 16px;
-	list-style: disc outside url(../assets/bullet.gif);
+	list-style: disc outside url(assets/bullet.gif);
 }
 
 ol {
@@ -83,56 +83,4 @@ ol {
 
 .footer {
 	margin-top: 20px;
-}
-
-/* PaperScript */
-
-.paperscript {
-	margin-bottom: 20px;
-}
-
-.paperscript .button {
-	display: none;
-	position: relative; /* position (top / right) relative to paperscriptcontainer */
-	float: right; /* align right as block */
-	font-size: 11px;
-	line-height: 16px;
-	padding: 2px 6px;
-	margin-bottom: -20px; /* move canvas up by 16px (height) + 2 * 2px (padding) */
-	top: 8px; /* margin to top */
-	right: 8px; /* margin to right */
-	background: #eee;
-	border-radius: 4px;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	z-index: 1;
-}
-
-.paperscript .source {
-	overflow: auto;
-	border: 1px solid #999;
-}
-
-.paperscript:hover .button {
-	display: block;
-}
-
-.paperscript .button:hover {
-	background: #ddd;
-	cursor: pointer;
-}
-
-.paperscript .CodeMirror-gutter-text,
-.paperscript .CodeMirror-lines {
-	padding-top: 10px;
-	padding-bottom: 10px;
-}
-
-.paperscript .canvas {
-	line-height: 0; /* prevent weird 5px padding under canvas elements */
-}
-
-.paperscript.split .canvas {
-	border: 1px solid #999;
-	border-top: 0;
 }

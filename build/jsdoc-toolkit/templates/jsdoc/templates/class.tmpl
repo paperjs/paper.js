@@ -1,5 +1,5 @@
 <div class="reference-class">
-<if test="publish.conf.renderMode == 'docs'"><h1>{+ data.name == '_global_' ? publish.conf.globalName : data.name +}</h1></if>
+<if test="publish.conf.renderMode == 'docs'"><h1>{+ data.name == '_global_' && publish.conf.globalName || data.name +}</h1></if>
 <if test="data.inheritedLinks">
 <p> Extends {+ data.inheritedLinks +}</p>
 </if>
@@ -49,7 +49,7 @@
 <for each="inheritedClass" in="data.inheritedClasses">
 <if test="inheritedClass.properties.length">
 <!-- =========================== inherited properties ====================== -->
-<div class="reference-members"><h2>Properties inherited from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
+<div class="reference-members"><h2>Properties inherited from {+ new Link(true).toSymbol(inheritedClass.className) +}</h2>
 <for each="member" in="inheritedClass.properties">
 	{+ Render.property(member, true) +}
 </for>
@@ -57,7 +57,7 @@
 </if>
 <if test="inheritedClass.methods.length">
 <!-- =========================== inherited methods ========================= -->
-<div class="reference-members"><h2>Functions inherited from {+ new Link().toSymbol(inheritedClass.className) +}</h2>
+<div class="reference-members"><h2>Functions inherited from {+ new Link(true).toSymbol(inheritedClass.className) +}</h2>
 <for each="member" in="inheritedClass.methods">
 	{+ Render.method(member, true) +}
 </for>
