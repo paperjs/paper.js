@@ -693,6 +693,42 @@ var Path = this.Path = PathItem.extend({
 		this.setSegments(segments);
 	},
 
+	/**
+	 * @param {Number} [tolerance=2.5]
+	 * 
+	 * @example {@paperscript height=300}
+	 * // Click and drag below to draw to draw a line, when you release the
+	 * // mouse, the is made smooth using path.pointsToCurves():
+	 * 
+	 * var path;
+	 * function onMouseDown(event) {
+	 * 	// If we already made a path before, deselect it:
+	 * 	if (path) {
+	 * 		path.selected = false;
+	 * 	}
+	 * 	
+	 * 	// Create a new path and add the position of the mouse
+	 * 	// as its first segment. Select it, so we can see the
+	 * 	// segment points:
+	 * 	path = new Path();
+	 * 	path.strokeColor = 'black';
+	 * 	path.add(event.point);
+	 * 	path.selected = true;
+	 * }
+	 * 
+	 * function onMouseDrag(event) {
+	 * 	// On every drag event, add a segment to the path
+	 * 	// at the position of the mouse:
+	 * 	path.add(event.point);
+	 * }
+	 * 
+	 * function onMouseUp(event) {
+	 * 	// When the mouse is released, simplify the path using
+	 * 	// the pointsToCurves function:
+	 * 	path.pointsToCurves();
+	 * 	path.selected = true;
+	 * }
+	 */
 	pointsToCurves: function(tolerance) {
 		var fitter = new PathFitter(this, tolerance || 2.5);
 		this.setSegments(fitter.fit());
