@@ -15,7 +15,7 @@ var Render = new function() {
 		constructor: 'constructor.tmpl',
 		html: 'html.tmpl',
 		index: 'index.tmpl',
-		indexjs: 'indexjs.tmpl',
+		packages: 'packages.tmpl',
 		operator: 'operator.tmpl'
 	};
 	publish.classes = [];
@@ -35,7 +35,7 @@ var Render = new function() {
 		// {@link ...} -> html links
 		str = str.replace(/\{@link ([^} ]+) ?\}/gi,
 			function(match, symbolName) {
-				return new Link().toSymbol(symbolName.replace(/[\^]/g, '-'));
+				return new Link(true).toSymbol(symbolName.replace(/[\^]/g, '-'));
 			}
 		);
 		// {@code ...} -> code blocks
@@ -142,7 +142,7 @@ var Render = new function() {
 			};
 			param.inheritedLinks = [];
 			for (var i in param.inheritedClasses) {
-				param.inheritedLinks.push('<b>' + new Link().toSymbol(i) + '</b>');
+				param.inheritedLinks.push('<b>' + new Link(true).toSymbol(i) + '</b>');
 			}
 			param.inheritedLinks = param.inheritedLinks.join(', ');
 			// Add the grouped operators to param:
@@ -157,8 +157,8 @@ var Render = new function() {
 					param.operators[name].push(operator);
 				}
 			}
-			var name = param.name == '_global_'
-					? publish.conf.globalName : param.name;
+			var name = param.name == '_global_' && publish.conf.globalName
+					|| param.name;
 			publish.curClass = {
 				name: name,
 				index: {
@@ -234,7 +234,7 @@ var Render = new function() {
 				name: symbol.name,
 				description: processInlineTags(symbol.desc,
 						{stripParagraphs: true}),
-				typeLink: new Link().toSymbol(symbol.type),
+				typeLink: new Link(true).toSymbol(symbol.type),
 				symbol: symbol
 			});
 		},
@@ -271,7 +271,7 @@ var Render = new function() {
 				name: symbol.name,
 				description: processInlineTags(symbol.desc,
 						{stripParagraphs: true}),
-				typeLink: new Link().toSymbol(symbol.type),
+				typeLink: new Link(true).toSymbol(symbol.type),
 				symbol: symbol
 			});
 		},
@@ -329,8 +329,10 @@ var Render = new function() {
 			return templates.html.process(content);
 		},
 		classes: function() {
-			// TODO: Use Template instead?
+			// TODO: Use a template instead?
 			var renderMode = publish.conf.renderMode;
+			var out = '<ul class="package-classes">';
+
 			load(JSDOC.opt.t + 'classLayout.js');
 			function parseClassNames(classNames) {
 				var out = '';
@@ -347,6 +349,7 @@ var Render = new function() {
 				}
 				return out;
 			}
+
 			function getLink(name) {
 				var link = name;
 				if (name.indexOf(':') > 0) {
@@ -354,13 +357,7 @@ var Render = new function() {
 					name = names[0];
 					link = names[1];
 				}
-				if (renderMode == 'docs') {
-					link += '.html';
-				} else if (renderMode == 'templatedocs') {
-					link = link.toLowerCase();
-					link = '/reference/' + (link == '_global_' ? 'global' : link);
-				}
-				return '<li><a href="' + link + '">' + name + '</a></li>\n';
+				return '<li>' + new Link(false).toSymbol(link) + '</li>\n';
 			}
 
 			function getRuler() {
@@ -370,22 +367,28 @@ var Render = new function() {
 			function getHeading(title) {
 				return '<li><h3>' + title + '</h3></li>\n';
 			}
-			var first = true,
-				out = '<ul class="package-classes">';
+
+			var first = true;
 			for (var i in classLayout) {
-				out += '<li' + (first ? ' class="first">' : '>');
-				out += '<h2>' + i + '</h2></li>\n';
+				if (i != '_global_') {
+					out += '<li' + (first ? ' class="first">' : '>\n');
+					out += '<h2>' + i + '</h2>\n';
+					out += '<ul>\n';
+				} 
 				out += parseClassNames(classLayout[i]);
+				if (i != '_global_') {
+					out += '</ul>\n';
+				}
 				first = false;
 			}
-			out += '</ul>';
-			return out;
+
+			return out + '</ul>';
 		},
 		index: function(html) {
 			return templates.index.process(html);
 		},
-		indexjs: function() {
-			return templates.indexjs.process(publish.classes);
+		packages: function() {
+			return templates.packages.process(publish.classes);
 		}
 	};
 };

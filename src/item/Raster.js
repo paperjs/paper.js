@@ -101,7 +101,7 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	/**
-	 * Pixels per inch of the raster at it's current size.
+	 * Pixels per inch of the raster at its current size.
 	 *
 	 * @type Size
 	 * @bean
