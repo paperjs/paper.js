@@ -28,6 +28,59 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * @param {Point} [hilite]
 	 * @constructs GradientColor
 	 * 
+	 * @example {@paperscript height=200}
+	 * // Applying a linear gradient color containing evenly distributed
+	 * // color stops:
+	 * 
+	 * // Define two points which we will be using to construct
+	 * // the path and to position the gradient color:
+	 * var topLeft = view.center - [80, 80];
+	 * var bottomRight = view.center + [80, 80];
+	 * 
+	 * // Create a rectangle shaped path between
+	 * // the topLeft and bottomRight points:
+	 * var path = new Path.Rectangle(topLeft, bottomRight);
+	 * 
+	 * // Create the gradient, passing it an array of colors to be converted
+	 * // to evenly distributed color stops:
+	 * var gradient = new Gradient(['yellow', 'red', 'blue']);
+	 * 
+	 * // Have the gradient color run between the topLeft and
+	 * // bottomRight points we defined earlier:
+	 * var gradientColor = new GradientColor(gradient, topLeft, bottomRight);
+	 * 
+	 * // Set the fill color of the path to the gradient color:
+	 * path.fillColor = gradientColor;
+	 * 
+	 * @example {@paperscript height=200}
+	 * // Applying a radial gradient color containing unevenly distributed
+	 * // color stops:
+	 * 
+	 * // Create a circle shaped path at the center of the view
+	 * // with a radius of 80:
+	 * var path = new Path.Circle(view.center, 80);
+	 * 
+	 * // The stops array: yellow mixes with red between 0 and 15%,
+	 * // 15% to 30% is pure red, red mixes with black between 30% to 100%:
+	 * var stops = [['yellow', 0], ['red', 0.15], ['red', 0.3], ['black', 0.9]];
+	 * 
+	 * // Create a radial gradient using the color stops array:
+	 * var gradient = new Gradient(stops, 'radial');
+	 * 
+	 * // We will use the center point of the circle shaped path as
+	 * // the origin point for our gradient color
+	 * var from = path.position;
+	 * 
+	 * // The destination point of the gradient color will be the
+	 * // center point of the path + 80pt in horizontal direction:
+	 * var to = path.position + [80, 0];
+	 * 
+	 * // Create the gradient color: 
+	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * 
+	 * // Set the fill color of the path to the gradient color:
+	 * path.fillColor = gradientColor;
+	 * 
 	 * @class The GradientColor object.
 	 */
 	initialize: function(gradient, origin, destination, hilite) {
@@ -51,6 +104,29 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * 
 	 * @type Point
 	 * @bean
+	 *
+	 * @example {@paperscript height=200}
+	 * // Move the origin point of the gradient, by moving your mouse over
+	 * // the view below:
+	 * 
+	 * // Create a rectangle shaped path with the same dimensions as
+	 * // that of the view and fill it with a gradient color:
+	 * var path = new Path.Rectangle(view.bounds);
+	 * var gradient = new Gradient(['yellow', 'red', 'blue']);
+	 * 
+	 * // Have the gradient color run from the top left point of the view,
+	 * // to the bottom right point of the view:
+	 * var from = view.bounds.topLeft;
+	 * var to = view.bounds.bottomRight;
+	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * path.fillColor = gradientColor;
+	 * 
+	 * function onMouseMove(event) {
+	 * 	// Set the origin point of the path's gradient color
+	 * 	// to the position of the mouse:
+	 * 	path.fillColor.origin = event.point;
+	 * }
+	 * 
 	 */
 	getOrigin: function() {
 		return this._origin;
@@ -70,6 +146,27 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * 
 	 * @type Point
 	 * @bean
+	 * 
+	 * @example {@paperscript height=300}
+	 * // Move the destination point of the gradient, by moving your mouse over
+	 * // the view below:
+	 * 
+	 * // Create a circle shaped path at the center of the view,
+	 * // using 40% of the height of the view as its radius
+	 * // and fill it with a radial gradient color:
+	 * var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+	 * 
+	 * var gradient = new Gradient(['yellow', 'red', 'black'], 'radial');
+	 * var from = view.center;
+	 * var to = view.bounds.bottomRight;
+	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * path.fillColor = gradientColor;
+	 * 
+	 * function onMouseMove(event) {
+	 * 	// Set the origin point of the path's gradient color
+	 * 	// to the position of the mouse:
+	 * 	path.fillColor.destination = event.point;
+	 * }
 	 */
 	getDestination: function() {
 		return this._destination;
@@ -88,6 +185,26 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * 
 	 * @type Point
 	 * @bean
+	 * 
+	 * @example {@paperscript height=300}
+	 * // Move the hilite point of the gradient, by moving your mouse over
+	 * // the view below:
+	 * 
+	 * // Create a circle shaped path at the center of the view,
+	 * // using 40% of the height of the view as its radius
+	 * // and fill it with a radial gradient color:
+	 * var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+	 * var gradient = new Gradient(['yellow', 'red', 'black'], 'radial');
+	 * var from = path.position;
+	 * var to = path.bounds.rightCenter;
+	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * path.fillColor = gradientColor;
+	 * 
+	 * function onMouseMove(event) {
+	 * 	// Set the origin hilite of the path's gradient color
+	 * 	// to the position of the mouse:
+	 * 	path.fillColor.hilite = event.point;
+	 * }
 	 */
 	getHilite: function() {
 		return this._hilite;
