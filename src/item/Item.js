@@ -594,7 +594,7 @@ var Item = this.Item = Base.extend({
 	 * for (var i = 0; i < 20; i++) {
 	 * 	var copy = circle.clone();
 	 * 
-	 * 	// Move the copies horizontally, so we can see them:
+	 * 	// Distribute the copies horizontally, so we can see them:
 	 * 	copy.position.x += i * copy.bounds.width;
 	 * }
 	 */
