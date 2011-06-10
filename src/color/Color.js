@@ -531,6 +531,16 @@ var GrayColor = this.GrayColor = Color.extend(/** @scope GrayColor */{
 	 * 
 	 * @class A GrayColor object is used to represent any gray color value.
 	 * @extends Color
+	 * 
+	 * @example {@paperscript}
+	 * // Creating a GrayColor:
+	 * 
+	 * // Create a circle shaped path at {x: 80, y: 50}
+	 * // with a radius of 30:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 *
+	 * // Create a GrayColor with 50% gray:
+	 * circle.fillColor = new GrayColor(0.5);
 	 */
 
 	_colorType: 'gray'
@@ -553,6 +563,16 @@ var RGBColor = this.RGBColor = Color.extend(/** @scope RGBColor */{
 	 * 
 	 * @class An RGBColor object is used to represent any RGB color value.
 	 * @extends Color
+	 * 
+	 * @example {@paperscript}
+	 * // Creating an RGBColor:
+	 * 
+	 * // Create a circle shaped path at {x: 80, y: 50}
+	 * // with a radius of 30:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 *
+	 * // 100% red, 0% blue, 50% blue:
+	 * circle.fillColor = new RGBColor(1, 0, 0.5);
 	 */
 
 	_colorType: 'rgb'
@@ -575,6 +595,17 @@ var HSBColor = this.HSBColor = Color.extend(/** @scope HSBColor */{
 	 * 
 	 * @class An HSBColor object is used to represent any HSB color value.
 	 * @extends Color
+	 *
+	 * @example {@paperscript}
+	 * // Creating an HSBColor:
+	 * 
+	 * // Create a circle shaped path at {x: 80, y: 50}
+	 * // with a radius of 30:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 *
+	 * // Create an HSBColor with a hue of 90 degrees, a saturation
+	 * // 100% and a brightness of 100%:
+	 * circle.fillColor = new HSBColor(90, 1, 1);
 	 */
 
 	_colorType: 'hsb'
