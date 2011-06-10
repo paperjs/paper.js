@@ -146,7 +146,7 @@ var View = this.View = Base.extend({
 	},
 
 	/**
-	 * @type Size
+	 * @type Rectangle
 	 * @bean
 	 */
 	getBounds: function() {
@@ -386,13 +386,13 @@ var View = this.View = Base.extend({
 				curPoint = point || curPoint;
 				if (curPoint)
 					tool.onHandleEvent('mousedrag', curPoint, event);
-				if (tool.onMouseDrag)
+				if (tool.onMouseDrag && !tool.onFrame)
 					that.draw();
 			// PORT: If there is only an onMouseMove handler, also call it when
 			// the user is dragging:
 			} else if (!dragging || onlyMove) {
 				tool.onHandleEvent('mousemove', point, event);
-				if (tool.onMouseMove)
+				if (tool.onMouseMove && !tool.onFrame)
 					that.draw();
 			}
 		}
