@@ -1907,6 +1907,8 @@ var Path = this.Path = PathItem.extend({
 		/**
 		 * Closes the path. When closed, Paper.js connects the first and last
 		 * segments.
+		 * 
+		 * @see #closed
 		 */
 		closePath: function() {
 			this.setClosed(true);
