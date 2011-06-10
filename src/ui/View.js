@@ -269,17 +269,17 @@ var View = this.View = Base.extend({
 	 * <b>{@code event.delta}</b>: the time passed in seconds since the last frame
 	 * event.
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * // Creating an animation:
 	 * 
-	 * // Create a rectangle shaped path between {x: 20, y: 20}
-	 * // and {x: 50, y: 50}:
-	 * var path = new Path.Rectangle([20, 20], [50, 50]);
+	 * // Create a rectangle shaped path with its top left point at:
+	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
+	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 	 * path.fillColor = 'black';
 	 * 
 	 * function onFrame(event) {
-	 * 	// Every frame, rotate the path by 1 degree:
-	 * 	path.rotate(1);
+	 * 	// Every frame, rotate the path by 3 degrees:
+	 * 	path.rotate(3);
 	 * }
 	 * 
 	 * @type function
