@@ -7,7 +7,7 @@ load(JSDOC.opt.t + 'src/Render.js');
 function publish(symbolSet) {
 	var renderMode = JSDOC.opt.D.renderMode;
 	var templates = renderMode == 'templates';
-	var extension = templates ? '.jstl' : '.html';
+	var extension = '.html';
 	var templateDir = JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/';
 	var outDir = JSDOC.opt.d || SYS.pwd + '../out/jsdoc/';
 
