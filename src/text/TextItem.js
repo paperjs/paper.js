@@ -44,6 +44,31 @@ var TextItem = this.TextItem = Item.extend({
 	 *
 	 * @name TextItem#content
 	 * @type String
+	 * 
+	 * @example {@paperscript}
+	 * // Setting the content of a PointText item:
+	 * 
+	 * // Create a point-text item at {x: 30, y: 30}:
+	 * var text = new PointText(new Point(30, 30));
+	 * text.fillColor = 'black';
+	 * 
+	 * // Set the content of the text item:
+	 * text.content = 'Hello world';
+	 * 
+	 * @example {@paperscript}
+	 * // Interactive example, move your mouse over the view below:
+	 * 
+	 * // Create a point-text item at {x: 30, y: 30}:
+	 * var text = new PointText(new Point(30, 30));
+	 * text.fillColor = 'black';
+	 * 
+	 * text.content = 'Move your mouse over the view, to see its position';
+	 * 
+	 * function onMouseMove(event) {
+	 * 	// Each time the mouse is moved, set the content of
+	 * 	// the point text to describe the position of the mouse:
+	 * 	text.content = 'Your position is: ' + event.point.toString();
+	 * }
 	 */
 
 	_clone: function(copy) {
