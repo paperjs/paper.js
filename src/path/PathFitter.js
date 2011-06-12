@@ -26,7 +26,7 @@ var PathFitter = Base.extend({
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var point = segments[i].point.clone();
 			if (!prev || !prev.equals(point)) {
-				this.points[i] = point;
+				this.points.push(point);
 				prev = point;
 			}
 		}
