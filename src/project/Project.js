@@ -66,24 +66,24 @@ var Project = this.Project = Base.extend({
 	 * @type PathStyle
 	 * @bean
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * project.currentStyle = {
 	 * 	fillColor: 'red',
 	 * 	strokeColor: 'black',
 	 * 	strokeWidth: 5
 	 * }
 	 * 
-	 * // The following path will take over all style properties of
+	 * // The following paths will take over all style properties of
 	 * // the current style:
-	 * var path = new Path.Circle(new Point(50, 50), 30);
-	 * console.log(path.strokeWidth); // 5
+	 * var path = new Path.Circle(new Point(75, 50), 30);
+	 * var path2 = new Path.Circle(new Point(175, 50), 20);
 	 * 
-	 * @example
+	 * @example {@paperscript}
 	 * project.currentStyle.fillColor = 'red';
 	 * 
 	 * // The following path will take over the fill color we just set:
-	 * var path = new Path.Circle(new Point(50, 50), 30);
-	 * console.log(path.fillColor); // RGBColor(1, 0, 0)
+	 * var path = new Path.Circle(new Point(75, 50), 30);
+	 * var path2 = new Path.Circle(new Point(175, 50), 20);
 	 */
 	getCurrentStyle: function() {
 		return this._currentStyle;
