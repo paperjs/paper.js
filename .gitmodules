@@ -1,0 +1,3 @@
+[submodule "build/jsdoc-toolkit"]
+	path = build/jsdoc-toolkit
+	url = git@github.com:scriptographer/jsdoc-toolkit.git
