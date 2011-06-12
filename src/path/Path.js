@@ -693,6 +693,42 @@ var Path = this.Path = PathItem.extend({
 		this.setSegments(segments);
 	},
 
+	/**
+	 * @param {Number} [tolerance=2.5]
+	 * 
+	 * @example {@paperscript height=300}
+	 * // Click and drag below to draw to draw a line, when you release the
+	 * // mouse, the is made smooth using path.pointsToCurves():
+	 * 
+	 * var path;
+	 * function onMouseDown(event) {
+	 * 	// If we already made a path before, deselect it:
+	 * 	if (path) {
+	 * 		path.selected = false;
+	 * 	}
+	 * 	
+	 * 	// Create a new path and add the position of the mouse
+	 * 	// as its first segment. Select it, so we can see the
+	 * 	// segment points:
+	 * 	path = new Path();
+	 * 	path.strokeColor = 'black';
+	 * 	path.add(event.point);
+	 * 	path.selected = true;
+	 * }
+	 * 
+	 * function onMouseDrag(event) {
+	 * 	// On every drag event, add a segment to the path
+	 * 	// at the position of the mouse:
+	 * 	path.add(event.point);
+	 * }
+	 * 
+	 * function onMouseUp(event) {
+	 * 	// When the mouse is released, simplify the path using
+	 * 	// the pointsToCurves function:
+	 * 	path.pointsToCurves();
+	 * 	path.selected = true;
+	 * }
+	 */
 	pointsToCurves: function(tolerance) {
 		var fitter = new PathFitter(this, tolerance || 2.5);
 		this.setSegments(fitter.fit());
@@ -1789,9 +1825,52 @@ var Path = this.Path = PathItem.extend({
 			this._add(segments);
 		},
 
-		// DOCS: document Path#lineBy
 		/**
-		 * @param {Point} vector
+		 * Adds a segment relative to the last segment point of the path.
+		 * 
+		 * @param {Point} vector The vector which is added to the position
+		 * of the last segment of the path, to become the new segment.
+		 * 
+		 * @example {@paperscript}
+		 * var path = new Path();
+		 * path.strokeColor = 'black';
+		 * 
+		 * // Add a segment at {x: 50, y: 50}
+		 * path.add(25, 25);
+		 * 
+		 * // Add a segment relative to the last segment of the path.
+		 * // 50 in x direction and 0 in y direction, becomes {x: 75, y: 25}
+		 * path.lineBy(50, 0);
+		 * 
+		 * // 0 in x direction and 50 in y direction, becomes {x: 75, y: 75}
+		 * path.lineBy(0, 50);
+		 * 
+		 * @example {@paperscript height=300}
+		 * // Drawing a spiral using lineBy:
+		 * var path = new Path();
+		 * path.strokeColor = 'black';
+		 * 
+		 * // Add the first segment at {x: 50, y: 50}
+		 * path.add(view.center);
+		 * 
+		 * // Loop 500 times:
+		 * for (var i = 0; i < 500; i++) {
+		 * 	// Create a vector with an ever increasing length
+		 * 	// and an angle in increments of 45 degrees
+		 * 	var vector = new Point({
+		 * 	    angle: i * 45,
+		 * 	    length: i / 2
+		 * 	});
+		 * 	// Add the vector relatively to the last segment point:
+		 * 	path.lineBy(vector);
+		 * }
+		 * 
+		 * // Smooth the handles of the path:
+		 * path.smooth();
+		 * 
+		 * // Uncomment the following line and click on 'run' to see
+		 * // the construction of the path:
+		 * // path.selected = true;
 		 */
 		lineBy: function(vector) {
 			vector = Point.read(arguments);
@@ -1828,6 +1907,8 @@ var Path = this.Path = PathItem.extend({
 		/**
 		 * Closes the path. When closed, Paper.js connects the first and last
 		 * segments.
+		 * 
+		 * @see #closed
 		 */
 		closePath: function() {
 			this.setClosed(true);

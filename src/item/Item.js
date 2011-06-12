@@ -297,7 +297,10 @@ var Item = this.Item = Base.extend({
 	/**
 	 * The blend mode of the item.
 	 * 
-	 * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light', 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten', 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color', 'add', 'subtract', 'average', 'pin-light', 'negation')
+	 * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light',
+	 * 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten',
+	 * 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color',
+	 * 'add', 'subtract', 'average', 'pin-light', 'negation')
 	 * @default 'normal'
 	 * 
 	 * @example {@paperscript}
@@ -591,7 +594,7 @@ var Item = this.Item = Base.extend({
 	 * for (var i = 0; i < 20; i++) {
 	 * 	var copy = circle.clone();
 	 * 
-	 * 	// Move the copies horizontally, so we can see them:
+	 * 	// Distribute the copies horizontally, so we can see them:
 	 * 	copy.position.x += i * copy.bounds.width;
 	 * }
 	 */
