@@ -16,4 +16,4 @@
 echo "// Paper.js loader for development, as produced by the build/load.sh script
 var root = '../../';
 document.write('<script type=\"text/javascript\" src=\"' + root 
-		+ 'src/load.js\"></script>');" > ../out/paper.js;
+		+ 'src/load.js\"></script>');" > ../dist/paper.js;
