@@ -26,4 +26,4 @@ cd jsdoc-toolkit
 java -jar jsrun.jar app/run.js -c=conf/$MODE.conf -D="renderMode:$MODE"
 cd ..
 
-./preprocess.sh ../src/paper.js ../out/docs/resources/js/paper.js "-DBROWSER" stripped
+./preprocess.sh ../src/paper.js ../dist/docs/resources/js/paper.js "-DBROWSER" stripped
