@@ -1,0 +1,86 @@
+body, select, input, textarea {
+	font-family: "Lucida Grande", Geneva, Verdana, Arial, sans-serif;
+}
+
+body {
+	background: #fff;
+	margin: 16px;
+	font-size: 13px;
+	line-height: 20px;
+	color: #000;
+	max-width: 540px;
+}
+
+select, input, textarea {
+	font-size: 11px;
+	margin: 0;
+	color: #000;
+}
+
+tt, pre {
+	font-family: Menlo, Consolas, "Vera Mono", monospace;
+	font-size: 12px;
+	line-height: 20px;
+}
+
+a {
+	color: #000;
+	text-decoration: none;
+	border-bottom: 1px solid #000;
+}
+
+img {
+	border: 0;
+}
+
+a:hover {
+	background: #e5e5e5;
+}
+
+p {
+	margin: 0 0 20px 0;
+}
+
+ul {
+	padding: 0;
+	margin: 0 0 20px 16px;
+	list-style: disc outside url(assets/bullet.gif);
+}
+
+ol {
+	padding: 0;
+	margin: 0 0 20px 0;
+}
+
+.clear {
+	clear: both;
+}
+
+.hidden {
+	display: none;
+}
+
+.reference-packages, .reference-packages a {
+	color: #009dec;
+	border-bottom: 0px;
+}
+
+/* Border-bottom color for headers and ruler */
+.reference-packages h2, .reference-packages h3, .reference-packages hr {
+	border-color: #009dec;
+}
+
+.reference-packages a:hover {
+	background: #e3f4fc;
+}
+
+.reference h1 {
+	font-size: 18px;
+	font-weight: normal;
+	line-height: 24px;
+	border: none;
+}
+
+.footer {
+	margin-top: 20px;
+}
