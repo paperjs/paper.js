@@ -25,11 +25,11 @@ else
 	MODE=$1
 fi
 
-# Create the out folder if it does not exist yet.
-if [ ! -d ../out/ ]
+# Create the dist folder if it does not exist yet.
+if [ ! -d ../dist/ ]
 then
-	mkdir ../out/
+	mkdir ../dist/
 fi
 
-./preprocess.sh ../src/paper.js ../out/paper.js "-DBROWSER" $MODE
-./preprocess.sh ../src/paper.js ../out/paper-server.js "-DSERVER" $MODE
+./preprocess.sh ../src/paper.js ../dist/paper.js "-DBROWSER" $MODE
+./preprocess.sh ../src/paper.js ../dist/paper-server.js "-DSERVER" $MODE

@@ -9,7 +9,7 @@ function publish(symbolSet) {
 	var templates = renderMode == 'templates';
 	var extension = '.html';
 	var templateDir = JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/';
-	var outDir = JSDOC.opt.d || SYS.pwd + '../out/jsdoc/';
+	var outDir = JSDOC.opt.d || SYS.pwd + '../dist/docs/';
 
 	publish.conf = {  // trailing slash expected for dirs
 		// Use no extensions in links for templates
