@@ -647,7 +647,7 @@ var Path = this.Path = PathItem.extend({
 	isFullySelected: function() {
 		return this._selectedSegmentCount == this._segments.length;
 	},
-	
+
 	setFullySelected: function(selected) {
 		this.setSelected(selected);
 	},
