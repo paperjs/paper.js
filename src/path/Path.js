@@ -500,7 +500,7 @@ var Path = this.Path = PathItem.extend({
 		var segments = this.removeSegments(index, index + 1);
 		return segments[0] || null;
 	},
-	
+
 	// PORT: Add to Scriptographer
 	/**
 	 * Removes the segments from the specified 'from' index to the specified
@@ -526,7 +526,7 @@ var Path = this.Path = PathItem.extend({
 	 */
 	removeSegments: function(from, to) {
 		from = from || 0;
-	 	to = Base.pick(to, this._segments.length - 1);
+	 	to = Base.pick(to, this._segments.length);
 		var segments = this._segments,
 			curves = this._curves,
 			last = to >= segments.length,
@@ -602,7 +602,7 @@ var Path = this.Path = PathItem.extend({
 	isSelected: function() {
 		return this._selectedSegmentCount > 0;
 	},
-	
+
 	setSelected: function(selected) {
 		var wasSelected = this.isSelected(),
 			length = this._segments.length;
