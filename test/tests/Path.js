@@ -70,12 +70,10 @@ test('path.remove()', function() {
 		return path.segments.length;
 	}, 2);
 
-	// TODO: shouldn't this remove two segments? The segments from index 0 till
-	// index 1?
 	path.removeSegments(0, 1);
 	equals(function() {
 		return path.segments.length;
-	}, 0);
+	}, 1);
 
 	path.remove();
 	
