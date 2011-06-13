@@ -35,13 +35,11 @@ var Size = this.Size = Base.extend({
 	 * @class The Size object is used to describe the size of something, through
 	 * its {@link #width} and {@link #height} properties.
 	 * 
-	 * Example:
-	 * <pre>
+	 * @classexample
 	 * // Create a size that is 10pt wide and 5pt high
 	 * var size = new Size(10, 5);
 	 * console.log(size.width); // 10
 	 * console.log(size.height); // 5
-	 * </pre>
 	 */
 	/**
 	 * Creates a Size object using the numbers in the given array as
