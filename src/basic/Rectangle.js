@@ -388,6 +388,27 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * @function
 	 * @param {Point} point the specified point
 	 * @return {Boolean} {@true if the point is inside the rectangle's boundary}
+	 * 
+	 * @example {@paperscript}
+	 * // Checking whether the mouse position falls within the bounding
+	 * // rectangle of an item:
+	 * 
+	 * // Create a circle shaped path at {x: 80, y: 50}
+	 * // with a radius of 30.
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * circle.fillColor = 'red';
+	 * 
+	 * function onMouseMove(event) {
+	 * 	// Check whether the mouse position intersects with the
+	 * 	// bounding box of the item:
+	 * 	if (circle.bounds.contains(event.point)) {
+	 * 		// If it intersects, fill it with green:
+	 * 		circle.fillColor = 'green';
+	 * 	} else {
+	 * 		// If it doesn't intersect, fill it with red:
+	 * 		circle.fillColor = 'red';
+	 * 	}
+	 * }
 	 */
 	/**
 	 * Tests if the interior of the rectangle entirely contains the specified
@@ -396,6 +417,41 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * @param {Rectangle} rect The specified rectangle
 	 * @return {Boolean} {@true if the rectangle entirely contains the specified
 	 *                   rectangle}
+	 * 
+	 * @example {@paperscript}
+	 * // Checking whether the bounding box of one item is contained within
+	 * // that of another item:
+	 * 
+	 * // All newly created paths will inherit these styles:
+	 * project.currentStyle = {
+	 * 	fillColor: 'green',
+	 * 	strokeColor: 'black'
+	 * };
+	 * 
+	 * // Create a circle shaped path at {x: 80, y: 50}
+	 * // with a radius of 45.
+	 * var largeCircle = new Path.Circle(new Point(80, 50), 45);
+	 * 
+	 * // Create a smaller circle shaped path in the same position
+	 * // with a radius of 30.
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * 
+	 * function onMouseMove(event) {
+	 * 	// Move the circle to the position of the mouse:
+	 * 	circle.position = event.point;
+	 * 	
+	 * 	// Check whether the bounding box of the smaller circle
+	 * 	// is contained within the bounding box of the larger item:
+	 * 	if (largeCircle.bounds.contains(circle.bounds)) {
+	 * 		// If it does, fill it with green:
+	 * 		circle.fillColor = 'green';
+	 * 		largeCircle.fillColor = 'green';
+	 * 	} else {
+	 * 		// If doesn't, fill it with red:
+	 * 		circle.fillColor = 'red';
+	 * 		largeCircle.fillColor = 'red';
+	 * 	}
+	 * }
 	 */
 	contains: function(rect) {
 		if (rect.width !== undefined) {
@@ -417,6 +473,41 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * @param {Rectangle} rect the specified rectangle
 	 * @return {Boolean} {@true if the rectangle and the specified rectangle
 	 *                   intersect each other}
+	 * 
+	 * @example {@paperscript}
+	 * // Checking whether the bounding box of one item intersects with
+	 * // that of another item:
+	 * 
+	 * // All newly created paths will inherit these styles:
+	 * project.currentStyle = {
+	 * 	fillColor: 'green',
+	 * 	strokeColor: 'black'
+	 * };
+	 * 
+	 * // Create a circle shaped path at {x: 80, y: 50}
+	 * // with a radius of 45.
+	 * var largeCircle = new Path.Circle(new Point(80, 50), 45);
+	 * 
+	 * // Create a smaller circle shaped path in the same position
+	 * // with a radius of 30.
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * 
+	 * function onMouseMove(event) {
+	 * 	// Move the circle to the position of the mouse:
+	 * 	circle.position = event.point;
+	 * 	
+	 * 	// Check whether the bounding box of the two circle
+	 * 	// shaped paths intersect:
+	 * 	if (largeCircle.bounds.intersects(circle.bounds)) {
+	 * 		// If it does, fill it with green:
+	 * 		circle.fillColor = 'green';
+	 * 		largeCircle.fillColor = 'green';
+	 * 	} else {
+	 * 		// If doesn't, fill it with red:
+	 * 		circle.fillColor = 'red';
+	 * 		largeCircle.fillColor = 'red';
+	 * 	}
+	 * }
 	 */
 	intersects: function(rect) {
 		rect = Rectangle.read(arguments);
@@ -436,6 +527,36 @@ var Rectangle = this.Rectangle = Base.extend({
 	 *                         rectangle
 	 * @return {Rectangle} The largest rectangle contained in both the specified
 	 *                     rectangle and in this rectangle.
+	 * 
+	 * @example {@paperscript}
+	 * // Intersecting two rectangles and visualizing the result using rectangle
+	 * // shaped paths:
+	 * 
+	 * // Create two rectangles that overlap each other
+	 * var size = new Size(50, 50);
+	 * var rectangle1 = new Rectangle(new Point(25, 15), size);
+	 * var rectangle2 = new Rectangle(new Point(50, 40), size);
+	 * 
+	 * // The rectangle that represents the intersection of the
+	 * // two rectangles:
+	 * var intersected = rectangle1.intersect(rectangle2);
+	 * 
+	 * // To visualize the intersecting of the rectangles, we will
+	 * // create rectangle shaped paths using the Path.Rectangle
+	 * // constructor.
+	 * 
+	 * // Have all newly created paths inherit a black stroke:
+	 * project.currentStyle.strokeColor = 'black';
+	 * 
+	 * // Create two rectangle shaped paths using the abstract rectangles
+	 * // we created before:
+	 * new Path.Rectangle(rectangle1);
+	 * new Path.Rectangle(rectangle2);
+	 * 
+	 * // Create a path that represents the intersected rectangle,
+	 * // and fill it with red:
+	 * var intersectionPath = new Path.Rectangle(intersected);
+	 * intersectionPath.fillColor = 'red';
 	 */
 	intersect: function(rect) {
 		rect = Rectangle.read(arguments);
