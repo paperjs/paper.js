@@ -144,7 +144,33 @@ var Color = this.Color = Base.extend(new function() {
 		// DOCS: write Color constructor and class documentation.
 		/**
 		 * @constructs Color
-		 * @class
+		 * @class All properties and functions that expect color values accept
+		 * instances of the different color classes such as {@link RGBColor},
+		 * {@link HSBColor} and {@link GrayColor}, and also accept named colors
+		 * and hex values as strings which are then converted to instances of
+		 * {@link RGBColor} internally.
+		 * 
+		 * @classexample {@paperscript}
+		 * // Named color values:
+		 * 
+		 * // Create a circle shaped path at {x: 80, y: 50}
+		 * // with a radius of 30.
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 * 
+		 * // Pass a color name to the fillColor property, which is internally
+		 * // converted to an RGBColor.
+		 * circle.fillColor = 'green';
+		 * 
+		 * @classexample {@paperscript}
+		 * // Hex color values:
+		 * 
+		 * // Create a circle shaped path at {x: 80, y: 50}
+		 * // with a radius of 30.
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 * 
+		 * // Pass a hex string to the fillColor property, which is internally
+		 * // converted to an RGBColor.
+		 * circle.fillColor = '#ff0000';
 		 */
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg),
