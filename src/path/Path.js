@@ -526,7 +526,7 @@ var Path = this.Path = PathItem.extend({
 	 */
 	removeSegments: function(from, to) {
 		from = from || 0;
-	 	to = Base.pick(to, this._segments.length - 1);
+	 	to = Base.pick(to, this._segments.length);
 		var segments = this._segments,
 			curves = this._curves,
 			last = to >= segments.length,
