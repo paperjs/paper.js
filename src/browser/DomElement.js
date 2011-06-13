@@ -57,7 +57,16 @@ var DomElement = new function() {
 			);
 		},
 
-		// Checks if element is visibile in current viewport
+		/**
+		 * Checks if element is invisibile (display: none, ...)
+		 */
+		isInvisible: function(el) {
+			return DomElement.getSize(el).equals([0, 0]);
+		},
+
+		/**
+		 * Checks if element is visibile in current viewport
+		 */
 		isVisible: function(el) {
 			// See if the scrolled bounds intersect with the windows rectangle
 			// which always starts at 0, 0
