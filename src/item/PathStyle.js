@@ -55,17 +55,15 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		 * {@link Item#style}. This is a convenient way to define a style once and
 		 * apply it to a series of items:
 		 * 
-		 * Example:
-		 * <pre>
+		 * @classexample {@paperscript}
 		 * var circleStyle = {
 		 * 	fillColor: new RGBColor(1, 0, 0),
 		 * 	strokeColor: 'black',
 		 * 	strokeWidth: 5
 		 * };
 		 * 
-		 * var path = new Path.Circle(new Point(50, 50), 30);
+		 * var path = new Path.Circle(new Point(80, 50), 30);
 		 * path.style = circleStyle;
-		 * </pre>
 		 */
 		initialize: function(style) {
 			// If the passed style object is a PathStyle, clone its clonable
