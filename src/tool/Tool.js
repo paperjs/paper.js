@@ -24,7 +24,7 @@ var Tool = this.Tool = Base.extend({
 	 * Initializes the tool's settings, so a new tool can be assigned to it
 	 * 
 	 * @constructs Tool
-	 *
+	 * 
 	 * @class The Tool object refers to a script that the user can interact with
 	 * by using the mouse and keyboard and can be accessed through the global
 	 * {@code tool} variable. All its properties are also available in the paper
@@ -185,7 +185,7 @@ var Tool = this.Tool = Base.extend({
 	 * 
 	 * @example {@paperscript}
 	 * // Moving a path to the position of the mouse:
-	 *
+	 * 
 	 * // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
 	 * var path = new Path.Circle([0, 0], 10);
 	 * path.fillColor = 'black';
@@ -257,7 +257,7 @@ var Tool = this.Tool = Base.extend({
 	 * prevented from bubbling up. This can be used for example to stop the
 	 * window from scrolling, when you need the user to interact with arrow
 	 * keys.
-	 *
+	 * 
 	 * @name Tool#onKeyUp
 	 * @property
 	 * @type Function

@@ -32,7 +32,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * 
 	 * // Move the inner circle 5pt to the right:
 	 * compoundPath.children[1].position.x += 5;
-	 *
+	 * 
 	 * @class A compound path contains two or more paths, holes are drawn
 	 * where the paths overlap. All the paths in a compound path take on the
 	 * style of the backmost path and can be accessed through its
@@ -65,7 +65,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * If this is a compound path with only one path inside,
 	 * the path is moved outside and the compound path is erased.
 	 * Otherwise, the compound path is returned unmodified.
-	 *
+	 * 
 	 * @return {CompoundPath|Path} the simplified compound path
 	 */
 	simplify: function() {
@@ -164,7 +164,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	/**
 	 * Adds a cubic bezier curve to the current path, defined by two handles and
 	 * a to point.
-	 *
+	 * 
 	 * @name CompoundPath#cubicCurveTo
 	 * @function
 	 * @param {Point} handle1
@@ -175,7 +175,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	/**
 	 * Adds a quadratic bezier curve to the current path, defined by a handle
 	 * and a to point.
-	 *
+	 * 
 	 * @name CompoundPath#quadraticCurveTo
 	 * @function
 	 * @param {Point} handle

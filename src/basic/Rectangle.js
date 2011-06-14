@@ -16,13 +16,15 @@
 
 var Rectangle = this.Rectangle = Base.extend({
 	/** @lends Rectangle# */
+
 	beans: true,
 
 	/**
 	 * Creates a Rectangle object.
-	 *
+	 * 
 	 * @name Rectangle
 	 * @constructor
+	 * 
 	 * @param {Point} point the top-left point of the rectangle
 	 * @param {Size} size the size of the rectangle
 	 * 
@@ -141,7 +143,7 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	/**
 	 * The top-left point of the rectangle
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -158,7 +160,7 @@ var Rectangle = this.Rectangle = Base.extend({
 
 	/**
 	 * The size of the rectangle
-	 *
+	 * 
 	 * @type Size
 	 * @bean
 	 */
@@ -674,7 +676,7 @@ var LinkedRectangle = Rectangle.extend({
 		 * Provide a faster creator for Points out of two coordinates that
 		 * does not rely on Point#initialize at all. This speeds up all math
 		 * operations a lot.
-		 *
+		 * 
 		 * @ignore
 		 */
 		create: function(owner, setter, x, y, width, height) {

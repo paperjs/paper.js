@@ -128,7 +128,7 @@ var PaperScope = this.PaperScope = Base.extend({
 	 * Installs the paper scope into any other given scope. Can be used for
 	 * examle to inject the currently active PaperScope into the window's global
 	 * scope, to emulate PaperScript-style globally accessible Paper classes:
-	 *
+	 * 
 	 * paper.install(window);
 	 * @ignore
 	 */
