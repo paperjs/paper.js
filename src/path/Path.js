@@ -1790,8 +1790,6 @@ var Path = this.Path = PathItem.extend({
 				half = inc * Math.PI / 360,
 				z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
 				segments = [];
-
-			// TODO: Use Point#setAngle() and Point vector algebra instead?
 			for (var i = 0; i <= count; i++) {
 				// Explicitely use to point for last segment, since depending
 				// on values the calculation adds imprecision:
