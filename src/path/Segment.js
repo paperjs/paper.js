@@ -182,7 +182,6 @@ var Segment = this.Segment = Base.extend({
 		var path = this._path,
 			selected = !!selected, // convert to boolean
 			state = this._selectionState,
-			wasSelected = !!state,
 			// For performance reasons use array indices to access the various
 			// selection states: 0 = point, 1 = handleIn, 2 = handleOut
 			selection = [
@@ -220,9 +219,11 @@ var Segment = this.Segment = Base.extend({
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
 		// project._selectedItems
-		if (path && wasSelected != !!this._selectionState)
-			path._updateSelection(this);
+		if (path && state != this._selectionState)
+			path._updateSelection(this, state, this._selectionState);
 	},
+
+	
 
 	/**
 	 * Specifies whether the {@link #point} of the segment is selected.

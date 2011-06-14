@@ -231,7 +231,7 @@ var Item = this.Item = Base.extend({
 			}
 		} else if ((selected = !!selected) != this._selected) {
 			this._selected = selected;
-			this._project._selectItem(this, selected);
+			this._project._updateSelection(this);
 		}
 	},
 
