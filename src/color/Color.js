@@ -249,6 +249,8 @@ var Color = this.Color = Base.extend(new function() {
 			/**
 			 * Override Color.extend() to produce getters and setters based
 			 * on the component types defined in _components.
+			 * 
+			 * @ignore
 			 */
 			extend: function(src) {
 				src.beans = true;

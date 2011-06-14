@@ -35,6 +35,9 @@
  *
  ***/
 
+/**
+ * @ignore
+ */
 var paper = new function() {
 // Inline Bootstrap core (the Base class) inside the paper scope first:
 //#include "../lib/bootstrap.js"
