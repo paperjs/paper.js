@@ -14,5 +14,16 @@
  * All rights reserved.
  */
 
+/**
+ * @name PathItem
+ * @class
+ * @extends Item
+ */
 var PathItem = this.PathItem = Item.extend({
+	/**
+	 * {@grouptitle Postscript Style Drawing Commands}
+	 * 
+	 * @name PathItem#moveTo
+	 * @param {Point} point
+	 */
 });
