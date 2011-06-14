@@ -49,21 +49,21 @@ var Line = this.Line = Base.extend({
 
 	/**
 	 * The starting point of the line
-	 *
+	 * 
 	 * @name Line#point
 	 * @type Point
 	 */
 
 	/**
 	 * The vector of the line
-	 *
+	 * 
 	 * @name Line#vector
 	 * @type Point
 	 */
 
 	/**
 	 * Specifies whether the line extends infinitely
-	 *
+	 * 
 	 * @name Line#infinite
 	 * @type Boolean
 	 */

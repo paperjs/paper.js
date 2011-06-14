@@ -104,7 +104,7 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * 
 	 * @type Point
 	 * @bean
-	 *
+	 * 
 	 * @example {@paperscript height=200}
 	 * // Move the origin point of the gradient, by moving your mouse over
 	 * // the view below:

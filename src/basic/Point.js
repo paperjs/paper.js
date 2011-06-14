@@ -21,9 +21,10 @@ var Point = this.Point = Base.extend({
 
 	/**
 	 * Creates a Point object with the given x and y coordinates.
-	 *
+	 * 
 	 * @name Point
 	 * @constructor
+	 * 
 	 * @param {Number} x the x coordinate
 	 * @param {Number} y the y coordinate
 	 * 
@@ -46,7 +47,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Creates a Point object using the numbers in the given array as
 	 * coordinates.
-	 *
+	 * 
 	 * @name Point#initialize
 	 * @param {array} array
 	 * 
@@ -56,7 +57,7 @@ var Point = this.Point = Base.extend({
 	 * var point = new Point(array);
 	 * console.log(point.x); // 10
 	 * console.log(point.y); // 5
-	 *
+	 * 
 	 * @example
 	 * // Passing an array to a functionality that expects a point:
 	 * 
@@ -71,7 +72,7 @@ var Point = this.Point = Base.extend({
 	 */
 	/**
 	 * Creates a Point object using the properties in the given object.
-	 *
+	 * 
 	 * @name Point#initialize
 	 * @param {object} object
 	 * 
@@ -163,7 +164,7 @@ var Point = this.Point = Base.extend({
 
 	/**
 	 * The x coordinate of the point
-	 *
+	 * 
 	 * @name Point#x
 	 * @type Number
 	 */
@@ -390,7 +391,7 @@ var Point = this.Point = Base.extend({
 	/**
 	 * Transforms the point by the matrix as a new point. The object itself
 	 * is not modified!
-	 *
+	 * 
 	 * @param {Matrix} matrix
 	 * @return {Point} the transformed point
 	 */
@@ -402,7 +403,7 @@ var Point = this.Point = Base.extend({
 	 * {@grouptitle Distance & Length}
 	 * 
 	 * Returns the distance between the point and another point.
-	 *
+	 * 
 	 * @param {Point} point
 	 * @return {Number}
 	 */
@@ -826,7 +827,7 @@ var Point = this.Point = Base.extend({
 		 * 
 		 * @returns {Point} The newly created point object
 		 * @static
-		 *
+		 * 
 		 * @example
 		 * var maxPoint = new Point(100, 100);
 		 * var randomPoint = Point.random();

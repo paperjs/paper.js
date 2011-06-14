@@ -24,7 +24,7 @@ var Path = this.Path = PathItem.extend({
 	 * 
 	 * @param {Segment[]} [segments] An optional array of segments (or points to be
 	 * converted to segments) that will be added to the path.
-	 *
+	 * 
 	 * @example
 	 * // Create an empty path and add segments to it:
 	 * var path = new Path();
@@ -564,12 +564,12 @@ var Path = this.Path = PathItem.extend({
 	 * Specifies whether an path is selected and will also return {@code true}
 	 * if the path is partially selected, i.e. one or more of its segments is
 	 * selected.
-	 *
+	 * 
 	 * Paper.js draws the visual outlines of selected items on top of your
 	 * project. This can be useful for debugging, as it allows you to see the
 	 * construction of paths, position of path curves, individual segment points
 	 * and bounding boxes of symbol and raster items.
-	 *
+	 * 
 	 * @type Boolean
 	 * @bean
 	 * @see Project#selectedItems
@@ -616,7 +616,7 @@ var Path = this.Path = PathItem.extend({
 	 * if (path.fullySelected) {
 	 * 	path.fillColor = 'red';
 	 * }
-	 *
+	 * 
 	 * // If the second path is fully selected (which it isn't, since we just
 	 * // deselected its second segment),
 	 * // set its fill color to red:
@@ -1083,7 +1083,7 @@ var Path = this.Path = PathItem.extend({
 	 * @param {Number} offset
 	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the normal vector at the given offset
-	 *
+	 * 
 	 * @example {@paperscript height=150}
 	 * // Working with the normal vector at a given offset:
 	 * 
@@ -1531,7 +1531,7 @@ var Path = this.Path = PathItem.extend({
 		/**
 		 * Adds a cubic bezier curve to the path, defined by two handles and a
 		 * to point.
-		 *
+		 * 
 		 * @param {Point} handle1
 		 * @param {Point} handle2
 		 * @param {Point} to
@@ -1551,7 +1551,7 @@ var Path = this.Path = PathItem.extend({
 		/**
 		 * Adds a quadratic bezier curve to the path, defined by a handle and a
 		 * to point.
-		 *
+		 * 
 		 * @param {Point} handle
 		 * @param {Point} to
 		 */
@@ -1632,7 +1632,7 @@ var Path = this.Path = PathItem.extend({
 		 * the path that goes through the specified {@code through} point,
 		 * to the specified {@code to} point by adding one or more segments to
 		 * the path.
-		 *
+		 * 
 		 * @name Path#arcTo
 		 * @function
 		 * @param {Point} through the point where the arc should pass through

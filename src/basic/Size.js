@@ -44,7 +44,7 @@ var Size = this.Size = Base.extend({
 	/**
 	 * Creates a Size object using the numbers in the given array as
 	 * dimensions.
-	 *
+	 * 
 	 * @name Size#initialize
 	 * @param {array} array
 	 * 
@@ -57,7 +57,7 @@ var Size = this.Size = Base.extend({
 	 */
 	/**
 	 * Creates a Size object using the properties in the given object.
-	 *
+	 * 
 	 * @name Size#initialize
 	 * @param {object} object
 	 * 
@@ -73,7 +73,7 @@ var Size = this.Size = Base.extend({
 	 */
 	/**
 	 * Creates a Size object using the coordinates of the given Size object.
-	 *
+	 * 
 	 * @name Size#initialize
 	 * @param {Size} size
 	 */
@@ -127,14 +127,14 @@ var Size = this.Size = Base.extend({
 
 	/**
 	 * The width of the size
-	 *
+	 * 
 	 * @name Size#width
 	 * @type Number
 	 */
 
 	/**
 	 * The height of the size
-	 *
+	 * 
 	 * @name Size#height
 	 * @type Number
 	 */
@@ -322,7 +322,7 @@ var Size = this.Size = Base.extend({
 	/**
 	 * Checks whether the width and height of the size are equal to those of the
 	 * supplied size.
-	 *
+	 * 
 	 * @param {Size}
 	 * @return {Boolean}
 	 * 

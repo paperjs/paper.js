@@ -21,12 +21,13 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * Creates a new curve object.
-	 *
+	 * 
 	 * @name Curve
 	 * @constructor
+	 * 
 	 * @param {Segment} segment1
 	 * @param {Segment} segment2
-	 *
+	 * 
 	 * @class The Curve object represents...
 	 */
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
@@ -64,7 +65,7 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The first anchor point of the curve.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -79,7 +80,7 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The second anchor point of the curve.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -94,7 +95,7 @@ var Curve = this.Curve = Base.extend({
 	
 	/**
 	 * The handle point that describes the tangent in the first anchor point.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -109,7 +110,7 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The handle point that describes the tangent in the second anchor point.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -124,7 +125,7 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The first segment of the curve.
-	 *
+	 * 
 	 * @type Segment
 	 * @bean
 	 */
@@ -134,7 +135,7 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The second segment of the curve.
-	 *
+	 * 
 	 * @type Segment
 	 * @bean
 	 */
@@ -144,7 +145,7 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The path that the curve belongs to.
-	 *
+	 * 
 	 * @type Path
 	 * @bean
 	 */
@@ -154,7 +155,7 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * The index of the curve in the {@link Path#curves} array.
-	 *
+	 * 
 	 * @type Number
 	 * @bean
 	 */
@@ -165,7 +166,7 @@ var Curve = this.Curve = Base.extend({
 	/**
 	 * The next curve in the {@link Path#curves} array that the curve
 	 * belongs to.
-	 *
+	 * 
 	 * @type Curve
 	 * @bean
 	 */
@@ -178,7 +179,7 @@ var Curve = this.Curve = Base.extend({
 	/**
 	 * The previous curve in the {@link Path#curves} array that the curve
 	 * belongs to.
-	 *
+	 * 
 	 * @type Curve
 	 * @bean
 	 */
@@ -190,7 +191,7 @@ var Curve = this.Curve = Base.extend({
 
 	/**
 	 * Specifies whether the handles of the curve are selected.
-	 *
+	 * 
 	 * @type Boolean
 	 * @bean
 	 */
@@ -210,7 +211,7 @@ var Curve = this.Curve = Base.extend({
 	// DOCS: document Curve#getLength(from, to)
 	/**
 	 * The approximated length of the curve in points.
-	 *
+	 * 
 	 * @type Number
 	 * @bean
 	 */
@@ -305,7 +306,7 @@ var Curve = this.Curve = Base.extend({
 	/**
 	 * Returns a reversed version of the curve, without modifying the curve
 	 * itself.
-	 *
+	 * 
 	 * @return {Curve} a reversed version of the curve
 	 */
 	reverse: function() {

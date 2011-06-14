@@ -59,7 +59,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	 * 
 	 * @class A PlacedSymbol represents an instance of a symbol which has been
 	 * placed in a Paper.js project.
-	 *
+	 * 
 	 * @extends Item
 	 * @constructs PlacedSymbol
 	 */
@@ -75,7 +75,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 
 	/**
 	 * The symbol that the placed symbol refers to:
-	 *
+	 * 
 	 * @name PlacedSymbol#symbol
 	 * @type Symbol
 	 */
