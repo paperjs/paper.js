@@ -1014,7 +1014,7 @@ var Path = this.Path = PathItem.extend({
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getPoint();
 	},
-	
+
 	/**
 	 * Get the tangent to the path at the given offset as a vector
 	 * point.
@@ -1083,7 +1083,7 @@ var Path = this.Path = PathItem.extend({
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getTangent();
 	},
-	
+
 	/**
 	 * Get the normal to the path at the given offset as a vector point.
 	 * 
@@ -1189,7 +1189,7 @@ var Path = this.Path = PathItem.extend({
 			}
 		}
 	}
-	
+
 	function drawHandle(ctx, point, handle) {
 		if (!handle.isZero()) {
 			var handleX = point._x + handle._x,
@@ -2188,7 +2188,7 @@ var Path = this.Path = PathItem.extend({
 		getControlBounds: function() {
 			// TODO: Implement!
 		}
-		
+
 		// TODO: intersects(item)
 		// TODO: contains(item)
 		// TODO: contains(point)
