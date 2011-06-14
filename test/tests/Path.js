@@ -114,6 +114,21 @@ test('Is the path deselected after setting a new list of segments?', function() 
 	}, 0);
 });
 
+test('After setting Path#selected=true on an empty path, subsequent segments should be selected', function() {
+	var path = new Path();
+	path.selected = true;
+	equals(function() {
+		return path.selected;
+	}, true);
+	path.add([10, 10]);
+	equals(function() {
+		return path.selected;
+	}, true);
+	equals(function() {
+		return path.firstSegment.selected;
+	}, true);
+});
+
 test('Path#reverse', function() {
 	var path = new Path.Circle([100, 100], 30);
 	path.reverse();
