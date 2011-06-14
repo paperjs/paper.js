@@ -1734,6 +1734,7 @@ var Path = this.Path = PathItem.extend({
 		 * 	myPath.arcTo(event.point);
 		 * }
 		 */
+		// PORT: New implementation back to Scriptographer
 		arcTo: function(to, clockwise) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
