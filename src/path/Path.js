@@ -1765,7 +1765,7 @@ var Path = this.Path = PathItem.extend({
 				f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
 					- y1 * y3 + y1 * y2,
 				g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
-				m = g == 0 ? 0 : f / g,
+				m = g == 0 ? f : f / g,
 				e = x1 * x2 + y1 * y2 - m * (x1 * y2 - y1 * x2),
 				cx = (x1 + x2 + m * (y1 - y2)) / 2,
 				cy = (y1 + y2 + m * (x2 - x1)) / 2,
@@ -1798,10 +1798,14 @@ var Path = this.Path = PathItem.extend({
 			for (var i = 0; i <= arcSegs; i++) {
 				var relx = Math.cos(angle),
 					rely = Math.sin(angle);
-				var pt = new Point(
-					cx + relx * radius,
-					cy + rely * radius
-				);
+				// Explicitely use to point for last segment, since depending
+				// on values the calculation adds imprecision:
+				var pt = i == arcSegs
+					? to
+					: new Point(
+						cx + relx * radius,
+						cy + rely * radius
+					);
 				var out = i == arcSegs
 					? null
 					: new Point(
