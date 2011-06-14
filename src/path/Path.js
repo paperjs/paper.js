@@ -1759,70 +1759,44 @@ var Path = this.Path = PathItem.extend({
 				through = middle[clockwise ? 'subtract' : 'add'](-step.y, step.x);
 			}
 
-			var x1 = from._x, x2 = through.x, x3 = to.x,
-				y1 = from._y, y2 = through.y, y3 = to.y,
-
-				f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
-					- y1 * y3 + y1 * y2,
-				g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
-				m = g == 0 ? f : f / g,
-				e = x1 * x2 + y1 * y2 - m * (x1 * y2 - y1 * x2),
-				cx = (x1 + x2 + m * (y1 - y2)) / 2,
-				cy = (y1 + y2 + m * (x2 - x1)) / 2,
-				radius = Math.sqrt(cx * cx + cy * cy - e),
-				angle = Math.atan2(y1 - cy, x1 - cx),
-				middle = Math.atan2(y2 - cy, x2 - cx),
-				extent = Math.atan2(y3 - cy, x3 - cx),
-				diff = middle - angle,
-				d180 = Math.PI, // = 180 degrees in radians
-				d360 = d180 * 2; // = 360 degrees in radians
-
-			if (diff < -d180)
-				diff += d360;
-			else if (diff > d180)
-				diff -= d360;
-
-			extent -= angle;
-			if (extent <= 0)
-				extent += d360;
-			if (diff < 0)
-				extent -= d360;
-
+			// Construct the two perpendicular middle lines to (from, through)
+			// and (through, to), and intersect them to get the center
+			var l1 = new Line(from.add(through).divide(2),
+					through.subtract(from).rotate(90)),
+			 	l2 = new Line(through.add(to).divide(2),
+					to.subtract(through).rotate(90)),
+				center = l1.intersect(l2),
+				vector = from.subtract(center),
+				radius = vector.getLength(),
+				extent = vector.getDirectedAngle(to.subtract(center)),
+				line = new Line(from, to, true);
+			// If the center is on the same side of the line (from, to) than
+			// the through point, we're extending bellow 180 degrees and need
+			// to adapt extent.
+			if (line.getSide(center) == line.getSide(through))
+				extent -= 360 * (extent < 0 ? -1 : 1);
 			var ext = Math.abs(extent),
-				arcSegs =  ext >= d360
-				 	? 4 : Math.ceil(ext * 2 / Math.PI),
-				inc = Math.min(Math.max(extent, -d360), d360) / arcSegs,
-				z = 4 / 3 * Math.sin(inc / 2) / (1 + Math.cos(inc / 2)),
+				count =  ext >= 360 ? 4 : Math.ceil(ext / 90),
+				inc = extent / count,
+				half = inc * Math.PI / 360,
+				z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
 				segments = [];
+
 			// TODO: Use Point#setAngle() and Point vector algebra instead?
-			for (var i = 0; i <= arcSegs; i++) {
-				var relx = Math.cos(angle),
-					rely = Math.sin(angle);
+			for (var i = 0; i <= count; i++) {
 				// Explicitely use to point for last segment, since depending
 				// on values the calculation adds imprecision:
-				var pt = i == arcSegs
-					? to
-					: new Point(
-						cx + relx * radius,
-						cy + rely * radius
-					);
-				var out = i == arcSegs
-					? null
-					: new Point(
-						cx + (relx - z * rely) * radius - pt.x,
-						cy + (rely + z * relx) * radius - pt.y
-					);
+				var pt = i < count ? center.add(vector) : to;
+				var out = i < count ? vector.rotate(90).multiply(z) : null;
 				if (i == 0) {
 					// Modify startSegment
 					current.setHandleOut(out);
 				} else {
 					// Add new Segment
-					segments.push(new Segment(pt, new Point(
-						cx + (relx + z * rely) * radius - pt.x,
-						cy + (rely - z * relx) * radius - pt.y
-					), out));
+					segments.push(
+						new Segment(pt, vector.rotate(-90).multiply(z), out));
 				}
-				angle += inc;
+				vector = vector.rotate(inc);
 			}
 			// Add all segments at once at the end for higher performance
 			this._add(segments);
