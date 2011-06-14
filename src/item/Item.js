@@ -222,7 +222,7 @@ var Item = this.Item = Base.extend({
 					return true;
 			}
 		}
-		return !!this._selected;
+		return this._selected;
 	},
 
 	setSelected: function(selected) {
@@ -235,6 +235,8 @@ var Item = this.Item = Base.extend({
 			this._project._selectItem(this, selected);
 		}
 	},
+
+	_selected: false,
 
 	// TODO: isFullySelected / setFullySelected
 	// TODO: Change to getter / setters for these below that notify of changes
@@ -612,7 +614,8 @@ var Item = this.Item = Base.extend({
 		// Only copy over these fields if they are actually defined in 'this'
 		// TODO: Consider moving this to Base once it's useful in more than one
 		// place
-		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask'];
+		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask',
+				'_selected'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
