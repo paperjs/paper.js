@@ -195,8 +195,8 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * Specifies whether an item is selected and will also return {@code true} if
-	 * the item is partially selected (groups with some selected items/partially
+	 * Specifies whether an item is selected and will also return {@code true}
+	 * if the item is partially selected (groups with some selected or partially
 	 * selected paths).
 	 *
 	 * Paper.js draws the visual outlines of selected items on top of your
@@ -218,14 +218,11 @@ var Item = this.Item = Base.extend({
 	isSelected: function() {
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++) {
-				if (this._children[i].isSelected()) {
+				if (this._children[i].isSelected())
 					return true;
-				}
 			}
-		} else {
-			return !!this._selected;
 		}
-		return false;
+		return !!this._selected;
 	},
 
 	setSelected: function(selected) {
@@ -233,11 +230,9 @@ var Item = this.Item = Base.extend({
 			for (var i = 0, l = this._children.length; i < l; i++) {
 				this._children[i].setSelected(selected);
 			}
-		} else {
-			if ((selected = !!selected) != this._selected) {
-				this._selected = selected;
-				this._project._selectItem(this, selected);
-			}
+		} else if ((selected = !!selected) != this._selected) {
+			this._selected = selected;
+			this._project._selectItem(this, selected);
 		}
 	},
 
