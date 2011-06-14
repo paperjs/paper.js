@@ -1774,24 +1774,24 @@ var Path = this.Path = PathItem.extend({
 				middle = Math.atan2(y2 - cy, x2 - cx),
 				extent = Math.atan2(y3 - cy, x3 - cx),
 				diff = middle - angle,
-				d90 = Math.PI, // = 90 degrees in radians
-				d180 = d90 * 2; // = 180 degrees in radians
+				d180 = Math.PI, // = 180 degrees in radians
+				d360 = d180 * 2; // = 360 degrees in radians
 
-			if (diff < -d90)
-				diff += d180;
-			else if (diff > d90)
-				diff -= d180;
+			if (diff < -d180)
+				diff += d360;
+			else if (diff > d180)
+				diff -= d360;
 
 			extent -= angle;
 			if (extent <= 0)
-				extent += d180;
+				extent += d360;
 			if (diff < 0)
-				extent -= d180;
+				extent -= d360;
 
 			var ext = Math.abs(extent),
-				arcSegs =  ext >= d180
+				arcSegs =  ext >= d360
 				 	? 4 : Math.ceil(ext * 2 / Math.PI),
-				inc = Math.min(Math.max(extent, -d180), d180) / arcSegs,
+				inc = Math.min(Math.max(extent, -d360), d360) / arcSegs,
 				z = 4 / 3 * Math.sin(inc / 2) / (1 + Math.cos(inc / 2)),
 				segments = [];
 			// TODO: Use Point#setAngle() and Point vector algebra instead?
