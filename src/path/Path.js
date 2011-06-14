@@ -1745,6 +1745,7 @@ var Path = this.Path = PathItem.extend({
 		arcTo: function(to, clockwise) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
+				from = current._point,
 				through;
 			if (typeof clockwise !== 'boolean') {
 				through = Point.read(arguments, 0, 1);
@@ -1753,23 +1754,21 @@ var Path = this.Path = PathItem.extend({
 				to = Point.read(arguments, 0, 1);
 				if (clockwise === undefined)
 					clockwise = true;
-				var middle = current._point.add(to).divide(2),
-					step = middle.subtract(current._point);
-				through = clockwise 
-						? middle.subtract(-step.y, step.x)
-						: middle.add(-step.y, step.x);
+				var middle = from.add(to).divide(2),
+					step = middle.subtract(from);
+				through = middle[clockwise ? 'subtract' : 'add'](-step.y, step.x);
 			}
 
-			var x1 = current._point._x, x2 = through.x, x3 = to.x,
-				y1 = current._point._y, y2 = through.y, y3 = to.y,
+			var x1 = from._x, x2 = through.x, x3 = to.x,
+				y1 = from._y, y2 = through.y, y3 = to.y,
 
 				f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
 					- y1 * y3 + y1 * y2,
 				g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
 				m = g == 0 ? 0 : f / g,
 				e = x1 * x2 + y1 * y2 - m * (x1 * y2 - y1 * x2),
-				cx = (x1 + x2 - m * (y2 - y1)) / 2,
-				cy = (y1 + y2 - m * (x1 - x2)) / 2,
+				cx = (x1 + x2 + m * (y1 - y2)) / 2,
+				cy = (y1 + y2 + m * (x2 - x1)) / 2,
 				radius = Math.sqrt(cx * cx + cy * cy - e),
 				angle = Math.atan2(y1 - cy, x1 - cx),
 				middle = Math.atan2(y2 - cy, x2 - cx),
