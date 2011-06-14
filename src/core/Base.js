@@ -60,6 +60,8 @@ this.Base = Base.inject({
 		 * Utility function for adding and removing items from a list of which
 		 * each entry keeps a reference to its index in the list in the private
 		 * _index property. Used for PaperScope#projects and Item#children.
+		 * 
+		 * @ignore
 		 */
 		splice: function(list, items, index, remove) {
 			var amount = items && items.length,
@@ -104,6 +106,8 @@ this.Base = Base.inject({
 		/**
 		 * Utility function for rendering numbers to strings at a precision of
 		 * up to 5 fractional digits.
+		 * 
+		 * @ignore
 		 */
 		formatNumber: function(num) {
 			return (Math.round(num * 100000) / 100000).toString();
@@ -112,6 +116,8 @@ this.Base = Base.inject({
 		/**
 		 * Utility function for rendering objects to strings, in object literal
 		 * notation.
+		 * 
+		 * @ignore
 		 */
 		formatObject: function(obj) {
 			return '{ ' + Base.each(obj, function(value, key) {
