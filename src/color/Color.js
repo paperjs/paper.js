@@ -548,12 +548,13 @@ var GrayColor = this.GrayColor = Color.extend(/** @scope GrayColor */{
 	/**
 	 * Creates a GrayColor object
 	 * 
+	 * @name GrayColor
+	 * @constructor
+	 * 
 	 * @param {Number} gray the amount of gray in the color as a value
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} [alpha] the alpha of the color as a value between
 	 * {@code 0} and {@code 1}
-	 * @constructor
-	 * @name GrayColor
 	 * 
 	 * @class A GrayColor object is used to represent any gray color value.
 	 * @extends Color
@@ -576,6 +577,9 @@ var RGBColor = this.RGBColor = Color.extend(/** @scope RGBColor */{
 	/**
 	 * Creates an RGBColor object
 	 * 
+	 * @name RGBColor
+	 * @constructor
+	 * 
 	 * @param {Number} red the amount of red in the color as a value
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} green the amount of green in the color as a value
@@ -584,8 +588,6 @@ var RGBColor = this.RGBColor = Color.extend(/** @scope RGBColor */{
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} [alpha] the alpha of the color as a value between
 	 * {@code 0} and {@code 1}
-	 * @constructor
-	 * @name RGBColor
 	 * 
 	 * @class An RGBColor object is used to represent any RGB color value.
 	 * @extends Color
@@ -608,6 +610,9 @@ var HSBColor = this.HSBColor = Color.extend(/** @scope HSBColor */{
 	/**
 	 * Creates an HSBColor object
 	 * 
+	 * @name HSBColor
+	 * @constructor
+	 * 
 	 * @param {Number} hue the hue of the color as a value in degrees between
 	 * {@code 0} and {@code 360}.
 	 * @param {Number} saturation the saturation of the color as a value
@@ -616,8 +621,6 @@ var HSBColor = this.HSBColor = Color.extend(/** @scope HSBColor */{
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} [alpha] the alpha of the color as a value between
 	 * {@code 0} and {@code 1}
-	 * @constructor
-	 * @name HSBColor
 	 * 
 	 * @class An HSBColor object is used to represent any HSB color value.
 	 * @extends Color
