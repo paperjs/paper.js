@@ -49,9 +49,9 @@ var View = this.View = Base.extend({
 				var that = this;
 				DomEvent.add(window, {
 					resize: function(event) {
-						// Only get canvas offset if it's not invisible (size is
-						// 0, 0), as otherwise the offset would be wrong.
-						if (!DomElement.getSize(canvas).equals([0, 0]))
+						// Only get canvas offset if it's not invisible, as
+						// otherwise the offset would be wrong.
+						if (!DomElement.isInvisible(canvas))
 							offset = DomElement.getOffset(canvas);
 						// Set the size now, which internally calls onResize
 						that.setViewSize(
@@ -66,7 +66,10 @@ var View = this.View = Base.extend({
 					}
 				});
 			} else {
-				size = Size.create(canvas.offsetWidth, canvas.offsetHeight);
+				size = DomElement.isInvisible(canvas)
+					? Size.create(parseInt(canvas.getAttribute('width')),
+							parseInt(canvas.getAttribute('height')))
+					: DomElement.getSize(canvas);
 			}
 			// TODO: Test this on IE:
 			if (canvas.attributes.stats) {
