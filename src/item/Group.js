@@ -86,7 +86,7 @@ var Group = this.Group = Item.extend({
 	 * Specifies whether the group item is to be clipped.
 	 * When setting to {@code true}, the first child in the group is
 	 * automatically defined as the clipping mask.
-	 *
+	 * 
 	 * @type Boolean
 	 * @bean
 	 */

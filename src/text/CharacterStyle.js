@@ -21,12 +21,12 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	 * CharacterStyle objects don't need to be created directly. Just pass an
 	 * object to {@link TextItem#characterStyle}, it will be converted to a
 	 * CharacterStyle object internally.
-	 *
+	 * 
 	 * @constructs CharacterStyle
 	 * @param {object} style
 	 * 
 	 * @constructs CharacterStyle
-	 *
+	 * 
 	 * @class The CharacterStyle object represents the character style of a text
 	 * item ({@link TextItem#characterStyle})
 	 * 
@@ -52,7 +52,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 
 	/**
 	 * The font of the character style.
-	 *
+	 * 
 	 * @name CharacterStyle#font
 	 * @default 'sans-serif'
 	 * @type String
@@ -60,7 +60,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 
 	/**
 	 * The font size of the character style in points.
-	 *
+	 * 
 	 * @name CharacterStyle#fontSize
 	 * @default 10
 	 * @type Number

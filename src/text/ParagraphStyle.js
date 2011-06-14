@@ -21,12 +21,12 @@ var ParagraphStyle = this.ParagraphStyle = Base.extend({
 	 * ParagraphStyle objects don't need to be created directly. Just pass an
 	 * object to {@link TextItem#paragraphStyle}, it will be converted to a
 	 * ParagraphStyle object internally.
-	 *
+	 * 
 	 * @constructs ParagraphStyle
 	 * @param {object} style
 	 * 
 	 * @constructs ParagraphStyle
-	 *
+	 * 
 	 * @class The ParagraphStyle object represents the paragraph style of a text
 	 * item ({@link TextItem#paragraphStyle}).
 	 * 
@@ -50,7 +50,7 @@ var ParagraphStyle = this.ParagraphStyle = Base.extend({
 
 	/**
 	 * The justification of the paragraph.
-	 *
+	 * 
 	 * @name ParagraphStyle#justification
 	 * @default 'left'
 	 * @type String('left', 'right', 'center')

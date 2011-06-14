@@ -107,7 +107,7 @@ var Segment = this.Segment = Base.extend({
 
 	/**
 	 * The anchor point of the segment.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -125,7 +125,7 @@ var Segment = this.Segment = Base.extend({
 	/**
 	 * The handle point relative to the anchor point of the segment that
 	 * describes the in tangent of the segment.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -149,7 +149,7 @@ var Segment = this.Segment = Base.extend({
 	/**
 	 * The handle point relative to the anchor point of the segment that
 	 * describes the out tangent of the segment.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -243,7 +243,7 @@ var Segment = this.Segment = Base.extend({
 	 * 
 	 * The index of the segment in the {@link Path#segments} array that the
 	 * segment belongs to.
-	 *
+	 * 
 	 * @type Number
 	 * @bean
 	 */
@@ -253,7 +253,7 @@ var Segment = this.Segment = Base.extend({
 
 	/**
 	 * The path that the segment belongs to.
-	 *
+	 * 
 	 * @type Path
 	 * @bean
 	 */
@@ -263,7 +263,7 @@ var Segment = this.Segment = Base.extend({
 
 	/**
 	 * The curve that the segment belongs to.
-	 *
+	 * 
 	 * @type Curve
 	 * @bean
 	 */
@@ -284,7 +284,7 @@ var Segment = this.Segment = Base.extend({
 	 * The next segment in the {@link Path#segments} array that the segment
 	 * belongs to. If the segments belongs to a closed path, the first segment
 	 * is returned for the last segment of the path.
-	 *
+	 * 
 	 * @type Segment
 	 * @bean
 	 */
@@ -298,7 +298,7 @@ var Segment = this.Segment = Base.extend({
 	 * The previous segment in the {@link Path#segments} array that the
 	 * segment belongs to. If the segments belongs to a closed path, the last
 	 * segment is returned for the first segment of the path.
-	 *
+	 * 
 	 * @type Segment
 	 * @bean
 	 */

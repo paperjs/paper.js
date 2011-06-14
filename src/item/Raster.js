@@ -27,7 +27,7 @@ var Raster = this.Raster = Item.extend({
 	 * 
 	 * @constructs Raster
 	 * @param {HTMLImageElement|Canvas|string} [object]
-	 *
+	 * 
 	 * @class The Raster item represents an image in a Paper.js project.
 	 * 
 	 * @extends Item
@@ -62,7 +62,7 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * The size of the raster in pixels.
-	 *
+	 * 
 	 * @type Size
 	 * @bean
 	 */
@@ -82,7 +82,7 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * The width of the raster in pixels.
-	 *
+	 * 
 	 * @type Number
 	 * @bean
 	 */
@@ -92,7 +92,7 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * The height of the raster in pixels.
-	 *
+	 * 
 	 * @type Number
 	 * @bean
 	 */
@@ -102,7 +102,7 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * Pixels per inch of the raster at its current size.
-	 *
+	 * 
 	 * @type Size
 	 * @bean
 	 */
@@ -119,7 +119,7 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * The Canvas 2d drawing context of the raster.
-	 *
+	 * 
 	 * @type Context
 	 * @bean
 	 */
@@ -155,7 +155,7 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * The HTMLImageElement or Canvas of the raster.
-	 *
+	 * 
 	 * @type HTMLImageElement|Canvas
 	 * @bean
 	 */
@@ -275,7 +275,7 @@ var Raster = this.Raster = Item.extend({
 	/**
 	 * {@grouptitle Pixels}
 	 * Gets the color of a pixel in the raster.
-	 *
+	 * 
 	 * @name Raster#getPixel
 	 * @function
 	 * @param x the x offset of the pixel in pixel coordinates
@@ -298,7 +298,7 @@ var Raster = this.Raster = Item.extend({
 
 	/**
 	 * Sets the color of the specified pixel to the specified color.
-	 *
+	 * 
 	 * @name Raster#setPixel
 	 * @function
 	 * @param x the x offset of the pixel in pixel coordinates

@@ -25,6 +25,7 @@
  */
 var Item = this.Item = Base.extend({
 	/** @lends Item# */
+
 	beans: true,
 
 	initialize: function() {
@@ -39,7 +40,7 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Private notifier that is called whenever a change occurs in this item or
 	 * its sub-elements, such as Segments, Curves, PathStyles, etc.
-	 *
+	 * 
 	 * @param {ChangeFlags} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
@@ -120,7 +121,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * // Move the circle 100 points to the right and 50 points down
 	 * circle.position += new Point(100, 50);
-	 *
+	 * 
 	 * @example {@paperscript split=true height=100}
 	 * // Changing the x coordinate of an item's position:
 	 * 
@@ -152,7 +153,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @type PathStyle
 	 * @bean
-	 *
+	 * 
 	 * @example {@paperscript}
 	 * // Applying several styles to an item in one go, by passing an object
 	 * // to its style property:
@@ -198,12 +199,12 @@ var Item = this.Item = Base.extend({
 	 * Specifies whether an item is selected and will also return {@code true}
 	 * if the item is partially selected (groups with some selected or partially
 	 * selected paths).
-	 *
+	 * 
 	 * Paper.js draws the visual outlines of selected items on top of your
 	 * project. This can be useful for debugging, as it allows you to see the
 	 * construction of paths, position of path curves, individual segment points
 	 * and bounding boxes of symbol and raster items.
-	 *
+	 * 
 	 * @type Boolean
 	 * @bean
 	 * @see Project#selectedItems
@@ -404,7 +405,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @type Item[]
 	 * @bean
-	 *
+	 * 
 	 * @example {@paperscript}
 	 * // Accessing items in the children array:
 	 * var path = new Path.Circle(new Point(80, 50), 35);
@@ -412,7 +413,7 @@ var Item = this.Item = Base.extend({
 	 * // Create a group and move the path into it:
 	 * var group = new Group();
 	 * group.appendTop(path);
-	 *
+	 * 
 	 * // Access the path through the group's children array:
 	 * group.children[0].fillColor = 'red';
 	 * 
@@ -1224,7 +1225,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * Transform the item.
-	 *
+	 * 
 	 * @param {Matrix} matrix
 	 * @param {Array} flags Array of any of the following: 'objects', 'children',
 	 *     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
@@ -1395,7 +1396,7 @@ var Item = this.Item = Base.extend({
 		 * Inserts the specified item as a child of the item by appending it to
 		 * the list of children and moving it above all other children. You can
 		 * use this function for groups, compound paths and layers.
-		 *
+		 * 
 		 * @function
 		 * @param {Item} item The item that will be appended as a child
 		 */
@@ -1422,7 +1423,7 @@ var Item = this.Item = Base.extend({
 
 		/**
 		 * Moves the item below the specified item.
-		 *
+		 * 
 		 * @function
 		 * @param {Item} item the item below which it should be moved
 		 * @return {Boolean} {@true it was moved}
@@ -1489,7 +1490,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * Removes the item when the next {@link Tool#onMouseDown} event is fired.
-	 *
+	 * 
 	 * @name Item#removeOnDown
 	 * @function
 	 * 

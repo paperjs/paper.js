@@ -70,7 +70,7 @@ var Gradient = this.Gradient = Base.extend({
 
 	/**
 	 * Checks whether the gradient is equal to the supplied gradient.
-	 *
+	 * 
 	 * @param {Gradient} gradient
 	 * @return {Boolean} {@true they are equal}
 	 */

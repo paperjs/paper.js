@@ -46,7 +46,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	/**
 	 * The position of the mouse in project coordinates when the event was
 	 * fired.
-	 *
+	 * 
 	 * @example
 	 * function onMouseDrag(event) {
 	 * 	// the position of the mouse when it is dragged
@@ -57,7 +57,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * 	// the position of the mouse when it is released
 	 * 	console.log(event.point);
 	 * }
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -72,7 +72,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	/**
 	 * The position of the mouse in project coordinates when the previous
 	 * event was fired.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -87,7 +87,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	/**
 	 * The position of the mouse in project coordinates when the mouse button
 	 * was last clicked.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -104,7 +104,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * {@link #point}. This is a useful position to use when creating
 	 * artwork based on the moving direction of the mouse, as returned by
 	 * {@link #delta}.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -125,7 +125,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	 * The difference between the current position and the last position of the
 	 * mouse when the event was fired. In case of the mouseup event, the
 	 * difference to the mousedown position is returned.
-	 *
+	 * 
 	 * @type Point
 	 * @bean
 	 */
@@ -146,7 +146,7 @@ var ToolEvent = this.ToolEvent = Base.extend({
 
 	/**
 	 * The number of times the mouse event was fired.
-	 *
+	 * 
 	 * @type Number
 	 * @bean
 	 */

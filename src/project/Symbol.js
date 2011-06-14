@@ -24,7 +24,7 @@ var Symbol = this.Symbol = Base.extend({
 	 * 
 	 * @param {Item} item the source item which is copied as the definition of
 	 *               the symbol
-	 *
+	 * 
 	 * @name Symbol
 	 * @constructor
 	 * 

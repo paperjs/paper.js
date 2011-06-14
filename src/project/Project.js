@@ -23,7 +23,7 @@ var Project = this.Project = Base.extend({
 	// DOCS: Document Project constructor and class
 	/**
 	 * Creates a Paper.js project
-	 *
+	 * 
 	 * @name Project
 	 * @constructor
 	 * 
@@ -114,7 +114,7 @@ var Project = this.Project = Base.extend({
 
 	/**
 	 * The index of the project in the global projects array.
-	 *
+	 * 
 	 * @type Number
 	 * @bean
 	 */
@@ -124,7 +124,7 @@ var Project = this.Project = Base.extend({
 
 	/**
 	 * The selected items contained within the project.
-	 *
+	 * 
 	 * @type Item[]
 	 * @bean
 	 */
@@ -172,7 +172,7 @@ var Project = this.Project = Base.extend({
 	 * {@grouptitle Project Hierarchy}
 	 * 
 	 * The layers contained within the project.
-	 *
+	 * 
 	 * @name Project#layers
 	 * @type Layer[]
 	 */
@@ -180,28 +180,28 @@ var Project = this.Project = Base.extend({
 	/**
 	 * The layer which is currently active. New items will be created on this
 	 * layer by default.
-	 *
+	 * 
 	 * @name Project#activeLayer
 	 * @type Layer
 	 */
 
 	/**
 	 * The symbols contained within the project.
-	 *
+	 * 
 	 * @name Project#symbols
 	 * @type Symbol[]
 	 */
 
 	/**
 	 * The views contained within the project.
-	 *
+	 * 
 	 * @name Project#views
 	 * @type View[]
 	 */
 
 	/**
 	 * The view which is currently active.
-	 *
+	 * 
 	 * @name Project#activeView
 	 * @type View
 	 */

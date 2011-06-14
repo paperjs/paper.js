@@ -364,7 +364,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	/**
 	 * Checks if the color has an alpha value.
-	 *
+	 * 
 	 * @return {Boolean} {@true if the color has an alpha value}
 	 */
 	hasAlpha: function() {
@@ -431,7 +431,7 @@ var Color = this.Color = Base.extend(new function() {
 	
 	/**
 	 * {@grouptitle RGB Components}
-	 *
+	 * 
 	 * The amount of red in the color as a value between {@code 0} and
 	 * {@code 1}.
 	 * 
@@ -488,7 +488,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	/**
 	 * {@grouptitle Gray Components}
-	 *
+	 * 
 	 * The amount of gray in the color as a value between {@code 0} and
 	 * {@code 1}.
 	 * 
@@ -499,7 +499,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	/**
 	 * {@grouptitle HSB Components}
-	 *
+	 * 
 	 * The hue of the color as a value in degrees between {@code 0} and
 	 * {@code 360}.
 	 * 
@@ -564,7 +564,7 @@ var GrayColor = this.GrayColor = Color.extend(/** @scope GrayColor */{
 	 * // Create a circle shaped path at {x: 80, y: 50}
 	 * // with a radius of 30:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
+	 * 
 	 * // Create a GrayColor with 50% gray:
 	 * circle.fillColor = new GrayColor(0.5);
 	 */
@@ -596,7 +596,7 @@ var RGBColor = this.RGBColor = Color.extend(/** @scope RGBColor */{
 	 * // Create a circle shaped path at {x: 80, y: 50}
 	 * // with a radius of 30:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
+	 * 
 	 * // 100% red, 0% blue, 50% blue:
 	 * circle.fillColor = new RGBColor(1, 0, 0.5);
 	 */
@@ -621,14 +621,14 @@ var HSBColor = this.HSBColor = Color.extend(/** @scope HSBColor */{
 	 * 
 	 * @class An HSBColor object is used to represent any HSB color value.
 	 * @extends Color
-	 *
+	 * 
 	 * @example {@paperscript}
 	 * // Creating an HSBColor:
 	 * 
 	 * // Create a circle shaped path at {x: 80, y: 50}
 	 * // with a radius of 30:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
+	 * 
 	 * // Create an HSBColor with a hue of 90 degrees, a saturation
 	 * // 100% and a brightness of 100%:
 	 * circle.fillColor = new HSBColor(90, 1, 1);
