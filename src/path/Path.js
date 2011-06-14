@@ -235,7 +235,8 @@ var Path = this.Path = PathItem.extend({
 			curves = this._curves,
 			amount = segs.length,
 			append = index == null,
-			index = append ? segments.length : index;
+			index = append ? segments.length : index,
+			fullySelected = this.isFullySelected();
 		// Scan through segments to add first, convert if necessary and set
 		// _path and _index references on them.
 		for (var i = 0; i < amount; i++) {
@@ -247,6 +248,9 @@ var Path = this.Path = PathItem.extend({
 			}
 			segment._path = this;
 			segment._index = index + i;
+			// Select newly added segments if path was fully selected before
+			if (fullySelected)
+				segment._selectionState = SelectionState.POINT;
 			// If parts of this segment are selected, adjust the internal
 			// _selectedSegmentState now
 			if (segment._selectionState)
