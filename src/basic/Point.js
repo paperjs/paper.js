@@ -590,8 +590,7 @@ var Point = this.Point = Base.extend({
 	 */
 	getDirectedAngle: function(point) {
 		point = Point.read(arguments);
-		var angle = this.getAngle() - point.getAngle();
-		return angle < -180 ? angle + 360 : angle > 180 ? angle - 360 : angle;
+		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
 	},
 
 	/**
