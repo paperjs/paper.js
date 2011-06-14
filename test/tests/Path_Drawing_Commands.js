@@ -9,9 +9,10 @@ test('path.lineTo(point);', function() {
 
 test('path.arcTo(from, through, to);', function() {
 	var path = new Path();
-	path.moveTo([50, 50]);
-	path.arcTo([100, 100], [75, 75]);
-	equals(path.segments.toString(), '{ point: { x: 50, y: 50 }, handleOut: { x: 10.11156, y: -10.11156 } },{ point: { x: 88.5299, y: 42.33593 }, handleIn: { x: -13.21138, y: -5.47233 }, handleOut: { x: 13.21138, y: 5.47233 } },{ point: { x: 110.35534, y: 75 }, handleIn: { x: 0, y: -14.2999 } }');
+	console.log(path.segments);
+	path.moveTo([0, 20]);
+	path.arcTo([75, 75], [100, 0]);
+	equals(path.segments.toString(), '{ point: { x: 0, y: 20 }, handleOut: { x: -2.62559, y: 23.01251 } },{ point: { x: 30.89325, y: 74.75812 }, handleIn: { x: -21.05455, y: -9.65273 }, handleOut: { x: 21.05455, y: 9.65273 } },{ point: { x: 92.54397, y: 62.42797 }, handleIn: { x: -15.72238, y: 17.00811 }, handleOut: { x: 15.72238, y: -17.00811 } },{ point: { x: 100, y: 0 }, handleIn: { x: 11.27458, y: 20.23247 } }');
 });
 
 test('path.arcTo(from, through, to); where from, through and to all share the same y position and through lies in between from and to', function() {
