@@ -217,10 +217,9 @@ var Item = this.Item = Base.extend({
 	 */	
 	isSelected: function() {
 		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
+			for (var i = 0, l = this._children.length; i < l; i++)
 				if (this._children[i].isSelected())
 					return true;
-			}
 		}
 		return this._selected;
 	},
