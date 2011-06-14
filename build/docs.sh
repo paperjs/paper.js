@@ -26,5 +26,9 @@ cd jsdoc-toolkit
 java -jar jsrun.jar app/run.js -c=conf/$MODE.conf -D="renderMode:$MODE"
 cd ..
 
-#build paper.js library for documentation
-./preprocess.sh ../src/paper.js ../dist/docs/resources/js/paper.js "-DBROWSER" stripped
+if [ $MODE == "docs" ]
+then
+	# Build paper.js library for documentation
+	./preprocess.sh ../src/paper.js ../dist/docs/resources/js/paper.js \
+		"-DBROWSER" stripped
+fi
