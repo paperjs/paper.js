@@ -16,6 +16,7 @@
 
 var Segment = this.Segment = Base.extend({
 	/** @lends Segment# */
+
 	beans: true,
 
 	/**
@@ -23,6 +24,7 @@ var Segment = this.Segment = Base.extend({
 	 * 
 	 * @name Segment
 	 * @constructor
+	 * 
 	 * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
 	 * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
 	 *        anchor point of the segment that describes the in tangent of the

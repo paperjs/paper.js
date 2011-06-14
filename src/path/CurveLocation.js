@@ -30,6 +30,7 @@ CurveLocation = Base.extend({
 	 * 
 	 * @name CurveLocation
 	 * @constructor
+	 * 
 	 * @param {Curve} curve
 	 * @param {Number} parameter
 	 * @param {Point} point

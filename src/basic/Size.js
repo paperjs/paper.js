@@ -21,8 +21,9 @@ var Size = this.Size = Base.extend({
 	/**
 	 * Creates a Size object with the given width and height values.
 	 * 
-	 * @constructor
 	 * @name Size
+	 * @constructor
+	 * 
 	 * @param {Number} width the width
 	 * @param {Number} height the height
 	 * 
