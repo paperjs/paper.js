@@ -1758,7 +1758,6 @@ var Path = this.Path = PathItem.extend({
 					step = middle.subtract(from);
 				through = middle[clockwise ? 'subtract' : 'add'](-step.y, step.x);
 			}
-
 			// Construct the two perpendicular middle lines to (from, through)
 			// and (through, to), and intersect them to get the center
 			var l1 = new Line(from.add(through).divide(2),
@@ -1766,14 +1765,24 @@ var Path = this.Path = PathItem.extend({
 			 	l2 = new Line(through.add(to).divide(2),
 					to.subtract(through).rotate(90)),
 				center = l1.intersect(l2),
-				vector = from.subtract(center),
+				line = new Line(from, to, true),
+				side = line.getSide(through);
+			if (!center) {
+				// If the two lines are colinear, there cannot be an arc as the
+				// circle is infinitely big and has no center point.
+				// We're cheating by producing a center point that's just really
+				// far away. While this is wrong, it graphically produces the
+				// expected results...
+				center = from.add(to).divide(2).add(to.subtract(from).rotate(
+						-90 * (side || 1)).multiply(10e9));
+			}
+			var vector = from.subtract(center),
 				radius = vector.getLength(),
-				extent = vector.getDirectedAngle(to.subtract(center)),
-				line = new Line(from, to, true);
-			// If the center is on the same side of the line (from, to) than
+				extent = vector.getDirectedAngle(to.subtract(center));
+			// If the center is on the same side of the line (from, to) as
 			// the through point, we're extending bellow 180 degrees and need
 			// to adapt extent.
-			if (line.getSide(center) == line.getSide(through))
+			if (side == line.getSide(center))
 				extent -= 360 * (extent < 0 ? -1 : 1);
 			var ext = Math.abs(extent),
 				count =  ext >= 360 ? 4 : Math.ceil(ext / 90),
