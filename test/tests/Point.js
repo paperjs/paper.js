@@ -64,6 +64,15 @@ test('set angle', function() {
 });
 
 test('getDirectedAngle(point)', function() {
-	var angle = new Point().getDirectedAngle(new Point(10, 10));
+	var angle = new Point(10, 10).getDirectedAngle(new Point(1, 0));
 	equals(angle, -45);
+
+	var angle = new Point(-10, 10).getDirectedAngle(new Point(1, 0));
+	equals(angle, -135);
+
+	var angle = new Point(-10, -10).getDirectedAngle(new Point(1, 0));
+	equals(angle, 135);
+
+	var angle = new Point(10, -10).getDirectedAngle(new Point(1, 0));
+	equals(angle, 45);
 });
