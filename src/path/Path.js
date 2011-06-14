@@ -46,7 +46,7 @@ var Path = this.Path = PathItem.extend({
 	initialize: function(segments) {
 		this.base();
 		this._closed = false;
-		this._selectedSegmentCount = 0;
+		this._selectedSegmentState = 0;
 		// Support both passing of segments as array or arguments
 		// If it is an array, it can also be a description of a point, so
 		// check its first entry for object as well
@@ -248,9 +248,9 @@ var Path = this.Path = PathItem.extend({
 			segment._path = this;
 			segment._index = index + i;
 			// If parts of this segment are selected, adjust the internal
-			// _selectedSegmentCount now
+			// _selectedSegmentState now
 			if (segment._selectionState)
-				this._updateSelection(segment);
+				this._updateSelection(segment, 0, segment._selectionState);
 		}
 		if (append) {
 			// Append them all at the end by using push
@@ -278,13 +278,6 @@ var Path = this.Path = PathItem.extend({
 		}
 		this._changed(ChangeFlags.GEOMETRY);
 		return segs;
-	},
-
-	_updateSelection: function(segment) {
-		var count = this._selectedSegmentCount +=
-				segment._selectionState ? 1 : -1;
-		if (count <= 1)
-			this._project._selectItem(this, count == 1);
 	},
 
 	// PORT: Add support for adding multiple segments at once to Scriptographer
@@ -537,10 +530,8 @@ var Path = this.Path = PathItem.extend({
 		// Update selection state accordingly
 		for (var i = 0; i < amount; i++) {
 			var segment = removed[i];
-			if (segment._selectionState) {
-				segment._selectionState = 0;
-				this._updateSelection(segment);
-			}
+			if (segment._selectionState)
+				this._updateSelection(segment, segment._selectionState, 0);
 			// Clear the indices and path references of the removed segments
 			removed._index = removed._path = undefined;
 		}
@@ -599,23 +590,8 @@ var Path = this.Path = PathItem.extend({
 	 * }
 	 * 
 	 */
-	isSelected: function() {
-		return this._selectedSegmentCount > 0;
-	},
-
-	setSelected: function(selected) {
-		var wasSelected = this.isSelected(),
-			length = this._segments.length;
-		if (!wasSelected != !selected && length)
-			this._project._selectItem(this, selected);
-		this._selectedSegmentCount = selected ? length : 0;
-		for (var i = 0; i < length; i++)
-			this._segments[i]._selectionState = selected
-					? SelectionState.POINT : 0;
-	},
-
 	/**
-	 * Specifies whether all segments of the path are selected.
+	 * Specifies whether the path and all its segments are selected.
 	 * 
 	 * @type Boolean
 	 * @bean
@@ -623,10 +599,10 @@ var Path = this.Path = PathItem.extend({
 	 * @example {@paperscript}
 	 * // A path is fully selected, if all of its segments are selected:
 	 * var path = new Path.Circle(new Size(80, 50), 35);
-	 * path.selected = true;
+	 * path.fullySelected = true;
 	 * 
 	 * var path2 = new Path.Circle(new Size(180, 50), 35);
-	 * path2.selected = true;
+	 * path2.fullySelected = true;
 	 * 
 	 * // Deselect the second segment of the second path:
 	 * path2.segments[1].selected = false;
@@ -645,11 +621,24 @@ var Path = this.Path = PathItem.extend({
 	 * }
 	 */
 	isFullySelected: function() {
-		return this._selectedSegmentCount == this._segments.length;
+		return this._selected && this._selectedSegmentState
+				== this._segments.length * SelectionState.POINT;
 	},
 
 	setFullySelected: function(selected) {
+		var length = this._segments.length;
+		this._selectedSegmentState = selected
+				? length * SelectionState.POINT : 0;
+		for (var i = 0; i < length; i++)
+			this._segments[i]._selectionState = selected
+					? SelectionState.POINT : 0;
 		this.setSelected(selected);
+	},
+
+	_updateSelection: function(segment, oldState, newState) {
+		segment._selectionState = newState;
+		this.setSelected(
+				(this._selectedSegmentState += newState - oldState) > 0);
 	},
 
 	/**
@@ -1166,13 +1155,12 @@ var Path = this.Path = PathItem.extend({
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
 				point = segment._point,
-				pointSelected = segment._selectionState == SelectionState.POINT;
-			// TODO: draw handles depending on selection state of
-			// segment.point and neighbouring segments.
-				if (pointSelected || segment._isSelected(segment._handleIn))
-					drawHandle(ctx, point, segment._handleIn);
-				if (pointSelected || segment._isSelected(segment._handleOut))
-					drawHandle(ctx, point, segment._handleOut);
+				state = segment._selectionState,
+				selected = state & SelectionState.POINT;
+			if (selected || (state & SelectionState.HANDLE_IN))
+				drawHandle(ctx, point, segment._handleIn);
+			if (selected || (state & SelectionState.HANDLE_OUT))
+				drawHandle(ctx, point, segment._handleOut);
 			// Draw a rectangle at segment.point:
 			ctx.save();
 			ctx.beginPath();
@@ -1180,7 +1168,7 @@ var Path = this.Path = PathItem.extend({
 			ctx.fill();
 			// If the point is not selected, draw a white square that is 1 px
 			// smaller on all sides:
-			if (!pointSelected) {
+			if (!selected) {
 				ctx.beginPath();
 				ctx.rect(point._x - 1, point._y - 1, 2, 2);
 				ctx.fillStyle = '#ffffff';

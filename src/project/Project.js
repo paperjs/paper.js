@@ -142,8 +142,8 @@ var Project = this.Project = Base.extend({
 
 	// TODO: Implement setSelectedItems?
 	
-	_selectItem: function(item, select) {
-		if (select) {
+	_updateSelection: function(item) {
+		if (item._selected) {
 			this._selectedItemCount++;
 			this._selectedItems[item.getId()] = item;
 		} else {
