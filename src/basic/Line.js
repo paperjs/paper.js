@@ -98,7 +98,7 @@ var Line = this.Line = Base.extend({
 		if (ccw == 0) {
 			ccw = v2.dot(v1);
 			if (ccw > 0) {
-				ccw = (v2 - v1).dot(v1);
+				ccw = v2.subtract(v1).dot(v1);
 				if (ccw < 0)
 				    ccw = 0;
 			}
