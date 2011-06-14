@@ -20,6 +20,11 @@
  * @ignore
  */
 var PaperScope = this.PaperScope = Base.extend({
+	/**
+	 * The version of Paper.js, as a float number.
+	 * @type Number
+	 */
+	version: 0.1,
 
 	initialize: function(id) {
 		/** @lends _global_# */
