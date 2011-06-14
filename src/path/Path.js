@@ -1746,7 +1746,7 @@ var Path = this.Path = PathItem.extend({
 			// Get the start point:
 			var current = getCurrentSegment(this),
 				through;
-			if (arguments[1] && typeof arguments[1] !== 'boolean') {
+			if (typeof clockwise !== 'boolean') {
 				through = Point.read(arguments, 0, 1);
 				to = Point.read(arguments, 1, 1);
 			} else {
