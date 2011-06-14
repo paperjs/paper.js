@@ -28,15 +28,15 @@ var PaperScope = this.PaperScope = Base.extend({
 
 	initialize: function(id) {
 		/** @lends _global_# */
-		
+
 		/**
-		 * The global active project.
+		 * The currently active project.
 		 * @type Project
 		 */
 		this.project = null;
 
 		/**
-		 * The global projects array.
+		 * The list of all open projects within the current Paper.js context.
 		 * @type Project[]
 		 */
 		this.projects = [];
@@ -46,6 +46,11 @@ var PaperScope = this.PaperScope = Base.extend({
 		 * @type View
 		 */
 		this.view = null;
+
+		/**
+		 * The active view of the active project.
+		 * @type View
+		 */
 		this.views = [];
 
 		/**
