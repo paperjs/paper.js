@@ -19,9 +19,10 @@
  * global paper object, which simply is a pointer to the currently active scope.
  * @ignore
  */
-var PaperScope = this.PaperScope = Base.extend({
+var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 	/**
 	 * The version of Paper.js, as a float number.
+	 *
 	 * @type Number
 	 */
 	version: 0.1,
