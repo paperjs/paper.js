@@ -222,7 +222,7 @@ var PathItem = this.PathItem = Item.extend(/** @scope PathItem */{
 	 * 
 	 * @name PathItem#arcTo
 	 * @function
-	 * @param {Point} point
+	 * @param {Point} to the point where the arc should end
 	 * @param {Boolean} [clockwise=true] specifies whether the arc should be
 	 *        drawn in clockwise direction.
 	 * 
