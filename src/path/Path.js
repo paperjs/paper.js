@@ -1516,16 +1516,16 @@ var Path = this.Path = PathItem.extend({
 			var current = getCurrentSegment(this),
 				from = current._point,
 				through;
-			if (typeof clockwise !== 'boolean') {
+			if (clockwise === undefined)
+				clockwise = true;
+			if (typeof clockwise === 'boolean') {
+				to = Point.read(arguments, 0, 1);
+				var middle = from.add(to).divide(2),
+				through = middle.add(middle.subtract(from).rotate(
+						clockwise ? -90 : 90));
+			} else {
 				through = Point.read(arguments, 0, 1);
 				to = Point.read(arguments, 1, 1);
-			} else {
-				to = Point.read(arguments, 0, 1);
-				if (clockwise === undefined)
-					clockwise = true;
-				var middle = from.add(to).divide(2),
-					step = middle.subtract(from);
-				through = middle[clockwise ? 'subtract' : 'add'](-step.y, step.x);
 			}
 			// Construct the two perpendicular middle lines to (from, through)
 			// and (through, to), and intersect them to get the center
