@@ -39,7 +39,6 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * {@link Item#children} list.
 	 * 
 	 * @extends PathItem
-	 * @extends Item
 	 */
 	initialize: function(paths) {
 		this.base();
