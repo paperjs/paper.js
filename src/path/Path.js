@@ -1326,8 +1326,6 @@ var Path = this.Path = PathItem.extend({
 	};
 
 	return {
-		/** @lends Path# */
-
 		_setStyles: function(ctx) {
 			for (var i in styles) {
 				var style = this._style[i]();
@@ -1336,60 +1334,7 @@ var Path = this.Path = PathItem.extend({
 			}
 		},
 
-		// DOCS: implement @movebefore tag and move the Path#smooth function up
-		// in the documentation.
-		/**
-		 * {@grouptitle Path Smoothing}
-		 * 
-		 * Smooth bezier curves without changing the amount of segments or their
-		 * points, by only smoothing and adjusting their handle points, for both
-		 * open ended and closed paths.
-		 * 
-		 * @author Oleg V. Polikarpotchkin
-		 * 
-		 * @example {@paperscript}
-		 * // Smoothing a closed shape:
-		 * 
-		 * // Create a rectangular path with its top-left point at
-		 * // {x: 30, y: 25} and a size of {width: 50, height: 50}:
-		 * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
-		 * path.strokeColor = 'black';
-		 * 
-		 * // Select the path, so we can see its handles:
-		 * path.selected = true;
-		 * 
-		 * // Create a copy of the path and move it 100pt to the right:
-		 * var copy = path.clone();
-		 * copy.position.x += 100;
-		 * 
-		 * // Smooth the segments of the copy:
-		 * copy.smooth();
-		 * 
-		 * @example {@paperscript height=220}
-		 * var path = new Path();
-		 * path.strokeColor = 'black';
-		 * 
-		 * path.add(new Point(30, 50));
-		 * 
-		 * var y = 5;
-		 * var x = 3;
-		 * 
-		 * for (var i = 0; i < 28; i++) {
-		 *     y *= -1.1;
-		 *     x *= 1.1;
-		 *     path.lineBy(x, y);
-		 * }
-		 * 
-		 * // Create a copy of the path and move it 100pt down:
-		 * var copy = path.clone();
-		 * copy.position.y += 120;
-		 * 
-		 * // Set its stroke color to red:
-		 * copy.strokeColor = 'red';
-		 * 
-		 * // Smooth the segments of the copy:
-		 * copy.smooth();
-		 */
+		// Note: Documentation for smooth() is in PathItem
 		smooth: function() {
 			// This code is based on the work by Oleg V. Polikarpotchkin,
 			// http://ov-p.spaces.live.com/blog/cns!39D56F0C7A08D703!147.entry
@@ -1490,7 +1435,10 @@ var Path = this.Path = PathItem.extend({
 		}
 	};
 }, new function() { // PostScript-style drawing commands
-
+	/**
+	 * Helper method that returns the current segment and checks if a moveTo()
+	 * command is required first.
+	 */
 	function getCurrentSegment(that) {
 		var segments = that._segments;
 		if (segments.length == 0)
@@ -1498,19 +1446,10 @@ var Path = this.Path = PathItem.extend({
 		return segments[segments.length - 1];
 	}
 
-	/**
-	 * Helper method that returns the current segment and checks if we need to
-	 * execute a moveTo() command first.
-	 */
 	return {
-		/** @lends Path# */
-
-		// DOCS: document moveTo
-		/**
-		 * {@grouptitle Postscript Style Drawing Commands}
-		 * 
-		 * @param {Point} point
-		 */
+		// Note: Documentation for these methods is found in PathItem, as they
+		// are considered abstract methods of PathItem and need to be defined in
+		// all implementing classes.
 		moveTo: function(point) {
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
@@ -1518,23 +1457,15 @@ var Path = this.Path = PathItem.extend({
 				this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
-		// DOCS: document lineTo
-		/**
-		 * @param {Point} point
-		 */
+		moveBy: function(point) {
+			throw new Error('moveBy() is unsupported on Path items.');
+		},
+
 		lineTo: function(point) {
 			// Let's not be picky about calling moveTo() first:
 			this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
-		/**
-		 * Adds a cubic bezier curve to the path, defined by two handles and a
-		 * to point.
-		 * 
-		 * @param {Point} handle1
-		 * @param {Point} handle2
-		 * @param {Point} to
-		 */
 		cubicCurveTo: function(handle1, handle2, to) {
 			handle1 = Point.read(arguments, 0, 1);
 			handle2 = Point.read(arguments, 1, 1);
@@ -1547,13 +1478,6 @@ var Path = this.Path = PathItem.extend({
 			this._add([ new Segment(to, handle2.subtract(to)) ]);
 		},
 
-		/**
-		 * Adds a quadratic bezier curve to the path, defined by a handle and a
-		 * to point.
-		 * 
-		 * @param {Point} handle
-		 * @param {Point} to
-		 */
 		quadraticCurveTo: function(handle, to) {
 			handle = Point.read(arguments, 0, 1);
 			to = Point.read(arguments, 1, 1);
@@ -1570,46 +1494,6 @@ var Path = this.Path = PathItem.extend({
 			);
 		},
 
-		// DOCS: document Path#curveTo 'paramater' param.
-		/**
-		 * Draws a curve from the position of the last segment point in
-		 * the path that goes through the specified {@code through} point,
-		 * to the specified {@code to} point by adding one segment to the path.
-		 * 
-		 * @param {Point} through the point through which the curve should go
-		 * @param {Point} to the point where the curve should end
-		 * @param {Number} [parameter=0.5]
-		 * 
-		 * @example {@paperscript height=300}
-		 * // Interactive example. Click and drag in the view below:
-		 * 
-		 * var myPath;
-		 * function onMouseDrag(event) {
-		 * 	// If we created a path before, remove it:
-		 * 	if (myPath) {
-		 * 	    myPath.remove();
-		 * 	}
-		 * 
-		 * 	// Create a new path and add a segment point to it
-		 * 	// at {x: 150, y: 150):
-		 * 	myPath = new Path();
-		 * 	myPath.add(150, 150);
-		 * 
-		 * 	// Draw a curve through the position of the mouse to 'toPoint'
-		 * 	var toPoint = new Point(350, 150);
-		 * 	myPath.curveTo(event.point, toPoint);
-		 * 
-		 * 	// Select the path, so we can see its segments:
-		 * 	myPath.selected = true;
-		 * }
-	     * 
-		 * // When the mouse is released, deselect the path
-		 * // and set its stroke-color to black:
-		 * function onMouseUp(event) {
-		 * 	myPath.selected = false;
-		 * 	myPath.strokeColor = 'black';
-		 * }
-		 */
 		curveTo: function(through, to, parameter) {
 			through = Point.read(arguments, 0, 1);
 			to = Point.read(arguments, 1, 1);
@@ -1626,113 +1510,6 @@ var Path = this.Path = PathItem.extend({
 			this.quadraticCurveTo(handle, to);
 		},
 
-		/**
-		 * Draws an arc from the position of the last segment point in
-		 * the path that goes through the specified {@code through} point,
-		 * to the specified {@code to} point by adding one or more segments to
-		 * the path.
-		 * 
-		 * @name Path#arcTo
-		 * @function
-		 * @param {Point} through the point where the arc should pass through
-		 * @param {Point} to the point where the arc should end
-		 * 
-		 * @example {@paperscript}
-		 * var path = new Path();
-		 * path.strokeColor = 'black';
-		 * 
-		 * var firstPoint = new Point(30, 75);
-		 * path.add(firstPoint);
-		 * 
-		 * // The point through which we will create the arc:
-		 * var throughPoint = new Point(40, 40);
-		 * 
-		 * // The point at which the arc will end:
-		 * var toPoint = new Point(130, 75);
-		 * 
-		 * // Draw an arc through 'throughPoint' to 'toPoint'
-		 * path.arcTo(throughPoint, toPoint);
-		 * 
-		 * // Add a red circle shaped path at the position of 'throughPoint':
-		 * var circle = new Path.Circle(throughPoint, 3);
-		 * circle.fillColor = 'red';
-		 * 
-		 * @example {@paperscript height=300}
-		 * // Interactive example. Click and drag in the view below:
-		 * 
-		 * var myPath;
-		 * function onMouseDrag(event) {
-		 * 	// If we created a path before, remove it:
-		 * 	if (myPath) {
-		 * 	    myPath.remove();
-		 * 	}
-		 * 	
-		 * 	// Create a new path and add a segment point to it
-		 * 	// at {x: 150, y: 150):
-		 * 	myPath = new Path();
-		 * 	myPath.add(150, 150);
-		 * 	
-		 * 	// Draw an arc through the position of the mouse to 'toPoint'
-		 * 	var toPoint = new Point(350, 150);
-		 * 	myPath.arcTo(event.point, toPoint);
-		 * 	
-		 * 	// Select the path, so we can see its segments:
-		 * 	myPath.selected = true;
-		 * }
-		 * 
-		 * // When the mouse is released, deselect the path
-		 * // and fill it with black.
-		 * function onMouseUp(event) {
-		 * 	myPath.selected = false;
-		 * 	myPath.fillColor = 'black';
-		 * }
-		 */
-		/**
-		 * Draws an arc from the position of the last segment point in
-		 * the path to the specified point by adding one or more segments to the
-		 * path.
-		 * 
-		 * @param {Point} point
-		 * @param {Boolean} [clockwise=true] specifies whether the arc should
-		 *                                   be drawn in clockwise direction.
-		 * 
-		 * @example {@paperscript}
-		 * var path = new Path();
-		 * path.strokeColor = 'black';
-		 * 
-		 * path.add(new Point(30, 75));
-		 * path.arcTo(new Point(130, 75));
-		 * 
-		 * var path2 = new Path();
-		 * path2.strokeColor = 'red';
-		 * path2.add(new Point(180, 25));
-		 * 
-		 * // To draw an arc in anticlockwise direction,
-		 * // we pass 'false' as the second argument to arcTo:
-		 * path2.arcTo(new Point(280, 25), false);
-		 * 
-		 * @example {@paperscript height=300}
-		 * // Interactive example. Click and drag in the view below:
-		 * var myPath;
-		 * 
-		 * // The mouse has to move at least 20 points before
-		 * // the next mouse drag event is fired:
-		 * tool.minDistance = 20;
-		 * 
-		 * // When the user clicks, create a new path and add
-		 * // the current mouse position to it as its first segment:
-		 * function onMouseDown(event) {
-		 * 	myPath = new Path();
-		 * 	myPath.strokeColor = 'black';
-		 * 	myPath.add(event.point);
-		 * }
-		 * 
-		 * // On each mouse drag event, draw an arc to the current
-		 * // position of the mouse:
-		 * function onMouseDrag(event) {
-		 * 	myPath.arcTo(event.point);
-		 * }
-		 */
 		// PORT: New implementation back to Scriptographer
 		arcTo: function(to, clockwise) {
 			// Get the start point:
@@ -1801,65 +1578,12 @@ var Path = this.Path = PathItem.extend({
 			this._add(segments);
 		},
 
-		/**
-		 * Adds a segment relative to the last segment point of the path.
-		 * 
-		 * @param {Point} vector The vector which is added to the position
-		 * of the last segment of the path, to become the new segment.
-		 * 
-		 * @example {@paperscript}
-		 * var path = new Path();
-		 * path.strokeColor = 'black';
-		 * 
-		 * // Add a segment at {x: 50, y: 50}
-		 * path.add(25, 25);
-		 * 
-		 * // Add a segment relative to the last segment of the path.
-		 * // 50 in x direction and 0 in y direction, becomes {x: 75, y: 25}
-		 * path.lineBy(50, 0);
-		 * 
-		 * // 0 in x direction and 50 in y direction, becomes {x: 75, y: 75}
-		 * path.lineBy(0, 50);
-		 * 
-		 * @example {@paperscript height=300}
-		 * // Drawing a spiral using lineBy:
-		 * var path = new Path();
-		 * path.strokeColor = 'black';
-		 * 
-		 * // Add the first segment at {x: 50, y: 50}
-		 * path.add(view.center);
-		 * 
-		 * // Loop 500 times:
-		 * for (var i = 0; i < 500; i++) {
-		 * 	// Create a vector with an ever increasing length
-		 * 	// and an angle in increments of 45 degrees
-		 * 	var vector = new Point({
-		 * 	    angle: i * 45,
-		 * 	    length: i / 2
-		 * 	});
-		 * 	// Add the vector relatively to the last segment point:
-		 * 	path.lineBy(vector);
-		 * }
-		 * 
-		 * // Smooth the handles of the path:
-		 * path.smooth();
-		 * 
-		 * // Uncomment the following line and click on 'run' to see
-		 * // the construction of the path:
-		 * // path.selected = true;
-		 */
 		lineBy: function(vector) {
 			vector = Point.read(arguments);
 			var current = getCurrentSegment(this);
 			this.lineTo(current._point.add(vector));
 		},
 
-		// DOCS: document Path#curveBy
-		/**
-		 * @param {Point} throughVector
-		 * @param {Point} toVector
-		 * @param {Number} [parameter=0.5]
-		 */
 		curveBy: function(throughVector, toVector, parameter) {
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
@@ -1868,11 +1592,6 @@ var Path = this.Path = PathItem.extend({
 					parameter);
 		},
 
-		// DOCS: document Path#arcBy
-		/**
-		 * @param {Point} throughVector
-		 * @param {Point} toVector
-		 */
 		arcBy: function(throughVector, toVector) {
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
@@ -1880,12 +1599,6 @@ var Path = this.Path = PathItem.extend({
 			this.arcBy(current.add(throughVector), current.add(toVector));
 		},
 
-		/**
-		 * Closes the path. When closed, Paper.js connects the first and last
-		 * segments.
-		 * 
-		 * @see #closed
-		 */
 		closePath: function() {
 			this.setClosed(true);
 		}
