@@ -1544,9 +1544,8 @@ var Path = this.Path = PathItem.extend({
 				// Otherwise we bail out:
 				if (!side)
 					return this.lineTo(to);
-				throw new Error(
-					"Cannot put an arc through the given points: "
-					+ Array.prototype.join.call(arguments));
+				throw new Error("Cannot put an arc through the given points: "
+					+ [from, through, to]);
 			}
 			var vector = from.subtract(center),
 				radius = vector.getLength(),
