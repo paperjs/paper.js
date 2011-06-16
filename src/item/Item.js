@@ -14,20 +14,20 @@
  * All rights reserved.
  */
 
- /**
- * @name Item
- * @class The Item type allows you to access and modify the items in
- * Paper.js projects. Its functionality is inherited by different project
- * item types such as {@link Path}, {@link CompoundPath}, {@link Group},
- * {@link Layer} and {@link Raster}. They each add a layer of functionality that
- * is unique to their type, but share the underlying properties and functions
- * that they inherit from Item.
- */
 var Item = this.Item = Base.extend({
 	/** @lends Item# */
 
 	beans: true,
 
+	/**
+	 * @name Item
+	 * @class The Item type allows you to access and modify the items in
+	 * Paper.js projects. Its functionality is inherited by different project
+	 * item types such as {@link Path}, {@link CompoundPath}, {@link Group},
+	 * {@link Layer} and {@link Raster}. They each add a layer of functionality that
+	 * is unique to their type, but share the underlying properties and functions
+	 * that they inherit from Item.
+	 */
 	initialize: function() {
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
@@ -1111,6 +1111,8 @@ var Item = this.Item = Base.extend({
 	 * Scales the item by the given values from its center point, or optionally
 	 * from a supplied point.
 	 * 
+	 * @name Item#scale
+	 * @function
 	 * @param {Number} sx the horizontal scale factor
 	 * @param {Number} sy the vertical scale factor
 	 * @param {Point} [center=the center point of the item]
@@ -1207,6 +1209,8 @@ var Item = this.Item = Base.extend({
 	 * Shears the item by the given values from its center point, or optionally
 	 * by a supplied point.
 	 * 
+	 * @name Item#shear
+	 * @function
 	 * @param {Number} shx
 	 * @param {Number} shy
 	 * @param {Point} [center=the center point of the item]

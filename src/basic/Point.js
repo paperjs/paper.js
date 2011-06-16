@@ -487,8 +487,9 @@ var Point = this.Point = Base.extend({
 	 * The angle is unsigned, no information about rotational direction is
 	 * given.
 	 * 
-	 * @type Number
+	 * @name Point#getAngle
 	 * @bean
+	 * @type Number
 	 */
 	getAngle: function(/* point */) {
 		// Hide parameters from Bootstrap so it injects bean too
@@ -524,8 +525,9 @@ var Point = this.Point = Base.extend({
 	 * The angle is unsigned, no information about rotational direction is
 	 * given.
 	 * 
-	 * @type Number
+	 * @name Point#getAngleInRadians
 	 * @bean
+	 * @type Number
 	 */
 	getAngleInRadians: function(/* point */) {
 		// Hide parameters from Bootstrap so it injects bean too
