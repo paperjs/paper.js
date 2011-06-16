@@ -77,13 +77,6 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		return this;
 	},
 
-	/**
-	 * Smooth bezier curves without changing the amount of segments or their
-	 * points, by only smoothing and adjusting their handle points, for both
-	 * open ended and closed paths.
-	 * 
-	 * @author Oleg V. Polikarpotchkin
-	 */
 	smooth: function() {
 		for (var i = 0, l = this._children.length; i < l; i++)
 			this._children[i].smooth();
@@ -109,6 +102,10 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		param.compound = false;
 	}
 }, new function() { // Injection scope for PostScript-like drawing functions
+	/**
+	 * Helper method that returns the current path and checks if a moveTo()
+	 * command is required first.
+	 */
 	function getCurrentPath(that) {
 		if (!that._children.length)
 			throw new Error('Use a moveTo() command first');
@@ -116,113 +113,25 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	}
 
 	var fields = {
-		/** @lends CompoundPath# */
-
-		/**
-		 * {@grouptitle Postscript Style Drawing Commands}
-		 * 
-		 * Creates a new path in the compound-path and adds the point
-		 * as its first segment.
-		 * 
-		 * @param {Point} point
-		 */
+		// Note: Documentation for these methods is found in PathItem, as they
+		// are considered abstract methods of PathItem and need to be defined in
+		// all implementing classes.
 		moveTo: function(point) {
 			var path = new Path();
 			this.appendTop(path);
 			path.moveTo.apply(path, arguments);
 		},
 
-		/**
-		 * Creates a new path in the compound-path and adds the point as its
-		 * first segment relative to the position of the last segment of the
-		 * current path.
-		 * 
-		 * @param {Point} point
-		 */
 		moveBy: function(point) {
 			this.moveTo(getCurrentPath(this).getLastSegment()._point.add(
 					Point.read(arguments)));
 		},
 
-		/**
-		 * Closes the path. If it is closed, Paper.js connects the first and
-		 * last segments.
-		 */
 		closePath: function() {
 			getCurrentPath(this).setClosed(true);
 		}
 	};
 
-	// DOCS: document CompoundPath#lineTo
-	/**
-	 * @name CompoundPath#lineTo
-	 * @function
-	 * @param {Point} point
-	 */
-
-	/**
-	 * Adds a cubic bezier curve to the current path, defined by two handles and
-	 * a to point.
-	 * 
-	 * @name CompoundPath#cubicCurveTo
-	 * @function
-	 * @param {Point} handle1
-	 * @param {Point} handle2
-	 * @param {Point} to
-	 */
-
-	/**
-	 * Adds a quadratic bezier curve to the current path, defined by a handle
-	 * and a to point.
-	 * 
-	 * @name CompoundPath#quadraticCurveTo
-	 * @function
-	 * @param {Point} handle
-	 * @param {Point} to
-	 */
-
-	// DOCS: document CompoundPath#curveTo
-	/**
-	 * @name CompoundPath#curveTo
-	 * @function
-	 * @param {Point} through
-	 * @param {Point} to
-	 * @param {Number} [parameter=0.5]
-	 */
-
-	// DOCS: document CompoundPath#arcTo
-	/**
-	 * @name CompoundPath#arcTo
-	 * @function
-	 * @param {Point} to
-	 * @param {Boolean} [clockwise=true]
-	 */
-
-	// DOCS: document CompoundPath#lineBy
-	/**
-	 * @name CompoundPath#lineBy
-	 * @function
-	 * @param {Point} vector
-	 */
-
-	// DOCS: document CompoundPath#curveBy
-	/**
-	 * @name CompoundPath#curveBy
-	 * @function
-	 * @param {Point} throughVector
-	 * @param {Point} toVector
-	 * @param {Number} [parameter=0.5]
-	 */
-	
-	// DOCS: document CompoundPath#arcBy
-	/**
-	 * @name CompoundPath#arcBy
-	 * @function
-	 * @param {Point} throughVector
-	 * @param {Point} toVector
-	 */
-
-	// DOCS: document CompoundPath#lineTo, CompoundPath#cubicCurveTo etc
 	// Redirect all other drawing commands to the current path
 	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
 			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
