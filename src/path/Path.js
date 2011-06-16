@@ -1535,26 +1535,33 @@ var Path = this.Path = PathItem.extend({
 					to.subtract(through).rotate(90)),
 				center = l1.intersect(l2),
 				line = new Line(from, to, true),
-				side = line.getSide(through);
+				throughSide = line.getSide(through);
 			if (!center) {
 				// If the two lines are colinear, there cannot be an arc as the
 				// circle is infinitely big and has no center point. If side is
 				// 0, the connecting arc line of this huge circle is a line
 				// between the two points, so we can use #lineTo instead.
 				// Otherwise we bail out:
-				if (!side)
+				if (!throughSide)
 					return this.lineTo(to);
 				throw new Error("Cannot put an arc through the given points: "
 					+ [from, through, to]);
 			}
 			var vector = from.subtract(center),
 				radius = vector.getLength(),
-				extent = vector.getDirectedAngle(to.subtract(center));
-			// If the center is on the same side of the line (from, to) as
-			// the through point, we're extending bellow 180 degrees and need
-			// to adapt extent.
-			if (side == line.getSide(center))
+				extent = vector.getDirectedAngle(to.subtract(center)),
+				centerSide = line.getSide(center);
+			if (centerSide == 0) {
+				// If the center is lying on the line, we might have gotten the
+				// wrong sign for extent above. Use the sign of the side of the
+				// through point.
+				extent = throughSide * Math.abs(extent);
+			} else if (throughSide == centerSide) {
+				// If the center is on the same side of the line (from, to) as
+				// the through point, we're extending bellow 180 degrees and
+				// need to adapt extent.
 				extent -= 360 * (extent < 0 ? -1 : 1);
+			}
 			var ext = Math.abs(extent),
 				count =  ext >= 360 ? 4 : Math.ceil(ext / 90),
 				inc = extent / count,
