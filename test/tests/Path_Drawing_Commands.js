@@ -29,8 +29,13 @@ test('path.arcTo(from, through, to); where from, through and to all share the sa
 	path.strokeColor = 'black';
 
 	path.add([40, 75]);
-	path.arcTo([150, 75], [100, 75]);
-	equals(path.lastSegment.point.toString(), '{ x: 100, y: 75 }', 'We expect the last segment point to be at the position where we wanted to draw the arc to.');
+	var error = null;
+	try {
+		path.arcTo([150, 75], [100, 75]);
+	} catch (e) {
+		error = e;
+	}
+	equals(error != null, true, 'We expect this arcTo() command to throw an error');
 });
 
 test('path.arcTo(from, through, to); where from, through and to all share the same y position and through lies to the left of to', function() {
@@ -38,6 +43,11 @@ test('path.arcTo(from, through, to); where from, through and to all share the sa
 	path.strokeColor = 'black';
 
 	path.add([40, 75]);
-	path.arcTo([10, 75], [100, 75]);
-	equals(path.lastSegment.point.toString(), '{ x: 100, y: 75 }', 'We expect the last segment point to be at the position where we wanted to draw the arc to.');
+	var error = null;
+	try {
+		path.arcTo([10, 75], [100, 75]);
+	} catch (e) {
+		error = e;
+	}
+	equals(error != null, true, 'We expect this arcTo() command to throw an error');
 });
