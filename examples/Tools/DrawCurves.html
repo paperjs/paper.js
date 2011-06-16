@@ -24,12 +24,12 @@
 
 		function onMouseDrag(event) {
 			path.add(event.point);
-			path.selected = true;
+			path.fullySelected = true;
 		}
 
 		function onMouseUp(event) {
 			path.pointsToCurves(10);
-			path.selected = true;
+			path.fullySelected = true;
 		}
 	</script>
 </head>
