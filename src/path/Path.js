@@ -1511,7 +1511,7 @@ var Path = this.Path = PathItem.extend({
 		},
 
 		// PORT: New implementation back to Scriptographer
-		arcTo: function(to, clockwise) {
+		arcTo: function(to, clockwise /* | through, to */) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
 				from = current._point,
@@ -1538,12 +1538,15 @@ var Path = this.Path = PathItem.extend({
 				side = line.getSide(through);
 			if (!center) {
 				// If the two lines are colinear, there cannot be an arc as the
-				// circle is infinitely big and has no center point.
-				// We're cheating by producing a center point that's just really
-				// far away. While this is wrong, it graphically produces the
-				// expected results...
-				center = from.add(to).divide(2).add(to.subtract(from).rotate(
-						-90 * (side || 1)).multiply(10e9));
+				// circle is infinitely big and has no center point. If side is
+				// 0, the connecting arc line of this huge circle is a line
+				// between the two points, so we can use #lineTo instead.
+				// Otherwise we bail out:
+				if (!side)
+					return this.lineTo(to);
+				throw new Error(
+					"Cannot put an arc through the given points: "
+					+ Array.prototype.join.call(arguments));
 			}
 			var vector = from.subtract(center),
 				radius = vector.getLength(),
