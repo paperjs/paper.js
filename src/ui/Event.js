@@ -35,6 +35,11 @@ var Event = this.Event = Base.extend({
 		this.preventDefault();
 	},
 
+	// DOCS: Document Event#modifiers
+	/**
+	 * @type object
+	 * @bean
+	 */
 	getModifiers: function() {
 		return Key.modifiers;
 	}
