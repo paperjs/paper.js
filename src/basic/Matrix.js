@@ -119,6 +119,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Concatentates this transform with a scaling transformation.
 	 * 
+	 * @name Matrix#scale
+	 * @function
 	 * @param {Number} sx The x-axis scaling factor.
 	 * @param {Number} sy The y-axis scaling factor.
 	 * @param {Point} [center] The optional center for the scaling
@@ -157,6 +159,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Concatentates this transform with a translate transformation.
 	 * 
+	 * @name Matrix#translate
+	 * @function
 	 * @param {Number} dx The distance to translate in the x direction.
 	 * @param {Number} dy The distance to translate in the y direction.
 	 * @return {Matrix} This affine transform.
@@ -183,6 +187,8 @@ var Matrix = this.Matrix = Base.extend({
 	 * Concatentates this transform with a rotation transformation around an
 	 * anchor point.
 	 * 
+	 * @name Matrix#rotate
+	 * @function
 	 * @param {Number} angle The angle of rotation measured in degrees.
 	 * @param {Number} x The x coordinate of the anchor point.
 	 * @param {Number} y The y coordinate of the anchor point.
@@ -205,6 +211,8 @@ var Matrix = this.Matrix = Base.extend({
 	/**
 	 * Concatentates this transform with a shear transformation.
 	 * 
+	 * @name Matrix#shear
+	 * @function
 	 * @param {Number} shx The x shear factor.
 	 * @param {Number} shy The y shear factor.
 	 * @param {Point} [center] The optional center for the shear transformation.

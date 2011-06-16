@@ -416,6 +416,8 @@ var Rectangle = this.Rectangle = Base.extend({
 	 * Tests if the interior of the rectangle entirely contains the specified
 	 * rectangle.
 	 * 
+	 * @name Rectangle#contains
+	 * @function
 	 * @param {Rectangle} rect The specified rectangle
 	 * @return {Boolean} {@true if the rectangle entirely contains the specified
 	 *                   rectangle}
