@@ -29,6 +29,9 @@ var PathItem = this.PathItem = Item.extend(/** @scope PathItem */{
 	 * points, by only smoothing and adjusting their handle points, for both
 	 * open ended and closed paths.
 	 * 
+	 * @name PathItem#smooth
+	 * @function
+	 *
 	 * @example {@paperscript}
 	 * // Smoothing a closed shape:
 	 * 
