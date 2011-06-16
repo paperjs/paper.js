@@ -284,6 +284,9 @@ var Raster = this.Raster = Item.extend({
 	 */
 	/**
 	 * Gets the color of a pixel in the raster.
+	 *
+	 * @name Raster#getPixel
+	 * @function
 	 * @param point the offset of the pixel as a point in pixel coordinates
 	 * @return {RGBColor} the color of the pixel
 	 */
@@ -307,6 +310,9 @@ var Raster = this.Raster = Item.extend({
 	 */
 	/**
 	 * Sets the color of the specified pixel to the specified color.
+	 *
+	 * @name Raster#setPixel
+	 * @function
 	 * @param point the offset of the pixel as a point in pixel coordinates
 	 * @param color the color that the pixel will be set to
 	 */
