@@ -40,7 +40,6 @@ var Path = this.Path = PathItem.extend({
 	 * 
 	 * @class The Path item represents a path in a Paper.js project.
 	 * @extends PathItem
-	 * @extends Item
 	 * @constructs Path
 	 */
 	initialize: function(segments) {

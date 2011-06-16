@@ -36,7 +36,6 @@ var PointText = this.PointText = TextItem.extend({
 	 * characters contained in it.
 	 * 
 	 * @extends TextItem
-	 * @extends Item
 	 */
 	initialize: function(point) {
 		this.base();

@@ -39,7 +39,6 @@ var Layer = this.Layer = Group.extend({
 	 * {@link Project#layers}.
 	 * 
 	 * @extends Group
-	 * @extends Item
 	 * @constructs Layer
 	 */
 	initialize: function(items) {
