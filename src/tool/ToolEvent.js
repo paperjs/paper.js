@@ -14,7 +14,7 @@
  * All rights reserved.
  */
 
-var ToolEvent = this.ToolEvent = Base.extend({
+var ToolEvent = this.ToolEvent = Event.extend({
 	/** @lends ToolEvent# */
 
 	beans: true,
@@ -161,15 +161,6 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	setCount: function(count) {
 		this.tool[/^mouse(down|up)$/.test(this.type) ? 'downCount' : 'count']
 			= count;
-	},
-
-	// DOCS: document ToolEvent#modifiers
-	/**
-	 * @type object
-	 * @bean
-	 */
-	getModifiers: function() {
-		return Key.modifiers;
 	},
 
 	// TODO: Implement hitTest first
