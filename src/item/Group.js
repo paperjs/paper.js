@@ -71,15 +71,17 @@ var Group = this.Group = Item.extend({
 		this.base();
 		this._children = [];
 		this._namedChildren = {};
-		this._clipped = false;
 		this.setChildren(!items || !Array.isArray(items)
 				|| typeof items[0] !== 'object' ? arguments : items);
 	},
 
-	clone: function() {
-		var copy = this.base();
-		copy._clipped = this._clipped;
-		return copy;
+	_getClipMask: function() {
+		// TODO: Use caching once ChangeFlags.HIERARCHY is implemented
+		for (var i = 0, l = this._children.length; i < l; i++) {
+			var child = this._children[i];
+			if (child._clipMask)
+				return child;
+		}
 	},
 
 	/**
@@ -91,21 +93,24 @@ var Group = this.Group = Item.extend({
 	 * @bean
 	 */
 	isClipped: function() {
-		return this._clipped;
+		return !!this._getClipMask();
 	},
 
 	setClipped: function(clipped) {
-		this._clipped = clipped;
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
+		return this;
 	},
 
 	draw: function(ctx, param) {
+		var clipMask = this._getClipMask();
+		if (clipMask)
+			Item.draw(clipMask, ctx, param);
 		for (var i = 0, l = this._children.length; i < l; i++) {
-			// the group is clipped on its first child
-			param.clip = this._clipped && i == 0;
-			Item.draw(this._children[i], ctx, param);
+			var item = this._children[i];
+			if (item != clipMask)
+				Item.draw(item, ctx, param);
 		}
 	}
 });
