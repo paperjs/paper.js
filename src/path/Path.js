@@ -1442,7 +1442,7 @@ var Path = this.Path = PathItem.extend({
 	function getCurrentSegment(that) {
 		var segments = that._segments;
 		if (segments.length == 0)
-			throw('Use a moveTo() command first');
+			throw new Error('Use a moveTo() command first');
 		return segments[segments.length - 1];
 	}
 
@@ -1506,7 +1506,7 @@ var Path = this.Path = PathItem.extend({
 					.subtract(to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
-					"Cannot put a curve through points with parameter=" + t);
+					'Cannot put a curve through points with parameter = ' + t);
 			this.quadraticCurveTo(handle, to);
 		},
 
