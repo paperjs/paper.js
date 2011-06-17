@@ -32,7 +32,7 @@ var Item = this.Item = Base.extend({
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project)
-			paper.project.activeLayer.appendTop(this);
+			paper.project.activeLayer.addChild(this);
 		this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 	},
@@ -73,9 +73,9 @@ var Item = this.Item = Base.extend({
 	 * // Set the name of the path:
 	 * path.name = 'example';
 	 * 
-	 * // Create a group and move path into it:
+	 * // Create a group and add path to it as a child:
 	 * var group = new Group();
-	 * group.appendTop(path);
+	 * group.addChild(path);
 	 * 
 	 * // The path can be accessed by name:
 	 * group.children['example'].fillColor = 'red';
@@ -389,7 +389,7 @@ var Item = this.Item = Base.extend({
 	 * console.log(path.parent == project.activeLayer); // true
 	 * 
 	 * var group = new Group();
-	 * group.appendTop(path);
+	 * group.addChild(path);
 	 * 
 	 * // Now the parent of the path has become the group:
 	 * console.log(path.parent == group); // true
@@ -399,10 +399,16 @@ var Item = this.Item = Base.extend({
 	},
 
 	// DOCS: add comment to Item#children about not playing around with the
-	// array directly - use appendTop etc instead.
+	// array directly - use addChild etc instead.
 	/**
 	 * The children items contained within this item. Items that define a
 	 * {@link #name} can also be accessed by name.
+	 * 
+	 * <b>Please note:</b> The children array should not be modified directly
+	 * using array functions. To remove single items from the children list, use
+	 * {@link Item#remove()}, to remove all items from the children list, use
+	 * {@link Item#removeChildren()}. To add items to the children list, use
+	 * {@link Item#addChild(item)} or {@link Item#insertChild(index, item)}.
 	 * 
 	 * @type Item[]
 	 * @bean
@@ -413,7 +419,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * // Create a group and move the path into it:
 	 * var group = new Group();
-	 * group.appendTop(path);
+	 * group.addChild(path);
 	 * 
 	 * // Access the path through the group's children array:
 	 * group.children[0].fillColor = 'red';
@@ -426,7 +432,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * // Create a group and move the path into it:
 	 * var group = new Group();
-	 * group.appendTop(path);
+	 * group.addChild(path);
 	 * 
 	 * // The path can be accessed by name:
 	 * group.children['example'].fillColor = 'orange';
@@ -448,7 +454,7 @@ var Item = this.Item = Base.extend({
 	setChildren: function(items) {
 		this.removeChildren();
 		for (var i = 0, l = items && items.length; i < l; i++)
-			this.appendTop(items[i]);
+			this.addChild(items[i]);
 	},
 
 	/**
@@ -579,9 +585,9 @@ var Item = this.Item = Base.extend({
 	copyTo: function(itemOrProject) {
 		var copy = this.clone();
 		if (itemOrProject.layers) {
-			itemOrProject.activeLayer.appendTop(copy);
+			itemOrProject.activeLayer.addChild(copy);
 		} else {
-			itemOrProject.appendTop(copy);
+			itemOrProject.addChild(copy);
 		}
 		return copy;
 	},
@@ -615,7 +621,7 @@ var Item = this.Item = Base.extend({
 		// If this item has children, clone and append each of them:
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.appendTop(this._children[i].clone());
+				copy.addChild(this._children[i].clone());
 		}
 		// Only copy over these fields if they are actually defined in 'this'
 		// TODO: Consider moving this to Base once it's useful in more than one
@@ -627,8 +633,8 @@ var Item = this.Item = Base.extend({
 			if (this.hasOwnProperty(key))
 				copy[key] = this[key];
 		}
-		// Move the clone above the original, at the same position.
-		copy.moveAbove(this);
+		// Insert the clone above the original, at the same position.
+		copy.insertAbove(this);
 		// Only set name once the copy is moved, to avoid setting and unsettting
 		// name related structures.
 		if (this._name)
@@ -1367,21 +1373,6 @@ var Item = this.Item = Base.extend({
 	}
 }, new function() {
 
-	function append(top) {
-		return function(item) {
-			item._removeFromParent();
-			if (this._children) {
-				Base.splice(this._children, [item], top ? undefined : 0, 0);
-				item._parent = this;
-				item._setProject(this._project);
-				if (item._name)
-					item.setName(item._name);
-				return true;
-			}
-			return false;
-		};
-	}
-
 	function move(above) {
 		return function(item) {
 			// first remove the item from its parent's children list
@@ -1403,24 +1394,78 @@ var Item = this.Item = Base.extend({
 
 		/**
 		 * {@grouptitle Hierarchy Operations}
+		 * Adds the specified item as a child of the item at the end of the
+		 * its children list. You can use this function for groups, compound
+		 * paths and layers.
+		 * 
+		 * @param {Item} item The item that will be added as a child
+		 */		
+		addChild: function(item) {
+			return this.insertChild(undefined, item);
+		},
+
+		/**
+		 * Inserts the specified item as a child of the item at the specified
+		 * index in its {@link #children} list. You can use this function for
+		 * groups, compound paths and layers.
+		 * 
+		 * @param {Number} index
+		 * @param {Item} item The item that will be appended as a child
+		 */
+		insertChild: function(index, item) {
+			item._removeFromParent();
+			if (this._children) {
+				Base.splice(this._children, [item], index, 0);
+				item._parent = this;
+				item._setProject(this._project);
+				if (item._name)
+					item.setName(item._name);
+				return true;
+			}
+			return false;
+		},
+
+		/**
+		 * Inserts this item above the specified item.
+		 * 
+		 * @function
+		 * @param {Item} item The item above which it should be moved
+		 * @return {Boolean} {@true it was inserted}
+		 */
+		insertAbove: move(true),
+
+		/**
+		 * Inserts this item below the specified item.
+		 * 
+		 * @function
+		 * @param {Item} item The item above which it should be moved
+		 * @return {Boolean} {@true it was inserted}
+		 */
+		insertBelow: move(false),
+
+		/**
 		 * Inserts the specified item as a child of the item by appending it to
 		 * the list of children and moving it above all other children. You can
 		 * use this function for groups, compound paths and layers.
 		 * 
-		 * @function
 		 * @param {Item} item The item that will be appended as a child
+		 * @deprecated use {@link #addChild(item)} instead.
 		 */
-		appendTop: append(true),
+		appendTop: function(item) {
+			return this.addChild(item);
+		},
 
 		/**
 		 * Inserts the specified item as a child of this item by appending it to
 		 * the list of children and moving it below all other children. You can
 		 * use this function for groups, compound paths and layers.
 		 * 
-		 * @function
 		 * @param {Item} item The item that will be appended as a child
+		 * @deprecated use {@link #insertChild(index, item)} instead.
 		 */
-		appendBottom: append(false),
+		appendBottom: function(item) {
+			return this.insertChild(0, item);
+		},
 
 		/**
 		 * Moves this item above the specified item.
@@ -1428,6 +1473,7 @@ var Item = this.Item = Base.extend({
 		 * @function
 		 * @param {Item} item The item above which it should be moved
 		 * @return {Boolean} {@true it was moved}
+		 * @deprecated use {@link #insertAbove(item)} instead.
 		 */
 		moveAbove: move(true),
 
@@ -1437,6 +1483,7 @@ var Item = this.Item = Base.extend({
 		 * @function
 		 * @param {Item} item the item below which it should be moved
 		 * @return {Boolean} {@true it was moved}
+		 * @deprecated use {@link #insertBelow(item)} instead.
 		 */
 		moveBelow: move(false)
 	};
