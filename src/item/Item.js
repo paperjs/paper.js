@@ -235,6 +235,7 @@ var Item = this.Item = Base.extend({
 			this._selected = selected;
 			this._project._updateSelection(this);
 		}
+		this._changed(ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE);
 	},
 
 	_selected: false,
@@ -243,8 +244,6 @@ var Item = this.Item = Base.extend({
 	// TODO: Change to getter / setters for these below that notify of changes
 	// through _changed()
 
-	// TODO: Item#isLocked is currently ignored in the documentation, as
-	// locking an item currently has no effect
 	/**
 	 * Specifies whether the item is locked.
 	 * 
@@ -294,6 +293,7 @@ var Item = this.Item = Base.extend({
 			this.setFillColor(null);
 			this.setStrokeColor(null);
 		}
+		this._changed(ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE);
 	},
 
 	/**
