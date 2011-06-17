@@ -499,12 +499,12 @@ var Path = this.Path = PathItem.extend({
 
 	// PORT: Add to Scriptographer
 	/**
-	 * Removes the segments from the specified 'from' index to the specified
-	 * 'to' index from the path's {@link #segments} array.
+	 * Removes the segments from the specified {@code from} index to the
+	 * specified {@code to} index from the path's {@link #segments} array.
 	 * 
-	 * @param {Number} from
-	 * @param {Number} to
-	 * @return {Array} an array containing the removed segments.
+	 * @param {Number} [from=0] the beginning index, inclusive
+	 * @param {Number} [to=segments.length] the ending index, exclusive
+	 * @return {Array} an array containing the removed segments
 	 * 
 	 * @example {@paperscript}
 	 * // Removing segments from a path:
