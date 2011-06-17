@@ -1172,30 +1172,31 @@ var Item = this.Item = Base.extend({
 	 * path3.strokeJoin = 'bevel';
 	 */
 
-	// /**
-	//  * The dash offset of the stroke.
-	//  * 
-	//  * @property
-	//  * @name Item#dashOffset
-	//  * @type Number
-	//  */
+	/**
+	 * The dash offset of the stroke.
+	 * 
+	 * @property
+	 * @name Item#dashOffset
+	 * @default 0
+	 * @type Number
+	 */
 
-	// /**
-	//  * Specifies an array containing the dash and gap lengths of the stroke.
-	//  * 
-	//  * @example {@paperscript}
-	//  * // Create a line from { x: 0, y: 50 } to { x: 50, y: 50 };
-	//  * var line = new Path.Line(new Point(0, 50), new Point(50, 50));
-	//  * 
-	//  * line.strokeWidth = 3;
-	//  * 
-	//  * // Set the dashed stroke to [10pt dash, 5pt gap, 8pt dash, 10pt gap]:
-	//  * line.dashArray = [10, 5, 8, 10];
-	//  * 
-	//  * @property
-	//  * @name Item#dashArray
-	//  * @type Array
-	//  */
+	/**
+	 * Specifies an array containing the dash and gap lengths of the stroke.
+	 * 
+	 * @example {@paperscript}
+	 * var path = new Path.Circle(new Point(80, 50), 40);
+	 * path.strokeWidth = 2;
+	 * path.strokeColor = 'black';
+	 * 
+	 * // Set the dashed stroke to [10pt dash, 4pt gap]:
+	 * path.dashArray = [10, 4];
+	 * 
+	 * @property
+	 * @name Item#dashArray
+	 * @default []
+	 * @type Array
+	 */
 
 	/**
 	 * The miter limit of the stroke.
