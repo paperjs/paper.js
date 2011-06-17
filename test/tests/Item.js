@@ -42,10 +42,10 @@ test('clone()', function() {
 	}, true);
 });
 
-test('appendTop(item)', function() {
+test('addChild(item)', function() {
 	var project = paper.project;
 	var path = new Path();
-	project.activeLayer.appendTop(path);
+	project.activeLayer.addChild(path);
 	equals(function() {
 		return project.activeLayer.children.length;
 	},  1);
@@ -55,11 +55,11 @@ test('item.parent / item.isChild / item.isParent', function() {
 	var project = paper.project;
 	var secondDoc = new Project();
 	var path = new Path();
-	project.activeLayer.appendTop(path);
+	project.activeLayer.addChild(path);
 	equals(function() {
 		return project.activeLayer.children.indexOf(path) != -1;
 	}, true);
-	secondDoc.activeLayer.appendTop(path);
+	secondDoc.activeLayer.addChild(path);
 	equals(function() {
 		return project.activeLayer.isChild(path);
 	}, false);
@@ -92,34 +92,34 @@ test('item.lastChild / item.firstChild', function() {
 	}, true);
 });
 
-test('appendBottom(item)', function() {
+test('insertChild(0, item)', function() {
 	var project = paper.project;
 	var path = new Path();
 	var secondPath = new Path();
-	project.activeLayer.appendBottom(secondPath);
+	project.activeLayer.insertChild(0, secondPath);
 	equals(function() {
 		return secondPath.index < path.index;
 	}, true);
 });
 
-test('moveAbove(item)', function() {
+test('insertAbove(item)', function() {
 	var project = paper.project;
 	var path = new Path();
 	var secondPath = new Path();
-	path.moveAbove(secondPath);
+	path.insertAbove(secondPath);
 	equals(function() {
 		return project.activeLayer.lastChild == path;
 	}, true);
 });
 
-test('moveBelow(item)', function() {
+test('insertBelow(item)', function() {
 	var project = paper.project;
 	var firstPath = new Path();
 	var secondPath = new Path();
 	equals(function() {
 		return secondPath.index > firstPath.index;
 	}, true);
-	secondPath.moveBelow(firstPath);
+	secondPath.insertBelow(firstPath);
 	equals(function() {
 		return secondPath.index < firstPath.index;
 	}, true);
@@ -161,7 +161,7 @@ test('isGroupedWith', function() {
 	equals(function() {
 		return path.isGroupedWith(secondPath);
 	}, false);
-	secondGroup.appendTop(path);
+	secondGroup.addChild(path);
 	equals(function() {
 		return path.isGroupedWith(secondPath);
 	}, true);
@@ -180,11 +180,11 @@ test('isGroupedWith', function() {
 	equals(function() {
 		return path.isGroupedWith(secondGroup);
 	}, false);
-	paper.project.activeLayer.appendTop(path);
+	paper.project.activeLayer.addChild(path);
 	equals(function() {
 		return path.isGroupedWith(secondPath);
 	}, false);
-	paper.project.activeLayer.appendTop(secondPath);
+	paper.project.activeLayer.addChild(secondPath);
 	equals(function() {
 		return path.isGroupedWith(secondPath);
 	}, false);
@@ -229,18 +229,18 @@ test('Check item#project when moving items across projects', function() {
 	var doc1 = new Project();
 	var path = new Path();
 	var group = new Group();
-	group.appendTop(new Path());
+	group.addChild(new Path());
 	
 	equals(function() {
 		return path.project == doc1;
 	}, true);
 	var doc2 = new Project();
-	doc2.activeLayer.appendTop(path);
+	doc2.activeLayer.addChild(path);
 	equals(function() {
 		return path.project == doc2;
 	}, true);
 	
-	doc2.activeLayer.appendTop(group);
+	doc2.activeLayer.addChild(group);
 	equals(function() {
 		return group.children[0].project == doc2;
 	}, true);
@@ -355,7 +355,7 @@ test('Named child access 2', function() {
 	
 	var group = new Group();
 	
-	group.appendTop(path2);
+	group.addChild(path2);
 	
 	equals(function() {
 		return paper.project.activeLayer.children['test'] == path;
@@ -373,7 +373,7 @@ test('Named child access 2', function() {
 		return group._namedChildren['test'].length == 1;
 	}, true);
 	
-	paper.project.activeLayer.appendTop(path2);
+	paper.project.activeLayer.addChild(path2);
 
 	equals(function() {
 		return group._namedChildren['test'] === undefined;
