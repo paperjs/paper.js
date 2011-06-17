@@ -17,8 +17,6 @@
 var View = this.View = Base.extend({
 	/** @lends View# */
 
-	beans: true,
-
 	// DOCS: View: there is alot left to document
 	// TODO: Add bounds parameter that defines position within canvas?
 	// Find a good name for these bounds, since #bounds is already the artboard

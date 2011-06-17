@@ -17,8 +17,6 @@
 var ToolEvent = this.ToolEvent = Event.extend({
 	/** @lends ToolEvent# */
 
-	beans: true,
-
 	/**
 	 * @name ToolEvent
 	 * @constructor

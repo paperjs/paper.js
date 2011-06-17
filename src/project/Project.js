@@ -17,8 +17,6 @@
 var Project = this.Project = Base.extend({
 	/** @lends Project# */
 
-	beans: true,
-
 	// TODO: Add arguments to define pages
 	// DOCS: Document Project constructor and class
 	/**

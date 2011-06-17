@@ -18,8 +18,6 @@
 var GradientStop = this.GradientStop = Base.extend({
 	/** @lends GradientStop# */
 
-	beans: true,
-
 	/**
 	 * Creates a GradientStop object.
 	 * 

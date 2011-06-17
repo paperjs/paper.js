@@ -307,8 +307,6 @@ var Color = this.Color = Base.extend(new function() {
 }, {
 	/** @lends Color# */
 
-	beans: true,
-
 	/**
 	 * Returns the type of the color as a string.
 	 * 

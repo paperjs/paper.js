@@ -17,8 +17,6 @@
 CurveLocation = Base.extend({
 	/** @lends CurveLocation# */
 
-	beans: true,
-
 	// DOCS: CurveLocation class description: add this comment back when the
 	// mentioned functioned have been added:
 	// The class is in use in many places, such as {@link Path#getLocationAt(offset)},

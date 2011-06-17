@@ -21,8 +21,6 @@
  * @ignore
  */
 var SegmentPoint = Point.extend({
-	beans: true,
-
 	set: function(x, y) {
 		this._x = x;
 		this._y = y;

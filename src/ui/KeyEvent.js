@@ -18,8 +18,6 @@ var KeyEvent = this.KeyEvent = Event.extend(new function() {
 	return {
 		/** @lends KeyEvent# */
 
-		beans: true,
-
 		/**
 		 * @name KeyEvent
 		 * @constructor

@@ -33,8 +33,6 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 	};
 
 	var fields = {
-		beans: true,
-
 		// DOCS: why isn't the example code showing up?
 		/**
 		 * PathStyle objects don't need to be created directly. Just pass an
@@ -151,7 +149,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 		this[get] = function() {
 			return this._style[get]();
 		};
-	}, { beans: true }));
+	}, {}));
 
 	return fields;
 });
