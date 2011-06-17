@@ -19,6 +19,7 @@
 <p>A Rectangle specifies an area that is enclosed by it's top-left
 point (x, y), its width, and its height. It should not be confused with a
 rectangular path, it is not an item.</p>
+
 </div>
 
 <!-- ============================== constructors ========================= -->
@@ -89,28 +90,28 @@ rectangular path, it is not an item.</p>
 
 <li>
 <tt>x:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the left coordinate
 
 </li>
 
 <li>
 <tt>y:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the top coordinate
 
 </li>
 
 <li>
 <tt>width:</tt> 
-Number
+<tt>Number</tt>
 
 
 </li>
 
 <li>
 <tt>height:</tt> 
-Number
+<tt>Number</tt>
 
 
 </li>
@@ -235,7 +236,7 @@ that of the supplied rectangle.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangles are equal, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangles are equal, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -277,7 +278,7 @@ that of the supplied rectangle.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -309,7 +310,7 @@ that of the supplied rectangle.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -341,7 +342,7 @@ that of the supplied rectangle.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -373,7 +374,7 @@ that of the supplied rectangle.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -472,7 +473,7 @@ doesn't move the whole rectangle; the right hand side stays where it was.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -505,7 +506,7 @@ whole rectangle: the bottom won't move.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -538,7 +539,7 @@ doesn't move the whole rectangle; the left hand side stays where it was.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -571,7 +572,7 @@ whole rectangle: the top won't move.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -876,7 +877,7 @@ whole rectangle: the top won't move.</p>
 
 
 <!-- ============================== methods ================================ -->
-	<div class="reference-members"><h2>Functions</h2>
+	<div class="reference-members"><h2>Methods</h2>
 		
 			
 <div id="isempty-member" class="member">
@@ -900,7 +901,7 @@ whole rectangle: the top won't move.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> the rectangle is empty, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> the rectangle is empty, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -933,7 +934,7 @@ whole rectangle: the top won't move.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>String</tt>&nbsp;&mdash;&nbsp;A string representation of this rectangle.
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of this rectangle.
 </li>
 	
 	</ul>
@@ -979,13 +980,40 @@ whole rectangle: the top won't move.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the point is inside the rectangle's boundary, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the point is inside the rectangle's boundary, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
 
 	
-	
+	<p>
+<b>Example</b> &mdash; Checking whether the mouse position falls within the bounding rectangle of an item:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+// Create a circle shaped path at {x: 80, y: 50}
+// with a radius of 30.
+var circle = new Path.Circle(new Point(80, 50), 30);
+circle.fillColor = 'red';
+
+function onMouseMove(event) {
+	// Check whether the mouse position intersects with the
+	// bounding box of the item:
+	if (circle.bounds.contains(event.point)) {
+		// If it intersects, fill it with green:
+		circle.fillColor = 'green';
+	} else {
+		// If it doesn't intersect, fill it with red:
+		circle.fillColor = 'red';
+	}
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
 </div>
 </div>
 </div>
@@ -1024,14 +1052,55 @@ rectangle.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangle entirely contains the specified
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangle entirely contains the specified
                   rectangle, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
 
 	
+	<p>
+<b>Example</b> &mdash; Checking whether the bounding box of one item is contained within that of another item:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+// All newly created paths will inherit these styles:
+project.currentStyle = {
+	fillColor: 'green',
+	strokeColor: 'black'
+};
+
+// Create a circle shaped path at {x: 80, y: 50}
+// with a radius of 45.
+var largeCircle = new Path.Circle(new Point(80, 50), 45);
+
+// Create a smaller circle shaped path in the same position
+// with a radius of 30.
+var circle = new Path.Circle(new Point(80, 50), 30);
+
+function onMouseMove(event) {
+	// Move the circle to the position of the mouse:
+	circle.position = event.point;
 	
+	// Check whether the bounding box of the smaller circle
+	// is contained within the bounding box of the larger item:
+	if (largeCircle.bounds.contains(circle.bounds)) {
+		// If it does, fill it with green:
+		circle.fillColor = 'green';
+		largeCircle.fillColor = 'green';
+	} else {
+		// If doesn't, fill it with red:
+		circle.fillColor = 'red';
+		largeCircle.fillColor = 'red';
+	}
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
 </div>
 </div>
 </div>
@@ -1070,14 +1139,55 @@ another rectangle.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangle and the specified rectangle
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangle and the specified rectangle
                   intersect each other, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
 
 	
+	<p>
+<b>Example</b> &mdash; Checking whether the bounding box of one item intersects with that of another item:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-2">
+// All newly created paths will inherit these styles:
+project.currentStyle = {
+	fillColor: 'green',
+	strokeColor: 'black'
+};
+
+// Create a circle shaped path at {x: 80, y: 50}
+// with a radius of 45.
+var largeCircle = new Path.Circle(new Point(80, 50), 45);
+
+// Create a smaller circle shaped path in the same position
+// with a radius of 30.
+var circle = new Path.Circle(new Point(80, 50), 30);
+
+function onMouseMove(event) {
+	// Move the circle to the position of the mouse:
+	circle.position = event.point;
 	
+	// Check whether the bounding box of the two circle
+	// shaped paths intersect:
+	if (largeCircle.bounds.intersects(circle.bounds)) {
+		// If it does, fill it with green:
+		circle.fillColor = 'green';
+		largeCircle.fillColor = 'green';
+	} else {
+		// If doesn't, fill it with red:
+		circle.fillColor = 'red';
+		largeCircle.fillColor = 'red';
+	}
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
 </div>
 </div>
 </div>
@@ -1126,7 +1236,43 @@ with the specified rectangle.</p>
 	</ul>
 
 	
-	
+	<p>
+<b>Example</b> &mdash; Intersecting two rectangles and visualizing the result using rectangle shaped paths:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-3">
+// Create two rectangles that overlap each other
+var size = new Size(50, 50);
+var rectangle1 = new Rectangle(new Point(25, 15), size);
+var rectangle2 = new Rectangle(new Point(50, 40), size);
+
+// The rectangle that represents the intersection of the
+// two rectangles:
+var intersected = rectangle1.intersect(rectangle2);
+
+// To visualize the intersecting of the rectangles, we will
+// create rectangle shaped paths using the Path.Rectangle
+// constructor.
+
+// Have all newly created paths inherit a black stroke:
+project.currentStyle.strokeColor = 'black';
+
+// Create two rectangle shaped paths using the abstract rectangles
+// we created before:
+new Path.Rectangle(rectangle1);
+new Path.Rectangle(rectangle2);
+
+// Create a path that represents the intersected rectangle,
+// and fill it with red:
+var intersectionPath = new Path.Rectangle(intersected);
+intersectionPath.fillColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+</div>
+
+
 </div>
 </div>
 </div>
@@ -1227,6 +1373,7 @@ added point falls on the left or bottom edge of the enlarged rectangle,
 
 
 <!-- =========================== copyright notice ========================= -->
-<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
 
 </body>

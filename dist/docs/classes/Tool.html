@@ -41,6 +41,7 @@ function onMouseDrag(event) {
 	path.add(event.point);
 }
 </pre>
+
 </div>
 
 <!-- ============================== constructors ========================= -->
@@ -122,7 +123,7 @@ function onMouseDrag(event) {
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -155,7 +156,7 @@ event, since the last onMouseDrag event.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -188,7 +189,7 @@ event, since the last onMouseDrag event.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -220,7 +221,7 @@ event, since the last onMouseDrag event.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -256,7 +257,7 @@ about the mouse event.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		function
+		<tt>function</tt>
 	</li>
 	</ul>
 	
@@ -266,7 +267,7 @@ about the mouse event.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas367">
+<script type="text/paperscript" canvas="canvas-0">
 function onMouseDown(event) {
 	// Create a new circle shaped path with a radius of 10
 	// at the position of the mouse (event.point):
@@ -274,7 +275,7 @@ function onMouseDown(event) {
 	path.fillColor = 'black';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas367"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
 </div>
 
 
@@ -309,7 +310,7 @@ move by setting the <a href="../classes/Tool.html#eventinterval" onclick="return
 	
 	<ul><b>Type:</b>
 	<li>
-		function
+		<tt>function</tt>
 	</li>
 	</ul>
 	
@@ -319,7 +320,7 @@ move by setting the <a href="../classes/Tool.html#eventinterval" onclick="return
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas368">
+<script type="text/paperscript" canvas="canvas-1">
 // Create an empty path:
 var path = new Path();
 path.strokeColor = 'black';
@@ -329,7 +330,7 @@ function onMouseDrag(event) {
 	path.add(event.point);
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas368"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
 </div>
 
 
@@ -362,7 +363,7 @@ about the mouse event.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		function
+		<tt>function</tt>
 	</li>
 	</ul>
 	
@@ -372,7 +373,7 @@ about the mouse event.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas369">
+<script type="text/paperscript" canvas="canvas-2">
 // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
 var path = new Path.Circle([0, 0], 10);
 path.fillColor = 'black';
@@ -383,7 +384,7 @@ function onMouseMove(event) {
 	path.position = event.point;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas369"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
 </div>
 
 
@@ -416,7 +417,7 @@ mouse event.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		function
+		<tt>function</tt>
 	</li>
 	</ul>
 	
@@ -426,7 +427,7 @@ mouse event.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas370">
+<script type="text/paperscript" canvas="canvas-3">
 function onMouseUp(event) {
 	// Create a new circle shaped path with a radius of 10
 	// at the position of the mouse (event.point):
@@ -434,7 +435,7 @@ function onMouseUp(event) {
 	path.fillColor = 'black';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas370"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -473,7 +474,7 @@ keys.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Function
+		<tt>Function</tt>
 	</li>
 	</ul>
 	
@@ -483,7 +484,7 @@ keys.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas371">
+<script type="text/paperscript" canvas="canvas-4">
 // Create a circle shaped path:
 var path = new Path.Circle(new Point(50, 50), 30);
 path.fillColor = 'red';
@@ -498,7 +499,7 @@ function onKeyDown(event) {
 	}
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas371"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
 </div>
 
 
@@ -535,7 +536,7 @@ keys.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Function
+		<tt>Function</tt>
 	</li>
 	</ul>
 	
@@ -563,6 +564,7 @@ keys.</p>
 
 
 <!-- =========================== copyright notice ========================= -->
-<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
 
 </body>

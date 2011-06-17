@@ -16,6 +16,48 @@
 <div class="reference-class">
 <h1>Color</h1>
 
+<p>All properties and functions that expect color values accept
+instances of the different color classes such as <a href="../classes/RGBColor.html"><tt>RGBColor</tt></a>,
+<a href="../classes/HSBColor.html"><tt>HSBColor</tt></a> and <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>, and also accept named colors
+and hex values as strings which are then converted to instances of
+<a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> internally.</p>
+<p>
+<b>Example</b> &mdash; Named color values:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+// Create a circle shaped path at {x: 80, y: 50}
+// with a radius of 30.
+var circle = new Path.Circle(new Point(80, 50), 30);
+
+// Pass a color name to the fillColor property, which is internally
+// converted to an RGBColor.
+circle.fillColor = 'green';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+<p>
+<b>Example</b> &mdash; Hex color values:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+// Create a circle shaped path at {x: 80, y: 50}
+// with a radius of 30.
+var circle = new Path.Circle(new Point(80, 50), 30);
+
+// Pass a hex string to the fillColor property, which is internally
+// converted to an RGBColor.
+circle.fillColor = '#ff0000';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
 
 </div>
 
@@ -47,7 +89,7 @@ same as those of the supplied one.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the colors are the same, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the colors are the same, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -94,7 +136,7 @@ console.log(color.type); // 'rgb'
 	
 	<ul><b>Type:</b>
 	<li>
-		String('rgb', 'hsb', 'gray')
+		<tt>String('rgb', 'hsb', 'gray')</tt>
 	</li>
 	</ul>
 	
@@ -127,7 +169,7 @@ colors of the different subclasses support alpha values.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -137,7 +179,7 @@ colors of the different subclasses support alpha values.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas4">
+<script type="text/paperscript" canvas="canvas-2">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // Fill the circle with red and give it a 20pt green stroke:
@@ -150,7 +192,7 @@ circle.style = {
 // Make the stroke half transparent:
 circle.strokeColor.alpha = 0.5;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas4"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
 </div>
 
 
@@ -184,7 +226,7 @@ circle.strokeColor.alpha = 0.5;
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -194,14 +236,14 @@ circle.strokeColor.alpha = 0.5;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas5">
+<script type="text/paperscript" canvas="canvas-3">
 var circle = new Path.Circle(new Point(80, 50), 30);
 circle.fillColor = 'blue';
 
 // Blue + red = purple:
 circle.fillColor.red = 1;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas5"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -233,7 +275,7 @@ circle.fillColor.red = 1;
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -243,7 +285,7 @@ circle.fillColor.red = 1;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas6">
+<script type="text/paperscript" canvas="canvas-4">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // First we set the fill color to red:
@@ -252,7 +294,7 @@ circle.fillColor = 'red';
 // Red + green = yellow:
 circle.fillColor.green = 1;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas6"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
 </div>
 
 
@@ -284,7 +326,7 @@ circle.fillColor.green = 1;
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -294,7 +336,7 @@ circle.fillColor.green = 1;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas7">
+<script type="text/paperscript" canvas="canvas-5">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // First we set the fill color to red:
@@ -303,7 +345,7 @@ circle.fillColor = 'red';
 // Red + blue = purple:
 circle.fillColor.blue = 1;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas7"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
 </div>
 
 
@@ -337,7 +379,7 @@ circle.fillColor.blue = 1;
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -372,7 +414,7 @@ circle.fillColor.blue = 1;
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -382,12 +424,12 @@ circle.fillColor.blue = 1;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas8">
+<script type="text/paperscript" canvas="canvas-6">
 var circle = new Path.Circle(new Point(80, 50), 30);
 circle.fillColor = 'red';
 circle.fillColor.hue += 30;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas8"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-6"></canvas></div>
 </div>
 
 
@@ -397,7 +439,7 @@ circle.fillColor.hue += 30;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas9">
+<script type="text/paperscript" canvas="canvas-7">
 // Create a rectangle shaped path, using the dimensions
 // of the view:
 var path = new Path.Rectangle(view.bounds);
@@ -407,7 +449,7 @@ function onFrame(event) {
 	path.fillColor.hue += 0.5;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas9"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-7"></canvas></div>
 </div>
 
 
@@ -438,7 +480,7 @@ function onFrame(event) {
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -470,7 +512,7 @@ function onFrame(event) {
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -485,7 +527,7 @@ function onFrame(event) {
 
 
 <!-- ============================== methods ================================ -->
-	<div class="reference-members"><h2>Functions</h2>
+	<div class="reference-members"><h2>Methods</h2>
 		
 			
 <div id="clone-member" class="member">
@@ -542,7 +584,7 @@ function onFrame(event) {
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the color has an alpha value, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the color has an alpha value, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -577,7 +619,7 @@ function onFrame(event) {
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>String</tt>&nbsp;&mdash;&nbsp;A string representation of the color.
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of the color.
 </li>
 	
 	</ul>
@@ -610,7 +652,7 @@ function onFrame(event) {
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>String</tt>&nbsp;&mdash;&nbsp;A css string representation of the color.
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A css string representation of the color.
 </li>
 	
 	</ul>
@@ -627,6 +669,7 @@ function onFrame(event) {
 
 
 <!-- =========================== copyright notice ========================= -->
-<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
 
 </body>
