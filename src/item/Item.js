@@ -720,6 +720,9 @@ var Item = this.Item = Base.extend({
 		return this.insertBelow(item);
 	},
 
+	/**
+	* Removes the item from its parent's named children list.
+	*/
 	_removeFromNamed: function() {
 		var children = this._parent._children,
 			namedChildren = this._parent._namedChildren,
@@ -1214,7 +1217,7 @@ var Item = this.Item = Base.extend({
 	 * @name Item#scale
 	 * @function
 	 * @param {Number} scale the scale factor
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * 
 	 * @example {@paperscript}
 	 * // Scaling an item from its center point:
@@ -1246,7 +1249,7 @@ var Item = this.Item = Base.extend({
 	 * @function
 	 * @param {Number} sx the horizontal scale factor
 	 * @param {Number} sy the vertical scale factor
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * 
 	 * @example {@paperscript}
 	 * // Scaling an item horizontally by 300%:
@@ -1285,7 +1288,7 @@ var Item = this.Item = Base.extend({
 	 * Angles are oriented clockwise and measured in degrees.
 	 * 
 	 * @param {Number} angle the rotation angle
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#rotate
 	 * 
 	 * @example {@paperscript}
@@ -1333,7 +1336,7 @@ var Item = this.Item = Base.extend({
 	 * @name Item#shear
 	 * @function
 	 * @param {Point} point
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#shear
 	 */
 	/**
@@ -1344,7 +1347,7 @@ var Item = this.Item = Base.extend({
 	 * @function
 	 * @param {Number} shx
 	 * @param {Number} shy
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#shear
 	 */
 	shear: function(shx, shy, center) {
