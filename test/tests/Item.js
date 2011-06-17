@@ -304,7 +304,7 @@ test('Check parent children object for named item', function() {
 	}, true);
 });
 
-test('Named child access', function() {
+test('Named child access 1', function() {
 	var path = new Path();
 	path.name = 'test';
 
@@ -346,7 +346,7 @@ test('Named child access 2', function() {
 	}, true);
 });
 
-test('Named child access 2', function() {
+test('Named child access 3', function() {
 	var path = new Path();
 	path.name = 'test';
 
@@ -360,28 +360,41 @@ test('Named child access 2', function() {
 	equals(function() {
 		return paper.project.activeLayer.children['test'] == path;
 	}, true);
-	
+
+	// TODO: Tests should not access internal properties
 	equals(function() {
-		return paper.project.activeLayer._namedChildren['test'].length == 1;
-	}, true);
+		return paper.project.activeLayer._namedChildren['test'].length;
+	}, 1);
 
 	equals(function() {
 		return group.children['test'] == path2;
 	}, true);
-	
+
 	equals(function() {
 		return group._namedChildren['test'].length == 1;
 	}, true);
-	
-	paper.project.activeLayer.addChild(path2);
+
+	equals(function() {
+		return paper.project.activeLayer._namedChildren['test'][0] == path;
+	}, true);
+
+	paper.project.activeLayer.appendTop(path2);
+
+	equals(function() {
+		return group.children['test'] == null;
+	}, true);
 
 	equals(function() {
 		return group._namedChildren['test'] === undefined;
 	}, true);
-	
+
 	equals(function() {
-		return paper.project.activeLayer._namedChildren['test'].length == 2;
+		return paper.project.activeLayer.children['test'] == path2;
 	}, true);
+
+	equals(function() {
+		return paper.project.activeLayer._namedChildren['test'].length;
+	}, 2);
 });
 
 test('Setting name of child back to null', function() {
