@@ -85,21 +85,22 @@ var Item = this.Item = Base.extend({
 	},
 
 	setName: function(name) {
+		// Empty name '' is stored as undefined internally
+		if ((name || '') === (this._name || ''))
+			return;
 		var children = this._parent._children,
 			namedChildren = this._parent._namedChildren;
-		if (name != this._name) {
-			// If the item already had a name,
-			// remove its property from the parent's children object:
-			if (this._name)
-				this._removeFromNamed();
-			this._name = name || undefined;
-		}
+		// If the item already had a name,
+		// remove its property from the parent's children object:
+		if (this._name)
+			this._removeFromNamed();
 		if (name) {
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
-		} else {
-			delete children[name];
+		} else if (this._name) {
+			delete children[this._name];
 		}
+		this._name = name || undefined;
 	},
 
 	/**
