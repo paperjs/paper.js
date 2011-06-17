@@ -772,14 +772,31 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Removes all of the item's {@link #children} (if any).
 	 * 
-	 * @return {Boolean} {@true removing was successful}
+	 * @name Item#removeChildren
+	 * @function
+	 * @return {Array} an array containing the removed items
 	 */
-	removeChildren: function() {
-		var removed = false;
-		if (this._children) {
-			for (var i = this._children.length - 1; i >= 0; i--)
-				removed = this._children[i].remove() || removed;
-		}
+	/**
+	 * Removes all of the item's {@link #children} (if any).
+	 * 
+	 * @return {Array} an array containing the removed items
+	 */
+	/**
+	 * Removes the children from the specified {@code from} index to the
+	 * {@code to} index from the parent's {@link #children} array.
+	 * 
+	 * @param {Number} from the beginning index, inclusive
+	 * @param {Number} [to=children.length] the ending index, exclusive
+	 * @return {Array} an array containing the removed items
+	 */
+	removeChildren: function(from, to) {
+		if (!this._children)
+			return null;
+		from = from || 0;
+	 	to = Base.pick(to, this._children.length);
+		var removed = this._children.splice(from, to - from);
+		for (var i = removed.length - 1; i >= 0; i--)
+			removed[i].remove();
 		return removed;
 	},
 
