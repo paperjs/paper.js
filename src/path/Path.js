@@ -1276,7 +1276,7 @@ var Path = this.Path = PathItem.extend({
 				// we will do it later when we composite the temporary
 				// canvas.
 				if (!fillColor || !strokeColor)
-					ctx.globalAlpha = this.opacity;
+					ctx.globalAlpha = this._opacity;
 				if (fillColor) {
 					ctx.fillStyle = fillColor.getCanvasStyle(ctx);
 					ctx.fill();

@@ -194,6 +194,112 @@ var Item = this.Item = Base.extend({
 		this._style.initialize(style);
 	},
 
+}, new function() { // Injection scope to produce getter setters for properties
+	// We need setters because we want to call _changed() if a property was
+	// modified.
+	return Base.each(['locked', 'visible', 'blendMode', 'opacity'],
+		function(name) {
+			var part = Base.capitalize(name),
+				name = '_' + name;
+			this['get' + part] = function() {
+				return this[name];
+			};
+			this['set' + part] = function(value) {
+				if (value != this[name]) {
+					this[name] = value;
+					// #locked does not change appearance, all others do:
+					this._changed(ChangeFlags.ATTRIBUTE
+						| (name !== '_locked' ? ChangeFlags.APPEARANCE : 0));
+				}
+			};
+		}, {});
+}, {
+	/** @lends Item# */
+
+	// Note: These properties have their getter / setters produced in the
+	// injection scope above.
+
+	/**
+	 * Specifies whether the item is locked.
+	 * 
+	 * @name Item#locked
+	 * @type Boolean
+	 * @default false
+	 * @ignore
+	 */
+	_locked: false,
+
+	/**
+	 * Specifies whether the item is visible. When set to {@code false}, the
+	 * item won't be drawn.
+	 * 
+	 * @name Item#visible
+	 * @type Boolean
+	 * @default true
+	 * 
+	 * @example {@paperscript}
+	 * // Hiding an item:
+	 * var path = new Path.Circle(new Point(50, 50), 20);
+	 * path.fillColor = 'red';
+	 * 
+	 * // Hide the path:
+	 * path.visible = false;
+	 */
+	_visible: true,
+
+	/**
+	 * The blend mode of the item.
+	 * 
+	 * @name Item#blendMode
+	 * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light',
+	 * 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten',
+	 * 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color',
+	 * 'add', 'subtract', 'average', 'pin-light', 'negation')
+	 * @default 'normal'
+	 * 
+	 * @example {@paperscript}
+	 * // Setting an item's blend mode:
+	 * 
+	 * // Create a white rectangle in the background
+	 * // with the same dimensions as the view:
+	 * var background = new Path.Rectangle(view.bounds);
+	 * background.fillColor = 'white';
+	 * 
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
+	 * circle.fillColor = 'red';
+	 * 
+	 * var circle2 = new Path.Circle(new Point(120, 50), 35);
+	 * circle2.fillColor = 'blue';
+	 * 
+	 * // Set the blend mode of circle2:
+	 * circle2.blendMode = 'multiply';
+	 */
+	_blendMode: 'normal',
+
+	/**
+	 * The opacity of the item as a value between {@code 0} and {@code 1}.
+	 * 
+	 * @name Item#opacity
+	 * @type Number
+	 * @default 1
+	 * 
+	 * @example {@paperscript}
+	 * // Making an item 50% transparent:
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
+	 * circle.fillColor = 'red';
+     * 
+	 * var circle2 = new Path.Circle(new Point(120, 50), 35);
+	 * circle2.style = {
+	 * 	fillColor: 'blue',
+	 * 	strokeColor: 'green',
+	 * 	strokeWidth: 10
+	 * };
+	 * 
+	 * // Make circle2 50% transparent:
+	 * circle2.opacity = 0.5;
+	 */
+	_opacity: 1,
+
 	/**
 	 * Specifies whether an item is selected and will also return {@code true}
 	 * if the item is partially selected (groups with some selected or partially
@@ -205,6 +311,7 @@ var Item = this.Item = Base.extend({
 	 * and bounding boxes of symbol and raster items.
 	 * 
 	 * @type Boolean
+	 * @default false
 	 * @bean
 	 * @see Project#selectedItems
 	 * @see Segment#selected
@@ -239,34 +346,6 @@ var Item = this.Item = Base.extend({
 	_selected: false,
 
 	// TODO: isFullySelected / setFullySelected
-	// TODO: Change to getter / setters for these below that notify of changes
-	// through _changed()
-
-	/**
-	 * Specifies whether the item is locked.
-	 * 
-	 * @type Boolean
-	 * @default false
-	 * @ignore
-	 */
-	locked: false,
-
-	/**
-	 * Specifies whether the item is visible. When set to {@code false}, the
-	 * item won't be drawn.
-	 * 
-	 * @type Boolean
-	 * @default true
-	 * 
-	 * @example {@paperscript}
-	 * // Hiding an item:
-	 * var path = new Path.Circle(new Point(50, 50), 20);
-	 * path.fillColor = 'red';
-	 * 
-	 * // Hide the path:
-	 * path.visible = false;
-	 */
-	visible: true,
 
 	/**
 	 * Specifies whether the item defines a clip mask. This can only be set on
@@ -276,7 +355,6 @@ var Item = this.Item = Base.extend({
 	 * @type Boolean
 	 * @default false
 	 * @bean
-	 * @ignore // ignoring this until we actually make use of it for drawing
 	 */
 	isClipMask: function() {
 		return this._clipMask;
@@ -291,56 +369,7 @@ var Item = this.Item = Base.extend({
 		this._changed(ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE);
 	},
 
-	/**
-	 * The blend mode of the item.
-	 * 
-	 * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light',
-	 * 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten',
-	 * 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color',
-	 * 'add', 'subtract', 'average', 'pin-light', 'negation')
-	 * @default 'normal'
-	 * 
-	 * @example {@paperscript}
-	 * // Setting an item's blend mode:
-	 * 
-	 * // Create a white rectangle in the background
-	 * // with the same dimensions as the view:
-	 * var background = new Path.Rectangle(view.bounds);
-	 * background.fillColor = 'white';
-	 * 
-	 * var circle = new Path.Circle(new Point(80, 50), 35);
-	 * circle.fillColor = 'red';
-	 * 
-	 * var circle2 = new Path.Circle(new Point(120, 50), 35);
-	 * circle2.fillColor = 'blue';
-	 * 
-	 * // Set the blend mode of circle2:
-	 * circle2.blendMode = 'multiply';
-	 */
-	blendMode: 'normal',
-
-	/**
-	 * The opacity of the item as a value between {@code 0} and {@code 1}.
-	 * 
-	 * @example {@paperscript}
-	 * // Making an item 50% transparent:
-	 * var circle = new Path.Circle(new Point(80, 50), 35);
-	 * circle.fillColor = 'red';
-     * 
-	 * var circle2 = new Path.Circle(new Point(120, 50), 35);
-	 * circle2.style = {
-	 * 	fillColor: 'blue',
-	 * 	strokeColor: 'green',
-	 * 	strokeWidth: 10
-	 * };
-	 * 
-	 * // Make circle2 50% transparent:
-	 * circle2.opacity = 0.5;
-	 * 
-	 * @type Number
-	 * @default 1
-	 */
-	opacity: 1,
+	_clipMask: false,
 
 	// TODO: get/setIsolated (print specific feature)
 	// TODO: get/setKnockout (print specific feature)
@@ -539,8 +568,8 @@ var Item = this.Item = Base.extend({
 		// Only copy over these fields if they are actually defined in 'this'
 		// TODO: Consider moving this to Base once it's useful in more than one
 		// place
-		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask',
-				'_selected'];
+		var keys = ['_locked', '_visible', '_opacity', '_blendMode',
+				'_clipMask', '_selected'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
@@ -823,7 +852,7 @@ var Item = this.Item = Base.extend({
 	isEditable: function() {
 		var item = this;
 		while (item) {
-			if (!item.visible || item.locked)
+			if (!item._visible || item._locked)
 				return false;
 			item = item._parent;
 		}
@@ -993,7 +1022,7 @@ var Item = this.Item = Base.extend({
 				y2 = x2;
 			for (var i = 0, l = children.length; i < l; i++) {
 				var child = children[i];
-				if (child.visible) {
+				if (child._visible) {
 					var rect = includeStroke
 							? child.getStrokeBounds()
 							: child.getBounds();
@@ -1412,7 +1441,7 @@ var Item = this.Item = Base.extend({
 		// TODO: Optimize temporary canvas drawing to ignore parts that are
 		// outside of the visible view.
 		draw: function(item, ctx, param) {
-			if (!item.visible || item.opacity == 0)
+			if (!item._visible || item._opacity == 0)
 				return;
 
 			var tempCanvas, parentCtx;
@@ -1422,8 +1451,8 @@ var Item = this.Item = Base.extend({
 			// and strokeColor also need to be drawn on a temporary canvas first,
 			// since otherwise their stroke is drawn half transparent over their
 			// fill.
-			if (item.blendMode !== 'normal'
-					|| item.opacity < 1
+			if (item._blendMode !== 'normal'
+					|| item._opacity < 1
 					&& !(item._segments && (!item.getFillColor()
 							|| !item.getStrokeColor()))) {
 				var bounds = item.getStrokeBounds() || item.getBounds();
@@ -1467,17 +1496,17 @@ var Item = this.Item = Base.extend({
 
 				// If the item has a blendMode, use BlendMode#process to
 				// composite its canvas on the parentCanvas.
-				if (item.blendMode !== 'normal') {
+				if (item._blendMode !== 'normal') {
 					// The pixel offset of the temporary canvas to the parent
 					// canvas.
 					var pixelOffset = itemOffset.subtract(param.offset);
-					BlendMode.process(item.blendMode, ctx, parentCtx,
-						item.opacity, pixelOffset);
+					BlendMode.process(item._blendMode, ctx, parentCtx,
+						item._opacity, pixelOffset);
 				} else {
 				// Otherwise we just need to set the globalAlpha before drawing
 				// the temporary canvas on the parent canvas.
 					parentCtx.save();
-					parentCtx.globalAlpha = item.opacity;
+					parentCtx.globalAlpha = item._opacity;
 					parentCtx.drawImage(tempCanvas,
 							itemOffset.x, itemOffset.y);
 					parentCtx.restore();
