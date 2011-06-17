@@ -19,13 +19,15 @@
 <p>The Point object represents a point in the two dimensional space
 of the Paper.js project. It is also used to represent two dimensional
 vector objects.</p>
-<p>Example:</p>
-<pre class="code">
-// Create a point at x: 10, y: 5
-var point = new Point(10, 5);
+<p>
+<b>Example</b> &mdash; Create a point at x: 10, y: 5
+</p>
+
+
+<pre class="code">var point = new Point(10, 5);
 console.log(point.x); // 10
-console.log(point.y); // 5
-</pre>
+console.log(point.y); // 5</pre>
+
 </div>
 
 <!-- ============================== constructors ========================= -->
@@ -53,14 +55,14 @@ console.log(point.y); // 5
 
 <li>
 <tt>x:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the x coordinate
 
 </li>
 
 <li>
 <tt>y:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the y coordinate
 
 </li>
@@ -105,7 +107,7 @@ coordinates.</p>
 
 <li>
 <tt>array:</tt> 
-array
+<tt>array</tt>
 
 
 </li>
@@ -164,7 +166,7 @@ path.fillColor = 'red';</pre>
 
 <li>
 <tt>object:</tt> 
-object
+<tt>object</tt>
 
 
 </li>
@@ -741,7 +743,7 @@ supplied point.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the points are equal, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the points are equal, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -792,7 +794,7 @@ console.log(point != new Point(1, 1)); // true</pre>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -824,7 +826,7 @@ console.log(point != new Point(1, 1)); // true</pre>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -859,7 +861,7 @@ console.log(point != new Point(1, 1)); // true</pre>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -893,7 +895,7 @@ given.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -927,7 +929,7 @@ given.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -963,7 +965,7 @@ are in quadrant <tt>4</tt>.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -1016,7 +1018,7 @@ of a <a href="../classes/Segment.html"><tt>Segment</tt></a> or a <a href="../cla
 	
 	<ul><b>Type:</b>
 	<li>
-		Boolean
+		<tt>Boolean</tt>
 	</li>
 	</ul>
 	
@@ -1031,7 +1033,7 @@ of a <a href="../classes/Segment.html"><tt>Segment</tt></a> or a <a href="../cla
 
 
 <!-- ============================== methods ================================ -->
-	<div class="reference-members"><h2>Functions</h2>
+	<div class="reference-members"><h2>Methods</h2>
 		
 			
 <div id="clone-member" class="member">
@@ -1099,7 +1101,7 @@ point2.x = 1; // doesn't change point1.x</pre>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>String</tt>&nbsp;&mdash;&nbsp;A string representation of the point.
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of the point.
 </li>
 	
 	</ul>
@@ -1190,7 +1192,7 @@ is not modified!</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Number</tt>
+<tt><tt>Number</tt></tt>
 </li>
 	
 	</ul>
@@ -1226,7 +1228,7 @@ changing its angle and returns it as a new point. The optional
 
 <li>
 <tt>length:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the length of the normalized vector
 &mdash;&nbsp;optional, default: <tt>1</tt>
 </li>
@@ -1285,7 +1287,7 @@ information about rotational direction is given.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Number</tt>&nbsp;&mdash;&nbsp;the angle in degrees
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the angle in degrees
 </li>
 	
 	</ul>
@@ -1330,7 +1332,7 @@ unsigned, no information about rotational direction is given.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Number</tt>&nbsp;&mdash;&nbsp;the angle in radians
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the angle in radians
 </li>
 	
 	</ul>
@@ -1377,7 +1379,7 @@ signed, giving information about the rotational direction.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Number</tt>&nbsp;&mdash;&nbsp;the angle between the two vectors
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the angle between the two vectors
 </li>
 	
 	</ul>
@@ -1413,7 +1415,7 @@ signed, giving information about the rotational direction.</p>
 
 <li>
 <tt>angle:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the rotation angle
 
 </li>
@@ -1477,7 +1479,7 @@ Number
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the point is inside the rectangle, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the point is inside the rectangle, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1517,7 +1519,7 @@ Number
 
 <li>
 <tt>tolerance:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the maximum distance allowed
 
 </li>
@@ -1528,7 +1530,7 @@ Number
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is within the given distance, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is within the given distance, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1573,7 +1575,7 @@ another vector.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it is parallel, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it is parallel, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1618,7 +1620,7 @@ another vector.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it is orthogonal, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it is orthogonal, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1651,7 +1653,7 @@ another vector.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> both x and y are 0, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> both x and y are 0, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1685,7 +1687,7 @@ coordinates.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if either x or y are not a number, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if either x or y are not a number, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1731,7 +1733,7 @@ coordinates.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Number</tt>&nbsp;&mdash;&nbsp;the dot product of the two points
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the dot product of the two points
 </li>
 	
 	</ul>
@@ -1775,7 +1777,7 @@ coordinates.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Number</tt>&nbsp;&mdash;&nbsp;the cross product of the two points
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the cross product of the two points
 </li>
 	
 	</ul>
@@ -2006,7 +2008,7 @@ console.log(absPoint); // {x: 5, y: 10}</pre>
 	</div>
 
 
-	<div class="reference-members"><h2>Static Functions</h2>
+	<div class="reference-members"><h2>Static Methods</h2>
 		
 			
 <div id="min-point1-point2-member" class="member">
@@ -2179,6 +2181,7 @@ var point = maxPoint * randomPoint;</pre>
 
 
 <!-- =========================== copyright notice ========================= -->
-<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
 
 </body>

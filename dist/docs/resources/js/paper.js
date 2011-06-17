@@ -371,13 +371,16 @@ this.Base = Base.inject({
 });
 
 var PaperScope = this.PaperScope = Base.extend({
+	version: 0.1,
 
 	initialize: function(id) {
+
 		this.project = null;
 
 		this.projects = [];
 
 		this.view = null;
+
 		this.views = [];
 
 		this.tool = null;
@@ -586,8 +589,7 @@ var Point = this.Point = Base.extend({
 
 	getDirectedAngle: function(point) {
 		point = Point.read(arguments);
-		var angle = this.getAngle() - point.getAngle();
-		return angle < -180 ? angle + 360 : angle > 180 ? angle - 360 : angle;
+		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
 	},
 
 	rotate: function(angle, center) {
@@ -891,6 +893,7 @@ var LinkedSize = Size.extend({
 });
 
 var Rectangle = this.Rectangle = Base.extend({
+
 	beans: true,
 
 	initialize: function(arg0, arg1, arg2, arg3) {
@@ -1525,7 +1528,7 @@ var Line = this.Line = Base.extend({
 		if (ccw == 0) {
 			ccw = v2.dot(v1);
 			if (ccw > 0) {
-				ccw = (v2 - v1).dot(v1);
+				ccw = v2.subtract(v1).dot(v1);
 				if (ccw < 0)
 				    ccw = 0;
 			}
@@ -1601,8 +1604,8 @@ var Project = this.Project = Base.extend({
 		return items;
 	},
 
-	_selectItem: function(item, select) {
-		if (select) {
+	_updateSelection: function(item) {
+		if (item._selected) {
 			this._selectedItemCount++;
 			this._selectedItems[item.getId()] = item;
 		} else {
@@ -1682,6 +1685,7 @@ var ChangeFlags = {
 };
 
 var Item = this.Item = Base.extend({
+
 	beans: true,
 
 	initialize: function() {
@@ -1743,15 +1747,11 @@ var Item = this.Item = Base.extend({
 
 	isSelected: function() {
 		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				if (this._children[i].isSelected()) {
+			for (var i = 0, l = this._children.length; i < l; i++)
+				if (this._children[i].isSelected())
 					return true;
-				}
-			}
-		} else {
-			return !!this._selected;
 		}
-		return false;
+		return this._selected;
 	},
 
 	setSelected: function(selected) {
@@ -1759,13 +1759,13 @@ var Item = this.Item = Base.extend({
 			for (var i = 0, l = this._children.length; i < l; i++) {
 				this._children[i].setSelected(selected);
 			}
-		} else {
-			if ((selected = !!selected) != this._selected) {
-				this._selected = selected;
-				this._project._selectItem(this, selected);
-			}
+		} else if ((selected = !!selected) != this._selected) {
+			this._selected = selected;
+			this._project._updateSelection(this);
 		}
 	},
+
+	_selected: false,
 
 	locked: false,
 
@@ -1898,7 +1898,8 @@ var Item = this.Item = Base.extend({
 			for (var i = 0, l = this._children.length; i < l; i++)
 				copy.appendTop(this._children[i].clone());
 		}
-		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask'];
+		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask',
+				'_selected'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
@@ -2298,9 +2299,8 @@ var Group = this.Group = Item.extend({
 
 	draw: function(ctx, param) {
 		for (var i = 0, l = this._children.length; i < l; i++) {
+			param.clip = this._clipped && i == 0;
 			Item.draw(this._children[i], ctx, param);
-			if (this._clipped && i == 0)
-				ctx.clip();
 		}
 	}
 });
@@ -2727,6 +2727,7 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 });
 
 var Segment = this.Segment = Base.extend({
+
 	beans: true,
 
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
@@ -2824,7 +2825,6 @@ var Segment = this.Segment = Base.extend({
 		var path = this._path,
 			selected = !!selected, 
 			state = this._selectionState,
-			wasSelected = !!state,
 			selection = [
 				!!(state & SelectionState.POINT),
 				!!(state & SelectionState.HANDLE_IN),
@@ -2853,8 +2853,8 @@ var Segment = this.Segment = Base.extend({
 		this._selectionState = (selection[0] ? SelectionState.POINT : 0)
 				| (selection[1] ? SelectionState.HANDLE_IN : 0)
 				| (selection[2] ? SelectionState.HANDLE_OUT : 0);
-		if (path && wasSelected != !!this._selectionState)
-			path._updateSelection(this);
+		if (path && state != this._selectionState)
+			path._updateSelection(this, state, this._selectionState);
 	},
 
 	isSelected: function() {
@@ -3018,10 +3018,9 @@ var SegmentPoint = Point.extend({
 });
 
 var SelectionState = {
-	POINT: 1,
-	HANDLE_IN: 2,
-	HANDLE_OUT: 4,
-	HANDLE_BOTH: 6
+	HANDLE_IN: 1,
+	HANDLE_OUT: 2,
+	POINT: 4
 };
 
 var Curve = this.Curve = Base.extend({
@@ -3499,6 +3498,7 @@ CurveLocation = Base.extend({
 });
 
 var PathItem = this.PathItem = Item.extend({
+
 });
 
 var Path = this.Path = PathItem.extend({
@@ -3508,7 +3508,7 @@ var Path = this.Path = PathItem.extend({
 	initialize: function(segments) {
 		this.base();
 		this._closed = false;
-		this._selectedSegmentCount = 0;
+		this._selectedSegmentState = 0;
 		this.setSegments(!segments || !Array.isArray(segments)
 				|| typeof segments[0] !== 'object' ? arguments : segments);
 	},
@@ -3622,7 +3622,8 @@ var Path = this.Path = PathItem.extend({
 			curves = this._curves,
 			amount = segs.length,
 			append = index == null,
-			index = append ? segments.length : index;
+			index = append ? segments.length : index,
+			fullySelected = this.isFullySelected();
 		for (var i = 0; i < amount; i++) {
 			var segment = segs[i];
 			if (segment._path) {
@@ -3630,8 +3631,10 @@ var Path = this.Path = PathItem.extend({
 			}
 			segment._path = this;
 			segment._index = index + i;
+			if (fullySelected)
+				segment._selectionState = SelectionState.POINT;
 			if (segment._selectionState)
-				this._updateSelection(segment);
+				this._updateSelection(segment, 0, segment._selectionState);
 		}
 		if (append) {
 			segments.push.apply(segments, segs);
@@ -3651,13 +3654,6 @@ var Path = this.Path = PathItem.extend({
 		}
 		this._changed(ChangeFlags.GEOMETRY);
 		return segs;
-	},
-
-	_updateSelection: function(segment) {
-		var count = this._selectedSegmentCount +=
-				segment._selectionState ? 1 : -1;
-		if (count <= 1)
-			this._project._selectItem(this, count == 1);
 	},
 
 	add: function(segment1 ) {
@@ -3692,9 +3688,10 @@ var Path = this.Path = PathItem.extend({
 		var segments = this.removeSegments(index, index + 1);
 		return segments[0] || null;
 	},
+
 	removeSegments: function(from, to) {
 		from = from || 0;
-	 	to = Base.pick(to, this._segments.length - 1);
+	 	to = Base.pick(to, this._segments.length);
 		var segments = this._segments,
 			curves = this._curves,
 			last = to >= segments.length,
@@ -3704,10 +3701,8 @@ var Path = this.Path = PathItem.extend({
 			return removed;
 		for (var i = 0; i < amount; i++) {
 			var segment = removed[i];
-			if (segment._selectionState) {
-				segment._selectionState = 0;
-				this._updateSelection(segment);
-			}
+			if (segment._selectionState)
+				this._updateSelection(segment, segment._selectionState, 0);
 			removed._index = removed._path = undefined;
 		}
 		for (var i = from, l = segments.length; i < l; i++)
@@ -3726,26 +3721,25 @@ var Path = this.Path = PathItem.extend({
 		return removed;
 	},
 
-	isSelected: function() {
-		return this._selectedSegmentCount > 0;
-	},
-	setSelected: function(selected) {
-		var wasSelected = this.isSelected(),
-			length = this._segments.length;
-		if (!wasSelected != !selected && length)
-			this._project._selectItem(this, selected);
-		this._selectedSegmentCount = selected ? length : 0;
-		for (var i = 0; i < length; i++)
-			this._segments[i]._selectionState = selected
-					? SelectionState.POINT : 0;
-	},
-
 	isFullySelected: function() {
-		return this._selectedSegmentCount == this._segments.length;
+		return this._selected && this._selectedSegmentState
+				== this._segments.length * SelectionState.POINT;
 	},
 
 	setFullySelected: function(selected) {
+		var length = this._segments.length;
+		this._selectedSegmentState = selected
+				? length * SelectionState.POINT : 0;
+		for (var i = 0; i < length; i++)
+			this._segments[i]._selectionState = selected
+					? SelectionState.POINT : 0;
 		this.setSelected(selected);
+	},
+
+	_updateSelection: function(segment, oldState, newState) {
+		segment._selectionState = newState;
+		this.setSelected(
+				(this._selectedSegmentState += newState - oldState) > 0);
 	},
 
 	curvesToPoints: function(maxDistance) {
@@ -3896,10 +3890,12 @@ var Path = this.Path = PathItem.extend({
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getPoint();
 	},
+
 	getTangentAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getTangent();
 	},
+
 	getNormalAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getNormal();
@@ -3910,16 +3906,17 @@ var Path = this.Path = PathItem.extend({
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
 				point = segment._point,
-				pointSelected = segment._selectionState == SelectionState.POINT;
-				if (pointSelected || segment._isSelected(segment._handleIn))
-					drawHandle(ctx, point, segment._handleIn);
-				if (pointSelected || segment._isSelected(segment._handleOut))
-					drawHandle(ctx, point, segment._handleOut);
+				state = segment._selectionState,
+				selected = state & SelectionState.POINT;
+			if (selected || (state & SelectionState.HANDLE_IN))
+				drawHandle(ctx, point, segment._handleIn);
+			if (selected || (state & SelectionState.HANDLE_OUT))
+				drawHandle(ctx, point, segment._handleOut);
 			ctx.save();
 			ctx.beginPath();
 			ctx.rect(point._x - 2, point._y - 2, 4, 4);
 			ctx.fill();
-			if (!pointSelected) {
+			if (!selected) {
 				ctx.beginPath();
 				ctx.rect(point._x - 1, point._y - 1, 2, 2);
 				ctx.fillStyle = '#ffffff';
@@ -3928,6 +3925,7 @@ var Path = this.Path = PathItem.extend({
 			}
 		}
 	}
+
 	function drawHandle(ctx, point, handle) {
 		if (!handle.isZero()) {
 			var handleX = point._x + handle._x,
@@ -4053,7 +4051,6 @@ var Path = this.Path = PathItem.extend({
 	};
 
 	return {
-
 		_setStyles: function(ctx) {
 			for (var i in styles) {
 				var style = this._style[i]();
@@ -4139,19 +4136,21 @@ var Path = this.Path = PathItem.extend({
 		}
 	};
 }, new function() { 
-
 	function getCurrentSegment(that) {
 		var segments = that._segments;
 		if (segments.length == 0)
-			throw('Use a moveTo() command first');
+			throw new Error('Use a moveTo() command first');
 		return segments[segments.length - 1];
 	}
 
 	return {
-
 		moveTo: function(point) {
 			if (!this._segments.length)
 				this._add([ new Segment(Point.read(arguments)) ]);
+		},
+
+		moveBy: function(point) {
+			throw new Error('moveBy() is unsupported on Path items.');
 		},
 
 		lineTo: function(point) {
@@ -4188,84 +4187,63 @@ var Path = this.Path = PathItem.extend({
 					.subtract(to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
-					"Cannot put a curve through points with parameter=" + t);
+					'Cannot put a curve through points with parameter = ' + t);
 			this.quadraticCurveTo(handle, to);
 		},
 
-		arcTo: function(to, clockwise) {
+		arcTo: function(to, clockwise ) {
 			var current = getCurrentSegment(this),
+				from = current._point,
 				through;
-			if (arguments[1] && typeof arguments[1] !== 'boolean') {
+			if (clockwise === undefined)
+				clockwise = true;
+			if (typeof clockwise === 'boolean') {
+				to = Point.read(arguments, 0, 1);
+				var middle = from.add(to).divide(2),
+				through = middle.add(middle.subtract(from).rotate(
+						clockwise ? -90 : 90));
+			} else {
 				through = Point.read(arguments, 0, 1);
 				to = Point.read(arguments, 1, 1);
-			} else {
-				to = Point.read(arguments, 0, 1);
-				if (clockwise === undefined)
-					clockwise = true;
-				var middle = current._point.add(to).divide(2),
-					step = middle.subtract(current._point);
-				through = clockwise 
-						? middle.subtract(-step.y, step.x)
-						: middle.add(-step.y, step.x);
 			}
-
-			var x1 = current._point._x, x2 = through.x, x3 = to.x,
-				y1 = current._point._y, y2 = through.y, y3 = to.y,
-
-				f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
-					- y1 * y3 + y1 * y2,
-				g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
-				m = g == 0 ? 0 : f / g,
-				e = x1 * x2 + y1 * y2 - m * (x1 * y2 - y1 * x2),
-				cx = (x1 + x2 - m * (y2 - y1)) / 2,
-				cy = (y1 + y2 - m * (x1 - x2)) / 2,
-				radius = Math.sqrt(cx * cx + cy * cy - e),
-				angle = Math.atan2(y1 - cy, x1 - cx),
-				middle = Math.atan2(y2 - cy, x2 - cx),
-				extent = Math.atan2(y3 - cy, x3 - cx),
-				diff = middle - angle,
-				d90 = Math.PI, 
-				d180 = d90 * 2; 
-
-			if (diff < -d90)
-				diff += d180;
-			else if (diff > d90)
-				diff -= d180;
-
-			extent -= angle;
-			if (extent <= 0)
-				extent += d180;
-			if (diff < 0)
-				extent -= d180;
-
+			var l1 = new Line(from.add(through).divide(2),
+					through.subtract(from).rotate(90)),
+			 	l2 = new Line(through.add(to).divide(2),
+					to.subtract(through).rotate(90)),
+				center = l1.intersect(l2),
+				line = new Line(from, to, true),
+				throughSide = line.getSide(through);
+			if (!center) {
+				if (!throughSide)
+					return this.lineTo(to);
+				throw new Error("Cannot put an arc through the given points: "
+					+ [from, through, to]);
+			}
+			var vector = from.subtract(center),
+				radius = vector.getLength(),
+				extent = vector.getDirectedAngle(to.subtract(center)),
+				centerSide = line.getSide(center);
+			if (centerSide == 0) {
+				extent = throughSide * Math.abs(extent);
+			} else if (throughSide == centerSide) {
+				extent -= 360 * (extent < 0 ? -1 : 1);
+			}
 			var ext = Math.abs(extent),
-				arcSegs =  ext >= d180
-				 	? 4 : Math.ceil(ext * 2 / Math.PI),
-				inc = Math.min(Math.max(extent, -d180), d180) / arcSegs,
-				z = 4 / 3 * Math.sin(inc / 2) / (1 + Math.cos(inc / 2)),
+				count =  ext >= 360 ? 4 : Math.ceil(ext / 90),
+				inc = extent / count,
+				half = inc * Math.PI / 360,
+				z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
 				segments = [];
-			for (var i = 0; i <= arcSegs; i++) {
-				var relx = Math.cos(angle),
-					rely = Math.sin(angle);
-				var pt = new Point(
-					cx + relx * radius,
-					cy + rely * radius
-				);
-				var out = i == arcSegs
-					? null
-					: new Point(
-						cx + (relx - z * rely) * radius - pt.x,
-						cy + (rely + z * relx) * radius - pt.y
-					);
+			for (var i = 0; i <= count; i++) {
+				var pt = i < count ? center.add(vector) : to;
+				var out = i < count ? vector.rotate(90).multiply(z) : null;
 				if (i == 0) {
 					current.setHandleOut(out);
 				} else {
-					segments.push(new Segment(pt, new Point(
-						cx + (relx + z * rely) * radius - pt.x,
-						cy + (rely - z * relx) * radius - pt.y
-					), out));
+					segments.push(
+						new Segment(pt, vector.rotate(-90).multiply(z), out));
 				}
-				angle += inc;
+				vector = vector.rotate(inc);
 			}
 			this._add(segments);
 		},
@@ -4502,6 +4480,7 @@ var Path = this.Path = PathItem.extend({
 
 		getControlBounds: function() {
 		}
+
 	};
 });
 
@@ -4562,7 +4541,6 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	}
 
 	var fields = {
-
 		moveTo: function(point) {
 			var path = new Path();
 			this.appendTop(path);
@@ -5673,6 +5651,10 @@ var DomElement = new function() {
 			);
 		},
 
+		isInvisible: function(el) {
+			return DomElement.getSize(el).equals([0, 0]);
+		},
+
 		isVisible: function(el) {
 			return new Rectangle([0, 0], DomElement.getWindowSize())
 					.intersects(DomElement.getBounds(el, false, true));
@@ -5807,7 +5789,7 @@ var View = this.View = Base.extend({
 				var that = this;
 				DomEvent.add(window, {
 					resize: function(event) {
-						if (!DomElement.getSize(canvas).equals([0, 0]))
+						if (!DomElement.isInvisible(canvas))
 							offset = DomElement.getOffset(canvas);
 						that.setViewSize(
 								DomElement.getWindowSize().subtract(offset));
@@ -5819,7 +5801,10 @@ var View = this.View = Base.extend({
 					}
 				});
 			} else {
-				size = Size.create(canvas.offsetWidth, canvas.offsetHeight);
+				size = DomElement.isInvisible(canvas)
+					? Size.create(parseInt(canvas.getAttribute('width')),
+							parseInt(canvas.getAttribute('height')))
+					: DomElement.getSize(canvas);
 			}
 			if (canvas.attributes.stats) {
 				this._stats = new Stats();
@@ -6210,7 +6195,7 @@ var Key = this.Key = new function() {
 	};
 };
 
-var ToolEvent = this.ToolEvent = Base.extend({
+var ToolEvent = this.ToolEvent = Event.extend({
 
 	beans: true,
 
@@ -6278,10 +6263,6 @@ var ToolEvent = this.ToolEvent = Base.extend({
 	setCount: function(count) {
 		this.tool[/^mouse(down|up)$/.test(this.type) ? 'downCount' : 'count']
 			= count;
-	},
-
-	getModifiers: function() {
-		return Key.modifiers;
 	},
 
 	toString: function() {

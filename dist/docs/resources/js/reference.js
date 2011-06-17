@@ -1,3 +1,26 @@
+ContentEnd = HtmlElement.extend({
+	_class: 'content-end',
+
+	initialize: function() {
+		var anchor = $$('a[name]').getLast(),
+			that = this;
+		if (anchor) {
+			function resize() {
+				var bottom = $window.getScrollSize().height
+					- anchor.getOffset().y - $window.getSize().height;
+				that.setHeight(that.getHeight() - bottom);
+			}
+			$window.addEvents({
+				load: resize,
+				resize: resize
+			});
+			// Not sure why these are required twice, in addition to load()..
+			resize();
+			resize();
+		}
+	}
+});
+
 function createCodeMirror(place, options, source) {
 	return new CodeMirror(place, Hash.create({}, {
 		lineNumbers: true,
@@ -223,7 +246,7 @@ function scrollToElement(id) {
 }
 
 $document.addEvent('domready', function() {
-	var h = unescape(document.location.hash);
+	var h = unescape(window.location.hash);
 	if (h) scrollToElement(h.substring(1));
 	if (window.paper)
 		paper.load();

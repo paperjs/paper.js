@@ -17,6 +17,7 @@
 <h1>GradientColor</h1>
 
 <p>The GradientColor object.</p>
+
 </div>
 
 <!-- ============================== constructors ========================= -->
@@ -79,7 +80,7 @@
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas42">
+<script type="text/paperscript" canvas="canvas-0">
 // Define two points which we will be using to construct
 // the path and to position the gradient color:
 var topLeft = view.center - [80, 80];
@@ -100,7 +101,7 @@ var gradientColor = new GradientColor(gradient, topLeft, bottomRight);
 // Set the fill color of the path to the gradient color:
 path.fillColor = gradientColor;
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas42"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-0"></canvas></div>
 </div>
 
 
@@ -110,7 +111,7 @@ path.fillColor = gradientColor;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas43">
+<script type="text/paperscript" canvas="canvas-1">
 // Create a circle shaped path at the center of the view
 // with a radius of 80:
 var path = new Path.Circle(view.center, 80);
@@ -136,7 +137,7 @@ var gradientColor = new GradientColor(gradient, from, to);
 // Set the fill color of the path to the gradient color:
 path.fillColor = gradientColor;
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas43"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-1"></canvas></div>
 </div>
 
 
@@ -185,7 +186,7 @@ path.fillColor = gradientColor;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas44">
+<script type="text/paperscript" canvas="canvas-2">
 // Create a rectangle shaped path with the same dimensions as
 // that of the view and fill it with a gradient color:
 var path = new Path.Rectangle(view.bounds);
@@ -204,7 +205,7 @@ function onMouseMove(event) {
 	path.fillColor.origin = event.point;
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas44"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-2"></canvas></div>
 </div>
 
 
@@ -245,7 +246,7 @@ function onMouseMove(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas45">
+<script type="text/paperscript" canvas="canvas-3">
 // Create a circle shaped path at the center of the view,
 // using 40% of the height of the view as its radius
 // and fill it with a radial gradient color:
@@ -263,7 +264,7 @@ function onMouseMove(event) {
 	path.fillColor.destination = event.point;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas45"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -304,7 +305,7 @@ function onMouseMove(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas46">
+<script type="text/paperscript" canvas="canvas-4">
 // Create a circle shaped path at the center of the view,
 // using 40% of the height of the view as its radius
 // and fill it with a radial gradient color:
@@ -321,7 +322,7 @@ function onMouseMove(event) {
 	path.fillColor.hilite = event.point;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas46"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-4"></canvas></div>
 </div>
 
 
@@ -335,7 +336,7 @@ function onMouseMove(event) {
 
 
 <!-- ============================== methods ================================ -->
-	<div class="reference-members"><h2>Functions</h2>
+	<div class="reference-members"><h2>Methods</h2>
 		
 			
 <div id="clone-member" class="member">
@@ -457,6 +458,7 @@ supplied one.</p>
 
 
 <!-- =========================== copyright notice ========================= -->
-<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
 
 </body>
