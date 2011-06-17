@@ -510,6 +510,219 @@ var Item = this.Item = Base.extend({
 		return this._index;
 	},
 
+	/**
+	 * Clones the item within the same project and places the copy above the
+	 * item.
+	 * 
+	 * @return {Item} the newly cloned item
+	 * 
+	 * @example {@paperscript}
+	 * // Cloning items:
+	 * var circle = new Path.Circle(new Point(50, 50), 10);
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Make 20 copies of the circle:
+	 * for (var i = 0; i < 20; i++) {
+	 * 	var copy = circle.clone();
+	 * 
+	 * 	// Distribute the copies horizontally, so we can see them:
+	 * 	copy.position.x += i * copy.bounds.width;
+	 * }
+	 */
+	clone: function() {
+		return this._clone(new this.constructor());
+	},
+
+	_clone: function(copy) {
+		// Copy over style
+		copy.setStyle(this._style);
+		// If this item has children, clone and append each of them:
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++)
+				copy.addChild(this._children[i].clone());
+		}
+		// Only copy over these fields if they are actually defined in 'this'
+		// TODO: Consider moving this to Base once it's useful in more than one
+		// place
+		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask',
+				'_selected'];
+		for (var i = 0, l = keys.length; i < l; i++) {
+			var key = keys[i];
+			if (this.hasOwnProperty(key))
+				copy[key] = this[key];
+		}
+		// Insert the clone above the original, at the same position.
+		copy.insertAbove(this);
+		// Only set name once the copy is moved, to avoid setting and unsettting
+		// name related structures.
+		if (this._name)
+			copy.setName(this._name);
+		return copy;
+	},
+
+	/**
+	 * When passed a project, copies the item to the project,
+	 * or duplicates it within the same project. When passed an item,
+	 * copies the item into the specified item.
+	 * 
+	 * @param {Project|Layer|Group|CompoundPath} item the item or project to
+	 * copy the item to
+	 * @return {Item} the new copy of the item
+	 */
+	copyTo: function(itemOrProject) {
+		var copy = this.clone();
+		if (itemOrProject.layers) {
+			itemOrProject.activeLayer.addChild(copy);
+		} else {
+			itemOrProject.addChild(copy);
+		}
+		return copy;
+	},
+
+	/**
+	 * Rasterizes the item into a newly created Raster object. The item itself
+	 * is not removed after rasterization.
+	 * 
+	 * @param {Number} [resolution=72] the resolution of the raster in dpi
+	 * @return {Raster} the newly created raster item
+	 * 
+	 * @example {@paperscript}
+	 * // Rasterizing an item:
+	 * var circle = new Path.Circle(new Point(80, 50), 5);
+	 * circle.fillColor = 'red';
+	 * 
+	 * // Create a rasterized version of the path:
+	 * var raster = circle.rasterize();
+	 * 
+	 * // Move it 100pt to the right:
+	 * raster.position.x += 100;
+	 * 
+	 * // Scale the path and the raster by 300%, so we can compare them:
+	 * circle.scale(5);
+	 * raster.scale(5);
+	 */
+	rasterize: function(resolution) {
+		// TODO: why would we want to pass a size to rasterize? Seems to produce
+		// weird results on Scriptographer. Also we can't use antialiasing, since
+		// Canvas doesn't support it yet. Project colorMode is also out of the
+		// question for now.
+		var bounds = this.getStrokeBounds(),
+			scale = (resolution || 72) / 72,
+			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
+			ctx = canvas.getContext('2d'),
+			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
+		matrix.applyToContext(ctx);
+		this.draw(ctx, {});
+		var raster = new Raster(canvas);
+		raster.setPosition(this.getPosition());
+		raster.scale(1 / scale);
+		return raster;
+	},
+
+	/**
+	 * {@grouptitle Hierarchy Operations}
+	 * Adds the specified item as a child of the item at the end of the
+	 * its children list. You can use this function for groups, compound
+	 * paths and layers.
+	 * 
+	 * @param {Item} item The item that will be added as a child
+	 */		
+	addChild: function(item) {
+		return this.insertChild(undefined, item);
+	},
+
+	/**
+	 * Inserts the specified item as a child of the item at the specified
+	 * index in its {@link #children} list. You can use this function for
+	 * groups, compound paths and layers.
+	 * 
+	 * @param {Number} index
+	 * @param {Item} item The item that will be appended as a child
+	 */
+	insertChild: function(index, item) {
+		if (this._children) {
+			item._removeFromParent();
+			Base.splice(this._children, [item], index, 0);
+			item._parent = this;
+			item._setProject(this._project);
+			if (item._name)
+				item.setName(item._name);
+			return true;
+		}
+		return false;
+	},
+
+	/**
+	 * Inserts this item above the specified item.
+	 * 
+	 * @param {Item} item The item above which it should be moved
+	 * @return {Boolean} {@true it was inserted}
+	 */
+	insertAbove: function(item) {
+		return item._parent && item._parent.insertChild(
+				item._index + 1, this);
+	},
+
+	/**
+	 * Inserts this item below the specified item.
+	 * 
+	 * @param {Item} item The item above which it should be moved
+	 * @return {Boolean} {@true it was inserted}
+	 */
+	insertBelow: function(item) {
+		return item._parent && item._parent.insertChild(
+				item._index - 1, this);
+	},
+
+	/**
+	 * Inserts the specified item as a child of the item by appending it to
+	 * the list of children and moving it above all other children. You can
+	 * use this function for groups, compound paths and layers.
+	 * 
+	 * @param {Item} item The item that will be appended as a child
+	 * @deprecated use {@link #addChild(item)} instead.
+	 */
+	appendTop: function(item) {
+		return this.addChild(item);
+	},
+
+	/**
+	 * Inserts the specified item as a child of this item by appending it to
+	 * the list of children and moving it below all other children. You can
+	 * use this function for groups, compound paths and layers.
+	 * 
+	 * @param {Item} item The item that will be appended as a child
+	 * @deprecated use {@link #insertChild(index, item)} instead.
+	 */
+	appendBottom: function(item) {
+		return this.insertChild(0, item);
+	},
+
+	/**
+	 * Moves this item above the specified item.
+	 * 
+	 * @param {Item} item The item above which it should be moved
+	 * @return {Boolean} {@true it was moved}
+	 * @deprecated use {@link #insertAbove(item)} instead.
+	 */
+	moveAbove: function(item) {
+		return this.insertAbove(item);
+	},
+
+	/**
+	 * Moves the item below the specified item.
+	 * 
+	 * @param {Item} item the item below which it should be moved
+	 * @return {Boolean} {@true it was moved}
+	 * @deprecated use {@link #insertBelow(item)} instead.
+	 */
+	moveBelow: function(item) {
+		return this.insertBelow(item);
+	},
+
+	/**
+	* Removes the item from its parent's named children list.
+	*/
 	_removeFromNamed: function() {
 		var children = this._parent._children,
 			namedChildren = this._parent._namedChildren,
@@ -562,84 +775,32 @@ var Item = this.Item = Base.extend({
 	/**
 	 * Removes all of the item's {@link #children} (if any).
 	 * 
-	 * @return {Boolean} {@true removing was successful}
+	 * @name Item#removeChildren
+	 * @function
+	 * @return {Array} an array containing the removed items
 	 */
-	removeChildren: function() {
-		var removed = false;
-		if (this._children) {
-			for (var i = this._children.length - 1; i >= 0; i--)
-				removed = this._children[i].remove() || removed;
-		}
+	/**
+	 * Removes all of the item's {@link #children} (if any).
+	 * 
+	 * @return {Array} an array containing the removed items
+	 */
+	/**
+	 * Removes the children from the specified {@code from} index to the
+	 * {@code to} index from the parent's {@link #children} array.
+	 * 
+	 * @param {Number} from the beginning index, inclusive
+	 * @param {Number} [to=children.length] the ending index, exclusive
+	 * @return {Array} an array containing the removed items
+	 */
+	removeChildren: function(from, to) {
+		if (!this._children)
+			return null;
+		from = from || 0;
+	 	to = Base.pick(to, this._children.length);
+		var removed = this._children.splice(from, to - from);
+		for (var i = removed.length - 1; i >= 0; i--)
+			removed[i].remove();
 		return removed;
-	},
-
-	/**
-	 * When passed a project, copies the item to the project,
-	 * or duplicates it within the same project. When passed an item,
-	 * copies the item into the specified item.
-	 * 
-	 * @param {Project|Layer|Group|CompoundPath} item the item or project to
-	 * copy the item to
-	 * @return {Item} the new copy of the item
-	 */
-	copyTo: function(itemOrProject) {
-		var copy = this.clone();
-		if (itemOrProject.layers) {
-			itemOrProject.activeLayer.addChild(copy);
-		} else {
-			itemOrProject.addChild(copy);
-		}
-		return copy;
-	},
-
-	/**
-	 * Clones the item within the same project and places the copy above the
-	 * item.
-	 * 
-	 * @return {Item} the newly cloned item
-	 * 
-	 * @example {@paperscript}
-	 * // Cloning items:
-	 * var circle = new Path.Circle(new Point(50, 50), 10);
-	 * circle.fillColor = 'red';
-	 * 
-	 * // Make 20 copies of the circle:
-	 * for (var i = 0; i < 20; i++) {
-	 * 	var copy = circle.clone();
-	 * 
-	 * 	// Distribute the copies horizontally, so we can see them:
-	 * 	copy.position.x += i * copy.bounds.width;
-	 * }
-	 */
-	clone: function() {
-		return this._clone(new this.constructor());
-	},
-
-	_clone: function(copy) {
-		// Copy over style
-		copy.setStyle(this._style);
-		// If this item has children, clone and append each of them:
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.addChild(this._children[i].clone());
-		}
-		// Only copy over these fields if they are actually defined in 'this'
-		// TODO: Consider moving this to Base once it's useful in more than one
-		// place
-		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask',
-				'_selected'];
-		for (var i = 0, l = keys.length; i < l; i++) {
-			var key = keys[i];
-			if (this.hasOwnProperty(key))
-				copy[key] = this[key];
-		}
-		// Insert the clone above the original, at the same position.
-		copy.insertAbove(this);
-		// Only set name once the copy is moved, to avoid setting and unsettting
-		// name related structures.
-		if (this._name)
-			copy.setName(this._name);
-		return copy;
 	},
 
 	/**
@@ -654,59 +815,10 @@ var Item = this.Item = Base.extend({
 		}
 	},
 
-	/**
-	 * Rasterizes the item into a newly created Raster object. The item itself
-	 * is not removed after rasterization.
-	 * 
-	 * @param {Number} [resolution=72] the resolution of the raster in dpi
-	 * @return {Raster} the newly created raster item
-	 * 
-	 * @example {@paperscript}
-	 * // Rasterizing an item:
-	 * var circle = new Path.Circle(new Point(80, 50), 5);
-	 * circle.fillColor = 'red';
-	 * 
-	 * // Create a rasterized version of the path:
-	 * var raster = circle.rasterize();
-	 * 
-	 * // Move it 100pt to the right:
-	 * raster.position.x += 100;
-	 * 
-	 * // Scale the path and the raster by 300%, so we can compare them:
-	 * circle.scale(5);
-	 * raster.scale(5);
-	 */
-	rasterize: function(resolution) {
-		// TODO: why would we want to pass a size to rasterize? Seems to produce
-		// weird results on Scriptographer. Also we can't use antialiasing, since
-		// Canvas doesn't support it yet. Project colorMode is also out of the
-		// question for now.
-		var bounds = this.getStrokeBounds(),
-			scale = (resolution || 72) / 72,
-			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
-			ctx = canvas.getContext('2d'),
-			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
-		matrix.applyToContext(ctx);
-		this.draw(ctx, {});
-		var raster = new Raster(canvas);
-		raster.setPosition(this.getPosition());
-		raster.scale(1 / scale);
-		return raster;
-	},
-
-	/**
-	 * {@grouptitle Tests}
-	 * Checks if the item contains any children items.
-	 * 
-	 * @return {Boolean} {@true it has one or more children}
-	 */
-	hasChildren: function() {
-		return this._children && this._children.length > 0;
-	},
-
 	// TODO: Item#isEditable is currently ignored in the documentation, as
 	// locking an item currently has no effect
 	/**
+	 * {@grouptitle Tests}
 	 * Checks whether the item is editable.
 	 * 
 	 * @return {Boolean} {@true when neither the item, nor its parents are
@@ -757,6 +869,17 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
+	 * {@grouptitle Hierarchy Tests}
+	 *
+	 * Checks if the item contains any children items.
+	 * 
+	 * @return {Boolean} {@true it has one or more children}
+	 */
+	hasChildren: function() {
+		return this._children && this._children.length > 0;
+	},
+
+	/**
 	 * Checks if this item is above the specified item in the stacking order
 	 * of the project.
 	 * 
@@ -779,7 +902,6 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * {@grouptitle Hierarchy Tests}
 	 * Checks whether the specified item is the parent of the item.
 	 * 
 	 * @param {Item} item The item to check against
@@ -1095,7 +1217,7 @@ var Item = this.Item = Base.extend({
 	 * @name Item#scale
 	 * @function
 	 * @param {Number} scale the scale factor
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * 
 	 * @example {@paperscript}
 	 * // Scaling an item from its center point:
@@ -1127,7 +1249,7 @@ var Item = this.Item = Base.extend({
 	 * @function
 	 * @param {Number} sx the horizontal scale factor
 	 * @param {Number} sy the vertical scale factor
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * 
 	 * @example {@paperscript}
 	 * // Scaling an item horizontally by 300%:
@@ -1166,7 +1288,7 @@ var Item = this.Item = Base.extend({
 	 * Angles are oriented clockwise and measured in degrees.
 	 * 
 	 * @param {Number} angle the rotation angle
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#rotate
 	 * 
 	 * @example {@paperscript}
@@ -1214,7 +1336,7 @@ var Item = this.Item = Base.extend({
 	 * @name Item#shear
 	 * @function
 	 * @param {Point} point
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#shear
 	 */
 	/**
@@ -1225,7 +1347,7 @@ var Item = this.Item = Base.extend({
 	 * @function
 	 * @param {Number} shx
 	 * @param {Number} shy
-	 * @param {Point} [center=the center point of the item]
+	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#shear
 	 */
 	shear: function(shx, shy, center) {
@@ -1371,122 +1493,6 @@ var Item = this.Item = Base.extend({
 			}
 		}
 	}
-}, new function() {
-
-	function move(above) {
-		return function(item) {
-			// first remove the item from its parent's children list
-			if (item._parent && this._removeFromParent()) {
-				Base.splice(item._parent._children, [this],
-						item._index + (above ? 1 : -1), 0);
-				this._parent = item._parent;
-				this._setProject(item._project);
-				if (item._name)
-					item.setName(item._name);
-				return true;
-			}
-			return false;
-		};
-	}
-
-	return {
-		/** @lends Item# */
-
-		/**
-		 * {@grouptitle Hierarchy Operations}
-		 * Adds the specified item as a child of the item at the end of the
-		 * its children list. You can use this function for groups, compound
-		 * paths and layers.
-		 * 
-		 * @param {Item} item The item that will be added as a child
-		 */		
-		addChild: function(item) {
-			return this.insertChild(undefined, item);
-		},
-
-		/**
-		 * Inserts the specified item as a child of the item at the specified
-		 * index in its {@link #children} list. You can use this function for
-		 * groups, compound paths and layers.
-		 * 
-		 * @param {Number} index
-		 * @param {Item} item The item that will be appended as a child
-		 */
-		insertChild: function(index, item) {
-			if (this._children) {
-				item._removeFromParent();
-				Base.splice(this._children, [item], index, 0);
-				item._parent = this;
-				item._setProject(this._project);
-				if (item._name)
-					item.setName(item._name);
-				return true;
-			}
-			return false;
-		},
-
-		/**
-		 * Inserts this item above the specified item.
-		 * 
-		 * @function
-		 * @param {Item} item The item above which it should be moved
-		 * @return {Boolean} {@true it was inserted}
-		 */
-		insertAbove: move(true),
-
-		/**
-		 * Inserts this item below the specified item.
-		 * 
-		 * @function
-		 * @param {Item} item The item above which it should be moved
-		 * @return {Boolean} {@true it was inserted}
-		 */
-		insertBelow: move(false),
-
-		/**
-		 * Inserts the specified item as a child of the item by appending it to
-		 * the list of children and moving it above all other children. You can
-		 * use this function for groups, compound paths and layers.
-		 * 
-		 * @param {Item} item The item that will be appended as a child
-		 * @deprecated use {@link #addChild(item)} instead.
-		 */
-		appendTop: function(item) {
-			return this.addChild(item);
-		},
-
-		/**
-		 * Inserts the specified item as a child of this item by appending it to
-		 * the list of children and moving it below all other children. You can
-		 * use this function for groups, compound paths and layers.
-		 * 
-		 * @param {Item} item The item that will be appended as a child
-		 * @deprecated use {@link #insertChild(index, item)} instead.
-		 */
-		appendBottom: function(item) {
-			return this.insertChild(0, item);
-		},
-
-		/**
-		 * Moves this item above the specified item.
-		 * 
-		 * @function
-		 * @param {Item} item The item above which it should be moved
-		 * @return {Boolean} {@true it was moved}
-		 * @deprecated use {@link #insertAbove(item)} instead.
-		 */
-		moveAbove: move(true),
-
-		/**
-		 * Moves the item below the specified item.
-		 * 
-		 * @function
-		 * @param {Item} item the item below which it should be moved
-		 * @return {Boolean} {@true it was moved}
-		 * @deprecated use {@link #insertBelow(item)} instead.
-		 */
-		moveBelow: move(false)
-	};
 }, new function() {
 	/**
 	 * {@grouptitle Remove On Event}
