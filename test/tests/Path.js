@@ -129,6 +129,15 @@ test('After setting Path#fullySelected=true on an empty path, subsequent segment
 	}, true);
 });
 
+test('After selecting a segment, Path#selected should return true', function() {
+	var path = new Path();
+	path.add([10, 10]);
+	path.firstSegment.selected = true;
+	equals(function() {
+		return path.selected;
+	}, true);
+});
+
 test('Path#reverse', function() {
 	var path = new Path.Circle([100, 100], 30);
 	path.reverse();
