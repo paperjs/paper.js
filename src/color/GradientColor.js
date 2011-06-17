@@ -17,8 +17,6 @@
 var GradientColor = this.GradientColor = Color.extend({
 	/** @lends GradientColor# */
 
-	beans: true,
-
 	/**
 	 * Creates a gradient color object.
 	 * 

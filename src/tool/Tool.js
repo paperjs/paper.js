@@ -17,8 +17,6 @@
 var Tool = this.Tool = Base.extend({
 	/** @lends Tool# */
 
-	beans: true,
-
 	// DOCS: rewrite Tool constructor explanation
 	/**
 	 * Initializes the tool's settings, so a new tool can be assigned to it

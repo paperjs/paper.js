@@ -17,8 +17,6 @@
 var Curve = this.Curve = Base.extend({
 	/** @lends Curve# */
 
-	beans: true,
-
 	/**
 	 * Creates a new curve object.
 	 * 

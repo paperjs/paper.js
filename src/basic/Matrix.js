@@ -22,8 +22,6 @@
 var Matrix = this.Matrix = Base.extend({
 	/** @lends Matrix# */
 
-	beans: true,
-
 	/**
 	 * Creates a 2D affine transform.
 	 * 
@@ -609,5 +607,5 @@ var Matrix = this.Matrix = Base.extend({
 		this['set' + name] = function(value) {
 			this[prop] = value;
 		};
-	}, { beans: true });
+	}, {});
 });

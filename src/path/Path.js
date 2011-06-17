@@ -17,8 +17,6 @@
 var Path = this.Path = PathItem.extend({
 	/** @lends Path# */
 
-	beans: true,
-
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 * 
@@ -1760,8 +1758,6 @@ var Path = this.Path = PathItem.extend({
 	}
 
 	return {
-		beans: true,
-
 		/**
 		 * The bounding rectangle of the item excluding stroke width.
 		 * @param matrix optional

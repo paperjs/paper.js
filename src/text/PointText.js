@@ -17,8 +17,6 @@
 var PointText = this.PointText = TextItem.extend({
 	/** @lends PointText# */
 
-	beans: true,
-
 	/**
 	 * Creates a point text item
 	 * 

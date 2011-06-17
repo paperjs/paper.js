@@ -17,8 +17,6 @@
 var Raster = this.Raster = Item.extend({
 	/** @lends Raster# */
 
-	beans: true,
-
 	// TODO: Implement url / type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
 	// DOCS: Document Raster constructor.

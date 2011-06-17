@@ -17,8 +17,6 @@
 var TextItem = this.TextItem = Item.extend({
 	/** @lends TextItem# */
 
-	beans: true,
-
 	/**
 	 * @constructs TextItem
 	 * 

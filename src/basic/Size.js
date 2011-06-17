@@ -502,8 +502,6 @@ var Size = this.Size = Base.extend({
  * @ignore
  */
 var LinkedSize = Size.extend({
-	beans: true,
-
 	set: function(width, height, dontNotify) {
 		this._width = width;
 		this._height = height;
