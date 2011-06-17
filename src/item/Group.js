@@ -75,6 +75,15 @@ var Group = this.Group = Item.extend({
 				|| typeof items[0] !== 'object' ? arguments : items);
 	},
 
+	_getClipMask: function() {
+		// TODO: Use caching once ChangeFlags.HIERARCHY is implemented
+		for (var i = 0, l = this._children.length; i < l; i++) {
+			var child = this._children[i];
+			if (child._clipMask)
+				return child;
+		}
+	},
+
 	/**
 	 * Specifies whether the group item is to be clipped.
 	 * When setting to {@code true}, the first child in the group is
@@ -84,11 +93,7 @@ var Group = this.Group = Item.extend({
 	 * @bean
 	 */
 	isClipped: function() {
-		for (var i = 0, l = this._children.length; i < l; i++) {
-			if (this._children[i]._clipMask)
-				return true;
-		}
-		return false;
+		return !!this._getClipMask();
 	},
 
 	setClipped: function(clipped) {
@@ -99,8 +104,13 @@ var Group = this.Group = Item.extend({
 	},
 
 	draw: function(ctx, param) {
+		var clipMask = this._getClipMask();
+		if (clipMask)
+			Item.draw(clipMask, ctx, param);
 		for (var i = 0, l = this._children.length; i < l; i++) {
-			Item.draw(this._children[i], ctx, param);
+			var item = this._children[i];
+			if (item != clipMask)
+				Item.draw(item, ctx, param);
 		}
 	}
 });
