@@ -1249,7 +1249,7 @@ var Path = this.Path = PathItem.extend({
 				dashArray = this.getDashArray() || [], // TODO: Always defined?
 				hasDash = !!dashArray.length;
 
-			if (param.compound || param.selection || param.clip || fillColor
+			if (param.compound || param.selection || this._clipMask || fillColor
 					|| strokeColor && !hasDash) {
 				drawSegments(ctx, this);
 			}
@@ -1259,7 +1259,7 @@ var Path = this.Path = PathItem.extend({
 			if (param.selection) {
 				ctx.stroke();
 				drawHandles(ctx, this._segments);
-			} else if (param.clip) {
+			} else if (this._clipMask) {
 				ctx.clip();
 			} else if (!param.compound && (fillColor || strokeColor)) {
 				// If the path is part of a compound path or doesn't have a fill
