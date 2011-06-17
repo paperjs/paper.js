@@ -270,9 +270,6 @@ var Item = this.Item = Base.extend({
 	 */
 	visible: true,
 
-	// TODO Item#clipMask is currently not used for clipping - consider
-	// taking it out, as we could also simply always use the first child as the
-	// clipping mask.
 	/**
 	 * Specifies whether the item defines a clip mask. This can only be set on
 	 * paths, compound paths, and text frame objects, and only if the item is
@@ -1328,7 +1325,7 @@ var Item = this.Item = Base.extend({
 				center || this.getPosition()));
 	},
 
-	// TODO: add test for item shearing, as it might be behaving oddly.
+	// TODO: Add test for item shearing, as it might be behaving oddly.
 	/**
 	 * Shears the item by the given value from its center point, or optionally
 	 * by a supplied point.
