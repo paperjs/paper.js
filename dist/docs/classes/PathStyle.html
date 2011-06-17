@@ -24,16 +24,26 @@ i.e.: <a href="../classes/Item.html#fillcolor"><tt>item.fillColor</tt></a>.</p>
 <p>To set multiple style properties in one go, you can pass an object to
 <a href="../classes/Item.html#style"><tt>item.style</tt></a>. This is a convenient way to define a style once and
 apply it to a series of items:</p>
-<p>Example:</p>
-<pre class="code">
+<p>
+<b>Example</b> 
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
 var circleStyle = {
 	fillColor: new RGBColor(1, 0, 0),
 	strokeColor: 'black',
 	strokeWidth: 5
 };
-var path = new Path.Circle(new Point(50, 50), 30);
+
+var path = new Path.Circle(new Point(80, 50), 30);
 path.style = circleStyle;
-</pre>
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
 </div>
 
 
@@ -76,7 +86,7 @@ path.style = circleStyle;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas223">
+<script type="text/paperscript" canvas="canvas-1">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -84,7 +94,7 @@ var circle = new Path.Circle(new Point(80, 50), 35);
 // Set its stroke color to RGB red:
 circle.strokeColor = new RGBColor(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas223"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
 </div>
 
 
@@ -121,7 +131,7 @@ circle.strokeColor = new RGBColor(1, 0, 0);
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -131,7 +141,7 @@ circle.strokeColor = new RGBColor(1, 0, 0);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas224">
+<script type="text/paperscript" canvas="canvas-2">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -142,7 +152,7 @@ circle.strokeColor = 'black';
 // Set its stroke width to 10:
 circle.strokeWidth = 10;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas224"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
 </div>
 
 
@@ -179,7 +189,7 @@ circle.strokeWidth = 10;
 	
 	<ul><b>Type:</b>
 	<li>
-		String ('miter', 'round', 'bevel')
+		<tt>String</tt> ('miter', 'round', 'bevel')
 	</li>
 	</ul>
 	
@@ -189,7 +199,7 @@ circle.strokeWidth = 10;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas225">
+<script type="text/paperscript" canvas="canvas-3">
 var path = new Path();
 path.add(new Point(80, 100));
 path.add(new Point(120, 40));
@@ -208,7 +218,7 @@ var path3 = path2.clone();
 path3.position.x += path3.bounds.width * 1.5;
 path3.strokeJoin = 'bevel';
 </script>
-<div class="canvas"><canvas width="516" height="120" id="canvas225"></canvas></div>
+<div class="canvas"><canvas width="516" height="120" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -249,7 +259,7 @@ limit on the ratio of the miter length to the <a href="../classes/PathStyle.html
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -293,7 +303,7 @@ limit on the ratio of the miter length to the <a href="../classes/PathStyle.html
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas226">
+<script type="text/paperscript" canvas="canvas-4">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -301,7 +311,7 @@ var circle = new Path.Circle(new Point(80, 50), 35);
 // Set the fill color of the circle to RGB red:
 circle.fillColor = new RGBColor(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas226"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
 </div>
 
 
@@ -318,6 +328,7 @@ circle.fillColor = new RGBColor(1, 0, 0);
 
 
 <!-- =========================== copyright notice ========================= -->
-<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
 
 </body>

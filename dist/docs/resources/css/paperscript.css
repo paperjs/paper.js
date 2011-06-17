@@ -30,7 +30,7 @@
 }
 
 .paperscript .CodeMirror {
-	margin-bottom: 0; /* Override any potential bottom margins again */
+	margin: 0 !important; /* Override any potential margins again */
 }
 
 .paperscript .CodeMirror-gutter-text,

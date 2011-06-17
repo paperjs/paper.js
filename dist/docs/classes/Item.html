@@ -22,6 +22,7 @@ item types such as <a href="../classes/Path.html"><tt>Path</tt></a>, <a href="..
 <a href="../classes/Layer.html"><tt>Layer</tt></a> and <a href="../classes/Raster.html"><tt>Raster</tt></a>. They each add a layer of functionality that
 is unique to their type, but share the underlying properties and functions
 that they inherit from Item.</p>
+
 </div>
 
 
@@ -52,7 +53,7 @@ that they inherit from Item.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -85,7 +86,7 @@ through its parent's children list.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		String
+		<tt>String</tt>
 	</li>
 	</ul>
 	
@@ -95,7 +96,7 @@ through its parent's children list.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas96">
+<script type="text/paperscript" canvas="canvas-0">
 var path = new Path.Circle(new Point(80, 50), 35);
 // Set the name of the path:
 path.name = 'example';
@@ -107,7 +108,7 @@ group.appendTop(path);
 // The path can be accessed by name:
 group.children['example'].fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas96"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
 </div>
 
 
@@ -149,7 +150,7 @@ group.children['example'].fillColor = 'red';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas97">
+<script type="text/paperscript" canvas="canvas-1">
 // Create a circle at position { x: 10, y: 10 }
 var circle = new Path.Circle(new Point(10, 10), 10);
 circle.fillColor = 'red';
@@ -160,7 +161,7 @@ circle.position = new Point(20, 20);
 // Move the circle 100 points to the right and 50 points down
 circle.position += new Point(100, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas97"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
 </div>
 
 
@@ -170,7 +171,7 @@ circle.position += new Point(100, 50);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas98">
+<script type="text/paperscript" canvas="canvas-2">
 // Create a circle at position { x: 20, y: 20 }
 var circle = new Path.Circle(new Point(20, 20), 10);
 circle.fillColor = 'red';
@@ -178,7 +179,7 @@ circle.fillColor = 'red';
 // Move the circle 100 points to the right
 circle.position.x += 100;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas98"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
 </div>
 
 
@@ -219,7 +220,7 @@ circle.position.x += 100;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas99">
+<script type="text/paperscript" canvas="canvas-3">
 var circle = new Path.Circle(new Point(80, 50), 30);
 circle.style = {
 	fillColor: 'blue',
@@ -227,7 +228,7 @@ circle.style = {
 	strokeWidth: 5
 };
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas99"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -237,7 +238,7 @@ circle.style = {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas100">
+<script type="text/paperscript" canvas="canvas-4">
 var path = new Path.Circle(new Point(50, 50), 30);
 path.fillColor = 'red';
 
@@ -245,7 +246,7 @@ var path2 = new Path.Circle(new Point(180, 50), 20);
 // Copy the path style of path:
 path2.style = path.style;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas100"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
 </div>
 
 
@@ -255,7 +256,7 @@ path2.style = path.style;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas101">
+<script type="text/paperscript" canvas="canvas-5">
 var myStyle = {
 	fillColor: 'red',
 	strokeColor: 'blue',
@@ -268,7 +269,7 @@ path.style = myStyle;
 var path2 = new Path.Circle(new Point(150, 50), 20);
 path2.style = myStyle;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas101"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
 </div>
 
 
@@ -294,8 +295,8 @@ path2.style = myStyle;
 </div>
 
 <div class="member-text">
-	<p>Specifies whether an item is selected and will also return <tt>true</tt> if
-the item is partially selected (groups with some selected items/partially
+	<p>Specifies whether an item is selected and will also return <tt>true</tt>
+if the item is partially selected (groups with some selected or partially
 selected paths).</p>
 <p>Paper.js draws the visual outlines of selected items on top of your
 project. This can be useful for debugging, as it allows you to see the
@@ -305,7 +306,7 @@ and bounding boxes of symbol and raster items.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Boolean
+		<tt>Boolean</tt>
 	</li>
 	</ul>
 	
@@ -319,11 +320,11 @@ and bounding boxes of symbol and raster items.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas102">
+<script type="text/paperscript" canvas="canvas-6">
 var path = new Path.Circle(new Size(80, 50), 35);
 path.selected = true; // Select the path
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas102"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-6"></canvas></div>
 </div>
 
 
@@ -361,7 +362,7 @@ item won't be drawn.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Boolean
+		<tt>Boolean</tt>
 	</li>
 	</ul>
 	
@@ -371,51 +372,17 @@ item won't be drawn.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas103">
+<script type="text/paperscript" canvas="canvas-7">
 var path = new Path.Circle(new Point(50, 50), 20);
 path.fillColor = 'red';
 
 // Hide the path:
 path.visible = false;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas103"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-7"></canvas></div>
 </div>
 
 
-</div>
-
-</div>
-</div>
-		
-			
-<div id="clipmask-member" class="member">
-<div id="clipmask-link" class="member-link">
-<a name="clipmask" href="#" onClick="return toggleMember('clipmask', false);"><tt><b>clipMask</b></tt></a>
-</div>
-<div id="clipmask-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('clipmask', false);"><tt><b>clipMask</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('clipmask', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>Specifies whether the item defines a clip mask. This can only be set on
-paths, compound paths, and text frame objects, and only if the item is
-already contained within a clipping group.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		Boolean
-	</li>
-	</ul>
-	
-	
 </div>
 
 </div>
@@ -449,10 +416,10 @@ already contained within a clipping group.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		String('normal', 'multiply', 'screen', 'overlay', 'soft-light',
+		<tt>String('normal', 'multiply', 'screen', 'overlay', 'soft-light',
 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten',
 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color',
-'add', 'subtract', 'average', 'pin-light', 'negation')
+'add', 'subtract', 'average', 'pin-light', 'negation')</tt>
 	</li>
 	</ul>
 	
@@ -462,7 +429,7 @@ already contained within a clipping group.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas104">
+<script type="text/paperscript" canvas="canvas-8">
 // Create a white rectangle in the background
 // with the same dimensions as the view:
 var background = new Path.Rectangle(view.bounds);
@@ -477,7 +444,7 @@ circle2.fillColor = 'blue';
 // Set the blend mode of circle2:
 circle2.blendMode = 'multiply';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas104"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-8"></canvas></div>
 </div>
 
 
@@ -514,7 +481,7 @@ circle2.blendMode = 'multiply';
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -524,7 +491,7 @@ circle2.blendMode = 'multiply';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas105">
+<script type="text/paperscript" canvas="canvas-9">
 var circle = new Path.Circle(new Point(80, 50), 35);
 circle.fillColor = 'red';
 
@@ -538,7 +505,7 @@ circle2.style = {
 // Make circle2 50% transparent:
 circle2.opacity = 0.5;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas105"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-9"></canvas></div>
 </div>
 
 
@@ -661,7 +628,7 @@ console.log(path.parent == group); // true</pre>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas106">
+<script type="text/paperscript" canvas="canvas-10">
 var path = new Path.Circle(new Point(80, 50), 35);
 
 // Create a group and move the path into it:
@@ -671,7 +638,7 @@ group.appendTop(path);
 // Access the path through the group's children array:
 group.children[0].fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas106"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-10"></canvas></div>
 </div>
 
 
@@ -681,7 +648,7 @@ group.children[0].fillColor = 'red';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas107">
+<script type="text/paperscript" canvas="canvas-11">
 var path = new Path.Circle(new Point(80, 50), 35);
 // Set the name of the path:
 path.name = 'example';
@@ -693,7 +660,7 @@ group.appendTop(path);
 // The path can be accessed by name:
 group.children['example'].fillColor = 'orange';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas107"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-11"></canvas></div>
 </div>
 
 
@@ -703,7 +670,7 @@ group.children['example'].fillColor = 'orange';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas108">
+<script type="text/paperscript" canvas="canvas-12">
 var path = new Path.Circle(new Point(80, 50), 35);
 
 var group = new Group();
@@ -712,7 +679,7 @@ group.children = [path];
 // The path is the first child of the group:
 group.firstChild.fillColor = 'green';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas108"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-12"></canvas></div>
 </div>
 
 
@@ -873,7 +840,7 @@ accessing <tt>item.children[item.children.length - 1]</tt>.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -983,7 +950,7 @@ accessing <tt>item.children[item.children.length - 1]</tt>.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas109">
+<script type="text/paperscript" canvas="canvas-13">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -991,7 +958,7 @@ var circle = new Path.Circle(new Point(80, 50), 35);
 // Set its stroke color to RGB red:
 circle.strokeColor = new RGBColor(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas109"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-13"></canvas></div>
 </div>
 
 
@@ -1022,7 +989,7 @@ circle.strokeColor = new RGBColor(1, 0, 0);
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -1032,7 +999,7 @@ circle.strokeColor = new RGBColor(1, 0, 0);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas110">
+<script type="text/paperscript" canvas="canvas-14">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -1043,7 +1010,7 @@ circle.strokeColor = 'black';
 // Set its stroke width to 10:
 circle.strokeWidth = 10;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas110"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-14"></canvas></div>
 </div>
 
 
@@ -1081,7 +1048,7 @@ have a stroke.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		String('round', 'square', 'butt')
+		<tt>String('round', 'square', 'butt')</tt>
 	</li>
 	</ul>
 	
@@ -1091,7 +1058,7 @@ have a stroke.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas111">
+<script type="text/paperscript" canvas="canvas-15">
 var line = new Path(new Point(80, 50), new Point(420, 50));
 line.strokeColor = 'black';
 line.strokeWidth = 20;
@@ -1112,7 +1079,7 @@ var line2 = line.clone();
 line2.position.y += 100;
 line2.strokeCap = 'butt';
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas111"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-15"></canvas></div>
 </div>
 
 
@@ -1149,7 +1116,7 @@ line2.strokeCap = 'butt';
 	
 	<ul><b>Type:</b>
 	<li>
-		String ('miter', 'round', 'bevel')
+		<tt>String</tt> ('miter', 'round', 'bevel')
 	</li>
 	</ul>
 	
@@ -1159,7 +1126,7 @@ line2.strokeCap = 'butt';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas112">
+<script type="text/paperscript" canvas="canvas-16">
 var path = new Path();
 path.add(new Point(80, 100));
 path.add(new Point(120, 40));
@@ -1178,7 +1145,7 @@ var path3 = path2.clone();
 path3.position.x += path3.bounds.width * 1.5;
 path3.strokeJoin = 'bevel';
 </script>
-<div class="canvas"><canvas width="516" height="120" id="canvas112"></canvas></div>
+<div class="canvas"><canvas width="516" height="120" id="canvas-16"></canvas></div>
 </div>
 
 
@@ -1220,7 +1187,7 @@ miterLimit imposes a limit on the ratio of the miter length to the
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -1264,7 +1231,7 @@ miterLimit imposes a limit on the ratio of the miter length to the
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas113">
+<script type="text/paperscript" canvas="canvas-17">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -1272,7 +1239,7 @@ var circle = new Path.Circle(new Point(80, 50), 35);
 // Set the fill color of the circle to RGB red:
 circle.fillColor = new RGBColor(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas113"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-17"></canvas></div>
 </div>
 
 
@@ -1310,7 +1277,7 @@ have a stroke.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		String('round', 'square', 'butt')
+		<tt>String('round', 'square', 'butt')</tt>
 	</li>
 	</ul>
 	
@@ -1320,7 +1287,7 @@ have a stroke.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas114">
+<script type="text/paperscript" canvas="canvas-18">
 var line = new Path(new Point(80, 50), new Point(420, 50));
 line.strokeColor = 'black';
 line.strokeWidth = 20;
@@ -1341,7 +1308,7 @@ var line2 = line.clone();
 line2.position.y += 100;
 line2.strokeCap = 'butt';
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas114"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-18"></canvas></div>
 </div>
 
 
@@ -1355,7 +1322,7 @@ line2.strokeCap = 'butt';
 
 
 <!-- ============================== methods ================================ -->
-	<div class="reference-members"><h2>Functions</h2>
+	<div class="reference-members"><h2>Methods</h2>
 		
 			
 <div id="remove-member" class="member">
@@ -1380,7 +1347,7 @@ removed.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> the item was removed, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> the item was removed, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1413,7 +1380,7 @@ removed.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> removing was successful, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> removing was successful, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1506,7 +1473,7 @@ item.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas115">
+<script type="text/paperscript" canvas="canvas-19">
 var circle = new Path.Circle(new Point(50, 50), 10);
 circle.fillColor = 'red';
 
@@ -1518,7 +1485,7 @@ for (var i = 0; i < 20; i++) {
 	copy.position.x += i * copy.bounds.width;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas115"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-19"></canvas></div>
 </div>
 
 
@@ -1574,7 +1541,7 @@ is not removed after rasterization.</p>
 
 <li>
 <tt>resolution:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the resolution of the raster in dpi
 &mdash;&nbsp;optional, default: <tt>72</tt>
 </li>
@@ -1597,7 +1564,7 @@ Number
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas116">
+<script type="text/paperscript" canvas="canvas-20">
 var circle = new Path.Circle(new Point(80, 50), 5);
 circle.fillColor = 'red';
 
@@ -1611,7 +1578,7 @@ raster.position.x += 100;
 circle.scale(5);
 raster.scale(5);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas116"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-20"></canvas></div>
 </div>
 
 
@@ -1643,7 +1610,7 @@ raster.scale(5);
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it has one or more children, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it has one or more children, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1688,7 +1655,7 @@ of the project.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is above the specified item, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is above the specified item, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1733,7 +1700,7 @@ the project.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is below the specified item, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is below the specified item, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1779,7 +1746,7 @@ the project.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is the parent of the item, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is the parent of the item, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1823,7 +1790,7 @@ the project.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it is a child of the item, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it is a child of the item, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1867,7 +1834,7 @@ the project.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is inside the specified item, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is inside the specified item, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1911,7 +1878,7 @@ the project.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the item is an ancestor of the specified
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the item is an ancestor of the specified
 item, <tt>false</tt> otherwise
 </li>
 	
@@ -1956,7 +1923,7 @@ item, <tt>false</tt> otherwise
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the items are grouped together, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the items are grouped together, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -1992,7 +1959,7 @@ from a supplied point.</p>
 
 <li>
 <tt>scale:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the scale factor
 
 </li>
@@ -2014,7 +1981,7 @@ Number
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas117">
+<script type="text/paperscript" canvas="canvas-21">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle(new Point(80, 50), 20);
@@ -2023,7 +1990,7 @@ circle.fillColor = 'red';
 // Scale the path by 150% from its center point
 circle.scale(1.5);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas117"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-21"></canvas></div>
 </div>
 
 
@@ -2033,7 +2000,7 @@ circle.scale(1.5);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas118">
+<script type="text/paperscript" canvas="canvas-22">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle(new Point(80, 50), 20);
@@ -2042,7 +2009,7 @@ circle.fillColor = 'red';
 // Scale the path 150% from its bottom left corner
 circle.scale(1.5, circle.bounds.bottomLeft);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas118"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-22"></canvas></div>
 </div>
 
 
@@ -2073,14 +2040,14 @@ from a supplied point.</p>
 
 <li>
 <tt>sx:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the horizontal scale factor
 
 </li>
 
 <li>
 <tt>sy:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the vertical scale factor
 
 </li>
@@ -2102,7 +2069,7 @@ Number
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas119">
+<script type="text/paperscript" canvas="canvas-23">
 // Create a circle shaped path at { x: 100, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle(new Point(100, 50), 20);
@@ -2111,7 +2078,7 @@ circle.fillColor = 'red';
 // Scale the path horizontally by 300%
 circle.scale(3, 1);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas119"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-23"></canvas></div>
 </div>
 
 
@@ -2178,7 +2145,7 @@ circle.scale(3, 1);
 
 <li>
 <tt>angle:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the rotation angle
 
 </li>
@@ -2204,7 +2171,7 @@ Number
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas120">
+<script type="text/paperscript" canvas="canvas-24">
 // Create a rectangle shaped path with its top left
 // point at {x: 80, y: 25} and a size of {width: 50, height: 50}:
 var path = new Path.Rectangle(new Point(80, 25), new Size(50, 50));
@@ -2213,7 +2180,7 @@ path.fillColor = 'black';
 // Rotate the path by 30 degrees:
 path.rotate(30);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas120"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-24"></canvas></div>
 </div>
 
 
@@ -2223,7 +2190,7 @@ path.rotate(30);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas121">
+<script type="text/paperscript" canvas="canvas-25">
 // Create a rectangle shaped path with its top left
 // point at {x: 175, y: 50} and a size of {width: 100, height: 100}:
 var topLeft = new Point(175, 50);
@@ -2242,7 +2209,7 @@ function onFrame(event) {
 	path.rotate(3, view.center);
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas121"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-25"></canvas></div>
 </div>
 
 
@@ -2321,14 +2288,14 @@ by a supplied point.</p>
 
 <li>
 <tt>shx:</tt> 
-Number
+<tt>Number</tt>
 
 
 </li>
 
 <li>
 <tt>shy:</tt> 
-Number
+<tt>Number</tt>
 
 
 </li>
@@ -2382,7 +2349,7 @@ Number
 
 <li>
 <tt>flags:</tt> 
-Array
+<tt>Array</tt>
 &mdash;&nbsp;Array of any of the following: 'objects', 'children',
     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
     Default: ['objects', 'children']
@@ -2509,7 +2476,7 @@ use this function for groups, compound paths and layers.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it was moved, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it was moved, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -2553,7 +2520,7 @@ use this function for groups, compound paths and layers.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>Boolean</tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it was moved, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it was moved, <tt>false</tt> otherwise
 </li>
 	
 	</ul>
@@ -2598,7 +2565,7 @@ fired: <tt>object.up = true</tt></p>
 
 <li>
 <tt>object:</tt> 
-Object
+<tt>Object</tt>
 
 
 </li>
@@ -2613,7 +2580,7 @@ Object
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas122">
+<script type="text/paperscript" canvas="canvas-26">
 function onMouseDrag(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2627,7 +2594,7 @@ function onMouseDrag(event) {
 	});
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas122"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-26"></canvas></div>
 </div>
 
 
@@ -2661,7 +2628,7 @@ function onMouseDrag(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas123">
+<script type="text/paperscript" canvas="canvas-27">
 function onMouseMove(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2672,7 +2639,7 @@ function onMouseMove(event) {
 	path.removeOnMove();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas123"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-27"></canvas></div>
 </div>
 
 
@@ -2706,7 +2673,7 @@ function onMouseMove(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas124">
+<script type="text/paperscript" canvas="canvas-28">
 function onMouseDown(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2717,7 +2684,7 @@ function onMouseDown(event) {
 	path.removeOnDown();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas124"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-28"></canvas></div>
 </div>
 
 
@@ -2751,7 +2718,7 @@ function onMouseDown(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas125">
+<script type="text/paperscript" canvas="canvas-29">
 function onMouseDrag(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2762,7 +2729,7 @@ function onMouseDrag(event) {
 	path.removeOnDrag();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas125"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-29"></canvas></div>
 </div>
 
 
@@ -2796,7 +2763,7 @@ function onMouseDrag(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas126">
+<script type="text/paperscript" canvas="canvas-30">
 function onMouseDown(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2807,7 +2774,7 @@ function onMouseDown(event) {
 	path.removeOnUp();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas126"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-30"></canvas></div>
 </div>
 
 
@@ -2821,6 +2788,7 @@ function onMouseDown(event) {
 
 
 <!-- =========================== copyright notice ========================= -->
-<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
 
 </body>

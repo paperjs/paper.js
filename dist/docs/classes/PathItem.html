@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>PointText</title>
+<title>PathItem</title>
 <base target="classFrame">
 <link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
 <link rel="stylesheet" href="../resources/css/style.css" type="text/css">
@@ -14,107 +14,842 @@
 </head>
 <body class="reference">
 <div class="reference-class">
-<h1>PointText</h1>
+<h1>PathItem</h1>
 
-<p> Extends <b><a href="../classes/Item.html"><tt>Item</tt></a></b>, <b><a href="../classes/TextItem.html"><tt>TextItem</tt></a></b></p>
+<p> Extends <b><a href="../classes/Item.html"><tt>Item</tt></a></b></p>
 
-<p>A PointText item represents a piece of typography in your Paper.js
-project which starts from a certain point and extends by the amount of
-characters contained in it.</p>
+
 
 </div>
 
-<!-- ============================== constructors ========================= -->
-<div class="reference-members"><h2>Constructors</h2>
-	
+
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
 		
-<div id="pointtext-point-member" class="member">
-<div id="pointtext-point-link" class="member-link">
-<a name="pointtext-point" href="#" onClick="return toggleMember('pointtext-point', false);"><tt><b>PointText</b>(point)</tt></a>
+			
+<div id="smooth-member" class="member">
+<div id="smooth-link" class="member-link">
+<a name="smooth" href="#" onClick="return toggleMember('smooth', false);"><tt><b>smooth</b>()</tt></a>
 </div>
-<div id="pointtext-point-description" class="member-description hidden">
+<div id="smooth-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('pointtext-point', false);"><tt><b>PointText</b>(point)</tt></a>
+<a href="#" onClick="return toggleMember('smooth', false);"><tt><b>smooth</b>()</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('pointtext-point', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('smooth', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
-<p>Creates a point text item</p>
+	<p>Smooth bezier curves without changing the amount of segments or their
+points, by only smoothing and adjusting their handle points, for both
+open ended and closed paths.</p>
+	
+	
+	
+	<p>
+<b>Example</b> &mdash; Smoothing a closed shape:
+</p>
 
-<ul><b>Parameters:</b>
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+// Create a rectangular path with its top-left point at
+// {x: 30, y: 25} and a size of {width: 50, height: 50}:
+var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
+path.strokeColor = 'black';
 
-<li>
-<tt>point:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;the position where the text will start
+// Select the path, so we can see its handles:
+path.selected = true;
 
-</li>
+// Create a copy of the path and move it 100pt to the right:
+var copy = path.clone();
+copy.position.x += 100;
 
-</ul>
+// Smooth the segments of the copy:
+copy.smooth();
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
 
 
 <p>
 <b>Example</b> 
 </p>
 
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+var path = new Path();
+path.strokeColor = 'black';
 
-<pre class="code">var text = new PointText(new Point(50, 100));
-text.paragraphStyle.justification = 'center';
-text.characterStyle.fillColor = 'black';
-text.content = 'The contents of the point text';</pre>
+path.add(new Point(30, 50));
+
+var y = 5;
+var x = 3;
+
+for (var i = 0; i < 28; i++) {
+    y *= -1.1;
+    x *= 1.1;
+    path.lineBy(x, y);
+}
+
+// Create a copy of the path and move it 100pt down:
+var copy = path.clone();
+copy.position.y += 120;
+
+// Set its stroke color to red:
+copy.strokeColor = 'red';
+
+// Smooth the segments of the copy:
+copy.smooth();
+</script>
+<div class="canvas"><canvas width="516" height="220" id="canvas-1"></canvas></div>
+</div>
 
 
 </div>
 </div>
 </div>
-	
-</div>
-
-
-
-
-
-	<div class="reference-members"><h2>Properties</h2>
 		
 			
-<div id="point-member" class="member">
-<div id="point-link" class="member-link">
-<a name="point" href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+<h3>Postscript Style Drawing Commands</h3>
+
+<div id="moveto-point-member" class="member">
+<div id="moveto-point-link" class="member-link">
+<a name="moveto-point" href="#" onClick="return toggleMember('moveto-point', false);"><tt><b>moveTo</b>(point)</tt></a>
 </div>
-<div id="point-description" class="member-description hidden">
+<div id="moveto-point-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+<a href="#" onClick="return toggleMember('moveto-point', false);"><tt><b>moveTo</b>(point)</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('moveto-point', false);"></div>
 <div class="clear"></div>
 </div>
-
 <div class="member-text">
-	<p>The PointText's anchor point</p>
+	<p>If called on a <a href="../classes/CompoundPath.html"><tt>CompoundPath</tt></a>, a new <a href="../classes/Path.html"><tt>Path</tt></a> is created as a
+child and the point is added as its first segment. On a normal empty
+<a href="../classes/Path.html"><tt>Path</tt></a>, the point is simply added as its first segment.</p>
 	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
 	
-	<ul><b>Type:</b>
-	<li>
-		<a href="../classes/Point.html"><tt>Point</tt></a>
-	</li>
-	</ul>
 	
 	
 </div>
+</div>
+</div>
+		
+			
+<div id="lineto-point-member" class="member">
+<div id="lineto-point-link" class="member-link">
+<a name="lineto-point" href="#" onClick="return toggleMember('lineto-point', false);"><tt><b>lineTo</b>(point)</tt></a>
+</div>
+<div id="lineto-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('lineto-point', false);"><tt><b>lineTo</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('lineto-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+<ul><b>Parameters:</b>
 
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="cubiccurveto-handle1-handle2-to-member" class="member">
+<div id="cubiccurveto-handle1-handle2-to-link" class="member-link">
+<a name="cubiccurveto-handle1-handle2-to" href="#" onClick="return toggleMember('cubiccurveto-handle1-handle2-to', false);"><tt><b>cubicCurveTo</b>(handle1, handle2, to)</tt></a>
+</div>
+<div id="cubiccurveto-handle1-handle2-to-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('cubiccurveto-handle1-handle2-to', false);"><tt><b>cubicCurveTo</b>(handle1, handle2, to)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('cubiccurveto-handle1-handle2-to', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Adds a cubic bezier curve to the path, defined by two handles and a to
+point.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>handle1:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>handle2:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="quadraticcurveto-handle-to-member" class="member">
+<div id="quadraticcurveto-handle-to-link" class="member-link">
+<a name="quadraticcurveto-handle-to" href="#" onClick="return toggleMember('quadraticcurveto-handle-to', false);"><tt><b>quadraticCurveTo</b>(handle, to)</tt></a>
+</div>
+<div id="quadraticcurveto-handle-to-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('quadraticcurveto-handle-to', false);"><tt><b>quadraticCurveTo</b>(handle, to)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('quadraticcurveto-handle-to', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Adds a quadratic bezier curve to the path, defined by a handle and a to
+point.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>handle:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="curveto-through-to-member" class="member">
+<div id="curveto-through-to-link" class="member-link">
+<a name="curveto-through-to" href="#" onClick="return toggleMember('curveto-through-to', false);"><tt><b>curveTo</b>(through, to[, parameter])</tt></a>
+</div>
+<div id="curveto-through-to-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('curveto-through-to', false);"><tt><b>curveTo</b>(through, to[, parameter])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('curveto-through-to', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Draws a curve from the position of the last segment point in the path
+that goes through the specified <tt>through</tt> point, to the specified
+<tt>to</tt> point by adding one segment to the path.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>through:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point through which the curve should go
+
+</li>
+
+<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the curve should end
+
+</li>
+
+<li>
+<tt>parameter:</tt> 
+<tt>Number</tt>
+
+&mdash;&nbsp;optional, default: <tt>0.5</tt>
+</li>
+
+</ul>
+
+	
+	
+	<p>
+<b>Example</b> &mdash; Interactive example. Click and drag in the view below:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-2">
+var myPath;
+function onMouseDrag(event) {
+	// If we created a path before, remove it:
+	if (myPath) {
+	    myPath.remove();
+	}
+
+	// Create a new path and add a segment point to it
+	// at {x: 150, y: 150):
+	myPath = new Path();
+	myPath.add(150, 150);
+
+	// Draw a curve through the position of the mouse to 'toPoint'
+	var toPoint = new Point(350, 150);
+	myPath.curveTo(event.point, toPoint);
+
+	// Select the path, so we can see its segments:
+	myPath.selected = true;
+}
+
+// When the mouse is released, deselect the path
+// and set its stroke-color to black:
+function onMouseUp(event) {
+	myPath.selected = false;
+	myPath.strokeColor = 'black';
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+		
+			
+<div id="arcto-through-to-member" class="member">
+<div id="arcto-through-to-link" class="member-link">
+<a name="arcto-through-to" href="#" onClick="return toggleMember('arcto-through-to', false);"><tt><b>arcTo</b>(through, to)</tt></a>
+</div>
+<div id="arcto-through-to-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('arcto-through-to', false);"><tt><b>arcTo</b>(through, to)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('arcto-through-to', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Draws an arc from the position of the last segment point in the path that
+goes through the specified <tt>through</tt> point, to the specified
+<tt>to</tt> point by adding one or more segments to the path.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>through:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the arc should pass through
+
+</li>
+
+<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the arc should end
+
+</li>
+
+</ul>
+
+	
+	
+	<p>
+<b>Example</b> 
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-3">
+var path = new Path();
+path.strokeColor = 'black';
+
+var firstPoint = new Point(30, 75);
+path.add(firstPoint);
+
+// The point through which we will create the arc:
+var throughPoint = new Point(40, 40);
+
+// The point at which the arc will end:
+var toPoint = new Point(130, 75);
+
+// Draw an arc through 'throughPoint' to 'toPoint'
+path.arcTo(throughPoint, toPoint);
+
+// Add a red circle shaped path at the position of 'throughPoint':
+var circle = new Path.Circle(throughPoint, 3);
+circle.fillColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+</div>
+
+
+<p>
+<b>Example</b> &mdash; Interactive example. Click and drag in the view below:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-4">
+var myPath;
+function onMouseDrag(event) {
+	// If we created a path before, remove it:
+	if (myPath) {
+	    myPath.remove();
+	}
+	
+	// Create a new path and add a segment point to it
+	// at {x: 150, y: 150):
+	myPath = new Path();
+	myPath.add(150, 150);
+	
+	// Draw an arc through the position of the mouse to 'toPoint'
+	var toPoint = new Point(350, 150);
+	myPath.arcTo(event.point, toPoint);
+	
+	// Select the path, so we can see its segments:
+	myPath.selected = true;
+}
+
+// When the mouse is released, deselect the path
+// and fill it with black.
+function onMouseUp(event) {
+	myPath.selected = false;
+	myPath.fillColor = 'black';
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-4"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+		
+			
+<div id="arcto-to-member" class="member">
+<div id="arcto-to-link" class="member-link">
+<a name="arcto-to" href="#" onClick="return toggleMember('arcto-to', false);"><tt><b>arcTo</b>(to[, clockwise])</tt></a>
+</div>
+<div id="arcto-to-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('arcto-to', false);"><tt><b>arcTo</b>(to[, clockwise])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('arcto-to', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Draws an arc from the position of the last segment point in the path to
+the specified point by adding one or more segments to the path.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the arc should end
+
+</li>
+
+<li>
+<tt>clockwise:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;specifies whether the arc should be
+       drawn in clockwise direction.
+&mdash;&nbsp;optional, default: <tt>true</tt>
+</li>
+
+</ul>
+
+	
+	
+	<p>
+<b>Example</b> 
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-5">
+var path = new Path();
+path.strokeColor = 'black';
+
+path.add(new Point(30, 75));
+path.arcTo(new Point(130, 75));
+
+var path2 = new Path();
+path2.strokeColor = 'red';
+path2.add(new Point(180, 25));
+
+// To draw an arc in anticlockwise direction,
+// we pass 'false' as the second argument to arcTo:
+path2.arcTo(new Point(280, 25), false);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
+</div>
+
+
+<p>
+<b>Example</b> &mdash; Interactive example. Click and drag in the view below:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-6">
+var myPath;
+
+// The mouse has to move at least 20 points before
+// the next mouse drag event is fired:
+tool.minDistance = 20;
+
+// When the user clicks, create a new path and add
+// the current mouse position to it as its first segment:
+function onMouseDown(event) {
+	myPath = new Path();
+	myPath.strokeColor = 'black';
+	myPath.add(event.point);
+}
+
+// On each mouse drag event, draw an arc to the current
+// position of the mouse:
+function onMouseDrag(event) {
+	myPath.arcTo(event.point);
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-6"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+		
+			
+<div id="closepath-member" class="member">
+<div id="closepath-link" class="member-link">
+<a name="closepath" href="#" onClick="return toggleMember('closepath', false);"><tt><b>closePath</b>()</tt></a>
+</div>
+<div id="closepath-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('closepath', false);"><tt><b>closePath</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('closepath', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Closes the path. When closed, Paper.js connects the first and last
+segments.</p>
+	
+	
+	
+	<p><b>See also:</b>
+	<tt><a href="../classes/Path.html#closed"><tt>path.closed</tt></a></tt>
+	</p>
+
+	
+</div>
+</div>
+</div>
+		
+			
+<h3>Relative Drawing Commands</h3>
+
+<div id="moveby-point-member" class="member">
+<div id="moveby-point-link" class="member-link">
+<a name="moveby-point" href="#" onClick="return toggleMember('moveby-point', false);"><tt><b>moveBy</b>(point)</tt></a>
+</div>
+<div id="moveby-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('moveby-point', false);"><tt><b>moveBy</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('moveby-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>If called on a <a href="../classes/CompoundPath.html"><tt>CompoundPath</tt></a>, a new <a href="../classes/Path.html"><tt>Path</tt></a> is created as a
+child and the point is added as its first segment relative to the
+position of the last segment of the current path.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="lineby-vector-member" class="member">
+<div id="lineby-vector-link" class="member-link">
+<a name="lineby-vector" href="#" onClick="return toggleMember('lineby-vector', false);"><tt><b>lineBy</b>(vector)</tt></a>
+</div>
+<div id="lineby-vector-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('lineby-vector', false);"><tt><b>lineBy</b>(vector)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('lineby-vector', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Adds a segment relative to the last segment point of the path.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>vector:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The vector which is added to the position of the
+       last segment of the path, to become the new segment.
+
+</li>
+
+</ul>
+
+	
+	
+	<p>
+<b>Example</b> 
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-7">
+var path = new Path();
+path.strokeColor = 'black';
+
+// Add a segment at {x: 50, y: 50}
+path.add(25, 25);
+
+// Add a segment relative to the last segment of the path.
+// 50 in x direction and 0 in y direction, becomes {x: 75, y: 25}
+path.lineBy(50, 0);
+
+// 0 in x direction and 50 in y direction, becomes {x: 75, y: 75}
+path.lineBy(0, 50);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-7"></canvas></div>
+</div>
+
+
+<p>
+<b>Example</b> &mdash; Drawing a spiral using lineBy:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-8">
+var path = new Path();
+path.strokeColor = 'black';
+
+// Add the first segment at {x: 50, y: 50}
+path.add(view.center);
+
+// Loop 500 times:
+for (var i = 0; i < 500; i++) {
+	// Create a vector with an ever increasing length
+	// and an angle in increments of 45 degrees
+	var vector = new Point({
+	    angle: i * 45,
+	    length: i / 2
+	});
+	// Add the vector relatively to the last segment point:
+	path.lineBy(vector);
+}
+
+// Smooth the handles of the path:
+path.smooth();
+
+// Uncomment the following line and click on 'run' to see
+// the construction of the path:
+// path.selected = true;
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-8"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+		
+			
+<div id="curveby-throughVector-toVector-member" class="member">
+<div id="curveby-throughVector-toVector-link" class="member-link">
+<a name="curveby-throughVector-toVector" href="#" onClick="return toggleMember('curveby-throughVector-toVector', false);"><tt><b>curveBy</b>(throughVector, toVector[, parameter])</tt></a>
+</div>
+<div id="curveby-throughVector-toVector-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('curveby-throughVector-toVector', false);"><tt><b>curveBy</b>(throughVector, toVector[, parameter])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('curveby-throughVector-toVector', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>throughVector:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>toVector:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>parameter:</tt> 
+<tt>Number</tt>
+
+&mdash;&nbsp;optional, default: <tt>0.5</tt>
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="arcby-throughVector-toVector-member" class="member">
+<div id="arcby-throughVector-toVector-link" class="member-link">
+<a name="arcby-throughVector-toVector" href="#" onClick="return toggleMember('arcby-throughVector-toVector', false);"><tt><b>arcBy</b>(throughVector, toVector)</tt></a>
+</div>
+<div id="arcby-throughVector-toVector-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('arcby-throughVector-toVector', false);"><tt><b>arcBy</b>(throughVector, toVector)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('arcby-throughVector-toVector', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>throughVector:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>toVector:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
 </div>
 </div>
 		
 	</div>
-
-
 
 
 
@@ -187,7 +922,7 @@ through its parent's children list.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-0">
+<script type="text/paperscript" canvas="canvas-9">
 var path = new Path.Circle(new Point(80, 50), 35);
 // Set the name of the path:
 path.name = 'example';
@@ -199,7 +934,7 @@ group.appendTop(path);
 // The path can be accessed by name:
 group.children['example'].fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-9"></canvas></div>
 </div>
 
 
@@ -241,7 +976,7 @@ group.children['example'].fillColor = 'red';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-1">
+<script type="text/paperscript" canvas="canvas-10">
 // Create a circle at position { x: 10, y: 10 }
 var circle = new Path.Circle(new Point(10, 10), 10);
 circle.fillColor = 'red';
@@ -252,7 +987,7 @@ circle.position = new Point(20, 20);
 // Move the circle 100 points to the right and 50 points down
 circle.position += new Point(100, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-10"></canvas></div>
 </div>
 
 
@@ -262,7 +997,7 @@ circle.position += new Point(100, 50);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-2">
+<script type="text/paperscript" canvas="canvas-11">
 // Create a circle at position { x: 20, y: 20 }
 var circle = new Path.Circle(new Point(20, 20), 10);
 circle.fillColor = 'red';
@@ -270,7 +1005,7 @@ circle.fillColor = 'red';
 // Move the circle 100 points to the right
 circle.position.x += 100;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-11"></canvas></div>
 </div>
 
 
@@ -311,7 +1046,7 @@ circle.position.x += 100;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-3">
+<script type="text/paperscript" canvas="canvas-12">
 var circle = new Path.Circle(new Point(80, 50), 30);
 circle.style = {
 	fillColor: 'blue',
@@ -319,7 +1054,7 @@ circle.style = {
 	strokeWidth: 5
 };
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-12"></canvas></div>
 </div>
 
 
@@ -329,7 +1064,7 @@ circle.style = {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-4">
+<script type="text/paperscript" canvas="canvas-13">
 var path = new Path.Circle(new Point(50, 50), 30);
 path.fillColor = 'red';
 
@@ -337,7 +1072,7 @@ var path2 = new Path.Circle(new Point(180, 50), 20);
 // Copy the path style of path:
 path2.style = path.style;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-13"></canvas></div>
 </div>
 
 
@@ -347,7 +1082,7 @@ path2.style = path.style;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-5">
+<script type="text/paperscript" canvas="canvas-14">
 var myStyle = {
 	fillColor: 'red',
 	strokeColor: 'blue',
@@ -360,7 +1095,7 @@ path.style = myStyle;
 var path2 = new Path.Circle(new Point(150, 50), 20);
 path2.style = myStyle;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-14"></canvas></div>
 </div>
 
 
@@ -411,11 +1146,11 @@ and bounding boxes of symbol and raster items.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-6">
+<script type="text/paperscript" canvas="canvas-15">
 var path = new Path.Circle(new Size(80, 50), 35);
 path.selected = true; // Select the path
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-6"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-15"></canvas></div>
 </div>
 
 
@@ -463,14 +1198,14 @@ item won't be drawn.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-7">
+<script type="text/paperscript" canvas="canvas-16">
 var path = new Path.Circle(new Point(50, 50), 20);
 path.fillColor = 'red';
 
 // Hide the path:
 path.visible = false;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-7"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-16"></canvas></div>
 </div>
 
 
@@ -520,7 +1255,7 @@ path.visible = false;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-8">
+<script type="text/paperscript" canvas="canvas-17">
 // Create a white rectangle in the background
 // with the same dimensions as the view:
 var background = new Path.Rectangle(view.bounds);
@@ -535,7 +1270,7 @@ circle2.fillColor = 'blue';
 // Set the blend mode of circle2:
 circle2.blendMode = 'multiply';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-8"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-17"></canvas></div>
 </div>
 
 
@@ -582,7 +1317,7 @@ circle2.blendMode = 'multiply';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-9">
+<script type="text/paperscript" canvas="canvas-18">
 var circle = new Path.Circle(new Point(80, 50), 35);
 circle.fillColor = 'red';
 
@@ -596,7 +1331,7 @@ circle2.style = {
 // Make circle2 50% transparent:
 circle2.opacity = 0.5;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-9"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-18"></canvas></div>
 </div>
 
 
@@ -719,7 +1454,7 @@ console.log(path.parent == group); // true</pre>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-10">
+<script type="text/paperscript" canvas="canvas-19">
 var path = new Path.Circle(new Point(80, 50), 35);
 
 // Create a group and move the path into it:
@@ -729,7 +1464,7 @@ group.appendTop(path);
 // Access the path through the group's children array:
 group.children[0].fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-10"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-19"></canvas></div>
 </div>
 
 
@@ -739,7 +1474,7 @@ group.children[0].fillColor = 'red';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-11">
+<script type="text/paperscript" canvas="canvas-20">
 var path = new Path.Circle(new Point(80, 50), 35);
 // Set the name of the path:
 path.name = 'example';
@@ -751,7 +1486,7 @@ group.appendTop(path);
 // The path can be accessed by name:
 group.children['example'].fillColor = 'orange';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-11"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-20"></canvas></div>
 </div>
 
 
@@ -761,7 +1496,7 @@ group.children['example'].fillColor = 'orange';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-12">
+<script type="text/paperscript" canvas="canvas-21">
 var path = new Path.Circle(new Point(80, 50), 35);
 
 var group = new Group();
@@ -770,7 +1505,7 @@ group.children = [path];
 // The path is the first child of the group:
 group.firstChild.fillColor = 'green';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-12"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-21"></canvas></div>
 </div>
 
 
@@ -1041,7 +1776,7 @@ accessing <tt>item.children[item.children.length - 1]</tt>.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-13">
+<script type="text/paperscript" canvas="canvas-22">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -1049,7 +1784,7 @@ var circle = new Path.Circle(new Point(80, 50), 35);
 // Set its stroke color to RGB red:
 circle.strokeColor = new RGBColor(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-13"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-22"></canvas></div>
 </div>
 
 
@@ -1090,7 +1825,7 @@ circle.strokeColor = new RGBColor(1, 0, 0);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-14">
+<script type="text/paperscript" canvas="canvas-23">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -1101,7 +1836,7 @@ circle.strokeColor = 'black';
 // Set its stroke width to 10:
 circle.strokeWidth = 10;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-14"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-23"></canvas></div>
 </div>
 
 
@@ -1149,7 +1884,7 @@ have a stroke.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-15">
+<script type="text/paperscript" canvas="canvas-24">
 var line = new Path(new Point(80, 50), new Point(420, 50));
 line.strokeColor = 'black';
 line.strokeWidth = 20;
@@ -1170,7 +1905,7 @@ var line2 = line.clone();
 line2.position.y += 100;
 line2.strokeCap = 'butt';
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-15"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-24"></canvas></div>
 </div>
 
 
@@ -1217,7 +1952,7 @@ line2.strokeCap = 'butt';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-16">
+<script type="text/paperscript" canvas="canvas-25">
 var path = new Path();
 path.add(new Point(80, 100));
 path.add(new Point(120, 40));
@@ -1236,7 +1971,7 @@ var path3 = path2.clone();
 path3.position.x += path3.bounds.width * 1.5;
 path3.strokeJoin = 'bevel';
 </script>
-<div class="canvas"><canvas width="516" height="120" id="canvas-16"></canvas></div>
+<div class="canvas"><canvas width="516" height="120" id="canvas-25"></canvas></div>
 </div>
 
 
@@ -1322,7 +2057,7 @@ miterLimit imposes a limit on the ratio of the miter length to the
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-17">
+<script type="text/paperscript" canvas="canvas-26">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -1330,7 +2065,7 @@ var circle = new Path.Circle(new Point(80, 50), 35);
 // Set the fill color of the circle to RGB red:
 circle.fillColor = new RGBColor(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-17"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-26"></canvas></div>
 </div>
 
 
@@ -1378,7 +2113,7 @@ have a stroke.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-18">
+<script type="text/paperscript" canvas="canvas-27">
 var line = new Path(new Point(80, 50), new Point(420, 50));
 line.strokeColor = 'black';
 line.strokeWidth = 20;
@@ -1399,7 +2134,7 @@ var line2 = line.clone();
 line2.position.y += 100;
 line2.strokeCap = 'butt';
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-18"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-27"></canvas></div>
 </div>
 
 
@@ -1563,7 +2298,7 @@ item.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-19">
+<script type="text/paperscript" canvas="canvas-28">
 var circle = new Path.Circle(new Point(50, 50), 10);
 circle.fillColor = 'red';
 
@@ -1575,7 +2310,7 @@ for (var i = 0; i < 20; i++) {
 	copy.position.x += i * copy.bounds.width;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-19"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-28"></canvas></div>
 </div>
 
 
@@ -1654,7 +2389,7 @@ is not removed after rasterization.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-20">
+<script type="text/paperscript" canvas="canvas-29">
 var circle = new Path.Circle(new Point(80, 50), 5);
 circle.fillColor = 'red';
 
@@ -1668,7 +2403,7 @@ raster.position.x += 100;
 circle.scale(5);
 raster.scale(5);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-20"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-29"></canvas></div>
 </div>
 
 
@@ -2071,7 +2806,7 @@ from a supplied point.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-21">
+<script type="text/paperscript" canvas="canvas-30">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle(new Point(80, 50), 20);
@@ -2080,7 +2815,7 @@ circle.fillColor = 'red';
 // Scale the path by 150% from its center point
 circle.scale(1.5);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-21"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-30"></canvas></div>
 </div>
 
 
@@ -2090,7 +2825,7 @@ circle.scale(1.5);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-22">
+<script type="text/paperscript" canvas="canvas-31">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle(new Point(80, 50), 20);
@@ -2099,7 +2834,7 @@ circle.fillColor = 'red';
 // Scale the path 150% from its bottom left corner
 circle.scale(1.5, circle.bounds.bottomLeft);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-22"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-31"></canvas></div>
 </div>
 
 
@@ -2159,7 +2894,7 @@ from a supplied point.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-23">
+<script type="text/paperscript" canvas="canvas-32">
 // Create a circle shaped path at { x: 100, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle(new Point(100, 50), 20);
@@ -2168,7 +2903,7 @@ circle.fillColor = 'red';
 // Scale the path horizontally by 300%
 circle.scale(3, 1);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-23"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-32"></canvas></div>
 </div>
 
 
@@ -2261,7 +2996,7 @@ circle.scale(3, 1);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-24">
+<script type="text/paperscript" canvas="canvas-33">
 // Create a rectangle shaped path with its top left
 // point at {x: 80, y: 25} and a size of {width: 50, height: 50}:
 var path = new Path.Rectangle(new Point(80, 25), new Size(50, 50));
@@ -2270,7 +3005,7 @@ path.fillColor = 'black';
 // Rotate the path by 30 degrees:
 path.rotate(30);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-24"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-33"></canvas></div>
 </div>
 
 
@@ -2280,7 +3015,7 @@ path.rotate(30);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-25">
+<script type="text/paperscript" canvas="canvas-34">
 // Create a rectangle shaped path with its top left
 // point at {x: 175, y: 50} and a size of {width: 100, height: 100}:
 var topLeft = new Point(175, 50);
@@ -2299,7 +3034,7 @@ function onFrame(event) {
 	path.rotate(3, view.center);
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-25"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-34"></canvas></div>
 </div>
 
 
@@ -2670,7 +3405,7 @@ fired: <tt>object.up = true</tt></p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-26">
+<script type="text/paperscript" canvas="canvas-35">
 function onMouseDrag(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2684,7 +3419,7 @@ function onMouseDrag(event) {
 	});
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-26"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-35"></canvas></div>
 </div>
 
 
@@ -2718,7 +3453,7 @@ function onMouseDrag(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-27">
+<script type="text/paperscript" canvas="canvas-36">
 function onMouseMove(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2729,7 +3464,7 @@ function onMouseMove(event) {
 	path.removeOnMove();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-27"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-36"></canvas></div>
 </div>
 
 
@@ -2763,7 +3498,7 @@ function onMouseMove(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-28">
+<script type="text/paperscript" canvas="canvas-37">
 function onMouseDown(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2774,7 +3509,7 @@ function onMouseDown(event) {
 	path.removeOnDown();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-28"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-37"></canvas></div>
 </div>
 
 
@@ -2808,7 +3543,7 @@ function onMouseDown(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-29">
+<script type="text/paperscript" canvas="canvas-38">
 function onMouseDrag(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2819,7 +3554,7 @@ function onMouseDrag(event) {
 	path.removeOnDrag();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-29"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-38"></canvas></div>
 </div>
 
 
@@ -2853,7 +3588,7 @@ function onMouseDrag(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-30">
+<script type="text/paperscript" canvas="canvas-39">
 function onMouseDown(event) {
 	// Create a circle shaped path at the mouse position,
 	// with a radius of 10:
@@ -2864,7 +3599,7 @@ function onMouseDown(event) {
 	path.removeOnUp();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-30"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-39"></canvas></div>
 </div>
 
 
@@ -2873,152 +3608,6 @@ function onMouseDown(event) {
 </div>
 
 </div>
-
-
-
-<!-- =========================== inherited properties ====================== -->
-<div class="reference-members"><h2>Properties inherited from <a href="../classes/TextItem.html"><tt>TextItem</tt></a></h2>
-
-	
-<div id="content-member" class="member">
-<div id="content-link" class="member-link">
-<a name="content" href="#" onClick="return toggleMember('content', false);"><tt><b>content</b></tt></a>
-</div>
-<div id="content-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('content', false);"><tt><b>content</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('content', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>The text contents of the text item.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>String</tt>
-	</li>
-	</ul>
-	
-	<p>
-<b>Example</b> &mdash; Setting the content of a PointText item:
-</p>
-
-<div class="paperscript split">
-<div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-31">
-// Create a point-text item at {x: 30, y: 30}:
-var text = new PointText(new Point(30, 30));
-text.fillColor = 'black';
-
-// Set the content of the text item:
-text.content = 'Hello world';
-</script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-31"></canvas></div>
-</div>
-
-
-<p>
-<b>Example</b> &mdash; Interactive example, move your mouse over the view below:
-</p>
-
-<div class="paperscript split">
-<div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-32">
-// Create a point-text item at {x: 30, y: 30}:
-var text = new PointText(new Point(30, 30));
-text.fillColor = 'black';
-
-text.content = 'Move your mouse over the view, to see its position';
-
-function onMouseMove(event) {
-	// Each time the mouse is moved, set the content of
-	// the point text to describe the position of the mouse:
-	text.content = 'Your position is: ' + event.point.toString();
-}
-</script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-32"></canvas></div>
-</div>
-
-
-</div>
-
-</div>
-</div>
-
-	
-	<h3>Style Properties</h3>
-
-<div id="characterstyle-member" class="member">
-<div id="characterstyle-link" class="member-link">
-<a name="characterstyle" href="#" onClick="return toggleMember('characterstyle', false);"><tt><b>characterStyle</b></tt></a>
-</div>
-<div id="characterstyle-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('characterstyle', false);"><tt><b>characterStyle</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('characterstyle', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>The character style of the text item.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<a href="../classes/CharacterStyle.html"><tt>CharacterStyle</tt></a>
-	</li>
-	</ul>
-	
-	
-</div>
-
-</div>
-</div>
-
-	
-<div id="paragraphstyle-member" class="member">
-<div id="paragraphstyle-link" class="member-link">
-<a name="paragraphstyle" href="#" onClick="return toggleMember('paragraphstyle', false);"><tt><b>paragraphStyle</b></tt></a>
-</div>
-<div id="paragraphstyle-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('paragraphstyle', false);"><tt><b>paragraphStyle</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('paragraphstyle', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>The paragraph style of the text item.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<a href="../classes/ParagraphStyle.html"><tt>ParagraphStyle</tt></a>
-	</li>
-	</ul>
-	
-	
-</div>
-
-</div>
-</div>
-
-</div>
-
 
 
 

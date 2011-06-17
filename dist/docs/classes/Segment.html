@@ -20,6 +20,7 @@
 described by the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array. Every segment of a
 path corresponds to an anchor point (anchor points are the path handles
 that are visible when the path is selected).</p>
+
 </div>
 
 <!-- ============================== constructors ========================= -->
@@ -79,7 +80,7 @@ that are visible when the path is selected).</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas332">
+<script type="text/paperscript" canvas="canvas-0">
 var handleIn = new Point(-80, -100);
 var handleOut = new Point(80, 100);
 
@@ -92,7 +93,7 @@ var secondSegment = new Segment(secondPoint, handleIn, null);
 var path = new Path(firstSegment, secondSegment);
 path.strokeColor = 'black';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas332"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
 </div>
 
 
@@ -229,7 +230,7 @@ describes the out tangent of the segment.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Boolean
+		<tt>Boolean</tt>
 	</li>
 	</ul>
 	
@@ -264,7 +265,7 @@ segment belongs to.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -413,7 +414,7 @@ segment is returned for the first segment of the path.</p>
 
 
 <!-- ============================== methods ================================ -->
-	<div class="reference-members"><h2>Functions</h2>
+	<div class="reference-members"><h2>Methods</h2>
 		
 			
 <div id="reverse-member" class="member">
@@ -495,7 +496,7 @@ segment is returned for the first segment of the path.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt>String</tt>&nbsp;&mdash;&nbsp;A string representation of the segment.
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of the segment.
 </li>
 	
 	</ul>
@@ -512,6 +513,7 @@ segment is returned for the first segment of the path.</p>
 
 
 <!-- =========================== copyright notice ========================= -->
-<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
 
 </body>

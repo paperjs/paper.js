@@ -17,6 +17,7 @@
 <h1>GradientStop</h1>
 
 <p>The GradientStop object.</p>
+
 </div>
 
 <!-- ============================== constructors ========================= -->
@@ -51,7 +52,7 @@
 
 <li>
 <tt>rampPoint:</tt> 
-Number
+<tt>Number</tt>
 &mdash;&nbsp;the position of the stop on the gradient
                               ramp {@default 0}
 &mdash;&nbsp;optional, default: <tt>0</tt>
@@ -97,7 +98,7 @@ Number
 	
 	<ul><b>Type:</b>
 	<li>
-		Number
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -107,7 +108,7 @@ Number
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas47">
+<script type="text/paperscript" canvas="canvas-0">
 // Create a circle shaped path at the center of the view,
 // using 40% of the height of the view as its radius
 // and fill it with a radial gradient color:
@@ -132,7 +133,7 @@ function onFrame(event) {
 	redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas47"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-0"></canvas></div>
 </div>
 
 
@@ -173,7 +174,7 @@ function onFrame(event) {
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas48">
+<script type="text/paperscript" canvas="canvas-1">
 // Create a circle shaped path at the center of the view,
 // using 40% of the height of the view as its radius
 // and fill it with a radial gradient color:
@@ -195,7 +196,7 @@ function onFrame(event) {
 	gradient.stops[0].color.hue += 1;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas48"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-1"></canvas></div>
 </div>
 
 
@@ -209,7 +210,7 @@ function onFrame(event) {
 
 
 <!-- ============================== methods ================================ -->
-	<div class="reference-members"><h2>Functions</h2>
+	<div class="reference-members"><h2>Methods</h2>
 		
 			
 <div id="clone-member" class="member">
@@ -250,6 +251,7 @@ function onFrame(event) {
 
 
 <!-- =========================== copyright notice ========================= -->
-<p class="footer">Copyright &#169; 21011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
 
 </body>
