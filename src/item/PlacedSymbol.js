@@ -17,8 +17,6 @@
 var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	/** @lends PlacedSymbol# */
 
-	beans: true,
-
 	/**
 	 * Creates a new PlacedSymbol Item.
 	 * 

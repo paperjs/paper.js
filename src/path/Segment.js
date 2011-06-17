@@ -17,8 +17,6 @@
 var Segment = this.Segment = Base.extend({
 	/** @lends Segment# */
 
-	beans: true,
-
 	/**
 	 * Creates a new Segment object.
 	 * 

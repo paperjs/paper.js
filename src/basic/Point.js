@@ -17,8 +17,6 @@
 var Point = this.Point = Base.extend({
 	/** @lends Point# */
 
-	beans: true,
-
 	/**
 	 * Creates a Point object with the given x and y coordinates.
 	 * 
@@ -919,8 +917,6 @@ var Point = this.Point = Base.extend({
  * @ignore
  */
 var LinkedPoint = Point.extend({
-	beans: true,
-
 	set: function(x, y, dontNotify) {
 		this._x = x;
 		this._y = y;

@@ -17,8 +17,6 @@
 var Group = this.Group = Item.extend({
 	/** @lends Group# */
 
-	beans: true,
-
 	// DOCS: document new Group(item, item...);
 	/**
 	 * Creates a new Group item and places it at the top of the active layer.

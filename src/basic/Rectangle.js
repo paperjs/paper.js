@@ -17,8 +17,6 @@
 var Rectangle = this.Rectangle = Base.extend({
 	/** @lends Rectangle# */
 
-	beans: true,
-
 	/**
 	 * Creates a Rectangle object.
 	 * 
@@ -649,7 +647,7 @@ var Rectangle = this.Rectangle = Base.extend({
 				// Note: call chaining happens here.
 				return this[setX](point.x)[setY](point.y);
 			};
-		}, { beans: true });
+		}, {});
 });
 
 /**
@@ -661,8 +659,6 @@ var Rectangle = this.Rectangle = Base.extend({
  * @ignore
  */
 var LinkedRectangle = Rectangle.extend({
-	beans: true,
-
 	set: function(x, y, width, height, dontNotify) {
 		this._x = x;
 		this._y = y;
@@ -722,6 +718,6 @@ var LinkedRectangle = Rectangle.extend({
 				this._owner[this._setter](this);
 				return this;
 			};
-		}, { beans: true })
+		}, {})
 	);
 });

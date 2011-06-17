@@ -17,8 +17,6 @@
 var Item = this.Item = Base.extend({
 	/** @lends Item# */
 
-	beans: true,
-
 	/**
 	 * @name Item
 	 * @class The Item type allows you to access and modify the items in

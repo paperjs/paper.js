@@ -17,8 +17,6 @@
 var Symbol = this.Symbol = Base.extend({
 	/** @lends Symbol# */
 
-	beans: true,
-
 	/**
 	 * Creates a Symbol item.
 	 * 
