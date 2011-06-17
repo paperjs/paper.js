@@ -290,7 +290,7 @@ var Item = this.Item = Base.extend({
 
 	setClipMask: function(clipMask) {
 		this._clipMask = clipMask;
-		if (this._clipMask) {
+		if (clipMask) {
 			this.setFillColor(null);
 			this.setStrokeColor(null);
 		}
