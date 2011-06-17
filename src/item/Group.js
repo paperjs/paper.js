@@ -69,6 +69,7 @@ var Group = this.Group = Item.extend({
 	 */
 	initialize: function(items) {
 		this.base();
+		// Allow Group to have children and named children
 		this._children = [];
 		this._namedChildren = {};
 		this.setChildren(!items || !Array.isArray(items)

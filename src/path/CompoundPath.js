@@ -42,7 +42,9 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 */
 	initialize: function(paths) {
 		this.base();
+		// Allow CompoundPath to have children and named children.
 		this._children = [];
+		this._namedChildren = {};
 		// Do not reassign to paths, since arguments would get modified, which
 		// we potentially use as array, depending on what is passed.
 		var items = !paths || !Array.isArray(paths)
