@@ -181,7 +181,7 @@ var Segment = this.Segment = Base.extend({
 	_setSelected: function(point, selected) {
 		var path = this._path,
 			selected = !!selected, // convert to boolean
-			state = this._selectionState,
+			state = this._selectionState || 0,
 			// For performance reasons use array indices to access the various
 			// selection states: 0 = point, 1 = handleIn, 2 = handleOut
 			selection = [
