@@ -85,22 +85,22 @@ var Item = this.Item = Base.extend({
 	},
 
 	setName: function(name) {
-		// Empty name '' is stored as undefined internally
-		if ((name || '') === (this._name || ''))
-			return;
-		var children = this._parent._children,
-			namedChildren = this._parent._namedChildren;
-		// If the item already had a name,
-		// remove its property from the parent's children object:
+		// Note: Don't check if the name has changed and bail out if it has not,
+		// because setName is used internally also to update internal structures
+		// when an item is moved from one parent to another.
+
+		// If the item already had a name, remove the reference to it from the
+		// parent's children object:
 		if (this._name)
 			this._removeFromNamed();
+		this._name = name || undefined;
 		if (name) {
+			var children = this._parent._children,
+				namedChildren = this._parent._namedChildren;
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
-		} else if (this._name) {
-			delete children[this._name];
 		}
-		this._name = name || undefined;
+		this._changed(ChangeFlags.ATTRIBUTE);
 	},
 
 	/**
@@ -235,6 +235,7 @@ var Item = this.Item = Base.extend({
 			this._selected = selected;
 			this._project._updateSelection(this);
 		}
+		this._changed(ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE);
 	},
 
 	_selected: false,
@@ -243,8 +244,6 @@ var Item = this.Item = Base.extend({
 	// TODO: Change to getter / setters for these below that notify of changes
 	// through _changed()
 
-	// TODO: Item#isLocked is currently ignored in the documentation, as
-	// locking an item currently has no effect
 	/**
 	 * Specifies whether the item is locked.
 	 * 
@@ -294,6 +293,7 @@ var Item = this.Item = Base.extend({
 			this.setFillColor(null);
 			this.setStrokeColor(null);
 		}
+		this._changed(ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE);
 	},
 
 	/**
@@ -514,10 +514,15 @@ var Item = this.Item = Base.extend({
 		var children = this._parent._children,
 			namedChildren = this._parent._namedChildren,
 			name = this._name,
-			namedArray = namedChildren[name];
-		if (children[name] = this)
+			namedArray = namedChildren[name],
+			index = namedArray ? namedArray.indexOf(this) : -1;
+		if (index == -1)
+			return;
+		// Remove the named reference
+		if (children[name] == this)
 			delete children[name];
-		namedArray.splice(namedArray.indexOf(this), 1);
+		// Remove this entry
+		namedArray.splice(index, 1);
 		// If there are any items left in the named array, set
 		// the last of them to be this.parent.children[this.name]
 		if (namedArray.length) {
