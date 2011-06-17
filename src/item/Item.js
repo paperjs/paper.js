@@ -403,6 +403,12 @@ var Item = this.Item = Base.extend({
 	 * The children items contained within this item. Items that define a
 	 * {@link #name} can also be accessed by name.
 	 * 
+	 * <b>Please note:</b> The children array should not be modified directly
+	 * using array functions. To remove single items from the children list, use
+	 * {@link Item#remove()}, to remove all items from the children list, use
+	 * {@link Item#removeChildren()}. To add items to the children list, use
+	 * {@link Item#addChild(item)} or {@link Item#insertChild(index, item)}.
+	 * 
 	 * @type Item[]
 	 * @bean
 	 * 
