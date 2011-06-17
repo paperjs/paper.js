@@ -96,7 +96,7 @@ var PointText = this.PointText = TextItem.extend({
 		var fillColor = this.getFillColor();
 		var strokeColor = this.getStrokeColor();
 		if (!fillColor || !strokeColor)
-			ctx.globalAlpha = this.opacity;
+			ctx.globalAlpha = this._opacity;
 		if (fillColor) {
 			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
 			ctx.fillText(this.content, 0, 0);
