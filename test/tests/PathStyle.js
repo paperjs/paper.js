@@ -56,7 +56,7 @@ test('setting path styles to an object', function() {
 test('setting group styles to an object', function() {
 	var group = new Group();
 	var path = new Path();
-	group.appendTop(path);
+	group.addChild(path);
 	group.style = {
 		fillColor: 'red',
 		strokeColor: 'green'
@@ -69,13 +69,13 @@ test('getting group styles', function() {
 	var group = new Group();
 	var path = new Path();
 	path.fillColor = 'red';
-	group.appendTop(path);
+	group.addChild(path);
 
 	compareRGBColors(group.fillColor, 'red', 'group.fillColor');
 	
 	var secondPath = new Path();
 	secondPath.fillColor = 'black';
-	group.appendTop(secondPath);
+	group.addChild(secondPath);
 	
 	// the group now contains two paths with different fillColors and therefore
 	// should return undefined:
@@ -92,12 +92,12 @@ test('setting group styles', function() {
 	var group = new Group();
 	var path = new Path();
 	path.fillColor = 'red';
-	group.appendTop(path);
+	group.addChild(path);
 
 	var secondPath = new Path();
 	secondPath.fillColor = 'blue';
 	secondPath.strokeColor = 'red';
-	group.appendTop(secondPath);
+	group.addChild(secondPath);
 	
 	// Change the fill color of the group:
 	group.fillColor = 'black';
@@ -115,14 +115,14 @@ test('setting group styles 2', function() {
 	var group = new Group();
 	var path = new Path();
 	path.fillColor = 'red';
-	group.appendTop(path);
+	group.addChild(path);
 	
 	compareRGBColors(group.fillColor, 'red', 'group.fillColor');
 	
 	var secondPath = new Path();
 	secondPath.fillColor = 'blue';
 	secondPath.strokeColor = 'red';
-	group.appendTop(secondPath);
+	group.addChild(secondPath);
 	
 	compareRGBColors(secondPath.fillColor, 'blue', 'secondPath.fillColor');
 	compareRGBColors(secondPath.strokeColor, 'red', 'secondPath.strokeColor');
