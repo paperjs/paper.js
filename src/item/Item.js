@@ -1413,8 +1413,8 @@ var Item = this.Item = Base.extend({
 		 * @param {Item} item The item that will be appended as a child
 		 */
 		insertChild: function(index, item) {
-			item._removeFromParent();
 			if (this._children) {
+				item._removeFromParent();
 				Base.splice(this._children, [item], index, 0);
 				item._parent = this;
 				item._setProject(this._project);
