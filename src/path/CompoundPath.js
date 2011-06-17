@@ -56,7 +56,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 			// TODO: Should this be handled in appendTop / Bottom instead?
 			if (path._clockwise === undefined)
 				path.setClockwise(i < l - 1);
-			this.appendTop(path);
+			this.addChild(path);
 		}
 	},
 
@@ -70,7 +70,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	simplify: function() {
 		if (this._children.length == 1) {
 			var child = this._children[0];
-			child.moveAbove(this);
+			child.insertAbove(this);
 			this.remove();
 			return child;
 		}
@@ -118,7 +118,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		// all implementing classes.
 		moveTo: function(point) {
 			var path = new Path();
-			this.appendTop(path);
+			this.addChild(path);
 			path.moveTo.apply(path, arguments);
 		},
 

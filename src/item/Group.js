@@ -51,8 +51,8 @@ var Group = this.Group = Item.extend({
 	 * 	var path = new Path.Circle(event.point, 5);
 	 * 	path.fillColor = 'black';
 	 * 
-	 * 	// Move the path to the top of the group's children list:
-	 * 	group.appendTop(path);
+	 * 	// Add the path to the group's children list:
+	 * 	group.addChild(path);
 	 * }
 	 * 
 	 * function onFrame(event) {

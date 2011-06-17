@@ -15,14 +15,14 @@ test('previousSibling / nextSibling', function() {
 	// previousSibling:
 	var path = new Path();
 	var thirdLayer = new Layer();
-	secondLayer.appendBottom(thirdLayer);
+	secondLayer.insertChild(0, thirdLayer);
 	equals(function() {
 		return secondLayer.children.length;
 	}, 2);
 	equals(function() {
 		return thirdLayer.nextSibling == path;
 	}, true);
-	secondLayer.appendTop(thirdLayer);
+	secondLayer.addChild(thirdLayer);
 	equals(function() {
 		return thirdLayer.nextSibling == null;
 	}, true);
@@ -33,17 +33,17 @@ test('previousSibling / nextSibling', function() {
 		return project.layers.length == 2;
 	}, true);
 	
-	firstLayer.appendTop(secondLayer);
+	firstLayer.addChild(secondLayer);
 	equals(function() {
 		return project.layers.length == 1;
 	}, true);
 });
 
-test('moveAbove / moveBelow', function() {
+test('insertAbove / insertBelow', function() {
 	var project = paper.project;
 	var firstLayer = project.activeLayer;
 	var secondLayer = new Layer();
-	secondLayer.moveBelow(firstLayer);
+	secondLayer.insertBelow(firstLayer);
 	equals(function() {
 		return secondLayer.previousSibling == null;
 	}, true);
@@ -52,10 +52,10 @@ test('moveAbove / moveBelow', function() {
 	}, true);
 	
 	var path = new Path();
-	firstLayer.appendTop(path);
+	firstLayer.addChild(path);
 
 	// move the layer above the path, inside the firstLayer:
-	secondLayer.moveAbove(path);
+	secondLayer.insertAbove(path);
 	equals(function() {
 		return secondLayer.previousSibling == path;
 	}, true);
@@ -68,7 +68,7 @@ test('moveAbove / moveBelow', function() {
 	}, 1);
 });
 
-test('appendTop / appendBottom / nesting', function() {
+test('addChild / appendBottom / nesting', function() {
 	var project = paper.project;
 	var firstLayer = project.activeLayer;
 	var secondLayer = new Layer();
@@ -76,7 +76,7 @@ test('appendTop / appendBottom / nesting', function() {
 	equals(function() {
 		return project.layers.length;
 	}, 2);
-	firstLayer.appendTop(secondLayer);
+	firstLayer.addChild(secondLayer);
 	equals(function() {
 		return secondLayer.parent == firstLayer;
 	}, true);
@@ -89,7 +89,7 @@ test('appendTop / appendBottom / nesting', function() {
 	}, true);
 	// Now move secondLayer bellow the first again, in which case it should
 	// reappear in project.layers
-	secondLayer.moveBelow(firstLayer);
+	secondLayer.insertBelow(firstLayer);
 	// There should be two layers now in project.layers again now
 	equals(function() {
 		return project.layers.length;
