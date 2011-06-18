@@ -192,7 +192,7 @@ var Item = this.Item = Base.extend({
 
 	setStyle: function(style) {
 		this._style.initialize(style);
-	},
+	}
 
 }, new function() { // Injection scope to produce getter setters for properties
 	// We need setters because we want to call _changed() if a property was
