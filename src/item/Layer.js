@@ -53,9 +53,17 @@ var Layer = this.Layer = Group.extend({
 	* Removes the layer from its project's layers list
 	* or its parent's children list.
 	*/
-	_removeFromParent: function() {
-		return this._parent ? this.base()
-			: !!Base.splice(this._project.layers, null, this._index, 1).length;
+	_removeFromParent: function(deselect, notify) {
+		if (this._parent)
+			return this.base(deselect, notify);
+		if (this._index != null) {
+			if (deselect)
+				this.setSelected(false);
+			Base.splice(this._project.layers, null, this._index, 1);
+			// TODO: If notify == true, notify project of hierarchy change
+			return true;
+		}
+		return false;
 	},
 
 	getNextSibling: function() {
@@ -83,9 +91,10 @@ var Layer = this.Layer = Group.extend({
 }, new function () {
 	function move(above) {
 		return function(item) {
-			// if the item is a layer and contained within Project#layers
+			// If the item is a layer and contained within Project#layers, use
+			// our own version of move().
 			if (item instanceof Layer && !item._parent
-						&& this._removeFromParent()) {
+						&& this._removeFromParent(false, true)) {
 				Base.splice(item._project.layers, [this],
 						item._index + (above ? 1 : -1), 0);
 				this._setProject(item._project);
