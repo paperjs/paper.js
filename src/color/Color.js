@@ -138,7 +138,6 @@ var Color = this.Color = Base.extend(new function() {
 	var fields = {
 	/** @lends Color# */
 
-		beans: true,
 		_readNull: true,
 
 		// DOCS: write Color constructor and class documentation.
