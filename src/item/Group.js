@@ -74,13 +74,24 @@ var Group = this.Group = Item.extend({
 				|| typeof items[0] !== 'object' ? arguments : items);
 	},
 
-	_getClipMask: function() {
-		// TODO: Use caching once Change.HIERARCHY is implemented
+	_changed: function(flags) {
+		if (flags & (ChangeFlag.HIERARCHY | ChangeFlag.CLIPPING)) {
+			// Clear cached clip item whenever hierarchy changes
+			delete this._clipItem;
+		}
+	},
+
+	_getClipItem: function() {
+		// Allow us to set _clipItem to null when none is found and still return
+		// it as a defined value without searching again
+		if (this._clipItem !== undefined)
+			return this._clipItem;
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var child = this._children[i];
 			if (child._clipMask)
-				return child;
+				return this._clipItem = child;
 		}
+		return this._clipItem = null;
 	},
 
 	/**
@@ -92,7 +103,7 @@ var Group = this.Group = Item.extend({
 	 * @bean
 	 */
 	isClipped: function() {
-		return !!this._getClipMask();
+		return !!this._getClipItem();
 	},
 
 	setClipped: function(clipped) {
@@ -103,12 +114,12 @@ var Group = this.Group = Item.extend({
 	},
 
 	draw: function(ctx, param) {
-		var clipMask = this._getClipMask();
-		if (clipMask)
-			Item.draw(clipMask, ctx, param);
+		var clipItem = this._getClipItem();
+		if (clipItem)
+			Item.draw(clipItem, ctx, param);
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var item = this._children[i];
-			if (item != clipMask)
+			if (item != clipItem)
 				Item.draw(item, ctx, param);
 		}
 	}

@@ -27,10 +27,12 @@ var ChangeFlag = {
 	// Fill style or stroke color / dash
 	STYLE: 16,
 	// Item attributes: visible, blendMode, locked, name, opacity, clipMask ...
-	ATTRIBUTE: 32
+	ATTRIBUTE: 32,
+	// Clipping in one of the child items
+	CLIPPING: 64 
 };
 
-// Shortcuts to the ChangeFlag to send to #_changed(), all including appearance
+// Shortcuts to often used ChangeFlag values including APPEARANCE
 var Change = {
 	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.APPEARANCE,
 	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
