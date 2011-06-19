@@ -232,13 +232,5 @@ var Project = this.Project = Base.extend({
 			});
 			ctx.restore();
 		}
-	},
-
-	/**
-	 * @deprecated
-	 * @ignore
-	 */
-	redraw: function() {
-		this._scope.view.draw();
 	}
 });
