@@ -28,6 +28,8 @@ var ChangeFlag = {
 	STYLE: 16,
 	// Item attributes: visible, blendMode, locked, name, opacity, clipMask ...
 	ATTRIBUTE: 32,
+	// Text content
+	CONTENT: 64,
 	// Clipping in one of the child items
 	CLIPPING: 64 
 };
@@ -38,5 +40,6 @@ var Change = {
 	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
 	STROKE: ChangeFlag.STROKE | ChangeFlag.APPEARANCE,
 	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
-	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE
+	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
+	CONTENT: ChangeFlag.CONTENT | ChangeFlag.APPEARANCE
 };
