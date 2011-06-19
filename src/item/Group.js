@@ -91,6 +91,8 @@ var Group = this.Group = Item.extend({
 			if (child._clipMask)
 				return this._clipItem = child;
 		}
+		// Make sure we're setting _clipItem to null so it won't be searched for
+		// nex time.
 		return this._clipItem = null;
 	},
 
