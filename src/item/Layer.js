@@ -89,7 +89,7 @@ var Layer = this.Layer = Group.extend({
 		this._project.activeLayer = this;
 	}
 }, new function () {
-	function move(above) {
+	function insert(above) {
 		return function(item) {
 			// If the item is a layer and contained within Project#layers, use
 			// our own version of move().
@@ -105,8 +105,8 @@ var Layer = this.Layer = Group.extend({
 	}
 
 	return {
-		insertAbove: move(true),
+		insertAbove: insert(true),
 
-		insertBelow: move(false)
+		insertBelow: insert(false)
 	};
 });
