@@ -60,14 +60,14 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	_changed: function(flags) {
-		if (flags & ChangeFlags.GEOMETRY) {
+		if (flags & ChangeFlag.GEOMETRY) {
 			delete this._bounds;
 			delete this._position;
 			delete this._strokeBounds;
 			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.
 			delete this._clockwise;
-		} else if (flags & ChangeFlags.STROKE) {
+		} else if (flags & ChangeFlag.STROKE) {
 			delete this._strokeBounds;
 		}
 	},

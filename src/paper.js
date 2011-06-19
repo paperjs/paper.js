@@ -58,7 +58,7 @@ var paper = new function() {
 //#include "project/Project.js"
 //#include "project/Symbol.js"
 
-//#include "item/ChangeFlags.js"
+//#include "item/ChangeFlag.js"
 //#include "item/Item.js"
 //#include "item/Group.js"
 //#include "item/Layer.js"
