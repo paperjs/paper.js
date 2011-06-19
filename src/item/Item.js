@@ -339,8 +339,8 @@ var Item = this.Item = Base.extend({
 		} else if ((selected = !!selected) != this._selected) {
 			this._selected = selected;
 			this._project._updateSelection(this);
+			this._changed(ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE);
 		}
-		this._changed(ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE);
 	},
 
 	_selected: false,
