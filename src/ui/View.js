@@ -366,9 +366,8 @@ var View = this.View = Base.extend({
 			if (!(tool = that._scope.tool))
 				return;
 			curPoint = viewToArtwork(event);
-			tool.onHandleEvent('mousedown', curPoint, event);
-			if (tool.onMouseDown)
-				that.draw();
+			if (tool.onHandleEvent('mousedown', curPoint, event))
+				that.draw(true);
 			if (tool.eventInterval != null)
 				timer = setInterval(mousemove, tool.eventInterval);
 			dragging = true;
@@ -385,16 +384,13 @@ var View = this.View = Base.extend({
 			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
 			if (dragging && !onlyMove) {
 				curPoint = point || curPoint;
-				if (curPoint)
-					tool.onHandleEvent('mousedrag', curPoint, event);
-				if (tool.onMouseDrag && !tool.onFrame)
-					that.draw();
+				if (curPoint && tool.onHandleEvent('mousedrag', curPoint, event))
+					that.draw(true);
 			// PORT: If there is only an onMouseMove handler, also call it when
 			// the user is dragging:
 			} else if (!dragging || onlyMove) {
-				tool.onHandleEvent('mousemove', point, event);
-				if (tool.onMouseMove && !tool.onFrame)
-					that.draw();
+				if (tool.onHandleEvent('mousemove', point, event))
+					that.draw(true);
 			}
 		}
 
@@ -406,9 +402,8 @@ var View = this.View = Base.extend({
 			if (tool) {
 				if (tool.eventInterval != null)
 					timer = clearInterval(timer);
-				tool.onHandleEvent('mouseup', viewToArtwork(event), event);
-				if (tool.onMouseUp)
-					that.draw();
+				if (tool.onHandleEvent('mouseup', viewToArtwork(event), event))
+					that.draw(true);
 			}
 		}
 
