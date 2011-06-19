@@ -59,7 +59,7 @@ var View = this.View = Base.extend({
 						if (that._onFrameCallback) {
 							that._onFrameCallback(0, true);
 						} else {
-							that.draw();
+							that.draw(true);
 						}
 					}
 				});
@@ -328,7 +328,7 @@ var View = this.View = Base.extend({
 			});
 			before = now;
 			// Automatically draw view on each frame.
-			that.draw();
+			that.draw(true);
 		};
 		// Call the onFrame handler straight away, initializing the sequence
 		// of onFrame calls.
