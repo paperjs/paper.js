@@ -671,6 +671,7 @@ var Item = this.Item = Base.extend({
 			item._setProject(this._project);
 			if (item._name)
 				item.setName(item._name);
+			this._changed(ChangeFlags.HIERARCHY);
 			return true;
 		}
 		return false;
@@ -865,9 +866,10 @@ var Item = this.Item = Base.extend({
 	reverseChildren: function() {
 		if (this._children) {
 			this._children.reverse();
-			for (var i = 0, l = this._children.length; i < l; i++) {
+			// Adjust inidces
+			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i]._index = i;
-			}
+			this._changed(ChangeFlags.HIERARCHY);
 		}
 	},
 

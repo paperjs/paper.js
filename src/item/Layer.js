@@ -58,7 +58,7 @@ var Layer = this.Layer = Group.extend({
 			if (deselect)
 				this.setSelected(false);
 			Base.splice(this._project.layers, null, this._index, 1);
-			// TODO: If notify == true, notify project of hierarchy change
+			this._project._changed(ChangeFlags.HIERARCHY);
 			return true;
 		}
 		return false;
