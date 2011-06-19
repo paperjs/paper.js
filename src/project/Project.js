@@ -97,7 +97,7 @@ var Project = this.Project = Base.extend({
 	 * in it.
 	 */
 	activate: function() {
-		if (this._index != null) {
+		if (this._scope) {
 			this._scope.project = this;
 			return true;
 		}
@@ -105,9 +105,12 @@ var Project = this.Project = Base.extend({
 	},
 
 	remove: function() {
-		var res = Base.splice(this._scope.projects, null, this._index, 1);
-		this._scope = null;
-		return !!res.length;
+		if (this._scope) {
+			Base.splice(this._scope.projects, null, this._index, 1);
+			this._scope = null;
+			return true;
+		}
+		return false;
 	},
 
 	/**
