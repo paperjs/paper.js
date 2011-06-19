@@ -104,6 +104,12 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 				var old = this['_' + key];
 				if (old != value && !(old && old.equals && old.equals(value))) {
 					this['_' + key] = value;
+					if (isColor) {
+						if (old)
+							old._removeOwner(this._item);
+						if (value)
+							value._addOwner(this._item);
+					}
 					if (this._item) {
 						this._item._changed(Change.STYLE
 								| (strokeFlags[key] ? Change.STROKE : 0));
