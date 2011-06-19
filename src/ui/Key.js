@@ -69,7 +69,8 @@ var Key = this.Key = new function() {
 		var character = String.fromCharCode(charCode),
 			key = keys[keyCode] || character.toLowerCase(),
 			handler = down ? 'onKeyDown' : 'onKeyUp',
-			scope = View.focused && View.focused._scope,
+			view = View.focused,
+			scope = view && view._scope,
 			tool = scope && scope.tool;
 		keyMap[key] = down;
 		if (tool && tool[handler]) {
@@ -80,6 +81,8 @@ var Key = this.Key = new function() {
 			var keyEvent = new KeyEvent(down, key, character, event);
 			if (tool[handler](keyEvent) === false)
 				keyEvent.preventDefault();
+			if (view)
+				view.draw(true);
 		}
 	}
 
