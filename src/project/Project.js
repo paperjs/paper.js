@@ -57,6 +57,12 @@ var Project = this.Project = Base.extend({
 		this.activeLayer = new Layer();
 	},
 
+	_changed: function(flags) {
+		if (flags & ChangeFlags.GEOMETRY) {
+			// TODO: Mark as requireRedraw
+		}
+	},
+
 	/**
 	 * The currently active path style. All selected items and newly
 	 * created items will be styled with this style.
