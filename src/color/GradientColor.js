@@ -136,6 +136,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		this._origin = origin;
 		if (this._destination)
 			this._radius = this._destination.getDistance(this._origin);
+		this._changed();
 		return this;
 	},
 
@@ -175,6 +176,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		destination = Point.read(arguments).clone();
 		this._destination = destination;
 		this._radius = this._destination.getDistance(this._origin);
+		this._changed();
 		return this;
 	},
 
@@ -218,6 +220,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		} else {
 			this._hilite = hilite;
 		}
+		this._changed();
 		return this;
 	},
 

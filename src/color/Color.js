@@ -270,7 +270,7 @@ var Color = this.Color = Base.extend(new function() {
 								? ((value % 360) + 360) % 360
 								// All other values are 0..1
 								: Math.min(Math.max(value, 0), 1);
-							this._cssString = null;
+							this._changed();
 							return this;
 						};
 					}, src);
@@ -305,6 +305,27 @@ var Color = this.Color = Base.extend(new function() {
 	return fields;
 }, {
 	/** @lends Color# */
+
+	_changed: function() {
+		this._cssString = null;
+		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
+			this._owners[i]._changed(Change.STYLE);
+	},
+
+	_addOwner: function(item) {
+		if (!this._owners)
+			this._owners = [];
+		this._owners.push(item);
+	},
+
+	_removeOwner: function(item) {
+		var index = this._owners ? this._owners.indexOf(item) : -1;
+		if (index != -1) {
+			this._owners.splice(index, 1);
+			if (this._owners.length == 0)
+				delete this._owners;
+		}
+	},
 
 	/**
 	 * Returns the type of the color as a string.
@@ -357,7 +378,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	setAlpha: function(alpha) {
 		this._alpha = alpha == null ? null : Math.min(Math.max(alpha, 0), 1);
-		this._cssString = null;
+		this._changed();
 		return this;
 	},
 
