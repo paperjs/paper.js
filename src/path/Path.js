@@ -60,9 +60,9 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	_changed: function(flags) {
+		// Don't use base() for reasons of performance.
+		Item.prototype._changed.call(this, flags);
 		if (flags & ChangeFlag.GEOMETRY) {
-			delete this._bounds;
-			delete this._position;
 			delete this._strokeBounds;
 			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.

@@ -75,6 +75,8 @@ var Group = this.Group = Item.extend({
 	},
 
 	_changed: function(flags) {
+		// Don't use base() for reasons of performance.
+		Item.prototype._changed.call(this, flags);
 		if (flags & (ChangeFlag.HIERARCHY | ChangeFlag.CLIPPING)) {
 			// Clear cached clip item whenever hierarchy changes
 			delete this._clipItem;
