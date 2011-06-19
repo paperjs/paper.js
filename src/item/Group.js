@@ -70,7 +70,7 @@ var Group = this.Group = Item.extend({
 		// Allow Group to have children and named children
 		this._children = [];
 		this._namedChildren = {};
-		this.setChildren(!items || !Array.isArray(items)
+		this.addChildren(!items || !Array.isArray(items)
 				|| typeof items[0] !== 'object' ? arguments : items);
 	},
 
