@@ -23,8 +23,8 @@ var Layer = this.Layer = Group.extend({
 	 * {@link Project#layers} array. The newly created layer will be activated,
 	 * so all newly created items will be placed within it.
 	 * 
-	 * @param {Array} [children] An optional array of items that will be
-	 * added to the newly created layer.
+	 * @param {Array} [children] An array of items that will be added to the 
+	 * newly created layer.
 	 * 
 	 * @example
 	 * var layer = new Layer();
