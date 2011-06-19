@@ -53,7 +53,7 @@ var Layer = this.Layer = Group.extend({
 	* Removes the layer from its project's layers list
 	* or its parent's children list.
 	*/
-	_removeFromParent: function(deselect, notify) {
+	_remove: function(deselect, notify) {
 		if (this._parent)
 			return this.base(deselect, notify);
 		if (this._index != null) {
@@ -94,7 +94,7 @@ var Layer = this.Layer = Group.extend({
 			// If the item is a layer and contained within Project#layers, use
 			// our own version of move().
 			if (item instanceof Layer && !item._parent
-						&& this._removeFromParent(false, true)) {
+						&& this._remove(false, true)) {
 				Base.splice(item._project.layers, [this],
 						item._index + (above ? 1 : -1), 0);
 				this._setProject(item._project);
