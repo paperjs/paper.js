@@ -665,7 +665,7 @@ var Item = this.Item = Base.extend({
 	 */
 	insertChild: function(index, item) {
 		if (this._children) {
-			item._removeFromParent(false, true);
+			item._remove(false, true);
 			Base.splice(this._children, [item], index, 0);
 			item._parent = this;
 			item._setProject(this._project);
@@ -773,7 +773,7 @@ var Item = this.Item = Base.extend({
 	/**
 	* Removes the item from its parent's children list.
 	*/
-	_removeFromParent: function(deselect, notify) {
+	_remove: function(deselect, notify) {
 		if (this._parent) {
 			if (deselect)
 				this.setSelected(false);
@@ -796,7 +796,7 @@ var Item = this.Item = Base.extend({
 	* @return {Boolean} {@true the item was removed}
 	*/
 	remove: function() {
-		return this._removeFromParent(true, true);
+		return this._remove(true, true);
 	},
 
 	/**
@@ -826,7 +826,7 @@ var Item = this.Item = Base.extend({
 	 	to = Base.pick(to, this._children.length);
 		var removed = this._children.splice(from, to - from);
 		for (var i = removed.length - 1; i >= 0; i--)
-			removed[i]._removeFromParent(true, false);
+			removed[i]._remove(true, false);
 		if (removed.length > 0)
 			this._changed(ChangeFlags.HIERARCHY);
 		return removed;
