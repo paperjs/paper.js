@@ -17,24 +17,18 @@
 			amount: 200
 		};
 		// Create a raster object, using the image 
-		var originalRaster = new Raster('sunflower');
-		// Stretch the image to fit exactly into the view
-		originalRaster.bounds = view.bounds;
-		originalRaster.visible = false;
-		rasterizeImage();
+		var raster = new Raster('sunflower');
+
+		// Transform the raster so it fills the bounding rectangle
+		// of the view:
+		raster.fitBounds(view.bounds, true);
+
+		// Hide the raster:
+		raster.visible = false;
 
 		// Create the group of circle shaped paths and scale it up a bit:
 		var group = createPhyllotaxis(values.amount);
 		group.scale(3);
-		
-		function rasterizeImage() {
-			// Stretch the image to fit exactly into the view
-			originalRaster.bounds = view.bounds;
-			if (raster)
-				raster.remove();
-			raster = originalRaster.rasterize();
-			raster.visible = false;
-		}
 		
 		function createPhyllotaxis(amount) {
 			var group = new Group();
@@ -71,10 +65,10 @@
 			position = event.point;
 		}
 
-		// Whenever the window is resized,
-		// we need to rerasterize the image:
+		// Whenever the window is resized, we need to fit the raster
+		// in the bounding rectangle of the view again:
 		function onResize() {
-			rasterizeImage();
+			raster.fitBounds(view.bounds, true);
 		}
 
 		function onFrame(event) {
