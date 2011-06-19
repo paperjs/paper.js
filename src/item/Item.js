@@ -362,12 +362,18 @@ var Item = this.Item = Base.extend({
 	},
 
 	setClipMask: function(clipMask) {
-		this._clipMask = clipMask;
-		if (clipMask) {
-			this.setFillColor(null);
-			this.setStrokeColor(null);
+		// On-the-fly conversion to boolean:
+		if (this._clipMask != (clipMask = !!clipMask)) {
+			this._clipMask = clipMask;
+			if (clipMask) {
+				this.setFillColor(null);
+				this.setStrokeColor(null);
+			}
+			this._changed(Change.ATTRIBUTE);
+			// Tell the parent the clipping mask has changed
+			if (this._parent)
+				this._parent._changed(ChangeFlag.CLIPPING);
 		}
-		this._changed(Change.ATTRIBUTE);
 	},
 
 	_clipMask: false,
