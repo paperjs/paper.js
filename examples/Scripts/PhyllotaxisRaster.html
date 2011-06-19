@@ -46,7 +46,7 @@
 				var cornerSize = new Size(radius / 4);
 				var path = new Path.RoundRectangle(rectangle, cornerSize);
 				path.rotate(i * rotation + 45);
-				group.appendTop(path);
+				group.addChild(path);
 			}
 			return group;
 		}
