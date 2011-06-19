@@ -30,7 +30,7 @@ var TextItem = this.TextItem = Item.extend({
 	 */
 	initialize: function() {
 		this.base();
-		this.content = '';
+		this._content = '';
 		this._characterStyle = CharacterStyle.create(this);
 		this.setCharacterStyle(this._project.getCurrentStyle());
 		this._paragraphStyle = ParagraphStyle.create(this);
@@ -70,10 +70,19 @@ var TextItem = this.TextItem = Item.extend({
 	 */
 
 	_clone: function(copy) {
-		copy.content = this.content;
+		copy._content = this._content;
 		copy.setCharacterStyle(this._characterStyle);
 		copy.setParagraphStyle(this._paragraphStyle);
 		return this.base(copy);
+	},
+
+	getContent: function() {
+		return this._content;
+	},
+
+	setContent: function(content) {
+		this._changed(Change.CONTENT);
+		this._content = content;
 	},
 
 	/**

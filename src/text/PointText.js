@@ -83,7 +83,7 @@ var PointText = this.PointText = TextItem.extend({
 	},
 	
 	draw: function(ctx) {
-		if (this.content == null)
+		if (!this._content)
 			return;
 		ctx.save();
 		ctx.font = this._characterStyle.fontSize + 'pt ' +
@@ -97,11 +97,11 @@ var PointText = this.PointText = TextItem.extend({
 			ctx.globalAlpha = this._opacity;
 		if (fillColor) {
 			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-			ctx.fillText(this.content, 0, 0);
+			ctx.fillText(this._content, 0, 0);
 		}
 		if (strokeColor) {
 			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-			ctx.strokeText(this.content, 0, 0);
+			ctx.strokeText(this._content, 0, 0);
 		}
 		ctx.restore();
 	}
