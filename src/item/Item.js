@@ -478,8 +478,7 @@ var Item = this.Item = Base.extend({
 
 	setChildren: function(items) {
 		this.removeChildren();
-		for (var i = 0, l = items && items.length; i < l; i++)
-			this.addChild(items[i]);
+		this.addChildren(items);
 	},
 
 	/**
@@ -646,23 +645,23 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * {@grouptitle Hierarchy Operations}
-	 * Adds the specified item as a child of the item at the end of the
+	 * Adds the specified item as a child of this item at the end of the
 	 * its children list. You can use this function for groups, compound
 	 * paths and layers.
 	 * 
-	 * @param {Item} item The item that will be added as a child
-	 */		
+	 * @param {Item} item The item to be added as a child
+	 */
 	addChild: function(item) {
 		return this.insertChild(undefined, item);
 	},
 
 	/**
-	 * Inserts the specified item as a child of the item at the specified
+	 * Inserts the specified item as a child of this item at the specified
 	 * index in its {@link #children} list. You can use this function for
 	 * groups, compound paths and layers.
 	 * 
 	 * @param {Number} index
-	 * @param {Item} item The item that will be appended as a child
+	 * @param {Item} item The item to be appended as a child
 	 */
 	insertChild: function(index, item) {
 		if (this._children) {
@@ -675,6 +674,33 @@ var Item = this.Item = Base.extend({
 			return true;
 		}
 		return false;
+	},
+
+	/**
+	 * Adds the specified items as children of this item at the end of the
+	 * its children list. You can use this function for groups, compound
+	 * paths and layers.
+	 * 
+	 * @param {item[]} items The items to be added as children
+	 */
+	addChildren: function(items) {
+		for (var i = 0, l = items && items.length; i < l; i++)
+			this.insertChild(undefined, items[i]);
+	},
+
+	/**
+	 * Inserts the specified items as children of this item at the specified
+	 * index in its {@link #children} list. You can use this function for
+	 * groups, compound paths and layers.
+	 * 
+	 * @param {Number} index
+	 * @param {Item[]} items The items to be appended as children
+	 */
+	insertChildren: function(index, items) {
+		for (var i = 0, l = items && items.length; i < l; i++) {
+			if (this.insertChild(index, items[i]))
+				index++;
+		}
 	},
 
 	/**
@@ -700,11 +726,11 @@ var Item = this.Item = Base.extend({
 	},
 
 	/**
-	 * Inserts the specified item as a child of the item by appending it to
+	 * Inserts the specified item as a child of this item by appending it to
 	 * the list of children and moving it above all other children. You can
 	 * use this function for groups, compound paths and layers.
 	 * 
-	 * @param {Item} item The item that will be appended as a child
+	 * @param {Item} item The item to be appended as a child
 	 * @deprecated use {@link #addChild(item)} instead.
 	 */
 	appendTop: function(item) {
@@ -716,7 +742,7 @@ var Item = this.Item = Base.extend({
 	 * the list of children and moving it below all other children. You can
 	 * use this function for groups, compound paths and layers.
 	 * 
-	 * @param {Item} item The item that will be appended as a child
+	 * @param {Item} item The item to be appended as a child
 	 * @deprecated use {@link #insertChild(index, item)} instead.
 	 */
 	appendBottom: function(item) {
