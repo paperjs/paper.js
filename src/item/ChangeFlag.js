@@ -14,7 +14,7 @@
  * All rights reserved.
  */
 
-var ChangeFlags = {
+var ChangeFlag = {
 	// Anything affecting the appearance of an item, including GEOMETRY,
 	// STROKE, STYLE and ATTRIBUTE (except for the invisible ones: locked, name)
 	APPEARANCE: 1,
@@ -30,11 +30,11 @@ var ChangeFlags = {
 	ATTRIBUTE: 32
 };
 
-// Shortcuts to the ChangeFlags to send to #_changed(), all including appearance
+// Shortcuts to the ChangeFlag to send to #_changed(), all including appearance
 var Change = {
-	HIERARCHY: ChangeFlags.HIERARCHY | ChangeFlags.APPEARANCE,
-	GEOMETRY: ChangeFlags.GEOMETRY | ChangeFlags.APPEARANCE,
-	STROKE: ChangeFlags.STROKE | ChangeFlags.APPEARANCE,
-	STYLE: ChangeFlags.STYLE | ChangeFlags.APPEARANCE,
-	ATTRIBUTE: ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE
+	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.APPEARANCE,
+	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	STROKE: ChangeFlag.STROKE | ChangeFlag.APPEARANCE,
+	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
+	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE
 };

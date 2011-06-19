@@ -39,10 +39,10 @@ var Item = this.Item = Base.extend({
 	 * Private notifier that is called whenever a change occurs in this item or
 	 * its sub-elements, such as Segments, Curves, PathStyles, etc.
 	 * 
-	 * @param {ChangeFlags} flags describes what exactly has changed.
+	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
-		if (flags & ChangeFlags.GEOMETRY) {
+		if (flags & ChangeFlag.GEOMETRY) {
 			delete this._bounds;
 			delete this._position;
 		}
@@ -99,7 +99,7 @@ var Item = this.Item = Base.extend({
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
 		}
-		this._changed(ChangeFlags.ATTRIBUTE);
+		this._changed(ChangeFlag.ATTRIBUTE);
 	},
 
 	/**
@@ -210,7 +210,7 @@ var Item = this.Item = Base.extend({
 					this[name] = value;
 					// #locked does not change appearance, all others do:
 					this._changed(name === '_locked'
-							? ChangeFlags.ATTRIBUTE : Change.ATTRIBUTE);
+							? ChangeFlag.ATTRIBUTE : Change.ATTRIBUTE);
 				}
 			};
 		}, {});

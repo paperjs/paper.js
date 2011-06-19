@@ -58,7 +58,7 @@ var Project = this.Project = Base.extend({
 	},
 
 	_changed: function(flags) {
-		if (flags & ChangeFlags.GEOMETRY) {
+		if (flags & ChangeFlag.GEOMETRY) {
 			// TODO: Mark as requireRedraw
 		}
 	},
