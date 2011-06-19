@@ -204,13 +204,15 @@ var View = this.View = Base.extend({
 		this._inverse = null;
 	},
 
-	draw: function() {
+	draw: function(checkRedraw) {
+		if (checkRedraw && !this._redrawNeeded)
+			return false;
 		if (this._stats)
 			this._stats.update();
 		// Initial tests conclude that clearing the canvas using clearRect
 		// is always faster than setting canvas.width = canvas.width
 		// http://jsperf.com/clearrect-vs-setting-width/7
-		var ctx =this._context,
+		var ctx = this._context,
 			bounds = this._viewBounds;
 		ctx.clearRect(bounds._x, bounds._y,
 				// TODO: +1... what if we have multiple views in one canvas? 
@@ -221,6 +223,10 @@ var View = this.View = Base.extend({
 		// Just draw the active project for now
 		this._scope.project.draw(ctx);
 		ctx.restore();
+		// Update _redrawNotified in PaperScope as soon as one view was drawn
+		this._redrawNeeded = false;
+		this._scope._redrawNotified = false;
+		return true;
 	},
 
 	activate: function() {

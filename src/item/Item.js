@@ -42,7 +42,12 @@ var Item = this.Item = Base.extend({
 	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
+		if (flags & ChangeFlag.APPEARANCE) {
+			if (this._project)
+				this._project._needsRedraw();
+		}
 		if (flags & ChangeFlag.GEOMETRY) {
+			// Clear cached bounds and position whenever geometry changes
 			delete this._bounds;
 			delete this._position;
 		}

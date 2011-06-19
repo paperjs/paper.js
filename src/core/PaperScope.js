@@ -167,6 +167,15 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 		delete PaperScope._scopes[this.id];
 	},
 
+	_needsRedraw: function() {
+		// Make sure we're not looping through the view list each time...
+		if (!this._redrawNotified) {
+			for (var i = this.views.length - 1; i >= 0; i--)
+				this.views[i]._redrawNeeded = true;
+			this._redrawNotified = true;
+		}
+	},
+
 	statics: {
 		_scopes: {},
 
