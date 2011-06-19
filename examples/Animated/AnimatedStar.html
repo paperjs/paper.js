@@ -27,7 +27,7 @@
 			}
 			path.smooth();
 			var placedSymbol = new PlacedSymbol(path);
-			layer.appendBottom(placedSymbol);
+			layer.insertChild(0, placedSymbol);
 		}
 		layer.position = view.center;
 		
