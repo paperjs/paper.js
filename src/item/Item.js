@@ -43,6 +43,7 @@ var Item = this.Item = Base.extend({
 	 */
 	_changed: function(flags) {
 		if (flags & ChangeFlags.GEOMETRY) {
+			delete this._bounds;
 			delete this._position;
 		}
 	},
@@ -1040,9 +1041,9 @@ var Item = this.Item = Base.extend({
 			}
 		}
 		return includeStroke
-			? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
-			: LinkedRectangle.create(this, 'setBounds',
-					x1, y1, x2 - x1, y2 - y1);
+				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
+				: LinkedRectangle.create(this, 'setBounds',
+						x1, y1, x2 - x1, y2 - y1);
 	},
 
 	setBounds: function(rect) {
@@ -1401,8 +1402,13 @@ var Item = this.Item = Base.extend({
 		// TODO: Handle flags, add TransformFlag class and convert to bit mask
 		// for quicker checking.
 		// TODO: Call transform on chidren only if 'children' flag is provided.
-		if (this._transform)
+		if (this._transform) {
+			// TODO: Detect matrices that contain only translations and scaling
+			// and transform the cached _bounds and _position without
+			// recalculating each time.
 			this._transform(matrix, flags);
+			this._changed(ChangeFlags.GEOMETRY);
+		}
 		// Transform position as well. Do not modify _position directly,
 		// since it's a LinkedPoint and would cause recursion!
 		if (this._position)

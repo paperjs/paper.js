@@ -61,10 +61,10 @@ var Path = this.Path = PathItem.extend({
 
 	_changed: function(flags) {
 		if (flags & ChangeFlags.GEOMETRY) {
-			delete this._length;
 			delete this._bounds;
 			delete this._position;
 			delete this._strokeBounds;
+			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.
 			delete this._clockwise;
 		} else if (flags & ChangeFlags.STROKE) {
@@ -217,7 +217,6 @@ var Path = this.Path = PathItem.extend({
 			if (strokeColor && strokeColor.transform)
 				strokeColor.transform(matrix);
 		}
-		this._changed(ChangeFlags.GEOMETRY);
 	},
 
 	/**
