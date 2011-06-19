@@ -313,12 +313,16 @@ var Tool = this.Tool = Base.extend({
 	},
 
 	onHandleEvent: function(type, pt, event) {
+		// Update global reference to this scope.
 		paper = this._scope;
+		var called = false;
 		switch (type) {
 		case 'mousedown':
 			this.updateEvent(type, pt, null, null, true, false, false);
-			if (this.onMouseDown)
+			if (this.onMouseDown) {
 				this.onMouseDown(new ToolEvent(this, type, event));
+				called = true;
+			}
 			break;
 		case 'mousedrag':
 			// In order for idleInterval drag events to work, we need to not
@@ -333,8 +337,10 @@ var Tool = this.Tool = Base.extend({
 				matchMaxDistance = false;
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, false, needsChange, matchMaxDistance)) {
-				if (this.onMouseDrag)
+				if (this.onMouseDrag) {
 					this.onMouseDrag(new ToolEvent(this, type, event));
+					called = true;
+				}
 				needsChange = true;
 				matchMaxDistance = true;
 			}
@@ -345,13 +351,17 @@ var Tool = this.Tool = Base.extend({
 			if ((this._point.x != pt.x || this._point.y != pt.y)
 					&& this.updateEvent('mousedrag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
-				if (this.onMouseDrag)
+				if (this.onMouseDrag) {
 					this.onMouseDrag(new ToolEvent(this, type, event));
+					called = true;
+				}
 			}
 			this.updateEvent(type, pt, null, this.maxDistance, false,
 					false, false);
-			if (this.onMouseUp)
+			if (this.onMouseUp) {
 				this.onMouseUp(new ToolEvent(this, type, event));
+				called = true;
+			}
 			// Start with new values for 'mousemove'
 			this.updateEvent(type, pt, null, null, true, false, false);
 			this._firstMove = true;
@@ -359,11 +369,15 @@ var Tool = this.Tool = Base.extend({
 		case 'mousemove':
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, this._firstMove, true, false)) {
-				if (this.onMouseMove)
+				if (this.onMouseMove) {
 					this.onMouseMove(new ToolEvent(this, type, event));
+					called = true;
+				}
 				this._firstMove = false;
 			}
 			break;
 		}
+		// Return if a callback was called or not.
+		return called;
 	}
 });
