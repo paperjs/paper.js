@@ -196,7 +196,7 @@ var Path = this.Path = PathItem.extend({
 					this._curves[i = length - 1] = Curve.create(this,
 						this._segments[i], this._segments[0]);
 			}
-			this._changed(ChangeFlags.GEOMETRY);
+			this._changed(Change.GEOMETRY);
 		}
 	},
 
@@ -276,7 +276,7 @@ var Path = this.Path = PathItem.extend({
 				curve._segment1 = segments[index + amount];
 			}
 		}
-		this._changed(ChangeFlags.GEOMETRY);
+		this._changed(Change.GEOMETRY);
 		return segs;
 	},
 
@@ -559,7 +559,7 @@ var Path = this.Path = PathItem.extend({
 			if (last && this._closed && (curve = curves[curves.length - 1]))
 				curve._segment2 = segments[0];
 		}
-		this._changed(ChangeFlags.GEOMETRY);
+		this._changed(Change.GEOMETRY);
 		return removed;
 	},
 
@@ -885,7 +885,7 @@ var Path = this.Path = PathItem.extend({
 				last1.remove();
 				this.setClosed(true);
 			}
-			this._changed(ChangeFlags.GEOMETRY);
+			this._changed(Change.GEOMETRY);
 			return true;
 		}
 		return false;

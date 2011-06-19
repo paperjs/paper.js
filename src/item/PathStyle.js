@@ -105,8 +105,8 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 				if (old != value && !(old && old.equals && old.equals(value))) {
 					this['_' + key] = value;
 					if (this._item) {
-						this._item._changed(ChangeFlags.STYLE
-							| (strokeFlags[key] ? ChangeFlags.STROKE : 0));
+						this._item._changed(Change.STYLE
+								| (strokeFlags[key] ? Change.STROKE : 0));
 					}
 				}
 			}

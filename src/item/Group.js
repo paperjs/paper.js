@@ -75,7 +75,7 @@ var Group = this.Group = Item.extend({
 	},
 
 	_getClipMask: function() {
-		// TODO: Use caching once ChangeFlags.HIERARCHY is implemented
+		// TODO: Use caching once Change.HIERARCHY is implemented
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var child = this._children[i];
 			if (child._clipMask)

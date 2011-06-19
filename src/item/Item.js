@@ -209,8 +209,8 @@ var Item = this.Item = Base.extend({
 				if (value != this[name]) {
 					this[name] = value;
 					// #locked does not change appearance, all others do:
-					this._changed(ChangeFlags.ATTRIBUTE
-						| (name !== '_locked' ? ChangeFlags.APPEARANCE : 0));
+					this._changed(name === '_locked'
+							? ChangeFlags.ATTRIBUTE : Change.ATTRIBUTE);
 				}
 			};
 		}, {});
@@ -340,7 +340,7 @@ var Item = this.Item = Base.extend({
 		} else if ((selected = !!selected) != this._selected) {
 			this._selected = selected;
 			this._project._updateSelection(this);
-			this._changed(ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE);
+			this._changed(Change.ATTRIBUTE);
 		}
 	},
 
@@ -367,7 +367,7 @@ var Item = this.Item = Base.extend({
 			this.setFillColor(null);
 			this.setStrokeColor(null);
 		}
-		this._changed(ChangeFlags.ATTRIBUTE | ChangeFlags.APPEARANCE);
+		this._changed(Change.ATTRIBUTE);
 	},
 
 	_clipMask: false,
@@ -671,7 +671,7 @@ var Item = this.Item = Base.extend({
 			item._setProject(this._project);
 			if (item._name)
 				item.setName(item._name);
-			this._changed(ChangeFlags.HIERARCHY);
+			this._changed(Change.HIERARCHY);
 			return true;
 		}
 		return false;
@@ -810,7 +810,7 @@ var Item = this.Item = Base.extend({
 			Base.splice(this._parent._children, null, this._index, 1);
 			// Notify parent of changed hierarchy
 			if (notify)
-				this._parent._changed(ChangeFlags.HIERARCHY);
+				this._parent._changed(Change.HIERARCHY);
 			this._parent = null;
 			return true;
 		}
@@ -856,7 +856,7 @@ var Item = this.Item = Base.extend({
 		for (var i = removed.length - 1; i >= 0; i--)
 			removed[i]._remove(true, false);
 		if (removed.length > 0)
-			this._changed(ChangeFlags.HIERARCHY);
+			this._changed(Change.HIERARCHY);
 		return removed;
 	},
 
@@ -869,7 +869,7 @@ var Item = this.Item = Base.extend({
 			// Adjust inidces
 			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i]._index = i;
-			this._changed(ChangeFlags.HIERARCHY);
+			this._changed(Change.HIERARCHY);
 		}
 	},
 
@@ -1435,7 +1435,7 @@ var Item = this.Item = Base.extend({
 			// and transform the cached _bounds and _position without
 			// recalculating each time.
 			this._transform(matrix, flags);
-			this._changed(ChangeFlags.GEOMETRY);
+			this._changed(Change.GEOMETRY);
 		}
 		// Transform position as well. Do not modify _position directly,
 		// since it's a LinkedPoint and would cause recursion!
