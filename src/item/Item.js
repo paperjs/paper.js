@@ -1414,6 +1414,74 @@ var Item = this.Item = Base.extend({
 		return this;
 	},
 
+	/**
+	 * Transform the item so that its {@link #bounds} fit within the specified
+	 * rectangle, without changing its aspect ratio.
+	 * 
+	 * @param {Rectangle} rectangle
+	 * @param {Boolean} [fill=false]
+	 * 
+	 * @example {@paperscript height=100}
+	 * // Fitting an item to the bounding rectangle of another item's bounding
+	 * // rectangle:
+	 * 
+	 * // Create a rectangle shaped path with its top left corner
+	 * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
+	 * var size = new Size(75, 50);
+	 * var path = new Path.Rectangle(new Point(80, 25), size);
+	 * path.fillColor = 'black';
+	 * 
+	 * // Create a circle shaped path with its center at {x: 80, y: 50}
+	 * // and a radius of 30.
+	 * var circlePath = new Path.Circle(new Point(80, 50), 30);
+	 * circlePath.fillColor = 'red';
+	 * 
+	 * // Fit the circlePath to the bounding rectangle of
+	 * // the rectangular path:
+	 * circlePath.fitBounds(path.bounds);
+	 * 
+	 * @example {@paperscript height=100}
+	 * // Fitting an item to the bounding rectangle of another item's bounding
+	 * // rectangle with the fill parameter set to true:
+	 * 
+	 * // Create a rectangle shaped path with its top left corner
+	 * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
+	 * var size = new Size(75, 50);
+	 * var path = new Path.Rectangle(new Point(80, 25), size);
+	 * path.fillColor = 'black';
+	 * 
+	 * // Create a circle shaped path with its center at {x: 80, y: 50}
+	 * // and a radius of 30.
+	 * var circlePath = new Path.Circle(new Point(80, 50), 30);
+	 * circlePath.fillColor = 'red';
+	 * 
+	 * // Fit the circlePath to the bounding rectangle of
+	 * // the rectangular path:
+	 * circlePath.fitBounds(path.bounds, true);
+	 * 
+	 * @example {@paperscript height=200}
+	 * // Fitting an item to the bounding rectangle of the view
+	 * var path = new Path.Circle(new Point(80, 50), 30);
+	 * path.fillColor = 'red';
+	 * 
+	 * // Fit the path to the bounding rectangle of the view:
+	 * path.fitBounds(view.bounds);
+	 */
+	fitBounds: function(rectangle, fill) {
+		rectangle = Rectangle.read(arguments);
+		var bounds = this.getBounds(),
+			itemRatio = bounds.height / bounds.width,
+			rectRatio = rectangle.height / rectangle.width,
+			scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
+					? rectangle.width / bounds.width
+					: rectangle.height / bounds.height,
+			delta = rectangle.getCenter().subtract(bounds.getCenter()),
+			newBounds = new Rectangle(new Point(),
+					new Size(bounds.width * scale, bounds.height * scale));
+		newBounds.setCenter(rectangle.getCenter());
+		this.setBounds(newBounds);
+	},
+
 	/*
 		_transform: function(matrix, flags) {
 			// The code that performs the actual transformation of content,
