@@ -57,10 +57,9 @@ var Project = this.Project = Base.extend({
 		this.activeLayer = new Layer();
 	},
 
-	_changed: function(flags) {
-		if (flags & ChangeFlag.GEOMETRY) {
-			// TODO: Mark as requireRedraw
-		}
+	_needsRedraw: function() {
+		if (this._scope)
+			this._scope._needsRedraw();
 	},
 
 	/**

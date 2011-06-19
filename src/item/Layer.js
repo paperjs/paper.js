@@ -58,7 +58,9 @@ var Layer = this.Layer = Group.extend({
 			if (deselect)
 				this.setSelected(false);
 			Base.splice(this._project.layers, null, this._index, 1);
-			this._project._changed(Change.HIERARCHY);
+			// Tell project we need a redraw. This is similar to _changed() 
+			// mechanism.
+			this._project._needsRedraw();
 			return true;
 		}
 		return false;
