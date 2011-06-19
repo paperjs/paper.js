@@ -1046,7 +1046,7 @@ var Item = this.Item = Base.extend({
 		rect = Rectangle.read(arguments);
 		var bounds = this.getBounds(),
 			matrix = new Matrix(),
-			center = rect.center;
+			center = rect.getCenter();
 		// Read this from bottom to top:
 		// Translate to new center:
 		matrix.translate(center);
@@ -1057,7 +1057,7 @@ var Item = this.Item = Base.extend({
 					bounds.height != 0 ? rect.height / bounds.height : 1);
 		}
 		// Translate to center:
-		center = bounds.center;
+		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
 		// Now execute the transformation:
 		this.transform(matrix);
