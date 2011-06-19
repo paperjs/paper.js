@@ -102,7 +102,7 @@ var Segment = this.Segment = Base.extend({
 				other._changed();
 			}
 		}
-		this._path._changed(ChangeFlags.GEOMETRY);
+		this._path._changed(Change.GEOMETRY);
 	},
 
 	/**

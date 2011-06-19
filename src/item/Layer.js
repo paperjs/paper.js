@@ -58,7 +58,7 @@ var Layer = this.Layer = Group.extend({
 			if (deselect)
 				this.setSelected(false);
 			Base.splice(this._project.layers, null, this._index, 1);
-			this._project._changed(ChangeFlags.HIERARCHY);
+			this._project._changed(Change.HIERARCHY);
 			return true;
 		}
 		return false;
