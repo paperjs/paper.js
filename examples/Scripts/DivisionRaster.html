@@ -46,7 +46,7 @@ function onMouseMove(event) {
 			var topLeft = bounds.topLeft.floor();
 			var path = new Path.Rectangle(topLeft, size.ceil());
 			path.fillColor = raster.getAverageColor(path);
-			path.moveBelow(child);
+			path.insertBelow(child);
 
 			var secondPath = path.clone();
 			size = size.floor();
@@ -54,7 +54,7 @@ function onMouseMove(event) {
 					? [size.width, 0]
 					: [0, size.height];				
 			secondPath.fillColor = raster.getAverageColor(secondPath);
-			secondPath.moveBelow(path);
+			secondPath.insertBelow(path);
 
 			// Remove the path which was split:
 			child.remove();
