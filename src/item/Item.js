@@ -1020,30 +1020,29 @@ var Item = this.Item = Base.extend({
 
 	_getBounds: function(includeStroke) {
 		var children = this._children;
-		if (children && children.length) {
-			var x1 = Infinity,
-				x2 = -Infinity,
-				y1 = x1,
-				y2 = x2,
-				getBounds = includeStroke ? 'getStrokeBounds' : 'getBounds';
-			for (var i = 0, l = children.length; i < l; i++) {
-				var child = children[i];
-				if (child._visible) {
-					var rect = child[getBounds]();
-					x1 = Math.min(rect.x, x1);
-					y1 = Math.min(rect.y, y1);
-					x2 = Math.max(rect.x + rect.width, x2);
-					y2 = Math.max(rect.y + rect.height, y2);
-				}
-			}
-			return includeStroke
-				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
-				: LinkedRectangle.create(this, 'setBounds',
-						x1, y1, x2 - x1, y2 - y1);
-		}
 		// TODO: What to return if nothing is defined, e.g. empty Groups?
 		// Scriptographer behaves weirdly then too.
-		return new Rectangle();
+		if (!children || children.length == 0) 
+			return new Rectangle();
+		var x1 = Infinity,
+			x2 = -Infinity,
+			y1 = x1,
+			y2 = x2,
+			getBounds = includeStroke ? 'getStrokeBounds' : 'getBounds';
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i];
+			if (child._visible) {
+				var rect = child[getBounds]();
+				x1 = Math.min(rect.x, x1);
+				y1 = Math.min(rect.y, y1);
+				x2 = Math.max(rect.x + rect.width, x2);
+				y2 = Math.max(rect.y + rect.height, y2);
+			}
+		}
+		return includeStroke
+			? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
+			: LinkedRectangle.create(this, 'setBounds',
+					x1, y1, x2 - x1, y2 - y1);
 	},
 
 	setBounds: function(rect) {
