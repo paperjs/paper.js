@@ -1024,13 +1024,12 @@ var Item = this.Item = Base.extend({
 			var x1 = Infinity,
 				x2 = -Infinity,
 				y1 = x1,
-				y2 = x2;
+				y2 = x2,
+				getBounds = includeStroke ? 'getStrokeBounds' : 'getBounds';
 			for (var i = 0, l = children.length; i < l; i++) {
 				var child = children[i];
 				if (child._visible) {
-					var rect = includeStroke
-							? child.getStrokeBounds()
-							: child.getBounds();
+					var rect = child[getBounds]();
 					x1 = Math.min(rect.x, x1);
 					y1 = Math.min(rect.y, y1);
 					x2 = Math.max(rect.x + rect.width, x2);
