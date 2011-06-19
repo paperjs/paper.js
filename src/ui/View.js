@@ -97,6 +97,9 @@ var View = this.View = Base.extend({
 		// Make sure the first view is focused for keyboard input straight away
 		if (!View.focused)
 			View.focused = this;
+		// As soon as a new view is added we need to mark the redraw as not
+		// motified, so the next call loops through all the views again.
+		this._scope._redrawNotified = false;
 	},
 
 	getCanvas: function() {
@@ -223,9 +226,11 @@ var View = this.View = Base.extend({
 		// Just draw the active project for now
 		this._scope.project.draw(ctx);
 		ctx.restore();
-		// Update _redrawNotified in PaperScope as soon as one view was drawn
-		this._redrawNeeded = false;
-		this._scope._redrawNotified = false;
+		if (this._redrawNeeded) {
+			this._redrawNeeded = false;
+			// Update _redrawNotified in PaperScope as soon as a view was drawn
+			this._scope._redrawNotified = false;
+		}
 		return true;
 	},
 
