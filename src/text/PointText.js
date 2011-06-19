@@ -38,14 +38,12 @@ var PointText = this.PointText = TextItem.extend({
 	initialize: function(point) {
 		this.base();
 		var point = Point.read(arguments);
-		this.content = '';
 		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
 		this._matrix = new Matrix().translate(point);
 	},
 
 	clone: function() {
 		var copy = this._clone(new PointText(this._point));
-		copy.content = this.content;
 		// Use Matrix#initialize to easily copy over values.
 		copy._matrix.initialize(this._matrix);
 		return copy;
