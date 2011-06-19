@@ -107,16 +107,6 @@ var Layer = this.Layer = Group.extend({
 	return {
 		insertAbove: move(true),
 
-		insertBelow: move(false),
-
-		/**
-		 * @deprecated
-		 */
-		moveAbove: move(true),
-
-		/**
-		 * @deprecated
-		 */
-		moveBelow: move(false)
+		insertBelow: move(false)
 	};
 });
