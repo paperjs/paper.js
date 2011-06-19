@@ -21,8 +21,8 @@ var Group = this.Group = Item.extend({
 	/**
 	 * Creates a new Group item and places it at the top of the active layer.
 	 * 
-	 * @param {Item[]} [children] An optional array of children that will be
-	 * added to the newly created group.
+	 * @param {Item[]} [children] An array of children that will be added to the
+	 * newly created group.
 	 * 
 	 * @example {@paperscript split=true height=200}
 	 * // Create a group containing two paths:

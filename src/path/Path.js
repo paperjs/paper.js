@@ -20,7 +20,7 @@ var Path = this.Path = PathItem.extend({
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 * 
-	 * @param {Segment[]} [segments] An optional array of segments (or points to be
+	 * @param {Segment[]} [segments] An array of segments (or points to be
 	 * converted to segments) that will be added to the path.
 	 * 
 	 * @example

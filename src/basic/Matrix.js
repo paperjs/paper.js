@@ -110,7 +110,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * @name Matrix#scale
 	 * @function
 	 * @param {Number} scale The scaling factor.
-	 * @param {Point} [center] The optional center for the scaling
+	 * @param {Point} [center] The center for the scaling
 	 * transformation.
 	 * @return {Matrix} This affine transform.
 	 */
@@ -121,7 +121,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * @function
 	 * @param {Number} sx The x-axis scaling factor.
 	 * @param {Number} sy The y-axis scaling factor.
-	 * @param {Point} [center] The optional center for the scaling
+	 * @param {Point} [center] The center for the scaling
 	 * transformation.
 	 * @return {Matrix} This affine transform.
 	 */
@@ -203,7 +203,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * @name Matrix#shear
 	 * @function
 	 * @param {Point} point The shear factor in x and y direction.
-	 * @param {Point} [center] The optional center for the shear transformation.
+	 * @param {Point} [center] The center for the shear transformation.
 	 * @return {Matrix} This affine transform.
 	 */
 	/**
@@ -213,7 +213,7 @@ var Matrix = this.Matrix = Base.extend({
 	 * @function
 	 * @param {Number} shx The x shear factor.
 	 * @param {Number} shy The y shear factor.
-	 * @param {Point} [center] The optional center for the shear transformation.
+	 * @param {Point} [center] The center for the shear transformation.
 	 * @return {Matrix} This affine transform.
 	 */
 	shear: function(shx, shy, center) {
