@@ -31,7 +31,7 @@
 				this.r = 30;
 				this.maxSpeed = maxSpeed + strength;
 				this.maxForce = maxForce + strength;
-				this.head = new PlacedSymbol(headSymbol);
+				this.head = headSymbol.place();
 				this.path = new Path();
 				this.shortPath = new Path();
 				this.shortPath.strokeWidth = 4;
