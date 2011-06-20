@@ -17,7 +17,6 @@
 // Extend Base with utility functions used across the library. Also set
 // this.Base, since bootstrap.js ommits that.
 this.Base = Base.inject({
-
 	/**
 	 * General purpose clone function that delegates cloning to the constructor
 	 * that receives the object to be cloned as the first argument.
@@ -98,6 +97,12 @@ this.Base = Base.inject({
 					list[i]._index = i;
 				return removed;
 			}
+		},
+
+		merge: function(dest, src) {
+			return Base.each(src, function(value, key) {
+				this[key] = value;
+			}, dest);
 		},
 
 		/**
