@@ -194,6 +194,17 @@ var View = this.View = Base.extend({
 	},
 
 	/**
+	 * Checks whether the view is currently visible within the current browser
+	 * viewport.
+	 * 
+	 * @return {Boolean} Whether the view is visible.
+	 */
+	isVisible: function() {
+		// TODO: Take bounds into account if it's not the full canvas?
+		return DomElement.isVisible(this._canvas);
+	},
+
+	/**
 	 * @param {Point} point
 	 */
 	scrollBy: function(point) {
