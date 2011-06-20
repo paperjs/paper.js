@@ -24,11 +24,11 @@ test('path.curves Synchronisation', function() {
 	equals(path.curves.toString(), "{ point1: { x: 0, y: 100 }, point2: { x: 100, y: 100 } },{ point1: { x: 100, y: 100 }, point2: { x: 0, y: 100 } }", "path.curves: path.add(new Point(100, 100));\npath.removeSegments(1, 2);");
 });
 
-test('path.curvesToPoints(maxDistance)', function() {
+test('path.flatten(maxDistance)', function() {
 	var path = new Path.Circle(new Size(80, 50), 35);
 
 	// Convert its curves to points, with a max distance of 20:
-	path.curvesToPoints(20);
+	path.flatten(20);
 
 	equals(function() {
 		return path.lastSegment.point.equals(path.firstSegment.point);
