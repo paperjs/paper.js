@@ -580,14 +580,15 @@ var Item = this.Item = Base.extend({
 		// TODO: Consider moving this to Base once it's useful in more than one
 		// place
 		var keys = ['_locked', '_visible', '_opacity', '_blendMode',
-				'_clipMask', '_selected'];
+				'_clipMask'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
 				copy[key] = this[key];
 		}
-		// Insert the clone above the original, at the same position.
-		copy.insertAbove(this);
+		// Copy over the selection state, use setSelected so the item
+		// is also added to Project#selectedItems if it is selected.
+		copy.setSelected(this._selected);
 		// Only set name once the copy is moved, to avoid setting and unsettting
 		// name related structures.
 		if (this._name)
