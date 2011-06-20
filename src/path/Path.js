@@ -1833,7 +1833,7 @@ var Path = this.Path = PathItem.extend({
 						normal1 = curve1.getNormal(1).normalize(radius),
 						normal2 = curve2.getNormal(0).normalize(radius),
 						// Intersect the two lines
-						line1 = new Line(point.add(normal1),
+						line1 = new Line(point.subtract(normal1),
 								new Point(-normal1.y, normal1.x)),
 						line2 = new Line(point.subtract(normal2),
 								new Point(-normal2.y, normal2.x)),
