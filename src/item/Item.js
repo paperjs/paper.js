@@ -843,12 +843,12 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @name Item#removeChildren
 	 * @function
-	 * @return {Array} an array containing the removed items
+	 * @return {Item[]} an array containing the removed items
 	 */
 	/**
 	 * Removes all of the item's {@link #children} (if any).
 	 * 
-	 * @return {Array} an array containing the removed items
+	 * @return {Item[]} an array containing the removed items
 	 */
 	/**
 	 * Removes the children from the specified {@code from} index to the
@@ -856,7 +856,7 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @param {Number} from the beginning index, inclusive
 	 * @param {Number} [to=children.length] the ending index, exclusive
-	 * @return {Array} an array containing the removed items
+	 * @return {Item[]} an array containing the removed items
 	 */
 	removeChildren: function(from, to) {
 		if (!this._children)
@@ -1433,7 +1433,7 @@ var Item = this.Item = Base.extend({
 	 * Transform the item.
 	 * 
 	 * @param {Matrix} matrix
-	 * @param {Array} flags Array of any of the following: 'objects', 'children',
+	 * @param {String[]} flags Array of any of the following: 'objects', 'children',
 	 *     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
 	 *     Default: ['objects', 'children']
 	 */
