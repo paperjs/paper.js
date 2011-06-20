@@ -19,6 +19,13 @@
  * PargraphStyle.
  */
 var Style = Item.extend({
+
+	initialize: function(style) {
+		return Base.each(this._defaults || {}, function(value, key) {
+			this[key] = style && style[key] || value;
+		}, this);
+	},
+
 	statics: {
 		create: function(item) {
 			var style = new this(this.dont);

@@ -65,14 +65,6 @@ this.Base = Base.inject({
 			return res;
 		},
 
-		initialize: function(object, values, defaults) {
-			if (!values)
-				values = defaults;
-			return Base.each(defaults, function(value, key) {
-				this[key] = values[key] || value;
-			}, object);
-		},
-
 		/**
 		 * Utility function for adding and removing items from a list of which
 		 * each entry keeps a reference to its index in the list in the private
