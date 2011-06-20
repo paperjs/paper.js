@@ -18,11 +18,24 @@
 // this.Base, since bootstrap.js ommits that.
 this.Base = Base.inject({
 
+	/**
+	 * General purpose clone function that delegates cloning to the constructor
+	 * that receives the object to be cloned as the first argument.
+	 * Note: #clone() needs to be overridden in any class that requires other
+	 * cloning behavior.
+	 */
 	clone: function() {
 		return new this.constructor(this);
 	},
 
 	statics: {
+		/**
+		 * Reads arguments of the type of the class on which it is called on
+		 * from the passed arguments list or array, at the given index, up to
+		 * the specified length. This is used in argument conversion, e.g. by
+		 * all basic types (Point, Size, Rectangle) and also higher classes such
+		 * as Color and Segment.
+		 */
 		read: function(list, start, length) {
 			var start = start || 0,
 				length = length || list.length - start;
@@ -38,6 +51,10 @@ this.Base = Base.inject({
 				: list) || obj;
 		},
 
+		/**
+		 * Reads all readable arguments from the list, handling nested arrays
+		 * seperately.
+		 */
 		readAll: function(list, start) {
 			var res = [], entry;
 			for (var i = start || 0, l = list.length; i < l; i++) {
@@ -91,12 +108,18 @@ this.Base = Base.inject({
 			}
 		},
 
+		/**
+		 * Capitalizes the passed string: hello world -> Hello World
+		 */
 		capitalize: function(str) {
 			return str.replace(/\b[a-z]/g, function(match) {
 				return match.toUpperCase();
 			});
 		},
 
+		/**
+		 * Camelizes the passed string: caps-lock -> capsLock
+		 */
 		camelize: function(str) {
 			return str.replace(/-(\w)/g, function(all, chr) {
 				return chr.toUpperCase();
