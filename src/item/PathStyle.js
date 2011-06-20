@@ -14,7 +14,7 @@
  * All rights reserved.
  */
 
-var PathStyle = this.PathStyle = Base.extend(new function() {
+var PathStyle = this.PathStyle = Style.extend(new function() {
 	/** @lends PathStyle# */
 
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
@@ -76,14 +76,6 @@ var PathStyle = this.PathStyle = Base.extend(new function() {
 					this[key] = value && clone && value.clone
 							? value.clone() : value;
 				}
-			}
-		},
-
-		statics: {
-			create: function(item) {
-				var style = new PathStyle(PathStyle.dont);
-				style._item = item;
-				return style;
 			}
 		}
 	};
