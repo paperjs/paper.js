@@ -129,6 +129,25 @@ test('After setting Path#fullySelected=true on an empty path, subsequent segment
 	}, true);
 });
 
+test('After removing all segments of a fully selected path, it should still be fully selected.', function() {
+	var path = new Path([10, 20], [30, 40]);
+	path.fullySelected = true;
+	path.removeSegments();
+	equals(function() {
+		return path.fullySelected;
+	}, true);
+});
+
+test('After removing all segments of a selected path, it should still be selected.', function() {
+	var path = new Path([10, 20], [30, 40]);
+	path.selected = true;
+	path.removeSegments();
+	equals(function() {
+		return path.selected;
+	}, true);
+});
+
+
 test('After simplifying a path using #pointToCurves(), the path should stay fullySelected', function() {
 	var path = new Path();
 	for (var i = 0; i < 30; i++) {
