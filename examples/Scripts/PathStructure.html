@@ -47,20 +47,20 @@
 		var segment = path.segments[i];
 		var text = new PointText(segment.point - [0, 10]);
 		text.content = i;
-		text.paragraphStyle.justification = 'center';
+		text.justification = 'center';
 	}
 	
 	for (var i = 0; i < 2; i++) {
 		var handleInText = new PointText();
 		handleInText.content = 'handleIn';
-		handleInText.paragraphStyle.justification = 'center';
-		handleInText.characterStyle.fontSize = 9;
+		handleInText.justification = 'center';
+		handleInText.fontSize = 9;
 		handleTexts.push(handleInText);
 
 		var handleOutText = new PointText();
 		handleOutText.content = 'handleOut';
-		handleOutText.paragraphStyle.justification = 'center';
-		handleOutText.characterStyle.fontSize = 9;
+		handleOutText.justification = 'center';
+		handleOutText.fontSize = 9;
 		handleTexts.push(handleOutText);
 	}
 	

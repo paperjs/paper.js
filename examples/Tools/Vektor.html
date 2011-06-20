@@ -148,7 +148,7 @@
 					? 8 : 0;
 			var text = new PointText(middle + awayVector.normalize(away + lengthSize));
 			text.rotate(textAngle);
-			text.paragraphStyle.justification = 'center';
+			text.justification = 'center';
 			value = value || vector.length;
 			text.content = (prefix || '') + Math.floor(value * 1000) / 1000;
 			text.fillColor = 'black';
