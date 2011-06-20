@@ -1088,7 +1088,7 @@ var Item = this.Item = Base.extend({
 	 */
 	_createBounds: function(rect) {
 		return LinkedRectangle.create(this, 'setBounds',
-				rect.x, rect.y, rect.width, rect.height)
+				rect.x, rect.y, rect.width, rect.height);
 	},
 
 	setBounds: function(rect) {
@@ -1459,7 +1459,7 @@ var Item = this.Item = Base.extend({
 		// Detect matrices that contain only translations and scaling
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.
-		if (bounds && matrix.getRotation() === 0) {
+		if (bounds && matrix.getRotation() % 90 === 0) {
 			this._bounds = this._createBounds(
 					matrix._transformBounds(bounds));
 			this._position = this._bounds.getCenter();
