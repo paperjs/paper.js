@@ -148,6 +148,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
+		// TODO: _changed()
 		this._bounds = null;
 	},
 
@@ -170,6 +171,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(image.naturalWidth, image.naturalHeight);
 		this._canvas = null;
 		this._context = null;
+		// TODO: _changed()
 		this._bounds = null;
 	},
 
@@ -368,14 +370,12 @@ var Raster = this.Raster = Item.extend({
 		// raster, simply preconcatenate the internal matrix with the provided
 		// one.
 		this.matrix.preConcatenate(matrix);
-		this._bounds = null;
 	},
 
 	getBounds: function() {
-		if (!this._bounds) {
-			this._bounds = this.matrix._transformBounds(
-					new Rectangle(this._size).setCenter(0, 0));
-		}
+		if (!this._bounds)
+			this._bounds = tis._createBounds(this.matrix._transformBounds(
+					new Rectangle(this._size).setCenter(0, 0)));
 		return this._bounds;
 	},
 	
