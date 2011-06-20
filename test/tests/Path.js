@@ -173,7 +173,7 @@ test('After smoothing a path using #smooth(), the path should stay selected', fu
 	path.selected = true;
 	path.smooth();
 	equals(function() {
-		return path.fullySelected;
+		return path.selected;
 	}, true);
 });
 
