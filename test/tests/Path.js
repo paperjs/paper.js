@@ -168,6 +168,36 @@ test('After simplifying a path using #simplify(), the path should stay fullySele
 	}, true);
 });
 
+test('After simplifying a path using #simplify(), the path should stay fullySelected', function() {
+	var path = new Path();
+	for (var i = 0; i < 30; i++) {
+		path.add(i * 10, 10);
+	};
+	path.fullySelected = true;
+	equals(function() {
+		return path.selected;
+	}, true);
+
+	path.simplify();
+
+	equals(function() {
+		return path.selected;
+	}, true);
+	equals(function() {
+		return path.fullySelected;
+	}, true);
+});
+
+test('After cloning a selected item, it should be added to the Project#selectedItems array', function() {
+	var path = new Path.Circle(new Size(80, 50), 35);
+	path.selected = true;
+	var copy = path.clone();
+	
+	equals(function() {
+		return paper.project.selectedItems.length
+	}, 2);
+});
+
 test('After simplifying a path using #simplify(), the path should stay selected', function() {
 	var path = new Path();
 	for (var i = 0; i < 30; i++) {
