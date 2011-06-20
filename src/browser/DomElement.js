@@ -70,8 +70,9 @@ var DomElement = new function() {
 		isVisible: function(el) {
 			// See if the scrolled bounds intersect with the windows rectangle
 			// which always starts at 0, 0
-			return new Rectangle([0, 0], DomElement.getWindowSize())
-					.intersects(DomElement.getBounds(el, false, true));
+			return !DomElement.isInvisible(el)
+					&& new Rectangle([0, 0], DomElement.getWindowSize())
+						.intersects(DomElement.getBounds(el, false, true));
 		}
 	};
 };
