@@ -17,15 +17,19 @@
 var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	/** @lends CharacterStyle# */
 
+	_defaults: {
+		fontSize: 10,
+		font: 'sans-serif'
+	},
+
 	/**
 	 * CharacterStyle objects don't need to be created directly. Just pass an
 	 * object to {@link TextItem#characterStyle}, it will be converted to a
 	 * CharacterStyle object internally.
 	 * 
-	 * @constructs CharacterStyle
+	 * @name CharacterStyle
+	 * @constructor
 	 * @param {object} style
-	 * 
-	 * @constructs CharacterStyle
 	 * 
 	 * @class The CharacterStyle object represents the character style of a text
 	 * item ({@link TextItem#characterStyle})
@@ -42,13 +46,6 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	 * 
 	 * @extends PathStyle
 	 */
-	initialize: function(style) {
-		Base.initialize(this, style, {
-			fontSize: 10,
-			font: 'sans-serif'
-		});
-		this.base(style);
-	}
 
 	/**
 	 * The font of the character style.
