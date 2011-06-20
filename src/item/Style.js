@@ -21,8 +21,15 @@
 var Style = Item.extend({
 
 	initialize: function(style) {
-		return Base.each(this._defaults || {}, function(value, key) {
-			this[key] = style && style[key] || value;
+		// If the passed style object is also a Style, clone its clonable
+		// fields rather than simply copying them.
+		var clone = style instanceof Style;
+		// Note: This relies on bean getters and setters that get implicetly
+		// called when getting from style[key] and setting on this[key].
+		return Base.each(this._defaults, function(value, key) {
+			value = style && style[key] || value;
+			this[key] = value && clone && value.clone
+					? value.clone() : value;
 		}, this);
 	},
 
@@ -31,6 +38,26 @@ var Style = Item.extend({
 			var style = new this(this.dont);
 			style._item = item;
 			return style;
+		},
+
+		extend: function(src) {
+			// Inject style getters and setters into the 'owning' class, which
+			// redirect calls to the linked style objects through their internal
+			// property on the instances of that class, as defined by _style.
+			var style = src._style;
+			src._owner.inject(Base.each(src._defaults, function(value, key) {
+				var part = Base.capitalize(key),
+					set = 'set' + part,
+					get = 'get' + part;
+				this[set] = function(value) {
+					this[style][set](value);
+					return this;
+				};
+				this[get] = function() {
+					return this[style][get]();
+				};
+			}, {}));
+			return this.base(src);
 		}
 	}
 });

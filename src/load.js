@@ -59,10 +59,10 @@ var sources = [
 	'src/path/PathFlattener.js',
 	'src/path/PathFitter.js',
 
-	'src/text/ParagraphStyle.js',
-	'src/text/CharacterStyle.js',
 	'src/text/TextItem.js',
 	'src/text/PointText.js',
+	'src/text/ParagraphStyle.js',
+	'src/text/CharacterStyle.js',
 
 	'src/color/Color.js',
 	'src/color/GradientColor.js',
