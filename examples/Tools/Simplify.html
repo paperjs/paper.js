@@ -42,7 +42,7 @@
 			var segmentCount = path.segments.length;
 
 			// When the mouse is released, simplify it:
-			path.pointsToCurves(10);
+			path.simplify(10);
 
 			// Select the path, so we can see its segments:
 			path.fullySelected = true;

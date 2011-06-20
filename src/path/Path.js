@@ -649,12 +649,14 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	/**
-	 * Converts the curves in the path to straight lines.
+	 * Converts the curves in a path to straight lines with an even distribution
+	 * of points. The distance between the produced segments is as close as
+	 * possible to the value specified by the {@code maxDistance} parameter.
 	 * 
 	 * @param {Number} maxDistance the maximum distance between the points
 	 * 
 	 * @example {@paperscript}
-	 * // Straightening the curves of a circle:
+	 * // Flattening a circle shaped path:
 	 * 
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
@@ -668,12 +670,12 @@ var Path = this.Path = PathItem.extend({
 	 * copy.position.x += 150;
 	 * 
 	 * // Convert its curves to points, with a max distance of 20:
-	 * copy.curvesToPoints(20);
+	 * copy.flatten(20);
 	 * 
 	 * // Select the copy, so we can inspect its segments:
 	 * copy.selected = true;
 	 */
-	curvesToPoints: function(maxDistance) {
+	flatten: function(maxDistance) {
 		var flattener = new PathFlattener(this),
 			pos = 0,
 			// Adapt step = maxDistance so the points distribute evenly.
@@ -690,11 +692,15 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	/**
+	 * Smooths a path by simplifying it. The {@link Path#segments} array is
+	 * analyzed and replaced by a more optimal set of segments, reducing memory
+	 * usage and speeding up drawing.
+	 * 
 	 * @param {Number} [tolerance=2.5]
 	 * 
 	 * @example {@paperscript height=300}
 	 * // Click and drag below to draw to draw a line, when you release the
-	 * // mouse, the is made smooth using path.pointsToCurves():
+	 * // mouse, the is made smooth using path.simplify():
 	 * 
 	 * var path;
 	 * function onMouseDown(event) {
@@ -719,13 +725,12 @@ var Path = this.Path = PathItem.extend({
 	 * }
 	 * 
 	 * function onMouseUp(event) {
-	 * 	// When the mouse is released, simplify the path using
-	 * 	// the pointsToCurves function:
-	 * 	path.pointsToCurves();
+	 * 	// When the mouse is released, simplify the path:
+	 * 	path.simplify();
 	 * 	path.selected = true;
 	 * }
 	 */
-	pointsToCurves: function(tolerance) {
+	simplify: function(tolerance) {
 		var fitter = new PathFitter(this, tolerance || 2.5);
 		this.setSegments(fitter.fit());
 	},
