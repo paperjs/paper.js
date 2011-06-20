@@ -22,19 +22,16 @@
 		var gradientColor = new GradientColor(gradient, point, point + [radius, 0]);
 		path.fillColor = gradientColor;
 		
-		tool.eventInterval = 30;
-		
-		var mouseDown = false;
+		var mouseDown = false,
+			mousePoint = view.center;
 		
 		function onMouseDown(event) {
-			point = point + vector;
 			mouseDown = true;
+			mousePoint = event.point;
 		}
 		
 		function onMouseDrag(event) {
-			point = point + (event.point - point) / 10;
-			gradientColor.hilite = point;
-			iterate();
+			mousePoint = event.point;
 		}
 		
 		function onMouseUp(event) {
@@ -43,8 +40,7 @@
 		}
 		
 		function onFrame() {
-			if (!mouseDown)
-				iterate();
+			iterate();
 		}
 
 		var grow = false;
@@ -58,8 +54,12 @@
 			} else if (!grow && vector.length < 75) {
 				grow = true;
 			}
-			vector.length += (grow ? 1 : -1);
-			vector.angle += 5;
+			if (mouseDown) {
+				point = point + (mousePoint - point) / 10;
+			} else {
+				vector.length += (grow ? 1 : -1);
+				vector.angle += 5;
+			}
 			gradientColor.hilite = mouseDown ? point : point + vector;
 		}
 		
