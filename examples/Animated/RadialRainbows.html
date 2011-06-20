@@ -39,14 +39,10 @@
 			mouseDown = false;
 		}
 		
-		function onFrame() {
-			iterate();
-		}
-
 		var grow = false;
 		var vector = new Point(150, 0);
 		
-		function iterate() {
+		function onFrame() {
 			for (var i = 0, l = gradient.stops.length; i < l; i++)
 				gradient.stops[i].color.hue -= 20;
 			if (grow && vector.length > 300) {
