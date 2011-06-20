@@ -1419,19 +1419,19 @@ var Item = this.Item = Base.extend({
 	 * 
 	 * @name Item#shear
 	 * @function
-	 * @param {Number} shx
-	 * @param {Number} shy
+	 * @param {Number} shearX
+	 * @param {Number} shearY
 	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#shear
 	 */
-	shear: function(shx, shy, center) {
+	shear: function(shearX, shearY, center) {
 		// PORT: Add support for center back to Scriptographer too!
 		// See Matrix#scale for explanation of this:
 		if (arguments.length < 2 || typeof sy === 'object') {
-			center = shy;
-			shy = shx;
+			center = shearY;
+			shearY = shearX;
 		}
-		return this.transform(new Matrix().shear(shx, shy,
+		return this.transform(new Matrix().shear(shearX, shearY,
 				center || this.getPosition()));
 	},
 
