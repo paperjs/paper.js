@@ -1766,11 +1766,10 @@ var Path = this.Path = PathItem.extend({
 			// Pass the matrix hidden from Bootstrap, so it still inject 
 			// getBounds as bean too.
 			if (!useCache || !this._bounds) {
-				var bounds = getBounds(this, arguments[0]);
-				if (!useCache)
-					return bounds;
-				this._bounds = LinkedRectangle.create(this, 'setBounds',
-						bounds.x, bounds.y, bounds.width, bounds.height);
+				var bounds = this._createBounds(getBounds(this, arguments[0]));
+				if (useCache)
+					this._bounds = bounds;
+				return bounds;
 			}
 			return this._bounds;
 		},
