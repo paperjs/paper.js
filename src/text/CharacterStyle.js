@@ -21,6 +21,8 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 		fontSize: 10,
 		font: 'sans-serif'
 	},
+	_owner: TextItem,
+	_style: '_characterStyle'
 
 	/**
 	 * CharacterStyle objects don't need to be created directly. Just pass an

@@ -20,6 +20,8 @@ var ParagraphStyle = this.ParagraphStyle = Style.extend({
 	_defaults: {
 		justification: 'left'
 	},
+	_owner: TextItem,
+	_style: '_paragraphStyle'
 
 	/**
 	 * ParagraphStyle objects don't need to be created directly. Just pass an
