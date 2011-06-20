@@ -330,10 +330,10 @@ var Matrix = this.Matrix = Base.extend({
 	 * 
 	 * @param {Point} point The point to be transformed.
 	 * 
-	 * @param {Array} src The array containing the source points
+	 * @param {Number[]} src The array containing the source points
 	 *        as x, y value pairs.
 	 * @param {Number} srcOff The offset to the first point to be transformed.
-	 * @param {Array} dst The array into which to store the transformed
+	 * @param {Number[]} dst The array into which to store the transformed
 	 *        point pairs.
 	 * @param {Number} dstOff The offset of the location of the first
 	 *        transformed point in the destination array.
