@@ -38,15 +38,13 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	 * @class The CharacterStyle object represents the character style of a text
 	 * item ({@link TextItem#characterStyle})
 	 * 
-	 * Example:
-	 * <code>
-	 * var text = new PointText(new Point(50, 50));
+	 * @classexample {@paperscript height=100}
+	 * var text = new PointText(new Point(50, 60));
 	 * text.content = 'Hello world.';
 	 * text.characterStyle = {
-	 * 	fontSize: 50,
-	 * 	fillColor: 'black',
+	 * 	fontSize: 30,
+	 * 	font: 'times'
 	 * };
-	 * </code>
 	 * 
 	 * @extends PathStyle
 	 */
@@ -57,6 +55,12 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	 * @name CharacterStyle#font
 	 * @default 'sans-serif'
 	 * @type String
+	 * 
+	 * @example {@paperscript height=150}
+	 * var textItem = new PointText(new Point(20, 80));
+	 * textItem.content = 'Hello world.';
+	 * textItem.fontSize = 30;
+	 * textItem.font = 'times';
 	 */
 
 	/**
@@ -65,5 +69,10 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	 * @name CharacterStyle#fontSize
 	 * @default 10
 	 * @type Number
+	 * 
+	 * @example {@paperscript height=150}
+	 * var textItem = new PointText(new Point(20, 80));
+	 * textItem.content = 'Hello world.';
+	 * textItem.fontSize = 30;
 	 */
 });

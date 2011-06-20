@@ -38,14 +38,6 @@ var ParagraphStyle = this.ParagraphStyle = Style.extend({
 	 * Currently, the ParagraphStyle object may seem a bit empty, with just the
 	 * {@link #justification} property. Yet, we have lots in store for Paper.js
 	 * when it comes to typography. Please stay tuned.
-	 * 
-	 * Example:
-	 * <pre>
-	 * var text = new PointText(new Point(0,0));
-	 * text.fillColor = 'black';
-	 * text.content = 'Hello world.';
-	 * text.paragraphStyle.justification = 'center';
-	 * </pre>
 	 */
 
 	/**
@@ -54,5 +46,25 @@ var ParagraphStyle = this.ParagraphStyle = Style.extend({
 	 * @name ParagraphStyle#justification
 	 * @default 'left'
 	 * @type String('left', 'right', 'center')
+	 * 
+	 * @example {@paperscript height=150 split=false}
+	 * // Examples of the different justifications:
+	 * 
+	 * // Create a vertical line that runs from the top center
+	 * // of the view to the bottom center of the view:
+	 * var bounds = view.bounds;
+	 * var path = new Path(bounds.topCenter, bounds.bottomCenter);
+	 * path.strokeColor = 'pink';
+	 * 
+	 * var textItem = new PointText(view.center - [0, 30]);
+	 * textItem.content = 'left justified';
+	 * 
+	 * var textItem2 = new PointText(view.center);
+	 * textItem2.content = 'center justified';
+	 * textItem2.justification = 'center';
+	 * 
+	 * var textItem3 = new PointText(view.center + [0, 30]);
+	 * textItem3.content = 'right justified';
+	 * textItem3.justification = 'right';
 	 */
 });
