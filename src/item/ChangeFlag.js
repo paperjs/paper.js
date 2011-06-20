@@ -30,8 +30,10 @@ var ChangeFlag = {
 	ATTRIBUTE: 32,
 	// Text content
 	CONTENT: 64,
+	// Raster pixels
+	PIXELS: 128,
 	// Clipping in one of the child items
-	CLIPPING: 128
+	CLIPPING: 256
 };
 
 // Shortcuts to often used ChangeFlag values including APPEARANCE
@@ -41,5 +43,6 @@ var Change = {
 	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
 	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
 	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
-	CONTENT: ChangeFlag.CONTENT | ChangeFlag.APPEARANCE
+	CONTENT: ChangeFlag.CONTENT | ChangeFlag.APPEARANCE,
+	PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE
 };

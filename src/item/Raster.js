@@ -75,7 +75,7 @@ var Raster = this.Raster = Item.extend({
 		// Setting canvas internally sets _size
 		this.setCanvas(CanvasProvider.getCanvas(size));
 		// Draw image back onto new canvas
-		this.getContext().drawImage(image, 0, 0, size.width, size.height);
+		this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
 	},
 
 	/**
@@ -122,9 +122,13 @@ var Raster = this.Raster = Item.extend({
 	 * @bean
 	 */
 	getContext: function() {
-		if (!this._context) {
+		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
-		}
+		// Support a hidden parameter that indicates if the context will be used
+		// to modify the Raster object. We can notify such changes ahead since
+		// they are only used afterwards for redrawing.
+		if (arguments[0])
+			this._changed(Change.PIXELS);
 		return this._context;
 	},
 
@@ -136,7 +140,7 @@ var Raster = this.Raster = Item.extend({
 		if (!this._canvas) {
 			this._canvas = CanvasProvider.getCanvas(this._size);
 			if (this._image)
-				this.getContext().drawImage(this._image, 0, 0);
+				this.getContext(true).drawImage(this._image, 0, 0);
 		}
 		return this._canvas;
 	},
@@ -148,8 +152,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
-		// TODO: _changed()
-		this._bounds = null;
+		this._changed(Change.GEOMETRY);
 	},
 
 	/**
@@ -171,8 +174,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(image.naturalWidth, image.naturalHeight);
 		this._canvas = null;
 		this._context = null;
-		// TODO: _changed()
-		this._bounds = null;
+		this._changed(Change.GEOMETRY);
 	},
 
 	// DOCS: document Raster#getSubImage
@@ -199,7 +201,7 @@ var Raster = this.Raster = Item.extend({
 	 */
 	drawImage: function(image, point) {
 		point = Point.read(arguments, 1);
-		this.getContext().drawImage(image, point.x, point.y);
+		this.getContext(true).drawImage(image, point.x, point.y);
 	},
 
 	/**
@@ -320,7 +322,7 @@ var Raster = this.Raster = Item.extend({
 		var hasPoint = arguments.length == 2;
 		point = Point.read(arguments, 0, hasPoint ? 1 : 2);
 		color = Color.read(arguments, hasPoint ? 1 : 2);
-		var ctx = this.getContext(),
+		var ctx = this.getContext(true),
 			imageData = ctx.createImageData(1, 1),
 			alpha = color.getAlpha();
 		imageData.data[0] = color.getRed() * 255;
@@ -362,7 +364,7 @@ var Raster = this.Raster = Item.extend({
 	 */
 	setData: function(data, point) {
 		point = Point.read(arguments, 1);
-		this.getContext().putImageData(data, point.x, point.y);
+		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
 	_transform: function(matrix, flags) {
