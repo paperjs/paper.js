@@ -38,7 +38,7 @@ var ChangeFlag = {
 var Change = {
 	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.APPEARANCE,
 	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
-	STROKE: ChangeFlag.STROKE | ChangeFlag.APPEARANCE,
+	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
 	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
 	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
 	CONTENT: ChangeFlag.CONTENT | ChangeFlag.APPEARANCE
