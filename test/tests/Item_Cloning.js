@@ -97,7 +97,7 @@ test('PointText#clone()', function() {
 		font: 'serif',
 		fontSize: 20
 	};
-	pointText.paragraphStyle.justification = 'center';
+	pointText.justification = 'center';
 	cloneAndCompare(pointText);
 });
 
