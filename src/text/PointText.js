@@ -26,7 +26,6 @@ var PointText = this.PointText = TextItem.extend({
 	 * @example
 	 * var text = new PointText(new Point(50, 100));
 	 * text.justification = 'center';
-	 * text.fillColor = 'black';
 	 * text.content = 'The contents of the point text';
 	 * 
 	 * @class A PointText item represents a piece of typography in your Paper.js
