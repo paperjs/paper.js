@@ -129,6 +129,54 @@ test('After setting Path#fullySelected=true on an empty path, subsequent segment
 	}, true);
 });
 
+test('After simplifying a path using #pointToCurves(), the path should stay fullySelected', function() {
+	var path = new Path();
+	for (var i = 0; i < 30; i++) {
+		path.add(i * 10, 10);
+	};
+	path.fullySelected = true;
+	path.pointsToCurves();
+	equals(function() {
+		return path.fullySelected;
+	}, true);
+});
+
+test('After simplifying a path using #pointToCurves(), the path should stay selected', function() {
+	var path = new Path();
+	for (var i = 0; i < 30; i++) {
+		path.add(i * 10, (i % 2 ? 20 : 40));
+	};
+	path.selected = true;
+	path.pointsToCurves();
+	equals(function() {
+		return path.selected;
+	}, true);
+});
+
+test('After smoothing a path using #smooth(), the path should stay fullySelected', function() {
+	var path = new Path();
+	for (var i = 0; i < 30; i++) {
+		path.add(i * 10, (i % 2 ? 20 : 40));
+	};
+	path.fullySelected = true;
+	path.smooth();
+	equals(function() {
+		return path.fullySelected;
+	}, true);
+});
+
+test('After smoothing a path using #smooth(), the path should stay selected', function() {
+	var path = new Path();
+	for (var i = 0; i < 30; i++) {
+		path.add(i * 10, (i % 2 ? 20 : 40));
+	};
+	path.selected = true;
+	path.smooth();
+	equals(function() {
+		return path.fullySelected;
+	}, true);
+});
+
 test('After selecting a segment, Path#selected should return true', function() {
 	var path = new Path();
 	path.add([10, 10]);
