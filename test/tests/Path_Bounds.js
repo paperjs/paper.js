@@ -43,3 +43,82 @@ test('path.strokeBounds on path without stroke', function() {
 	]);
 	compareRectangles(path.strokeBounds, { x: 121, y: 275.06796, width: 149.49304, height: 145.87686 });
 });
+
+test('path.bounds & path.strokeBounds with stroke styles', function() {
+	function makePath() {
+		var path = new Path();
+		path.moveTo(200, 50);
+		path.lineTo(230, 100);
+		path.lineTo(250, 50);
+		path.lineTo(280, 110);
+		path.arcTo([250, 20], false);
+		path.rotate(-5);
+		path.strokeWidth = 30;
+		path.miterLimit = 3;
+		return path;
+	}
+
+	var path = makePath();
+	path.fullySelected = true;
+	path.strokeColor = 'black';
+	path.strokeCap = 'butt';
+	path.strokeJoin = 'round';
+	compareRectangles(path.bounds, { x: 199.01325, y: 16.78419, width: 113.50622, height: 90.96766 });
+	compareRectangles(path.strokeBounds, { x: 186.87242, y: 1.78419, width: 140.64705, height: 120.96766 });
+
+	var path = makePath().translate(150, 0);
+	path.strokeColor = 'black';
+	path.strokeCap = 'butt';
+	path.strokeJoin = 'bevel';
+	compareRectangles(path.bounds, { x: 349.01325, y: 16.78419, width: 113.50622, height: 90.96766 });
+	compareRectangles(path.strokeBounds, { x: 336.87242, y: 1.78419, width: 140.64705, height: 119.73034 });
+
+	var path = makePath().translate(300, 0);
+	path.strokeColor = 'black';
+	path.strokeCap = 'butt';
+	path.strokeJoin = 'miter';
+	compareRectangles(path.bounds, { x: 499.01325, y: 16.78419, width: 113.50622, height: 90.96766 });
+	compareRectangles(path.strokeBounds, { x: 486.87242, y: 1.78419, width: 140.64705, height: 133.64882 });
+
+	var path = makePath().translate(0, 150);
+	path.strokeColor = 'black';
+	path.strokeCap = 'square';
+	path.strokeJoin = 'round';
+	compareRectangles(path.bounds, { x: 199.01325, y: 166.78419, width: 113.50622, height: 90.96766 });
+	compareRectangles(path.strokeBounds, { x: 178.06332, y: 150.9807, width: 149.45615, height: 121.77115 });
+
+	var path = makePath().translate(150, 150);
+	path.strokeColor = 'black';
+	path.strokeCap = 'square';
+	path.strokeJoin = 'bevel';
+	compareRectangles(path.bounds, { x: 349.01325, y: 166.78419, width: 113.50622, height: 90.96766 });
+	compareRectangles(path.strokeBounds, { x: 328.06332, y: 150.9807, width: 149.45615, height: 120.53383 });
+
+	var path = makePath().translate(300, 150);
+	path.strokeColor = 'black';
+	path.strokeCap = 'square';
+	path.strokeJoin = 'miter';
+	compareRectangles(path.bounds, { x: 499.01325, y: 166.78419, width: 113.50622, height: 90.96766 });
+	compareRectangles(path.strokeBounds, { x: 478.06332, y: 150.9807, width: 149.45615, height: 134.45231 });
+
+	var path = makePath().translate(0, 300);
+	path.strokeColor = 'black';
+	path.strokeCap = 'round';
+	path.strokeJoin = 'round';
+	compareRectangles(path.bounds, { x: 199.01325, y: 316.78419, width: 113.50622, height: 90.96766 });
+	compareRectangles(path.strokeBounds, { x: 184.01325, y: 301.78419, width: 143.50622, height: 120.96766 });
+
+	var path = makePath().translate(150, 300);
+	path.strokeColor = 'black';
+	path.strokeCap = 'round';
+	path.strokeJoin = 'bevel';
+	compareRectangles(path.bounds, { x: 349.01325, y: 316.78419, width: 113.50622, height: 90.96766 });
+	compareRectangles(path.strokeBounds, { x: 334.01325, y: 301.78419, width: 143.50622, height: 119.73034 });
+
+	var path = makePath().translate(300, 300);
+	path.strokeColor = 'black';
+	path.strokeCap = 'round';
+	path.strokeJoin = 'miter';
+	compareRectangles(path.bounds, { x: 499.01325, y: 316.78419, width: 113.50622, height: 90.96766 });
+	compareRectangles(path.strokeBounds, { x: 484.01325, y: 301.78419, width: 143.50622, height: 133.64882 });
+});
