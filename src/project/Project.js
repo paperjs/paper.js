@@ -38,15 +38,7 @@ var Project = this.Project = Base.extend({
 		this._scope = paper;
 		// Push it onto this._scope.projects and set index:
 		this._index = this._scope.projects.push(this) - 1;
-		this._currentStyle = PathStyle.create(null);
-		this.setCurrentStyle({
-			strokeWidth: 1,
-			strokeCap: 'butt',
-			strokeJoin: 'miter',
-			miterLimit: 10,
-			dashOffset: 0,
-			dashArray: []
-		});
+		this._currentStyle = new PathStyle();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		// Activate straight away so paper.project is set, as required by

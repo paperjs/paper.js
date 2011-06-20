@@ -15,15 +15,21 @@
  */
 
 var PathStyle = this.PathStyle = Style.extend(new function() {
-	/** @lends PathStyle# */
-
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
 	// not supported. The full list of properties would be:
 	//	['windingRule', 'resolution', 'strokeColor', 'strokeWidth',
 	//		'strokeCap', 'strokeJoin', 'miterLimit', 'dashOffset','dashArray',
 	//		'strokeOverprint', 'fillColor', 'fillOverprint'],
-	var keys = ['strokeColor', 'strokeWidth', 'strokeCap', 'strokeJoin',
-				'miterLimit', 'dashOffset','dashArray', 'fillColor'];
+	var defaults = {
+		fillColor: undefined,
+		strokeColor: undefined,
+		strokeWidth: 1,
+		strokeCap: 'butt',
+		strokeJoin: 'miter',
+		miterLimit: 10,
+		dashOffset: 0,
+		dashArray: []
+	};
 
 	var strokeFlags = {
 		strokeWidth: true,
@@ -32,64 +38,13 @@ var PathStyle = this.PathStyle = Style.extend(new function() {
 		miterLimit: true
 	};
 
-	var fields = {
-		// DOCS: why isn't the example code showing up?
-		/**
-		 * PathStyle objects don't need to be created directly. Just pass an
-		 * object to {@link Item#style} or {@link Project#currentStyle}, it will
-		 * be converted to a PathStyle object internally.
-		 * 
-		 * @constructs PathStyle
-		 * @param {object} style
-		 * 
-		 * @class PathStyle is used for changing the visual styles of items
-		 * contained within a Paper.js project and is returned by
-		 * {@link Item#style} and {@link Project#currentStyle}.
-		 * 
-		 * All properties of PathStyle are also reflected directly in {@link Item},
-		 * i.e.: {@link Item#fillColor}.
-		 * 
-		 * To set multiple style properties in one go, you can pass an object to
-		 * {@link Item#style}. This is a convenient way to define a style once and
-		 * apply it to a series of items:
-		 * 
-		 * @classexample {@paperscript}
-		 * var circleStyle = {
-		 * 	fillColor: new RGBColor(1, 0, 0),
-		 * 	strokeColor: 'black',
-		 * 	strokeWidth: 5
-		 * };
-		 * 
-		 * var path = new Path.Circle(new Point(80, 50), 30);
-		 * path.style = circleStyle;
-		 */
-		initialize: function(style) {
-			// If the passed style object is a PathStyle, clone its clonable
-			// fields rather than simply copying them.
-			var clone = style instanceof PathStyle;
-			// Note: This relies on bean getters and setters that get implicetly
-			// called when getting from style[key] and setting on this[key].
-			for (var i = 0, l = style && keys.length; i < l; i++) {
-				var key = keys[i],
-					value = style[key];
-				if (value !== undefined) {
-					this[key] = value && clone && value.clone
-							? value.clone() : value;
-				}
-			}
-			// Let Style#initialize handle the defaults:
-			if (this._defaults)
-				this.base(style);
-		}
-	};
-
-	Item.inject(Base.each(keys, function(key) {
+	return Base.each(defaults, function(value, key) {
 		var isColor = !!key.match(/Color$/),
 			part = Base.capitalize(key),
 			set = 'set' + part,
 			get = 'get' + part;
 
-		fields[set] = function(value) {
+		this[set] = function(value) {
 			var children = this._item && this._item._children;
 			value = isColor ? Color.read(arguments) : value;
 			if (children) {
@@ -114,7 +69,7 @@ var PathStyle = this.PathStyle = Style.extend(new function() {
 			return this;
 		};
 
-		fields[get] = function() {
+		this[get] = function() {
 			var children = this._item && this._item._children,
 				style;
 			// If this item has children, walk through all of them and see if
@@ -138,23 +93,44 @@ var PathStyle = this.PathStyle = Style.extend(new function() {
 				return this['_' + key];
 			}
 		};
-
-		// Style-getters and setters for Item:
-		// 'this' = the Base.each() side-car = the object that is returned from
-		// Base.each and injected into Item above:
-		this[set] = function(value) {
-			this._style[set](value);
-			return this;
-		};
-
-		this[get] = function() {
-			return this._style[get]();
-		};
-	}, {}));
-
-	return fields;
+	}, {
+		_defaults: defaults,
+		_owner: Item,
+		_style: '_style'
+	});
 });
 
+// TODO: See if these still show up?
+// DOCS: why isn't the example code showing up?
+/**
+ * PathStyle objects don't need to be created directly. Just pass an
+ * object to {@link Item#style} or {@link Project#currentStyle}, it will
+ * be converted to a PathStyle object internally.
+ * 
+ * @constructs PathStyle
+ * @param {object} style
+ * 
+ * @class PathStyle is used for changing the visual styles of items
+ * contained within a Paper.js project and is returned by
+ * {@link Item#style} and {@link Project#currentStyle}.
+ * 
+ * All properties of PathStyle are also reflected directly in {@link Item},
+ * i.e.: {@link Item#fillColor}.
+ * 
+ * To set multiple style properties in one go, you can pass an object to
+ * {@link Item#style}. This is a convenient way to define a style once and
+ * apply it to a series of items:
+ * 
+ * @classexample {@paperscript}
+ * var circleStyle = {
+ * 	fillColor: new RGBColor(1, 0, 0),
+ * 	strokeColor: 'black',
+ * 	strokeWidth: 5
+ * };
+ * 
+ * var path = new Path.Circle(new Point(80, 50), 30);
+ * path.style = circleStyle;
+ */
 /**
  * {@grouptitle Stroke Style}
  * 

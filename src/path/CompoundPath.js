@@ -21,7 +21,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * Creates a new compound path item and places it in the active layer.
 	 * 
 	 * @constructs CompoundPath
-	 * @param {Array} [paths] the paths to place within the compound path.
+	 * @param {Path[]} [paths] the paths to place within the compound path.
 	 * 
 	 * @example {@paperscript}
 	 * // Create a circle shaped path with a hole in it:
