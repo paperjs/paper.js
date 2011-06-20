@@ -1079,10 +1079,16 @@ var Item = this.Item = Base.extend({
 				y2 = Math.max(rect.y + rect.height, y2);
 			}
 		}
-		return includeStroke
-				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
-				: LinkedRectangle.create(this, 'setBounds',
-						x1, y1, x2 - x1, y2 - y1);
+		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return includeStroke ? bounds : this._createBounds(bounds);
+	},
+
+	/**
+	 * Creates a LinkedRectangle that when modified calls #setBounds().
+	 */
+	_createBounds: function(rect) {
+		return LinkedRectangle.create(this, 'setBounds',
+				rect.x, rect.y, rect.width, rect.height)
 	},
 
 	setBounds: function(rect) {

@@ -90,11 +90,9 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	},
 
 	getBounds: function() {
-		if (!this._bounds) {
-			var bounds = this.symbol._definition.getStrokeBounds(this.matrix);
-			this._bounds = LinkedRectangle.create(this, 'setBounds',
-					bounds.x, bounds.y, bounds.width, bounds.height);
-		}
+		if (!this._bounds)
+			this._bounds = this._createBounds(
+					this.symbol._definition.getStrokeBounds(this.matrix))
 		return this._bounds;
 	},
 
