@@ -86,7 +86,7 @@ var Path = this.Path = PathItem.extend({
 		if (!this._segments) {
 			this._segments = [];
 		} else {
-			this.setSelected(false);
+			this._selectedSegmentState = 0;
 			this._segments.length = 0;
 			// Make sure new curves are calculated next time we call getCurves()
 			if (this._curves)
@@ -644,8 +644,12 @@ var Path = this.Path = PathItem.extend({
 
 	_updateSelection: function(segment, oldState, newState) {
 		segment._selectionState = newState;
-		this.setSelected(
-				(this._selectedSegmentState += newState - oldState) > 0);
+		var total = this._selectedSegmentState += newState - oldState;
+		// Set this path as selected in case we have selected segments. Do not
+		// unselect if we're down to 0, as the path itself can still remain
+		// selected even when empty.
+		if (total > 0)
+			this.setSelected(true);
 	},
 
 	/**

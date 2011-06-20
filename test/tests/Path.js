@@ -108,10 +108,10 @@ test('Is the path deselected after setting a new list of segments?', function() 
 	path.segments = [[0, 10]];
 	equals(function() {
 		return path.selected;
-	}, false);
+	}, true);
 	equals(function() {
 		return paper.project.selectedItems.length;
-	}, 0);
+	}, 1);
 });
 
 test('After setting Path#fullySelected=true on an empty path, subsequent segments should be selected', function() {
@@ -154,7 +154,15 @@ test('After simplifying a path using #simplify(), the path should stay fullySele
 		path.add(i * 10, 10);
 	};
 	path.fullySelected = true;
+	equals(function() {
+		return path.selected;
+	}, true);
+
 	path.simplify();
+
+	equals(function() {
+		return path.selected;
+	}, true);
 	equals(function() {
 		return path.fullySelected;
 	}, true);
