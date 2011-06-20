@@ -382,7 +382,6 @@ var View = this.View = Base.extend({
 	}
 
 	function mousemove(event) {
-		DomEvent.stop(event);
 		if (!view || !(tool = view._scope.tool))
 			return;
 		// If the event was triggered by a touch screen device, prevent the
@@ -413,7 +412,6 @@ var View = this.View = Base.extend({
 				timer = clearInterval(timer);
 			if (tool.onHandleEvent('mouseup', viewToArtwork(event), event))
 				view.draw(true);
-			DomEvent.stop(event);
 		}
 	}
 
