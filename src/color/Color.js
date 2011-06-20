@@ -311,6 +311,8 @@ var Color = this.Color = Base.extend(new function() {
 	 */
 	_changed: function() {
 		this._cssString = null;
+		// Loop through the items that use this color and notify them about
+		// the style change, so they can redraw.
 		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
 			this._owners[i]._changed(Change.STYLE);
 	},
@@ -328,6 +330,8 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * Called by PathStyle whenever this color stops being used to define an
 	 * item's style.
+	 * TODO: Should we remove owners that are not used anymore for good, e.g.
+	 * in a Item#destroy() method?
 	 */
 	_removeOwner: function(item) {
 		var index = this._owners ? this._owners.indexOf(item) : -1;
