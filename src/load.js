@@ -44,8 +44,6 @@ var sources = [
 	'src/item/Layer.js',
 	'src/item/Raster.js',
 	'src/item/PlacedSymbol.js',
-	'src/item/Style.js',
-	'src/item/PathStyle.js',
 
 	'src/path/Segment.js',
 	'src/path/SegmentPoint.js',
@@ -61,8 +59,11 @@ var sources = [
 
 	'src/text/TextItem.js',
 	'src/text/PointText.js',
-	'src/text/ParagraphStyle.js',
-	'src/text/CharacterStyle.js',
+
+	'src/style/Style.js',
+	'src/style/PathStyle.js',
+	'src/style/ParagraphStyle.js',
+	'src/style/CharacterStyle.js',
 
 	'src/color/Color.js',
 	'src/color/GradientColor.js',
