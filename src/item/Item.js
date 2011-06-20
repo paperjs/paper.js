@@ -1433,10 +1433,11 @@ var Item = this.Item = Base.extend({
 	 * Transform the item.
 	 * 
 	 * @param {Matrix} matrix
-	 * @param {String[]} flags Array of any of the following: 'objects', 'children',
-	 *     'fill-gradients', 'fill-patterns', 'stroke-patterns', 'lines'. 
-	 *     Default: ['objects', 'children']
 	 */
+	// Remove this for now:
+	// @param {String[]} flags Array of any of the following: 'objects',
+	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
+	//        'lines'. Default: ['objects', 'children']
 	transform: function(matrix, flags) {
 		// TODO: Handle flags, add TransformFlag class and convert to bit mask
 		// for quicker checking.
