@@ -64,8 +64,6 @@ var paper = new function() {
 //#include "item/Layer.js"
 //#include "item/Raster.js"
 //#include "item/PlacedSymbol.js"
-//#include "item/Style.js"
-//#include "item/PathStyle.js"
 
 //#include "path/Segment.js"
 //#include "path/SegmentPoint.js"
@@ -81,8 +79,11 @@ var paper = new function() {
 
 //#include "text/TextItem.js"
 //#include "text/PointText.js"
-//#include "text/ParagraphStyle.js"
-//#include "text/CharacterStyle.js"
+
+//#include "style/Style.js"
+//#include "style/PathStyle.js"
+//#include "style/ParagraphStyle.js"
+//#include "style/CharacterStyle.js"
 
 //#include "color/Color.js"
 //#include "color/GradientColor.js"
