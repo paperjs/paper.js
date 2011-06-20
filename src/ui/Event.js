@@ -29,8 +29,7 @@ var Event = this.Event = Base.extend({
 	},
 
 	stop: function() {
-		this.stopPropagation();
-		this.preventDefault();
+		DomEvent.stop(this.event);
 	},
 
 	// DOCS: Document Event#modifiers
