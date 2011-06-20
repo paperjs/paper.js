@@ -31,7 +31,7 @@ var ChangeFlag = {
 	// Text content
 	CONTENT: 64,
 	// Clipping in one of the child items
-	CLIPPING: 64 
+	CLIPPING: 128
 };
 
 // Shortcuts to often used ChangeFlag values including APPEARANCE
