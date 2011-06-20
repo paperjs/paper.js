@@ -17,10 +17,12 @@
 var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	/** @lends CharacterStyle# */
 
-	_defaults: Base.merge({
+	_defaults: Base.merge(PathStyle.prototype._defaults, {
+		// Override default fillColor of CharacterStyle
+		fillColor: 'black',
 		fontSize: 10,
 		font: 'sans-serif'
-	}, PathStyle.prototype._defaults),
+	}),
 	_owner: TextItem,
 	_style: '_characterStyle'
 
