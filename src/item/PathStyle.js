@@ -77,6 +77,9 @@ var PathStyle = this.PathStyle = Style.extend(new function() {
 							? value.clone() : value;
 				}
 			}
+			// Let Style#initialize handle the defaults:
+			if (this._defaults)
+				this.base(style);
 		}
 	};
 
