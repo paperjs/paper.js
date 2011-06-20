@@ -42,14 +42,14 @@ var Item = this.Item = Base.extend({
 	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
-		if (flags & ChangeFlag.APPEARANCE) {
-			if (this._project)
-				this._project._needsRedraw();
-		}
 		if (flags & ChangeFlag.GEOMETRY) {
 			// Clear cached bounds and position whenever geometry changes
 			delete this._bounds;
 			delete this._position;
+		}
+		if (flags & ChangeFlag.APPEARANCE) {
+			if (this._project)
+				this._project._needsRedraw();
 		}
 	},
 
@@ -1064,11 +1064,11 @@ var Item = this.Item = Base.extend({
 		// Scriptographer behaves weirdly then too.
 		if (!children || children.length == 0) 
 			return new Rectangle();
-		var x1 = Infinity,
+		var getBounds = includeStroke ? 'getStrokeBounds' : 'getBounds',
+			x1 = Infinity,
 			x2 = -Infinity,
 			y1 = x1,
-			y2 = x2,
-			getBounds = includeStroke ? 'getStrokeBounds' : 'getBounds';
+			y2 = x2;
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			if (child._visible) {
