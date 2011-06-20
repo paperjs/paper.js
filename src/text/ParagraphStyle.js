@@ -19,7 +19,7 @@ var ParagraphStyle = this.ParagraphStyle = Style.extend({
 
 	_defaults: {
 		justification: 'left'
-	},
+	}
 
 	/**
 	 * ParagraphStyle objects don't need to be created directly. Just pass an
