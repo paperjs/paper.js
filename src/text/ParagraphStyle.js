@@ -14,7 +14,7 @@
  * All rights reserved.
  */
 
-var ParagraphStyle = this.ParagraphStyle = Base.extend({
+var ParagraphStyle = this.ParagraphStyle = Style.extend({
 	/** @lends ParagraphStyle# */
 
 	/**
@@ -46,7 +46,7 @@ var ParagraphStyle = this.ParagraphStyle = Base.extend({
 		Base.initialize(this, style, {
 			justification: 'left'
 		});
-	},
+	}
 
 	/**
 	 * The justification of the paragraph.
@@ -55,12 +55,4 @@ var ParagraphStyle = this.ParagraphStyle = Base.extend({
 	 * @default 'left'
 	 * @type String('left', 'right', 'center')
 	 */
-
-	statics: {
-		create: function(item) {
-			var style = new ParagraphStyle(ParagraphStyle.dont);
-			style._item = item;
-			return style;
-		}
-	}
 });

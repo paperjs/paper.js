@@ -48,7 +48,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 			font: 'sans-serif'
 		});
 		this.base(style);
-	},
+	}
 
 	/**
 	 * The font of the character style.
@@ -65,12 +65,4 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend({
 	 * @default 10
 	 * @type Number
 	 */
-
-	statics: {
-		create: function(item) {
-			var style = new CharacterStyle(CharacterStyle.dont);
-			style._item = item;
-			return style;
-		}
-	}
 });

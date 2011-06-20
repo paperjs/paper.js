@@ -44,6 +44,7 @@ var sources = [
 	'src/item/Layer.js',
 	'src/item/Raster.js',
 	'src/item/PlacedSymbol.js',
+	'src/item/Style.js',
 	'src/item/PathStyle.js',
 
 	'src/path/Segment.js',
