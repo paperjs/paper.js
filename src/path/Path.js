@@ -500,7 +500,7 @@ var Path = this.Path = PathItem.extend({
 	 * 
 	 * @name Path#removeSegments
 	 * @function
-	 * @return {Array} an array containing the removed segments
+	 * @return {Segment[]} an array containing the removed segments
 	 */
 	/**
 	 * Removes the segments from the specified {@code from} index to the
