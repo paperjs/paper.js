@@ -99,10 +99,12 @@ this.Base = Base.inject({
 			}
 		},
 
-		merge: function(dest, src) {
-			return Base.each(src, function(value, key) {
-				this[key] = value;
-			}, dest);
+		merge: function() {
+			return Base.each(arguments, function(hash) {
+				Base.each(hash, function(value, key) {
+					this[key] = value;
+				}, this);
+			}, {}, true); // Pass true for asArray.
 		},
 
 		/**
