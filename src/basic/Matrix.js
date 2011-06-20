@@ -411,6 +411,30 @@ var Matrix = this.Matrix = Base.extend({
 		return this._m00 * this._m11 - this._m01 * this._m10;
 	},
 
+	getTranslation: function() {
+		return new Point(this._m02, this._m12);
+	},
+
+	getScaling: function() {
+		var sx = Math.sqrt(this._m00 * this._m00 + this._m10 * this._m10),
+			sy = Math.sqrt(this._m01 * this._m01 + this._m11 * this._m11);
+		return new Point(this._m00 < 0 ? -sx : sx, this._m01 < 0 ? -sy : sy);
+	},
+
+	/**
+	 * @return {Number} The rotation angle of the matrix. If a non-uniform
+	 * rotation is applied as a result of a shear() or scale() command,
+	 * undefined is returned, as the resulting transformation cannot be
+	 * expressed in one rotation angle.
+	 */
+	getRotation: function() {
+		var angle1 = -Math.atan2(this._m01, this._m11),
+			angle2 = Math.atan2(this._m10, this._m00);
+		console.log(angle1 * 180 / Math.PI, angle2 * 180 / Math.PI);
+		return Math.abs(angle1 - angle2) < Numerical.TOLERANCE
+				? angle1 * 180 / Math.PI : undefined;
+	},
+
 	/**
 	 * @return {Boolean} Whether this transform is the identity transform.
 	 */
