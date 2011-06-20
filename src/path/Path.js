@@ -508,7 +508,7 @@ var Path = this.Path = PathItem.extend({
 	 * 
 	 * @param {Number} from the beginning index, inclusive
 	 * @param {Number} [to=segments.length] the ending index, exclusive
-	 * @return {Array} an array containing the removed segments
+	 * @return {Segment[]} an array containing the removed segments
 	 * 
 	 * @example {@paperscript}
 	 * // Removing segments from a path:
