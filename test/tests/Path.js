@@ -148,25 +148,25 @@ test('After removing all segments of a selected path, it should still be selecte
 });
 
 
-test('After simplifying a path using #pointToCurves(), the path should stay fullySelected', function() {
+test('After simplifying a path using #simplify(), the path should stay fullySelected', function() {
 	var path = new Path();
 	for (var i = 0; i < 30; i++) {
 		path.add(i * 10, 10);
 	};
 	path.fullySelected = true;
-	path.pointsToCurves();
+	path.simplify();
 	equals(function() {
 		return path.fullySelected;
 	}, true);
 });
 
-test('After simplifying a path using #pointToCurves(), the path should stay selected', function() {
+test('After simplifying a path using #simplify(), the path should stay selected', function() {
 	var path = new Path();
 	for (var i = 0; i < 30; i++) {
 		path.add(i * 10, (i % 2 ? 20 : 40));
 	};
 	path.selected = true;
-	path.pointsToCurves();
+	path.simplify();
 	equals(function() {
 		return path.selected;
 	}, true);
