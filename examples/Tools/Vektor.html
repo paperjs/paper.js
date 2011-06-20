@@ -113,7 +113,6 @@
 			var text = new PointText(center
 					+ through.normalize(radius + 10) + new Point(0, 3));
 			text.content = Math.floor(vector.angle * 100) / 100 + '\xb0';
-			text.fillColor = 'black';
 			items.push(text);
 		}
 	}
@@ -151,7 +150,6 @@
 			text.justification = 'center';
 			value = value || vector.length;
 			text.content = (prefix || '') + Math.floor(value * 1000) / 1000;
-			text.fillColor = 'black';
 			items.push(text);
 		}
 	}
