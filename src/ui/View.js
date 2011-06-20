@@ -369,73 +369,96 @@ var View = this.View = Base.extend({
 	 * 
 	 * @type function
 	 */
-	onResize: null,
+	onResize: null
+}, new function() { // Injection scope for mouse handlers
+	var view,
+		tool,
+		timer,
+		curPoint,
+		dragging = false;
 
-	_createEvents: function() {
-		var that = this,
-			tool,
-			timer,
-			curPoint,
-			dragging = false;
-
-		function viewToArtwork(event) {
-			return that.viewToArtwork(DomEvent.getOffset(event));
-		}
-
-		function mousedown(event) {
-			// Tell the Key class which view should receive keyboard input.
-			View.focused = that;
-			if (!(tool = that._scope.tool))
-				return;
-			curPoint = viewToArtwork(event);
-			if (tool.onHandleEvent('mousedown', curPoint, event))
-				that.draw(true);
-			if (tool.eventInterval != null)
-				timer = setInterval(mousemove, tool.eventInterval);
-			dragging = true;
-		}
-
-		function mousemove(event) {
-			if (!(tool = that._scope.tool))
-				return;
-			// If the event was triggered by a touch screen device, prevent the
-			// default behaviour, as it will otherwise scroll the page:
-			if (event && event.targetTouches)
-				DomEvent.preventDefault(event);
-			var point = event && viewToArtwork(event);
-			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
-			if (dragging && !onlyMove) {
-				curPoint = point || curPoint;
-				if (curPoint && tool.onHandleEvent('mousedrag', curPoint, event))
-					that.draw(true);
-			// PORT: If there is only an onMouseMove handler, also call it when
-			// the user is dragging:
-			} else if (!dragging || onlyMove) {
-				if (tool.onHandleEvent('mousemove', point, event))
-					that.draw(true);
-			}
-		}
-
-		function mouseup(event) {
-			if (!dragging)
-				return;
-			dragging = false;
-			curPoint = null;
-			if (tool) {
-				if (tool.eventInterval != null)
-					timer = clearInterval(timer);
-				if (tool.onHandleEvent('mouseup', viewToArtwork(event), event))
-					that.draw(true);
-			}
-		}
-
-		return {
-			mousedown: mousedown,
-			mousemove: mousemove,
-			mouseup: mouseup,
-			touchstart: mousedown,
-			touchmove: mousemove,
-			touchend: mouseup
-		};
+	function viewToArtwork(event) {
+		return view.viewToArtwork(DomEvent.getOffset(event, view._canvas));
 	}
+
+	function mousemove(event) {
+		DomEvent.stop(event);
+		if (!view || !(tool = view._scope.tool))
+			return;
+		// If the event was triggered by a touch screen device, prevent the
+		// default behaviour, as it will otherwise scroll the page:
+		if (event && event.targetTouches)
+			DomEvent.preventDefault(event);
+		var point = event && viewToArtwork(event);
+		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
+		if (dragging && !onlyMove) {
+			curPoint = point || curPoint;
+			if (curPoint && tool.onHandleEvent('mousedrag', curPoint, event))
+				view.draw(true);
+		// PORT: If there is only an onMouseMove handler, also call it when
+		// the user is dragging:
+		} else if ((!dragging || onlyMove)
+				&& tool.onHandleEvent('mousemove', point, event)) {
+			view.draw(true);
+		}
+	}
+
+	function mouseup(event) {
+		if (!view || !dragging)
+			return;
+		dragging = false;
+		curPoint = null;
+		if (tool) {
+			if (timer != null)
+				timer = clearInterval(timer);
+			if (tool.onHandleEvent('mouseup', viewToArtwork(event), event))
+				view.draw(true);
+			DomEvent.stop(event);
+		}
+	}
+
+	function selectstart(event) {
+		// Only stop this even if we're dragging already, since otherwise no
+		// text whatsoever can be selected on the page.
+		if (dragging)
+			DomEvent.stop(event);
+	}
+
+	// mousemove and mouseup events need to be installed on document, not the
+	// view canvas, since we want to catch the end of drag events even outside
+	// our view. Only the mousedown events are installed on the view, as handled
+	// by _createEvents below.
+
+	DomEvent.add(document, {
+		mousemove: mousemove,
+		mouseup: mouseup,
+		touchmove: mousemove,
+		touchend: mouseup,
+		selectstart: selectstart
+	});
+
+	return {
+		_createEvents: function() {
+			var that = this;
+
+			function mousedown(event) {
+				// Tell the Key class which view should receive keyboard input.
+				view = View.focused = that;
+				if (!(tool = view._scope.tool))
+					return;
+				curPoint = viewToArtwork(event);
+				if (tool.onHandleEvent('mousedown', curPoint, event))
+					view.draw(true);
+				if (tool.eventInterval != null)
+					timer = setInterval(mousemove, tool.eventInterval);
+				dragging = true;
+			}
+
+			return {
+				mousedown: mousedown,
+				touchstart: mousedown,
+				selectstart: selectstart
+			};
+		}
+	};
 });
