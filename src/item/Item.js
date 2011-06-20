@@ -1448,32 +1448,28 @@ var Item = this.Item = Base.extend({
 		// TODO: Handle flags, add TransformFlag class and convert to bit mask
 		// for quicker checking.
 		// TODO: Call transform on chidren only if 'children' flag is provided.
+		// Calling _changed will clear _bounds and _position, but depending
+		// on matrix we can calculate and set them again.
+		var bounds = this._bounds,
+			position = this._position;
 		if (this._transform) {
-			// Detect matrices that contain only translations and scaling
-			// and transform the cached _bounds and _position without having to
-			// fully recalculate each time.
-			var bounds = this._bounds,
-				position = this._position;
 			this._transform(matrix, flags);
-			// Calling _changed will clear _bounds and _position, but depending
-			// on matrix we can calculate and set them again.
 			this._changed(Change.GEOMETRY);
-			if (bounds && matrix.getRotation() === 0) {
-				this._bounds = this._createBounds(
-						matrix._transformBounds(bounds));
-				this._position = this._bounds.getCenter();
-			} else if (position) {
-				// Transform position as well. Do not modify _position directly,
-				// since it's a LinkedPoint and would cause recursion!
-				this._position = matrix._transformPoint(position, position, true);
-			}
 		}
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				var child = this._children[i];
-				child.transform(matrix, flags);
-			}
+		// Detect matrices that contain only translations and scaling
+		// and transform the cached _bounds and _position without having to
+		// fully recalculate each time.
+		if (bounds && matrix.getRotation() === 0) {
+			this._bounds = this._createBounds(
+					matrix._transformBounds(bounds));
+			this._position = this._bounds.getCenter();
+		} else if (position) {
+			// Transform position as well. Do not notify _position of
+			// changes, since it's a LinkedPoint and would cause recursion!
+			this._position = matrix._transformPoint(position, position, true);
 		}
+		for (var i = 0, l = this._children && this._children.length; i < l; i++)
+			this._children[i].transform(matrix, flags);
 		// PORT: Return 'this' in all chainable commands
 		return this;
 	},
