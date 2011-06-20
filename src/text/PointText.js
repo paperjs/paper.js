@@ -25,8 +25,8 @@ var PointText = this.PointText = TextItem.extend({
 	 * 
 	 * @example
 	 * var text = new PointText(new Point(50, 100));
-	 * text.paragraphStyle.justification = 'center';
-	 * text.characterStyle.fillColor = 'black';
+	 * text.justification = 'center';
+	 * text.fillColor = 'black';
 	 * text.content = 'The contents of the point text';
 	 * 
 	 * @class A PointText item represents a piece of typography in your Paper.js
@@ -86,9 +86,8 @@ var PointText = this.PointText = TextItem.extend({
 		if (!this._content)
 			return;
 		ctx.save();
-		ctx.font = this._characterStyle.fontSize + 'pt ' +
-				this._characterStyle.font;
-		ctx.textAlign = this._paragraphStyle.justification;
+		ctx.font = this.getFontSize() + 'pt ' + this.getFont();
+		ctx.textAlign = this.getJustification();
 		this._matrix.applyToContext(ctx);
 		
 		var fillColor = this.getFillColor();
