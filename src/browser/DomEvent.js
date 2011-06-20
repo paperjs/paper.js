@@ -58,10 +58,10 @@ var DomEvent = {
 		return event.target || event.srcElement;
 	},
 
-	getOffset: function(event) {
+	getOffset: function(event, target) {
 		// Remove target offsets from page coordinates
 		return DomEvent.getPoint(event).subtract(
-				DomElement.getOffset(DomEvent.getElement(event), true));
+				DomElement.getOffset(target || DomEvent.getElement(event), true));
 	},
 
 	preventDefault: function(event) {
