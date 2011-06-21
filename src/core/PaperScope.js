@@ -132,7 +132,9 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 	},
 
 	evaluate: function(code) {
-		return PaperScript.evaluate(code, this);
+		var res = PaperScript.evaluate(code, this);
+		View.updateFocus();
+		return res;
 	},
 
 	/**
@@ -184,6 +186,13 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 			if (typeof id === 'object')
 				id = id.getAttribute('id');
 			return this._scopes[id] || null;
+		},
+
+		/**
+		 * A way to iterate over all active scopes without accessing _scopes
+		 */
+		each: function(iter) {
+			Base.each(this._scopes, iter);
 		}
 	}
 });

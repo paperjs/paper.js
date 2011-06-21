@@ -423,6 +423,18 @@ var View = this.View = Base.extend({
 			DomEvent.stop(event);
 	}
 
+	function updateFocus() {
+		PaperScope.each(function(scope) {
+			for (var i = 0, l = scope.views.length; i < l; i++) {
+				var view = scope.views[i];
+				if (view.isVisible()) {
+					View.focused = view;
+					throw Base.stop;
+				}
+			}
+		});
+	}
+
 	// mousemove and mouseup events need to be installed on document, not the
 	// view canvas, since we want to catch the end of drag events even outside
 	// our view. Only the mousedown events are installed on the view, as handled
@@ -433,7 +445,8 @@ var View = this.View = Base.extend({
 		mouseup: mouseup,
 		touchmove: mousemove,
 		touchend: mouseup,
-		selectstart: selectstart
+		selectstart: selectstart,
+		scroll: updateFocus
 	});
 
 	return {
@@ -458,6 +471,14 @@ var View = this.View = Base.extend({
 				touchstart: mousedown,
 				selectstart: selectstart
 			};
+		},
+
+		statics: {
+			/**
+			 * Loops through all scopes and their views and sets the focus on
+			 * the first active one.
+			 */
+			updateFocus: updateFocus
 		}
 	};
 });
