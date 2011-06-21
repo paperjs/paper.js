@@ -441,3 +441,17 @@ test('Changing item#position.x', function() {
 	path.position.x += 5;
 	equals(path.position.toString(), '{ x: 55, y: 50 }', 'path.position.x += 5');
 });
+
+test('Cloning a linked size', function() {
+	var path = new Path([40, 75], [140, 75]);
+	var error = null;
+	try {
+		var cloneSize = path.bounds.size.clone();
+	} catch (e) {
+		error = e;
+	}
+	var description = 'Cloning a linked size should not throw an error';
+	if (error)
+		description += ': ' + error;
+	equals(error == null, true, description);
+});
