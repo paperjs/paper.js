@@ -132,8 +132,8 @@ DomEvent.requestAnimationFrame = new function() {
 					var entry = callbacks[i],
 						func = entry[0],
 						element = entry[1];
-					if (!element || element.getAttribute('keepalive') == 'true'
-							|| focused && DomElement.isVisible(element)) {
+					if (!element || (element.getAttribute('keepalive') == 'true'
+							|| focused) && DomElement.isVisible(element)) {
 						// Handle callback and remove it from callbacks list.
 						callbacks.splice(i, 1);
 						func(Date.now());
