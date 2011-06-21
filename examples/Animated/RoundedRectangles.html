@@ -17,14 +17,9 @@
 			path.fillColor = colors[i % 4];
 			var scale = (1 - i / amount) * 20;
 			path.scale(scale);
-			new PlacedSymbol(path);
 		}
 
-		function onMouseDown(event) {
-			mousePoint = event.point;
-		}
-		
-		function onMouseDrag(event) {
+		function onMouseMove(event) {
 			mousePoint = event.point;
 		}
 
@@ -35,7 +30,7 @@
 				var delta = (mousePoint - item.position) / (i + 5);
 				item.rotate(Math.sin((event.count + i) / 10) * 7);
 				if (delta.length > 0.1)
-					item.translate(delta);
+					item.position += delta;
 			}
 		}
 	</script>
