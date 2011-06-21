@@ -371,24 +371,24 @@ var View = this.View = Base.extend({
 	 */
 	onResize: null
 }, new function() { // Injection scope for mouse handlers
-	var view,
-		tool,
+	var tool,
 		timer,
 		curPoint,
 		dragging = false;
 
-	function viewToArtwork(event) {
+	function viewToArtwork(view, event) {
 		return view.viewToArtwork(DomEvent.getOffset(event, view._canvas));
 	}
 
 	function mousemove(event) {
+		var view = View.focused;
 		if (!view || !(tool = view._scope.tool))
 			return;
 		// If the event was triggered by a touch screen device, prevent the
 		// default behaviour, as it will otherwise scroll the page:
 		if (event && event.targetTouches)
 			DomEvent.preventDefault(event);
-		var point = event && viewToArtwork(event);
+		var point = event && viewToArtwork(view, event);
 		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
 		if (dragging && !onlyMove) {
 			curPoint = point || curPoint;
@@ -403,6 +403,7 @@ var View = this.View = Base.extend({
 	}
 
 	function mouseup(event) {
+		var view = View.focused;
 		if (!view || !dragging)
 			return;
 		dragging = false;
@@ -410,7 +411,7 @@ var View = this.View = Base.extend({
 		if (tool) {
 			if (timer != null)
 				timer = clearInterval(timer);
-			if (tool.onHandleEvent('mouseup', viewToArtwork(event), event))
+			if (tool.onHandleEvent('mouseup', viewToArtwork(view, event), event))
 				view.draw(true);
 		}
 	}
@@ -437,14 +438,14 @@ var View = this.View = Base.extend({
 
 	return {
 		_createEvents: function() {
-			var that = this;
+			var view = this;
 
 			function mousedown(event) {
 				// Tell the Key class which view should receive keyboard input.
-				view = View.focused = that;
+				View.focused = view;
 				if (!(tool = view._scope.tool))
 					return;
-				curPoint = viewToArtwork(event);
+				curPoint = viewToArtwork(view, event);
 				if (tool.onHandleEvent('mousedown', curPoint, event))
 					view.draw(true);
 				if (tool.eventInterval != null)
