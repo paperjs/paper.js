@@ -101,8 +101,8 @@ var View = this.View = Base.extend({
 		this._events = this._createEvents();
 		DomEvent.add(this._canvas, this._events);
 		// Make sure the first view is focused for keyboard input straight away
-		if (!View.focused)
-			View.focused = this;
+		if (!View._focused)
+			View._focused = this;
 		// As soon as a new view is added we need to mark the redraw as not
 		// motified, so the next call loops through all the views again.
 		this._scope._redrawNotified = false;
@@ -243,8 +243,9 @@ var View = this.View = Base.extend({
 	remove: function() {
 		if (this._index == null)
 			return false;
-		if (View.focused == this)
-			View.focused = null;
+		// Clear focus if removed view had it
+		if (View._focused == this)
+			View._focused = null;
 		delete View._views[this._id];
 		Base.splice(this._scope.views, null, this._index, 1);
 		// Uninstall event handlers again for this view.
@@ -370,15 +371,45 @@ var View = this.View = Base.extend({
 	var tool,
 		timer,
 		curPoint,
+		tempFocus,
 		dragging = false;
 
 	function viewToArtwork(view, event) {
 		return view.viewToArtwork(DomEvent.getOffset(event, view._canvas));
 	}
 
+	function updateFocus() {
+		if (!View._focused || !View._focused.isVisible()) {
+			// Find the first visible view in all scopes
+			PaperScope.each(function(scope) {
+				for (var i = 0, l = scope.views.length; i < l; i++) {
+					var view = scope.views[i];
+					if (view.isVisible()) {
+						View._focused = tempFocus = view;
+						throw Base.stop;
+					}
+				}
+			});
+		}
+	}
+
 	function mousemove(event) {
-		var view = View.focused;
-		if (!view || !(tool = view._scope.tool))
+		var view;
+		if (!dragging) {
+			// See if we can get the view from the current event target, and
+			// handle the mouse move over it.
+		 	view = View._views[DomEvent.getTarget(event).getAttribute('id')];
+			if (view) {
+				// Temporarily focus this view without making it sticky, so
+				// Key events are handled too during the mouse over
+				View._focused = tempFocus = view;
+			} else if (tempFocus && tempFocus == View._focused) {
+				// Clear temporary focus again and update it.
+				View._focused = null;
+				updateFocus();
+			}
+		}
+		if (!(view = view || View._focused) || !(tool = view._scope.tool))
 			return;
 		var point = event && viewToArtwork(view, event);
 		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
@@ -398,7 +429,7 @@ var View = this.View = Base.extend({
 	}
 
 	function mouseup(event) {
-		var view = View.focused;
+		var view = View._focused;
 		if (!view || !dragging)
 			return;
 		dragging = false;
@@ -418,21 +449,6 @@ var View = this.View = Base.extend({
 		// text whatsoever can be selected on the page.
 		if (dragging)
 			DomEvent.stop(event);
-	}
-
-	function updateFocus() {
-		if (!View.focused || View.focused.isInvisible()) {
-			// Find the first visible view in all scopes
-			PaperScope.each(function(scope) {
-				for (var i = 0, l = scope.views.length; i < l; i++) {
-					var view = scope.views[i];
-					if (view.isVisible()) {
-						View.focused = view;
-						throw Base.stop;
-					}
-				}
-			});
-		}
 	}
 
 	// mousemove and mouseup events need to be installed on document, not the
@@ -459,7 +475,7 @@ var View = this.View = Base.extend({
 
 			function mousedown(event) {
 				// Tell the Key class which view should receive keyboard input.
-				View.focused = view;
+				View._focused = view;
 				if (!(tool = view._scope.tool))
 					return;
 				curPoint = viewToArtwork(view, event);
