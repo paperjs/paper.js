@@ -369,21 +369,20 @@ var View = this.View = Base.extend({
 		var view = View.focused;
 		if (!view || !(tool = view._scope.tool))
 			return;
-		// If the event was triggered by a touch screen device, prevent the
-		// default behaviour, as it will otherwise scroll the page:
-		if (event && event.targetTouches)
-			DomEvent.preventDefault(event);
 		var point = event && viewToArtwork(view, event);
 		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
 		if (dragging && !onlyMove) {
 			curPoint = point || curPoint;
-			if (curPoint && tool.onHandleEvent('mousedrag', curPoint, event))
+			if (curPoint && tool.onHandleEvent('mousedrag', curPoint, event)) {
 				view.draw(true);
+				DomEvent.stop(event);
+			}
 		// PORT: If there is only an onMouseMove handler, also call it when
 		// the user is dragging:
 		} else if ((!dragging || onlyMove)
 				&& tool.onHandleEvent('mousemove', point, event)) {
 			view.draw(true);
+			DomEvent.stop(event);
 		}
 	}
 
@@ -396,8 +395,10 @@ var View = this.View = Base.extend({
 		if (tool) {
 			if (timer != null)
 				timer = clearInterval(timer);
-			if (tool.onHandleEvent('mouseup', viewToArtwork(view, event), event))
+			if (tool.onHandleEvent('mouseup', viewToArtwork(view, event), event)) {
 				view.draw(true);
+				DomEvent.stop(event);
+			}
 		}
 	}
 
