@@ -1,30 +1,34 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Symbol = this.Symbol = Base.extend({
-	/** @lends Symbol# */
-
+/**
+ * @name Symbol
+ * 
+ * @class Symbols allow you to place multiple instances of an item in your
+ * project. This can save memory, since all instances of a symbol simply refer
+ * to the original item and it can speed up moving around complex objects, since
+ * internal properties such as segment lists and gradient positions don't need
+ * to be updated with every transformation.
+ */
+var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	/**
 	 * Creates a Symbol item.
 	 * 
 	 * @param {Item} item the source item which is copied as the definition of
 	 *               the symbol
-	 * 
-	 * @name Symbol
-	 * @constructor
 	 * 
 	 * @example {@paperscript split=true height=240}
 	 * // Placing 100 instances of a symbol:
@@ -55,13 +59,6 @@ var Symbol = this.Symbol = Base.extend({
 	 *     // Scale the instance between 0.25 and 1:
 	 *     instance.scale(0.25 + Math.random() * 0.75);
 	 * }
-	 * 
-	 * @class Symbols allow you to place multiple instances of an item in your
-	 *        project. This can save memory, since all instances of a symbol
-	 *        simply refer to the original item and it can speed up moving
-	 *        around complex objects, since internal properties such as segment
-	 *        lists and gradient positions don't need to be updated with every
-	 *        transformation.
 	 */
 	initialize: function(item) {
 		this.project = paper.project;

@@ -1,42 +1,41 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Point = this.Point = Base.extend({
-	/** @lends Point# */
-
+/**
+ * @name Point
+ * 
+ * @class The Point object represents a point in the two dimensional space
+ * of the Paper.js project. It is also used to represent two dimensional
+ * vector objects.
+ * 
+ * @classexample
+ * // Create a point at x: 10, y: 5
+ * var point = new Point(10, 5);
+ * console.log(point.x); // 10
+ * console.log(point.y); // 5
+ */
+var Point = this.Point = Base.extend(/** @lends Point# */{
 	/**
 	 * Creates a Point object with the given x and y coordinates.
 	 * 
-	 * @name Point
-	 * @constructor
-	 * 
+	 * @name Point#initialize
 	 * @param {Number} x the x coordinate
 	 * @param {Number} y the y coordinate
 	 * 
 	 * @example
-	 * // Create a point at x: 10, y: 5
-	 * var point = new Point(10, 5);
-	 * console.log(point.x); // 10
-	 * console.log(point.y); // 5
-	 * 
-	 * @class The Point object represents a point in the two dimensional space
-	 * of the Paper.js project. It is also used to represent two dimensional
-	 * vector objects.
-	 * 
-	 * @classexample
 	 * // Create a point at x: 10, y: 5
 	 * var point = new Point(10, 5);
 	 * console.log(point.x); // 10
@@ -909,11 +908,13 @@ var Point = this.Point = Base.extend({
 });
 
 /**
- * An internal version of Point that notifies its owner of each change through
- * setting itself again on the setter that corresponds to the getter that
- * produced this LinkedPoint. See uses of LinkedPoint.create()
+ * @name LinkedPoint
+ * 
+ * @class An internal version of Point that notifies its owner of each change
+ * through setting itself again on the setter that corresponds to the getter
+ * that produced this LinkedPoint. See uses of LinkedPoint.create()
  * Note: This prototype is not exported.
- *
+ * 
  * @ignore
  */
 var LinkedPoint = Point.extend({

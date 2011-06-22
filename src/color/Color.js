@@ -1,19 +1,51 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
+// DOCS: write Color class documentation.
+/**
+ * @name Color
+ * 
+ * @class All properties and functions that expect color values accept
+ * instances of the different color classes such as {@link RGBColor},
+ * {@link HSBColor} and {@link GrayColor}, and also accept named colors
+ * and hex values as strings which are then converted to instances of
+ * {@link RGBColor} internally.
+ * 
+ * @classexample {@paperscript}
+ * // Named color values:
+ * 
+ * // Create a circle shaped path at {x: 80, y: 50}
+ * // with a radius of 30.
+ * var circle = new Path.Circle(new Point(80, 50), 30);
+ * 
+ * // Pass a color name to the fillColor property, which is internally
+ * // converted to an RGBColor.
+ * circle.fillColor = 'green';
+ * 
+ * @classexample {@paperscript}
+ * // Hex color values:
+ * 
+ * // Create a circle shaped path at {x: 80, y: 50}
+ * // with a radius of 30.
+ * var circle = new Path.Circle(new Point(80, 50), 30);
+ * 
+ * // Pass a hex string to the fillColor property, which is internally
+ * // converted to an RGBColor.
+ * circle.fillColor = '#ff0000';
+ */
 var Color = this.Color = Base.extend(new function() {
 	
 	var components = {
@@ -135,42 +167,9 @@ var Color = this.Color = Base.extend(new function() {
 		}
 	};
 
-	var fields = {
-	/** @lends Color# */
-
+	var fields = /** @lends Color# */{
 		_readNull: true,
 
-		// DOCS: write Color constructor and class documentation.
-		/**
-		 * @constructs Color
-		 * @class All properties and functions that expect color values accept
-		 * instances of the different color classes such as {@link RGBColor},
-		 * {@link HSBColor} and {@link GrayColor}, and also accept named colors
-		 * and hex values as strings which are then converted to instances of
-		 * {@link RGBColor} internally.
-		 * 
-		 * @classexample {@paperscript}
-		 * // Named color values:
-		 * 
-		 * // Create a circle shaped path at {x: 80, y: 50}
-		 * // with a radius of 30.
-		 * var circle = new Path.Circle(new Point(80, 50), 30);
-		 * 
-		 * // Pass a color name to the fillColor property, which is internally
-		 * // converted to an RGBColor.
-		 * circle.fillColor = 'green';
-		 * 
-		 * @classexample {@paperscript}
-		 * // Hex color values:
-		 * 
-		 * // Create a circle shaped path at {x: 80, y: 50}
-		 * // with a radius of 30.
-		 * var circle = new Path.Circle(new Point(80, 50), 30);
-		 * 
-		 * // Pass a hex string to the fillColor property, which is internally
-		 * // converted to an RGBColor.
-		 * circle.fillColor = '#ff0000';
-		 */
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg),
 				type = this._colorType;
@@ -244,7 +243,7 @@ var Color = this.Color = Base.extend(new function() {
 				: converters[this._colorType + '-' + type](this);
 		},
 
-		statics: {
+		statics: /** @lends Color */{
 			/**
 			 * Override Color.extend() to produce getters and setters based
 			 * on the component types defined in _components.
@@ -303,8 +302,7 @@ var Color = this.Color = Base.extend(new function() {
 	});
 
 	return fields;
-}, {
-	/** @lends Color# */
+}, /** @lends Color# */{
 
 	/**
 	 * Called by various setters whenever a color value changes
@@ -345,14 +343,12 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * Returns the type of the color as a string.
 	 * 
-	 * Example:
-	 * <code>
-	 * var color = new RGBColor(1, 0, 0);
-	 * console.log(color.type); // 'rgb'
-	 * </code>
-	 * 
 	 * @type String('rgb', 'hsb', 'gray')
 	 * @bean
+	 *
+	 * @example
+	 * var color = new RGBColor(1, 0, 0);
+	 * console.log(color.type); // 'rgb'
 	 */
 	getType: function() {
 		return this._colorType;
@@ -579,20 +575,20 @@ var Color = this.Color = Base.extend(new function() {
 
 });
 
-var GrayColor = this.GrayColor = Color.extend(/** @scope GrayColor */{
+/**
+ * @name GrayColor
+ * @class A GrayColor object is used to represent any gray color value.
+ * @extends Color
+ */
+var GrayColor = this.GrayColor = Color.extend(/** @lends GrayColor# */{
 	/**
 	 * Creates a GrayColor object
 	 * 
-	 * @name GrayColor
-	 * @constructor
-	 * 
+	 * @name GrayColor#initialize
 	 * @param {Number} gray the amount of gray in the color as a value
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} [alpha] the alpha of the color as a value between
 	 * {@code 0} and {@code 1}
-	 * 
-	 * @class A GrayColor object is used to represent any gray color value.
-	 * @extends Color
 	 * 
 	 * @example {@paperscript}
 	 * // Creating a GrayColor:
@@ -608,13 +604,16 @@ var GrayColor = this.GrayColor = Color.extend(/** @scope GrayColor */{
 	_colorType: 'gray'
 });
 
-var RGBColor = this.RGBColor = Color.extend(/** @scope RGBColor */{
+/**
+ * @name RGBColor
+ * @class An RGBColor object is used to represent any RGB color value.
+ * @extends Color
+ */
+var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
 	/**
 	 * Creates an RGBColor object
 	 * 
-	 * @name RGBColor
-	 * @constructor
-	 * 
+	 * @name RGBColor#initialize
 	 * @param {Number} red the amount of red in the color as a value
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} green the amount of green in the color as a value
@@ -623,9 +622,6 @@ var RGBColor = this.RGBColor = Color.extend(/** @scope RGBColor */{
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} [alpha] the alpha of the color as a value between
 	 * {@code 0} and {@code 1}
-	 * 
-	 * @class An RGBColor object is used to represent any RGB color value.
-	 * @extends Color
 	 * 
 	 * @example {@paperscript}
 	 * // Creating an RGBColor:
@@ -641,13 +637,16 @@ var RGBColor = this.RGBColor = Color.extend(/** @scope RGBColor */{
 	_colorType: 'rgb'
 });
 
-var HSBColor = this.HSBColor = Color.extend(/** @scope HSBColor */{
+/**
+ * @name HSBColor
+ * @class An HSBColor object is used to represent any HSB color value.
+ * @extends Color
+ */
+var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
 	/**
 	 * Creates an HSBColor object
 	 * 
-	 * @name HSBColor
-	 * @constructor
-	 * 
+	 * @name HSBColor#initialize
 	 * @param {Number} hue the hue of the color as a value in degrees between
 	 * {@code 0} and {@code 360}.
 	 * @param {Number} saturation the saturation of the color as a value
@@ -656,9 +655,6 @@ var HSBColor = this.HSBColor = Color.extend(/** @scope HSBColor */{
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} [alpha] the alpha of the color as a value between
 	 * {@code 0} and {@code 1}
-	 * 
-	 * @class An HSBColor object is used to represent any HSB color value.
-	 * @extends Color
 	 * 
 	 * @example {@paperscript}
 	 * // Creating an HSBColor:

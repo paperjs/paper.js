@@ -1,32 +1,32 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
 // TODO: Support midPoint? (initial tests didn't look nice)
-var GradientStop = this.GradientStop = Base.extend({
-	/** @lends GradientStop# */
-
+/**
+ * @name GradientStop
+ * 
+ * @class The GradientStop object.
+ */
+var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	/**
 	 * Creates a GradientStop object.
 	 * 
 	 * @param {Color} [color=new RGBColor(0, 0, 0)] the color of the stop
 	 * @param {Number} [rampPoint=0] the position of the stop on the gradient
 	 *                               ramp {@default 0}
-	 * @constructs GradientStop
-	 * 
-	 * @class The GradientStop object.
 	 */
 	initialize: function(arg0, arg1) {
 		if (arg1 === undefined && Array.isArray(arg0)) {

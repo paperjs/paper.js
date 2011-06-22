@@ -1,21 +1,25 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var GradientColor = this.GradientColor = Color.extend({
-	/** @lends GradientColor# */
+/**
+ * @name GradientColor
+ * 
+ * @class The GradientColor object.
+ */
+var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# */{
 
 	/**
 	 * Creates a gradient color object.
@@ -24,7 +28,6 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * @param {Point} origin
 	 * @param {Point} destination
 	 * @param {Point} [hilite]
-	 * @constructs GradientColor
 	 * 
 	 * @example {@paperscript height=200}
 	 * // Applying a linear gradient color containing evenly distributed
@@ -78,8 +81,6 @@ var GradientColor = this.GradientColor = Color.extend({
 	 * 
 	 * // Set the fill color of the path to the gradient color:
 	 * path.fillColor = gradientColor;
-	 * 
-	 * @class The GradientColor object.
 	 */
 	initialize: function(gradient, origin, destination, hilite) {
 		this.gradient = gradient || new Gradient();

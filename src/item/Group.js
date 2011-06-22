@@ -1,22 +1,29 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Group = this.Group = Item.extend({
-	/** @lends Group# */
-
+/**
+ * @name Group
+ * 
+ * @class A Group is a collection of items. When you transform a Group, its
+ * children are treated as a single unit without changing their relative
+ * positions.
+ * 
+ * @extends Item
+ */
+var Group = this.Group = Item.extend(/** @lends Group# */{
 	// DOCS: document new Group(item, item...);
 	/**
 	 * Creates a new Group item and places it at the top of the active layer.
@@ -58,12 +65,6 @@ var Group = this.Group = Item.extend({
 	 * 	// the centerpoint of the view:
 	 * 	group.rotate(1, view.center);
 	 * }
-	 * 
-	 * @class A Group is a collection of items. When you transform a Group, its
-	 * children are treated as a single unit without changing their relative
-	 * positions.
-	 * @extends Item
-	 * @constructs Group
 	 */
 	initialize: function(items) {
 		this.base();

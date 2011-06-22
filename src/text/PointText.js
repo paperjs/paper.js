@@ -1,39 +1,39 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var PointText = this.PointText = TextItem.extend({
-	/** @lends PointText# */
-
+/**
+ * @name PointText
+ * 
+ * @class A PointText item represents a piece of typography in your Paper.js
+ * project which starts from a certain point and extends by the amount of
+ * characters contained in it.
+ * 
+ * @extends TextItem
+ */
+var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	/**
 	 * Creates a point text item
 	 * 
 	 * @param {Point} point the position where the text will start
-	 * @constructs PointText
 	 * 
-	 * @class A PointText item represents a piece of typography in your Paper.js
-	 * project which starts from a certain point and extends by the amount of
-	 * characters contained in it.
-	 * 
-	 * @classexample {@paperscript height=100}
-	 * var text = new PointText(258, 60);
+	 * @example
+	 * var text = new PointText(new Point(50, 100));
 	 * text.justification = 'center';
-	 * text.fontSize = 30;
-	 * text.content = 'Hello world.';
-	 * 
-	 * @extends TextItem
+	 * text.fillColor = 'black';
+	 * text.content = 'The contents of the point text';
 	 */
 	initialize: function(point) {
 		this.base();
