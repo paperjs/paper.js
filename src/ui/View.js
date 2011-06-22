@@ -87,8 +87,8 @@ var View = this.View = Base.extend({
 				size = new Size(1024, 768);
 			this._canvas = CanvasProvider.getCanvas(size);
 		}
-		this._viewBounds = LinkedRectangle.create(this, 'setViewBounds',
-				0, 0, size.width, size.height);
+		this._viewSize = LinkedSize.create(this, 'setViewSize',
+				size.width, size.height);
 		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
@@ -107,23 +107,19 @@ var View = this.View = Base.extend({
 	},
 
 	/**
-	 * The bounds of the view, i.e. the bounds of the part of the project which
-	 * is visible in the window.
+	 * The size of the view canvas. Changing the view's size will resize it's
+	 * canvas.
 	 * 
-	 * @type Rectangle
+	 * @type Size
 	 * @bean
 	 */
-	getViewBounds: function() {
-		return this._viewBounds;
+	getViewSize: function() {
+		return this._viewSize;
 	},
 
-	setViewBounds: function(bounds) {
-		bounds = Rectangle.read(arguments);
-		var size = bounds.getSize(),
-			delta = size.subtract(this._viewBounds.getSize());
-		// TODO: Take into acount bounds.x/y and decide on what grounds to
-		// change canvas size. Also, if x/y is not 0, do we need to add that
-		// to transform, or is that up to the user?
+	setViewSize: function(size) {
+		size = Size.read(arguments);
+		var delta = size.subtract(this._viewSize);
 		this._canvas.width = size.width;
 		this._canvas.height = size.height;
 		// Call onResize handler on any size change
@@ -133,20 +129,10 @@ var View = this.View = Base.extend({
 				delta: delta
 			});
 		}
+		// Update _viewSize but don't notify of change.
+		this._viewSize.set(size.width, size.height, true);
 		// Force recalculation
 		this._bounds = null;
-	},
-
-	/**
-	 * @type Size
-	 * @bean
-	 */
-	getViewSize: function() {
-		return this._viewBounds.getSize();
-	},
-
-	setViewSize: function(size) {
-		this._viewBounds.setSize.apply(this._viewBounds, arguments);
 	},
 
 	/**
@@ -155,7 +141,8 @@ var View = this.View = Base.extend({
 	 */
 	getBounds: function() {
 		if (!this._bounds)
-			this._bounds = this._matrix._transformBounds(this._viewBounds);
+			this._bounds = this._matrix._transformBounds(
+					new Rectangle(new Point(), this._viewSize));
 		return this._bounds;
 	},
 
@@ -227,10 +214,8 @@ var View = this.View = Base.extend({
 		// is always faster than setting canvas.width = canvas.width
 		// http://jsperf.com/clearrect-vs-setting-width/7
 		var ctx = this._context,
-			bounds = this._viewBounds;
-		ctx.clearRect(bounds._x, bounds._y,
-				// TODO: +1... what if we have multiple views in one canvas? 
-				bounds._width + 1, bounds._height + 1);
+			size = this._viewSize;
+		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
 
 		ctx.save();
 		this._matrix.applyToContext(ctx);
