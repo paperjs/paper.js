@@ -1,34 +1,32 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Raster = this.Raster = Item.extend({
-	/** @lends Raster# */
-
+/**
+ * @name Raster
+ * @class The Raster item represents an image in a Paper.js project.
+ * @extends Item
+ */
+var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	// TODO: Implement url / type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
 	// DOCS: Document Raster constructor.
 	/**
 	 * Creates a new raster item and places it in the active layer.
 	 * 
-	 * @constructs Raster
 	 * @param {HTMLImageElement|Canvas|string} [object]
-	 * 
-	 * @class The Raster item represents an image in a Paper.js project.
-	 * 
-	 * @extends Item
 	 */
 	initialize: function(object) {
 		this.base();
@@ -286,7 +284,7 @@ var Raster = this.Raster = Item.extend({
 	 */
 	/**
 	 * Gets the color of a pixel in the raster.
-	 *
+	 * 
 	 * @name Raster#getPixel
 	 * @function
 	 * @param point the offset of the pixel as a point in pixel coordinates
@@ -312,7 +310,7 @@ var Raster = this.Raster = Item.extend({
 	 */
 	/**
 	 * Sets the color of the specified pixel to the specified color.
-	 *
+	 * 
 	 * @name Raster#setPixel
 	 * @function
 	 * @param point the offset of the pixel as a point in pixel coordinates

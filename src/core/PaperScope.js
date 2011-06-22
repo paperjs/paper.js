@@ -1,28 +1,31 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
 /**
- * Define internal PaperScope class that handles all the fields available on the
+ * @name PaperScope
+ * 
+ * @class Internal PaperScope class that handles all the fields available on the
  * global paper object, which simply is a pointer to the currently active scope.
- * @ignore
+ * 
+ * @private
  */
 var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 	/**
 	 * The version of Paper.js, as a float number.
-	 *
+	 * 
 	 * @type Number
 	 */
 	version: 0.1,
@@ -181,6 +184,13 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 	statics: {
 		_scopes: {},
 
+		/**
+		 * Retrieves a PaperScope object with the given id or associated with
+		 * the passed canvas element.
+		 * 
+		 * @param id
+		 * @ignore
+		 */
 		get: function(id) {
 			// If a script tag is passed, get the id from it.
 			if (typeof id === 'object')
@@ -190,6 +200,9 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 
 		/**
 		 * A way to iterate over all active scopes without accessing _scopes
+		 * 
+		 * @param iter
+		 * @ignore
 		 */
 		each: function(iter) {
 			Base.each(this._scopes, iter);

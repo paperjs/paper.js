@@ -1,22 +1,27 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
 // Extend Base with utility functions used across the library. Also set
-// this.Base, since bootstrap.js ommits that.
-this.Base = Base.inject({
+// this.Base on the injection scope, since bootstrap.js ommits that.
+/**
+ * @name Base
+ * @class
+ * @private
+ */
+this.Base = Base.inject(/** @lends Base# */{
 	/**
 	 * General purpose clone function that delegates cloning to the constructor
 	 * that receives the object to be cloned as the first argument.
@@ -27,7 +32,7 @@ this.Base = Base.inject({
 		return new this.constructor(this);
 	},
 
-	statics: {
+	statics: /** @lends Base */{
 		/**
 		 * Reads arguments of the type of the class on which it is called on
 		 * from the passed arguments list or array, at the given index, up to
@@ -68,8 +73,6 @@ this.Base = Base.inject({
 		 * Utility function for adding and removing items from a list of which
 		 * each entry keeps a reference to its index in the list in the private
 		 * _index property. Used for PaperScope#projects and Item#children.
-		 * 
-		 * @ignore
 		 */
 		splice: function(list, items, index, remove) {
 			var amount = items && items.length,
@@ -128,8 +131,6 @@ this.Base = Base.inject({
 		/**
 		 * Utility function for rendering numbers to strings at a precision of
 		 * up to 5 fractional digits.
-		 * 
-		 * @ignore
 		 */
 		formatNumber: function(num) {
 			return (Math.round(num * 100000) / 100000).toString();
@@ -138,8 +139,6 @@ this.Base = Base.inject({
 		/**
 		 * Utility function for rendering objects to strings, in object literal
 		 * notation.
-		 * 
-		 * @ignore
 		 */
 		formatObject: function(obj) {
 			return '{ ' + Base.each(obj, function(value, key) {

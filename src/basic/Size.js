@@ -1,29 +1,37 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Size = this.Size = Base.extend({
-	/** @lends Size# */
-
+/**
+ * @name Size
+ * 
+ * @class The Size object is used to describe the size of something, through
+ * its {@link #width} and {@link #height} properties.
+ * 
+ * @classexample
+ * // Create a size that is 10pt wide and 5pt high
+ * var size = new Size(10, 5);
+ * console.log(size.width); // 10
+ * console.log(size.height); // 5
+ */
+var Size = this.Size = Base.extend(/** @lends Size# */{
 	// DOCS: improve Size class description
 	/**
 	 * Creates a Size object with the given width and height values.
 	 * 
-	 * @name Size
-	 * @constructor
-	 * 
+	 * @name Size#initialize
 	 * @param {Number} width the width
 	 * @param {Number} height the height
 	 * 
@@ -33,15 +41,6 @@ var Size = this.Size = Base.extend({
 	 * console.log(size.width); // 10
 	 * console.log(size.height); // 5
 	 * 
-	 * @class The Size object is used to describe the size of something, through
-	 * its {@link #width} and {@link #height} properties.
-	 * 
-	 * @classexample
-	 * // Create a size that is 10pt wide and 5pt high
-	 * var size = new Size(10, 5);
-	 * console.log(size.width); // 10
-	 * console.log(size.height); // 5
-	 */
 	/**
 	 * Creates a Size object using the numbers in the given array as
 	 * dimensions.
@@ -494,12 +493,14 @@ var Size = this.Size = Base.extend({
 });
 
 /**
- * An internal version of Size that notifies its owner of each change through
- * setting itself again on the setter that corresponds to the getter that
- * produced this LinkedSize. See uses of LinkedSize.create()
+ * @name LinkedSize
+ * 
+ * @class An internal version of Size that notifies its owner of each change
+ * through setting itself again on the setter that corresponds to the getter
+ * that produced this LinkedSize. See uses of LinkedSize.create()
  * Note: This prototype is not exported.
- *
- * @ignore
+ * 
+ * @private
  */
 var LinkedSize = Size.extend({
 	set: function(width, height, dontNotify) {

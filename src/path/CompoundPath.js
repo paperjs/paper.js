@@ -1,26 +1,33 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var CompoundPath = this.CompoundPath = PathItem.extend({
-	/** @lends CompoundPath# */
-
+/**
+ * @name CompoundPath
+ * 
+ * @class A compound path contains two or more paths, holes are drawn
+ * where the paths overlap. All the paths in a compound path take on the
+ * style of the backmost path and can be accessed through its
+ * {@link Item#children} list.
+ * 
+ * @extends PathItem
+ */
+var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	/**
 	 * Creates a new compound path item and places it in the active layer.
 	 * 
-	 * @constructs CompoundPath
 	 * @param {Path[]} [paths] the paths to place within the compound path.
 	 * 
 	 * @example {@paperscript}
@@ -32,13 +39,6 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	 * 
 	 * // Move the inner circle 5pt to the right:
 	 * compoundPath.children[1].position.x += 5;
-	 * 
-	 * @class A compound path contains two or more paths, holes are drawn
-	 * where the paths overlap. All the paths in a compound path take on the
-	 * style of the backmost path and can be accessed through its
-	 * {@link Item#children} list.
-	 * 
-	 * @extends PathItem
 	 */
 	initialize: function(paths) {
 		this.base();

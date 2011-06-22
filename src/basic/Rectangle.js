@@ -1,34 +1,33 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Rectangle = this.Rectangle = Base.extend({
-	/** @lends Rectangle# */
-
+/**
+ * @name Rectangle
+ * 
+ * @class A Rectangle specifies an area that is enclosed by it's top-left
+ * point (x, y), its width, and its height. It should not be confused with a
+ * rectangular path, it is not an item.
+ */
+var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	/**
 	 * Creates a Rectangle object.
 	 * 
-	 * @name Rectangle
-	 * @constructor
-	 * 
+	 * @name Rectangle#initialize
 	 * @param {Point} point the top-left point of the rectangle
 	 * @param {Size} size the size of the rectangle
-	 * 
-	 * @class A Rectangle specifies an area that is enclosed by it's top-left
-	 * point (x, y), its width, and its height. It should not be confused with a
-	 * rectangular path, it is not an item.
 	 */
 	/**
 	 * Creates a rectangle object.
@@ -651,12 +650,15 @@ var Rectangle = this.Rectangle = Base.extend({
 });
 
 /**
- * An internal version of Rectangle that notifies its owner of each change
- * through setting itself again on the setter that corresponds to the getter
- * that produced this LinkedRectangle. See uses of LinkedRectangle.create()
+ * @name LinkedRectangle
+ * 
+ * @class An internal version of Rectangle that notifies its owner of each
+ * change through setting itself again on the setter that corresponds to the
+ * getter that produced this LinkedRectangle.
+ * See uses of LinkedRectangle.create()
  * Note: This prototype is not exported.
- *
- * @ignore
+ * 
+ * @private
  */
 var LinkedRectangle = Rectangle.extend({
 	set: function(x, y, width, height, dontNotify) {

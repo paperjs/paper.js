@@ -1,32 +1,30 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Curve = this.Curve = Base.extend({
-	/** @lends Curve# */
-
+/**
+ * @name Curve
+ * 
+ * @class The Curve object represents...
+ */
+var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * Creates a new curve object.
 	 * 
-	 * @name Curve
-	 * @constructor
-	 * 
 	 * @param {Segment} segment1
 	 * @param {Segment} segment2
-	 * 
-	 * @class The Curve object represents...
 	 */
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
@@ -48,7 +46,6 @@ var Curve = this.Curve = Base.extend({
 			// An array as returned by getValues
 			var p1 = Point.create(arg0, arg1),
 				p2 = Point.create(arg6, arg7);
-			p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y
 			this._segment1 = new Segment(p1, null,
 					Point.create(arg2, arg3).subtract(p1));
 			this._segment2 = new Segment(p2,

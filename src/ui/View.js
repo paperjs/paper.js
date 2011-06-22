@@ -1,32 +1,28 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var View = this.View = Base.extend({
-	/** @lends View# */
-
-	// DOCS: View: there is alot left to document
-	// TODO: Add bounds parameter that defines position within canvas?
-	// Find a good name for these bounds, since #bounds is already the artboard
-	// bounds of the visible area.
+// DOCS: View: there is alot left to document
+/**
+ * @name View
+ * @class The View object..
+ */
+var View = this.View = Base.extend(/** @lends View# */{
 	/**
 	 * Creates a view object
 	 * @param {Canvas} canvas
-	 * @constructs View
-	 * 
-	 * @class The View object..
 	 */
 	initialize: function(canvas) {
 		// Associate this view with the active paper scope.

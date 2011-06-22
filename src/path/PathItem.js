@@ -1,29 +1,27 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var PathItem = this.PathItem = Item.extend(/** @scope PathItem */{
-	/**
-	 * @name PathItem
-	 * @class
-	 * @extends Item
-	 */
-
+/**
+ * @name PathItem
+ * @class
+ * @extends Item
+ */
+var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	// Note: The PathItem class is currently empty but holds the documentation
 	// for all the methods that exist both on Path and CompoundPath.
-
 	/**
 	 * Smooth bezier curves without changing the amount of segments or their
 	 * points, by only smoothing and adjusting their handle points, for both
@@ -31,7 +29,7 @@ var PathItem = this.PathItem = Item.extend(/** @scope PathItem */{
 	 * 
 	 * @name PathItem#smooth
 	 * @function
-	 *
+	 * 
 	 * @example {@paperscript}
 	 * // Smoothing a closed shape:
 	 * 
@@ -82,7 +80,7 @@ var PathItem = this.PathItem = Item.extend(/** @scope PathItem */{
 	 * If called on a {@link CompoundPath}, a new {@link Path} is created as a
 	 * child and the point is added as its first segment. On a normal empty
 	 * {@link Path}, the point is simply added as its first segment.
-	 *
+	 * 
 	 * @name PathItem#moveTo
 	 * @function
 	 * @param {Point} point
@@ -278,7 +276,7 @@ var PathItem = this.PathItem = Item.extend(/** @scope PathItem */{
 
 	/**
 	 * {@grouptitle Relative Drawing Commands}
-	 *
+	 * 
 	 * If called on a {@link CompoundPath}, a new {@link Path} is created as a
 	 * child and the point is added as its first segment relative to the
 	 * position of the last segment of the current path.
