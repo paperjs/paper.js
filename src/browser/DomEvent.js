@@ -54,14 +54,14 @@ var DomEvent = {
 		);
 	},
 
-	getElement: function(event) {
+	getTarget: function(event) {
 		return event.target || event.srcElement;
 	},
 
 	getOffset: function(event, target) {
 		// Remove target offsets from page coordinates
 		return DomEvent.getPoint(event).subtract(
-				DomElement.getOffset(target || DomEvent.getElement(event), true));
+				DomElement.getOffset(target || DomEvent.getTarget(event), true));
 	},
 
 	preventDefault: function(event) {
