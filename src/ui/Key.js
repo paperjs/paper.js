@@ -69,7 +69,7 @@ var Key = this.Key = new function() {
 		var character = String.fromCharCode(charCode),
 			key = keys[keyCode] || character.toLowerCase(),
 			handler = down ? 'onKeyDown' : 'onKeyUp',
-			view = View.focused,
+			view = View._focused,
 			scope = view && view.isVisible() && view._scope,
 			tool = scope && scope.tool;
 		keyMap[key] = down;
