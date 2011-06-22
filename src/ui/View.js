@@ -87,6 +87,12 @@ var View = this.View = Base.extend({
 				size = new Size(1024, 768);
 			this._canvas = CanvasProvider.getCanvas(size);
 		}
+		// Generate an id for this view / canvas if it does not have one
+		this._id = this._canvas.getAttribute('id');
+		if (this._id == null)
+			this._canvas.setAttribute('id', this._id = 'canvas-' + View._id++);
+		// Link this id to our view
+		View._views[this._id] = this;
 		this._viewSize = LinkedSize.create(this, 'setViewSize',
 				size.width, size.height);
 		this._context = this._canvas.getContext('2d');
@@ -235,12 +241,17 @@ var View = this.View = Base.extend({
 	},
 
 	remove: function() {
-		var res = Base.splice(this._scope.views, null, this._index, 1);
+		if (this._index == null)
+			return false;
+		if (View.focused == this)
+			View.focused = null;
+		delete View._views[this._id];
+		Base.splice(this._scope.views, null, this._index, 1);
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._canvas, this._events);
 		// Clearing _onFrame makes the frame handler stop automatically.
 		this._scope = this._canvas = this._events = this._onFrame = null;
-		return !!res.length;
+		return true;
 	},
 
 	// TODO: getInvalidBounds
@@ -460,6 +471,9 @@ var View = this.View = Base.extend({
 		},
 
 		statics: {
+			_views: {},
+			_id: 0,
+
 			/**
 			 * Loops through all scopes and their views and sets the focus on
 			 * the first active one.
