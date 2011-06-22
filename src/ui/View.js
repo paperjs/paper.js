@@ -421,15 +421,18 @@ var View = this.View = Base.extend({
 	}
 
 	function updateFocus() {
-		PaperScope.each(function(scope) {
-			for (var i = 0, l = scope.views.length; i < l; i++) {
-				var view = scope.views[i];
-				if (view.isVisible()) {
-					View.focused = view;
-					throw Base.stop;
+		if (!View.focused || View.focused.isInvisible()) {
+			// Find the first visible view in all scopes
+			PaperScope.each(function(scope) {
+				for (var i = 0, l = scope.views.length; i < l; i++) {
+					var view = scope.views[i];
+					if (view.isVisible()) {
+						View.focused = view;
+						throw Base.stop;
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	// mousemove and mouseup events need to be installed on document, not the
@@ -444,6 +447,10 @@ var View = this.View = Base.extend({
 		touchend: mouseup,
 		selectstart: selectstart,
 		scroll: updateFocus
+	});
+
+	DomEvent.add(window, {
+		load: updateFocus
 	});
 
 	return {
