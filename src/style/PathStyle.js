@@ -14,7 +14,6 @@
  * All rights reserved.
  */
 
-// DOCS: why isn't the example code showing up?
 /**
  * @name PathStyle
  * 
