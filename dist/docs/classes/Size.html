@@ -33,18 +33,18 @@ console.log(size.height); // 5</pre>
 <div class="reference-members"><h2>Constructors</h2>
 	
 		
-<div id="size-width-height-member" class="member">
-<div id="size-width-height-link" class="member-link">
-<a name="size-width-height" href="#" onClick="return toggleMember('size-width-height', false);"><tt><b>Size</b>(width, height)</tt></a>
+<div id="size-width-height-array-member" class="member">
+<div id="size-width-height-array-link" class="member-link">
+<a name="size-width-height-array" href="#" onClick="return toggleMember('size-width-height-array', false);"><tt><b>Size</b>(width, height, array)</tt></a>
 </div>
-<div id="size-width-height-description" class="member-description hidden">
+<div id="size-width-height-array-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('size-width-height', false);"><tt><b>Size</b>(width, height)</tt></a>
+<a href="#" onClick="return toggleMember('size-width-height-array', false);"><tt><b>Size</b>(width, height, array)</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('size-width-height', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('size-width-height-array', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
@@ -66,6 +66,13 @@ console.log(size.height); // 5</pre>
 
 </li>
 
+<li>
+<tt>array:</tt> 
+<tt>array</tt>
+
+
+</li>
+
 </ul>
 
 
@@ -76,43 +83,11 @@ console.log(size.height); // 5</pre>
 
 <pre class="code">var size = new Size(10, 5);
 console.log(size.width); // 10
-console.log(size.height); // 5</pre>
+console.log(size.height); // 5
 
-
-</div>
-</div>
-</div>
-	
-		
-<div id="size-array-member" class="member">
-<div id="size-array-link" class="member-link">
-<a name="size-array" href="#" onClick="return toggleMember('size-array', false);"><tt><b>Size</b>(array)</tt></a>
-</div>
-<div id="size-array-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('size-array', false);"><tt><b>Size</b>(array)</tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('size-array', false);"></div>
-<div class="clear"></div>
-</div>
-<div class="member-text">
-<p>Creates a Size object using the numbers in the given array as
-dimensions.</p>
-
-<ul><b>Parameters:</b>
-
-<li>
-<tt>array:</tt> 
-<tt>array</tt>
-
-
-</li>
-
-</ul>
-
+	/**
+Creates a Size object using the numbers in the given array as
+dimensions.</pre>
 
 <p>
 <b>Example</b> &mdash; Creating a size of width: 320, height: 240 using an array of numbers:
