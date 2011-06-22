@@ -1,22 +1,29 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-CurveLocation = Base.extend({
-	/** @lends CurveLocation# */
-
+/**
+ * @name CurveLocation
+ * 
+ * @class CurveLocation objects describe a location on {@link Curve}
+ * objects, as defined by the curve {@link #parameter}, a value between
+ * {@code 0} (beginning of the curve) and {@code 1} (end of the curve). If
+ * the curve is part of a {@link Path} item, its {@link #index} inside the
+ * {@link Path#curves} array is also provided.
+ */
+CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	// DOCS: CurveLocation class description: add this comment back when the
 	// mentioned functioned have been added:
 	// The class is in use in many places, such as {@link Path#getLocationAt(offset)},
@@ -26,18 +33,9 @@ CurveLocation = Base.extend({
 	/**
 	 * Creates a new CurveLocation object.
 	 * 
-	 * @name CurveLocation
-	 * @constructor
-	 * 
 	 * @param {Curve} curve
 	 * @param {Number} parameter
 	 * @param {Point} point
-	 * 
-	 * @class CurveLocation objects describe a location on {@link Curve}
-	 * objects, as defined by the curve {@link #parameter}, a value between
-	 * {@code 0} (beginning of the curve) and {@code 1} (end of the curve). If
-	 * the curve is part of a {@link Path} item, its {@link #index} inside the
-	 * {@link Path#curves} array is also provided.
 	 */
 	initialize: function(curve, parameter, point) {
 		this._curve = curve;

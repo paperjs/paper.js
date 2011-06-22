@@ -1,22 +1,28 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var PlacedSymbol = this.PlacedSymbol = Item.extend({
-	/** @lends PlacedSymbol# */
-
+/**
+ * @name PlacedSymbol
+ * 
+ * @class A PlacedSymbol represents an instance of a symbol which has been
+ * placed in a Paper.js project.
+ * 
+ * @extends Item
+ */
+var PlacedSymbol = this.PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 	/**
 	 * Creates a new PlacedSymbol Item.
 	 * 
@@ -54,12 +60,6 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	 *     // Scale the instance between 0.25 and 1:
 	 *     instance.scale(0.25 + Math.random() * 0.75);
 	 * }
-	 * 
-	 * @class A PlacedSymbol represents an instance of a symbol which has been
-	 * placed in a Paper.js project.
-	 * 
-	 * @extends Item
-	 * @constructs PlacedSymbol
 	 */
 	initialize: function(symbol, matrixOrOffset) {
 		this.base();

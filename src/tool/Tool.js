@@ -1,58 +1,55 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Tool = this.Tool = Base.extend({
-	/** @lends Tool# */
-
+/**
+ * @name Tool
+ * 
+ * @class The Tool object refers to a script that the user can interact with
+ * by using the mouse and keyboard and can be accessed through the global
+ * {@code tool} variable. All its properties are also available in the paper
+ * scope.
+ * 
+ * The global {@code tool} variable only exists in scripts that contain mouse
+ * handler functions ({@link #onMouseMove}, {@link #onMouseDown},
+ * {@link #onMouseDrag}, {@link #onMouseUp}) or a keyboard handler
+ * function ({@link #onKeyDown}, {@link #onKeyUp}).
+ * 
+ * @classexample
+ * var path;
+ * 
+ * // Only execute onMouseDrag when the mouse
+ * // has moved at least 10 points:
+ * tool.distanceThreshold = 10;
+ * 
+ * function onMouseDown(event) {
+ * 	// Create a new path every time the mouse is clicked
+ * 	path = new Path();
+ * 	path.add(event.point);
+ * 	path.strokeColor = 'black';
+ * }
+ * 
+ * function onMouseDrag(event) {
+ * 	// Add a point to the path every time the mouse is dragged
+ * 	path.add(event.point);
+ * }
+ */
+var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	// DOCS: rewrite Tool constructor explanation
 	/**
 	 * Initializes the tool's settings, so a new tool can be assigned to it
-	 * 
-	 * @constructs Tool
-	 * 
-	 * @class The Tool object refers to a script that the user can interact with
-	 * by using the mouse and keyboard and can be accessed through the global
-	 * {@code tool} variable. All its properties are also available in the paper
-	 * scope.
-	 * 
-	 * The global {@code tool} variable only exists in scripts that contain mouse
-	 * handler functions ({@link #onMouseMove}, {@link #onMouseDown},
-	 * {@link #onMouseDrag}, {@link #onMouseUp}) or a keyboard handler
-	 * function ({@link #onKeyDown}, {@link #onKeyUp}).
-	 * 
-	 * Example code:
-	 * <pre>
-	 * var path;
-	 * 
-	 * // Only execute onMouseDrag when the mouse
-	 * // has moved at least 10 points:
-	 * tool.distanceThreshold = 10;
-	 * 
-	 * function onMouseDown(event) {
-	 * 	// Create a new path every time the mouse is clicked
-	 * 	path = new Path();
-	 * 	path.add(event.point);
-	 * 	path.strokeColor = 'black';
-	 * }
-	 * 
-	 * function onMouseDrag(event) {
-	 * 	// Add a point to the path every time the mouse is dragged
-	 * 	path.add(event.point);
-	 * }
-	 * </pre>
 	 */
 	initialize: function(handlers, scope) {
 		this._scope = scope;

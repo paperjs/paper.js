@@ -1,31 +1,30 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Item = this.Item = Base.extend({
-	/** @lends Item# */
-
-	/**
-	 * @name Item
-	 * @class The Item type allows you to access and modify the items in
-	 * Paper.js projects. Its functionality is inherited by different project
-	 * item types such as {@link Path}, {@link CompoundPath}, {@link Group},
-	 * {@link Layer} and {@link Raster}. They each add a layer of functionality that
-	 * is unique to their type, but share the underlying properties and functions
-	 * that they inherit from Item.
-	 */
+/**
+ * @name Item
+ * 
+ * @class The Item type allows you to access and modify the items in
+ * Paper.js projects. Its functionality is inherited by different project
+ * item types such as {@link Path}, {@link CompoundPath}, {@link Group},
+ * {@link Layer} and {@link Raster}. They each add a layer of functionality that
+ * is unique to their type, but share the underlying properties and functions
+ * that they inherit from Item.
+ */
+var Item = this.Item = Base.extend(/** @lends Item# */{
 	initialize: function() {
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
@@ -219,9 +218,7 @@ var Item = this.Item = Base.extend({
 				}
 			};
 		}, {});
-}, {
-	/** @lends Item# */
-
+}, /** @lends Item# */{
 	// Note: These properties have their getter / setters produced in the
 	// injection scope above.
 
@@ -940,7 +937,7 @@ var Item = this.Item = Base.extend({
 
 	/**
 	 * {@grouptitle Hierarchy Tests}
-	 *
+	 * 
 	 * Checks if the item contains any children items.
 	 * 
 	 * @return {Boolean} {@true it has one or more children}

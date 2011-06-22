@@ -1,22 +1,25 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Gradient = this.Gradient = Base.extend({
-	/** @lends Gradient# */
-
+/**
+ * @name Gradient
+ * 
+ * @class The Gradient object.
+ */
+var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	// TODO: Should type here be called 'radial' and have it receive a
 	// boolean value?
 	/**
@@ -24,9 +27,6 @@ var Gradient = this.Gradient = Base.extend({
 	 * 
 	 * @param {GradientStop[]} stops
 	 * @param {String} [type='linear'] 'linear' or 'radial'
-	 * @constructs Gradient
-	 * 
-	 * @class The Gradient object.
 	 */
 	initialize: function(stops, type) {
 		this.setStops(stops || ['white', 'black']);

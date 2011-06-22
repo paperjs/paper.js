@@ -1,32 +1,31 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var ToolEvent = this.ToolEvent = Event.extend({
-	/** @lends ToolEvent# */
-
-	/**
-	 * @name ToolEvent
-	 * @constructor
-	 * 
-	 * @class ToolEvent The ToolEvent object is received by the {@link Tool}'s mouse event handlers
-	 * {@link Tool#onMouseDown}, {@link Tool#onMouseDrag},
-	 * {@link Tool#onMouseMove} and {@link Tool#onMouseUp}. The ToolEvent
-	 * object is the only parameter passed to these functions and contains
-	 * information about the mouse event.
-	 */
+/**
+ * @name ToolEvent
+ * 
+ * @class ToolEvent The ToolEvent object is received by the {@link Tool}'s mouse
+ * event handlers {@link Tool#onMouseDown}, {@link Tool#onMouseDrag},
+ * {@link Tool#onMouseMove} and {@link Tool#onMouseUp}. The ToolEvent
+ * object is the only parameter passed to these functions and contains
+ * information about the mouse event.
+ *
+ * @extends Event
+ */
+var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	initialize: function(tool, type, event) {
 		this.tool = tool;
 		this.type = type;

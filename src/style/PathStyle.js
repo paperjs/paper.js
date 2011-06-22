@@ -1,22 +1,45 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var PathStyle = this.PathStyle = Style.extend({
-	/** @lends PathStyle# */
-
+// DOCS: why isn't the example code showing up?
+/**
+ * @name PathStyle
+ * 
+ * @class PathStyle is used for changing the visual styles of items
+ * contained within a Paper.js project and is returned by
+ * {@link Item#style} and {@link Project#currentStyle}.
+ * 
+ * All properties of PathStyle are also reflected directly in {@link Item},
+ * i.e.: {@link Item#fillColor}.
+ * 
+ * To set multiple style properties in one go, you can pass an object to
+ * {@link Item#style}. This is a convenient way to define a style once and
+ * apply it to a series of items:
+ * 
+ * @classexample {@paperscript}
+ * var circleStyle = {
+ * 	fillColor: new RGBColor(1, 0, 0),
+ * 	strokeColor: 'black',
+ * 	strokeWidth: 5
+ * };
+ * 
+ * var path = new Path.Circle(new Point(80, 50), 30);
+ * path.style = circleStyle;
+ */
+var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
 	// not supported.
 	_defaults: {
@@ -44,30 +67,10 @@ var PathStyle = this.PathStyle = Style.extend({
 	 * object to {@link Item#style} or {@link Project#currentStyle}, it will
 	 * be converted to a PathStyle object internally.
 	 * 
-	 * @constructs PathStyle
+	 * @name PathStyle#initialize
 	 * @param {object} style
-	 * 
-	 * @class PathStyle is used for changing the visual styles of items
-	 * contained within a Paper.js project and is returned by
-	 * {@link Item#style} and {@link Project#currentStyle}.
-	 * 
-	 * All properties of PathStyle are also reflected directly in {@link Item},
-	 * i.e.: {@link Item#fillColor}.
-	 * 
-	 * To set multiple style properties in one go, you can pass an object to
-	 * {@link Item#style}. This is a convenient way to define a style once and
-	 * apply it to a series of items:
-	 * 
-	 * @classexample {@paperscript}
-	 * var circleStyle = {
-	 * 	fillColor: new RGBColor(1, 0, 0),
-	 * 	strokeColor: 'black',
-	 * 	strokeWidth: 5
-	 * };
-	 * 
-	 * var path = new Path.Circle(new Point(80, 50), 30);
-	 * path.style = circleStyle;
 	 */
+
 	/**
 	 * {@grouptitle Stroke Style}
 	 * 
@@ -115,7 +118,7 @@ var PathStyle = this.PathStyle = Style.extend({
 	 * have a stroke.
 	 * 
 	 * @property
-	 * @name Item#strokeCap
+	 * @name PathStyle#strokeCap
 	 * @default 'butt'
 	 * @type String('round', 'square', 'butt')
 	 * 

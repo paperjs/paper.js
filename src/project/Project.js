@@ -1,37 +1,35 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Project = this.Project = Base.extend({
-	/** @lends Project# */
-
+/** 
+ * @name Project
+ * 
+ * @class The Project item refers to..
+ * 
+ * The currently active project can be accessed through the global {@code
+ * project} variable.
+ * 
+ * An array of all open projects is accessible through the global {@code
+ * projects} variable.
+ */
+var Project = this.Project = Base.extend(/** @lends Project# */{
 	// TODO: Add arguments to define pages
 	// DOCS: Document Project constructor and class
 	/**
 	 * Creates a Paper.js project
-	 * 
-	 * @name Project
-	 * @constructor
-	 * 
-	 * @class The Project item refers to..
-	 * 
-	 * The currently active project can be accessed through the global {@code
-	 * project} variable.
-	 * 
-	 * An array of all open projects is accessible through the global {@code
-	 * projects} variable.
 	 */
 	initialize: function() {
 		// Store reference to the currently active global paper scope:

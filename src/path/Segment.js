@@ -1,27 +1,30 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Segment = this.Segment = Base.extend({
-	/** @lends Segment# */
-
+/**
+ * @name Segment
+ * @class The Segment object represents a part of a path which is
+ * described by the {@link Path#segments} array. Every segment of a
+ * path corresponds to an anchor point (anchor points are the path handles
+ * that are visible when the path is selected).
+ * 
+ */
+var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	/**
 	 * Creates a new Segment object.
-	 * 
-	 * @name Segment
-	 * @constructor
 	 * 
 	 * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
 	 * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
@@ -43,11 +46,6 @@ var Segment = this.Segment = Base.extend({
 	 * 
 	 * var path = new Path(firstSegment, secondSegment);
 	 * path.strokeColor = 'black';
-	 * 
-	 * @class The Segment object represents a part of a path which is
-	 * described by the {@link Path#segments} array. Every segment of a
-	 * path corresponds to an anchor point (anchor points are the path handles
-	 * that are visible when the path is selected).
 	 */
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,

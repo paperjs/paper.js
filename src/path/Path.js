@@ -1,22 +1,27 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Path = this.Path = PathItem.extend({
-	/** @lends Path# */
-
+/**
+ * @name Path
+ * 
+ * @class The Path item represents a path in a Paper.js project.
+ * 
+ * @extends PathItem
+ */
+var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 * 
@@ -35,10 +40,6 @@ var Path = this.Path = PathItem.extend({
 	 * var segments = [new Point(30, 30), new Point(100, 100)];
 	 * var path = new Path(segments);
 	 * path.strokeColor = 'black';
-	 * 
-	 * @class The Path item represents a path in a Paper.js project.
-	 * @extends PathItem
-	 * @constructs Path
 	 */
 	initialize: function(segments) {
 		this.base();

@@ -1,22 +1,32 @@
 /*
  * Paper.js
- *
+ * 
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
  */
 
-var Layer = this.Layer = Group.extend({
-	/** @lends Layer# */
-
+/**
+ * @name Layer
+ * 
+ * @class The Layer item represents a layer in a Paper.js project.
+ * 
+ * The layer which is currently active can be accessed through
+ * {@link Project#activeLayer}.
+ * An array of all layers in a project can be accessed through
+ * {@link Project#layers}.
+ * 
+ * @extends Group
+ */
+var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	// DOCS: improve constructor code example.
 	/**
 	 * Creates a new Layer item and places it at the end of the
@@ -28,16 +38,6 @@ var Layer = this.Layer = Group.extend({
 	 * 
 	 * @example
 	 * var layer = new Layer();
-	 * 
-	 * @class The Layer item represents a layer in a Paper.js project.
-	 * 
-	 * The layer which is currently active can be accessed through
-	 * {@link Project#activeLayer}.
-	 * An array of all layers in a project can be accessed through
-	 * {@link Project#layers}.
-	 * 
-	 * @extends Group
-	 * @constructs Layer
 	 */
 	initialize: function(items) {
 		this._project = paper.project;
