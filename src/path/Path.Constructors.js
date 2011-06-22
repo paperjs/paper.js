@@ -24,9 +24,7 @@ Path.inject({ statics: new function() {
 		new Segment([0.5, 1], [kappa, 0 ], [-kappa, 0])
 	];
 
-	return {
-		/** @lends Path */
-		
+	return /** @lends Path */{
 		/**
 		 * {@grouptitle Shaped Paths}
 		 * Creates a Path Item with two anchor points forming a line.

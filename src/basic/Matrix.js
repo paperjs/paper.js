@@ -555,9 +555,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		return this;
 	},
 
-	statics: {
-		/** @lends Matrix */
-
+	statics: /** @lends Matrix */{
 		// See Point.create()
 		create: function(m00, m10, m01, m11, m02, m12) {
 			return new Matrix(Matrix.dont).set(m00, m10, m01, m11, m02, m12);
