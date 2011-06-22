@@ -751,9 +751,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @return {Boolean} {@true the point is selected}
 	 */
 
-	statics: {
-		/** @lends Point */
-
+	statics: /** @lends Point */{
 		/**
 		 * Provide a faster creator for Points out of two coordinates that
 		 * does not rely on Point#initialize at all. This speeds up all math
