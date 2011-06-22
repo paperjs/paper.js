@@ -262,7 +262,7 @@ matrix multiplication).</p>
 <li>
 <tt>center:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The optional center for the scaling
+&mdash;&nbsp;The center for the scaling
 transformation.
 &mdash;&nbsp;optional
 </li>
@@ -321,7 +321,7 @@ transformation.
 <li>
 <tt>center:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The optional center for the scaling
+&mdash;&nbsp;The center for the scaling
 transformation.
 &mdash;&nbsp;optional
 </li>
@@ -579,7 +579,7 @@ anchor point.</p>
 <li>
 <tt>center:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The optional center for the shear transformation.
+&mdash;&nbsp;The center for the shear transformation.
 &mdash;&nbsp;optional
 </li>
 
@@ -637,7 +637,7 @@ anchor point.</p>
 <li>
 <tt>center:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The optional center for the shear transformation.
+&mdash;&nbsp;The center for the shear transformation.
 &mdash;&nbsp;optional
 </li>
 
@@ -810,7 +810,7 @@ destination array.</p>
 
 <li>
 <tt>src:</tt> 
-<tt>Array</tt>
+<tt>Number</tt>
 &mdash;&nbsp;The array containing the source points
        as x, y value pairs.
 
@@ -825,7 +825,7 @@ destination array.</p>
 
 <li>
 <tt>dst:</tt> 
-<tt>Array</tt>
+<tt>Number</tt>
 &mdash;&nbsp;The array into which to store the transformed
        point pairs.
 
@@ -878,6 +878,42 @@ destination array.</p>
 	
 		<li>
 <tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The determinant of this transform.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="getrotation-member" class="member">
+<div id="getrotation-link" class="member-link">
+<a name="getrotation" href="#" onClick="return toggleMember('getrotation', false);"><tt><b>getRotation</b>()</tt></a>
+</div>
+<div id="getrotation-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('getrotation', false);"><tt><b>getRotation</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getrotation', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The rotation angle of the matrix. If a non-uniform
+rotation is applied as a result of a shear() or scale() command,
+undefined is returned, as the resulting transformation cannot be
+expressed in one rotation angle.
 </li>
 	
 	</ul>

@@ -1,45 +1,45 @@
 /***
- *
+* 
  * Paper.js
- *
+ * 
  * A JavaScript Vector Graphics Library, based on Scriptographer.org and
  * designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- *
+ * 
  * Distributed under the MIT license. See LICENSE file for details.
- *
+ * 
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- *
+ * 
  * All rights reserved.
- *
+ * 
  ***
- *
+ * 
  * Bootstrap.js JavaScript Framework.
  * http://bootstrapjs.org/
- *
+ * 
  * Distributed under the MIT license.
- *
+ * 
  * Copyright (c) 2006 - 2011 Juerg Lehni
  * http://lehni.org/
- *
+ * 
  ***
- *
+ * 
  * Parse-JS, A JavaScript tokenizer / parser / generator.
- *
+ * 
  * Distributed under the BSD license.
- *
+ * 
  * Copyright (c) 2010, Mihai Bazon <mihai.bazon@gmail.com>
  * http://mihai.bazon.net/blog/
- *
+ * 
  ***/
 
 var paper = new function() {
 
 var Base = new function() { 
 	var fix = !this.__proto__,
-		hidden = /^(statics|generics|preserve|enumerable|beans|prototype|__proto__|toString|valueOf)$/,
+		hidden = /^(statics|generics|preserve|enumerable|prototype|__proto__|toString|valueOf)$/,
 		proto = Object.prototype,
 		has = fix
 			? function(name) {
@@ -150,7 +150,7 @@ var Base = new function() {
 			}
 		}
 		if (src) {
-			beans = src.beans && [];
+			beans = [];
 			for (var name in src)
 				if (has.call(src, name) && !hidden.test(name))
 					field(name, null, true, generics);
@@ -287,7 +287,6 @@ var Base = new function() {
 }
 
 this.Base = Base.inject({
-
 	clone: function() {
 		return new this.constructor(this);
 	},
@@ -316,14 +315,6 @@ this.Base = Base.inject({
 			return res;
 		},
 
-		initialize: function(object, values, defaults) {
-			if (!values)
-				values = defaults;
-			return Base.each(defaults, function(value, key) {
-				this[key] = values[key] || value;
-			}, object);
-		},
-
 		splice: function(list, items, index, remove) {
 			var amount = items && items.length,
 				append = index === undefined;
@@ -344,6 +335,14 @@ this.Base = Base.inject({
 					list[i]._index = i;
 				return removed;
 			}
+		},
+
+		merge: function() {
+			return Base.each(arguments, function(hash) {
+				Base.each(hash, function(value, key) {
+					this[key] = value;
+				}, this);
+			}, {}, true); 
 		},
 
 		capitalize: function(str) {
@@ -391,7 +390,9 @@ var PaperScope = this.PaperScope = Base.extend({
 	},
 
 	evaluate: function(code) {
-		return PaperScript.evaluate(code, this);
+		var res = PaperScript.evaluate(code, this);
+		View.updateFocus();
+		return res;
 	},
 
 	install: function(scope) {
@@ -414,6 +415,14 @@ var PaperScope = this.PaperScope = Base.extend({
 		delete PaperScope._scopes[this.id];
 	},
 
+	_needsRedraw: function() {
+		if (!this._redrawNotified) {
+			for (var i = this.views.length - 1; i >= 0; i--)
+				this.views[i]._redrawNeeded = true;
+			this._redrawNotified = true;
+		}
+	},
+
 	statics: {
 		_scopes: {},
 
@@ -421,14 +430,15 @@ var PaperScope = this.PaperScope = Base.extend({
 			if (typeof id === 'object')
 				id = id.getAttribute('id');
 			return this._scopes[id] || null;
+		},
+
+		each: function(iter) {
+			Base.each(this._scopes, iter);
 		}
 	}
 });
 
 var Point = this.Point = Base.extend({
-
-	beans: true,
-
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
 			this.x = arg0;
@@ -656,7 +666,6 @@ var Point = this.Point = Base.extend({
 	},
 
 	statics: {
-
 		create: function(x, y) {
 			var point = new Point(Point.dont);
 			point.x = x;
@@ -697,8 +706,6 @@ var Point = this.Point = Base.extend({
 });
 
 var LinkedPoint = Point.extend({
-	beans: true,
-
 	set: function(x, y, dontNotify) {
 		this._x = x;
 		this._y = y;
@@ -738,7 +745,6 @@ var LinkedPoint = Point.extend({
 });
 
 var Size = this.Size = Base.extend({
-
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
 			this.width = arg0;
@@ -820,7 +826,6 @@ var Size = this.Size = Base.extend({
 	},
 
 	statics: {
-
 		create: function(width, height) {
 			return new Size(Size.dont).set(width, height);
 		},
@@ -852,8 +857,6 @@ var Size = this.Size = Base.extend({
 });
 
 var LinkedSize = Size.extend({
-	beans: true,
-
 	set: function(width, height, dontNotify) {
 		this._width = width;
 		this._height = height;
@@ -893,9 +896,6 @@ var LinkedSize = Size.extend({
 });
 
 var Rectangle = this.Rectangle = Base.extend({
-
-	beans: true,
-
 	initialize: function(arg0, arg1, arg2, arg3) {
 		if (arguments.length == 4) {
 			this.x = arg0;
@@ -1132,12 +1132,10 @@ var Rectangle = this.Rectangle = Base.extend({
 				point = Point.read(arguments);
 				return this[setX](point.x)[setY](point.y);
 			};
-		}, { beans: true });
+		}, {});
 });
 
 var LinkedRectangle = Rectangle.extend({
-	beans: true,
-
 	set: function(x, y, width, height, dontNotify) {
 		this._x = x;
 		this._y = y;
@@ -1185,14 +1183,11 @@ var LinkedRectangle = Rectangle.extend({
 				this._owner[this._setter](this);
 				return this;
 			};
-		}, { beans: true })
+		}, {})
 	);
 });
 
 var Matrix = this.Matrix = Base.extend({
-
-	beans: true,
-
 	initialize: function(m00, m10, m01, m11, m02, m12) {
 		var ok = true;
 		if (arguments.length == 6) {
@@ -1382,6 +1377,23 @@ var Matrix = this.Matrix = Base.extend({
 		return this._m00 * this._m11 - this._m01 * this._m10;
 	},
 
+	getTranslation: function() {
+		return new Point(this._m02, this._m12);
+	},
+
+	getScaling: function() {
+		var sx = Math.sqrt(this._m00 * this._m00 + this._m10 * this._m10),
+			sy = Math.sqrt(this._m01 * this._m01 + this._m11 * this._m11);
+		return new Point(this._m00 < 0 ? -sx : sx, this._m01 < 0 ? -sy : sy);
+	},
+
+	getRotation: function() {
+		var angle1 = -Math.atan2(this._m01, this._m11),
+			angle2 = Math.atan2(this._m10, this._m00);
+		return Math.abs(angle1 - angle2) < Numerical.TOLERANCE
+				? angle1 * 180 / Math.PI : undefined;
+	},
+
 	isIdentity: function() {
 		return this._m00 == 1 && this._m10 == 0 && this._m01 == 0 &&
 				this._m11 == 1 && this._m02 == 0 && this._m12 == 0;
@@ -1450,7 +1462,6 @@ var Matrix = this.Matrix = Base.extend({
 	},
 
 	statics: {
-
 		create: function(m00, m10, m01, m11, m02, m12) {
 			return new Matrix(Matrix.dont).set(m00, m10, m01, m11, m02, m12);
 		},
@@ -1491,7 +1502,7 @@ var Matrix = this.Matrix = Base.extend({
 		this['set' + name] = function(value) {
 			this[prop] = value;
 		};
-	}, { beans: true });
+	}, {});
 });
 
 var Line = this.Line = Base.extend({
@@ -1547,27 +1558,21 @@ var Line = this.Line = Base.extend({
 });
 
 var Project = this.Project = Base.extend({
-
-	beans: true,
-
 	initialize: function() {
 		this._scope = paper;
 		this._index = this._scope.projects.push(this) - 1;
-		this._currentStyle = PathStyle.create(null);
-		this.setCurrentStyle({
-			strokeWidth: 1,
-			strokeCap: 'butt',
-			strokeJoin: 'miter',
-			miterLimit: 10,
-			dashOffset: 0,
-			dashArray: []
-		});
+		this._currentStyle = new PathStyle();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		this.activate();
 		this.layers = [];
 		this.symbols = [];
 		this.activeLayer = new Layer();
+	},
+
+	_needsRedraw: function() {
+		if (this._scope)
+			this._scope._needsRedraw();
 	},
 
 	getCurrentStyle: function() {
@@ -1579,7 +1584,7 @@ var Project = this.Project = Base.extend({
 	},
 
 	activate: function() {
-		if (this._index != null) {
+		if (this._scope) {
 			this._scope.project = this;
 			return true;
 		}
@@ -1587,9 +1592,12 @@ var Project = this.Project = Base.extend({
 	},
 
 	remove: function() {
-		var res = Base.splice(this._scope.projects, null, this._index, 1);
-		this._scope = null;
-		return !!res.length;
+		if (this._scope) {
+			Base.splice(this._scope.projects, null, this._index, 1);
+			this._scope = null;
+			return true;
+		}
+		return false;
 	},
 
 	getIndex: function() {
@@ -1640,17 +1648,10 @@ var Project = this.Project = Base.extend({
 			});
 			ctx.restore();
 		}
-	},
-
-	redraw: function() {
-		this._scope.view.draw();
 	}
 });
 
 var Symbol = this.Symbol = Base.extend({
-
-	beans: true,
-
 	initialize: function(item) {
 		this.project = paper.project;
 		this.project.symbols.push(this);
@@ -1663,8 +1664,7 @@ var Symbol = this.Symbol = Base.extend({
 
 	setDefinition: function(item) {
 		this._definition = item;
-		item.setSelected(false);
-		item._removeFromParent();
+		item.remove();
 		item.setPosition(new Point());
 	},
 
@@ -1677,27 +1677,44 @@ var Symbol = this.Symbol = Base.extend({
 	}
 });
 
-var ChangeFlags = {
-	GEOMETRY: 1, 
-	STROKE: 2, 
-	STYLE: 4, 
-	HIERARCHY: 8 
+var ChangeFlag = {
+	APPEARANCE: 1,
+	HIERARCHY: 2,
+	GEOMETRY: 4,
+	STROKE: 8,
+	STYLE: 16,
+	ATTRIBUTE: 32,
+	CONTENT: 64,
+	PIXELS: 128,
+	CLIPPING: 256
+};
+
+var Change = {
+	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.APPEARANCE,
+	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
+	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
+	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
+	CONTENT: ChangeFlag.CONTENT | ChangeFlag.APPEARANCE,
+	PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE
 };
 
 var Item = this.Item = Base.extend({
-
-	beans: true,
-
 	initialize: function() {
 		if (!this._project)
-			paper.project.activeLayer.appendTop(this);
+			paper.project.activeLayer.addChild(this);
 		this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 	},
 
 	_changed: function(flags) {
-		if (flags & ChangeFlags.GEOMETRY) {
+		if (flags & ChangeFlag.GEOMETRY) {
+			delete this._bounds;
 			delete this._position;
+		}
+		if (flags & ChangeFlag.APPEARANCE) {
+			if (this._project)
+				this._project._needsRedraw();
 		}
 	},
 
@@ -1712,19 +1729,17 @@ var Item = this.Item = Base.extend({
 	},
 
 	setName: function(name) {
-		var children = this._parent._children,
-			namedChildren = this._parent._namedChildren;
-		if (name != this._name) {
-			if (this._name)
-				this._removeFromNamed();
-			this._name = name || undefined;
-		}
+
+		if (this._name)
+			this._removeFromNamed();
+		this._name = name || undefined;
 		if (name) {
+			var children = this._parent._children,
+				namedChildren = this._parent._namedChildren;
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
-		} else {
-			delete children[name];
 		}
+		this._changed(ChangeFlag.ATTRIBUTE);
 	},
 
 	getPosition: function() {
@@ -1743,7 +1758,33 @@ var Item = this.Item = Base.extend({
 
 	setStyle: function(style) {
 		this._style.initialize(style);
-	},
+	}
+
+}, new function() { 
+	return Base.each(['locked', 'visible', 'blendMode', 'opacity'],
+		function(name) {
+			var part = Base.capitalize(name),
+				name = '_' + name;
+			this['get' + part] = function() {
+				return this[name];
+			};
+			this['set' + part] = function(value) {
+				if (value != this[name]) {
+					this[name] = value;
+					this._changed(name === '_locked'
+							? ChangeFlag.ATTRIBUTE : Change.ATTRIBUTE);
+				}
+			};
+		}, {});
+}, {
+
+	_locked: false,
+
+	_visible: true,
+
+	_blendMode: 'normal',
+
+	_opacity: 1,
 
 	isSelected: function() {
 		if (this._children) {
@@ -1762,30 +1803,30 @@ var Item = this.Item = Base.extend({
 		} else if ((selected = !!selected) != this._selected) {
 			this._selected = selected;
 			this._project._updateSelection(this);
+			this._changed(Change.ATTRIBUTE);
 		}
 	},
 
 	_selected: false,
-
-	locked: false,
-
-	visible: true,
 
 	isClipMask: function() {
 		return this._clipMask;
 	},
 
 	setClipMask: function(clipMask) {
-		this._clipMask = clipMask;
-		if (this._clipMask) {
-			this.setFillColor(null);
-			this.setStrokeColor(null);
+		if (this._clipMask != (clipMask = !!clipMask)) {
+			this._clipMask = clipMask;
+			if (clipMask) {
+				this.setFillColor(null);
+				this.setStrokeColor(null);
+			}
+			this._changed(Change.ATTRIBUTE);
+			if (this._parent)
+				this._parent._changed(ChangeFlag.CLIPPING);
 		}
 	},
 
-	blendMode: 'normal',
-
-	opacity: 1,
+	_clipMask: false,
 
 	getProject: function() {
 		return this._project;
@@ -1812,8 +1853,7 @@ var Item = this.Item = Base.extend({
 
 	setChildren: function(items) {
 		this.removeChildren();
-		for (var i = 0, l = items && items.length; i < l; i++)
-			this.appendTop(items[i]);
+		this.addChildren(items);
 	},
 
 	getFirstChild: function() {
@@ -1837,57 +1877,6 @@ var Item = this.Item = Base.extend({
 		return this._index;
 	},
 
-	_removeFromNamed: function() {
-		var children = this._parent._children,
-			namedChildren = this._parent._namedChildren,
-			name = this._name,
-			namedArray = namedChildren[name];
-		if (children[name] = this)
-			delete children[name];
-		namedArray.splice(namedArray.indexOf(this), 1);
-		if (namedArray.length) {
-			children[name] = namedArray[namedArray.length - 1];
-		} else {
-			delete namedChildren[name];
-		}
-	},
-
-	_removeFromParent: function() {
-		if (this._parent) {
-			if (this._name)
-				this._removeFromNamed();
-			var res = Base.splice(this._parent._children, null, this._index, 1);
-			this._parent = null;
-			return !!res.length;
-		}
-		return false;
-	},
-
-	remove: function() {
-		if (this.isSelected())
-			this.setSelected(false);
-		return this._removeFromParent();
-	},
-
-	removeChildren: function() {
-		var removed = false;
-		if (this._children) {
-			for (var i = this._children.length - 1; i >= 0; i--)
-				removed = this._children[i].remove() || removed;
-		}
-		return removed;
-	},
-
-	copyTo: function(itemOrProject) {
-		var copy = this.clone();
-		if (itemOrProject.layers) {
-			itemOrProject.activeLayer.appendTop(copy);
-		} else {
-			itemOrProject.appendTop(copy);
-		}
-		return copy;
-	},
-
 	clone: function() {
 		return this._clone(new this.constructor());
 	},
@@ -1896,28 +1885,29 @@ var Item = this.Item = Base.extend({
 		copy.setStyle(this._style);
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.appendTop(this._children[i].clone());
+				copy.addChild(this._children[i].clone());
 		}
-		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask',
-				'_selected'];
+		var keys = ['_locked', '_visible', '_opacity', '_blendMode',
+				'_clipMask'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
 				copy[key] = this[key];
 		}
-		copy.moveAbove(this);
+		copy.setSelected(this._selected);
 		if (this._name)
 			copy.setName(this._name);
 		return copy;
 	},
 
-	reverseChildren: function() {
-		if (this._children) {
-			this._children.reverse();
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				this._children[i]._index = i;
-			}
+	copyTo: function(itemOrProject) {
+		var copy = this.clone();
+		if (itemOrProject.layers) {
+			itemOrProject.activeLayer.addChild(copy);
+		} else {
+			itemOrProject.addChild(copy);
 		}
+		return copy;
 	},
 
 	rasterize: function(resolution) {
@@ -1934,14 +1924,125 @@ var Item = this.Item = Base.extend({
 		return raster;
 	},
 
-	hasChildren: function() {
-		return this._children && this._children.length > 0;
+	addChild: function(item) {
+		return this.insertChild(undefined, item);
+	},
+
+	insertChild: function(index, item) {
+		if (this._children) {
+			item._remove(false, true);
+			Base.splice(this._children, [item], index, 0);
+			item._parent = this;
+			item._setProject(this._project);
+			if (item._name)
+				item.setName(item._name);
+			this._changed(Change.HIERARCHY);
+			return true;
+		}
+		return false;
+	},
+
+	addChildren: function(items) {
+		for (var i = 0, l = items && items.length; i < l; i++)
+			this.insertChild(undefined, items[i]);
+	},
+
+	insertChildren: function(index, items) {
+		for (var i = 0, l = items && items.length; i < l; i++) {
+			if (this.insertChild(index, items[i]))
+				index++;
+		}
+	},
+
+	insertAbove: function(item) {
+		return item._parent && item._parent.insertChild(
+				item._index + 1, this);
+	},
+
+	insertBelow: function(item) {
+		return item._parent && item._parent.insertChild(
+				item._index - 1, this);
+	},
+
+	appendTop: function(item) {
+		return this.addChild(item);
+	},
+
+	appendBottom: function(item) {
+		return this.insertChild(0, item);
+	},
+
+	moveAbove: function(item) {
+		return this.insertAbove(item);
+	},
+
+	moveBelow: function(item) {
+		return this.insertBelow(item);
+	},
+
+	_removeFromNamed: function() {
+		var children = this._parent._children,
+			namedChildren = this._parent._namedChildren,
+			name = this._name,
+			namedArray = namedChildren[name],
+			index = namedArray ? namedArray.indexOf(this) : -1;
+		if (index == -1)
+			return;
+		if (children[name] == this)
+			delete children[name];
+		namedArray.splice(index, 1);
+		if (namedArray.length) {
+			children[name] = namedArray[namedArray.length - 1];
+		} else {
+			delete namedChildren[name];
+		}
+	},
+
+	_remove: function(deselect, notify) {
+		if (this._parent) {
+			if (deselect)
+				this.setSelected(false);
+			if (this._name)
+				this._removeFromNamed();
+			Base.splice(this._parent._children, null, this._index, 1);
+			if (notify)
+				this._parent._changed(Change.HIERARCHY);
+			this._parent = null;
+			return true;
+		}
+		return false;
+	},
+
+	remove: function() {
+		return this._remove(true, true);
+	},
+
+	removeChildren: function(from, to) {
+		if (!this._children)
+			return null;
+		from = from || 0;
+	 	to = Base.pick(to, this._children.length);
+		var removed = this._children.splice(from, to - from);
+		for (var i = removed.length - 1; i >= 0; i--)
+			removed[i]._remove(true, false);
+		if (removed.length > 0)
+			this._changed(Change.HIERARCHY);
+		return removed;
+	},
+
+	reverseChildren: function() {
+		if (this._children) {
+			this._children.reverse();
+			for (var i = 0, l = this._children.length; i < l; i++)
+				this._children[i]._index = i;
+			this._changed(Change.HIERARCHY);
+		}
 	},
 
 	isEditable: function() {
 		var item = this;
 		while (item) {
-			if (!item.visible || item.locked)
+			if (!item._visible || item._locked)
 				return false;
 			item = item._parent;
 		}
@@ -1964,6 +2065,10 @@ var Item = this.Item = Base.extend({
 			}
 		}
 		return 0;
+	},
+
+	hasChildren: function() {
+		return this._children && this._children.length > 0;
 	},
 
 	isAbove: function(item) {
@@ -2017,43 +2122,44 @@ var Item = this.Item = Base.extend({
 
 	_getBounds: function(includeStroke) {
 		var children = this._children;
-		if (children && children.length) {
-			var x1 = Infinity,
-				x2 = -Infinity,
-				y1 = x1,
-				y2 = x2;
-			for (var i = 0, l = children.length; i < l; i++) {
-				var child = children[i];
-				if (child.visible) {
-					var rect = includeStroke
-							? child.getStrokeBounds()
-							: child.getBounds();
-					x1 = Math.min(rect.x, x1);
-					y1 = Math.min(rect.y, y1);
-					x2 = Math.max(rect.x + rect.width, x2);
-					y2 = Math.max(rect.y + rect.height, y2);
-				}
+		if (!children || children.length == 0) 
+			return new Rectangle();
+		var getBounds = includeStroke ? 'getStrokeBounds' : 'getBounds',
+			x1 = Infinity,
+			x2 = -Infinity,
+			y1 = x1,
+			y2 = x2;
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i];
+			if (child._visible) {
+				var rect = child[getBounds]();
+				x1 = Math.min(rect.x, x1);
+				y1 = Math.min(rect.y, y1);
+				x2 = Math.max(rect.x + rect.width, x2);
+				y2 = Math.max(rect.y + rect.height, y2);
 			}
-			return includeStroke
-				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
-				: LinkedRectangle.create(this, 'setBounds',
-						x1, y1, x2 - x1, y2 - y1);
 		}
-		return new Rectangle();
+		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return includeStroke ? bounds : this._createBounds(bounds);
+	},
+
+	_createBounds: function(rect) {
+		return LinkedRectangle.create(this, 'setBounds',
+				rect.x, rect.y, rect.width, rect.height);
 	},
 
 	setBounds: function(rect) {
 		rect = Rectangle.read(arguments);
 		var bounds = this.getBounds(),
 			matrix = new Matrix(),
-			center = rect.center;
+			center = rect.getCenter();
 		matrix.translate(center);
 		if (rect.width != bounds.width || rect.height != bounds.height) {
 			matrix.scale(
 					bounds.width != 0 ? rect.width / bounds.width : 1,
 					bounds.height != 0 ? rect.height / bounds.height : 1);
 		}
-		center = bounds.center;
+		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
 		this.transform(matrix);
 	},
@@ -2077,27 +2183,47 @@ var Item = this.Item = Base.extend({
 				center || this.getPosition()));
 	},
 
-	shear: function(shx, shy, center) {
+	shear: function(shearX, shearY, center) {
 		if (arguments.length < 2 || typeof sy === 'object') {
-			center = shy;
-			shy = shx;
+			center = shearY;
+			shearY = shearX;
 		}
-		return this.transform(new Matrix().shear(shx, shy,
+		return this.transform(new Matrix().shear(shearX, shearY,
 				center || this.getPosition()));
 	},
 
 	transform: function(matrix, flags) {
-		if (this._transform)
+		var bounds = this._bounds,
+			position = this._position;
+		if (this._transform) {
 			this._transform(matrix, flags);
-		if (this._position)
-			matrix._transformPoint(this._position, this._position, true);
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				var child = this._children[i];
-				child.transform(matrix, flags);
-			}
+			this._changed(Change.GEOMETRY);
 		}
+		if (bounds && matrix.getRotation() % 90 === 0) {
+			this._bounds = this._createBounds(
+					matrix._transformBounds(bounds));
+			this._position = this._bounds.getCenter();
+		} else if (position) {
+			this._position = matrix._transformPoint(position, position, true);
+		}
+		for (var i = 0, l = this._children && this._children.length; i < l; i++)
+			this._children[i].transform(matrix, flags);
 		return this;
+	},
+
+	fitBounds: function(rectangle, fill) {
+		rectangle = Rectangle.read(arguments);
+		var bounds = this.getBounds(),
+			itemRatio = bounds.height / bounds.width,
+			rectRatio = rectangle.height / rectangle.width,
+			scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
+					? rectangle.width / bounds.width
+					: rectangle.height / bounds.height,
+			delta = rectangle.getCenter().subtract(bounds.getCenter()),
+			newBounds = new Rectangle(new Point(),
+					new Size(bounds.width * scale, bounds.height * scale));
+		newBounds.setCenter(rectangle.getCenter());
+		this.setBounds(newBounds);
 	},
 
 	statics: {
@@ -2116,12 +2242,12 @@ var Item = this.Item = Base.extend({
 		},
 
 		draw: function(item, ctx, param) {
-			if (!item.visible || item.opacity == 0)
+			if (!item._visible || item._opacity == 0)
 				return;
 
 			var tempCanvas, parentCtx;
-			if (item.blendMode !== 'normal'
-					|| item.opacity < 1
+			if (item._blendMode !== 'normal'
+					|| item._opacity < 1
 					&& !(item._segments && (!item.getFillColor()
 							|| !item.getStrokeColor()))) {
 				var bounds = item.getStrokeBounds() || item.getBounds();
@@ -2152,13 +2278,13 @@ var Item = this.Item = Base.extend({
 
 				ctx.restore();
 
-				if (item.blendMode !== 'normal') {
+				if (item._blendMode !== 'normal') {
 					var pixelOffset = itemOffset.subtract(param.offset);
-					BlendMode.process(item.blendMode, ctx, parentCtx,
-						item.opacity, pixelOffset);
+					BlendMode.process(item._blendMode, ctx, parentCtx,
+						item._opacity, pixelOffset);
 				} else {
 					parentCtx.save();
-					parentCtx.globalAlpha = item.opacity;
+					parentCtx.globalAlpha = item._opacity;
 					parentCtx.drawImage(tempCanvas,
 							itemOffset.x, itemOffset.y);
 					parentCtx.restore();
@@ -2168,48 +2294,6 @@ var Item = this.Item = Base.extend({
 			}
 		}
 	}
-}, new function() {
-
-	function append(top) {
-		return function(item) {
-			item._removeFromParent();
-			if (this._children) {
-				Base.splice(this._children, [item], top ? undefined : 0, 0);
-				item._parent = this;
-				item._setProject(this._project);
-				if (item._name)
-					item.setName(item._name);
-				return true;
-			}
-			return false;
-		};
-	}
-
-	function move(above) {
-		return function(item) {
-			if (item._parent && this._removeFromParent()) {
-				Base.splice(item._parent._children, [this],
-						item._index + (above ? 1 : -1), 0);
-				this._parent = item._parent;
-				this._setProject(item._project);
-				if (item._name)
-					item.setName(item._name);
-				return true;
-			}
-			return false;
-		};
-	}
-
-	return {
-
-		appendTop: append(true),
-
-		appendBottom: append(false),
-
-		moveAbove: move(true),
-
-		moveBelow: move(false)
-	};
 }, new function() {
 
 	var sets = {
@@ -2268,46 +2352,56 @@ var Item = this.Item = Base.extend({
 });
 
 var Group = this.Group = Item.extend({
-
-	beans: true,
-
 	initialize: function(items) {
 		this.base();
 		this._children = [];
 		this._namedChildren = {};
-		this._clipped = false;
-		this.setChildren(!items || !Array.isArray(items)
+		this.addChildren(!items || !Array.isArray(items)
 				|| typeof items[0] !== 'object' ? arguments : items);
 	},
 
-	clone: function() {
-		var copy = this.base();
-		copy._clipped = this._clipped;
-		return copy;
+	_changed: function(flags) {
+		Item.prototype._changed.call(this, flags);
+		if (flags & (ChangeFlag.HIERARCHY | ChangeFlag.CLIPPING)) {
+			delete this._clipItem;
+		}
+	},
+
+	_getClipItem: function() {
+		if (this._clipItem !== undefined)
+			return this._clipItem;
+		for (var i = 0, l = this._children.length; i < l; i++) {
+			var child = this._children[i];
+			if (child._clipMask)
+				return this._clipItem = child;
+		}
+		return this._clipItem = null;
 	},
 
 	isClipped: function() {
-		return this._clipped;
+		return !!this._getClipItem();
 	},
 
 	setClipped: function(clipped) {
-		this._clipped = clipped;
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
+		return this;
 	},
 
 	draw: function(ctx, param) {
+		var clipItem = this._getClipItem();
+		if (clipItem)
+			Item.draw(clipItem, ctx, param);
 		for (var i = 0, l = this._children.length; i < l; i++) {
-			param.clip = this._clipped && i == 0;
-			Item.draw(this._children[i], ctx, param);
+			var item = this._children[i];
+			if (item != clipItem)
+				Item.draw(item, ctx, param);
 		}
 	}
 });
 
 var Layer = this.Layer = Group.extend({
-
-	beans: true,
 	initialize: function(items) {
 		this._project = paper.project;
 		this._index = this._project.layers.push(this) - 1;
@@ -2315,9 +2409,17 @@ var Layer = this.Layer = Group.extend({
 		this.activate();
 	},
 
-	_removeFromParent: function() {
-		return this._parent ? this.base()
-			: !!Base.splice(this._project.layers, null, this._index, 1).length;
+	_remove: function(deselect, notify) {
+		if (this._parent)
+			return this.base(deselect, notify);
+		if (this._index != null) {
+			if (deselect)
+				this.setSelected(false);
+			Base.splice(this._project.layers, null, this._index, 1);
+			this._project._needsRedraw();
+			return true;
+		}
+		return false;
 	},
 
 	getNextSibling: function() {
@@ -2334,10 +2436,10 @@ var Layer = this.Layer = Group.extend({
 		this._project.activeLayer = this;
 	}
 }, new function () {
-	function move(above) {
+	function insert(above) {
 		return function(item) {
 			if (item instanceof Layer && !item._parent
-						&& this._removeFromParent()) {
+						&& this._remove(false, true)) {
 				Base.splice(item._project.layers, [this],
 						item._index + (above ? 1 : -1), 0);
 				this._setProject(item._project);
@@ -2348,16 +2450,13 @@ var Layer = this.Layer = Group.extend({
 	}
 
 	return {
-		moveAbove: move(true),
+		insertAbove: insert(true),
 
-		moveBelow: move(false)
+		insertBelow: insert(false)
 	};
 });
 
 var Raster = this.Raster = Item.extend({
-
-	beans: true,
-
 	initialize: function(object) {
 		this.base();
 		if (object.getContext) {
@@ -2389,7 +2488,7 @@ var Raster = this.Raster = Item.extend({
 		var size = Size.read(arguments),
 			image = this.getImage();
 		this.setCanvas(CanvasProvider.getCanvas(size));
-		this.getContext().drawImage(image, 0, 0, size.width, size.height);
+		this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
 	},
 
 	getWidth: function() {
@@ -2412,9 +2511,10 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	getContext: function() {
-		if (!this._context) {
+		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
-		}
+		if (arguments[0])
+			this._changed(Change.PIXELS);
 		return this._context;
 	},
 
@@ -2426,7 +2526,7 @@ var Raster = this.Raster = Item.extend({
 		if (!this._canvas) {
 			this._canvas = CanvasProvider.getCanvas(this._size);
 			if (this._image)
-				this.getContext().drawImage(this._image, 0, 0);
+				this.getContext(true).drawImage(this._image, 0, 0);
 		}
 		return this._canvas;
 	},
@@ -2438,7 +2538,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
-		this._bounds = null;
+		this._changed(Change.GEOMETRY);
 	},
 
 	getImage: function() {
@@ -2452,7 +2552,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(image.naturalWidth, image.naturalHeight);
 		this._canvas = null;
 		this._context = null;
-		this._bounds = null;
+		this._changed(Change.GEOMETRY);
 	},
 
 	getSubImage: function(rect) {
@@ -2465,7 +2565,7 @@ var Raster = this.Raster = Item.extend({
 
 	drawImage: function(image, point) {
 		point = Point.read(arguments, 1);
-		this.getContext().drawImage(image, point.x, point.y);
+		this.getContext(true).drawImage(image, point.x, point.y);
 	},
 
 	getAverageColor: function(object) {
@@ -2529,7 +2629,7 @@ var Raster = this.Raster = Item.extend({
 		var hasPoint = arguments.length == 2;
 		point = Point.read(arguments, 0, hasPoint ? 1 : 2);
 		color = Color.read(arguments, hasPoint ? 1 : 2);
-		var ctx = this.getContext(),
+		var ctx = this.getContext(true),
 			imageData = ctx.createImageData(1, 1),
 			alpha = color.getAlpha();
 		imageData.data[0] = color.getRed() * 255;
@@ -2554,19 +2654,17 @@ var Raster = this.Raster = Item.extend({
 
 	setData: function(data, point) {
 		point = Point.read(arguments, 1);
-		this.getContext().putImageData(data, point.x, point.y);
+		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
 	_transform: function(matrix, flags) {
 		this.matrix.preConcatenate(matrix);
-		this._bounds = null;
 	},
 
 	getBounds: function() {
-		if (!this._bounds) {
-			this._bounds = this.matrix._transformBounds(
-					new Rectangle(this._size).setCenter(0, 0));
-		}
+		if (!this._bounds)
+			this._bounds = this._createBounds(this.matrix._transformBounds(
+					new Rectangle(this._size).setCenter(0, 0)));
 		return this._bounds;
 	},
 	getStrokeBounds: function() {
@@ -2588,9 +2686,6 @@ var Raster = this.Raster = Item.extend({
 });
 
 var PlacedSymbol = this.PlacedSymbol = Item.extend({
-
-	beans: true,
-
 	initialize: function(symbol, matrixOrOffset) {
 		this.base();
 		this.symbol = symbol instanceof Symbol ? symbol : new Symbol(symbol);
@@ -2610,9 +2705,10 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	},
 
 	getBounds: function() {
-		var bounds = this.symbol._definition.getStrokeBounds(this.matrix);
-		return LinkedRectangle.create(this, 'setBounds',
-				bounds.x, bounds.y, bounds.width, bounds.height);
+		if (!this._bounds)
+			this._bounds = this._createBounds(
+					this.symbol._definition.getStrokeBounds(this.matrix))
+		return this._bounds;
 	},
 
 	getStrokeBounds: function() {
@@ -2633,103 +2729,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 
 });
 
-var PathStyle = this.PathStyle = Base.extend(new function() {
-
-	var keys = ['strokeColor', 'strokeWidth', 'strokeCap', 'strokeJoin',
-				'miterLimit', 'dashOffset','dashArray', 'fillColor'];
-
-	var strokeFlags = {
-		strokeWidth: true,
-		strokeCap: true,
-		strokeJoin: true,
-		miterLimit: true
-	};
-
-	var fields = {
-		beans: true,
-
-		initialize: function(style) {
-			var clone = style instanceof PathStyle;
-			for (var i = 0, l = style && keys.length; i < l; i++) {
-				var key = keys[i],
-					value = style[key];
-				if (value !== undefined) {
-					this[key] = value && clone && value.clone
-							? value.clone() : value;
-				}
-			}
-		},
-
-		statics: {
-			create: function(item) {
-				var style = new PathStyle(PathStyle.dont);
-				style._item = item;
-				return style;
-			}
-		}
-	};
-
-	Item.inject(Base.each(keys, function(key) {
-		var isColor = !!key.match(/Color$/),
-			part = Base.capitalize(key),
-			set = 'set' + part,
-			get = 'get' + part;
-
-		fields[set] = function(value) {
-			var children = this._item && this._item._children;
-			value = isColor ? Color.read(arguments) : value;
-			if (children) {
-				for (var i = 0, l = children.length; i < l; i++)
-					children[i]._style[set](value);
-			} else {
-				var old = this['_' + key];
-				if (old != value && !(old && old.equals && old.equals(value))) {
-					this['_' + key] = value;
-					if (this._item) {
-						this._item._changed(ChangeFlags.STYLE
-							| (strokeFlags[key] ? ChangeFlags.STROKE : 0));
-					}
-				}
-			}
-			return this;
-		};
-
-		fields[get] = function() {
-			var children = this._item && this._item._children,
-				style;
-			if (children) {
-				for (var i = 0, l = children.length; i < l; i++) {
-					var childStyle = children[i]._style[get]();
-					if (!style) {
-						style = childStyle;
-					} else if (style != childStyle && !(style && style.equals
-							&& style.equals(childStyle))) {
-						return undefined;
-					}
-				}
-				return style;
-			} else {
-				return this['_' + key];
-			}
-		};
-
-		this[set] = function(value) {
-			this._style[set](value);
-			return this;
-		};
-
-		this[get] = function() {
-			return this._style[get]();
-		};
-	}, { beans: true }));
-
-	return fields;
-});
-
 var Segment = this.Segment = Base.extend({
-
-	beans: true,
-
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
 			createPoint = SegmentPoint.create,
@@ -2773,7 +2773,7 @@ var Segment = this.Segment = Base.extend({
 				other._changed();
 			}
 		}
-		this._path._changed(ChangeFlags.GEOMETRY);
+		this._path._changed(Change.GEOMETRY);
 	},
 
 	getPoint: function() {
@@ -2824,7 +2824,7 @@ var Segment = this.Segment = Base.extend({
 	_setSelected: function(point, selected) {
 		var path = this._path,
 			selected = !!selected, 
-			state = this._selectionState,
+			state = this._selectionState || 0,
 			selection = [
 				!!(state & SelectionState.POINT),
 				!!(state & SelectionState.HANDLE_IN),
@@ -2960,8 +2960,6 @@ var Segment = this.Segment = Base.extend({
 });
 
 var SegmentPoint = Point.extend({
-	beans: true,
-
 	set: function(x, y) {
 		this._x = x;
 		this._y = y;
@@ -3024,9 +3022,6 @@ var SelectionState = {
 };
 
 var Curve = this.Curve = Base.extend({
-
-	beans: true,
-
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
 		if (count == 0) {
@@ -3044,7 +3039,6 @@ var Curve = this.Curve = Base.extend({
 		} else if (count == 8) {
 			var p1 = Point.create(arg0, arg1),
 				p2 = Point.create(arg6, arg7);
-			p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y
 			this._segment1 = new Segment(p1, null,
 					Point.create(arg2, arg3).subtract(p1));
 			this._segment2 = new Segment(p2,
@@ -3406,9 +3400,6 @@ var Curve = this.Curve = Base.extend({
 });
 
 CurveLocation = Base.extend({
-
-	beans: true,
-
 	initialize: function(curve, parameter, point) {
 		this._curve = curve;
 		this._parameter = parameter;
@@ -3502,9 +3493,6 @@ var PathItem = this.PathItem = Item.extend({
 });
 
 var Path = this.Path = PathItem.extend({
-
-	beans: true,
-
 	initialize: function(segments) {
 		this.base();
 		this._closed = false;
@@ -3522,13 +3510,12 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	_changed: function(flags) {
-		if (flags & ChangeFlags.GEOMETRY) {
-			delete this._length;
-			delete this._bounds;
-			delete this._position;
+		Item.prototype._changed.call(this, flags);
+		if (flags & ChangeFlag.GEOMETRY) {
 			delete this._strokeBounds;
+			delete this._length;
 			delete this._clockwise;
-		} else if (flags & ChangeFlags.STROKE) {
+		} else if (flags & ChangeFlag.STROKE) {
 			delete this._strokeBounds;
 		}
 	},
@@ -3541,7 +3528,7 @@ var Path = this.Path = PathItem.extend({
 		if (!this._segments) {
 			this._segments = [];
 		} else {
-			this.setSelected(false);
+			this._selectedSegmentState = 0;
 			this._segments.length = 0;
 			if (this._curves)
 				delete this._curves;
@@ -3597,7 +3584,7 @@ var Path = this.Path = PathItem.extend({
 					this._curves[i = length - 1] = Curve.create(this,
 						this._segments[i], this._segments[0]);
 			}
-			this._changed(ChangeFlags.GEOMETRY);
+			this._changed(Change.GEOMETRY);
 		}
 	},
 
@@ -3614,7 +3601,6 @@ var Path = this.Path = PathItem.extend({
 			if (strokeColor && strokeColor.transform)
 				strokeColor.transform(matrix);
 		}
-		this._changed(ChangeFlags.GEOMETRY);
 	},
 
 	_add: function(segs, index) {
@@ -3652,7 +3638,7 @@ var Path = this.Path = PathItem.extend({
 				curve._segment1 = segments[index + amount];
 			}
 		}
-		this._changed(ChangeFlags.GEOMETRY);
+		this._changed(Change.GEOMETRY);
 		return segs;
 	},
 
@@ -3717,7 +3703,7 @@ var Path = this.Path = PathItem.extend({
 			if (last && this._closed && (curve = curves[curves.length - 1]))
 				curve._segment2 = segments[0];
 		}
-		this._changed(ChangeFlags.GEOMETRY);
+		this._changed(Change.GEOMETRY);
 		return removed;
 	},
 
@@ -3738,11 +3724,12 @@ var Path = this.Path = PathItem.extend({
 
 	_updateSelection: function(segment, oldState, newState) {
 		segment._selectionState = newState;
-		this.setSelected(
-				(this._selectedSegmentState += newState - oldState) > 0);
+		var total = this._selectedSegmentState += newState - oldState;
+		if (total > 0)
+			this.setSelected(true);
 	},
 
-	curvesToPoints: function(maxDistance) {
+	flatten: function(maxDistance) {
 		var flattener = new PathFlattener(this),
 			pos = 0,
 			step = flattener.length / Math.ceil(flattener.length / maxDistance),
@@ -3755,7 +3742,7 @@ var Path = this.Path = PathItem.extend({
 		this.setSegments(segments);
 	},
 
-	pointsToCurves: function(tolerance) {
+	simplify: function(tolerance) {
 		var fitter = new PathFitter(this, tolerance || 2.5);
 		this.setSegments(fitter.fit());
 	},
@@ -3836,7 +3823,7 @@ var Path = this.Path = PathItem.extend({
 				last1.remove();
 				this.setClosed(true);
 			}
-			this._changed(ChangeFlags.GEOMETRY);
+			this._changed(Change.GEOMETRY);
 			return true;
 		}
 		return false;
@@ -3993,7 +3980,7 @@ var Path = this.Path = PathItem.extend({
 				dashArray = this.getDashArray() || [], 
 				hasDash = !!dashArray.length;
 
-			if (param.compound || param.selection || param.clip || fillColor
+			if (param.compound || param.selection || this._clipMask || fillColor
 					|| strokeColor && !hasDash) {
 				drawSegments(ctx, this);
 			}
@@ -4001,13 +3988,13 @@ var Path = this.Path = PathItem.extend({
 			if (param.selection) {
 				ctx.stroke();
 				drawHandles(ctx, this._segments);
-			} else if (param.clip) {
+			} else if (this._clipMask) {
 				ctx.clip();
 			} else if (!param.compound && (fillColor || strokeColor)) {
 				ctx.save();
 				this._setStyles(ctx);
 				if (!fillColor || !strokeColor)
-					ctx.globalAlpha = this.opacity;
+					ctx.globalAlpha = this._opacity;
 				if (fillColor) {
 					ctx.fillStyle = fillColor.getCanvasStyle(ctx);
 					ctx.fill();
@@ -4374,16 +4361,13 @@ var Path = this.Path = PathItem.extend({
 	}
 
 	return {
-		beans: true,
-
 		getBounds: function() {
 			var useCache = arguments.length == 0;
 			if (!useCache || !this._bounds) {
-				var bounds = getBounds(this, arguments[0]);
-				if (!useCache)
-					return bounds;
-				this._bounds = LinkedRectangle.create(this, 'setBounds',
-						bounds.x, bounds.y, bounds.width, bounds.height);
+				var bounds = this._createBounds(getBounds(this, arguments[0]));
+				if (useCache)
+					this._bounds = bounds;
+				return bounds;
 			}
 			return this._bounds;
 		},
@@ -4434,7 +4418,7 @@ var Path = this.Path = PathItem.extend({
 						point = curve2.getPoint(0),
 						normal1 = curve1.getNormal(1).normalize(radius),
 						normal2 = curve2.getNormal(0).normalize(radius),
-						line1 = new Line(point.add(normal1),
+						line1 = new Line(point.subtract(normal1),
 								new Point(-normal1.y, normal1.x)),
 						line2 = new Line(point.subtract(normal2),
 								new Point(-normal2.y, normal2.x)),
@@ -4485,24 +4469,24 @@ var Path = this.Path = PathItem.extend({
 });
 
 var CompoundPath = this.CompoundPath = PathItem.extend({
-
 	initialize: function(paths) {
 		this.base();
 		this._children = [];
+		this._namedChildren = {};
 		var items = !paths || !Array.isArray(paths)
 				|| typeof paths[0] !== 'object' ? arguments : paths;
 		for (var i = 0, l = items.length; i < l; i++) {
 			var path = items[i];
 			if (path._clockwise === undefined)
 				path.setClockwise(i < l - 1);
-			this.appendTop(path);
+			this.addChild(path);
 		}
 	},
 
 	simplify: function() {
 		if (this._children.length == 1) {
 			var child = this._children[0];
-			child.moveAbove(this);
+			child.insertAbove(this);
 			this.remove();
 			return child;
 		}
@@ -4543,7 +4527,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	var fields = {
 		moveTo: function(point) {
 			var path = new Path();
-			this.appendTop(path);
+			this.addChild(path);
 			path.moveTo.apply(path, arguments);
 		},
 
@@ -4988,49 +4972,10 @@ var PathFitter = Base.extend({
 	}
 });
 
-var ParagraphStyle = this.ParagraphStyle = Base.extend({
-
-	initialize: function(style) {
-		Base.initialize(this, style, {
-			justification: 'left'
-		});
-	},
-
-	statics: {
-		create: function(item) {
-			var style = new ParagraphStyle(ParagraphStyle.dont);
-			style._item = item;
-			return style;
-		}
-	}
-});
-
-var CharacterStyle = this.CharacterStyle = PathStyle.extend({
-
-	initialize: function(style) {
-		Base.initialize(this, style, {
-			fontSize: 10,
-			font: 'sans-serif'
-		});
-		this.base(style);
-	},
-
-	statics: {
-		create: function(item) {
-			var style = new CharacterStyle(CharacterStyle.dont);
-			style._item = item;
-			return style;
-		}
-	}
-});
-
 var TextItem = this.TextItem = Item.extend({
-
-	beans: true,
-
 	initialize: function() {
 		this.base();
-		this.content = null;
+		this._content = '';
 		this._characterStyle = CharacterStyle.create(this);
 		this.setCharacterStyle(this._project.getCurrentStyle());
 		this._paragraphStyle = ParagraphStyle.create(this);
@@ -5038,9 +4983,19 @@ var TextItem = this.TextItem = Item.extend({
 	},
 
 	_clone: function(copy) {
+		copy._content = this._content;
 		copy.setCharacterStyle(this._characterStyle);
 		copy.setParagraphStyle(this._paragraphStyle);
 		return this.base(copy);
+	},
+
+	getContent: function() {
+		return this._content;
+	},
+
+	setContent: function(content) {
+		this._changed(Change.CONTENT);
+		this._content = content;
 	},
 
 	getCharacterStyle: function() {
@@ -5061,20 +5016,15 @@ var TextItem = this.TextItem = Item.extend({
 });
 
 var PointText = this.PointText = TextItem.extend({
-
-	beans: true,
-
 	initialize: function(point) {
 		this.base();
 		var point = Point.read(arguments);
-		this.content = '';
 		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
 		this._matrix = new Matrix().translate(point);
 	},
 
 	clone: function() {
 		var copy = this._clone(new PointText(this._point));
-		copy.content = this.content;
 		copy._matrix.initialize(this._matrix);
 		return copy;
 	},
@@ -5098,27 +5048,145 @@ var PointText = this.PointText = TextItem.extend({
 		matrix._transformPoint(this._point, this._point, true);
 	},
 	draw: function(ctx) {
-		if (this.content == null)
+		if (!this._content)
 			return;
 		ctx.save();
-		ctx.font = this._characterStyle.fontSize + 'pt ' +
-				this._characterStyle.font;
-		ctx.textAlign = this._paragraphStyle.justification;
+		ctx.font = this.getFontSize() + 'pt ' + this.getFont();
+		ctx.textAlign = this.getJustification();
 		this._matrix.applyToContext(ctx);
 		var fillColor = this.getFillColor();
 		var strokeColor = this.getStrokeColor();
 		if (!fillColor || !strokeColor)
-			ctx.globalAlpha = this.opacity;
+			ctx.globalAlpha = this._opacity;
 		if (fillColor) {
 			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-			ctx.fillText(this.content, 0, 0);
+			ctx.fillText(this._content, 0, 0);
 		}
 		if (strokeColor) {
 			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-			ctx.strokeText(this.content, 0, 0);
+			ctx.strokeText(this._content, 0, 0);
 		}
 		ctx.restore();
 	}
+});
+
+var Style = Item.extend({
+	initialize: function(style) {
+		var clone = style instanceof Style;
+		return Base.each(this._defaults, function(value, key) {
+			value = style && style[key] || value;
+			this[key] = value && clone && value.clone
+					? value.clone() : value;
+		}, this);
+	},
+
+	statics: {
+		create: function(item) {
+			var style = new this(this.dont);
+			style._item = item;
+			return style;
+		},
+
+		extend: function(src) {
+			var styleKey = src._style,
+				flags = src._flags || {};
+			src._owner.inject(Base.each(src._defaults, function(value, key) {
+				var isColor = !!key.match(/Color$/),
+					part = Base.capitalize(key),
+					set = 'set' + part,
+					get = 'get' + part;
+				src[set] = function(value) {
+					var children = this._item && this._item._children;
+					value = isColor ? Color.read(arguments) : value;
+					if (children) {
+						for (var i = 0, l = children.length; i < l; i++)
+							children[i][styleKey][set](value);
+					} else {
+						var old = this['_' + key];
+						if (old != value && !(old && old.equals
+									&& old.equals(value))) {
+							this['_' + key] = value;
+							if (isColor) {
+								if (old)
+									old._removeOwner(this._item);
+								if (value)
+									value._addOwner(this._item);
+							}
+							if (this._item)
+								this._item._changed(flags[key] || Change.STYLE);
+						}
+					}
+					return this;
+				};
+				src[get] = function() {
+					var children = this._item && this._item._children,
+						style;
+					if (!children)
+						return this['_' + key];
+					for (var i = 0, l = children.length; i < l; i++) {
+						var childStyle = children[i][styleKey][get]();
+						if (!style) {
+							style = childStyle;
+						} else if (style != childStyle && !(style
+								&& style.equals && style.equals(childStyle))) {
+							return undefined;
+						}
+					}
+					return style;
+				};
+				this[set] = function(value) {
+					this[styleKey][set](value);
+					return this;
+				};
+				this[get] = function() {
+					return this[styleKey][get]();
+				};
+			}, {}));
+			return this.base(src);
+		}
+	}
+});
+
+var PathStyle = this.PathStyle = Style.extend({
+	_defaults: {
+		fillColor: undefined,
+		strokeColor: undefined,
+		strokeWidth: 1,
+		strokeCap: 'butt',
+		strokeJoin: 'miter',
+		miterLimit: 10,
+		dashOffset: 0,
+		dashArray: []
+	},
+	_flags: {
+		strokeWidth: Change.STROKE,
+		strokeCap: Change.STROKE,
+		strokeJoin: Change.STROKE,
+		miterLimit: Change.STROKE
+	},
+	_owner: Item,
+	_style: '_style'
+
+});
+
+var ParagraphStyle = this.ParagraphStyle = Style.extend({
+	_defaults: {
+		justification: 'left'
+	},
+	_owner: TextItem,
+	_style: '_paragraphStyle'
+
+});
+
+var CharacterStyle = this.CharacterStyle = PathStyle.extend({
+	_defaults: Base.merge(PathStyle.prototype._defaults, {
+		fillColor: 'black',
+		fontSize: 10,
+		font: 'sans-serif'
+	}),
+	_owner: TextItem,
+	_style: '_characterStyle'
+
 });
 
 var Color = this.Color = Base.extend(new function() {
@@ -5230,8 +5298,6 @@ var Color = this.Color = Base.extend(new function() {
 	};
 
 	var fields = {
-
-		beans: true,
 		_readNull: true,
 
 		initialize: function(arg) {
@@ -5310,7 +5376,7 @@ var Color = this.Color = Base.extend(new function() {
 							this[name] = isHue
 								? ((value % 360) + 360) % 360
 								: Math.min(Math.max(value, 0), 1);
-							this._cssString = null;
+							this._changed();
 							return this;
 						};
 					}, src);
@@ -5341,7 +5407,26 @@ var Color = this.Color = Base.extend(new function() {
 	return fields;
 }, {
 
-	beans: true,
+	_changed: function() {
+		this._cssString = null;
+		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
+			this._owners[i]._changed(Change.STYLE);
+	},
+
+	_addOwner: function(item) {
+		if (!this._owners)
+			this._owners = [];
+		this._owners.push(item);
+	},
+
+	_removeOwner: function(item) {
+		var index = this._owners ? this._owners.indexOf(item) : -1;
+		if (index != -1) {
+			this._owners.splice(index, 1);
+			if (this._owners.length == 0)
+				delete this._owners;
+		}
+	},
 
 	getType: function() {
 		return this._colorType;
@@ -5361,7 +5446,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	setAlpha: function(alpha) {
 		this._alpha = alpha == null ? null : Math.min(Math.max(alpha, 0), 1);
-		this._cssString = null;
+		this._changed();
 		return this;
 	},
 
@@ -5432,8 +5517,6 @@ var HSBColor = this.HSBColor = Color.extend({
 
 var GradientColor = this.GradientColor = Color.extend({
 
-	beans: true,
-
 	initialize: function(gradient, origin, destination, hilite) {
 		this.gradient = gradient || new Gradient();
 		this.setOrigin(origin);
@@ -5456,6 +5539,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		this._origin = origin;
 		if (this._destination)
 			this._radius = this._destination.getDistance(this._origin);
+		this._changed();
 		return this;
 	},
 
@@ -5467,6 +5551,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		destination = Point.read(arguments).clone();
 		this._destination = destination;
 		this._radius = this._destination.getDistance(this._origin);
+		this._changed();
 		return this;
 	},
 
@@ -5483,6 +5568,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		} else {
 			this._hilite = hilite;
 		}
+		this._changed();
 		return this;
 	},
 
@@ -5520,9 +5606,6 @@ var GradientColor = this.GradientColor = Color.extend({
 });
 
 var Gradient = this.Gradient = Base.extend({
-
-	beans: true,
-
 	initialize: function(stops, type) {
 		this.setStops(stops || ['white', 'black']);
 		this.type = type || 'linear';
@@ -5566,9 +5649,6 @@ var Gradient = this.Gradient = Base.extend({
 });
 
 var GradientStop = this.GradientStop = Base.extend({
-
-	beans: true,
-
 	initialize: function(arg0, arg1) {
 		if (arg1 === undefined && Array.isArray(arg0)) {
 			this.setColor(arg0[0]);
@@ -5656,8 +5736,9 @@ var DomElement = new function() {
 		},
 
 		isVisible: function(el) {
-			return new Rectangle([0, 0], DomElement.getWindowSize())
-					.intersects(DomElement.getBounds(el, false, true));
+			return !DomElement.isInvisible(el)
+					&& new Rectangle([0, 0], DomElement.getWindowSize())
+						.intersects(DomElement.getBounds(el, false, true));
 		}
 	};
 };
@@ -5699,13 +5780,13 @@ var DomEvent = {
 		);
 	},
 
-	getElement: function(event) {
+	getTarget: function(event) {
 		return event.target || event.srcElement;
 	},
 
-	getOffset: function(event) {
+	getOffset: function(event, target) {
 		return DomEvent.getPoint(event).subtract(
-				DomElement.getOffset(DomEvent.getElement(event), true));
+				DomElement.getOffset(target || DomEvent.getTarget(event), true));
 	},
 
 	preventDefault: function(event) {
@@ -5722,7 +5803,12 @@ var DomEvent = {
 		} else {
 			event.cancelBubble = true;
 		}
-	}
+	},
+
+	stop: function(event) {
+		DomEvent.stopPropagation(event);
+		DomEvent.preventDefault(event);
+	},
 };
 
 DomEvent.requestAnimationFrame = new function() {
@@ -5760,8 +5846,8 @@ DomEvent.requestAnimationFrame = new function() {
 					var entry = callbacks[i],
 						func = entry[0],
 						element = entry[1];
-					if (!element || element.getAttribute('keepalive') == 'true'
-							|| focused && DomElement.isVisible(element)) {
+					if (!element || (element.getAttribute('keepalive') == 'true'
+							|| focused) && DomElement.isVisible(element)) {
 						callbacks.splice(i, 1);
 						func(Date.now());
 					}
@@ -5772,9 +5858,6 @@ DomEvent.requestAnimationFrame = new function() {
 };
 
 var View = this.View = Base.extend({
-
-	beans: true,
-
 	initialize: function(canvas) {
 		this._scope = paper;
 		this._index = this._scope.views.push(this) - 1;
@@ -5796,7 +5879,7 @@ var View = this.View = Base.extend({
 						if (that._onFrameCallback) {
 							that._onFrameCallback(0, true);
 						} else {
-							that.draw();
+							that.draw(true);
 						}
 					}
 				});
@@ -5821,29 +5904,33 @@ var View = this.View = Base.extend({
 				size = new Size(1024, 768);
 			this._canvas = CanvasProvider.getCanvas(size);
 		}
-		this._viewBounds = LinkedRectangle.create(this, 'setViewBounds',
-				0, 0, size.width, size.height);
+		this._id = this._canvas.getAttribute('id');
+		if (this._id == null)
+			this._canvas.setAttribute('id', this._id = 'canvas-' + View._id++);
+		View._views[this._id] = this;
+		this._viewSize = LinkedSize.create(this, 'setViewSize',
+				size.width, size.height);
 		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
 		this._events = this._createEvents();
 		DomEvent.add(this._canvas, this._events);
-		if (!View.focused)
-			View.focused = this;
+		if (!View._focused)
+			View._focused = this;
+		this._scope._redrawNotified = false;
 	},
 
 	getCanvas: function() {
 		return this._canvas;
 	},
 
-	getViewBounds: function() {
-		return this._viewBounds;
+	getViewSize: function() {
+		return this._viewSize;
 	},
 
-	setViewBounds: function(bounds) {
-		bounds = Rectangle.read(arguments);
-		var size = bounds.getSize(),
-			delta = size.subtract(this._viewBounds.getSize());
+	setViewSize: function(size) {
+		size = Size.read(arguments);
+		var delta = size.subtract(this._viewSize);
 		this._canvas.width = size.width;
 		this._canvas.height = size.height;
 		if (this.onResize) {
@@ -5852,20 +5939,14 @@ var View = this.View = Base.extend({
 				delta: delta
 			});
 		}
+		this._viewSize.set(size.width, size.height, true);
 		this._bounds = null;
-	},
-
-	getViewSize: function() {
-		return this._viewBounds.getSize();
-	},
-
-	setViewSize: function(size) {
-		this._viewBounds.setSize.apply(this._viewBounds, arguments);
 	},
 
 	getBounds: function() {
 		if (!this._bounds)
-			this._bounds = this._matrix._transformBounds(this._viewBounds);
+			this._bounds = this._matrix._transformBounds(
+					new Rectangle(new Point(), this._viewSize));
 		return this._bounds;
 	},
 
@@ -5890,6 +5971,10 @@ var View = this.View = Base.extend({
 		this._zoom = zoom;
 	},
 
+	isVisible: function() {
+		return DomElement.isVisible(this._canvas);
+	},
+
 	scrollBy: function(point) {
 		this._transform(new Matrix().translate(Point.read(arguments).negate()));
 	},
@@ -5900,18 +5985,24 @@ var View = this.View = Base.extend({
 		this._inverse = null;
 	},
 
-	draw: function() {
+	draw: function(checkRedraw) {
+		if (checkRedraw && !this._redrawNeeded)
+			return false;
 		if (this._stats)
 			this._stats.update();
-		var ctx =this._context,
-			bounds = this._viewBounds;
-		ctx.clearRect(bounds._x, bounds._y,
-				bounds._width + 1, bounds._height + 1);
+		var ctx = this._context,
+			size = this._viewSize;
+		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
 
 		ctx.save();
 		this._matrix.applyToContext(ctx);
 		this._scope.project.draw(ctx);
 		ctx.restore();
+		if (this._redrawNeeded) {
+			this._redrawNeeded = false;
+			this._scope._redrawNotified = false;
+		}
+		return true;
 	},
 
 	activate: function() {
@@ -5919,10 +6010,15 @@ var View = this.View = Base.extend({
 	},
 
 	remove: function() {
-		var res = Base.splice(this._scope.views, null, this._index, 1);
+		if (this._index == null)
+			return false;
+		if (View._focused == this)
+			View._focused = null;
+		delete View._views[this._id];
+		Base.splice(this._scope.views, null, this._index, 1);
 		DomEvent.remove(this._canvas, this._events);
 		this._scope = this._canvas = this._events = this._onFrame = null;
-		return !!res.length;
+		return true;
 	},
 
 	artworkToView: function(point) {
@@ -5972,86 +6068,133 @@ var View = this.View = Base.extend({
 				count: count++
 			});
 			before = now;
-			that.draw();
+			that.draw(true);
 		};
 		if (!requested)
 			this._onFrameCallback();
 	},
 
-	onResize: null,
+	onResize: null
+}, new function() { 
+	var tool,
+		timer,
+		curPoint,
+		tempFocus,
+		dragging = false;
 
-	_createEvents: function() {
-		var that = this,
-			tool,
-			timer,
-			curPoint,
-			dragging = false;
-
-		function viewToArtwork(event) {
-			return that.viewToArtwork(DomEvent.getOffset(event));
-		}
-
-		function mousedown(event) {
-			View.focused = that;
-			if (!(tool = that._scope.tool))
-				return;
-			curPoint = viewToArtwork(event);
-			tool.onHandleEvent('mousedown', curPoint, event);
-			if (tool.onMouseDown)
-				that.draw();
-			if (tool.eventInterval != null)
-				timer = setInterval(mousemove, tool.eventInterval);
-			dragging = true;
-		}
-
-		function mousemove(event) {
-			if (!(tool = that._scope.tool))
-				return;
-			if (event && event.targetTouches)
-				DomEvent.preventDefault(event);
-			var point = event && viewToArtwork(event);
-			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
-			if (dragging && !onlyMove) {
-				curPoint = point || curPoint;
-				if (curPoint)
-					tool.onHandleEvent('mousedrag', curPoint, event);
-				if (tool.onMouseDrag && !tool.onFrame)
-					that.draw();
-			} else if (!dragging || onlyMove) {
-				tool.onHandleEvent('mousemove', point, event);
-				if (tool.onMouseMove && !tool.onFrame)
-					that.draw();
-			}
-		}
-
-		function mouseup(event) {
-			if (!dragging)
-				return;
-			dragging = false;
-			curPoint = null;
-			if (tool) {
-				if (tool.eventInterval != null)
-					timer = clearInterval(timer);
-				tool.onHandleEvent('mouseup', viewToArtwork(event), event);
-				if (tool.onMouseUp)
-					that.draw();
-			}
-		}
-
-		return {
-			mousedown: mousedown,
-			mousemove: mousemove,
-			mouseup: mouseup,
-			touchstart: mousedown,
-			touchmove: mousemove,
-			touchend: mouseup
-		};
+	function viewToArtwork(view, event) {
+		return view.viewToArtwork(DomEvent.getOffset(event, view._canvas));
 	}
+
+	function updateFocus() {
+		if (!View._focused || !View._focused.isVisible()) {
+			PaperScope.each(function(scope) {
+				for (var i = 0, l = scope.views.length; i < l; i++) {
+					var view = scope.views[i];
+					if (view.isVisible()) {
+						View._focused = tempFocus = view;
+						throw Base.stop;
+					}
+				}
+			});
+		}
+	}
+
+	function mousemove(event) {
+		var view;
+		if (!dragging) {
+		 	view = View._views[DomEvent.getTarget(event).getAttribute('id')];
+			if (view) {
+				View._focused = tempFocus = view;
+			} else if (tempFocus && tempFocus == View._focused) {
+				View._focused = null;
+				updateFocus();
+			}
+		}
+		if (!(view = view || View._focused) || !(tool = view._scope.tool))
+			return;
+		var point = event && viewToArtwork(view, event);
+		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
+		if (dragging && !onlyMove) {
+			curPoint = point || curPoint;
+			if (curPoint && tool.onHandleEvent('mousedrag', curPoint, event)) {
+				view.draw(true);
+				DomEvent.stop(event);
+			}
+		} else if ((!dragging || onlyMove)
+				&& tool.onHandleEvent('mousemove', point, event)) {
+			view.draw(true);
+			DomEvent.stop(event);
+		}
+	}
+
+	function mouseup(event) {
+		var view = View._focused;
+		if (!view || !dragging)
+			return;
+		dragging = false;
+		curPoint = null;
+		if (tool) {
+			if (timer != null)
+				timer = clearInterval(timer);
+			if (tool.onHandleEvent('mouseup', viewToArtwork(view, event), event)) {
+				view.draw(true);
+				DomEvent.stop(event);
+			}
+		}
+	}
+
+	function selectstart(event) {
+		if (dragging)
+			DomEvent.stop(event);
+	}
+
+	DomEvent.add(document, {
+		mousemove: mousemove,
+		mouseup: mouseup,
+		touchmove: mousemove,
+		touchend: mouseup,
+		selectstart: selectstart,
+		scroll: updateFocus
+	});
+
+	DomEvent.add(window, {
+		load: updateFocus
+	});
+
+	return {
+		_createEvents: function() {
+			var view = this;
+
+			function mousedown(event) {
+				View._focused = view;
+				if (!(tool = view._scope.tool))
+					return;
+				curPoint = viewToArtwork(view, event);
+				if (tool.onHandleEvent('mousedown', curPoint, event))
+					view.draw(true);
+				if (tool.eventInterval != null)
+					timer = setInterval(mousemove, tool.eventInterval);
+				dragging = true;
+			}
+
+			return {
+				mousedown: mousedown,
+				touchstart: mousedown,
+				selectstart: selectstart
+			};
+		},
+
+		statics: {
+			_views: {},
+			_id: 0,
+
+			updateFocus: updateFocus
+		}
+	};
 });
 
 var Event = this.Event = Base.extend({
-	beans: true,
-
 	initialize: function(event) {
 		this.event = event;
 	},
@@ -6065,8 +6208,7 @@ var Event = this.Event = Base.extend({
 	},
 
 	stop: function() {
-		this.stopPropagation();
-		this.preventDefault();
+		DomEvent.stop(this.event);
 	},
 
 	getModifiers: function() {
@@ -6076,9 +6218,6 @@ var Event = this.Event = Base.extend({
 
 var KeyEvent = this.KeyEvent = Event.extend(new function() {
 	return {
-
-		beans: true,
-
 		initialize: function(down, key, character, event) {
 			this.base(event);
 			this.type = down ? 'keydown' : 'keyup';
@@ -6138,13 +6277,16 @@ var Key = this.Key = new function() {
 		var character = String.fromCharCode(charCode),
 			key = keys[keyCode] || character.toLowerCase(),
 			handler = down ? 'onKeyDown' : 'onKeyUp',
-			scope = View.focused && View.focused._scope,
+			view = View._focused,
+			scope = view && view.isVisible() && view._scope,
 			tool = scope && scope.tool;
 		keyMap[key] = down;
 		if (tool && tool[handler]) {
 			var keyEvent = new KeyEvent(down, key, character, event);
 			if (tool[handler](keyEvent) === false)
 				keyEvent.preventDefault();
+			if (view)
+				view.draw(true);
 		}
 	}
 
@@ -6186,7 +6328,6 @@ var Key = this.Key = new function() {
 	});
 
 	return {
-
 		modifiers: modifiers,
 
 		isDown: function(key) {
@@ -6196,9 +6337,6 @@ var Key = this.Key = new function() {
 };
 
 var ToolEvent = this.ToolEvent = Event.extend({
-
-	beans: true,
-
 	initialize: function(tool, type, event) {
 		this.tool = tool;
 		this.type = type;
@@ -6275,9 +6413,6 @@ var ToolEvent = this.ToolEvent = Event.extend({
 });
 
 var Tool = this.Tool = Base.extend({
-
-	beans: true,
-
 	initialize: function(handlers, scope) {
 		this._scope = scope;
 		this._firstMove = true;
@@ -6362,19 +6497,24 @@ var Tool = this.Tool = Base.extend({
 
 	onHandleEvent: function(type, pt, event) {
 		paper = this._scope;
+		var called = false;
 		switch (type) {
 		case 'mousedown':
 			this.updateEvent(type, pt, null, null, true, false, false);
-			if (this.onMouseDown)
+			if (this.onMouseDown) {
 				this.onMouseDown(new ToolEvent(this, type, event));
+				called = true;
+			}
 			break;
 		case 'mousedrag':
 			var needsChange = false,
 				matchMaxDistance = false;
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, false, needsChange, matchMaxDistance)) {
-				if (this.onMouseDrag)
+				if (this.onMouseDrag) {
 					this.onMouseDrag(new ToolEvent(this, type, event));
+					called = true;
+				}
 				needsChange = true;
 				matchMaxDistance = true;
 			}
@@ -6383,25 +6523,32 @@ var Tool = this.Tool = Base.extend({
 			if ((this._point.x != pt.x || this._point.y != pt.y)
 					&& this.updateEvent('mousedrag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
-				if (this.onMouseDrag)
+				if (this.onMouseDrag) {
 					this.onMouseDrag(new ToolEvent(this, type, event));
+					called = true;
+				}
 			}
 			this.updateEvent(type, pt, null, this.maxDistance, false,
 					false, false);
-			if (this.onMouseUp)
+			if (this.onMouseUp) {
 				this.onMouseUp(new ToolEvent(this, type, event));
+				called = true;
+			}
 			this.updateEvent(type, pt, null, null, true, false, false);
 			this._firstMove = true;
 			break;
 		case 'mousemove':
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, this._firstMove, true, false)) {
-				if (this.onMouseMove)
+				if (this.onMouseMove) {
 					this.onMouseMove(new ToolEvent(this, type, event));
+					called = true;
+				}
 				this._firstMove = false;
 			}
 			break;
 		}
+		return called;
 	}
 });
 

@@ -24,23 +24,28 @@ scope.</p>
 handler functions (<a href="../classes/Tool.html#onmousemove" onclick="return toggleMember('onmousemove', true);"><tt>onMouseMove</tt></a>, <a href="../classes/Tool.html#onmousedown" onclick="return toggleMember('onmousedown', true);"><tt>onMouseDown</tt></a>,
 <a href="../classes/Tool.html#onmousedrag" onclick="return toggleMember('onmousedrag', true);"><tt>onMouseDrag</tt></a>, <a href="../classes/Tool.html#onmouseup" onclick="return toggleMember('onmouseup', true);"><tt>onMouseUp</tt></a>) or a keyboard handler
 function (<a href="../classes/Tool.html#onkeydown" onclick="return toggleMember('onkeydown', true);"><tt>onKeyDown</tt></a>, <a href="../classes/Tool.html#onkeyup" onclick="return toggleMember('onkeyup', true);"><tt>onKeyUp</tt></a>).</p>
-<p>Example code:</p>
-<pre class="code">
-var path;
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var path;
+
 // Only execute onMouseDrag when the mouse
 // has moved at least 10 points:
 tool.distanceThreshold = 10;
+
 function onMouseDown(event) {
 	// Create a new path every time the mouse is clicked
 	path = new Path();
 	path.add(event.point);
 	path.strokeColor = 'black';
 }
+
 function onMouseDrag(event) {
 	// Add a point to the path every time the mouse is dragged
 	path.add(event.point);
-}
-</pre>
+}</pre>
 
 </div>
 
