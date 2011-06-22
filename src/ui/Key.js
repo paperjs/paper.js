@@ -133,9 +133,7 @@ var Key = this.Key = new function() {
 		}
 	});
 
-	return {
-		/** @lends Key */
-
+	return /** @lends Key */{
 		modifiers: modifiers,
 
 		/**

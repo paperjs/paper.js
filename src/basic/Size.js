@@ -356,9 +356,7 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 		return isNaN(this.width) || isNaN(this.height);
 	},
 
-	statics: {
-		/** @lends Size */
-
+	statics: /** @lends Size */{
 		// See Point.create()
 		create: function(width, height) {
 			return new Size(Size.dont).set(width, height);
