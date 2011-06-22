@@ -12,8 +12,8 @@
 # Generate documentation
 #
 # MODE:
-#	docs			Generates the JS API docs
-#	templatedocs	Generates the website templates for the online JS API docs
+#	docs			Generates the JS API docs - Default
+#	serverdocs		Generates the website templates for the online JS API docs
 
 if [ $# -eq 0 ]
 then
