@@ -1,4 +1,4 @@
-# Paper.js --
+# Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
 
 If you want to work with Paper.js, simply download the latest "stable" version from [http://paperjs.org/downloads/](http://paperjs.org/downloads/)
 
