@@ -1,4 +1,4 @@
-# Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+# Paper.js - The Swiss Army Knife of Vector Graphics Scripting
 
 If you want to work with Paper.js, simply download the latest "stable" version from [http://paperjs.org/downloads/](http://paperjs.org/downloads/)
 
@@ -29,7 +29,7 @@ If you want to contribute to the project you will have to [make a fork](http://h
     git clone --recursive git@github.com:yourusername/paper.js.git
     git remote add upstream git://github.com/paperjs/paper.js.git
 
-### Refreshing your clone
+### Refreshing Your Clone
 
 To fetch changes from origin, run
 
@@ -51,7 +51,7 @@ We prefer that you send a [*pull request* here on GitHub](http://help.github.com
 
 Also, in your first contribution, add yourself to the end of `AUTHORS.md` (which of course is optional).
 
-#### Creating and submitting a patch
+#### Creating and Submitting a Patch
 
 As mentioned earlier in this article, we prefer that you send a [*pull request*](http://help.github.com/pull-requests/) on GitHub.
 
