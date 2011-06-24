@@ -14,11 +14,11 @@ If you want to work with Paper.js, simply download the latest "stable" version f
 
 Git 1.6.5 and later:
 
-    git clone --recursive git@github.com:paperjs/paper.js.git
+    git clone --recursive git://github.com/paperjs/paper.js.git
 
 Git 1.6.4 and earlier:
 
-	git clone git@github.com:paperjs/paper.js.git
+	git clone git://github.com/paperjs/paper.js.git
 	cd paper.js
 	git submodule update --init
 
