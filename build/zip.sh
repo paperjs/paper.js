@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Paper.js
 #
 # This file is part of Paper.js, a JavaScript Vector Graphics Library,
@@ -24,7 +26,7 @@ mkdir lib
 cp $BASE/dist/paper.js lib
 # Copy examples over
 cp -r $BASE/examples .
-# Replace ../../dist with ../../lib/ in each example
+# Replace ../../dist/ with ../../lib/ in each example
 find examples -type f -print0 | xargs -0 perl -i -pe 's/\.\.\/\.\.\/dist\//\.\.\/\.\.\/lib\//g'
 # Copy docs over
 cp -r $BASE/dist/docs .
