@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Paper.js
 #
 # This file is part of Paper.js, a JavaScript Vector Graphics Library,
