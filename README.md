@@ -43,7 +43,7 @@ To update the `jsdoc-toolkit` submodule inside the `build` folder, used to gener
 
 	git submodule update --init
 
-### Building Library
+### Building the Library
 
 The Paper.js sources are distributed across many separate files, organised in subfolders inside the `src` folder. To compile them all into one distributable file, yo need to run the `build.sh` script inside the `build` folder:
 
@@ -61,7 +61,7 @@ You will then find the built library inside the `dist` folder, named `paper.js`.
 
 In order for UglifyJS to work when building Paper.js, it needs to be located in a folder name `uglifyjs` on the same level as your `paper.js` project folder. Alternatively you can also adjust the path in `build/preprocess.sh`
 
-### Building Documentation
+### Building the Documentation
 
 Similarly to building the library, you can run `docs.sh` inside the `build` folder to build the documentation.
 
