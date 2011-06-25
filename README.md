@@ -86,7 +86,7 @@ Note that your PaperScripts examples do not need to change, they can simply load
 
 ### Testing
 
-Paper.js is developed and tested from day 1 with proper unit testing. To run the tests after any change to the library's source, simply open `index.html` inside the `test` folder in your web browser.
+Paper.js was developed and tested from day 1 using proper unit testing through jQuery's [Qunit](http://docs.jquery.com/Qunit). To run the tests after any change to the library's source, simply open `index.html` inside the `test` folder in your web browser. There should be a green bar at the top, meaning all tests have passed. If the bar is red, some tests have not passed. These will be highlighted and become visible when scrolling down.
 
 ### Contributing
 
