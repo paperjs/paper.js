@@ -128,6 +128,14 @@ this.Base = Base.inject(/** @lends Base# */{
 			});
 		},
 
+		hyphenate: function(str) {
+			return str.replace(/[a-z][A-Z0-9]|[0-9][a-zA-Z]|[A-Z]{2}[a-z]/g,
+				function(match) {
+					return match.charAt(0) + '-' + match.substring(1);
+				}
+			);
+		},
+
 		/**
 		 * Utility function for rendering numbers to strings at a precision of
 		 * up to 5 fractional digits.
