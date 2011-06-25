@@ -39,9 +39,54 @@ If you are working with a fork and would like to fetch from upstream, run
 
 	git fetch upstream
 
-To update the `jsdoc-toolkit` submodule inside the `build` directory, used to generate the documentation, run
+To update the `jsdoc-toolkit` submodule inside the `build` folder, used to generate the documentation, run
 
 	git submodule update --init
+
+### Building Library
+
+The Paper.js sources are distributed across many separate files, organised in subfolders inside the `src` folder. To compile them all into one distributable file, yo need to run the `build.sh` script inside the `build` folder:
+
+	cd build
+	./build.sh
+
+You will then find the built library inside the `dist` folder, named `paper.js`.
+
+`build.sh` offer a row of modes:
+
+	commented		Preprocessed but still formated and commented
+	stripped		Formated but without comments (default)
+	compressed		No comments and no whitespaces
+	uglified		Uses UglifyJS to further reduce file size
+
+In order for UglifyJS to work when building Paper.js, it needs to be located in a folder name `uglifyjs` on the same level as your `paper.js` project folder. Alternatively you can also adjust the path in `build/preprocess.sh`
+
+### Building Documentation
+
+Similarly to building the library, you can run `docs.sh` inside the `build` folder to build the documentation.
+
+	cd build
+	./build.sh
+
+Your docs will then be located at `dist/docs`.
+
+### Editing and Running Code during Development
+
+As a handy alternative to building the library after each change to try it out in your scripts, there is a helper script `src/load.js` that loads the library directly from all the separate source files in the `src` folder. The shell script `load.sh` in the `build` folder produces a `paper.js` library in `dist` that does nothing else than loading the source files through `src/load.js`. This means you can switch between loading from sources and loading a built library simply by running `build.sh` or `load.sh` inside the `build` folder.
+
+	cd build
+	./load.sh
+
+And to go back to a built library
+
+	cd build
+	./build.sh
+
+Note that your PaperScripts examples do not need to change, they can simply load `dist/paper.js`, which will always do the right rhing.
+
+### Testing
+
+Paper.js is developed and tested from day 1 with proper unit testing. To run the tests after any change to the library's source, simply open `index.html` inside the `test` folder in your web browser.
 
 ### Contributing
 
