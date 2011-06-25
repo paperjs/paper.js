@@ -32,6 +32,18 @@ var DomElement = new function() {
 	}
 
 	return {
+		getWindow: function(doc) {
+			return doc.defaultView || doc.parentWindow;
+		},
+
+		getComputedStyle: function(el, name) {
+			if (el.currentStyle)
+				return el.currentStyle[Base.camelize(name)];
+			var style = DomElement.getWindow(el.ownerDocument).getComputedStyle(
+					el, null);
+			return style ? style.getPropertyValue(Base.hyphenate(name)) : null;
+		},
+
 		getOffset: function(el, positioned, scroll) {
 			var point = cumulate(el, 'offset', 'offsetParent', positioned);
 			return scroll
