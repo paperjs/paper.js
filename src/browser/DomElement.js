@@ -15,20 +15,29 @@
  */
 
 var DomElement = new function() {
-	function cumulate(el, name, parent, positioned) {
+	function cumulateOffset(el, name, parent, positioned, scroll, test) {
 		var left = name + 'Left',
 			top = name + 'Top',
 			x = 0,
-			y = 0;
-			// If we're asked to calculate positioned offset, stop at any
-			// parent element that has relative or absolute position.
-			while (el && (!positioned
-					|| !/^(relative|absolute)$/.test(el.style.position))) {
+			y = 0,
+			style;
+		// If we're asked to calculate positioned offset, stop at any parent
+		// element that has relative or absolute position.
+		while (el && el.style && (!test || !test.test(
+					style = DomElement.getComputedStyle(el, 'position')))) {
 			x += el[left] || 0;
 			y += el[top] || 0;
 			el = el[parent];
 		}
-		return Point.create(x, y);
+		return {
+			offset: Point.create(x, y),
+			element: el,
+			style: style
+		};
+	}
+
+	function getScrollOffset(el, test) {
+		return cumulateOffset(el, 'scroll', 'parentNode', null, null, test).offset;
 	}
 
 	return {
@@ -45,10 +54,19 @@ var DomElement = new function() {
 		},
 
 		getOffset: function(el, positioned, scroll) {
-			var point = cumulate(el, 'offset', 'offsetParent', positioned);
+			var res = cumulateOffset(el, 'offset', 'offsetParent',
+					positioned, scroll,
+					positioned ? /^(relative|absolute|fixed)$/ : /^fixed$/);
+			// We need to handle fixed positioned elements seperately if we're
+			// asked to calculate offsets without scrolling removed, by adding
+			// the scroll offset to them.
+			if (res.style == 'fixed' && !scroll)
+				return res.offset.add(getScrollOffset(res.element));
+			// Otherwise remove scrolling from the calculated offset if that's
+			// what we're asked to do.
 			return scroll
-				? point.subtract(cumulate(el, 'scroll', 'parentNode'))
-				: point;
+					? res.offset.subtract(getScrollOffset(el, /^fixed$/))
+					: res.offset;
 		},
 
 		getSize: function(el) {
