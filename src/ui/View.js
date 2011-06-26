@@ -33,20 +33,22 @@ var View = this.View = Base.extend(/** @lends View# */{
 		var size;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
-			var offset = DomElement.getOffset(canvas);
 			// If the canvas has the resize attribute, resize the it to fill the
 			// window and resize it again whenever the user resizes the window.
 			if (canvas.attributes.resize) {
+				// Subtract canvas' viewport offset from the total size, to
+				// stretch it in
+				var offset = DomElement.getOffset(canvas, false, true),
+					that = this;
 				size = DomElement.getWindowSize().subtract(offset);
 				canvas.width = size.width;
 				canvas.height = size.height;
-				var that = this;
 				DomEvent.add(window, {
 					resize: function(event) {
-						// Only get canvas offset if it's not invisible, as
+						// Only update canvas offset if it's not invisible, as
 						// otherwise the offset would be wrong.
 						if (!DomElement.isInvisible(canvas))
-							offset = DomElement.getOffset(canvas);
+							offset = DomElement.getOffset(canvas, false, true);
 						// Set the size now, which internally calls onResize
 						that.setViewSize(
 								DomElement.getWindowSize().subtract(offset));
@@ -70,7 +72,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 				this._stats = new Stats();
 				// Align top-left to the canvas
 				var element = this._stats.domElement,
-					style = element.style;
+					style = element.style,
+					offset = DomElement.getOffset(canvas);
 				style.position = 'absolute';
 				style.left = offset.x + 'px';
 				style.top = offset.y + 'px';
