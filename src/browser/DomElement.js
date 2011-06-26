@@ -15,7 +15,7 @@
  */
 
 var DomElement = new function() {
-	function cumulateOffset(el, name, parent, positioned, scroll, test) {
+	function cumulateOffset(el, name, parent, test) {
 		var left = name + 'Left',
 			top = name + 'Top',
 			x = 0,
@@ -37,7 +37,7 @@ var DomElement = new function() {
 	}
 
 	function getScrollOffset(el, test) {
-		return cumulateOffset(el, 'scroll', 'parentNode', null, null, test).offset;
+		return cumulateOffset(el, 'scroll', 'parentNode', test).offset;
 	}
 
 	return {
@@ -55,7 +55,6 @@ var DomElement = new function() {
 
 		getOffset: function(el, positioned, scroll) {
 			var res = cumulateOffset(el, 'offset', 'offsetParent',
-					positioned, scroll,
 					positioned ? /^(relative|absolute|fixed)$/ : /^fixed$/);
 			// We need to handle fixed positioned elements seperately if we're
 			// asked to calculate offsets without scrolling removed, by adding
