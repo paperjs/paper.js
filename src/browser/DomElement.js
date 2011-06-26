@@ -41,29 +41,6 @@ var DomElement = new function() {
 	}
 
 	return {
-		getViewport: function(doc) {
-			return doc.defaultView || doc.parentWindow;
-		},
-
-		getViewportSize: function(el) {
-			var doc = el.ownerDocument,
-				view = this.getViewport(doc),
-				body = doc.getElementsByTagName(
-					doc.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
-			return Size.create(
-				view.innerWidth || body.clientWidth,
-				view.innerHeight || body.clientHeight
-			);
-		},
-
-		getComputedStyle: function(el, name) {
-			if (el.currentStyle)
-				return el.currentStyle[Base.camelize(name)];
-			var style = this.getViewport(el.ownerDocument)
-					.getComputedStyle(el, null);
-			return style ? style.getPropertyValue(Base.hyphenate(name)) : null;
-		},
-
 		getOffset: function(el, positioned, viewport) {
 			var res = cumulateOffset(el, 'offset', 'offsetParent',
 					positioned ? /^(relative|absolute|fixed)$/ : /^fixed$/);
@@ -104,6 +81,29 @@ var DomElement = new function() {
 			return !this.isInvisible(el)
 					&& new Rectangle([0, 0], this.getViewportSize(el))
 						.intersects(this.getBounds(el, false, true));
+		},
+
+		getViewport: function(doc) {
+			return doc.defaultView || doc.parentWindow;
+		},
+
+		getViewportSize: function(el) {
+			var doc = el.ownerDocument,
+				view = this.getViewport(doc),
+				body = doc.getElementsByTagName(
+					doc.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
+			return Size.create(
+				view.innerWidth || body.clientWidth,
+				view.innerHeight || body.clientHeight
+			);
+		},
+
+		getComputedStyle: function(el, name) {
+			if (el.currentStyle)
+				return el.currentStyle[Base.camelize(name)];
+			var style = this.getViewport(el.ownerDocument)
+					.getComputedStyle(el, null);
+			return style ? style.getPropertyValue(Base.hyphenate(name)) : null;
 		}
 	};
 };
