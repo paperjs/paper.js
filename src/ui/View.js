@@ -40,7 +40,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 				// stretch it in
 				var offset = DomElement.getOffset(canvas, false, true),
 					that = this;
-				size = DomElement.getWindowSize().subtract(offset);
+				size = DomElement.getViewportSize(canvas).subtract(offset);
 				canvas.width = size.width;
 				canvas.height = size.height;
 				DomEvent.add(window, {
@@ -50,8 +50,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 						if (!DomElement.isInvisible(canvas))
 							offset = DomElement.getOffset(canvas, false, true);
 						// Set the size now, which internally calls onResize
-						that.setViewSize(
-								DomElement.getWindowSize().subtract(offset));
+						that.setViewSize(DomElement.getViewportSize(canvas)
+								.subtract(offset));
 						// If there's a _onFrameCallback, call it staight away,
 						// but without requesting another animation frame.
 						if (that._onFrameCallback) {
