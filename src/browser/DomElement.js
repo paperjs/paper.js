@@ -53,17 +53,17 @@ var DomElement = new function() {
 			return style ? style.getPropertyValue(Base.hyphenate(name)) : null;
 		},
 
-		getOffset: function(el, positioned, scroll) {
+		getOffset: function(el, positioned, viewport) {
 			var res = cumulateOffset(el, 'offset', 'offsetParent',
 					positioned ? /^(relative|absolute|fixed)$/ : /^fixed$/);
 			// We need to handle fixed positioned elements seperately if we're
-			// asked to calculate offsets without scrolling removed, by adding
-			// the scroll offset to them.
-			if (res.style == 'fixed' && !scroll)
+			// asked to calculate offsets within the page (= not within
+			// viewport), by adding their scroll offset to the result.
+			if (res.style == 'fixed' && !viewport)
 				return res.offset.add(getScrollOffset(res.element));
-			// Otherwise remove scrolling from the calculated offset if that's
-			// what we're asked to do.
-			return scroll
+			// Otherwise remove scrolling from the calculated offset if we asked
+			// for viewport coordinates
+			return viewport
 					? res.offset.subtract(getScrollOffset(el, /^fixed$/))
 					: res.offset;
 		},
@@ -72,8 +72,8 @@ var DomElement = new function() {
 			return Size.create(el.offsetWidth, el.offsetHeight);
 		},
 
-		getBounds: function(el, positioned, scroll) {
-			return new Rectangle(DomElement.getOffset(el, positioned, scroll),
+		getBounds: function(el, positioned, viewport) {
+			return new Rectangle(DomElement.getOffset(el, positioned, viewport),
 					DomElement.getSize(el));
 		},
 
@@ -97,7 +97,7 @@ var DomElement = new function() {
 		 * Checks if element is visibile in current viewport
 		 */
 		isVisible: function(el) {
-			// See if the scrolled bounds intersect with the windows rectangle
+			// See if the viewport bounds intersect with the windows rectangle
 			// which always starts at 0, 0
 			return !DomElement.isInvisible(el)
 					&& new Rectangle([0, 0], DomElement.getWindowSize())
