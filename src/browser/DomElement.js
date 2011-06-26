@@ -41,15 +41,26 @@ var DomElement = new function() {
 	}
 
 	return {
-		getWindow: function(doc) {
+		getViewport: function(doc) {
 			return doc.defaultView || doc.parentWindow;
+		},
+
+		getViewportSize: function(el) {
+			var doc = el.ownerDocument,
+				view = DomElement.getViewport(doc),
+				body = doc.getElementsByTagName(
+					doc.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
+			return Size.create(
+				view.innerWidth || body.clientWidth,
+				view.innerHeight || body.clientHeight
+			);
 		},
 
 		getComputedStyle: function(el, name) {
 			if (el.currentStyle)
 				return el.currentStyle[Base.camelize(name)];
-			var style = DomElement.getWindow(el.ownerDocument).getComputedStyle(
-					el, null);
+			var style = DomElement.getViewport(el.ownerDocument)
+					.getComputedStyle(el, null);
 			return style ? style.getPropertyValue(Base.hyphenate(name)) : null;
 		},
 
@@ -77,15 +88,6 @@ var DomElement = new function() {
 					DomElement.getSize(el));
 		},
 
-		getWindowSize: function() {
-			var doc = document.getElementsByTagName(
-					document.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
-			return Size.create(
-				window.innerWidth || doc.clientWidth,
-				window.innerHeight || doc.clientHeight
-			);
-		},
-
 		/**
 		 * Checks if element is invisibile (display: none, ...)
 		 */
@@ -100,7 +102,7 @@ var DomElement = new function() {
 			// See if the viewport bounds intersect with the windows rectangle
 			// which always starts at 0, 0
 			return !DomElement.isInvisible(el)
-					&& new Rectangle([0, 0], DomElement.getWindowSize())
+					&& new Rectangle([0, 0], DomElement.getViewportSize(el))
 						.intersects(DomElement.getBounds(el, false, true));
 		}
 	};
