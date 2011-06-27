@@ -16,11 +16,15 @@
 
 /**
  * @name Segment
- * @class The Segment object represents a part of a path which is
- * described by the {@link Path#segments} array. Every segment of a
- * path corresponds to an anchor point (anchor points are the path handles
- * that are visible when the path is selected).
  * 
+ * @class The Segment object represents the points of a path through which its
+ * {@link Curve} objects pass. The segments of a path can be accessed through
+ * its {@link Path#segments} array.
+ * 
+ * Each segment consists of an anchor point ({@link Segment#point}) and
+ * optionaly an incoming and an outgoing handle ({@link Segment#handleIn} and
+ * {@link Segment#handleOut}), describing the tangents of the two {@link Curve}
+ * objects that are connected by this segment.
  */
 var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	/**
