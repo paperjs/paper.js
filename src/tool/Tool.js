@@ -132,7 +132,7 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * 
 	 * @name Tool#onMouseDown
 	 * @property
-	 * @type function
+	 * @type Function
 	 * 
 	 * @example {@paperscript}
 	 * // Creating circle shaped paths where the user presses the mouse button:
@@ -154,7 +154,7 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * 
 	 * @name Tool#onMouseDrag
 	 * @property
-	 * @type function
+	 * @type Function
 	 * 
 	 * @example {@paperscript}
 	 * // Draw a line by adding a segment to a path on every mouse drag event:
@@ -176,7 +176,7 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * 
 	 * @name Tool#onMouseMove
 	 * @property
-	 * @type function
+	 * @type Function
 	 * 
 	 * @example {@paperscript}
 	 * // Moving a path to the position of the mouse:
@@ -199,7 +199,7 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * 
 	 * @name Tool#onMouseUp
 	 * @property
-	 * @type function
+	 * @type Function
 	 * 
 	 * @example {@paperscript}
 	 * // Creating circle shaped paths where the user releases the mouse:
