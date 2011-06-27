@@ -16,7 +16,15 @@
 <div class="reference-class">
 <h1>Curve</h1>
 
-<p>The Curve object represents...</p>
+<p>The Curve object represents the parts of a path that are connected by
+two following <a href="../classes/Segment.html"><tt>Segment</tt></a> objects. The curves of a path can be accessed
+through its <a href="../classes/Path.html#curves"><tt>path.curves</tt></a> array.</p>
+<p>While a segment describe the anchor point and its incoming and outgoing
+handles, a Curve object describes the curve passing between two such
+segments. Curves and segments represent two different ways of looking at the
+same thing, but focusing on different aspects. Curves for example offer many
+convenient ways to work with parts of the path, finding lengths, positions or
+tangents at given offsets.</p>
 
 </div>
 

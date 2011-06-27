@@ -16,9 +16,19 @@
 <div class="reference-class">
 <h1>Project</h1>
 
-<p>The Project item refers to..</p>
-<p>The currently active project can be accessed through the global <tt>project</tt> variable.</p>
-<p>An array of all open projects is accessible through the global <tt>projects</tt> variable.</p>
+<p>A Project object in Paper.js is what usually is refered to as the
+document: The top level object that holds all the items contained in the
+scene graph. As the term document is already taken in the browser context,
+it is called Project.</p>
+<p>Projects allow the manipluation of the styles that are applied to all newly
+created items, give access to the selected items, and will in future versions
+offer ways to query for items in the scene graph defining specific
+requirements, and means to persist and load from different formats, such as
+SVG and PDF.</p>
+<p>The currently active project can be accessed through the global
+{@see _global_#project} variable.</p>
+<p>An array of all open projects is accessible through the global
+{@see _global_#projects} variable.</p>
 
 </div>
 
@@ -41,7 +51,9 @@
 <div class="clear"></div>
 </div>
 <div class="member-text">
-<p>Creates a Paper.js project</p>
+<p>Creates a Paper.js project.</p>
+<p>When working with PaperScript, a project is automatically created for us
+and the global {@see _global_#project} variable points to it.</p>
 
 
 
@@ -381,6 +393,31 @@ layer by default.</p>
 <div class="member-text">
 	<p>Activates this project, so all newly created items will be placed
 in it.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="remove-member" class="member">
+<div id="remove-link" class="member-link">
+<a name="remove" href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+<div id="remove-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('remove', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Removes this project from the global {@see _global_#projects} list.</p>
 	
 	
 	
