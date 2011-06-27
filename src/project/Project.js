@@ -99,10 +99,15 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 		return false;
 	},
 
+	/**
+	 * Removes this project from the global {@see _global_#projects} list.
+	 */
 	remove: function() {
 		if (this._scope) {
 			Base.splice(this._scope.projects, null, this._index, 1);
-			this._scope.remove();
+			// Clear the active project reference if it was pointint to this.
+			if (this._scope.project == this)
+				this._scope.project = null;
 			this._scope = null;
 			return true;
 		}
