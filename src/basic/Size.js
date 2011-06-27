@@ -146,6 +146,13 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	},
 
 	/**
+	 * Returns a copy of the size.
+	 */
+	clone: function() {
+		return Size.create(this.width, this.height);
+	},
+
+	/**
 	 * Returns the addition of the supplied value to the width and height of the
 	 * size as a new size. The object itself is not modified!
 	 * 
