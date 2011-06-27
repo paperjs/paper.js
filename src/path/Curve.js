@@ -17,7 +17,16 @@
 /**
  * @name Curve
  * 
- * @class The Curve object represents...
+ * @class The Curve object represents the parts of a path that are connected by
+ * two following segments. The curves of a path can be accessed through its
+ * {@link Path#curves} array
+ *
+ * While a segment describe the anchor point and its incoming and outgoing
+ * handles, a Curve object describes the curve passing between two such
+ * segments. Curves and segments represent two different ways of looking at the
+ * same thing, but focusing on different aspects. Curves for example offer many
+ * convenient ways to work with parts of the path, finding lengths, positions or
+ * tangents at given offsets.
  */
 var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	/**
