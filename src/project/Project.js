@@ -102,6 +102,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	remove: function() {
 		if (this._scope) {
 			Base.splice(this._scope.projects, null, this._index, 1);
+			this._scope.remove();
 			this._scope = null;
 			return true;
 		}
