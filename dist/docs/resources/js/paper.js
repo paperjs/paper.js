@@ -357,6 +357,14 @@ this.Base = Base.inject({
 			});
 		},
 
+		hyphenate: function(str) {
+			return str.replace(/[a-z][A-Z0-9]|[0-9][a-zA-Z]|[A-Z]{2}[a-z]/g,
+				function(match) {
+					return match.charAt(0) + '-' + match.substring(1);
+				}
+			);
+		},
+
 		formatNumber: function(num) {
 			return (Math.round(num * 100000) / 100000).toString();
 		},
@@ -5691,54 +5699,80 @@ var GradientStop = this.GradientStop = Base.extend({
 });
 
 var DomElement = new function() {
-	function cumulate(el, name, parent, positioned) {
+	function cumulateOffset(el, name, parent, test) {
 		var left = name + 'Left',
 			top = name + 'Top',
 			x = 0,
-			y = 0;
-			while (el && (!positioned
-					|| !/^(relative|absolute)$/.test(el.style.position))) {
+			y = 0,
+			style;
+		while (el && el.style && (!test || !test.test(
+					style = DomElement.getComputedStyle(el, 'position')))) {
 			x += el[left] || 0;
 			y += el[top] || 0;
 			el = el[parent];
 		}
-		return Point.create(x, y);
+		return {
+			offset: Point.create(x, y),
+			element: el,
+			style: style
+		};
+	}
+
+	function getScrollOffset(el, test) {
+		return cumulateOffset(el, 'scroll', 'parentNode', test).offset;
 	}
 
 	return {
-		getOffset: function(el, positioned, scroll) {
-			var point = cumulate(el, 'offset', 'offsetParent', positioned);
-			return scroll
-				? point.subtract(cumulate(el, 'scroll', 'parentNode'))
-				: point;
+		getOffset: function(el, positioned, viewport) {
+			var res = cumulateOffset(el, 'offset', 'offsetParent',
+					positioned ? /^(relative|absolute|fixed)$/ : /^fixed$/);
+			if (res.style == 'fixed' && !viewport)
+				return res.offset.add(getScrollOffset(res.element));
+			return viewport
+					? res.offset.subtract(getScrollOffset(el, /^fixed$/))
+					: res.offset;
 		},
 
 		getSize: function(el) {
 			return Size.create(el.offsetWidth, el.offsetHeight);
 		},
 
-		getBounds: function(el, positioned, scroll) {
-			return new Rectangle(DomElement.getOffset(el, positioned, scroll),
-					DomElement.getSize(el));
-		},
-
-		getWindowSize: function() {
-			var doc = document.getElementsByTagName(
-					document.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
-			return Size.create(
-				window.innerWidth || doc.clientWidth,
-				window.innerHeight || doc.clientHeight
-			);
+		getBounds: function(el, positioned, viewport) {
+			return new Rectangle(this.getOffset(el, positioned, viewport),
+					this.getSize(el));
 		},
 
 		isInvisible: function(el) {
-			return DomElement.getSize(el).equals([0, 0]);
+			return this.getSize(el).equals([0, 0]);
 		},
 
 		isVisible: function(el) {
-			return !DomElement.isInvisible(el)
-					&& new Rectangle([0, 0], DomElement.getWindowSize())
-						.intersects(DomElement.getBounds(el, false, true));
+			return !this.isInvisible(el)
+					&& new Rectangle([0, 0], this.getViewportSize(el))
+						.intersects(this.getBounds(el, false, true));
+		},
+
+		getViewport: function(doc) {
+			return doc.defaultView || doc.parentWindow;
+		},
+
+		getViewportSize: function(el) {
+			var doc = el.ownerDocument,
+				view = this.getViewport(doc),
+				body = doc.getElementsByTagName(
+					doc.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
+			return Size.create(
+				view.innerWidth || body.clientWidth,
+				view.innerHeight || body.clientHeight
+			);
+		},
+
+		getComputedStyle: function(el, name) {
+			if (el.currentStyle)
+				return el.currentStyle[Base.camelize(name)];
+			var style = this.getViewport(el.ownerDocument)
+					.getComputedStyle(el, null);
+			return style ? style.getPropertyValue(Base.hyphenate(name)) : null;
 		}
 	};
 };
@@ -5864,18 +5898,18 @@ var View = this.View = Base.extend({
 		var size;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
-			var offset = DomElement.getOffset(canvas);
 			if (canvas.attributes.resize) {
-				size = DomElement.getWindowSize().subtract(offset);
+				var offset = DomElement.getOffset(canvas, false, true),
+					that = this;
+				size = DomElement.getViewportSize(canvas).subtract(offset);
 				canvas.width = size.width;
 				canvas.height = size.height;
-				var that = this;
 				DomEvent.add(window, {
 					resize: function(event) {
 						if (!DomElement.isInvisible(canvas))
-							offset = DomElement.getOffset(canvas);
-						that.setViewSize(
-								DomElement.getWindowSize().subtract(offset));
+							offset = DomElement.getOffset(canvas, false, true);
+						that.setViewSize(DomElement.getViewportSize(canvas)
+								.subtract(offset));
 						if (that._onFrameCallback) {
 							that._onFrameCallback(0, true);
 						} else {
@@ -5892,7 +5926,8 @@ var View = this.View = Base.extend({
 			if (canvas.attributes.stats) {
 				this._stats = new Stats();
 				var element = this._stats.domElement,
-					style = element.style;
+					style = element.style,
+					offset = DomElement.getOffset(canvas);
 				style.position = 'absolute';
 				style.left = offset.x + 'px';
 				style.top = offset.y + 'px';
