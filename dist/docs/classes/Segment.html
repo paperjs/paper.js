@@ -16,10 +16,13 @@
 <div class="reference-class">
 <h1>Segment</h1>
 
-<p>The Segment object represents a part of a path which is
-described by the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array. Every segment of a
-path corresponds to an anchor point (anchor points are the path handles
-that are visible when the path is selected).</p>
+<p>The Segment object represents the points of a path through which its
+<a href="../classes/Curve.html"><tt>Curve</tt></a> objects pass. The segments of a path can be accessed through
+its <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array.</p>
+<p>Each segment consists of an anchor point (<a href="../classes/Segment.html#point"><tt>segment.point</tt></a>) and
+optionaly an incoming and an outgoing handle (<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> and
+<a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>), describing the tangents of the two <a href="../classes/Curve.html"><tt>Curve</tt></a>
+objects that are connected by this segment.</p>
 
 </div>
 

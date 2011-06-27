@@ -791,6 +791,10 @@ var Size = this.Size = Base.extend({
 		return this;
 	},
 
+	clone: function() {
+		return Size.create(this.width, this.height);
+	},
+
 	add: function(size) {
 		size = Size.read(arguments);
 		return Size.create(this.width + size.width, this.height + size.height);
@@ -1602,6 +1606,8 @@ var Project = this.Project = Base.extend({
 	remove: function() {
 		if (this._scope) {
 			Base.splice(this._scope.projects, null, this._index, 1);
+			if (this._scope.project == this)
+				this._scope.project = null;
 			this._scope = null;
 			return true;
 		}
@@ -6056,11 +6062,11 @@ var View = this.View = Base.extend({
 		return true;
 	},
 
-	artworkToView: function(point) {
+	projectToView: function(point) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
-	viewToArtwork: function(point) {
+	viewToProject: function(point) {
 		return this._getInverse()._transformPoint(Point.read(arguments));
 	},
 
@@ -6117,8 +6123,8 @@ var View = this.View = Base.extend({
 		tempFocus,
 		dragging = false;
 
-	function viewToArtwork(view, event) {
-		return view.viewToArtwork(DomEvent.getOffset(event, view._canvas));
+	function viewToProject(view, event) {
+		return view.viewToProject(DomEvent.getOffset(event, view._canvas));
 	}
 
 	function updateFocus() {
@@ -6148,7 +6154,7 @@ var View = this.View = Base.extend({
 		}
 		if (!(view = view || View._focused) || !(tool = view._scope.tool))
 			return;
-		var point = event && viewToArtwork(view, event);
+		var point = event && viewToProject(view, event);
 		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
 		if (dragging && !onlyMove) {
 			curPoint = point || curPoint;
@@ -6172,7 +6178,7 @@ var View = this.View = Base.extend({
 		if (tool) {
 			if (timer != null)
 				timer = clearInterval(timer);
-			if (tool.onHandleEvent('mouseup', viewToArtwork(view, event), event)) {
+			if (tool.onHandleEvent('mouseup', viewToProject(view, event), event)) {
 				view.draw(true);
 				DomEvent.stop(event);
 			}
@@ -6205,7 +6211,7 @@ var View = this.View = Base.extend({
 				View._focused = view;
 				if (!(tool = view._scope.tool))
 					return;
-				curPoint = viewToArtwork(view, event);
+				curPoint = viewToProject(view, event);
 				if (tool.onHandleEvent('mousedown', curPoint, event))
 					view.draw(true);
 				if (tool.eventInterval != null)
