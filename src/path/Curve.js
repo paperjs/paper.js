@@ -18,8 +18,8 @@
  * @name Curve
  * 
  * @class The Curve object represents the parts of a path that are connected by
- * two following segments. The curves of a path can be accessed through its
- * {@link Path#curves} array
+ * two following {@link Segment} objects. The curves of a path can be accessed
+ * through its {@link Path#curves} array.
  *
  * While a segment describe the anchor point and its incoming and outgoing
  * handles, a Curve object describes the curve passing between two such
