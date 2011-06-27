@@ -112,8 +112,9 @@ var View = this.View = Base.extend(/** @lends View# */{
 	},
 
 	/**
-	 * The underling native canvas element.
+	 * The underlying native canvas element.
 	 *
+	 * @type HTMLCanvasElement
 	 * @bean
 	 */
 	getCanvas: function() {
