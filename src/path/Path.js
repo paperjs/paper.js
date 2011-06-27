@@ -736,8 +736,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * }
 	 */
 	simplify: function(tolerance) {
-		var fitter = new PathFitter(this, tolerance || 2.5);
-		this.setSegments(fitter.fit());
+		if (this._segments.length > 2) {
+			var fitter = new PathFitter(this, tolerance || 2.5);
+			this.setSegments(fitter.fit());
+		}
 	},
 
 	// TODO: reduceSegments([flatness])
