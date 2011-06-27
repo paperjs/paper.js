@@ -16,7 +16,11 @@
 <div class="reference-class">
 <h1>View</h1>
 
-<p>The View object..</p>
+<p>The View object wraps a canvas element and handles drawing and user
+interaction trhough mouse and keyboard for it. It offer means to scroll the
+view, find the currently visible bounds in project coordinates, or the
+center, both useful fo constructing artwork that should appear centered on
+screen.</p>
 
 </div>
 
@@ -68,6 +72,38 @@
 	<div class="reference-members"><h2>Properties</h2>
 		
 			
+<div id="canvas-member" class="member">
+<div id="canvas-link" class="member-link">
+<a name="canvas" href="#" onClick="return toggleMember('canvas', false);"><tt><b>canvas</b></tt></a>
+</div>
+<div id="canvas-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('canvas', false);"><tt><b>canvas</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('canvas', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The underlying native canvas element.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>HTMLCanvasElement</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
 <div id="viewsize-member" class="member">
 <div id="viewsize-link" class="member-link">
 <a name="viewsize" href="#" onClick="return toggleMember('viewsize', false);"><tt><b>viewSize</b></tt></a>
@@ -85,7 +121,7 @@
 
 <div class="member-text">
 	<p>The size of the view canvas. Changing the view's size will resize it's
-canvas.</p>
+underlying canvas.</p>
 	
 	
 	<ul><b>Type:</b>
@@ -117,7 +153,7 @@ canvas.</p>
 </div>
 
 <div class="member-text">
-	
+	<p>The bounds of the currently visible area in project coordinates.</p>
 	
 	
 	<ul><b>Type:</b>
@@ -149,7 +185,7 @@ canvas.</p>
 </div>
 
 <div class="member-text">
-	
+	<p>The size of the visible area in project coordinates.</p>
 	
 	
 	<ul><b>Type:</b>
@@ -181,7 +217,7 @@ canvas.</p>
 </div>
 
 <div class="member-text">
-	
+	<p>The center of the visible area in project coordinates.</p>
 	
 	
 	<ul><b>Type:</b>
@@ -213,7 +249,7 @@ canvas.</p>
 </div>
 
 <div class="member-text">
-	
+	<p>The zoom factor by which the project coordinates are magnified.</p>
 	
 	
 	<ul><b>Type:</b>
@@ -391,7 +427,7 @@ viewport.</p>
 <div class="clear"></div>
 </div>
 <div class="member-text">
-	
+	<p>Scrolls the view by the given vector.</p>
 	
 <ul><b>Parameters:</b>
 
