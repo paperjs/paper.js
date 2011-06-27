@@ -320,7 +320,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 	 * 	path.rotate(3);
 	 * }
 	 * 
-	 * @type function
+	 * @type Function
 	 * @bean
 	 */
 	getOnFrame: function() {
@@ -382,7 +382,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 	 * 	path.position = view.center;
 	 * }
 	 * 
-	 * @type function
+	 * @type Function
 	 */
 	onResize: null
 }, new function() { // Injection scope for mouse handlers
