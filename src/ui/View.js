@@ -14,10 +14,14 @@
  * All rights reserved.
  */
 
-// DOCS: View: there is alot left to document
 /**
  * @name View
- * @class The View object..
+ *
+ * @class The View object wraps a canvas element and handles drawing and user
+ * interaction trhough mouse and keyboard for it. It offer means to scroll the
+ * view, find the currently visible bounds in project coordinates, or the
+ * center, both useful fo constructing artwork that should appear centered on
+ * screen.
  */
 var View = this.View = Base.extend(/** @lends View# */{
 	/**
@@ -107,13 +111,18 @@ var View = this.View = Base.extend(/** @lends View# */{
 		this._scope._redrawNotified = false;
 	},
 
+	/**
+	 * The underling native canvas element.
+	 *
+	 * @bean
+	 */
 	getCanvas: function() {
 		return this._canvas;
 	},
 
 	/**
 	 * The size of the view canvas. Changing the view's size will resize it's
-	 * canvas.
+	 * underlying canvas.
 	 * 
 	 * @type Size
 	 * @bean
@@ -141,6 +150,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 	},
 
 	/**
+	 * The bounds of the currently visible area in project coordinates.
+	 * 
 	 * @type Rectangle
 	 * @bean
 	 */
@@ -152,6 +163,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 	},
 
 	/**
+	 * The size of the visible area in project coordinates.
+	 *
 	 * @type Size
 	 * @bean
 	 */
@@ -160,6 +173,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 	},
 
 	/**
+	 * The center of the visible area in project coordinates.
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -172,6 +187,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 	},
 
 	/**
+	 * The zoom factor by which the project coordinates are magnified.
+	 * 
 	 * @type Number
 	 * @bean
 	 */
@@ -197,6 +214,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 	},
 
 	/**
+	 * Scrolls the view by the given vector.
+	 *
 	 * @param {Point} point
 	 */
 	scrollBy: function(point) {
