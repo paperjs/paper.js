@@ -278,14 +278,13 @@ var View = this.View = Base.extend(/** @lends View# */{
 	// TODO: style: artwork / preview / raster / opaque / ink
 	// TODO: getShowGrid
 	// TODO: getMousePoint
-	// TODO: artworkToView(rect)
+	// TODO: projectToView(rect)
 
-	// TODO: Consider naming these projectToView, viewToProject
-	artworkToView: function(point) {
+	projectToView: function(point) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
-	viewToArtwork: function(point) {
+	viewToProject: function(point) {
 		return this._getInverse()._transformPoint(Point.read(arguments));
 	},
 
@@ -392,8 +391,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 		tempFocus,
 		dragging = false;
 
-	function viewToArtwork(view, event) {
-		return view.viewToArtwork(DomEvent.getOffset(event, view._canvas));
+	function viewToProject(view, event) {
+		return view.viewToProject(DomEvent.getOffset(event, view._canvas));
 	}
 
 	function updateFocus() {
@@ -429,7 +428,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 		}
 		if (!(view = view || View._focused) || !(tool = view._scope.tool))
 			return;
-		var point = event && viewToArtwork(view, event);
+		var point = event && viewToProject(view, event);
 		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
 		if (dragging && !onlyMove) {
 			curPoint = point || curPoint;
@@ -455,7 +454,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 		if (tool) {
 			if (timer != null)
 				timer = clearInterval(timer);
-			if (tool.onHandleEvent('mouseup', viewToArtwork(view, event), event)) {
+			if (tool.onHandleEvent('mouseup', viewToProject(view, event), event)) {
 				view.draw(true);
 				DomEvent.stop(event);
 			}
@@ -496,7 +495,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 				View._focused = view;
 				if (!(tool = view._scope.tool))
 					return;
-				curPoint = viewToArtwork(view, event);
+				curPoint = viewToProject(view, event);
 				if (tool.onHandleEvent('mousedown', curPoint, event))
 					view.draw(true);
 				if (tool.eventInterval != null)
