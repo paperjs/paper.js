@@ -27,6 +27,7 @@ Path.inject({ statics: new function() {
 	return /** @lends Path */{
 		/**
 		 * {@grouptitle Shaped Paths}
+		 *
 		 * Creates a Path Item with two anchor points forming a line.
 		 * 
 		 * @param {Point} pt1 the first anchor point of the path
