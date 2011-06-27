@@ -17,19 +17,30 @@
 /** 
  * @name Project
  * 
- * @class The Project item refers to..
+ * @class A Project object in Paper.js is what usually is refered to as the
+ * document: The top level object that holds all the items contained in the
+ * scene graph. As the term document is already taken in the browser context,
+ * it is called Project.
  * 
- * The currently active project can be accessed through the global {@code
- * project} variable.
+ * Projects allow the manipluation of the styles that are applied to all newly
+ * created items, give access to the selected items, and will in future versions
+ * offer ways to query for items in the scene graph defining specific
+ * requirements, and means to persist and load from different formats, such as
+ * SVG and PDF.
  * 
- * An array of all open projects is accessible through the global {@code
- * projects} variable.
+ * The currently active project can be accessed through the global
+ * {@see _global_#project} variable.
+ * 
+ * An array of all open projects is accessible through the global
+ * {@see _global_#projects} variable.
  */
 var Project = this.Project = Base.extend(/** @lends Project# */{
 	// TODO: Add arguments to define pages
-	// DOCS: Document Project constructor and class
 	/**
-	 * Creates a Paper.js project
+	 * Creates a Paper.js project.
+	 * 
+	 * When working with PaperScript, a project is automatically created for us
+	 * and the global {@see _global_#project} variable points to it.
 	 */
 	initialize: function() {
 		// Store reference to the currently active global paper scope:
