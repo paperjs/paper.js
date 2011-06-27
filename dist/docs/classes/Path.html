@@ -80,6 +80,652 @@ path.strokeColor = 'black';</pre>
 </div>
 </div>
 	
+		<h3>Shaped Paths</h3>
+<div id="path-line-pt1-pt2-member" class="member">
+<div id="path-line-pt1-pt2-link" class="member-link">
+<a name="path-line-pt1-pt2" href="#" onClick="return toggleMember('path-line-pt1-pt2', false);"><tt><b>Path.Line</b>(pt1, pt2)</tt></a>
+</div>
+<div id="path-line-pt1-pt2-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-line-pt1-pt2', false);"><tt><b>Path.Line</b>(pt1, pt2)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-line-pt1-pt2', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Path Item with two anchor points forming a line.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>pt1:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the first anchor point of the path
+
+</li>
+
+<li>
+<tt>pt2:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the second anchor point of the path
+
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var from = new Point(20, 20);
+var to = new Point(100, 100);
+var path = new Path.Line(from, to);
+path.strokeColor = 'black';</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="path-rectangle-point-size-member" class="member">
+<div id="path-rectangle-point-size-link" class="member-link">
+<a name="path-rectangle-point-size" href="#" onClick="return toggleMember('path-rectangle-point-size', false);"><tt><b>Path.Rectangle</b>(point, size)</tt></a>
+</div>
+<div id="path-rectangle-point-size-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-rectangle-point-size', false);"><tt><b>Path.Rectangle</b>(point, size)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-rectangle-point-size', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a rectangle shaped Path Item from the passed point and size.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>size:</tt> 
+<a href="../classes/Size.html"><tt>Size</tt></a>
+
+
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(100, 100);
+var size = new Size(100, 100);
+var rectangle = new Rectangle(point, size);
+var path = new Path.Rectangle(rectangle);
+path.strokeColor = 'black';</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="path-rectangle-point1-point2-member" class="member">
+<div id="path-rectangle-point1-point2-link" class="member-link">
+<a name="path-rectangle-point1-point2" href="#" onClick="return toggleMember('path-rectangle-point1-point2', false);"><tt><b>Path.Rectangle</b>(point1, point2)</tt></a>
+</div>
+<div id="path-rectangle-point1-point2-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-rectangle-point1-point2', false);"><tt><b>Path.Rectangle</b>(point1, point2)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-rectangle-point1-point2', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a rectangle shaped Path Item from the passed points. These do not
+necessarily need to be the top left and bottom right corners, the
+constructor figures out how to fit a rectangle between them.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point1:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The first point defining the rectangle
+
+</li>
+
+<li>
+<tt>point2:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The second point defining the rectangle
+
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(100, 100);
+var point2 = new Point(200, 300);
+var path = new Path.Rectangle(point, point2);
+path.strokeColor = 'black';</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="path-rectangle-rect-member" class="member">
+<div id="path-rectangle-rect-link" class="member-link">
+<a name="path-rectangle-rect" href="#" onClick="return toggleMember('path-rectangle-rect', false);"><tt><b>Path.Rectangle</b>(rect)</tt></a>
+</div>
+<div id="path-rectangle-rect-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-rectangle-rect', false);"><tt><b>Path.Rectangle</b>(rect)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-rectangle-rect', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a rectangle shaped Path Item from the passed abstract
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>rect:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+
+
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(100, 100);
+var size = new Size(100, 100);
+var rectangle = new Rectangle(point, size);
+var path = new Path.Rectangle(rectangle);
+path.strokeColor = 'black';</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="path-roundrectangle-rect-size-member" class="member">
+<div id="path-roundrectangle-rect-size-link" class="member-link">
+<a name="path-roundrectangle-rect-size" href="#" onClick="return toggleMember('path-roundrectangle-rect-size', false);"><tt><b>Path.RoundRectangle</b>(rect, size)</tt></a>
+</div>
+<div id="path-roundrectangle-rect-size-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-roundrectangle-rect-size', false);"><tt><b>Path.RoundRectangle</b>(rect, size)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-roundrectangle-rect-size', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a rectangular Path Item with rounded corners.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>rect:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+
+
+</li>
+
+<li>
+<tt>size:</tt> 
+<a href="../classes/Size.html"><tt>Size</tt></a>
+&mdash;&nbsp;the size of the rounded corners
+
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(100, 100);
+var size = new Size(100, 100);
+var rectangle = new Rectangle(point, size);
+var cornerSize = new Size(30, 30);
+var path = new Path.RoundRectangle(rectangle, cornerSize);</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="path-oval-rect-member" class="member">
+<div id="path-oval-rect-link" class="member-link">
+<a name="path-oval-rect" href="#" onClick="return toggleMember('path-oval-rect', false);"><tt><b>Path.Oval</b>(rect[, circumscribed])</tt></a>
+</div>
+<div id="path-oval-rect-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-oval-rect', false);"><tt><b>Path.Oval</b>(rect[, circumscribed])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-oval-rect', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates an oval shaped Path Item.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>rect:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+
+
+</li>
+
+<li>
+<tt>circumscribed:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;when set to <tt>true</tt> the
+       oval shaped path will be created so the rectangle fits into
+       it. When set to <tt>false</tt> the oval path will fit within
+       the rectangle.
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var topLeft = new Point(100, 100);
+var size = new Size(150, 100);
+var rectangle = new Rectangle(topLeft, size);
+var path = new Path.Oval(rectangle);
+path.fillColor = 'black';</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="path-circle-center-radius-member" class="member">
+<div id="path-circle-center-radius-link" class="member-link">
+<a name="path-circle-center-radius" href="#" onClick="return toggleMember('path-circle-center-radius', false);"><tt><b>Path.Circle</b>(center, radius)</tt></a>
+</div>
+<div id="path-circle-center-radius-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-circle-center-radius', false);"><tt><b>Path.Circle</b>(center, radius)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-circle-center-radius', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a circle shaped Path Item.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the center point of the circle
+
+</li>
+
+<li>
+<tt>radius:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the radius of the circle
+
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var path = new Path.Circle(new Point(100, 100), 50);</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="path-arc-from-through-to-member" class="member">
+<div id="path-arc-from-through-to-link" class="member-link">
+<a name="path-arc-from-through-to" href="#" onClick="return toggleMember('path-arc-from-through-to', false);"><tt><b>Path.Arc</b>(from, through, to)</tt></a>
+</div>
+<div id="path-arc-from-through-to-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-arc-from-through-to', false);"><tt><b>Path.Arc</b>(from, through, to)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-arc-from-through-to', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a circular arc shaped Path Item.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>from:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the starting point of the circular arc
+
+</li>
+
+<li>
+<tt>through:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point the arc passes through
+
+</li>
+
+<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the end point of the arc
+
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var start = new Point(0, 0);
+var through = new Point(100, 100);
+var to = new Point(200, 150);
+var path = new Path.Arc(start, through, to);
+path.strokeColor = 'black';</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="path-regularpolygon-center-numSides-radius-member" class="member">
+<div id="path-regularpolygon-center-numSides-radius-link" class="member-link">
+<a name="path-regularpolygon-center-numSides-radius" href="#" onClick="return toggleMember('path-regularpolygon-center-numSides-radius', false);"><tt><b>Path.RegularPolygon</b>(center, numSides, radius)</tt></a>
+</div>
+<div id="path-regularpolygon-center-numSides-radius-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-regularpolygon-center-numSides-radius', false);"><tt><b>Path.RegularPolygon</b>(center, numSides, radius)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-regularpolygon-center-numSides-radius', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a regular polygon shaped Path Item.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the center point of the polygon
+
+</li>
+
+<li>
+<tt>numSides:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the number of sides of the polygon
+
+</li>
+
+<li>
+<tt>radius:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the radius of the polygon
+
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> &mdash; Create a triangle shaped path
+</p>
+
+
+<pre class="code">var center = new Point(100, 100);
+var sides = 3;
+var radius = 50;
+var triangle = new Path.RegularPolygon(center, sides, radius);
+triangle.fillColor = 'black';</pre>
+
+<p>
+<b>Example</b> &mdash; Create a decahedron shaped path
+</p>
+
+
+<pre class="code">var center = new Point(100, 100);
+var sides = 10;
+var radius = 50;
+var decahedron = new Path.RegularPolygon(center, sides, radius);
+decahedron.fillColor = 'black';</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="path-star-center-numPoints-radius1-radius2-member" class="member">
+<div id="path-star-center-numPoints-radius1-radius2-link" class="member-link">
+<a name="path-star-center-numPoints-radius1-radius2" href="#" onClick="return toggleMember('path-star-center-numPoints-radius1-radius2', false);"><tt><b>Path.Star</b>(center, numPoints, radius1, radius2)</tt></a>
+</div>
+<div id="path-star-center-numPoints-radius1-radius2-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path-star-center-numPoints-radius1-radius2', false);"><tt><b>Path.Star</b>(center, numPoints, radius1, radius2)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path-star-center-numPoints-radius1-radius2', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a star shaped Path Item.</p>
+<p>The largest of <tt>radius1</tt> and <tt>radius2</tt> will be the outer
+radius of the star. The smallest of radius1 and radius2 will be the
+inner radius.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the center point of the star
+
+</li>
+
+<li>
+<tt>numPoints:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the number of points of the star
+
+</li>
+
+<li>
+<tt>radius1:</tt> 
+<tt>Number</tt>
+
+
+</li>
+
+<li>
+<tt>radius2:</tt> 
+<tt>Number</tt>
+
+
+</li>
+
+</ul>
+
+
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path
+</li>
+	
+	</ul>
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var center = new Point(100, 100);
+var points = 6;
+var radius1 = 20;
+var radius2 = 50;
+var path = new Path.Star(center, points, radius1, radius2);
+path.fillColor = 'black';</pre>
+
+
+</div>
+</div>
+</div>
+	
 </div>
 
 
