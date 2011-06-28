@@ -26,7 +26,7 @@
 			initialize: function(position, maxSpeed, maxForce) {
 				var strength = Math.random() * 0.5;
 				this.acc = new Point(0, 0);
-				this.vel = new Point(Math.random() * 2 - 1, Math.random() * 2 - 1);
+				this.vel = Point.random() * 2 - 1;
 				this.loc = position.clone();
 				this.r = 30;
 				this.maxSpeed = maxSpeed + strength;
@@ -64,8 +64,10 @@
 					var segment = segments[i];
 					var vector = lastPoint - segment.point;
 					this.count += this.vel.length * 10;
-					var rotated = lastVector.rotate(90).normalize(Math.sin((this.count + i * 3) / 300));
-					lastPoint = segment.point = lastPoint + lastVector.normalize(-5 - this.vel.length / 3);
+					var rotLength = Math.sin((this.count + i * 3) / 300);
+					var rotated = lastVector.rotate(90).normalize(rotLength);
+					lastPoint += lastVector.normalize(-5 - this.vel.length / 3);
+					segment.point = lastPoint;
 					segment.point += rotated;
 					lastVector = vector;
 				}
@@ -108,15 +110,18 @@
 			},
 			
 			// A method that calculates a steering vector towards a target
-			// Takes a second argument, if true, it slows down as it approaches the target
+			// Takes a second argument, if true, it slows down as it approaches
+			// the target
 			steer: function(target, slowdown) {
 				var steer,
 					desired = target - this.loc,
 					d = desired.length;
 				if (d > 0) {
-					// Two options for desired vector magnitude (1 -- based on distance, 2 -- maxSpeed)
+					// Two options for desired vector magnitude
+					// (1 -- based on distance, 2 -- maxSpeed)
 					if (slowdown && d < 100) {
-						desired.length = this.maxSpeed * (d / 100); // This damping is somewhat arbitrary
+						// // This damping is somewhat arbitrary:
+						desired.length = this.maxSpeed * (d / 100);
 					} else {
 						desired.length = this.maxSpeed;
 					}
@@ -203,7 +208,8 @@
 			},
 			
 			// Cohesion
-			// For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
+			// For the average location (i.e. center) of all nearby boids,
+			// calculate steering vector towards that location
 			cohesion: function(boids) {
 				var neighborDist = 100;
 				var sum = new Point(0, 0);
@@ -263,7 +269,8 @@
 		function onFrame(event) {
 			for (var i = 0, l = boids.length; i < l; i++) {
 				if (groupTogether) {
-					var point = heartPath.getPointAt(((i + event.count / 30) % l) / l * pathLength);
+					var length = ((i + event.count / 30) % l) / l * pathLength;
+					var point = heartPath.getPointAt(length);
 					boids[i].arrive(point);
 				}
 				boids[i].run(boids);
