@@ -68,14 +68,6 @@
 		path.strokeCap = 'round';
 		path.strokeJoin = 'miter';
 
-		var path = new Path.Circle([50, 50], 35);
-		path.strokeColor = 'black';
-		path.strokeWidth = 30;
-		path.strokeJoin = 'round';
-		path.strokeCap = 'round';
-//		path.scale(1, 0.5);
-		paths.push(path);
-
 		for (var i = 0; i < paths.length; i++) {
 			var path = paths[i];
 			path.scale(1.5, new Point(300, 0));
@@ -88,6 +80,8 @@
 			rect.strokeColor = 'red'
 			rect.fillColor = null;
 		}
+		
+		project.activeLayer.position = view.center;
 	</script>
 </head>
 <body>
