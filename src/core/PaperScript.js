@@ -88,8 +88,8 @@ var PaperScript = this.PaperScript = new function() {
 		// Use parse-js to translate the code into a AST structure which is then
 		// walked and parsed for operators to overload. The resulting AST is
 		// translated back to code and evaluated.
-		var ast = parse_js.parse(code),
-			walker = parse_js.walker(),
+		var ast = parse_js.parse(code, true),
+			walker = parse_js.ast_walker(),
 			walk = walker.walk;
 
 		ast = walker.with_walkers({
@@ -125,7 +125,7 @@ var PaperScript = this.PaperScript = new function() {
 			return walk(ast);
 		});
 
-		return parse_js.stringify(ast, true);
+		return parse_js.gen_code(ast, true);
 	}
 
 	function evaluate(code, scope) {
