@@ -30,7 +30,7 @@ apply it to a series of items:</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-0">
+<script type="text/x-paperscript" canvas="canvas-0">
 var circleStyle = {
 	fillColor: new RGBColor(1, 0, 0),
 	strokeColor: 'black',
@@ -86,7 +86,7 @@ path.style = circleStyle;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-1">
+<script type="text/x-paperscript" canvas="canvas-1">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -141,7 +141,7 @@ circle.strokeColor = new RGBColor(1, 0, 0);
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-2">
+<script type="text/x-paperscript" canvas="canvas-2">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -200,7 +200,7 @@ have a stroke.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-3">
+<script type="text/x-paperscript" canvas="canvas-3">
 var line = new Path(new Point(80, 50), new Point(420, 50));
 line.strokeColor = 'black';
 line.strokeWidth = 20;
@@ -268,7 +268,7 @@ line2.strokeCap = 'butt';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-4">
+<script type="text/x-paperscript" canvas="canvas-4">
 var path = new Path();
 path.add(new Point(80, 100));
 path.add(new Point(120, 40));
@@ -372,7 +372,7 @@ path3.strokeJoin = 'bevel';
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-5">
+<script type="text/x-paperscript" canvas="canvas-5">
 var path = new Path.Circle(new Point(80, 50), 40);
 path.strokeWidth = 2;
 path.strokeColor = 'black';
@@ -465,7 +465,7 @@ limit on the ratio of the miter length to the <a href="../classes/PathStyle.html
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-6">
+<script type="text/x-paperscript" canvas="canvas-6">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);

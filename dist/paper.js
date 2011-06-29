@@ -7064,7 +7064,7 @@ var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++
 			count = 0;
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
-			if (script.type === 'text/paperscript'
+			if (script.type === 'text/x-paperscript'
 					&& !script.getAttribute('loaded')) {
 				var scope = new PaperScope(script.getAttribute('id')
 						|| script.src || ('paperscript-' + (count++)));

@@ -70,7 +70,7 @@ between <tt>0</tt> and <tt>1</tt>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-0">
+<script type="text/x-paperscript" canvas="canvas-0">
 // Create a circle shaped path at {x: 80, y: 50}
 // with a radius of 30:
 var circle = new Path.Circle(new Point(80, 50), 30);
@@ -173,7 +173,7 @@ colors of the different subclasses support alpha values.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-1">
+<script type="text/x-paperscript" canvas="canvas-1">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // Fill the circle with red and give it a 20pt green stroke:
@@ -230,7 +230,7 @@ circle.strokeColor.alpha = 0.5;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-2">
+<script type="text/x-paperscript" canvas="canvas-2">
 var circle = new Path.Circle(new Point(80, 50), 30);
 circle.fillColor = 'blue';
 
@@ -279,7 +279,7 @@ circle.fillColor.red = 1;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-3">
+<script type="text/x-paperscript" canvas="canvas-3">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // First we set the fill color to red:
@@ -330,7 +330,7 @@ circle.fillColor.green = 1;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-4">
+<script type="text/x-paperscript" canvas="canvas-4">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // First we set the fill color to red:
@@ -418,7 +418,7 @@ circle.fillColor.blue = 1;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-5">
+<script type="text/x-paperscript" canvas="canvas-5">
 var circle = new Path.Circle(new Point(80, 50), 30);
 circle.fillColor = 'red';
 circle.fillColor.hue += 30;
@@ -433,7 +433,7 @@ circle.fillColor.hue += 30;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-6">
+<script type="text/x-paperscript" canvas="canvas-6">
 // Create a rectangle shaped path, using the dimensions
 // of the view:
 var path = new Path.Rectangle(view.bounds);
