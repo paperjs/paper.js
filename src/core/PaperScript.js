@@ -228,7 +228,7 @@ var PaperScript = this.PaperScript = new function() {
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
 			// Only load this script if it not loaded already.
-			if (script.type === 'text/paperscript'
+			if (script.type === 'text/x-paperscript'
 					&& !script.getAttribute('loaded')) {
 				// Produce a new PaperScope for this script now. Scopes are
 				// cheap so let's not worry about the initial one that was
