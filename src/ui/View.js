@@ -1,16 +1,16 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
  */
 
@@ -37,9 +37,9 @@ var View = this.View = Base.extend(/** @lends View# */{
 		var size;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
-			// If the canvas has the resize attribute, resize the it to fill the
+			// If the canvas has the data-resize attribute, resize the it to fill the
 			// window and resize it again whenever the user resizes the window.
-			if (canvas.attributes.resize) {
+			if (canvas.attributes["data-resize"]) {
 				// Subtract canvas' viewport offset from the total size, to
 				// stretch it in
 				var offset = DomElement.getOffset(canvas, false, true),
@@ -124,7 +124,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 	/**
 	 * The size of the view canvas. Changing the view's size will resize it's
 	 * underlying canvas.
-	 * 
+	 *
 	 * @type Size
 	 * @bean
 	 */
@@ -152,7 +152,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 
 	/**
 	 * The bounds of the currently visible area in project coordinates.
-	 * 
+	 *
 	 * @type Rectangle
 	 * @bean
 	 */
@@ -189,7 +189,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 
 	/**
 	 * The zoom factor by which the project coordinates are magnified.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -206,7 +206,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 	/**
 	 * Checks whether the view is currently visible within the current browser
 	 * viewport.
-	 * 
+	 *
 	 * @return {Boolean} Whether the view is visible.
 	 */
 	isVisible: function() {
@@ -300,26 +300,26 @@ var View = this.View = Base.extend(/** @lends View# */{
 	 * Handler function to be called on each frame of an animation.
 	 * The function receives an event object which contains information about
 	 * the frame event:
-	 * 
+	 *
 	 * <b>{@code event.count}</b>: the number of times the frame event was fired.
 	 * <b>{@code event.time}</b>: the total amount of time passed since the first frame
 	 * event in seconds.
 	 * <b>{@code event.delta}</b>: the time passed in seconds since the last frame
 	 * event.
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Creating an animation:
-	 * 
+	 *
 	 * // Create a rectangle shaped path with its top left point at:
 	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
 	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 	 * path.fillColor = 'black';
-	 * 
+	 *
 	 * function onFrame(event) {
 	 * 	// Every frame, rotate the path by 3 degrees:
 	 * 	path.rotate(3);
 	 * }
-	 * 
+	 *
 	 * @type Function
 	 * @bean
 	 */
@@ -369,19 +369,19 @@ var View = this.View = Base.extend(/** @lends View# */{
 
 	/**
 	 * Handler function that is called whenever a view is resized.
-	 * 
+	 *
 	 * @example
 	 * // Repositioning items when a view is resized:
-	 * 
+	 *
 	 * // Create a circle shaped path in the center of the view:
 	 * var path = new Path.Circle(view.bounds.center, 30);
 	 * path.fillColor = 'red';
-	 * 
+	 *
 	 * function onResize(event) {
 	 * 	// Whenever the view is resized, move the path to its center:
 	 * 	path.position = view.center;
 	 * }
-	 * 
+	 *
 	 * @type Function
 	 */
 	onResize: null

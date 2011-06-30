@@ -1,16 +1,16 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
  */
 
@@ -18,7 +18,7 @@
  * @name SegmentPoint
  * @class An internal version of Point that notifies its segment of each change
  * Note: This prototype is not exported.
- * 
+ *
  * @private
  */
 var SegmentPoint = Point.extend({
@@ -46,15 +46,15 @@ var SegmentPoint = Point.extend({
 		this._y = y;
 		this._owner._changed(this);
 	},
-	
+
 	setSelected: function(selected) {
 		this._owner._setSelected(this, selected);
 	},
-	
+
 	isSelected: function() {
 		return this._owner._isSelected(this);
 	},
-	
+
 	statics: {
 		create: function(segment, key, pt) {
 			var point = new SegmentPoint(SegmentPoint.dont),

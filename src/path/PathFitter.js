@@ -1,16 +1,16 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
  */
 
@@ -152,7 +152,7 @@ var PathFitter = Base.extend({
 		var segLength = pt2.getDistance(pt1);
 		epsilon *= segLength;
 		if (alpha1 < epsilon || alpha2 < epsilon) {
-			// fall back on standard (probably inaccurate) formula, 
+			// fall back on standard (probably inaccurate) formula,
 			// and subdivide further if needed.
 			alpha1 = alpha2 = segLength / 3;
 		}
@@ -211,7 +211,7 @@ var PathFitter = Base.extend({
 		return tmp[0];
 	},
 
-	// Assign parameter values to digitized points 
+	// Assign parameter values to digitized points
 	// using relative distances between points.
 	chordLengthParameterize: function(first, last) {
 		var u = [0];
