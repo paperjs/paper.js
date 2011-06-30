@@ -5010,7 +5010,7 @@ var TextItem = this.TextItem = Item.extend({
 
 	setContent: function(content) {
 		this._changed(Change.CONTENT);
-		this._content = content;
+		this._content = '' + content;
 	},
 
 	getCharacterStyle: function() {
