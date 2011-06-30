@@ -37,9 +37,9 @@ var View = this.View = Base.extend(/** @lends View# */{
 		var size;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
-			// If the canvas has the data-resize attribute, resize the it to fill the
+			// If the canvas has the resize attribute, resize the it to fill the
 			// window and resize it again whenever the user resizes the window.
-			if (canvas.attributes["data-resize"]) {
+			if (canvas.attributes.resize) {
 				// Subtract canvas' viewport offset from the total size, to
 				// stretch it in
 				var offset = DomElement.getOffset(canvas, false, true),
