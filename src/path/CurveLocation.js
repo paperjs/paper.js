@@ -1,22 +1,22 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
  */
 
 /**
  * @name CurveLocation
- * 
+ *
  * @class CurveLocation objects describe a location on {@link Curve}
  * objects, as defined by the curve {@link #parameter}, a value between
  * {@code 0} (beginning of the curve) and {@code 1} (end of the curve). If
@@ -32,7 +32,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	// {@link PathItem#getIntersections(PathItem)}, etc.
 	/**
 	 * Creates a new CurveLocation object.
-	 * 
+	 *
 	 * @param {Curve} curve
 	 * @param {Number} parameter
 	 * @param {Point} point
@@ -45,7 +45,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
 	/**
 	 * The segment of the curve which is closer to the described location.
-	 * 
+	 *
 	 * @type Segment
 	 * @bean
 	 */
@@ -71,7 +71,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
 	/**
 	 * The curve by which the location is defined.
-	 * 
+	 *
 	 * @type Curve
 	 * @bean
 	 */
@@ -81,7 +81,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
 	/**
 	 * The item this curve belongs to, if any.
-	 * 
+	 *
 	 * @type Item
 	 * @bean
 	 */
@@ -92,7 +92,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	/**
 	 * The index of the curve within the {@link Path#curves} list, if the
 	 * curve is part of a {@link Path} item.
-	 * 
+	 *
 	 * @type Index
 	 * @bean
 	 */
@@ -103,7 +103,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	/**
 	 * The length of the path from its beginning up to the location described
 	 * by this object.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -115,7 +115,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	/**
 	 * The length of the curve from its beginning up to the location described
 	 * by this object.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -128,7 +128,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * The curve parameter, as used by various bezier curve calculations. It is
 	 * value between {@code 0} (beginning of the curve) and {@code 1} (end of
 	 * the curve).
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -141,7 +141,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	/**
 	 * The point which is defined by the {@link #curve} and
 	 * {@link #parameter}.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -156,7 +156,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
 	/**
 	 * The tangential vector to the {@link #curve} at the given location.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -165,10 +165,10 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 		return parameter != null && this._curve
 				&& this._curve.getTangent(parameter);
 	},
-	
+
 	/**
 	 * The normal vector to the {@link #curve} at the given location.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
