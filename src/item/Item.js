@@ -1043,50 +1043,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * @bean
 	 */
 	getBounds: function() {
-		return this._getBounds(false);
-	},
-
-	/**
-	 * The bounding rectangle of the item including stroke width.
-	 * 
-	 * @type Rectangle
-	 * @bean
-	 */
-	getStrokeBounds: function() {
-		return this._getBounds(true);
-	},
-
-	_getBounds: function(includeStroke) {
-		var children = this._children;
-		// TODO: What to return if nothing is defined, e.g. empty Groups?
-		// Scriptographer behaves weirdly then too.
-		if (!children || children.length == 0) 
-			return new Rectangle();
-		var getBounds = includeStroke ? 'getStrokeBounds' : 'getBounds',
-			x1 = Infinity,
-			x2 = -Infinity,
-			y1 = x1,
-			y2 = x2;
-		for (var i = 0, l = children.length; i < l; i++) {
-			var child = children[i];
-			if (child._visible) {
-				var rect = child[getBounds]();
-				x1 = Math.min(rect.x, x1);
-				y1 = Math.min(rect.y, y1);
-				x2 = Math.max(rect.x + rect.width, x2);
-				y2 = Math.max(rect.y + rect.height, y2);
-			}
-		}
-		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-		return includeStroke ? bounds : this._createBounds(bounds);
-	},
-
-	/**
-	 * Creates a LinkedRectangle that when modified calls #setBounds().
-	 */
-	_createBounds: function(rect) {
-		return LinkedRectangle.create(this, 'setBounds',
-				rect.x, rect.y, rect.width, rect.height);
+		return this._getBounds('getBounds');
 	},
 
 	setBounds: function(rect) {
@@ -1108,6 +1065,52 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		matrix.translate(-center.x, -center.y);
 		// Now execute the transformation:
 		this.transform(matrix);
+	},
+
+	/**
+	 * The bounding rectangle of the item including stroke width.
+	 * 
+	 * @type Rectangle
+	 * @bean
+	 */
+	getStrokeBounds: function() {
+		return this._getBounds('getStrokeBounds');
+	},
+
+	/**
+	 * Loops through all children, gets their bounds and finds the bounds around
+	 * all of them.
+	 */
+	_getBounds: function(getter) {
+		var children = this._children;
+		// TODO: What to return if nothing is defined, e.g. empty Groups?
+		// Scriptographer behaves weirdly then too.
+		if (!children || children.length == 0) 
+			return new Rectangle();
+		var x1 = Infinity,
+			x2 = -Infinity,
+			y1 = x1,
+			y2 = x2;
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i];
+			if (child._visible) {
+				var rect = child[getter]();
+				x1 = Math.min(rect.x, x1);
+				y1 = Math.min(rect.y, y1);
+				x2 = Math.max(rect.x + rect.width, x2);
+				y2 = Math.max(rect.y + rect.height, y2);
+			}
+		}
+		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
+	},
+
+	/**
+	 * Creates a LinkedRectangle that when modified calls #setBounds().
+	 */
+	_createBounds: function(rect) {
+		return LinkedRectangle.create(this, 'setBounds',
+				rect.x, rect.y, rect.width, rect.height);
 	},
 
 	/**
