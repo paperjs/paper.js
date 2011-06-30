@@ -1043,7 +1043,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * @bean
 	 */
 	getBounds: function() {
-		return this._getBounds(false);
+		return this._getBounds('getBounds');
 	},
 
 	/**
@@ -1053,24 +1053,23 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * @bean
 	 */
 	getStrokeBounds: function() {
-		return this._getBounds(true);
+		return this._getBounds('getStrokeBounds');
 	},
 
-	_getBounds: function(includeStroke) {
+	_getBounds: function(getter) {
 		var children = this._children;
 		// TODO: What to return if nothing is defined, e.g. empty Groups?
 		// Scriptographer behaves weirdly then too.
 		if (!children || children.length == 0) 
 			return new Rectangle();
-		var getBounds = includeStroke ? 'getStrokeBounds' : 'getBounds',
-			x1 = Infinity,
+		var x1 = Infinity,
 			x2 = -Infinity,
 			y1 = x1,
 			y2 = x2;
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			if (child._visible) {
-				var rect = child[getBounds]();
+				var rect = child[getter]();
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
 				x2 = Math.max(rect.x + rect.width, x2);
@@ -1078,7 +1077,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 			}
 		}
 		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-		return includeStroke ? bounds : this._createBounds(bounds);
+		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
 	},
 
 	/**
