@@ -365,6 +365,17 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
+	/**
+	 * Set the raster's transformation.
+	 * 
+	 * @param {Matrix} matrix
+	 */
+	setTransform: function(matrix)
+	{
+	    this.matrix = matrix.clone();
+        this._changed(Change.GEOMETRY);
+	},
+
 	_transform: function(matrix, flags) {
 		// In order to set the right context transformation when drawing the
 		// raster, simply preconcatenate the internal matrix with the provided
