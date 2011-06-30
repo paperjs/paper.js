@@ -31,7 +31,7 @@
 				this.strength = param.strength ? param.strength : 0.55;
 				this.mamb = values.invMass * values.invMass;
 			},
-
+	
 			update: function() {
 				var delta = this.b - this.a;
 				var dist = delta.length;
@@ -46,15 +46,6 @@
 		});
 
 		onResize();
-
-		function onResize() {
-			values.count = 0;
-			if (path) {
-				path.remove();
-			}
-			size = view.bounds.size * [2, 1];
-			path = createPath(0.1);
-		}
 
 		function createPath(strength) {
 			var path = new Path();
@@ -81,10 +72,18 @@
 			return path;
 		}
 
+		function onResize() {
+			values.count = 0;
+			if (path) {
+				path.remove();
+			}
+			size = view.bounds.size * [2, 1];
+			path = createPath(0.1);
+		}
+
 		function onMouseMove(event) {
 			var segments = path.segments;
-			var index = Math.floor((event.point.x + size.width / 4)
-					* segments.length / size.width);
+			var index = Math.floor((event.point.x + size.width / 4) * segments.length / size.width);
 			var y = event.point.y;
 			var range = size.height / 4;
 			var segment = segments[index];
@@ -130,7 +129,7 @@
 			path.insert(0, new Point(0, size.height));
 			path.add(new Point(size));
 		}
-		
+
 		function onKeyDown(event) {
 			if (event.key == 'space')
 				path.fullySelected = !path.fullySelected;
