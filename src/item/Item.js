@@ -1046,6 +1046,27 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		return this._getBounds('getBounds');
 	},
 
+	setBounds: function(rect) {
+		rect = Rectangle.read(arguments);
+		var bounds = this.getBounds(),
+			matrix = new Matrix(),
+			center = rect.getCenter();
+		// Read this from bottom to top:
+		// Translate to new center:
+		matrix.translate(center);
+		// Scale to new Size, if size changes and avoid divisions by 0:
+		if (rect.width != bounds.width || rect.height != bounds.height) {
+			matrix.scale(
+					bounds.width != 0 ? rect.width / bounds.width : 1,
+					bounds.height != 0 ? rect.height / bounds.height : 1);
+		}
+		// Translate to center:
+		center = bounds.getCenter();
+		matrix.translate(-center.x, -center.y);
+		// Now execute the transformation:
+		this.transform(matrix);
+	},
+
 	/**
 	 * The bounding rectangle of the item including stroke width.
 	 * 
@@ -1056,6 +1077,10 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		return this._getBounds('getStrokeBounds');
 	},
 
+	/**
+	 * Loops through all children, gets their bounds and finds the bounds around
+	 * all of them.
+	 */
 	_getBounds: function(getter) {
 		var children = this._children;
 		// TODO: What to return if nothing is defined, e.g. empty Groups?
@@ -1086,27 +1111,6 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	_createBounds: function(rect) {
 		return LinkedRectangle.create(this, 'setBounds',
 				rect.x, rect.y, rect.width, rect.height);
-	},
-
-	setBounds: function(rect) {
-		rect = Rectangle.read(arguments);
-		var bounds = this.getBounds(),
-			matrix = new Matrix(),
-			center = rect.getCenter();
-		// Read this from bottom to top:
-		// Translate to new center:
-		matrix.translate(center);
-		// Scale to new Size, if size changes and avoid divisions by 0:
-		if (rect.width != bounds.width || rect.height != bounds.height) {
-			matrix.scale(
-					bounds.width != 0 ? rect.width / bounds.width : 1,
-					bounds.height != 0 ? rect.height / bounds.height : 1);
-		}
-		// Translate to center:
-		center = bounds.getCenter();
-		matrix.translate(-center.x, -center.y);
-		// Now execute the transformation:
-		this.transform(matrix);
 	},
 
 	/**
