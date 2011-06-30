@@ -6,50 +6,21 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-	var y = view.size.height / 2;
-	var width = view.size.width;
-	var vector = new Point({
-	    angle: 45,
-	    length: width / 5
-	});
-	var offset = width / 30;
+	var yMiddle;
+	var segmentTexts = [];
 	var handleTexts = [];
+
 	var path = new Path();
-	path.segments = [
-		[[offset, y], null, vector.rotate(-90)],
-		[[width / 2, y], vector.rotate(-180), vector],
-		[[width - offset, y], vector.rotate(90), null]
-	];
 	path.fullySelected = true;
 
-	function onMouseMove(event) {
-		var point = event.point.clone();
-		// Constrain the event point, to not cut off the text:
-		if (point.y < 22)
-			point.y = 22;
-		if (point.y > view.size.height - 24)
-			point.y = view.size.height - 24;
-	    var delta = point - view.center;
-		for (var i = 0; i < 2; i++) {
-			var curve = path.curves[i];
-			curve.handle1.y = curve.handle2.y = delta.y * (i % 2 ? 1 : -1);
-			var firstPoint = curve.point1 + curve.handle1;
-			var secondPoint = curve.point2 + curve.handle2;
-			handleTexts[i * 2].point = secondPoint -
-					(firstPoint.y < y ? [0, 10] : [0, -18]);
-			handleTexts[i * 2 + 1].point = firstPoint -
-					(firstPoint.y < y ? [0, 10] : [0, -18]);
-		}
-	}
-	
-	project.currentStyle.fillColor = 'black';
 	for (var i = 0; i < 3; i++) {
-		var segment = path.segments[i];
-		var text = new PointText(segment.point - [0, 10]);
-		text.content = i;
+		var text = new PointText();
+		text.content = '' + i;
 		text.justification = 'center';
+		text.fontSize = 9;
+		segmentTexts.push(text);
 	}
-	
+
 	for (var i = 0; i < 2; i++) {
 		var handleInText = new PointText();
 		handleInText.content = 'handleIn';
@@ -57,18 +28,58 @@
 		handleInText.fontSize = 9;
 		handleTexts.push(handleInText);
 
-		var handleOutText = new PointText();
+		var handleOutText = handleInText.clone();
 		handleOutText.content = 'handleOut';
-		handleOutText.justification = 'center';
-		handleOutText.fontSize = 9;
 		handleTexts.push(handleOutText);
 	}
-	
-	// Call onMouseMove once to correctly position the text items:
-	onMouseMove({ point: view.center - vector.rotate(-90) });
+
+	// Call onResize directly on execution to correctly position everything
+	onResize();
+
+	function onResize() {
+		var width = view.size.width;
+		var offset = width / 30;
+		var vector = new Point({
+		    	angle: 45,
+		    	length: width / 5
+			});
+		yMiddle = view.size.height / 2;
+		path.segments = [
+			[[offset, yMiddle], null, vector.rotate(-90)],
+			[[width / 2, yMiddle], vector.rotate(-180), vector],
+			[[width - offset, yMiddle], vector.rotate(90), null]
+		];
+		onMouseMove({
+			point: view.bounds.bottomRight
+		});
+	}
+
+	function onMouseMove(event) {
+		var point = event.point.clone();
+		// Constrain the event point, to not cut off the text:
+		if (point.y < 22) {
+			point.y = 22;
+		}
+		if (point.y > view.size.height - 24) {
+			point.y = view.size.height - 24;
+		}
+	    var delta = point - view.center;
+		for (var i = 0; i < path.segments.length; i++) {
+			segmentTexts[i].point = path.segments[i].point - [0, 10];
+		}
+		for (var i = 0; i < path.curves.length; i++) {
+			var curve = path.curves[i];
+			curve.handle1.y = curve.handle2.y = delta.y * (i % 2 ? 1 : -1);
+			var firstPoint = curve.point1 + curve.handle1;
+			var secondPoint = curve.point2 + curve.handle2;
+			var offset = (firstPoint.y < yMiddle ? [0, 10] : [0, -18]);
+			handleTexts[i * 2].point = secondPoint - offset;
+			handleTexts[i * 2 + 1].point = firstPoint - offset;
+		}
+	}
 	</script>
 </head>
 <body>
-	<canvas id='canvas' width=303 height=167 resize></canvas>
+	<canvas id='canvas' resize></canvas>
 </body>
 </html>
