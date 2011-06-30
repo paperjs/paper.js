@@ -9,10 +9,11 @@
 		var point = view.center;
 		
 		var colors = [];
+		var cycles = 4;
 		for (var i = 0, l = 60; i < l; i++) {
-			var color = new RGBColor(1, 0, 0);
-			var cycles = 4;
-			color.hue = i / l * cycles * 360;
+			var brightness = 1 - (i / l) * 1.5;
+			var hue = i / l * cycles * 360;
+			var color = new HSBColor(hue, 1, brightness);
 			colors.push(color);
 		}
 
@@ -70,6 +71,6 @@
 	</script>
 </head>
 <body>
-	<canvas id="canvas" resize keepalive="true"></canvas>
+	<canvas id="canvas" resize></canvas>
 </body>
 </html>
