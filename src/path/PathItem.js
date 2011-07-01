@@ -16,7 +16,11 @@
 
 /**
  * @name PathItem
- * @class
+ *
+ * @class The PathItem class is the base for any items that describe paths
+ * and offer standardised methods for drawing and path manipulation, such as
+ * {@link Path} and {@link CompoundPath}.
+ *
  * @extends Item
  */
 var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
