@@ -135,6 +135,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 	setViewSize: function(size) {
 		size = Size.read(arguments);
 		var delta = size.subtract(this._viewSize);
+		if (delta.isZero())
+			return;
 		this._canvas.width = size.width;
 		this._canvas.height = size.height;
 		// Call onResize handler on any size change
@@ -148,6 +150,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 		this._viewSize.set(size.width, size.height, true);
 		// Force recalculation
 		this._bounds = null;
+		this._redrawNeeded = true;
 	},
 
 	/**
