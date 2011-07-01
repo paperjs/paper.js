@@ -54,15 +54,9 @@ var View = this.View = Base.extend(/** @lends View# */{
 						if (!DomElement.isInvisible(canvas))
 							offset = DomElement.getOffset(canvas, false, true);
 						// Set the size now, which internally calls onResize
+						// and redraws the view
 						that.setViewSize(DomElement.getViewportSize(canvas)
 								.subtract(offset));
-						// If there's a _onFrameCallback, call it staight away,
-						// but without requesting another animation frame.
-						if (that._onFrameCallback) {
-							that._onFrameCallback(0, true);
-						} else {
-							that.draw(true);
-						}
 					}
 				});
 			} else {
@@ -151,6 +145,14 @@ var View = this.View = Base.extend(/** @lends View# */{
 		// Force recalculation
 		this._bounds = null;
 		this._redrawNeeded = true;
+		if (this._onFrameCallback) {
+			// If there's a _onFrameCallback, call it staight away,
+			// but without requesting another animation frame.
+			this._onFrameCallback(0, true);
+		} else {
+			// Otherwise simply redraw the view now
+			this.draw(true);
+		}
 	},
 
 	/**
