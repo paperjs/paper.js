@@ -1327,8 +1327,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 *
 	 * @name Item#scale
 	 * @function
-	 * @param {Number} sx the horizontal scale factor
-	 * @param {Number} sy the vertical scale factor
+	 * @param {Number} hor the horizontal scale factor
+	 * @param {Number} ver the vertical scale factor
 	 * @param {Point} [center={@link Item#position}]
 	 *
 	 * @example {@paperscript}
@@ -1342,13 +1342,13 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * // Scale the path horizontally by 300%
 	 * circle.scale(3, 1);
 	 */
-	scale: function(sx, sy /* | scale */, center) {
+	scale: function(hor, ver /* | scale */, center) {
 		// See Matrix#scale for explanation of this:
-		if (arguments.length < 2 || typeof sy === 'object') {
-			center = sy;
-			sy = sx;
+		if (arguments.length < 2 || typeof ver === 'object') {
+			center = ver;
+			ver = hor;
 		}
-		return this.transform(new Matrix().scale(sx, sy,
+		return this.transform(new Matrix().scale(hor, ver,
 				center || this.getPosition()));
 	},
 
@@ -1425,19 +1425,19 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 *
 	 * @name Item#shear
 	 * @function
-	 * @param {Number} shearX
-	 * @param {Number} shearY
+	 * @param {Number} hor the horizontal shear factor.
+	 * @param {Number} ver the vertical shear factor.
 	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#shear
 	 */
-	shear: function(shearX, shearY, center) {
+	shear: function(hor, ver, center) {
 		// PORT: Add support for center back to Scriptographer too!
 		// See Matrix#scale for explanation of this:
-		if (arguments.length < 2 || typeof sy === 'object') {
-			center = shearY;
-			shearY = shearX;
+		if (arguments.length < 2 || typeof ver === 'object') {
+			center = ver;
+			ver = hor;
 		}
-		return this.transform(new Matrix().shear(shearX, shearY,
+		return this.transform(new Matrix().shear(hor, ver,
 				center || this.getPosition()));
 	},
 
