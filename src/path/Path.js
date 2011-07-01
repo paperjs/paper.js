@@ -1904,12 +1904,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				y1 = x1,
 				y2 = x2;
 
-			function add(point, relative) {
+			function add(point, handle) {
 				var x = point._x,
 					y = point._y;
-				if (relative) {
-					x += relative._x;
-					y += relative._y;
+				if (handle) {
+					x += handle._x;
+					y += handle._y;
 				}
 				if (x < x1) x1 = x;
 				if (x > x2) x2 = x;
@@ -1921,8 +1921,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				var segment = this._segments[i],
 					point = segment._point;
 				add(point);
-				add(segment._handleIn, point);
-				add(segment.handleOut, point);
+				add(point, segment._handleIn);
+				add(point, segment._handleOut);
 			}
 			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 		}
