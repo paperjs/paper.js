@@ -1,16 +1,16 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
  */
 
@@ -29,11 +29,11 @@ Path.inject({ statics: new function() {
 		 * {@grouptitle Shaped Paths}
 		 *
 		 * Creates a Path Item with two anchor points forming a line.
-		 * 
+		 *
 		 * @param {Point} pt1 the first anchor point of the path
 		 * @param {Point} pt2 the second anchor point of the path
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * var from = new Point(20, 20);
 		 * var to = new Point(100, 100);
@@ -50,12 +50,12 @@ Path.inject({ statics: new function() {
 
 		/**
 		 * Creates a rectangle shaped Path Item from the passed point and size.
-		 * 
+		 *
 		 * @name Path.Rectangle
 		 * @param {Point} point
 		 * @param {Size} size
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * var point = new Point(100, 100);
 		 * var size = new Size(100, 100);
@@ -67,12 +67,12 @@ Path.inject({ statics: new function() {
 		 * Creates a rectangle shaped Path Item from the passed points. These do not
 		 * necessarily need to be the top left and bottom right corners, the
 		 * constructor figures out how to fit a rectangle between them.
-		 * 
+		 *
 		 * @name Path.Rectangle
 		 * @param {Point} point1 The first point defining the rectangle
 		 * @param {Point} point2 The second point defining the rectangle
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * var point = new Point(100, 100);
 		 * var point2 = new Point(200, 300);
@@ -82,10 +82,10 @@ Path.inject({ statics: new function() {
 		/**
 		 * Creates a rectangle shaped Path Item from the passed abstract
 		 * {@link Rectangle}.
-		 * 
+		 *
 		 * @param {Rectangle} rect
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * var point = new Point(100, 100);
 		 * var size = new Size(100, 100);
@@ -108,11 +108,11 @@ Path.inject({ statics: new function() {
 
 		/**
 	 	* Creates a rectangular Path Item with rounded corners.
-		 * 
+		 *
 		 * @param {Rectangle} rect
 		 * @param {Size} size the size of the rounded corners
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * var point = new Point(100, 100);
 		 * var size = new Size(100, 100);
@@ -154,14 +154,14 @@ Path.inject({ statics: new function() {
 
 		/**
 		* Creates an oval shaped Path Item.
-		 * 
+		 *
 		 * @param {Rectangle} rect
 		 * @param {Boolean} [circumscribed=false] when set to {@code true} the
 		 *        oval shaped path will be created so the rectangle fits into
 		 *        it. When set to {@code false} the oval path will fit within
 		 *        the rectangle.
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * var topLeft = new Point(100, 100);
 		 * var size = new Size(150, 100);
@@ -190,11 +190,11 @@ Path.inject({ statics: new function() {
 
 		/**
 		 * Creates a circle shaped Path Item.
-		 * 
+		 *
 		 * @param {Point} center the center point of the circle
 		 * @param {Number} radius the radius of the circle
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * var path = new Path.Circle(new Point(100, 100), 50);
 		 */
@@ -211,12 +211,12 @@ Path.inject({ statics: new function() {
 
 		/**
 		 * Creates a circular arc shaped Path Item.
-		 * 
+		 *
 		 * @param {Point} from the starting point of the circular arc
 		 * @param {Point} through the point the arc passes through
 		 * @param {Point} to the end point of the arc
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * var start = new Point(0, 0);
 		 * var through = new Point(100, 100);
@@ -233,12 +233,12 @@ Path.inject({ statics: new function() {
 
 		/**
 		 * Creates a regular polygon shaped Path Item.
-		 * 
+		 *
 		 * @param {Point} center the center point of the polygon
 		 * @param {Number} numSides the number of sides of the polygon
 		 * @param {Number} radius the radius of the polygon
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * // Create a triangle shaped path
 		 * var center = new Point(100, 100);
@@ -246,7 +246,7 @@ Path.inject({ statics: new function() {
 		 * var radius = 50;
 		 * var triangle = new Path.RegularPolygon(center, sides, radius);
 		 * triangle.fillColor = 'black';
-		 * 
+		 *
 		 * @example
 		 * // Create a decahedron shaped path
 		 * var center = new Point(100, 100);
@@ -274,17 +274,17 @@ Path.inject({ statics: new function() {
 
 		/**
 		 * Creates a star shaped Path Item.
-		 * 
+		 *
 		 * The largest of {@code radius1} and {@code radius2} will be the outer
 		 * radius of the star. The smallest of radius1 and radius2 will be the
 		 * inner radius.
-		 * 
+		 *
 		 * @param {Point} center the center point of the star
 		 * @param {Number} numPoints the number of points of the star
 		 * @param {Number} radius1
 		 * @param {Number} radius2
 		 * @return {Path} the newly created path
-		 * 
+		 *
 		 * @example
 		 * var center = new Point(100, 100);
 		 * var points = 6;
@@ -292,7 +292,7 @@ Path.inject({ statics: new function() {
 		 * var radius2 = 50;
 		 * var path = new Path.Star(center, points, radius1, radius2);
 		 * path.fillColor = 'black';
-		 */	
+		 */
 		Star: function(center, numPoints, radius1, radius2) {
 			center = Point.read(arguments, 0, 1);
 			numPoints *= 2;

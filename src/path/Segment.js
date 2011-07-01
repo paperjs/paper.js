@@ -1,26 +1,26 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
  */
 
 /**
  * @name Segment
- * 
+ *
  * @class The Segment object represents the points of a path through which its
  * {@link Curve} objects pass. The segments of a path can be accessed through
  * its {@link Path#segments} array.
- * 
+ *
  * Each segment consists of an anchor point ({@link Segment#point}) and
  * optionaly an incoming and an outgoing handle ({@link Segment#handleIn} and
  * {@link Segment#handleOut}), describing the tangents of the two {@link Curve}
@@ -29,7 +29,7 @@
 var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	/**
 	 * Creates a new Segment object.
-	 * 
+	 *
 	 * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
 	 * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
 	 *        anchor point of the segment that describes the in tangent of the
@@ -37,17 +37,17 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	 * @param {Point} [handleOut={x: 0, y: 0}] the handle point relative to the
 	 *        anchor point of the segment that describes the out tangent of the
 	 *        segment.
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * var handleIn = new Point(-80, -100);
 	 * var handleOut = new Point(80, 100);
-	 * 
+	 *
 	 * var firstPoint = new Point(100, 50);
 	 * var firstSegment = new Segment(firstPoint, null, handleOut);
-	 * 
+	 *
 	 * var secondPoint = new Point(300, 50);
 	 * var secondSegment = new Segment(secondPoint, handleIn, null);
-	 * 
+	 *
 	 * var path = new Path(firstSegment, secondSegment);
 	 * path.strokeColor = 'black';
 	 */
@@ -109,7 +109,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * The anchor point of the segment.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -127,7 +127,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	/**
 	 * The handle point relative to the anchor point of the segment that
 	 * describes the in tangent of the segment.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -151,7 +151,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	/**
 	 * The handle point relative to the anchor point of the segment that
 	 * describes the out tangent of the segment.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -225,7 +225,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 			path._updateSelection(this, state, this._selectionState);
 	},
 
-	
+
 
 	/**
 	 * Specifies whether the {@link #point} of the segment is selected.
@@ -242,10 +242,10 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * {@grouptitle Hierarchy}
-	 * 
+	 *
 	 * The index of the segment in the {@link Path#segments} array that the
 	 * segment belongs to.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -255,7 +255,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * The path that the segment belongs to.
-	 * 
+	 *
 	 * @type Path
 	 * @bean
 	 */
@@ -265,7 +265,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * The curve that the segment belongs to.
-	 * 
+	 *
 	 * @type Curve
 	 * @bean
 	 */
@@ -282,11 +282,11 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * {@grouptitle Sibling Segments}
-	 * 
+	 *
 	 * The next segment in the {@link Path#segments} array that the segment
 	 * belongs to. If the segments belongs to a closed path, the first segment
 	 * is returned for the last segment of the path.
-	 * 
+	 *
 	 * @type Segment
 	 * @bean
 	 */
@@ -300,7 +300,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	 * The previous segment in the {@link Path#segments} array that the
 	 * segment belongs to. If the segments belongs to a closed path, the last
 	 * segment is returned for the first segment of the path.
-	 * 
+	 *
 	 * @type Segment
 	 * @bean
 	 */
@@ -344,7 +344,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		var point = this._point,
 			// If a matrix is defined, only transform handles if they are set.
 			// This saves some computation time. If no matrix is set, always
-			// use the real handles, as we just want to receive a filled 
+			// use the real handles, as we just want to receive a filled
 			// coords array for getBounds().
 			handleIn =  matrix && this.getHandleInIfSet() || this._handleIn,
 			handleOut = matrix && this.getHandleOutIfSet() || this._handleOut,

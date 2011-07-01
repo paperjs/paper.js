@@ -1,16 +1,16 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
  */
 
@@ -25,7 +25,7 @@ var PathFlattener = Base.extend({
 
 		// Instead of relying on path.curves, we only use segments here and
 		// get the curve values from them.
-		
+
 		// Now walk through all curves and compute the parts for each of them,
 		// by recursively calling _computeParts().
 		var segments = path._segments,
@@ -93,7 +93,7 @@ var PathFlattener = Base.extend({
 				// Now get the previous part so we can linearly interpolate
 				// the curve parameter
 				var prev = this.parts[i - 1];
-				// Make sure we only use the previous parameter value if its 
+				// Make sure we only use the previous parameter value if its
 				// for the same curve, by checking index. Use 0 otherwise.
 				var prevVal = prev && prev.index == part.index ? prev.value : 0,
 					prevLen = prev ? prev.offset : 0;

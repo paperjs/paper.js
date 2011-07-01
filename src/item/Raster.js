@@ -1,16 +1,16 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
  */
 
@@ -25,7 +25,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	// DOCS: Document Raster constructor.
 	/**
 	 * Creates a new raster item and places it in the active layer.
-	 * 
+	 *
 	 * @param {HTMLImageElement|Canvas|string} [object]
 	 */
 	initialize: function(object) {
@@ -58,7 +58,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * The size of the raster in pixels.
-	 * 
+	 *
 	 * @type Size
 	 * @bean
 	 */
@@ -78,7 +78,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * The width of the raster in pixels.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -88,7 +88,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * The height of the raster in pixels.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -98,7 +98,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * Pixels per inch of the raster at its current size.
-	 * 
+	 *
 	 * @type Size
 	 * @bean
 	 */
@@ -115,7 +115,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * The Canvas 2d drawing context of the raster.
-	 * 
+	 *
 	 * @type Context
 	 * @bean
 	 */
@@ -155,7 +155,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * The HTMLImageElement or Canvas of the raster.
-	 * 
+	 *
 	 * @type HTMLImageElement|Canvas
 	 * @bean
 	 */
@@ -179,7 +179,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	/**
 	 * @param {Rectangle} rect the boundaries of the sub image in pixel
 	 * coordinates
-	 * 
+	 *
 	 * @return {Canvas}
 	 */
 	getSubImage: function(rect) {
@@ -192,7 +192,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * Draws an image on the raster.
-	 * 
+	 *
 	 * @param {HTMLImageELement|Canvas} image
 	 * @param {Point} point the offset of the image as a point in pixel
 	 * coordinates
@@ -206,7 +206,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 * Calculates the average color of the image within the given path,
 	 * rectangle or point. This can be used for creating raster image
 	 * effects.
-	 * 
+	 *
 	 * @param {Path|Rectangle|Point} object
 	 * @return {RGBColor} the average color contained in the area covered by the
 	 * specified path, rectangle or point.
@@ -275,7 +275,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	/**
 	 * {@grouptitle Pixels}
 	 * Gets the color of a pixel in the raster.
-	 * 
+	 *
 	 * @name Raster#getPixel
 	 * @function
 	 * @param x the x offset of the pixel in pixel coordinates
@@ -284,7 +284,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 */
 	/**
 	 * Gets the color of a pixel in the raster.
-	 * 
+	 *
 	 * @name Raster#getPixel
 	 * @function
 	 * @param point the offset of the pixel as a point in pixel coordinates
@@ -301,7 +301,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * Sets the color of the specified pixel to the specified color.
-	 * 
+	 *
 	 * @name Raster#setPixel
 	 * @function
 	 * @param x the x offset of the pixel in pixel coordinates
@@ -310,7 +310,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 */
 	/**
 	 * Sets the color of the specified pixel to the specified color.
-	 * 
+	 *
 	 * @name Raster#setPixel
 	 * @function
 	 * @param point the offset of the pixel as a point in pixel coordinates
@@ -378,7 +378,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 					new Rectangle(this._size).setCenter(0, 0)));
 		return this._bounds;
 	},
-	
+
 	getStrokeBounds: function() {
 		return this.getBounds();
 	},

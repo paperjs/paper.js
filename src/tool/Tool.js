@@ -1,46 +1,46 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
  */
 
 /**
  * @name Tool
- * 
+ *
  * @class The Tool object refers to a script that the user can interact with
  * by using the mouse and keyboard and can be accessed through the global
  * {@code tool} variable. All its properties are also available in the paper
  * scope.
- * 
+ *
  * The global {@code tool} variable only exists in scripts that contain mouse
  * handler functions ({@link #onMouseMove}, {@link #onMouseDown},
  * {@link #onMouseDrag}, {@link #onMouseUp}) or a keyboard handler
  * function ({@link #onKeyDown}, {@link #onKeyUp}).
- * 
+ *
  * @classexample
  * var path;
- * 
+ *
  * // Only execute onMouseDrag when the mouse
  * // has moved at least 10 points:
  * tool.distanceThreshold = 10;
- * 
+ *
  * function onMouseDown(event) {
  * 	// Create a new path every time the mouse is clicked
  * 	path = new Path();
  * 	path.add(event.point);
  * 	path.strokeColor = 'black';
  * }
- * 
+ *
  * function onMouseDrag(event) {
  * 	// Add a point to the path every time the mouse is dragged
  * 	path.add(event.point);
@@ -65,7 +65,7 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * {@link #onMouseDrag} event. Setting this to an interval means the
 	 * {@link #onMouseDrag} event is called repeatedly after the initial
 	 * {@link #onMouseDown} until the user releases the mouse.
-	 * 
+	 *
 	 * @type Number
 	 */
 	eventInterval: null,
@@ -73,7 +73,7 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	/**
 	 * The minimum distance the mouse has to drag before firing the onMouseDrag
 	 * event, since the last onMouseDrag event.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -92,7 +92,7 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	/**
 	 * The maximum distance the mouse has to drag before firing the onMouseDrag
 	 * event, since the last onMouseDrag event.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -125,15 +125,15 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 
 	/**
 	 * {@grouptitle Mouse Event Handlers}
-	 * 
+	 *
 	 * The function to be called when the mouse button is pushed down. The
 	 * function receives a {@link ToolEvent} object which contains information
 	 * about the mouse event.
-	 * 
+	 *
 	 * @name Tool#onMouseDown
 	 * @property
 	 * @type Function
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Creating circle shaped paths where the user presses the mouse button:
 	 * function onMouseDown(event) {
@@ -148,21 +148,21 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * The function to be called when the mouse position changes while the mouse
 	 * is being dragged. The function receives a {@link ToolEvent} object which
 	 * contains information about the mouse event.
-	 * 
+	 *
 	 * This function can also be called periodically while the mouse doesn't
 	 * move by setting the {@link #eventInterval}
-	 * 
+	 *
 	 * @name Tool#onMouseDrag
 	 * @property
 	 * @type Function
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Draw a line by adding a segment to a path on every mouse drag event:
-	 * 
+	 *
 	 * // Create an empty path:
 	 * var path = new Path();
 	 * path.strokeColor = 'black';
-	 * 
+	 *
 	 * function onMouseDrag(event) {
 	 * 	// Add a segment to the path at the position of the mouse:
 	 * 	path.add(event.point);
@@ -173,18 +173,18 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * The function to be called the mouse moves within the project view. The
 	 * function receives a {@link ToolEvent} object which contains information
 	 * about the mouse event.
-	 * 
+	 *
 	 * @name Tool#onMouseMove
 	 * @property
 	 * @type Function
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Moving a path to the position of the mouse:
-	 * 
+	 *
 	 * // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
 	 * var path = new Path.Circle([0, 0], 10);
 	 * path.fillColor = 'black';
-	 * 
+	 *
 	 * function onMouseMove(event) {
 	 * 	// Whenever the user moves the mouse, move the path
 	 * 	// to that position:
@@ -196,11 +196,11 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * The function to be called when the mouse button is released. The function
 	 * receives a {@link ToolEvent} object which contains information about the
 	 * mouse event.
-	 * 
+	 *
 	 * @name Tool#onMouseUp
 	 * @property
 	 * @type Function
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Creating circle shaped paths where the user releases the mouse:
 	 * function onMouseUp(event) {
@@ -213,7 +213,7 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 
 	/**
 	 * {@grouptitle Keyboard Event Handlers}
-	 * 
+	 *
 	 * The function to be called when the user presses a key on the keyboard.
 	 * The function receives a {@link KeyEvent} object which contains
 	 * information about the keyboard event.
@@ -221,23 +221,23 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * prevented from bubbling up. This can be used for example to stop the
 	 * window from scrolling, when you need the user to interact with arrow
 	 * keys.
-	 * 
+	 *
 	 * @name Tool#onKeyDown
 	 * @property
 	 * @type Function
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Scaling a path whenever the user presses the space bar:
-	 * 
+	 *
 	 * // Create a circle shaped path:
 	 * var path = new Path.Circle(new Point(50, 50), 30);
 	 * path.fillColor = 'red';
-	 * 
+	 *
 	 * function onKeyDown(event) {
 	 * 	if(event.key == 'space') {
 	 * 		// Scale the path by 110%:
 	 * 		path.scale(1.1);
-	 * 
+	 *
 	 * 		// Prevent the key event from bubbling
 	 * 		return false;
 	 * 	}
@@ -252,11 +252,11 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	 * prevented from bubbling up. This can be used for example to stop the
 	 * window from scrolling, when you need the user to interact with arrow
 	 * keys.
-	 * 
+	 *
 	 * @name Tool#onKeyUp
 	 * @property
 	 * @type Function
-	 * 
+	 *
 	 * @example
 	 * function onKeyUp(event) {
 	 * 	if(event.key == 'space') {
