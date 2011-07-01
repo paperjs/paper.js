@@ -1159,6 +1159,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getNormal();
 	}
+
+	// TODO: intersects(item)
+	// TODO: contains(item)
+	// TODO: contains(point)
+	// TODO: intersect(item)
+	// TODO: unite(item)
+	// TODO: exclude(item)
+	// TODO: getIntersections(path)
 }, new function() { // Scope for drawing
 
 	// Note that in the code below we're often accessing _x and _y on point
@@ -1927,12 +1935,5 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 		}
 
-		// TODO: intersects(item)
-		// TODO: contains(item)
-		// TODO: contains(point)
-		// TODO: intersect(item)
-		// TODO: unite(item)
-		// TODO: exclude(item)
-		// TODO: getIntersections(path)
 	};
 });
