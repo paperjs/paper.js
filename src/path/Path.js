@@ -1826,11 +1826,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 
 			function addJoin(segment, join) {
-				var handleIn = segment.getHandleInIfSet(),
-					handleOut = segment.getHandleOutIfSet();
 				// When both handles are set in a segment, the join setting is
 				// ignored and round is always used.
-				if (join === 'round' || handleIn && handleOut) {
+				if (join === 'round' || !segment._handleIn.isZero()
+						&& !segment._handleOut.isZero()) {
 					bounds = bounds.unite(joinBounds.setCenter(matrix
 						? matrix.transform(segment._point) : segment._point));
 				} else if (join == 'bevel') {

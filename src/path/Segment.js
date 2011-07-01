@@ -143,11 +143,6 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		// this.corner = !this._handleIn.isColinear(this._handleOut);
 	},
 
-	getHandleInIfSet: function() {
-		return this._handleIn._x == 0 && this._handleIn._y == 0
-			? null : this._handleIn;
-	},
-
 	/**
 	 * The handle point relative to the anchor point of the segment that
 	 * describes the out tangent of the segment.
@@ -165,11 +160,6 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		this._handleOut.set(point.x, point.y);
 		// Update corner accordingly
 		// this.corner = !this._handleIn.isColinear(this._handleOut);
-	},
-
-	getHandleOutIfSet: function() {
-		return this._handleOut._x == 0 && this._handleOut._y == 0
-			? null : this._handleOut;
 	},
 
 	_isSelected: function(point) {
@@ -346,8 +336,10 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 			// This saves some computation time. If no matrix is set, always
 			// use the real handles, as we just want to receive a filled
 			// coords array for getBounds().
-			handleIn =  matrix && this.getHandleInIfSet() || this._handleIn,
-			handleOut = matrix && this.getHandleOutIfSet() || this._handleOut,
+			handleIn =  !matrix || !this._handleIn.isZero()
+					? this._handleIn : null,
+			handleOut = !matrix || !this._handleOut.isZero()
+					? this._handleOut : null,
 			x = point._x,
 			y = point._y,
 			i = 2;
