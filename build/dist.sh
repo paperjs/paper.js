@@ -9,7 +9,9 @@
 # Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
 # http://lehni.org/ & http://jonathanpuckey.com/
 #
-# All rights reserved. See LICENSE file for details.
+# Distributed under the MIT license. See LICENSE file for details.
+#
+# All rights reserved.
 
 echo "Building paper.js"
 ./build.sh

@@ -6,10 +6,10 @@
  * http://paperjs.org/
  * http://scriptographer.org/
  *
- * Distributed under the MIT license. See LICENSE file for details.
- *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
  *
  * All rights reserved.
  */
