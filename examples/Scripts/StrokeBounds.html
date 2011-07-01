@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Example</title>
+	<title>Stroke Bounds</title>
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
@@ -73,11 +73,11 @@
 			path.scale(1.5, new Point(300, 0));
 			var rect = new Path.Rectangle(path.strokeBounds);
 			rect.strokeWidth = 0.25;
-			rect.strokeColor = 'black'
+			rect.strokeColor = 'black';
 			rect.fillColor = null;
 			var rect = new Path.Rectangle(path.bounds);
 			rect.strokeWidth = 0.25;
-			rect.strokeColor = 'red'
+			rect.strokeColor = 'red';
 			rect.fillColor = null;
 		}
 		
