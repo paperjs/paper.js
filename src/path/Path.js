@@ -1898,7 +1898,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		 * @type Rectangle
 		 * @bean
 		 */
-		getControlBounds: function() {
+		getHandleBounds: function() {
 			var x1 = Infinity,
 				x2 = -Infinity,
 				y1 = x1,
