@@ -1078,6 +1078,16 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	},
 
 	/**
+	 * The bounding rectangle of the item including handles.
+	 *
+	 * @type Rectangle
+	 * @bean
+	 */
+	getControlBounds: function() {
+		return this._getBounds('getControlBounds');
+	},
+
+	/**
 	 * Loops through all children, gets their bounds and finds the bounds around
 	 * all of them.
 	 */
@@ -1112,11 +1122,6 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		return LinkedRectangle.create(this, 'setBounds',
 				rect.x, rect.y, rect.width, rect.height);
 	},
-
-	/**
-	 * The bounding rectangle of the item including stroke width and controls.
-	 */
-	// TODO: getControlBounds
 
 	/**
 	 * {@grouptitle Stroke Style}
