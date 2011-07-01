@@ -1435,7 +1435,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		return this.transform(new Matrix().shear(shearX, shearY,
 				center || this.getPosition()));
 	},
-
+	
 	/**
 	 * Transform the item.
 	 *

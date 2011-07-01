@@ -2204,7 +2204,6 @@ var Item = this.Item = Base.extend({
 		return this.transform(new Matrix().shear(shearX, shearY,
 				center || this.getPosition()));
 	},
-
 	transform: function(matrix, flags) {
 		var bounds = this._bounds,
 			position = this._position;
@@ -2668,6 +2667,12 @@ var Raster = this.Raster = Item.extend({
 	setData: function(data, point) {
 		point = Point.read(arguments, 1);
 		this.getContext(true).putImageData(data, point.x, point.y);
+	},
+
+	setTransform: function(matrix)
+	{
+	    this.matrix = matrix.clone();
+        this._changed(Change.GEOMETRY);
 	},
 
 	_transform: function(matrix, flags) {
