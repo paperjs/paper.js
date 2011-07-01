@@ -80,7 +80,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 
 	setContent: function(content) {
 		this._changed(Change.CONTENT);
-		this._content = content;
+		this._content = '' + content;
 	},
 
 	/**
