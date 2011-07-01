@@ -20,9 +20,9 @@
  * @class A PlacedSymbol represents an instance of a symbol which has been
  * placed in a Paper.js project.
  *
- * @extends Item
+ * @extends PlacedItem
  */
-var PlacedSymbol = this.PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
+var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol# */{
 	/**
 	 * Creates a new PlacedSymbol Item.
 	 *
@@ -82,22 +82,11 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 		return this._clone(new PlacedSymbol(this.symbol, this.matrix.clone()));
 	},
 
-	_transform: function(matrix, flags) {
-		// In order to set the right context transformation when drawing the
-		// raster, simply preconcatenate the internal matrix with the provided
-		// one.
-		this.matrix.preConcatenate(matrix);
-	},
-
 	getBounds: function() {
 		if (!this._bounds)
 			this._bounds = this._createBounds(
 					this.symbol._definition.getStrokeBounds(this.matrix))
 		return this._bounds;
-	},
-
-	getStrokeBounds: function() {
-		return this.getBounds();
 	},
 
 	draw: function(ctx, param) {
