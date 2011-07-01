@@ -16,10 +16,12 @@
 
 /**
  * @name Raster
+ *
  * @class The Raster item represents an image in a Paper.js project.
- * @extends Item
+ *
+ * @extends PlacedItem
  */
-var Raster = this.Raster = Item.extend(/** @lends Raster# */{
+var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	// TODO: Implement url / type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
 	// DOCS: Document Raster constructor.
@@ -341,6 +343,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		return this.getContext().createImageData(size.width, size.height);
 	},
 
+	// TODO: Rename to #get/setImageData, as it will conflict with Item#getData
 	// DOCS: document Raster#getData
 	/**
 	 * @param {Rectangle} rect
@@ -365,22 +368,11 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
-	_transform: function(matrix, flags) {
-		// In order to set the right context transformation when drawing the
-		// raster, simply preconcatenate the internal matrix with the provided
-		// one.
-		this.matrix.preConcatenate(matrix);
-	},
-
 	getBounds: function() {
 		if (!this._bounds)
 			this._bounds = this._createBounds(this.matrix._transformBounds(
 					new Rectangle(this._size).setCenter(0, 0)));
 		return this._bounds;
-	},
-
-	getStrokeBounds: function() {
-		return this.getBounds();
 	},
 
 	draw: function(ctx, param) {

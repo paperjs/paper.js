@@ -64,6 +64,7 @@ var paper = new function() {
 //#include "item/Item.js"
 //#include "item/Group.js"
 //#include "item/Layer.js"
+//#include "item/PlacedItem.js"
 //#include "item/Raster.js"
 //#include "item/PlacedSymbol.js"
 

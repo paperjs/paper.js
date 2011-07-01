@@ -42,6 +42,7 @@ var sources = [
 	'src/item/Item.js',
 	'src/item/Group.js',
 	'src/item/Layer.js',
+	'src/item/PlacedItem.js',
 	'src/item/Raster.js',
 	'src/item/PlacedSymbol.js',
 
