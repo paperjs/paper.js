@@ -100,7 +100,7 @@ Also, in your first contribution, add yourself to the end of `AUTHORS.md` (which
 
 As mentioned earlier in this article, we prefer that you send a [*pull request*](http://help.github.com/pull-requests/) on GitHub.
 
-1. Create a fork of the upstream repository by visiting <https://github.com/paperjs/paper.js/fork>. If you feel insecure, here's a great guide: <http://help.github.com/forking/> 
+1. Create a fork of the upstream repository by visiting <https://github.com/paperjs/paper.js/fork>. If you feel insecure, here's a great guide: <http://help.github.com/forking/>
 
 2. Clone of your repository: `git clone https://yourusername@github.com/yourusername/paper.js.git`
 
