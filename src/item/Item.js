@@ -1083,8 +1083,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
-	getControlBounds: function() {
-		return this._getBounds('getControlBounds');
+	getHandleBounds: function() {
+		return this._getBounds('getHandleBounds');
 	},
 
 	/**
