@@ -42,7 +42,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 //#endif // BROWSER
 			this.setImage(object);
 		}
-		this.matrix = new Matrix();
+		this._matrix = new Matrix();
 	},
 
 	clone: function() {
@@ -54,7 +54,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			image.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
 		var copy = new Raster(image);
-		copy.matrix = this.matrix.clone();
+		copy._matrix = this._matrix.clone();
 		return this._clone(copy);
 	},
 
@@ -105,7 +105,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @bean
 	 */
 	getPpi: function() {
-		var matrix = this.matrix,
+		var matrix = this._matrix,
 			orig = new Point(0, 0).transform(matrix),
 			u = new Point(1, 0).transform(matrix).subtract(orig),
 			v = new Point(0, 1).transform(matrix).subtract(orig);
@@ -251,7 +251,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		if (path)
 			path.draw(ctx, { clip: true });
 		// Now draw the image clipped into it.
-		this.matrix.applyToContext(ctx);
+		this._matrix.applyToContext(ctx);
 		ctx.drawImage(this._canvas || this._image,
 				-this._size.width / 2, -this._size.height / 2);
 		ctx.restore();
@@ -370,7 +370,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 
 	getBounds: function() {
 		if (!this._bounds)
-			this._bounds = this._createBounds(this.matrix._transformBounds(
+			this._bounds = this._createBounds(this._matrix._transformBounds(
 					new Rectangle(this._size).setCenter(0, 0)));
 		return this._bounds;
 	},
@@ -378,10 +378,10 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	draw: function(ctx, param) {
 		if (param.selection) {
 			var bounds = new Rectangle(this._size).setCenter(0, 0);
-			Item.drawSelectedBounds(bounds, ctx, this.matrix);
+			Item.drawSelectedBounds(bounds, ctx, this._matrix);
 		} else {
 			ctx.save();
-			this.matrix.applyToContext(ctx);
+			this._matrix.applyToContext(ctx);
 			ctx.drawImage(this._canvas || this._image,
 					-this._size.width / 2, -this._size.height / 2);
 			ctx.restore();
