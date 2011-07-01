@@ -119,28 +119,28 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 *
 	 * @name Matrix#scale
 	 * @function
-	 * @param {Number} sx The x-axis scaling factor.
-	 * @param {Number} sy The y-axis scaling factor.
+	 * @param {Number} hor The horizontal scaling factor.
+	 * @param {Number} ver The vertical scaling factor.
 	 * @param {Point} [center] The center for the scaling
 	 * transformation.
 	 * @return {Matrix} This affine transform.
 	 */
-	scale: function(sx, sy /* | scale */, center) {
-		if (arguments.length < 2 || typeof sy === 'object') {
-			// sx is the single scale parameter, representing both sx and sy
-			// Read center first from argument 1, then set sy = sx (thus
+	scale: function(hor, ver /* | scale */, center) {
+		if (arguments.length < 2 || typeof ver === 'object') {
+			// hor is the single scale parameter, representing both hor and ver
+			// Read center first from argument 1, then set ver = hor (thus
 			// modifing the content of argument 1!)
 			center = Point.read(arguments, 1);
-			sy = sx;
+			ver = hor;
 		} else {
 			center = Point.read(arguments, 2);
 		}
 		if (center)
 			this.translate(center);
-		this._m00 *= sx;
-		this._m10 *= sx;
-		this._m01 *= sy;
-		this._m11 *= sy;
+		this._m00 *= hor;
+		this._m10 *= hor;
+		this._m01 *= ver;
+		this._m11 *= ver;
 		if (center)
 			this.translate(center.negate());
 		return this;
@@ -211,16 +211,16 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 *
 	 * @name Matrix#shear
 	 * @function
-	 * @param {Number} shx The x shear factor.
-	 * @param {Number} shy The y shear factor.
+	 * @param {Number} hor The horizontal shear factor.
+	 * @param {Number} ver The vertical shear factor.
 	 * @param {Point} [center] The center for the shear transformation.
 	 * @return {Matrix} This affine transform.
 	 */
-	shear: function(shx, shy, center) {
+	shear: function(hor, ver, center) {
 		// See #scale() for explanation of this:
-		if (arguments.length < 2 || typeof shy === 'object') {
+		if (arguments.length < 2 || typeof ver === 'object') {
 			center = Point.read(arguments, 1);
-			sy = sx;
+			ver = hor;
 		} else {
 			center = Point.read(arguments, 2);
 		}
@@ -228,10 +228,10 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 			this.translate(center);
 		var m00 = this._m00;
 		var m10 = this._m10;
-		this._m00 += shy * this._m01;
-		this._m10 += shy * this._m11;
-		this._m01 += shx * m00;
-		this._m11 += shx * m10;
+		this._m00 += ver * this._m01;
+		this._m10 += ver * this._m11;
+		this._m01 += hor * m00;
+		this._m11 += hor * m10;
 		if (center)
 			this.translate(center.negate());
 		return this;
@@ -416,9 +416,9 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	getScaling: function() {
-		var sx = Math.sqrt(this._m00 * this._m00 + this._m10 * this._m10),
-			sy = Math.sqrt(this._m01 * this._m01 + this._m11 * this._m11);
-		return new Point(this._m00 < 0 ? -sx : sx, this._m01 < 0 ? -sy : sy);
+		var hor = Math.sqrt(this._m00 * this._m00 + this._m10 * this._m10),
+			ver = Math.sqrt(this._m01 * this._m01 + this._m11 * this._m11);
+		return new Point(this._m00 < 0 ? -hor : hor, this._m01 < 0 ? -ver : ver);
 	},
 
 	/**
@@ -490,12 +490,12 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	/**
 	 * Sets this transform to a scaling transformation.
 	 *
-	 * @param {Number} sx The x-axis scaling factor.
-	 * @param {Number} sy The y-axis scaling factor.
+	 * @param {Number} hor The horizontal scaling factor.
+	 * @param {Number} ver The vertical scaling factor.
 	 * @return {Matrix} This affine transform.
 	 */
-	setToScale: function(sx, sy) {
-		return this.set(sx, 0, 0, sy, 0, 0);
+	setToScale: function(hor, ver) {
+		return this.set(hor, 0, 0, ver, 0, 0);
 	},
 
 	/**
@@ -513,12 +513,12 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	/**
 	 * Sets this transform to a shearing transformation.
 	 *
-	 * @param {Number} shx The x-axis shear factor.
-	 * @param {Number} shy The y-axis shear factor.
+	 * @param {Number} hor The horizontal shear factor.
+	 * @param {Number} ver The vertical shear factor.
 	 * @return {Matrix} This affine transform.
 	 */
-	setToShear: function(shx, shy) {
-		return this.set(1, shy, shx, 1, 0, 0);
+	setToShear: function(hor, ver) {
+		return this.set(1, ver, hor, 1, 0, 0);
 	},
 
 	/**
@@ -564,12 +564,12 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		/**
 		 * Creates a transform representing a scaling transformation.
 		 *
-		 * @param {Number} sx The x-axis scaling factor.
-		 * @param {Number} sy The y-axis scaling factor.
+		 * @param {Number} hor The horizontal scaling factor.
+		 * @param {Number} ver The vertical scaling factor.
 		 * @return {Matrix} A transform representing a scaling
 		 *         transformation.
 		 */
-		getScaleInstance: function(sx, sy) {
+		getScaleInstance: function(hor, ver) {
 			var mx = new Matrix();
 			return mx.setToScale.apply(mx, arguments);
 		},
@@ -590,11 +590,11 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		/**
 		 * Creates a transform representing a shearing transformation.
 		 *
-		 * @param {Number} shx The x-axis shear factor.
-		 * @param {Number} shy The y-axis shear factor.
+		 * @param {Number} hor The horizontal shear factor.
+		 * @param {Number} ver The vertical shear factor.
 		 * @return {Matrix} A transform representing a shearing transformation.
 		 */
-		getShearInstance: function(shx, shy, center) {
+		getShearInstance: function(hor, ver, center) {
 			var mx = new Matrix();
 			return mx.setToShear.apply(mx, arguments);
 		},
