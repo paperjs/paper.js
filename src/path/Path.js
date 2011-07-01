@@ -1894,9 +1894,37 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 		/**
 		 * The bounding rectangle of the item including handles.
+		 *
+		 * @type Rectangle
+		 * @bean
 		 */
 		getControlBounds: function() {
-			// TODO: Implement!
+			var x1 = Infinity,
+				x2 = -Infinity,
+				y1 = x1,
+				y2 = x2;
+
+			function add(point, relative) {
+				var x = point._x,
+					y = point._y;
+				if (relative) {
+					x += relative._x;
+					y += relative._y;
+				}
+				if (x < x1) x1 = x;
+				if (x > x2) x2 = x;
+				if (y < y1) y1 = y;
+				if (y > y2) y2 = y;
+			}
+
+			for (var i = 0, l = this._segments.length; i < l; i++) {
+				var segment = this._segments[i],
+					point = segment._point;
+				add(point);
+				add(segment._handleIn, point);
+				add(segment.handleOut, point);
+			}
+			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 		}
 
 		// TODO: intersects(item)

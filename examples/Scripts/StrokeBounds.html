@@ -23,7 +23,6 @@
 		}
 
 		var path = makePath();
-		path.fullySelected = true;
 		path.strokeColor = 'black';
 		path.strokeCap = 'butt';
 		path.strokeJoin = 'round';
@@ -70,6 +69,7 @@
 
 		for (var i = 0; i < paths.length; i++) {
 			var path = paths[i];
+			path.fullySelected = true;
 			path.scale(1.5, new Point(300, 0));
 			var rect = new Path.Rectangle(path.strokeBounds);
 			rect.strokeWidth = 0.25;
@@ -78,6 +78,11 @@
 			var rect = new Path.Rectangle(path.bounds);
 			rect.strokeWidth = 0.25;
 			rect.strokeColor = 'red';
+			rect.fillColor = null;
+			console.log(path.controlBounds);
+			var rect = new Path.Rectangle(path.controlBounds);
+			rect.strokeWidth = 0.25;
+			rect.strokeColor = 'green';
 			rect.fillColor = null;
 		}
 		
