@@ -29,7 +29,23 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 		// In order to set the right context transformation when drawing the
 		// raster, simply preconcatenate the internal matrix with the provided
 		// one.
-		this.matrix.preConcatenate(matrix);
+		this._matrix.preConcatenate(matrix);
+	},
+
+	/**
+	 * The item's transformation matrix, defining position and dimensions in the
+	 * document.
+	 *
+	 * @type Matrix
+	 * @bean
+	 */
+	getMatrix: function() {
+		return this._matrix;
+	},
+
+	setMatrix: function(matrix) {
+		this._matrix = matrix.clone();
+		this._changed(Change.GEOMETRY);
 	},
 
 	getStrokeBounds: function() {

@@ -64,7 +64,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	initialize: function(symbol, matrixOrOffset) {
 		this.base();
 		this.symbol = symbol instanceof Symbol ? symbol : new Symbol(symbol);
-		this.matrix = matrixOrOffset !== undefined
+		this._matrix = matrixOrOffset !== undefined
 			? matrixOrOffset instanceof Matrix
 				? matrixOrOffset
 				: new Matrix().translate(Point.read(arguments, 1))
@@ -79,23 +79,23 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	 */
 
 	clone: function() {
-		return this._clone(new PlacedSymbol(this.symbol, this.matrix.clone()));
+		return this._clone(new PlacedSymbol(this.symbol, this._matrix.clone()));
 	},
 
 	getBounds: function() {
 		if (!this._bounds)
 			this._bounds = this._createBounds(
-					this.symbol._definition.getStrokeBounds(this.matrix))
+					this.symbol._definition.getStrokeBounds(this._matrix))
 		return this._bounds;
 	},
 
 	draw: function(ctx, param) {
 		if (param.selection) {
 			Item.drawSelectedBounds(this.symbol._definition.getStrokeBounds(),
-					ctx, this.matrix);
+					ctx, this._matrix);
 		} else {
 			ctx.save();
-			this.matrix.applyToContext(ctx);
+			this._matrix.applyToContext(ctx);
 			Item.draw(this.symbol.getDefinition(), ctx, param);
 			ctx.restore();
 		}
