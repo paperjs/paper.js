@@ -332,13 +332,15 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		// points for largely improved performance, as no calls to
 		// Point.read() and Point constructors are necessary.
 		var point = this._point,
-			// If a matrix is defined, only transform handles if they are set.
-			// This saves some computation time. If no matrix is set, always
+			// If change is true, only transform handles if they are set, as
+			// _transformCoordinates is called only to change the segment, no
+			// to receive the coords.
+			// This saves some computation time. If change is false, always
 			// use the real handles, as we just want to receive a filled
 			// coords array for getBounds().
-			handleIn =  !matrix || !this._handleIn.isZero()
+			handleIn =  !change || !this._handleIn.isZero()
 					? this._handleIn : null,
-			handleOut = !matrix || !this._handleOut.isZero()
+			handleOut = !change || !this._handleOut.isZero()
 					? this._handleOut : null,
 			x = point._x,
 			y = point._y,
@@ -355,34 +357,36 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 			coords[i++] = handleOut._x + x;
 			coords[i++] = handleOut._y + y;
 		}
-		if (matrix) {
-			matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
-			x = coords[0];
-			y = coords[1];
-			if (change) {
-				// If change is true, we need to set the new values back
-				point._x = x;
-				point._y = y;
-				i  = 2;
-				if (handleIn) {
-					handleIn._x = coords[i++] - x;
-					handleIn._y = coords[i++] - y;
-				}
-				if (handleOut) {
-					handleOut._x = coords[i++] - x;
-					handleOut._y = coords[i++] - y;
-				}
-			} else {
-				// We want to receive the results in coords, so make sure
-				// handleIn and out are defined too, even if they're 0
-				if (!handleIn) {
-					coords[i++] = x;
-					coords[i++] = y;
-				}
-				if (!handleOut) {
-					coords[i++] = x;
-					coords[i++] = y;
-				}
+		// If no matrix was previded, this was just called to get the coords and
+		// we are done now.
+		if (!matrix)
+			return;
+		matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
+		x = coords[0];
+		y = coords[1];
+		if (change) {
+			// If change is true, we need to set the new values back
+			point._x = x;
+			point._y = y;
+			i  = 2;
+			if (handleIn) {
+				handleIn._x = coords[i++] - x;
+				handleIn._y = coords[i++] - y;
+			}
+			if (handleOut) {
+				handleOut._x = coords[i++] - x;
+				handleOut._y = coords[i++] - y;
+			}
+		} else {
+			// We want to receive the results in coords, so make sure
+			// handleIn and out are defined too, even if they're 0
+			if (!handleIn) {
+				coords[i++] = x;
+				coords[i++] = y;
+			}
+			if (!handleOut) {
+				coords[i++] = x;
+				coords[i++] = y;
 			}
 		}
 	}
