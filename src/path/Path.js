@@ -65,6 +65,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		Item.prototype._changed.call(this, flags);
 		if (flags & ChangeFlag.GEOMETRY) {
 			delete this._strokeBounds;
+			delete this._handleBounds;
+			delete this._roughBounds;
 			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.
 			delete this._clockwise;
@@ -1779,7 +1781,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	return {
 		/**
 		 * The bounding rectangle of the item excluding stroke width.
+		 *
 		 * @param matrix optional
+		 *
+		 * @ignore
 		 */
 		getBounds: function(/* matrix */) {
 			var useCache = arguments.length == 0;
@@ -1796,6 +1801,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 		/**
 		 * The bounding rectangle of the item including stroke width.
+		 *
+		 * @ignore
 		 */
 		getStrokeBounds: function(/* matrix */) {
 			if (!this._style._strokeColor || !this._style._strokeWidth)
@@ -1903,37 +1910,73 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		/**
 		 * The bounding rectangle of the item including handles.
 		 *
-		 * @type Rectangle
-		 * @bean
+		 * @ignore
 		 */
-		getHandleBounds: function() {
-			var x1 = Infinity,
-				x2 = -Infinity,
+		getHandleBounds: function(/* matrix, stroke, join */) {
+			var matrix = arguments[0],
+				useCache = matrix === undefined;
+			if (this._handleBounds && useCache)
+				return this._handleBounds;
+			var coords = new Array(6),
+				stroke = arguments[1] / 2 || 0, // Stroke padding
+				join = arguments[2] / 2 || 0, // Join padding, for miterLimiet
+				open = !this._closed,
+				x1 = Infinity,
+				x2 = -x1,
 				y1 = x1,
 				y2 = x2;
-
-			function add(point, handle) {
-				var x = point._x,
-					y = point._y;
-				if (handle) {
-					x += handle._x;
-					y += handle._y;
-				}
-				if (x < x1) x1 = x;
-				if (x > x2) x2 = x;
-				if (y < y1) y1 = y;
-				if (y > y2) y2 = y;
-			}
-
 			for (var i = 0, l = this._segments.length; i < l; i++) {
-				var segment = this._segments[i],
-					point = segment._point;
-				add(point);
-				add(point, segment._handleIn);
-				add(point, segment._handleOut);
+				var segment = this._segments[i];
+				segment._transformCoordinates(matrix, coords, false);
+				if (open && (i == 0 || i == l - 1)) {
+					// Clear handleIn for first and handleOut for last segment
+					// of open paths.
+					var j = i == 0 ? 2 : 4;
+					coords[j] = coords[0];
+					coords[j + 1] = coords[1];
+				}
+				for (var j = 0; j < 6; j += 2) {
+					// Use different padding for points or handles
+					var padding = j == 0 ? join : stroke,
+						x = coords[j],
+						y = coords[j + 1],
+						xn = x - padding,
+						xx = x + padding,
+						yn = y - padding,
+						yx = y + padding;
+					if (xn < x1) x1 = xn;
+					if (xx > x2) x2 = xx;
+					if (yn < y1) y1 = yn;
+					if (yx > y2) y2 = yx;
+				}
 			}
-			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-		}
+			var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+			if (useCache)
+				this._handleBounds = bounds;
+			return bounds;
+		},
 
+		/**
+		 * The rough bounding rectangle of the item that is shure to include all
+		 * of the drawing, including stroke width.
+		 *
+		 * @ignore
+		 */
+		getRoughBounds: function(/* matrix */) {
+			var matrix = arguments[0],
+				useCache = matrix === undefined;
+			if (this._roughBounds && useCache)
+				return this._roughBounds;
+			// Delegate to #getHandleBounds(), but pass on radius values for
+			// stroke and joins. Hanlde miter joins specially, by passing the
+			// largets radius possible.
+			var bounds = this.getHandleBounds(arguments[0], this.strokeWidth,
+					this.getStrokeJoin() == 'miter'
+						? this.strokeWidth * this.getMiterLimit()
+						: this.strokeWidth);
+			if (useCache)
+				this._roughBounds = bounds;
+			return bounds;
+		}
 	};
 });
