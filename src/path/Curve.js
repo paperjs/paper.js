@@ -484,17 +484,15 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			];
 		},
 
-		// Converts from the point coordinates (p1, c1, c2, p2) to the
-		// polynomial coefficients and solve the polynomial for val
+		// Converts from the point coordinates (p1, c1, c2, p2) for one axis to
+		// the polynomial coefficients and solve the polynomial for val
 		solve: function (p1, c1, c2, p2, val) {
-			var p1m3 = 3 * p1,
-				c1m3 = 3 * c1,
-				c2m3 = 3 * c2,
-				a = p2 - c2m3 + c1m3 - p1,
-				b = c2m3 - c1m3 - c1m3 + p1m3,
-				c = c1m3 - p1m3,
-				d = p1 - val;
-			return Numerical.solveCubic(a, b, c, d, Numerical.TOLERANCE);
+			return Numerical.solveCubic(
+					p2 - p1 + 3 * (c1 - c2), // a
+					3 * (c2 + p1) - 6 * c1, // b
+					3 * (c1 - p1), // c
+					p1 - val, // d
+					Numerical.TOLERANCE);
 		},
 
 		// TODO: Find better name
