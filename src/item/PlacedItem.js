@@ -32,6 +32,17 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 		this._matrix.preConcatenate(matrix);
 	},
 
+	_changed: function(flags) {
+		// Don't use base() for reasons of performance.
+		Item.prototype._changed.call(this, flags);
+		if (flags & ChangeFlag.GEOMETRY) {
+			delete this._strokeBounds;
+			// TODO: These are not used in Raster. Do we mind?
+			delete this._handleBounds;
+			delete this._roughBounds;
+		}
+	},
+
 	/**
 	 * The item's transformation matrix, defining position and dimensions in the
 	 * document.
@@ -48,7 +59,30 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 		this._changed(Change.GEOMETRY);
 	},
 
-	getStrokeBounds: function() {
-		return this.getBounds();
+	getBounds: function(/* matrix */) {
+		// The bounds of PlacedItems are the same as the strokeBounds, but are
+		// wrapped in a LinkedRectangle that catch changes for us.
+		var useCache = arguments[0] === undefined;
+		if (useCache && this._bounds)
+			return this._bounds;
+		var bounds = this.getStrokeBounds(arguments[0]);
+		if (useCache)
+			bounds = this._bounds = this._createBounds(bounds);
+		return bounds;
+	},
+
+	_getBounds: function(getter, cacheName, args) {
+		var matrix = args[0],
+			useCache = matrix === undefined;
+		if (useCache && this[cacheName])
+			return this[cacheName];
+		matrix = matrix ? matrix.clone().concatenate(this._matrix)
+				: this._matrix;
+		// Call _calculateBounds, which needs to be defined in the subclasses:
+		var bounds = this._calculateBounds(getter, matrix);
+		// TODO: Clear cache
+		if (useCache)
+			this[cacheName] = bounds;
+		return bounds;
 	}
 });

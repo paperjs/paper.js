@@ -1787,16 +1787,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		 * @ignore
 		 */
 		getBounds: function(/* matrix */) {
-			var useCache = arguments.length == 0;
+			var useCache = arguments[0] === undefined;
 			// Pass the matrix hidden from Bootstrap, so it still inject
 			// getBounds as bean too.
-			if (!useCache || !this._bounds) {
-				var bounds = this._createBounds(getBounds(this, arguments[0]));
-				if (useCache)
-					this._bounds = bounds;
-				return bounds;
-			}
-			return this._bounds;
+			if (useCache && this._bounds)
+				return this._bounds;
+			var bounds = this._createBounds(getBounds(this, arguments[0]));
+			if (useCache)
+				this._bounds = bounds;
+			return bounds;
 		},
 
 		/**
@@ -1807,8 +1806,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		getStrokeBounds: function(/* matrix */) {
 			if (!this._style._strokeColor || !this._style._strokeWidth)
 				return this.getBounds.apply(this, arguments);
-			var useCache = arguments.length == 0;
-			if (this._strokeBounds && useCache)
+			var useCache = arguments[0] === undefined;
+			if (useCache && this._strokeBounds)
 				return this._strokeBounds;
 			var matrix = arguments[0], // set #getBounds()
 				width = this.getStrokeWidth(),
@@ -1915,7 +1914,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		getHandleBounds: function(/* matrix, stroke, join */) {
 			var matrix = arguments[0],
 				useCache = matrix === undefined;
-			if (this._handleBounds && useCache)
+			if (useCache && this._handleBounds)
 				return this._handleBounds;
 			var coords = new Array(6),
 				stroke = arguments[1] / 2 || 0, // Stroke padding
@@ -1963,9 +1962,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		 * @ignore
 		 */
 		getRoughBounds: function(/* matrix */) {
-			var matrix = arguments[0],
-				useCache = matrix === undefined;
-			if (this._roughBounds && useCache)
+			var useCache = arguments[0] === undefined;
+			if (useCache && this._roughBounds)
 				return this._roughBounds;
 			// Delegate to #getHandleBounds(), but pass on radius values for
 			// stroke and joins. Hanlde miter joins specially, by passing the

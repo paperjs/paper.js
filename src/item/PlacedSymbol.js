@@ -71,6 +71,9 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 			: new Matrix();
 	},
 
+	// TODO: Symbols need to register their placed instances, so whenever a
+	// symbol definition changes, all instances are notified through _changed()
+
 	/**
 	 * The symbol that the placed symbol refers to:
 	 *
@@ -82,12 +85,9 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 		return this._clone(new PlacedSymbol(this.symbol, this._matrix.clone()));
 	},
 
-	getBounds: function() {
-		if (!this._bounds) {
-			this._bounds = this._createBounds(
-					this.symbol._definition.getStrokeBounds(this._matrix));
-		}
-		return this._bounds;
+	_calculateBounds: function(getter, matrix) {
+		// Ask the symbol definition to calculate the bounds for us
+		return this.symbol._definition[getter](matrix);
 	},
 
 	draw: function(ctx, param) {
