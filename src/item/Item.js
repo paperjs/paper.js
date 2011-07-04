@@ -26,6 +26,8 @@
  */
 var Item = this.Item = Base.extend(/** @lends Item# */{
 	initialize: function() {
+		// Define this Item's unique id.
+		this._id = ++Item._id;
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project)
@@ -59,8 +61,6 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * @bean
 	 */
 	getId: function() {
-		if (this._id == null)
-			this._id = Item._id = (Item._id || 0) + 1;
 		return this._id;
 	},
 
@@ -197,8 +197,11 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 
 	setStyle: function(style) {
 		this._style.initialize(style);
-	}
+	},
 
+	statics: {
+		_id: 0
+	}
 }, new function() { // Injection scope to produce getter setters for properties
 	// We need setters because we want to call _changed() if a property was
 	// modified.
