@@ -455,6 +455,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * }
 	 */
 	contains: function(rect) {
+		// TODO: improve handling of passed Rectangle or Point
 		if (rect.width !== undefined) {
 			return rect.x >= this.x && rect.y >= this.y
 					&& rect.x + rect.width <= this.x + this.width
