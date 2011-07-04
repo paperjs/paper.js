@@ -1036,6 +1036,45 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	},
 
 	/**
+	 * Loops through all children, gets their bounds and finds the bounds around
+	 * all of them.
+	 */
+	_getBounds: function(getter, cacheName, args) {
+		// Note: We cannot cache these results here, since we do not get
+		// _changed() notifications here for changing geometry in children.
+		// But cacheName is used in sub-classes such as PlacedItem.
+		var children = this._children;
+		// TODO: What to return if nothing is defined, e.g. empty Groups?
+		// Scriptographer behaves weirdly then too.
+		if (!children || children.length == 0)
+			return new Rectangle();
+		var x1 = Infinity,
+			x2 = -x1,
+			y1 = x1,
+			y2 = x2;
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i];
+			if (child._visible) {
+				var rect = child[getter](args[0]);
+				x1 = Math.min(rect.x, x1);
+				y1 = Math.min(rect.y, y1);
+				x2 = Math.max(rect.x + rect.width, x2);
+				y2 = Math.max(rect.y + rect.height, y2);
+			}
+		}
+		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
+	},
+
+	/**
+	 * Creates a LinkedRectangle that when modified calls #setBounds().
+	 */
+	_createBounds: function(rect) {
+		return LinkedRectangle.create(this, 'setBounds',
+				rect.x, rect.y, rect.width, rect.height);
+	},
+
+	/**
 	 * {@grouptitle Bounding Rectangles}
 	 *
 	 * The bounding rectangle of the item excluding stroke width.
@@ -1097,45 +1136,6 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 */
 	getRoughBounds: function(/* matrix */) {
 		return this._getBounds('getRoughBounds', '_roughBounds', arguments);
-	},
-
-	/**
-	 * Loops through all children, gets their bounds and finds the bounds around
-	 * all of them.
-	 */
-	_getBounds: function(getter, cacheName, args) {
-		// Note: We cannot cache these results here, since we do not get
-		// _changed() notifications here for changing geometry in children.
-		// But cacheName is used in sub-classes such as PlacedItem.
-		var children = this._children;
-		// TODO: What to return if nothing is defined, e.g. empty Groups?
-		// Scriptographer behaves weirdly then too.
-		if (!children || children.length == 0)
-			return new Rectangle();
-		var x1 = Infinity,
-			x2 = -x1,
-			y1 = x1,
-			y2 = x2;
-		for (var i = 0, l = children.length; i < l; i++) {
-			var child = children[i];
-			if (child._visible) {
-				var rect = child[getter](args[0]);
-				x1 = Math.min(rect.x, x1);
-				y1 = Math.min(rect.y, y1);
-				x2 = Math.max(rect.x + rect.width, x2);
-				y2 = Math.max(rect.y + rect.height, y2);
-			}
-		}
-		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
-	},
-
-	/**
-	 * Creates a LinkedRectangle that when modified calls #setBounds().
-	 */
-	_createBounds: function(rect) {
-		return LinkedRectangle.create(this, 'setBounds',
-				rect.x, rect.y, rect.width, rect.height);
 	},
 
 	/**
