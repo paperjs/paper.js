@@ -63,7 +63,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	 */
 	initialize: function(symbol, matrixOrOffset) {
 		this.base();
-		this.symbol = symbol instanceof Symbol ? symbol : new Symbol(symbol);
+		this.setSymbol(symbol instanceof Symbol ? symbol : new Symbol(symbol));
 		this._matrix = matrixOrOffset !== undefined
 			? matrixOrOffset instanceof Matrix
 				? matrixOrOffset
@@ -71,15 +71,25 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 			: new Matrix();
 	},
 
-	// TODO: Symbols need to register their placed instances, so whenever a
-	// symbol definition changes, all instances are notified through _changed()
-
 	/**
 	 * The symbol that the placed symbol refers to:
 	 *
 	 * @name PlacedSymbol#symbol
 	 * @type Symbol
+	 * @bean
 	 */
+	getSymbol: function() {
+		return this._symbol;
+	},
+
+	setSymbol: function(symbol) {
+		// Remove from previous symbol's instances
+		if (this._symbol)
+			delete this._symbol._instances[this._id];
+		this._symbol = symbol;
+		// Add to the new one's
+		symbol._instances[this._id] = this;
+	},
 
 	clone: function() {
 		return this._clone(new PlacedSymbol(this.symbol, this._matrix.clone()));

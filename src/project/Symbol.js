@@ -64,6 +64,8 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 		this.project = paper.project;
 		this.project.symbols.push(this);
 		this.setDefinition(item);
+		// Hash to keep track of placed instances
+		this._instances = {};
 	},
 
 	// TODO: Symbol#remove()
@@ -78,6 +80,20 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	 */
 
 	/**
+	 * Private notifier that is called whenever a change occurs in this symbol's
+	 * definition.
+	 *
+	 * @param {ChangeFlag} flags describes what exactly has changed.
+	 */
+	_changed: function(flags) {
+		// Notify all PlacedItems of the change in our definition, so they
+		// can clear cached bounds.
+		Base.each(this._instances, function(item) {
+			item._changed(flags);
+		});
+	},
+
+	/**
 	 * The symbol definition.
 	 *
 	 * @type Item
@@ -88,11 +104,19 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	},
 
 	setDefinition: function(item) {
+		// Make sure we're not steatling another symbol's definition
+		if (item._parentSymbol)
+			item = item.clone();
+		// Remove previous definition's reference to this symbol
+		if (this._definition)
+			delete this._definition._parentSymbol;
 		this._definition = item;
 		// Remove item from DOM, as it's embedded in Symbol now.
 		item.remove();
-		// Move position to 0, 0. TODO: Why?
+		// Move position to 0, 0, so it's centered when placed.
 		item.setPosition(new Point());
+		item._parentSymbol = this;
+		this._changed(Change.GEOMETRY);
 	},
 
 	/**
