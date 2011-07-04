@@ -1164,14 +1164,19 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	contains: function(point) {
 		point = Point.read(arguments);
-		if (!this.getBounds().contains(point))
+		if (!this._closed || !this.getBounds().contains(point))
 			return false;
 		var curves = this.getCurves(),
+			prevCurve = this.getLastCurve(),
 			crossings = 0;
-		for (var i = 0, l = curves.length; i < l; i++)
-			crossings += curves[i].getCrossingsFor(point);
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var curve = curves[i];
+			crossings += curve.getCrossingsFor(point,
+					prevCurve.getTangent(1).y);
+			prevCurve = curve;
+		}
 		return (crossings & 1) == 1;
-	},
+	}
 
 	// TODO: intersects(item)
 	// TODO: contains(item)
