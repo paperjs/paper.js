@@ -305,19 +305,25 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return this._evaluate(parameter, 2);
 	},
 
-	getCrossingsFor: function(point) {
-		// Implement a simple crossing number algorithm:
+	getCrossingsFor: function(point, prevSlope) {
+		// Implement the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		// Solve the y-axis cubic polynominal for point.y and count all
 		// solutions to the right of point.x as crossings.
 		var vals = this.getValues(),
 			roots = Curve.solve(vals[1], vals[3], vals[5], vals[7], point.y),
-			crossings = 0,
-			maxT = 1 - Numerical.TOLERANCE;
+			crossings = 0;
 		for (var i = 0, l = roots != Infinity && roots.length; i < l; i++) {
 			var t = roots[i];
-			if (t >= 0 && t < maxT && this.getPoint(t).x > point.x)
+			if (t >= 0 && t < 1 && this.getPoint(t).x > point.x) {
+				// If we're close to 0 and are not changing y-direction from.
+				// previous curve, do not count this solution, as we're merely
+				// touching a tip.
+				if (t < Numerical.TOLERANCE
+							&& prevSlope * this.getTangent(t).y >= 0)
+					continue;
 				crossings++;
+			}
 		}
 		return crossings;
 	},
