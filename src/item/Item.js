@@ -1042,8 +1042,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
-	getBounds: function() {
-		return this._getBounds('getBounds');
+	getBounds: function(/* matrix */) {
+		return this._getBounds('getBounds', '_bounds', arguments);
 	},
 
 	setBounds: function(rect) {
@@ -1073,8 +1073,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
-	getStrokeBounds: function() {
-		return this._getBounds('getStrokeBounds');
+	getStrokeBounds: function(/* matrix */) {
+		return this._getBounds('getStrokeBounds', '_strokeBounds', arguments);
 	},
 
 	/**
@@ -1083,15 +1083,30 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
-	getHandleBounds: function() {
-		return this._getBounds('getHandleBounds');
+	getHandleBounds: function(/* matrix */) {
+		return this._getBounds('getHandleBounds', '_handleBounds', arguments);
+	},
+
+	/**
+	 * The rough bounding rectangle of the item that is shure to include all of
+	 * the drawing, including stroke width.
+	 *
+	 * @type Rectangle
+	 * @bean
+	 * @ignore
+	 */
+	getRoughBounds: function(/* matrix */) {
+		return this._getBounds('getRoughBounds', '_roughBounds', arguments);
 	},
 
 	/**
 	 * Loops through all children, gets their bounds and finds the bounds around
 	 * all of them.
 	 */
-	_getBounds: function(getter) {
+	_getBounds: function(getter, cacheName, args) {
+		// Note: We cannot cache these results here, since we do not get
+		// _changed() notifications here for changing geometry in children.
+		// But cacheName is used in sub-classes such as PlacedItem.
 		var children = this._children;
 		// TODO: What to return if nothing is defined, e.g. empty Groups?
 		// Scriptographer behaves weirdly then too.
@@ -1104,7 +1119,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			if (child._visible) {
-				var rect = child[getter]();
+				var rect = child[getter](args[0]);
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
 				x2 = Math.max(rect.x + rect.width, x2);
@@ -1535,6 +1550,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * path.fitBounds(view.bounds);
 	 */
 	fitBounds: function(rectangle, fill) {
+		// TODO: Think about passing options with various ways of defining
+		// fitting.
 		rectangle = Rectangle.read(arguments);
 		var bounds = this.getBounds(),
 			itemRatio = bounds.height / bounds.width,
