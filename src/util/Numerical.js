@@ -128,7 +128,7 @@ var Numerical = new function() {
 				// If all the coefficients are 0, infinite values are
 				// possible!
 				if (abs(c) < tolerance)
-					return Infinite; // Infinite solutions
+					return Infinity; // Infinite solutions
 				return []; // 0 solutions
 			}
 			var q = b * b - 4 * a * c;
