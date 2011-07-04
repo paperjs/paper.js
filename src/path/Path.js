@@ -1160,7 +1160,18 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	getNormalAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getNormal();
-	}
+	},
+
+	contains: function(point) {
+		point = Point.read(arguments);
+		if (!this.getBounds().contains(point))
+			return false;
+		var curves = this.getCurves(),
+			crossings = 0;
+		for (var i = 0, l = curves.length; i < l; i++)
+			crossings += curves[i].getCrossingsFor(point);
+		return (crossings & 1) == 1;
+	},
 
 	// TODO: intersects(item)
 	// TODO: contains(item)

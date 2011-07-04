@@ -305,6 +305,23 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return this._evaluate(parameter, 2);
 	},
 
+	getCrossingsFor: function(point) {
+		// Implement a simple crossing number algorithm:
+		// http://en.wikipedia.org/wiki/Point_in_polygon
+		// Solve the y-axis cubic polynominal for point.y and count all
+		// solutions to the right of point.x as crossings.
+		var vals = this.getValues(),
+			roots = Curve.solve(vals[1], vals[3], vals[5], vals[7], point.y),
+			crossings = 0,
+			maxT = 1 - Numerical.TOLERANCE;
+		for (var i = 0, l = roots != Infinity && roots.length; i < l; i++) {
+			var t = roots[i];
+			if (t >= 0 && t < maxT && this.getPoint(t).x > point.x)
+				crossings++;
+		}
+		return crossings;
+	},
+
 	// TODO: getParameter(point, precision)
 	// TODO: getLocation
 	// TODO: getIntersections
@@ -465,6 +482,19 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
 				[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
 			];
+		},
+
+		// Converts from the point coordinates (p1, c1, c2, p2) to the
+		// polynomial coefficients and solve the polynomial for val
+		solve: function (p1, c1, c2, p2, val) {
+			var p1m3 = 3 * p1,
+				c1m3 = 3 * c1,
+				c2m3 = 3 * c2,
+				a = p2 - c2m3 + c1m3 - p1,
+				b = c2m3 - c1m3 - c1m3 + p1m3,
+				c = c1m3 - p1m3,
+				d = p1 - val;
+			return Numerical.solveCubic(a, b, c, d, Numerical.TOLERANCE);
 		},
 
 		// TODO: Find better name
