@@ -1,16 +1,16 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
@@ -158,7 +158,7 @@ var PaperScript = this.PaperScript = new function() {
 			tool = scope.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
 					&& new Tool(null, scope),
 			res;
-		// Define variables for potential handlers, so eval() calls below to 
+		// Define variables for potential handlers, so eval() calls below to
 		// fetch their values do not require try-catch around them.
 		// Set currently active scope.
 		paper = scope;

@@ -1,16 +1,16 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
@@ -42,6 +42,7 @@ var sources = [
 	'src/item/Item.js',
 	'src/item/Group.js',
 	'src/item/Layer.js',
+	'src/item/PlacedItem.js',
 	'src/item/Raster.js',
 	'src/item/PlacedSymbol.js',
 
@@ -124,7 +125,7 @@ if (window.tests) {
 }
 
 for (var i = 0; i < sources.length; i++) {
-	document.write('<script type="text/javascript" src="' + (window.root || '') 
+	document.write('<script type="text/javascript" src="' + (window.root || '')
 			+ sources[i] + '"></script>');
 }
 

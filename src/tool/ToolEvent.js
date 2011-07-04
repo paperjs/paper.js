@@ -1,22 +1,22 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name ToolEvent
- * 
+ *
  * @class ToolEvent The ToolEvent object is received by the {@link Tool}'s mouse
  * event handlers {@link Tool#onMouseDown}, {@link Tool#onMouseDrag},
  * {@link Tool#onMouseMove} and {@link Tool#onMouseUp}. The ToolEvent
@@ -43,18 +43,18 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	/**
 	 * The position of the mouse in project coordinates when the event was
 	 * fired.
-	 * 
+	 *
 	 * @example
 	 * function onMouseDrag(event) {
 	 * 	// the position of the mouse when it is dragged
 	 * 	console.log(event.point);
 	 * }
-	 * 
+	 *
 	 * function onMouseUp(event) {
 	 * 	// the position of the mouse when it is released
 	 * 	console.log(event.point);
 	 * }
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -69,7 +69,7 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	/**
 	 * The position of the mouse in project coordinates when the previous
 	 * event was fired.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -84,7 +84,7 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	/**
 	 * The position of the mouse in project coordinates when the mouse button
 	 * was last clicked.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -101,7 +101,7 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	 * {@link #point}. This is a useful position to use when creating
 	 * artwork based on the moving direction of the mouse, as returned by
 	 * {@link #delta}.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -122,7 +122,7 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	 * The difference between the current position and the last position of the
 	 * mouse when the event was fired. In case of the mouseup event, the
 	 * difference to the mousedown position is returned.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -143,7 +143,7 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 
 	/**
 	 * The number of times the mouse event was fired.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -176,7 +176,7 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	// 	}
 	// 	return item;
 	// }
-	// 
+	//
 	// setItem: function(Item item) {
 	// 	this.item = item;
 	// }
@@ -185,7 +185,7 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	 * @return {String} A string representation of the tool event.
 	 */
 	toString: function() {
-		return '{ type: ' + this.type 
+		return '{ type: ' + this.type
 				+ ', point: ' + this.getPoint()
 				+ ', count: ' + this.getCount()
 				+ ', modifiers: ' + this.getModifiers()

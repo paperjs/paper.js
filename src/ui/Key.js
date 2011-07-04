@@ -1,16 +1,16 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
@@ -59,7 +59,7 @@ var Key = this.Key = new function() {
 	// characters, we need to perform a little trickery here to use these codes
 	// in onKeyDown/Up: keydown is used to store the downCode and handle
 	// modifiers and special keys such as arrows, space, etc, keypress fires the
-	// actual onKeyDown event and maps the keydown keyCode to the keypress 
+	// actual onKeyDown event and maps the keydown keyCode to the keypress
 	// charCode so keyup can do the right thing too.
 	charCodeMap = {}, // keyCode -> charCode mappings for pressed keys
 	keyMap = {}, // Map for currently pressed keys
@@ -138,12 +138,12 @@ var Key = this.Key = new function() {
 
 		/**
 		 * Checks whether the specified key is pressed.
-		 * 
+		 *
 		 * @param {String} key One of: 'backspace', 'enter', 'shift', 'control',
 		 * 'option', 'pause', 'caps-lock', 'escape', 'space', 'end', 'home',
 		 * 'left', 'up', 'right', 'down', 'delete', 'command'
 		 * @return {Boolean} {@true if the key is pressed}
-		 * 
+		 *
 		 * @example
 		 * // Whenever the user clicks, create a circle shaped path. If the
 		 * // 'a' key is pressed, fill it with red, otherwise fill it with blue:

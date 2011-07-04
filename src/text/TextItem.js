@@ -1,28 +1,28 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name TextItem
- * 
+ *
  * @class The TextItem type allows you to create typography. Its
  * functionality is inherited by different text item types such as
  * {@link PointText}, and {@link AreaText} (coming soon). They each add a
  * layer of functionality that is unique to their type, but share the
  * underlying properties and functions that they inherit from TextItem.
- * 
+ *
  * @extends Item
  */
 var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
@@ -37,29 +37,29 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 
 	/**
 	 * The text contents of the text item.
-	 * 
+	 *
 	 * @name TextItem#content
 	 * @type String
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Setting the content of a PointText item:
-	 * 
+	 *
 	 * // Create a point-text item at {x: 30, y: 30}:
 	 * var text = new PointText(new Point(30, 30));
 	 * text.fillColor = 'black';
-	 * 
+	 *
 	 * // Set the content of the text item:
 	 * text.content = 'Hello world';
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Interactive example, move your mouse over the view below:
-	 * 
+	 *
 	 * // Create a point-text item at {x: 30, y: 30}:
 	 * var text = new PointText(new Point(30, 30));
 	 * text.fillColor = 'black';
-	 * 
+	 *
 	 * text.content = 'Move your mouse over the view, to see its position';
-	 * 
+	 *
 	 * function onMouseMove(event) {
 	 * 	// Each time the mouse is moved, set the content of
 	 * 	// the point text to describe the position of the mouse:
@@ -80,14 +80,14 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 
 	setContent: function(content) {
 		this._changed(Change.CONTENT);
-		this._content = content;
+		this._content = '' + content;
 	},
 
 	/**
 	 * {@grouptitle Style Properties}
-	 * 
+	 *
 	 * The character style of the text item.
-	 * 
+	 *
 	 * @type CharacterStyle
 	 * @bean
 	 */
@@ -101,7 +101,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 
 	/**
 	 * The paragraph style of the text item.
-	 * 
+	 *
 	 * @type ParagraphStyle
 	 * @bean
 	 */

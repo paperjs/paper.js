@@ -1,22 +1,22 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name Curve
- * 
+ *
  * @class The Curve object represents the parts of a path that are connected by
  * two following {@link Segment} objects. The curves of a path can be accessed
  * through its {@link Path#curves} array.
@@ -31,7 +31,7 @@
 var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * Creates a new curve object.
-	 * 
+	 *
 	 * @param {Segment} segment1
 	 * @param {Segment} segment2
 	 */
@@ -69,7 +69,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * The first anchor point of the curve.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -84,7 +84,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * The second anchor point of the curve.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -96,10 +96,10 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		point = Point.read(arguments);
 		this._segment2._point.set(point.x, point.y);
 	},
-	
+
 	/**
 	 * The handle point that describes the tangent in the first anchor point.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -114,7 +114,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * The handle point that describes the tangent in the second anchor point.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -129,7 +129,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * The first segment of the curve.
-	 * 
+	 *
 	 * @type Segment
 	 * @bean
 	 */
@@ -139,7 +139,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * The second segment of the curve.
-	 * 
+	 *
 	 * @type Segment
 	 * @bean
 	 */
@@ -149,7 +149,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * The path that the curve belongs to.
-	 * 
+	 *
 	 * @type Path
 	 * @bean
 	 */
@@ -159,7 +159,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * The index of the curve in the {@link Path#curves} array.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -170,7 +170,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * The next curve in the {@link Path#curves} array that the curve
 	 * belongs to.
-	 * 
+	 *
 	 * @type Curve
 	 * @bean
 	 */
@@ -183,7 +183,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * The previous curve in the {@link Path#curves} array that the curve
 	 * belongs to.
-	 * 
+	 *
 	 * @type Curve
 	 * @bean
 	 */
@@ -195,7 +195,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * Specifies whether the handles of the curve are selected.
-	 * 
+	 *
 	 * @type Boolean
 	 * @bean
 	 */
@@ -215,7 +215,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	// DOCS: document Curve#getLength(from, to)
 	/**
 	 * The approximated length of the curve in points.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -273,7 +273,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * Returns the point on the curve at the specified position.
-	 * 
+	 *
 	 * @param {Number} parameter the position at which to find the point as
 	 *                 a value between {@code 0} and {@code 1}.
 	 * @return {Point}
@@ -284,7 +284,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * Returns the tangent point on the curve at the specified position.
-	 * 
+	 *
 	 * @param {Number} parameter the position at which to find the tangent
 	 *                 point as a value between {@code 0} and {@code 1}.
 	 */
@@ -294,7 +294,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * Returns the normal point on the curve at the specified position.
-	 * 
+	 *
 	 * @param {Number} parameter the position at which to find the normal
 	 *                 point as a value between {@code 0} and {@code 1}.
 	 */
@@ -310,7 +310,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * Returns a reversed version of the curve, without modifying the curve
 	 * itself.
-	 * 
+	 *
 	 * @return {Curve} a reversed version of the curve
 	 */
 	reverse: function() {
@@ -322,7 +322,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	/**
 	 * Returns a copy of the curve.
-	 * 
+	 *
 	 * @return {Curve}
 	 */
 	clone: function() {
@@ -416,7 +416,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 					cy = 3 * (c1y - p1y),
 					by = 3 * (c2y - c1y) - cy,
 					ay = p2y - p1y - cy - by;
-					
+
 				switch (type) {
 				case 0: // point
 					// Calculate the curve point at parameter value t
