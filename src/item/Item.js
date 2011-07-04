@@ -52,6 +52,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 			if (this._project)
 				this._project._needsRedraw();
 		}
+		if (this._parentSymbol)
+			this._parentSymbol._changed(flags);
 	},
 
 	/**
