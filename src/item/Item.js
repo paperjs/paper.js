@@ -1098,7 +1098,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		if (!children || children.length == 0)
 			return new Rectangle();
 		var x1 = Infinity,
-			x2 = -Infinity,
+			x2 = -x1,
 			y1 = x1,
 			y2 = x2;
 		for (var i = 0, l = children.length; i < l; i++) {
@@ -1457,7 +1457,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
 		var bounds = this._bounds,
-			position = this._position;
+			position = this._position,
+			children = this._children;
 		if (this._transform) {
 			this._transform(matrix, flags);
 			this._changed(Change.GEOMETRY);
@@ -1474,8 +1475,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 			// changes, since it's a LinkedPoint and would cause recursion!
 			this._position = matrix._transformPoint(position, position, true);
 		}
-		for (var i = 0, l = this._children && this._children.length; i < l; i++)
-			this._children[i].transform(matrix, flags);
+		for (var i = 0, l = children && children.length; i < l; i++)
+			children[i].transform(matrix, flags);
 		// PORT: Return 'this' in all chainable commands
 		return this;
 	},
