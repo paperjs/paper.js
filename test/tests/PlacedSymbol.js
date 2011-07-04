@@ -43,6 +43,46 @@ test('placedSymbol bounds', function() {
 		'Bounds after rotation.');
 });
 
+test('bounds of group of symbol instances', function() {
+	var path = new Path.Circle(new Point(), 10);
+	var symbol = new Symbol(path);
+	var instances = [];
+	for (var i = 0; i < 10; i++) {
+		var instance = symbol.place(new Point(i * 20, 20));
+		instances.push(instance);
+	}
+	var group = new Group(instances);
+	compareRectangles(group.bounds,
+		{ x: -10, y: 10, width: 200, height: 20 },
+		'Group bounds');
+});
+
+test('bounds of a symbol that contains a group of items', function() {
+	var path = new Path.Circle(new Point(), 10);
+	var path2 = path.clone();
+	path2.position += [20, 0];
+	var group = new Group(path, path2);
+	var symbol = new Symbol(group);
+	var instance = symbol.place(new Point(0, 0));
+	compareRectangles(instance.bounds,
+		{ x: -20, y: -10, width: 40, height: 20 },
+		'Instance bounds');
+});
+
+test('Changing the definition of a symbol should change the bounds of all instances of it.', function() {
+	var path = new Path.Circle(new Point(), 10);
+	var path2 = new Path.Circle(new Point(), 20);
+	var symbol = new Symbol(path);
+	var instance = symbol.place(new Point(0, 0));
+	compareRectangles(instance.bounds,
+		{ x: -10, y: -10, width: 20, height: 20 },
+		'Initial bounds');
+	symbol.definition = path2;
+	compareRectangles(instance.bounds,
+		{ x: -20, y: -20, width: 40, height: 40 },
+		'Bounds after changing symbol definition');
+});
+
 test('Symbol definition selection', function() {
 	var path = new Path.Circle([50, 50], 50);
 	path.selected = true;
