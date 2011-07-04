@@ -608,6 +608,19 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
+	// DOCS: Document #expand and #scale
+	expand: function(hor, ver) {
+		if (ver === undefined)
+			ver = hor;
+		return Rectangle.create(this.x - hor / 2, this.y - ver / 2,
+				this.width + hor, this.height + ver);
+	},
+
+	scale: function(hor, ver) {
+		return this.expand(this.width * hor - this.width,
+				this.height * (ver === undefined ? hor : ver) - this.height);
+	},
+
 	statics: {
 		// See Point.create()
 		create: function(x, y, width, height) {
