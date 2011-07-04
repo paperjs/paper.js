@@ -151,8 +151,6 @@ var Numerical = new function() {
 		 * (zero crossings) and and returns the solutions in an array.
 		 *
 		 * a*x^3 + b*x^2 + c*x + d = 0
-		 *
-		 *
 		 */
 	    solveCubic: function(a, b, c, d, tolerance) {
 			// After Numerical Recipes in C, 2nd edition, Press et al.,
