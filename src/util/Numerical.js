@@ -35,9 +35,9 @@ var Numerical = new function() {
 		[  0.1080549487073436620662447,0.3191123689278897604356718,0.5152486363581540919652907,0.6872929048116854701480198,0.8272013150697649931897947,0.9284348836635735173363911,0.9862838086968123388415973],
 		[0,0.2011940939974345223006283,0.3941513470775633698972074,0.5709721726085388475372267,0.7244177313601700474161861,0.8482065834104272162006483,0.9372733924007059043077589,0.9879925180204854284895657],
 		[  0.0950125098376374401853193,0.2816035507792589132304605,0.4580167776572273863424194,0.6178762444026437484466718,0.7554044083550030338951012,0.8656312023878317438804679,0.9445750230732325760779884,0.9894009349916499325961542]
-	],
+	];
 
-	weights = [
+	var weights = [
 		[1],
 		[0.8888888888888888888888889,0.5555555555555555555555556],
 		[0.6521451548625461426269361,0.3478548451374538573730639],
@@ -54,6 +54,13 @@ var Numerical = new function() {
 		[0.2025782419255612728806202,0.1984314853271115764561183,0.1861610000155622110268006,0.1662692058169939335532009,0.1395706779261543144478048,0.1071592204671719350118695,0.0703660474881081247092674,0.0307532419961172683546284],
 		[0.1894506104550684962853967,0.1826034150449235888667637,0.1691565193950025381893121,0.1495959888165767320815017,0.1246289712555338720524763,0.0951585116824927848099251,0.0622535239386478928628438,0.0271524594117540948517806]
 	];
+
+	// Math short-cuts for often used methods and values
+	var abs = Math.abs,
+		sqrt = Math.sqrt,
+		cos = Math.cos,
+		PI = Math.PI;
+		
 
 	return {
 		TOLERANCE: 10e-6,
@@ -79,13 +86,13 @@ var Numerical = new function() {
 		/**
 		 * Root finding using Newton-Raphson Method combined with Bisection.
 		 */
-		findRoot: function(f, df, x, a, b, n, tol) {
+		findRoot: function(f, df, x, a, b, n, tolerance) {
 			for (var i = 0; i < n; i++) {
 				var fx = f(x),
 					dx = fx / df(x);
 				// See if we can trust the Newton-Raphson result. If not we use
 				// bisection to find another candiate for Newton's method.
-				if (Math.abs(dx) < tol)
+				if (abs(dx) < tolerance)
 					return x;
 				// Generate a candidate for Newton's method.
 				var nx = x - dx;
@@ -103,6 +110,85 @@ var Numerical = new function() {
 					x = nx >= b ? 0.5 * (a + b) : nx;
 				}
 			}
+		},
+
+		/**
+		 * Solves the quadratic polynomial with coefficients a, b, c for roots
+		 * (zero crossings) and and returns the solutions in an array.
+		 *
+		 * a*x^2 + b*x + c = 0
+		 */
+		solveQuadratic: function(a, b, c, tolerance) {
+			// After Numerical Recipes in C, 2nd edition, Press et al.,
+			// 5.6, Quadratic and Cubic Equations
+			// If problem is actually linear, return 0 or 1 easy roots
+			if (abs(a) < tolerance) {
+				if (abs(b) >= tolerance)
+					return [ -c / b ];
+				// If all the coefficients are 0, infinite values are
+				// possible!
+				if (abs(c) < tolerance)
+					return Infinite; // Infinite solutions
+				return []; // 0 solutions
+			}
+			var q = b * b - 4 * a * c;
+			if (q < 0)
+				return []; // 0 solutions
+			q = sqrt(q);
+			if (b < 0)
+				q = -q;
+			q = (b + q) * -0.5;
+			var roots = [];
+			if (abs(q) >= tolerance)
+				roots.push(c / q);
+			if (abs(a) >= tolerance)
+				roots.push(q / a);
+			return roots; // 0, 1 or 2 solutions
+		},
+
+		/**
+		 * Solves the cubic polynomial with coefficients a, b, c, d for roots
+		 * (zero crossings) and and returns the solutions in an array.
+		 *
+		 * a*x^3 + b*x^2 + c*x + d = 0
+		 *
+		 *
+		 */
+	    solveCubic: function(a, b, c, d, tolerance) {
+			// After Numerical Recipes in C, 2nd edition, Press et al.,
+			// 5.6, Quadratic and Cubic Equations
+			if (d == 0)
+			    return Numerical.solveQuadratic(b, c, d, tolerance);
+			// Normalize
+			b /= a;
+			c /= a;
+			d /= a;
+			// Compute discriminants
+			var Q = (b * b - 3 * c) / 9,
+				R = (2 * b * b * b - 9 * b * c + 27 * d) / 54,
+				Q3 = Q * Q * Q,
+				R2 = R * R;
+			if (R2 <= Q3) { // Three real roots
+				// This sqrt and division is safe, since R2 >= 0, so Q3 > R2,
+				// so Q3 > 0.  The acos is also safe, since R2/Q3 < 1, and
+				// thus R/sqrt(Q3) < 1.
+				var theta = Math.acos(R / sqrt(Q3)),
+					// This sqrt is safe, since Q3 >= 0, and thus Q >= 0
+					v1 = -2 * sqrt(Q);
+					v2 = b / 3;
+				// TODO: Improve these values using findRoot()!
+				return [
+					v1 * cos(theta / 3) - v2,
+					v1 * cos((theta + 2 * PI) / 3) - v2,
+					v1 * cos((theta - 2 * PI) / 3) - v2
+				];
+			} else { // One real root
+				var A = -Math.pow(abs(R) + sqrt(R2 - Q3), 1 / 3);
+				if (R < 0) A = -A;
+			    var B = (abs(A) < tolerance) ? 0 : Q / A;
+				return [ (A + B) - a ];
+			}
+			return [];
 		}
 	};
 };
