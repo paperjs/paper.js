@@ -177,8 +177,8 @@ var Numerical = new function() {
 					v1 = -2 * sqrt(Q);
 					v2 = b / 3;
 				return [
-					v1 * cos(theta / 3) - v2
-					v1 * cos((theta + 2 * PI) / 3) - v2
+					v1 * cos(theta / 3) - v2,
+					v1 * cos((theta + 2 * PI) / 3) - v2,
 					v1 * cos((theta - 2 * PI) / 3) - v2
 				];
 			} else { // One real root
