@@ -90,6 +90,10 @@ test('Changing the definition of a symbol should change the bounds of all instan
 	compareRectangles(instance.bounds,
 		{ x: -20, y: -20, width: 40, height: 40 },
 		'Bounds after changing symbol definition');
+	symbol.definition.scale(0.5, 0.5);
+	compareRectangles(instance.bounds,
+		{ x: -10, y: -10, width: 20, height: 20 },
+		'Bounds after modifying symbol definition');
 });
 
 test('Symbol definition selection', function() {
