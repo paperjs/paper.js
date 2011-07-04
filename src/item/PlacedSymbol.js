@@ -83,9 +83,10 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	},
 
 	getBounds: function() {
-		if (!this._bounds)
+		if (!this._bounds) {
 			this._bounds = this._createBounds(
-					this.symbol._definition.getStrokeBounds(this._matrix))
+					this.symbol._definition.getStrokeBounds(this._matrix));
+		}
 		return this._bounds;
 	},
 
