@@ -60,12 +60,21 @@ test('bounds of group of symbol instances', function() {
 test('bounds of a symbol that contains a group of items', function() {
 	var path = new Path.Circle(new Point(), 10);
 	var path2 = path.clone();
-	path2.position += [20, 0];
+	path2.position.x += 20;
+	compareRectangles(path.bounds,
+		{ x: -10, y: -10, width: 20, height: 20 },
+		'path bounds');
+	compareRectangles(path2.bounds,
+		{ x: 10, y: -10, width: 20, height: 20 },
+		'path2 bounds');
 	var group = new Group(path, path2);
+	compareRectangles(group.bounds,
+		{ x: -10, y: -10, width: 40, height: 20 },
+		'Group bounds');
 	var symbol = new Symbol(group);
-	var instance = symbol.place(new Point(0, 0));
+	var instance = symbol.place(new Point(50, 50));
 	compareRectangles(instance.bounds,
-		{ x: -20, y: -10, width: 40, height: 20 },
+		{ x: 30, y: 40, width: 40, height: 20 },
 		'Instance bounds');
 });
 
