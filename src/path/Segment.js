@@ -1,26 +1,26 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name Segment
- * 
+ *
  * @class The Segment object represents the points of a path through which its
  * {@link Curve} objects pass. The segments of a path can be accessed through
  * its {@link Path#segments} array.
- * 
+ *
  * Each segment consists of an anchor point ({@link Segment#point}) and
  * optionaly an incoming and an outgoing handle ({@link Segment#handleIn} and
  * {@link Segment#handleOut}), describing the tangents of the two {@link Curve}
@@ -29,7 +29,7 @@
 var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	/**
 	 * Creates a new Segment object.
-	 * 
+	 *
 	 * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
 	 * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
 	 *        anchor point of the segment that describes the in tangent of the
@@ -37,17 +37,17 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	 * @param {Point} [handleOut={x: 0, y: 0}] the handle point relative to the
 	 *        anchor point of the segment that describes the out tangent of the
 	 *        segment.
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * var handleIn = new Point(-80, -100);
 	 * var handleOut = new Point(80, 100);
-	 * 
+	 *
 	 * var firstPoint = new Point(100, 50);
 	 * var firstSegment = new Segment(firstPoint, null, handleOut);
-	 * 
+	 *
 	 * var secondPoint = new Point(300, 50);
 	 * var secondSegment = new Segment(secondPoint, handleIn, null);
-	 * 
+	 *
 	 * var path = new Path(firstSegment, secondSegment);
 	 * path.strokeColor = 'black';
 	 */
@@ -109,7 +109,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * The anchor point of the segment.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -127,7 +127,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	/**
 	 * The handle point relative to the anchor point of the segment that
 	 * describes the in tangent of the segment.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -143,15 +143,10 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		// this.corner = !this._handleIn.isColinear(this._handleOut);
 	},
 
-	getHandleInIfSet: function() {
-		return this._handleIn._x == 0 && this._handleIn._y == 0
-			? null : this._handleIn;
-	},
-
 	/**
 	 * The handle point relative to the anchor point of the segment that
 	 * describes the out tangent of the segment.
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -165,11 +160,6 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		this._handleOut.set(point.x, point.y);
 		// Update corner accordingly
 		// this.corner = !this._handleIn.isColinear(this._handleOut);
-	},
-
-	getHandleOutIfSet: function() {
-		return this._handleOut._x == 0 && this._handleOut._y == 0
-			? null : this._handleOut;
 	},
 
 	_isSelected: function(point) {
@@ -225,7 +215,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 			path._updateSelection(this, state, this._selectionState);
 	},
 
-	
+
 
 	/**
 	 * Specifies whether the {@link #point} of the segment is selected.
@@ -242,10 +232,10 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * {@grouptitle Hierarchy}
-	 * 
+	 *
 	 * The index of the segment in the {@link Path#segments} array that the
 	 * segment belongs to.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -255,7 +245,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * The path that the segment belongs to.
-	 * 
+	 *
 	 * @type Path
 	 * @bean
 	 */
@@ -265,7 +255,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * The curve that the segment belongs to.
-	 * 
+	 *
 	 * @type Curve
 	 * @bean
 	 */
@@ -282,11 +272,11 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * {@grouptitle Sibling Segments}
-	 * 
+	 *
 	 * The next segment in the {@link Path#segments} array that the segment
 	 * belongs to. If the segments belongs to a closed path, the first segment
 	 * is returned for the last segment of the path.
-	 * 
+	 *
 	 * @type Segment
 	 * @bean
 	 */
@@ -300,7 +290,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	 * The previous segment in the {@link Path#segments} array that the
 	 * segment belongs to. If the segments belongs to a closed path, the last
 	 * segment is returned for the first segment of the path.
-	 * 
+	 *
 	 * @type Segment
 	 * @bean
 	 */
@@ -342,12 +332,16 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		// points for largely improved performance, as no calls to
 		// Point.read() and Point constructors are necessary.
 		var point = this._point,
-			// If a matrix is defined, only transform handles if they are set.
-			// This saves some computation time. If no matrix is set, always
-			// use the real handles, as we just want to receive a filled 
+			// If change is true, only transform handles if they are set, as
+			// _transformCoordinates is called only to change the segment, no
+			// to receive the coords.
+			// This saves some computation time. If change is false, always
+			// use the real handles, as we just want to receive a filled
 			// coords array for getBounds().
-			handleIn =  matrix && this.getHandleInIfSet() || this._handleIn,
-			handleOut = matrix && this.getHandleOutIfSet() || this._handleOut,
+			handleIn =  !change || !this._handleIn.isZero()
+					? this._handleIn : null,
+			handleOut = !change || !this._handleOut.isZero()
+					? this._handleOut : null,
 			x = point._x,
 			y = point._y,
 			i = 2;
@@ -363,34 +357,36 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 			coords[i++] = handleOut._x + x;
 			coords[i++] = handleOut._y + y;
 		}
-		if (matrix) {
-			matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
-			x = coords[0];
-			y = coords[1];
-			if (change) {
-				// If change is true, we need to set the new values back
-				point._x = x;
-				point._y = y;
-				i  = 2;
-				if (handleIn) {
-					handleIn._x = coords[i++] - x;
-					handleIn._y = coords[i++] - y;
-				}
-				if (handleOut) {
-					handleOut._x = coords[i++] - x;
-					handleOut._y = coords[i++] - y;
-				}
-			} else {
-				// We want to receive the results in coords, so make sure
-				// handleIn and out are defined too, even if they're 0
-				if (!handleIn) {
-					coords[i++] = x;
-					coords[i++] = y;
-				}
-				if (!handleOut) {
-					coords[i++] = x;
-					coords[i++] = y;
-				}
+		// If no matrix was previded, this was just called to get the coords and
+		// we are done now.
+		if (!matrix)
+			return;
+		matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
+		x = coords[0];
+		y = coords[1];
+		if (change) {
+			// If change is true, we need to set the new values back
+			point._x = x;
+			point._y = y;
+			i  = 2;
+			if (handleIn) {
+				handleIn._x = coords[i++] - x;
+				handleIn._y = coords[i++] - y;
+			}
+			if (handleOut) {
+				handleOut._x = coords[i++] - x;
+				handleOut._y = coords[i++] - y;
+			}
+		} else {
+			// We want to receive the results in coords, so make sure
+			// handleIn and out are defined too, even if they're 0
+			if (!handleIn) {
+				coords[i++] = x;
+				coords[i++] = y;
+			}
+			if (!handleOut) {
+				coords[i++] = x;
+				coords[i++] = y;
 			}
 		}
 	}

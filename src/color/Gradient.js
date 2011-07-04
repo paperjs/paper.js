@@ -1,22 +1,22 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name Gradient
- * 
+ *
  * @class The Gradient object.
  */
 var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
@@ -24,7 +24,7 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	// boolean value?
 	/**
 	 * Creates a gradient object
-	 * 
+	 *
 	 * @param {GradientStop[]} stops
 	 * @param {String} [type='linear'] 'linear' or 'radial'
 	 */
@@ -45,7 +45,7 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 
 	/**
 	 * The gradient stops on the gradient ramp.
-	 * 
+	 *
 	 * @type GradientStop[]
 	 * @bean
 	 */
@@ -68,7 +68,7 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 
 	/**
 	 * Checks whether the gradient is equal to the supplied gradient.
-	 * 
+	 *
 	 * @param {Gradient} gradient
 	 * @return {Boolean} {@true they are equal}
 	 */

@@ -1,29 +1,29 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name Line
- * 
+ *
  * @class The Line object represents..
  */
 var Line = this.Line = Base.extend(/** @lends Line# */{
 	// DOCS: document Line class and constructor
 	/**
 	 * Creates a Line object.
-	 * 
+	 *
 	 * @param {Point} point1
 	 * @param {Point} point2
 	 * @param {Boolean} [infinite=true]
@@ -49,21 +49,21 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 
 	/**
 	 * The starting point of the line
-	 * 
+	 *
 	 * @name Line#point
 	 * @type Point
 	 */
 
 	/**
 	 * The vector of the line
-	 * 
+	 *
 	 * @name Line#vector
 	 * @type Point
 	 */
 
 	/**
 	 * Specifies whether the line extends infinitely
-	 * 
+	 *
 	 * @name Line#infinite
 	 * @type Boolean
 	 */

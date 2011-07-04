@@ -1,36 +1,36 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
-/** 
+/**
  * @name Project
- * 
+ *
  * @class A Project object in Paper.js is what usually is refered to as the
  * document: The top level object that holds all the items contained in the
  * scene graph. As the term document is already taken in the browser context,
  * it is called Project.
- * 
+ *
  * Projects allow the manipluation of the styles that are applied to all newly
  * created items, give access to the selected items, and will in future versions
  * offer ways to query for items in the scene graph defining specific
  * requirements, and means to persist and load from different formats, such as
  * SVG and PDF.
- * 
+ *
  * The currently active project can be accessed through the global
  * {@see _global_#project} variable.
- * 
+ *
  * An array of all open projects is accessible through the global
  * {@see _global_#projects} variable.
  */
@@ -38,7 +38,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	// TODO: Add arguments to define pages
 	/**
 	 * Creates a Paper.js project.
-	 * 
+	 *
 	 * When working with PaperScript, a project is automatically created for us
 	 * and the global {@see _global_#project} variable points to it.
 	 */
@@ -66,25 +66,25 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	/**
 	 * The currently active path style. All selected items and newly
 	 * created items will be styled with this style.
-	 * 
+	 *
 	 * @type PathStyle
 	 * @bean
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * project.currentStyle = {
 	 * 	fillColor: 'red',
 	 * 	strokeColor: 'black',
 	 * 	strokeWidth: 5
 	 * }
-	 * 
+	 *
 	 * // The following paths will take over all style properties of
 	 * // the current style:
 	 * var path = new Path.Circle(new Point(75, 50), 30);
 	 * var path2 = new Path.Circle(new Point(175, 50), 20);
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * project.currentStyle.fillColor = 'red';
-	 * 
+	 *
 	 * // The following path will take over the fill color we just set:
 	 * var path = new Path.Circle(new Point(75, 50), 30);
 	 * var path2 = new Path.Circle(new Point(175, 50), 20);
@@ -127,7 +127,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 
 	/**
 	 * The index of the project in the global projects array.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -137,7 +137,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 
 	/**
 	 * The selected items contained within the project.
-	 * 
+	 *
 	 * @type Item[]
 	 * @bean
 	 */
@@ -154,7 +154,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	},
 
 	// TODO: Implement setSelectedItems?
-	
+
 	_updateSelection: function(item) {
 		if (item._selected) {
 			this._selectedItemCount++;
@@ -164,7 +164,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 			delete this._selectedItems[item.getId()];
 		}
 	},
-	
+
 	/**
 	 * Selects all items in the project.
 	 */
@@ -183,9 +183,9 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 
 	/**
 	 * {@grouptitle Project Hierarchy}
-	 * 
+	 *
 	 * The layers contained within the project.
-	 * 
+	 *
 	 * @name Project#layers
 	 * @type Layer[]
 	 */
@@ -193,28 +193,28 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	/**
 	 * The layer which is currently active. New items will be created on this
 	 * layer by default.
-	 * 
+	 *
 	 * @name Project#activeLayer
 	 * @type Layer
 	 */
 
 	/**
 	 * The symbols contained within the project.
-	 * 
+	 *
 	 * @name Project#symbols
 	 * @type Symbol[]
 	 */
 
 	/**
 	 * The views contained within the project.
-	 * 
+	 *
 	 * @name Project#views
 	 * @type View[]
 	 */
 
 	/**
 	 * The view which is currently active.
-	 * 
+	 *
 	 * @name Project#activeView
 	 * @type View
 	 */

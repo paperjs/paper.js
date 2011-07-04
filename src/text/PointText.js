@@ -1,34 +1,34 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name PointText
- * 
+ *
  * @class A PointText item represents a piece of typography in your Paper.js
  * project which starts from a certain point and extends by the amount of
  * characters contained in it.
- * 
+ *
  * @extends TextItem
  */
 var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	/**
 	 * Creates a point text item
-	 * 
+	 *
 	 * @param {Point} point the position where the text will start
-	 * 
+	 *
 	 * @example
 	 * var text = new PointText(new Point(50, 100));
 	 * text.justification = 'center';
@@ -51,7 +51,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 
 	/**
 	 * The PointText's anchor point
-	 * 
+	 *
 	 * @type Point
 	 * @bean
 	 */
@@ -63,17 +63,17 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		this._transform(new Matrix().translate(
 				Point.read(arguments).subtract(this._point)));
 	},
-	
+
 	// TODO: Position should be the center point of the bounds but we currently
 	// don't support bounds for PointText.
 	getPosition: function() {
 		return this._point;
 	},
-	
+
 	setPosition: function(point) {
 		this.setPoint.apply(this, arguments);
 	},
-	
+
 	_transform: function(matrix, flags) {
 		this._matrix.preConcatenate(matrix);
 		// We need to transform the LinkedPoint, passing true for dontNotify so
@@ -81,7 +81,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		// recursion.
 		matrix._transformPoint(this._point, this._point, true);
 	},
-	
+
 	draw: function(ctx) {
 		if (!this._content)
 			return;
@@ -89,7 +89,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		ctx.font = this.getFontSize() + 'pt ' + this.getFont();
 		ctx.textAlign = this.getJustification();
 		this._matrix.applyToContext(ctx);
-		
+
 		var fillColor = this.getFillColor();
 		var strokeColor = this.getStrokeColor();
 		if (!fillColor || !strokeColor)
