@@ -1,42 +1,42 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name CompoundPath
- * 
+ *
  * @class A compound path contains two or more paths, holes are drawn
  * where the paths overlap. All the paths in a compound path take on the
  * style of the backmost path and can be accessed through its
  * {@link Item#children} list.
- * 
+ *
  * @extends PathItem
  */
 var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	/**
 	 * Creates a new compound path item and places it in the active layer.
-	 * 
+	 *
 	 * @param {Path[]} [paths] the paths to place within the compound path.
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Create a circle shaped path with a hole in it:
 	 * var circle = new Path.Circle(new Point(50, 50), 30);
 	 * var innerCircle = new Path.Circle(new Point(50, 50), 10);
 	 * var compoundPath = new CompoundPath([circle, innerCircle]);
 	 * compoundPath.fillColor = 'red';
-	 * 
+	 *
 	 * // Move the inner circle 5pt to the right:
 	 * compoundPath.children[1].position.x += 5;
 	 */
@@ -66,7 +66,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	 * If this is a compound path with only one path inside,
 	 * the path is moved outside and the compound path is erased.
 	 * Otherwise, the compound path is returned unmodified.
-	 * 
+	 *
 	 * @return {CompoundPath|Path} the simplified compound path
 	 */
 	simplify: function() {

@@ -1,53 +1,53 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 // DOCS: write Color class documentation.
 /**
  * @name Color
- * 
+ *
  * @class All properties and functions that expect color values accept
  * instances of the different color classes such as {@link RGBColor},
  * {@link HSBColor} and {@link GrayColor}, and also accept named colors
  * and hex values as strings which are then converted to instances of
  * {@link RGBColor} internally.
- * 
+ *
  * @classexample {@paperscript}
  * // Named color values:
- * 
+ *
  * // Create a circle shaped path at {x: 80, y: 50}
  * // with a radius of 30.
  * var circle = new Path.Circle(new Point(80, 50), 30);
- * 
+ *
  * // Pass a color name to the fillColor property, which is internally
  * // converted to an RGBColor.
  * circle.fillColor = 'green';
- * 
+ *
  * @classexample {@paperscript}
  * // Hex color values:
- * 
+ *
  * // Create a circle shaped path at {x: 80, y: 50}
  * // with a radius of 30.
  * var circle = new Path.Circle(new Point(80, 50), 30);
- * 
+ *
  * // Pass a hex string to the fillColor property, which is internally
  * // converted to an RGBColor.
  * circle.fillColor = '#ff0000';
  */
 var Color = this.Color = Base.extend(new function() {
-	
+
 	var components = {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],
@@ -247,7 +247,7 @@ var Color = this.Color = Base.extend(new function() {
 			/**
 			 * Override Color.extend() to produce getters and setters based
 			 * on the component types defined in _components.
-			 * 
+			 *
 			 * @ignore
 			 */
 			extend: function(src) {
@@ -342,7 +342,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	/**
 	 * Returns the type of the color as a string.
-	 * 
+	 *
 	 * @type String('rgb', 'hsb', 'gray')
 	 * @bean
 	 *
@@ -365,21 +365,21 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * The color's alpha value as a number between {@code 0} and {@code 1}. All
 	 * colors of the different subclasses support alpha values.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // A filled path with a half transparent stroke:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * 
+	 *
 	 * // Fill the circle with red and give it a 20pt green stroke:
 	 * circle.style = {
 	 * 	fillColor: 'red',
 	 * 	strokeColor: 'green',
 	 * 	strokeWidth: 20
 	 * };
-	 * 
+	 *
 	 * // Make the stroke half transparent:
 	 * circle.strokeColor.alpha = 0.5;
 	 */
@@ -395,7 +395,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	/**
 	 * Checks if the color has an alpha value.
-	 * 
+	 *
 	 * @return {Boolean} {@true if the color has an alpha value}
 	 */
 	hasAlpha: function() {
@@ -405,7 +405,7 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * Checks if the component color values of the color are the
 	 * same as those of the supplied one.
-	 * 
+	 *
 	 * @param {Color} color the color to compare with
 	 * @return {Boolean} {@true if the colors are the same}
 	 */
@@ -459,22 +459,22 @@ var Color = this.Color = Base.extend(new function() {
 	getCanvasStyle: function() {
 		return this.toCssString();
 	}
-	
+
 	/**
 	 * {@grouptitle RGB Components}
-	 * 
+	 *
 	 * The amount of red in the color as a value between {@code 0} and
 	 * {@code 1}.
-	 * 
+	 *
 	 * @name Color#red
 	 * @property
 	 * @type Number
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Changing the amount of red in a color:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
 	 * circle.fillColor = 'blue';
-	 * 
+	 *
 	 * // Blue + red = purple:
 	 * circle.fillColor.red = 1;
 	 */
@@ -482,18 +482,18 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * The amount of green in the color as a value between {@code 0} and
 	 * {@code 1}.
-	 * 
+	 *
 	 * @name Color#green
 	 * @property
 	 * @type Number
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Changing the amount of green in a color:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * 
+	 *
 	 * // First we set the fill color to red:
 	 * circle.fillColor = 'red';
-	 * 
+	 *
 	 * // Red + green = yellow:
 	 * circle.fillColor.green = 1;
 	 */
@@ -501,28 +501,28 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * The amount of blue in the color as a value between {@code 0} and
 	 * {@code 1}.
-	 * 
+	 *
 	 * @name Color#blue
 	 * @property
 	 * @type Number
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Changing the amount of blue in a color:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * 
+	 *
 	 * // First we set the fill color to red:
 	 * circle.fillColor = 'red';
-	 * 
+	 *
 	 * // Red + blue = purple:
 	 * circle.fillColor.blue = 1;
 	 */
 
 	/**
 	 * {@grouptitle Gray Components}
-	 * 
+	 *
 	 * The amount of gray in the color as a value between {@code 0} and
 	 * {@code 1}.
-	 * 
+	 *
 	 * @name Color#gray
 	 * @property
 	 * @type Number
@@ -530,28 +530,28 @@ var Color = this.Color = Base.extend(new function() {
 
 	/**
 	 * {@grouptitle HSB Components}
-	 * 
+	 *
 	 * The hue of the color as a value in degrees between {@code 0} and
 	 * {@code 360}.
-	 * 
+	 *
 	 * @name Color#hue
 	 * @property
 	 * @type Number
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Changing the hue of a color:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
 	 * circle.fillColor = 'red';
 	 * circle.fillColor.hue += 30;
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Hue cycling:
-	 * 
+	 *
 	 * // Create a rectangle shaped path, using the dimensions
 	 * // of the view:
 	 * var path = new Path.Rectangle(view.bounds);
 	 * path.fillColor = 'red';
-	 * 
+	 *
 	 * function onFrame(event) {
 	 * 	path.fillColor.hue += 0.5;
 	 * }
@@ -559,7 +559,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	/**
 	 * The saturation of the color as a value between {@code 0} and {@code 1}.
-	 * 
+	 *
 	 * @name Color#saturation
 	 * @property
 	 * @type Number
@@ -567,7 +567,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	/**
 	 * The brightness of the color as a value between {@code 0} and {@code 1}.
-	 * 
+	 *
 	 * @name Color#brightness
 	 * @property
 	 * @type Number
@@ -583,20 +583,20 @@ var Color = this.Color = Base.extend(new function() {
 var GrayColor = this.GrayColor = Color.extend(/** @lends GrayColor# */{
 	/**
 	 * Creates a GrayColor object
-	 * 
+	 *
 	 * @name GrayColor#initialize
 	 * @param {Number} gray the amount of gray in the color as a value
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} [alpha] the alpha of the color as a value between
 	 * {@code 0} and {@code 1}
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Creating a GrayColor:
-	 * 
+	 *
 	 * // Create a circle shaped path at {x: 80, y: 50}
 	 * // with a radius of 30:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * 
+	 *
 	 * // Create a GrayColor with 50% gray:
 	 * circle.fillColor = new GrayColor(0.5);
 	 */
@@ -612,7 +612,7 @@ var GrayColor = this.GrayColor = Color.extend(/** @lends GrayColor# */{
 var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
 	/**
 	 * Creates an RGBColor object
-	 * 
+	 *
 	 * @name RGBColor#initialize
 	 * @param {Number} red the amount of red in the color as a value
 	 * between {@code 0} and {@code 1}
@@ -622,14 +622,14 @@ var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} [alpha] the alpha of the color as a value between
 	 * {@code 0} and {@code 1}
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Creating an RGBColor:
-	 * 
+	 *
 	 * // Create a circle shaped path at {x: 80, y: 50}
 	 * // with a radius of 30:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * 
+	 *
 	 * // 100% red, 0% blue, 50% blue:
 	 * circle.fillColor = new RGBColor(1, 0, 0.5);
 	 */
@@ -645,7 +645,7 @@ var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
 var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
 	/**
 	 * Creates an HSBColor object
-	 * 
+	 *
 	 * @name HSBColor#initialize
 	 * @param {Number} hue the hue of the color as a value in degrees between
 	 * {@code 0} and {@code 360}.
@@ -655,14 +655,14 @@ var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} [alpha] the alpha of the color as a value between
 	 * {@code 0} and {@code 1}
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Creating an HSBColor:
-	 * 
+	 *
 	 * // Create a circle shaped path at {x: 80, y: 50}
 	 * // with a radius of 30:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * 
+	 *
 	 * // Create an HSBColor with a hue of 90 degrees, a saturation
 	 * // 100% and a brightness of 100%:
 	 * circle.fillColor = new HSBColor(90, 1, 1);

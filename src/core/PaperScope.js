@@ -1,31 +1,31 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name PaperScope
- * 
+ *
  * @class Internal PaperScope class that handles all the fields available on the
  * global paper object, which simply is a pointer to the currently active scope.
- * 
+ *
  * @private
  */
 var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 	/**
 	 * The version of Paper.js, as a float number.
-	 * 
+	 *
 	 * @type Number
 	 */
 	version: 0.1,
@@ -70,7 +70,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 		/**
 		 * {@grouptitle View Event Handlers}
 		 * A reference to the {@link View#onFrame} handler function.
-		 * 
+		 *
 		 * @name onFrame
 		 * @property
 		 * @type Function
@@ -78,7 +78,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 
 		/**
 		 * A reference to the {@link View#onResize} handler function.
-		 * 
+		 *
 		 * @name onResize
 		 * @property
 		 * @type Function
@@ -94,7 +94,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 
 		/**
 		 * A reference to the {@link Tool#onMouseDrag} handler function.
-		 * 
+		 *
 		 * @name onMouseDrag
 		 * @property
 		 * @type Function
@@ -102,7 +102,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 
 		/**
 		 * A reference to the {@link Tool#onMouseMove} handler function.
-		 * 
+		 *
 		 * @name onMouseMove
 		 * @property
 		 * @type Function
@@ -110,7 +110,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 
 		/**
 		 * A reference to the {@link Tool#onMouseUp} handler function.
-		 * 
+		 *
 		 * @name onMouseUp
 		 * @property
 		 * @type Function
@@ -119,7 +119,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 		/**
 		 * {@grouptitle Keyboard Event Handlers}
 		 * A reference to the {@link Tool#onKeyDown} handler function.
-		 * 
+		 *
 		 * @name onKeyDown
 		 * @property
 		 * @type Function
@@ -127,7 +127,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 
 		/**
 		 * A reference to the {@link Tool#onKeyUp} handler function.
-		 * 
+		 *
 		 * @name onKeyUp
 		 * @property
 		 * @type Function
@@ -144,7 +144,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 	 * Installs the paper scope into any other given scope. Can be used for
 	 * examle to inject the currently active PaperScope into the window's global
 	 * scope, to emulate PaperScript-style globally accessible Paper classes:
-	 * 
+	 *
 	 * paper.install(window);
 	 * @ignore
 	 */
@@ -187,7 +187,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 		/**
 		 * Retrieves a PaperScope object with the given id or associated with
 		 * the passed canvas element.
-		 * 
+		 *
 		 * @param id
 		 * @ignore
 		 */
@@ -200,7 +200,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 
 		/**
 		 * A way to iterate over all active scopes without accessing _scopes
-		 * 
+		 *
 		 * @param iter
 		 * @ignore
 		 */

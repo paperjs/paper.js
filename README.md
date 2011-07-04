@@ -100,7 +100,7 @@ Also, in your first contribution, add yourself to the end of `AUTHORS.md` (which
 
 As mentioned earlier in this article, we prefer that you send a [*pull request*](http://help.github.com/pull-requests/) on GitHub.
 
-1. Create a fork of the upstream repository by visiting <https://github.com/paperjs/paper.js/fork>. If you feel insecure, here's a great guide: <http://help.github.com/forking/> 
+1. Create a fork of the upstream repository by visiting <https://github.com/paperjs/paper.js/fork>. If you feel insecure, here's a great guide: <http://help.github.com/forking/>
 
 2. Clone of your repository: `git clone https://yourusername@github.com/yourusername/paper.js.git`
 
@@ -117,7 +117,7 @@ If you are fixing a ticket, a convenient way to name the branch is to use the UR
 
 Before we can accept any contributions to Paper.js, you need to sign this [CLA](http://en.wikipedia.org/wiki/Contributor_License_Agreement):
 
-[http://paperjs.org/cla.html](http://paperjs.org/cla.html)
+[Contributor License Agreement](https://spreadsheets.google.com/a/paperjs.org/spreadsheet/embeddedform?formkey=dENxd0JBVDY2REo3THVuRmh4YjdWRlE6MQ)
 
 > The purpose of this agreement is to clearly define the terms under which intellectual property has been contributed to Paper.js and thereby allow us to defend the project should there be a legal dispute regarding the software at some future time.
 

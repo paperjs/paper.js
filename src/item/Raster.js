@@ -1,31 +1,33 @@
 /*
  * Paper.js
- * 
+ *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
- * 
- * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
  * All rights reserved.
  */
 
 /**
  * @name Raster
+ *
  * @class The Raster item represents an image in a Paper.js project.
- * @extends Item
+ *
+ * @extends PlacedItem
  */
-var Raster = this.Raster = Item.extend(/** @lends Raster# */{
+var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	// TODO: Implement url / type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
 	// DOCS: Document Raster constructor.
 	/**
 	 * Creates a new raster item and places it in the active layer.
-	 * 
+	 *
 	 * @param {HTMLImageElement|Canvas|string} [object]
 	 */
 	initialize: function(object) {
@@ -40,7 +42,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 //#endif // BROWSER
 			this.setImage(object);
 		}
-		this.matrix = new Matrix();
+		this._matrix = new Matrix();
 	},
 
 	clone: function() {
@@ -52,13 +54,13 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 			image.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
 		var copy = new Raster(image);
-		copy.matrix = this.matrix.clone();
+		copy._matrix = this._matrix.clone();
 		return this._clone(copy);
 	},
 
 	/**
 	 * The size of the raster in pixels.
-	 * 
+	 *
 	 * @type Size
 	 * @bean
 	 */
@@ -78,7 +80,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * The width of the raster in pixels.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -88,7 +90,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * The height of the raster in pixels.
-	 * 
+	 *
 	 * @type Number
 	 * @bean
 	 */
@@ -98,12 +100,12 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * Pixels per inch of the raster at its current size.
-	 * 
+	 *
 	 * @type Size
 	 * @bean
 	 */
 	getPpi: function() {
-		var matrix = this.matrix,
+		var matrix = this._matrix,
 			orig = new Point(0, 0).transform(matrix),
 			u = new Point(1, 0).transform(matrix).subtract(orig),
 			v = new Point(0, 1).transform(matrix).subtract(orig);
@@ -115,7 +117,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * The Canvas 2d drawing context of the raster.
-	 * 
+	 *
 	 * @type Context
 	 * @bean
 	 */
@@ -155,7 +157,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * The HTMLImageElement or Canvas of the raster.
-	 * 
+	 *
 	 * @type HTMLImageElement|Canvas
 	 * @bean
 	 */
@@ -179,7 +181,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	/**
 	 * @param {Rectangle} rect the boundaries of the sub image in pixel
 	 * coordinates
-	 * 
+	 *
 	 * @return {Canvas}
 	 */
 	getSubImage: function(rect) {
@@ -192,7 +194,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * Draws an image on the raster.
-	 * 
+	 *
 	 * @param {HTMLImageELement|Canvas} image
 	 * @param {Point} point the offset of the image as a point in pixel
 	 * coordinates
@@ -206,7 +208,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 * Calculates the average color of the image within the given path,
 	 * rectangle or point. This can be used for creating raster image
 	 * effects.
-	 * 
+	 *
 	 * @param {Path|Rectangle|Point} object
 	 * @return {RGBColor} the average color contained in the area covered by the
 	 * specified path, rectangle or point.
@@ -249,7 +251,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		if (path)
 			path.draw(ctx, { clip: true });
 		// Now draw the image clipped into it.
-		this.matrix.applyToContext(ctx);
+		this._matrix.applyToContext(ctx);
 		ctx.drawImage(this._canvas || this._image,
 				-this._size.width / 2, -this._size.height / 2);
 		ctx.restore();
@@ -275,7 +277,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	/**
 	 * {@grouptitle Pixels}
 	 * Gets the color of a pixel in the raster.
-	 * 
+	 *
 	 * @name Raster#getPixel
 	 * @function
 	 * @param x the x offset of the pixel in pixel coordinates
@@ -284,7 +286,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 */
 	/**
 	 * Gets the color of a pixel in the raster.
-	 * 
+	 *
 	 * @name Raster#getPixel
 	 * @function
 	 * @param point the offset of the pixel as a point in pixel coordinates
@@ -301,7 +303,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 
 	/**
 	 * Sets the color of the specified pixel to the specified color.
-	 * 
+	 *
 	 * @name Raster#setPixel
 	 * @function
 	 * @param x the x offset of the pixel in pixel coordinates
@@ -310,7 +312,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 */
 	/**
 	 * Sets the color of the specified pixel to the specified color.
-	 * 
+	 *
 	 * @name Raster#setPixel
 	 * @function
 	 * @param point the offset of the pixel as a point in pixel coordinates
@@ -341,6 +343,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		return this.getContext().createImageData(size.width, size.height);
 	},
 
+	// TODO: Rename to #get/setImageData, as it will conflict with Item#getData
 	// DOCS: document Raster#getData
 	/**
 	 * @param {Rectangle} rect
@@ -365,31 +368,20 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
-	_transform: function(matrix, flags) {
-		// In order to set the right context transformation when drawing the
-		// raster, simply preconcatenate the internal matrix with the provided
-		// one.
-		this.matrix.preConcatenate(matrix);
-	},
-
 	getBounds: function() {
 		if (!this._bounds)
-			this._bounds = this._createBounds(this.matrix._transformBounds(
+			this._bounds = this._createBounds(this._matrix._transformBounds(
 					new Rectangle(this._size).setCenter(0, 0)));
 		return this._bounds;
-	},
-	
-	getStrokeBounds: function() {
-		return this.getBounds();
 	},
 
 	draw: function(ctx, param) {
 		if (param.selection) {
 			var bounds = new Rectangle(this._size).setCenter(0, 0);
-			Item.drawSelectedBounds(bounds, ctx, this.matrix);
+			Item.drawSelectedBounds(bounds, ctx, this._matrix);
 		} else {
 			ctx.save();
-			this.matrix.applyToContext(ctx);
+			this._matrix.applyToContext(ctx);
 			ctx.drawImage(this._canvas || this._image,
 					-this._size.width / 2, -this._size.height / 2);
 			ctx.restore();
