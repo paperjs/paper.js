@@ -257,7 +257,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * @param {Number} length
 	 * @param {Number} [start]
-	 * @return {Boolean} {@true the curve is linear}
+	 * @return {Number}
 	 */
 	getParameter: function(length, start) {
 		var args = this.getValues();
@@ -265,6 +265,9 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return Curve.getParameter.apply(Curve, args);
 	},
 
+	/**
+	 * Private method used in getPoint, getTangent, getNormal.
+	 */
 	_evaluate: function(parameter, type) {
 		var args = this.getValues();
 		args.push(parameter, type);
