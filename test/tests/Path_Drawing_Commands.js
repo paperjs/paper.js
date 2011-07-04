@@ -25,7 +25,6 @@ test('path.lineTo(point);', function() {
 
 test('path.arcTo(from, through, to);', function() {
 	var path = new Path();
-	console.log(path.segments);
 	path.moveTo([0, 20]);
 	path.arcTo([75, 75], [100, 0]);
 	equals(path.segments.toString(), '{ point: { x: 0, y: 20 }, handleOut: { x: -2.62559, y: 23.01251 } },{ point: { x: 30.89325, y: 74.75812 }, handleIn: { x: -21.05455, y: -9.65273 }, handleOut: { x: 21.05455, y: 9.65273 } },{ point: { x: 92.54397, y: 62.42797 }, handleIn: { x: -15.72238, y: 17.00811 }, handleOut: { x: 15.72238, y: -17.00811 } },{ point: { x: 100, y: 0 }, handleIn: { x: 11.27458, y: 20.23247 } }');
