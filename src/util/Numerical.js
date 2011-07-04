@@ -176,11 +176,20 @@ var Numerical = new function() {
 					// This sqrt is safe, since Q3 >= 0, and thus Q >= 0
 					v1 = -2 * sqrt(Q);
 					v2 = b / 3;
-				// TODO: Improve these values using findRoot()!
+				function f(x) {
+					// Normalized, a * x = x:
+					return ((x + b) * x + c) * x + d;
+				}
+				function df(x) {
+					return (3 * x + 2 * b) * x + c;
+				}
+				function fix(t) {
+					return Numerical.findRoot(f, df, t, -10, 10, 32, Numerical.TOLERANCE);
+				}
 				return [
-					v1 * cos(theta / 3) - v2,
-					v1 * cos((theta + 2 * PI) / 3) - v2,
-					v1 * cos((theta - 2 * PI) / 3) - v2
+					fix(v1 * cos(theta / 3) - v2),
+					fix(v1 * cos((theta + 2 * PI) / 3) - v2),
+					fix(v1 * cos((theta - 2 * PI) / 3) - v2)
 				];
 			} else { // One real root
 				var A = -Math.pow(abs(R) + sqrt(R2 - Q3), 1 / 3);
