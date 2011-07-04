@@ -1166,6 +1166,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		point = Point.read(arguments);
 		if (!this._closed || !this.getBounds().contains(point))
 			return false;
+		// Use the crossing number algorithm, by counting the crossings of the
+		// beam in right y-direction with the shape, and see if it's an odd
+		// number, meaning the starting point is inside the shape.
+		// http://en.wikipedia.org/wiki/Point_in_polygon
 		var curves = this.getCurves(),
 			prevCurve = this.getLastCurve(),
 			crossings = 0;
