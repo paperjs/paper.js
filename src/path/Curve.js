@@ -316,8 +316,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		for (var i = 0, l = roots != Infinity && roots.length; i < l; i++) {
 			var t = roots[i];
 			if (t >= 0 && t < 1 && this.getPoint(t).x > point.x) {
-				// If we're close to 0 and are not changing y-direction from.
-				// previous curve, do not count this solution, as we're merely
+				// If we're close to 0 and are not changing y-direction from the
+				// previous curve, do not count this root, as we're merely
 				// touching a tip.
 				if (t < Numerical.TOLERANCE
 							&& prevSlope * this.getTangent(t).y >= 0)
