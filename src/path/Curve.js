@@ -278,7 +278,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * Returns the point on the curve at the specified position.
 	 *
 	 * @param {Number} parameter the position at which to find the point as
-	 *                 a value between {@code 0} and {@code 1}.
+	 *        a value between {@code 0} and {@code 1}.
 	 * @return {Point}
 	 */
 	getPoint: function(parameter) {
@@ -289,7 +289,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * Returns the tangent point on the curve at the specified position.
 	 *
 	 * @param {Number} parameter the position at which to find the tangent
-	 *                 point as a value between {@code 0} and {@code 1}.
+	 *        point as a value between {@code 0} and {@code 1}.
 	 */
 	getTangent: function(parameter) {
 		return this._evaluate(parameter, 1);
@@ -299,7 +299,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * Returns the normal point on the curve at the specified position.
 	 *
 	 * @param {Number} parameter the position at which to find the normal
-	 *                 point as a value between {@code 0} and {@code 1}.
+	 *        point as a value between {@code 0} and {@code 1}.
 	 */
 	getNormal: function(parameter) {
 		return this._evaluate(parameter, 2);
@@ -467,6 +467,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
 			if (t === undefined)
 				t = 0.5;
+			// Triangle computation, with loops unrolled.
 			var u = 1 - t,
 				// Interpolate from 4 to 3 points
 				p3x = u * p1x + t * c1x,
