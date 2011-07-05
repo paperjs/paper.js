@@ -155,7 +155,7 @@ var Numerical = new function() {
 	    solveCubic: function(a, b, c, d, tolerance) {
 			// After Numerical Recipes in C, 2nd edition, Press et al.,
 			// 5.6, Quadratic and Cubic Equations
-			if (d == 0)
+			if (abs(a) < tolerance)
 			    return Numerical.solveQuadratic(b, c, d, tolerance);
 			// Normalize
 			b /= a;
