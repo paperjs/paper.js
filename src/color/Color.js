@@ -173,25 +173,17 @@ var Color = this.Color = Base.extend(new function() {
 				b = color._blue,
 				max = Math.max(r, g, b),
 				min = Math.min(r, g, b),
-				l = (max + min) / 2,
-				s, h;
+				h, s, l = (max + min) / 2;
 			
 			if (max == min) {
-				s = 0;
-				h = Number.NaN
+				h = s = 0;
 			} else {
-				if (l < 0.5) {
-					s = (max - min) / (max + min);
-				} else {
-					s = (max - min) / (2 - max - min);
-				}
+				s = l < 0.5 ? (max - min) / (max + min) : (max - min) / (2 - max - min);
 			}
-			if (r == max) {
-				h = (g - b) / (max - min);
-			} else if (g == max) {
-				h = 2 + (b - r) / (max - min);
-			} else {
-				h = 4 + (r - g) / (max - min);
+			switch (max) {
+				case r: h = (g - b) / (max - min); break;
+				case g: h = 2 + (b - r) / (max - min); break;
+				case b: h = 4 + (r - g) / (max - min); break;
 			}
 			h *= 60;
 			if (h < 0) h += 360;
@@ -200,7 +192,7 @@ var Color = this.Color = Base.extend(new function() {
 		
 		'hsl-rgb': function(color) {
 			var s = color._saturation,
-				h = color._hue,
+				h = color._hue / 360,
 				l = color._lightness,
 				t1, t2, t3, c, r, g, b, i;
 				
@@ -209,17 +201,11 @@ var Color = this.Color = Base.extend(new function() {
 			} else {
 				t3 = [0,0,0];
 				c = [0,0,0];
-				if (l < 0.5) {
-					t2 = t2 = l * (1 + s);
-				} else {
-					t2 = l + s - l * s;
-				}
-				t1 = 2 * l - t2;	
-				h = h / 360;
+				t2 = l < 0.5 ? l * (1 + s) : l + s - l * s;
+				t1 = 2 * l - t2;
 				t3[0] = h + 1 / 3;
 				t3[1] = h;
 				t3[2] = h - 1 / 3;
-				
 				for (i = 0; i<3; i++) {
 					if (t3[i] < 0) t3[i] += 1;
 					if (t3[i] > 1) t3[i] -= 1;
@@ -228,7 +214,6 @@ var Color = this.Color = Base.extend(new function() {
 					else if (3 * t3[i] < 2) c[i] = t1 + (t2 - t1) * ((2 / 3) - t3[i]) * 6;
 					else c[i] = t1;
 				}
-				
 				return new RGBColor(c[0], c[1], c[2], color._alpha);
 			}
 		},
