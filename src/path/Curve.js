@@ -520,7 +520,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			return curve;
 		},
 
-		isSufficientlyFlat: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+		isFlatEnough: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
 			// Inspired by Skia, but to be tested:
 			// Calculate 1/3 (m1) and 2/3 (m2) along the line between start (p1)
 			// and end (p2), measure distance from there the control points and
