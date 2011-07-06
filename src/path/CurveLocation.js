@@ -37,10 +37,11 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @param {Number} parameter
 	 * @param {Point} point
 	 */
-	initialize: function(curve, parameter, point) {
+	initialize: function(curve, parameter, point, distance) {
 		this._curve = curve;
 		this._parameter = parameter;
 		this._point = point;
+		this._distance = distance;
 	},
 
 	/**
@@ -174,6 +175,16 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 		var parameter = this.getParameter();
 		return parameter != null && this._curve
 				&& this._curve.getNormal(parameter);
+	},
+
+	/**
+	 * The distance from the queried point to the returned location.
+	 *
+	 * @type Number
+	 * @bean
+	 */
+	getDistance: function() {
+		return this._distance;
 	},
 
 	/**
