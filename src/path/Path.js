@@ -1162,6 +1162,24 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return loc && loc.getNormal();
 	},
 
+	getNearestLocation: function(point) {
+		var curves = this.getCurves(),
+			minDist = Infinity,
+			minLoc = null;
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var loc = curves[i].getNearestLocation(point);
+			if (loc._distance < minDist) {
+				minDist = loc._distance;
+				minLoc = loc;
+			}
+		}
+		return minLoc;
+	},
+
+	getNearestPoint: function(point) {
+		return this.getNearestLocation(point).getPoint();
+	},
+
 	contains: function(point) {
 		point = Point.read(arguments);
 		if (!this._closed || !this.getBounds().contains(point))
