@@ -120,8 +120,9 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getCurveOffset: function() {
-		var parameter = this._curve && this.getParameter();
-		return parameter != null ? this._curve.getLength(0, parameter) : null;
+		var parameter = this.getParameter();
+		return parameter != null && this._curve
+				&& this._curve.getLength(0, parameter);
 	},
 
 	/**
@@ -133,7 +134,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getParameter: function() {
-		if (this._parameter == null && this._point)
+		if (this._parameter == null && this._curve && this._point)
 			this._parameter = this._curve.getParameter(this._point);
 		return this._parameter;
 	},
