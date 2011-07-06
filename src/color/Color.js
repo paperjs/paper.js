@@ -159,10 +159,6 @@ var Color = this.Color = Base.extend(new function() {
 			return new RGBColor(comp, comp, comp, color._alpha);
 		},
 
-		'hsb-gray': function(color) {
-			return converters['rgb-gray'](converters['hsb-rgb'](color));
-		},
-
 		'gray-hsb': function(color) {
 			return new HSBColor(0, 0, 1 - color._gray, color._alpha);
 		},
@@ -221,21 +217,9 @@ var Color = this.Color = Base.extend(new function() {
 			}
 			return new RGBColor(c[0], c[1], c[2], color._alpha);
 		},
-		
-		'hsl-gray': function(color) {
-			return converters['rgb-gray'](converters['hsl-rgb'](color));
-		},
 
 		'gray-hsl': function(color) {
 			return new HSLColor(0, 0, 1 - color._gray, color._alpha);
-		},
-		
-		'hsl-hsb': function(color) {
-			return converters['rgb-hsb'](converters['hsl-rgb'](color));
-		},
-		
-		'hsb-hsl': function(color) {
-			return converters['rgb-hsl'](converters['hsb-rgb'](color));
 		}
 	};
 
@@ -313,9 +297,13 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		convert: function(type) {
+			var converter;
 			return this._colorType == type
-				? this.clone()
-				: converters[this._colorType + '-' + type](this);
+					? this.clone()
+					: (converter = converters[this._colorType + '-' + type])
+						? converter(this)
+						: converters['rgb-' + type](
+								converters[this._colorType + '-rgb'](this));
 		},
 
 		statics: /** @lends Color */{
