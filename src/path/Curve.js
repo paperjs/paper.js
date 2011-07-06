@@ -492,7 +492,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		},
 
 		// Converts from the point coordinates (p1, c1, c2, p2) for one axis to
-		// the polynomial coefficients and solve the polynomial for val
+		// the polynomial coefficients and solves the polynomial for val
 		solve: function (p1, c1, c2, p2, val) {
 			return Numerical.solveCubic(
 					p2 - p1 + 3 * (c1 - c2), // a

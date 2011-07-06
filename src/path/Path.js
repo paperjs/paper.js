@@ -1787,14 +1787,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// t = pi * n + arctan(b cot(phi)) // y
 		var tx = - Math.atan(b * Math.tan(phi)),
 			ty = + Math.atan(b / Math.tan(phi)),
-			// Due to symetry, we don't need to cycle through pi * n
-			// solutions:
+			// Due to symetry, we don't need to cycle through pi * n solutions:
 			x = a * Math.cos(tx) * Math.cos(phi)
 				- b * Math.sin(tx) * Math.sin(phi),
 			y = b * Math.sin(ty) * Math.cos(phi)
 				+ a * Math.cos(ty) * Math.sin(phi);
-		// Now update the join / round padding, as required by
-		// getBounds() and code below.
 		return [Math.abs(x), Math.abs(y)];
 	}
 
