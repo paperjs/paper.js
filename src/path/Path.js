@@ -1175,7 +1175,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			crossings = 0;
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var curve = curves[i];
-			crossings += curve.getCrossingsFor(point,
+			crossings += curve.getCrossings(point,
 					prevCurve.getTangent(1).y);
 			prevCurve = curve;
 		}
