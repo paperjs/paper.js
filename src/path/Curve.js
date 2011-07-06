@@ -305,7 +305,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return this._evaluate(parameter, 2);
 	},
 
-	getCrossingsFor: function(point, prevSlope) {
+	getCrossings: function(point, prevSlope) {
 		// Implement the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		// Solve the y-axis cubic polynominal for point.y and count all
