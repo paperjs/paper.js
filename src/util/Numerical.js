@@ -166,24 +166,24 @@ var Numerical = new function() {
 				R = (2 * b * b * b - 9 * b * c + 27 * d) / 54,
 				Q3 = Q * Q * Q,
 				R2 = R * R;
-			if (R2 <= Q3) { // Three real roots
+			b /= 3; // Divide by 3 as that's required below
+			if (R2 < Q3) { // Three real roots
 				// This sqrt and division is safe, since R2 >= 0, so Q3 > R2,
 				// so Q3 > 0.  The acos is also safe, since R2/Q3 < 1, and
 				// thus R/sqrt(Q3) < 1.
 				var theta = Math.acos(R / sqrt(Q3)),
 					// This sqrt is safe, since Q3 >= 0, and thus Q >= 0
-					v1 = -2 * sqrt(Q);
-					v2 = b / 3;
+					q = -2 * sqrt(Q);
 				return [
-					v1 * cos(theta / 3) - v2,
-					v1 * cos((theta + 2 * PI) / 3) - v2,
-					v1 * cos((theta - 2 * PI) / 3) - v2
+					q * cos(theta / 3) - b,
+					q * cos((theta + 2 * PI) / 3) - b,
+					q * cos((theta - 2 * PI) / 3) - b
 				];
 			} else { // One real root
 				var A = -Math.pow(abs(R) + sqrt(R2 - Q3), 1 / 3);
 				if (R < 0) A = -A;
 			    var B = (abs(A) < tolerance) ? 0 : Q / A;
-				return [ (A + B) - a ];
+				return [ (A + B) - b ];
 			}
 			return [];
 		}
