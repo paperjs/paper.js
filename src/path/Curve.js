@@ -803,7 +803,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	}
 
 	return {
-		getNearestParameterFor: function(point) {
+		getNearestLocation: function(point) {
 			var p1 = this._segment1._point,
 				h1 = this._segment1._handleOut,
 				h2 = this._segment2._handleIn,
@@ -821,11 +821,11 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 					best = roots[i];
 				}
 			}
-			return best;
+			return new CurveLocation(this, best);
 		},
 
-		getNearestPointFor: function(point) {
-			return this.getPoint(this.getNearestParameterFor(point));
+		getNearestPoint: function(point) {
+			return this.getNearestLocation(point).getPoint();
 		}
 	}
 });
