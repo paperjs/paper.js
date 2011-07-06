@@ -206,7 +206,7 @@ var Color = this.Color = Base.extend(new function() {
 			var t3s = [ h + 1 / 3, h, h - 1 / 3 ],
 				t2 = l < 0.5 ? l * (1 + s) : l + s - l * s,
 				t1 = 2 * l - t2,
-				c = [0, 0, 0];
+				c = [];
 			for (var i = 0; i < 3; i++) {
 				var t3 = t3s[i];
 				if (t3 < 0) t3 += 1;
