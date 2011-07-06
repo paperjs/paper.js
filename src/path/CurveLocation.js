@@ -146,11 +146,8 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getPoint: function() {
-		if (!this._point && this._curve) {
-			var parameter = this.getParameter();
-			if (parameter != null)
-				this._point = this._curve.getPoint(parameter);
-		}
+		if (!this._point && this._curve && this._parameter != null)
+			this._point = this._curve.getPoint(this._parameter);
 		return this._point;
 	},
 
