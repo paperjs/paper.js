@@ -306,6 +306,17 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return this._evaluate(parameter, 2);
 	},
 
+	/**
+	 * @param {Point} point
+	 * @return {Number}
+	 */
+	getParameter: function(point) {
+		var args = this.getValues();
+		if (point)
+			args.push(point.x, point.y);
+		return Curve.getParameter.apply(Curve, args);
+	},
+
 	getCrossings: function(point, prevSlope) {
 		// Implement the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
@@ -330,7 +341,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return crossings;
 	},
 
-	// TODO: getParameter(point, precision)
 	// TODO: getLocation
 	// TODO: getIntersections
 	// TODO: adjustThroughPoint
@@ -502,6 +512,38 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 					3 * (c1 - p1), // c
 					p1 - val, // d
 					Numerical.TOLERANCE);
+		},
+
+		getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, x, y) {
+			var txs = Curve.solveCubic(p1x, c1x, c2x, p2x, x),
+				tys = Curve.solveCubic(p1y, c1y, c2y, p2y, y),
+				sx = txs === Infinity ? -1 : txs.length,
+				sy = tys === Infinity ? -1 : tys.length,
+				tx, ty;
+			// sx, sy == -1 means infinite solutions:
+			// Loop through all solutions for x and match with solutions for y,
+			// to see if we either have a matching pair, or infinite solutions
+			// for one or the other.
+			for (var cx = 0;  sx == -1 || cx < sx;) {
+				if (sx == -1 || (tx = txs[cx++]) >= 0 && tx <= 1) {
+					for (var cy = 0; sy == -1 || cy < sy;) {
+						if (sy == -1 || (ty = tys[cy++]) >= 0 && ty <= 1) {
+							// Handle infinite solutions by assigning root of
+							// the other polynomial
+							if (sx == -1) tx = ty;
+							else if (sy == -1) ty = tx;
+							// Use average if we're within tolerance
+							if (Math.abs(tx - ty) < Numerical.TOLERANCE)
+								return (tx + ty) * 0.5;
+						}
+					}
+					// Avoid endless loops here: If sx is infinite and there was
+					// no fitting ty, there's no solution for this bezier
+					if (sx == -1)
+						break; 
+				}
+			}
+			return null;
 		},
 
 		// TODO: Find better name
