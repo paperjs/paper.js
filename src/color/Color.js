@@ -146,23 +146,6 @@ var Color = this.Color = Base.extend(new function() {
 			return new RGBColor(v[i[0]], v[i[1]], v[i[2]], color._alpha);
 		},
 
-		'rgb-gray': function(color) {
-			// Using the standard NTSC conversion formula that is used for
-			// calculating the effective luminance of an RGB color:
-			// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
-			return new GrayColor(1 - (color._red * 0.2989 + color._green * 0.587
-					+ color._blue * 0.114), color._alpha);
-		},
-
-		'gray-rgb': function(color) {
-			var comp = 1 - color._gray;
-			return new RGBColor(comp, comp, comp, color._alpha);
-		},
-
-		'gray-hsb': function(color) {
-			return new HSBColor(0, 0, 1 - color._gray, color._alpha);
-		},
-		
 		// HSL code is based on:
 		// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
 		'rgb-hsl': function(color) {
@@ -191,7 +174,7 @@ var Color = this.Color = Base.extend(new function() {
 			if (h < 0) h += 360;
 			return new HSLColor(h, s, l, color._alpha);
 		},
-		
+
 		'hsl-rgb': function(color) {
 			var s = color._saturation,
 				h = color._hue / 360,
@@ -216,6 +199,23 @@ var Color = this.Color = Base.extend(new function() {
 							: t1;
 			}
 			return new RGBColor(c[0], c[1], c[2], color._alpha);
+		},
+
+		'rgb-gray': function(color) {
+			// Using the standard NTSC conversion formula that is used for
+			// calculating the effective luminance of an RGB color:
+			// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
+			return new GrayColor(1 - (color._red * 0.2989 + color._green * 0.587
+					+ color._blue * 0.114), color._alpha);
+		},
+
+		'gray-rgb': function(color) {
+			var comp = 1 - color._gray;
+			return new RGBColor(comp, comp, comp, color._alpha);
+		},
+
+		'gray-hsb': function(color) {
+			return new HSBColor(0, 0, 1 - color._gray, color._alpha);
 		},
 
 		'gray-hsl': function(color) {
