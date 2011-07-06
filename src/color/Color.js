@@ -125,9 +125,9 @@ var Color = this.Color = Base.extend(new function() {
 				case g: h = (b - r) / delta + 2; break;
 				case b: h = (r - g) / delta + 4; break;
 				}
-				h /= 6;
+				h *= 60;
 			}
-			return new HSBColor(h * 360, s, v, color._alpha);
+			return new HSBColor(h, s, v, color._alpha);
 		},
 
 		'hsb-rgb': function(color) {
@@ -138,7 +138,7 @@ var Color = this.Color = Base.extend(new function() {
 				f = h - i,
 				i = hsbIndices[i],
 				v = [
-					b, 						// b, index 0
+					b,						// b, index 0
 					b * (1 - s),			// p, index 1
 					b * (1 - s * f),		// q, index 2
 					b * (1 - s * (1 - f))	// t, index 3
