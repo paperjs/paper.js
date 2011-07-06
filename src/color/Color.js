@@ -114,19 +114,12 @@ var Color = this.Color = Base.extend(new function() {
 				max = Math.max(r, g, b),
 				min = Math.min(r, g, b),
 				delta = max - min,
-				h,
+				h = delta == 0 ? 0
+					:   ( max == r ? (g - b) / delta + (g < b ? 6 : 0)
+						: max == g ? (b - r) / delta + 2
+						:            (r - g) / delta + 4) * 60, // max == b
 				s = max == 0 ? 0 : delta / max,
 				v = max; // = brightness, also called value
-			if (delta == 0) {
-				h = 0; // Achromatic
-			} else {
-				switch (max) {
-				case r: h = (g - b) / delta + (g < b ? 6 : 0); break;
-				case g: h = (b - r) / delta + 2; break;
-				case b: h = (r - g) / delta + 4; break;
-				}
-				h *= 60;
-			}
 			return new HSBColor(h, s, v, color._alpha);
 		},
 
@@ -155,23 +148,14 @@ var Color = this.Color = Base.extend(new function() {
 				max = Math.max(r, g, b),
 				min = Math.min(r, g, b),
 				delta = max - min,
-				h,
-				s,
-				l = (max + min) / 2;
-			if (delta == 0) {
-				h = s = 0;
-			} else {
+				h = delta == 0 ? 0
+					:   ( max == r ? (g - b) / delta + (g < b ? 6 : 0)
+						: max == g ? (b - r) / delta + 2
+						:            (r - g) / delta + 4) * 60, // max == b
+				l = (max + min) / 2,
 				s = l < 0.5
 					? delta / (max + min)
 					: delta / (2 - max - min);
-			}
-			switch (max) {
-			case r: h = (g - b) / delta; break;
-			case g: h = (b - r) / delta + 2; break;
-			case b: h = (r - g) / delta + 4; break;
-			}
-			h *= 60;
-			if (h < 0) h += 360;
 			return new HSLColor(h, s, l, color._alpha);
 		},
 
