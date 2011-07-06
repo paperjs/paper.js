@@ -253,16 +253,17 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	// PORT: Add support for start parameter to Sg
-	// DOCS: document Curve#getParameter(length, start)
+	// PORT: Rename #getParameter(length) -> #getParameterAt(offset)
+	// DOCS: Document #getParameter(length, start)
 	/**
-	 * @param {Number} length
+	 * @param {Number} offset
 	 * @param {Number} [start]
 	 * @return {Number}
 	 */
-	getParameter: function(length, start) {
+	getParameterAt: function(offset, start) {
 		var args = this.getValues();
-		args.push(length, start !== undefined ? start : length < 0 ? 1 : 0);
-		return Curve.getParameter.apply(Curve, args);
+		args.push(offset, start !== undefined ? start : offset < 0 ? 1 : 0);
+		return Curve.getParameterAt.apply(Curve, args);
 	},
 
 	/**
@@ -606,16 +607,16 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			return Numerical.integrate(ds, a, b, getIterations(a, b));
 		},
 
-		getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
-				length, start) {
-			if (length == 0)
+		getParameterAt: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
+				offset, start) {
+			if (offset == 0)
 				return start;
 			// See if we're going forward or backward, and handle cases
 			// differently
-			var forward = length > 0,
+			var forward = offset > 0,
 				a = forward ? start : 0,
 				b = forward ? 1 : start,
-				length = Math.abs(length),
+				offset = Math.abs(offset),
 				// Use integrand to calculate both range length and part
 				// lengths in f(t) below.
 				ds = getLengthIntegrand(
@@ -623,25 +624,23 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				// Get length of total range
 				rangeLength = Numerical.integrate(ds, a, b,
 						getIterations(a, b));
-			if (length >= rangeLength)
+			if (offset >= rangeLength)
 				return forward ? b : a;
-			// Use length / rangeLength for an initial guess for t, to
+			// Use offset / rangeLength for an initial guess for t, to
 			// bring us closer:
-			var guess = length / rangeLength,
-				len = 0;
+			var guess = offset / rangeLength,
+				length = 0;
 			// Iteratively calculate curve range lengths, and add them up,
 			// using integration precision depending on the size of the
 			// range. This is much faster and also more precise than not
 			// modifing start and calculating total length each time.
 			function f(t) {
 				var count = getIterations(start, t);
-				if (start < t) {
-					len += Numerical.integrate(ds, start, t, count);
-				} else {
-					len -= Numerical.integrate(ds, t, start, count);
-				}
+				length += start < t
+						? Numerical.integrate(ds, start, t, count)
+						: -Numerical.integrate(ds, t, start, count);
 				start = t;
-				return len - length;
+				return length - offset;
 			}
 			return Numerical.findRoot(f, ds,
 					forward ? a + guess : b - guess, // Initial guess for x
@@ -832,5 +831,5 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		getNearestPoint: function(point) {
 			return this.getNearestLocation(point).getPoint();
 		}
-	}
+	};
 });

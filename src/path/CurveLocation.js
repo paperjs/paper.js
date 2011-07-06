@@ -136,7 +136,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 */
 	getParameter: function() {
 		if (this._parameter == null && this._curve && this._point)
-			this._parameter = this._curve.getParameter(this._point);
+			this._parameter = this._curve.getParameterAt(this._point);
 		return this._parameter;
 	},
 

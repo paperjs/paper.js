@@ -960,7 +960,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (length >= offset) {
 				// Found the segment within which the length lies
 				return new CurveLocation(curve,
-						curve.getParameter(offset - start));
+						curve.getParameterAt(offset - start));
 			}
 		}
 		// It may be that through impreciseness of getLength, that the end
