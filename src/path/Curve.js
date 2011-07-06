@@ -812,16 +812,20 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			var w = toBezierForm([p1, p1.add(h1), p2.add(h2), p2], point);
 			// Also look at beginning and end of curve (t = 0 / 1)
 			var roots = findRoots(w, 0).concat([0, 1]);
-			var min = Infinity,
-				best;
+			var minDist = Infinity,
+				minPoint,
+				minRoot;
+			// There are always roots, since we add [0, 1] above.
 			for (var i = 0; i < roots.length; i++) {
-				var dist = point.getDistance(this.getPoint(roots[i]));
-				if (dist < min) {
-					min = dist;
-					best = roots[i];
+				var pt = this.getPoint(roots[i]),
+					dist = point.getDistance(pt);
+				if (dist < minDist) {
+					minDist = dist;
+					minRoot = roots[i];
+					minPoint = pt;
 				}
 			}
-			return new CurveLocation(this, best);
+			return new CurveLocation(this, minRoot, minPoint, minDist);
 		},
 
 		getNearestPoint: function(point) {
