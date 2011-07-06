@@ -51,7 +51,8 @@ var Color = this.Color = Base.extend(new function() {
 	var components = {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],
-		hsb: ['hue', 'saturation', 'brightness']
+		hsb: ['hue', 'saturation', 'brightness'],
+		hsl: ['hue', 'saturation', 'lightness']
 	};
 
 	var colorCache = {},
@@ -164,6 +165,77 @@ var Color = this.Color = Base.extend(new function() {
 
 		'gray-hsb': function(color) {
 			return new HSBColor(0, 0, 1 - color._gray, color._alpha);
+		},
+		
+		'rgb-hsl': function(color) {
+			// Code taken from 
+			// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+			var r = color._red,
+				g = color._green,
+				b = color._blue,
+				max = Math.max(r, g, b),
+				min = Math.min(r, g, b),
+				h, s, l = (max + min) / 2;
+			
+			if (max == min) {
+				h = s = 0;
+			} else {
+				s = l < 0.5 ? (max - min) / (max + min) : (max - min) / (2 - max - min);
+			}
+			switch (max) {
+				case r: h = (g - b) / (max - min); break;
+				case g: h = 2 + (b - r) / (max - min); break;
+				case b: h = 4 + (r - g) / (max - min); break;
+			}
+			h *= 60;
+			if (h < 0) h += 360;
+			return new HSLColor(h, s, l, color._alpha);
+		},
+		
+		'hsl-rgb': function(color) {
+			// this code is a slightly modified version of this source:
+			// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+			var s = color._saturation,
+				h = color._hue / 360,
+				l = color._lightness,
+				t1, t2, t3, c, r, g, b, i;
+				
+			if (s == 0) {
+				return new RGBColor(l, l, l, color._alpha);
+			} else {
+				t3 = [0,0,0];
+				c = [0,0,0];
+				t2 = l < 0.5 ? l * (1 + s) : l + s - l * s;
+				t1 = 2 * l - t2;
+				t3[0] = h + 1 / 3;
+				t3[1] = h;
+				t3[2] = h - 1 / 3;
+				for (i = 0; i<3; i++) {
+					if (t3[i] < 0) t3[i] += 1;
+					if (t3[i] > 1) t3[i] -= 1;
+					if (6 * t3[i] < 1) c[i] = t1 + (t2 - t1) * 6 * t3[i];
+					else if (2 * t3[i] < 1) c[i] = t2;
+					else if (3 * t3[i] < 2) c[i] = t1 + (t2 - t1) * ((2 / 3) - t3[i]) * 6;
+					else c[i] = t1;
+				}
+				return new RGBColor(c[0], c[1], c[2], color._alpha);
+			}
+		},
+		
+		'hsl-gray': function(color) {
+			return converters['rgb-gray'](converters['hsl-rgb'](color));
+		},
+
+		'gray-hsl': function(color) {
+			return new HSLColor(0, 0, 1 - color._gray, color._alpha);
+		},
+		
+		'hsl-hsb': function(color) {
+			return converters['rgb-hsb'](converters['hsl-rgb'](color));
+		},
+		
+		'hsb-hsl': function(color) {
+			return converters['rgb-hsl'](converters['hsb-rgb'](color));
 		}
 	};
 
@@ -181,6 +253,9 @@ var Color = this.Color = Base.extend(new function() {
 						? new RGBColor(arg.red, arg.green, arg.blue, arg.alpha)
 						: arg.gray !== undefined
 						? new GrayColor(arg.gray, arg.alpha)
+						: arg.lightness !== undefined
+						? new HSLColor(arg.hue, arg.saturation, arg.lightness,
+								arg.alpha)
 						: arg.hue !== undefined
 						? new HSBColor(arg.hue, arg.saturation, arg.brightness,
 								arg.alpha)
@@ -669,4 +744,39 @@ var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
 	 */
 
 	_colorType: 'hsb'
+});
+
+
+/**
+ * @name HSLColor
+ * @class An HSLColor object is used to represent any HSL color value.
+ * @extends Color
+ */
+var HSLColor = this.HSLColor = Color.extend(/** @lends HSLColor# */{
+	/**
+	 * Creates an HSLColor object
+	 *
+	 * @name HSLColor#initialize
+	 * @param {Number} hue the hue of the color as a value in degrees between
+	 * {@code 0} and {@code 360}.
+	 * @param {Number} saturation the saturation of the color as a value
+	 * between {@code 0} and {@code 1}
+	 * @param {Number} lightness the lightness of the color as a value
+	 * between {@code 0} and {@code 1}
+	 * @param {Number} [alpha] the alpha of the color as a value between
+	 * {@code 0} and {@code 1}
+	 *
+	 * @example {@paperscript}
+	 * // Creating an HSLColor:
+	 *
+	 * // Create a circle shaped path at {x: 80, y: 50}
+	 * // with a radius of 30:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 *
+	 * // Create an HSLColor with a hue of 90 degrees, a saturation
+	 * // 100% and a lightness of 100%:
+	 * circle.fillColor = new HSLColor(90, 1, 1);
+	 */
+
+	_colorType: 'hsl'
 });
