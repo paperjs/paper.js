@@ -167,25 +167,29 @@ var Color = this.Color = Base.extend(new function() {
 			return new HSBColor(0, 0, 1 - color._gray, color._alpha);
 		},
 		
+		// HSL code is based on:
+		// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
 		'rgb-hsl': function(color) {
-			// Code taken from 
-			// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
 			var r = color._red,
 				g = color._green,
 				b = color._blue,
 				max = Math.max(r, g, b),
 				min = Math.min(r, g, b),
-				h, s, l = (max + min) / 2;
-			
-			if (max == min) {
+				delta = max - min,
+				h,
+				s,
+				l = (max + min) / 2;
+			if (delta == 0) {
 				h = s = 0;
 			} else {
-				s = l < 0.5 ? (max - min) / (max + min) : (max - min) / (2 - max - min);
+				s = l < 0.5
+					? delta / (max + min)
+					: delta / (2 - max - min);
 			}
 			switch (max) {
-				case r: h = (g - b) / (max - min); break;
-				case g: h = 2 + (b - r) / (max - min); break;
-				case b: h = 4 + (r - g) / (max - min); break;
+			case r: h = (g - b) / delta; break;
+			case g: h = (b - r) / delta + 2; break;
+			case b: h = (r - g) / delta + 4; break;
 			}
 			h *= 60;
 			if (h < 0) h += 360;
@@ -193,33 +197,29 @@ var Color = this.Color = Base.extend(new function() {
 		},
 		
 		'hsl-rgb': function(color) {
-			// this code is a slightly modified version of this source:
-			// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
 			var s = color._saturation,
 				h = color._hue / 360,
 				l = color._lightness,
-				t1, t2, t3, c, r, g, b, i;
-				
-			if (s == 0) {
+				t1, t2, c;
+			if (s == 0)
 				return new RGBColor(l, l, l, color._alpha);
-			} else {
-				t3 = [0,0,0];
-				c = [0,0,0];
-				t2 = l < 0.5 ? l * (1 + s) : l + s - l * s;
-				t1 = 2 * l - t2;
-				t3[0] = h + 1 / 3;
-				t3[1] = h;
-				t3[2] = h - 1 / 3;
-				for (i = 0; i<3; i++) {
-					if (t3[i] < 0) t3[i] += 1;
-					if (t3[i] > 1) t3[i] -= 1;
-					if (6 * t3[i] < 1) c[i] = t1 + (t2 - t1) * 6 * t3[i];
-					else if (2 * t3[i] < 1) c[i] = t2;
-					else if (3 * t3[i] < 2) c[i] = t1 + (t2 - t1) * ((2 / 3) - t3[i]) * 6;
-					else c[i] = t1;
-				}
-				return new RGBColor(c[0], c[1], c[2], color._alpha);
+			var t3s = [ h + 1 / 3, h, h - 1 / 3 ],
+				t2 = l < 0.5 ? l * (1 + s) : l + s - l * s,
+				t1 = 2 * l - t2,
+				c = [0, 0, 0];
+			for (var i = 0; i < 3; i++) {
+				var t3 = t3s[i];
+				if (t3 < 0) t3 += 1;
+				if (t3 > 1) t3 -= 1;
+				c[i] = 6 * t3 < 1
+					? t1 + (t2 - t1) * 6 * t3
+					: 2 * t3 < 1
+						? t2
+						: 3 * t3 < 2
+							? t1 + (t2 - t1) * ((2 / 3) - t3) * 6
+							: t1;
 			}
+			return new RGBColor(c[0], c[1], c[2], color._alpha);
 		},
 		
 		'hsl-gray': function(color) {
