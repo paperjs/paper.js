@@ -134,7 +134,7 @@ var PaperScript = this.PaperScript = new function() {
 		if (typeof code !== 'string') {
 			// If a canvas id is provided, create a project for it now,
 			// so the active project is defined.
-			var canvas = code.getAttribute('canvas');
+			var canvas = PaperScript.getAttribute(code, 'canvas');
 			if (canvas = canvas && document.getElementById(canvas)) {
 				// Create an empty Project for this scope, and a view for the
 				// canvas, both using the right paper scope
@@ -230,7 +230,7 @@ var PaperScript = this.PaperScript = new function() {
 			// Only load this script if it not loaded already.
 			// TODO: support 'text/x-paperscript':
 			if (script.type === 'text/paperscript'
-					&& !script.getAttribute('loaded')) {
+					&& !script.getAttribute('data-paper-loaded')) {
 				// Produce a new PaperScope for this script now. Scopes are
 				// cheap so let's not worry about the initial one that was
 				// already created.
@@ -244,17 +244,28 @@ var PaperScript = this.PaperScript = new function() {
 				script.setAttribute('id', scope.id);
 				evaluate(script, scope);
 				// Mark script as loaded now.
-				script.setAttribute('loaded', true);
+				script.setAttribute('data-paper-loaded', true);
 			}
 		}
 	}
 
 	DomEvent.add(window, { load: load });
 
+	// Produces helpers to e.g. check for both 'canvas' and 'data-paper-canvas'
+	// attributes:
+	function handleAttribute(name) {
+		name += 'Attribute';
+		return function(el, attr) {
+			return el[name](attr) || el[name]('data-paper-' + attr);
+		}
+	}
+
 	return {
 		compile: compile,
 		evaluate: evaluate,
-		load: load
+		load: load,
+		getAttribute: handleAttribute('get'),
+		hasAttribute: handleAttribute('has')
 	};
 
 //#else // !BROWSER

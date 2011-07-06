@@ -39,7 +39,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 			this._canvas = canvas;
 			// If the canvas has the resize attribute, resize the it to fill the
 			// window and resize it again whenever the user resizes the window.
-			if (canvas.attributes.resize) {
+			if (PaperScript.hasAttribute(canvas, 'resize')) {
 				// Subtract canvas' viewport offset from the total size, to
 				// stretch it in
 				var offset = DomElement.getOffset(canvas, false, true),
@@ -66,7 +66,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 					: DomElement.getSize(canvas);
 			}
 			// TODO: Test this on IE:
-			if (canvas.attributes.stats) {
+			if (PaperScript.hasAttribute(canvas, 'stats')) {
 				this._stats = new Stats();
 				// Align top-left to the canvas
 				var element = this._stats.domElement,

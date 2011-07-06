@@ -122,24 +122,25 @@ DomEvent.requestAnimationFrame = new function() {
 			return request(callback, element);
 		// If not, do the callback handling ourself:
 		callbacks.push([callback, element]);
-		if (!timer) {
-			// Installs interval timer that checks all callbacks. This results
-			// in faster animations than repeatedly installing timout timers.
-			timer = window.setInterval(function() {
-				// Checks all installed callbacks for element visibility and
-				// execute if needed.
-				for (var i = callbacks.length - 1; i >= 0; i--) {
-					var entry = callbacks[i],
-						func = entry[0],
-						element = entry[1];
-					if (!element || (element.getAttribute('keepalive') == 'true'
-							|| focused) && DomElement.isVisible(element)) {
-						// Handle callback and remove it from callbacks list.
-						callbacks.splice(i, 1);
-						func(Date.now());
-					}
+		// We're done if there's already a timer installed
+		if (timer)
+			return;
+		// Installs interval timer that checks all callbacks. This results
+		// in faster animations than repeatedly installing timout timers.
+		timer = window.setInterval(function() {
+			// Checks all installed callbacks for element visibility and
+			// execute if needed.
+			for (var i = callbacks.length - 1; i >= 0; i--) {
+				var entry = callbacks[i],
+					func = entry[0],
+					el = entry[1];
+				if (!el || (PaperScript.getAttribute(el, 'keepalive') == 'true'
+						|| focused) && DomElement.isVisible(el)) {
+					// Handle callback and remove it from callbacks list.
+					callbacks.splice(i, 1);
+					func(Date.now());
 				}
-			}, 1000 / 60);
-		}
+			}
+		}, 1000 / 60);
 	};
 };
