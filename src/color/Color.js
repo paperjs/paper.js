@@ -168,6 +168,8 @@ var Color = this.Color = Base.extend(new function() {
 		},
 		
 		'rgb-hsl': function(color) {
+			// Code taken from 
+			// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
 			var r = color._red,
 				g = color._green,
 				b = color._blue,
@@ -191,6 +193,8 @@ var Color = this.Color = Base.extend(new function() {
 		},
 		
 		'hsl-rgb': function(color) {
+			// this code is a slightly modified version of this source:
+			// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
 			var s = color._saturation,
 				h = color._hue / 360,
 				l = color._lightness,
