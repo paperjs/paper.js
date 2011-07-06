@@ -20,7 +20,7 @@ var PathFlattener = Base.extend({
 		this.parts = []; // The calculated, subdivided parts of the path
 		this.length = 0; // The total length of the path
 		// Keep a current index from the part where we last where in
-		// getParameter(), to optimise for iterator-like usage of the flattener.
+		// getParameterAt(), to optimise for iterator-like usage of flattener.
 		this.index = 0;
 
 		// Instead of relying on path.curves, we only use segments here and
@@ -73,7 +73,7 @@ var PathFlattener = Base.extend({
 		}
 	},
 
-	getParameter: function(offset) {
+	getParameterAt: function(offset) {
 		// Make sure we're not beyond the requested offset already. Search the
 		// start position backwards from where to then process the loop below.
 		var i, j = this.index;
@@ -113,14 +113,14 @@ var PathFlattener = Base.extend({
 	},
 
 	evaluate: function(offset, type) {
-		var param = this.getParameter(offset);
+		var param = this.getParameterAt(offset);
 		return Curve.evaluate.apply(Curve,
 				this.curves[param.index].concat([param.value, type]));
 	},
 
 	drawPart: function(ctx, from, to) {
-		from = this.getParameter(from);
-		to = this.getParameter(to);
+		from = this.getParameterAt(from);
+		to = this.getParameterAt(to);
 		for (var i = from.index; i <= to.index; i++) {
 			var curve = Curve.getPart.apply(Curve, this.curves[i].concat(
 					i == from.index ? from.value : 0,
