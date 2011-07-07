@@ -156,7 +156,7 @@ test('isDescendant(item) / isAncestor(item)', function() {
 	equals(function() {
 		return project.activeLayer.isAncestor(path);
 	}, true);
-	
+
 	// an item can't be its own descendant:
 	equals(function() {
 		return project.activeLayer.isDescendant(project.activeLayer);
@@ -173,7 +173,7 @@ test('isGroupedWith', function() {
 	var secondPath = new Path();
 	var group = new Group([path]);
 	var secondGroup = new Group([secondPath]);
-	
+
 	equals(function() {
 		return path.isGroupedWith(secondPath);
 	}, false);
@@ -246,7 +246,7 @@ test('Check item#project when moving items across projects', function() {
 	var path = new Path();
 	var group = new Group();
 	group.addChild(new Path());
-	
+
 	equals(function() {
 		return path.project == doc1;
 	}, true);
@@ -255,7 +255,7 @@ test('Check item#project when moving items across projects', function() {
 	equals(function() {
 		return path.project == doc2;
 	}, true);
-	
+
 	doc2.activeLayer.addChild(group);
 	equals(function() {
 		return group.children[0].project == doc2;
@@ -270,12 +270,12 @@ test('group.selected', function() {
 	equals(function() {
 		return group.selected;
 	}, true);
-	
+
 	path.selected = false;
 	equals(function() {
 		return group.selected;
 	}, false);
-	
+
 	group.selected = true;
 	equals(function() {
 		return path.selected;
@@ -283,7 +283,7 @@ test('group.selected', function() {
 	equals(function() {
 		return path2.selected;
 	}, true);
-	
+
 	group.selected = false;
 	equals(function() {
 		return path.selected;
@@ -299,22 +299,22 @@ test('Check parent children object for named item', function() {
 	equals(function() {
 		return paper.project.activeLayer.children['test'] == path;
 	}, true);
-	
+
 	var path2 = new Path();
 	path2.name = 'test';
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children['test'] == path2;
 	}, true);
-	
+
 	path2.remove();
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children['test'] == path;
 	}, true);
-	
+
 	path.remove();
-	
+
 	equals(function() {
 		return !paper.project.activeLayer.children['test'];
 	}, true);
@@ -326,9 +326,9 @@ test('Named child access 1', function() {
 
 	var path2 = new Path();
 	path2.name = 'test';
-	
+
 	path.remove();
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children['test'] == path2;
 	}, true);
@@ -340,23 +340,23 @@ test('Named child access 2', function() {
 
 	var path2 = new Path();
 	path2.name = 'test';
-	
+
 	path.remove();
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children['test'] == path2;
 	}, true);
-	
+
 	equals(function() {
 		return paper.project.activeLayer._namedChildren['test'].length == 1;
 	}, true);
-	
+
 	path2.remove();
 
 	equals(function() {
 		return !paper.project.activeLayer._namedChildren['test'];
 	}, true);
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children['test'] === undefined;
 	}, true);
@@ -368,11 +368,11 @@ test('Named child access 3', function() {
 
 	var path2 = new Path();
 	path2.name = 'test';
-	
+
 	var group = new Group();
-	
+
 	group.addChild(path2);
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children['test'] == path;
 	}, true);
@@ -429,9 +429,9 @@ test('Setting name of child back to null', function() {
 	equals(function() {
 		return paper.project.activeLayer.children['test'] == path;
 	}, true);
-	
+
 	path.name = null;
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children['test'] === undefined;
 	}, true);
@@ -440,13 +440,13 @@ test('Setting name of child back to null', function() {
 test('Renaming item', function() {
 	var path = new Path();
 	path.name = 'test';
-	
+
 	path.name = 'test2';
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children['test'] === undefined;
 	}, true);
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children['test2'] == path;
 	}, true);

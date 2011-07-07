@@ -52,7 +52,7 @@ function onMouseMove(event) {
 			size = size.floor();
 			secondPath.position += isLandscape
 					? [size.width, 0]
-					: [0, size.height];				
+					: [0, size.height];
 			secondPath.fillColor = raster.getAverageColor(secondPath);
 			secondPath.insertBelow(path);
 

@@ -32,7 +32,7 @@ test('moveTo / lineTo', function() {
 	}
 
 	path.fillColor = 'black';
-	
+
 	equals(function() {
 		return path.children.length;
 	}, 2);

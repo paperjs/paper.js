@@ -60,7 +60,6 @@ var Numerical = new function() {
 		sqrt = Math.sqrt,
 		cos = Math.cos,
 		PI = Math.PI;
-		
 
 	return {
 		TOLERANCE: 10e-6,

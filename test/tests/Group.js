@@ -45,7 +45,7 @@ test('Group bounds', function() {
 	var group = new Group([path, secondPath]);
 	compareRectangles(group.bounds, { x: 90, y: 90, width: 170, height: 170 }, 'group.bounds');
 	compareRectangles(group.strokeBounds, { x: 87.5, y: 87.5, width: 175, height: 175 }, 'group.strokeBounds');
-	
+
 	group.rotate(20);
 	compareRectangles(group.bounds, { x: 89.97681, y: 82.94095, width: 170.04639, height: 177.08224 }, 'rotated group.bounds');
 	compareRectangles(group.strokeBounds, { x: 87.47681, y: 80.44095, width: 175.04639, height: 182.08224 }, 'rotated group.strokeBounds');
