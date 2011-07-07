@@ -587,9 +587,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			var a = p1y - p2y,
 				b = p2x - p1x,
 				c = p1x * p2y - p2x * p1y,
-				// Find the largest distance
-				// Compute distance from each of the points to that line
-			 	v1 = a * c1x + b * c1y + c,
+				// Find the largest distance from each of the points to the line
+				v1 = a * c1x + b * c1y + c,
 				v2 = a * c2x + b * c2y + c;
 			// Compute intercepts of bounding box
 			return Math.abs((v1 * v1 + v2 * v2) / (a * (a * a + b * b))) < 0.005;
