@@ -207,7 +207,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 }, new function() { // Injection scope to produce getter setters for properties
 	// We need setters because we want to call _changed() if a property was
 	// modified.
-	return Base.each(['locked', 'visible', 'blendMode', 'opacity'],
+	return Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 		function(name) {
 			var part = Base.capitalize(name),
 				name = '_' + name;
@@ -307,6 +307,17 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * circle2.opacity = 0.5;
 	 */
 	_opacity: 1,
+
+	// TODO: Implement guides
+	/**
+	 * Specifies whether the item functions as a guide. When set to
+	 * {@code true}, the item will be drawn at the end as a guide.
+	 *
+	 * @name Item#guide
+	 * @type Number
+	 * @default 1
+	 */
+	_guide: false,
 
 	/**
 	 * Specifies whether an item is selected and will also return {@code true}
@@ -581,8 +592,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		// Only copy over these fields if they are actually defined in 'this'
 		// TODO: Consider moving this to Base once it's useful in more than one
 		// place
-		var keys = ['_locked', '_visible', '_opacity', '_blendMode',
-				'_clipMask'];
+		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
+				'_clipMask', '_guide'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
