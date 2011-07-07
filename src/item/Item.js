@@ -668,6 +668,27 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		return raster;
 	},
 
+	hitTest: function(point, options, matrix) {
+		options = HitResult.getOptions(options);
+		// TODO: Support option.type even for things like CompoundPath where
+		// children are matched but the parent is returned.
+
+		// Filter for guides or selected items if that's required
+		return this._children || !(options.guides && !this._guide
+				|| options.selected && !this._selected)
+					? this._hitTest(point, options, matrix) : null;
+	},
+
+	_hitTest: function(point, options, matrix) {
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				var res = this._children[i].hitTest(point, options, matrix);
+				if (res)
+					return res;
+			}
+		}
+	},
+
 	/**
 	 * {@grouptitle Hierarchy Operations}
 	 * Adds the specified item as a child of this item at the end of the
@@ -1583,10 +1604,10 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	},
 
 	/*
-		_transform: function(matrix, flags) {
-			// The code that performs the actual transformation of content,
-			// if defined. Item itself does not define this.
-		},
+	_transform: function(matrix, flags) {
+		// The code that performs the actual transformation of content,
+		// if defined. Item itself does not define this.
+	},
 	*/
 
 	toString: function() {

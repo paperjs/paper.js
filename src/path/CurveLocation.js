@@ -14,6 +14,7 @@
  * All rights reserved.
  */
 
+// TODO: Consider simply naming Location?
 /**
  * @name CurveLocation
  *
@@ -87,7 +88,8 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getItem: function() {
-		return this._curve && this._curve._path;
+		// Support _item for HitResult
+		return this._item || this._curve && this._curve._path;
 	},
 
 	/**
@@ -193,6 +195,12 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	toString: function() {
 		var parts = [],
 			point = this.getPoint();
+		// Support for HitResult that inherits from CurveLocation
+		if (this._type)
+			parts.push('type: ' + this._type);
+		if (this._item)
+			parts.push('item: ' + this._item);
+		// Normal CurveLocation properties:
 		if (point)
 			parts.push('point: ' + point);
 		var index = this.getIndex();
@@ -201,6 +209,8 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 		var parameter = this.getParameter();
 		if (parameter != null)
 			parts.push('parameter: ' + Base.formatNumber(parameter));
+		if (this._distance != null)
+			parts.push('distance: ' + Base.formatNumber(this._distance));
 		return '{ ' + parts.join(', ') + ' }';
 	}
 });

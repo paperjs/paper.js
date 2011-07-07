@@ -181,6 +181,16 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 			this._selectedItems[i].setSelected(false);
 	},
 
+	hitTest: function(point, options) {
+		options = HitResult.getOptions(options);
+		for (var i = 0, l = this.layers.length; i < l; i++) {
+			var res = this.layers[i].hitTest(point, options);
+			if (res)
+				return res;
+		}
+		return null;
+	},
+
 	/**
 	 * {@grouptitle Project Hierarchy}
 	 *
