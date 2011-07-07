@@ -41,6 +41,13 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	},
 
 	/**
+	 * The type of tool event.
+	 *
+	 * @name ToolEvent#type
+	 * @type String('mousedown', 'mouseup', 'mousemove', 'mousedrag')
+	 */
+
+	/**
 	 * The position of the mouse in project coordinates when the event was
 	 * fired.
 	 *
