@@ -55,10 +55,10 @@ test('Set color to array', function() {
 });
 
 test('Creating colors', function() {
-	
+
 	compareRGBColors(new RGBColor('#ff0000'), new RGBColor(1, 0, 0),
 			'RGBColor from hex code');
-	
+
 	compareRGBColors(new RGBColor({ red: 1, green: 0, blue: 1}),
 			new RGBColor(1, 0, 1), 'RGBColor from rgb object literal');
 
@@ -70,7 +70,7 @@ test('Creating colors', function() {
 
 	compareRGBColors(new RGBColor([1, 0, 0]), new RGBColor(1, 0, 0),
 			'RGBColor from array');
-	
+
 	compareHSBColors(new HSBColor('#000000'), new HSBColor(0, 0, 0),
 			'HSBColor from hex code');
 
@@ -82,7 +82,7 @@ test('Creating colors', function() {
 
 	compareHSBColors(new HSBColor([1, 0, 0]), new HSBColor(1, 0, 0),
 			'HSBColor from array');
-	
+
 	compareGrayColors(new GrayColor('#000000'), new GrayColor(1),
 			'GrayColor from hex code');
 
@@ -123,14 +123,14 @@ test('Get red from HSBColor', function() {
 test('Get hue from RGBColor', function() {
 	var color = new RGBColor(1, 0, 0);
 	compareNumbers(color.hue, 0);
-	compareNumbers(color.saturation, 1);	
+	compareNumbers(color.saturation, 1);
 });
 
 test('Gray Color', function() {
 	var color = new GrayColor(1);
 	compareNumbers(color.gray, 1);
 	compareNumbers(color.red, 0);
-	
+
 	color.red = 0.5;
 	compareNumbers(color.gray, '0.84999');
 
@@ -141,14 +141,14 @@ test('Gray Color', function() {
 test('Converting Colors', function() {
 	var rgbColor = new RGBColor(1, 0.5, 0.2);
 	compareNumbers(new GrayColor(rgbColor).gray, 0.38299560546875);
-	
+
 	var grayColor = new GrayColor(0.2);
 	var rgbColor = new RGBColor(grayColor);
 	compareRGBColors(rgbColor, [ 0.8, 0.8, 0.8, 1]);
-	
+
 	var hsbColor = new HSBColor(grayColor);
 	compareHSBColors(hsbColor, [ 0, 0, 0.8, 1]);
-	
+
 	var rgbColor = new RGBColor(1, 0, 0);
 	compareHSBColors(new HSBColor(rgbColor), [0, 1, 1, 1]);
 });
@@ -156,24 +156,24 @@ test('Converting Colors', function() {
 test('Setting RGBColor#gray', function() {
 	var color = new RGBColor(1, 0.5, 0.2);
 	color.gray = 0.1;
-	compareRGBColors(color, [ 0.9, 0.9, 0.9, 1]);	
+	compareRGBColors(color, [ 0.9, 0.9, 0.9, 1]);
 });
 
 test('Setting HSBColor#red', function() {
 	var color = new HSBColor(180, 0, 0);
 	color.red = 1;
-	compareHSBColors(color, [0, 1, 1, 1]);	
+	compareHSBColors(color, [0, 1, 1, 1]);
 });
 
 test('Setting HSBColor#gray', function() {
 	var color = new HSBColor(180, 0, 0);
 	color.gray = 0.5;
-	compareHSBColors(color, [0, 0, 0.5, 1]);	
+	compareHSBColors(color, [0, 0, 0.5, 1]);
 });
 
 test('Color.read(channels)', function() {
 	var color = Color.read([0, 0, 1]);
-	compareRGBColors(color, [0, 0, 1, 1]);	
+	compareRGBColors(color, [0, 0, 1, 1]);
 });
 
 test('Cloning colors', function() {

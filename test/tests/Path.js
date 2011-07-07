@@ -20,11 +20,11 @@ test('path.join(path)', function() {
 	var path = new Path();
 	path.add(0, 0);
 	path.add(10, 0);
-	
+
 	var path2 = new Path();
 	path2.add(10, 0);
 	path2.add(20, 10);
-	
+
 	path.join(path2);
 	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } }');
 	equals(function() {
@@ -34,13 +34,13 @@ test('path.join(path)', function() {
 	var path = new Path();
 	path.add(0, 0);
 	path.add(10, 0);
-	
+
 	var path2 = new Path();
 	path2.add(20, 10);
 	path2.add(10, 0);
 	path.join(path2);
 	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } }');
-		
+
 	var path = new Path();
 	path.add(0, 0);
 	path.add(10, 0);
@@ -60,9 +60,9 @@ test('path.join(path)', function() {
 	path2.add(0, 0);
 	path2.add(10, 5);
 	path2.add(20, 10);
-	
+
 	path.join(path2);
-	
+
 	equals(path.segments.toString(), '{ point: { x: 0, y: 0 } },{ point: { x: 10, y: 0 } },{ point: { x: 20, y: 10 } },{ point: { x: 10, y: 5 } }');
 	equals(function() {
 		return path.closed;
@@ -75,7 +75,7 @@ test('path.remove()', function() {
 	path.add(10, 0);
 	path.add(20, 0);
 	path.add(30, 0);
-	
+
 	path.removeSegment(0);
 	equals(function() {
 		return path.segments.length;
@@ -92,7 +92,7 @@ test('path.remove()', function() {
 	}, 1);
 
 	path.remove();
-	
+
 	equals(function() {
 		return paper.project.activeLayer.children.length;
 	}, 0);
@@ -208,7 +208,7 @@ test('After cloning a selected item, it should be added to the Project#selectedI
 	var path = new Path.Circle(new Size(80, 50), 35);
 	path.selected = true;
 	var copy = path.clone();
-	
+
 	equals(function() {
 		return paper.project.selectedItems.length
 	}, 2);
