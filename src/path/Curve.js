@@ -326,7 +326,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return Curve.getParameter.apply(Curve, args);
 	},
 
-	getCrossings: function(point, matrix, prevSlope) {
+	getCrossings: function(point, matrix) {
 		// Implement the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		// Solve the y-axis cubic polynominal for point.y and count all
@@ -342,7 +342,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				// previous curve, do not count this root, as we're merely
 				// touching a tip.
 				if (t < Numerical.TOLERANCE
-							&& prevSlope * this.getTangent(t).y >= 0)
+						&& this.getPrevious().getTangent(1).y
+							* this.getTangent(t).y >= 0)
 					continue;
 				crossings++;
 			}
