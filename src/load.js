@@ -129,3 +129,12 @@ for (var i = 0; i < sources.length; i++) {
 			+ sources[i] + '"></script>');
 }
 
+// Append a bit of code that names our classes.
+// See src/paper.js for an in-depth explanation.
+document.write('<script type="text/javascript">\
+Base.each(this, function(val, key) {\
+	if (val && val.prototype instanceof Base)\
+		val._name = key;\
+});\
+</script>');
+

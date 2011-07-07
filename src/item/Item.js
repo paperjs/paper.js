@@ -1589,7 +1589,11 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		},
 	*/
 
-	// TODO: toString
+	toString: function() {
+		return (this.constructor._name || 'Item') + (this._name
+				? " '" + this._name + "'"
+				: ' @' + this._id);
+	},
 
 	statics: {
 		drawSelectedBounds: function(bounds, ctx, matrix) {

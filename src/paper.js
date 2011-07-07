@@ -122,6 +122,15 @@ var paper = new function() {
 
 //#include "core/PaperScript.js"
 
+// Iterate over all proced Base classes and set the _name property of their
+// constructors to the key under which they are stored. This is a simple hack
+// that allow us to use their names.
+// Setting Function#name is not possible, as that is read-only.
+Base.each(this, function(val, key) {
+	if (val && val.prototype instanceof Base)
+		val._name = key;
+});
+
 // Finally inject the classes set on 'this' into the PaperScope class and create
 // the first PaperScope and return it, all in one statement.
 return new (PaperScope.inject(this));
