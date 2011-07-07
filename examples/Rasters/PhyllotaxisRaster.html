@@ -16,7 +16,7 @@
 			// The amount of paths to produce:
 			amount: 200
 		};
-		// Create a raster object, using the image 
+		// Create a raster object, using the image
 		var raster = new Raster('sunflower');
 
 		// Transform the raster so it fills the bounding rectangle
@@ -29,7 +29,7 @@
 		// Create the group of circle shaped paths and scale it up a bit:
 		var group = createPhyllotaxis(values.amount);
 		group.scale(3);
-		
+
 		function createPhyllotaxis(amount) {
 			var group = new Group();
 			// The Golden Angle (http://en.wikipedia.org/wiki/Golden_angle)

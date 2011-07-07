@@ -553,7 +553,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 					// Avoid endless loops here: If sx is infinite and there was
 					// no fitting ty, there's no solution for this bezier
 					if (sx == -1)
-						break; 
+						break;
 				}
 			}
 			return null;
@@ -711,7 +711,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	var maxDepth = 32,
 		epsilon = Math.pow(2, -maxDepth - 1);
 
-	var zCubic = [  
+	var zCubic = [
 		[1.0, 0.6, 0.3, 0.1],
 		[0.4, 0.6, 0.6, 0.4],
 		[0.1, 0.3, 0.6, 1.0]
@@ -745,7 +745,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		// c's and d's
 		for (var row = 0; row < n; row++) {
 			cd[row] = [];
-			for (var column = 0; column <= n; column++) 
+			for (var column = 0; column <= n; column++)
 				cd[row][column] = d[row].dot(c[column]);
 		}
 

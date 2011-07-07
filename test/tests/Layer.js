@@ -26,7 +26,7 @@ test('previousSibling / nextSibling', function() {
 	equals(function() {
 		return secondLayer.nextSibling == null;
 	}, true);
-	
+
 	// Move another layer into secondLayer and check nextSibling /
 	// previousSibling:
 	var path = new Path();
@@ -48,7 +48,7 @@ test('previousSibling / nextSibling', function() {
 	equals(function() {
 		return project.layers.length == 2;
 	}, true);
-	
+
 	firstLayer.addChild(secondLayer);
 	equals(function() {
 		return project.layers.length == 1;
@@ -66,7 +66,7 @@ test('insertAbove / insertBelow', function() {
 	equals(function() {
 		return secondLayer.nextSibling == firstLayer;
 	}, true);
-	
+
 	var path = new Path();
 	firstLayer.addChild(path);
 

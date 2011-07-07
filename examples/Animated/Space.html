@@ -35,7 +35,7 @@
 		angle: 45,
 		length: 0
 	});
-	
+
 	var mouseVector = vector.clone();
 
 	function onMouseMove(event) {
@@ -45,7 +45,7 @@
 	// The onFrame function is called up to 60 times a second:
 	function onFrame(event) {
 		vector = vector + (mouseVector - vector) / 30;
-		
+
 		// Run through the active layer's children list and change
 		// the position of the placed symbols:
 		for (var i = 0; i < count; i++) {
@@ -56,7 +56,7 @@
 			keepInView(item);
 		}
 	}
-	
+
 	function keepInView(item) {
 		var position = item.position;
 		var itemBounds = item.bounds;
@@ -72,7 +72,7 @@
 		if (itemBounds.top > view.size.height) {
 			position.y = -itemBounds.height;
 		}
-		
+
 		if (position.y < -itemBounds.height) {
 			position.y = bounds.height  + itemBounds.height / 2;
 		}

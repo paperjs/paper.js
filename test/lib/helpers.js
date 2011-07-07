@@ -55,7 +55,7 @@ function compareRectangles(rect1, rect2, message) {
 function compareRGBColors(color1, color2, message) {
 	color1 = new RGBColor(color1);
 	color2 = new RGBColor(color2);
-	
+
 	compareNumbers(color1.red, color2.red,
 			(message || '') + ' red');
 	compareNumbers(color1.green, color2.green,
@@ -69,7 +69,7 @@ function compareRGBColors(color1, color2, message) {
 function compareHSBColors(color1, color2, message) {
 	color1 = new HSBColor(color1);
 	color2 = new HSBColor(color2);
-	
+
 	compareNumbers(color1.hue, color2.hue,
 			(message || '') + ' hue');
 	compareNumbers(color1.saturation, color2.saturation,
@@ -83,7 +83,7 @@ function compareHSBColors(color1, color2, message) {
 function compareGrayColors(color1, color2, message) {
 	color1 = new GrayColor(color1);
 	color2 = new GrayColor(color2);
-	
+
 	compareNumbers(color1.gray, color2.gray,
 			(message || '') + ' gray');
 }
@@ -208,7 +208,7 @@ function compareItems(item, item2, checkIdentity) {
 		equals(function() {
 			return item != item2;
 		}, true);
-		
+
 		equals(function() {
 			return item.id != item2.id;
 		}, true);
@@ -241,7 +241,7 @@ function compareItems(item, item2, checkIdentity) {
 
 	equals(item.position.toString(), item2.position.toString(),
 			'Compare Item#position');
-	
+
 	if (item.matrix) {
 		if (checkIdentity) {
 			equals(function() {
@@ -308,7 +308,7 @@ function compareItems(item, item2, checkIdentity) {
 		compareCharacterStyles(item.characterStyle, item2.characterStyle,
 				checkIdentity);
 	}
-	
+
 	// PointText specific:
 	if (item instanceof PointText) {
 		if (checkIdentity) {
@@ -318,7 +318,7 @@ function compareItems(item, item2, checkIdentity) {
 		}
 		equals(item.point.toString(), item2.point.toString(), checkIdentity);
 	}
-	
+
 	if (item.style) {
 		// Path Style
 		comparePathStyles(item.style, item2.style, checkIdentity);

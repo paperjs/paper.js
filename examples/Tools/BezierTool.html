@@ -27,18 +27,18 @@
 			}
 			return null;
 		}
-		
+
 		var currentSegment, mode, type;
 		function onMouseDown(event) {
 			if (currentSegment)
 				currentSegment.selected = false;
 			mode = type = currentSegment = null;
-			
+
 			if (!path) {
 				path = new Path();
 				path.fillColor = new HSBColor(360 * Math.random(), 1, 1, 0.5);
 			}
-			
+
 			var result = findHandle(event.point);
 			if (result) {
 				currentSegment = result.segment;
@@ -51,7 +51,7 @@
 					path = null;
 				}
 			}
-			
+
 			if (mode != 'close') {
 				mode = currentSegment ? 'move' : 'add';
 				if (!currentSegment)
@@ -59,7 +59,7 @@
 				currentSegment.selected = true;
 			}
 		}
-			
+
 		function onMouseDrag(event) {
 			if (mode == 'move' && type == 'point') {
 				currentSegment.point = event.point;
@@ -75,9 +75,9 @@
 </head>
 <body>
 	<p>
-	An emulation of a vector pen tool. 
+	An emulation of a vector pen tool.
 	Click and drag to add a points.<br/>
-	Drag segment handles and points to manipulate them. 
+	Drag segment handles and points to manipulate them.
 	Close the path to start a new one.
 	</p>
 	<canvas id="canvas" resize></canvas>

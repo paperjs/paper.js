@@ -8,7 +8,7 @@
 	<script type="text/paperscript" canvas="canvas">
 		// Adapted from Flocking Processing example by Daniel Schiffman:
 		// http://processing.org/learning/topics/flocking.html
-		
+
 		project.currentStyle = {
 			strokeColor: 'white',
 			strokeWidth: 2,
@@ -21,7 +21,7 @@
 		var headSymbol = new Symbol(head);
 
 		var size = view.size;
-	
+
 		var Boid = Base.extend({
 			initialize: function(position, maxSpeed, maxForce) {
 				var strength = Math.random() * 0.5;
@@ -40,12 +40,12 @@
 					if (i < 3)
 						this.shortPath.add(this.loc);
 				}
-				
+
 				this.firstSegment = this.path.segments[0];
 				this.count = 0;
 				this.lastRot = 0;
 			},
-			
+
 			run: function(boids) {
 				this.lastLoc = this.loc.clone();
 				if (!groupTogether) {
@@ -77,12 +77,12 @@
 				var rot = vector.angle;
 				this.head.rotate(rot - this.lastRot);
 				this.lastRot = rot;
-				
+
 				var shortSegments = this.shortPath.segments;
 				for (var i = 0; i < 3; i++)
 					shortSegments[i] = segments[i].clone();
 			},
-			
+
 			// We accumulate a new acceleration each time based on three rules
 			flock: function(boids) {
 				var sep = this.separate(boids) * 3;
@@ -90,7 +90,7 @@
 				var coh = this.cohesion(boids);
 				this.acc += sep + ali + coh;
 			},
-			
+
 			update: function() {
 				// Update velocity
 				this.vel += this.acc;
@@ -100,15 +100,15 @@
 				// Reset acceleration to 0 each cycle
 				this.acc.length = 0;
 			},
-			
+
 			seek: function(target) {
 				this.acc += this.steer(target, false);
 			},
-			
+
 			arrive: function(target) {
 				this.acc += this.steer(target, true);
 			},
-			
+
 			// A method that calculates a steering vector towards a target
 			// Takes a second argument, if true, it slows down as it approaches
 			// the target
@@ -132,7 +132,7 @@
 				}
 				return steer;
 			},
-			
+
 			borders: function() {
 				var loc = this.loc;
 				var r = this.r;
@@ -147,7 +147,7 @@
 				if (!vector.isZero())
 					this.path.position += vector;
 			},
-			
+
 			separate: function(boids) {
 				var desiredSeperation = 60;
 				var steer = new Point(0, 0);
@@ -174,7 +174,7 @@
 				}
 				return steer;
 			},
-			
+
 			// Alignment
 			// For every nearby boid in the system, calculate the average velocity
 			align: function(boids) {
@@ -195,7 +195,7 @@
 						count++;
 					}
 				}
-				
+
 				if (count > 0)
 					steer /= count;
 				if (steer.length > 0) {
@@ -206,7 +206,7 @@
 				}
 				return steer;
 			},
-			
+
 			// Cohesion
 			// For the average location (i.e. center) of all nearby boids,
 			// calculate steering vector towards that location
@@ -230,7 +230,7 @@
 				return sum;
 			}
 		});
-		
+
 		var heartPath = new Path([
 			[[514.6962890625, 624.703125], [7.0966796875, -26.3369140625], [-7.10205078125, -27.0244140625]],
 			[[484.29052734375, 548.6025390625], [13.16845703125, 23.7060546875], [-13.173828125, -23.70703125]],
@@ -254,7 +254,7 @@
 		heartPath.position = view.center;
 		heartPath.strokeColor = null;
 		heartPath.scale(1.5);
-		
+
 		var groupTogether = false;
 		var pathLength = heartPath.length;
 		var mouseDown = false;
@@ -286,7 +286,7 @@
 		function onMouseDown(event) {
 			groupTogether = !groupTogether;
 		}
-		
+
 		var layer = project.activeLayer;
 		function onKeyDown(event) {
 			if (event.key == 'space') {

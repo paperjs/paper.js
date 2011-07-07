@@ -50,7 +50,7 @@
 				this.vector.x *= 0.99;
 				var pre = this.point + this.vector;
 				if (pre.x < this.radius || pre.x > size.width - this.radius)
-					this.vector.x *= -this.dampen; 
+					this.vector.x *= -this.dampen;
 				if (pre.y < this.radius || pre.y > size.height - this.radius) {
 					if (Math.abs(this.vector.x) < 3)
 						this.vector = Point.random() * [150, 100] + [-75, 20];
