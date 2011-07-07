@@ -45,12 +45,14 @@ var sources = [
 	'src/item/PlacedItem.js',
 	'src/item/Raster.js',
 	'src/item/PlacedSymbol.js',
+	// TODO: Move to item?
+	'src/path/CurveLocation.js',
+	'src/item/HitResult.js',
 
 	'src/path/Segment.js',
 	'src/path/SegmentPoint.js',
 	'src/path/SelectionState.js',
 	'src/path/Curve.js',
-	'src/path/CurveLocation.js',
 	'src/path/PathItem.js',
 	'src/path/Path.js',
 	'src/path/CompoundPath.js',
