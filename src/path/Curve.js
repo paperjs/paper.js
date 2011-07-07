@@ -579,6 +579,21 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		},
 
 		isFlatEnough: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+			// Code from Nearest Point-on-Curve Problem and by Philip J.
+			// Schneider from "Graphics Gems", Academic Press, 1990, adapted
+			// and optimised for cubic bezier curves.
+			// Derive the implicit equation for line connecting first and last
+			// control points
+			var a = p1y - p2y,
+				b = p2x - p1x,
+				c = p1x * p2y - p2x * p1y,
+				// Find the largest distance
+				// Compute distance from each of the points to that line
+			 	v1 = a * c1x + b * c1y + c,
+				v2 = a * c2x + b * c2y + c;
+			// Compute intercepts of bounding box
+			return Math.abs((v1 * v1 + v2 * v2) / (a * (a * a + b * b))) < 0.005;
+			/*
 			// Inspired by Skia, but to be tested:
 			// Calculate 1/3 (m1) and 2/3 (m2) along the line between start (p1)
 			// and end (p2), measure distance from there the control points and
@@ -595,6 +610,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			return Math.max(
 					Math.abs(m1x - c1x), Math.abs(m1y - c1y),
 					Math.abs(m2x - c1x), Math.abs(m1y - c1y)) < 1 / 2;
+			*/
 			/*
 			// Thanks to Kaspar Fischer for the following:
 			// http://www.inf.ethz.ch/personal/fischerk/pubs/bez.pdf
