@@ -22,14 +22,14 @@
  * {@code 0} (beginning of the curve) and {@code 1} (end of the curve). If
  * the curve is part of a {@link Path} item, its {@link #index} inside the
  * {@link Path#curves} array is also provided.
+ *
+ * The class is in use in many places, such as
+ * {@link Path#getLocationAt(offset)}, Path#getNearestLocation(point), etc.
  */
 CurveLocation = Base.extend(/** @lends CurveLocation# */{
-	// DOCS: CurveLocation class description: add this comment back when the
-	// mentioned functioned have been added:
-	// The class is in use in many places, such as {@link Path#getLocationAt(offset)},
-	// {@link Path#getLength(CurveLocation)}, {@link Path#getPoint(length)},
-	// {@link Path#split(CurveLocation)},
-	// {@link PathItem#getIntersections(PathItem)}, etc.
+	// DOCS: CurveLocation class description: add these back when the  mentioned
+	// functioned have been added: {@link Path#split(location)},
+	// {@link PathItem#getIntersections(path)}, etc.
 	/**
 	 * Creates a new CurveLocation object.
 	 *
