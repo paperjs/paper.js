@@ -1193,6 +1193,32 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		for (var i = 0, l = curves.length; i < l; i++)
 			crossings += curves[i].getCrossings(point, matrix);
 		return (crossings & 1) == 1;
+	},
+
+	_hitTest: function(point, options, matrix) {
+		// TODO:
+		// segments: true,
+		// ends: false,
+		// handles: true,
+		var radius = (options.stroke ? this.getStrokeWidth() / 2 : 0)
+				+ (options.tolerance || 0),
+			loc;
+		// If we're querying for stroke, perform that before fill
+		if (options.stroke && radius > 0)
+			loc = this.getNearestLocation(point, matrix);
+		// Don't process loc yet, as we also need to query for stroke after fill
+		// in some cases. Simply skip fill query if we already have a matching
+		// stroke.
+		if (!(loc && loc._distance <= radius) && options.fill
+				&& this.getFillColor() && this.contains(point, matrix))
+			return new HitResult('fill', this);
+		// Now query stroke if we haven't already
+		if (!loc && radius > 0)
+			loc = this.getNearestLocation(point, matrix);
+		if (loc._distance <= radius)
+			return options.stroke
+					? new HitResult('stroke', loc)
+					: new HitResult('fill', this);
 	}
 
 	// TODO: intersects(item)
