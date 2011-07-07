@@ -1189,14 +1189,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// number, meaning the starting point is inside the shape.
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		var curves = this.getCurves(),
-			prevCurve = this.getLastCurve(),
 			crossings = 0;
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var curve = curves[i];
-			crossings += curve.getCrossings(point,
-					prevCurve.getTangent(1).y);
-			prevCurve = curve;
-		}
+		for (var i = 0, l = curves.length; i < l; i++)
+			crossings += curves[i].getCrossings(point, matrix);
 		return (crossings & 1) == 1;
 	}
 
