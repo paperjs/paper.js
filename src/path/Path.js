@@ -1761,6 +1761,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				// Solve for derivative for quadratic roots. Each good root
 				// (meaning a solution 0 < t < 1) is an extrema in the cubic
 				// polynomial and thus a potential point defining the bounds
+				// TODO: Use tolerance here, just like Numerical.solveQuadratic
 				if (a == 0) {
 					if (b == 0)
 					    continue;
@@ -1771,11 +1772,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					continue;
 				}
 
-				var b2ac = b * b - 4 * a * c;
-				if (b2ac < 0)
+				var q = b * b - 4 * a * c;
+				if (q < 0)
 					continue;
-				var sqrt = Math.sqrt(b2ac),
-					f = 1 / (a * -2),
+				// TODO: Match this with Numerical.solveQuadratic
+				var sqrt = Math.sqrt(q),
+					f = -0.5 / a,
 				 	t1 = (b - sqrt) * f,
 					t2 = (b + sqrt) * f;
 				if (tMin < t1 && t1 < tMax)
