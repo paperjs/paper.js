@@ -14,14 +14,17 @@
  * All rights reserved.
  */
 
-// Extend Base with utility functions used across the library. Also set
-// this.Base on the injection scope, since bootstrap.js ommits that.
 /**
  * @name Base
  * @class
  * @private
  */
+// Extend Base with utility functions used across the library. Also set
+// this.Base on the injection scope, since bootstrap.js ommits that.
 this.Base = Base.inject(/** @lends Base# */{
+	// Have generics versions of #clone() and #toString():
+	generics: true,
+
 	/**
 	 * General purpose clone function that delegates cloning to the constructor
 	 * that receives the object to be cloned as the first argument.
@@ -30,6 +33,16 @@ this.Base = Base.inject(/** @lends Base# */{
 	 */
 	clone: function() {
 		return new this.constructor(this);
+	},
+
+	/**
+	 * Renders base objects to strings in object literal notation.
+	 */
+	toString: function() {
+		return '{ ' + Base.each(this, function(value, key) {
+			this.push(key + ': ' + (typeof value === 'number'
+					? Base.formatNumber(value) : value));
+		}, []).join(', ') + ' }';
 	},
 
 	statics: /** @lends Base */{
@@ -102,12 +115,15 @@ this.Base = Base.inject(/** @lends Base# */{
 			}
 		},
 
+		/**
+		 * Merge all passed hash objects into a newly creted Base object.
+		 */
 		merge: function() {
 			return Base.each(arguments, function(hash) {
 				Base.each(hash, function(value, key) {
 					this[key] = value;
 				}, this);
-			}, {}, true); // Pass true for asArray.
+			}, new Base(), true); // Pass true for asArray, as arguments is none
 		},
 
 		/**
@@ -142,16 +158,6 @@ this.Base = Base.inject(/** @lends Base# */{
 		 */
 		formatNumber: function(num) {
 			return (Math.round(num * 100000) / 100000).toString();
-		},
-
-		/**
-		 * Utility function for rendering objects to strings, in object literal
-		 * notation.
-		 */
-		formatObject: function(obj) {
-			return '{ ' + Base.each(obj, function(value, key) {
-				this.push(key + ': ' + value);
-			}, []).join(', ') + ' }';
 		}
 	}
 });

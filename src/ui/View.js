@@ -357,11 +357,12 @@ var View = this.View = Base.extend(/** @lends View# */{
 			}
 			var now = Date.now() / 1000,
 			 	delta = before ? now - before : 0;
-			that._onFrame({
+			// Use Base.merge to convert into a Base object, for #toString()
+			that._onFrame(Base.merge({
 				delta: delta, // Time elapsed since last redraw in seconds
 				time: time += delta, // Time since first call of frame() in seconds
 				count: count++
-			});
+			}));
 			before = now;
 			// Automatically draw view on each frame.
 			that.draw(true);

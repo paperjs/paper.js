@@ -43,17 +43,14 @@ var Key = this.Key = new function() {
 		91: 'command'
 	},
 
-	modifiers = {
+	// Use Base.merge to convert into a Base object, for #toString()
+	modifiers = Base.merge({
 		shift: false,
 		control: false,
 		option: false,
 		command: false,
-		capsLock: false,
-
-		toString: function() {
-			return Base.formatObject(this);
-		}
-	},
+		capsLock: false
+	}),
 
 	// Since only keypress gets proper keyCodes that are actually representing
 	// characters, we need to perform a little trickery here to use these codes
