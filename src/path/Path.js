@@ -1162,12 +1162,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return loc && loc.getNormal();
 	},
 
-	getNearestLocation: function(point) {
+	getNearestLocation: function(point, matrix) {
 		var curves = this.getCurves(),
 			minDist = Infinity,
 			minLoc = null;
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var loc = curves[i].getNearestLocation(point);
+			var loc = curves[i].getNearestLocation(point, matrix);
 			if (loc._distance < minDist) {
 				minDist = loc._distance;
 				minLoc = loc;
@@ -1176,13 +1176,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return minLoc;
 	},
 
-	getNearestPoint: function(point) {
-		return this.getNearestLocation(point).getPoint();
+	getNearestPoint: function(point, matrix) {
+		return this.getNearestLocation(point, matrix).getPoint();
 	},
 
-	contains: function(point) {
+	contains: function(point, matrix) {
 		point = Point.read(arguments);
-		if (!this._closed || !this.getBounds().contains(point))
+		if (!this._closed || !this.getBounds(matrix).contains(point))
 			return false;
 		// Use the crossing number algorithm, by counting the crossings of the
 		// beam in right y-direction with the shape, and see if it's an odd
