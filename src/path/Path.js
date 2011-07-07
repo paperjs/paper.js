@@ -1197,7 +1197,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	// TODO: intersects(item)
 	// TODO: contains(item)
-	// TODO: contains(point)
 	// TODO: intersect(item)
 	// TODO: unite(item)
 	// TODO: exclude(item)
