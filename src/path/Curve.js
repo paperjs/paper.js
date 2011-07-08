@@ -854,14 +854,13 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			a = v[0].y - v[n].y,
 			b = v[n].x - v[0].x,
 			c = v[0].x * v[n].y - v[n].x * v[0].y,
-			abSquared = a * a + b * b,
 			maxAbove = 0,
 			maxBelow = 0;
 		// Find the largest distance
 		for (var i = 1; i < n; i++) {
 			// Compute distance from each of the points to that line
 			var val = a * v[i].x + b * v[i].y + c,
-				dist = val * val / abSquared;
+				dist = val * val;
 			if (val < 0 && dist > maxBelow) {
 				maxBelow = dist;
 			} else if (dist > maxAbove) {
@@ -869,7 +868,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			}
 		}
 		// Compute intercepts of bounding box
-		return Math.abs((maxAbove + maxBelow) / a) * 0.5 < epsilon;
+		return Math.abs((maxAbove + maxBelow) / (2 * a * (a * a + b * b)))
+				< epsilon;
 	}
 
 	return {
