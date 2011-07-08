@@ -1196,13 +1196,34 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	_hitTest: function(point, options, matrix) {
-		// TODO:
-		// segments: true,
-		// ends: false,
-		// handles: true,
-		var radius = (options.stroke ? this.getStrokeWidth() / 2 : 0)
-				+ (options.tolerance || 0),
-			loc;
+		var tolerance = options.tolerance || 0,
+			radius = (options.stroke ? this.getStrokeWidth() / 2 : 0) + tolerance,
+			loc,
+			res;
+		// If we're asked to query for segments, ends or handles, do all that
+		// before stroke or fill.
+		var coords = [],
+			that = this;
+		function checkSegment(segment, ends) {
+			segment._transformCoordinates(matrix, coords);
+			for (var j = ends || options.segments ? 0 : 2,
+					m = !ends && options.handles ? 6 : 2; j < m; j += 2) {
+				if (point.getDistance(coords[j], coords[j + 1]) < tolerance)
+					return new HitResult(j == 0 ? 'segment'
+							: 'handle-' + (j == 2 ? 'in' : 'out'),
+							that, { segment: segment });
+			}
+		}
+		if (options.ends && !options.segments && !this._closed) {
+			if (res = checkSegment(this.getFirstSegment(), true)
+					|| checkSegment(this.getLastSegment(), true))
+				return res;
+		} else if (options.segments || options.handles) {
+			for (var i = 0, l = this._segments.length; i < l; i++) {
+				if (res = checkSegment(this._segments[i]))
+					return res;
+			}
+		}
 		// If we're querying for stroke, perform that before fill
 		if (options.stroke && radius > 0)
 			loc = this.getNearestLocation(point, matrix);
@@ -1217,7 +1238,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			loc = this.getNearestLocation(point, matrix);
 		if (loc && loc._distance <= radius)
 			return options.stroke
-					? new HitResult('stroke', this, loc)
+					? new HitResult('stroke', this, { location: location })
 					: new HitResult('fill', this);
 	}
 
