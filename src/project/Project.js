@@ -182,7 +182,8 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	},
 
 	hitTest: function(point, options) {
-		options = HitResult.getOptions(options);
+		options = HitResult.getOptions(point, options);
+		point = options.point;
 		// Loop backwards, so layers that get drawn last are tested first
 		for (var i = this.layers.length - 1; i >= 0; i--) {
 			var res = this.layers[i].hitTest(point, options);
