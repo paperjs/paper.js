@@ -22,11 +22,16 @@
  * @extends CurveLocation
  */
 HitResult = Base.extend(/** @lends HitResult# */{
-	initialize: function(type, item, location) {
+	initialize: function(type, item, values) {
 		this.type = type;
 		this.item = item;
-		if (location)
-			this.location = location;
+		if (values) {
+			// Copy over passed values, depending on use case.
+			// DOCS: HitResult#location, #segment, #point
+			Base.each(values, function(value, key) {
+				this[key] = value;
+			}, this);
+		}
 	},
 
 	statics: {
@@ -55,7 +60,7 @@ HitResult = Base.extend(/** @lends HitResult# */{
 				// its segments (Segment#point)
 				segments: true,
 				// Hit the parts of segments that define the curvature
-				handles: true,
+				handles: false,
 				// Only first or last segment hits on path (mutually exclusive
 				// with segments: true)
 				ends: false,
