@@ -27,7 +27,7 @@ HitResult = Base.extend(/** @lends HitResult# */{
 		this.item = item;
 		if (values) {
 			// Copy over passed values, depending on use case.
-			// DOCS: HitResult#location, #segment, #point
+			// DOCS: HitResult#location, #segment, #name, #point
 			Base.each(values, function(value, key) {
 				this[key] = value;
 			}, this);
