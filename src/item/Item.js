@@ -670,6 +670,12 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 
 	hitTest: function(point, options, matrix) {
 		options = HitResult.getOptions(options);
+		// Check if the point is withing roughBounds + tolerance, but only if
+		// this item does not have children, since we'd have to travel up the
+		// chain already to determine the rough bounds.
+		if (!this._children && !this.getRoughBounds(matrix)
+				.expand(options.tolerance).contains(point))
+			return null;
 		// TODO: Support option.type even for things like CompoundPath where
 		// children are matched but the parent is returned.
 
