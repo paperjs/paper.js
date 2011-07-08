@@ -692,9 +692,6 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 					return new HitResult(type, that,
 							{ name: Base.hyphenate(part), point: pt });
 			}
-			// Push the getter name parts onto _parts for the bounds properties
-			// that we are supposed to test. This is performed only once, even
-			// when testing many items.
 			if (options.center && (res = checkBounds('center', 'Center')))
 				return res;
 			if (options.bounds) {
