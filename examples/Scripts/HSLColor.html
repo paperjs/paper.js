@@ -6,32 +6,27 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var center = view.center;
-
-		var path,
-			h,
-			s = 0.6,
-			l = 0.6,
-			d = view.size.width * 0.012;
-			p = new Point(),
-			r = view.size.width * .12;
-
-		for (s = 0; s <= 1; s+=0.2) {
-			for (h = 0; h < (s > 0 ? 360 : 1); h+= 20) {
-				p.x = (center.x - r)*0.5 + Math.cos((h-90)/180*Math.PI) * r*s;
-				p.y = center.y + Math.sin((h-90)/180*Math.PI) * r*s;
-				path = new Path.Circle(p, Math.max(d*Math.sqrt(s), 5));
-				path.fillColor =  new HSLColor(h, s, 0.75);
-
-				p.x = center.x + Math.cos((h-90)/180*Math.PI) * r*s;
-				p.y = center.y + Math.sin((h-90)/180*Math.PI) * r*s;
-				path = new Path.Circle(p, Math.max(d*Math.sqrt(s), 5));
-				path.fillColor =  new HSLColor(h, s, 0.5);
-
-				p.x = center.x + (center.x + r) * .5 + Math.cos((h-90)/180*Math.PI) * r*s;
-				p.y = center.y + Math.sin((h-90)/180*Math.PI) * r*s;
-				path = new Path.Circle(p, Math.max(d*Math.sqrt(s), 5));
-				path.fillColor =  new HSLColor(h, s, 0.25);
+		var path;
+		var r = view.size.width * .12;
+		var offset = new Point(view.size.width / 3, 0);
+		var hCount = 40;
+		var sCount = 18;
+		for (var s = 0; s < sCount; s++) {
+			for (var h = 0; h < hCount; h++) {
+				var saturation = s / sCount;
+				var hue = (h / hCount) * 360;
+				var vector = new Point({
+					angle: hue - 90,
+					length: r * saturation
+				});
+				var color = new HSLColor(hue, saturation, 0.75);
+				var radius = Math.max(r / 10 * Math.sqrt(saturation), 5);
+				for (var i = 0; i < 3; i++) {
+					var center = view.center + vector + offset * (i - 1);
+					path = new Path.Circle(center, radius);
+					color.lightness = 0.25 + 0.25 * (2 - i);
+					path.fillColor = color.clone();
+				}
 			}
 		}
 	</script>
