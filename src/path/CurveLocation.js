@@ -53,7 +53,8 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 */
 	getSegment: function() {
 		if (!this._segment) {
-			var parameter = this.getParameter();
+			var curve = this._curve,
+				parameter = this.getParameter();
 			if (parameter == 0) {
 				this._segment = curve._segment1;
 			} else if (parameter == 1) {
