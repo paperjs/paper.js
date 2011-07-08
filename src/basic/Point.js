@@ -393,7 +393,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @return {Point} the transformed point
 	 */
 	transform: function(matrix) {
-		return matrix._transformPoint(this);
+		return matrix ? matrix._transformPoint(this) : this;
 	},
 
 	/**

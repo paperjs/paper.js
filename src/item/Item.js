@@ -677,6 +677,33 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		if (!this._children && !this.getRoughBounds(matrix)
 				.expand(options.tolerance).contains(point))
 			return null;
+		if (options.center || options.bounds) {
+			// Don't get the transformed bounds, check against transformed
+			// points instead
+			var bounds = this.getBounds(),
+				that = this,
+				// TODO: Move these into a private scope
+				points = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
+				'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'],
+				res;
+			function checkBounds(part) {
+				var pt = bounds['get' + part]().transform(matrix);
+				if (point.getDistance(pt) < options.tolerance)
+					return new HitResult(Base.hyphenate(part), that,
+							{ point: pt });
+			}
+			// Push the getter name parts onto _parts for the bounds properties
+			// that we are supposed to test. This is performed only once, even
+			// when testing many items.
+			if (options.center && (res = checkBounds('Center')))
+				return res;
+			if (options.bounds) {
+				for (var i = 0; i < 8; i++)
+					if (res = checkBounds(points[i]))
+						return res;
+			}
+		}
+
 		// TODO: Support option.type even for things like CompoundPath where
 		// children are matched but the parent is returned.
 
@@ -691,8 +718,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 			// Loop backwards, so items that get drawn last are tested first
 			for (var i = this._children.length - 1; i >= 0; i--) {
 				var res = this._children[i].hitTest(point, options, matrix);
-				if (res)
-					return res;
+				if (res) return res;
 			}
 		}
 	},
