@@ -686,20 +686,20 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 				points = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
 				'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'],
 				res;
-			function checkBounds(part) {
+			function checkBounds(type, part) {
 				var pt = bounds['get' + part]().transform(matrix);
 				if (point.getDistance(pt) < options.tolerance)
-					return new HitResult(Base.hyphenate(part), that,
-							{ point: pt });
+					return new HitResult(type, that,
+							{ name: Base.hyphenate(part), point: pt });
 			}
 			// Push the getter name parts onto _parts for the bounds properties
 			// that we are supposed to test. This is performed only once, even
 			// when testing many items.
-			if (options.center && (res = checkBounds('Center')))
+			if (options.center && (res = checkBounds('center', 'Center')))
 				return res;
 			if (options.bounds) {
 				for (var i = 0; i < 8; i++)
-					if (res = checkBounds(points[i]))
+					if (res = checkBounds('bounds', points[i]))
 						return res;
 			}
 		}
