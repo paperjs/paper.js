@@ -40,8 +40,9 @@ this.Base = Base.inject(/** @lends Base# */{
 	 */
 	toString: function() {
 		return '{ ' + Base.each(this, function(value, key) {
-			this.push(key + ': ' + (typeof value === 'number'
-					? Base.formatNumber(value) : value));
+			var type = typeof value;
+			this.push(key + ': ' + (type === 'number' ? Base.formatNumber(value)
+					: type === 'string' ? "'" + value + "'" : value));
 		}, []).join(', ') + ' }';
 	},
 

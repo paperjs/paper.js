@@ -83,14 +83,13 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	},
 
 	/**
-	 * The item this curve belongs to, if any.
+	 * The path this curve belongs to, if any.
 	 *
 	 * @type Item
 	 * @bean
 	 */
-	getItem: function() {
-		// Support _item for HitResult
-		return this._item || this._curve && this._curve._path;
+	getPath: function() {
+		return this._curve && this._curve._path;
 	},
 
 	/**
@@ -196,12 +195,6 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	toString: function() {
 		var parts = [],
 			point = this.getPoint();
-		// Support for HitResult that inherits from CurveLocation
-		if (this._type)
-			parts.push('type: ' + this._type);
-		if (this._item)
-			parts.push('item: ' + this._item);
-		// Normal CurveLocation properties:
 		if (point)
 			parts.push('point: ' + point);
 		var index = this.getIndex();
