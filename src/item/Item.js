@@ -687,7 +687,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 
 	_hitTest: function(point, options, matrix) {
 		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
+			// Loop backwards, so items that get drawn last are tested first
+			for (var i = this._children.length - 1; i >= 0; i--) {
 				var res = this._children[i].hitTest(point, options, matrix);
 				if (res)
 					return res;
