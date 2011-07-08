@@ -669,7 +669,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	},
 
 	hitTest: function(point, options, matrix) {
-		options = HitResult.getOptions(options);
+		options = HitResult.getOptions(point, options);
+		point = options.point;
 		// Check if the point is withing roughBounds + tolerance, but only if
 		// this item does not have children, since we'd have to travel up the
 		// chain already to determine the rough bounds.
