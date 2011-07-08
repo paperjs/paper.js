@@ -150,7 +150,7 @@ this.Base = Base.inject(/** @lends Base# */{
 				function(match) {
 					return match.charAt(0) + '-' + match.substring(1);
 				}
-			);
+			).toLowerCase();
 		},
 
 		/**
