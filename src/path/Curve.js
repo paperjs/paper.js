@@ -319,13 +319,13 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			crossings = 0;
 		for (var i = 0, l = roots != Infinity && roots.length; i < l; i++) {
 			var t = roots[i];
-			if (t >= 0 && t < 1 && this.getPoint(t).x > point.x) {
+			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, 0).y > point.x) {
 				// If we're close to 0 and are not changing y-direction from the
 				// previous curve, do not count this root, as we're merely
 				// touching a tip.
-				if (t < Numerical.TOLERANCE
-						&& this.getPrevious().getTangent(1).y
-							* this.getTangent(t).y >= 0)
+				if (t < Numerical.TOLERANCE && Curve.evaluate(
+							this.getPrevious().getValues(matrix), 1, 1).y
+						* Curve.evaluate(vals, t, 1).y >= 0)
 					continue;
 				crossings++;
 			}
