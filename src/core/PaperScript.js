@@ -230,8 +230,8 @@ var PaperScript = this.PaperScript = new function() {
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
 			// Only load this script if it not loaded already.
-			// TODO: support 'text/x-paperscript':
-			if (script.type === 'text/paperscript'
+			// Support both text/paperscript and text/x-paperscript:
+			if (/^text\/(?:x-)paperscript$/.test(script.type)
 					&& !script.getAttribute('data-paper-loaded')) {
 				// Produce a new PaperScope for this script now. Scopes are
 				// cheap so let's not worry about the initial one that was
@@ -259,7 +259,7 @@ var PaperScript = this.PaperScript = new function() {
 		name += 'Attribute';
 		return function(el, attr) {
 			return el[name](attr) || el[name]('data-paper-' + attr);
-		}
+		};
 	}
 
 	return {
