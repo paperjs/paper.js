@@ -6,27 +6,43 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var path;
-		var r = view.size.width * .12;
-		var offset = new Point(view.size.width / 3, 0);
-		var hCount = 40;
-		var sCount = 18;
-		for (var s = 0; s < sCount; s++) {
-			for (var h = 0; h < hCount; h++) {
-				var saturation = s / sCount;
-				var hue = (h / hCount) * 360;
+		var steps = {
+			hue: 100,
+			saturation: 20,
+			lightness: 3
+		};
+
+		for (var i = 0; i < steps.lightness; i++) {
+			var radius = view.size.width / steps.lightness * 0.45;
+			var offset = new Point(view.size.width / steps.lightness, 0);
+			var position = view.bounds.leftCenter + offset * (i + 0.5);
+			var lightness = 1 - (i + 1) / (steps.lightness + 1);
+			createWheel(position, radius, steps, lightness);
+		};
+		
+		function createWheel(center, radius, steps, lightness) {
+			var hUnit =  360 / steps.hue;
+			for (var h = 0; h < steps.hue; h++) {
+				var hue = h * hUnit;
 				var vector = new Point({
 					angle: hue - 90,
-					length: r * saturation
+					length: radius
 				});
-				var color = new HSLColor(hue, saturation, 0.75);
-				var radius = Math.max(r / 10 * Math.sqrt(saturation), 5);
-				for (var i = 0; i < 3; i++) {
-					var center = view.center + vector + offset * (i - 1);
-					path = new Path.Circle(center, radius);
-					color.lightness = 0.25 + 0.25 * (2 - i);
-					path.fillColor = color.clone();
+				path = new Path(new Point(), vector.rotate(hUnit / 2));
+				path.closed = true;
+				path.arcTo(vector, vector.rotate(hUnit / -2));
+				path.position += center;
+				var colors = [];
+				for (var i = 0; i < steps.saturation; i++) {
+					var saturation = i / steps.saturation;
+					var color = new HSLColor(hue, saturation, lightness);
+					colors.push(color);
 				}
+				var gradient = new Gradient(colors, 'radial');
+				var from = center;
+				var to = center + vector;
+				var gradientColor = new GradientColor(gradient, from, to);
+				path.fillColor = path.strokeColor = gradientColor;
 			}
 		}
 	</script>
