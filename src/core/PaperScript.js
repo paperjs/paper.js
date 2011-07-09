@@ -125,7 +125,9 @@ var PaperScript = this.PaperScript = new function() {
 			return walk(ast);
 		});
 
-		return parse_js.gen_code(ast, true);
+		return parse_js.gen_code(ast, {
+			beautify: true
+		});
 	}
 
 	function evaluate(code, scope) {
