@@ -309,15 +309,15 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return Curve.getParameter(this.getValues(), point.x, point.y);
 	},
 
-	getCrossings: function(point, matrix) {
+	getCrossings: function(point, matrix, roots) {
 		// Implement the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		// Solve the y-axis cubic polynominal for point.y and count all
 		// solutions to the right of point.x as crossings.
 		var vals = this.getValues(matrix),
-			roots = Curve.solveCubic(vals, 1, point.y),
+			num = Curve.solveCubic(vals, 1, point.y, roots),
 			crossings = 0;
-		for (var i = 0, l = roots != Infinity && roots.length; i < l; i++) {
+		for (var i = 0; i < num; i++) {
 			var t = roots[i];
 			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, 0).x > point.x) {
 				// If we're close to 0 and are not changing y-direction from the
@@ -470,7 +470,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 		// Converts from the point coordinates (p1, c1, c2, p2) for one axis to
 		// the polynomial coefficients and solves the polynomial for val
-		solveCubic: function (v, coord, val) {
+		solveCubic: function (v, coord, val, roots) {
 			var p1 = v[coord],
 				c1 = v[coord + 2],
 				c2 = v[coord + 4],
@@ -478,14 +478,15 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				c = 3 * (c1 - p1),
 				b = 3 * (c2 - c1) - c,
 				a = p2 - p1 - c - b;
-			return Numerical.solveCubic(a, b, c, p1 - val, Numerical.TOLERANCE);
+			return Numerical.solveCubic(a, b, c, p1 - val, roots,
+					Numerical.TOLERANCE);
 		},
 
 		getParameter: function(v, x, y) {
-			var txs = Curve.solveCubic(v, 0, x),
-				tys = Curve.solveCubic(v, 1, y),
-				sx = txs === Infinity ? -1 : txs.length,
-				sy = tys === Infinity ? -1 : tys.length,
+			var txs = [],
+				tys = [],
+				sx = Curve.solveCubic(v, 0, x, txs),
+				sy = Curve.solveCubic(v, 1, y, tys),
 				tx, ty;
 			// sx, sy == -1 means infinite solutions:
 			// Loop through all solutions for x and match with solutions for y,

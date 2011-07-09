@@ -117,32 +117,34 @@ var Numerical = new function() {
 		 *
 		 * a*x^2 + b*x + c = 0
 		 */
-		solveQuadratic: function(a, b, c, tolerance) {
+		solveQuadratic: function(a, b, c, roots, tolerance) {
 			// After Numerical Recipes in C, 2nd edition, Press et al.,
 			// 5.6, Quadratic and Cubic Equations
 			// If problem is actually linear, return 0 or 1 easy roots
 			if (abs(a) < tolerance) {
-				if (abs(b) >= tolerance)
-					return [ -c / b ];
+				if (abs(b) >= tolerance) {
+					roots[0] = -c / b;
+					return 1;
+				}
 				// If all the coefficients are 0, infinite values are
 				// possible!
 				if (abs(c) < tolerance)
-					return Infinity; // Infinite solutions
-				return []; // 0 solutions
+					return -1; // Infinite solutions
+				return 0; // 0 solutions
 			}
 			var q = b * b - 4 * a * c;
 			if (q < 0)
-				return []; // 0 solutions
+				return 0; // 0 solutions
 			q = sqrt(q);
 			if (b < 0)
 				q = -q;
 			q = (b + q) * -0.5;
-			var roots = [];
+			var n = 0;
 			if (abs(q) >= tolerance)
-				roots.push(c / q);
+				roots[n++] = c / q;
 			if (abs(a) >= tolerance)
-				roots.push(q / a);
-			return roots; // 0, 1 or 2 solutions
+				roots[n++] = q / a;
+			return n; // 0, 1 or 2 solutions
 		},
 
 		/**
@@ -151,11 +153,11 @@ var Numerical = new function() {
 		 *
 		 * a*x^3 + b*x^2 + c*x + d = 0
 		 */
-	    solveCubic: function(a, b, c, d, tolerance) {
+	    solveCubic: function(a, b, c, d, roots, tolerance) {
 			// After Numerical Recipes in C, 2nd edition, Press et al.,
 			// 5.6, Quadratic and Cubic Equations
 			if (abs(a) < tolerance)
-			    return Numerical.solveQuadratic(b, c, d, tolerance);
+			    return Numerical.solveQuadratic(b, c, d, roots, tolerance);
 			// Normalize
 			b /= a;
 			c /= a;
@@ -173,18 +175,18 @@ var Numerical = new function() {
 				var theta = Math.acos(R / sqrt(Q3)),
 					// This sqrt is safe, since Q3 >= 0, and thus Q >= 0
 					q = -2 * sqrt(Q);
-				return [
-					q * cos(theta / 3) - b,
-					q * cos((theta + 2 * PI) / 3) - b,
-					q * cos((theta - 2 * PI) / 3) - b
-				];
+				roots[0] = q * cos(theta / 3) - b;
+				roots[1] = q * cos((theta + 2 * PI) / 3) - b;
+				roots[2] = q * cos((theta - 2 * PI) / 3) - b;
+				return 3;
 			} else { // One real root
 				var A = -Math.pow(abs(R) + sqrt(R2 - Q3), 1 / 3);
 				if (R < 0) A = -A;
-			    var B = (abs(A) < tolerance) ? 0 : Q / A;
-				return [ (A + B) - b ];
+				var B = (abs(A) < tolerance) ? 0 : Q / A;
+				roots[0] = (A + B) - b;
+				return 1;
 			}
-			return [];
+			return 0;
 		}
 	};
 };
