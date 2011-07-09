@@ -456,16 +456,25 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 */
 	contains: function(rect) {
 		// TODO: improve handling of passed Rectangle or Point
-		if (rect.width !== undefined) {
-			return rect.x >= this.x && rect.y >= this.y
-					&& rect.x + rect.width <= this.x + this.width
-					&& rect.y + rect.height <= this.y + this.height;
-		} else {
-			var point = Point.read(arguments);
-			return point.x >= this.x && point.y >= this.y
-					&& point.x <= this.x + this.width
-					&& point.y <= this.y + this.height;
-		}
+		return rect.width !== undefined
+				? this._containsRectangle(rect)
+				: this._containsPoint(Point.read(arguments));
+	},
+
+	_containsPoint: function(point) {
+		var x = point.x,
+			y = point.y;
+		return x >= this.x && y >= this.y
+				&& x <= this.x + this.width
+				&& y <= this.y + this.height;
+	},
+
+	_containsRectangle: function(rect) {
+		var x = rect.x,
+			y = rect.y;
+		return x >= this.x && y >= this.y
+				&& x + rect.width <= this.x + this.width
+				&& y + rect.height <= this.y + this.height;
 	},
 
 	/**
