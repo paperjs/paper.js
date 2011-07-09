@@ -42,7 +42,6 @@ HitResult = Base.extend(/** @lends HitResult# */{
 		 * @private
 		 */
 		getOptions: function(point, options) {
-			// TODO: Consier moving to HitResult / HitEvent?
 			return options && options._merged ? options : Base.merge({
 				// Use the converted options object to perform point conversion
 				// only once.
