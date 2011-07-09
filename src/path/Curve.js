@@ -410,7 +410,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			// PORT: Change in Sg too, so 0.000000000001 won't be
 			// required anymore
 			if (t == 0 || t == 1) {
-				var point;
 				switch (type) {
 				case 0: // point
 					x = t == 0 ? p1x : p2x;
