@@ -409,42 +409,9 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			// Handle special case at beginning / end of curve
 			// PORT: Change in Sg too, so 0.000000000001 won't be
 			// required anymore
-			if (t == 0 || t == 1) {
-				switch (type) {
-				case 0: // point
-					x = t == 0 ? p1x : p2x;
-					y = t == 0 ? p1y : p2y;
-					break;
-				case 1: // tangent
-				case 2: // normal
-					var px, py;
-					if (t == 0) {
-						if (c1x == p1x && c1y == p1y) { // handle1 = 0
-							if (c2x == p2x && c2y == p2y) { // handle2 = 0
-								px = p2x; py = p2y; // p2
-							} else {
-								px = c2x; py = c2y; // c2
-							}
-						} else {
-							px = c1x; py = c1y; // handle1
-						}
-						x = px - p1x;
-						y = py - p1y;
-					} else {
-						if (c2x == p2x && c2y == p2y) { // handle2 = 0
-							if (c1x == p1x && c1y == p1y) { // handle1 = 0
-								px = p1x; py = p1y; // p1
-							} else {
-								px = c1x; py = c1y; // c1
-							}
-						} else { // handle2
-							px = c2x; py = c2y;
-						}
-						x = p2x - px;
-						y = p2y - py;
-					}
-					break;
-				}
+			if (type == 0 && (t == 0 || t == 1)) {
+				x = t == 0 ? p1x : p2x;
+				y = t == 0 ? p1y : p2y;
 			} else {
 				// Calculate the polynomial coefficients.
 				var cx = 3 * (c1x - p1x),
