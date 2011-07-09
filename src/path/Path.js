@@ -1184,7 +1184,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	contains: function(point, matrix) {
 		point = Point.read(arguments);
-		if (!this._closed || !this.getRoughBounds(matrix).contains(point))
+		if (!this._closed || !this.getRoughBounds(matrix)._containsPoint(point))
 			return false;
 		// Use the crossing number algorithm, by counting the crossings of the
 		// beam in right y-direction with the shape, and see if it's an odd

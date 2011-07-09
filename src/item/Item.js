@@ -675,7 +675,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		// this item does not have children, since we'd have to travel up the
 		// chain already to determine the rough bounds.
 		if (!this._children && !this.getRoughBounds(matrix)
-				.expand(options.tolerance).contains(point))
+				.expand(options.tolerance)._containsPoint(point))
 			return null;
 		if (options.center || options.bounds) {
 			// Don't get the transformed bounds, check against transformed
