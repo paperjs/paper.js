@@ -364,7 +364,25 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 
 	_selected: false,
 
-	// TODO: isFullySelected / setFullySelected
+	isFullySelected: function() {
+		if (this._children && this._selected) {
+			for (var i = 0, l = this._children.length; i < l; i++)
+				if (!this._children[i].isFullySelected())
+					return false;
+			return true;
+		}
+		// If there are no children, this is the same as #selected
+		return this._selected;
+	},
+
+	setFullySelected: function(selected) {
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				this._children[i].setFullySelected(selected);
+			}
+		}
+		this.setSelected(selected);
+	},
 
 	/**
 	 * Specifies whether the item defines a clip mask. This can only be set on
