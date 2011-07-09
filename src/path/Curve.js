@@ -322,7 +322,9 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, 0).y > point.x) {
 				// If we're close to 0 and are not changing y-direction from the
 				// previous curve, do not count this root, as we're merely
-				// touching a tip.
+				// touching a tip. Passing 1 for Curve.evaluate()'s type means
+				// we're calculating tangents, and then check their y-slope for
+				// a change of direction:
 				if (t < Numerical.TOLERANCE && Curve.evaluate(
 							this.getPrevious().getValues(matrix), 1, 1).y
 						* Curve.evaluate(vals, t, 1).y >= 0)
