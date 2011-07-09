@@ -657,10 +657,10 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			if (b === undefined)
 				b = 1;
 			// if (p1 == c1 && p2 == c2):
-			if (v[0] == v[2] && v[1] == v[3] && v[6] == v[4] && v[7] ==  v[5]) {
+			if (v[0] == v[2] && v[1] == v[3] && v[6] == v[4] && v[7] == v[5]) {
 				// Straight line
-				var dx = p2x - p1x,
-					dy = p2y - p1y;
+				var dx = v[6] - v[0], // p2x - p1x
+					dy = v[7] - v[1]; // p2y - p1y
 				return (b - a) * Math.sqrt(dx * dx + dy * dy);
 			}
 			var ds = getLengthIntegrand(v);
