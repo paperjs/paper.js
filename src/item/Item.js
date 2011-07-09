@@ -669,10 +669,6 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * raster.scale(5);
 	 */
 	rasterize: function(resolution) {
-		// TODO: why would we want to pass a size to rasterize? Seems to produce
-		// weird results on Scriptographer. Also we can't use antialiasing, since
-		// Canvas doesn't support it yet. Project colorMode is also out of the
-		// question for now.
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || 72) / 72,
 			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),

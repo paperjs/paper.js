@@ -14,7 +14,6 @@
  * All rights reserved.
  */
 
-// TODO: Consider simply naming Location?
 /**
  * @name CurveLocation
  *
