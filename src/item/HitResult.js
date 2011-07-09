@@ -48,7 +48,7 @@ HitResult = Base.extend(/** @lends HitResult# */{
 				// only once.
 				point: Point.read(arguments, 0, 1),
 				// Type of item, for instanceof check: PathItem, TexItem, etc
-				type: Item,
+				type: null,
 				// Tolerance
 				tolerance: 2,
 				// Hit the fill of items
