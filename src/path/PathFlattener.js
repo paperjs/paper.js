@@ -51,8 +51,8 @@ var PathFlattener = Base.extend({
 	_computeParts: function(curve, index, minT, maxT) {
 		// Check if the t-span is big enough for subdivision.
 		// We're not subdividing more than 32 times...
-		if ((maxT - minT) > 1 / 32 && !Curve.isFlatEnough.apply(Curve, curve)) {
-			var curves = Curve.subdivide.apply(Curve, curve);
+		if ((maxT - minT) > 1 / 32 && !Curve.isFlatEnough(curve)) {
+			var curves = Curve.subdivide(curve);
 			var halfT = (minT + maxT) / 2;
 			// Recursively subdive and compute parts again.
 			this._computeParts(curves[0], index, minT, halfT);
@@ -114,17 +114,16 @@ var PathFlattener = Base.extend({
 
 	evaluate: function(offset, type) {
 		var param = this.getParameterAt(offset);
-		return Curve.evaluate.apply(Curve,
-				this.curves[param.index].concat([param.value, type]));
+		return Curve.evaluate(this.curves[param.index], param.value, type);
 	},
 
 	drawPart: function(ctx, from, to) {
 		from = this.getParameterAt(from);
 		to = this.getParameterAt(to);
 		for (var i = from.index; i <= to.index; i++) {
-			var curve = Curve.getPart.apply(Curve, this.curves[i].concat(
+			var curve = Curve.getPart(this.curves[i],
 					i == from.index ? from.value : 0,
-					i == to.index ? to.value : 1));
+					i == to.index ? to.value : 1);
 			if (i == from.index)
 				ctx.moveTo(curve[0], curve[1]);
 			ctx.bezierCurveTo.apply(ctx, curve.slice(2));
