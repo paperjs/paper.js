@@ -229,25 +229,20 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * @bean
 	 */
 	getLength: function(/* from, to */) {
+		// Hide parameters from Bootstrap so it injects bean too
 		var from = arguments[0],
 			to = arguments[1];
 			fullLength = arguments.length == 0 || from == 0 && to == 1;
 		if (fullLength && this._length != null)
 			return this._length;
-		// Hide parameters from Bootstrap so it injects bean too
-		var args = this.getValues();
-		if (!fullLength)
-			args.push(from, to);
-		var length = Curve.getLength.apply(Curve, args);
+		var length = Curve.getLength(this.getValues(), from, to);
 		if (fullLength)
 			this._length = length;
 		return length;
 	},
 
 	getPart: function(from, to) {
-		var args = this.getValues();
-		args.push(from, to);
-		return new Curve(Curve.getPart.apply(Curve, args));
+		return new Curve(Curve.getPart(this.getValues(), from, to));
 	},
 
 	/**
@@ -270,18 +265,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * @return {Number}
 	 */
 	getParameterAt: function(offset, start) {
-		var args = this.getValues();
-		args.push(offset, start !== undefined ? start : offset < 0 ? 1 : 0);
-		return Curve.getParameterAt.apply(Curve, args);
-	},
-
-	/**
-	 * Private method used in getPoint, getTangent, getNormal.
-	 */
-	_evaluate: function(parameter, type) {
-		var args = this.getValues();
-		args.push(parameter, type);
-		return Curve.evaluate.apply(Curve, args);
+		return Curve.getParameterAt(this.getValues(), offset,
+				start !== undefined ? start : offset < 0 ? 1 : 0);
 	},
 
 	/**
@@ -292,7 +277,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * @return {Point}
 	 */
 	getPoint: function(parameter) {
-		return this._evaluate(parameter, 0);
+		return Curve.evaluate(this.getValues(), parameter, 0);
 	},
 
 	/**
@@ -302,7 +287,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 *        point as a value between {@code 0} and {@code 1}.
 	 */
 	getTangent: function(parameter) {
-		return this._evaluate(parameter, 1);
+		return Curve.evaluate(this.getValues(), parameter, 1);
 	},
 
 	/**
@@ -312,7 +297,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 *        point as a value between {@code 0} and {@code 1}.
 	 */
 	getNormal: function(parameter) {
-		return this._evaluate(parameter, 2);
+		return Curve.evaluate(this.getValues(), parameter, 2);
 	},
 
 	/**
@@ -320,10 +305,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * @return {Number}
 	 */
 	getParameter: function(point) {
-		var args = this.getValues();
-		if (point)
-			args.push(point.x, point.y);
-		return Curve.getParameter.apply(Curve, args);
+		point = Point.read(point);
+		return Curve.getParameter(this.getValues(), point.x, point.y);
 	},
 
 	getCrossings: function(point, matrix) {
@@ -332,8 +315,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		// Solve the y-axis cubic polynominal for point.y and count all
 		// solutions to the right of point.x as crossings.
 		var vals = this.getValues(matrix),
-			roots = Curve.solveCubic(vals[1], vals[3], vals[5], vals[7],
-					point.y),
+			roots = Curve.solveCubic(vals, 1, point.y),
 			crossings = 0;
 		for (var i = 0, l = roots != Infinity && roots.length; i < l; i++) {
 			var t = roots[i];
@@ -415,8 +397,12 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 					: coords;
 		},
 
-		evaluate: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t, type) {
-			var x, y;
+		evaluate: function(v, t, type) {
+			var p1x = v[0], p1y = v[1],
+				c1x = v[2], c1y = v[3],
+				c2x = v[4], c2y = v[5],
+				p2x = v[6], p2y = v[7],
+				x, y;
 
 			// Handle special case at beginning / end of curve
 			// PORT: Change in Sg too, so 0.000000000001 won't be
@@ -489,26 +475,24 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			return type == 2 ? new Point(y, -x) : new Point(x, y);
 		},
 
-		subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
+		subdivide: function(v, t) {
+			var p1x = v[0], p1y = v[1],
+				c1x = v[2], c1y = v[3],
+				c2x = v[4], c2y = v[5],
+				p2x = v[6], p2y = v[7];
 			if (t === undefined)
 				t = 0.5;
 			// Triangle computation, with loops unrolled.
 			var u = 1 - t,
 				// Interpolate from 4 to 3 points
-				p3x = u * p1x + t * c1x,
-				p3y = u * p1y + t * c1y,
-				p4x = u * c1x + t * c2x,
-				p4y = u * c1y + t * c2y,
-				p5x = u * c2x + t * p2x,
-				p5y = u * c2y + t * p2y,
+				p3x = u * p1x + t * c1x, p3y = u * p1y + t * c1y,
+				p4x = u * c1x + t * c2x, p4y = u * c1y + t * c2y,
+				p5x = u * c2x + t * p2x, p5y = u * c2y + t * p2y,
 				// Interpolate from 3 to 2 points
-				p6x = u * p3x + t * p4x,
-				p6y = u * p3y + t * p4y,
-				p7x = u * p4x + t * p5x,
-				p7y = u * p4y + t * p5y,
+				p6x = u * p3x + t * p4x, p6y = u * p3y + t * p4y,
+				p7x = u * p4x + t * p5x, p7y = u * p4y + t * p5y,
 				// Interpolate from 2 points to 1 point
-				p8x = u * p6x + t * p7x,
-				p8y = u * p6y + t * p7y;
+				p8x = u * p6x + t * p7x, p8y = u * p6y + t * p7y;
 			// We now have all the values we need to build the subcurves:
 			return [
 				[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
@@ -518,18 +502,20 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 		// Converts from the point coordinates (p1, c1, c2, p2) for one axis to
 		// the polynomial coefficients and solves the polynomial for val
-		solveCubic: function (p1, c1, c2, p2, val) {
-			return Numerical.solveCubic(
-					p2 - p1 + 3 * (c1 - c2), // a
-					3 * (c2 + p1) - 6 * c1, // b
-					3 * (c1 - p1), // c
-					p1 - val, // d
-					Numerical.TOLERANCE);
+		solveCubic: function (v, coord, val) {
+			var p1 = v[coord],
+				c1 = v[coord + 2],
+				c2 = v[coord + 4],
+				p2 = v[coord + 6],
+				c = 3 * (c1 - p1),
+				b = 3 * (c2 - c1) - c,
+				a = p2 - p1 - c - b;
+			return Numerical.solveCubic(a, b, c, p1 - val, Numerical.TOLERANCE);
 		},
 
-		getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, x, y) {
-			var txs = Curve.solveCubic(p1x, c1x, c2x, p2x, x),
-				tys = Curve.solveCubic(p1y, c1y, c2y, p2y, y),
+		getParameter: function(v, x, y) {
+			var txs = Curve.solveCubic(v, 0, x),
+				tys = Curve.solveCubic(v, 1, y),
 				sx = txs === Infinity ? -1 : txs.length,
 				sy = tys === Infinity ? -1 : tys.length,
 				tx, ty;
@@ -560,31 +546,28 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		},
 
 		// TODO: Find better name
-		getPart: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, from, to) {
-			var curve = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
-			if (from > 0) {
-				// 8th argument of Curve.subdivide() == t, and values can be
-				// directly used as arguments list for apply().
-				curve[8] = from;
-				curve = Curve.subdivide.apply(Curve, curve)[1]; // right
-			}
-			if (to < 1) {
-				// Se above about curve[8].
-				// Interpolate the  parameter at 'to' in the new curve and
-				// cut there
-				curve[8] = (to - from) / (1 - from);
-				curve = Curve.subdivide.apply(Curve, curve)[0]; // left
-			}
-			return curve;
+		getPart: function(v, from, to) {
+			if (from > 0)
+				v = Curve.subdivide(v, from)[1]; // [1] right
+			// Interpolate the  parameter at 'to' in the new curve and
+			// cut there.
+			if (to < 1)
+				v = Curve.subdivide(v, (to - from) / (1 - from))[0]; // [0] left
+			return v;
 		},
 
-		isFlatEnough: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+		isFlatEnough: function(v) {
 			// Code from Nearest Point-on-Curve Problem and by Philip J.
 			// Schneider from "Graphics Gems", Academic Press, 1990, adapted
 			// and optimised for cubic bezier curves.
 			// Derive the implicit equation for line connecting first and last
 			// control points
-			var a = p1y - p2y,
+			var p1x = v[0], p1y = v[1],
+				c1x = v[2], c1y = v[3],
+				c2x = v[4], c2y = v[5],
+				p2x = v[6], p2y = v[7],
+
+				a = p1y - p2y,
 				b = p2x - p1x,
 				c = p1x * p2y - p2x * p1y,
 				// Find the largest distance from each of the points to the line
@@ -632,9 +615,14 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	}
 }, new function() { // Scope for methods that require numerical integration
 
-	function getLengthIntegrand(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+	function getLengthIntegrand(v) {
 		// Calculate the coefficients of a Bezier derivative.
-		var ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
+		var p1x = v[0], p1y = v[1],
+			c1x = v[2], c1y = v[3],
+			c2x = v[4], c2y = v[5],
+			p2x = v[6], p2y = v[7],
+
+			ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
 			bx = 6 * (p1x + c2x) - 12 * c1x,
 			cx = 3 * (c1x - p1x),
 
@@ -661,24 +649,23 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	return {
 		statics: true,
 
-		getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, a, b) {
+		getLength: function(v, a, b) {
 			if (a === undefined)
 				a = 0;
 			if (b === undefined)
 				b = 1;
-			if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
+			// if (p1 == c1 && p2 == c2):
+			if (v[0] == v[2] && v[1] == v[3] && v[6] == v[4] && v[7] ==  v[5]) {
 				// Straight line
 				var dx = p2x - p1x,
 					dy = p2y - p1y;
 				return (b - a) * Math.sqrt(dx * dx + dy * dy);
 			}
-			var ds = getLengthIntegrand(
-					p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+			var ds = getLengthIntegrand(v);
 			return Numerical.integrate(ds, a, b, getIterations(a, b));
 		},
 
-		getParameterAt: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
-				offset, start) {
+		getParameterAt: function(v, offset, start) {
 			if (offset == 0)
 				return start;
 			// See if we're going forward or backward, and handle cases
@@ -689,8 +676,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				offset = Math.abs(offset),
 				// Use integrand to calculate both range length and part
 				// lengths in f(t) below.
-				ds = getLengthIntegrand(
-						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y),
+				ds = getLengthIntegrand(v),
 				// Get length of total range
 				rangeLength = Numerical.integrate(ds, a, b,
 						getIterations(a, b));
