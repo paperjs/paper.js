@@ -413,6 +413,13 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				x = t == 0 ? p1x : p2x;
 				y = t == 0 ? p1y : p2y;
 			} else {
+				// TODO: Find a better solution for this:
+				// Prevent tangents and normals of length 0:
+				var tMin = Numerical.TOLERANCE;
+				if (t < tMin && c1x == p1x && c1y == p1y)
+					t = tMin;
+				else if (t > 1 - tMin && c2x == p2x && c2y == p2y)
+					t = 1 - tMin;
 				// Calculate the polynomial coefficients.
 				var cx = 3 * (c1x - p1x),
 					bx = 3 * (c2x - c1x) - cx,
