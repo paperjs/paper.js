@@ -687,8 +687,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			pos = 0,
 			// Adapt step = maxDistance so the points distribute evenly.
 			step = flattener.length / Math.ceil(flattener.length / maxDistance),
-			// Add half of step to end, so imprecisions are ok too.
-			end = flattener.length + step / 2;
+			// Add/remove half of step to end, so imprecisions are ok too.
+			// For closed paths, remove it, because we don't want to add last
+			// segment again
+			end = flattener.length + (this._closed ? -step : step) / 2;
 		// Iterate over path and evaluate and add points at given offsets
 		var segments = [];
 		while (pos <= end) {
