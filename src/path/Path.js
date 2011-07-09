@@ -1191,9 +1191,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// number, meaning the starting point is inside the shape.
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		var curves = this.getCurves(),
-			crossings = 0;
+			crossings = 0,
+			// Reuse one array for root-finding, give garbage collector a break
+			roots = [];
 		for (var i = 0, l = curves.length; i < l; i++)
-			crossings += curves[i].getCrossings(point, matrix);
+			crossings += curves[i].getCrossings(point, matrix, roots);
 		return (crossings & 1) == 1;
 	},
 
