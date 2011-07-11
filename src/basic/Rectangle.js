@@ -454,10 +454,13 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * 	}
 	 * }
 	 */
-	contains: function(rect) {
-		// TODO: improve handling of passed Rectangle or Point
-		return rect.width !== undefined
-				? this._containsRectangle(rect)
+	contains: function(arg) {
+		// Detect rectangles either by checking for 'width' on the passed object
+		// or by looking at the amount of elements in the arguments list,
+		// or the passed array:
+		return arg && arg.width !== undefined
+				|| (Array.isArray(arg) ? arg : arguments).length == 4
+				? this._containsRectangle(Rectangle.read(arguments))
 				: this._containsPoint(Point.read(arguments));
 	},
 
