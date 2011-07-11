@@ -74,7 +74,6 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	/**
 	 * The symbol that the placed symbol refers to.
 	 *
-	 * @name PlacedSymbol#symbol
 	 * @type Symbol
 	 * @bean
 	 */
