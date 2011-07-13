@@ -1,9 +1,8 @@
-/***
+/*!
+ * Paper.js vVERSION
  *
- * Paper.js
- *
- * A JavaScript Vector Graphics Library, based on Scriptographer.org and
- * designed to be largely API compatible.
+ * This file is part of Paper.js, a JavaScript Vector Graphics Library,
+ * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
  * http://scriptographer.org/
  *
@@ -13,6 +12,8 @@
  * Distributed under the MIT license. See LICENSE file for details.
  *
  * All rights reserved.
+ *
+ * Date: DATE
  *
  ***
  *
@@ -40,8 +41,7 @@
  * http://lehni.org/
  *
  * Distributed under the BSD license.
- *
- ***/
+ */
 
 /**
  * The global PaperScope object

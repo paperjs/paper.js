@@ -1784,7 +1784,7 @@ function onMouseDown(event) {
 	if (path) {
 		path.selected = false;
 	}
-	
+
 	// Create a new path and add the position of the mouse
 	// as its first segment. Select it, so we can see the
 	// segment points:
@@ -2092,10 +2092,10 @@ var amount = 5;
 var length = path.length;
 for (var i = 0; i < amount + 1; i++) {
 	var offset = i / amount * length;
-	
+
 	// Find the point on the path at the given offset:
 	var point = path.getPointAt(offset);
-	
+
 	// Create a small circle shaped path at the point:
 	var circle = new Path.Circle(point, 3);
 	circle.fillColor = 'red';
@@ -2211,13 +2211,13 @@ for (var i = 0; i < amount + 1; i++) {
 
 	// Find the point on the path at the given offset:
 	var point = path.getPointAt(offset);
-	
+
 	// Find the normal vector on the path at the given offset:
 	var tangent = path.getTangentAt(offset);
-	
+
 	// Make the tangent vector 60pt long:
 	tangent.length = 60;
-	
+
 	var line = new Path();
 	line.strokeColor = 'red';
 	line.add(point);
@@ -2330,16 +2330,16 @@ var amount = 10;
 var length = path.length;
 for (var i = 0; i < amount + 1; i++) {
 	var offset = i / amount * length;
-	
+
 	// Find the point on the path at the given offset:
 	var point = path.getPointAt(offset);
-	
+
 	// Find the normal vector on the path at the given offset:
 	var normal = path.getNormalAt(offset);
-	
+
 	// Make the normal vector 30pt long:
 	normal.length = 30;
-	
+
 	var line = new Path();
 	line.strokeColor = 'red';
 	line.add(point);
@@ -2793,16 +2793,16 @@ function onMouseDrag(event) {
 	if (myPath) {
 	    myPath.remove();
 	}
-	
+
 	// Create a new path and add a segment point to it
 	// at {x: 150, y: 150):
 	myPath = new Path();
 	myPath.add(150, 150);
-	
+
 	// Draw an arc through the position of the mouse to 'toPoint'
 	var toPoint = new Point(350, 150);
 	myPath.arcTo(event.point, toPoint);
-	
+
 	// Select the path, so we can see its segments:
 	myPath.selected = true;
 }
@@ -3617,6 +3617,45 @@ circle2.opacity = 0.5;
 </div>
 
 	
+<div id="guide-member" class="member">
+<div id="guide-link" class="member-link">
+<a name="guide" href="#" onClick="return toggleMember('guide', false);"><tt><b>guide</b></tt></a>
+</div>
+<div id="guide-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('guide', false);"><tt><b>guide</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('guide', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>Specifies whether the item functions as a guide. When set to
+<tt>true</tt>, the item will be drawn at the end as a guide.</p>
+	
+	
+		<ul><b>Default:</b>
+		<li>
+		<tt>1</tt>
+		</li>
+		</ul>
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+
+	
 <div id="selected-member" class="member">
 <div id="selected-link" class="member-link">
 <a name="selected" href="#" onClick="return toggleMember('selected', false);"><tt><b>selected</b></tt></a>
@@ -4113,6 +4152,38 @@ accessing <tt>item.children[item.children.length - 1]</tt>.</p>
 </div>
 
 	
+<div id="handlebounds-member" class="member">
+<div id="handlebounds-link" class="member-link">
+<a name="handlebounds" href="#" onClick="return toggleMember('handlebounds', false);"><tt><b>handleBounds</b></tt></a>
+</div>
+<div id="handlebounds-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('handlebounds', false);"><tt><b>handleBounds</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('handlebounds', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The bounding rectangle of the item including handles.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+
+	
 	<h3>Stroke Style</h3>
 
 <div id="strokecolor-member" class="member">
@@ -4136,7 +4207,7 @@ accessing <tt>item.children[item.children.length - 1]</tt>.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		<a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> / <a href="../classes/HSBColor.html"><tt>HSBColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
+		<a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> / <a href="../classes/HSBColor.html"><tt>HSBColor</tt></a> / <a href="../classes/HSLColor.html"><tt>HSLColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
 	</li>
 	</ul>
 	
@@ -4510,7 +4581,7 @@ miterLimit imposes a limit on the ratio of the miter length to the
 	
 	<ul><b>Type:</b>
 	<li>
-		<a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> / <a href="../classes/HSBColor.html"><tt>HSBColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
+		<a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> / <a href="../classes/HSBColor.html"><tt>HSBColor</tt></a> / <a href="../classes/HSLColor.html"><tt>HSLColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
 	</li>
 	</ul>
 	
@@ -5707,18 +5778,18 @@ circle.scale(1.5, circle.bounds.bottomLeft);
 </div>
 
 	
-<div id="scale-sx-sy-member" class="member">
-<div id="scale-sx-sy-link" class="member-link">
-<a name="scale-sx-sy" href="#" onClick="return toggleMember('scale-sx-sy', false);"><tt><b>scale</b>(sx, sy[, center])</tt></a>
+<div id="scale-hor-ver-member" class="member">
+<div id="scale-hor-ver-link" class="member-link">
+<a name="scale-hor-ver" href="#" onClick="return toggleMember('scale-hor-ver', false);"><tt><b>scale</b>(hor, ver[, center])</tt></a>
 </div>
-<div id="scale-sx-sy-description" class="member-description hidden">
+<div id="scale-hor-ver-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('scale-sx-sy', false);"><tt><b>scale</b>(sx, sy[, center])</tt></a>
+<a href="#" onClick="return toggleMember('scale-hor-ver', false);"><tt><b>scale</b>(hor, ver[, center])</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('scale-sx-sy', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('scale-hor-ver', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
@@ -5728,14 +5799,14 @@ from a supplied point.</p>
 <ul><b>Parameters:</b>
 
 <li>
-<tt>sx:</tt> 
+<tt>hor:</tt> 
 <tt>Number</tt>
 &mdash;&nbsp;the horizontal scale factor
 
 </li>
 
 <li>
-<tt>sy:</tt> 
+<tt>ver:</tt> 
 <tt>Number</tt>
 &mdash;&nbsp;the vertical scale factor
 
@@ -5955,18 +6026,18 @@ by a supplied point.</p>
 </div>
 
 	
-<div id="shear-shearX-shearY-member" class="member">
-<div id="shear-shearX-shearY-link" class="member-link">
-<a name="shear-shearX-shearY" href="#" onClick="return toggleMember('shear-shearX-shearY', false);"><tt><b>shear</b>(shearX, shearY[, center])</tt></a>
+<div id="shear-hor-ver-member" class="member">
+<div id="shear-hor-ver-link" class="member-link">
+<a name="shear-hor-ver" href="#" onClick="return toggleMember('shear-hor-ver', false);"><tt><b>shear</b>(hor, ver[, center])</tt></a>
 </div>
-<div id="shear-shearX-shearY-description" class="member-description hidden">
+<div id="shear-hor-ver-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('shear-shearX-shearY', false);"><tt><b>shear</b>(shearX, shearY[, center])</tt></a>
+<a href="#" onClick="return toggleMember('shear-hor-ver', false);"><tt><b>shear</b>(hor, ver[, center])</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('shear-shearX-shearY', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('shear-hor-ver', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
@@ -5976,16 +6047,16 @@ by a supplied point.</p>
 <ul><b>Parameters:</b>
 
 <li>
-<tt>shearX:</tt> 
+<tt>hor:</tt> 
 <tt>Number</tt>
-
+&mdash;&nbsp;the horizontal shear factor.
 
 </li>
 
 <li>
-<tt>shearY:</tt> 
+<tt>ver:</tt> 
 <tt>Number</tt>
-
+&mdash;&nbsp;the vertical shear factor.
 
 </li>
 
@@ -6219,7 +6290,7 @@ function onMouseDrag(event) {
 	// with a radius of 10:
 	var path = new Path.Circle(event.point, 10);
 	path.fillColor = 'black';
-	
+
 	// Remove the path on the next onMouseDrag or onMouseDown event:
 	path.removeOn({
 		drag: true,
@@ -6267,7 +6338,7 @@ function onMouseMove(event) {
 	// with a radius of 10:
 	var path = new Path.Circle(event.point, 10);
 	path.fillColor = 'black';
-	
+
 	// On the next move event, automatically remove the path:
 	path.removeOnMove();
 }
@@ -6357,7 +6428,7 @@ function onMouseDrag(event) {
 	// with a radius of 10:
 	var path = new Path.Circle(event.point, 10);
 	path.fillColor = 'black';
-	
+
 	// On the next drag event, automatically remove the path:
 	path.removeOnDrag();
 }
@@ -6402,7 +6473,7 @@ function onMouseDown(event) {
 	// with a radius of 10:
 	var path = new Path.Circle(event.point, 10);
 	path.fillColor = 'black';
-	
+
 	// Remove the path, when the mouse is released:
 	path.removeOnUp();
 }
