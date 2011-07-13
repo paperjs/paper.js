@@ -65,6 +65,9 @@ var SegmentPoint = Point.extend({
 				x = pt.x;
 				y = pt.y;
 				selected = pt.selected;
+			} else if (pt.width !== undefined) {
+				x = pt.width;
+				y = pt.height;
 			} else {
 				x = pt[0];
 				y = pt[1];
