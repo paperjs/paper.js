@@ -89,22 +89,27 @@ span.CodeMirror-selected {
 
 /* JavaScript */
 
-span.js-comment {
-	color: #8c868f;
-}
-span.js-keyword {
+span.cm-keyword {
 	color: #ff7800;
 }
-span.js-atom {
+span.cm-number,
+span.cm-atom {
 	color: #3b5bb5;
 }
-span.js-string {
+span.cm-string {
 	color: #409b1c;
 }
-span.js-variable {
-	color: #000000;
+span.cm-comment {
+	color: #8c868f;
 }
-span.js-variabledef,
-span.js-localvariable {
+span.cm-property {
+	color: #000;
+}
+span.cm-variable {
+	color: #000;
+}
+span.cm-def,
+span.cm-variable-2,
+span.cm-variable-3 {
 	color: #3a4a64;
 }
