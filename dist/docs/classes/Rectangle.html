@@ -1083,7 +1083,7 @@ var circle = new Path.Circle(new Point(80, 50), 30);
 function onMouseMove(event) {
 	// Move the circle to the position of the mouse:
 	circle.position = event.point;
-	
+
 	// Check whether the bounding box of the smaller circle
 	// is contained within the bounding box of the larger item:
 	if (largeCircle.bounds.contains(circle.bounds)) {
@@ -1170,7 +1170,7 @@ var circle = new Path.Circle(new Point(80, 50), 30);
 function onMouseMove(event) {
 	// Move the circle to the position of the mouse:
 	circle.position = event.point;
-	
+
 	// Check whether the bounding box of the two circle
 	// shaped paths intersect:
 	if (largeCircle.bounds.intersects(circle.bounds)) {

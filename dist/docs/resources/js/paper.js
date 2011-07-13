@@ -1,45 +1,45 @@
 /***
-* 
+ *
  * Paper.js
- * 
+ *
  * A JavaScript Vector Graphics Library, based on Scriptographer.org and
  * designed to be largely API compatible.
- * http://paperjs.org/
+ * http://Paperjs.org/
  * http://scriptographer.org/
- * 
+ *
  * Distributed under the MIT license. See LICENSE file for details.
- * 
+ *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
- * 
+ *
  * All rights reserved.
- * 
+ *
  ***
- * 
+ *
  * Bootstrap.js JavaScript Framework.
  * http://bootstrapjs.org/
- * 
+ *
  * Distributed under the MIT license.
- * 
+ *
  * Copyright (c) 2006 - 2011 Juerg Lehni
  * http://lehni.org/
- * 
+ *
  ***
- * 
+ *
  * Parse-JS, A JavaScript tokenizer / parser / generator.
- * 
+ *
  * Distributed under the BSD license.
- * 
+ *
  * Copyright (c) 2010, Mihai Bazon <mihai.bazon@gmail.com>
  * http://mihai.bazon.net/blog/
- * 
+ *
  ***/
 
 var paper = new function() {
 
 var Base = new function() { 
 	var fix = !this.__proto__,
-		hidden = /^(statics|generics|preserve|enumerable|prototype|__proto__|toString|valueOf)$/,
+		hidden = /^(statics|generics|preserve|enumerable|beans|prototype|__proto__|toString|valueOf)$/,
 		proto = Object.prototype,
 		has = fix
 			? function(name) {
@@ -150,7 +150,7 @@ var Base = new function() {
 			}
 		}
 		if (src) {
-			beans = [];
+			beans = src.beans && [];
 			for (var name in src)
 				if (has.call(src, name) && !hidden.test(name))
 					field(name, null, true, generics);
@@ -287,6 +287,7 @@ var Base = new function() {
 }
 
 this.Base = Base.inject({
+
 	clone: function() {
 		return new this.constructor(this);
 	},
@@ -315,6 +316,14 @@ this.Base = Base.inject({
 			return res;
 		},
 
+		initialize: function(object, values, defaults) {
+			if (!values)
+				values = defaults;
+			return Base.each(defaults, function(value, key) {
+				this[key] = values[key] || value;
+			}, object);
+		},
+
 		splice: function(list, items, index, remove) {
 			var amount = items && items.length,
 				append = index === undefined;
@@ -337,14 +346,6 @@ this.Base = Base.inject({
 			}
 		},
 
-		merge: function() {
-			return Base.each(arguments, function(hash) {
-				Base.each(hash, function(value, key) {
-					this[key] = value;
-				}, this);
-			}, {}, true); 
-		},
-
 		capitalize: function(str) {
 			return str.replace(/\b[a-z]/g, function(match) {
 				return match.toUpperCase();
@@ -355,14 +356,6 @@ this.Base = Base.inject({
 			return str.replace(/-(\w)/g, function(all, chr) {
 				return chr.toUpperCase();
 			});
-		},
-
-		hyphenate: function(str) {
-			return str.replace(/[a-z][A-Z0-9]|[0-9][a-zA-Z]|[A-Z]{2}[a-z]/g,
-				function(match) {
-					return match.charAt(0) + '-' + match.substring(1);
-				}
-			);
 		},
 
 		formatNumber: function(num) {
@@ -378,16 +371,13 @@ this.Base = Base.inject({
 });
 
 var PaperScope = this.PaperScope = Base.extend({
-	version: 0.1,
 
 	initialize: function(id) {
-
 		this.project = null;
 
 		this.projects = [];
 
 		this.view = null;
-
 		this.views = [];
 
 		this.tool = null;
@@ -398,9 +388,7 @@ var PaperScope = this.PaperScope = Base.extend({
 	},
 
 	evaluate: function(code) {
-		var res = PaperScript.evaluate(code, this);
-		View.updateFocus();
-		return res;
+		return PaperScript.evaluate(code, this);
 	},
 
 	install: function(scope) {
@@ -423,14 +411,6 @@ var PaperScope = this.PaperScope = Base.extend({
 		delete PaperScope._scopes[this.id];
 	},
 
-	_needsRedraw: function() {
-		if (!this._redrawNotified) {
-			for (var i = this.views.length - 1; i >= 0; i--)
-				this.views[i]._redrawNeeded = true;
-			this._redrawNotified = true;
-		}
-	},
-
 	statics: {
 		_scopes: {},
 
@@ -438,15 +418,14 @@ var PaperScope = this.PaperScope = Base.extend({
 			if (typeof id === 'object')
 				id = id.getAttribute('id');
 			return this._scopes[id] || null;
-		},
-
-		each: function(iter) {
-			Base.each(this._scopes, iter);
 		}
 	}
 });
 
 var Point = this.Point = Base.extend({
+
+	beans: true,
+
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
 			this.x = arg0;
@@ -607,7 +586,8 @@ var Point = this.Point = Base.extend({
 
 	getDirectedAngle: function(point) {
 		point = Point.read(arguments);
-		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
+		var angle = this.getAngle() - point.getAngle();
+		return angle < -180 ? angle + 360 : angle > 180 ? angle - 360 : angle;
 	},
 
 	rotate: function(angle, center) {
@@ -674,6 +654,7 @@ var Point = this.Point = Base.extend({
 	},
 
 	statics: {
+
 		create: function(x, y) {
 			var point = new Point(Point.dont);
 			point.x = x;
@@ -714,6 +695,8 @@ var Point = this.Point = Base.extend({
 });
 
 var LinkedPoint = Point.extend({
+	beans: true,
+
 	set: function(x, y, dontNotify) {
 		this._x = x;
 		this._y = y;
@@ -753,6 +736,7 @@ var LinkedPoint = Point.extend({
 });
 
 var Size = this.Size = Base.extend({
+
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
 			this.width = arg0;
@@ -789,10 +773,6 @@ var Size = this.Size = Base.extend({
 		this.width = width;
 		this.height = height;
 		return this;
-	},
-
-	clone: function() {
-		return Size.create(this.width, this.height);
 	},
 
 	add: function(size) {
@@ -838,6 +818,7 @@ var Size = this.Size = Base.extend({
 	},
 
 	statics: {
+
 		create: function(width, height) {
 			return new Size(Size.dont).set(width, height);
 		},
@@ -869,6 +850,8 @@ var Size = this.Size = Base.extend({
 });
 
 var LinkedSize = Size.extend({
+	beans: true,
+
 	set: function(width, height, dontNotify) {
 		this._width = width;
 		this._height = height;
@@ -908,6 +891,8 @@ var LinkedSize = Size.extend({
 });
 
 var Rectangle = this.Rectangle = Base.extend({
+	beans: true,
+
 	initialize: function(arg0, arg1, arg2, arg3) {
 		if (arguments.length == 4) {
 			this.x = arg0;
@@ -1144,10 +1129,12 @@ var Rectangle = this.Rectangle = Base.extend({
 				point = Point.read(arguments);
 				return this[setX](point.x)[setY](point.y);
 			};
-		}, {});
+		}, { beans: true });
 });
 
 var LinkedRectangle = Rectangle.extend({
+	beans: true,
+
 	set: function(x, y, width, height, dontNotify) {
 		this._x = x;
 		this._y = y;
@@ -1195,11 +1182,14 @@ var LinkedRectangle = Rectangle.extend({
 				this._owner[this._setter](this);
 				return this;
 			};
-		}, {})
+		}, { beans: true })
 	);
 });
 
 var Matrix = this.Matrix = Base.extend({
+
+	beans: true,
+
 	initialize: function(m00, m10, m01, m11, m02, m12) {
 		var ok = true;
 		if (arguments.length == 6) {
@@ -1389,23 +1379,6 @@ var Matrix = this.Matrix = Base.extend({
 		return this._m00 * this._m11 - this._m01 * this._m10;
 	},
 
-	getTranslation: function() {
-		return new Point(this._m02, this._m12);
-	},
-
-	getScaling: function() {
-		var sx = Math.sqrt(this._m00 * this._m00 + this._m10 * this._m10),
-			sy = Math.sqrt(this._m01 * this._m01 + this._m11 * this._m11);
-		return new Point(this._m00 < 0 ? -sx : sx, this._m01 < 0 ? -sy : sy);
-	},
-
-	getRotation: function() {
-		var angle1 = -Math.atan2(this._m01, this._m11),
-			angle2 = Math.atan2(this._m10, this._m00);
-		return Math.abs(angle1 - angle2) < Numerical.TOLERANCE
-				? angle1 * 180 / Math.PI : undefined;
-	},
-
 	isIdentity: function() {
 		return this._m00 == 1 && this._m10 == 0 && this._m01 == 0 &&
 				this._m11 == 1 && this._m02 == 0 && this._m12 == 0;
@@ -1474,6 +1447,7 @@ var Matrix = this.Matrix = Base.extend({
 	},
 
 	statics: {
+
 		create: function(m00, m10, m01, m11, m02, m12) {
 			return new Matrix(Matrix.dont).set(m00, m10, m01, m11, m02, m12);
 		},
@@ -1514,7 +1488,7 @@ var Matrix = this.Matrix = Base.extend({
 		this['set' + name] = function(value) {
 			this[prop] = value;
 		};
-	}, {});
+	}, { beans: true });
 });
 
 var Line = this.Line = Base.extend({
@@ -1551,7 +1525,7 @@ var Line = this.Line = Base.extend({
 		if (ccw == 0) {
 			ccw = v2.dot(v1);
 			if (ccw > 0) {
-				ccw = v2.subtract(v1).dot(v1);
+				ccw = (v2 - v1).dot(v1);
 				if (ccw < 0)
 				    ccw = 0;
 			}
@@ -1570,21 +1544,27 @@ var Line = this.Line = Base.extend({
 });
 
 var Project = this.Project = Base.extend({
+
+	beans: true,
+
 	initialize: function() {
 		this._scope = paper;
 		this._index = this._scope.projects.push(this) - 1;
-		this._currentStyle = new PathStyle();
+		this._currentStyle = PathStyle.create(null);
+		this.setCurrentStyle({
+			strokeWidth: 1,
+			strokeCap: 'butt',
+			strokeJoin: 'miter',
+			miterLimit: 10,
+			dashOffset: 0,
+			dashArray: []
+		});
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		this.activate();
 		this.layers = [];
 		this.symbols = [];
 		this.activeLayer = new Layer();
-	},
-
-	_needsRedraw: function() {
-		if (this._scope)
-			this._scope._needsRedraw();
 	},
 
 	getCurrentStyle: function() {
@@ -1596,7 +1576,7 @@ var Project = this.Project = Base.extend({
 	},
 
 	activate: function() {
-		if (this._scope) {
+		if (this._index != null) {
 			this._scope.project = this;
 			return true;
 		}
@@ -1604,14 +1584,9 @@ var Project = this.Project = Base.extend({
 	},
 
 	remove: function() {
-		if (this._scope) {
-			Base.splice(this._scope.projects, null, this._index, 1);
-			if (this._scope.project == this)
-				this._scope.project = null;
-			this._scope = null;
-			return true;
-		}
-		return false;
+		var res = Base.splice(this._scope.projects, null, this._index, 1);
+		this._scope = null;
+		return !!res.length;
 	},
 
 	getIndex: function() {
@@ -1626,8 +1601,8 @@ var Project = this.Project = Base.extend({
 		return items;
 	},
 
-	_updateSelection: function(item) {
-		if (item._selected) {
+	_selectItem: function(item, select) {
+		if (select) {
 			this._selectedItemCount++;
 			this._selectedItems[item.getId()] = item;
 		} else {
@@ -1662,10 +1637,17 @@ var Project = this.Project = Base.extend({
 			});
 			ctx.restore();
 		}
+	},
+
+	redraw: function() {
+		this._scope.view.draw();
 	}
 });
 
 var Symbol = this.Symbol = Base.extend({
+
+	beans: true,
+
 	initialize: function(item) {
 		this.project = paper.project;
 		this.project.symbols.push(this);
@@ -1678,7 +1660,8 @@ var Symbol = this.Symbol = Base.extend({
 
 	setDefinition: function(item) {
 		this._definition = item;
-		item.remove();
+		item.setSelected(false);
+		item._removeFromParent();
 		item.setPosition(new Point());
 	},
 
@@ -1691,44 +1674,26 @@ var Symbol = this.Symbol = Base.extend({
 	}
 });
 
-var ChangeFlag = {
-	APPEARANCE: 1,
-	HIERARCHY: 2,
-	GEOMETRY: 4,
-	STROKE: 8,
-	STYLE: 16,
-	ATTRIBUTE: 32,
-	CONTENT: 64,
-	PIXELS: 128,
-	CLIPPING: 256
-};
-
-var Change = {
-	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.APPEARANCE,
-	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
-	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
-	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
-	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
-	CONTENT: ChangeFlag.CONTENT | ChangeFlag.APPEARANCE,
-	PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE
+var ChangeFlags = {
+	GEOMETRY: 1, 
+	STROKE: 2, 
+	STYLE: 4, 
+	HIERARCHY: 8 
 };
 
 var Item = this.Item = Base.extend({
+	beans: true,
+
 	initialize: function() {
 		if (!this._project)
-			paper.project.activeLayer.addChild(this);
+			paper.project.activeLayer.appendTop(this);
 		this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 	},
 
 	_changed: function(flags) {
-		if (flags & ChangeFlag.GEOMETRY) {
-			delete this._bounds;
+		if (flags & ChangeFlags.GEOMETRY) {
 			delete this._position;
-		}
-		if (flags & ChangeFlag.APPEARANCE) {
-			if (this._project)
-				this._project._needsRedraw();
 		}
 	},
 
@@ -1743,17 +1708,19 @@ var Item = this.Item = Base.extend({
 	},
 
 	setName: function(name) {
-
-		if (this._name)
-			this._removeFromNamed();
-		this._name = name || undefined;
+		var children = this._parent._children,
+			namedChildren = this._parent._namedChildren;
+		if (name != this._name) {
+			if (this._name)
+				this._removeFromNamed();
+			this._name = name || undefined;
+		}
 		if (name) {
-			var children = this._parent._children,
-				namedChildren = this._parent._namedChildren;
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
+		} else {
+			delete children[name];
 		}
-		this._changed(ChangeFlag.ATTRIBUTE);
 	},
 
 	getPosition: function() {
@@ -1772,41 +1739,19 @@ var Item = this.Item = Base.extend({
 
 	setStyle: function(style) {
 		this._style.initialize(style);
-	}
-
-}, new function() { 
-	return Base.each(['locked', 'visible', 'blendMode', 'opacity'],
-		function(name) {
-			var part = Base.capitalize(name),
-				name = '_' + name;
-			this['get' + part] = function() {
-				return this[name];
-			};
-			this['set' + part] = function(value) {
-				if (value != this[name]) {
-					this[name] = value;
-					this._changed(name === '_locked'
-							? ChangeFlag.ATTRIBUTE : Change.ATTRIBUTE);
-				}
-			};
-		}, {});
-}, {
-
-	_locked: false,
-
-	_visible: true,
-
-	_blendMode: 'normal',
-
-	_opacity: 1,
+	},
 
 	isSelected: function() {
 		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++)
-				if (this._children[i].isSelected())
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				if (this._children[i].isSelected()) {
 					return true;
+				}
+			}
+		} else {
+			return !!this._selected;
 		}
-		return this._selected;
+		return false;
 	},
 
 	setSelected: function(selected) {
@@ -1814,33 +1759,33 @@ var Item = this.Item = Base.extend({
 			for (var i = 0, l = this._children.length; i < l; i++) {
 				this._children[i].setSelected(selected);
 			}
-		} else if ((selected = !!selected) != this._selected) {
-			this._selected = selected;
-			this._project._updateSelection(this);
-			this._changed(Change.ATTRIBUTE);
+		} else {
+			if ((selected = !!selected) != this._selected) {
+				this._selected = selected;
+				this._project._selectItem(this, selected);
+			}
 		}
 	},
 
-	_selected: false,
+	locked: false,
+
+	visible: true,
 
 	isClipMask: function() {
 		return this._clipMask;
 	},
 
 	setClipMask: function(clipMask) {
-		if (this._clipMask != (clipMask = !!clipMask)) {
-			this._clipMask = clipMask;
-			if (clipMask) {
-				this.setFillColor(null);
-				this.setStrokeColor(null);
-			}
-			this._changed(Change.ATTRIBUTE);
-			if (this._parent)
-				this._parent._changed(ChangeFlag.CLIPPING);
+		this._clipMask = clipMask;
+		if (this._clipMask) {
+			this.setFillColor(null);
+			this.setStrokeColor(null);
 		}
 	},
 
-	_clipMask: false,
+	blendMode: 'normal',
+
+	opacity: 1,
 
 	getProject: function() {
 		return this._project;
@@ -1867,7 +1812,8 @@ var Item = this.Item = Base.extend({
 
 	setChildren: function(items) {
 		this.removeChildren();
-		this.addChildren(items);
+		for (var i = 0, l = items && items.length; i < l; i++)
+			this.appendTop(items[i]);
 	},
 
 	getFirstChild: function() {
@@ -1891,6 +1837,57 @@ var Item = this.Item = Base.extend({
 		return this._index;
 	},
 
+	_removeFromNamed: function() {
+		var children = this._parent._children,
+			namedChildren = this._parent._namedChildren,
+			name = this._name,
+			namedArray = namedChildren[name];
+		if (children[name] = this)
+			delete children[name];
+		namedArray.splice(namedArray.indexOf(this), 1);
+		if (namedArray.length) {
+			children[name] = namedArray[namedArray.length - 1];
+		} else {
+			delete namedChildren[name];
+		}
+	},
+
+	_removeFromParent: function() {
+		if (this._parent) {
+			if (this._name)
+				this._removeFromNamed();
+			var res = Base.splice(this._parent._children, null, this._index, 1);
+			this._parent = null;
+			return !!res.length;
+		}
+		return false;
+	},
+
+	remove: function() {
+		if (this.isSelected())
+			this.setSelected(false);
+		return this._removeFromParent();
+	},
+
+	removeChildren: function() {
+		var removed = false;
+		if (this._children) {
+			for (var i = this._children.length - 1; i >= 0; i--)
+				removed = this._children[i].remove() || removed;
+		}
+		return removed;
+	},
+
+	copyTo: function(itemOrProject) {
+		var copy = this.clone();
+		if (itemOrProject.layers) {
+			itemOrProject.activeLayer.appendTop(copy);
+		} else {
+			itemOrProject.appendTop(copy);
+		}
+		return copy;
+	},
+
 	clone: function() {
 		return this._clone(new this.constructor());
 	},
@@ -1899,29 +1896,27 @@ var Item = this.Item = Base.extend({
 		copy.setStyle(this._style);
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.addChild(this._children[i].clone());
+				copy.appendTop(this._children[i].clone());
 		}
-		var keys = ['_locked', '_visible', '_opacity', '_blendMode',
-				'_clipMask'];
+		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
 				copy[key] = this[key];
 		}
-		copy.setSelected(this._selected);
+		copy.moveAbove(this);
 		if (this._name)
 			copy.setName(this._name);
 		return copy;
 	},
 
-	copyTo: function(itemOrProject) {
-		var copy = this.clone();
-		if (itemOrProject.layers) {
-			itemOrProject.activeLayer.addChild(copy);
-		} else {
-			itemOrProject.addChild(copy);
+	reverseChildren: function() {
+		if (this._children) {
+			this._children.reverse();
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				this._children[i]._index = i;
+			}
 		}
-		return copy;
 	},
 
 	rasterize: function(resolution) {
@@ -1938,125 +1933,14 @@ var Item = this.Item = Base.extend({
 		return raster;
 	},
 
-	addChild: function(item) {
-		return this.insertChild(undefined, item);
-	},
-
-	insertChild: function(index, item) {
-		if (this._children) {
-			item._remove(false, true);
-			Base.splice(this._children, [item], index, 0);
-			item._parent = this;
-			item._setProject(this._project);
-			if (item._name)
-				item.setName(item._name);
-			this._changed(Change.HIERARCHY);
-			return true;
-		}
-		return false;
-	},
-
-	addChildren: function(items) {
-		for (var i = 0, l = items && items.length; i < l; i++)
-			this.insertChild(undefined, items[i]);
-	},
-
-	insertChildren: function(index, items) {
-		for (var i = 0, l = items && items.length; i < l; i++) {
-			if (this.insertChild(index, items[i]))
-				index++;
-		}
-	},
-
-	insertAbove: function(item) {
-		return item._parent && item._parent.insertChild(
-				item._index + 1, this);
-	},
-
-	insertBelow: function(item) {
-		return item._parent && item._parent.insertChild(
-				item._index - 1, this);
-	},
-
-	appendTop: function(item) {
-		return this.addChild(item);
-	},
-
-	appendBottom: function(item) {
-		return this.insertChild(0, item);
-	},
-
-	moveAbove: function(item) {
-		return this.insertAbove(item);
-	},
-
-	moveBelow: function(item) {
-		return this.insertBelow(item);
-	},
-
-	_removeFromNamed: function() {
-		var children = this._parent._children,
-			namedChildren = this._parent._namedChildren,
-			name = this._name,
-			namedArray = namedChildren[name],
-			index = namedArray ? namedArray.indexOf(this) : -1;
-		if (index == -1)
-			return;
-		if (children[name] == this)
-			delete children[name];
-		namedArray.splice(index, 1);
-		if (namedArray.length) {
-			children[name] = namedArray[namedArray.length - 1];
-		} else {
-			delete namedChildren[name];
-		}
-	},
-
-	_remove: function(deselect, notify) {
-		if (this._parent) {
-			if (deselect)
-				this.setSelected(false);
-			if (this._name)
-				this._removeFromNamed();
-			Base.splice(this._parent._children, null, this._index, 1);
-			if (notify)
-				this._parent._changed(Change.HIERARCHY);
-			this._parent = null;
-			return true;
-		}
-		return false;
-	},
-
-	remove: function() {
-		return this._remove(true, true);
-	},
-
-	removeChildren: function(from, to) {
-		if (!this._children)
-			return null;
-		from = from || 0;
-	 	to = Base.pick(to, this._children.length);
-		var removed = this._children.splice(from, to - from);
-		for (var i = removed.length - 1; i >= 0; i--)
-			removed[i]._remove(true, false);
-		if (removed.length > 0)
-			this._changed(Change.HIERARCHY);
-		return removed;
-	},
-
-	reverseChildren: function() {
-		if (this._children) {
-			this._children.reverse();
-			for (var i = 0, l = this._children.length; i < l; i++)
-				this._children[i]._index = i;
-			this._changed(Change.HIERARCHY);
-		}
+	hasChildren: function() {
+		return this._children && this._children.length > 0;
 	},
 
 	isEditable: function() {
 		var item = this;
 		while (item) {
-			if (!item._visible || item._locked)
+			if (!item.visible || item.locked)
 				return false;
 			item = item._parent;
 		}
@@ -2079,10 +1963,6 @@ var Item = this.Item = Base.extend({
 			}
 		}
 		return 0;
-	},
-
-	hasChildren: function() {
-		return this._children && this._children.length > 0;
 	},
 
 	isAbove: function(item) {
@@ -2127,54 +2007,54 @@ var Item = this.Item = Base.extend({
 	},
 
 	getBounds: function() {
-		return this._getBounds('getBounds');
+		return this._getBounds(false);
+	},
+
+	getStrokeBounds: function() {
+		return this._getBounds(true);
+	},
+
+	_getBounds: function(includeStroke) {
+		var children = this._children;
+		if (children && children.length) {
+			var x1 = Infinity,
+				x2 = -Infinity,
+				y1 = x1,
+				y2 = x2;
+			for (var i = 0, l = children.length; i < l; i++) {
+				var child = children[i];
+				if (child.visible) {
+					var rect = includeStroke
+							? child.getStrokeBounds()
+							: child.getBounds();
+					x1 = Math.min(rect.x, x1);
+					y1 = Math.min(rect.y, y1);
+					x2 = Math.max(rect.x + rect.width, x2);
+					y2 = Math.max(rect.y + rect.height, y2);
+				}
+			}
+			return includeStroke
+				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
+				: LinkedRectangle.create(this, 'setBounds',
+						x1, y1, x2 - x1, y2 - y1);
+		}
+		return new Rectangle();
 	},
 
 	setBounds: function(rect) {
 		rect = Rectangle.read(arguments);
 		var bounds = this.getBounds(),
 			matrix = new Matrix(),
-			center = rect.getCenter();
+			center = rect.center;
 		matrix.translate(center);
 		if (rect.width != bounds.width || rect.height != bounds.height) {
 			matrix.scale(
 					bounds.width != 0 ? rect.width / bounds.width : 1,
 					bounds.height != 0 ? rect.height / bounds.height : 1);
 		}
-		center = bounds.getCenter();
+		center = bounds.center;
 		matrix.translate(-center.x, -center.y);
 		this.transform(matrix);
-	},
-
-	getStrokeBounds: function() {
-		return this._getBounds('getStrokeBounds');
-	},
-
-	_getBounds: function(getter) {
-		var children = this._children;
-		if (!children || children.length == 0) 
-			return new Rectangle();
-		var x1 = Infinity,
-			x2 = -Infinity,
-			y1 = x1,
-			y2 = x2;
-		for (var i = 0, l = children.length; i < l; i++) {
-			var child = children[i];
-			if (child._visible) {
-				var rect = child[getter]();
-				x1 = Math.min(rect.x, x1);
-				y1 = Math.min(rect.y, y1);
-				x2 = Math.max(rect.x + rect.width, x2);
-				y2 = Math.max(rect.y + rect.height, y2);
-			}
-		}
-		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
-	},
-
-	_createBounds: function(rect) {
-		return LinkedRectangle.create(this, 'setBounds',
-				rect.x, rect.y, rect.width, rect.height);
 	},
 
 	scale: function(sx, sy , center) {
@@ -2196,47 +2076,27 @@ var Item = this.Item = Base.extend({
 				center || this.getPosition()));
 	},
 
-	shear: function(shearX, shearY, center) {
+	shear: function(shx, shy, center) {
 		if (arguments.length < 2 || typeof sy === 'object') {
-			center = shearY;
-			shearY = shearX;
+			center = shy;
+			shy = shx;
 		}
-		return this.transform(new Matrix().shear(shearX, shearY,
+		return this.transform(new Matrix().shear(shx, shy,
 				center || this.getPosition()));
 	},
 
 	transform: function(matrix, flags) {
-		var bounds = this._bounds,
-			position = this._position;
-		if (this._transform) {
+		if (this._transform)
 			this._transform(matrix, flags);
-			this._changed(Change.GEOMETRY);
+		if (this._position)
+			matrix._transformPoint(this._position, this._position, true);
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				var child = this._children[i];
+				child.transform(matrix, flags);
+			}
 		}
-		if (bounds && matrix.getRotation() % 90 === 0) {
-			this._bounds = this._createBounds(
-					matrix._transformBounds(bounds));
-			this._position = this._bounds.getCenter();
-		} else if (position) {
-			this._position = matrix._transformPoint(position, position, true);
-		}
-		for (var i = 0, l = this._children && this._children.length; i < l; i++)
-			this._children[i].transform(matrix, flags);
 		return this;
-	},
-
-	fitBounds: function(rectangle, fill) {
-		rectangle = Rectangle.read(arguments);
-		var bounds = this.getBounds(),
-			itemRatio = bounds.height / bounds.width,
-			rectRatio = rectangle.height / rectangle.width,
-			scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
-					? rectangle.width / bounds.width
-					: rectangle.height / bounds.height,
-			delta = rectangle.getCenter().subtract(bounds.getCenter()),
-			newBounds = new Rectangle(new Point(),
-					new Size(bounds.width * scale, bounds.height * scale));
-		newBounds.setCenter(rectangle.getCenter());
-		this.setBounds(newBounds);
 	},
 
 	statics: {
@@ -2255,12 +2115,12 @@ var Item = this.Item = Base.extend({
 		},
 
 		draw: function(item, ctx, param) {
-			if (!item._visible || item._opacity == 0)
+			if (!item.visible || item.opacity == 0)
 				return;
 
 			var tempCanvas, parentCtx;
-			if (item._blendMode !== 'normal'
-					|| item._opacity < 1
+			if (item.blendMode !== 'normal'
+					|| item.opacity < 1
 					&& !(item._segments && (!item.getFillColor()
 							|| !item.getStrokeColor()))) {
 				var bounds = item.getStrokeBounds() || item.getBounds();
@@ -2291,13 +2151,13 @@ var Item = this.Item = Base.extend({
 
 				ctx.restore();
 
-				if (item._blendMode !== 'normal') {
+				if (item.blendMode !== 'normal') {
 					var pixelOffset = itemOffset.subtract(param.offset);
-					BlendMode.process(item._blendMode, ctx, parentCtx,
-						item._opacity, pixelOffset);
+					BlendMode.process(item.blendMode, ctx, parentCtx,
+						item.opacity, pixelOffset);
 				} else {
 					parentCtx.save();
-					parentCtx.globalAlpha = item._opacity;
+					parentCtx.globalAlpha = item.opacity;
 					parentCtx.drawImage(tempCanvas,
 							itemOffset.x, itemOffset.y);
 					parentCtx.restore();
@@ -2307,6 +2167,48 @@ var Item = this.Item = Base.extend({
 			}
 		}
 	}
+}, new function() {
+
+	function append(top) {
+		return function(item) {
+			item._removeFromParent();
+			if (this._children) {
+				Base.splice(this._children, [item], top ? undefined : 0, 0);
+				item._parent = this;
+				item._setProject(this._project);
+				if (item._name)
+					item.setName(item._name);
+				return true;
+			}
+			return false;
+		};
+	}
+
+	function move(above) {
+		return function(item) {
+			if (item._parent && this._removeFromParent()) {
+				Base.splice(item._parent._children, [this],
+						item._index + (above ? 1 : -1), 0);
+				this._parent = item._parent;
+				this._setProject(item._project);
+				if (item._name)
+					item.setName(item._name);
+				return true;
+			}
+			return false;
+		};
+	}
+
+	return {
+
+		appendTop: append(true),
+
+		appendBottom: append(false),
+
+		moveAbove: move(true),
+
+		moveBelow: move(false)
+	};
 }, new function() {
 
 	var sets = {
@@ -2365,56 +2267,47 @@ var Item = this.Item = Base.extend({
 });
 
 var Group = this.Group = Item.extend({
+
+	beans: true,
+
 	initialize: function(items) {
 		this.base();
 		this._children = [];
 		this._namedChildren = {};
-		this.addChildren(!items || !Array.isArray(items)
+		this._clipped = false;
+		this.setChildren(!items || !Array.isArray(items)
 				|| typeof items[0] !== 'object' ? arguments : items);
 	},
 
-	_changed: function(flags) {
-		Item.prototype._changed.call(this, flags);
-		if (flags & (ChangeFlag.HIERARCHY | ChangeFlag.CLIPPING)) {
-			delete this._clipItem;
-		}
-	},
-
-	_getClipItem: function() {
-		if (this._clipItem !== undefined)
-			return this._clipItem;
-		for (var i = 0, l = this._children.length; i < l; i++) {
-			var child = this._children[i];
-			if (child._clipMask)
-				return this._clipItem = child;
-		}
-		return this._clipItem = null;
+	clone: function() {
+		var copy = this.base();
+		copy._clipped = this._clipped;
+		return copy;
 	},
 
 	isClipped: function() {
-		return !!this._getClipItem();
+		return this._clipped;
 	},
 
 	setClipped: function(clipped) {
+		this._clipped = clipped;
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
-		return this;
 	},
 
 	draw: function(ctx, param) {
-		var clipItem = this._getClipItem();
-		if (clipItem)
-			Item.draw(clipItem, ctx, param);
 		for (var i = 0, l = this._children.length; i < l; i++) {
-			var item = this._children[i];
-			if (item != clipItem)
-				Item.draw(item, ctx, param);
+			Item.draw(this._children[i], ctx, param);
+			if (this._clipped && i == 0)
+				ctx.clip();
 		}
 	}
 });
 
 var Layer = this.Layer = Group.extend({
+
+	beans: true,
 	initialize: function(items) {
 		this._project = paper.project;
 		this._index = this._project.layers.push(this) - 1;
@@ -2422,17 +2315,9 @@ var Layer = this.Layer = Group.extend({
 		this.activate();
 	},
 
-	_remove: function(deselect, notify) {
-		if (this._parent)
-			return this.base(deselect, notify);
-		if (this._index != null) {
-			if (deselect)
-				this.setSelected(false);
-			Base.splice(this._project.layers, null, this._index, 1);
-			this._project._needsRedraw();
-			return true;
-		}
-		return false;
+	_removeFromParent: function() {
+		return this._parent ? this.base()
+			: !!Base.splice(this._project.layers, null, this._index, 1).length;
 	},
 
 	getNextSibling: function() {
@@ -2449,10 +2334,10 @@ var Layer = this.Layer = Group.extend({
 		this._project.activeLayer = this;
 	}
 }, new function () {
-	function insert(above) {
+	function move(above) {
 		return function(item) {
 			if (item instanceof Layer && !item._parent
-						&& this._remove(false, true)) {
+						&& this._removeFromParent()) {
 				Base.splice(item._project.layers, [this],
 						item._index + (above ? 1 : -1), 0);
 				this._setProject(item._project);
@@ -2463,13 +2348,16 @@ var Layer = this.Layer = Group.extend({
 	}
 
 	return {
-		insertAbove: insert(true),
+		moveAbove: move(true),
 
-		insertBelow: insert(false)
+		moveBelow: move(false)
 	};
 });
 
 var Raster = this.Raster = Item.extend({
+
+	beans: true,
+
 	initialize: function(object) {
 		this.base();
 		if (object.getContext) {
@@ -2501,7 +2389,7 @@ var Raster = this.Raster = Item.extend({
 		var size = Size.read(arguments),
 			image = this.getImage();
 		this.setCanvas(CanvasProvider.getCanvas(size));
-		this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
+		this.getContext().drawImage(image, 0, 0, size.width, size.height);
 	},
 
 	getWidth: function() {
@@ -2524,10 +2412,9 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	getContext: function() {
-		if (!this._context)
+		if (!this._context) {
 			this._context = this.getCanvas().getContext('2d');
-		if (arguments[0])
-			this._changed(Change.PIXELS);
+		}
 		return this._context;
 	},
 
@@ -2539,7 +2426,7 @@ var Raster = this.Raster = Item.extend({
 		if (!this._canvas) {
 			this._canvas = CanvasProvider.getCanvas(this._size);
 			if (this._image)
-				this.getContext(true).drawImage(this._image, 0, 0);
+				this.getContext().drawImage(this._image, 0, 0);
 		}
 		return this._canvas;
 	},
@@ -2551,7 +2438,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
-		this._changed(Change.GEOMETRY);
+		this._bounds = null;
 	},
 
 	getImage: function() {
@@ -2565,7 +2452,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(image.naturalWidth, image.naturalHeight);
 		this._canvas = null;
 		this._context = null;
-		this._changed(Change.GEOMETRY);
+		this._bounds = null;
 	},
 
 	getSubImage: function(rect) {
@@ -2578,7 +2465,7 @@ var Raster = this.Raster = Item.extend({
 
 	drawImage: function(image, point) {
 		point = Point.read(arguments, 1);
-		this.getContext(true).drawImage(image, point.x, point.y);
+		this.getContext().drawImage(image, point.x, point.y);
 	},
 
 	getAverageColor: function(object) {
@@ -2642,7 +2529,7 @@ var Raster = this.Raster = Item.extend({
 		var hasPoint = arguments.length == 2;
 		point = Point.read(arguments, 0, hasPoint ? 1 : 2);
 		color = Color.read(arguments, hasPoint ? 1 : 2);
-		var ctx = this.getContext(true),
+		var ctx = this.getContext(),
 			imageData = ctx.createImageData(1, 1),
 			alpha = color.getAlpha();
 		imageData.data[0] = color.getRed() * 255;
@@ -2667,17 +2554,19 @@ var Raster = this.Raster = Item.extend({
 
 	setData: function(data, point) {
 		point = Point.read(arguments, 1);
-		this.getContext(true).putImageData(data, point.x, point.y);
+		this.getContext().putImageData(data, point.x, point.y);
 	},
 
 	_transform: function(matrix, flags) {
 		this.matrix.preConcatenate(matrix);
+		this._bounds = null;
 	},
 
 	getBounds: function() {
-		if (!this._bounds)
-			this._bounds = this._createBounds(this.matrix._transformBounds(
-					new Rectangle(this._size).setCenter(0, 0)));
+		if (!this._bounds) {
+			this._bounds = this.matrix._transformBounds(
+					new Rectangle(this._size).setCenter(0, 0));
+		}
 		return this._bounds;
 	},
 	getStrokeBounds: function() {
@@ -2699,6 +2588,9 @@ var Raster = this.Raster = Item.extend({
 });
 
 var PlacedSymbol = this.PlacedSymbol = Item.extend({
+
+	beans: true,
+
 	initialize: function(symbol, matrixOrOffset) {
 		this.base();
 		this.symbol = symbol instanceof Symbol ? symbol : new Symbol(symbol);
@@ -2718,10 +2610,9 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 	},
 
 	getBounds: function() {
-		if (!this._bounds)
-			this._bounds = this._createBounds(
-					this.symbol._definition.getStrokeBounds(this.matrix))
-		return this._bounds;
+		var bounds = this.symbol._definition.getStrokeBounds(this.matrix);
+		return LinkedRectangle.create(this, 'setBounds',
+				bounds.x, bounds.y, bounds.width, bounds.height);
 	},
 
 	getStrokeBounds: function() {
@@ -2742,7 +2633,102 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 
 });
 
+var PathStyle = this.PathStyle = Base.extend(new function() {
+
+	var keys = ['strokeColor', 'strokeWidth', 'strokeCap', 'strokeJoin',
+				'miterLimit', 'dashOffset','dashArray', 'fillColor'];
+
+	var strokeFlags = {
+		strokeWidth: true,
+		strokeCap: true,
+		strokeJoin: true,
+		miterLimit: true
+	};
+
+	var fields = {
+		beans: true,
+
+		initialize: function(style) {
+			var clone = style instanceof PathStyle;
+			for (var i = 0, l = style && keys.length; i < l; i++) {
+				var key = keys[i],
+					value = style[key];
+				if (value !== undefined) {
+					this[key] = value && clone && value.clone
+							? value.clone() : value;
+				}
+			}
+		},
+
+		statics: {
+			create: function(item) {
+				var style = new PathStyle(PathStyle.dont);
+				style._item = item;
+				return style;
+			}
+		}
+	};
+
+	Item.inject(Base.each(keys, function(key) {
+		var isColor = !!key.match(/Color$/),
+			part = Base.capitalize(key),
+			set = 'set' + part,
+			get = 'get' + part;
+
+		fields[set] = function(value) {
+			var children = this._item && this._item._children;
+			value = isColor ? Color.read(arguments) : value;
+			if (children) {
+				for (var i = 0, l = children.length; i < l; i++)
+					children[i]._style[set](value);
+			} else {
+				var old = this['_' + key];
+				if (old != value && !(old && old.equals && old.equals(value))) {
+					this['_' + key] = value;
+					if (this._item) {
+						this._item._changed(ChangeFlags.STYLE
+							| (strokeFlags[key] ? ChangeFlags.STROKE : 0));
+					}
+				}
+			}
+			return this;
+		};
+
+		fields[get] = function() {
+			var children = this._item && this._item._children,
+				style;
+			if (children) {
+				for (var i = 0, l = children.length; i < l; i++) {
+					var childStyle = children[i]._style[get]();
+					if (!style) {
+						style = childStyle;
+					} else if (style != childStyle && !(style && style.equals
+							&& style.equals(childStyle))) {
+						return undefined;
+					}
+				}
+				return style;
+			} else {
+				return this['_' + key];
+			}
+		};
+
+		this[set] = function(value) {
+			this._style[set](value);
+			return this;
+		};
+
+		this[get] = function() {
+			return this._style[get]();
+		};
+	}, { beans: true }));
+
+	return fields;
+});
+
 var Segment = this.Segment = Base.extend({
+	beans: true,
+
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
 			createPoint = SegmentPoint.create,
@@ -2786,7 +2772,7 @@ var Segment = this.Segment = Base.extend({
 				other._changed();
 			}
 		}
-		this._path._changed(Change.GEOMETRY);
+		this._path._changed(ChangeFlags.GEOMETRY);
 	},
 
 	getPoint: function() {
@@ -2837,7 +2823,8 @@ var Segment = this.Segment = Base.extend({
 	_setSelected: function(point, selected) {
 		var path = this._path,
 			selected = !!selected, 
-			state = this._selectionState || 0,
+			state = this._selectionState,
+			wasSelected = !!state,
 			selection = [
 				!!(state & SelectionState.POINT),
 				!!(state & SelectionState.HANDLE_IN),
@@ -2866,8 +2853,8 @@ var Segment = this.Segment = Base.extend({
 		this._selectionState = (selection[0] ? SelectionState.POINT : 0)
 				| (selection[1] ? SelectionState.HANDLE_IN : 0)
 				| (selection[2] ? SelectionState.HANDLE_OUT : 0);
-		if (path && state != this._selectionState)
-			path._updateSelection(this, state, this._selectionState);
+		if (path && wasSelected != !!this._selectionState)
+			path._updateSelection(this);
 	},
 
 	isSelected: function() {
@@ -2973,6 +2960,8 @@ var Segment = this.Segment = Base.extend({
 });
 
 var SegmentPoint = Point.extend({
+	beans: true,
+
 	set: function(x, y) {
 		this._x = x;
 		this._y = y;
@@ -3029,12 +3018,16 @@ var SegmentPoint = Point.extend({
 });
 
 var SelectionState = {
-	HANDLE_IN: 1,
-	HANDLE_OUT: 2,
-	POINT: 4
+	POINT: 1,
+	HANDLE_IN: 2,
+	HANDLE_OUT: 4,
+	HANDLE_BOTH: 6
 };
 
 var Curve = this.Curve = Base.extend({
+
+	beans: true,
+
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
 		if (count == 0) {
@@ -3052,6 +3045,7 @@ var Curve = this.Curve = Base.extend({
 		} else if (count == 8) {
 			var p1 = Point.create(arg0, arg1),
 				p2 = Point.create(arg6, arg7);
+			p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y
 			this._segment1 = new Segment(p1, null,
 					Point.create(arg2, arg3).subtract(p1));
 			this._segment2 = new Segment(p2,
@@ -3413,6 +3407,9 @@ var Curve = this.Curve = Base.extend({
 });
 
 CurveLocation = Base.extend({
+
+	beans: true,
+
 	initialize: function(curve, parameter, point) {
 		this._curve = curve;
 		this._parameter = parameter;
@@ -3502,14 +3499,16 @@ CurveLocation = Base.extend({
 });
 
 var PathItem = this.PathItem = Item.extend({
-
 });
 
 var Path = this.Path = PathItem.extend({
+
+	beans: true,
+
 	initialize: function(segments) {
 		this.base();
 		this._closed = false;
-		this._selectedSegmentState = 0;
+		this._selectedSegmentCount = 0;
 		this.setSegments(!segments || !Array.isArray(segments)
 				|| typeof segments[0] !== 'object' ? arguments : segments);
 	},
@@ -3523,12 +3522,13 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	_changed: function(flags) {
-		Item.prototype._changed.call(this, flags);
-		if (flags & ChangeFlag.GEOMETRY) {
-			delete this._strokeBounds;
+		if (flags & ChangeFlags.GEOMETRY) {
 			delete this._length;
+			delete this._bounds;
+			delete this._position;
+			delete this._strokeBounds;
 			delete this._clockwise;
-		} else if (flags & ChangeFlag.STROKE) {
+		} else if (flags & ChangeFlags.STROKE) {
 			delete this._strokeBounds;
 		}
 	},
@@ -3541,7 +3541,7 @@ var Path = this.Path = PathItem.extend({
 		if (!this._segments) {
 			this._segments = [];
 		} else {
-			this._selectedSegmentState = 0;
+			this.setSelected(false);
 			this._segments.length = 0;
 			if (this._curves)
 				delete this._curves;
@@ -3597,7 +3597,7 @@ var Path = this.Path = PathItem.extend({
 					this._curves[i = length - 1] = Curve.create(this,
 						this._segments[i], this._segments[0]);
 			}
-			this._changed(Change.GEOMETRY);
+			this._changed(ChangeFlags.GEOMETRY);
 		}
 	},
 
@@ -3614,6 +3614,7 @@ var Path = this.Path = PathItem.extend({
 			if (strokeColor && strokeColor.transform)
 				strokeColor.transform(matrix);
 		}
+		this._changed(ChangeFlags.GEOMETRY);
 	},
 
 	_add: function(segs, index) {
@@ -3621,8 +3622,7 @@ var Path = this.Path = PathItem.extend({
 			curves = this._curves,
 			amount = segs.length,
 			append = index == null,
-			index = append ? segments.length : index,
-			fullySelected = this.isFullySelected();
+			index = append ? segments.length : index;
 		for (var i = 0; i < amount; i++) {
 			var segment = segs[i];
 			if (segment._path) {
@@ -3630,10 +3630,8 @@ var Path = this.Path = PathItem.extend({
 			}
 			segment._path = this;
 			segment._index = index + i;
-			if (fullySelected)
-				segment._selectionState = SelectionState.POINT;
 			if (segment._selectionState)
-				this._updateSelection(segment, 0, segment._selectionState);
+				this._updateSelection(segment);
 		}
 		if (append) {
 			segments.push.apply(segments, segs);
@@ -3651,8 +3649,15 @@ var Path = this.Path = PathItem.extend({
 				curve._segment1 = segments[index + amount];
 			}
 		}
-		this._changed(Change.GEOMETRY);
+		this._changed(ChangeFlags.GEOMETRY);
 		return segs;
+	},
+
+	_updateSelection: function(segment) {
+		var count = this._selectedSegmentCount +=
+				segment._selectionState ? 1 : -1;
+		if (count <= 1)
+			this._project._selectItem(this, count == 1);
 	},
 
 	add: function(segment1 ) {
@@ -3687,10 +3692,9 @@ var Path = this.Path = PathItem.extend({
 		var segments = this.removeSegments(index, index + 1);
 		return segments[0] || null;
 	},
-
 	removeSegments: function(from, to) {
 		from = from || 0;
-	 	to = Base.pick(to, this._segments.length);
+	 	to = Base.pick(to, this._segments.length - 1);
 		var segments = this._segments,
 			curves = this._curves,
 			last = to >= segments.length,
@@ -3700,8 +3704,10 @@ var Path = this.Path = PathItem.extend({
 			return removed;
 		for (var i = 0; i < amount; i++) {
 			var segment = removed[i];
-			if (segment._selectionState)
-				this._updateSelection(segment, segment._selectionState, 0);
+			if (segment._selectionState) {
+				segment._selectionState = 0;
+				this._updateSelection(segment);
+			}
 			removed._index = removed._path = undefined;
 		}
 		for (var i = from, l = segments.length; i < l; i++)
@@ -3716,33 +3722,32 @@ var Path = this.Path = PathItem.extend({
 			if (last && this._closed && (curve = curves[curves.length - 1]))
 				curve._segment2 = segments[0];
 		}
-		this._changed(Change.GEOMETRY);
+		this._changed(ChangeFlags.GEOMETRY);
 		return removed;
 	},
 
-	isFullySelected: function() {
-		return this._selected && this._selectedSegmentState
-				== this._segments.length * SelectionState.POINT;
+	isSelected: function() {
+		return this._selectedSegmentCount > 0;
 	},
-
-	setFullySelected: function(selected) {
-		var length = this._segments.length;
-		this._selectedSegmentState = selected
-				? length * SelectionState.POINT : 0;
+	setSelected: function(selected) {
+		var wasSelected = this.isSelected(),
+			length = this._segments.length;
+		if (!wasSelected != !selected && length)
+			this._project._selectItem(this, selected);
+		this._selectedSegmentCount = selected ? length : 0;
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
 					? SelectionState.POINT : 0;
+	},
+
+	isFullySelected: function() {
+		return this._selectedSegmentCount == this._segments.length;
+	},
+	setFullySelected: function(selected) {
 		this.setSelected(selected);
 	},
 
-	_updateSelection: function(segment, oldState, newState) {
-		segment._selectionState = newState;
-		var total = this._selectedSegmentState += newState - oldState;
-		if (total > 0)
-			this.setSelected(true);
-	},
-
-	flatten: function(maxDistance) {
+	curvesToPoints: function(maxDistance) {
 		var flattener = new PathFlattener(this),
 			pos = 0,
 			step = flattener.length / Math.ceil(flattener.length / maxDistance),
@@ -3755,11 +3760,9 @@ var Path = this.Path = PathItem.extend({
 		this.setSegments(segments);
 	},
 
-	simplify: function(tolerance) {
-		if (this._segments.length > 2) {
-			var fitter = new PathFitter(this, tolerance || 2.5);
-			this.setSegments(fitter.fit());
-		}
+	pointsToCurves: function(tolerance) {
+		var fitter = new PathFitter(this, tolerance || 2.5);
+		this.setSegments(fitter.fit());
 	},
 
 	isClockwise: function() {
@@ -3838,7 +3841,7 @@ var Path = this.Path = PathItem.extend({
 				last1.remove();
 				this.setClosed(true);
 			}
-			this._changed(Change.GEOMETRY);
+			this._changed(ChangeFlags.GEOMETRY);
 			return true;
 		}
 		return false;
@@ -3892,12 +3895,10 @@ var Path = this.Path = PathItem.extend({
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getPoint();
 	},
-
 	getTangentAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getTangent();
 	},
-
 	getNormalAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getNormal();
@@ -3908,17 +3909,16 @@ var Path = this.Path = PathItem.extend({
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
 				point = segment._point,
-				state = segment._selectionState,
-				selected = state & SelectionState.POINT;
-			if (selected || (state & SelectionState.HANDLE_IN))
-				drawHandle(ctx, point, segment._handleIn);
-			if (selected || (state & SelectionState.HANDLE_OUT))
-				drawHandle(ctx, point, segment._handleOut);
+				pointSelected = segment._selectionState == SelectionState.POINT;
+				if (pointSelected || segment._isSelected(segment._handleIn))
+					drawHandle(ctx, point, segment._handleIn);
+				if (pointSelected || segment._isSelected(segment._handleOut))
+					drawHandle(ctx, point, segment._handleOut);
 			ctx.save();
 			ctx.beginPath();
 			ctx.rect(point._x - 2, point._y - 2, 4, 4);
 			ctx.fill();
-			if (!selected) {
+			if (!pointSelected) {
 				ctx.beginPath();
 				ctx.rect(point._x - 1, point._y - 1, 2, 2);
 				ctx.fillStyle = '#ffffff';
@@ -3927,7 +3927,6 @@ var Path = this.Path = PathItem.extend({
 			}
 		}
 	}
-
 	function drawHandle(ctx, point, handle) {
 		if (!handle.isZero()) {
 			var handleX = point._x + handle._x,
@@ -3995,7 +3994,7 @@ var Path = this.Path = PathItem.extend({
 				dashArray = this.getDashArray() || [], 
 				hasDash = !!dashArray.length;
 
-			if (param.compound || param.selection || this._clipMask || fillColor
+			if (param.compound || param.selection || param.clip || fillColor
 					|| strokeColor && !hasDash) {
 				drawSegments(ctx, this);
 			}
@@ -4003,13 +4002,13 @@ var Path = this.Path = PathItem.extend({
 			if (param.selection) {
 				ctx.stroke();
 				drawHandles(ctx, this._segments);
-			} else if (this._clipMask) {
+			} else if (param.clip) {
 				ctx.clip();
 			} else if (!param.compound && (fillColor || strokeColor)) {
 				ctx.save();
 				this._setStyles(ctx);
 				if (!fillColor || !strokeColor)
-					ctx.globalAlpha = this._opacity;
+					ctx.globalAlpha = this.opacity;
 				if (fillColor) {
 					ctx.fillStyle = fillColor.getCanvasStyle(ctx);
 					ctx.fill();
@@ -4053,6 +4052,7 @@ var Path = this.Path = PathItem.extend({
 	};
 
 	return {
+
 		_setStyles: function(ctx) {
 			for (var i in styles) {
 				var style = this._style[i]();
@@ -4138,21 +4138,19 @@ var Path = this.Path = PathItem.extend({
 		}
 	};
 }, new function() { 
+
 	function getCurrentSegment(that) {
 		var segments = that._segments;
 		if (segments.length == 0)
-			throw new Error('Use a moveTo() command first');
+			throw('Use a moveTo() command first');
 		return segments[segments.length - 1];
 	}
 
 	return {
+
 		moveTo: function(point) {
 			if (!this._segments.length)
 				this._add([ new Segment(Point.read(arguments)) ]);
-		},
-
-		moveBy: function(point) {
-			throw new Error('moveBy() is unsupported on Path items.');
 		},
 
 		lineTo: function(point) {
@@ -4189,63 +4187,84 @@ var Path = this.Path = PathItem.extend({
 					.subtract(to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
-					'Cannot put a curve through points with parameter = ' + t);
+					"Cannot put a curve through points with parameter=" + t);
 			this.quadraticCurveTo(handle, to);
 		},
 
-		arcTo: function(to, clockwise ) {
+		arcTo: function(to, clockwise) {
 			var current = getCurrentSegment(this),
-				from = current._point,
 				through;
-			if (clockwise === undefined)
-				clockwise = true;
-			if (typeof clockwise === 'boolean') {
-				to = Point.read(arguments, 0, 1);
-				var middle = from.add(to).divide(2),
-				through = middle.add(middle.subtract(from).rotate(
-						clockwise ? -90 : 90));
-			} else {
+			if (arguments[1] && typeof arguments[1] !== 'boolean') {
 				through = Point.read(arguments, 0, 1);
 				to = Point.read(arguments, 1, 1);
+			} else {
+				to = Point.read(arguments, 0, 1);
+				if (clockwise === undefined)
+					clockwise = true;
+				var middle = current._point.add(to).divide(2),
+					step = middle.subtract(current._point);
+				through = clockwise 
+						? middle.subtract(-step.y, step.x)
+						: middle.add(-step.y, step.x);
 			}
-			var l1 = new Line(from.add(through).divide(2),
-					through.subtract(from).rotate(90)),
-			 	l2 = new Line(through.add(to).divide(2),
-					to.subtract(through).rotate(90)),
-				center = l1.intersect(l2),
-				line = new Line(from, to, true),
-				throughSide = line.getSide(through);
-			if (!center) {
-				if (!throughSide)
-					return this.lineTo(to);
-				throw new Error("Cannot put an arc through the given points: "
-					+ [from, through, to]);
-			}
-			var vector = from.subtract(center),
-				radius = vector.getLength(),
-				extent = vector.getDirectedAngle(to.subtract(center)),
-				centerSide = line.getSide(center);
-			if (centerSide == 0) {
-				extent = throughSide * Math.abs(extent);
-			} else if (throughSide == centerSide) {
-				extent -= 360 * (extent < 0 ? -1 : 1);
-			}
+
+			var x1 = current._point._x, x2 = through.x, x3 = to.x,
+				y1 = current._point._y, y2 = through.y, y3 = to.y,
+
+				f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
+					- y1 * y3 + y1 * y2,
+				g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
+				m = g == 0 ? 0 : f / g,
+				e = x1 * x2 + y1 * y2 - m * (x1 * y2 - y1 * x2),
+				cx = (x1 + x2 - m * (y2 - y1)) / 2,
+				cy = (y1 + y2 - m * (x1 - x2)) / 2,
+				radius = Math.sqrt(cx * cx + cy * cy - e),
+				angle = Math.atan2(y1 - cy, x1 - cx),
+				middle = Math.atan2(y2 - cy, x2 - cx),
+				extent = Math.atan2(y3 - cy, x3 - cx),
+				diff = middle - angle,
+				d90 = Math.PI, 
+				d180 = d90 * 2; 
+
+			if (diff < -d90)
+				diff += d180;
+			else if (diff > d90)
+				diff -= d180;
+
+			extent -= angle;
+			if (extent <= 0)
+				extent += d180;
+			if (diff < 0)
+				extent -= d180;
+
 			var ext = Math.abs(extent),
-				count =  ext >= 360 ? 4 : Math.ceil(ext / 90),
-				inc = extent / count,
-				half = inc * Math.PI / 360,
-				z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
+				arcSegs =  ext >= d180
+				 	? 4 : Math.ceil(ext * 2 / Math.PI),
+				inc = Math.min(Math.max(extent, -d180), d180) / arcSegs,
+				z = 4 / 3 * Math.sin(inc / 2) / (1 + Math.cos(inc / 2)),
 				segments = [];
-			for (var i = 0; i <= count; i++) {
-				var pt = i < count ? center.add(vector) : to;
-				var out = i < count ? vector.rotate(90).multiply(z) : null;
+			for (var i = 0; i <= arcSegs; i++) {
+				var relx = Math.cos(angle),
+					rely = Math.sin(angle);
+				var pt = new Point(
+					cx + relx * radius,
+					cy + rely * radius
+				);
+				var out = i == arcSegs
+					? null
+					: new Point(
+						cx + (relx - z * rely) * radius - pt.x,
+						cy + (rely + z * relx) * radius - pt.y
+					);
 				if (i == 0) {
 					current.setHandleOut(out);
 				} else {
-					segments.push(
-						new Segment(pt, vector.rotate(-90).multiply(z), out));
+					segments.push(new Segment(pt, new Point(
+						cx + (relx + z * rely) * radius - pt.x,
+						cy + (rely - z * relx) * radius - pt.y
+					), out));
 				}
-				vector = vector.rotate(inc);
+				angle += inc;
 			}
 			this._add(segments);
 		},
@@ -4376,13 +4395,16 @@ var Path = this.Path = PathItem.extend({
 	}
 
 	return {
+		beans: true,
+
 		getBounds: function() {
 			var useCache = arguments.length == 0;
 			if (!useCache || !this._bounds) {
-				var bounds = this._createBounds(getBounds(this, arguments[0]));
-				if (useCache)
-					this._bounds = bounds;
-				return bounds;
+				var bounds = getBounds(this, arguments[0]);
+				if (!useCache)
+					return bounds;
+				this._bounds = LinkedRectangle.create(this, 'setBounds',
+						bounds.x, bounds.y, bounds.width, bounds.height);
 			}
 			return this._bounds;
 		},
@@ -4433,7 +4455,7 @@ var Path = this.Path = PathItem.extend({
 						point = curve2.getPoint(0),
 						normal1 = curve1.getNormal(1).normalize(radius),
 						normal2 = curve2.getNormal(0).normalize(radius),
-						line1 = new Line(point.subtract(normal1),
+						line1 = new Line(point.add(normal1),
 								new Point(-normal1.y, normal1.x)),
 						line2 = new Line(point.subtract(normal2),
 								new Point(-normal2.y, normal2.x)),
@@ -4479,29 +4501,28 @@ var Path = this.Path = PathItem.extend({
 
 		getControlBounds: function() {
 		}
-
 	};
 });
 
 var CompoundPath = this.CompoundPath = PathItem.extend({
+
 	initialize: function(paths) {
 		this.base();
 		this._children = [];
-		this._namedChildren = {};
 		var items = !paths || !Array.isArray(paths)
 				|| typeof paths[0] !== 'object' ? arguments : paths;
 		for (var i = 0, l = items.length; i < l; i++) {
 			var path = items[i];
 			if (path._clockwise === undefined)
 				path.setClockwise(i < l - 1);
-			this.addChild(path);
+			this.appendTop(path);
 		}
 	},
 
 	simplify: function() {
 		if (this._children.length == 1) {
 			var child = this._children[0];
-			child.insertAbove(this);
+			child.moveAbove(this);
 			this.remove();
 			return child;
 		}
@@ -4540,9 +4561,10 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 	}
 
 	var fields = {
+
 		moveTo: function(point) {
 			var path = new Path();
-			this.addChild(path);
+			this.appendTop(path);
 			path.moveTo.apply(path, arguments);
 		},
 
@@ -4808,7 +4830,7 @@ var PathFitter = Base.extend({
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var point = segments[i].point.clone();
 			if (!prev || !prev.equals(point)) {
-				this.points.push(point);
+				this.points[i] = point;
 				prev = point;
 			}
 		}
@@ -4987,10 +5009,49 @@ var PathFitter = Base.extend({
 	}
 });
 
+var ParagraphStyle = this.ParagraphStyle = Base.extend({
+
+	initialize: function(style) {
+		Base.initialize(this, style, {
+			justification: 'left'
+		});
+	},
+
+	statics: {
+		create: function(item) {
+			var style = new ParagraphStyle(ParagraphStyle.dont);
+			style._item = item;
+			return style;
+		}
+	}
+});
+
+var CharacterStyle = this.CharacterStyle = PathStyle.extend({
+
+	initialize: function(style) {
+		Base.initialize(this, style, {
+			fontSize: 10,
+			font: 'sans-serif'
+		});
+		this.base(style);
+	},
+
+	statics: {
+		create: function(item) {
+			var style = new CharacterStyle(CharacterStyle.dont);
+			style._item = item;
+			return style;
+		}
+	}
+});
+
 var TextItem = this.TextItem = Item.extend({
+
+	beans: true,
+
 	initialize: function() {
 		this.base();
-		this._content = '';
+		this.content = null;
 		this._characterStyle = CharacterStyle.create(this);
 		this.setCharacterStyle(this._project.getCurrentStyle());
 		this._paragraphStyle = ParagraphStyle.create(this);
@@ -4998,19 +5059,9 @@ var TextItem = this.TextItem = Item.extend({
 	},
 
 	_clone: function(copy) {
-		copy._content = this._content;
 		copy.setCharacterStyle(this._characterStyle);
 		copy.setParagraphStyle(this._paragraphStyle);
 		return this.base(copy);
-	},
-
-	getContent: function() {
-		return this._content;
-	},
-
-	setContent: function(content) {
-		this._changed(Change.CONTENT);
-		this._content = '' + content;
 	},
 
 	getCharacterStyle: function() {
@@ -5031,15 +5082,20 @@ var TextItem = this.TextItem = Item.extend({
 });
 
 var PointText = this.PointText = TextItem.extend({
+
+	beans: true,
+
 	initialize: function(point) {
 		this.base();
 		var point = Point.read(arguments);
+		this.content = '';
 		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
 		this._matrix = new Matrix().translate(point);
 	},
 
 	clone: function() {
 		var copy = this._clone(new PointText(this._point));
+		copy.content = this.content;
 		copy._matrix.initialize(this._matrix);
 		return copy;
 	},
@@ -5063,145 +5119,27 @@ var PointText = this.PointText = TextItem.extend({
 		matrix._transformPoint(this._point, this._point, true);
 	},
 	draw: function(ctx) {
-		if (!this._content)
+		if (this.content == null)
 			return;
 		ctx.save();
-		ctx.font = this.getFontSize() + 'pt ' + this.getFont();
-		ctx.textAlign = this.getJustification();
+		ctx.font = this._characterStyle.fontSize + 'pt ' +
+				this._characterStyle.font;
+		ctx.textAlign = this._paragraphStyle.justification;
 		this._matrix.applyToContext(ctx);
 		var fillColor = this.getFillColor();
 		var strokeColor = this.getStrokeColor();
 		if (!fillColor || !strokeColor)
-			ctx.globalAlpha = this._opacity;
+			ctx.globalAlpha = this.opacity;
 		if (fillColor) {
 			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-			ctx.fillText(this._content, 0, 0);
+			ctx.fillText(this.content, 0, 0);
 		}
 		if (strokeColor) {
 			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-			ctx.strokeText(this._content, 0, 0);
+			ctx.strokeText(this.content, 0, 0);
 		}
 		ctx.restore();
 	}
-});
-
-var Style = Item.extend({
-	initialize: function(style) {
-		var clone = style instanceof Style;
-		return Base.each(this._defaults, function(value, key) {
-			value = style && style[key] || value;
-			this[key] = value && clone && value.clone
-					? value.clone() : value;
-		}, this);
-	},
-
-	statics: {
-		create: function(item) {
-			var style = new this(this.dont);
-			style._item = item;
-			return style;
-		},
-
-		extend: function(src) {
-			var styleKey = src._style,
-				flags = src._flags || {};
-			src._owner.inject(Base.each(src._defaults, function(value, key) {
-				var isColor = !!key.match(/Color$/),
-					part = Base.capitalize(key),
-					set = 'set' + part,
-					get = 'get' + part;
-				src[set] = function(value) {
-					var children = this._item && this._item._children;
-					value = isColor ? Color.read(arguments) : value;
-					if (children) {
-						for (var i = 0, l = children.length; i < l; i++)
-							children[i][styleKey][set](value);
-					} else {
-						var old = this['_' + key];
-						if (old != value && !(old && old.equals
-									&& old.equals(value))) {
-							this['_' + key] = value;
-							if (isColor) {
-								if (old)
-									old._removeOwner(this._item);
-								if (value)
-									value._addOwner(this._item);
-							}
-							if (this._item)
-								this._item._changed(flags[key] || Change.STYLE);
-						}
-					}
-					return this;
-				};
-				src[get] = function() {
-					var children = this._item && this._item._children,
-						style;
-					if (!children)
-						return this['_' + key];
-					for (var i = 0, l = children.length; i < l; i++) {
-						var childStyle = children[i][styleKey][get]();
-						if (!style) {
-							style = childStyle;
-						} else if (style != childStyle && !(style
-								&& style.equals && style.equals(childStyle))) {
-							return undefined;
-						}
-					}
-					return style;
-				};
-				this[set] = function(value) {
-					this[styleKey][set](value);
-					return this;
-				};
-				this[get] = function() {
-					return this[styleKey][get]();
-				};
-			}, {}));
-			return this.base(src);
-		}
-	}
-});
-
-var PathStyle = this.PathStyle = Style.extend({
-	_defaults: {
-		fillColor: undefined,
-		strokeColor: undefined,
-		strokeWidth: 1,
-		strokeCap: 'butt',
-		strokeJoin: 'miter',
-		miterLimit: 10,
-		dashOffset: 0,
-		dashArray: []
-	},
-	_flags: {
-		strokeWidth: Change.STROKE,
-		strokeCap: Change.STROKE,
-		strokeJoin: Change.STROKE,
-		miterLimit: Change.STROKE
-	},
-	_owner: Item,
-	_style: '_style'
-
-});
-
-var ParagraphStyle = this.ParagraphStyle = Style.extend({
-	_defaults: {
-		justification: 'left'
-	},
-	_owner: TextItem,
-	_style: '_paragraphStyle'
-
-});
-
-var CharacterStyle = this.CharacterStyle = PathStyle.extend({
-	_defaults: Base.merge(PathStyle.prototype._defaults, {
-		fillColor: 'black',
-		fontSize: 10,
-		font: 'sans-serif'
-	}),
-	_owner: TextItem,
-	_style: '_characterStyle'
-
 });
 
 var Color = this.Color = Base.extend(new function() {
@@ -5313,6 +5251,8 @@ var Color = this.Color = Base.extend(new function() {
 	};
 
 	var fields = {
+
+		beans: true,
 		_readNull: true,
 
 		initialize: function(arg) {
@@ -5391,7 +5331,7 @@ var Color = this.Color = Base.extend(new function() {
 							this[name] = isHue
 								? ((value % 360) + 360) % 360
 								: Math.min(Math.max(value, 0), 1);
-							this._changed();
+							this._cssString = null;
 							return this;
 						};
 					}, src);
@@ -5422,26 +5362,7 @@ var Color = this.Color = Base.extend(new function() {
 	return fields;
 }, {
 
-	_changed: function() {
-		this._cssString = null;
-		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
-			this._owners[i]._changed(Change.STYLE);
-	},
-
-	_addOwner: function(item) {
-		if (!this._owners)
-			this._owners = [];
-		this._owners.push(item);
-	},
-
-	_removeOwner: function(item) {
-		var index = this._owners ? this._owners.indexOf(item) : -1;
-		if (index != -1) {
-			this._owners.splice(index, 1);
-			if (this._owners.length == 0)
-				delete this._owners;
-		}
-	},
+	beans: true,
 
 	getType: function() {
 		return this._colorType;
@@ -5461,7 +5382,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	setAlpha: function(alpha) {
 		this._alpha = alpha == null ? null : Math.min(Math.max(alpha, 0), 1);
-		this._changed();
+		this._cssString = null;
 		return this;
 	},
 
@@ -5532,6 +5453,8 @@ var HSBColor = this.HSBColor = Color.extend({
 
 var GradientColor = this.GradientColor = Color.extend({
 
+	beans: true,
+
 	initialize: function(gradient, origin, destination, hilite) {
 		this.gradient = gradient || new Gradient();
 		this.setOrigin(origin);
@@ -5554,7 +5477,6 @@ var GradientColor = this.GradientColor = Color.extend({
 		this._origin = origin;
 		if (this._destination)
 			this._radius = this._destination.getDistance(this._origin);
-		this._changed();
 		return this;
 	},
 
@@ -5566,7 +5488,6 @@ var GradientColor = this.GradientColor = Color.extend({
 		destination = Point.read(arguments).clone();
 		this._destination = destination;
 		this._radius = this._destination.getDistance(this._origin);
-		this._changed();
 		return this;
 	},
 
@@ -5583,7 +5504,6 @@ var GradientColor = this.GradientColor = Color.extend({
 		} else {
 			this._hilite = hilite;
 		}
-		this._changed();
 		return this;
 	},
 
@@ -5621,6 +5541,9 @@ var GradientColor = this.GradientColor = Color.extend({
 });
 
 var Gradient = this.Gradient = Base.extend({
+
+	beans: true,
+
 	initialize: function(stops, type) {
 		this.setStops(stops || ['white', 'black']);
 		this.type = type || 'linear';
@@ -5664,6 +5587,9 @@ var Gradient = this.Gradient = Base.extend({
 });
 
 var GradientStop = this.GradientStop = Base.extend({
+
+	beans: true,
+
 	initialize: function(arg0, arg1) {
 		if (arg1 === undefined && Array.isArray(arg0)) {
 			this.setColor(arg0[0]);
@@ -5706,80 +5632,49 @@ var GradientStop = this.GradientStop = Base.extend({
 });
 
 var DomElement = new function() {
-	function cumulateOffset(el, name, parent, test) {
+	function cumulate(el, name, parent, positioned) {
 		var left = name + 'Left',
 			top = name + 'Top',
 			x = 0,
-			y = 0,
-			style;
-		while (el && el.style && (!test || !test.test(
-					style = DomElement.getComputedStyle(el, 'position')))) {
+			y = 0;
+			while (el && (!positioned
+					|| !/^(relative|absolute)$/.test(el.style.position))) {
 			x += el[left] || 0;
 			y += el[top] || 0;
 			el = el[parent];
 		}
-		return {
-			offset: Point.create(x, y),
-			element: el,
-			style: style
-		};
-	}
-
-	function getScrollOffset(el, test) {
-		return cumulateOffset(el, 'scroll', 'parentNode', test).offset;
+		return Point.create(x, y);
 	}
 
 	return {
-		getOffset: function(el, positioned, viewport) {
-			var res = cumulateOffset(el, 'offset', 'offsetParent',
-					positioned ? /^(relative|absolute|fixed)$/ : /^fixed$/);
-			if (res.style == 'fixed' && !viewport)
-				return res.offset.add(getScrollOffset(res.element));
-			return viewport
-					? res.offset.subtract(getScrollOffset(el, /^fixed$/))
-					: res.offset;
+		getOffset: function(el, positioned, scroll) {
+			var point = cumulate(el, 'offset', 'offsetParent', positioned);
+			return scroll
+				? point.subtract(cumulate(el, 'scroll', 'parentNode'))
+				: point;
 		},
 
 		getSize: function(el) {
 			return Size.create(el.offsetWidth, el.offsetHeight);
 		},
 
-		getBounds: function(el, positioned, viewport) {
-			return new Rectangle(this.getOffset(el, positioned, viewport),
-					this.getSize(el));
+		getBounds: function(el, positioned, scroll) {
+			return new Rectangle(DomElement.getOffset(el, positioned, scroll),
+					DomElement.getSize(el));
 		},
 
-		isInvisible: function(el) {
-			return this.getSize(el).equals([0, 0]);
-		},
-
-		isVisible: function(el) {
-			return !this.isInvisible(el)
-					&& new Rectangle([0, 0], this.getViewportSize(el))
-						.intersects(this.getBounds(el, false, true));
-		},
-
-		getViewport: function(doc) {
-			return doc.defaultView || doc.parentWindow;
-		},
-
-		getViewportSize: function(el) {
-			var doc = el.ownerDocument,
-				view = this.getViewport(doc),
-				body = doc.getElementsByTagName(
-					doc.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
+		getWindowSize: function() {
+			var doc = document.getElementsByTagName(
+					document.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
 			return Size.create(
-				view.innerWidth || body.clientWidth,
-				view.innerHeight || body.clientHeight
+				window.innerWidth || doc.clientWidth,
+				window.innerHeight || doc.clientHeight
 			);
 		},
 
-		getComputedStyle: function(el, name) {
-			if (el.currentStyle)
-				return el.currentStyle[Base.camelize(name)];
-			var style = this.getViewport(el.ownerDocument)
-					.getComputedStyle(el, null);
-			return style ? style.getPropertyValue(Base.hyphenate(name)) : null;
+		isVisible: function(el) {
+			return new Rectangle([0, 0], DomElement.getWindowSize())
+					.intersects(DomElement.getBounds(el, false, true));
 		}
 	};
 };
@@ -5821,13 +5716,13 @@ var DomEvent = {
 		);
 	},
 
-	getTarget: function(event) {
+	getElement: function(event) {
 		return event.target || event.srcElement;
 	},
 
-	getOffset: function(event, target) {
+	getOffset: function(event) {
 		return DomEvent.getPoint(event).subtract(
-				DomElement.getOffset(target || DomEvent.getTarget(event), true));
+				DomElement.getOffset(DomEvent.getElement(event), true));
 	},
 
 	preventDefault: function(event) {
@@ -5844,12 +5739,7 @@ var DomEvent = {
 		} else {
 			event.cancelBubble = true;
 		}
-	},
-
-	stop: function(event) {
-		DomEvent.stopPropagation(event);
-		DomEvent.preventDefault(event);
-	},
+	}
 };
 
 DomEvent.requestAnimationFrame = new function() {
@@ -5887,8 +5777,8 @@ DomEvent.requestAnimationFrame = new function() {
 					var entry = callbacks[i],
 						func = entry[0],
 						element = entry[1];
-					if (!element || (element.getAttribute('keepalive') == 'true'
-							|| focused) && DomElement.isVisible(element)) {
+					if (!element || element.getAttribute('keepalive') == 'true'
+							|| focused && DomElement.isVisible(element)) {
 						callbacks.splice(i, 1);
 						func(Date.now());
 					}
@@ -5899,42 +5789,41 @@ DomEvent.requestAnimationFrame = new function() {
 };
 
 var View = this.View = Base.extend({
+
+	beans: true,
+
 	initialize: function(canvas) {
 		this._scope = paper;
 		this._index = this._scope.views.push(this) - 1;
 		var size;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
+			var offset = DomElement.getOffset(canvas);
 			if (canvas.attributes.resize) {
-				var offset = DomElement.getOffset(canvas, false, true),
-					that = this;
-				size = DomElement.getViewportSize(canvas).subtract(offset);
+				size = DomElement.getWindowSize().subtract(offset);
 				canvas.width = size.width;
 				canvas.height = size.height;
+				var that = this;
 				DomEvent.add(window, {
 					resize: function(event) {
-						if (!DomElement.isInvisible(canvas))
-							offset = DomElement.getOffset(canvas, false, true);
-						that.setViewSize(DomElement.getViewportSize(canvas)
-								.subtract(offset));
+						if (!DomElement.getSize(canvas).equals([0, 0]))
+							offset = DomElement.getOffset(canvas);
+						that.setViewSize(
+								DomElement.getWindowSize().subtract(offset));
 						if (that._onFrameCallback) {
 							that._onFrameCallback(0, true);
 						} else {
-							that.draw(true);
+							that.draw();
 						}
 					}
 				});
 			} else {
-				size = DomElement.isInvisible(canvas)
-					? Size.create(parseInt(canvas.getAttribute('width')),
-							parseInt(canvas.getAttribute('height')))
-					: DomElement.getSize(canvas);
+				size = Size.create(canvas.offsetWidth, canvas.offsetHeight);
 			}
 			if (canvas.attributes.stats) {
 				this._stats = new Stats();
 				var element = this._stats.domElement,
-					style = element.style,
-					offset = DomElement.getOffset(canvas);
+					style = element.style;
 				style.position = 'absolute';
 				style.left = offset.x + 'px';
 				style.top = offset.y + 'px';
@@ -5946,33 +5835,29 @@ var View = this.View = Base.extend({
 				size = new Size(1024, 768);
 			this._canvas = CanvasProvider.getCanvas(size);
 		}
-		this._id = this._canvas.getAttribute('id');
-		if (this._id == null)
-			this._canvas.setAttribute('id', this._id = 'canvas-' + View._id++);
-		View._views[this._id] = this;
-		this._viewSize = LinkedSize.create(this, 'setViewSize',
-				size.width, size.height);
+		this._viewBounds = LinkedRectangle.create(this, 'setViewBounds',
+				0, 0, size.width, size.height);
 		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
 		this._events = this._createEvents();
 		DomEvent.add(this._canvas, this._events);
-		if (!View._focused)
-			View._focused = this;
-		this._scope._redrawNotified = false;
+		if (!View.focused)
+			View.focused = this;
 	},
 
 	getCanvas: function() {
 		return this._canvas;
 	},
 
-	getViewSize: function() {
-		return this._viewSize;
+	getViewBounds: function() {
+		return this._viewBounds;
 	},
 
-	setViewSize: function(size) {
-		size = Size.read(arguments);
-		var delta = size.subtract(this._viewSize);
+	setViewBounds: function(bounds) {
+		bounds = Rectangle.read(arguments);
+		var size = bounds.getSize(),
+			delta = size.subtract(this._viewBounds.getSize());
 		this._canvas.width = size.width;
 		this._canvas.height = size.height;
 		if (this.onResize) {
@@ -5981,14 +5866,20 @@ var View = this.View = Base.extend({
 				delta: delta
 			});
 		}
-		this._viewSize.set(size.width, size.height, true);
 		this._bounds = null;
+	},
+
+	getViewSize: function() {
+		return this._viewBounds.getSize();
+	},
+
+	setViewSize: function(size) {
+		this._viewBounds.setSize.apply(this._viewBounds, arguments);
 	},
 
 	getBounds: function() {
 		if (!this._bounds)
-			this._bounds = this._matrix._transformBounds(
-					new Rectangle(new Point(), this._viewSize));
+			this._bounds = this._matrix._transformBounds(this._viewBounds);
 		return this._bounds;
 	},
 
@@ -6013,10 +5904,6 @@ var View = this.View = Base.extend({
 		this._zoom = zoom;
 	},
 
-	isVisible: function() {
-		return DomElement.isVisible(this._canvas);
-	},
-
 	scrollBy: function(point) {
 		this._transform(new Matrix().translate(Point.read(arguments).negate()));
 	},
@@ -6027,24 +5914,18 @@ var View = this.View = Base.extend({
 		this._inverse = null;
 	},
 
-	draw: function(checkRedraw) {
-		if (checkRedraw && !this._redrawNeeded)
-			return false;
+	draw: function() {
 		if (this._stats)
 			this._stats.update();
-		var ctx = this._context,
-			size = this._viewSize;
-		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
+		var ctx =this._context,
+			bounds = this._viewBounds;
+		ctx.clearRect(bounds._x, bounds._y,
+				bounds._width + 1, bounds._height + 1);
 
 		ctx.save();
 		this._matrix.applyToContext(ctx);
 		this._scope.project.draw(ctx);
 		ctx.restore();
-		if (this._redrawNeeded) {
-			this._redrawNeeded = false;
-			this._scope._redrawNotified = false;
-		}
-		return true;
 	},
 
 	activate: function() {
@@ -6052,22 +5933,17 @@ var View = this.View = Base.extend({
 	},
 
 	remove: function() {
-		if (this._index == null)
-			return false;
-		if (View._focused == this)
-			View._focused = null;
-		delete View._views[this._id];
-		Base.splice(this._scope.views, null, this._index, 1);
+		var res = Base.splice(this._scope.views, null, this._index, 1);
 		DomEvent.remove(this._canvas, this._events);
 		this._scope = this._canvas = this._events = this._onFrame = null;
-		return true;
+		return !!res.length;
 	},
 
-	projectToView: function(point) {
+	artworkToView: function(point) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
-	viewToProject: function(point) {
+	viewToArtwork: function(point) {
 		return this._getInverse()._transformPoint(Point.read(arguments));
 	},
 
@@ -6110,133 +5986,86 @@ var View = this.View = Base.extend({
 				count: count++
 			});
 			before = now;
-			that.draw(true);
+			that.draw();
 		};
 		if (!requested)
 			this._onFrameCallback();
 	},
 
-	onResize: null
-}, new function() { 
-	var tool,
-		timer,
-		curPoint,
-		tempFocus,
-		dragging = false;
+	onResize: null,
 
-	function viewToProject(view, event) {
-		return view.viewToProject(DomEvent.getOffset(event, view._canvas));
-	}
+	_createEvents: function() {
+		var that = this,
+			tool,
+			timer,
+			curPoint,
+			dragging = false;
 
-	function updateFocus() {
-		if (!View._focused || !View._focused.isVisible()) {
-			PaperScope.each(function(scope) {
-				for (var i = 0, l = scope.views.length; i < l; i++) {
-					var view = scope.views[i];
-					if (view.isVisible()) {
-						View._focused = tempFocus = view;
-						throw Base.stop;
-					}
-				}
-			});
+		function viewToArtwork(event) {
+			return that.viewToArtwork(DomEvent.getOffset(event));
 		}
-	}
 
-	function mousemove(event) {
-		var view;
-		if (!dragging) {
-		 	view = View._views[DomEvent.getTarget(event).getAttribute('id')];
-			if (view) {
-				View._focused = tempFocus = view;
-			} else if (tempFocus && tempFocus == View._focused) {
-				View._focused = null;
-				updateFocus();
+		function mousedown(event) {
+			View.focused = that;
+			if (!(tool = that._scope.tool))
+				return;
+			curPoint = viewToArtwork(event);
+			tool.onHandleEvent('mousedown', curPoint, event);
+			if (tool.onMouseDown)
+				that.draw();
+			if (tool.eventInterval != null)
+				timer = setInterval(mousemove, tool.eventInterval);
+			dragging = true;
+		}
+
+		function mousemove(event) {
+			if (!(tool = that._scope.tool))
+				return;
+			if (event && event.targetTouches)
+				DomEvent.preventDefault(event);
+			var point = event && viewToArtwork(event);
+			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
+			if (dragging && !onlyMove) {
+				curPoint = point || curPoint;
+				if (curPoint)
+					tool.onHandleEvent('mousedrag', curPoint, event);
+				if (tool.onMouseDrag)
+					that.draw();
+			} else if (!dragging || onlyMove) {
+				tool.onHandleEvent('mousemove', point, event);
+				if (tool.onMouseMove)
+					that.draw();
 			}
 		}
-		if (!(view = view || View._focused) || !(tool = view._scope.tool))
-			return;
-		var point = event && viewToProject(view, event);
-		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
-		if (dragging && !onlyMove) {
-			curPoint = point || curPoint;
-			if (curPoint && tool.onHandleEvent('mousedrag', curPoint, event)) {
-				view.draw(true);
-				DomEvent.stop(event);
-			}
-		} else if ((!dragging || onlyMove)
-				&& tool.onHandleEvent('mousemove', point, event)) {
-			view.draw(true);
-			DomEvent.stop(event);
-		}
-	}
 
-	function mouseup(event) {
-		var view = View._focused;
-		if (!view || !dragging)
-			return;
-		dragging = false;
-		curPoint = null;
-		if (tool) {
-			if (timer != null)
-				timer = clearInterval(timer);
-			if (tool.onHandleEvent('mouseup', viewToProject(view, event), event)) {
-				view.draw(true);
-				DomEvent.stop(event);
-			}
-		}
-	}
-
-	function selectstart(event) {
-		if (dragging)
-			DomEvent.stop(event);
-	}
-
-	DomEvent.add(document, {
-		mousemove: mousemove,
-		mouseup: mouseup,
-		touchmove: mousemove,
-		touchend: mouseup,
-		selectstart: selectstart,
-		scroll: updateFocus
-	});
-
-	DomEvent.add(window, {
-		load: updateFocus
-	});
-
-	return {
-		_createEvents: function() {
-			var view = this;
-
-			function mousedown(event) {
-				View._focused = view;
-				if (!(tool = view._scope.tool))
-					return;
-				curPoint = viewToProject(view, event);
-				if (tool.onHandleEvent('mousedown', curPoint, event))
-					view.draw(true);
+		function mouseup(event) {
+			if (!dragging)
+				return;
+			dragging = false;
+			curPoint = null;
+			if (tool) {
 				if (tool.eventInterval != null)
-					timer = setInterval(mousemove, tool.eventInterval);
-				dragging = true;
+					timer = clearInterval(timer);
+				tool.onHandleEvent('mouseup', viewToArtwork(event), event);
+				if (tool.onMouseUp)
+					that.draw();
 			}
-
-			return {
-				mousedown: mousedown,
-				touchstart: mousedown,
-				selectstart: selectstart
-			};
-		},
-
-		statics: {
-			_views: {},
-			_id: 0,
-
-			updateFocus: updateFocus
 		}
-	};
+
+		return {
+			mousedown: mousedown,
+			mousemove: mousemove,
+			mouseup: mouseup,
+			touchstart: mousedown,
+			touchmove: mousemove,
+			touchend: mouseup
+		};
+	}
 });
 
 var Event = this.Event = Base.extend({
+	beans: true,
+
 	initialize: function(event) {
 		this.event = event;
 	},
@@ -6250,7 +6079,8 @@ var Event = this.Event = Base.extend({
 	},
 
 	stop: function() {
-		DomEvent.stop(this.event);
+		this.stopPropagation();
+		this.preventDefault();
 	},
 
 	getModifiers: function() {
@@ -6260,6 +6090,9 @@ var Event = this.Event = Base.extend({
 
 var KeyEvent = this.KeyEvent = Event.extend(new function() {
 	return {
+
+		beans: true,
+
 		initialize: function(down, key, character, event) {
 			this.base(event);
 			this.type = down ? 'keydown' : 'keyup';
@@ -6319,16 +6152,13 @@ var Key = this.Key = new function() {
 		var character = String.fromCharCode(charCode),
 			key = keys[keyCode] || character.toLowerCase(),
 			handler = down ? 'onKeyDown' : 'onKeyUp',
-			view = View._focused,
-			scope = view && view.isVisible() && view._scope,
+			scope = View.focused && View.focused._scope,
 			tool = scope && scope.tool;
 		keyMap[key] = down;
 		if (tool && tool[handler]) {
 			var keyEvent = new KeyEvent(down, key, character, event);
 			if (tool[handler](keyEvent) === false)
 				keyEvent.preventDefault();
-			if (view)
-				view.draw(true);
 		}
 	}
 
@@ -6370,6 +6200,7 @@ var Key = this.Key = new function() {
 	});
 
 	return {
+
 		modifiers: modifiers,
 
 		isDown: function(key) {
@@ -6378,7 +6209,10 @@ var Key = this.Key = new function() {
 	};
 };
 
-var ToolEvent = this.ToolEvent = Event.extend({
+var ToolEvent = this.ToolEvent = Base.extend({
+
+	beans: true,
+
 	initialize: function(tool, type, event) {
 		this.tool = tool;
 		this.type = type;
@@ -6445,6 +6279,10 @@ var ToolEvent = this.ToolEvent = Event.extend({
 			= count;
 	},
 
+	getModifiers: function() {
+		return Key.modifiers;
+	},
+
 	toString: function() {
 		return '{ type: ' + this.type 
 				+ ', point: ' + this.getPoint()
@@ -6455,6 +6293,9 @@ var ToolEvent = this.ToolEvent = Event.extend({
 });
 
 var Tool = this.Tool = Base.extend({
+
+	beans: true,
+
 	initialize: function(handlers, scope) {
 		this._scope = scope;
 		this._firstMove = true;
@@ -6539,24 +6380,19 @@ var Tool = this.Tool = Base.extend({
 
 	onHandleEvent: function(type, pt, event) {
 		paper = this._scope;
-		var called = false;
 		switch (type) {
 		case 'mousedown':
 			this.updateEvent(type, pt, null, null, true, false, false);
-			if (this.onMouseDown) {
+			if (this.onMouseDown)
 				this.onMouseDown(new ToolEvent(this, type, event));
-				called = true;
-			}
 			break;
 		case 'mousedrag':
 			var needsChange = false,
 				matchMaxDistance = false;
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, false, needsChange, matchMaxDistance)) {
-				if (this.onMouseDrag) {
+				if (this.onMouseDrag)
 					this.onMouseDrag(new ToolEvent(this, type, event));
-					called = true;
-				}
 				needsChange = true;
 				matchMaxDistance = true;
 			}
@@ -6565,32 +6401,25 @@ var Tool = this.Tool = Base.extend({
 			if ((this._point.x != pt.x || this._point.y != pt.y)
 					&& this.updateEvent('mousedrag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
-				if (this.onMouseDrag) {
+				if (this.onMouseDrag)
 					this.onMouseDrag(new ToolEvent(this, type, event));
-					called = true;
-				}
 			}
 			this.updateEvent(type, pt, null, this.maxDistance, false,
 					false, false);
-			if (this.onMouseUp) {
+			if (this.onMouseUp)
 				this.onMouseUp(new ToolEvent(this, type, event));
-				called = true;
-			}
 			this.updateEvent(type, pt, null, null, true, false, false);
 			this._firstMove = true;
 			break;
 		case 'mousemove':
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, this._firstMove, true, false)) {
-				if (this.onMouseMove) {
+				if (this.onMouseMove)
 					this.onMouseMove(new ToolEvent(this, type, event));
-					called = true;
-				}
 				this._firstMove = false;
 			}
 			break;
 		}
-		return called;
 	}
 });
 
@@ -6906,7 +6735,7 @@ var BlendMode = {
 };
 
 var PaperScript = this.PaperScript = new function() {
-var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++e)d.push(b.call(c,a[e],e));return d}function R(a,b){return Object.prototype.hasOwnProperty.call(a,b)}function Q(c){return/^[a-z_$][a-z0-9_$]*$/i.test(c)&&c!="this"&&!R(d,c)&&!R(b,c)&&!R(a,c)}function P(a,b){var c={};a===!0&&(a={});for(var d in b)R(b,d)&&(c[d]=a&&R(a,d)?a[d]:b[d]);return c}function O(a,b){for(var c=b.length;--c>=0;)if(b[c]===a)return!0;return!1}function N(a){return a.split("")}function M(a,b){return Array.prototype.slice.call(a,b||0)}function L(a){var b={};for(var c=0;c<a.length;++c)b[a[c]]=!0;return b}function K(a){a instanceof Function&&(a=a());for(var b=1,c=arguments.length;--c>0;++b)arguments[b]();return a}function J(a){var b=M(arguments,1);return function(){return a.apply(this,b.concat(M(arguments)))}}function I(a,b){function y(a){var b=a[0],c=p[b];if(!c)throw new Error("Can't find generator for \""+b+'"');x.push(a);var d=c.apply(b,a.slice(1));x.pop();return d}function w(a){var b=a[0],c=a[1];c!=null&&(b=h([b,"=",y(c)]));return b}function v(a){if(!a)return";";if(a.length==0)return"{}";return"{"+d+g(function(){return t(a).join(d)})+d+f("}")}function u(a){var c=a.length;if(c==0)return"{}";return"{"+d+S(a,function(a,e){var i=a[1].length>0,j=g(function(){return f(a[0]?h(["case",y(a[0])+":"]):"default:")},.5)+(i?d+g(function(){return t(a[1]).join(d)}):"");!b&&i&&e<c-1&&(j+=";");return j}).join(d)+d+f("}")}function t(a){for(var c=[],d=a.length-1,e=0;e<=d;++e){var g=a[e],h=y(g);h!=";"&&(!b&&e==d&&(g[0]=="while"&&F(g[2])||O(g[0],["for","for-in"])&&F(g[4])||g[0]=="if"&&F(g[2])&&!g[3]||g[0]=="if"&&g[3]&&F(g[3])?h=h.replace(/;*\s*$/,";"):h=h.replace(/;+\s*$/,"")),c.push(h))}return S(c,f)}function s(a){return a.toString()}function r(a,b,c,d){var e=d||"function";a&&(e+=" "+s(a)),e+="("+j(S(b,s))+")";return h([e,v(c)])}function q(a){if(a[0]=="do")return y(["block",[a]]);var b=a;for(;;){var c=b[0];if(c=="if"){if(!b[3])return y(["block",[a]]);b=b[3]}else if(c=="while"||c=="do")b=b[2];else if(c=="for"||c=="for-in")b=b[4];else break}return y(a)}function o(a){var b=a.toString(10),c=[b.replace(/^0\./,".")],d;Math.floor(a)===a?(c.push("0x"+a.toString(16).toLowerCase(),"0"+a.toString(8)),(d=/^(.*?)(0+)$/.exec(a))&&c.push(d[1]+"e"+d[2].length)):(d=/^0?\.(0+)(.*)$/.exec(a))&&c.push(d[2]+"e-"+(d[1].length+d[2].length),b.substr(b.indexOf(".")));return l(c)}function m(a){if(a[0]=="function"){var b=M(x),c=b.pop(),d=b.pop();while(d){if(d[0]=="stat")return!0;if(d[0]=="seq"&&d[1]===c||d[0]=="call"&&d[1]===c||d[0]=="binary"&&d[2]===c)c=d,d=b.pop();else return!1}}return!R(G,a[0])}function l(a){if(a.length==1)return a[0];if(a.length==2){var b=a[1];a=a[0];return a.length<=b.length?a:b}return l([a[0],l(a.slice(1))])}function k(a){var b=y(a);for(var c=1;c<arguments.length;++c){var d=arguments[c];if(d instanceof Function&&d(a)||a[0]==d)return"("+b+")"}return b}function j(a){return a.join(","+e)}function h(a){if(b)return a.join(" ");var c=[];for(var d=0;d<a.length;++d){var e=a[d+1];c.push(a[d]),e&&(/[a-z0-9_\x24]$/i.test(a[d].toString())&&/^[a-z0-9_\x24]/i.test(e.toString())||/[\+\-]$/.test(a[d].toString())&&/^[\+\-]/.test(e.toString()))&&c.push(" ")}return c.join("")}function g(a,b){b==null&&(b=1),c+=b;try{return a.apply(null,M(arguments,1))}finally{c-=b}}function f(a){a==null&&(a=""),b&&(a=Array(b.indent_start+c*b.indent_level).join(" ")+a);return a}b&&(b=P(b,{indent_start:0,indent_level:4,quote_keys:!1,space_colon:!1}));var c=0,d=b?"\n":"",e=b?" ":"",p={string:H,num:o,name:s,toplevel:function(a){return t(a).join(d+d)},block:v,"var":function(a){return"var "+j(S(a,w))+";"},"const":function(a){return"const "+j(S(a,w))+";"},"try":function(a,b,c){var d=["try",v(a)];b&&d.push("catch","("+b[0]+")",v(b[1])),c&&d.push("finally",v(c));return h(d)},"throw":function(a){return h(["throw",y(a)])+";"},"new":function(a,b){b=b.length>0?"("+j(S(b,y))+")":"";return h(["new",k(a,"seq","binary","conditional","assign",function(a){var b=E(),c={};try{b.with_walkers({call:function(){throw c},"function":function(){return this}},function(){b.walk(a)})}catch(d){if(d===c)return!0;throw d}})+b])},"switch":function(a,b){return h(["switch","("+y(a)+")",u(b)])},"break":function(a){var b="break";a!=null&&(b+=" "+s(a));return b+";"},"continue":function(a){var b="continue";a!=null&&(b+=" "+s(a));return b+";"},conditional:function(a,b,c){return h([k(a,"assign","seq","conditional"),"?",k(b,"seq"),":",k(c,"seq")])},assign:function(a,b,c){a&&a!==!0?a+="=":a="=";return h([y(b),a,k(c,"seq")])},dot:function(a){var b=y(a),c=1;a[0]=="num"?b+=".":m(a)&&(b="("+b+")");while(c<arguments.length)b+="."+s(arguments[c++]);return b},call:function(a,b){var c=y(a);m(a)&&(c="("+c+")");return c+"("+j(S(b,function(a){return k(a,"seq")}))+")"},"function":r,defun:r,"if":function(a,b,c){var d=["if","("+y(a)+")",c?q(b):y(b)];c&&d.push("else",y(c));return h(d)},"for":function(a,b,c,d){var f=["for"];a=(a!=null?y(a):"").replace(/;*\s*$/,";"+e),b=(b!=null?y(b):"").replace(/;*\s*$/,";"+e),c=(c!=null?y(c):"").replace(/;*\s*$/,"");var g=a+b+c;g=="; ; "&&(g=";;"),f.push("("+g+")",y(d));return h(f)},"for-in":function(a,b,c,d){var e=h(["for","("]);a&&(e+="var "),e+=h([s(b)+" in "+y(c)+")",y(d)]);return e},"while":function(a,b){return h(["while","("+y(a)+")",y(b)])},"do":function(a,b){return h(["do",y(b),"while","("+y(a)+")"])+";"},"return":function(a){var b=["return"];a!=null&&b.push(y(a));return h(b)+";"},binary:function(a,b,c){var d=y(b),e=y(c);if(O(b[0],["assign","conditional","seq"])||b[0]=="binary"&&z[a]>z[b[1]])d="("+d+")";if(O(c[0],["assign","conditional","seq"])||c[0]=="binary"&&z[a]>=z[c[1]]&&(c[1]!=a||!O(a,["&&","||","*"])))e="("+e+")";return h([d,a,e])},"unary-prefix":function(a,b){var c=y(b);b[0]=="num"||b[0]=="unary-prefix"&&!R(i,a+b[1])||!m(b)||(c="("+c+")");return a+(n(a.charAt(0))?" ":"")+c},"unary-postfix":function(a,b){var c=y(b);b[0]=="num"||b[0]=="unary-postfix"&&!R(i,a+b[1])||!m(b)||(c="("+c+")");return c+a},sub:function(a,b){var c=y(a);m(a)&&(c="("+c+")");return c+"["+y(b)+"]"},object:function(a){if(a.length==0)return"{}";return"{"+d+g(function(){return S(a,function(a){if(a.length==3)return f(r(a[0],a[1][2],a[1][3],a[2]));var c=a[0],d=y(a[1]);b&&b.quote_keys?c=H(c):(typeof c=="number"||!b&&+c+""==c)&&parseFloat(c)>=0?c=o(+c):Q(c)||(c=H(c));return f(h(b&&b.space_colon?[c,":",d]:[c+":",d]))}).join(","+d)})+d+f("}")},regexp:function(a,b){return"/"+a+"/"+b},array:function(a){if(a.length==0)return"[]";return h(["[",j(S(a,function(a){if(!b&&a[0]=="atom"&&a[1]=="undefined")return"";return k(a,"seq")})),"]"])},stat:function(a){return y(a).replace(/;*\s*$/,";")},seq:function(){return j(S(M(arguments),y))},label:function(a,b){return h([s(a),":",y(b)])},"with":function(a,b){return h(["with","("+y(a)+")",y(b)])},atom:function(a){return s(a)}},x=[];return y(a)}function H(a){var b=0,c=0;a=a.replace(/[\\\b\f\n\r\t\x22\x27]/g,function(a){switch(a){case"\\":return"\\\\";case"\b":return"\\b";case"\f":return"\\f";case"\n":return"\\n";case"\r":return"\\r";case"\t":return"\\t";case'"':++b;return'"';case"'":++c;return"'"}return a});return b>c?"'"+a.replace(/\x27/g,"\\'")+"'":'"'+a.replace(/\x22/g,'\\"')+'"'}function F(a){return!a||a[0]=="block"&&(!a[1]||a[1].length==0)}function E(){function f(a,b){var d={},e;for(e in a)R(a,e)&&(d[e]=c[e],c[e]=a[e]);var f=b();for(e in d)R(d,e)&&(d[e]?c[e]=d[e]:delete c[e]);return f}function e(a){if(a==null)return null;try{d.push(a);var e=a[0],f=c[e];if(f){var g=f.apply(a,a.slice(1));if(g!=null)return g}f=b[e];return f.apply(a,a.slice(1))}finally{d.pop()}}function a(a){return[this[0],S(a,function(a){var b=[a[0]];a.length>1&&(b[1]=e(a[1]));return b})]}var b={string:function(a){return[this[0],a]},num:function(a){return[this[0],a]},name:function(a){return[this[0],a]},toplevel:function(a){return[this[0],S(a,e)]},block:function(a){var b=[this[0]];a!=null&&b.push(S(a,e));return b},"var":a,"const":a,"try":function(a,b,c){return[this[0],S(a,e),b!=null?[b[0],S(b[1],e)]:null,c!=null?S(c,e):null]},"throw":function(a){return[this[0],e(a)]},"new":function(a,b){return[this[0],e(a),S(b,e)]},"switch":function(a,b){return[this[0],e(a),S(b,function(a){return[a[0]?e(a[0]):null,S(a[1],e)]})]},"break":function(a){return[this[0],a]},"continue":function(a){return[this[0],a]},conditional:function(a,b,c){return[this[0],e(a),e(b),e(c)]},assign:function(a,b,c){return[this[0],a,e(b),e(c)]},dot:function(a){return[this[0],e(a)].concat(M(arguments,1))},call:function(a,b){return[this[0],e(a),S(b,e)]},"function":function(a,b,c){return[this[0],a,b.slice(),S(c,e)]},defun:function(a,b,c){return[this[0],a,b.slice(),S(c,e)]},"if":function(a,b,c){return[this[0],e(a),e(b),e(c)]},"for":function(a,b,c,d){return[this[0],e(a),e(b),e(c),e(d)]},"for-in":function(a,b,c,d){return[this[0],a,b,e(c),e(d)]},"while":function(a,b){return[this[0],e(a),e(b)]},"do":function(a,b){return[this[0],e(a),e(b)]},"return":function(a){return[this[0],e(a)]},binary:function(a,b,c){return[this[0],a,e(b),e(c)]},"unary-prefix":function(a,b){return[this[0],a,e(b)]},"unary-postfix":function(a,b){return[this[0],a,e(b)]},sub:function(a,b){return[this[0],e(a),e(b)]},object:function(a){return[this[0],S(a,function(a){return a.length==2?[a[0],e(a[1])]:[a[0],e(a[1]),a[2]]})]},regexp:function(a,b){return[this[0],a,b]},array:function(a){return[this[0],S(a,e)]},stat:function(a){return[this[0],e(a)]},seq:function(){return[this[0]].concat(S(M(arguments),e))},label:function(a,b){return[this[0],a,e(b)]},"with":function(a,b){return[this[0],e(a),e(b)]},atom:function(a){return[this[0],a]}},c={},d=[];return{walk:e,with_walkers:f,parent:function(){return d[d.length-2]},stack:function(){return d}}}function D(a,b,c){function bj(a){try{++d.in_loop;return a()}finally{--d.in_loop}}function bi(a){arguments.length==0&&(a=!0);var b=bh();if(a&&e("punc",",")){g();return p("seq",b,bi())}return b}function bh(){var a=bf(),b=d.token.value;if(e("operator")&&R(y,b)){if(bg(a)){g();return p("assign",y[b],a,bh())}i("Invalid assignment")}return a}function bg(a){switch(a[0]){case"dot":case"sub":return!0;case"name":return a[1]!="this"}}function bf(){var a=be();if(e("operator","?")){g();var b=bi(!1);m(":");return p("conditional",a,b,bi(!1))}return a}function be(){return bd(X(!0),0)}function bd(a,b){var c=e("operator")?d.token.value:null,f=c!=null?z[c]:null;if(f!=null&&f>b){g();var h=bd(X(!0),f);return bd(p("binary",c,a,h),b)}return a}function bc(a,b,c){(b=="++"||b=="--")&&!bg(c)&&i("Invalid use of "+b+" operator");return p(a,b,c)}function bb(a,b){if(e("punc",".")){g();return bb(p("dot",a,ba()),b)}if(e("punc","[")){g();return bb(p("sub",a,K(bi,J(m,"]"))),b)}if(b&&e("punc","(")){g();return bb(p("call",a,Y(")")),!0)}if(b&&e("operator")&&R(x,d.token.value))return K(J(bc,"unary-postfix",d.token.value,a),g);return a}function ba(){switch(d.token.type){case"name":case"operator":case"keyword":case"atom":return K(d.token.value,g);default:k()}}function _(){switch(d.token.type){case"num":case"string":return K(d.token.value,g)}return ba()}function $(){var a=!0,c=[];while(!e("punc","}")){a?a=!1:m(",");if(!b&&e("punc","}"))break;var f=d.token.type,h=_();f!="name"||h!="get"&&h!="set"||!!e("punc",":")?(m(":"),c.push([h,bi(!1)])):c.push([ba(),I(!1),h])}g();return p("object",c)}function Z(){return p("array",Y("]",!b,!0))}function Y(a,b,c){var d=!0,f=[];while(!e("punc",a)){d?d=!1:m(",");if(b&&e("punc",a))break;e("punc",",")&&c?f.push(["atom","undefined"]):f.push(bi(!1))}g();return f}function X(a){if(e("operator","new")){g();return W()}if(e("operator")&&R(w,d.token.value))return bc("unary-prefix",K(d.token.value,g),X(a));if(e("punc")){switch(d.token.value){case"(":g();return bb(K(bi,J(m,")")),a);case"[":g();return bb(Z(),a);case"{":g();return bb($(),a)}k()}if(e("keyword","function")){g();return bb(I(!1),a)}if(R(B,d.token.type)){var b=d.token.type=="regexp"?p("regexp",d.token.value[0],d.token.value[1]):p(d.token.type,d.token.value);return bb(K(b,g),a)}k()}function W(){var a=X(!1),b;e("punc","(")?(g(),b=Y(")")):b=[];return bb(p("new",a,b),!0)}function V(){return p("const",T())}function U(){return p("var",T())}function T(){var a=[];for(;;){e("name")||k();var b=d.token.value;g(),e("operator","=")?(g(),a.push([b,bi(!1)])):a.push([b]);if(!e("punc",","))break;g()}return a}function S(){var a=P(),b,c;if(e("keyword","catch")){g(),m("("),e("name")||i("Name expected");var f=d.token.value;g(),m(")"),b=[f,P()]}e("keyword","finally")&&(g(),c=P()),!b&&!c&&i("Missing catch/finally blocks");return p("try",a,b,c)}function P(){m("{");var a=[];while(!e("punc","}"))e("eof")&&k(),a.push(u());g();return a}function N(){var a=q(),b=u(),c;e("keyword","else")&&(g(),c=u());return p("if",a,b,c)}function L(a){var b=e("name")?K(d.token.value,g):null;a&&!b&&k(),m("(");return p(a?"defun":"function",b,function(a,b){while(!e("punc",")"))a?a=!1:m(","),e("name")||k(),b.push(d.token.value),g();g();return b}(!0,[]),function(){++d.in_function;var a=d.in_loop;d.in_loop=0;var b=P();--d.in_function,d.in_loop=a;return b}())}function H(){m("(");var a=e("keyword","var");a&&g();if(e("name")&&t(f(),"operator","in")){var b=d.token.value;g(),g();var c=bi();m(")");return p("for-in",a,b,c,bj(u))}var h=e("punc",";")?null:a?U():bi();m(";");var i=e("punc",";")?null:bi();m(";");var j=e("punc",")")?null:bi();m(")");return p("for",h,i,j,bj(u))}function G(a){var b=e("name")?d.token.value:null;b!=null?(g(),O(b,d.labels)||i("Label "+b+" without matching loop or statement")):d.in_loop==0&&i(a+" not inside a loop or switch"),o();return p(a,b)}function F(){return p("stat",K(bi,o))}function E(a){d.labels.push(a);var c=d.token,e=u();b&&!R(A,e[0])&&k(c),d.labels.pop();return p("label",a,e)}function D(){e("operator","/")&&(d.peeked=null,d.token=d.input(!0));switch(d.token.type){case"num":case"string":case"regexp":case"operator":case"atom":return F();case"name":return t(f(),"punc",":")?E(K(d.token.value,g,g)):F();case"punc":switch(d.token.value){case"{":return p("block",P());case"[":case"(":return F();case";":g();return p("block");default:k()};case"keyword":switch(K(d.token.value,g)){case"break":return G("break");case"continue":return G("continue");case"debugger":o();return p("debugger");case"do":return function(a){l("keyword","while");return p("do",K(q,o),a)}(bj(u));case"for":return H();case"function":return I(!0);case"if":return N();case"return":d.in_function==0&&i("'return' outside of function");return p("return",e("punc",";")?(g(),null):n()?null:K(bi,o));case"switch":return p("switch",q(),Q());case"throw":return p("throw",K(bi,o));case"try":return S();case"var":return K(U,o);case"const":return K(V,o);case"while":return p("while",q(),bj(u));case"with":return p("with",q(),u());default:k()}}}function r(a,b,c){return a instanceof C?a:new C(a,b,c)}function q(){m("(");var a=bi();m(")");return a}function p(){return M(arguments)}function o(){e("punc",";")?g():n()||k()}function n(){return!b&&(d.token.nlb||e("eof")||e("punc","}"))}function m(a){return l("punc",a)}function l(a,b){if(e(a,b))return g();j(d.token,"Unexpected token "+d.token.type+", expected "+a)}function k(a){a==null&&(a=d.token),j(a,"Unexpected token: "+a.type+" ("+a.value+")")}function j(a,b){i(b,a.line,a.col)}function i(a,b,c,e){var f=d.input.context();s(a,b!=null?b:f.tokline,c!=null?c:f.tokcol,e!=null?e:f.tokpos)}function h(){return d.prev}function g(){d.prev=d.token,d.peeked?(d.token=d.peeked,d.peeked=null):d.token=d.input();return d.token}function f(){return d.peeked||(d.peeked=d.input())}function e(a,b){return t(d.token,a,b)}var d={input:typeof a=="string"?v(a,!0):a,token:null,prev:null,peeked:null,in_function:0,in_loop:0,labels:[]};d.token=g();var u=c?function(){var a=d.token,b=D.apply(this,arguments);b[0]=r(b[0],a,h());return b}:D,I=c?function(){var a=h(),b=L.apply(this,arguments);b[0]=r(b[0],a,h());return b}:L,Q=J(bj,function(){m("{");var a=[],b=null;while(!e("punc","}"))e("eof")&&k(),e("keyword","case")?(g(),b=[],a.push([bi(),b]),m(":")):e("keyword","default")?(g(),m(":"),b=[],a.push([null,b])):(b||k(),b.push(u()));g();return a});return p("toplevel",function(a){while(!e("eof"))a.push(u());return a}([]))}function C(a,b,c){this.name=a,this.start=b,this.end=c}function v(b){function N(a){if(a)return H();y(),v();var b=g();if(!b)return w("eof");if(p(b))return B();if(b=='"'||b=="'")return E();if(R(l,b))return w("punc",h());if(b==".")return K();if(b=="/")return J();if(R(e,b))return I();if(o(b))return L();A("Unexpected character '"+b+"'")}function M(a,b){try{return b()}catch(c){if(c===u)A(a);else throw c}}function L(){var b=z(o);return R(a,b)?R(i,b)?w("operator",b):R(d,b)?w("atom",b):w("keyword",b):w("name",b)}function K(){h();return p(g())?B("."):w("punc",".")}function J(){h();var a=f.regex_allowed;switch(g()){case"/":f.comments_before.push(F()),f.regex_allowed=a;return N();case"*":f.comments_before.push(G()),f.regex_allowed=a;return N()}return f.regex_allowed?H():I("/")}function I(a){function b(a){if(!g())return a;var c=a+g();if(R(i,c)){h();return b(c)}return a}return w("operator",b(a||h()))}function H(){return M("Unterminated regular expression",function(){var a=!1,b="",c,d=!1;while(c=h(!0))if(a)b+="\\"+c,a=!1;else if(c=="[")d=!0,b+=c;else if(c=="]"&&d)d=!1,b+=c;else{if(c=="/"&&!d)break;c=="\\"?a=!0:b+=c}var e=z(function(a){return R(m,a)});return w("regexp",[b,e])})}function G(){h();return M("Unterminated multiline comment",function(){var a=t("*/",!0),b=f.text.substring(f.pos,a),c=w("comment2",b,!0);f.pos=a+2,f.line+=b.split("\n").length-1,f.newline_before=b.indexOf("\n")>=0;return c})}function F(){h();var a=t("\n"),b;a==-1?(b=f.text.substr(f.pos),f.pos=f.text.length):(b=f.text.substring(f.pos,a),f.pos=a);return w("comment1",b,!0)}function E(){return M("Unterminated string constant",function(){var a=h(),b="";for(;;){var c=h(!0);if(c=="\\")c=C();else if(c==a)break;b+=c}return w("string",b)})}function D(a){var b=0;for(;a>0;--a){var c=parseInt(h(!0),16);isNaN(c)&&A("Invalid hex-character pattern in string"),b=b<<4|c}return b}function C(){var a=h(!0);switch(a){case"n":return"\n";case"r":return"\r";case"t":return"\t";case"b":return"\b";case"v":return"";case"f":return"\f";case"0":return" ";case"x":return String.fromCharCode(D(2));case"u":return String.fromCharCode(D(4));default:return a}}function B(a){var b=!1,c=!1,d=!1,e=a==".",f=z(function(f,g){if(f=="x"||f=="X"){if(d)return!1;return d=!0}if(!d&&(f=="E"||f=="e")){if(b)return!1;return b=c=!0}if(f=="-"){if(c||g==0&&!a)return!0;return!1}if(f=="+")return c;c=!1;if(f=="."){if(!e)return e=!0;return!1}return n(f)});a&&(f=a+f);var g=q(f);if(!isNaN(g))return w("num",g);A("Invalid syntax: "+f)}function A(a){s(a,f.tokline,f.tokcol,f.tokpos)}function z(a){var b="",c=g(),d=0;while(c&&a(c,d++))b+=h(),c=g();return b}function y(){while(R(j,g()))h()}function w(a,b,d){f.regex_allowed=a=="operator"&&!R(x,b)||a=="keyword"&&R(c,b)||a=="punc"&&R(k,b);var e={type:a,value:b,line:f.tokline,col:f.tokcol,pos:f.tokpos,nlb:f.newline_before};d||(e.comments_before=f.comments_before,f.comments_before=[]),f.newline_before=!1;return e}function v(){f.tokline=f.line,f.tokcol=f.col,f.tokpos=f.pos}function t(a,b){var c=f.text.indexOf(a,f.pos);if(b&&c==-1)throw u;return c}function r(){return!f.peek()}function h(a){var b=f.text.charAt(f.pos++);if(a&&!b)throw u;b=="\n"?(f.newline_before=!0,++f.line,f.col=0):++f.col;return b}function g(){return f.text.charAt(f.pos)}var f={text:b.replace(/\r\n?|[\n\u2028\u2029]/g,"\n").replace(/^\uFEFF/,""),pos:0,tokpos:0,line:0,tokline:0,col:0,tokcol:0,newline_before:!1,regex_allowed:!1,comments_before:[]};N.context=function(a){a&&(f=a);return f};return N}function t(a,b,c){return a.type==b&&(c==null||a.value==c)}function s(a,b,c,d){throw new r(a,b,c,d)}function r(a,b,c,d){this.message=a,this.line=b,this.col=c,this.pos=d}function q(a){if(f.test(a))return parseInt(a.substr(2),16);if(g.test(a))return parseInt(a.substr(1),8);if(h.test(a))return parseFloat(a)}function p(a){a=a.charCodeAt(0);return a>=48&&a<=57}function o(a){return n(a)||a=="$"||a=="_"}function n(a){a=a.charCodeAt(0);return a>=48&&a<=57||a>=65&&a<=90||a>=97&&a<=122}var a=L(["break","case","catch","const","continue","default","delete","do","else","finally","for","function","if","in","instanceof","new","return","switch","throw","try","typeof","var","void","while","with"]),b=L(["abstract","boolean","byte","char","class","debugger","double","enum","export","extends","final","float","goto","implements","import","int","interface","long","native","package","private","protected","public","short","static","super","synchronized","throws","transient","volatile"]),c=L(["return","new","delete","throw","else","case"]),d=L(["false","null","true","undefined"]),e=L(N("+-*&%=<>!?|~^")),f=/^0x[0-9a-f]+$/i,g=/^0[0-7]+$/,h=/^\d*\.?\d*(?:e[+-]?\d*(?:\d\.?|\.?\d)\d*)?$/i,i=L(["in","instanceof","typeof","new","void","delete","++","--","+","-","!","~","&","|","^","*","/","%",">>","<<",">>>","<",">","<=",">=","==","===","!=","!==","?","=","+=","-=","/=","*=","%=",">>=","<<=",">>>=","%=","|=","^=","&=","&&","||"]),j=L(N(" \n\r\t")),k=L(N("[{}(,.;:")),l=L(N("[]{}(),;:")),m=L(N("gmsiy"));r.prototype.toString=function(){return this.message+" (line: "+this.line+", col: "+this.col+", pos: "+this.pos+")"};var u={},w=L(["typeof","void","delete","--","++","!","~","-","+"]),x=L(["--","++"]),y=function(a,b,c){while(c<a.length)b[a[c]]=a[c].substr(0,a[c].length-1),c++;return b}(["+=","-=","/=","*=","%=",">>=","<<=",">>>=","|=","^=","&="],{"=":!0},0),z=function(a,b){for(var c=0,d=1;c<a.length;++c,++d){var e=a[c];for(var f=0;f<e.length;++f)b[e[f]]=d}return b}([["||"],["&&"],["|"],["^"],["&"],["==","===","!=","!=="],["<",">","<=",">=","in","instanceof"],[">>","<<",">>>"],["+","-"],["*","/","%"]],{}),A=L(["for","do","while","switch"]),B=L(["atom","num","string","regexp","name"]);C.prototype.toString=function(){return this.name};var G=L(["name","array","string","dot","sub","call","regexp"]);return{parse:D,gen_code:I,tokenizer:v,ast_walker:E}}
+var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++e)d.push(b.call(c,a[e],e));return d}function R(a,b){return Object.prototype.hasOwnProperty.call(a,b)}function Q(c){return/^[a-z_$][a-z0-9_$]*$/i.test(c)&&c!="this"&&!R(d,c)&&!R(b,c)&&!R(a,c)}function P(a,b){var c={};a===!0&&(a={});for(var d in b)R(b,d)&&(c[d]=a&&R(a,d)?a[d]:b[d]);return c}function O(a,b){for(var c=b.length;--c>=0;)if(b[c]===a)return!0;return!1}function N(a){return a.split("")}function M(a,b){return Array.prototype.slice.call(a,b==null?0:b)}function L(a){var b={};for(var c=0;c<a.length;++c)b[a[c]]=!0;return b}function K(a){a instanceof Function&&(a=a());for(var b=1,c=arguments.length;--c>0;++b)arguments[b]();return a}function J(a){var b=M(arguments,1);return function(){return a.apply(this,b.concat(M(arguments)))}}function I(a,b){function y(a){var b=a[0],c=p[b];if(!c)throw new Error("Can't find generator for \""+b+'"');x.push(a);var d=c.apply(b,a.slice(1));x.pop();return d}function w(a){var b=a[0],c=a[1];c!=null&&(b=h([b,"=",y(c)]));return b}function v(a){if(!a)return";";if(a.length==0)return"{}";return"{"+d+g(function(){return t(a).join(d)})+d+f("}")}function u(a){var c=a.length;if(c==0)return"{}";return"{"+d+S(a,function(a,e){var i=a[1].length>0,j=g(function(){return f(a[0]?h(["case",y(a[0])+":"]):"default:")},.5)+(i?d+g(function(){return t(a[1]).join(d)}):"");!b&&i&&e<c-1&&(j+=";");return j}).join(d)+d+f("}")}function t(a){for(var c=[],d=a.length-1,e=0;e<=d;++e){var g=a[e],h=y(g);h!=";"&&(!b&&e==d&&(g[0]=="while"&&F(g[2])||O(g[0],["for","for-in"])&&F(g[4])||g[0]=="if"&&F(g[2])&&!g[3]||g[0]=="if"&&g[3]&&F(g[3])?h=h.replace(/;*\s*$/,";"):h=h.replace(/;+\s*$/,"")),c.push(h))}return S(c,f)}function s(a){return a.toString()}function r(a,b,c,d){var e=d||"function";a&&(e+=" "+s(a)),e+="("+j(S(b,s))+")";return h([e,v(c)])}function q(a){if(a[0]=="do")return y(["block",[a]]);var b=a;for(;;){var c=b[0];if(c=="if"){if(!b[3])return y(["block",[a]]);b=b[3]}else if(c=="while"||c=="do")b=b[2];else if(c=="for"||c=="for-in")b=b[4];else break}return y(a)}function o(a){var b=a.toString(10),c=[b.replace(/^0\./,".")],d;Math.floor(a)===a?(c.push("0x"+a.toString(16).toLowerCase(),"0"+a.toString(8)),(d=/^(.*?)(0+)$/.exec(a))&&c.push(d[1]+"e"+d[2].length)):(d=/^0?\.(0+)(.*)$/.exec(a))&&c.push(d[2]+"e-"+(d[1].length+d[2].length),b.substr(b.indexOf(".")));return l(c)}function m(a){if(a[0]=="function"){var b=M(x),c=b.pop(),d=b.pop();while(d){if(d[0]=="stat")return!0;if(d[0]=="seq"&&d[1]===c||d[0]=="call"&&d[1]===c||d[0]=="binary"&&d[2]===c)c=d,d=b.pop();else return!1}}return!R(G,a[0])}function l(a){if(a.length==1)return a[0];if(a.length==2){var b=a[1];a=a[0];return a.length<=b.length?a:b}return l([a[0],l(a.slice(1))])}function k(a){var b=y(a);for(var c=1;c<arguments.length;++c){var d=arguments[c];if(d instanceof Function&&d(a)||a[0]==d)return"("+b+")"}return b}function j(a){return a.join(","+e)}function h(a){if(b)return a.join(" ");var c=[];for(var d=0;d<a.length;++d){var e=a[d+1];c.push(a[d]),e&&(/[a-z0-9_\x24]$/i.test(a[d].toString())&&/^[a-z0-9_\x24]/i.test(e.toString())||/[\+\-]$/.test(a[d].toString())&&/^[\+\-]/.test(e.toString()))&&c.push(" ")}return c.join("")}function g(a,b){b==null&&(b=1),c+=b;try{return a.apply(null,M(arguments,1))}finally{c-=b}}function f(a){a==null&&(a=""),b&&(a=Array(b.indent_start+c*b.indent_level).join(" ")+a);return a}b&&(b=P(b,{indent_start:0,indent_level:4,quote_keys:!1,space_colon:!1}));var c=0,d=b?"\n":"",e=b?" ":"",p={string:H,num:o,name:s,toplevel:function(a){return t(a).join(d+d)},block:v,"var":function(a){return"var "+j(S(a,w))+";"},"const":function(a){return"const "+j(S(a,w))+";"},"try":function(a,b,c){var d=["try",v(a)];b&&d.push("catch","("+b[0]+")",v(b[1])),c&&d.push("finally",v(c));return h(d)},"throw":function(a){return h(["throw",y(a)])+";"},"new":function(a,b){b=b.length>0?"("+j(S(b,y))+")":"";return h(["new",k(a,"seq","binary","conditional","assign",function(a){var b=E(),c={};try{b.with_walkers({call:function(){throw c},"function":function(){return this}},function(){b.walk(a)})}catch(d){if(d===c)return!0;throw d}})+b])},"switch":function(a,b){return h(["switch","("+y(a)+")",u(b)])},"break":function(a){var b="break";a!=null&&(b+=" "+s(a));return b+";"},"continue":function(a){var b="continue";a!=null&&(b+=" "+s(a));return b+";"},conditional:function(a,b,c){return h([k(a,"assign","seq","conditional"),"?",k(b,"seq"),":",k(c,"seq")])},assign:function(a,b,c){a&&a!==!0?a+="=":a="=";return h([y(b),a,k(c,"seq")])},dot:function(a){var b=y(a),c=1;a[0]=="num"?b+=".":m(a)&&(b="("+b+")");while(c<arguments.length)b+="."+s(arguments[c++]);return b},call:function(a,b){var c=y(a);m(a)&&(c="("+c+")");return c+"("+j(S(b,function(a){return k(a,"seq")}))+")"},"function":r,defun:r,"if":function(a,b,c){var d=["if","("+y(a)+")",c?q(b):y(b)];c&&d.push("else",y(c));return h(d)},"for":function(a,b,c,d){var f=["for"];a=(a!=null?y(a):"").replace(/;*\s*$/,";"+e),b=(b!=null?y(b):"").replace(/;*\s*$/,";"+e),c=(c!=null?y(c):"").replace(/;*\s*$/,"");var g=a+b+c;g=="; ; "&&(g=";;"),f.push("("+g+")",y(d));return h(f)},"for-in":function(a,b,c,d){var e=h(["for","("]);a&&(e+="var "),e+=h([s(b)+" in "+y(c)+")",y(d)]);return e},"while":function(a,b){return h(["while","("+y(a)+")",y(b)])},"do":function(a,b){return h(["do",y(b),"while","("+y(a)+")"])+";"},"return":function(a){var b=["return"];a!=null&&b.push(y(a));return h(b)+";"},binary:function(a,b,c){var d=y(b),e=y(c);if(O(b[0],["assign","conditional","seq"])||b[0]=="binary"&&z[a]>z[b[1]])d="("+d+")";if(O(c[0],["assign","conditional","seq"])||c[0]=="binary"&&z[a]>=z[c[1]]&&(c[1]!=a||!O(a,["&&","||","*"])))e="("+e+")";return h([d,a,e])},"unary-prefix":function(a,b){var c=y(b);b[0]=="num"||b[0]=="unary-prefix"&&!R(i,a+b[1])||!m(b)||(c="("+c+")");return a+(n(a.charAt(0))?" ":"")+c},"unary-postfix":function(a,b){var c=y(b);b[0]=="num"||b[0]=="unary-postfix"&&!R(i,a+b[1])||!m(b)||(c="("+c+")");return c+a},sub:function(a,b){var c=y(a);m(a)&&(c="("+c+")");return c+"["+y(b)+"]"},object:function(a){if(a.length==0)return"{}";return"{"+d+g(function(){return S(a,function(a){if(a.length==3)return f(r(a[0],a[1][2],a[1][3],a[2]));var c=a[0],d=y(a[1]);b&&b.quote_keys?c=H(c):(typeof c=="number"||!b&&+c+""==c)&&parseFloat(c)>=0?c=o(+c):Q(c)||(c=H(c));return f(h(b&&b.space_colon?[c,":",d]:[c+":",d]))}).join(","+d)})+d+f("}")},regexp:function(a,b){return"/"+a+"/"+b},array:function(a){if(a.length==0)return"[]";return h(["[",j(S(a,function(a){if(!b&&a[0]=="atom"&&a[1]=="undefined")return"";return k(a,"seq")})),"]"])},stat:function(a){return y(a).replace(/;*\s*$/,";")},seq:function(){return j(S(M(arguments),y))},label:function(a,b){return h([s(a),":",y(b)])},"with":function(a,b){return h(["with","("+y(a)+")",y(b)])},atom:function(a){return s(a)}},x=[];return y(a)}function H(a){var b=0,c=0;a=a.replace(/[\\\b\f\n\r\t\x22\x27]/g,function(a){switch(a){case"\\":return"\\\\";case"\b":return"\\b";case"\f":return"\\f";case"\n":return"\\n";case"\r":return"\\r";case"\t":return"\\t";case'"':++b;return'"';case"'":++c;return"'"}return a});return b>c?"'"+a.replace(/\x27/g,"\\'")+"'":'"'+a.replace(/\x22/g,'\\"')+'"'}function F(a){return!a||a[0]=="block"&&(!a[1]||a[1].length==0)}function E(){function f(a,b){var d={},e;for(e in a)R(a,e)&&(d[e]=c[e],c[e]=a[e]);var f=b();for(e in d)R(d,e)&&(d[e]?c[e]=d[e]:delete c[e]);return f}function e(a){if(a==null)return null;try{d.push(a);var e=a[0],f=c[e];if(f){var g=f.apply(a,a.slice(1));if(g!=null)return g}f=b[e];return f.apply(a,a.slice(1))}finally{d.pop()}}function a(a){return[this[0],S(a,function(a){var b=[a[0]];a.length>1&&(b[1]=e(a[1]));return b})]}var b={string:function(a){return[this[0],a]},num:function(a){return[this[0],a]},name:function(a){return[this[0],a]},toplevel:function(a){return[this[0],S(a,e)]},block:function(a){var b=[this[0]];a!=null&&b.push(S(a,e));return b},"var":a,"const":a,"try":function(a,b,c){return[this[0],S(a,e),b!=null?[b[0],S(b[1],e)]:null,c!=null?S(c,e):null]},"throw":function(a){return[this[0],e(a)]},"new":function(a,b){return[this[0],e(a),S(b,e)]},"switch":function(a,b){return[this[0],e(a),S(b,function(a){return[a[0]?e(a[0]):null,S(a[1],e)]})]},"break":function(a){return[this[0],a]},"continue":function(a){return[this[0],a]},conditional:function(a,b,c){return[this[0],e(a),e(b),e(c)]},assign:function(a,b,c){return[this[0],a,e(b),e(c)]},dot:function(a){return[this[0],e(a)].concat(M(arguments,1))},call:function(a,b){return[this[0],e(a),S(b,e)]},"function":function(a,b,c){return[this[0],a,b.slice(),S(c,e)]},defun:function(a,b,c){return[this[0],a,b.slice(),S(c,e)]},"if":function(a,b,c){return[this[0],e(a),e(b),e(c)]},"for":function(a,b,c,d){return[this[0],e(a),e(b),e(c),e(d)]},"for-in":function(a,b,c,d){return[this[0],a,b,e(c),e(d)]},"while":function(a,b){return[this[0],e(a),e(b)]},"do":function(a,b){return[this[0],e(a),e(b)]},"return":function(a){return[this[0],e(a)]},binary:function(a,b,c){return[this[0],a,e(b),e(c)]},"unary-prefix":function(a,b){return[this[0],a,e(b)]},"unary-postfix":function(a,b){return[this[0],a,e(b)]},sub:function(a,b){return[this[0],e(a),e(b)]},object:function(a){return[this[0],S(a,function(a){return a.length==2?[a[0],e(a[1])]:[a[0],e(a[1]),a[2]]})]},regexp:function(a,b){return[this[0],a,b]},array:function(a){return[this[0],S(a,e)]},stat:function(a){return[this[0],e(a)]},seq:function(){return[this[0]].concat(S(M(arguments),e))},label:function(a,b){return[this[0],a,e(b)]},"with":function(a,b){return[this[0],e(a),e(b)]},atom:function(a){return[this[0],a]}},c={},d=[];return{walk:e,with_walkers:f,parent:function(){return d[d.length-2]},stack:function(){return d}}}function D(a,b,c){function bj(a){try{++d.in_loop;return a()}finally{--d.in_loop}}function bi(a){arguments.length==0&&(a=!0);var b=bh();if(a&&e("punc",",")){g();return p("seq",b,bi())}return b}function bh(){var a=bf(),b=d.token.value;if(e("operator")&&R(y,b)){if(bg(a)){g();return p("assign",y[b],a,bh())}i("Invalid assignment")}return a}function bg(a){switch(a[0]){case"dot":case"sub":return!0;case"name":return a[1]!="this"}}function bf(){var a=be();if(e("operator","?")){g();var b=bi(!1);m(":");return p("conditional",a,b,bi(!1))}return a}function be(){return bd(X(!0),0)}function bd(a,b){var c=e("operator")?d.token.value:null,f=c!=null?z[c]:null;if(f!=null&&f>b){g();var h=bd(X(!0),f);return bd(p("binary",c,a,h),b)}return a}function bc(a,b,c){(b=="++"||b=="--")&&!bg(c)&&i("Invalid use of "+b+" operator");return p(a,b,c)}function bb(a,b){if(e("punc",".")){g();return bb(p("dot",a,ba()),b)}if(e("punc","[")){g();return bb(p("sub",a,K(bi,J(m,"]"))),b)}if(b&&e("punc","(")){g();return bb(p("call",a,Y(")")),!0)}if(b&&e("operator")&&R(x,d.token.value))return K(J(bc,"unary-postfix",d.token.value,a),g);return a}function ba(){switch(d.token.type){case"name":case"operator":case"keyword":case"atom":return K(d.token.value,g);default:k()}}function _(){switch(d.token.type){case"num":case"string":return K(d.token.value,g)}return ba()}function $(){var a=!0,c=[];while(!e("punc","}")){a?a=!1:m(",");if(!b&&e("punc","}"))break;var f=d.token.type,h=_();f!="name"||h!="get"&&h!="set"||!!e("punc",":")?(m(":"),c.push([h,bi(!1)])):c.push([ba(),I(!1),h])}g();return p("object",c)}function Z(){return p("array",Y("]",!b,!0))}function Y(a,b,c){var d=!0,f=[];while(!e("punc",a)){d?d=!1:m(",");if(b&&e("punc",a))break;e("punc",",")&&c?f.push(["atom","undefined"]):f.push(bi(!1))}g();return f}function X(a){if(e("operator","new")){g();return W()}if(e("operator")&&R(w,d.token.value))return bc("unary-prefix",K(d.token.value,g),X(a));if(e("punc")){switch(d.token.value){case"(":g();return bb(K(bi,J(m,")")),a);case"[":g();return bb(Z(),a);case"{":g();return bb($(),a)}k()}if(e("keyword","function")){g();return bb(I(!1),a)}if(R(B,d.token.type)){var b=d.token.type=="regexp"?p("regexp",d.token.value[0],d.token.value[1]):p(d.token.type,d.token.value);return bb(K(b,g),a)}k()}function W(){var a=X(!1),b;e("punc","(")?(g(),b=Y(")")):b=[];return bb(p("new",a,b),!0)}function V(){return p("const",T())}function U(){return p("var",T())}function T(){var a=[];for(;;){e("name")||k();var b=d.token.value;g(),e("operator","=")?(g(),a.push([b,bi(!1)])):a.push([b]);if(!e("punc",","))break;g()}return a}function S(){var a=P(),b,c;if(e("keyword","catch")){g(),m("("),e("name")||i("Name expected");var f=d.token.value;g(),m(")"),b=[f,P()]}e("keyword","finally")&&(g(),c=P()),!b&&!c&&i("Missing catch/finally blocks");return p("try",a,b,c)}function P(){m("{");var a=[];while(!e("punc","}"))e("eof")&&k(),a.push(u());g();return a}function N(){var a=q(),b=u(),c;e("keyword","else")&&(g(),c=u());return p("if",a,b,c)}function L(a){var b=e("name")?K(d.token.value,g):null;a&&!b&&k(),m("(");return p(a?"defun":"function",b,function(a,b){while(!e("punc",")"))a?a=!1:m(","),e("name")||k(),b.push(d.token.value),g();g();return b}(!0,[]),function(){++d.in_function;var a=d.in_loop;d.in_loop=0;var b=P();--d.in_function,d.in_loop=a;return b}())}function H(){m("(");var a=e("keyword","var");a&&g();if(e("name")&&t(f(),"operator","in")){var b=d.token.value;g(),g();var c=bi();m(")");return p("for-in",a,b,c,bj(u))}var h=e("punc",";")?null:a?U():bi();m(";");var i=e("punc",";")?null:bi();m(";");var j=e("punc",")")?null:bi();m(")");return p("for",h,i,j,bj(u))}function G(a){var b=e("name")?d.token.value:null;b!=null?(g(),O(b,d.labels)||i("Label "+b+" without matching loop or statement")):d.in_loop==0&&i(a+" not inside a loop or switch"),o();return p(a,b)}function F(){return p("stat",K(bi,o))}function E(a){d.labels.push(a);var c=d.token,e=u();b&&!R(A,e[0])&&k(c),d.labels.pop();return p("label",a,e)}function D(){e("operator","/")&&(d.peeked=null,d.token=d.input(!0));switch(d.token.type){case"num":case"string":case"regexp":case"operator":case"atom":return F();case"name":return t(f(),"punc",":")?E(K(d.token.value,g,g)):F();case"punc":switch(d.token.value){case"{":return p("block",P());case"[":case"(":return F();case";":g();return p("block");default:k()};case"keyword":switch(K(d.token.value,g)){case"break":return G("break");case"continue":return G("continue");case"debugger":o();return p("debugger");case"do":return function(a){l("keyword","while");return p("do",K(q,o),a)}(bj(u));case"for":return H();case"function":return I(!0);case"if":return N();case"return":d.in_function==0&&i("'return' outside of function");return p("return",e("punc",";")?(g(),null):n()?null:K(bi,o));case"switch":return p("switch",q(),Q());case"throw":return p("throw",K(bi,o));case"try":return S();case"var":return K(U,o);case"const":return K(V,o);case"while":return p("while",q(),bj(u));case"with":return p("with",q(),u());default:k()}}}function r(a,b,c){return a instanceof C?a:new C(a,b,c)}function q(){m("(");var a=bi();m(")");return a}function p(){return M(arguments)}function o(){e("punc",";")?g():n()||k()}function n(){return!b&&(d.token.nlb||e("eof")||e("punc","}"))}function m(a){return l("punc",a)}function l(a,b){if(e(a,b))return g();j(d.token,"Unexpected token "+d.token.type+", expected "+a)}function k(a){a==null&&(a=d.token),j(a,"Unexpected token: "+a.type+" ("+a.value+")")}function j(a,b){i(b,a.line,a.col)}function i(a,b,c,e){var f=d.input.context();s(a,b!=null?b:f.tokline,c!=null?c:f.tokcol,e!=null?e:f.tokpos)}function h(){return d.prev}function g(){d.prev=d.token,d.peeked?(d.token=d.peeked,d.peeked=null):d.token=d.input();return d.token}function f(){return d.peeked||(d.peeked=d.input())}function e(a,b){return t(d.token,a,b)}var d={input:typeof a=="string"?v(a,!0):a,token:null,prev:null,peeked:null,in_function:0,in_loop:0,labels:[]};d.token=g();var u=c?function(){var a=d.token,b=D.apply(this,arguments);b[0]=r(b[0],a,h());return b}:D,I=c?function(){var a=h(),b=L.apply(this,arguments);b[0]=r(b[0],a,h());return b}:L,Q=J(bj,function(){m("{");var a=[],b=null;while(!e("punc","}"))e("eof")&&k(),e("keyword","case")?(g(),b=[],a.push([bi(),b]),m(":")):e("keyword","default")?(g(),m(":"),b=[],a.push([null,b])):(b||k(),b.push(u()));g();return a});return p("toplevel",function(a){while(!e("eof"))a.push(u());return a}([]))}function C(a,b,c){this.name=a,this.start=b,this.end=c}function v(b){function N(a){if(a)return H();y(),v();var b=g();if(!b)return w("eof");if(p(b))return B();if(b=='"'||b=="'")return E();if(R(l,b))return w("punc",h());if(b==".")return K();if(b=="/")return J();if(R(e,b))return I();if(o(b))return L();A("Unexpected character '"+b+"'")}function M(a,b){try{return b()}catch(c){if(c===u)A(a);else throw c}}function L(){var b=z(o);return R(a,b)?R(i,b)?w("operator",b):R(d,b)?w("atom",b):w("keyword",b):w("name",b)}function K(){h();return p(g())?B("."):w("punc",".")}function J(){h();var a=f.regex_allowed;switch(g()){case"/":f.comments_before.push(F()),f.regex_allowed=a;return N();case"*":f.comments_before.push(G()),f.regex_allowed=a;return N()}return f.regex_allowed?H():I("/")}function I(a){function b(a){if(!g())return a;var c=a+g();if(R(i,c)){h();return b(c)}return a}return w("operator",b(a||h()))}function H(){return M("Unterminated regular expression",function(){var a=!1,b="",c,d=!1;while(c=h(!0))if(a)b+="\\"+c,a=!1;else if(c=="[")d=!0,b+=c;else if(c=="]"&&d)d=!1,b+=c;else{if(c=="/"&&!d)break;c=="\\"?a=!0:b+=c}var e=z(function(a){return R(m,a)});return w("regexp",[b,e])})}function G(){h();return M("Unterminated multiline comment",function(){var a=t("*/",!0),b=f.text.substring(f.pos,a),c=w("comment2",b,!0);f.pos=a+2,f.line+=b.split("\n").length-1,f.newline_before=b.indexOf("\n")>=0;return c})}function F(){h();var a=t("\n"),b;a==-1?(b=f.text.substr(f.pos),f.pos=f.text.length):(b=f.text.substring(f.pos,a),f.pos=a);return w("comment1",b,!0)}function E(){return M("Unterminated string constant",function(){var a=h(),b="";for(;;){var c=h(!0);if(c=="\\")c=C();else if(c==a)break;b+=c}return w("string",b)})}function D(a){var b=0;for(;a>0;--a){var c=parseInt(h(!0),16);isNaN(c)&&A("Invalid hex-character pattern in string"),b=b<<4|c}return b}function C(){var a=h(!0);switch(a){case"n":return"\n";case"r":return"\r";case"t":return"\t";case"b":return"\b";case"v":return"";case"f":return"\f";case"0":return" ";case"x":return String.fromCharCode(D(2));case"u":return String.fromCharCode(D(4));default:return a}}function B(a){var b=!1,c=!1,d=!1,e=a==".",f=z(function(f,g){if(f=="x"||f=="X"){if(d)return!1;return d=!0}if(!d&&(f=="E"||f=="e")){if(b)return!1;return b=c=!0}if(f=="-"){if(c||g==0&&!a)return!0;return!1}if(f=="+")return c;c=!1;if(f=="."){if(!e)return e=!0;return!1}return n(f)});a&&(f=a+f);var g=q(f);if(!isNaN(g))return w("num",g);A("Invalid syntax: "+f)}function A(a){s(a,f.tokline,f.tokcol,f.tokpos)}function z(a){var b="",c=g(),d=0;while(c&&a(c,d++))b+=h(),c=g();return b}function y(){while(R(j,g()))h()}function w(a,b,d){f.regex_allowed=a=="operator"&&!R(x,b)||a=="keyword"&&R(c,b)||a=="punc"&&R(k,b);var e={type:a,value:b,line:f.tokline,col:f.tokcol,pos:f.tokpos,nlb:f.newline_before};d||(e.comments_before=f.comments_before,f.comments_before=[]),f.newline_before=!1;return e}function v(){f.tokline=f.line,f.tokcol=f.col,f.tokpos=f.pos}function t(a,b){var c=f.text.indexOf(a,f.pos);if(b&&c==-1)throw u;return c}function r(){return!f.peek()}function h(a){var b=f.text.charAt(f.pos++);if(a&&!b)throw u;b=="\n"?(f.newline_before=!0,++f.line,f.col=0):++f.col;return b}function g(){return f.text.charAt(f.pos)}var f={text:b.replace(/\r\n?|[\n\u2028\u2029]/g,"\n").replace(/^\uFEFF/,""),pos:0,tokpos:0,line:0,tokline:0,col:0,tokcol:0,newline_before:!1,regex_allowed:!1,comments_before:[]};N.context=function(a){a&&(f=a);return f};return N}function t(a,b,c){return a.type==b&&(c==null||a.value==c)}function s(a,b,c,d){throw new r(a,b,c,d)}function r(a,b,c,d){this.message=a,this.line=b,this.col=c,this.pos=d;try{({})()}catch(e){this.stack=e.stack}}function q(a){if(f.test(a))return parseInt(a.substr(2),16);if(g.test(a))return parseInt(a.substr(1),8);if(h.test(a))return parseFloat(a)}function p(a){a=a.charCodeAt(0);return a>=48&&a<=57}function o(a){return n(a)||a=="$"||a=="_"}function n(a){a=a.charCodeAt(0);return a>=48&&a<=57||a>=65&&a<=90||a>=97&&a<=122}var a=L(["break","case","catch","const","continue","default","delete","do","else","finally","for","function","if","in","instanceof","new","return","switch","throw","try","typeof","var","void","while","with"]),b=L(["abstract","boolean","byte","char","class","debugger","double","enum","export","extends","final","float","goto","implements","import","int","interface","long","native","package","private","protected","public","short","static","super","synchronized","throws","transient","volatile"]),c=L(["return","new","delete","throw","else","case"]),d=L(["false","null","true","undefined"]),e=L(N("+-*&%=<>!?|~^")),f=/^0x[0-9a-f]+$/i,g=/^0[0-7]+$/,h=/^\d*\.?\d*(?:e[+-]?\d*(?:\d\.?|\.?\d)\d*)?$/i,i=L(["in","instanceof","typeof","new","void","delete","++","--","+","-","!","~","&","|","^","*","/","%",">>","<<",">>>","<",">","<=",">=","==","===","!=","!==","?","=","+=","-=","/=","*=","%=",">>=","<<=",">>>=","%=","|=","^=","&=","&&","||"]),j=L(N(" \n\r\t")),k=L(N("[{}(,.;:")),l=L(N("[]{}(),;:")),m=L(N("gmsiy"));r.prototype.toString=function(){return this.message+" (line: "+this.line+", col: "+this.col+", pos: "+this.pos+")"+"\n\n"+this.stack};var u={},w=L(["typeof","void","delete","--","++","!","~","-","+"]),x=L(["--","++"]),y=function(a,b,c){while(c<a.length)b[a[c]]=a[c].substr(0,a[c].length-1),c++;return b}(["+=","-=","/=","*=","%=",">>=","<<=",">>>=","|=","^=","&="],{"=":!0},0),z=function(a,b){for(var c=0,d=1;c<a.length;++c,++d){var e=a[c];for(var f=0;f<e.length;++f)b[e[f]]=d}return b}([["||"],["&&"],["|"],["^"],["&"],["==","===","!=","!=="],["<",">","<=",">=","in","instanceof"],[">>","<<",">>>"],["+","-"],["*","/","%"]],{}),A=L(["for","do","while","switch"]),B=L(["atom","num","string","regexp","name"]);C.prototype.toString=function(){return this.name};var G=L(["name","array","string","dot","sub","call","regexp"]);return{parse:D,stringify:I,tokenizer:v,walker:E}}
 
 	var operators = {
 		'+': 'add',
@@ -6967,8 +6796,8 @@ var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++
 	}
 
 	function compile(code) {
-		var ast = parse_js.parse(code, true),
-			walker = parse_js.ast_walker(),
+		var ast = parse_js.parse(code),
+			walker = parse_js.walker(),
 			walk = walker.walk;
 
 		ast = walker.with_walkers({
@@ -6996,7 +6825,7 @@ var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++
 			return walk(ast);
 		});
 
-		return parse_js.gen_code(ast, true);
+		return parse_js.stringify(ast, true);
 	}
 
 	function evaluate(code, scope) {

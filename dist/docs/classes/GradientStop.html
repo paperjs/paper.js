@@ -127,7 +127,7 @@ function onFrame(event) {
 	var blackStop = gradient.stops[2];
 	// Animate the rampPoint between 0.7 and 0.9:
 	blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
-	
+
 	// Animate the rampPoint between 0.2 and 0.4
 	var redStop = gradient.stops[1];
 	redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
