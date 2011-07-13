@@ -133,6 +133,11 @@ var View = this.View = Base.extend(/** @lends View# */{
 			return;
 		this._canvas.width = size.width;
 		this._canvas.height = size.height;
+		// Update _viewSize but don't notify of change.
+		this._viewSize.set(size.width, size.height, true);
+		// Force recalculation
+		this._bounds = null;
+		this._redrawNeeded = true;
 		// Call onResize handler on any size change
 		if (this.onResize) {
 			this.onResize({
@@ -140,11 +145,6 @@ var View = this.View = Base.extend(/** @lends View# */{
 				delta: delta
 			});
 		}
-		// Update _viewSize but don't notify of change.
-		this._viewSize.set(size.width, size.height, true);
-		// Force recalculation
-		this._bounds = null;
-		this._redrawNeeded = true;
 		if (this._onFrameCallback) {
 			// If there's a _onFrameCallback, call it staight away,
 			// but without requesting another animation frame.
