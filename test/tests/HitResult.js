@@ -69,6 +69,93 @@ test('hitting a stroked path', function() {
 	}, true);
 });
 
+test('hitting path segments', function() {
+	var path = new Path([0, 0], [10, 10], [20, 0]);
+
+	var hitResult = paper.project.hitTest([10, 10]);
+	
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned.');
+	
+	if (hitResult) {
+		equals(function() {
+			return hitResult.type;
+		}, 'segment');
+	
+		equals(function() {
+			return hitResult.item == path;
+		}, true);
+	}
+});
+
+test('hitting the center of a path', function() {
+	var path = new Path([0, 0], [100, 100], [200, 0]);
+	path.closed = true;
+
+	var hitResult = paper.project.hitTest(path.position, {
+		center: true
+	});
+
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned.');
+	
+	if (hitResult) {
+		equals(function() {
+			return hitResult.point.toString();
+		}, path.position.toString());
+
+		equals(function() {
+			return hitResult.type;
+		}, 'center');
+		equals(function() {
+			return hitResult.item !== paper.project.activeLayer;
+		}, true, 'We should not be hitting the active layer.');
+
+		equals(function() {
+			return hitResult.item == path;
+		}, true, 'We should be hitting the path.');
+	}
+});
+
+test('hitting the center of a path with tolerance', function() {
+	var path = new Path([0, 0], [100, 100], [200, 0]);
+	path.closed = true;
+
+	var hitResult = paper.project.hitTest(path.position + [1, 1], {
+		center: true
+	});
+
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned.');
+	
+	if (hitResult) {
+		equals(function() {
+			return !!hitResult.point;
+		}, true, 'HitResult#point should not be empty');
+		
+		if (hitResult.point) {
+			equals(function() {
+				return hitResult.point.toString();
+			}, path.position.toString());
+		}
+
+		equals(function() {
+			return hitResult.type;
+		}, 'center');
+
+		equals(function() {
+			return hitResult.item !== paper.project.activeLayer;
+		}, true, 'We should not be hitting the active layer.');
+
+		equals(function() {
+			return hitResult.item == path;
+		}, true, 'We should be hitting the path.');
+	}
+});
+
 test('hitting path handles', function() {
 	var path = new Path(new Segment({
 		point: [0, 0],
@@ -110,5 +197,104 @@ test('hitting path handles', function() {
 		equals(function() {
 			return hitResult.item == path;
 		}, true);
+	}
+});
+
+test('HitTest options.segments and options.ends should be mutually exclusive', function() {
+	var options = HitResult.getOptions({
+		ends: true
+	});
+	equals(function() {
+		return options.ends;
+	}, true);
+	equals(function() {
+		return options.segments;
+	}, false);
+});
+
+test('hitting path ends', function() {
+	var path = new Path([0, 0], [50, 50], [100, 0]);
+	path.closed = true;
+
+	var hitResult = paper.project.hitTest(path.firstSegment.point, {
+		ends: true
+	});
+
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned (1)');
+	
+	if (hitResult) {
+		equals(function() {
+			return hitResult.type;
+		}, 'segment');
+	
+		equals(function() {
+			return hitResult.segment == path.firstSegment;
+		}, true);
+	}
+
+	var hitResult = paper.project.hitTest(path.lastSegment.point, {
+		ends: true
+	});
+
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned (1)');
+	
+	if (hitResult) {
+		equals(function() {
+			return hitResult.type;
+		}, 'segment');
+	
+		equals(function() {
+			return hitResult.segment == path.lastSegment;
+		}, true);
+	}
+
+	equals(function() {
+		var hitResult = paper.project.hitTest(path.segments[1].point, {
+			ends: true
+		});
+		return !hitResult;
+	}, true, 'No HitResult should be returned, since the second segment is not an end');
+});
+
+test('When a path is closed, the end of a path cannot be hit.', function() {
+	var path = new Path([0, 0], [50, 50], [100, 0]);
+	path.closed = true;
+
+	var hitResult = paper.project.hitTest([0, 0], {
+		ends: true
+	});
+
+	equals(function() {
+		return !hitResult;
+	}, true, 'When a path is closed, the end of a path cannot be hit.');
+});
+
+test('hitting path bounding box', function() {
+	var path = new Path.Circle(new Point(100, 100), 50);
+
+	var hitResult = paper.project.hitTest(path.bounds.topLeft, {
+		bounds: true
+	});
+
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned (1)');
+	
+	if (hitResult) {
+		equals(function() {
+			return hitResult.type;
+		}, 'bounds');
+
+		equals(function() {
+			return hitResult.name;
+		}, 'top-left');
+
+		equals(function() {
+			return hitResult.point.toString();
+		},path.bounds.topLeft.toString());
 	}
 });
