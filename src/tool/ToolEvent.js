@@ -167,26 +167,37 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 			= count;
 	},
 
-	// TODO: Implement hitTest first
-	// getItem: function() {
-	// 	if (this.item == null) {
-	// 		var result = Project.getActiveProject().hitTest(this.getPoint());
-	// 		if (result != null) {
-	// 			this.item = result.getItem();
-	// 			// Find group parent
-	// 			var parent = item.getParent();
-	// 			while (parent instanceof Group || parent instanceof CompoundPath) {
-	// 				item = parent;
-	// 				parent = parent.getParent();
-	// 			}
-	// 		}
-	// 	}
-	// 	return item;
-	// }
-	//
-	// setItem: function(Item item) {
-	// 	this.item = item;
-	// }
+	/**
+	 * The item at the position of the mouse (if any).
+	 * 
+	 * If the item is contained within one or more {@link Group} or
+	 * {@link CompoundPath} items, the most top level group or compound path
+	 * that it is contained within is returned.
+	 *
+	 * @type Item
+	 * @bean
+	 */
+	getItem: function() {
+		if (!this._item) {
+			var result = this.tool._scope.project.hitTest(this.getPoint());
+			if (result) {
+				var item = result.item,
+					// Find group parent
+					parent = item.getParent();
+				while ((parent instanceof Group && !(parent instanceof Layer))
+						|| parent instanceof CompoundPath) {
+					item = parent;
+					parent = parent.getParent();
+				}
+				this._item = item;
+			}
+		}
+		return this._item;
+	},
+	
+	setItem: function(item) {
+		this._item = item;
+	},
 
 	/**
 	 * @return {String} A string representation of the tool event.
