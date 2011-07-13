@@ -19,6 +19,9 @@
 //
 // NOTE: Any files added as includes to paper.js also need to be listed here
 
+// Define VERSION, so PaperScope is not bailing out.
+var VERSION = 'dev;'
+
 var sources = [
 	'lib/bootstrap.js',
 	'lib/parse-js.js',

@@ -21,36 +21,37 @@
 # are preserved or stripped and whitespaces are compressed.
 #
 # Usage:
-# preprocess.sh SOURCE DESTINATION ARGUMENTS MODE
+# preprocess.sh MODE SOURCE DESTINATION ARGUMENTS
 #
 # ARGUMENTS:
 #	e.g. "-DBROWSER"
 #
 # MODE:
-#	commented		Preprocessed but still formated and commented (default)
+#	commented		Preprocessed but still formated and commented
 #	stripped		Formated but without comments
 #	compressed		No comments and no whitespaces
 #	uglified		Uses UglifyJS to further reduce file size
 
 KEYWORD="//#"
+COMMAND="./filepp.pl -kc $KEYWORD $4 $2"
 
-case $4 in
+case $1 in
 	stripped)
-		./filepp.pl -kc $KEYWORD $3 $1 | ./jsstrip.pl -w -q | sed -n '/^[ 	][ 	]*$/d
+		eval $COMMAND | ./jsstrip.pl -w -q | sed -n '/^[ 	][ 	]*$/d
 			/./,/^$/!d
-			p' > $2
+			p' > $3
 		;;
 	compressed)
-		./filepp.pl -kc $KEYWORD $3 $1 | ./jsstrip.pl -q > $2
+		eval $COMMAND | ./jsstrip.pl -q > $3
 		;;
 	commented)
-		./filepp.pl -kc $KEYWORD $3 $1 | sed -n '/^[ 	][ 	]*$/d
+		eval $COMMAND | sed -n '/^[ 	][ 	]*$/d
 			/./,/^$/!d
-			p' > $2
+			p' > $3
 		;;
 	uglified)
-		./filepp.pl -kc $KEYWORD $3 $1 > temp.js
-		../../uglifyjs/bin/uglifyjs temp.js --extra --unsafe --reserved-names "$eval,$sign" > $2
+		eval $COMMAND > temp.js
+		../../uglifyjs/bin/uglifyjs temp.js --extra --unsafe --reserved-names "$eval,$sign" > $3
 		rm temp.js
 		;;
 esac
