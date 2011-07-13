@@ -61,16 +61,16 @@ var SegmentPoint = Point.extend({
 				x, y, selected;
 			if (!pt) {
 				x = y = 0;
-			} else if (pt.x !== undefined) {
-				x = pt.x;
+			} else if ((x = pt[0]) !== undefined) { // Array-like
+				y = pt[1];
+			} else {
+				// If not Point-like already, read Point from pt = 3rd argument
+				if ((x = pt.x) === undefined) {
+					pt = Point.read(arguments, 2, 1);
+					x = pt.x;
+				}
 				y = pt.y;
 				selected = pt.selected;
-			} else if (pt.width !== undefined) {
-				x = pt.width;
-				y = pt.height;
-			} else {
-				x = pt[0];
-				y = pt[1];
 			}
 			point._x = x;
 			point._y = y;
