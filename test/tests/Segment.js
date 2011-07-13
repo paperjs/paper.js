@@ -40,6 +40,11 @@ test('new Segment(x, y, inX, inY, outX, outY)', function() {
 	equals(segment.toString(), '{ point: { x: 10, y: 10 }, handleIn: { x: 5, y: 5 }, handleOut: { x: 15, y: 15 } }');
 });
 
+test('new Segment(size)', function() {
+	var segment = new Segment(new Size(10, 10));
+	equals(segment.toString(), '{ point: { x: 10, y: 10 } }');
+});
+
 test('segment.reverse()', function() {
 	var segment = new Segment(new Point(10, 10), new Point(5, 5), new Point(15, 15));
 	segment = segment.reverse();
