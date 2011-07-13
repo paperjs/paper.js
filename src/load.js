@@ -124,7 +124,9 @@ if (window.tests) {
 		'test/tests/Path_Length.js',
 		'test/tests/CompoundPath.js',
 
-		'test/tests/PlacedSymbol.js'
+		'test/tests/PlacedSymbol.js',
+
+		'test/tests/HitResult.js'
 	);
 }
 
