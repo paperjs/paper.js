@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>CurveLocation</title>
+<title>HitResult</title>
 <base target="classFrame">
 <link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
 <link rel="stylesheet" href="../resources/css/style.css" type="text/css">
@@ -14,87 +14,27 @@
 </head>
 <body class="reference">
 <div class="reference-class">
-<h1>CurveLocation</h1>
+<h1>HitResult</h1>
 
-<p>CurveLocation objects describe a location on <a href="../classes/Curve.html"><tt>Curve</tt></a>
-objects, as defined by the curve <a href="../classes/CurveLocation.html#parameter" onclick="return toggleMember('parameter', true);"><tt>parameter</tt></a>, a value between
-<tt>0</tt> (beginning of the curve) and <tt>1</tt> (end of the curve). If
-the curve is part of a <a href="../classes/Path.html"><tt>Path</tt></a> item, its <a href="../classes/CurveLocation.html#index" onclick="return toggleMember('index', true);"><tt>index</tt></a> inside the
-<a href="../classes/Path.html#curves"><tt>path.curves</tt></a> array is also provided.</p>
-<p>The class is in use in many places, such as
-<a href="../classes/Path.html#getlocationat-offset"><tt>path.getLocationAt(offset)</tt></a>, Path#getNearestLocation(point), etc.</p>
+<p> Extends <b><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></b></p>
+
+
 
 </div>
 
-<!-- ============================== constructors ========================= -->
-<div class="reference-members"><h2>Constructors</h2>
+
+
+
+
+
+
+
+
+
+<!-- =========================== inherited properties ====================== -->
+<div class="reference-members"><h2>Properties inherited from <a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></h2>
+
 	
-		
-<div id="curvelocation-curve-parameter-point-distance-member" class="member">
-<div id="curvelocation-curve-parameter-point-distance-link" class="member-link">
-<a name="curvelocation-curve-parameter-point-distance" href="#" onClick="return toggleMember('curvelocation-curve-parameter-point-distance', false);"><tt><b>CurveLocation</b>(curve, parameter, point, distance)</tt></a>
-</div>
-<div id="curvelocation-curve-parameter-point-distance-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('curvelocation-curve-parameter-point-distance', false);"><tt><b>CurveLocation</b>(curve, parameter, point, distance)</tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('curvelocation-curve-parameter-point-distance', false);"></div>
-<div class="clear"></div>
-</div>
-<div class="member-text">
-<p>Creates a new CurveLocation object.</p>
-
-<ul><b>Parameters:</b>
-
-<li>
-<tt>curve:</tt> 
-<a href="../classes/Curve.html"><tt>Curve</tt></a>
-
-
-</li>
-
-<li>
-<tt>parameter:</tt> 
-<tt>Number</tt>
-
-
-</li>
-
-<li>
-<tt>point:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-
-<li>
-<tt>distance:</tt> 
-
-
-
-</li>
-
-</ul>
-
-
-
-
-</div>
-</div>
-</div>
-	
-</div>
-
-
-
-
-
-	<div class="reference-members"><h2>Properties</h2>
-		
-			
 <div id="segment-member" class="member">
 <div id="segment-link" class="member-link">
 <a name="segment" href="#" onClick="return toggleMember('segment', false);"><tt><b>segment</b></tt></a>
@@ -125,8 +65,8 @@ the curve is part of a <a href="../classes/Path.html"><tt>Path</tt></a> item, it
 
 </div>
 </div>
-		
-			
+
+	
 <div id="curve-member" class="member">
 <div id="curve-link" class="member-link">
 <a name="curve" href="#" onClick="return toggleMember('curve', false);"><tt><b>curve</b></tt></a>
@@ -157,8 +97,8 @@ the curve is part of a <a href="../classes/Path.html"><tt>Path</tt></a> item, it
 
 </div>
 </div>
-		
-			
+
+	
 <div id="path-member" class="member">
 <div id="path-link" class="member-link">
 <a name="path" href="#" onClick="return toggleMember('path', false);"><tt><b>path</b></tt></a>
@@ -189,8 +129,8 @@ the curve is part of a <a href="../classes/Path.html"><tt>Path</tt></a> item, it
 
 </div>
 </div>
-		
-			
+
+	
 <div id="index-member" class="member">
 <div id="index-link" class="member-link">
 <a name="index" href="#" onClick="return toggleMember('index', false);"><tt><b>index</b></tt></a>
@@ -222,8 +162,8 @@ curve is part of a <a href="../classes/Path.html"><tt>Path</tt></a> item.</p>
 
 </div>
 </div>
-		
-			
+
+	
 <div id="offset-member" class="member">
 <div id="offset-link" class="member-link">
 <a name="offset" href="#" onClick="return toggleMember('offset', false);"><tt><b>offset</b></tt></a>
@@ -255,8 +195,8 @@ by this object.</p>
 
 </div>
 </div>
-		
-			
+
+	
 <div id="curveoffset-member" class="member">
 <div id="curveoffset-link" class="member-link">
 <a name="curveoffset" href="#" onClick="return toggleMember('curveoffset', false);"><tt><b>curveOffset</b></tt></a>
@@ -288,8 +228,8 @@ by this object.</p>
 
 </div>
 </div>
-		
-			
+
+	
 <div id="parameter-member" class="member">
 <div id="parameter-link" class="member-link">
 <a name="parameter" href="#" onClick="return toggleMember('parameter', false);"><tt><b>parameter</b></tt></a>
@@ -322,8 +262,8 @@ the curve).</p>
 
 </div>
 </div>
-		
-			
+
+	
 <div id="point-member" class="member">
 <div id="point-link" class="member-link">
 <a name="point" href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
@@ -355,8 +295,8 @@ the curve).</p>
 
 </div>
 </div>
-		
-			
+
+	
 <div id="tangent-member" class="member">
 <div id="tangent-link" class="member-link">
 <a name="tangent" href="#" onClick="return toggleMember('tangent', false);"><tt><b>tangent</b></tt></a>
@@ -387,8 +327,8 @@ the curve).</p>
 
 </div>
 </div>
-		
-			
+
+	
 <div id="normal-member" class="member">
 <div id="normal-link" class="member-link">
 <a name="normal" href="#" onClick="return toggleMember('normal', false);"><tt><b>normal</b></tt></a>
@@ -419,8 +359,8 @@ the curve).</p>
 
 </div>
 </div>
-		
-			
+
+	
 <div id="distance-member" class="member">
 <div id="distance-link" class="member-link">
 <a name="distance" href="#" onClick="return toggleMember('distance', false);"><tt><b>distance</b></tt></a>
@@ -451,15 +391,79 @@ the curve).</p>
 
 </div>
 </div>
-		
-	</div>
+
+</div>
+
+
+<!-- =========================== inherited methods ========================= -->
+<div class="reference-members"><h2>Methods inherited from <a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></h2>
+
+	
+<div id="curvelocation-curve-parameter-point-distance-member" class="member">
+<div id="curvelocation-curve-parameter-point-distance-link" class="member-link">
+<a name="curvelocation-curve-parameter-point-distance" href="#" onClick="return toggleMember('curvelocation-curve-parameter-point-distance', false);"><tt><b>initialize</b>(curve, parameter, point, distance)</tt></a>
+</div>
+<div id="curvelocation-curve-parameter-point-distance-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('curvelocation-curve-parameter-point-distance', false);"><tt><b>initialize</b>(curve, parameter, point, distance)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('curvelocation-curve-parameter-point-distance', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Creates a new CurveLocation object.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>curve:</tt> 
+<a href="../classes/Curve.html"><tt>Curve</tt></a>
+
+
+</li>
+
+<li>
+<tt>parameter:</tt> 
+<tt>Number</tt>
+
+
+</li>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>distance:</tt> 
 
 
 
-<!-- ============================== methods ================================ -->
-	<div class="reference-members"><h2>Methods</h2>
-		
-			
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+
+	
 <div id="tostring-member" class="member">
 <div id="tostring-link" class="member-link">
 <a name="tostring" href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
@@ -491,9 +495,8 @@ the curve).</p>
 </div>
 </div>
 </div>
-		
-	</div>
 
+</div>
 
 
 
