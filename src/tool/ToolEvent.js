@@ -187,7 +187,7 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 				while ((parent instanceof Group && !(parent instanceof Layer))
 						|| parent instanceof CompoundPath) {
 					item = parent;
-					parent = parent.getParent();
+					parent = parent._parent;
 				}
 				this._item = item;
 			}
