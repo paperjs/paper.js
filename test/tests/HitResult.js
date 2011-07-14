@@ -69,6 +69,27 @@ test('hitting a stroked path', function() {
 	}, true);
 });
 
+test('hitting a selected path', function() {
+	var path = new Path.Circle([50, 50], 50);
+	path.fillColor = 'red';
+	
+	var hitResult = paper.project.hitTest([75, 75], {
+		selected: true
+	});
+	equals(function() {
+		return hitResult == null;
+	}, true, 'Since the path is not selected, the hit-test should return null');
+
+	path.selected = true;
+	hitResult = paper.project.hitTest([75, 75]);
+	equals(function() {
+		return hitResult.type == 'fill';
+	}, true);
+	equals(function() {
+		return hitResult.item == path;
+	}, true);
+});
+
 test('hitting path segments', function() {
 	var path = new Path([0, 0], [10, 10], [20, 0]);
 
@@ -298,3 +319,40 @@ test('hitting path bounding box', function() {
 		},path.bounds.topLeft.toString());
 	}
 });
+
+test('hitting guides', function() {
+	var path = new Path.Circle(new Point(100, 100), 50);
+	path.fillColor = 'red';
+
+	var copy = path.clone();
+
+	var hitResult = paper.project.hitTest(path.position);
+
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned (1)');
+	
+	if (hitResult) {
+		equals(function() {
+			return hitResult.item == copy;
+		}, true, 'The copy is returned, because it is on top.');
+	}
+	
+	path.guide = true;
+	
+	var hitResult = paper.project.hitTest(path.position, {
+		guides: true
+	});
+	
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned (2)');
+	
+	if (hitResult) {
+		equals(function() {
+			return hitResult.item == path;
+		}, true, 'The path is returned, because it is a guide.');
+	}
+});
+
+// TODO: project.hitTest(point, {type: AnItemType});
