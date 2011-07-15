@@ -177,6 +177,48 @@ test('hitting the center of a path with tolerance', function() {
 });
 
 test('hitting path handles', function() {
+	var path = new Path.Circle(new Point(), 10);
+	path.firstSegment.handleIn = [-50, 0];
+	path.firstSegment.handleOut = [50, 0];
+	var firstPoint = path.firstSegment.point;
+	var hitResult = paper.project.hitTest(firstPoint.add(50, 0), {
+		handles: true
+	});
+
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned (1)');
+	
+	if (hitResult) {
+		equals(function() {
+			return hitResult.type;
+		}, 'handle-out');
+	
+		equals(function() {
+			return hitResult.item == path;
+		}, true);
+	}
+
+	var hitResult = paper.project.hitTest(firstPoint.add(-50, 0), {
+		handles: true
+	});
+
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A HitResult should be returned (2)');
+
+	if (hitResult) {
+		equals(function() {
+			return hitResult.type;
+		}, 'handle-in');
+
+		equals(function() {
+			return hitResult.item == path;
+		}, true);
+	}
+});
+
+test('hitting path handles (2)', function() {
 	var path = new Path(new Segment({
 		point: [0, 0],
 		handleIn: [-50, -50],
@@ -220,39 +262,17 @@ test('hitting path handles', function() {
 	}
 });
 
-test('HitTest options.segments and options.ends should be mutually exclusive', function() {
-	var options = HitResult.getOptions({
-		ends: true
-	});
-	equals(function() {
-		return options.ends;
-	}, true);
-	equals(function() {
-		return options.segments;
-	}, false);
-});
-
 test('hitting path ends', function() {
 	var path = new Path([0, 0], [50, 50], [100, 0]);
 	path.closed = true;
 
-	var hitResult = paper.project.hitTest(path.firstSegment.point, {
-		ends: true
-	});
-
 	equals(function() {
-		return !!hitResult;
-	}, true, 'A HitResult should be returned (1)');
-	
-	if (hitResult) {
-		equals(function() {
-			return hitResult.type;
-		}, 'segment');
-	
-		equals(function() {
-			return hitResult.segment == path.firstSegment;
-		}, true);
-	}
+		return !paper.project.hitTest(path.firstSegment.point, {
+			ends: true
+		});
+	}, true, 'No hitresult should be returned, because the path is closed.');
+
+	path.closed = false;
 
 	var hitResult = paper.project.hitTest(path.lastSegment.point, {
 		ends: true
@@ -273,10 +293,9 @@ test('hitting path ends', function() {
 	}
 
 	equals(function() {
-		var hitResult = paper.project.hitTest(path.segments[1].point, {
+		return !paper.project.hitTest(path.segments[1].point, {
 			ends: true
 		});
-		return !hitResult;
 	}, true, 'No HitResult should be returned, since the second segment is not an end');
 });
 
@@ -287,7 +306,6 @@ test('When a path is closed, the end of a path cannot be hit.', function() {
 	var hitResult = paper.project.hitTest([0, 0], {
 		ends: true
 	});
-
 	equals(function() {
 		return !hitResult;
 	}, true, 'When a path is closed, the end of a path cannot be hit.');
@@ -340,7 +358,8 @@ test('hitting guides', function() {
 	path.guide = true;
 	
 	var hitResult = paper.project.hitTest(path.position, {
-		guides: true
+		guides: true,
+		fill: true
 	});
 	
 	equals(function() {
