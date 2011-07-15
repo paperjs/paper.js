@@ -1248,7 +1248,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				&& this.getFillColor() && this.contains(point, matrix))
 			return new HitResult('fill', this);
 		// Now query stroke if we haven't already
-		if (!loc && radius > 0)
+		if (!loc && options.stroke && radius > 0)
 			loc = this.getNearestLocation(point, matrix);
 		if (loc && loc._distance <= radius)
 			return options.stroke
