@@ -51,13 +51,13 @@ HitResult = Base.extend(/** @lends HitResult# */{
 				// Tolerance
 				tolerance: 2,
 				// Hit the fill of items
-				fill: true,
+				fill: !options,
 				// Hit the curves of path items, taking into account the stroke
 				// width.
-				stroke: true,
+				stroke: !options,
 				// Hit the part of segments that curves pass through, excluding
 				// its segments (Segment#point)
-				segments: true,
+				segments: !options,
 				// Hit the parts of segments that define the curvature
 				handles: false,
 				// Only first or last segment hits on path (mutually exclusive
