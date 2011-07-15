@@ -262,6 +262,25 @@ test('hitting path handles (2)', function() {
 	}
 });
 
+test('hit testing stroke on segment point of a path', function() {
+	var path = new Path([0, 0], [50, 50], [100, 0]);
+	path.strokeColor = 'black';
+	path.closed = true;
+
+	var error = null;
+	try {
+		var hitResult = paper.project.hitTest(path.firstSegment.point, {
+			stroke: true
+		});
+	} catch (e) {
+		error = e;
+	}
+	var description = 'This hit test should not throw an error';
+	if (error)
+		description += ': ' + error;
+	equals(error == null, true, description);
+});
+
 test('hitting path ends', function() {
 	var path = new Path([0, 0], [50, 50], [100, 0]);
 	path.closed = true;
