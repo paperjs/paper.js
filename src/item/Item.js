@@ -691,7 +691,9 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		if (!this._children && !this.getRoughBounds(matrix)
 				.expand(options.tolerance)._containsPoint(point))
 			return null;
-		if (options.center || options.bounds) {
+		if ((options.center || options.bounds) &&
+				// Ignore top level layers:
+				!(this instanceof Layer && !this._parent)) {
 			// Don't get the transformed bounds, check against transformed
 			// points instead
 			var bounds = this.getBounds(),
