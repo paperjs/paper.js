@@ -2019,13 +2019,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			for (var i = 0, l = this._segments.length; i < l; i++) {
 				var segment = this._segments[i];
 				segment._transformCoordinates(matrix, coords, false);
-				if (open && (i == 0 || i == l - 1)) {
-					// Clear handleIn for first and handleOut for last segment
-					// of open paths.
-					var j = i == 0 ? 2 : 4;
-					coords[j] = coords[0];
-					coords[j + 1] = coords[1];
-				}
 				for (var j = 0; j < 6; j += 2) {
 					// Use different padding for points or handles
 					var padding = j == 0 ? join : stroke,
