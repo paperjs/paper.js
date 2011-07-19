@@ -141,6 +141,23 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 	},
 
 	/**
+	 * Sets up the scope for a standard project, by creating an empty
+	 * {@link Project} object for us, along with a {@link View} for the passed
+	 * canvas, both linked to this scope.
+	 */
+	setup: function(canvas) {
+		// We need to set the global paper reference to this scope,
+		// since that will be used in the Project constructor to set
+		// internal references.
+		paper = this;
+		new Project();
+		if (canvas) {
+			// Activate the newly created view straight away
+			new View(canvas).activate();
+		}
+	},
+
+	/**
 	 * Injects the paper scope into any other given scope. Can be used for
 	 * examle to inject the currently active PaperScope into the window's global
 	 * scope, to emulate PaperScript-style globally accessible Paper classes and
