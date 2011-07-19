@@ -150,15 +150,15 @@ var PaperScript = this.PaperScript = new function() {
 			}
 		}
 //#endif // BROWSER
+		// Set currently active scope.
+		paper = scope;
 		var view = scope.view,
 			// TODO: Add support for multiple tools
 			tool = scope.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
-					&& new Tool(null, scope),
+					&& new Tool(),
 			res;
 		// Define variables for potential handlers, so eval() calls below to
 		// fetch their values do not require try-catch around them.
-		// Set currently active scope.
-		paper = scope;
 		// Use with(){} in order to make the scope the current 'global' scope
 		// instead of window.
 		with (scope) {
