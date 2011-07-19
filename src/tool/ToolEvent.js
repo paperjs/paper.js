@@ -183,7 +183,7 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 			if (result) {
 				var item = result.item,
 					// Find group parent
-					parent = item.getParent();
+					parent = item._parent;
 				while ((parent instanceof Group && !(parent instanceof Layer))
 						|| parent instanceof CompoundPath) {
 					item = parent;
