@@ -138,12 +138,7 @@ var PaperScript = this.PaperScript = new function() {
 			// so the active project is defined.
 			var canvas = PaperScript.getAttribute(code, 'canvas');
 			if (canvas = canvas && document.getElementById(canvas)) {
-				// Create an empty Project for this scope, and a view for the
-				// canvas, both using the right paper scope
-				paper = scope;
-				new Project();
-				// Activate the newly created view straight away
-				new View(canvas).activate();
+				scope.setup(canvas);
 			}
 			if (code.src) {
 				// If we're loading from a source, request that first and then
