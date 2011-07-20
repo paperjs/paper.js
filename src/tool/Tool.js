@@ -48,11 +48,9 @@
  */
 var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 	// DOCS: rewrite Tool constructor explanation
-	/**
-	 * Initializes the tool's settings, so a new tool can be assigned to it
-	 */
-	initialize: function(handlers, scope) {
-		this._scope = scope;
+	initialize: function() {
+		// Store reference to the currently active global paper scope:
+		this._scope = paper;
 		this._firstMove = true;
 		this._count = 0;
 		this._downCount = 0;
