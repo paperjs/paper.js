@@ -33,6 +33,6 @@ cd ..
 if [ $MODE == "docs" ]
 then
 	# Build paper.js library for documentation
-	./preprocess.sh ../src/paper.js ../dist/docs/resources/js/paper.js \
-		"-DBROWSER" stripped
+	./preprocess.sh stripped ../src/paper.js ../dist/docs/resources/js/paper.js\ 
+		"-DBROWSER"
 fi
