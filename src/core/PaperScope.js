@@ -17,12 +17,26 @@
 /**
  * @name PaperScope
  *
- * @class Internal PaperScope class that handles all the fields available on the
- * global paper object, which simply is a pointer to the currently active scope.
- *
- * @private
+ * @class The {@code PaperScope} class represents the scope associated with a
+ * Paper context. When working with PaperScript, these scopes are automatically
+ * created and their fields and methods become part of the global scope. When
+ * working with normal JavaScript files, {@code PaperScope} objects need to be
+ * manually created and handled.
+ * The global {@link _global_#paper} object is simply a reference to the
+ * currently active {@code PaperScope}.
  */
-var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
+var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
+	initialize: function(id) {
+		this.project = null;
+		this.projects = [];
+		this.view = null;
+		this.views = [];
+		this.tool = null;
+		this.tools = [];
+		this.id = id;
+		PaperScope._scopes[id] = this;
+	},
+
 	/**
 	 * The version of Paper.js, as a float number.
 	 *
@@ -30,109 +44,41 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 	 */
 	version: VERSION,
 
-	initialize: function(id) {
-		/** @lends _global_# */
+	/**
+	 * The currently active project.
+	 * @name PaperScope#project
+	 * @type Project
+	 */
 
-		/**
-		 * The currently active project.
-		 * @type Project
-		 */
-		this.project = null;
+	/**
+	 * The list of all open projects within the current Paper.js context.
+	 * @name PaperScope#projects
+	 * @type Project[]
+	 */
 
-		/**
-		 * The list of all open projects within the current Paper.js context.
-		 * @type Project[]
-		 */
-		this.projects = [];
+	/**
+	 * The active view of the active project.
+	 * @name PaperScope#view
+	 * @type View
+	 */
 
-		/**
-		 * The active view of the active project.
-		 * @type View
-		 */
-		this.view = null;
+	/**
+	 * The list of view of the active project.
+	 * @name PaperScope#views
+	 * @type View[]
+	 */
 
-		/**
-		 * The active view of the active project.
-		 * @type View
-		 */
-		this.views = [];
+	/**
+	 * The reference to the active tool.
+	 * @name PaperScope#tool
+	 * @type Tool
+	 */
 
-		/**
-		 * The reference to the tool object.
-		 * @type Tool
-		 */
-		this.tool = null;
-		this.tools = [];
-		this.id = id;
-		PaperScope._scopes[id] = this;
-
-		// DOCS: should the different event handlers be in here?
-		/**
-		 * {@grouptitle View Event Handlers}
-		 * A reference to the {@link View#onFrame} handler function.
-		 *
-		 * @name onFrame
-		 * @property
-		 * @type Function
-		 */
-
-		/**
-		 * A reference to the {@link View#onResize} handler function.
-		 *
-		 * @name onResize
-		 * @property
-		 * @type Function
-		 */
-
-		/**
-		 * {@grouptitle Mouse Event Handlers}
-		 * A reference to the {@link Tool#onMouseDown} handler function.
-		 * @name onMouseDown
-		 * @property
-		 * @type Function
-		 */
-
-		/**
-		 * A reference to the {@link Tool#onMouseDrag} handler function.
-		 *
-		 * @name onMouseDrag
-		 * @property
-		 * @type Function
-		 */
-
-		/**
-		 * A reference to the {@link Tool#onMouseMove} handler function.
-		 *
-		 * @name onMouseMove
-		 * @property
-		 * @type Function
-		 */
-
-		/**
-		 * A reference to the {@link Tool#onMouseUp} handler function.
-		 *
-		 * @name onMouseUp
-		 * @property
-		 * @type Function
-		 */
-
-		/**
-		 * {@grouptitle Keyboard Event Handlers}
-		 * A reference to the {@link Tool#onKeyDown} handler function.
-		 *
-		 * @name onKeyDown
-		 * @property
-		 * @type Function
-		 */
-
-		/**
-		 * A reference to the {@link Tool#onKeyUp} handler function.
-		 *
-		 * @name onKeyUp
-		 * @property
-		 * @type Function
-		 */
-	},
+	/**
+	 * The list of available tools.
+	 * @name PaperScope#tools
+	 * @type Tool[]
+	 */
 
 	evaluate: function(code) {
 		var res = PaperScript.evaluate(code, this);
@@ -165,8 +111,6 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 	 *
 	 * @example
 	 * paper.install(window);
-	 *
-	 * @ignore
 	 */
 	install: function(scope) {
 		// Use scope as side-car (= 'this' inside iterator), and have it
@@ -201,7 +145,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 		}
 	},
 
-	statics: {
+	statics: /** @lends PaperScope */{
 		_scopes: {},
 
 		/**
@@ -209,7 +153,6 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 		 * the passed canvas element.
 		 *
 		 * @param id
-		 * @ignore
 		 */
 		get: function(id) {
 			// If a script tag is passed, get the id from it.
@@ -219,10 +162,10 @@ var PaperScope = this.PaperScope = Base.extend(/** @scope _global_ */{
 		},
 
 		/**
-		 * A way to iterate over all active scopes without accessing _scopes
+		 * Iterates over all active scopes and calls the passed iterator
+		 * function for each of them.
 		 *
-		 * @param iter
-		 * @ignore
+		 * @param iter the iterator function.
 		 */
 		each: function(iter) {
 			Base.each(this._scopes, iter);
