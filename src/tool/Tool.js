@@ -54,8 +54,6 @@ var Tool = this.Tool = Base.extend(/** @lends Tool# */{
 		this._firstMove = true;
 		this._count = 0;
 		this._downCount = 0;
-		for (var i in handlers)
-			this[i] = handlers[i];
 	},
 
 	/**
