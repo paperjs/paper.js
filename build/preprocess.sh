@@ -32,8 +32,11 @@
 #	compressed		No comments and no whitespaces
 #	uglified		Uses UglifyJS to further reduce file size
 
+VERSION=0.2
+DATE=$(git log -1 --pretty=format:%ad)
+
 KEYWORD="//#"
-COMMAND="./filepp.pl -kc $KEYWORD $4 $2"
+COMMAND="./filepp.pl -kc $KEYWORD $4 -DVERSION=$VERSION -DDATE='$DATE' $2"
 
 case $1 in
 	stripped)
