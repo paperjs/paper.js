@@ -22,9 +22,6 @@
 #	compressed		No comments and no whitespaces
 #	uglified		Uses UglifyJS to further reduce file size
 
-VERSION=0.2
-DATE=$(git log -1 --pretty=format:%ad)
-
 if [ $# -eq 0 ]
 then
 	MODE="stripped"
@@ -38,5 +35,5 @@ then
 	mkdir ../dist/
 fi
 
-./preprocess.sh $MODE ../src/paper.js ../dist/paper.js "-DBROWSER -DVERSION=$VERSION -DDATE='$DATE'"
+./preprocess.sh $MODE ../src/paper.js ../dist/paper.js "-DBROWSER"
 #./preprocess.sh $MODE ../src/paper.js ../dist/paper-server.js "-DSERVER"
