@@ -29,10 +29,10 @@
  * SVG and PDF.
  *
  * The currently active project can be accessed through the global
- * {@see _global_#project} variable.
+ * {@see PaperScope#project} variable.
  *
  * An array of all open projects is accessible through the global
- * {@see _global_#projects} variable.
+ * {@see PaperScope#projects} variable.
  */
 var Project = this.Project = Base.extend(/** @lends Project# */{
 	// TODO: Add arguments to define pages
@@ -40,7 +40,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	 * Creates a Paper.js project.
 	 *
 	 * When working with PaperScript, a project is automatically created for us
-	 * and the global {@see _global_#project} variable points to it.
+	 * and the global {@see PaperScope#project} variable points to it.
 	 */
 	initialize: function() {
 		// Store reference to the currently active global paper scope:
@@ -111,7 +111,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	},
 
 	/**
-	 * Removes this project from the global {@see _global_#projects} list.
+	 * Removes this project from the global {@see PaperScope#projects} list.
 	 */
 	remove: function() {
 		if (this._scope) {

@@ -15,8 +15,12 @@
  */
 
 /**
- * Internal base-class for all style objects, e.g. PathStyle, CharacterStyle,
- * PargraphStyle.
+ * @name Style
+ *
+ * @class Internal base-class for all style objects, e.g. PathStyle,
+ * CharacterStyle, PargraphStyle.
+ *
+ * @private
  */
 var Style = Item.extend({
 	initialize: function(style) {

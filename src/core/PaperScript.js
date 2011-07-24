@@ -14,6 +14,10 @@
  * All rights reserved.
  */
 
+/**
+ * @name PaperScript
+ * @namespace
+ */
 var PaperScript = this.PaperScript = new function() {
 //#include "../../lib/parse-js-min.js"
 
@@ -84,6 +88,14 @@ var PaperScript = this.PaperScript = new function() {
 		}
 	}
 
+	/**
+	 * Compiles PaperScript code into JavaScript code.
+	 *
+	 * @name PaperScript.compile
+	 * @function
+	 * @param {String} code The PaperScript code.
+	 * @return {String} The compiled PaperScript as JavaScript code.
+	 */
 	function compile(code) {
 		// Use parse-js to translate the code into a AST structure which is then
 		// walked and parsed for operators to overload. The resulting AST is
@@ -130,6 +142,16 @@ var PaperScript = this.PaperScript = new function() {
 		});
 	}
 
+	/**
+	 * Evaluates parsed PaperScript code in the passed scope. Also handles
+	 * canvas setup, tool creation and handlers automatically.
+	 *
+	 * @name PaperScript.evaluate
+	 * @function
+	 * @param {String} code The compiled PaperScript code.
+	 * @param {PaperScript} scope The scope in which the code is executed.
+	 * @return {Object} The result of the code evaluation.
+	 */
 	function evaluate(code, scope) {
 //#ifdef BROWSER
 		// See if it's a script tag or a string
