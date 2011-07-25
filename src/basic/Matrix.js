@@ -32,9 +32,9 @@
  * by considering them to be a column vector and multiplying the coordinate
  * vector by the matrix according to the following process:
  * <pre>
- *      [ x']   [  m00  m01  m02  ] [ x ]   [ m00x + m01y + m02 ]
- *      [ y'] = [  m10  m11  m12  ] [ y ] = [ m10x + m11y + m12 ]
- *      [ 1 ]   [   0    0    1   ] [ 1 ]   [         1         ]
+ *      [ x ]   [  m00  m01  m02  ] [ x ]   [ m00 * x + m01 * y + m02 ]
+ *      [ y ] = [  m10  m11  m12  ] [ y ] = [ m10 * x + m11 * y + m12 ]
+ *      [ 1 ]   [   0    0    1   ] [ 1 ]   [            1            ]
  * </pre>
  *
  * This class is optimized for speed and minimizes calculations based on its
