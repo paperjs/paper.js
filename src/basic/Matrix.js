@@ -52,24 +52,25 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Number} m02 The m02 coordinate of the transform.
 	 * @param {Number} m12 The m12 coordinate of the transform.
 	 */
-	initialize: function(m00, m10, m01, m11, m02, m12) {
-		var ok = true;
-		if (arguments.length == 6) {
-			this.set(m00, m10, m01, m11, m02, m12);
-		} else if (arguments.length == 1) {
-			if (m00 instanceof Matrix) {
-				this.set(m00._m00, m00._m10, m00._m01,
-						m00._m11, m00._m02, m00._m12);
-			} else if (Array.isArray(m00)) {
-				this.set.apply(this, m00);
+	initialize: function(arg) {
+		var count = arguments.length,
+			ok = true;
+		if (count == 6) {
+			this.set.apply(this, arguments);
+		} else if (count == 1) {
+			if (arg instanceof Matrix) {
+				this.set(arg._m00, arg._m10, arg._m01,
+						arg._m11, arg._m02, arg._m12);
+			} else if (Array.isArray(arg)) {
+				this.set.apply(this, arg);
 			} else {
 				ok = false;
 			}
-		} else if (arguments.length > 0) {
-			ok = false;
-		} else {
+		} else if (count == 0) {
 			this._m00 = this._m11 = 1;
 			this._m10 = this._m01 = this._m02 = this._m12 = 0;
+		} else {
+			ok = false;
 		}
 		if (!ok)
 			throw new Error('Unsupported matrix parameters');
