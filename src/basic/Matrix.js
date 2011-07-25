@@ -249,34 +249,46 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * @return {Number} The scaling factor in the x-direction (m00).
+	 * The scaling factor in the x-direction (m00).
+	 *
+	 * @name Matrix#scaleX
+	 * @type Number
 	 */
-	// scaleX
 
 	/**
-	 * @return {Number} The scaling factor in the y-direction (m11).
+	 * The scaling factor in the y-direction (m11).
+	 *
+	 * @name Matrix#scaleY
+	 * @type Number
 	 */
-	// scaleY
 
 	/**
-	 * @return {Number} The translation in the x-direction (m02).
+	 * The translation in the x-direction (m02).
+	 *
+	 * @name Matrix#translateX
+	 * @type Number
 	 */
-	// translateX
 
 	/**
-	 * @return {Number} The translation in the y-direction (m12).
+	 * The translation in the y-direction (m12).
+	 *
+	 * @name Matrix#translateY
+	 * @type Number
 	 */
-	// translateY
 
 	/**
 	 * @return {Number} The shear factor in the x-direction (m01).
+	 *
+	 * @name Matrix#shearX
+	 * @type Number
 	 */
-	// shearX
 
 	/**
 	 * @return {Number} The shear factor in the y-direction (m10).
+	 *
+	 * @name Matrix#shearY
+	 * @type Number
 	 */
-	// shearY
 
 	/**
 	 * Concatenates an affine transform to this transform.
