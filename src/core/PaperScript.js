@@ -19,7 +19,7 @@
  * @namespace
  */
 var PaperScript = this.PaperScript = new function() {
-//#include "../../lib/parse-js-min.js"
+/*#*/ include('../../lib/parse-js-min.js');
 
 	// Math Operators
 
@@ -153,7 +153,7 @@ var PaperScript = this.PaperScript = new function() {
 	 * @return {Object} The result of the code evaluation.
 	 */
 	function evaluate(code, scope) {
-//#ifdef BROWSER
+/*#*/ if (options.browser) {
 		// See if it's a script tag or a string
 		if (typeof code !== 'string') {
 			// If a canvas id is provided, create a project for it now,
@@ -171,7 +171,7 @@ var PaperScript = this.PaperScript = new function() {
 				code = code.innerHTML;
 			}
 		}
-//#endif // BROWSER
+/*#*/ } // options.browser
 		// Set currently active scope.
 		paper = scope;
 		var view = scope.view,
@@ -224,7 +224,7 @@ var PaperScript = this.PaperScript = new function() {
 		return res;
 	}
 
-//#ifdef BROWSER
+/*#*/ if (options.browser) {
 	// Code borrowed from Coffee Script:
 	function request(url, scope) {
 		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
@@ -287,14 +287,14 @@ var PaperScript = this.PaperScript = new function() {
 		hasAttribute: handleAttribute('has')
 	};
 
-//#else // !BROWSER
+/*#*/ } else { // !options.browser
 
 	return {
 		compile: compile,
 		evaluate: evaluate
 	};
 
-//#endif // !BROWSER
+/*#*/ } // !options.browser
 };
 
 // Export load directly:
