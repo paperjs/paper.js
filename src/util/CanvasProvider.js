@@ -37,15 +37,15 @@ var CanvasProvider = {
 			}
 			return canvas;
 		} else {
-//#ifdef BROWSER
+/*#*/ if (options.browser) {
 			var canvas = document.createElement('canvas');
 			canvas.width = size.width;
 			canvas.height = size.height;
 			return canvas;
-//#else // !BROWSER
+/*#*/ } else { // !options.browser
 			// Only rhino-canvas for now:
 			return new Image(size.width, size.height);
-//#endif // !BROWSER
+/*#*/ } // !options.browser
 		}
 	},
 

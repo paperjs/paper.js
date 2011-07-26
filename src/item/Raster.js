@@ -35,11 +35,11 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		if (object.getContext) {
 			this.setCanvas(object);
 		} else {
-//#ifdef BROWSER
+/*#*/ if (options.browser) {
 			// If it's a string, get the element with this id first.
 			if (typeof object === 'string')
 				object = document.getElementById(object);
-//#endif // BROWSER
+/*#*/ } // options.browser
 			this.setImage(object);
 		}
 		this._matrix = new Matrix();
