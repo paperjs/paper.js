@@ -35,5 +35,5 @@ then
 	mkdir ../dist/
 fi
 
-./preprocess.sh $MODE ../src/paper.js ../dist/paper.js "-DBROWSER"
-#./preprocess.sh $MODE ../src/paper.js ../dist/paper-server.js "-DSERVER"
+./preprocess.sh $MODE ../src/paper.js ../dist/paper.js '{ "browser": true }'
+#./preprocess.sh $MODE ../src/paper.js ../dist/paper-server.js '{ "server": true }'

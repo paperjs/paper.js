@@ -42,7 +42,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 	 *
 	 * @type Number
 	 */
-	version: VERSION,
+	version: /*#=*/ options.version,
 
 	/**
 	 * The currently active project.

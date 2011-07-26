@@ -35,8 +35,8 @@
 VERSION=0.2
 DATE=$(git log -1 --pretty=format:%ad)
 
-KEYWORD="//#"
-COMMAND="./filepp.pl -kc $KEYWORD $4 -DVERSION=$VERSION -DDATE='$DATE' $2"
+COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\" }' -d '$4' $2"
+echo $COMMAND
 
 case $1 in
 	stripped)
