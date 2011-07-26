@@ -23,7 +23,7 @@
  * supporting build time switches.
  */
 
-// Require libs
+// Required libs
 
 var fs = require('fs'),
 	path = require('path');
@@ -32,7 +32,8 @@ var fs = require('fs'),
 
 var args = process.argv.slice(2),
 	options = {},
-	files = [];
+	files = [],
+	strip = false;
 
 while (args.length > 0) {
 	var arg = args.shift();
@@ -44,6 +45,9 @@ while (args.length > 0) {
 		for (var key in def)
 			options[key] = def[key];
 		break;	
+	case '-c':
+		strip = true;
+		break;
 	default:
 		files.push(arg);
 	}
@@ -51,7 +55,8 @@ while (args.length > 0) {
 
 // Preprocessing
 
-var code = [];
+var code = [],
+	out = [];
 
 function include(base, file) {
 	// Compose a pathname from base and file, which is specified relatively,
@@ -82,8 +87,8 @@ function include(base, file) {
 					return options[name];
 				}
 			);
-			// No add a statement that when evaluated writes out this code line
-			code.push('console.log(' + JSON.stringify(line) + ');');
+			// Now add a statement that when evaluated writes out this code line
+			code.push('out.push(' + JSON.stringify(line) + ');');
 		}
 	});
 }
@@ -95,3 +100,79 @@ files.forEach(function(file) {
 
 // Evaluate the resulting code: Calls puts() and writes the result to stdout.
 eval(code.join('\n'));
+
+// Convert the resulting lines to one string again.
+var out = out.join('\n');
+
+if (strip) {
+	out = stripComments(out);
+	// Strip empty lines that contain only white space and line breaks, as they
+	// are left-overs from comment removal.
+	out = out.replace(/^[ \t]+(\r\n|\n|\r)/gm, function(all) {
+		return '';
+	});
+	// Replace a sequence of more than two line breaks with only two.
+	out = out.replace(/(\r\n|\n|\r)(\r\n|\n|\r)+/g, function(all, lineBreak) {
+		return lineBreak + lineBreak;
+	});
+}
+
+// Write the result out
+process.stdout.write(out);
+
+/**
+ * Strips comments out of JavaScript code, based on:
+ * http://james.padolsey.com/javascript/removing-comments-in-javascript/
+*/
+function stripComments(str) {
+	str = ('__' + str + '__').split('');
+	var singleQuote = false,
+		doubleQuote = false,
+		blockComment = false,
+		lineComment = false;
+	var removed = [];
+	for (var i = 0, l = str.length; i < l; i++) {
+		if (singleQuote) {
+			if (str[i] == "'" && str[i-1] !== '\\')
+				singleQuote = false;
+			continue;
+		}
+		if (doubleQuote) {
+			if (str[i] == '"' && str[i-1] !== '\\')
+				doubleQuote = false;
+			continue;
+		}
+		if (blockComment) {
+			if (str[i] == '*' && str[i+1] == '/') {
+				str[i+1] = '';
+				blockComment = false;
+			}
+			removed.push(str[i]);
+			str[i] = '';
+			continue;
+		}
+		if (lineComment) {
+			if (str[i+1] == '\n' || str[i+1] == '\r')
+				lineComment = false;
+			str[i] = '';
+			continue;
+		}
+		doubleQuote = str[i] == '"';
+		singleQuote = str[i] == "'";
+		if (str[i] == '/') {
+			// Do not filter out conditional comments and comments marked 
+			// as protected (/*! */)
+			if (str[i+1] == '*' && str[i+2] != '@' && str[i+2] != '!') {
+				str[i] = '';
+				blockComment = true;
+				continue;
+			}
+			if (str[i+1] == '/') {
+				str[i] = '';
+				lineComment = true;
+				continue;
+			}
+ 		}
+ 	}
+	return str.join('').slice(2, -2);
+}
