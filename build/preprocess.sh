@@ -29,8 +29,7 @@
 # MODE:
 #	commented		Preprocessed but still formated and commented
 #	stripped		Formated but without comments
-#	compressed		No comments and no whitespaces
-#	uglified		Uses UglifyJS to further reduce file size
+#	compressed		Uses UglifyJS to reduce file size
 
 VERSION=0.2
 DATE=$(git log -1 --pretty=format:%ad)
@@ -39,19 +38,12 @@ COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\" }' -d '$4'
 
 case $1 in
 	stripped)
-		eval $COMMAND | ./jsstrip.pl -w -q | sed -n '/^[ 	][ 	]*$/d
-			/./,/^$/!d
-			p' > $3
-		;;
-	compressed)
-		eval $COMMAND | ./jsstrip.pl -q > $3
+		eval "$COMMAND -c" > $3
 		;;
 	commented)
-		eval $COMMAND | sed -n '/^[ 	][ 	]*$/d
-			/./,/^$/!d
-			p' > $3
+		eval $COMMAND > $3
 		;;
-	uglified)
+	compressed)
 		eval $COMMAND > temp.js
 		../../uglifyjs/bin/uglifyjs temp.js --extra --unsafe --reserved-names "$eval,$sign" > $3
 		rm temp.js
