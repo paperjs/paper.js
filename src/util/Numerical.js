@@ -153,11 +153,11 @@ var Numerical = new function() {
 		 *
 		 * a*x^3 + b*x^2 + c*x + d = 0
 		 */
-	    solveCubic: function(a, b, c, d, roots, tolerance) {
+		solveCubic: function(a, b, c, d, roots, tolerance) {
 			// After Numerical Recipes in C, 2nd edition, Press et al.,
 			// 5.6, Quadratic and Cubic Equations
 			if (abs(a) < tolerance)
-			    return Numerical.solveQuadratic(b, c, d, roots, tolerance);
+				return Numerical.solveQuadratic(b, c, d, roots, tolerance);
 			// Normalize
 			b /= a;
 			c /= a;
