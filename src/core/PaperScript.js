@@ -143,35 +143,17 @@ var PaperScript = this.PaperScript = new function() {
 	}
 
 	/**
-	 * Evaluates parsed PaperScript code in the passed scope. Also handles
-	 * canvas setup, tool creation and handlers automatically.
+	 * Evaluates parsed PaperScript code in the passed {@link PaperScope}
+	 * object. It also handles canvas setup, tool creation and handlers
+	 * automatically for us.
 	 *
 	 * @name PaperScript.evaluate
 	 * @function
-	 * @param {String} code The compiled PaperScript code.
+	 * @param {String} code The PaperScript code.
 	 * @param {PaperScript} scope The scope in which the code is executed.
 	 * @return {Object} The result of the code evaluation.
 	 */
 	function evaluate(code, scope) {
-/*#*/ if (options.browser) {
-		// See if it's a script tag or a string
-		if (typeof code !== 'string') {
-			// If a canvas id is provided, create a project for it now,
-			// so the active project is defined.
-			var canvas = PaperScript.getAttribute(code, 'canvas');
-			if (canvas = canvas && document.getElementById(canvas)) {
-				scope.setup(canvas);
-			}
-			if (code.src) {
-				// If we're loading from a source, request that first and then
-				// run later.
-				return request(code.src, scope);
-			} else {
-				// We can simply get the code form the script tag.
-				code = code.innerHTML;
-			}
-		}
-/*#*/ } // options.browser
 		// Set currently active scope.
 		paper = scope;
 		var view = scope.view,
@@ -242,8 +224,7 @@ var PaperScript = this.PaperScript = new function() {
 	}
 
 	function load() {
-		var scripts = document.getElementsByTagName('script'),
-			count = 0;
+		var scripts = document.getElementsByTagName('script');
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
 			// Only load this script if it not loaded already.
@@ -253,15 +234,21 @@ var PaperScript = this.PaperScript = new function() {
 				// Produce a new PaperScope for this script now. Scopes are
 				// cheap so let's not worry about the initial one that was
 				// already created.
-				// Define an id for each paperscript, so its scope can be
+				// Define an id for each PaperScript, so its scope can be
 				// retrieved through PaperScope.get().
-				var scope = new PaperScope(script.getAttribute('id')
-						|| script.src || ('paperscript-' + (count++)));
-				// Make sure the tag also has this id now. If it already had an
-				// id, we're not changing it, since it's the first option we're
-				// trying to get an id from above.
-				script.setAttribute('id', scope.id);
-				evaluate(script, scope);
+				// If a canvas id is provided, pass it on to the PaperScope
+				// so a project is created for it now.
+				var canvas = PaperScript.getAttribute(script, 'canvas');
+				canvas = canvas && document.getElementById(canvas);
+				var scope = new PaperScope(canvas, script);
+				if (script.src) {
+					// If we're loading from a source, request that first and then
+					// run later.
+					request(script.src, scope);
+				} else {
+					// We can simply get the code form the script tag.
+					evaluate(script.innerHTML, scope);
+				}
 				// Mark script as loaded now.
 				script.setAttribute('data-paper-loaded', true);
 			}
