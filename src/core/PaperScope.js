@@ -22,7 +22,7 @@
  * created and their fields and methods become part of the global scope. When
  * working with normal JavaScript files, {@code PaperScope} objects need to be
  * manually created and handled.
- * The global {@link _global_#paper} object is simply a reference to the
+ * The global {@link paper} object is simply a reference to the
  * currently active {@code PaperScope}.
  */
 var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
