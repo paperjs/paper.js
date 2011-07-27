@@ -17,7 +17,7 @@
 /**
  * @name Project
  *
- * @class A Project object in Paper.js is what usually is refered to as the
+ * @class A Project object in Paper.js is what usually is referred to as the
  * document: The top level object that holds all the items contained in the
  * scene graph. As the term document is already taken in the browser context,
  * it is called Project.
@@ -28,11 +28,11 @@
  * requirements, and means to persist and load from different formats, such as
  * SVG and PDF.
  *
- * The currently active project can be accessed through the global
- * {@see PaperScope#project} variable.
+ * The currently active project can be accessed through the
+ * {@link PaperScope#project} variable.
  *
- * An array of all open projects is accessible through the global
- * {@see PaperScope#projects} variable.
+ * An array of all open projects is accessible through the
+ * {@link PaperScope#projects} variable.
  */
 var Project = this.Project = Base.extend(/** @lends Project# */{
 	// TODO: Add arguments to define pages
@@ -40,7 +40,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	 * Creates a Paper.js project.
 	 *
 	 * When working with PaperScript, a project is automatically created for us
-	 * and the global {@see PaperScope#project} variable points to it.
+	 * and the {@link PaperScope#project} variable points to it.
 	 */
 	initialize: function() {
 		// Store reference to the currently active global paper scope:
@@ -111,7 +111,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	},
 
 	/**
-	 * Removes this project from the global {@see PaperScope#projects} list.
+	 * Removes this project from the {@link PaperScope#projects} list.
 	 */
 	remove: function() {
 		if (this._scope) {
@@ -126,7 +126,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	},
 
 	/**
-	 * The index of the project in the global projects array.
+	 * The index of the project in the {@link PaperScope#projects} list.
 	 *
 	 * @type Number
 	 * @bean
