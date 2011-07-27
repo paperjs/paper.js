@@ -49,17 +49,17 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		// we potentially use as array, depending on what is passed.
 		var items = !paths || !Array.isArray(paths)
 				|| typeof paths[0] !== 'object' ? arguments : paths;
-		for (var i = 0, l = items.length; i < l; i++) {
-			var path = items[i];
-			// All paths except for the top one (last one in list) are set to
-			// clockwise orientation when creating a compound path, so that they
-			// appear as holes, but only if their orientation was not already
-			// specified before (= _clockwise is defined).
-			// TODO: Should this be handled in appendTop / Bottom instead?
-			if (path._clockwise === undefined)
-				path.setClockwise(i < l - 1);
-			this.addChild(path);
-		}
+		this.addChildren(items);
+	},
+
+	insertChild: function(index, item) {
+		this.base(index, item);
+		// All children except for the bottom one (first one in list) are set
+		// to anti-clockwise orientation, so that they appear as holes, but
+		// only if their orientation was not already specified before
+		// (= _clockwise is defined).
+		if (item._clockwise === undefined)
+			item.setClockwise(item._index == 0);
 	},
 
 	/**
