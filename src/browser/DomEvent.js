@@ -84,7 +84,7 @@ var DomEvent = {
 	stop: function(event) {
 		DomEvent.stopPropagation(event);
 		DomEvent.preventDefault(event);
-	},
+	}
 };
 
 DomEvent.requestAnimationFrame = new function() {
