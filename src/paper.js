@@ -219,38 +219,3 @@ var paper = new function() {
 return new (PaperScope.inject(this));
 /*#*/ } // options.version != 'dev'
 };
-
-/*#*/ // Load unit tests after library if we're asked to do so
-/*#*/ if (options.tests) {
-/*#*/ include('../test/lib/qunit/qunit.js');
-/*#*/ include('../test/lib/helpers.js');
-
-/*#*/ include('../test/tests/Point.js');
-/*#*/ include('../test/tests/Size.js');
-/*#*/ include('../test/tests/Rectangle.js');
-
-/*#*/ include('../test/tests/Color.js');
-
-/*#*/ include('../test/tests/Project.js');
-
-/*#*/ include('../test/tests/Item.js');
-/*#*/ include('../test/tests/Item_Cloning.js');
-/*#*/ include('../test/tests/Item_Order.js');
-
-/*#*/ include('../test/tests/Layer.js');
-/*#*/ include('../test/tests/Group.js');
-/*#*/ include('../test/tests/Segment.js');
-
-/*#*/ include('../test/tests/Path.js');
-/*#*/ include('../test/tests/PathStyle.js');
-/*#*/ include('../test/tests/Path_Shapes.js');
-/*#*/ include('../test/tests/Path_Drawing_Commands.js');
-/*#*/ include('../test/tests/Path_Curves.js');
-/*#*/ include('../test/tests/Path_Bounds.js');
-/*#*/ include('../test/tests/Path_Length.js');
-/*#*/ include('../test/tests/CompoundPath.js');
-
-/*#*/ include('../test/tests/PlacedSymbol.js');
-
-/*#*/ include('../test/tests/HitResult.js');
-/*#*/ } // options.tests
