@@ -22,8 +22,9 @@
 var options = {
 	browser: true,
 	stats: true,
-	tests: this.tests,
 	version: 'dev'
 };
 
-include('../paper.js');
+// This folder is specified relatively to the lib folder from which prepro.js is
+// loaded, and which is referenced as the root.
+include('../src/paper.js');
