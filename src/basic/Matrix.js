@@ -478,8 +478,12 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * @return {Matrix} An Matrix object representing the inverse
-	 *         transformation.
+	 * Inverts the transformation of the matrix. If the matrix is not invertible
+	 * (in which case {@link #isSingular()} returns true), {@code null } is
+	 * returned.
+	 * 
+	 * @return {Matrix} The inverted matrix, or {@code null }, if the matrix is
+	 * singular.
 	 */
 	createInverse: function() {
 		var det = this.getDeterminant();
