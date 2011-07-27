@@ -1,14 +1,12 @@
 /** @scope _global_ */ {
 
+// DOCS: Find a way to put this description into _global_
+
 /**
  * In a PaperScript context, the global scope is populated with all
  * fields of the currently active {@link PaperScope} object. In a JavaScript
  * context, it only contains the {@link #paper} reference to the currently
  * active {@link PaperScope} object, which also exposes all Paper classes.
- *
- * {@grouptitle PaperScript Global Properties}
- *
- * @borrows PaperScope#version as _global_#version
  */
 
 /**
@@ -19,8 +17,48 @@
  * @type PaperScope
  */
 
+// DOCS: This does not work: @borrows PaperScope#version as _global_#version,
+// so we're repeating documentation here form PaperScope:
 /**
- * {@grouptitle PaperScript View Event Handlers}
+ * {@grouptitle Global PaperScope Properties (for PaperScript)}
+ *
+ * The currently active project.
+ * @name project
+ * @type Project
+ */
+
+/**
+ * The list of all open projects within the current Paper.js context.
+ * @name projects
+ * @type Project[]
+ */
+
+/**
+ * The active view of the active project.
+ * @name view
+ * @type View
+ */
+
+/**
+ * The list of view of the active project.
+ * @name views
+ * @type View[]
+ */
+
+/**
+ * The reference to the active tool.
+ * @name tool
+ * @type Tool
+ */
+
+/**
+ * The list of available tools.
+ * @name tools
+ * @type Tool[]
+ */
+
+/**
+ * {@grouptitle View Event Handlers (for PaperScript)}
  * A reference to the {@link View#onFrame} handler function.
  *
  * @name onFrame
@@ -37,7 +75,7 @@
  */
 
 /**
- * {@grouptitle PaperScript Mouse Event Handlers}
+ * {@grouptitle Mouse Event Handlers (for PaperScript)}
  * A reference to the {@link Tool#onMouseDown} handler function.
  * @name onMouseDown
  * @property
@@ -69,7 +107,7 @@
  */
 
 /**
- * {@grouptitle PaperScript Keyboard Event Handlers}
+ * {@grouptitle Keyboard Event Handlers (for PaperScript)}
  * A reference to the {@link Tool#onKeyDown} handler function.
  *
  * @name onKeyDown
