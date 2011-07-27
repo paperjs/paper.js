@@ -19,22 +19,52 @@
  *
  * @class The {@code PaperScope} class represents the scope associated with a
  * Paper context. When working with PaperScript, these scopes are automatically
- * created and their fields and methods become part of the global scope. When
- * working with normal JavaScript files, {@code PaperScope} objects need to be
- * manually created and handled.
- * The global {@link paper} object is simply a reference to the
- * currently active {@code PaperScope}.
+ * created, and through clever scoping the fields and methods of the active
+ * scope seem to become part of the global scope. When working with normal
+ * JavaScript code, {@code PaperScope} objects need to be manually created and
+ * handled.
+ * Paper classes can only be accessed through {@code PaperScope} objects. Thus
+ * in PaperScript they are global, while in JavaScript, they are available on
+ * the global {@link paper} object, which is simply a reference to the currently
+ * active {@code PaperScope}.
  */
 var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
-	initialize: function(id) {
-		this.project = null;
-		this.projects = [];
-		this.view = null;
+
+	/**
+	 * Creates a PaperScope object and an empty {@link Project} for it. If a
+	 * canvas is provided, it also creates a {@link View} for it.
+	 * Both project and view are linked to this scope.
+	 *
+	 * @param {HTMLCanvasElement} canvas The canvas this scope should be
+	 *        associated with.
+	 */
+	initialize: function(canvas, script) {
+		// script is only used internally, when creating scopes for PaperScript.
+		// Whenever a PaperScope is created, it automatically becomes the active
+		// one.
+		paper = this;
 		this.views = [];
+		this.view = null;
+		this.projects = [];
+		// Since the global paper variable points to this PaperScope, the
+		// created project and view are automatically associated with it.
+		this.project = new Project();
 		this.tool = null;
 		this.tools = [];
-		this.id = id;
-		PaperScope._scopes[id] = this;
+		var obj = script || canvas;
+		this._id = obj && obj.getAttribute('id')
+				|| script && script.src
+				|| ('paperscope-' + (PaperScope._id++));
+		// Make sure the script tag also has this id now. If it already had an
+		// id, we're not changing it, since it's the first option we're
+		// trying to get an id from above.
+		if (script)
+			script.setAttribute('id', this._id);
+		PaperScope._scopes[this._id] = this;
+		if (canvas) {
+			// Create a view for the canvas.
+			this.view = new View(canvas);
+		}
 	},
 
 	/**
@@ -87,23 +117,6 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 	},
 
 	/**
-	 * Sets up the scope for a standard project, by creating an empty
-	 * {@link Project} object for us, along with a {@link View} for the passed
-	 * canvas, both linked to this scope.
-	 */
-	setup: function(canvas) {
-		// We need to set the global paper reference to this scope,
-		// since that will be used in the Project constructor to set
-		// internal references.
-		paper = this;
-		new Project();
-		if (canvas) {
-			// Activate the newly created view straight away
-			new View(canvas).activate();
-		}
-	},
-
-	/**
 	 * Injects the paper scope into any other given scope. Can be used for
 	 * examle to inject the currently active PaperScope into the window's global
 	 * scope, to emulate PaperScript-style globally accessible Paper classes and
@@ -133,7 +146,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 
 	remove: function() {
 		this.clear();
-		delete PaperScope._scopes[this.id];
+		delete PaperScope._scopes[this._id];
 	},
 
 	_needsRedraw: function() {
@@ -147,6 +160,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 
 	statics: /** @lends PaperScope */{
 		_scopes: {},
+		_id: 0,
 
 		/**
 		 * Retrieves a PaperScope object with the given id or associated with
