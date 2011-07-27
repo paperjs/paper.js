@@ -19,14 +19,22 @@
  *
  * @class The {@code PaperScope} class represents the scope associated with a
  * Paper context. When working with PaperScript, these scopes are automatically
- * created, and through clever scoping the fields and methods of the active
- * scope seem to become part of the global scope. When working with normal
- * JavaScript code, {@code PaperScope} objects need to be manually created and
- * handled.
+ * created for us, and through clever scoping the properties and methods of the
+ * active scope seem to become part of the global scope.
+ *
+ * When working with normal JavaScript code, {@code PaperScope} objects need to
+ * be manually created and handled.
+ *
  * Paper classes can only be accessed through {@code PaperScope} objects. Thus
  * in PaperScript they are global, while in JavaScript, they are available on
- * the global {@link paper} object, which is simply a reference to the currently
- * active {@code PaperScope}.
+ * the global {@link paper} object. For JavaScript you can use
+ * {@link PaperScope#install(scope) } to install the Paper classes and objects
+ * on the global scope. Note that when working with more than one scope, this
+ * still works for classes, but not for objects like {@link PaperScope#project},
+ * since they are not updated in the injected scope if scopes are switched.
+ *
+ * The global {@link paper} object is simply a reference to the currently active
+ * {@code PaperScope}.
  */
 var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 
@@ -35,6 +43,8 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 	 * canvas is provided, it also creates a {@link View} for it.
 	 * Both project and view are linked to this scope.
 	 *
+	 * @name PaperScope#initialize
+	 * @function
 	 * @param {HTMLCanvasElement} canvas The canvas this scope should be
 	 *        associated with.
 	 */
