@@ -74,7 +74,8 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 */
 	intersect: function(line) {
 		var cross = this.vector.cross(line.vector);
-		if (Math.abs(cross) <= Numerical.TOLERANCE)
+		// Avoid divisions by 0, and errors when getting too close to 0
+		if (Math.abs(cross) <= Numerical.EPSILON)
 			return null;
 		var v = line.point.subtract(this.point),
 			t1 = v.cross(line.vector) / cross,
