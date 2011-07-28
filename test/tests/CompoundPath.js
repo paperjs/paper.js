@@ -66,7 +66,7 @@ test('clockwise', function() {
 	}, true);
 	equals(function() {
 		return path2.clockwise;
-	}, true);
+	}, false);
 	equals(function() {
 		return path3.clockwise;
 	}, false);
