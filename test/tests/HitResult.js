@@ -281,6 +281,24 @@ test('hit testing stroke on segment point of a path', function() {
 	equals(error == null, true, description);
 });
 
+test('Hit testing a point that is extremely close to a curve', function() {
+	var path = new Path.Rectangle([0, 0], [100, 100]);
+	// A point whose x value is extremely close to 0:
+	var point = new Point(2.842 / Math.pow(10, 14), 0);
+	var error;
+	try {
+		var hitResult = path.hitTest(point, {
+			stroke: true
+		});
+	} catch(e) {
+		error = e;
+	}
+	var description = 'This hit test should not throw an error';
+	if (error)
+		description += ': ' + error;
+	equals(error == null, true, description);
+});
+
 test('hitting path ends', function() {
 	var path = new Path([0, 0], [50, 50], [100, 0]);
 	path.closed = true;
