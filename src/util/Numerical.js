@@ -63,6 +63,9 @@ var Numerical = new function() {
 
 	return {
 		TOLERANCE: 10e-6,
+		// Precision when comparing against 0
+		// TODO: Find a good value
+		EPSILON: 10e-12,
 
 		/**
 		 * Gauss-Legendre Numerical Integration
