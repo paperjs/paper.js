@@ -30,7 +30,7 @@ cd jsdoc-toolkit
 java -jar jsrun.jar app/run.js -c=conf/$MODE.conf -D="renderMode:$MODE"
 cd ..
 
-if [ $MODE == "docs" ]
+if [ $MODE = "docs" ]
 then
 	# Build paper.js library for documentation
 	./preprocess.sh stripped ../src/paper.js ../dist/docs/resources/js/paper.js\
