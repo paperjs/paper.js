@@ -760,8 +760,15 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				return [0.5 * (w[0].x + w[5].x)];
 			// Compute intersection of chord from first control point to last
 			// with x-axis.
-			if (isFlatEnough(w))
-				return [xAxis.intersect(new Line(w[0], w[5], true)).x];
+			if (isFlatEnough(w)) {
+				var line = new Line(w[0], w[5], true);
+				// Compare the line's squared length with EPSILON. If we're
+				// below, #intersect() will return null because of division
+				// by near-zero.
+				return [ line.vector.getLength(true) < Numerical.EPSILON
+						? line.point.x
+						: xAxis.intersect(line).x ];
+			}
 		}
 
 		// Otherwise, solve recursively after
