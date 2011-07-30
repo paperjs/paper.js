@@ -35,6 +35,26 @@ var View = this.View = Base.extend(/** @lends View# */{
 		this._index = this._scope.views.push(this) - 1;
 		// Handle canvas argument
 		var size;
+
+/*#*/ if (options.server) {
+		if (canvas && canvas instanceof Canvas) {
+			this._canvas = canvas;
+			size = Size.create(canvas.width, canvas.height);
+		} else {
+			// 2nd argument onwards could be view size, otherwise use default:
+			size = Size.read(arguments, 1);
+			if (size.isZero())
+				size = new Size(1024, 768);
+			this._canvas = CanvasProvider.getCanvas(size);
+		}
+
+		// Generate an id for this view / canvas if it does not have one
+		this._id = this._canvas.id;
+		if (this._id == null)
+			this._canvas.id = this._id = 'canvas-' + View._id++;
+/*#*/ } // options.server
+
+/*#*/ if (options.browser) {
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
 			// If the canvas has the resize attribute, resize the it to fill the
@@ -88,6 +108,8 @@ var View = this.View = Base.extend(/** @lends View# */{
 		this._id = this._canvas.getAttribute('id');
 		if (this._id == null)
 			this._canvas.setAttribute('id', this._id = 'canvas-' + View._id++);
+/*#*/ } // options.browser
+
 		// Link this id to our view
 		View._views[this._id] = this;
 		this._viewSize = LinkedSize.create(this, 'setViewSize',
@@ -95,11 +117,15 @@ var View = this.View = Base.extend(/** @lends View# */{
 		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
+
+/*#*/ if (options.browser) {
 		this._events = this._createEvents();
 		DomEvent.add(this._canvas, this._events);
 		// Make sure the first view is focused for keyboard input straight away
 		if (!View._focused)
 			View._focused = this;
+/*#*/ } // options.browser
+
 		// As soon as a new view is added we need to mark the redraw as not
 		// motified, so the next call loops through all the views again.
 		this._scope._redrawNotified = false;
@@ -338,6 +364,7 @@ var View = this.View = Base.extend(/** @lends View# */{
 			delete this._onFrameCallback;
 			return;
 		}
+/*#*/ if (options.browser) {
 		var that = this,
 			requested = false,
 			before,
@@ -371,7 +398,82 @@ var View = this.View = Base.extend(/** @lends View# */{
 		// of onFrame calls.
 		if (!requested)
 			this._onFrameCallback();
+/*#*/ } // options.browser
 	},
+
+		// TODO: support exporting of jpg
+		exportFrames: function(param) {
+/*#*/ if (options.server) {
+			param = Base.merge({
+				fps: 30,
+				prefix: 'frame-',
+				amount: 1
+			}, param);
+			if (!param.directory)
+				throw new Error('Missing param.directory');
+
+			var view = this,
+				count = 0,
+				fs = require('fs'),
+				frameDuration = 1 / param.fps,
+				lastTime = startTime = Date.now();
+
+			// Start exporting frames by exporting the first frame:
+			exportFrame(param);
+
+			// Utility function that converts a number to a string with
+			// x amount of padded 0 digits:
+			function toPaddedString(number, length) {
+				var str = number.toString(10);
+				for (var i = 0, l = length - str.length; i < l; i++) {
+					str = '0' + str;
+				}
+				return str;
+			}
+
+			function exportFrame(param) {
+				count++;
+				if (view.onFrame) {
+					var then = new Date();
+					view.onFrame({
+						delta: frameDuration,
+						time: frameDuration * count,
+						count: count
+					});
+					console.log(new Date() - then, ' onFrame');
+				}
+				view.draw();
+				var filename = param.prefix + toPaddedString(count, 6) + '.png',
+					uri = param.directory + '/' + filename,
+					out = fs.createWriteStream(uri),
+					stream = view._canvas.createPNGStream();
+				// Pipe the png stream to the write stream:
+				stream.pipe(out);
+				// When the file has been closed, export the next fame:
+				out.on('close', function() {
+					var now = Date.now();
+					if (param.onProgress) {
+						param.onProgress({
+							count: count,
+							amount: param.amount,
+							percentage: Math.round(count / param.amount * 10000) / 100,
+							time: now - startTime,
+							delta: now - lastTime
+						});
+					}
+					lastTime = now;
+					if (count < param.amount) {
+						exportFrame(param);
+					} else {
+						// Call onComplete handler when finished:
+						if (param.onComplete) {
+							param.onComplete();
+						}
+					}
+				});
+			}
+/*#*/ } // options.server
+		},
 
 	/**
 	 * Handler function that is called whenever a view is resized.
@@ -391,7 +493,13 @@ var View = this.View = Base.extend(/** @lends View# */{
 	 * @type Function
 	 */
 	onResize: null
+}, {
+	statics: {
+		_views: {},
+		_id: 0
+	}
 }, new function() { // Injection scope for mouse handlers
+/*#*/ if (options.browser) {
 	var tool,
 		timer,
 		curPoint,
@@ -518,8 +626,6 @@ var View = this.View = Base.extend(/** @lends View# */{
 		},
 
 		statics: {
-			_views: {},
-			_id: 0,
 
 			/**
 			 * Loops through all scopes and their views and sets the focus on
@@ -528,4 +634,5 @@ var View = this.View = Base.extend(/** @lends View# */{
 			updateFocus: updateFocus
 		}
 	};
+/*#*/ } // options.browser	
 });

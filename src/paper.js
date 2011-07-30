@@ -104,8 +104,15 @@ var paper = new function() {
 /*#*/ if (options.browser) {
 /*#*/ include('browser/DomElement.js');
 /*#*/ include('browser/DomEvent.js');
+/*#*/ } // options.browser
+
+/*#*/ if (options.server) {
+	var Canvas = this.Canvas = require('canvas');
+/*#*/ } // options.server
 
 /*#*/ include('ui/View.js');
+
+/*#*/ if (options.browser) {
 /*#*/ include('ui/Event.js');
 /*#*/ include('ui/KeyEvent.js');
 /*#*/ include('ui/Key.js');
@@ -130,3 +137,7 @@ var paper = new function() {
 return new (PaperScope.inject(this));
 /*#*/ } // options.version != 'dev'
 };
+
+/*#*/ if (options.server) {
+module.exports = paper;
+/*#*/ } // options.server
