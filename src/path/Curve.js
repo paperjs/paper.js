@@ -840,19 +840,20 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			// Also look at beginning and end of curve (t = 0 / 1)
 			var roots = findRoots(w, 0).concat([0, 1]);
 			var minDist = Infinity,
-				minPoint,
-				minRoot;
+				minT,
+				minPoint;
 			// There are always roots, since we add [0, 1] above.
 			for (var i = 0; i < roots.length; i++) {
 				var pt = this.getPoint(roots[i]),
-					dist = point.getDistance(pt);
+					dist = point.getDistance(pt, true);
+				// We're comparing squared distances
 				if (dist < minDist) {
 					minDist = dist;
-					minRoot = roots[i];
+					minT = roots[i];
 					minPoint = pt;
 				}
 			}
-			return new CurveLocation(this, minRoot, minPoint, minDist);
+			return new CurveLocation(this, minT, minPoint, Math.sqrt(minDist));
 		},
 
 		getNearestPoint: function(point, matrix) {
