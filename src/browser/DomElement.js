@@ -14,6 +14,11 @@
  * All rights reserved.
  */
 
+/**
+ * @name DomElement
+ * @namespace
+ * @private
+ */
 var DomElement = {
 	getBounds: function(el, viewport) {
 		var rect = el.getBoundingClientRect(),

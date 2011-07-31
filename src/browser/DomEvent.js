@@ -14,6 +14,11 @@
  * All rights reserved.
  */
 
+/**
+ * @name DomEvent
+ * @namespace
+ * @private
+ */
 var DomEvent = {
 	add: function(el, events) {
 		for (var type in events) {
