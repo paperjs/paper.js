@@ -100,7 +100,7 @@ var PaperScript = this.PaperScript = new function() {
 		// Use parse-js to translate the code into a AST structure which is then
 		// walked and parsed for operators to overload. The resulting AST is
 		// translated back to code and evaluated.
-		var ast = parse_js.parse(code, true),
+		var ast = parse_js.parse(code),
 			walker = parse_js.ast_walker(),
 			walk = walker.walk;
 
