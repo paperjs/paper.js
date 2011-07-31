@@ -747,7 +747,7 @@ var HSLColor = this.HSLColor = Color.extend(/** @lends HSLColor# */{
 	 *
 	 * // Create an HSLColor with a hue of 90 degrees, a saturation
 	 * // 100% and a lightness of 100%:
-	 * circle.fillColor = new HSLColor(90, 1, 1);
+	 * circle.fillColor = new HSLColor(90, 1, 0.5);
 	 */
 
 	_colorType: 'hsl'
