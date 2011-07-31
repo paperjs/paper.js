@@ -52,7 +52,7 @@ var DomElement = {
 		// See if the viewport bounds intersect with the windows rectangle
 		// which always starts at 0, 0
 		return !this.isInvisible(el) && this.getViewportBounds(el).intersects(
-				this.getBounds(el, false, true));
+				this.getBounds(el, true));
 	},
 
 	getViewport: function(doc) {
