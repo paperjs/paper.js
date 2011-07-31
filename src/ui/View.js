@@ -42,9 +42,10 @@ var View = this.View = Base.extend(/** @lends View# */{
 			if (PaperScript.hasAttribute(canvas, 'resize')) {
 				// Subtract canvas' viewport offset from the total size, to
 				// stretch it in
-				var offset = DomElement.getOffset(canvas, false, true),
+				var offset = DomElement.getOffset(canvas, true),
 					that = this;
-				size = DomElement.getViewportSize(canvas).subtract(offset);
+				size = DomElement.getViewportBounds(canvas)
+						.getSize().subtract(offset);
 				canvas.width = size.width;
 				canvas.height = size.height;
 				DomEvent.add(window, {
@@ -52,11 +53,11 @@ var View = this.View = Base.extend(/** @lends View# */{
 						// Only update canvas offset if it's not invisible, as
 						// otherwise the offset would be wrong.
 						if (!DomElement.isInvisible(canvas))
-							offset = DomElement.getOffset(canvas, false, true);
+							offset = DomElement.getOffset(canvas, true);
 						// Set the size now, which internally calls onResize
 						// and redraws the view
-						that.setViewSize(DomElement.getViewportSize(canvas)
-								.subtract(offset));
+						that.setViewSize(DomElement.getViewportBounds(canvas)
+								.getSize().subtract(offset));
 					}
 				});
 			} else {
