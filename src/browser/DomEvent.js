@@ -60,8 +60,8 @@ var DomEvent = {
 
 	getOffset: function(event, target) {
 		// Remove target offsets from page coordinates
-		return DomEvent.getPoint(event).subtract(
-				DomElement.getOffset(target || DomEvent.getTarget(event), true));
+		return DomEvent.getPoint(event).subtract(DomElement.getOffset(
+				target || DomEvent.getTarget(event)));
 	},
 
 	preventDefault: function(event) {
