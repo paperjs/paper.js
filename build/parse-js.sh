@@ -17,4 +17,4 @@
 # through the seperate source files in the src directory. Very useful during
 # development of the library itself.
 
-./preprocess.sh ../lib/parse-js.js ../lib/parse-js-min.js "" uglified
+./preprocess.sh compressed ../lib/parse-js.js ../lib/parse-js-min.js '{}'
