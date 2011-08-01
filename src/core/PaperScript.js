@@ -239,7 +239,8 @@ var PaperScript = this.PaperScript = new function() {
 				// so a project is created for it now.
 				var canvas = PaperScript.getAttribute(script, 'canvas');
 				canvas = canvas && document.getElementById(canvas);
-				var scope = new PaperScope(canvas, script);
+				var scope = new PaperScope(script);
+				scope.setup(canvas);
 				if (script.src) {
 					// If we're loading from a source, request that first and then
 					// run later.
