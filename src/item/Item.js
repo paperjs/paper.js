@@ -695,18 +695,19 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * <b>options.type:</b> Only hit test again a certain item
 	 * type: {@link PathItem}, {@link Raster}, {@link TextItem}, etc.
 	 * <b>options.fill:</b> {@code Boolean} - Hit test the fill of items.
-	 * <b>options.stroke:</b> {@code Boolean} - Hit test the curves of path items,
-	 * taking into account stroke width.
-	 * <b>options.segment:</b> {@code Boolean} - Hit test for {@link Segment#point} of
-	 * {@link Path} items.
+	 * <b>options.stroke:</b> {@code Boolean} - Hit test the curves of path
+	 * items, taking into account stroke width.
+	 * <b>options.segment:</b> {@code Boolean} - Hit test for
+	 * {@link Segment#point} of {@link Path} items.
 	 * <b>options.handles:</b> {@code Boolean} - Hit test for the handles
 	 * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
-	 * <b>options.ends:</b> {@code Boolean} - Only hit test for the first or last
-	 * segment points of open path items.
-	 * <b>options.bounds:</b> {@code Boolean} - Hit test the corners and side-centers
-	 * of the bounding rectangle of items ({@link Item#bounds}).
-	 * <b>options.center:</b> {@code Boolean} - Hit test the {@link Rectangle#center}
-	 * of the bounding rectangle of items ({@link Item#bounds}).
+	 * <b>options.ends:</b> {@code Boolean} - Only hit test for the first or
+	 * last segment points of open path items.
+	 * <b>options.bounds:</b> {@code Boolean} - Hit test the corners and
+	 * side-centers of the bounding rectangle of items ({@link Item#bounds}).
+	 * <b>options.center:</b> {@code Boolean} - Hit test the
+	 * {@link Rectangle#center} of the bounding rectangle of items
+	 * ({@link Item#bounds}).
 	 * <b>options.guide:</b> {@code Boolean} - Hit test items that have
 	 * {@link Item#guide} set to {@code true}.
 	 * <b>options.selected:</b> {@code Boolean} - Only hit selected items.
