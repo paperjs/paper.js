@@ -144,8 +144,7 @@ var PaperScript = this.PaperScript = new function() {
 
 	/**
 	 * Evaluates parsed PaperScript code in the passed {@link PaperScope}
-	 * object. It also handles canvas setup, tool creation and handlers
-	 * automatically for us.
+	 * object. It also installs handlers automatically for us.
 	 *
 	 * @name PaperScript.evaluate
 	 * @function
