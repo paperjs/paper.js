@@ -141,10 +141,8 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		// Do not use Base.each, since we also want to enumerate over
 		// fields on PaperScope.prototype, e.g. all classes
 		for (var key in this) {
-			if (!/^(version|_id|load)/.test(key) && !(key in scope)) {
-				console.log(key);
+			if (!/^(version|_id|load)/.test(key) && !(key in scope))
 				scope[key] = this[key];
-			}
 		}
 	},
 
