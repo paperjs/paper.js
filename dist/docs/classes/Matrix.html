@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <title>Matrix</title>
 <base target="classFrame">
 <link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
@@ -25,9 +26,9 @@ transforms source coordinates (x,y) into destination coordinates (x',y')
 by considering them to be a column vector and multiplying the coordinate
 vector by the matrix according to the following process:</p>
 <pre class="code">
-     [ x']   [  m00  m01  m02  ] [ x ]   [ m00x + m01y + m02 ]
-     [ y'] = [  m10  m11  m12  ] [ y ] = [ m10x + m11y + m12 ]
-     [ 1 ]   [   0    0    1   ] [ 1 ]   [         1         ]
+     [ x ]   [ a  b  tx ] [ x ]   [ a * x + b * y + tx ]
+     [ y ] = [ c  d  ty ] [ y ] = [ c * x + d * y + ty ]
+     [ 1 ]   [ 0  0  1  ] [ 1 ]   [         1          ]
 </pre>
 <p>This class is optimized for speed and minimizes calculations based on its
 knowledge of the underlying matrix (as opposed to say simply performing
@@ -39,18 +40,18 @@ matrix multiplication).</p>
 <div class="reference-members"><h2>Constructors</h2>
 	
 		
-<div id="matrix-m00-m10-m01-m11-m02-m12-member" class="member">
-<div id="matrix-m00-m10-m01-m11-m02-m12-link" class="member-link">
-<a name="matrix-m00-m10-m01-m11-m02-m12" href="#" onClick="return toggleMember('matrix-m00-m10-m01-m11-m02-m12', false);"><tt><b>Matrix</b>(m00, m10, m01, m11, m02, m12)</tt></a>
+<div id="matrix-a-c-b-d-tx-ty-member" class="member">
+<div id="matrix-a-c-b-d-tx-ty-link" class="member-link">
+<a name="matrix-a-c-b-d-tx-ty" href="#" onClick="return toggleMember('matrix-a-c-b-d-tx-ty', false);"><tt><b>Matrix</b>(a, c, b, d, tx, ty)</tt></a>
 </div>
-<div id="matrix-m00-m10-m01-m11-m02-m12-description" class="member-description hidden">
+<div id="matrix-a-c-b-d-tx-ty-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('matrix-m00-m10-m01-m11-m02-m12', false);"><tt><b>Matrix</b>(m00, m10, m01, m11, m02, m12)</tt></a>
+<a href="#" onClick="return toggleMember('matrix-a-c-b-d-tx-ty', false);"><tt><b>Matrix</b>(a, c, b, d, tx, ty)</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('matrix-m00-m10-m01-m11-m02-m12', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('matrix-a-c-b-d-tx-ty', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
@@ -59,44 +60,44 @@ matrix multiplication).</p>
 <ul><b>Parameters:</b>
 
 <li>
-<tt>m00:</tt> 
+<tt>a:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m00 coordinate of the transform.
+&mdash;&nbsp;The scaleX coordinate of the transform
 
 </li>
 
 <li>
-<tt>m10:</tt> 
+<tt>c:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m10 coordinate of the transform.
+&mdash;&nbsp;The shearY coordinate of the transform
 
 </li>
 
 <li>
-<tt>m01:</tt> 
+<tt>b:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m01 coordinate of the transform.
+&mdash;&nbsp;The shearX coordinate of the transform
 
 </li>
 
 <li>
-<tt>m11:</tt> 
+<tt>d:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m11 coordinate of the transform.
+&mdash;&nbsp;The scaleY coordinate of the transform
 
 </li>
 
 <li>
-<tt>m02:</tt> 
+<tt>tx:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m02 coordinate of the transform.
+&mdash;&nbsp;The translateX coordinate of the transform
 
 </li>
 
 <li>
-<tt>m12:</tt> 
+<tt>ty:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m12 coordinate of the transform.
+&mdash;&nbsp;The translateY coordinate of the transform
 
 </li>
 
@@ -114,6 +115,235 @@ matrix multiplication).</p>
 
 
 
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="scalex-member" class="member">
+<div id="scalex-link" class="member-link">
+<a name="scalex" href="#" onClick="return toggleMember('scalex', false);"><tt><b>scaleX</b></tt></a>
+</div>
+<div id="scalex-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('scalex', false);"><tt><b>scaleX</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('scalex', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The scaling factor in the x-direction (<tt>a</tt>).</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="scaley-member" class="member">
+<div id="scaley-link" class="member-link">
+<a name="scaley" href="#" onClick="return toggleMember('scaley', false);"><tt><b>scaleY</b></tt></a>
+</div>
+<div id="scaley-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('scaley', false);"><tt><b>scaleY</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('scaley', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The scaling factor in the y-direction (<tt>d</tt>).</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="shearx-member" class="member">
+<div id="shearx-link" class="member-link">
+<a name="shearx" href="#" onClick="return toggleMember('shearx', false);"><tt><b>shearX</b></tt></a>
+</div>
+<div id="shearx-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('shearx', false);"><tt><b>shearX</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('shearx', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="sheary-member" class="member">
+<div id="sheary-link" class="member-link">
+<a name="sheary" href="#" onClick="return toggleMember('sheary', false);"><tt><b>shearY</b></tt></a>
+</div>
+<div id="sheary-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('sheary', false);"><tt><b>shearY</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('sheary', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="translatex-member" class="member">
+<div id="translatex-link" class="member-link">
+<a name="translatex" href="#" onClick="return toggleMember('translatex', false);"><tt><b>translateX</b></tt></a>
+</div>
+<div id="translatex-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('translatex', false);"><tt><b>translateX</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('translatex', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The translation in the x-direction (<tt>tx</tt>).</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="translatey-member" class="member">
+<div id="translatey-link" class="member-link">
+<a name="translatey" href="#" onClick="return toggleMember('translatey', false);"><tt><b>translateY</b></tt></a>
+</div>
+<div id="translatey-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('translatey', false);"><tt><b>translateY</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('translatey', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The translation in the y-direction (<tt>ty</tt>).</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="values-member" class="member">
+<div id="values-link" class="member-link">
+<a name="values" href="#" onClick="return toggleMember('values', false);"><tt><b>values</b></tt></a>
+</div>
+<div id="values-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('values', false);"><tt><b>values</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('values', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The transform values as an array, in the same sequence as they are passed
+to {@link #initialize(a, c, b, d, tx, ty)}.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
 
 
 
@@ -154,18 +384,18 @@ matrix multiplication).</p>
 </div>
 		
 			
-<div id="set-m00-m10-m01-m11-m02-m12-member" class="member">
-<div id="set-m00-m10-m01-m11-m02-m12-link" class="member-link">
-<a name="set-m00-m10-m01-m11-m02-m12" href="#" onClick="return toggleMember('set-m00-m10-m01-m11-m02-m12', false);"><tt><b>set</b>(m00, m10, m01, m11, m02, m12)</tt></a>
+<div id="set-a-c-b-d-tx-ty-member" class="member">
+<div id="set-a-c-b-d-tx-ty-link" class="member-link">
+<a name="set-a-c-b-d-tx-ty" href="#" onClick="return toggleMember('set-a-c-b-d-tx-ty', false);"><tt><b>set</b>(a, c, b, d, tx, ty)</tt></a>
 </div>
-<div id="set-m00-m10-m01-m11-m02-m12-description" class="member-description hidden">
+<div id="set-a-c-b-d-tx-ty-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('set-m00-m10-m01-m11-m02-m12', false);"><tt><b>set</b>(m00, m10, m01, m11, m02, m12)</tt></a>
+<a href="#" onClick="return toggleMember('set-a-c-b-d-tx-ty', false);"><tt><b>set</b>(a, c, b, d, tx, ty)</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('set-m00-m10-m01-m11-m02-m12', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('set-a-c-b-d-tx-ty', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
@@ -174,44 +404,44 @@ matrix multiplication).</p>
 <ul><b>Parameters:</b>
 
 <li>
-<tt>m00:</tt> 
+<tt>a:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m00 coordinate of the transform.
+&mdash;&nbsp;The scaleX coordinate of the transform
 
 </li>
 
 <li>
-<tt>m10:</tt> 
+<tt>c:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m10 coordinate of the transform.
+&mdash;&nbsp;The shearY coordinate of the transform
 
 </li>
 
 <li>
-<tt>m01:</tt> 
+<tt>b:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m01 coordinate of the transform.
+&mdash;&nbsp;The shearX coordinate of the transform
 
 </li>
 
 <li>
-<tt>m11:</tt> 
+<tt>d:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m11 coordinate of the transform.
+&mdash;&nbsp;The scaleY coordinate of the transform
 
 </li>
 
 <li>
-<tt>m02:</tt> 
+<tt>tx:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m02 coordinate of the transform.
+&mdash;&nbsp;The translateX coordinate of the transform
 
 </li>
 
 <li>
-<tt>m12:</tt> 
+<tt>ty:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The m12 coordinate of the transform.
+&mdash;&nbsp;The translateY coordinate of the transform
 
 </li>
 
@@ -221,7 +451,7 @@ matrix multiplication).</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -255,15 +485,14 @@ matrix multiplication).</p>
 <li>
 <tt>scale:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The scaling factor.
+&mdash;&nbsp;The scaling factor
 
 </li>
 
 <li>
 <tt>center:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The center for the scaling
-transformation.
+&mdash;&nbsp;The center for the scaling transformation
 &mdash;&nbsp;optional
 </li>
 
@@ -273,7 +502,7 @@ transformation.
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -307,22 +536,21 @@ transformation.
 <li>
 <tt>hor:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The horizontal scaling factor.
+&mdash;&nbsp;The horizontal scaling factor
 
 </li>
 
 <li>
 <tt>ver:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The vertical scaling factor.
+&mdash;&nbsp;The vertical scaling factor
 
 </li>
 
 <li>
 <tt>center:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The center for the scaling
-transformation.
+&mdash;&nbsp;The center for the scaling transformation
 &mdash;&nbsp;optional
 </li>
 
@@ -332,7 +560,7 @@ transformation.
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -366,7 +594,7 @@ transformation.
 <li>
 <tt>point:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The vector to translate by.
+&mdash;&nbsp;The vector to translate by
 
 </li>
 
@@ -376,7 +604,7 @@ transformation.
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -410,14 +638,14 @@ transformation.
 <li>
 <tt>dx:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The distance to translate in the x direction.
+&mdash;&nbsp;The distance to translate in the x direction
 
 </li>
 
 <li>
 <tt>dy:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The distance to translate in the y direction.
+&mdash;&nbsp;The distance to translate in the y direction
 
 </li>
 
@@ -427,7 +655,7 @@ transformation.
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -462,14 +690,14 @@ anchor point.</p>
 <li>
 <tt>angle:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The angle of rotation measured in degrees.
+&mdash;&nbsp;The angle of rotation measured in degrees
 
 </li>
 
 <li>
 <tt>center:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The anchor point to rotate around.
+&mdash;&nbsp;The anchor point to rotate around
 
 </li>
 
@@ -479,7 +707,7 @@ anchor point.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -514,21 +742,21 @@ anchor point.</p>
 <li>
 <tt>angle:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The angle of rotation measured in degrees.
+&mdash;&nbsp;The angle of rotation measured in degrees
 
 </li>
 
 <li>
 <tt>x:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The x coordinate of the anchor point.
+&mdash;&nbsp;The x coordinate of the anchor point
 
 </li>
 
 <li>
 <tt>y:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The y coordinate of the anchor point.
+&mdash;&nbsp;The y coordinate of the anchor point
 
 </li>
 
@@ -538,7 +766,7 @@ anchor point.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -572,14 +800,14 @@ anchor point.</p>
 <li>
 <tt>point:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The shear factor in x and y direction.
+&mdash;&nbsp;The shear factor in x and y direction
 
 </li>
 
 <li>
 <tt>center:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The center for the shear transformation.
+&mdash;&nbsp;The center for the shear transformation
 &mdash;&nbsp;optional
 </li>
 
@@ -589,7 +817,7 @@ anchor point.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -623,21 +851,21 @@ anchor point.</p>
 <li>
 <tt>hor:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The horizontal shear factor.
+&mdash;&nbsp;The horizontal shear factor
 
 </li>
 
 <li>
 <tt>ver:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The vertical shear factor.
+&mdash;&nbsp;The vertical shear factor
 
 </li>
 
 <li>
 <tt>center:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The center for the shear transformation.
+&mdash;&nbsp;The center for the shear transformation
 &mdash;&nbsp;optional
 </li>
 
@@ -647,7 +875,7 @@ anchor point.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -714,7 +942,7 @@ anchor point.</p>
 <li>
 <tt>mx:</tt> 
 <a href="../classes/Matrix.html"><tt>Matrix</tt></a>
-&mdash;&nbsp;The transform to concatenate.
+&mdash;&nbsp;The transform to concatenate
 
 </li>
 
@@ -724,7 +952,7 @@ anchor point.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -758,7 +986,7 @@ anchor point.</p>
 <li>
 <tt>mx:</tt> 
 <a href="../classes/Matrix.html"><tt>Matrix</tt></a>
-&mdash;&nbsp;The transform to preconcatenate.
+&mdash;&nbsp;The transform to preconcatenate
 
 </li>
 
@@ -768,7 +996,7 @@ anchor point.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -804,7 +1032,7 @@ destination array.</p>
 <li>
 <tt>point:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;The point to be transformed.
+&mdash;&nbsp;The point to be transformed
 
 </li>
 
@@ -812,14 +1040,14 @@ destination array.</p>
 <tt>src:</tt> 
 <tt>Number</tt>
 &mdash;&nbsp;The array containing the source points
-       as x, y value pairs.
+       as x, y value pairs
 
 </li>
 
 <li>
 <tt>srcOff:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The offset to the first point to be transformed.
+&mdash;&nbsp;The offset to the first point to be transformed
 
 </li>
 
@@ -827,7 +1055,7 @@ destination array.</p>
 <tt>dst:</tt> 
 <tt>Number</tt>
 &mdash;&nbsp;The array into which to store the transformed
-       point pairs.
+       point pairs
 
 </li>
 
@@ -835,14 +1063,14 @@ destination array.</p>
 <tt>dstOff:</tt> 
 <tt>Number</tt>
 &mdash;&nbsp;The offset of the location of the first
-       transformed point in the destination array.
+       transformed point in the destination array
 
 </li>
 
 <li>
 <tt>numPts:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The number of points to tranform.
+&mdash;&nbsp;The number of points to tranform
 
 </li>
 
@@ -877,7 +1105,7 @@ destination array.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The determinant of this transform.
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The determinant of this transform
 </li>
 	
 	</ul>
@@ -904,16 +1132,16 @@ destination array.</p>
 <div class="clear"></div>
 </div>
 <div class="member-text">
-	
+	<p>Returns the rotation angle of the matrix. If a non-uniform
+rotation is applied as a result of a shear() or scale() command,
+undefined is returned, as the resulting transformation cannot be
+expressed in one rotation angle</p>
 	
 	
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The rotation angle of the matrix. If a non-uniform
-rotation is applied as a result of a shear() or scale() command,
-undefined is returned, as the resulting transformation cannot be
-expressed in one rotation angle.
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The rotation angle of the matrix
 </li>
 	
 	</ul>
@@ -946,7 +1174,7 @@ expressed in one rotation angle.
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether this transform is the identity transform.
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether this transform is the identity transform
 </li>
 	
 	</ul>
@@ -980,7 +1208,7 @@ invertible if the determinant is 0 or any value is non-finite or NaN.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether the transform is invertible.
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether the transform is invertible
 </li>
 	
 	</ul>
@@ -1014,7 +1242,7 @@ inverted.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether the matrix is singular.
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether the matrix is singular
 </li>
 	
 	</ul>
@@ -1041,14 +1269,16 @@ inverted.</p>
 <div class="clear"></div>
 </div>
 <div class="member-text">
-	
+	<p>Inverts the transformation of the matrix. If the matrix is not invertible
+(in which case <a href="../classes/Matrix.html#issingular" onclick="return toggleMember('issingular', true);"><tt>isSingular</tt></a>() returns true), <tt>null </tt> is
+returned.</p>
 	
 	
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;An Matrix object representing the inverse
-        transformation.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;The inverted matrix, or <tt>null </tt>, if the matrix is
+        singular
 </li>
 	
 	</ul>
@@ -1082,14 +1312,14 @@ inverted.</p>
 <li>
 <tt>hor:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The horizontal scaling factor.
+&mdash;&nbsp;The horizontal scaling factor
 
 </li>
 
 <li>
 <tt>ver:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The vertical scaling factor.
+&mdash;&nbsp;The vertical scaling factor
 
 </li>
 
@@ -1099,7 +1329,7 @@ inverted.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -1133,14 +1363,14 @@ inverted.</p>
 <li>
 <tt>dx:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The distance to translate in the x direction.
+&mdash;&nbsp;The distance to translate in the x direction
 
 </li>
 
 <li>
 <tt>dy:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The distance to translate in the y direction.
+&mdash;&nbsp;The distance to translate in the y direction
 
 </li>
 
@@ -1150,7 +1380,7 @@ inverted.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -1184,14 +1414,14 @@ inverted.</p>
 <li>
 <tt>hor:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The horizontal shear factor.
+&mdash;&nbsp;The horizontal shear factor
 
 </li>
 
 <li>
 <tt>ver:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The vertical shear factor.
+&mdash;&nbsp;The vertical shear factor
 
 </li>
 
@@ -1201,7 +1431,7 @@ inverted.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -1235,21 +1465,21 @@ inverted.</p>
 <li>
 <tt>angle:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The angle of rotation measured in degrees.
+&mdash;&nbsp;The angle of rotation measured in degrees
 
 </li>
 
 <li>
 <tt>x:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The x coordinate of the anchor point.
+&mdash;&nbsp;The x coordinate of the anchor point
 
 </li>
 
 <li>
 <tt>y:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The y coordinate of the anchor point.
+&mdash;&nbsp;The y coordinate of the anchor point
 
 </li>
 
@@ -1259,7 +1489,7 @@ inverted.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
 </li>
 	
 	</ul>
@@ -1341,14 +1571,14 @@ inverted.</p>
 <li>
 <tt>hor:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The horizontal scaling factor.
+&mdash;&nbsp;The horizontal scaling factor
 
 </li>
 
 <li>
 <tt>ver:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The vertical scaling factor.
+&mdash;&nbsp;The vertical scaling factor
 
 </li>
 
@@ -1359,7 +1589,7 @@ inverted.</p>
 	
 		<li>
 <tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a scaling
-        transformation.
+        transformation
 </li>
 	
 	</ul>
@@ -1393,14 +1623,14 @@ inverted.</p>
 <li>
 <tt>dx:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The distance to translate in the x direction.
+&mdash;&nbsp;The distance to translate in the x direction
 
 </li>
 
 <li>
 <tt>dy:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The distance to translate in the y direction.
+&mdash;&nbsp;The distance to translate in the y direction
 
 </li>
 
@@ -1411,7 +1641,7 @@ inverted.</p>
 	
 		<li>
 <tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a translation
-        transformation.
+        transformation
 </li>
 	
 	</ul>
@@ -1445,14 +1675,14 @@ inverted.</p>
 <li>
 <tt>hor:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The horizontal shear factor.
+&mdash;&nbsp;The horizontal shear factor
 
 </li>
 
 <li>
 <tt>ver:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The vertical shear factor.
+&mdash;&nbsp;The vertical shear factor
 
 </li>
 
@@ -1469,7 +1699,7 @@ inverted.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a shearing transformation.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a shearing transformation
 </li>
 	
 	</ul>
@@ -1503,21 +1733,21 @@ inverted.</p>
 <li>
 <tt>angle:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The angle of rotation measured in degrees.
+&mdash;&nbsp;The angle of rotation measured in degrees
 
 </li>
 
 <li>
 <tt>x:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The x coordinate of the anchor point.
+&mdash;&nbsp;The x coordinate of the anchor point
 
 </li>
 
 <li>
 <tt>y:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;The y coordinate of the anchor point.
+&mdash;&nbsp;The y coordinate of the anchor point
 
 </li>
 
@@ -1527,7 +1757,7 @@ inverted.</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a rotation transformation.
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a rotation transformation
 </li>
 	
 	</ul>
