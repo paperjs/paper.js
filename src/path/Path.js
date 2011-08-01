@@ -1174,6 +1174,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return loc && loc.getNormal();
 	},
 
+	/**
+	 * Returns the nearest location on the path to the specified point.
+	 *
+	 * @name Path#getNearestLocation
+	 * @function
+	 * @param point {Point} The point for which we search the nearest location
+	 * @return {CurveLocation} The location on the path that's the closest to
+	 * the specified point
+	 */
 	getNearestLocation: function(point, matrix) {
 		var curves = this.getCurves(),
 			minDist = Infinity,
@@ -1188,6 +1197,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return minLoc;
 	},
 
+	/**
+	 * Returns the nearest point on the path to the specified point.
+	 *
+	 * @name Path#getNearestPoint
+	 * @function
+	 * @param point {Point} The point for which we search the nearest point
+	 * @return {Point} The point on the path that's the closest to the specified
+	 * point
+	 */
 	getNearestPoint: function(point, matrix) {
 		return this.getNearestLocation(point, matrix).getPoint();
 	},
