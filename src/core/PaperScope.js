@@ -126,7 +126,8 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 	 * paper.install(window);
 	 */
 	install: function(scope) {
-		// Define project, view and tool as getters, so they are kept up to date
+		// Define project, view and tool as getters that redirect to these
+		// values on the PaperScope, so they are kept up to date
 		var that = this;
 		Base.each(['project', 'view', 'tool'], function(key) {
 			Base.define(scope, key, {

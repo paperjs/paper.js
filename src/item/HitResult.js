@@ -20,8 +20,6 @@
  * @class A HitResult object contains information about the results of a hit
  * test. It is returned by {@link Item#hitTest(point)} and
  * {@link Project#hitTest(point)}.
- *
- * @extends CurveLocation
  */
 HitResult = Base.extend(/** @lends HitResult# */{
 	initialize: function(type, item, values) {
