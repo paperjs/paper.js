@@ -35,7 +35,9 @@ var View = this.View = Base.extend(/** @lends View# */{
 		this._index = this._scope.views.push(this) - 1;
 		// Handle canvas argument
 		var size;
-		if (canvas && canvas instanceof HTMLCanvasElement) {
+		if (typeof canvas === 'string')
+			canvas = document.getElementById(canvas);
+		if (canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
 			// If the canvas has the resize attribute, resize the it to fill the
 			// window and resize it again whenever the user resizes the window.
