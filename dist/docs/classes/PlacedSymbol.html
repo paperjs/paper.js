@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <title>PlacedSymbol</title>
 <base target="classFrame">
 <link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
@@ -1751,6 +1752,83 @@ raster.scale(5);
 </div>
 
 
+</div>
+</div>
+</div>
+
+	
+<div id="hittest-point-member" class="member">
+<div id="hittest-point-link" class="member-link">
+<a name="hittest-point" href="#" onClick="return toggleMember('hittest-point', false);"><tt><b>hitTest</b>(point[, options])</tt></a>
+</div>
+<div id="hittest-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('hittest-point', false);"><tt><b>hitTest</b>(point[, options])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('hittest-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Perform a hit test on the item (and its children, if it is a
+<a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point.</p>
+<p>The optional options object allows you to control the specifics of the
+hit test and may contain a combination of the following values:</p>
+<p><b>tolerance:</b> <tt>Number</tt> - The tolerance of the hit test in
+points.</p>
+<p><b>options.type:</b> Only hit test again a certain item
+type: <a href="../classes/PathItem.html"><tt>PathItem</tt></a>, <a href="../classes/Raster.html"><tt>Raster</tt></a>, <a href="../classes/TextItem.html"><tt>TextItem</tt></a>, etc.</p>
+<p><b>options.fill:</b> <tt>Boolean</tt> - Hit test the fill of items.</p>
+<p><b>options.stroke:</b> <tt>Boolean</tt> - Hit test the curves of path items,
+taking into account stroke width.</p>
+<p><b>options.segment:</b> <tt>Boolean</tt> - Hit test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of
+<a href="../classes/Path.html"><tt>Path</tt></a> items.</p>
+<p><b>options.handles:</b> <tt>Boolean</tt> - Hit test for the handles
+(<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> / <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>) of path segments.</p>
+<p><b>options.ends:</b> <tt>Boolean</tt> - Only hit test for the first or last
+segment points of open path items.</p>
+<p><b>options.bounds:</b> <tt>Boolean</tt> - Hit test the corners and side-centers
+of the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>).</p>
+<p><b>options.center:</b> <tt>Boolean</tt> - Hit test the <a href="../classes/Rectangle.html#center"><tt>rectangle.center</tt></a>
+of the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>).</p>
+<p><b>options.guide:</b> <tt>Boolean</tt> - Hit test items that have
+<a href="../classes/Item.html#guide"><tt>item.guide</tt></a> set to <tt>true</tt>.</p>
+<p><b>options.selected:</b> <tt>Boolean</tt> - Only hit selected items.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The point where the hit test should be performed
+
+</li>
+
+<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+
+&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,
+tolerance: 2 }</tt>
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/HitResult.html"><tt>HitResult</tt></a></tt>&nbsp;&mdash;&nbsp;A hit result object that contains more
+information about what exactly was hit or <tt>null</tt> if nothing was
+hit.
+</li>
+	
+	</ul>
+
+	
+	
 </div>
 </div>
 </div>
