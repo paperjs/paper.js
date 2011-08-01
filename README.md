@@ -56,10 +56,11 @@ You will then find the built library inside the `dist` folder, named `paper.js`.
 
 	commented		Preprocessed but still formated and commented
 	stripped		Formated but without comments (default)
-	compressed		No comments and no whitespaces
-	uglified		Uses UglifyJS to further reduce file size
+	compressed		Uses UglifyJS to reduce file size
 
-In order for UglifyJS to work when building Paper.js, it needs to be located in a folder name `uglifyjs` on the same level as your `paper.js` project folder. Alternatively you can also adjust the path in `build/preprocess.sh`
+In order for UglifyJS to work when building Paper.js, it needs to be located in a folder name `uglifyjs` on the same level as your `paper.js` project folder. Alternatively you can also adjust the path in `build/preprocess.sh`. You also need to make sure that node will find the uglifyjs library by making a symbolic link to it from `~/.node_libraries/uglify-js`, e.g.
+
+	ln -s ~/Development/JavaScript/uglifyjs ~/.node_libraries/uglify-js
 
 ### Building the Documentation
 
