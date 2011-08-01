@@ -193,12 +193,9 @@ var PaperScript = this.PaperScript = new function() {
 				}
 				if (view) {
 					view.onResize = onResize;
-					if (onFrame) {
-						view.setOnFrame(onFrame);
-					} else {
-						// Automatically draw view at the end.
-						view.draw();
-					}
+					view.setOnFrame(onFrame);
+					// Automatically draw view at the end.
+					view.draw();
 				}
 			}).call(scope);
 		}
