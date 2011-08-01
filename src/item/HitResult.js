@@ -18,7 +18,8 @@
  * @name HitResult
  *
  * @class A HitResult object contains information about the results of a hit
- * test.
+ * test. It is returned by {@link Item#hitTest(point)} and
+ * {@link Project#hitTest(point)}.
  *
  * @extends CurveLocation
  */
