@@ -682,6 +682,43 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		return raster;
 	},
 
+
+
+	/**
+	 * Perform a hit test on the item (and its children, if it is a
+	 * {@link Group} or {@link Layer}) at the location of the specified point.
+	 * 
+	 * The optional options object allows you to control the specifics of the
+	 * hit test and may contain a combination of the following values:
+	 * <b>tolerance:</b> {@code Number} - The tolerance of the hit test in
+	 * points.
+	 * <b>type:</b> Only hit test again a certain item
+	 * type: {@link PathItem}, {@link Raster}, {@link TextItem}, etc.
+	 * <b>fill:</b> {@code Boolean} - Hit test the fill of items.
+	 * <b>stroke:</b> {@code Boolean} - Hit test the curves of path items,
+	 * taking into account stroke width.
+	 * <b>segment:</b> {@code Boolean} - Hit test for {@link Segment#point} of
+	 * {@link Path} items.
+	 * <b>handles:</b> {@code Boolean} - Hit test for the handles
+	 * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
+	 * <b>ends:</b> {@code Boolean} - Only hit test for the first or last
+	 * segment points of open path items.
+	 * <b>bounds:</b> {@code Boolean} - Hit test the corners and side-centers
+	 * of the bounding rectangle of items ({@link Item#bounds}).
+	 * <b>center:</b> {@code Boolean} - Hit test the {@link Rectangle#center}
+	 * of the bounding rectangle of items ({@link Item#bounds}).
+	 * <b>guide:</b> {@code Boolean} - Hit test items that have
+	 * {@link Item#guide} set to {@code true}.
+	 * <b>selected:</b> {@code Boolean} - Only hit selected items.
+	 *
+	 * @param {Point} point The point where the hit test should be performed
+	 * @param {Object} [options={ fill: true, stroke: true, segments: true,
+	 * tolerance: 2 }]
+	 * @param {Matrix} [matrix]
+	 * @return {HitResult|null} A hit result object that contains more
+	 * information about what exactly was hit or {@code null} if nothing was
+	 * hit.
+	 */
 	hitTest: function(point, options, matrix) {
 		options = HitResult.getOptions(point, options);
 		point = options.point;
