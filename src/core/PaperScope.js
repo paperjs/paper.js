@@ -39,16 +39,12 @@
 var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 
 	/**
-	 * Creates a PaperScope object. If a canvas is provided, it also creates a
-	 * an empty {@link Project} and a {@link View} for it, both linked to this
-	 * scope.
+	 * Creates a PaperScope object.
 	 *
 	 * @name PaperScope#initialize
 	 * @function
-	 * @param {HTMLCanvasElement} canvas The canvas this scope should be
-	 * associated with.
 	 */
-	initialize: function(canvas, script) {
+	initialize: function(script) {
 		// script is only used internally, when creating scopes for PaperScript.
 		// Whenever a PaperScope is created, it automatically becomes the active
 		// one.
@@ -59,9 +55,9 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		this.projects = [];
 		this.tool = null;
 		this.tools = [];
-		var obj = script || canvas;
-		this._id = obj && obj.getAttribute('id')
-				|| script && script.src
+		// Assign an id to this canvas that's either extracted from the script
+		// or automatically generated.
+		this._id = script && (script.getAttribute('id') || script.src)
 				|| ('paperscope-' + (PaperScope._id++));
 		// Make sure the script tag also has this id now. If it already had an
 		// id, we're not changing it, since it's the first option we're
@@ -69,14 +65,6 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		if (script)
 			script.setAttribute('id', this._id);
 		PaperScope._scopes[this._id] = this;
-		if (canvas) {
-			// Create an empty project for the scope.
-			// Since the global paper variable points to this PaperScope, the
-			// created project and view are automatically associated with it.
-			this.project = new Project();
-			// Create a view for the canvas.
-			this.view = new View(canvas);
-		}
 	},
 
 	/**
@@ -143,6 +131,24 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		return Base.each(this, function(value, key) {
 			this[key] = value;
 		}, scope);
+	},
+
+	/**
+	 * Sets up an empty project for us. If a canvas is provided, it also creates
+	 * a {@link View} for it, both linked to this scope.
+	 *
+	 * @param {HTMLCanvasElement} canvas The canvas this scope should be
+	 * associated with.
+	 */
+	setup: function(canvas) {
+		// Create an empty project for the scope.
+		// Make sure this is the active scope, so the created project and view
+		// are automatically associated with it.
+		paper = this;
+		this.project = new Project();
+		// Create a view for the canvas.
+		if (canvas)
+			this.view = new View(canvas);
 	},
 
 	clear: function() {
