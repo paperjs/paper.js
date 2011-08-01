@@ -211,7 +211,7 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	 * @param {Point} point The point where the hit test should be performed
 	 * @param {Object} [options={ fill: true, stroke: true, segments: true,
 	 * tolerance: true }]
-	 * @return {HitResult|null} A hit result object that contains more
+	 * @return {HitResult} A hit result object that contains more
 	 * information about what exactly was hit or {@code null} if nothing was
 	 * hit.
 	 */
