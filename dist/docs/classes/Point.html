@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <title>Point</title>
 <base target="classFrame">
 <link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
@@ -1146,7 +1147,7 @@ is not modified!</p>
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the transformed point
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;The transformed point
 </li>
 	
 	</ul>
@@ -1160,18 +1161,18 @@ is not modified!</p>
 			
 <h3>Distance & Length</h3>
 
-<div id="getdistance-point-member" class="member">
-<div id="getdistance-point-link" class="member-link">
-<a name="getdistance-point" href="#" onClick="return toggleMember('getdistance-point', false);"><tt><b>getDistance</b>(point)</tt></a>
+<div id="getdistance-point-squared-member" class="member">
+<div id="getdistance-point-squared-link" class="member-link">
+<a name="getdistance-point-squared" href="#" onClick="return toggleMember('getdistance-point-squared', false);"><tt><b>getDistance</b>(point, squared)</tt></a>
 </div>
-<div id="getdistance-point-description" class="member-description hidden">
+<div id="getdistance-point-squared-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('getdistance-point', false);"><tt><b>getDistance</b>(point)</tt></a>
+<a href="#" onClick="return toggleMember('getdistance-point-squared', false);"><tt><b>getDistance</b>(point, squared)</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getdistance-point', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getdistance-point-squared', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
@@ -1183,6 +1184,14 @@ is not modified!</p>
 <tt>point:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
 
+
+</li>
+
+<li>
+<tt>squared:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;Controls whether the distance should remain
+       squared, or its square root should be calculated.
 
 </li>
 
@@ -1229,7 +1238,7 @@ changing its angle and returns it as a new point. The optional
 <li>
 <tt>length:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;the length of the normalized vector
+&mdash;&nbsp;The length of the normalized vector
 &mdash;&nbsp;optional, default: <tt>1</tt>
 </li>
 
@@ -1239,7 +1248,7 @@ changing its angle and returns it as a new point. The optional
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the normalized vector of the vector that is represented
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;The normalized vector of the vector that is represented
                 by this point's coordinates.
 </li>
 	
