@@ -127,6 +127,9 @@ var paper = new function() {
 // the first PaperScope and return it, all in one statement.
 // The version for 'dev' of this happens in core/initialize.js, since it depends
 // on sequentiality of include() loading.
+// Mark this object as enumerable, so all the injected classes can be enumerated
+// again in PaperScope#install().
+this.enumerable = true;
 return new (PaperScope.inject(this));
 /*#*/ } // options.version != 'dev'
 };

@@ -137,12 +137,15 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 				}
 			});
 		});
-		// Use scope as side-car (= 'this' inside iterator), and have it
-		// returned at the end.
-		return Base.each(this, function(value, key) {
-			if (!(key in this))
-				this[key] = value;
-		}, scope);
+		// Copy over all fields from this scope to the destination.
+		// Do not use Base.each, since we also want to enumerate over
+		// fields on PaperScope.prototype, e.g. all classes
+		for (var key in this) {
+			if (!/^(version|_id|load)/.test(key) && !(key in scope)) {
+				console.log(key);
+				scope[key] = this[key];
+			}
+		}
 	},
 
 	/**
