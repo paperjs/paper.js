@@ -26,7 +26,8 @@
 var View = this.View = Base.extend(/** @lends View# */{
 	/**
 	 * Creates a view object
-	 * @param {Canvas} canvas
+	 * @param {HTMLCanvasElement|String} canvas The canvas object that this
+	 * view should wrap, or the String id that represents it
 	 */
 	initialize: function(canvas) {
 		// Associate this view with the active paper scope.
