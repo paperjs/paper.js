@@ -43,6 +43,10 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	// not supported.
 	_defaults: {
 		fillColor: undefined,
+		shadowColor: undefined,
+		shadowBlur: 0,
+		shadowOffsetX: 0,
+		shadowOffsetY: 0,
 		strokeColor: undefined,
 		strokeWidth: 1,
 		strokeCap: 'butt',
@@ -231,5 +235,57 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	 *
 	 * // Set the fill color of the circle to RGB red:
 	 * circle.fillColor = new RGBColor(1, 0, 0);
+	 */
+
+	/**
+	 * {@grouptitle Shadow Style}
+	 *
+	 * The shadow color.
+	 *
+	 * @property
+	 * @name PathStyle#shadowColor
+	 * @type RGBColor|HSBColor|HSLColor|GrayColor
+	 *
+	 * @example {@paperscript}
+	 * // Setting the shadow color of a path to black:
+	 *
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
+	 *
+	 * // Set the shadow color of the circle to RGB black:
+	 * circle.shadowColor = new RGBColor(0, 0, 0);
+	 *
+	 * // Set the shadow blur, offsetX and offsetY to 10:
+	 * circle.shadowBlur = 10;
+	 * circle.shadowOffsetX = 10;
+	 * circle.shadowOffsetY = 10;
+	 */
+
+	/**
+	 * The shadow's blur.
+	 *
+	 * @property
+	 * @default 0
+	 * @name PathStyle#shadowBlur
+	 * @type Number
+	 */
+
+	/**
+	 * The shadow's x offset.
+	 *
+	 * @property
+	 * @default 0
+	 * @name PathStyle#shadowOffsetX
+	 * @type Number
+	 */
+
+	/**
+	 * The shadow's y offset.
+	 *
+	 * @property
+	 * @default 0
+	 * @name PathStyle#shadowOffsetY
+	 * @type Number
 	 */
 });

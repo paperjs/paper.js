@@ -1383,6 +1383,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 			var fillColor = this.getFillColor(),
 				strokeColor = this.getStrokeColor(),
+				shadowColor = this.getShadowColor(),
 				dashArray = this.getDashArray() || [], // TODO: Always defined?
 				hasDash = !!dashArray.length;
 
@@ -1410,6 +1411,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				if (!fillColor || !strokeColor)
 					ctx.globalAlpha = this._opacity;
 				if (fillColor) {
+					if(shadowColor) {
+						ctx.shadowColor = shadowColor.getCanvasStyle(ctx);
+						ctx.shadowBlur = this.getShadowBlur();
+						ctx.shadowOffsetX = this.getShadowOffsetX();
+						ctx.shadowOffsetY = this.getShadowOffsetY();
+					}
 					ctx.fillStyle = fillColor.getCanvasStyle(ctx);
 					ctx.fill();
 				}
