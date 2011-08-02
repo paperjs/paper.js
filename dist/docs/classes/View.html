@@ -50,8 +50,9 @@ screen.</p>
 
 <li>
 <tt>canvas:</tt> 
-<tt>Canvas</tt>
-
+<tt>HTMLCanvasElement</tt> / <tt>String</tt>
+&mdash;&nbsp;The canvas object that this
+view should wrap, or the String id that represents it
 
 </li>
 
@@ -379,6 +380,58 @@ function onResize(event) {
 	<div class="reference-members"><h2>Methods</h2>
 		
 			
+<div id="activate-member" class="member">
+<div id="activate-link" class="member-link">
+<a name="activate" href="#" onClick="return toggleMember('activate', false);"><tt><b>activate</b>()</tt></a>
+</div>
+<div id="activate-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('activate', false);"><tt><b>activate</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('activate', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Makes this view the active one, meaning <a href="../classes/PaperScope.html#view"><tt>paperScope.view</tt></a> will
+point to it.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="remove-member" class="member">
+<div id="remove-link" class="member-link">
+<a name="remove" href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+<div id="remove-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('remove', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Removes thsi view from the <a href="../classes/PaperScope.html#views"><tt>paperScope.views</tt></a> list and frees the
+associated canvas.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
 <div id="isvisible-member" class="member">
 <div id="isvisible-link" class="member-link">
 <a name="isvisible" href="#" onClick="return toggleMember('isvisible', false);"><tt><b>isVisible</b>()</tt></a>
@@ -441,6 +494,31 @@ viewport.</p>
 
 </ul>
 
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="draw-member" class="member">
+<div id="draw-link" class="member-link">
+<a name="draw" href="#" onClick="return toggleMember('draw', false);"><tt><b>draw</b>()</tt></a>
+</div>
+<div id="draw-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('draw', false);"><tt><b>draw</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('draw', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Draws the view.</p>
+	
 	
 	
 	
