@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>_global_</title>
+<title>PaperScope</title>
 <base target="classFrame">
 <link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
 <link rel="stylesheet" href="../resources/css/style.css" type="text/css">
@@ -15,10 +15,54 @@
 </head>
 <body class="reference">
 <div class="reference-class">
-<h1>Global Scope</h1>
+<h1>PaperScope</h1>
+
+<p>The <tt>PaperScope</tt> class represents the scope associated with a
+Paper context. When working with PaperScript, these scopes are automatically
+created for us, and through clever scoping the properties and methods of the
+active scope seem to become part of the global scope.</p>
+<p>When working with normal JavaScript code, <tt>PaperScope</tt> objects need to
+be manually created and handled.</p>
+<p>Paper classes can only be accessed through <tt>PaperScope</tt> objects. Thus
+in PaperScript they are global, while in JavaScript, they are available on
+the global <a href="../classes/global.html#paper"><tt>paper</tt></a> object. For JavaScript you can use
+<a href="../classes/PaperScope.html#install-scope"><tt>paperScope.install(scope)</tt></a> to install the Paper classes and objects
+on the global scope. Note that when working with more than one scope, this
+still works for classes, but not for objects like <a href="../classes/PaperScope.html#project"><tt>paperScope.project</tt></a>,
+since they are not updated in the injected scope if scopes are switched.</p>
+<p>The global <a href="../classes/global.html#paper"><tt>paper</tt></a> object is simply a reference to the currently active
+<tt>PaperScope</tt>.</p>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="paperscope-member" class="member">
+<div id="paperscope-link" class="member-link">
+<a name="paperscope" href="#" onClick="return toggleMember('paperscope', false);"><tt><b>PaperScope</b>()</tt></a>
+</div>
+<div id="paperscope-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('paperscope', false);"><tt><b>PaperScope</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('paperscope', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a PaperScope object.</p>
 
 
 
+
+</div>
+</div>
+</div>
+	
 </div>
 
 
@@ -28,28 +72,28 @@
 	<div class="reference-members"><h2>Properties</h2>
 		
 			
-<div id="paper-member" class="member">
-<div id="paper-link" class="member-link">
-<a name="paper" href="#" onClick="return toggleMember('paper', false);"><tt><b>paper</b></tt></a>
+<div id="version-member" class="member">
+<div id="version-link" class="member-link">
+<a name="version" href="#" onClick="return toggleMember('version', false);"><tt><b>version</b></tt></a>
 </div>
-<div id="paper-description" class="member-description hidden">
+<div id="version-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('paper', false);"><tt><b>paper</b></tt></a>
+<a href="#" onClick="return toggleMember('version', false);"><tt><b>version</b></tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('paper', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('version', false);"></div>
 <div class="clear"></div>
 </div>
 
 <div class="member-text">
-	<p>A reference to the currently active <a href="../classes/PaperScope.html"><tt>PaperScope</tt></a> object.</p>
+	<p>The version of Paper.js, as a float number.</p>
 	
 	
 	<ul><b>Type:</b>
 	<li>
-		<a href="../classes/PaperScope.html"><tt>PaperScope</tt></a>
+		<tt>Number</tt>
 	</li>
 	</ul>
 	
@@ -60,8 +104,6 @@
 </div>
 		
 			
-	<h3>Global PaperScope Properties (for PaperScript)</h3>
-
 <div id="project-member" class="member">
 <div id="project-link" class="member-link">
 <a name="project" href="#" onClick="return toggleMember('project', false);"><tt><b>project</b></tt></a>
@@ -253,272 +295,176 @@
 </div>
 </div>
 		
-			
-	<h3>View Event Handlers (for PaperScript)</h3>
+	</div>
 
-<div id="onframe-member" class="member">
-<div id="onframe-link" class="member-link">
-<a name="onframe" href="#" onClick="return toggleMember('onframe', false);"><tt><b>onFrame</b></tt></a>
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="install-scope-member" class="member">
+<div id="install-scope-link" class="member-link">
+<a name="install-scope" href="#" onClick="return toggleMember('install-scope', false);"><tt><b>install</b>(scope)</tt></a>
 </div>
-<div id="onframe-description" class="member-description hidden">
+<div id="install-scope-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('onframe', false);"><tt><b>onFrame</b></tt></a>
+<a href="#" onClick="return toggleMember('install-scope', false);"><tt><b>install</b>(scope)</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onframe', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('install-scope', false);"></div>
 <div class="clear"></div>
 </div>
-
 <div class="member-text">
-	<p>A reference to the <a href="../classes/View.html#onframe"><tt>view.onFrame</tt></a> handler function.</p>
+	<p>Injects the paper scope into any other given scope. Can be used for
+examle to inject the currently active PaperScope into the window's global
+scope, to emulate PaperScript-style globally accessible Paper classes and
+objects:</p>
 	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Function</tt>
-	</li>
-	</ul>
-	
-	
-</div>
+<ul><b>Parameters:</b>
 
+<li>
+<tt>scope:</tt> 
+
+
+
+</li>
+
+</ul>
+
+	
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">paper.install(window);</pre>
+
+</div>
 </div>
 </div>
 		
 			
-<div id="onresize-member" class="member">
-<div id="onresize-link" class="member-link">
-<a name="onresize" href="#" onClick="return toggleMember('onresize', false);"><tt><b>onResize</b></tt></a>
+<div id="setup-canvas-member" class="member">
+<div id="setup-canvas-link" class="member-link">
+<a name="setup-canvas" href="#" onClick="return toggleMember('setup-canvas', false);"><tt><b>setup</b>(canvas)</tt></a>
 </div>
-<div id="onresize-description" class="member-description hidden">
+<div id="setup-canvas-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('onresize', false);"><tt><b>onResize</b></tt></a>
+<a href="#" onClick="return toggleMember('setup-canvas', false);"><tt><b>setup</b>(canvas)</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onresize', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('setup-canvas', false);"></div>
 <div class="clear"></div>
 </div>
-
 <div class="member-text">
-	<p>A reference to the <a href="../classes/View.html#onresize"><tt>view.onResize</tt></a> handler function.</p>
+	<p>Sets up an empty project for us. If a canvas is provided, it also creates
+a <a href="../classes/View.html"><tt>View</tt></a> for it, both linked to this scope.</p>
 	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Function</tt>
-	</li>
-	</ul>
-	
-	
-</div>
+<ul><b>Parameters:</b>
 
-</div>
-</div>
-		
-			
-	<h3>Mouse Event Handlers (for PaperScript)</h3>
+<li>
+<tt>canvas:</tt> 
+<tt>HTMLCanvasElement</tt>
+&mdash;&nbsp;The canvas this scope should be
+associated with.
 
-<div id="onmousedown-member" class="member">
-<div id="onmousedown-link" class="member-link">
-<a name="onmousedown" href="#" onClick="return toggleMember('onmousedown', false);"><tt><b>onMouseDown</b></tt></a>
-</div>
-<div id="onmousedown-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('onmousedown', false);"><tt><b>onMouseDown</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onmousedown', false);"></div>
-<div class="clear"></div>
-</div>
+</li>
 
-<div class="member-text">
-	<p>A reference to the <a href="../classes/Tool.html#onmousedown"><tt>tool.onMouseDown</tt></a> handler function.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Function</tt>
-	</li>
-	</ul>
-	
-	
-</div>
+</ul>
 
-</div>
-</div>
-		
-			
-<div id="onmousedrag-member" class="member">
-<div id="onmousedrag-link" class="member-link">
-<a name="onmousedrag" href="#" onClick="return toggleMember('onmousedrag', false);"><tt><b>onMouseDrag</b></tt></a>
-</div>
-<div id="onmousedrag-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('onmousedrag', false);"><tt><b>onMouseDrag</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onmousedrag', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>A reference to the <a href="../classes/Tool.html#onmousedrag"><tt>tool.onMouseDrag</tt></a> handler function.</p>
 	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Function</tt>
-	</li>
-	</ul>
 	
 	
 </div>
-
-</div>
-</div>
-		
-			
-<div id="onmousemove-member" class="member">
-<div id="onmousemove-link" class="member-link">
-<a name="onmousemove" href="#" onClick="return toggleMember('onmousemove', false);"><tt><b>onMouseMove</b></tt></a>
-</div>
-<div id="onmousemove-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('onmousemove', false);"><tt><b>onMouseMove</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onmousemove', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>A reference to the <a href="../classes/Tool.html#onmousemove"><tt>tool.onMouseMove</tt></a> handler function.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Function</tt>
-	</li>
-	</ul>
-	
-	
-</div>
-
-</div>
-</div>
-		
-			
-<div id="onmouseup-member" class="member">
-<div id="onmouseup-link" class="member-link">
-<a name="onmouseup" href="#" onClick="return toggleMember('onmouseup', false);"><tt><b>onMouseUp</b></tt></a>
-</div>
-<div id="onmouseup-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('onmouseup', false);"><tt><b>onMouseUp</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onmouseup', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>A reference to the <a href="../classes/Tool.html#onmouseup"><tt>tool.onMouseUp</tt></a> handler function.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Function</tt>
-	</li>
-	</ul>
-	
-	
-</div>
-
-</div>
-</div>
-		
-			
-	<h3>Keyboard Event Handlers (for PaperScript)</h3>
-
-<div id="onkeydown-member" class="member">
-<div id="onkeydown-link" class="member-link">
-<a name="onkeydown" href="#" onClick="return toggleMember('onkeydown', false);"><tt><b>onKeyDown</b></tt></a>
-</div>
-<div id="onkeydown-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('onkeydown', false);"><tt><b>onKeyDown</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onkeydown', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>A reference to the <a href="../classes/Tool.html#onkeydown"><tt>tool.onKeyDown</tt></a> handler function.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Function</tt>
-	</li>
-	</ul>
-	
-	
-</div>
-
-</div>
-</div>
-		
-			
-<div id="onkeyup-member" class="member">
-<div id="onkeyup-link" class="member-link">
-<a name="onkeyup" href="#" onClick="return toggleMember('onkeyup', false);"><tt><b>onKeyUp</b></tt></a>
-</div>
-<div id="onkeyup-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('onkeyup', false);"><tt><b>onKeyUp</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onkeyup', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>A reference to the <a href="../classes/Tool.html#onkeyup"><tt>tool.onKeyUp</tt></a> handler function.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Function</tt>
-	</li>
-	</ul>
-	
-	
-</div>
-
 </div>
 </div>
 		
 	</div>
 
 
+	<div class="reference-members"><h2>Static Methods</h2>
+		
+			
+<div id="get-id-member" class="member">
+<div id="get-id-link" class="member-link">
+<a name="get-id" href="#" onClick="return toggleMember('get-id', false);"><tt><b>PaperScope.get</b>(id)</tt></a>
+</div>
+<div id="get-id-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('get-id', false);"><tt><b>PaperScope.get</b>(id)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('get-id', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Retrieves a PaperScope object with the given id or associated with
+the passed canvas element.</p>
+	
+<ul><b>Parameters:</b>
 
+<li>
+<tt>id:</tt> 
+
+
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="each-iter-member" class="member">
+<div id="each-iter-link" class="member-link">
+<a name="each-iter" href="#" onClick="return toggleMember('each-iter', false);"><tt><b>PaperScope.each</b>(iter)</tt></a>
+</div>
+<div id="each-iter-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('each-iter', false);"><tt><b>PaperScope.each</b>(iter)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('each-iter', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Iterates over all active scopes and calls the passed iterator
+function for each of them.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>iter:</tt> 
+
+&mdash;&nbsp;the iterator function.
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
 
 
 

@@ -760,8 +760,15 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				return [0.5 * (w[0].x + w[5].x)];
 			// Compute intersection of chord from first control point to last
 			// with x-axis.
-			if (isFlatEnough(w))
-				return [xAxis.intersect(new Line(w[0], w[5], true)).x];
+			if (isFlatEnough(w)) {
+				var line = new Line(w[0], w[5], true);
+				// Compare the line's squared length with EPSILON. If we're
+				// below, #intersect() will return null because of division
+				// by near-zero.
+				return [ line.vector.getLength(true) < Numerical.EPSILON
+						? line.point.x
+						: xAxis.intersect(line).x ];
+			}
 		}
 
 		// Otherwise, solve recursively after
@@ -840,19 +847,20 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			// Also look at beginning and end of curve (t = 0 / 1)
 			var roots = findRoots(w, 0).concat([0, 1]);
 			var minDist = Infinity,
-				minPoint,
-				minRoot;
+				minT,
+				minPoint;
 			// There are always roots, since we add [0, 1] above.
 			for (var i = 0; i < roots.length; i++) {
 				var pt = this.getPoint(roots[i]),
-					dist = point.getDistance(pt);
+					dist = point.getDistance(pt, true);
+				// We're comparing squared distances
 				if (dist < minDist) {
 					minDist = dist;
-					minRoot = roots[i];
+					minT = roots[i];
 					minPoint = pt;
 				}
 			}
-			return new CurveLocation(this, minRoot, minPoint, minDist);
+			return new CurveLocation(this, minT, minPoint, Math.sqrt(minDist));
 		},
 
 		getNearestPoint: function(point, matrix) {
