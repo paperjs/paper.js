@@ -390,7 +390,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * is not modified!
 	 *
 	 * @param {Matrix} matrix
-	 * @return {Point} the transformed point
+	 * @return {Point} The transformed point
 	 */
 	transform: function(matrix) {
 		return matrix ? matrix._transformPoint(this) : this;
@@ -402,13 +402,16 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * Returns the distance between the point and another point.
 	 *
 	 * @param {Point} point
+	 * @param {Boolean} squared Controls whether the distance should remain
+	 *        squared, or its square root should be calculated.
 	 * @return {Number}
 	 */
-	getDistance: function(point) {
+	getDistance: function(point, squared) {
 		point = Point.read(arguments);
 		var x = point.x - this.x,
-			y = point.y - this.y;
-		return Math.sqrt(x * x + y * y);
+			y = point.y - this.y,
+			d = x * x + y * y;
+		return squared ? d : Math.sqrt(d);
 	},
 
 	/**
@@ -421,7 +424,11 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @bean
 	 */
 	getLength: function() {
-		return Math.sqrt(this.x * this.x + this.y * this.y);
+		// Supports a hidden parameter 'squared', which controls whether the
+		// squared length should be returned. Hide it so it produces a bean
+		// property called #length.
+		var l = this.x * this.x + this.y * this.y;
+		return arguments[0] ? l : Math.sqrt(l);
 	},
 
 	setLength: function(length) {
@@ -453,8 +460,8 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * {@code length} parameter defines the length to normalize to.
 	 * The object itself is not modified!
 	 *
-	 * @param {Number} [length=1] the length of the normalized vector
-	 * @return {Point} the normalized vector of the vector that is represented
+	 * @param {Number} [length=1] The length of the normalized vector
+	 * @return {Point} The normalized vector of the vector that is represented
 	 *                 by this point's coordinates.
 	 */
 	normalize: function(length) {

@@ -19,13 +19,19 @@
 // that allow us to use their names.
 // Setting Function#name is not possible, as that is read-only.
 Base.each(this, function(val, key) {
-	if (val && val.prototype instanceof Base)
+	if (val && val.prototype instanceof Base) {
 		val._name = key;
+/*#*/ if (options.version == 'dev') {
+		// If we're in dev mode, also export all classes through PaperScope, to
+		// mimick scoping behavior of the built library.
+		PaperScope.prototype[key] = val;
+/*#*/ } // options.version == 'dev'
+	}
 });
 
 /*#*/ if (options.version == 'dev') {
-// We're already leaking into the global scope, so let's just assign the global
-// paper object with a prepare scope. See paper.js for the non-dev version of
-// this code.
+// See paper.js for the non-dev version of this code. We cannot handle dev there
+// due to the seperate loading of all source files, which are only availabe
+// after the execution of paper.js
 paper = new PaperScope();
 /*#*/ } // options.version == 'dev'

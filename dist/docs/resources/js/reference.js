@@ -119,10 +119,15 @@ PaperScript = HtmlElement.extend({
 			var scope = paper.PaperScope.get(script.$);
 			if (scope) {
 				// Update script to edited version
-				script.setText(editor.getValue());
+				var code = editor.getValue();
+				script.setText(code);
+				// Keep a reference to the used canvas, since we're going to
+				// fully clear the scope and initialize again with this canvas.
+				var canvas = scope.view.canvas;
 				// Clear scope first, then evaluate a new script.
 				scope.clear();
-				scope.evaluate(script.$);
+				scope.initialize(canvas);
+				scope.evaluate(code);
 			}
 		}
 

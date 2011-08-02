@@ -100,7 +100,7 @@ var PaperScript = this.PaperScript = new function() {
 		// Use parse-js to translate the code into a AST structure which is then
 		// walked and parsed for operators to overload. The resulting AST is
 		// translated back to code and evaluated.
-		var ast = parse_js.parse(code, true),
+		var ast = parse_js.parse(code),
 			walker = parse_js.ast_walker(),
 			walk = walker.walk;
 
@@ -144,8 +144,7 @@ var PaperScript = this.PaperScript = new function() {
 
 	/**
 	 * Evaluates parsed PaperScript code in the passed {@link PaperScope}
-	 * object. It also handles canvas setup, tool creation and handlers
-	 * automatically for us.
+	 * object. It also installs handlers automatically for us.
 	 *
 	 * @name PaperScript.evaluate
 	 * @function
@@ -194,12 +193,9 @@ var PaperScript = this.PaperScript = new function() {
 				}
 				if (view) {
 					view.onResize = onResize;
-					if (onFrame) {
-						view.setOnFrame(onFrame);
-					} else {
-						// Automatically draw view at the end.
-						view.draw();
-					}
+					view.setOnFrame(onFrame);
+					// Automatically draw view at the end.
+					view.draw();
 				}
 			}).call(scope);
 		}
@@ -240,7 +236,8 @@ var PaperScript = this.PaperScript = new function() {
 				// so a project is created for it now.
 				var canvas = PaperScript.getAttribute(script, 'canvas');
 				canvas = canvas && document.getElementById(canvas);
-				var scope = new PaperScope(canvas, script);
+				var scope = new PaperScope(script);
+				scope.setup(canvas);
 				if (script.src) {
 					// If we're loading from a source, request that first and then
 					// run later.

@@ -1,45 +1,53 @@
-/***
+/*!
+ * Paper.js v0.2
  *
- * Paper.js
+ * This file is part of Paper.js, a JavaScript Vector Graphics Library,
+ * based on Scriptographer.org and designed to be largely API compatible.
+ * http:
+ * http:
  *
- * A JavaScript Vector Graphics Library, based on Scriptographer.org and
- * designed to be largely API compatible.
- * http://Paperjs.org/
- * http://scriptographer.org/
+ * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * http:
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
- *
  * All rights reserved.
+ *
+ * Date: Mon Aug 1 12:03:23 2011 +0100
  *
  ***
  *
  * Bootstrap.js JavaScript Framework.
- * http://bootstrapjs.org/
+ * http:
+ *
+ * Copyright (c) 2006 - 2011 Juerg Lehni
+ * http:
  *
  * Distributed under the MIT license.
  *
- * Copyright (c) 2006 - 2011 Juerg Lehni
- * http://lehni.org/
- *
  ***
  *
- * Parse-JS, A JavaScript tokenizer / parser / generator.
+ * Parse-js
+ *
+ * A JavaScript tokenizer / parser / generator, originally written in Lisp.
+ * Copyright (c) Marijn Haverbeke <marijnh@gmail.com>
+ * http:
+ *
+ * Ported by to JavaScript by Mihai Bazon
+ * Copyright (c) 2010, Mihai Bazon <mihai.bazon@gmail.com>
+ * http:
+ *
+ * Modifications and adaptions to browser (c) 2011, Juerg Lehni
+ * http:
  *
  * Distributed under the BSD license.
- *
- * Copyright (c) 2010, Mihai Bazon <mihai.bazon@gmail.com>
- * http://mihai.bazon.net/blog/
- *
- ***/
+ */
 
 var paper = new function() {
 
 var Base = new function() { 
 	var fix = !this.__proto__,
-		hidden = /^(statics|generics|preserve|enumerable|beans|prototype|__proto__|toString|valueOf)$/,
+		hidden = /^(statics|generics|preserve|enumerable|prototype|__proto__|toString|valueOf)$/,
 		proto = Object.prototype,
 		has = fix
 			? function(name) {
@@ -150,7 +158,7 @@ var Base = new function() {
 			}
 		}
 		if (src) {
-			beans = src.beans && [];
+			beans = [];
 			for (var name in src)
 				if (has.call(src, name) && !hidden.test(name))
 					field(name, null, true, generics);
@@ -287,9 +295,18 @@ var Base = new function() {
 }
 
 this.Base = Base.inject({
+	generics: true,
 
 	clone: function() {
 		return new this.constructor(this);
+	},
+
+	toString: function() {
+		return '{ ' + Base.each(this, function(value, key) {
+			var type = typeof value;
+			this.push(key + ': ' + (type === 'number' ? Base.formatNumber(value)
+					: type === 'string' ? "'" + value + "'" : value));
+		}, []).join(', ') + ' }';
 	},
 
 	statics: {
@@ -316,14 +333,6 @@ this.Base = Base.inject({
 			return res;
 		},
 
-		initialize: function(object, values, defaults) {
-			if (!values)
-				values = defaults;
-			return Base.each(defaults, function(value, key) {
-				this[key] = values[key] || value;
-			}, object);
-		},
-
 		splice: function(list, items, index, remove) {
 			var amount = items && items.length,
 				append = index === undefined;
@@ -346,6 +355,14 @@ this.Base = Base.inject({
 			}
 		},
 
+		merge: function() {
+			return Base.each(arguments, function(hash) {
+				Base.each(hash, function(value, key) {
+					this[key] = value;
+				}, this);
+			}, new Base(), true); 
+		},
+
 		capitalize: function(str) {
 			return str.replace(/\b[a-z]/g, function(match) {
 				return match.toUpperCase();
@@ -358,43 +375,67 @@ this.Base = Base.inject({
 			});
 		},
 
-		formatNumber: function(num) {
-			return (Math.round(num * 100000) / 100000).toString();
+		hyphenate: function(str) {
+			return str.replace(/[a-z][A-Z0-9]|[0-9][a-zA-Z]|[A-Z]{2}[a-z]/g,
+				function(match) {
+					return match.charAt(0) + '-' + match.substring(1);
+				}
+			).toLowerCase();
 		},
 
-		formatObject: function(obj) {
-			return '{ ' + Base.each(obj, function(value, key) {
-				this.push(key + ': ' + value);
-			}, []).join(', ') + ' }';
+		formatNumber: function(num) {
+			return (Math.round(num * 100000) / 100000).toString();
 		}
 	}
 });
 
 var PaperScope = this.PaperScope = Base.extend({
 
-	initialize: function(id) {
-		this.project = null;
-
-		this.projects = [];
-
+	initialize: function(script) {
+		paper = this;
 		this.view = null;
 		this.views = [];
-
+		this.project = null;
+		this.projects = [];
 		this.tool = null;
 		this.tools = [];
-		this.id = id;
-		PaperScope._scopes[id] = this;
-
+		this._id = script && (script.getAttribute('id') || script.src)
+				|| ('paperscope-' + (PaperScope._id++));
+		if (script)
+			script.setAttribute('id', this._id);
+		PaperScope._scopes[this._id] = this;
 	},
 
+	version: 0.2,
+
 	evaluate: function(code) {
-		return PaperScript.evaluate(code, this);
+		var res = PaperScript.evaluate(code, this);
+		View.updateFocus();
+		return res;
 	},
 
 	install: function(scope) {
-		return Base.each(this, function(value, key) {
-			this[key] = value;
-		}, scope);
+		var that = this;
+		Base.each(['project', 'view', 'tool'], function(key) {
+			Base.define(scope, key, {
+				configurable: true,
+				writable: true,
+				get: function() {
+					return that[key];
+				}
+			});
+		});
+		for (var key in this) {
+			if (!/^(version|_id|load)/.test(key) && !(key in scope))
+				scope[key] = this[key];
+		}
+	},
+
+	setup: function(canvas) {
+		paper = this;
+		this.project = new Project();
+		if (canvas)
+			this.view = new View(canvas);
 	},
 
 	clear: function() {
@@ -408,24 +449,34 @@ var PaperScope = this.PaperScope = Base.extend({
 
 	remove: function() {
 		this.clear();
-		delete PaperScope._scopes[this.id];
+		delete PaperScope._scopes[this._id];
+	},
+
+	_needsRedraw: function() {
+		if (!this._redrawNotified) {
+			for (var i = this.views.length - 1; i >= 0; i--)
+				this.views[i]._redrawNeeded = true;
+			this._redrawNotified = true;
+		}
 	},
 
 	statics: {
 		_scopes: {},
+		_id: 0,
 
 		get: function(id) {
 			if (typeof id === 'object')
 				id = id.getAttribute('id');
 			return this._scopes[id] || null;
+		},
+
+		each: function(iter) {
+			Base.each(this._scopes, iter);
 		}
 	}
 });
 
 var Point = this.Point = Base.extend({
-
-	beans: true,
-
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
 			this.x = arg0;
@@ -501,18 +552,20 @@ var Point = this.Point = Base.extend({
 	},
 
 	transform: function(matrix) {
-		return matrix._transformPoint(this);
+		return matrix ? matrix._transformPoint(this) : this;
 	},
 
-	getDistance: function(point) {
+	getDistance: function(point, squared) {
 		point = Point.read(arguments);
 		var x = point.x - this.x,
-			y = point.y - this.y;
-		return Math.sqrt(x * x + y * y);
+			y = point.y - this.y,
+			d = x * x + y * y;
+		return squared ? d : Math.sqrt(d);
 	},
 
 	getLength: function() {
-		return Math.sqrt(this.x * this.x + this.y * this.y);
+		var l = this.x * this.x + this.y * this.y;
+		return arguments[0] ? l : Math.sqrt(l);
 	},
 
 	setLength: function(length) {
@@ -586,8 +639,7 @@ var Point = this.Point = Base.extend({
 
 	getDirectedAngle: function(point) {
 		point = Point.read(arguments);
-		var angle = this.getAngle() - point.getAngle();
-		return angle < -180 ? angle + 360 : angle > 180 ? angle - 360 : angle;
+		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
 	},
 
 	rotate: function(angle, center) {
@@ -630,6 +682,7 @@ var Point = this.Point = Base.extend({
 	isNaN: function() {
 		return isNaN(this.x) || isNaN(this.y);
 	},
+
 	dot: function(point) {
 		point = Point.read(arguments);
 		return this.x * point.x + this.y * point.y;
@@ -654,7 +707,6 @@ var Point = this.Point = Base.extend({
 	},
 
 	statics: {
-
 		create: function(x, y) {
 			var point = new Point(Point.dont);
 			point.x = x;
@@ -695,8 +747,6 @@ var Point = this.Point = Base.extend({
 });
 
 var LinkedPoint = Point.extend({
-	beans: true,
-
 	set: function(x, y, dontNotify) {
 		this._x = x;
 		this._y = y;
@@ -736,7 +786,6 @@ var LinkedPoint = Point.extend({
 });
 
 var Size = this.Size = Base.extend({
-
 	initialize: function(arg0, arg1) {
 		if (arg1 !== undefined) {
 			this.width = arg0;
@@ -773,6 +822,10 @@ var Size = this.Size = Base.extend({
 		this.width = width;
 		this.height = height;
 		return this;
+	},
+
+	clone: function() {
+		return Size.create(this.width, this.height);
 	},
 
 	add: function(size) {
@@ -818,7 +871,6 @@ var Size = this.Size = Base.extend({
 	},
 
 	statics: {
-
 		create: function(width, height) {
 			return new Size(Size.dont).set(width, height);
 		},
@@ -850,8 +902,6 @@ var Size = this.Size = Base.extend({
 });
 
 var LinkedSize = Size.extend({
-	beans: true,
-
 	set: function(width, height, dontNotify) {
 		this._width = width;
 		this._height = height;
@@ -891,8 +941,6 @@ var LinkedSize = Size.extend({
 });
 
 var Rectangle = this.Rectangle = Base.extend({
-	beans: true,
-
 	initialize: function(arg0, arg1, arg2, arg3) {
 		if (arguments.length == 4) {
 			this.x = arg0;
@@ -1048,17 +1096,27 @@ var Rectangle = this.Rectangle = Base.extend({
 				+ ' }';
 	},
 
-	contains: function(rect) {
-		if (rect.width !== undefined) {
-			return rect.x >= this.x && rect.y >= this.y
-					&& rect.x + rect.width <= this.x + this.width
-					&& rect.y + rect.height <= this.y + this.height;
-		} else {
-			var point = Point.read(arguments);
-			return point.x >= this.x && point.y >= this.y
-					&& point.x <= this.x + this.width
-					&& point.y <= this.y + this.height;
-		}
+	contains: function(arg) {
+		return arg && arg.width !== undefined
+				|| (Array.isArray(arg) ? arg : arguments).length == 4
+				? this._containsRectangle(Rectangle.read(arguments))
+				: this._containsPoint(Point.read(arguments));
+	},
+
+	_containsPoint: function(point) {
+		var x = point.x,
+			y = point.y;
+		return x >= this.x && y >= this.y
+				&& x <= this.x + this.width
+				&& y <= this.y + this.height;
+	},
+
+	_containsRectangle: function(rect) {
+		var x = rect.x,
+			y = rect.y;
+		return x >= this.x && y >= this.y
+				&& x + rect.width <= this.x + this.width
+				&& y + rect.height <= this.y + this.height;
 	},
 
 	intersects: function(rect) {
@@ -1096,6 +1154,18 @@ var Rectangle = this.Rectangle = Base.extend({
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
+	expand: function(hor, ver) {
+		if (ver === undefined)
+			ver = hor;
+		return Rectangle.create(this.x - hor / 2, this.y - ver / 2,
+				this.width + hor, this.height + ver);
+	},
+
+	scale: function(hor, ver) {
+		return this.expand(this.width * hor - this.width,
+				this.height * (ver === undefined ? hor : ver) - this.height);
+	},
+
 	statics: {
 		create: function(x, y, width, height) {
 			return new Rectangle(Rectangle.dont).set(x, y, width, height);
@@ -1129,12 +1199,10 @@ var Rectangle = this.Rectangle = Base.extend({
 				point = Point.read(arguments);
 				return this[setX](point.x)[setY](point.y);
 			};
-		}, { beans: true });
+		}, {});
 });
 
 var LinkedRectangle = Rectangle.extend({
-	beans: true,
-
 	set: function(x, y, width, height, dontNotify) {
 		this._x = x;
 		this._y = y;
@@ -1182,65 +1250,62 @@ var LinkedRectangle = Rectangle.extend({
 				this._owner[this._setter](this);
 				return this;
 			};
-		}, { beans: true })
+		}, {})
 	);
 });
 
 var Matrix = this.Matrix = Base.extend({
-
-	beans: true,
-
-	initialize: function(m00, m10, m01, m11, m02, m12) {
-		var ok = true;
-		if (arguments.length == 6) {
-			this.set(m00, m10, m01, m11, m02, m12);
-		} else if (arguments.length == 1) {
-			if (m00 instanceof Matrix) {
-				this.set(m00._m00, m00._m10, m00._m01,
-						m00._m11, m00._m02, m00._m12);
-			} else if (Array.isArray(m00)) {
-				this.set.apply(this, m00);
+	initialize: function(arg) {
+		var count = arguments.length,
+			ok = true;
+		if (count == 6) {
+			this.set.apply(this, arguments);
+		} else if (count == 1) {
+			if (arg instanceof Matrix) {
+				this.set(arg._a, arg._c, arg._b, arg._d, arg._tx, arg._ty);
+			} else if (Array.isArray(arg)) {
+				this.set.apply(this, arg);
 			} else {
 				ok = false;
-			} 
-		} else if (arguments.length > 0) {
-			ok = false;
+			}
+		} else if (count == 0) {
+			this._a = this._d = 1;
+			this._c = this._b = this._tx = this._ty = 0;
 		} else {
-			this._m00 = this._m11 = 1;
-			this._m10 = this._m01 = this._m02 = this._m12 = 0;
+			ok = false;
 		}
 		if (!ok)
 			throw new Error('Unsupported matrix parameters');
 	},
 
 	clone: function() {
-		return Matrix.create(this._m00, this._m10, this._m01,
-				this._m11, this._m02, this._m12);
+		return Matrix.create(this._a, this._c, this._b, this._d,
+				this._tx, this._ty);
 	},
 
-	set: function(m00, m10, m01, m11, m02, m12) {
-		this._m00 = m00;
-		this._m10 = m10;
-		this._m01 = m01;
-		this._m11 = m11;
-		this._m02 = m02;
-		this._m12 = m12;
+	set: function(a, c, b, d, tx, ty) {
+		this._a = a;
+		this._c = c;
+		this._b = b;
+		this._d = d;
+		this._tx = tx;
+		this._ty = ty;
 		return this;
 	},
 
-	scale: function(sx, sy , center) {
-		if (arguments.length < 2 || typeof sy === 'object') {
+	scale: function(hor, ver , center) {
+		if (arguments.length < 2 || typeof ver === 'object') {
 			center = Point.read(arguments, 1);
-			sy = sx;
+			ver = hor;
 		} else {
 			center = Point.read(arguments, 2);
 		}
 		if (center)
 			this.translate(center);
-		this._m00 *= sx;
-		this._m10 *= sx;
-		this._m01 *= sy;
-		this._m11 *= sy;
+		this._a *= hor;
+		this._c *= hor;
+		this._b *= ver;
+		this._d *= ver;
 		if (center)
 			this.translate(center.negate());
 		return this;
@@ -1249,8 +1314,8 @@ var Matrix = this.Matrix = Base.extend({
 	translate: function(point) {
 		point = Point.read(arguments);
 		var x = point.x, y = point.y;
-		this._m02 += x * this._m00 + y * this._m01;
-		this._m12 += x * this._m10 + y * this._m11;
+		this._tx += x * this._a + y * this._b;
+		this._ty += x * this._c + y * this._d;
 		return this;
 	},
 
@@ -1259,21 +1324,21 @@ var Matrix = this.Matrix = Base.extend({
 				Matrix.getRotateInstance.apply(Matrix, arguments));
 	},
 
-	shear: function(shx, shy, center) {
-		if (arguments.length < 2 || typeof shy === 'object') {
+	shear: function(hor, ver, center) {
+		if (arguments.length < 2 || typeof ver === 'object') {
 			center = Point.read(arguments, 1);
-			sy = sx;
+			ver = hor;
 		} else {
 			center = Point.read(arguments, 2);
 		}
 		if (center)
 			this.translate(center);
-		var m00 = this._m00;
-		var m10 = this._m10;
-		this._m00 += shy * this._m01;
-		this._m10 += shy * this._m11;
-		this._m01 += shx * m00;
-		this._m11 += shx * m10;
+		var a = this._a,
+			c = this._c;
+		this._a += ver * this._b;
+		this._c += ver * this._d;
+		this._b += hor * a;
+		this._d += hor * c;
 		if (center)
 			this.translate(center.negate());
 		return this;
@@ -1281,42 +1346,43 @@ var Matrix = this.Matrix = Base.extend({
 
 	toString: function() {
 		var format = Base.formatNumber;
-		return '[[' + [format(this._m00), format(this._m01),
-					format(this._m02)].join(', ') + '], ['
-				+ [format(this._m10), format(this._m11),
-					format(this._m12)].join(', ') + ']]';
+		return '[[' + [format(this._a), format(this._b),
+					format(this._tx)].join(', ') + '], ['
+				+ [format(this._c), format(this._d),
+					format(this._ty)].join(', ') + ']]';
+	},
+
+	getValues: function() {
+		return [ this._a, this._c, this._b, this._d, this._tx, this._ty ];
 	},
 
 	concatenate: function(mx) {
-		var m0 = this._m00,
-			m1 = this._m01;
-		this._m00 = mx._m00 * m0 + mx._m10 * m1;
-		this._m01 = mx._m01 * m0 + mx._m11 * m1;
-		this._m02 += mx._m02 * m0 + mx._m12 * m1;
-
-		m0 = this._m10;
-		m1 = this._m11;
-		this._m10 = mx._m00 * m0 + mx._m10 * m1;
-		this._m11 = mx._m01 * m0 + mx._m11 * m1;
-		this._m12 += mx._m02 * m0 + mx._m12 * m1;
+		var a = this._a,
+			b = this._b,
+			c = this._c,
+			d = this._d;
+		this._a = mx._a * a + mx._c * b;
+		this._b = mx._b * a + mx._d * b;
+		this._tx += mx._tx * a + mx._ty * b;
+		this._c = mx._a * c + mx._c * d;
+		this._d = mx._b * c + mx._d * d;
+		this._ty += mx._tx * c + mx._ty * d;
 		return this;
 	},
 
 	preConcatenate: function(mx) {
-		var m0 = this._m00,
-			m1 = this._m10;
-		this._m00 = mx._m00 * m0 + mx._m01 * m1;
-		this._m10 = mx._m10 * m0 + mx._m11 * m1;
-
-		m0 = this._m01;
-		m1 = this._m11;
-		this._m01 = mx._m00 * m0 + mx._m01 * m1;
-		this._m11 = mx._m10 * m0 + mx._m11 * m1;
-
-		m0 = this._m02;
-		m1 = this._m12;
-		this._m02 = mx._m00 * m0 + mx._m01 * m1 + mx._m02;
-		this._m12 = mx._m10 * m0 + mx._m11 * m1 + mx._m12;
+		var a = this._a,
+			b = this._b,
+			c = this._c,
+			d = this._d,
+			tx = this._tx,
+			ty = this._ty;
+		this._a = mx._a * a + mx._b * c;
+		this._c = mx._c * a + mx._d * c;
+		this._b = mx._a * b + mx._b * d;
+		this._d = mx._c * b + mx._d * d;
+		this._tx = mx._a * tx + mx._b * ty + mx._tx;
+		this._ty = mx._c * tx + mx._d * ty + mx._ty;
 		return this;
 	},
 
@@ -1332,8 +1398,8 @@ var Matrix = this.Matrix = Base.extend({
 		if (!dest)
 			dest = new Point(Point.dont);
 		return dest.set(
-			x * this._m00 + y * this._m01 + this._m02,
-			x * this._m10 + y * this._m11 + this._m12,
+			x * this._a + y * this._b + this._tx,
+			x * this._c + y * this._d + this._ty,
 			dontNotify
 		);
 	},
@@ -1344,8 +1410,8 @@ var Matrix = this.Matrix = Base.extend({
 		while (i < srcEnd) {
 			var x = src[i++];
 			var y = src[i++];
-			dst[j++] = x * this._m00 + y * this._m01 + this._m02;
-			dst[j++] = x * this._m10 + y * this._m11 + this._m12;
+			dst[j++] = x * this._a + y * this._b + this._tx;
+			dst[j++] = x * this._c + y * this._d + this._ty;
 		}
 		return dst;
 	},
@@ -1376,18 +1442,35 @@ var Matrix = this.Matrix = Base.extend({
 	},
 
 	getDeterminant: function() {
-		return this._m00 * this._m11 - this._m01 * this._m10;
+		return this._a * this._d - this._b * this._c;
+	},
+
+	getTranslation: function() {
+		return new Point(this._tx, this._ty);
+	},
+
+	getScaling: function() {
+		var hor = Math.sqrt(this._a * this._a + this._c * this._c),
+			ver = Math.sqrt(this._b * this._b + this._d * this._d);
+		return new Point(this._a < 0 ? -hor : hor, this._b < 0 ? -ver : ver);
+	},
+
+	getRotation: function() {
+		var angle1 = -Math.atan2(this._b, this._d),
+			angle2 = Math.atan2(this._c, this._a);
+		return Math.abs(angle1 - angle2) < Numerical.TOLERANCE
+				? angle1 * 180 / Math.PI : undefined;
 	},
 
 	isIdentity: function() {
-		return this._m00 == 1 && this._m10 == 0 && this._m01 == 0 &&
-				this._m11 == 1 && this._m02 == 0 && this._m12 == 0;
+		return this._a == 1 && this._c == 0 && this._b == 0 && this._d == 1
+				&& this._tx == 0 && this._ty == 0;
 	},
 
 	isInvertible: function() {
 		var det = this.getDeterminant();
-		return isFinite(det) && det != 0 && isFinite(this._m02)
-				&& isFinite(this._m12);
+		return isFinite(det) && det != 0 && isFinite(this._tx)
+				&& isFinite(this._ty);
 	},
 
 	isSingular: function() {
@@ -1396,25 +1479,25 @@ var Matrix = this.Matrix = Base.extend({
 
 	createInverse: function() {
 		var det = this.getDeterminant();
-		if (isFinite(det) && det != 0 && isFinite(this._m02)
-				&& isFinite(this._m12)) {
+		if (isFinite(det) && det != 0 && isFinite(this._tx)
+				&& isFinite(this._ty)) {
 			return Matrix.create(
-				this._m11 / det,
-				-this._m10 / det,
-				-this._m01 / det,
-				this._m00 / det,
-				(this._m01 * this._m12 - this._m11 * this._m02) / det,
-				(this._m10 * this._m02 - this._m00 * this._m12) / det);
+				this._d / det,
+				-this._c / det,
+				-this._b / det,
+				this._a / det,
+				(this._b * this._ty - this._d * this._tx) / det,
+				(this._c * this._tx - this._a * this._ty) / det);
 		}
 		return null;
 	},
 
 	createShiftless: function() {
-		return Matrix.create(this._m00, this._m10, this._m01, this._m11, 0, 0);
+		return Matrix.create(this._a, this._c, this._b, this._d, 0, 0);
 	},
 
-	setToScale: function(sx, sy) {
-		return this.set(sx, 0, 0, sy, 0, 0);
+	setToScale: function(hor, ver) {
+		return this.set(hor, 0, 0, ver, 0, 0);
 	},
 
 	setToTranslation: function(delta) {
@@ -1422,8 +1505,8 @@ var Matrix = this.Matrix = Base.extend({
 		return this.set(1, 0, 0, 1, delta.x, delta.y);
 	},
 
-	setToShear: function(shx, shy) {
-		return this.set(1, shy, shx, 1, 0, 0);
+	setToShear: function(hor, ver) {
+		return this.set(1, ver, hor, 1, 0, 0);
 	},
 
 	setToRotation: function(angle, center) {
@@ -1440,19 +1523,16 @@ var Matrix = this.Matrix = Base.extend({
 
 	applyToContext: function(ctx, reset) {
 		ctx[reset ? 'setTransform' : 'transform'](
-			this._m00, this._m10, this._m01,
-			this._m11, this._m02, this._m12
-		);
+				this._a, this._c, this._b, this._d, this._tx, this._ty);
 		return this;
 	},
 
 	statics: {
-
-		create: function(m00, m10, m01, m11, m02, m12) {
-			return new Matrix(Matrix.dont).set(m00, m10, m01, m11, m02, m12);
+		create: function(a, c, b, d, tx, ty) {
+			return new Matrix(Matrix.dont).set(a, c, b, d, tx, ty);
 		},
 
-		getScaleInstance: function(sx, sy) {
+		getScaleInstance: function(hor, ver) {
 			var mx = new Matrix();
 			return mx.setToScale.apply(mx, arguments);
 		},
@@ -1462,7 +1542,7 @@ var Matrix = this.Matrix = Base.extend({
 			return mx.setToTranslation.apply(mx, arguments);
 		},
 
-		getShearInstance: function(shx, shy, center) {
+		getShearInstance: function(hor, ver, center) {
 			var mx = new Matrix();
 			return mx.setToShear.apply(mx, arguments);
 		},
@@ -1474,12 +1554,12 @@ var Matrix = this.Matrix = Base.extend({
 	}
 }, new function() {
 	return Base.each({
-		scaleX: '_m00',
-		scaleY: '_m11',
-		translateX: '_m02',
-		translateY: '_m12',
-		shearX: '_m01',
-		shearY: '_m10'
+		scaleX: '_a',
+		scaleY: '_d',
+		translateX: '_tx',
+		translateY: '_ty',
+		shearX: '_b',
+		shearY: '_c'
 	}, function(prop, name) {
 		name = Base.capitalize(name);
 		this['get' + name] = function() {
@@ -1488,7 +1568,7 @@ var Matrix = this.Matrix = Base.extend({
 		this['set' + name] = function(value) {
 			this[prop] = value;
 		};
-	}, { beans: true });
+	}, {});
 });
 
 var Line = this.Line = Base.extend({
@@ -1508,7 +1588,7 @@ var Line = this.Line = Base.extend({
 
 	intersect: function(line) {
 		var cross = this.vector.cross(line.vector);
-		if (Math.abs(cross) <= Numerical.TOLERANCE)
+		if (Math.abs(cross) <= Numerical.EPSILON)
 			return null;
 		var v = line.point.subtract(this.point),
 			t1 = v.cross(line.vector) / cross,
@@ -1525,7 +1605,7 @@ var Line = this.Line = Base.extend({
 		if (ccw == 0) {
 			ccw = v2.dot(v1);
 			if (ccw > 0) {
-				ccw = (v2 - v1).dot(v1);
+				ccw = v2.subtract(v1).dot(v1);
 				if (ccw < 0)
 				    ccw = 0;
 			}
@@ -1544,27 +1624,21 @@ var Line = this.Line = Base.extend({
 });
 
 var Project = this.Project = Base.extend({
-
-	beans: true,
-
 	initialize: function() {
 		this._scope = paper;
 		this._index = this._scope.projects.push(this) - 1;
-		this._currentStyle = PathStyle.create(null);
-		this.setCurrentStyle({
-			strokeWidth: 1,
-			strokeCap: 'butt',
-			strokeJoin: 'miter',
-			miterLimit: 10,
-			dashOffset: 0,
-			dashArray: []
-		});
+		this._currentStyle = new PathStyle();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		this.activate();
 		this.layers = [];
 		this.symbols = [];
 		this.activeLayer = new Layer();
+	},
+
+	_needsRedraw: function() {
+		if (this._scope)
+			this._scope._needsRedraw();
 	},
 
 	getCurrentStyle: function() {
@@ -1576,7 +1650,7 @@ var Project = this.Project = Base.extend({
 	},
 
 	activate: function() {
-		if (this._index != null) {
+		if (this._scope) {
 			this._scope.project = this;
 			return true;
 		}
@@ -1584,9 +1658,14 @@ var Project = this.Project = Base.extend({
 	},
 
 	remove: function() {
-		var res = Base.splice(this._scope.projects, null, this._index, 1);
-		this._scope = null;
-		return !!res.length;
+		if (this._scope) {
+			Base.splice(this._scope.projects, null, this._index, 1);
+			if (this._scope.project == this)
+				this._scope.project = null;
+			this._scope = null;
+			return true;
+		}
+		return false;
 	},
 
 	getIndex: function() {
@@ -1601,8 +1680,8 @@ var Project = this.Project = Base.extend({
 		return items;
 	},
 
-	_selectItem: function(item, select) {
-		if (select) {
+	_updateSelection: function(item) {
+		if (item._selected) {
 			this._selectedItemCount++;
 			this._selectedItems[item.getId()] = item;
 		} else {
@@ -1610,6 +1689,7 @@ var Project = this.Project = Base.extend({
 			delete this._selectedItems[item.getId()];
 		}
 	},
+
 	selectAll: function() {
 		for (var i = 0, l = this.layers.length; i < l; i++)
 			this.layers[i].setSelected(true);
@@ -1618,6 +1698,16 @@ var Project = this.Project = Base.extend({
 	deselectAll: function() {
 		for (var i in this._selectedItems)
 			this._selectedItems[i].setSelected(false);
+	},
+
+	hitTest: function(point, options) {
+		options = HitResult.getOptions(point, options);
+		point = options.point;
+		for (var i = this.layers.length - 1; i >= 0; i--) {
+			var res = this.layers[i].hitTest(point, options);
+			if (res) return res;
+		}
+		return null;
 	},
 
 	draw: function(ctx) {
@@ -1637,21 +1727,21 @@ var Project = this.Project = Base.extend({
 			});
 			ctx.restore();
 		}
-	},
-
-	redraw: function() {
-		this._scope.view.draw();
 	}
 });
 
 var Symbol = this.Symbol = Base.extend({
-
-	beans: true,
-
 	initialize: function(item) {
 		this.project = paper.project;
 		this.project.symbols.push(this);
 		this.setDefinition(item);
+		this._instances = {};
+	},
+
+	_changed: function(flags) {
+		Base.each(this._instances, function(item) {
+			item._changed(flags);
+		});
 	},
 
 	getDefinition: function() {
@@ -1659,10 +1749,15 @@ var Symbol = this.Symbol = Base.extend({
 	},
 
 	setDefinition: function(item) {
+		if (item._parentSymbol)
+			item = item.clone();
+		if (this._definition)
+			delete this._definition._parentSymbol;
 		this._definition = item;
-		item.setSelected(false);
-		item._removeFromParent();
+		item.remove();
 		item.setPosition(new Point());
+		item._parentSymbol = this;
+		this._changed(Change.GEOMETRY);
 	},
 
 	place: function(position) {
@@ -1674,32 +1769,51 @@ var Symbol = this.Symbol = Base.extend({
 	}
 });
 
-var ChangeFlags = {
-	GEOMETRY: 1, 
-	STROKE: 2, 
-	STYLE: 4, 
-	HIERARCHY: 8 
+var ChangeFlag = {
+	APPEARANCE: 1,
+	HIERARCHY: 2,
+	GEOMETRY: 4,
+	STROKE: 8,
+	STYLE: 16,
+	ATTRIBUTE: 32,
+	CONTENT: 64,
+	PIXELS: 128,
+	CLIPPING: 256
+};
+
+var Change = {
+	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.APPEARANCE,
+	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
+	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
+	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
+	CONTENT: ChangeFlag.CONTENT | ChangeFlag.APPEARANCE,
+	PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE
 };
 
 var Item = this.Item = Base.extend({
-	beans: true,
-
 	initialize: function() {
+		this._id = ++Item._id;
 		if (!this._project)
-			paper.project.activeLayer.appendTop(this);
+			paper.project.activeLayer.addChild(this);
 		this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 	},
 
 	_changed: function(flags) {
-		if (flags & ChangeFlags.GEOMETRY) {
+		if (flags & ChangeFlag.GEOMETRY) {
+			delete this._bounds;
 			delete this._position;
 		}
+		if (flags & ChangeFlag.APPEARANCE) {
+			if (this._project)
+				this._project._needsRedraw();
+		}
+		if (this._parentSymbol)
+			this._parentSymbol._changed(flags);
 	},
 
 	getId: function() {
-		if (this._id == null)
-			this._id = Item._id = (Item._id || 0) + 1;
 		return this._id;
 	},
 
@@ -1708,19 +1822,17 @@ var Item = this.Item = Base.extend({
 	},
 
 	setName: function(name) {
-		var children = this._parent._children,
-			namedChildren = this._parent._namedChildren;
-		if (name != this._name) {
-			if (this._name)
-				this._removeFromNamed();
-			this._name = name || undefined;
-		}
+
+		if (this._name)
+			this._removeFromNamed();
+		this._name = name || undefined;
 		if (name) {
+			var children = this._parent._children,
+				namedChildren = this._parent._namedChildren;
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
-		} else {
-			delete children[name];
 		}
+		this._changed(ChangeFlag.ATTRIBUTE);
 	},
 
 	getPosition: function() {
@@ -1741,17 +1853,44 @@ var Item = this.Item = Base.extend({
 		this._style.initialize(style);
 	},
 
+	statics: {
+		_id: 0
+	}
+}, new function() { 
+	return Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
+		function(name) {
+			var part = Base.capitalize(name),
+				name = '_' + name;
+			this['get' + part] = function() {
+				return this[name];
+			};
+			this['set' + part] = function(value) {
+				if (value != this[name]) {
+					this[name] = value;
+					this._changed(name === '_locked'
+							? ChangeFlag.ATTRIBUTE : Change.ATTRIBUTE);
+				}
+			};
+		}, {});
+}, {
+
+	_locked: false,
+
+	_visible: true,
+
+	_blendMode: 'normal',
+
+	_opacity: 1,
+
+	_guide: false,
+
 	isSelected: function() {
 		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				if (this._children[i].isSelected()) {
+			for (var i = 0, l = this._children.length; i < l; i++)
+				if (this._children[i].isSelected())
 					return true;
-				}
-			}
-		} else {
-			return !!this._selected;
 		}
-		return false;
+		return this._selected;
 	},
 
 	setSelected: function(selected) {
@@ -1759,33 +1898,52 @@ var Item = this.Item = Base.extend({
 			for (var i = 0, l = this._children.length; i < l; i++) {
 				this._children[i].setSelected(selected);
 			}
-		} else {
-			if ((selected = !!selected) != this._selected) {
-				this._selected = selected;
-				this._project._selectItem(this, selected);
-			}
+		} else if ((selected = !!selected) != this._selected) {
+			this._selected = selected;
+			this._project._updateSelection(this);
+			this._changed(Change.ATTRIBUTE);
 		}
 	},
 
-	locked: false,
+	_selected: false,
 
-	visible: true,
+	isFullySelected: function() {
+		if (this._children && this._selected) {
+			for (var i = 0, l = this._children.length; i < l; i++)
+				if (!this._children[i].isFullySelected())
+					return false;
+			return true;
+		}
+		return this._selected;
+	},
+
+	setFullySelected: function(selected) {
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				this._children[i].setFullySelected(selected);
+			}
+		}
+		this.setSelected(selected);
+	},
 
 	isClipMask: function() {
 		return this._clipMask;
 	},
 
 	setClipMask: function(clipMask) {
-		this._clipMask = clipMask;
-		if (this._clipMask) {
-			this.setFillColor(null);
-			this.setStrokeColor(null);
+		if (this._clipMask != (clipMask = !!clipMask)) {
+			this._clipMask = clipMask;
+			if (clipMask) {
+				this.setFillColor(null);
+				this.setStrokeColor(null);
+			}
+			this._changed(Change.ATTRIBUTE);
+			if (this._parent)
+				this._parent._changed(ChangeFlag.CLIPPING);
 		}
 	},
 
-	blendMode: 'normal',
-
-	opacity: 1,
+	_clipMask: false,
 
 	getProject: function() {
 		return this._project;
@@ -1812,8 +1970,7 @@ var Item = this.Item = Base.extend({
 
 	setChildren: function(items) {
 		this.removeChildren();
-		for (var i = 0, l = items && items.length; i < l; i++)
-			this.appendTop(items[i]);
+		this.addChildren(items);
 	},
 
 	getFirstChild: function() {
@@ -1837,57 +1994,6 @@ var Item = this.Item = Base.extend({
 		return this._index;
 	},
 
-	_removeFromNamed: function() {
-		var children = this._parent._children,
-			namedChildren = this._parent._namedChildren,
-			name = this._name,
-			namedArray = namedChildren[name];
-		if (children[name] = this)
-			delete children[name];
-		namedArray.splice(namedArray.indexOf(this), 1);
-		if (namedArray.length) {
-			children[name] = namedArray[namedArray.length - 1];
-		} else {
-			delete namedChildren[name];
-		}
-	},
-
-	_removeFromParent: function() {
-		if (this._parent) {
-			if (this._name)
-				this._removeFromNamed();
-			var res = Base.splice(this._parent._children, null, this._index, 1);
-			this._parent = null;
-			return !!res.length;
-		}
-		return false;
-	},
-
-	remove: function() {
-		if (this.isSelected())
-			this.setSelected(false);
-		return this._removeFromParent();
-	},
-
-	removeChildren: function() {
-		var removed = false;
-		if (this._children) {
-			for (var i = this._children.length - 1; i >= 0; i--)
-				removed = this._children[i].remove() || removed;
-		}
-		return removed;
-	},
-
-	copyTo: function(itemOrProject) {
-		var copy = this.clone();
-		if (itemOrProject.layers) {
-			itemOrProject.activeLayer.appendTop(copy);
-		} else {
-			itemOrProject.appendTop(copy);
-		}
-		return copy;
-	},
-
 	clone: function() {
 		return this._clone(new this.constructor());
 	},
@@ -1896,27 +2002,29 @@ var Item = this.Item = Base.extend({
 		copy.setStyle(this._style);
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.appendTop(this._children[i].clone());
+				copy.addChild(this._children[i].clone());
 		}
-		var keys = ['locked', 'visible', 'opacity', 'blendMode', '_clipMask'];
+		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
+				'_clipMask', '_guide'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
 				copy[key] = this[key];
 		}
-		copy.moveAbove(this);
+		copy.setSelected(this._selected);
 		if (this._name)
 			copy.setName(this._name);
 		return copy;
 	},
 
-	reverseChildren: function() {
-		if (this._children) {
-			this._children.reverse();
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				this._children[i]._index = i;
-			}
+	copyTo: function(itemOrProject) {
+		var copy = this.clone();
+		if (itemOrProject.layers) {
+			itemOrProject.activeLayer.addChild(copy);
+		} else {
+			itemOrProject.addChild(copy);
 		}
+		return copy;
 	},
 
 	rasterize: function(resolution) {
@@ -1933,14 +2041,167 @@ var Item = this.Item = Base.extend({
 		return raster;
 	},
 
-	hasChildren: function() {
-		return this._children && this._children.length > 0;
+	hitTest: function(point, options, matrix) {
+		options = HitResult.getOptions(point, options);
+		point = options.point;
+		if (!this._children && !this.getRoughBounds(matrix)
+				.expand(options.tolerance)._containsPoint(point))
+			return null;
+		if ((options.center || options.bounds) &&
+				!(this instanceof Layer && !this._parent)) {
+			var bounds = this.getBounds(),
+				that = this,
+				points = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
+				'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'],
+				res;
+			function checkBounds(type, part) {
+				var pt = bounds['get' + part]().transform(matrix);
+				if (point.getDistance(pt) < options.tolerance)
+					return new HitResult(type, that,
+							{ name: Base.hyphenate(part), point: pt });
+			}
+			if (options.center && (res = checkBounds('center', 'Center')))
+				return res;
+			if (options.bounds) {
+				for (var i = 0; i < 8; i++)
+					if (res = checkBounds('bounds', points[i]))
+						return res;
+			}
+		}
+
+		return this._children || !(options.guides && !this._guide
+				|| options.selected && !this._selected)
+					? this._hitTest(point, options, matrix) : null;
+	},
+
+	_hitTest: function(point, options, matrix) {
+		if (this._children) {
+			for (var i = this._children.length - 1; i >= 0; i--) {
+				var res = this._children[i].hitTest(point, options, matrix);
+				if (res) return res;
+			}
+		}
+	},
+
+	addChild: function(item) {
+		return this.insertChild(undefined, item);
+	},
+
+	insertChild: function(index, item) {
+		if (this._children) {
+			item._remove(false, true);
+			Base.splice(this._children, [item], index, 0);
+			item._parent = this;
+			item._setProject(this._project);
+			if (item._name)
+				item.setName(item._name);
+			this._changed(Change.HIERARCHY);
+			return true;
+		}
+		return false;
+	},
+
+	addChildren: function(items) {
+		for (var i = 0, l = items && items.length; i < l; i++)
+			this.insertChild(undefined, items[i]);
+	},
+
+	insertChildren: function(index, items) {
+		for (var i = 0, l = items && items.length; i < l; i++) {
+			if (this.insertChild(index, items[i]))
+				index++;
+		}
+	},
+
+	insertAbove: function(item) {
+		return item._parent && item._parent.insertChild(
+				item._index + 1, this);
+	},
+
+	insertBelow: function(item) {
+		return item._parent && item._parent.insertChild(
+				item._index - 1, this);
+	},
+
+	appendTop: function(item) {
+		return this.addChild(item);
+	},
+
+	appendBottom: function(item) {
+		return this.insertChild(0, item);
+	},
+
+	moveAbove: function(item) {
+		return this.insertAbove(item);
+	},
+
+	moveBelow: function(item) {
+		return this.insertBelow(item);
+	},
+
+	_removeFromNamed: function() {
+		var children = this._parent._children,
+			namedChildren = this._parent._namedChildren,
+			name = this._name,
+			namedArray = namedChildren[name],
+			index = namedArray ? namedArray.indexOf(this) : -1;
+		if (index == -1)
+			return;
+		if (children[name] == this)
+			delete children[name];
+		namedArray.splice(index, 1);
+		if (namedArray.length) {
+			children[name] = namedArray[namedArray.length - 1];
+		} else {
+			delete namedChildren[name];
+		}
+	},
+
+	_remove: function(deselect, notify) {
+		if (this._parent) {
+			if (deselect)
+				this.setSelected(false);
+			if (this._name)
+				this._removeFromNamed();
+			Base.splice(this._parent._children, null, this._index, 1);
+			if (notify)
+				this._parent._changed(Change.HIERARCHY);
+			this._parent = null;
+			return true;
+		}
+		return false;
+	},
+
+	remove: function() {
+		return this._remove(true, true);
+	},
+
+	removeChildren: function(from, to) {
+		if (!this._children)
+			return null;
+		from = from || 0;
+	 	to = Base.pick(to, this._children.length);
+		var removed = this._children.splice(from, to - from);
+		for (var i = removed.length - 1; i >= 0; i--)
+			removed[i]._remove(true, false);
+		if (removed.length > 0)
+			this._changed(Change.HIERARCHY);
+		return removed;
+	},
+
+	reverseChildren: function() {
+		if (this._children) {
+			this._children.reverse();
+			for (var i = 0, l = this._children.length; i < l; i++)
+				this._children[i]._index = i;
+			this._changed(Change.HIERARCHY);
+		}
 	},
 
 	isEditable: function() {
 		var item = this;
 		while (item) {
-			if (!item.visible || item.locked)
+			if (!item._visible || item._locked)
 				return false;
 			item = item._parent;
 		}
@@ -1963,6 +2224,10 @@ var Item = this.Item = Base.extend({
 			}
 		}
 		return 0;
+	},
+
+	hasChildren: function() {
+		return this._children && this._children.length > 0;
 	},
 
 	isAbove: function(item) {
@@ -2006,63 +2271,71 @@ var Item = this.Item = Base.extend({
 		return false;
 	},
 
-	getBounds: function() {
-		return this._getBounds(false);
-	},
-
-	getStrokeBounds: function() {
-		return this._getBounds(true);
-	},
-
-	_getBounds: function(includeStroke) {
+	_getBounds: function(getter, cacheName, args) {
 		var children = this._children;
-		if (children && children.length) {
-			var x1 = Infinity,
-				x2 = -Infinity,
-				y1 = x1,
-				y2 = x2;
-			for (var i = 0, l = children.length; i < l; i++) {
-				var child = children[i];
-				if (child.visible) {
-					var rect = includeStroke
-							? child.getStrokeBounds()
-							: child.getBounds();
-					x1 = Math.min(rect.x, x1);
-					y1 = Math.min(rect.y, y1);
-					x2 = Math.max(rect.x + rect.width, x2);
-					y2 = Math.max(rect.y + rect.height, y2);
-				}
+		if (!children || children.length == 0)
+			return new Rectangle();
+		var x1 = Infinity,
+			x2 = -x1,
+			y1 = x1,
+			y2 = x2;
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i];
+			if (child._visible) {
+				var rect = child[getter](args[0]);
+				x1 = Math.min(rect.x, x1);
+				y1 = Math.min(rect.y, y1);
+				x2 = Math.max(rect.x + rect.width, x2);
+				y2 = Math.max(rect.y + rect.height, y2);
 			}
-			return includeStroke
-				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
-				: LinkedRectangle.create(this, 'setBounds',
-						x1, y1, x2 - x1, y2 - y1);
 		}
-		return new Rectangle();
+		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
+	},
+
+	_createBounds: function(rect) {
+		return LinkedRectangle.create(this, 'setBounds',
+				rect.x, rect.y, rect.width, rect.height);
+	},
+
+	getBounds: function() {
+		return this._getBounds('getBounds', '_bounds', arguments);
 	},
 
 	setBounds: function(rect) {
 		rect = Rectangle.read(arguments);
 		var bounds = this.getBounds(),
 			matrix = new Matrix(),
-			center = rect.center;
+			center = rect.getCenter();
 		matrix.translate(center);
 		if (rect.width != bounds.width || rect.height != bounds.height) {
 			matrix.scale(
 					bounds.width != 0 ? rect.width / bounds.width : 1,
 					bounds.height != 0 ? rect.height / bounds.height : 1);
 		}
-		center = bounds.center;
+		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
 		this.transform(matrix);
 	},
 
-	scale: function(sx, sy , center) {
-		if (arguments.length < 2 || typeof sy === 'object') {
-			center = sy;
-			sy = sx;
+	getStrokeBounds: function() {
+		return this._getBounds('getStrokeBounds', '_strokeBounds', arguments);
+	},
+
+	getHandleBounds: function() {
+		return this._getBounds('getHandleBounds', '_handleBounds', arguments);
+	},
+
+	getRoughBounds: function() {
+		return this._getBounds('getRoughBounds', '_roughBounds', arguments);
+	},
+
+	scale: function(hor, ver , center) {
+		if (arguments.length < 2 || typeof ver === 'object') {
+			center = ver;
+			ver = hor;
 		}
-		return this.transform(new Matrix().scale(sx, sy,
+		return this.transform(new Matrix().scale(hor, ver,
 				center || this.getPosition()));
 	},
 
@@ -2076,27 +2349,54 @@ var Item = this.Item = Base.extend({
 				center || this.getPosition()));
 	},
 
-	shear: function(shx, shy, center) {
-		if (arguments.length < 2 || typeof sy === 'object') {
-			center = shy;
-			shy = shx;
+	shear: function(hor, ver, center) {
+		if (arguments.length < 2 || typeof ver === 'object') {
+			center = ver;
+			ver = hor;
 		}
-		return this.transform(new Matrix().shear(shx, shy,
+		return this.transform(new Matrix().shear(hor, ver,
 				center || this.getPosition()));
 	},
 
 	transform: function(matrix, flags) {
-		if (this._transform)
+		var bounds = this._bounds,
+			position = this._position,
+			children = this._children;
+		if (this._transform) {
 			this._transform(matrix, flags);
-		if (this._position)
-			matrix._transformPoint(this._position, this._position, true);
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				var child = this._children[i];
-				child.transform(matrix, flags);
-			}
+			this._changed(Change.GEOMETRY);
 		}
+		if (bounds && matrix.getRotation() % 90 === 0) {
+			this._bounds = this._createBounds(
+					matrix._transformBounds(bounds));
+			this._position = this._bounds.getCenter();
+		} else if (position) {
+			this._position = matrix._transformPoint(position, position, true);
+		}
+		for (var i = 0, l = children && children.length; i < l; i++)
+			children[i].transform(matrix, flags);
 		return this;
+	},
+
+	fitBounds: function(rectangle, fill) {
+		rectangle = Rectangle.read(arguments);
+		var bounds = this.getBounds(),
+			itemRatio = bounds.height / bounds.width,
+			rectRatio = rectangle.height / rectangle.width,
+			scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
+					? rectangle.width / bounds.width
+					: rectangle.height / bounds.height,
+			delta = rectangle.getCenter().subtract(bounds.getCenter()),
+			newBounds = new Rectangle(new Point(),
+					new Size(bounds.width * scale, bounds.height * scale));
+		newBounds.setCenter(rectangle.getCenter());
+		this.setBounds(newBounds);
+	},
+
+	toString: function() {
+		return (this.constructor._name || 'Item') + (this._name
+				? " '" + this._name + "'"
+				: ' @' + this._id);
 	},
 
 	statics: {
@@ -2115,12 +2415,12 @@ var Item = this.Item = Base.extend({
 		},
 
 		draw: function(item, ctx, param) {
-			if (!item.visible || item.opacity == 0)
+			if (!item._visible || item._opacity == 0)
 				return;
 
 			var tempCanvas, parentCtx;
-			if (item.blendMode !== 'normal'
-					|| item.opacity < 1
+			if (item._blendMode !== 'normal'
+					|| item._opacity < 1
 					&& !(item._segments && (!item.getFillColor()
 							|| !item.getStrokeColor()))) {
 				var bounds = item.getStrokeBounds() || item.getBounds();
@@ -2151,13 +2451,13 @@ var Item = this.Item = Base.extend({
 
 				ctx.restore();
 
-				if (item.blendMode !== 'normal') {
+				if (item._blendMode !== 'normal') {
 					var pixelOffset = itemOffset.subtract(param.offset);
-					BlendMode.process(item.blendMode, ctx, parentCtx,
-						item.opacity, pixelOffset);
+					BlendMode.process(item._blendMode, ctx, parentCtx,
+						item._opacity, pixelOffset);
 				} else {
 					parentCtx.save();
-					parentCtx.globalAlpha = item.opacity;
+					parentCtx.globalAlpha = item._opacity;
 					parentCtx.drawImage(tempCanvas,
 							itemOffset.x, itemOffset.y);
 					parentCtx.restore();
@@ -2167,48 +2467,6 @@ var Item = this.Item = Base.extend({
 			}
 		}
 	}
-}, new function() {
-
-	function append(top) {
-		return function(item) {
-			item._removeFromParent();
-			if (this._children) {
-				Base.splice(this._children, [item], top ? undefined : 0, 0);
-				item._parent = this;
-				item._setProject(this._project);
-				if (item._name)
-					item.setName(item._name);
-				return true;
-			}
-			return false;
-		};
-	}
-
-	function move(above) {
-		return function(item) {
-			if (item._parent && this._removeFromParent()) {
-				Base.splice(item._parent._children, [this],
-						item._index + (above ? 1 : -1), 0);
-				this._parent = item._parent;
-				this._setProject(item._project);
-				if (item._name)
-					item.setName(item._name);
-				return true;
-			}
-			return false;
-		};
-	}
-
-	return {
-
-		appendTop: append(true),
-
-		appendBottom: append(false),
-
-		moveAbove: move(true),
-
-		moveBelow: move(false)
-	};
 }, new function() {
 
 	var sets = {
@@ -2267,47 +2525,56 @@ var Item = this.Item = Base.extend({
 });
 
 var Group = this.Group = Item.extend({
-
-	beans: true,
-
 	initialize: function(items) {
 		this.base();
 		this._children = [];
 		this._namedChildren = {};
-		this._clipped = false;
-		this.setChildren(!items || !Array.isArray(items)
+		this.addChildren(!items || !Array.isArray(items)
 				|| typeof items[0] !== 'object' ? arguments : items);
 	},
 
-	clone: function() {
-		var copy = this.base();
-		copy._clipped = this._clipped;
-		return copy;
+	_changed: function(flags) {
+		Item.prototype._changed.call(this, flags);
+		if (flags & (ChangeFlag.HIERARCHY | ChangeFlag.CLIPPING)) {
+			delete this._clipItem;
+		}
+	},
+
+	_getClipItem: function() {
+		if (this._clipItem !== undefined)
+			return this._clipItem;
+		for (var i = 0, l = this._children.length; i < l; i++) {
+			var child = this._children[i];
+			if (child._clipMask)
+				return this._clipItem = child;
+		}
+		return this._clipItem = null;
 	},
 
 	isClipped: function() {
-		return this._clipped;
+		return !!this._getClipItem();
 	},
 
 	setClipped: function(clipped) {
-		this._clipped = clipped;
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
+		return this;
 	},
 
 	draw: function(ctx, param) {
+		var clipItem = this._getClipItem();
+		if (clipItem)
+			Item.draw(clipItem, ctx, param);
 		for (var i = 0, l = this._children.length; i < l; i++) {
-			Item.draw(this._children[i], ctx, param);
-			if (this._clipped && i == 0)
-				ctx.clip();
+			var item = this._children[i];
+			if (item != clipItem)
+				Item.draw(item, ctx, param);
 		}
 	}
 });
 
 var Layer = this.Layer = Group.extend({
-
-	beans: true,
 	initialize: function(items) {
 		this._project = paper.project;
 		this._index = this._project.layers.push(this) - 1;
@@ -2315,9 +2582,17 @@ var Layer = this.Layer = Group.extend({
 		this.activate();
 	},
 
-	_removeFromParent: function() {
-		return this._parent ? this.base()
-			: !!Base.splice(this._project.layers, null, this._index, 1).length;
+	_remove: function(deselect, notify) {
+		if (this._parent)
+			return this.base(deselect, notify);
+		if (this._index != null) {
+			if (deselect)
+				this.setSelected(false);
+			Base.splice(this._project.layers, null, this._index, 1);
+			this._project._needsRedraw();
+			return true;
+		}
+		return false;
 	},
 
 	getNextSibling: function() {
@@ -2334,10 +2609,10 @@ var Layer = this.Layer = Group.extend({
 		this._project.activeLayer = this;
 	}
 }, new function () {
-	function move(above) {
+	function insert(above) {
 		return function(item) {
 			if (item instanceof Layer && !item._parent
-						&& this._removeFromParent()) {
+						&& this._remove(false, true)) {
 				Base.splice(item._project.layers, [this],
 						item._index + (above ? 1 : -1), 0);
 				this._setProject(item._project);
@@ -2348,16 +2623,61 @@ var Layer = this.Layer = Group.extend({
 	}
 
 	return {
-		moveAbove: move(true),
+		insertAbove: insert(true),
 
-		moveBelow: move(false)
+		insertBelow: insert(false)
 	};
 });
 
-var Raster = this.Raster = Item.extend({
+var PlacedItem = this.PlacedItem = Item.extend({
 
-	beans: true,
+	_transform: function(matrix, flags) {
+		this._matrix.preConcatenate(matrix);
+	},
 
+	_changed: function(flags) {
+		Item.prototype._changed.call(this, flags);
+		if (flags & ChangeFlag.GEOMETRY) {
+			delete this._strokeBounds;
+			delete this._handleBounds;
+			delete this._roughBounds;
+		}
+	},
+
+	getMatrix: function() {
+		return this._matrix;
+	},
+
+	setMatrix: function(matrix) {
+		this._matrix = matrix.clone();
+		this._changed(Change.GEOMETRY);
+	},
+
+	getBounds: function() {
+		var useCache = arguments[0] === undefined;
+		if (useCache && this._bounds)
+			return this._bounds;
+		var bounds = this.getStrokeBounds(arguments[0]);
+		if (useCache)
+			bounds = this._bounds = this._createBounds(bounds);
+		return bounds;
+	},
+
+	_getBounds: function(getter, cacheName, args) {
+		var matrix = args[0],
+			useCache = matrix === undefined;
+		if (useCache && this[cacheName])
+			return this[cacheName];
+		matrix = matrix ? matrix.clone().concatenate(this._matrix)
+				: this._matrix;
+		var bounds = this._calculateBounds(getter, matrix);
+		if (useCache)
+			this[cacheName] = bounds;
+		return bounds;
+	}
+});
+
+var Raster = this.Raster = PlacedItem.extend({
 	initialize: function(object) {
 		this.base();
 		if (object.getContext) {
@@ -2367,7 +2687,7 @@ var Raster = this.Raster = Item.extend({
 				object = document.getElementById(object);
 			this.setImage(object);
 		}
-		this.matrix = new Matrix();
+		this._matrix = new Matrix();
 	},
 
 	clone: function() {
@@ -2377,7 +2697,7 @@ var Raster = this.Raster = Item.extend({
 			image.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
 		var copy = new Raster(image);
-		copy.matrix = this.matrix.clone();
+		copy._matrix = this._matrix.clone();
 		return this._clone(copy);
 	},
 
@@ -2389,7 +2709,7 @@ var Raster = this.Raster = Item.extend({
 		var size = Size.read(arguments),
 			image = this.getImage();
 		this.setCanvas(CanvasProvider.getCanvas(size));
-		this.getContext().drawImage(image, 0, 0, size.width, size.height);
+		this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
 	},
 
 	getWidth: function() {
@@ -2401,7 +2721,7 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	getPpi: function() {
-		var matrix = this.matrix,
+		var matrix = this._matrix,
 			orig = new Point(0, 0).transform(matrix),
 			u = new Point(1, 0).transform(matrix).subtract(orig),
 			v = new Point(0, 1).transform(matrix).subtract(orig);
@@ -2412,9 +2732,10 @@ var Raster = this.Raster = Item.extend({
 	},
 
 	getContext: function() {
-		if (!this._context) {
+		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
-		}
+		if (arguments[0])
+			this._changed(Change.PIXELS);
 		return this._context;
 	},
 
@@ -2426,7 +2747,7 @@ var Raster = this.Raster = Item.extend({
 		if (!this._canvas) {
 			this._canvas = CanvasProvider.getCanvas(this._size);
 			if (this._image)
-				this.getContext().drawImage(this._image, 0, 0);
+				this.getContext(true).drawImage(this._image, 0, 0);
 		}
 		return this._canvas;
 	},
@@ -2438,7 +2759,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
-		this._bounds = null;
+		this._changed(Change.GEOMETRY);
 	},
 
 	getImage: function() {
@@ -2452,7 +2773,7 @@ var Raster = this.Raster = Item.extend({
 		this._size = new Size(image.naturalWidth, image.naturalHeight);
 		this._canvas = null;
 		this._context = null;
-		this._bounds = null;
+		this._changed(Change.GEOMETRY);
 	},
 
 	getSubImage: function(rect) {
@@ -2465,7 +2786,7 @@ var Raster = this.Raster = Item.extend({
 
 	drawImage: function(image, point) {
 		point = Point.read(arguments, 1);
-		this.getContext().drawImage(image, point.x, point.y);
+		this.getContext(true).drawImage(image, point.x, point.y);
 	},
 
 	getAverageColor: function(object) {
@@ -2495,7 +2816,7 @@ var Raster = this.Raster = Item.extend({
 		ctx.translate(-bounds.x, -bounds.y);
 		if (path)
 			path.draw(ctx, { clip: true });
-		this.matrix.applyToContext(ctx);
+		this._matrix.applyToContext(ctx);
 		ctx.drawImage(this._canvas || this._image,
 				-this._size.width / 2, -this._size.height / 2);
 		ctx.restore();
@@ -2529,7 +2850,7 @@ var Raster = this.Raster = Item.extend({
 		var hasPoint = arguments.length == 2;
 		point = Point.read(arguments, 0, hasPoint ? 1 : 2);
 		color = Color.read(arguments, hasPoint ? 1 : 2);
-		var ctx = this.getContext(),
+		var ctx = this.getContext(true),
 			imageData = ctx.createImageData(1, 1),
 			alpha = color.getAlpha();
 		imageData.data[0] = color.getRed() * 255;
@@ -2554,32 +2875,29 @@ var Raster = this.Raster = Item.extend({
 
 	setData: function(data, point) {
 		point = Point.read(arguments, 1);
-		this.getContext().putImageData(data, point.x, point.y);
+		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
-	_transform: function(matrix, flags) {
-		this.matrix.preConcatenate(matrix);
-		this._bounds = null;
+	_calculateBounds: function(getter, matrix) {
+		return matrix._transformBounds(
+				new Rectangle(this._size).setCenter(0, 0));
 	},
 
-	getBounds: function() {
-		if (!this._bounds) {
-			this._bounds = this.matrix._transformBounds(
-					new Rectangle(this._size).setCenter(0, 0));
-		}
-		return this._bounds;
+	getHandleBounds: function() {
+		return this.getStrokeBounds(arguments[0]);
 	},
-	getStrokeBounds: function() {
-		return this.getBounds();
+
+	getRoughBounds: function() {
+		return this.getStrokeBounds(arguments[0]);
 	},
 
 	draw: function(ctx, param) {
 		if (param.selection) {
 			var bounds = new Rectangle(this._size).setCenter(0, 0);
-			Item.drawSelectedBounds(bounds, ctx, this.matrix);
+			Item.drawSelectedBounds(bounds, ctx, this._matrix);
 		} else {
 			ctx.save();
-			this.matrix.applyToContext(ctx);
+			this._matrix.applyToContext(ctx);
 			ctx.drawImage(this._canvas || this._image,
 					-this._size.width / 2, -this._size.height / 2);
 			ctx.restore();
@@ -2587,45 +2905,43 @@ var Raster = this.Raster = Item.extend({
 	}
 });
 
-var PlacedSymbol = this.PlacedSymbol = Item.extend({
-
-	beans: true,
-
+var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend({
 	initialize: function(symbol, matrixOrOffset) {
 		this.base();
-		this.symbol = symbol instanceof Symbol ? symbol : new Symbol(symbol);
-		this.matrix = matrixOrOffset !== undefined
+		this.setSymbol(symbol instanceof Symbol ? symbol : new Symbol(symbol));
+		this._matrix = matrixOrOffset !== undefined
 			? matrixOrOffset instanceof Matrix
 				? matrixOrOffset
 				: new Matrix().translate(Point.read(arguments, 1))
 			: new Matrix();
 	},
 
+	getSymbol: function() {
+		return this._symbol;
+	},
+
+	setSymbol: function(symbol) {
+		if (this._symbol)
+			delete this._symbol._instances[this._id];
+		this._symbol = symbol;
+		symbol._instances[this._id] = this;
+	},
+
 	clone: function() {
-		return this._clone(new PlacedSymbol(this.symbol, this.matrix.clone()));
+		return this._clone(new PlacedSymbol(this.symbol, this._matrix.clone()));
 	},
 
-	_transform: function(matrix, flags) {
-		this.matrix.preConcatenate(matrix);
-	},
-
-	getBounds: function() {
-		var bounds = this.symbol._definition.getStrokeBounds(this.matrix);
-		return LinkedRectangle.create(this, 'setBounds',
-				bounds.x, bounds.y, bounds.width, bounds.height);
-	},
-
-	getStrokeBounds: function() {
-		return this.getBounds();
+	_calculateBounds: function(getter, matrix) {
+		return this.symbol._definition[getter](matrix);
 	},
 
 	draw: function(ctx, param) {
 		if (param.selection) {
 			Item.drawSelectedBounds(this.symbol._definition.getStrokeBounds(),
-					ctx, this.matrix);
+					ctx, this._matrix);
 		} else {
 			ctx.save();
-			this.matrix.applyToContext(ctx);
+			this._matrix.applyToContext(ctx);
 			Item.draw(this.symbol.getDefinition(), ctx, param);
 			ctx.restore();
 		}
@@ -2633,102 +2949,39 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend({
 
 });
 
-var PathStyle = this.PathStyle = Base.extend(new function() {
-
-	var keys = ['strokeColor', 'strokeWidth', 'strokeCap', 'strokeJoin',
-				'miterLimit', 'dashOffset','dashArray', 'fillColor'];
-
-	var strokeFlags = {
-		strokeWidth: true,
-		strokeCap: true,
-		strokeJoin: true,
-		miterLimit: true
-	};
-
-	var fields = {
-		beans: true,
-
-		initialize: function(style) {
-			var clone = style instanceof PathStyle;
-			for (var i = 0, l = style && keys.length; i < l; i++) {
-				var key = keys[i],
-					value = style[key];
-				if (value !== undefined) {
-					this[key] = value && clone && value.clone
-							? value.clone() : value;
-				}
-			}
-		},
-
-		statics: {
-			create: function(item) {
-				var style = new PathStyle(PathStyle.dont);
-				style._item = item;
-				return style;
-			}
+HitResult = Base.extend({
+	initialize: function(type, item, values) {
+		this.type = type;
+		this.item = item;
+		if (values) {
+			Base.each(values, function(value, key) {
+				this[key] = value;
+			}, this);
 		}
-	};
+	},
 
-	Item.inject(Base.each(keys, function(key) {
-		var isColor = !!key.match(/Color$/),
-			part = Base.capitalize(key),
-			set = 'set' + part,
-			get = 'get' + part;
-
-		fields[set] = function(value) {
-			var children = this._item && this._item._children;
-			value = isColor ? Color.read(arguments) : value;
-			if (children) {
-				for (var i = 0, l = children.length; i < l; i++)
-					children[i]._style[set](value);
-			} else {
-				var old = this['_' + key];
-				if (old != value && !(old && old.equals && old.equals(value))) {
-					this['_' + key] = value;
-					if (this._item) {
-						this._item._changed(ChangeFlags.STYLE
-							| (strokeFlags[key] ? ChangeFlags.STROKE : 0));
-					}
-				}
-			}
-			return this;
-		};
-
-		fields[get] = function() {
-			var children = this._item && this._item._children,
-				style;
-			if (children) {
-				for (var i = 0, l = children.length; i < l; i++) {
-					var childStyle = children[i]._style[get]();
-					if (!style) {
-						style = childStyle;
-					} else if (style != childStyle && !(style && style.equals
-							&& style.equals(childStyle))) {
-						return undefined;
-					}
-				}
-				return style;
-			} else {
-				return this['_' + key];
-			}
-		};
-
-		this[set] = function(value) {
-			this._style[set](value);
-			return this;
-		};
-
-		this[get] = function() {
-			return this._style[get]();
-		};
-	}, { beans: true }));
-
-	return fields;
+	statics: {
+		getOptions: function(point, options) {
+			return options && options._merged ? options : Base.merge({
+				point: Point.read(arguments, 0, 1),
+				type: null,
+				tolerance: 2,
+				fill: !options,
+				stroke: !options,
+				segments: !options,
+				handles: false,
+				ends: false,
+				center: false,
+				bounds: false,
+				guides: false,
+				selected: false,
+				_merged: true
+			}, options);
+		}
+	}
 });
 
 var Segment = this.Segment = Base.extend({
-	beans: true,
-
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
 			createPoint = SegmentPoint.create,
@@ -2772,7 +3025,7 @@ var Segment = this.Segment = Base.extend({
 				other._changed();
 			}
 		}
-		this._path._changed(ChangeFlags.GEOMETRY);
+		this._path._changed(Change.GEOMETRY);
 	},
 
 	getPoint: function() {
@@ -2793,11 +3046,6 @@ var Segment = this.Segment = Base.extend({
 		this._handleIn.set(point.x, point.y);
 	},
 
-	getHandleInIfSet: function() {
-		return this._handleIn._x == 0 && this._handleIn._y == 0
-			? null : this._handleIn;
-	},
-
 	getHandleOut: function() {
 		return this._handleOut;
 	},
@@ -2805,11 +3053,6 @@ var Segment = this.Segment = Base.extend({
 	setHandleOut: function(point) {
 		point = Point.read(arguments);
 		this._handleOut.set(point.x, point.y);
-	},
-
-	getHandleOutIfSet: function() {
-		return this._handleOut._x == 0 && this._handleOut._y == 0
-			? null : this._handleOut;
 	},
 
 	_isSelected: function(point) {
@@ -2823,8 +3066,7 @@ var Segment = this.Segment = Base.extend({
 	_setSelected: function(point, selected) {
 		var path = this._path,
 			selected = !!selected, 
-			state = this._selectionState,
-			wasSelected = !!state,
+			state = this._selectionState || 0,
 			selection = [
 				!!(state & SelectionState.POINT),
 				!!(state & SelectionState.HANDLE_IN),
@@ -2853,8 +3095,8 @@ var Segment = this.Segment = Base.extend({
 		this._selectionState = (selection[0] ? SelectionState.POINT : 0)
 				| (selection[1] ? SelectionState.HANDLE_IN : 0)
 				| (selection[2] ? SelectionState.HANDLE_OUT : 0);
-		if (path && wasSelected != !!this._selectionState)
-			path._updateSelection(this);
+		if (path && state != this._selectionState)
+			path._updateSelection(this, state, this._selectionState);
 	},
 
 	isSelected: function() {
@@ -2914,8 +3156,10 @@ var Segment = this.Segment = Base.extend({
 
 	_transformCoordinates: function(matrix, coords, change) {
 		var point = this._point,
-			handleIn =  matrix && this.getHandleInIfSet() || this._handleIn,
-			handleOut = matrix && this.getHandleOutIfSet() || this._handleOut,
+			handleIn =  !change || !this._handleIn.isZero()
+					? this._handleIn : null,
+			handleOut = !change || !this._handleOut.isZero()
+					? this._handleOut : null,
 			x = point._x,
 			y = point._y,
 			i = 2;
@@ -2929,39 +3173,37 @@ var Segment = this.Segment = Base.extend({
 			coords[i++] = handleOut._x + x;
 			coords[i++] = handleOut._y + y;
 		}
-		if (matrix) {
-			matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
-			x = coords[0];
-			y = coords[1];
-			if (change) {
-				point._x = x;
-				point._y = y;
-				i  = 2;
-				if (handleIn) {
-					handleIn._x = coords[i++] - x;
-					handleIn._y = coords[i++] - y;
-				}
-				if (handleOut) {
-					handleOut._x = coords[i++] - x;
-					handleOut._y = coords[i++] - y;
-				}
-			} else {
-				if (!handleIn) {
-					coords[i++] = x;
-					coords[i++] = y;
-				}
-				if (!handleOut) {
-					coords[i++] = x;
-					coords[i++] = y;
-				}
+		if (!matrix)
+			return;
+		matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
+		x = coords[0];
+		y = coords[1];
+		if (change) {
+			point._x = x;
+			point._y = y;
+			i  = 2;
+			if (handleIn) {
+				handleIn._x = coords[i++] - x;
+				handleIn._y = coords[i++] - y;
+			}
+			if (handleOut) {
+				handleOut._x = coords[i++] - x;
+				handleOut._y = coords[i++] - y;
+			}
+		} else {
+			if (!handleIn) {
+				coords[i++] = x;
+				coords[i++] = y;
+			}
+			if (!handleOut) {
+				coords[i++] = x;
+				coords[i++] = y;
 			}
 		}
 	}
 });
 
 var SegmentPoint = Point.extend({
-	beans: true,
-
 	set: function(x, y) {
 		this._x = x;
 		this._y = y;
@@ -2986,25 +3228,30 @@ var SegmentPoint = Point.extend({
 		this._y = y;
 		this._owner._changed(this);
 	},
+
 	setSelected: function(selected) {
 		this._owner._setSelected(this, selected);
 	},
+
 	isSelected: function() {
 		return this._owner._isSelected(this);
 	},
+
 	statics: {
 		create: function(segment, key, pt) {
 			var point = new SegmentPoint(SegmentPoint.dont),
 				x, y, selected;
 			if (!pt) {
 				x = y = 0;
-			} else if (pt.x !== undefined) {
-				x = pt.x;
+			} else if ((x = pt[0]) !== undefined) { 
+				y = pt[1];
+			} else {
+				if ((x = pt.x) === undefined) {
+					pt = Point.read(arguments, 2, 1);
+					x = pt.x;
+				}
 				y = pt.y;
 				selected = pt.selected;
-			} else {
-				x = pt[0];
-				y = pt[1];
 			}
 			point._x = x;
 			point._y = y;
@@ -3018,16 +3265,12 @@ var SegmentPoint = Point.extend({
 });
 
 var SelectionState = {
-	POINT: 1,
-	HANDLE_IN: 2,
-	HANDLE_OUT: 4,
-	HANDLE_BOTH: 6
+	HANDLE_IN: 1,
+	HANDLE_OUT: 2,
+	POINT: 4
 };
 
 var Curve = this.Curve = Base.extend({
-
-	beans: true,
-
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
 		if (count == 0) {
@@ -3045,7 +3288,6 @@ var Curve = this.Curve = Base.extend({
 		} else if (count == 8) {
 			var p1 = Point.create(arg0, arg1),
 				p2 = Point.create(arg6, arg7);
-			p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y
 			this._segment1 = new Segment(p1, null,
 					Point.create(arg2, arg3).subtract(p1));
 			this._segment2 = new Segment(p2,
@@ -3074,6 +3316,7 @@ var Curve = this.Curve = Base.extend({
 		point = Point.read(arguments);
 		this._segment2._point.set(point.x, point.y);
 	},
+
 	getHandle1: function() {
 		return this._segment1._handleOut;
 	},
@@ -3129,8 +3372,16 @@ var Curve = this.Curve = Base.extend({
 		this.getHandle2().setSelected(selected);
 	},
 
-	getValues: function() {
-		return Curve.getValues(this._segment1, this._segment2);
+	getValues: function(matrix) {
+		return Curve.getValues(this._segment1, this._segment2, matrix);
+	},
+
+	getPoints: function(matrix) {
+		var coords = this.getValues(matrix),
+			points = [];
+		for (var i = 0; i < 8; i += 2)
+			points.push(Point.create(coords[i], coords[i + 1]));
+		return points;
 	},
 
 	getLength: function() {
@@ -3139,19 +3390,14 @@ var Curve = this.Curve = Base.extend({
 			fullLength = arguments.length == 0 || from == 0 && to == 1;
 		if (fullLength && this._length != null)
 			return this._length;
-		var args = this.getValues();
-		if (!fullLength)
-			args.push(from, to);
-		var length = Curve.getLength.apply(Curve, args);
+		var length = Curve.getLength(this.getValues(), from, to);
 		if (fullLength)
 			this._length = length;
 		return length;
 	},
 
 	getPart: function(from, to) {
-		var args = this.getValues();
-		args.push(from, to);
-		return new Curve(Curve.getPart.apply(Curve, args));
+		return new Curve(Curve.getPart(this.getValues(), from, to));
 	},
 
 	isLinear: function() {
@@ -3159,28 +3405,43 @@ var Curve = this.Curve = Base.extend({
 				&& this._segment2._handleIn.isZero();
 	},
 
-	getParameter: function(length, start) {
-		var args = this.getValues();
-		args.push(length, start !== undefined ? start : length < 0 ? 1 : 0);
-		return Curve.getParameter.apply(Curve, args);
-	},
-
-	_evaluate: function(parameter, type) {
-		var args = this.getValues();
-		args.push(parameter, type);
-		return Curve.evaluate.apply(Curve, args);
+	getParameterAt: function(offset, start) {
+		return Curve.getParameterAt(this.getValues(), offset,
+				start !== undefined ? start : offset < 0 ? 1 : 0);
 	},
 
 	getPoint: function(parameter) {
-		return this._evaluate(parameter, 0);
+		return Curve.evaluate(this.getValues(), parameter, 0);
 	},
 
 	getTangent: function(parameter) {
-		return this._evaluate(parameter, 1);
+		return Curve.evaluate(this.getValues(), parameter, 1);
 	},
 
 	getNormal: function(parameter) {
-		return this._evaluate(parameter, 2);
+		return Curve.evaluate(this.getValues(), parameter, 2);
+	},
+
+	getParameter: function(point) {
+		point = Point.read(point);
+		return Curve.getParameter(this.getValues(), point.x, point.y);
+	},
+
+	getCrossings: function(point, matrix, roots) {
+		var vals = this.getValues(matrix),
+			num = Curve.solveCubic(vals, 1, point.y, roots),
+			crossings = 0;
+		for (var i = 0; i < num; i++) {
+			var t = roots[i];
+			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, 0).x > point.x) {
+				if (t < Numerical.TOLERANCE && Curve.evaluate(
+							this.getPrevious().getValues(matrix), 1, 1).y
+						* Curve.evaluate(vals, t, 1).y >= 0)
+					continue;
+				crossings++;
+			}
+		}
+		return crossings;
 	},
 
 	reverse: function() {
@@ -3210,60 +3471,38 @@ var Curve = this.Curve = Base.extend({
 			return curve;
 		},
 
-		getValues: function(segment1, segment2) {
+		getValues: function(segment1, segment2, matrix) {
 			var p1 = segment1._point,
 				h1 = segment1._handleOut,
 				h2 = segment2._handleIn,
-				p2 = segment2._point;
-			return [
-				p1._x, p1._y,
-				p1._x + h1._x, p1._y + h1._y,
-				p2._x + h2._x, p2._y + h2._y,
-				p2._x, p2._y
-			];
+				p2 = segment2._point,
+				coords = [
+					p1._x, p1._y,
+					p1._x + h1._x, p1._y + h1._y,
+					p2._x + h2._x, p2._y + h2._y,
+					p2._x, p2._y
+				];
+			return matrix
+					? matrix._transformCoordinates(coords, 0, coords, 0, 4)
+					: coords;
 		},
 
-		evaluate: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t, type) {
-			var x, y;
+		evaluate: function(v, t, type) {
+			var p1x = v[0], p1y = v[1],
+				c1x = v[2], c1y = v[3],
+				c2x = v[4], c2y = v[5],
+				p2x = v[6], p2y = v[7],
+				x, y;
 
-			if (t == 0 || t == 1) {
-				var point;
-				switch (type) {
-				case 0: 
-					x = t == 0 ? p1x : p2x;
-					y = t == 0 ? p1y : p2y;
-					break;
-				case 1: 
-				case 2: 
-					var px, py;
-					if (t == 0) {
-						if (c1x == p1x && c1y == p1y) { 
-							if (c2x == p2x && c2y == p2y) { 
-								px = p2x; py = p2y; 
-							} else {
-								px = c2x; py = c2y; 
-							}
-						} else {
-							px = c1x; py = c1y; 
-						}
-						x = px - p1x;
-						y = py - p1y;
-					} else {
-						if (c2x == p2x && c2y == p2y) { 
-							if (c1x == p1x && c1y == p1y) { 
-								px = p1x; py = p1y; 
-							} else {
-								px = c1x; py = c1y; 
-							}
-						} else { 
-							px = c2x; py = c2y;
-						}
-						x = p2x - px;
-						y = p2y - py;
-					}
-					break;
-				}
+			if (type == 0 && (t == 0 || t == 1)) {
+				x = t == 0 ? p1x : p2x;
+				y = t == 0 ? p1y : p2y;
 			} else {
+				var tMin = Numerical.TOLERANCE;
+				if (t < tMin && c1x == p1x && c1y == p1y)
+					t = tMin;
+				else if (t > 1 - tMin && c2x == p2x && c2y == p2y)
+					t = 1 - tMin;
 				var cx = 3 * (c1x - p1x),
 					bx = 3 * (c2x - c1x) - cx,
 					ax = p2x - p1x - cx - bx,
@@ -3271,6 +3510,7 @@ var Curve = this.Curve = Base.extend({
 					cy = 3 * (c1y - p1y),
 					by = 3 * (c2y - c1y) - cy,
 					ay = p2y - p1y - cy - by;
+
 				switch (type) {
 				case 0: 
 					x = ((ax * t + bx) * t + cx) * t + p1x;
@@ -3286,57 +3526,92 @@ var Curve = this.Curve = Base.extend({
 			return type == 2 ? new Point(y, -x) : new Point(x, y);
 		},
 
-		subdivide: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
+		subdivide: function(v, t) {
+			var p1x = v[0], p1y = v[1],
+				c1x = v[2], c1y = v[3],
+				c2x = v[4], c2y = v[5],
+				p2x = v[6], p2y = v[7];
 			if (t === undefined)
 				t = 0.5;
 			var u = 1 - t,
-				p3x = u * p1x + t * c1x,
-				p3y = u * p1y + t * c1y,
-				p4x = u * c1x + t * c2x,
-				p4y = u * c1y + t * c2y,
-				p5x = u * c2x + t * p2x,
-				p5y = u * c2y + t * p2y,
-				p6x = u * p3x + t * p4x,
-				p6y = u * p3y + t * p4y,
-				p7x = u * p4x + t * p5x,
-				p7y = u * p4y + t * p5y,
-				p8x = u * p6x + t * p7x,
-				p8y = u * p6y + t * p7y;
+				p3x = u * p1x + t * c1x, p3y = u * p1y + t * c1y,
+				p4x = u * c1x + t * c2x, p4y = u * c1y + t * c2y,
+				p5x = u * c2x + t * p2x, p5y = u * c2y + t * p2y,
+				p6x = u * p3x + t * p4x, p6y = u * p3y + t * p4y,
+				p7x = u * p4x + t * p5x, p7y = u * p4y + t * p5y,
+				p8x = u * p6x + t * p7x, p8y = u * p6y + t * p7y;
 			return [
 				[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], 
 				[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] 
 			];
 		},
 
-		getPart: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, from, to) {
-			var curve = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
-			if (from > 0) {
-				curve[8] = from;
-				curve = Curve.subdivide.apply(Curve, curve)[1]; 
-			}
-			if (to < 1) {
-				curve[8] = (to - from) / (1 - from);
-				curve = Curve.subdivide.apply(Curve, curve)[0]; 
-			}
-			return curve;
+		solveCubic: function (v, coord, val, roots) {
+			var p1 = v[coord],
+				c1 = v[coord + 2],
+				c2 = v[coord + 4],
+				p2 = v[coord + 6],
+				c = 3 * (c1 - p1),
+				b = 3 * (c2 - c1) - c,
+				a = p2 - p1 - c - b;
+			return Numerical.solveCubic(a, b, c, p1 - val, roots,
+					Numerical.TOLERANCE);
 		},
 
-		isSufficientlyFlat: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
-			var vx = (p2x - p1x) / 3,
-				vy = (p2y - p1y) / 3,
-				m1x = p1x + vx,
-				m1y = p1y + vy,
-				m2x = p2x - vx,
-				m2y = p2y - vy;
-			return Math.max(
-					Math.abs(m1x - c1x), Math.abs(m1y - c1y),
-					Math.abs(m2x - c1x), Math.abs(m1y - c1y)) < 1 / 2;
+		getParameter: function(v, x, y) {
+			var txs = [],
+				tys = [],
+				sx = Curve.solveCubic(v, 0, x, txs),
+				sy = Curve.solveCubic(v, 1, y, tys),
+				tx, ty;
+			for (var cx = 0;  sx == -1 || cx < sx;) {
+				if (sx == -1 || (tx = txs[cx++]) >= 0 && tx <= 1) {
+					for (var cy = 0; sy == -1 || cy < sy;) {
+						if (sy == -1 || (ty = tys[cy++]) >= 0 && ty <= 1) {
+							if (sx == -1) tx = ty;
+							else if (sy == -1) ty = tx;
+							if (Math.abs(tx - ty) < Numerical.TOLERANCE)
+								return (tx + ty) * 0.5;
+						}
+					}
+					if (sx == -1)
+						break;
+				}
+			}
+			return null;
+		},
+
+		getPart: function(v, from, to) {
+			if (from > 0)
+				v = Curve.subdivide(v, from)[1]; 
+			if (to < 1)
+				v = Curve.subdivide(v, (to - from) / (1 - from))[0]; 
+			return v;
+		},
+
+		isFlatEnough: function(v) {
+			var p1x = v[0], p1y = v[1],
+				c1x = v[2], c1y = v[3],
+				c2x = v[4], c2y = v[5],
+				p2x = v[6], p2y = v[7],
+
+				a = p1y - p2y,
+				b = p2x - p1x,
+				c = p1x * p2y - p2x * p1y,
+				v1 = a * c1x + b * c1y + c,
+				v2 = a * c2x + b * c2y + c;
+			return Math.abs((v1 * v1 + v2 * v2) / (a * (a * a + b * b))) < 0.005;
 		}
 	}
 }, new function() { 
 
-	function getLengthIntegrand(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
-		var ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
+	function getLengthIntegrand(v) {
+		var p1x = v[0], p1y = v[1],
+			c1x = v[2], c1y = v[3],
+			c2x = v[4], c2y = v[5],
+			p2x = v[6], p2y = v[7],
+
+			ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
 			bx = 6 * (p1x + c2x) - 12 * c1x,
 			cx = 3 * (c1x - p1x),
 
@@ -3358,67 +3633,198 @@ var Curve = this.Curve = Base.extend({
 	return {
 		statics: true,
 
-		getLength: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, a, b) {
+		getLength: function(v, a, b) {
 			if (a === undefined)
 				a = 0;
 			if (b === undefined)
 				b = 1;
-			if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y) {
-				var dx = p2x - p1x,
-					dy = p2y - p1y;
+			if (v[0] == v[2] && v[1] == v[3] && v[6] == v[4] && v[7] == v[5]) {
+				var dx = v[6] - v[0], 
+					dy = v[7] - v[1]; 
 				return (b - a) * Math.sqrt(dx * dx + dy * dy);
 			}
-			var ds = getLengthIntegrand(
-					p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+			var ds = getLengthIntegrand(v);
 			return Numerical.integrate(ds, a, b, getIterations(a, b));
 		},
 
-		getParameter: function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y,
-				length, start) {
-			if (length == 0)
+		getParameterAt: function(v, offset, start) {
+			if (offset == 0)
 				return start;
-			var forward = length > 0,
+			var forward = offset > 0,
 				a = forward ? start : 0,
 				b = forward ? 1 : start,
-				length = Math.abs(length),
-				ds = getLengthIntegrand(
-						p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y),
+				offset = Math.abs(offset),
+				ds = getLengthIntegrand(v),
 				rangeLength = Numerical.integrate(ds, a, b,
 						getIterations(a, b));
-			if (length >= rangeLength)
+			if (offset >= rangeLength)
 				return forward ? b : a;
-			var guess = length / rangeLength,
-				len = 0;
+			var guess = offset / rangeLength,
+				length = 0;
 			function f(t) {
 				var count = getIterations(start, t);
-				if (start < t) {
-					len += Numerical.integrate(ds, start, t, count);
-				} else {
-					len -= Numerical.integrate(ds, t, start, count);
-				}
+				length += start < t
+						? Numerical.integrate(ds, start, t, count)
+						: -Numerical.integrate(ds, t, start, count);
 				start = t;
-				return len - length;
+				return length - offset;
 			}
 			return Numerical.findRoot(f, ds,
 					forward ? a + guess : b - guess, 
 					a, b, 16, Numerical.TOLERANCE);
 		}
 	};
+}, new function() { 
+
+	var maxDepth = 32,
+		epsilon = Math.pow(2, -maxDepth - 1);
+
+	var zCubic = [
+		[1.0, 0.6, 0.3, 0.1],
+		[0.4, 0.6, 0.6, 0.4],
+		[0.1, 0.3, 0.6, 1.0]
+	];
+
+	var xAxis = new Line(new Point(0, 0), new Point(1, 0));
+
+	function toBezierForm(v, point) {
+		var n = 3, 
+	 		degree = 5, 
+			c = [],
+			d = [],
+			cd = [],
+			w = [];
+		for(var i = 0; i <= n; i++) {
+			c[i] = v[i].subtract(point);
+			if (i < n)
+				d[i] = v[i + 1].subtract(v[i]).multiply(n);
+		}
+
+		for (var row = 0; row < n; row++) {
+			cd[row] = [];
+			for (var column = 0; column <= n; column++)
+				cd[row][column] = d[row].dot(c[column]);
+		}
+
+		for (var i = 0; i <= degree; i++)
+			w[i] = new Point(i / degree, 0);
+
+		for (k = 0; k <= degree; k++) {
+			var lb = Math.max(0, k - n + 1),
+				ub = Math.min(k, n);
+			for (var i = lb; i <= ub; i++) {
+				var j = k - i;
+				w[k].y += cd[j][i] * zCubic[j][i];
+			}
+		}
+
+		return w;
+	}
+
+	function findRoots(w, depth) {
+		switch (countCrossings(w)) {
+		case 0:
+			return [];
+		case 1:
+			if (depth >= maxDepth)
+				return [0.5 * (w[0].x + w[5].x)];
+			if (isFlatEnough(w)) {
+				var line = new Line(w[0], w[5], true);
+				return [ line.vector.getLength(true) < Numerical.EPSILON
+						? line.point.x
+						: xAxis.intersect(line).x ];
+			}
+		}
+
+		var p = [[]],
+			left = [],
+			right = [];
+		for (var j = 0; j <= 5; j++)
+		 	p[0][j] = new Point(w[j]);
+
+		for (var i = 1; i <= 5; i++) {
+			p[i] = [];
+			for (var j = 0 ; j <= 5 - i; j++)
+				p[i][j] = p[i - 1][j].add(p[i - 1][j + 1]).multiply(0.5);
+		}
+		for (var j = 0; j <= 5; j++) {
+			left[j]  = p[j][0];
+			right[j] = p[5 - j][j];
+		}
+
+		return findRoots(left, depth + 1).concat(findRoots(right, depth + 1));
+	}
+
+	function countCrossings(v) {
+		var crossings = 0,
+			prevSign = null;
+		for (var i = 0, l = v.length; i < l; i++)  {
+			var sign = v[i].y < 0 ? -1 : 1;
+			if (prevSign != null && sign != prevSign)
+				crossings++;
+			prevSign = sign;
+		}
+		return crossings;
+	}
+
+	function isFlatEnough(v) {
+
+		var n = v.length - 1,
+			a = v[0].y - v[n].y,
+			b = v[n].x - v[0].x,
+			c = v[0].x * v[n].y - v[n].x * v[0].y,
+			maxAbove = 0,
+			maxBelow = 0;
+		for (var i = 1; i < n; i++) {
+			var val = a * v[i].x + b * v[i].y + c,
+				dist = val * val;
+			if (val < 0 && dist > maxBelow) {
+				maxBelow = dist;
+			} else if (dist > maxAbove) {
+				maxAbove = dist;
+			}
+		}
+		return Math.abs((maxAbove + maxBelow) / (2 * a * (a * a + b * b)))
+				< epsilon;
+	}
+
+	return {
+		getNearestLocation: function(point, matrix) {
+			var w = toBezierForm(this.getPoints(matrix), point);
+			var roots = findRoots(w, 0).concat([0, 1]);
+			var minDist = Infinity,
+				minT,
+				minPoint;
+			for (var i = 0; i < roots.length; i++) {
+				var pt = this.getPoint(roots[i]),
+					dist = point.getDistance(pt, true);
+				if (dist < minDist) {
+					minDist = dist;
+					minT = roots[i];
+					minPoint = pt;
+				}
+			}
+			return new CurveLocation(this, minT, minPoint, Math.sqrt(minDist));
+		},
+
+		getNearestPoint: function(point, matrix) {
+			return this.getNearestLocation(point, matrix).getPoint();
+		}
+	};
 });
 
 CurveLocation = Base.extend({
-
-	beans: true,
-
-	initialize: function(curve, parameter, point) {
+	initialize: function(curve, parameter, point, distance) {
 		this._curve = curve;
 		this._parameter = parameter;
 		this._point = point;
+		this._distance = distance;
 	},
 
 	getSegment: function() {
 		if (!this._segment) {
-			var parameter = this.getParameter();
+			var curve = this._curve,
+				parameter = this.getParameter();
 			if (parameter == 0) {
 				this._segment = curve._segment1;
 			} else if (parameter == 1) {
@@ -3439,7 +3845,7 @@ CurveLocation = Base.extend({
 		return this._curve;
 	},
 
-	getItem: function() {
+	getPath: function() {
 		return this._curve && this._curve._path;
 	},
 
@@ -3453,22 +3859,20 @@ CurveLocation = Base.extend({
 	},
 
 	getCurveOffset: function() {
-		var parameter = this._curve && this.getParameter();
-		return parameter != null ? this._curve.getLength(0, parameter) : null;
+		var parameter = this.getParameter();
+		return parameter != null && this._curve
+				&& this._curve.getLength(0, parameter);
 	},
 
 	getParameter: function() {
-		if (this._parameter == null && this._point)
-			this._parameter = this._curve.getParameter(this._point);
+		if (this._parameter == null && this._curve && this._point)
+			this._parameter = this._curve.getParameterAt(this._point);
 		return this._parameter;
 	},
 
 	getPoint: function() {
-		if (!this._point && this._curve) {
-			var parameter = this.getParameter();
-			if (parameter != null)
-				this._point = this._curve.getPoint(parameter);
-		}
+		if (!this._point && this._curve && this._parameter != null)
+			this._point = this._curve.getPoint(this._parameter);
 		return this._point;
 	},
 
@@ -3477,10 +3881,15 @@ CurveLocation = Base.extend({
 		return parameter != null && this._curve
 				&& this._curve.getTangent(parameter);
 	},
+
 	getNormal: function() {
 		var parameter = this.getParameter();
 		return parameter != null && this._curve
 				&& this._curve.getNormal(parameter);
+	},
+
+	getDistance: function() {
+		return this._distance;
 	},
 
 	toString: function() {
@@ -3494,21 +3903,21 @@ CurveLocation = Base.extend({
 		var parameter = this.getParameter();
 		if (parameter != null)
 			parts.push('parameter: ' + Base.formatNumber(parameter));
+		if (this._distance != null)
+			parts.push('distance: ' + Base.formatNumber(this._distance));
 		return '{ ' + parts.join(', ') + ' }';
 	}
 });
 
 var PathItem = this.PathItem = Item.extend({
+
 });
 
 var Path = this.Path = PathItem.extend({
-
-	beans: true,
-
 	initialize: function(segments) {
 		this.base();
 		this._closed = false;
-		this._selectedSegmentCount = 0;
+		this._selectedSegmentState = 0;
 		this.setSegments(!segments || !Array.isArray(segments)
 				|| typeof segments[0] !== 'object' ? arguments : segments);
 	},
@@ -3522,13 +3931,14 @@ var Path = this.Path = PathItem.extend({
 	},
 
 	_changed: function(flags) {
-		if (flags & ChangeFlags.GEOMETRY) {
-			delete this._length;
-			delete this._bounds;
-			delete this._position;
+		Item.prototype._changed.call(this, flags);
+		if (flags & ChangeFlag.GEOMETRY) {
 			delete this._strokeBounds;
+			delete this._handleBounds;
+			delete this._roughBounds;
+			delete this._length;
 			delete this._clockwise;
-		} else if (flags & ChangeFlags.STROKE) {
+		} else if (flags & ChangeFlag.STROKE) {
 			delete this._strokeBounds;
 		}
 	},
@@ -3541,7 +3951,7 @@ var Path = this.Path = PathItem.extend({
 		if (!this._segments) {
 			this._segments = [];
 		} else {
-			this.setSelected(false);
+			this._selectedSegmentState = 0;
 			this._segments.length = 0;
 			if (this._curves)
 				delete this._curves;
@@ -3597,7 +4007,7 @@ var Path = this.Path = PathItem.extend({
 					this._curves[i = length - 1] = Curve.create(this,
 						this._segments[i], this._segments[0]);
 			}
-			this._changed(ChangeFlags.GEOMETRY);
+			this._changed(Change.GEOMETRY);
 		}
 	},
 
@@ -3614,7 +4024,6 @@ var Path = this.Path = PathItem.extend({
 			if (strokeColor && strokeColor.transform)
 				strokeColor.transform(matrix);
 		}
-		this._changed(ChangeFlags.GEOMETRY);
 	},
 
 	_add: function(segs, index) {
@@ -3622,7 +4031,8 @@ var Path = this.Path = PathItem.extend({
 			curves = this._curves,
 			amount = segs.length,
 			append = index == null,
-			index = append ? segments.length : index;
+			index = append ? segments.length : index,
+			fullySelected = this.isFullySelected();
 		for (var i = 0; i < amount; i++) {
 			var segment = segs[i];
 			if (segment._path) {
@@ -3630,8 +4040,10 @@ var Path = this.Path = PathItem.extend({
 			}
 			segment._path = this;
 			segment._index = index + i;
+			if (fullySelected)
+				segment._selectionState = SelectionState.POINT;
 			if (segment._selectionState)
-				this._updateSelection(segment);
+				this._updateSelection(segment, 0, segment._selectionState);
 		}
 		if (append) {
 			segments.push.apply(segments, segs);
@@ -3649,15 +4061,8 @@ var Path = this.Path = PathItem.extend({
 				curve._segment1 = segments[index + amount];
 			}
 		}
-		this._changed(ChangeFlags.GEOMETRY);
+		this._changed(Change.GEOMETRY);
 		return segs;
-	},
-
-	_updateSelection: function(segment) {
-		var count = this._selectedSegmentCount +=
-				segment._selectionState ? 1 : -1;
-		if (count <= 1)
-			this._project._selectItem(this, count == 1);
 	},
 
 	add: function(segment1 ) {
@@ -3692,9 +4097,10 @@ var Path = this.Path = PathItem.extend({
 		var segments = this.removeSegments(index, index + 1);
 		return segments[0] || null;
 	},
+
 	removeSegments: function(from, to) {
 		from = from || 0;
-	 	to = Base.pick(to, this._segments.length - 1);
+	 	to = Base.pick(to, this._segments.length);
 		var segments = this._segments,
 			curves = this._curves,
 			last = to >= segments.length,
@@ -3704,10 +4110,8 @@ var Path = this.Path = PathItem.extend({
 			return removed;
 		for (var i = 0; i < amount; i++) {
 			var segment = removed[i];
-			if (segment._selectionState) {
-				segment._selectionState = 0;
-				this._updateSelection(segment);
-			}
+			if (segment._selectionState)
+				this._updateSelection(segment, segment._selectionState, 0);
 			removed._index = removed._path = undefined;
 		}
 		for (var i = from, l = segments.length; i < l; i++)
@@ -3722,36 +4126,37 @@ var Path = this.Path = PathItem.extend({
 			if (last && this._closed && (curve = curves[curves.length - 1]))
 				curve._segment2 = segments[0];
 		}
-		this._changed(ChangeFlags.GEOMETRY);
+		this._changed(Change.GEOMETRY);
 		return removed;
 	},
 
-	isSelected: function() {
-		return this._selectedSegmentCount > 0;
+	isFullySelected: function() {
+		return this._selected && this._selectedSegmentState
+				== this._segments.length * SelectionState.POINT;
 	},
-	setSelected: function(selected) {
-		var wasSelected = this.isSelected(),
-			length = this._segments.length;
-		if (!wasSelected != !selected && length)
-			this._project._selectItem(this, selected);
-		this._selectedSegmentCount = selected ? length : 0;
+
+	setFullySelected: function(selected) {
+		var length = this._segments.length;
+		this._selectedSegmentState = selected
+				? length * SelectionState.POINT : 0;
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
 					? SelectionState.POINT : 0;
-	},
-
-	isFullySelected: function() {
-		return this._selectedSegmentCount == this._segments.length;
-	},
-	setFullySelected: function(selected) {
 		this.setSelected(selected);
 	},
 
-	curvesToPoints: function(maxDistance) {
+	_updateSelection: function(segment, oldState, newState) {
+		segment._selectionState = newState;
+		var total = this._selectedSegmentState += newState - oldState;
+		if (total > 0)
+			this.setSelected(true);
+	},
+
+	flatten: function(maxDistance) {
 		var flattener = new PathFlattener(this),
 			pos = 0,
 			step = flattener.length / Math.ceil(flattener.length / maxDistance),
-			end = flattener.length + step / 2;
+			end = flattener.length + (this._closed ? -step : step) / 2;
 		var segments = [];
 		while (pos <= end) {
 			segments.push(new Segment(flattener.evaluate(pos, 0)));
@@ -3760,9 +4165,11 @@ var Path = this.Path = PathItem.extend({
 		this.setSegments(segments);
 	},
 
-	pointsToCurves: function(tolerance) {
-		var fitter = new PathFitter(this, tolerance || 2.5);
-		this.setSegments(fitter.fit());
+	simplify: function(tolerance) {
+		if (this._segments.length > 2) {
+			var fitter = new PathFitter(this, tolerance || 2.5);
+			this.setSegments(fitter.fit());
+		}
 	},
 
 	isClockwise: function() {
@@ -3841,7 +4248,7 @@ var Path = this.Path = PathItem.extend({
 				last1.remove();
 				this.setClosed(true);
 			}
-			this._changed(ChangeFlags.GEOMETRY);
+			this._changed(Change.GEOMETRY);
 			return true;
 		}
 		return false;
@@ -3870,6 +4277,17 @@ var Path = this.Path = PathItem.extend({
 		return null;
 	},
 
+	getLocation: function(point) {
+		var curves = this.getCurves();
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var curve = curves[i];
+			var t = curve.getParameter(point);
+			if (t != null)
+				return new CurveLocation(curve, t);
+		}
+		return null;
+	},
+
 	getLocationAt: function(offset, isParameter) {
 		var curves = this.getCurves(),
 			length = 0;
@@ -3883,7 +4301,7 @@ var Path = this.Path = PathItem.extend({
 			length += curve.getLength();
 			if (length >= offset) {
 				return new CurveLocation(curve,
-						curve.getParameter(offset - start));
+						curve.getParameterAt(offset - start));
 			}
 		}
 		if (offset <= this.getLength())
@@ -3895,30 +4313,104 @@ var Path = this.Path = PathItem.extend({
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getPoint();
 	},
+
 	getTangentAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getTangent();
 	},
+
 	getNormalAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
 		return loc && loc.getNormal();
+	},
+
+	getNearestLocation: function(point, matrix) {
+		var curves = this.getCurves(),
+			minDist = Infinity,
+			minLoc = null;
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var loc = curves[i].getNearestLocation(point, matrix);
+			if (loc._distance < minDist) {
+				minDist = loc._distance;
+				minLoc = loc;
+			}
+		}
+		return minLoc;
+	},
+
+	getNearestPoint: function(point, matrix) {
+		return this.getNearestLocation(point, matrix).getPoint();
+	},
+
+	contains: function(point, matrix) {
+		point = Point.read(arguments);
+		if (!this._closed || !this.getRoughBounds(matrix)._containsPoint(point))
+			return false;
+		var curves = this.getCurves(),
+			crossings = 0,
+			roots = [];
+		for (var i = 0, l = curves.length; i < l; i++)
+			crossings += curves[i].getCrossings(point, matrix, roots);
+		return (crossings & 1) == 1;
+	},
+
+	_hitTest: function(point, options, matrix) {
+		var tolerance = options.tolerance || 0,
+			radius = (options.stroke ? this.getStrokeWidth() / 2 : 0) + tolerance,
+			loc,
+			res;
+		var coords = [],
+			that = this;
+		function checkSegment(segment, ends) {
+			segment._transformCoordinates(matrix, coords);
+			for (var j = ends || options.segments ? 0 : 2,
+					m = !ends && options.handles ? 6 : 2; j < m; j += 2) {
+				if (point.getDistance(coords[j], coords[j + 1]) < tolerance)
+					return new HitResult(j == 0 ? 'segment'
+							: 'handle-' + (j == 2 ? 'in' : 'out'),
+							that, { segment: segment });
+			}
+		}
+		if (options.ends && !options.segments && !this._closed) {
+			if (res = checkSegment(this.getFirstSegment(), true)
+					|| checkSegment(this.getLastSegment(), true))
+				return res;
+		} else if (options.segments || options.handles) {
+			for (var i = 0, l = this._segments.length; i < l; i++) {
+				if (res = checkSegment(this._segments[i]))
+					return res;
+			}
+		}
+		if (options.stroke && radius > 0)
+			loc = this.getNearestLocation(point, matrix);
+		if (!(loc && loc._distance <= radius) && options.fill
+				&& this.getFillColor() && this.contains(point, matrix))
+			return new HitResult('fill', this);
+		if (!loc && options.stroke && radius > 0)
+			loc = this.getNearestLocation(point, matrix);
+		if (loc && loc._distance <= radius)
+			return options.stroke
+					? new HitResult('stroke', this, { location: loc })
+					: new HitResult('fill', this);
 	}
+
 }, new function() { 
 
 	function drawHandles(ctx, segments) {
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
 				point = segment._point,
-				pointSelected = segment._selectionState == SelectionState.POINT;
-				if (pointSelected || segment._isSelected(segment._handleIn))
-					drawHandle(ctx, point, segment._handleIn);
-				if (pointSelected || segment._isSelected(segment._handleOut))
-					drawHandle(ctx, point, segment._handleOut);
+				state = segment._selectionState,
+				selected = state & SelectionState.POINT;
+			if (selected || (state & SelectionState.HANDLE_IN))
+				drawHandle(ctx, point, segment._handleIn);
+			if (selected || (state & SelectionState.HANDLE_OUT))
+				drawHandle(ctx, point, segment._handleOut);
 			ctx.save();
 			ctx.beginPath();
 			ctx.rect(point._x - 2, point._y - 2, 4, 4);
 			ctx.fill();
-			if (!pointSelected) {
+			if (!selected) {
 				ctx.beginPath();
 				ctx.rect(point._x - 1, point._y - 1, 2, 2);
 				ctx.fillStyle = '#ffffff';
@@ -3927,6 +4419,7 @@ var Path = this.Path = PathItem.extend({
 			}
 		}
 	}
+
 	function drawHandle(ctx, point, handle) {
 		if (!handle.isZero()) {
 			var handleX = point._x + handle._x,
@@ -3994,7 +4487,7 @@ var Path = this.Path = PathItem.extend({
 				dashArray = this.getDashArray() || [], 
 				hasDash = !!dashArray.length;
 
-			if (param.compound || param.selection || param.clip || fillColor
+			if (param.compound || param.selection || this._clipMask || fillColor
 					|| strokeColor && !hasDash) {
 				drawSegments(ctx, this);
 			}
@@ -4002,13 +4495,13 @@ var Path = this.Path = PathItem.extend({
 			if (param.selection) {
 				ctx.stroke();
 				drawHandles(ctx, this._segments);
-			} else if (param.clip) {
+			} else if (this._clipMask) {
 				ctx.clip();
 			} else if (!param.compound && (fillColor || strokeColor)) {
 				ctx.save();
 				this._setStyles(ctx);
 				if (!fillColor || !strokeColor)
-					ctx.globalAlpha = this.opacity;
+					ctx.globalAlpha = this._opacity;
 				if (fillColor) {
 					ctx.fillStyle = fillColor.getCanvasStyle(ctx);
 					ctx.fill();
@@ -4052,7 +4545,6 @@ var Path = this.Path = PathItem.extend({
 	};
 
 	return {
-
 		_setStyles: function(ctx) {
 			for (var i in styles) {
 				var style = this._style[i]();
@@ -4138,19 +4630,21 @@ var Path = this.Path = PathItem.extend({
 		}
 	};
 }, new function() { 
-
 	function getCurrentSegment(that) {
 		var segments = that._segments;
 		if (segments.length == 0)
-			throw('Use a moveTo() command first');
+			throw new Error('Use a moveTo() command first');
 		return segments[segments.length - 1];
 	}
 
 	return {
-
 		moveTo: function(point) {
 			if (!this._segments.length)
 				this._add([ new Segment(Point.read(arguments)) ]);
+		},
+
+		moveBy: function(point) {
+			throw new Error('moveBy() is unsupported on Path items.');
 		},
 
 		lineTo: function(point) {
@@ -4187,84 +4681,63 @@ var Path = this.Path = PathItem.extend({
 					.subtract(to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
-					"Cannot put a curve through points with parameter=" + t);
+					'Cannot put a curve through points with parameter = ' + t);
 			this.quadraticCurveTo(handle, to);
 		},
 
-		arcTo: function(to, clockwise) {
+		arcTo: function(to, clockwise ) {
 			var current = getCurrentSegment(this),
+				from = current._point,
 				through;
-			if (arguments[1] && typeof arguments[1] !== 'boolean') {
+			if (clockwise === undefined)
+				clockwise = true;
+			if (typeof clockwise === 'boolean') {
+				to = Point.read(arguments, 0, 1);
+				var middle = from.add(to).divide(2),
+				through = middle.add(middle.subtract(from).rotate(
+						clockwise ? -90 : 90));
+			} else {
 				through = Point.read(arguments, 0, 1);
 				to = Point.read(arguments, 1, 1);
-			} else {
-				to = Point.read(arguments, 0, 1);
-				if (clockwise === undefined)
-					clockwise = true;
-				var middle = current._point.add(to).divide(2),
-					step = middle.subtract(current._point);
-				through = clockwise 
-						? middle.subtract(-step.y, step.x)
-						: middle.add(-step.y, step.x);
 			}
-
-			var x1 = current._point._x, x2 = through.x, x3 = to.x,
-				y1 = current._point._y, y2 = through.y, y3 = to.y,
-
-				f = x3 * x3 - x3 * x2 - x1 * x3 + x1 * x2 + y3 * y3 - y3 * y2
-					- y1 * y3 + y1 * y2,
-				g = x3 * y1 - x3 * y2 + x1 * y2 - x1 * y3 + x2 * y3 - x2 * y1,
-				m = g == 0 ? 0 : f / g,
-				e = x1 * x2 + y1 * y2 - m * (x1 * y2 - y1 * x2),
-				cx = (x1 + x2 - m * (y2 - y1)) / 2,
-				cy = (y1 + y2 - m * (x1 - x2)) / 2,
-				radius = Math.sqrt(cx * cx + cy * cy - e),
-				angle = Math.atan2(y1 - cy, x1 - cx),
-				middle = Math.atan2(y2 - cy, x2 - cx),
-				extent = Math.atan2(y3 - cy, x3 - cx),
-				diff = middle - angle,
-				d90 = Math.PI, 
-				d180 = d90 * 2; 
-
-			if (diff < -d90)
-				diff += d180;
-			else if (diff > d90)
-				diff -= d180;
-
-			extent -= angle;
-			if (extent <= 0)
-				extent += d180;
-			if (diff < 0)
-				extent -= d180;
-
+			var l1 = new Line(from.add(through).divide(2),
+					through.subtract(from).rotate(90)),
+			 	l2 = new Line(through.add(to).divide(2),
+					to.subtract(through).rotate(90)),
+				center = l1.intersect(l2),
+				line = new Line(from, to, true),
+				throughSide = line.getSide(through);
+			if (!center) {
+				if (!throughSide)
+					return this.lineTo(to);
+				throw new Error("Cannot put an arc through the given points: "
+					+ [from, through, to]);
+			}
+			var vector = from.subtract(center),
+				radius = vector.getLength(),
+				extent = vector.getDirectedAngle(to.subtract(center)),
+				centerSide = line.getSide(center);
+			if (centerSide == 0) {
+				extent = throughSide * Math.abs(extent);
+			} else if (throughSide == centerSide) {
+				extent -= 360 * (extent < 0 ? -1 : 1);
+			}
 			var ext = Math.abs(extent),
-				arcSegs =  ext >= d180
-				 	? 4 : Math.ceil(ext * 2 / Math.PI),
-				inc = Math.min(Math.max(extent, -d180), d180) / arcSegs,
-				z = 4 / 3 * Math.sin(inc / 2) / (1 + Math.cos(inc / 2)),
+				count =  ext >= 360 ? 4 : Math.ceil(ext / 90),
+				inc = extent / count,
+				half = inc * Math.PI / 360,
+				z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
 				segments = [];
-			for (var i = 0; i <= arcSegs; i++) {
-				var relx = Math.cos(angle),
-					rely = Math.sin(angle);
-				var pt = new Point(
-					cx + relx * radius,
-					cy + rely * radius
-				);
-				var out = i == arcSegs
-					? null
-					: new Point(
-						cx + (relx - z * rely) * radius - pt.x,
-						cy + (rely + z * relx) * radius - pt.y
-					);
+			for (var i = 0; i <= count; i++) {
+				var pt = i < count ? center.add(vector) : to;
+				var out = i < count ? vector.rotate(90).multiply(z) : null;
 				if (i == 0) {
 					current.setHandleOut(out);
 				} else {
-					segments.push(new Segment(pt, new Point(
-						cx + (relx + z * rely) * radius - pt.x,
-						cy + (rely - z * relx) * radius - pt.y
-					), out));
+					segments.push(
+						new Segment(pt, vector.rotate(-90).multiply(z), out));
 				}
-				angle += inc;
+				vector = vector.rotate(inc);
 			}
 			this._add(segments);
 		},
@@ -4352,11 +4825,11 @@ var Path = this.Path = PathItem.extend({
 					continue;
 				}
 
-				var b2ac = b * b - 4 * a * c;
-				if (b2ac < 0)
+				var q = b * b - 4 * a * c;
+				if (q < 0)
 					continue;
-				var sqrt = Math.sqrt(b2ac),
-					f = 1 / (a * -2),
+				var sqrt = Math.sqrt(q),
+					f = -0.5 / a,
 				 	t1 = (b - sqrt) * f,
 					t2 = (b + sqrt) * f;
 				if (tMin < t1 && t1 < tMax)
@@ -4395,25 +4868,21 @@ var Path = this.Path = PathItem.extend({
 	}
 
 	return {
-		beans: true,
-
 		getBounds: function() {
-			var useCache = arguments.length == 0;
-			if (!useCache || !this._bounds) {
-				var bounds = getBounds(this, arguments[0]);
-				if (!useCache)
-					return bounds;
-				this._bounds = LinkedRectangle.create(this, 'setBounds',
-						bounds.x, bounds.y, bounds.width, bounds.height);
-			}
-			return this._bounds;
+			var useCache = arguments[0] === undefined;
+			if (useCache && this._bounds)
+				return this._bounds;
+			var bounds = this._createBounds(getBounds(this, arguments[0]));
+			if (useCache)
+				this._bounds = bounds;
+			return bounds;
 		},
 
 		getStrokeBounds: function() {
 			if (!this._style._strokeColor || !this._style._strokeWidth)
 				return this.getBounds.apply(this, arguments);
-			var useCache = arguments.length == 0;
-			if (this._strokeBounds && useCache)
+			var useCache = arguments[0] === undefined;
+			if (useCache && this._strokeBounds)
 				return this._strokeBounds;
 			var matrix = arguments[0], 
 				width = this.getStrokeWidth(),
@@ -4440,9 +4909,8 @@ var Path = this.Path = PathItem.extend({
 			}
 
 			function addJoin(segment, join) {
-				var handleIn = segment.getHandleInIfSet(),
-					handleOut = segment.getHandleOutIfSet();
-				if (join === 'round' || handleIn && handleOut) {
+				if (join === 'round' || !segment._handleIn.isZero()
+						&& !segment._handleOut.isZero()) {
 					bounds = bounds.unite(joinBounds.setCenter(matrix
 						? matrix.transform(segment._point) : segment._point));
 				} else if (join == 'bevel') {
@@ -4455,7 +4923,7 @@ var Path = this.Path = PathItem.extend({
 						point = curve2.getPoint(0),
 						normal1 = curve1.getNormal(1).normalize(radius),
 						normal2 = curve2.getNormal(0).normalize(radius),
-						line1 = new Line(point.add(normal1),
+						line1 = new Line(point.subtract(normal1),
 								new Point(-normal1.y, normal1.x)),
 						line2 = new Line(point.subtract(normal2),
 								new Point(-normal2.y, normal2.x)),
@@ -4499,94 +4967,55 @@ var Path = this.Path = PathItem.extend({
 			return bounds;
 		},
 
-		getControlBounds: function() {
-		}
-	};
-});
-
-var CompoundPath = this.CompoundPath = PathItem.extend({
-
-	initialize: function(paths) {
-		this.base();
-		this._children = [];
-		var items = !paths || !Array.isArray(paths)
-				|| typeof paths[0] !== 'object' ? arguments : paths;
-		for (var i = 0, l = items.length; i < l; i++) {
-			var path = items[i];
-			if (path._clockwise === undefined)
-				path.setClockwise(i < l - 1);
-			this.appendTop(path);
-		}
-	},
-
-	simplify: function() {
-		if (this._children.length == 1) {
-			var child = this._children[0];
-			child.moveAbove(this);
-			this.remove();
-			return child;
-		}
-		return this;
-	},
-
-	smooth: function() {
-		for (var i = 0, l = this._children.length; i < l; i++)
-			this._children[i].smooth();
-	},
-
-	draw: function(ctx, param) {
-		var firstChild = this._children[0];
-		ctx.beginPath();
-		param.compound = true;
-		for (var i = 0, l = this._children.length; i < l; i++)
-			Item.draw(this._children[i], ctx, param);
-		firstChild._setStyles(ctx);
-		var fillColor = firstChild.getFillColor(),
-			strokeColor = firstChild.getStrokeColor();
-		if (fillColor) {
-			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-			ctx.fill();
-		}
-		if (strokeColor) {
-			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-			ctx.stroke();
-		}
-		param.compound = false;
-	}
-}, new function() { 
-	function getCurrentPath(that) {
-		if (!that._children.length)
-			throw new Error('Use a moveTo() command first');
-		return that._children[that._children.length - 1];
-	}
-
-	var fields = {
-
-		moveTo: function(point) {
-			var path = new Path();
-			this.appendTop(path);
-			path.moveTo.apply(path, arguments);
+		getHandleBounds: function() {
+			var matrix = arguments[0],
+				useCache = matrix === undefined;
+			if (useCache && this._handleBounds)
+				return this._handleBounds;
+			var coords = new Array(6),
+				stroke = arguments[1] / 2 || 0, 
+				join = arguments[2] / 2 || 0, 
+				open = !this._closed,
+				x1 = Infinity,
+				x2 = -x1,
+				y1 = x1,
+				y2 = x2;
+			for (var i = 0, l = this._segments.length; i < l; i++) {
+				var segment = this._segments[i];
+				segment._transformCoordinates(matrix, coords, false);
+				for (var j = 0; j < 6; j += 2) {
+					var padding = j == 0 ? join : stroke,
+						x = coords[j],
+						y = coords[j + 1],
+						xn = x - padding,
+						xx = x + padding,
+						yn = y - padding,
+						yx = y + padding;
+					if (xn < x1) x1 = xn;
+					if (xx > x2) x2 = xx;
+					if (yn < y1) y1 = yn;
+					if (yx > y2) y2 = yx;
+				}
+			}
+			var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+			if (useCache)
+				this._handleBounds = bounds;
+			return bounds;
 		},
 
-		moveBy: function(point) {
-			this.moveTo(getCurrentPath(this).getLastSegment()._point.add(
-					Point.read(arguments)));
-		},
-
-		closePath: function() {
-			getCurrentPath(this).setClosed(true);
+		getRoughBounds: function() {
+			var useCache = arguments[0] === undefined;
+			if (useCache && this._roughBounds)
+				return this._roughBounds;
+			var bounds = this.getHandleBounds(arguments[0], this.strokeWidth,
+					this.getStrokeJoin() == 'miter'
+						? this.strokeWidth * this.getMiterLimit()
+						: this.strokeWidth);
+			if (useCache)
+				this._roughBounds = bounds;
+			return bounds;
 		}
 	};
-
-	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
-			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
-		fields[key] = function() {
-			var path = getCurrentPath(this);
-			path[key].apply(path, arguments);
-		};
-	});
-
-	return fields;
 });
 
 Path.inject({ statics: new function() {
@@ -4725,6 +5154,95 @@ Path.inject({ statics: new function() {
 	};
 }});
 
+var CompoundPath = this.CompoundPath = PathItem.extend({
+	initialize: function(paths) {
+		this.base();
+		this._children = [];
+		this._namedChildren = {};
+		var items = !paths || !Array.isArray(paths)
+				|| typeof paths[0] !== 'object' ? arguments : paths;
+		this.addChildren(items);
+	},
+
+	insertChild: function(index, item) {
+		this.base(index, item);
+		if (item._clockwise === undefined)
+			item.setClockwise(item._index == 0);
+	},
+
+	simplify: function() {
+		if (this._children.length == 1) {
+			var child = this._children[0];
+			child.insertAbove(this);
+			this.remove();
+			return child;
+		}
+		return this;
+	},
+
+	smooth: function() {
+		for (var i = 0, l = this._children.length; i < l; i++)
+			this._children[i].smooth();
+	},
+
+	draw: function(ctx, param) {
+		var l = this._children.length;
+		if (l == 0) {
+			return;
+		}
+		var firstChild = this._children[0];
+		ctx.beginPath();
+		param.compound = true;
+		for (var i = 0; i < l; i++)
+			Item.draw(this._children[i], ctx, param);
+		firstChild._setStyles(ctx);
+		var fillColor = firstChild.getFillColor(),
+			strokeColor = firstChild.getStrokeColor();
+		if (fillColor) {
+			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+			ctx.fill();
+		}
+		if (strokeColor) {
+			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+			ctx.stroke();
+		}
+		param.compound = false;
+	}
+}, new function() { 
+	function getCurrentPath(that) {
+		if (!that._children.length)
+			throw new Error('Use a moveTo() command first');
+		return that._children[that._children.length - 1];
+	}
+
+	var fields = {
+		moveTo: function(point) {
+			var path = new Path();
+			this.addChild(path);
+			path.moveTo.apply(path, arguments);
+		},
+
+		moveBy: function(point) {
+			this.moveTo(getCurrentPath(this).getLastSegment()._point.add(
+					Point.read(arguments)));
+		},
+
+		closePath: function() {
+			getCurrentPath(this).setClosed(true);
+		}
+	};
+
+	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
+			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
+		fields[key] = function() {
+			var path = getCurrentPath(this);
+			path[key].apply(path, arguments);
+		};
+	});
+
+	return fields;
+});
+
 var PathFlattener = Base.extend({
 	initialize: function(path) {
 		this.curves = []; 
@@ -4753,9 +5271,8 @@ var PathFlattener = Base.extend({
 	},
 
 	_computeParts: function(curve, index, minT, maxT) {
-		if ((maxT - minT) > 1 / 32
-				&& !Curve.isSufficientlyFlat.apply(Curve, curve)) {
-			var curves = Curve.subdivide.apply(Curve, curve);
+		if ((maxT - minT) > 1 / 32 && !Curve.isFlatEnough(curve)) {
+			var curves = Curve.subdivide(curve);
 			var halfT = (minT + maxT) / 2;
 			this._computeParts(curves[0], index, minT, halfT);
 			this._computeParts(curves[1], index, halfT, maxT);
@@ -4774,7 +5291,7 @@ var PathFlattener = Base.extend({
 		}
 	},
 
-	getParameter: function(offset) {
+	getParameterAt: function(offset) {
 		var i, j = this.index;
 		for (;;) {
 			i = j;
@@ -4803,18 +5320,17 @@ var PathFlattener = Base.extend({
 	},
 
 	evaluate: function(offset, type) {
-		var param = this.getParameter(offset);
-		return Curve.evaluate.apply(Curve,
-				this.curves[param.index].concat([param.value, type]));
+		var param = this.getParameterAt(offset);
+		return Curve.evaluate(this.curves[param.index], param.value, type);
 	},
 
 	drawPart: function(ctx, from, to) {
-		from = this.getParameter(from);
-		to = this.getParameter(to);
+		from = this.getParameterAt(from);
+		to = this.getParameterAt(to);
 		for (var i = from.index; i <= to.index; i++) {
-			var curve = Curve.getPart.apply(Curve, this.curves[i].concat(
+			var curve = Curve.getPart(this.curves[i],
 					i == from.index ? from.value : 0,
-					i == to.index ? to.value : 1));
+					i == to.index ? to.value : 1);
 			if (i == from.index)
 				ctx.moveTo(curve[0], curve[1]);
 			ctx.bezierCurveTo.apply(ctx, curve.slice(2));
@@ -4830,7 +5346,7 @@ var PathFitter = Base.extend({
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var point = segments[i].point.clone();
 			if (!prev || !prev.equals(point)) {
-				this.points[i] = point;
+				this.points.push(point);
 				prev = point;
 			}
 		}
@@ -4887,7 +5403,7 @@ var PathFitter = Base.extend({
 	},
 
 	generateBezier: function(first, last, uPrime, tan1, tan2) {
-		var epsilon = Numerical.TOLERANCE,
+		var epsilon = Numerical.EPSILON,
 			pt1 = this.points[first],
 			pt2 = this.points[last],
 		 	C = [[0, 0], [0, 0]],
@@ -5009,49 +5525,10 @@ var PathFitter = Base.extend({
 	}
 });
 
-var ParagraphStyle = this.ParagraphStyle = Base.extend({
-
-	initialize: function(style) {
-		Base.initialize(this, style, {
-			justification: 'left'
-		});
-	},
-
-	statics: {
-		create: function(item) {
-			var style = new ParagraphStyle(ParagraphStyle.dont);
-			style._item = item;
-			return style;
-		}
-	}
-});
-
-var CharacterStyle = this.CharacterStyle = PathStyle.extend({
-
-	initialize: function(style) {
-		Base.initialize(this, style, {
-			fontSize: 10,
-			font: 'sans-serif'
-		});
-		this.base(style);
-	},
-
-	statics: {
-		create: function(item) {
-			var style = new CharacterStyle(CharacterStyle.dont);
-			style._item = item;
-			return style;
-		}
-	}
-});
-
 var TextItem = this.TextItem = Item.extend({
-
-	beans: true,
-
 	initialize: function() {
 		this.base();
-		this.content = null;
+		this._content = '';
 		this._characterStyle = CharacterStyle.create(this);
 		this.setCharacterStyle(this._project.getCurrentStyle());
 		this._paragraphStyle = ParagraphStyle.create(this);
@@ -5059,9 +5536,19 @@ var TextItem = this.TextItem = Item.extend({
 	},
 
 	_clone: function(copy) {
+		copy._content = this._content;
 		copy.setCharacterStyle(this._characterStyle);
 		copy.setParagraphStyle(this._paragraphStyle);
 		return this.base(copy);
+	},
+
+	getContent: function() {
+		return this._content;
+	},
+
+	setContent: function(content) {
+		this._changed(Change.CONTENT);
+		this._content = '' + content;
 	},
 
 	getCharacterStyle: function() {
@@ -5082,20 +5569,15 @@ var TextItem = this.TextItem = Item.extend({
 });
 
 var PointText = this.PointText = TextItem.extend({
-
-	beans: true,
-
 	initialize: function(point) {
 		this.base();
 		var point = Point.read(arguments);
-		this.content = '';
 		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
 		this._matrix = new Matrix().translate(point);
 	},
 
 	clone: function() {
 		var copy = this._clone(new PointText(this._point));
-		copy.content = this.content;
 		copy._matrix.initialize(this._matrix);
 		return copy;
 	},
@@ -5108,45 +5590,170 @@ var PointText = this.PointText = TextItem.extend({
 		this._transform(new Matrix().translate(
 				Point.read(arguments).subtract(this._point)));
 	},
+
 	getPosition: function() {
 		return this._point;
 	},
+
 	setPosition: function(point) {
 		this.setPoint.apply(this, arguments);
 	},
+
 	_transform: function(matrix, flags) {
 		this._matrix.preConcatenate(matrix);
 		matrix._transformPoint(this._point, this._point, true);
 	},
+
 	draw: function(ctx) {
-		if (this.content == null)
+		if (!this._content)
 			return;
 		ctx.save();
-		ctx.font = this._characterStyle.fontSize + 'pt ' +
-				this._characterStyle.font;
-		ctx.textAlign = this._paragraphStyle.justification;
+		ctx.font = this.getFontSize() + 'pt ' + this.getFont();
+		ctx.textAlign = this.getJustification();
 		this._matrix.applyToContext(ctx);
+
 		var fillColor = this.getFillColor();
 		var strokeColor = this.getStrokeColor();
 		if (!fillColor || !strokeColor)
-			ctx.globalAlpha = this.opacity;
+			ctx.globalAlpha = this._opacity;
 		if (fillColor) {
 			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-			ctx.fillText(this.content, 0, 0);
+			ctx.fillText(this._content, 0, 0);
 		}
 		if (strokeColor) {
 			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-			ctx.strokeText(this.content, 0, 0);
+			ctx.strokeText(this._content, 0, 0);
 		}
 		ctx.restore();
 	}
 });
 
+var Style = Item.extend({
+	initialize: function(style) {
+		var clone = style instanceof Style;
+		return Base.each(this._defaults, function(value, key) {
+			value = style && style[key] || value;
+			this[key] = value && clone && value.clone
+					? value.clone() : value;
+		}, this);
+	},
+
+	statics: {
+		create: function(item) {
+			var style = new this(this.dont);
+			style._item = item;
+			return style;
+		},
+
+		extend: function(src) {
+			var styleKey = src._style,
+				flags = src._flags || {};
+			src._owner.inject(Base.each(src._defaults, function(value, key) {
+				var isColor = !!key.match(/Color$/),
+					part = Base.capitalize(key),
+					set = 'set' + part,
+					get = 'get' + part;
+				src[set] = function(value) {
+					var children = this._item && this._item._children;
+					value = isColor ? Color.read(arguments) : value;
+					if (children) {
+						for (var i = 0, l = children.length; i < l; i++)
+							children[i][styleKey][set](value);
+					} else {
+						var old = this['_' + key];
+						if (old != value && !(old && old.equals
+									&& old.equals(value))) {
+							this['_' + key] = value;
+							if (isColor) {
+								if (old)
+									old._removeOwner(this._item);
+								if (value)
+									value._addOwner(this._item);
+							}
+							if (this._item)
+								this._item._changed(flags[key] || Change.STYLE);
+						}
+					}
+					return this;
+				};
+				src[get] = function() {
+					var children = this._item && this._item._children,
+						style;
+					if (!children)
+						return this['_' + key];
+					for (var i = 0, l = children.length; i < l; i++) {
+						var childStyle = children[i][styleKey][get]();
+						if (!style) {
+							style = childStyle;
+						} else if (style != childStyle && !(style
+								&& style.equals && style.equals(childStyle))) {
+							return undefined;
+						}
+					}
+					return style;
+				};
+				this[set] = function(value) {
+					this[styleKey][set](value);
+					return this;
+				};
+				this[get] = function() {
+					return this[styleKey][get]();
+				};
+			}, {}));
+			return this.base(src);
+		}
+	}
+});
+
+var PathStyle = this.PathStyle = Style.extend({
+	_defaults: {
+		fillColor: undefined,
+		strokeColor: undefined,
+		strokeWidth: 1,
+		strokeCap: 'butt',
+		strokeJoin: 'miter',
+		miterLimit: 10,
+		dashOffset: 0,
+		dashArray: []
+	},
+	_flags: {
+		strokeWidth: Change.STROKE,
+		strokeCap: Change.STROKE,
+		strokeJoin: Change.STROKE,
+		miterLimit: Change.STROKE
+	},
+	_owner: Item,
+	_style: '_style'
+
+});
+
+var ParagraphStyle = this.ParagraphStyle = Style.extend({
+	_defaults: {
+		justification: 'left'
+	},
+	_owner: TextItem,
+	_style: '_paragraphStyle'
+
+});
+
+var CharacterStyle = this.CharacterStyle = PathStyle.extend({
+	_defaults: Base.merge(PathStyle.prototype._defaults, {
+		fillColor: 'black',
+		fontSize: 10,
+		font: 'sans-serif'
+	}),
+	_owner: TextItem,
+	_style: '_characterStyle'
+
+});
+
 var Color = this.Color = Base.extend(new function() {
+
 	var components = {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],
-		hsb: ['hue', 'saturation', 'brightness']
+		hsb: ['hue', 'saturation', 'brightness'],
+		hsl: ['hue', 'saturation', 'lightness']
 	};
 
 	var colorCache = {},
@@ -5199,20 +5806,13 @@ var Color = this.Color = Base.extend(new function() {
 				max = Math.max(r, g, b),
 				min = Math.min(r, g, b),
 				delta = max - min,
-				h,
+				h = delta == 0 ? 0
+					:   ( max == r ? (g - b) / delta + (g < b ? 6 : 0)
+						: max == g ? (b - r) / delta + 2
+						:            (r - g) / delta + 4) * 60, 
 				s = max == 0 ? 0 : delta / max,
 				v = max; 
-			if (delta == 0) {
-				h = 0; 
-			} else {
-				switch (max) {
-				case r: h = (g - b) / delta + (g < b ? 6 : 0); break;
-				case g: h = (b - r) / delta + 2; break;
-				case b: h = (r - g) / delta + 4; break;
-				}
-				h /= 6;
-			}
-			return new HSBColor(h * 360, s, v, color._alpha);
+			return new HSBColor(h, s, v, color._alpha);
 		},
 
 		'hsb-rgb': function(color) {
@@ -5223,12 +5823,56 @@ var Color = this.Color = Base.extend(new function() {
 				f = h - i,
 				i = hsbIndices[i],
 				v = [
-					b, 						
+					b,						
 					b * (1 - s),			
 					b * (1 - s * f),		
 					b * (1 - s * (1 - f))	
 				];
 			return new RGBColor(v[i[0]], v[i[1]], v[i[2]], color._alpha);
+		},
+
+		'rgb-hsl': function(color) {
+			var r = color._red,
+				g = color._green,
+				b = color._blue,
+				max = Math.max(r, g, b),
+				min = Math.min(r, g, b),
+				delta = max - min,
+				h = delta == 0 ? 0
+					:   ( max == r ? (g - b) / delta + (g < b ? 6 : 0)
+						: max == g ? (b - r) / delta + 2
+						:            (r - g) / delta + 4) * 60, 
+				l = (max + min) / 2,
+				s = l < 0.5
+					? delta / (max + min)
+					: delta / (2 - max - min);
+			return new HSLColor(h, s, l, color._alpha);
+		},
+
+		'hsl-rgb': function(color) {
+			var s = color._saturation,
+				h = color._hue / 360,
+				l = color._lightness,
+				t1, t2, c;
+			if (s == 0)
+				return new RGBColor(l, l, l, color._alpha);
+			var t3s = [ h + 1 / 3, h, h - 1 / 3 ],
+				t2 = l < 0.5 ? l * (1 + s) : l + s - l * s,
+				t1 = 2 * l - t2,
+				c = [];
+			for (var i = 0; i < 3; i++) {
+				var t3 = t3s[i];
+				if (t3 < 0) t3 += 1;
+				if (t3 > 1) t3 -= 1;
+				c[i] = 6 * t3 < 1
+					? t1 + (t2 - t1) * 6 * t3
+					: 2 * t3 < 1
+						? t2
+						: 3 * t3 < 2
+							? t1 + (t2 - t1) * ((2 / 3) - t3) * 6
+							: t1;
+			}
+			return new RGBColor(c[0], c[1], c[2], color._alpha);
 		},
 
 		'rgb-gray': function(color) {
@@ -5241,18 +5885,16 @@ var Color = this.Color = Base.extend(new function() {
 			return new RGBColor(comp, comp, comp, color._alpha);
 		},
 
-		'hsb-gray': function(color) {
-			return converters['rgb-gray'](converters['hsb-rgb'](color));
-		},
-
 		'gray-hsb': function(color) {
 			return new HSBColor(0, 0, 1 - color._gray, color._alpha);
+		},
+
+		'gray-hsl': function(color) {
+			return new HSLColor(0, 0, 1 - color._gray, color._alpha);
 		}
 	};
 
 	var fields = {
-
-		beans: true,
 		_readNull: true,
 
 		initialize: function(arg) {
@@ -5264,6 +5906,9 @@ var Color = this.Color = Base.extend(new function() {
 						? new RGBColor(arg.red, arg.green, arg.blue, arg.alpha)
 						: arg.gray !== undefined
 						? new GrayColor(arg.gray, arg.alpha)
+						: arg.lightness !== undefined
+						? new HSLColor(arg.hue, arg.saturation, arg.lightness,
+								arg.alpha)
 						: arg.hue !== undefined
 						? new HSBColor(arg.hue, arg.saturation, arg.brightness,
 								arg.alpha)
@@ -5309,9 +5954,13 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		convert: function(type) {
+			var converter;
 			return this._colorType == type
-				? this.clone()
-				: converters[this._colorType + '-' + type](this);
+					? this.clone()
+					: (converter = converters[this._colorType + '-' + type])
+						? converter(this)
+						: converters['rgb-' + type](
+								converters[this._colorType + '-rgb'](this));
 		},
 
 		statics: {
@@ -5331,7 +5980,7 @@ var Color = this.Color = Base.extend(new function() {
 							this[name] = isHue
 								? ((value % 360) + 360) % 360
 								: Math.min(Math.max(value, 0), 1);
-							this._cssString = null;
+							this._changed();
 							return this;
 						};
 					}, src);
@@ -5362,7 +6011,26 @@ var Color = this.Color = Base.extend(new function() {
 	return fields;
 }, {
 
-	beans: true,
+	_changed: function() {
+		this._cssString = null;
+		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
+			this._owners[i]._changed(Change.STYLE);
+	},
+
+	_addOwner: function(item) {
+		if (!this._owners)
+			this._owners = [];
+		this._owners.push(item);
+	},
+
+	_removeOwner: function(item) {
+		var index = this._owners ? this._owners.indexOf(item) : -1;
+		if (index != -1) {
+			this._owners.splice(index, 1);
+			if (this._owners.length == 0)
+				delete this._owners;
+		}
+	},
 
 	getType: function() {
 		return this._colorType;
@@ -5382,7 +6050,7 @@ var Color = this.Color = Base.extend(new function() {
 
 	setAlpha: function(alpha) {
 		this._alpha = alpha == null ? null : Math.min(Math.max(alpha, 0), 1);
-		this._cssString = null;
+		this._changed();
 		return this;
 	},
 
@@ -5451,9 +6119,12 @@ var HSBColor = this.HSBColor = Color.extend({
 	_colorType: 'hsb'
 });
 
-var GradientColor = this.GradientColor = Color.extend({
+var HSLColor = this.HSLColor = Color.extend({
 
-	beans: true,
+	_colorType: 'hsl'
+});
+
+var GradientColor = this.GradientColor = Color.extend({
 
 	initialize: function(gradient, origin, destination, hilite) {
 		this.gradient = gradient || new Gradient();
@@ -5477,6 +6148,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		this._origin = origin;
 		if (this._destination)
 			this._radius = this._destination.getDistance(this._origin);
+		this._changed();
 		return this;
 	},
 
@@ -5488,6 +6160,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		destination = Point.read(arguments).clone();
 		this._destination = destination;
 		this._radius = this._destination.getDistance(this._origin);
+		this._changed();
 		return this;
 	},
 
@@ -5504,6 +6177,7 @@ var GradientColor = this.GradientColor = Color.extend({
 		} else {
 			this._hilite = hilite;
 		}
+		this._changed();
 		return this;
 	},
 
@@ -5541,9 +6215,6 @@ var GradientColor = this.GradientColor = Color.extend({
 });
 
 var Gradient = this.Gradient = Base.extend({
-
-	beans: true,
-
 	initialize: function(stops, type) {
 		this.setStops(stops || ['white', 'black']);
 		this.type = type || 'linear';
@@ -5587,9 +6258,6 @@ var Gradient = this.Gradient = Base.extend({
 });
 
 var GradientStop = this.GradientStop = Base.extend({
-
-	beans: true,
-
 	initialize: function(arg0, arg1) {
 		if (arg1 === undefined && Array.isArray(arg0)) {
 			this.setColor(arg0[0]);
@@ -5631,52 +6299,61 @@ var GradientStop = this.GradientStop = Base.extend({
 	}
 });
 
-var DomElement = new function() {
-	function cumulate(el, name, parent, positioned) {
-		var left = name + 'Left',
-			top = name + 'Top',
-			x = 0,
-			y = 0;
-			while (el && (!positioned
-					|| !/^(relative|absolute)$/.test(el.style.position))) {
-			x += el[left] || 0;
-			y += el[top] || 0;
-			el = el[parent];
+var DomElement = {
+	getBounds: function(el, viewport) {
+		var rect = el.getBoundingClientRect(),
+			doc = el.ownerDocument,
+			body = doc.body,
+			docEl = doc.documentElement,
+			x = rect.left - (docEl.clientLeft || body.clientLeft || 0),
+			y = rect.top - (docEl.clientTop  || body.clientTop  || 0);
+		if (!viewport) {
+			var win = DomElement.getViewport(doc);
+			x += win.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+			y += win.pageYOffset || docEl.scrollTop || body.scrollTop;
 		}
-		return Point.create(x, y);
+		return new Rectangle(x, y, rect.width, rect.height);
+	},
+
+	getOffset: function(el, viewport) {
+		return this.getBounds(el, viewport).getPoint();
+	},
+
+	getSize: function(el) {
+		return this.getBounds(el, true).getSize();
+	},
+
+	isInvisible: function(el) {
+		return this.getSize(el).equals([0, 0]);
+	},
+
+	isVisible: function(el) {
+		return !this.isInvisible(el) && this.getViewportBounds(el).intersects(
+				this.getBounds(el, true));
+	},
+
+	getViewport: function(doc) {
+		return doc.defaultView || doc.parentWindow;
+	},
+
+	getViewportBounds: function(el) {
+		var doc = el.ownerDocument,
+			view = this.getViewport(doc),
+			body = doc.getElementsByTagName(
+				doc.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
+		return Rectangle.create(0, 0, 
+			view.innerWidth || body.clientWidth,
+			view.innerHeight || body.clientHeight
+		);
+	},
+
+	getComputedStyle: function(el, name) {
+		if (el.currentStyle)
+			return el.currentStyle[Base.camelize(name)];
+		var style = this.getViewport(el.ownerDocument)
+				.getComputedStyle(el, null);
+		return style ? style.getPropertyValue(Base.hyphenate(name)) : null;
 	}
-
-	return {
-		getOffset: function(el, positioned, scroll) {
-			var point = cumulate(el, 'offset', 'offsetParent', positioned);
-			return scroll
-				? point.subtract(cumulate(el, 'scroll', 'parentNode'))
-				: point;
-		},
-
-		getSize: function(el) {
-			return Size.create(el.offsetWidth, el.offsetHeight);
-		},
-
-		getBounds: function(el, positioned, scroll) {
-			return new Rectangle(DomElement.getOffset(el, positioned, scroll),
-					DomElement.getSize(el));
-		},
-
-		getWindowSize: function() {
-			var doc = document.getElementsByTagName(
-					document.compatMode === 'CSS1Compat' ? 'html' : 'body')[0];
-			return Size.create(
-				window.innerWidth || doc.clientWidth,
-				window.innerHeight || doc.clientHeight
-			);
-		},
-
-		isVisible: function(el) {
-			return new Rectangle([0, 0], DomElement.getWindowSize())
-					.intersects(DomElement.getBounds(el, false, true));
-		}
-	};
 };
 
 var DomEvent = {
@@ -5716,13 +6393,13 @@ var DomEvent = {
 		);
 	},
 
-	getElement: function(event) {
+	getTarget: function(event) {
 		return event.target || event.srcElement;
 	},
 
-	getOffset: function(event) {
-		return DomEvent.getPoint(event).subtract(
-				DomElement.getOffset(DomEvent.getElement(event), true));
+	getOffset: function(event, target) {
+		return DomEvent.getPoint(event).subtract(DomElement.getOffset(
+				target || DomEvent.getTarget(event)));
 	},
 
 	preventDefault: function(event) {
@@ -5739,6 +6416,11 @@ var DomEvent = {
 		} else {
 			event.cancelBubble = true;
 		}
+	},
+
+	stop: function(event) {
+		DomEvent.stopPropagation(event);
+		DomEvent.preventDefault(event);
 	}
 };
 
@@ -5771,59 +6453,56 @@ DomEvent.requestAnimationFrame = new function() {
 		if (request)
 			return request(callback, element);
 		callbacks.push([callback, element]);
-		if (!timer) {
-			timer = window.setInterval(function() {
-				for (var i = callbacks.length - 1; i >= 0; i--) {
-					var entry = callbacks[i],
-						func = entry[0],
-						element = entry[1];
-					if (!element || element.getAttribute('keepalive') == 'true'
-							|| focused && DomElement.isVisible(element)) {
-						callbacks.splice(i, 1);
-						func(Date.now());
-					}
+		if (timer)
+			return;
+		timer = window.setInterval(function() {
+			for (var i = callbacks.length - 1; i >= 0; i--) {
+				var entry = callbacks[i],
+					func = entry[0],
+					el = entry[1];
+				if (!el || (PaperScript.getAttribute(el, 'keepalive') == 'true'
+						|| focused) && DomElement.isVisible(el)) {
+					callbacks.splice(i, 1);
+					func(Date.now());
 				}
-			}, 1000 / 60);
-		}
+			}
+		}, 1000 / 60);
 	};
 };
 
 var View = this.View = Base.extend({
-
-	beans: true,
-
 	initialize: function(canvas) {
 		this._scope = paper;
 		this._index = this._scope.views.push(this) - 1;
 		var size;
 		if (canvas && canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
-			var offset = DomElement.getOffset(canvas);
-			if (canvas.attributes.resize) {
-				size = DomElement.getWindowSize().subtract(offset);
+			if (PaperScript.hasAttribute(canvas, 'resize')) {
+				var offset = DomElement.getOffset(canvas, true),
+					that = this;
+				size = DomElement.getViewportBounds(canvas)
+						.getSize().subtract(offset);
 				canvas.width = size.width;
 				canvas.height = size.height;
-				var that = this;
 				DomEvent.add(window, {
 					resize: function(event) {
-						if (!DomElement.getSize(canvas).equals([0, 0]))
-							offset = DomElement.getOffset(canvas);
-						that.setViewSize(
-								DomElement.getWindowSize().subtract(offset));
-						if (that._onFrameCallback) {
-							that._onFrameCallback(0, true);
-						} else {
-							that.draw();
-						}
+						if (!DomElement.isInvisible(canvas))
+							offset = DomElement.getOffset(canvas, true);
+						that.setViewSize(DomElement.getViewportBounds(canvas)
+								.getSize().subtract(offset));
 					}
 				});
 			} else {
-				size = Size.create(canvas.offsetWidth, canvas.offsetHeight);
+				size = DomElement.isInvisible(canvas)
+					? Size.create(parseInt(canvas.getAttribute('width')),
+							parseInt(canvas.getAttribute('height')))
+					: DomElement.getSize(canvas);
 			}
-			if (canvas.attributes.stats) {
+			if (PaperScript.hasAttribute(canvas, 'stats')) {
 				this._stats = new Stats();
 				var element = this._stats.domElement,
-					style = element.style;
+					style = element.style,
+					offset = DomElement.getOffset(canvas);
 				style.position = 'absolute';
 				style.left = offset.x + 'px';
 				style.top = offset.y + 'px';
@@ -5835,51 +6514,57 @@ var View = this.View = Base.extend({
 				size = new Size(1024, 768);
 			this._canvas = CanvasProvider.getCanvas(size);
 		}
-		this._viewBounds = LinkedRectangle.create(this, 'setViewBounds',
-				0, 0, size.width, size.height);
+		this._id = this._canvas.getAttribute('id');
+		if (this._id == null)
+			this._canvas.setAttribute('id', this._id = 'canvas-' + View._id++);
+		View._views[this._id] = this;
+		this._viewSize = LinkedSize.create(this, 'setViewSize',
+				size.width, size.height);
 		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
 		this._events = this._createEvents();
 		DomEvent.add(this._canvas, this._events);
-		if (!View.focused)
-			View.focused = this;
+		if (!View._focused)
+			View._focused = this;
+		this._scope._redrawNotified = false;
 	},
 
 	getCanvas: function() {
 		return this._canvas;
 	},
 
-	getViewBounds: function() {
-		return this._viewBounds;
+	getViewSize: function() {
+		return this._viewSize;
 	},
 
-	setViewBounds: function(bounds) {
-		bounds = Rectangle.read(arguments);
-		var size = bounds.getSize(),
-			delta = size.subtract(this._viewBounds.getSize());
+	setViewSize: function(size) {
+		size = Size.read(arguments);
+		var delta = size.subtract(this._viewSize);
+		if (delta.isZero())
+			return;
 		this._canvas.width = size.width;
 		this._canvas.height = size.height;
+		this._viewSize.set(size.width, size.height, true);
+		this._bounds = null;
+		this._redrawNeeded = true;
 		if (this.onResize) {
 			this.onResize({
 				size: size,
 				delta: delta
 			});
 		}
-		this._bounds = null;
-	},
-
-	getViewSize: function() {
-		return this._viewBounds.getSize();
-	},
-
-	setViewSize: function(size) {
-		this._viewBounds.setSize.apply(this._viewBounds, arguments);
+		if (this._onFrameCallback) {
+			this._onFrameCallback(0, true);
+		} else {
+			this.draw(true);
+		}
 	},
 
 	getBounds: function() {
 		if (!this._bounds)
-			this._bounds = this._matrix._transformBounds(this._viewBounds);
+			this._bounds = this._matrix._transformBounds(
+					new Rectangle(new Point(), this._viewSize));
 		return this._bounds;
 	},
 
@@ -5904,6 +6589,10 @@ var View = this.View = Base.extend({
 		this._zoom = zoom;
 	},
 
+	isVisible: function() {
+		return DomElement.isVisible(this._canvas);
+	},
+
 	scrollBy: function(point) {
 		this._transform(new Matrix().translate(Point.read(arguments).negate()));
 	},
@@ -5914,18 +6603,24 @@ var View = this.View = Base.extend({
 		this._inverse = null;
 	},
 
-	draw: function() {
+	draw: function(checkRedraw) {
+		if (checkRedraw && !this._redrawNeeded)
+			return false;
 		if (this._stats)
 			this._stats.update();
-		var ctx =this._context,
-			bounds = this._viewBounds;
-		ctx.clearRect(bounds._x, bounds._y,
-				bounds._width + 1, bounds._height + 1);
+		var ctx = this._context,
+			size = this._viewSize;
+		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
 
 		ctx.save();
 		this._matrix.applyToContext(ctx);
 		this._scope.project.draw(ctx);
 		ctx.restore();
+		if (this._redrawNeeded) {
+			this._redrawNeeded = false;
+			this._scope._redrawNotified = false;
+		}
+		return true;
 	},
 
 	activate: function() {
@@ -5933,17 +6628,22 @@ var View = this.View = Base.extend({
 	},
 
 	remove: function() {
-		var res = Base.splice(this._scope.views, null, this._index, 1);
+		if (this._index == null)
+			return false;
+		if (View._focused == this)
+			View._focused = null;
+		delete View._views[this._id];
+		Base.splice(this._scope.views, null, this._index, 1);
 		DomEvent.remove(this._canvas, this._events);
 		this._scope = this._canvas = this._events = this._onFrame = null;
-		return !!res.length;
+		return true;
 	},
 
-	artworkToView: function(point) {
+	projectToView: function(point) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
-	viewToArtwork: function(point) {
+	viewToProject: function(point) {
 		return this._getInverse()._transformPoint(Point.read(arguments));
 	},
 
@@ -5980,92 +6680,139 @@ var View = this.View = Base.extend({
 			}
 			var now = Date.now() / 1000,
 			 	delta = before ? now - before : 0;
-			that._onFrame({
+			that._onFrame(Base.merge({
 				delta: delta, 
 				time: time += delta, 
 				count: count++
-			});
+			}));
 			before = now;
-			that.draw();
+			that.draw(true);
 		};
 		if (!requested)
 			this._onFrameCallback();
 	},
 
-	onResize: null,
+	onResize: null
+}, new function() { 
+	var tool,
+		timer,
+		curPoint,
+		tempFocus,
+		dragging = false;
 
-	_createEvents: function() {
-		var that = this,
-			tool,
-			timer,
-			curPoint,
-			dragging = false;
-
-		function viewToArtwork(event) {
-			return that.viewToArtwork(DomEvent.getOffset(event));
-		}
-
-		function mousedown(event) {
-			View.focused = that;
-			if (!(tool = that._scope.tool))
-				return;
-			curPoint = viewToArtwork(event);
-			tool.onHandleEvent('mousedown', curPoint, event);
-			if (tool.onMouseDown)
-				that.draw();
-			if (tool.eventInterval != null)
-				timer = setInterval(mousemove, tool.eventInterval);
-			dragging = true;
-		}
-
-		function mousemove(event) {
-			if (!(tool = that._scope.tool))
-				return;
-			if (event && event.targetTouches)
-				DomEvent.preventDefault(event);
-			var point = event && viewToArtwork(event);
-			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
-			if (dragging && !onlyMove) {
-				curPoint = point || curPoint;
-				if (curPoint)
-					tool.onHandleEvent('mousedrag', curPoint, event);
-				if (tool.onMouseDrag)
-					that.draw();
-			} else if (!dragging || onlyMove) {
-				tool.onHandleEvent('mousemove', point, event);
-				if (tool.onMouseMove)
-					that.draw();
-			}
-		}
-
-		function mouseup(event) {
-			if (!dragging)
-				return;
-			dragging = false;
-			curPoint = null;
-			if (tool) {
-				if (tool.eventInterval != null)
-					timer = clearInterval(timer);
-				tool.onHandleEvent('mouseup', viewToArtwork(event), event);
-				if (tool.onMouseUp)
-					that.draw();
-			}
-		}
-
-		return {
-			mousedown: mousedown,
-			mousemove: mousemove,
-			mouseup: mouseup,
-			touchstart: mousedown,
-			touchmove: mousemove,
-			touchend: mouseup
-		};
+	function viewToProject(view, event) {
+		return view.viewToProject(DomEvent.getOffset(event, view._canvas));
 	}
+
+	function updateFocus() {
+		if (!View._focused || !View._focused.isVisible()) {
+			PaperScope.each(function(scope) {
+				for (var i = 0, l = scope.views.length; i < l; i++) {
+					var view = scope.views[i];
+					if (view.isVisible()) {
+						View._focused = tempFocus = view;
+						throw Base.stop;
+					}
+				}
+			});
+		}
+	}
+
+	function mousemove(event) {
+		var view;
+		if (!dragging) {
+		 	view = View._views[DomEvent.getTarget(event).getAttribute('id')];
+			if (view) {
+				View._focused = tempFocus = view;
+			} else if (tempFocus && tempFocus == View._focused) {
+				View._focused = null;
+				updateFocus();
+			}
+		}
+		if (!(view = view || View._focused) || !(tool = view._scope.tool))
+			return;
+		var point = event && viewToProject(view, event);
+		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
+		if (dragging && !onlyMove) {
+			curPoint = point || curPoint;
+			if (curPoint && tool.onHandleEvent('mousedrag', curPoint, event)) {
+				view.draw(true);
+				DomEvent.stop(event);
+			}
+		} else if ((!dragging || onlyMove)
+				&& tool.onHandleEvent('mousemove', point, event)) {
+			view.draw(true);
+			DomEvent.stop(event);
+		}
+	}
+
+	function mouseup(event) {
+		var view = View._focused;
+		if (!view || !dragging)
+			return;
+		dragging = false;
+		curPoint = null;
+		if (tool) {
+			if (timer != null)
+				timer = clearInterval(timer);
+			if (tool.onHandleEvent('mouseup', viewToProject(view, event), event)) {
+				view.draw(true);
+				DomEvent.stop(event);
+			}
+		}
+	}
+
+	function selectstart(event) {
+		if (dragging)
+			DomEvent.stop(event);
+	}
+
+	DomEvent.add(document, {
+		mousemove: mousemove,
+		mouseup: mouseup,
+		touchmove: mousemove,
+		touchend: mouseup,
+		selectstart: selectstart,
+		scroll: updateFocus
+	});
+
+	DomEvent.add(window, {
+		load: updateFocus
+	});
+
+	return {
+		_createEvents: function() {
+			var view = this;
+
+			function mousedown(event) {
+				View._focused = view;
+				if (!(tool = view._scope.tool))
+					return;
+				curPoint = viewToProject(view, event);
+				if (tool.onHandleEvent('mousedown', curPoint, event))
+					view.draw(true);
+				if (tool.eventInterval != null)
+					timer = setInterval(mousemove, tool.eventInterval);
+				dragging = true;
+			}
+
+			return {
+				mousedown: mousedown,
+				touchstart: mousedown,
+				selectstart: selectstart
+			};
+		},
+
+		statics: {
+			_views: {},
+			_id: 0,
+
+			updateFocus: updateFocus
+		}
+	};
 });
 
 var Event = this.Event = Base.extend({
-	beans: true,
-
 	initialize: function(event) {
 		this.event = event;
 	},
@@ -6079,8 +6826,7 @@ var Event = this.Event = Base.extend({
 	},
 
 	stop: function() {
-		this.stopPropagation();
-		this.preventDefault();
+		DomEvent.stop(this.event);
 	},
 
 	getModifiers: function() {
@@ -6090,9 +6836,6 @@ var Event = this.Event = Base.extend({
 
 var KeyEvent = this.KeyEvent = Event.extend(new function() {
 	return {
-
-		beans: true,
-
 		initialize: function(down, key, character, event) {
 			this.base(event);
 			this.type = down ? 'keydown' : 'keyup';
@@ -6101,7 +6844,7 @@ var KeyEvent = this.KeyEvent = Event.extend(new function() {
 		},
 
 		toString: function() {
-			return '{ type: ' + this.type 
+			return '{ type: ' + this.type
 					+ ', key: ' + this.key
 					+ ', character: ' + this.character
 					+ ', modifiers: ' + this.getModifiers()
@@ -6132,17 +6875,13 @@ var Key = this.Key = new function() {
 		91: 'command'
 	},
 
-	modifiers = {
+	modifiers = Base.merge({
 		shift: false,
 		control: false,
 		option: false,
 		command: false,
-		capsLock: false,
-
-		toString: function() {
-			return Base.formatObject(this);
-		}
-	},
+		capsLock: false
+	}),
 
 	charCodeMap = {}, 
 	keyMap = {}, 
@@ -6152,13 +6891,16 @@ var Key = this.Key = new function() {
 		var character = String.fromCharCode(charCode),
 			key = keys[keyCode] || character.toLowerCase(),
 			handler = down ? 'onKeyDown' : 'onKeyUp',
-			scope = View.focused && View.focused._scope,
+			view = View._focused,
+			scope = view && view.isVisible() && view._scope,
 			tool = scope && scope.tool;
 		keyMap[key] = down;
 		if (tool && tool[handler]) {
 			var keyEvent = new KeyEvent(down, key, character, event);
 			if (tool[handler](keyEvent) === false)
 				keyEvent.preventDefault();
+			if (view)
+				view.draw(true);
 		}
 	}
 
@@ -6200,7 +6942,6 @@ var Key = this.Key = new function() {
 	});
 
 	return {
-
 		modifiers: modifiers,
 
 		isDown: function(key) {
@@ -6209,10 +6950,7 @@ var Key = this.Key = new function() {
 	};
 };
 
-var ToolEvent = this.ToolEvent = Base.extend({
-
-	beans: true,
-
+var ToolEvent = this.ToolEvent = Event.extend({
 	initialize: function(tool, type, event) {
 		this.tool = tool;
 		this.type = type;
@@ -6279,12 +7017,28 @@ var ToolEvent = this.ToolEvent = Base.extend({
 			= count;
 	},
 
-	getModifiers: function() {
-		return Key.modifiers;
+	getItem: function() {
+		if (!this._item) {
+			var result = this.tool._scope.project.hitTest(this.getPoint());
+			if (result) {
+				var item = result.item,
+					parent = item._parent;
+				while ((parent instanceof Group && !(parent instanceof Layer))
+						|| parent instanceof CompoundPath) {
+					item = parent;
+					parent = parent._parent;
+				}
+				this._item = item;
+			}
+		}
+		return this._item;
+	},
+	setItem: function(item) {
+		this._item = item;
 	},
 
 	toString: function() {
-		return '{ type: ' + this.type 
+		return '{ type: ' + this.type
 				+ ', point: ' + this.getPoint()
 				+ ', count: ' + this.getCount()
 				+ ', modifiers: ' + this.getModifiers()
@@ -6293,16 +7047,11 @@ var ToolEvent = this.ToolEvent = Base.extend({
 });
 
 var Tool = this.Tool = Base.extend({
-
-	beans: true,
-
-	initialize: function(handlers, scope) {
-		this._scope = scope;
+	initialize: function() {
+		this._scope = paper;
 		this._firstMove = true;
 		this._count = 0;
 		this._downCount = 0;
-		for (var i in handlers)
-			this[i] = handlers[i];
 	},
 
 	eventInterval: null,
@@ -6380,19 +7129,24 @@ var Tool = this.Tool = Base.extend({
 
 	onHandleEvent: function(type, pt, event) {
 		paper = this._scope;
+		var called = false;
 		switch (type) {
 		case 'mousedown':
 			this.updateEvent(type, pt, null, null, true, false, false);
-			if (this.onMouseDown)
+			if (this.onMouseDown) {
 				this.onMouseDown(new ToolEvent(this, type, event));
+				called = true;
+			}
 			break;
 		case 'mousedrag':
 			var needsChange = false,
 				matchMaxDistance = false;
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, false, needsChange, matchMaxDistance)) {
-				if (this.onMouseDrag)
+				if (this.onMouseDrag) {
 					this.onMouseDrag(new ToolEvent(this, type, event));
+					called = true;
+				}
 				needsChange = true;
 				matchMaxDistance = true;
 			}
@@ -6401,25 +7155,32 @@ var Tool = this.Tool = Base.extend({
 			if ((this._point.x != pt.x || this._point.y != pt.y)
 					&& this.updateEvent('mousedrag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
-				if (this.onMouseDrag)
+				if (this.onMouseDrag) {
 					this.onMouseDrag(new ToolEvent(this, type, event));
+					called = true;
+				}
 			}
 			this.updateEvent(type, pt, null, this.maxDistance, false,
 					false, false);
-			if (this.onMouseUp)
+			if (this.onMouseUp) {
 				this.onMouseUp(new ToolEvent(this, type, event));
+				called = true;
+			}
 			this.updateEvent(type, pt, null, null, true, false, false);
 			this._firstMove = true;
 			break;
 		case 'mousemove':
 			while (this.updateEvent(type, pt, this.minDistance,
 					this.maxDistance, this._firstMove, true, false)) {
-				if (this.onMouseMove)
+				if (this.onMouseMove) {
 					this.onMouseMove(new ToolEvent(this, type, event));
+					called = true;
+				}
 				this._firstMove = false;
 			}
 			break;
 		}
+		return called;
 	}
 });
 
@@ -6468,9 +7229,9 @@ var Numerical = new function() {
 		[  0.1080549487073436620662447,0.3191123689278897604356718,0.5152486363581540919652907,0.6872929048116854701480198,0.8272013150697649931897947,0.9284348836635735173363911,0.9862838086968123388415973],
 		[0,0.2011940939974345223006283,0.3941513470775633698972074,0.5709721726085388475372267,0.7244177313601700474161861,0.8482065834104272162006483,0.9372733924007059043077589,0.9879925180204854284895657],
 		[  0.0950125098376374401853193,0.2816035507792589132304605,0.4580167776572273863424194,0.6178762444026437484466718,0.7554044083550030338951012,0.8656312023878317438804679,0.9445750230732325760779884,0.9894009349916499325961542]
-	],
+	];
 
-	weights = [
+	var weights = [
 		[1],
 		[0.8888888888888888888888889,0.5555555555555555555555556],
 		[0.6521451548625461426269361,0.3478548451374538573730639],
@@ -6488,8 +7249,14 @@ var Numerical = new function() {
 		[0.1894506104550684962853967,0.1826034150449235888667637,0.1691565193950025381893121,0.1495959888165767320815017,0.1246289712555338720524763,0.0951585116824927848099251,0.0622535239386478928628438,0.0271524594117540948517806]
 	];
 
+	var abs = Math.abs,
+		sqrt = Math.sqrt,
+		cos = Math.cos,
+		PI = Math.PI;
+
 	return {
 		TOLERANCE: 10e-6,
+		EPSILON: 10e-12,
 
 		integrate: function(f, a, b, n) {
 			var x = abscissas[n - 2],
@@ -6506,11 +7273,11 @@ var Numerical = new function() {
 			return A * sum;
 		},
 
-		findRoot: function(f, df, x, a, b, n, tol) {
+		findRoot: function(f, df, x, a, b, n, tolerance) {
 			for (var i = 0; i < n; i++) {
 				var fx = f(x),
 					dx = fx / df(x);
-				if (Math.abs(dx) < tol)
+				if (abs(dx) < tolerance)
 					return x;
 				var nx = x - dx;
 				if (fx > 0) {
@@ -6521,6 +7288,59 @@ var Numerical = new function() {
 					x = nx >= b ? 0.5 * (a + b) : nx;
 				}
 			}
+		},
+
+		solveQuadratic: function(a, b, c, roots, tolerance) {
+			if (abs(a) < tolerance) {
+				if (abs(b) >= tolerance) {
+					roots[0] = -c / b;
+					return 1;
+				}
+				if (abs(c) < tolerance)
+					return -1; 
+				return 0; 
+			}
+			var q = b * b - 4 * a * c;
+			if (q < 0)
+				return 0; 
+			q = sqrt(q);
+			if (b < 0)
+				q = -q;
+			q = (b + q) * -0.5;
+			var n = 0;
+			if (abs(q) >= tolerance)
+				roots[n++] = c / q;
+			if (abs(a) >= tolerance)
+				roots[n++] = q / a;
+			return n; 
+		},
+
+		solveCubic: function(a, b, c, d, roots, tolerance) {
+			if (abs(a) < tolerance)
+				return Numerical.solveQuadratic(b, c, d, roots, tolerance);
+			b /= a;
+			c /= a;
+			d /= a;
+			var Q = (b * b - 3 * c) / 9,
+				R = (2 * b * b * b - 9 * b * c + 27 * d) / 54,
+				Q3 = Q * Q * Q,
+				R2 = R * R;
+			b /= 3; 
+			if (R2 < Q3) { 
+				var theta = Math.acos(R / sqrt(Q3)),
+					q = -2 * sqrt(Q);
+				roots[0] = q * cos(theta / 3) - b;
+				roots[1] = q * cos((theta + 2 * PI) / 3) - b;
+				roots[2] = q * cos((theta - 2 * PI) / 3) - b;
+				return 3;
+			} else { 
+				var A = -Math.pow(abs(R) + sqrt(R2 - Q3), 1 / 3);
+				if (R < 0) A = -A;
+				var B = (abs(A) < tolerance) ? 0 : Q / A;
+				roots[0] = (A + B) - b;
+				return 1;
+			}
+			return 0;
 		}
 	};
 };
@@ -6735,7 +7555,9 @@ var BlendMode = {
 };
 
 var PaperScript = this.PaperScript = new function() {
-var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++e)d.push(b.call(c,a[e],e));return d}function R(a,b){return Object.prototype.hasOwnProperty.call(a,b)}function Q(c){return/^[a-z_$][a-z0-9_$]*$/i.test(c)&&c!="this"&&!R(d,c)&&!R(b,c)&&!R(a,c)}function P(a,b){var c={};a===!0&&(a={});for(var d in b)R(b,d)&&(c[d]=a&&R(a,d)?a[d]:b[d]);return c}function O(a,b){for(var c=b.length;--c>=0;)if(b[c]===a)return!0;return!1}function N(a){return a.split("")}function M(a,b){return Array.prototype.slice.call(a,b==null?0:b)}function L(a){var b={};for(var c=0;c<a.length;++c)b[a[c]]=!0;return b}function K(a){a instanceof Function&&(a=a());for(var b=1,c=arguments.length;--c>0;++b)arguments[b]();return a}function J(a){var b=M(arguments,1);return function(){return a.apply(this,b.concat(M(arguments)))}}function I(a,b){function y(a){var b=a[0],c=p[b];if(!c)throw new Error("Can't find generator for \""+b+'"');x.push(a);var d=c.apply(b,a.slice(1));x.pop();return d}function w(a){var b=a[0],c=a[1];c!=null&&(b=h([b,"=",y(c)]));return b}function v(a){if(!a)return";";if(a.length==0)return"{}";return"{"+d+g(function(){return t(a).join(d)})+d+f("}")}function u(a){var c=a.length;if(c==0)return"{}";return"{"+d+S(a,function(a,e){var i=a[1].length>0,j=g(function(){return f(a[0]?h(["case",y(a[0])+":"]):"default:")},.5)+(i?d+g(function(){return t(a[1]).join(d)}):"");!b&&i&&e<c-1&&(j+=";");return j}).join(d)+d+f("}")}function t(a){for(var c=[],d=a.length-1,e=0;e<=d;++e){var g=a[e],h=y(g);h!=";"&&(!b&&e==d&&(g[0]=="while"&&F(g[2])||O(g[0],["for","for-in"])&&F(g[4])||g[0]=="if"&&F(g[2])&&!g[3]||g[0]=="if"&&g[3]&&F(g[3])?h=h.replace(/;*\s*$/,";"):h=h.replace(/;+\s*$/,"")),c.push(h))}return S(c,f)}function s(a){return a.toString()}function r(a,b,c,d){var e=d||"function";a&&(e+=" "+s(a)),e+="("+j(S(b,s))+")";return h([e,v(c)])}function q(a){if(a[0]=="do")return y(["block",[a]]);var b=a;for(;;){var c=b[0];if(c=="if"){if(!b[3])return y(["block",[a]]);b=b[3]}else if(c=="while"||c=="do")b=b[2];else if(c=="for"||c=="for-in")b=b[4];else break}return y(a)}function o(a){var b=a.toString(10),c=[b.replace(/^0\./,".")],d;Math.floor(a)===a?(c.push("0x"+a.toString(16).toLowerCase(),"0"+a.toString(8)),(d=/^(.*?)(0+)$/.exec(a))&&c.push(d[1]+"e"+d[2].length)):(d=/^0?\.(0+)(.*)$/.exec(a))&&c.push(d[2]+"e-"+(d[1].length+d[2].length),b.substr(b.indexOf(".")));return l(c)}function m(a){if(a[0]=="function"){var b=M(x),c=b.pop(),d=b.pop();while(d){if(d[0]=="stat")return!0;if(d[0]=="seq"&&d[1]===c||d[0]=="call"&&d[1]===c||d[0]=="binary"&&d[2]===c)c=d,d=b.pop();else return!1}}return!R(G,a[0])}function l(a){if(a.length==1)return a[0];if(a.length==2){var b=a[1];a=a[0];return a.length<=b.length?a:b}return l([a[0],l(a.slice(1))])}function k(a){var b=y(a);for(var c=1;c<arguments.length;++c){var d=arguments[c];if(d instanceof Function&&d(a)||a[0]==d)return"("+b+")"}return b}function j(a){return a.join(","+e)}function h(a){if(b)return a.join(" ");var c=[];for(var d=0;d<a.length;++d){var e=a[d+1];c.push(a[d]),e&&(/[a-z0-9_\x24]$/i.test(a[d].toString())&&/^[a-z0-9_\x24]/i.test(e.toString())||/[\+\-]$/.test(a[d].toString())&&/^[\+\-]/.test(e.toString()))&&c.push(" ")}return c.join("")}function g(a,b){b==null&&(b=1),c+=b;try{return a.apply(null,M(arguments,1))}finally{c-=b}}function f(a){a==null&&(a=""),b&&(a=Array(b.indent_start+c*b.indent_level).join(" ")+a);return a}b&&(b=P(b,{indent_start:0,indent_level:4,quote_keys:!1,space_colon:!1}));var c=0,d=b?"\n":"",e=b?" ":"",p={string:H,num:o,name:s,toplevel:function(a){return t(a).join(d+d)},block:v,"var":function(a){return"var "+j(S(a,w))+";"},"const":function(a){return"const "+j(S(a,w))+";"},"try":function(a,b,c){var d=["try",v(a)];b&&d.push("catch","("+b[0]+")",v(b[1])),c&&d.push("finally",v(c));return h(d)},"throw":function(a){return h(["throw",y(a)])+";"},"new":function(a,b){b=b.length>0?"("+j(S(b,y))+")":"";return h(["new",k(a,"seq","binary","conditional","assign",function(a){var b=E(),c={};try{b.with_walkers({call:function(){throw c},"function":function(){return this}},function(){b.walk(a)})}catch(d){if(d===c)return!0;throw d}})+b])},"switch":function(a,b){return h(["switch","("+y(a)+")",u(b)])},"break":function(a){var b="break";a!=null&&(b+=" "+s(a));return b+";"},"continue":function(a){var b="continue";a!=null&&(b+=" "+s(a));return b+";"},conditional:function(a,b,c){return h([k(a,"assign","seq","conditional"),"?",k(b,"seq"),":",k(c,"seq")])},assign:function(a,b,c){a&&a!==!0?a+="=":a="=";return h([y(b),a,k(c,"seq")])},dot:function(a){var b=y(a),c=1;a[0]=="num"?b+=".":m(a)&&(b="("+b+")");while(c<arguments.length)b+="."+s(arguments[c++]);return b},call:function(a,b){var c=y(a);m(a)&&(c="("+c+")");return c+"("+j(S(b,function(a){return k(a,"seq")}))+")"},"function":r,defun:r,"if":function(a,b,c){var d=["if","("+y(a)+")",c?q(b):y(b)];c&&d.push("else",y(c));return h(d)},"for":function(a,b,c,d){var f=["for"];a=(a!=null?y(a):"").replace(/;*\s*$/,";"+e),b=(b!=null?y(b):"").replace(/;*\s*$/,";"+e),c=(c!=null?y(c):"").replace(/;*\s*$/,"");var g=a+b+c;g=="; ; "&&(g=";;"),f.push("("+g+")",y(d));return h(f)},"for-in":function(a,b,c,d){var e=h(["for","("]);a&&(e+="var "),e+=h([s(b)+" in "+y(c)+")",y(d)]);return e},"while":function(a,b){return h(["while","("+y(a)+")",y(b)])},"do":function(a,b){return h(["do",y(b),"while","("+y(a)+")"])+";"},"return":function(a){var b=["return"];a!=null&&b.push(y(a));return h(b)+";"},binary:function(a,b,c){var d=y(b),e=y(c);if(O(b[0],["assign","conditional","seq"])||b[0]=="binary"&&z[a]>z[b[1]])d="("+d+")";if(O(c[0],["assign","conditional","seq"])||c[0]=="binary"&&z[a]>=z[c[1]]&&(c[1]!=a||!O(a,["&&","||","*"])))e="("+e+")";return h([d,a,e])},"unary-prefix":function(a,b){var c=y(b);b[0]=="num"||b[0]=="unary-prefix"&&!R(i,a+b[1])||!m(b)||(c="("+c+")");return a+(n(a.charAt(0))?" ":"")+c},"unary-postfix":function(a,b){var c=y(b);b[0]=="num"||b[0]=="unary-postfix"&&!R(i,a+b[1])||!m(b)||(c="("+c+")");return c+a},sub:function(a,b){var c=y(a);m(a)&&(c="("+c+")");return c+"["+y(b)+"]"},object:function(a){if(a.length==0)return"{}";return"{"+d+g(function(){return S(a,function(a){if(a.length==3)return f(r(a[0],a[1][2],a[1][3],a[2]));var c=a[0],d=y(a[1]);b&&b.quote_keys?c=H(c):(typeof c=="number"||!b&&+c+""==c)&&parseFloat(c)>=0?c=o(+c):Q(c)||(c=H(c));return f(h(b&&b.space_colon?[c,":",d]:[c+":",d]))}).join(","+d)})+d+f("}")},regexp:function(a,b){return"/"+a+"/"+b},array:function(a){if(a.length==0)return"[]";return h(["[",j(S(a,function(a){if(!b&&a[0]=="atom"&&a[1]=="undefined")return"";return k(a,"seq")})),"]"])},stat:function(a){return y(a).replace(/;*\s*$/,";")},seq:function(){return j(S(M(arguments),y))},label:function(a,b){return h([s(a),":",y(b)])},"with":function(a,b){return h(["with","("+y(a)+")",y(b)])},atom:function(a){return s(a)}},x=[];return y(a)}function H(a){var b=0,c=0;a=a.replace(/[\\\b\f\n\r\t\x22\x27]/g,function(a){switch(a){case"\\":return"\\\\";case"\b":return"\\b";case"\f":return"\\f";case"\n":return"\\n";case"\r":return"\\r";case"\t":return"\\t";case'"':++b;return'"';case"'":++c;return"'"}return a});return b>c?"'"+a.replace(/\x27/g,"\\'")+"'":'"'+a.replace(/\x22/g,'\\"')+'"'}function F(a){return!a||a[0]=="block"&&(!a[1]||a[1].length==0)}function E(){function f(a,b){var d={},e;for(e in a)R(a,e)&&(d[e]=c[e],c[e]=a[e]);var f=b();for(e in d)R(d,e)&&(d[e]?c[e]=d[e]:delete c[e]);return f}function e(a){if(a==null)return null;try{d.push(a);var e=a[0],f=c[e];if(f){var g=f.apply(a,a.slice(1));if(g!=null)return g}f=b[e];return f.apply(a,a.slice(1))}finally{d.pop()}}function a(a){return[this[0],S(a,function(a){var b=[a[0]];a.length>1&&(b[1]=e(a[1]));return b})]}var b={string:function(a){return[this[0],a]},num:function(a){return[this[0],a]},name:function(a){return[this[0],a]},toplevel:function(a){return[this[0],S(a,e)]},block:function(a){var b=[this[0]];a!=null&&b.push(S(a,e));return b},"var":a,"const":a,"try":function(a,b,c){return[this[0],S(a,e),b!=null?[b[0],S(b[1],e)]:null,c!=null?S(c,e):null]},"throw":function(a){return[this[0],e(a)]},"new":function(a,b){return[this[0],e(a),S(b,e)]},"switch":function(a,b){return[this[0],e(a),S(b,function(a){return[a[0]?e(a[0]):null,S(a[1],e)]})]},"break":function(a){return[this[0],a]},"continue":function(a){return[this[0],a]},conditional:function(a,b,c){return[this[0],e(a),e(b),e(c)]},assign:function(a,b,c){return[this[0],a,e(b),e(c)]},dot:function(a){return[this[0],e(a)].concat(M(arguments,1))},call:function(a,b){return[this[0],e(a),S(b,e)]},"function":function(a,b,c){return[this[0],a,b.slice(),S(c,e)]},defun:function(a,b,c){return[this[0],a,b.slice(),S(c,e)]},"if":function(a,b,c){return[this[0],e(a),e(b),e(c)]},"for":function(a,b,c,d){return[this[0],e(a),e(b),e(c),e(d)]},"for-in":function(a,b,c,d){return[this[0],a,b,e(c),e(d)]},"while":function(a,b){return[this[0],e(a),e(b)]},"do":function(a,b){return[this[0],e(a),e(b)]},"return":function(a){return[this[0],e(a)]},binary:function(a,b,c){return[this[0],a,e(b),e(c)]},"unary-prefix":function(a,b){return[this[0],a,e(b)]},"unary-postfix":function(a,b){return[this[0],a,e(b)]},sub:function(a,b){return[this[0],e(a),e(b)]},object:function(a){return[this[0],S(a,function(a){return a.length==2?[a[0],e(a[1])]:[a[0],e(a[1]),a[2]]})]},regexp:function(a,b){return[this[0],a,b]},array:function(a){return[this[0],S(a,e)]},stat:function(a){return[this[0],e(a)]},seq:function(){return[this[0]].concat(S(M(arguments),e))},label:function(a,b){return[this[0],a,e(b)]},"with":function(a,b){return[this[0],e(a),e(b)]},atom:function(a){return[this[0],a]}},c={},d=[];return{walk:e,with_walkers:f,parent:function(){return d[d.length-2]},stack:function(){return d}}}function D(a,b,c){function bj(a){try{++d.in_loop;return a()}finally{--d.in_loop}}function bi(a){arguments.length==0&&(a=!0);var b=bh();if(a&&e("punc",",")){g();return p("seq",b,bi())}return b}function bh(){var a=bf(),b=d.token.value;if(e("operator")&&R(y,b)){if(bg(a)){g();return p("assign",y[b],a,bh())}i("Invalid assignment")}return a}function bg(a){switch(a[0]){case"dot":case"sub":return!0;case"name":return a[1]!="this"}}function bf(){var a=be();if(e("operator","?")){g();var b=bi(!1);m(":");return p("conditional",a,b,bi(!1))}return a}function be(){return bd(X(!0),0)}function bd(a,b){var c=e("operator")?d.token.value:null,f=c!=null?z[c]:null;if(f!=null&&f>b){g();var h=bd(X(!0),f);return bd(p("binary",c,a,h),b)}return a}function bc(a,b,c){(b=="++"||b=="--")&&!bg(c)&&i("Invalid use of "+b+" operator");return p(a,b,c)}function bb(a,b){if(e("punc",".")){g();return bb(p("dot",a,ba()),b)}if(e("punc","[")){g();return bb(p("sub",a,K(bi,J(m,"]"))),b)}if(b&&e("punc","(")){g();return bb(p("call",a,Y(")")),!0)}if(b&&e("operator")&&R(x,d.token.value))return K(J(bc,"unary-postfix",d.token.value,a),g);return a}function ba(){switch(d.token.type){case"name":case"operator":case"keyword":case"atom":return K(d.token.value,g);default:k()}}function _(){switch(d.token.type){case"num":case"string":return K(d.token.value,g)}return ba()}function $(){var a=!0,c=[];while(!e("punc","}")){a?a=!1:m(",");if(!b&&e("punc","}"))break;var f=d.token.type,h=_();f!="name"||h!="get"&&h!="set"||!!e("punc",":")?(m(":"),c.push([h,bi(!1)])):c.push([ba(),I(!1),h])}g();return p("object",c)}function Z(){return p("array",Y("]",!b,!0))}function Y(a,b,c){var d=!0,f=[];while(!e("punc",a)){d?d=!1:m(",");if(b&&e("punc",a))break;e("punc",",")&&c?f.push(["atom","undefined"]):f.push(bi(!1))}g();return f}function X(a){if(e("operator","new")){g();return W()}if(e("operator")&&R(w,d.token.value))return bc("unary-prefix",K(d.token.value,g),X(a));if(e("punc")){switch(d.token.value){case"(":g();return bb(K(bi,J(m,")")),a);case"[":g();return bb(Z(),a);case"{":g();return bb($(),a)}k()}if(e("keyword","function")){g();return bb(I(!1),a)}if(R(B,d.token.type)){var b=d.token.type=="regexp"?p("regexp",d.token.value[0],d.token.value[1]):p(d.token.type,d.token.value);return bb(K(b,g),a)}k()}function W(){var a=X(!1),b;e("punc","(")?(g(),b=Y(")")):b=[];return bb(p("new",a,b),!0)}function V(){return p("const",T())}function U(){return p("var",T())}function T(){var a=[];for(;;){e("name")||k();var b=d.token.value;g(),e("operator","=")?(g(),a.push([b,bi(!1)])):a.push([b]);if(!e("punc",","))break;g()}return a}function S(){var a=P(),b,c;if(e("keyword","catch")){g(),m("("),e("name")||i("Name expected");var f=d.token.value;g(),m(")"),b=[f,P()]}e("keyword","finally")&&(g(),c=P()),!b&&!c&&i("Missing catch/finally blocks");return p("try",a,b,c)}function P(){m("{");var a=[];while(!e("punc","}"))e("eof")&&k(),a.push(u());g();return a}function N(){var a=q(),b=u(),c;e("keyword","else")&&(g(),c=u());return p("if",a,b,c)}function L(a){var b=e("name")?K(d.token.value,g):null;a&&!b&&k(),m("(");return p(a?"defun":"function",b,function(a,b){while(!e("punc",")"))a?a=!1:m(","),e("name")||k(),b.push(d.token.value),g();g();return b}(!0,[]),function(){++d.in_function;var a=d.in_loop;d.in_loop=0;var b=P();--d.in_function,d.in_loop=a;return b}())}function H(){m("(");var a=e("keyword","var");a&&g();if(e("name")&&t(f(),"operator","in")){var b=d.token.value;g(),g();var c=bi();m(")");return p("for-in",a,b,c,bj(u))}var h=e("punc",";")?null:a?U():bi();m(";");var i=e("punc",";")?null:bi();m(";");var j=e("punc",")")?null:bi();m(")");return p("for",h,i,j,bj(u))}function G(a){var b=e("name")?d.token.value:null;b!=null?(g(),O(b,d.labels)||i("Label "+b+" without matching loop or statement")):d.in_loop==0&&i(a+" not inside a loop or switch"),o();return p(a,b)}function F(){return p("stat",K(bi,o))}function E(a){d.labels.push(a);var c=d.token,e=u();b&&!R(A,e[0])&&k(c),d.labels.pop();return p("label",a,e)}function D(){e("operator","/")&&(d.peeked=null,d.token=d.input(!0));switch(d.token.type){case"num":case"string":case"regexp":case"operator":case"atom":return F();case"name":return t(f(),"punc",":")?E(K(d.token.value,g,g)):F();case"punc":switch(d.token.value){case"{":return p("block",P());case"[":case"(":return F();case";":g();return p("block");default:k()};case"keyword":switch(K(d.token.value,g)){case"break":return G("break");case"continue":return G("continue");case"debugger":o();return p("debugger");case"do":return function(a){l("keyword","while");return p("do",K(q,o),a)}(bj(u));case"for":return H();case"function":return I(!0);case"if":return N();case"return":d.in_function==0&&i("'return' outside of function");return p("return",e("punc",";")?(g(),null):n()?null:K(bi,o));case"switch":return p("switch",q(),Q());case"throw":return p("throw",K(bi,o));case"try":return S();case"var":return K(U,o);case"const":return K(V,o);case"while":return p("while",q(),bj(u));case"with":return p("with",q(),u());default:k()}}}function r(a,b,c){return a instanceof C?a:new C(a,b,c)}function q(){m("(");var a=bi();m(")");return a}function p(){return M(arguments)}function o(){e("punc",";")?g():n()||k()}function n(){return!b&&(d.token.nlb||e("eof")||e("punc","}"))}function m(a){return l("punc",a)}function l(a,b){if(e(a,b))return g();j(d.token,"Unexpected token "+d.token.type+", expected "+a)}function k(a){a==null&&(a=d.token),j(a,"Unexpected token: "+a.type+" ("+a.value+")")}function j(a,b){i(b,a.line,a.col)}function i(a,b,c,e){var f=d.input.context();s(a,b!=null?b:f.tokline,c!=null?c:f.tokcol,e!=null?e:f.tokpos)}function h(){return d.prev}function g(){d.prev=d.token,d.peeked?(d.token=d.peeked,d.peeked=null):d.token=d.input();return d.token}function f(){return d.peeked||(d.peeked=d.input())}function e(a,b){return t(d.token,a,b)}var d={input:typeof a=="string"?v(a,!0):a,token:null,prev:null,peeked:null,in_function:0,in_loop:0,labels:[]};d.token=g();var u=c?function(){var a=d.token,b=D.apply(this,arguments);b[0]=r(b[0],a,h());return b}:D,I=c?function(){var a=h(),b=L.apply(this,arguments);b[0]=r(b[0],a,h());return b}:L,Q=J(bj,function(){m("{");var a=[],b=null;while(!e("punc","}"))e("eof")&&k(),e("keyword","case")?(g(),b=[],a.push([bi(),b]),m(":")):e("keyword","default")?(g(),m(":"),b=[],a.push([null,b])):(b||k(),b.push(u()));g();return a});return p("toplevel",function(a){while(!e("eof"))a.push(u());return a}([]))}function C(a,b,c){this.name=a,this.start=b,this.end=c}function v(b){function N(a){if(a)return H();y(),v();var b=g();if(!b)return w("eof");if(p(b))return B();if(b=='"'||b=="'")return E();if(R(l,b))return w("punc",h());if(b==".")return K();if(b=="/")return J();if(R(e,b))return I();if(o(b))return L();A("Unexpected character '"+b+"'")}function M(a,b){try{return b()}catch(c){if(c===u)A(a);else throw c}}function L(){var b=z(o);return R(a,b)?R(i,b)?w("operator",b):R(d,b)?w("atom",b):w("keyword",b):w("name",b)}function K(){h();return p(g())?B("."):w("punc",".")}function J(){h();var a=f.regex_allowed;switch(g()){case"/":f.comments_before.push(F()),f.regex_allowed=a;return N();case"*":f.comments_before.push(G()),f.regex_allowed=a;return N()}return f.regex_allowed?H():I("/")}function I(a){function b(a){if(!g())return a;var c=a+g();if(R(i,c)){h();return b(c)}return a}return w("operator",b(a||h()))}function H(){return M("Unterminated regular expression",function(){var a=!1,b="",c,d=!1;while(c=h(!0))if(a)b+="\\"+c,a=!1;else if(c=="[")d=!0,b+=c;else if(c=="]"&&d)d=!1,b+=c;else{if(c=="/"&&!d)break;c=="\\"?a=!0:b+=c}var e=z(function(a){return R(m,a)});return w("regexp",[b,e])})}function G(){h();return M("Unterminated multiline comment",function(){var a=t("*/",!0),b=f.text.substring(f.pos,a),c=w("comment2",b,!0);f.pos=a+2,f.line+=b.split("\n").length-1,f.newline_before=b.indexOf("\n")>=0;return c})}function F(){h();var a=t("\n"),b;a==-1?(b=f.text.substr(f.pos),f.pos=f.text.length):(b=f.text.substring(f.pos,a),f.pos=a);return w("comment1",b,!0)}function E(){return M("Unterminated string constant",function(){var a=h(),b="";for(;;){var c=h(!0);if(c=="\\")c=C();else if(c==a)break;b+=c}return w("string",b)})}function D(a){var b=0;for(;a>0;--a){var c=parseInt(h(!0),16);isNaN(c)&&A("Invalid hex-character pattern in string"),b=b<<4|c}return b}function C(){var a=h(!0);switch(a){case"n":return"\n";case"r":return"\r";case"t":return"\t";case"b":return"\b";case"v":return"";case"f":return"\f";case"0":return" ";case"x":return String.fromCharCode(D(2));case"u":return String.fromCharCode(D(4));default:return a}}function B(a){var b=!1,c=!1,d=!1,e=a==".",f=z(function(f,g){if(f=="x"||f=="X"){if(d)return!1;return d=!0}if(!d&&(f=="E"||f=="e")){if(b)return!1;return b=c=!0}if(f=="-"){if(c||g==0&&!a)return!0;return!1}if(f=="+")return c;c=!1;if(f=="."){if(!e)return e=!0;return!1}return n(f)});a&&(f=a+f);var g=q(f);if(!isNaN(g))return w("num",g);A("Invalid syntax: "+f)}function A(a){s(a,f.tokline,f.tokcol,f.tokpos)}function z(a){var b="",c=g(),d=0;while(c&&a(c,d++))b+=h(),c=g();return b}function y(){while(R(j,g()))h()}function w(a,b,d){f.regex_allowed=a=="operator"&&!R(x,b)||a=="keyword"&&R(c,b)||a=="punc"&&R(k,b);var e={type:a,value:b,line:f.tokline,col:f.tokcol,pos:f.tokpos,nlb:f.newline_before};d||(e.comments_before=f.comments_before,f.comments_before=[]),f.newline_before=!1;return e}function v(){f.tokline=f.line,f.tokcol=f.col,f.tokpos=f.pos}function t(a,b){var c=f.text.indexOf(a,f.pos);if(b&&c==-1)throw u;return c}function r(){return!f.peek()}function h(a){var b=f.text.charAt(f.pos++);if(a&&!b)throw u;b=="\n"?(f.newline_before=!0,++f.line,f.col=0):++f.col;return b}function g(){return f.text.charAt(f.pos)}var f={text:b.replace(/\r\n?|[\n\u2028\u2029]/g,"\n").replace(/^\uFEFF/,""),pos:0,tokpos:0,line:0,tokline:0,col:0,tokcol:0,newline_before:!1,regex_allowed:!1,comments_before:[]};N.context=function(a){a&&(f=a);return f};return N}function t(a,b,c){return a.type==b&&(c==null||a.value==c)}function s(a,b,c,d){throw new r(a,b,c,d)}function r(a,b,c,d){this.message=a,this.line=b,this.col=c,this.pos=d;try{({})()}catch(e){this.stack=e.stack}}function q(a){if(f.test(a))return parseInt(a.substr(2),16);if(g.test(a))return parseInt(a.substr(1),8);if(h.test(a))return parseFloat(a)}function p(a){a=a.charCodeAt(0);return a>=48&&a<=57}function o(a){return n(a)||a=="$"||a=="_"}function n(a){a=a.charCodeAt(0);return a>=48&&a<=57||a>=65&&a<=90||a>=97&&a<=122}var a=L(["break","case","catch","const","continue","default","delete","do","else","finally","for","function","if","in","instanceof","new","return","switch","throw","try","typeof","var","void","while","with"]),b=L(["abstract","boolean","byte","char","class","debugger","double","enum","export","extends","final","float","goto","implements","import","int","interface","long","native","package","private","protected","public","short","static","super","synchronized","throws","transient","volatile"]),c=L(["return","new","delete","throw","else","case"]),d=L(["false","null","true","undefined"]),e=L(N("+-*&%=<>!?|~^")),f=/^0x[0-9a-f]+$/i,g=/^0[0-7]+$/,h=/^\d*\.?\d*(?:e[+-]?\d*(?:\d\.?|\.?\d)\d*)?$/i,i=L(["in","instanceof","typeof","new","void","delete","++","--","+","-","!","~","&","|","^","*","/","%",">>","<<",">>>","<",">","<=",">=","==","===","!=","!==","?","=","+=","-=","/=","*=","%=",">>=","<<=",">>>=","%=","|=","^=","&=","&&","||"]),j=L(N(" \n\r\t")),k=L(N("[{}(,.;:")),l=L(N("[]{}(),;:")),m=L(N("gmsiy"));r.prototype.toString=function(){return this.message+" (line: "+this.line+", col: "+this.col+", pos: "+this.pos+")"+"\n\n"+this.stack};var u={},w=L(["typeof","void","delete","--","++","!","~","-","+"]),x=L(["--","++"]),y=function(a,b,c){while(c<a.length)b[a[c]]=a[c].substr(0,a[c].length-1),c++;return b}(["+=","-=","/=","*=","%=",">>=","<<=",">>>=","|=","^=","&="],{"=":!0},0),z=function(a,b){for(var c=0,d=1;c<a.length;++c,++d){var e=a[c];for(var f=0;f<e.length;++f)b[e[f]]=d}return b}([["||"],["&&"],["|"],["^"],["&"],["==","===","!=","!=="],["<",">","<=",">=","in","instanceof"],[">>","<<",">>>"],["+","-"],["*","/","%"]],{}),A=L(["for","do","while","switch"]),B=L(["atom","num","string","regexp","name"]);C.prototype.toString=function(){return this.name};var G=L(["name","array","string","dot","sub","call","regexp"]);return{parse:D,stringify:I,tokenizer:v,walker:E}}
+var parse_js=new function(){function W(a,b,c){var d=[];for(var e=0;e<a.length;++e)d.push(b.call(c,a[e],e));return d}function V(c){return/^[a-z_$][a-z0-9_$]*$/i.test(c)&&c!="this"&&!M(d,c)&&!M(b,c)&&!M(a,c)}function U(a,b){var c={};a===!0&&(a={});for(var d in b)M(b,d)&&(c[d]=a&&M(a,d)?a[d]:b[d]);return c}function T(a,b){return b<1?"":Array(b+1).join(a)}function S(a,b){function z(a){var b=a[0],c=r[b];if(!c)throw new Error("Can't find generator for \""+b+'"');y.push(a);var d=c.apply(b,a.slice(1));y.pop();return d}function x(a){var b=a[0],c=a[1];c!=null&&(b=k([g(b),"=",m(c,"seq")]));return b}function w(a){return a?a.length==0?"{}":"{"+e+j(function(){return u(a).join(e)})+e+h("}"):";"}function v(a){var b=a.length;return b==0?"{}":"{"+e+W(a,function(a,d){var f=a[1].length>0,g=j(function(){return h(a[0]?k(["case",z(a[0])+":"]):"default:")},.5)+(f?e+j(function(){return u(a[1]).join(e)}):"");!c&&f&&d<b-1&&(g+=";");return g}).join(e)+e+h("}")}function u(a,b){for(var d=[],e=a.length-1,f=0;f<=e;++f){var g=a[f],i=z(g);i!=";"&&(!c&&f==e&&(g[0]=="while"&&O(g[2])||L(g[0],["for","for-in"])&&O(g[4])||g[0]=="if"&&O(g[2])&&!g[3]||g[0]=="if"&&g[3]&&O(g[3])?i=i.replace(/;*\s*$/,";"):i=i.replace(/;+\s*$/,"")),d.push(i))}return b?d:W(d,h)}function t(a,b,c,d){var e=d||"function";a&&(e+=" "+g(a)),e+="("+l(W(b,g))+")";return k([e,w(c)])}function s(a){if(a[0]=="do")return z(["block",[a]]);var b=a;for(;;){var c=b[0];if(c=="if"){if(!b[3])return z(["block",[a]]);b=b[3]}else if(c=="while"||c=="do")b=b[2];else if(c=="for"||c=="for-in")b=b[4];else break}return z(a)}function q(a){var b=a.toString(10),c=[b.replace(/^0\./,".")],d;Math.floor(a)===a?(c.push("0x"+a.toString(16).toLowerCase(),"0"+a.toString(8)),(d=/^(.*?)(0+)$/.exec(a))&&c.push(d[1]+"e"+d[2].length)):(d=/^0?\.(0+)(.*)$/.exec(a))&&c.push(d[2]+"e-"+(d[1].length+d[2].length),b.substr(b.indexOf(".")));return n(c)}function o(a){if(a[0]=="function"||a[0]=="object"){var b=J(y),c=b.pop(),d=b.pop();while(d){if(d[0]=="stat")return!0;if((d[0]=="seq"||d[0]=="call"||d[0]=="dot"||d[0]=="sub"||d[0]=="conditional")&&d[1]===c||(d[0]=="binary"||d[0]=="assign"||d[0]=="unary-postfix")&&d[2]===c)c=d,d=b.pop();else return!1}}return!M(P,a[0])}function n(a){if(a.length==1)return a[0];if(a.length==2){var b=a[1];a=a[0];return a.length<=b.length?a:b}return n([a[0],n(a.slice(1))])}function m(a){var b=z(a);for(var c=1;c<arguments.length;++c){var d=arguments[c];if(d instanceof Function&&d(a)||a[0]==d)return"("+b+")"}return b}function l(a){return a.join(","+f)}function k(a){if(c)return a.join(" ");var b=[];for(var d=0;d<a.length;++d){var e=a[d+1];b.push(a[d]),e&&(/[a-z0-9_\x24]$/i.test(a[d].toString())&&/^[a-z0-9_\x24]/i.test(e.toString())||/[\+\-]$/.test(a[d].toString())&&/^[\+\-]/.test(e.toString()))&&b.push(" ")}return b.join("")}function j(a,b){b==null&&(b=1),d+=b;try{return a.apply(null,J(arguments,1))}finally{d-=b}}function h(a){a==null&&(a=""),c&&(a=T(" ",b.indent_start+d*b.indent_level)+a);return a}function g(a){return a.toString()}b=U(b,{indent_start:0,indent_level:4,quote_keys:!1,space_colon:!1,beautify:!1});var c=!!b.beautify,d=0,e=c?"\n":"",f=c?" ":"",r={string:Q,num:q,name:g,toplevel:function(a){return u(a).join(e)},splice:function(a){var b=y[y.length-2][0];return M(R,b)?w.apply(this,arguments):W(u(a,!0),function(a,b){return b>0?h(a):a}).join(e)},block:w,"var":function(a){return"var "+l(W(a,x))+";"},"const":function(a){return"const "+l(W(a,x))+";"},"try":function(a,b,c){var d=["try",w(a)];b&&d.push("catch","("+b[0]+")",w(b[1])),c&&d.push("finally",w(c));return k(d)},"throw":function(a){return k(["throw",z(a)])+";"},"new":function(a,b){b=b.length>0?"("+l(W(b,z))+")":"";return k(["new",m(a,"seq","binary","conditional","assign",function(a){var b=N(),c={};try{b.with_walkers({call:function(){throw c},"function":function(){return this}},function(){b.walk(a)})}catch(d){if(d===c)return!0;throw d}})+b])},"switch":function(a,b){return k(["switch","("+z(a)+")",v(b)])},"break":function(a){var b="break";a!=null&&(b+=" "+g(a));return b+";"},"continue":function(a){var b="continue";a!=null&&(b+=" "+g(a));return b+";"},conditional:function(a,b,c){return k([m(a,"assign","seq","conditional"),"?",m(b,"seq"),":",m(c,"seq")])},assign:function(a,b,c){a&&a!==!0?a+="=":a="=";return k([z(b),a,m(c,"seq")])},dot:function(a){var b=z(a),c=1;a[0]=="num"?/\./.test(a[1])||(b+="."):o(a)&&(b="("+b+")");while(c<arguments.length)b+="."+g(arguments[c++]);return b},call:function(a,b){var c=z(a);o(a)&&(c="("+c+")");return c+"("+l(W(b,function(a){return m(a,"seq")}))+")"},"function":t,defun:t,"if":function(a,b,c){var d=["if","("+z(a)+")",c?s(b):z(b)];c&&d.push("else",z(c));return k(d)},"for":function(a,b,c,d){var e=["for"];a=(a!=null?z(a):"").replace(/;*\s*$/,";"+f),b=(b!=null?z(b):"").replace(/;*\s*$/,";"+f),c=(c!=null?z(c):"").replace(/;*\s*$/,"");var g=a+b+c;g=="; ; "&&(g=";;"),e.push("("+g+")",z(d));return k(e)},"for-in":function(a,b,c,d){return k(["for","("+(a?z(a).replace(/;+$/,""):z(b)),"in",z(c)+")",z(d)])},"while":function(a,b){return k(["while","("+z(a)+")",z(b)])},"do":function(a,b){return k(["do",z(b),"while","("+z(a)+")"])+";"},"return":function(a){var b=["return"];a!=null&&b.push(z(a));return k(b)+";"},binary:function(a,b,c){var d=z(b),e=z(c);if(L(b[0],["assign","conditional","seq"])||b[0]=="binary"&&B[a]>B[b[1]])d="("+d+")";if(L(c[0],["assign","conditional","seq"])||c[0]=="binary"&&B[a]>=B[c[1]]&&(c[1]!=a||!L(a,["&&","||","*"])))e="("+e+")";return k([d,a,e])},"unary-prefix":function(a,b){var c=z(b);b[0]=="num"||b[0]=="unary-prefix"&&!M(i,a+b[1])||!o(b)||(c="("+c+")");return a+(p(a.charAt(0))?" ":"")+c},"unary-postfix":function(a,b){var c=z(b);b[0]=="num"||b[0]=="unary-postfix"&&!M(i,a+b[1])||!o(b)||(c="("+c+")");return c+a},sub:function(a,b){var c=z(a);o(a)&&(c="("+c+")");return c+"["+z(b)+"]"},object:function(a){return a.length==0?"{}":"{"+e+j(function(){return W(a,function(a){if(a.length==3)return h(t(a[0],a[1][2],a[1][3],a[2]));var d=a[0],e=z(a[1]);b.quote_keys?d=Q(d):(typeof d=="number"||!c&&+d+""==d)&&parseFloat(d)>=0?d=q(+d):V(d)||(d=Q(d));return h(k(c&&b.space_colon?[d,":",e]:[d+":",e]))}).join(","+e)})+e+h("}")},regexp:function(a,b){return"/"+a+"/"+b},array:function(a){return a.length==0?"[]":k(["[",l(W(a,function(a){return!c&&a[0]=="atom"&&a[1]=="undefined"?"":m(a,"seq")})),"]"])},stat:function(a){return z(a).replace(/;*\s*$/,";")},seq:function(){return l(W(J(arguments),z))},label:function(a,b){return k([g(a),":",z(b)])},"with":function(a,b){return k(["with","("+z(a)+")",z(b)])},atom:function(a){return g(a)}},y=[];return z(a)}function Q(a){var b=0,c=0;a=a.replace(/[\\\b\f\n\r\t\x22\x27]/g,function(a){switch(a){case"\\":return"\\\\";case"\b":return"\\b";case"\f":return"\\f";case"\n":return"\\n";case"\r":return"\\r";case"\t":return"\\t";case'"':++b;return'"';case"'":++c;return"'"}return a});return b>c?"'"+a.replace(/\x27/g,"\\'")+"'":'"'+a.replace(/\x22/g,'\\"')+'"'}function O(a){return!a||a[0]=="block"&&(!a[1]||a[1].length==0)}function N(){function g(a,b){var c={},e;for(e in a)M(a,e)&&(c[e]=d[e],d[e]=a[e]);var f=b();for(e in c)M(c,e)&&(c[e]?d[e]=c[e]:delete d[e]);return f}function f(a){if(a==null)return null;try{e.push(a);var b=a[0],f=d[b];if(f){var g=f.apply(a,a.slice(1));if(g!=null)return g}f=c[b];return f.apply(a,a.slice(1))}finally{e.pop()}}function b(a){var b=[this[0]];a!=null&&b.push(W(a,f));return b}function a(a){return[this[0],W(a,function(a){var b=[a[0]];a.length>1&&(b[1]=f(a[1]));return b})]}var c={string:function(a){return[this[0],a]},num:function(a){return[this[0],a]},name:function(a){return[this[0],a]},toplevel:function(a){return[this[0],W(a,f)]},block:b,splice:b,"var":a,"const":a,"try":function(a,b,c){return[this[0],W(a,f),b!=null?[b[0],W(b[1],f)]:null,c!=null?W(c,f):null]},"throw":function(a){return[this[0],f(a)]},"new":function(a,b){return[this[0],f(a),W(b,f)]},"switch":function(a,b){return[this[0],f(a),W(b,function(a){return[a[0]?f(a[0]):null,W(a[1],f)]})]},"break":function(a){return[this[0],a]},"continue":function(a){return[this[0],a]},conditional:function(a,b,c){return[this[0],f(a),f(b),f(c)]},assign:function(a,b,c){return[this[0],a,f(b),f(c)]},dot:function(a){return[this[0],f(a)].concat(J(arguments,1))},call:function(a,b){return[this[0],f(a),W(b,f)]},"function":function(a,b,c){return[this[0],a,b.slice(),W(c,f)]},defun:function(a,b,c){return[this[0],a,b.slice(),W(c,f)]},"if":function(a,b,c){return[this[0],f(a),f(b),f(c)]},"for":function(a,b,c,d){return[this[0],f(a),f(b),f(c),f(d)]},"for-in":function(a,b,c,d){return[this[0],f(a),f(b),f(c),f(d)]},"while":function(a,b){return[this[0],f(a),f(b)]},"do":function(a,b){return[this[0],f(a),f(b)]},"return":function(a){return[this[0],f(a)]},binary:function(a,b,c){return[this[0],a,f(b),f(c)]},"unary-prefix":function(a,b){return[this[0],a,f(b)]},"unary-postfix":function(a,b){return[this[0],a,f(b)]},sub:function(a,b){return[this[0],f(a),f(b)]},object:function(a){return[this[0],W(a,function(a){return a.length==2?[a[0],f(a[1])]:[a[0],f(a[1]),a[2]]})]},regexp:function(a,b){return[this[0],a,b]},array:function(a){return[this[0],W(a,f)]},stat:function(a){return[this[0],f(a)]},seq:function(){return[this[0]].concat(W(J(arguments),f))},label:function(a,b){return[this[0],a,f(b)]},"with":function(a,b){return[this[0],f(a),f(b)]},atom:function(a){return[this[0],a]}},d={},e=[];return{walk:f,with_walkers:g,parent:function(){return e[e.length-2]},stack:function(){return e}}}function M(a,b){return Object.prototype.hasOwnProperty.call(a,b)}function L(a,b){for(var c=b.length;--c>=0;)if(b[c]===a)return!0;return!1}function K(a){return a.split("")}function J(a,b){return Array.prototype.slice.call(a,b||0)}function I(a){var b={};for(var c=0;c<a.length;++c)b[a[c]]=!0;return b}function H(a){a instanceof Function&&(a=a());for(var b=1,c=arguments.length;--c>0;++b)arguments[b]();return a}function G(a){var b=J(arguments,1);return function(){return a.apply(this,b.concat(J(arguments)))}}function F(a,b,c){function bk(a){try{++d.in_loop;return a()}finally{--d.in_loop}}function bi(a){var b=bg(a),c=d.token.value;if(e("operator")&&M(A,c)){if(bh(b)){g();return p("assign",A[c],b,bi(a))}i("Invalid assignment")}return b}function bh(a){if(!b)return!0;switch(a[0]){case"dot":case"sub":case"new":case"call":return!0;case"name":return a[1]!="this"}}function bg(a){var b=bf(a);if(e("operator","?")){g();var c=bj(!1);m(":");return p("conditional",b,c,bj(!1,a))}return b}function bf(a){return be(Y(!0),0,a)}function be(a,b,c){var f=e("operator")?d.token.value:null;f&&f=="in"&&c&&(f=null);var h=f!=null?B[f]:null;if(h!=null&&h>b){g();var i=be(Y(!0),h,c);return be(p("binary",f,a,i),b,c)}return a}function bd(a,b,c){(b=="++"||b=="--")&&!bh(c)&&i("Invalid use of "+b+" operator");return p(a,b,c)}function bc(a,b){if(e("punc",".")){g();return bc(p("dot",a,bb()),b)}if(e("punc","[")){g();return bc(p("sub",a,H(bj,G(m,"]"))),b)}if(b&&e("punc","(")){g();return bc(p("call",a,Z(")")),!0)}return b&&e("operator")&&M(z,d.token.value)?H(G(bd,"unary-postfix",d.token.value,a),g):a}function bb(){switch(d.token.type){case"name":case"operator":case"keyword":case"atom":return H(d.token.value,g);default:k()}}function ba(){switch(d.token.type){case"num":case"string":return H(d.token.value,g)}return bb()}function _(){var a=!0,c=[];while(!e("punc","}")){a?a=!1:m(",");if(!b&&e("punc","}"))break;var f=d.token.type,h=ba();f!="name"||h!="get"&&h!="set"||!!e("punc",":")?(m(":"),c.push([h,bj(!1)])):c.push([bb(),P(!1),h])}g();return p("object",c)}function $(){return p("array",Z("]",!b,!0))}function Z(a,b,c){var d=!0,f=[];while(!e("punc",a)){d?d=!1:m(",");if(b&&e("punc",a))break;e("punc",",")&&c?f.push(["atom","undefined"]):f.push(bj(!1))}g();return f}function X(){var a=Y(!1),b;e("punc","(")?(g(),b=Z(")")):b=[];return bc(p("new",a,b),!0)}function W(){return p("const",U())}function V(a){return p("var",U(a))}function U(a){var b=[];for(;;){e("name")||k();var c=d.token.value;g(),e("operator","=")?(g(),b.push([c,bj(!1,a)])):b.push([c]);if(!e("punc",","))break;g()}return b}function T(){var a=R(),b,c;if(e("keyword","catch")){g(),m("("),e("name")||i("Name expected");var f=d.token.value;g(),m(")"),b=[f,R()]}e("keyword","finally")&&(g(),c=R()),!b&&!c&&i("Missing catch/finally blocks");return p("try",a,b,c)}function R(){m("{");var a=[];while(!e("punc","}"))e("eof")&&k(),a.push(t());g();return a}function Q(){var a=q(),b=t(),c;e("keyword","else")&&(g(),c=t());return p("if",a,b,c)}function O(a){var b=a[0]=="var"?p("name",a[1][0]):a;g();var c=bj();m(")");return p("for-in",a,b,c,bk(t))}function N(a){m(";");var b=e("punc",";")?null:bj();m(";");var c=e("punc",")")?null:bj();m(")");return p("for",a,b,c,bk(t))}function K(){m("(");var a=null;if(!e("punc",";")){a=e("keyword","var")?(g(),V(!0)):bj(!0,!0);if(e("operator","in"))return O(a)}return N(a)}function I(a){var b;n()||(b=e("name")?d.token.value:null),b!=null?(g(),L(b,d.labels)||i("Label "+b+" without matching loop or statement")):d.in_loop==0&&i(a+" not inside a loop or switch"),o();return p(a,b)}function F(){return p("stat",H(bj,o))}function w(a){d.labels.push(a);var c=d.token,e=t();b&&!M(C,e[0])&&k(c),d.labels.pop();return p("label",a,e)}function s(a){return c?function(){var b=d.token,c=a.apply(this,arguments);c[0]=r(c[0],b,h());return c}:a}function r(a,b,c){return a instanceof E?a:new E(a,b,c)}function q(){m("(");var a=bj();m(")");return a}function p(){return J(arguments)}function o(){e("punc",";")?g():n()||k()}function n(){return!b&&(d.token.nlb||e("eof")||e("punc","}"))}function m(a){return l("punc",a)}function l(a,b){if(e(a,b))return g();j(d.token,"Unexpected token "+d.token.type+", expected "+a)}function k(a){a==null&&(a=d.token),j(a,"Unexpected token: "+a.type+" ("+a.value+")")}function j(a,b){i(b,a.line,a.col)}function i(a,b,c,e){var f=d.input.context();u(a,b!=null?b:f.tokline,c!=null?c:f.tokcol,e!=null?e:f.tokpos)}function h(){return d.prev}function g(){d.prev=d.token,d.peeked?(d.token=d.peeked,d.peeked=null):d.token=d.input();return d.token}function f(){return d.peeked||(d.peeked=d.input())}function e(a,b){return v(d.token,a,b)}var d={input:typeof a=="string"?x(a,!0):a,token:null,prev:null,peeked:null,in_function:0,in_loop:0,labels:[]};d.token=g();var t=s(function(){e("operator","/")&&(d.peeked=null,d.token=d.input(!0));switch(d.token.type){case"num":case"string":case"regexp":case"operator":case"atom":return F();case"name":return v(f(),"punc",":")?w(H(d.token.value,g,g)):F();case"punc":switch(d.token.value){case"{":return p("block",R());case"[":case"(":return F();case";":g();return p("block");default:k()};case"keyword":switch(H(d.token.value,g)){case"break":return I("break");case"continue":return I("continue");case"debugger":o();return p("debugger");case"do":return function(a){l("keyword","while");return p("do",H(q,o),a)}(bk(t));case"for":return K();case"function":return P(!0);case"if":return Q();case"return":d.in_function==0&&i("'return' outside of function");return p("return",e("punc",";")?(g(),null):n()?null:H(bj,o));case"switch":return p("switch",q(),S());case"throw":return p("throw",H(bj,o));case"try":return T();case"var":return H(V,o);case"const":return H(W,o);case"while":return p("while",q(),bk(t));case"with":return p("with",q(),t());default:k()}}}),P=s(function(a){var b=e("name")?H(d.token.value,g):null;a&&!b&&k(),m("(");return p(a?"defun":"function",b,function(a,b){while(!e("punc",")"))a?a=!1:m(","),e("name")||k(),b.push(d.token.value),g();g();return b}(!0,[]),function(){++d.in_function;var a=d.in_loop;d.in_loop=0;var b=R();--d.in_function,d.in_loop=a;return b}())}),S=G(bk,function(){m("{");var a=[],b=null;while(!e("punc","}"))e("eof")&&k(),e("keyword","case")?(g(),b=[],a.push([bj(),b]),m(":")):e("keyword","default")?(g(),m(":"),b=[],a.push([null,b])):(b||k(),b.push(t()));g();return a}),Y=s(function(a){if(e("operator","new")){g();return X()}if(e("operator")&&M(y,d.token.value))return bd("unary-prefix",H(d.token.value,g),Y(a));if(e("punc")){switch(d.token.value){case"(":g();return bc(H(bj,G(m,")")),a);case"[":g();return bc($(),a);case"{":g();return bc(_(),a)}k()}if(e("keyword","function")){g();return bc(P(!1),a)}if(M(D,d.token.type)){var b=d.token.type=="regexp"?p("regexp",d.token.value[0],d.token.value[1]):p(d.token.type,d.token.value);return bc(H(b,g),a)}k()}),bj=s(function(a,b){arguments.length==0&&(a=!0);var c=bi(b);if(a&&e("punc",",")){g();return p("seq",c,bj(!0,b))}return c});return p("toplevel",function(a){while(!e("eof"))a.push(t());return a}([]))}function E(a,b,c){this.name=a,this.start=b,this.end=c}function x(b){function P(a){if(a)return I();y(),v();var b=g();if(!b)return x("eof");if(o(b))return C();if(b=='"'||b=="'")return F();if(M(l,b))return x("punc",h());if(b==".")return L();if(b=="/")return K();if(M(e,b))return J();if(b=="\\"||q(b))return N();B("Unexpected character '"+b+"'")}function O(a,b){try{return b()}catch(c){if(c===w)B(a);else throw c}}function N(){var b=A(r);return M(a,b)?M(i,b)?x("operator",b):M(d,b)?x("atom",b):x("keyword",b):x("name",b)}function L(){h();return o(g())?C("."):x("punc",".")}function K(){h();var a=f.regex_allowed;switch(g()){case"/":f.comments_before.push(G()),f.regex_allowed=a;return P();case"*":f.comments_before.push(H()),f.regex_allowed=a;return P()}return f.regex_allowed?I():J("/")}function J(a){function b(a){if(!g())return a;var c=a+g();if(M(i,c)){h();return b(c)}return a}return x("operator",b(a||h()))}function I(){return O("Unterminated regular expression",function(){var a=!1,b="",c,d=!1;while(c=h(!0))if(a)b+="\\"+c,a=!1;else if(c=="[")d=!0,b+=c;else if(c=="]"&&d)d=!1,b+=c;else{if(c=="/"&&!d)break;c=="\\"?a=!0:b+=c}var e=A(function(a){return M(m,a)});return x("regexp",[b,e])})}function H(){h();return O("Unterminated multiline comment",function(){var a=t("*/",!0),b=f.text.substring(f.pos,a),c=x("comment2",b,!0);f.pos=a+2,f.line+=b.split("\n").length-1,f.newline_before=b.indexOf("\n")>=0;return c})}function G(){h();var a=t("\n"),b;a==-1?(b=f.text.substr(f.pos),f.pos=f.text.length):(b=f.text.substring(f.pos,a),f.pos=a);return x("comment1",b,!0)}function F(){return O("Unterminated string constant",function(){var a=h(),b="";for(;;){var c=h(!0);if(c=="\\")c=D();else if(c==a)break;b+=c}return x("string",b)})}function E(a){var b=0;for(;a>0;--a){var c=parseInt(h(!0),16);isNaN(c)&&B("Invalid hex-character pattern in string"),b=b<<4|c}return b}function D(){var a=h(!0);switch(a){case"n":return"\n";case"r":return"\r";case"t":return"\t";case"b":return"\b";case"v":return"";case"f":return"\f";case"0":return" ";case"x":return String.fromCharCode(E(2));case"u":return String.fromCharCode(E(4));case"\n":return"";default:return a}}function C(a){var b=!1,c=!1,d=!1,e=a==".",f=A(function(f,g){if(f=="x"||f=="X")return d?!1:d=!0;if(!d&&(f=="E"||f=="e"))return b?!1:b=c=!0;if(f=="-")return c||g==0&&!a?!0:!1;if(f=="+")return c;c=!1;if(f==".")return!e&&!d?e=!0:!1;return p(f)});a&&(f=a+f);var g=s(f);if(!isNaN(g))return x("num",g);B("Invalid syntax: "+f)}function B(a){u(a,f.tokline,f.tokcol,f.tokpos)}function A(a){var b="",c=g(),d=0;while(c&&a(c,d++))b+=h(),c=g();return b}function y(){while(M(j,g()))h()}function x(a,b,d){f.regex_allowed=a=="operator"&&!M(z,b)||a=="keyword"&&M(c,b)||a=="punc"&&M(k,b);var e={type:a,value:b,line:f.tokline,col:f.tokcol,pos:f.tokpos,nlb:f.newline_before};d||(e.comments_before=f.comments_before,f.comments_before=[]),f.newline_before=!1;return e}function v(){f.tokline=f.line,f.tokcol=f.col,f.tokpos=f.pos}function t(a,b){var c=f.text.indexOf(a,f.pos);if(b&&c==-1)throw w;return c}function n(){return!f.peek()}function h(a){var b=f.text.charAt(f.pos++);if(a&&!b)throw w;b=="\n"?(f.newline_before=!0,++f.line,f.col=0):++f.col;return b}function g(){return f.text.charAt(f.pos)}var f={text:b.replace(/\r\n?|[\n\u2028\u2029]/g,"\n").replace(/^\uFEFF/,""),pos:0,tokpos:0,line:0,tokline:0,col:0,tokcol:0,newline_before:!1,regex_allowed:!1,comments_before:[]};P.context=function(a){a&&(f=a);return f};return P}function v(a,b,c){return a.type==b&&(c==null||a.value==c)}function u(a,b,c,d){throw new t(a,b,c,d)}function t(a,b,c,d){this.message=a,this.line=b,this.col=c,this.pos=d}function s(a){if(f.test(a))return parseInt(a.substr(2),16);if(g.test(a))return parseInt(a.substr(1),8);if(h.test(a))return parseFloat(a)}function r(a){return q(a)||o(a)}function q(a){return a=="$"||a=="_"||n(a)}function p(a){return o(a)||n(a)}function o(a){a=a.charCodeAt(0);return a>=48&&a<=57}function n(a){a=a.charCodeAt(0);return a>=65&&a<=90||a>=97&&a<=122}var a=I(["break","case","catch","const","continue","default","delete","do","else","finally","for","function","if","in","instanceof","new","return","switch","throw","try","typeof","var","void","while","with"]),b=I(["abstract","boolean","byte","char","class","debugger","double","enum","export","extends","final","float","goto","implements","import","int","interface","long","native","package","private","protected","public","short","static","super","synchronized","throws","transient","volatile"]),c=I(["return","new","delete","throw","else","case"]),d=I(["false","null","true","undefined"]),e=I(K("+-*&%=<>!?|~^")),f=/^0x[0-9a-f]+$/i,g=/^0[0-7]+$/,h=/^\d*\.?\d*(?:e[+-]?\d*(?:\d\.?|\.?\d)\d*)?$/i,i=I(["in","instanceof","typeof","new","void","delete","++","--","+","-","!","~","&","|","^","*","/","%",">>","<<",">>>","<",">","<=",">=","==","===","!=","!==","?","=","+=","-=","/=","*=","%=",">>=","<<=",">>>=","|=","^=","&=","&&","||"]),j=I(K(" \n\r\t")),k=I(K("[{}(,.;:")),l=I(K("[]{}(),;:")),m=I(K("gmsiy"));t.prototype.toString=function(){return this.message+" (line: "+this.line+", col: "+this.col+", pos: "+this.pos+")"};var w={},y=I(["typeof","void","delete","--","++","!","~","-","+"]),z=I(["--","++"]),A=function(a,b,c){while(c<a.length)b[a[c]]=a[c].substr(0,a[c].length-1),c++;return b}(["+=","-=","/=","*=","%=",">>=","<<=",">>>=","|=","^=","&="],{"=":!0},0),B=function(a,b){for(var c=0,d=1;c<a.length;++c,++d){var e=a[c];for(var f=0;f<e.length;++f)b[e[f]]=d}return b}([["||"],["&&"],["|"],["^"],["&"],["==","===","!=","!=="],["<",">","<=",">=","in","instanceof"],[">>","<<",">>>"],["+","-"],["*","/","%"]],{}),C=I(["for","do","while","switch"]),D=I(["atom","num","string","regexp","name"]);E.prototype.toString=function(){return this.name};var P=I(["name","array","object","string","dot","sub","call","regexp"]),R=I(["if","while","do","for","for-in","with"]);return{parse:F,gen_code:S,tokenizer:x,ast_walker:N}}
+
+	// Math Operators
 
 	var operators = {
 		'+': 'add',
@@ -6766,6 +7588,8 @@ var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++
 		}
 	};
 
+	// Sign Operators
+
 	var signOperators = {
 		'-': 'negate'
 	};
@@ -6783,27 +7607,45 @@ var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++
 		}
 	}
 
+	// AST Helpers
+
 	function isDynamic(exp) {
 		var type = exp[0];
 		return type != 'num' && type != 'string';
 	}
 
 	function handleOperator(operator, left, right) {
+		// Only replace operators with calls to $operator if the left hand side
+		// is potentially an object.
 		if (operators[operator] && isDynamic(left)) {
+			// Replace with call to $operator(left, operator, right):
 			return ['call', ['name', '$eval'],
 					[left, ['string', operator], right]];
 		}
 	}
 
+	/**
+	 * Compiles PaperScript code into JavaScript code.
+	 *
+	 * @name PaperScript.compile
+	 * @function
+	 * @param {String} code The PaperScript code.
+	 * @return {String} The compiled PaperScript as JavaScript code.
+	 */
 	function compile(code) {
+		// Use parse-js to translate the code into a AST structure which is then
+		// walked and parsed for operators to overload. The resulting AST is
+		// translated back to code and evaluated.
 		var ast = parse_js.parse(code),
-			walker = parse_js.walker(),
+			walker = parse_js.ast_walker(),
 			walk = walker.walk;
 
 		ast = walker.with_walkers({
 			'binary': function(operator, left, right) {
+				// Handle simple mathematical operators here:
 				return handleOperator(operator, left = walk(left),
 						right = walk(right))
+						// Always return something since we're walking left and
 						|| [this[0], operator, left, right];
 			},
 
@@ -6825,28 +7667,17 @@ var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++
 			return walk(ast);
 		});
 
-		return parse_js.stringify(ast, true);
+		return parse_js.gen_code(ast, {
+			beautify: true
+		});
 	}
 
 	function evaluate(code, scope) {
-		if (typeof code !== 'string') {
-			var canvas = code.getAttribute('canvas');
-			if (canvas = canvas && document.getElementById(canvas)) {
-				paper = scope;
-				new Project();
-				new View(canvas).activate();
-			}
-			if (code.src) {
-				return request(code.src, scope);
-			} else {
-				code = code.innerHTML;
-			}
-		}
+		paper = scope;
 		var view = scope.view,
 			tool = scope.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
-					&& new Tool(null, scope),
+					&& new Tool(),
 			res;
-		paper = scope;
 		with (scope) {
 			(function() {
 				var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
@@ -6863,11 +7694,8 @@ var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++
 				}
 				if (view) {
 					view.onResize = onResize;
-					if (onFrame) {
-						view.setOnFrame(onFrame);
-					} else {
-						view.draw();
-					}
+					view.setOnFrame(onFrame);
+					view.draw();
 				}
 			}).call(scope);
 		}
@@ -6890,32 +7718,52 @@ var parse_js=new function(){function S(a,b,c){var d=[];for(var e=0;e<a.length;++
 	}
 
 	function load() {
-		var scripts = document.getElementsByTagName('script'),
-			count = 0;
+		var scripts = document.getElementsByTagName('script');
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
-			if (script.type === 'text/paperscript'
-					&& !script.getAttribute('loaded')) {
-				var scope = new PaperScope(script.getAttribute('id')
-						|| script.src || ('paperscript-' + (count++)));
-				script.setAttribute('id', scope.id);
-				evaluate(script, scope);
-				script.setAttribute('loaded', true);
+			if (/^text\/(?:x-|)paperscript$/.test(script.type)
+					&& !script.getAttribute('data-paper-loaded')) {
+				var canvas = PaperScript.getAttribute(script, 'canvas');
+				canvas = canvas && document.getElementById(canvas);
+				var scope = new PaperScope(script);
+				scope.setup(canvas);
+				if (script.src) {
+					request(script.src, scope);
+				} else {
+					evaluate(script.innerHTML, scope);
+				}
+				script.setAttribute('data-paper-loaded', true);
 			}
 		}
 	}
 
 	DomEvent.add(window, { load: load });
 
+	function handleAttribute(name) {
+		name += 'Attribute';
+		return function(el, attr) {
+			return el[name](attr) || el[name]('data-paper-' + attr);
+		};
+	}
+
 	return {
 		compile: compile,
 		evaluate: evaluate,
-		load: load
+		load: load,
+		getAttribute: handleAttribute('get'),
+		hasAttribute: handleAttribute('has')
 	};
 
 };
 
 this.load = PaperScript.load;
 
+Base.each(this, function(val, key) {
+	if (val && val.prototype instanceof Base) {
+		val._name = key;
+	}
+});
+
+this.enumerable = true;
 return new (PaperScope.inject(this));
 };

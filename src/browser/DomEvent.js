@@ -14,6 +14,11 @@
  * All rights reserved.
  */
 
+/**
+ * @name DomEvent
+ * @namespace
+ * @private
+ */
 var DomEvent = {
 	add: function(el, events) {
 		for (var type in events) {
@@ -60,8 +65,8 @@ var DomEvent = {
 
 	getOffset: function(event, target) {
 		// Remove target offsets from page coordinates
-		return DomEvent.getPoint(event).subtract(
-				DomElement.getOffset(target || DomEvent.getTarget(event), true));
+		return DomEvent.getPoint(event).subtract(DomElement.getOffset(
+				target || DomEvent.getTarget(event)));
 	},
 
 	preventDefault: function(event) {
