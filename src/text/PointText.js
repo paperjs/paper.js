@@ -37,7 +37,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 */
 	initialize: function(point) {
 		this.base();
-		var point = Point.read(arguments);
+		point = Point.read(arguments);
 		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
 		this._matrix = new Matrix().translate(point);
 	},
@@ -56,10 +56,17 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * @bean
 	 */
 	getPoint: function() {
-		return this._point;
+		// this._point is a LinkedPoint, so we can use _x and _y.
+		// Do not cache LinkedPoints directly, since we would not be able to
+		// use them to calculate the difference in #setPoint, as when it is
+		// modified, it would hold new values already and only then cause the
+		// calling of #setPoint.
+		return LinkedPoint.create(this, 'setPoint', this._point._x,
+				this._point._y);
 	},
 
 	setPoint: function(point) {
+		this._changed(Change.GEOMETRY);
 		this._transform(new Matrix().translate(
 				Point.read(arguments).subtract(this._point)));
 	},
@@ -67,7 +74,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	// TODO: Position should be the center point of the bounds but we currently
 	// don't support bounds for PointText.
 	getPosition: function() {
-		return this._point;
+		return this.getPoint();
 	},
 
 	setPosition: function(point) {
