@@ -156,8 +156,7 @@ var PaperScript = this.PaperScript = new function() {
 		// Set currently active scope.
 		paper = scope;
 		var view = scope.view,
-			// TODO: Add support for multiple tools
-			tool = scope.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
+			tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
 					&& new Tool(),
 			res;
 		// Define variables for potential handlers, so eval() calls below to
