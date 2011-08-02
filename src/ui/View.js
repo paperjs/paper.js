@@ -437,13 +437,11 @@ var View = this.View = Base.extend(/** @lends View# */{
 		function exportFrame(param) {
 			count++;
 			if (view.onFrame) {
-				var then = new Date();
 				view.onFrame({
 					delta: frameDuration,
 					time: frameDuration * count,
 					count: count
 				});
-				console.log(new Date() - then, ' onFrame');
 			}
 			view.draw();
 			var filename = param.prefix + toPaddedString(count, 6) + '.png',
