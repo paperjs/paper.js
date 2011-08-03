@@ -62,9 +62,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	},
 
 	setPoint: function(point) {
-		this._changed(Change.GEOMETRY);
-		this._transform(new Matrix().translate(
-				Point.read(arguments).subtract(this._point)));
+		this.translate(Point.read(arguments).subtract(this._point));
 	},
 
 	// TODO: Position should be the center point of the bounds but we currently
