@@ -677,8 +677,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		matrix.applyToContext(ctx);
 		this.draw(ctx, {});
 		var raster = new Raster(canvas);
-		raster.setPosition(this.getPosition());
-		raster.scale(1 / scale);
+		raster.setBounds(bounds);
 		return raster;
 	},
 
