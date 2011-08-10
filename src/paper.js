@@ -53,6 +53,7 @@ var paper = new function() {
 
 /*#*/ include('core/Base.js');
 /*#*/ include('core/PaperScope.js');
+/*#*/ include('core/PaperScopeItem.js');
 
 // Include Paper classes, which are later injected into PaperScope by setting
 // them on the 'this' object, e.g.:

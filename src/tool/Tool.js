@@ -46,15 +46,32 @@
  * 	path.add(event.point);
  * }
  */
-var Tool = this.Tool = Base.extend(/** @lends Tool# */{
+var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
+	_list: 'tools',
+	_reference: 'tool',
+
 	// DOCS: rewrite Tool constructor explanation
 	initialize: function() {
-		// Store reference to the currently active global paper scope:
-		this._scope = paper;
+		this.base();
 		this._firstMove = true;
 		this._count = 0;
 		this._downCount = 0;
 	},
+
+	/**
+	 * Activates this tool, meaning {@link PaperScope#tool} will
+	 * point to it and it will be the one that recieves mouse events.
+	 *
+	 * @name Tool#activate
+	 * @function
+	 */
+
+	/**
+	 * Removes this tool from the {@link PaperScope#tools} list.
+	 *
+	 * @name Tool#remove
+	 * @function
+	 */
 
 	/**
 	 * The fixed time delay in milliseconds between each call to the

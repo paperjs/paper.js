@@ -23,16 +23,17 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-var View = this.View = Base.extend(/** @lends View# */{
+var View = this.View = PaperScopeItem.extend(/** @lends View# */{
+	_list: 'views',
+	_reference: 'view',
+
 	/**
 	 * Creates a view object
-	 * @param {Canvas} canvas
+	 * @param {HTMLCanvasElement|String} canvas The canvas object that this
+	 * view should wrap, or the String id that represents it
 	 */
 	initialize: function(canvas) {
-		// Associate this view with the active paper scope.
-		this._scope = paper;
-		// Push it onto project.views and set index:
-		this._index = this._scope.views.push(this) - 1;
+		this.base();
 		// Handle canvas argument
 		var size;
 
@@ -132,6 +133,32 @@ var View = this.View = Base.extend(/** @lends View# */{
 		// As soon as a new view is added we need to mark the redraw as not
 		// motified, so the next call loops through all the views again.
 		this._scope._redrawNotified = false;
+	},
+
+	/**
+	 * Makes this view the active one, meaning {@link PaperScope#view} will
+	 * point to it.
+	 *
+	 * @name View#activate
+	 * @function
+	 */
+
+ 	/**
+	 * Removes thsi view from the {@link PaperScope#views} list and frees the
+	 * associated canvas.
+	 */
+	remove: function() {
+		if (!this.base())
+			return false;
+		// Clear focus if removed view had it
+		if (View._focused == this)
+			View._focused = null;
+		delete View._views[this._id];
+		// Uninstall event handlers again for this view.
+		DomEvent.remove(this._canvas, this._events);
+		// Clearing _onFrame makes the frame handler stop automatically.
+		this._canvas = this._events = this._onFrame = null;
+		return true;
 	},
 
 	/**
@@ -264,6 +291,12 @@ var View = this.View = Base.extend(/** @lends View# */{
 		this._inverse = null;
 	},
 
+	/**
+	 * Draws the view.
+	 *
+	 * @name View#draw
+	 * @function
+	 */
 	draw: function(checkRedraw) {
 		if (checkRedraw && !this._redrawNeeded)
 			return false;
@@ -286,25 +319,6 @@ var View = this.View = Base.extend(/** @lends View# */{
 			// Update _redrawNotified in PaperScope as soon as a view was drawn
 			this._scope._redrawNotified = false;
 		}
-		return true;
-	},
-
-	activate: function() {
-		this._scope.view = this;
-	},
-
-	remove: function() {
-		if (this._index == null)
-			return false;
-		// Clear focus if removed view had it
-		if (View._focused == this)
-			View._focused = null;
-		delete View._views[this._id];
-		Base.splice(this._scope.views, null, this._index, 1);
-		// Uninstall event handlers again for this view.
-		DomEvent.remove(this._canvas, this._events);
-		// Clearing _onFrame makes the frame handler stop automatically.
-		this._scope = this._canvas = this._events = this._onFrame = null;
 		return true;
 	},
 
