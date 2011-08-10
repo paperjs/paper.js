@@ -107,10 +107,6 @@ var paper = new function() {
 /*#*/ include('browser/DomEvent.js');
 /*#*/ } // options.browser
 
-/*#*/ if (options.server) {
-	var Canvas = this.Canvas = require('canvas');
-/*#*/ } // options.server
-
 /*#*/ include('ui/View.js');
 
 /*#*/ if (options.browser) {
@@ -128,7 +124,9 @@ var paper = new function() {
 
 /*#*/ include('core/PaperScript.js');
 
+/*#*/ if (options.browser) {
 /*#*/ include('core/initialize.js');
+/*#*/ } // options.browser
 
 /*#*/ if (options.version != 'dev') {
 // Finally inject the classes set on 'this' into the PaperScope class and create
@@ -141,7 +139,3 @@ this.enumerable = true;
 return new (PaperScope.inject(this));
 /*#*/ } // options.version != 'dev'
 };
-
-/*#*/ if (options.server) {
-module.exports = paper;
-/*#*/ } // options.server
