@@ -37,9 +37,8 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 */
 	initialize: function(point) {
 		this.base();
-		var point = Point.read(arguments);
-		this._point = LinkedPoint.create(this, 'setPoint', point.x, point.y);
-		this._matrix = new Matrix().translate(point);
+		this._point = Point.read(arguments).clone();
+		this._matrix = new Matrix().translate(this._point);
 	},
 
 	clone: function() {
@@ -56,18 +55,21 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * @bean
 	 */
 	getPoint: function() {
-		return this._point;
+		// Se Item#getPosition for an explanation why we create new LinkedPoint
+		// objects each time.
+		return LinkedPoint.create(this, 'setPoint',
+				this._point.x, this._point.y);
 	},
 
 	setPoint: function(point) {
-		this._transform(new Matrix().translate(
-				Point.read(arguments).subtract(this._point)));
+		this.translate(Point.read(arguments).subtract(this._point));
 	},
 
 	// TODO: Position should be the center point of the bounds but we currently
-	// don't support bounds for PointText.
+	// don't support bounds for PointText, so let's return the same as #point
+	// for the time being.
 	getPosition: function() {
-		return this._point;
+		return this.getPoint();
 	},
 
 	setPosition: function(point) {
@@ -76,10 +78,8 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 
 	_transform: function(matrix, flags) {
 		this._matrix.preConcatenate(matrix);
-		// We need to transform the LinkedPoint, passing true for dontNotify so
-		// chaning it won't trigger calls of setPoint(), leading to an endless
-		// recursion.
-		matrix._transformPoint(this._point, this._point, true);
+		// Also transform _point:
+		matrix._transformPoint(this._point, this._point);
 	},
 
 	draw: function(ctx) {

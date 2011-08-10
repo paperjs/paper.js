@@ -34,7 +34,10 @@
  * An array of all open projects is accessible through the
  * {@link PaperScope#projects} variable.
  */
-var Project = this.Project = Base.extend(/** @lends Project# */{
+var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
+	_list: 'projects',
+	_reference: 'project',
+
 	// TODO: Add arguments to define pages
 	/**
 	 * Creates a Paper.js project.
@@ -43,16 +46,12 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	 * and the {@link PaperScope#project} variable points to it.
 	 */
 	initialize: function() {
-		// Store reference to the currently active global paper scope:
-		this._scope = paper;
-		// Push it onto this._scope.projects and set index:
-		this._index = this._scope.projects.push(this) - 1;
+		// Activate straight away so paper.project is set, as required by
+		// Layer and DoumentView constructors.
+		this.base(true);
 		this._currentStyle = new PathStyle();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
-		// Activate straight away so paper.project is set, as required by
-		// Layer and DoumentView constructors.
-		this.activate();
 		this.layers = [];
 		this.symbols = [];
 		this.activeLayer = new Layer();
@@ -62,6 +61,21 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 		if (this._scope)
 			this._scope._needsRedraw();
 	},
+
+	/**
+	 * Activates this project, so all newly created items will be placed
+	 * in it.
+	 *
+	 * @name Project#activate
+	 * @function
+	 */
+
+	/**
+	 * Removes this project from the {@link PaperScope#projects} list.
+	 *
+	 * @name Project#remove
+	 * @function
+	 */
 
 	/**
 	 * The currently active path style. All selected items and newly
@@ -96,33 +110,6 @@ var Project = this.Project = Base.extend(/** @lends Project# */{
 	setCurrentStyle: function(style) {
 		// TODO: Style selected items with the style:
 		this._currentStyle.initialize(style);
-	},
-
-	/**
-	 * Activates this project, so all newly created items will be placed
-	 * in it.
-	 */
-	activate: function() {
-		if (this._scope) {
-			this._scope.project = this;
-			return true;
-		}
-		return false;
-	},
-
-	/**
-	 * Removes this project from the {@link PaperScope#projects} list.
-	 */
-	remove: function() {
-		if (this._scope) {
-			Base.splice(this._scope.projects, null, this._index, 1);
-			// Clear the active project reference if it was pointint to this.
-			if (this._scope.project == this)
-				this._scope.project = null;
-			this._scope = null;
-			return true;
-		}
-		return false;
 	},
 
 	/**
