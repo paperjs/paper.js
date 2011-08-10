@@ -203,6 +203,9 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 				if (selected)
 					selection[0] = false;
 				selection[index] = selected;
+				// Let path know that we changed something and the view
+				// should be redrawn
+				path._changed(Change.ATTRIBUTE);
 			}
 		}
 		this._selectionState = (selection[0] ? SelectionState.POINT : 0)

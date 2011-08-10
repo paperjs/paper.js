@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.2
+ * Paper.js v0.21
  *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
  * based on Scriptographer.org and designed to be largely API compatible.
@@ -13,7 +13,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Aug 1 12:03:23 2011 +0100
+ * Date: Tue Aug 2 10:08:08 2011 +0100
  *
  ***
  *
@@ -303,9 +303,12 @@ this.Base = Base.inject({
 
 	toString: function() {
 		return '{ ' + Base.each(this, function(value, key) {
-			var type = typeof value;
-			this.push(key + ': ' + (type === 'number' ? Base.formatNumber(value)
-					: type === 'string' ? "'" + value + "'" : value));
+			if (key.charAt(0) != '_') {
+				var type = typeof value;
+				this.push(key + ': ' + (type === 'number'
+						? Base.formatNumber(value)
+						: type === 'string' ? "'" + value + "'" : value));
+			}
 		}, []).join(', ') + ' }';
 	},
 
@@ -406,7 +409,7 @@ var PaperScope = this.PaperScope = Base.extend({
 		PaperScope._scopes[this._id] = this;
 	},
 
-	version: 0.2,
+	version: 0.21,
 
 	evaluate: function(code) {
 		var res = PaperScript.evaluate(code, this);
@@ -473,6 +476,33 @@ var PaperScope = this.PaperScope = Base.extend({
 		each: function(iter) {
 			Base.each(this._scopes, iter);
 		}
+	}
+});
+
+var PaperScopeItem = Base.extend({
+
+	initialize: function(activate) {
+		this._scope = paper;
+		this._index = this._scope[this._list].push(this) - 1;
+		if (activate || !this._scope[this._reference])
+			this.activate();
+	},
+
+	activate: function() {
+		if (!this._scope)
+			return false;
+		this._scope[this._reference] = this;
+		return true;
+	},
+
+	remove: function() {
+		if (this._index == null)
+			return false;
+		Base.splice(this._scope[this._list], null, this._index, 1);
+		if (this._scope[this._reference] == this)
+			this._scope[this._reference] = null;
+		this._scope = null;
+		return true;
 	}
 });
 
@@ -1623,14 +1653,15 @@ var Line = this.Line = Base.extend({
 	}
 });
 
-var Project = this.Project = Base.extend({
+var Project = this.Project = PaperScopeItem.extend({
+	_list: 'projects',
+	_reference: 'project',
+
 	initialize: function() {
-		this._scope = paper;
-		this._index = this._scope.projects.push(this) - 1;
+		this.base(true);
 		this._currentStyle = new PathStyle();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
-		this.activate();
 		this.layers = [];
 		this.symbols = [];
 		this.activeLayer = new Layer();
@@ -1647,25 +1678,6 @@ var Project = this.Project = Base.extend({
 
 	setCurrentStyle: function(style) {
 		this._currentStyle.initialize(style);
-	},
-
-	activate: function() {
-		if (this._scope) {
-			this._scope.project = this;
-			return true;
-		}
-		return false;
-	},
-
-	remove: function() {
-		if (this._scope) {
-			Base.splice(this._scope.projects, null, this._index, 1);
-			if (this._scope.project == this)
-				this._scope.project = null;
-			this._scope = null;
-			return true;
-		}
-		return false;
 	},
 
 	getIndex: function() {
@@ -6470,12 +6482,16 @@ DomEvent.requestAnimationFrame = new function() {
 	};
 };
 
-var View = this.View = Base.extend({
+var View = this.View = PaperScopeItem.extend({
+	_list: 'views',
+	_reference: 'view',
+
 	initialize: function(canvas) {
-		this._scope = paper;
-		this._index = this._scope.views.push(this) - 1;
+		this.base();
 		var size;
-		if (canvas && canvas instanceof HTMLCanvasElement) {
+		if (typeof canvas === 'string')
+			canvas = document.getElementById(canvas);
+		if (canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
 			if (PaperScript.hasAttribute(canvas, 'resize')) {
 				var offset = DomElement.getOffset(canvas, true),
@@ -6528,6 +6544,17 @@ var View = this.View = Base.extend({
 		if (!View._focused)
 			View._focused = this;
 		this._scope._redrawNotified = false;
+	},
+
+	remove: function() {
+		if (!this.base())
+			return false;
+		if (View._focused == this)
+			View._focused = null;
+		delete View._views[this._id];
+		DomEvent.remove(this._canvas, this._events);
+		this._canvas = this._events = this._onFrame = null;
+		return true;
 	},
 
 	getCanvas: function() {
@@ -6620,22 +6647,6 @@ var View = this.View = Base.extend({
 			this._redrawNeeded = false;
 			this._scope._redrawNotified = false;
 		}
-		return true;
-	},
-
-	activate: function() {
-		this._scope.view = this;
-	},
-
-	remove: function() {
-		if (this._index == null)
-			return false;
-		if (View._focused == this)
-			View._focused = null;
-		delete View._views[this._id];
-		Base.splice(this._scope.views, null, this._index, 1);
-		DomEvent.remove(this._canvas, this._events);
-		this._scope = this._canvas = this._events = this._onFrame = null;
 		return true;
 	},
 
@@ -7046,9 +7057,12 @@ var ToolEvent = this.ToolEvent = Event.extend({
 	}
 });
 
-var Tool = this.Tool = Base.extend({
+var Tool = this.Tool = PaperScopeItem.extend({
+	_list: 'tools',
+	_reference: 'tool',
+
 	initialize: function() {
-		this._scope = paper;
+		this.base();
 		this._firstMove = true;
 		this._count = 0;
 		this._downCount = 0;
@@ -7675,7 +7689,7 @@ var parse_js=new function(){function W(a,b,c){var d=[];for(var e=0;e<a.length;++
 	function evaluate(code, scope) {
 		paper = scope;
 		var view = scope.view,
-			tool = scope.tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
+			tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
 					&& new Tool(),
 			res;
 		with (scope) {
@@ -7723,10 +7737,8 @@ var parse_js=new function(){function W(a,b,c){var d=[];for(var e=0;e<a.length;++
 			var script = scripts[i];
 			if (/^text\/(?:x-|)paperscript$/.test(script.type)
 					&& !script.getAttribute('data-paper-loaded')) {
-				var canvas = PaperScript.getAttribute(script, 'canvas');
-				canvas = canvas && document.getElementById(canvas);
 				var scope = new PaperScope(script);
-				scope.setup(canvas);
+				scope.setup(PaperScript.getAttribute(script, 'canvas'));
 				if (script.src) {
 					request(script.src, scope);
 				} else {
