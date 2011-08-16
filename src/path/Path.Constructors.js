@@ -95,13 +95,17 @@ Path.inject({ statics: new function() {
 		 */
 		Rectangle: function(rect) {
 			rect = Rectangle.read(arguments);
-			var path = new Path(),
-				corners = ['getBottomLeft', 'getTopLeft', 'getTopRight',
-					'getBottomRight'],
-				segments = new Array(4);
-			for (var i = 0; i < 4; i++)
-				segments[i] = new Segment(rect[corners[i]]());
-			path._add(segments);
+			var left = rect.x,
+				top = rect.y
+				right = left + rect.width,
+				bottom = top + rect.height,
+				path = new Path();
+			path._add([
+				new Segment(Point.create(left, bottom)),
+				new Segment(Point.create(left, top)),
+				new Segment(Point.create(right, top)),
+				new Segment(Point.create(right, bottom))
+			]);
 			path._closed = true;
 			return path;
 		},
