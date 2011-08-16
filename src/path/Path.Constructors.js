@@ -210,7 +210,7 @@ Path.inject({ statics: new function() {
 				center = Point.read(arguments, 0, 1);
 			}
 			return Path.Oval(new Rectangle(center.subtract(radius),
-					new Size(radius * 2, radius * 2)));
+					Size.create(radius * 2, radius * 2)));
 		},
 
 		/**
