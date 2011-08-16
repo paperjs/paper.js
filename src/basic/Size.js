@@ -535,13 +535,16 @@ var LinkedSize = Size.extend({
 	},
 
 	statics: {
-		create: function(owner, setter, width, height) {
-			var point = new LinkedSize(LinkedSize.dont);
-			point._width = width;
-			point._height = height;
-			point._owner = owner;
-			point._setter = setter;
-			return point;
+		create: function(owner, setter, width, height, dontLink) {
+			// See LinkedPoint.create() for an explanation about dontLink.
+			if (dontLink)
+				return Size.create(width, height);
+			var size = new LinkedSize(LinkedSize.dont);
+			size._width = width;
+			size._height = height;
+			size._owner = owner;
+			size._setter = setter;
+			return size;
 		}
 	}
 });
