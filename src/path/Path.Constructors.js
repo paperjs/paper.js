@@ -132,13 +132,13 @@ Path.inject({ statics: new function() {
 				rect = Rectangle.read(arguments, 0, 4);
 				size = Size.read(arguments, 4, 2);
 			}
-			size = Size.min(size, rect.getSize().divide(2));
+			size = Size.min(size, rect.getSize(true).divide(2));
 			var path = new Path(),
 				uSize = size.multiply(kappa * 2),
-				bl = rect.getBottomLeft(),
-				tl = rect.getTopLeft(),
-				tr = rect.getTopRight(),
-				br = rect.getBottomRight();
+				bl = rect.getBottomLeft(true),
+				tl = rect.getTopLeft(true),
+				tr = rect.getTopRight(true),
+				br = rect.getBottomRight(true);
 			path._add([
 				new Segment(bl.add(size.width, 0), null, [-uSize.width, 0]),
 				new Segment(bl.subtract(0, size.height), [0, uSize.height], null),
@@ -176,13 +176,13 @@ Path.inject({ statics: new function() {
 		Oval: function(rect) {
 			rect = Rectangle.read(arguments);
 			var path = new Path(),
-				topLeft = rect.getTopLeft(),
-				size = new Size(rect.width, rect.height),
+				point = rect.getPoint(true),
+				size = rect.getSize(true),
 				segments = new Array(4);
 			for (var i = 0; i < 4; i++) {
 				var segment = ovalSegments[i];
 				segments[i] = new Segment(
-					segment._point.multiply(size).add(topLeft),
+					segment._point.multiply(size).add(point),
 					segment._handleIn.multiply(size),
 					segment._handleOut.multiply(size)
 				);
