@@ -418,77 +418,7 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 /*#*/ } // options.browser
 	},
 
-	// TODO: support exporting of jpg
-	exportFrames: function(param) {
-/*#*/ if (options.server) {
-		param = Base.merge({
-			fps: 30,
-			prefix: 'frame-',
-			amount: 1
-		}, param);
-		if (!param.directory)
-			throw new Error('Missing param.directory');
 
-		var view = this,
-			count = 0,
-			fs = require('fs'),
-			frameDuration = 1 / param.fps,
-			lastTime = startTime = Date.now();
-
-		// Start exporting frames by exporting the first frame:
-		exportFrame(param);
-
-		// Utility function that converts a number to a string with
-		// x amount of padded 0 digits:
-		function toPaddedString(number, length) {
-			var str = number.toString(10);
-			for (var i = 0, l = length - str.length; i < l; i++) {
-				str = '0' + str;
-			}
-			return str;
-		}
-
-		function exportFrame(param) {
-			count++;
-			if (view.onFrame) {
-				view.onFrame({
-					delta: frameDuration,
-					time: frameDuration * count,
-					count: count
-				});
-			}
-			view.draw();
-			var filename = param.prefix + toPaddedString(count, 6) + '.png',
-				uri = param.directory + '/' + filename,
-				out = fs.createWriteStream(uri),
-				stream = view._canvas.createPNGStream();
-			// Pipe the png stream to the write stream:
-			stream.pipe(out);
-			// When the file has been closed, export the next fame:
-			out.on('close', function() {
-				var now = Date.now();
-				if (param.onProgress) {
-					param.onProgress({
-						count: count,
-						amount: param.amount,
-						percentage: Math.round(count / param.amount * 10000) / 100,
-						time: now - startTime,
-						delta: now - lastTime
-					});
-				}
-				lastTime = now;
-				if (count < param.amount) {
-					exportFrame(param);
-				} else {
-					// Call onComplete handler when finished:
-					if (param.onComplete) {
-						param.onComplete();
-					}
-				}
-			});
-		}
-/*#*/ } // options.server
-	},
 
 	/**
 	 * Handler function that is called whenever a view is resized.
@@ -650,4 +580,90 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 		}
 	};
 /*#*/ } // options.browser
+}, new function() {
+/*#*/ if (options.server) {
+	var fs = require('fs'),
+		path = require('path');
+	// Utility function that converts a number to a string with
+	// x amount of padded 0 digits:
+	function toPaddedString(number, length) {
+		var str = number.toString(10);
+		for (var i = 0, l = length - str.length; i < l; i++) {
+			str = '0' + str;
+		}
+		return str;
+	}
+	return {
+		exportFrames: function(param) {
+			param = Base.merge({
+				fps: 30,
+				prefix: 'frame-',
+				amount: 1
+			}, param);
+			if (!param.directory)
+				throw new Error('Missing param.directory');
+
+			var view = this,
+				count = 0,
+				frameDuration = 1 / param.fps,
+				lastTime = startTime = Date.now();
+
+			// Start exporting frames by exporting the first frame:
+			exportFrame(param);
+
+			function exportFrame(param) {
+				count++;
+				var filename = param.prefix + toPaddedString(count, 6) + '.png',
+					uri = param.directory + '/' + filename,
+					onComplete = function() {
+						// When the file has been closed, export the next fame:
+						var then = Date.now();
+						if (param.onProgress) {
+							param.onProgress({
+								count: count,
+								amount: param.amount,
+								percentage: Math.round(count / param.amount
+										* 10000) / 100,
+								time: then - startTime,
+								delta: then - lastTime
+							});
+						}
+						lastTime = then;
+						if (count < param.amount) {
+							exportFrame(param);
+						} else {
+							// Call onComplete handler when finished:
+							if (param.onComplete) {
+								param.onComplete();
+							}
+						}
+					},
+					out = view.exportImage(uri, onComplete);
+				if (view.onFrame) {
+					view.onFrame({
+						delta: frameDuration,
+						time: frameDuration * count,
+						count: count
+					});
+				}
+			}
+		},
+		// TODO: support exporting of jpg
+		exportImage: function(uri, param) {
+			this.draw();
+			// TODO: is it necessary to resolve the path?
+			var out = fs.createWriteStream(path.resolve(__dirname, uri)),
+				stream = this._canvas.createPNGStream();
+			// Pipe the png stream to the write stream:
+			stream.pipe(out);
+			if (param && param.onComplete) {
+				out.on('close', param.onComplete);
+			}
+			if (param && param.onError) {
+				out.on('error', param.onError);
+			}
+			return out;
+		}
+	};
+/*#*/ } // options.server
 });
