@@ -1,7 +1,7 @@
-require('../../index.js');
-var scope = require('./Tadpoles');
-scope.view.exportFrames({
-	amount: 200,
+require('../../node.js/');
+var paper = require('./Tadpoles');
+paper.view.exportFrames({
+	amount: 400,
 	directory: __dirname,
 	onComplete: function() {
 		console.log('Done exporting.');
