@@ -594,6 +594,7 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 		return str;
 	}
 	return {
+		// DOCS: View#exportFrames(param);
 		exportFrames: function(param) {
 			param = Base.merge({
 				fps: 30,
@@ -647,6 +648,7 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 				}
 			}
 		},
+		// DOCS: View#exportImage(uri, callback);
 		exportImage: function(uri, callback) {
 			this.draw();
 			// TODO: is it necessary to resolve the path?
