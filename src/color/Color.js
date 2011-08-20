@@ -148,14 +148,15 @@ var Color = this.Color = Base.extend(new function() {
 				max = Math.max(r, g, b),
 				min = Math.min(r, g, b),
 				delta = max - min,
-				h = delta == 0 ? 0
+				achromatic = delta == 0,
+				h = achromatic ? 0
 					:   ( max == r ? (g - b) / delta + (g < b ? 6 : 0)
 						: max == g ? (b - r) / delta + 2
 						:            (r - g) / delta + 4) * 60, // max == b
 				l = (max + min) / 2,
-				s = l < 0.5
-					? delta / (max + min)
-					: delta / (2 - max - min);
+				s = achromatic ? 0 : l < 0.5
+						? delta / (max + min)
+						: delta / (2 - max - min);
 			return new HSLColor(h, s, l, color._alpha);
 		},
 

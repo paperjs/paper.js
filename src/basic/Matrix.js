@@ -422,7 +422,10 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * @return {Number} The determinant of this transform
+	 * The determinant of this transform.
+	 *
+	 * @type Number
+	 * @bean
 	 */
 	getDeterminant: function() {
 		return this._a * this._d - this._b * this._c;
@@ -439,11 +442,12 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * Returns the rotation angle of the matrix. If a non-uniform
-	 * rotation is applied as a result of a shear() or scale() command,
-	 * undefined is returned, as the resulting transformation cannot be
-	 * expressed in one rotation angle
-	 * @return {Number} The rotation angle of the matrix
+	 * The rotation angle of the matrix. If a non-uniform rotation is applied as
+	 * a result of a shear() or scale() command, undefined is returned, as the
+	 * resulting transformation cannot be expressed in one rotation angle.
+	 *
+	 * @type Number
+	 * @bean
 	 */
 	getRotation: function() {
 		var angle1 = -Math.atan2(this._b, this._d),
