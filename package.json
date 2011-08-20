@@ -1,0 +1,20 @@
+{
+	"name": "paper",
+	"description":  "Vector graphics scripting framework",
+	"version":  "0.2.1",
+	"contributors": [{
+		"name" : "Jürg Lehni",
+		"url" : "http://lehni.org"
+	}, {
+		"name" : "Jonathan Puckey",
+		"url" : "http://jonathanpuckey.com"
+	}],
+	"homepage": "http://paperjs.org",
+	"keywords": ["canvas", "graphic", "graphics", "vector", "paper.js"], 	
+	"repository": "git://github.com/paperjs/paper.js/",
+	"dependencies": {
+		"canvas": "0.7.0"
+	},
+	"engines": { "node": ">= 0.4.0 && < 0.6.0" },
+	"main": "./node.js/index.js"
+}

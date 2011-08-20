@@ -1,0 +1,280 @@
+paper.setup(new Canvas(1024, 768));
+
+// Adapted from Flocking Processing example by Daniel Schiffman:
+// http://processing.org/learning/topics/flocking.html
+
+project.currentStyle = {
+	strokeColor: 'white',
+	strokeWidth: 2,
+	strokeCap: 'round'
+};
+
+new Path.Rectangle(view.bounds).fillColor = 'black';
+
+var head = new Path.Oval([0, 0], [13, 8]);
+head.fillColor = 'white';
+head.strokeColor = null;
+var headSymbol = new Symbol(head);
+
+var size = view.size;
+
+var Boid = Base.extend({
+	initialize: function(position, maxSpeed, maxForce) {
+		var strength = Math.random() * 0.5;
+		this.acc = new Point(0, 0);
+		this.vel = Point.random() * 2 - 1;
+		this.loc = position.clone();
+		this.r = 30;
+		this.maxSpeed = maxSpeed + strength;
+		this.maxForce = maxForce + strength;
+		this.head = headSymbol.place();
+		this.path = new Path();
+		this.shortPath = new Path();
+		this.shortPath.strokeWidth = 4;
+		for (var i = 0, l = strength * 10 + 10; i < l; i++) {
+			this.path.add(this.loc);
+			if (i < 3)
+				this.shortPath.add(this.loc);
+		}
+
+		this.firstSegment = this.path.segments[0];
+		this.count = 0;
+		this.lastRot = 0;
+	},
+
+	run: function(boids) {
+		this.lastLoc = this.loc.clone();
+		if (!groupTogether) {
+			this.flock(boids);
+		} else {
+			this.align(boids);
+		}
+		this.borders();
+
+		this.update();
+		this.firstSegment.point = this.loc;
+		var lastPoint = this.firstSegment.point;
+		var lastVector = this.loc - this.lastLoc;
+		var segments = this.path.segments;
+		for (var i = 1, l = segments.length; i < l; i++) {
+			var segment = segments[i];
+			var vector = lastPoint - segment.point;
+			this.count += this.vel.length * 10;
+			var rotLength = Math.sin((this.count + i * 3) / 300);
+			var rotated = lastVector.rotate(90).normalize(rotLength);
+			lastPoint += lastVector.normalize(-5 - this.vel.length / 3);
+			segment.point = lastPoint;
+			segment.point += rotated;
+			lastVector = vector;
+		}
+		this.path.smooth();
+		this.head.position = this.loc;
+		var vector = this.loc - this.lastLoc;
+		var rot = vector.angle;
+		this.head.rotate(rot - this.lastRot);
+		this.lastRot = rot;
+
+		var shortSegments = this.shortPath.segments;
+		for (var i = 0; i < 3; i++)
+			shortSegments[i] = segments[i].clone();
+	},
+
+	// We accumulate a new acceleration each time based on three rules
+	flock: function(boids) {
+		var sep = this.separate(boids) * 3;
+		var ali = this.align(boids);
+		var coh = this.cohesion(boids);
+		this.acc += sep + ali + coh;
+	},
+
+	update: function() {
+		// Update velocity
+		this.vel += this.acc;
+		// Limit speed (vector#limit?)
+		this.vel.length = Math.min(this.maxSpeed, this.vel.length);
+		this.loc += this.vel;
+		// Reset acceleration to 0 each cycle
+		this.acc.length = 0;
+	},
+
+	seek: function(target) {
+		this.acc += this.steer(target, false);
+	},
+
+	arrive: function(target) {
+		this.acc += this.steer(target, true);
+	},
+
+	// A method that calculates a steering vector towards a target
+	// Takes a second argument, if true, it slows down as it approaches
+	// the target
+	steer: function(target, slowdown) {
+		var steer,
+			desired = target - this.loc,
+			d = desired.length;
+		if (d > 0) {
+			// Two options for desired vector magnitude
+			// (1 -- based on distance, 2 -- maxSpeed)
+			if (slowdown && d < 100) {
+				// // This damping is somewhat arbitrary:
+				desired.length = this.maxSpeed * (d / 100);
+			} else {
+				desired.length = this.maxSpeed;
+			}
+			steer = desired - this.vel;
+			steer.length = Math.min(this.maxForce, steer.length);
+		} else {
+			steer = new Point(0, 0);
+		}
+		return steer;
+	},
+
+	borders: function() {
+		var loc = this.loc;
+		var r = this.r;
+		var oldLoc = this.loc.clone();
+		var width = size.width;
+		var height = size.height;
+		if (loc.x < -r) loc.x = width + r;
+		if (loc.y < -r) loc.y = height + r;
+		if (loc.x > width + r) loc.x = -r;
+		if (loc.y > height + r) loc.y = -r;
+		var vector = this.loc - oldLoc;
+		if (!vector.isZero())
+			this.path.position += vector;
+	},
+
+	separate: function(boids) {
+		var desiredSeperation = 60;
+		var steer = new Point(0, 0);
+		var count = 0;
+		// For every boid in the system, check if it's too close
+		for (var i = 0, l = boids.length; i < l; i++) {
+			var other = boids[i];
+			var d = other.loc.getDistance(this.loc);
+			if (d > 0 && d < desiredSeperation) {
+				// Calculate vector pointing away from neighbor
+				var diff = this.loc - other.loc;
+				steer += diff.normalize(1 / d);
+				count++;
+			}
+		}
+		// Average -- divide by how many
+		if (count > 0)
+			steer /= count;
+		if (steer.length > 0) {
+			// Implement Reynolds: Steering = Desired - Velocity
+			steer.length = this.maxSpeed;
+			steer -= this.vel;
+			steer.length = Math.min(steer.length, this.maxForce);
+		}
+		return steer;
+	},
+
+	// Alignment
+	// For every nearby boid in the system, calculate the average velocity
+	align: function(boids) {
+		var neighborDist = 25;
+		var steer = new Point(0, 0);
+		var count = 0;
+		var nearest = 999;
+		var closestPoint;
+		for (var i = 0, l = boids.length; i < l; i++) {
+			var other = boids[i];
+			var d = this.loc.getDistance(other.loc);
+			if (d > 0 && d < nearest) {
+				closestPoint = other.loc;
+				nearest = d;
+			}
+			if (d > 0 && d < neighborDist) {
+				steer += other.vel;
+				count++;
+			}
+		}
+
+		if (count > 0)
+			steer /= count;
+		if (steer.length > 0) {
+			// Implement Reynolds: Steering = Desired - Velocity
+			steer.length = this.maxSpeed;
+			steer -= this.vel;
+			steer.length = Math.min(steer.length, this.maxForce);
+		}
+		return steer;
+	},
+
+	// Cohesion
+	// For the average location (i.e. center) of all nearby boids,
+	// calculate steering vector towards that location
+	cohesion: function(boids) {
+		var neighborDist = 100;
+		var sum = new Point(0, 0);
+		var count = 0;
+		for (var i = 0, l = boids.length; i < l; i++) {
+			var other = boids[i];
+			var d = this.loc.getDistance(other.loc);
+			if (d > 0 && d < neighborDist) {
+				sum += other.loc; // Add location
+				count++;
+			}
+		}
+		if (count > 0) {
+			sum /= count;
+			// Steer towards the location
+			return this.steer(sum, false);
+		}
+		return sum;
+	}
+});
+
+var heartPath = new Path([
+	[[514.6962890625, 624.703125], [7.0966796875, -26.3369140625], [-7.10205078125, -27.0244140625]],
+	[[484.29052734375, 548.6025390625], [13.16845703125, 23.7060546875], [-13.173828125, -23.70703125]],
+	[[407.84619140625, 438.14453125], [37.79296875, 49.935546875], [-27.71630859375, -36.6435546875]],
+	[[356.654296875, 368.400390625], [6.41015625, 9.8505859375], [-10.53759765625, -16.02978515625]],
+	[[333.80712890625, 324.25146484375], [4.69189453125, 13.3994140625], [-4.697265625, -13.39892578125]],
+	[[326.76416015625, 283.53857421875], [0, 13.74267578125], [0, -25.42431640625]],
+	[[352.18798828125, 219.634765625], [-16.95263671875, 17.17822265625], [16.94775390625, -17.1787109375]],
+	[[415.0615234375, 193.8671875], [-24.96826171875, 0], [25.19287109375, 0]],
+	[[480.68310546875, 220.66552734375], [-18.552734375, -17.86572265625], [13.96826171875, 13.28662109375]],
+	[[514.6962890625, 280.10302734375], [-8.70703125, -26.3369140625], [7.55859375, -25.88037109375]],
+	[[546.6484375, 221.0087890625], [-13.7431640625, 13.517578125], [19.0087890625, -18.32177734375]],
+	[[612.61328125, 193.5234375], [-24.9677734375, 0], [24.7373046875, 0]],
+	[[675.486328125, 219.119140625], [-17.177734375, -17.06005859375], [17.1787109375, 17.06591796875]],
+	[[701.2548828125, 280.10302734375], [0, -23.58837890625], [0, 20.61376953125]],
+	[[686.1376953125, 344.52197265625], [10.076171875, -22.33203125], [-10.08203125, 22.33203125]],
+	[[627.73046875, 432.3046875], [28.8603515625, -36.1875], [-37.5673828125, 47.412109375]],
+	[[545.6171875, 549.1171875], [17.1787109375, -30.458984375], [-13.517578125, 24.0498046875]]
+]);
+heartPath.closed = true;
+heartPath.position = view.center;
+heartPath.strokeColor = null;
+heartPath.scale(1.5);
+
+var groupTogether = false;
+var pathLength = heartPath.length;
+var mouseDown = false;
+var boids = [];
+
+// Add the boids:
+for (var i = 0; i < 300; i++) {
+	var position = view.center;
+	boids.push(new Boid(position, 10, 0.05));
+}
+
+function onFrame(event) {
+	for (var i = 0, l = boids.length; i < l; i++) {
+		if (groupTogether) {
+			var length = ((i + event.count / 30) % l) / l * pathLength;
+			var point = heartPath.getPointAt(length);
+			boids[i].arrive(point);
+		}
+		boids[i].run(boids);
+	}
+}
+
+// Reposition the heart path whenever the window is resized:
+function onResize(event) {
+	size = view.size;
+	heartPath.position = view.center;
+}

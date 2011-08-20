@@ -105,8 +105,11 @@ var paper = new function() {
 /*#*/ if (options.browser) {
 /*#*/ include('browser/DomElement.js');
 /*#*/ include('browser/DomEvent.js');
+/*#*/ } // options.browser
 
 /*#*/ include('ui/View.js');
+
+/*#*/ if (options.browser) {
 /*#*/ include('ui/Event.js');
 /*#*/ include('ui/KeyEvent.js');
 /*#*/ include('ui/Key.js');
@@ -121,7 +124,9 @@ var paper = new function() {
 
 /*#*/ include('core/PaperScript.js');
 
+/*#*/ if (options.browser) {
 /*#*/ include('core/initialize.js');
+/*#*/ } // options.browser
 
 /*#*/ if (options.version != 'dev') {
 // Finally inject the classes set on 'this' into the PaperScope class and create
