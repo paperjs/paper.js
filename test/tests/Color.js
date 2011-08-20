@@ -197,3 +197,9 @@ test('Color#convert', function() {
 		return converted.equals(color);
 	}, true);
 });
+
+test('Saturation from black rgb', function() {
+	equals(function() {
+		return new RGBColor(0, 0, 0).saturation == 0;
+	}, true);
+});
