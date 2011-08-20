@@ -600,9 +600,9 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 				prefix: 'frame-',
 				amount: 1
 			}, param);
-			if (!param.directory)
+			if (!param.directory) {
 				throw new Error('Missing param.directory');
-
+			}
 			var view = this,
 				count = 0,
 				frameDuration = 1 / param.fps,
@@ -614,31 +614,30 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 			function exportFrame(param) {
 				count++;
 				var filename = param.prefix + toPaddedString(count, 6) + '.png',
-					uri = param.directory + '/' + filename,
-					onComplete = function() {
-						// When the file has been closed, export the next fame:
-						var then = Date.now();
-						if (param.onProgress) {
-							param.onProgress({
-								count: count,
-								amount: param.amount,
-								percentage: Math.round(count / param.amount
-										* 10000) / 100,
-								time: then - startTime,
-								delta: then - lastTime
-							});
+					uri = param.directory + '/' + filename;
+				var out = view.exportImage(uri, function() {
+					// When the file has been closed, export the next fame:
+					var then = Date.now();
+					if (param.onProgress) {
+						param.onProgress({
+							count: count,
+							amount: param.amount,
+							percentage: Math.round(count / param.amount
+									* 10000) / 100,
+							time: then - startTime,
+							delta: then - lastTime
+						});
+					}
+					lastTime = then;
+					if (count < param.amount) {
+						exportFrame(param);
+					} else {
+						// Call onComplete handler when finished:
+						if (param.onComplete) {
+							param.onComplete();
 						}
-						lastTime = then;
-						if (count < param.amount) {
-							exportFrame(param);
-						} else {
-							// Call onComplete handler when finished:
-							if (param.onComplete) {
-								param.onComplete();
-							}
-						}
-					},
-					out = view.exportImage(uri, onComplete);
+					}
+				});
 				if (view.onFrame) {
 					view.onFrame({
 						delta: frameDuration,
@@ -648,19 +647,15 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 				}
 			}
 		},
-		// TODO: support exporting of jpg
-		exportImage: function(uri, param) {
+		exportImage: function(uri, callback) {
 			this.draw();
 			// TODO: is it necessary to resolve the path?
 			var out = fs.createWriteStream(path.resolve(__dirname, uri)),
 				stream = this._canvas.createPNGStream();
 			// Pipe the png stream to the write stream:
 			stream.pipe(out);
-			if (param && param.onComplete) {
-				out.on('close', param.onComplete);
-			}
-			if (param && param.onError) {
-				out.on('error', param.onError);
+			if (callback) {
+				out.on('close', callback);
 			}
 			return out;
 		}
