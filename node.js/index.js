@@ -2,6 +2,8 @@ var fs = require('fs'),
 	vm = require('vm'),
 	path = require('path');
 
+__dirname = path.resolve(__dirname, '../src/');
+
 // Create the context within which we will run the source files:
 var context = vm.createContext({
 	options: {
@@ -27,6 +29,7 @@ var context = vm.createContext({
 	}
 });
 
+// Load Paper.js library files:
 context.include('paper.js');
 
 context.Base.each(context, function(val, key) {
