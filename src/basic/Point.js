@@ -949,7 +949,12 @@ var LinkedPoint = Point.extend({
 	},
 
 	statics: {
-		create: function(owner, setter, x, y) {
+		create: function(owner, setter, x, y, dontLink) {
+			// Support creation of normal Points rather than LinkedPoints
+			// through an optional parameter that can be passed to the getters.
+			// See e.g. Rectangle#getPoint(true).
+			if (dontLink)
+				return Point.create(x, y);
 			var point = new LinkedPoint(LinkedPoint.dont);
 			point._x = x;
 			point._y = y;

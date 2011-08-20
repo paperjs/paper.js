@@ -1286,10 +1286,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// objects that were read from segments. This is because the SegmentPoint
 	// class overrides the plain x / y properties with getter / setters and
 	// stores the values in these private properties internally. To avoid
-	// of getter functions all the time we directly access these private
+	// calling of getter functions all the time we directly access these private
 	// properties here. The distinction between normal Point objects and
-	// SegmentPoint objects maybe seem a bit tedious but is worth the
-	// performance benefit.
+	// SegmentPoint objects maybe seem a bit tedious but is worth the benefit in
+	// performance.
 
 	function drawHandles(ctx, segments) {
 		for (var i = 0, l = segments.length; i < l; i++) {
@@ -2028,7 +2028,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				return this._handleBounds;
 			var coords = new Array(6),
 				stroke = arguments[1] / 2 || 0, // Stroke padding
-				join = arguments[2] / 2 || 0, // Join padding, for miterLimiet
+				join = arguments[2] / 2 || 0, // Join padding, for miterLimit
 				open = !this._closed,
 				x1 = Infinity,
 				x2 = -x1,
