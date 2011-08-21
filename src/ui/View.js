@@ -582,8 +582,7 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 /*#*/ } // options.browser
 }, new function() {
 /*#*/ if (options.server) {
-	var fs = require('fs'),
-		path = require('path');
+	var path = require('path');
 	// Utility function that converts a number to a string with
 	// x amount of padded 0 digits:
 	function toPaddedString(number, length) {

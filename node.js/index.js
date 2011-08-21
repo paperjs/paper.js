@@ -1,6 +1,7 @@
 var fs = require('fs'),
 	vm = require('vm'),
-	path = require('path');
+	path = require('path'),
+	Canvas = require('canvas');
 
 __dirname = path.resolve(__dirname, '../src/');
 
@@ -10,8 +11,10 @@ var context = vm.createContext({
 		server: true,
 		version: 'dev'
 	},
+	fs: fs,
 	// Node Canvas library: https://github.com/learnboost/node-canvas
-	Canvas: require('canvas'),
+	Canvas: Canvas,
+	Image: Canvas.Image,
 	// Copy over global variables:
     console: console,
 	require: require,
