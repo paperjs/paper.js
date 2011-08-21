@@ -39,7 +39,16 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			// If it's a string, get the element with this id first.
 			if (typeof object === 'string')
 				object = document.getElementById(object);
-/*#*/ } // options.browser
+/*#*/ } else if (options.server) {
+			// If we're running on the server and it's a string,
+			// load it from disk:
+			if (typeof object === 'string') {
+				// TODO: load images async
+				var data = fs.readFileSync(object);
+				object = new Image();
+				object.src = data;
+			}
+/*#*/ } // options.server
 			this.setImage(object);
 		}
 		this._matrix = new Matrix();
@@ -170,8 +179,11 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		if (this._canvas)
 			CanvasProvider.returnCanvas(this._canvas);
 		this._image = image;
-		// TODO: Cross browser compatible?
+/*#*/ if (options.browser) {
 		this._size = new Size(image.naturalWidth, image.naturalHeight);
+/*#*/ } else if (options.server) {
+		this._size = new Size(image.width, image.height);
+/*#*/ } // options.server
 		this._canvas = null;
 		this._context = null;
 		this._changed(Change.GEOMETRY);
