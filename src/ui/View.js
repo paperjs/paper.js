@@ -219,7 +219,7 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 	 */
 	getBounds: function() {
 		if (!this._bounds)
-			this._bounds = this._matrix._transformBounds(
+			this._bounds = this._getInverse()._transformBounds(
 					new Rectangle(new Point(), this._viewSize));
 		return this._bounds;
 	},
