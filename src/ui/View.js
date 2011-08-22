@@ -443,7 +443,9 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 		_views: {},
 		_id: 0
 	}
-}, new function() { // Injection scope for mouse handlers
+}, new function() {
+	// Injection scope for special code on browser (mouse events)
+	// and server (rendering)
 /*#*/ if (options.browser) {
 	var tool,
 		timer,
@@ -579,9 +581,7 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 			updateFocus: updateFocus
 		}
 	};
-/*#*/ } // options.browser
-}, new function() {
-/*#*/ if (options.server) {
+/*#*/ } else if (options.server) {
 	var path = require('path');
 	// Utility function that converts a number to a string with
 	// x amount of padded 0 digits:
