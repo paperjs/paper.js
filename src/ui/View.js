@@ -283,7 +283,6 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 	 * @return {Boolean} Whether the view is visible.
 	 */
 	isVisible: function() {
-		// TODO: Take bounds into account if it's not the full canvas?
 		return DomElement.isVisible(this._canvas);
 	},
 
