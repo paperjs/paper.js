@@ -161,6 +161,13 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 		return true;
 	},
 
+	_transform: function(matrix, flags) {
+		this._matrix.preConcatenate(matrix);
+		// Force recalculation of these values next time they are requested.
+		this._bounds = null;
+		this._inverse = null;
+	},
+
 	/**
 	 * The underlying native canvas element.
 	 *
@@ -282,13 +289,6 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 	 */
 	scrollBy: function(point) {
 		this._transform(new Matrix().translate(Point.read(arguments).negate()));
-	},
-
-	_transform: function(matrix, flags) {
-		this._matrix.preConcatenate(matrix);
-		// Force recalculation of these values next time they are requested.
-		this._bounds = null;
-		this._inverse = null;
 	},
 
 	/**
