@@ -161,11 +161,23 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 		return true;
 	},
 
+	_redraw: function() {
+		if (this._onFrameCallback) {
+			// If there's a _onFrameCallback, call it staight away,
+			// but without requesting another animation frame.
+			this._onFrameCallback(0, true);
+		} else {
+			// Otherwise simply redraw the view now
+			this.draw(true);
+		}
+	},
+
 	_transform: function(matrix, flags) {
 		this._matrix.preConcatenate(matrix);
 		// Force recalculation of these values next time they are requested.
 		this._bounds = null;
 		this._inverse = null;
+		this._redraw();
 	},
 
 	/**
@@ -208,14 +220,7 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 				delta: delta
 			});
 		}
-		if (this._onFrameCallback) {
-			// If there's a _onFrameCallback, call it staight away,
-			// but without requesting another animation frame.
-			this._onFrameCallback(0, true);
-		} else {
-			// Otherwise simply redraw the view now
-			this.draw(true);
-		}
+		this._redraw();
 	},
 
 	/**
