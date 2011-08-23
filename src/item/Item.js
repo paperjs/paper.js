@@ -51,6 +51,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		if (flags & ChangeFlag.APPEARANCE) {
 			this._project._needsRedraw();
 		}
+		// If this item is a symbol's definition, notify it of the change too
 		if (this._parentSymbol)
 			this._parentSymbol._changed(flags);
 	},
