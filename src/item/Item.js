@@ -49,8 +49,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 			delete this._position;
 		}
 		if (flags & ChangeFlag.APPEARANCE) {
-			if (this._project)
-				this._project._needsRedraw();
+			this._project._needsRedraw();
 		}
 		if (this._parentSymbol)
 			this._parentSymbol._changed(flags);
