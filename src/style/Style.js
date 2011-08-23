@@ -73,6 +73,9 @@ var Style = Item.extend({
 								if (value)
 									value._addOwner(this._item);
 							}
+							// Notify the item of the style change STYLE is
+							// always set, additional flags come from _flags,
+							// as used for STROKE:
 							if (this._item)
 								this._item._changed(flags[key] || Change.STYLE);
 						}
