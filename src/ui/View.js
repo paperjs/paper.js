@@ -162,13 +162,14 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 	},
 
 	_redraw: function() {
+		this._redrawNeeded = true;
 		if (this._onFrameCallback) {
 			// If there's a _onFrameCallback, call it staight away,
 			// but without requesting another animation frame.
 			this._onFrameCallback(0, true);
 		} else {
 			// Otherwise simply redraw the view now
-			this.draw(true);
+			this.draw();
 		}
 	},
 
