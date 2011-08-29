@@ -67,7 +67,7 @@ test('addChild(item)', function() {
 	},  1);
 });
 
-test('item.parent / item.isChild / item.isParent', function() {
+test('item.parent / item.isChild / item.isParent / item.isLayer', function() {
 	var project = paper.project;
 	var secondDoc = new Project();
 	var path = new Path();
@@ -75,10 +75,16 @@ test('item.parent / item.isChild / item.isParent', function() {
 	equals(function() {
 		return project.activeLayer.children.indexOf(path) != -1;
 	}, true);
+		equals(function() {
+		return path.getLayer() == project.activeLayer;
+	}, true);
 	secondDoc.activeLayer.addChild(path);
 	equals(function() {
 		return project.activeLayer.isChild(path);
 	}, false);
+	equals(function() {
+		return path.getLayer() == secondDoc.activeLayer;
+	}, true);
 	equals(function() {
 		return path.isParent(project.activeLayer);
 	}, false);
@@ -291,6 +297,33 @@ test('group.selected', function() {
 	equals(function() {
 		return path2.selected;
 	}, false);
+});
+
+test('Check item layer is recorded when added to layer', function() {
+	
+	// test insertAbove
+	var path = new Path();
+	var layer = new Layer();
+	layer.insertAbove(path);
+	equals(layer == path.getLayer(), true);
+
+	// test insert before
+	var path2 = new Path();
+	var layer2 = new Layer();
+	layer2.insertBelow(path2);
+	equals(layer2 == path2.getLayer(), true);
+
+	// test addChild
+	var parentPath = new Group();
+	var childPath = new Path();
+	var layer3 = new Layer();
+	layer3.insertAbove(parentPath);
+	parentPath.addChild(childPath);
+	equals(layer3 == childPath.getLayer(), true);
+
+	// test layer relationships
+	layer3.insertAbove(layer);
+	equals(layer.getLayer() == layer3, true);
 });
 
 test('Check parent children object for named item', function() {

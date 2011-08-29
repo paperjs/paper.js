@@ -32,6 +32,10 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project)
 			paper.project.activeLayer.addChild(this);
+		
+		if (!this._layer)
+			this._layer = this._project.activeLayer;
+
 		this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 	},
@@ -441,7 +445,26 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		}
 	},
 
-	// TODO: #getLayer()
+	/**
+	 * The layer that this item belongs to.
+	 * @type Layer
+	 * @bean
+	 *
+	 * @example
+	 * var path = new Path();
+	 *
+	 * // create a new layer 
+	 * var layer = new Layer();
+	 *
+	 * // add item to the layer
+	 * layer.insertAbove(path);
+	 *
+	 * // the path's layer should be the one you just created.
+	 * console.log(layer == path.getLayer());
+	 */
+	getLayer: function() {
+		return this._layer;
+	},
 
 	/**
 	 * The item that this item is contained within.
@@ -800,6 +823,11 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 			Base.splice(this._children, [item], index, 0);
 			item._parent = this;
 			item._setProject(this._project);
+			if (this._layer)
+				item._layer = this._layer;
+			else
+				item._layer = this;
+
 			if (item._name)
 				item.setName(item._name);
 			this._changed(Change.HIERARCHY);
@@ -1098,6 +1126,17 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 */
 	isParent: function(item) {
 		return this._parent == item;
+	},
+
+	/**
+	 * Checks to see whether the specified layer is the layer of the
+	 * item.
+	 *
+	 * @param {Layer} layer The layer to check against
+	 * @return {Boolean} {@true if it is the layer of the item}
+	 */
+	isLayer: function(layer) {
+		return this._layer == layer;
 	},
 
 	/**
