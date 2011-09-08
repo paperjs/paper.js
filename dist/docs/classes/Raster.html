@@ -1335,6 +1335,53 @@ already contained within a clipping group.</p>
 </div>
 
 	
+<div id="layer-member" class="member">
+<div id="layer-link" class="member-link">
+<a name="layer" href="#" onClick="return toggleMember('layer', false);"><tt><b>layer</b></tt></a>
+</div>
+<div id="layer-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('layer', false);"><tt><b>layer</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('layer', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The layer that this item belongs to.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Layer.html"><tt>Layer</tt></a>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var path = new Path();
+
+// create a new layer 
+var layer = new Layer();
+
+// add item to the layer
+layer.insertAbove(path);
+
+// the path's layer should be the one you just created.
+console.log(layer == path.getLayer());</pre>
+
+</div>
+
+</div>
+</div>
+
+	
 <div id="parent-member" class="member">
 <div id="parent-link" class="member-link">
 <a name="parent" href="#" onClick="return toggleMember('parent', false);"><tt><b>parent</b></tt></a>
@@ -3141,6 +3188,51 @@ the project.</p>
 	
 		<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is the parent of the item, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="islayer-layer-member" class="member">
+<div id="islayer-layer-link" class="member-link">
+<a name="islayer-layer" href="#" onClick="return toggleMember('islayer-layer', false);"><tt><b>isLayer</b>(layer)</tt></a>
+</div>
+<div id="islayer-layer-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('islayer-layer', false);"><tt><b>isLayer</b>(layer)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('islayer-layer', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks to see whether the specified layer is the layer of the
+item.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>layer:</tt> 
+<a href="../classes/Layer.html"><tt>Layer</tt></a>
+&mdash;&nbsp;The layer to check against
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is the layer of the item, <tt>false</tt> otherwise
 </li>
 	
 	</ul>

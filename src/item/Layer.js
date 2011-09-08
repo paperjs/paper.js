@@ -91,6 +91,10 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 }, new function () {
 	function insert(above) {
 		return function(item) {
+
+			// Set item's layer to this.
+			item._layer = this;
+
 			// If the item is a layer and contained within Project#layers, use
 			// our own version of move().
 			if (item instanceof Layer && !item._parent
