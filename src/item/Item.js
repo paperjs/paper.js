@@ -441,7 +441,20 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		}
 	},
 
-	// TODO: #getLayer()
+	/**
+	 * The layer that this item is contained within.
+	 *
+	 * @type Layer
+	 * @bean
+	 */
+	getLayer: function() {
+		var parent = this;
+		while (parent = parent._parent) {
+			if (parent instanceof Layer)
+				return parent;
+		}
+		return null;
+	},
 
 	/**
 	 * The item that this item is contained within.
@@ -680,8 +693,6 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		raster.setBounds(bounds);
 		return raster;
 	},
-
-
 
 	/**
 	 * Perform a hit test on the item (and its children, if it is a

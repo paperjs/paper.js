@@ -67,7 +67,7 @@ test('addChild(item)', function() {
 	},  1);
 });
 
-test('item.parent / item.isChild / item.isParent', function() {
+test('item.parent / item.isChild / item.isParent / item.layer', function() {
 	var project = paper.project;
 	var secondDoc = new Project();
 	var path = new Path();
@@ -75,10 +75,16 @@ test('item.parent / item.isChild / item.isParent', function() {
 	equals(function() {
 		return project.activeLayer.children.indexOf(path) != -1;
 	}, true);
+		equals(function() {
+		return path.layer == project.activeLayer;
+	}, true);
 	secondDoc.activeLayer.addChild(path);
 	equals(function() {
 		return project.activeLayer.isChild(path);
 	}, false);
+	equals(function() {
+		return path.layer == secondDoc.activeLayer;
+	}, true);
 	equals(function() {
 		return path.isParent(project.activeLayer);
 	}, false);
