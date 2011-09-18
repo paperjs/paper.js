@@ -1313,8 +1313,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				ctx.rect(point._x - 1, point._y - 1, 2, 2);
 				ctx.fillStyle = '#ffffff';
 				ctx.fill();
-				ctx.restore();
 			}
+			ctx.restore();
 		}
 	}
 
