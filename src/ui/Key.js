@@ -93,15 +93,12 @@ var Key = this.Key = new function() {
 			// a keypress, but space would).
 			var key = keys[code], name;
 			if (key) {
-				// Do not fire handleKey for modifiers, but for other keys such
-				// ass arrows, delete, backspace, etc.
-				if (modifiers[name = Base.camelize(key)] !== undefined) {
+				// Detect modifiers and mark them as pressed
+				if ((name = Base.camelize(key)) in modifiers)
 					modifiers[name] = true;
-				} else {
-					// No char code for special keys, but mark as pressed
-					charCodeMap[code] = 0;
-					handleKey(true, code, null, event);
-				}
+				// No char code for special keys, but mark as pressed
+				charCodeMap[code] = 0;
+				handleKey(true, code, null, event);
 				// Do not set downCode as we handled it already. Space would
 				// be handled twice otherwise, once here, once in keypress.
 			} else {
@@ -112,8 +109,8 @@ var Key = this.Key = new function() {
 		keypress: function(event) {
 			if (downCode != null) {
 				var code = event.which || event.keyCode;
-				// Link the downCode from keydown with the code form keypress, so
-				// keyup can retrieve that code again.
+				// Link the downCode from keydown with the code form keypress,
+				// so keyup can retrieve that code again.
 				charCodeMap[downCode] = code;
 				handleKey(true, downCode, code, event);
 				downCode = null;
@@ -123,9 +120,10 @@ var Key = this.Key = new function() {
 		keyup: function(event) {
 			var code = event.which || event.keyCode,
 				key = keys[code], name;
-			if (key && modifiers[name = Base.camelize(key)] !== undefined) {
+			// Detect modifiers and mark them as released
+			if (key && (name = Base.camelize(key)) in modifiers)
 				modifiers[name] = false;
-			} else if (charCodeMap[code] != null) {
+			if (charCodeMap[code] != null) {
 				handleKey(false, code, charCodeMap[code], event);
 				delete charCodeMap[code];
 			}
