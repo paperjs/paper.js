@@ -40,7 +40,9 @@ var Key = this.Key = new function() {
 		39: 'right',
 		40: 'down',
 		46: 'delete',
-		91: 'command'
+		91: 'command',
+		93: 'command', // WebKit right command button
+		224: 'command'  // Gecko command button
 	},
 
 	// Use Base.merge to convert into a Base object, for #toString()
