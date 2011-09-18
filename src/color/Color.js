@@ -621,6 +621,15 @@ var Color = this.Color = Base.extend(new function() {
 	 * @type Number
 	 */
 
+	/**
+	 * {@grouptitle HSL Components}
+	 *
+	 * The lightness of the color as a value between {@code 0} and {@code 1}.
+	 *
+	 * @name Color#lightness
+	 * @property
+	 * @type Number
+	 */
 });
 
 /**
@@ -647,6 +656,15 @@ var GrayColor = this.GrayColor = Color.extend(/** @lends GrayColor# */{
 	 *
 	 * // Create a GrayColor with 50% gray:
 	 * circle.fillColor = new GrayColor(0.5);
+	 */
+
+	/**
+	 * The amount of gray in the color as a value between {@code 0} and
+	 * {@code 1}.
+	 *
+	 * @name GrayColor#gray
+	 * @property
+	 * @type Number
 	 */
 
 	_colorType: 'gray'
@@ -680,6 +698,61 @@ var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
 	 *
 	 * // 100% red, 0% blue, 50% blue:
 	 * circle.fillColor = new RGBColor(1, 0, 0.5);
+	 */
+
+	/**
+	 * The amount of red in the color as a value between {@code 0} and
+	 * {@code 1}.
+	 *
+	 * @name RGBColor#red
+	 * @property
+	 * @type Number
+	 *
+	 * @example {@paperscript}
+	 * // Changing the amount of red in a color:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * circle.fillColor = 'blue';
+	 *
+	 * // Blue + red = purple:
+	 * circle.fillColor.red = 1;
+	 */
+
+	/**
+	 * The amount of green in the color as a value between {@code 0} and
+	 * {@code 1}.
+	 *
+	 * @name RGBColor#green
+	 * @property
+	 * @type Number
+	 *
+	 * @example {@paperscript}
+	 * // Changing the amount of green in a color:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 *
+	 * // First we set the fill color to red:
+	 * circle.fillColor = 'red';
+	 *
+	 * // Red + green = yellow:
+	 * circle.fillColor.green = 1;
+	 */
+
+	/**
+	 * The amount of blue in the color as a value between {@code 0} and
+	 * {@code 1}.
+	 *
+	 * @name RGBColor#blue
+	 * @property
+	 * @type Number
+	 *
+	 * @example {@paperscript}
+	 * // Changing the amount of blue in a color:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 *
+	 * // First we set the fill color to red:
+	 * circle.fillColor = 'red';
+	 *
+	 * // Red + blue = purple:
+	 * circle.fillColor.blue = 1;
 	 */
 
 	_colorType: 'rgb'
@@ -716,6 +789,49 @@ var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
 	 * circle.fillColor = new HSBColor(90, 1, 1);
 	 */
 
+	/**
+	 * The hue of the color as a value in degrees between {@code 0} and
+	 * {@code 360}.
+	 *
+	 * @name HSBColor#hue
+	 * @property
+	 * @type Number
+	 *
+	 * @example {@paperscript}
+	 * // Changing the hue of a color:
+	 * var circle = new Path.Circle(new Point(80, 50), 30);
+	 * circle.fillColor = 'red';
+	 * circle.fillColor.hue += 30;
+	 *
+	 * @example {@paperscript}
+	 * // Hue cycling:
+	 *
+	 * // Create a rectangle shaped path, using the dimensions
+	 * // of the view:
+	 * var path = new Path.Rectangle(view.bounds);
+	 * path.fillColor = 'red';
+	 *
+	 * function onFrame(event) {
+	 * 	path.fillColor.hue += 0.5;
+	 * }
+	 */
+
+	/**
+	 * The saturation of the color as a value between {@code 0} and {@code 1}.
+	 *
+	 * @name HSBColor#saturation
+	 * @property
+	 * @type Number
+	 */
+
+	/**
+	 * The brightness of the color as a value between {@code 0} and {@code 1}.
+	 *
+	 * @name HSBColor#brightness
+	 * @property
+	 * @type Number
+	 */
+
 	_colorType: 'hsb'
 });
 
@@ -749,6 +865,31 @@ var HSLColor = this.HSLColor = Color.extend(/** @lends HSLColor# */{
 	 * // Create an HSLColor with a hue of 90 degrees, a saturation
 	 * // 100% and a lightness of 50%:
 	 * circle.fillColor = new HSLColor(90, 1, 0.5);
+	 */
+
+	/**
+	 * The hue of the color as a value in degrees between {@code 0} and
+	 * {@code 360}.
+	 *
+	 * @name HSLColor#hue
+	 * @property
+	 * @type Number
+	 */
+
+	/**
+	 * The saturation of the color as a value between {@code 0} and {@code 1}.
+	 *
+	 * @name HSLColor#saturation
+	 * @property
+	 * @type Number
+	 */
+
+	/**
+	 * The lightness of the color as a value between {@code 0} and {@code 1}.
+	 *
+	 * @name HSLColor#lightness
+	 * @property
+	 * @type Number
 	 */
 
 	_colorType: 'hsl'
