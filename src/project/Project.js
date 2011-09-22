@@ -55,6 +55,9 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		this.layers = [];
 		this.symbols = [];
 		this.activeLayer = new Layer();
+		// Change tracking, not in use for now. Activate once required:
+		// this._changes = [];
+		// this._changesById = {};
 	},
 
 	_needsRedraw: function() {
