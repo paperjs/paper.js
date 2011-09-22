@@ -54,6 +54,19 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		// If this item is a symbol's definition, notify it of the change too
 		if (this._parentSymbol)
 			this._parentSymbol._changed(flags);
+		// Have project keep track of changed items, so they can be iterated.
+		// This can be used for example to update the SVG tree. Needs to be
+		// activated in Project
+		if (this._project._changes) {
+			var entry = this._project._changesById[this._id];
+			if (entry) {
+				entry.flags |= flags;
+			} else {
+				entry = { item: this, flags: flags };
+				this._project._changesById[this._id] = entry;
+				this._project._changes.push(entry);
+			}
+		}
 	},
 
 	/**
