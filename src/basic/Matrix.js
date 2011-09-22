@@ -422,13 +422,14 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * The determinant of this transform.
-	 *
-	 * @type Number
-	 * @bean
+	 * Returns the determinant of this transform, but only if the matrix is
+	 * reversible, null otherwise.
 	 */
-	getDeterminant: function() {
-		return this._a * this._d - this._b * this._c;
+	_getDeterminant: function() {
+		var det = this._a * this._d - this._b * this._c;
+		return isFinite(det) && Math.abs(det) > Numerical.EPSILON
+				&& isFinite(this._tx) && isFinite(this._ty)
+				? det : null;
 	},
 
 	getTranslation: function() {
@@ -471,9 +472,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Boolean} Whether the transform is invertible
 	 */
 	isInvertible: function() {
-		var det = this.getDeterminant();
-		return isFinite(det) && det != 0 && isFinite(this._tx)
-				&& isFinite(this._ty);
+		return !!this._getDeterminant();
 	},
 
 	/**
@@ -483,7 +482,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Boolean} Whether the matrix is singular
 	 */
 	isSingular: function() {
-		return !this.isInvertible();
+		return !this._getDeterminant();
 	},
 
 	/**
@@ -495,18 +494,14 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 *         singular
 	 */
 	createInverse: function() {
-		var det = this.getDeterminant();
-		if (isFinite(det) && det != 0 && isFinite(this._tx)
-				&& isFinite(this._ty)) {
-			return Matrix.create(
+		var det = this._getDeterminant();
+		return det && Matrix.create(
 				this._d / det,
 				-this._c / det,
 				-this._b / det,
 				this._a / det,
 				(this._b * this._ty - this._d * this._tx) / det,
 				(this._c * this._tx - this._a * this._ty) / det);
-		}
-		return null;
 	},
 
 	createShiftless: function() {
