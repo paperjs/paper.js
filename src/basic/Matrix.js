@@ -123,7 +123,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Point} [center] The center for the scaling transformation
 	 * @return {Matrix} This affine transform
 	 */
-	scale: function(hor, ver /* | scale */, center) {
+	scale: function(hor, ver, center) {
 		if (arguments.length < 2 || typeof ver === 'object') {
 			// hor is the single scale parameter, representing both hor and ver
 			// Read center first from argument 1, then set ver = hor (thus
