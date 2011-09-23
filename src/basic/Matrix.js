@@ -123,7 +123,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Point} [center] The center for the scaling transformation
 	 * @return {Matrix} This affine transform
 	 */
-	scale: function(hor, ver, center) {
+	scale: function(/* scale | */ hor, ver, center) {
 		if (arguments.length < 2 || typeof ver === 'object') {
 			// hor is the single scale parameter, representing both hor and ver
 			// Read center first from argument 1, then set ver = hor (thus
@@ -214,7 +214,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Point} [center] The center for the shear transformation
 	 * @return {Matrix} This affine transform
 	 */
-	shear: function(hor, ver, center) {
+	shear: function(/* point | */ hor, ver, center) {
 		// See #scale() for explanation of this:
 		if (arguments.length < 2 || typeof ver === 'object') {
 			center = Point.read(arguments, 1);
