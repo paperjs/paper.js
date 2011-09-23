@@ -342,11 +342,19 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * Transforms a point or an array of coordinates by this matrix and returns
-	 * the result. If an array is transformed, the the result is stored into a
-	 * destination array.
+	 * Transforms a point and returns the result.
 	 *
+	 * @name Matrix#transform
+	 * @function
 	 * @param {Point} point The point to be transformed
+	 * @return {Point} The transformed point
+	 */
+	/**
+	 * Transforms an array of coordinates by this matrix and stores the results
+	 * into the destination array, which is also returned.
+	 *
+	 * @name Matrix#transform
+	 * @function
 	 * @param {Number[]} src The array containing the source points
 	 *        as x, y value pairs
 	 * @param {Number} srcOff The offset to the first point to be transformed
@@ -355,6 +363,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Number} dstOff The offset of the location of the first
 	 *        transformed point in the destination array
 	 * @param {Number} numPts The number of points to tranform
+	 * @return {Number[]} The dst array, containing the transformed coordinates.
 	 */
 	transform: function(/* point | */ src, srcOff, dst, dstOff, numPts) {
 		return arguments.length < 5
