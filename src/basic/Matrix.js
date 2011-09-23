@@ -431,6 +431,15 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
+	 * Inverse transforms a point and returns the result.
+	 *
+	 * @param {Point} point The point to be transformed
+	 */
+	inverseTransform: function(point) {
+		return this._inverseTransform(Point.read(arguments));
+	},
+
+	/**
 	 * Returns the determinant of this transform, but only if the matrix is
 	 * reversible, null otherwise.
 	 */
@@ -439,6 +448,21 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		return isFinite(det) && Math.abs(det) > Numerical.EPSILON
 				&& isFinite(this._tx) && isFinite(this._ty)
 				? det : null;
+	},
+
+	_inverseTransform: function(point, dest, dontNotify) {
+		var det = this._getDeterminant();
+		if (!det)
+			return null;
+		var x = point.x - this._tx,
+			y = point.y - this._ty;
+		if (!dest)
+			dest = new Point(Point.dont);
+		return dest.set(
+			(x * this._d - y * this._b) / det,
+			(y * this._a - x * this._c) / det,
+			dontNotify
+		);
 	},
 
 	getTranslation: function() {
