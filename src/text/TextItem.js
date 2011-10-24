@@ -111,5 +111,13 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 
 	setParagraphStyle: function(style) {
 		this._paragraphStyle.initialize(style);
+	},
+	
+	_getFontString: function(){
+		if (this.characterStyle.fontString !== undefined) {
+			return this.characterStyle.fontString;
+		} else {
+			return this.getFontSize() + 'pt ' + this.getFont();
+		}
 	}
 });

@@ -75,6 +75,33 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	setPosition: function(point) {
 		this.setPoint.apply(this, arguments);
 	},
+	
+	_getBounds: function(getter, cacheName, args){
+		if (!this._content){
+			return new Rectangle();
+		}
+		// Create an in-memory canvas on which to do the measuring
+		var x = this._point.x,
+		    y = this._point.y,
+		    canvas = this.project._scope.view.canvas,
+		    ctx = canvas.getContext('2d'),
+		    justification = this.getJustification();
+		// Measure the real width of the text, but the height still must be undefined
+		// (since there is no sane way to measure text height with canvas)
+		ctx.save();
+		ctx.font = this._getFontString();
+		this._matrix.applyToContext(ctx);
+		var width = ctx.measureText(this._content).width;
+		// Adjust for different justifications
+		if (justification === 'right') {
+			x = Math.round(x - width);
+		} else if (justification === 'center') {
+			x = Math.round(x - (width / 2));
+		}
+		var bounds = Rectangle.create(x, y, width, undefined);
+		ctx.restore();
+		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
+	},
 
 	_transform: function(matrix, flags) {
 		this._matrix.preConcatenate(matrix);
@@ -86,8 +113,9 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		if (!this._content)
 			return;
 		ctx.save();
-		ctx.font = this.getFontSize() + 'pt ' + this.getFont();
+		ctx.font = this._getFontString();
 		ctx.textAlign = this.getJustification();
+		ctx.textBaseline = 'middle';
 		this._matrix.applyToContext(ctx);
 
 		var fillColor = this.getFillColor();
