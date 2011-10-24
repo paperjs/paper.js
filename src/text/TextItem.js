@@ -114,8 +114,9 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	},
 	
 	_getFontString: function(){
-		if (this.characterStyle.fontString !== undefined) {
-			return this.characterStyle.fontString;
+		var fontString = this.getFontString();
+		if (fontString !== undefined) {
+			return fontString;
 		} else {
 			return this.getFontSize() + 'pt ' + this.getFont();
 		}

@@ -77,8 +77,12 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	},
 	
 	_getBounds: function(getter, cacheName, args){
+		// Return from the cache if we can
+		if (this[cacheName])
+			return this[cacheName];
+		// If there is no text, there are no bounds
 		if (!this._content){
-			return new Rectangle();
+			return this[cacheName] = new Rectangle();
 		}
 		// Create an in-memory canvas on which to do the measuring
 		var x = this._point.x,
@@ -99,6 +103,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 			x = Math.round(x - (width / 2));
 		}
 		var bounds = Rectangle.create(x, y, width, undefined);
+		this[cacheName] = bounds;
 		ctx.restore();
 		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
 	},
