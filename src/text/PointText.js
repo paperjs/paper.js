@@ -131,7 +131,6 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		// Draw unless we already have a cache to use
 		if (this._cache === undefined) {
 			if (this.cache === true) {
-				console.log('Cache miss');
 				var originalCtx = ctx,
 			        cacheCanvas = ctx.canvas.cloneNode(true),
 			        ctx = cacheCanvas.getContext('2d');
@@ -161,8 +160,6 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 				this._cache = cacheCanvas;
 				ctx = originalCtx;
 			}
-		} else {
-			console.log('Cache hit');
 		}
 	
 		// If the cache was used (either generated here, or already prepared previously), we need to
