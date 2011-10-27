@@ -28,6 +28,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * Creates a point text item
 	 *
 	 * @param {Point} point the position where the text will start
+	 * @param {Boolean} cache whether the text should be cached; improves redraw performance significantly
 	 *
 	 * @example
 	 * var text = new PointText(new Point(50, 100));
@@ -35,10 +36,19 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * text.fillColor = 'black';
 	 * text.content = 'The contents of the point text';
 	 */
-	initialize: function(point) {
+	initialize: function(point, cache) {
 		this.base();
 		this._point = Point.read(arguments).clone();
 		this._matrix = new Matrix().translate(this._point);
+		this.cache = (cache === true);
+	},
+	
+	_changed: function(flags) {
+		// Don't use base() for reasons of performance.
+		Item.prototype._changed.call(this, flags);
+		if (flags & (Change.CONTENT | Change.ATTRIBUTE)) {
+			delete this._cache;
+		}
 	},
 
 	clone: function() {
@@ -117,24 +127,48 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	draw: function(ctx) {
 		if (!this._content)
 			return;
-		ctx.save();
-		ctx.font = this._getFontString();
-		ctx.textAlign = this.getJustification();
-		ctx.textBaseline = 'middle';
-		this._matrix.applyToContext(ctx);
+		
+		// Draw unless we already have a cache to use
+		if (this._cache === undefined) {
+			if (this.cache === true) {
+				console.log('Cache miss');
+				var originalCtx = ctx,
+			        cacheCanvas = ctx.canvas.cloneNode(true),
+			        ctx = cacheCanvas.getContext('2d');
+			}
+			
+			ctx.save();
+			ctx.font = this._getFontString();
+			ctx.textAlign = this.getJustification();
+			ctx.textBaseline = 'middle';
+			this._matrix.applyToContext(ctx);
 
-		var fillColor = this.getFillColor();
-		var strokeColor = this.getStrokeColor();
-		if (!fillColor || !strokeColor)
-			ctx.globalAlpha = this._opacity;
-		if (fillColor) {
-			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-			ctx.fillText(this._content, 0, 0);
+			var fillColor = this.getFillColor();
+			var strokeColor = this.getStrokeColor();
+			if (!fillColor || !strokeColor)
+				ctx.globalAlpha = this._opacity;
+			if (fillColor) {
+				ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+				ctx.fillText(this._content, 0, 0);
+			}
+			if (strokeColor) {
+				ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+				ctx.strokeText(this._content, 0, 0);
+			}
+			ctx.restore();
+			
+			if (this.cache === true) {
+				this._cache = cacheCanvas;
+				ctx = originalCtx;
+			}
+		} else {
+			console.log('Cache hit');
 		}
-		if (strokeColor) {
-			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-			ctx.strokeText(this._content, 0, 0);
+	
+		// If the cache was used (either generated here, or already prepared previously), we need to
+		// draw it to the actual canvas
+		if (this._cache !== undefined) {
+			ctx.drawImage(this._cache, 0, 0);
 		}
-		ctx.restore();
 	}
 });
