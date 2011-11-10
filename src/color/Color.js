@@ -19,10 +19,10 @@
  * @name Color
  *
  * @class All properties and functions that expect color values accept
- * instances of the different color classes such as {@link RGBColor},
- * {@link HSBColor} and {@link GrayColor}, and also accept named colors
+ * instances of the different color classes such as {@link RgbColor},
+ * {@link HsbColor} and {@link GrayColor}, and also accept named colors
  * and hex values as strings which are then converted to instances of
- * {@link RGBColor} internally.
+ * {@link RgbColor} internally.
  *
  * @classexample {@paperscript}
  * // Named color values:
@@ -32,7 +32,7 @@
  * var circle = new Path.Circle(new Point(80, 50), 30);
  *
  * // Pass a color name to the fillColor property, which is internally
- * // converted to an RGBColor.
+ * // converted to an RgbColor.
  * circle.fillColor = 'green';
  *
  * @classexample {@paperscript}
@@ -43,7 +43,7 @@
  * var circle = new Path.Circle(new Point(80, 50), 30);
  *
  * // Pass a hex string to the fillColor property, which is internally
- * // converted to an RGBColor.
+ * // converted to an RgbColor.
  * circle.fillColor = '#ff0000';
  */
 var Color = this.Color = Base.extend(new function() {
@@ -58,7 +58,7 @@ var Color = this.Color = Base.extend(new function() {
 	var colorCache = {},
 		colorContext;
 
-	function nameToRGBColor(name) {
+	function nameToRgbColor(name) {
 		var color = colorCache[name];
 		if (color)
 			return color.clone();
@@ -79,10 +79,10 @@ var Color = this.Color = Base.extend(new function() {
 		colorContext.fillRect(0, 0, 1, 1);
 		var data = colorContext.getImageData(0, 0, 1, 1).data,
 			rgb = [data[0] / 255, data[1] / 255, data[2] / 255];
-		return (colorCache[name] = RGBColor.read(rgb)).clone();
+		return (colorCache[name] = RgbColor.read(rgb)).clone();
 	}
 
-	function hexToRGBColor(string) {
+	function hexToRgbColor(string) {
 		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
 		if (hex.length >= 4) {
 			var rgb = new Array(3);
@@ -91,7 +91,7 @@ var Color = this.Color = Base.extend(new function() {
 				rgb[i] = parseInt(channel.length == 1
 						? channel + channel : channel, 16) / 255;
 			}
-			return RGBColor.read(rgb);
+			return RgbColor.read(rgb);
 		}
 	}
 
@@ -120,7 +120,7 @@ var Color = this.Color = Base.extend(new function() {
 						:            (r - g) / delta + 4) * 60, // max == b
 				s = max == 0 ? 0 : delta / max,
 				v = max; // = brightness, also called value
-			return new HSBColor(h, s, v, color._alpha);
+			return new HsbColor(h, s, v, color._alpha);
 		},
 
 		'hsb-rgb': function(color) {
@@ -136,7 +136,7 @@ var Color = this.Color = Base.extend(new function() {
 					b * (1 - s * f),		// q, index 2
 					b * (1 - s * (1 - f))	// t, index 3
 				];
-			return new RGBColor(v[i[0]], v[i[1]], v[i[2]], color._alpha);
+			return new RgbColor(v[i[0]], v[i[1]], v[i[2]], color._alpha);
 		},
 
 		// HSL code is based on:
@@ -157,7 +157,7 @@ var Color = this.Color = Base.extend(new function() {
 				s = achromatic ? 0 : l < 0.5
 						? delta / (max + min)
 						: delta / (2 - max - min);
-			return new HSLColor(h, s, l, color._alpha);
+			return new HslColor(h, s, l, color._alpha);
 		},
 
 		'hsl-rgb': function(color) {
@@ -166,7 +166,7 @@ var Color = this.Color = Base.extend(new function() {
 				l = color._lightness,
 				t1, t2, c;
 			if (s == 0)
-				return new RGBColor(l, l, l, color._alpha);
+				return new RgbColor(l, l, l, color._alpha);
 			var t3s = [ h + 1 / 3, h, h - 1 / 3 ],
 				t2 = l < 0.5 ? l * (1 + s) : l + s - l * s,
 				t1 = 2 * l - t2,
@@ -183,7 +183,7 @@ var Color = this.Color = Base.extend(new function() {
 							? t1 + (t2 - t1) * ((2 / 3) - t3) * 6
 							: t1;
 			}
-			return new RGBColor(c[0], c[1], c[2], color._alpha);
+			return new RgbColor(c[0], c[1], c[2], color._alpha);
 		},
 
 		'rgb-gray': function(color) {
@@ -196,15 +196,15 @@ var Color = this.Color = Base.extend(new function() {
 
 		'gray-rgb': function(color) {
 			var comp = 1 - color._gray;
-			return new RGBColor(comp, comp, comp, color._alpha);
+			return new RgbColor(comp, comp, comp, color._alpha);
 		},
 
 		'gray-hsb': function(color) {
-			return new HSBColor(0, 0, 1 - color._gray, color._alpha);
+			return new HsbColor(0, 0, 1 - color._gray, color._alpha);
 		},
 
 		'gray-hsl': function(color) {
-			return new HSLColor(0, 0, 1 - color._gray, color._alpha);
+			return new HslColor(0, 0, 1 - color._gray, color._alpha);
 		}
 	};
 
@@ -219,16 +219,16 @@ var Color = this.Color = Base.extend(new function() {
 					// Called on the abstract Color class. Guess color type
 					// from arg
 					return arg.red !== undefined
-						? new RGBColor(arg.red, arg.green, arg.blue, arg.alpha)
+						? new RgbColor(arg.red, arg.green, arg.blue, arg.alpha)
 						: arg.gray !== undefined
 						? new GrayColor(arg.gray, arg.alpha)
 						: arg.lightness !== undefined
-						? new HSLColor(arg.hue, arg.saturation, arg.lightness,
+						? new HslColor(arg.hue, arg.saturation, arg.lightness,
 								arg.alpha)
 						: arg.hue !== undefined
-						? new HSBColor(arg.hue, arg.saturation, arg.brightness,
+						? new HsbColor(arg.hue, arg.saturation, arg.brightness,
 								arg.alpha)
-						: new RGBColor(); // Fallback
+						: new RgbColor(); // Fallback
 				} else {
 					// Called on a subclass instance. Return the converted
 					// color.
@@ -236,8 +236,8 @@ var Color = this.Color = Base.extend(new function() {
 				}
 			} else if (typeof arg === 'string') {
 				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
-						? hexToRGBColor(arg)
-						: nameToRGBColor(arg);
+						? hexToRgbColor(arg)
+						: nameToRgbColor(arg);
 				return type
 						? rgbColor.convert(type)
 						: rgbColor;
@@ -248,9 +248,9 @@ var Color = this.Color = Base.extend(new function() {
 					// Called on the abstract Color class. Guess color type
 					// from arg
 					//if (components.length >= 4)
-					//	return new CMYKColor(components);
+					//	return new CmykColor(components);
 					if (components.length >= 3)
-						return new RGBColor(components);
+						return new RgbColor(components);
 					return new GrayColor(components);
 				} else {
 					// Called on a subclass instance. Just copy over
@@ -268,7 +268,7 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		/**
-		 * @return {RGBColor|GrayColor|HSBColor} a copy of the color object
+		 * @return {RgbColor|GrayColor|HsbColor} a copy of the color object
 		 */
 		clone: function() {
 			var ctor = this.constructor,
@@ -395,7 +395,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * @bean
 	 *
 	 * @example
-	 * var color = new RGBColor(1, 0, 0);
+	 * var color = new RgbColor(1, 0, 0);
 	 * console.log(color.type); // 'rgb'
 	 */
 	getType: function() {
@@ -671,15 +671,15 @@ var GrayColor = this.GrayColor = Color.extend(/** @lends GrayColor# */{
 });
 
 /**
- * @name RGBColor
- * @class An RGBColor object is used to represent any RGB color value.
+ * @name RgbColor
+ * @class An RgbColor object is used to represent any RGB color value.
  * @extends Color
  */
-var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
+var RgbColor = this.RgbColor = this.RGBColor = Color.extend(/** @lends RgbColor# */{
 	/**
-	 * Creates an RGBColor object
+	 * Creates an RgbColor object
 	 *
-	 * @name RGBColor#initialize
+	 * @name RgbColor#initialize
 	 * @param {Number} red the amount of red in the color as a value
 	 * between {@code 0} and {@code 1}
 	 * @param {Number} green the amount of green in the color as a value
@@ -690,21 +690,21 @@ var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
 	 * {@code 0} and {@code 1}
 	 *
 	 * @example {@paperscript}
-	 * // Creating an RGBColor:
+	 * // Creating an RgbColor:
 	 *
 	 * // Create a circle shaped path at {x: 80, y: 50}
 	 * // with a radius of 30:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
 	 *
 	 * // 100% red, 0% blue, 50% blue:
-	 * circle.fillColor = new RGBColor(1, 0, 0.5);
+	 * circle.fillColor = new RgbColor(1, 0, 0.5);
 	 */
 
 	/**
 	 * The amount of red in the color as a value between {@code 0} and
 	 * {@code 1}.
 	 *
-	 * @name RGBColor#red
+	 * @name RgbColor#red
 	 * @property
 	 * @type Number
 	 *
@@ -721,7 +721,7 @@ var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
 	 * The amount of green in the color as a value between {@code 0} and
 	 * {@code 1}.
 	 *
-	 * @name RGBColor#green
+	 * @name RgbColor#green
 	 * @property
 	 * @type Number
 	 *
@@ -740,7 +740,7 @@ var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
 	 * The amount of blue in the color as a value between {@code 0} and
 	 * {@code 1}.
 	 *
-	 * @name RGBColor#blue
+	 * @name RgbColor#blue
 	 * @property
 	 * @type Number
 	 *
@@ -759,15 +759,15 @@ var RGBColor = this.RGBColor = Color.extend(/** @lends RGBColor# */{
 });
 
 /**
- * @name HSBColor
- * @class An HSBColor object is used to represent any HSB color value.
+ * @name HsbColor
+ * @class An HsbColor object is used to represent any HSB color value.
  * @extends Color
  */
-var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
+var HsbColor = this.HsbColor = this.HSBColor = Color.extend(/** @lends HsbColor# */{
 	/**
-	 * Creates an HSBColor object
+	 * Creates an HsbColor object
 	 *
-	 * @name HSBColor#initialize
+	 * @name HsbColor#initialize
 	 * @param {Number} hue the hue of the color as a value in degrees between
 	 * {@code 0} and {@code 360}.
 	 * @param {Number} saturation the saturation of the color as a value
@@ -778,22 +778,22 @@ var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
 	 * {@code 0} and {@code 1}
 	 *
 	 * @example {@paperscript}
-	 * // Creating an HSBColor:
+	 * // Creating an HsbColor:
 	 *
 	 * // Create a circle shaped path at {x: 80, y: 50}
 	 * // with a radius of 30:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
 	 *
-	 * // Create an HSBColor with a hue of 90 degrees, a saturation
+	 * // Create an HsbColor with a hue of 90 degrees, a saturation
 	 * // 100% and a brightness of 100%:
-	 * circle.fillColor = new HSBColor(90, 1, 1);
+	 * circle.fillColor = new HsbColor(90, 1, 1);
 	 */
 
 	/**
 	 * The hue of the color as a value in degrees between {@code 0} and
 	 * {@code 360}.
 	 *
-	 * @name HSBColor#hue
+	 * @name HsbColor#hue
 	 * @property
 	 * @type Number
 	 *
@@ -819,7 +819,7 @@ var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
 	/**
 	 * The saturation of the color as a value between {@code 0} and {@code 1}.
 	 *
-	 * @name HSBColor#saturation
+	 * @name HsbColor#saturation
 	 * @property
 	 * @type Number
 	 */
@@ -827,7 +827,7 @@ var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
 	/**
 	 * The brightness of the color as a value between {@code 0} and {@code 1}.
 	 *
-	 * @name HSBColor#brightness
+	 * @name HsbColor#brightness
 	 * @property
 	 * @type Number
 	 */
@@ -837,15 +837,15 @@ var HSBColor = this.HSBColor = Color.extend(/** @lends HSBColor# */{
 
 
 /**
- * @name HSLColor
- * @class An HSLColor object is used to represent any HSL color value.
+ * @name HslColor
+ * @class An HslColor object is used to represent any HSL color value.
  * @extends Color
  */
-var HSLColor = this.HSLColor = Color.extend(/** @lends HSLColor# */{
+var HslColor = this.HslColor = this.HSLColor = Color.extend(/** @lends HslColor# */{
 	/**
-	 * Creates an HSLColor object
+	 * Creates an HslColor object
 	 *
-	 * @name HSLColor#initialize
+	 * @name HslColor#initialize
 	 * @param {Number} hue the hue of the color as a value in degrees between
 	 * {@code 0} and {@code 360}.
 	 * @param {Number} saturation the saturation of the color as a value
@@ -856,22 +856,22 @@ var HSLColor = this.HSLColor = Color.extend(/** @lends HSLColor# */{
 	 * {@code 0} and {@code 1}
 	 *
 	 * @example {@paperscript}
-	 * // Creating an HSLColor:
+	 * // Creating an HslColor:
 	 *
 	 * // Create a circle shaped path at {x: 80, y: 50}
 	 * // with a radius of 30:
 	 * var circle = new Path.Circle(new Point(80, 50), 30);
 	 *
-	 * // Create an HSLColor with a hue of 90 degrees, a saturation
+	 * // Create an HslColor with a hue of 90 degrees, a saturation
 	 * // 100% and a lightness of 50%:
-	 * circle.fillColor = new HSLColor(90, 1, 0.5);
+	 * circle.fillColor = new HslColor(90, 1, 0.5);
 	 */
 
 	/**
 	 * The hue of the color as a value in degrees between {@code 0} and
 	 * {@code 360}.
 	 *
-	 * @name HSLColor#hue
+	 * @name HslColor#hue
 	 * @property
 	 * @type Number
 	 */
@@ -879,7 +879,7 @@ var HSLColor = this.HSLColor = Color.extend(/** @lends HSLColor# */{
 	/**
 	 * The saturation of the color as a value between {@code 0} and {@code 1}.
 	 *
-	 * @name HSLColor#saturation
+	 * @name HslColor#saturation
 	 * @property
 	 * @type Number
 	 */
@@ -887,7 +887,7 @@ var HSLColor = this.HSLColor = Color.extend(/** @lends HSLColor# */{
 	/**
 	 * The lightness of the color as a value between {@code 0} and {@code 1}.
 	 *
-	 * @name HSLColor#lightness
+	 * @name HslColor#lightness
 	 * @property
 	 * @type Number
 	 */

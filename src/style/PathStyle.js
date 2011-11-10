@@ -30,7 +30,7 @@
  *
  * @classexample {@paperscript}
  * var circleStyle = {
- * 	fillColor: new RGBColor(1, 0, 0),
+ * 	fillColor: new RgbColor(1, 0, 0),
  * 	strokeColor: 'black',
  * 	strokeWidth: 5
  * };
@@ -77,7 +77,7 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	 *
 	 * @property
 	 * @name PathStyle#strokeColor
-	 * @type RGBColor|HSBColor|HSLColor|GrayColor
+	 * @type RgbColor|HsbColor|HslColor|GrayColor
 	 *
 	 * @example {@paperscript}
 	 * // Setting the stroke color of a path:
@@ -87,7 +87,7 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	 * var circle = new Path.Circle(new Point(80, 50), 35);
 	 *
 	 * // Set its stroke color to RGB red:
-	 * circle.strokeColor = new RGBColor(1, 0, 0);
+	 * circle.strokeColor = new RgbColor(1, 0, 0);
 	 */
 
 	/**
@@ -220,7 +220,7 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	 *
 	 * @property
 	 * @name PathStyle#fillColor
-	 * @type RGBColor|HSBColor|HSLColor|GrayColor
+	 * @type RgbColor|HsbColor|HslColor|GrayColor
 	 *
 	 * @example {@paperscript}
 	 * // Setting the fill color of a path to red:
@@ -230,6 +230,6 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	 * var circle = new Path.Circle(new Point(80, 50), 35);
 	 *
 	 * // Set the fill color of the circle to RGB red:
-	 * circle.fillColor = new RGBColor(1, 0, 0);
+	 * circle.fillColor = new RgbColor(1, 0, 0);
 	 */
 });

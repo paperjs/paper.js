@@ -52,9 +52,9 @@ function compareRectangles(rect1, rect2, message) {
 			(message || '') + ' height');
 }
 
-function compareRGBColors(color1, color2, message) {
-	color1 = new RGBColor(color1);
-	color2 = new RGBColor(color2);
+function compareRgbColors(color1, color2, message) {
+	color1 = new RgbColor(color1);
+	color2 = new RgbColor(color2);
 
 	compareNumbers(color1.red, color2.red,
 			(message || '') + ' red');
@@ -66,9 +66,9 @@ function compareRGBColors(color1, color2, message) {
 			(message || '') + ' alpha');
 }
 
-function compareHSBColors(color1, color2, message) {
-	color1 = new HSBColor(color1);
-	color2 = new HSBColor(color2);
+function compareHsbColors(color1, color2, message) {
+	color1 = new HsbColor(color1);
+	color2 = new HsbColor(color2);
 
 	compareNumbers(color1.hue, color2.hue,
 			(message || '') + ' hue');
