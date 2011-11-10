@@ -720,7 +720,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * <b>options.fill:</b> {@code Boolean} - Hit test the fill of items.
 	 * <b>options.stroke:</b> {@code Boolean} - Hit test the curves of path
 	 * items, taking into account stroke width.
-	 * <b>options.segments:</b> {@code Boolean} - Hit test for
+	 * <b>options.segment:</b> {@code Boolean} - Hit test for
 	 * {@link Segment#point} of {@link Path} items.
 	 * <b>options.handles:</b> {@code Boolean} - Hit test for the handles
 	 * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
@@ -1291,7 +1291,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 *
 	 * @property
 	 * @name Item#strokeColor
-	 * @type RGBColor|HSBColor|HSLColor|GrayColor
+	 * @type RgbColor|HsbColor|HslColor|GrayColor
 	 *
 	 * @example {@paperscript}
 	 * // Setting the stroke color of a path:
@@ -1301,7 +1301,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * var circle = new Path.Circle(new Point(80, 50), 35);
 	 *
 	 * // Set its stroke color to RGB red:
-	 * circle.strokeColor = new RGBColor(1, 0, 0);
+	 * circle.strokeColor = new RgbColor(1, 0, 0);
 	 */
 
 	/**
@@ -1435,7 +1435,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 *
 	 * @property
 	 * @name Item#fillColor
-	 * @type RGBColor|HSBColor|HSLColor|GrayColor
+	 * @type RgbColor|HsbColor|HslColor|GrayColor
 	 *
 	 * @example {@paperscript}
 	 * // Setting the fill color of a path to red:
@@ -1445,7 +1445,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * var circle = new Path.Circle(new Point(80, 50), 35);
 	 *
 	 * // Set the fill color of the circle to RGB red:
-	 * circle.fillColor = new RGBColor(1, 0, 0);
+	 * circle.fillColor = new RgbColor(1, 0, 0);
 	 */
 
 	// DOCS: document the different arguments that this function can receive.
