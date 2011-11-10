@@ -31,7 +31,7 @@
 #	stripped		Formated but without comments
 #	compressed		Uses UglifyJS to reduce file size
 
-VERSION=0.21
+VERSION=0.22
 DATE=$(git log -1 --pretty=format:%ad)
 
 COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\" }' -d '$4' $2"
