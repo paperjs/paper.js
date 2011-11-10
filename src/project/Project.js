@@ -184,7 +184,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * <b>options.fill:</b> {@code Boolean} - Hit test the fill of items.
 	 * <b>options.stroke:</b> {@code Boolean} - Hit test the curves of path
 	 * items, taking into account stroke width.
-	 * <b>options.segment:</b> {@code Boolean} - Hit test for
+	 * <b>options.segments:</b> {@code Boolean} - Hit test for
 	 * {@link Segment#point} of {@link Path} items.
 	 * <b>options.handles:</b> {@code Boolean} - Hit test for the handles
 	 * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
