@@ -92,24 +92,50 @@ span.CodeMirror-selected {
 span.cm-keyword {
 	color: #ff7800;
 }
-span.cm-number,
-span.cm-atom {
+span.cm-atom,
+span.cm-number {
 	color: #3b5bb5;
-}
-span.cm-string {
-	color: #409b1c;
-}
-span.cm-comment {
-	color: #8c868f;
-}
-span.cm-property {
-	color: #000;
-}
-span.cm-variable {
-	color: #000;
 }
 span.cm-def,
 span.cm-variable-2,
 span.cm-variable-3 {
 	color: #3a4a64;
+}
+span.cm-variable {
+	color: #000;
+}
+span.cm-property {
+	color: #000;
+}
+span.cm-operator {
+	color: #000;
+}
+span.cm-comment {
+	color: #8c868f;
+}
+span.cm-string {
+	color: #409b1c;
+}
+span.cm-meta {
+	color: #555;
+}
+span.cm-error {
+	color: #f30;
+}
+span.cm-qualifier {
+	color: #555;
+}
+span.cm-builtin {
+	color: #30a;
+}
+span.cm-bracket {
+	color: #cc7;
+}
+span.cm-tag {
+	font-weight: bold;
+	color: #3b5bb5;
+}
+span.cm-attribute {
+	font-style: italic;
+	color: #3b5bb5;
 }

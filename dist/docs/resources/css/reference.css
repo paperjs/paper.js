@@ -17,12 +17,6 @@
 .reference a tt {
 	line-height: 18px;
 }
-/*
-.reference a tt,
-.reference a tt b {
-	padding-bottom: 1px;
-}
-*/
 
 .reference p {
 	margin: 0 0 16px 0;
@@ -58,6 +52,7 @@
 * html .reference-packages img {
 	margin-top: 5px;
 }
+
 .reference-packages li {
 	list-style: none;
 	list-style-image: none; /* needed for ie 6 */
