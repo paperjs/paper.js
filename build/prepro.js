@@ -129,50 +129,46 @@ function stripComments(str) {
 	var singleQuote = false,
 		doubleQuote = false,
 		blockComment = false,
-		lineComment = false;
-	var removed = [];
+		lineComment = false,
+		preserveComment = false;
 	for (var i = 0, l = str.length; i < l; i++) {
 		if (singleQuote) {
-			if (str[i] == "'" && str[i-1] !== '\\')
+			if (str[i] == "'" && str[i - 1] !== '\\')
 				singleQuote = false;
-			continue;
-		}
-		if (doubleQuote) {
-			if (str[i] == '"' && str[i-1] !== '\\')
+		} else if (doubleQuote) {
+			if (str[i] == '"' && str[i - 1] !== '\\')
 				doubleQuote = false;
-			continue;
-		}
-		if (blockComment) {
-			if (str[i] == '*' && str[i+1] == '/') {
-				str[i+1] = '';
-				blockComment = false;
+		} else if (blockComment) {
+			// Is the block comment closing?
+			if (str[i] == '*' && str[i + 1] == '/') {
+				if (!preserveComment)
+					str[i] = str[i + 1] = '';
+				blockComment = preserveComment = false;
+			} else if (!preserveComment) {
+				str[i] = '';
 			}
-			removed.push(str[i]);
-			str[i] = '';
-			continue;
-		}
-		if (lineComment) {
-			if (str[i+1] == '\n' || str[i+1] == '\r')
+		} else if (lineComment) {
+			// One-line comments end with the line-break
+			if (str[i + 1] == '\n' || str[i + 1] == '\r')
 				lineComment = false;
 			str[i] = '';
-			continue;
+		} else {
+			doubleQuote = str[i] == '"';
+			singleQuote = str[i] == "'";
+			if (!blockComment && str[i] == '/') {
+				if (str[i + 1] == '*') {
+					// Do not filter out conditional comments and comments marked
+					// as protected (/*! */)
+					preserveComment = str[i + 2] == '@' || str[i + 2] == '!';
+					if (!preserveComment)
+						str[i] = '';
+					blockComment = true;
+				} else if (str[i + 1] == '/') {
+					str[i] = '';
+					lineComment = true;
+				}
+	 		}
 		}
-		doubleQuote = str[i] == '"';
-		singleQuote = str[i] == "'";
-		if (str[i] == '/') {
-			// Do not filter out conditional comments and comments marked 
-			// as protected (/*! */)
-			if (str[i+1] == '*' && str[i+2] != '@' && str[i+2] != '!') {
-				str[i] = '';
-				blockComment = true;
-				continue;
-			}
-			if (str[i+1] == '/') {
-				str[i] = '';
-				lineComment = true;
-				continue;
-			}
- 		}
  	}
 	return str.join('').slice(2, -2);
 }
