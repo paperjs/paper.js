@@ -675,6 +675,7 @@ var GrayColor = this.GrayColor = Color.extend(/** @lends GrayColor# */{
  * @class An RgbColor object is used to represent any RGB color value.
  * @extends Color
  */
+// RGBColor references RgbColor inside PaperScopes for backward compatibility
 var RgbColor = this.RgbColor = this.RGBColor = Color.extend(/** @lends RgbColor# */{
 	/**
 	 * Creates an RgbColor object
@@ -763,6 +764,7 @@ var RgbColor = this.RgbColor = this.RGBColor = Color.extend(/** @lends RgbColor#
  * @class An HsbColor object is used to represent any HSB color value.
  * @extends Color
  */
+// HSBColor references HsbColor inside PaperScopes for backward compatibility
 var HsbColor = this.HsbColor = this.HSBColor = Color.extend(/** @lends HsbColor# */{
 	/**
 	 * Creates an HsbColor object
@@ -841,6 +843,7 @@ var HsbColor = this.HsbColor = this.HSBColor = Color.extend(/** @lends HsbColor#
  * @class An HslColor object is used to represent any HSL color value.
  * @extends Color
  */
+// HSLColor references HslColor inside PaperScopes for backward compatibility
 var HslColor = this.HslColor = this.HSLColor = Color.extend(/** @lends HslColor# */{
 	/**
 	 * Creates an HslColor object
