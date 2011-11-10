@@ -18,10 +18,10 @@
 <h1>Color</h1>
 
 <p>All properties and functions that expect color values accept
-instances of the different color classes such as <a href="../classes/RGBColor.html"><tt>RGBColor</tt></a>,
-<a href="../classes/HSBColor.html"><tt>HSBColor</tt></a> and <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>, and also accept named colors
+instances of the different color classes such as <a href="../classes/RgbColor.html"><tt>RgbColor</tt></a>,
+<a href="../classes/HsbColor.html"><tt>HsbColor</tt></a> and <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>, and also accept named colors
 and hex values as strings which are then converted to instances of
-<a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> internally.</p>
+<a href="../classes/RgbColor.html"><tt>RgbColor</tt></a> internally.</p>
 <p>
 <b>Example</b> &mdash; Named color values:
 </p>
@@ -34,7 +34,7 @@ and hex values as strings which are then converted to instances of
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // Pass a color name to the fillColor property, which is internally
-// converted to an RGBColor.
+// converted to an RgbColor.
 circle.fillColor = 'green';
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
@@ -53,7 +53,7 @@ circle.fillColor = 'green';
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // Pass a hex string to the fillColor property, which is internally
-// converted to an RGBColor.
+// converted to an RgbColor.
 circle.fillColor = '#ff0000';
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
@@ -141,7 +141,7 @@ same as those of the supplied one.</p>
 </p>
 
 
-<pre class="code">var color = new RGBColor(1, 0, 0);
+<pre class="code">var color = new RgbColor(1, 0, 0);
 console.log(color.type); // 'rgb'</pre>
 
 </div>
@@ -525,6 +525,40 @@ function onFrame(event) {
 </div>
 </div>
 		
+			
+	<h3>HSL Components</h3>
+
+<div id="lightness-member" class="member">
+<div id="lightness-link" class="member-link">
+<a name="lightness" href="#" onClick="return toggleMember('lightness', false);"><tt><b>lightness</b></tt></a>
+</div>
+<div id="lightness-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('lightness', false);"><tt><b>lightness</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('lightness', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The lightness of the color as a value between <tt>0</tt> and <tt>1</tt>.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
 	</div>
 
 
@@ -554,7 +588,7 @@ function onFrame(event) {
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a> / <a href="../classes/HSBColor.html"><tt>HSBColor</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the color object
+<tt><a href="../classes/RgbColor.html"><tt>RgbColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a> / <a href="../classes/HsbColor.html"><tt>HsbColor</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the color object
 </li>
 	
 	</ul>

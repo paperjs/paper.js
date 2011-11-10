@@ -343,6 +343,40 @@ to {@link #initialize(a, c, b, d, tx, ty)}.</p>
 </div>
 </div>
 		
+			
+<div id="rotation-member" class="member">
+<div id="rotation-link" class="member-link">
+<a name="rotation" href="#" onClick="return toggleMember('rotation', false);"><tt><b>rotation</b></tt></a>
+</div>
+<div id="rotation-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rotation', false);"><tt><b>rotation</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rotation', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The rotation angle of the matrix. If a non-uniform rotation is applied as
+a result of a shear() or scale() command, undefined is returned, as the
+resulting transformation cannot be expressed in one rotation angle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
 	</div>
 
 
@@ -1008,24 +1042,22 @@ anchor point.</p>
 </div>
 		
 			
-<div id="transform-point-src-srcOff-dst-dstOff-numPts-member" class="member">
-<div id="transform-point-src-srcOff-dst-dstOff-numPts-link" class="member-link">
-<a name="transform-point-src-srcOff-dst-dstOff-numPts" href="#" onClick="return toggleMember('transform-point-src-srcOff-dst-dstOff-numPts', false);"><tt><b>transform</b>(point, src, srcOff, dst, dstOff, numPts)</tt></a>
+<div id="transform-point-member" class="member">
+<div id="transform-point-link" class="member-link">
+<a name="transform-point" href="#" onClick="return toggleMember('transform-point', false);"><tt><b>transform</b>(point)</tt></a>
 </div>
-<div id="transform-point-src-srcOff-dst-dstOff-numPts-description" class="member-description hidden">
+<div id="transform-point-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('transform-point-src-srcOff-dst-dstOff-numPts', false);"><tt><b>transform</b>(point, src, srcOff, dst, dstOff, numPts)</tt></a>
+<a href="#" onClick="return toggleMember('transform-point', false);"><tt><b>transform</b>(point)</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('transform-point-src-srcOff-dst-dstOff-numPts', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('transform-point', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
-	<p>Transforms a point or an array of coordinates by this matrix and returns
-the result. If an array is transformed, the the result is stored into a
-destination array.</p>
+	<p>Transforms a point and returns the result.</p>
 	
 <ul><b>Parameters:</b>
 
@@ -1035,6 +1067,44 @@ destination array.</p>
 &mdash;&nbsp;The point to be transformed
 
 </li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;The transformed point
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="transform-src-srcOff-dst-dstOff-numPts-member" class="member">
+<div id="transform-src-srcOff-dst-dstOff-numPts-link" class="member-link">
+<a name="transform-src-srcOff-dst-dstOff-numPts" href="#" onClick="return toggleMember('transform-src-srcOff-dst-dstOff-numPts', false);"><tt><b>transform</b>(src, srcOff, dst, dstOff, numPts)</tt></a>
+</div>
+<div id="transform-src-srcOff-dst-dstOff-numPts-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('transform-src-srcOff-dst-dstOff-numPts', false);"><tt><b>transform</b>(src, srcOff, dst, dstOff, numPts)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('transform-src-srcOff-dst-dstOff-numPts', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Transforms an array of coordinates by this matrix and stores the results
+into the destination array, which is also returned.</p>
+	
+<ul><b>Parameters:</b>
 
 <li>
 <tt>src:</tt> 
@@ -1077,35 +1147,10 @@ destination array.</p>
 </ul>
 
 	
-	
-	
-</div>
-</div>
-</div>
-		
-			
-<div id="getdeterminant-member" class="member">
-<div id="getdeterminant-link" class="member-link">
-<a name="getdeterminant" href="#" onClick="return toggleMember('getdeterminant', false);"><tt><b>getDeterminant</b>()</tt></a>
-</div>
-<div id="getdeterminant-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('getdeterminant', false);"><tt><b>getDeterminant</b>()</tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getdeterminant', false);"></div>
-<div class="clear"></div>
-</div>
-<div class="member-text">
-	
-	
-	
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The determinant of this transform
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The dst array, containing the transformed coordinates.
 </li>
 	
 	</ul>
@@ -1117,35 +1162,35 @@ destination array.</p>
 </div>
 		
 			
-<div id="getrotation-member" class="member">
-<div id="getrotation-link" class="member-link">
-<a name="getrotation" href="#" onClick="return toggleMember('getrotation', false);"><tt><b>getRotation</b>()</tt></a>
+<div id="inversetransform-point-member" class="member">
+<div id="inversetransform-point-link" class="member-link">
+<a name="inversetransform-point" href="#" onClick="return toggleMember('inversetransform-point', false);"><tt><b>inverseTransform</b>(point)</tt></a>
 </div>
-<div id="getrotation-description" class="member-description hidden">
+<div id="inversetransform-point-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('getrotation', false);"><tt><b>getRotation</b>()</tt></a>
+<a href="#" onClick="return toggleMember('inversetransform-point', false);"><tt><b>inverseTransform</b>(point)</tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getrotation', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('inversetransform-point', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
-	<p>Returns the rotation angle of the matrix. If a non-uniform
-rotation is applied as a result of a shear() or scale() command,
-undefined is returned, as the resulting transformation cannot be
-expressed in one rotation angle</p>
+	<p>Inverse transforms a point and returns the result.</p>
 	
-	
-	<ul><b>Returns:</b>
-	
-		<li>
-<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The rotation angle of the matrix
-</li>
-	
-	</ul>
+<ul><b>Parameters:</b>
 
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The point to be transformed
+
+</li>
+
+</ul>
+
+	
 	
 	
 </div>

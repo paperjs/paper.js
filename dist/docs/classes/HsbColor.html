@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>HSBColor</title>
+<title>HsbColor</title>
 <base target="classFrame">
 <link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
 <link rel="stylesheet" href="../resources/css/style.css" type="text/css">
@@ -15,11 +15,11 @@
 </head>
 <body class="reference">
 <div class="reference-class">
-<h1>HSBColor</h1>
+<h1>HsbColor</h1>
 
 <p> Extends <b><a href="../classes/Color.html"><tt>Color</tt></a></b></p>
 
-<p>An HSBColor object is used to represent any HSB color value.</p>
+<p>An HsbColor object is used to represent any HSB color value.</p>
 
 </div>
 
@@ -29,20 +29,20 @@
 		
 <div id="hsbcolor-hue-saturation-brightness-member" class="member">
 <div id="hsbcolor-hue-saturation-brightness-link" class="member-link">
-<a name="hsbcolor-hue-saturation-brightness" href="#" onClick="return toggleMember('hsbcolor-hue-saturation-brightness', false);"><tt><b>HSBColor</b>(hue, saturation, brightness[, alpha])</tt></a>
+<a name="hsbcolor-hue-saturation-brightness" href="#" onClick="return toggleMember('hsbcolor-hue-saturation-brightness', false);"><tt><b>HsbColor</b>(hue, saturation, brightness[, alpha])</tt></a>
 </div>
 <div id="hsbcolor-hue-saturation-brightness-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('hsbcolor-hue-saturation-brightness', false);"><tt><b>HSBColor</b>(hue, saturation, brightness[, alpha])</tt></a>
+<a href="#" onClick="return toggleMember('hsbcolor-hue-saturation-brightness', false);"><tt><b>HsbColor</b>(hue, saturation, brightness[, alpha])</tt></a>
 </div>
 </div>
 <div class="member-close"><input type="button" value="Close" onClick="toggleMember('hsbcolor-hue-saturation-brightness', false);"></div>
 <div class="clear"></div>
 </div>
 <div class="member-text">
-<p>Creates an HSBColor object</p>
+<p>Creates an HsbColor object</p>
 
 <ul><b>Parameters:</b>
 
@@ -82,7 +82,7 @@ between <tt>0</tt> and <tt>1</tt>
 
 
 <p>
-<b>Example</b> &mdash; Creating an HSBColor:
+<b>Example</b> &mdash; Creating an HsbColor:
 </p>
 
 <div class="paperscript split">
@@ -92,9 +92,9 @@ between <tt>0</tt> and <tt>1</tt>
 // with a radius of 30:
 var circle = new Path.Circle(new Point(80, 50), 30);
 
-// Create an HSBColor with a hue of 90 degrees, a saturation
+// Create an HsbColor with a hue of 90 degrees, a saturation
 // 100% and a brightness of 100%:
-circle.fillColor = new HSBColor(90, 1, 1);
+circle.fillColor = new HsbColor(90, 1, 1);
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
 </div>
@@ -110,6 +110,141 @@ circle.fillColor = new HSBColor(90, 1, 1);
 
 
 
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="hue-member" class="member">
+<div id="hue-link" class="member-link">
+<a name="hue" href="#" onClick="return toggleMember('hue', false);"><tt><b>hue</b></tt></a>
+</div>
+<div id="hue-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('hue', false);"><tt><b>hue</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('hue', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The hue of the color as a value in degrees between <tt>0</tt> and
+<tt>360</tt>.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Changing the hue of a color:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+var circle = new Path.Circle(new Point(80, 50), 30);
+circle.fillColor = 'red';
+circle.fillColor.hue += 30;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+<p>
+<b>Example</b> &mdash; Hue cycling:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-2">
+// Create a rectangle shaped path, using the dimensions
+// of the view:
+var path = new Path.Rectangle(view.bounds);
+path.fillColor = 'red';
+
+function onFrame(event) {
+	path.fillColor.hue += 0.5;
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="saturation-member" class="member">
+<div id="saturation-link" class="member-link">
+<a name="saturation" href="#" onClick="return toggleMember('saturation', false);"><tt><b>saturation</b></tt></a>
+</div>
+<div id="saturation-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('saturation', false);"><tt><b>saturation</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('saturation', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The saturation of the color as a value between <tt>0</tt> and <tt>1</tt>.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="brightness-member" class="member">
+<div id="brightness-link" class="member-link">
+<a name="brightness" href="#" onClick="return toggleMember('brightness', false);"><tt><b>brightness</b></tt></a>
+</div>
+<div id="brightness-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('brightness', false);"><tt><b>brightness</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('brightness', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The brightness of the color as a value between <tt>0</tt> and <tt>1</tt>.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
 
 
 
@@ -150,7 +285,7 @@ circle.fillColor = new HSBColor(90, 1, 1);
 </p>
 
 
-<pre class="code">var color = new RGBColor(1, 0, 0);
+<pre class="code">var color = new RgbColor(1, 0, 0);
 console.log(color.type); // 'rgb'</pre>
 
 </div>
@@ -191,7 +326,7 @@ colors of the different subclasses support alpha values.</p>
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-1">
+<script type="text/paperscript" canvas="canvas-3">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // Fill the circle with red and give it a 20pt green stroke:
@@ -204,7 +339,7 @@ circle.style = {
 // Make the stroke half transparent:
 circle.strokeColor.alpha = 0.5;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -248,14 +383,14 @@ circle.strokeColor.alpha = 0.5;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-2">
+<script type="text/paperscript" canvas="canvas-4">
 var circle = new Path.Circle(new Point(80, 50), 30);
 circle.fillColor = 'blue';
 
 // Blue + red = purple:
 circle.fillColor.red = 1;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
 </div>
 
 
@@ -297,7 +432,7 @@ circle.fillColor.red = 1;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-3">
+<script type="text/paperscript" canvas="canvas-5">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // First we set the fill color to red:
@@ -306,7 +441,7 @@ circle.fillColor = 'red';
 // Red + green = yellow:
 circle.fillColor.green = 1;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
 </div>
 
 
@@ -348,7 +483,7 @@ circle.fillColor.green = 1;
 
 <div class="paperscript split">
 <div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-4">
+<script type="text/paperscript" canvas="canvas-6">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // First we set the fill color to red:
@@ -357,7 +492,7 @@ circle.fillColor = 'red';
 // Red + blue = purple:
 circle.fillColor.blue = 1;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-6"></canvas></div>
 </div>
 
 
@@ -402,124 +537,25 @@ circle.fillColor.blue = 1;
 </div>
 
 	
-	<h3>HSB Components</h3>
+	<h3>HSL Components</h3>
 
-<div id="hue-member" class="member">
-<div id="hue-link" class="member-link">
-<a name="hue" href="#" onClick="return toggleMember('hue', false);"><tt><b>hue</b></tt></a>
+<div id="lightness-member" class="member">
+<div id="lightness-link" class="member-link">
+<a name="lightness" href="#" onClick="return toggleMember('lightness', false);"><tt><b>lightness</b></tt></a>
 </div>
-<div id="hue-description" class="member-description hidden">
+<div id="lightness-description" class="member-description hidden">
 <div class="member-header">
 <div class="member-title">
 <div class="member-link">
-<a href="#" onClick="return toggleMember('hue', false);"><tt><b>hue</b></tt></a>
+<a href="#" onClick="return toggleMember('lightness', false);"><tt><b>lightness</b></tt></a>
 </div>
 </div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('hue', false);"></div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('lightness', false);"></div>
 <div class="clear"></div>
 </div>
 
 <div class="member-text">
-	<p>The hue of the color as a value in degrees between <tt>0</tt> and
-<tt>360</tt>.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Number</tt>
-	</li>
-	</ul>
-	
-	<p>
-<b>Example</b> &mdash; Changing the hue of a color:
-</p>
-
-<div class="paperscript split">
-<div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-5">
-var circle = new Path.Circle(new Point(80, 50), 30);
-circle.fillColor = 'red';
-circle.fillColor.hue += 30;
-</script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
-</div>
-
-
-<p>
-<b>Example</b> &mdash; Hue cycling:
-</p>
-
-<div class="paperscript split">
-<div class="button">Run</div>
-<script type="text/paperscript" canvas="canvas-6">
-// Create a rectangle shaped path, using the dimensions
-// of the view:
-var path = new Path.Rectangle(view.bounds);
-path.fillColor = 'red';
-
-function onFrame(event) {
-	path.fillColor.hue += 0.5;
-}
-</script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-6"></canvas></div>
-</div>
-
-
-</div>
-
-</div>
-</div>
-
-	
-<div id="saturation-member" class="member">
-<div id="saturation-link" class="member-link">
-<a name="saturation" href="#" onClick="return toggleMember('saturation', false);"><tt><b>saturation</b></tt></a>
-</div>
-<div id="saturation-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('saturation', false);"><tt><b>saturation</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('saturation', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>The saturation of the color as a value between <tt>0</tt> and <tt>1</tt>.</p>
-	
-	
-	<ul><b>Type:</b>
-	<li>
-		<tt>Number</tt>
-	</li>
-	</ul>
-	
-	
-</div>
-
-</div>
-</div>
-
-	
-<div id="brightness-member" class="member">
-<div id="brightness-link" class="member-link">
-<a name="brightness" href="#" onClick="return toggleMember('brightness', false);"><tt><b>brightness</b></tt></a>
-</div>
-<div id="brightness-description" class="member-description hidden">
-<div class="member-header">
-<div class="member-title">
-<div class="member-link">
-<a href="#" onClick="return toggleMember('brightness', false);"><tt><b>brightness</b></tt></a>
-</div>
-</div>
-<div class="member-close"><input type="button" value="Close" onClick="toggleMember('brightness', false);"></div>
-<div class="clear"></div>
-</div>
-
-<div class="member-text">
-	<p>The brightness of the color as a value between <tt>0</tt> and <tt>1</tt>.</p>
+	<p>The lightness of the color as a value between <tt>0</tt> and <tt>1</tt>.</p>
 	
 	
 	<ul><b>Type:</b>
@@ -562,7 +598,7 @@ function onFrame(event) {
 	<ul><b>Returns:</b>
 	
 		<li>
-<tt><a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a> / <a href="../classes/HSBColor.html"><tt>HSBColor</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the color object
+<tt><a href="../classes/RgbColor.html"><tt>RgbColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a> / <a href="../classes/HsbColor.html"><tt>HsbColor</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the color object
 </li>
 	
 	</ul>

@@ -714,6 +714,38 @@ already contained within a clipping group.</p>
 </div>
 
 	
+<div id="layer-member" class="member">
+<div id="layer-link" class="member-link">
+<a name="layer" href="#" onClick="return toggleMember('layer', false);"><tt><b>layer</b></tt></a>
+</div>
+<div id="layer-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('layer', false);"><tt><b>layer</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('layer', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The layer that this item is contained within.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Layer.html"><tt>Layer</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+
+	
 <div id="parent-member" class="member">
 <div id="parent-link" class="member-link">
 <a name="parent" href="#" onClick="return toggleMember('parent', false);"><tt><b>parent</b></tt></a>
@@ -1142,7 +1174,7 @@ accessing <tt>item.children[item.children.length - 1]</tt>.</p>
 	
 	<ul><b>Type:</b>
 	<li>
-		<a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> / <a href="../classes/HSBColor.html"><tt>HSBColor</tt></a> / <a href="../classes/HSLColor.html"><tt>HSLColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
+		<a href="../classes/RgbColor.html"><tt>RgbColor</tt></a> / <a href="../classes/HsbColor.html"><tt>HsbColor</tt></a> / <a href="../classes/HslColor.html"><tt>HslColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
 	</li>
 	</ul>
 	
@@ -1158,7 +1190,7 @@ accessing <tt>item.children[item.children.length - 1]</tt>.</p>
 var circle = new Path.Circle(new Point(80, 50), 35);
 
 // Set its stroke color to RGB red:
-circle.strokeColor = new RGBColor(1, 0, 0);
+circle.strokeColor = new RgbColor(1, 0, 0);
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-13"></canvas></div>
 </div>
@@ -1516,7 +1548,7 @@ miterLimit imposes a limit on the ratio of the miter length to the
 	
 	<ul><b>Type:</b>
 	<li>
-		<a href="../classes/RGBColor.html"><tt>RGBColor</tt></a> / <a href="../classes/HSBColor.html"><tt>HSBColor</tt></a> / <a href="../classes/HSLColor.html"><tt>HSLColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
+		<a href="../classes/RgbColor.html"><tt>RgbColor</tt></a> / <a href="../classes/HsbColor.html"><tt>HsbColor</tt></a> / <a href="../classes/HslColor.html"><tt>HslColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
 	</li>
 	</ul>
 	
@@ -1532,7 +1564,7 @@ miterLimit imposes a limit on the ratio of the miter length to the
 var circle = new Path.Circle(new Point(80, 50), 35);
 
 // Set the fill color of the circle to RGB red:
-circle.fillColor = new RGBColor(1, 0, 0);
+circle.fillColor = new RgbColor(1, 0, 0);
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-18"></canvas></div>
 </div>
