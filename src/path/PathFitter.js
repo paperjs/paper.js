@@ -17,6 +17,8 @@
 // An Algorithm for Automatically Fitting Digitized Curves
 // by Philip J. Schneider
 // from "Graphics Gems", Academic Press, 1990
+// Modifications and optimisations of original algorithm by Juerg Lehni.
+
 var PathFitter = Base.extend({
 	initialize: function(path, error) {
 		this.points = [];
