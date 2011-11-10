@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>HSLColor</title>
+	<title>HslColor</title>
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
@@ -35,7 +35,7 @@
 				var colors = [];
 				for (var i = 0; i < steps.saturation; i++) {
 					var saturation = i / steps.saturation;
-					var color = new HSLColor(hue, saturation, lightness);
+					var color = new HslColor(hue, saturation, lightness);
 					colors.push(color);
 				}
 				var gradient = new Gradient(colors, 'radial');
