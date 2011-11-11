@@ -397,6 +397,20 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		return this.getStrokeBounds(arguments[0]);
 	},
 
+	_hitTest: function(point, options) {
+		point = this._matrix._inverseTransform(point);
+		if (point.isInside(new Rectangle(this._size).setCenter(0, 0))) {
+			var that = this;
+			return new HitResult('pixel', that, {
+				offset: point.add(that._size.divide(2)).round(),
+				// Becomes HitResult#color
+				getColor: function() {
+					return that.getPixel(this.offset);
+				}
+			});
+		}
+	},
+
 	draw: function(ctx, param) {
 		if (param.selection) {
 			var bounds = new Rectangle(this._size).setCenter(0, 0);
