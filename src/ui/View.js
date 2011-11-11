@@ -27,7 +27,7 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 	_list: 'views',
 	_reference: 'view',
 	_events: {
-		frame: {
+		onFrame: {
 			install: function() {
 /*#*/ if (options.browser) {
 				var that = this,
@@ -75,7 +75,7 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 			}
 		},
 
-		resize: {}
+		onResize: {}
 	},
 
 	/**
@@ -210,7 +210,7 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 		this._canvas = this._domEvents = null;
 		// Removing all onFrame handlers makes the _onFrameCallback handler stop
 		// automatically through its uninstall method.
-		this.detachAll('frame');
+		this.detach('frame');
 		return true;
 	},
 
