@@ -25,13 +25,11 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	initialize: function(type, item, values) {
 		this.type = type;
 		this.item = item;
-		if (values) {
-			// Copy over passed values, depending on use case.
-			// DOCS: HitResult#location, #segment, #name, #point
-			Base.each(values, function(value, key) {
-				this[key] = value;
-			}, this);
-		}
+		// Inject passed values, so we can be flexible about the HitResult
+		// properties.
+		// This allows the definition of getters too, e.g. for 'pixel'.
+		if (values)
+			this.inject(values);
 	},
 
 	/**
