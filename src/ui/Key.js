@@ -67,19 +67,14 @@ var Key = this.Key = new function() {
 	function handleKey(down, keyCode, charCode, event) {
 		var character = String.fromCharCode(charCode),
 			key = keys[keyCode] || character.toLowerCase(),
-			handler = down ? 'onKeyDown' : 'onKeyUp',
+			type = down ? 'keydown' : 'keyup',
 			view = View._focused,
 			scope = view && view.isVisible() && view._scope,
 			tool = scope && scope.tool;
 		keyMap[key] = down;
-		if (tool && tool[handler]) {
+		if (tool && tool.responds(type)) {
 			// Call the onKeyDown or onKeyUp handler if present
-			// When the handler function returns false, prevent the
-			// default behaviour of the key event:
-			// PORT: Add to Sg
-			var keyEvent = new KeyEvent(down, key, character, event);
-			if (tool[handler](keyEvent) === false)
-				keyEvent.preventDefault();
+			tool.fire(type, new KeyEvent(down, key, character, event));
 			if (view)
 				view.draw(true);
 		}
