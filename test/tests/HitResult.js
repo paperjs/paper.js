@@ -370,7 +370,7 @@ test('hitting path bounding box', function() {
 
 		equals(function() {
 			return hitResult.point.toString();
-		},path.bounds.topLeft.toString());
+		}, path.bounds.topLeft.toString());
 	}
 });
 
