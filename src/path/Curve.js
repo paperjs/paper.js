@@ -582,21 +582,14 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				c1x = v[2], c1y = v[3],
 				c2x = v[4], c2y = v[5],
 				p2x = v[6], p2y = v[7],
-
 				ux = 3 * c1x - 2 * p1x - p2x,
 				uy = 3 * c1y - 2 * p1y - p2y,
 				vx = 3 * c2x - 2 * p2x - p1x,
-				vy = 3 * c2y - 2 * p2y - p1y;
-			ux *= ux;
-			uy *= uy;
-			vx *= vx;
-			vy *= vy;
-			if (ux < vx)
-				ux = vx;
-			if (uy < vy)
-				uy = vy;
+				vy = 3 * c2y - 2 * p2y - p1y,
+				tol = Numerical.TOLERNACE;
 			// Tolerance is 16 * tol ^ 2
-			return ux + uy <= 16 * Numerical.TOLERNACE * Numerical.TOLERNACE;
+			return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy)
+					<= 16 * tol * tol;
 		}
 	}
 }, new function() { // Scope for methods that require numerical integration
