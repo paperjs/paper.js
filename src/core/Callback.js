@@ -16,14 +16,15 @@
 
 var Callback = {
 	attach: function(type, func) {
-		var entry = this._events[type];
 		// If an object literal is passed, attach all callbacks defined in it
-		if (!entry) {
+		if (typeof type !== 'string') {
 			return Base.each(type, function(value, key) {
 				this.attach(key, value);
 			}, this);
 		}
-		// Otherwise, attach the event now
+		var entry = this._eventTypes[type];
+		if (!entry)
+			return this;
 		var handlers = this._handlers = this._handlers || {};
 		handlers = handlers[type] = handlers[type] || [];
 		if (handlers.indexOf(func) == -1) { // Not added yet, add it now
@@ -37,20 +38,23 @@ var Callback = {
 	},
 
 	detach: function(type, func) {
-		var entry = this._events[type];
 		// If an object literal is passed, detach all callbacks defined in it
-		if (!entry) {
+		if (typeof type !== 'string') {
 			return Base.each(type, function(value, key) {
 				this.detach(key, value);
 			}, this);
 		}
-		// Otherwise, detach the event now
-		var handlers = this._handlers && this._handlers[type],
-			index = handlers && handlers.indexOf(func) || -1;
-		if (index != -1) {
-			handlers.splice(index, 1);
-			// See if this is the last handler that we're detaching, and
-			// call uninstall if defined.
+		var entry = this._eventTypes[type],
+			handlers = this._handlers && this._handlers[type],
+			index;
+		if (entry && handlers) {
+			if (!func) { // Remove all
+				handlers = [];
+			} else if ((index = handlers.indexOf(func)) != -1) {
+				handlers.splice(index, 1);
+			}
+			// See if this is the last handler that we're detaching, and call
+			// uninstall if defined.
 			if (!handlers.length) {
 				delete this._handlers[type];
 				if (entry.uninstall)
@@ -58,14 +62,6 @@ var Callback = {
 			}
 		}
 		return this;
-	},
-
-	detachAll: function(type) {
-		return Base.each(this._handlers && this._handlers[type] || [],
-				function(func) {
-					this.detach(type, func);
-				},
-				this);
 	},
 
 	fire: function(type, param) {
@@ -79,26 +75,44 @@ var Callback = {
 		return true;
 	},
 
+	responds: function(type) {
+		return this._handlers && this._handlers[type];
+	},
+
 	statics: {
 		inject: function(/* src, ... */) {
 			for (var i = 0, l = arguments.length; i < l; i++) {
 				var src = arguments[i],
 					events = src._events;
 				if (events) {
-					Base.each(events, function(entry, type) {
-						var part = Base.capitalize(type);
-						src['getOn' + part] = function() {
-							return this['_on' + part];
+					// events can either be an object literal or an array of
+					// strings describing the on*-names.
+					// We need to map lowercased event types to the event
+					// entries represented by these on*-names in _events.
+					var types = {};
+					Base.each(events, function(entry, key) {
+						var isString = typeof entry === 'string',
+							name = isString ? entry : key,
+							part = Base.capitalize(name),
+							type = name.substring(2).toLowerCase();
+						// Map the event type name to the event entry.
+						types[type] = isString ? {} : entry;
+						// Create getters and setters for the property
+						// with the on*-name name:
+						name = '_' + name;
+						src['get' + part] = function() {
+							return this[name];
 						};
-						src['setOn' + part] = function(func) {
+						src['set' + part] = function(func) {
 							if (func) {
 								this.attach(type, func);
 							} else {
-								this.detach(type, this['_on' + part]);
+								this.detach(type, this[name]);
 							}
-							this['_on' + part] = func;
+							this[name] = func;
 						};
 					});
+					src._eventTypes = types;
 				}
 				this.base(src);
 			}
