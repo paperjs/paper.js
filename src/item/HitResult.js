@@ -39,7 +39,7 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	 * @property
 	 * @name HitResult#type
 	 * @type String('segment', 'handle-in', 'handle-out', 'stroke', 'fill',
-	 * 'bounds', 'center')
+	 * 'bounds', 'center', 'pixel')
 	 */
 
 	/**
@@ -67,6 +67,15 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	 * @property
 	 * @name HitResult#location
 	 * @type CurveLocation
+	 */
+
+	/**
+	 * If the HitResult has a type of 'pixel', this property refers to the color
+	 * of the pixel on the {@link Raster} that was hit.
+	 *
+	 * @property
+	 * @name HitResult#color
+	 * @type RgbColor
 	 */
 
 	/**
