@@ -299,7 +299,6 @@ var Color = this.Color = Base.extend(new function() {
 			 * @ignore
 			 */
 			extend: function(src) {
-				src.beans = true;
 				if (src._colorType) {
 					var comps = components[src._colorType];
 					// Automatically produce the _components field, adding alpha
