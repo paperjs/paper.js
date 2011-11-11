@@ -1240,10 +1240,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			segment._transformCoordinates(matrix, coords);
 			for (var j = ends || options.segments ? 0 : 2,
 					m = !ends && options.handles ? 6 : 2; j < m; j += 2) {
-				if (point.getDistance(coords[j], coords[j + 1]) < tolerance)
+				if (point.getDistance(coords[j], coords[j + 1]) < tolerance) {
 					return new HitResult(j == 0 ? 'segment'
-							: 'handle-' + (j == 2 ? 'in' : 'out'),
-							that, { segment: segment });
+							: 'handle-' + (j == 2 ? 'in' : 'out'), that, {
+								segment: segment,
+								point: Point.create(coords[j], coords[j + 1])
+							});
+				}
 			}
 		}
 		if (options.ends && !options.segments && !this._closed) {
