@@ -14,30 +14,6 @@
  * All rights reserved.
  */
 
-/*
-var events = {
-	frame: function() {
-
-	},
-
-	resize: function() {
-
-	}
-};
-
-view.attach(events);
-view.detach(events);
-
-function handler() {
-	
-}
-
-view.attach('frame', handler);
-
-
-view.detach('frame', handler);
-*/
-
 var Callback = {
 	attach: function(type, func) {
 		var entry = this._events[type];
