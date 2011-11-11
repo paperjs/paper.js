@@ -23,9 +23,60 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-var View = this.View = PaperScopeItem.extend(/** @lends View# */{
+var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 	_list: 'views',
 	_reference: 'view',
+	_events: {
+		frame: {
+			install: function() {
+/*#*/ if (options.browser) {
+				var that = this,
+					requested = false,
+					before,
+					time = 0,
+					count = 0;
+				this._onFrameCallback = function(param, dontRequest) {
+					requested = false;
+					// See if we need to stop due to a call to uninstall()
+					if (!that._onFrameCallback)
+						return;
+					// Set the global paper object to the current scope
+					paper = that._scope;
+					if (!dontRequest) {
+						// Request next frame already
+						requested = true;
+						DomEvent.requestAnimationFrame(that._onFrameCallback,
+								that._canvas);
+					}
+					var now = Date.now() / 1000,
+					 	delta = before ? now - before : 0;
+					// delta: Time elapsed since last redraw in seconds
+					// time: Time since first call of frame() in seconds
+					// Use Base.merge to convert into a Base object,
+					// for #toString()
+					that.fire('frame', Base.merge({
+						delta: delta,
+						time: time += delta,
+						count: count++
+					}));
+					before = now;
+					// Automatically draw view on each frame.
+					that.draw(true);
+				};
+				// Call the onFrame handler straight away, initializing the
+				// sequence of onFrame calls.
+				if (!requested)
+					this._onFrameCallback();
+/*#*/ } // options.browser
+			},
+
+			uninstall: function() {
+				delete this._onFrameCallback;
+			}
+		},
+
+		resize: {}
+	},
 
 	/**
 	 * Creates a view object
@@ -123,8 +174,8 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 		this._zoom = 1;
 
 /*#*/ if (options.browser) {
-		this._events = this._createEvents();
-		DomEvent.add(this._canvas, this._events);
+		this._domEvents = this._createEvents();
+		DomEvent.add(this._canvas, this._domEvents);
 		// Make sure the first view is focused for keyboard input straight away
 		if (!View._focused)
 			View._focused = this;
@@ -155,9 +206,11 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 			View._focused = null;
 		delete View._views[this._id];
 		// Uninstall event handlers again for this view.
-		DomEvent.remove(this._canvas, this._events);
-		// Clearing _onFrame makes the frame handler stop automatically.
-		this._canvas = this._events = this._onFrame = null;
+		DomEvent.remove(this._canvas, this._domEvents);
+		this._canvas = this._domEvents = null;
+		// Removing all onFrame handlers makes the _onFrameCallback handler stop
+		// automatically through its uninstall method.
+		this.detachAll('frame');
 		return true;
 	},
 
@@ -215,12 +268,10 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 		this._bounds = null;
 		this._redrawNeeded = true;
 		// Call onResize handler on any size change
-		if (this.onResize) {
-			this.onResize({
-				size: size,
-				delta: delta
-			});
-		}
+		this.fire('resize', {
+			size: size,
+			delta: delta
+		});
 		this._redraw();
 	},
 
@@ -346,7 +397,7 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 		if (!this._inverse)
 			this._inverse = this._matrix.createInverse();
 		return this._inverse;
-	},
+	}
 
 	/**
 	 * {@grouptitle Event Handlers}
@@ -373,57 +424,10 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 	 * 	path.rotate(3);
 	 * }
 	 *
+	 * @property
+	 * @name View#onFrame
 	 * @type Function
-	 * @bean
 	 */
-	getOnFrame: function() {
-		return this._onFrame;
-	},
-
-	setOnFrame: function(onFrame) {
-		this._onFrame = onFrame;
-		if (!onFrame) {
-			delete this._onFrameCallback;
-			return;
-		}
-/*#*/ if (options.browser) {
-		var that = this,
-			requested = false,
-			before,
-			time = 0,
-			count = 0;
-		this._onFrameCallback = function(param, dontRequest) {
-			requested = false;
-			if (!that._onFrame)
-				return;
-			// Set the global paper object to the current scope
-			paper = that._scope;
-			// Request next frame already
-			requested = true;
-			if (!dontRequest) {
-				DomEvent.requestAnimationFrame(that._onFrameCallback,
-						that._canvas);
-			}
-			var now = Date.now() / 1000,
-			 	delta = before ? now - before : 0;
-			// Use Base.merge to convert into a Base object, for #toString()
-			that._onFrame(Base.merge({
-				delta: delta, // Time elapsed since last redraw in seconds
-				time: time += delta, // Time since first call of frame() in seconds
-				count: count++
-			}));
-			before = now;
-			// Automatically draw view on each frame.
-			that.draw(true);
-		};
-		// Call the onFrame handler straight away, initializing the sequence
-		// of onFrame calls.
-		if (!requested)
-			this._onFrameCallback();
-/*#*/ } // options.browser
-	},
-
-
 
 	/**
 	 * Handler function that is called whenever a view is resized.
@@ -440,9 +444,10 @@ var View = this.View = PaperScopeItem.extend(/** @lends View# */{
 	 * 	path.position = view.center;
 	 * }
 	 *
+	 * @property
+	 * @name View#onResize
 	 * @type Function
 	 */
-	onResize: null
 }, {
 	statics: {
 		_views: {},
