@@ -64,19 +64,23 @@ var Callback = {
 		return this;
 	},
 
-	fire: function(type, param) {
+	fire: function(type, event) {
 		// Returns true if fired, false otherwise
 		var handlers = this._handlers && this._handlers[type];
 		if (!handlers)
 			return false;
 		Base.each(handlers, function(func) {
-			func.call(this, param);
+			// When the handler function returns false, prevent the default
+			// behaviour of the event by calling stop() on it
+			// PORT: Add to Sg
+			if (func.call(this, event) === false && event && event.stop)
+				event.stop();
 		}, this);
 		return true;
 	},
 
 	responds: function(type) {
-		return this._handlers && this._handlers[type];
+		return !!(this._handlers && this._handlers[type]);
 	},
 
 	statics: {
@@ -106,7 +110,7 @@ var Callback = {
 						src['set' + part] = function(func) {
 							if (func) {
 								this.attach(type, func);
-							} else {
+							} else if (this[name]) {
 								this.detach(type, this[name]);
 							}
 							this[name] = func;
