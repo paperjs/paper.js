@@ -80,7 +80,8 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	 */
 
 	/**
-	 * The hit point.
+	 * Describes the actual coordinates of the segment, handle or bounding box
+	 * corner that was hit.
 	 *
 	 * @property
 	 * @name HitResult#point
