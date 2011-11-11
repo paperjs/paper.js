@@ -169,10 +169,7 @@ var PaperScript = this.PaperScript = new function() {
 			(function() {
 				var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
 					onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp,
-					onFrame, onResize,
-					handlers = [ 'onEditOptions', 'onSelect', 'onDeselect',
-						'onReselect', 'onMouseDown', 'onMouseUp', 'onMouseDrag',
-						'onMouseMove', 'onKeyDown', 'onKeyUp'];
+					onFrame, onResize;
 				res = eval(compile(code));
 				if (tool) {
 					// We could do this instead to avoid eval(), but it's longer
@@ -186,7 +183,7 @@ var PaperScript = this.PaperScript = new function() {
 					// tool.onMouseMove = onMouseMove;
 					// tool.onKeyDown = onKeyDown;
 					// tool.onKeyUp = onKeyUp;
-					Base.each(handlers, function(key) {
+					Base.each(tool._events, function(key) {
 						tool[key] = eval(key);
 					});
 				}
