@@ -608,8 +608,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 
 		statics: {
 			/**
-			 * Loops through all scopes and their views and sets the focus on
-			 * the first active one.
+			 * Loops through all views and sets the focus on the first
+			 * active one.
 			 */
 			updateFocus: updateFocus
 		}
