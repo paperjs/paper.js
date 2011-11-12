@@ -1003,7 +1003,7 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 		if (!this._children)
 			return null;
 		from = from || 0;
-	 	to = Base.pick(to, this._children.length);
+		to = Base.pick(to, this._children.length);
 		var removed = this._children.splice(from, to - from);
 		for (var i = removed.length - 1; i >= 0; i--)
 			removed[i]._remove(true, false);
