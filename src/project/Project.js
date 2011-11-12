@@ -241,20 +241,6 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @type Symbol[]
 	 */
 
-	/**
-	 * The views contained within the project.
-	 *
-	 * @name Project#views
-	 * @type View[]
-	 */
-
-	/**
-	 * The view which is currently active.
-	 *
-	 * @name Project#activeView
-	 * @type View
-	 */
-
 	draw: function(ctx) {
 		ctx.save();
 		var param = { offset: new Point(0, 0) };
