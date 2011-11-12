@@ -28,11 +28,11 @@ var Callback = {
 		var handlers = this._handlers = this._handlers || {};
 		handlers = handlers[type] = handlers[type] || [];
 		if (handlers.indexOf(func) == -1) { // Not added yet, add it now
+			handlers.push(func);
 			// See if this is the first handler that we're attaching, and 
 			// call install if defined.
-			if (entry.install && !handlers.length)
+			if (entry.install && handlers.length == 1)
 				entry.install.call(this);
-			handlers.push(func);
 		}
 		return this;
 	},
@@ -48,17 +48,16 @@ var Callback = {
 			handlers = this._handlers && this._handlers[type],
 			index;
 		if (entry && handlers) {
-			if (!func) { // Remove all
-				handlers = [];
-			} else if ((index = handlers.indexOf(func)) != -1) {
-				handlers.splice(index, 1);
-			}
-			// See if this is the last handler that we're detaching, and call
-			// uninstall if defined.
-			if (!handlers.length) {
-				delete this._handlers[type];
+			// See if this is the last handler that we're detaching (or if we
+			// are detaching all handlers), and call uninstall if defined.
+			if (!func || (index = handlers.indexOf(func)) != -1
+					&& handlers.length == 1) {
 				if (entry.uninstall)
 					entry.uninstall.call(this);
+				delete this._handlers[type];
+			} else if (index != -1) {
+				// Just remove this one handler
+				handlers.splice(index, 1);
 			}
 		}
 		return this;
