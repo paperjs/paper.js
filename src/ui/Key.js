@@ -24,7 +24,7 @@ var Key = this.Key = new function() {
 	// slash, etc etc etc.
 
 	var keys = {
-		 8: 'backspace',
+		8: 'backspace',
 		13: 'enter',
 		16: 'shift',
 		17: 'control',
