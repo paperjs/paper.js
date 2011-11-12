@@ -14,7 +14,6 @@
  * All rights reserved.
  */
 
-// DOCS: write Color class documentation.
 /**
  * @name Color
  *

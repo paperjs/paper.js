@@ -626,7 +626,24 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
-	// DOCS: Document #expand and #scale
+	/**
+	 * Expands the rectangle by the specified amount in both horizontal and
+	 * vertical directions.
+	 *
+	 * @name Rectangle#expand
+	 * @function
+	 * @param {Number} amount
+	 */
+	/**
+	 * Expands the rectangle in horizontal direction by the specified
+	 * {@code hor} amount and in vertical direction by the specified {@code ver}
+	 * amount.
+	 *
+	 * @name Rectangle#expand^2
+	 * @function
+	 * @param {Number} hor
+	 * @param {Number} ver
+	 */
 	expand: function(hor, ver) {
 		if (ver === undefined)
 			ver = hor;
@@ -634,6 +651,23 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 				this.width + hor, this.height + ver);
 	},
 
+	/**
+	 * Scales the rectangle by the specified amount from its center.
+	 *
+	 * @name Rectangle#scale
+	 * @function
+	 * @param {Number} amount
+	 */
+	/**
+	 * Scales the rectangle in horizontal direction by the specified
+	 * {@code hor} amount and in vertical direction by the specified {@code ver}
+	 * amount from its center.
+	 *
+	 * @name Rectangle#scale^2
+	 * @function
+	 * @param {Number} hor
+	 * @param {Number} ver
+	 */
 	scale: function(hor, ver) {
 		return this.expand(this.width * hor - this.width,
 				this.height * (ver === undefined ? hor : ver) - this.height);
