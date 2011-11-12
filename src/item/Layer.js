@@ -76,14 +76,15 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 				: this._project.layers[this._index - 1] || null;
 	},
 
-	// DOCS: improve Layer#activate() example.
 	/**
 	 * Activates the layer.
 	 *
 	 * @example
-	 * var layer = new Layer();
-	 * layer.activate();
-	 * console.log(project.activeLayer == layer); // true
+	 * var firstLayer = project.activeLayer;
+	 * var secondLayer = new Layer();
+	 * console.log(project.activeLayer == secondLayer); // true
+	 * firstLayer.activate();
+	 * console.log(project.activeLayer == firstLayer); // true
 	 */
 	activate: function() {
 		this._project.activeLayer = this;
