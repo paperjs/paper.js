@@ -1820,7 +1820,13 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 			}
 		}
 	}
-}, new function() {
+}, Base.each(['down', 'drag', 'up', 'move'], function(name) {
+	this['removeOn' + Base.capitalize(name)] = function() {
+		var hash = {};
+		hash[name] = true;
+		return this.removeOn(hash);
+	};
+}, /** @lends Item# */{
 	/**
 	 * {@grouptitle Remove On Event}
 	 *
@@ -1934,25 +1940,16 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * 	path.removeOnUp();
 	 * }
 	 */
-
 	// TODO: implement Item#removeOnFrame
-	return Base.each(['down', 'drag', 'up', 'move'], function(name) {
-		this['removeOn' + Base.capitalize(name)] = function() {
-			var hash = {};
-			hash[name] = true;
-			return this.removeOn(hash);
-		};
-	}, {
-		removeOn: function(obj) {
-			for (var name in obj) {
-				if (obj[name]) {
-					var key = 'mouse' + name,
-						sets = Tool._removeSets = Tool._removeSets || {};
-					sets[key] = sets[key] || {};
-					sets[key][this.getId()] = this;
-				}
+	removeOn: function(obj) {
+		for (var name in obj) {
+			if (obj[name]) {
+				var key = 'mouse' + name,
+					sets = Tool._removeSets = Tool._removeSets || {};
+				sets[key] = sets[key] || {};
+				sets[key][this.getId()] = this;
 			}
-			return this;
 		}
-	});
-});
+		return this;
+	}
+}));
