@@ -822,6 +822,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 			Base.splice(this._children, [item], index, 0);
 			item._parent = this;
 			item._setProject(this._project);
+			// Setting the name again makes sure all name lookup structures are
+			// kept in sync.
 			if (item._name)
 				item.setName(item._name);
 			this._changed(Change.HIERARCHY);
