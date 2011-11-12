@@ -24,7 +24,30 @@
  * is unique to their type, but share the underlying properties and functions
  * that they inherit from Item.
  */
-var Item = this.Item = Base.extend(/** @lends Item# */{
+var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
+	_events: new function() {
+		var onFrameItems = [];
+		function onFrame(event) {
+			for (var i = 0, l = onFrameItems.length; i < l; i++)
+				onFrameItems[i].fire('frame', event);
+		}
+
+		return {
+				onFrame: {
+					install: function() {
+						if (!onFrameItems.length)
+							this._project.view.attach('frame', onFrame);
+						onFrameItems.push(this);
+					},
+					uninstall: function() {
+						onFrameItems.splice(onFrameItems.indexOf(this), 1);
+						if (!onFrameItems.length)
+							this._project.view.detach('frame', onFrame);
+					}
+				}
+		};
+	},
+
 	initialize: function() {
 		// Define this Item's unique id.
 		this._id = ++Item._id;
