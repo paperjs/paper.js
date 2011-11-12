@@ -1229,7 +1229,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	_hitTest: function(point, options, matrix) {
 		var tolerance = options.tolerance || 0,
-			radius = (options.stroke ? this.getStrokeWidth() / 2 : 0) + tolerance,
+			radius = (options.stroke && this.getStrokeColor()
+					? this.getStrokeWidth() / 2 : 0) + tolerance,
 			loc,
 			res;
 		// If we're asked to query for segments, ends or handles, do all that
