@@ -982,7 +982,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
-	// DOCS: improve Path#getPointAt documenation.
 	/**
 	 * Get the point on the path at the given offset.
 	 *
