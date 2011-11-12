@@ -533,49 +533,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		},
 
 		isFlatEnough: function(v) {
-			// Code from Nearest Point-on-Curve Problem and by Philip J.
-			// Schneider from "Graphics Gems", Academic Press, 1990, adapted
-			// and optimised for cubic bezier curves.
-			// Derive the implicit equation for line connecting first and last
-			// control points
-			/*
-			var p1x = v[0], p1y = v[1],
-				c1x = v[2], c1y = v[3],
-				c2x = v[4], c2y = v[5],
-				p2x = v[6], p2y = v[7],
-
-				a = p1y - p2y,
-				b = p2x - p1x,
-				c = p1x * p2y - p2x * p1y,
-				// Find the largest distance from each of the points to the line
-				v1 = a * c1x + b * c1y + c,
-				v2 = a * c2x + b * c2y + c;
-			// Compute intercepts of bounding box
-			return Math.abs((v1 * v1 + v2 * v2) / (a * (a * a + b * b))) < 0.005;
-			*/
-			// Inspired by Skia, but to be tested:
-			// Calculate 1/3 (m1) and 2/3 (m2) along the line between start (p1)
-			// and end (p2), measure distance from there the control points and
-			// see if they are further away than 1/2.
-			// Seems all very inaccurate, especially since the distance
-			// measurement is just the bigger one of x / y...
-			// TODO: Find a more accurate and still fast way to determine this.
-			/*
-			var p1x = v[0], p1y = v[1],
-				c1x = v[2], c1y = v[3],
-				c2x = v[4], c2y = v[5],
-				p2x = v[6], p2y = v[7],
-
-				vx = (p2x - p1x) / 3,
-				vy = (p2y - p1y) / 3,
-				m1x = p1x + vx,
-				m1y = p1y + vy,
-				m2x = p2x - vx,
-				m2y = p2y - vy;
-			return Math.max(
-					Math.abs(m1x - c1x), Math.abs(m1y - c1y),
-					Math.abs(m2x - c1x), Math.abs(m1y - c1y)) < 1 / 2;
-			*/
 			// Thanks to Kaspar Fischer for the following:
 			// http://www.inf.ethz.ch/personal/fischerk/pubs/bez.pdf
 			var p1x = v[0], p1y = v[1],
@@ -585,11 +542,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				ux = 3 * c1x - 2 * p1x - p2x,
 				uy = 3 * c1y - 2 * p1y - p2y,
 				vx = 3 * c2x - 2 * p2x - p1x,
-				vy = 3 * c2y - 2 * p2y - p1y,
-				tol = Numerical.TOLERNACE;
-			// Tolerance is 16 * tol ^ 2
-			return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy)
-					<= 16 * tol * tol;
+				vy = 3 * c2y - 2 * p2y - p1y;
+			return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy) < 1;
 		}
 	}
 }, new function() { // Scope for methods that require numerical integration
