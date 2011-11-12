@@ -25,15 +25,19 @@ var Event = this.Event = Base.extend(/** @lends Event# */{
 
 	// PORT: Add to Scriptographer
 	preventDefault: function() {
+		this._prevented = true;
 		DomEvent.preventDefault(this.event);
+		return this;
 	},
 
 	stopPropagation: function() {
+		this._stopped = true;
 		DomEvent.stopPropagation(this.event);
+		return this;
 	},
 
 	stop: function() {
-		DomEvent.stop(this.event);
+		return this.stopPropagation().preventDefault();
 	},
 
 	// DOCS: Document Event#modifiers
