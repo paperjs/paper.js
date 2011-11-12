@@ -189,6 +189,12 @@ var PaperScript = this.PaperScript = new function() {
 				}
 				if (view) {
 					view.setOnResize(onResize);
+					// Fire resize event directly, so any user
+					// defined resize handlers are called.
+					view.fire('resize', {
+						size: view.size,
+						delta: new Point()
+					});
 					view.setOnFrame(onFrame);
 					// Automatically draw view at the end.
 					view.draw();

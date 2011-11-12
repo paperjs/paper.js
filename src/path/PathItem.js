@@ -43,7 +43,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	 * path.strokeColor = 'black';
 	 *
 	 * // Select the path, so we can see its handles:
-	 * path.selected = true;
+	 * path.fullySelected = true;
 	 *
 	 * // Create a copy of the path and move it 100pt to the right:
 	 * var copy = path.clone();
