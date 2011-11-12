@@ -455,7 +455,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	// and server (rendering)
 /*#*/ if (options.browser) {
 	var tool,
-		timer,
 		curPoint,
 		tempFocus,
 		dragging = false;
@@ -519,8 +518,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		dragging = false;
 		curPoint = null;
 		if (tool) {
-			if (timer != null)
-				timer = clearInterval(timer);
 			if (tool.onHandleEvent('mouseup', viewToProject(view, event),
 			 		event)) {
 				view.draw(true);
