@@ -1212,6 +1212,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	contains: function(point, matrix) {
 		point = Point.read(arguments);
+		// Note: This only works correctly with even-odd fill rule, or paths
+		// that do not overlap with themselves.
+		// TODO: Find out how to implement the "Point In Polygon" problem for
+		// non-zero fill rule.
 		if (!this._closed || !this.getRoughBounds(matrix)._containsPoint(point))
 			return false;
 		// Use the crossing number algorithm, by counting the crossings of the
