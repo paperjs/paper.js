@@ -514,8 +514,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		return this._parent;
 	},
 
-	// DOCS: add comment to Item#children about not playing around with the
-	// array directly - use addChild etc instead.
 	/**
 	 * The children items contained within this item. Items that define a
 	 * {@link #name} can also be accessed by name.
