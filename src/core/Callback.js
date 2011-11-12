@@ -33,9 +33,6 @@ var Callback = {
 			// call install if defined.
 			if (entry.install && handlers.length == 1)
 				entry.install.call(this);
-			// If the event entry provide an attach callback, call it now
-			if (entry.attach)
-				entry.attach.call(this, type, func);
 		}
 		return this;
 	},
@@ -51,9 +48,6 @@ var Callback = {
 			handlers = this._handlers && this._handlers[type],
 			index;
 		if (entry && handlers) {
-			// If the event entry provide a detach callback, call it now
-			if (entry.detach)
-				entry.detach.call(this, type, func);
 			// See if this is the last handler that we're detaching (or if we
 			// are detaching all handlers), and call uninstall if defined.
 			if (!func || (index = handlers.indexOf(func)) != -1
