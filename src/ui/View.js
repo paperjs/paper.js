@@ -565,8 +565,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 				curPoint = viewToProject(view, event);
 				if (tool.onHandleEvent('mousedown', curPoint, event))
 					view.draw(true);
-				if (tool.eventInterval != null)
-					timer = setInterval(mousemove, tool.eventInterval);
 				dragging = true;
 			}
 

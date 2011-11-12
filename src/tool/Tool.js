@@ -77,16 +77,6 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 	 */
 
 	/**
-	 * The fixed time delay in milliseconds between each call to the
-	 * {@link #onMouseDrag} event. Setting this to an interval means the
-	 * {@link #onMouseDrag} event is called repeatedly after the initial
-	 * {@link #onMouseDown} until the user releases the mouse.
-	 *
-	 * @type Number
-	 */
-	eventInterval: null,
-
-	/**
 	 * The minimum distance the mouse has to drag before firing the onMouseDrag
 	 * event, since the last onMouseDrag event.
 	 *
@@ -164,9 +154,6 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 	 * The function to be called when the mouse position changes while the mouse
 	 * is being dragged. The function receives a {@link ToolEvent} object which
 	 * contains information about the mouse event.
-	 *
-	 * This function can also be called periodically while the mouse doesn't
-	 * move by setting the {@link #eventInterval}
 	 *
 	 * @name Tool#onMouseDrag
 	 * @property
