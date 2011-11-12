@@ -32,7 +32,7 @@ var Callback = {
 			// See if this is the first handler that we're attaching, and 
 			// call install if defined.
 			if (entry.install && handlers.length == 1)
-				entry.install.call(this);
+				entry.install.call(this, type);
 		}
 		return this;
 	},
@@ -53,7 +53,7 @@ var Callback = {
 			if (!func || (index = handlers.indexOf(func)) != -1
 					&& handlers.length == 1) {
 				if (entry.uninstall)
-					entry.uninstall.call(this);
+					entry.uninstall.call(this, type);
 				delete this._handlers[type];
 			} else if (index != -1) {
 				// Just remove this one handler

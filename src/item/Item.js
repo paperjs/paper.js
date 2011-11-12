@@ -26,13 +26,58 @@
  */
 var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	_events: new function() {
+
+		// Flags defining which native events are required by which Paper events
+		// as required for counting amount of necessary natives events.
+		// The mapping is native -> virtual
+		var mouseFlags = {
+			mousedown: {
+				mousedown: 1,
+				mousedrag: 1,
+				click: 1,
+				doubleclick: 1
+			},
+			mouseup: {
+				mouseup: 1,
+				mousedrag: 1,
+				click: 1,
+				doubleclick: 1
+			},
+			mousemove: {
+				mousedrag: 1,
+				mousemove: 1,
+				mouseenter: 1,
+				mouseleave: 1
+			}
+		};
+
+		// Entry for all mouse events in the _events list
+		var mouseEvent = {
+			install: function(type) {
+				var counters = this._project.view._eventCounters;
+				for (var key in mouseFlags) {
+					counters[key] = (counters[key] || 0)
+							+ (mouseFlags[key][type] || 0);
+				}
+			},
+			uninstall: function(type) {
+				var counters = this._project.view._eventCounters;
+				for (var key in mouseFlags)
+					counters[key] -= mouseFlags[key][type] || 0;
+			}
+		};
+
 		var onFrameItems = [];
 		function onFrame(event) {
 			for (var i = 0, l = onFrameItems.length; i < l; i++)
 				onFrameItems[i].fire('frame', event);
 		}
 
-		return {
+		return Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
+			'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
+			function(name) {
+				this[name] = mouseEvent;
+			}, {
 				onFrame: {
 					install: function() {
 						if (!onFrameItems.length)
@@ -45,7 +90,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 							this._project.view.detach('frame', onFrame);
 					}
 				}
-		};
+			});
 	},
 
 	initialize: function() {
