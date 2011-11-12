@@ -424,8 +424,8 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 	 * 	path.rotate(3);
 	 * }
 	 *
-	 * @property
 	 * @name View#onFrame
+	 * @property
 	 * @type Function
 	 */
 
@@ -444,8 +444,8 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 	 * 	path.position = view.center;
 	 * }
 	 *
-	 * @property
 	 * @name View#onResize
+	 * @property
 	 * @type Function
 	 */
 }, {

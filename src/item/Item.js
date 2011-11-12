@@ -735,8 +735,6 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * {@link Item#guide} set to {@code true}.
 	 * <b>options.selected:</b> {@code Boolean} - Only hit selected items.
 	 *
-	 * @name Item#hitTest
-	 * @function
 	 * @param {Point} point The point where the hit test should be performed
 	 * @param {Object} [options={ fill: true, stroke: true, segments: true,
 	 * tolerance: 2 }]
@@ -990,14 +988,11 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * @return {Item[]} an array containing the removed items
 	 */
 	/**
-	 * Removes all of the item's {@link #children} (if any).
-	 *
-	 * @return {Item[]} an array containing the removed items
-	 */
-	/**
 	 * Removes the children from the specified {@code from} index to the
 	 * {@code to} index from the parent's {@link #children} array.
 	 *
+	 * @name Item#removeChildren
+	 * @function
 	 * @param {Number} from the beginning index, inclusive
 	 * @param {Number} [to=children.length] the ending index, exclusive
 	 * @return {Item[]} an array containing the removed items
@@ -1289,8 +1284,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 *
 	 * The color of the stroke.
 	 *
-	 * @property
 	 * @name Item#strokeColor
+	 * @property
 	 * @type RgbColor|HsbColor|HslColor|GrayColor
 	 *
 	 * @example {@paperscript}
@@ -1307,8 +1302,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	/**
 	 * The width of the stroke.
 	 *
-	 * @property
 	 * @name Item#strokeWidth
+	 * @property
 	 * @type Number
 	 *
 	 * @example {@paperscript}
@@ -1329,8 +1324,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * The shape to be used at the end of open {@link Path} items, when they
 	 * have a stroke.
 	 *
-	 * @property
 	 * @name Item#strokeCap
+	 * @property
 	 * @default 'butt'
 	 * @type String('round', 'square', 'butt')
 	 *
@@ -1361,8 +1356,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	/**
 	 * The shape to be used at the corners of paths when they have a stroke.
 	 *
-	 * @property
 	 * @name Item#strokeJoin
+	 * @property
 	 * @default 'miter'
 	 * @type String ('miter', 'round', 'bevel')
 	 *
@@ -1391,8 +1386,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	/**
 	 * The dash offset of the stroke.
 	 *
-	 * @property
 	 * @name Item#dashOffset
+	 * @property
 	 * @default 0
 	 * @type Number
 	 */
@@ -1408,8 +1403,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * // Set the dashed stroke to [10pt dash, 4pt gap]:
 	 * path.dashArray = [10, 4];
 	 *
-	 * @property
 	 * @name Item#dashArray
+	 * @property
 	 * @default []
 	 * @type Array
 	 */
@@ -1422,8 +1417,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 * miterLimit imposes a limit on the ratio of the miter length to the
 	 * {@link Item#strokeWidth}.
 	 *
-	 * @property
 	 * @default 10
+	 * @property
 	 * @name Item#miterLimit
 	 * @type Number
 	 */
@@ -1433,8 +1428,8 @@ var Item = this.Item = Base.extend(/** @lends Item# */{
 	 *
 	 * The fill color of the item.
 	 *
-	 * @property
 	 * @name Item#fillColor
+	 * @property
 	 * @type RgbColor|HsbColor|HslColor|GrayColor
 	 *
 	 * @example {@paperscript}
