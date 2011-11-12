@@ -237,7 +237,7 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 	 * path.fillColor = 'red';
 	 *
 	 * function onKeyDown(event) {
-	 * 	if(event.key == 'space') {
+	 * 	if (event.key == 'space') {
 	 * 		// Scale the path by 110%:
 	 * 		path.scale(1.1);
 	 *
@@ -262,7 +262,7 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 	 *
 	 * @example
 	 * function onKeyUp(event) {
-	 * 	if(event.key == 'space') {
+	 * 	if (event.key == 'space') {
 	 * 		console.log('The spacebar was released!');
 	 * 	}
 	 * }
