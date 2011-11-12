@@ -23,9 +23,7 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
-	_list: 'views',
-	_reference: 'view',
+var View = this.View = Base.extend(Callback, /** @lends View# */{
 	_events: {
 		onFrame: {
 			install: function() {
@@ -79,15 +77,18 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 	},
 
 	/**
-	 * Creates a view object
-	 * @param {HTMLCanvasElement|String} canvas The canvas object that this
-	 * view should wrap, or the String id that represents it
+	 * Creates a view object for a given project.
+	 * 
+	 * @param {HTMLCanvasElement} canvas The canvas object that this view should
+	 * wrap
 	 */
 	initialize: function(canvas) {
-		this.base();
+		// Store reference to the currently active global paper scope, and the
+		// active project, which will be represented by this view
+		this._scope = paper;
+		this._project = paper.project;
 		// Handle canvas argument
 		var size;
-
 /*#*/ if (options.server) {
 		if (canvas && canvas instanceof Canvas) {
 			this._canvas = canvas;
@@ -104,11 +105,7 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 		this._id = this._canvas.id;
 		if (this._id == null)
 			this._canvas.id = this._id = 'canvas-' + View._id++;
-/*#*/ } // options.server
-
-/*#*/ if (options.browser) {
-		if (typeof canvas === 'string')
-			canvas = document.getElementById(canvas);
+/*#*/ } else if (options.browser) {
 		if (canvas instanceof HTMLCanvasElement) {
 			this._canvas = canvas;
 			// If the canvas has the resize attribute, resize the it to fill the
@@ -163,51 +160,42 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 		this._id = this._canvas.getAttribute('id');
 		if (this._id == null)
 			this._canvas.setAttribute('id', this._id = 'canvas-' + View._id++);
+		// Install event handlers
+		this._handlers = this._createHandlers();
+		DomEvent.add(this._canvas, this._handlers);
 /*#*/ } // options.browser
-
+		// Keep track of views internally
+		View._views.push(this);
 		// Link this id to our view
-		View._views[this._id] = this;
+		View._viewsById[this._id] = this;
 		this._viewSize = LinkedSize.create(this, 'setViewSize',
 				size.width, size.height);
 		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
-
-/*#*/ if (options.browser) {
-		this._domEvents = this._createEvents();
-		DomEvent.add(this._canvas, this._domEvents);
 		// Make sure the first view is focused for keyboard input straight away
 		if (!View._focused)
 			View._focused = this;
-/*#*/ } // options.browser
-
-		// As soon as a new view is added we need to mark the redraw as not
-		// motified, so the next call loops through all the views again.
-		this._scope._redrawNotified = false;
 	},
 
 	/**
-	 * Makes this view the active one, meaning {@link PaperScope#view} will
-	 * point to it.
-	 *
-	 * @name View#activate
-	 * @function
-	 */
-
- 	/**
-	 * Removes thsi view from the {@link PaperScope#views} list and frees the
-	 * associated canvas.
+	 * Removes this view from and frees the associated canvas.
 	 */
 	remove: function() {
-		if (!this.base())
+		if (!this._project)
 			return false;
 		// Clear focus if removed view had it
 		if (View._focused == this)
 			View._focused = null;
-		delete View._views[this._id];
+		// Remove view from internal structures
+		View._views.splice(View._views.indexOf(this), 1);
+		delete View._viewsById[this._id];
+		// Unlink from project
+		if (this._project.view == this)
+			this._project.view = null;
 		// Uninstall event handlers again for this view.
-		DomEvent.remove(this._canvas, this._domEvents);
-		this._canvas = this._domEvents = null;
+		DomEvent.remove(this._canvas, this._handlers);
+		this._canvas = this._project = this._handlers = null;
 		// Removing all onFrame handlers makes the _onFrameCallback handler stop
 		// automatically through its uninstall method.
 		this.detach('frame');
@@ -324,7 +312,8 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 
 	setZoom: function(zoom) {
 		// TODO: Clamp the view between 1/32 and 64, just like Illustrator?
-		this._transform(new Matrix().scale(zoom / this._zoom, this.getCenter()));
+		this._transform(new Matrix().scale(zoom / this._zoom,
+			this.getCenter()));
 		this._zoom = zoom;
 	},
 
@@ -367,14 +356,9 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 
 		ctx.save();
 		this._matrix.applyToContext(ctx);
-		// Just draw the active project for now
-		this._scope.project.draw(ctx);
+		this._project.draw(ctx);
 		ctx.restore();
-		if (this._redrawNeeded) {
-			this._redrawNeeded = false;
-			// Update _redrawNotified in PaperScope as soon as a view was drawn
-			this._scope._redrawNotified = false;
-		}
+		this._redrawNeeded = false;
 		return true;
 	},
 
@@ -405,11 +389,12 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 	 * The function receives an event object which contains information about
 	 * the frame event:
 	 *
-	 * <b>{@code event.count}</b>: the number of times the frame event was fired.
-	 * <b>{@code event.time}</b>: the total amount of time passed since the first frame
-	 * event in seconds.
-	 * <b>{@code event.delta}</b>: the time passed in seconds since the last frame
-	 * event.
+	 * <b>{@code event.count}</b>: the number of times the frame event was
+	 * fired.
+	 * <b>{@code event.time}</b>: the total amount of time passed since the
+	 * first frame event in seconds.
+	 * <b>{@code event.delta}</b>: the time passed in seconds since the last
+	 * frame event.
 	 *
 	 * @example {@paperscript}
 	 * // Creating an animation:
@@ -450,8 +435,19 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 	 */
 }, {
 	statics: {
-		_views: {},
-		_id: 0
+		_views: [],
+		_viewsById: {},
+		_id: 0,
+
+		create: function(element) {
+/*#*/ if (options.browser) {
+			if (typeof element === 'string')
+				element = document.getElementById(element);
+/*#*/ } // options.browser
+			// Factory to provide the right View subclass for a given element.
+			// Produces only Canvas-Views for now:
+			return new View(element);
+		}
 	}
 }, new function() {
 	// Injection scope for special code on browser (mouse events)
@@ -469,16 +465,14 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 
 	function updateFocus() {
 		if (!View._focused || !View._focused.isVisible()) {
-			// Find the first visible view in all scopes
-			PaperScope.each(function(scope) {
-				for (var i = 0, l = scope.views.length; i < l; i++) {
-					var view = scope.views[i];
-					if (view.isVisible()) {
-						View._focused = tempFocus = view;
-						throw Base.stop;
-					}
+			// Find the first visible view
+			for (var i = 0, l = View._views.length; i < l; i++) {
+				var view = View._views[i];
+				if (view && view.isVisible()) {
+					View._focused = tempFocus = view;
+					throw Base.stop;
 				}
-			});
+			}
 		}
 	}
 
@@ -487,7 +481,7 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 		if (!dragging) {
 			// See if we can get the view from the current event target, and
 			// handle the mouse move over it.
-		 	view = View._views[DomEvent.getTarget(event).getAttribute('id')];
+		 	view = View._viewsById[DomEvent.getTarget(event).getAttribute('id')];
 			if (view) {
 				// Temporarily focus this view without making it sticky, so
 				// Key events are handled too during the mouse over
@@ -526,7 +520,8 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 		if (tool) {
 			if (timer != null)
 				timer = clearInterval(timer);
-			if (tool.onHandleEvent('mouseup', viewToProject(view, event), event)) {
+			if (tool.onHandleEvent('mouseup', viewToProject(view, event),
+			 		event)) {
 				view.draw(true);
 				DomEvent.stop(event);
 			}
@@ -543,7 +538,7 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 	// mousemove and mouseup events need to be installed on document, not the
 	// view canvas, since we want to catch the end of drag events even outside
 	// our view. Only the mousedown events are installed on the view, as handled
-	// by _createEvents below.
+	// by _createHandlers below.
 
 	DomEvent.add(document, {
 		mousemove: mousemove,
@@ -559,7 +554,7 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 	});
 
 	return {
-		_createEvents: function() {
+		_createHandlers: function() {
 			var view = this;
 
 			function mousedown(event) {
@@ -583,7 +578,6 @@ var View = this.View = PaperScopeItem.extend(Callback, /** @lends View# */{
 		},
 
 		statics: {
-
 			/**
 			 * Loops through all scopes and their views and sets the focus on
 			 * the first active one.
