@@ -34,15 +34,9 @@
  */
 
 /**
- * The active view of the active project.
+ * The reference to the active project's view.
  * @name view
  * @type View
- */
-
-/**
- * The list of view of the active project.
- * @name views
- * @type View[]
  */
 
 /**

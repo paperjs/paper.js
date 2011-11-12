@@ -49,8 +49,6 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		// Whenever a PaperScope is created, it automatically becomes the active
 		// one.
 		paper = this;
-		this.view = null;
-		this.views = [];
 		this.project = null;
 		this.projects = [];
 		this.tool = null;
@@ -87,16 +85,13 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 	 */
 
 	/**
-	 * The active view of the active project.
+	 * The reference to the active project's view.
 	 * @name PaperScope#view
 	 * @type View
 	 */
-
-	/**
-	 * The list of view of the active project.
-	 * @name PaperScope#views
-	 * @type View[]
-	 */
+	getView: function() {
+		return this.project.view;
+	},
 
 	/**
 	 * The reference to the active tool.
@@ -159,19 +154,14 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		// Make sure this is the active scope, so the created project and view
 		// are automatically associated with it.
 		paper = this;
-		this.project = new Project();
-		// Create a view for the canvas.
-		if (canvas)
-			this.view = new View(canvas);
+		this.project = new Project(canvas);
 	},
 
 	clear: function() {
 		// Remove all projects, views and tools.
+		// This also removes the installed event handlers.
 		for (var i = this.projects.length - 1; i >= 0; i--)
 			this.projects[i].remove();
-		// This also removes the installed event handlers.
-		for (var i = this.views.length - 1; i >= 0; i--)
-			this.views[i].remove();
 		for (var i = this.tools.length - 1; i >= 0; i--)
 			this.tools[i].remove();
 	},
@@ -179,15 +169,6 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 	remove: function() {
 		this.clear();
 		delete PaperScope._scopes[this._id];
-	},
-
-	_needsRedraw: function() {
-		// Make sure we're not looping through the view list each time...
-		if (!this._redrawNotified) {
-			for (var i = this.views.length - 1; i >= 0; i--)
-				this.views[i]._redrawNeeded = true;
-			this._redrawNotified = true;
-		}
 	},
 
 	statics: /** @lends PaperScope */{
@@ -205,16 +186,6 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 			if (typeof id === 'object')
 				id = id.getAttribute('id');
 			return this._scopes[id] || null;
-		},
-
-		/**
-		 * Iterates over all active scopes and calls the passed iterator
-		 * function for each of them.
-		 *
-		 * @param iter the iterator function.
-		 */
-		each: function(iter) {
-			Base.each(this._scopes, iter);
 		}
 	}
 });
