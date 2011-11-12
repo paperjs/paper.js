@@ -36,8 +36,8 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	 * Describes the type of the hit result. For example, if you hit a segment
 	 * point, the type would be 'segment'.
 	 *
-	 * @property
 	 * @name HitResult#type
+	 * @property
 	 * @type String('segment', 'handle-in', 'handle-out', 'stroke', 'fill',
 	 * 'bounds', 'center', 'pixel')
 	 */
@@ -46,8 +46,8 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	 * If the HitResult has a {@link HitResult#type} of 'bounds', this property
 	 * describes which corner of the bounding rectangle was hit.
 	 *
-	 * @property
 	 * @name HitResult#name
+	 * @property
 	 * @type String('top-left', 'top-right', 'bottom-left', 'bottom-right',
 	 * 'left-center', 'top-center', 'right-center', 'bottom-center')
 	 */
@@ -55,8 +55,8 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	/**
 	 * The item that was hit.
 	 *
-	 * @property
 	 * @name HitResult#item
+	 * @property
 	 * @type Item
 	 */
 
@@ -64,8 +64,8 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	 * If the HitResult has a type of 'stroke', this property gives more
 	 * information about the exact position that was hit on the path.
 	 *
-	 * @property
 	 * @name HitResult#location
+	 * @property
 	 * @type CurveLocation
 	 */
 
@@ -73,8 +73,8 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	 * If the HitResult has a type of 'pixel', this property refers to the color
 	 * of the pixel on the {@link Raster} that was hit.
 	 *
-	 * @property
 	 * @name HitResult#color
+	 * @property
 	 * @type RgbColor
 	 */
 
@@ -83,8 +83,8 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	 * 'handle-out', this property refers to the Segment that was hit or that
 	 * is closest to the hitResult.location on the curve.
 	 *
-	 * @property
 	 * @name HitResult#segment
+	 * @property
 	 * @type Segment
 	 */
 
@@ -92,8 +92,8 @@ HitResult = Base.extend(/** @lends HitResult# */{
 	 * Describes the actual coordinates of the segment, handle or bounding box
 	 * corner that was hit.
 	 *
-	 * @property
 	 * @name HitResult#point
+	 * @property
 	 * @type Point
 	 */
 
