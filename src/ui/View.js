@@ -17,7 +17,7 @@
 /**
  * @name View
  *
- * @class The View object wraps a canvas element and handles drawing and user
+ * @class The View object wraps an html element and handles drawing and user
  * interaction through mouse and keyboard for it. It offer means to scroll the
  * view, find the currently visible bounds in project coordinates, or the
  * center, both useful for constructing artwork that should appear centered on
@@ -44,7 +44,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 						// Request next frame already
 						requested = true;
 						DomEvent.requestAnimationFrame(that._onFrameCallback,
-								that._canvas);
+								that._element);
 					}
 					var now = Date.now() / 1000,
 					 	delta = before ? now - before : 0;
@@ -76,100 +76,75 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		onResize: {}
 	},
 
-	/**
-	 * Creates a view object for a given project.
-	 * 
-	 * @param {HTMLCanvasElement} canvas The canvas object that this view should
-	 * wrap
-	 */
-	initialize: function(canvas) {
+	initialize: function(element) {
 		// Store reference to the currently active global paper scope, and the
 		// active project, which will be represented by this view
 		this._scope = paper;
 		this._project = paper.project;
-		// Handle canvas argument
+		this._element = element;
 		var size;
-/*#*/ if (options.server) {
-		if (canvas && canvas instanceof Canvas) {
-			this._canvas = canvas;
-			size = Size.create(canvas.width, canvas.height);
-		} else {
-			// 2nd argument onwards could be view size, otherwise use default:
-			size = Size.read(arguments, 1);
-			if (size.isZero())
-				size = new Size(1024, 768);
-			this._canvas = CanvasProvider.getCanvas(size);
-		}
-
-		// Generate an id for this view / canvas if it does not have one
-		this._id = this._canvas.id;
+/*#*/ if (options.browser) {
+		// Generate an id for this view / element if it does not have one
+		this._id = element.getAttribute('id');
 		if (this._id == null)
-			this._canvas.id = this._id = 'canvas-' + View._id++;
-/*#*/ } else if (options.browser) {
-		if (canvas instanceof HTMLCanvasElement) {
-			this._canvas = canvas;
-			// If the canvas has the resize attribute, resize the it to fill the
-			// window and resize it again whenever the user resizes the window.
-			if (PaperScript.hasAttribute(canvas, 'resize')) {
-				// Subtract canvas' viewport offset from the total size, to
-				// stretch it in
-				var offset = DomElement.getOffset(canvas, true),
-					that = this;
-				size = DomElement.getViewportBounds(canvas)
-						.getSize().subtract(offset);
-				canvas.width = size.width;
-				canvas.height = size.height;
-				DomEvent.add(window, {
-					resize: function(event) {
-						// Only update canvas offset if it's not invisible, as
-						// otherwise the offset would be wrong.
-						if (!DomElement.isInvisible(canvas))
-							offset = DomElement.getOffset(canvas, true);
-						// Set the size now, which internally calls onResize
-						// and redraws the view
-						that.setViewSize(DomElement.getViewportBounds(canvas)
-								.getSize().subtract(offset));
-					}
-				});
-			} else {
-				size = DomElement.isInvisible(canvas)
-					? Size.create(parseInt(canvas.getAttribute('width')),
-							parseInt(canvas.getAttribute('height')))
-					: DomElement.getSize(canvas);
-			}
-			// TODO: Test this on IE:
-			if (PaperScript.hasAttribute(canvas, 'stats')) {
-				this._stats = new Stats();
-				// Align top-left to the canvas
-				var element = this._stats.domElement,
-					style = element.style,
-					offset = DomElement.getOffset(canvas);
-				style.position = 'absolute';
-				style.left = offset.x + 'px';
-				style.top = offset.y + 'px';
-				document.body.appendChild(element);
-			}
-		} else {
-			// 2nd argument onwards could be view size, otherwise use default:
-			size = Size.read(arguments, 1);
-			if (size.isZero())
-				size = new Size(1024, 768);
-			this._canvas = CanvasProvider.getCanvas(size);
-		}
-		// Generate an id for this view / canvas if it does not have one
-		this._id = this._canvas.getAttribute('id');
-		if (this._id == null)
-			this._canvas.setAttribute('id', this._id = 'canvas-' + View._id++);
+			element.setAttribute('id', this._id = 'view-' + View._id++);
 		// Install event handlers
-		DomEvent.add(this._canvas, this._handlers);
-/*#*/ } // options.browser
+		DomEvent.add(element, this._handlers);
+		// If the element has the resize attribute, resize the it to fill the
+		// window and resize it again whenever the user resizes the window.
+		if (PaperScript.hasAttribute(element, 'resize')) {
+			// Subtract element' viewport offset from the total size, to
+			// stretch it in
+			var offset = DomElement.getOffset(element, true),
+				that = this;
+			size = DomElement.getViewportBounds(element)
+					.getSize().subtract(offset);
+			element.width = size.width;
+			element.height = size.height;
+			DomEvent.add(window, {
+				resize: function(event) {
+					// Only update element offset if it's not invisible, as
+					// otherwise the offset would be wrong.
+					if (!DomElement.isInvisible(element))
+						offset = DomElement.getOffset(element, true);
+					// Set the size now, which internally calls onResize
+					// and redraws the view
+					that.setViewSize(DomElement.getViewportBounds(element)
+							.getSize().subtract(offset));
+				}
+			});
+		} else {
+			// If the element is invisible, we cannot directly access
+			// element.width / height, because they would appear 0. Reading
+			// the attributes still works though:
+			size = DomElement.isInvisible(element)
+				? Size.create(parseInt(element.getAttribute('width')),
+						parseInt(element.getAttribute('height')))
+				: DomElement.getSize(element);
+		}
+		// TODO: Test this on IE:
+		if (PaperScript.hasAttribute(element, 'stats')) {
+			this._stats = new Stats();
+			// Align top-left to the element
+			var stats = this._stats.domElement,
+				style = stats.style,
+				offset = DomElement.getOffset(element);
+			style.position = 'absolute';
+			style.left = offset.x + 'px';
+			style.top = offset.y + 'px';
+			document.body.appendChild(stats);
+		}
+/*#*/ } else if (options.server) {
+		// Generate an id for this view
+		this._id = 'view-' + View._id++;
+		size = Size.create(element.width, element.height);
+/*#*/ } // options.server
 		// Keep track of views internally
 		View._views.push(this);
 		// Link this id to our view
 		View._viewsById[this._id] = this;
 		this._viewSize = LinkedSize.create(this, 'setViewSize',
 				size.width, size.height);
-		this._context = this._canvas.getContext('2d');
 		this._matrix = new Matrix();
 		this._zoom = 1;
 		this._eventCounters = {};
@@ -179,7 +154,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	/**
-	 * Removes this view from and frees the associated canvas.
+	 * Removes this view from and frees the associated element.
 	 */
 	remove: function() {
 		if (!this._project)
@@ -194,8 +169,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		if (this._project.view == this)
 			this._project.view = null;
 		// Uninstall event handlers again for this view.
-		DomEvent.remove(this._canvas, this._handlers);
-		this._canvas = this._project = null;
+		DomEvent.remove(this._element, this._handlers);
+		this._element = this._project = null;
 		// Removing all onFrame handlers makes the _onFrameCallback handler stop
 		// automatically through its uninstall method.
 		this.detach('frame');
@@ -223,18 +198,18 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	/**
-	 * The underlying native canvas element.
+	 * The underlying native element.
 	 *
 	 * @type HTMLCanvasElement
 	 * @bean
 	 */
-	getCanvas: function() {
-		return this._canvas;
+	getElement: function() {
+		return this._element;
 	},
 
 	/**
-	 * The size of the view canvas. Changing the view's size will resize it's
-	 * underlying canvas.
+	 * The size of the view. Changing the view's size will resize it's
+	 * underlying element.
 	 *
 	 * @type Size
 	 * @bean
@@ -248,8 +223,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		var delta = size.subtract(this._viewSize);
 		if (delta.isZero())
 			return;
-		this._canvas.width = size.width;
-		this._canvas.height = size.height;
+		this._element.width = size.width;
+		this._element.height = size.height;
 		// Update _viewSize but don't notify of change.
 		this._viewSize.set(size.width, size.height, true);
 		// Force recalculation
@@ -324,7 +299,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @return {Boolean} Whether the view is visible.
 	 */
 	isVisible: function() {
-		return DomElement.isVisible(this._canvas);
+		return DomElement.isVisible(this._element);
 	},
 
 	/**
@@ -342,25 +317,10 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @name View#draw
 	 * @function
 	 */
+	/*
 	draw: function(checkRedraw) {
-		if (checkRedraw && !this._redrawNeeded)
-			return false;
-		if (this._stats)
-			this._stats.update();
-		// Initial tests conclude that clearing the canvas using clearRect
-		// is always faster than setting canvas.width = canvas.width
-		// http://jsperf.com/clearrect-vs-setting-width/7
-		var ctx = this._context,
-			size = this._viewSize;
-		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
-
-		ctx.save();
-		this._matrix.applyToContext(ctx);
-		this._project.draw(ctx);
-		ctx.restore();
-		this._redrawNeeded = false;
-		return true;
 	},
+	*/
 
 	// TODO: getInvalidBounds
 	// TODO: invalidate(rect)
@@ -446,20 +406,24 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 /*#*/ } // options.browser
 			// Factory to provide the right View subclass for a given element.
 			// Produces only Canvas-Views for now:
-			return new View(element);
+			return new CanvasView(element);
 		}
 	}
 }, new function() {
-	// Injection scope for special code on browser (mouse events)
-	// and server (rendering)
+	// Injection scope for mouse events on the browser
 /*#*/ if (options.browser) {
 	var tool,
 		curPoint,
 		tempFocus,
 		dragging = false;
 
+	function getView(event) {
+		// Get the view from the current event target.
+		return View._viewsById[DomEvent.getTarget(event).getAttribute('id')];
+	}
+
 	function viewToProject(view, event) {
-		return view.viewToProject(DomEvent.getOffset(event, view._canvas));
+		return view.viewToProject(DomEvent.getOffset(event, view._element));
 	}
 
 	function updateFocus() {
@@ -475,10 +439,27 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		}
 	}
 
+	var hitOptions = {
+		fill: true,
+		stroke: true,
+		tolerance: 0
+	};
+
+	function callEvent(item, event, bubble) {
+		var called = false;
+		while (item) {
+			called = item.fire(event.type, event) || called;
+			if (called && (!bubble || event._stopped))
+				break;
+			item = item.getParent();
+		}
+		return called;
+	}
+
 	function mousedown(event) {
-		var view = View._viewsById[DomEvent.getTarget(event).getAttribute('id')];
-		// Tell the Key class which view should receive keyboard input.
-		View._focused = view;
+		// Get the view from the event, and store a reference to the view that
+		// should receive keyboard input.
+		var view = View._focused = getView(event);
 		curPoint = viewToProject(view, event);
 		dragging = true;
 
@@ -505,7 +486,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		if (!dragging) {
 			// See if we can get the view from the current event target, and
 			// handle the mouse move over it.
-			view = View._viewsById[DomEvent.getTarget(event).getAttribute('id')];
+			view = getView(event);
 			if (view) {
 				// Temporarily focus this view without making it sticky, so
 				// Key events are handled too during the mouse over
@@ -558,7 +539,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	}
 
 	// mousemove and mouseup events need to be installed on document, not the
-	// view canvas, since we want to catch the end of drag events even outside
+	// view element, since we want to catch the end of drag events even outside
 	// our view. Only the mousedown events are installed on the view, as handled
 	// by _createHandlers below.
 
@@ -575,23 +556,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		load: updateFocus
 	});
 
-	var hitOptions = {
-		fill: true,
-		stroke: true,
-		tolerance: 0
-	};
-
-	function callEvent(item, event, bubble) {
-		var called = false;
-		while (item) {
-			called = item.fire(event.type, event) || called;
-			if (called && (!bubble || event._stopped))
-				break;
-			item = item.getParent();
-		}
-		return called;
-	}
-
 	return {
 		_handlers: {
 			mousedown: mousedown,
@@ -607,85 +571,5 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 			updateFocus: updateFocus
 		}
 	};
-/*#*/ } else if (options.server) {
-	var path = require('path');
-	// Utility function that converts a number to a string with
-	// x amount of padded 0 digits:
-	function toPaddedString(number, length) {
-		var str = number.toString(10);
-		for (var i = 0, l = length - str.length; i < l; i++) {
-			str = '0' + str;
-		}
-		return str;
-	}
-	return {
-		// DOCS: View#exportFrames(param);
-		exportFrames: function(param) {
-			param = Base.merge({
-				fps: 30,
-				prefix: 'frame-',
-				amount: 1
-			}, param);
-			if (!param.directory) {
-				throw new Error('Missing param.directory');
-			}
-			var view = this,
-				count = 0,
-				frameDuration = 1 / param.fps,
-				lastTime = startTime = Date.now();
-
-			// Start exporting frames by exporting the first frame:
-			exportFrame(param);
-
-			function exportFrame(param) {
-				count++;
-				var filename = param.prefix + toPaddedString(count, 6) + '.png',
-					uri = param.directory + '/' + filename;
-				var out = view.exportImage(uri, function() {
-					// When the file has been closed, export the next fame:
-					var then = Date.now();
-					if (param.onProgress) {
-						param.onProgress({
-							count: count,
-							amount: param.amount,
-							percentage: Math.round(count / param.amount
-									* 10000) / 100,
-							time: then - startTime,
-							delta: then - lastTime
-						});
-					}
-					lastTime = then;
-					if (count < param.amount) {
-						exportFrame(param);
-					} else {
-						// Call onComplete handler when finished:
-						if (param.onComplete) {
-							param.onComplete();
-						}
-					}
-				});
-				if (view.onFrame) {
-					view.onFrame({
-						delta: frameDuration,
-						time: frameDuration * count,
-						count: count
-					});
-				}
-			}
-		},
-		// DOCS: View#exportImage(uri, callback);
-		exportImage: function(uri, callback) {
-			this.draw();
-			// TODO: is it necessary to resolve the path?
-			var out = fs.createWriteStream(path.resolve(__dirname, uri)),
-				stream = this._canvas.createPNGStream();
-			// Pipe the png stream to the write stream:
-			stream.pipe(out);
-			if (callback) {
-				out.on('close', callback);
-			}
-			return out;
-		}
-	};
-/*#*/ } // options.server
+/*#*/ } // options.browser
 });
