@@ -161,7 +161,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		if (this._id == null)
 			this._canvas.setAttribute('id', this._id = 'canvas-' + View._id++);
 		// Install event handlers
-		this._handlers = this._createHandlers();
 		DomEvent.add(this._canvas, this._handlers);
 /*#*/ } // options.browser
 		// Keep track of views internally
@@ -196,7 +195,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 			this._project.view = null;
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._canvas, this._handlers);
-		this._canvas = this._project = this._handlers = null;
+		this._canvas = this._project = null;
 		// Removing all onFrame handlers makes the _onFrameCallback handler stop
 		// automatically through its uninstall method.
 		this.detach('frame');
@@ -476,12 +475,37 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		}
 	}
 
+	function mousedown(event) {
+		var view = View._viewsById[DomEvent.getTarget(event).getAttribute('id')];
+		// Tell the Key class which view should receive keyboard input.
+		View._focused = view;
+		curPoint = viewToProject(view, event);
+		dragging = true;
+
+		var update = false;
+		// TODO: Move this to CanvasView soon!
+		if (view._eventCounters.mousedown) {
+			var hit = view._project.hitTest(curPoint, hitOptions);
+			if (hit && hit.item) {
+				update = callEvent(hit.item, new MouseEvent('mousedown',
+						curPoint, hit.item, event), false);
+			}
+		}
+
+		if (tool = view._scope.tool)
+			update = tool.onHandleEvent('mousedown', curPoint, event)
+					|| update;
+
+		if (update)
+			view.draw(true);
+	}
+
 	function mousemove(event) {
 		var view;
 		if (!dragging) {
 			// See if we can get the view from the current event target, and
 			// handle the mouse move over it.
-		 	view = View._viewsById[DomEvent.getTarget(event).getAttribute('id')];
+			view = View._viewsById[DomEvent.getTarget(event).getAttribute('id')];
 			if (view) {
 				// Temporarily focus this view without making it sticky, so
 				// Key events are handled too during the mouse over
@@ -569,38 +593,10 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	}
 
 	return {
-		_createHandlers: function() {
-			var view = this;
-
-			function mousedown(event) {
-				// Tell the Key class which view should receive keyboard input.
-				View._focused = view;
-				curPoint = viewToProject(view, event);
-				dragging = true;
-
-				var update = false;
-				// TODO: Move this to CanvasView soon!
-				if (view._eventCounters.mousedown) {
-					var hit = view._project.hitTest(curPoint, hitOptions);
-					if (hit && hit.item) {
-						update = callEvent(hit.item, new MouseEvent('mousedown',
-								curPoint, hit.item, event), false);
-					}
-				}
-
-				if (tool = view._scope.tool)
-					update = tool.onHandleEvent('mousedown', curPoint, event)
-							|| update;
-
-				if (update)
-					view.draw(true);
-			}
-
-			return {
-				mousedown: mousedown,
-				touchstart: mousedown,
-				selectstart: selectstart
-			};
+		_handlers: {
+			mousedown: mousedown,
+			touchstart: mousedown,
+			selectstart: selectstart
 		},
 
 		statics: {
