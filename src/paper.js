@@ -109,6 +109,7 @@ var paper = new function() {
 /*#*/ } // options.browser
 
 /*#*/ include('ui/View.js');
+/*#*/ include('ui/CanvasView.js');
 
 /*#*/ if (options.browser) {
 /*#*/ include('ui/Event.js');
