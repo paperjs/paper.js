@@ -112,7 +112,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		} else if (justification === 'center') {
 			x = Math.round(x - (width / 2));
 		}
-		var bounds = Rectangle.create(x, y, width, undefined);
+		var bounds = Rectangle.create(x, y, width, this.getCharacterStyle()._lineHeight);
 		this[cacheName] = bounds;
 		ctx.restore();
 		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
@@ -131,16 +131,27 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		// Draw unless we already have a cache to use
 		if (this._cache === undefined) {
 			if (this.cache === true) {
+				this._cachedDrawBounds = this.getBounds();
+				var cacheCanvas = document.createElement('canvas');
+				cacheCanvas.width = this._cachedDrawBounds.width;
+				cacheCanvas.height = this._cachedDrawBounds.height;
 				var originalCtx = ctx,
-			        cacheCanvas = ctx.canvas.cloneNode(true),
-			        ctx = cacheCanvas.getContext('2d');
+				    ctx = cacheCanvas.getContext('2d');
 			}
 			
 			ctx.save();
 			ctx.font = this._getFontString();
-			ctx.textAlign = this.getJustification();
-			ctx.textBaseline = 'middle';
-			this._matrix.applyToContext(ctx);
+			
+			// textAlign and the matrix transformation don't apply if we're caching, and textBaseline should be top
+			// so that rendering always happens at (0, 0) -- the positioning is handled in drawImage instead
+			// (this is so that we can have a "snug" off-screen canvas -- see http://jsperf.com/render-vs-prerender/3)
+			if (this.cache === true) {
+				ctx.textBaseline = 'top';
+			} else {
+				ctx.textBaseline = 'middle';
+				ctx.textAlign = this.getJustification();
+				this._matrix.applyToContext(ctx);
+			}
 
 			var fillColor = this.getFillColor();
 			var strokeColor = this.getStrokeColor();
@@ -165,7 +176,11 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		// If the cache was used (either generated here, or already prepared previously), we need to
 		// draw it to the actual canvas
 		if (this._cache !== undefined) {
-			ctx.drawImage(this._cache, 0, 0);
+			ctx.drawImage(
+				this._cache,
+				this._cachedDrawBounds.x,
+				(this._cachedDrawBounds.y - (this._cachedDrawBounds.height / 2))
+			);
 		}
 	}
 });

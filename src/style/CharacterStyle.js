@@ -36,7 +36,8 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 		fillColor: 'black',
 		fontSize: 10,
 		font: 'sans-serif',
-		fontString: undefined
+		fontString: undefined,
+		_lineHeight: 100
 	}),
 	_owner: TextItem,
 	_style: '_characterStyle'

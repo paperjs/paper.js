@@ -123,12 +123,16 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 		// If the group is clipped, draw to an in-memory canvas (otherwise the entire
 		// canvas will be clipped)
 		if (clipItems.length !== 0) {
-			var clippingCanvas = ctx.canvas.cloneNode(true),
-			    originalCtx = ctx;
-			var ctx = clippingCanvas.getContext('2d');
+			var clippingCanvas = document.createElement('canvas');
+			clippingCanvas.width = ctx.canvas.width;
+			clippingCanvas.height = ctx.canvas.height;
+			var originalCtx = ctx,
+			    ctx = clippingCanvas.getContext('2d');
+			
 			for (var i = 0, l = clipItems.length; i < l; i++) {
 				Item.draw(clipItems[i], ctx, param);
 			}
+			
 			ctx.globalCompositeOperation = this._clippingCompositionOperation;
 		}
 		for (var i = 0, l = this._children.length; i < l; i++) {
