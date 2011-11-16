@@ -268,7 +268,7 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 	 * }
 	 */
 
-	updateEvent: function(type, pt, minDistance, maxDistance, start,
+	_updateEvent: function(type, pt, minDistance, maxDistance, start,
 			needsChange, matchMaxDistance) {
 		if (!start) {
 			if (minDistance != null || maxDistance != null) {
@@ -312,7 +312,7 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 		return true;
 	},
 
-	onHandleEvent: function(type, pt, event) {
+	_onHandleEvent: function(type, pt, event) {
 		// Update global reference to this scope.
 		paper = this._scope;
 		// Handle removeOn* calls first
@@ -339,7 +339,7 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 		var called = false;
 		switch (type) {
 		case 'mousedown':
-			this.updateEvent(type, pt, null, null, true, false, false);
+			this._updateEvent(type, pt, null, null, true, false, false);
 			if (this.responds(type))
 				called = this.fire(type, new ToolEvent(this, type, event));
 			break;
@@ -354,7 +354,7 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 			// case it is shorter than maxDistance, as this would produce weird
 			// results. matchMaxDistance controls this.
 				matchMaxDistance = false;
-			while (this.updateEvent(type, pt, this.minDistance,
+			while (this._updateEvent(type, pt, this.minDistance,
 					this.maxDistance, false, needsChange, matchMaxDistance)) {
 				if (this.responds(type))
 					called = this.fire(type, new ToolEvent(this, type, event));
@@ -366,22 +366,22 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 			// If the last mouse drag happened in a different place, call mouse
 			// drag first, then mouse up.
 			if ((this._point.x != pt.x || this._point.y != pt.y)
-					&& this.updateEvent('mousedrag', pt, this.minDistance,
+					&& this._updateEvent('mousedrag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
 				if (this.responds('mousedrag'))
 					called = this.fire('mousedrag',
 							new ToolEvent(this, type, event));
 			}
-			this.updateEvent(type, pt, null, this.maxDistance, false,
+			this._updateEvent(type, pt, null, this.maxDistance, false,
 					false, false);
 			if (this.responds(type))
 				called = this.fire(type, new ToolEvent(this, type, event));
 			// Start with new values for 'mousemove'
-			this.updateEvent(type, pt, null, null, true, false, false);
+			this._updateEvent(type, pt, null, null, true, false, false);
 			this._firstMove = true;
 			break;
 		case 'mousemove':
-			while (this.updateEvent(type, pt, this.minDistance,
+			while (this._updateEvent(type, pt, this.minDistance,
 					this.maxDistance, this._firstMove, true, false)) {
 				if (this.responds(type))
 					called = this.fire(type, new ToolEvent(this, type, event));
