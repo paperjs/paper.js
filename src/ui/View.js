@@ -474,7 +474,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		}
 
 		if (tool = view._scope.tool)
-			update = tool.onHandleEvent('mousedown', curPoint, event)
+			update = tool._onHandleEvent('mousedown', curPoint, event)
 					|| update;
 
 		if (update)
@@ -503,14 +503,14 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
 		if (dragging && !onlyMove) {
 			curPoint = point || curPoint;
-			if (curPoint && tool.onHandleEvent('mousedrag', curPoint, event)) {
+			if (curPoint && tool._onHandleEvent('mousedrag', curPoint, event)) {
 				view.draw(true);
 				DomEvent.stop(event);
 			}
 		// PORT: If there is only an onMouseMove handler, also call it when
 		// the user is dragging:
 		} else if ((!dragging || onlyMove)
-				&& tool.onHandleEvent('mousemove', point, event)) {
+				&& tool._onHandleEvent('mousemove', point, event)) {
 			view.draw(true);
 			DomEvent.stop(event);
 		}
@@ -523,7 +523,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		dragging = false;
 		curPoint = null;
 		if (tool) {
-			if (tool.onHandleEvent('mouseup', viewToProject(view, event),
+			if (tool._onHandleEvent('mouseup', viewToProject(view, event),
 			 		event)) {
 				view.draw(true);
 				DomEvent.stop(event);
