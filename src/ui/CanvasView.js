@@ -36,6 +36,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			canvas = CanvasProvider.getCanvas(size);
 		}
 		this._context = canvas.getContext('2d');
+		// Have Item count installed mouse events.
+		this._eventCounters = {};
 		this.base(canvas);
 	},
 
@@ -63,10 +65,40 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		ctx.restore();
 		this._redrawNeeded = false;
 		return true;
+	},
+
+	// Item based mouse handling:
+
+	_hitOptions: {
+		fill: true,
+		stroke: true,
+		tolerance: 0
+	},
+
+	_callEvent: function(item, event, bubble) {
+		var called = false;
+		while (item) {
+			called = item.fire(event.type, event) || called;
+			if (called && (!bubble || event._stopped))
+				break;
+			item = item.getParent();
+		}
+		return called;
+	},
+
+	_onMouseDown: function(event, point) {
+		if (this._eventCounters.mousedown) {
+			var hit = this._project.hitTest(point, this._hitOptions);
+			if (hit && hit.item) {
+				this._callEvent(hit.item, new MouseEvent('mousedown', point,
+						hit.item, event), false);
+			}
+		}
 	}
 });
 
 /*#*/ if (options.server) {
+// Node.js server based image exporting code.
 CanvasView.inject(new function() {
 	var path = require('path');
 	// Utility function that converts a number to a string with

@@ -147,7 +147,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 				size.width, size.height);
 		this._matrix = new Matrix();
 		this._zoom = 1;
-		this._eventCounters = {};
 		// Make sure the first view is focused for keyboard input straight away
 		if (!View._focused)
 			View._focused = this;
@@ -439,23 +438,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		}
 	}
 
-	var hitOptions = {
-		fill: true,
-		stroke: true,
-		tolerance: 0
-	};
-
-	function callEvent(item, event, bubble) {
-		var called = false;
-		while (item) {
-			called = item.fire(event.type, event) || called;
-			if (called && (!bubble || event._stopped))
-				break;
-			item = item.getParent();
-		}
-		return called;
-	}
-
 	function mousedown(event) {
 		// Get the view from the event, and store a reference to the view that
 		// should receive keyboard input.
@@ -463,22 +445,15 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		curPoint = viewToProject(view, event);
 		dragging = true;
 
-		var update = false;
-		// TODO: Move this to CanvasView soon!
-		if (view._eventCounters.mousedown) {
-			var hit = view._project.hitTest(curPoint, hitOptions);
-			if (hit && hit.item) {
-				update = callEvent(hit.item, new MouseEvent('mousedown',
-						curPoint, hit.item, event), false);
-			}
-		}
+		if (view._onMouseDown)
+			view._onMouseDown(event, curPoint);
 
 		if (tool = view._scope.tool)
-			update = tool._onHandleEvent('mousedown', curPoint, event)
-					|| update;
+			tool._onHandleEvent('mousedown', curPoint, event);
 
-		if (update)
-			view.draw(true);
+		// Always call draw(), but set checkRedraw = true, so we only redraw the
+		// view if anything has changed in the above calls
+		view.draw(true);
 	}
 
 	function mousemove(event) {
