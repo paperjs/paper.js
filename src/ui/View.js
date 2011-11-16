@@ -444,15 +444,14 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		var view = View._focused = getView(event);
 		curPoint = viewToProject(view, event);
 		dragging = true;
-
+		// Always first call the view's mouse handlers, as required by
+		// CanvasView, and then handle the active tool, if any.
 		if (view._onMouseDown)
 			view._onMouseDown(event, curPoint);
-
 		if (tool = view._scope.tool)
 			tool._onHandleEvent('mousedown', curPoint, event);
-
-		// Always call draw(), but set checkRedraw = true, so we only redraw the
-		// view if anything has changed in the above calls
+		// In the end we always call draw(), but pass checkRedraw = true, so we
+		// only redraw the view if anything has changed in the above calls.
 		view.draw(true);
 	}
 
@@ -472,23 +471,25 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 				updateFocus();
 			}
 		}
-		if (!(view = view || View._focused) || !(tool = view._scope.tool))
+		if (!(view = view || View._focused))
 			return;
 		var point = event && viewToProject(view, event);
-		var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
-		if (dragging && !onlyMove) {
-			curPoint = point || curPoint;
-			if (curPoint && tool._onHandleEvent('mousedrag', curPoint, event)) {
-				view.draw(true);
+		if (view._onMouseMove)
+			view._onMouseMove(event, point);
+		if (tool = view._scope.tool) {
+			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
+			if (dragging && !onlyMove) {
+				if ((curPoint = point || curPoint) 
+						&& tool._onHandleEvent('mousedrag', curPoint, event))
+					DomEvent.stop(event);
+			// PORT: If there is only an onMouseMove handler, also call it when
+			// the user is dragging:
+			} else if ((!dragging || onlyMove)
+					&& tool._onHandleEvent('mousemove', point, event)) {
 				DomEvent.stop(event);
 			}
-		// PORT: If there is only an onMouseMove handler, also call it when
-		// the user is dragging:
-		} else if ((!dragging || onlyMove)
-				&& tool._onHandleEvent('mousemove', point, event)) {
-			view.draw(true);
-			DomEvent.stop(event);
 		}
+		view.draw(true);
 	}
 
 	function mouseup(event) {
@@ -503,7 +504,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		// Cancel DOM-event if it was handled by our tool
 		if (tool && tool._onHandleEvent('mouseup', point, event))
 			DomEvent.stop(event);
-		// See mousedown() for an explanation of why we can always call this.
 		view.draw(true);
 	}
 
