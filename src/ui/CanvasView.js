@@ -84,15 +84,30 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		}
 	}
 
-	var overItem = null;
+	var downPoint,
+		downItem,
+		overItem,
+		doubleClick,
+		clickTime;
 
 	return {
 		_onMouseDown: function(event, point) {
-			handleEvent(this, 'mousedown', event, point);
+			var item = handleEvent(this, 'mousedown', event, point);
+			// See if we're clicking again on the same item, within the
+			// double-click time. Firefox uses 300ms as the max time difference:
+			doubleClick = downItem == item && Date.now() - clickTime < 300;
+			downItem = item;
+			downPoint = point;
 		},
 
 		_onMouseUp: function(event, point) {
-			handleEvent(this, 'mouseup', event, point);
+			var item = handleEvent(this, 'mouseup', event, point);
+			if (item == downItem) {
+				clickTime = Date.now();
+				new MouseEvent(doubleClick ? 'doubleclick' : 'click', downPoint,
+						overItem, event)._call();
+				doubleClick = false;
+			}
 		},
 
 		_onMouseMove: function(event, point) {
