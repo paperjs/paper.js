@@ -107,7 +107,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			var hit = view._project.hitTest(point, hitOptions),
 				item = hit && hit.item;
 			if (item) {
-				// If this is a mousemove event and we change the over item,
+				// If this is a mousemove event and we change the overItem,
 				// reset lastPoint to point so delta is (0, 0)
 				if (type == 'mousemove' && item != overItem)
 					lastPoint = point;
