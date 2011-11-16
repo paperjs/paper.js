@@ -65,17 +65,16 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		ctx.restore();
 		this._redrawNeeded = false;
 		return true;
-	},
+	}
+}, new function() { // Item based mouse handling:
 
-	// Item based mouse handling:
-
-	_hitOptions: {
+	var hitOptions = {
 		fill: true,
 		stroke: true,
 		tolerance: 0
-	},
+	};
 
-	_callEvent: function(item, event, bubble) {
+	function callEvent(item, event, bubble) {
 		var called = false;
 		while (item) {
 			called = item.fire(event.type, event) || called;
@@ -84,17 +83,32 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			item = item.getParent();
 		}
 		return called;
-	},
+	}
 
-	_onMouseDown: function(event, point) {
-		if (this._eventCounters.mousedown) {
-			var hit = this._project.hitTest(point, this._hitOptions);
+	function handleEvent(view, type, event, point) {
+		if (view._eventCounters[type]) {
+			var hit = view._project.hitTest(point, hitOptions);
 			if (hit && hit.item) {
-				this._callEvent(hit.item, new MouseEvent('mousedown', point,
+				callEvent(hit.item, new MouseEvent(type, point,
 						hit.item, event), false);
+				return hit;
 			}
 		}
 	}
+
+	return {
+		_onMouseDown: function(event, point) {
+			handleEvent(this, 'mousedown', event, point);
+		},
+
+		_onMouseUp: function(event, point) {
+			handleEvent(this, 'mouseup', event, point);
+		},
+
+		_onMouseMove: function(event, point) {
+			handleEvent(this, 'mousemove', event, point);
+		}
+	};
 });
 
 /*#*/ if (options.server) {
