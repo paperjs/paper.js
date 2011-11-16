@@ -75,20 +75,24 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	};
 
 	var downPoint,
+		lastPoint,
+		overPoint,
 		downItem,
-		hasDrag,
 		overItem,
+		hasDrag,
 		doubleClick,
 		clickTime;
 
-	function callEvent(type, event, point, target, bubble) {
+	function callEvent(type, event, point, target, lastPoint, bubble) {
 		var item = target,
 			mouseEvent,
 			called = false;
 		while (item) {
 			if (item.responds(type)) {
 				if (!mouseEvent)
-					mouseEvent = new MouseEvent(type, event, point, target);
+					mouseEvent = new MouseEvent(type, event, point, target,
+							// Calculate delta if lastPoint was passed
+							lastPoint ? point.subtract(lastPoint) : null);
 				called = item.fire(type, mouseEvent) || called;
 				if (called && (!bubble || mouseEvent._stopped))
 					break;
@@ -98,15 +102,21 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		return called;
 	}
 
-	function handleEvent(view, type, event, point) {
+	function handleEvent(view, type, event, point, lastPoint) {
 		if (view._eventCounters[type]) {
 			var hit = view._project.hitTest(point, hitOptions),
 				item = hit && hit.item;
 			if (item) {
+				// If this is a mousemove event and we change the over item,
+				// reset lastPoint to point so delta is (0, 0)
+				if (type == 'mousemove' && item != overItem)
+					lastPoint = point;
 				// If we have a downItem with a mousedrag event, do not send
 				// mousemove events to any item while we're dragging.
-				if (type != 'mousemove' || !downItem)
-					callEvent(type, event, point, item);
+				// TODO: Do we also need to lock mousenter / mouseleave in the
+				// same way?
+				if (type != 'mousemove' || !hasDrag)
+					callEvent(type, event, point, item, lastPoint);
 				return item;
 			}
 		}
@@ -119,16 +129,27 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			// double-click time. Firefox uses 300ms as the max time difference:
 			doubleClick = downItem == item && Date.now() - clickTime < 300;
 			downItem = item;
-			downPoint = point;
+			downPoint = lastPoint = overPoint = point;
 			hasDrag = downItem && downItem.responds('mousedrag');
 		},
 
 		_onMouseUp: function(event, point) {
+			// TODO: Check 
 			var item = handleEvent(this, 'mouseup', event, point);
-			// If we had a mousedrag event locking mousemove events and are over
-			// another item, send it a mousemove event now
-			if (hasDrag && item != downItem)
-				callEvent('mousemove', event, point, item);
+			if (hasDrag) {
+				// If the point has changed since the last mousedrag event, send
+				// another one
+				if (lastPoint && !lastPoint.equals(point))
+					callEvent('mousedrag', event, point, downItem, lastPoint);
+				// If we had a mousedrag event locking mousemove events and are
+				// over another item, send it a mousemove event now.
+				// Use point as overPoint, so delta is (0, 0) since this will
+				// be the first mousemove event for this item.
+				if (item != downItem) {
+					overPoint = point;
+					callEvent('mousemove', event, point, item, overPoint);
+				}
+			}
 			if (item == downItem) {
 				clickTime = Date.now();
 				callEvent(doubleClick ? 'doubleclick' : 'click', event,
@@ -142,8 +163,9 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		_onMouseMove: function(event, point) {
 			// Call the mousedrag event first if an item was clicked earlier
 			if (downItem)
-				callEvent('mousedrag', event, point, downItem);
-			var item = handleEvent(this, 'mousemove', event, point);
+				callEvent('mousedrag', event, point, downItem, lastPoint);
+			var item = handleEvent(this, 'mousemove', event, point, overPoint);
+			lastPoint = overPoint = point;
 			if (item != overItem) {
 				callEvent('mouseleave', event, point, overItem);
 				overItem = item;
