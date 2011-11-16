@@ -495,15 +495,16 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		var view = View._focused;
 		if (!view || !dragging)
 			return;
-		dragging = false;
+		var point = viewToProject(view, event);
 		curPoint = null;
-		if (tool) {
-			if (tool._onHandleEvent('mouseup', viewToProject(view, event),
-			 		event)) {
-				view.draw(true);
-				DomEvent.stop(event);
-			}
-		}
+		dragging = false;
+		if (view._onMouseUp)
+			view._onMouseUp(event, point);
+		// Cancel DOM-event if it was handled by our tool
+		if (tool && tool._onHandleEvent('mouseup', point, event))
+			DomEvent.stop(event);
+		// See mousedown() for an explanation of why we can always call this.
+		view.draw(true);
 	}
 
 	function selectstart(event) {
