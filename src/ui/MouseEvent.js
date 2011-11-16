@@ -19,24 +19,22 @@
  *
  * @extends Event
  */
-var MouseEvent = this.MouseEvent = Event.extend(new function() {
-	return /** @lends MouseEvent# */{
-		initialize: function(type, point, target, event) {
-			this.base(event);
-			this.type = type;
-			this.point = point;
-			this.target = target;
-		},
+var MouseEvent = this.MouseEvent = Event.extend(/** @lends MouseEvent# */{
+	initialize: function(type, point, target, event) {
+		this.base(event);
+		this.type = type;
+		this.point = point;
+		this.target = target;
+	},
 
-		/**
-		 * @return {String} A string representation of the key event.
-		 */
-		toString: function() {
-			return '{ type: ' + this.type
-					+ ', point: ' + this.point
-					+ ', target: ' + this.target
-					+ ', modifiers: ' + this.getModifiers()
-					+ ' }';
-		}
-	};
+	/**
+	 * @return {String} A string representation of the key event.
+	 */
+	toString: function() {
+		return '{ type: ' + this.type
+				+ ', point: ' + this.point
+				+ ', target: ' + this.target
+				+ ', modifiers: ' + this.getModifiers()
+				+ ' }';
+	}
 });
