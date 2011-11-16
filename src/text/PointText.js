@@ -28,6 +28,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * Creates a point text item
 	 *
 	 * @param {Point} point the position where the text will start
+	 * @param {Boolean} cache whether the text should be cached; improves redraw performance significantly
 	 *
 	 * @example
 	 * var text = new PointText(new Point(50, 100));
@@ -35,10 +36,19 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * text.fillColor = 'black';
 	 * text.content = 'The contents of the point text';
 	 */
-	initialize: function(point) {
+	initialize: function(point, cache) {
 		this.base();
 		this._point = Point.read(arguments).clone();
 		this._matrix = new Matrix().translate(this._point);
+		this.cache = (cache === true);
+	},
+	
+	_changed: function(flags) {
+		// Don't use base() for reasons of performance.
+		Item.prototype._changed.call(this, flags);
+		if (flags & (Change.CONTENT | Change.ATTRIBUTE)) {
+			delete this._cache;
+		}
 	},
 
 	clone: function() {
@@ -75,6 +85,38 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	setPosition: function(point) {
 		this.setPoint.apply(this, arguments);
 	},
+	
+	_getBounds: function(getter, cacheName, args){
+		// Return from the cache if we can
+		if (this[cacheName])
+			return this[cacheName];
+		// If there is no text, there are no bounds
+		if (!this._content){
+			return this[cacheName] = new Rectangle();
+		}
+		// Create an in-memory canvas on which to do the measuring
+		var x = this._point.x,
+		    y = this._point.y,
+		    canvas = this.project._scope.view.canvas,
+		    ctx = canvas.getContext('2d'),
+		    justification = this.getJustification();
+		// Measure the real width of the text, but the height still must be undefined
+		// (since there is no sane way to measure text height with canvas)
+		ctx.save();
+		ctx.font = this._getFontString();
+		this._matrix.applyToContext(ctx);
+		var width = ctx.measureText(this._content).width;
+		// Adjust for different justifications
+		if (justification === 'right') {
+			x = Math.round(x - width);
+		} else if (justification === 'center') {
+			x = Math.round(x - (width / 2));
+		}
+		var bounds = Rectangle.create(x, y, width, this.getCharacterStyle()._lineHeight);
+		this[cacheName] = bounds;
+		ctx.restore();
+		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
+	},
 
 	_transform: function(matrix, flags) {
 		this._matrix.preConcatenate(matrix);
@@ -85,23 +127,60 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	draw: function(ctx) {
 		if (!this._content)
 			return;
-		ctx.save();
-		ctx.font = this.getFontSize() + 'pt ' + this.getFont();
-		ctx.textAlign = this.getJustification();
-		this._matrix.applyToContext(ctx);
+		
+		// Draw unless we already have a cache to use
+		if (this._cache === undefined) {
+			if (this.cache === true) {
+				this._cachedDrawBounds = this.getBounds();
+				var cacheCanvas = document.createElement('canvas');
+				cacheCanvas.width = this._cachedDrawBounds.width;
+				cacheCanvas.height = this._cachedDrawBounds.height;
+				var originalCtx = ctx,
+				    ctx = cacheCanvas.getContext('2d');
+			}
+			
+			ctx.save();
+			ctx.font = this._getFontString();
+			
+			// textAlign and the matrix transformation don't apply if we're caching, and textBaseline should be top
+			// so that rendering always happens at (0, 0) -- the positioning is handled in drawImage instead
+			// (this is so that we can have a "snug" off-screen canvas -- see http://jsperf.com/render-vs-prerender/3)
+			if (this.cache === true) {
+				ctx.textBaseline = 'top';
+			} else {
+				ctx.textBaseline = 'middle';
+				ctx.textAlign = this.getJustification();
+				this._matrix.applyToContext(ctx);
+			}
 
-		var fillColor = this.getFillColor();
-		var strokeColor = this.getStrokeColor();
-		if (!fillColor || !strokeColor)
-			ctx.globalAlpha = this._opacity;
-		if (fillColor) {
-			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-			ctx.fillText(this._content, 0, 0);
+			var fillColor = this.getFillColor();
+			var strokeColor = this.getStrokeColor();
+			if (!fillColor || !strokeColor)
+				ctx.globalAlpha = this._opacity;
+			if (fillColor) {
+				ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+				ctx.fillText(this._content, 0, 0);
+			}
+			if (strokeColor) {
+				ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+				ctx.strokeText(this._content, 0, 0);
+			}
+			ctx.restore();
+			
+			if (this.cache === true) {
+				this._cache = cacheCanvas;
+				ctx = originalCtx;
+			}
 		}
-		if (strokeColor) {
-			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-			ctx.strokeText(this._content, 0, 0);
+	
+		// If the cache was used (either generated here, or already prepared previously), we need to
+		// draw it to the actual canvas
+		if (this._cache !== undefined) {
+			ctx.drawImage(
+				this._cache,
+				this._cachedDrawBounds.x,
+				(this._cachedDrawBounds.y - (this._cachedDrawBounds.height / 2))
+			);
 		}
-		ctx.restore();
 	}
 });
