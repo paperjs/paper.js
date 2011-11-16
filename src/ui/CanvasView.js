@@ -74,21 +74,26 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		tolerance: 0
 	};
 
-	function handleEvent(view, type, event, point) {
-		if (view._eventCounters[type]) {
-			var hit = view._project.hitTest(point, hitOptions);
-			if (hit && hit.item) {
-				new MouseEvent(type, point, hit.item, event)._call();
-				return hit.item;
-			}
-		}
-	}
-
 	var downPoint,
 		downItem,
+		hasDrag,
 		overItem,
 		doubleClick,
 		clickTime;
+
+	function handleEvent(view, type, event, point) {
+		if (view._eventCounters[type]) {
+			var hit = view._project.hitTest(point, hitOptions),
+				item = hit && hit.item;
+			if (item) {
+				// If we have a downItem with a mousedrag event, do not send
+				// mousemove events to any item while we're dragging.
+				if (type != 'mousemove' || !downItem)
+					new MouseEvent(type, point, item, event)._call();
+				return item;
+			}
+		}
+	}
 
 	return {
 		_onMouseDown: function(event, point) {
@@ -98,19 +103,29 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			doubleClick = downItem == item && Date.now() - clickTime < 300;
 			downItem = item;
 			downPoint = point;
+			hasDrag = downItem && downItem.responds('mousedrag');
 		},
 
 		_onMouseUp: function(event, point) {
 			var item = handleEvent(this, 'mouseup', event, point);
+			// If we had a mousedrag event locking mousemove events and are over
+			// another item, send it a mousemove event now
+			if (hasDrag && item != downItem)
+				new MouseEvent('mousemove', point, item, event)._call();
 			if (item == downItem) {
 				clickTime = Date.now();
 				new MouseEvent(doubleClick ? 'doubleclick' : 'click', downPoint,
 						overItem, event)._call();
 				doubleClick = false;
 			}
+			downItem = null;
+			hasDrag = false;
 		},
 
 		_onMouseMove: function(event, point) {
+			// Call the mousedrag event first if an item was clicked earlier
+			if (downItem)
+				new MouseEvent('mousedrag', point, downItem, event)._call();
 			var item = handleEvent(this, 'mousemove', event, point);
 			if (item != overItem) {
 				new MouseEvent('mouseleave', point, overItem, event)._call();
