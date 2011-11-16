@@ -36,5 +36,18 @@ var MouseEvent = this.MouseEvent = Event.extend(/** @lends MouseEvent# */{
 				+ ', target: ' + this.target
 				+ ', modifiers: ' + this.getModifiers()
 				+ ' }';
+	},
+
+	// TODO: Move to Event perhaps?
+	_call: function(bubble) {
+		var item = this.target,
+			called = false;
+		while (item) {
+			called = item.fire(this.type, this) || called;
+			if (called && (!bubble || this._stopped))
+				break;
+			item = item.getParent();
+		}
+		return called;
 	}
 });
