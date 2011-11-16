@@ -81,14 +81,14 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		doubleClick,
 		clickTime;
 
-	function callEvent(type, point, target, event, bubble) {
+	function callEvent(type, event, point, target, bubble) {
 		var item = target,
 			mouseEvent,
 			called = false;
 		while (item) {
 			if (item.responds(type)) {
 				if (!mouseEvent)
-					mouseEvent = new MouseEvent(type, point, target, event);
+					mouseEvent = new MouseEvent(type, event, point, target);
 				called = item.fire(type, mouseEvent) || called;
 				if (called && (!bubble || mouseEvent._stopped))
 					break;
@@ -106,7 +106,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 				// If we have a downItem with a mousedrag event, do not send
 				// mousemove events to any item while we're dragging.
 				if (type != 'mousemove' || !downItem)
-					callEvent(type, point, item, event);
+					callEvent(type, event, point, item);
 				return item;
 			}
 		}
@@ -128,11 +128,11 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			// If we had a mousedrag event locking mousemove events and are over
 			// another item, send it a mousemove event now
 			if (hasDrag && item != downItem)
-				callEvent('mousemove', point, item, event);
+				callEvent('mousemove', event, point, item);
 			if (item == downItem) {
 				clickTime = Date.now();
-				callEvent(doubleClick ? 'doubleclick' : 'click', downPoint,
-						overItem, event);
+				callEvent(doubleClick ? 'doubleclick' : 'click', event,
+						downPoint, overItem);
 				doubleClick = false;
 			}
 			downItem = null;
@@ -142,12 +142,12 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		_onMouseMove: function(event, point) {
 			// Call the mousedrag event first if an item was clicked earlier
 			if (downItem)
-				callEvent('mousedrag', point, downItem, event);
+				callEvent('mousedrag', event, point, downItem);
 			var item = handleEvent(this, 'mousemove', event, point);
 			if (item != overItem) {
-				callEvent('mouseleave', point, overItem, event);
+				callEvent('mouseleave', event, point, overItem);
 				overItem = item;
-				callEvent('mouseenter', point, item, event);
+				callEvent('mouseenter', event, point, item);
 			}
 		}
 	};

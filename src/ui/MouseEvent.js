@@ -20,7 +20,7 @@
  * @extends Event
  */
 var MouseEvent = this.MouseEvent = Event.extend(/** @lends MouseEvent# */{
-	initialize: function(type, point, target, event) {
+	initialize: function(type, event, point, target) {
 		this.base(event);
 		this.type = type;
 		this.point = point;
