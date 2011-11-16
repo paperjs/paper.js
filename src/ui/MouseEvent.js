@@ -20,11 +20,12 @@
  * @extends Event
  */
 var MouseEvent = this.MouseEvent = Event.extend(/** @lends MouseEvent# */{
-	initialize: function(type, event, point, target) {
+	initialize: function(type, event, point, target, delta) {
 		this.base(event);
 		this.type = type;
 		this.point = point;
 		this.target = target;
+		this.delta = delta;
 	},
 
 	/**
@@ -34,6 +35,7 @@ var MouseEvent = this.MouseEvent = Event.extend(/** @lends MouseEvent# */{
 		return '{ type: ' + this.type
 				+ ', point: ' + this.point
 				+ ', target: ' + this.target
+				+ (this.delta ? ', delta: ' + this.delta : '')
 				+ ', modifiers: ' + this.getModifiers()
 				+ ' }';
 	}
