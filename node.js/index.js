@@ -1,7 +1,9 @@
 var fs = require('fs'),
 	vm = require('vm'),
 	path = require('path'),
-	Canvas = require('canvas');
+	// Have HTMLCanvasElement reference Canvas too, so we do not handle browser
+	// and server differently in some places of our code.
+	Canvas = HTMLCanvasElement =require('canvas');
 
 __dirname = path.resolve(__dirname, '../src/');
 

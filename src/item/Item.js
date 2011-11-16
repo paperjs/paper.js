@@ -54,16 +54,24 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Entry for all mouse events in the _events list
 		var mouseEvent = {
 			install: function(type) {
+				// If the view requires counting of installed mouse events,
+				// increase the counters now according to mouseFlags
 				var counters = this._project.view._eventCounters;
-				for (var key in mouseFlags) {
-					counters[key] = (counters[key] || 0)
-							+ (mouseFlags[key][type] || 0);
+				if (counters) {
+					for (var key in mouseFlags) {
+						counters[key] = (counters[key] || 0)
+								+ (mouseFlags[key][type] || 0);
+					}
 				}
 			},
 			uninstall: function(type) {
+				// If the view requires counting of installed mouse events,
+				// decrease the counters now according to mouseFlags
 				var counters = this._project.view._eventCounters;
-				for (var key in mouseFlags)
-					counters[key] -= mouseFlags[key][type] || 0;
+				if (counters) {
+					for (var key in mouseFlags)
+						counters[key] -= mouseFlags[key][type] || 0;
+				}
 			}
 		};
 
