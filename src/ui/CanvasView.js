@@ -74,27 +74,17 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		tolerance: 0
 	};
 
-	function callEvent(item, event, bubble) {
-		var called = false;
-		while (item) {
-			called = item.fire(event.type, event) || called;
-			if (called && (!bubble || event._stopped))
-				break;
-			item = item.getParent();
-		}
-		return called;
-	}
-
 	function handleEvent(view, type, event, point) {
 		if (view._eventCounters[type]) {
 			var hit = view._project.hitTest(point, hitOptions);
 			if (hit && hit.item) {
-				callEvent(hit.item, new MouseEvent(type, point,
-						hit.item, event), false);
-				return hit;
+				new MouseEvent(type, point, hit.item, event)._call();
+				return hit.item;
 			}
 		}
 	}
+
+	var overItem = null;
 
 	return {
 		_onMouseDown: function(event, point) {
@@ -106,7 +96,12 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		},
 
 		_onMouseMove: function(event, point) {
-			handleEvent(this, 'mousemove', event, point);
+			var item = handleEvent(this, 'mousemove', event, point);
+			if (item != overItem) {
+				new MouseEvent('mouseleave', point, overItem, event)._call();
+				overItem = item;
+				new MouseEvent('mouseenter', point, item, event)._call();
+			}
 		}
 	};
 });
