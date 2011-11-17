@@ -89,6 +89,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			called = false;
 		while (item) {
 			if (item.responds(type)) {
+				// Create an reuse the event object if we're bubbling
 				if (!mouseEvent)
 					mouseEvent = new MouseEvent(type, event, point, target,
 							// Calculate delta if lastPoint was passed
