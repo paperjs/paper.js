@@ -215,6 +215,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 			var fillColor = this.getFillColor(),
 				strokeColor = this.getStrokeColor();
+			// Try calling transform on colors in case they are GradientColors.
 			if (fillColor && fillColor.transform)
 				fillColor.transform(matrix);
 			if (strokeColor && strokeColor.transform)

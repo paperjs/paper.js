@@ -1817,7 +1817,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		draw: function(item, ctx, param) {
 			if (!item._visible || item._opacity == 0)
 				return;
-
 			var tempCanvas, parentCtx;
 			// If the item has a blendMode or is defining an opacity, draw it on
 			// a temporary canvas first and composite the canvas afterwards.
@@ -1832,21 +1831,17 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				var bounds = item.getStrokeBounds() || item.getBounds();
 				if (!bounds.width || !bounds.height)
 					return;
-
 				// Floor the offset and ceil the size, so we don't cut off any
 				// antialiased pixels when drawing onto the temporary canvas.
 				var itemOffset = bounds.getTopLeft().floor(),
 					size = bounds.getSize().ceil().add(new Size(1, 1));
 				tempCanvas = CanvasProvider.getCanvas(size);
-
 				// Save the parent context, so we can draw onto it later
 				parentCtx = ctx;
-
 				// Set ctx to the context of the temporary canvas,
 				// so we draw onto it, instead of the parentCtx
 				ctx = tempCanvas.getContext('2d');
 				ctx.save();
-
 				// Translate the context so the topLeft of the item is at (0, 0)
 				// on the temporary canvas.
 				ctx.translate(-itemOffset.x, -itemOffset.y);
@@ -1859,15 +1854,12 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			item.draw(ctx, param);
 			if (itemOffset)
 				param.offset = savedOffset;
-
 			// If we created a temporary canvas before, composite it onto the
 			// parent canvas:
 			if (tempCanvas) {
-
 				// Restore the temporary canvas to its state before the
 				// translation matrix was applied above.
 				ctx.restore();
-
 				// If the item has a blendMode, use BlendMode#process to
 				// composite its canvas on the parentCanvas.
 				if (item._blendMode !== 'normal') {
@@ -1885,7 +1877,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 							itemOffset.x, itemOffset.y);
 					parentCtx.restore();
 				}
-
 				// Return the temporary canvas, so it can be reused
 				CanvasProvider.returnCanvas(tempCanvas);
 			}
