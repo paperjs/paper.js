@@ -115,7 +115,7 @@ var Style = Item.extend({
 					return this[styleKey][get]();
 				};
 			}, {}));
-			return this.base(src);
+			return this.base.apply(this, arguments);
 		}
 	}
 });
