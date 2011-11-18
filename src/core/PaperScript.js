@@ -155,7 +155,7 @@ var PaperScript = this.PaperScript = new function() {
 	function evaluate(code, scope) {
 		// Set currently active scope.
 		paper = scope;
-		var view = scope.view,
+		var view = scope.project.view,
 			tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
 					&& new Tool(),
 			res;
