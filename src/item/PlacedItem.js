@@ -71,9 +71,8 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 		return bounds;
 	},
 
-	_getBounds: function(getter, cacheName, args) {
-		var matrix = args[0],
-			useCache = matrix === undefined;
+	_getBounds: function(getter, cacheName, matrix) {
+		var useCache = matrix === undefined;
 		if (useCache && this[cacheName])
 			return this[cacheName];
 		// Concatenate the passed matrix with the internal one
