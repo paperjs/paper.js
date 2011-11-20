@@ -1256,7 +1256,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * Loops through all children, gets their bounds and finds the bounds around
 	 * all of them.
 	 */
-	_getBounds: function(getter, cacheName, args) {
+	_getBounds: function(getter, cacheName, matrix) {
 		// Note: We cannot cache these results here, since we do not get
 		// _changed() notifications here for changing geometry in children.
 		// But cacheName is used in sub-classes such as PlacedItem.
@@ -1272,7 +1272,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			if (child._visible) {
-				var rect = child[getter](args[0]);
+				var rect = child[getter](matrix);
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
 				x2 = Math.max(rect.x + rect.width, x2);
@@ -1299,7 +1299,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 */
 	getBounds: function(/* matrix */) {
-		return this._getBounds('getBounds', '_bounds', arguments);
+		return this._getBounds('getBounds', '_bounds', arguments[0]);
 	},
 
 	setBounds: function(rect) {
@@ -1330,7 +1330,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 */
 	getStrokeBounds: function(/* matrix */) {
-		return this._getBounds('getStrokeBounds', '_strokeBounds', arguments);
+		return this._getBounds('getStrokeBounds', '_strokeBounds', arguments[0]);
 	},
 
 	/**
@@ -1340,7 +1340,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 */
 	getHandleBounds: function(/* matrix */) {
-		return this._getBounds('getHandleBounds', '_handleBounds', arguments);
+		return this._getBounds('getHandleBounds', '_handleBounds', arguments[0]);
 	},
 
 	/**
@@ -1352,7 +1352,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @ignore
 	 */
 	getRoughBounds: function(/* matrix */) {
-		return this._getBounds('getRoughBounds', '_roughBounds', arguments);
+		return this._getBounds('getRoughBounds', '_roughBounds', arguments[0]);
 	},
 
 	/**
