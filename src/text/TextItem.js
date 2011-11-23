@@ -29,6 +29,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	initialize: function() {
 		this.base();
 		this._content = '';
+		this._lines = [];
 		this._characterStyle = CharacterStyle.create(this);
 		this.setCharacterStyle(this._project.getCurrentStyle());
 		this._paragraphStyle = ParagraphStyle.create(this);
@@ -68,7 +69,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	 */
 
 	_clone: function(copy) {
-		copy._content = this._content;
+		copy.setContent(this._content);
 		copy.setCharacterStyle(this._characterStyle);
 		copy.setParagraphStyle(this._paragraphStyle);
 		return this.base(copy);
@@ -79,8 +80,9 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	},
 
 	setContent: function(content) {
-		this._changed(Change.CONTENT);
 		this._content = '' + content;
+		this._lines = this._content.split(/\r\n|\n|\r/mg);
+		this._changed(Change.CONTENT);
 	},
 
 	/**
