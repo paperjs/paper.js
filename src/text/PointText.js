@@ -65,17 +65,6 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		this.translate(Point.read(arguments).subtract(this._point));
 	},
 
-	// TODO: Position should be the center point of the bounds but we currently
-	// don't support bounds for PointText, so let's return the same as #point
-	// for the time being.
-	getPosition: function() {
-		return this.getPoint();
-	},
-
-	setPosition: function(point) {
-		this.setPoint.apply(this, arguments);
-	},
-
 	_transform: function(matrix, flags) {
 		this._matrix.preConcatenate(matrix);
 		// Also transform _point:
@@ -86,22 +75,64 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		if (!this._content)
 			return;
 		ctx.save();
-		ctx.font = this.getFontSize() + 'pt ' + this.getFont();
+		ctx.font = this.getFontSize() + 'px ' + this.getFont();
 		ctx.textAlign = this.getJustification();
 		this._matrix.applyToContext(ctx);
-
-		var fillColor = this.getFillColor();
-		var strokeColor = this.getStrokeColor();
+		var fillColor = this.getFillColor(),
+			strokeColor = this.getStrokeColor(),
+			leading = this.getLeading();
 		if (!fillColor || !strokeColor)
 			ctx.globalAlpha = this._opacity;
-		if (fillColor) {
+		if (fillColor)
 			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-			ctx.fillText(this._content, 0, 0);
-		}
-		if (strokeColor) {
+		if (strokeColor)
 			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
-			ctx.strokeText(this._content, 0, 0);
+		for (var i = 0, l = this._lines.length; i < l; i++) {
+			var line = this._lines[i];
+			if (fillColor)
+				ctx.fillText(line, 0, 0);
+			if (strokeColor)
+				ctx.strokeText(line, 0, 0);
+			ctx.translate(0, leading);
 		}
 		ctx.restore();
 	}
+}, new function() {
+	var context = null;
+
+	return {
+		_getBounds: function(getter, cacheName, matrix) {
+			// TODO: What if first argument is a Matrix? See PlacedItem...
+			// Return from the cache if we can
+			if (this[cacheName])
+				return this[cacheName];
+			// If there is no text, there are no bounds
+			if (!this._content)
+				return this[cacheName] = new Rectangle();
+			// Create an in-memory canvas on which to do the measuring
+			if (!context)
+				context = CanvasProvider.getCanvas(Size.create(1, 1)).getContext('2d');
+			var justification = this.getJustification(),
+				x = 0;
+			// Measure the real width of the text. Unfortunately, there is no
+			// sane way to measure text height with canvas
+			context.font = this.getFontSize() + 'px ' + this.getFont();
+			var width = 0;
+			for (var i = 0, l = this._lines.length; i < l; i++)
+				width = Math.max(width, context.measureText(this._lines[i]).width);
+			// Adjust for different justifications
+			if (justification != 'left')
+				x -= width / (justification === 'center' ? 2: 1);
+			var leading = this.getLeading();
+			var count = this._lines.length;
+			// Until we don't have baseline measuring, assume leading / 4 as a
+			// rough guess
+			var bounds = Rectangle.create(x, leading / 4 + (count - 1) * leading,
+					width, -count * leading);
+			bounds = this._matrix._transformBounds(bounds);
+			// TODO: Only cache if no matrix is provided
+			this[cacheName] = bounds;
+			return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
+		}
+	};
 });
