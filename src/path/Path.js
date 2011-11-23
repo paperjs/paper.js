@@ -2030,11 +2030,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		 * @ignore
 		 */
 		getHandleBounds: function(/* matrix, stroke, join */) {
-			var matrix = arguments[0],
-				useCache = matrix === undefined;
+			// Do not check for matrix but count parameters to determine if we
+			// can cache or not, as the other parameters have an influence on
+			// that too:
+			var useCache = arguments.length == 0;
 			if (useCache && this._handleBounds)
 				return this._handleBounds;
 			var coords = new Array(6),
+				matrix = arguments[0],
 				stroke = arguments[1] / 2 || 0, // Stroke padding
 				join = arguments[2] / 2 || 0, // Join padding, for miterLimit
 				open = !this._closed,
