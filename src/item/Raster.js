@@ -388,6 +388,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 
 	// Since Raster doesn't make the distinction between the different bounds,
 	// simply redirect to strokeBounds so the cached values can be reused.
+	// TODO: Shouldn't this be moved to PlacedItem
 
 	getHandleBounds: function(/* matrix */) {
 		return this.getStrokeBounds(arguments[0]);
