@@ -59,29 +59,14 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 		this._changed(Change.GEOMETRY);
 	},
 
-	getBounds: function(/* matrix */) {
-		var useCache = arguments[0] === undefined;
-		if (useCache && this._bounds)
-			return this._bounds;
-		// The bounds of PlacedItems are the same as the strokeBounds, but are
-		// wrapped in a LinkedRectangle that catch changes for us.
-		var bounds = this.getStrokeBounds(arguments[0]);
-		if (useCache)
-			bounds = this._bounds = this._createBounds(bounds);
-		return bounds;
-	},
-
-	_getBounds: function(getter, cacheName, matrix) {
-		var useCache = matrix === undefined;
-		if (useCache && this[cacheName])
-			return this[cacheName];
+	_getBounds: function(type, matrix) {
+		// The bounds of PlacedItems are the same as the strokeBounds
+		if (type == 'bounds')
+			type = 'strokeBounds';
 		// Concatenate the passed matrix with the internal one
 		matrix = matrix ? matrix.clone().concatenate(this._matrix)
 				: this._matrix;
 		// Call _calculateBounds, which needs to be defined in the subclasses:
-		var bounds = this._calculateBounds(getter, matrix);
-		if (useCache)
-			this[cacheName] = bounds;
-		return bounds;
+		return this._calculateBounds(type, matrix);
 	}
 });
