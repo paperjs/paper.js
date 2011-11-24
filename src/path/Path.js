@@ -213,6 +213,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			for (var i = 0, l = this._segments.length; i < l; i++) {
 				this._segments[i]._transformCoordinates(matrix, coords, true);
 			}
+			// TODO: Can't we access _style._fillColor, as we do in strokeBounds?
 			var fillColor = this.getFillColor(),
 				strokeColor = this.getStrokeColor();
 			// Try calling transform on colors in case they are GradientColors.
@@ -1232,6 +1233,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	_hitTest: function(point, options, matrix) {
+		// TODO: Can't we access _style._strokeColor, as we do in strokeBounds?
 		var tolerance = options.tolerance || 0,
 			radius = (options.stroke && this.getStrokeColor()
 					? this.getStrokeWidth() / 2 : 0) + tolerance,
@@ -1389,6 +1391,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (!param.compound)
 				ctx.beginPath();
 
+			// TODO: Can't we access _style._strokeColor, as we do in strokeBounds?
 			var fillColor = this.getFillColor(),
 				strokeColor = this.getStrokeColor(),
 				dashArray = this.getDashArray() || [], // TODO: Always defined?
