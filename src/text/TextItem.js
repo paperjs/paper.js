@@ -27,8 +27,8 @@
  */
 var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	// TextItem doesn't make the distinction between the different bounds,
-	// so use the same cache for all of them
-	_simpleBounds: true,
+	// so use the same name for all of them
+	_boundsType: 'bounds',
 
 	initialize: function() {
 		this.base();
