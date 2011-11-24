@@ -1265,9 +1265,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		if (cache && this._bounds && this._bounds[cache])
 			return this._bounds[cache];
 		var bounds = this._getBounds(name, matrix);
-		// TODO:
 		if (name == 'bounds')
-		 	bounds = this._createBounds(bounds);
+			bounds = LinkedRectangle.create(this, 'setBounds',
+					bounds.x, bounds.y, bounds.width, bounds.height);
 		// If we can cache the result, update the _bounds cache structure
 		// before returning
 		if (cache) {
@@ -1314,14 +1314,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		}
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	},
-
-	/**
-	 * Creates a LinkedRectangle that when modified calls #setBounds().
-	 */
-	_createBounds: function(rect) {
-		return LinkedRectangle.create(this, 'setBounds',
-				rect.x, rect.y, rect.width, rect.height);
 	},
 
 	setBounds: function(rect) {
