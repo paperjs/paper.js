@@ -1345,6 +1345,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
+
 	/**
 	 * The bounding rectangle of the item including stroke width.
 	 *
@@ -1352,6 +1353,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
+
 	/**
 	 * The bounding rectangle of the item including handles.
 	 *
@@ -1359,6 +1361,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
+
 	/**
 	 * The rough bounding rectangle of the item that is shure to include all of
 	 * the drawing, including stroke width.
@@ -1368,7 +1371,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 * @ignore
 	 */
-}), /** @lends Item# */{
+
+	// Document all style properties which get injected into Item by Style:
+
 	/**
 	 * {@grouptitle Stroke Style}
 	 *
@@ -1532,7 +1537,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Set the fill color of the circle to RGB red:
 	 * circle.fillColor = new RgbColor(1, 0, 0);
 	 */
-
+}), /** @lends Item# */{
 	// DOCS: document the different arguments that this function can receive.
 	/**
 	 * {@grouptitle Transform Functions}
