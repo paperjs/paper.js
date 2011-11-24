@@ -414,7 +414,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * point and finding the new bounding box to these points. This is not
 	 * really the transformed reactangle!
 	 */
-	_transformBounds: function(bounds) {
+	_transformBounds: function(bounds, dest, dontNotify) {
 		var coords = this._transformCorners(bounds),
 			min = coords.slice(0, 2),
 			max = coords.slice(0);
@@ -426,8 +426,10 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 			else if (val > max[j])
 				max[j] = val;
 		}
-		return Rectangle.create(min[0], min[1],
-				max[0] - min[0], max[1] - min[1]);
+		if (!dest)
+			dest = new Rectangle(Rectangle.dont);
+		return dest.set(min[0], min[1], max[0] - min[0], max[1] - min[1],
+				dontNotify);
 	},
 
 	/**

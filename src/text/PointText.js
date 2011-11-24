@@ -129,7 +129,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 			// rough guess
 			var bounds = Rectangle.create(x, leading / 4 + (count - 1) * leading,
 					width, -count * leading);
-			bounds = this._matrix._transformBounds(bounds);
+			this._matrix._transformBounds(bounds, bounds);
 			// TODO: Only cache if no matrix is provided
 			this[cacheName] = bounds;
 			return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
