@@ -1699,8 +1699,13 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.
 		if (bounds && matrix.getRotation() % 90 === 0) {
-			this._bounds = this._createBounds(
-					matrix._transformBounds(bounds));
+			// Transform the old _bounds without notifying it of changes
+			this._bounds = matrix._transformBounds(bounds, bounds, true);
+			// Update _position again, by linking it to _bounds
+			// TODO: If LinkedPoint would not just sync writes, but reads too,
+			// we could do this: this._position = position;
+			// This is a bug currently in Paper.js, that should be fixed, but
+			// can only really be handled properly using versioning...
 			this._position = this._bounds.getCenter();
 		} else if (position) {
 			// Transform position as well. Do not notify _position of
