@@ -101,14 +101,10 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	var context = null;
 
 	return {
-		_getBounds: function(getter, cacheName, matrix) {
-			// TODO: What if first argument is a Matrix? See PlacedItem...
-			// Return from the cache if we can
-			if (this[cacheName])
-				return this[cacheName];
+		_getBounds: function(type, matrix) {
 			// If there is no text, there are no bounds
 			if (!this._content)
-				return this[cacheName] = new Rectangle();
+				return new Rectangle();
 			// Create an in-memory canvas on which to do the measuring
 			if (!context)
 				context = CanvasProvider.getCanvas(Size.create(1, 1)).getContext('2d');
@@ -129,10 +125,8 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 			// rough guess
 			var bounds = Rectangle.create(x, leading / 4 + (count - 1) * leading,
 					width, -count * leading);
-			this._matrix._transformBounds(bounds, bounds);
-			// TODO: Only cache if no matrix is provided
-			this[cacheName] = bounds;
-			return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
+			// TODO: matrix!
+			return this._matrix._transformBounds(bounds, bounds);
 		}
 	};
 });

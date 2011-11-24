@@ -1248,13 +1248,26 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			parent = parent._parent;
 		}
 		return false;
-	},
-
+	}
+}, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'], function(name) {
+	this['get' + Base.capitalize(name)] = function(/* matrix */) {
+		var matrix = arguments[0];
+		// If the matrix is an identity transformation, set it to null for
+		// faster processing
+		if (matrix && matrix.isIdentity())
+			matrix = null;
+		// TODO: Caching!
+		var bounds = this._getBounds(name, matrix);
+		return name == 'bounds' ? this._createBounds(bounds) : bounds;
+	};
+}, /** @lends Item# */{
 	/**
-	 * Loops through all children, gets their bounds and finds the bounds around
-	 * all of them.
+	 * Internal method used in all the bounds getters. It loops through all the
+	 * children, gets their bounds and finds the bounds around all of them.
+	 * Subclasses override it to define calculations for the various required
+	 * bounding types.
 	 */
-	_getBounds: function(getter, cacheName, matrix) {
+	_getBounds: function(type, matrix) {
 		// Note: We cannot cache these results here, since we do not get
 		// _changed() notifications here for changing geometry in children.
 		// But cacheName is used in sub-classes such as PlacedItem.
@@ -1270,15 +1283,14 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			if (child._visible) {
-				var rect = child[getter](matrix);
+				var rect = child._getBounds(type, matrix);
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
 				x2 = Math.max(rect.x + rect.width, x2);
 				y2 = Math.max(rect.y + rect.height, y2);
 			}
 		}
-		var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-		return getter == 'getBounds' ? this._createBounds(bounds) : bounds;
+		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**
@@ -1296,9 +1308,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
-	getBounds: function(/* matrix */) {
-		return this._getBounds('getBounds', '_bounds', arguments[0]);
-	},
+//	getBounds: function(/* matrix */) {
+//		return this._getBounds('getBounds', '_bounds', arguments[0]);
+//	},
 
 	setBounds: function(rect) {
 		rect = Rectangle.read(arguments);
@@ -1319,7 +1331,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		matrix.translate(-center.x, -center.y);
 		// Now execute the transformation:
 		this.transform(matrix);
-	},
+	}
 
 	/**
 	 * The bounding rectangle of the item including stroke width.
@@ -1327,9 +1339,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
-	getStrokeBounds: function(/* matrix */) {
-		return this._getBounds('getStrokeBounds', '_strokeBounds', arguments[0]);
-	},
+//	getStrokeBounds: function(/* matrix */) {
+//		return this._getBounds('getStrokeBounds', '_strokeBounds', arguments[0]);
+//	},
 
 	/**
 	 * The bounding rectangle of the item including handles.
@@ -1337,9 +1349,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Rectangle
 	 * @bean
 	 */
-	getHandleBounds: function(/* matrix */) {
-		return this._getBounds('getHandleBounds', '_handleBounds', arguments[0]);
-	},
+//	getHandleBounds: function(/* matrix */) {
+//		return this._getBounds('getHandleBounds', '_handleBounds', arguments[0]);
+//	},
 
 	/**
 	 * The rough bounding rectangle of the item that is shure to include all of
@@ -1349,10 +1361,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 * @ignore
 	 */
-	getRoughBounds: function(/* matrix */) {
-		return this._getBounds('getRoughBounds', '_roughBounds', arguments[0]);
-	},
-
+//	getRoughBounds: function(/* matrix */) {
+//		return this._getBounds('getRoughBounds', '_roughBounds', arguments[0]);
+//	},
+}), /** @lends Item# */{
 	/**
 	 * {@grouptitle Stroke Style}
 	 *

@@ -208,7 +208,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// taken into account.
 
 	_transform: function(matrix, flags) {
-		if (!matrix.isIdentity()) {
+		if (matrix && !matrix.isIdentity()) {
 			var coords = new Array(6);
 			for (var i = 0, l = this._segments.length; i < l; i++) {
 				this._segments[i]._transformCoordinates(matrix, coords, true);
@@ -1761,109 +1761,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		}
 	};
 }, new function() { // A dedicated scope for the tricky bounds calculations
-
-	function getBounds(that, matrix, strokePadding) {
-		// Code ported and further optimised from:
-		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-		var segments = that._segments,
-			first = segments[0];
-		if (!first)
-			return null;
-		var coords = new Array(6),
-			prevCoords = new Array(6);
-		// If the matrix is an identity transformation, set it to null for
-		// faster processing
-		if (matrix && matrix.isIdentity())
-			matrix = null;
-		// Make coordinates for first segment available in prevCoords.
-		first._transformCoordinates(matrix, prevCoords, false);
-		var min = prevCoords.slice(0, 2),
-			max = min.slice(0), // clone
-			// Add some tolerance for good roots, as t = 0 / 1 are added
-			// seperately anyhow, and we don't want joins to be added with
-			// radiuses in getStrokeBounds()
-			tMin = Numerical.TOLERANCE,
-			tMax = 1 - tMin;
-		function processSegment(segment) {
-			segment._transformCoordinates(matrix, coords, false);
-
-			for (var i = 0; i < 2; i++) {
-				var v0 = prevCoords[i], // prev.point
-					v1 = prevCoords[i + 4], // prev.handleOut
-					v2 = coords[i + 2], // segment.handleIn
-					v3 = coords[i]; // segment.point
-
-				function add(value, t) {
-					var padding = 0;
-					if (value == null) {
-						// Calculate bezier polynomial at t
-						var u = 1 - t;
-						value = u * u * u * v0
-								+ 3 * u * u * t * v1
-								+ 3 * u * t * t * v2
-								+ t * t * t * v3;
-						// Only add strokeWidth to bounds for points which lie
-						// within 0 < t < 1. The corner cases for cap and join
-						// are handled in getStrokeBounds()
-						padding = strokePadding ? strokePadding[i] : 0;
-					}
-					var left = value - padding,
-						right = value + padding;
-					if (left < min[i])
-						min[i] = left;
-					if (right > max[i])
-						max[i] = right;
-
-				}
-				add(v3, null);
-
-				// Calculate derivative of our bezier polynomial, divided by 3.
-				// Dividing by 3 allows for simpler calculations of a, b, c and
-				// leads to the same quadratic roots below.
-				var a = 3 * (v1 - v2) - v0 + v3,
-					b = 2 * (v0 + v2) - 4 * v1,
-					c = v1 - v0;
-
-				// Solve for derivative for quadratic roots. Each good root
-				// (meaning a solution 0 < t < 1) is an extrema in the cubic
-				// polynomial and thus a potential point defining the bounds
-				// TODO: Use tolerance here, just like Numerical.solveQuadratic
-				if (a == 0) {
-					if (b == 0)
-					    continue;
-					var t = -c / b;
-					// Test for good root and add to bounds if good (same below)
-					if (tMin < t && t < tMax)
-						add(null, t);
-					continue;
-				}
-
-				var q = b * b - 4 * a * c;
-				if (q < 0)
-					continue;
-				// TODO: Match this with Numerical.solveQuadratic
-				var sqrt = Math.sqrt(q),
-					f = -0.5 / a,
-				 	t1 = (b - sqrt) * f,
-					t2 = (b + sqrt) * f;
-				if (tMin < t1 && t1 < tMax)
-					add(null, t1);
-				if (tMin < t2 && t2 < tMax)
-					add(null, t2);
-			}
-			// Swap coordinate buffers
-			var tmp = prevCoords;
-			prevCoords = coords;
-			coords = tmp;
-		}
-		for (var i = 1, l = segments.length; i < l; i++)
-			processSegment(segments[i]);
-		if (that._closed)
-			processSegment(first);
-		return Rectangle.create(min[0], min[1],
-					max[0] - min[0], max[1] - min[1]);
-	}
-
 	/**
 	 * Returns the horizontal and vertical padding that a transformed round
 	 * stroke adds to the bounding box, by calculating the dimensions of a
@@ -1906,51 +1803,129 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return [Math.abs(x), Math.abs(y)];
 	}
 
-	return {
+	var get = {
 		/**
-		 * The bounding rectangle of the item excluding stroke width.
-		 *
-		 * @param matrix optional
-		 *
-		 * @ignore
+		 * Returns the bounding rectangle of the item excluding stroke width.
 		 */
-		getBounds: function(/* matrix */) {
-			var useCache = arguments[0] === undefined;
-			// Pass the matrix hidden from Bootstrap, so it still inject
-			// getBounds as bean too.
-			if (useCache && this._bounds)
-				return this._bounds;
-			var bounds = this._createBounds(getBounds(this, arguments[0]));
-			if (useCache)
-				this._bounds = bounds;
-			return bounds;
+		bounds: function(that, matrix, strokePadding) {
+			// Code ported and further optimised from:
+			// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
+			var segments = that._segments,
+				first = segments[0];
+			if (!first)
+				return null;
+			var coords = new Array(6),
+				prevCoords = new Array(6);
+			// Make coordinates for first segment available in prevCoords.
+			first._transformCoordinates(matrix, prevCoords, false);
+			var min = prevCoords.slice(0, 2),
+				max = min.slice(0), // clone
+				// Add some tolerance for good roots, as t = 0 / 1 are added
+				// seperately anyhow, and we don't want joins to be added with
+				// radiuses in getStrokeBounds()
+				tMin = Numerical.TOLERANCE,
+				tMax = 1 - tMin;
+			function processSegment(segment) {
+				segment._transformCoordinates(matrix, coords, false);
+
+				for (var i = 0; i < 2; i++) {
+					var v0 = prevCoords[i], // prev.point
+						v1 = prevCoords[i + 4], // prev.handleOut
+						v2 = coords[i + 2], // segment.handleIn
+						v3 = coords[i]; // segment.point
+
+					function add(value, t) {
+						var padding = 0;
+						if (value == null) {
+							// Calculate bezier polynomial at t
+							var u = 1 - t;
+							value = u * u * u * v0
+									+ 3 * u * u * t * v1
+									+ 3 * u * t * t * v2
+									+ t * t * t * v3;
+							// Only add strokeWidth to bounds for points which lie
+							// within 0 < t < 1. The corner cases for cap and join
+							// are handled in getStrokeBounds()
+							padding = strokePadding ? strokePadding[i] : 0;
+						}
+						var left = value - padding,
+							right = value + padding;
+						if (left < min[i])
+							min[i] = left;
+						if (right > max[i])
+							max[i] = right;
+
+					}
+					add(v3, null);
+
+					// Calculate derivative of our bezier polynomial, divided by 3.
+					// Dividing by 3 allows for simpler calculations of a, b, c and
+					// leads to the same quadratic roots below.
+					var a = 3 * (v1 - v2) - v0 + v3,
+						b = 2 * (v0 + v2) - 4 * v1,
+						c = v1 - v0;
+
+					// Solve for derivative for quadratic roots. Each good root
+					// (meaning a solution 0 < t < 1) is an extrema in the cubic
+					// polynomial and thus a potential point defining the bounds
+					// TODO: Use tolerance here, just like Numerical.solveQuadratic
+					if (a == 0) {
+						if (b == 0)
+						    continue;
+						var t = -c / b;
+						// Test for good root and add to bounds if good (same below)
+						if (tMin < t && t < tMax)
+							add(null, t);
+						continue;
+					}
+
+					var q = b * b - 4 * a * c;
+					if (q < 0)
+						continue;
+					// TODO: Match this with Numerical.solveQuadratic
+					var sqrt = Math.sqrt(q),
+						f = -0.5 / a,
+					 	t1 = (b - sqrt) * f,
+						t2 = (b + sqrt) * f;
+					if (tMin < t1 && t1 < tMax)
+						add(null, t1);
+					if (tMin < t2 && t2 < tMax)
+						add(null, t2);
+				}
+				// Swap coordinate buffers
+				var tmp = prevCoords;
+				prevCoords = coords;
+				coords = tmp;
+			}
+			for (var i = 1, l = segments.length; i < l; i++)
+				processSegment(segments[i]);
+			if (that._closed)
+				processSegment(first);
+			return Rectangle.create(min[0], min[1],
+						max[0] - min[0], max[1] - min[1]);
 		},
 
 		/**
-		 * The bounding rectangle of the item including stroke width.
-		 *
-		 * @ignore
+		 * Returns the bounding rectangle of the item including stroke width.
 		 */
-		getStrokeBounds: function(/* matrix */) {
-			if (!this._style._strokeColor || !this._style._strokeWidth)
-				return this.getBounds.apply(this, arguments);
-			var useCache = arguments[0] === undefined;
-			if (useCache && this._strokeBounds)
-				return this._strokeBounds;
-			var matrix = arguments[0], // set #getBounds()
-				width = this.getStrokeWidth(),
+		strokeBounds: function(that, matrix) {
+			// TODO: Should we access this.getStrokeColor, as we do in _transform?
+			// TODO: Find a way to reuse 'bounds' cache instead?
+			if (!that._style._strokeColor || !that._style._strokeWidth)
+				return get.bounds(that, matrix);
+			var width = that.getStrokeWidth(),
 				radius = width / 2,
 				padding = getPenPadding(radius, matrix),
-				join = this.getStrokeJoin(),
-				cap = this.getStrokeCap(),
+				join = that.getStrokeJoin(),
+				cap = that.getStrokeCap(),
 				// miter is relative to width. Divide it by 2 since we're
 				// measuring half the distance below
-				miter = this.getMiterLimit() * width / 2,
-				segments = this._segments,
+				miter = that.getMiterLimit() * width / 2,
+				segments = that._segments,
 				length = segments.length,
 				// It seems to be compatible with Ai we need to pass pen padding
-				// untransformed to getBounds()
-				bounds = getBounds(this, matrix, getPenPadding(radius));
+				// untransformed to get.bounds
+				bounds = get.bounds(that, matrix, getPenPadding(radius));
 			// Create a rectangle of padding size, used for union with bounds
 			// further down
 			var joinBounds = new Rectangle(new Size(padding).multiply(2));
@@ -2020,43 +1995,31 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				}
 			}
 
-			for (var i = 1, l = length - (this._closed ? 0 : 1); i < l; i++) {
+			for (var i = 1, l = length - (that._closed ? 0 : 1); i < l; i++) {
 				addJoin(segments[i], join);
 			}
-			if (this._closed) {
+			if (that._closed) {
 				addJoin(segments[0], join);
 			} else {
 				addCap(segments[0], cap, 0);
 				addCap(segments[length - 1], cap, 1);
 			}
-			if (useCache)
-				this._strokeBounds = bounds;
 			return bounds;
 		},
 
 		/**
-		 * The bounding rectangle of the item including handles.
-		 *
-		 * @ignore
+		 * Returns the bounding rectangle of the item including handles.
 		 */
-		getHandleBounds: function(/* matrix, stroke, join */) {
-			// Do not check for matrix but count parameters to determine if we
-			// can cache or not, as the other parameters have an influence on
-			// that too:
-			var useCache = arguments.length == 0;
-			if (useCache && this._handleBounds)
-				return this._handleBounds;
+		handleBounds: function(that, matrix, stroke, join) {
 			var coords = new Array(6),
-				matrix = arguments[0],
-				stroke = arguments[1] / 2 || 0, // Stroke padding
-				join = arguments[2] / 2 || 0, // Join padding, for miterLimit
-				open = !this._closed,
 				x1 = Infinity,
 				x2 = -x1,
 				y1 = x1,
 				y2 = x2;
-			for (var i = 0, l = this._segments.length; i < l; i++) {
-				var segment = this._segments[i];
+			stroke = stroke / 2 || 0; // Stroke padding
+			join = join / 2 || 0; // Join padding, for miterLimit
+			for (var i = 0, l = that._segments.length; i < l; i++) {
+				var segment = that._segments[i];
 				segment._transformCoordinates(matrix, coords, false);
 				for (var j = 0; j < 6; j += 2) {
 					// Use different padding for points or handles
@@ -2073,32 +2036,28 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					if (yx > y2) y2 = yx;
 				}
 			}
-			var bounds = Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-			if (useCache)
-				this._handleBounds = bounds;
-			return bounds;
+			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
 		},
 
 		/**
-		 * The rough bounding rectangle of the item that is shure to include all
-		 * of the drawing, including stroke width.
-		 *
-		 * @ignore
+		 * Returns the rough bounding rectangle of the item that is shure to
+		 * include all of the drawing, including stroke width.
 		 */
-		getRoughBounds: function(/* matrix */) {
-			var useCache = arguments[0] === undefined;
-			if (useCache && this._roughBounds)
-				return this._roughBounds;
-			// Delegate to #getHandleBounds(), but pass on radius values for
-			// stroke and joins. Hanlde miter joins specially, by passing the
-			// largets radius possible.
-			var bounds = this.getHandleBounds(arguments[0], this.strokeWidth,
-					this.getStrokeJoin() == 'miter'
-						? this.strokeWidth * this.getMiterLimit()
-						: this.strokeWidth);
-			if (useCache)
-				this._roughBounds = bounds;
-			return bounds;
+		roughBounds: function(that, matrix) {
+			// Delegate to handleBounds, but pass on radius values for stroke
+			// and joins. Hanlde miter joins specially, by passing the largets
+			// radius possible.
+			var width = that.getStrokeWidth();
+			return get.handleBounds(that, matrix, width,
+					that.getStrokeJoin() == 'miter'
+						? width * that.getMiterLimit()
+						: width);
+		}
+	};
+
+	return {
+		_getBounds: function(type, matrix) {
+			return get[type](this, matrix);
 		}
 	};
 });
