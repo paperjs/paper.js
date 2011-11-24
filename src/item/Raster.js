@@ -22,6 +22,10 @@
  * @extends PlacedItem
  */
 var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
+	// Raster doesn't make the distinction between the different bounds,
+	// so use the same cache for all of them
+	_simpleBounds: true,
+
 	// TODO: Implement url / type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
 	// DOCS: Document Raster constructor.
@@ -381,8 +385,6 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	_calculateBounds: function(type, matrix) {
-		// Note: Raster doesn't make the distinction between the different
-		// bounds
 		return matrix._transformBounds(
 				new Rectangle(this._size).setCenter(0, 0));
 	},

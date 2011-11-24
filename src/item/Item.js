@@ -1260,8 +1260,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// bounds on items without children, as we do not receive hierarchy
 		// change notifiers from children, and walking up the parents and
 		// merging cache bounds is not expensive.
+		// Allow subclasses to define _simpleBounds if they want to share the
+		// cache across all different bound types.
 		var cache = !this._children && !matrix
-				&& (this._boundsName[name] || name);
+				&& (this._simpleBounds && 'bounds' || name);
 		if (cache && this._bounds && this._bounds[cache])
 			return this._bounds[cache];
 		var bounds = this._getBounds(name, matrix);
@@ -1281,12 +1283,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		return bounds;
 	};
 }, /** @lends Item# */{
-	/**
-	 * Used internally to override caching names, so bound types can share their
-	 * cache, in case they return the same results.
-	 */
-	_boundsName: {},
-
 	/**
 	 * Internal method used in all the bounds getters. It loops through all the
 	 * children, gets their bounds and finds the bounds around all of them.
