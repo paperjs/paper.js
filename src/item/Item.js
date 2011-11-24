@@ -293,26 +293,24 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	statics: {
 		_id: 0
 	}
-}, new function() { // Injection scope to produce getter setters for properties
-	// We need setters because we want to call _changed() if a property was
-	// modified.
-	return Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
-		function(name) {
-			var part = Base.capitalize(name),
-				name = '_' + name;
-			this['get' + part] = function() {
-				return this[name];
-			};
-			this['set' + part] = function(value) {
-				if (value != this[name]) {
-					this[name] = value;
-					// #locked does not change appearance, all others do:
-					this._changed(name === '_locked'
-							? ChangeFlag.ATTRIBUTE : Change.ATTRIBUTE);
-				}
-			};
-		}, {});
-}, /** @lends Item# */{
+}, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
+	// Produce getter/setters for properties. We need setters because we want to
+	// call _changed() if a property was modified.
+	function(name) {
+		var part = Base.capitalize(name),
+			name = '_' + name;
+		this['get' + part] = function() {
+			return this[name];
+		};
+		this['set' + part] = function(value) {
+			if (value != this[name]) {
+				this[name] = value;
+				// #locked does not change appearance, all others do:
+				this._changed(name === '_locked'
+						? ChangeFlag.ATTRIBUTE : Change.ATTRIBUTE);
+			}
+		};
+}, {}), /** @lends Item# */{
 	// Note: These properties have their getter / setters produced in the
 	// injection scope above.
 
