@@ -1768,9 +1768,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			return null;
 		var coords = new Array(6),
 			prevCoords = new Array(6);
-		// Make coordinates for first segment available in prevCoords.
+		// If the matrix is an identity transformation, set it to null for
+		// faster processing
 		if (matrix && matrix.isIdentity())
 			matrix = null;
+		// Make coordinates for first segment available in prevCoords.
 		first._transformCoordinates(matrix, prevCoords, false);
 		var min = prevCoords.slice(0, 2),
 			max = min.slice(0), // clone
