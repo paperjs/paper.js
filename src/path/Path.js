@@ -1861,6 +1861,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					max[0] - min[0], max[1] - min[1]);
 	}
 
+	/**
+	 * Returns the horizontal and vertical padding that a transformed round
+	 * stroke adds to the bounding box, by calculating the dimensions of a
+	 * rotated ellipse.
+	 */
 	function getPenPadding(radius, matrix) {
 		if (!matrix)
 			return [radius, radius];
