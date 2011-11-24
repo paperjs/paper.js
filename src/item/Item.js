@@ -1256,11 +1256,34 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// faster processing
 		if (matrix && matrix.isIdentity())
 			matrix = null;
-		// TODO: Caching!
+		// See if we can cache these bounds. We only cache non-transformed
+		// bounds on items without children, as we do not receive hierarchy
+		// change notifiers from children, and walking up the parents and
+		// merging cache bounds is not expensive.
+		var cache = !this._children && !matrix
+				&& (this._boundsName[name] || name);
+		if (cache && this._bounds && this._bounds[cache])
+			return this._bounds[cache];
 		var bounds = this._getBounds(name, matrix);
-		return name == 'bounds' ? this._createBounds(bounds) : bounds;
+		// TODO:
+		if (name == 'bounds')
+		 	bounds = this._createBounds(bounds);
+		// If we can cache the result, update the _bounds cache structure
+		// before returning
+		if (cache) {
+			if (!this._bounds)
+				this._bounds = {};
+			this._bounds[cache] = bounds;
+		}
+		return bounds;
 	};
 }, /** @lends Item# */{
+	/**
+	 * Used internally to override caching names, so bound types can share their
+	 * cache, in case they return the same results.
+	 */
+	_boundsName: {},
+
 	/**
 	 * Internal method used in all the bounds getters. It loops through all the
 	 * children, gets their bounds and finds the bounds around all of them.
@@ -1301,17 +1324,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				rect.x, rect.y, rect.width, rect.height);
 	},
 
-	/**
-	 * {@grouptitle Bounding Rectangles}
-	 *
-	 * The bounding rectangle of the item excluding stroke width.
-	 * @type Rectangle
-	 * @bean
-	 */
-//	getBounds: function(/* matrix */) {
-//		return this._getBounds('getBounds', '_bounds', arguments[0]);
-//	},
-
 	setBounds: function(rect) {
 		rect = Rectangle.read(arguments);
 		var bounds = this.getBounds(),
@@ -1334,25 +1346,24 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	}
 
 	/**
+	 * {@grouptitle Bounding Rectangles}
+	 *
+	 * The bounding rectangle of the item excluding stroke width.
+	 * @type Rectangle
+	 * @bean
+	 */
+	/**
 	 * The bounding rectangle of the item including stroke width.
 	 *
 	 * @type Rectangle
 	 * @bean
 	 */
-//	getStrokeBounds: function(/* matrix */) {
-//		return this._getBounds('getStrokeBounds', '_strokeBounds', arguments[0]);
-//	},
-
 	/**
 	 * The bounding rectangle of the item including handles.
 	 *
 	 * @type Rectangle
 	 * @bean
 	 */
-//	getHandleBounds: function(/* matrix */) {
-//		return this._getBounds('getHandleBounds', '_handleBounds', arguments[0]);
-//	},
-
 	/**
 	 * The rough bounding rectangle of the item that is shure to include all of
 	 * the drawing, including stroke width.
@@ -1361,9 +1372,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 * @ignore
 	 */
-//	getRoughBounds: function(/* matrix */) {
-//		return this._getBounds('getRoughBounds', '_roughBounds', arguments[0]);
-//	},
 }), /** @lends Item# */{
 	/**
 	 * {@grouptitle Stroke Style}
@@ -1698,7 +1706,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// TODO: Call transform on chidren only if 'children' flag is provided.
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
-		var bounds = this._bounds,
+		var bounds = null,// this._bounds,
 			position = this._position,
 			children = this._children;
 		if (this._transform) {
@@ -1709,6 +1717,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.
 		if (bounds && matrix.getRotation() % 90 === 0) {
+			// XXX: Bounds transition
 			// Transform the old _bounds without notifying it of changes
 			this._bounds = matrix._transformBounds(bounds, bounds, true);
 			// Update _position again, by linking it to _bounds

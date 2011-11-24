@@ -32,17 +32,6 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 		this._matrix.preConcatenate(matrix);
 	},
 
-	_changed: function(flags) {
-		// Don't use base() for reasons of performance.
-		Item.prototype._changed.call(this, flags);
-		if (flags & ChangeFlag.GEOMETRY) {
-			delete this._strokeBounds;
-			// TODO: These are not used in Raster. Do we mind?
-			delete this._handleBounds;
-			delete this._roughBounds;
-		}
-	},
-
 	/**
 	 * The item's transformation matrix, defining position and dimensions in the
 	 * document.

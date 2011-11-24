@@ -64,14 +64,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// Don't use base() for reasons of performance.
 		Item.prototype._changed.call(this, flags);
 		if (flags & ChangeFlag.GEOMETRY) {
-			delete this._strokeBounds;
-			delete this._handleBounds;
-			delete this._roughBounds;
 			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.
 			delete this._clockwise;
 		} else if (flags & ChangeFlag.STROKE) {
-			delete this._strokeBounds;
+			// TODO: We could preserve the purely geometric bounds that are not
+			// affected by stroke: _bounds.bounds and _bounds.handleBounds
+			delete this._bounds;
 		}
 	},
 
