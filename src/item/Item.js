@@ -1265,6 +1265,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		if (cache && this._bounds && this._bounds[cache])
 			return this._bounds[cache];
 		var bounds = this._getBounds(name, matrix);
+		// If we're returning 'bounds', create a LinkedRectangle that uses
+		// the setBounds() setter to update the Item whenever the bounds are
+		// changed:
 		if (name == 'bounds')
 			bounds = LinkedRectangle.create(this, 'setBounds',
 					bounds.x, bounds.y, bounds.width, bounds.height);
