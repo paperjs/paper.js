@@ -23,8 +23,8 @@
  */
 var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	// Raster doesn't make the distinction between the different bounds,
-	// so use the same cache for all of them
-	_simpleBounds: true,
+	// so use the same name for all of them
+	_boundsType: 'bounds',
 
 	// TODO: Implement url / type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?

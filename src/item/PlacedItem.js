@@ -24,6 +24,8 @@
  * @extends Item
  */
 var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
+	// PlacedItem uses strokeBounds for bounds
+	_boundsType: { bounds: 'strokeBounds' },
 
 	_transform: function(matrix, flags) {
 		// In order to set the right context transformation when drawing the
@@ -49,9 +51,6 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 	},
 
 	_getBounds: function(type, matrix) {
-		// The bounds of PlacedItems are the same as the strokeBounds
-		if (type == 'bounds')
-			type = 'strokeBounds';
 		// Concatenate the passed matrix with the internal one
 		matrix = matrix ? matrix.clone().concatenate(this._matrix)
 				: this._matrix;
