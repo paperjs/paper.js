@@ -117,5 +117,9 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 
 	setParagraphStyle: function(style) {
 		this._paragraphStyle.initialize(style);
+	},
+	
+	_getFontString: function() {
+		return this.getFontWeight() + ' ' + this.getFontSize() + 'px ' + this.getFont();
 	}
 });
