@@ -108,7 +108,7 @@ test('Group#clone()', function() {
 test('PointText#clone()', function() {
 	var pointText = new PointText(new Point(50, 50));
 	pointText.content = 'test';
-	pointText.position += 100;
+	pointText.position = pointText.position.add(100);
 	pointText.characterStyle = {
 		font: 'serif',
 		fontSize: 20
