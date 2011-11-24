@@ -95,7 +95,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	},
 
 	_calculateBounds: function(type, matrix) {
-		// Ask the symbol definition to calculate the bounds for us
+		// Redirect the call to the symbol definition to calculate the bounds
 		return this.symbol._definition._getBounds(type, matrix);
 	},
 
