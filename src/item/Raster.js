@@ -380,22 +380,11 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
-	_calculateBounds: function(getter, matrix) {
-		// The getter is only used for PlacedSymbol, not Raster
+	_calculateBounds: function(type, matrix) {
+		// Note: Raster doesn't make the distinction between the different
+		// bounds
 		return matrix._transformBounds(
 				new Rectangle(this._size).setCenter(0, 0));
-	},
-
-	// Since Raster doesn't make the distinction between the different bounds,
-	// simply redirect to strokeBounds so the cached values can be reused.
-	// TODO: Shouldn't this be moved to PlacedItem
-
-	getHandleBounds: function(/* matrix */) {
-		return this.getStrokeBounds(arguments[0]);
-	},
-
-	getRoughBounds: function(/* matrix */) {
-		return this.getStrokeBounds(arguments[0]);
 	},
 
 	_hitTest: function(point, options) {

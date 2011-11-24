@@ -94,9 +94,9 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 		return this._clone(new PlacedSymbol(this.symbol, this._matrix.clone()));
 	},
 
-	_calculateBounds: function(getter, matrix) {
+	_calculateBounds: function(type, matrix) {
 		// Ask the symbol definition to calculate the bounds for us
-		return this.symbol._definition[getter](matrix);
+		return this.symbol._definition._getBounds(type, matrix);
 	},
 
 	draw: function(ctx, param) {
