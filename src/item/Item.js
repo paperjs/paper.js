@@ -110,6 +110,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			paper.project.activeLayer.addChild(this);
 		this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
+		this._matrix = new Matrix();
 	},
 
 	/**
@@ -715,6 +716,8 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			if (this.hasOwnProperty(key))
 				copy[key] = this[key];
 		}
+		// Use Matrix#initialize to easily copy over values.
+		copy._matrix.initialize(this._matrix);
 		// Copy over the selection state, use setSelected so the item
 		// is also added to Project#selectedItems if it is selected.
 		copy.setSelected(this._selected);
@@ -1303,6 +1306,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Scriptographer behaves weirdly then too.
 		if (!children || children.length == 0)
 			return new Rectangle();
+		// Concate the nate the passed matrix with the inner one, or start with
+		// one.
+		matrix = matrix ? matrix.clone().concatenate(this._matrix)
+				: this._matrix;
 		var x1 = Infinity,
 			x2 = -x1,
 			y1 = x1,

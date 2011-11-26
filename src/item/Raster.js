@@ -55,7 +55,6 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 /*#*/ } // options.server
 			this.setImage(object);
 		}
-		this._matrix = new Matrix();
 	},
 
 	clone: function() {
@@ -67,7 +66,6 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			image.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
 		var copy = new Raster(image);
-		copy._matrix = this._matrix.clone();
 		return this._clone(copy);
 	},
 

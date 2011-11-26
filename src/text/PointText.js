@@ -42,10 +42,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	},
 
 	clone: function() {
-		var copy = this._clone(new PointText(this._point));
-		// Use Matrix#initialize to easily copy over values.
-		copy._matrix.initialize(this._matrix);
-		return copy;
+		return this._clone(new PointText(this._point));
 	},
 
 	/**
