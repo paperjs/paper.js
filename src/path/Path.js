@@ -2060,7 +2060,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	};
 
 	return {
-		_getBounds: function(type, matrix) {
+		_getBounds: function(baseItem, type, matrix) {
 			return get[type](this, matrix);
 		}
 	};
