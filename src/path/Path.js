@@ -1763,10 +1763,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the bounding rectangle of the item excluding stroke width.
 	 */
-	function getBounds(that, matrix, strokePadding) {
+	function getBounds(matrix, strokePadding) {
 		// Code ported and further optimised from:
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-		var segments = that._segments,
+		var segments = this._segments,
 			first = segments[0];
 		if (!first)
 			return null;
@@ -1855,7 +1855,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		}
 		for (var i = 1, l = segments.length; i < l; i++)
 			processSegment(segments[i]);
-		if (that._closed)
+		if (this._closed)
 			processSegment(first);
 		return Rectangle.create(min[0], min[1],
 					max[0] - min[0], max[1] - min[1]);
@@ -1906,24 +1906,24 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the bounding rectangle of the item including stroke width.
 	 */
-	function getStrokeBounds(that, matrix) {
+	function getStrokeBounds(matrix) {
 		// TODO: Should we access this.getStrokeColor, as we do in _transform?
 		// TODO: Find a way to reuse 'bounds' cache instead?
-		if (!that._style._strokeColor || !that._style._strokeWidth)
-			return getBounds(that, matrix);
-		var width = that.getStrokeWidth(),
+		if (!this._style._strokeColor || !this._style._strokeWidth)
+			return getBounds.call(this, matrix);
+		var width = this.getStrokeWidth(),
 			radius = width / 2,
 			padding = getPenPadding(radius, matrix),
-			join = that.getStrokeJoin(),
-			cap = that.getStrokeCap(),
+			join = this.getStrokeJoin(),
+			cap = this.getStrokeCap(),
 			// miter is relative to width. Divide it by 2 since we're
 			// measuring half the distance below
-			miter = that.getMiterLimit() * width / 2,
-			segments = that._segments,
+			miter = this.getMiterLimit() * width / 2,
+			segments = this._segments,
 			length = segments.length,
 			// It seems to be compatible with Ai we need to pass pen padding
 			// untransformed to getBounds
-			bounds = getBounds(that, matrix, getPenPadding(radius));
+			bounds = getBounds.call(this, matrix, getPenPadding(radius));
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
 		var joinBounds = new Rectangle(new Size(padding).multiply(2));
@@ -1993,10 +1993,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 
-		for (var i = 1, l = length - (that._closed ? 0 : 1); i < l; i++) {
+		for (var i = 1, l = length - (this._closed ? 0 : 1); i < l; i++) {
 			addJoin(segments[i], join);
 		}
-		if (that._closed) {
+		if (this._closed) {
 			addJoin(segments[0], join);
 		} else {
 			addCap(segments[0], cap, 0);
@@ -2008,7 +2008,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the bounding rectangle of the item including handles.
 	 */
-	function getHandleBounds(that, matrix, stroke, join) {
+	function getHandleBounds(matrix, stroke, join) {
 		var coords = new Array(6),
 			x1 = Infinity,
 			x2 = -x1,
@@ -2016,8 +2016,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			y2 = x2;
 		stroke = stroke / 2 || 0; // Stroke padding
 		join = join / 2 || 0; // Join padding, for miterLimit
-		for (var i = 0, l = that._segments.length; i < l; i++) {
-			var segment = that._segments[i];
+		for (var i = 0, l = this._segments.length; i < l; i++) {
+			var segment = this._segments[i];
 			segment._transformCoordinates(matrix, coords, false);
 			for (var j = 0; j < 6; j += 2) {
 				// Use different padding for points or handles
@@ -2041,14 +2041,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * Returns the rough bounding rectangle of the item that is shure to include
 	 * all of the drawing, including stroke width.
 	 */
-	function getRoughBounds(that, matrix) {
+	function getRoughBounds(matrix) {
 		// Delegate to handleBounds, but pass on radius values for stroke and
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
-		var width = that.getStrokeWidth();
-		return getHandleBounds(that, matrix, width,
-				that.getStrokeJoin() == 'miter'
-					? width * that.getMiterLimit()
+		var width = this.getStrokeWidth();
+		return getHandleBounds.call(this, matrix, width,
+				this.getStrokeJoin() == 'miter'
+					? width * this.getMiterLimit()
 					: width);
 	}
 
@@ -2061,7 +2061,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	return {
 		_getBounds: function(baseItem, type, matrix) {
-			return get[type](this, matrix);
+			return get[type].call(this, matrix);
 		}
 	};
 });
