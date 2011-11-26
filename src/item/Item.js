@@ -1258,7 +1258,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * matrix concatenation and handles all the complicated caching mechanisms.
 	 * Note: Needs to be called on an item using getBounds.call(item, ...).
 	 */
-	function getBounds(baseItem, type, matrix) {
+	function getBounds(type, matrix, baseItem) {
 		// If the result of concatinating the passed matrix with our internal
 		// one is an identity transformation, set it to null for faster
 		// processing
@@ -1270,10 +1270,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// bounds on items without children, as we do not receive hierarchy
 		// change notifiers from children, and walking up the parents and
 		// merging cache bounds is not expensive.
-		var cache = !this._children && !matrix && type;
+		var cache = !matrix && type;
 		if (cache && this._bounds && this._bounds[cache])
 			return this._bounds[cache];
-		var bounds = this._getBounds(baseItem, type, matrix);
+		var bounds = this._getBounds(type, matrix, baseItem);
 		// If we're returning 'bounds', create a LinkedRectangle that uses
 		// the setBounds() setter to update the Item whenever the bounds are
 		// changed:
@@ -1297,7 +1297,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// overridden by subclasses, see below.
 		this['get' + Base.capitalize(name)] = function(/* matrix */) {
 			var type = this._boundsType;
-			return getBounds.call(this, this,
+			return getBounds.call(this,
 					// Allow subclasses to override _boundsType if they use the
 					// same calculations for multiple types.
 					// The default is name:
@@ -1314,7 +1314,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		 * them. Subclasses override it to define calculations for the various
 		 * required bounding types.
 		 */
-		_getBounds: function(baseItem, type, matrix) {
+		_getBounds: function(type, matrix, baseItem) {
 			// Note: We cannot cache these results here, since we do not get
 			// _changed() notifications here for changing geometry in children.
 			// But cacheName is used in sub-classes such as PlacedItem.
@@ -1330,7 +1330,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			for (var i = 0, l = children.length; i < l; i++) {
 				var child = children[i];
 				if (child._visible) {
-					var rect = getBounds.call(child, baseItem, type, matrix);
+					var rect = getBounds.call(child, type, matrix, baseItem);
 					x1 = Math.min(rect.x, x1);
 					y1 = Math.min(rect.y, y1);
 					x2 = Math.max(rect.x + rect.width, x2);
