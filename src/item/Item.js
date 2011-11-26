@@ -1252,102 +1252,108 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		return false;
 	}
-}, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'], function(name) {
-	// Produce getters for bounds properties. These handle caching, matrices and
-	// redirect the call to the private _getBounds, which can be overridden by 
-	// subclasses, see below.
-	this['get' + Base.capitalize(name)] = function(/* matrix */) {
-		var matrix = arguments[0];
-		// If the matrix is an identity transformation, set it to null for
-		// faster processing
-		if (matrix && matrix.isIdentity())
-			matrix = null;
-		// Allow subclasses to override _boundsType if they use the same
-		// calculations for multiple types. The default is name:
-		var type = this._boundsType;
-		if (typeof type != 'string')
-			type = type && type[name] || name;
-		// See if we can cache these bounds. We only cache non-transformed
-		// bounds on items without children, as we do not receive hierarchy
-		// change notifiers from children, and walking up the parents and
-		// merging cache bounds is not expensive.
-		var cache = !this._children && !matrix && type;
-		if (cache && this._bounds && this._bounds[cache])
-			return this._bounds[cache];
-		var bounds = this._getBounds(type, matrix);
-		// If we're returning 'bounds', create a LinkedRectangle that uses
-		// the setBounds() setter to update the Item whenever the bounds are
-		// changed:
-		if (name == 'bounds')
-			bounds = LinkedRectangle.create(this, 'setBounds',
-					bounds.x, bounds.y, bounds.width, bounds.height);
-		// If we can cache the result, update the _bounds cache structure
-		// before returning
-		if (cache) {
-			if (!this._bounds)
-				this._bounds = {};
-			this._bounds[cache] = bounds;
-		}
-		return bounds;
-	};
-}, /** @lends Item# */{
-	/**
-	 * Internal method used in all the bounds getters. It loops through all the
-	 * children, gets their bounds and finds the bounds around all of them.
-	 * Subclasses override it to define calculations for the various required
-	 * bounding types.
-	 */
-	_getBounds: function(type, matrix) {
-		// Note: We cannot cache these results here, since we do not get
-		// _changed() notifications here for changing geometry in children.
-		// But cacheName is used in sub-classes such as PlacedItem.
-		var children = this._children;
-		// TODO: What to return if nothing is defined, e.g. empty Groups?
-		// Scriptographer behaves weirdly then too.
-		if (!children || children.length == 0)
-			return new Rectangle();
-		// Concate the nate the passed matrix with the inner one, or start with
-		// one.
-		matrix = matrix ? matrix.clone().concatenate(this._matrix)
-				: this._matrix;
-		var x1 = Infinity,
-			x2 = -x1,
-			y1 = x1,
-			y2 = x2;
-		for (var i = 0, l = children.length; i < l; i++) {
-			var child = children[i];
-			if (child._visible) {
-				var rect = child._getBounds(type, matrix);
-				x1 = Math.min(rect.x, x1);
-				y1 = Math.min(rect.y, y1);
-				x2 = Math.max(rect.x + rect.width, x2);
-				y2 = Math.max(rect.y + rect.height, y2);
+}, new function() {
+	return Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'],
+	function(name) {
+		// Produce getters for bounds properties. These handle caching, matrices
+		// and redirect the call to the private _getBounds, which can be
+		// overridden by subclasses, see below.
+		this['get' + Base.capitalize(name)] = function(/* matrix */) {
+			var matrix = arguments[0];
+			// If the matrix is an identity transformation, set it to null for
+			// faster processing
+			if (matrix && matrix.isIdentity())
+				matrix = null;
+			// Allow subclasses to override _boundsType if they use the same
+			// calculations for multiple types. The default is name:
+			var type = this._boundsType;
+			if (typeof type != 'string')
+				type = type && type[name] || name;
+			// See if we can cache these bounds. We only cache non-transformed
+			// bounds on items without children, as we do not receive hierarchy
+			// change notifiers from children, and walking up the parents and
+			// merging cache bounds is not expensive.
+			var cache = !this._children && !matrix && type;
+			if (cache && this._bounds && this._bounds[cache])
+				return this._bounds[cache];
+			var bounds = this._getBounds(type, matrix);
+			// If we're returning 'bounds', create a LinkedRectangle that uses
+			// the setBounds() setter to update the Item whenever the bounds are
+			// changed:
+			if (name == 'bounds')
+				bounds = LinkedRectangle.create(this, 'setBounds',
+						bounds.x, bounds.y, bounds.width, bounds.height);
+			// If we can cache the result, update the _bounds cache structure
+			// before returning
+			if (cache) {
+				if (!this._bounds)
+					this._bounds = {};
+				this._bounds[cache] = bounds;
 			}
-		}
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	},
+			return bounds;
+		};
+	}, {
+		// Note: The documentation for the bounds properties is defined in the
+		// next injection object.
 
-	setBounds: function(rect) {
-		rect = Rectangle.read(arguments);
-		var bounds = this.getBounds(),
-			matrix = new Matrix(),
-			center = rect.getCenter();
-		// Read this from bottom to top:
-		// Translate to new center:
-		matrix.translate(center);
-		// Scale to new Size, if size changes and avoid divisions by 0:
-		if (rect.width != bounds.width || rect.height != bounds.height) {
-			matrix.scale(
-					bounds.width != 0 ? rect.width / bounds.width : 1,
-					bounds.height != 0 ? rect.height / bounds.height : 1);
-		}
-		// Translate to center:
-		center = bounds.getCenter();
-		matrix.translate(-center.x, -center.y);
-		// Now execute the transformation:
-		this.transform(matrix);
-	}
+		/**
+		 * Internal method used in all the bounds getters. It loops through all
+		 * the children, gets their bounds and finds the bounds around all of
+		 * them. Subclasses override it to define calculations for the various
+		 * required bounding types.
+		 */
+		_getBounds: function(type, matrix) {
+			// Note: We cannot cache these results here, since we do not get
+			// _changed() notifications here for changing geometry in children.
+			// But cacheName is used in sub-classes such as PlacedItem.
+			var children = this._children;
+			// TODO: What to return if nothing is defined, e.g. empty Groups?
+			// Scriptographer behaves weirdly then too.
+			if (!children || children.length == 0)
+				return new Rectangle();
+			// Concate the nate the passed matrix with the inner one, or start
+			// with one.
+			matrix = matrix ? matrix.clone().concatenate(this._matrix)
+					: this._matrix;
+			var x1 = Infinity,
+				x2 = -x1,
+				y1 = x1,
+				y2 = x2;
+			for (var i = 0, l = children.length; i < l; i++) {
+				var child = children[i];
+				if (child._visible) {
+					var rect = child._getBounds(type, matrix);
+					x1 = Math.min(rect.x, x1);
+					y1 = Math.min(rect.y, y1);
+					x2 = Math.max(rect.x + rect.width, x2);
+					y2 = Math.max(rect.y + rect.height, y2);
+				}
+			}
+			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		},
 
+		setBounds: function(rect) {
+			rect = Rectangle.read(arguments);
+			var bounds = this.getBounds(),
+				matrix = new Matrix(),
+				center = rect.getCenter();
+			// Read this from bottom to top:
+			// Translate to new center:
+			matrix.translate(center);
+			// Scale to new Size, if size changes and avoid divisions by 0:
+			if (rect.width != bounds.width || rect.height != bounds.height) {
+				matrix.scale(
+						bounds.width != 0 ? rect.width / bounds.width : 1,
+						bounds.height != 0 ? rect.height / bounds.height : 1);
+			}
+			// Translate to center:
+			center = bounds.getCenter();
+			matrix.translate(-center.x, -center.y);
+			// Now execute the transformation:
+			this.transform(matrix);
+		}
+	});
+}, /** @lends Item# */{
 	/**
 	 * {@grouptitle Bounding Rectangles}
 	 *
@@ -1549,7 +1555,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Set the fill color of the circle to RGB red:
 	 * circle.fillColor = new RgbColor(1, 0, 0);
 	 */
-}), /** @lends Item# */{
+
 	// DOCS: document the different arguments that this function can receive.
 	/**
 	 * {@grouptitle Transform Functions}
