@@ -98,7 +98,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	var context = null;
 
 	return {
-		_getBounds: function(type, matrix) {
+		_getBounds: function(baseItem, type, matrix) {
 			// If there is no text, there are no bounds
 			if (!this._content)
 				return new Rectangle();

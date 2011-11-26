@@ -382,7 +382,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
-	_getBounds: function(type, matrix) {
+	_getBounds: function(baseItem, type, matrix) {
 		var rect = new Rectangle(this._size).setCenter(0, 0);
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},
