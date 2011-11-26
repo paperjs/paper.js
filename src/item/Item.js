@@ -1254,39 +1254,38 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	}
 }, new function() {
 	/**
-	 * Private method that deals with the calling of _getBounds and handles all
-	 * the complicated caching mechanisms.
+	 * Private method that deals with the calling of _getBounds, recursive
+	 * matrix concatenation and handles all the complicated caching mechanisms.
+	 * Note: Needs to be called on an item using getBounds.call(item, ...).
 	 */
-	// TODO: See if calling getBounds.call(item, type, matrix) and using this
-	// instead of item speeds things up.
-	function getBounds(item, type, matrix) {
+	function getBounds(type, matrix) {
 		// If the result of concatinating the passed matrix with our internal
 		// one is an identity transformation, set it to null for faster
 		// processing
-		var identity = item._matrix.isIdentity();
+		var identity = this._matrix.isIdentity();
 		matrix = !matrix || matrix.isIdentity()
-				? identity ? null : item._matrix
-				: identity ? matrix : matrix.clone().concatenate(item._matrix);
+				? identity ? null : this._matrix
+				: identity ? matrix : matrix.clone().concatenate(this._matrix);
 		// See if we can cache these bounds. We only cache non-transformed
 		// bounds on items without children, as we do not receive hierarchy
 		// change notifiers from children, and walking up the parents and
 		// merging cache bounds is not expensive.
-		var cache = !item._children && !matrix && type;
-		if (cache && item._bounds && item._bounds[cache])
-			return item._bounds[cache];
-		var bounds = item._getBounds(type, matrix);
+		var cache = !this._children && !matrix && type;
+		if (cache && this._bounds && this._bounds[cache])
+			return this._bounds[cache];
+		var bounds = this._getBounds(type, matrix);
 		// If we're returning 'bounds', create a LinkedRectangle that uses
 		// the setBounds() setter to update the Item whenever the bounds are
 		// changed:
 		if (name == 'bounds')
-			bounds = LinkedRectangle.create(item, 'setBounds',
+			bounds = LinkedRectangle.create(this, 'setBounds',
 					bounds.x, bounds.y, bounds.width, bounds.height);
 		// If we can cache the result, update the _bounds cache structure
 		// before returning
 		if (cache) {
-			if (!item._bounds)
-				item._bounds = {};
-			item._bounds[cache] = bounds;
+			if (!this._bounds)
+				this._bounds = {};
+			this._bounds[cache] = bounds;
 		}
 		return bounds;
 	}
@@ -1298,7 +1297,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// overridden by subclasses, see below.
 		this['get' + Base.capitalize(name)] = function(/* matrix */) {
 			var type = this._boundsType;
-			return getBounds(this,
+			return getBounds.call(this,
 					// Allow subclasses to override _boundsType if they use the
 					// same calculations for multiple types.
 					// The default is name:
@@ -1331,7 +1330,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			for (var i = 0, l = children.length; i < l; i++) {
 				var child = children[i];
 				if (child._visible) {
-					var rect = getBounds(child, type, matrix);
+					var rect = getBounds.call(child, type, matrix);
 					x1 = Math.min(rect.x, x1);
 					y1 = Math.min(rect.y, y1);
 					x2 = Math.max(rect.x + rect.width, x2);
