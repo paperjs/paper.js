@@ -99,12 +99,10 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 
 	return {
 		_getBounds: function(baseItem, type, matrix) {
-			// If there is no text, there are no bounds
-			if (!this._content)
-				return new Rectangle();
 			// Create an in-memory canvas on which to do the measuring
 			if (!context)
-				context = CanvasProvider.getCanvas(Size.create(1, 1)).getContext('2d');
+				context = CanvasProvider.getCanvas(
+						Size.create(1, 1)).getContext('2d');
 			var justification = this.getJustification(),
 				x = 0;
 			// Measure the real width of the text. Unfortunately, there is no
@@ -112,18 +110,19 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 			context.font = this.getFontSize() + 'px ' + this.getFont();
 			var width = 0;
 			for (var i = 0, l = this._lines.length; i < l; i++)
-				width = Math.max(width, context.measureText(this._lines[i]).width);
+				width = Math.max(width, context.measureText(
+						this._lines[i]).width);
 			// Adjust for different justifications
-			if (justification != 'left')
+			if (justification !== 'left')
 				x -= width / (justification === 'center' ? 2: 1);
-			var leading = this.getLeading();
-			var count = this._lines.length;
-			// Until we don't have baseline measuring, assume leading / 4 as a
-			// rough guess
-			var bounds = Rectangle.create(x, leading / 4 + (count - 1) * leading,
-					width, -count * leading);
-			// TODO: matrix!
-			return this._matrix._transformBounds(bounds, bounds);
+			var leading = this.getLeading(),
+				count = this._lines.length,
+				// Until we don't have baseline measuring, assume leading / 4 as
+				// a rough guess:
+				bounds = Rectangle.create(x,
+						count ? leading / 4 + (count - 1) * leading : 0,
+						width, -count * leading);
+			return matrix ? matrix._transformBounds(bounds, bounds) : bounds;
 		}
 	};
 });
