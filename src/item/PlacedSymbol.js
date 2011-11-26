@@ -94,14 +94,15 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 		return this._clone(new PlacedSymbol(this.symbol, this._matrix.clone()));
 	},
 
-	_getBounds: function(type, matrix) {
+	_getBounds: function(baseItem, type, matrix) {
 		// Redirect the call to the symbol definition to calculate the bounds
-		return this.symbol._definition._getBounds(type, matrix);
+		return this.symbol._definition._getBounds(baseItem, type, matrix);
 	},
 
 	draw: function(ctx, param) {
 		if (param.selection) {
-			Item.drawSelectedBounds(this._getBounds('bounds'), ctx, this._matrix);
+			Item.drawSelectedBounds(this._getBounds(this, 'bounds'), ctx,
+					this._matrix);
 		} else {
 			ctx.save();
 			this._matrix.applyToContext(ctx);
