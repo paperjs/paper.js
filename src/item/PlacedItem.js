@@ -48,13 +48,5 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 	setMatrix: function(matrix) {
 		this._matrix = matrix.clone();
 		this._changed(Change.GEOMETRY);
-	},
-
-	_getBounds: function(type, matrix) {
-		// Concatenate the passed matrix with the internal one
-		matrix = matrix ? matrix.clone().concatenate(this._matrix)
-				: this._matrix;
-		// Call _calculateBounds, which needs to be defined in the subclasses:
-		return this._calculateBounds(type, matrix);
 	}
 });
