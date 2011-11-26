@@ -1253,51 +1253,64 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		return false;
 	}
 }, new function() {
+	/**
+	 * Private method that deals with the calling of _getBounds and handles all
+	 * the complicated caching mechanisms.
+	 */
+	// TODO: See if calling getBounds.call(item, type, matrix) and using this
+	// instead of item speeds things up.
+	function getBounds(item, type, matrix) {
+		// If the result of concatinating the passed matrix with our internal
+		// one is an identity transformation, set it to null for faster
+		// processing
+		var identity = item._matrix.isIdentity();
+		matrix = !matrix || matrix.isIdentity()
+				? identity ? null : item._matrix
+				: identity ? matrix : matrix.clone().concatenate(item._matrix);
+		// See if we can cache these bounds. We only cache non-transformed
+		// bounds on items without children, as we do not receive hierarchy
+		// change notifiers from children, and walking up the parents and
+		// merging cache bounds is not expensive.
+		var cache = !item._children && !matrix && type;
+		if (cache && item._bounds && item._bounds[cache])
+			return item._bounds[cache];
+		var bounds = item._getBounds(type, matrix);
+		// If we're returning 'bounds', create a LinkedRectangle that uses
+		// the setBounds() setter to update the Item whenever the bounds are
+		// changed:
+		if (name == 'bounds')
+			bounds = LinkedRectangle.create(item, 'setBounds',
+					bounds.x, bounds.y, bounds.width, bounds.height);
+		// If we can cache the result, update the _bounds cache structure
+		// before returning
+		if (cache) {
+			if (!item._bounds)
+				item._bounds = {};
+			item._bounds[cache] = bounds;
+		}
+		return bounds;
+	}
+
 	return Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'],
 	function(name) {
 		// Produce getters for bounds properties. These handle caching, matrices
 		// and redirect the call to the private _getBounds, which can be
 		// overridden by subclasses, see below.
 		this['get' + Base.capitalize(name)] = function(/* matrix */) {
-			var matrix = arguments[0];
-			// If the matrix is an identity transformation, set it to null for
-			// faster processing
-			if (matrix && matrix.isIdentity())
-				matrix = null;
-			// Allow subclasses to override _boundsType if they use the same
-			// calculations for multiple types. The default is name:
 			var type = this._boundsType;
-			if (typeof type != 'string')
-				type = type && type[name] || name;
-			// See if we can cache these bounds. We only cache non-transformed
-			// bounds on items without children, as we do not receive hierarchy
-			// change notifiers from children, and walking up the parents and
-			// merging cache bounds is not expensive.
-			var cache = !this._children && !matrix && type;
-			if (cache && this._bounds && this._bounds[cache])
-				return this._bounds[cache];
-			var bounds = this._getBounds(type, matrix);
-			// If we're returning 'bounds', create a LinkedRectangle that uses
-			// the setBounds() setter to update the Item whenever the bounds are
-			// changed:
-			if (name == 'bounds')
-				bounds = LinkedRectangle.create(this, 'setBounds',
-						bounds.x, bounds.y, bounds.width, bounds.height);
-			// If we can cache the result, update the _bounds cache structure
-			// before returning
-			if (cache) {
-				if (!this._bounds)
-					this._bounds = {};
-				this._bounds[cache] = bounds;
-			}
-			return bounds;
+			return getBounds(this,
+					// Allow subclasses to override _boundsType if they use the
+					// same calculations for multiple types.
+					// The default is name:
+					typeof type == 'string' ? type : type && type[name] || name,
+					arguments[0]);
 		};
 	}, {
 		// Note: The documentation for the bounds properties is defined in the
 		// next injection object.
 
 		/**
-		 * Internal method used in all the bounds getters. It loops through all
+		 * Protected method used in all the bounds getters. It loops through all
 		 * the children, gets their bounds and finds the bounds around all of
 		 * them. Subclasses override it to define calculations for the various
 		 * required bounding types.
@@ -1311,10 +1324,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			// Scriptographer behaves weirdly then too.
 			if (!children || children.length == 0)
 				return new Rectangle();
-			// Concate the nate the passed matrix with the inner one, or start
-			// with one.
-			matrix = matrix ? matrix.clone().concatenate(this._matrix)
-					: this._matrix;
 			var x1 = Infinity,
 				x2 = -x1,
 				y1 = x1,
@@ -1322,7 +1331,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			for (var i = 0, l = children.length; i < l; i++) {
 				var child = children[i];
 				if (child._visible) {
-					var rect = child._getBounds(type, matrix);
+					var rect = getBounds(child, type, matrix);
 					x1 = Math.min(rect.x, x1);
 					y1 = Math.min(rect.y, y1);
 					x2 = Math.max(rect.x + rect.width, x2);
