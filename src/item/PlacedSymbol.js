@@ -101,7 +101,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 
 	draw: function(ctx, param) {
 		if (param.selection) {
-			Item.drawSelectedBounds(this._getBounds(this, 'bounds'), ctx,
+			Item.drawSelectedBounds(this.symbol._definition.getBounds(), ctx,
 					this._matrix);
 		} else {
 			ctx.save();
