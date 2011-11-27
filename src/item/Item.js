@@ -125,6 +125,20 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			delete this._bounds;
 			delete this._position;
 		}
+		if (this._parent
+				&& (flags & (ChangeFlag.GEOMETRY | ChangeFlag.STROKE))) {
+			// Clear cached bounds of all items that this item contributes to.
+			// We call this on the parent, since the information is cached on
+			// the parent, see getBounds().
+			this._parent._clearBoundsCache();
+		}
+		if (flags & ChangeFlag.HIERARCHY) {
+			// Clear cached bounds of all items that this item contributes to.
+			// We don't call this on the parent, since we're already the parent
+			// of the child that modified the hierarchy (that's where these
+			// HIERARCHY notifications go)
+			this._clearBoundsCache();
+		}
 		if (flags & ChangeFlag.APPEARANCE) {
 			this._project._needsRedraw();
 		}
@@ -1258,7 +1272,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * matrix concatenation and handles all the complicated caching mechanisms.
 	 * Note: Needs to be called on an item using getBounds.call(item, ...).
 	 */
-	function getBounds(type, matrix, baseItem) {
+	function getBounds(type, matrix, cacheItem) {
+		// See if we can cache these bounds. We only cache the bounds
+		// transformed with the internally stored _matrix, (the default if no
+		// matrix is passed).
+		var cache = (!matrix || matrix.equals(this._matrix)) && type;
 		// If the result of concatinating the passed matrix with our internal
 		// one is an identity transformation, set it to null for faster
 		// processing
@@ -1266,14 +1284,38 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		matrix = !matrix || matrix.isIdentity()
 				? identity ? null : this._matrix
 				: identity ? matrix : matrix.clone().concatenate(this._matrix);
-		// See if we can cache these bounds. We only cache non-transformed
-		// bounds on items without children, as we do not receive hierarchy
-		// change notifiers from children, and walking up the parents and
-		// merging cache bounds is not expensive.
-		var cache = !matrix && type;
 		if (cache && this._bounds && this._bounds[cache])
 			return this._bounds[cache];
-		var bounds = this._getBounds(type, matrix, baseItem);
+		if (cacheItem) {
+			// Set up a boundsCache structure that keeps track of items that
+			// keep cached bounds that depend on this item. We store this in our
+			// parent, for  multiple reasons:
+			// The parent receives HIERARCHY change notifications for when its
+			// children are added or removed and can thus clear the cache, and
+			// we save a lot of memory, e.g. when grouping 100 items and asking
+			// the group for its bounds. If stored on the children, we would
+			// have 100 times the same structure.
+			if (this._parent) {
+				// Set-up the parent's boundsCache structure if it does not
+				// exist yet and add the cacheItem to it.
+				var ref = this._parent._boundsCache
+						= this._parent._boundsCache || {
+					// Use both a hashtable for ids and an array for the list,
+					// so we can keep track of items that were added already
+					ids: {},
+					list: []
+				};
+				var id = cacheItem.getId();
+				// Only add the item if it isn't there already
+				if (!ref.ids[id]) {
+					ref.list.push(cacheItem);
+					ref.ids[id] = cacheItem;
+				}
+			}
+		}
+		// If we're caching bounds on this item, pass it on as cacheItem, so the
+		// children can setup the _boundsCache structures for it.
+		var bounds = this._getBounds(type, matrix, cache ? this : cacheItem);
 		// If we're returning 'bounds', create a LinkedRectangle that uses
 		// the setBounds() setter to update the Item whenever the bounds are
 		// changed:
@@ -1314,7 +1356,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		 * them. Subclasses override it to define calculations for the various
 		 * required bounding types.
 		 */
-		_getBounds: function(type, matrix, baseItem) {
+		_getBounds: function(type, matrix, cacheItem) {
 			// Note: We cannot cache these results here, since we do not get
 			// _changed() notifications here for changing geometry in children.
 			// But cacheName is used in sub-classes such as PlacedItem.
@@ -1330,7 +1372,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			for (var i = 0, l = children.length; i < l; i++) {
 				var child = children[i];
 				if (child._visible) {
-					var rect = getBounds.call(child, type, matrix, baseItem);
+					var rect = getBounds.call(child, type, matrix, cacheItem);
 					x1 = Math.min(rect.x, x1);
 					y1 = Math.min(rect.y, y1);
 					x2 = Math.max(rect.x + rect.width, x2);
@@ -1338,6 +1380,20 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				}
 			}
 			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		},
+
+		/**
+		 * Clears cached bounds of all items that the children of this item are
+		 * contributing to. See getBounds() for an explanation why this
+		 * information is stored on parents, not the children themselves.
+		 */
+		_clearBoundsCache: function() {
+			if (this._boundsCache) {
+				for (var i = 0, list = this._boundsCache.list, l = list.length;
+						i < l; i++)
+					delete list[i]._bounds;
+				delete this._boundsCache;
+			}
 		},
 
 		setBounds: function(rect) {
