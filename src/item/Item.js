@@ -1392,8 +1392,15 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		_clearBoundsCache: function() {
 			if (this._boundsCache) {
 				for (var i = 0, list = this._boundsCache.list, l = list.length;
-						i < l; i++)
-					delete list[i]._bounds;
+						i < l; i++) {
+					var item = list[i];
+					delete item._bounds;
+					// We need to recursively call _clearBoundsCache, because if
+					// the cache for this item's children is not valid anymore,
+					// that propagates up the DOM tree.
+					if (item != this && item._boundsCache)
+						item._clearBoundsCache();
+				}
 				delete this._boundsCache;
 			}
 		},
