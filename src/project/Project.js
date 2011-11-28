@@ -164,10 +164,10 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	_updateSelection: function(item) {
 		if (item._selected) {
 			this._selectedItemCount++;
-			this._selectedItems[item.getId()] = item;
+			this._selectedItems[item._id] = item;
 		} else {
 			this._selectedItemCount--;
-			delete this._selectedItems[item.getId()];
+			delete this._selectedItems[item._id];
 		}
 	},
 
