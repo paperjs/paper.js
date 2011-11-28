@@ -1284,17 +1284,17 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		matrix = !matrix || matrix.isIdentity()
 				? identity ? null : this._matrix
 				: identity ? matrix : matrix.clone().concatenate(this._matrix);
-		if (cache && this._bounds && this._bounds[cache])
-			return this._bounds[cache];
+		// Set up a boundsCache structure that keeps track of items that keep
+		// cached bounds that depend on this item. We store this in our parent,
+		// for multiple reasons:
+		// The parent receives HIERARCHY change notifications for when its
+		// children are added or removed and can thus clear the cache, and we
+		// save a lot of memory, e.g. when grouping 100 items and asking the
+		// group for its bounds. If stored on the children, we would have 100
+		// times the same structure.
+		// Note: This needs to happen before returning cached values, since even
+		// then, _boundsCache needs to be kept up-to-date.
 		if (cacheItem) {
-			// Set up a boundsCache structure that keeps track of items that
-			// keep cached bounds that depend on this item. We store this in our
-			// parent, for  multiple reasons:
-			// The parent receives HIERARCHY change notifications for when its
-			// children are added or removed and can thus clear the cache, and
-			// we save a lot of memory, e.g. when grouping 100 items and asking
-			// the group for its bounds. If stored on the children, we would
-			// have 100 times the same structure.
 			if (this._parent) {
 				// Set-up the parent's boundsCache structure if it does not
 				// exist yet and add the cacheItem to it.
@@ -1313,6 +1313,8 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				}
 			}
 		}
+		if (cache && this._bounds && this._bounds[cache])
+			return this._bounds[cache];
 		// If we're caching bounds on this item, pass it on as cacheItem, so the
 		// children can setup the _boundsCache structures for it.
 		var bounds = this._getBounds(type, matrix, cache ? this : cacheItem);
