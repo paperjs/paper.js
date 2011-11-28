@@ -327,8 +327,8 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 					var item = set[id];
 					for (var key in sets) {
 						var other = sets[key];
-						if (other && other != set && other[item.getId()])
-							delete other[item.getId()];
+						if (other && other != set && other[item._id])
+							delete other[item._id];
 					}
 					item.remove();
 				}
