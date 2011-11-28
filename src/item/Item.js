@@ -1294,23 +1294,20 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// times the same structure.
 		// Note: This needs to happen before returning cached values, since even
 		// then, _boundsCache needs to be kept up-to-date.
-		if (cacheItem) {
-			if (this._parent) {
-				// Set-up the parent's boundsCache structure if it does not
-				// exist yet and add the cacheItem to it.
-				var ref = this._parent._boundsCache
-						= this._parent._boundsCache || {
-					// Use both a hashtable for ids and an array for the list,
-					// so we can keep track of items that were added already
-					ids: {},
-					list: []
-				};
-				var id = cacheItem.getId();
-				// Only add the item if it isn't there already
-				if (!ref.ids[id]) {
-					ref.list.push(cacheItem);
-					ref.ids[id] = cacheItem;
-				}
+		if (cacheItem && this._parent) {
+			// Set-up the parent's boundsCache structure if it does not
+			// exist yet and add the cacheItem to it.
+			var id = cacheItem._id,
+				ref = this._parent._boundsCache
+					= this._parent._boundsCache || {
+				// Use both a hashtable for ids and an array for the list,
+				// so we can keep track of items that were added already
+				ids: {},
+				list: []
+			};
+			if (!ref.ids[id]) {
+				ref.list.push(cacheItem);
+				ref.ids[id] = cacheItem;
 			}
 		}
 		if (cache && this._bounds && this._bounds[cache])
@@ -2125,7 +2122,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				var key = 'mouse' + name,
 					sets = Tool._removeSets = Tool._removeSets || {};
 				sets[key] = sets[key] || {};
-				sets[key][this.getId()] = this;
+				sets[key][this._id] = this;
 			}
 		}
 		return this;
