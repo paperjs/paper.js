@@ -1795,7 +1795,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// TODO: Call transform on chidren only if 'children' flag is provided.
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
-		var bounds = null,// this._bounds,
+		var bounds = this._bounds,
 			position = this._position,
 			children = this._children;
 		if (this._transform) {
@@ -1806,15 +1806,21 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.
 		if (bounds && matrix.getRotation() % 90 === 0) {
-			// XXX: Bounds transition
-			// Transform the old _bounds without notifying it of changes
-			this._bounds = matrix._transformBounds(bounds, bounds, true);
-			// Update _position again, by linking it to _bounds
-			// TODO: If LinkedPoint would not just sync writes, but reads too,
-			// we could do this: this._position = position;
-			// This is a bug currently in Paper.js, that should be fixed, but
-			// can only really be handled properly using versioning...
-			this._position = this._bounds.getCenter();
+			// Transform the old bound by looping through all the cached bounds
+			// in _bounds and transform each.
+			for (var key in bounds) {
+				var rect = bounds[key];
+				// Transform without notifying the item of changes
+				bounds[key] = matrix._transformBounds(rect, rect, true);
+				// If we have cached 'bounds', update _position again, by
+				// linking it to it
+				// TODO: If LinkedPoint would not just sync writes, but reads
+				// too, we could do this: this._position = position;
+				// This is a bug currently in Paper.js, that should be fixed,
+				// but can only really be handled properly using versioning...
+				if (key == 'bounds')
+					this._position = rect.getCenter();
+			}
 		} else if (position) {
 			// Transform position as well. Do not notify _position of
 			// changes, since it's a LinkedPoint and would cause recursion!
