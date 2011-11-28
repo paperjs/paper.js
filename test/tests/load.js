@@ -9,6 +9,7 @@
 /*#*/ include('Item.js');
 /*#*/ include('Item_Cloning.js');
 /*#*/ include('Item_Order.js');
+/*#*/ include('Item_Bounds.js');
 
 /*#*/ include('Layer.js');
 /*#*/ include('Group.js');
