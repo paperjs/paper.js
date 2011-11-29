@@ -32,21 +32,5 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 		// raster, simply preconcatenate the internal matrix with the provided
 		// one.
 		this._matrix.preConcatenate(matrix);
-	},
-
-	/**
-	 * The item's transformation matrix, defining position and dimensions in the
-	 * document.
-	 *
-	 * @type Matrix
-	 * @bean
-	 */
-	getMatrix: function() {
-		return this._matrix;
-	},
-
-	setMatrix: function(matrix) {
-		this._matrix = matrix.clone();
-		this._changed(Change.GEOMETRY);
 	}
 });
