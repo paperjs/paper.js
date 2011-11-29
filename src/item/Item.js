@@ -213,6 +213,23 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
+	 * The item's transformation matrix, defining position and dimensions in the
+	 * document.
+	 *
+	 * @type Matrix
+	 * @bean
+	 */
+	getMatrix: function() {
+		return this._matrix;
+	},
+
+	setMatrix: function(matrix) {
+		// Use Matrix#initialize to easily copy over values.
+		this._matrix.initialize(matrix);
+		this._changed(Change.GEOMETRY);
+	},
+
+	/**
 	 * The item's position within the project. This is the
 	 * {@link Rectangle#center} of the item's {@link #bounds} rectangle.
 	 *
@@ -790,6 +807,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			ctx = canvas.getContext('2d'),
 			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(ctx);
+		// XXX: Decide how to handle _matrix
 		this.draw(ctx, {});
 		var raster = new Raster(canvas);
 		raster.setBounds(bounds);
