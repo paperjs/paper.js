@@ -120,7 +120,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			orig = new Point(0, 0).transform(matrix),
 			u = new Point(1, 0).transform(matrix).subtract(orig),
 			v = new Point(0, 1).transform(matrix).subtract(orig);
-		return new Size(
+		return Size.create(
 			72 / u.getLength(),
 			72 / v.getLength()
 		);
@@ -160,7 +160,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		if (this._canvas)
 			CanvasProvider.returnCanvas(this._canvas);
 		this._canvas = canvas;
-		this._size = new Size(canvas.width, canvas.height);
+		this._size = Size.create(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
 		this._changed(Change.GEOMETRY);
@@ -182,9 +182,9 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			CanvasProvider.returnCanvas(this._canvas);
 		this._image = image;
 /*#*/ if (options.browser) {
-		this._size = new Size(image.naturalWidth, image.naturalHeight);
+		this._size = Size.create(image.naturalWidth, image.naturalHeight);
 /*#*/ } else if (options.server) {
-		this._size = new Size(image.width, image.height);
+		this._size = Size.create(image.width, image.height);
 /*#*/ } // options.server
 		this._canvas = null;
 		this._context = null;
@@ -252,7 +252,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		var ctx = Raster._sampleContext;
 		if (!ctx) {
 			ctx = Raster._sampleContext = CanvasProvider.getCanvas(
-					new Size(sampleSize)).getContext('2d');
+					sampleSize.clone()).getContext('2d');
 		} else {
 			// Clear the sample canvas:
 			ctx.clearRect(0, 0, sampleSize, sampleSize);
