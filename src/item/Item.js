@@ -1897,7 +1897,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 					: rectangle.height / bounds.height,
 			delta = rectangle.getCenter().subtract(bounds.getCenter()),
 			newBounds = new Rectangle(new Point(),
-					new Size(bounds.width * scale, bounds.height * scale));
+					Size.create(bounds.width * scale, bounds.height * scale));
 		newBounds.setCenter(rectangle.getCenter());
 		this.setBounds(newBounds);
 	},
@@ -1940,9 +1940,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			// If the item has a blendMode or is defining an opacity, draw it on
 			// a temporary canvas first and composite the canvas afterwards.
 			// Paths with an opacity < 1 that both define a fillColor
-			// and strokeColor also need to be drawn on a temporary canvas first,
-			// since otherwise their stroke is drawn half transparent over their
-			// fill.
+			// and strokeColor also need to be drawn on a temporary canvas
+			// first, since otherwise their stroke is drawn half transparent
+			// over their fill.
 			if (item._blendMode !== 'normal'
 					|| item._opacity < 1
 					&& !(item._segments && (!item.getFillColor()
@@ -1953,7 +1953,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				// Floor the offset and ceil the size, so we don't cut off any
 				// antialiased pixels when drawing onto the temporary canvas.
 				var itemOffset = bounds.getTopLeft().floor(),
-					size = bounds.getSize().ceil().add(new Size(1, 1));
+					size = bounds.getSize().ceil().add(Size.create(1, 1));
 				tempCanvas = CanvasProvider.getCanvas(size);
 				// Save the parent context, so we can draw onto it later
 				parentCtx = ctx;
