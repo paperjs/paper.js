@@ -239,6 +239,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		} else if (object.width) {
 			bounds = new Rectangle(object);
 		} else if (object.x) {
+			// Create a rectangle of 1px size around the specified coordinates
 			bounds = Rectangle.create(object.x - 0.5, object.y - 0.5, 1, 1);
 		}
 		// Use a sample size of max 32 x 32 pixels, into which the path is
