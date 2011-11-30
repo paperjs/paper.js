@@ -1965,64 +1965,59 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		draw: function(item, ctx, param) {
 			if (!item._visible || item._opacity == 0)
 				return;
-			var tempCanvas, parentCtx;
+			var tempCanvas, parentCtx,
+			 	itemOffset, prevOffset;
 			// If the item has a blendMode or is defining an opacity, draw it on
 			// a temporary canvas first and composite the canvas afterwards.
 			// Paths with an opacity < 1 that both define a fillColor
 			// and strokeColor also need to be drawn on a temporary canvas
 			// first, since otherwise their stroke is drawn half transparent
 			// over their fill.
-			if (item._blendMode !== 'normal'
-					|| item._opacity < 1
+			if (item._blendMode !== 'normal' || item._opacity < 1
 					&& !(item._segments && (!item.getFillColor()
 							|| !item.getStrokeColor()))) {
-				var bounds = item.getStrokeBounds() || item.getBounds();
+				var bounds = item.getStrokeBounds();
 				if (!bounds.width || !bounds.height)
 					return;
+				// Store previous offset and save the parent context, so we can
+				// draw onto it later
+				prevOffset = param.offset;
+				parentCtx = ctx;
 				// Floor the offset and ceil the size, so we don't cut off any
 				// antialiased pixels when drawing onto the temporary canvas.
-				var itemOffset = bounds.getTopLeft().floor(),
-					size = bounds.getSize().ceil().add(Size.create(1, 1));
-				tempCanvas = CanvasProvider.getCanvas(size);
-				// Save the parent context, so we can draw onto it later
-				parentCtx = ctx;
+				itemOffset = param.offset = bounds.getTopLeft().floor();
+				tempCanvas = CanvasProvider.getCanvas(
+						bounds.getSize().ceil().add(Size.create(1, 1)));
 				// Set ctx to the context of the temporary canvas,
 				// so we draw onto it, instead of the parentCtx
 				ctx = tempCanvas.getContext('2d');
-				ctx.save();
-				// Translate the context so the topLeft of the item is at (0, 0)
-				// on the temporary canvas.
+			}
+			ctx.save();
+			// Translate the context so the topLeft of the item is at (0, 0)
+			// on the temporary canvas.
+			if (tempCanvas)
 				ctx.translate(-itemOffset.x, -itemOffset.y);
-			}
-			var savedOffset;
-			if (itemOffset) {
-				savedOffset = param.offset;
-				param.offset = itemOffset;
-			}
+			item._matrix.applyToContext(ctx);
 			item.draw(ctx, param);
-			if (itemOffset)
-				param.offset = savedOffset;
+			ctx.restore();
 			// If we created a temporary canvas before, composite it onto the
 			// parent canvas:
 			if (tempCanvas) {
-				// Restore the temporary canvas to its state before the
-				// translation matrix was applied above.
-				ctx.restore();
+				// Restore previous offset.
+				param.offset = prevOffset;
 				// If the item has a blendMode, use BlendMode#process to
 				// composite its canvas on the parentCanvas.
 				if (item._blendMode !== 'normal') {
 					// The pixel offset of the temporary canvas to the parent
 					// canvas.
-					var pixelOffset = itemOffset.subtract(param.offset);
 					BlendMode.process(item._blendMode, ctx, parentCtx,
-						item._opacity, pixelOffset);
+						item._opacity, itemOffset.subtract(prevOffset));
 				} else {
 				// Otherwise we just need to set the globalAlpha before drawing
 				// the temporary canvas on the parent canvas.
 					parentCtx.save();
 					parentCtx.globalAlpha = item._opacity;
-					parentCtx.drawImage(tempCanvas,
-							itemOffset.x, itemOffset.y);
+					parentCtx.drawImage(tempCanvas, itemOffset.x, itemOffset.y);
 					parentCtx.restore();
 				}
 				// Return the temporary canvas, so it can be reused
