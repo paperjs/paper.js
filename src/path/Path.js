@@ -643,6 +643,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
 					? SelectionState.POINT : 0;
+		// No need to pass true for noChildren since Path has none anyway.
 		this.setSelected(selected);
 	},
 
