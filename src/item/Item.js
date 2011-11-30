@@ -1826,10 +1826,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		var bounds = this._bounds,
 			position = this._position,
 			children = this._children;
-		if (this._transform) {
+		if (this._transform)
 			this._transform(matrix, flags);
-			this._changed(Change.GEOMETRY);
-		}
+		// We need to call _changed even if we don't have _transform, since
+		// we're caching bounds on such items too now, e.g. Group
+		this._changed(Change.GEOMETRY);
 		// Detect matrices that contain only translations and scaling
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.
