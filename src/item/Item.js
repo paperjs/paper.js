@@ -259,20 +259,24 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Move the circle 100 points to the right
 	 * circle.position.x += 100;
 	 */
-	getPosition: function() {
-		// Cache position value
+	getPosition: function(/* dontLink */) {
+		// Cache position value.
+		// Pass true for dontLink in getCenter(), so receive back a normal point
 		var pos = this._position
-				|| (this._position = this.getBounds().getCenter());
-		// this._position is a LinkedPoint as well, so we can use _x and _y.
+				|| (this._position = this.getBounds().getCenter(true));
 		// Do not cache LinkedPoints directly, since we would not be able to
 		// use them to calculate the difference in #setPosition, as when it is
 		// modified, it would hold new values already and only then cause the
 		// calling of #setPosition.
-		return LinkedPoint.create(this, 'setPosition', pos._x, pos._y);
+		return arguments[0] ? pos
+				: LinkedPoint.create(this, 'setPosition', pos.x, pos.y);
 	},
 
 	setPosition: function(point) {
-		this.translate(Point.read(arguments).subtract(this.getPosition()));
+		// Calculate the distance to the current position, by which to
+		// translate the item. Pass true for dontLink, as we do not need a
+		// LinkedPoint to simply calculate this distance.
+		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
 	},
 
 	/**
