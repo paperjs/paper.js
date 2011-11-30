@@ -474,15 +474,12 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	setSelected: function(selected /*, noChildren */) {
-		// Don't recursively call #setSelected() if it was called with noChildren
-		// set to true, see #setFullySelected().
+		// Don't recursively call #setSelected() if it was called with
+		// noChildren set to true, see #setFullySelected().
 		if (this._children && !arguments[1]) {
 			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i].setSelected(selected);
-		}
-		// We also need to set _selcted of this item, regardless if it had
-		// children or not.
-		if ((selected = !!selected) != this._selected) {
+		} else if ((selected = !!selected) != this._selected) {
 			this._selected = selected;
 			this._project._updateSelection(this);
 			this._changed(Change.ATTRIBUTE);
