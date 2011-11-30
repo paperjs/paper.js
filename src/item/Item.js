@@ -1337,12 +1337,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// If we're caching bounds on this item, pass it on as cacheItem, so the
 		// children can setup the _boundsCache structures for it.
 		var bounds = this._getBounds(type, matrix, cache ? this : cacheItem);
-		// If we're returning 'bounds', create a LinkedRectangle that uses
-		// the setBounds() setter to update the Item whenever the bounds are
-		// changed:
-		if (name == 'bounds')
-			bounds = LinkedRectangle.create(this, 'setBounds',
-					bounds.x, bounds.y, bounds.width, bounds.height);
 		// If we can cache the result, update the _bounds cache structure
 		// before returning
 		if (cache) {
@@ -1359,13 +1353,21 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// and redirect the call to the private _getBounds, which can be
 		// overridden by subclasses, see below.
 		this['get' + Base.capitalize(name)] = function(/* matrix */) {
-			var type = this._boundsType;
-			return getBounds.call(this,
+			var type = this._boundsType,
+				bounds = getBounds.call(this,
 					// Allow subclasses to override _boundsType if they use the
 					// same calculations for multiple types.
 					// The default is name:
 					typeof type == 'string' ? type : type && type[name] || name,
+					// Pass on the optional matrix
 					arguments[0]);
+			// If we're returning 'bounds', create a LinkedRectangle that uses
+			// the setBounds() setter to update the Item whenever the bounds are
+			// changed:
+			if (name == 'bounds')
+				bounds = LinkedRectangle.create(this, 'setBounds',
+						bounds.x, bounds.y, bounds.width, bounds.height);
+			return bounds;
 		};
 	}, {
 		// Note: The documentation for the bounds properties is defined in the
