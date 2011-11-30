@@ -407,11 +407,8 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			var bounds = new Rectangle(this._size).setCenter(0, 0);
 			Item.drawSelectedBounds(bounds, ctx, this._matrix);
 		} else {
-			ctx.save();
-			this._matrix.applyToContext(ctx);
 			ctx.drawImage(this._canvas || this._image,
 					-this._size.width / 2, -this._size.height / 2);
-			ctx.restore();
 		}
 	}
 });
