@@ -213,73 +213,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * The item's transformation matrix, defining position and dimensions in the
-	 * document.
-	 *
-	 * @type Matrix
-	 * @bean
-	 */
-	getMatrix: function() {
-		return this._matrix;
-	},
-
-	setMatrix: function(matrix) {
-		// Use Matrix#initialize to easily copy over values.
-		this._matrix.initialize(matrix);
-		this._changed(Change.GEOMETRY);
-	},
-
-	/**
-	 * The item's position within the project. This is the
-	 * {@link Rectangle#center} of the item's {@link #bounds} rectangle.
-	 *
-	 * @type Point
-	 * @bean
-	 *
-	 * @example {@paperscript}
-	 * // Changing the position of a path:
-	 *
-	 * // Create a circle at position { x: 10, y: 10 }
-	 * var circle = new Path.Circle(new Point(10, 10), 10);
-	 * circle.fillColor = 'red';
-	 *
-	 * // Move the circle to { x: 20, y: 20 }
-	 * circle.position = new Point(20, 20);
-	 *
-	 * // Move the circle 100 points to the right and 50 points down
-	 * circle.position += new Point(100, 50);
-	 *
-	 * @example {@paperscript split=true height=100}
-	 * // Changing the x coordinate of an item's position:
-	 *
-	 * // Create a circle at position { x: 20, y: 20 }
-	 * var circle = new Path.Circle(new Point(20, 20), 10);
-	 * circle.fillColor = 'red';
-	 *
-	 * // Move the circle 100 points to the right
-	 * circle.position.x += 100;
-	 */
-	getPosition: function(/* dontLink */) {
-		// Cache position value.
-		// Pass true for dontLink in getCenter(), so receive back a normal point
-		var pos = this._position
-				|| (this._position = this.getBounds().getCenter(true));
-		// Do not cache LinkedPoints directly, since we would not be able to
-		// use them to calculate the difference in #setPosition, as when it is
-		// modified, it would hold new values already and only then cause the
-		// calling of #setPosition.
-		return arguments[0] ? pos
-				: LinkedPoint.create(this, 'setPosition', pos.x, pos.y);
-	},
-
-	setPosition: function(point) {
-		// Calculate the distance to the current position, by which to
-		// translate the item. Pass true for dontLink, as we do not need a
-		// LinkedPoint to simply calculate this distance.
-		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
-	},
-
-	/**
 	 * The path style of the item.
 	 *
 	 * @type PathStyle
@@ -543,6 +476,271 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	// TODO: get/setAlphaIsShape
 	// TODO: get/setData
 
+	/**
+	 * {@grouptitle Position and Bounding Boxes}
+	 *
+	 * The item's position within the project. This is the
+	 * {@link Rectangle#center} of the item's {@link #bounds} rectangle.
+	 *
+	 * @type Point
+	 * @bean
+	 *
+	 * @example {@paperscript}
+	 * // Changing the position of a path:
+	 *
+	 * // Create a circle at position { x: 10, y: 10 }
+	 * var circle = new Path.Circle(new Point(10, 10), 10);
+	 * circle.fillColor = 'red';
+	 *
+	 * // Move the circle to { x: 20, y: 20 }
+	 * circle.position = new Point(20, 20);
+	 *
+	 * // Move the circle 100 points to the right and 50 points down
+	 * circle.position += new Point(100, 50);
+	 *
+	 * @example {@paperscript split=true height=100}
+	 * // Changing the x coordinate of an item's position:
+	 *
+	 * // Create a circle at position { x: 20, y: 20 }
+	 * var circle = new Path.Circle(new Point(20, 20), 10);
+	 * circle.fillColor = 'red';
+	 *
+	 * // Move the circle 100 points to the right
+	 * circle.position.x += 100;
+	 */
+	getPosition: function(/* dontLink */) {
+		// Cache position value.
+		// Pass true for dontLink in getCenter(), so receive back a normal point
+		var pos = this._position
+				|| (this._position = this.getBounds().getCenter(true));
+		// Do not cache LinkedPoints directly, since we would not be able to
+		// use them to calculate the difference in #setPosition, as when it is
+		// modified, it would hold new values already and only then cause the
+		// calling of #setPosition.
+		return arguments[0] ? pos
+				: LinkedPoint.create(this, 'setPosition', pos.x, pos.y);
+	},
+
+	setPosition: function(point) {
+		// Calculate the distance to the current position, by which to
+		// translate the item. Pass true for dontLink, as we do not need a
+		// LinkedPoint to simply calculate this distance.
+		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
+	},
+
+	/**
+	 * The item's transformation matrix, defining position and dimensions in the
+	 * document.
+	 *
+	 * @type Matrix
+	 * @bean
+	 */
+	getMatrix: function() {
+		return this._matrix;
+	},
+
+	setMatrix: function(matrix) {
+		// Use Matrix#initialize to easily copy over values.
+		this._matrix.initialize(matrix);
+		this._changed(Change.GEOMETRY);
+	}
+
+	// Documentation for the bounds properties that are defined in the next
+	// scope
+
+	/**
+	 * The bounding rectangle of the item excluding stroke width.
+	 *
+	 * @name Item#getBounds
+	 * @type Rectangle
+	 * @bean
+	 */
+
+	/**
+	 * The bounding rectangle of the item including stroke width.
+	 *
+	 * @name Item#getStrokeBounds
+	 * @type Rectangle
+	 * @bean
+	 */
+
+	/**
+	 * The bounding rectangle of the item including handles.
+	 *
+	 * @name Item#getHandleBounds
+	 * @type Rectangle
+	 * @bean
+	 */
+
+	/**
+	 * The rough bounding rectangle of the item that is shure to include all of
+	 * the drawing, including stroke width.
+	 *
+	 * @name Item#getRoughBounds
+	 * @type Rectangle
+	 * @bean
+	 * @ignore
+	 */
+}, new function() {
+	/**
+	 * Private method that deals with the calling of _getBounds, recursive
+	 * matrix concatenation and handles all the complicated caching mechanisms.
+	 * Note: Needs to be called on an item using getBounds.call(item, ...).
+	 */
+	function getBounds(type, matrix, cacheItem) {
+		// See if we can cache these bounds. We only cache the bounds
+		// transformed with the internally stored _matrix, (the default if no
+		// matrix is passed).
+		var cache = (!matrix || matrix.equals(this._matrix)) && type;
+		// If the result of concatinating the passed matrix with our internal
+		// one is an identity transformation, set it to null for faster
+		// processing
+		var identity = this._matrix.isIdentity();
+		matrix = !matrix || matrix.isIdentity()
+				? identity ? null : this._matrix
+				: identity ? matrix : matrix.clone().concatenate(this._matrix);
+		// Set up a boundsCache structure that keeps track of items that keep
+		// cached bounds that depend on this item. We store this in our parent,
+		// for multiple reasons:
+		// The parent receives HIERARCHY change notifications for when its
+		// children are added or removed and can thus clear the cache, and we
+		// save a lot of memory, e.g. when grouping 100 items and asking the
+		// group for its bounds. If stored on the children, we would have 100
+		// times the same structure.
+		// Note: This needs to happen before returning cached values, since even
+		// then, _boundsCache needs to be kept up-to-date.
+		if (cacheItem && this._parent) {
+			// Set-up the parent's boundsCache structure if it does not
+			// exist yet and add the cacheItem to it.
+			var id = cacheItem._id,
+				ref = this._parent._boundsCache
+					= this._parent._boundsCache || {
+				// Use both a hashtable for ids and an array for the list,
+				// so we can keep track of items that were added already
+				ids: {},
+				list: []
+			};
+			if (!ref.ids[id]) {
+				ref.list.push(cacheItem);
+				ref.ids[id] = cacheItem;
+			}
+		}
+		if (cache && this._bounds && this._bounds[cache])
+			return this._bounds[cache];
+		// If we're caching bounds on this item, pass it on as cacheItem, so the
+		// children can setup the _boundsCache structures for it.
+		var bounds = this._getBounds(type, matrix, cache ? this : cacheItem);
+		// If we can cache the result, update the _bounds cache structure
+		// before returning
+		if (cache) {
+			if (!this._bounds)
+				this._bounds = {};
+			this._bounds[cache] = bounds;
+		}
+		return bounds;
+	}
+
+	return Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'],
+	function(name) {
+		// Produce getters for bounds properties. These handle caching, matrices
+		// and redirect the call to the private _getBounds, which can be
+		// overridden by subclasses, see below.
+		this['get' + Base.capitalize(name)] = function(/* matrix */) {
+			var type = this._boundsType,
+				bounds = getBounds.call(this,
+					// Allow subclasses to override _boundsType if they use the
+					// same calculations for multiple types.
+					// The default is name:
+					typeof type == 'string' ? type : type && type[name] || name,
+					// Pass on the optional matrix
+					arguments[0]);
+			// If we're returning 'bounds', create a LinkedRectangle that uses
+			// the setBounds() setter to update the Item whenever the bounds are
+			// changed:
+			if (name == 'bounds')
+				bounds = LinkedRectangle.create(this, 'setBounds',
+						bounds.x, bounds.y, bounds.width, bounds.height);
+			return bounds;
+		};
+	}, {
+		// Note: The documentation for the bounds properties is defined in the
+		// previous injection object.
+
+		/**
+		 * Protected method used in all the bounds getters. It loops through all
+		 * the children, gets their bounds and finds the bounds around all of
+		 * them. Subclasses override it to define calculations for the various
+		 * required bounding types.
+		 */
+		_getBounds: function(type, matrix, cacheItem) {
+			// Note: We cannot cache these results here, since we do not get
+			// _changed() notifications here for changing geometry in children.
+			// But cacheName is used in sub-classes such as PlacedItem.
+			var children = this._children;
+			// TODO: What to return if nothing is defined, e.g. empty Groups?
+			// Scriptographer behaves weirdly then too.
+			if (!children || children.length == 0)
+				return new Rectangle();
+			var x1 = Infinity,
+				x2 = -x1,
+				y1 = x1,
+				y2 = x2;
+			for (var i = 0, l = children.length; i < l; i++) {
+				var child = children[i];
+				if (child._visible) {
+					var rect = getBounds.call(child, type, matrix, cacheItem);
+					x1 = Math.min(rect.x, x1);
+					y1 = Math.min(rect.y, y1);
+					x2 = Math.max(rect.x + rect.width, x2);
+					y2 = Math.max(rect.y + rect.height, y2);
+				}
+			}
+			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		},
+
+		/**
+		 * Clears cached bounds of all items that the children of this item are
+		 * contributing to. See getBounds() for an explanation why this
+		 * information is stored on parents, not the children themselves.
+		 */
+		_clearBoundsCache: function() {
+			if (this._boundsCache) {
+				for (var i = 0, list = this._boundsCache.list, l = list.length;
+						i < l; i++) {
+					var item = list[i];
+					delete item._bounds;
+					// We need to recursively call _clearBoundsCache, because if
+					// the cache for this item's children is not valid anymore,
+					// that propagates up the DOM tree.
+					if (item != this && item._boundsCache)
+						item._clearBoundsCache();
+				}
+				delete this._boundsCache;
+			}
+		},
+
+		setBounds: function(rect) {
+			rect = Rectangle.read(arguments);
+			var bounds = this.getBounds(),
+				matrix = new Matrix(),
+				center = rect.getCenter();
+			// Read this from bottom to top:
+			// Translate to new center:
+			matrix.translate(center);
+			// Scale to new Size, if size changes and avoid divisions by 0:
+			if (rect.width != bounds.width || rect.height != bounds.height) {
+				matrix.scale(
+						bounds.width != 0 ? rect.width / bounds.width : 1,
+						bounds.height != 0 ? rect.height / bounds.height : 1);
+			}
+			// Translate to center:
+			center = bounds.getCenter();
+			matrix.translate(-center.x, -center.y);
+			// Now execute the transformation:
+			this.transform(matrix);
+		}
+	});
+}, /** @lends Item# */{
 	/**
 	 * {@grouptitle Project Hierarchy}
 	 * The project that this item belongs to.
@@ -1288,202 +1486,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			parent = parent._parent;
 		}
 		return false;
-	}
-}, new function() {
-	/**
-	 * Private method that deals with the calling of _getBounds, recursive
-	 * matrix concatenation and handles all the complicated caching mechanisms.
-	 * Note: Needs to be called on an item using getBounds.call(item, ...).
-	 */
-	function getBounds(type, matrix, cacheItem) {
-		// See if we can cache these bounds. We only cache the bounds
-		// transformed with the internally stored _matrix, (the default if no
-		// matrix is passed).
-		var cache = (!matrix || matrix.equals(this._matrix)) && type;
-		// If the result of concatinating the passed matrix with our internal
-		// one is an identity transformation, set it to null for faster
-		// processing
-		var identity = this._matrix.isIdentity();
-		matrix = !matrix || matrix.isIdentity()
-				? identity ? null : this._matrix
-				: identity ? matrix : matrix.clone().concatenate(this._matrix);
-		// Set up a boundsCache structure that keeps track of items that keep
-		// cached bounds that depend on this item. We store this in our parent,
-		// for multiple reasons:
-		// The parent receives HIERARCHY change notifications for when its
-		// children are added or removed and can thus clear the cache, and we
-		// save a lot of memory, e.g. when grouping 100 items and asking the
-		// group for its bounds. If stored on the children, we would have 100
-		// times the same structure.
-		// Note: This needs to happen before returning cached values, since even
-		// then, _boundsCache needs to be kept up-to-date.
-		if (cacheItem && this._parent) {
-			// Set-up the parent's boundsCache structure if it does not
-			// exist yet and add the cacheItem to it.
-			var id = cacheItem._id,
-				ref = this._parent._boundsCache
-					= this._parent._boundsCache || {
-				// Use both a hashtable for ids and an array for the list,
-				// so we can keep track of items that were added already
-				ids: {},
-				list: []
-			};
-			if (!ref.ids[id]) {
-				ref.list.push(cacheItem);
-				ref.ids[id] = cacheItem;
-			}
-		}
-		if (cache && this._bounds && this._bounds[cache])
-			return this._bounds[cache];
-		// If we're caching bounds on this item, pass it on as cacheItem, so the
-		// children can setup the _boundsCache structures for it.
-		var bounds = this._getBounds(type, matrix, cache ? this : cacheItem);
-		// If we can cache the result, update the _bounds cache structure
-		// before returning
-		if (cache) {
-			if (!this._bounds)
-				this._bounds = {};
-			this._bounds[cache] = bounds;
-		}
-		return bounds;
-	}
-
-	return Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'],
-	function(name) {
-		// Produce getters for bounds properties. These handle caching, matrices
-		// and redirect the call to the private _getBounds, which can be
-		// overridden by subclasses, see below.
-		this['get' + Base.capitalize(name)] = function(/* matrix */) {
-			var type = this._boundsType,
-				bounds = getBounds.call(this,
-					// Allow subclasses to override _boundsType if they use the
-					// same calculations for multiple types.
-					// The default is name:
-					typeof type == 'string' ? type : type && type[name] || name,
-					// Pass on the optional matrix
-					arguments[0]);
-			// If we're returning 'bounds', create a LinkedRectangle that uses
-			// the setBounds() setter to update the Item whenever the bounds are
-			// changed:
-			if (name == 'bounds')
-				bounds = LinkedRectangle.create(this, 'setBounds',
-						bounds.x, bounds.y, bounds.width, bounds.height);
-			return bounds;
-		};
-	}, {
-		// Note: The documentation for the bounds properties is defined in the
-		// next injection object.
-
-		/**
-		 * Protected method used in all the bounds getters. It loops through all
-		 * the children, gets their bounds and finds the bounds around all of
-		 * them. Subclasses override it to define calculations for the various
-		 * required bounding types.
-		 */
-		_getBounds: function(type, matrix, cacheItem) {
-			// Note: We cannot cache these results here, since we do not get
-			// _changed() notifications here for changing geometry in children.
-			// But cacheName is used in sub-classes such as PlacedItem.
-			var children = this._children;
-			// TODO: What to return if nothing is defined, e.g. empty Groups?
-			// Scriptographer behaves weirdly then too.
-			if (!children || children.length == 0)
-				return new Rectangle();
-			var x1 = Infinity,
-				x2 = -x1,
-				y1 = x1,
-				y2 = x2;
-			for (var i = 0, l = children.length; i < l; i++) {
-				var child = children[i];
-				if (child._visible) {
-					var rect = getBounds.call(child, type, matrix, cacheItem);
-					x1 = Math.min(rect.x, x1);
-					y1 = Math.min(rect.y, y1);
-					x2 = Math.max(rect.x + rect.width, x2);
-					y2 = Math.max(rect.y + rect.height, y2);
-				}
-			}
-			return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-		},
-
-		/**
-		 * Clears cached bounds of all items that the children of this item are
-		 * contributing to. See getBounds() for an explanation why this
-		 * information is stored on parents, not the children themselves.
-		 */
-		_clearBoundsCache: function() {
-			if (this._boundsCache) {
-				for (var i = 0, list = this._boundsCache.list, l = list.length;
-						i < l; i++) {
-					var item = list[i];
-					delete item._bounds;
-					// We need to recursively call _clearBoundsCache, because if
-					// the cache for this item's children is not valid anymore,
-					// that propagates up the DOM tree.
-					if (item != this && item._boundsCache)
-						item._clearBoundsCache();
-				}
-				delete this._boundsCache;
-			}
-		},
-
-		setBounds: function(rect) {
-			rect = Rectangle.read(arguments);
-			var bounds = this.getBounds(),
-				matrix = new Matrix(),
-				center = rect.getCenter();
-			// Read this from bottom to top:
-			// Translate to new center:
-			matrix.translate(center);
-			// Scale to new Size, if size changes and avoid divisions by 0:
-			if (rect.width != bounds.width || rect.height != bounds.height) {
-				matrix.scale(
-						bounds.width != 0 ? rect.width / bounds.width : 1,
-						bounds.height != 0 ? rect.height / bounds.height : 1);
-			}
-			// Translate to center:
-			center = bounds.getCenter();
-			matrix.translate(-center.x, -center.y);
-			// Now execute the transformation:
-			this.transform(matrix);
-		}
-	});
-}, /** @lends Item# */{
-	/**
-	 * {@grouptitle Bounding Rectangles}
-	 *
-	 * The bounding rectangle of the item excluding stroke width.
-	 *
-	 * @name Item#getBounds
-	 * @type Rectangle
-	 * @bean
-	 */
-
-	/**
-	 * The bounding rectangle of the item including stroke width.
-	 *
-	 * @name Item#getStrokeBounds
-	 * @type Rectangle
-	 * @bean
-	 */
-
-	/**
-	 * The bounding rectangle of the item including handles.
-	 *
-	 * @name Item#getHandleBounds
-	 * @type Rectangle
-	 * @bean
-	 */
-
-	/**
-	 * The rough bounding rectangle of the item that is shure to include all of
-	 * the drawing, including stroke width.
-	 *
-	 * @name Item#getRoughBounds
-	 * @type Rectangle
-	 * @bean
-	 * @ignore
-	 */
+	},
 
 	// Document all style properties which get injected into Item by Style:
 
