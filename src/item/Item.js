@@ -101,258 +101,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			});
 	},
 
-	// DOCS: move event handler documentation down?
-	/**
-	 * {@grouptitle Event Handlers}
-	 * Item level handler function to be called on each frame of an animation.
-	 * The function receives an event object which contains information about
-	 * the frame event:
-	 *
-	 * <b>{@code event.count}</b>: the number of times the frame event was
-	 * fired.
-	 * <b>{@code event.time}</b>: the total amount of time passed since the
-	 * first frame event in seconds.
-	 * <b>{@code event.delta}</b>: the time passed in seconds since the last
-	 * frame event.
-	 *
- 	 * @see View#onFrame
-	 * @example {@paperscript}
-	 * // Creating an animation:
-	 *
-	 * // Create a rectangle shaped path with its top left point at:
-	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
-	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
-	 * path.fillColor = 'black';
-	 *
-	 * path.onFrame = function(event) {
-	 * 	// Every frame, rotate the path by 3 degrees:
-	 * 	this.rotate(3);
-	 * }
-	 *
-	 * @name Item#onFrame
-	 * @property
-	 * @type Function
-	 */
-
-	/**
-	 * The function to be called when the mouse button is pushed down on the
-	 * item. The function receives a {@link MouseEvent} object which contains
-	 * information about the mouse event.
-	 *
-	 * @name Item#onMouseDown
-	 * @property
-	 * @type Function
-	 *
-	 * @example {@paperscript}
-	 * // Press the mouse button down on the circle shaped path, to make it red:
-	 * 
-	 * // Create a circle shaped path at the center of the view:
-	 * var path = new Path.Circle(view.center, 25);
-	 * path.fillColor = 'black';
-	 * 
-	 * // When the mouse is pressed on the item,
-	 * // set its fill color to red:
-	 * path.onMouseDown = function(event) {
-	 * 	this.fillColor = 'red';
-	 * }
-	 * 
-	 * @example {@paperscript}
-	 * // Press the mouse on the circle shaped paths to remove them:
-	 * 
-	 * // Loop 30 times:
-	 * for (var i = 0; i < 30; i++) {
-	 * 	// Create a circle shaped path at a random position
-	 * 	// in the view:
-	 * 	var position = Point.random() * view.size;
-	 * 	var path = new Path.Circle(position, 25);
-	 * 	path.fillColor = 'black';
-	 * 	path.strokeColor = 'white';
-	 * 	// When the mouse is pressed on the item, remove it:
-	 * 	path.onMouseDown = function(event) {
-	 * 		this.remove();
-	 * 	}
-	 * }
-	 */
-
-	/**
-	 * The function to be called when the mouse button is released over the item.
-	 * The function receives a {@link MouseEvent} object which contains
-	 * information about the mouse event.
-	 *
-	 * @name Item#onMouseUp
-	 * @property
-	 * @type Function
-	 *
-	 * @example {@paperscript}
-	 * // Release the mouse button over the circle shaped path, to make it red:
-	 * 
-	 * // Create a circle shaped path at the center of the view:
-	 * var path = new Path.Circle(view.center, 25);
-	 * path.fillColor = 'black';
-	 * 
-	 * // When the mouse is released over the item,
-	 * // set its fill color to red:
-	 * path.onMouseUp = function(event) {
-	 * 	this.fillColor = 'red';
-	 * }
-	 */
-
-	/**
-	 * The function to be called when the mouse clicks on the item. The function
-	 * receives a {@link MouseEvent} object which contains information about the
-	 * mouse event.
-	 *
-	 * @name Item#onClick
-	 * @property
-	 * @type Function
-	 *
-	 * @example {@paperscript}
-	 * // Click on the circle shaped path, to make it red:
-	 * 
-	 * // Create a circle shaped path at the center of the view:
-	 * var path = new Path.Circle(view.center, 25);
-	 * path.fillColor = 'black';
-	 * 
-	 * // When the mouse is clicked on the item,
-	 * // set its fill color to red:
-	 * path.onClick = function(event) {
-	 * 	this.fillColor = 'red';
-	 * }
-	 * 
-	 * @example {@paperscript}
-	 * // Click on the circle shaped paths to remove them:
-	 * 
-	 * // Loop 30 times:
-	 * for (var i = 0; i < 30; i++) {
-	 * 	// Create a circle shaped path at a random position
-	 * 	// in the view:
-	 * 	var position = Point.random() * view.size;
-	 * 	var path = new Path.Circle(position, 25);
-	 * 	path.fillColor = 'black';
-	 * 	path.strokeColor = 'white';
-	 * 	// When the mouse is clicked on the item, remove it:
-	 * 	path.onClick = function(event) {
-	 * 		this.remove();
-	 * 	}
-	 * }
-	 */
-
-	/**
-	 * The function to be called when the mouse double clicks on the item. The
-	 * function receives a {@link MouseEvent} object which contains information
-	 * about the mouse event.
-	 *
-	 * @name Item#onDoubleClick
-	 * @property
-	 * @type Function
-	 *
-	 * @example {@paperscript}
-	 * // Double click on the circle shaped path, to make it red:
-	 * 
-	 * // Create a circle shaped path at the center of the view:
-	 * var path = new Path.Circle(view.center, 25);
-	 * path.fillColor = 'black';
-	 * 
-	 * // When the mouse is double clicked on the item,
-	 * // set its fill color to red:
-	 * path.onDoubleClick = function(event) {
-	 * 	this.fillColor = 'red';
-	 * }
-	 * 
-	 * @example {@paperscript}
-	 * // Double click on the circle shaped paths to remove them:
-	 * 
-	 * // Loop 30 times:
-	 * for (var i = 0; i < 30; i++) {
-	 * 	// Create a circle shaped path at a random position
-	 * 	// in the view:
-	 * 	var position = Point.random() * view.size;
-	 * 	var path = new Path.Circle(position, 25);
-	 * 	path.fillColor = 'black';
-	 * 	path.strokeColor = 'white';
-	 * 	// When the mouse is clicked on the item, remove it:
-	 * 	path.onDoubleClick = function(event) {
-	 * 		this.remove();
-	 * 	}
-	 * }
-	 */
-
-	/**
-	 * The function to be called repeatedly when the mouse moves on top of the
-	 * item. The function receives a {@link MouseEvent} object which contains
-	 * information about the mouse event.
-	 *
-	 * @name Item#onMouseMove
-	 * @property
-	 * @type Function
-	 *
-	 * @example {@paperscript}
-	 * // Move over the circle shaped path, to change its opacity:
-	 * 
-	 * // Create a circle shaped path at the center of the view:
-	 * var path = new Path.Circle(view.center, 25);
-	 * path.fillColor = 'black';
-	 * 
-	 * // When the mouse moves on top of the item, set its opacity
-	 * // to a random value between 0 and 1:
-	 * path.onMouseMove = function(event) {
-	 * 	this.opacity = Math.random();
-	 * }
-	 */
-
-	/**
-	 * The function to be called when the mouse moves over the item. This
-	 * function will only be called again, once the mouse moved outside of the
-	 * item first. The function receives a {@link MouseEvent} object which
-	 * contains information about the mouse event.
-	 *
-	 * @name Item#onMouseEnter
-	 * @property
-	 * @type Function
-	 *
-	 * @example {@paperscript}
-	 * // When you move the mouse over the item, its fill color is set to red.
-	 * // When you move the mouse outside again, its fill color is set back
-	 * // to black.
-	 * 
-	 * // Create a circle shaped path at the center of the view:
-	 * var path = new Path.Circle(view.center, 25);
-	 * path.fillColor = 'black';
-	 * 
-	 * // When the mouse enters the item, set its fill color to red:
-	 * path.onMouseEnter = function(event) {
-	 * 	this.fillColor = 'red';
-	 * }
-	 
-	 * // When the mouse leaves the item, set its fill color to black:
-	 * path.onMouseLeave = function(event) {
-	 * 	this.fillColor = 'black';
-	 * }
-	 */
-
-	/**
-	 * The function to be called when the mouse moves out of the item.
-	 * The function receives a {@link MouseEvent} object which contains
-	 * information about the mouse event.
-	 *
-	 * @name Item#onMouseLeave
-	 * @property
-	 * @type Function
-	 *
-	 * @example {@paperscript}
-	 * // Move the mouse over the circle shaped path and then move it out
-	 * // of it again to set its fill color to red:
-	 * 
-	 * // Create a circle shaped path at the center of the view:
-	 * var path = new Path.Circle(view.center, 25);
-	 * path.fillColor = 'black';
-	 * 
-	 * // When the mouse leaves the item, set its fill color to red:
-	 * path.onMouseLeave = function(event) {
-	 * 	this.fillColor = 'red';
-	 * }
-	 */
-
 	initialize: function() {
 		// Define this Item's unique id.
 		this._id = ++Item._id;
@@ -2195,6 +1943,409 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				? " '" + this._name + "'"
 				: ' @' + this._id);
 	},
+
+	/**
+	 * {@grouptitle Event Handlers}
+	 * Item level handler function to be called on each frame of an animation.
+	 * The function receives an event object which contains information about
+	 * the frame event:
+	 *
+	 * <b>{@code event.count}</b>: the number of times the frame event was
+	 * fired.
+	 * <b>{@code event.time}</b>: the total amount of time passed since the
+	 * first frame event in seconds.
+	 * <b>{@code event.delta}</b>: the time passed in seconds since the last
+	 * frame event.
+	 *
+ 	 * @see View#onFrame
+	 * @example {@paperscript}
+	 * // Creating an animation:
+	 *
+	 * // Create a rectangle shaped path with its top left point at:
+	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
+	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+	 *
+	 * path.onFrame = function(event) {
+	 * 	// Every frame, rotate the path by 3 degrees:
+	 * 	this.rotate(3);
+	 * }
+	 *
+	 * @name Item#onFrame
+	 * @property
+	 * @type Function
+	 */
+
+	/**
+	 * The function to be called when the mouse button is pushed down on the
+	 * item. The function receives a {@link MouseEvent} object which contains
+	 * information about the mouse event.
+	 *
+	 * @name Item#onMouseDown
+	 * @property
+	 * @type Function
+	 *
+	 * @example {@paperscript}
+	 * // Press the mouse button down on the circle shaped path, to make it red:
+	 * 
+	 * // Create a circle shaped path at the center of the view:
+	 * var path = new Path.Circle(view.center, 25);
+	 * path.fillColor = 'black';
+	 * 
+	 * // When the mouse is pressed on the item,
+	 * // set its fill color to red:
+	 * path.onMouseDown = function(event) {
+	 * 	this.fillColor = 'red';
+	 * }
+	 * 
+	 * @example {@paperscript}
+	 * // Press the mouse on the circle shaped paths to remove them:
+	 * 
+	 * // Loop 30 times:
+	 * for (var i = 0; i < 30; i++) {
+	 * 	// Create a circle shaped path at a random position
+	 * 	// in the view:
+	 * 	var position = Point.random() * view.size;
+	 * 	var path = new Path.Circle(position, 25);
+	 * 	path.fillColor = 'black';
+	 * 	path.strokeColor = 'white';
+	 * 	// When the mouse is pressed on the item, remove it:
+	 * 	path.onMouseDown = function(event) {
+	 * 		this.remove();
+	 * 	}
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the mouse button is released over the item.
+	 * The function receives a {@link MouseEvent} object which contains
+	 * information about the mouse event.
+	 *
+	 * @name Item#onMouseUp
+	 * @property
+	 * @type Function
+	 *
+	 * @example {@paperscript}
+	 * // Release the mouse button over the circle shaped path, to make it red:
+	 * 
+	 * // Create a circle shaped path at the center of the view:
+	 * var path = new Path.Circle(view.center, 25);
+	 * path.fillColor = 'black';
+	 * 
+	 * // When the mouse is released over the item,
+	 * // set its fill color to red:
+	 * path.onMouseUp = function(event) {
+	 * 	this.fillColor = 'red';
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the mouse clicks on the item. The function
+	 * receives a {@link MouseEvent} object which contains information about the
+	 * mouse event.
+	 *
+	 * @name Item#onClick
+	 * @property
+	 * @type Function
+	 *
+	 * @example {@paperscript}
+	 * // Click on the circle shaped path, to make it red:
+	 * 
+	 * // Create a circle shaped path at the center of the view:
+	 * var path = new Path.Circle(view.center, 25);
+	 * path.fillColor = 'black';
+	 * 
+	 * // When the mouse is clicked on the item,
+	 * // set its fill color to red:
+	 * path.onClick = function(event) {
+	 * 	this.fillColor = 'red';
+	 * }
+	 * 
+	 * @example {@paperscript}
+	 * // Click on the circle shaped paths to remove them:
+	 * 
+	 * // Loop 30 times:
+	 * for (var i = 0; i < 30; i++) {
+	 * 	// Create a circle shaped path at a random position
+	 * 	// in the view:
+	 * 	var position = Point.random() * view.size;
+	 * 	var path = new Path.Circle(position, 25);
+	 * 	path.fillColor = 'black';
+	 * 	path.strokeColor = 'white';
+	 * 	// When the mouse is clicked on the item, remove it:
+	 * 	path.onClick = function(event) {
+	 * 		this.remove();
+	 * 	}
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the mouse double clicks on the item. The
+	 * function receives a {@link MouseEvent} object which contains information
+	 * about the mouse event.
+	 *
+	 * @name Item#onDoubleClick
+	 * @property
+	 * @type Function
+	 *
+	 * @example {@paperscript}
+	 * // Double click on the circle shaped path, to make it red:
+	 * 
+	 * // Create a circle shaped path at the center of the view:
+	 * var path = new Path.Circle(view.center, 25);
+	 * path.fillColor = 'black';
+	 * 
+	 * // When the mouse is double clicked on the item,
+	 * // set its fill color to red:
+	 * path.onDoubleClick = function(event) {
+	 * 	this.fillColor = 'red';
+	 * }
+	 * 
+	 * @example {@paperscript}
+	 * // Double click on the circle shaped paths to remove them:
+	 * 
+	 * // Loop 30 times:
+	 * for (var i = 0; i < 30; i++) {
+	 * 	// Create a circle shaped path at a random position
+	 * 	// in the view:
+	 * 	var position = Point.random() * view.size;
+	 * 	var path = new Path.Circle(position, 25);
+	 * 	path.fillColor = 'black';
+	 * 	path.strokeColor = 'white';
+	 * 	// When the mouse is clicked on the item, remove it:
+	 * 	path.onDoubleClick = function(event) {
+	 * 		this.remove();
+	 * 	}
+	 * }
+	 */
+
+	/**
+	 * The function to be called repeatedly when the mouse moves on top of the
+	 * item. The function receives a {@link MouseEvent} object which contains
+	 * information about the mouse event.
+	 *
+	 * @name Item#onMouseMove
+	 * @property
+	 * @type Function
+	 *
+	 * @example {@paperscript}
+	 * // Move over the circle shaped path, to change its opacity:
+	 * 
+	 * // Create a circle shaped path at the center of the view:
+	 * var path = new Path.Circle(view.center, 25);
+	 * path.fillColor = 'black';
+	 * 
+	 * // When the mouse moves on top of the item, set its opacity
+	 * // to a random value between 0 and 1:
+	 * path.onMouseMove = function(event) {
+	 * 	this.opacity = Math.random();
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the mouse moves over the item. This
+	 * function will only be called again, once the mouse moved outside of the
+	 * item first. The function receives a {@link MouseEvent} object which
+	 * contains information about the mouse event.
+	 *
+	 * @name Item#onMouseEnter
+	 * @property
+	 * @type Function
+	 *
+	 * @example {@paperscript}
+	 * // When you move the mouse over the item, its fill color is set to red.
+	 * // When you move the mouse outside again, its fill color is set back
+	 * // to black.
+	 * 
+	 * // Create a circle shaped path at the center of the view:
+	 * var path = new Path.Circle(view.center, 25);
+	 * path.fillColor = 'black';
+	 * 
+	 * // When the mouse enters the item, set its fill color to red:
+	 * path.onMouseEnter = function(event) {
+	 * 	this.fillColor = 'red';
+	 * }
+	 
+	 * // When the mouse leaves the item, set its fill color to black:
+	 * path.onMouseLeave = function(event) {
+	 * 	this.fillColor = 'black';
+	 * }
+	 * @example {@paperscript}
+	 * // When you click the mouse, you create new circle shaped items. When you
+	 * // move the mouse over the item, its fill color is set to red. When you
+	 * // move the mouse outside again, its fill color is set back
+	 * // to black.
+	 * 
+	 * function enter(event) {
+	 * 	this.fillColor = 'red';
+	 * }
+	 * 
+	 * function leave(event) {
+	 * 	this.fillColor = 'black';
+	 * }
+	 * 
+	 * // When the mouse is pressed:
+	 * function onMouseDown(event) {
+	 * 	// Create a circle shaped path at the position of the mouse:
+	 * 	var path = new Path.Circle(event.point, 25);
+	 * 	path.fillColor = 'black';
+     * 
+	 * 	// When the mouse enters the item, set its fill color to red:
+	 * 	path.onMouseEnter = enter;
+     * 
+	 * 	// When the mouse leaves the item, set its fill color to black:
+	 * 	path.onMouseLeave = leave;
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the mouse moves out of the item.
+	 * The function receives a {@link MouseEvent} object which contains
+	 * information about the mouse event.
+	 *
+	 * @name Item#onMouseLeave
+	 * @property
+	 * @type Function
+	 *
+	 * @example {@paperscript}
+	 * // Move the mouse over the circle shaped path and then move it out
+	 * // of it again to set its fill color to red:
+	 * 
+	 * // Create a circle shaped path at the center of the view:
+	 * var path = new Path.Circle(view.center, 25);
+	 * path.fillColor = 'black';
+	 * 
+	 * // When the mouse leaves the item, set its fill color to red:
+	 * path.onMouseLeave = function(event) {
+	 * 	this.fillColor = 'red';
+	 * }
+	 */
+
+	/**
+	 * {@grouptitle Event Handling}
+	 * 
+	 * Attach an event handler to the item.
+	 *
+	 * @name Item#attach
+	 * @function
+	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
+	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
+	 * type
+	 * @param {Function} function The function to be called when the event
+	 * occurs
+	 *
+	 * @example {@paperscript}
+	 * // Change the fill color of the path to red when the mouse enters its
+	 * // shape and back to black again, when it leaves its shape.
+	 * 
+	 * // Create a circle shaped path at the center of the view:
+	 * var path = new Path.Circle(view.center, 25);
+	 * path.fillColor = 'black';
+	 * 
+	 * // When the mouse enters the item, set its fill color to red:
+	 * path.attach('mouseenter', function() {
+	 * 	this.fillColor = 'red';
+	 * });
+	 * 
+	 * // When the mouse leaves the item, set its fill color to black:
+	 * path.attach('mouseleave', function() {
+	 * 	this.fillColor = 'black';
+	 * });
+	 */
+	/**
+	 * Attach one or more event handlers to the item.
+	 *
+	 * @name Item#attach^2
+	 * @function
+	 * @param {Object} param An object literal containing one or more of the
+	 * following properties: {@code mousedown, mouseup, mousedrag, click,
+	 * doubleclick, mousemove, mouseenter, mouseleave}.
+	 *
+	 * @example {@paperscript}
+	 * // Change the fill color of the path to red when the mouse enters its
+	 * // shape and back to black again, when it leaves its shape.
+	 * 
+	 * // Create a circle shaped path at the center of the view:
+	 * var path = new Path.Circle(view.center, 25);
+	 * path.fillColor = 'black';
+	 * 
+	 * // When the mouse enters the item, set its fill color to red:
+	 * path.attach({
+	 * 	mouseenter: function(event) {
+	 * 		this.fillColor = 'red';
+	 * 	},
+	 * 	mouseleave: function(event) {
+	 * 		this.fillColor = 'black';
+	 * 	}
+	 * });
+	 * @example {@paperscript}
+	 * // When you click the mouse, you create new circle shaped items. When you
+	 * // move the mouse over the item, its fill color is set to red. When you
+	 * // move the mouse outside again, its fill color is set black.
+	 * 
+	 * var pathHandlers = {
+	 * 	mouseenter: function(event) {
+	 * 		this.fillColor = 'red';
+	 * 	},
+	 * 	mouseleave: function(event) {
+	 * 		this.fillColor = 'black';
+	 * 	}
+	 * }
+	 * 
+	 * // When the mouse is pressed:
+	 * function onMouseDown(event) {
+	 * 	// Create a circle shaped path at the position of the mouse:
+	 * 	var path = new Path.Circle(event.point, 25);
+	 * 	path.fillColor = 'black';
+     * 
+	 * 	// Attach the handers inside the object literal to the path:
+	 * 	path.attach(pathHandlers);
+	 * }
+	 */
+
+	/**
+	 * Detach an event handler from the item.
+	 *
+	 * @name Item#detach
+	 * @function
+	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
+	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
+	 * type
+	 * @param {Function} function The function to be detached
+	 */
+	/**
+	 * Detach one or more event handlers to the item.
+	 *
+	 * @name Item#detach^2
+	 * @function
+	 * @param {Object} param An object literal containing one or more of the
+	 * following properties: {@code mousedown, mouseup, mousedrag, click,
+	 * doubleclick, mousemove, mouseenter, mouseleave}
+	 */
+
+	/**
+	 * Fire an event on the item.
+	 *
+	 * @name Item#fire
+	 * @function
+	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
+	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
+	 * type
+	 * @param {Object} event An object literal containing properties describing
+	 * the event.
+	 */
+
+	/**
+	 * Check if the item has one or more event handlers of the specified type.
+	 *
+	 * @name Item#responds
+	 * @function
+	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
+	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
+	 * type
+	 * @return {Boolean} {@true if the item has one or more event handlers of
+	 * the specified type}
+	 */
 
 	statics: {
 		drawSelectedBounds: function(bounds, ctx, matrix) {
