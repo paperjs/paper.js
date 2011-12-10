@@ -432,7 +432,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 				var view = View._views[i];
 				if (view && view.isVisible()) {
 					View._focused = tempFocus = view;
-					throw Base.stop;
+					break;
 				}
 			}
 		}
