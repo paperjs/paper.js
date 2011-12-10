@@ -35,6 +35,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 		// Override default fillColor of CharacterStyle
 		fillColor: 'black',
 		fontSize: 10,
+		fontWeight: 'normal',
 		leading: null,
 		font: 'sans-serif'
 	}),
