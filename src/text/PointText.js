@@ -74,7 +74,6 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		ctx.save();
 		ctx.font = this.getFontSize() + 'px ' + this.getFont();
 		ctx.textAlign = this.getJustification();
-		this._matrix.applyToContext(ctx);
 		var fillColor = this.getFillColor(),
 			strokeColor = this.getStrokeColor(),
 			leading = this.getLeading();
