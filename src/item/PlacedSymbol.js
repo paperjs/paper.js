@@ -97,7 +97,9 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 
 	_getBounds: function(type, matrix) {
 		// Redirect the call to the symbol definition to calculate the bounds
-		return this.symbol._definition._getBounds(type, matrix);
+		// TODO: Implement bounds caching through passing on of cacheItem, so
+		// that Symbol#_changed() notification become unnecessary!
+		return this.symbol._definition._getCachedBounds(type, matrix);
 	},
 
 	draw: function(ctx, param) {
