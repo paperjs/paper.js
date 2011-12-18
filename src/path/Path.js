@@ -206,21 +206,20 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
 
-	_transform: function(matrix, flags) {
-		if (matrix && !matrix.isIdentity()) {
-			var coords = new Array(6);
-			for (var i = 0, l = this._segments.length; i < l; i++) {
-				this._segments[i]._transformCoordinates(matrix, coords, true);
-			}
-			// TODO: Can't we access _style._fillColor, as we do in strokeBounds?
-			var fillColor = this.getFillColor(),
-				strokeColor = this.getStrokeColor();
-			// Try calling transform on colors in case they are GradientColors.
-			if (fillColor && fillColor.transform)
-				fillColor.transform(matrix);
-			if (strokeColor && strokeColor.transform)
-				strokeColor.transform(matrix);
+	_applyMatrix: function(matrix) {
+		var coords = new Array(6);
+		for (var i = 0, l = this._segments.length; i < l; i++) {
+			this._segments[i]._transformCoordinates(matrix, coords, true);
 		}
+		// TODO: Can't we access _style._fillColor, as we do in strokeBounds?
+		var fillColor = this.getFillColor(),
+			strokeColor = this.getStrokeColor();
+		// Try calling transform on colors in case they are GradientColors.
+		if (fillColor && fillColor.transform)
+			fillColor.transform(matrix);
+		if (strokeColor && strokeColor.transform)
+			strokeColor.transform(matrix);
+		return true;
 	},
 
 	/**

@@ -38,6 +38,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	initialize: function(point) {
 		this.base();
 		this._point = Point.read(arguments).clone();
+		// XXX: Define one way of creating matrices and passing them to ctors
 		this._matrix = new Matrix().translate(this._point);
 	},
 
@@ -62,9 +63,8 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		this.translate(Point.read(arguments).subtract(this._point));
 	},
 
-	_transform: function(matrix, flags) {
-		this._matrix.preConcatenate(matrix);
-		// Also transform _point:
+	_transform: function(matrix) {
+		// Transform _point:
 		matrix._transformPoint(this._point, this._point);
 	},
 
