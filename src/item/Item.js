@@ -1665,6 +1665,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @function
 	 * @param {Number} scale the scale factor
 	 * @param {Point} [center={@link Item#position}]
+	 * @param {Boolean} apply
 	 *
 	 * @example {@paperscript}
 	 * // Scaling an item from its center point:
@@ -1697,6 +1698,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Number} hor the horizontal scale factor
 	 * @param {Number} ver the vertical scale factor
 	 * @param {Point} [center={@link Item#position}]
+	 * @param {Boolean} apply
 	 *
 	 * @example {@paperscript}
 	 * // Scaling an item horizontally by 300%:
@@ -1709,24 +1711,26 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Scale the path horizontally by 300%
 	 * circle.scale(3, 1);
 	 */
-	scale: function(hor, ver /* | scale */, center) {
+	scale: function(hor, ver /* | scale */, center, apply) {
 		// See Matrix#scale for explanation of this:
 		if (arguments.length < 2 || typeof ver === 'object') {
+			apply = center;
 			center = ver;
 			ver = hor;
 		}
 		return this.transform(new Matrix().scale(hor, ver,
-				center || this.getPosition()));
+				center || this.getPosition(true)), apply);
 	},
 
 	/**
 	 * Translates (moves) the item by the given offset point.
 	 *
 	 * @param {Point} delta the offset to translate the item by
+	 * @param {Boolean} apply
 	 */
-	translate: function(delta) {
+	translate: function(delta, apply) {
 		var mx = new Matrix();
-		return this.transform(mx.translate.apply(mx, arguments));
+		return this.transform(mx.translate.apply(mx, arguments), apply);
 	},
 
 	/**
@@ -1736,6 +1740,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @param {Number} angle the rotation angle
 	 * @param {Point} [center={@link Item#position}]
+	 * @param {Boolean} apply
 	 * @see Matrix#rotate
 	 *
 	 * @example {@paperscript}
@@ -1770,9 +1775,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * 	path.rotate(3, view.center);
 	 * }
 	 */
-	rotate: function(angle, center) {
+	rotate: function(angle, center, apply) {
 		return this.transform(new Matrix().rotate(angle,
-				center || this.getPosition()));
+				center || this.getPosition(true)), apply);
 	},
 
 	// TODO: Add test for item shearing, as it might be behaving oddly.
@@ -1784,6 +1789,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @function
 	 * @param {Point} point
 	 * @param {Point} [center={@link Item#position}]
+	 * @param {Boolean} apply
 	 * @see Matrix#shear
 	 */
 	/**
@@ -1795,41 +1801,48 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Number} hor the horizontal shear factor.
 	 * @param {Number} ver the vertical shear factor.
 	 * @param {Point} [center={@link Item#position}]
+	 * @param {Boolean} apply
 	 * @see Matrix#shear
 	 */
-	shear: function(hor, ver, center) {
-		// PORT: Add support for center back to Scriptographer too!
+	shear: function(hor, ver, center, apply) {
+		// PORT: Add support for center and apply back to Scriptographer too!
 		// See Matrix#scale for explanation of this:
 		if (arguments.length < 2 || typeof ver === 'object') {
+			apply = center;
 			center = ver;
 			ver = hor;
 		}
 		return this.transform(new Matrix().shear(hor, ver,
-				center || this.getPosition()));
+				center || this.getPosition(true)), apply);
 	},
 
 	/**
 	 * Transform the item.
 	 *
-	 * @param {Matrix} matrix
+	 * @param {Matrix} matrix the matrix by which the item shall be transformed.
+	 * @param {Boolean} apply controls wether the transformation should just be
+	 * concatenated to {@link #matrix} ({@code false}) or if it should directly
+	 * be applied to item's content and its children.
 	 */
 	// Remove this for now:
 	// @param {String[]} flags Array of any of the following: 'objects',
 	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
 	//        'lines'. Default: ['objects', 'children']
-	transform: function(matrix, flags) {
-		// TODO: Handle flags, add TransformFlag class and convert to bit mask
-		// for quicker checking.
-		// TODO: Call transform on chidren only if 'children' flag is provided.
+	transform: function(matrix, apply) {
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
 		var bounds = this._bounds,
 			position = this._position,
 			children = this._children;
+		bounds = position = null;
+		// Simply preconcatenate the internal matrix with the passed one:
+		this._matrix.preConcatenate(matrix);
 		if (this._transform)
-			this._transform(matrix, flags);
-		// We need to call _changed even if we don't have _transform, since
-		// we're caching bounds on such items too now, e.g. Group
+			this._transform(matrix);
+		if (apply)
+			this.applyMatrix(false);
+		// We always need to call _changed since we're caching bounds on all
+		// items, including Group.
 		this._changed(Change.GEOMETRY);
 		// Detect matrices that contain only translations and scaling
 		// and transform the cached _bounds and _position without having to
@@ -1855,10 +1868,31 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			// changes, since it's a LinkedPoint and would cause recursion!
 			this._position = matrix._transformPoint(position, position, true);
 		}
-		for (var i = 0, l = children && children.length; i < l; i++)
-			children[i].transform(matrix, flags);
 		// PORT: Return 'this' in all chainable commands
 		return this;
+	},
+
+	applyMatrix: function(recursive) {
+		if (this._applyMatrix(this._matrix, recursive)) {
+			// Set _matrix to the identity
+			// TODO: Introduce Matrix#setIdentity() and use it from
+			// #initialize() too?
+			this._matrix.initialize();
+			// TODO: This needs a _changed notification, but the GEOMETRY
+			// actually sdoesnt change! What to do?
+		}
+	},
+
+	_applyMatrix: function(matrix, recursive) {
+		if (this._children) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				var child = this._children[i];
+				child.transform(matrix);
+				if (recursive)
+					child.applyMatrix(true);
+			}
+			return true;
+		}
 	},
 
 	/**
@@ -1930,13 +1964,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		newBounds.setCenter(rectangle.getCenter());
 		this.setBounds(newBounds);
 	},
-
-	/*
-	_transform: function(matrix, flags) {
-		// The code that performs the actual transformation of content,
-		// if defined. Item itself does not define this.
-	},
-	*/
 
 	toString: function() {
 		return (this.constructor._name || 'Item') + (this._name

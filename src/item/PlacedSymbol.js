@@ -64,6 +64,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	initialize: function(symbol, matrixOrOffset) {
 		this.base();
 		this.setSymbol(symbol instanceof Symbol ? symbol : new Symbol(symbol));
+		// XXX: Define one way of creating matrices and passing them to ctors
 		this._matrix = matrixOrOffset !== undefined
 			? matrixOrOffset instanceof Matrix
 				? matrixOrOffset
