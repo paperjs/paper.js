@@ -25,12 +25,5 @@
  */
 var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 	// PlacedItem uses strokeBounds for bounds
-	_boundsType: { bounds: 'strokeBounds' },
-
-	_transform: function(matrix, flags) {
-		// In order to set the right context transformation when drawing the
-		// raster, simply preconcatenate the internal matrix with the provided
-		// one.
-		this._matrix.preConcatenate(matrix);
-	}
+	_boundsType: { bounds: 'strokeBounds' }
 });
