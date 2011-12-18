@@ -105,7 +105,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 			Item.drawSelectedBounds(this.symbol._definition.getBounds(), ctx,
 					this._matrix);
 		} else {
-			Item.draw(this.symbol.getDefinition(), ctx, param);
+			Item.draw(this.symbol._definition, ctx, param);
 		}
 	}
 
