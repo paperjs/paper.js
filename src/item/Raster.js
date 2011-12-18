@@ -132,7 +132,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @type Context
 	 * @bean
 	 */
-	getContext: function() {
+	getContext: function(/* notifyChange */) {
 		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
 		// Support a hidden parameter that indicates if the context will be used
@@ -163,7 +163,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this._size = Size.create(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
-		this._changed(Change.GEOMETRY);
+		this._changed(Change.GEOMETRY | Change.PIXELS);
 	},
 
 	/**
