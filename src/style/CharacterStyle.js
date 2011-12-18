@@ -34,7 +34,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 	_defaults: Base.merge(PathStyle.prototype._defaults, {
 		// Override default fillColor of CharacterStyle
 		fillColor: 'black',
-		fontSize: 10,
+		fontSize: 12,
 		leading: null,
 		font: 'sans-serif'
 	}),
