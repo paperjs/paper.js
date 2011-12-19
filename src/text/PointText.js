@@ -72,7 +72,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		if (!this._content)
 			return;
 		this._setStyles(ctx);
-		ctx.font = this.getFontSize() + 'px ' + this.getFont();
+		ctx.font = style.getFontStyle();
 		ctx.textAlign = this.getJustification();
 		var leading = this.getLeading();
 		for (var i = 0, l = this._lines.length; i < l; i++) {
@@ -97,7 +97,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 				x = 0;
 			// Measure the real width of the text. Unfortunately, there is no
 			// sane way to measure text height with canvas
-			context.font = this.getFontSize() + 'px ' + this.getFont();
+			context.font = this._style.getFontStyle();
 			var width = 0;
 			for (var i = 0, l = this._lines.length; i < l; i++)
 				width = Math.max(width, context.measureText(
