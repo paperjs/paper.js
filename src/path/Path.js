@@ -1386,11 +1386,24 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	}
 
 	return {
+		_setStyles: function(ctx) {
+			var style = this._style,
+				width = style.getStrokeWidth(),
+				join = style.getStrokeJoin(),
+				cap = style.getStrokeCap(),
+				limit = style.getMiterLimit();
+			if (width != null) ctx.lineWidth = width;
+			if (join) ctx.lineJoin = join;
+			if (cap) ctx.lineCap = cap;
+			if (limit) ctx.miterLimit = limit;
+		},
+
 		draw: function(ctx, param) {
 			if (!param.compound)
 				ctx.beginPath();
 
-			// TODO: Can't we access _style._strokeColor, as we do in strokeBounds?
+			// TODO: Can't we access _style._strokeColor, as we do in
+			// strokeBounds?
 			var fillColor = this.getFillColor(),
 				strokeColor = this.getStrokeColor(),
 				dashArray = this.getDashArray() || [], // TODO: Always defined?
@@ -1437,7 +1450,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 	};
-}, new function() { // Inject methods that require scoped privates
+}, new function() { // Path Smoothing
 
 	/**
 	 * Solves a tri-diagonal system for one of coordinates (x or y) of first
@@ -1465,22 +1478,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return x;
 	};
 
-	var styles = {
-		getStrokeWidth: 'lineWidth',
-		getStrokeJoin: 'lineJoin',
-		getStrokeCap: 'lineCap',
-		getMiterLimit: 'miterLimit'
-	};
-
 	return {
-		_setStyles: function(ctx) {
-			for (var i in styles) {
-				var style = this._style[i]();
-				if (style)
-					ctx[styles[i]] = style;
-			}
-		},
-
 		// Note: Documentation for smooth() is in PathItem
 		smooth: function() {
 			// This code is based on the work by Oleg V. Polikarpotchkin,
