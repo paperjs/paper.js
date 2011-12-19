@@ -71,28 +71,18 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	draw: function(ctx) {
 		if (!this._content)
 			return;
-		ctx.save();
+		this._setStyles(ctx);
 		ctx.font = this.getFontSize() + 'px ' + this.getFont();
 		ctx.textAlign = this.getJustification();
-		this._matrix.applyToContext(ctx);
-		var fillColor = this.getFillColor(),
-			strokeColor = this.getStrokeColor(),
-			leading = this.getLeading();
-		if (!fillColor || !strokeColor)
-			ctx.globalAlpha = this._opacity;
-		if (fillColor)
-			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-		if (strokeColor)
-			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+		var leading = this.getLeading();
 		for (var i = 0, l = this._lines.length; i < l; i++) {
 			var line = this._lines[i];
-			if (fillColor)
+			if (ctx.fillStyle)
 				ctx.fillText(line, 0, 0);
-			if (strokeColor)
+			if (ctx.strokeStyle)
 				ctx.strokeText(line, 0, 0);
 			ctx.translate(0, leading);
 		}
-		ctx.restore();
 	}
 }, new function() {
 	var context = null;

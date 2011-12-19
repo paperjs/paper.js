@@ -211,9 +211,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		for (var i = 0, l = this._segments.length; i < l; i++) {
 			this._segments[i]._transformCoordinates(matrix, coords, true);
 		}
-		// TODO: Can't we access _style._fillColor, as we do in strokeBounds?
-		var fillColor = this.getFillColor(),
-			strokeColor = this.getStrokeColor();
+		// See #draw() for an explanation of why we can access _style properties
+		// directly here:
+		var style = this._style,
+			fillColor = style._fillColor,
+			strokeColor = style._strokeColor;
 		// Try calling transform on colors in case they are GradientColors.
 		if (fillColor && fillColor.transform)
 			fillColor.transform(matrix);
@@ -1232,10 +1234,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	_hitTest: function(point, options, matrix) {
-		// TODO: Can't we access _style._strokeColor, as we do in strokeBounds?
-		var tolerance = options.tolerance || 0,
-			radius = (options.stroke && this.getStrokeColor()
-					? this.getStrokeWidth() / 2 : 0) + tolerance,
+		// See #draw() for an explanation of why we can access _style properties
+		// directly here:
+		var style = this._style,
+			tolerance = options.tolerance || 0,
+			radius = (options.stroke && style._strokeColor
+					? style._strokeWidth / 2 : 0) + tolerance,
 			loc,
 			res;
 		// If we're asked to query for segments, ends or handles, do all that
@@ -1272,7 +1276,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// in some cases. Simply skip fill query if we already have a matching
 		// stroke.
 		if (!(loc && loc._distance <= radius) && options.fill
-				&& this.getFillColor() && this.contains(point, matrix))
+				&& style._fillColor && this.contains(point, matrix))
 			return new HitResult('fill', this);
 		// Now query stroke if we haven't already
 		if (!loc && options.stroke && radius > 0)
@@ -1390,13 +1394,17 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (!param.compound)
 				ctx.beginPath();
 
-			// TODO: Can't we access _style._strokeColor, as we do in
-			// strokeBounds?
-			var fillColor = this.getFillColor(),
-				strokeColor = this.getStrokeColor(),
-				dashArray = this.getDashArray() || [], // TODO: Always defined?
-				hasDash = !!dashArray.length;
+			// We can access styles directly on the internal _styles object,
+			// since Path items do not have children, thus do not need style
+			// accessors for merged styles.
+			var style = this._style,
+				fillColor = style._fillColor,
+				strokeColor = style._strokeColor,
+				dashArray = style._dashArray,
+				hasDash = strokeColor && dashArray && dashArray.length;
 
+			// Prepare the canvas path if we have any situation that requires it
+			// to be defined.
 			if (param.compound || param.selection || this._clipMask || fillColor
 					|| strokeColor && !hasDash) {
 				drawSegments(ctx, this);
@@ -1414,23 +1422,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				// or stroke, there is no need to continue.
 				ctx.save();
 				this._setStyles(ctx);
-				// If the path only defines a strokeColor or a fillColor,
-				// draw it directly with the globalAlpha set, otherwise
-				// we will do it later when we composite the temporary
-				// canvas.
-				if (!fillColor || !strokeColor)
-					ctx.globalAlpha = this._opacity;
-				if (fillColor) {
-					ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+				if (fillColor)
 					ctx.fill();
-				}
 				if (strokeColor) {
-					ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
 					if (hasDash) {
 						// We cannot use the path created by drawSegments above
 						// Use CurveFlatteners to draw dashed paths:
 						ctx.beginPath();
-						drawDashes(ctx, this, dashArray, this.getDashOffset());
+						drawDashes(ctx, this, dashArray, style._dashOffset);
 					}
 					ctx.stroke();
 				}
@@ -1894,18 +1893,20 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * Returns the bounding rectangle of the item including stroke width.
 	 */
 	function getStrokeBounds(matrix) {
-		// TODO: Should we access this.getStrokeColor, as we do in _transform?
+		// See #draw() for an explanation of why we can access _style
+		// properties directly here:
+		var style = this._style;
 		// TODO: Find a way to reuse 'bounds' cache instead?
-		if (!this._style._strokeColor || !this._style._strokeWidth)
+		if (!style._strokeColor || !style._strokeWidth)
 			return getBounds.call(this, matrix);
-		var width = this.getStrokeWidth(),
+		var width = style._strokeWidth,
 			radius = width / 2,
 			padding = getPenPadding(radius, matrix),
-			join = this.getStrokeJoin(),
-			cap = this.getStrokeCap(),
+			join = style._strokeJoin,
+			cap = style._strokeCap,
 			// miter is relative to width. Divide it by 2 since we're
 			// measuring half the distance below
-			miter = this.getMiterLimit() * width / 2,
+			miter = style._miterLimit * width / 2,
 			segments = this._segments,
 			length = segments.length,
 			// It seems to be compatible with Ai we need to pass pen padding
@@ -2032,10 +2033,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// Delegate to handleBounds, but pass on radius values for stroke and
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
-		var width = this.getStrokeWidth();
+		var style = this._style,
+			width = style._strokeWidth;
 		return getHandleBounds.call(this, matrix, width,
-				this.getStrokeJoin() == 'miter'
-					? width * this.getMiterLimit()
+				style._strokeJoin == 'miter'
+					? width * style._miterLimit
 					: width);
 	}
 

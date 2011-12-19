@@ -85,27 +85,20 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	},
 
 	draw: function(ctx, param) {
-		var l = this._children.length;
+		var children = this._children;
 		// Return early if the compound path doesn't have any children:
-		if (l == 0) {
+		if (children.length == 0)
 			return;
-		}
-		var firstChild = this._children[0];
+		var firstChild = children[0];
 		ctx.beginPath();
 		param.compound = true;
-		for (var i = 0; i < l; i++)
-			Item.draw(this._children[i], ctx, param);
+		for (var i = 0, l = children.length; i < l; i++)
+			Item.draw(children[i], ctx, param);
 		firstChild._setStyles(ctx);
-		var fillColor = firstChild.getFillColor(),
-			strokeColor = firstChild.getStrokeColor();
-		if (fillColor) {
-			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+		if (ctx.fillStyle)
 			ctx.fill();
-		}
-		if (strokeColor) {
-			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+		if (ctx.strokeStyle)
 			ctx.stroke();
-		}
 		param.compound = false;
 	}
 }, new function() { // Injection scope for PostScript-like drawing functions
