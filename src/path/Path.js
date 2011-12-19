@@ -1887,21 +1887,21 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
 		// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
 		// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
-		// this can be simplified to:
+		// This can be simplified to:
 		// tan(t) = -b * tan(phi) / a // x
 		// tan(t) =  b * cot(phi) / a // y
 		// Solving for t gives:
 		// t = pi * n - arctan(b * tan(phi) / a) // x
 		// t = pi * n + arctan(b * cot(phi) / a)
 		//   = pi * n + arctan(b / tan(phi) / a) // y
-		var tx = -Math.atan(b * Math.tan(phi) / a),
-			ty = Math.atan(b / (Math.tan(phi) * a)),
-			// Due to symetry, we don't need to cycle through pi * n solutions:
-			x = a * Math.cos(tx) * Math.cos(phi)
-				- b * Math.sin(tx) * Math.sin(phi),
-			y = b * Math.sin(ty) * Math.cos(phi)
-				+ a * Math.cos(ty) * Math.sin(phi);
-		return [Math.abs(x), Math.abs(y)];
+		var sin = Math.sin(phi),
+			cos = Math.cos(phi),
+			tan = Math.tan(phi),
+			tx = -Math.atan(b * tan / a),
+			ty = Math.atan(b / (tan * a));
+		// Due to symetry, we don't need to cycle through pi * n solutions:
+		return [Math.abs(a * Math.cos(tx) * cos - b * Math.sin(tx) * sin),
+				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
 	}
 
 	/**
