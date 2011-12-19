@@ -1831,7 +1831,7 @@ function(name) {
 		if (this._transform)
 			this._transform(matrix);
 		if (apply)
-			this.applyMatrix(false);
+			this.applyMatrix();
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(Change.GEOMETRY);
@@ -1863,8 +1863,14 @@ function(name) {
 		return this;
 	},
 
-	applyMatrix: function(recursive) {
-		if (this._applyMatrix(this._matrix, recursive)) {
+	applyMatrix: function() {
+		// Call the internal #_applyMatrix(), and set the internal _matrix to
+		// the identity transformation if it was possible to apply it.
+		// Application is not possible on Raster, PointText, PlacedSymbol, since
+		// the matrix is storing the actual location / transformation state.
+		// Pass on this._matrix to _applyMatrix calls, for reasons of faster
+		// access and code minification.
+		if (this._applyMatrix(this._matrix)) {
 			// Set _matrix to the identity
 			// TODO: Introduce Matrix#setIdentity() and use it from
 			// #initialize() too?
@@ -1874,13 +1880,13 @@ function(name) {
 		}
 	},
 
-	_applyMatrix: function(matrix, recursive) {
+	_applyMatrix: function(matrix) {
+		// Pass on the transformation to the children, and apply it there too:
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++) {
 				var child = this._children[i];
 				child.transform(matrix);
-				if (recursive)
-					child.applyMatrix(true);
+				child.applyMatrix();
 			}
 			return true;
 		}
