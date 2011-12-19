@@ -1889,12 +1889,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
 		// this can be simplified to:
 		// tan(t) = -b * tan(phi) / a // x
-		// tan(t) = b * cot(phi) / a // y
+		// tan(t) =  b * cot(phi) / a // y
 		// Solving for t gives:
-		// t = pi * n - arctan(b tan(phi)) // x
-		// t = pi * n + arctan(b cot(phi)) // y
-		var tx = - Math.atan(b * Math.tan(phi)),
-			ty = + Math.atan(b / Math.tan(phi)),
+		// t = pi * n - arctan(b * tan(phi) / a) // x
+		// t = pi * n + arctan(b * cot(phi) / a)
+		//   = pi * n + arctan(b / tan(phi) / a) // y
+		var tx = -Math.atan(b * Math.tan(phi) / a),
+			ty = Math.atan(b / (Math.tan(phi) * a)),
 			// Due to symetry, we don't need to cycle through pi * n solutions:
 			x = a * Math.cos(tx) * Math.cos(phi)
 				- b * Math.sin(tx) * Math.sin(phi),
