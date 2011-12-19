@@ -1386,18 +1386,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	}
 
 	return {
-		_setStyles: function(ctx) {
-			var style = this._style,
-				width = style.getStrokeWidth(),
-				join = style.getStrokeJoin(),
-				cap = style.getStrokeCap(),
-				limit = style.getMiterLimit();
-			if (width != null) ctx.lineWidth = width;
-			if (join) ctx.lineJoin = join;
-			if (cap) ctx.lineCap = cap;
-			if (limit) ctx.miterLimit = limit;
-		},
-
 		draw: function(ctx, param) {
 			if (!param.compound)
 				ctx.beginPath();
