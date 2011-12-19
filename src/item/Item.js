@@ -2373,15 +2373,28 @@ function(name) {
 	 * e.g. PointText.
 	 */
 	_setStyles: function(ctx) {
+		// We can access internal properties since we're only using this on
+		// items without children, where styles would be merged.
 		var style = this._style,
-			width = style.getStrokeWidth(),
-			join = style.getStrokeJoin(),
-			cap = style.getStrokeCap(),
-			limit = style.getMiterLimit();
+			width = style._strokeWidth,
+			join = style._strokeJoin,
+			cap = style._strokeCap,
+			limit = style._miterLimit,
+			fillColor = style._fillColor,
+			strokeColor = style._strokeColor;
 		if (width != null) ctx.lineWidth = width;
 		if (join) ctx.lineJoin = join;
 		if (cap) ctx.lineCap = cap;
 		if (limit) ctx.miterLimit = limit;
+		// Always set fillStyle and strokeStyle, so the code calling
+		// #_setStyles() can check them to see if we need to stroke / fill.
+		ctx.fillStyle = fillColor ? fillColor.getCanvasStyle(ctx) : null;
+		ctx.strokeStyle = strokeColor ? strokeColor.getCanvasStyle(ctx) : null;
+		// If the item only defines a strokeColor or a fillColor, draw it
+		// directly with the globalAlpha set, otherwise we will do it later when
+		// we composite the temporary canvas.
+		if (!fillColor || !strokeColor)
+			ctx.globalAlpha = this._opacity;
 	},
 
 	statics: {
@@ -2414,8 +2427,8 @@ function(name) {
 			// first, since otherwise their stroke is drawn half transparent
 			// over their fill.
 			if (item._blendMode !== 'normal' || item._opacity < 1
-					&& !(item._segments && (!item.getFillColor()
-							|| !item.getStrokeColor()))) {
+					&& !(item._segments
+						&& (!item.getFillColor() || !item.getStrokeColor()))) {
 				var bounds = item.getStrokeBounds();
 				if (!bounds.width || !bounds.height)
 					return;
