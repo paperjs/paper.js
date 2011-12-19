@@ -1972,7 +1972,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				// For square caps, we need to step away from point in the
 				// direction of the tangent, which is the rotated normal
 				if (cap === 'square')
-					point = point.add(normal.y, -normal.x);
+					point = point.add(normal.rotate(t == 0 ? -90 : 90));
 				add(point.add(normal));
 				add(point.subtract(normal));
 				break;
