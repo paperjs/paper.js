@@ -108,7 +108,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project)
 			paper.project.activeLayer.addChild(this);
-		this._style = PathStyle.create(this);
+		// TextItem defines its own _style, based on CharacterStyle
+		if (!this._style)
+			this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 		this._matrix = new Matrix();
 	},
