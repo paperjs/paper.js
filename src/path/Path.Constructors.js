@@ -173,6 +173,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Oval(rectangle);
 		 * path.fillColor = 'black';
 		 */
+		// TODO: Shall this be called Path.Ellipse instead?
 		Oval: function(rect) {
 			rect = Rectangle.read(arguments);
 			var path = new Path(),
