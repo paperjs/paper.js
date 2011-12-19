@@ -96,7 +96,7 @@ Path.inject({ statics: new function() {
 		Rectangle: function(rect) {
 			rect = Rectangle.read(arguments);
 			var left = rect.x,
-				top = rect.y
+				top = rect.y,
 				right = left + rect.width,
 				bottom = top + rect.height,
 				path = new Path();
