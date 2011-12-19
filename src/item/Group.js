@@ -68,6 +68,7 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	 */
 	initialize: function(items) {
 		this.base();
+		this._clippingCompositionOperation = 'source-in';
 		// Allow Group to have children and named children
 		this._children = [];
 		this._namedChildren = {};
@@ -79,24 +80,23 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 		// Don't use base() for reasons of performance.
 		Item.prototype._changed.call(this, flags);
 		if (flags & (ChangeFlag.HIERARCHY | ChangeFlag.CLIPPING)) {
-			// Clear cached clip item whenever hierarchy changes
-			delete this._clipItem;
+			// Clear cached clip items whenever hierarchy changes
+			delete this._clipItems;
 		}
 	},
 
-	_getClipItem: function() {
-		// Allow us to set _clipItem to null when none is found and still return
-		// it as a defined value without searching again
-		if (this._clipItem !== undefined)
-			return this._clipItem;
-		for (var i = 0, l = this._children.length; i < l; i++) {
-			var child = this._children[i];
-			if (child._clipMask)
-				return this._clipItem = child;
+	_getClipItems: function() {
+		// Only re-calculate if _clipItems is undefined (if there are no items this will
+		// instead be an empty array)
+		if (this._clipItems === undefined){
+			this._clipItems = [];
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				var child = this._children[i];
+				if (child._clipMask)
+					this._clipItems.push(child);
+			}
 		}
-		// Make sure we're setting _clipItem to null so it won't be searched for
-		// nex time.
-		return this._clipItem = null;
+		return this._clipItems;
 	},
 
 	/**
@@ -108,7 +108,7 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	 * @bean
 	 */
 	isClipped: function() {
-		return !!this._getClipItem();
+		return this._getClipItems().length !== 0;
 	},
 
 	setClipped: function(clipped) {
@@ -119,13 +119,26 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	},
 
 	draw: function(ctx, param) {
-		var clipItem = this._getClipItem();
-		if (clipItem)
-			Item.draw(clipItem, ctx, param);
+		var clipItems = this._getClipItems();
+		// If the group is clipped, draw to an in-memory canvas (otherwise the entire
+		// canvas will be clipped)
+		if (clipItems.length !== 0) {
+			var clippingCanvas = ctx.canvas.cloneNode(true),
+			    originalCtx = ctx;
+			var ctx = clippingCanvas.getContext('2d');
+			for (var i = 0, l = clipItems.length; i < l; i++) {
+				Item.draw(clipItems[i], ctx, param);
+			}
+			ctx.globalCompositeOperation = this._clippingCompositionOperation;
+		}
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var item = this._children[i];
-			if (item != clipItem)
+			if (!item._clipMask)
 				Item.draw(item, ctx, param);
+		}
+		// Draw the clipped items back to the original canvas
+		if (clipItems.length !== 0) {
+			originalCtx.drawImage(clippingCanvas, 0, 0);
 		}
 	}
 });

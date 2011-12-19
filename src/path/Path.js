@@ -1406,8 +1406,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (param.selection) {
 				ctx.stroke();
 				drawHandles(ctx, this._segments);
-			} else if (this._clipMask) {
-				ctx.clip();
 			} else if (!param.compound && (fillColor || strokeColor)) {
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.

@@ -458,10 +458,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// On-the-fly conversion to boolean:
 		if (this._clipMask != (clipMask = !!clipMask)) {
 			this._clipMask = clipMask;
-			if (clipMask) {
-				this.setFillColor(null);
-				this.setStrokeColor(null);
-			}
 			this._changed(Change.ATTRIBUTE);
 			// Tell the parent the clipping mask has changed
 			if (this._parent)
