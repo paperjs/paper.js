@@ -47,9 +47,21 @@ var Style = Item.extend({
 			// Inject style getters and setters into the 'owning' class, which
 			// redirect calls to the linked style objects through their internal
 			// property on the instances of that class, as defined by _style.
-			var styleKey = src._style,
-				flags = src._flags || {};
-			src._owner.inject(Base.each(src._defaults, function(value, key) {
+			var styleKey = '_' + src._style,
+				stylePart = Base.capitalize(src._style),
+				flags = src._flags || {},
+				owner = {};
+
+			// Define accessor on owner class for this style:
+			owner['get' + stylePart] = function() {
+				return this[styleKey];
+			};
+
+			owner['set' + stylePart] = function(style) {
+				this[styleKey].initialize(style);
+			};
+
+			Base.each(src._defaults, function(value, key) {
 				var isColor = !!key.match(/Color$/),
 					part = Base.capitalize(key),
 					set = 'set' + part,
@@ -105,16 +117,16 @@ var Style = Item.extend({
 					return style;
 				};
 				// Style-getters and setters for owner class:
-				// 'this' = the Base.each() side-car = the object that is
-				// returned from Base.each and injected into _owner above:
-				this[set] = function(value) {
+				owner[set] = function(value) {
 					this[styleKey][set](value);
 					return this;
 				};
-				this[get] = function() {
+				owner[get] = function() {
 					return this[styleKey][get]();
 				};
-			}, {}));
+			});
+			src._owner.inject(owner);
+			// Pass on to base()
 			return this.base.apply(this, arguments);
 		}
 	}

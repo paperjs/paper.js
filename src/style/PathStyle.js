@@ -58,7 +58,7 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 		miterLimit: Change.STROKE
 	},
 	_owner: Item,
-	_style: '_style'
+	_style: 'style'
 
 	// DOCS: why isn't the example code showing up?
 	/**
