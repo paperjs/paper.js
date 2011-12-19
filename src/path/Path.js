@@ -1909,9 +1909,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			miter = style._miterLimit * width / 2,
 			segments = this._segments,
 			length = segments.length,
-			// It seems to be compatible with Ai we need to pass pen padding
-			// untransformed to getBounds
-			bounds = getBounds.call(this, matrix, getPenPadding(radius));
+			bounds = getBounds.call(this, matrix, padding);
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
 		var joinBounds = new Rectangle(new Size(padding).multiply(2));
