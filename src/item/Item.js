@@ -2371,6 +2371,23 @@ function(name) {
 	 * the specified type}
 	 */
 
+	/**
+	 * Private method that sets Path related styles on the canvas context.
+	 * Not defined in Path as it is required by other classes too,
+	 * e.g. PointText.
+	 */
+	_setStyles: function(ctx) {
+		var style = this._style,
+			width = style.getStrokeWidth(),
+			join = style.getStrokeJoin(),
+			cap = style.getStrokeCap(),
+			limit = style.getMiterLimit();
+		if (width != null) ctx.lineWidth = width;
+		if (join) ctx.lineJoin = join;
+		if (cap) ctx.lineCap = cap;
+		if (limit) ctx.miterLimit = limit;
+	},
+
 	statics: {
 		drawSelectedBounds: function(bounds, ctx, matrix) {
 			var coords = matrix._transformCorners(bounds);
