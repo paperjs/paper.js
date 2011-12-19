@@ -72,14 +72,16 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		if (!this._content)
 			return;
 		this._setStyles(ctx);
+		var style = this._style,
+			leading = this.getLeading(),
+			lines = this._lines;
 		ctx.font = style.getFontStyle();
 		ctx.textAlign = this.getJustification();
-		var leading = this.getLeading();
-		for (var i = 0, l = this._lines.length; i < l; i++) {
-			var line = this._lines[i];
-			if (ctx.fillStyle)
+		for (var i = 0, l = lines.length; i < l; i++) {
+			var line = lines[i];
+			if (style._fillColor)
 				ctx.fillText(line, 0, 0);
-			if (ctx.strokeStyle)
+			if (style._strokeColor)
 				ctx.strokeText(line, 0, 0);
 			ctx.translate(0, leading);
 		}

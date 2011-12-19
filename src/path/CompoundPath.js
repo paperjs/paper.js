@@ -89,15 +89,16 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		// Return early if the compound path doesn't have any children:
 		if (children.length == 0)
 			return;
-		var firstChild = children[0];
+		var firstChild = children[0],
+			style = firstChild._style;
 		ctx.beginPath();
 		param.compound = true;
 		for (var i = 0, l = children.length; i < l; i++)
 			Item.draw(children[i], ctx, param);
 		firstChild._setStyles(ctx);
-		if (ctx.fillStyle)
+		if (style._fillColor)
 			ctx.fill();
-		if (ctx.strokeStyle)
+		if (style._strokeColor)
 			ctx.stroke();
 		param.compound = false;
 	}

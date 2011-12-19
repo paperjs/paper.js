@@ -2386,10 +2386,8 @@ function(name) {
 		if (join) ctx.lineJoin = join;
 		if (cap) ctx.lineCap = cap;
 		if (limit) ctx.miterLimit = limit;
-		// Always set fillStyle and strokeStyle, so the code calling
-		// #_setStyles() can check them to see if we need to stroke / fill.
-		ctx.fillStyle = fillColor ? fillColor.getCanvasStyle(ctx) : null;
-		ctx.strokeStyle = strokeColor ? strokeColor.getCanvasStyle(ctx) : null;
+		if (fillColor) ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+		if (strokeColor) ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
 		// If the item only defines a strokeColor or a fillColor, draw it
 		// directly with the globalAlpha set, otherwise we will do it later when
 		// we composite the temporary canvas.
