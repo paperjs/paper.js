@@ -30,12 +30,10 @@
  * 	fillColor: 'black',
  * };
  */
-// TODO: Note that CharacterStyle extends PathStyle and thus injects the same
+// Note that CharacterStyle extends PathStyle and thus injects the same
 // accessors into its _owner TextItem, overriding those previously defined by
-// PathStyle for Item. This means that when we set ttextItem.fillColor,
-// textItem.characterStyle.fillColor gets defined, not textItem.style.fillColor.
-// In fact, textItem.style does not have any impact on textItem appearance...
-// Ideally it should become a pointer to textItem.characterStyle!
+// PathStyle for Item. It is also returned from TextItem#getStyle instead of
+// PathStyle. TextItem#characterStyle is now simply a pointer to #style.
 var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends CharacterStyle# */{
 	_defaults: Base.merge(PathStyle.prototype._defaults, {
 		// Override default fillColor of CharacterStyle
@@ -45,7 +43,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 		font: 'sans-serif'
 	}),
 	_owner: TextItem,
-	_style: 'characterStyle'
+	_style: 'style',
 
 	/**
 	 * CharacterStyle objects don't need to be created directly. Just pass an
