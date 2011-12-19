@@ -215,6 +215,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * The path style of the item.
 	 *
+	 * @name Item#getStyle
 	 * @type PathStyle
 	 * @bean
 	 *
@@ -251,13 +252,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * var path2 = new Path.Circle(new Point(150, 50), 20);
 	 * path2.style = myStyle;
 	 */
-	getStyle: function() {
-		return this._style;
-	},
-
-	setStyle: function(style) {
-		this._style.initialize(style);
-	},
 
 	statics: {
 		_id: 0

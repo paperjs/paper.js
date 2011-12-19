@@ -94,28 +94,16 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	 *
 	 * The character style of the text item.
 	 *
+	 * @name TextItem#getCharacterStyle
 	 * @type CharacterStyle
 	 * @bean
 	 */
-	getCharacterStyle: function() {
-		return this._characterStyle;
-	},
-
-	setCharacterStyle: function(style) {
-		this._characterStyle.initialize(style);
-	},
 
 	/**
 	 * The paragraph style of the text item.
 	 *
+	 * @name TextItem#getParagraphStyle
 	 * @type ParagraphStyle
 	 * @bean
 	 */
-	getParagraphStyle: function() {
-		return this._paragraphStyle;
-	},
-
-	setParagraphStyle: function(style) {
-		this._paragraphStyle.initialize(style);
-	}
 });
