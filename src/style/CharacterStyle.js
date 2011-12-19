@@ -43,7 +43,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 		font: 'sans-serif'
 	}),
 	_owner: TextItem,
-	_style: 'style',
+	_style: 'style'
 
 	/**
 	 * CharacterStyle objects don't need to be created directly. Just pass an
@@ -74,5 +74,9 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 		// Override leading to return fontSize * 1.2 by default, when undefined
 		var leading = this.base();
 		return leading != null ? leading : this.getFontSize() * 1.2;
+	},
+
+	getFontStyle: function() {
+		return this._fontSize + 'px ' + this._font;
 	}
 });
