@@ -37,6 +37,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 		this._style = CharacterStyle.create(this);
 		this._paragraphStyle = ParagraphStyle.create(this);
 		this.base();
+		// No need to call setStyle(), since base() handles this already.
 		// Call with no parameter to initalize defaults now.
 		this.setParagraphStyle();
 		this._content = '';
