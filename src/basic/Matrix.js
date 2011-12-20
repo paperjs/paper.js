@@ -66,8 +66,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 				ok = false;
 			}
 		} else if (count == 0) {
-			this._a = this._d = 1;
-			this._c = this._b = this._tx = this._ty = 0;
+			this.setIdentity();
 		} else {
 			ok = false;
 		}
@@ -102,6 +101,11 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		this._tx = tx;
 		this._ty = ty;
 		return this;
+	},
+
+	setIdentity: function() {
+		this._a = this._d = 1;
+		this._c = this._b = this._tx = this._ty = 0;
 	},
 
 	/**
