@@ -106,6 +106,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	setIdentity: function() {
 		this._a = this._d = 1;
 		this._c = this._b = this._tx = this._ty = 0;
+		return this;
 	},
 
 	/**
@@ -472,13 +473,13 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	getTranslation: function() {
-		return new Point(this._tx, this._ty);
+		return Point.create(this._tx, this._ty);
 	},
 
 	getScaling: function() {
 		var hor = Math.sqrt(this._a * this._a + this._c * this._c),
 			ver = Math.sqrt(this._b * this._b + this._d * this._d);
-		return new Point(this._a < 0 ? -hor : hor, this._b < 0 ? -ver : ver);
+		return Point.create(this._a < 0 ? -hor : hor, this._b < 0 ? -ver : ver);
 	},
 
 	/**
