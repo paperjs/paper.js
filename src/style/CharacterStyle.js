@@ -35,15 +35,15 @@
 // PathStyle for Item. It is also returned from TextItem#getStyle instead of
 // PathStyle. TextItem#characterStyle is now simply a pointer to #style.
 var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends CharacterStyle# */{
+	_owner: TextItem,
+	_style: 'style',
 	_defaults: Base.merge(PathStyle.prototype._defaults, {
 		// Override default fillColor of CharacterStyle
 		fillColor: 'black',
 		fontSize: 12,
 		leading: null,
 		font: 'sans-serif'
-	}),
-	_owner: TextItem,
-	_style: 'style'
+	})
 
 	/**
 	 * CharacterStyle objects don't need to be created directly. Just pass an
