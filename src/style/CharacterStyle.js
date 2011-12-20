@@ -43,7 +43,12 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 		fontSize: 12,
 		leading: null,
 		font: 'sans-serif'
-	})
+	}),
+	_flags: {
+		fontSize: Change.GEOMETRY,
+		leading: Change.GEOMETRY,
+		font: Change.GEOMETRY
+	}
 
 	/**
 	 * CharacterStyle objects don't need to be created directly. Just pass an
