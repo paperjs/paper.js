@@ -1852,19 +1852,13 @@ function(name) {
 				var rect = bounds[key];
 				// Transform without notifying the item of changes
 				bounds[key] = matrix._transformBounds(rect, rect, true);
-				// If we have cached 'bounds', update _position again, by
-				// linking it to it
-				// TODO: If LinkedPoint would not just sync writes, but reads
-				// too, we could do this: this._position = position;
-				// This is a bug currently in Paper.js, that should be fixed,
-				// but can only really be handled properly using versioning...
+				// If we have cached 'bounds', update _position again
 				if (key == 'bounds')
-					this._position = rect.getCenter();
+					this._position = rect.getCenter(true);
 			}
 		} else if (position) {
-			// Transform position as well. Do not notify _position of
-			// changes, since it's a LinkedPoint and would cause recursion!
-			this._position = matrix._transformPoint(position, position, true);
+			// Transform position as well.
+			this._position = matrix._transformPoint(position, position);
 		}
 		// PORT: Return 'this' in all chainable commands
 		return this;
