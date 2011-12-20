@@ -24,23 +24,23 @@ test('placedSymbol bounds', function() {
 	path.strokeJoin = 'round';
 	compareRectangles(path.strokeBounds,
 		{ x: -0.5, y: -0.5, width: 101, height: 101 },
-		'Path initial bounds.');
+		'Path initial bounds');
 	var symbol = new Symbol(path);
 	var placedSymbol = new PlacedSymbol(symbol);
 
 	compareRectangles(placedSymbol.bounds,
 		new Rectangle(-50.5, -50.5, 101, 101),
-		'PlacedSymbol initial bounds.');
+		'PlacedSymbol initial bounds');
 
 	placedSymbol.scale(1, 0.5);
 	compareRectangles(placedSymbol.bounds,
 		{ x: -50.5, y: -25.25, width: 101, height: 50.5 },
-		'Bounds after scale.');
+		'Bounds after scale');
 
 	placedSymbol.rotate(40);
 	compareRectangles(placedSymbol.bounds,
-		{ x: -42.04736, y: -37.91846, width: 84.09473, height: 75.83691 },
-		'Bounds after rotation.');
+		{ x: -41.96283, y: -37.79252, width: 83.92567, height: 75.58503 },
+		'Bounds after rotation');
 });
 
 test('bounds of group of symbol instances', function() {
