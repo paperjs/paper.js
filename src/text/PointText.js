@@ -35,15 +35,13 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * text.fillColor = 'black';
 	 * text.content = 'The contents of the point text';
 	 */
-	initialize: function(point) {
-		this.base();
-		this._point = Point.read(arguments).clone();
-		// XXX: Define one way of creating matrices and passing them to ctors
-		this._matrix = new Matrix().translate(this._point);
+	initialize: function(pointOrMatrix) {
+		this.base(pointOrMatrix);
+		this._point = this._matrix.getTranslation();
 	},
 
 	clone: function() {
-		return this._clone(new PointText(this._point));
+		return this._clone(new PointText(this._matrix));
 	},
 
 	/**
