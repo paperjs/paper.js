@@ -39,6 +39,8 @@
  * path.style = circleStyle;
  */
 var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
+	_owner: Item,
+	_style: 'style',
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
 	// not supported.
 	_defaults: {
@@ -56,9 +58,7 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 		strokeCap: Change.STROKE,
 		strokeJoin: Change.STROKE,
 		miterLimit: Change.STROKE
-	},
-	_owner: Item,
-	_style: 'style'
+	}
 
 	// DOCS: why isn't the example code showing up?
 	/**
