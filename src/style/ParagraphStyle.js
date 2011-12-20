@@ -35,6 +35,9 @@ var ParagraphStyle = this.ParagraphStyle = Style.extend(/** @lends ParagraphStyl
 	_style: 'paragraphStyle',
 	_defaults: {
 		justification: 'left'
+	},
+	_flags: {
+		justification: Change.GEOMETRY
 	}
 
 	/**
