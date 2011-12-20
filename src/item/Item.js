@@ -1833,7 +1833,6 @@ function(name) {
 		var bounds = this._bounds,
 			position = this._position,
 			children = this._children;
-		bounds = position = null;
 		// Simply preconcatenate the internal matrix with the passed one:
 		this._matrix.preConcatenate(matrix);
 		if (this._transform)
