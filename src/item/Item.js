@@ -539,18 +539,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
 		this._changed(Change.GEOMETRY);
-	},
-
-	getGlobalMatrix: function() {
-		// TODO: Implement caching?
-		var matrix = new Matrix(),
-			item = this;
-		while (item) {
-			if (!item._matrix.isIdentity())
-				matrix.preConcatenate(item._matrix);
-			item = item._parent;
-		}
-		return matrix;
 	}
 }, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'],
 function(name) {
