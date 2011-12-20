@@ -1861,9 +1861,7 @@ function(name) {
 		// access and code minification.
 		if (this._applyMatrix(this._matrix)) {
 			// Set _matrix to the identity
-			// TODO: Introduce Matrix#setIdentity() and use it from
-			// #initialize() too?
-			this._matrix.initialize();
+			this._matrix.setIdentity();
 			// TODO: This needs a _changed notification, but the GEOMETRY
 			// actually sdoesnt change! What to do?
 		}
