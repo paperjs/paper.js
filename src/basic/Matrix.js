@@ -312,9 +312,9 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 			d = this._d;
 		this._a = mx._a * a + mx._c * b;
 		this._b = mx._b * a + mx._d * b;
-		this._tx += mx._tx * a + mx._ty * b;
 		this._c = mx._a * c + mx._c * d;
 		this._d = mx._b * c + mx._d * d;
+		this._tx += mx._tx * a + mx._ty * b;
 		this._ty += mx._tx * c + mx._ty * d;
 		return this;
 	},
@@ -333,8 +333,8 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 			tx = this._tx,
 			ty = this._ty;
 		this._a = mx._a * a + mx._b * c;
-		this._c = mx._c * a + mx._d * c;
 		this._b = mx._a * b + mx._b * d;
+		this._c = mx._c * a + mx._d * c;
 		this._d = mx._c * b + mx._d * d;
 		this._tx = mx._a * tx + mx._b * ty + mx._tx;
 		this._ty = mx._c * tx + mx._d * ty + mx._ty;
