@@ -272,12 +272,42 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.strokeWidth = 1;
 			// TODO: use Layer#color
 			ctx.strokeStyle = ctx.fillStyle = '#009dec';
+			// Create a local lookup table for hierarchically concatenated
+			// matrices by item id, to speed up drawing by eliminating repeated
+			// concatenation of parent's matrices through caching.
+			var matrices = {};
+			// Descriptionf of the paramters to getGlobalMatrix():
+			// matrix is the container for the final concatenated matrix, passed
+			// to getGlobalMatrix() on the initial call.
+			// cached defines wether the result of the concatenation should be
+			// cached, only used for parents of items that this is called for.
+			function getGlobalMatrix(item, matrix, cached) {
+				var cache = cached && matrices[item._id];
+				if (cache) {
+					// Found a cached version, copy over the values and return
+					matrix.initialize(cache);
+					return matrix;
+				}
+				if (item._parent) {
+					// Get concatenated matrix from all the parents, using
+					// local caching (passing true for cached):
+					getGlobalMatrix(item._parent, matrix, true);
+					// No need to concatenate if it's the identity matrix
+					if (!item._matrix.isIdentity())
+						matrix.concatenate(item._matrix);
+				} else {
+					// Simply copy over the item's matrix, since it's the root
+					matrix.initialize(item._matrix);
+				}
+				// If the result needs to be cached, create a copy since matrix
+				// might be further modified through recursive calls
+				if (cached)
+					matrices[item._id] = matrix.clone();
+				return matrix;
+			}
 			for (var id in this._selectedItems) {
-				var item = this._selectedItems[id],
-					mx = item.getGlobalMatrix();
-				if (matrix)
-					mx.preConcatenate(matrix);
-				item.drawSelected(ctx, mx);
+				var item = this._selectedItems[id];
+				item.drawSelected(ctx, getGlobalMatrix(item, new Matrix()));
 			}
 			ctx.restore();
 		}
