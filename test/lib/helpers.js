@@ -316,7 +316,8 @@ function compareItems(item, item2, checkIdentity) {
 				return item.point != item2.point;
 			}, true);
 		}
-		equals(item.point.toString(), item2.point.toString(), checkIdentity);
+		equals(item.point.toString(), item2.point.toString(),
+				'Compare Item#point');
 	}
 
 	if (item.style) {
