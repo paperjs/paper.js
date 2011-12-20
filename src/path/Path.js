@@ -1304,26 +1304,44 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// SegmentPoint objects maybe seem a bit tedious but is worth the benefit in
 	// performance.
 
-	function drawHandles(ctx, segments) {
+	function drawHandles(ctx, segments, matrix) {
+		var coords = new Array(6);
 		for (var i = 0, l = segments.length; i < l; i++) {
-			var segment = segments[i],
-				point = segment._point,
-				state = segment._selectionState,
-				selected = state & SelectionState.POINT;
+			var segment = segments[i];
+			segment._transformCoordinates(matrix, coords, false);
+			var state = segment._selectionState,
+				selected = state & SelectionState.POINT,
+				pX = coords[0],
+				pY = coords[1];
+
+			function drawHandle(index) {
+				var hX = coords[index],
+					hY = coords[index + 1];
+				if (pX != hX || pY != hY) {
+					ctx.beginPath();
+					ctx.moveTo(pX, pY);
+					ctx.lineTo(hX, hY);
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.arc(hX, hY, 1.75, 0, Math.PI * 2, true);
+					ctx.fill();
+				}
+			}
+
 			if (selected || (state & SelectionState.HANDLE_IN))
-				drawHandle(ctx, point, segment._handleIn);
+				drawHandle(2);
 			if (selected || (state & SelectionState.HANDLE_OUT))
-				drawHandle(ctx, point, segment._handleOut);
+				drawHandle(4);
 			// Draw a rectangle at segment.point:
 			ctx.save();
 			ctx.beginPath();
-			ctx.rect(point._x - 2, point._y - 2, 4, 4);
+			ctx.rect(pX - 2, pY - 2, 4, 4);
 			ctx.fill();
 			// If the point is not selected, draw a white square that is 1 px
 			// smaller on all sides:
 			if (!selected) {
 				ctx.beginPath();
-				ctx.rect(point._x - 1, point._y - 1, 2, 2);
+				ctx.rect(pX - 1, pY - 1, 2, 2);
 				ctx.fillStyle = '#ffffff';
 				ctx.fill();
 			}
@@ -1331,44 +1349,55 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		}
 	}
 
-	function drawHandle(ctx, point, handle) {
-		if (!handle.isZero()) {
-			var handleX = point._x + handle._x,
-				handleY = point._y + handle._y;
-			ctx.beginPath();
-			ctx.moveTo(point._x, point._y);
-			ctx.lineTo(handleX, handleY);
-			ctx.stroke();
-			ctx.beginPath();
-			ctx.arc(handleX, handleY, 1.75, 0, Math.PI * 2, true);
-			ctx.fill();
-		}
-	}
-
-	function drawSegments(ctx, path) {
+	function drawSegments(ctx, path, matrix) {
 		var segments = path._segments,
 			length = segments.length,
-			handleOut, outX, outY;
+			coords = new Array(6),
+			first = true,
+			pX, pY,
+			inX, inY,
+			outX, outY;
 
 		function drawSegment(i) {
-			var segment = segments[i],
-				point = segment._point,
-				x = point._x,
-				y = point._y,
-				handleIn = segment._handleIn;
-			if (!handleOut) {
-				ctx.moveTo(x, y);
+			var segment = segments[i];
+			// Optimise code when no matrix is provided by accessing semgent
+			// points hand handles directly, since this is the default when
+			// drawing paths. Matrix is only used for drawing selections.
+			if (matrix) {
+				segment._transformCoordinates(matrix, coords, false);
+				pX = coords[0];
+				pY = coords[1];
 			} else {
-				if (handleIn.isZero() && handleOut.isZero()) {
-					ctx.lineTo(x, y);
+				var point = segment._point;
+				pX = point._x;
+				pY = point._y;
+			}
+			if (first) {
+				ctx.moveTo(pX, pY);
+				first = false;
+			} else {
+				if (matrix) {
+					inX = coords[2];
+					inY = coords[3];
 				} else {
-					ctx.bezierCurveTo(outX, outY,
-							handleIn._x + x, handleIn._y + y, x, y);
+					var handle = segment._handleIn;
+					inX = pX + handle._x;
+					inY = pY + handle._y;
+				}
+				if (inX == pX && inY == pY && outX == pX && outY == pY) {
+					ctx.lineTo(pX, pY);
+				} else {
+					ctx.bezierCurveTo(outX, outY, inX, inY, pX, pY);
 				}
 			}
-			handleOut = segment._handleOut;
-			outX = handleOut._x + x;
-			outY = handleOut._y + y;
+			if (matrix) {
+				outX = coords[4];
+				outY = coords[5];
+			} else {
+				var handle = segment._handleOut;
+				outX = pX + handle._x;
+				outY = pY + handle._y;
+			}
 		}
 
 		for (var i = 0; i < length; i++)
