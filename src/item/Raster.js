@@ -403,12 +403,12 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	draw: function(ctx, param) {
-		if (param.selection) {
-			var bounds = new Rectangle(this._size).setCenter(0, 0);
-			Item.drawSelectedBounds(bounds, ctx, this._matrix);
-		} else {
-			ctx.drawImage(this._canvas || this._image,
-					-this._size.width / 2, -this._size.height / 2);
-		}
+		ctx.drawImage(this._canvas || this._image,
+				-this._size.width / 2, -this._size.height / 2);
+	},
+
+	drawSelected: function(ctx, matrix) {
+		Item.drawSelectedBounds(new Rectangle(this._size).setCenter(0, 0), ctx,
+				matrix);
 	}
 });

@@ -1434,17 +1434,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 			// Prepare the canvas path if we have any situation that requires it
 			// to be defined.
-			if (param.compound || param.selection || this._clipMask || fillColor
+			if (param.compound || this._clipMask || fillColor
 					|| strokeColor && !hasDash) {
 				drawSegments(ctx, this);
 			}
 
-			// If we are drawing the selection of a path, stroke it and draw
-			// its handles:
-			if (param.selection) {
-				ctx.stroke();
-				drawHandles(ctx, this._segments);
-			} else if (this._clipMask) {
+			if (this._clipMask) {
 				ctx.clip();
 			} else if (!param.compound && (fillColor || strokeColor)) {
 				// If the path is part of a compound path or doesn't have a fill
@@ -1464,6 +1459,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				}
 				ctx.restore();
 			}
+		},
+
+		drawSelected: function(ctx, matrix) {
+			ctx.beginPath();
+			drawSegments(ctx, this, matrix);
+			// Now stroke it and draw its handles:
+			ctx.stroke();
+			drawHandles(ctx, this._segments, matrix);
 		}
 	};
 }, new function() { // Path Smoothing
