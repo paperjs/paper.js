@@ -30,13 +30,13 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	// so use the same name for all of them
 	_boundsType: 'bounds',
 
-	initialize: function() {
+	initialize: function(pointOrMatrix) {
 		// Note that internally #characterStyle is the same as #style, but
 		// defined as an instance of CharacterStyle. We need to define it before
 		// calling this.base(), to override the default PathStyle instance.
 		this._style = CharacterStyle.create(this);
 		this._paragraphStyle = ParagraphStyle.create(this);
-		this.base();
+		this.base(pointOrMatrix);
 		// No need to call setStyle(), since base() handles this already.
 		// Call with no parameter to initalize defaults now.
 		this.setParagraphStyle();

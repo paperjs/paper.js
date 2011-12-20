@@ -27,7 +27,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	 * Creates a new PlacedSymbol Item.
 	 *
 	 * @param {Symbol} symbol the symbol to place
-	 * @param {Point|Matrix} [matrixOrOffset] the center point of the placed
+	 * @param {Point|Matrix} [pointOrMatrix] the center point of the placed
 	 * symbol or a {@link Matrix} transformation to transform the placed symbol
 	 * with.
 	 *
@@ -61,15 +61,9 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	 *     instance.scale(0.25 + Math.random() * 0.75);
 	 * }
 	 */
-	initialize: function(symbol, matrixOrOffset) {
-		this.base();
+	initialize: function(symbol, pointOrMatrix) {
+		this.base(pointOrMatrix);
 		this.setSymbol(symbol instanceof Symbol ? symbol : new Symbol(symbol));
-		// XXX: Define one way of creating matrices and passing them to ctors
-		this._matrix = matrixOrOffset !== undefined
-			? matrixOrOffset instanceof Matrix
-				? matrixOrOffset
-				: new Matrix().translate(Point.read(arguments, 1))
-			: new Matrix();
 	},
 
 	/**
