@@ -103,12 +103,12 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	},
 
 	draw: function(ctx, param) {
-		if (param.selection) {
-			Item.drawSelectedBounds(this.symbol._definition.getBounds(), ctx,
-					this._matrix);
-		} else {
-			Item.draw(this.symbol._definition, ctx, param);
-		}
+		Item.draw(this.symbol._definition, ctx, param);
+	},
+
+	drawSelected: function(ctx, matrix) {
+		Item.drawSelectedBounds(this.symbol._definition.getBounds(), ctx,
+				matrix);
 	}
 
 	// TODO: PlacedSymbol#embed()

@@ -272,10 +272,13 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.strokeWidth = 1;
 			// TODO: use Layer#color
 			ctx.strokeStyle = ctx.fillStyle = '#009dec';
-			param = { selection: true };
-			Base.each(this._selectedItems, function(item) {
-				item.draw(ctx, param);
-			});
+			for (var id in this._selectedItems) {
+				var item = this._selectedItems[id],
+					mx = item.getGlobalMatrix();
+				if (matrix)
+					mx.preConcatenate(matrix);
+				item.drawSelected(ctx, mx);
+			}
 			ctx.restore();
 		}
 	}
