@@ -257,8 +257,10 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @type Symbol[]
 	 */
 
-	draw: function(ctx) {
+	draw: function(ctx, matrix) {
 		ctx.save();
+		if (matrix)
+			matrix.applyToContext(ctx);
 		var param = { offset: new Point(0, 0) };
 		for (var i = 0, l = this.layers.length; i < l; i++)
 			Item.draw(this.layers[i], ctx, param);

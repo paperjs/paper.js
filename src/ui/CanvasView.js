@@ -58,11 +58,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		var ctx = this._context,
 			size = this._viewSize;
 		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
-
-		ctx.save();
-		this._matrix.applyToContext(ctx);
-		this._project.draw(ctx);
-		ctx.restore();
+		this._project.draw(ctx, this._matrix.isIdentity() ? null : this._matrix);
 		this._redrawNeeded = false;
 		return true;
 	}
