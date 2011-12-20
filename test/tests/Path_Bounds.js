@@ -136,7 +136,7 @@ test('path.bounds & path.strokeBounds with stroke styles', function() {
 			{ x: 199.01325, y: 166.78419, width: 113.50622, height: 90.96766 },
 			'square/round path.bounds');
 	compareRectangles(path.strokeBounds, 
-		 	{ x: 178.06332, y: 150.9807, width: 149.45615, height: 121.77115 },
+		 	{ x: 178.06332, y: 151.78419, width: 149.45615, height: 120.96766 },
 			'square/strokeBounds path.bounds');
 
 	var path = makePath().translate(150, 150);
@@ -147,7 +147,7 @@ test('path.bounds & path.strokeBounds with stroke styles', function() {
 			{ x: 349.01325, y: 166.78419, width: 113.50622, height: 90.96766 },
 			'square/bevel path.bounds');
 	compareRectangles(path.strokeBounds,
-			{ x: 328.06332, y: 150.9807, width: 149.45615, height: 120.53383 },
+			{ x: 328.06332, y: 151.78419, width: 149.45615, height: 119.73034 },
 			'square/bevel path.strokeBounds');
 
 	var path = makePath().translate(300, 150);
@@ -158,7 +158,7 @@ test('path.bounds & path.strokeBounds with stroke styles', function() {
 			{ x: 499.01325, y: 166.78419, width: 113.50622, height: 90.96766 },
 			'square/miter path.bounds');
 	compareRectangles(path.strokeBounds,
-			{ x: 478.06332, y: 150.9807, width: 149.45615, height: 134.45231 },
+			{ x: 478.06332, y: 151.78419, width: 149.45615, height: 133.64882 },
 			'square/miter path.strokeBounds');
 
 	var path = makePath().translate(0, 300);
