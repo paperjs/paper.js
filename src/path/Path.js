@@ -21,6 +21,7 @@
  *
  * @extends PathItem
  */
+// DOCS: Explain that path matrix is always applied with each transformation.
 var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
@@ -205,6 +206,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// TODO: Consider adding getSubPath(a, b), returning a part of the current
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
+
+	// DOCS: Explain that path matrix is always applied with each transformation.
+	transform: function(matrix) {
+		this.base(matrix, true);
+	},
 
 	_apply: function(matrix) {
 		var coords = new Array(6);
