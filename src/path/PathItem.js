@@ -90,7 +90,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	 * @param {Point} point
 	 */
 
-	// DOCS: Document lineTo
+	// DOCS: Document #lineTo()
 	/**
 	 * @name PathItem#lineTo
 	 * @function
@@ -118,7 +118,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	 * @param {Point} to
 	 */
 
-	// DOCS: Document PathItem#curveTo 'paramater' param.
+	// DOCS: Document PathItem#curveTo() 'paramater' param.
 	/**
 	 * Draws a curve from the position of the last segment point in the path
 	 * that goes through the specified {@code through} point, to the specified
@@ -340,7 +340,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	 * // path.selected = true;
 	 */
 
-	// DOCS: Document Path#curveBy
+	// DOCS: Document Path#curveBy()
 	/**
 	 * @name PathItem#curveBy
 	 * @function
@@ -349,7 +349,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	 * @param {Number} [parameter=0.5]
 	 */
 
-	// DOCS: Document Path#arcBy
+	// DOCS: Document Path#arcBy()
 	/**
 	 * @name PathItem#arcBy
 	 * @function
