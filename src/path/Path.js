@@ -212,6 +212,17 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		this.base(matrix, true);
 	},
 
+	getMatrix: function() {
+		// Override matrix getter to always return null, since Paths act as if
+		// they do not have a matrix, and always directly apply transformations
+		// to their segment points.
+		return null;
+	},
+
+	setMatrix: function(matrix) {
+		// Do nothing for the same reason as above.
+	},
+
 	_apply: function(matrix) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++) {
@@ -1413,6 +1424,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			drawSegment(0);
 	}
 
+	// XXX: Make this work with global matrices?
 	function drawDashes(ctx, path, dashArray, dashOffset) {
 		var flattener = new PathFlattener(path),
 			from = dashOffset, to,
