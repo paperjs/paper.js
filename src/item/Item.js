@@ -1830,7 +1830,7 @@ function(name) {
 		if (this._transform)
 			this._transform(matrix);
 		if (apply)
-			this.applyMatrix();
+			this.apply();
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(Change.GEOMETRY);
@@ -1856,14 +1856,15 @@ function(name) {
 		return this;
 	},
 
-	applyMatrix: function() {
-		// Call the internal #_applyMatrix(), and set the internal _matrix to
-		// the identity transformation if it was possible to apply it.
+	// DOCS: Document #apply()
+	apply: function() {
+		// Call the internal #_apply(), and set the internal _matrix to the
+		// identity transformation if it was possible to apply it.
 		// Application is not possible on Raster, PointText, PlacedSymbol, since
 		// the matrix is storing the actual location / transformation state.
-		// Pass on this._matrix to _applyMatrix calls, for reasons of faster
-		// access and code minification.
-		if (this._applyMatrix(this._matrix)) {
+		// Pass on this._matrix to _apply calls, for reasons of faster access
+		// and code minification.
+		if (this._apply(this._matrix)) {
 			// Set _matrix to the identity
 			this._matrix.setIdentity();
 			// TODO: This needs a _changed notification, but the GEOMETRY
@@ -1871,13 +1872,13 @@ function(name) {
 		}
 	},
 
-	_applyMatrix: function(matrix) {
+	_apply: function(matrix) {
 		// Pass on the transformation to the children, and apply it there too:
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++) {
 				var child = this._children[i];
 				child.transform(matrix);
-				child.applyMatrix();
+				child.apply();
 			}
 			return true;
 		}

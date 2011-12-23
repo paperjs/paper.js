@@ -206,7 +206,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
 
-	_applyMatrix: function(matrix) {
+	_apply: function(matrix) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++) {
 			this._segments[i]._transformCoordinates(matrix, coords, true);
