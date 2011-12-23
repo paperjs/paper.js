@@ -1645,7 +1645,8 @@ function(name) {
 	 * circle.fillColor = new RgbColor(1, 0, 0);
 	 */
 
-	// DOCS: document the different arguments that this function can receive.
+	// DOCS: Document the different arguments that this function can receive.
+	// DOCS: Document the apply parameter in all transform functions.
 	/**
 	 * {@grouptitle Transform Functions}
 	 *
