@@ -389,8 +389,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	_hitTest: function(point, options) {
-		point = this._matrix._inverseTransform(point);
-		if (point.isInside(new Rectangle(this._size).setCenter(0, 0))) {
+		if (point.isInside(this._getBounds())) {
 			var that = this;
 			return new HitResult('pixel', that, {
 				offset: point.add(that._size.divide(2)).round(),
