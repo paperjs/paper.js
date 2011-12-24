@@ -575,13 +575,6 @@ function(name) {
 		// transformed with the internally stored _matrix, (the default if no
 		// matrix is passed).
 		var cache = (!matrix || matrix.equals(this._matrix)) && type;
-		// If the result of concatinating the passed matrix with our internal
-		// one is an identity transformation, set it to null for faster
-		// processing
-		var identity = this._matrix.isIdentity();
-		matrix = !matrix || matrix.isIdentity()
-				? identity ? null : this._matrix
-				: identity ? matrix : matrix.clone().concatenate(this._matrix);
 		// Set up a boundsCache structure that keeps track of items that keep
 		// cached bounds that depend on this item. We store this in our parent,
 		// for multiple reasons:
@@ -610,6 +603,13 @@ function(name) {
 		}
 		if (cache && this._bounds && this._bounds[cache])
 			return this._bounds[cache];
+		// If the result of concatinating the passed matrix with our internal
+		// one is an identity transformation, set it to null for faster
+		// processing
+		var identity = this._matrix.isIdentity();
+		matrix = !matrix || matrix.isIdentity()
+				? identity ? null : this._matrix
+				: identity ? matrix : matrix.clone().concatenate(this._matrix);
 		// If we're caching bounds on this item, pass it on as cacheItem, so the
 		// children can setup the _boundsCache structures for it.
 		var bounds = this._getBounds(type, matrix, cache ? this : cacheItem);
