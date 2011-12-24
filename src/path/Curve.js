@@ -208,13 +208,13 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		this.getHandle2().setSelected(selected);
 	},
 
-	getValues: function(matrix) {
-		return Curve.getValues(this._segment1, this._segment2, matrix);
+	getValues: function() {
+		return Curve.getValues(this._segment1, this._segment2);
 	},
 
-	getPoints: function(matrix) {
+	getPoints: function() {
 		// Convert to array of absolute points
-		var coords = this.getValues(matrix),
+		var coords = this.getValues(),
 			points = [];
 		for (var i = 0; i < 8; i += 2)
 			points.push(Point.create(coords[i], coords[i + 1]));
@@ -309,12 +309,12 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return Curve.getParameter(this.getValues(), point.x, point.y);
 	},
 
-	getCrossings: function(point, matrix, roots) {
+	getCrossings: function(point, roots) {
 		// Implement the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		// Solve the y-axis cubic polynominal for point.y and count all
 		// solutions to the right of point.x as crossings.
-		var vals = this.getValues(matrix),
+		var vals = this.getValues(),
 			num = Curve.solveCubic(vals, 1, point.y, roots),
 			crossings = 0;
 		for (var i = 0; i < num; i++) {
@@ -326,7 +326,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				// we're calculating tangents, and then check their y-slope for
 				// a change of direction:
 				if (t < Numerical.TOLERANCE && Curve.evaluate(
-							this.getPrevious().getValues(matrix), 1, 1).y
+							this.getPrevious().getValues(), 1, 1).y
 						* Curve.evaluate(vals, t, 1).y >= 0)
 					continue;
 				crossings++;
@@ -383,20 +383,17 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			return curve;
 		},
 
-		getValues: function(segment1, segment2, matrix) {
+		getValues: function(segment1, segment2) {
 			var p1 = segment1._point,
 				h1 = segment1._handleOut,
 				h2 = segment2._handleIn,
-				p2 = segment2._point,
-				coords = [
-					p1._x, p1._y,
-					p1._x + h1._x, p1._y + h1._y,
-					p2._x + h2._x, p2._y + h2._y,
-					p2._x, p2._y
-				];
-			return matrix
-					? matrix._transformCoordinates(coords, 0, coords, 0, 4)
-					: coords;
+				p2 = segment2._point;
+    		return [
+    			p1._x, p1._y,
+    			p1._x + h1._x, p1._y + h1._y,
+    			p2._x + h2._x, p2._y + h2._y,
+    			p2._x, p2._y
+    		];
 		},
 
 		evaluate: function(v, t, type) {
@@ -799,8 +796,11 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	}
 
 	return {
-		getNearestLocation: function(point, matrix) {
-			var w = toBezierForm(this.getPoints(matrix), point);
+		getNearestLocation: function(point) {
+			// NOTE: If we allow #matrix on Path, we need to inverse-transform
+			// point here first.
+			// point = this._matrix.inverseTransform(point);
+			var w = toBezierForm(this.getPoints(), point);
 			// Also look at beginning and end of curve (t = 0 / 1)
 			var roots = findRoots(w, 0).concat([0, 1]);
 			var minDist = Infinity,
@@ -820,8 +820,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			return new CurveLocation(this, minT, minPoint, Math.sqrt(minDist));
 		},
 
-		getNearestPoint: function(point, matrix) {
-			return this.getNearestLocation(point, matrix).getPoint();
+		getNearestPoint: function(point) {
+			return this.getNearestLocation(point).getPoint();
 		}
 	};
 });
