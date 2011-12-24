@@ -1202,12 +1202,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * @return {CurveLocation} The location on the path that's the closest to
 	 * the specified point
 	 */
-	getNearestLocation: function(point, matrix) {
+	getNearestLocation: function(point) {
 		var curves = this.getCurves(),
 			minDist = Infinity,
 			minLoc = null;
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var loc = curves[i].getNearestLocation(point, matrix);
+			var loc = curves[i].getNearestLocation(point);
 			if (loc._distance < minDist) {
 				minDist = loc._distance;
 				minLoc = loc;
@@ -1225,17 +1225,17 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * @return {Point} The point on the path that's the closest to the specified
 	 * point
 	 */
-	getNearestPoint: function(point, matrix) {
-		return this.getNearestLocation(point, matrix).getPoint();
+	getNearestPoint: function(point) {
+		return this.getNearestLocation(point).getPoint();
 	},
 
-	contains: function(point, matrix) {
+	contains: function(point) {
 		point = Point.read(arguments);
 		// Note: This only works correctly with even-odd fill rule, or paths
 		// that do not overlap with themselves.
 		// TODO: Find out how to implement the "Point In Polygon" problem for
 		// non-zero fill rule.
-		if (!this._closed || !this.getRoughBounds(matrix)._containsPoint(point))
+		if (!this._closed || !this.getRoughBounds()._containsPoint(point))
 			return false;
 		// Use the crossing number algorithm, by counting the crossings of the
 		// beam in right y-direction with the shape, and see if it's an odd
@@ -1246,11 +1246,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Reuse one array for root-finding, give garbage collector a break
 			roots = [];
 		for (var i = 0, l = curves.length; i < l; i++)
-			crossings += curves[i].getCrossings(point, matrix, roots);
+			crossings += curves[i].getCrossings(point, roots);
 		return (crossings & 1) == 1;
 	},
 
-	_hitTest: function(point, options, matrix) {
+	_hitTest: function(point, options) {
 		// See #draw() for an explanation of why we can access _style properties
 		// directly here:
 		var style = this._style,
@@ -1264,7 +1264,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		var coords = [],
 			that = this;
 		function checkSegment(segment, ends) {
-			segment._transformCoordinates(matrix, coords);
+            // TODO: Convert to not using _transformCoordinates to get
+            // untransformed bounds
+			segment._transformCoordinates(null, coords);
 			for (var j = ends || options.segments ? 0 : 2,
 					m = !ends && options.handles ? 6 : 2; j < m; j += 2) {
 				if (point.getDistance(coords[j], coords[j + 1]) < tolerance) {
@@ -1288,16 +1290,16 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		}
 		// If we're querying for stroke, perform that before fill
 		if (options.stroke && radius > 0)
-			loc = this.getNearestLocation(point, matrix);
+			loc = this.getNearestLocation(point);
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
 		// stroke.
 		if (!(loc && loc._distance <= radius) && options.fill
-				&& style._fillColor && this.contains(point, matrix))
+				&& style._fillColor && this.contains(point))
 			return new HitResult('fill', this);
 		// Now query stroke if we haven't already
 		if (!loc && options.stroke && radius > 0)
-			loc = this.getNearestLocation(point, matrix);
+			loc = this.getNearestLocation(point);
 		if (loc && loc._distance <= radius)
 			return options.stroke
 					? new HitResult('stroke', this, { location: loc })

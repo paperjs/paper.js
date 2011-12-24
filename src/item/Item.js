@@ -1043,13 +1043,13 @@ function(name) {
 	 * information about what exactly was hit or {@code null} if nothing was
 	 * hit.
 	 */
-	hitTest: function(point, options, matrix) {
+	hitTest: function(point, options) {
 		options = HitResult.getOptions(point, options);
 		point = options.point;
 		// Check if the point is withing roughBounds + tolerance, but only if
 		// this item does not have children, since we'd have to travel up the
 		// chain already to determine the rough bounds.
-		if (!this._children && !this.getRoughBounds(matrix)
+		if (!this._children && !this.getRoughBounds()
 				.expand(options.tolerance)._containsPoint(point))
 			return null;
 		if ((options.center || options.bounds) &&
@@ -1064,7 +1064,7 @@ function(name) {
 				'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'],
 				res;
 			function checkBounds(type, part) {
-				var pt = bounds['get' + part]().transform(matrix);
+				var pt = bounds['get' + part]();
 				if (point.getDistance(pt) < options.tolerance)
 					return new HitResult(type, that,
 							{ name: Base.hyphenate(part), point: pt });
@@ -1084,14 +1084,14 @@ function(name) {
 		// Filter for guides or selected items if that's required
 		return this._children || !(options.guides && !this._guide
 				|| options.selected && !this._selected)
-					? this._hitTest(point, options, matrix) : null;
+					? this._hitTest(point, options) : null;
 	},
 
-	_hitTest: function(point, options, matrix) {
+	_hitTest: function(point, options) {
 		if (this._children) {
 			// Loop backwards, so items that get drawn last are tested first
 			for (var i = this._children.length - 1; i >= 0; i--) {
-				var res = this._children[i].hitTest(point, options, matrix);
+				var res = this._children[i].hitTest(point, options);
 				if (res) return res;
 			}
 		}
