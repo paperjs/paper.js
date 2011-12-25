@@ -1274,7 +1274,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Note, when checking for ends, we don't also check for handles,
 			// since this will happen afterwards in a separate loop, see below.
 			return (ends || options.segments)
-					&& checkPoint(seg, point, 'point')
+					&& checkPoint(seg, point, 'segment')
 				|| (!ends && options.handles) && (
 					checkPoint(seg, point.add(seg._handleIn), 'handle-in') ||
 					checkPoint(seg, point.add(seg._handleOut), 'handle-out'));
