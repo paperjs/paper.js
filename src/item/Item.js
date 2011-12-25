@@ -1065,6 +1065,8 @@ function(name) {
 				res;
 			function checkBounds(type, part) {
 				var pt = bounds['get' + part]();
+				// TODO: We need to transform the point back to the coordinate
+				// system of the DOM level on which the inquiry was started!
 				if (point.getDistance(pt) < options.tolerance)
 					return new HitResult(type, that,
 							{ name: Base.hyphenate(part), point: pt });
