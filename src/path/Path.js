@@ -1263,20 +1263,19 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// before stroke or fill.
 		var coords = [],
 			that = this;
-		function checkSegment(segment, ends) {
-            // TODO: Convert to not using _transformCoordinates to get
-            // untransformed bounds
-			segment._transformCoordinates(null, coords);
-			for (var j = ends || options.segments ? 0 : 2,
-					m = !ends && options.handles ? 6 : 2; j < m; j += 2) {
-				if (point.getDistance(coords[j], coords[j + 1]) < tolerance) {
-					return new HitResult(j == 0 ? 'segment'
-							: 'handle-' + (j == 2 ? 'in' : 'out'), that, {
-								segment: segment,
-								point: Point.create(coords[j], coords[j + 1])
-							});
-				}
-			}
+		function checkPoint(seg, pt, name) {
+			if (point.getDistance(pt) < tolerance)
+				return new HitResult(name, that, { segment: seg, point: pt });
+		}
+		function checkSegment(seg, ends) {
+			var point = seg._point;
+			// Note, when checking for ends, we don't also check for handles,
+			// since this will happen afterwards in a separate loop, see below.
+			return (ends || options.segments)
+					&& checkPoint(seg, point, 'point')
+				|| (!ends && options.handles) && (
+					checkPoint(seg, point.add(seg._handleIn), 'handle-in') ||
+					checkPoint(seg, point.add(seg._handleOut), 'handle-out'));
 		}
 		if (options.ends && !options.segments && !this._closed) {
 			if (res = checkSegment(this.getFirstSegment(), true)
