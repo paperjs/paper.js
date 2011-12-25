@@ -209,7 +209,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	// DOCS: Explain that path matrix is always applied with each transformation.
 	transform: function(matrix) {
-		this.base(matrix, true);
+		return this.base(matrix, true);
 	},
 
 	getMatrix: function() {
