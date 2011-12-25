@@ -1264,6 +1264,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		var coords = [],
 			that = this;
 		function checkPoint(seg, pt, name) {
+			// TODO: We need to transform the point back to the coordinate
+			// system of the DOM level on which the inquiry was started!
 			if (point.getDistance(pt) < tolerance)
 				return new HitResult(name, that, { segment: seg, point: pt });
 		}
@@ -1300,6 +1302,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		if (!loc && options.stroke && radius > 0)
 			loc = this.getNearestLocation(point);
 		if (loc && loc._distance <= radius)
+			// TODO: Do we need to transform the location back to the coordinate
+			// system of the DOM level on which the inquiry was started?
 			return options.stroke
 					? new HitResult('stroke', this, { location: loc })
 					: new HitResult('fill', this);
