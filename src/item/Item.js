@@ -1265,7 +1265,8 @@ function(name) {
 				this.setSelected(false);
 			if (this._name)
 				this._removeFromNamed();
-			Base.splice(this._parent._children, null, this._index, 1);
+			if (this._index != null)
+				Base.splice(this._parent._children, null, this._index, 1);
 			// Notify parent of changed hierarchy
 			if (notify)
 				this._parent._changed(Change.HIERARCHY);
@@ -1307,7 +1308,10 @@ function(name) {
 			return null;
 		from = from || 0;
 		to = Base.pick(to, this._children.length);
-		var removed = this._children.splice(from, to - from);
+		// Use Base.splice(), wich adjusts #_index for the items above, and
+		// deletes it for the removed items. Calling #_remove() afterwards is
+		// fine, since it only calls Base.splice() if #_index is set.
+		var removed = Base.splice(this._children, null, from, to - from);
 		for (var i = removed.length - 1; i >= 0; i--)
 			removed[i]._remove(true, false);
 		if (removed.length > 0)
