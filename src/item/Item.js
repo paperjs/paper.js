@@ -1849,11 +1849,10 @@ function(name) {
 			// in _bounds and transform each.
 			for (var key in bounds) {
 				var rect = bounds[key];
-				// Transform without notifying the item of changes
-				bounds[key] = matrix._transformBounds(rect, rect, true);
 				// If we have cached 'bounds', update _position again
 				if (key == 'bounds')
 					this._position = rect.getCenter(true);
+				bounds[key] = matrix._transformBounds(rect, rect);
 			}
 		} else if (position) {
 			// Transform position as well.
