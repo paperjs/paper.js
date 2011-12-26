@@ -1849,11 +1849,15 @@ function(name) {
 			// in _bounds and transform each.
 			for (var key in bounds) {
 				var rect = bounds[key];
-				// If we have cached 'bounds', update _position again
-				if (key == 'bounds')
-					this._position = rect.getCenter(true);
 				bounds[key] = matrix._transformBounds(rect, rect);
 			}
+			// If we have cached 'bounds', update _position again as its 
+			// center. We need to take into account _boundsType here too, in 
+			// case another type is assigned to it, e.g. 'strokeBounds'.
+			var type = this._boundsType,
+				rect = bounds[type && type.bounds || 'bounds'];
+			if (rect)
+				this._position = rect.getCenter(true);
 		} else if (position) {
 			// Transform position as well.
 			this._position = matrix._transformPoint(position, position);
