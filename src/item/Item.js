@@ -1830,8 +1830,7 @@ function(name) {
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
 		var bounds = this._bounds,
-			position = this._position,
-			children = this._children;
+			position = this._position;
 		// Simply preconcatenate the internal matrix with the passed one:
 		this._matrix.preConcatenate(matrix);
 		if (this._transform)
@@ -1849,7 +1848,7 @@ function(name) {
 			// in _bounds and transform each.
 			for (var key in bounds) {
 				var rect = bounds[key];
-				bounds[key] = matrix._transformBounds(rect, rect);
+				matrix._transformBounds(rect, rect);
 			}
 			// If we have cached 'bounds', update _position again as its 
 			// center. We need to take into account _boundsType here too, in 
