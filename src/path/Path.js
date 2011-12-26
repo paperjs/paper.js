@@ -1971,7 +1971,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 		function add(point) {
 			bounds = bounds.include(matrix
-				? matrix.transform(point) : point);
+				? matrix._transformPoint(point, point) : point);
 		}
 
 		function addBevelJoin(curve, t) {
@@ -1987,7 +1987,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (join === 'round' || !segment._handleIn.isZero()
 					&& !segment._handleOut.isZero()) {
 				bounds = bounds.unite(joinBounds.setCenter(matrix
-					? matrix.transform(segment._point) : segment._point));
+					? matrix._transformPoint(segment._point) : segment._point));
 			} else if (join == 'bevel') {
 				var curve = segment.getCurve();
 				addBevelJoin(curve, 0);
