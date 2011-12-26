@@ -1858,6 +1858,7 @@ function(name) {
 				rect = bounds[type && type.bounds || 'bounds'];
 			if (rect)
 				this._position = rect.getCenter(true);
+			this._bounds = bounds;
 		} else if (position) {
 			// Transform position as well.
 			this._position = matrix._transformPoint(position, position);
