@@ -228,10 +228,10 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * specified path, rectangle or point.
 	 */
 	getAverageColor: function(object) {
-		if (!object)
-			object = this.getBounds();
 		var bounds, path;
-		if (object instanceof PathItem) {
+		if (!object) {
+			bounds = this.getBounds();
+		} else if (object instanceof PathItem) {
 			// TODO: What if the path is smaller than 1 px?
 			// TODO: How about rounding of bounds.size?
 			path = object;
