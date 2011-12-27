@@ -50,8 +50,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	draw: function(checkRedraw) {
 		if (checkRedraw && !this._redrawNeeded)
 			return false;
-		if (this._stats)
-			this._stats.update();
 		// Initial tests conclude that clearing the canvas using clearRect
 		// is always faster than setting canvas.width = canvas.width
 		// http://jsperf.com/clearrect-vs-setting-width/7
