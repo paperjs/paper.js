@@ -618,7 +618,9 @@ function(name) {
 		if (cache) {
 			if (!this._bounds)
 				this._bounds = {};
-			this._bounds[cache] = bounds;
+			// Put a separate instance into the cache, so modifications of the
+			// returned one won't affect it.
+			this._bounds[cache] = bounds.clone();
 		}
 		return bounds;
 	},
