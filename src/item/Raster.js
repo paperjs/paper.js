@@ -253,7 +253,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		var ctx = Raster._sampleContext;
 		if (!ctx) {
 			ctx = Raster._sampleContext = CanvasProvider.getCanvas(
-					sampleSize.clone()).getContext('2d');
+					new Size(sampleSize)).getContext('2d');
 		} else {
 			// Clear the sample canvas:
 			ctx.clearRect(0, 0, sampleSize, sampleSize);
