@@ -51,7 +51,6 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		paper = this;
 		this.project = null;
 		this.projects = [];
-		this.tool = null;
 		this.tools = [];
 		// Assign an id to this canvas that's either extracted from the script
 		// or automatically generated.
@@ -86,8 +85,8 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 
 	/**
 	 * The reference to the active project's view.
-	 * @name PaperScope#view
 	 * @type View
+	 * @bean
 	 */
 	getView: function() {
 		return this.project.view;
@@ -95,9 +94,16 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 
 	/**
 	 * The reference to the active tool.
-	 * @name PaperScope#tool
 	 * @type Tool
+	 * @bean
 	 */
+	getTool: function() {
+		// If no tool exists yet but one is requested, produce it now on the fly
+		// so it can be used in PaperScript.
+		if (!this._tool)
+			this._tool = new Tool();
+		return this._tool;
+	 },
 
 	/**
 	 * The list of available tools.

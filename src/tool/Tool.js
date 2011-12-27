@@ -48,7 +48,7 @@
  */
 var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 	_list: 'tools',
-	_reference: 'tool',
+	_reference: '_tool', // PaperScope has accessor for #tool
 	_events: [ 'onEditOptions', 'onSelect', 'onDeselect', 'onReselect',
 			'onMouseDown', 'onMouseUp', 'onMouseDrag', 'onMouseMove',
 			'onKeyDown', 'onKeyUp' ],
