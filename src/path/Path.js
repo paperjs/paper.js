@@ -1599,13 +1599,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					segment.setHandleIn(handleIn.subtract(segment._point));
 				if (i < n) {
 					segment.setHandleOut(
-							new Point(x[i], y[i]).subtract(segment._point));
+							Point.create(x[i], y[i]).subtract(segment._point));
 					if (i < n - 1)
-						handleIn = new Point(
+						handleIn = Point.create(
 								2 * knots[i + 1]._x - x[i + 1],
 								2 * knots[i + 1]._y - y[i + 1]);
 					else
-						handleIn = new Point(
+						handleIn = Point.create(
 								(knots[n]._x + x[n - 1]) / 2,
 								(knots[n]._y + y[n - 1]) / 2);
 				}
@@ -1909,8 +1909,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// Get rotated hor and ver vectors, and determine rotation angle
 		// and elipse values from them:
 		var mx = matrix.createShiftless(),
-			hor = mx.transform(new Point(radius, 0)),
-			ver = mx.transform(new Point(0, radius)),
+			hor = mx.transform(Point.create(radius, 0)),
+			ver = mx.transform(Point.create(0, radius)),
 			phi = hor.getAngleInRadians(),
 			a = hor.getLength(),
 			b = ver.getLength();
@@ -1995,9 +1995,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					normal2 = curve2.getNormal(0).normalize(radius),
 					// Intersect the two lines
 					line1 = new Line(point.subtract(normal1),
-							new Point(-normal1.y, normal1.x)),
+							Point.create(-normal1.y, normal1.x)),
 					line2 = new Line(point.subtract(normal2),
-							new Point(-normal2.y, normal2.x)),
+							Point.create(-normal2.y, normal2.x)),
 					corner = line1.intersect(line2);
 				// Now measure the distance from the segment to the
 				// intersection, which his half of the miter distance
