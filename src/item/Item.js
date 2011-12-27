@@ -560,10 +560,8 @@ function(name) {
 		// If we're returning 'bounds', create a LinkedRectangle that uses the
 		// setBounds() setter to update the Item whenever the bounds are
 		// changed:
-		if (name == 'bounds')
-			bounds = LinkedRectangle.create(this, 'setBounds',
-					bounds.x, bounds.y, bounds.width, bounds.height);
-		return bounds;
+		return name == 'bounds' ? LinkedRectangle.create(this, 'setBounds',
+				bounds.x, bounds.y, bounds.width, bounds.height) : bounds;
 	};
 }, /** @lends Item# */{
 	/**
