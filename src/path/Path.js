@@ -1429,18 +1429,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			drawSegment(0);
 	}
 
-	// XXX: Make this work with global matrices?
-	function drawDashes(ctx, path, dashArray, dashOffset) {
-		var flattener = new PathFlattener(path),
-			from = dashOffset, to,
-			i = 0;
-		while (from < flattener.length) {
-			to = from + dashArray[(i++) % dashArray.length];
-			flattener.drawPart(ctx, from, to);
-			from = to + dashArray[(i++) % dashArray.length];
-		}
-	}
-
 	return {
 		draw: function(ctx, param) {
 			if (!param.compound)
@@ -1476,7 +1464,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 						// We cannot use the path created by drawSegments above
 						// Use CurveFlatteners to draw dashed paths:
 						ctx.beginPath();
-						drawDashes(ctx, this, dashArray, style._dashOffset);
+						var flattener = new PathFlattener(this),
+							from = style._dashOffset, to,
+							i = 0;
+						while (from < flattener.length) {
+							to = from + dashArray[(i++) % dashArray.length];
+							flattener.drawPart(ctx, from, to);
+							from = to + dashArray[(i++) % dashArray.length];
+						}
 					}
 					ctx.stroke();
 				}
