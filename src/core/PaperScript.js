@@ -156,8 +156,6 @@ var PaperScript = this.PaperScript = new function() {
 		// Set currently active scope.
 		paper = scope;
 		var view = scope.project.view,
-			tool = /on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
-					&& new Tool(),
 			res;
 		// Define variables for potential handlers, so eval() calls below to
 		// fetch their values do not require try-catch around them.
@@ -171,20 +169,16 @@ var PaperScript = this.PaperScript = new function() {
 					onMouseDown, onMouseUp, onMouseDrag, onMouseMove,
 					onKeyDown, onKeyUp, onFrame, onResize;
 				res = eval(compile(code));
-				if (tool) {
-					// We could do this instead to avoid eval(), but it's longer
-					// tool.onEditOptions = onEditOptions;
-					// tool.onSelect = onSelect;
-					// tool.onDeselect = onDeselect;
-					// tool.onReselect = onReselect;
-					// tool.onMouseDown = onMouseDown;
-					// tool.onMouseUp = onMouseUp;
-					// tool.onMouseDrag = onMouseDrag;
-					// tool.onMouseMove = onMouseMove;
-					// tool.onKeyDown = onKeyDown;
-					// tool.onKeyUp = onKeyUp;
-					Base.each(tool._events, function(key) {
-						tool[key] = eval(key);
+				// Only look for tool handlers if something resembling their
+				// name is contained in the code.
+				if (/on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)) {
+					Base.each(Tool.prototype._events, function(key) {
+						var value = eval(key);
+						if (value) {
+							// Use the getTool accessor that handles auto tool
+							// creation for us:
+							scope.getTool()[key] = value;
+						}
 					});
 				}
 				if (view) {
