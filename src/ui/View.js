@@ -58,6 +58,9 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 						count: count++
 					}));
 					before = now;
+					// Update framerate stats
+					if (that._stats)
+						that._stats.update();
 					// Automatically draw view on each frame.
 					that.draw(true);
 				};
