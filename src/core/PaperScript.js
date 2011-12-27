@@ -167,9 +167,9 @@ var PaperScript = this.PaperScript = new function() {
 			// Within this, use a function scope, so local variables to not try
 			// and set themselves on the scope object.
 			(function() {
-				var onEditOptions, onSelect, onDeselect, onReselect, onMouseDown,
-					onMouseUp, onMouseDrag, onMouseMove, onKeyDown, onKeyUp,
-					onFrame, onResize;
+				var onEditOptions, onSelect, onDeselect, onReselect,
+					onMouseDown, onMouseUp, onMouseDrag, onMouseMove,
+					onKeyDown, onKeyUp, onFrame, onResize;
 				res = eval(compile(code));
 				if (tool) {
 					// We could do this instead to avoid eval(), but it's longer
