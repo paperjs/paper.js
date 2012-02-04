@@ -1473,6 +1473,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 							from = to + dashArray[(i++) % dashArray.length];
 						}
 					}
+					if (this._closed) {
+					  ctx.closePath();
+					}
 					ctx.stroke();
 				}
 				ctx.restore();
