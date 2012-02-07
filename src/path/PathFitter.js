@@ -140,7 +140,7 @@ var PathFitter = Base.extend({
 				c1 = C[1][0] + C[1][1];
 			if (Math.abs(c0) > epsilon) {
 				alpha1 = alpha2 = X[0] / c0;
-			} else if (Math.abs(c0) > epsilon) {
+			} else if (Math.abs(c1) > epsilon) {
 				alpha1 = alpha2 = X[1] / c1;
 			} else {
 				// Handle below
