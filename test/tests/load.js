@@ -2,6 +2,8 @@
 /*#*/ include('Size.js');
 /*#*/ include('Rectangle.js');
 
+/*#*/ include( 'Polygon.js' );
+
 /*#*/ include('Color.js');
 
 /*#*/ include('Project.js');

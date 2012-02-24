@@ -66,6 +66,8 @@ var paper = new function() {
 /*#*/ include('basic/Matrix.js');
 /*#*/ include('basic/Line.js');
 
+/*#*/ include('basic/Polygon.js');
+
 /*#*/ include('project/Project.js');
 /*#*/ include('project/Symbol.js');
 
