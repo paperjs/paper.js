@@ -57,6 +57,11 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		this._selectedItemCount = 0;
 		this.layers = [];
 		this.symbols = [];
+
+		//the font array for all loaded font
+		//svg-font will be saved here
+		this.fonts = [];
+
 		this.activeLayer = new Layer();
 		if (view)
 			this.view = view instanceof View ? view : View.create(view);

@@ -129,6 +129,8 @@ var paper = new function() {
 
 /*#*/ include('core/PaperScript.js');
 
+/*#*/ include( 'typography/Font.js' );
+
 /*#*/ if (options.browser) {
 /*#*/ include('core/initialize.js');
 /*#*/ } // options.browser
