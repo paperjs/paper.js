@@ -29,3 +29,5 @@
 /*#*/ include('PlacedSymbol.js');
 
 /*#*/ include('HitResult.js');
+
+/*#*/ include('Font.js');
