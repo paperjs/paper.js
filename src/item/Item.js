@@ -209,7 +209,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		if (this._name)
 			this._removeFromNamed();
 		this._name = name || undefined;
-		if (name) {
+		if (name && this._parent) {
 			var children = this._parent._children,
 				namedChildren = this._parent._namedChildren;
 			(namedChildren[name] = namedChildren[name] || []).push(this);
