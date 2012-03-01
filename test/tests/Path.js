@@ -265,6 +265,14 @@ test('Path#reverse', function() {
 	equals(path.segments.toString(), '{ point: { x: 100, y: 130 }, handleIn: { x: -16.56854, y: 0 }, handleOut: { x: 16.56854, y: 0 } },{ point: { x: 130, y: 100 }, handleIn: { x: 0, y: 16.56854 }, handleOut: { x: 0, y: -16.56854 } },{ point: { x: 100, y: 70 }, handleIn: { x: 16.56854, y: 0 }, handleOut: { x: -16.56854, y: 0 } },{ point: { x: 70, y: 100 }, handleIn: { x: 0, y: -16.56854 }, handleOut: { x: 0, y: 16.56854 } }');
 });
 
+test('#reverse should adjust segment indices', function() {
+	var path = new Path([[0, 0], [10, 10], [20, 20]]);
+	path.reverse();
+	equals(path.segments[0]._index, 0);
+	equals(path.segments[1]._index, 1);
+	equals(path.segments[2]._index, 2);
+});
+
 test('Path#fullySelected', function() {
 	var path = new Path.Circle([100, 100], 10);
 	path.fullySelected = true;
