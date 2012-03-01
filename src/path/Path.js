@@ -828,7 +828,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			var handleIn = segment._handleIn;
 			segment._handleIn = segment._handleOut;
 			segment._handleOut = handleIn;
-			// Adjust index
 			segment._index = i;
 		}
 		// Flip clockwise state if it's defined
