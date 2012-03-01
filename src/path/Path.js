@@ -1451,6 +1451,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				drawSegments(ctx, this);
 			}
 
+			if (this._closed)
+				ctx.closePath();
+
 			if (this._clipMask) {
 				ctx.clip();
 			} else if (!param.compound && (fillColor || strokeColor)) {
