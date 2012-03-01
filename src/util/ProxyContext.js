@@ -68,9 +68,9 @@ var ProxyContext = new function() {
 				if (name == 'restore') {
 					this._indents--;
 				}
-				var args = Array.prototype.slice.call(arguments, 0);
-				var string = 'ctx.' + name + '(' + args.join(', ') + ')';
-				console.log(this.getIndentation() + string + ';');
+				var args = Array.prototype.slice.call(arguments, 0).join(', '),
+					string = 'ctx.' + name + '(' + args + ');';
+				console.log(this.getIndentation() + string);
 				this._ctx[name].apply(this._ctx, arguments);
 				if (name == 'save') {
 					this._indents++;
@@ -79,11 +79,9 @@ var ProxyContext = new function() {
 		} else {
 			var capitalized = Base.capitalize(name);
 			param['set' + capitalized] = function(value) {
-				if (value.substring) {
-					value = '\'' + value + '\'';
-				}
-				var string = 'ctx.' + name + ' = ' + value;
-				console.log(this.getIndentation() + string + ';');
+				var logValue = value.substring ? '\'' + value + '\'' : value,
+					string = 'ctx.' + name + ' = ' + logValue + ';';
+				console.log(this.getIndentation() + string);
 				return this._ctx[name] = value;
 			};
 			param['get' + capitalized] = function() {
