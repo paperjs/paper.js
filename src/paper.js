@@ -124,6 +124,9 @@ var paper = new function() {
 /*#*/ include('util/CanvasProvider.js');
 /*#*/ include('util/Numerical.js');
 /*#*/ include('util/BlendMode.js');
+/*#*/ if (options.version == 'dev') {
+/*#*/ include('util/ProxyContext.js');
+/*#*/ } // options.browser
 
 /*#*/ include('core/PaperScript.js');
 
