@@ -42,9 +42,9 @@ var ProxyContext = new function() {
 		'textAlign', 'textBaseline', 'fillText(text,x,y,maxWidth)',
 		'strokeText(text,x,y,maxWidth)', 'measureText(text)',
 		'drawImage(image,dx,dy)', 'drawImage(image,dx,dy,dw,dh)',
-		'drawImage(image,sx,sy,sw,sh,dx,dy,dw,dh)', 'create(sw,sh)',
-		'create(imagedata)', 'get(sx,sy,sw,sh)',
-		'put(imagedata,dx,dy,dirtyX,dirtyY,dirtyWidth,dirtyHeight)'
+		'drawImage(image,sx,sy,sw,sh,dx,dy,dw,dh)', 'createImageData(sw,sh)',
+		'createImageData(imagedata)', 'getImageData(sx,sy,sw,sh)',
+		'putImageData(imagedata,dx,dy,dirtyX,dirtyY,dirtyWidth,dirtyHeight)'
 	];
 	var param = {
 		initialize: function(context) {
@@ -71,10 +71,10 @@ var ProxyContext = new function() {
 				var args = Array.prototype.slice.call(arguments, 0).join(', '),
 					string = 'ctx.' + name + '(' + args + ');';
 				console.log(this.getIndentation() + string);
-				this._ctx[name].apply(this._ctx, arguments);
 				if (name == 'save') {
 					this._indents++;
 				}
+				return this._ctx[name].apply(this._ctx, arguments);
 			};
 		} else {
 			var capitalized = Base.capitalize(name);
