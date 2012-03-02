@@ -2449,14 +2449,16 @@ function(name) {
 				// so we draw onto it, instead of the parentCtx
 				ctx = tempCanvas.getContext('2d');
 			}
-			ctx.save();
+			if (!param.clipping)
+				ctx.save();
 			// Translate the context so the topLeft of the item is at (0, 0)
 			// on the temporary canvas.
 			if (tempCanvas)
 				ctx.translate(-itemOffset.x, -itemOffset.y);
 			item._matrix.applyToContext(ctx);
 			item.draw(ctx, param);
-			ctx.restore();
+			if (!param.clipping)
+				ctx.restore();
 			// If we created a temporary canvas before, composite it onto the
 			// parent canvas:
 			if (tempCanvas) {
