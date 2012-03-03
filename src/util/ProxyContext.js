@@ -79,7 +79,7 @@ var ProxyContext = new function() {
 		} else {
 			var capitalized = Base.capitalize(name);
 			param['set' + capitalized] = function(value) {
-				var logValue = value.substring ? '\'' + value + '\'' : value,
+				var logValue = value && value.substring ? '\'' + value + '\'' : value,
 					string = 'ctx.' + name + ' = ' + logValue + ';';
 				console.log(this.getIndentation() + string);
 				return this._ctx[name] = value;
