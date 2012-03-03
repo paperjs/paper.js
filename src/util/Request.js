@@ -70,7 +70,7 @@ var Request = this.Request = Base.extend( new function(){
 	//open the request
 		xhr.open( 
 			( config.method || "GET" ), 
-			config. url,
+			config.url,
 			( config.async != null && config.async == false ) ? 
 					false : true
 		);
@@ -103,11 +103,7 @@ var Request = this.Request = Base.extend( new function(){
 		this.onChange = config.onChange || function( e ){}
 	//errors are detected via the http status in the 
 	//onreadystate event handler
-		this.onError = config.onError || function( e ){
-			if( window.console ){
-				console.log( "error while loading" );
-			}
-		}
+		this.onError = config.onError || function( e ){}
 
 		this.success = config.success || function( e ){}
 

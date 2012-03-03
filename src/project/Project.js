@@ -58,9 +58,9 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		this.layers = [];
 		this.symbols = [];
 
-		//the font array for all loaded font
+		//the font Object for all loaded font
 		//svg-font will be saved here
-		this.fonts = [];
+		this.fonts = {};
 
 		this.activeLayer = new Layer();
 		if (view)
@@ -316,5 +316,25 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			}
 			ctx.restore();
 		}
+	},
+
+	/**
+		import assets in the project
+		fonts, symbols, graphics
+		@PARAM url the url of the requested file
+		@PARAM onDone callback that is triggered when the
+		import is finished, supplied with an Argument, an
+		Object that contains the imported content
+		f.e.:
+		{
+			fonts : [], //the names of the fonts 
+			symbols : [], //symbol references
+			items : [] // the graphic 
+				//items in their hirachical order
+		}
+	**/
+	import : function( url, onDone ) {
+		//var importer = Importer.getImporter( url, onDone );
+		return Importer.getImporter( url, onDone, this );
 	}
 });

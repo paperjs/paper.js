@@ -132,6 +132,8 @@ var paper = new function() {
 
 /*#*/ include('core/PaperScript.js');
 
+/*#*/ include( 'import/Importer.js' );
+/*#*/ include( 'import/SVGImporter.js' );
 /*#*/ include( 'typography/Font.js' );
 
 /*#*/ if (options.browser) {

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg>
+  <g>
+    <rect width="208.57143" height="182.85715" x="80" y="77.14286" />
+  </g>
+  <g>
+    <g>
+      <path d="m 10,10 90,90" />
+    </g>
+  </g>
+  <path
+     d="M 100,100 300,300" />
+</svg>

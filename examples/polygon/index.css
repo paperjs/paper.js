@@ -1,0 +1,32 @@
+div.form-wrapper{
+	position: absolute;
+	top : 0px;
+	left : 0px;
+	padding: 20px;
+	max-width : 180px;
+}
+
+span.label {
+	color : #00ff00;
+	font-family : Courier;
+	font-size : 16px;
+	font-weight : bold;
+
+}
+
+span.explanation {
+	color : #00ff00;
+	font-family : Courier;
+	font-size : 14px;
+	font-weight : normal;	
+}
+
+input.text.number.max-edges{
+	width : 100px;
+	padding : 10px;
+	margin : 20px 0px;
+	border : 1px #00ff00 solid;
+	background-color : #000000;
+	color : #00ff00;
+	font-family: Courier;
+}

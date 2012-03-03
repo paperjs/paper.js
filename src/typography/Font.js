@@ -31,7 +31,6 @@ var Font = this.Font = Base.extend(
 
 			var that = this;
 			this.url = url;
-			console.log( this.url );
 			this.extension = result[ 5 ];
 			this.filename = result[ 4 ] + "." + 
 						this.extension;
@@ -39,7 +38,6 @@ var Font = this.Font = Base.extend(
 			this.path = result[ 2 ];
 
 			this.glyphs = [];
-			this.kerning = {};
 
 			var request = new Request({
 				"url" : this.url,
@@ -52,15 +50,14 @@ var Font = this.Font = Base.extend(
 
 				"success" : function( e ){
 					formats[ that.extension ].
-						initFunction.call( that, e );
-				},
-
-				"autoSend" : false
+						initFunction.call( that, this.responseText );
+				}
 			});
 		};
 
 		function initFromSVG( data ){
-			console.log( data );
+			var parser = new DOMParser();
+				console.log( parser.parseFromString( data, "image/svg+xml" ) );
 		}
 	}
 );

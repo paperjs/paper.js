@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta
+			http-equiv="Content-Type"
+			content="text/html; charset=utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link
+			rel="shortcut icon"
+			type="image/x-icon"
+			href="favicon.ico" />
+		<title>
+			paper.Polygon demo
+			</title>
+		<style
+			type="text/css">
+			@import url( 'index.css' );
+			</style>
+		<script 
+			type="text/javascript"
+			src="../../dist/paper.js">
+			</script>
+		<script 
+			type="text/javascript"
+			src="index.js">
+			</script>
+		</head>
+	<body
+		style="	padding:0px;
+						margin:0px;
+						background-color:#000000;">
+		<div
+			style="margin:20px auto;
+						width:900px;">
+			<canvas
+				id="paper-canvas"
+				width="900"
+				height="600">
+				</canvas>
+			</div>
+		<div 
+			class="form-wrapper">
+			<form name="firm" id="some-settings">
+				<span 
+					class="label">
+					maximum edges for decomposition:
+					</span>
+				<br />
+				<input 
+					type="number"
+					id="max-edges"
+					class="text number max-edges" />
+				<br />
+				<span class="explanation">
+					to set some vertices click into to input frame.<br />
+					note that polygons with self-intersections will not
+					be processed for triangulation and decomposition.<br />
+					press <b>ESC</b> to clear all screens and data.<br />
+					Set the maximum number of edges for polygon decomposition
+					in the box above.
+					</span>
+				</form>
+			</div>
+		</body>
+	</html>

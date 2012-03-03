@@ -30,4 +30,7 @@
 
 /*#*/ include('HitResult.js');
 
+/*#*/ include('Importer.js');
+/*#*/ include('SVGImporter.js');
 /*#*/ include('Font.js');
+
