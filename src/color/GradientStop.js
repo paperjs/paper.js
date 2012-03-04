@@ -44,12 +44,47 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 		}
 	},
 
+	// TODO: Do we really need to also clone the color here?
 	/**
 	 * @return {GradientColor} a copy of the gradient-stop
 	 */
 	clone: function() {
 		return new GradientStop(this._color.clone(), this._rampPoint);
 	},
+
+	/**
+	 * Called by various setters whenever a value changes
+	 */
+	_changed: function() {
+		// Loop through the gradients that use this stop and notify them about
+		// the change, so they can notify their gradient colors, which in turn
+		// will notify the items they are used in:
+		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
+			this._owners[i]._changed(Change.STYLE);
+	},
+
+	/**
+	 * Called by Gradient whenever this stop is used. This is required to pass 
+	 * on _changed() notifications to the _owners.
+	 */
+	_addOwner: function(gradient) {
+		if (!this._owners)
+			this._owners = [];
+		this._owners.push(gradient);
+	},
+
+	/**
+	 * Called by Gradient whenever this GradientStop is no longer used by it.
+	 */
+	_removeOwner: function(gradient) {
+		var index = this._owners ? this._owners.indexOf(gradient) : -1;
+		if (index != -1) {
+			this._owners.splice(index, 1);
+			if (this._owners.length == 0)
+				delete this._owners;
+		}
+	},
+
 
 	/**
 	 * The ramp-point of the gradient stop as a value between {@code 0} and
@@ -92,6 +127,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	setRampPoint: function(rampPoint) {
 		this._defaultRamp = rampPoint == null;
 		this._rampPoint = rampPoint || 0;
+		this._changed();
 	},
 
 	/**
@@ -129,7 +165,13 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	},
 
 	setColor: function(color) {
+		// If the stop already contained a color,
+		// remove it as an owner:
+		if (this._color)
+			this._color._removeOwner(this);
 		this._color = Color.read(arguments);
+		this._color._addOwner(this);
+		this._changed();
 	},
 
 	equals: function(stop) {
