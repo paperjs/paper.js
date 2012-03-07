@@ -22,7 +22,7 @@ var Importer = this.Importer = Base.extend( new function(){
 		this.url = url;
 		this.onDone = onDone;
 		this.project = project;
-		this.imported = {};
+		this.imports = {};
 		this.status = "initial"
 		this.load();
 	}

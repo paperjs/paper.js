@@ -108,6 +108,11 @@ var paper = new function() {
 /*#*/ include('color/Gradient.js');
 /*#*/ include('color/GradientStop.js');
 
+/*#*/ include('import/Importer.js');
+/*#*/ include('import/SVGImporter.js');
+/*#*/ include('typography/Font.js');
+
+
 /*#*/ if (options.browser) {
 /*#*/ include('browser/DomElement.js');
 /*#*/ include('browser/DomEvent.js');
@@ -132,9 +137,6 @@ var paper = new function() {
 
 /*#*/ include('core/PaperScript.js');
 
-/*#*/ include( 'import/Importer.js' );
-/*#*/ include( 'import/SVGImporter.js' );
-/*#*/ include( 'typography/Font.js' );
 
 /*#*/ if (options.browser) {
 /*#*/ include('core/initialize.js');

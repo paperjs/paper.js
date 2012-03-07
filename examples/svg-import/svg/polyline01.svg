@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <desc>Example polyline01 - increasingly larger bars</desc>
+
+  <!-- Show outline of canvas using 'rect' element -->
+  <g transform="scale(0.3)">
+	  <rect x="1" y="1" width="1198" height="398" fill="none" stroke="blue" stroke-width="2"/>
+
+	  <polyline fill="none" stroke="blue" stroke-width="10" points="50,375                     150,375 150,325 250,325 250,375                     350,375 350,250 450,250 450,375                     550,375 550,175 650,175 650,375                     750,375 750,100 850,100 850,375                     950,375 950,25 1050,25 1050,375                     1150,375"/>
+	</g>
+</svg>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml" width="800" height="800">
+  <g transform="scale(0.5)">
+    <g transform="translate(50,50)">
+      <polygon points="0,0 300,0 300,300 0,300" style="fill:lightblue; stroke:red;"/>
+      <foreignObject x="10" y="10" width="280" height="280">
+        <html:font color="white"><html:b>Absolute Cubic Beziers</html:b></html:font><html:br/>
+         &lt;path d="M 50,150 C 150,10 150,290 250,150 z"
+                  style="stroke:red; stroke-width:5; fill:yellow;"/&gt;
+        </foreignObject>
+      <path d="M 50,150 C 150,10 150,290 250,150 z" style="stroke:red; stroke-width:5; fill:yellow;"/>
+      <path d="M50,150 L150,10 M250,150 L150,290" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="50" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="250" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="150" cy="10" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="150" cy="290" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+    </g>
+    <g transform="translate(400,50)">
+      <polygon points="0,0 300,0 300,300 0,300" style="fill:lightblue; stroke:red;"/>
+      <foreignObject x="10" y="10" width="280" height="280">
+        <html:b>Relative Cubic Beziers</html:b><html:br/>
+         &lt;path d="M 50,150 c 100,-140 100,140 200,0 z"
+                  style="stroke:red; stroke-width:5; fill:yellow;"/&gt;
+        </foreignObject>
+      <path d="M 50,150 c 100,-140 100,140 200,0 z" style="stroke:red; stroke-width:5; fill:yellow;"/>
+      <path d="M50,150 L150,10 M250,150 L150,290" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="50" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="250" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="150" cy="10" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="150" cy="290" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+    </g>
+    <g transform="translate(50,400)">
+      <polygon points="0,0 300,0 300,300 0,300" style="fill:lightblue; stroke:red;"/>
+      <path d="M 50,150 C 50,75 150,75 150,150 S 250,225 250,150 z" style="stroke:red; stroke-width:5; fill:yellow;"/>
+      <path d="M50,150 L50,75 M150,150 L150,75 M 250,150 L250,225" style="stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="50" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="50" cy="75" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="150" cy="75" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="150" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="250" cy="225" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="250" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+
+      <foreignObject x="10" y="10" width="280" height="280">
+        <html:small><html:b>Absolute Shorthand/Smooth Curveto</html:b><html:br/>
+         &lt;path d="M 50,150 C 50,75 150,75 150,150 S 250,225 250,150 z"
+                  style="stroke:red; stroke-width:5; fill:yellow;"/&gt;</html:small>
+      </foreignObject>
+    </g>
+    <g transform="translate(400,400)">
+      <polygon points="0,0 300,0 300,300 0,300" style="fill:lightblue; stroke:red;"/>
+      <path d="M 50,150 c 0,-75 100,-75 100,0 s 100,75 100,0 z" style="stroke:red; stroke-width:5; fill:yellow;"/>
+      <path d="M50,150 L50,75 M150,150 L150,75 M 250,150 L250,225" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="50" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="50" cy="75" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="150" cy="75" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="150" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="250" cy="225" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+      <circle cx="250" cy="150" r="6" style="fill:none; stroke:blue; stroke-opacity:0.5;"/>
+
+      <foreignObject x="10" y="10" width="280" height="280">
+        <html:small><html:b>Relative Shorthand/Smooth Curveto</html:b><html:br/>
+         &lt;path d="M 50,150 c 0,-75 100,-75 100,0 s 100,75 100,0 z"
+                  style="stroke:red; stroke-width:5; fill:yellow;"/&gt;</html:small>
+      </foreignObject>
+    </g>
+  </g>
+</svg>

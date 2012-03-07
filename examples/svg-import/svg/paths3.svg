@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="800">
+  <g transform="scale(0.5)">
+    <g transform="translate(20,20)">
+      <text x="235" y="25" font-size="18">elliptical arcs (absolute coords)</text>
+      <g transform="scale(0.6)">
+        <path d="M1,1 1198,1 1198,398 1,398z" fill="none" stroke="blue" stroke-width="1"/>
+        <path d="M300,200 H150 A150,150 0 1,0 300,50 z" fill="red" stroke="blue" stroke-width="5"/>
+        <path d="M275,175 V25 A150,150 0 0,0 125,175 z" fill="yellow" stroke="blue" stroke-width="5"/>
+        <path d="M600,350 L 650,325             A25,25  -30 0,1  700,300 L  750,275             A25,50  -30 0,1  800,250 L  850,225             A25,75  -30 0,1  900,200 L  950,175             A25,100 -30 0,1 1000,150 L 1050,125" fill="none" stroke="red" stroke-width="5"/>
+      </g>
+    </g>
+    <g transform="translate(20,280)">
+      <text x="235" y="25" font-size="18">elliptical arcs (relative coords)</text>
+      <g transform="scale(0.6)">
+        <path d="M1,1 1198,1 1198,398 1,398z" fill="none" stroke="blue" stroke-width="1"/>
+        <path d="M300,200 h-150 a150,150 0 1,0 150,-150 z" fill="red" stroke="blue" stroke-width="5"/>
+        <path d="M275,175 v-150 a150,150 0 0,0 -150,150 z" fill="yellow" stroke="blue" stroke-width="5"/>
+        <path d="M600,350 l 50,-25             a25,25  -30 0,1 50,-25 l 50,-25             a25,50  -30 0,1 50,-25 l 50,-25             a25,75  -30 0,1 50,-25 l 50,-25             a25,100 -30 0,1 50,-25 l 50,-25" fill="none" stroke="red" stroke-width="5"/>
+      </g>
+    </g>
+  </g>
+</svg>

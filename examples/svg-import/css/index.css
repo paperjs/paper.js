@@ -1,0 +1,49 @@
+body{
+	padding:0px;
+	margin:0px;
+	background-color:#000000;
+}
+
+div.center {
+	width : 960px;
+	margin : 20px auto;
+}
+
+div#list-container {
+	margin : 0px 0px 20px 20px;
+}
+
+div#list-container select {
+	border : 1px #00ff00 solid;
+	background-color : #000000;
+	padding : 5px;
+	font-family: Courier New;
+	color: #00ff00;
+}
+
+div.preview-container {
+	float: left;
+	border: 1px #00ff00 solid;
+	margin : 0px 10px;
+}
+
+div.preview-container.left{
+	margin-left : 20px;
+}
+
+.preview-canvas{
+	width : 450px;
+	height : 450px;
+}
+
+span.preview-title {
+	position : absolute;
+	font-family : Courier New;
+	background-color: #00ff00;
+	padding : 5px;
+	font-size : 12px;
+}
+
+div.float-fix {
+	clear: both;
+};
