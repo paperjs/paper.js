@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="450" height="450" xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <desc>Example line01 - lines expressed in user coordinates</desc>
+  <g stroke="green" transform="scale(0.5)">
+    <line x1="100" y1="300" x2="300" y2="100" stroke-width="5"/>
+    <line x1="300" y1="300" x2="500" y2="100" stroke-width="10"/>
+    <line x1="500" y1="300" x2="700" y2="100" stroke-width="15"/>
+    <line x1="700" y1="300" x2="900" y2="100" stroke-width="20"/>
+    <line x1="900" y1="300" x2="1100" y2="100" stroke-width="25"/>
+  </g>
+</svg>

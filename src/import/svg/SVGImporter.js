@@ -77,10 +77,21 @@ var SVGImporter = this.SVGImporter = Importer.extend(
 		var symbol = {};
 
 	/*
-		all fonts
+		all font elements
 	*/
-		var font = {};
-
+		var font = {
+			"alt-glyph" : 0,
+			"font" : 1,
+			"font-face" : 2,
+			"font-face-format" : 3,
+			"font-face-name" : 4,
+			"font-face-src" : 5,
+			"font-face-uri" : 6,
+			"glyph" : 7,
+			"hkern" : 8,
+			"missing-glyph" : 9,
+			"vkern" : 10
+		};
 	/*
 		here all elements which can become paper.Items in
 		the paper dom are listed
@@ -178,6 +189,10 @@ var SVGImporter = this.SVGImporter = Importer.extend(
 			this.base( url, onDone, project );
 		}
 
+		this.toString = function(){
+			return "[Object SVGImporter]";
+		}
+
 		this.load = function(){
 			var request = this.base();
 			request.setRequestHeader( "content-type", 
@@ -200,11 +215,25 @@ var SVGImporter = this.SVGImporter = Importer.extend(
 			}
 
 			try{
+				createImportsList.call( this );
 				importSVG.call( this, doc.documentElement );
+				cleanUpImports.call( this );
 				this.onDone.call( this, this.imports );
 			} catch( importError ){
 				console.error( importError );
 				this.onDone.call( this, "import Error" );	
+			}
+		}
+
+		function createImportsList(){
+			var list = SVGImporter.list;
+			for( var e in list ){
+				for( var c in list[ e ][ "categories" ] ){
+					if( !this.imports.hasOwnProperty( c ) ){
+						this.imports[ c ] = new SVGImportRootItem( 
+							{ "transform" : null, "nodeName" : e }, this );
+					}
+				}
 			}
 		}
 
@@ -218,20 +247,28 @@ var SVGImporter = this.SVGImporter = Importer.extend(
 		*/		
 		function importSVG( root ){
 			var stack = [root];
-			var c, i;
-			var item = new ImportItem( root, this );
-				item.parent = item;
+			var c, i, context;
+	//		var item = new ImportItem( root, this );
+	//			item.parent = item;
 			var transformList = [];
-
-			console.log( "hallo" );
 
 			while( stack.length > 0 ){
 				i = null;
 				c = stack[ stack.length - 1 ];
-
+			/*
 				if( ImportItem.isItem( c ) && item.canAppend ){
 					i = new ImportItem( c, this );
 					item.addChild( i );
+				}
+			*/
+				if( SVGImportItem.isItem( c ) && 
+					this.imports[ "item" ].canAppend ){
+					i = new SVGImportPaperItem( c, this );
+					this.imports[ i.context ].addChild( i );
+				}
+
+				if( i != null ){
+					context = i.context;
 				}
 
 				if( c.nodeType == 1 && c.childNodes.length > 0 ){
@@ -240,7 +277,8 @@ var SVGImporter = this.SVGImporter = Importer.extend(
 						SVGImporter.getTransformMatrix.call( this, c ) );
 
 					if( i != null ){
-						item = i;
+		//				item = i;
+							this.imports[ context ] = i;
 					}
 				
 				} else if( c.nextSibling != null ){
@@ -251,9 +289,10 @@ var SVGImporter = this.SVGImporter = Importer.extend(
 					while( stack.length > 0 ){
 						c = stack.pop();
 						transformList.pop();
-						if( c === item.e ){
+						if( c === this.imports[ context ].e ){
 						//	item.finalize();
-							item = item.parent;
+							this.imports[ context ] = 
+								this.imports[ context ].parent;
 						}
 			
 						if( c.nextSibling != null ){
@@ -263,7 +302,23 @@ var SVGImporter = this.SVGImporter = Importer.extend(
 					}
 				}
 			}
-			this.imports.items = item.paperitem;
+		}
+
+		function cleanUpImports(){
+			var imported, root;
+			for( var i in this.imports ){
+				root = this.imports[ i ];
+				if( root.children.length == 0 ){
+					delete this.imports[ i ];
+				
+				} else {
+					this.imports[ i ] = [];
+					for( var c = 0; c < root.children.length; c++ ){
+						this.imports[ i ].push( 
+							root.children[ c ].getImports() );
+					}
+				}
+			}
 		}
 });
 
@@ -272,6 +327,7 @@ var SVGImporter = this.SVGImporter = Importer.extend(
 	Keeping the hiracical Order alive and tracking the
 	transform matrix encapsulating the process functions
 */
+/*
 var ImportItem = Base.extend( new function(){
 	this.initialize = function( e, importer ){
 		var list = SVGImporter.list;
@@ -330,11 +386,13 @@ var ImportItem = Base.extend( new function(){
 		}
 	}
 },
-
+*/
 /*
 	scope for element processing functions
 */
+/*
 new function(){
+*/
 	/*
 		this is the collection of functions which convert
 		an element to a paper.Path. Each element is converted
@@ -344,6 +402,7 @@ new function(){
 		than the "post-script-command-convert" functions of
 		the scope below are used.
 	*/
+	/*
 	this.processDefs = function(){
 		
 	}
@@ -409,7 +468,7 @@ new function(){
 		this.closePath();
 		return this.currentPath;
 	}
-
+*/
 	/*
 		this is the most complex element to process.
 		this function acts as "big switch" of all post-script
@@ -422,6 +481,7 @@ new function(){
 		2.: executing all commands from that "queue" in order
 		of appearance.
 	*/
+/*
 	this.processPath = function(){
 		var seg, point, command, nextCommand, prevCommand;
 		var paths = [];
@@ -461,6 +521,7 @@ new function(){
 					this.moveToRelative( toPoints.call( 
 						this, stack, [ ["x","y"] ] )[ 0 ] );
 					break;
+	*/
 				/*
 					these cases are still missing just because
 					the paper.Path.arc api is totally not
@@ -474,6 +535,7 @@ new function(){
 					case "A" :
 						break;
 				*/
+	/*
 				case "L" :
 					this.lineToAbsolute( toPoints.call( 
 						this, stack, [ ["x","y"] ] ) );
@@ -560,7 +622,7 @@ new function(){
 		}
 		return new CompoundPath( paths ).simplify();
 	}
-
+*/
 	/*
 		this is a helper function which converts the orginal
 		the svg element's commandlist to paper.Points
@@ -572,6 +634,7 @@ new function(){
 		<numberOfItems> property plus the <getItem> mehtod
 		instead of the >[ ]< operator.
 	*/
+/*
 	function toPoints( stack, props ){
 		var points = [];
 		var seg, prop;
@@ -601,13 +664,14 @@ new function(){
 		};
 		return points;
 	};
-
+*/
 	/*
 		a helper function to get the base values of arbitary
 		properties. That is needed as long as we do not decide
 		to implement the animation module which is specified
 		for SVG.
 	*/
+/*
 	function getBaseValProps( props ){
 		for( var p in props ){
 			props[ p ] = this.e[ p ]["baseVal"]["value"];
@@ -616,6 +680,7 @@ new function(){
 	}
 },
 new function(){
+*/
 /*
 	this is the collection of all possible (execpt arc) drawing
 	commands. In general this works in the following way:
@@ -640,6 +705,7 @@ new function(){
 	compressed SVG graphic need more time to render, but
 	this scales linear.
 */
+/*
 this.moveToRelative = function( point ){
 	point = point.add( this.currentPosition );
 	this.moveToAbsolute( point );
@@ -806,10 +872,11 @@ this.closePath = function(){
 	this.currentPosition = this.startPosition.clone();
 	this.currentPath.closePath();
 }
-
+*/
 /*
 	Helper function needed for smooth curve commands only
 */
+/*
 function getReflectedControlPoint(){
 	return new Point(
 		2 * this.currentPosition.x - this.lastControlPoint.x,
@@ -817,4 +884,4 @@ function getReflectedControlPoint(){
 	);
 }
 
-});
+}); */

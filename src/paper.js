@@ -109,7 +109,11 @@ var paper = new function() {
 /*#*/ include('color/GradientStop.js');
 
 /*#*/ include('import/Importer.js');
-/*#*/ include('import/SVGImporter.js');
+/*#*/ include('import/svg/SVGImporter.js');
+/*#*/ include('import/svg/SVGImportItem.js');
+/*#*/ include('import/svg/SVGImportRootItem.js');
+/*#*/ include('import/svg/SVGImportPaperItem.js');
+/*#*/ include('import/svg/SVGImportFontItem.js');
 /*#*/ include('typography/Font.js');
 
 

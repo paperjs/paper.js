@@ -36,6 +36,10 @@ div.preview-container.left{
 	height : 450px;
 }
 
+div#svg-canvas {
+	overflow: hidden;
+}
+
 span.preview-title {
 	position : absolute;
 	font-family : Courier New;

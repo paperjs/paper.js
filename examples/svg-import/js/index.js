@@ -13,6 +13,7 @@ $( document ).ready( function(){
 	$.ajax({
 		"url" : LIST_URL,
 		"dataType" : "xml",
+		"header" : { "Cache-Control" : "no-cache" },
 		"success" : makeList
 	});
 
@@ -38,6 +39,7 @@ $( document ).ready( function(){
 			$.ajax({
 				"url" : e.target.value,
 				"dataType" : "xml",
+				"header" : { "Cache-Control" : "no-cache" },
 				"success" : function( d ){
 					files[ this.url ] = d;
 					showSVG(this.url  );
@@ -66,8 +68,10 @@ $( document ).ready( function(){
 			layers[ url ] = new paper.Layer();
 			paper.project.import( url, function( e ){ 
 				console.log( e );
-				if( e.hasOwnProperty( "items" ) ){
-					currentLayer.addChild( e.items );
+				if( e.hasOwnProperty( "item" ) ){
+					for( var i = 0; i < e.item.length; i++ ){
+						currentLayer.addChild( e.item[ i ] );
+					}
 					paper.view.draw();
 				}
 			});
