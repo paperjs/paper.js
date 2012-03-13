@@ -69,7 +69,7 @@ test('Item#moveAbove(item) / Item#moveBelow(item)', function() {
 		command();
 		equals(function() {
 			return item0.index;
-		}, indexes[0]);
+		}, indexes[0], command.toString());
 		equals(function() {
 			return item1.index;
 		}, indexes[1]);
@@ -84,13 +84,14 @@ test('Item#moveAbove(item) / Item#moveBelow(item)', function() {
 	testMove(function() { item1.moveBelow(item0) }, [1,0,2]);
 	testMove(function() { item1.moveBelow(item1) }, [0,1,2]);
 	testMove(function() { item1.moveBelow(item2) }, [0,1,2]);
-	testMove(function() { item2.moveBelow(item0) }, [2,0,1]);
+
+	testMove(function() { item2.moveBelow(item0) }, [1,2,0]);
 	testMove(function() { item2.moveBelow(item1) }, [0,2,1]);
 	testMove(function() { item2.moveBelow(item2) }, [0,1,2]);
  
 	testMove(function() { item0.moveAbove(item0) }, [0,1,2]);
 	testMove(function() { item0.moveAbove(item1) }, [1,0,2]);
-	testMove(function() { item0.moveAbove(item2) }, [1,2,0]);
+	testMove(function() { item0.moveAbove(item2) }, [2,0,1]);
 	testMove(function() { item1.moveAbove(item0) }, [0,1,2]);
 	testMove(function() { item1.moveAbove(item1) }, [0,1,2]);
 	testMove(function() { item1.moveAbove(item2) }, [0,2,1]);
