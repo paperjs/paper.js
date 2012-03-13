@@ -1169,8 +1169,10 @@ function(name) {
 	 * @return {Boolean} {@true it was inserted}
 	 */
 	insertAbove: function(item) {
-		return item._parent && item._parent.insertChild(
-				item._index + 1, this);
+		var index = item._index;
+		if (item._parent == this._parent && index < this._index)
+			 index++;
+		return item._parent.insertChild(index, this);
 	},
 
 	/**
@@ -1180,8 +1182,10 @@ function(name) {
 	 * @return {Boolean} {@true it was inserted}
 	 */
 	insertBelow: function(item) {
-		return item._parent && item._parent.insertChild(
-				item._index - 1, this);
+		var index = item._index;
+		if (item._parent == this._parent && index > this._index)
+			 index--;
+		return item._parent.insertChild(index, this);
 	},
 
 	/**
