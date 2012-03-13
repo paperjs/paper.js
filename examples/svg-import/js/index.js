@@ -1,6 +1,7 @@
 $( document ).ready( function(){
 	
-	var LIST_URL = "php/GetSvgList.php";
+	var LIST_URL = "php/GetSvgList.php?dir=svg";
+	var FONT_URL = "php/GetSvgList.php?dir=fonts";
 	var doc, list;
 	var currentLayer = null;
 	var files = {};
@@ -68,9 +69,9 @@ $( document ).ready( function(){
 			layers[ url ] = new paper.Layer();
 			paper.project.import( url, function( e ){ 
 				console.log( e );
-				if( e.hasOwnProperty( "item" ) ){
-					for( var i = 0; i < e.item.length; i++ ){
-						currentLayer.addChild( e.item[ i ] );
+				if( e.hasOwnProperty( "items" ) ){
+					for( var i = 0; i < e.items.length; i++ ){
+						currentLayer.addChild( e.items[ i ] );
 					}
 					paper.view.draw();
 				}

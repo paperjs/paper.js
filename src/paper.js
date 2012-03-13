@@ -108,13 +108,13 @@ var paper = new function() {
 /*#*/ include('color/Gradient.js');
 /*#*/ include('color/GradientStop.js');
 
-/*#*/ include('import/Importer.js');
-/*#*/ include('import/svg/SVGImporter.js');
+/*#*/ include('typography/Glyph.js');
+/*#*/ include('typography/Font.js');
 /*#*/ include('import/svg/SVGImportItem.js');
-/*#*/ include('import/svg/SVGImportRootItem.js');
 /*#*/ include('import/svg/SVGImportPaperItem.js');
 /*#*/ include('import/svg/SVGImportFontItem.js');
-/*#*/ include('typography/Font.js');
+/*#*/ include('import/Importer.js');
+/*#*/ include('import/svg/SVGImporter.js');
 
 
 /*#*/ if (options.browser) {
