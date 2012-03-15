@@ -5,12 +5,12 @@ body{
 }
 
 div.center {
-	width : 960px;
+	width : 990px;
 	margin : 20px auto;
 }
 
 div#list-container {
-	margin : 0px 0px 20px 20px;
+	margin : 0px 0px 20px 10px;
 }
 
 div#list-container select {
@@ -23,22 +23,8 @@ div#list-container select {
 }
 
 div.preview-container {
-	float: left;
 	border: 1px #00ff00 solid;
 	margin : 0px 10px;
-}
-
-div.preview-container.left{
-	margin-left : 20px;
-}
-
-.preview-canvas{
-	width : 450px;
-	height : 450px;
-}
-
-div#svg-canvas {
-	overflow: hidden;
 }
 
 span.preview-title {

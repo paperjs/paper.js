@@ -63,13 +63,13 @@ var SVGImportItem = Base.extend( new function(){
 	}
 
 	var font = {
-		"alt-glyph" : 0,
+	//	"alt-glyph" : 0,
 		"font" : 1,
 		"font-face" : 2,
-		"font-face-format" : 3,
-		"font-face-name" : 4,
-		"font-face-src" : 5,
-		"font-face-uri" : 6,
+	//	"font-face-format" : 3,
+	//	"font-face-name" : 4,
+	//	"font-face-src" : 5,
+	//	"font-face-uri" : 6,
 		"glyph" : 7,
 		"hkern" : 8,
 		"missing-glyph" : 9,
@@ -127,6 +127,40 @@ var SVGImportItem = Base.extend( new function(){
 		this.currentPosition = new Point( 0, 0 );
 		this.startPosition = new Point( 0, 0 );
 		this.lastControlPoint = null;
+	}
+
+	this.statics = new function(){
+		function isNumber( v ){
+			return !isNaN( v );
+		}
+
+		var map =  {
+			"float" : { "test" : isNumber, "parser" : parseFloat },
+			"int" : { "test" : isNumber, "parser" : parseInt },
+			"string" : { 
+				"test" : function( v ){
+					return  typeof v == "string" },
+				"parser" : function( v ){
+					return v.toString();
+				} 
+			}
+		}
+
+		this.getAttr = function( e, attr, type, defauld ){
+			if( e.hasAttribute( attr ) ){
+				try{
+					var parsed = map[ type ][ "parser" ]( 
+						e.getAttribute( attr ) );
+					if( map[ type ][ "test" ]( parsed ) ){
+						return parsed;	
+					}
+				} catch( err ){
+					throw new Error( "SVGImportItem::type of: "+
+						type+" not in map." );
+				}
+			}
+			return defauld;
+		}
 	}
 
 	this.toString = function(){

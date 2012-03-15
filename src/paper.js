@@ -110,6 +110,8 @@ var paper = new function() {
 
 /*#*/ include('typography/Glyph.js');
 /*#*/ include('typography/Font.js');
+/*#*/ include('typography/TextComposer.js');
+/*#*/ include('typography/TextField.js');
 /*#*/ include('import/svg/SVGImportItem.js');
 /*#*/ include('import/svg/SVGImportPaperItem.js');
 /*#*/ include('import/svg/SVGImportFontItem.js');

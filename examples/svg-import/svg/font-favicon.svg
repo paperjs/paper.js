@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32"
+   height="32"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.2 r9819"
+   sodipodi:docname="New document 1">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="16.368725"
+     inkscape:cy="26.719377"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1366"
+     inkscape:window-height="744"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-1020.3622)">
+    <text
+       xml:space="preserve"
+       style="font-size:62.53293991px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0000ff;fill-opacity:0.58904114;stroke:#00ff00;stroke-width:0.50053215;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Sans"
+       x="1.4507099"
+       y="1050.7284"
+       id="text2985"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan2987"
+         x="1.4507099"
+         y="1050.7284"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;fill-opacity:0.58904114;stroke:#00ff00;stroke-width:0.50053215;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Liberation Serif;-inkscape-font-specification:Liberation Serif">a</tspan></text>
+  </g>
+</svg>

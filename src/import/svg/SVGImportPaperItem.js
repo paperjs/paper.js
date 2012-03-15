@@ -5,7 +5,7 @@ var SVGImportPaperItem = SVGImportItem.extend( new function(){
 		this.paperitem = 
 			this[ this.list[ this.e.nodeName ][ "processor" ] ].call( this );
 
-		this.paperitem.remove();
+		//this.paperitem.remove();
 
 		if( this.transform != null ){
 			this.paperitem.transform( this.transform );

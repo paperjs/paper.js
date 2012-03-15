@@ -1,21 +1,21 @@
 $( document ).ready( function(){
-	
-	var LIST_URL = "php/GetSvgList.php?dir=svg";
+
+	var FONT_URL = "php/GetSvgList.php?dir=fonts";
 	var doc, list;
 	var currentLayer = null;
 	var files = {};
-	var svgCanvas = $( "div#svg-canvas" );
 	var canvas = $( "canvas#paper-canvas" );
 	var title = $( "title" ).html();
 	var layers = {};
+	var testString = "ABCDEFRGHIJKLMNOPQRSTUVWXYZ";
 	paper.setup( canvas[ 0 ] );
 
 	$.ajax({
-		"url" : LIST_URL,
+		"url" : FONT_URL,
 		"dataType" : "xml",
 		"header" : { "Cache-Control" : "no-cache" },
 		"success" : function( e ){ 
-				makeList( e, "svg-select-list" ) }
+			makeList( e, "font-select-list" ) }
 	});
 
 	function makeList( e, id ){
@@ -43,20 +43,12 @@ $( document ).ready( function(){
 				"header" : { "Cache-Control" : "no-cache" },
 				"success" : function( d ){
 					files[ this.url ] = d;
-					showSVG(this.url  );
+					paperImport( this.url  );
 				}
 			});
 		} else {
-			showSVG( e.target.value );
+			paperImport( e.target.value );
 		}
-	}
-
-	function showSVG( url ){
-		$( "title" ).html( title + url );
-		var c = $( files[ url ].documentElement ).clone( false );
-		svgCanvas.empty();
-		svgCanvas.append( c );
-		paperImport( url );
 	}
 
 	function paperImport( url ){
@@ -68,16 +60,27 @@ $( document ).ready( function(){
 		if( !layers.hasOwnProperty( url ) ){
 			layers[ url ] = new paper.Layer();
 			paper.project.import( url, function( e ){ 
-				console.log( e );
-				if( e.hasOwnProperty( "items" ) ){
-					for( var i = 0; i < e.items.length; i++ ){
-						currentLayer.addChild( e.items[ i ] );
+				if( e.hasOwnProperty( "fonts" ) ){
+					for( var i = 0; i < e.fonts.length; i++ ){
+						makeFontTable( e.fonts[ i ], layers[ url ] );
+						switchLayers( layers[ url ] );
 					}
-					paper.view.draw();
 				}
 			});
+		} else {
+			switchLayers( layers[ url ] );
 		}
-		currentLayer = layers[ url ];
+	}
+
+	function makeFontTable( font, layer ){
+		var tf = new paper.TextField( font, 3, 
+			new paper.Rectangle( 10, 10, 800, 300 ) );
+		tf.text = testString;
+		layer.addChild( tf );
+	}
+
+	function switchLayers( layer ){
+		currentLayer = layer
 		currentLayer.visible = true;
 		paper.view.draw();
 	}

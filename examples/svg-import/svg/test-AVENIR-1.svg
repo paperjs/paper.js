@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" > <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+<defs >
+<font id="AVENIR-1" horiz-adv-x="446" ><font-face
+    font-family="Avenir"
+    units-per-em="1000"
+    panose-1="2 0 5 3 4 0 0 2 0 3"
+    ascent="750"
+    descent="-170"
+    alphabetic="0" />
+<missing-glyph horiz-adv-x="278" />
+<glyph unicode="$" glyph-name="dollar" horiz-adv-x="556" d="M254 328Q220 338 186 353T124 392T79 448T61 527Q61 570 77 605T121 665T182 704T254 722V792H302V724Q338 724 366 717T416 698T455 671T487 639L431 591Q410 626 374 642T302 658V391Q339 378
+375 362T440 321T487 262T505 178Q505 136 490 102T447 42T382 2T302 -16V-84H254V-18Q184 -14 129 17T43 92L103 135Q119 114 139 98T179 71T218 55T254 49V328ZM302 50Q321 50 344 56T386 77T419 116T433 178Q434 229 397 262T302 314V50ZM254 657Q227 655 205
+645T167 617T142 578T133 529Q133 503 142 484T168 451T207 425T254 405V657Z">
+	<rect x="0" y="0" width="10" height="10" />;
+</glyph>
+
+</font>
+</defs>
+</svg>
