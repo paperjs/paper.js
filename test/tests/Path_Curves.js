@@ -38,6 +38,11 @@ test('path.curves Synchronisation', function() {
 	path.removeSegments(1, 2);
 	equals(path.segments.toString(), "{ point: { x: 0, y: 100 } },{ point: { x: 100, y: 100 } }", "path.segments: path.add(new Point(100, 100));\npath.removeSegments(1, 2);");
 	equals(path.curves.toString(), "{ point1: { x: 0, y: 100 }, point2: { x: 100, y: 100 } },{ point1: { x: 100, y: 100 }, point2: { x: 0, y: 100 } }", "path.curves: path.add(new Point(100, 100));\npath.removeSegments(1, 2);");
+	
+	// Transform the path, and the curves length should be invalidated (first, force-cache the first segment's length by accessing it
+	path.curves[0].length;
+	path.scale(2, [0, 0]);
+	equals(path.curves[0].length, 200, 'Curve length should be updated when path is transformed')
 });
 
 test('path.flatten(maxDistance)', function() {
