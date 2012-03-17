@@ -41,6 +41,7 @@ test('path.curves Synchronisation', function() {
 	
 	// Transform the path, and the curves length should be invalidated (first, force-cache the first segment's length by accessing it
 	path.curves[0].length;
+	ok(path.curves[0]._length, 'Curve length does not appear to be cached');
 	path.scale(2, [0, 0]);
 	equals(path.curves[0].length, 200, 'Curve length should be updated when path is transformed')
 });
