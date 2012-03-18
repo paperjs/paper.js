@@ -280,7 +280,7 @@ var SVGImportItem = Base.extend( new function(){
 	this.getPathStyle = function( e ){
 		var style = new PathStyle({
 			strokeColor : new RgbColor( 0, 255, 0 ),
-			fillColor : new RgbColor( 0, 0, 255, 0.1 ),
+			fillColor : new RgbColor( 0, 0, 255, 0.5 ),
 			strokeWidth : 1 });
 				 
 			return style;

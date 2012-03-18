@@ -17,10 +17,12 @@ new function(){
 				"padding:0px;"+
 				"margin:0px;"+
 				"visibility:hidden;" );
-			document.getElementsByTagName( "body" )[ 0 ].appendChild( d );
+			document.getElementsByTagName( "body" )[ 0 ]
+				.appendChild( d );
+
 			EM = d.offsetHeight;
-			document.getElementsByTagName( "body" )[ 0 ].removeChild( d );
-			console.log( EM );
+			document.getElementsByTagName( "body" )[ 0 ]
+				.removeChild( d );
 		}
 	})();
 
@@ -188,5 +190,33 @@ new function(){
 			this._cache[ unicode ][ size ] = g.getInstance( size );
 		}
 		return this._cache[ unicode ][ size ].clone();
+	}
+
+	this.getGlyphsFromString = function( string, size ){
+		var index = 0;
+		var g = [];
+		var s;
+		var isLigature = true;
+
+		for( var i = 0; i < string.length; i++ ){
+			s = string[ i ];
+			isLigature = true;
+			while( isLigature ){
+				if( this._glyphs.hasOwnProperty( ( s + string[ i + 1 ] ) ) ){
+					s += string[ ++i ];
+				
+				} else {
+					isLigature = false;
+				}
+			}
+			g.push( this.getGlyph( s, size ) );
+		}
+		return g;
+	}
+
+	this.compile = function(){
+		for( var g in this._glyphs ){
+			this._glyphs[ g ].compile();
+		}
 	}
 });

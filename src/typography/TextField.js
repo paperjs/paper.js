@@ -18,7 +18,7 @@ new function(){
 	}
 
 	this.setText = function( text ){
-	//	this.removeChildren();
+		this.removeChildren();
 		this._text = text;
 		this.addChildren( this._composer.composeText( this._text ) );
 	}

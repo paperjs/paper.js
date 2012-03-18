@@ -63,7 +63,7 @@ var SVGImportFontItem = SVGImportItem.extend( new function(){
 	}
 
 	this.finalize = function(){
-		
+		this.font.compile();
 	}
 },
 new function(){
@@ -146,7 +146,8 @@ new function(){
 		importItem = makeGlyphGraphics.call( this, e );
 		
 		try{
-			glyph.insertChild( 0, importItem.getImports() );
+			//glyph.insertChild( 0, importItem.getImports() );
+			copyContent( importItem.getImports(), glyph );
 		}catch( err ){
 			console.log( err.message+" @unicode: "+unicode );
 		}
@@ -164,7 +165,7 @@ new function(){
 		configureGlyph.call( this, e, glyph );
 		this.font.missingGlyph = glyph;
 		try{
-			glyph.insertChild( 0, importItem.getImports() );
+			copyContent( importItem.getImports(), glyph );
 		} catch( err ){
 			console.log( "hallo" );
 		}
@@ -212,7 +213,6 @@ new function(){
 			outer, this.importer );
 			
 		importItem.traverse();
-		importItem.paperitem.scale( 1, -1 );
 		return importItem;
 	}
 
@@ -232,6 +232,13 @@ new function(){
 		glyph.verticalOrigin = new Point( vox, voy );
 
 		return glyph;
+	}
+
+	function copyContent( container, target ){
+		for( var i = 0; i < container.children.length; i++ ){
+		//	container.children[ i ].scale( 1, -1 );
+			container.children[ i ].copyTo( target );
+		}
 	}
 
 });

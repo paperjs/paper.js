@@ -7,7 +7,7 @@ $( document ).ready( function(){
 	var canvas = $( "canvas#paper-canvas" );
 	var title = $( "title" ).html();
 	var layers = {};
-	var testString = "ABCDEFRGHIJKLMNOPQRSTUVWXYZ";
+	var testString = "1234567890";
 	paper.setup( canvas[ 0 ] );
 
 	$.ajax({
