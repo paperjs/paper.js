@@ -29,7 +29,7 @@ var Glyph = this.Glyph = Group.extend( new function(){
 		for( var d in this._debug ){
 			de = this._debug[ d ];
 			de.strokeWidth = 1;
-			de.strokeColor = new RGBColor( 255, 0, 0 );
+			de.strokeColor = new RgbColor( 255, 0, 0 );
 			this.addChild( de );
 		}
 	}
@@ -83,7 +83,7 @@ var Glyph = this.Glyph = Group.extend( new function(){
 	this.compile = function(){
 		var r = new Rectangle( this.bounds );
 		this._debug.c = new Path.Circle( r.center.clone(), 10 );
-		this._debug.c.style = { strokeColor : new RGBColor( 255,0,0 ), strokeWidth : 3 };
+		this._debug.c.style = { strokeColor : new RgbColor( 255,0,0 ), strokeWidth : 3 };
 		this.addChild( this._debug.c );
 
 		this._origin = r.center.clone();
@@ -115,7 +115,7 @@ new function(){
 		this.create = function( glyph, size ){
 			var gi = new GlyphInstance();
 			var font = glyph._font;
-			var scale = Font.EM / font.unitsPerEM * size;
+			var scale = /*Font.EM*/ 1 / font.unitsPerEM * size;
 			
 
 			for( var i = 0; i < glyph.children.length; i++ ){

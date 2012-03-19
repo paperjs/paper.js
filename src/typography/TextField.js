@@ -4,9 +4,9 @@ new function(){
 		this.base();
 		var frame = new Path.Rectangle( bounds );
 		frame.strokeWidth = 1;
-		frame.strokeColor = new RGBColor( 0, 255, 0 );
+		frame.strokeColor = new RgbColor( 0, 255, 0 );
 		this.addChild( frame );
-		this._text = "ass";
+		this._text = "";
 		this._composer = new TextComposer( font, fontSize, bounds );
 		this._font = font;
 		this._fontSize = fontSize;

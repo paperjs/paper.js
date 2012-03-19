@@ -1,7 +1,7 @@
 var TextComposer = this.TextComposer = Base.extend(
 new function(){
 	this.initialize = function( font, fontSize, frame ){
-		this._cursor = new Point( 0, 100 );
+		this._cursor = new Point( 0, fontSize );
 		this._font = font;
 		this._fontSize = fontSize;
 		this._frame = frame;
