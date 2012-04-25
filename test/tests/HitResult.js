@@ -410,4 +410,52 @@ test('hitting guides', function() {
 	}
 });
 
+test('hitting raster items', function() {
+	// Create a path, rasterize it and then remove the path:
+	var path = new Path.Rectangle(new Point(), new Size(320, 240));
+	path.fillColor = 'red';
+	var raster = path.rasterize();
+	
+	var hitResult = paper.project.hitTest(new Point(160, 120));
+
+	equals(function() {
+		return hitResult && hitResult.item == raster;
+	}, true, 'Hit raster item before moving');
+	
+	// Move the raster:
+	raster.translate(100, 100);
+	
+	var hitResult = paper.project.hitTest(new Point(160, 120));
+
+	equals(function() {
+		return hitResult && hitResult.item == raster;
+	}, true, 'Hit raster item after moving');	
+});
+
+test('hitting path with a text item in the project', function() {
+    var path = new Path.Rectangle(new Point(50, 50), new Point(100, 100));
+    path.fillColor = 'blue';
+	
+	var hitResult = paper.project.hitTest(new Point(75, 75));
+
+	equals(function() {
+		return hitResult && hitResult.item == path;
+	}, true, 'Hit path item before adding text item');
+
+	var text1 = new PointText(30, 30);
+	text1.content = "Text 1";
+
+	var hitResult = paper.project.hitTest(new Point(75, 75));
+	
+	equals(function() {
+		return !!hitResult;
+	}, true, 'A hitresult should be returned.');
+
+	equals(function() {
+		return !!hitResult && hitResult.item == path;
+	}, true, 'We should have hit the path');
+	
+});
+
+
 // TODO: project.hitTest(point, {type: AnItemType});
