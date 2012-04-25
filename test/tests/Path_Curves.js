@@ -43,7 +43,7 @@ test('path.curves Synchronisation', function() {
 	path.curves[0].length;
 	ok(path.curves[0]._length, 'Curve length does not appear to be cached');
 	path.scale(2, [0, 0]);
-	equals(path.curves[0].length, 200, 'Curve length should be updated when path is transformed')
+	equals(path.curves[0].length, 200, 'Curve length should be updated when path is transformed');
 });
 
 test('path.flatten(maxDistance)', function() {
