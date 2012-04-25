@@ -108,7 +108,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 
 	setCharacterStyle: function(style) {
 		this.setStyle(style);
-	},
+	}
 
 	/**
 	 * The paragraph style of the text item.
