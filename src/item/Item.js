@@ -1961,7 +1961,6 @@ function(name) {
 			scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
 					? rectangle.width / bounds.width
 					: rectangle.height / bounds.height,
-			delta = rectangle.getCenter().subtract(bounds.getCenter()),
 			newBounds = new Rectangle(new Point(),
 					Size.create(bounds.width * scale, bounds.height * scale));
 		newBounds.setCenter(rectangle.getCenter());
