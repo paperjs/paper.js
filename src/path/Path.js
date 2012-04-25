@@ -70,8 +70,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			delete this._clockwise;
 			// Curves are no longer valid
 			if (this._curves != null) {
-				for (var i = 0; i < this._curves.length; i++)
-					this._curves[i]._changed(Change.GEOMETRY)
+				for (var i = 0, l = this._curves.length; i < l; i++) {
+					this._curves[i]._changed(Change.GEOMETRY);
+				}
 			}
 		} else if (flags & ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
