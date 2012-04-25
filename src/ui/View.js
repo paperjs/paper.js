@@ -274,7 +274,11 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	setCenter: function(center) {
-		this.scrollBy(Point.read(arguments).subtract(this.getCenter()));
+		this.scrollBy((
+			this._matrix.transform(Point.read(arguments).subtract(this.getCenter()))
+		).subtract(
+			this._matrix.transform([0, 0])
+		));
 	},
 
 	/**
@@ -290,7 +294,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	setZoom: function(zoom) {
 		// TODO: Clamp the view between 1/32 and 64, just like Illustrator?
 		this._transform(new Matrix().scale(zoom / this._zoom,
-			this.getCenter()));
+			this._matrix.transform(this.getCenter())));
 		this._zoom = zoom;
 	},
 
