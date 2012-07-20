@@ -13,7 +13,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Mar 2 03:30:25 2012 -0800
+ * Date: Wed Apr 25 20:47:53 2012 +0200
  *
  ***
  *
@@ -2460,13 +2460,17 @@ function(name) {
 	},
 
 	insertAbove: function(item) {
-		return item._parent && item._parent.insertChild(
-				item._index + 1, this);
+		var index = item._index;
+		if (item._parent == this._parent && index < this._index)
+			 index++;
+		return item._parent.insertChild(index, this);
 	},
 
 	insertBelow: function(item) {
-		return item._parent && item._parent.insertChild(
-				item._index - 1, this);
+		var index = item._index;
+		if (item._parent == this._parent && index > this._index)
+			 index--;
+		return item._parent.insertChild(index, this);
 	},
 
 	appendTop: function(item) {
@@ -2698,7 +2702,6 @@ function(name) {
 			scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
 					? rectangle.width / bounds.width
 					: rectangle.height / bounds.height,
-			delta = rectangle.getCenter().subtract(bounds.getCenter()),
 			newBounds = new Rectangle(new Point(),
 					Size.create(bounds.width * scale, bounds.height * scale));
 		newBounds.setCenter(rectangle.getCenter());
@@ -4177,6 +4180,11 @@ var Path = this.Path = PathItem.extend({
 		if (flags & ChangeFlag.GEOMETRY) {
 			delete this._length;
 			delete this._clockwise;
+			if (this._curves != null) {
+				for (var i = 0, l = this._curves.length; i < l; i++) {
+					this._curves[i]._changed(Change.GEOMETRY);
+				}
+			}
 		} else if (flags & ChangeFlag.STROKE) {
 			delete this._bounds;
 		}
@@ -5803,7 +5811,7 @@ var TextItem = this.TextItem = Item.extend({
 
 	setCharacterStyle: function(style) {
 		this.setStyle(style);
-	},
+	}
 
 });
 
@@ -6405,6 +6413,7 @@ var GradientColor = this.GradientColor = Color.extend({
 
 	initialize: function(gradient, origin, destination, hilite) {
 		this.gradient = gradient || new Gradient();
+		this.gradient._addOwner(this);
 		this.setOrigin(origin);
 		this.setDestination(destination);
 		if (hilite)
@@ -6497,6 +6506,26 @@ var Gradient = this.Gradient = Base.extend({
 		this.type = type || 'linear';
 	},
 
+	_changed: function() {
+		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
+			this._owners[i]._changed();
+	},
+
+	_addOwner: function(color) {
+		if (!this._owners)
+			this._owners = [];
+		this._owners.push(color);
+	},
+
+	_removeOwner: function(color) {
+		var index = this._owners ? this._owners.indexOf(color) : -1;
+		if (index != -1) {
+			this._owners.splice(index, 1);
+			if (this._owners.length == 0)
+				delete this._owners;
+		}
+	},
+
 	clone: function() {
 		var stops = [];
 		for (var i = 0, l = this._stops.length; i < l; i++)
@@ -6509,15 +6538,22 @@ var Gradient = this.Gradient = Base.extend({
 	},
 
 	setStops: function(stops) {
+		if (this.stops) {
+			for (var i = 0, l = this._stops.length; i < l; i++) {
+				this._stops[i]._removeOwner(this);
+			}
+		}
 		if (stops.length < 2)
 			throw new Error(
 					'Gradient stop list needs to contain at least two stops.');
 		this._stops = GradientStop.readAll(stops);
 		for (var i = 0, l = this._stops.length; i < l; i++) {
 			var stop = this._stops[i];
+			stop._addOwner(this);
 			if (stop._defaultRamp)
 				stop.setRampPoint(i / (l - 1));
 		}
+		this._changed();
 	},
 
 	equals: function(gradient) {
@@ -6552,6 +6588,26 @@ var GradientStop = this.GradientStop = Base.extend({
 		return new GradientStop(this._color.clone(), this._rampPoint);
 	},
 
+	_changed: function() {
+		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
+			this._owners[i]._changed(Change.STYLE);
+	},
+
+	_addOwner: function(gradient) {
+		if (!this._owners)
+			this._owners = [];
+		this._owners.push(gradient);
+	},
+
+	_removeOwner: function(gradient) {
+		var index = this._owners ? this._owners.indexOf(gradient) : -1;
+		if (index != -1) {
+			this._owners.splice(index, 1);
+			if (this._owners.length == 0)
+				delete this._owners;
+		}
+	},
+
 	getRampPoint: function() {
 		return this._rampPoint;
 	},
@@ -6559,6 +6615,7 @@ var GradientStop = this.GradientStop = Base.extend({
 	setRampPoint: function(rampPoint) {
 		this._defaultRamp = rampPoint == null;
 		this._rampPoint = rampPoint || 0;
+		this._changed();
 	},
 
 	getColor: function() {
@@ -6566,7 +6623,11 @@ var GradientStop = this.GradientStop = Base.extend({
 	},
 
 	setColor: function(color) {
+		if (this._color)
+			this._color._removeOwner(this);
 		this._color = Color.read(arguments);
+		this._color._addOwner(this);
+		this._changed();
 	},
 
 	equals: function(stop) {
