@@ -693,7 +693,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		for (var i = 0; i <= degree; i++)
 			w[i] = new Point(i / degree, 0);
 
-		for (k = 0; k <= degree; k++) {
+		for (var k = 0; k <= degree; k++) {
 			var lb = Math.max(0, k - n + 1),
 				ub = Math.min(k, n);
 			for (var i = lb; i <= ub; i++) {
