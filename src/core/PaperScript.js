@@ -155,7 +155,7 @@ var PaperScript = this.PaperScript = new function() {
 	function evaluate(code, scope) {
 		// Set currently active scope.
 		paper = scope;
-		var view = scope.project.view,
+		var view = scope.project && scope.project.view,
 			res;
 		// Define variables for potential handlers, so eval() calls below to
 		// fetch their values do not require try-catch around them.
