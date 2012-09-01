@@ -1,9 +1,7 @@
 var fs = require('fs'),
 	vm = require('vm'),
 	path = require('path'),
-	// Have HTMLCanvasElement reference Canvas too, so we do not handle browser
-	// and server differently in some places of our code.
-	Canvas = HTMLCanvasElement =require('canvas');
+	Canvas = require('canvas');
 
 __dirname = path.resolve(__dirname, '../src/');
 
@@ -16,6 +14,7 @@ var context = vm.createContext({
 	fs: fs,
 	// Node Canvas library: https://github.com/learnboost/node-canvas
 	Canvas: Canvas,
+	HTMLCanvasElement: Canvas,
 	Image: Canvas.Image,
 	// Copy over global variables:
     console: console,
