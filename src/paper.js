@@ -93,6 +93,9 @@ var paper = new function() {
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');
 
+/*#*/ include('svg/ExportSVG.js');
+/*#*/ include('svg/ImportSVG.js');
+
 /*#*/ include('style/Style.js');
 /*#*/ include('style/PathStyle.js');
 /*#*/ include('style/ParagraphStyle.js');
