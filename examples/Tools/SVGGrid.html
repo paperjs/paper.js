@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Grid</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../src/svg/ExportSVG.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		/////////////////////////////////////////////////////////////////////
+		// Values
+
+		tool.fixedDistance = 10;
+
+		var values = { size: tool.fixedDistance };
+
+		/////////////////////////////////////////////////////////////////////
+		// Mouse handling
+
+		var point, path;
+
+		function getPos(pt) {
+			return (pt / values.size).round() * values.size;
+		}
+
+		function onMouseDown(event) {
+			point = getPos(event.point);
+			path = new Path();
+			path.strokeColor = 'black';
+			path.add(point);
+		}
+
+		function onMouseDrag(event) {
+			var p = getPos(event.point);
+			if (point != p) {
+				path.add(p);
+				point = p;
+			}
+				var svg = new ExportSVG();
+				var svgout = svg.exportPath(path);
+				console.log(svgout);
+		}
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+</body>
+</html>
