@@ -55,7 +55,7 @@ var ImportSVG = this.ImportSVG = Base.extend({
 	 * takes a svg circle node (xml dom)
 	 * returns Paper.js Path.Circle item
 	 */
-	createCircle: function(svgCircle)
+	importCircle: function(svgCircle)
 	{
 		var cx		= svgCircle.cx.baseVal.value || 0;
 		var cy		= svgCircle.cy.baseVal.value || 0;
@@ -72,7 +72,7 @@ var ImportSVG = this.ImportSVG = Base.extend({
 	 * takes a svg ellipse node (xml dom)
 	 * returns Paper.js Path.Oval item
 	 */
-	createOval: function(svgOval)
+	importOval: function(svgOval)
 	{
 		var cx			= svgOval.cx.baseVal.value || 0;
 		var cy			= svgOval.cy.baseVal.value || 0;
@@ -98,7 +98,7 @@ var ImportSVG = this.ImportSVG = Base.extend({
 	 *   - Path.Rectangle item
 	 *   - Path.RoundRectangle item (if the rectangle has rounded corners)
 	 */
-	createRectangle: function(svgRectangle)
+	importRectangle: function(svgRectangle)
 	{
 		var x			= svgRectangle.x.baseVal.value || 0;
 		var y			= svgRectangle.y.baseVal.value || 0;
@@ -127,7 +127,7 @@ var ImportSVG = this.ImportSVG = Base.extend({
 	 * takes a svg line node (xml dom)
 	 * returns a Path.Line item
 	 */
-	createLine: function(svgLine)
+	importLine: function(svgLine)
 	{
 		var x1		= svgLine.x1.baseVal.value || 0;
 		var y1		= svgLine.y1.baseVal.value || 0;
