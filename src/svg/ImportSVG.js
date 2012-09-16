@@ -5,7 +5,6 @@
  */
 
 var ImportSVG = this.ImportSVG = Base.extend({
-{
 	//initialize
 	initialize: function()
 	{
@@ -13,7 +12,6 @@ var ImportSVG = this.ImportSVG = Base.extend({
 	},
 
 	/**
-	 *
 	 * Takes the svg dom obj and parses the data
 	 * to create a layer with groups (if needed) with
 	 * items inside. Should support nested groups.
