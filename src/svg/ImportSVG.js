@@ -4,13 +4,13 @@
  *
  */
 
-var ImportSVG = function()
+var ImportSVG = this.ImportSVG = Base.extend({
 {
     //initialize
-    function initialize()
+    initialize: function()
     {
 
-    };
+    },
 
     /**
      *
@@ -21,10 +21,10 @@ var ImportSVG = function()
      * takes in a svg object (xml dom)
      * returns Paper.js Layer
      */
-    this.importSVG = function(svg)
+    importSVG: function(svg)
     {
-        return layer;
-    };
+        //TODO: return layer;
+    },
 
     /**
      * Creates a Paper.js Group by parsing
@@ -33,10 +33,10 @@ var ImportSVG = function()
      * takes in a svg object (xml dom)
      * returns Paper.js Group
      */
-    function importGroup(svg)
+    importGroup: function(svg)
     {
-        return group;
-    };
+        //TODO: return group;
+    },
 
     /**
      * Creates a Paper.js Path by parsing
@@ -46,10 +46,8 @@ var ImportSVG = function()
      * takes in a svg object (xml dom)
      * returns Paper.js Group
      */
-    function importPath(svg)
+    importPath: function(svg)
     {
-        return path;
-    };
-
-    initialize(); // calls the init function after class is loaded
-};
+        //TODO: return path;
+    }
+});
