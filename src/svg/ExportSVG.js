@@ -112,9 +112,17 @@ var ExportSVG = function()
 	var segArray = pathClone.getSegments();
 
 	var pointArray = new Array();
+	var handleInArray = new Array();
+	var handleOutArray = new Array();
 	for(i = 0; i < segArray.length; i++)
 	{		
 		pointArray[i] = segArray[i].getPoint();
+		handleInArray[i] = segArray[i].getHandleIn();
+		handleOutArray[i] = segArray[i].getHandleOut();
+
+		console.log("point " + i + ": " + pointArray[i]);
+		console.log("HI " + i + ": " + handleInArray[i]);
+		console.log("HO " + i + ": " + handleOutArray[i]);
 	}
 	var pointString = "";
 	for(i = 0; i < pointArray.length; i++)
@@ -137,19 +145,29 @@ var ExportSVG = function()
 		pointString += "z";
 	}
 	
-	var strokeRed = RGBconverter(pathClone.strokeColor.red);
-	var strokeGreen = RGBconverter(pathClone.strokeColor.green);
-	var strokeBlue = RGBconverter(pathClone.strokeColor.blue);
-	var strokeRGB = "#" + strokeRed + strokeGreen + strokeBlue;
-	
-	var fillRed = RGBconverter(pathClone.fillColor.red);
-	var fillGreen = RGBconverter(pathClone.fillColor.green);
-	var fillBlue = RGBconverter(pathClone.fillColor.blue);
-	var fillRGB = "#" + fillRed + fillGreen + fillBlue;
+	svgPath.setAttribute("d",pointString);
 
-	svgPath.setAttribute("d", pointString);
-	svgPath.setAttribute("stroke", strokeRGB);
-	svgPath.setAttribute("fill", fillRGB);
+	if(pathClone.strokeColor != undefined)
+	{
+		var strokeRed = pathClone.strokeColor.red;
+		var strokeGreen = pathClone.strokeColor.green;
+		var strokeBlue = pathClone.strokeColor.blue;
+		var strokeRGB = RGBtoHex(strokeRed, strokeGreen, strokeBlue);
+		svgPath.setAttribute("stroke", strokeRGB);
+	}
+	
+	if(pathClone.fillColor != undefined)
+	{
+		var fillRed = pathClone.fillColor.red;
+		var fillGreen = pathClone.fillColor.green;
+		var fillBlue = pathClone.fillColor.blue;
+		var fillRGB = RGBtoHex(fillRed, fillGreen, fillBlue);
+		svgPath.setAttribute("fill", fillRGB);
+	}
+
+	//svgPath.setAttribute("d", pointString);
+	//svgPath.setAttribute("stroke", strokeRGB);
+	//svgPath.setAttribute("fill", fillRGB);
 	svgPath.setAttribute("stroke-width",pathClone.strokeWidth);
 	svgObj.appendChild(svgPath);i
 
@@ -157,13 +175,22 @@ var ExportSVG = function()
 	return svgObj;
     };
 
-    function RGBconverter(deciColor)
+    function RGBConverter(deciColor)
     {
 	var decColor = Math.round(deciColor * 255);
 	var hexColor = decColor.toString(16);
 	hexColor = hexColor.length > 1? hexColor : "0" + hexColor;
 	return hexColor;
     };
+
+    function RGBtoHex(red, green, blue)
+    {
+    	var redVal = RGBConverter(red);
+	var greenVal = RGBConverter(green);
+	var blueVal = RGBConverter(blue);
+	return "#" + redVal + greenVal + blueVal;
+    }
+
 
     //initialize(); // calls the init function after class is loaded
 };
