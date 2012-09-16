@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Circles</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../src/svg/ExportSVG.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+			// All newly created items will receive
+			// these style properties:
+			project.currentStyle = {
+				fillColor: 'white',
+				strokeColor: 'black'
+			};
+
+			var path;
+			function onMouseDrag(event) {
+				// The radius is the distance between the position
+				// where the user clicked and the current position
+				// of the mouse.
+				var radius = (event.downPoint - event.point).length;
+				path = new Path.Circle(event.downPoint, radius);
+				var svg = new ExportSVG();
+				var svgout = svg.exportPath(path);
+				console.log(svgout);
+				path.removeOnDrag();
+
+			};
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+</body>
+</html>
