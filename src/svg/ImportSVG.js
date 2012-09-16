@@ -8,7 +8,7 @@ var ImportSVG = this.ImportSVG = Base.extend({
     //initialize
     initialize: function()
     {
-    
+
     },
 
     /**
@@ -22,7 +22,7 @@ var ImportSVG = this.ImportSVG = Base.extend({
      */
     importSVG: function(svg)
     {
-        // return layer;
+        //TODO: return layer;
     },
 
     /**
@@ -34,7 +34,7 @@ var ImportSVG = this.ImportSVG = Base.extend({
      */
     importGroup: function(svg)
     {
-        // return group;
+        //TODO: return group;
     },
 
     /**
@@ -47,7 +47,7 @@ var ImportSVG = this.ImportSVG = Base.extend({
      */
     importPath: function(svg)
     {
-        // return path;
+        //TODO: return path;
     },
 
     /**
@@ -141,6 +141,4 @@ var ImportSVG = this.ImportSVG = Base.extend({
 
         return line;
     }
-	
-    // initialize(); // calls the init function after class is loaded
 });
