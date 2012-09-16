@@ -21,7 +21,11 @@ var ImportSVG = this.ImportSVG = Base.extend({
 	 */
 	importSVG: function(svg)
 	{
-		//TODO: return layer;
+		var layer = new Layer();
+		groups = this.importGroup(svg);
+		layer.addChild(groups);
+
+		return layer;
 	},
 
 	/**
@@ -33,7 +37,18 @@ var ImportSVG = this.ImportSVG = Base.extend({
 	 */
 	importGroup: function(svg)
 	{
-		//TODO: return group;
+		var group = new Group();
+		var child;
+		for (var i in svg.childNodes) {
+			child = svg.childNodes[i];
+			if (child.nodeType != 1) {
+				continue;
+			}
+			item = this.importPath(child);
+			group.addChild(item);
+		}
+		
+		return group;
 	},
 
 	/**
@@ -42,11 +57,28 @@ var ImportSVG = this.ImportSVG = Base.extend({
 	 * and creating the right path object based on the svg type.
 	 *
 	 * takes in a svg object (xml dom)
-	 * returns Paper.js Group
+	 * returns Paper.js Item
 	 */
 	importPath: function(svg)
 	{
-		//TODO: return path;
+		switch (svg.nodeName.toLowerCase()) {
+			case 'line':
+				item = this.importLine(svg);
+				break;
+			case 'rect':
+				item = this.importRectangle(svg);
+				break;
+			case 'ellipse':
+				item = this.importOval(svg);
+				break;
+			case 'g':
+				item = this.importGroup(svg);
+				break;
+			default:
+			break;
+		}
+		
+		return item;
 	},
 
 	/**
