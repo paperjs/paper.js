@@ -68,6 +68,9 @@ var ImportSVG = this.ImportSVG = Base.extend({
 			case 'g':
 				item = this.importGroup(svg);
 				break;
+			case 'text':
+				item = this._importText(svg);
+				break;
 			default:
 			break;
 		}
@@ -165,5 +168,31 @@ var ImportSVG = this.ImportSVG = Base.extend({
 		var line	= new Path.Line(from, to);
 
 		return line;
+	},
+
+	/**
+	 * Creates a PointText Paper.js item
+	 *
+	 * takes a svg text node (xml dom)
+	 * returns a PointText item
+	 */
+	_importText: function(svgText)
+	{
+		//TODO: Extend this for multiple values
+		var x	= svgText.x.baseVal.getItem(0).value || 0;
+		var y	= svgText.y.baseVal.getItem(0).value || 0;
+		//END:Todo
+		
+		var dx; //character kerning
+		var dy; //character baseline
+		var rotate; //character rotation
+		var textLength; //the width of the containing box
+		var lengthAdjust; //
+		var textContent = svgText.textContent || "";
+		
+		var topLeft = new Point(x, y);
+		var text = new PointText(topLeft);
+		text.content = textContent;
+		return text;
 	}
 });
