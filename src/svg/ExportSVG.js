@@ -115,7 +115,8 @@ var ExportSVG = function()
 	var handleInArray = new Array();
 	var handleOutArray = new Array();
 	for(i = 0; i < segArray.length; i++)
-	{		
+	{	
+		console.log(segArray[i].toString());
 		pointArray[i] = segArray[i].getPoint();
 		handleInArray[i] = segArray[i].getHandleIn();
 		handleOutArray[i] = segArray[i].getHandleOut();
@@ -128,9 +129,9 @@ var ExportSVG = function()
 	for(i = 0; i < pointArray.length; i++)
 	{
 		var x = pointArray[i].getX();
-		x = x - (x % 1);
+		//x = x - (x % 1);
 		var y = pointArray[i].getY();
-		y = y - (y % 1);
+		//y = y - (x % 1);
 		if(i === 0)
 		{
 			pointString+= "M " + x + " " + y + " ";
@@ -169,7 +170,7 @@ var ExportSVG = function()
 	//svgPath.setAttribute("stroke", strokeRGB);
 	//svgPath.setAttribute("fill", fillRGB);
 	svgPath.setAttribute("stroke-width",pathClone.strokeWidth);
-	svgObj.appendChild(svgPath);i
+	svgObj.appendChild(svgPath);
 
 	console.log(svgObj);
 	return svgObj;
