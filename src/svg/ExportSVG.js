@@ -92,23 +92,11 @@ var ExportSVG = function()
     {
     	//this.initialize();
     	//console.log(blarg.svgObj);
+	var pathClone = path.clone();
 	var NS = "http://www.w3.org/2000/svg";
 	svgObj = document.createElementNS(NS,"svg");
-	svgRect = document.createElementNS(NS,"rect");
-	svgRect.height.baseVal.value = 50;
-	svgRect.width.baseVal.value = 60;
-	svgRect.x.baseVal.value = 50;
-	svgObj.appendChild(svgRect);
-
-	svgPoint = document.createElementNS(NS,"point");
-	svgPoint.setAttribute("x",50);
-	svgPoint.setAttribute("y",100);
-	svgObj.appendChild(svgPoint);
-
 	svgPath = document.createElementNS(NS, "path");
-		
-    	console.log(svgObj);
-	var pathClone = path.clone();
+	
 	var segArray = pathClone.getSegments();
 
 	var pointArray = new Array();
@@ -120,10 +108,6 @@ var ExportSVG = function()
 		pointArray[i] = segArray[i].getPoint();
 		handleInArray[i] = segArray[i].getHandleIn();
 		handleOutArray[i] = segArray[i].getHandleOut();
-
-		console.log("point " + i + ": " + pointArray[i]);
-		console.log("HI " + i + ": " + handleInArray[i]);
-		console.log("HO " + i + ": " + handleOutArray[i]);
 	}
 	var pointString = "";
 	for(i = 0; i < pointArray.length; i++)
@@ -165,14 +149,8 @@ var ExportSVG = function()
 		var fillRGB = RGBtoHex(fillRed, fillGreen, fillBlue);
 		svgPath.setAttribute("fill", fillRGB);
 	}
-
-	//svgPath.setAttribute("d", pointString);
-	//svgPath.setAttribute("stroke", strokeRGB);
-	//svgPath.setAttribute("fill", fillRGB);
 	svgPath.setAttribute("stroke-width",pathClone.strokeWidth);
 	svgObj.appendChild(svgPath);
-
-	console.log(svgObj);
 	return svgObj;
     };
 
