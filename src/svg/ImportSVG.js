@@ -20,8 +20,10 @@
 
 /**
  * @name ImportSVG
- *
- * @class The ImportSVG object represents an object created using the SVG Canvas * that will be converted into a Paper.js object. The SVG object is imported     * into Paper.js by converting it into items within groups.
+ * @class The ImportSVG object represents an object created using the SVG
+ * Canvas that will be converted into a Paper.js object. 
+ * The SVG object is imported into Paper.js by converting it into items 
+ * within groups.
  *
  */
 
