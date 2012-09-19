@@ -16,6 +16,7 @@
 *
 *
 * This class and all methods therein designed by Stetson-Team-Alpha
+* @author Stetson Team Alpha
 */
 
 /**
