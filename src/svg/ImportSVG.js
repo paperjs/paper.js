@@ -175,6 +175,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 	 * corners
 	 * @return {Path.RoundRectangle} rectangle A Path.Rectangle item for
 	 * Paper.js
+	 */
 	_importRectangle: function(svgRectangle)
 	{
 		var x			= svgRectangle.x.baseVal.value || 0;
