@@ -12,11 +12,21 @@
 * Distributed under the MIT license. See LICENSE file for details.
 *
 * All rights reserved.
+*
+* This test file created by Stetson-Team-Alpha
 */
 
 module('ImportSVG');
 
-/**
-*TODO: Create SVGs utilizing ImportSVG methods
-* WILL ADD MORE AFTER LEARNING SVG
-*/
+test('Make a circle', function() 
+{
+	var svgDocument = evt.target.ownerDocument;
+	var svgcircle = svgDocument.createElementNS(svgns, "circle");
+	svgCircle.setAttributeNS(null, "cx", 25);
+	svgCircle.setAttributeNS(null, "cy", 25);
+	svgCircle.setAttributeNS(null, "r",  20);
+	svgCircle.setAttributeNS(null, "fill", "green");
+	var circle = new ImportSVG(svgCircle)
+	equals(circle);
+});
+/
