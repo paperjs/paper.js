@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Resize</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var redPath = new Path.Circle(view.center, 10);
+		redPath.fillColor = 'red';
+
+		var whitePath = new Path.Circle(view.center, 10);
+		whitePath.fillColor = 'white';
+
+		var text = new PointText();
+		text.content = 'Resize your window';
+		text.justification = 'center';
+		
+		function onResize(event) {
+			// Resize the red circle to fill the bounds of the view:
+			redPath.fitBounds(view.bounds, true);
+
+			// Resize the white circle to fit within the bounds of the view:
+			whitePath.fitBounds(view.bounds, false);
+
+			// Move the text to the center of the view:
+			text.position = view.bounds.center;
+		}
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+</body>
+</html>

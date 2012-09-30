@@ -395,6 +395,62 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @property
 	 * @type Function
 	 */
+	/**
+	 * {@grouptitle Event Handling}
+	 * 
+	 * Attach an event handler to the view.
+	 *
+	 * @name View#attach
+	 * @function
+	 * @param {String('frame', 'resize')} type the event type
+	 * @param {Function} function The function to be called when the event
+	 * occurs
+	 */
+	/**
+	 * Attach one or more event handlers to the view.
+	 *
+	 * @name View#attach^2
+	 * @function
+	 * @param {Object} param An object literal containing one or more of the
+	 * following properties: {@code frame, resize}.
+	 */
+
+	/**
+	 * Detach an event handler from the view.
+	 *
+	 * @name View#detach
+	 * @function
+	 * @param {String('frame', 'resize')} type the event type
+	 * @param {Function} function The function to be detached
+	 */
+	/**
+	 * Detach one or more event handlers from the view.
+	 *
+	 * @name View#detach^2
+	 * @function
+	 * @param {Object} param An object literal containing one or more of the
+	 * following properties: {@code frame, resize}
+	 */
+
+	/**
+	 * Fire an event on the view.
+	 *
+	 * @name View#fire
+	 * @function
+	 * @param {String('frame', 'resize')} type the event type
+	 * @param {Object} event An object literal containing properties describing
+	 * the event.
+	 */
+
+	/**
+	 * Check if the view has one or more event handlers of the specified type.
+	 *
+	 * @name View#responds
+	 * @function
+	 * @param {String('frame', 'resize')} type the event type
+	 * @return {Boolean} {@true if the view has one or more event handlers of
+	 * the specified type}
+	 */
 }, {
 	statics: {
 		_views: [],

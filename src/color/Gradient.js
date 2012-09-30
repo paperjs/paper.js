@@ -34,6 +34,39 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	},
 
 	/**
+	 * Called by various setters whenever a gradient value changes
+	 */
+	_changed: function() {
+		// Loop through the gradient-colors that use this gradient and notify
+		// them, so they can notify the items they belong to.
+		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
+			this._owners[i]._changed();
+	},
+
+	/**
+	 * Called by GradientColor#initialize
+	 * This is required to pass on _changed() notifications to the _owners.
+	 */
+	_addOwner: function(color) {
+		if (!this._owners)
+			this._owners = [];
+		this._owners.push(color);
+	},
+
+	// TODO: Where and when should this be called:
+	/**
+	 * Called by GradientColor whenever this gradient stops being used.
+	 */
+	_removeOwner: function(color) {
+		var index = this._owners ? this._owners.indexOf(color) : -1;
+		if (index != -1) {
+			this._owners.splice(index, 1);
+			if (this._owners.length == 0)
+				delete this._owners;
+		}
+	},
+
+	/**
 	 * @return {Gradient} a copy of the gradient
 	 */
 	clone: function() {
@@ -54,6 +87,13 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	},
 
 	setStops: function(stops) {
+		// If this gradient already contains stops, first remove
+		// this gradient as their owner.
+		if (this.stops) {
+			for (var i = 0, l = this._stops.length; i < l; i++) {
+				this._stops[i]._removeOwner(this);
+			}
+		}
 		if (stops.length < 2)
 			throw new Error(
 					'Gradient stop list needs to contain at least two stops.');
@@ -61,9 +101,11 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 		// Now reassign ramp points if they were not specified.
 		for (var i = 0, l = this._stops.length; i < l; i++) {
 			var stop = this._stops[i];
+			stop._addOwner(this);
 			if (stop._defaultRamp)
 				stop.setRampPoint(i / (l - 1));
 		}
+		this._changed();
 	},
 
 	/**

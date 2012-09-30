@@ -120,8 +120,11 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 
 	draw: function(ctx, param) {
 		var clipItem = this._getClipItem();
-		if (clipItem)
+		if (clipItem) {
+			param.clipping = true;
 			Item.draw(clipItem, ctx, param);
+			delete param.clipping;
+		}
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var item = this._children[i];
 			if (item != clipItem)

@@ -392,4 +392,66 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 		// Return if a callback was called or not.
 		return called;
 	}
+	/**
+	 * {@grouptitle Event Handling}
+	 * 
+	 * Attach an event handler to the tool.
+	 *
+	 * @name Tool#attach
+	 * @function
+	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
+	 * 'keydown', 'keyup')} type the event type
+	 * @param {Function} function The function to be called when the event
+	 * occurs
+	 */
+	/**
+	 * Attach one or more event handlers to the tool.
+	 *
+	 * @name Tool#attach^2
+	 * @function
+	 * @param {Object} param An object literal containing one or more of the
+	 * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
+	 * keydown, keyup}.
+	 */
+
+	/**
+	 * Detach an event handler from the tool.
+	 *
+	 * @name Tool#detach
+	 * @function
+	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
+	 * 'keydown', 'keyup')} type the event type
+	 * @param {Function} function The function to be detached
+	 */
+	/**
+	 * Detach one or more event handlers from the tool.
+	 *
+	 * @name Tool#detach^2
+	 * @function
+	 * @param {Object} param An object literal containing one or more of the
+	 * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
+	 * keydown, keyup}
+	 */
+
+	/**
+	 * Fire an event on the tool.
+	 *
+	 * @name Tool#fire
+	 * @function
+	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
+	 * 'keydown', 'keyup')} type the event type
+	 * @param {Object} event An object literal containing properties describing
+	 * the event.
+	 */
+
+	/**
+	 * Check if the tool has one or more event handlers of the specified type.
+	 *
+	 * @name Tool#responds
+	 * @function
+	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
+	 * 'keydown', 'keyup')} type the event type
+	 * @return {Boolean} {@true if the tool has one or more event handlers of
+	 * the specified type}
+	 */
 });

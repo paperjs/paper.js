@@ -209,7 +209,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		if (this._name)
 			this._removeFromNamed();
 		this._name = name || undefined;
-		if (name) {
+		if (name && this._parent) {
 			var children = this._parent._children,
 				namedChildren = this._parent._namedChildren;
 			(namedChildren[name] = namedChildren[name] || []).push(this);
@@ -1169,8 +1169,10 @@ function(name) {
 	 * @return {Boolean} {@true it was inserted}
 	 */
 	insertAbove: function(item) {
-		return item._parent && item._parent.insertChild(
-				item._index + 1, this);
+		var index = item._index;
+		if (item._parent == this._parent && index < this._index)
+			 index++;
+		return item._parent.insertChild(index, this);
 	},
 
 	/**
@@ -1180,8 +1182,10 @@ function(name) {
 	 * @return {Boolean} {@true it was inserted}
 	 */
 	insertBelow: function(item) {
-		return item._parent && item._parent.insertChild(
-				item._index - 1, this);
+		var index = item._index;
+		if (item._parent == this._parent && index > this._index)
+			 index--;
+		return item._parent.insertChild(index, this);
 	},
 
 	/**
@@ -1957,7 +1961,6 @@ function(name) {
 			scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
 					? rectangle.width / bounds.width
 					: rectangle.height / bounds.height,
-			delta = rectangle.getCenter().subtract(bounds.getCenter()),
 			newBounds = new Rectangle(new Point(),
 					Size.create(bounds.width * scale, bounds.height * scale));
 		newBounds.setCenter(rectangle.getCenter());
@@ -2449,14 +2452,16 @@ function(name) {
 				// so we draw onto it, instead of the parentCtx
 				ctx = tempCanvas.getContext('2d');
 			}
-			ctx.save();
+			if (!param.clipping)
+				ctx.save();
 			// Translate the context so the topLeft of the item is at (0, 0)
 			// on the temporary canvas.
 			if (tempCanvas)
 				ctx.translate(-itemOffset.x, -itemOffset.y);
 			item._matrix.applyToContext(ctx);
 			item.draw(ctx, param);
-			ctx.restore();
+			if (!param.clipping)
+				ctx.restore();
 			// If we created a temporary canvas before, composite it onto the
 			// parent canvas:
 			if (tempCanvas) {
