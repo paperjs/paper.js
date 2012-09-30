@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Circle Testing</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+
+</head>
+<body>	
+	<canvas id="canvas" width="500px" height="500px"></canvas>
+		<script type="text/paperscript" canvas="canvas">
+		initializePath();
+
+		function initializePath() {
+			var topLeft = new Point(-200, -200);
+			var size = new Size(-150, -100);
+			var rectangle = new Rectangle(topLeft, size);
+			var path = new Path.Oval(rectangle);
+			path.fillColor = 'black';
+		
+			var topLeft = new Point(-5, -400);
+			var size = new Size(-100, -50);
+			var rectangle = new Rectangle(topLeft, size);
+			var path = new Path.Oval(rectangle);
+			path.fillColor = 'yellow';
+		
+			var path = new Path.Circle(new Point(-25, -25), -7);
+			path.fillColor = 'red';
+			
+			var esvg = new ExportSVG();
+		//esvg.exportProject(paper.project);
+			var output = esvg.exportProject(paper.project);
+			console.log(output);
+			var test = document.getElementById('svg')
+			test.innerHTML = "";
+			test.appendChild (output);   
+		}
+		
+		// Reposition the path whenever the window is resized:
+		function onResize(event) {
+		    initializePath();
+		}		
+	</script>
+	<svg id="svg" style="width: 500px; height: 500px">
+	</svg>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Stroke Bounds</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		project.currentStyle = {
+				// strokeColor: 'black',
+				// strokeWidth: 2,
+				// strokeCap: 'round'
+		};
+		var isvg = new ImportSVG;
+		isvg.importSVG(document.getElementById('svg'));
+	</script>
+</head>
+<body>	
+	<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="width:500px; height:1000px;" id="svg">
+		  <path id="lineAB" d="M 100 350 l 150 -300" stroke="red"
+		  stroke-width="3px" fill="none" />
+		  <path id="lineBC" d="M 250 50 l 150 300" stroke="red"
+		  stroke-width="3px" fill="none" />
+		  <path id="lineBC" d="M 175 200 l 150 0" stroke="red"
+		  stroke-width="3px" fill="none" />
+		  <path id="quadcurveABC" d="M 100 350 q 150 -300 300 0"
+		  stroke="blue" stroke-width="5px" fill="none" />
+  <!-- Mark relevant points -->
+  <g stroke="black" stroke-width="3" fill="black">
+    <circle id="pointA" cx="100" cy="350" r="3" />
+    <circle id="pointB" cx="250" cy="50" r="3" />
+    <circle id="pointC" cx="400" cy="350" r="3" />
+  </g>
+  <!-- Label the points -->
+  <g fill="black" stroke="none"
+  text-anchor="middle">
+    <text font-size="30" font-family="times" x="100" y="350" dx="-30">A</text>
+    <text font-size="30" font-family="times" x="250" y="50" dy="-10">B</text>
+    <text font-size="30" font-family="times" x="400" y="350" dx="30">C</text>
+  </g>
+
+	</svg>
+	<canvas id="canvas" width="500px" height="1000px"></canvas>
+</body>
+</html>
