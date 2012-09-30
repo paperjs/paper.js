@@ -189,7 +189,6 @@ var Numerical = new function() {
 				roots[0] = (A + B) - b;
 				return 1;
 			}
-			return 0;
 		}
 	};
 };
