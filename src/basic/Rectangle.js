@@ -487,7 +487,8 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 
 	/**
 	 * Tests if the interior of this rectangle intersects the interior of
-	 * another rectangle.
+	 * another rectangle. Rectangles just touching each other are considered
+	 * as non-intersecting.
 	 *
 	 * @param {Rectangle} rect the specified rectangle
 	 * @return {Boolean} {@true if the rectangle and the specified rectangle
