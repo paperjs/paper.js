@@ -487,6 +487,14 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		},
 
 		getParameter: function(v, x, y) {
+			// Handle beginnings and end seperately, as they are not detected
+			// sometimes.
+			if (Math.abs(v[0] - x) < Numerical.TOLERANCE
+					&& Math.abs(v[1] - y) < Numerical.TOLERANCE)
+				return 0;
+			if (Math.abs(v[6] - x) < Numerical.TOLERANCE
+					&& Math.abs(v[7] - y) < Numerical.TOLERANCE)
+				return 1;
 			var txs = [],
 				tys = [],
 				sx = Curve.solveCubic(v, 0, x, txs),
