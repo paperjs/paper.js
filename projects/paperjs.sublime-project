@@ -1,0 +1,35 @@
+{
+	"folders":
+	[
+		{
+			"path": "../src"
+		},
+		{
+			"path": "../test"
+		},
+		{
+			"path": "../examples"
+		},
+		{
+			"path": "../lib"
+		},
+		{
+			"path": "../build",
+            // jsdoc-toolkit will have its own project file
+			"folder_exclude_patterns": ["jsdoc-toolkit"]
+		},
+		{
+			"path": "../node.js"
+		},
+		{
+			"path": "..",
+			"name": "root",
+            "folder_exclude_patterns": ["*"]
+		}
+	],
+    "settings":
+    {
+        "tab_size": 4,
+        "translate_tabs_to_spaces": false
+    }
+}
