@@ -44,6 +44,7 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 	 * @return {SVG DOM} this.svgObj The imported project converted to an
 	 * SVG project
 	 */
+	 //TODO: Implement symbols and Gradients
 	exportProject: function(project) {
 		var layerArray = project.layers;
 		var layer;
@@ -222,7 +223,9 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 		//If the object is a circle, ellipse, rectangle, or rounded rectangle, it will find the angle 
 		//found by the transformCheck method and make a path that accommodates for the transformed object
 		if(type != 'text' && type != undefined && type != 'polygon' &&  type != 'polyline' && type != 'line') {
-			var angle = this._transformCheck(path, pointArray, type) + 90;
+			//TODO: Need to implement exported transforms for circle, ellipse, and rectangles instead of 
+			//making them paths
+			var angle = this._determineIfTransformed(path, pointArray, type) + 90;
 			console.log(angle);
 			if(angle != 0) {
 				if(type == 'rect' || type == 'roundRect') {
@@ -305,7 +308,7 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 	},
 
 	//Determines whether the object has been transformed or not through determining the angle
-	_determinesIfTransformed: function(path, pointArray, type) {
+	_determineIfTransformed: function(path, pointArray, type) {
 		var topMidBoundx = (path.bounds.topRight.getX() + path.bounds.topLeft.getX() )/2;
 		var topMidBoundy = (path.bounds.topRight.getY() + path.bounds.topLeft.getY() )/2;
 		var topMidBound = new Point(topMidBoundx, topMidBoundy);
