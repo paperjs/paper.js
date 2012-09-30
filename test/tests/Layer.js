@@ -73,7 +73,7 @@ test('insertAbove / insertBelow', function() {
 	// move the layer above the path, inside the firstLayer:
 	secondLayer.insertAbove(path);
 	equals(function() {
-		return secondLayer.previousSibling == path;
+		return secondLayer.nextSibling == path;
 	}, true);
 	equals(function() {
 		return secondLayer.parent == firstLayer;

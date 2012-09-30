@@ -68,6 +68,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.
 			delete this._clockwise;
+			// Curves are no longer valid
+			if (this._curves != null) {
+				for (var i = 0, l = this._curves.length; i < l; i++) {
+					this._curves[i]._changed(Change.GEOMETRY);
+				}
+			}
 		} else if (flags & ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
 			// affected by stroke: _bounds.bounds and _bounds.handleBounds
@@ -828,6 +834,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			var handleIn = segment._handleIn;
 			segment._handleIn = segment._handleOut;
 			segment._handleOut = handleIn;
+			segment._index = i;
 		}
 		// Flip clockwise state if it's defined
 		if (this._clockwise !== undefined)
@@ -1449,6 +1456,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					|| strokeColor && !hasDash) {
 				drawSegments(ctx, this);
 			}
+
+			if (this._closed)
+				ctx.closePath();
 
 			if (this._clipMask) {
 				ctx.clip();
