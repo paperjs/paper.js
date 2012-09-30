@@ -13,8 +13,8 @@
 	"keywords": ["canvas", "graphic", "graphics", "vector", "paper.js"], 	
 	"repository": "git://github.com/paperjs/paper.js/",
 	"dependencies": {
-		"canvas": "0.7.0"
+		"canvas": ">= 0.7.0"
 	},
-	"engines": { "node": ">= 0.4.0 && < 0.6.0" },
+	"engines": { "node": ">= 0.4.0" },
 	"main": "./node.js/index.js"
 }

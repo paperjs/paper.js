@@ -464,6 +464,17 @@ test('Changing item#position.x', function() {
 	equals(path.position.toString(), '{ x: 55, y: 50 }', 'path.position.x += 5');
 });
 
+test('Naming a removed item', function() {
+	var path = new Path();
+	path.remove();
+	path.name = 'test';
+});
+
+test('Naming a layer', function() {
+	var layer = new Layer();
+	layer.name = 'test';
+});
+
 test('Cloning a linked size', function() {
 	var path = new Path([40, 75], [140, 75]);
 	var error = null;

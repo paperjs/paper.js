@@ -84,6 +84,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 */
 	initialize: function(gradient, origin, destination, hilite) {
 		this.gradient = gradient || new Gradient();
+		this.gradient._addOwner(this);
 		this.setOrigin(origin);
 		this.setDestination(destination);
 		if (hilite)

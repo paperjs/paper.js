@@ -42,3 +42,12 @@ test('item.bounds caching', function() {
 	}, 2);
 	compareRectangles(group.bounds, { x: 50, y: 50, width: 125, height: 125 }, 'group.bounds with circle');
 });
+
+test('group.bounds when group contains empty group', function() {
+	var group = new Group();
+	var rectangle = new Path.Rectangle(new Point(75, 75), new Point(175, 175));
+	group.addChild(rectangle);
+	compareRectangles(group.bounds, { x: 75, y: 75, width: 100, height: 100 }, 'group.bounds without empty group');
+	group.addChild(new Group());
+	compareRectangles(group.bounds, { x: 75, y: 75, width: 100, height: 100 }, 'group.bounds with empty group');
+});
