@@ -28,8 +28,10 @@ HitResult = Base.extend(/** @lends HitResult# */{
 		// Inject passed values, so we can be flexible about the HitResult
 		// properties.
 		// This allows the definition of getters too, e.g. for 'pixel'.
-		if (values)
+		if (values) {
+			values.enumerable = true;
 			this.inject(values);
+		}
 	},
 
 	/**
