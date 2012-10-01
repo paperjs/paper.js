@@ -22,9 +22,7 @@
 			copy.rotate(-45);
 			copy.scale(0.5);
 			var esvg = new ExportSVG();
-		//esvg.exportProject(paper.project);
 			var output = esvg.exportProject(paper.project);
-			console.log(output);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";
 			test.appendChild (output);   
