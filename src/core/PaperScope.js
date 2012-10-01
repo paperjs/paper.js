@@ -103,7 +103,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		if (!this._tool)
 			this._tool = new Tool();
 		return this._tool;
-	 },
+	},
 
 	/**
 	 * The list of available tools.
