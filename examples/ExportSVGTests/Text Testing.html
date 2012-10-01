@@ -26,9 +26,6 @@
 			center = new Point(100,100);
 			var path2 = new Path.Circle(center,radius);
 			path2.strokeColor = 'black';
-			console.log(path2.getSegments());
-			//copy = path2.clone();
-			//copy.strokeColor = 'blue';
 			point = new Point(120,100);
 			path2.shear(.5, .5);
 			colors = ['red', 'blue', 'green', 'orange'];
@@ -36,12 +33,10 @@
 				var p = path2.segments[i].point;
 				var c = new Path.Circle(p, 2);
 				c.fillColor = colors[i];
-			}
-			console.log(path2.segments);			
+			}		
 			
 			var esvg = new ExportSVG();
 			var output = esvg.exportProject(paper.project);
-			//console.log(output);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";
 			test.appendChild (output);   
