@@ -221,12 +221,11 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 				break;
 		}
 		//If the object is a circle, ellipse, rectangle, or rounded rectangle, it will find the angle 
-		//found by the transformCheck method and make a path that accommodates for the transformed object
+		//found by the determineIfTransformed method and make a path that accommodates for the transformed object
 		if(type != 'text' && type != undefined && type != 'polygon' &&  type != 'polyline' && type != 'line') {
 			//TODO: Need to implement exported transforms for circle, ellipse, and rectangles instead of 
 			//making them paths
 			var angle = this._determineIfTransformed(path, pointArray, type) + 90;
-			console.log(angle);
 			if(angle != 0) {
 				if(type == 'rect' || type == 'roundRect') {
 					svgEle = document.createElementNS(this.NS, 'path');
@@ -307,7 +306,7 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 		return svgEle;
 	},
 
-	//Determines whether the object has been transformed or not through determining the angle
+	//Determines whether the object has been transformed or not through finding the angle
 	_determineIfTransformed: function(path, pointArray, type) {
 		var topMidBoundx = (path.bounds.topRight.getX() + path.bounds.topLeft.getX() )/2;
 		var topMidBoundy = (path.bounds.topRight.getY() + path.bounds.topLeft.getY() )/2;
@@ -473,7 +472,6 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 		} else {
 			type = null;
 		}
-		console.log(type);
 		return type;
 	}
 });
