@@ -162,8 +162,7 @@ var Color = this.Color = Base.extend(new function() {
 		'hsl-rgb': function(color) {
 			var s = color._saturation,
 				h = color._hue / 360,
-				l = color._lightness,
-				t1, t2, c;
+				l = color._lightness;
 			if (s == 0)
 				return new RgbColor(l, l, l, color._alpha);
 			var t3s = [ h + 1 / 3, h, h - 1 / 3 ],
