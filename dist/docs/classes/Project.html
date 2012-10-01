@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Project</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>Project</h1>
+
+<p>A Project object in Paper.js is what usually is referred to as the
+document: The top level object that holds all the items contained in the
+scene graph. As the term document is already taken in the browser context,
+it is called Project.</p>
+<p>Projects allow the manipluation of the styles that are applied to all newly
+created items, give access to the selected items, and will in future versions
+offer ways to query for items in the scene graph defining specific
+requirements, and means to persist and load from different formats, such as
+SVG and PDF.</p>
+<p>The currently active project can be accessed through the
+<a href="../classes/PaperScope.html#project"><tt>paperScope.project</tt></a> variable.</p>
+<p>An array of all open projects is accessible through the
+<a href="../classes/PaperScope.html#projects"><tt>paperScope.projects</tt></a> variable.</p>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="project-member" class="member">
+<div id="project-link" class="member-link">
+<a name="project" href="#" onClick="return toggleMember('project', false);"><tt><b>Project</b>()</tt></a>
+</div>
+<div id="project-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('project', false);"><tt><b>Project</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('project', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Paper.js project.</p>
+<p>When working with PaperScript, a project is automatically created for us
+and the <a href="../classes/PaperScope.html#project"><tt>paperScope.project</tt></a> variable points to it.</p>
+
+
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="currentstyle-member" class="member">
+<div id="currentstyle-link" class="member-link">
+<a name="currentstyle" href="#" onClick="return toggleMember('currentstyle', false);"><tt><b>currentStyle</b></tt></a>
+</div>
+<div id="currentstyle-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('currentstyle', false);"><tt><b>currentStyle</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('currentstyle', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The currently active path style. All selected items and newly
+created items will be styled with this style.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/PathStyle.html"><tt>PathStyle</tt></a>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> 
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+project.currentStyle = {
+	fillColor: 'red',
+	strokeColor: 'black',
+	strokeWidth: 5
+}
+
+// The following paths will take over all style properties of
+// the current style:
+var path = new Path.Circle(new Point(75, 50), 30);
+var path2 = new Path.Circle(new Point(175, 50), 20);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+<p>
+<b>Example</b> 
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+project.currentStyle.fillColor = 'red';
+
+// The following path will take over the fill color we just set:
+var path = new Path.Circle(new Point(75, 50), 30);
+var path2 = new Path.Circle(new Point(175, 50), 20);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="index-member" class="member">
+<div id="index-link" class="member-link">
+<a name="index" href="#" onClick="return toggleMember('index', false);"><tt><b>index</b></tt></a>
+</div>
+<div id="index-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('index', false);"><tt><b>index</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('index', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The index of the project in the <a href="../classes/PaperScope.html#projects"><tt>paperScope.projects</tt></a> list.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="selecteditems-member" class="member">
+<div id="selecteditems-link" class="member-link">
+<a name="selecteditems" href="#" onClick="return toggleMember('selecteditems', false);"><tt><b>selectedItems</b></tt></a>
+</div>
+<div id="selecteditems-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('selecteditems', false);"><tt><b>selectedItems</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('selecteditems', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The selected items contained within the project.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Project Hierarchy</h3>
+
+<div id="layers-member" class="member">
+<div id="layers-link" class="member-link">
+<a name="layers" href="#" onClick="return toggleMember('layers', false);"><tt><b>layers</b></tt></a>
+</div>
+<div id="layers-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('layers', false);"><tt><b>layers</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('layers', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The layers contained within the project.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		Array of <a href="../classes/Layer.html"><tt>Layer</tt></a> objects
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="activelayer-member" class="member">
+<div id="activelayer-link" class="member-link">
+<a name="activelayer" href="#" onClick="return toggleMember('activelayer', false);"><tt><b>activeLayer</b></tt></a>
+</div>
+<div id="activelayer-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('activelayer', false);"><tt><b>activeLayer</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('activelayer', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The layer which is currently active. New items will be created on this
+layer by default.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Layer.html"><tt>Layer</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="symbols-member" class="member">
+<div id="symbols-link" class="member-link">
+<a name="symbols" href="#" onClick="return toggleMember('symbols', false);"><tt><b>symbols</b></tt></a>
+</div>
+<div id="symbols-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('symbols', false);"><tt><b>symbols</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('symbols', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The symbols contained within the project.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		Array of <a href="../classes/Symbol.html"><tt>Symbol</tt></a> objects
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="views-member" class="member">
+<div id="views-link" class="member-link">
+<a name="views" href="#" onClick="return toggleMember('views', false);"><tt><b>views</b></tt></a>
+</div>
+<div id="views-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('views', false);"><tt><b>views</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('views', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The views contained within the project.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		Array of <a href="../classes/View.html"><tt>View</tt></a> objects
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="activeview-member" class="member">
+<div id="activeview-link" class="member-link">
+<a name="activeview" href="#" onClick="return toggleMember('activeview', false);"><tt><b>activeView</b></tt></a>
+</div>
+<div id="activeview-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('activeview', false);"><tt><b>activeView</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('activeview', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The view which is currently active.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/View.html"><tt>View</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="activate-member" class="member">
+<div id="activate-link" class="member-link">
+<a name="activate" href="#" onClick="return toggleMember('activate', false);"><tt><b>activate</b>()</tt></a>
+</div>
+<div id="activate-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('activate', false);"><tt><b>activate</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('activate', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Activates this project, so all newly created items will be placed
+in it.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="remove-member" class="member">
+<div id="remove-link" class="member-link">
+<a name="remove" href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+<div id="remove-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('remove', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Removes this project from the <a href="../classes/PaperScope.html#projects"><tt>paperScope.projects</tt></a> list.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="selectall-member" class="member">
+<div id="selectall-link" class="member-link">
+<a name="selectall" href="#" onClick="return toggleMember('selectall', false);"><tt><b>selectAll</b>()</tt></a>
+</div>
+<div id="selectall-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('selectall', false);"><tt><b>selectAll</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('selectall', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Selects all items in the project.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="deselectall-member" class="member">
+<div id="deselectall-link" class="member-link">
+<a name="deselectall" href="#" onClick="return toggleMember('deselectall', false);"><tt><b>deselectAll</b>()</tt></a>
+</div>
+<div id="deselectall-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('deselectall', false);"><tt><b>deselectAll</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('deselectall', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Deselects all selected items in the project.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="hittest-point-member" class="member">
+<div id="hittest-point-link" class="member-link">
+<a name="hittest-point" href="#" onClick="return toggleMember('hittest-point', false);"><tt><b>hitTest</b>(point[, options])</tt></a>
+</div>
+<div id="hittest-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('hittest-point', false);"><tt><b>hitTest</b>(point[, options])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('hittest-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Perform a hit test on the items contained within the project at the
+location of the specified point.</p>
+<p>The optional options object allows you to control the specifics of the
+hit test and may contain a combination of the following values:</p>
+<p><b>options.tolerance:</b> <tt>Number</tt> - The tolerance of the hit test
+in points.</p>
+<p><b>options.type:</b> Only hit test again a certain item
+type: <a href="../classes/PathItem.html"><tt>PathItem</tt></a>, <a href="../classes/Raster.html"><tt>Raster</tt></a>, <a href="../classes/TextItem.html"><tt>TextItem</tt></a>, etc.</p>
+<p><b>options.fill:</b> <tt>Boolean</tt> - Hit test the fill of items.</p>
+<p><b>options.stroke:</b> <tt>Boolean</tt> - Hit test the curves of path
+items, taking into account stroke width.</p>
+<p><b>options.segments:</b> <tt>Boolean</tt> - Hit test for
+<a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of <a href="../classes/Path.html"><tt>Path</tt></a> items.</p>
+<p><b>options.handles:</b> <tt>Boolean</tt> - Hit test for the handles
+(<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> / <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>) of path segments.</p>
+<p><b>options.ends:</b> <tt>Boolean</tt> - Only hit test for the first or
+last segment points of open path items.</p>
+<p><b>options.bounds:</b> <tt>Boolean</tt> - Hit test the corners and
+side-centers of the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>).</p>
+<p><b>options.center:</b> <tt>Boolean</tt> - Hit test the
+<a href="../classes/Rectangle.html#center"><tt>rectangle.center</tt></a> of the bounding rectangle of items
+(<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>).</p>
+<p><b>options.guide:</b> <tt>Boolean</tt> - Hit test items that have
+<a href="../classes/Item.html#guide"><tt>item.guide</tt></a> set to <tt>true</tt>.</p>
+<p><b>options.selected:</b> <tt>Boolean</tt> - Only hit selected items.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The point where the hit test should be performed
+
+</li>
+
+<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+
+&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,
+tolerance: true }</tt>
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/HitResult.html"><tt>HitResult</tt></a></tt>&nbsp;&mdash;&nbsp;A hit result object that contains more
+information about what exactly was hit or <tt>null</tt> if nothing was
+hit.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

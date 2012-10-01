@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Segment</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>Segment</h1>
+
+<p>The Segment object represents the points of a path through which its
+<a href="../classes/Curve.html"><tt>Curve</tt></a> objects pass. The segments of a path can be accessed through
+its <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array.</p>
+<p>Each segment consists of an anchor point (<a href="../classes/Segment.html#point"><tt>segment.point</tt></a>) and
+optionaly an incoming and an outgoing handle (<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> and
+<a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>), describing the tangents of the two <a href="../classes/Curve.html"><tt>Curve</tt></a>
+objects that are connected by this segment.</p>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="segment-arg3-arg4-arg5-member" class="member">
+<div id="segment-arg3-arg4-arg5-link" class="member-link">
+<a name="segment-arg3-arg4-arg5" href="#" onClick="return toggleMember('segment-arg3-arg4-arg5', false);"><tt><b>Segment</b>([point[, handleIn[, handleOut, arg3, arg4, arg5]]])</tt></a>
+</div>
+<div id="segment-arg3-arg4-arg5-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('segment-arg3-arg4-arg5', false);"><tt><b>Segment</b>([point[, handleIn[, handleOut, arg3, arg4, arg5]]])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('segment-arg3-arg4-arg5', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a new Segment object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the anchor point of the segment
+&mdash;&nbsp;optional, default: <tt>{x: 0, y: 0}</tt>
+</li>
+
+<li>
+<tt>handleIn:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the handle point relative to the
+       anchor point of the segment that describes the in tangent of the
+       segment.
+&mdash;&nbsp;optional, default: <tt>{x: 0, y: 0}</tt>
+</li>
+
+<li>
+<tt>handleOut:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the handle point relative to the
+       anchor point of the segment that describes the out tangent of the
+       segment.
+&mdash;&nbsp;optional, default: <tt>{x: 0, y: 0}</tt>
+</li>
+
+<li>
+<tt>arg3:</tt> 
+
+
+
+</li>
+
+<li>
+<tt>arg4:</tt> 
+
+
+
+</li>
+
+<li>
+<tt>arg5:</tt> 
+
+
+
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> 
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+var handleIn = new Point(-80, -100);
+var handleOut = new Point(80, 100);
+
+var firstPoint = new Point(100, 50);
+var firstSegment = new Segment(firstPoint, null, handleOut);
+
+var secondPoint = new Point(300, 50);
+var secondSegment = new Segment(secondPoint, handleIn, null);
+
+var path = new Path(firstSegment, secondSegment);
+path.strokeColor = 'black';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="point-member" class="member">
+<div id="point-link" class="member-link">
+<a name="point" href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+</div>
+<div id="point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The anchor point of the segment.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="handlein-member" class="member">
+<div id="handlein-link" class="member-link">
+<a name="handlein" href="#" onClick="return toggleMember('handlein', false);"><tt><b>handleIn</b></tt></a>
+</div>
+<div id="handlein-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('handlein', false);"><tt><b>handleIn</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('handlein', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The handle point relative to the anchor point of the segment that
+describes the in tangent of the segment.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="handleout-member" class="member">
+<div id="handleout-link" class="member-link">
+<a name="handleout" href="#" onClick="return toggleMember('handleout', false);"><tt><b>handleOut</b></tt></a>
+</div>
+<div id="handleout-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('handleout', false);"><tt><b>handleOut</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('handleout', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The handle point relative to the anchor point of the segment that
+describes the out tangent of the segment.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="selected-member" class="member">
+<div id="selected-link" class="member-link">
+<a name="selected" href="#" onClick="return toggleMember('selected', false);"><tt><b>selected</b></tt></a>
+</div>
+<div id="selected-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('selected', false);"><tt><b>selected</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('selected', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>Specifies whether the <a href="../classes/Segment.html#point" onclick="return toggleMember('point', true);"><tt>point</tt></a> of the segment is selected.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Boolean</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Hierarchy</h3>
+
+<div id="index-member" class="member">
+<div id="index-link" class="member-link">
+<a name="index" href="#" onClick="return toggleMember('index', false);"><tt><b>index</b></tt></a>
+</div>
+<div id="index-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('index', false);"><tt><b>index</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('index', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The index of the segment in the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array that the
+segment belongs to.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="path-member" class="member">
+<div id="path-link" class="member-link">
+<a name="path" href="#" onClick="return toggleMember('path', false);"><tt><b>path</b></tt></a>
+</div>
+<div id="path-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('path', false);"><tt><b>path</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('path', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The path that the segment belongs to.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Path.html"><tt>Path</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="curve-member" class="member">
+<div id="curve-link" class="member-link">
+<a name="curve" href="#" onClick="return toggleMember('curve', false);"><tt><b>curve</b></tt></a>
+</div>
+<div id="curve-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('curve', false);"><tt><b>curve</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('curve', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The curve that the segment belongs to.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Curve.html"><tt>Curve</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Sibling Segments</h3>
+
+<div id="next-member" class="member">
+<div id="next-link" class="member-link">
+<a name="next" href="#" onClick="return toggleMember('next', false);"><tt><b>next</b></tt></a>
+</div>
+<div id="next-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('next', false);"><tt><b>next</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('next', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The next segment in the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array that the segment
+belongs to. If the segments belongs to a closed path, the first segment
+is returned for the last segment of the path.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Segment.html"><tt>Segment</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="previous-member" class="member">
+<div id="previous-link" class="member-link">
+<a name="previous" href="#" onClick="return toggleMember('previous', false);"><tt><b>previous</b></tt></a>
+</div>
+<div id="previous-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('previous', false);"><tt><b>previous</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('previous', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The previous segment in the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array that the
+segment belongs to. If the segments belongs to a closed path, the last
+segment is returned for the first segment of the path.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Segment.html"><tt>Segment</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="reverse-member" class="member">
+<div id="reverse-link" class="member-link">
+<a name="reverse" href="#" onClick="return toggleMember('reverse', false);"><tt><b>reverse</b>()</tt></a>
+</div>
+<div id="reverse-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('reverse', false);"><tt><b>reverse</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('reverse', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns the reversed the segment, without modifying the segment itself.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Segment.html"><tt>Segment</tt></a></tt>&nbsp;&mdash;&nbsp;the reversed segment
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="remove-member" class="member">
+<div id="remove-link" class="member-link">
+<a name="remove" href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+<div id="remove-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('remove', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Removes the segment from the path that it belongs to.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="tostring-member" class="member">
+<div id="tostring-link" class="member-link">
+<a name="tostring" href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+<div id="tostring-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('tostring', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of the segment.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

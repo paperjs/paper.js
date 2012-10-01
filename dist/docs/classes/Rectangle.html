@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Rectangle</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>Rectangle</h1>
+
+<p>A Rectangle specifies an area that is enclosed by it's top-left
+point (x, y), its width, and its height. It should not be confused with a
+rectangular path, it is not an item.</p>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="rectangle-point-size-member" class="member">
+<div id="rectangle-point-size-link" class="member-link">
+<a name="rectangle-point-size" href="#" onClick="return toggleMember('rectangle-point-size', false);"><tt><b>Rectangle</b>(point, size)</tt></a>
+</div>
+<div id="rectangle-point-size-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rectangle-point-size', false);"><tt><b>Rectangle</b>(point, size)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rectangle-point-size', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Rectangle object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the top-left point of the rectangle
+
+</li>
+
+<li>
+<tt>size:</tt> 
+<a href="../classes/Size.html"><tt>Size</tt></a>
+&mdash;&nbsp;the size of the rectangle
+
+</li>
+
+</ul>
+
+
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="rectangle-x-y-width-height-member" class="member">
+<div id="rectangle-x-y-width-height-link" class="member-link">
+<a name="rectangle-x-y-width-height" href="#" onClick="return toggleMember('rectangle-x-y-width-height', false);"><tt><b>Rectangle</b>(x, y, width, height)</tt></a>
+</div>
+<div id="rectangle-x-y-width-height-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rectangle-x-y-width-height', false);"><tt><b>Rectangle</b>(x, y, width, height)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rectangle-x-y-width-height', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a rectangle object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>x:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the left coordinate
+
+</li>
+
+<li>
+<tt>y:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the top coordinate
+
+</li>
+
+<li>
+<tt>width:</tt> 
+<tt>Number</tt>
+
+
+</li>
+
+<li>
+<tt>height:</tt> 
+<tt>Number</tt>
+
+
+</li>
+
+</ul>
+
+
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="rectangle-point1-point2-member" class="member">
+<div id="rectangle-point1-point2-link" class="member-link">
+<a name="rectangle-point1-point2" href="#" onClick="return toggleMember('rectangle-point1-point2', false);"><tt><b>Rectangle</b>(point1, point2)</tt></a>
+</div>
+<div id="rectangle-point1-point2-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rectangle-point1-point2', false);"><tt><b>Rectangle</b>(point1, point2)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rectangle-point1-point2', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a rectangle object from the passed points. These do not
+necessarily need to be the top left and bottom right corners, the
+constructor figures out how to fit a rectangle between them.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point1:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The first point defining the rectangle
+
+</li>
+
+<li>
+<tt>point2:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The second point defining the rectangle
+
+</li>
+
+</ul>
+
+
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="rectangle-rt-member" class="member">
+<div id="rectangle-rt-link" class="member-link">
+<a name="rectangle-rt" href="#" onClick="return toggleMember('rectangle-rt', false);"><tt><b>Rectangle</b>(rt)</tt></a>
+</div>
+<div id="rectangle-rt-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rectangle-rt', false);"><tt><b>Rectangle</b>(rt)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rectangle-rt', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a new rectangle object from the passed rectangle object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>rt:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+
+
+</li>
+
+</ul>
+
+
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+<!-- ============================== properties ========================= -->
+	<div class="reference-members"><h2>Operators</h2>
+		
+			<div id="equals-member" class="member">
+<div id="equals-link" class="member-link">
+<a name="equals" href="#" onClick="return toggleMember('equals', false);"><tt><tt><b>==</b> Rectangle</tt></tt></a>
+</div>
+<div id="equals-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('equals', false);"><tt><b>==</b> Rectangle</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('equals', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Checks whether the coordinates and size of the rectangle are equal to
+that of the supplied rectangle.</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangles are equal, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+		
+		
+	</div>
+
+
+</div>
+</div>
+
+		
+	</div>
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="x-member" class="member">
+<div id="x-link" class="member-link">
+<a name="x" href="#" onClick="return toggleMember('x', false);"><tt><b>x</b></tt></a>
+</div>
+<div id="x-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('x', false);"><tt><b>x</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('x', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The x position of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="y-member" class="member">
+<div id="y-link" class="member-link">
+<a name="y" href="#" onClick="return toggleMember('y', false);"><tt><b>y</b></tt></a>
+</div>
+<div id="y-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('y', false);"><tt><b>y</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('y', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The y position of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="width-member" class="member">
+<div id="width-link" class="member-link">
+<a name="width" href="#" onClick="return toggleMember('width', false);"><tt><b>width</b></tt></a>
+</div>
+<div id="width-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('width', false);"><tt><b>width</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('width', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The width of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="height-member" class="member">
+<div id="height-link" class="member-link">
+<a name="height" href="#" onClick="return toggleMember('height', false);"><tt><b>height</b></tt></a>
+</div>
+<div id="height-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('height', false);"><tt><b>height</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('height', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The height of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="point-member" class="member">
+<div id="point-link" class="member-link">
+<a name="point" href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+</div>
+<div id="point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The top-left point of the rectangle</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="size-member" class="member">
+<div id="size-link" class="member-link">
+<a name="size" href="#" onClick="return toggleMember('size', false);"><tt><b>size</b></tt></a>
+</div>
+<div id="size-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('size', false);"><tt><b>size</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('size', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The size of the rectangle</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Size.html"><tt>Size</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Side Positions</h3>
+
+<div id="left-member" class="member">
+<div id="left-link" class="member-link">
+<a name="left" href="#" onClick="return toggleMember('left', false);"><tt><b>left</b></tt></a>
+</div>
+<div id="left-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('left', false);"><tt><b>left</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('left', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The position of the left hand side of the rectangle. Note that this
+doesn't move the whole rectangle; the right hand side stays where it was.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="top-member" class="member">
+<div id="top-link" class="member-link">
+<a name="top" href="#" onClick="return toggleMember('top', false);"><tt><b>top</b></tt></a>
+</div>
+<div id="top-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('top', false);"><tt><b>top</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('top', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The top coordinate of the rectangle. Note that this doesn't move the
+whole rectangle: the bottom won't move.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="right-member" class="member">
+<div id="right-link" class="member-link">
+<a name="right" href="#" onClick="return toggleMember('right', false);"><tt><b>right</b></tt></a>
+</div>
+<div id="right-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('right', false);"><tt><b>right</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('right', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The position of the right hand side of the rectangle. Note that this
+doesn't move the whole rectangle; the left hand side stays where it was.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="bottom-member" class="member">
+<div id="bottom-link" class="member-link">
+<a name="bottom" href="#" onClick="return toggleMember('bottom', false);"><tt><b>bottom</b></tt></a>
+</div>
+<div id="bottom-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('bottom', false);"><tt><b>bottom</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('bottom', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The bottom coordinate of the rectangle. Note that this doesn't move the
+whole rectangle: the top won't move.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Corner and Center Point Positions</h3>
+
+<div id="center-member" class="member">
+<div id="center-link" class="member-link">
+<a name="center" href="#" onClick="return toggleMember('center', false);"><tt><b>center</b></tt></a>
+</div>
+<div id="center-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('center', false);"><tt><b>center</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('center', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The center point of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="topleft-member" class="member">
+<div id="topleft-link" class="member-link">
+<a name="topleft" href="#" onClick="return toggleMember('topleft', false);"><tt><b>topLeft</b></tt></a>
+</div>
+<div id="topleft-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('topleft', false);"><tt><b>topLeft</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('topleft', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The top-left point of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="topright-member" class="member">
+<div id="topright-link" class="member-link">
+<a name="topright" href="#" onClick="return toggleMember('topright', false);"><tt><b>topRight</b></tt></a>
+</div>
+<div id="topright-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('topright', false);"><tt><b>topRight</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('topright', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The top-right point of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="bottomleft-member" class="member">
+<div id="bottomleft-link" class="member-link">
+<a name="bottomleft" href="#" onClick="return toggleMember('bottomleft', false);"><tt><b>bottomLeft</b></tt></a>
+</div>
+<div id="bottomleft-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('bottomleft', false);"><tt><b>bottomLeft</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('bottomleft', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The bottom-left point of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="bottomright-member" class="member">
+<div id="bottomright-link" class="member-link">
+<a name="bottomright" href="#" onClick="return toggleMember('bottomright', false);"><tt><b>bottomRight</b></tt></a>
+</div>
+<div id="bottomright-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('bottomright', false);"><tt><b>bottomRight</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('bottomright', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The bottom-right point of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="leftcenter-member" class="member">
+<div id="leftcenter-link" class="member-link">
+<a name="leftcenter" href="#" onClick="return toggleMember('leftcenter', false);"><tt><b>leftCenter</b></tt></a>
+</div>
+<div id="leftcenter-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('leftcenter', false);"><tt><b>leftCenter</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('leftcenter', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The left-center point of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="topcenter-member" class="member">
+<div id="topcenter-link" class="member-link">
+<a name="topcenter" href="#" onClick="return toggleMember('topcenter', false);"><tt><b>topCenter</b></tt></a>
+</div>
+<div id="topcenter-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('topcenter', false);"><tt><b>topCenter</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('topcenter', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The top-center point of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="rightcenter-member" class="member">
+<div id="rightcenter-link" class="member-link">
+<a name="rightcenter" href="#" onClick="return toggleMember('rightcenter', false);"><tt><b>rightCenter</b></tt></a>
+</div>
+<div id="rightcenter-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rightcenter', false);"><tt><b>rightCenter</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rightcenter', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The right-center point of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="bottomcenter-member" class="member">
+<div id="bottomcenter-link" class="member-link">
+<a name="bottomcenter" href="#" onClick="return toggleMember('bottomcenter', false);"><tt><b>bottomCenter</b></tt></a>
+</div>
+<div id="bottomcenter-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('bottomcenter', false);"><tt><b>bottomCenter</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('bottomcenter', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The bottom-center point of the rectangle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="isempty-member" class="member">
+<div id="isempty-link" class="member-link">
+<a name="isempty" href="#" onClick="return toggleMember('isempty', false);"><tt><b>isEmpty</b>()</tt></a>
+</div>
+<div id="isempty-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isempty', false);"><tt><b>isEmpty</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isempty', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> the rectangle is empty, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="tostring-member" class="member">
+<div id="tostring-link" class="member-link">
+<a name="tostring" href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+<div id="tostring-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('tostring', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of this rectangle.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<h3>Geometric Tests</h3>
+
+<div id="contains-point-member" class="member">
+<div id="contains-point-link" class="member-link">
+<a name="contains-point" href="#" onClick="return toggleMember('contains-point', false);"><tt><b>contains</b>(point)</tt></a>
+</div>
+<div id="contains-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('contains-point', false);"><tt><b>contains</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('contains-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Tests if the specified point is inside the boundary of the rectangle.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the specified point
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the point is inside the rectangle's boundary, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> &mdash; Checking whether the mouse position falls within the bounding rectangle of an item:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+// Create a circle shaped path at {x: 80, y: 50}
+// with a radius of 30.
+var circle = new Path.Circle(new Point(80, 50), 30);
+circle.fillColor = 'red';
+
+function onMouseMove(event) {
+	// Check whether the mouse position intersects with the
+	// bounding box of the item:
+	if (circle.bounds.contains(event.point)) {
+		// If it intersects, fill it with green:
+		circle.fillColor = 'green';
+	} else {
+		// If it doesn't intersect, fill it with red:
+		circle.fillColor = 'red';
+	}
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+		
+			
+<div id="contains-rect-member" class="member">
+<div id="contains-rect-link" class="member-link">
+<a name="contains-rect" href="#" onClick="return toggleMember('contains-rect', false);"><tt><b>contains</b>(rect)</tt></a>
+</div>
+<div id="contains-rect-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('contains-rect', false);"><tt><b>contains</b>(rect)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('contains-rect', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Tests if the interior of the rectangle entirely contains the specified
+rectangle.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>rect:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+&mdash;&nbsp;The specified rectangle
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangle entirely contains the specified
+                  rectangle, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> &mdash; Checking whether the bounding box of one item is contained within that of another item:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+// All newly created paths will inherit these styles:
+project.currentStyle = {
+	fillColor: 'green',
+	strokeColor: 'black'
+};
+
+// Create a circle shaped path at {x: 80, y: 50}
+// with a radius of 45.
+var largeCircle = new Path.Circle(new Point(80, 50), 45);
+
+// Create a smaller circle shaped path in the same position
+// with a radius of 30.
+var circle = new Path.Circle(new Point(80, 50), 30);
+
+function onMouseMove(event) {
+	// Move the circle to the position of the mouse:
+	circle.position = event.point;
+
+	// Check whether the bounding box of the smaller circle
+	// is contained within the bounding box of the larger item:
+	if (largeCircle.bounds.contains(circle.bounds)) {
+		// If it does, fill it with green:
+		circle.fillColor = 'green';
+		largeCircle.fillColor = 'green';
+	} else {
+		// If doesn't, fill it with red:
+		circle.fillColor = 'red';
+		largeCircle.fillColor = 'red';
+	}
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+		
+			
+<div id="intersects-rect-member" class="member">
+<div id="intersects-rect-link" class="member-link">
+<a name="intersects-rect" href="#" onClick="return toggleMember('intersects-rect', false);"><tt><b>intersects</b>(rect)</tt></a>
+</div>
+<div id="intersects-rect-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('intersects-rect', false);"><tt><b>intersects</b>(rect)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('intersects-rect', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Tests if the interior of this rectangle intersects the interior of
+another rectangle.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>rect:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+&mdash;&nbsp;the specified rectangle
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangle and the specified rectangle
+                  intersect each other, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> &mdash; Checking whether the bounding box of one item intersects with that of another item:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-2">
+// All newly created paths will inherit these styles:
+project.currentStyle = {
+	fillColor: 'green',
+	strokeColor: 'black'
+};
+
+// Create a circle shaped path at {x: 80, y: 50}
+// with a radius of 45.
+var largeCircle = new Path.Circle(new Point(80, 50), 45);
+
+// Create a smaller circle shaped path in the same position
+// with a radius of 30.
+var circle = new Path.Circle(new Point(80, 50), 30);
+
+function onMouseMove(event) {
+	// Move the circle to the position of the mouse:
+	circle.position = event.point;
+
+	// Check whether the bounding box of the two circle
+	// shaped paths intersect:
+	if (largeCircle.bounds.intersects(circle.bounds)) {
+		// If it does, fill it with green:
+		circle.fillColor = 'green';
+		largeCircle.fillColor = 'green';
+	} else {
+		// If doesn't, fill it with red:
+		circle.fillColor = 'red';
+		largeCircle.fillColor = 'red';
+	}
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+		
+			
+<h3>Boolean Operations</h3>
+
+<div id="intersect-rect-member" class="member">
+<div id="intersect-rect-link" class="member-link">
+<a name="intersect-rect" href="#" onClick="return toggleMember('intersect-rect', false);"><tt><b>intersect</b>(rect)</tt></a>
+</div>
+<div id="intersect-rect-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('intersect-rect', false);"><tt><b>intersect</b>(rect)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('intersect-rect', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new rectangle representing the intersection of this rectangle
+with the specified rectangle.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>rect:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+&mdash;&nbsp;The rectangle to be intersected with this
+                        rectangle
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt>&nbsp;&mdash;&nbsp;The largest rectangle contained in both the specified
+                    rectangle and in this rectangle.
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> &mdash; Intersecting two rectangles and visualizing the result using rectangle shaped paths:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-3">
+// Create two rectangles that overlap each other
+var size = new Size(50, 50);
+var rectangle1 = new Rectangle(new Point(25, 15), size);
+var rectangle2 = new Rectangle(new Point(50, 40), size);
+
+// The rectangle that represents the intersection of the
+// two rectangles:
+var intersected = rectangle1.intersect(rectangle2);
+
+// To visualize the intersecting of the rectangles, we will
+// create rectangle shaped paths using the Path.Rectangle
+// constructor.
+
+// Have all newly created paths inherit a black stroke:
+project.currentStyle.strokeColor = 'black';
+
+// Create two rectangle shaped paths using the abstract rectangles
+// we created before:
+new Path.Rectangle(rectangle1);
+new Path.Rectangle(rectangle2);
+
+// Create a path that represents the intersected rectangle,
+// and fill it with red:
+var intersectionPath = new Path.Rectangle(intersected);
+intersectionPath.fillColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+		
+			
+<div id="unite-rect-member" class="member">
+<div id="unite-rect-link" class="member-link">
+<a name="unite-rect" href="#" onClick="return toggleMember('unite-rect', false);"><tt><b>unite</b>(rect)</tt></a>
+</div>
+<div id="unite-rect-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('unite-rect', false);"><tt><b>unite</b>(rect)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('unite-rect', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new rectangle representing the union of this rectangle with the
+specified rectangle.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>rect:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+&mdash;&nbsp;the rectangle to be combined with this rectangle
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt>&nbsp;&mdash;&nbsp;the smallest rectangle containing both the specified
+                    rectangle and this rectangle.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="include-point-member" class="member">
+<div id="include-point-link" class="member-link">
+<a name="include-point" href="#" onClick="return toggleMember('include-point', false);"><tt><b>include</b>(point)</tt></a>
+</div>
+<div id="include-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('include-point', false);"><tt><b>include</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('include-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Adds a point to this rectangle. The resulting rectangle is the
+smallest rectangle that contains both the original rectangle and the
+specified point.</p>
+<p>After adding a point, a call to <a href="../classes/Rectangle.html#contains-point" onclick="return toggleMember('contains-point', true);"><tt>contains(point)</tt></a> with the added
+point as an argument does not necessarily return <tt>true</tt>.</p>
+<p>The <a href="../classes/Rectangle.html#contains-point"><tt>rectangle.contains(point)</tt></a> method does not return <tt>true</tt>
+for points on the right or bottom edges of a rectangle. Therefore, if the
+added point falls on the left or bottom edge of the enlarged rectangle,
+<a href="../classes/Rectangle.html#contains-point"><tt>rectangle.contains(point)</tt></a> returns <tt>false</tt> for that point.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

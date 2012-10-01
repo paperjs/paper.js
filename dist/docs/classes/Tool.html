@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Tool</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>Tool</h1>
+
+<p>The Tool object refers to a script that the user can interact with
+by using the mouse and keyboard and can be accessed through the global
+<tt>tool</tt> variable. All its properties are also available in the paper
+scope.</p>
+<p>The global <tt>tool</tt> variable only exists in scripts that contain mouse
+handler functions (<a href="../classes/Tool.html#onmousemove" onclick="return toggleMember('onmousemove', true);"><tt>onMouseMove</tt></a>, <a href="../classes/Tool.html#onmousedown" onclick="return toggleMember('onmousedown', true);"><tt>onMouseDown</tt></a>,
+<a href="../classes/Tool.html#onmousedrag" onclick="return toggleMember('onmousedrag', true);"><tt>onMouseDrag</tt></a>, <a href="../classes/Tool.html#onmouseup" onclick="return toggleMember('onmouseup', true);"><tt>onMouseUp</tt></a>) or a keyboard handler
+function (<a href="../classes/Tool.html#onkeydown" onclick="return toggleMember('onkeydown', true);"><tt>onKeyDown</tt></a>, <a href="../classes/Tool.html#onkeyup" onclick="return toggleMember('onkeyup', true);"><tt>onKeyUp</tt></a>).</p>
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var path;
+
+// Only execute onMouseDrag when the mouse
+// has moved at least 10 points:
+tool.distanceThreshold = 10;
+
+function onMouseDown(event) {
+	// Create a new path every time the mouse is clicked
+	path = new Path();
+	path.add(event.point);
+	path.strokeColor = 'black';
+}
+
+function onMouseDrag(event) {
+	// Add a point to the path every time the mouse is dragged
+	path.add(event.point);
+}</pre>
+
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="eventinterval-member" class="member">
+<div id="eventinterval-link" class="member-link">
+<a name="eventinterval" href="#" onClick="return toggleMember('eventinterval', false);"><tt><b>eventInterval</b></tt></a>
+</div>
+<div id="eventinterval-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('eventinterval', false);"><tt><b>eventInterval</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('eventinterval', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The fixed time delay in milliseconds between each call to the
+<a href="../classes/Tool.html#onmousedrag" onclick="return toggleMember('onmousedrag', true);"><tt>onMouseDrag</tt></a> event. Setting this to an interval means the
+<a href="../classes/Tool.html#onmousedrag" onclick="return toggleMember('onmousedrag', true);"><tt>onMouseDrag</tt></a> event is called repeatedly after the initial
+<a href="../classes/Tool.html#onmousedown" onclick="return toggleMember('onmousedown', true);"><tt>onMouseDown</tt></a> until the user releases the mouse.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="mindistance-member" class="member">
+<div id="mindistance-link" class="member-link">
+<a name="mindistance" href="#" onClick="return toggleMember('mindistance', false);"><tt><b>minDistance</b></tt></a>
+</div>
+<div id="mindistance-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('mindistance', false);"><tt><b>minDistance</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('mindistance', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The minimum distance the mouse has to drag before firing the onMouseDrag
+event, since the last onMouseDrag event.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="maxdistance-member" class="member">
+<div id="maxdistance-link" class="member-link">
+<a name="maxdistance" href="#" onClick="return toggleMember('maxdistance', false);"><tt><b>maxDistance</b></tt></a>
+</div>
+<div id="maxdistance-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('maxdistance', false);"><tt><b>maxDistance</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('maxdistance', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The maximum distance the mouse has to drag before firing the onMouseDrag
+event, since the last onMouseDrag event.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="fixeddistance-member" class="member">
+<div id="fixeddistance-link" class="member-link">
+<a name="fixeddistance" href="#" onClick="return toggleMember('fixeddistance', false);"><tt><b>fixedDistance</b></tt></a>
+</div>
+<div id="fixeddistance-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('fixeddistance', false);"><tt><b>fixedDistance</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('fixeddistance', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Mouse Event Handlers</h3>
+
+<div id="onmousedown-member" class="member">
+<div id="onmousedown-link" class="member-link">
+<a name="onmousedown" href="#" onClick="return toggleMember('onmousedown', false);"><tt><b>onMouseDown</b></tt></a>
+</div>
+<div id="onmousedown-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('onmousedown', false);"><tt><b>onMouseDown</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onmousedown', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The function to be called when the mouse button is pushed down. The
+function receives a <a href="../classes/ToolEvent.html"><tt>ToolEvent</tt></a> object which contains information
+about the mouse event.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Function</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Creating circle shaped paths where the user presses the mouse button:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+function onMouseDown(event) {
+	// Create a new circle shaped path with a radius of 10
+	// at the position of the mouse (event.point):
+	var path = new Path.Circle(event.point, 10);
+	path.fillColor = 'black';
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmousedrag-member" class="member">
+<div id="onmousedrag-link" class="member-link">
+<a name="onmousedrag" href="#" onClick="return toggleMember('onmousedrag', false);"><tt><b>onMouseDrag</b></tt></a>
+</div>
+<div id="onmousedrag-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('onmousedrag', false);"><tt><b>onMouseDrag</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onmousedrag', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The function to be called when the mouse position changes while the mouse
+is being dragged. The function receives a <a href="../classes/ToolEvent.html"><tt>ToolEvent</tt></a> object which
+contains information about the mouse event.</p>
+<p>This function can also be called periodically while the mouse doesn't
+move by setting the <a href="../classes/Tool.html#eventinterval" onclick="return toggleMember('eventinterval', true);"><tt>eventInterval</tt></a></p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Function</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Draw a line by adding a segment to a path on every mouse drag event:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+// Create an empty path:
+var path = new Path();
+path.strokeColor = 'black';
+
+function onMouseDrag(event) {
+	// Add a segment to the path at the position of the mouse:
+	path.add(event.point);
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmousemove-member" class="member">
+<div id="onmousemove-link" class="member-link">
+<a name="onmousemove" href="#" onClick="return toggleMember('onmousemove', false);"><tt><b>onMouseMove</b></tt></a>
+</div>
+<div id="onmousemove-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('onmousemove', false);"><tt><b>onMouseMove</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onmousemove', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The function to be called the mouse moves within the project view. The
+function receives a <a href="../classes/ToolEvent.html"><tt>ToolEvent</tt></a> object which contains information
+about the mouse event.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Function</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Moving a path to the position of the mouse:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-2">
+// Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
+var path = new Path.Circle([0, 0], 10);
+path.fillColor = 'black';
+
+function onMouseMove(event) {
+	// Whenever the user moves the mouse, move the path
+	// to that position:
+	path.position = event.point;
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmouseup-member" class="member">
+<div id="onmouseup-link" class="member-link">
+<a name="onmouseup" href="#" onClick="return toggleMember('onmouseup', false);"><tt><b>onMouseUp</b></tt></a>
+</div>
+<div id="onmouseup-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('onmouseup', false);"><tt><b>onMouseUp</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onmouseup', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The function to be called when the mouse button is released. The function
+receives a <a href="../classes/ToolEvent.html"><tt>ToolEvent</tt></a> object which contains information about the
+mouse event.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Function</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Creating circle shaped paths where the user releases the mouse:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-3">
+function onMouseUp(event) {
+	// Create a new circle shaped path with a radius of 10
+	// at the position of the mouse (event.point):
+	var path = new Path.Circle(event.point, 10);
+	path.fillColor = 'black';
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Keyboard Event Handlers</h3>
+
+<div id="onkeydown-member" class="member">
+<div id="onkeydown-link" class="member-link">
+<a name="onkeydown" href="#" onClick="return toggleMember('onkeydown', false);"><tt><b>onKeyDown</b></tt></a>
+</div>
+<div id="onkeydown-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('onkeydown', false);"><tt><b>onKeyDown</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onkeydown', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The function to be called when the user presses a key on the keyboard.</p>
+<p>The function receives a <a href="../classes/KeyEvent.html"><tt>KeyEvent</tt></a> object which contains
+information about the keyboard event.</p>
+<p>If the function returns <tt>false</tt>, the keyboard event will be
+prevented from bubbling up. This can be used for example to stop the
+window from scrolling, when you need the user to interact with arrow
+keys.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Function</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Scaling a path whenever the user presses the space bar:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-4">
+// Create a circle shaped path:
+var path = new Path.Circle(new Point(50, 50), 30);
+path.fillColor = 'red';
+
+function onKeyDown(event) {
+	if(event.key == 'space') {
+		// Scale the path by 110%:
+		path.scale(1.1);
+
+		// Prevent the key event from bubbling
+		return false;
+	}
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onkeyup-member" class="member">
+<div id="onkeyup-link" class="member-link">
+<a name="onkeyup" href="#" onClick="return toggleMember('onkeyup', false);"><tt><b>onKeyUp</b></tt></a>
+</div>
+<div id="onkeyup-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('onkeyup', false);"><tt><b>onKeyUp</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onkeyup', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The function to be called when the user releases a key on the keyboard.</p>
+<p>The function receives a <a href="../classes/KeyEvent.html"><tt>KeyEvent</tt></a> object which contains
+information about the keyboard event.</p>
+<p>If the function returns <tt>false</tt>, the keyboard event will be
+prevented from bubbling up. This can be used for example to stop the
+window from scrolling, when you need the user to interact with arrow
+keys.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Function</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">function onKeyUp(event) {
+	if(event.key == 'space') {
+		console.log('The spacebar was released!');
+	}
+}</pre>
+
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="activate-member" class="member">
+<div id="activate-link" class="member-link">
+<a name="activate" href="#" onClick="return toggleMember('activate', false);"><tt><b>activate</b>()</tt></a>
+</div>
+<div id="activate-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('activate', false);"><tt><b>activate</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('activate', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Activates this tool, meaning <a href="../classes/PaperScope.html#tool"><tt>paperScope.tool</tt></a> will
+point to it and it will be the one that recieves mouse events.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="remove-member" class="member">
+<div id="remove-link" class="member-link">
+<a name="remove" href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+<div id="remove-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('remove', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Removes this tool from the <a href="../classes/PaperScope.html#tools"><tt>paperScope.tools</tt></a> list.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

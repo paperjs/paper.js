@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Matrix</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>Matrix</h1>
+
+<p>An affine transform performs a linear mapping from 2D coordinates
+to other 2D coordinates that preserves the "straightness" and
+"parallelness" of lines.</p>
+<p>Such a coordinate transformation can be represented by a 3 row by 3
+column matrix with an implied last row of [ 0 0 1 ]. This matrix
+transforms source coordinates (x,y) into destination coordinates (x',y')
+by considering them to be a column vector and multiplying the coordinate
+vector by the matrix according to the following process:</p>
+<pre class="code">
+     [ x ]   [ a  b  tx ] [ x ]   [ a * x + b * y + tx ]
+     [ y ] = [ c  d  ty ] [ y ] = [ c * x + d * y + ty ]
+     [ 1 ]   [ 0  0  1  ] [ 1 ]   [         1          ]
+</pre>
+<p>This class is optimized for speed and minimizes calculations based on its
+knowledge of the underlying matrix (as opposed to say simply performing
+matrix multiplication).</p>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="matrix-a-c-b-d-tx-ty-member" class="member">
+<div id="matrix-a-c-b-d-tx-ty-link" class="member-link">
+<a name="matrix-a-c-b-d-tx-ty" href="#" onClick="return toggleMember('matrix-a-c-b-d-tx-ty', false);"><tt><b>Matrix</b>(a, c, b, d, tx, ty)</tt></a>
+</div>
+<div id="matrix-a-c-b-d-tx-ty-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('matrix-a-c-b-d-tx-ty', false);"><tt><b>Matrix</b>(a, c, b, d, tx, ty)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('matrix-a-c-b-d-tx-ty', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a 2D affine transform.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>a:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The scaleX coordinate of the transform
+
+</li>
+
+<li>
+<tt>c:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The shearY coordinate of the transform
+
+</li>
+
+<li>
+<tt>b:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The shearX coordinate of the transform
+
+</li>
+
+<li>
+<tt>d:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The scaleY coordinate of the transform
+
+</li>
+
+<li>
+<tt>tx:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The translateX coordinate of the transform
+
+</li>
+
+<li>
+<tt>ty:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The translateY coordinate of the transform
+
+</li>
+
+</ul>
+
+
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="scalex-member" class="member">
+<div id="scalex-link" class="member-link">
+<a name="scalex" href="#" onClick="return toggleMember('scalex', false);"><tt><b>scaleX</b></tt></a>
+</div>
+<div id="scalex-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('scalex', false);"><tt><b>scaleX</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('scalex', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The scaling factor in the x-direction (<tt>a</tt>).</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="scaley-member" class="member">
+<div id="scaley-link" class="member-link">
+<a name="scaley" href="#" onClick="return toggleMember('scaley', false);"><tt><b>scaleY</b></tt></a>
+</div>
+<div id="scaley-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('scaley', false);"><tt><b>scaleY</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('scaley', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The scaling factor in the y-direction (<tt>d</tt>).</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="shearx-member" class="member">
+<div id="shearx-link" class="member-link">
+<a name="shearx" href="#" onClick="return toggleMember('shearx', false);"><tt><b>shearX</b></tt></a>
+</div>
+<div id="shearx-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('shearx', false);"><tt><b>shearX</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('shearx', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="sheary-member" class="member">
+<div id="sheary-link" class="member-link">
+<a name="sheary" href="#" onClick="return toggleMember('sheary', false);"><tt><b>shearY</b></tt></a>
+</div>
+<div id="sheary-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('sheary', false);"><tt><b>shearY</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('sheary', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="translatex-member" class="member">
+<div id="translatex-link" class="member-link">
+<a name="translatex" href="#" onClick="return toggleMember('translatex', false);"><tt><b>translateX</b></tt></a>
+</div>
+<div id="translatex-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('translatex', false);"><tt><b>translateX</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('translatex', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The translation in the x-direction (<tt>tx</tt>).</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="translatey-member" class="member">
+<div id="translatey-link" class="member-link">
+<a name="translatey" href="#" onClick="return toggleMember('translatey', false);"><tt><b>translateY</b></tt></a>
+</div>
+<div id="translatey-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('translatey', false);"><tt><b>translateY</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('translatey', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The translation in the y-direction (<tt>ty</tt>).</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="values-member" class="member">
+<div id="values-link" class="member-link">
+<a name="values" href="#" onClick="return toggleMember('values', false);"><tt><b>values</b></tt></a>
+</div>
+<div id="values-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('values', false);"><tt><b>values</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('values', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The transform values as an array, in the same sequence as they are passed
+to {@link #initialize(a, c, b, d, tx, ty)}.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="rotation-member" class="member">
+<div id="rotation-link" class="member-link">
+<a name="rotation" href="#" onClick="return toggleMember('rotation', false);"><tt><b>rotation</b></tt></a>
+</div>
+<div id="rotation-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rotation', false);"><tt><b>rotation</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rotation', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The rotation angle of the matrix. If a non-uniform rotation is applied as
+a result of a shear() or scale() command, undefined is returned, as the
+resulting transformation cannot be expressed in one rotation angle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="clone-member" class="member">
+<div id="clone-link" class="member-link">
+<a name="clone" href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+<div id="clone-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('clone', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A copy of this transform.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="set-a-c-b-d-tx-ty-member" class="member">
+<div id="set-a-c-b-d-tx-ty-link" class="member-link">
+<a name="set-a-c-b-d-tx-ty" href="#" onClick="return toggleMember('set-a-c-b-d-tx-ty', false);"><tt><b>set</b>(a, c, b, d, tx, ty)</tt></a>
+</div>
+<div id="set-a-c-b-d-tx-ty-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('set-a-c-b-d-tx-ty', false);"><tt><b>set</b>(a, c, b, d, tx, ty)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('set-a-c-b-d-tx-ty', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Sets this transform to the matrix specified by the 6 values.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>a:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The scaleX coordinate of the transform
+
+</li>
+
+<li>
+<tt>c:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The shearY coordinate of the transform
+
+</li>
+
+<li>
+<tt>b:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The shearX coordinate of the transform
+
+</li>
+
+<li>
+<tt>d:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The scaleY coordinate of the transform
+
+</li>
+
+<li>
+<tt>tx:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The translateX coordinate of the transform
+
+</li>
+
+<li>
+<tt>ty:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The translateY coordinate of the transform
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="scale-scale-member" class="member">
+<div id="scale-scale-link" class="member-link">
+<a name="scale-scale" href="#" onClick="return toggleMember('scale-scale', false);"><tt><b>scale</b>(scale[, center])</tt></a>
+</div>
+<div id="scale-scale-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('scale-scale', false);"><tt><b>scale</b>(scale[, center])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('scale-scale', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Concatentates this transform with a scaling transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>scale:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The scaling factor
+
+</li>
+
+<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The center for the scaling transformation
+&mdash;&nbsp;optional
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="scale-hor-ver-member" class="member">
+<div id="scale-hor-ver-link" class="member-link">
+<a name="scale-hor-ver" href="#" onClick="return toggleMember('scale-hor-ver', false);"><tt><b>scale</b>(hor, ver[, center])</tt></a>
+</div>
+<div id="scale-hor-ver-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('scale-hor-ver', false);"><tt><b>scale</b>(hor, ver[, center])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('scale-hor-ver', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Concatentates this transform with a scaling transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>hor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The horizontal scaling factor
+
+</li>
+
+<li>
+<tt>ver:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The vertical scaling factor
+
+</li>
+
+<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The center for the scaling transformation
+&mdash;&nbsp;optional
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="translate-point-member" class="member">
+<div id="translate-point-link" class="member-link">
+<a name="translate-point" href="#" onClick="return toggleMember('translate-point', false);"><tt><b>translate</b>(point)</tt></a>
+</div>
+<div id="translate-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('translate-point', false);"><tt><b>translate</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('translate-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Concatentates this transform with a translate transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The vector to translate by
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="translate-dx-dy-member" class="member">
+<div id="translate-dx-dy-link" class="member-link">
+<a name="translate-dx-dy" href="#" onClick="return toggleMember('translate-dx-dy', false);"><tt><b>translate</b>(dx, dy)</tt></a>
+</div>
+<div id="translate-dx-dy-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('translate-dx-dy', false);"><tt><b>translate</b>(dx, dy)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('translate-dx-dy', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Concatentates this transform with a translate transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>dx:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The distance to translate in the x direction
+
+</li>
+
+<li>
+<tt>dy:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The distance to translate in the y direction
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="rotate-angle-center-member" class="member">
+<div id="rotate-angle-center-link" class="member-link">
+<a name="rotate-angle-center" href="#" onClick="return toggleMember('rotate-angle-center', false);"><tt><b>rotate</b>(angle, center)</tt></a>
+</div>
+<div id="rotate-angle-center-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rotate-angle-center', false);"><tt><b>rotate</b>(angle, center)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rotate-angle-center', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Concatentates this transform with a rotation transformation around an
+anchor point.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>angle:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The angle of rotation measured in degrees
+
+</li>
+
+<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The anchor point to rotate around
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="rotate-angle-x-y-member" class="member">
+<div id="rotate-angle-x-y-link" class="member-link">
+<a name="rotate-angle-x-y" href="#" onClick="return toggleMember('rotate-angle-x-y', false);"><tt><b>rotate</b>(angle, x, y)</tt></a>
+</div>
+<div id="rotate-angle-x-y-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rotate-angle-x-y', false);"><tt><b>rotate</b>(angle, x, y)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rotate-angle-x-y', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Concatentates this transform with a rotation transformation around an
+anchor point.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>angle:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The angle of rotation measured in degrees
+
+</li>
+
+<li>
+<tt>x:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The x coordinate of the anchor point
+
+</li>
+
+<li>
+<tt>y:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The y coordinate of the anchor point
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="shear-point-member" class="member">
+<div id="shear-point-link" class="member-link">
+<a name="shear-point" href="#" onClick="return toggleMember('shear-point', false);"><tt><b>shear</b>(point[, center])</tt></a>
+</div>
+<div id="shear-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('shear-point', false);"><tt><b>shear</b>(point[, center])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('shear-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Concatentates this transform with a shear transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The shear factor in x and y direction
+
+</li>
+
+<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The center for the shear transformation
+&mdash;&nbsp;optional
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="shear-hor-ver-member" class="member">
+<div id="shear-hor-ver-link" class="member-link">
+<a name="shear-hor-ver" href="#" onClick="return toggleMember('shear-hor-ver', false);"><tt><b>shear</b>(hor, ver[, center])</tt></a>
+</div>
+<div id="shear-hor-ver-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('shear-hor-ver', false);"><tt><b>shear</b>(hor, ver[, center])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('shear-hor-ver', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Concatentates this transform with a shear transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>hor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The horizontal shear factor
+
+</li>
+
+<li>
+<tt>ver:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The vertical shear factor
+
+</li>
+
+<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The center for the shear transformation
+&mdash;&nbsp;optional
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="tostring-member" class="member">
+<div id="tostring-link" class="member-link">
+<a name="tostring" href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+<div id="tostring-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('tostring', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of this transform.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="concatenate-mx-member" class="member">
+<div id="concatenate-mx-link" class="member-link">
+<a name="concatenate-mx" href="#" onClick="return toggleMember('concatenate-mx', false);"><tt><b>concatenate</b>(mx)</tt></a>
+</div>
+<div id="concatenate-mx-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('concatenate-mx', false);"><tt><b>concatenate</b>(mx)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('concatenate-mx', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Concatenates an affine transform to this transform.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>mx:</tt> 
+<a href="../classes/Matrix.html"><tt>Matrix</tt></a>
+&mdash;&nbsp;The transform to concatenate
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="preconcatenate-mx-member" class="member">
+<div id="preconcatenate-mx-link" class="member-link">
+<a name="preconcatenate-mx" href="#" onClick="return toggleMember('preconcatenate-mx', false);"><tt><b>preConcatenate</b>(mx)</tt></a>
+</div>
+<div id="preconcatenate-mx-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('preconcatenate-mx', false);"><tt><b>preConcatenate</b>(mx)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('preconcatenate-mx', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Pre-concatenates an affine transform to this transform.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>mx:</tt> 
+<a href="../classes/Matrix.html"><tt>Matrix</tt></a>
+&mdash;&nbsp;The transform to preconcatenate
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="transform-point-member" class="member">
+<div id="transform-point-link" class="member-link">
+<a name="transform-point" href="#" onClick="return toggleMember('transform-point', false);"><tt><b>transform</b>(point)</tt></a>
+</div>
+<div id="transform-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('transform-point', false);"><tt><b>transform</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('transform-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Transforms a point and returns the result.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The point to be transformed
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;The transformed point
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="transform-src-srcOff-dst-dstOff-numPts-member" class="member">
+<div id="transform-src-srcOff-dst-dstOff-numPts-link" class="member-link">
+<a name="transform-src-srcOff-dst-dstOff-numPts" href="#" onClick="return toggleMember('transform-src-srcOff-dst-dstOff-numPts', false);"><tt><b>transform</b>(src, srcOff, dst, dstOff, numPts)</tt></a>
+</div>
+<div id="transform-src-srcOff-dst-dstOff-numPts-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('transform-src-srcOff-dst-dstOff-numPts', false);"><tt><b>transform</b>(src, srcOff, dst, dstOff, numPts)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('transform-src-srcOff-dst-dstOff-numPts', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Transforms an array of coordinates by this matrix and stores the results
+into the destination array, which is also returned.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>src:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The array containing the source points
+       as x, y value pairs
+
+</li>
+
+<li>
+<tt>srcOff:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The offset to the first point to be transformed
+
+</li>
+
+<li>
+<tt>dst:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The array into which to store the transformed
+       point pairs
+
+</li>
+
+<li>
+<tt>dstOff:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The offset of the location of the first
+       transformed point in the destination array
+
+</li>
+
+<li>
+<tt>numPts:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The number of points to tranform
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;The dst array, containing the transformed coordinates.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="inversetransform-point-member" class="member">
+<div id="inversetransform-point-link" class="member-link">
+<a name="inversetransform-point" href="#" onClick="return toggleMember('inversetransform-point', false);"><tt><b>inverseTransform</b>(point)</tt></a>
+</div>
+<div id="inversetransform-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('inversetransform-point', false);"><tt><b>inverseTransform</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('inversetransform-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Inverse transforms a point and returns the result.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;The point to be transformed
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="isidentity-member" class="member">
+<div id="isidentity-link" class="member-link">
+<a name="isidentity" href="#" onClick="return toggleMember('isidentity', false);"><tt><b>isIdentity</b>()</tt></a>
+</div>
+<div id="isidentity-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isidentity', false);"><tt><b>isIdentity</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isidentity', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether this transform is the identity transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="isinvertible-member" class="member">
+<div id="isinvertible-link" class="member-link">
+<a name="isinvertible" href="#" onClick="return toggleMember('isinvertible', false);"><tt><b>isInvertible</b>()</tt></a>
+</div>
+<div id="isinvertible-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isinvertible', false);"><tt><b>isInvertible</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isinvertible', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns whether the transform is invertible. A transform is not
+invertible if the determinant is 0 or any value is non-finite or NaN.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether the transform is invertible
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="issingular-member" class="member">
+<div id="issingular-link" class="member-link">
+<a name="issingular" href="#" onClick="return toggleMember('issingular', false);"><tt><b>isSingular</b>()</tt></a>
+</div>
+<div id="issingular-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('issingular', false);"><tt><b>isSingular</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('issingular', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks whether the matrix is singular or not. Singular matrices cannot be
+inverted.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether the matrix is singular
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="createinverse-member" class="member">
+<div id="createinverse-link" class="member-link">
+<a name="createinverse" href="#" onClick="return toggleMember('createinverse', false);"><tt><b>createInverse</b>()</tt></a>
+</div>
+<div id="createinverse-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('createinverse', false);"><tt><b>createInverse</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('createinverse', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Inverts the transformation of the matrix. If the matrix is not invertible
+(in which case <a href="../classes/Matrix.html#issingular" onclick="return toggleMember('issingular', true);"><tt>isSingular</tt></a>() returns true), <tt>null </tt> is
+returned.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;The inverted matrix, or <tt>null </tt>, if the matrix is
+        singular
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="settoscale-hor-ver-member" class="member">
+<div id="settoscale-hor-ver-link" class="member-link">
+<a name="settoscale-hor-ver" href="#" onClick="return toggleMember('settoscale-hor-ver', false);"><tt><b>setToScale</b>(hor, ver)</tt></a>
+</div>
+<div id="settoscale-hor-ver-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('settoscale-hor-ver', false);"><tt><b>setToScale</b>(hor, ver)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('settoscale-hor-ver', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Sets this transform to a scaling transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>hor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The horizontal scaling factor
+
+</li>
+
+<li>
+<tt>ver:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The vertical scaling factor
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="settotranslation-dx-dy-member" class="member">
+<div id="settotranslation-dx-dy-link" class="member-link">
+<a name="settotranslation-dx-dy" href="#" onClick="return toggleMember('settotranslation-dx-dy', false);"><tt><b>setToTranslation</b>(dx, dy)</tt></a>
+</div>
+<div id="settotranslation-dx-dy-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('settotranslation-dx-dy', false);"><tt><b>setToTranslation</b>(dx, dy)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('settotranslation-dx-dy', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Sets this transform to a translation transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>dx:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The distance to translate in the x direction
+
+</li>
+
+<li>
+<tt>dy:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The distance to translate in the y direction
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="settoshear-hor-ver-member" class="member">
+<div id="settoshear-hor-ver-link" class="member-link">
+<a name="settoshear-hor-ver" href="#" onClick="return toggleMember('settoshear-hor-ver', false);"><tt><b>setToShear</b>(hor, ver)</tt></a>
+</div>
+<div id="settoshear-hor-ver-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('settoshear-hor-ver', false);"><tt><b>setToShear</b>(hor, ver)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('settoshear-hor-ver', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Sets this transform to a shearing transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>hor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The horizontal shear factor
+
+</li>
+
+<li>
+<tt>ver:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The vertical shear factor
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="settorotation-angle-x-y-member" class="member">
+<div id="settorotation-angle-x-y-link" class="member-link">
+<a name="settorotation-angle-x-y" href="#" onClick="return toggleMember('settorotation-angle-x-y', false);"><tt><b>setToRotation</b>(angle, x, y)</tt></a>
+</div>
+<div id="settorotation-angle-x-y-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('settorotation-angle-x-y', false);"><tt><b>setToRotation</b>(angle, x, y)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('settorotation-angle-x-y', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Sets this transform to a rotation transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>angle:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The angle of rotation measured in degrees
+
+</li>
+
+<li>
+<tt>x:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The x coordinate of the anchor point
+
+</li>
+
+<li>
+<tt>y:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The y coordinate of the anchor point
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;This affine transform
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="applytocontext-ctx-member" class="member">
+<div id="applytocontext-ctx-link" class="member-link">
+<a name="applytocontext-ctx" href="#" onClick="return toggleMember('applytocontext-ctx', false);"><tt><b>applyToContext</b>(ctx[, reset])</tt></a>
+</div>
+<div id="applytocontext-ctx-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('applytocontext-ctx', false);"><tt><b>applyToContext</b>(ctx[, reset])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('applytocontext-ctx', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Applies this matrix to the specified Canvas Context.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>ctx:</tt> 
+<tt>CanvasRenderingContext2D</tt>
+
+
+</li>
+
+<li>
+<tt>reset:</tt> 
+<tt>Boolean</tt>
+
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+	<div class="reference-members"><h2>Static Methods</h2>
+		
+			
+<div id="getscaleinstance-hor-ver-member" class="member">
+<div id="getscaleinstance-hor-ver-link" class="member-link">
+<a name="getscaleinstance-hor-ver" href="#" onClick="return toggleMember('getscaleinstance-hor-ver', false);"><tt><b>Matrix.getScaleInstance</b>(hor, ver)</tt></a>
+</div>
+<div id="getscaleinstance-hor-ver-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('getscaleinstance-hor-ver', false);"><tt><b>Matrix.getScaleInstance</b>(hor, ver)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getscaleinstance-hor-ver', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Creates a transform representing a scaling transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>hor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The horizontal scaling factor
+
+</li>
+
+<li>
+<tt>ver:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The vertical scaling factor
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a scaling
+        transformation
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="gettranslateinstance-dx-dy-member" class="member">
+<div id="gettranslateinstance-dx-dy-link" class="member-link">
+<a name="gettranslateinstance-dx-dy" href="#" onClick="return toggleMember('gettranslateinstance-dx-dy', false);"><tt><b>Matrix.getTranslateInstance</b>(dx, dy)</tt></a>
+</div>
+<div id="gettranslateinstance-dx-dy-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('gettranslateinstance-dx-dy', false);"><tt><b>Matrix.getTranslateInstance</b>(dx, dy)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('gettranslateinstance-dx-dy', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Creates a transform representing a translation transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>dx:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The distance to translate in the x direction
+
+</li>
+
+<li>
+<tt>dy:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The distance to translate in the y direction
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a translation
+        transformation
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="getshearinstance-hor-ver-center-member" class="member">
+<div id="getshearinstance-hor-ver-center-link" class="member-link">
+<a name="getshearinstance-hor-ver-center" href="#" onClick="return toggleMember('getshearinstance-hor-ver-center', false);"><tt><b>Matrix.getShearInstance</b>(hor, ver, center)</tt></a>
+</div>
+<div id="getshearinstance-hor-ver-center-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('getshearinstance-hor-ver-center', false);"><tt><b>Matrix.getShearInstance</b>(hor, ver, center)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getshearinstance-hor-ver-center', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Creates a transform representing a shearing transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>hor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The horizontal shear factor
+
+</li>
+
+<li>
+<tt>ver:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The vertical shear factor
+
+</li>
+
+<li>
+<tt>center:</tt> 
+
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a shearing transformation
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="getrotateinstance-angle-x-y-member" class="member">
+<div id="getrotateinstance-angle-x-y-link" class="member-link">
+<a name="getrotateinstance-angle-x-y" href="#" onClick="return toggleMember('getrotateinstance-angle-x-y', false);"><tt><b>Matrix.getRotateInstance</b>(angle, x, y)</tt></a>
+</div>
+<div id="getrotateinstance-angle-x-y-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('getrotateinstance-angle-x-y', false);"><tt><b>Matrix.getRotateInstance</b>(angle, x, y)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getrotateinstance-angle-x-y', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Creates a transform representing a rotation transformation.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>angle:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The angle of rotation measured in degrees
+
+</li>
+
+<li>
+<tt>x:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The x coordinate of the anchor point
+
+</li>
+
+<li>
+<tt>y:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The y coordinate of the anchor point
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt>&nbsp;&mdash;&nbsp;A transform representing a rotation transformation
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

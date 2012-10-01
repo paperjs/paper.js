@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>View</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>View</h1>
+
+<p>The View object wraps a canvas element and handles drawing and user
+interaction through mouse and keyboard for it. It offer means to scroll the
+view, find the currently visible bounds in project coordinates, or the
+center, both useful for constructing artwork that should appear centered on
+screen.</p>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="view-canvas-member" class="member">
+<div id="view-canvas-link" class="member-link">
+<a name="view-canvas" href="#" onClick="return toggleMember('view-canvas', false);"><tt><b>View</b>(canvas)</tt></a>
+</div>
+<div id="view-canvas-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('view-canvas', false);"><tt><b>View</b>(canvas)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('view-canvas', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a view object</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>canvas:</tt> 
+<tt>HTMLCanvasElement</tt> / <tt>String</tt>
+&mdash;&nbsp;The canvas object that this
+view should wrap, or the String id that represents it
+
+</li>
+
+</ul>
+
+
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="canvas-member" class="member">
+<div id="canvas-link" class="member-link">
+<a name="canvas" href="#" onClick="return toggleMember('canvas', false);"><tt><b>canvas</b></tt></a>
+</div>
+<div id="canvas-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('canvas', false);"><tt><b>canvas</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('canvas', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The underlying native canvas element.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>HTMLCanvasElement</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="viewsize-member" class="member">
+<div id="viewsize-link" class="member-link">
+<a name="viewsize" href="#" onClick="return toggleMember('viewsize', false);"><tt><b>viewSize</b></tt></a>
+</div>
+<div id="viewsize-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('viewsize', false);"><tt><b>viewSize</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('viewsize', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The size of the view canvas. Changing the view's size will resize it's
+underlying canvas.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Size.html"><tt>Size</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="bounds-member" class="member">
+<div id="bounds-link" class="member-link">
+<a name="bounds" href="#" onClick="return toggleMember('bounds', false);"><tt><b>bounds</b></tt></a>
+</div>
+<div id="bounds-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('bounds', false);"><tt><b>bounds</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('bounds', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The bounds of the currently visible area in project coordinates.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="size-member" class="member">
+<div id="size-link" class="member-link">
+<a name="size" href="#" onClick="return toggleMember('size', false);"><tt><b>size</b></tt></a>
+</div>
+<div id="size-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('size', false);"><tt><b>size</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('size', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The size of the visible area in project coordinates.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Size.html"><tt>Size</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="center-member" class="member">
+<div id="center-link" class="member-link">
+<a name="center" href="#" onClick="return toggleMember('center', false);"><tt><b>center</b></tt></a>
+</div>
+<div id="center-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('center', false);"><tt><b>center</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('center', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The center of the visible area in project coordinates.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="zoom-member" class="member">
+<div id="zoom-link" class="member-link">
+<a name="zoom" href="#" onClick="return toggleMember('zoom', false);"><tt><b>zoom</b></tt></a>
+</div>
+<div id="zoom-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('zoom', false);"><tt><b>zoom</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('zoom', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The zoom factor by which the project coordinates are magnified.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Event Handlers</h3>
+
+<div id="onframe-member" class="member">
+<div id="onframe-link" class="member-link">
+<a name="onframe" href="#" onClick="return toggleMember('onframe', false);"><tt><b>onFrame</b></tt></a>
+</div>
+<div id="onframe-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('onframe', false);"><tt><b>onFrame</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onframe', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>Handler function to be called on each frame of an animation.</p>
+<p>The function receives an event object which contains information about
+the frame event:</p>
+<p><b><tt>event.count</tt></b>: the number of times the frame event was fired.</p>
+<p><b><tt>event.time</tt></b>: the total amount of time passed since the first frame
+event in seconds.</p>
+<p><b><tt>event.delta</tt></b>: the time passed in seconds since the last frame
+event.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Function</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Creating an animation:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+// Create a rectangle shaped path with its top left point at:
+// {x: 50, y: 25} and a size of {width: 50, height: 50}
+var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+path.fillColor = 'black';
+
+function onFrame(event) {
+	// Every frame, rotate the path by 3 degrees:
+	path.rotate(3);
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onresize-member" class="member">
+<div id="onresize-link" class="member-link">
+<a name="onresize" href="#" onClick="return toggleMember('onresize', false);"><tt><b>onResize</b></tt></a>
+</div>
+<div id="onresize-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('onresize', false);"><tt><b>onResize</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('onresize', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>Handler function that is called whenever a view is resized.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Function</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Repositioning items when a view is resized:
+</p>
+
+
+<pre class="code">// Create a circle shaped path in the center of the view:
+var path = new Path.Circle(view.bounds.center, 30);
+path.fillColor = 'red';
+
+function onResize(event) {
+	// Whenever the view is resized, move the path to its center:
+	path.position = view.center;
+}</pre>
+
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="activate-member" class="member">
+<div id="activate-link" class="member-link">
+<a name="activate" href="#" onClick="return toggleMember('activate', false);"><tt><b>activate</b>()</tt></a>
+</div>
+<div id="activate-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('activate', false);"><tt><b>activate</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('activate', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Makes this view the active one, meaning <a href="../classes/PaperScope.html#view"><tt>paperScope.view</tt></a> will
+point to it.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="remove-member" class="member">
+<div id="remove-link" class="member-link">
+<a name="remove" href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+<div id="remove-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('remove', false);"><tt><b>remove</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('remove', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Removes thsi view from the <a href="../classes/PaperScope.html#views"><tt>paperScope.views</tt></a> list and frees the
+associated canvas.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="isvisible-member" class="member">
+<div id="isvisible-link" class="member-link">
+<a name="isvisible" href="#" onClick="return toggleMember('isvisible', false);"><tt><b>isVisible</b>()</tt></a>
+</div>
+<div id="isvisible-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isvisible', false);"><tt><b>isVisible</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isvisible', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks whether the view is currently visible within the current browser
+viewport.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;Whether the view is visible.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="scrollby-point-member" class="member">
+<div id="scrollby-point-link" class="member-link">
+<a name="scrollby-point" href="#" onClick="return toggleMember('scrollby-point', false);"><tt><b>scrollBy</b>(point)</tt></a>
+</div>
+<div id="scrollby-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('scrollby-point', false);"><tt><b>scrollBy</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('scrollby-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Scrolls the view by the given vector.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="draw-member" class="member">
+<div id="draw-link" class="member-link">
+<a name="draw" href="#" onClick="return toggleMember('draw', false);"><tt><b>draw</b>()</tt></a>
+</div>
+<div id="draw-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('draw', false);"><tt><b>draw</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('draw', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Draws the view.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

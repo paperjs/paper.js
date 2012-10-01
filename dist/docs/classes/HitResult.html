@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HitResult</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>HitResult</h1>
+
+<p>A HitResult object contains information about the results of a hit
+test. It is returned by <a href="../classes/Item.html#hittest-point"><tt>item.hitTest(point)</tt></a> and
+<a href="../classes/Project.html#hittest-point"><tt>project.hitTest(point)</tt></a>.</p>
+
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="type-member" class="member">
+<div id="type-link" class="member-link">
+<a name="type" href="#" onClick="return toggleMember('type', false);"><tt><b>type</b></tt></a>
+</div>
+<div id="type-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('type', false);"><tt><b>type</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('type', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>Describes the type of the hit result. For example, if you hit a segment
+point, the type would be 'segment'.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>String('segment', 'handle-in', 'handle-out', 'stroke', 'fill',
+'bounds', 'center')</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="name-member" class="member">
+<div id="name-link" class="member-link">
+<a name="name" href="#" onClick="return toggleMember('name', false);"><tt><b>name</b></tt></a>
+</div>
+<div id="name-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('name', false);"><tt><b>name</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('name', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>If the HitResult has a <a href="../classes/HitResult.html#type"><tt>hitResult.type</tt></a> of 'bounds', this property
+describes which corner of the bounding rectangle was hit.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>String('top-left', 'top-right', 'bottom-left', 'bottom-right',
+'left-center', 'top-center', 'right-center', 'bottom-center')</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="item-member" class="member">
+<div id="item-link" class="member-link">
+<a name="item" href="#" onClick="return toggleMember('item', false);"><tt><b>item</b></tt></a>
+</div>
+<div id="item-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('item', false);"><tt><b>item</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('item', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The item that was hit.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Item.html"><tt>Item</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="location-member" class="member">
+<div id="location-link" class="member-link">
+<a name="location" href="#" onClick="return toggleMember('location', false);"><tt><b>location</b></tt></a>
+</div>
+<div id="location-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('location', false);"><tt><b>location</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('location', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>If the HitResult has a type of 'stroke', this property gives more
+information about the exact position that was hit on the path.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="segment-member" class="member">
+<div id="segment-link" class="member-link">
+<a name="segment" href="#" onClick="return toggleMember('segment', false);"><tt><b>segment</b></tt></a>
+</div>
+<div id="segment-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('segment', false);"><tt><b>segment</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('segment', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>If the HitResult has a type of 'stroke', 'segment', 'handle-in' or
+'handle-out', this property refers to the Segment that was hit or that
+is closest to the hitResult.location on the curve.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Segment.html"><tt>Segment</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="point-member" class="member">
+<div id="point-link" class="member-link">
+<a name="point" href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+</div>
+<div id="point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The hit point.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

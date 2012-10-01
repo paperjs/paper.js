@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>GradientColor</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>GradientColor</h1>
+
+<p>The GradientColor object.</p>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="gradientcolor-gradient-origin-destination-member" class="member">
+<div id="gradientcolor-gradient-origin-destination-link" class="member-link">
+<a name="gradientcolor-gradient-origin-destination" href="#" onClick="return toggleMember('gradientcolor-gradient-origin-destination', false);"><tt><b>GradientColor</b>(gradient, origin, destination[, hilite])</tt></a>
+</div>
+<div id="gradientcolor-gradient-origin-destination-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('gradientcolor-gradient-origin-destination', false);"><tt><b>GradientColor</b>(gradient, origin, destination[, hilite])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('gradientcolor-gradient-origin-destination', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a gradient color object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>gradient:</tt> 
+<a href="../classes/Gradient.html"><tt>Gradient</tt></a>
+
+
+</li>
+
+<li>
+<tt>origin:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>destination:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>hilite:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+&mdash;&nbsp;optional
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> &mdash; Applying a linear gradient color containing evenly distributed color stops:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+// Define two points which we will be using to construct
+// the path and to position the gradient color:
+var topLeft = view.center - [80, 80];
+var bottomRight = view.center + [80, 80];
+
+// Create a rectangle shaped path between
+// the topLeft and bottomRight points:
+var path = new Path.Rectangle(topLeft, bottomRight);
+
+// Create the gradient, passing it an array of colors to be converted
+// to evenly distributed color stops:
+var gradient = new Gradient(['yellow', 'red', 'blue']);
+
+// Have the gradient color run between the topLeft and
+// bottomRight points we defined earlier:
+var gradientColor = new GradientColor(gradient, topLeft, bottomRight);
+
+// Set the fill color of the path to the gradient color:
+path.fillColor = gradientColor;
+</script>
+<div class="canvas"><canvas width="516" height="200" id="canvas-0"></canvas></div>
+</div>
+
+
+<p>
+<b>Example</b> &mdash; Applying a radial gradient color containing unevenly distributed color stops:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+// Create a circle shaped path at the center of the view
+// with a radius of 80:
+var path = new Path.Circle(view.center, 80);
+
+// The stops array: yellow mixes with red between 0 and 15%,
+// 15% to 30% is pure red, red mixes with black between 30% to 100%:
+var stops = [['yellow', 0], ['red', 0.15], ['red', 0.3], ['black', 0.9]];
+
+// Create a radial gradient using the color stops array:
+var gradient = new Gradient(stops, 'radial');
+
+// We will use the center point of the circle shaped path as
+// the origin point for our gradient color
+var from = path.position;
+
+// The destination point of the gradient color will be the
+// center point of the path + 80pt in horizontal direction:
+var to = path.position + [80, 0];
+
+// Create the gradient color:
+var gradientColor = new GradientColor(gradient, from, to);
+
+// Set the fill color of the path to the gradient color:
+path.fillColor = gradientColor;
+</script>
+<div class="canvas"><canvas width="516" height="200" id="canvas-1"></canvas></div>
+</div>
+
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="origin-member" class="member">
+<div id="origin-link" class="member-link">
+<a name="origin" href="#" onClick="return toggleMember('origin', false);"><tt><b>origin</b></tt></a>
+</div>
+<div id="origin-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('origin', false);"><tt><b>origin</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('origin', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The origin point of the gradient.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Move the origin point of the gradient, by moving your mouse over the view below:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-2">
+// Create a rectangle shaped path with the same dimensions as
+// that of the view and fill it with a gradient color:
+var path = new Path.Rectangle(view.bounds);
+var gradient = new Gradient(['yellow', 'red', 'blue']);
+
+// Have the gradient color run from the top left point of the view,
+// to the bottom right point of the view:
+var from = view.bounds.topLeft;
+var to = view.bounds.bottomRight;
+var gradientColor = new GradientColor(gradient, from, to);
+path.fillColor = gradientColor;
+
+function onMouseMove(event) {
+	// Set the origin point of the path's gradient color
+	// to the position of the mouse:
+	path.fillColor.origin = event.point;
+}
+</script>
+<div class="canvas"><canvas width="516" height="200" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="destination-member" class="member">
+<div id="destination-link" class="member-link">
+<a name="destination" href="#" onClick="return toggleMember('destination', false);"><tt><b>destination</b></tt></a>
+</div>
+<div id="destination-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('destination', false);"><tt><b>destination</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('destination', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The destination point of the gradient.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Move the destination point of the gradient, by moving your mouse over the view below:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-3">
+// Create a circle shaped path at the center of the view,
+// using 40% of the height of the view as its radius
+// and fill it with a radial gradient color:
+var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+
+var gradient = new Gradient(['yellow', 'red', 'black'], 'radial');
+var from = view.center;
+var to = view.bounds.bottomRight;
+var gradientColor = new GradientColor(gradient, from, to);
+path.fillColor = gradientColor;
+
+function onMouseMove(event) {
+	// Set the origin point of the path's gradient color
+	// to the position of the mouse:
+	path.fillColor.destination = event.point;
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-3"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="hilite-member" class="member">
+<div id="hilite-link" class="member-link">
+<a name="hilite" href="#" onClick="return toggleMember('hilite', false);"><tt><b>hilite</b></tt></a>
+</div>
+<div id="hilite-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('hilite', false);"><tt><b>hilite</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('hilite', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The hilite point of the gradient.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Move the hilite point of the gradient, by moving your mouse over the view below:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-4">
+// Create a circle shaped path at the center of the view,
+// using 40% of the height of the view as its radius
+// and fill it with a radial gradient color:
+var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+var gradient = new Gradient(['yellow', 'red', 'black'], 'radial');
+var from = path.position;
+var to = path.bounds.rightCenter;
+var gradientColor = new GradientColor(gradient, from, to);
+path.fillColor = gradientColor;
+
+function onMouseMove(event) {
+	// Set the origin hilite of the path's gradient color
+	// to the position of the mouse:
+	path.fillColor.hilite = event.point;
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-4"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="clone-member" class="member">
+<div id="clone-link" class="member-link">
+<a name="clone" href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+<div id="clone-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('clone', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/GradientColor.html"><tt>GradientColor</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the gradient color
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="equals-color-member" class="member">
+<div id="equals-color-link" class="member-link">
+<a name="equals-color" href="#" onClick="return toggleMember('equals-color', false);"><tt><b>equals</b>(color)</tt></a>
+</div>
+<div id="equals-color-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('equals-color', false);"><tt><b>equals</b>(color)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('equals-color', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks if the gradient color has the same properties as that of the
+supplied one.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>color:</tt> 
+<a href="../classes/GradientColor.html"><tt>GradientColor</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> the GradientColor is the same, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="transform-matrix-member" class="member">
+<div id="transform-matrix-link" class="member-link">
+<a name="transform-matrix" href="#" onClick="return toggleMember('transform-matrix', false);"><tt><b>transform</b>(matrix)</tt></a>
+</div>
+<div id="transform-matrix-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('transform-matrix', false);"><tt><b>transform</b>(matrix)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('transform-matrix', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Transform the gradient color by the specified matrix.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>matrix:</tt> 
+<a href="../classes/Matrix.html"><tt>Matrix</tt></a>
+&mdash;&nbsp;the matrix to transform the gradient color by
+
+</li>
+
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>
