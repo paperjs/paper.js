@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CharacterStyle</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>CharacterStyle</h1>
+
+<p> Extends <b><a href="../classes/PathStyle.html"><tt>PathStyle</tt></a></b></p>
+
+<p>The CharacterStyle object represents the character style of a text
+item (<a href="../classes/TextItem.html#characterstyle"><tt>textItem.characterStyle</tt></a>)</p>
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var text = new PointText(new Point(50, 50));
+text.content = 'Hello world.';
+text.characterStyle = {
+	fontSize: 50,
+	fillColor: 'black',
+};</pre>
+
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="font-member" class="member">
+<div id="font-link" class="member-link">
+<a name="font" href="#" onClick="return toggleMember('font', false);"><tt><b>font</b></tt></a>
+</div>
+<div id="font-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('font', false);"><tt><b>font</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('font', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The font of the character style.</p>
+	
+	
+		<ul><b>Default:</b>
+		<li>
+		<tt>'sans-serif'</tt>
+		</li>
+		</ul>
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>String</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="fontsize-member" class="member">
+<div id="fontsize-link" class="member-link">
+<a name="fontsize" href="#" onClick="return toggleMember('fontsize', false);"><tt><b>fontSize</b></tt></a>
+</div>
+<div id="fontsize-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('fontsize', false);"><tt><b>fontSize</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('fontsize', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The font size of the character style in points.</p>
+	
+	
+		<ul><b>Default:</b>
+		<li>
+		<tt>10</tt>
+		</li>
+		</ul>
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+
+<!-- =========================== inherited properties ====================== -->
+<div class="reference-members"><h2>Properties inherited from <a href="../classes/PathStyle.html"><tt>PathStyle</tt></a></h2>
+
+	
+	<h3>Stroke Style</h3>
+
+<div id="strokecolor-member" class="member">
+<div id="strokecolor-link" class="member-link">
+<a name="strokecolor" href="#" onClick="return toggleMember('strokecolor', false);"><tt><b>strokeColor</b></tt></a>
+</div>
+<div id="strokecolor-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('strokecolor', false);"><tt><b>strokeColor</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('strokecolor', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The color of the stroke.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/RgbColor.html"><tt>RgbColor</tt></a> / <a href="../classes/HsbColor.html"><tt>HsbColor</tt></a> / <a href="../classes/HslColor.html"><tt>HslColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Setting the stroke color of a path:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+// Create a circle shaped path at { x: 80, y: 50 }
+// with a radius of 35:
+var circle = new Path.Circle(new Point(80, 50), 35);
+
+// Set its stroke color to RGB red:
+circle.strokeColor = new RgbColor(1, 0, 0);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+
+	
+<div id="strokewidth-member" class="member">
+<div id="strokewidth-link" class="member-link">
+<a name="strokewidth" href="#" onClick="return toggleMember('strokewidth', false);"><tt><b>strokeWidth</b></tt></a>
+</div>
+<div id="strokewidth-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('strokewidth', false);"><tt><b>strokeWidth</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('strokewidth', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The width of the stroke.</p>
+	
+	
+		<ul><b>Default:</b>
+		<li>
+		<tt>1</tt>
+		</li>
+		</ul>
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Setting an item's stroke width:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+// Create a circle shaped path at { x: 80, y: 50 }
+// with a radius of 35:
+var circle = new Path.Circle(new Point(80, 50), 35);
+
+// Set its stroke color to black:
+circle.strokeColor = 'black';
+
+// Set its stroke width to 10:
+circle.strokeWidth = 10;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+
+	
+<div id="strokecap-member" class="member">
+<div id="strokecap-link" class="member-link">
+<a name="strokecap" href="#" onClick="return toggleMember('strokecap', false);"><tt><b>strokeCap</b></tt></a>
+</div>
+<div id="strokecap-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('strokecap', false);"><tt><b>strokeCap</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('strokecap', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The shape to be used at the end of open <a href="../classes/Path.html"><tt>Path</tt></a> items, when they
+have a stroke.</p>
+	
+	
+		<ul><b>Default:</b>
+		<li>
+		<tt>'butt'</tt>
+		</li>
+		</ul>
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>String('round', 'square', 'butt')</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; A look at the different stroke caps:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-2">
+var line = new Path(new Point(80, 50), new Point(420, 50));
+line.strokeColor = 'black';
+line.strokeWidth = 20;
+
+// Select the path, so we can see where the stroke is formed:
+line.selected = true;
+
+// Set the stroke cap of the line to be round:
+line.strokeCap = 'round';
+
+// Copy the path and set its stroke cap to be square:
+var line2 = line.clone();
+line2.position.y += 50;
+line2.strokeCap = 'square';
+
+// Make another copy and set its stroke cap to be butt:
+var line2 = line.clone();
+line2.position.y += 100;
+line2.strokeCap = 'butt';
+</script>
+<div class="canvas"><canvas width="516" height="200" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+
+	
+<div id="strokejoin-member" class="member">
+<div id="strokejoin-link" class="member-link">
+<a name="strokejoin" href="#" onClick="return toggleMember('strokejoin', false);"><tt><b>strokeJoin</b></tt></a>
+</div>
+<div id="strokejoin-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('strokejoin', false);"><tt><b>strokeJoin</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('strokejoin', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The shape to be used at the corners of paths when they have a stroke.</p>
+	
+	
+		<ul><b>Default:</b>
+		<li>
+		<tt>'miter'</tt>
+		</li>
+		</ul>
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>String</tt> ('miter', 'round', 'bevel')
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; A look at the different stroke joins:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-3">
+var path = new Path();
+path.add(new Point(80, 100));
+path.add(new Point(120, 40));
+path.add(new Point(160, 100));
+path.strokeColor = 'black';
+path.strokeWidth = 20;
+
+// Select the path, so we can see where the stroke is formed:
+path.selected = true;
+
+var path2 = path.clone();
+path2.position.x += path2.bounds.width * 1.5;
+path2.strokeJoin = 'round';
+
+var path3 = path2.clone();
+path3.position.x += path3.bounds.width * 1.5;
+path3.strokeJoin = 'bevel';
+</script>
+<div class="canvas"><canvas width="516" height="120" id="canvas-3"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+
+	
+<div id="dashoffset-member" class="member">
+<div id="dashoffset-link" class="member-link">
+<a name="dashoffset" href="#" onClick="return toggleMember('dashoffset', false);"><tt><b>dashOffset</b></tt></a>
+</div>
+<div id="dashoffset-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('dashoffset', false);"><tt><b>dashOffset</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('dashoffset', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The dash offset of the stroke.</p>
+	
+	
+		<ul><b>Default:</b>
+		<li>
+		<tt>0</tt>
+		</li>
+		</ul>
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="dasharray-member" class="member">
+<div id="dasharray-link" class="member-link">
+<a name="dasharray" href="#" onClick="return toggleMember('dasharray', false);"><tt><b>dashArray</b></tt></a>
+</div>
+<div id="dasharray-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('dasharray', false);"><tt><b>dashArray</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('dasharray', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>Specifies an array containing the dash and gap lengths of the stroke.</p>
+	
+	
+		<ul><b>Default:</b>
+		<li>
+		<tt>[]</tt>
+		</li>
+		</ul>
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Array</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> 
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-4">
+var path = new Path.Circle(new Point(80, 50), 40);
+path.strokeWidth = 2;
+path.strokeColor = 'black';
+
+// Set the dashed stroke to [10pt dash, 4pt gap]:
+path.dashArray = [10, 4];
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+
+	
+<div id="miterlimit-member" class="member">
+<div id="miterlimit-link" class="member-link">
+<a name="miterlimit" href="#" onClick="return toggleMember('miterlimit', false);"><tt><b>miterLimit</b></tt></a>
+</div>
+<div id="miterlimit-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('miterlimit', false);"><tt><b>miterLimit</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('miterlimit', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The miter limit of the stroke.</p>
+<p>When two line segments meet at a sharp angle and miter joins have been
+specified for <a href="../classes/PathStyle.html#strokejoin" onclick="return toggleMember('strokejoin', true);"><tt>strokeJoin</tt></a>, it is possible for the miter to extend
+far beyond the <a href="../classes/PathStyle.html#strokewidth" onclick="return toggleMember('strokewidth', true);"><tt>strokeWidth</tt></a> of the path. The miterLimit imposes a
+limit on the ratio of the miter length to the <a href="../classes/PathStyle.html#strokewidth" onclick="return toggleMember('strokewidth', true);"><tt>strokeWidth</tt></a>.</p>
+	
+	
+		<ul><b>Default:</b>
+		<li>
+		<tt>10</tt>
+		</li>
+		</ul>
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+	<h3>Fill Style</h3>
+
+<div id="fillcolor-member" class="member">
+<div id="fillcolor-link" class="member-link">
+<a name="fillcolor" href="#" onClick="return toggleMember('fillcolor', false);"><tt><b>fillColor</b></tt></a>
+</div>
+<div id="fillcolor-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('fillcolor', false);"><tt><b>fillColor</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('fillcolor', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The fill color.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/RgbColor.html"><tt>RgbColor</tt></a> / <a href="../classes/HsbColor.html"><tt>HsbColor</tt></a> / <a href="../classes/HslColor.html"><tt>HslColor</tt></a> / <a href="../classes/GrayColor.html"><tt>GrayColor</tt></a>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Setting the fill color of a path to red:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-5">
+// Create a circle shaped path at { x: 80, y: 50 }
+// with a radius of 35:
+var circle = new Path.Circle(new Point(80, 50), 35);
+
+// Set the fill color of the circle to RGB red:
+circle.fillColor = new RgbColor(1, 0, 0);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+
+</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

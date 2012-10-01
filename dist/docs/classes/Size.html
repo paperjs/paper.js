@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Size</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>Size</h1>
+
+<p>The Size object is used to describe the size of something, through
+its <a href="../classes/Size.html#width" onclick="return toggleMember('width', true);"><tt>width</tt></a> and <a href="../classes/Size.html#height" onclick="return toggleMember('height', true);"><tt>height</tt></a> properties.</p>
+<p>
+<b>Example</b> &mdash; Create a size that is 10pt wide and 5pt high
+</p>
+
+
+<pre class="code">var size = new Size(10, 5);
+console.log(size.width); // 10
+console.log(size.height); // 5</pre>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="size-width-height-array-member" class="member">
+<div id="size-width-height-array-link" class="member-link">
+<a name="size-width-height-array" href="#" onClick="return toggleMember('size-width-height-array', false);"><tt><b>Size</b>(width, height, array)</tt></a>
+</div>
+<div id="size-width-height-array-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('size-width-height-array', false);"><tt><b>Size</b>(width, height, array)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('size-width-height-array', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Size object with the given width and height values.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>width:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the width
+
+</li>
+
+<li>
+<tt>height:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the height
+
+</li>
+
+<li>
+<tt>array:</tt> 
+<tt>array</tt>
+
+
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> &mdash; Create a size that is 10pt wide and 5pt high
+</p>
+
+
+<pre class="code">var size = new Size(10, 5);
+console.log(size.width); // 10
+console.log(size.height); // 5
+
+	/**
+Creates a Size object using the numbers in the given array as
+dimensions.</pre>
+
+<p>
+<b>Example</b> &mdash; Creating a size of width: 320, height: 240 using an array of numbers:
+</p>
+
+
+<pre class="code">var array = [320, 240];
+var size = new Size(array);
+console.log(size.width); // 320
+console.log(size.height); // 240</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="size-object-member" class="member">
+<div id="size-object-link" class="member-link">
+<a name="size-object" href="#" onClick="return toggleMember('size-object', false);"><tt><b>Size</b>(object)</tt></a>
+</div>
+<div id="size-object-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('size-object', false);"><tt><b>Size</b>(object)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('size-object', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Size object using the properties in the given object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>object:</tt> 
+<tt>object</tt>
+
+
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> &mdash; Creating a size of width: 10, height: 20 using an object literal:
+</p>
+
+
+<pre class="code">var size = new Size({
+	width: 10,
+	height: 20
+});
+console.log(size.width); // 10
+console.log(size.height); // 20</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="size-size-member" class="member">
+<div id="size-size-link" class="member-link">
+<a name="size-size" href="#" onClick="return toggleMember('size-size', false);"><tt><b>Size</b>(size)</tt></a>
+</div>
+<div id="size-size-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('size-size', false);"><tt><b>Size</b>(size)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('size-size', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Size object using the coordinates of the given Size object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>size:</tt> 
+<a href="../classes/Size.html"><tt>Size</tt></a>
+
+
+</li>
+
+</ul>
+
+
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="size-point-member" class="member">
+<div id="size-point-link" class="member-link">
+<a name="size-point" href="#" onClick="return toggleMember('size-point', false);"><tt><b>Size</b>(point)</tt></a>
+</div>
+<div id="size-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('size-point', false);"><tt><b>Size</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('size-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Size object using the <a href="../classes/Point.html#x"><tt>point.x</tt></a> and <a href="../classes/Point.html#y"><tt>point.y</tt></a>
+values of the given Point object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(50, 50);
+var size = new Size(point);
+console.log(size.width); // 50
+console.log(size.height); // 50</pre>
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+<!-- ============================== properties ========================= -->
+	<div class="reference-members"><h2>Operators</h2>
+		
+			<div id="add-member" class="member">
+<div id="add-link" class="member-link">
+<a name="add" href="#" onClick="return toggleMember('add', false);"><tt><tt><b>+</b> Number</tt>, <tt><b>+</b> Size</tt></tt></a>
+</div>
+<div id="add-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('add', false);"><tt><b>+</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('add', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the addition of the supplied value to the width and height of the
+size as a new size. The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the addition of the size and the value as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(5, 10);
+var result = size + 20;
+console.log(result); // {width: 25, height: 30}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('add', false);"><tt><b>+</b> Size</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('add', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the addition of the width and height of the supplied size to the
+size as a new size. The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the addition of the two sizes as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size1 = new Size(5, 10);
+var size2 = new Size(10, 20);
+var result = size1 + size2;
+console.log(result); // {width: 15, height: 30}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="subtract-member" class="member">
+<div id="subtract-link" class="member-link">
+<a name="subtract" href="#" onClick="return toggleMember('subtract', false);"><tt><tt><b>-</b> Number</tt>, <tt><b>-</b> Size</tt></tt></a>
+</div>
+<div id="subtract-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('subtract', false);"><tt><b>-</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('subtract', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the subtraction of the supplied value from the width and height
+of the size as a new size. The object itself is not modified!</p>
+<p>The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the subtraction of the size and the value as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(10, 20);
+var result = size - 5;
+console.log(result); // {width: 5, height: 15}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('subtract', false);"><tt><b>-</b> Size</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('subtract', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the subtraction of the width and height of the supplied size from
+the size as a new size. The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the subtraction of the two sizes as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var firstSize = new Size(10, 20);
+var secondSize = new Size(5, 5);
+var result = firstSize - secondSize;
+console.log(result); // {width: 5, height: 15}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="multiply-member" class="member">
+<div id="multiply-link" class="member-link">
+<a name="multiply" href="#" onClick="return toggleMember('multiply', false);"><tt><tt><b>*</b> Number</tt>, <tt><b>*</b> Size</tt></tt></a>
+</div>
+<div id="multiply-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('multiply', false);"><tt><b>*</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('multiply', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the multiplication of the supplied value with the width and
+height of the size as a new size. The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the multiplication of the size and the value as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(10, 20);
+var result = size * 2;
+console.log(result); // {width: 20, height: 40}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('multiply', false);"><tt><b>*</b> Size</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('multiply', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the multiplication of the width and height of the supplied size
+with the size as a new size. The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the multiplication of the two sizes as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var firstSize = new Size(5, 10);
+var secondSize = new Size(4, 2);
+var result = firstSize * secondSize;
+console.log(result); // {width: 20, height: 20}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="divide-member" class="member">
+<div id="divide-link" class="member-link">
+<a name="divide" href="#" onClick="return toggleMember('divide', false);"><tt><tt><b>/</b> Number</tt>, <tt><b>/</b> Size</tt></tt></a>
+</div>
+<div id="divide-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('divide', false);"><tt><b>/</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('divide', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the division of the supplied value by the width and height of the
+size as a new size. The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the division of the size and the value as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(10, 20);
+var result = size / 2;
+console.log(result); // {width: 5, height: 10}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('divide', false);"><tt><b>/</b> Size</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('divide', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the division of the width and height of the supplied size by the
+size as a new size. The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the division of the two sizes as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var firstSize = new Size(8, 10);
+var secondSize = new Size(2, 5);
+var result = firstSize / secondSize;
+console.log(result); // {width: 4, height: 2}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="modulo-member" class="member">
+<div id="modulo-link" class="member-link">
+<a name="modulo" href="#" onClick="return toggleMember('modulo', false);"><tt><tt><b>%</b> Number</tt>, <tt><b>%</b> Size</tt></tt></a>
+</div>
+<div id="modulo-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('modulo', false);"><tt><b>%</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('modulo', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>The modulo operator returns the integer remainders of dividing the size
+by the supplied value as a new size.</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the integer remainders of dividing the size by the value
+                as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(12, 6);
+console.log(size % 5); // {width: 2, height: 1}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('modulo', false);"><tt><b>%</b> Size</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('modulo', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>The modulo operator returns the integer remainders of dividing the size
+by the supplied size as a new size.</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;the integer remainders of dividing the sizes by each
+                other as a new size
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(12, 6);
+console.log(size % new Size(5, 2)); // {width: 2, height: 0}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="equals-member" class="member">
+<div id="equals-link" class="member-link">
+<a name="equals" href="#" onClick="return toggleMember('equals', false);"><tt><tt><b>==</b> Size</tt></tt></a>
+</div>
+<div id="equals-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('equals', false);"><tt><b>==</b> Size</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('equals', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Checks whether the width and height of the size are equal to those of the
+supplied size.</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(5, 10);
+console.log(size == new Size(5, 10)); // true
+console.log(size == new Size(1, 1)); // false
+console.log(size != new Size(1, 1)); // true</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+	</div>
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="width-member" class="member">
+<div id="width-link" class="member-link">
+<a name="width" href="#" onClick="return toggleMember('width', false);"><tt><b>width</b></tt></a>
+</div>
+<div id="width-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('width', false);"><tt><b>width</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('width', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The width of the size</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="height-member" class="member">
+<div id="height-link" class="member-link">
+<a name="height" href="#" onClick="return toggleMember('height', false);"><tt><b>height</b></tt></a>
+</div>
+<div id="height-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('height', false);"><tt><b>height</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('height', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The height of the size</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="tostring-member" class="member">
+<div id="tostring-link" class="member-link">
+<a name="tostring" href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+<div id="tostring-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('tostring', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of the size.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="clone-member" class="member">
+<div id="clone-link" class="member-link">
+<a name="clone" href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+<div id="clone-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('clone', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a copy of the size.</p>
+	
+	
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<h3>Tests</h3>
+
+<div id="iszero-member" class="member">
+<div id="iszero-link" class="member-link">
+<a name="iszero" href="#" onClick="return toggleMember('iszero', false);"><tt><b>isZero</b>()</tt></a>
+</div>
+<div id="iszero-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('iszero', false);"><tt><b>isZero</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('iszero', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks if this size has both the width and height set to 0.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> both width and height are 0, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="isnan-member" class="member">
+<div id="isnan-link" class="member-link">
+<a name="isnan" href="#" onClick="return toggleMember('isnan', false);"><tt><b>isNaN</b>()</tt></a>
+</div>
+<div id="isnan-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isnan', false);"><tt><b>isNaN</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isnan', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks if the width or the height of the size are NaN.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the width or height of the size are NaN, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<h3>Math Functions</h3>
+
+<div id="round-member" class="member">
+<div id="round-link" class="member-link">
+<a name="round" href="#" onClick="return toggleMember('round', false);"><tt><b>round</b>()</tt></a>
+</div>
+<div id="round-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('round', false);"><tt><b>round</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('round', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new size with rounded <a href="../classes/Size.html#width" onclick="return toggleMember('width', true);"><tt>width</tt></a> and <a href="../classes/Size.html#height" onclick="return toggleMember('height', true);"><tt>height</tt></a> values.</p>
+<p>The object itself is not modified!</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(10.2, 10.9);
+var roundSize = size.round();
+console.log(roundSize); // {x: 10, y: 11}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="ceil-member" class="member">
+<div id="ceil-link" class="member-link">
+<a name="ceil" href="#" onClick="return toggleMember('ceil', false);"><tt><b>ceil</b>()</tt></a>
+</div>
+<div id="ceil-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('ceil', false);"><tt><b>ceil</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('ceil', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new size with the nearest greater non-fractional values to the
+specified <a href="../classes/Size.html#width" onclick="return toggleMember('width', true);"><tt>width</tt></a> and <a href="../classes/Size.html#height" onclick="return toggleMember('height', true);"><tt>height</tt></a> values. The object itself is not
+modified!</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(10.2, 10.9);
+var ceilSize = size.ceil();
+console.log(ceilSize); // {x: 11, y: 11}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="floor-member" class="member">
+<div id="floor-link" class="member-link">
+<a name="floor" href="#" onClick="return toggleMember('floor', false);"><tt><b>floor</b>()</tt></a>
+</div>
+<div id="floor-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('floor', false);"><tt><b>floor</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('floor', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new size with the nearest smaller non-fractional values to the
+specified <a href="../classes/Size.html#width" onclick="return toggleMember('width', true);"><tt>width</tt></a> and <a href="../classes/Size.html#height" onclick="return toggleMember('height', true);"><tt>height</tt></a> values. The object itself is not
+modified!</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(10.2, 10.9);
+var floorSize = size.floor();
+console.log(floorSize); // {x: 10, y: 10}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="abs-member" class="member">
+<div id="abs-link" class="member-link">
+<a name="abs" href="#" onClick="return toggleMember('abs', false);"><tt><b>abs</b>()</tt></a>
+</div>
+<div id="abs-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('abs', false);"><tt><b>abs</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('abs', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new size with the absolute values of the specified <a href="../classes/Size.html#width" onclick="return toggleMember('width', true);"><tt>width</tt></a>
+and <a href="../classes/Size.html#height" onclick="return toggleMember('height', true);"><tt>height</tt></a> values. The object itself is not modified!</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size = new Size(-5, 10);
+var absSize = size.abs();
+console.log(absSize); // {x: 5, y: 10}</pre>
+
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+	<div class="reference-members"><h2>Static Methods</h2>
+		
+			
+<div id="min-size1-size2-member" class="member">
+<div id="min-size1-size2-link" class="member-link">
+<a name="min-size1-size2" href="#" onClick="return toggleMember('min-size1-size2', false);"><tt><b>Size.min</b>(size1, size2)</tt></a>
+</div>
+<div id="min-size1-size2-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('min-size1-size2', false);"><tt><b>Size.min</b>(size1, size2)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('min-size1-size2', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new size object with the smallest <a href="../classes/Size.html#width" onclick="return toggleMember('width', true);"><tt>width</tt></a> and
+<a href="../classes/Size.html#height" onclick="return toggleMember('height', true);"><tt>height</tt></a> of the supplied sizes.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>size1:</tt> 
+<a href="../classes/Size.html"><tt>Size</tt></a>
+
+
+</li>
+
+<li>
+<tt>size2:</tt> 
+<a href="../classes/Size.html"><tt>Size</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;The newly created size object
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size1 = new Size(10, 100);
+var size2 = new Size(200, 5);
+var minSize = Size.min(size1, size2);
+console.log(minSize); // {width: 10, height: 5}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="max-size1-size2-member" class="member">
+<div id="max-size1-size2-link" class="member-link">
+<a name="max-size1-size2" href="#" onClick="return toggleMember('max-size1-size2', false);"><tt><b>Size.max</b>(size1, size2)</tt></a>
+</div>
+<div id="max-size1-size2-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('max-size1-size2', false);"><tt><b>Size.max</b>(size1, size2)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('max-size1-size2', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new size object with the largest <a href="../classes/Size.html#width" onclick="return toggleMember('width', true);"><tt>width</tt></a> and
+<a href="../classes/Size.html#height" onclick="return toggleMember('height', true);"><tt>height</tt></a> of the supplied sizes.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>size1:</tt> 
+<a href="../classes/Size.html"><tt>Size</tt></a>
+
+
+</li>
+
+<li>
+<tt>size2:</tt> 
+<a href="../classes/Size.html"><tt>Size</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;The newly created size object
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var size1 = new Size(10, 100);
+var size2 = new Size(200, 5);
+var maxSize = Size.max(size1, size2);
+console.log(maxSize); // {width: 200, height: 100}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="random-member" class="member">
+<div id="random-link" class="member-link">
+<a name="random" href="#" onClick="return toggleMember('random', false);"><tt><b>Size.random</b>()</tt></a>
+</div>
+<div id="random-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('random', false);"><tt><b>Size.random</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('random', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a size object with random <a href="../classes/Size.html#width" onclick="return toggleMember('width', true);"><tt>width</tt></a> and <a href="../classes/Size.html#height" onclick="return toggleMember('height', true);"><tt>height</tt></a>
+values between <tt>0</tt> and <tt>1</tt>.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Size.html"><tt>Size</tt></a></tt>&nbsp;&mdash;&nbsp;The newly created size object
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var maxSize = new Size(100, 100);
+var randomSize = Size.random();
+var size = maxSize * randomSize;</pre>
+
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

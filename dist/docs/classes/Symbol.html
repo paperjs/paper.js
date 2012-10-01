@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Symbol</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>Symbol</h1>
+
+<p>Symbols allow you to place multiple instances of an item in your
+project. This can save memory, since all instances of a symbol simply refer
+to the original item and it can speed up moving around complex objects, since
+internal properties such as segment lists and gradient positions don't need
+to be updated with every transformation.</p>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="symbol-item-member" class="member">
+<div id="symbol-item-link" class="member-link">
+<a name="symbol-item" href="#" onClick="return toggleMember('symbol-item', false);"><tt><b>Symbol</b>(item)</tt></a>
+</div>
+<div id="symbol-item-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('symbol-item', false);"><tt><b>Symbol</b>(item)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('symbol-item', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Symbol item.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>item:</tt> 
+<a href="../classes/Item.html"><tt>Item</tt></a>
+&mdash;&nbsp;the source item which is copied as the definition of
+              the symbol
+
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> &mdash; Placing 100 instances of a symbol:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+var path = new Path.Star(new Point(0, 0), 6, 5, 13);
+path.style = {
+    fillColor: 'white',
+    strokeColor: 'black'
+};
+
+// Create a symbol from the path:
+var symbol = new Symbol(path);
+
+// Remove the path:
+path.remove();
+
+// Place 100 instances of the symbol:
+for (var i = 0; i < 100; i++) {
+    // Place an instance of the symbol in the project:
+    var instance = symbol.place();
+
+    // Move the instance to a random position within the view:
+    instance.position = Point.random() * view.size;
+
+    // Rotate the instance by a random amount between
+    // 0 and 360 degrees:
+    instance.rotate(Math.random() * 360);
+
+    // Scale the instance between 0.25 and 1:
+    instance.scale(0.25 + Math.random() * 0.75);
+}
+</script>
+<div class="canvas"><canvas width="516" height="240" id="canvas-0"></canvas></div>
+</div>
+
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="project-member" class="member">
+<div id="project-link" class="member-link">
+<a name="project" href="#" onClick="return toggleMember('project', false);"><tt><b>project</b></tt></a>
+</div>
+<div id="project-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('project', false);"><tt><b>project</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('project', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The project that this symbol belongs to.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Project.html"><tt>Project</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="definition-member" class="member">
+<div id="definition-link" class="member-link">
+<a name="definition" href="#" onClick="return toggleMember('definition', false);"><tt><b>definition</b></tt></a>
+</div>
+<div id="definition-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('definition', false);"><tt><b>definition</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('definition', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The symbol definition.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Item.html"><tt>Item</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="place-member" class="member">
+<div id="place-link" class="member-link">
+<a name="place" href="#" onClick="return toggleMember('place', false);"><tt><b>place</b>([position])</tt></a>
+</div>
+<div id="place-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('place', false);"><tt><b>place</b>([position])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('place', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Places in instance of the symbol in the project.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>position:</tt> 
+
+&mdash;&nbsp;The position of the placed symbol.
+&mdash;&nbsp;optional
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/PlacedSymbol.html"><tt>PlacedSymbol</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="clone-member" class="member">
+<div id="clone-link" class="member-link">
+<a name="clone" href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+<div id="clone-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('clone', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a copy of the symbol.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Symbol.html"><tt>Symbol</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

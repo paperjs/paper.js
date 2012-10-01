@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>GradientStop</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>GradientStop</h1>
+
+<p>The GradientStop object.</p>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="gradientstop-member" class="member">
+<div id="gradientstop-link" class="member-link">
+<a name="gradientstop" href="#" onClick="return toggleMember('gradientstop', false);"><tt><b>GradientStop</b>([color[, rampPoint]])</tt></a>
+</div>
+<div id="gradientstop-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('gradientstop', false);"><tt><b>GradientStop</b>([color[, rampPoint]])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('gradientstop', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a GradientStop object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>color:</tt> 
+<a href="../classes/Color.html"><tt>Color</tt></a>
+&mdash;&nbsp;the color of the stop
+&mdash;&nbsp;optional, default: <tt>new RgbColor(0, 0, 0)</tt>
+</li>
+
+<li>
+<tt>rampPoint:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the position of the stop on the gradient
+                              ramp {@default 0}
+&mdash;&nbsp;optional, default: <tt>0</tt>
+</li>
+
+</ul>
+
+
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="ramppoint-member" class="member">
+<div id="ramppoint-link" class="member-link">
+<a name="ramppoint" href="#" onClick="return toggleMember('ramppoint', false);"><tt><b>rampPoint</b></tt></a>
+</div>
+<div id="ramppoint-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('ramppoint', false);"><tt><b>rampPoint</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('ramppoint', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The ramp-point of the gradient stop as a value between <tt>0</tt> and
+<tt>1</tt>.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Animating a gradient's ramp points:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-0">
+// Create a circle shaped path at the center of the view,
+// using 40% of the height of the view as its radius
+// and fill it with a radial gradient color:
+var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+
+// Prepare the gradient color and apply it to the path:
+var colors = [['yellow', 0.05], ['red', 0.2], ['black', 1]];
+var gradient = new Gradient(colors, 'radial');
+var from = path.position;
+var to = path.bounds.rightCenter;
+var gradientColor = new GradientColor(gradient, from, to);
+path.fillColor = gradientColor;
+
+// This function is called each frame of the animation:
+function onFrame(event) {
+	var blackStop = gradient.stops[2];
+	// Animate the rampPoint between 0.7 and 0.9:
+	blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
+
+	// Animate the rampPoint between 0.2 and 0.4
+	var redStop = gradient.stops[1];
+	redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="color-member" class="member">
+<div id="color-link" class="member-link">
+<a name="color" href="#" onClick="return toggleMember('color', false);"><tt><b>color</b></tt></a>
+</div>
+<div id="color-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('color', false);"><tt><b>color</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('color', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The color of the gradient stop.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Color.html"><tt>Color</tt></a>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> &mdash; Animating a gradient's ramp points:
+</p>
+
+<div class="paperscript split">
+<div class="button">Run</div>
+<script type="text/paperscript" canvas="canvas-1">
+// Create a circle shaped path at the center of the view,
+// using 40% of the height of the view as its radius
+// and fill it with a radial gradient color:
+var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+
+// Create a radial gradient that mixes red and black evenly:
+var gradient = new Gradient(['red', 'black'], 'radial');
+
+// Fill the path with a gradient color that runs from its center,
+// to the right center of its bounding rectangle:
+var from = path.position;
+var to = path.bounds.rightCenter;
+var gradientColor = new GradientColor(gradient, from, to);
+path.fillColor = gradientColor;
+
+// This function is called each frame of the animation:
+function onFrame(event) {
+	// Change the hue of the first stop's color:
+	gradient.stops[0].color.hue += 1;
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="clone-member" class="member">
+<div id="clone-link" class="member-link">
+<a name="clone" href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+<div id="clone-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('clone', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/GradientColor.html"><tt>GradientColor</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the gradient-stop
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ToolEvent</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>ToolEvent</h1>
+
+<p> Extends <b><a href="../classes/Event.html"><tt>Event</tt></a></b></p>
+
+<p>ToolEvent The ToolEvent object is received by the <a href="../classes/Tool.html"><tt>Tool</tt></a>'s mouse
+event handlers <a href="../classes/Tool.html#onmousedown"><tt>tool.onMouseDown</tt></a>, <a href="../classes/Tool.html#onmousedrag"><tt>tool.onMouseDrag</tt></a>,
+<a href="../classes/Tool.html#onmousemove"><tt>tool.onMouseMove</tt></a> and <a href="../classes/Tool.html#onmouseup"><tt>tool.onMouseUp</tt></a>. The ToolEvent
+object is the only parameter passed to these functions and contains
+information about the mouse event.</p>
+
+</div>
+
+
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="type-member" class="member">
+<div id="type-link" class="member-link">
+<a name="type" href="#" onClick="return toggleMember('type', false);"><tt><b>type</b></tt></a>
+</div>
+<div id="type-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('type', false);"><tt><b>type</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('type', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The type of tool event.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>String('mousedown', 'mouseup', 'mousemove', 'mousedrag')</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="point-member" class="member">
+<div id="point-link" class="member-link">
+<a name="point" href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+</div>
+<div id="point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('point', false);"><tt><b>point</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The position of the mouse in project coordinates when the event was
+fired.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">function onMouseDrag(event) {
+	// the position of the mouse when it is dragged
+	console.log(event.point);
+}
+
+function onMouseUp(event) {
+	// the position of the mouse when it is released
+	console.log(event.point);
+}</pre>
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="lastpoint-member" class="member">
+<div id="lastpoint-link" class="member-link">
+<a name="lastpoint" href="#" onClick="return toggleMember('lastpoint', false);"><tt><b>lastPoint</b></tt></a>
+</div>
+<div id="lastpoint-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('lastpoint', false);"><tt><b>lastPoint</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('lastpoint', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The position of the mouse in project coordinates when the previous
+event was fired.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="downpoint-member" class="member">
+<div id="downpoint-link" class="member-link">
+<a name="downpoint" href="#" onClick="return toggleMember('downpoint', false);"><tt><b>downPoint</b></tt></a>
+</div>
+<div id="downpoint-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('downpoint', false);"><tt><b>downPoint</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('downpoint', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The position of the mouse in project coordinates when the mouse button
+was last clicked.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="middlepoint-member" class="member">
+<div id="middlepoint-link" class="member-link">
+<a name="middlepoint" href="#" onClick="return toggleMember('middlepoint', false);"><tt><b>middlePoint</b></tt></a>
+</div>
+<div id="middlepoint-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('middlepoint', false);"><tt><b>middlePoint</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('middlepoint', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The point in the middle between <a href="../classes/ToolEvent.html#lastpoint" onclick="return toggleMember('lastpoint', true);"><tt>lastPoint</tt></a> and
+<a href="../classes/ToolEvent.html#point" onclick="return toggleMember('point', true);"><tt>point</tt></a>. This is a useful position to use when creating
+artwork based on the moving direction of the mouse, as returned by
+<a href="../classes/ToolEvent.html#delta" onclick="return toggleMember('delta', true);"><tt>delta</tt></a>.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="delta-member" class="member">
+<div id="delta-link" class="member-link">
+<a name="delta" href="#" onClick="return toggleMember('delta', false);"><tt><b>delta</b></tt></a>
+</div>
+<div id="delta-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('delta', false);"><tt><b>delta</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('delta', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The difference between the current position and the last position of the
+mouse when the event was fired. In case of the mouseup event, the
+difference to the mousedown position is returned.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Point.html"><tt>Point</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="count-member" class="member">
+<div id="count-link" class="member-link">
+<a name="count" href="#" onClick="return toggleMember('count', false);"><tt><b>count</b></tt></a>
+</div>
+<div id="count-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('count', false);"><tt><b>count</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('count', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The number of times the mouse event was fired.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="item-member" class="member">
+<div id="item-link" class="member-link">
+<a name="item" href="#" onClick="return toggleMember('item', false);"><tt><b>item</b></tt></a>
+</div>
+<div id="item-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('item', false);"><tt><b>item</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('item', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The item at the position of the mouse (if any).</p>
+<p>If the item is contained within one or more <a href="../classes/Group.html"><tt>Group</tt></a> or
+<a href="../classes/CompoundPath.html"><tt>CompoundPath</tt></a> items, the most top level group or compound path
+that it is contained within is returned.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<a href="../classes/Item.html"><tt>Item</tt></a>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="tostring-member" class="member">
+<div id="tostring-link" class="member-link">
+<a name="tostring" href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+<div id="tostring-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('tostring', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of the tool event.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+
+<!-- =========================== inherited properties ====================== -->
+<div class="reference-members"><h2>Properties inherited from <a href="../classes/Event.html"><tt>Event</tt></a></h2>
+
+	
+<div id="modifiers-member" class="member">
+<div id="modifiers-link" class="member-link">
+<a name="modifiers" href="#" onClick="return toggleMember('modifiers', false);"><tt><b>modifiers</b></tt></a>
+</div>
+<div id="modifiers-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('modifiers', false);"><tt><b>modifiers</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('modifiers', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>object</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+
+</div>
+
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>
