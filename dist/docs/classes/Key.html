@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Key</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>Key</h1>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+	<div class="reference-members"><h2>Static Methods</h2>
+		
+			
+<div id="isdown-key-member" class="member">
+<div id="isdown-key-link" class="member-link">
+<a name="isdown-key" href="#" onClick="return toggleMember('isdown-key', false);"><tt><b>Key.isDown</b>(key)</tt></a>
+</div>
+<div id="isdown-key-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isdown-key', false);"><tt><b>Key.isDown</b>(key)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isdown-key', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks whether the specified key is pressed.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>key:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;One of: 'backspace', 'enter', 'shift', 'control',
+'option', 'pause', 'caps-lock', 'escape', 'space', 'end', 'home',
+'left', 'up', 'right', 'down', 'delete', 'command'
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the key is pressed, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> &mdash; Whenever the user clicks, create a circle shaped path. If the 'a' key is pressed, fill it with red, otherwise fill it with blue:
+</p>
+
+
+<pre class="code">function onMouseDown(event) {
+	var path = new Path.Circle(event.point, 10);
+	if(Key.isDown('a')) {
+		path.fillColor = 'red';
+	} else {
+		path.fillColor = 'blue';
+	}
+}</pre>
+
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>

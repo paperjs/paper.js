@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Point</title>
+<base target="classFrame">
+<link rel="stylesheet" href="../resources/css/reference.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/style.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/paperscript.css" type="text/css">
+<link rel="stylesheet" href="../resources/css/codemirror.css" type="text/css">
+<script src="../resources/js/bootstrap.js" type="text/javascript"></script>
+<script src="../resources/js/paper.js" type="text/javascript"></script>
+<script src="../resources/js/codemirror.js" type="text/javascript"></script>
+<script src="../resources/js/reference.js" type="text/javascript"></script>
+</head>
+<body class="reference">
+<div class="reference-class">
+<h1>Point</h1>
+
+<p>The Point object represents a point in the two dimensional space
+of the Paper.js project. It is also used to represent two dimensional
+vector objects.</p>
+<p>
+<b>Example</b> &mdash; Create a point at x: 10, y: 5
+</p>
+
+
+<pre class="code">var point = new Point(10, 5);
+console.log(point.x); // 10
+console.log(point.y); // 5</pre>
+
+</div>
+
+<!-- ============================== constructors ========================= -->
+<div class="reference-members"><h2>Constructors</h2>
+	
+		
+<div id="point-x-y-member" class="member">
+<div id="point-x-y-link" class="member-link">
+<a name="point-x-y" href="#" onClick="return toggleMember('point-x-y', false);"><tt><b>Point</b>(x, y)</tt></a>
+</div>
+<div id="point-x-y-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('point-x-y', false);"><tt><b>Point</b>(x, y)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point-x-y', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Point object with the given x and y coordinates.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>x:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the x coordinate
+
+</li>
+
+<li>
+<tt>y:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the y coordinate
+
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> &mdash; Create a point at x: 10, y: 5
+</p>
+
+
+<pre class="code">var point = new Point(10, 5);
+console.log(point.x); // 10
+console.log(point.y); // 5</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="point-array-member" class="member">
+<div id="point-array-link" class="member-link">
+<a name="point-array" href="#" onClick="return toggleMember('point-array', false);"><tt><b>Point</b>(array)</tt></a>
+</div>
+<div id="point-array-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('point-array', false);"><tt><b>Point</b>(array)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point-array', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Point object using the numbers in the given array as
+coordinates.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>array:</tt> 
+<tt>array</tt>
+
+
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> &mdash; Creating a point at x: 10, y: 5 using an array of numbers:
+</p>
+
+
+<pre class="code">var array = [10, 5];
+var point = new Point(array);
+console.log(point.x); // 10
+console.log(point.y); // 5</pre>
+
+<p>
+<b>Example</b> &mdash; Passing an array to a functionality that expects a point:
+</p>
+
+
+<pre class="code">// Create a circle shaped path at x: 50, y: 50
+// with a radius of 30:
+var path = new Path.Circle([50, 50], 30);
+path.fillColor = 'red';
+
+// Which is the same as doing:
+var path = new Path.Circle(new Point(50, 50), 30);
+path.fillColor = 'red';</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="point-object-member" class="member">
+<div id="point-object-link" class="member-link">
+<a name="point-object" href="#" onClick="return toggleMember('point-object', false);"><tt><b>Point</b>(object)</tt></a>
+</div>
+<div id="point-object-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('point-object', false);"><tt><b>Point</b>(object)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point-object', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Point object using the properties in the given object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>object:</tt> 
+<tt>object</tt>
+
+
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> &mdash; Creating a point using an object literal with length and angle properties:
+</p>
+
+
+<pre class="code">var point = new Point({
+	length: 10,
+	angle: 90
+});
+console.log(point.length); // 10
+console.log(point.angle); // 90</pre>
+
+<p>
+<b>Example</b> &mdash; Creating a point at x: 10, y: 20 using an object literal:
+</p>
+
+
+<pre class="code">var point = new Point({
+	x: 10,
+	y: 20
+});
+console.log(point.x); // 10
+console.log(point.y); // 20</pre>
+
+<p>
+<b>Example</b> &mdash; Passing an object to a functionality that expects a point:
+</p>
+
+
+<pre class="code">var center = {
+	x: 50,
+	y: 50
+};
+
+// Creates a circle shaped path at x: 50, y: 50
+// with a radius of 30:
+var path = new Path.Circle(center, 30);
+path.fillColor = 'red';</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="point-size-member" class="member">
+<div id="point-size-link" class="member-link">
+<a name="point-size" href="#" onClick="return toggleMember('point-size', false);"><tt><b>Point</b>(size)</tt></a>
+</div>
+<div id="point-size-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('point-size', false);"><tt><b>Point</b>(size)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point-size', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Point object using the width and height values of the given
+Size object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>size:</tt> 
+<a href="../classes/Size.html"><tt>Size</tt></a>
+
+
+</li>
+
+</ul>
+
+
+<p>
+<b>Example</b> &mdash; Creating a point using a size object.
+</p>
+
+
+<pre class="code">// Create a Size with a width of 100pt and a height of 50pt
+var size = new Size(100, 50);
+console.log(size); // { width: 100, height: 50 }
+var point = new Point(size);
+console.log(point); // { x: 100, y: 50 }</pre>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="point-point-member" class="member">
+<div id="point-point-link" class="member-link">
+<a name="point-point" href="#" onClick="return toggleMember('point-point', false);"><tt><b>Point</b>(point)</tt></a>
+</div>
+<div id="point-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('point-point', false);"><tt><b>Point</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('point-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+<p>Creates a Point object using the coordinates of the given Point object.</p>
+
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+<!-- ============================== properties ========================= -->
+	<div class="reference-members"><h2>Operators</h2>
+		
+			<div id="add-member" class="member">
+<div id="add-link" class="member-link">
+<a name="add" href="#" onClick="return toggleMember('add', false);"><tt><tt><b>+</b> Number</tt>, <tt><b>+</b> Point</tt></tt></a>
+</div>
+<div id="add-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('add', false);"><tt><b>+</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('add', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the addition of the supplied value to both coordinates of
+the point as a new point.</p>
+<p>The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the addition of the point and the value as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(5, 10);
+var result = point + 20;
+console.log(result); // {x: 25, y: 30}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('add', false);"><tt><b>+</b> Point</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('add', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the addition of the supplied point to the point as a new
+point.</p>
+<p>The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the addition of the two points as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point1 = new Point(5, 10);
+var point2 = new Point(10, 20);
+var result = point1 + point2;
+console.log(result); // {x: 15, y: 30}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="subtract-member" class="member">
+<div id="subtract-link" class="member-link">
+<a name="subtract" href="#" onClick="return toggleMember('subtract', false);"><tt><tt><b>-</b> Number</tt>, <tt><b>-</b> Point</tt></tt></a>
+</div>
+<div id="subtract-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('subtract', false);"><tt><b>-</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('subtract', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the subtraction of the supplied value to both coordinates of
+the point as a new point.</p>
+<p>The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the subtraction of the point and the value as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(10, 20);
+var result = point - 5;
+console.log(result); // {x: 5, y: 15}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('subtract', false);"><tt><b>-</b> Point</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('subtract', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the subtraction of the supplied point to the point as a new
+point.</p>
+<p>The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the subtraction of the two points as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var firstPoint = new Point(10, 20);
+var secondPoint = new Point(5, 5);
+var result = firstPoint - secondPoint;
+console.log(result); // {x: 5, y: 15}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="multiply-member" class="member">
+<div id="multiply-link" class="member-link">
+<a name="multiply" href="#" onClick="return toggleMember('multiply', false);"><tt><tt><b>*</b> Number</tt>, <tt><b>*</b> Point</tt></tt></a>
+</div>
+<div id="multiply-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('multiply', false);"><tt><b>*</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('multiply', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the multiplication of the supplied value to both coordinates of
+the point as a new point.</p>
+<p>The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the multiplication of the point and the value as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(10, 20);
+var result = point * 2;
+console.log(result); // {x: 20, y: 40}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('multiply', false);"><tt><b>*</b> Point</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('multiply', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the multiplication of the supplied point to the point as a new
+point.</p>
+<p>The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the multiplication of the two points as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var firstPoint = new Point(5, 10);
+var secondPoint = new Point(4, 2);
+var result = firstPoint * secondPoint;
+console.log(result); // {x: 20, y: 20}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="divide-member" class="member">
+<div id="divide-link" class="member-link">
+<a name="divide" href="#" onClick="return toggleMember('divide', false);"><tt><tt><b>/</b> Number</tt>, <tt><b>/</b> Point</tt></tt></a>
+</div>
+<div id="divide-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('divide', false);"><tt><b>/</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('divide', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the division of the supplied value to both coordinates of
+the point as a new point.</p>
+<p>The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the division of the point and the value as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(10, 20);
+var result = point / 2;
+console.log(result); // {x: 5, y: 10}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('divide', false);"><tt><b>/</b> Point</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('divide', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Returns the division of the supplied point to the point as a new
+point.</p>
+<p>The object itself is not modified!</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the division of the two points as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var firstPoint = new Point(8, 10);
+var secondPoint = new Point(2, 5);
+var result = firstPoint / secondPoint;
+console.log(result); // {x: 4, y: 2}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="modulo-member" class="member">
+<div id="modulo-link" class="member-link">
+<a name="modulo" href="#" onClick="return toggleMember('modulo', false);"><tt><tt><b>%</b> Number</tt>, <tt><b>%</b> Point</tt></tt></a>
+</div>
+<div id="modulo-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('modulo', false);"><tt><b>%</b> Number</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('modulo', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>The modulo operator returns the integer remainders of dividing the point
+by the supplied value as a new point.</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the integer remainders of dividing the point by the value
+                as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(12, 6);
+console.log(point % 5); // {x: 2, y: 1}</pre>
+
+	</div>
+
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('modulo', false);"><tt><b>%</b> Point</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('modulo', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>The modulo operator returns the integer remainders of dividing the point
+by the supplied value as a new point.</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the integer remainders of dividing the points by each
+                other as a new point
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(12, 6);
+console.log(point % new Point(5, 2)); // {x: 2, y: 0}</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+			<div id="equals-member" class="member">
+<div id="equals-link" class="member-link">
+<a name="equals" href="#" onClick="return toggleMember('equals', false);"><tt><tt><b>==</b> Point</tt></tt></a>
+</div>
+<div id="equals-description" class="member-description hidden">
+
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('equals', false);"><tt><b>==</b> Point</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('equals', false);"></div>
+<div class="clear"></div>
+</div>
+
+	<div class="member-text">
+		<p>Checks whether the coordinates of the point are equal to that of the
+supplied point.</p>
+		
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the points are equal, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+		
+		<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(5, 10);
+console.log(point == new Point(5, 10)); // true
+console.log(point == new Point(1, 1)); // false
+console.log(point != new Point(1, 1)); // true</pre>
+
+	</div>
+
+
+</div>
+</div>
+
+		
+	</div>
+
+
+
+	<div class="reference-members"><h2>Properties</h2>
+		
+			
+<div id="x-member" class="member">
+<div id="x-link" class="member-link">
+<a name="x" href="#" onClick="return toggleMember('x', false);"><tt><b>x</b></tt></a>
+</div>
+<div id="x-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('x', false);"><tt><b>x</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('x', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The x coordinate of the point</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="y-member" class="member">
+<div id="y-link" class="member-link">
+<a name="y" href="#" onClick="return toggleMember('y', false);"><tt><b>y</b></tt></a>
+</div>
+<div id="y-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('y', false);"><tt><b>y</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('y', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The y coordinate of the point</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="length-member" class="member">
+<div id="length-link" class="member-link">
+<a name="length" href="#" onClick="return toggleMember('length', false);"><tt><b>length</b></tt></a>
+</div>
+<div id="length-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('length', false);"><tt><b>length</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('length', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The length of the vector that is represented by this point's coordinates.</p>
+<p>Each point can be interpreted as a vector that points from the origin
+(<tt>x = 0</tt>, <tt>y = 0</tt>) to the point's location.</p>
+<p>Setting the length changes the location but keeps the vector's angle.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="angle-member" class="member">
+<div id="angle-link" class="member-link">
+<a name="angle" href="#" onClick="return toggleMember('angle', false);"><tt><b>angle</b></tt></a>
+</div>
+<div id="angle-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('angle', false);"><tt><b>angle</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('angle', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The vector's angle in degrees, measured from the x-axis to the vector.</p>
+<p>The angle is unsigned, no information about rotational direction is
+given.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="angleinradians-member" class="member">
+<div id="angleinradians-link" class="member-link">
+<a name="angleinradians" href="#" onClick="return toggleMember('angleinradians', false);"><tt><b>angleInRadians</b></tt></a>
+</div>
+<div id="angleinradians-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('angleinradians', false);"><tt><b>angleInRadians</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('angleinradians', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The vector's angle in radians, measured from the x-axis to the vector.</p>
+<p>The angle is unsigned, no information about rotational direction is
+given.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="quadrant-member" class="member">
+<div id="quadrant-link" class="member-link">
+<a name="quadrant" href="#" onClick="return toggleMember('quadrant', false);"><tt><b>quadrant</b></tt></a>
+</div>
+<div id="quadrant-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('quadrant', false);"><tt><b>quadrant</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('quadrant', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>The quadrant of the <a href="../classes/Point.html#angle" onclick="return toggleMember('angle', true);"><tt>angle</tt></a> of the point.</p>
+<p>Angles between 0 and 90 degrees are in quadrant <tt>1</tt>. Angles between
+90 and 180 degrees are in quadrant <tt>2</tt>, angles between 180 and 270
+degrees are in quadrant <tt>3</tt> and angles between 270 and 360 degrees
+are in quadrant <tt>4</tt>.</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Number</tt>
+	</li>
+	</ul>
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point({
+	angle: 10,
+	length: 20
+});
+console.log(point.quadrant); // 1
+
+point.angle = 100;
+console.log(point.quadrant); // 2
+
+point.angle = 190;
+console.log(point.quadrant); // 3
+
+point.angle = 280;
+console.log(point.quadrant); // 4</pre>
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="selected-member" class="member">
+<div id="selected-link" class="member-link">
+<a name="selected" href="#" onClick="return toggleMember('selected', false);"><tt><b>selected</b></tt></a>
+</div>
+<div id="selected-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('selected', false);"><tt><b>selected</b></tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('selected', false);"></div>
+<div class="clear"></div>
+</div>
+
+<div class="member-text">
+	<p>This property is only present if the point is an anchor or control point
+of a <a href="../classes/Segment.html"><tt>Segment</tt></a> or a <a href="../classes/Curve.html"><tt>Curve</tt></a>. In this case, it returns
+<tt>true</tt> it is selected, <tt>false</tt> otherwise</p>
+	
+	
+	<ul><b>Type:</b>
+	<li>
+		<tt>Boolean</tt>
+	</li>
+	</ul>
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members"><h2>Methods</h2>
+		
+			
+<div id="clone-member" class="member">
+<div id="clone-link" class="member-link">
+<a name="clone" href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+<div id="clone-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('clone', false);"><tt><b>clone</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('clone', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a copy of the point.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the cloned point
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point1 = new Point();
+var point2 = point1;
+point2.x = 1; // also changes point1.x
+
+var point2 = point1.clone();
+point2.x = 1; // doesn't change point1.x</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="tostring-member" class="member">
+<div id="tostring-link" class="member-link">
+<a name="tostring" href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+<div id="tostring-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('tostring', false);"><tt><b>toString</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('tostring', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;A string representation of the point.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="transform-matrix-member" class="member">
+<div id="transform-matrix-link" class="member-link">
+<a name="transform-matrix" href="#" onClick="return toggleMember('transform-matrix', false);"><tt><b>transform</b>(matrix)</tt></a>
+</div>
+<div id="transform-matrix-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('transform-matrix', false);"><tt><b>transform</b>(matrix)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('transform-matrix', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Transforms the point by the matrix as a new point. The object itself
+is not modified!</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>matrix:</tt> 
+<a href="../classes/Matrix.html"><tt>Matrix</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;The transformed point
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<h3>Distance & Length</h3>
+
+<div id="getdistance-point-squared-member" class="member">
+<div id="getdistance-point-squared-link" class="member-link">
+<a name="getdistance-point-squared" href="#" onClick="return toggleMember('getdistance-point-squared', false);"><tt><b>getDistance</b>(point, squared)</tt></a>
+</div>
+<div id="getdistance-point-squared-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('getdistance-point-squared', false);"><tt><b>getDistance</b>(point, squared)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getdistance-point-squared', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns the distance between the point and another point.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>squared:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;Controls whether the distance should remain
+       squared, or its square root should be calculated.
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Number</tt></tt>
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="normalize-member" class="member">
+<div id="normalize-link" class="member-link">
+<a name="normalize" href="#" onClick="return toggleMember('normalize', false);"><tt><b>normalize</b>([length])</tt></a>
+</div>
+<div id="normalize-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('normalize', false);"><tt><b>normalize</b>([length])</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('normalize', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Normalize modifies the <a href="../classes/Point.html#length" onclick="return toggleMember('length', true);"><tt>length</tt></a> of the vector to <tt>1</tt> without
+changing its angle and returns it as a new point. The optional
+<tt>length</tt> parameter defines the length to normalize to.</p>
+<p>The object itself is not modified!</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>length:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;The length of the normalized vector
+&mdash;&nbsp;optional, default: <tt>1</tt>
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;The normalized vector of the vector that is represented
+                by this point's coordinates.
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<h3>Angle & Rotation</h3>
+
+<div id="getangle-point-member" class="member">
+<div id="getangle-point-link" class="member-link">
+<a name="getangle-point" href="#" onClick="return toggleMember('getangle-point', false);"><tt><b>getAngle</b>(point)</tt></a>
+</div>
+<div id="getangle-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('getangle-point', false);"><tt><b>getAngle</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getangle-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns the smaller angle between two vectors. The angle is unsigned, no
+information about rotational direction is given.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the angle in degrees
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="getangleinradians-point-member" class="member">
+<div id="getangleinradians-point-link" class="member-link">
+<a name="getangleinradians-point" href="#" onClick="return toggleMember('getangleinradians-point', false);"><tt><b>getAngleInRadians</b>(point)</tt></a>
+</div>
+<div id="getangleinradians-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('getangleinradians-point', false);"><tt><b>getAngleInRadians</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getangleinradians-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns the smaller angle between two vectors in radians. The angle is
+unsigned, no information about rotational direction is given.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the angle in radians
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="getdirectedangle-point-member" class="member">
+<div id="getdirectedangle-point-link" class="member-link">
+<a name="getdirectedangle-point" href="#" onClick="return toggleMember('getdirectedangle-point', false);"><tt><b>getDirectedAngle</b>(point)</tt></a>
+</div>
+<div id="getdirectedangle-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('getdirectedangle-point', false);"><tt><b>getDirectedAngle</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('getdirectedangle-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns the angle between two vectors. The angle is directional and
+signed, giving information about the rotational direction.</p>
+<p>Read more about angle units and orientation in the description of the
+<a href="../classes/Point.html#angle" onclick="return toggleMember('angle', true);"><tt>angle</tt></a> property.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the angle between the two vectors
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="rotate-angle-center-member" class="member">
+<div id="rotate-angle-center-link" class="member-link">
+<a name="rotate-angle-center" href="#" onClick="return toggleMember('rotate-angle-center', false);"><tt><b>rotate</b>(angle, center)</tt></a>
+</div>
+<div id="rotate-angle-center-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('rotate-angle-center', false);"><tt><b>rotate</b>(angle, center)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('rotate-angle-center', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Rotates the point by the given angle around an optional center point.</p>
+<p>The object itself is not modified.</p>
+<p>Read more about angle units and orientation in the description of the
+<a href="../classes/Point.html#angle" onclick="return toggleMember('angle', true);"><tt>angle</tt></a> property.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>angle:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the rotation angle
+
+</li>
+
+<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the center point of the rotation
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the rotated point
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<h3>Tests</h3>
+
+<div id="isinside-rect-member" class="member">
+<div id="isinside-rect-link" class="member-link">
+<a name="isinside-rect" href="#" onClick="return toggleMember('isinside-rect', false);"><tt><b>isInside</b>(rect)</tt></a>
+</div>
+<div id="isinside-rect-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isinside-rect', false);"><tt><b>isInside</b>(rect)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isinside-rect', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks whether the point is inside the boundaries of the rectangle.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>rect:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+&mdash;&nbsp;the rectangle to check against
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the point is inside the rectangle, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="isclose-point-tolerance-member" class="member">
+<div id="isclose-point-tolerance-link" class="member-link">
+<a name="isclose-point-tolerance" href="#" onClick="return toggleMember('isclose-point-tolerance', false);"><tt><b>isClose</b>(point, tolerance)</tt></a>
+</div>
+<div id="isclose-point-tolerance-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isclose-point-tolerance', false);"><tt><b>isClose</b>(point, tolerance)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isclose-point-tolerance', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks if the point is within a given distance of another point.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point to check against
+
+</li>
+
+<li>
+<tt>tolerance:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the maximum distance allowed
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it is within the given distance, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="iscolinear-point-member" class="member">
+<div id="iscolinear-point-link" class="member-link">
+<a name="iscolinear-point" href="#" onClick="return toggleMember('iscolinear-point', false);"><tt><b>isColinear</b>(point)</tt></a>
+</div>
+<div id="iscolinear-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('iscolinear-point', false);"><tt><b>isColinear</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('iscolinear-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks if the vector represented by this point is colinear (parallel) to
+another vector.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the vector to check against
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it is parallel, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="isorthogonal-point-member" class="member">
+<div id="isorthogonal-point-link" class="member-link">
+<a name="isorthogonal-point" href="#" onClick="return toggleMember('isorthogonal-point', false);"><tt><b>isOrthogonal</b>(point)</tt></a>
+</div>
+<div id="isorthogonal-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isorthogonal-point', false);"><tt><b>isOrthogonal</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isorthogonal-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks if the vector represented by this point is orthogonal
+(perpendicular) to another vector.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the vector to check against
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> it is orthogonal, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="iszero-member" class="member">
+<div id="iszero-link" class="member-link">
+<a name="iszero" href="#" onClick="return toggleMember('iszero', false);"><tt><b>isZero</b>()</tt></a>
+</div>
+<div id="iszero-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('iszero', false);"><tt><b>isZero</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('iszero', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks if this point has both the x and y coordinate set to 0.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> both x and y are 0, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="isnan-member" class="member">
+<div id="isnan-link" class="member-link">
+<a name="isnan" href="#" onClick="return toggleMember('isnan', false);"><tt><b>isNaN</b>()</tt></a>
+</div>
+<div id="isnan-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('isnan', false);"><tt><b>isNaN</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('isnan', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Checks if this point has an undefined value for at least one of its
+coordinates.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if either x or y are not a number, <tt>false</tt> otherwise
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<h3>Vector Math Functions</h3>
+
+<div id="dot-point-member" class="member">
+<div id="dot-point-link" class="member-link">
+<a name="dot-point" href="#" onClick="return toggleMember('dot-point', false);"><tt><b>dot</b>(point)</tt></a>
+</div>
+<div id="dot-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('dot-point', false);"><tt><b>dot</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('dot-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns the dot product of the point and another point.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the dot product of the two points
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="cross-point-member" class="member">
+<div id="cross-point-link" class="member-link">
+<a name="cross-point" href="#" onClick="return toggleMember('cross-point', false);"><tt><b>cross</b>(point)</tt></a>
+</div>
+<div id="cross-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('cross-point', false);"><tt><b>cross</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('cross-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns the cross product of the point and another point.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the cross product of the two points
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="project-point-member" class="member">
+<div id="project-point-link" class="member-link">
+<a name="project-point" href="#" onClick="return toggleMember('project-point', false);"><tt><b>project</b>(point)</tt></a>
+</div>
+<div id="project-point-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('project-point', false);"><tt><b>project</b>(point)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('project-point', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns the projection of the point on another point.</p>
+<p>Both points are interpreted as vectors.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the projection of the point on another point
+</li>
+	
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<h3>Math Functions</h3>
+
+<div id="round-member" class="member">
+<div id="round-link" class="member-link">
+<a name="round" href="#" onClick="return toggleMember('round', false);"><tt><b>round</b>()</tt></a>
+</div>
+<div id="round-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('round', false);"><tt><b>round</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('round', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new point with rounded <a href="../classes/Point.html#x" onclick="return toggleMember('x', true);"><tt>x</tt></a> and <a href="../classes/Point.html#y" onclick="return toggleMember('y', true);"><tt>y</tt></a> values. The
+object itself is not modified!</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(10.2, 10.9);
+var roundPoint = point.round();
+console.log(roundPoint); // {x: 10, y: 11}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="ceil-member" class="member">
+<div id="ceil-link" class="member-link">
+<a name="ceil" href="#" onClick="return toggleMember('ceil', false);"><tt><b>ceil</b>()</tt></a>
+</div>
+<div id="ceil-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('ceil', false);"><tt><b>ceil</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('ceil', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new point with the nearest greater non-fractional values to the
+specified <a href="../classes/Point.html#x" onclick="return toggleMember('x', true);"><tt>x</tt></a> and <a href="../classes/Point.html#y" onclick="return toggleMember('y', true);"><tt>y</tt></a> values. The object itself is not
+modified!</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(10.2, 10.9);
+var ceilPoint = point.ceil();
+console.log(ceilPoint); // {x: 11, y: 11}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="floor-member" class="member">
+<div id="floor-link" class="member-link">
+<a name="floor" href="#" onClick="return toggleMember('floor', false);"><tt><b>floor</b>()</tt></a>
+</div>
+<div id="floor-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('floor', false);"><tt><b>floor</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('floor', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new point with the nearest smaller non-fractional values to the
+specified <a href="../classes/Point.html#x" onclick="return toggleMember('x', true);"><tt>x</tt></a> and <a href="../classes/Point.html#y" onclick="return toggleMember('y', true);"><tt>y</tt></a> values. The object itself is not
+modified!</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(10.2, 10.9);
+var floorPoint = point.floor();
+console.log(floorPoint); // {x: 10, y: 10}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="abs-member" class="member">
+<div id="abs-link" class="member-link">
+<a name="abs" href="#" onClick="return toggleMember('abs', false);"><tt><b>abs</b>()</tt></a>
+</div>
+<div id="abs-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('abs', false);"><tt><b>abs</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('abs', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new point with the absolute values of the specified <a href="../classes/Point.html#x" onclick="return toggleMember('x', true);"><tt>x</tt></a>
+and <a href="../classes/Point.html#y" onclick="return toggleMember('y', true);"><tt>y</tt></a> values. The object itself is not modified!</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point = new Point(-5, 10);
+var absPoint = point.abs();
+console.log(absPoint); // {x: 5, y: 10}</pre>
+
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+	<div class="reference-members"><h2>Static Methods</h2>
+		
+			
+<div id="min-point1-point2-member" class="member">
+<div id="min-point1-point2-link" class="member-link">
+<a name="min-point1-point2" href="#" onClick="return toggleMember('min-point1-point2', false);"><tt><b>Point.min</b>(point1, point2)</tt></a>
+</div>
+<div id="min-point1-point2-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('min-point1-point2', false);"><tt><b>Point.min</b>(point1, point2)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('min-point1-point2', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new point object with the smallest <a href="../classes/Point.html#x" onclick="return toggleMember('x', true);"><tt>x</tt></a> and
+<a href="../classes/Point.html#y" onclick="return toggleMember('y', true);"><tt>y</tt></a> of the supplied points.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point1:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>point2:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;The newly created point object
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point1 = new Point(10, 100);
+var point2 = new Point(200, 5);
+var minPoint = Point.min(point1, point2);
+console.log(minPoint); // {x: 10, y: 5}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="max-point1-point2-member" class="member">
+<div id="max-point1-point2-link" class="member-link">
+<a name="max-point1-point2" href="#" onClick="return toggleMember('max-point1-point2', false);"><tt><b>Point.max</b>(point1, point2)</tt></a>
+</div>
+<div id="max-point1-point2-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('max-point1-point2', false);"><tt><b>Point.max</b>(point1, point2)</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('max-point1-point2', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a new point object with the largest <a href="../classes/Point.html#x" onclick="return toggleMember('x', true);"><tt>x</tt></a> and
+<a href="../classes/Point.html#y" onclick="return toggleMember('y', true);"><tt>y</tt></a> of the supplied points.</p>
+	
+<ul><b>Parameters:</b>
+
+<li>
+<tt>point1:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+<li>
+<tt>point2:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+
+</ul>
+
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;The newly created point object
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var point1 = new Point(10, 100);
+var point2 = new Point(200, 5);
+var maxPoint = Point.max(point1, point2);
+console.log(maxPoint); // {x: 200, y: 100}</pre>
+
+</div>
+</div>
+</div>
+		
+			
+<div id="random-member" class="member">
+<div id="random-link" class="member-link">
+<a name="random" href="#" onClick="return toggleMember('random', false);"><tt><b>Point.random</b>()</tt></a>
+</div>
+<div id="random-description" class="member-description hidden">
+<div class="member-header">
+<div class="member-title">
+<div class="member-link">
+<a href="#" onClick="return toggleMember('random', false);"><tt><b>Point.random</b>()</tt></a>
+</div>
+</div>
+<div class="member-close"><input type="button" value="Close" onClick="toggleMember('random', false);"></div>
+<div class="clear"></div>
+</div>
+<div class="member-text">
+	<p>Returns a point object with random <a href="../classes/Point.html#x" onclick="return toggleMember('x', true);"><tt>x</tt></a> and <a href="../classes/Point.html#y" onclick="return toggleMember('y', true);"><tt>y</tt></a> values
+between <tt>0</tt> and <tt>1</tt>.</p>
+	
+	
+	<ul><b>Returns:</b>
+	
+		<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;The newly created point object
+</li>
+	
+	</ul>
+
+	
+	<p>
+<b>Example</b> 
+</p>
+
+
+<pre class="code">var maxPoint = new Point(100, 100);
+var randomPoint = Point.random();
+
+// A point between {x:0, y:0} and {x:100, y:100}:
+var point = maxPoint * randomPoint;</pre>
+
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- =========================== copyright notice ========================= -->
+<p class="footer">Copyright &#169; 2011 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+</body>
