@@ -19,7 +19,7 @@
 				y2 = 45;
 			var line1 = new Path.Line([x1, y1], [x2, y2]);
 			line1.strokeColor = "blue";
-			line1.strokeWidth = "10px";
+			line1.strokeWidth = "10";
 		 
 			var x3 = 20,
 				x4 = 99,
@@ -35,10 +35,9 @@
 				y6 = 300;
 			var line3 = new Path.Line([x5, y5], [x6, y6]);
 			line3.strokeColor = "yellow";
-			line3.strokeWidth = "5px";
+			line3.strokeWidth = "5";
 			
 			var esvg = new ExportSVG();
-			//esvg.exportProject(paper.project);
 			var output = esvg.exportProject(paper.project);
 			console.log(output);
 			var test = document.getElementById('svg')
