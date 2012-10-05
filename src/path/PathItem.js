@@ -81,9 +81,9 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	/**
 	 * {@grouptitle Postscript Style Drawing Commands}
 	 *
-	 * If called on a {@link CompoundPath}, a new {@link Path} is created as a
-	 * child and the point is added as its first segment. On a normal empty
-	 * {@link Path}, the point is simply added as its first segment.
+	 * On a normal empty {@link Path}, the point is simply added as the path's
+	 * first segment. If called on a {@link CompoundPath}, a new {@link Path} is
+	 * created as a child and the point is added as its first segment.
 	 *
 	 * @name PathItem#moveTo
 	 * @function
@@ -282,12 +282,12 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	 * {@grouptitle Relative Drawing Commands}
 	 *
 	 * If called on a {@link CompoundPath}, a new {@link Path} is created as a
-	 * child and the point is added as its first segment relative to the
+	 * child and a point is added as its first segment relative to the
 	 * position of the last segment of the current path.
 	 *
 	 * @name PathItem#moveBy
 	 * @function
-	 * @param {Point} point
+	 * @param {Point} vector
 	 */
 
 	/**
