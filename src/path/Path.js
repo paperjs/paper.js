@@ -1383,7 +1383,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			length = segments.length,
 			coords = new Array(6),
 			first = true,
-			pX, pY,
+			curX, curY,
+			prevX, prevY,
 			inX, inY,
 			outX, outY;
 
@@ -1394,15 +1395,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// drawing paths. Matrix is only used for drawing selections.
 			if (matrix) {
 				segment._transformCoordinates(matrix, coords, false);
-				pX = coords[0];
-				pY = coords[1];
+				curX = coords[0];
+				curY = coords[1];
 			} else {
 				var point = segment._point;
-				pX = point._x;
-				pY = point._y;
+				curX = point._x;
+				curY = point._y;
 			}
 			if (first) {
-				ctx.moveTo(pX, pY);
+				ctx.moveTo(curX, curY);
 				first = false;
 			} else {
 				if (matrix) {
@@ -1410,22 +1411,24 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					inY = coords[3];
 				} else {
 					var handle = segment._handleIn;
-					inX = pX + handle._x;
-					inY = pY + handle._y;
+					inX = curX + handle._x;
+					inY = curY + handle._y;
 				}
-				if (inX == pX && inY == pY && outX == pX && outY == pY) {
-					ctx.lineTo(pX, pY);
+				if (inX == curX && inY == curY && outX == prevX && outY == prevY) {
+					ctx.lineTo(curX, curY);
 				} else {
-					ctx.bezierCurveTo(outX, outY, inX, inY, pX, pY);
+					ctx.bezierCurveTo(outX, outY, inX, inY, curX, curY);
 				}
 			}
+			prevX = curX;
+			prevY = curY;
 			if (matrix) {
 				outX = coords[4];
 				outY = coords[5];
 			} else {
 				var handle = segment._handleOut;
-				outX = pX + handle._x;
-				outY = pY + handle._y;
+				outX = prevX + handle._x;
+				outY = prevY + handle._y;
 			}
 		}
 
