@@ -71,3 +71,21 @@ test('group.addChildren(otherGroup.children)', function() {
 		return group.children.length;
 	}, 0);
 });
+
+test('group.insertChildren(0, otherGroup.children)', function() {
+	var group = new Group();
+	group.addChild(new Path());
+	group.addChild(new Path());
+	equals(function() {
+		return group.children.length;
+	}, 2);
+
+	var secondGroup = new Group();
+	secondGroup.insertChildren(0, group.children);
+	equals(function() {
+		return secondGroup.children.length;
+	}, 2);
+	equals(function() {
+		return group.children.length;
+	}, 0);
+});
