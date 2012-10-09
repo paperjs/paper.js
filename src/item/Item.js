@@ -1143,8 +1143,7 @@ function(name) {
 	 * @param {item[]} items The items to be added as children
 	 */
 	addChildren: function(items) {
-		for (var i = 0, l = items && items.length; i < l; i++)
-			this.insertChild(undefined, items[i]);
+		this.insertChildren(this._children.length, items);
 	},
 
 	/**
@@ -1156,6 +1155,10 @@ function(name) {
 	 * @param {Item[]} items The items to be appended as children
 	 */
 	insertChildren: function(index, items) {
+		// We need to clone items because it might be
+		// an Item#children array. Use Array.prototype.slice because
+		// in certain cases items is an arguments object
+		items = items && Array.prototype.slice.apply(items);
 		for (var i = 0, l = items && items.length; i < l; i++) {
 			if (this.insertChild(index, items[i]))
 				index++;

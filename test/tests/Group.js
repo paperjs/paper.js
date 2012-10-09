@@ -53,3 +53,39 @@ test('Group bounds', function() {
 	compareRectangles(group.bounds, { x: 39.70692, y: 114.99196, width: 170.00412, height: 180.22401 }, 'rotated group.bounds');
 	compareRectangles(group.strokeBounds, { x: 37.20692, y: 112.49196, width: 175.00412, height: 185.22401 }, 'rotated group.strokeBounds');
 });
+
+test('group.addChildren(otherGroup.children)', function() {
+	var group = new Group();
+	group.addChild(new Path());
+	group.addChild(new Path());
+	equals(function() {
+		return group.children.length;
+	}, 2);
+
+	var secondGroup = new Group();
+	secondGroup.addChildren(group.children);
+	equals(function() {
+		return secondGroup.children.length;
+	}, 2);
+	equals(function() {
+		return group.children.length;
+	}, 0);
+});
+
+test('group.insertChildren(0, otherGroup.children)', function() {
+	var group = new Group();
+	group.addChild(new Path());
+	group.addChild(new Path());
+	equals(function() {
+		return group.children.length;
+	}, 2);
+
+	var secondGroup = new Group();
+	secondGroup.insertChildren(0, group.children);
+	equals(function() {
+		return secondGroup.children.length;
+	}, 2);
+	equals(function() {
+		return group.children.length;
+	}, 0);
+});
