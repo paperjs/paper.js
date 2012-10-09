@@ -173,8 +173,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 			this._project.view = null;
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._element, this._handlers);
-		if (this._windowHandlers)
-			DomEvent.remove(window, this._windowHandlers);
+		DomEvent.remove(window, this._windowHandlers);
 		this._element = this._project = null;
 		// Removing all onFrame handlers makes the _onFrameCallback handler stop
 		// automatically through its uninstall method.
