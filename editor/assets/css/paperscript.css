@@ -1,0 +1,65 @@
+.paperscript .buttons {
+	position: absolute;
+	right: 0;
+	z-index: 1;
+}
+
+.paperscript .button,
+.paperscript .explain {
+	float: right;
+	display: none;
+	font-size: 11px;
+	line-height: 16px;
+	padding: 2px 6px;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	margin: 8px 8px 0 0;
+}
+
+.paperscript .button {
+	background: #eee;
+}
+
+.paperscript .explain {
+	background: #e3f4fc;
+}
+
+.paperscript .explain,
+.buttons-context:hover .button {
+	display: inline-block;
+}
+
+.paperscript .button:hover {
+	background: #ddd;
+	cursor: pointer;
+}
+
+.paperscript .source {
+	overflow: auto;
+	border-bottom: 1px solid #999;
+	max-height: 240px;
+}
+
+.paperscript .CodeMirror {
+	margin: 0 !important; /* Override any potential margins again */
+}
+
+.paperscript .CodeMirror-gutter-text,
+.paperscript .CodeMirror-lines {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.paperscript .canvas {
+	line-height: 0; /* prevent weird 5px padding under canvas elements */
+}
+
+.paperscript .canvas.border canvas {
+	border: 0;
+}
+
+.paperscript.split .canvas {
+	border: 0;
+	border-top: 0;
+}
