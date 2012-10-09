@@ -203,9 +203,6 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 				if (selected)
 					selection[0] = false;
 				selection[index] = selected;
-				// Let path know that we changed something and the view
-				// should be redrawn
-				path._changed(Change.ATTRIBUTE);
 			}
 		}
 		this._selectionState = (selection[0] ? SelectionState.POINT : 0)
@@ -214,8 +211,12 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
 		// project._selectedItems
-		if (path && state != this._selectionState)
+		if (path && state != this._selectionState) {
 			path._updateSelection(this, state, this._selectionState);
+			// Let path know that we changed something and the view should be
+			// redrawn
+			path._changed(Change.ATTRIBUTE);
+		}
 	},
 
 
