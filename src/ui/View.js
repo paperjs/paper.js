@@ -47,7 +47,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 								that._element);
 					}
 					var now = Date.now() / 1000,
-					 	delta = before ? now - before : 0;
+						delta = before ? now - before : 0;
 					// delta: Time elapsed since last redraw in seconds
 					// time: Time since first call of frame() in seconds
 					// Use Base.merge to convert into a Base object,
