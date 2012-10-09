@@ -104,7 +104,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 					.getSize().subtract(offset);
 			element.width = size.width;
 			element.height = size.height;
-			DomEvent.add(window, {
+			this._windowHandlers = {
 				resize: function(event) {
 					// Only update element offset if it's not invisible, as
 					// otherwise the offset would be wrong.
@@ -115,7 +115,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 					that.setViewSize(DomElement.getViewportBounds(element)
 							.getSize().subtract(offset));
 				}
-			});
+			};
+			DomEvent.add(window, this._windowHandlers);
 		} else {
 			// If the element is invisible, we cannot directly access
 			// element.width / height, because they would appear 0. Reading
@@ -172,6 +173,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 			this._project.view = null;
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._element, this._handlers);
+		if (this._windowHandlers)
+			DomEvent.remove(window, this._windowHandlers);
 		this._element = this._project = null;
 		// Removing all onFrame handlers makes the _onFrameCallback handler stop
 		// automatically through its uninstall method.
