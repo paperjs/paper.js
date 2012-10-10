@@ -4,7 +4,7 @@ function createCodeMirror(place, options, source) {
 		matchBrackets: true,
 		indentUnit: 4,
 		tabMode: 'shift',
-		value: source.getText().replace(/\t/gi, '	').match(
+		value: source.getText().replace(/\t/gi, '    ').match(
 			// Remove first & last empty line
 			/^\s*?[\n\r]?([\u0000-\uffff]*?)[\n\r]?\s*?$/)[1]
 	}, options));
@@ -26,6 +26,7 @@ Code = HtmlElement.extend({
 		}, {
 			lineNumbers: !this.hasParent('.resource-text'),
 			firstLineNumber: (start || 1).toInt(),
+			mode: this.getProperty('mode') || 'javascript',
 			readOnly: true
 		}, this);
 		if (highlight) {
@@ -58,16 +59,12 @@ PaperScript = HtmlElement.extend({
 		if (this.initialized || this.getBounds().height == 0)
 			return;
 		var script = $('script', this),
-			runButton = $('.button', this),
-			inspectorButton = $('.canvas .button', this);
+			runButton = $('.button.run', this);
 		if (!script || !runButton)
 			return;
 		var code = localStorage[this.scriptName];
 		if (code)
 			script.setText(code);
-		var source = script.injectBefore('div', {
-			className: 'source hidden'
-		});
 		var that = this,
 			canvas = $('canvas', this),
 			hasResize = canvas.getProperty('resize'),
@@ -75,11 +72,19 @@ PaperScript = HtmlElement.extend({
 			sourceFirst = this.hasClass('source'),
 			width, height,
 			editor = null,
-			hasBorders = true;
+			hasBorders = true,
+			tools = $('.tools', this),
+			inspectorButton = $('.tools .button.inspector', this),
+			inspectorInfo = $('.tools .info', this),
+			source = script.injectBefore('div', {
+				className: 'source hidden'
+			});
 
 		function showSource(show) {
 			source.modifyClass('hidden', !show);
 			runButton.setText(show ? 'Run' : 'Source');
+			if (tools && !showSplit)
+				tools.modifyClass('hidden', show);
 			if (show && !editor) {
 				editor = createCodeMirror(source.$, {
 					onKeyEvent: function(editor, event) {
@@ -100,16 +105,19 @@ PaperScript = HtmlElement.extend({
 
 		var inspectorTool,
 			previousTool,
-			toggleInspector = true;
+			toggleInspector = false;
 
 		function createInspector() {
+			if (!inspectorButton)
+				return;
 			var scope = paper.PaperScope.get(script.$);
-			previousTool = scope.getTool();
+			previousTool = scope.tools[0];
 			inspectorTool = new paper.Tool();
 			prevItem = null;
 			inspectorTool.onMouseDown = function(event) {
-				if (prevItem)
+				if (prevItem) {
 					prevItem.selected = false;
+				}
 				var item = event.item;
 				if (item) {
 					var handle = item.hitTest(event.point, {
@@ -120,13 +128,31 @@ PaperScript = HtmlElement.extend({
 					}
 					item.selected = true;
 				}
+				inspectorInfo.modifyClass('hidden', !item);
+				if (item) {
+					var text;
+					if (item instanceof paper.Segment) {
+						text = 'Segment';
+						text += '<br />point: ' + item.point;
+						if (!item.handleIn.isZero())
+							text += '<br />handleIn: ' + item.handleIn;
+						if (!item.handleOut.isZero())
+							text += '<br />handleOut: ' + item.handleOut;
+					} else {
+						text = item.constructor._name;
+						text += '<br />position: ' + item.position;
+						text += '<br />bounds: ' + item.bounds;
+					}
+					inspectorInfo.setHtml(text);
+				}
 				prevItem = item;
 			};
 			inspectorTool.onSelect = function() {
 				console.log('select');
 			};
 			// reactivate previous tool for now
-			previousTool.activate();
+			if (previousTool)
+				previousTool.activate();
 		}
 		// Create inspector once the paper script was evaluated
 		$window.addEvents({
@@ -136,8 +162,8 @@ PaperScript = HtmlElement.extend({
 		inspectorButton.addEvents({
 			click: function(event) {
 				if (inspectorTool) {
-					(toggleInspector ? inspectorTool : previousTool).activate();
-					if (!toggleInspector) {
+					(toggleInspector && previousTool ? previousTool : inspectorTool).activate();
+					if (toggleInspector) {
 						if (prevItem)
 							prevItem.selected = false;
 						prevItem = null;
@@ -155,7 +181,8 @@ PaperScript = HtmlElement.extend({
 				script.setText(code);
 				// Keep a reference to the used canvas, since we're going to
 				// fully clear the scope and initialize again with this canvas.
-				var element = scope.view.element;
+				// Support both old and new versions of paper.js for now:
+				var element = scope.view.element || scope.view.canvas;
 				// Clear scope first, then evaluate a new script.
 				scope.clear();
 				scope.initialize(script.$);
@@ -193,20 +220,21 @@ PaperScript = HtmlElement.extend({
 			showSource(show);
 			if (!show)
 				runScript();
-			// Remove padding
-			runButton.setStyle('right',
+			// Add extra margin if there is scrolling
+			runButton.setStyle('margin-right',
 				$('.CodeMirror', source).getScrollSize().height > height
-					? 24 : 8);
+					? 23 : 8);
 		}
 
 		if (hasResize) {
-			// Delay the installing of the resize event, so paper.js installs
-			// its own before us.
-			(function() {
+			// Install the resize event only after paper.js installs its own,
+			// which happens on the load event. This is needed because we rely
+			// on paper.js performing the actual resize magic.
+			$window.addEvent('load', function() {
 				$window.addEvents({
 					resize: resize
 				});
-			}).delay(1);
+			});
 			hasBorders = false;
 			source.setStyles({
 				borderWidth: '0 0 0 1px'
@@ -226,14 +254,15 @@ PaperScript = HtmlElement.extend({
 				} else {
 					toggleView();
 				}
-				if (event) event.stop();
+				if (event) {
+					event.stop();
+				}
 			},
 
 			mousedown: function(event) {
 				event.stop();
 			}
 		});
-
 		this.initialized = true;
 	}
 });

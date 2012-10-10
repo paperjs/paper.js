@@ -5,9 +5,8 @@
 }
 
 .paperscript .button,
-.paperscript .explain {
+.paperscript .info {
 	float: right;
-	display: none;
 	font-size: 11px;
 	line-height: 16px;
 	padding: 2px 6px;
@@ -15,10 +14,11 @@
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	margin: 8px 8px 0 0;
+	background: #eee;
 }
 
 .paperscript .button {
-	background: #eee;
+	display: none;
 }
 
 .paperscript .explain {
@@ -27,7 +27,7 @@
 
 .paperscript .explain,
 .buttons-context:hover .button {
-	display: inline-block;
+	display: block;
 }
 
 .paperscript .button:hover {

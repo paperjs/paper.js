@@ -13,7 +13,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 8 18:44:08 2012 -0700
+ * Date: Mon Oct 8 23:14:12 2012 -0700
  *
  ***
  *
@@ -4417,8 +4417,7 @@ var Path = this.Path = PathItem.extend({
 	_updateSelection: function(segment, oldState, newState) {
 		segment._selectionState = newState;
 		var total = this._selectedSegmentState += newState - oldState;
-		if (total > 0)
-			this.setSelected(true);
+		this.setSelected(total > 0);
 	},
 
 	flatten: function(maxDistance) {
@@ -4818,6 +4817,9 @@ var Path = this.Path = PathItem.extend({
 			drawSegments(ctx, this, matrix);
 			ctx.stroke();
 			drawHandles(ctx, this._segments, matrix);
+			if (this._selectedSegmentState == 0) {
+				Item.drawSelectedBounds(this.getBounds(), ctx, matrix);
+			}
 		}
 	};
 }, new function() { 
