@@ -121,7 +121,8 @@ PaperScript = HtmlElement.extend({
 				var item = event.item;
 				if (item) {
 					var handle = item.hitTest(event.point, {
-						handles: true
+						segments: true,
+						tolerance: 4
 					});
 					if (handle) {
 						item = handle.segment;
