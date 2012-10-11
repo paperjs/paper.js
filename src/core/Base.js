@@ -57,8 +57,12 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * the specified length. This is used in argument conversion, e.g. by
 		 * all basic types (Point, Size, Rectangle) and also higher classes such
 		 * as Color and Segment.
+		 * @param {Number} start the index at which to start reading in the list
+		 * @param {Number} length the amount of elements that can be read
+		 * @param {Boolean} clone controls wether passed objects should be
+		 *        cloned if they are already provided in the required type
 		 */
-		read: function(list, start, length) {
+		read: function(list, start, length, clone) {
 			var start = start || 0,
 				length = length || list.length - start;
 			var obj = list[start];
@@ -66,7 +70,7 @@ this.Base = Base.inject(/** @lends Base# */{
 					// If the class defines _readNull, return null when nothing
 					// was provided
 					|| this.prototype._readNull && obj == null && length <= 1)
-				return obj;
+				return obj && clone ? obj.clone() : obj;
 			obj = new this(this.dont);
 			return obj.initialize.apply(obj, start > 0 || length < list.length
 				? Array.prototype.slice.call(list, start, start + length)
@@ -76,13 +80,16 @@ this.Base = Base.inject(/** @lends Base# */{
 		/**
 		 * Reads all readable arguments from the list, handling nested arrays
 		 * seperately.
+		 * @param {Number} start the index at which to start reading in the list
+		 * @param {Boolean} clone controls wether passed objects should be
+		 *        cloned if they are already provided in the required type
 		 */
-		readAll: function(list, start) {
+		readAll: function(list, start, clone) {
 			var res = [], entry;
 			for (var i = start || 0, l = list.length; i < l; i++) {
 				res.push(Array.isArray(entry = list[i])
-					? this.read(entry, 0)
-					: this.read(list, i, 1));
+					? this.read(entry, 0, 0, clone) // 0 for length = max
+					: this.read(list, i, 1, clone));
 			}
 			return res;
 		},
