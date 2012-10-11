@@ -665,7 +665,7 @@ function(name) {
 			y2 = x2;
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
-			if (child._visible) {
+			if (child._visible && !child.isEmpty()) {
 				var rect = child._getCachedBounds(type, matrix, cacheItem);
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
@@ -674,6 +674,10 @@ function(name) {
 			}
 		}
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+	},
+
+	isEmpty: function() {
+		return true;
 	},
 
 	setBounds: function(rect) {

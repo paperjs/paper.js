@@ -92,6 +92,10 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 		this._changed(Change.CONTENT);
 	},
 
+	isEmpty: function() {
+		return !!this._content;
+	},
+
 	/**
 	 * {@grouptitle Style Properties}
 	 *
