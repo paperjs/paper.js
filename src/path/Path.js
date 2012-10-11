@@ -229,6 +229,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// Do nothing for the same reason as above.
 	},
 
+	isEmpty: function() {
+		return this._segments.length == 0;
+	},
+
 	_apply: function(matrix) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++) {
