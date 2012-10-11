@@ -70,7 +70,8 @@ var Style = Item.extend({
 				// injected into this class using this.base() further down.
 				src[set] = function(value) {
 					var children = this._item && this._item._children;
-					value = isColor ? Color.read(arguments) : value;
+					// Clone color objects since they reference their owner
+					value = isColor ? Color.read(arguments, 0, 0, true) : value;
 					if (children) {
 						for (var i = 0, l = children.length; i < l; i++)
 							children[i][styleKey][set](value);
@@ -78,13 +79,14 @@ var Style = Item.extend({
 						var old = this['_' + key];
 						if (old != value && !(old && old.equals
 									&& old.equals(value))) {
-							this['_' + key] = value;
 							if (isColor) {
 								if (old)
-									old._removeOwner(this._item);
-								if (value)
-									value._addOwner(this._item);
+									delete old._owner;
+								if (value) {
+									value._owner = this._item;
+								}
 							}
+							this['_' + key] = value;
 							// Notify the item of the style change STYLE is
 							// always set, additional flags come from _flags,
 							// as used for STROKE:
