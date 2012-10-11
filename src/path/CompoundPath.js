@@ -85,6 +85,10 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 			this._children[i].smooth();
 	},
 
+	isEmpty: function() {
+		return this._children.length == 0;
+	},
+
 	draw: function(ctx, param) {
 		var children = this._children;
 		// Return early if the compound path doesn't have any children:

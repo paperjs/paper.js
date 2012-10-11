@@ -109,6 +109,10 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		return this._size.height;
 	},
 
+	isEmpty: function() {
+		return this._size.width == 0 && this._size.height == 0;
+	},
+
 	/**
 	 * Pixels per inch of the raster at its current size.
 	 *
