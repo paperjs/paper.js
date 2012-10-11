@@ -674,11 +674,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	_updateSelection: function(segment, oldState, newState) {
 		segment._selectionState = newState;
 		var total = this._selectedSegmentState += newState - oldState;
-		// Set this path as selected in case we have selected segments. Do not
-		// unselect if we're down to 0, as the path itself can still remain
-		// selected even when empty.
-		if (total > 0)
-			this.setSelected(true);
+		// Set this path as selected in case we have selected segments.
+		this.setSelected(total > 0);
 	},
 
 	/**
@@ -1498,6 +1495,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Now stroke it and draw its handles:
 			ctx.stroke();
 			drawHandles(ctx, this._segments, matrix);
+			// If the path has no selected segments, draw its bounds too
+			if (this._selectedSegmentState == 0) {
+				Item.drawSelectedBounds(this.getBounds(), ctx, matrix);
+			}
 		}
 	};
 }, new function() { // Path Smoothing
