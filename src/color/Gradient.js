@@ -90,18 +90,17 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 		// If this gradient already contains stops, first remove
 		// this gradient as their owner.
 		if (this.stops) {
-			for (var i = 0, l = this._stops.length; i < l; i++) {
-				this._stops[i]._removeOwner(this);
-			}
+			for (var i = 0, l = this._stops.length; i < l; i++)
+				delete this._stops[i]._owner;
 		}
 		if (stops.length < 2)
 			throw new Error(
 					'Gradient stop list needs to contain at least two stops.');
-		this._stops = GradientStop.readAll(stops);
+		this._stops = GradientStop.readAll(stops, 0, true); // clone
 		// Now reassign ramp points if they were not specified.
 		for (var i = 0, l = this._stops.length; i < l; i++) {
 			var stop = this._stops[i];
-			stop._addOwner(this);
+			stop._owner = this;
 			if (stop._defaultRamp)
 				stop.setRampPoint(i / (l - 1));
 		}
