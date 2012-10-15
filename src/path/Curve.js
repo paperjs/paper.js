@@ -539,7 +539,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 		isFlatEnough: function(v) {
 			// Thanks to Kaspar Fischer for the following:
-			// http://www.inf.ethz.ch/personal/fischerk/pubs/bez.pdf
+			// http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
 			var p1x = v[0], p1y = v[1],
 				c1x = v[2], c1y = v[3],
 				c2x = v[4], c2y = v[5],
