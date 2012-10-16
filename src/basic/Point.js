@@ -130,32 +130,25 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @name Point#initialize
 	 */
 	initialize: function(arg0, arg1) {
-		if (arg1 !== undefined) {
+		var type = typeof arg0;
+		if (type === 'number') {
 			this.x = arg0;
-			this.y = arg1;
-		} else if (arg0 !== undefined) {
-			if (arg0 == null) {
-				this.x = this.y = 0;
-			} else if (arg0.x !== undefined) {
-				this.x = arg0.x;
-				this.y = arg0.y;
-			} else if (arg0.width !== undefined) {
-				this.x = arg0.width;
-				this.y = arg0.height;
-			} else if (Array.isArray(arg0)) {
-				this.x = arg0[0];
-				this.y = arg0.length > 1 ? arg0[1] : arg0[0];
-			} else if (arg0.angle !== undefined) {
-				this.x = arg0.length;
-				this.y = 0;
-				this.setAngle(arg0.angle);
-			} else if (typeof arg0 === 'number') {
-				this.x = this.y = arg0;
-			} else {
-				this.x = this.y = 0;
-			}
-		} else {
+			this.y = typeof arg1 === 'number' ? arg1 : arg0;
+		} else if (type === 'undefined' || arg0 === null) {
 			this.x = this.y = 0;
+		} else if (typeof arg0.x !== 'undefined') {
+			this.x = arg0.x;
+			this.y = arg0.y;
+		} else if (Array.isArray(arg0)) {
+			this.x = arg0[0];
+			this.y = arg0.length > 1 ? arg0[1] : arg0[0];
+		} else if (typeof arg0.width !== 'undefined') {
+			this.x = arg0.width;
+			this.y = arg0.height;
+		} else if (typeof arg0.angle !== 'undefined') {
+			this.x = arg0.length;
+			this.y = 0;
+			this.setAngle(arg0.angle);
 		}
 	},
 
