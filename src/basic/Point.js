@@ -149,6 +149,8 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 			this.x = arg0.length;
 			this.y = 0;
 			this.setAngle(arg0.angle);
+		} else {
+			this.x = this.y = 0;
 		}
 	},
 
