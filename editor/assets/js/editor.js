@@ -76,9 +76,8 @@ PaperScript = HtmlElement.extend({
 			tools = $('.tools', this),
 			inspectorButton = $('.tools .button.inspector', this),
 			inspectorInfo = $('.tools .info', this),
-			source = script.injectBefore('div', {
-				className: 'source hidden'
-			});
+			source = $('.source', this),
+			console = $('.console', this);
 
 		function showSource(show) {
 			source.modifyClass('hidden', !show);
@@ -188,6 +187,14 @@ PaperScript = HtmlElement.extend({
 				scope.clear();
 				scope.initialize(script.$);
 				scope.setup(element);
+				// Override the console object with one that logs to our new
+				// console
+				scope.console = {
+					log: function() {
+						console.injectBottom('div', { text: Array.join(arguments, ' '), className: 'line' });
+						console.setScrollOffset(0, 10000000000000);
+					}
+				};
 				scope.evaluate(code);
 				createInspector();
 			}

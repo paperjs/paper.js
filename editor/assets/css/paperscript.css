@@ -35,10 +35,38 @@
 	cursor: pointer;
 }
 
-.paperscript .source {
-	overflow: auto;
+.paperscript .editor {
+	display: table;
+	width: 100%;
 	border-bottom: 1px solid #999;
+}
+
+.paperscript .half {
+	width: 50%;
+	display: table-cell;
+	position: relative;
+}
+
+.paperscript .source,
+.paperscript .console {
+	overflow: auto;
 	max-height: 240px;
+	height: 100%;
+}
+
+.paperscript .console {
+	border-left: 1px solid #999;
+	color: #666;
+	background: #eee;
+	font-family: Menlo, Consolas, "Vera Mono", monospace;
+	font-size: 12px;
+	line-height: 16px;
+	padding: 10px;
+}
+
+.paperscript .console .line {
+	text-indent: -16px;
+	padding-left: 16px;
 }
 
 .paperscript .CodeMirror {
