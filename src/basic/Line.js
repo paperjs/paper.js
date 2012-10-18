@@ -34,8 +34,8 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 		// intersection outside the line segment are allowed.
 		// With two parameters, the 2nd parameter is a direction, and infinite
 		// is automatially true, since we're describing an infinite line.
-		point1 = Point.read(arguments, 0, 1);
-		point2 = Point.read(arguments, 1, 1);
+		point1 = Point.read(arguments);
+		point2 = Point.read(arguments);
 		if (arguments.length == 3) {
 			this.point = point1;
 			this.vector = point2.subtract(point1);

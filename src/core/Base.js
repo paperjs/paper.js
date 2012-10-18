@@ -63,18 +63,45 @@ this.Base = Base.inject(/** @lends Base# */{
 		 *        cloned if they are already provided in the required type
 		 */
 		read: function(list, start, length, clone) {
-			var start = start || 0,
-				length = length || list.length - start;
-			var obj = list[start];
+			var proto = this.prototype,
+				readIndex = proto._readIndex,
+				index = start || readIndex && list._index || 0;
+			if (!length)
+				length = list.length - index;
+			var obj = list[index];
 			if (obj instanceof this
 					// If the class defines _readNull, return null when nothing
 					// was provided
-					|| this.prototype._readNull && obj == null && length <= 1)
+					|| proto._readNull && obj == null && length <= 1) {
+				if (readIndex)
+					list._index = index + 1;
 				return obj && clone ? obj.clone() : obj;
+			}
 			obj = new this(this.dont);
-			return obj.initialize.apply(obj, start > 0 || length < list.length
-				? Array.prototype.slice.call(list, start, start + length)
+			if (readIndex)
+				obj._read = true;
+			obj = obj.initialize.apply(obj, index > 0 || length < list.length
+				? Array.prototype.slice.call(list, index, index + length)
 				: list) || obj;
+			if (readIndex) {
+				list._index = index + obj._read;
+				// Have arguments._read point to the amount of args read in the
+				// last read() call
+				list._read = obj._read;
+				delete obj._read;
+			}
+			return obj;
+		},
+
+		peekValue: function(list, start) {
+			return list[list._index = start || list._index || 0];
+		},
+
+		readValue: function(list, start) {
+			var value = this.peekValue(list, start);
+			list._index++;
+			list._read = 1;
+			return value;
 		},
 
 		/**
