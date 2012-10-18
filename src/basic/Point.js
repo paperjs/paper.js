@@ -28,6 +28,9 @@
  * console.log(point.y); // 5
  */
 var Point = this.Point = Base.extend(/** @lends Point# */{
+	// Tell Base.read that the Point constructor supporst reading with index
+	_readIndex: true,
+
 	/**
 	 * Creates a Point object with the given x and y coordinates.
 	 *
@@ -132,25 +135,36 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	initialize: function(arg0, arg1) {
 		var type = typeof arg0;
 		if (type === 'number') {
+			var hasY = typeof arg1 === 'number';
 			this.x = arg0;
-			this.y = typeof arg1 === 'number' ? arg1 : arg0;
+			this.y = hasY ? arg1 : arg0;
+			if (this._read)
+				this._read = hasY ? 2 : 1;
 		} else if (type === 'undefined' || arg0 === null) {
 			this.x = this.y = 0;
-		} else if (typeof arg0.x !== 'undefined') {
-			this.x = arg0.x;
-			this.y = arg0.y;
-		} else if (Array.isArray(arg0)) {
-			this.x = arg0[0];
-			this.y = arg0.length > 1 ? arg0[1] : arg0[0];
-		} else if (typeof arg0.width !== 'undefined') {
-			this.x = arg0.width;
-			this.y = arg0.height;
-		} else if (typeof arg0.angle !== 'undefined') {
-			this.x = arg0.length;
-			this.y = 0;
-			this.setAngle(arg0.angle);
+			if (this._read)
+				this._read = arg0 === null ? 1 : 0;
 		} else {
-			this.x = this.y = 0;
+			if (typeof arg0.x !== 'undefined') {
+				this.x = arg0.x;
+				this.y = arg0.y;
+			} else if (Array.isArray(arg0)) {
+				this.x = arg0[0];
+				this.y = arg0.length > 1 ? arg0[1] : arg0[0];
+			} else if (typeof arg0.width !== 'undefined') {
+				this.x = arg0.width;
+				this.y = arg0.height;
+			} else if (typeof arg0.angle !== 'undefined') {
+				this.x = arg0.length;
+				this.y = 0;
+				this.setAngle(arg0.angle);
+			} else {
+				this.x = this.y = 0;
+				if (this._read)
+					this._read = 0;
+			}
+			if (this._read)
+				this._read = 1;
 		}
 	},
 
@@ -787,11 +801,11 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		 * console.log(minPoint); // {x: 10, y: 5}
 		 */
 		min: function(point1, point2) {
-			point1 = Point.read(arguments, 0, 1);
-			point2 = Point.read(arguments, 1, 1);
+			var _point1 = Point.read(arguments);
+				_point2 = Point.read(arguments);
 			return Point.create(
-				Math.min(point1.x, point2.x),
-				Math.min(point1.y, point2.y)
+				Math.min(_point1.x, _point2.x),
+				Math.min(_point1.y, _point2.y)
 			);
 		},
 
@@ -811,11 +825,11 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		 * console.log(maxPoint); // {x: 200, y: 100}
 		 */
 		max: function(point1, point2) {
-			point1 = Point.read(arguments, 0, 1);
-			point2 = Point.read(arguments, 1, 1);
+			var _point1 = Point.read(arguments);
+				_point2 = Point.read(arguments);
 			return Point.create(
-				Math.max(point1.x, point2.x),
-				Math.max(point1.y, point2.y)
+				Math.max(_point1.x, _point2.x),
+				Math.max(_point1.y, _point2.y)
 			);
 		},
 

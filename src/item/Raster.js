@@ -338,17 +338,16 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @param color the color that the pixel will be set to
 	 */
 	setPixel: function(point, color) {
-		var hasPoint = arguments.length == 2;
-		point = Point.read(arguments, 0, hasPoint ? 1 : 2);
-		color = Color.read(arguments, hasPoint ? 1 : 2);
+		var _point = Point.read(arguments),
+			_color = Color.read(arguments);
 		var ctx = this.getContext(true),
 			imageData = ctx.createImageData(1, 1),
 			alpha = color.getAlpha();
-		imageData.data[0] = color.getRed() * 255;
-		imageData.data[1] = color.getGreen() * 255;
-		imageData.data[2] = color.getBlue() * 255;
+		imageData.data[0] = _color.getRed() * 255;
+		imageData.data[1] = _color.getGreen() * 255;
+		imageData.data[2] = _color.getBlue() * 255;
 		imageData.data[3] = alpha != null ? alpha * 255 : 255;
-		ctx.putImageData(imageData, point.x, point.y);
+		ctx.putImageData(imageData, _point.x, _point.y);
 	},
 
 	// DOCS: document Raster#createData

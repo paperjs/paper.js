@@ -1667,20 +1667,20 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		},
 
 		cubicCurveTo: function(handle1, handle2, to) {
-			handle1 = Point.read(arguments, 0, 1);
-			handle2 = Point.read(arguments, 1, 1);
-			to = Point.read(arguments, 2, 1);
+			var _handle1 = Point.read(arguments);
+				_handle2 = Point.read(arguments);
+				_to = Point.read(arguments);
 			// First modify the current segment:
 			var current = getCurrentSegment(this);
 			// Convert to relative values:
-			current.setHandleOut(handle1.subtract(current._point));
+			current.setHandleOut(_handle1.subtract(current._point));
 			// And add the new segment, with handleIn set to c2
-			this._add([ new Segment(to, handle2.subtract(to)) ]);
+			this._add([ new Segment(_to, _handle2.subtract(to)) ]);
 		},
 
 		quadraticCurveTo: function(handle, to) {
-			handle = Point.read(arguments, 0, 1);
-			to = Point.read(arguments, 1, 1);
+			var _handle = Point.read(arguments),
+				to = Point.read(arguments);
 			// This is exact:
 			// If we have the three quad points: A E D,
 			// and the cubic is A B C D,
@@ -1688,26 +1688,26 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// C = E + 1/3 (D - E)
 			var current = getCurrentSegment(this)._point;
 			this.cubicCurveTo(
-				handle.add(current.subtract(handle).multiply(1/3)),
-				handle.add(to.subtract(handle).multiply(1/3)),
-				to
+				_handle.add(current.subtract(_handle).multiply(1 / 3)),
+				_handle.add(to.subtract(_handle).multiply(1 / 3)),
+				_to
 			);
 		},
 
 		curveTo: function(through, to, parameter) {
-			through = Point.read(arguments, 0, 1);
-			to = Point.read(arguments, 1, 1);
-			var t = Base.pick(parameter, 0.5),
+			var _through = Point.read(arguments),
+				_to = Point.read(arguments),
+				t = Base.pick(Base.readValue(arguments), 0.5),
 				t1 = 1 - t,
 				current = getCurrentSegment(this)._point,
 				// handle = (through - (1 - t)^2 * current - t^2 * to) /
 				// (2 * (1 - t) * t)
-				handle = through.subtract(current.multiply(t1 * t1))
-					.subtract(to.multiply(t * t)).divide(2 * t * t1);
+				handle = _through.subtract(current.multiply(t1 * t1))
+					.subtract(_to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
 					'Cannot put a curve through points with parameter = ' + t);
-			this.quadraticCurveTo(handle, to);
+			this.quadraticCurveTo(handle, _to);
 		},
 
 		// PORT: New implementation back to Scriptographer
@@ -1715,17 +1715,20 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Get the start point:
 			var current = getCurrentSegment(this),
 				from = current._point,
-				through;
-			if (clockwise === undefined)
-				clockwise = true;
-			if (typeof clockwise === 'boolean') {
-				to = Point.read(arguments, 0, 1);
+				through,
+				point = Point.read(arguments),
+				next = Base.peekValue(arguments);
+			if (/boolean|undefined/.test(typeof next)) {
+				// arcTo(to, clockwise)
+				to = point;
+				clockwise = next;
 				var middle = from.add(to).divide(2),
 				through = middle.add(middle.subtract(from).rotate(
 						clockwise ? -90 : 90));
 			} else {
-				through = Point.read(arguments, 0, 1);
-				to = Point.read(arguments, 1, 1);
+				// arcTo(through, to)
+				through = point;
+				to = Point.read(arguments);
 			}
 			// Construct the two perpendicular middle lines to (from, through)
 			// and (through, to), and intersect them to get the center

@@ -207,16 +207,20 @@ var Color = this.Color = Base.extend(new function() {
 	};
 
 	var fields = /** @lends Color# */{
+		// Tell Base.read that we do not want null to be converted to a color.
 		_readNull: true,
+		// Tell Base.read that the Point constructor supporst reading with index
+		_readIndex: true,
 
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg),
-				type = this._colorType;
+				type = this._colorType,
+				res;
 			if (typeof arg === 'object' && !isArray) {
 				if (!type) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
-					return arg.red !== undefined
+					res = arg.red !== undefined
 						? new RgbColor(arg.red, arg.green, arg.blue, arg.alpha)
 						: arg.gray !== undefined
 						? new GrayColor(arg.gray, arg.alpha)
@@ -227,33 +231,41 @@ var Color = this.Color = Base.extend(new function() {
 						? new HsbColor(arg.hue, arg.saturation, arg.brightness,
 								arg.alpha)
 						: new RgbColor(); // Fallback
+					if (this._read)
+						res._read = 1;
 				} else {
 					// Called on a subclass instance. Return the converted
 					// color.
-					return Color.read(arguments).convert(type);
+					res = Color.read(arguments).convert(type);
+					if (this._read)
+						res._read = arguments._read;
 				}
 			} else if (typeof arg === 'string') {
 				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
 						? hexToRgbColor(arg)
 						: nameToRgbColor(arg);
-				return type
+				res = type
 						? rgbColor.convert(type)
 						: rgbColor;
+				if (this._read)
+					res._read = 1;
 			} else {
 				var components = isArray ? arg
 						: Array.prototype.slice.call(arguments);
 				if (!type) {
 					// Called on the abstract Color class. Guess color type
 					// from arg
-					//if (components.length >= 4)
-					//	return new CmykColor(components);
-					if (components.length >= 3)
-						return new RgbColor(components);
-					return new GrayColor(components);
+					// var ctor = components.length >= 4
+					//		? CmykColor
+					//		: components.length >= 3
+					var ctor = components.length >= 3
+							? RgbColor
+							: GrayColor;
+					res = new ctor(components);
 				} else {
 					// Called on a subclass instance. Just copy over
 					// components.
-					Base.each(this._components,
+					res = Base.each(this._components,
 						function(name, i) {
 							var value = components[i];
 							// Set internal propery directly
@@ -262,7 +274,10 @@ var Color = this.Color = Base.extend(new function() {
 						},
 					this);
 				}
+				if (this._read)
+					res._read = res._components.length;
 			}
+			return res;
 		},
 
 		/**

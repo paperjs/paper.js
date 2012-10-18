@@ -107,10 +107,9 @@ HitResult = Base.extend(/** @lends HitResult# */{
 		 * @private
 		 */
 		getOptions: function(point, options) {
+			// Use _merged property to not repeatetly call merge in recursion.
 			return options && options._merged ? options : Base.merge({
-				// Use the converted options object to perform point conversion
-				// only once.
-				point: Point.read(arguments, 0, 1),
+				point: Point.read([point]),
 				// Type of item, for instanceof check: PathItem, TexItem, etc
 				type: null,
 				// Tolerance
