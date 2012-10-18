@@ -115,7 +115,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		this._matrix = pointOrMatrix !== undefined
 			? pointOrMatrix instanceof Matrix
 				? pointOrMatrix.clone()
-				: new Matrix().translate(Point.read(arguments, 0))
+				: new Matrix().translate(Point.read(arguments))
 			: new Matrix();
 	},
 

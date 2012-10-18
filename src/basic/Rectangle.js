@@ -22,6 +22,9 @@
  * rectangular path, it is not an item.
  */
 var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
+	// Tell Base.read that the Rectangle constructor supporst reading with index
+	_readIndex: true,
+
 	/**
 	 * Creates a Rectangle object.
 	 *
@@ -54,21 +57,34 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @param {Rectangle} rt
 	 */
 	initialize: function(arg0, arg1, arg2, arg3) {
-		if (arguments.length == 4) {
+		var type = typeof arg0;
+		if (type === 'number') {
 			// new Rectangle(x, y, width, height)
 			this.x = arg0;
 			this.y = arg1;
 			this.width = arg2;
 			this.height = arg3;
-		} else if (arguments.length == 2) {
-			if (arg1 && arg1.x !== undefined) {
+			if (this._read)
+				this._read = 4;
+		} else if (type === 'undefined' || arg0 === null) {
+			// new Rectangle(), new Rectangle(null)
+			this.x = this.y = this.width = this.height = 0;
+			if (this._read)
+				this._read = arg0 === null ? 1 : 0;
+		} else if (arguments.length > 1 && typeof arg0.width === 'undefined') {
+			// We're checking arg0.width to rule out Rectangles, which are
+			// handled separately below.
+			// Read a point argument and look at the next value to see wether
+			// it's a size or a point, then read accordingly
+			var point = Point.read(arguments),
+				next = Base.peekValue(arguments);
+			this.x = point.x;
+			this.y = point.y;
+			if (next && next.x !== undefined) {
 				// new Rectangle(point1, point2)
-				var point1 = Point.read(arguments, 0, 1);
-				var point2 = Point.read(arguments, 1, 1);
-				this.x = point1.x;
-				this.y = point1.y;
-				this.width = point2.x - point1.x;
-				this.height = point2.y - point1.y;
+				var point2 = Point.read(arguments);
+				this.width = point2.x - point.x;
+				this.height = point2.y - point.y;
 				if (this.width < 0) {
 					this.x = point2.x;
 					this.width = -this.width;
@@ -79,22 +95,22 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 				}
 			} else {
 				// new Rectangle(point, size)
-				var point = Point.read(arguments, 0, 1);
-				var size = Size.read(arguments, 1, 1);
-				this.x = point.x;
-				this.y = point.y;
+				var size = Size.read(arguments);
 				this.width = size.width;
 				this.height = size.height;
 			}
+			if (this._read)
+				this._read = arguments._index;
 		} else if (arg0) {
-			// Use 0 as defaults, in case we're reading from a Point or Size
+			// new Rectangle(rect)
+			// Use 0 as defaults, in case we're not reading from a Rectangle,
+			// but a Point or Size instead
 			this.x = arg0.x || 0;
 			this.y = arg0.y || 0;
 			this.width = arg0.width || 0;
 			this.height = arg0.height || 0;
-		} else {
-			// new Rectangle()
-			this.x = this.y = this.width = this.height = 0;
+			if (this._read)
+				this._read = 1;
 		}
 	},
 

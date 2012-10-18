@@ -41,10 +41,9 @@ Path.inject({ statics: new function() {
 		 * path.strokeColor = 'black';
 		 */
 		Line: function() {
-			var step = Math.floor(arguments.length / 2);
 			return new Path(
-				Segment.read(arguments, 0, step),
-				Segment.read(arguments, step, step)
+				Point.read(arguments),
+				Point.read(arguments)
 			);
 		},
 
@@ -125,32 +124,27 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.RoundRectangle(rectangle, cornerSize);
 		 */
 		RoundRectangle: function(rect, size) {
-			if (arguments.length == 2) {
-				rect = Rectangle.read(arguments, 0, 1);
-				size = Size.read(arguments, 1, 1);
-			} else if (arguments.length == 6) {
-				rect = Rectangle.read(arguments, 0, 4);
-				size = Size.read(arguments, 4, 2);
-			}
-			size = Size.min(size, rect.getSize(true).divide(2));
-			var path = new Path(),
-				uSize = size.multiply(kappa * 2),
-				bl = rect.getBottomLeft(true),
-				tl = rect.getTopLeft(true),
-				tr = rect.getTopRight(true),
-				br = rect.getBottomRight(true);
+			var _rect = Rectangle.read(arguments),
+				_size = Size.min(Size.read(arguments),
+						_rect.getSize(true).divide(2)),
+				path = new Path(),
+				uSize = _size.multiply(kappa * 2),
+				bl = _rect.getBottomLeft(true),
+				tl = _rect.getTopLeft(true),
+				tr = _rect.getTopRight(true),
+				br = _rect.getBottomRight(true);
 			path._add([
-				new Segment(bl.add(size.width, 0), null, [-uSize.width, 0]),
-				new Segment(bl.subtract(0, size.height), [0, uSize.height], null),
+				new Segment(bl.add(_size.width, 0), null, [-uSize.width, 0]),
+				new Segment(bl.subtract(0, _size.height), [0, uSize.height], null),
 
-				new Segment(tl.add(0, size.height), null, [0, -uSize.height]),
-				new Segment(tl.add(size.width, 0), [-uSize.width, 0], null),
+				new Segment(tl.add(0, _size.height), null, [0, -uSize.height]),
+				new Segment(tl.add(_size.width, 0), [-uSize.width, 0], null),
 
-				new Segment(tr.subtract(size.width, 0), null, [uSize.width, 0]),
-				new Segment(tr.add(0, size.height), [0, -uSize.height], null),
+				new Segment(tr.subtract(_size.width, 0), null, [uSize.width, 0]),
+				new Segment(tr.add(0, _size.height), [0, -uSize.height], null),
 
-				new Segment(br.subtract(0, size.height), null, [0, uSize.height]),
-				new Segment(br.subtract(size.width, 0), [uSize.width, 0], null)
+				new Segment(br.subtract(0, _size.height), null, [0, uSize.height]),
+				new Segment(br.subtract(_size.width, 0), [uSize.width, 0], null)
 			]);
 			path._closed = true;
 			return path;
@@ -204,14 +198,10 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Circle(new Point(100, 100), 50);
 		 */
 		Circle: function(center, radius) {
-			if (arguments.length == 3) {
-				center = Point.read(arguments, 0, 2);
-				radius = arguments[2];
-			} else {
-				center = Point.read(arguments, 0, 1);
-			}
-			return Path.Oval(new Rectangle(center.subtract(radius),
-					Size.create(radius * 2, radius * 2)));
+			var _center = Point.read(arguments),
+				_radius = Base.readValue(arguments);
+			return Path.Oval(new Rectangle(_center.subtract(_radius),
+					Size.create(_radius * 2, _radius * 2)));
 		},
 
 		/**
@@ -261,15 +251,17 @@ Path.inject({ statics: new function() {
 		 * decahedron.fillColor = 'black';
 		 */
 		RegularPolygon: function(center, numSides, radius) {
-			center = Point.read(arguments, 0, 1);
-			var path = new Path(),
-				step = 360 / numSides,
-				three = !(numSides % 3),
-				vector = new Point(0, three ? -radius : radius),
+			var _center = Point.read(arguments),
+				_numSides = Base.readValue(arguments),
+				_radius = Base.readValue(arguments),
+				path = new Path(),
+				step = 360 / _numSides,
+				three = !(_numSides % 3),
+				vector = new Point(0, three ? -_radius : _radius),
 				offset = three ? -1 : 0.5,
-				segments = new Array(numSides);
-			for (var i = 0; i < numSides; i++) {
-				segments[i] = new Segment(center.add(
+				segments = new Array(_numSides);
+			for (var i = 0; i < _numSides; i++) {
+				segments[i] = new Segment(_center.add(
 					vector.rotate((i + offset) * step)));
 			}
 			path._add(segments);
@@ -299,15 +291,17 @@ Path.inject({ statics: new function() {
 		 * path.fillColor = 'black';
 		 */
 		Star: function(center, numPoints, radius1, radius2) {
-			center = Point.read(arguments, 0, 1);
-			numPoints *= 2;
-			var path = new Path(),
-				step = 360 / numPoints,
+			var _center = Point.read(arguments),
+				_numPoints = Base.readValue(arguments) * 2,
+				_radius1 = Base.readValue(arguments),
+				_radius2 = Base.readValue(arguments),
+				path = new Path(),
+				step = 360 / _numPoints,
 				vector = new Point(0, -1),
-				segments = new Array(numPoints);
-			for (var i = 0; i < numPoints; i++) {
-				segments[i] = new Segment(center.add(
-					vector.rotate(step * i).multiply(i % 2 ? radius2 : radius1)));
+				segments = new Array(_numPoints);
+			for (var i = 0; i < _numPoints; i++) {
+				segments[i] = new Segment(_center.add(
+					vector.rotate(step * i).multiply(i % 2 ? _radius2 : _radius1)));
 			}
 			path._add(segments);
 			path._closed = true;

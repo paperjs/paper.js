@@ -73,7 +73,7 @@ var SegmentPoint = Point.extend({
 			} else {
 				// If not Point-like already, read Point from pt = 3rd argument
 				if ((x = pt.x) === undefined) {
-					pt = Point.read(arguments, 2, 1);
+					pt = Point.read(arguments, 2);
 					x = pt.x;
 				}
 				y = pt.y;
