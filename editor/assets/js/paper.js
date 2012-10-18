@@ -13,7 +13,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 17 00:25:53 2012 -0700
+ * Date: Thu Oct 18 14:24:55 2012 -0700
  *
  ***
  *
@@ -5003,7 +5003,7 @@ var Path = this.Path = PathItem.extend({
 		},
 
 		cubicCurveTo: function(handle1, handle2, to) {
-			var	_handle1 = Point.read(arguments);
+			var _handle1 = Point.read(arguments);
 				_handle2 = Point.read(arguments);
 				_to = Point.read(arguments);
 			var current = getCurrentSegment(this);
@@ -5018,7 +5018,7 @@ var Path = this.Path = PathItem.extend({
 			this.cubicCurveTo(
 				_handle.add(current.subtract(_handle).multiply(1 / 3)),
 				_handle.add(to.subtract(_handle).multiply(1 / 3)),
-				_to
+				to
 			);
 		},
 
