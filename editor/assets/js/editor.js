@@ -193,7 +193,9 @@ PaperScript = HtmlElement.extend({
 					log: function() {
 						console.injectBottom('div', {
 							className: 'line',
-							text: Array.join(arguments, ' ')
+							text: Base.each(arguments, function(arg) {
+								this.push(arg + '');
+							}, []).join(' ')
 						});
 						console.setScrollOffset(0,
 							console.getScrollSize().height);
