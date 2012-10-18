@@ -1690,7 +1690,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			this.cubicCurveTo(
 				_handle.add(current.subtract(_handle).multiply(1 / 3)),
 				_handle.add(to.subtract(_handle).multiply(1 / 3)),
-				_to
+				to
 			);
 		},
 
