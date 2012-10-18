@@ -191,8 +191,12 @@ PaperScript = HtmlElement.extend({
 				// console
 				scope.console = {
 					log: function() {
-						console.injectBottom('div', { text: Array.join(arguments, ' '), className: 'line' });
-						console.setScrollOffset(0, 10000000000000);
+						console.injectBottom('div', {
+							className: 'line',
+							text: Array.join(arguments, ' ')
+						});
+						console.setScrollOffset(0,
+							console.getScrollSize().height);
 					}
 				};
 				scope.evaluate(code);

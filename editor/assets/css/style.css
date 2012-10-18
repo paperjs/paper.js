@@ -8,6 +8,7 @@ body {
 	font-size: 13px;
 	line-height: 20px;
 	color: #000;
+	overflow: hidden;
 }
 
 select, input, textarea {

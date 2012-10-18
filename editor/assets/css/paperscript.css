@@ -36,21 +36,23 @@
 }
 
 .paperscript .editor {
-	display: table;
 	width: 100%;
 	border-bottom: 1px solid #999;
 }
 
 .paperscript .half {
+	float: left;
 	width: 50%;
-	display: table-cell;
+	height: 240px;
 	position: relative;
+}
+
+.CodeMirror-scroll {
+	height: 240px;
 }
 
 .paperscript .source,
 .paperscript .console {
-	overflow: auto;
-	max-height: 240px;
 	height: 100%;
 }
 
@@ -61,14 +63,22 @@
 	font-family: Menlo, Consolas, "Vera Mono", monospace;
 	font-size: 12px;
 	line-height: 16px;
-	padding: 10px;
+	overflow: auto;
 }
 
 .paperscript .console .line {
+	margin: 0 10px;
 	text-indent: -16px;
 	padding-left: 16px;
 }
 
+.paperscript .console .line:first-child {
+	margin-top: 10px;
+}
+
+.paperscript .console .line:last-child {
+	margin-bottom: 10px;
+}
 .paperscript .CodeMirror {
 	margin: 0 !important; /* Override any potential margins again */
 }
@@ -85,6 +95,8 @@
 
 .paperscript .canvas.border canvas {
 	border: 0;
+	margin: 0;
+	padding: 0;
 }
 
 .paperscript.split .canvas {

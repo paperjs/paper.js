@@ -6,8 +6,11 @@
 }
 
 .CodeMirror {
-	overflow: auto;
 	height: 100%;
+}
+
+.CodeMirror-scroll {
+	overflow: auto;
 }
 
 .CodeMirror-gutter {
