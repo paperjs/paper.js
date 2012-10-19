@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Circle and Oval Testing</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		project.currentStyle = {
+				// strokeColor: 'black',
+				// strokeWidth: 2,
+				// strokeCap: 'round'
+		};
+		var isvg = new ImportSVG;
+		isvg.importSVG(document.getElementById('svg'));
+	</script>
+</head>
+<body>	
+	<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="width:500px; height:1000px;" id="svg">
+	<g transform="scale(5) translate(15, 15) rotate(20) skewX(20) skewY(5)" >
+		<rect x="10" y="10" width="5" height="5" fill="firebrick" />
+		<circle r="10" fill="seagreen" stroke="blue"/>
+		<rect x="5" y="5" width="12" height="2" fill="gray" stroke="silver"/>
+	</g>
+			
+	</svg>
+	<canvas id="canvas" width="500px" height="1000px"></canvas>
+</body>
+</html>
