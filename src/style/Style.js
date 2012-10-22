@@ -36,7 +36,11 @@ var Style = Item.extend({
 		}, this);
 	},
 
+	/**
+	 * Returns the children to be used to unify style attributes, if any.
+	 */
 	_getChildren: function() {
+		// Only unify styles on children of Group items, excluding CompoundPath.
 		return this._item instanceof Group && this._item._children;
 	},
 
