@@ -58,8 +58,14 @@ var Numerical = new function() {
 	// Math short-cuts for often used methods and values
 	var abs = Math.abs,
 		sqrt = Math.sqrt,
+		pow = Math.pow,
 		cos = Math.cos,
 		PI = Math.PI;
+
+	// Define the missing Math.cbrt()
+	function cbrt(x) {
+		return x > 0 ? pow(x, 1 / 3) : x < 0 ? -pow(-x, 1 / 3) : 0;
+	}
 
 	return {
 		TOLERANCE: 10e-6,
@@ -121,33 +127,26 @@ var Numerical = new function() {
 		 * a*x^2 + b*x + c = 0
 		 */
 		solveQuadratic: function(a, b, c, roots, tolerance) {
-			// After Numerical Recipes in C, 2nd edition, Press et al.,
-			// 5.6, Quadratic and Cubic Equations
+			// Code ported over and adapted from Uintah library (MIT license).
 			// If problem is actually linear, return 0 or 1 easy roots
 			if (abs(a) < tolerance) {
 				if (abs(b) >= tolerance) {
 					roots[0] = -c / b;
 					return 1;
 				}
-				// If all the coefficients are 0, infinite values are
-				// possible!
-				if (abs(c) < tolerance)
-					return -1; // Infinite solutions
-				return 0; // 0 solutions
+				// If all the coefficients are 0, we have infinite solutions!
+				return abs(c) < tolerance ? -1 : 0; // Infinite or 0 solutions
 			}
 			var q = b * b - 4 * a * c;
 			if (q < 0)
 				return 0; // 0 solutions
 			q = sqrt(q);
-			if (b < 0)
-				q = -q;
-			q = (b + q) * -0.5;
+			a *= 2; // Prepare division by (2 * a)
 			var n = 0;
-			if (abs(q) >= tolerance)
-				roots[n++] = c / q;
-			if (abs(a) >= tolerance)
-				roots[n++] = q / a;
-			return n; // 0, 1 or 2 solutions
+			roots[n++] = (-b - q) / a;
+			if (q > 0)
+				roots[n++] = (-b + q) / a;
+			return n; // 1 or 2 solutions
 		},
 
 		/**
@@ -157,37 +156,43 @@ var Numerical = new function() {
 		 * a*x^3 + b*x^2 + c*x + d = 0
 		 */
 		solveCubic: function(a, b, c, d, roots, tolerance) {
-			// After Numerical Recipes in C, 2nd edition, Press et al.,
-			// 5.6, Quadratic and Cubic Equations
+			// Code ported over and adapted from Uintah library (MIT license).
 			if (abs(a) < tolerance)
 				return Numerical.solveQuadratic(b, c, d, roots, tolerance);
-			// Normalize
+			// Normalize to form: x^3 + b x^2 + c x + d = 0:
 			b /= a;
 			c /= a;
 			d /= a;
 			// Compute discriminants
-			var Q = (b * b - 3 * c) / 9,
-				R = (2 * b * b * b - 9 * b * c + 27 * d) / 54,
-				Q3 = Q * Q * Q,
-				R2 = R * R;
-			b /= 3; // Divide by 3 as that's required below
-			if (R2 < Q3) { // Three real roots
-				// This sqrt and division is safe, since R2 >= 0, so Q3 > R2,
-				// so Q3 > 0.  The acos is also safe, since R2/Q3 < 1, and
-				// thus R/sqrt(Q3) < 1.
-				var theta = Math.acos(R / sqrt(Q3)),
-					// This sqrt is safe, since Q3 >= 0, and thus Q >= 0
-					q = -2 * sqrt(Q);
-				roots[0] = q * cos(theta / 3) - b;
-				roots[1] = q * cos((theta + 2 * PI) / 3) - b;
-				roots[2] = q * cos((theta - 2 * PI) / 3) - b;
-				return 3;
-			} else { // One real root
-				var A = -Math.pow(abs(R) + sqrt(R2 - Q3), 1 / 3);
-				if (R < 0) A = -A;
-				var B = (abs(A) < tolerance) ? 0 : Q / A;
-				roots[0] = (A + B) - b;
-				return 1;
+			var bb = b * b,
+				p = 1 / 3 * (-1 / 3 * bb + c),
+				q = 1 / 2 * (2 / 27 * b * bb - 1 / 3 * b * c + d),
+				// Use Cardano's formula
+				ppp = p * p * p,
+				D = q * q + ppp;
+			// Substitute x = y - b/3 to eliminate quadric term: x^3 +px + q = 0
+			b /= 3;
+			if (abs(D) < tolerance) {
+			    if (abs(q) < tolerance) { // One triple solution.
+			        roots[0] = - b;
+			        return 1;
+			    } else { // One single and one double solution.
+			        var u = cbrt(-q);
+			        roots[0] = 2 * u - b;
+			        roots[1] = - u - b;
+			        return 2;
+			    }
+			} else if (D < 0) { // Casus irreducibilis: three real solutions
+			    var phi = 1 / 3 * Math.acos(-q / sqrt(-ppp));
+			    var t = 2 * sqrt(-p);
+			    roots[0] =   t * cos(phi) - b;
+			    roots[1] = - t * cos(phi + PI / 3) - b;
+			    roots[2] = - t * cos(phi - PI / 3) - b;
+			    return 3;
+			} else { // One real solution
+			    D = sqrt(D);
+			    roots[0] = cbrt(D - q) - cbrt(D + q) - b;
+			    return 1;
 			}
 		}
 	};
