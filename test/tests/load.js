@@ -27,3 +27,6 @@
 /*#*/ include('PlacedSymbol.js');
 
 /*#*/ include('HitResult.js');
+
+/*#*/ include('ImportSVG.js');
+/*#*/ include('ExportSVG.js');

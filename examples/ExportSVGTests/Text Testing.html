@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Text Testing</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+
+</head>
+<body>	
+	<canvas id="canvas" width="500" height="350"></canvas>
+		<script type="text/paperscript" canvas="canvas">
+
+		function initializePath() {
+			
+			var text = new PointText(new Point(50, 100));
+			text.fillColor = 'black';
+			text.content = 'This is a test';
+			
+			var text = new PointText(new Point(100, 150));
+			text.fillColor = 'red';
+			text.strokeWidth = '4';
+			text.content = 'This is also a test';
+			
+			radius = 50;
+			center = new Point(100,100);
+			var path2 = new Path.Circle(center,radius);
+			path2.strokeColor = 'black';
+			point = new Point(120,100);
+			path2.shear(.5, .5);
+			colors = ['red', 'blue', 'green', 'orange'];
+			for (var i in path2.segments) {
+				var p = path2.segments[i].point;
+				var c = new Path.Circle(p, 2);
+				c.fillColor = colors[i];
+			}		
+			
+			var esvg = new ExportSVG();
+			var output = esvg.exportProject(paper.project);
+			var test = document.getElementById('svg')
+			test.innerHTML = "";
+			test.appendChild (output);   
+		}
+
+		// Reposition the path whenever the window is resized:
+		function onResize(event) {
+		    initializePath();
+		}
+		
+		
+	</script>
+	<svg id="svg" style="width: 500px; height: 500px">
+	</svg>
+</body>
+</html>
