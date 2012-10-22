@@ -1057,7 +1057,7 @@ function(name) {
 			return null;
 		// Transform point to local coordinates but use untransformed point
 		// for bounds check above.
-		point = options.point = this._matrix._inverseTransform(options.point);
+		if(!this.getMatrix()) point = options.point = this._matrix._inverseTransform(options.point);
 		if ((options.center || options.bounds) &&
 				// Ignore top level layers:
 				!(this instanceof Layer && !this._parent)) {
