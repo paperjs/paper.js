@@ -1049,7 +1049,7 @@ function(name) {
 	 */
 	hitTest: function(point, options) {
 		options = HitResult.getOptions(point, options);
-		point = options.point = this._matrix._inverseTransform(options.point);
+		if(!this.getMatrix()) point = options.point = this._matrix._inverseTransform(options.point);
 		// Check if the point is withing roughBounds + tolerance, but only if
 		// this item does not have children, since we'd have to travel up the
 		// chain already to determine the rough bounds.
