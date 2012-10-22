@@ -31,7 +31,7 @@ test('make an svg line', function() {
    	shape.setAttribute('y2', y2);
 
 	var isvg = new ImportSvg();
-	var importedLine = isvg.importSVG(shape);
+	var importedLine = isvg.importSvg(shape);
 
 	var line = new Path.Line([x1, y1], [x2, y2]);
 
@@ -47,7 +47,7 @@ test('make an svg line with invalid values', function() {
 	shape.setAttribute('y2', null);
 
 	var isvg = new ImportSvg();
-	var importedLine = isvg.importSVG(shape);
+	var importedLine = isvg.importSvg(shape);
 
 	var line = new Path.Line([0, 0], [0, 0]);
 
@@ -68,7 +68,7 @@ test('compare rectangle values', function() {
 	shape.setAttribute('height', height);
 
 	var isvg = new ImportSvg();
-	var importedRectangle = isvg.importSVG(shape);
+	var importedRectangle = isvg.importSvg(shape);
 
 	var topLeft = new Point(x, y);
 	var size = new Size(width, height);
@@ -92,7 +92,7 @@ test('compare negative rectangle values', function() {
 	shape.setAttribute('height', height);
 
 	var isvg = new ImportSvg();
-	var importedRectangle = isvg.importSVG(shape);
+	var importedRectangle = isvg.importSvg(shape);
         var topLeft = new Point(x, y);
         var size = new Size(width, height);
         var rectangle = new Rectangle(topLeft, size);
@@ -112,7 +112,7 @@ test('compare invalid rectangle values', function() {
 	shape.setAttribute('height', null);
 
         var isvg = new ImportSvg();
-	var importedRectangle = isvg.importSVG(shape);
+	var importedRectangle = isvg.importSvg(shape);
 	
 	var topLeft = new Point(0, 0);
 	var size = new Size(0, 0);
@@ -139,7 +139,7 @@ test('compare round rectangle values', function() {
 	shape.setAttribute('height', height);
 
 	var isvg = new ImportSvg();
-	var importedRectangle = isvg.importSVG(shape);
+	var importedRectangle = isvg.importSvg(shape);
 
 	var topLeft = new Point(x, y);
 	var size = new Size(width, height);
@@ -167,7 +167,7 @@ test('compare negative round rectangle values', function() {
 	shape.setAttribute('height', height);
 
 	var isvg = new ImportSvg();
-	var importedRectangle = isvg.importSVG(shape);
+	var importedRectangle = isvg.importSvg(shape);
 
 	var topLeft = new Point(x, y);
 	var size = new Size(width, height);
@@ -195,7 +195,7 @@ test('compare invalid round rectangle values', function() {
 	shape.setAttribute('height', height);
 
 	var isvg = new ImportSvg();
-	var importedRectangle = isvg.importSVG(shape);
+	var importedRectangle = isvg.importSvg(shape);
 
 	var topLeft = new Point(x, y);
 	var size = new Size(width, height);
@@ -219,7 +219,7 @@ test('compare oval values', function() {
 	shape.setAttribute('ry', ry);
 
 	var isvg = new ImportSvg();
-	var importedOval = isvg.importSVG(shape);
+	var importedOval = isvg.importSvg(shape);
 
 	var center = new Point(cx, cy);
 	var offset = new Point(rx, ry);
@@ -247,7 +247,7 @@ test('compare negative oval values', function() {
 	shape.setAttribute('ry', ry);
 
 	var isvg = new ImportSvg();
-	var importedOval = isvg.importSVG(shape);
+	var importedOval = isvg.importSvg(shape);
 
 	var center = new Point(cx, cy);
 	var offset = new Point(rx, ry);
@@ -270,7 +270,7 @@ test('compare invalid oval values', function() {
 	shape.setAttribute('ry', null);
 
 	var isvg = new ImportSvg();
-	var importedOval = isvg.importSVG(shape);
+	var importedOval = isvg.importSvg(shape);
 
 	var center = new Point(0, 0);
 	var offset = new Point(0, 0);
@@ -295,7 +295,7 @@ test('compare circle values', function() {
 	shape.setAttribute('r', r);
 
 	var isvg = new ImportSvg();
-	var importedCircle = isvg.importSVG(shape);
+	var importedCircle = isvg.importSvg(shape);
 
 	var center = new Point(cx, cy);
 	var circle = new Path.Circle(center, r);
@@ -315,7 +315,7 @@ test('compare negative circle values', function() {
 	shape.setAttribute('r', r);
 
 	var isvg = new ImportSvg();
-	var importedCircle = isvg.importSVG(shape);
+	var importedCircle = isvg.importSvg(shape);
 
 	var center = new Point(cx, cy);
 	var circle = new Path.Circle(center, r);
@@ -333,7 +333,7 @@ test('compare invalid circle values', function() {
 	shape.setAttribute('r', null);
 
 	var isvg = new ImportSvg();
-	var importedCircle = isvg.importSVG(shape);
+	var importedCircle = isvg.importSvg(shape);
 
 	var center = new Point(0, 0);
 	var circle = new Path.Circle(center, 0);
@@ -349,7 +349,7 @@ test('compare polygon values', function() {
 	shape.setAttribute('points', svgpoints);
 
 	var isvg = new ImportSvg();
-	var importedPolygon = isvg.importSVG(shape);
+	var importedPolygon = isvg.importSvg(shape);
 
 	var poly = new Path();
 	var points = shape.points;
@@ -376,7 +376,7 @@ test('compare negative polygon values', function() {
 	shape.setAttribute('points', svgpoints);
 
 	var isvg = new ImportSvg();
-	var importedPolygon = isvg.importSVG(shape);
+	var importedPolygon = isvg.importSvg(shape);
 
 	var poly = new Path();
 	var points = shape.points;
@@ -403,7 +403,7 @@ test('compare polyline values', function() {
 	shape.setAttribute('points', svgpoints);
 
 	var isvg = new ImportSvg();
-	var importedPolyline = isvg.importSVG(shape);
+	var importedPolyline = isvg.importSvg(shape);
 
 	var poly = new Path();
 	var points = shape.points;
@@ -430,7 +430,7 @@ test('compare polyline values', function() {
 	shape.setAttribute('points', svgpoints);
 
 	var isvg = new ImportSvg();
-	var importedPolyline = isvg.importSVG(shape);
+	var importedPolyline = isvg.importSvg(shape);
 
 	var poly = new Path();
 	var points = shape.points;
