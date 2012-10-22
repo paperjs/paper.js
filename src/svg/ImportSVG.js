@@ -20,15 +20,15 @@
 */
 
 /**
-* @name ImportSVG
-* @class The ImportSVG object represents an object created using the SVG
+* @name ImportSvg
+* @class The ImportSvg object represents an object created using the SVG
 * Canvas that will be converted into a Paper.js object.
 * The SVG object is imported into Paper.js by converting it into items
 * within groups.
 *
 */
 
-var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
+var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 		/**
 		* Creates a Paper.js object using data parsed from the selected
 		* SVG Document Object Model (DOM). The SVG object is imported, 
@@ -89,7 +89,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 		* Creates a Paper.js group by parsing a specific GNode of the 
 		* imported SVG DOM
 		*
-		* @name ImportSVG#importGroup
+		* @name ImportSvg#importGroup
 		* @function
 		* @param {XML DOM} svg A node passed in by the imported SVG
 		* @return {Group} group A Paper.js group
@@ -117,7 +117,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 		* Creates a Path.Circle item in Paper.js using an imported 
 		* Circle from SVG
 		*
-		* @name ImportSVG#importCircle
+		* @name ImportSvg#importCircle
 		* @function
 		* @param {XML DOM} svgCircle An SVG circle node
 		* @return {Path.Circle} circle A Path.Circle item for Paper.js
@@ -136,7 +136,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 	/**
 	* Creates a Path.Oval item in Paper.js using an imported Oval from SVG
 	*
-	* @name ImportSVG#importOval
+	* @name ImportSvg#importOval
 	* @function
 	* @param {XML DOM} svgOval An SVG ellipse node
 	* @return {Path.Oval} oval A Path.Oval item for Paper.js
@@ -161,7 +161,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 		/**
 		* Creates a Path.Rectangle item from an imported SVG rectangle
 		*
-		* @name ImportSVG#importRectangle
+		* @name ImportSvg#importRectangle
 		* @function
 		* @param {XML DOM} svgRectangle An SVG rectangle node
 		* @return {Path.Rectangle} rectangle A Path.Rectangle item for 
@@ -171,7 +171,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 		* Creates a Path.RoundRectangle item from an imported SVG 
 		* rectangle with rounded corners
 		*
-		* @name ImportSVG#importRectangle
+		* @name ImportSvg#importRectangle
 		* @function
 		* @param {XML DOM} svgRectangle An SVG rectangle node with 
 		* rounded corners
@@ -203,7 +203,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 	/**
 	* Creates a Path.Line item in Paper.js from an imported SVG line
 	*
-	* @name ImportSVG#importLine
+	* @name ImportSvg#importLine
 	* @function
 	* @param {XML DOM} svgLine An SVG line node
 	* @return {Path.Line} line A Path.Line item for Paper.js
@@ -224,7 +224,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 	/**
 	* Creates a PointText item in Paper.js from an imported SVG text node
 	*
-	* @name ImportSVG#importText
+	* @name ImportSvg#importText
 	* @function
 	* @param {XML DOM} svgText An SVG text node
 	* @return {Path.Text} text A PointText item for Paper.js
@@ -268,7 +268,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 	* a specific SVG node (rectangle, path, circle, polygon, etc.)
 	* and creating the right Path object based on the SVG type.
 	*
-	* @name ImportSVG#importPath
+	* @name ImportSvg#importPath
 	* @function
 	* @param {XML DOM} svg An SVG object
 	* @return {Item} item A Paper.js item
@@ -374,7 +374,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 	 * Creates a Path.Poly item in Paper.js using an imported Polygon or
 	 * Polyline SVG node
 	 *
-	 * @name ImportSVG#importPoly
+	 * @name ImportSvg#importPoly
 	 * @function
 	 * @param {XML DOM} svgPoly An SVG polygon or polyline node
 	 * @return {Path.Poly} poly A Path.Poly item for Paper.js
@@ -405,7 +405,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 	 * attributes
 	 * This method is destructive to item (changes happen to it)
 	 *
-	 * @name ImportSVG#importAttributesAndStyles
+	 * @name ImportSvg#importAttributesAndStyles
 	 * @function
 	 * @param {XML DOM} svg An SVG node
 	 * @param {Item} item A Paper.js item
@@ -433,7 +433,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 	 * Parses an SVG style attibute and applies it to a Paper.js item
 	 * This method is destructive to item (changes happen to it)
 	 *
-	 * @name ImportSVG#applyAttributeOrStyle
+	 * @name ImportSvg#applyAttributeOrStyle
 	 * @function
 	 * @param {Style Name} name An SVG style name
 	 * @param {Style Value} value The value of an SVG style
@@ -526,7 +526,7 @@ var ImportSVG = this.ImportSVG = Base.extend(/** @Lends ImportSVG# */{
 	 * made Paper.js item
 	 * This method is destructive to item
 	 *
-	 * @name ImportSVG#applyTransform
+	 * @name ImportSvg#applyTransform
 	 * @function
 	 * @param {XML DOM} An SVG node
 	 * @param {Item} A Paper.js item

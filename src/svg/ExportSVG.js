@@ -19,15 +19,15 @@
 
 
  /**
- * @name ExportSVG
+ * @name ExportSvg
  *
- * @class The ExportSVG object represents a Paper.js object that will be
+ * @class The ExportSvg object represents a Paper.js object that will be
  * converted into an SVG canvas design.
  * The Paper.js object is converted by changing its items into groups
  *
  */
 
-var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
+var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 	//initialize the svgObj
 	initialize: function() {
 		this.NS = 'http://www.w3.org/2000/svg';
@@ -60,7 +60,7 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 	 * Takes the selected Paper.js layer and parses all groups
 	 * and items on the layer into one SVG
 	 * 
-	 * @name ExportSVG#exportLayer
+	 * @name ExportSvg#exportLayer
 	 * @function
 	 * @param {Paper.js Layer} layer A Paper.js layer
 	 * @return {SVG DOM} this.exportGroup(layer) The layer converted into an
@@ -74,7 +74,7 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 	 * 
 	 * Takes a Paper.js group and puts its items in a SVG file.
 	 * 
-	 * @name ExportSVG#exportGroup
+	 * @name ExportSvg#exportGroup
 	 * @function
 	 * @param {Paper.js Group} group A Paper.js group
 	 * @return {SVG DOM} svgG An SVG object
@@ -99,7 +99,7 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 	 * Takes the path and puts it in
 	 * a svg file.
 	 * 
-	 * @name ExportSVG#exportPath
+	 * @name ExportSvg#exportPath
 	 * @function
 	 * @param {Paper.js Path} path A Paper.js path object
 	 * @return {SVG DOM} svgPath An SVG object of the imported path
@@ -396,7 +396,7 @@ var ExportSVG = this.ExportSVG = Base.extend(/** @Lends ExportSVG# */{
 	/**
 	* Checks the type SVG object created by converting from Paper.js
 	*
-	* @name ExportSVG#checkType
+	* @name ExportSvg#checkType
 	* @function
 	* @param {SVG Object Array} segArray An array of objects for the newly
 	* converted SVG object
