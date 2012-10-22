@@ -111,123 +111,124 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 		var pointArray;
 		var handleInArray;
 		var handleOutArray;
+		var type;
 		//finding the type of path to export
-		if(path.content) {
+		if (path.content) {
 			type = 'text';
 		} else {
 			//Values are only defined if the path is not text because
 			// text does not have these values
 			segArray = path.getSegments();
-			pointArray = new Array();
-			handleInArray = new Array();
-			handleOutArray = new Array();
+			pointArray = [];
+			handleInArray = [];
+			handleOutArray = [];
 			for (i = 0; i < segArray.length; i++) {
 				pointArray[i] = segArray[i].getPoint();
 				handleInArray[i] = segArray[i].getHandleIn();
 				handleOutArray[i] = segArray[i].getHandleOut();
 			}
 			var exp = this;
-			var type = exp._determineType(path, segArray, pointArray, handleInArray, handleOutArray);
+			type = exp._determineType(path, segArray, pointArray, handleInArray, handleOutArray);
 		}
 		//switch statement that determines what type of SVG element to add to the SVG Object
 		switch (type) {
-			case 'rect':
-				var width = pointArray[0].getDistance(pointArray[3], false);
-				var height = pointArray[0].getDistance(pointArray[1], false);
-				svgEle = document.createElementNS(this.NS, 'rect');
-				svgEle.setAttribute('x', path.bounds.topLeft.getX());
-				svgEle.setAttribute('y', path.bounds.topLeft.getY());
-				svgEle.setAttribute('width', width);
-				svgEle.setAttribute('height', height);
-				break;
-			case 'roundRect':
-				//d variables and point are used to determine the rounded corners for the rounded rectangle
-				var dx1 = pointArray[1].getDistance(pointArray[6], false);
-				var dx2 = pointArray[0].getDistance(pointArray[7], false);
-				var dx3 = (dx1 - dx2) / 2;
-				var dy1 = pointArray[0].getDistance(pointArray[3], false);
-				var dy2 = pointArray[1].getDistance(pointArray[2], false);
-				var dy3 = (dy1 - dy2) / 2;
-				var point = new Point((pointArray[3].getX() - dx3), (pointArray[2].getY() - dy3)); 
-				var width = Math.round(dx1);
-				var height = Math.round(dy1);
-				var rx = pointArray[3].getX() - point.x;
-				var ry = pointArray[2].getY() - point.y;
-				svgEle = document.createElementNS(this.NS, 'rect');
-				svgEle.setAttribute('x', path.bounds.topLeft.getX());
-				svgEle.setAttribute('y', path.bounds.topLeft.getY());
-				svgEle.setAttribute('rx', rx);
-				svgEle.setAttribute('ry', ry);
-				svgEle.setAttribute('width', width);
-				svgEle.setAttribute('height', height);
-				break;
-			case'line':
-				svgEle = document.createElementNS(this.NS, 'line');
-				svgEle.setAttribute('x1', pointArray[0].getX());
-				svgEle.setAttribute('y1', pointArray[0].getY());
-				svgEle.setAttribute('x2', pointArray[pointArray.length - 1].getX());
-				svgEle.setAttribute('y2', pointArray[pointArray.length - 1].getY());
-				break;
-			case 'circle':
-				svgEle = document.createElementNS(this.NS, 'circle');
-				var radius = (pointArray[0].getDistance(pointArray[2], false)) /2;
-				svgEle.setAttribute('cx', path.bounds.center.x);
-				svgEle.setAttribute('cy', path.bounds.center.y);
-				svgEle.setAttribute('r', radius);
-				break;
-			case 'ellipse':
-				svgEle = document.createElementNS(this.NS, 'ellipse');
-				var radiusX = (pointArray[2].getDistance(pointArray[0], false)) / 2;
-				var radiusY = (pointArray[3].getDistance(pointArray[1], false)) /2;
-				svgEle.setAttribute('cx', path.bounds.center.x);
-				svgEle.setAttribute('cy', path.bounds.center.y);
-				svgEle.setAttribute('rx', radiusX);
-				svgEle.setAttribute('ry', radiusY);
-				break;
-			case 'polyline':
-				svgEle = document.createElementNS(this.NS, 'polyline');
-				var pointString = '';
-				for(i = 0; i < pointArray.length; ++i) {
-					pointString += pointArray[i].getX() + ','  + pointArray[i].getY() + ' ';
-				}
-				svgEle.setAttribute('points', pointString);
-				break;
-			case 'polygon':
-				svgEle = document.createElementNS(this.NS, 'polygon');
-				var pointString = '';
-				for(i = 0; i < pointArray.length; ++i) {
-					pointString += pointArray[i].getX() + ',' + pointArray[i].getY() + ' ';
-				}
-				svgEle.setAttribute('points', pointString);
-				break;
-			case 'text':
-				svgEle = document.createElementNS(this.NS, 'text');
-				svgEle.setAttribute('x', path.getPoint().getX());
-				svgEle.setAttribute('y', path.getPoint().getY());
-				if(path.style.font != undefined) {
-					svgEle.setAttribute('font', path.style.font);
-				}
-				if(path.characterStyle.font != undefined) {
-					svgEle.setAttribute('font-family', path.characterStyle.font);
-				}
-				if(path.characterStyle.fontSize != undefined) {
-					svgEle.setAttribute('font-size',path.characterStyle.fontSize);
-				}
-				svgEle.textContent = path.getContent();
-				break;
-			default:
-				svgEle = document.createElementNS(this.NS, 'path');
-				svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
-				break;
+		case 'rect':
+			var width = pointArray[0].getDistance(pointArray[3], false);
+			var height = pointArray[0].getDistance(pointArray[1], false);
+			svgEle = document.createElementNS(this.NS, 'rect');
+			svgEle.setAttribute('x', path.bounds.topLeft.getX());
+			svgEle.setAttribute('y', path.bounds.topLeft.getY());
+			svgEle.setAttribute('width', width);
+			svgEle.setAttribute('height', height);
+			break;
+		case 'roundRect':
+			//d variables and point are used to determine the rounded corners for the rounded rectangle
+			var dx1 = pointArray[1].getDistance(pointArray[6], false);
+			var dx2 = pointArray[0].getDistance(pointArray[7], false);
+			var dx3 = (dx1 - dx2) / 2;
+			var dy1 = pointArray[0].getDistance(pointArray[3], false);
+			var dy2 = pointArray[1].getDistance(pointArray[2], false);
+			var dy3 = (dy1 - dy2) / 2;
+			var point = new Point((pointArray[3].getX() - dx3), (pointArray[2].getY() - dy3)); 
+			var width = Math.round(dx1);
+			var height = Math.round(dy1);
+			var rx = pointArray[3].getX() - point.x;
+			var ry = pointArray[2].getY() - point.y;
+			svgEle = document.createElementNS(this.NS, 'rect');
+			svgEle.setAttribute('x', path.bounds.topLeft.getX());
+			svgEle.setAttribute('y', path.bounds.topLeft.getY());
+			svgEle.setAttribute('rx', rx);
+			svgEle.setAttribute('ry', ry);
+			svgEle.setAttribute('width', width);
+			svgEle.setAttribute('height', height);
+			break;
+		case'line':
+			svgEle = document.createElementNS(this.NS, 'line');
+			svgEle.setAttribute('x1', pointArray[0].getX());
+			svgEle.setAttribute('y1', pointArray[0].getY());
+			svgEle.setAttribute('x2', pointArray[pointArray.length - 1].getX());
+			svgEle.setAttribute('y2', pointArray[pointArray.length - 1].getY());
+			break;
+		case 'circle':
+			svgEle = document.createElementNS(this.NS, 'circle');
+			var radius = (pointArray[0].getDistance(pointArray[2], false)) /2;
+			svgEle.setAttribute('cx', path.bounds.center.x);
+			svgEle.setAttribute('cy', path.bounds.center.y);
+			svgEle.setAttribute('r', radius);
+			break;
+		case 'ellipse':
+			svgEle = document.createElementNS(this.NS, 'ellipse');
+			var radiusX = (pointArray[2].getDistance(pointArray[0], false)) / 2;
+			var radiusY = (pointArray[3].getDistance(pointArray[1], false)) /2;
+			svgEle.setAttribute('cx', path.bounds.center.x);
+			svgEle.setAttribute('cy', path.bounds.center.y);
+			svgEle.setAttribute('rx', radiusX);
+			svgEle.setAttribute('ry', radiusY);
+			break;
+		case 'polyline':
+			svgEle = document.createElementNS(this.NS, 'polyline');
+			var pointString = '';
+			for(i = 0; i < pointArray.length; ++i) {
+				pointString += pointArray[i].getX() + ','  + pointArray[i].getY() + ' ';
+			}
+			svgEle.setAttribute('points', pointString);
+			break;
+		case 'polygon':
+			svgEle = document.createElementNS(this.NS, 'polygon');
+			var pointString = '';
+			for(i = 0; i < pointArray.length; ++i) {
+				pointString += pointArray[i].getX() + ',' + pointArray[i].getY() + ' ';
+			}
+			svgEle.setAttribute('points', pointString);
+			break;
+		case 'text':
+			svgEle = document.createElementNS(this.NS, 'text');
+			svgEle.setAttribute('x', path.getPoint().getX());
+			svgEle.setAttribute('y', path.getPoint().getY());
+			if (path.style.font != undefined) {
+				svgEle.setAttribute('font', path.style.font);
+			}
+			if (path.characterStyle.font != undefined) {
+				svgEle.setAttribute('font-family', path.characterStyle.font);
+			}
+			if (path.characterStyle.fontSize != undefined) {
+				svgEle.setAttribute('font-size',path.characterStyle.fontSize);
+			}
+			svgEle.textContent = path.getContent();
+			break;
+		default:
+			svgEle = document.createElementNS(this.NS, 'path');
+			svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+			break;
 		}
 		//If the object is a circle, ellipse, rectangle, or rounded rectangle, it will find the angle 
 		//found by the determineIfTransformed method and make a path that accommodates for the transformed object
-		if(type != 'text' && type != undefined && type != 'polygon' &&  type != 'polyline' && type != 'line') {
+		if (type != 'text' && type != undefined && type != 'polygon' &&  type != 'polyline' && type != 'line') {
 			//TODO: Need to implement exported transforms for circle, ellipse, and rectangles instead of 
 			//making them paths
 			var angle = this._determineIfTransformed(path, pointArray, type) + 90;
-			if(angle != 0) {
-				if(type == 'rect' || type == 'roundRect') {
+			if (angle != 0) {
+				if (type == 'rect' || type == 'roundRect') {
 					svgEle = document.createElementNS(this.NS, 'path');
 					svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 				} else {
@@ -236,10 +237,10 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 				}
 			} 
 		}
-		if(type == 'text') {
+		if (type == 'text') {
 			svgEle.setAttribute('transform','rotate(' + path.matrix.getRotation() + ',' + path.getPoint().getX() + ',' +path.getPoint().getY() +')');
 		}
-		if(path.id != undefined) {
+		if (path.id != undefined) {
 			svgEle.setAttribute('id', path.id);
 		}
 		//checks if there is a stroke color in the passed in path
@@ -254,30 +255,30 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			svgEle.setAttribute('fill', 'rgba(0,0,0,0)');
 		}
 		//same thing as stroke color except with stroke width
-		if(path.strokeWidth != undefined){
+		if (path.strokeWidth != undefined) {
 			svgEle.setAttribute('stroke-width', path.strokeWidth);
 		}
 		//same thing as stroke color except with the path name
-		if(path.name != undefined) {
+		if (path.name != undefined) {
 			svgEle.setAttribute('name', path.name);
 		}
 		//same thing as stroke color except with the strokeCap
-		if(path.strokeCap != undefined) {
+		if (path.strokeCap != undefined) {
 			svgEle.setAttribute('stroke-linecap', path.strokeCap);
 		}
 		//same thing as stroke color except with the strokeJoin
-		if(path.strokeJoin != undefined) {
+		if (path.strokeJoin != undefined) {
 			svgEle.setAttribute('stroke-linejoin', path.strokeJoin);
 		}
 		//same thing as stroke color except with the opacity
-		if(path.opacity != undefined) {
+		if (path.opacity != undefined) {
 			svgEle.setAttribute('opacity', path.opacity);
 		}
 		//checks to see if there the dashArray is set, then adds the attribute if there is.
-		if(path.dashArray[0] != undefined) {
+		if (path.dashArray[0] != undefined) {
 			var dashVals = '';
 			for (var i in path.dashArray) {
-				if(i != path.dashArray.length -1) {
+				if (i != path.dashArray.length -1) {
 					dashVals += path.dashArray[i] + ", ";
 				} else {
 					dashVals += path.dashArray[i];
@@ -286,17 +287,17 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			svgEle.setAttribute('stroke-dasharray', dashVals);
 		}
 		//same thing as stroke color except with the dash offset
-		if(path.dashOffset != undefined) {
+		if (path.dashOffset != undefined) {
 			svgEle.setAttribute('stroke-dashoffset', path.dashOffset);
 		}
 		//same thing as stroke color except with the miter limit
-		if(path.miterLimit != undefined) {
+		if (path.miterLimit != undefined) {
 			svgEle.setAttribute('stroke-miterlimit', path.miterLimit);
 		}
 		//same thing as stroke color except with the visibility
-		if(path.visibility != undefined) {
+		if (path.visibility != undefined) {
 			var visString = '';
-			if(path.visibility) {
+			if (path.visibility) {
 				visString = 'visible';
 			} else {
 				visString = 'hidden';
@@ -316,25 +317,25 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 		var topMidPathy;
 		var topMidPath;
 		switch (type) {
-			case 'rect':
-				topMidPathx = (pointArray[1].getX() + pointArray[2].getX() )/2;
-				topMidPathy = (pointArray[1].getY() + pointArray[2].getY() )/2;
-				topMidPath = new Point(topMidPathx, topMidPathy);
-				break;
-			case 'ellipse':
-				topMidPath = new Point(pointArray[1].getX(), pointArray[1].getY());
-				break;
-			case 'circle':
-				topMidPath = new Point(pointArray[1].getX(), pointArray[1].getY());
-				break;
-			case 'roundRect':
-				topMidPathx = (pointArray[3].getX() + pointArray[4].getX())/2;
-				topMidPathy = (pointArray[3].getY() + pointArray[4].getY())/2;
-				topMidPath = new Point(topMidPathx, topMidPathy);
-				break;	
-			default:
-				//Nothing happens here
-				break;
+		case 'rect':
+			topMidPathx = (pointArray[1].getX() + pointArray[2].getX() )/2;
+			topMidPathy = (pointArray[1].getY() + pointArray[2].getY() )/2;
+			topMidPath = new Point(topMidPathx, topMidPathy);
+			break;
+		case 'ellipse':
+			topMidPath = new Point(pointArray[1].getX(), pointArray[1].getY());
+			break;
+		case 'circle':
+			topMidPath = new Point(pointArray[1].getX(), pointArray[1].getY());
+			break;
+		case 'roundRect':
+			topMidPathx = (pointArray[3].getX() + pointArray[4].getX())/2;
+			topMidPathy = (pointArray[3].getY() + pointArray[4].getY())/2;
+			topMidPath = new Point(topMidPathx, topMidPathy);
+			break;	
+		default:
+			//Nothing happens here
+			break;
 		}
 		var deltaY = topMidPath.y - centerPoint.getY();
 		var deltaX = topMidPath.x - centerPoint.getX();
@@ -362,7 +363,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			y2 = pointArray[i + 1].getY();
 			handleOut1 = hOArray[i];
 			handleIn2 = hIArray[i+1];
-			if(handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() ==0) {
+			if (handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() ==0) {
 					//L is lineto, moving to a point with drawing
 					pointString+= 'L' + x2 + ',' + y2 + ' ';
 			} else {
@@ -410,7 +411,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 		var curves = false;	
 		var segHandleIn;
 		var segHandleOut;
-		for( var i in segArray){
+		for( var i in segArray) {
 			//Checks for any curves (if the handles have values). Differentiates between straight objects(line, polyline, rect, and polygon) and
 			//and objects with curves(circle, ellipse, roundedRectangle).
 			segHandleIn = segArray[i].getHandleIn();
@@ -421,46 +422,46 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 		//Checks for curves in the passed in segments
 		//Checks if the type of the passed in path is a rounded rectangle, an ellipse, a circle, or if it's simply a path
 		//If there aren't any curves (if curves = false), then it checks if the type is a rectangle, a polygon, a polyline, or simply a line.
-		if(curves){
-			if(segArray.length == 8) {
+		if (curves) {
+			if (segArray.length == 8) {
 				//if the distance between (point0 and point3) and (point7 and point4) are equal then it is a roundedRectangle
 				dPoint12 = Math.round(pointArray[0].getDistance(pointArray[3], false));
 				dPoint34 = Math.round(pointArray[7].getDistance(pointArray[4], false));
-				if(dPoint12 == dPoint34) {
+				if (dPoint12 == dPoint34) {
 					type = 'roundRect';
 				}
-			} else if(segArray.length == 4) {
+			} else if (segArray.length == 4) {
 				//checks if the values of the point have values similar to circles and ellipses
 				var checkPointValues = true;
 				for(i = 0; i < pointArray.length && checkPointValues == true; i++) {
-					if(handleInArray[i].getX() != 0 || handleInArray[i].getY() != 0 && Math.round(Math.abs(handleInArray[i].getX())) === Math.round(Math.abs(handleOutArray[i].getX())) && Math.round(Math.abs(handleInArray[i].getY())) === Math.round(Math.abs(handleOutArray[i].getY()))) {
+					if (handleInArray[i].getX() != 0 || handleInArray[i].getY() != 0 && Math.round(Math.abs(handleInArray[i].getX())) === Math.round(Math.abs(handleOutArray[i].getX())) && Math.round(Math.abs(handleInArray[i].getY())) === Math.round(Math.abs(handleOutArray[i].getY()))) {
 						checkPointValues = true;
 					} else {
 						checkPointValues = false;
 					}	
 				}	
-				if(checkPointValues == true) {
+				if (checkPointValues == true) {
 					//if the distance between (point0 and point2) and (point1 and point3) are equal, then it is a circle
 					var d1 = Math.round(pointArray[0].getDistance(pointArray[2], false));
 					var d2 = Math.round(pointArray[1].getDistance(pointArray[3], false));
-					if(d1 == d2) {
+					if (d1 == d2) {
 						type = 'circle';
 					} else {
 						type = 'ellipse';
 					}
 				}
 			} 
-		} else if(!curves) {
-			if(segArray.length == 4) {
+		} else if (!curves) {
+			if (segArray.length == 4) {
 				//if the distance between (point0 and point1) and (point2 and point3) are equal, then it is a rectangle
 				dPoint12 = Math.round(pointArray[0].getDistance(pointArray[1], false));
 				dPoint34 = Math.round(pointArray[3].getDistance(pointArray[2], false));
-				if(dPoint12 == dPoint34) {
+				if (dPoint12 == dPoint34) {
 					type = 'rect';
 				}
-			} else if(segArray.length >= 3) {
+			} else if (segArray.length >= 3) {
 				//If it is an object with more than 3 segments and the path is closed, it is a polygon
-				if(path.getClosed()) {
+				if (path.getClosed()) {
 					type = 'polygon';
 				} else {
 					type = 'polyline';

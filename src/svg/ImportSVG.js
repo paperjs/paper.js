@@ -39,48 +39,47 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 		* @param {SVG DOM} svg An SVG DOM object with parameters
 		* @return {item} A Paper.js layer
 		*/
-	importSVG: function(svg) {
+	importSvg: function(svg) {
 		var item;
 		var symbol;
 		switch (svg.nodeName.toLowerCase()) {
-			case 'line':
-				item = this._importLine(svg);
-				break;
-			case 'rect':
-				item = this._importRectangle(svg);
-				break;
-			case 'circle':
-				item = this._importCircle(svg);
-				break;
-			case 'ellipse':
-				item = this._importOval(svg);
-				break;
-			case 'g':
-			case 'svg':
-				item = this._importGroup(svg);
-				break;
-			case 'text':
-				item = this._importText(svg);
-				break;
-			case 'path':
-				item = this._importPath(svg);
-				break;
-			case 'polygon':
-			case 'polyline':
-				item = this._importPoly(svg);
-				break;
-			case 'symbol':
-				item = this._importGroup(svg);
-				this._importAttributesAndStyles(svg, item);
-				symbol = new Symbol(item);
-				item = null;
-			default:
-				//Not supported yet.
+		case 'line':
+			item = this._importLine(svg);
+			break;
+		case 'rect':
+			item = this._importRectangle(svg);
+			break;
+		case 'circle':
+			item = this._importCircle(svg);
+			break;
+		case 'ellipse':
+			item = this._importOval(svg);
+			break;
+		case 'g':
+		case 'svg':
+			item = this._importGroup(svg);
+			break;
+		case 'text':
+			item = this._importText(svg);
+			break;
+		case 'path':
+			item = this._importPath(svg);
+			break;
+		case 'polygon':
+		case 'polyline':
+			item = this._importPoly(svg);
+			break;
+		case 'symbol':
+			item = this._importGroup(svg);
+			this._importAttributesAndStyles(svg, item);
+			symbol = new Symbol(item);
+			item = null;
+		default:
+			// Not supported yet.
 		}
 
-		if (item) {
+		if (item)
 			this._importAttributesAndStyles(svg, item);
-		}
 
 		return item;
 	},
@@ -101,13 +100,11 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 		var child;
 		for (var i in svg.childNodes) {
 			child = svg.childNodes[i];
-			if (child.nodeType != 1) {
+			if (child.nodeType != 1)
 				continue;
-			}
-			item = this.importSVG(child);
-			if (item) {
+			item = this.importSvg(child);
+			if (item)
 				group.addChild(item);
-			}
 		}
 
 		return group;
@@ -282,7 +279,7 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 		var controlPoint;
 		var prevCommand;
 		var segmentTo;
-		for (var i = 0; i < segments.numberOfItems; ++i){
+		for (var i = 0; i < segments.numberOfItems; ++i) {
 			segment = segments.getItem(i);
 			if (segment.pathSegType == SVGPathSeg.PATHSEG_UNKNOWN) {
 				continue;
@@ -295,75 +292,75 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 			segmentTo = new Point(segment.x, segment.y);
 			segmentTo = segmentTo.add(relativeToPoint);
 			switch (segment.pathSegType) {
-				case SVGPathSeg.PATHSEG_CLOSEPATH:
-					path.closePath();
-					break;
-				case SVGPathSeg.PATHSEG_MOVETO_ABS:
-				case SVGPathSeg.PATHSEG_MOVETO_REL:
-					path.moveTo(segmentTo);
-					break;
-				case SVGPathSeg.PATHSEG_LINETO_ABS:
-				case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
-				case SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
-				case SVGPathSeg.PATHSEG_LINETO_REL:
-				case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
-				case SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
-					path.lineTo(segmentTo);
-					break;
-				case SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
-				case SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
-					path.cubicCurveTo(
-						relativeToPoint.add([segment.x1, segment.y1]),
-						relativeToPoint.add([segment.x2, segment.y2]),
-						segmentTo
-					);
-					break;
-				case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
-				case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
-					path.quadraticCurveTo(
-						relativeToPoint.add([segment.x1, segment.y1]),
-						segmentTo
-					);
-					break;
-				case SVGPathSeg.PATHSEG_ARC_ABS:
-				case SVGPathSeg.PATHSEG_ARC_REL:
-					//TODO: Implement Arcs.
-					//TODO: Requires changes in Paper.js's Path to do.
-					//TODO: http://www.w3.org/TR/SVG/implnote.html
-					break;
-				case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
-				case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
-					prevCommand = segments.getItem(i - 1);
-					controlPoint = new Point(prevCommand.x2, prevCommand.y2);
-					controlPoint = controlPoint.subtract([prevCommand.x, prevCommand.y]);
-					controlPoint = controlPoint.add(path.lastSegment.point);
-					controlPoint = path.lastSegment.point.subtract(controlPoint);
-					controlPoint = path.lastSegment.point.add(controlPoint);
-					path.cubicCurveTo(
-						controlPoint,
-						relativeToPoint.add([segment.x2, segment.y2]),
-						segmentTo
-					);
-					break;
-				case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
-				case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
-					for (j = i; j >= 0; --j) {
-						prevCommand = segments.getItem(j);
-						if (prevCommand.pathSegType == SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS ||
-							prevCommand.pathSegType == SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL
-						) {
-							controlPoint = new Point(prevCommand.x1, prevCommand.y1);
-							controlPoint = controlPoint.subtract([prevCommand.x, prevCommand.y]);
-							controlPoint = controlPoint.add(path.segments[j].point);
-							break;
-						}
+			case SVGPathSeg.PATHSEG_CLOSEPATH:
+				path.closePath();
+				break;
+			case SVGPathSeg.PATHSEG_MOVETO_ABS:
+			case SVGPathSeg.PATHSEG_MOVETO_REL:
+				path.moveTo(segmentTo);
+				break;
+			case SVGPathSeg.PATHSEG_LINETO_ABS:
+			case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
+			case SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
+			case SVGPathSeg.PATHSEG_LINETO_REL:
+			case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
+			case SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
+				path.lineTo(segmentTo);
+				break;
+			case SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
+			case SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
+				path.cubicCurveTo(
+					relativeToPoint.add([segment.x1, segment.y1]),
+					relativeToPoint.add([segment.x2, segment.y2]),
+					segmentTo
+				);
+				break;
+			case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
+			case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
+				path.quadraticCurveTo(
+					relativeToPoint.add([segment.x1, segment.y1]),
+					segmentTo
+				);
+				break;
+			case SVGPathSeg.PATHSEG_ARC_ABS:
+			case SVGPathSeg.PATHSEG_ARC_REL:
+				//TODO: Implement Arcs.
+				//TODO: Requires changes in Paper.js's Path to do.
+				//TODO: http://www.w3.org/TR/SVG/implnote.html
+				break;
+			case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
+			case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
+				prevCommand = segments.getItem(i - 1);
+				controlPoint = new Point(prevCommand.x2, prevCommand.y2);
+				controlPoint = controlPoint.subtract([prevCommand.x, prevCommand.y]);
+				controlPoint = controlPoint.add(path.lastSegment.point);
+				controlPoint = path.lastSegment.point.subtract(controlPoint);
+				controlPoint = path.lastSegment.point.add(controlPoint);
+				path.cubicCurveTo(
+					controlPoint,
+					relativeToPoint.add([segment.x2, segment.y2]),
+					segmentTo
+				);
+				break;
+			case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
+			case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
+				for (j = i; j >= 0; --j) {
+					prevCommand = segments.getItem(j);
+					if (prevCommand.pathSegType == SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS ||
+						prevCommand.pathSegType == SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL
+					) {
+						controlPoint = new Point(prevCommand.x1, prevCommand.y1);
+						controlPoint = controlPoint.subtract([prevCommand.x, prevCommand.y]);
+						controlPoint = controlPoint.add(path.segments[j].point);
+						break;
 					}
-					for (j; j < i; ++j) {
-						controlPoint = path.segments[j].point.subtract(controlPoint);
-						controlPoint = path.segments[j].point.add(controlPoint);
-					}
-					path.quadraticCurveTo(controlPoint, segmentTo);
-					break;
+				}
+				for (j; j < i; ++j) {
+					controlPoint = path.segments[j].point.subtract(controlPoint);
+					controlPoint = path.segments[j].point.add(controlPoint);
+				}
+				path.quadraticCurveTo(controlPoint, segmentTo);
+				break;
 			}
 		}
 
@@ -445,79 +442,79 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 			return;
 		}
 		switch (name) {
-			case 'id':
-				item.name = value;
-				break;
-			case 'fill':
-				if (value != 'none') {
-					item.fillColor = value;
-				}
-				break;
-			case 'stroke':
-				if (value != 'none') {
-					item.strokeColor = value;
-				}
-				break;
-			case 'stroke-width':
-				item.strokeWidth = parseFloat(value, 10);
-				break;
-			case 'stroke-linecap':
-				item.strokeCap = value;
-				break;
-			case 'stroke-linejoin':
-				item.strokeJoin = value;
-				break;
-			case 'stroke-dasharray':
-				value = value.replace(/px/g, '');
-				value = value.replace(/, /g, ',');
-				value = value.replace(/ /g, ',');
-				value = value.split(',');
-				for (var i in value) {
-					value[i] = parseFloat(value[i], 10);
-				}
-				item.dashArray = value;
-				break;
-			case 'stroke-dashoffset':
-				item.dashOffset = parseFloat(value, 10);
-				break;
-			case 'stroke-miterlimit':
-				item.miterLimit = parseFloat(value, 10);
-				break;
-			case 'transform':
-				this._applyTransform(item, svg);
-			case 'opacity':
-				item.opacity = parseFloat(value, 10);
-			case 'visibility':
-				item.visibility = (value == 'visible') ? true : false;
-				break;
-			case 'font':
-			case 'font-family':
-			case 'font-size':
-				//Implemented in characterStyle below.
-				break;
-			default:
-				// Not supported yet.
-				break;
+		case 'id':
+			item.name = value;
+			break;
+		case 'fill':
+			if (value != 'none') {
+				item.fillColor = value;
+			}
+			break;
+		case 'stroke':
+			if (value != 'none') {
+				item.strokeColor = value;
+			}
+			break;
+		case 'stroke-width':
+			item.strokeWidth = parseFloat(value, 10);
+			break;
+		case 'stroke-linecap':
+			item.strokeCap = value;
+			break;
+		case 'stroke-linejoin':
+			item.strokeJoin = value;
+			break;
+		case 'stroke-dasharray':
+			value = value.replace(/px/g, '');
+			value = value.replace(/, /g, ',');
+			value = value.replace(/ /g, ',');
+			value = value.split(',');
+			for (var i in value) {
+				value[i] = parseFloat(value[i], 10);
+			}
+			item.dashArray = value;
+			break;
+		case 'stroke-dashoffset':
+			item.dashOffset = parseFloat(value, 10);
+			break;
+		case 'stroke-miterlimit':
+			item.miterLimit = parseFloat(value, 10);
+			break;
+		case 'transform':
+			this._applyTransform(item, svg);
+		case 'opacity':
+			item.opacity = parseFloat(value, 10);
+		case 'visibility':
+			item.visibility = (value == 'visible') ? true : false;
+			break;
+		case 'font':
+		case 'font-family':
+		case 'font-size':
+			//Implemented in characterStyle below.
+			break;
+		default:
+			// Not supported yet.
+			break;
 		}
 		if (item.characterStyle) {
 			switch (name) {
-				case 'font':
-					var text = document.createElement('span');
-					text.style.font = value;
-					for (var i = 0; i < text.style.length; ++i) {
-						var n = text.style[i];
-						this._applyAttributeOrStyle(n, text.style[n], item, svg);
-					}
-					break;
-				case 'font-family':
-					var fonts = value.split(',');
-					fonts[0] = fonts[0].replace(/^\s+|\s+$/g, "");
-					item.characterStyle.font = fonts[0];
-					break;
-				case 'font-size':
-					item.characterStyle.fontSize = parseFloat(value, 10);
-					break;
-			}
+			case 'font':
+				var text = document.createElement('span');
+				text.style.font = value;
+				for (var i = 0; i < text.style.length; ++i) {
+					var n = text.style[i];
+					this._applyAttributeOrStyle(n, text.style[n], item, svg);
+				}
+				break;
+			case 'font-family':
+				var fonts = value.split(',');
+				fonts[0] = fonts[0].replace(/^\s+|\s+$/g, "");
+				item.characterStyle.font = fonts[0];
+				break;
+			case 'font-size':
+				item.characterStyle.fontSize = parseFloat(value, 10);
+				break;
+		}
 		}
 	},
 
@@ -550,29 +547,28 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 				transform.matrix.f
 			);
 			switch (transform.type) {
-				case SVGTransform.SVG_TRANSFORM_TRANSLATE:
-					break;
-				case SVGTransform.SVG_TRANSFORM_SCALE:
-					break;
-
-				//Compensate for SVG's theta rotation going the opposite direction
-				case SVGTransform.SVG_TRANSFORM_MATRIX:
-					var temp = transformMatrix.getShearX();
-					transformMatrix.setShearX(transformMatrix.getShearY());
-					transformMatrix.setShearY(temp);
-					break;
-				case SVGTransform.SVG_TRANSFORM_SKEWX:
-					transformMatrix.setShearX(transformMatrix.getShearY());
-					transformMatrix.setShearY(0);
-					break;
-				case SVGTransform.SVG_TRANSFORM_SKEWY:
-					transformMatrix.setShearY(transformMatrix.getShearX());
-					transformMatrix.setShearX(0);
-					break;
-				case SVGTransform.SVG_TRANSFORM_ROTATE:
-					transformMatrix.setShearX(transformMatrix.getShearX() * -1);
-					transformMatrix.setShearY(transformMatrix.getShearY() * -1);
-					break;
+			case SVGTransform.SVG_TRANSFORM_TRANSLATE:
+				break;
+			case SVGTransform.SVG_TRANSFORM_SCALE:
+				break;
+			//Compensate for SVG's theta rotation going the opposite direction
+			case SVGTransform.SVG_TRANSFORM_MATRIX:
+				var temp = transformMatrix.getShearX();
+				transformMatrix.setShearX(transformMatrix.getShearY());
+				transformMatrix.setShearY(temp);
+				break;
+			case SVGTransform.SVG_TRANSFORM_SKEWX:
+				transformMatrix.setShearX(transformMatrix.getShearY());
+				transformMatrix.setShearY(0);
+				break;
+			case SVGTransform.SVG_TRANSFORM_SKEWY:
+				transformMatrix.setShearY(transformMatrix.getShearX());
+				transformMatrix.setShearX(0);
+				break;
+			case SVGTransform.SVG_TRANSFORM_ROTATE:
+				transformMatrix.setShearX(transformMatrix.getShearX() * -1);
+				transformMatrix.setShearY(transformMatrix.getShearY() * -1);
+				break;
 			}
 			matrix.concatenate(transformMatrix);
 		}
