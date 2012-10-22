@@ -66,6 +66,10 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		matrix._transformPoint(this._point, this._point);
 	},
 
+	_hitTest: function(point, options) {
+		if(this.getRoughBounds().expand(options.tolerance)._containsPoint(point)) return new HitResult('text', this);
+	},
+
 	draw: function(ctx) {
 		if (!this._content)
 			return;
