@@ -36,6 +36,10 @@ var Style = Item.extend({
 		}, this);
 	},
 
+	_getChildren: function() {
+		return this._item instanceof Group && this._item._children;
+	},
+
 	statics: {
 		create: function(item) {
 			var style = new this(this.dont);
@@ -69,7 +73,7 @@ var Style = Item.extend({
 				// Simply extend src with these getters and setters, to be
 				// injected into this class using this.base() further down.
 				src[set] = function(value) {
-					var children = this._item && this._item._children;
+					var children = this._getChildren();
 					// Clone color objects since they reference their owner
 					value = isColor ? Color.read(arguments, 0, 0, true) : value;
 					if (children) {
@@ -97,7 +101,7 @@ var Style = Item.extend({
 					return this;
 				};
 				src[get] = function() {
-					var children = this._item && this._item._children,
+					var children = this._getChildren(),
 						style;
 					// If this item has children, walk through all of them and
 					// see if they all have the same style.

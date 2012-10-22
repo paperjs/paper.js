@@ -89,23 +89,39 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		return this._children.length == 0;
 	},
 
+	contains: function(point) {
+		point = Point.read(arguments);
+		var count = 0;
+		for (var i = 0, l = this._children.length; i < l; i++) {
+			if (this._children[i].contains(point))
+				count++;
+		}
+		return (count & 1) == 1;
+	},
+
+	_hitTest: function(point, options) {
+		return this.base(point, Base.merge(options, { fill: false }))
+			|| options.fill && this._style._fillColor && this.contains(point)
+				? new HitResult('fill', this)
+				: null;
+	},
+
 	draw: function(ctx, param) {
-		var children = this._children;
+		var children = this._children,
+			style = this._style;
 		// Return early if the compound path doesn't have any children:
 		if (children.length == 0)
 			return;
-		var firstChild = children[0],
-			style = firstChild._style;
 		ctx.beginPath();
 		param.compound = true;
 		for (var i = 0, l = children.length; i < l; i++)
 			Item.draw(children[i], ctx, param);
-		firstChild._setStyles(ctx);
+		param.compound = false;
+		this._setStyles(ctx);
 		if (style._fillColor)
 			ctx.fill();
 		if (style._strokeColor)
 			ctx.stroke();
-		param.compound = false;
 	}
 }, new function() { // Injection scope for PostScript-like drawing functions
 	/**
