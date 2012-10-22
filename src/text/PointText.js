@@ -60,6 +60,10 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	setPoint: function(point) {
 		this.translate(Point.read(arguments).subtract(this._point));
 	},
+	
+	_hitTest: function(point, options) {
+		if(this.getRoughBounds().expand(options.tolerance)._containsPoint(point)) return new HitResult('text', this);
+	},
 
 	_transform: function(matrix) {
 		// Transform _point:
