@@ -1717,8 +1717,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				from = current._point,
 				through,
 				point = Point.read(arguments),
-				next = Base.peekValue(arguments);
-			if (/boolean|undefined/.test(typeof next)) {
+				// Peek at next value to see if it's clockwise,
+				// with true as default value.
+				next = Base.pick(Base.peekValue(arguments), true);
+			if (typeof next === 'boolean') {
 				// arcTo(to, clockwise)
 				to = point;
 				clockwise = next;
@@ -2103,7 +2105,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
 		var style = this._style,
-			width = style._strokeWidth;
+			width = style._strokeColor ? style._strokeWidth : 0;
 		return getHandleBounds.call(this, matrix, width,
 				style._strokeJoin == 'miter'
 					? width * style._miterLimit
