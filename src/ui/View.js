@@ -92,7 +92,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		if (this._id == null)
 			element.setAttribute('id', this._id = 'view-' + View._id++);
 		// Install event handlers
-		DomEvent.add(element, this._handlers);
+		DomEvent.add(element, this._viewHandlers);
 		// If the element has the resize attribute, resize the it to fill the
 		// window and resize it again whenever the user resizes the window.
 		if (PaperScript.hasAttribute(element, 'resize')) {
@@ -172,7 +172,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		if (this._project.view == this)
 			this._project.view = null;
 		// Uninstall event handlers again for this view.
-		DomEvent.remove(this._element, this._handlers);
+		DomEvent.remove(this._element, this._viewHandlers);
 		DomEvent.remove(window, this._windowHandlers);
 		this._element = this._project = null;
 		// Removing all onFrame handlers makes the _onFrameCallback handler stop
@@ -594,7 +594,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	});
 
 	return {
-		_handlers: {
+		_viewHandlers: {
 			mousedown: mousedown,
 			touchstart: mousedown,
 			selectstart: selectstart
