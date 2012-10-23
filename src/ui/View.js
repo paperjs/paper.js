@@ -474,6 +474,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 /*#*/ if (options.browser) {
 	var tool,
 		curPoint,
+		prevFocus,
 		tempFocus,
 		dragging = false;
 
@@ -525,10 +526,11 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 			if (view) {
 				// Temporarily focus this view without making it sticky, so
 				// Key events are handled too during the mouse over
+				prevFocus = View._focused;
 				View._focused = tempFocus = view;
 			} else if (tempFocus && tempFocus == View._focused) {
 				// Clear temporary focus again and update it.
-				View._focused = null;
+				View._focused = prevFocus;
 				updateFocus();
 			}
 		}
