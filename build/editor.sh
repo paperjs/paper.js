@@ -15,3 +15,4 @@
 
 ./build.sh
 cp ../dist/paper.js ../editor/assets/js/paper.js
+./load.sh

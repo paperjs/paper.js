@@ -222,7 +222,7 @@ var PaperScript = this.PaperScript = new function() {
 			// Only load this script if it not loaded already.
 			// Support both text/paperscript and text/x-paperscript:
 			if (/^text\/(?:x-|)paperscript$/.test(script.type)
-					&& !script.getAttribute('data-paper-loaded')) {
+					&& !script.getAttribute('data-paper-ignore')) {
 				// Produce a new PaperScope for this script now. Scopes are
 				// cheap so let's not worry about the initial one that was
 				// already created.
@@ -241,7 +241,7 @@ var PaperScript = this.PaperScript = new function() {
 					evaluate(script.innerHTML, scope);
 				}
 				// Mark script as loaded now.
-				script.setAttribute('data-paper-loaded', true);
+				script.setAttribute('data-paper-ignore', true);
 			}
 		}
 	}
