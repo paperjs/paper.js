@@ -154,10 +154,6 @@ PaperScript = HtmlElement.extend({
 			if (previousTool)
 				previousTool.activate();
 		}
-		// Create inspector once the paper script was evaluated
-		$window.addEvents({
-			load: createInspector
-		});
 
 		inspectorButton.addEvents({
 			click: function(event) {
@@ -173,38 +169,55 @@ PaperScript = HtmlElement.extend({
 			}
 		});
 
+		// In order to be able to install our own error handlers first, we are
+		// not relying on automatic script loading, which is disabled by the use
+		// of data-paper-ignore="true". So we need to create a new paperscope
+		// or re
+
 		function runScript() {
-			var scope = paper.PaperScope.get(script.$);
-			if (scope) {
-				// Update script to edited version
-				var code = editor.getValue();
-				script.setText(code);
-				// Keep a reference to the used canvas, since we're going to
-				// fully clear the scope and initialize again with this canvas.
-				// Support both old and new versions of paper.js for now:
-				var element = scope.view.element || scope.view.canvas;
-				// Clear scope first, then evaluate a new script.
-				scope.clear();
-				scope.initialize(script.$);
-				scope.setup(element);
-				// Override the console object with one that logs to our new
-				// console
-				scope.console = {
-					log: function() {
-						console.injectBottom('div', {
-							className: 'line',
-							text: Base.each(arguments, function(arg) {
-								this.push(arg + '');
-							}, []).join(' ')
-						});
-						console.setScrollOffset(0,
-							console.getScrollSize().height);
-					}
-				};
-				scope.evaluate(code);
-				createInspector();
+			// Update script to edited version
+			var code = editor.getValue();
+			script.setText(code);
+			var scope = new paper.PaperScope(script.$);
+			// Override the console object with one that logs to our new
+			// console
+
+			function print(className, args) {
+				console.injectBottom('div', {
+					className: className,
+					text: Base.each(args, function(arg) {
+						this.push(arg + '');
+					}, []).join(' ')
+				});
+				console.setScrollOffset(0,
+					console.getScrollSize().height);
 			}
+
+			scope.console = {
+				log: function() {
+					print('line', arguments);
+				},
+
+				error: function() {
+					print('line error', arguments);
+				}
+			};
+
+			// Install an error handler to log the errors in our log too:
+			window.onerror = function(error, url, lineNumber) {
+				scope.console.error('Line ' + lineNumber + ': ' + error);
+				paper.view.draw();
+			}
+
+			scope.setup(paper.PaperScript.getAttribute(script.$, 'canvas'));
+			scope.evaluate(code);
+			createInspector();
 		}
+
+		// Run the script once the window is loaded
+		$window.addEvents({
+			load: runScript
+		});
 
 		function resize() {
 			if (!canvas.hasClass('hidden')) {

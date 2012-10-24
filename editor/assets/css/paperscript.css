@@ -79,6 +79,11 @@
 .paperscript .console .line:last-child {
 	margin-bottom: 10px;
 }
+
+.paperscript .console .error {
+	color: #f30;
+}
+
 .paperscript .CodeMirror {
 	margin: 0 !important; /* Override any potential margins again */
 }

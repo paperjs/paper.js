@@ -13,7 +13,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 18 14:24:55 2012 -0700
+ * Date: Mon Oct 22 18:03:57 2012 -0700
  *
  ***
  *
@@ -2436,10 +2436,10 @@ function(name) {
 
 	hitTest: function(point, options) {
 		options = HitResult.getOptions(point, options);
-		point = options.point = this._matrix._inverseTransform(options.point);
 		if (!this._children && !this.getRoughBounds()
-				.expand(options.tolerance)._containsPoint(point))
+				.expand(options.tolerance)._containsPoint(options.point))
 			return null;
+		point = options.point = this._matrix._inverseTransform(options.point);
 		if ((options.center || options.bounds) &&
 				!(this instanceof Layer && !this._parent)) {
 			var bounds = this.getBounds(),
@@ -3746,7 +3746,7 @@ var Curve = this.Curve = Base.extend({
 			crossings = 0;
 		for (var i = 0; i < num; i++) {
 			var t = roots[i];
-			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, 0).x > point.x) {
+			if (t >= 0 && t <= 1 && Curve.evaluate(vals, t, 0).x > point.x) {
 				if (t < Numerical.TOLERANCE && Curve.evaluate(
 							this.getPrevious().getValues(), 1, 1).y
 						* Curve.evaluate(vals, t, 1).y >= 0)
@@ -4003,7 +4003,7 @@ var Curve = this.Curve = Base.extend({
 
 	function toBezierForm(v, point) {
 		var n = 3, 
-	 		degree = 5, 
+			degree = 5, 
 			c = [],
 			d = [],
 			cd = [],
@@ -4431,7 +4431,7 @@ var Path = this.Path = PathItem.extend({
 
 	removeSegments: function(from, to) {
 		from = from || 0;
-	 	to = Base.pick(to, this._segments.length);
+		to = Base.pick(to, this._segments.length);
 		var segments = this._segments,
 			curves = this._curves,
 			last = to >= segments.length,
@@ -5041,8 +5041,8 @@ var Path = this.Path = PathItem.extend({
 				from = current._point,
 				through,
 				point = Point.read(arguments),
-				next = Base.peekValue(arguments);
-			if (/boolean|undefined/.test(typeof next)) {
+				next = Base.pick(Base.peekValue(arguments), true);
+			if (typeof next === 'boolean') {
 				to = point;
 				clockwise = next;
 				var middle = from.add(to).divide(2),
@@ -5330,7 +5330,7 @@ var Path = this.Path = PathItem.extend({
 
 	function getRoughBounds(matrix) {
 		var style = this._style,
-			width = style._strokeWidth;
+			width = style._strokeColor ? style._strokeWidth : 0;
 		return getHandleBounds.call(this, matrix, width,
 				style._strokeJoin == 'miter'
 					? width * style._miterLimit
@@ -5521,22 +5521,38 @@ var CompoundPath = this.CompoundPath = PathItem.extend({
 		return this._children.length == 0;
 	},
 
+	contains: function(point) {
+		point = Point.read(arguments);
+		var count = 0;
+		for (var i = 0, l = this._children.length; i < l; i++) {
+			if (this._children[i].contains(point))
+				count++;
+		}
+		return (count & 1) == 1;
+	},
+
+	_hitTest: function(point, options) {
+		return this.base(point, Base.merge(options, { fill: false }))
+			|| options.fill && this._style._fillColor && this.contains(point)
+				? new HitResult('fill', this)
+				: null;
+	},
+
 	draw: function(ctx, param) {
-		var children = this._children;
+		var children = this._children,
+			style = this._style;
 		if (children.length == 0)
 			return;
-		var firstChild = children[0],
-			style = firstChild._style;
 		ctx.beginPath();
 		param.compound = true;
 		for (var i = 0, l = children.length; i < l; i++)
 			Item.draw(children[i], ctx, param);
-		firstChild._setStyles(ctx);
+		param.compound = false;
+		this._setStyles(ctx);
 		if (style._fillColor)
 			ctx.fill();
 		if (style._strokeColor)
 			ctx.stroke();
-		param.compound = false;
 	}
 }, new function() { 
 	function getCurrentPath(that) {
@@ -5965,6 +5981,762 @@ var PointText = this.PointText = TextItem.extend({
 	};
 });
 
+var ExportSvg = this.ExportSvg = Base.extend({
+	initialize: function() {
+		this.NS = 'http://www.w3.org/2000/svg';
+		this.svgObj = document.createElementNS(this.NS, 'svg');
+	},
+
+	exportProject: function(project) {
+		var layerArray = project.layers;
+		var layer;
+		for (var i = 0; i < layerArray.length; ++i) {
+			layer = layerArray[i];
+			this.svgObj.appendChild(this.exportLayer(layer));
+		}
+		return this.svgObj;
+	},
+
+	exportLayer: function(layer) {
+		return this.exportGroup(layer);
+	},
+
+	exportGroup: function(group) {
+		var svgG = document.createElementNS(this.NS, 'g');
+		var curChild;
+
+		for (var i in group.children) {
+			curChild = group.children[i];
+			if (curChild.children) {
+				svgG.appendChild(this.exportGroup(curChild));
+			} else {
+				svgG.appendChild(this.exportPath(curChild));
+			}
+		}
+		return svgG;
+	},
+	exportPath: function(path) {
+		var svgEle;
+		var segArray;
+		var pointArray;
+		var handleInArray;
+		var handleOutArray;
+		var type;
+		if (path.content) {
+			type = 'text';
+		} else {
+			segArray = path.getSegments();
+			pointArray = [];
+			handleInArray = [];
+			handleOutArray = [];
+			for (i = 0; i < segArray.length; i++) {
+				pointArray[i] = segArray[i].getPoint();
+				handleInArray[i] = segArray[i].getHandleIn();
+				handleOutArray[i] = segArray[i].getHandleOut();
+			}
+			var exp = this;
+			type = exp._determineType(path, segArray, pointArray, handleInArray, handleOutArray);
+		}
+		switch (type) {
+		case 'rect':
+			var width = pointArray[0].getDistance(pointArray[3], false);
+			var height = pointArray[0].getDistance(pointArray[1], false);
+			svgEle = document.createElementNS(this.NS, 'rect');
+			svgEle.setAttribute('x', path.bounds.topLeft.getX());
+			svgEle.setAttribute('y', path.bounds.topLeft.getY());
+			svgEle.setAttribute('width', width);
+			svgEle.setAttribute('height', height);
+			break;
+		case 'roundRect':
+			var dx1 = pointArray[1].getDistance(pointArray[6], false);
+			var dx2 = pointArray[0].getDistance(pointArray[7], false);
+			var dx3 = (dx1 - dx2) / 2;
+			var dy1 = pointArray[0].getDistance(pointArray[3], false);
+			var dy2 = pointArray[1].getDistance(pointArray[2], false);
+			var dy3 = (dy1 - dy2) / 2;
+			var point = new Point((pointArray[3].getX() - dx3), (pointArray[2].getY() - dy3)); 
+			var width = Math.round(dx1);
+			var height = Math.round(dy1);
+			var rx = pointArray[3].getX() - point.x;
+			var ry = pointArray[2].getY() - point.y;
+			svgEle = document.createElementNS(this.NS, 'rect');
+			svgEle.setAttribute('x', path.bounds.topLeft.getX());
+			svgEle.setAttribute('y', path.bounds.topLeft.getY());
+			svgEle.setAttribute('rx', rx);
+			svgEle.setAttribute('ry', ry);
+			svgEle.setAttribute('width', width);
+			svgEle.setAttribute('height', height);
+			break;
+		case'line':
+			svgEle = document.createElementNS(this.NS, 'line');
+			svgEle.setAttribute('x1', pointArray[0].getX());
+			svgEle.setAttribute('y1', pointArray[0].getY());
+			svgEle.setAttribute('x2', pointArray[pointArray.length - 1].getX());
+			svgEle.setAttribute('y2', pointArray[pointArray.length - 1].getY());
+			break;
+		case 'circle':
+			svgEle = document.createElementNS(this.NS, 'circle');
+			var radius = (pointArray[0].getDistance(pointArray[2], false)) /2;
+			svgEle.setAttribute('cx', path.bounds.center.x);
+			svgEle.setAttribute('cy', path.bounds.center.y);
+			svgEle.setAttribute('r', radius);
+			break;
+		case 'ellipse':
+			svgEle = document.createElementNS(this.NS, 'ellipse');
+			var radiusX = (pointArray[2].getDistance(pointArray[0], false)) / 2;
+			var radiusY = (pointArray[3].getDistance(pointArray[1], false)) /2;
+			svgEle.setAttribute('cx', path.bounds.center.x);
+			svgEle.setAttribute('cy', path.bounds.center.y);
+			svgEle.setAttribute('rx', radiusX);
+			svgEle.setAttribute('ry', radiusY);
+			break;
+		case 'polyline':
+			svgEle = document.createElementNS(this.NS, 'polyline');
+			var pointString = '';
+			for(i = 0; i < pointArray.length; ++i) {
+				pointString += pointArray[i].getX() + ','  + pointArray[i].getY() + ' ';
+			}
+			svgEle.setAttribute('points', pointString);
+			break;
+		case 'polygon':
+			svgEle = document.createElementNS(this.NS, 'polygon');
+			var pointString = '';
+			for(i = 0; i < pointArray.length; ++i) {
+				pointString += pointArray[i].getX() + ',' + pointArray[i].getY() + ' ';
+			}
+			svgEle.setAttribute('points', pointString);
+			break;
+		case 'text':
+			svgEle = document.createElementNS(this.NS, 'text');
+			svgEle.setAttribute('x', path.getPoint().getX());
+			svgEle.setAttribute('y', path.getPoint().getY());
+			if (path.style.font != undefined) {
+				svgEle.setAttribute('font', path.style.font);
+			}
+			if (path.characterStyle.font != undefined) {
+				svgEle.setAttribute('font-family', path.characterStyle.font);
+			}
+			if (path.characterStyle.fontSize != undefined) {
+				svgEle.setAttribute('font-size',path.characterStyle.fontSize);
+			}
+			svgEle.textContent = path.getContent();
+			break;
+		default:
+			svgEle = document.createElementNS(this.NS, 'path');
+			svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+			break;
+		}
+		if (type != 'text' && type != undefined && type != 'polygon' &&  type != 'polyline' && type != 'line') {
+			var angle = this._determineIfTransformed(path, pointArray, type) + 90;
+			if (angle != 0) {
+				if (type == 'rect' || type == 'roundRect') {
+					svgEle = document.createElementNS(this.NS, 'path');
+					svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+				} else {
+					svgEle = document.createElementNS(this.NS, 'path');
+					svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+				}
+			} 
+		}
+		if (type == 'text') {
+			svgEle.setAttribute('transform','rotate(' + path.matrix.getRotation() + ',' + path.getPoint().getX() + ',' +path.getPoint().getY() +')');
+		}
+		if (path.id != undefined) {
+			svgEle.setAttribute('id', path.id);
+		}
+		if (path.strokeColor != undefined) {
+			svgEle.setAttribute('stroke', path.strokeColor.toCssString());
+		}
+		if (path.fillColor != undefined) {
+			svgEle.setAttribute('fill', path.fillColor.toCssString());
+		} else {
+			svgEle.setAttribute('fill', 'rgba(0,0,0,0)');
+		}
+		if (path.strokeWidth != undefined) {
+			svgEle.setAttribute('stroke-width', path.strokeWidth);
+		}
+		if (path.name != undefined) {
+			svgEle.setAttribute('name', path.name);
+		}
+		if (path.strokeCap != undefined) {
+			svgEle.setAttribute('stroke-linecap', path.strokeCap);
+		}
+		if (path.strokeJoin != undefined) {
+			svgEle.setAttribute('stroke-linejoin', path.strokeJoin);
+		}
+		if (path.opacity != undefined) {
+			svgEle.setAttribute('opacity', path.opacity);
+		}
+		if (path.dashArray[0] != undefined) {
+			var dashVals = '';
+			for (var i in path.dashArray) {
+				if (i != path.dashArray.length -1) {
+					dashVals += path.dashArray[i] + ", ";
+				} else {
+					dashVals += path.dashArray[i];
+				}
+			}
+			svgEle.setAttribute('stroke-dasharray', dashVals);
+		}
+		if (path.dashOffset != undefined) {
+			svgEle.setAttribute('stroke-dashoffset', path.dashOffset);
+		}
+		if (path.miterLimit != undefined) {
+			svgEle.setAttribute('stroke-miterlimit', path.miterLimit);
+		}
+		if (path.visibility != undefined) {
+			var visString = '';
+			if (path.visibility) {
+				visString = 'visible';
+			} else {
+				visString = 'hidden';
+			}
+			svgEle.setAttribute('visibility', visString);
+		}
+		return svgEle;
+	},
+
+	_determineIfTransformed: function(path, pointArray, type) {
+		var topMidBoundx = (path.bounds.topRight.getX() + path.bounds.topLeft.getX() )/2;
+		var topMidBoundy = (path.bounds.topRight.getY() + path.bounds.topLeft.getY() )/2;
+		var topMidBound = new Point(topMidBoundx, topMidBoundy);
+		var centerPoint = path.getPosition();
+		var topMidPathx;
+		var topMidPathy;
+		var topMidPath;
+		switch (type) {
+		case 'rect':
+			topMidPathx = (pointArray[1].getX() + pointArray[2].getX() )/2;
+			topMidPathy = (pointArray[1].getY() + pointArray[2].getY() )/2;
+			topMidPath = new Point(topMidPathx, topMidPathy);
+			break;
+		case 'ellipse':
+			topMidPath = new Point(pointArray[1].getX(), pointArray[1].getY());
+			break;
+		case 'circle':
+			topMidPath = new Point(pointArray[1].getX(), pointArray[1].getY());
+			break;
+		case 'roundRect':
+			topMidPathx = (pointArray[3].getX() + pointArray[4].getX())/2;
+			topMidPathy = (pointArray[3].getY() + pointArray[4].getY())/2;
+			topMidPath = new Point(topMidPathx, topMidPathy);
+			break;	
+		default:
+			break;
+		}
+		var deltaY = topMidPath.y - centerPoint.getY();
+		var deltaX = topMidPath.x - centerPoint.getX();
+		var angleInDegrees = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+		return angleInDegrees;
+	},
+	pathSetup: function(path, pointArray, hIArray, hOArray) {
+		var svgPath = document.createElementNS(this.NS, 'path');
+		var pointString = '';
+		var x1;
+		var x2;
+		var y1;
+		var y2;
+		var handleOut1;
+		var handleIn2;
+		pointString += 'M' + pointArray[0].getX() + ',' + pointArray[0].getY() + ' ';
+		for (i = 0; i < pointArray.length-1; i++) {
+			x1 = pointArray[i].getX();
+			y1 = pointArray[i].getY();
+			x2 = pointArray[i + 1].getX();
+			y2 = pointArray[i + 1].getY();
+			handleOut1 = hOArray[i];
+			handleIn2 = hIArray[i+1];
+			if (handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() ==0) {
+					pointString+= 'L' + x2 + ',' + y2 + ' ';
+			} else {
+				pointString+= 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
+				pointString+= (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
+				pointString+= (x2 - x1) + ',' + (y2-y1) +  ' ';
+			}
+		}
+		if (!hOArray[hOArray.length - 1].equals([0,0]) && !hIArray[0].equals([0,0])) {
+			handleOut1 = hOArray[hOArray.length - 1];
+			handleIn2 = hIArray[0];
+			x1 = pointArray[pointArray.length - 1].getX();
+			y1 = pointArray[pointArray.length - 1].getY();
+			x2 = pointArray[0].getX();
+			y2 = pointArray[0].getY();
+			pointString+= 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
+			pointString+= (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
+			pointString+= (x2 - x1) + ',' + (y2-y1) +  ' ';
+		}
+		if (path.getClosed())
+		{
+			pointString += 'z';
+		}
+		svgPath.setAttribute('d',pointString);
+		return svgPath;
+	},	
+
+	_determineType: function(path, segArray, pointArray, handleInArray, handleOutArray) {
+		var type;
+		var dPoint12;
+		var dPoint34;
+		var curves = false;	
+		var segHandleIn;
+		var segHandleOut;
+		for( var i in segArray) {
+			segHandleIn = segArray[i].getHandleIn();
+			segHandleOut = segArray[i].getHandleOut();
+			curves = segHandleIn.getX() != 0 || segHandleIn.getY() != 0 ? true : curves;
+			curves = segHandleOut.getX() != 0 || segHandleOut.getY() != 0 ? true : curves;			
+		}
+		if (curves) {
+			if (segArray.length == 8) {
+				dPoint12 = Math.round(pointArray[0].getDistance(pointArray[3], false));
+				dPoint34 = Math.round(pointArray[7].getDistance(pointArray[4], false));
+				if (dPoint12 == dPoint34) {
+					type = 'roundRect';
+				}
+			} else if (segArray.length == 4) {
+				var checkPointValues = true;
+				for(i = 0; i < pointArray.length && checkPointValues == true; i++) {
+					if (handleInArray[i].getX() != 0 || handleInArray[i].getY() != 0 && Math.round(Math.abs(handleInArray[i].getX())) === Math.round(Math.abs(handleOutArray[i].getX())) && Math.round(Math.abs(handleInArray[i].getY())) === Math.round(Math.abs(handleOutArray[i].getY()))) {
+						checkPointValues = true;
+					} else {
+						checkPointValues = false;
+					}	
+				}	
+				if (checkPointValues == true) {
+					var d1 = Math.round(pointArray[0].getDistance(pointArray[2], false));
+					var d2 = Math.round(pointArray[1].getDistance(pointArray[3], false));
+					if (d1 == d2) {
+						type = 'circle';
+					} else {
+						type = 'ellipse';
+					}
+				}
+			} 
+		} else if (!curves) {
+			if (segArray.length == 4) {
+				dPoint12 = Math.round(pointArray[0].getDistance(pointArray[1], false));
+				dPoint34 = Math.round(pointArray[3].getDistance(pointArray[2], false));
+				if (dPoint12 == dPoint34) {
+					type = 'rect';
+				}
+			} else if (segArray.length >= 3) {
+				if (path.getClosed()) {
+					type = 'polygon';
+				} else {
+					type = 'polyline';
+				}
+			} else {
+				type = 'line';
+			}	
+		} else {
+			type = null;
+		}
+		return type;
+	}
+});
+
+var ImportSvg = this.ImportSvg = Base.extend({
+	importSvg: function(svg) {
+		var item;
+		var symbol;
+		switch (svg.nodeName.toLowerCase()) {
+		case 'line':
+			item = this._importLine(svg);
+			break;
+		case 'rect':
+			item = this._importRectangle(svg);
+			break;
+		case 'circle':
+			item = this._importCircle(svg);
+			break;
+		case 'ellipse':
+			item = this._importOval(svg);
+			break;
+		case 'g':
+		case 'svg':
+			item = this._importGroup(svg);
+			break;
+		case 'text':
+			item = this._importText(svg);
+			break;
+		case 'path':
+			item = this._importPath(svg);
+			break;
+		case 'polygon':
+		case 'polyline':
+			item = this._importPoly(svg);
+			break;
+		case 'symbol':
+			item = this._importGroup(svg);
+			this._importAttributesAndStyles(svg, item);
+			symbol = new Symbol(item);
+			item = null;
+		default:
+		}
+
+		if (item)
+			this._importAttributesAndStyles(svg, item);
+
+		return item;
+	},
+
+	_importGroup: function(svg) {
+		var group = new Group();
+		var child;
+		for (var i in svg.childNodes) {
+			child = svg.childNodes[i];
+			if (child.nodeType != 1)
+				continue;
+			item = this.importSvg(child);
+			if (item)
+				group.addChild(item);
+		}
+
+		return group;
+	},
+
+	_importCircle: function(svgCircle) {
+		var cx = svgCircle.cx.baseVal.value || 0;
+		var cy = svgCircle.cy.baseVal.value || 0;
+		var r = svgCircle.r.baseVal.value || 0;
+		var center = new Point(cx, cy);
+		var circle = new Path.Circle(center, r);
+
+		return circle;
+	},
+
+	_importOval: function(svgOval) {
+		var cx = svgOval.cx.baseVal.value || 0;
+		var cy = svgOval.cy.baseVal.value || 0;
+		var rx = svgOval.rx.baseVal.value || 0;
+		var ry = svgOval.ry.baseVal.value || 0;
+
+		var center = new Point(cx, cy);
+		var offset = new Point(rx, ry);
+		var topLeft = center.subtract(offset);
+		var bottomRight = center.add(offset);
+
+		var rect = new Rectangle(topLeft, bottomRight);
+		var oval = new Path.Oval(rect);
+
+		return oval;
+	},
+
+	_importRectangle: function(svgRectangle) {
+		var x = svgRectangle.x.baseVal.value || 0;
+		var y = svgRectangle.y.baseVal.value || 0;
+		var rx = svgRectangle.rx.baseVal.value || 0;
+		var ry = svgRectangle.ry.baseVal.value || 0;
+		var width = svgRectangle.width.baseVal.value || 0;
+		var height = svgRectangle.height.baseVal.value || 0;
+
+		var topLeft = new Point(x, y);
+		var size = new Size(width, height);
+		var rectangle = new Rectangle(topLeft, size);
+
+		if (rx && ry) {
+			var cornerSize = new Size(rx, ry);
+			rectangle = new Path.RoundRectangle(rectangle, cornerSize);
+		} else {
+			rectangle = new Path.Rectangle(rectangle);
+		}
+
+		return rectangle;
+	},
+
+	_importLine: function(svgLine) {
+		var x1 = svgLine.x1.baseVal.value || 0;
+		var y1 = svgLine.y1.baseVal.value || 0;
+		var x2 = svgLine.x2.baseVal.value || 0;
+		var y2 = svgLine.y2.baseVal.value || 0;
+
+		var from = new Point(x1, y1);
+		var to = new Point(x2, y2);
+		var line = new Path.Line(from, to);
+
+		return line;
+	},
+
+	_importText: function(svgText) {
+		var x = svgText.x.baseVal.getItem(0).value || 0;
+		var y = svgText.y.baseVal.getItem(0).value || 0;
+
+		var dx = 0;
+		var dy = 0;
+		if (svgText.dx.baseVal.numberOfItems) {
+			dx = svgText.dx.baseVal.getItem(0).value || 0;
+		}
+		if (svgText.dy.baseVal.numberOfItems) {
+			dy = svgText.dy.baseVal.getItem(0).value || 0;
+		}
+		var textLength = svgText.textLength.baseVal.value || 0;
+		var textContent = svgText.textContent || "";
+		var bottomLeft = new Point(x, y);
+		bottomLeft = bottomLeft.add([dx, dy]);
+		bottomLeft = bottomLeft.subtract([textLength / 2, 0]);
+		var text = new PointText(bottomLeft);
+		text.content = textContent;
+
+		return text;
+	},
+
+	_importPath: function(svgPath) {
+		var path = new Path();
+		var segments = svgPath.pathSegList;
+		var segment;
+		var j;
+		var relativeToPoint;
+		var controlPoint;
+		var prevCommand;
+		var segmentTo;
+		for (var i = 0; i < segments.numberOfItems; ++i) {
+			segment = segments.getItem(i);
+			if (segment.pathSegType == SVGPathSeg.PATHSEG_UNKNOWN) {
+				continue;
+			}
+			if (segment.pathSegType % 2 == 1 && path.segments.length > 0) {
+				relativeToPoint = path.lastSegment.point;
+			} else {
+				relativeToPoint = new Point(0, 0);
+			}
+			segmentTo = new Point(segment.x, segment.y);
+			segmentTo = segmentTo.add(relativeToPoint);
+			switch (segment.pathSegType) {
+			case SVGPathSeg.PATHSEG_CLOSEPATH:
+				path.closePath();
+				break;
+			case SVGPathSeg.PATHSEG_MOVETO_ABS:
+			case SVGPathSeg.PATHSEG_MOVETO_REL:
+				path.moveTo(segmentTo);
+				break;
+			case SVGPathSeg.PATHSEG_LINETO_ABS:
+			case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
+			case SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
+			case SVGPathSeg.PATHSEG_LINETO_REL:
+			case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
+			case SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
+				path.lineTo(segmentTo);
+				break;
+			case SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
+			case SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
+				path.cubicCurveTo(
+					relativeToPoint.add([segment.x1, segment.y1]),
+					relativeToPoint.add([segment.x2, segment.y2]),
+					segmentTo
+				);
+				break;
+			case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
+			case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
+				path.quadraticCurveTo(
+					relativeToPoint.add([segment.x1, segment.y1]),
+					segmentTo
+				);
+				break;
+			case SVGPathSeg.PATHSEG_ARC_ABS:
+			case SVGPathSeg.PATHSEG_ARC_REL:
+				break;
+			case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
+			case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
+				prevCommand = segments.getItem(i - 1);
+				controlPoint = new Point(prevCommand.x2, prevCommand.y2);
+				controlPoint = controlPoint.subtract([prevCommand.x, prevCommand.y]);
+				controlPoint = controlPoint.add(path.lastSegment.point);
+				controlPoint = path.lastSegment.point.subtract(controlPoint);
+				controlPoint = path.lastSegment.point.add(controlPoint);
+				path.cubicCurveTo(
+					controlPoint,
+					relativeToPoint.add([segment.x2, segment.y2]),
+					segmentTo
+				);
+				break;
+			case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
+			case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
+				for (j = i; j >= 0; --j) {
+					prevCommand = segments.getItem(j);
+					if (prevCommand.pathSegType == SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS ||
+						prevCommand.pathSegType == SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL
+					) {
+						controlPoint = new Point(prevCommand.x1, prevCommand.y1);
+						controlPoint = controlPoint.subtract([prevCommand.x, prevCommand.y]);
+						controlPoint = controlPoint.add(path.segments[j].point);
+						break;
+					}
+				}
+				for (j; j < i; ++j) {
+					controlPoint = path.segments[j].point.subtract(controlPoint);
+					controlPoint = path.segments[j].point.add(controlPoint);
+				}
+				path.quadraticCurveTo(controlPoint, segmentTo);
+				break;
+			}
+		}
+
+		return path;
+	},
+
+	_importPoly: function(svgPoly) {
+		var poly = new Path();
+		var points = svgPoly.points;
+		var start = points.getItem(0);
+		var point;
+		poly.moveTo([start.x, start.y]);
+
+		for (var i = 1; i < points.length; ++i) {
+			point = points.getItem(i);
+			poly.lineTo([point.x, point.y]);
+		}
+		if (svgPoly.nodeName.toLowerCase() == 'polygon') {
+			poly.closePath();
+		}
+
+		return poly;
+	},
+
+	_importAttributesAndStyles: function(svg, item) {
+		var name,
+			value,
+			cssName;
+		for (var i = 0; i < svg.style.length; ++i) {
+			name = svg.style[i];
+			cssName = name.replace(/-(.)/g, function(match, p) {
+				return p.toUpperCase();
+			});
+			value = svg.style[cssName];
+			this._applyAttributeOrStyle(name, value, item, svg);
+		}
+		for (var i = 0; i < svg.attributes.length; ++i) {
+			name = svg.attributes[i].name;
+			value = svg.attributes[i].value;
+			this._applyAttributeOrStyle(name, value, item, svg);
+		}
+	},
+
+	 _applyAttributeOrStyle: function(name, value, item, svg) {
+		if (!value) {
+			return;
+		}
+		switch (name) {
+		case 'id':
+			item.name = value;
+			break;
+		case 'fill':
+			if (value != 'none') {
+				item.fillColor = value;
+			}
+			break;
+		case 'stroke':
+			if (value != 'none') {
+				item.strokeColor = value;
+			}
+			break;
+		case 'stroke-width':
+			item.strokeWidth = parseFloat(value, 10);
+			break;
+		case 'stroke-linecap':
+			item.strokeCap = value;
+			break;
+		case 'stroke-linejoin':
+			item.strokeJoin = value;
+			break;
+		case 'stroke-dasharray':
+			value = value.replace(/px/g, '');
+			value = value.replace(/, /g, ',');
+			value = value.replace(/ /g, ',');
+			value = value.split(',');
+			for (var i in value) {
+				value[i] = parseFloat(value[i], 10);
+			}
+			item.dashArray = value;
+			break;
+		case 'stroke-dashoffset':
+			item.dashOffset = parseFloat(value, 10);
+			break;
+		case 'stroke-miterlimit':
+			item.miterLimit = parseFloat(value, 10);
+			break;
+		case 'transform':
+			this._applyTransform(item, svg);
+		case 'opacity':
+			item.opacity = parseFloat(value, 10);
+		case 'visibility':
+			item.visibility = (value == 'visible') ? true : false;
+			break;
+		case 'font':
+		case 'font-family':
+		case 'font-size':
+			break;
+		default:
+			break;
+		}
+		if (item.characterStyle) {
+			switch (name) {
+			case 'font':
+				var text = document.createElement('span');
+				text.style.font = value;
+				for (var i = 0; i < text.style.length; ++i) {
+					var n = text.style[i];
+					this._applyAttributeOrStyle(n, text.style[n], item, svg);
+				}
+				break;
+			case 'font-family':
+				var fonts = value.split(',');
+				fonts[0] = fonts[0].replace(/^\s+|\s+$/g, "");
+				item.characterStyle.font = fonts[0];
+				break;
+			case 'font-size':
+				item.characterStyle.fontSize = parseFloat(value, 10);
+				break;
+		}
+		}
+	},
+
+	_applyTransform: function(item, svg) {
+		var transforms = svg.transform.baseVal;
+		var transform;
+		var matrix = new Matrix();
+
+		for (var i = 0; i < transforms.numberOfItems; ++i) {
+			transform = transforms.getItem(i);
+			if (transform.type == SVGTransform.SVG_TRANSFORM_UNKNOWN) {
+				continue;
+			}
+			var transformMatrix = new Matrix(
+				transform.matrix.a,
+				transform.matrix.c,
+				transform.matrix.b,
+				transform.matrix.d,
+				transform.matrix.e,
+				transform.matrix.f
+			);
+			switch (transform.type) {
+			case SVGTransform.SVG_TRANSFORM_TRANSLATE:
+				break;
+			case SVGTransform.SVG_TRANSFORM_SCALE:
+				break;
+			case SVGTransform.SVG_TRANSFORM_MATRIX:
+				var temp = transformMatrix.getShearX();
+				transformMatrix.setShearX(transformMatrix.getShearY());
+				transformMatrix.setShearY(temp);
+				break;
+			case SVGTransform.SVG_TRANSFORM_SKEWX:
+				transformMatrix.setShearX(transformMatrix.getShearY());
+				transformMatrix.setShearY(0);
+				break;
+			case SVGTransform.SVG_TRANSFORM_SKEWY:
+				transformMatrix.setShearY(transformMatrix.getShearX());
+				transformMatrix.setShearX(0);
+				break;
+			case SVGTransform.SVG_TRANSFORM_ROTATE:
+				transformMatrix.setShearX(transformMatrix.getShearX() * -1);
+				transformMatrix.setShearY(transformMatrix.getShearY() * -1);
+				break;
+			}
+			matrix.concatenate(transformMatrix);
+		}
+		item.transform(matrix);
+	}
+});
+
 var Style = Item.extend({
 	initialize: function(style) {
 		var clone = style instanceof Style;
@@ -5973,6 +6745,10 @@ var Style = Item.extend({
 			this[key] = value && clone && value.clone
 					? value.clone() : value;
 		}, this);
+	},
+
+	_getChildren: function() {
+		return this._item instanceof Group && this._item._children;
 	},
 
 	statics: {
@@ -6002,7 +6778,7 @@ var Style = Item.extend({
 					set = 'set' + part,
 					get = 'get' + part;
 				src[set] = function(value) {
-					var children = this._item && this._item._children;
+					var children = this._getChildren();
 					value = isColor ? Color.read(arguments, 0, 0, true) : value;
 					if (children) {
 						for (var i = 0, l = children.length; i < l; i++)
@@ -6026,7 +6802,7 @@ var Style = Item.extend({
 					return this;
 				};
 				src[get] = function() {
-					var children = this._item && this._item._children,
+					var children = this._getChildren(),
 						style;
 					if (!children)
 						return this['_' + key];
@@ -6922,7 +7698,7 @@ var View = this.View = Base.extend(Callback, {
 		this._id = element.getAttribute('id');
 		if (this._id == null)
 			element.setAttribute('id', this._id = 'view-' + View._id++);
-		DomEvent.add(element, this._handlers);
+		DomEvent.add(element, this._viewHandlers);
 		if (PaperScript.hasAttribute(element, 'resize')) {
 			var offset = DomElement.getOffset(element, true),
 				that = this;
@@ -6974,7 +7750,7 @@ var View = this.View = Base.extend(Callback, {
 		delete View._viewsById[this._id];
 		if (this._project.view == this)
 			this._project.view = null;
-		DomEvent.remove(this._element, this._handlers);
+		DomEvent.remove(this._element, this._viewHandlers);
 		DomEvent.remove(window, this._windowHandlers);
 		this._element = this._project = null;
 		this.detach('frame');
@@ -7088,6 +7864,7 @@ var View = this.View = Base.extend(Callback, {
 }, new function() {
 	var tool,
 		curPoint,
+		prevFocus,
 		tempFocus,
 		dragging = false;
 
@@ -7127,9 +7904,10 @@ var View = this.View = Base.extend(Callback, {
 		if (!dragging) {
 			view = getView(event);
 			if (view) {
+				prevFocus = View._focused;
 				View._focused = tempFocus = view;
 			} else if (tempFocus && tempFocus == View._focused) {
-				View._focused = null;
+				View._focused = prevFocus;
 				updateFocus();
 			}
 		}
@@ -7185,7 +7963,7 @@ var View = this.View = Base.extend(Callback, {
 	});
 
 	return {
-		_handlers: {
+		_viewHandlers: {
 			mousedown: mousedown,
 			touchstart: mousedown,
 			selectstart: selectstart
@@ -7785,8 +8563,13 @@ var Numerical = new function() {
 
 	var abs = Math.abs,
 		sqrt = Math.sqrt,
+		pow = Math.pow,
 		cos = Math.cos,
 		PI = Math.PI;
+
+	function cbrt(x) {
+		return x > 0 ? pow(x, 1 / 3) : x < 0 ? -pow(-x, 1 / 3) : 0;
+	}
 
 	return {
 		TOLERANCE: 10e-6,
@@ -7830,22 +8613,17 @@ var Numerical = new function() {
 					roots[0] = -c / b;
 					return 1;
 				}
-				if (abs(c) < tolerance)
-					return -1; 
-				return 0; 
+				return abs(c) < tolerance ? -1 : 0; 
 			}
 			var q = b * b - 4 * a * c;
 			if (q < 0)
 				return 0; 
 			q = sqrt(q);
-			if (b < 0)
-				q = -q;
-			q = (b + q) * -0.5;
+			a *= 2; 
 			var n = 0;
-			if (abs(q) >= tolerance)
-				roots[n++] = c / q;
-			if (abs(a) >= tolerance)
-				roots[n++] = q / a;
+			roots[n++] = (-b - q) / a;
+			if (q > 0)
+				roots[n++] = (-b + q) / a;
 			return n; 
 		},
 
@@ -7855,24 +8633,33 @@ var Numerical = new function() {
 			b /= a;
 			c /= a;
 			d /= a;
-			var Q = (b * b - 3 * c) / 9,
-				R = (2 * b * b * b - 9 * b * c + 27 * d) / 54,
-				Q3 = Q * Q * Q,
-				R2 = R * R;
-			b /= 3; 
-			if (R2 < Q3) { 
-				var theta = Math.acos(R / sqrt(Q3)),
-					q = -2 * sqrt(Q);
-				roots[0] = q * cos(theta / 3) - b;
-				roots[1] = q * cos((theta + 2 * PI) / 3) - b;
-				roots[2] = q * cos((theta - 2 * PI) / 3) - b;
-				return 3;
+			var bb = b * b,
+				p = 1 / 3 * (-1 / 3 * bb + c),
+				q = 1 / 2 * (2 / 27 * b * bb - 1 / 3 * b * c + d),
+				ppp = p * p * p,
+				D = q * q + ppp;
+			b /= 3;
+			if (abs(D) < tolerance) {
+			    if (abs(q) < tolerance) { 
+			        roots[0] = - b;
+			        return 1;
+			    } else { 
+			        var u = cbrt(-q);
+			        roots[0] = 2 * u - b;
+			        roots[1] = - u - b;
+			        return 2;
+			    }
+			} else if (D < 0) { 
+			    var phi = 1 / 3 * Math.acos(-q / sqrt(-ppp));
+			    var t = 2 * sqrt(-p);
+			    roots[0] =   t * cos(phi) - b;
+			    roots[1] = - t * cos(phi + PI / 3) - b;
+			    roots[2] = - t * cos(phi - PI / 3) - b;
+			    return 3;
 			} else { 
-				var A = -Math.pow(abs(R) + sqrt(R2 - Q3), 1 / 3);
-				if (R < 0) A = -A;
-				var B = (abs(A) < tolerance) ? 0 : Q / A;
-				roots[0] = (A + B) - b;
-				return 1;
+			    D = sqrt(D);
+			    roots[0] = cbrt(D - q) - cbrt(D + q) - b;
+			    return 1;
 			}
 		}
 	};
@@ -8257,7 +9044,7 @@ var parse_js=new function(){function W(a,b,c){var d=[];for(var e=0;e<a.length;++
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
 			if (/^text\/(?:x-|)paperscript$/.test(script.type)
-					&& !script.getAttribute('data-paper-loaded')) {
+					&& !script.getAttribute('data-paper-ignore')) {
 				var scope = new PaperScope(script);
 				scope.setup(PaperScript.getAttribute(script, 'canvas'));
 				if (script.src) {
@@ -8265,7 +9052,7 @@ var parse_js=new function(){function W(a,b,c){var d=[];for(var e=0;e<a.length;++
 				} else {
 					evaluate(script.innerHTML, scope);
 				}
-				script.setAttribute('data-paper-loaded', true);
+				script.setAttribute('data-paper-ignore', true);
 			}
 		}
 	}
