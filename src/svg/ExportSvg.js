@@ -30,8 +30,11 @@
 var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 	//initialize the svgObj
 	initialize: function() {
-		this.NS = 'http://www.w3.org/2000/svg';
-		this.svgObj = document.createElementNS(this.NS, 'svg');
+		this.svgObj = this.create('svg');
+	},
+
+	create: function(tag) {
+		return document.createElementNS('http://www.w3.org/2000/svg', tag);
 	},
 
 	/**
@@ -80,7 +83,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 	 * @return {SVG DOM} svgG An SVG object
 	 */
 	exportGroup: function(group) {
-		var svgG = document.createElementNS(this.NS, 'g');
+		var svgG = this.create('g');
 		var curChild;
 
 		for (var i in group.children) {
@@ -135,7 +138,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 		case 'rect':
 			var width = pointArray[0].getDistance(pointArray[3], false);
 			var height = pointArray[0].getDistance(pointArray[1], false);
-			svgEle = document.createElementNS(this.NS, 'rect');
+			svgEle = this.create('rect');
 			svgEle.setAttribute('x', path.bounds.topLeft.getX());
 			svgEle.setAttribute('y', path.bounds.topLeft.getY());
 			svgEle.setAttribute('width', width);
@@ -154,7 +157,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			var height = Math.round(dy1);
 			var rx = pointArray[3].getX() - point.x;
 			var ry = pointArray[2].getY() - point.y;
-			svgEle = document.createElementNS(this.NS, 'rect');
+			svgEle = this.create('rect');
 			svgEle.setAttribute('x', path.bounds.topLeft.getX());
 			svgEle.setAttribute('y', path.bounds.topLeft.getY());
 			svgEle.setAttribute('rx', rx);
@@ -163,21 +166,21 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			svgEle.setAttribute('height', height);
 			break;
 		case'line':
-			svgEle = document.createElementNS(this.NS, 'line');
+			svgEle = this.create('line');
 			svgEle.setAttribute('x1', pointArray[0].getX());
 			svgEle.setAttribute('y1', pointArray[0].getY());
 			svgEle.setAttribute('x2', pointArray[pointArray.length - 1].getX());
 			svgEle.setAttribute('y2', pointArray[pointArray.length - 1].getY());
 			break;
 		case 'circle':
-			svgEle = document.createElementNS(this.NS, 'circle');
+			svgEle = this.create('circle');
 			var radius = (pointArray[0].getDistance(pointArray[2], false)) /2;
 			svgEle.setAttribute('cx', path.bounds.center.x);
 			svgEle.setAttribute('cy', path.bounds.center.y);
 			svgEle.setAttribute('r', radius);
 			break;
 		case 'ellipse':
-			svgEle = document.createElementNS(this.NS, 'ellipse');
+			svgEle = this.create('ellipse');
 			var radiusX = (pointArray[2].getDistance(pointArray[0], false)) / 2;
 			var radiusY = (pointArray[3].getDistance(pointArray[1], false)) /2;
 			svgEle.setAttribute('cx', path.bounds.center.x);
@@ -186,7 +189,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			svgEle.setAttribute('ry', radiusY);
 			break;
 		case 'polyline':
-			svgEle = document.createElementNS(this.NS, 'polyline');
+			svgEle = this.create('polyline');
 			var pointString = '';
 			for(i = 0; i < pointArray.length; ++i) {
 				pointString += pointArray[i].getX() + ','  + pointArray[i].getY() + ' ';
@@ -194,7 +197,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			svgEle.setAttribute('points', pointString);
 			break;
 		case 'polygon':
-			svgEle = document.createElementNS(this.NS, 'polygon');
+			svgEle = this.create('polygon');
 			var pointString = '';
 			for(i = 0; i < pointArray.length; ++i) {
 				pointString += pointArray[i].getX() + ',' + pointArray[i].getY() + ' ';
@@ -202,7 +205,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			svgEle.setAttribute('points', pointString);
 			break;
 		case 'text':
-			svgEle = document.createElementNS(this.NS, 'text');
+			svgEle = this.create('text');
 			svgEle.setAttribute('x', path.getPoint().getX());
 			svgEle.setAttribute('y', path.getPoint().getY());
 			if (path.style.font != undefined) {
@@ -217,7 +220,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			svgEle.textContent = path.getContent();
 			break;
 		default:
-			svgEle = document.createElementNS(this.NS, 'path');
+			svgEle = this.create('path');
 			svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 			break;
 		}
@@ -229,10 +232,10 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			var angle = this._determineIfTransformed(path, pointArray, type) + 90;
 			if (angle != 0) {
 				if (type == 'rect' || type == 'roundRect') {
-					svgEle = document.createElementNS(this.NS, 'path');
+					svgEle = this.create('path');
 					svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 				} else {
-					svgEle = document.createElementNS(this.NS, 'path');
+					svgEle = this.create('path');
 					svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 				}
 			} 
@@ -346,7 +349,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 	//pointstring is formatted in the way the SVG XML will be reading
 	//Namely, a point and the way to traverse to that point
 	pathSetup: function(path, pointArray, hIArray, hOArray) {
-		var svgPath = document.createElementNS(this.NS, 'path');
+		var svgPath = this.create('path');
 		var pointString = '';
 		var x1;
 		var x2;
