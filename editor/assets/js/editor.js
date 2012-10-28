@@ -9,7 +9,7 @@ $.extend($.fn, {
 });
 
 function createCodeMirror(place, options, source) {
-	return new CodeMirror(place, paper.Base.merge({
+	return new CodeMirror(place, $.extend({
 		lineNumbers: true,
 		matchBrackets: true,
 		indentUnit: 4,
@@ -20,26 +20,25 @@ function createCodeMirror(place, options, source) {
 	}, options));
 }
 
-function createPaperScript() {
+function createPaperScript(element) {
 	var scriptName = 'paperjs_' + document.documentURI.match(/\/([^\/]*)$/)[1],
-		script = $('script', this).orNull(),
-		runButton = $('.button.run', this).orNull();
+		script = $('script', element).orNull(),
+		runButton = $('.button.run', element).orNull();
 	if (!script || !runButton)
 		return;
-	script.html(localStorage[scriptName] || '');
-	var el = $(this),
-		canvas = $('canvas', this),
+	var canvas = $('canvas', element),
 		hasResize = canvas.attr('resize'),
-		showSplit = el.hasClass('split'),
-		sourceFirst = el.hasClass('source'),
+		showSplit = element.hasClass('split'),
+		sourceFirst = element.hasClass('source'),
 		width, height,
 		editor = null,
 		hasBorders = true,
-		tools = $('.tools', this),
-		inspectorButton = $('.tools .button.inspector', this),
-		inspectorInfo = $('.tools .info', this),
-		source = $('.source', this),
-		console = $('.console', this);
+		tools = $('.tools', element),
+		inspectorButton = $('.tools .button.inspector', element),
+		inspectorInfo = $('.tools .info', element),
+		source = $('.source', element),
+		console = $('.console', element);
+	script.html(localStorage[scriptName] || '');
 
 	function showSource(show) {
 		source.modifyClass('hidden', !show);
@@ -139,9 +138,20 @@ function createPaperScript() {
 		var code = editor.getValue();
 		script.html(code);
 		var scope = new paper.PaperScope(script[0]);
+		installConsole(scope);
+		handleInclude(scope, code, function() {
+			scope.setup(paper.PaperScript.getAttribute(script[0], 'canvas'));
+			scope.evaluate(code);
+			createInspector();
+		});
+	}
+
+	// Run the script once the window is loaded
+	$(window).load(runScript);
+
+	function installConsole(scope) {
 		// Override the console object with one that logs to our new
 		// console
-
 		function print(className, args) {
 			$('<div />')
 				.addClass(className)
@@ -152,29 +162,48 @@ function createPaperScript() {
 			console.scrollTop(console.prop('scrollHeight'));
 		}
 
-		scope.console = {
-			log: function() {
-				print('line', arguments);
-			},
+		$.extend(scope, {
+			console: {
+				log: function() {
+					print('line', arguments);
+				},
 
-			error: function() {
-				print('line error', arguments);
+				error: function() {
+					print('line error', arguments);
+				}
 			}
-		};
+		});
 
 		// Install an error handler to log the errors in our log too:
 		window.onerror = function(error, url, lineNumber) {
 			scope.console.error('Line ' + lineNumber + ': ' + error);
 			paper.view.draw();
 		};
-
-		scope.setup(paper.PaperScript.getAttribute(script[0], 'canvas'));
-		scope.evaluate(code);
-		createInspector();
 	}
 
-	// Run the script once the window is loaded
-	$(window).load(runScript);
+	function handleInclude(scope, code, run) {
+		var includes = [];
+		// Parse code for includes, and load them asynchronously if present
+		code.replace(/\binclude\(['"]([^)]*)['"]\)/g, function(all, url) {
+			includes.push(url);
+		});
+
+		// Install empty include() function, so code can execute include()
+		// statements, which we process separately here.
+		scope.include = function(url) {
+		};
+
+		function load() {
+			var url = includes.shift();
+			if (url) {
+				$.getScript(url, load);
+			} else {
+				run();
+			}
+		}
+
+		load();
+	}
 
 	function resize() {
 		if (!canvas.hasClass('hidden')) {
@@ -190,7 +219,7 @@ function createPaperScript() {
 		}
 		// Resize the main element as well, so that the float:right button
 		// is always positioned correctly.
-		el.attr({ width: width, height: height });
+		element.attr({ width: width, height: height });
 		source.attr({
 			width: width - (hasBorders ? 2 : 1),
 			height: height - (hasBorders ? 2 : 0)
@@ -242,7 +271,9 @@ function createPaperScript() {
 }
 
 $(function() {
-	$('.paperscript').each(createPaperScript);
+	$('.paperscript').each(function() {
+		createPaperScript($(this));
+	});
 	$(document).keydown(function(event) {
 		if ((event.metaKey || event.ctrlKey) && event.which == 69) {
 			$('.paperscript .button').trigger('click', event);
