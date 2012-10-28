@@ -49,7 +49,11 @@
             "supernew": true,
             "laxbreak": true,
             "eqeqeq": false,
-            "eqnull": true
+            "eqnull": true,
+            "loopfunc": true,
+            "boss": true,
+            "loopfunc": true,
+            "shadow": true
         }
     }
 }
