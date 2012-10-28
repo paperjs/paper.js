@@ -74,6 +74,7 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 			this._importAttributesAndStyles(svg, item);
 			symbol = new Symbol(item);
 			item = null;
+			break;
 		default:
 			// Not supported yet.
 		}
@@ -482,8 +483,10 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 			break;
 		case 'transform':
 			this._applyTransform(item, svg);
+			break;
 		case 'opacity':
 			item.opacity = parseFloat(value, 10);
+			break;
 		case 'visibility':
 			item.visibility = (value == 'visible') ? true : false;
 			break;
@@ -566,8 +569,8 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 				transformMatrix.setShearX(0);
 				break;
 			case SVGTransform.SVG_TRANSFORM_ROTATE:
-				transformMatrix.setShearX(transformMatrix.getShearX() * -1);
-				transformMatrix.setShearY(transformMatrix.getShearY() * -1);
+				transformMatrix.setShearX(-transformMatrix.getShearX());
+				transformMatrix.setShearY(-transformMatrix.getShearY());
 				break;
 			}
 			matrix.concatenate(transformMatrix);

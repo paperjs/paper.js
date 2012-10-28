@@ -28,10 +28,6 @@
  */
 
 var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
-	//initialize the svgObj
-	initialize: function() {
-		this.svgObj = this.create('svg');
-	},
 
 	create: function(tag) {
 		return document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -49,13 +45,12 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 	 */
 	 //TODO: Implement symbols and Gradients
 	exportProject: function(project) {
-		var layerArray = project.layers;
-		var layer;
-		for (var i = 0; i < layerArray.length; ++i) {
-			layer = layerArray[i];
-			this.svgObj.appendChild(this.exportLayer(layer));
+		var svg = this.create('svg'),
+			layers = project.layers;
+		for (var i = 0; i < layers.length; ++i) {
+			svg.appendChild(this.exportLayer(layers[i]));
 		}
-		return this.svgObj;
+		return svg;
 	},
 
 	/**
@@ -366,7 +361,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 			y2 = pointArray[i + 1].getY();
 			handleOut1 = hOArray[i];
 			handleIn2 = hIArray[i+1];
-			if (handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() ==0) {
+			if (handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() == 0) {
 					//L is lineto, moving to a point with drawing
 					pointString+= 'L' + x2 + ',' + y2 + ' ';
 			} else {
@@ -376,7 +371,7 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 				pointString+= (x2 - x1) + ',' + (y2-y1) +  ' ';
 			}
 		}
-		if (!hOArray[hOArray.length - 1].equals([0,0]) && !hIArray[0].equals([0,0])) {
+		if (!hOArray[hOArray.length - 1].equals([0, 0]) && !hIArray[0].equals([0, 0])) {
 			handleOut1 = hOArray[hOArray.length - 1];
 			handleIn2 = hIArray[0];
 			// Bezier curve from last point to first
