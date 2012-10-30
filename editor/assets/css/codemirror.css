@@ -7,10 +7,18 @@
 
 .CodeMirror {
 	height: 100%;
+	/* Necessary so the scrollbar can be absolutely positioned within the wrapper on Lion. */
+	position: relative;
+	/* This prevents unwanted scrollbars from showing up on the body and wrapper in IE. */
+	overflow: hidden;
 }
 
 .CodeMirror-scroll {
 	overflow: auto;
+	/* This is needed to prevent an IE[67] bug where the scrolled content
+	   is visible outside of the scrolling box. */
+	position: relative;
+	outline: none;
 }
 
 .CodeMirror-gutter {
@@ -27,6 +35,8 @@
 	color: #aaa;
 	text-align: right;
 	padding: 2px 8px 2px 8px; /* 2px required for CodeMirror-selected */
+	white-space: pre !important;
+	cursor: default;
 }
 
 .CodeMirror-gutter-text pre {

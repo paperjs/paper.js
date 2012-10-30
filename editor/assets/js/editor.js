@@ -1,3 +1,5 @@
+// Install some useful jQuery extensions that we use a lot
+
 $.extend($.fn, {
 	modifyClass: function(className, add) {
 		return this[add ? 'addClass' : 'removeClass'](className);
@@ -27,18 +29,21 @@ function createPaperScript(element) {
 	if (!script || !runButton)
 		return;
 	var canvas = $('canvas', element),
-		hasResize = canvas.attr('resize'),
+		hasResize = canvas.attr('resize') !== undefined,
 		showSplit = element.hasClass('split'),
 		sourceFirst = element.hasClass('source'),
 		width, height,
 		editor = null,
 		hasBorders = true,
 		tools = $('.tools', element),
-		inspectorButton = $('.tools .button.inspector', element),
+		inspectorButton = $('.tools .button.inspector', element).orNull(),
 		inspectorInfo = $('.tools .info', element),
 		source = $('.source', element),
-		console = $('.console', element);
-	script.html(localStorage[scriptName] || '');
+		console = $('.console', element),
+		code = localStorage[scriptName] || '',
+		scope;
+
+	script.html(code);
 
 	function showSource(show) {
 		source.modifyClass('hidden', !show);
@@ -63,6 +68,89 @@ function createPaperScript(element) {
 		}
 	}
 
+	function evaluateCode() {
+		scope.setup(canvas[0]);
+		scope.evaluate(code);
+		createInspector();
+	}
+
+	function runCode() {
+		// Update script to edited version
+		code = editor.getValue();
+		script.html(code);
+		// In order to be able to install our own error handlers first, we are
+		// not relying on automatic script loading, which is disabled by the use
+		// of data-paper-ignore="true". So we need to create a new paperscope
+		// each time.
+		if (scope)
+			scope.remove();
+		scope = new paper.PaperScope(script[0]);
+		createConsole();
+		// parseInclude() triggers evaluateCode() in the right moment for us.
+		parseInclude();
+	}
+
+	// Run the script once the window is loaded
+	$(window).load(runCode);
+
+	function createConsole() {
+		// Override the console object with one that logs to our new
+		// console
+		function print(className, args) {
+			$('<div />')
+				.addClass(className)
+				.text(paper.Base.each(args, function(arg) {
+									this.push(arg + '');
+								}, []).join(' '))
+				.appendTo(console);
+			console.scrollTop(console.prop('scrollHeight'));
+		}
+
+		$.extend(scope, {
+			console: {
+				log: function() {
+					print('line', arguments);
+				},
+
+				error: function() {
+					print('line error', arguments);
+				}
+			}
+		});
+	}
+
+	// Install an error handler to log the errors in our log too:
+	window.onerror = function(error, url, lineNumber) {
+		scope.console.error('Line ' + lineNumber + ': ' + error);
+		paper.view.draw();
+	};
+
+	function parseInclude() {
+		var includes = [];
+		// Parse code for includes, and load them synchronously, if present
+		code.replace(/\binclude\(['"]([^)]*)['"]\)/g, function(all, url) {
+			includes.push(url);
+		});
+
+		// Install empty include() function, so code can execute include()
+		// statements, which we process separately above.
+		scope.include = function(url) {
+		};
+
+		// Load all includes sequentially, and finally evaluate code, since 
+		// the code will probably be interdependent.
+		function load() {
+			var url = includes.shift();
+			if (url) {
+				$.getScript(url, load);
+			} else {
+				evaluateCode();
+			}
+		}
+
+		load();
+	}
+
 	var inspectorTool,
 		previousTool,
 		toggleInspector = false;
@@ -70,7 +158,6 @@ function createPaperScript(element) {
 	function createInspector() {
 		if (!inspectorButton)
 			return;
-		var scope = paper.PaperScope.get(script[0]);
 		previousTool = scope.tools[0];
 		inspectorTool = new paper.Tool();
 		prevItem = null;
@@ -111,128 +198,45 @@ function createPaperScript(element) {
 		inspectorTool.onSelect = function() {
 			console.log('select');
 		};
+		previousTool._name = 'normal';
+		inspectorTool._name = 'inspector';
 		// reactivate previous tool for now
-		if (previousTool)
+		if (previousTool) {
 			previousTool.activate();
+		}
 	}
 
-	inspectorButton.click(function(event) {
-		if (inspectorTool) {
-			(toggleInspector && previousTool ? previousTool : inspectorTool).activate();
-			if (toggleInspector) {
-				if (prevItem)
-					prevItem.selected = false;
-				prevItem = null;
+	if (inspectorButton) {
+		inspectorButton.click(function(event) {
+			if (inspectorTool) {
+				(toggleInspector && previousTool ? previousTool : inspectorTool).activate();
+				if (toggleInspector) {
+					if (prevItem)
+						prevItem.selected = false;
+					prevItem = null;
+				}
+				toggleInspector = !toggleInspector;
 			}
-			toggleInspector = !toggleInspector;
-		}
+		});
+	}
+
+	$('.editor', element).split({ orientation:'vertical', limit: 100, position:'50%' });
+	element.split({ orientation:'horizontal', limit: 100, position:'50%' });
+	$('.editor', element).on('splitter.resize', function() {
+		editor.refresh();
 	});
 
-	// In order to be able to install our own error handlers first, we are
-	// not relying on automatic script loading, which is disabled by the use
-	// of data-paper-ignore="true". So we need to create a new paperscope
-	// or re
-
-	function runScript() {
-		// Update script to edited version
-		var code = editor.getValue();
-		script.html(code);
-		var scope = new paper.PaperScope(script[0]);
-		installConsole(scope);
-		handleInclude(scope, code, function() {
-			scope.setup(paper.PaperScript.getAttribute(script[0], 'canvas'));
-			scope.evaluate(code);
-			createInspector();
-		});
-	}
-
-	// Run the script once the window is loaded
-	$(window).load(runScript);
-
-	function installConsole(scope) {
-		// Override the console object with one that logs to our new
-		// console
-		function print(className, args) {
-			$('<div />')
-				.addClass(className)
-				.text(paper.Base.each(args, function(arg) {
-									this.push(arg + '');
-								}, []).join(' '))
-				.appendTo(console);
-			console.scrollTop(console.prop('scrollHeight'));
-		}
-
-		$.extend(scope, {
-			console: {
-				log: function() {
-					print('line', arguments);
-				},
-
-				error: function() {
-					print('line error', arguments);
-				}
-			}
-		});
-
-		// Install an error handler to log the errors in our log too:
-		window.onerror = function(error, url, lineNumber) {
-			scope.console.error('Line ' + lineNumber + ': ' + error);
-			paper.view.draw();
-		};
-	}
-
-	function handleInclude(scope, code, run) {
-		var includes = [];
-		// Parse code for includes, and load them asynchronously if present
-		code.replace(/\binclude\(['"]([^)]*)['"]\)/g, function(all, url) {
-			includes.push(url);
-		});
-
-		// Install empty include() function, so code can execute include()
-		// statements, which we process separately here.
-		scope.include = function(url) {
-		};
-
-		function load() {
-			var url = includes.shift();
-			if (url) {
-				$.getScript(url, load);
-			} else {
-				run();
-			}
-		}
-
-		load();
-	}
-
 	function resize() {
-		if (!canvas.hasClass('hidden')) {
-			width = canvas.getWidth();
-			height = canvas.getHeight();
-		} else if (hasResize) {
-			// Can't get correct dimensions from hidden canvas,
-			// so calculate again.
-			var size = $window.getScrollSize();
-			var offset = source.getOffset();
-			width = size.width - offset.x;
-			height = size.height - offset.y;
-		}
-		// Resize the main element as well, so that the float:right button
-		// is always positioned correctly.
-		element.attr({ width: width, height: height });
-		source.attr({
-			width: width - (hasBorders ? 2 : 1),
-			height: height - (hasBorders ? 2 : 0)
-		});
+		editor.refresh();
+		$('.splitter_panel', element).trigger('splitter.resize');
 	}
 
 	function toggleView() {
 		var show = source.hasClass('hidden');
-		resize();
 		canvas.modifyClass('hidden', show);
 		showSource(show);
 		if (!show)
-			runScript();
+			runCode();
 		// Add extra margin if there is scrolling
 		runButton.css('margin-right',
 			$('.CodeMirror', source).getScrollSize().height > height
@@ -244,10 +248,8 @@ function createPaperScript(element) {
 		// which happens on the load event. This is needed because we rely
 		// on paper.js performing the actual resize magic.
 		$(window).load(function() {
-			$window.resize(resize);
+			$(window).resize(resize);
 		});
-		hasBorders = false;
-		source.css('border-width', '0 0 0 1px');
 	}
 
 	if (showSplit) {
@@ -259,7 +261,7 @@ function createPaperScript(element) {
 	runButton
 		.click(function(event) {
 			if (showSplit) {
-				runScript();
+				runCode();
 			} else {
 				toggleView();
 			}
@@ -276,7 +278,7 @@ $(function() {
 	});
 	$(document).keydown(function(event) {
 		if ((event.metaKey || event.ctrlKey) && event.which == 69) {
-			$('.paperscript .button').trigger('click', event);
+			$('.paperscript .button.run').trigger('click', event);
 			return false;
 		}
 	});
