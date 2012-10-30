@@ -510,7 +510,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		// CanvasView, and then handle the active tool, if any.
 		if (view._onMouseDown)
 			view._onMouseDown(event, curPoint);
-		if (tool = view._scope.tool)
+		if (tool = view._scope._tool)
 			tool._onHandleEvent('mousedown', curPoint, event);
 		// In the end we always call draw(), but pass checkRedraw = true, so we
 		// only redraw the view if anything has changed in the above calls.
@@ -539,7 +539,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		var point = event && viewToProject(view, event);
 		if (view._onMouseMove)
 			view._onMouseMove(event, point);
-		if (tool = view._scope.tool) {
+		if (tool = view._scope._tool) {
 			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
 			if (dragging && !onlyMove) {
 				if ((curPoint = point || curPoint) 
