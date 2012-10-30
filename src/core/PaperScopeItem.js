@@ -45,6 +45,10 @@ var PaperScopeItem = Base.extend(/** @lends PaperScopeItem# */{
 		return true;
 	},
 
+	isActive: function() {
+		return this._scope[this._reference] === this;
+	},
+
 	remove: function() {
 		if (this._index == null)
 			return false;
