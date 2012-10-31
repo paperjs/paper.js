@@ -91,7 +91,7 @@ function createPaperScript(element) {
 
 	if (consoleContainer) {
 		// Append to a container inside the console, so css can use :first-child
-		consoleContainer = $('<div class="lines"/>').appendTo(consoleContainer);
+		consoleContainer = $('<div class="content"/>').appendTo(consoleContainer);
 	}
 
 	function createConsole() {

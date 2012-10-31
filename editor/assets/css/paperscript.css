@@ -51,17 +51,17 @@ html,
 	height: 100%;
 }
 
-.paperscript .console .lines {
-	overflow: auto;
-	height: 100%;
+.paperscript .console {
+	background: #f4f4f4;
 }
 
-.paperscript .console {
+.paperscript .console .content {
 	color: #666;
-	background: #f4f4f4;
 	font-family: Menlo, Consolas, "Vera Mono", monospace;
 	font-size: 12px;
 	line-height: 16px;
+	overflow: auto;
+	height: 100%;
 }
 
 .paperscript .console .line {
