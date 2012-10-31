@@ -53,7 +53,7 @@
                     return position;
                 } else {
                     position = pos;
-                    var max = splitter[size]();
+                    var max = splitter[size](),
                         half = Math.round(max / 2);
                     splitter.css(first, pos - half);
                     panel_1[size](pos - half);
