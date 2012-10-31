@@ -13,9 +13,9 @@
 <script src="assets/js/editor.js" type="text/javascript"></script>
 </head>
 <body>
-<div class="paperscript split">
-    <div class="editor">
-        <div class="half">
+<div class="paperscript split pane-hor">
+    <div class="pane-ver">
+        <div class="editor">
             <script type="text/paperscript" canvas="canvas" data-paper-ignore="true"></script>
             <div class="source buttons-context hidden">
                 <div class="buttons">
@@ -23,10 +23,11 @@
                 </div>
             </div>
         </div>
-        <div class="half">
-            <div class="console"></div>
+        <div class="console buttons-context">
+            <div class="buttons">
+                <div class="button clear-console">Clear</div>
+            </div>
         </div>
-        <div class="clear"></div>
     </div>
     <div class="canvas buttons-context">
         <div class="buttons tools">

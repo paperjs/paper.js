@@ -51,13 +51,17 @@ html,
 	height: 100%;
 }
 
+.paperscript .console .lines {
+	overflow: auto;
+	height: 100%;
+}
+
 .paperscript .console {
 	color: #666;
-	background: #eee;
+	background: #f4f4f4;
 	font-family: Menlo, Consolas, "Vera Mono", monospace;
 	font-size: 12px;
 	line-height: 16px;
-	overflow: auto;
 }
 
 .paperscript .console .line {
@@ -107,18 +111,20 @@ html,
  position: relative;
 }
 
+.splitter_panel .hsplitter,
 .splitter_panel .vsplitter {
     background-color: #ddd;
+    z-index: 1000;
+}
+
+.splitter_panel .vsplitter {
     cursor: col-resize;
-    z-index:900;
-    width: 4px;
+    width: 3px;
 }
 
 .splitter_panel .hsplitter {
-    background-color: #ddd;
     cursor: row-resize;
-    z-index: 800;
-    height: 4px;
+    height: 3px;
 }
 
 .splitter_panel .vsplitter,

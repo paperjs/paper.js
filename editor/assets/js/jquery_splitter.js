@@ -1,6 +1,7 @@
 /*!
  * JQuery Spliter Plugin
  * Copyright (C) 2010 Jakub Jankiewicz <http://jcubic.pl> 
+ * Modifications for Paper.js by Juerg Lehni, 2012 <http://lehni.org> 
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -52,10 +53,11 @@
                     return position;
                 } else {
                     position = n;
-                    var sw = Math.round(splitter[size]() / 2);
+                    var w = splitter[size]();
+                        sw = Math.round(w / 2);
                     splitter.css(first, n - sw);
                     panel_1[size](n - sw);
-                    panel_2[size](self[size]() - n - sw);
+                    panel_2[size](self[size]() - n - (w - sw));
                 }
             },
             orientation: settings.orientation,
@@ -106,7 +108,7 @@
                 if (x > self.limit &&
                     x < self[size]() - self.limit) {
                     self.position(x);
-                    self.find('.splitter_panel').trigger('splitter.resize');
+                    self.closest('.splitter_panel').trigger('splitter.resize');
                     return false;
                 }
                 settings.onDrag(e);
@@ -125,12 +127,7 @@
         //inital position of splitter
         var m = settings.position.match(/^([0-9]+)(%)?$/),
             max = this[size](),
-            pos;
-        if (m[2]) {
-            pos = Math.round((max * +m[1]) / 100);
-        } else {
-            pos = settings.position;
-        }
+            pos = m[2] ? Math.round((max * +m[1]) / 100) : settings.position;
         if (pos > max - settings.limit) {
             pos = max - settings.limit;
         } else if (pos < settings.limit) {

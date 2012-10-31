@@ -7,6 +7,10 @@ $.extend($.fn, {
 
 	orNull: function() {
 		return this.length > 0 ? this : null;
+	},
+
+	findAndSelf: function(selector) {
+		return this.find(selector).add(this.filter(selector));
 	}
 });
 
@@ -32,14 +36,12 @@ function createPaperScript(element) {
 		hasResize = canvas.attr('resize') !== undefined,
 		showSplit = element.hasClass('split'),
 		sourceFirst = element.hasClass('source'),
-		width, height,
+		consoleContainer = $('.console', element).orNull(),
 		editor = null,
-		hasBorders = true,
 		tools = $('.tools', element),
 		inspectorButton = $('.tools .button.inspector', element).orNull(),
 		inspectorInfo = $('.tools .info', element),
 		source = $('.source', element),
-		console = $('.console', element),
 		code = localStorage[scriptName] || '',
 		scope;
 
@@ -93,17 +95,24 @@ function createPaperScript(element) {
 	// Run the script once the window is loaded
 	$(window).load(runCode);
 
+	if (consoleContainer) {
+		// Append to a container inside the console, so css can use :first-child
+		consoleContainer = $('<div class="lines"/>').appendTo(consoleContainer);
+	}
+
 	function createConsole() {
+		if (!consoleContainer)
+			return;
 		// Override the console object with one that logs to our new
 		// console
 		function print(className, args) {
-			$('<div />')
+			$('<div/>')
 				.addClass(className)
 				.text(paper.Base.each(args, function(arg) {
 									this.push(arg + '');
 								}, []).join(' '))
-				.appendTo(console);
-			console.scrollTop(console.prop('scrollHeight'));
+				.appendTo(consoleContainer);
+			consoleContainer.scrollTop(consoleContainer.prop('scrollHeight'));
 		}
 
 		$.extend(scope, {
@@ -220,9 +229,18 @@ function createPaperScript(element) {
 		});
 	}
 
-	$('.editor', element).split({ orientation:'vertical', limit: 100, position:'50%' });
-	element.split({ orientation:'horizontal', limit: 100, position:'50%' });
-	$('.editor', element).on('splitter.resize', function() {
+	element.findAndSelf('.pane-hor').split({
+		orientation:'vertical',
+		limit: 100,
+		position:'50%'
+	});
+	element.findAndSelf('.pane-ver').split({
+		orientation:'horizontal',
+		limit: 100,
+		position:'50%'
+	});
+	// Refresh editor if parent gets resized
+	$('.editor', element).parents('.splitter_panel').on('splitter.resize', function() {
 		editor.refresh();
 	});
 
@@ -237,10 +255,6 @@ function createPaperScript(element) {
 		showSource(show);
 		if (!show)
 			runCode();
-		// Add extra margin if there is scrolling
-		runButton.css('margin-right',
-			$('.CodeMirror', source).getScrollSize().height > height
-				? 23 : 8);
 	}
 
 	if (hasResize) {
@@ -258,18 +272,22 @@ function createPaperScript(element) {
 		toggleView();
 	}
 
-	runButton
-		.click(function(event) {
-			if (showSplit) {
-				runCode();
-			} else {
-				toggleView();
-			}
-			return false;
-		})
-		.mousedown(function(event) {
-			return false;
-		});
+	$('.button', element).mousedown(function(event) {
+		return false;
+	});
+
+	runButton.click(function() {
+		if (showSplit) {
+			runCode();
+		} else {
+			toggleView();
+		}
+		return false;
+	});
+
+	$('.button.clear-console', element).click(function() {
+		consoleContainer.children().remove();
+	})
 }
 
 $(function() {

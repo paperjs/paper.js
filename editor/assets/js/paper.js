@@ -13,7 +13,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 22 18:03:57 2012 -0700
+ * Date: Tue Oct 30 11:43:40 2012 -0700
  *
  ***
  *
@@ -509,6 +509,10 @@ var PaperScopeItem = Base.extend({
 			return false;
 		this._scope[this._reference] = this;
 		return true;
+	},
+
+	isActive: function() {
+		return this._scope[this._reference] === this;
 	},
 
 	remove: function() {
@@ -5982,19 +5986,18 @@ var PointText = this.PointText = TextItem.extend({
 });
 
 var ExportSvg = this.ExportSvg = Base.extend({
-	initialize: function() {
-		this.NS = 'http://www.w3.org/2000/svg';
-		this.svgObj = document.createElementNS(this.NS, 'svg');
+
+	create: function(tag) {
+		return document.createElementNS('http://www.w3.org/2000/svg', tag);
 	},
 
 	exportProject: function(project) {
-		var layerArray = project.layers;
-		var layer;
-		for (var i = 0; i < layerArray.length; ++i) {
-			layer = layerArray[i];
-			this.svgObj.appendChild(this.exportLayer(layer));
+		var svg = this.create('svg'),
+			layers = project.layers;
+		for (var i = 0; i < layers.length; ++i) {
+			svg.appendChild(this.exportLayer(layers[i]));
 		}
-		return this.svgObj;
+		return svg;
 	},
 
 	exportLayer: function(layer) {
@@ -6002,7 +6005,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 	},
 
 	exportGroup: function(group) {
-		var svgG = document.createElementNS(this.NS, 'g');
+		var svgG = this.create('g');
 		var curChild;
 
 		for (var i in group.children) {
@@ -6041,7 +6044,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 		case 'rect':
 			var width = pointArray[0].getDistance(pointArray[3], false);
 			var height = pointArray[0].getDistance(pointArray[1], false);
-			svgEle = document.createElementNS(this.NS, 'rect');
+			svgEle = this.create('rect');
 			svgEle.setAttribute('x', path.bounds.topLeft.getX());
 			svgEle.setAttribute('y', path.bounds.topLeft.getY());
 			svgEle.setAttribute('width', width);
@@ -6059,7 +6062,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 			var height = Math.round(dy1);
 			var rx = pointArray[3].getX() - point.x;
 			var ry = pointArray[2].getY() - point.y;
-			svgEle = document.createElementNS(this.NS, 'rect');
+			svgEle = this.create('rect');
 			svgEle.setAttribute('x', path.bounds.topLeft.getX());
 			svgEle.setAttribute('y', path.bounds.topLeft.getY());
 			svgEle.setAttribute('rx', rx);
@@ -6068,21 +6071,21 @@ var ExportSvg = this.ExportSvg = Base.extend({
 			svgEle.setAttribute('height', height);
 			break;
 		case'line':
-			svgEle = document.createElementNS(this.NS, 'line');
+			svgEle = this.create('line');
 			svgEle.setAttribute('x1', pointArray[0].getX());
 			svgEle.setAttribute('y1', pointArray[0].getY());
 			svgEle.setAttribute('x2', pointArray[pointArray.length - 1].getX());
 			svgEle.setAttribute('y2', pointArray[pointArray.length - 1].getY());
 			break;
 		case 'circle':
-			svgEle = document.createElementNS(this.NS, 'circle');
+			svgEle = this.create('circle');
 			var radius = (pointArray[0].getDistance(pointArray[2], false)) /2;
 			svgEle.setAttribute('cx', path.bounds.center.x);
 			svgEle.setAttribute('cy', path.bounds.center.y);
 			svgEle.setAttribute('r', radius);
 			break;
 		case 'ellipse':
-			svgEle = document.createElementNS(this.NS, 'ellipse');
+			svgEle = this.create('ellipse');
 			var radiusX = (pointArray[2].getDistance(pointArray[0], false)) / 2;
 			var radiusY = (pointArray[3].getDistance(pointArray[1], false)) /2;
 			svgEle.setAttribute('cx', path.bounds.center.x);
@@ -6091,7 +6094,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 			svgEle.setAttribute('ry', radiusY);
 			break;
 		case 'polyline':
-			svgEle = document.createElementNS(this.NS, 'polyline');
+			svgEle = this.create('polyline');
 			var pointString = '';
 			for(i = 0; i < pointArray.length; ++i) {
 				pointString += pointArray[i].getX() + ','  + pointArray[i].getY() + ' ';
@@ -6099,7 +6102,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 			svgEle.setAttribute('points', pointString);
 			break;
 		case 'polygon':
-			svgEle = document.createElementNS(this.NS, 'polygon');
+			svgEle = this.create('polygon');
 			var pointString = '';
 			for(i = 0; i < pointArray.length; ++i) {
 				pointString += pointArray[i].getX() + ',' + pointArray[i].getY() + ' ';
@@ -6107,7 +6110,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 			svgEle.setAttribute('points', pointString);
 			break;
 		case 'text':
-			svgEle = document.createElementNS(this.NS, 'text');
+			svgEle = this.create('text');
 			svgEle.setAttribute('x', path.getPoint().getX());
 			svgEle.setAttribute('y', path.getPoint().getY());
 			if (path.style.font != undefined) {
@@ -6122,7 +6125,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 			svgEle.textContent = path.getContent();
 			break;
 		default:
-			svgEle = document.createElementNS(this.NS, 'path');
+			svgEle = this.create('path');
 			svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 			break;
 		}
@@ -6130,10 +6133,10 @@ var ExportSvg = this.ExportSvg = Base.extend({
 			var angle = this._determineIfTransformed(path, pointArray, type) + 90;
 			if (angle != 0) {
 				if (type == 'rect' || type == 'roundRect') {
-					svgEle = document.createElementNS(this.NS, 'path');
+					svgEle = this.create('path');
 					svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 				} else {
-					svgEle = document.createElementNS(this.NS, 'path');
+					svgEle = this.create('path');
 					svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 				}
 			} 
@@ -6230,7 +6233,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 		return angleInDegrees;
 	},
 	pathSetup: function(path, pointArray, hIArray, hOArray) {
-		var svgPath = document.createElementNS(this.NS, 'path');
+		var svgPath = this.create('path');
 		var pointString = '';
 		var x1;
 		var x2;
@@ -6246,7 +6249,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 			y2 = pointArray[i + 1].getY();
 			handleOut1 = hOArray[i];
 			handleIn2 = hIArray[i+1];
-			if (handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() ==0) {
+			if (handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() == 0) {
 					pointString+= 'L' + x2 + ',' + y2 + ' ';
 			} else {
 				pointString+= 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
@@ -6254,7 +6257,7 @@ var ExportSvg = this.ExportSvg = Base.extend({
 				pointString+= (x2 - x1) + ',' + (y2-y1) +  ' ';
 			}
 		}
-		if (!hOArray[hOArray.length - 1].equals([0,0]) && !hIArray[0].equals([0,0])) {
+		if (!hOArray[hOArray.length - 1].equals([0, 0]) && !hIArray[0].equals([0, 0])) {
 			handleOut1 = hOArray[hOArray.length - 1];
 			handleIn2 = hIArray[0];
 			x1 = pointArray[pointArray.length - 1].getX();
@@ -6371,6 +6374,7 @@ var ImportSvg = this.ImportSvg = Base.extend({
 			this._importAttributesAndStyles(svg, item);
 			symbol = new Symbol(item);
 			item = null;
+			break;
 		default:
 		}
 
@@ -6656,8 +6660,10 @@ var ImportSvg = this.ImportSvg = Base.extend({
 			break;
 		case 'transform':
 			this._applyTransform(item, svg);
+			break;
 		case 'opacity':
 			item.opacity = parseFloat(value, 10);
+			break;
 		case 'visibility':
 			item.visibility = (value == 'visible') ? true : false;
 			break;
@@ -6727,8 +6733,8 @@ var ImportSvg = this.ImportSvg = Base.extend({
 				transformMatrix.setShearX(0);
 				break;
 			case SVGTransform.SVG_TRANSFORM_ROTATE:
-				transformMatrix.setShearX(transformMatrix.getShearX() * -1);
-				transformMatrix.setShearY(transformMatrix.getShearY() * -1);
+				transformMatrix.setShearX(-transformMatrix.getShearX());
+				transformMatrix.setShearY(-transformMatrix.getShearY());
 				break;
 			}
 			matrix.concatenate(transformMatrix);
@@ -7894,7 +7900,7 @@ var View = this.View = Base.extend(Callback, {
 		dragging = true;
 		if (view._onMouseDown)
 			view._onMouseDown(event, curPoint);
-		if (tool = view._scope.tool)
+		if (tool = view._scope._tool)
 			tool._onHandleEvent('mousedown', curPoint, event);
 		view.draw(true);
 	}
@@ -7916,7 +7922,7 @@ var View = this.View = Base.extend(Callback, {
 		var point = event && viewToProject(view, event);
 		if (view._onMouseMove)
 			view._onMouseMove(event, point);
-		if (tool = view._scope.tool) {
+		if (tool = view._scope._tool) {
 			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
 			if (dragging && !onlyMove) {
 				if ((curPoint = point || curPoint) 
@@ -8176,7 +8182,7 @@ var Key = this.Key = new function() {
 			type = down ? 'keydown' : 'keyup',
 			view = View._focused,
 			scope = view && view.isVisible() && view._scope,
-			tool = scope && scope.tool;
+			tool = scope && scope._tool;
 		keyMap[key] = down;
 		if (tool && tool.responds(type)) {
 			tool.fire(type, new KeyEvent(down, key, character, event));
