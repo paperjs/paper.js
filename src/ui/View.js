@@ -102,8 +102,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 				that = this;
 			size = DomElement.getViewportBounds(element)
 					.getSize().subtract(offset);
-			element.width = size.width;
-			element.height = size.height;
 			this._windowHandlers = {
 				resize: function(event) {
 					// Only update element offset if it's not invisible, as
@@ -126,6 +124,11 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 						parseInt(element.getAttribute('height')))
 				: DomElement.getSize(element);
 		}
+		// Set canvas size even if we just deterined the size from it, since
+		// it might have been set to a % size, in which case it would use some
+		// default internal size (300x150 on WebKit) and scale up the pixels.
+		element.width = size.width;
+		element.height = size.height;
 		// TODO: Test this on IE:
 		if (PaperScript.hasAttribute(element, 'stats')) {
 			this._stats = new Stats();
