@@ -7710,8 +7710,6 @@ var View = this.View = Base.extend(Callback, {
 				that = this;
 			size = DomElement.getViewportBounds(element)
 					.getSize().subtract(offset);
-			element.width = size.width;
-			element.height = size.height;
 			this._windowHandlers = {
 				resize: function(event) {
 					if (!DomElement.isInvisible(element))
@@ -7727,6 +7725,8 @@ var View = this.View = Base.extend(Callback, {
 						parseInt(element.getAttribute('height')))
 				: DomElement.getSize(element);
 		}
+		element.width = size.width;
+		element.height = size.height;
 		if (PaperScript.hasAttribute(element, 'stats')) {
 			this._stats = new Stats();
 			var stats = this._stats.domElement,

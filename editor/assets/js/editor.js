@@ -33,7 +33,6 @@ function createPaperScript(element) {
 	if (!script || !runButton)
 		return;
 	var canvas = $('canvas', element),
-		hasResize = canvas.attr('resize') !== undefined,
 		showSplit = element.hasClass('split'),
 		sourceFirst = element.hasClass('source'),
 		consoleContainer = $('.console', element).orNull(),
@@ -50,8 +49,6 @@ function createPaperScript(element) {
 	function showSource(show) {
 		source.modifyClass('hidden', !show);
 		runButton.text(show ? 'Run' : 'Source');
-		if (tools && !showSplit)
-			tools.modifyClass('hidden', show);
 		if (show && !editor) {
 			editor = createCodeMirror(source[0], {
 				onKeyEvent: function(editor, event) {
@@ -92,9 +89,6 @@ function createPaperScript(element) {
 		parseInclude();
 	}
 
-	// Run the script once the window is loaded
-	$(window).load(runCode);
-
 	if (consoleContainer) {
 		// Append to a container inside the console, so css can use :first-child
 		consoleContainer = $('<div class="lines"/>').appendTo(consoleContainer);
@@ -128,6 +122,12 @@ function createPaperScript(element) {
 		});
 	}
 
+	function clearConsole() {
+		if (consoleContainer) {
+			consoleContainer.children().remove();
+		}
+	}
+
 	// Install an error handler to log the errors in our log too:
 	window.onerror = function(error, url, lineNumber) {
 		scope.console.error('Line ' + lineNumber + ': ' + error);
@@ -156,7 +156,6 @@ function createPaperScript(element) {
 				evaluateCode();
 			}
 		}
-
 		load();
 	}
 
@@ -207,8 +206,6 @@ function createPaperScript(element) {
 		inspectorTool.onSelect = function() {
 			console.log('select');
 		};
-		previousTool._name = 'normal';
-		inspectorTool._name = 'inspector';
 		// reactivate previous tool for now
 		if (previousTool) {
 			previousTool.activate();
@@ -229,7 +226,8 @@ function createPaperScript(element) {
 		});
 	}
 
-	element.findAndSelf('.split-pane').each(function() {
+	var panes = element.findAndSelf('.split-pane');
+	panes.each(function() {
 		var pane = $(this);
 		pane.split({
 			orientation: pane.attr('data-orientation') == 'hor' ? 'vertical' : 'horizontal',
@@ -237,15 +235,16 @@ function createPaperScript(element) {
 			limit: 100
 		});
 	});
+
 	// Refresh editor if parent gets resized
-	$('.editor', element).parents('.splitter_panel').on('splitter.resize', function() {
+	$('.editor', element).parents('.split-pane').on('splitter.resize', function() {
 		editor.refresh();
 	});
 
-	function resize() {
-		editor.refresh();
-		$('.splitter_panel', element).trigger('splitter.resize');
-	}
+	canvas.parents('.split-pane').on('splitter.resize', function() {
+		var pane = $('.canvas', element);
+		scope.view.setViewSize(pane.width(), pane.height());
+	});
 
 	function toggleView() {
 		var show = source.hasClass('hidden');
@@ -255,14 +254,19 @@ function createPaperScript(element) {
 			runCode();
 	}
 
-	if (hasResize) {
-		// Install the resize event only after paper.js installs its own,
-		// which happens on the load event. This is needed because we rely
-		// on paper.js performing the actual resize magic.
-		$(window).load(function() {
-			$(window).resize(resize);
-		});
-	}
+	$(window).resize(function() {
+		// Do not have .paperscript automatically resize to 100%, instead
+		// resize it in the resize handler, for much smoother redrawing,
+		// since the splitter panes are aligning using right: 0 / bottom: 0.
+		element.width($(window).width()).height($(window).height());
+		if (editor) {
+			panes.trigger('splitter.resize');
+			editor.refresh();
+		}
+	}).trigger('resize');
+
+	// Run the script once the window is loaded
+	$(window).load(runCode);
 
 	if (showSplit) {
 		showSource(true);
@@ -284,8 +288,8 @@ function createPaperScript(element) {
 	});
 
 	$('.button.clear-console', element).click(function() {
-		consoleContainer.children().remove();
-	})
+		clearConsole();
+	});
 }
 
 $(function() {

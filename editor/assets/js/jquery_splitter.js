@@ -25,10 +25,7 @@
         var settings = $.extend({
             limit: 100,
             orientation: 'horizontal',
-            position: '50%',
-            onDragStart: $.noop,
-            onDragEnd: $.noop,
-            onDrag: $.noop
+            position: '50%'
         }, options || {});
         var children = this.children(),
             vertical = settings.orientation == 'vertical',
@@ -41,37 +38,37 @@
             coord = vertical ? 'pageX' : 'pageY',
             id = count++;
         this.addClass('splitter_panel');
-        var splitter = $('<div/>').addClass(cls).mouseenter(function() {
-            splitter_id = id;
-        }).mouseleave(function() {
-            splitter_id = null;
-        }).insertAfter(panel_1);
+        var splitter = $('<div/>').addClass(cls).insertAfter(panel_1)
+            .mouseenter(function() {
+                splitter_id = id;
+            }).mouseleave(function() {
+                splitter_id = null;
+            });
         var position;
         var self = $.extend(this, {
-            position: function(n) {
-                if (n === undefined) {
-                    return position;
-                } else {
-                    position = n;
-                    var w = splitter[size]();
-                        sw = Math.round(w / 2);
-                    splitter.css(first, n - sw);
-                    panel_1[size](n - sw);
-                    panel_2[size](self[size]() - n - (w - sw));
-                }
-            },
             orientation: settings.orientation,
             limit: settings.limit,
+            position: function(pos) {
+                if (pos === undefined) {
+                    return position;
+                } else {
+                    position = pos;
+                    var max = splitter[size]();
+                        half = Math.round(max / 2);
+                    splitter.css(first, pos - half);
+                    panel_1[size](pos - half);
+                    panel_2[size](this[size]() - pos - (max - half));
+                }
+            },
             isActive: function() {
                 return splitter_id === id;
             },
             destroy: function() {
-                splitter.unbind('mouseenter');
-                splitter.unbind('mouseleave');
+                splitter.off('mouseenter mouseleave');
                 panel_1.removeClass(first + 'panel');
                 panel_2.removeClass(second + 'panel');
-                self.unbind('splitter.resize');
-                splitters[id] = null;
+                this.off('splitter.resize');
+                delete splitters[id];
                 splitter.remove();
                 var not_null = false;
                 for (var i = splitters.length; i-- ;) {
@@ -82,40 +79,33 @@
                 }
                 //remove document events when no splitters
                 if (!not_null) {
-                    $(document.documentElement).unbind('.splitter');
+                    $(document.documentElement).off('.splitter');
                     splitters = [];
                 }
             },
             mousedown: function(e) {
-                $('<div class="splitterMask"></div>').insertAfter(self);
                 $('body').css('cursor', vertical ? 'col-resize' : 'row-resize');
-                settings.onDragStart(e);
                 return false;
             },
             mouseup: function(e) {
-                $('div.splitterMask').remove();
                 $('body').css('cursor', 'auto');
-                settings.onDragEnd(e);
             },
             mousemove: function(e) {
-                var offset = self.offset();
+                var offset = this.offset();
                 var x = e[coord] - offset[first];
-                if(x <= self.limit) {
-                    x = self.limit + 1;
-                } else if (x >= self[size]() - self.limit) {
-                    x = self[size]() - self.limit - 1;
+                if (x <= this.limit) {
+                    x = this.limit + 1;
+                } else if (x >= this[size]() - this.limit) {
+                    x = this[size]() - this.limit - 1;
                 }
-                if (x > self.limit &&
-                    x < self[size]() - self.limit) {
-                    self.position(x);
-                    self.closest('.splitter_panel').trigger('splitter.resize');
+                if (x > this.limit && x < this[size]() - this.limit) {
+                    this.position(x);
+                    this.find('.splitter_panel').add(this).trigger('splitter.resize');
                     return false;
                 }
-                settings.onDrag(e);
             }
         });
-        
-        self.bind('splitter.resize', function() {
+        this.on('splitter.resize', function() {
             var pos = self.position();
             if (pos > self[size]()) {
                 pos = self[size]() - self.limit - 1;
@@ -124,7 +114,7 @@
             }
             self.position(pos);
         });
-        //inital position of splitter
+        // Inital position of splitter
         var m = settings.position.match(/^([0-9]+)(%)?$/),
             max = this[size](),
             pos = m[2] ? Math.round((max * +m[1]) / 100) : settings.position;
@@ -133,24 +123,24 @@
         } else if (pos < settings.limit) {
             pos = settings.limit;
         }
-        self.position(pos);
-        if (splitters.length == 0) { // first time bind events to document
-            $(document.documentElement).bind('mousedown.splitter', function(e) {
+        this.position(pos);
+        if (splitters.length == 0) { // First time bind events to document
+            $(document.documentElement).on('mousedown.splitter', function(e) {
                 if (splitter_id !== null) {
                     current_splitter = splitters[splitter_id];
                     return current_splitter.mousedown(e);
                 }
-            }).bind('mouseup.splitter', function(e) {
+            }).on('mouseup.splitter', function(e) {
                 if (current_splitter) {
                     current_splitter.mouseup(e);
                     current_splitter = null;
                 }
-            }).bind('mousemove.splitter', function(e) {
+            }).on('mousemove.splitter', function(e) {
                 if (current_splitter !== null)
                     return current_splitter.mousemove(e);
             });
         }
-        splitters.push(self);
-        return self;
+        splitters.push(this);
+        return this;
     };
 })(jQuery);

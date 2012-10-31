@@ -94,6 +94,12 @@ html,
 
 .paperscript .canvas {
 	line-height: 0; /* prevent weird 5px padding under canvas elements */
+	overflow: hidden !important;
+}
+
+.paperscript .canvas canvas {
+	width: 100%;
+	height: 100%;
 }
 
 .paperscript .canvas.border canvas {
