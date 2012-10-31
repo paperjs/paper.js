@@ -229,15 +229,13 @@ function createPaperScript(element) {
 		});
 	}
 
-	element.findAndSelf('.pane-hor').split({
-		orientation:'vertical',
-		limit: 100,
-		position:'50%'
-	});
-	element.findAndSelf('.pane-ver').split({
-		orientation:'horizontal',
-		limit: 100,
-		position:'50%'
+	element.findAndSelf('.split-pane').each(function() {
+		var pane = $(this);
+		pane.split({
+			orientation: pane.attr('data-orientation') == 'hor' ? 'vertical' : 'horizontal',
+			position: pane.attr('data-percentage'),
+			limit: 100
+		});
 	});
 	// Refresh editor if parent gets resized
 	$('.editor', element).parents('.splitter_panel').on('splitter.resize', function() {
