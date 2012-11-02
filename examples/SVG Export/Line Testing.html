@@ -37,8 +37,7 @@
 			line3.strokeColor = "yellow";
 			line3.strokeWidth = "5";
 			
-			var esvg = new ExportSvg();
-			var output = esvg.exportProject(paper.project);
+			var output = ExportSvg.exportProject(paper.project);
 			console.log(output);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";

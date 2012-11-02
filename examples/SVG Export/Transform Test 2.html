@@ -21,8 +21,7 @@
 			copy.strokeColor = 'red';
 			copy.rotate(-45);
 			copy.scale(0.5);
-			var esvg = new ExportSvg();
-			var output = esvg.exportProject(paper.project);
+			var output = ExportSvg.exportProject(paper.project);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";
 			test.appendChild (output);   

@@ -28,7 +28,7 @@
 *
 */
 
-var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
+var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 		/**
 		* Creates a Paper.js object using data parsed from the selected
 		* SVG Document Object Model (DOM). The SVG object is imported, 
@@ -39,7 +39,7 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 		* @param {SVG DOM} svg An SVG DOM object with parameters
 		* @return {item} A Paper.js layer
 		*/
-	importSvg: function(svg) {
+	import: function(svg) {
 		var item;
 		var symbol;
 		switch (svg.nodeName.toLowerCase()) {
@@ -103,7 +103,7 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 			child = svg.childNodes[i];
 			if (child.nodeType != 1)
 				continue;
-			item = this.importSvg(child);
+			item = this.import(child);
 			if (item)
 				group.addChild(item);
 		}
@@ -577,4 +577,4 @@ var ImportSvg = this.ImportSvg = Base.extend(/** @Lends ImportSvg# */{
 		}
 		item.transform(matrix);
 	}
-});
+};
