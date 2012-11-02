@@ -678,8 +678,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	_updateSelection: function(segment, oldState, newState) {
 		segment._selectionState = newState;
 		var total = this._selectedSegmentState += newState - oldState;
-		// Set this path as selected in case we have selected segments.
-		this.setSelected(total > 0);
+		// Set this path as selected in case we have selected segments. Do not
+		// unselect if we're down to 0, as the path itself can still remain
+		// selected even when empty.
+		if (total > 0)
+			this.setSelected(true);
 	},
 
 	/**
