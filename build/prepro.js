@@ -125,22 +125,23 @@ process.stdout.write(out);
  * http://james.padolsey.com/javascript/removing-comments-in-javascript/
 */
 function stripComments(str) {
+	// Add some padding so we can always look ahead and behind by two chars
 	str = ('__' + str + '__').split('');
-	var singleQuote = false,
-		doubleQuote = false,
+	var quote = false,
+		quoteSign,
 		blockComment = false,
 		lineComment = false,
 		preserveComment = false;
 	for (var i = 0, l = str.length; i < l; i++) {
-		if (singleQuote) {
-			if (str[i] == "'" && str[i - 1] !== '\\')
-				singleQuote = false;
-		} else if (doubleQuote) {
-			if (str[i] == '"' && str[i - 1] !== '\\')
-				doubleQuote = false;
+		if (quote) {
+			// When checking for quote escaping, we also need to check that the
+			// escape sign itself is not escaped, as otherwise '\\' would cause
+			// the wrong impression of and endlessly open string:
+			if (str[i] === quoteSign && (str[i - 1] !== '\\' || str[i - 2] === '\\'))
+				quote = false;
 		} else if (blockComment) {
 			// Is the block comment closing?
-			if (str[i] == '*' && str[i + 1] == '/') {
+			if (str[i] === '*' && str[i + 1] === '/') {
 				if (!preserveComment)
 					str[i] = str[i + 1] = '';
 				blockComment = preserveComment = false;
@@ -149,26 +150,28 @@ function stripComments(str) {
 			}
 		} else if (lineComment) {
 			// One-line comments end with the line-break
-			if (str[i + 1] == '\n' || str[i + 1] == '\r')
+			if (/[\n\r]/.test(str[i + 1]))
 				lineComment = false;
 			str[i] = '';
 		} else {
-			doubleQuote = str[i] == '"';
-			singleQuote = str[i] == "'";
-			if (!blockComment && str[i] == '/') {
-				if (str[i + 1] == '*') {
-					// Do not filter out conditional comments and comments marked
-					// as protected (/*! */)
-					preserveComment = str[i + 2] == '@' || str[i + 2] == '!';
+			quote = /['"]/.test(str[i]);
+			if (quote)
+				quoteSign = str[i];
+			if (!blockComment && str[i] === '/') {
+				if (str[i + 1] === '*') {
+					// Do not filter out conditional comments /*@ ... */
+					// and comments marked as protected /*! ... */
+					preserveComment = /[@!]/.test(str[i + 2]);
 					if (!preserveComment)
 						str[i] = '';
 					blockComment = true;
-				} else if (str[i + 1] == '/') {
+				} else if (str[i + 1] === '/') {
 					str[i] = '';
 					lineComment = true;
 				}
-	 		}
+			}
 		}
- 	}
+	}
+	// Remove padding again.
 	return str.join('').slice(2, -2);
 }
