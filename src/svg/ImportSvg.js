@@ -36,10 +36,10 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 		*
 		* Supports nested groups
 		*
-		* @param {SVG DOM} svg An SVG DOM object with parameters
-		* @return {item} A Paper.js layer
+		* @param {SVGSVGElement} an SVG DOM object with parameters
+		* @return {Item} a Paper.js item
 		*/
-	import: function(svg) {
+	importSvg: function(svg) {
 		var item;
 		var symbol;
 		switch (svg.nodeName.toLowerCase()) {
@@ -98,14 +98,14 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 		*/
 	_importGroup: function(svg) {
 		var group = new Group();
-		var child;
-		for (var i in svg.childNodes) {
-			child = svg.childNodes[i];
-			if (child.nodeType != 1)
-				continue;
-			item = this.import(child);
-			if (item)
-				group.addChild(item);
+		var nodes = svg.childNodes;
+		for (var i = 0, l = nodes.length; i < l; i++) {
+			var child = nodes[i];
+			if (child.nodeType == 1) {
+				var item = this.importSvg(child);
+				if (item)
+					group.addChild(item);
+			}
 		}
 
 		return group;
