@@ -20,9 +20,8 @@
  /**
  * @name ExportSvg
  *
- * @class The ExportSvg object represents a Paper.js object that will be
- * converted into an SVG canvas design.
- * The Paper.js object is converted by changing its items into groups
+ * @class The ExportSvg object holds all the functionality to convert a Paper.js
+ * DOM to a SVG DOM.
  *
  */
 
@@ -38,15 +37,14 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 	 * SVG group.
 	 *
 	 * @function
-	 * @param {Paper.js Project} project A Paper.js project
-	 * @return {SVG DOM} this.svgObj The imported project converted to an
-	 * SVG project
+	 * @param {Project} project a Paper.js project
+	 * @return {SVGSVGElement} the imported project converted to an SVG project
 	 */
-	 //TODO: Implement symbols and Gradients
+	 // TODO: Implement symbols and Gradients
 	exportProject: function(project) {
 		var svg = this.create('svg'),
 			layers = project.layers;
-		for (var i = 0; i < layers.length; ++i) {
+		for (var i = 0, l = layers.length; i < l; i++) {
 			svg.appendChild(this.exportLayer(layers[i]));
 		}
 		return svg;
@@ -59,9 +57,8 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 	 * 
 	 * @name ExportSvg#exportLayer
 	 * @function
-	 * @param {Paper.js Layer} layer A Paper.js layer
-	 * @return {SVG DOM} this.exportGroup(layer) The layer converted into an
-	 * SVG group
+	 * @param {Layer} layer a Paper.js layer
+	 * @return {SVGSVGElement} the layer converted into an SVG group
 	 */
 	exportLayer: function(layer) {
 		return this.exportGroup(layer);
@@ -73,22 +70,21 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 	 * 
 	 * @name ExportSvg#exportGroup
 	 * @function
-	 * @param {Paper.js Group} group A Paper.js group
-	 * @return {SVG DOM} svgG An SVG object
+	 * @param {Group} group a Paper.js group
+	 * @return {SVGSVGElement} an SVG object
 	 */
 	exportGroup: function(group) {
-		var svgG = this.create('g');
-		var curChild;
-
-		for (var i in group.children) {
-			curChild = group.children[i];
-			if (curChild.children) {
-				svgG.appendChild(this.exportGroup(curChild));
+		var svg = this.create('g'),
+			children = group._children;
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i];
+			if (child._children) {
+				svg.appendChild(this.exportGroup(child));
 			} else {
-				svgG.appendChild(this.exportPath(curChild));
+				svg.appendChild(this.exportPath(child));
 			}
 		}
-		return svgG;
+		return svg;
 	},
 	
 	/**
@@ -98,11 +94,11 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 	 * 
 	 * @name ExportSvg#exportPath
 	 * @function
-	 * @param {Paper.js Path} path A Paper.js path object
-	 * @return {SVG DOM} svgPath An SVG object of the imported path
+	 * @param {Path} path a Paper.js path object
+	 * @return {SVGSVGElement} an SVG object of the imported path
 	 */
 	exportPath: function(path) {
-		var svgEle;
+		var svg;
 		//Getting all of the segments(a point, a HandleIn and a HandleOut) in the path
 		var segArray;
 		var pointArray;
@@ -130,92 +126,92 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 		//switch statement that determines what type of SVG element to add to the SVG Object
 		switch (type) {
 		case 'rect':
-			var width = pointArray[0].getDistance(pointArray[3], false);
-			var height = pointArray[0].getDistance(pointArray[1], false);
-			svgEle = this.create('rect');
-			svgEle.setAttribute('x', path.bounds.topLeft.getX());
-			svgEle.setAttribute('y', path.bounds.topLeft.getY());
-			svgEle.setAttribute('width', width);
-			svgEle.setAttribute('height', height);
+			var width = pointArray[0].getDistance(pointArray[3]);
+			var height = pointArray[0].getDistance(pointArray[1]);
+			svg = this.create('rect');
+			svg.setAttribute('x', path.bounds.topLeft.getX());
+			svg.setAttribute('y', path.bounds.topLeft.getY());
+			svg.setAttribute('width', width);
+			svg.setAttribute('height', height);
 			break;
 		case 'roundRect':
 			//d variables and point are used to determine the rounded corners for the rounded rectangle
-			var dx1 = pointArray[1].getDistance(pointArray[6], false);
-			var dx2 = pointArray[0].getDistance(pointArray[7], false);
+			var dx1 = pointArray[1].getDistance(pointArray[6]);
+			var dx2 = pointArray[0].getDistance(pointArray[7]);
 			var dx3 = (dx1 - dx2) / 2;
-			var dy1 = pointArray[0].getDistance(pointArray[3], false);
-			var dy2 = pointArray[1].getDistance(pointArray[2], false);
+			var dy1 = pointArray[0].getDistance(pointArray[3]);
+			var dy2 = pointArray[1].getDistance(pointArray[2]);
 			var dy3 = (dy1 - dy2) / 2;
 			var point = new Point((pointArray[3].getX() - dx3), (pointArray[2].getY() - dy3)); 
 			var width = Math.round(dx1);
 			var height = Math.round(dy1);
 			var rx = pointArray[3].getX() - point.x;
 			var ry = pointArray[2].getY() - point.y;
-			svgEle = this.create('rect');
-			svgEle.setAttribute('x', path.bounds.topLeft.getX());
-			svgEle.setAttribute('y', path.bounds.topLeft.getY());
-			svgEle.setAttribute('rx', rx);
-			svgEle.setAttribute('ry', ry);
-			svgEle.setAttribute('width', width);
-			svgEle.setAttribute('height', height);
+			svg = this.create('rect');
+			svg.setAttribute('x', path.bounds.topLeft.getX());
+			svg.setAttribute('y', path.bounds.topLeft.getY());
+			svg.setAttribute('rx', rx);
+			svg.setAttribute('ry', ry);
+			svg.setAttribute('width', width);
+			svg.setAttribute('height', height);
 			break;
 		case'line':
-			svgEle = this.create('line');
-			svgEle.setAttribute('x1', pointArray[0].getX());
-			svgEle.setAttribute('y1', pointArray[0].getY());
-			svgEle.setAttribute('x2', pointArray[pointArray.length - 1].getX());
-			svgEle.setAttribute('y2', pointArray[pointArray.length - 1].getY());
+			svg = this.create('line');
+			svg.setAttribute('x1', pointArray[0].getX());
+			svg.setAttribute('y1', pointArray[0].getY());
+			svg.setAttribute('x2', pointArray[pointArray.length - 1].getX());
+			svg.setAttribute('y2', pointArray[pointArray.length - 1].getY());
 			break;
 		case 'circle':
-			svgEle = this.create('circle');
+			svg = this.create('circle');
 			var radius = (pointArray[0].getDistance(pointArray[2], false)) /2;
-			svgEle.setAttribute('cx', path.bounds.center.x);
-			svgEle.setAttribute('cy', path.bounds.center.y);
-			svgEle.setAttribute('r', radius);
+			svg.setAttribute('cx', path.bounds.center.x);
+			svg.setAttribute('cy', path.bounds.center.y);
+			svg.setAttribute('r', radius);
 			break;
 		case 'ellipse':
-			svgEle = this.create('ellipse');
+			svg = this.create('ellipse');
 			var radiusX = (pointArray[2].getDistance(pointArray[0], false)) / 2;
 			var radiusY = (pointArray[3].getDistance(pointArray[1], false)) /2;
-			svgEle.setAttribute('cx', path.bounds.center.x);
-			svgEle.setAttribute('cy', path.bounds.center.y);
-			svgEle.setAttribute('rx', radiusX);
-			svgEle.setAttribute('ry', radiusY);
+			svg.setAttribute('cx', path.bounds.center.x);
+			svg.setAttribute('cy', path.bounds.center.y);
+			svg.setAttribute('rx', radiusX);
+			svg.setAttribute('ry', radiusY);
 			break;
 		case 'polyline':
-			svgEle = this.create('polyline');
+			svg = this.create('polyline');
 			var pointString = '';
 			for(i = 0; i < pointArray.length; ++i) {
 				pointString += pointArray[i].getX() + ','  + pointArray[i].getY() + ' ';
 			}
-			svgEle.setAttribute('points', pointString);
+			svg.setAttribute('points', pointString);
 			break;
 		case 'polygon':
-			svgEle = this.create('polygon');
+			svg = this.create('polygon');
 			var pointString = '';
 			for(i = 0; i < pointArray.length; ++i) {
 				pointString += pointArray[i].getX() + ',' + pointArray[i].getY() + ' ';
 			}
-			svgEle.setAttribute('points', pointString);
+			svg.setAttribute('points', pointString);
 			break;
 		case 'text':
-			svgEle = this.create('text');
-			svgEle.setAttribute('x', path.getPoint().getX());
-			svgEle.setAttribute('y', path.getPoint().getY());
+			svg = this.create('text');
+			svg.setAttribute('x', path.getPoint().getX());
+			svg.setAttribute('y', path.getPoint().getY());
 			if (path.style.font != undefined) {
-				svgEle.setAttribute('font', path.style.font);
+				svg.setAttribute('font', path.style.font);
 			}
 			if (path.characterStyle.font != undefined) {
-				svgEle.setAttribute('font-family', path.characterStyle.font);
+				svg.setAttribute('font-family', path.characterStyle.font);
 			}
 			if (path.characterStyle.fontSize != undefined) {
-				svgEle.setAttribute('font-size',path.characterStyle.fontSize);
+				svg.setAttribute('font-size',path.characterStyle.fontSize);
 			}
-			svgEle.textContent = path.getContent();
+			svg.textContent = path.getContent();
 			break;
 		default:
-			svgEle = this.create('path');
-			svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+			svg = this.create('path');
+			svg = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 			break;
 		}
 		//If the object is a circle, ellipse, rectangle, or rounded rectangle, it will find the angle 
@@ -226,70 +222,70 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 			var angle = this._determineIfTransformed(path, pointArray, type) + 90;
 			if (angle != 0) {
 				if (type == 'rect' || type == 'roundRect') {
-					svgEle = this.create('path');
-					svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+					svg = this.create('path');
+					svg = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 				} else {
-					svgEle = this.create('path');
-					svgEle = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+					svg = this.create('path');
+					svg = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 				}
 			} 
 		}
 		if (type == 'text') {
-			svgEle.setAttribute('transform','rotate(' + path.matrix.getRotation() + ',' + path.getPoint().getX() + ',' +path.getPoint().getY() +')');
+			svg.setAttribute('transform','rotate(' + path.matrix.getRotation() + ',' + path.getPoint().getX() + ',' +path.getPoint().getY() +')');
 		}
 		if (path.id != undefined) {
-			svgEle.setAttribute('id', path.id);
+			svg.setAttribute('id', path.id);
 		}
 		//checks if there is a stroke color in the passed in path
 		//adds an SVG element attribute with the defined stroke color
 		if (path.strokeColor != undefined) {
-			svgEle.setAttribute('stroke', path.strokeColor.toCssString());
+			svg.setAttribute('stroke', path.strokeColor.toCssString());
 		}
 		//same thing as above except checking for a fill color
 		if (path.fillColor != undefined) {
-			svgEle.setAttribute('fill', path.fillColor.toCssString());
+			svg.setAttribute('fill', path.fillColor.toCssString());
 		} else {
-			svgEle.setAttribute('fill', 'rgba(0,0,0,0)');
+			svg.setAttribute('fill', 'rgba(0,0,0,0)');
 		}
 		//same thing as stroke color except with stroke width
 		if (path.strokeWidth != undefined) {
-			svgEle.setAttribute('stroke-width', path.strokeWidth);
+			svg.setAttribute('stroke-width', path.strokeWidth);
 		}
 		//same thing as stroke color except with the path name
 		if (path.name != undefined) {
-			svgEle.setAttribute('name', path.name);
+			svg.setAttribute('name', path.name);
 		}
 		//same thing as stroke color except with the strokeCap
 		if (path.strokeCap != undefined) {
-			svgEle.setAttribute('stroke-linecap', path.strokeCap);
+			svg.setAttribute('stroke-linecap', path.strokeCap);
 		}
 		//same thing as stroke color except with the strokeJoin
 		if (path.strokeJoin != undefined) {
-			svgEle.setAttribute('stroke-linejoin', path.strokeJoin);
+			svg.setAttribute('stroke-linejoin', path.strokeJoin);
 		}
 		//same thing as stroke color except with the opacity
 		if (path.opacity != undefined) {
-			svgEle.setAttribute('opacity', path.opacity);
+			svg.setAttribute('opacity', path.opacity);
 		}
 		//checks to see if there the dashArray is set, then adds the attribute if there is.
 		if (path.dashArray[0] != undefined) {
 			var dashVals = '';
-			for (var i in path.dashArray) {
+			for (var i = 0, l = path.dashArray.length; i < l; i++) {
 				if (i != path.dashArray.length -1) {
 					dashVals += path.dashArray[i] + ", ";
 				} else {
 					dashVals += path.dashArray[i];
 				}
 			}
-			svgEle.setAttribute('stroke-dasharray', dashVals);
+			svg.setAttribute('stroke-dasharray', dashVals);
 		}
 		//same thing as stroke color except with the dash offset
 		if (path.dashOffset != undefined) {
-			svgEle.setAttribute('stroke-dashoffset', path.dashOffset);
+			svg.setAttribute('stroke-dashoffset', path.dashOffset);
 		}
 		//same thing as stroke color except with the miter limit
 		if (path.miterLimit != undefined) {
-			svgEle.setAttribute('stroke-miterlimit', path.miterLimit);
+			svg.setAttribute('stroke-miterlimit', path.miterLimit);
 		}
 		//same thing as stroke color except with the visibility
 		if (path.visibility != undefined) {
@@ -299,9 +295,9 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 			} else {
 				visString = 'hidden';
 			}
-			svgEle.setAttribute('visibility', visString);
+			svg.setAttribute('visibility', visString);
 		}
-		return svgEle;
+		return svg;
 	},
 
 	//Determines whether the object has been transformed or not through finding the angle
@@ -396,7 +392,7 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 	*
 	* @name ExportSvg#checkType
 	* @function
-	* @param {SVG Object Array} segArray An array of objects for the newly
+	* @param {Array} segArray An array of objects for the newly
 	* converted SVG object
 	* @return {String} type A string labeling which type of object the 
 	* passed in object is
@@ -408,7 +404,7 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 		var curves = false;	
 		var segHandleIn;
 		var segHandleOut;
-		for( var i in segArray) {
+		for( var i = 0, l = segArray.length; i < l; i++) {
 			//Checks for any curves (if the handles have values). Differentiates between straight objects(line, polyline, rect, and polygon) and
 			//and objects with curves(circle, ellipse, roundedRectangle).
 			segHandleIn = segArray[i].getHandleIn();
