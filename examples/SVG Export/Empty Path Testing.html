@@ -22,9 +22,7 @@
 			var path2 = new Path(segments);
 			path2.strokeColor = 'yellow';
 			
-			
-			var esvg = new ExportSvg();
-			var output = esvg.exportProject(paper.project);
+			var output = ExportSvg.exportProject(paper.project);
 			console.log(output);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";

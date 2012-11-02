@@ -34,9 +34,8 @@
 				var c = new Path.Circle(p, 2);
 				c.fillColor = colors[i];
 			}		
-			
-			var esvg = new ExportSvg();
-			var output = esvg.exportProject(paper.project);
+
+			var output = ExportSvg.exportProject(paper.project);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";
 			test.appendChild (output);   

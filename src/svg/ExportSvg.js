@@ -17,7 +17,6 @@
  * @author Stetson-Team-Alpha
  */
 
-
  /**
  * @name ExportSvg
  *
@@ -27,7 +26,7 @@
  *
  */
 
-var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
+var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 
 	create: function(tag) {
 		return document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -473,4 +472,4 @@ var ExportSvg = this.ExportSvg = Base.extend(/** @Lends ExportSvg# */{
 		}
 		return type;
 	}
-});
+};
