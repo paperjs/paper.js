@@ -411,8 +411,8 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * Returns the distance between the point and another point.
 	 *
 	 * @param {Point} point
-	 * @param {Boolean} squared Controls whether the distance should remain
-	 *        squared, or its square root should be calculated.
+	 * @param {Boolean} [squared=false] Controls whether the distance should
+	 *        remain squared, or its square root should be calculated.
 	 * @return {Number}
 	 */
 	getDistance: function(point, squared) {
