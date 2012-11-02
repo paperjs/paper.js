@@ -37,7 +37,7 @@ var PaperScript = this.PaperScript = new function() {
 		var handler = operators[operator];
 		if (left && left[handler]) {
 			var res = left[handler](right);
-			return operator == '!=' ? !res : res;
+			return operator === '!=' ? !res : res;
 		}
 		switch (operator) {
 		case '+': return left + right;
@@ -50,7 +50,7 @@ var PaperScript = this.PaperScript = new function() {
 		default:
 			throw new Error('Implement Operator: ' + operator);
 		}
-	};
+	}
 
 	// Sign Operators
 
@@ -109,8 +109,8 @@ var PaperScript = this.PaperScript = new function() {
 				// Handle simple mathematical operators here:
 				return handleOperator(operator, left = walk(left),
 						right = walk(right))
-						// Always return something since we're walking left and
-						// right for the handleOperator() call already.
+						// Always return a new AST for this node, since we have
+						// processed left and right int he call above!
 						|| [this[0], operator, left, right];
 			},
 
@@ -121,10 +121,10 @@ var PaperScript = this.PaperScript = new function() {
 				// of handleOperator on the right hand side.
 				var res = handleOperator(operator, left = walk(left),
 						right = walk(right));
-				if (res)
-					return [this[0], true, left, res];
-				// Always return something for the same reason as in binary
-				return [this[0], operator, left, right];
+				return res
+					? [this[0], true, left, res]
+					// Always return a new AST for the same reason as in binary
+					: [this[0], operator, left, right];
 			},
 
 			'unary-prefix': function(operator, exp) {
