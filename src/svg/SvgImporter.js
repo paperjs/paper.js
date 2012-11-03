@@ -124,7 +124,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			var controlPoint;
 			var prevCommand;
 			var segmentTo;
-			for (var i = 0; i < segments.numberOfItems; i++) {
+			for (var i = 0, l = segments.numberOfItems; i < l; i++) {
 				segment = segments.getItem(i);
 				if (segment.pathSegType == SVGPathSeg.PATHSEG_UNKNOWN) {
 					continue;
@@ -348,7 +348,7 @@ var SvgImporter = this.SvgImporter = new function() {
 		var transform;
 		var matrix = new Matrix();
 
-		for (var i = 0; i < transforms.numberOfItems; i++) {
+		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
 			transform = transforms.getItem(i);
 			if (transform.type == SVGTransform.SVG_TRANSFORM_UNKNOWN) {
 				continue;
