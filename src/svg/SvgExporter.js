@@ -13,16 +13,15 @@
  *
  * All rights reserved.
  * 
- * This class and all methods therein programmed by Stetson-Team-Alpha
+ * The base for this code was donated by Stetson-Team-Alpha.
  * @author Stetson-Team-Alpha
  */
 
  /**
   * @name SvgExporter
   *
-  * @class The SvgExporter object holds all the functionality to convert a Paper.js
-  * DOM to a SVG DOM.
-  *
+  * @class The SvgExporter object holds all the functionality to convert a
+  * Paper.js DOM to a SVG DOM.
   */
 
 var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
