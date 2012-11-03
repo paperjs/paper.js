@@ -335,8 +335,6 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		return angleInDegrees;
 	},
 	
-	//pointstring is formatted in the way the SVG XML will be reading
-	//Namely, a point and the way to traverse to that point
 	pathSetup: function(path, pointArray, hIArray, hOArray) {
 		var svgPath = this.create('path');
 		var pointString = '';
@@ -346,6 +344,8 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		var y2;
 		var handleOut1;
 		var handleIn2;
+		// pointstring is formatted in the way the SVG XML will be reading.
+		// Namely, a point and the way to traverse to that point.
 		pointString += 'M' + pointArray[0].getX() + ',' + pointArray[0].getY() + ' ';
 		//Checks 2 points and the angles in between the 2 points
 		for (i = 0; i < pointArray.length-1; i++) {
@@ -356,10 +356,10 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			handleOut1 = hOArray[i];
 			handleIn2 = hIArray[i+1];
 			if (handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() == 0) {
-					//L is lineto, moving to a point with drawing
+					// L is lineto, moving to a point with drawing
 					pointString+= 'L' + x2 + ',' + y2 + ' ';
 			} else {
-				//c is curveto, relative: handleOut, handleIn - endpoint, endpoint - startpoint
+				// c is curveto, relative: handleOut, handleIn - endpoint, endpoint - startpoint
 				pointString+= 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
 				pointString+= (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
 				pointString+= (x2 - x1) + ',' + (y2-y1) +  ' ';
@@ -377,24 +377,16 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			pointString+= (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
 			pointString+= (x2 - x1) + ',' + (y2-y1) +  ' ';
 		}
-		if (path.getClosed())
-		{
-			//Z implies a closed path, connecting the first and last points
+		if (path._closed) {
+			// z implies a closed path, connecting the first and last points
 			pointString += 'z';
 		}
-		svgPath.setAttribute('d',pointString);
+		svgPath.setAttribute('d', pointString);
 		return svgPath;
 	},	
 
 	/**
 	* Checks the type SVG object created by converting from Paper.js
-	*
-	* @name SvgExporter#checkType
-	* @function
-	* @param {Array} segArray An array of objects for the newly
-	* converted SVG object
-	* @return {String} type A string labeling which type of object the 
-	* passed in object is
 	*/
 	_determineType: function(path, segArray, pointArray, handleInArray, handleOutArray) {
 		var type;

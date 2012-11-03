@@ -134,8 +134,7 @@ var SvgImporter = this.SvgImporter = /** @Lends SvgImporter */{
 		var rectangle = new Rectangle(topLeft, size);
 
 		if (rx && ry) {
-			var cornerSize = new Size(rx, ry);
-			rectangle = new Path.RoundRectangle(rectangle, cornerSize);
+			rectangle = new Path.RoundRectangle(rectangle, new Size(rx, ry));
 		} else {
 			rectangle = new Path.Rectangle(rectangle);
 		}
