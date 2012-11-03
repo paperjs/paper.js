@@ -328,48 +328,40 @@ var SvgImporter = this.SvgImporter = new function() {
 	 * @param {Item} item a Paper.js item
 	 */
 	function applyTransform(svg, item) {
-		var transforms = svg.transform.baseVal;
-		var transform;
-		var matrix = new Matrix();
-
+		var transforms = svg.transform.baseVal,
+			matrix = new Matrix();
 		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
-			transform = transforms.getItem(i);
-			if (transform.type == SVGTransform.SVG_TRANSFORM_UNKNOWN) {
+			var transform = transforms.getItem(i);
+			if (transform.type == SVGTransform.SVG_TRANSFORM_UNKNOWN)
 				continue;
-			}
-			var transformMatrix = new Matrix(
-				transform.matrix.a,
-				transform.matrix.c,
-				transform.matrix.b,
-				transform.matrix.d,
-				transform.matrix.e,
-				transform.matrix.f
-			);
+			// Convert SVG Matrix to Paper Matrix.
+			// TODO: Should this be moved to our Matrix constructor?
+			var mx = transform.matrix,
+				a = mx.a,
+				b = mx.b,
+				c = mx.c,
+				d = mx.d;
 			switch (transform.type) {
-			case SVGTransform.SVG_TRANSFORM_TRANSLATE:
-				break;
-			case SVGTransform.SVG_TRANSFORM_SCALE:
-				break;
-			//Compensate for SVG's theta rotation going the opposite direction
+			// Compensate for SVG's theta rotation going the opposite direction
 			case SVGTransform.SVG_TRANSFORM_MATRIX:
-				var temp = transformMatrix.getShearX();
-				transformMatrix.setShearX(transformMatrix.getShearY());
-				transformMatrix.setShearY(temp);
+				var tmp = b;
+				b = c;
+				c = tmp;
 				break;
 			case SVGTransform.SVG_TRANSFORM_SKEWX:
-				transformMatrix.setShearX(transformMatrix.getShearY());
-				transformMatrix.setShearY(0);
+				b = c;
+				c = 0;
 				break;
 			case SVGTransform.SVG_TRANSFORM_SKEWY:
-				transformMatrix.setShearY(transformMatrix.getShearX());
-				transformMatrix.setShearX(0);
+				c = b;
+				b = 0;
 				break;
 			case SVGTransform.SVG_TRANSFORM_ROTATE:
-				transformMatrix.setShearX(-transformMatrix.getShearX());
-				transformMatrix.setShearY(-transformMatrix.getShearY());
+				b = -b;
+				c = -c;
 				break;
 			}
-			matrix.concatenate(transformMatrix);
+			matrix.concatenate(new Matrix(a, c, b, d, mx.e, mx.f));
 		}
 		item.transform(matrix);
 	}
