@@ -28,8 +28,8 @@
 var SvgImporter = this.SvgImporter = new function() {
 
 	function importGroup(svg) {
-		var group = new Group();
-		var nodes = svg.childNodes;
+		var group = new Group(),
+			nodes = svg.childNodes;
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var child = nodes[i];
 			if (child.nodeType == 1) {
@@ -41,22 +41,31 @@ var SvgImporter = this.SvgImporter = new function() {
 		return group;
 	}
 
-	function importPoly(svgPoly) {
-		var poly = new Path();
-		var points = svgPoly.points;
-		var start = points.getItem(0);
-		var point;
-		poly.moveTo([start.x, start.y]);
-
-		for (var i = 1; i < points.length; i++) {
-			point = points.getItem(i);
-			poly.lineTo([point.x, point.y]);
-		}
-		if (svgPoly.nodeName.toLowerCase() == 'polygon') {
+	function importPoly(svg) {
+		var poly = new Path(),
+			points = svg.points,
+			start = points.getItem(0);
+		poly.moveTo(start);
+		for (var i = 1; i < points.length; i++)
+			poly.lineTo(points.getItem(i));
+		if (svg.nodeName.toLowerCase() == 'polygon')
 			poly.closePath();
-		}
-
 		return poly;
+	}
+
+	function getValue(svg, key, index) {
+		var base = svg[key].baseVal;
+		return index !== undefined
+				? base.numberOfItems > 0 ? base.getItem(index).value || 0 : 0
+				: base.value || 0;
+	}
+
+	function getPoint(svg, x, y, index) {
+		return Point.create(getValue(svg, x, index), getValue(svg, y, index));
+	}
+
+	function getSize(svg, w, h, index) {
+		return Size.create(getValue(svg, w, index), getValue(svg, h, index));
 	}
 
 	var importers = {
@@ -65,75 +74,34 @@ var SvgImporter = this.SvgImporter = new function() {
 		polygon: importPoly,
 		polyline: importPoly,
 
-		circle: function(svgCircle) {
-			var cx = svgCircle.cx.baseVal.value || 0;
-			var cy = svgCircle.cy.baseVal.value || 0;
-			var r = svgCircle.r.baseVal.value || 0;
-			var center = new Point(cx, cy);
-			var circle = new Path.Circle(center, r);
-			return circle;
+		circle: function(svg) {
+			return new Path.Circle(getPoint(svg, 'cx', 'cy'),
+					getValue(svg, 'r'));
 		},
 
-		ellipse: function(svgOval) {
-			var cx = svgOval.cx.baseVal.value || 0;
-			var cy = svgOval.cy.baseVal.value || 0;
-			var rx = svgOval.rx.baseVal.value || 0;
-			var ry = svgOval.ry.baseVal.value || 0;
-
-			var center = new Point(cx, cy);
-			var offset = new Point(rx, ry);
-			var topLeft = center.subtract(offset);
-			var bottomRight = center.add(offset);
-
-			var rect = new Rectangle(topLeft, bottomRight);
-			var oval = new Path.Oval(rect);
-
-			return oval;
+		ellipse: function(svg) {
+			var center = getPoint(svg, 'cx', 'cy'),
+				radius = getSize(svg, 'rx', 'ry');
+			return new Path.Oval(new Rectangle(center.subtract(radius),
+					center.add(radius)));
 		},
 
-		rect: function(svgRectangle) {
-			var x = svgRectangle.x.baseVal.value || 0;
-			var y = svgRectangle.y.baseVal.value || 0;
-			var rx = svgRectangle.rx.baseVal.value || 0;
-			var ry = svgRectangle.ry.baseVal.value || 0;
-			var width = svgRectangle.width.baseVal.value || 0;
-			var height = svgRectangle.height.baseVal.value || 0;
-
-			var topLeft = new Point(x, y);
-			var size = new Size(width, height);
-			var rectangle = new Rectangle(topLeft, size);
-
-			return new Path.RoundRectangle(rectangle, new Size(rx, ry));
+		rect: function(svg) {
+			var point = getPoint(svg, 'x', 'y'),
+				size = getSize(svg, 'width', 'height'),
+				radius = getSize(svg, 'rx', 'ry');
+			return new Path.RoundRectangle(new Rectangle(point, size), radius);
 		},
 
-		line: function(svgLine) {
-			var x1 = svgLine.x1.baseVal.value || 0;
-			var y1 = svgLine.y1.baseVal.value || 0;
-			var x2 = svgLine.x2.baseVal.value || 0;
-			var y2 = svgLine.y2.baseVal.value || 0;
-
-			var from = new Point(x1, y1);
-			var to = new Point(x2, y2);
-			var line = new Path.Line(from, to);
-
-			return line;
+		line: function(svg) {
+			return new Path.Line(getPoint(svg, 'x1', 'y1'),
+					getPoint(svg, 'x2', 'y2'));
 		},
 
-		text: function(svgText) {
-			var x = svgText.x.baseVal.getItem(0).value || 0;
-			var y = svgText.y.baseVal.getItem(0).value || 0;
-
-			var dx = 0;
-			var dy = 0;
-			if (svgText.dx.baseVal.numberOfItems) {
-				dx = svgText.dx.baseVal.getItem(0).value || 0;
-			}
-			if (svgText.dy.baseVal.numberOfItems) {
-				dy = svgText.dy.baseVal.getItem(0).value || 0;
-			}
-			
-			var textLength = svgText.textLength.baseVal.value || 0;
-			
+		text: function(svg) {
+			var bottomLeft = getPoint(svg, 'x', 'y', 0),
+				textLength = getValue(svg, 'textLength'),
+				delta = getPoint(svg, 'dx', 'dy', 0);
 			// Not supported by Paper.js
 			// x: multiple values for x
 			// y: multiple values for y
@@ -141,20 +109,15 @@ var SvgImporter = this.SvgImporter = new function() {
 			// dy: multiple values for y
 			// rotate: character rotation
 			// lengthAdjust:
-			var textContent = svgText.textContent || "";
-			var bottomLeft = new Point(x, y);
-			
-			bottomLeft = bottomLeft.add([dx, dy]);
-			bottomLeft = bottomLeft.subtract([textLength / 2, 0]);
-			var text = new PointText(bottomLeft);
-			text.content = textContent;
-
+			var point = bottomLeft.add(delta).subtract(textLength / 2, 0);
+			var text = new PointText(point);
+			text.content = svg.textContent || '';
 			return text;
 		},
 
-		path: function(svgPath) {
+		path: function(svg) {
 			var path = new Path();
-			var segments = svgPath.pathSegList;
+			var segments = svg.pathSegList;
 			var segment;
 			var j;
 			var relativeToPoint;
