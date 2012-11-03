@@ -213,7 +213,6 @@ var SvgImporter = this.SvgImporter = new function() {
 					break;
 				}
 			}
-
 			return compoundPath || path;
 		},
 
