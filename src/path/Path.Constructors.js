@@ -127,6 +127,7 @@ Path.inject({ statics: new function() {
 			var _rect = Rectangle.read(arguments),
 				_size = Size.read(arguments);
 			if (_size.isZero())
+				// No need for new, since constructors here do so themselves.
 				return Path.Rectangle(rect);
 			_size = Size.min(_size, _rect.getSize(true).divide(2));
 			var bl = _rect.getBottomLeft(true),

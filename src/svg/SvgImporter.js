@@ -20,15 +20,15 @@
 */
 
 /**
-* @name ImportSvg
-* @class The ImportSvg object represents an object created using the SVG
+* @name SvgImporter
+* @class The SvgImporter object represents an object created using the SVG
 * Canvas that will be converted into a Paper.js object.
 * The SVG object is imported into Paper.js by converting it into items
 * within groups.
 *
 */
 
-var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
+var SvgImporter = this.SvgImporter = /** @Lends SvgImporter */{
 		/**
 		* Creates a Paper.js object using data parsed from the selected
 		* SVG Document Object Model (DOM). The SVG object is imported, 
@@ -72,16 +72,15 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 		case 'symbol':
 			item = this._importGroup(svg);
 			this._importAttributesAndStyles(svg, item);
+			// TODO: We're no returning symbol. How to handle this?
 			symbol = new Symbol(item);
 			item = null;
 			break;
 		default:
 			// Not supported yet.
 		}
-
 		if (item)
 			this._importAttributesAndStyles(svg, item);
-
 		return item;
 	},
 
@@ -89,7 +88,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 		* Creates a Paper.js group by parsing a specific GNode of the 
 		* imported SVG DOM
 		*
-		* @name ImportSvg#importGroup
+		* @name SvgImporter#importGroup
 		* @function
 		* @param {XML DOM} svg A node passed in by the imported SVG
 		* @return {Group} group A Paper.js group
@@ -115,7 +114,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 		* Creates a Path.Circle item in Paper.js using an imported 
 		* Circle from SVG
 		*
-		* @name ImportSvg#importCircle
+		* @name SvgImporter#importCircle
 		* @function
 		* @param {XML DOM} svgCircle An SVG circle node
 		* @return {Path.Circle} circle A Path.Circle item for Paper.js
@@ -134,7 +133,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 	/**
 	* Creates a Path.Oval item in Paper.js using an imported Oval from SVG
 	*
-	* @name ImportSvg#importOval
+	* @name SvgImporter#importOval
 	* @function
 	* @param {XML DOM} svgOval An SVG ellipse node
 	* @return {Path.Oval} oval A Path.Oval item for Paper.js
@@ -159,7 +158,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 		/**
 		* Creates a Path.Rectangle item from an imported SVG rectangle
 		*
-		* @name ImportSvg#importRectangle
+		* @name SvgImporter#importRectangle
 		* @function
 		* @param {XML DOM} svgRectangle An SVG rectangle node
 		* @return {Path.Rectangle} rectangle A Path.Rectangle item for 
@@ -169,7 +168,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 		* Creates a Path.RoundRectangle item from an imported SVG 
 		* rectangle with rounded corners
 		*
-		* @name ImportSvg#importRectangle
+		* @name SvgImporter#importRectangle
 		* @function
 		* @param {XML DOM} svgRectangle An SVG rectangle node with 
 		* rounded corners
@@ -201,7 +200,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 	/**
 	* Creates a Path.Line item in Paper.js from an imported SVG line
 	*
-	* @name ImportSvg#importLine
+	* @name SvgImporter#importLine
 	* @function
 	* @param {XML DOM} svgLine An SVG line node
 	* @return {Path.Line} line A Path.Line item for Paper.js
@@ -222,7 +221,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 	/**
 	* Creates a PointText item in Paper.js from an imported SVG text node
 	*
-	* @name ImportSvg#importText
+	* @name SvgImporter#importText
 	* @function
 	* @param {XML DOM} svgText An SVG text node
 	* @return {Path.Text} text A PointText item for Paper.js
@@ -266,7 +265,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 	* a specific SVG node (rectangle, path, circle, polygon, etc.)
 	* and creating the right Path object based on the SVG type.
 	*
-	* @name ImportSvg#importPath
+	* @name SvgImporter#importPath
 	* @function
 	* @param {XML DOM} svg An SVG object
 	* @return {Item} item A Paper.js item
@@ -372,7 +371,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 	 * Creates a Path.Poly item in Paper.js using an imported Polygon or
 	 * Polyline SVG node
 	 *
-	 * @name ImportSvg#importPoly
+	 * @name SvgImporter#importPoly
 	 * @function
 	 * @param {XML DOM} svgPoly An SVG polygon or polyline node
 	 * @return {Path.Poly} poly A Path.Poly item for Paper.js
@@ -403,7 +402,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 	 * attributes
 	 * This method is destructive to item (changes happen to it)
 	 *
-	 * @name ImportSvg#importAttributesAndStyles
+	 * @name SvgImporter#importAttributesAndStyles
 	 * @function
 	 * @param {XML DOM} svg An SVG node
 	 * @param {Item} item A Paper.js item
@@ -431,7 +430,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 	 * Parses an SVG style attibute and applies it to a Paper.js item
 	 * This method is destructive to item (changes happen to it)
 	 *
-	 * @name ImportSvg#applyAttributeOrStyle
+	 * @name SvgImporter#applyAttributeOrStyle
 	 * @function
 	 * @param {Style Name} name An SVG style name
 	 * @param {Style Value} value The value of an SVG style
@@ -526,7 +525,7 @@ var ImportSvg = this.ImportSvg = /** @Lends ImportSvg */{
 	 * made Paper.js item
 	 * This method is destructive to item
 	 *
-	 * @name ImportSvg#applyTransform
+	 * @name SvgImporter#applyTransform
 	 * @function
 	 * @param {XML DOM} An SVG node
 	 * @param {Item} A Paper.js item

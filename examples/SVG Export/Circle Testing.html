@@ -28,7 +28,7 @@
 			var path = new Path.Circle(new Point(50, 50), 25);
 			path.fillColor = 'red';
 			
-			var output = ExportSvg.exportProject(paper.project);
+			var output = SvgExporter.exportProject(paper.project);
 			console.log(output);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";
