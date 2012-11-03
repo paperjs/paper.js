@@ -171,12 +171,10 @@ var SvgImporter = this.SvgImporter = new function() {
 						segmentTo
 					);
 					break;
-				case 10: // PATHSEG_ARC_ABS:
-				case 11: // PATHSEG_ARC_REL:
-					//TODO: Implement Arcs.
-					//TODO: Requires changes in Paper.js's Path to do.
-					//TODO: http://www.w3.org/TR/SVG/implnote.html
-					break;
+				// TODO: Implement Arcs: ttp://www.w3.org/TR/SVG/implnote.html
+				// case 10: // PATHSEG_ARC_ABS:
+				// case 11: // PATHSEG_ARC_REL:
+				//	break;
 				case 16: // PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
 				case 17: // PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
 					var prev = list.getItem(i - 1),
