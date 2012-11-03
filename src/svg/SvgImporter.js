@@ -121,8 +121,7 @@ var SvgImporter = this.SvgImporter = new function() {
 		path: function(svg) {
 			var path = new Path(),
 				list = svg.pathSegList,
-				segments = path.getSegments(),
-				relative;
+				segments = path.getSegments();
 			for (var i = 0, l = list.numberOfItems; i < l; i++) {
 				// To shrink code, we replaced the long SVGPathSeg constants
 				// with their actual numeric values. The comments keep reference
@@ -131,11 +130,9 @@ var SvgImporter = this.SvgImporter = new function() {
 				var segment = list.getItem(i);
 				if (segment.pathSegType === 0) // SVGPathSeg.PATHSEG_UNKNOWN
 					continue;
-				if (segment.pathSegType % 2 == 1 && segments.length > 0) {
-					relative = path.getLastSegment().getPoint();
-				} else {
-					relative = Point.create(0, 0);
-				}
+				var relative = segment.pathSegType % 2 == 1 && segments.length
+						? path.getLastSegment().getPoint()
+						: Point.create(0, 0);
 				var point = Point.create(segment.x, segment.y).add(relative);
 				switch (segment.pathSegType) {
 				case 1: // SVGPathSeg.PATHSEG_CLOSEPATH:
