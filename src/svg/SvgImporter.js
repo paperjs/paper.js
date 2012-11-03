@@ -122,95 +122,93 @@ var SvgImporter = this.SvgImporter = new function() {
 		},
 
 		path: function(svg) {
-			var path = new Path();
-			var segments = svg.pathSegList;
-			var segment;
-			var j;
-			var relativeToPoint;
-			var controlPoint;
-			var prevCommand;
-			var segmentTo;
-			for (var i = 0, l = segments.numberOfItems; i < l; i++) {
-				segment = segments.getItem(i);
-				if (segment.pathSegType == SVGPathSeg.PATHSEG_UNKNOWN) {
+			var path = new Path(),
+				list = svg.pathSegList,
+				segments = path.getSegments(),
+				relative;
+			for (var i = 0, l = list.numberOfItems; i < l; i++) {
+				var segment = list.getItem(i);
+				if (segment.pathSegType === 0) // PATHSEG_UNKNOWN
 					continue;
-				}
-				if (segment.pathSegType % 2 == 1 && path.segments.length > 0) {
-					relativeToPoint = path.lastSegment.point;
+				if (segment.pathSegType % 2 == 1 && segments.length > 0) {
+					relative = path.getLastSegment().getPoint();
 				} else {
-					relativeToPoint = new Point(0, 0);
+					relative = Point.create(0, 0);
 				}
-				segmentTo = new Point(segment.x, segment.y);
-				segmentTo = segmentTo.add(relativeToPoint);
+				var segmentTo = Point.create(segment.x, segment.y).add(relative);
+				// To shrink code, we replaced the long SVGPathSeg constants
+				// with their actual numeric values. The comments keep reference
+				// to the original constants. Values were taken from:
+				// http://dxr.mozilla.org/mozilla-central/dom/interfaces/svg/nsIDOMSVGPathSeg.idl.html
 				switch (segment.pathSegType) {
-				case SVGPathSeg.PATHSEG_CLOSEPATH:
+				case 1: // PATHSEG_CLOSEPATH:
 					path.closePath();
 					break;
-				case SVGPathSeg.PATHSEG_MOVETO_ABS:
-				case SVGPathSeg.PATHSEG_MOVETO_REL:
+				case 2: // PATHSEG_MOVETO_ABS:
+				case 3: // PATHSEG_MOVETO_REL:
 					path.moveTo(segmentTo);
 					break;
-				case SVGPathSeg.PATHSEG_LINETO_ABS:
-				case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
-				case SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
-				case SVGPathSeg.PATHSEG_LINETO_REL:
-				case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
-				case SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
+				case 4: // PATHSEG_LINETO_ABS:
+				case 5: // PATHSEG_LINETO_REL:
+				case 12: // PATHSEG_LINETO_HORIZONTAL_ABS:
+				case 13: // PATHSEG_LINETO_HORIZONTAL_REL:
+				case 14: // PATHSEG_LINETO_VERTICAL_ABS:
+				case 15: // PATHSEG_LINETO_VERTICAL_REL:
 					path.lineTo(segmentTo);
 					break;
-				case SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
-				case SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
+				case 6: // PATHSEG_CURVETO_CUBIC_ABS:
+				case 7: // PATHSEG_CURVETO_CUBIC_REL:
 					path.cubicCurveTo(
-						relativeToPoint.add([segment.x1, segment.y1]),
-						relativeToPoint.add([segment.x2, segment.y2]),
+						relative.add(segment.x1, segment.y1),
+						relative.add(segment.x2, segment.y2),
 						segmentTo
 					);
 					break;
-				case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
-				case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
+				case 8: // PATHSEG_CURVETO_QUADRATIC_ABS:
+				case 9: // PATHSEG_CURVETO_QUADRATIC_REL:
 					path.quadraticCurveTo(
-						relativeToPoint.add([segment.x1, segment.y1]),
+						relative.add(segment.x1, segment.y1),
 						segmentTo
 					);
 					break;
-				case SVGPathSeg.PATHSEG_ARC_ABS:
-				case SVGPathSeg.PATHSEG_ARC_REL:
+				case 10: // PATHSEG_ARC_ABS:
+				case 11: // PATHSEG_ARC_REL:
 					//TODO: Implement Arcs.
 					//TODO: Requires changes in Paper.js's Path to do.
 					//TODO: http://www.w3.org/TR/SVG/implnote.html
 					break;
-				case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
-				case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
-					prevCommand = segments.getItem(i - 1);
-					controlPoint = new Point(prevCommand.x2, prevCommand.y2);
-					controlPoint = controlPoint.subtract([prevCommand.x, prevCommand.y]);
-					controlPoint = controlPoint.add(path.lastSegment.point);
-					controlPoint = path.lastSegment.point.subtract(controlPoint);
-					controlPoint = path.lastSegment.point.add(controlPoint);
+				case 16: // PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
+				case 17: // PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
+					var prev = list.getItem(i - 1),
+						last = path.getLastSegment().getPoint(),
+						control = last.add(last.subtract(
+							Point.create(prev.x2, prev.y2)
+								.subtract(prev.x, prev.y)
+								.add(last)));
 					path.cubicCurveTo(
-						controlPoint,
-						relativeToPoint.add([segment.x2, segment.y2]),
-						segmentTo
-					);
+						control,
+						relative.add(segment.x2, segment.y2),
+						segmentTo);
 					break;
-				case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
-				case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
-					for (j = i; j >= 0; --j) {
-						prevCommand = segments.getItem(j);
-						if (prevCommand.pathSegType == SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS ||
-							prevCommand.pathSegType == SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL
-						) {
-							controlPoint = new Point(prevCommand.x1, prevCommand.y1);
-							controlPoint = controlPoint.subtract([prevCommand.x, prevCommand.y]);
-							controlPoint = controlPoint.add(path.segments[j].point);
+				case 18: // PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
+				case 19: // PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
+					var control,
+						j = i;
+					for (; j >= 0; j--) {
+						var prev = list.getItem(j);
+						if (prev.pathSegType === 8 || // PATHSEG_CURVETO_QUADRATIC_ABS
+								prev.pathSegType === 9) { // PATHSEG_CURVETO_QUADRATIC_REL
+							control = Point.create(prev.x1, prev.y1)
+									.subtract(prev.x, prev.y)
+									.add(segments[j].getPoint());
 							break;
 						}
 					}
-					for (j; j < i; ++j) {
-						controlPoint = path.segments[j].point.subtract(controlPoint);
-						controlPoint = path.segments[j].point.add(controlPoint);
+					for (; j < i; ++j) {
+						var point = segments[j].getPoint();
+						control = point.add(point.subtract(control));
 					}
-					path.quadraticCurveTo(controlPoint, segmentTo);
+					path.quadraticCurveTo(control, segmentTo);
 					break;
 				}
 			}
@@ -332,7 +330,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			matrix = new Matrix();
 		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
 			var transform = transforms.getItem(i);
-			if (transform.type == SVGTransform.SVG_TRANSFORM_UNKNOWN)
+			if (transform.type === SVGTransform.SVG_TRANSFORM_UNKNOWN)
 				continue;
 			// Convert SVG Matrix to Paper Matrix.
 			// TODO: Should this be moved to our Matrix constructor?
