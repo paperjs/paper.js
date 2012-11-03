@@ -1,44 +1,44 @@
 /*
-* Paper.js
-*
-* This file is part of Paper.js, a JavaScript Vector Graphics Library,
-* based on Scriptographer.org and designed to be largely API compatible.
-* http://paperjs.org/
-* http://scriptographer.org/
-*
-* Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
-* http://lehni.org/ & http://jonathanpuckey.com/
-*
-* Distributed under the MIT license. See LICENSE file for details.
-*
-* All rights reserved.
-*
-*
-*
-* This class and all methods therein designed by Stetson-Team-Alpha
-* @author Stetson-Team-Alpha
-*/
+ * Paper.js
+ *
+ * This file is part of Paper.js, a JavaScript Vector Graphics Library,
+ * based on Scriptographer.org and designed to be largely API compatible.
+ * http://paperjs.org/
+ * http://scriptographer.org/
+ *
+ * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * http://lehni.org/ & http://jonathanpuckey.com/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ *
+ *
+ *
+ * This class and all methods therein designed by Stetson-Team-Alpha
+ * @author Stetson-Team-Alpha
+ */
 
 /**
-* @name SvgImporter
-* @class The SvgImporter object represents an object created using the SVG
-* Canvas that will be converted into a Paper.js object.
-* The SVG object is imported into Paper.js by converting it into items
-* within groups.
-*
-*/
+ * @name SvgImporter
+ * @class The SvgImporter object represents an object created using the SVG
+ * Canvas that will be converted into a Paper.js object.
+ * The SVG object is imported into Paper.js by converting it into items
+ * within groups.
+ *
+ */
 
 var SvgImporter = this.SvgImporter = /** @Lends SvgImporter */{
 		/**
-		* Creates a Paper.js object using data parsed from the selected
-		* SVG Document Object Model (DOM). The SVG object is imported, 
-		* than a layer is created (with groups for the items if needed).
-		*
-		* Supports nested groups
-		*
-		* @param {SVGSVGElement} an SVG DOM object with parameters
-		* @return {Item} a Paper.js item
-		*/
+		 * Creates a Paper.js object using data parsed from the selected
+		 * SVG Document Object Model (DOM). The SVG object is imported, 
+		 * than a layer is created (with groups for the items if needed).
+		 *
+		 * Supports nested groups
+		 *
+		 * @param {SVGSVGElement} an SVG DOM object with parameters
+		 * @return {Item} a Paper.js item
+		 */
 	importSvg: function(svg) {
 		var item;
 		var symbol;
