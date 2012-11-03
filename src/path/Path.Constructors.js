@@ -110,7 +110,7 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-	 	* Creates a rectangular Path Item with rounded corners.
+		 * Creates a rectangular Path Item with rounded corners.
 		 *
 		 * @param {Rectangle} rect
 		 * @param {Size} size the size of the rounded corners
@@ -125,14 +125,16 @@ Path.inject({ statics: new function() {
 		 */
 		RoundRectangle: function(rect, size) {
 			var _rect = Rectangle.read(arguments),
-				_size = Size.min(Size.read(arguments),
-						_rect.getSize(true).divide(2)),
-				path = new Path(),
-				uSize = _size.multiply(kappa * 2),
-				bl = _rect.getBottomLeft(true),
+				_size = Size.read(arguments);
+			if (_size.isZero())
+				return Path.Rectangle(rect);
+			_size = Size.min(_size, _rect.getSize(true).divide(2));
+			var bl = _rect.getBottomLeft(true),
 				tl = _rect.getTopLeft(true),
 				tr = _rect.getTopRight(true),
-				br = _rect.getBottomRight(true);
+				br = _rect.getBottomRight(true),
+				uSize = _size.multiply(kappa * 2),
+				path = new Path();
 			path._add([
 				new Segment(bl.add(_size.width, 0), null, [-uSize.width, 0]),
 				new Segment(bl.subtract(0, _size.height), [0, uSize.height], null),
