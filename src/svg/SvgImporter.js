@@ -27,6 +27,27 @@
  */
 var SvgImporter = this.SvgImporter = new function() {
 
+	// Define a couple of helper functions to easily read values from SVG
+	// objects, dealing with baseVal, and item lists.
+	// index is option, and if passed, causes a lookup in a list.
+
+	function getValue(svg, key, index) {
+		var base = svg[key].baseVal;
+		return index !== undefined
+				? index < base.numberOfItems ? base.getItem(index).value || 0 : 0
+				: base.value || 0;
+	}
+
+	function getPoint(svg, x, y, index) {
+		return Point.create(getValue(svg, x, index), getValue(svg, y, index));
+	}
+
+	function getSize(svg, w, h, index) {
+		return Size.create(getValue(svg, w, index), getValue(svg, h, index));
+	}
+
+	// Define importer functions for various SVG node types
+
 	function importGroup(svg) {
 		var group = new Group(),
 			nodes = svg.childNodes;
@@ -51,21 +72,6 @@ var SvgImporter = this.SvgImporter = new function() {
 		if (svg.nodeName.toLowerCase() == 'polygon')
 			poly.closePath();
 		return poly;
-	}
-
-	function getValue(svg, key, index) {
-		var base = svg[key].baseVal;
-		return index !== undefined
-				? index < base.numberOfItems ? base.getItem(index).value || 0 : 0
-				: base.value || 0;
-	}
-
-	function getPoint(svg, x, y, index) {
-		return Point.create(getValue(svg, x, index), getValue(svg, y, index));
-	}
-
-	function getSize(svg, w, h, index) {
-		return Size.create(getValue(svg, w, index), getValue(svg, h, index));
 	}
 
 	var importers = {
@@ -214,7 +220,7 @@ var SvgImporter = this.SvgImporter = new function() {
 
 		symbol: function(svg) {
 			var item = importGroup(svg);
-			importAttributesAndStyles(svg, item);
+			applyAttributesAndStyles(svg, item);
 			// TODO: We're returning a symbol. How to handle this?
 			return new Symbol(item);
 		}
@@ -227,29 +233,29 @@ var SvgImporter = this.SvgImporter = new function() {
 	 * @param {SVGSVGElement} svg an SVG node to read style and attributes from.
 	 * @param {Item} item the item to apply the style and attributes to.
 	 */
-	function importAttributesAndStyles(svg, item) {
+	function applyAttributesAndStyles(svg, item) {
 		for (var i = 0, l = svg.style.length; i < l; i++) {
 			var name = svg.style[i];
 			var cssName = name.replace(/-(.)/g, function(match, p) {
 				return p.toUpperCase();
 			});
-			applyAttributeOrStyle(name, svg.style[cssName], item, svg);
+			applyAttributeOrStyle(svg, item, name, svg.style[cssName]);
 		}
 		for (var i = 0, l = svg.attributes.length; i < l; i++) {
 			var attr = svg.attributes[i];
-			applyAttributeOrStyle(attr.name, attr.value, item, svg);
+			applyAttributeOrStyle(svg, item, attr.name, attr.value);
 		}
 	}
 
 	/**
 	 * Parses an SVG style attibute and applies it to a Paper.js item.
 	 *
+	 * @param {SVGSVGElement} svg an SVG node
+	 * @param {Item} item the item to apply the style or attribute to.
 	 * @param {String} name an SVG style name
 	 * @param value the value of the SVG style
-	 * @param {Item} item the item to apply the style or attribute to.
-	 * @param {SVGSVGElement} svg an SVG node
 	 */
-	 function applyAttributeOrStyle(name, value, item, svg) {
+	 function applyAttributeOrStyle(svg, item, name, value) {
 		if (!value) {
 			return;
 		}
@@ -293,7 +299,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			item.miterLimit = parseFloat(value, 10);
 			break;
 		case 'transform':
-			applyTransform(item, svg);
+			applyTransform(svg, item);
 			break;
 		case 'opacity':
 			item.opacity = parseFloat(value, 10);
@@ -317,7 +323,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				text.style.font = value;
 				for (var i = 0; i < text.style.length; i++) {
 					var n = text.style[i];
-					applyAttributeOrStyle(n, text.style[n], item, svg);
+					applyAttributeOrStyle(svg, item, n, text.style[n]);
 				}
 				break;
 			case 'font-family':
@@ -335,10 +341,10 @@ var SvgImporter = this.SvgImporter = new function() {
 	/**
 	 * Applies the transformations specified on the SVG node to a Paper.js item
 	 *
-	 * @param {Item} item a Paper.js item
 	 * @param {SVGSVGElement} svg an SVG node
+	 * @param {Item} item a Paper.js item
 	 */
-	function applyTransform(item, svg) {
+	function applyTransform(svg, item) {
 		var transforms = svg.transform.baseVal;
 		var transform;
 		var matrix = new Matrix();
@@ -398,7 +404,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			// TODO: importer == null: Not supported yet.
 			var item = importer && importer(svg);
 			if (item)
-				importAttributesAndStyles(svg, item);
+				applyAttributesAndStyles(svg, item);
 			return item;
 		}
 	};
