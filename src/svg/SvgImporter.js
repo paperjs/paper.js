@@ -56,7 +56,7 @@ var SvgImporter = this.SvgImporter = new function() {
 	function getValue(svg, key, index) {
 		var base = svg[key].baseVal;
 		return index !== undefined
-				? base.numberOfItems > 0 ? base.getItem(index).value || 0 : 0
+				? index < base.numberOfItems ? base.getItem(index).value || 0 : 0
 				: base.value || 0;
 	}
 
