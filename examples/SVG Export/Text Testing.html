@@ -35,7 +35,7 @@
 				c.fillColor = colors[i];
 			}		
 
-			var output = ExportSvg.exportProject(paper.project);
+			var output = SvgExporter.exportProject(paper.project);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";
 			test.appendChild (output);   

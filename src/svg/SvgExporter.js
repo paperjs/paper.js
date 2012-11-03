@@ -18,14 +18,14 @@
  */
 
  /**
- * @name ExportSvg
+ * @name SvgExporter
  *
- * @class The ExportSvg object holds all the functionality to convert a Paper.js
+ * @class The SvgExporter object holds all the functionality to convert a Paper.js
  * DOM to a SVG DOM.
  *
  */
 
-var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
+var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 
 	create: function(tag) {
 		return document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -55,7 +55,7 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 	 * Takes the selected Paper.js layer and parses all groups
 	 * and items on the layer into one SVG
 	 * 
-	 * @name ExportSvg#exportLayer
+	 * @name SvgExporter#exportLayer
 	 * @function
 	 * @param {Layer} layer a Paper.js layer
 	 * @return {SVGSVGElement} the layer converted into an SVG group
@@ -68,7 +68,7 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 	 * 
 	 * Takes a Paper.js group and puts its items in a SVG file.
 	 * 
-	 * @name ExportSvg#exportGroup
+	 * @name SvgExporter#exportGroup
 	 * @function
 	 * @param {Group} group a Paper.js group
 	 * @return {SVGSVGElement} an SVG object
@@ -92,7 +92,7 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 	 * Takes the path and puts it in
 	 * a svg file.
 	 * 
-	 * @name ExportSvg#exportPath
+	 * @name SvgExporter#exportPath
 	 * @function
 	 * @param {Path} path a Paper.js path object
 	 * @return {SVGSVGElement} an SVG object of the imported path
@@ -390,7 +390,7 @@ var ExportSvg = this.ExportSvg = /** @Lends ExportSvg */{
 	/**
 	* Checks the type SVG object created by converting from Paper.js
 	*
-	* @name ExportSvg#checkType
+	* @name SvgExporter#checkType
 	* @function
 	* @param {Array} segArray An array of objects for the newly
 	* converted SVG object

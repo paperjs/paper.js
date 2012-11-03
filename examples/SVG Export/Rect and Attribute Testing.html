@@ -49,7 +49,7 @@
 			path4.strokeColor= 'yellow';
 			path4.fillColor='purple';
 			
-			var output = ExportSvg.exportProject(paper.project);
+			var output = SvgExporter.exportProject(paper.project);
 			console.log(output);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";
