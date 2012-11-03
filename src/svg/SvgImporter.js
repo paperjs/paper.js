@@ -105,9 +105,6 @@ var SvgImporter = this.SvgImporter = new function() {
 		},
 
 		text: function(svg) {
-			var bottomLeft = getPoint(svg, 'x', 'y', 0),
-				textLength = getValue(svg, 'textLength'),
-				delta = getPoint(svg, 'dx', 'dy', 0);
 			// Not supported by Paper.js
 			// x: multiple values for x
 			// y: multiple values for y
@@ -115,8 +112,8 @@ var SvgImporter = this.SvgImporter = new function() {
 			// dy: multiple values for y
 			// rotate: character rotation
 			// lengthAdjust:
-			var point = bottomLeft.add(delta).subtract(textLength / 2, 0);
-			var text = new PointText(point);
+			var text = new PointText(getPoint(svg, 'x', 'y', 0)
+					.add(getPoint(svg, 'dx', 'dy', 0)));
 			text.content = svg.textContent || '';
 			return text;
 		},
@@ -298,22 +295,49 @@ var SvgImporter = this.SvgImporter = new function() {
 			item.setVisibility(value === 'visible');
 			break;
 		case 'font':
-			var text = document.createElement('span');
-			text.style.font = value;
-			for (var i = 0; i < text.style.length; i++) {
-				var n = text.style[i];
-				applyAttributeOrStyle(svg, item, n, text.style[n]);
-			}
-			break;
 		case 'font-family':
-			item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ""));
-			break;
 		case 'font-size':
-			item.setFontSize(parseFloat(value, 10));
+		case 'text-anchor':
+			applyTextStyle(svg, item, name, value);
 			break;
 		default:
 			// Not supported yet.
 			break;
+		}
+	}
+
+	function applyTextStyle(svg, item, name, value) {
+		if (item instanceof TextItem) {
+			switch (name) {
+			case 'font':
+				var text = document.createElement('span');
+				text.style.font = value;
+				for (var i = 0; i < text.style.length; i++) {
+					var n = text.style[i];
+					applyAttributeOrStyle(svg, item, n, text.style[n]);
+				}
+				break;
+			case 'font-family':
+				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ""));
+				break;
+			case 'font-size':
+				item.setFontSize(parseFloat(value, 10));
+				break;
+			case 'text-anchor':
+				item.setJustification({
+					start: 'left',
+					middle: 'center',
+					end: 'right'
+				}[value]);
+				break;
+			}
+		} else if (item instanceof Group) {
+			// Text styles need to be recursively passed down to children that
+			// might be TextItems explicitely.
+			var children = item._children;
+			for (var i = 0, l = children.length; i < l; i++) {
+				applyTextStyle(svg, children[i], name, value);
+			}
 		}
 	}
 
