@@ -63,15 +63,15 @@ var SvgImporter = this.SvgImporter = new function() {
 	}
 
 	function importPoly(svg) {
-		var poly = new Path(),
+		var path = new Path(),
 			points = svg.points,
 			start = points.getItem(0);
-		poly.moveTo(start);
+		path.moveTo(start);
 		for (var i = 1, l = points.numberOfItems; i < l; i++)
-			poly.lineTo(points.getItem(i));
+			path.lineTo(points.getItem(i));
 		if (svg.nodeName.toLowerCase() == 'polygon')
-			poly.closePath();
-		return poly;
+			path.closePath();
+		return path;
 	}
 
 	var importers = {
@@ -136,14 +136,14 @@ var SvgImporter = this.SvgImporter = new function() {
 				} else {
 					relative = Point.create(0, 0);
 				}
-				var segmentTo = Point.create(segment.x, segment.y).add(relative);
+				var point = Point.create(segment.x, segment.y).add(relative);
 				switch (segment.pathSegType) {
 				case 1: // SVGPathSeg.PATHSEG_CLOSEPATH:
 					path.closePath();
 					break;
 				case 2: // SVGPathSeg.PATHSEG_MOVETO_ABS:
 				case 3: // SVGPathSeg.PATHSEG_MOVETO_REL:
-					path.moveTo(segmentTo);
+					path.moveTo(point);
 					break;
 				case 4: // SVGPathSeg.PATHSEG_LINETO_ABS:
 				case 5: // SVGPathSeg.PATHSEG_LINETO_REL:
@@ -151,21 +151,21 @@ var SvgImporter = this.SvgImporter = new function() {
 				case 13: // SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
 				case 14: // SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
 				case 15: // PATHSEG_LINETO_VERTICAL_REL:
-					path.lineTo(segmentTo);
+					path.lineTo(point);
 					break;
 				case 6: // SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
 				case 7: // SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
 					path.cubicCurveTo(
 						relative.add(segment.x1, segment.y1),
 						relative.add(segment.x2, segment.y2),
-						segmentTo
+						point
 					);
 					break;
 				case 8: // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
 				case 9: // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
 					path.quadraticCurveTo(
 						relative.add(segment.x1, segment.y1),
-						segmentTo
+						point
 					);
 					break;
 				// TODO: Implement Arcs: ttp://www.w3.org/TR/SVG/implnote.html
@@ -183,7 +183,7 @@ var SvgImporter = this.SvgImporter = new function() {
 					path.cubicCurveTo(
 						control,
 						relative.add(segment.x2, segment.y2),
-						segmentTo);
+						point);
 					break;
 				case 18: // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
 				case 19: // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
@@ -203,7 +203,7 @@ var SvgImporter = this.SvgImporter = new function() {
 						var point = segments[j].getPoint();
 						control = point.add(point.subtract(control));
 					}
-					path.quadraticCurveTo(control, segmentTo);
+					path.quadraticCurveTo(control, point);
 					break;
 				}
 			}
@@ -307,6 +307,7 @@ var SvgImporter = this.SvgImporter = new function() {
 		if (item instanceof TextItem) {
 			switch (name) {
 			case 'font':
+				// TODO: Verify if there is not another way?
 				var text = document.createElement('span');
 				text.style.font = value;
 				for (var i = 0; i < text.style.length; i++) {
