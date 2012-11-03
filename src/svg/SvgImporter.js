@@ -197,8 +197,8 @@ var SvgImporter = this.SvgImporter = new function() {
 						}
 					}
 					for (; j < i; ++j) {
-						var point = segments[j].getPoint();
-						control = point.add(point.subtract(control));
+						var anchor = segments[j].getPoint();
+						control = anchor.add(anchor.subtract(control));
 					}
 					path.quadraticCurveTo(control, point);
 					break;
