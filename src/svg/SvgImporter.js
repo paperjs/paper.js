@@ -229,10 +229,7 @@ var SvgImporter = this.SvgImporter = new function() {
 	function applyAttributesAndStyles(svg, item) {
 		for (var i = 0, l = svg.style.length; i < l; i++) {
 			var name = svg.style[i];
-			var cssName = name.replace(/-(.)/g, function(match, p) {
-				return p.toUpperCase();
-			});
-			applyAttributeOrStyle(svg, item, name, svg.style[cssName]);
+			applyAttributeOrStyle(svg, item, name, svg.style[Base.camelize(name)]);
 		}
 		for (var i = 0, l = svg.attributes.length; i < l; i++) {
 			var attr = svg.attributes[i];
