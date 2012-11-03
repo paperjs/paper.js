@@ -228,21 +228,16 @@ var SvgImporter = this.SvgImporter = new function() {
 	 * @param {Item} item the item to apply the style and attributes to.
 	 */
 	function importAttributesAndStyles(svg, item) {
-		var name,
-			value,
-			cssName;
-		for (var i = 0; i < svg.style.length; i++) {
-			name = svg.style[i];
-			cssName = name.replace(/-(.)/g, function(match, p) {
+		for (var i = 0, l = svg.style.length; i < l; i++) {
+			var name = svg.style[i];
+			var cssName = name.replace(/-(.)/g, function(match, p) {
 				return p.toUpperCase();
 			});
-			value = svg.style[cssName];
-			applyAttributeOrStyle(name, value, item, svg);
+			applyAttributeOrStyle(name, svg.style[cssName], item, svg);
 		}
-		for (var i = 0; i < svg.attributes.length; i++) {
-			name = svg.attributes[i].name;
-			value = svg.attributes[i].value;
-			applyAttributeOrStyle(name, value, item, svg);
+		for (var i = 0, l = svg.attributes.length; i < l; i++) {
+			var attr = svg.attributes[i];
+			applyAttributeOrStyle(attr.name, attr.value, item, svg);
 		}
 	}
 
