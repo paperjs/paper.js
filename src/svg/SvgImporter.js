@@ -119,7 +119,8 @@ var SvgImporter = this.SvgImporter = new function() {
 		},
 
 		path: function(svg) {
-			var path = new Path(),
+			var compoundPath,
+				path = new Path(),
 				list = svg.pathSegList,
 				segments = path.getSegments();
 			for (var i = 0, l = list.numberOfItems; i < l; i++) {
@@ -140,7 +141,15 @@ var SvgImporter = this.SvgImporter = new function() {
 					break;
 				case 2: // SVGPathSeg.PATHSEG_MOVETO_ABS:
 				case 3: // SVGPathSeg.PATHSEG_MOVETO_REL:
-					path.moveTo(point);
+					if (path.segments.length || path.getParent() instanceof CompoundPath) {
+						if (!compoundPath)
+							compoundPath = new CompoundPath([path]);
+						path = new Path([point]);
+						compoundPath.addChild(path);
+						segments = path.getSegments();
+					} else {
+						path.moveTo(point);
+					}
 					break;
 				case 4: // SVGPathSeg.PATHSEG_LINETO_ABS:
 				case 5: // SVGPathSeg.PATHSEG_LINETO_REL:
@@ -205,7 +214,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				}
 			}
 
-			return path;
+			return compoundPath || path;
 		},
 
 		symbol: function(svg) {
