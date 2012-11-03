@@ -114,7 +114,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			pointArray = [];
 			handleInArray = [];
 			handleOutArray = [];
-			for (i = 0; i < segArray.length; i++) {
+			for (var i = 0; i < segArray.length; i++) {
 				pointArray[i] = segArray[i].getPoint();
 				handleInArray[i] = segArray[i].getHandleIn();
 				handleOutArray[i] = segArray[i].getHandleOut();
@@ -180,7 +180,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		case 'polyline':
 			svg = this.create('polyline');
 			var pointString = '';
-			for(i = 0; i < pointArray.length; ++i) {
+			for(var i = 0; i < pointArray.length; i++) {
 				pointString += pointArray[i].getX() + ','  + pointArray[i].getY() + ' ';
 			}
 			svg.setAttribute('points', pointString);
@@ -188,7 +188,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		case 'polygon':
 			svg = this.create('polygon');
 			var pointString = '';
-			for(i = 0; i < pointArray.length; ++i) {
+			for(i = 0; i < pointArray.length; i++) {
 				pointString += pointArray[i].getX() + ',' + pointArray[i].getY() + ' ';
 			}
 			svg.setAttribute('points', pointString);

@@ -432,7 +432,7 @@ test('compare polygon values', function() {
 	var point;
 	poly.moveTo([start.x, start.y]);
 
-	for (var i = 1; i < points.length; ++i) {
+	for (var i = 1; i < points.length; i++) {
 		point = points.getItem(i);
 		poly.lineTo([point.x, point.y]);
 	}
@@ -462,7 +462,7 @@ test('compare negative polygon values', function() {
 	var point;
 	poly.moveTo([start.x, start.y]);
 
-	for (var i = 1; i < points.length; ++i) {
+	for (var i = 1; i < points.length; i++) {
 		point = points.getItem(i);
 		poly.lineTo([point.x, point.y]);
 	}
@@ -492,7 +492,7 @@ test('compare polyline values', function() {
 	var point;
 	poly.moveTo([start.x, start.y]);
 
-	for (var i = 1; i < points.length; ++i) {
+	for (var i = 1; i < points.length; i++) {
 		point = points.getItem(i);
 		poly.lineTo([point.x, point.y]);
 	}
@@ -522,7 +522,7 @@ test('compare negative polyline values', function() {
 	var point;
 	poly.moveTo([start.x, start.y]);
 
-	for (var i = 1; i < points.length; ++i) {
+	for (var i = 1; i < points.length; i++) {
 		point = points.getItem(i);
 		poly.lineTo([point.x, point.y]);
 	}
