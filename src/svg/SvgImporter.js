@@ -256,85 +256,68 @@ var SvgImporter = this.SvgImporter = new function() {
 	 * @param value the value of the SVG style
 	 */
 	 function applyAttributeOrStyle(svg, item, name, value) {
-		if (!value) {
+		if (value == null)
 			return;
-		}
 		switch (name) {
 		case 'id':
-			item.name = value;
+			item.setName(value);
 			break;
 		case 'fill':
-			if (value != 'none') {
-				item.fillColor = value;
-			}
+			if (value !== 'none')
+				item.setFillColor(value);
 			break;
 		case 'stroke':
-			if (value != 'none') {
-				item.strokeColor = value;
-			}
+			if (value !== 'none')
+				item.setStrokeColor(value);
 			break;
 		case 'stroke-width':
-			item.strokeWidth = parseFloat(value, 10);
+			item.setStrokeWidth(parseFloat(value, 10));
 			break;
 		case 'stroke-linecap':
-			item.strokeCap = value;
+			item.setStrokeCap(value);
 			break;
 		case 'stroke-linejoin':
-			item.strokeJoin = value;
+			item.setStrokeJoin(value);
 			break;
 		case 'stroke-dasharray':
-			value = value.replace(/px/g, '');
-			value = value.replace(/, /g, ',');
-			value = value.replace(/ /g, ',');
-			value = value.split(',');
-			for (var i in value) {
+			value = value.replace(/px/g, '').replace(/, /g, ',')
+					.replace(/ /g, ',').split(',');
+			for (var i = 0, l = value.length; i < l; i++)
 				value[i] = parseFloat(value[i], 10);
-			}
-			item.dashArray = value;
+			item.setDashArray(value);
 			break;
 		case 'stroke-dashoffset':
-			item.dashOffset = parseFloat(value, 10);
+			item.setDashOffset(parseFloat(value, 10));
 			break;
 		case 'stroke-miterlimit':
-			item.miterLimit = parseFloat(value, 10);
+			item.setMiterLimit(parseFloat(value, 10));
 			break;
 		case 'transform':
 			applyTransform(svg, item);
 			break;
 		case 'opacity':
-			item.opacity = parseFloat(value, 10);
+			item.setOpacity(parseFloat(value, 10));
 			break;
 		case 'visibility':
-			item.visibility = (value == 'visible') ? true : false;
+			item.setVisibility(value === 'visible');
 			break;
 		case 'font':
+			var text = document.createElement('span');
+			text.style.font = value;
+			for (var i = 0; i < text.style.length; i++) {
+				var n = text.style[i];
+				applyAttributeOrStyle(svg, item, n, text.style[n]);
+			}
+			break;
 		case 'font-family':
+			item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ""));
+			break;
 		case 'font-size':
-			//Implemented in characterStyle below.
+			item.setFontSize(parseFloat(value, 10));
 			break;
 		default:
 			// Not supported yet.
 			break;
-		}
-		if (item.characterStyle) {
-			switch (name) {
-			case 'font':
-				var text = document.createElement('span');
-				text.style.font = value;
-				for (var i = 0; i < text.style.length; i++) {
-					var n = text.style[i];
-					applyAttributeOrStyle(svg, item, n, text.style[n]);
-				}
-				break;
-			case 'font-family':
-				var fonts = value.split(',');
-				fonts[0] = fonts[0].replace(/^\s+|\s+$/g, "");
-				item.characterStyle.font = fonts[0];
-				break;
-			case 'font-size':
-				item.characterStyle.fontSize = parseFloat(value, 10);
-				break;
-			}
 		}
 	}
 
