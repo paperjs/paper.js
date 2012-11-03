@@ -46,7 +46,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			points = svg.points,
 			start = points.getItem(0);
 		poly.moveTo(start);
-		for (var i = 1; i < points.length; i++)
+		for (var i = 1, l = points.numberOfItems; i < l; i++)
 			poly.lineTo(points.getItem(i));
 		if (svg.nodeName.toLowerCase() == 'polygon')
 			poly.closePath();

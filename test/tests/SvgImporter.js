@@ -331,13 +331,9 @@ test('compare polygon values', function() {
 
 	var poly = new Path();
 	var points = shape.points;
-	var start = points.getItem(0);
-	var point;
-	poly.moveTo([start.x, start.y]);
-
-	for (var i = 1; i < points.length; i++) {
-		point = points.getItem(i);
-		poly.lineTo([point.x, point.y]);
+	poly.moveTo(points.getItem(0));
+	for (var i = 1; i < points.numberOfItems; i++) {
+		poly.lineTo(points.getItem(i));
 	}
 	if (shape.nodeName.toLowerCase() == 'polygon') {
 		poly.closePath();
@@ -356,13 +352,9 @@ test('compare negative polygon values', function() {
 
 	var poly = new Path();
 	var points = shape.points;
-	var start = points.getItem(0);
-	var point;
-	poly.moveTo([start.x, start.y]);
-
-	for (var i = 1; i < points.length; i++) {
-		point = points.getItem(i);
-		poly.lineTo([point.x, point.y]);
+	poly.moveTo(points.getItem(0));
+	for (var i = 1; i < points.numberOfItems; i++) {
+		poly.lineTo(points.getItem(i));
 	}
 	if (shape.nodeName.toLowerCase() == 'polygon') {
 		poly.closePath();
@@ -381,13 +373,9 @@ test('compare polyline values', function() {
 
 	var poly = new Path();
 	var points = shape.points;
-	var start = points.getItem(0);
-	var point;
-	poly.moveTo([start.x, start.y]);
-
-	for (var i = 1; i < points.length; i++) {
-		point = points.getItem(i);
-		poly.lineTo([point.x, point.y]);
+	poly.moveTo(points.getItem(0));
+	for (var i = 1; i < points.numberOfItems; i++) {
+		poly.lineTo(points.getItem(i));
 	}
 	if (shape.nodeName.toLowerCase() == 'polygon') {
 		poly.closePath();
@@ -406,13 +394,9 @@ test('compare negative polyline values', function() {
 
 	var poly = new Path();
 	var points = shape.points;
-	var start = points.getItem(0);
-	var point;
-	poly.moveTo([start.x, start.y]);
-
-	for (var i = 1; i < points.length; i++) {
-		point = points.getItem(i);
-		poly.lineTo([point.x, point.y]);
+	poly.moveTo(points.getItem(0));
+	for (var i = 1; i < points.numberOfItems; i++) {
+		poly.lineTo(points.getItem(i));
 	}
 	if (shape.nodeName.toLowerCase() == 'polygon') {
 		poly.closePath();
