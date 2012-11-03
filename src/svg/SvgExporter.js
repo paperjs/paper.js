@@ -1,4 +1,4 @@
- /*
+/*
  * Paper.js
  *
  * This file is part of Paper.js, a JavaScript Vector Graphics Library,
@@ -18,12 +18,12 @@
  */
 
  /**
- * @name SvgExporter
- *
- * @class The SvgExporter object holds all the functionality to convert a Paper.js
- * DOM to a SVG DOM.
- *
- */
+  * @name SvgExporter
+  *
+  * @class The SvgExporter object holds all the functionality to convert a Paper.js
+  * DOM to a SVG DOM.
+  *
+  */
 
 var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 
