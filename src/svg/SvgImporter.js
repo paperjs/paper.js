@@ -206,7 +206,7 @@ var SvgImporter = this.SvgImporter = /** @Lends SvgImporter */{
 		var controlPoint;
 		var prevCommand;
 		var segmentTo;
-		for (var i = 0; i < segments.numberOfItems; ++i) {
+		for (var i = 0; i < segments.numberOfItems; i++) {
 			segment = segments.getItem(i);
 			if (segment.pathSegType == SVGPathSeg.PATHSEG_UNKNOWN) {
 				continue;
@@ -301,7 +301,7 @@ var SvgImporter = this.SvgImporter = /** @Lends SvgImporter */{
 		var point;
 		poly.moveTo([start.x, start.y]);
 
-		for (var i = 1; i < points.length; ++i) {
+		for (var i = 1; i < points.length; i++) {
 			point = points.getItem(i);
 			poly.lineTo([point.x, point.y]);
 		}
@@ -323,7 +323,7 @@ var SvgImporter = this.SvgImporter = /** @Lends SvgImporter */{
 		var name,
 			value,
 			cssName;
-		for (var i = 0; i < svg.style.length; ++i) {
+		for (var i = 0; i < svg.style.length; i++) {
 			name = svg.style[i];
 			cssName = name.replace(/-(.)/g, function(match, p) {
 				return p.toUpperCase();
@@ -331,7 +331,7 @@ var SvgImporter = this.SvgImporter = /** @Lends SvgImporter */{
 			value = svg.style[cssName];
 			this._applyAttributeOrStyle(name, value, item, svg);
 		}
-		for (var i = 0; i < svg.attributes.length; ++i) {
+		for (var i = 0; i < svg.attributes.length; i++) {
 			name = svg.attributes[i].name;
 			value = svg.attributes[i].value;
 			this._applyAttributeOrStyle(name, value, item, svg);
@@ -412,7 +412,7 @@ var SvgImporter = this.SvgImporter = /** @Lends SvgImporter */{
 			case 'font':
 				var text = document.createElement('span');
 				text.style.font = value;
-				for (var i = 0; i < text.style.length; ++i) {
+				for (var i = 0; i < text.style.length; i++) {
 					var n = text.style[i];
 					this._applyAttributeOrStyle(n, text.style[n], item, svg);
 				}
@@ -440,7 +440,7 @@ var SvgImporter = this.SvgImporter = /** @Lends SvgImporter */{
 		var transform;
 		var matrix = new Matrix();
 
-		for (var i = 0; i < transforms.numberOfItems; ++i) {
+		for (var i = 0; i < transforms.numberOfItems; i++) {
 			transform = transforms.getItem(i);
 			if (transform.type == SVGTransform.SVG_TRANSFORM_UNKNOWN) {
 				continue;
