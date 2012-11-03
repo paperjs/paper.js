@@ -133,7 +133,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			svg.setAttribute('width', width);
 			svg.setAttribute('height', height);
 			break;
-		case 'roundRect':
+		case 'roundrect':
 			//d variables and point are used to determine the rounded corners for the rounded rectangle
 			var dx1 = pointArray[1].getDistance(pointArray[6]);
 			var dx2 = pointArray[0].getDistance(pointArray[7]);
@@ -163,15 +163,15 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			break;
 		case 'circle':
 			svg = this.create('circle');
-			var radius = (pointArray[0].getDistance(pointArray[2], false)) /2;
+			var radius = (pointArray[0].getDistance(pointArray[2])) /2;
 			svg.setAttribute('cx', path.bounds.center.x);
 			svg.setAttribute('cy', path.bounds.center.y);
 			svg.setAttribute('r', radius);
 			break;
 		case 'ellipse':
 			svg = this.create('ellipse');
-			var radiusX = (pointArray[2].getDistance(pointArray[0], false)) / 2;
-			var radiusY = (pointArray[3].getDistance(pointArray[1], false)) /2;
+			var radiusX = pointArray[2].getDistance(pointArray[0]) / 2;
+			var radiusY = pointArray[3].getDistance(pointArray[1]) /2;
 			svg.setAttribute('cx', path.bounds.center.x);
 			svg.setAttribute('cy', path.bounds.center.y);
 			svg.setAttribute('rx', radiusX);
@@ -220,7 +220,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			//making them paths
 			var angle = this._determineIfTransformed(path, pointArray, type) + 90;
 			if (angle != 0) {
-				if (type == 'rect' || type == 'roundRect') {
+				if (type == 'rect' || type == 'roundrect') {
 					svg = this.create('path');
 					svg = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
 				} else {
@@ -320,7 +320,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		case 'circle':
 			topMidPath = new Point(pointArray[1].getX(), pointArray[1].getY());
 			break;
-		case 'roundRect':
+		case 'roundrect':
 			topMidPathx = (pointArray[3].getX() + pointArray[4].getX())/2;
 			topMidPathy = (pointArray[3].getY() + pointArray[4].getY())/2;
 			topMidPath = new Point(topMidPathx, topMidPathy);
