@@ -400,54 +400,28 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		var type;
 		var dPoint12;
 		var dPoint34;
-		var curves = false;	
+		var straight = true;	
 		var segHandleIn;
 		var segHandleOut;
-		for( var i = 0, l = segArray.length; i < l; i++) {
-			//Checks for any curves (if the handles have values). Differentiates between straight objects(line, polyline, rect, and polygon) and
-			//and objects with curves(circle, ellipse, roundedRectangle).
+		// See if actually have any curves in the path. Differentiate
+		// between straight objects (line, polyline, rect, and  polygon) and
+		// objects with curves(circle, ellipse, roundedRectangle).
+		for( var i = 0, l = segArray.length; i < l && straight; i++) {
 			segHandleIn = segArray[i].getHandleIn();
 			segHandleOut = segArray[i].getHandleOut();
-			curves = segHandleIn.getX() != 0 || segHandleIn.getY() != 0 ? true : curves;
-			curves = segHandleOut.getX() != 0 || segHandleOut.getY() != 0 ? true : curves;			
+			if (!segHandleIn.isZero() || !segHandleOut.isZero())
+				straight = false;
 		}
-		//Checks for curves in the passed in segments
-		//Checks if the type of the passed in path is a rounded rectangle, an ellipse, a circle, or if it's simply a path
-		//If there aren't any curves (if curves = false), then it checks if the type is a rectangle, a polygon, a polyline, or simply a line.
-		if (curves) {
-			if (segArray.length == 8) {
-				//if the distance between (point0 and point3) and (point7 and point4) are equal then it is a roundedRectangle
-				dPoint12 = Math.round(pointArray[0].getDistance(pointArray[3], false));
-				dPoint34 = Math.round(pointArray[7].getDistance(pointArray[4], false));
-				if (dPoint12 == dPoint34) {
-					type = 'roundRect';
-				}
-			} else if (segArray.length == 4) {
-				//checks if the values of the point have values similar to circles and ellipses
-				var checkPointValues = true;
-				for(i = 0; i < pointArray.length && checkPointValues == true; i++) {
-					if (handleInArray[i].getX() != 0 || handleInArray[i].getY() != 0 && Math.round(Math.abs(handleInArray[i].getX())) === Math.round(Math.abs(handleOutArray[i].getX())) && Math.round(Math.abs(handleInArray[i].getY())) === Math.round(Math.abs(handleOutArray[i].getY()))) {
-						checkPointValues = true;
-					} else {
-						checkPointValues = false;
-					}	
-				}	
-				if (checkPointValues == true) {
-					//if the distance between (point0 and point2) and (point1 and point3) are equal, then it is a circle
-					var d1 = Math.round(pointArray[0].getDistance(pointArray[2], false));
-					var d2 = Math.round(pointArray[1].getDistance(pointArray[3], false));
-					if (d1 == d2) {
-						type = 'circle';
-					} else {
-						type = 'ellipse';
-					}
-				}
-			} 
-		} else if (!curves) {
+		// Checks if the type of the passed in path is a rounded rectangle, an
+		// ellipse, a circle, or if it's simply a path.
+		// If there aren't any curves (straight == true), then check if the type
+		// is a rectangle, a polygon, a polyline, or simply a line.
+		if (straight) {
 			if (segArray.length == 4) {
-				//if the distance between (point0 and point1) and (point2 and point3) are equal, then it is a rectangle
-				dPoint12 = Math.round(pointArray[0].getDistance(pointArray[1], false));
-				dPoint34 = Math.round(pointArray[3].getDistance(pointArray[2], false));
+				// If the distance between (point0 and point1) and (point2 and
+				// point3) are equal, then it is a rectangle
+				dPoint12 = Math.round(pointArray[0].getDistance(pointArray[1]));
+				dPoint34 = Math.round(pointArray[3].getDistance(pointArray[2]));
 				if (dPoint12 == dPoint34) {
 					type = 'rect';
 				}
@@ -463,7 +437,39 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 				type = 'line';
 			}	
 		} else {
-			type = null;
+			if (segArray.length == 8) {
+				// If the distance between (point0 and point3) and (point7 and 
+				// point4) are equal then it is a roundedRectangle
+				dPoint12 = Math.round(pointArray[0].getDistance(pointArray[3]));
+				dPoint34 = Math.round(pointArray[7].getDistance(pointArray[4]));
+				if (dPoint12 == dPoint34) {
+					type = 'roundrect';
+				}
+			} else if (segArray.length == 4) {
+				// Check if the values of the point have values similar to 
+				// circles and ellipses.
+				var checkPointValues = true;
+				for (i = 0; i < pointArray.length && checkPointValues; i++) {
+					if (handleInArray[i].getX() != 0 || handleInArray[i].getY() != 0
+							&& Math.round(Math.abs(handleInArray[i].getX())) === Math.round(Math.abs(handleOutArray[i].getX()))
+							&& Math.round(Math.abs(handleInArray[i].getY())) === Math.round(Math.abs(handleOutArray[i].getY()))) {
+						checkPointValues = true;
+					} else {
+						checkPointValues = false;
+					}	
+				}	
+				if (checkPointValues) {
+					// If the distance between (point0 and point2) and (point1
+					// and point3) are equal, then it is a circle
+					var d1 = Math.round(pointArray[0].getDistance(pointArray[2]));
+					var d2 = Math.round(pointArray[1].getDistance(pointArray[3]));
+					if (d1 == d2) {
+						type = 'circle';
+					} else {
+						type = 'ellipse';
+					}
+				}
+			} 
 		}
 		return type;
 	}
