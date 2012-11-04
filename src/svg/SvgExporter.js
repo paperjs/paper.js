@@ -289,44 +289,38 @@ var SvgExporter = this.SvgExporter = new function() {
 	function pathSetup(path, pointArray, hIArray, hOArray) {
 		var svgPath = createElement('path');
 		var pointString = '';
-		var x1;
-		var x2;
-		var y1;
-		var y2;
-		var handleOut1;
-		var handleIn2;
 		// pointstring is formatted in the way the SVG XML will be reading.
 		// Namely, a point and the way to traverse to that point.
 		pointString += 'M' + pointArray[0].getX() + ',' + pointArray[0].getY() + ' ';
 		//Checks 2 points and the angles in between the 2 points
 		for (i = 0; i < pointArray.length-1; i++) {
-			x1 = pointArray[i].getX();
-			y1 = pointArray[i].getY();
-			x2 = pointArray[i + 1].getX();
-			y2 = pointArray[i + 1].getY();
-			handleOut1 = hOArray[i];
-			handleIn2 = hIArray[i+1];
+			var x1 = pointArray[i].getX(),
+				y1 = pointArray[i].getY(),
+				x2 = pointArray[i + 1].getX(),
+				y2 = pointArray[i + 1].getY(),
+				handleOut1 = hOArray[i],
+				handleIn2 = hIArray[i+1];
 			if (handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() == 0) {
 					// L is lineto, moving to a point with drawing
 					pointString+= 'L' + x2 + ',' + y2 + ' ';
 			} else {
 				// c is curveto, relative: handleOut, handleIn - endpoint, endpoint - startpoint
-				pointString+= 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
-				pointString+= (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
-				pointString+= (x2 - x1) + ',' + (y2-y1) +  ' ';
+				pointString += 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
+				pointString += (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
+				pointString += (x2 - x1) + ',' + (y2 - y1) +  ' ';
 			}
 		}
 		if (!hOArray[hOArray.length - 1].equals([0, 0]) && !hIArray[0].equals([0, 0])) {
-			handleOut1 = hOArray[hOArray.length - 1];
-			handleIn2 = hIArray[0];
-			// Bezier curve from last point to first
-			x1 = pointArray[pointArray.length - 1].getX();
-			y1 = pointArray[pointArray.length - 1].getY();
-			x2 = pointArray[0].getX();
-			y2 = pointArray[0].getY();
-			pointString+= 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
-			pointString+= (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
-			pointString+= (x2 - x1) + ',' + (y2-y1) +  ' ';
+			var handleOut1 = hOArray[hOArray.length - 1],
+				handleIn2 = hIArray[0],
+				// Bezier curve from last point to first
+				x1 = pointArray[pointArray.length - 1].getX(),
+				y1 = pointArray[pointArray.length - 1].getY(),
+				x2 = pointArray[0].getX(),
+				y2 = pointArray[0].getY();
+			pointString += 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
+			pointString += (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
+			pointString += (x2 - x1) + ',' + (y2 - y1) +  ' ';
 		}
 		if (path._closed) {
 			// z implies a closed path, connecting the first and last points
