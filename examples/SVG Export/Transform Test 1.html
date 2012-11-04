@@ -25,7 +25,7 @@
 				clonedPath.rotate(angle * i, circlePath.bounds.topLeft);
 			};
 
-			var output = SvgExporter.exportProject(paper.project);
+			var output = SvgExporter.exportProject(project);
 			console.log(output);
 			var test = document.getElementById('svg')
 			test.innerHTML = "";
