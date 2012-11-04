@@ -46,7 +46,7 @@ var Style = Item.extend({
 
 	statics: {
 		create: function(item) {
-			var style = new this(this.dont);
+			var style = Base.create(this);
 			style._item = item;
 			return style;
 		},

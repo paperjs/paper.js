@@ -376,7 +376,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	statics: {
 		create: function(path, segment1, segment2) {
-			var curve = new Curve(Curve.dont);
+			var curve = Base.create(Curve);
 			curve._path = path;
 			curve._segment1 = segment1;
 			curve._segment2 = segment2;
@@ -388,12 +388,12 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				h1 = segment1._handleOut,
 				h2 = segment2._handleIn,
 				p2 = segment2._point;
-    		return [
-    			p1._x, p1._y,
-    			p1._x + h1._x, p1._y + h1._y,
-    			p2._x + h2._x, p2._y + h2._y,
-    			p2._x, p2._y
-    		];
+			return [
+				p1._x, p1._y,
+				p1._x + h1._x, p1._y + h1._y,
+				p2._x + h2._x, p2._y + h2._y,
+				p2._x, p2._y
+			];
 		},
 
 		evaluate: function(v, t, type) {
