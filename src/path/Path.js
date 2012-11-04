@@ -1654,6 +1654,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// are considered abstract methods of PathItem and need to be defined in
 		// all implementing classes.
 		moveTo: function(point) {
+			// moveTo should only be called at the beginning of paths. But it 
+			// can ce called again if there is nothing drawn yet, in which case
+			// the first segment gets readjusted.
+			if (this._segments.length === 1)
+				this.removeSegment(0);
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
 			if (!this._segments.length)
