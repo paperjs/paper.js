@@ -77,7 +77,7 @@ this.Base = Base.inject(/** @lends Base# */{
 					list._index = index + 1;
 				return obj && clone ? obj.clone() : obj;
 			}
-			obj = new this(this.dont);
+			obj = Base.create(this);
 			if (readIndex)
 				obj._read = true;
 			obj = obj.initialize.apply(obj, index > 0 || length < list.length

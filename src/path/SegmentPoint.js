@@ -64,7 +64,7 @@ var SegmentPoint = Point.extend({
 
 	statics: {
 		create: function(segment, key, pt) {
-			var point = new SegmentPoint(SegmentPoint.dont),
+			var point = Base.create(SegmentPoint),
 				x, y, selected;
 			if (!pt) {
 				x = y = 0;

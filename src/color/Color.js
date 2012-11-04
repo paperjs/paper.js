@@ -284,8 +284,7 @@ var Color = this.Color = Base.extend(new function() {
 		 * @return {RgbColor|GrayColor|HsbColor} a copy of the color object
 		 */
 		clone: function() {
-			var ctor = this.constructor,
-				copy = new ctor(ctor.dont),
+			var copy = Base.create(this.constructor),
 				components = this._components;
 			for (var i = 0, l = components.length; i < l; i++) {
 				var key = '_' + components[i];

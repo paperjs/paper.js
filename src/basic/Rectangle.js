@@ -693,7 +693,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	statics: {
 		// See Point.create()
 		create: function(x, y, width, height) {
-			return new Rectangle(Rectangle.dont).set(x, y, width, height);
+			return Base.create(Rectangle).set(x, y, width, height);
 		}
 	}
 }, new function() {
@@ -762,8 +762,7 @@ var LinkedRectangle = Rectangle.extend({
 		 * @ignore
 		 */
 		create: function(owner, setter, x, y, width, height) {
-			var rect = new LinkedRectangle(LinkedRectangle.dont).set(
-					x, y, width, height, true);
+			var rect = Base.create(LinkedRectangle).set(x, y, width, height, true);
 			rect._owner = owner;
 			rect._setter = setter;
 			return rect;
