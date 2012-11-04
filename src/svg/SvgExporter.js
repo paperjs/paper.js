@@ -24,79 +24,21 @@
   * Paper.js DOM to a SVG DOM.
   */
 
-var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
+var SvgExporter = this.SvgExporter = new function() {
 
-	create: function(tag) {
+	function createElement(tag) {
 		return document.createElementNS('http://www.w3.org/2000/svg', tag);
-	},
+	}
 
-	/**
-	 * Takes the selected Paper.js project and parses all of its layers and
-	 * groups to be placed into SVG groups, converting the project into one
-	 * SVG group.
-	 *
-	 * @function
-	 * @param {Project} project a Paper.js project
-	 * @return {SVGSVGElement} the imported project converted to an SVG project
-	 */
-	 // TODO: Implement symbols and Gradients
-	exportProject: function(project) {
-		var svg = this.create('svg'),
-			layers = project.layers;
-		for (var i = 0, l = layers.length; i < l; i++) {
-			svg.appendChild(this.exportLayer(layers[i]));
-		}
-		return svg;
-	},
-
-	/**
-	 * 
-	 * Takes the selected Paper.js layer and parses all groups
-	 * and items on the layer into one SVG
-	 * 
-	 * @name SvgExporter#exportLayer
-	 * @function
-	 * @param {Layer} layer a Paper.js layer
-	 * @return {SVGSVGElement} the layer converted into an SVG group
-	 */
-	exportLayer: function(layer) {
-		return this.exportGroup(layer);
-	},
-
-	/**
-	 * 
-	 * Takes a Paper.js group and puts its items in a SVG file.
-	 * 
-	 * @name SvgExporter#exportGroup
-	 * @function
-	 * @param {Group} group a Paper.js group
-	 * @return {SVGSVGElement} an SVG object
-	 */
-	exportGroup: function(group) {
-		var svg = this.create('g'),
+	function exportGroup(group) {
+		var svg = createElement('g'),
 			children = group._children;
-		for (var i = 0, l = children.length; i < l; i++) {
-			var child = children[i];
-			if (child._children) {
-				svg.appendChild(this.exportGroup(child));
-			} else {
-				svg.appendChild(this.exportPath(child));
-			}
-		}
+		for (var i = 0, l = children.length; i < l; i++)
+			svg.appendChild(SvgExporter.exportItem(children[i]));
 		return svg;
-	},
-	
-	/**
-	 * 
-	 * Takes the path and puts it in
-	 * a svg file.
-	 * 
-	 * @name SvgExporter#exportPath
-	 * @function
-	 * @param {Path} path a Paper.js path object
-	 * @return {SVGSVGElement} an SVG object of the imported path
-	 */
-	exportPath: function(path) {
+	}
+
+	function exportItem(path) {
 		var svg;
 		//Getting all of the segments(a point, a HandleIn and a HandleOut) in the path
 		var segArray;
@@ -119,15 +61,14 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 				handleInArray[i] = segArray[i].getHandleIn();
 				handleOutArray[i] = segArray[i].getHandleOut();
 			}
-			var exp = this;
-			type = exp._determineType(path, segArray, pointArray, handleInArray, handleOutArray);
+			type = determineType(path, segArray, pointArray, handleInArray, handleOutArray);
 		}
 		//switch statement that determines what type of SVG element to add to the SVG Object
 		switch (type) {
 		case 'rect':
 			var width = pointArray[0].getDistance(pointArray[3]);
 			var height = pointArray[0].getDistance(pointArray[1]);
-			svg = this.create('rect');
+			svg = createElement('rect');
 			svg.setAttribute('x', path.bounds.topLeft.getX());
 			svg.setAttribute('y', path.bounds.topLeft.getY());
 			svg.setAttribute('width', width);
@@ -146,7 +87,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			var height = Math.round(dy1);
 			var rx = pointArray[3].getX() - point.x;
 			var ry = pointArray[2].getY() - point.y;
-			svg = this.create('rect');
+			svg = createElement('rect');
 			svg.setAttribute('x', path.bounds.topLeft.getX());
 			svg.setAttribute('y', path.bounds.topLeft.getY());
 			svg.setAttribute('rx', rx);
@@ -155,21 +96,21 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			svg.setAttribute('height', height);
 			break;
 		case'line':
-			svg = this.create('line');
+			svg = createElement('line');
 			svg.setAttribute('x1', pointArray[0].getX());
 			svg.setAttribute('y1', pointArray[0].getY());
 			svg.setAttribute('x2', pointArray[pointArray.length - 1].getX());
 			svg.setAttribute('y2', pointArray[pointArray.length - 1].getY());
 			break;
 		case 'circle':
-			svg = this.create('circle');
+			svg = createElement('circle');
 			var radius = (pointArray[0].getDistance(pointArray[2])) /2;
 			svg.setAttribute('cx', path.bounds.center.x);
 			svg.setAttribute('cy', path.bounds.center.y);
 			svg.setAttribute('r', radius);
 			break;
 		case 'ellipse':
-			svg = this.create('ellipse');
+			svg = createElement('ellipse');
 			var radiusX = pointArray[2].getDistance(pointArray[0]) / 2;
 			var radiusY = pointArray[3].getDistance(pointArray[1]) /2;
 			svg.setAttribute('cx', path.bounds.center.x);
@@ -178,7 +119,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			svg.setAttribute('ry', radiusY);
 			break;
 		case 'polyline':
-			svg = this.create('polyline');
+			svg = createElement('polyline');
 			var pointString = '';
 			for(var i = 0; i < pointArray.length; i++) {
 				pointString += pointArray[i].getX() + ','  + pointArray[i].getY() + ' ';
@@ -186,7 +127,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			svg.setAttribute('points', pointString);
 			break;
 		case 'polygon':
-			svg = this.create('polygon');
+			svg = createElement('polygon');
 			var pointString = '';
 			for(i = 0; i < pointArray.length; i++) {
 				pointString += pointArray[i].getX() + ',' + pointArray[i].getY() + ' ';
@@ -194,7 +135,7 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			svg.setAttribute('points', pointString);
 			break;
 		case 'text':
-			svg = this.create('text');
+			svg = createElement('text');
 			svg.setAttribute('x', path.getPoint().getX());
 			svg.setAttribute('y', path.getPoint().getY());
 			if (path.style.font != undefined) {
@@ -209,8 +150,8 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			svg.textContent = path.getContent();
 			break;
 		default:
-			svg = this.create('path');
-			svg = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+			svg = createElement('path');
+			svg = pathSetup(path, pointArray, handleInArray, handleOutArray);
 			break;
 		}
 		//If the object is a circle, ellipse, rectangle, or rounded rectangle, it will find the angle 
@@ -218,14 +159,14 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		if (type != 'text' && type != undefined && type != 'polygon' &&  type != 'polyline' && type != 'line') {
 			//TODO: Need to implement exported transforms for circle, ellipse, and rectangles instead of 
 			//making them paths
-			var angle = this._determineIfTransformed(path, pointArray, type) + 90;
+			var angle = determineIfTransformed(path, pointArray, type) + 90;
 			if (angle != 0) {
 				if (type == 'rect' || type == 'roundrect') {
-					svg = this.create('path');
-					svg = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+					svg = createElement('path');
+					svg = pathSetup(path, pointArray, handleInArray, handleOutArray);
 				} else {
-					svg = this.create('path');
-					svg = this.pathSetup(path, pointArray, handleInArray, handleOutArray);
+					svg = createElement('path');
+					svg = pathSetup(path, pointArray, handleInArray, handleOutArray);
 				}
 			} 
 		}
@@ -297,10 +238,20 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 			svg.setAttribute('visibility', visString);
 		}
 		return svg;
-	},
+	}
+	var exporters = {
+		group: exportGroup,
+		layer: exportGroup,
+		path: exportItem,
+		pointtext: exportItem
+		// TODO:
+		// raster: 
+		// placedsymbol:
+		// compoundpath:
+	};
 
-	//Determines whether the object has been transformed or not through finding the angle
-	_determineIfTransformed: function(path, pointArray, type) {
+	// Determines whether the object has been transformed or not through finding the angle
+	function determineIfTransformed(path, pointArray, type) {
 		var topMidBoundx = (path.bounds.topRight.getX() + path.bounds.topLeft.getX() )/2;
 		var topMidBoundy = (path.bounds.topRight.getY() + path.bounds.topLeft.getY() )/2;
 		var topMidBound = new Point(topMidBoundx, topMidBoundy);
@@ -333,10 +284,10 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		var deltaX = topMidPath.x - centerPoint.getX();
 		var angleInDegrees = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
 		return angleInDegrees;
-	},
+	}
 	
-	pathSetup: function(path, pointArray, hIArray, hOArray) {
-		var svgPath = this.create('path');
+	function pathSetup(path, pointArray, hIArray, hOArray) {
+		var svgPath = createElement('path');
 		var pointString = '';
 		var x1;
 		var x2;
@@ -383,12 +334,12 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		}
 		svgPath.setAttribute('d', pointString);
 		return svgPath;
-	},	
+	}
 
 	/**
 	* Checks the type SVG object created by converting from Paper.js
 	*/
-	_determineType: function(path, segArray, pointArray, handleInArray, handleOutArray) {
+	function determineType(path, segArray, pointArray, handleInArray, handleOutArray) {
 		var type;
 		var dPoint12;
 		var dPoint34;
@@ -465,4 +416,32 @@ var SvgExporter = this.SvgExporter = /** @Lends SvgExporter */{
 		}
 		return type;
 	}
+
+	return /** @Lends SvgExporter */{
+		/**
+		 * Takes the selected Paper.js project and parses all of its layers and
+		 * groups to be placed into SVG groups, converting the project into one
+		 * SVG group.
+		 *
+		 * @function
+		 * @param {Project} project a Paper.js project
+		 * @return {SVGSVGElement} the imported project converted to an SVG project
+		 */
+		 // TODO: Implement symbols and Gradients
+		exportProject: function(project) {
+			var svg = createElement('svg'),
+				layers = project.layers;
+			for (var i = 0, l = layers.length; i < l; i++) {
+				svg.appendChild(this.exportItem(layers[i]));
+			}
+			return svg;
+		},
+
+		exportItem: function(item) {
+			var exporter = exporters[item._type];
+			// TODO: exporter == null: Not supported yet.
+			var svg = exporter && exporter(item);
+			return svg;
+		}
+	};
 };
