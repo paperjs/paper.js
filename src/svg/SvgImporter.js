@@ -119,10 +119,9 @@ var SvgImporter = this.SvgImporter = new function() {
 		},
 
 		path: function(svg) {
-			var compoundPath,
-				path = new Path(),
+			var path = new Path(),
 				list = svg.pathSegList,
-				segments = path.getSegments();
+				compoundPath;
 			for (var i = 0, l = list.numberOfItems; i < l; i++) {
 				// To shrink code, we replaced the long SVGPathSeg constants
 				// with their actual numeric values. The comments keep reference
@@ -131,7 +130,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				var segment = list.getItem(i);
 				if (segment.pathSegType === 0) // SVGPathSeg.PATHSEG_UNKNOWN
 					continue;
-				var relative = segment.pathSegType % 2 == 1 && segments.length
+				var relative = segment.pathSegType % 2 == 1 && !path.isEmpty()
 						? path.getLastSegment().getPoint()
 						: Point.create(0, 0);
 				var point = Point.create(segment.x, segment.y).add(relative);
@@ -141,15 +140,14 @@ var SvgImporter = this.SvgImporter = new function() {
 					break;
 				case 2: // SVGPathSeg.PATHSEG_MOVETO_ABS:
 				case 3: // SVGPathSeg.PATHSEG_MOVETO_REL:
-					if (path.segments.length || path.getParent() instanceof CompoundPath) {
-						if (!compoundPath)
-							compoundPath = new CompoundPath([path]);
-						path = new Path([point]);
-						compoundPath.addChild(path);
-						segments = path.getSegments();
-					} else {
-						path.moveTo(point);
+					if (!path.isEmpty() && !compoundPath) {
+						compoundPath = new CompoundPath([path]);
 					}
+					if (compoundPath) {
+						path = new Path();
+						compoundPath.addChild(path);
+					}
+					path.moveTo(point);
 					break;
 				case 4: // SVGPathSeg.PATHSEG_LINETO_ABS:
 				case 5: // SVGPathSeg.PATHSEG_LINETO_REL:
@@ -201,12 +199,12 @@ var SvgImporter = this.SvgImporter = new function() {
 								prev.pathSegType === 9) { // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL
 							control = Point.create(prev.x1, prev.y1)
 									.subtract(prev.x, prev.y)
-									.add(segments[j].getPoint());
+									.add(path._segments[j].getPoint());
 							break;
 						}
 					}
 					for (; j < i; ++j) {
-						var anchor = segments[j].getPoint();
+						var anchor = path._segments[j].getPoint();
 						control = anchor.add(anchor.subtract(control));
 					}
 					path.quadraticCurveTo(control, point);
