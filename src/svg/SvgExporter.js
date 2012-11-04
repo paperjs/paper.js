@@ -17,12 +17,12 @@
  * @author Stetson-Team-Alpha
  */
 
- /**
-  * @name SvgExporter
-  *
-  * @class The SvgExporter object holds all the functionality to convert a
-  * Paper.js DOM to a SVG DOM.
-  */
+/**
+ * @name SvgExporter
+ *
+ * @class The SvgExporter object holds all the functionality to convert a
+ * Paper.js DOM to a SVG DOM.
+ */
 
 var SvgExporter = this.SvgExporter = new function() {
 
@@ -343,23 +343,10 @@ var SvgExporter = this.SvgExporter = new function() {
 		var type;
 		var dPoint12;
 		var dPoint34;
-		var straight = true;	
-		var segHandleIn;
-		var segHandleOut;
 		// See if actually have any curves in the path. Differentiate
 		// between straight objects (line, polyline, rect, and  polygon) and
 		// objects with curves(circle, ellipse, roundedRectangle).
-		for( var i = 0, l = segArray.length; i < l && straight; i++) {
-			segHandleIn = segArray[i].getHandleIn();
-			segHandleOut = segArray[i].getHandleOut();
-			if (!segHandleIn.isZero() || !segHandleOut.isZero())
-				straight = false;
-		}
-		// Checks if the type of the passed in path is a rounded rectangle, an
-		// ellipse, a circle, or if it's simply a path.
-		// If there aren't any curves (straight == true), then check if the type
-		// is a rectangle, a polygon, a polyline, or simply a line.
-		if (straight) {
+		if (path.isPolygon()) {
 			if (segArray.length == 4) {
 				// If the distance between (point0 and point1) and (point2 and
 				// point3) are equal, then it is a rectangle
