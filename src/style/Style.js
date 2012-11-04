@@ -70,7 +70,7 @@ var Style = Item.extend({
 			};
 
 			Base.each(src._defaults, function(value, key) {
-				var isColor = !!key.match(/Color$/),
+				var isColor = /Color$/.test(key),
 					part = Base.capitalize(key),
 					set = 'set' + part,
 					get = 'get' + part;
@@ -85,8 +85,7 @@ var Style = Item.extend({
 							children[i][styleKey][set](value);
 					} else {
 						var old = this['_' + key];
-						if (old != value && !(old && old.equals
-									&& old.equals(value))) {
+						if (!Base.equals(old, value)) {
 							if (isColor) {
 								if (old)
 									delete old._owner;
@@ -115,8 +114,7 @@ var Style = Item.extend({
 						var childStyle = children[i][styleKey][get]();
 						if (!style) {
 							style = childStyle;
-						} else if (style != childStyle && !(style
-								&& style.equals && style.equals(childStyle))) {
+						} else if (!Base.equals(style, childStyle)) {
 							// If there is another item with a different
 							// style, the style is not defined:
 							// PORT: Change this in Scriptographer
