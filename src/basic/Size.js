@@ -375,7 +375,7 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	statics: /** @lends Size */{
 		// See Point.create()
 		create: function(width, height) {
-			return new Size(Size.dont).set(width, height);
+			return Base.create(Size).set(width, height);
 		},
 
 		/**
@@ -548,7 +548,7 @@ var LinkedSize = Size.extend({
 			// See LinkedPoint.create() for an explanation about dontLink.
 			if (dontLink)
 				return Size.create(width, height);
-			var size = new LinkedSize(LinkedSize.dont);
+			var size = Base.create(LinkedSize);
 			size._width = width;
 			size._height = height;
 			size._owner = owner;

@@ -778,8 +778,8 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		create: function(x, y) {
 			// Don't use the shorter form as we want absolute maximum
 			// performance here:
-			// return new Point(Point.dont).set(x, y);
-			var point = new Point(Point.dont);
+			// return Base.create(Point).set(x, y);
+			var point = Base.create(Point);
 			point.x = x;
 			point.y = y;
 			return point;
@@ -964,7 +964,7 @@ var LinkedPoint = Point.extend({
 			// See e.g. Rectangle#getPoint(true).
 			if (dontLink)
 				return Point.create(x, y);
-			var point = new LinkedPoint(LinkedPoint.dont);
+			var point = Base.create(LinkedPoint);
 			point._x = x;
 			point._y = y;
 			point._owner = owner;
