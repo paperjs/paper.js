@@ -231,7 +231,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	isEmpty: function() {
-		return this._segments.length == 0;
+		return this._segments.length === 0;
+	},
+
+	isPolygon: function() {
+		for (var i = 0, l = this._segments.length; i < l; i++) {
+			if (!this._segments[i].isLinear())
+				return false;
+		}
+		return true;
 	},
 
 	_apply: function(matrix) {

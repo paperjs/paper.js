@@ -162,6 +162,16 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		// this.corner = !this._handleIn.isColinear(this._handleOut);
 	},
 
+	/**
+	 * Checks whether the segment has no handles defined, meaning it connects
+	 * two straight lines.
+	 *
+	 * @return {Boolean} {@true the segment is linear}
+	 */
+	isLinear: function() {
+		return this._handleIn.isZero() && this._handleOut.isZero();
+	},
+
 	_isSelected: function(point) {
 		var state = this._selectionState;
 		return point == this._point ? !!(state & SelectionState.POINT)
