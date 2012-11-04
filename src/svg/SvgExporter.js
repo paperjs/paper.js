@@ -14,7 +14,6 @@
  * All rights reserved.
  * 
  * The base for this code was donated by Stetson-Team-Alpha.
- * @author Stetson-Team-Alpha
  */
 
 /**
@@ -28,6 +27,11 @@ var SvgExporter = this.SvgExporter = new function() {
 
 	function createElement(tag) {
 		return document.createElementNS('http://www.w3.org/2000/svg', tag);
+	}
+
+	function setAttributes(svg, attrs) {
+		for (var key in attrs)
+			svg.setAttribute(key, attrs[key]);
 	}
 
 	function exportGroup(group) {
@@ -150,7 +154,6 @@ var SvgExporter = this.SvgExporter = new function() {
 			svg.textContent = path.getContent();
 			break;
 		default:
-			svg = createElement('path');
 			svg = pathSetup(path, pointArray, handleInArray, handleOutArray);
 			break;
 		}
@@ -162,10 +165,8 @@ var SvgExporter = this.SvgExporter = new function() {
 			var angle = determineIfTransformed(path, pointArray, type) + 90;
 			if (angle != 0) {
 				if (type == 'rect' || type == 'roundrect') {
-					svg = createElement('path');
 					svg = pathSetup(path, pointArray, handleInArray, handleOutArray);
 				} else {
-					svg = createElement('path');
 					svg = pathSetup(path, pointArray, handleInArray, handleOutArray);
 				}
 			} 
@@ -173,70 +174,7 @@ var SvgExporter = this.SvgExporter = new function() {
 		if (type == 'text') {
 			svg.setAttribute('transform','rotate(' + path.matrix.getRotation() + ',' + path.getPoint().getX() + ',' +path.getPoint().getY() +')');
 		}
-		if (path.id != undefined) {
-			svg.setAttribute('id', path.id);
-		}
-		//checks if there is a stroke color in the passed in path
-		//adds an SVG element attribute with the defined stroke color
-		if (path.strokeColor != undefined) {
-			svg.setAttribute('stroke', path.strokeColor.toCssString());
-		}
-		//same thing as above except checking for a fill color
-		if (path.fillColor != undefined) {
-			svg.setAttribute('fill', path.fillColor.toCssString());
-		} else {
-			svg.setAttribute('fill', 'rgba(0,0,0,0)');
-		}
-		//same thing as stroke color except with stroke width
-		if (path.strokeWidth != undefined) {
-			svg.setAttribute('stroke-width', path.strokeWidth);
-		}
-		//same thing as stroke color except with the path name
-		if (path.name != undefined) {
-			svg.setAttribute('name', path.name);
-		}
-		//same thing as stroke color except with the strokeCap
-		if (path.strokeCap != undefined) {
-			svg.setAttribute('stroke-linecap', path.strokeCap);
-		}
-		//same thing as stroke color except with the strokeJoin
-		if (path.strokeJoin != undefined) {
-			svg.setAttribute('stroke-linejoin', path.strokeJoin);
-		}
-		//same thing as stroke color except with the opacity
-		if (path.opacity != undefined) {
-			svg.setAttribute('opacity', path.opacity);
-		}
-		//checks to see if there the dashArray is set, then adds the attribute if there is.
-		if (path.dashArray[0] != undefined) {
-			var dashVals = '';
-			for (var i = 0, l = path.dashArray.length; i < l; i++) {
-				if (i != path.dashArray.length -1) {
-					dashVals += path.dashArray[i] + ", ";
-				} else {
-					dashVals += path.dashArray[i];
-				}
-			}
-			svg.setAttribute('stroke-dasharray', dashVals);
-		}
-		//same thing as stroke color except with the dash offset
-		if (path.dashOffset != undefined) {
-			svg.setAttribute('stroke-dashoffset', path.dashOffset);
-		}
-		//same thing as stroke color except with the miter limit
-		if (path.miterLimit != undefined) {
-			svg.setAttribute('stroke-miterlimit', path.miterLimit);
-		}
-		//same thing as stroke color except with the visibility
-		if (path.visibility != undefined) {
-			var visString = '';
-			if (path.visibility) {
-				visString = 'visible';
-			} else {
-				visString = 'hidden';
-			}
-			svg.setAttribute('visibility', visString);
-		}
+		applyStyle(path, svg);
 		return svg;
 	}
 	var exporters = {
@@ -396,6 +334,51 @@ var SvgExporter = this.SvgExporter = new function() {
 			} 
 		}
 		return type;
+	}
+
+	function applyStyle(item, svg) {
+		var attrs = {},
+			style = item._style,
+			parentStyle = item.getParent()._style,
+			properties = {
+				fillColor: 'fill',
+				strokeColor: 'stroke',
+				strokeWidth: 'stroke-width',
+				strokeCap: 'stroke-linecap',
+				strokeJoin: 'stroke-linejoin',
+				miterLimit: 'stroke-miterlimit',
+				dashArray: 'stroke-dasharray',
+				dashOffset: 'stroke-dashoffset'
+			};
+
+		if (item._id != null)
+			attrs.id = item._id;
+		// Same thing as stroke color except with the item name
+		if (item._name != null)
+			attrs.name = item._name;
+
+		Base.each(properties, function(svgName, name) {
+			// Get a given style only if it differs from the value on the parent
+			// (A layer or group which can have style values in SVG).
+			var getter = 'get' + Base.capitalize(name),
+				value = style[getter](),
+				parent = parentStyle[getter]();
+			if (!Base.equals(parent, value)) {
+				attrs[svgName] = value && /Color$/.test(name)
+					? value.toCssString()
+					: name == 'dashArray'
+						? value.join(',')
+						: value;
+			}
+		});
+
+		if (item._opacity != null)
+			attrs.opacity = item._opacity;
+
+		if (item._visibility != null)
+			attrs._visibility = item._visibility ? 'visible' : 'hidden';
+
+		setAttributes(svg, attrs);
 	}
 
 	return /** @Lends SvgExporter */{
