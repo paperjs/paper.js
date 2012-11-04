@@ -14,7 +14,6 @@
  * All rights reserved.
  *
  * The base for this code was donated by Stetson-Team-Alpha.
- * @author Stetson-Team-Alpha
  */
 
 /**
@@ -96,6 +95,8 @@ var SvgImporter = this.SvgImporter = new function() {
 			var point = getPoint(svg, 'x', 'y'),
 				size = getSize(svg, 'width', 'height'),
 				radius = getSize(svg, 'rx', 'ry');
+			// If radius is 0, Path.RoundRectangle automatically produces a
+			// normal rectangle for us.
 			return new Path.RoundRectangle(new Rectangle(point, size), radius);
 		},
 
