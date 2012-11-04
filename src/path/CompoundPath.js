@@ -25,6 +25,7 @@
  * @extends PathItem
  */
 var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
+	_type: 'compoundpath',
 	/**
 	 * Creates a new compound path item and places it in the active layer.
 	 *

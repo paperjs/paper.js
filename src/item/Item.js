@@ -177,6 +177,17 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
+	 * The type of the item as a string.
+	 *
+	 * @type String('group', 'layer', 'path', 'compoundpath', 'raster',
+	 * 'placedsymbol', 'pointtext')
+	 * @bean
+	 */
+	getType: function() {
+		return this._type;
+	},
+
+	/**
 	 * The name of the item. If the item has a name, it can be accessed by name
 	 * through its parent's children list.
 	 *

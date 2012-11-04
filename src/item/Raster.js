@@ -22,6 +22,7 @@
  * @extends PlacedItem
  */
 var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
+	_type: 'raster',
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
 	_boundsType: 'bounds',

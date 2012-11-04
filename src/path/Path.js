@@ -23,6 +23,7 @@
  */
 // DOCS: Explain that path matrix is always applied with each transformation.
 var Path = this.Path = PathItem.extend(/** @lends Path# */{
+	_type: 'path',
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 *

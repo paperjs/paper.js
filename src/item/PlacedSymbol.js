@@ -23,6 +23,7 @@
  * @extends PlacedItem
  */
 var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol# */{
+	_type: 'placedsymbol',
 	/**
 	 * Creates a new PlacedSymbol Item.
 	 *
