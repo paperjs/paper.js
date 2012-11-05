@@ -129,25 +129,28 @@ var SvgImporter = this.SvgImporter = new function() {
 				// to the original constants. Values were taken from:
 				// http://dxr.mozilla.org/mozilla-central/dom/interfaces/svg/nsIDOMSVGPathSeg.idl.html
 				var segment = list.getItem(i),
-					pathSegType = segment.pathSegType,
-					relativeSegType = pathSegType % 2 == 1;
-				if (pathSegType === 0) // SVGPathSeg.PATHSEG_UNKNOWN
+					segType = segment.pathSegType,
+					isRelative = segType % 2 == 1;
+				if (segType === 0) // SVGPathSeg.PATHSEG_UNKNOWN
 					continue;
 				if (!path.isEmpty())
 					lastPoint = path.getLastSegment().getPoint();
-				var relative = relativeSegType && !path.isEmpty()
+				var relative = isRelative && !path.isEmpty()
 						? lastPoint
 						: Point.create(0, 0);
-				// Horizontal or vertical lineto:
-				if (pathSegType >= 12 && pathSegType <= 15) {
-					// Fill in the missing x or y value:
-					if (segment.x === undefined)
-							segment.x = relativeSegType ? 0 : lastPoint.x;
-					if (segment.y === undefined)
-							segment.y = relativeSegType ? 0 : lastPoint.y;
-				}
+				// Horizontal or vertical lineto commands, so fill in the
+				// missing x or y value:
+				var coord =
+						// SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS
+						// SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL
+						(segType == 12 || segType == 13) && 'y'
+						// SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS
+						// SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL
+						|| (segType == 14 || segType == 15) && 'x';
+				if (coord)
+					segment[coord] = isRelative ? 0 : lastPoint[coord];
 				var point = Point.create(segment.x, segment.y).add(relative);
-				switch (segment.pathSegType) {
+				switch (segType) {
 				case 1: // SVGPathSeg.PATHSEG_CLOSEPATH:
 					path.closePath();
 					break;
