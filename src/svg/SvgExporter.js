@@ -39,6 +39,7 @@ var SvgExporter = this.SvgExporter = new function() {
 			children = group._children;
 		for (var i = 0, l = children.length; i < l; i++)
 			svg.appendChild(SvgExporter.exportItem(children[i]));
+		applyStyle(group, svg);
 		return svg;
 	}
 
@@ -339,7 +340,8 @@ var SvgExporter = this.SvgExporter = new function() {
 	function applyStyle(item, svg) {
 		var attrs = {},
 			style = item._style,
-			parentStyle = item.getParent()._style,
+			parent = item.getParent(),
+			parentStyle = parent && parent._style,
 			properties = {
 				fillColor: 'fill',
 				strokeColor: 'stroke',
@@ -361,14 +363,15 @@ var SvgExporter = this.SvgExporter = new function() {
 			// Get a given style only if it differs from the value on the parent
 			// (A layer or group which can have style values in SVG).
 			var getter = 'get' + Base.capitalize(name),
-				value = style[getter](),
-				parent = parentStyle[getter]();
-			if (!Base.equals(parent, value)) {
-				attrs[svgName] = value && /Color$/.test(name)
+				value = style[getter]();
+			if (value != null && (!parentStyle
+					|| !Base.equals(parentStyle[getter](), value))) {
+				value = /Color$/.test(name)
 					? value.toCssString()
 					: name == 'dashArray'
 						? value.join(',')
 						: value;
+				attrs[svgName] = value;
 			}
 		});
 
