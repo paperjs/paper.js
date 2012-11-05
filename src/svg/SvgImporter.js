@@ -122,18 +122,30 @@ var SvgImporter = this.SvgImporter = new function() {
 		path: function(svg) {
 			var path = new Path(),
 				list = svg.pathSegList,
-				compoundPath;
+				compoundPath, lastPoint;
 			for (var i = 0, l = list.numberOfItems; i < l; i++) {
 				// To shrink code, we replaced the long SVGPathSeg constants
 				// with their actual numeric values. The comments keep reference
 				// to the original constants. Values were taken from:
 				// http://dxr.mozilla.org/mozilla-central/dom/interfaces/svg/nsIDOMSVGPathSeg.idl.html
-				var segment = list.getItem(i);
-				if (segment.pathSegType === 0) // SVGPathSeg.PATHSEG_UNKNOWN
+				var segment = list.getItem(i),
+					pathSegType = segment.pathSegType,
+					relativeSegType = pathSegType % 2 == 1;
+				if (pathSegType === 0) // SVGPathSeg.PATHSEG_UNKNOWN
 					continue;
-				var relative = segment.pathSegType % 2 == 1 && !path.isEmpty()
-						? path.getLastSegment().getPoint()
+				if (!path.isEmpty())
+					lastPoint = path.getLastSegment().getPoint();
+				var relative = relativeSegType && !path.isEmpty()
+						? lastPoint
 						: Point.create(0, 0);
+				// Horizontal or vertical lineto:
+				if (pathSegType >= 12 && pathSegType <= 15) {
+					// Fill in the missing x or y value:
+					if (segment.x === undefined)
+							segment.x = relativeSegType ? 0 : lastPoint.x;
+					if (segment.y === undefined)
+							segment.y = relativeSegType ? 0 : lastPoint.y;
+				}
 				var point = Point.create(segment.x, segment.y).add(relative);
 				switch (segment.pathSegType) {
 				case 1: // SVGPathSeg.PATHSEG_CLOSEPATH:
@@ -155,7 +167,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				case 12: // SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
 				case 13: // SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
 				case 14: // SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
-				case 15: // PATHSEG_LINETO_VERTICAL_REL:
+				case 15: // SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
 					path.lineTo(point);
 					break;
 				case 6: // SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
@@ -180,11 +192,10 @@ var SvgImporter = this.SvgImporter = new function() {
 				case 16: // SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
 				case 17: // SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
 					var prev = list.getItem(i - 1),
-						last = path.getLastSegment().getPoint(),
-						control = last.add(last.subtract(
+						control = lastPoint.add(lastPoint.subtract(
 							Point.create(prev.x2, prev.y2)
 								.subtract(prev.x, prev.y)
-								.add(last)));
+								.add(lastPoint)));
 					path.cubicCurveTo(
 						control,
 						relative.add(segment.x2, segment.y2),
