@@ -240,10 +240,8 @@ var SvgExporter = this.SvgExporter = new function() {
 		case 'polyline':
 		case 'polygon':
 			var parts = [];
-			for(i = 0; i < segments.length; i++) {
-				var point = segments[i]._point;
-				parts.push(formatPoint(point));
-			}
+			for(i = 0; i < segments.length; i++)
+				parts.push(formatPoint(segments[i]._point));
 			attrs = {
 				points: parts.join(' ')
 			};
