@@ -224,44 +224,57 @@ var SvgExporter = this.SvgExporter = new function() {
 	}
 
 	function determineType(path, segments) {
+
+		function isOrthogonal(i) {
+			var segment = segments[i],
+				point = segment.getPoint();
+			return Numerical.isZero(90 - Math.abs(
+					segment.getNext().getPoint().subtract(point).getAngle(
+					segment.getPrevious().getPoint().subtract(point))));
+		}
+
+		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
+		var kappa = 4 * (Math.sqrt(2) - 1) / 3;
+
+		function isArc(i) {
+			var segment = segments[i],
+				next = segment.getNext(),
+				handle1 = segment.getHandleOut(),
+				handle2 = next.getHandleIn();
+			if (Numerical.isZero(90 - Math.abs(handle1.getAngle(handle2)))) {
+				var from = segment.getPoint(),
+					to = next.getPoint(),
+					corner = new Line(from, handle1).intersect(new Line(to, handle2));
+				return Numerical.isZero(handle1.length / corner.subtract(from).length - kappa)
+						&& Numerical.isZero(handle2.length / corner.subtract(to).length - kappa);
+			}
+		}
+
 		// See if actually have any curves in the path. Differentiate
 		// between straight objects (line, polyline, rect, and  polygon) and
 		// objects with curves(circle, ellipse, roundedRectangle).
 		if (path.isPolygon()) {
-			// If the distance between (point0 and point1) and (point2 and
-			// point3) are equal, then it is a rectangle
-			return segments.length == 4 && Numerical.isZero(
-					getDistance(segments, 0, 1) - getDistance(segments, 3, 2))
+			return  segments.length === 4 && path._closed && isOrthogonal(0)
+					&& isOrthogonal(1) && isOrthogonal(2) && isOrthogonal(3)
 					? 'rect'
 					: segments.length >= 3
 						? path._closed ? 'polygon' : 'polyline'
 						: 'line';
-		} else {
-			if (segments.length == 8) {
+		} else if (path._closed) {
+			if (segments.length === 8) {
 				// If the distance between (point0 and point3) and (point7 and 
 				// point4) are equal then it is a roundedRectangle
 				if (Numerical.isZero(
 					getDistance(segments, 0, 3) - getDistance(segments, 7, 5)))
 					return 'roundrect';
-			} else if (segments.length == 4) {
-				// Check if the values of the point have values similar to 
-				// circles and ellipses.
-				var checkPointValues = true;
-				for (var i = 0; i < segments.length && checkPointValues; i++) {
-					var handleIn = segments[i]._handleIn,
-						handleOut = segments[i]._handleOut;
-					checkPointValues = !handleIn.isZero()
-							&& Numerical.isZero(Math.abs(handleIn._x) - Math.abs(handleOut._x))
-							&& Numerical.isZero(Math.abs(handleIn._y) - Math.abs(handleOut._y));
-				}	
-				if (checkPointValues) {
-					// If the distance between (point0 and point2) and (point1
-					// and point3) are equal, then it is a circle
-					return Numerical.isZero(getDistance(segments, 0, 2)
-							- getDistance(segments, 1, 3))
-							? 'circle'
-							: 'ellipse';
-				}
+			} else if (segments.length === 4
+					&& isArc(0) && isArc(1) && isArc(2) && isArc(3)) {
+				// If the distance between (point0 and point2) and (point1
+				// and point3) are equal, then it is a circle
+				return Numerical.isZero(getDistance(segments, 0, 2)
+						- getDistance(segments, 1, 3))
+						? 'circle'
+						: 'ellipse';
 			} 
 		}
 		return 'path';
