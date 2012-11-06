@@ -16,3 +16,4 @@
 
  /*#*/ include('item/ChangeFlag.js');
  /*#*/ include('path/SelectionState.js');
+ /*#*/ include('svg/constants.js');
