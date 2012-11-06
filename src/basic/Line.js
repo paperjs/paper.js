@@ -75,7 +75,7 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	intersect: function(line) {
 		var cross = this.vector.cross(line.vector);
 		// Avoid divisions by 0, and errors when getting too close to 0
-		if (Math.abs(cross) <= Numerical.EPSILON)
+		if (Numerical.isZero(cross))
 			return null;
 		var v = line.point.subtract(this.point),
 			t1 = v.cross(line.vector) / cross,
@@ -96,7 +96,7 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 		var v1 = this.vector,
 			v2 = point.subtract(this.point),
 			ccw = v2.cross(v1);
-		if (ccw == 0) {
+		if (ccw === 0) {
 			ccw = v2.dot(v1);
 			if (ccw > 0) {
 				ccw = v2.subtract(v1).dot(v1);

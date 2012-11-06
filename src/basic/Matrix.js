@@ -446,7 +446,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	_getDeterminant: function() {
 		var det = this._a * this._d - this._b * this._c;
-		return isFinite(det) && Math.abs(det) > Numerical.EPSILON
+		return isFinite(det) && !Numerical.isZero(det)
 				&& isFinite(this._tx) && isFinite(this._ty)
 				? det : null;
 	},
