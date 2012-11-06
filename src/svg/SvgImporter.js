@@ -203,7 +203,7 @@ var SvgImporter = this.SvgImporter = new function() {
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(svg, type) {
 			var item = importGroup(svg, type);
-			applyAttributesAndStyles(svg, item);
+			applyAttributes(svg, item);
 			// TODO: We're returning a symbol. How to handle this?
 			return new Symbol(item);
 		},
@@ -268,16 +268,16 @@ var SvgImporter = this.SvgImporter = new function() {
 	 * @param {SVGSVGElement} svg an SVG node to read style and attributes from.
 	 * @param {Item} item the item to apply the style and attributes to.
 	 */
-	function applyAttributesAndStyles(svg, item) {
+	function applyAttributes(svg, item) {
 		// SVG attributes can be set both as styles and direct node attributes,
 		// so we need to parse both
 		for (var i = 0, l = svg.style.length; i < l; i++) {
 			var name = svg.style[i];
-			applyAttributeOrStyle(svg, item, name, svg.style[Base.camelize(name)]);
+			applyAttribute(svg, item, name, svg.style[Base.camelize(name)]);
 		}
 		for (var i = 0, l = svg.attributes.length; i < l; i++) {
 			var attr = svg.attributes[i];
-			applyAttributeOrStyle(svg, item, attr.name, attr.value);
+			applyAttribute(svg, item, attr.name, attr.value);
 		}
 	}
 
@@ -289,7 +289,7 @@ var SvgImporter = this.SvgImporter = new function() {
 	 * @param {String} name an SVG style name
 	 * @param value the value of the SVG style
 	 */
-	 function applyAttributeOrStyle(svg, item, name, value) {
+	 function applyAttribute(svg, item, name, value) {
 		if (value == null)
 			return;
 		var entry = SvgStyles.attributes[name];
@@ -328,7 +328,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			case 'font-size':
 			// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
 			case 'text-anchor':
-				applyTextStyle(svg, item, name, value);
+				applyTextAttribute(svg, item, name, value);
 				break;
 			default:
 				// Not supported yet.
@@ -337,7 +337,7 @@ var SvgImporter = this.SvgImporter = new function() {
 		}
 	}
 
-	function applyTextStyle(svg, item, name, value) {
+	function applyTextAttribute(svg, item, name, value) {
 		if (item instanceof TextItem) {
 			switch (name) {
 			case 'font':
@@ -346,7 +346,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				text.style.font = value;
 				for (var i = 0; i < text.style.length; i++) {
 					var name = text.style[i];
-					applyAttributeOrStyle(svg, item, name, text.style[name]);
+					applyAttribute(svg, item, name, text.style[name]);
 				}
 				break;
 			case 'font-family':
@@ -368,7 +368,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			// might be TextItems explicitely.
 			var children = item._children;
 			for (var i = 0, l = children.length; i < l; i++) {
-				applyTextStyle(svg, children[i], name, value);
+				applyTextAttribute(svg, children[i], name, value);
 			}
 		}
 	}
@@ -432,7 +432,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			// TODO: importer == null: Not supported yet.
 			var item = importer && importer(svg, type);
 			if (item)
-				applyAttributesAndStyles(svg, item);
+				applyAttributes(svg, item);
 			return item;
 		}
 	};
