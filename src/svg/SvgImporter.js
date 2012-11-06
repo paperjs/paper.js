@@ -298,7 +298,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				item.setOpacity(parseFloat(value, 10));
 				break;
 			case 'visibility':
-				item.setVisibility(value === 'visible');
+				item.setVisible(value === 'visible');
 				break;
 			case 'font':
 			case 'font-family':
