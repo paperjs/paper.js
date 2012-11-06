@@ -25,9 +25,24 @@
 
 var SvgExporter = this.SvgExporter = new function() {
 
+	// Shortcut to Base.formatNumber
+	var formatNumber = Base.formatNumber;
+
+	function formatPoint(x, y) {
+		if (arguments.length == 1) {
+			y = x._y;
+			x = x._x;
+		}
+		return formatNumber(x) + ',' + formatNumber(y);
+	}
+
 	function setAttributes(svg, attrs) {
-		for (var key in attrs)
-			svg.setAttribute(key, attrs[key]);
+		for (var key in attrs) {
+			var val = attrs[key];
+			if (typeof val === 'number')
+				val = formatNumber(val);
+			svg.setAttribute(key, val);
+		}
 		return svg;
 	}
 
@@ -84,7 +99,7 @@ var SvgExporter = this.SvgExporter = new function() {
 			var parts = [];
 			for(i = 0; i < segments.length; i++) {
 				var point = segments[i]._point;
-				parts.push(point._x + ',' + point._y);
+				parts.push(formatPoint(point));
 			}
 			attrs = {
 				points: parts.join(' ')
@@ -158,17 +173,16 @@ var SvgExporter = this.SvgExporter = new function() {
 		var svg = createElement(type, attrs);
 		if (angle) {
 			var center = path.getPosition();
-			svg.setAttribute('transform', 'rotate(' + angle + ','
-						+ center._x + ',' + center._y + ')');
+			svg.setAttribute('transform', 'rotate(' + formatNumber(angle) + ','
+						+ formatPoint(center) + ')');
 		}
 		return svg;
 	}
 
 	function drawPath(path, segments) {
 		var parts = [],
-			style = path._style,
-			first =  segments[0]._point;
-		parts.push('M' + first._x + ',' + first._y);
+			style = path._style;
+		parts.push('M' + formatPoint(segments[0]._point));
 		for (i = 0; i < segments.length - 1; i++)
 			drawCurve(parts, segments[i], segments[i + 1], false);
 		// We only need to draw the connecting curve if it is not a line, and if
@@ -183,26 +197,19 @@ var SvgExporter = this.SvgExporter = new function() {
 	function drawCurve(parts, seg1, seg2, skipLine) {
 		var point1 = seg1._point,
 			point2 = seg2._point,
-			x1 = point1._x,
-			y1 = point1._y,
-			x2 = point2._x,
-			y2 = point2._y,
 			handle1 = seg1._handleOut,
 			handle2 = seg2._handleIn;
 		if (handle1.isZero() && handle2.isZero()) {
 			if (!skipLine) {
 				// L = lineto: moving to a point with drawing
-				parts.push('L' + x2 + ',' + y2 + ' ');
+				parts.push('L' + formatPoint(point2));
 			}
 		} else {
 			// c = relative curveto: handle1, handle2 + end - start, end - start
-			x2 -= x1;
-			y2 -= y1;
-			parts.push(
-				'c' + handle1._x  + ',' + handle1._y,
-				(x2 + handle2._x) + ',' + (y2 + handle2._y),
-				x2 + ',' + y2
-			);
+			var end = point2.subtract(point1);
+			parts.push('c' + formatNumber(handle1),
+				formatNumber(end.add(handle2)),
+				formatNumber(end));
 		}
 	}
 
@@ -299,7 +306,9 @@ var SvgExporter = this.SvgExporter = new function() {
 					? value.toCssString()
 					: entry.type === 'array'
 						? value.join(',')
-						: value;
+						: entry.type === 'number'
+							? formatNumber(value)
+							: value;
 			}
 		});
 
