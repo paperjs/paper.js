@@ -36,39 +36,41 @@ var SvgExporter = this.SvgExporter = new function() {
 			document.createElementNS('http://www.w3.org/2000/svg', tag), attrs);
 	}
 
+	function getDistance(segments, index1, index2) {
+		return segments[index1]._point.getDistance(segments[index2]._point);
+	}
+
 	function exportGroup(group) {
 		var svg = createElement('g'),
 			children = group._children;
 		for (var i = 0, l = children.length; i < l; i++)
 			svg.appendChild(SvgExporter.exportItem(children[i]));
 		// Override default SVG style on groups, then apply style.
-		setAttributes(svg, {
+		return setAttributes(svg, {
 			fill: 'none'
 		});
-		applyStyle(group, svg);
+	}
+
+	function exportText(item) {
+		var point = item.getPoint(),
+			style = item._style,
+			attrs = {
+				x: point._x,
+				y: point._y
+			};
+		if (style._font != null)
+			attrs['font-family'] = style._font;
+		if (style._fontSize != null)
+			attrs['font-size'] = style._fontSize;
+		var svg = createElement('text', attrs);
+		svg.textContent = item.getContent();
+		svg.setAttribute('transform','rotate(' + item.matrix.getRotation() + ',' + item.getPoint()._x + ',' + item.getPoint()._y +')');
 		return svg;
 	}
 
-	function getDistance(segments, index1, index2) {
-		return segments[index1]._point.getDistance(segments[index2]._point);
-	}
-
-	function exportItem(path) {
-		var svg;
-		//Getting all of the segments(a point, a HandleIn and a HandleOut) in the path
-		var segments;
-		var type;
-		//finding the type of path to export
-		if (path.content) {
-			type = 'text';
-		} else {
-			//Values are only defined if the path is not text because
-			// text does not have these values
-			segments = path.getSegments();
+	function exportPath(path) {
+		var segments = path._segments,
 			type = determineType(path, segments);
-		}
-
-		//switch statement that determines what type of SVG element to add to the SVG Object
 		switch (type) {
 		case 'rect':
 			var width = getDistance(segments, 0, 3),
@@ -82,7 +84,8 @@ var SvgExporter = this.SvgExporter = new function() {
 			});
 			break;
 		case 'roundrect':
-			//d variables and point are used to determine the rounded corners for the rounded rectangle
+			// d-variables and point are used to determine the rounded corners
+			// for the rounded rectangle
 			var dx1 = getDistance(segments, 1, 6);
 			var dx2 = getDistance(segments, 0, 7);
 			var dx3 = (dx1 - dx2) / 2;
@@ -144,76 +147,25 @@ var SvgExporter = this.SvgExporter = new function() {
 				points: parts.join(' ')
 			});
 			break;
-		case 'text':
-			var point = path.getPoint(),
-				attrs = {
-					x: point._x,
-					y: point._y
-				},
-				style = path.characterStyle;
-			if (style._font != null)
-				attrs['font-family'] = style._font;
-			if (style._fontSize != null)
-				attrs['font-size'] = style._fontSize;
-			svg = createElement('text', attrs);
-			svg.textContent = path.getContent();
-			break;
 		default:
 			svg = pathSetup(path, segments);
 			break;
 		}
-		//If the object is a circle, ellipse, rectangle, or rounded rectangle, it will find the angle 
-		//found by the determineIfTransformed method and make a path that accommodates for the transformed object
-		if (type != 'text' && type != undefined && type != 'polygon' &&  type != 'polyline' && type != 'line') {
-			//TODO: Need to implement exported transforms for circle, ellipse, and rectangles instead of 
-			//making them paths
+		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
+		// ind the angle 
+		if (/^(circle|ellipse|rect|roundrect)$/.test(type)) {
 			var angle = determineIfTransformed(path, segments, type) + 90;
-			if (angle != 0) {
-				if (type == 'rect' || type == 'roundrect') {
-					svg = pathSetup(path, segments);
-				} else {
-					svg = pathSetup(path, segments);
-				}
+			if (angle !== 0) {
+				// TODO: Need to implement exported transforms for circle, ellipse,
+				// and rectangles instead of making them paths
+				svg = pathSetup(path, segments);
 			} 
 		}
-		if (type == 'text') {
-			svg.setAttribute('transform','rotate(' + path.matrix.getRotation() + ',' + path.getPoint()._x + ',' +path.getPoint()._y +')');
-		}
-		applyStyle(path, svg);
 		return svg;
 	}
-	var exporters = {
-		group: exportGroup,
-		layer: exportGroup,
-		path: exportItem,
-		pointtext: exportItem
-		// TODO:
-		// raster: 
-		// placedsymbol:
-		// compoundpath:
-	};
 
-	// Determines whether the object has been transformed or not through finding the angle
-	function determineIfTransformed(path, segments, type) {
-		var centerPoint = path.getPosition();
-		var topMidPath = centerPoint;
-		switch (type) {
-		case 'rect':
-			topMidPath = segments[1]._point.add(segments[2]._point).divide(2);
-			break;
-		case 'circle':
-		case 'ellipse':
-			topMidPath = segments[1]._point;
-			break;
-		case 'roundrect':
-			topMidPath = segments[3]._point.add(segments[4]._point).divide(2);
-			break;	
-		}
-		return topMidPath.subtract(centerPoint).getAngle();
-	}
-	
 	function pathSetup(path, segments) {
-		var svgPath = createElement('path');
+		var svg = createElement('path');
 		var parts = [];
 		parts.push('M' + segments[0]._point._x + ',' + segments[0]._point._y);
 		function drawCurve(seg1, seg2, skipLine) {
@@ -249,8 +201,27 @@ var SvgExporter = this.SvgExporter = new function() {
 			drawCurve(segments[segments.length - 1], segments[0], true);
 		if (path._closed)
 			parts.push('z');
-		svgPath.setAttribute('d', parts.join(' '));
-		return svgPath;
+		svg.setAttribute('d', parts.join(' '));
+		return svg;
+	}
+
+	// Determines whether the object has been transformed or not through finding the angle
+	function determineIfTransformed(path, segments, type) {
+		var centerPoint = path.getPosition();
+		var topMidPath = centerPoint;
+		switch (type) {
+		case 'rect':
+			topMidPath = segments[1]._point.add(segments[2]._point).divide(2);
+			break;
+		case 'roundrect':
+			topMidPath = segments[3]._point.add(segments[4]._point).divide(2);
+			break;	
+		case 'circle':
+		case 'ellipse':
+			topMidPath = segments[1]._point;
+			break;
+		}
+		return topMidPath.subtract(centerPoint).getAngle();
 	}
 
 	/**
@@ -350,8 +321,19 @@ var SvgExporter = this.SvgExporter = new function() {
 		if (item._visibility != null)
 			attrs._visibility = item._visibility ? 'visible' : 'hidden';
 
-		setAttributes(svg, attrs);
+		return setAttributes(svg, attrs);
 	}
+
+	var exporters = {
+		group: exportGroup,
+		layer: exportGroup,
+		path: exportPath,
+		pointtext: exportText
+		// TODO:
+		// raster: 
+		// placedsymbol:
+		// compoundpath:
+	};
 
 	return /** @Lends SvgExporter */{
 		/**
@@ -376,8 +358,8 @@ var SvgExporter = this.SvgExporter = new function() {
 		exportItem: function(item) {
 			var exporter = exporters[item._type];
 			// TODO: exporter == null: Not supported yet.
-			var svg = exporter && exporter(item);
-			return svg;
+			var svg = exporter && exporter(item, item._type);
+			return svg && applyStyle(item, svg);
 		}
 	};
 };
