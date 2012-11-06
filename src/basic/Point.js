@@ -621,6 +621,8 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @returns {Point} the rotated point
 	 */
 	rotate: function(angle, center) {
+		if (angle === 0)
+			return this.clone();
 		angle = angle * Math.PI / 180;
 		var point = center ? this.subtract(center) : this,
 			s = Math.sin(angle),
