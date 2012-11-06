@@ -70,14 +70,27 @@ var SvgExporter = this.SvgExporter = new function() {
 
 	function exportPath(path) {
 		var segments = path._segments,
-			type = determineType(path, segments);
+			type = determineType(path, segments),
+			topCenter;
 		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
 		// see if they are placed at an angle.
-		if (/^(circle|ellipse|rect|roundrect)$/.test(type)) {
-			var angle = determineIfTransformed(path, segments, type) + 90;
-			if (angle !== 0) {
-				// TODO: Need to implement exported transforms for circle, ellipse,
-				// and rectangles instead of making them paths
+		switch (type) {
+		case 'rect':
+			topCenter = segments[1]._point.add(segments[2]._point).divide(2);
+			break;
+		case 'roundrect':
+			topCenter = segments[3]._point.add(segments[4]._point).divide(2);
+			break;	
+		case 'circle':
+		case 'ellipse':
+			topCenter = segments[1]._point;
+			break;
+		}
+		if (topCenter) {
+			var angle = topCenter.subtract(path.getPosition()).getAngle() + 90;
+			if (!Numerical.isZero(angle)) {
+				// TODO: Need to implement exported transforms for circle,
+				// ellipse and rectangles instead of making them paths.
 				return pathSetup(path, segments);
 			} 
 		}
@@ -193,25 +206,6 @@ var SvgExporter = this.SvgExporter = new function() {
 			parts.push('z');
 		svg.setAttribute('d', parts.join(' '));
 		return svg;
-	}
-
-	// Determines whether the object has been transformed or not through finding the angle
-	function determineIfTransformed(path, segments, type) {
-		var centerPoint = path.getPosition();
-		var topMidPath = centerPoint;
-		switch (type) {
-		case 'rect':
-			topMidPath = segments[1]._point.add(segments[2]._point).divide(2);
-			break;
-		case 'roundrect':
-			topMidPath = segments[3]._point.add(segments[4]._point).divide(2);
-			break;	
-		case 'circle':
-		case 'ellipse':
-			topMidPath = segments[1]._point;
-			break;
-		}
-		return topMidPath.subtract(centerPoint).getAngle();
 	}
 
 	/**
