@@ -1,3 +1,19 @@
+/*
+ * Paper.js
+ *
+ * This file is part of Paper.js, a JavaScript Vector Graphics Library,
+ * based on Scriptographer.org and designed to be largely API compatible.
+ * http://paperjs.org/
+ * http://scriptographer.org/
+ *
+ * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * http://lehni.org/ & http://jonathanpuckey.com/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
 var SvgStyles = Base.each({
 	fillColor: 'fill',
 	strokeColor: 'stroke',
@@ -8,6 +24,7 @@ var SvgStyles = Base.each({
 	dashArray: 'stroke-dasharray',
 	dashOffset: 'stroke-dashoffset'
 }, function(attr, prop) {
+	var part = Base.capitalize(prop);
 	this.attributes[attr] = this.properties[prop] = {
 		type: /Color$/.test(prop)
 			? 'color'
@@ -16,7 +33,8 @@ var SvgStyles = Base.each({
 				: 'value',
 		property: prop,
 		attribute: attr,
-		getter: 'get' + Base.capitalize(prop)
+		get: 'get' + part,
+		set: 'set' + part
 	};
 }, {
 	properties: {},
