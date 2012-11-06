@@ -104,7 +104,7 @@ var SvgExporter = this.SvgExporter = new function() {
 		case 'rect':
 			var width = getDistance(segments, 0, 3),
 				height = getDistance(segments, 0, 1),
-				// Counter-compensate the rotation angle
+				// Counter-compensate the determined rotation angle
 				point = segments[1]._point.rotate(-angle, path.getPosition());
 			attrs = {
 				x: point.x,
@@ -128,6 +128,7 @@ var SvgExporter = this.SvgExporter = new function() {
 				left = segments[3]._point, // top-left side point
 				right = segments[4]._point, // top-right side point
 				point = left.subtract(right.subtract(left).normalize(rx))
+						// Counter-compensate the determined rotation angle
 						.rotate(-angle, path.getPosition());
 			attrs = {
 				x: point.x,
@@ -171,9 +172,8 @@ var SvgExporter = this.SvgExporter = new function() {
 		}
 		var svg = createElement(type, attrs);
 		if (angle) {
-			var center = path.getPosition();
 			svg.setAttribute('transform', 'rotate(' + formatNumber(angle) + ','
-						+ formatPoint(center) + ')');
+						+ formatPoint(path.getPosition()) + ')');
 		}
 		return svg;
 	}
