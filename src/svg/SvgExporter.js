@@ -212,7 +212,7 @@ var SvgExporter = this.SvgExporter = new function() {
 		var svgPath = createElement('path');
 		var parts = [];
 		parts.push('M' + segments[0]._point._x + ',' + segments[0]._point._y);
-		function drawCurve(seg1, seg2) {
+		function drawCurve(seg1, seg2, skipLine) {
 			var point1 = seg1._point,
 				point2 = seg2._point,
 				x1 = point1._x,
@@ -222,8 +222,10 @@ var SvgExporter = this.SvgExporter = new function() {
 				handle1 = seg1._handleOut,
 				handle2 = seg2._handleIn;
 			if (handle1.isZero() && handle2.isZero()) {
+				if (!skipLine) {
 					// L is lineto, moving to a point with drawing
 					parts.push('L' + x2 + ',' + y2 + ' ');
+				}
 			} else {
 				// c is curveto, relative: handle1, handle2 + end - start, end - start
 				x2 -= x1;
@@ -236,15 +238,11 @@ var SvgExporter = this.SvgExporter = new function() {
 			}
 		}
 		for (i = 0; i < segments.length - 1; i++)
-			drawCurve(segments[i], segments[i + 1]);
-		var first = segments[0],
-			last = segments[segments.length - 1],
-			style = path._style;
+			drawCurve(segments[i], segments[i + 1], false);
 		// We only need to draw the connecting curve if the path is cosed and
 		// has a stroke color, or if it's filled.
-		if ((path._closed && style._strokeColor || style._fillColor)
-				&& !first._handleOut.isZero() && !last._handleIn.isZero())
-			drawCurve(last, first);
+		if (path._closed && path._style._strokeColor || path._style._fillColor)
+			drawCurve(segments[segments.length - 1], segments[0], true);
 		if (path._closed)
 			parts.push('z');
 		svgPath.setAttribute('d', parts.join(' '));
