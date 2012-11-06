@@ -77,6 +77,126 @@ var SvgExporter = this.SvgExporter = new function() {
 		return attrs;
 	}
 
+	function getPath(path, segments) {
+		var parts = [],
+			style = path._style;
+
+		function addCurve(seg1, seg2, skipLine) {
+			var point1 = seg1._point,
+				point2 = seg2._point,
+				handle1 = seg1._handleOut,
+				handle2 = seg2._handleIn;
+			if (handle1.isZero() && handle2.isZero()) {
+				if (!skipLine) {
+					// L = lineto: moving to a point with drawing
+					parts.push('L' + formatPoint(point2));
+				}
+			} else {
+				// c = relative curveto: handle1, handle2 + end - start, end - start
+				var end = point2.subtract(point1);
+				parts.push('c' + formatPoint(handle1),
+					formatPoint(end.add(handle2)),
+					formatPoint(end));
+			}
+		}
+
+		parts.push('M' + formatPoint(segments[0]._point));
+		for (i = 0; i < segments.length - 1; i++)
+			addCurve(segments[i], segments[i + 1], false);
+		// We only need to draw the connecting curve if it is not a line, and if
+		// the path is cosed and has a stroke color, or if it is filled.
+		if (path._closed && style._strokeColor || style._fillColor)
+			addCurve(segments[segments.length - 1], segments[0], true);
+		if (path._closed)
+			parts.push('z');
+		return parts.join(' ');
+	}
+
+	function determineAngle(path, segments, type, center) {
+		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
+		// see if they are placed at an angle.
+		var topCenter = type === 'rect'
+				? segments[1]._point.add(segments[2]._point).divide(2)
+				: type === 'roundrect'
+				? segments[3]._point.add(segments[4]._point).divide(2)
+				: type === 'circle' || type === 'ellipse'
+				? segments[1]._point
+				: null;
+		if (topCenter) {
+			var angle = topCenter.subtract(center).getAngle() + 90;
+			return Numerical.isZero(angle) ? 0 : angle;
+		}
+		return 0;
+	}
+
+	function determineType(path, segments) {
+		// Returns true if the the two segment indices are the beggining of two
+		// lines and if the wto lines are parallel.
+		function isColinear(i, j) {
+			var seg1 = segments[i],
+				seg2 = seg1.getNext(),
+				seg3 = segments[j],
+				seg4 = seg3.getNext();
+			return seg1._handleOut.isZero() && seg2._handleIn.isZero()
+					&& seg3._handleOut.isZero() && seg4._handleIn.isZero()
+					&& seg2._point.subtract(seg1._point).isColinear(
+						seg4._point.subtract(seg3._point));
+		}
+
+		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
+		var kappa = 4 * (Math.sqrt(2) - 1) / 3;
+
+		// Returns true if the segment at the given index is the beginning of
+		// a orthogonal arc segment. The code is looking at the length of the
+		// handles and their relation to the distance to the imaginary corner
+		// point. If the relation is kappa (see above), then it's an arc.
+		function isArc(i) {
+			var segment = segments[i],
+				next = segment.getNext(),
+				handle1 = segment._handleOut,
+				handle2 = next._handleIn;
+			if (handle1.isOrthogonal(handle2)) {
+				var from = segment._point,
+					to = next._point,
+					// Find hte corner point by intersecting the lines described
+					// by both handles:
+					corner = new Line(from, handle1).intersect(
+							new Line(to, handle2));
+				return corner && Numerical.isZero(handle1.getLength() /
+						corner.subtract(from).getLength() - kappa)
+					&& Numerical.isZero(handle2.getLength() /
+						corner.subtract(to).getLength() - kappa);
+			}
+		}
+
+		// See if actually have any curves in the path. Differentiate
+		// between straight objects (line, polyline, rect, and  polygon) and
+		// objects with curves(circle, ellipse, roundedRectangle).
+		if (path.isPolygon()) {
+			return  segments.length === 4 && path._closed
+					&& isColinear(0, 2) && isColinear(1, 3)
+					? 'rect'
+					: segments.length >= 3
+						? path._closed ? 'polygon' : 'polyline'
+						: 'line';
+		} else if (path._closed) {
+			if (segments.length === 8
+					&& isArc(0) && isArc(2) && isArc(4) && isArc(6)
+					&& isColinear(1, 5) && isColinear(3, 7)) {
+				return 'roundrect';
+			} else if (segments.length === 4
+					&& isArc(0) && isArc(1) && isArc(2) && isArc(3)) {
+				// If the distance between (point0 and point2) and (point1
+				// and point3) are equal, then it is a circle
+				return Numerical.isZero(getDistance(segments, 0, 2)
+						- getDistance(segments, 1, 3))
+						? 'circle'
+						: 'ellipse';
+			} 
+		}
+		return 'path';
+	}
+
 	function exportGroup(group) {
 		var attrs = getTransform(group),
 			children = group._children;
@@ -109,7 +229,7 @@ var SvgExporter = this.SvgExporter = new function() {
 		switch (type) {
 		case 'path':
 			attrs = {
-				d: drawPath(path, segments)
+				d: getPath(path, segments)
 			};
 			break;
 		case 'polyline':
@@ -198,126 +318,16 @@ var SvgExporter = this.SvgExporter = new function() {
 		return svg;
 	}
 
-	function drawPath(path, segments) {
-		var parts = [],
-			style = path._style;
-
-		function drawCurve(seg1, seg2, skipLine) {
-			var point1 = seg1._point,
-				point2 = seg2._point,
-				handle1 = seg1._handleOut,
-				handle2 = seg2._handleIn;
-			if (handle1.isZero() && handle2.isZero()) {
-				if (!skipLine) {
-					// L = lineto: moving to a point with drawing
-					parts.push('L' + formatPoint(point2));
-				}
-			} else {
-				// c = relative curveto: handle1, handle2 + end - start, end - start
-				var end = point2.subtract(point1);
-				parts.push('c' + formatPoint(handle1),
-					formatPoint(end.add(handle2)),
-					formatPoint(end));
-			}
-		}
-
-		parts.push('M' + formatPoint(segments[0]._point));
-		for (i = 0; i < segments.length - 1; i++)
-			drawCurve(segments[i], segments[i + 1], false);
-		// We only need to draw the connecting curve if it is not a line, and if
-		// the path is cosed and has a stroke color, or if it is filled.
-		if (path._closed && style._strokeColor || style._fillColor)
-			drawCurve(segments[segments.length - 1], segments[0], true);
-		if (path._closed)
-			parts.push('z');
-		return parts.join(' ');
-	}
-
-	function determineAngle(path, segments, type, center) {
-		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
-		// see if they are placed at an angle.
-		var topCenter = type === 'rect'
-				? segments[1]._point.add(segments[2]._point).divide(2)
-				: type === 'roundrect'
-				? segments[3]._point.add(segments[4]._point).divide(2)
-				: type === 'circle' || type === 'ellipse'
-				? segments[1]._point
-				: null;
-		if (topCenter) {
-			var angle = topCenter.subtract(center).getAngle() + 90;
-			return Numerical.isZero(angle) ? 0 : angle;
-		}
-		return 0;
-	}
-
-	function determineType(path, segments) {
-
-		// Returns true if the the two segment indices are the beggining of two
-		// lines and if the wto lines are parallel.
-		function isColinear(i, j) {
-			var seg1 = segments[i],
-				seg2 = seg1.getNext(),
-				seg3 = segments[j],
-				seg4 = seg3.getNext();
-			return seg1._handleOut.isZero() && seg2._handleIn.isZero()
-					&& seg3._handleOut.isZero() && seg4._handleIn.isZero()
-					&& seg2._point.subtract(seg1._point).isColinear(
-						seg4._point.subtract(seg3._point));
-		}
-
-		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
-		var kappa = 4 * (Math.sqrt(2) - 1) / 3;
-
-		// Returns true if the segment at the given index is the beginning of
-		// a orthogonal arc segment. The code is looking at the length of the
-		// handles and their relation to the distance to the imaginary corner
-		// point. If the relation is kappa (see above), then it's an arc.
-		function isArc(i) {
-			var segment = segments[i],
-				next = segment.getNext(),
-				handle1 = segment._handleOut,
-				handle2 = next._handleIn;
-			if (handle1.isOrthogonal(handle2)) {
-				var from = segment._point,
-					to = next._point,
-					// Find hte corner point by intersecting the lines described
-					// by both handles:
-					corner = new Line(from, handle1).intersect(
-							new Line(to, handle2));
-				return corner && Numerical.isZero(handle1.getLength() /
-						corner.subtract(from).getLength() - kappa)
-					&& Numerical.isZero(handle2.getLength() /
-						corner.subtract(to).getLength() - kappa);
-			}
-		}
-
-		// See if actually have any curves in the path. Differentiate
-		// between straight objects (line, polyline, rect, and  polygon) and
-		// objects with curves(circle, ellipse, roundedRectangle).
-		if (path.isPolygon()) {
-			return  segments.length === 4 && path._closed
-					&& isColinear(0, 2) && isColinear(1, 3)
-					? 'rect'
-					: segments.length >= 3
-						? path._closed ? 'polygon' : 'polyline'
-						: 'line';
-		} else if (path._closed) {
-			if (segments.length === 8
-					&& isArc(0) && isArc(2) && isArc(4) && isArc(6)
-					&& isColinear(1, 5) && isColinear(3, 7)) {
-				return 'roundrect';
-			} else if (segments.length === 4
-					&& isArc(0) && isArc(1) && isArc(2) && isArc(3)) {
-				// If the distance between (point0 and point2) and (point1
-				// and point3) are equal, then it is a circle
-				return Numerical.isZero(getDistance(segments, 0, 2)
-						- getDistance(segments, 1, 3))
-						? 'circle'
-						: 'ellipse';
-			} 
-		}
-		return 'path';
-	}
+	var exporters = {
+		group: exportGroup,
+		layer: exportGroup,
+		path: exportPath,
+		pointtext: exportText
+		// TODO:
+		// raster: 
+		// placedsymbol:
+		// compoundpath:
+	};
 
 	function applyStyle(item, svg) {
 		var attrs = {},
@@ -353,17 +363,6 @@ var SvgExporter = this.SvgExporter = new function() {
 
 		return setAttributes(svg, attrs);
 	}
-
-	var exporters = {
-		group: exportGroup,
-		layer: exportGroup,
-		path: exportPath,
-		pointtext: exportText
-		// TODO:
-		// raster: 
-		// placedsymbol:
-		// compoundpath:
-	};
 
 	return /** @Lends SvgExporter */{
 		/**
