@@ -252,6 +252,8 @@ var SvgExporter = this.SvgExporter = new function() {
 
 	function determineType(path, segments) {
 
+		// Returns true if the the two segment indices are the beggining of two
+		// lines and if the wto lines are parallel.
 		function isColinear(i, j) {
 			var seg1 = segments[i],
 				seg2 = seg1.getNext(),
@@ -266,6 +268,10 @@ var SvgExporter = this.SvgExporter = new function() {
 		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
 		var kappa = 4 * (Math.sqrt(2) - 1) / 3;
 
+		// Returns true if the segment at the given index is the beginning of
+		// a orthogonal arc segment. The code is looking at the length of the
+		// handles and their relation to the distance to the imaginary corner
+		// point. If the relation is kappa (see above), then it's an arc.
 		function isArc(i) {
 			var segment = segments[i],
 				next = segment.getNext(),
@@ -274,6 +280,8 @@ var SvgExporter = this.SvgExporter = new function() {
 			if (handle1.isOrthogonal(handle2)) {
 				var from = segment._point,
 					to = next._point,
+					// Find hte corner point by intersecting the lines described
+					// by both handles:
 					corner = new Line(from, handle1).intersect(
 							new Line(to, handle2));
 				return corner && Numerical.isZero(handle1.getLength() /
