@@ -199,11 +199,9 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * up to the amount of fractional digits.
 		 *
 		 * @param {Number} num the number to be converted to a string
-		 * @param {Number} [digits=5] the maximum maount of fraction digits
 		 */
-		formatNumber: function(num, digits) {
-			var factor = Math.pow(10, digits | 5);
-			return (Math.round(num * factor) / factor).toString();
+		formatNumber: function(num) {
+			return (Math.round(num * 100000) / 100000).toString();
 		}
 	}
 });
