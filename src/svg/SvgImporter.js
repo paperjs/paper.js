@@ -183,8 +183,8 @@ var SvgImporter = this.SvgImporter = new function() {
 
 	var definitions = {};
 	function getDefinition(value) {
-		var matches = value.match(/#([^\)']+)/);
-        return definitions[matches ? matches[1] : value];
+		var match = value.match(/#([^)']+)/);
+        return definitions[match ? match[1] : value];
 	}
 
 	var importers = {
