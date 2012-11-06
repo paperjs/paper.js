@@ -251,6 +251,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			// y: multiple values for y
 			// dx: multiple values for x
 			// dy: multiple values for y
+			// TODO: Support for these is missing in Paper.js right now
 			// rotate: character rotation
 			// lengthAdjust:
 			var text = new PointText(getPoint(svg, 'x', 'y', 0)
@@ -291,19 +292,18 @@ var SvgImporter = this.SvgImporter = new function() {
 	 function applyAttributeOrStyle(svg, item, name, value) {
 		if (value == null)
 			return;
-		if (value === 'none')
-			value = null;
 		var entry = SvgStyles.attributes[name];
 		if (entry) {
-			if (entry.type === 'number') {
-				value = parseFloat(value, 10);
-			} else if (entry.type === 'array') {
-				value = value.replace(/px/g, '').replace(/, /g, ',')
-						.replace(/ /g, ',').split(',');
-				for (var i = 0, l = value.length; i < l; i++)
-					value[i] = parseFloat(value[i], 10);
-			}
-			item._style[entry.set](value);
+			item._style[entry.set](value === 'none'
+				? null
+				: entry.type === 'number'
+					? parseFloat(value, 10)
+					: entry.type === 'array'
+						? value.replace(/px/g, '').replace(/, /g, ',')
+							.replace(/ /g, ',').split(',').map(function(val) {
+								return parseFloat(val, 10);
+							})
+						: value);
 		} else {
 			switch (name) {
 			case 'id':
