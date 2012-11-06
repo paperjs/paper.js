@@ -948,6 +948,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
+	 * For simple paths, flatten always returns the path itself. See
+	 * {@link CompoundPath#flatten()} for more explanations.
+	 */
+	flatten: function() {
+		return this;
+	},
+
+	/**
 	 * The length of the perimeter of the path.
 	 *
 	 * @type Number

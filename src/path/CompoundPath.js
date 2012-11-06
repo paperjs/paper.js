@@ -69,9 +69,9 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	 * the path is moved outside and the compound path is erased.
 	 * Otherwise, the compound path is returned unmodified.
 	 *
-	 * @return {CompoundPath|Path} the simplified compound path
+	 * @return {CompoundPath|Path} the flattened compound path
 	 */
-	simplify: function() {
+	flatten: function() {
 		if (this._children.length == 1) {
 			var child = this._children[0];
 			child.insertAbove(this);
