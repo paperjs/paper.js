@@ -362,8 +362,10 @@ new function() {
 		return setAttributes(svg, attrs);
 	}
 
-	Item.inject(/** @Lends Item# */{
+	Item.inject(/** @lends Item# */{
 		/**
+		 * {@grouptitle SVG Conversion}
+		 *
 		 * Exports the item and all its child items as an SVG DOM, all contained
 		 * in one top level SVG group node.
 		 *
@@ -376,8 +378,10 @@ new function() {
 		}
 	});
 
-	Project.inject(/** @Lends Project# */{
+	Project.inject(/** @lends Project# */{
 		/**
+		 * {@grouptitle SVG Conversion}
+		 *
 		 * Exports the project and all its layers and child items as an SVG DOM,
 		 * all contained in one top level SVG group node.
 		 *
