@@ -119,7 +119,8 @@ var SvgExporter = this.SvgExporter = new function() {
 
 	function determineAngle(path, segments, type, center) {
 		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
-		// see if they are placed at an angle.
+		// see if it is placed at an angle, by figuring out its topCenter point
+		// and measuring the angle to its center.
 		var topCenter = type === 'rect'
 				? segments[1]._point.add(segments[2]._point).divide(2)
 				: type === 'roundrect'
@@ -127,11 +128,8 @@ var SvgExporter = this.SvgExporter = new function() {
 				: type === 'circle' || type === 'ellipse'
 				? segments[1]._point
 				: null;
-		if (topCenter) {
-			var angle = topCenter.subtract(center).getAngle() + 90;
-			return Numerical.isZero(angle) ? 0 : angle;
-		}
-		return 0;
+		var angle = topCenter && topCenter.subtract(center).getAngle() + 90;
+		return Numerical.isZero(angle || 0) ? 0 : angle;
 	}
 
 	function determineType(path, segments) {
