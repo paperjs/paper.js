@@ -25,13 +25,15 @@
 
 var SvgExporter = this.SvgExporter = new function() {
 
-	function createElement(tag) {
-		return document.createElementNS('http://www.w3.org/2000/svg', tag);
-	}
-
 	function setAttributes(svg, attrs) {
 		for (var key in attrs)
 			svg.setAttribute(key, attrs[key]);
+		return svg;
+	}
+
+	function createElement(tag, attrs) {
+		return setAttributes(
+			document.createElementNS('http://www.w3.org/2000/svg', tag), attrs);
 	}
 
 	function exportGroup(group) {
@@ -69,13 +71,15 @@ var SvgExporter = this.SvgExporter = new function() {
 		//switch statement that determines what type of SVG element to add to the SVG Object
 		switch (type) {
 		case 'rect':
-			var width = getDistance(segments, 0, 3);
-			var height = getDistance(segments, 0, 1);
-			svg = createElement('rect');
-			svg.setAttribute('x', path.bounds.topLeft._x);
-			svg.setAttribute('y', path.bounds.topLeft._y);
-			svg.setAttribute('width', width);
-			svg.setAttribute('height', height);
+			var width = getDistance(segments, 0, 3),
+				height = getDistance(segments, 0, 1),
+				point = path.getBounds().getTopLeft();
+			svg = createElement('rect', {
+				x: point._x,
+				y: point._y,
+				width: width,
+				height: height
+			});
 			break;
 		case 'roundrect':
 			//d variables and point are used to determine the rounded corners for the rounded rectangle
@@ -90,56 +94,68 @@ var SvgExporter = this.SvgExporter = new function() {
 			var height = Math.round(dy1);
 			var rx = segments[3]._point._x - point.x;
 			var ry = segments[2]._point._y - point.y;
-			svg = createElement('rect');
-			svg.setAttribute('x', path.bounds.topLeft._x);
-			svg.setAttribute('y', path.bounds.topLeft._y);
-			svg.setAttribute('rx', rx);
-			svg.setAttribute('ry', ry);
-			svg.setAttribute('width', width);
-			svg.setAttribute('height', height);
+			svg = createElement('rect', {
+				x: path.bounds.topLeft._x,
+				y: path.bounds.topLeft._y,
+				rx: rx,
+				ry: ry,
+				width: width,
+				height: height
+			});
 			break;
 		case'line':
-			svg = createElement('line');
-			svg.setAttribute('x1', segments[0]._point._x);
-			svg.setAttribute('y1', segments[0]._point._y);
-			svg.setAttribute('x2', segments[segments.length - 1]._point._x);
-			svg.setAttribute('y2', segments[segments.length - 1]._point._y);
+			var first = segments[0]._point,
+				last = segments[segments.length - 1]._point;
+			svg = createElement('line', {
+				x1: first._x,
+				y1: first._y,
+				x2: last._x,
+				y2: last._y
+			});
 			break;
 		case 'circle':
-			svg = createElement('circle');
-			var radius = (getDistance(segments, 0, 2)) /2;
-			svg.setAttribute('cx', path.bounds.center.x);
-			svg.setAttribute('cy', path.bounds.center.y);
-			svg.setAttribute('r', radius);
+			var radius = getDistance(segments, 0, 2) / 2,
+				center = path.getPosition();
+			svg = createElement('circle', {
+				cx: center._x,
+				cy: center._y,
+				r: radius
+			});
 			break;
 		case 'ellipse':
-			svg = createElement('ellipse');
-			var radiusX = getDistance(segments, 2, 0) / 2;
-			var radiusY = getDistance(segments, 3, 1) /2;
-			svg.setAttribute('cx', path.bounds.center.x);
-			svg.setAttribute('cy', path.bounds.center.y);
-			svg.setAttribute('rx', radiusX);
-			svg.setAttribute('ry', radiusY);
+			var radiusX = getDistance(segments, 2, 0) / 2,
+				radiusY = getDistance(segments, 3, 1) / 2,
+				center = path.getPosition();
+			svg = createElement('ellipse', {
+				cx: center._x,
+				cy: center._y,
+				rx: radiusX,
+				ry: radiusY
+			});
 			break;
 		case 'polyline':
 		case 'polygon':
-			svg = createElement(type);
 			var parts = [];
 			for(i = 0; i < segments.length; i++) {
-				parts.push(segments[i]._point._x + ',' + segments[i]._point._y);
+				var point = segments[i]._point;
+				parts.push(point._x + ',' + point._y);
 			}
-			svg.setAttribute('points', parts.join(' '));
+			svg = createElement(type, {
+				points: parts.join(' ')
+			});
 			break;
 		case 'text':
-			svg = createElement('text');
-			svg.setAttribute('x', path.getPoint()._x);
-			svg.setAttribute('y', path.getPoint()._y);
-			if (path.characterStyle.font != undefined) {
-				svg.setAttribute('font-family', path.characterStyle.font);
-			}
-			if (path.characterStyle.fontSize != undefined) {
-				svg.setAttribute('font-size',path.characterStyle.fontSize);
-			}
+			var point = path.getPoint(),
+				attrs = {
+					x: point._x,
+					y: point._y
+				},
+				style = path.characterStyle;
+			if (style._font != null)
+				attrs['font-family'] = style._font;
+			if (style._fontSize != null)
+				attrs['font-size'] = style._fontSize;
+			svg = createElement('text', attrs);
 			svg.textContent = path.getContent();
 			break;
 		default:
@@ -179,38 +195,21 @@ var SvgExporter = this.SvgExporter = new function() {
 
 	// Determines whether the object has been transformed or not through finding the angle
 	function determineIfTransformed(path, segments, type) {
-		var topMidBoundx = (path.bounds.topRight._x + path.bounds.topLeft._x) / 2;
-		var topMidBoundy = (path.bounds.topRight._y + path.bounds.topLeft._y) / 2;
-		var topMidBound = new Point(topMidBoundx, topMidBoundy);
 		var centerPoint = path.getPosition();
-		var topMidPathx;
-		var topMidPathy;
-		var topMidPath;
+		var topMidPath = centerPoint;
 		switch (type) {
 		case 'rect':
-			topMidPathx = (segments[1]._point._x + segments[2]._point._x) / 2;
-			topMidPathy = (segments[1]._point._y + segments[2]._point._y) / 2;
-			topMidPath = new Point(topMidPathx, topMidPathy);
-			break;
-		case 'ellipse':
-			topMidPath = new Point(segments[1]._point._x, segments[1]._point._y);
+			topMidPath = segments[1]._point.add(segments[2]._point).divide(2);
 			break;
 		case 'circle':
-			topMidPath = new Point(segments[1]._point._x, segments[1]._point._y);
+		case 'ellipse':
+			topMidPath = segments[1]._point;
 			break;
 		case 'roundrect':
-			topMidPathx = (segments[3]._point._x + segments[4]._point._x) / 2;
-			topMidPathy = (segments[3]._point._y + segments[4]._point._y) / 2;
-			topMidPath = new Point(topMidPathx, topMidPathy);
+			topMidPath = segments[3]._point.add(segments[4]._point).divide(2);
 			break;	
-		default:
-			//Nothing happens here
-			break;
 		}
-		var deltaY = topMidPath.y - centerPoint._y;
-		var deltaX = topMidPath.x - centerPoint._x;
-		var angleInDegrees = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
-		return angleInDegrees;
+		return topMidPath.subtract(centerPoint).getAngle();
 	}
 	
 	function pathSetup(path, segments) {
