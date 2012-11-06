@@ -61,14 +61,14 @@ var SvgImporter = this.SvgImporter = new function() {
 		return group;
 	}
 
-	function importPoly(svg) {
+	function importPoly(svg, type) {
 		var path = new Path(),
 			points = svg.points,
 			start = points.getItem(0);
 		path.moveTo(start);
 		for (var i = 1, l = points.numberOfItems; i < l; i++)
 			path.lineTo(points.getItem(i));
-		if (svg.nodeName.toLowerCase() == 'polygon')
+		if (type === 'polygon')
 			path.closePath();
 		return path;
 	}
@@ -406,9 +406,10 @@ var SvgImporter = this.SvgImporter = new function() {
 		 * @return {Item} the converted Paper.js item
 		 */
 		importSvg: function(svg) {
-			var importer = importers[svg.nodeName.toLowerCase()];
+			var type = svg.nodeName.toLowerCase(),
+				importer = importers[type];
 			// TODO: importer == null: Not supported yet.
-			var item = importer && importer(svg);
+			var item = importer && importer(svg, type);
 			if (item)
 				applyAttributesAndStyles(svg, item);
 			return item;
