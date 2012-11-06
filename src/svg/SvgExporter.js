@@ -30,10 +30,8 @@ var SvgExporter = this.SvgExporter = new function() {
 	}
 
 	function setAttributes(svg, attrs) {
-		for (var key in attrs) {
-			console.log(key + ', ' + attrs[key]);
+		for (var key in attrs)
 			svg.setAttribute(key, attrs[key]);
-		}
 	}
 
 	function exportGroup(group) {
@@ -41,6 +39,10 @@ var SvgExporter = this.SvgExporter = new function() {
 			children = group._children;
 		for (var i = 0, l = children.length; i < l; i++)
 			svg.appendChild(SvgExporter.exportItem(children[i]));
+		// Override default SVG style on groups, then apply style.
+		setAttributes(svg, {
+			fill: 'none'
+		});
 		applyStyle(group, svg);
 		return svg;
 	}
@@ -354,9 +356,9 @@ var SvgExporter = this.SvgExporter = new function() {
 		Base.each(SvgStyles.properties, function(entry) {
 			// Get a given style only if it differs from the value on the parent
 			// (A layer or group which can have style values in SVG).
-			var value = style[entry.getter]();
+			var value = style[entry.get]();
 			if (value != null && (!parentStyle
-					|| !Base.equals(parentStyle[entry.getter](), value))) {
+					|| !Base.equals(parentStyle[entry.get](), value))) {
 				attrs[entry.attribute] = entry.type === 'color'
 					? value.toCssString()
 					: entry.type === 'array'
