@@ -179,35 +179,36 @@ var SvgExporter = this.SvgExporter = new function() {
 	function drawPath(path, segments) {
 		var parts = [],
 			style = path._style;
+
+		function drawCurve(seg1, seg2, skipLine) {
+			var point1 = seg1._point,
+				point2 = seg2._point,
+				handle1 = seg1._handleOut,
+				handle2 = seg2._handleIn;
+			if (handle1.isZero() && handle2.isZero()) {
+				if (!skipLine) {
+					// L = lineto: moving to a point with drawing
+					parts.push('L' + formatPoint(point2));
+				}
+			} else {
+				// c = relative curveto: handle1, handle2 + end - start, end - start
+				var end = point2.subtract(point1);
+				parts.push('c' + formatPoint(handle1),
+					formatPoint(end.add(handle2)),
+					formatPoint(end));
+			}
+		}
+
 		parts.push('M' + formatPoint(segments[0]._point));
 		for (i = 0; i < segments.length - 1; i++)
-			drawCurve(parts, segments[i], segments[i + 1], false);
+			drawCurve(segments[i], segments[i + 1], false);
 		// We only need to draw the connecting curve if it is not a line, and if
 		// the path is cosed and has a stroke color, or if it is filled.
 		if (path._closed && style._strokeColor || style._fillColor)
-			drawCurve(parts, segments[segments.length - 1], segments[0], true);
+			drawCurve(segments[segments.length - 1], segments[0], true);
 		if (path._closed)
 			parts.push('z');
 		return parts.join(' ');
-	}
-
-	function drawCurve(parts, seg1, seg2, skipLine) {
-		var point1 = seg1._point,
-			point2 = seg2._point,
-			handle1 = seg1._handleOut,
-			handle2 = seg2._handleIn;
-		if (handle1.isZero() && handle2.isZero()) {
-			if (!skipLine) {
-				// L = lineto: moving to a point with drawing
-				parts.push('L' + formatPoint(point2));
-			}
-		} else {
-			// c = relative curveto: handle1, handle2 + end - start, end - start
-			var end = point2.subtract(point1);
-			parts.push('c' + formatPoint(handle1),
-				formatPoint(end.add(handle2)),
-				formatPoint(end));
-		}
 	}
 
 	function determineAngle(path, segments, type) {
