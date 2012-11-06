@@ -67,8 +67,8 @@ var SvgExporter = this.SvgExporter = new function() {
 			var width = segments[0]._point.getDistance(segments[3]._point);
 			var height = segments[0]._point.getDistance(segments[1]._point);
 			svg = createElement('rect');
-			svg.setAttribute('x', path.bounds.topLeft.getX());
-			svg.setAttribute('y', path.bounds.topLeft.getY());
+			svg.setAttribute('x', path.bounds.topLeft._x);
+			svg.setAttribute('y', path.bounds.topLeft._y);
 			svg.setAttribute('width', width);
 			svg.setAttribute('height', height);
 			break;
@@ -80,14 +80,14 @@ var SvgExporter = this.SvgExporter = new function() {
 			var dy1 = segments[0]._point.getDistance(segments[3]._point);
 			var dy2 = segments[1]._point.getDistance(segments[2]._point);
 			var dy3 = (dy1 - dy2) / 2;
-			var point = new Point((segments[3]._point.getX() - dx3), (segments[2]._point.getY() - dy3)); 
+			var point = new Point((segments[3]._point._x - dx3), (segments[2]._point._y - dy3)); 
 			var width = Math.round(dx1);
 			var height = Math.round(dy1);
-			var rx = segments[3]._point.getX() - point.x;
-			var ry = segments[2]._point.getY() - point.y;
+			var rx = segments[3]._point._x - point.x;
+			var ry = segments[2]._point._y - point.y;
 			svg = createElement('rect');
-			svg.setAttribute('x', path.bounds.topLeft.getX());
-			svg.setAttribute('y', path.bounds.topLeft.getY());
+			svg.setAttribute('x', path.bounds.topLeft._x);
+			svg.setAttribute('y', path.bounds.topLeft._y);
 			svg.setAttribute('rx', rx);
 			svg.setAttribute('ry', ry);
 			svg.setAttribute('width', width);
@@ -95,10 +95,10 @@ var SvgExporter = this.SvgExporter = new function() {
 			break;
 		case'line':
 			svg = createElement('line');
-			svg.setAttribute('x1', segments[0]._point.getX());
-			svg.setAttribute('y1', segments[0]._point.getY());
-			svg.setAttribute('x2', segments[segments.length - 1]._point.getX());
-			svg.setAttribute('y2', segments[segments.length - 1]._point.getY());
+			svg.setAttribute('x1', segments[0]._point._x);
+			svg.setAttribute('y1', segments[0]._point._y);
+			svg.setAttribute('x2', segments[segments.length - 1]._point._x);
+			svg.setAttribute('y2', segments[segments.length - 1]._point._y);
 			break;
 		case 'circle':
 			svg = createElement('circle');
@@ -120,7 +120,7 @@ var SvgExporter = this.SvgExporter = new function() {
 			svg = createElement('polyline');
 			var pointString = '';
 			for(var i = 0; i < segments.length; i++) {
-				pointString += segments[i]._point.getX() + ','  + segments[i]._point.getY() + ' ';
+				pointString += segments[i]._point._x + ','  + segments[i]._point._y + ' ';
 			}
 			svg.setAttribute('points', pointString);
 			break;
@@ -128,14 +128,14 @@ var SvgExporter = this.SvgExporter = new function() {
 			svg = createElement('polygon');
 			var pointString = '';
 			for(i = 0; i < segments.length; i++) {
-				pointString += segments[i]._point.getX() + ',' + segments[i]._point.getY() + ' ';
+				pointString += segments[i]._point._x + ',' + segments[i]._point._y + ' ';
 			}
 			svg.setAttribute('points', pointString);
 			break;
 		case 'text':
 			svg = createElement('text');
-			svg.setAttribute('x', path.getPoint().getX());
-			svg.setAttribute('y', path.getPoint().getY());
+			svg.setAttribute('x', path.getPoint()._x);
+			svg.setAttribute('y', path.getPoint()._y);
 			if (path.characterStyle.font != undefined) {
 				svg.setAttribute('font-family', path.characterStyle.font);
 			}
@@ -163,7 +163,7 @@ var SvgExporter = this.SvgExporter = new function() {
 			} 
 		}
 		if (type == 'text') {
-			svg.setAttribute('transform','rotate(' + path.matrix.getRotation() + ',' + path.getPoint().getX() + ',' +path.getPoint().getY() +')');
+			svg.setAttribute('transform','rotate(' + path.matrix.getRotation() + ',' + path.getPoint()._x + ',' +path.getPoint()._y +')');
 		}
 		applyStyle(path, svg);
 		return svg;
@@ -181,8 +181,8 @@ var SvgExporter = this.SvgExporter = new function() {
 
 	// Determines whether the object has been transformed or not through finding the angle
 	function determineIfTransformed(path, segments, type) {
-		var topMidBoundx = (path.bounds.topRight.getX() + path.bounds.topLeft.getX() )/2;
-		var topMidBoundy = (path.bounds.topRight.getY() + path.bounds.topLeft.getY() )/2;
+		var topMidBoundx = (path.bounds.topRight._x + path.bounds.topLeft._x )/2;
+		var topMidBoundy = (path.bounds.topRight._y + path.bounds.topLeft._y )/2;
 		var topMidBound = new Point(topMidBoundx, topMidBoundy);
 		var centerPoint = path.getPosition();
 		var topMidPathx;
@@ -190,27 +190,27 @@ var SvgExporter = this.SvgExporter = new function() {
 		var topMidPath;
 		switch (type) {
 		case 'rect':
-			topMidPathx = (segments[1]._point.getX() + segments[2]._point.getX() )/2;
-			topMidPathy = (segments[1]._point.getY() + segments[2]._point.getY() )/2;
+			topMidPathx = (segments[1]._point._x + segments[2]._point._x )/2;
+			topMidPathy = (segments[1]._point._y + segments[2]._point._y )/2;
 			topMidPath = new Point(topMidPathx, topMidPathy);
 			break;
 		case 'ellipse':
-			topMidPath = new Point(segments[1]._point.getX(), segments[1]._point.getY());
+			topMidPath = new Point(segments[1]._point._x, segments[1]._point._y);
 			break;
 		case 'circle':
-			topMidPath = new Point(segments[1]._point.getX(), segments[1]._point.getY());
+			topMidPath = new Point(segments[1]._point._x, segments[1]._point._y);
 			break;
 		case 'roundrect':
-			topMidPathx = (segments[3]._point.getX() + segments[4]._point.getX())/2;
-			topMidPathy = (segments[3]._point.getY() + segments[4]._point.getY())/2;
+			topMidPathx = (segments[3]._point._x + segments[4]._point._x)/2;
+			topMidPathy = (segments[3]._point._y + segments[4]._point._y)/2;
 			topMidPath = new Point(topMidPathx, topMidPathy);
 			break;	
 		default:
 			//Nothing happens here
 			break;
 		}
-		var deltaY = topMidPath.y - centerPoint.getY();
-		var deltaX = topMidPath.x - centerPoint.getX();
+		var deltaY = topMidPath.y - centerPoint._y;
+		var deltaX = topMidPath.x - centerPoint._x;
 		var angleInDegrees = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
 		return angleInDegrees;
 	}
@@ -220,22 +220,22 @@ var SvgExporter = this.SvgExporter = new function() {
 		var pointString = '';
 		// pointstring is formatted in the way the SVG XML will be reading.
 		// Namely, a point and the way to traverse to that point.
-		pointString += 'M' + segments[0]._point.getX() + ',' + segments[0]._point.getY() + ' ';
+		pointString += 'M' + segments[0]._point._x + ',' + segments[0]._point._y + ' ';
 		//Checks 2 points and the angles in between the 2 points
 		for (i = 0; i < segments.length-1; i++) {
-			var x1 = segments[i]._point.getX(),
-				y1 = segments[i]._point.getY(),
-				x2 = segments[i + 1]._point.getX(),
-				y2 = segments[i + 1]._point.getY(),
+			var x1 = segments[i]._point._x,
+				y1 = segments[i]._point._y,
+				x2 = segments[i + 1]._point._x,
+				y2 = segments[i + 1]._point._y,
 				handleOut1 = segments[i]._handleOut,
 				handleIn2 = segments[i+1]._handleIn;
-			if (handleOut1.getX() == 0 && handleOut1.getY() == 0 && handleIn2.getX() == 0 && handleIn2.getY() == 0) {
+			if (handleOut1._x == 0 && handleOut1._y == 0 && handleIn2._x == 0 && handleIn2._y == 0) {
 					// L is lineto, moving to a point with drawing
 					pointString+= 'L' + x2 + ',' + y2 + ' ';
 			} else {
 				// c is curveto, relative: handleOut, handleIn - endpoint, endpoint - startpoint
-				pointString += 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
-				pointString += (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
+				pointString += 'c' + (handleOut1._x)  + ',' + (handleOut1._y) + ' ';
+				pointString += (x2 - x1 + handleIn2._x) + ',' + (y2 - y1 + handleIn2._y) + ' ';
 				pointString += (x2 - x1) + ',' + (y2 - y1) +  ' ';
 			}
 		}
@@ -243,12 +243,12 @@ var SvgExporter = this.SvgExporter = new function() {
 			var handleOut1 = segments[segments.length - 1]._handleOut,
 				handleIn2 = segments[0]._handleIn,
 				// Bezier curve from last point to first
-				x1 = segments[segments.length - 1]._point.getX(),
-				y1 = segments[segments.length - 1]._point.getY(),
-				x2 = segments[0]._point.getX(),
-				y2 = segments[0]._point.getY();
-			pointString += 'c' + (handleOut1.getX())  + ',' + (handleOut1.getY()) + ' ';
-			pointString += (x2 - x1 + handleIn2.getX()) + ',' + (y2 - y1 + handleIn2.getY()) + ' ';
+				x1 = segments[segments.length - 1]._point._x,
+				y1 = segments[segments.length - 1]._point._y,
+				x2 = segments[0]._point._x,
+				y2 = segments[0]._point._y;
+			pointString += 'c' + (handleOut1._x)  + ',' + (handleOut1._y) + ' ';
+			pointString += (x2 - x1 + handleIn2._x) + ',' + (y2 - y1 + handleIn2._y) + ' ';
 			pointString += (x2 - x1) + ',' + (y2 - y1) +  ' ';
 		}
 		if (path._closed) {
@@ -303,9 +303,9 @@ var SvgExporter = this.SvgExporter = new function() {
 				// circles and ellipses.
 				var checkPointValues = true;
 				for (i = 0; i < segments.length && checkPointValues; i++) {
-					if (segments[i]._handleIn.getX() != 0 || segments[i]._handleIn.getY() != 0
-							&& Math.round(Math.abs(segments[i]._handleIn.getX())) === Math.round(Math.abs(segments[i]._handleOut.getX()))
-							&& Math.round(Math.abs(segments[i]._handleIn.getY())) === Math.round(Math.abs(segments[i]._handleOut.getY()))) {
+					if (segments[i]._handleIn._x != 0 || segments[i]._handleIn._y != 0
+							&& Math.round(Math.abs(segments[i]._handleIn._x)) === Math.round(Math.abs(segments[i]._handleOut._x))
+							&& Math.round(Math.abs(segments[i]._handleIn._y)) === Math.round(Math.abs(segments[i]._handleOut._y))) {
 						checkPointValues = true;
 					} else {
 						checkPointValues = false;
