@@ -47,6 +47,10 @@ var SvgExporter = this.SvgExporter = new function() {
 		return svg;
 	}
 
+	function getDistance(segments, index1, index2) {
+		return segments[index1]._point.getDistance(segments[index2]._point);
+	}
+
 	function exportItem(path) {
 		var svg;
 		//Getting all of the segments(a point, a HandleIn and a HandleOut) in the path
@@ -61,11 +65,12 @@ var SvgExporter = this.SvgExporter = new function() {
 			segments = path.getSegments();
 			type = determineType(path, segments);
 		}
+
 		//switch statement that determines what type of SVG element to add to the SVG Object
 		switch (type) {
 		case 'rect':
-			var width = segments[0]._point.getDistance(segments[3]._point);
-			var height = segments[0]._point.getDistance(segments[1]._point);
+			var width = getDistance(segments, 0, 3);
+			var height = getDistance(segments, 0, 1);
 			svg = createElement('rect');
 			svg.setAttribute('x', path.bounds.topLeft._x);
 			svg.setAttribute('y', path.bounds.topLeft._y);
@@ -74,11 +79,11 @@ var SvgExporter = this.SvgExporter = new function() {
 			break;
 		case 'roundrect':
 			//d variables and point are used to determine the rounded corners for the rounded rectangle
-			var dx1 = segments[1]._point.getDistance(segments[6]._point);
-			var dx2 = segments[0]._point.getDistance(segments[7]._point);
+			var dx1 = getDistance(segments, 1, 6);
+			var dx2 = getDistance(segments, 0, 7);
 			var dx3 = (dx1 - dx2) / 2;
-			var dy1 = segments[0]._point.getDistance(segments[3]._point);
-			var dy2 = segments[1]._point.getDistance(segments[2]._point);
+			var dy1 = getDistance(segments, 0, 3);
+			var dy2 = getDistance(segments, 1, 2);
 			var dy3 = (dy1 - dy2) / 2;
 			var point = new Point((segments[3]._point._x - dx3), (segments[2]._point._y - dy3)); 
 			var width = Math.round(dx1);
@@ -102,15 +107,15 @@ var SvgExporter = this.SvgExporter = new function() {
 			break;
 		case 'circle':
 			svg = createElement('circle');
-			var radius = (segments[0]._point.getDistance(segments[2]._point)) /2;
+			var radius = (getDistance(segments, 0, 2)) /2;
 			svg.setAttribute('cx', path.bounds.center.x);
 			svg.setAttribute('cy', path.bounds.center.y);
 			svg.setAttribute('r', radius);
 			break;
 		case 'ellipse':
 			svg = createElement('ellipse');
-			var radiusX = segments[2]._point.getDistance(segments[0]._point) / 2;
-			var radiusY = segments[3]._point.getDistance(segments[1]._point) /2;
+			var radiusX = getDistance(segments, 2, 0) / 2;
+			var radiusY = getDistance(segments, 3, 1) /2;
 			svg.setAttribute('cx', path.bounds.center.x);
 			svg.setAttribute('cy', path.bounds.center.y);
 			svg.setAttribute('rx', radiusX);
@@ -263,8 +268,8 @@ var SvgExporter = this.SvgExporter = new function() {
 			if (segments.length == 4) {
 				// If the distance between (point0 and point1) and (point2 and
 				// point3) are equal, then it is a rectangle
-				dPoint12 = Math.round(segments[0]._point.getDistance(segments[1]._point));
-				dPoint34 = Math.round(segments[3]._point.getDistance(segments[2]._point));
+				dPoint12 = Math.round(getDistance(segments, 0, 1));
+				dPoint34 = Math.round(getDistance(segments, 3, 2));
 				if (dPoint12 == dPoint34) {
 					type = 'rect';
 				}
@@ -283,8 +288,8 @@ var SvgExporter = this.SvgExporter = new function() {
 			if (segments.length == 8) {
 				// If the distance between (point0 and point3) and (point7 and 
 				// point4) are equal then it is a roundedRectangle
-				dPoint12 = Math.round(segments[0]._point.getDistance(segments[3]._point));
-				dPoint34 = Math.round(segments[7]._point.getDistance(segments[4]._point));
+				dPoint12 = Math.round(getDistance(segments, 0, 3));
+				dPoint34 = Math.round(getDistance(segments, 7, 4));
 				if (dPoint12 == dPoint34) {
 					type = 'roundrect';
 				}
@@ -304,8 +309,8 @@ var SvgExporter = this.SvgExporter = new function() {
 				if (checkPointValues) {
 					// If the distance between (point0 and point2) and (point1
 					// and point3) are equal, then it is a circle
-					var d1 = Math.round(segments[0]._point.getDistance(segments[2]._point));
-					var d2 = Math.round(segments[1]._point.getDistance(segments[3]._point));
+					var d1 = Math.round(getDistance(segments, 0, 2));
+					var d2 = Math.round(getDistance(segments, 1, 3));
 					if (d1 == d2) {
 						type = 'circle';
 					} else {
