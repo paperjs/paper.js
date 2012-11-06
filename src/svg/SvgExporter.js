@@ -86,24 +86,23 @@ var SvgExporter = this.SvgExporter = new function() {
 		case 'roundrect':
 			// d-variables and point are used to determine the rounded corners
 			// for the rounded rectangle
-			var dx1 = getDistance(segments, 1, 6);
-			var dx2 = getDistance(segments, 0, 7);
-			var dx3 = (dx1 - dx2) / 2;
-			var dy1 = getDistance(segments, 0, 3);
-			var dy2 = getDistance(segments, 1, 2);
-			var dy3 = (dy1 - dy2) / 2;
-			var point = new Point((segments[3]._point._x - dx3), (segments[2]._point._y - dy3)); 
-			var width = Math.round(dx1);
-			var height = Math.round(dy1);
-			var rx = segments[3]._point._x - point.x;
-			var ry = segments[2]._point._y - point.y;
+			var width = getDistance(segments, 1, 6),
+				height = getDistance(segments, 0, 3),
+				point = path.getBounds().getTopLeft(),
+				dx2 = getDistance(segments, 0, 7),
+				dy2 = getDistance(segments, 1, 2),
+				dx3 = (width - dx2) / 2,
+				dy3 = (height - dy2) / 2,
+				point = new Point((segments[3]._point._x - dx3), (segments[2]._point._y - dy3)),
+				rx = segments[3]._point._x - point.x,
+				ry = segments[2]._point._y - point.y;
 			svg = createElement('rect', {
-				x: path.bounds.topLeft._x,
-				y: path.bounds.topLeft._y,
-				rx: rx,
-				ry: ry,
+				x: point._x,
+				y: point._y,
 				width: width,
-				height: height
+				height: height,
+				rx: rx,
+				ry: ry
 			});
 			break;
 		case'line':
@@ -228,68 +227,46 @@ var SvgExporter = this.SvgExporter = new function() {
 	* Checks the type SVG object created by converting from Paper.js
 	*/
 	function determineType(path, segments) {
-		var type;
-		var dPoint12;
-		var dPoint34;
 		// See if actually have any curves in the path. Differentiate
 		// between straight objects (line, polyline, rect, and  polygon) and
 		// objects with curves(circle, ellipse, roundedRectangle).
 		if (path.isPolygon()) {
-			if (segments.length == 4) {
-				// If the distance between (point0 and point1) and (point2 and
-				// point3) are equal, then it is a rectangle
-				dPoint12 = Math.round(getDistance(segments, 0, 1));
-				dPoint34 = Math.round(getDistance(segments, 3, 2));
-				if (dPoint12 == dPoint34) {
-					type = 'rect';
-				}
-			} else if (segments.length >= 3) {
-				//If it is an object with more than 3 segments and the path is closed, it is a polygon
-				if (path.getClosed()) {
-					type = 'polygon';
-				} else {
-					type = 'polyline';
-				}
-			} else {
-				//if all of the handle values are == 0 and there are only 2 segments, it is a line
-				type = 'line';
-			}	
+			// If the distance between (point0 and point1) and (point2 and
+			// point3) are equal, then it is a rectangle
+			return segments.length == 4 && Numerical.isZero(
+					getDistance(segments, 0, 1) - getDistance(segments, 3, 2))
+					? 'rect'
+					: segments.length >= 3
+						? path._closed ? 'polygon' : 'polyline'
+						: 'line';
 		} else {
 			if (segments.length == 8) {
 				// If the distance between (point0 and point3) and (point7 and 
 				// point4) are equal then it is a roundedRectangle
-				dPoint12 = Math.round(getDistance(segments, 0, 3));
-				dPoint34 = Math.round(getDistance(segments, 7, 4));
-				if (dPoint12 == dPoint34) {
-					type = 'roundrect';
-				}
+				if (Numerical.isZero(
+					getDistance(segments, 0, 3) - getDistance(segments, 7, 5)))
+					return 'roundrect';
 			} else if (segments.length == 4) {
 				// Check if the values of the point have values similar to 
 				// circles and ellipses.
 				var checkPointValues = true;
-				for (i = 0; i < segments.length && checkPointValues; i++) {
-					if (segments[i]._handleIn._x != 0 || segments[i]._handleIn._y != 0
-							&& Math.round(Math.abs(segments[i]._handleIn._x)) === Math.round(Math.abs(segments[i]._handleOut._x))
-							&& Math.round(Math.abs(segments[i]._handleIn._y)) === Math.round(Math.abs(segments[i]._handleOut._y))) {
-						checkPointValues = true;
-					} else {
-						checkPointValues = false;
-					}	
+				for (var i = 0; i < segments.length && checkPointValues; i++) {
+					var handleIn = segments[i]._handleIn,
+						handleOut = segments[i]._handleOut;
+					checkPointValues = !handleIn.isZero()
+							&& Numerical.isZero(Math.abs(handleIn._x) - Math.abs(handleOut._x))
+							&& Numerical.isZero(Math.abs(handleIn._y) - Math.abs(handleOut._y));
 				}	
 				if (checkPointValues) {
 					// If the distance between (point0 and point2) and (point1
 					// and point3) are equal, then it is a circle
-					var d1 = Math.round(getDistance(segments, 0, 2));
-					var d2 = Math.round(getDistance(segments, 1, 3));
-					if (d1 == d2) {
-						type = 'circle';
-					} else {
-						type = 'ellipse';
-					}
+					return Numerical.isZero(getDistance(segments, 0, 2)
+							- getDistance(segments, 1, 3))
+							? 'circle'
+							: 'ellipse';
 				}
 			} 
 		}
-		return type;
 	}
 
 	function applyStyle(item, svg) {
