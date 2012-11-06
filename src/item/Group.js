@@ -74,7 +74,7 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 		this._children = [];
 		this._namedChildren = {};
 		this.addChildren(!items || !Array.isArray(items)
-				|| typeof items[0] !== 'object' ? arguments : items);
+				|| items.length && typeof items[0] !== 'object' ? arguments : items);
 	},
 
 	_changed: function(flags) {
