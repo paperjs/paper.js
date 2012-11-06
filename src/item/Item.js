@@ -1147,9 +1147,9 @@ function(name) {
 			if (item._name)
 				item.setName(item._name);
 			this._changed(/*#=*/ Change.HIERARCHY);
-			return true;
+			return item;
 		}
-		return false;
+		return null;
 	},
 
 	/**
