@@ -347,11 +347,8 @@ var SvgExporter = this.SvgExporter = new function() {
 			parent = item.getParent(),
 			parentStyle = parent && parent._style;
 
-		if (item._id != null)
-			attrs.id = item._id;
-		// Same thing as stroke color except with the item name
 		if (item._name != null)
-			attrs.name = item._name;
+			attrs.id = item._name;
 
 		Base.each(SvgStyles.properties, function(entry) {
 			// Get a given style only if it differs from the value on the parent

@@ -15,24 +15,20 @@
  */
 
 var SvgStyles = Base.each({
-	fillColor: 'fill',
-	strokeColor: 'stroke',
-	strokeWidth: 'stroke-width',
-	strokeCap: 'stroke-linecap',
-	strokeJoin: 'stroke-linejoin',
-	miterLimit: 'stroke-miterlimit',
-	dashArray: 'stroke-dasharray',
-	dashOffset: 'stroke-dashoffset'
-}, function(attr, prop) {
-	var part = Base.capitalize(prop);
-	this.attributes[attr] = this.properties[prop] = {
-		type: /Color$/.test(prop)
-			? 'color'
-			: prop == 'dashArray'
-				? 'array'
-				: 'value',
-		property: prop,
-		attribute: attr,
+	fillColor: ['fill', 'color'],
+	strokeColor: ['stroke', 'color'],
+	strokeWidth: ['stroke-width', 'number'],
+	strokeCap: ['stroke-linecap', 'string'],
+	strokeJoin: ['stroke-linejoin', 'string'],
+	miterLimit: ['stroke-miterlimit', 'number'],
+	dashArray: ['stroke-dasharray', 'array'],
+	dashOffset: ['stroke-dashoffset', 'number']
+}, function(entry, key) {
+	var part = Base.capitalize(key);
+	this.attributes[entry[0]] = this.properties[key] = {
+		type: entry[1],
+		property: key,
+		attribute: entry[0],
 		get: 'get' + part,
 		set: 'set' + part
 	};
