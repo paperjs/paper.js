@@ -9,49 +9,36 @@
 </head>
 <body>	
 	<canvas id="canvas" width="500px" height="500px"></canvas>
-		<script type="text/paperscript" canvas="canvas">
-		initializePath();
-
-		function initializePath() {
-			var x1 = 5,
-				x2 = 45,
-				y1 = 5,
-				y2 = 45;
-			var line1 = new Path.Line([x1, y1], [x2, y2]);
-			line1.strokeColor = "blue";
-			line1.strokeWidth = "10";
-		 
-			var x3 = 20,
-				x4 = 99,
-				y3 = 20,
-				y4 = 77;
-			var line2 = new Path.Line([x3, y3], [x4, y4]);
-			line2.strokeColor = "red";
-			line2.strokeWidth = "2";
-				 
-			var x5 = 50,
-				x6 = 200,
-				y5 = 55,
-				y6 = 300;
-			var line3 = new Path.Line([x5, y5], [x6, y6]);
-			line3.strokeColor = "yellow";
-			line3.strokeWidth = "5";
-			
-			var output = SvgExporter.exportProject(project);
-			console.log(output);
-			var test = document.getElementById('svg')
-			test.innerHTML = "";
-			test.appendChild (output);   
-		}
+	<script type="text/paperscript" canvas="canvas">
+		var x1 = 5,
+			x2 = 45,
+			y1 = 5,
+			y2 = 45;
+		var line1 = new Path.Line([x1, y1], [x2, y2]);
+		line1.strokeColor = "blue";
+		line1.strokeWidth = "10";
+		
+		var x3 = 20,
+			x4 = 99,
+			y3 = 20,
+			y4 = 77;
+		var line2 = new Path.Line([x3, y3], [x4, y4]);
+		line2.strokeColor = "red";
+		line2.strokeWidth = "2";
 			 
-
-
-		// Reposition the path whenever the window is resized:
-		function onResize(event) {
-		    initializePath();
-		}
+		var x5 = 50,
+			x6 = 200,
+			y5 = 55,
+			y6 = 300;
+		var line3 = new Path.Line([x5, y5], [x6, y6]);
+		line3.strokeColor = "yellow";
+		line3.strokeWidth = "5";
 		
-		
+		var output = SvgExporter.exportProject(project);
+		console.log(output);
+		var test = document.getElementById('svg')
+		test.innerHTML = "";
+		test.appendChild(output);   
 	</script>
 	<svg id="svg" style="width: 500px; height: 500px">
 	</svg>
