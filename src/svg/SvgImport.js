@@ -17,16 +17,10 @@
  */
 
 /**
- * @name SvgImporter
- *
- * @class The SvgImporter object represents an object created using the SVG
- * Canvas that will be converted into a Paper.js object.
- * The SVG object is imported into Paper.js by converting it into items
- * within groups.
- *
+ * A function scope holding all the functionality needed to convert a SVG DOM
+ * to a Paper.js DOM.
  */
-var SvgImporter = this.SvgImporter = new function() {
-
+new function() {
 	// Define a couple of helper functions to easily read values from SVG
 	// objects, dealing with baseVal, and item lists.
 	// index is option, and if passed, causes a lookup in a list.
@@ -54,7 +48,7 @@ var SvgImporter = this.SvgImporter = new function() {
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var child = nodes[i];
 			if (child.nodeType == 1) {
-				var item = SvgImporter.importSvg(child);
+				var item = importSvg(child);
 				if (item) {
 					var parent = item.getParent();
 					if (parent && !(parent instanceof Layer))
@@ -417,34 +411,40 @@ var SvgImporter = this.SvgImporter = new function() {
 		item.transform(matrix);
 	}
 
-	return /** @Lends SvgImporter */{
+	function importSvg(svg) {
+		var type = svg.nodeName.toLowerCase(),
+			importer = importers[type];
+		var item = importer && importer(svg, type);
+		if (item)
+			applyAttributes(item, svg);
+		return item;
+	}
+
+
+	Item.inject(/** @Lends Item# */{
 		/**
-		 * Creates a Paper.js item using data parsed from the selected
-		 * SVG DOM node.
+		 * Converts the passed svg node into a Paper.js item and adds it to the
+		 * children of this item.
 		 *
 		 * @param {SVGSVGElement} svg the SVG DOM node to convert
 		 * @return {Item} the converted Paper.js item
 		 */
 		importSvg: function(svg) {
-			var type = svg.nodeName.toLowerCase(),
-				importer = importers[type];
-			var item = importer && importer(svg, type);
-			if (item)
-				applyAttributes(item, svg);
-			return item;
+			return this.addChild(importSvg(svg));
 		}
-	};
+	});
+
+	Project.inject(/** @Lends Project# */{
+		/**
+		 * Converts the passed svg node into a Paper.js item and adds it to the
+		 * active layer of this project.
+		 *
+		 * @param {SVGSVGElement} svg the SVG DOM node to convert
+		 * @return {Item} the converted Paper.js item
+		 */
+		importSvg: function(svg) {
+			this.activate();
+			return importSvg(svg);
+		}
+	});
 };
-
-Item.inject({
-	importSvg: function(svg) {
-		return this.addChild(SvgExporter.importSvg(svg));
-	}
-});
-
-Project.inject({
-	importSvg: function(svg) {
-		this.activate();
-		return SvgImporter.importSvg(svg);
-	}
-});
