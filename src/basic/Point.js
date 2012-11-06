@@ -551,7 +551,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		} else {
 			var point = Point.read(arguments),
 				div = this.getLength() * point.getLength();
-			if (div == 0) {
+			if (Numerical.isZero(div)) {
 				return NaN;
 			} else {
 				return Math.acos(this.dot(point) / div);
