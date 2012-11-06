@@ -17,13 +17,10 @@
  */
 
 /**
- * @name SvgExporter
- *
- * @class The SvgExporter object holds all the functionality to convert a
- * Paper.js DOM to a SVG DOM.
+ * A function scope holding all the functionality needed to convert a
+ * Paper.js DOM to a Paper.js DOM.
  */
-
-var SvgExporter = this.SvgExporter = new function() {
+new function() {
 
 	// Shortcut to Base.formatNumber
 	var formatNumber = Base.formatNumber;
@@ -207,7 +204,7 @@ var SvgExporter = this.SvgExporter = new function() {
 		attrs.fill = 'none';
 		var svg = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++)
-			svg.appendChild(SvgExporter.exportItem(children[i]));
+			svg.appendChild(exportItem(children[i]));
 		return svg;
 	}
 
@@ -365,42 +362,42 @@ var SvgExporter = this.SvgExporter = new function() {
 		return setAttributes(svg, attrs);
 	}
 
-	return /** @Lends SvgExporter */{
-		/**
-		 * Takes the selected Paper.js project and parses all of its layers and
-		 * groups to be placed into SVG groups, converting the project into one
-		 * SVG group.
-		 *
-		 * @function
-		 * @param {Project} project a Paper.js project
-		 * @return {SVGSVGElement} the imported project converted to an SVG project
-		 */
-		 // TODO: Implement symbols and Gradients
-		exportProject: function(project) {
-			var svg = createElement('svg'),
-				layers = project.layers;
-			for (var i = 0, l = layers.length; i < l; i++) {
-				svg.appendChild(this.exportItem(layers[i]));
-			}
-			return svg;
-		},
-
-		exportItem: function(item) {
-			var exporter = exporters[item._type];
-			var svg = exporter && exporter(item, item._type);
-			return svg && applyStyle(item, svg);
+	function exportProject(project) {
+		var svg = createElement('svg'),
+			layers = project.layers;
+		for (var i = 0, l = layers.length; i < l; i++) {
+			svg.appendChild(exportItem(layers[i]));
 		}
-	};
+		return svg;
+	}
+
+	function exportItem(item) {
+		var exporter = exporters[item._type];
+		var svg = exporter && exporter(item, item._type);
+		return svg && applyStyle(item, svg);
+	}
+
+	Item.inject(/** @Lends Item# */{
+		/**
+		 * Exports the item and all its child items as an SVG DOM, all contained
+		 * in one top level SVG group node.
+		 *
+		 * @return {SVGSVGElement} the item converted to an SVG node
+		 */
+		exportSvg: function() {
+			return exportItem(this);
+		}
+	});
+
+	Project.inject(/** @Lends Project# */{
+		/**
+		 * Exports the project and all its layers and child items as an SVG DOM,
+		 * all contained in one top level SVG group node.
+		 *
+		 * @return {SVGSVGElement} the project converted to an SVG node
+		 */
+		exportSvg: function() {
+			return exportProject(this);
+		}
+	});
 };
-
-Item.inject({
-	exportSvg: function() {
-		return SvgExporter.exportItem(this);
-	}
-});
-
-Project.inject({
-	exportSvg: function() {
-		return SvgExporter.exportProject(this);
-	}
-});
