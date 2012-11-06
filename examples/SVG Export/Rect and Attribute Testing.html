@@ -46,13 +46,8 @@
 		path4.strokeColor= 'yellow';
 		path4.fillColor='purple';
 		
-		var output = SvgExporter.exportProject(project);
-		console.log(output);
-		var test = document.getElementById('svg')
-		test.innerHTML = "";
-		test.appendChild(output);   
+		document.getElementById('svg').appendChild(project.exportSvg());
 	</script>
-	<svg id="svg" style="width: 500px; height: 500px">
-	</svg>
+	<svg id="svg" style="width: 500px; height: 500px"></svg>
 </body>
 </html>

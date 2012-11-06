@@ -392,3 +392,15 @@ var SvgExporter = this.SvgExporter = new function() {
 		}
 	};
 };
+
+Item.inject({
+	exportSvg: function() {
+		return SvgExporter.exportItem(this);
+	}
+});
+
+Project.inject({
+	exportSvg: function() {
+		return SvgExporter.exportProject(this);
+	}
+});

@@ -19,13 +19,8 @@
 		var path2 = new Path(segments);
 		path2.strokeColor = 'yellow';
 		
-		var output = SvgExporter.exportProject(project);
-		console.log(output);
-		var test = document.getElementById('svg')
-		test.innerHTML = "";
-		test.appendChild (output);   
+		document.getElementById('svg').appendChild(project.exportSvg());
 	</script>
-	<svg id="svg" style="width: 500px; height: 500px">
-	</svg>
+	<svg id="svg" style="width: 500px; height: 500px"></svg>
 </body>
 </html>

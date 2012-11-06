@@ -435,3 +435,16 @@ var SvgImporter = this.SvgImporter = new function() {
 		}
 	};
 };
+
+Item.inject({
+	importSvg: function(svg) {
+		return this.addChild(SvgExporter.importSvg(svg));
+	}
+});
+
+Project.inject({
+	importSvg: function(svg) {
+		this.activate();
+		return SvgImporter.importSvg(svg);
+	}
+});
