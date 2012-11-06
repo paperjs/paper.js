@@ -360,7 +360,7 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	 * @return {Boolean} {@true both width and height are 0}
 	 */
 	isZero: function() {
-		return this.width == 0 && this.height == 0;
+		return Numerical.isZero(this.width) && Numerical.isZero(this.height);
 	},
 
 	/**

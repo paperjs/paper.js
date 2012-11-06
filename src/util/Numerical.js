@@ -74,7 +74,15 @@ var Numerical = new function() {
 		EPSILON: 10e-12,
 
 		/**
-		 * Gauss-Legendre Numerical Integration
+		 * Check if the value is 0, within a tolerance defined by
+		 * Numerical.EPSILON.
+		 */
+		isZero: function(val) {
+			return Math.abs(val) <= this.EPSILON;
+		},
+
+		/**
+		 * Gauss-Legendre Numerical Integration.
 		 */
 		integrate: function(f, a, b, n) {
 			var x = abscissas[n - 2],

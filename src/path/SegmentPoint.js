@@ -51,7 +51,7 @@ var SegmentPoint = Point.extend({
 		// Provide our own version of Point#isZero() that does not use the x / y
 		// accessors but the internal properties directly, for performance
 		// reasons, since it is used a lot internally.
-		return this._x == 0 && this._y == 0;
+		return Numerical.isZero(this._x) && Numerical.isZero(this._y);
 	},
 
 	setSelected: function(selected) {

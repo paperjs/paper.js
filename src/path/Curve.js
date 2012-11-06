@@ -724,10 +724,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			// with x-axis.
 			if (isFlatEnough(w)) {
 				var line = new Line(w[0], w[5], true);
-				// Compare the line's squared length with EPSILON. If we're
-				// below, #intersect() will return null because of division
-				// by near-zero.
-				return [ line.vector.getLength(true) <= Numerical.EPSILON
+				return [ Numerical.isZero(line.vector.getLength(true))
 						? line.point.x
 						: xAxis.intersect(line).x ];
 			}
