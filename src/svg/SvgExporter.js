@@ -51,38 +51,60 @@ var SvgExporter = this.SvgExporter = new function() {
 		return segments[index1]._point.getDistance(segments[index2]._point);
 	}
 
+	function getTransform(item) {
+		var matrix = item._matrix.createShiftless(),
+			trans =  matrix._inverseTransform(item._matrix.getTranslation()),
+			attrs = {
+				x: trans.x,
+				y: trans.y
+			};
+		if (matrix.isIdentity())
+			return attrs;
+		// See if we can formulate this matrix as simple scale / rotate commands
+		// Note: getScaling() returns values also when it's not a simple scale,
+		// but angle is only != null if it is, so check for that.
+		var transform = [],
+			angle = matrix.getRotation(),
+			scale = matrix.getScaling();
+		if (angle != null) {
+			transform.push(angle
+					? 'rotate(' + angle + ',' + formatPoint(center) +')'
+					: 'scale(' + formatPoint(scale) +')');
+		} else {
+			transform.push('matrix(' + matrix.getValues().join(',') + ')');
+		}
+		attrs.transform = transform.join(' ');
+		return attrs;
+	}
+
 	function exportGroup(group) {
-		var svg = createElement('g'),
+		var attrs = getTransform(group),
 			children = group._children;
+		// Override default SVG style on groups, then apply style.
+		attrs.fill = 'none';
+		var svg = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++)
 			svg.appendChild(SvgExporter.exportItem(children[i]));
-		// Override default SVG style on groups, then apply style.
-		return setAttributes(svg, {
-			fill: 'none'
-		});
+		return svg;
 	}
 
 	function exportText(item) {
-		var point = item.getPoint(),
-			style = item._style,
-			attrs = {
-				x: point._x,
-				y: point._y
-			};
+		var attrs = getTransform(item),
+			style = item._style;
 		if (style._font != null)
 			attrs['font-family'] = style._font;
 		if (style._fontSize != null)
 			attrs['font-size'] = style._fontSize;
 		var svg = createElement('text', attrs);
-		svg.textContent = item.getContent();
-		svg.setAttribute('transform','rotate(' + item.matrix.getRotation() + ',' + item.getPoint()._x + ',' + item.getPoint()._y +')');
+		svg.textContent = item._content;
 		return svg;
 	}
 
 	function exportPath(path) {
 		var segments = path._segments,
+			center = path.getPosition(true),
 			type = determineType(path, segments),
-			angle = determineAngle(path, segments, type),
+			angle = determineAngle(path, segments, type, center),
 			attrs;
 		switch (type) {
 		case 'path':
@@ -105,7 +127,7 @@ var SvgExporter = this.SvgExporter = new function() {
 			var width = getDistance(segments, 0, 3),
 				height = getDistance(segments, 0, 1),
 				// Counter-compensate the determined rotation angle
-				point = segments[1]._point.rotate(-angle, path.getPosition());
+				point = segments[1]._point.rotate(-angle, center);
 			attrs = {
 				x: point.x,
 				y: point.y,
@@ -129,7 +151,7 @@ var SvgExporter = this.SvgExporter = new function() {
 				right = segments[4]._point, // top-right side point
 				point = left.subtract(right.subtract(left).normalize(rx))
 						// Counter-compensate the determined rotation angle
-						.rotate(-angle, path.getPosition());
+						.rotate(-angle, center);
 			attrs = {
 				x: point.x,
 				y: point.y,
@@ -150,31 +172,29 @@ var SvgExporter = this.SvgExporter = new function() {
 			};
 			break;
 		case 'circle':
-			var radius = getDistance(segments, 0, 2) / 2,
-				center = path.getPosition();
+			var radius = getDistance(segments, 0, 2) / 2;
 			attrs = {
-				cx: center._x,
-				cy: center._y,
+				cx: center.x,
+				cy: center.y,
 				r: radius
 			};
 			break;
 		case 'ellipse':
 			var rx = getDistance(segments, 2, 0) / 2,
-				ry = getDistance(segments, 3, 1) / 2,
-				center = path.getPosition();
+				ry = getDistance(segments, 3, 1) / 2;
 			attrs = {
-				cx: center._x,
-				cy: center._y,
+				cx: center.x,
+				cy: center.y,
 				rx: rx,
 				ry: ry
 			};
 			break;
 		}
-		var svg = createElement(type, attrs);
 		if (angle) {
-			svg.setAttribute('transform', 'rotate(' + formatNumber(angle) + ','
-						+ formatPoint(path.getPosition()) + ')');
+			attrs.transform = 'rotate(' + formatNumber(angle) + ','
+					+ formatPoint(center) + ')';
 		}
+		var svg = createElement(type, attrs);
 		return svg;
 	}
 
@@ -213,7 +233,7 @@ var SvgExporter = this.SvgExporter = new function() {
 		return parts.join(' ');
 	}
 
-	function determineAngle(path, segments, type) {
+	function determineAngle(path, segments, type, center) {
 		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
 		// see if they are placed at an angle.
 		var topCenter = type === 'rect'
@@ -224,7 +244,7 @@ var SvgExporter = this.SvgExporter = new function() {
 				? segments[1]._point
 				: null;
 		if (topCenter) {
-			var angle = topCenter.subtract(path.getPosition()).getAngle() + 90;
+			var angle = topCenter.subtract(center).getAngle() + 90;
 			return Numerical.isZero(angle) ? 0 : angle;
 		}
 		return 0;
