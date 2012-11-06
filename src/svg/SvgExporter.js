@@ -29,7 +29,7 @@ var SvgExporter = this.SvgExporter = new function() {
 	var formatNumber = Base.formatNumber;
 
 	function formatPoint(point) {
-		return formatNumber(point._x) + ',' + formatNumber(point._y);
+		return formatNumber(point.x) + ',' + formatNumber(point.y);
 	}
 
 	function setAttributes(svg, attrs) {
@@ -203,9 +203,9 @@ var SvgExporter = this.SvgExporter = new function() {
 		} else {
 			// c = relative curveto: handle1, handle2 + end - start, end - start
 			var end = point2.subtract(point1);
-			parts.push('c' + formatNumber(handle1),
-				formatNumber(end.add(handle2)),
-				formatNumber(end));
+			parts.push('c' + formatPoint(handle1),
+				formatPoint(end.add(handle2)),
+				formatPoint(end));
 		}
 	}
 
