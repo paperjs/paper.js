@@ -54,10 +54,10 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 		dashArray: []
 	},
 	_flags: {
-		strokeWidth: Change.STROKE,
-		strokeCap: Change.STROKE,
-		strokeJoin: Change.STROKE,
-		miterLimit: Change.STROKE
+		strokeWidth: /*#=*/ Change.STROKE,
+		strokeCap: /*#=*/ Change.STROKE,
+		strokeJoin: /*#=*/ Change.STROKE,
+		miterLimit: /*#=*/ Change.STROKE
 	}
 
 	// DOCS: why isn't the example code showing up?

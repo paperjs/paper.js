@@ -60,7 +60,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 		// the change, so they can notify their gradient colors, which in turn
 		// will notify the items they are used in:
 		if (this._owner)
-			this._owner._changed(Change.STYLE);
+			this._owner._changed(/*#=*/ Change.STYLE);
 	},
 
 	/**
