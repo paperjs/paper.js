@@ -38,12 +38,8 @@
 			c.fillColor = colors[i];
 		}		
 
-		var output = SvgExporter.exportProject(project);
-		var test = document.getElementById('svg')
-		test.innerHTML = "";
-		test.appendChild (output);   
+		document.getElementById('svg').appendChild(project.exportSvg());
 	</script>
-	<svg id="svg" style="width: 500px; height: 500px">
-	</svg>
+	<svg id="svg" style="width: 500px; height: 500px"></svg>
 </body>
 </html>
