@@ -83,6 +83,109 @@ var SvgImporter = this.SvgImporter = new function() {
 		return path;
 	}
 
+	function importPath(svg) {
+		var path = new Path(),
+			list = svg.pathSegList,
+			compoundPath, lastPoint;
+		for (var i = 0, l = list.numberOfItems; i < l; i++) {
+			var segment = list.getItem(i),
+				segType = segment.pathSegType,
+				isRelative = segType % 2 == 1;
+			if (segType === /*#=*/ SVGPathSeg.PATHSEG_UNKNOWN)
+				continue;
+			if (!path.isEmpty())
+				lastPoint = path.getLastSegment().getPoint();
+			var relative = isRelative && !path.isEmpty()
+					? lastPoint
+					: Point.create(0, 0);
+			// Horizontal or vertical lineto commands, so fill in the
+			// missing x or y value:
+			var coord = (segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS
+					|| segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL) && 'y'
+					|| (segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS
+					|| segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL) && 'x';
+			if (coord)
+				segment[coord] = isRelative ? 0 : lastPoint[coord];
+			var point = Point.create(segment.x, segment.y).add(relative);
+			switch (segType) {
+			case /*#=*/ SVGPathSeg.PATHSEG_CLOSEPATH:
+				path.closePath();
+				break;
+			case /*#=*/ SVGPathSeg.PATHSEG_MOVETO_ABS:
+			case /*#=*/ SVGPathSeg.PATHSEG_MOVETO_REL:
+				if (!path.isEmpty() && !compoundPath) {
+					compoundPath = new CompoundPath([path]);
+				}
+				if (compoundPath) {
+					path = new Path();
+					compoundPath.addChild(path);
+				}
+				path.moveTo(point);
+				break;
+			case /*#=*/ SVGPathSeg.PATHSEG_LINETO_ABS:
+			case /*#=*/ SVGPathSeg.PATHSEG_LINETO_REL:
+			case /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
+			case /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
+			case /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
+			case /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
+				path.lineTo(point);
+				break;
+			case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
+			case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
+				path.cubicCurveTo(
+					relative.add(segment.x1, segment.y1),
+					relative.add(segment.x2, segment.y2),
+					point
+				);
+				break;
+			case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
+			case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
+				path.quadraticCurveTo(
+					relative.add(segment.x1, segment.y1),
+					point
+				);
+				break;
+			// TODO: Implement Arcs: ttp://www.w3.org/TR/SVG/implnote.html
+			// case /*#=*/ SVGPathSeg.PATHSEG_ARC_ABS:
+			// case /*#=*/ SVGPathSeg.PATHSEG_ARC_REL:
+			//	break;
+			case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
+			case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
+				var prev = list.getItem(i - 1),
+					control = lastPoint.add(lastPoint.subtract(
+						Point.create(prev.x2, prev.y2)
+							.subtract(prev.x, prev.y)
+							.add(lastPoint)));
+				path.cubicCurveTo(
+					control,
+					relative.add(segment.x2, segment.y2),
+					point);
+				break;
+			case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
+			case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
+				var control,
+					j = i;
+				for (; j >= 0; j--) {
+					var prev = list.getItem(j);
+					if (prev.pathSegType === /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS ||
+							prev.pathSegType === /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL) {
+						control = Point.create(prev.x1, prev.y1)
+								.subtract(prev.x, prev.y)
+								.add(path._segments[j].getPoint());
+						break;
+					}
+				}
+				for (; j < i; ++j) {
+					var anchor = path._segments[j].getPoint();
+					control = anchor.add(anchor.subtract(control));
+				}
+				path.quadraticCurveTo(control, point);
+				break;
+			}
+		}
+		return compoundPath || path;
+	}
+
 	var definitions = {};
 	function getDefinition(value) {
 		var matches = value.match(/#([^\)']+)/);
@@ -95,6 +198,12 @@ var SvgImporter = this.SvgImporter = new function() {
 		// http://www.w3.org/TR/SVG/struct.html#NewDocument
 		svg: importGroup,
 		clippath: importCompoundPath,
+		// http://www.w3.org/TR/SVG/shapes.html#PolygonElement
+		polygon: importPoly,
+		// http://www.w3.org/TR/SVG/shapes.html#PolylineElement
+		polyline: importPoly,
+		// http://www.w3.org/TR/SVG/paths.html
+		path: importPath,
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(svg) {
@@ -110,11 +219,6 @@ var SvgImporter = this.SvgImporter = new function() {
 			group.remove();
 			return group;
 		},
-
-		// http://www.w3.org/TR/SVG/shapes.html#PolygonElement
-		polygon: importPoly,
-		// http://www.w3.org/TR/SVG/shapes.html#PolylineElement
-		polyline: importPoly,
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
 		circle: function(svg) {
@@ -158,110 +262,6 @@ var SvgImporter = this.SvgImporter = new function() {
 					.add(getPoint(svg, 'dx', 'dy', 0)));
 			text.content = svg.textContent || '';
 			return text;
-		},
-
-		// http://www.w3.org/TR/SVG/paths.html
-		path: function(svg) {
-			var path = new Path(),
-				list = svg.pathSegList,
-				compoundPath, lastPoint;
-			for (var i = 0, l = list.numberOfItems; i < l; i++) {
-				var segment = list.getItem(i),
-					segType = segment.pathSegType,
-					isRelative = segType % 2 == 1;
-				if (segType === /*#=*/ SVGPathSeg.PATHSEG_UNKNOWN)
-					continue;
-				if (!path.isEmpty())
-					lastPoint = path.getLastSegment().getPoint();
-				var relative = isRelative && !path.isEmpty()
-						? lastPoint
-						: Point.create(0, 0);
-				// Horizontal or vertical lineto commands, so fill in the
-				// missing x or y value:
-				var coord = (segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS
-						|| segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL) && 'y'
-						|| (segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS
-						|| segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL) && 'x';
-				if (coord)
-					segment[coord] = isRelative ? 0 : lastPoint[coord];
-				var point = Point.create(segment.x, segment.y).add(relative);
-				switch (segType) {
-				case /*#=*/ SVGPathSeg.PATHSEG_CLOSEPATH:
-					path.closePath();
-					break;
-				case /*#=*/ SVGPathSeg.PATHSEG_MOVETO_ABS:
-				case /*#=*/ SVGPathSeg.PATHSEG_MOVETO_REL:
-					if (!path.isEmpty() && !compoundPath) {
-						compoundPath = new CompoundPath([path]);
-					}
-					if (compoundPath) {
-						path = new Path();
-						compoundPath.addChild(path);
-					}
-					path.moveTo(point);
-					break;
-				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_ABS:
-				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_REL:
-				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
-				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
-				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
-				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
-					path.lineTo(point);
-					break;
-				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
-				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
-					path.cubicCurveTo(
-						relative.add(segment.x1, segment.y1),
-						relative.add(segment.x2, segment.y2),
-						point
-					);
-					break;
-				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
-				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
-					path.quadraticCurveTo(
-						relative.add(segment.x1, segment.y1),
-						point
-					);
-					break;
-				// TODO: Implement Arcs: ttp://www.w3.org/TR/SVG/implnote.html
-				// case /*#=*/ SVGPathSeg.PATHSEG_ARC_ABS:
-				// case /*#=*/ SVGPathSeg.PATHSEG_ARC_REL:
-				//	break;
-				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
-				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
-					var prev = list.getItem(i - 1),
-						control = lastPoint.add(lastPoint.subtract(
-							Point.create(prev.x2, prev.y2)
-								.subtract(prev.x, prev.y)
-								.add(lastPoint)));
-					path.cubicCurveTo(
-						control,
-						relative.add(segment.x2, segment.y2),
-						point);
-					break;
-				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
-				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
-					var control,
-						j = i;
-					for (; j >= 0; j--) {
-						var prev = list.getItem(j);
-						if (prev.pathSegType === /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS ||
-								prev.pathSegType === /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL) {
-							control = Point.create(prev.x1, prev.y1)
-									.subtract(prev.x, prev.y)
-									.add(path._segments[j].getPoint());
-							break;
-						}
-					}
-					for (; j < i; ++j) {
-						var anchor = path._segments[j].getPoint();
-						control = anchor.add(anchor.subtract(control));
-					}
-					path.quadraticCurveTo(control, point);
-					break;
-				}
-			}
-			return compoundPath || path;
 		}
 	};
 
