@@ -98,7 +98,7 @@ var Style = Item.extend({
 							// always set, additional flags come from _flags,
 							// as used for STROKE:
 							if (this._item)
-								this._item._changed(flags[key] || Change.STYLE);
+								this._item._changed(flags[key] || /*#=*/ Change.STYLE);
 						}
 					}
 					return this;

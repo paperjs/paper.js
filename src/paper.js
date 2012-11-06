@@ -47,6 +47,10 @@ var paper = new function() {
 // Inline Bootstrap core (the Base class) inside the paper scope first:
 /*#*/ include('../lib/bootstrap.js');
 
+/*#*/ if (options.version == 'dev') {
+/*#*/ include('constants.js');
+/*#*/ } // options.version == 'dev'
+
 /*#*/ if (options.stats) {
 /*#*/ include('../lib/stats.js');
 /*#*/ } // options.stats
@@ -69,7 +73,6 @@ var paper = new function() {
 /*#*/ include('project/Project.js');
 /*#*/ include('project/Symbol.js');
 
-/*#*/ include('item/ChangeFlag.js');
 /*#*/ include('item/Item.js');
 /*#*/ include('item/Group.js');
 /*#*/ include('item/Layer.js');
@@ -80,7 +83,6 @@ var paper = new function() {
 
 /*#*/ include('path/Segment.js');
 /*#*/ include('path/SegmentPoint.js');
-/*#*/ include('path/SelectionState.js');
 /*#*/ include('path/Curve.js');
 /*#*/ include('path/CurveLocation.js');
 /*#*/ include('path/PathItem.js');

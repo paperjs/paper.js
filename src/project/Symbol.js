@@ -116,7 +116,7 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 		// Move position to 0, 0, so it's centered when placed.
 		item.setPosition(new Point());
 		item._parentSymbol = this;
-		this._changed(Change.GEOMETRY);
+		this._changed(/*#=*/ Change.GEOMETRY);
 	},
 
 	/**
