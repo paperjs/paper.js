@@ -51,6 +51,49 @@ this.Base = Base.inject(/** @lends Base# */{
 	},
 
 	statics: /** @lends Base */{
+
+		/**
+		 * Checks if two values or objects are equals to each other, by using their
+		 * equals() methods if available, and also comparing elements of arrays
+		 * and properties of objects.
+		 */ 
+		equals: function(obj1, obj2) {
+			if (obj1 == obj2)
+				return true;
+			// Call #equals() on both obj1 and obj2
+			if (obj1 != null && obj1.equals)
+				return obj1.equals(obj2);
+			if (obj2 != null && obj2.equals)
+				return obj2.equals(obj1);
+			// Compare arrays
+			if (Array.isArray(obj1) && Array.isArray(obj2)) {
+				if (obj1.length !== obj2.length)
+					return false;
+				for (var i = 0, l = obj1.length; i < l; i++) {
+					if (!Base.equals(obj1, obj2))
+						return false;
+				}
+				return true;
+			}
+			// Compare objects
+			if (typeof obj1 === 'object' && typeof obj2 === 'object') {
+				function checkKeys(o1, o2) {
+					for (var i in o1)
+						if (o1.hasOwnProperty(i) && typeof o2[i] === 'undefined')
+							return false;
+					return true;
+				}
+				if (!checkKeys(obj1, obj2) || !checkKeys(obj2, obj1))
+					return false;
+				for (var i in obj1) {
+					if (obj1.hasOwnProperty(i) && !Base.equals(obj1[i], obj2[i]))
+						return false;
+				}
+				return true;
+			}
+			return false;
+		},
+
 		/**
 		 * Reads arguments of the type of the class on which it is called on
 		 * from the passed arguments list or array, at the given index, up to
