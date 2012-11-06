@@ -48,19 +48,28 @@ var SvgImporter = this.SvgImporter = new function() {
 
 	// Define importer functions for various SVG node types
 
-	function importGroup(svg) {
-		var group = new Group(),
-			nodes = svg.childNodes;
-		for (var i = 0, l = nodes.length; i < l; i++) {
-			var child = nodes[i];
-			if (child.nodeType == 1) {
-				var item = SvgImporter.importSvg(child);
-				if (item)
-					group.addChild(item);
+	function createGroupImporter(type) {
+		return function(svg) {
+			var items = [],
+				nodes = svg.childNodes;
+			for (var i = 0, l = nodes.length; i < l; i++) {
+				var child = nodes[i];
+				if (child.nodeType == 1) {
+					var item = SvgImporter.importSvg(child);
+					if (item) {
+						var parent = item.getParent();
+						if (parent && !(parent instanceof Layer))
+							item = parent;
+						items.push(item);
+					}
+				}
 			}
+			return new type(items);
 		}
-		return group;
 	}
+
+	var importGroup = createGroupImporter(Group);
+	var importCompoundPath = createGroupImporter(CompoundPath);
 
 	function importPoly(svg, type) {
 		var path = new Path(),
@@ -74,11 +83,19 @@ var SvgImporter = this.SvgImporter = new function() {
 		return path;
 	}
 
+	var definitions = {};
+	function getDefinition(value) {
+		var matches = value.match(/#([^\)']+)/);
+        return definitions[matches ? matches[1] : value];
+	}
+
 	var importers = {
 		// http://www.w3.org/TR/SVG/struct.html#Groups
 		g: importGroup,
 		// http://www.w3.org/TR/SVG/struct.html#NewDocument
 		svg: importGroup,
+		clippath: importCompoundPath,
+
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(svg) {
 			var item = importGroup(svg);
@@ -86,6 +103,14 @@ var SvgImporter = this.SvgImporter = new function() {
 			// TODO: We're returning a symbol. How to handle this?
 			return new Symbol(item);
 		},
+
+		// http://www.w3.org/TR/SVG/struct.html#DefsElement
+		defs: function(svg) {
+			var group = importGroup(svg);
+			group.remove();
+			return group;
+		},
+
 		// http://www.w3.org/TR/SVG/shapes.html#PolygonElement
 		polygon: importPoly,
 		// http://www.w3.org/TR/SVG/shapes.html#PolylineElement
@@ -287,9 +312,15 @@ var SvgImporter = this.SvgImporter = new function() {
 		} else {
 			switch (name) {
 			case 'id':
+				definitions[value] = item;
 				item.setName(value);
 				break;
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
+			case 'clip-path':
+				var clipPath = getDefinition(value).clone().simplify(),
+					group = new Group([clipPath, item]);
+				group.clipped = true;
+				break;
 			// http://www.w3.org/TR/SVG/coords.html#TransformAttribute
 			case 'transform':
 				applyTransform(svg, item);
