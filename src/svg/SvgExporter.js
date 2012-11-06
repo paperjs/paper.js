@@ -106,7 +106,7 @@ var SvgExporter = this.SvgExporter = new function() {
 		}
 
 		parts.push('M' + formatPoint(segments[0]._point));
-		for (i = 0; i < segments.length - 1; i++)
+		for (i = 0, l = segments.length  - 1; i < l; i++)
 			addCurve(segments[i], segments[i + 1], false);
 		// We only need to draw the connecting curve if it is not a line, and if
 		// the path is cosed and has a stroke color, or if it is filled.
@@ -238,7 +238,7 @@ var SvgExporter = this.SvgExporter = new function() {
 		case 'polyline':
 		case 'polygon':
 			var parts = [];
-			for(i = 0; i < segments.length; i++)
+			for(i = 0, l = segments.length; i < l; i++)
 				parts.push(formatPoint(segments[i]._point));
 			attrs = {
 				points: parts.join(' ')

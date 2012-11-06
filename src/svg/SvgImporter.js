@@ -68,9 +68,8 @@ var SvgImporter = this.SvgImporter = new function() {
 
 	function importPoly(svg, type) {
 		var path = new Path(),
-			points = svg.points,
-			start = points.getItem(0);
-		path.moveTo(start);
+			points = svg.points;
+		path.moveTo(points.getItem(0));
 		for (var i = 1, l = points.numberOfItems; i < l; i++)
 			path.lineTo(points.getItem(i));
 		if (type === 'polygon')
