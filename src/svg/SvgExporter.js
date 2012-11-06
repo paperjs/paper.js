@@ -71,40 +71,35 @@ var SvgExporter = this.SvgExporter = new function() {
 	function exportPath(path) {
 		var segments = path._segments,
 			type = determineType(path, segments),
-			topCenter;
+			attrs;
 		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
 		// see if they are placed at an angle.
-		switch (type) {
-		case 'rect':
-			topCenter = segments[1]._point.add(segments[2]._point).divide(2);
-			break;
-		case 'roundrect':
-			topCenter = segments[3]._point.add(segments[4]._point).divide(2);
-			break;	
-		case 'circle':
-		case 'ellipse':
-			topCenter = segments[1]._point;
-			break;
-		}
+		var angle = 0,
+			topCenter = type === 'rect'
+				? segments[1]._point.add(segments[2]._point).divide(2)
+				: type === 'roundrect'
+				? segments[3]._point.add(segments[4]._point).divide(2)
+				: type === 'circle' || type === 'ellipse'
+				? segments[1]._point
+				: null;
 		if (topCenter) {
-			var angle = topCenter.subtract(path.getPosition()).getAngle() + 90;
-			if (!Numerical.isZero(angle)) {
-				// TODO: Need to implement exported transforms for circle,
-				// ellipse and rectangles instead of making them paths.
-				return pathSetup(path, segments);
-			} 
+			angle = topCenter.subtract(path.getPosition()).getAngle() + 90;
+			if (Numerical.isZero(angle))
+				angle = 0;
 		}
 		switch (type) {
 		case 'rect':
 			var width = getDistance(segments, 0, 3),
 				height = getDistance(segments, 0, 1),
-				point = path.getBounds().getTopLeft();
-			return createElement('rect', {
-				x: point._x,
-				y: point._y,
+				// Counter-compensate the rotation angle
+				point = segments[1]._point.rotate(-angle, path.getPosition());
+			attrs = {
+				x: point.x,
+				y: point.y,
 				width: width,
 				height: height
-			});
+			};
+			break;
 		case 'roundrect':
 			// d-variables and point are used to determine the rounded corners
 			// for the rounded rectangle
@@ -118,41 +113,45 @@ var SvgExporter = this.SvgExporter = new function() {
 				point = new Point((segments[3]._point._x - dx3), (segments[2]._point._y - dy3)),
 				rx = segments[3]._point._x - point.x,
 				ry = segments[2]._point._y - point.y;
-			return createElement('rect', {
+			attrs = {
 				x: point._x,
 				y: point._y,
 				width: width,
 				height: height,
 				rx: rx,
 				ry: ry
-			});
+			};
+			break;
 		case'line':
 			var first = segments[0]._point,
 				last = segments[segments.length - 1]._point;
-			return createElement('line', {
+			attrs = {
 				x1: first._x,
 				y1: first._y,
 				x2: last._x,
 				y2: last._y
-			});
+			};
+			break;
 		case 'circle':
 			var radius = getDistance(segments, 0, 2) / 2,
 				center = path.getPosition();
-			return createElement('circle', {
+			attrs = {
 				cx: center._x,
 				cy: center._y,
 				r: radius
-			});
+			};
+			break;
 		case 'ellipse':
 			var rx = getDistance(segments, 2, 0) / 2,
 				ry = getDistance(segments, 3, 1) / 2,
 				center = path.getPosition();
-			return createElement('ellipse', {
+			attrs = {
 				cx: center._x,
 				cy: center._y,
 				rx: rx,
 				ry: ry
-			});
+			};
+			break;
 		case 'polyline':
 		case 'polygon':
 			var parts = [];
@@ -160,9 +159,19 @@ var SvgExporter = this.SvgExporter = new function() {
 				var point = segments[i]._point;
 				parts.push(point._x + ',' + point._y);
 			}
-			return createElement(type, {
+			attrs = {
 				points: parts.join(' ')
-			});
+			};
+			break;
+		}
+		if (attrs) {
+			var svg = createElement(type, attrs),
+				center = path.getPosition();
+			if (angle) {
+				svg.setAttribute('transform', 'rotate(' + angle + ','
+							+ center._x + ',' + center._y + ')');
+			}
+			return svg;
 		}
 		return pathSetup(path, segments);
 	}
