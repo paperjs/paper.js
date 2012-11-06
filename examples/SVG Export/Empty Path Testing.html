@@ -9,29 +9,21 @@
 </head>
 <body>	
 	<canvas id="canvas" width="500px" height="500px"></canvas>
-		<script type="text/paperscript" canvas="canvas">
-		initializePath();
-
-		function initializePath() {
-			var path = new Path();
-			path.strokeColor = 'black';
-			path.add(new Point(30, 30));
-			path.add(new Point(100, 100));
+	<script type="text/paperscript" canvas="canvas">
+		var path = new Path();
+		path.strokeColor = 'black';
+		path.add(new Point(30, 30));
+		path.add(new Point(100, 100));
 		
-			var segments = [new Point(30, 90), new Point(100, 150)];
-			var path2 = new Path(segments);
-			path2.strokeColor = 'yellow';
-			
-			var output = SvgExporter.exportProject(project);
-			console.log(output);
-			var test = document.getElementById('svg')
-			test.innerHTML = "";
-			test.appendChild (output);   
-		}
-		// Reposition the path whenever the window is resized:
-		function onResize(event) {
-		    initializePath();
-		}		
+		var segments = [new Point(30, 90), new Point(100, 150)];
+		var path2 = new Path(segments);
+		path2.strokeColor = 'yellow';
+		
+		var output = SvgExporter.exportProject(project);
+		console.log(output);
+		var test = document.getElementById('svg')
+		test.innerHTML = "";
+		test.appendChild (output);   
 	</script>
 	<svg id="svg" style="width: 500px; height: 500px">
 	</svg>

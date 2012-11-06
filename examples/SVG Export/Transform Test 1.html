@@ -9,34 +9,24 @@
 </head>
 <body>	
 	<canvas id="canvas" width="500px" height="500px"></canvas>
-		<script type="text/paperscript" canvas="canvas">
-		initializePath();
+	<script type="text/paperscript" canvas="canvas">
+		var circlePath = new Path.Circle(new Point(280, 100), 25);
+		circlePath.strokeColor = 'black';
+		circlePath.fillColor = 'white';
 
-		function initializePath() {
-			var circlePath = new Path.Circle(new Point(280, 100), 25);
-			circlePath.strokeColor = 'black';
-			circlePath.fillColor = 'white';
+		var clones = 30;
+		var angle = 360 / clones;
 
-			var clones = 30;
-			var angle = 360 / clones;
+		for(var i = 0; i < clones; i++) {
+			var clonedPath = circlePath.clone();
+			clonedPath.rotate(angle * i, circlePath.bounds.topLeft);
+		};
 
-			for(var i = 0; i < clones; i++) {
-				var clonedPath = circlePath.clone();
-				clonedPath.rotate(angle * i, circlePath.bounds.topLeft);
-			};
-
-			var output = SvgExporter.exportProject(project);
-			console.log(output);
-			var test = document.getElementById('svg')
-			test.innerHTML = "";
-			test.appendChild (output);   
-		}
-		// Reposition the path whenever the window is resized:
-		function onResize(event) {
-		    initializePath();
-		}
-		
-		
+		var output = SvgExporter.exportProject(project);
+		console.log(output);
+		var test = document.getElementById('svg')
+		test.innerHTML = "";
+		test.appendChild (output);   
 	</script>
 	<svg id="svg" style="width: 500px; height: 500px">
 	</svg>
