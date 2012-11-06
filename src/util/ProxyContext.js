@@ -20,6 +20,8 @@
  * @class The ProxyContext is a helper class that helps Canvas debugging 
  * by logging all interactions with a 2D Canvas context.
  * 
+ * @private
+ *
  * @classexample
  * view._context = new ProxyContext(view._context);
  */
@@ -46,11 +48,12 @@ var ProxyContext = new function() {
 		'createImageData(imagedata)', 'getImageData(sx,sy,sw,sh)',
 		'putImageData(imagedata,dx,dy,dirtyX,dirtyY,dirtyWidth,dirtyHeight)'
 	];
-	var param = {
+	var fields = /** @lends ProxyContext# */ {
 		initialize: function(context) {
 			this._ctx = context;
 			this._indents = 0;
 		},
+
 		getIndentation: function() {
 			var str = '';
 			for (var i = 0; i < this._indents; i++) {
@@ -60,11 +63,11 @@ var ProxyContext = new function() {
 		}
 	};
 	Base.each(descriptions, function(description) {
-		var matches = description.match(/^([^(]+)(\()*/),
-			name = matches[1],
-			isFunction = !!matches[2];
+		var match = description.match(/^([^(]+)(\()*/),
+			name = match[1],
+			isFunction = !!match[2];
 		if (isFunction) {
-			param[name] = function() {
+			fields[name] = function() {
 				if (name == 'restore') {
 					this._indents--;
 				}
@@ -78,16 +81,16 @@ var ProxyContext = new function() {
 			};
 		} else {
 			var capitalized = Base.capitalize(name);
-			param['set' + capitalized] = function(value) {
+			fields['set' + capitalized] = function(value) {
 				var logValue = value && value.substring ? '\'' + value + '\'' : value,
 					string = 'ctx.' + name + ' = ' + logValue + ';';
 				console.log(this.getIndentation() + string);
 				return this._ctx[name] = value;
 			};
-			param['get' + capitalized] = function() {
+			fields['get' + capitalized] = function() {
 				return this._ctx[name];
 			};
 		}
 	});
-	return Base.extend(param);
+	return Base.extend(fields);
 };

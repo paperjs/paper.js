@@ -16,7 +16,7 @@
 
 /**
  * @name CanvasView
- *
+ * @class
  * @private
  */
 var CanvasView = View.extend(/** @lends CanvasView# */{

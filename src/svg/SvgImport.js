@@ -421,7 +421,7 @@ new function() {
 	}
 
 
-	Item.inject(/** @Lends Item# */{
+	Item.inject(/** @lends Item# */{
 		/**
 		 * Converts the passed svg node into a Paper.js item and adds it to the
 		 * children of this item.
@@ -434,7 +434,7 @@ new function() {
 		}
 	});
 
-	Project.inject(/** @Lends Project# */{
+	Project.inject(/** @lends Project# */{
 		/**
 		 * Converts the passed svg node into a Paper.js item and adds it to the
 		 * active layer of this project.
