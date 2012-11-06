@@ -23,6 +23,16 @@ test('new Group()', function() {
 	}, true);
 });
 
+test('new Group([])', function() {
+	var group = new Group([]);
+	equals(function() {
+		return paper.project.activeLayer.children[0] == group;
+	}, true);
+	equals(function() {
+		return group.children.length;
+	}, 0);
+});
+
 test('new Group([item])', function() {
 	var path = new Path();
 	var group = new Group([path]);
