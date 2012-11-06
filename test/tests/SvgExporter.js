@@ -352,7 +352,7 @@ test('compare invalid rounded rectangle values', function() {
 	equals(shapeheight, exportedheight);
 });*/
 
-test('compare oval values', function() {
+test('compare ellipse values', function() {
 	var svgns = 'http://www.w3.org/2000/svg'
 	var shape = document.createElementNS(svgns, 'ellipse');
 	var cx = 100,
@@ -370,19 +370,19 @@ test('compare oval values', function() {
 	var bottomRight = center.add(offset);
 
 	var rect = new Rectangle(topLeft, bottomRight);
-	var oval = new Path.Oval(rect);
+	var ellipse = new Path.Ellipse(rect);
 
-	var exportedOval = SvgExporter.exportItem(oval);
+	var exportedEllipse = SvgExporter.exportItem(ellipse);
 
 	var shapecx = shape.getAttribute('cx');
 	var shapecy = shape.getAttribute('cy');
 	var shaperx = shape.getAttribute('rx');
 	var shapery = shape.getAttribute('ry');
 
-	var exportedcx = exportedOval.getAttribute('cx');
-	var exportedcy = exportedOval.getAttribute('cy');
-	var exportedrx = exportedOval.getAttribute('rx');
-	var exportedry = exportedOval.getAttribute('ry');
+	var exportedcx = exportedEllipse.getAttribute('cx');
+	var exportedcy = exportedEllipse.getAttribute('cy');
+	var exportedrx = exportedEllipse.getAttribute('rx');
+	var exportedry = exportedEllipse.getAttribute('ry');
 
 	equals(shapecx, exportedcx);
 	equals(shapecy, exportedcy);

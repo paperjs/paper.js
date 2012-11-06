@@ -197,7 +197,7 @@ test('compare invalid round rectangle values', function() {
 	compareSegmentLists(importedRectangle.segments, roundRect.segments, true);
 });
 
-test('compare oval values', function() {
+test('compare ellipse values', function() {
 	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'ellipse');
 	var cx = 300,
@@ -209,7 +209,7 @@ test('compare oval values', function() {
 	shape.setAttribute('rx', rx);
 	shape.setAttribute('ry', ry);
 
-	var importedOval = SvgImporter.importSvg(shape);
+	var importedEllipse = SvgImporter.importSvg(shape);
 
 	var center = new Point(cx, cy);
 	var offset = new Point(rx, ry);
@@ -217,12 +217,12 @@ test('compare oval values', function() {
 	var bottomRight = center.add(offset);
 
 	var rect = new Rectangle(topLeft, bottomRight);
-	var oval = new Path.Oval(rect);
+	var ellipse = new Path.Ellipse(rect);
 
-	compareSegmentLists(importedOval.segments, oval.segments, true);
+	compareSegmentLists(importedEllipse.segments, ellipse.segments, true);
 });
 
-test('compare negative oval values', function() {
+test('compare negative ellipse values', function() {
 	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'ellipse');
 	var cx = -111,
@@ -234,7 +234,7 @@ test('compare negative oval values', function() {
 	shape.setAttribute('rx', rx);
 	shape.setAttribute('ry', ry);
 
-	var importedOval = SvgImporter.importSvg(shape);
+	var importedEllipse = SvgImporter.importSvg(shape);
 
 	var center = new Point(cx, cy);
 	var offset = new Point(rx, ry);
@@ -242,12 +242,12 @@ test('compare negative oval values', function() {
 	var bottomRight = center.add(offset);
 
 	var rect = new Rectangle(topLeft, bottomRight);
-	var oval = new Path.Oval(rect);
+	var ellipse = new Path.Ellipse(rect);
 
-	compareSegmentLists(importedOval.segments, oval.segments, true);
+	compareSegmentLists(importedEllipse.segments, ellipse.segments, true);
 });
 
-test('compare invalid oval values', function() {
+test('compare invalid ellipse values', function() {
 	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'ellipse');
 	shape.setAttribute('cx', null);
@@ -255,7 +255,7 @@ test('compare invalid oval values', function() {
 	shape.setAttribute('rx', null);
 	shape.setAttribute('ry', null);
 
-	var importedOval = SvgImporter.importSvg(shape);
+	var importedEllipse = SvgImporter.importSvg(shape);
 
 	var center = new Point(0, 0);
 	var offset = new Point(0, 0);
@@ -263,9 +263,9 @@ test('compare invalid oval values', function() {
 	var bottomRight = center.add(offset);
 
 	var rect = new Rectangle(topLeft, bottomRight);
-	var oval = new Path.Oval(rect);
+	var ellipse = new Path.Ellipse(rect);
 
-	compareSegmentLists(importedOval.segments, oval.segments, true);
+	compareSegmentLists(importedEllipse.segments, ellipse.segments, true);
 });
 
 test('compare circle values', function() {
