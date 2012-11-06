@@ -266,7 +266,6 @@ var SvgImporter = this.SvgImporter = new function() {
 			value = null;
 		var entry = SvgStyles.attributes[name];
 		if (entry) {
-			var style = item._style;
 			if (entry.type === 'number') {
 				value = parseFloat(value, 10);
 			} else if (entry.type === 'array') {
@@ -275,7 +274,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				for (var i = 0, l = value.length; i < l; i++)
 					value[i] = parseFloat(value[i], 10);
 			}
-			style[entry.set](value);
+			item._style[entry.set](value);
 		} else {
 			switch (name) {
 			case 'id':
@@ -311,12 +310,12 @@ var SvgImporter = this.SvgImporter = new function() {
 				var text = document.createElement('span');
 				text.style.font = value;
 				for (var i = 0; i < text.style.length; i++) {
-					var n = text.style[i];
-					applyAttributeOrStyle(svg, item, n, text.style[n]);
+					var name = text.style[i];
+					applyAttributeOrStyle(svg, item, name, text.style[name]);
 				}
 				break;
 			case 'font-family':
-				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ""));
+				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
 				break;
 			case 'font-size':
 				item.setFontSize(parseFloat(value, 10));
