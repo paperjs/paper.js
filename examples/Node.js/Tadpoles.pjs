@@ -11,7 +11,7 @@ project.currentStyle = {
 
 new Path.Rectangle(view.bounds).fillColor = 'black';
 
-var head = new Path.Oval([0, 0], [13, 8]);
+var head = new Path.Ellipse([0, 0], [13, 8]);
 head.fillColor = 'white';
 head.strokeColor = null;
 var headSymbol = new Symbol(head);

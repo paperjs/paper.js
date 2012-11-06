@@ -224,7 +224,7 @@ var SvgImporter = this.SvgImporter = new function() {
 		ellipse: function(svg) {
 			var center = getPoint(svg, 'cx', 'cy'),
 				radius = getSize(svg, 'rx', 'ry');
-			return new Path.Oval(new Rectangle(center.subtract(radius),
+			return new Path.Ellipse(new Rectangle(center.subtract(radius),
 					center.add(radius)));
 		},
 

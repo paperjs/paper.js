@@ -15,15 +15,52 @@
  */
 
 Path.inject({ statics: new function() {
+
+	function createRectangle(rect) {
+		rect = Rectangle.read(arguments);
+		var left = rect.x,
+			top = rect.y,
+			right = left + rect.width,
+			bottom = top + rect.height,
+			path = new Path();
+		path._add([
+			new Segment(Point.create(left, bottom)),
+			new Segment(Point.create(left, top)),
+			new Segment(Point.create(right, top)),
+			new Segment(Point.create(right, bottom))
+		]);
+		path._closed = true;
+		return path;
+	}
+
 	// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
 	var kappa = 2 * (Math.sqrt(2) - 1) / 3;
 
-	var ovalSegments = [
+	var ellipseSegments = [
 		new Segment([0, 0.5], [0, kappa ], [0, -kappa]),
 		new Segment([0.5, 0], [-kappa, 0], [kappa, 0 ]),
 		new Segment([1, 0.5], [0, -kappa], [0, kappa ]),
 		new Segment([0.5, 1], [kappa, 0 ], [-kappa, 0])
 	];
+
+	function createEllipse(rect) {
+		rect = Rectangle.read(arguments);
+		var path = new Path(),
+			point = rect.getPoint(true),
+			size = rect.getSize(true),
+			segments = new Array(4);
+		for (var i = 0; i < 4; i++) {
+			var segment = ellipseSegments[i];
+			segments[i] = new Segment(
+				segment._point.multiply(size).add(point),
+				segment._handleIn.multiply(size),
+				segment._handleOut.multiply(size)
+			);
+		}
+		path._add(segments);
+		path._closed = true;
+		return path;
+	}
 
 	return /** @lends Path */{
 		/**
@@ -93,22 +130,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Rectangle(rectangle);
 		 * path.strokeColor = 'black';
 		 */
-		Rectangle: function(rect) {
-			rect = Rectangle.read(arguments);
-			var left = rect.x,
-				top = rect.y,
-				right = left + rect.width,
-				bottom = top + rect.height,
-				path = new Path();
-			path._add([
-				new Segment(Point.create(left, bottom)),
-				new Segment(Point.create(left, top)),
-				new Segment(Point.create(right, top)),
-				new Segment(Point.create(right, bottom))
-			]);
-			path._closed = true;
-			return path;
-		},
+		Rectangle: createRectangle,
 
 		/**
 		 * Creates a rectangular Path Item with rounded corners.
@@ -128,8 +150,7 @@ Path.inject({ statics: new function() {
 			var _rect = Rectangle.read(arguments),
 				_size = Size.read(arguments);
 			if (_size.isZero())
-				// No need for new, since constructors here do so themselves.
-				return Path.Rectangle(rect);
+				return createRectangle(rect);
 			_size = Size.min(_size, _rect.getSize(true).divide(2));
 			var bl = _rect.getBottomLeft(true),
 				tl = _rect.getTopLeft(true),
@@ -155,12 +176,12 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-		* Creates an oval shaped Path Item.
+		* Creates an ellipse shaped Path Item.
 		 *
 		 * @param {Rectangle} rect
 		 * @param {Boolean} [circumscribed=false] when set to {@code true} the
-		 *        oval shaped path will be created so the rectangle fits into
-		 *        it. When set to {@code false} the oval path will fit within
+		 *        ellipse shaped path will be created so the rectangle fits into
+		 *        it. When set to {@code false} the ellipse path will fit within
 		 *        the rectangle.
 		 * @return {Path} the newly created path
 		 *
@@ -168,28 +189,15 @@ Path.inject({ statics: new function() {
 		 * var topLeft = new Point(100, 100);
 		 * var size = new Size(150, 100);
 		 * var rectangle = new Rectangle(topLeft, size);
-		 * var path = new Path.Oval(rectangle);
+		 * var path = new Path.Ellipse(rectangle);
 		 * path.fillColor = 'black';
 		 */
-		// TODO: Shall this be called Path.Ellipse instead?
-		Oval: function(rect) {
-			rect = Rectangle.read(arguments);
-			var path = new Path(),
-				point = rect.getPoint(true),
-				size = rect.getSize(true),
-				segments = new Array(4);
-			for (var i = 0; i < 4; i++) {
-				var segment = ovalSegments[i];
-				segments[i] = new Segment(
-					segment._point.multiply(size).add(point),
-					segment._handleIn.multiply(size),
-					segment._handleOut.multiply(size)
-				);
-			}
-			path._add(segments);
-			path._closed = true;
-			return path;
-		},
+		Ellipse: createEllipse,
+
+		/**
+		 * @deprecated use {@link #Path.Ellipse(rect)} instead.
+		 */
+		Oval: createEllipse,
 
 		/**
 		 * Creates a circle shaped Path Item.
@@ -204,7 +212,7 @@ Path.inject({ statics: new function() {
 		Circle: function(center, radius) {
 			var _center = Point.read(arguments),
 				_radius = Base.readValue(arguments);
-			return Path.Oval(new Rectangle(_center.subtract(_radius),
+			return createEllipse(new Rectangle(_center.subtract(_radius),
 					Size.create(_radius * 2, _radius * 2)));
 		},
 
