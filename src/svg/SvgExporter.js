@@ -30,8 +30,10 @@ var SvgExporter = this.SvgExporter = new function() {
 	}
 
 	function setAttributes(svg, attrs) {
-		for (var key in attrs)
+		for (var key in attrs) {
+			console.log(key + ', ' + attrs[key]);
 			svg.setAttribute(key, attrs[key]);
+		}
 	}
 
 	function exportGroup(group) {
@@ -341,17 +343,7 @@ var SvgExporter = this.SvgExporter = new function() {
 		var attrs = {},
 			style = item._style,
 			parent = item.getParent(),
-			parentStyle = parent && parent._style,
-			properties = {
-				fillColor: 'fill',
-				strokeColor: 'stroke',
-				strokeWidth: 'stroke-width',
-				strokeCap: 'stroke-linecap',
-				strokeJoin: 'stroke-linejoin',
-				miterLimit: 'stroke-miterlimit',
-				dashArray: 'stroke-dasharray',
-				dashOffset: 'stroke-dashoffset'
-			};
+			parentStyle = parent && parent._style;
 
 		if (item._id != null)
 			attrs.id = item._id;
@@ -359,19 +351,17 @@ var SvgExporter = this.SvgExporter = new function() {
 		if (item._name != null)
 			attrs.name = item._name;
 
-		Base.each(properties, function(svgName, name) {
+		Base.each(SvgStyles.properties, function(entry) {
 			// Get a given style only if it differs from the value on the parent
 			// (A layer or group which can have style values in SVG).
-			var getter = 'get' + Base.capitalize(name),
-				value = style[getter]();
+			var value = style[entry.getter]();
 			if (value != null && (!parentStyle
-					|| !Base.equals(parentStyle[getter](), value))) {
-				value = /Color$/.test(name)
+					|| !Base.equals(parentStyle[entry.getter](), value))) {
+				attrs[entry.attribute] = entry.type === 'color'
 					? value.toCssString()
-					: name == 'dashArray'
+					: entry.type === 'array'
 						? value.join(',')
 						: value;
-				attrs[svgName] = value;
 			}
 		});
 
