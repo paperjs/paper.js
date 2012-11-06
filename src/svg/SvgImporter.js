@@ -124,14 +124,10 @@ var SvgImporter = this.SvgImporter = new function() {
 				list = svg.pathSegList,
 				compoundPath, lastPoint;
 			for (var i = 0, l = list.numberOfItems; i < l; i++) {
-				// To shrink code, we replaced the long SVGPathSeg constants
-				// with their actual numeric values. The comments keep reference
-				// to the original constants. Values were taken from:
-				// http://dxr.mozilla.org/mozilla-central/dom/interfaces/svg/nsIDOMSVGPathSeg.idl.html
 				var segment = list.getItem(i),
 					segType = segment.pathSegType,
 					isRelative = segType % 2 == 1;
-				if (segType === 0) // SVGPathSeg.PATHSEG_UNKNOWN
+				if (segType === /*#=*/ SVGPathSeg.PATHSEG_UNKNOWN)
 					continue;
 				if (!path.isEmpty())
 					lastPoint = path.getLastSegment().getPoint();
@@ -140,22 +136,19 @@ var SvgImporter = this.SvgImporter = new function() {
 						: Point.create(0, 0);
 				// Horizontal or vertical lineto commands, so fill in the
 				// missing x or y value:
-				var coord =
-						// SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS
-						// SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL
-						(segType == 12 || segType == 13) && 'y'
-						// SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS
-						// SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL
-						|| (segType == 14 || segType == 15) && 'x';
+				var coord = (segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS
+						|| segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL) && 'y'
+						|| (segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS
+						|| segType == /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL) && 'x';
 				if (coord)
 					segment[coord] = isRelative ? 0 : lastPoint[coord];
 				var point = Point.create(segment.x, segment.y).add(relative);
 				switch (segType) {
-				case 1: // SVGPathSeg.PATHSEG_CLOSEPATH:
+				case /*#=*/ SVGPathSeg.PATHSEG_CLOSEPATH:
 					path.closePath();
 					break;
-				case 2: // SVGPathSeg.PATHSEG_MOVETO_ABS:
-				case 3: // SVGPathSeg.PATHSEG_MOVETO_REL:
+				case /*#=*/ SVGPathSeg.PATHSEG_MOVETO_ABS:
+				case /*#=*/ SVGPathSeg.PATHSEG_MOVETO_REL:
 					if (!path.isEmpty() && !compoundPath) {
 						compoundPath = new CompoundPath([path]);
 					}
@@ -165,35 +158,35 @@ var SvgImporter = this.SvgImporter = new function() {
 					}
 					path.moveTo(point);
 					break;
-				case 4: // SVGPathSeg.PATHSEG_LINETO_ABS:
-				case 5: // SVGPathSeg.PATHSEG_LINETO_REL:
-				case 12: // SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
-				case 13: // SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
-				case 14: // SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
-				case 15: // SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
+				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_ABS:
+				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_REL:
+				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
+				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
+				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
+				case /*#=*/ SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
 					path.lineTo(point);
 					break;
-				case 6: // SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
-				case 7: // SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
+				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
+				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
 					path.cubicCurveTo(
 						relative.add(segment.x1, segment.y1),
 						relative.add(segment.x2, segment.y2),
 						point
 					);
 					break;
-				case 8: // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
-				case 9: // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
+				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
+				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
 					path.quadraticCurveTo(
 						relative.add(segment.x1, segment.y1),
 						point
 					);
 					break;
 				// TODO: Implement Arcs: ttp://www.w3.org/TR/SVG/implnote.html
-				// case 10: // SVGPathSeg.PATHSEG_ARC_ABS:
-				// case 11: // SVGPathSeg.PATHSEG_ARC_REL:
+				// case /*#=*/ SVGPathSeg.PATHSEG_ARC_ABS:
+				// case /*#=*/ SVGPathSeg.PATHSEG_ARC_REL:
 				//	break;
-				case 16: // SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
-				case 17: // SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
+				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
+				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
 					var prev = list.getItem(i - 1),
 						control = lastPoint.add(lastPoint.subtract(
 							Point.create(prev.x2, prev.y2)
@@ -204,14 +197,14 @@ var SvgImporter = this.SvgImporter = new function() {
 						relative.add(segment.x2, segment.y2),
 						point);
 					break;
-				case 18: // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
-				case 19: // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
+				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
+				case /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
 					var control,
 						j = i;
 					for (; j >= 0; j--) {
 						var prev = list.getItem(j);
-						if (prev.pathSegType === 8 || // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS
-								prev.pathSegType === 9) { // SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL
+						if (prev.pathSegType === /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS ||
+								prev.pathSegType === /*#=*/ SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL) {
 							control = Point.create(prev.x1, prev.y1)
 									.subtract(prev.x, prev.y)
 									.add(path._segments[j].getPoint());
@@ -245,6 +238,8 @@ var SvgImporter = this.SvgImporter = new function() {
 	 * @param {Item} item the item to apply the style and attributes to.
 	 */
 	function applyAttributesAndStyles(svg, item) {
+		// SVG attributes can be set both as styles and direct node attributes,
+		// so we need to parse both
 		for (var i = 0, l = svg.style.length; i < l; i++) {
 			var name = svg.style[i];
 			applyAttributeOrStyle(svg, item, name, svg.style[Base.camelize(name)]);
@@ -367,12 +362,8 @@ var SvgImporter = this.SvgImporter = new function() {
 		var transforms = svg.transform.baseVal,
 			matrix = new Matrix();
 		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
-			// To shrink code, we replaced the long SVGTransform constants
-			// with their actual numeric values. The comments keep reference
-			// to the original constants. Values were taken from:
-			// http://dxr.mozilla.org/mozilla-central/dom/interfaces/svg/nsIDOMSVGTransform.idl.html
 			var transform = transforms.getItem(i);
-			if (transform.type === 0) // SVGTransform.SVG_TRANSFORM_UNKNOWN
+			if (transform.type === /*#=*/ SVGTransform.SVG_TRANSFORM_UNKNOWN)
 				continue;
 			// Convert SVG Matrix to Paper Matrix.
 			// TODO: Should this be moved to our Matrix constructor?
@@ -383,20 +374,20 @@ var SvgImporter = this.SvgImporter = new function() {
 				d = mx.d;
 			switch (transform.type) {
 			// Compensate for SVG's theta rotation going the opposite direction
-			case 1: // SVGTransform.SVG_TRANSFORM_MATRIX
+			case /*#=*/ SVGTransform.SVG_TRANSFORM_MATRIX
 				var tmp = b;
 				b = c;
 				c = tmp;
 				break;
-			case 5: // SVGTransform.SVG_TRANSFORM_SKEWX:
+			case /*#=*/ SVGTransform.SVG_TRANSFORM_SKEWX:
 				b = c;
 				c = 0;
 				break;
-			case 6: // SVGTransform.SVG_TRANSFORM_SKEWY:
+			case /*#=*/ SVGTransform.SVG_TRANSFORM_SKEWY:
 				c = b;
 				b = 0;
 				break;
-			case 4: // SVGTransform.SVG_TRANSFORM_ROTATE:
+			case /*#=*/ SVGTransform.SVG_TRANSFORM_ROTATE:
 				b = -b;
 				c = -c;
 				break;
