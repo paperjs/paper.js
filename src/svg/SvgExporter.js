@@ -229,13 +229,6 @@ var SvgExporter = this.SvgExporter = new function() {
 
 	function determineType(path, segments) {
 
-		function isOrthogonal(i) {
-			var segment = segments[i],
-				point = segment.getPoint();
-			return segment.getNext()._point.subtract(point).isOrthogonal(
-					segment.getPrevious()._point.subtract(point));
-		}
-
 		function isColinear(i, j) {
 			var seg1 = segments[i],
 				seg2 = seg1.getNext(),
