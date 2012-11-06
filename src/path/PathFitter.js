@@ -99,7 +99,7 @@ var PathFitter = Base.extend({
 			pt1 = this.points[first],
 			pt2 = this.points[last],
 			// Create the C and X matrices
-		 	C = [[0, 0], [0, 0]],
+			C = [[0, 0], [0, 0]],
 			X = [0, 0];
 
 		for (var i = 0, l = last - first + 1; i < l; i++) {
@@ -144,7 +144,7 @@ var PathFitter = Base.extend({
 				alpha1 = alpha2 = X[1] / c1;
 			} else {
 				// Handle below
-				alpha1 = alpha2 = 0.;
+				alpha1 = alpha2 = 0;
 			}
 		}
 
@@ -189,9 +189,9 @@ var PathFitter = Base.extend({
 		}
 		// Compute Q(u), Q'(u) and Q''(u)
 		var pt = this.evaluate(3, curve, u),
-		 	pt1 = this.evaluate(2, curve1, u),
-		 	pt2 = this.evaluate(1, curve2, u),
-		 	diff = pt.subtract(point),
+			pt1 = this.evaluate(2, curve1, u),
+			pt2 = this.evaluate(1, curve2, u),
+			diff = pt.subtract(point),
 			df = pt1.dot(pt1) + diff.dot(pt2);
 		// Compute f(u) / f'(u)
 		if (Math.abs(df) < Numerical.TOLERANCE)
