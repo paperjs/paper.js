@@ -28,12 +28,8 @@ var SvgExporter = this.SvgExporter = new function() {
 	// Shortcut to Base.formatNumber
 	var formatNumber = Base.formatNumber;
 
-	function formatPoint(x, y) {
-		if (arguments.length == 1) {
-			y = x._y;
-			x = x._x;
-		}
-		return formatNumber(x) + ',' + formatNumber(y);
+	function formatPoint(point) {
+		return formatNumber(point._x) + ',' + formatNumber(point._y);
 	}
 
 	function setAttributes(svg, attrs) {
