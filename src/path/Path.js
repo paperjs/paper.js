@@ -185,7 +185,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * // Close the path:
 	 * myPath.closed = true;
 	 */
-	getClosed: function() {
+	isClosed: function() {
 		return this._closed;
 	},
 
