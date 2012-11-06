@@ -262,58 +262,44 @@ var SvgImporter = this.SvgImporter = new function() {
 	 function applyAttributeOrStyle(svg, item, name, value) {
 		if (value == null)
 			return;
-		switch (name) {
-		case 'id':
-			item.setName(value);
-			break;
-		case 'fill':
-			if (value !== 'none')
-				item.setFillColor(value);
-			break;
-		case 'stroke':
-			if (value !== 'none')
-				item.setStrokeColor(value);
-			break;
-		case 'stroke-width':
-			item.setStrokeWidth(parseFloat(value, 10));
-			break;
-		case 'stroke-linecap':
-			item.setStrokeCap(value);
-			break;
-		case 'stroke-linejoin':
-			item.setStrokeJoin(value);
-			break;
-		case 'stroke-dasharray':
-			value = value.replace(/px/g, '').replace(/, /g, ',')
-					.replace(/ /g, ',').split(',');
-			for (var i = 0, l = value.length; i < l; i++)
-				value[i] = parseFloat(value[i], 10);
-			item.setDashArray(value);
-			break;
-		case 'stroke-dashoffset':
-			item.setDashOffset(parseFloat(value, 10));
-			break;
-		case 'stroke-miterlimit':
-			item.setMiterLimit(parseFloat(value, 10));
-			break;
-		case 'transform':
-			applyTransform(svg, item);
-			break;
-		case 'opacity':
-			item.setOpacity(parseFloat(value, 10));
-			break;
-		case 'visibility':
-			item.setVisibility(value === 'visible');
-			break;
-		case 'font':
-		case 'font-family':
-		case 'font-size':
-		case 'text-anchor':
-			applyTextStyle(svg, item, name, value);
-			break;
-		default:
-			// Not supported yet.
-			break;
+		if (value === 'none')
+			value = null;
+		var entry = SvgStyles.attributes[name];
+		if (entry) {
+			var style = item._style;
+			if (entry.type === 'number') {
+				value = parseFloat(value, 10);
+			} else if (entry.type === 'array') {
+				value = value.replace(/px/g, '').replace(/, /g, ',')
+						.replace(/ /g, ',').split(',');
+				for (var i = 0, l = value.length; i < l; i++)
+					value[i] = parseFloat(value[i], 10);
+			}
+			style[entry.set](value);
+		} else {
+			switch (name) {
+			case 'id':
+				item.setName(value);
+				break;
+			case 'transform':
+				applyTransform(svg, item);
+				break;
+			case 'opacity':
+				item.setOpacity(parseFloat(value, 10));
+				break;
+			case 'visibility':
+				item.setVisibility(value === 'visible');
+				break;
+			case 'font':
+			case 'font-family':
+			case 'font-size':
+			case 'text-anchor':
+				applyTextStyle(svg, item, name, value);
+				break;
+			default:
+				// Not supported yet.
+				break;
+			}
 		}
 	}
 

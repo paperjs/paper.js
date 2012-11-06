@@ -17,7 +17,8 @@
 /**
  * To shrink code, we automatically replace the long SVGPathSeg and SVGTransform
  * constants with their actual numeric values on preprocessing time, using
- * *#=* statements. To do so, we need their values defined, which happens here.
+ * prepro statements.
+ * To do so, we need their values defined, which happens here.
  */
 
  // http://dxr.mozilla.org/mozilla-central/dom/interfaces/svg/nsIDOMSVGPathSeg.idl.html
