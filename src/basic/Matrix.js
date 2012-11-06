@@ -487,7 +487,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	getRotation: function() {
 		var angle1 = -Math.atan2(this._b, this._d),
 			angle2 = Math.atan2(this._c, this._a);
-		return Math.abs(angle1 - angle2) < Numerical.TOLERANCE
+		return Math.abs(angle1 - angle2) < Numerical.EPSILON
 				? angle1 * 180 / Math.PI : undefined;
 	},
 

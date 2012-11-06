@@ -15,7 +15,8 @@
  */
 
 Path.inject({ statics: new function() {
-	var kappa = 2 / 3 * (Math.sqrt(2) - 1);
+	// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
+	var kappa = 2 * (Math.sqrt(2) - 1) / 3;
 
 	var ovalSegments = [
 		new Segment([0, 0.5], [0, kappa ], [0, -kappa]),
