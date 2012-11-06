@@ -211,37 +211,42 @@ var SvgExporter = this.SvgExporter = new function() {
 	function pathSetup(path, segments) {
 		var svgPath = createElement('path');
 		var parts = [];
-		// pointstring is formatted in the way the SVG XML will be reading.
-		// Namely, a point and the way to traverse to that point.
 		parts.push('M' + segments[0]._point._x + ',' + segments[0]._point._y);
-		//Checks 2 points and the angles in between the 2 points
 		function drawCurve(seg1, seg2) {
-			var x1 = seg1._point._x,
-				y1 = seg1._point._y,
-				x2 = seg2._point._x,
-				y2 = seg2._point._y,
-				handleOut1 = seg1._handleOut,
-				handleIn2 = seg2._handleIn;
-			if (handleOut1.isZero() && handleIn2.isZero()) {
+			var point1 = seg1._point,
+				point2 = seg2._point,
+				x1 = point1._x,
+				y1 = point1._y,
+				x2 = point2._x,
+				y2 = point2._y,
+				handle1 = seg1._handleOut,
+				handle2 = seg2._handleIn;
+			if (handle1.isZero() && handle2.isZero()) {
 					// L is lineto, moving to a point with drawing
 					parts.push('L' + x2 + ',' + y2 + ' ');
 			} else {
-				// c is curveto, relative: handleOut, handleIn - end, end - start
-				parts.push('c' + handleOut1._x  + ',' + handleOut1._y,
-					(x2 - x1 + handleIn2._x) + ',' + (y2 - y1 + handleIn2._y),
-					(x2 - x1) + ',' + (y2 - y1));
+				// c is curveto, relative: handle1, handle2 + end - start, end - start
+				x2 -= x1;
+				y2 -= y1;
+				parts.push(
+					'c' + handle1._x  + ',' + handle1._y,
+					(x2 + handle2._x) + ',' + (y2 + handle2._y),
+					x2 + ',' + y2
+				);
 			}
 		}
 		for (i = 0; i < segments.length - 1; i++)
 			drawCurve(segments[i], segments[i + 1]);
 		var first = segments[0],
-			last = segments[segments.length - 1];
-		if (!first._handleOut.isZero() && !last._handleIn.isZero())
+			last = segments[segments.length - 1],
+			style = path._style;
+		// We only need to draw the connecting curve if the path is cosed and
+		// has a stroke color, or if it's filled.
+		if ((path._closed && style._strokeColor || style._fillColor)
+				&& !first._handleOut.isZero() && !last._handleIn.isZero())
 			drawCurve(last, first);
-		if (path._closed) {
-			// z implies a closed path, connecting the first and last points
+		if (path._closed)
 			parts.push('z');
-		}
 		svgPath.setAttribute('d', parts.join(' '));
 		return svgPath;
 	}
