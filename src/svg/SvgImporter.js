@@ -317,7 +317,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				break;
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			case 'clip-path':
-				var clipPath = getDefinition(value).clone().simplify(),
+				var clipPath = getDefinition(value).clone().flatten(),
 					group = new Group([clipPath, item]);
 				group.clipped = true;
 				break;
