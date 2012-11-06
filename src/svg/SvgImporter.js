@@ -299,10 +299,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				: entry.type === 'number'
 					? parseFloat(value, 10)
 					: entry.type === 'array'
-						? value.replace(/px/g, '').replace(/, /g, ',')
-							.replace(/ /g, ',').split(',').map(function(val) {
-								return parseFloat(val, 10);
-							})
+						? value.split(/[\s,]+/g).map(parseFloat)
 						: value);
 		} else {
 			switch (name) {
