@@ -304,15 +304,16 @@ var SvgExporter = this.SvgExporter = new function() {
 			// Get a given style only if it differs from the value on the parent
 			// (A layer or group which can have style values in SVG).
 			var value = style[entry.get]();
-			if (value != null && (!parentStyle
-					|| !Base.equals(parentStyle[entry.get](), value))) {
-				attrs[entry.attribute] = entry.type === 'color'
-					? value.toCssString()
-					: entry.type === 'array'
-						? value.join(',')
-						: entry.type === 'number'
-							? formatNumber(value)
-							: value;
+			if (!parentStyle || !Base.equals(parentStyle[entry.get](), value)) {
+				attrs[entry.attribute] = value == null
+					? 'none'
+					: entry.type === 'color'
+						? value.toCssString()
+						: entry.type === 'array'
+							? value.join(',')
+							: entry.type === 'number'
+								? formatNumber(value)
+								: value;
 			}
 		});
 
