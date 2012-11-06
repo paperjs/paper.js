@@ -471,6 +471,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	getScaling: function() {
+		// http://math.stackexchange.com/questions/13150/
 		var hor = Math.sqrt(this._a * this._a + this._c * this._c),
 			ver = Math.sqrt(this._b * this._b + this._d * this._d);
 		return Point.create(this._a < 0 ? -hor : hor, this._b < 0 ? -ver : ver);
