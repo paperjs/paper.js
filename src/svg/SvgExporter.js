@@ -71,23 +71,25 @@ var SvgExporter = this.SvgExporter = new function() {
 	function exportPath(path) {
 		var segments = path._segments,
 			type = determineType(path, segments),
+			angle = determineAngle(path, segments, type),
 			attrs;
-		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
-		// see if they are placed at an angle.
-		var angle = 0,
-			topCenter = type === 'rect'
-				? segments[1]._point.add(segments[2]._point).divide(2)
-				: type === 'roundrect'
-				? segments[3]._point.add(segments[4]._point).divide(2)
-				: type === 'circle' || type === 'ellipse'
-				? segments[1]._point
-				: null;
-		if (topCenter) {
-			angle = topCenter.subtract(path.getPosition()).getAngle() + 90;
-			if (Numerical.isZero(angle))
-				angle = 0;
-		}
 		switch (type) {
+		case 'path':
+			attrs = {
+				d: drawPath(path, segments)
+			};
+			break;
+		case 'polyline':
+		case 'polygon':
+			var parts = [];
+			for(i = 0; i < segments.length; i++) {
+				var point = segments[i]._point;
+				parts.push(point._x + ',' + point._y);
+			}
+			attrs = {
+				points: parts.join(' ')
+			};
+			break;
 		case 'rect':
 			var width = getDistance(segments, 0, 3),
 				height = getDistance(segments, 0, 1),
@@ -152,74 +154,75 @@ var SvgExporter = this.SvgExporter = new function() {
 				ry: ry
 			};
 			break;
-		case 'polyline':
-		case 'polygon':
-			var parts = [];
-			for(i = 0; i < segments.length; i++) {
-				var point = segments[i]._point;
-				parts.push(point._x + ',' + point._y);
-			}
-			attrs = {
-				points: parts.join(' ')
-			};
-			break;
 		}
-		if (attrs) {
-			var svg = createElement(type, attrs),
-				center = path.getPosition();
-			if (angle) {
-				svg.setAttribute('transform', 'rotate(' + angle + ','
-							+ center._x + ',' + center._y + ')');
-			}
-			return svg;
+		var svg = createElement(type, attrs);
+		if (angle) {
+			var center = path.getPosition();
+			svg.setAttribute('transform', 'rotate(' + angle + ','
+						+ center._x + ',' + center._y + ')');
 		}
-		return pathSetup(path, segments);
-	}
-
-	function pathSetup(path, segments) {
-		var svg = createElement('path');
-		var parts = [];
-		parts.push('M' + segments[0]._point._x + ',' + segments[0]._point._y);
-		function drawCurve(seg1, seg2, skipLine) {
-			var point1 = seg1._point,
-				point2 = seg2._point,
-				x1 = point1._x,
-				y1 = point1._y,
-				x2 = point2._x,
-				y2 = point2._y,
-				handle1 = seg1._handleOut,
-				handle2 = seg2._handleIn;
-			if (handle1.isZero() && handle2.isZero()) {
-				if (!skipLine) {
-					// L is lineto, moving to a point with drawing
-					parts.push('L' + x2 + ',' + y2 + ' ');
-				}
-			} else {
-				// c is curveto, relative: handle1, handle2 + end - start, end - start
-				x2 -= x1;
-				y2 -= y1;
-				parts.push(
-					'c' + handle1._x  + ',' + handle1._y,
-					(x2 + handle2._x) + ',' + (y2 + handle2._y),
-					x2 + ',' + y2
-				);
-			}
-		}
-		for (i = 0; i < segments.length - 1; i++)
-			drawCurve(segments[i], segments[i + 1], false);
-		// We only need to draw the connecting curve if the path is cosed and
-		// has a stroke color, or if it's filled.
-		if (path._closed && path._style._strokeColor || path._style._fillColor)
-			drawCurve(segments[segments.length - 1], segments[0], true);
-		if (path._closed)
-			parts.push('z');
-		svg.setAttribute('d', parts.join(' '));
 		return svg;
 	}
 
-	/**
-	* Checks the type SVG object created by converting from Paper.js
-	*/
+	function drawPath(path, segments) {
+		var parts = [],
+			style = path._style,
+			first =  segments[0]._point;
+		parts.push('M' + first._x + ',' + first._y);
+		for (i = 0; i < segments.length - 1; i++)
+			drawCurve(parts, segments[i], segments[i + 1], false);
+		// We only need to draw the connecting curve if it is not a line, and if
+		// the path is cosed and has a stroke color, or if it is filled.
+		if (path._closed && style._strokeColor || style._fillColor)
+			drawCurve(parts, segments[segments.length - 1], segments[0], true);
+		if (path._closed)
+			parts.push('z');
+		return parts.join(' ');
+	}
+
+	function drawCurve(parts, seg1, seg2, skipLine) {
+		var point1 = seg1._point,
+			point2 = seg2._point,
+			x1 = point1._x,
+			y1 = point1._y,
+			x2 = point2._x,
+			y2 = point2._y,
+			handle1 = seg1._handleOut,
+			handle2 = seg2._handleIn;
+		if (handle1.isZero() && handle2.isZero()) {
+			if (!skipLine) {
+				// L = lineto: moving to a point with drawing
+				parts.push('L' + x2 + ',' + y2 + ' ');
+			}
+		} else {
+			// c = relative curveto: handle1, handle2 + end - start, end - start
+			x2 -= x1;
+			y2 -= y1;
+			parts.push(
+				'c' + handle1._x  + ',' + handle1._y,
+				(x2 + handle2._x) + ',' + (y2 + handle2._y),
+				x2 + ',' + y2
+			);
+		}
+	}
+
+	function determineAngle(path, segments, type) {
+		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
+		// see if they are placed at an angle.
+		var topCenter = type === 'rect'
+				? segments[1]._point.add(segments[2]._point).divide(2)
+				: type === 'roundrect'
+				? segments[3]._point.add(segments[4]._point).divide(2)
+				: type === 'circle' || type === 'ellipse'
+				? segments[1]._point
+				: null;
+		if (topCenter) {
+			var angle = topCenter.subtract(path.getPosition()).getAngle() + 90;
+			return Numerical.isZero(angle) ? 0 : angle;
+		}
+		return 0;
+	}
+
 	function determineType(path, segments) {
 		// See if actually have any curves in the path. Differentiate
 		// between straight objects (line, polyline, rect, and  polygon) and
@@ -261,6 +264,7 @@ var SvgExporter = this.SvgExporter = new function() {
 				}
 			} 
 		}
+		return 'path';
 	}
 
 	function applyStyle(item, svg) {
