@@ -104,7 +104,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 				other._changed();
 			}
 		}
-		this._path._changed(Change.GEOMETRY);
+		this._path._changed(/*#=*/ Change.GEOMETRY);
 	},
 
 	/**
@@ -174,9 +174,9 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 
 	_isSelected: function(point) {
 		var state = this._selectionState;
-		return point == this._point ? !!(state & SelectionState.POINT)
-			: point == this._handleIn ? !!(state & SelectionState.HANDLE_IN)
-			: point == this._handleOut ? !!(state & SelectionState.HANDLE_OUT)
+		return point == this._point ? !!(state & /*#=*/ SelectionState.POINT)
+			: point == this._handleIn ? !!(state & /*#=*/ SelectionState.HANDLE_IN)
+			: point == this._handleOut ? !!(state & /*#=*/ SelectionState.HANDLE_OUT)
 			: false;
 	},
 
@@ -187,9 +187,9 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 			// For performance reasons use array indices to access the various
 			// selection states: 0 = point, 1 = handleIn, 2 = handleOut
 			selection = [
-				!!(state & SelectionState.POINT),
-				!!(state & SelectionState.HANDLE_IN),
-				!!(state & SelectionState.HANDLE_OUT)
+				!!(state & /*#=*/ SelectionState.POINT),
+				!!(state & /*#=*/ SelectionState.HANDLE_IN),
+				!!(state & /*#=*/ SelectionState.HANDLE_OUT)
 			];
 		if (point == this._point) {
 			if (selected) {
@@ -215,9 +215,9 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 				selection[index] = selected;
 			}
 		}
-		this._selectionState = (selection[0] ? SelectionState.POINT : 0)
-				| (selection[1] ? SelectionState.HANDLE_IN : 0)
-				| (selection[2] ? SelectionState.HANDLE_OUT : 0);
+		this._selectionState = (selection[0] ? /*#=*/ SelectionState.POINT : 0)
+				| (selection[1] ? /*#=*/ SelectionState.HANDLE_IN : 0)
+				| (selection[2] ? /*#=*/ SelectionState.HANDLE_OUT : 0);
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
 		// project._selectedItems
@@ -225,7 +225,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 			path._updateSelection(this, state, this._selectionState);
 			// Let path know that we changed something and the view should be
 			// redrawn
-			path._changed(Change.ATTRIBUTE);
+			path._changed(/*#=*/ Change.ATTRIBUTE);
 		}
 	},
 

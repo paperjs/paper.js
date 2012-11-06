@@ -126,26 +126,26 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
-		if (flags & ChangeFlag.GEOMETRY) {
+		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			// Clear cached bounds and position whenever geometry changes
 			delete this._bounds;
 			delete this._position;
 		}
 		if (this._parent
-				&& (flags & (ChangeFlag.GEOMETRY | ChangeFlag.STROKE))) {
+				&& (flags & (/*#=*/ ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STROKE))) {
 			// Clear cached bounds of all items that this item contributes to.
 			// We call this on the parent, since the information is cached on
 			// the parent, see getBounds().
 			this._parent._clearBoundsCache();
 		}
-		if (flags & ChangeFlag.HIERARCHY) {
+		if (flags & /*#=*/ ChangeFlag.HIERARCHY) {
 			// Clear cached bounds of all items that this item contributes to.
 			// We don't call this on the parent, since we're already the parent
 			// of the child that modified the hierarchy (that's where these
 			// HIERARCHY notifications go)
 			this._clearBoundsCache();
 		}
-		if (flags & ChangeFlag.APPEARANCE) {
+		if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
 			this._project._needsRedraw();
 		}
 		// If this item is a symbol's definition, notify it of the change too
@@ -226,7 +226,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
 		}
-		this._changed(ChangeFlag.ATTRIBUTE);
+		this._changed(/*#=*/ ChangeFlag.ATTRIBUTE);
 	},
 
 	/**
@@ -287,7 +287,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				this[name] = value;
 				// #locked does not change appearance, all others do:
 				this._changed(name === '_locked'
-						? ChangeFlag.ATTRIBUTE : Change.ATTRIBUTE);
+						? /*#=*/ ChangeFlag.ATTRIBUTE : /*#=*/ Change.ATTRIBUTE);
 			}
 		};
 }, {}), /** @lends Item# */{
@@ -426,7 +426,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		} else if ((selected = !!selected) != this._selected) {
 			this._selected = selected;
 			this._project._updateSelection(this);
-			this._changed(Change.ATTRIBUTE);
+			this._changed(/*#=*/ Change.ATTRIBUTE);
 		}
 	},
 
@@ -473,10 +473,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				this.setFillColor(null);
 				this.setStrokeColor(null);
 			}
-			this._changed(Change.ATTRIBUTE);
+			this._changed(/*#=*/ Change.ATTRIBUTE);
 			// Tell the parent the clipping mask has changed
 			if (this._parent)
-				this._parent._changed(ChangeFlag.CLIPPING);
+				this._parent._changed(/*#=*/ ChangeFlag.CLIPPING);
 		}
 	},
 
@@ -553,7 +553,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	setMatrix: function(matrix) {
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
-		this._changed(Change.GEOMETRY);
+		this._changed(/*#=*/ Change.GEOMETRY);
 	}
 }, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'],
 function(name) {
@@ -1146,7 +1146,7 @@ function(name) {
 			// kept in sync.
 			if (item._name)
 				item.setName(item._name);
-			this._changed(Change.HIERARCHY);
+			this._changed(/*#=*/ Change.HIERARCHY);
 			return true;
 		}
 		return false;
@@ -1293,7 +1293,7 @@ function(name) {
 				Base.splice(this._parent._children, null, this._index, 1);
 			// Notify parent of changed hierarchy
 			if (notify)
-				this._parent._changed(Change.HIERARCHY);
+				this._parent._changed(/*#=*/ Change.HIERARCHY);
 			this._parent = null;
 			return true;
 		}
@@ -1339,7 +1339,7 @@ function(name) {
 		for (var i = removed.length - 1; i >= 0; i--)
 			removed[i]._remove(true, false);
 		if (removed.length > 0)
-			this._changed(Change.HIERARCHY);
+			this._changed(/*#=*/ Change.HIERARCHY);
 		return removed;
 	},
 
@@ -1352,7 +1352,7 @@ function(name) {
 			// Adjust inidces
 			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i]._index = i;
-			this._changed(Change.HIERARCHY);
+			this._changed(/*#=*/ Change.HIERARCHY);
 		}
 	},
 
@@ -1863,7 +1863,7 @@ function(name) {
 			this.apply();
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
-		this._changed(Change.GEOMETRY);
+		this._changed(/*#=*/ Change.GEOMETRY);
 		// Detect matrices that contain only translations and scaling
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.

@@ -21,10 +21,7 @@
 # are preserved or stripped and whitespaces are compressed.
 #
 # Usage:
-# preprocess.sh MODE SOURCE DESTINATION ARGUMENTS
-#
-# ARGUMENTS:
-#	e.g. "-DBROWSER"
+# preprocess.sh MODE SOURCE DEFINITIONS PREPRO_INCLUDE DESTINATION
 #
 # MODE:
 #	commented		Preprocessed but still formated and commented
@@ -34,18 +31,18 @@
 VERSION=0.22
 DATE=$(git log -1 --pretty=format:%ad)
 
-COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\" }' -d '$4' $2"
+COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\" }' -d '$3' -i '$4' $2"
 
 case $1 in
 	stripped)
-		eval "$COMMAND -c" > $3
+		eval "$COMMAND -c" > $5
 		;;
 	commented)
-		eval $COMMAND > $3
+		eval $COMMAND > $5
 		;;
 	compressed)
 		eval $COMMAND > temp.js
-		../../uglifyjs/bin/uglifyjs temp.js --extra --unsafe --reserved-names "$eval,$sign" > $3
+		../../uglifyjs/bin/uglifyjs temp.js --extra --unsafe --reserved-names "$eval,$sign" > $5
 		rm temp.js
 		;;
 esac

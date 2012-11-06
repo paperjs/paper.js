@@ -65,17 +65,17 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	_changed: function(flags) {
 		// Don't use base() for reasons of performance.
 		Item.prototype._changed.call(this, flags);
-		if (flags & ChangeFlag.GEOMETRY) {
+		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.
 			delete this._clockwise;
 			// Curves are no longer valid
 			if (this._curves != null) {
 				for (var i = 0, l = this._curves.length; i < l; i++) {
-					this._curves[i]._changed(Change.GEOMETRY);
+					this._curves[i]._changed(/*#=*/ Change.GEOMETRY);
 				}
 			}
-		} else if (flags & ChangeFlag.STROKE) {
+		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
 			// affected by stroke: _bounds.bounds and _bounds.handleBounds
 			delete this._bounds;
@@ -206,7 +206,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					this._curves[i = length - 1] = Curve.create(this,
 						this._segments[i], this._segments[0]);
 			}
-			this._changed(Change.GEOMETRY);
+			this._changed(/*#=*/ Change.GEOMETRY);
 		}
 	},
 
@@ -287,7 +287,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			segment._index = index + i;
 			// Select newly added segments if path was fully selected before
 			if (fullySelected)
-				segment._selectionState = SelectionState.POINT;
+				segment._selectionState = /*#=*/ SelectionState.POINT;
 			// If parts of this segment are selected, adjust the internal
 			// _selectedSegmentState now
 			if (segment._selectionState)
@@ -317,7 +317,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				curve._segment1 = segments[index + amount];
 			}
 		}
-		this._changed(Change.GEOMETRY);
+		this._changed(/*#=*/ Change.GEOMETRY);
 		return segs;
 	},
 
@@ -600,7 +600,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (last && this._closed && (curve = curves[curves.length - 1]))
 				curve._segment2 = segments[0];
 		}
-		this._changed(Change.GEOMETRY);
+		this._changed(/*#=*/ Change.GEOMETRY);
 		return removed;
 	},
 
@@ -670,16 +670,16 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 */
 	isFullySelected: function() {
 		return this._selected && this._selectedSegmentState
-				== this._segments.length * SelectionState.POINT;
+				== this._segments.length * /*#=*/ SelectionState.POINT;
 	},
 
 	setFullySelected: function(selected) {
 		var length = this._segments.length;
 		this._selectedSegmentState = selected
-				? length * SelectionState.POINT : 0;
+				? length * /*#=*/ SelectionState.POINT : 0;
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
-					? SelectionState.POINT : 0;
+					? /*#=*/ SelectionState.POINT : 0;
 		// No need to pass true for noChildren since Path has none anyway.
 		this.setSelected(selected);
 	},
@@ -941,7 +941,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				last1.remove();
 				this.setClosed(true);
 			}
-			this._changed(Change.GEOMETRY);
+			this._changed(/*#=*/ Change.GEOMETRY);
 			return true;
 		}
 		return false;
@@ -1352,7 +1352,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			var segment = segments[i];
 			segment._transformCoordinates(matrix, coords, false);
 			var state = segment._selectionState,
-				selected = state & SelectionState.POINT,
+				selected = state & /*#=*/ SelectionState.POINT,
 				pX = coords[0],
 				pY = coords[1];
 
@@ -1370,9 +1370,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				}
 			}
 
-			if (selected || (state & SelectionState.HANDLE_IN))
+			if (selected || (state & /*#=*/ SelectionState.HANDLE_IN))
 				drawHandle(2);
-			if (selected || (state & SelectionState.HANDLE_OUT))
+			if (selected || (state & /*#=*/ SelectionState.HANDLE_OUT))
 				drawHandle(4);
 			// Draw a rectangle at segment.point:
 			ctx.save();

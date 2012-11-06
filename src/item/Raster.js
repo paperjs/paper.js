@@ -144,7 +144,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		// to modify the Raster object. We can notify such changes ahead since
 		// they are only used afterwards for redrawing.
 		if (arguments[0])
-			this._changed(Change.PIXELS);
+			this._changed(/*#=*/ Change.PIXELS);
 		return this._context;
 	},
 
@@ -168,7 +168,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this._size = Size.create(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
-		this._changed(Change.GEOMETRY | Change.PIXELS);
+		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
 	},
 
 	/**
@@ -193,7 +193,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 /*#*/ } // options.server
 		this._canvas = null;
 		this._context = null;
-		this._changed(Change.GEOMETRY);
+		this._changed(/*#=*/ Change.GEOMETRY);
 	},
 
 	// DOCS: document Raster#getSubImage
