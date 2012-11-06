@@ -119,11 +119,11 @@ var SvgExporter = this.SvgExporter = new function() {
 		case 'polyline':
 		case 'polygon':
 			svg = createElement(type);
-			var pointString = '';
+			var parts = [];
 			for(i = 0; i < segments.length; i++) {
-				pointString += segments[i]._point._x + ',' + segments[i]._point._y + ' ';
+				parts.push(segments[i]._point._x + ',' + segments[i]._point._y);
 			}
-			svg.setAttribute('points', pointString);
+			svg.setAttribute('points', parts.join(' '));
 			break;
 		case 'text':
 			svg = createElement('text');
@@ -210,45 +210,39 @@ var SvgExporter = this.SvgExporter = new function() {
 	
 	function pathSetup(path, segments) {
 		var svgPath = createElement('path');
-		var pointString = '';
+		var parts = [];
 		// pointstring is formatted in the way the SVG XML will be reading.
 		// Namely, a point and the way to traverse to that point.
-		pointString += 'M' + segments[0]._point._x + ',' + segments[0]._point._y + ' ';
+		parts.push('M' + segments[0]._point._x + ',' + segments[0]._point._y);
 		//Checks 2 points and the angles in between the 2 points
-		for (i = 0; i < segments.length-1; i++) {
-			var x1 = segments[i]._point._x,
-				y1 = segments[i]._point._y,
-				x2 = segments[i + 1]._point._x,
-				y2 = segments[i + 1]._point._y,
-				handleOut1 = segments[i]._handleOut,
-				handleIn2 = segments[i+1]._handleIn;
+		function drawCurve(seg1, seg2) {
+			var x1 = seg1._point._x,
+				y1 = seg1._point._y,
+				x2 = seg2._point._x,
+				y2 = seg2._point._y,
+				handleOut1 = seg1._handleOut,
+				handleIn2 = seg2._handleIn;
 			if (handleOut1.isZero() && handleIn2.isZero()) {
 					// L is lineto, moving to a point with drawing
-					pointString+= 'L' + x2 + ',' + y2 + ' ';
+					parts.push('L' + x2 + ',' + y2 + ' ');
 			} else {
-				// c is curveto, relative: handleOut, handleIn - endpoint, endpoint - startpoint
-				pointString += 'c' + (handleOut1._x)  + ',' + (handleOut1._y) + ' ';
-				pointString += (x2 - x1 + handleIn2._x) + ',' + (y2 - y1 + handleIn2._y) + ' ';
-				pointString += (x2 - x1) + ',' + (y2 - y1) +  ' ';
+				// c is curveto, relative: handleOut, handleIn - end, end - start
+				parts.push('c' + handleOut1._x  + ',' + handleOut1._y,
+					(x2 - x1 + handleIn2._x) + ',' + (y2 - y1 + handleIn2._y),
+					(x2 - x1) + ',' + (y2 - y1));
 			}
 		}
-		if (!segments[segments.length - 1]._handleOut.equals([0, 0]) && !segments[0]._handleIn.equals([0, 0])) {
-			var handleOut1 = segments[segments.length - 1]._handleOut,
-				handleIn2 = segments[0]._handleIn,
-				// Bezier curve from last point to first
-				x1 = segments[segments.length - 1]._point._x,
-				y1 = segments[segments.length - 1]._point._y,
-				x2 = segments[0]._point._x,
-				y2 = segments[0]._point._y;
-			pointString += 'c' + (handleOut1._x)  + ',' + (handleOut1._y) + ' ';
-			pointString += (x2 - x1 + handleIn2._x) + ',' + (y2 - y1 + handleIn2._y) + ' ';
-			pointString += (x2 - x1) + ',' + (y2 - y1) +  ' ';
-		}
+		for (i = 0; i < segments.length - 1; i++)
+			drawCurve(segments[i], segments[i + 1]);
+		var first = segments[0],
+			last = segments[segments.length - 1];
+		if (!first._handleOut.isZero() && !last._handleIn.isZero())
+			drawCurve(last, first);
 		if (path._closed) {
 			// z implies a closed path, connecting the first and last points
-			pointString += 'z';
+			parts.push('z');
 		}
-		svgPath.setAttribute('d', pointString);
+		svgPath.setAttribute('d', parts.join(' '));
 		return svgPath;
 	}
 
