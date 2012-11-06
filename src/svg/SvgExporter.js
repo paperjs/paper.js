@@ -52,6 +52,11 @@ var SvgExporter = this.SvgExporter = new function() {
 	}
 
 	function getTransform(item) {
+		// Note, we're taking out the translation part of the matrix and move it
+		// to x, y attributes, to produce more readable markup, and not have to
+		// use center points in rotate(). To do so, SVG requries us to inverse
+		// transform the translation point by the matrix itself, since they are
+		// provided in local coordinates.
 		var matrix = item._matrix.createShiftless(),
 			trans =  matrix._inverseTransform(item._matrix.getTranslation()),
 			attrs = {
@@ -68,7 +73,7 @@ var SvgExporter = this.SvgExporter = new function() {
 			scale = matrix.getScaling();
 		if (angle != null) {
 			transform.push(angle
-					? 'rotate(' + angle + ',' + formatPoint(center) +')'
+					? 'rotate(' + formatNumber(angle) + ')'
 					: 'scale(' + formatPoint(scale) +')');
 		} else {
 			transform.push('matrix(' + matrix.getValues().join(',') + ')');
