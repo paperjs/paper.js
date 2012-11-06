@@ -119,17 +119,19 @@ var SvgExporter = this.SvgExporter = new function() {
 			// for the rounded rectangle
 			var width = getDistance(segments, 1, 6),
 				height = getDistance(segments, 0, 3),
-				point = path.getBounds().getTopLeft(),
-				dx2 = getDistance(segments, 0, 7),
-				dy2 = getDistance(segments, 1, 2),
-				dx3 = (width - dx2) / 2,
-				dy3 = (height - dy2) / 2,
-				point = new Point((segments[3]._point._x - dx3), (segments[2]._point._y - dy3)),
-				rx = segments[3]._point._x - point.x,
-				ry = segments[2]._point._y - point.y;
+				// Subtract side lengths from total width and divide by 2 to get
+				// corner radius size
+				rx = (width - getDistance(segments, 0, 7)) / 2,
+				ry = (height - getDistance(segments, 1, 2)) / 2,
+				// Calculate topLeft corner point, by using sides vectors and
+				// subtracting normalized rx vector to calculate arc corner. 
+				left = segments[3]._point, // top-left side point
+				right = segments[4]._point, // top-right side point
+				point = left.subtract(right.subtract(left).normalize(rx))
+						.rotate(-angle, path.getPosition());
 			attrs = {
-				x: point._x,
-				y: point._y,
+				x: point.x,
+				y: point.y,
 				width: width,
 				height: height,
 				rx: rx,
