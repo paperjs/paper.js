@@ -147,9 +147,6 @@ var SvgExporter = this.SvgExporter = new function() {
 			svg = createElement('text');
 			svg.setAttribute('x', path.getPoint().getX());
 			svg.setAttribute('y', path.getPoint().getY());
-			if (path.style.font != undefined) {
-				svg.setAttribute('font', path.style.font);
-			}
 			if (path.characterStyle.font != undefined) {
 				svg.setAttribute('font-family', path.characterStyle.font);
 			}
