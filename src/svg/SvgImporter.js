@@ -75,16 +75,29 @@ var SvgImporter = this.SvgImporter = new function() {
 	}
 
 	var importers = {
+		// http://www.w3.org/TR/SVG/struct.html#Groups
 		g: importGroup,
+		// http://www.w3.org/TR/SVG/struct.html#NewDocument
 		svg: importGroup,
+		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
+		symbol: function(svg) {
+			var item = importGroup(svg);
+			applyAttributesAndStyles(svg, item);
+			// TODO: We're returning a symbol. How to handle this?
+			return new Symbol(item);
+		},
+		// http://www.w3.org/TR/SVG/shapes.html#PolygonElement
 		polygon: importPoly,
+		// http://www.w3.org/TR/SVG/shapes.html#PolylineElement
 		polyline: importPoly,
 
+		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
 		circle: function(svg) {
 			return new Path.Circle(getPoint(svg, 'cx', 'cy'),
 					getValue(svg, 'r'));
 		},
 
+		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
 		ellipse: function(svg) {
 			var center = getPoint(svg, 'cx', 'cy'),
 				radius = getSize(svg, 'rx', 'ry');
@@ -92,6 +105,7 @@ var SvgImporter = this.SvgImporter = new function() {
 					center.add(radius)));
 		},
 
+		// http://www.w3.org/TR/SVG/shapes.html#RectElement
 		rect: function(svg) {
 			var point = getPoint(svg, 'x', 'y'),
 				size = getSize(svg, 'width', 'height'),
@@ -101,6 +115,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			return new Path.RoundRectangle(new Rectangle(point, size), radius);
 		},
 
+		// http://www.w3.org/TR/SVG/shapes.html#LineElement
 		line: function(svg) {
 			return new Path.Line(getPoint(svg, 'x1', 'y1'),
 					getPoint(svg, 'x2', 'y2'));
@@ -120,6 +135,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			return text;
 		},
 
+		// http://www.w3.org/TR/SVG/paths.html
 		path: function(svg) {
 			var path = new Path(),
 				list = svg.pathSegList,
@@ -221,13 +237,6 @@ var SvgImporter = this.SvgImporter = new function() {
 				}
 			}
 			return compoundPath || path;
-		},
-
-		symbol: function(svg) {
-			var item = importGroup(svg);
-			applyAttributesAndStyles(svg, item);
-			// TODO: We're returning a symbol. How to handle this?
-			return new Symbol(item);
 		}
 	};
 
@@ -280,6 +289,8 @@ var SvgImporter = this.SvgImporter = new function() {
 			case 'id':
 				item.setName(value);
 				break;
+			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
+			// http://www.w3.org/TR/SVG/coords.html#TransformAttribute
 			case 'transform':
 				applyTransform(svg, item);
 				break;
@@ -292,6 +303,7 @@ var SvgImporter = this.SvgImporter = new function() {
 			case 'font':
 			case 'font-family':
 			case 'font-size':
+			// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
 			case 'text-anchor':
 				applyTextStyle(svg, item, name, value);
 				break;
