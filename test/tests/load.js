@@ -28,5 +28,5 @@
 
 /*#*/ include('HitResult.js');
 
-/*#*/ include('SvgImporter.js');
-/*#*/ include('SvgExporter.js');
+/*#*/ include('SvgImport.js');
+/*#*/ include('SvgExport.js');
