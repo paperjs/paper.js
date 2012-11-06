@@ -48,28 +48,23 @@ var SvgImporter = this.SvgImporter = new function() {
 
 	// Define importer functions for various SVG node types
 
-	function createGroupImporter(type) {
-		return function(svg) {
-			var items = [],
-				nodes = svg.childNodes;
-			for (var i = 0, l = nodes.length; i < l; i++) {
-				var child = nodes[i];
-				if (child.nodeType == 1) {
-					var item = SvgImporter.importSvg(child);
-					if (item) {
-						var parent = item.getParent();
-						if (parent && !(parent instanceof Layer))
-							item = parent;
-						items.push(item);
-					}
+	function importGroup(svg, type) {
+		var items = [],
+			nodes = svg.childNodes;
+		for (var i = 0, l = nodes.length; i < l; i++) {
+			var child = nodes[i];
+			if (child.nodeType == 1) {
+				var item = SvgImporter.importSvg(child);
+				if (item) {
+					var parent = item.getParent();
+					if (parent && !(parent instanceof Layer))
+						item = parent;
+					items.push(item);
 				}
 			}
-			return new type(items);
 		}
+		return new (type === 'clippath' ? CompoundPath : Group)(items);
 	}
-
-	var importGroup = createGroupImporter(Group);
-	var importCompoundPath = createGroupImporter(CompoundPath);
 
 	function importPoly(svg, type) {
 		var path = new Path(),
@@ -197,7 +192,7 @@ var SvgImporter = this.SvgImporter = new function() {
 		g: importGroup,
 		// http://www.w3.org/TR/SVG/struct.html#NewDocument
 		svg: importGroup,
-		clippath: importCompoundPath,
+		clippath: importGroup,
 		// http://www.w3.org/TR/SVG/shapes.html#PolygonElement
 		polygon: importPoly,
 		// http://www.w3.org/TR/SVG/shapes.html#PolylineElement
@@ -206,16 +201,16 @@ var SvgImporter = this.SvgImporter = new function() {
 		path: importPath,
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
-		symbol: function(svg) {
-			var item = importGroup(svg);
+		symbol: function(svg, type) {
+			var item = importGroup(svg, type);
 			applyAttributesAndStyles(svg, item);
 			// TODO: We're returning a symbol. How to handle this?
 			return new Symbol(item);
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#DefsElement
-		defs: function(svg) {
-			var group = importGroup(svg);
+		defs: function(svg, type) {
+			var group = importGroup(svg, type);
 			group.remove();
 			return group;
 		},
