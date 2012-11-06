@@ -204,7 +204,7 @@ new function() {
 		attrs.fill = 'none';
 		var svg = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++)
-			svg.appendChild(exportItem(children[i]));
+			svg.appendChild(children[i].exportSvg());
 		return svg;
 	}
 
@@ -362,21 +362,6 @@ new function() {
 		return setAttributes(svg, attrs);
 	}
 
-	function exportProject(project) {
-		var svg = createElement('svg'),
-			layers = project.layers;
-		for (var i = 0, l = layers.length; i < l; i++) {
-			svg.appendChild(exportItem(layers[i]));
-		}
-		return svg;
-	}
-
-	function exportItem(item) {
-		var exporter = exporters[item._type];
-		var svg = exporter && exporter(item, item._type);
-		return svg && applyStyle(item, svg);
-	}
-
 	Item.inject(/** @Lends Item# */{
 		/**
 		 * Exports the item and all its child items as an SVG DOM, all contained
@@ -385,7 +370,9 @@ new function() {
 		 * @return {SVGSVGElement} the item converted to an SVG node
 		 */
 		exportSvg: function() {
-			return exportItem(this);
+			var exporter = exporters[this._type];
+			var svg = exporter && exporter(this, this._type);
+			return svg && applyStyle(this, svg);
 		}
 	});
 
@@ -397,7 +384,11 @@ new function() {
 		 * @return {SVGSVGElement} the project converted to an SVG node
 		 */
 		exportSvg: function() {
-			return exportProject(this);
+			var svg = createElement('svg'),
+				layers = this.layers;
+			for (var i = 0, l = layers.length; i < l; i++)
+				svg.appendChild(layers[i].exportSvg());
+			return svg;
 		}
 	});
 };
