@@ -114,6 +114,7 @@ var SvgExporter = this.SvgExporter = new function() {
 			};
 			break;
 		case 'roundrect':
+			type = 'rect';
 			// d-variables and point are used to determine the rounded corners
 			// for the rounded rectangle
 			var width = getDistance(segments, 1, 6),
@@ -231,9 +232,19 @@ var SvgExporter = this.SvgExporter = new function() {
 		function isOrthogonal(i) {
 			var segment = segments[i],
 				point = segment.getPoint();
-			return Numerical.isZero(90 - Math.abs(
-					segment.getNext().getPoint().subtract(point).getAngle(
-					segment.getPrevious().getPoint().subtract(point))));
+			return segment.getNext()._point.subtract(point).isOrthogonal(
+					segment.getPrevious()._point.subtract(point));
+		}
+
+		function isColinear(i, j) {
+			var seg1 = segments[i],
+				seg2 = seg1.getNext(),
+				seg3 = segments[j],
+				seg4 = seg3.getNext();
+			return seg1._handleOut.isZero() && seg2._handleIn.isZero()
+					&& seg3._handleOut.isZero() && seg4._handleIn.isZero()
+					&& seg2._point.subtract(seg1._point).isColinear(
+						seg4._point.subtract(seg3._point));
 		}
 
 		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
@@ -242,14 +253,17 @@ var SvgExporter = this.SvgExporter = new function() {
 		function isArc(i) {
 			var segment = segments[i],
 				next = segment.getNext(),
-				handle1 = segment.getHandleOut(),
-				handle2 = next.getHandleIn();
-			if (Numerical.isZero(90 - Math.abs(handle1.getAngle(handle2)))) {
-				var from = segment.getPoint(),
-					to = next.getPoint(),
-					corner = new Line(from, handle1).intersect(new Line(to, handle2));
-				return Numerical.isZero(handle1.length / corner.subtract(from).length - kappa)
-						&& Numerical.isZero(handle2.length / corner.subtract(to).length - kappa);
+				handle1 = segment._handleOut,
+				handle2 = next._handleIn;
+			if (handle1.isOrthogonal(handle2)) {
+				var from = segment._point,
+					to = next._point,
+					corner = new Line(from, handle1).intersect(
+							new Line(to, handle2));
+				return corner && Numerical.isZero(handle1.getLength() /
+						corner.subtract(from).getLength() - kappa)
+					&& Numerical.isZero(handle2.getLength() /
+						corner.subtract(to).getLength() - kappa);
 			}
 		}
 
@@ -257,18 +271,24 @@ var SvgExporter = this.SvgExporter = new function() {
 		// between straight objects (line, polyline, rect, and  polygon) and
 		// objects with curves(circle, ellipse, roundedRectangle).
 		if (path.isPolygon()) {
-			return  segments.length === 4 && path._closed && isOrthogonal(0)
-					&& isOrthogonal(1) && isOrthogonal(2) && isOrthogonal(3)
+			return  segments.length === 4 && path._closed
+					&& isColinear(0, 2) && isColinear(1, 3)
 					? 'rect'
 					: segments.length >= 3
 						? path._closed ? 'polygon' : 'polyline'
 						: 'line';
 		} else if (path._closed) {
 			if (segments.length === 8) {
-				// If the distance between (point0 and point3) and (point7 and 
-				// point4) are equal then it is a roundedRectangle
-				if (Numerical.isZero(
-					getDistance(segments, 0, 3) - getDistance(segments, 7, 5)))
+				var numArcs = 0,
+					numColinears = 0;
+				for (var i = 0; i < 8; i++) {
+					if (isArc(i))
+						numArcs++;
+					var j = i + 4;
+					if (isColinear(i, j >= 8 ? j - 8 : j))
+						numColinears++;
+				}
+				if (numArcs === 4 && numColinears === 4)
 					return 'roundrect';
 			} else if (segments.length === 4
 					&& isArc(0) && isArc(1) && isArc(2) && isArc(3)) {
