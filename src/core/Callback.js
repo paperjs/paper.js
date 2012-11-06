@@ -14,6 +14,10 @@
  * All rights reserved.
  */
 
+/**
+ * @name Callback
+ * @namespace
+ */
 var Callback = {
 	attach: function(type, func) {
 		// If an object literal is passed, attach all callbacks defined in it
