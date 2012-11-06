@@ -272,18 +272,10 @@ var SvgExporter = this.SvgExporter = new function() {
 						? path._closed ? 'polygon' : 'polyline'
 						: 'line';
 		} else if (path._closed) {
-			if (segments.length === 8) {
-				var numArcs = 0,
-					numColinears = 0;
-				for (var i = 0; i < 8; i++) {
-					if (isArc(i))
-						numArcs++;
-					var j = i + 4;
-					if (isColinear(i, j >= 8 ? j - 8 : j))
-						numColinears++;
-				}
-				if (numArcs === 4 && numColinears === 4)
-					return 'roundrect';
+			if (segments.length === 8
+					&& isArc(0) && isArc(2) && isArc(4) && isArc(6)
+					&& isColinear(1, 5) && isColinear(3, 7)) {
+				return 'roundrect';
 			} else if (segments.length === 4
 					&& isArc(0) && isArc(1) && isArc(2) && isArc(3)) {
 				// If the distance between (point0 and point2) and (point1
