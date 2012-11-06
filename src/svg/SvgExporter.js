@@ -117,15 +117,8 @@ var SvgExporter = this.SvgExporter = new function() {
 			svg.setAttribute('ry', radiusY);
 			break;
 		case 'polyline':
-			svg = createElement('polyline');
-			var pointString = '';
-			for(var i = 0; i < segments.length; i++) {
-				pointString += segments[i]._point._x + ','  + segments[i]._point._y + ' ';
-			}
-			svg.setAttribute('points', pointString);
-			break;
 		case 'polygon':
-			svg = createElement('polygon');
+			svg = createElement(type);
 			var pointString = '';
 			for(i = 0; i < segments.length; i++) {
 				pointString += segments[i]._point._x + ',' + segments[i]._point._y + ' ';
@@ -181,8 +174,8 @@ var SvgExporter = this.SvgExporter = new function() {
 
 	// Determines whether the object has been transformed or not through finding the angle
 	function determineIfTransformed(path, segments, type) {
-		var topMidBoundx = (path.bounds.topRight._x + path.bounds.topLeft._x )/2;
-		var topMidBoundy = (path.bounds.topRight._y + path.bounds.topLeft._y )/2;
+		var topMidBoundx = (path.bounds.topRight._x + path.bounds.topLeft._x) / 2;
+		var topMidBoundy = (path.bounds.topRight._y + path.bounds.topLeft._y) / 2;
 		var topMidBound = new Point(topMidBoundx, topMidBoundy);
 		var centerPoint = path.getPosition();
 		var topMidPathx;
@@ -190,8 +183,8 @@ var SvgExporter = this.SvgExporter = new function() {
 		var topMidPath;
 		switch (type) {
 		case 'rect':
-			topMidPathx = (segments[1]._point._x + segments[2]._point._x )/2;
-			topMidPathy = (segments[1]._point._y + segments[2]._point._y )/2;
+			topMidPathx = (segments[1]._point._x + segments[2]._point._x) / 2;
+			topMidPathy = (segments[1]._point._y + segments[2]._point._y) / 2;
 			topMidPath = new Point(topMidPathx, topMidPathy);
 			break;
 		case 'ellipse':
@@ -201,8 +194,8 @@ var SvgExporter = this.SvgExporter = new function() {
 			topMidPath = new Point(segments[1]._point._x, segments[1]._point._y);
 			break;
 		case 'roundrect':
-			topMidPathx = (segments[3]._point._x + segments[4]._point._x)/2;
-			topMidPathy = (segments[3]._point._y + segments[4]._point._y)/2;
+			topMidPathx = (segments[3]._point._x + segments[4]._point._x) / 2;
+			topMidPathy = (segments[3]._point._y + segments[4]._point._y) / 2;
 			topMidPath = new Point(topMidPathx, topMidPathy);
 			break;	
 		default:
@@ -229,7 +222,7 @@ var SvgExporter = this.SvgExporter = new function() {
 				y2 = segments[i + 1]._point._y,
 				handleOut1 = segments[i]._handleOut,
 				handleIn2 = segments[i+1]._handleIn;
-			if (handleOut1._x == 0 && handleOut1._y == 0 && handleIn2._x == 0 && handleIn2._y == 0) {
+			if (handleOut1.isZero() && handleIn2.isZero()) {
 					// L is lineto, moving to a point with drawing
 					pointString+= 'L' + x2 + ',' + y2 + ' ';
 			} else {
