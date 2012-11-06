@@ -391,7 +391,6 @@ var SvgExporter = this.SvgExporter = new function() {
 
 		exportItem: function(item) {
 			var exporter = exporters[item._type];
-			// TODO: exporter == null: Not supported yet.
 			var svg = exporter && exporter(item, item._type);
 			return svg && applyStyle(item, svg);
 		}
