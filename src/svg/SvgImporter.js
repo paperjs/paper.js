@@ -374,7 +374,7 @@ var SvgImporter = this.SvgImporter = new function() {
 				d = mx.d;
 			switch (transform.type) {
 			// Compensate for SVG's theta rotation going the opposite direction
-			case /*#=*/ SVGTransform.SVG_TRANSFORM_MATRIX
+			case /*#=*/ SVGTransform.SVG_TRANSFORM_MATRIX:
 				var tmp = b;
 				b = c;
 				c = tmp;
