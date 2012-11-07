@@ -43,27 +43,25 @@ new function() {
 	// Define importer functions for various SVG node types
 
 	function importGroup(svg, type) {
-		var items = [],
-			nodes = svg.childNodes,
-			compound = type === 'clippath';
+		var nodes = svg.childNodes,
+			compound = type === 'clippath',
+			group = compound ? new CompoundPath() : new Group();
 
 		for (var i = 0, l = nodes.length; i < l; i++) {
-			var child = nodes[i];
-			if (child.nodeType == 1) {
-				var item = importSvg(child);
-				// If adding compound paths to other compound paths,
+			var child = nodes[i],
+				item;
+			if (child.nodeType == 1 && (item = importSvg(child))) {
+				// If adding CompoundPaths to other CompoundPaths,
 				// we need to "unbox" them first:
-				if (item) {
-					if (compound && item instanceof CompoundPath) {
-						items.push.apply(items, item.removeChildren());
-						item.remove();
-					} else {
-						items.push(item);
-					}
+				if (compound && item instanceof CompoundPath) {
+					group.addChildren(item.removeChildren());
+					item.remove();
+				} else {
+					group.addChild(item);
 				}
 			}
 		}
-		return new (compound ? CompoundPath : Group)(items);
+		return group;
 	}
 
 	function importPoly(svg, type) {
