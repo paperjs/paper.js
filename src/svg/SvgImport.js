@@ -66,7 +66,7 @@ new function() {
 			// I don't think we need to add defs to the DOM. But we might want
 			// to use Symbols for them?
 			group.remove();
-			grourp = null;
+			group = null;
 		}
 		return group;
 	}
