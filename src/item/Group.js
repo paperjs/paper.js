@@ -73,8 +73,7 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 		// Allow Group to have children and named children
 		this._children = [];
 		this._namedChildren = {};
-		this.addChildren(!items || !Array.isArray(items)
-				|| items.length && typeof items[0] !== 'object' ? arguments : items);
+		this.addChildren(Array.isArray(items) ? items : arguments);
 	},
 
 	_changed: function(flags) {

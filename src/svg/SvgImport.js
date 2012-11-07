@@ -310,7 +310,7 @@ new function() {
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			case 'clip-path':
 				var clipPath = getDefinition(value).clone().flatten(),
-					group = new Group([clipPath]);
+					group = new Group(clipPath);
 				group.moveAbove(item);
 				group.addChild(item);
 				group.setClipped(true);

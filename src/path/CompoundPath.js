@@ -48,9 +48,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		this._namedChildren = {};
 		// Do not reassign to paths, since arguments would get modified, which
 		// we potentially use as array, depending on what is passed.
-		var items = !paths || !Array.isArray(paths)
-				|| typeof paths[0] !== 'object' ? arguments : paths;
-		this.addChildren(items);
+		this.addChildren(Array.isArray(paths) ? paths : arguments);
 	},
 
 	insertChild: function(index, item) {
