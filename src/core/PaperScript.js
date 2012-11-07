@@ -165,7 +165,7 @@ var PaperScript = this.PaperScript = new function() {
 			// Within this, use a function scope, so local variables to not try
 			// and set themselves on the scope object.
 			(function() {
-				var onEditOptions, onSelect, onDeselect, onReselect,
+				var onActivate, onDeactivate, onEditOptions,
 					onMouseDown, onMouseUp, onMouseDrag, onMouseMove,
 					onKeyDown, onKeyUp, onFrame, onResize;
 				res = eval(compile(code));
