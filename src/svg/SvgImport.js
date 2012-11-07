@@ -51,11 +51,6 @@ new function() {
 			var child = nodes[i];
 			if (child.nodeType == 1) {
 				var item = importSvg(child);
-				if (item) {
-					var parent = item.getParent();
-					if (parent && !(parent instanceof Layer))
-						item = parent;
-				}
 				// If adding compound paths to other compound paths,
 				// we need to "unbox" them first:
 				if (item) {
@@ -207,7 +202,7 @@ new function() {
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(svg, type) {
 			var item = importGroup(svg, type);
-			applyAttributes(item, svg);
+			item = applyAttributes(item, svg);
 			// TODO: We're returning a symbol. How to handle this?
 			return new Symbol(item);
 		},
@@ -279,12 +274,13 @@ new function() {
 		// so we need to parse both
 		for (var i = 0, l = svg.style.length; i < l; i++) {
 			var name = svg.style[i];
-			applyAttribute(item, svg, name, svg.style[Base.camelize(name)]);
+			item = applyAttribute(item, svg, name, svg.style[Base.camelize(name)]);
 		}
 		for (var i = 0, l = svg.attributes.length; i < l; i++) {
 			var attr = svg.attributes[i];
-			applyAttribute(item, svg, attr.name, attr.value);
+			item = applyAttribute(item, svg, attr.name, attr.value);
 		}
+		return item;
 	}
 
 	/**
@@ -297,7 +293,7 @@ new function() {
 	 */
 	 function applyAttribute(item, svg, name, value) {
 		if (value == null)
-			return;
+			return item;
 		var entry = SvgStyles.attributes[name];
 		if (entry) {
 			item._style[entry.set](value === 'none'
@@ -316,8 +312,13 @@ new function() {
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			case 'clip-path':
 				var clipPath = getDefinition(value).clone().flatten(),
-					group = new Group([clipPath, item]);
-				group.clipped = true;
+					group = new Group([clipPath]);
+				group.moveAbove(item);
+				group.addChild(item);
+				group.setClipped(true);
+				// item can be modified, since it gets returned from 
+				// applyAttribute(). So let's have this change propagate back up
+				item = group; 
 				break;
 			// http://www.w3.org/TR/SVG/coords.html#TransformAttribute
 			case 'transform':
@@ -341,6 +342,7 @@ new function() {
 				break;
 			}
 		}
+		return item;
 	}
 
 	function applyTextAttribute(item, svg, name, value) {
@@ -352,7 +354,7 @@ new function() {
 				text.style.font = value;
 				for (var i = 0; i < text.style.length; i++) {
 					var name = text.style[i];
-					applyAttribute(item, svg, name, text.style[name]);
+					item = applyAttribute(item, svg, name, text.style[name]);
 				}
 				break;
 			case 'font-family':
@@ -428,9 +430,7 @@ new function() {
 		var type = svg.nodeName.toLowerCase(),
 			importer = importers[type];
 		var item = importer && importer(svg, type);
-		if (item)
-			applyAttributes(item, svg);
-		return item;
+		return item ? applyAttributes(item, svg) : item;
 	}
 
 
