@@ -56,9 +56,9 @@ var paper = new function() {
 /*#*/ } // options.stats
 
 /*#*/ include('core/Base.js');
+/*#*/ include('core/Callback.js');
 /*#*/ include('core/PaperScope.js');
 /*#*/ include('core/PaperScopeItem.js');
-/*#*/ include('core/Callback.js');
 
 // Include Paper classes, which are later injected into PaperScope by setting
 // them on the 'this' object, e.g.:

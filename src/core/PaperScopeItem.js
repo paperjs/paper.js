@@ -23,7 +23,7 @@
  *
  * @private
  */
-var PaperScopeItem = Base.extend(/** @lends PaperScopeItem# */{
+var PaperScopeItem = Base.extend(Callback, /** @lends PaperScopeItem# */{
 
 	/**
 	 * Creates a PaperScopeItem object.
@@ -41,7 +41,11 @@ var PaperScopeItem = Base.extend(/** @lends PaperScopeItem# */{
 	activate: function() {
 		if (!this._scope)
 			return false;
+		var prev = this._scope[this._reference];
+		if (prev && prev != this)
+			prev.fire('deactivate');
 		this._scope[this._reference] = this;
+		this.fire('activate', prev);
 		return true;
 	},
 
