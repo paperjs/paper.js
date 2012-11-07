@@ -1615,13 +1615,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				// Do the actual averaging simply by linearly fading between the
 				// overlapping values.
 				for (var i = 0, j = size; i < overlap; i++, j++) {
-					var f1 = (i / overlap);
-					var f2 = 1 - f1;
+					var f1 = i / overlap,
+						f2 = 1 - f1,
+						ie = i + overlap,
+						je = j + overlap;
 					// Beginning
 					x[j] = x[i] * f1 + x[j] * f2;
 					y[j] = y[i] * f1 + y[j] * f2;
 					// End
-					var ie = i + overlap, je = j + overlap;
 					x[je] = x[ie] * f2 + x[je] * f1;
 					y[je] = y[ie] * f2 + y[je] * f1;
 				}
