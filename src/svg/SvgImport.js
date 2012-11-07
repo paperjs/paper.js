@@ -58,11 +58,13 @@ new function() {
 				}
 				// If adding compound paths to other compound paths,
 				// we need to "unbox" them first:
-				if (compound && item instanceof CompoundPath) {
-					items.push.apply(items, item.removeChildren());
-					item.remove();
-				} else {
-					items.push(item);
+				if (item) {
+					if (compound && item instanceof CompoundPath) {
+						items.push.apply(items, item.removeChildren());
+						item.remove();
+					} else {
+						items.push(item);
+					}
 				}
 			}
 		}
@@ -214,7 +216,9 @@ new function() {
 		defs: function(svg, type) {
 			var group = importGroup(svg, type);
 			group.remove();
-			return group;
+			// I don't think we need to add defs to the DOM. But we might want
+			// to use Symbols for them?
+			return null;
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
