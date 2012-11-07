@@ -52,7 +52,8 @@ var Key = this.Key = new function() {
 		control: false,
 		option: false,
 		command: false,
-		capsLock: false
+		capsLock: false,
+		space: false
 	}),
 
 	// Since only keypress gets proper keyCodes that are actually representing
