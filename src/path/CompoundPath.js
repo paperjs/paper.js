@@ -120,14 +120,16 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		param.compound = true;
 		for (var i = 0, l = children.length; i < l; i++)
 			Item.draw(children[i], ctx, param);
-		if (this._clipMask)
-			ctx.clip();
 		param.compound = false;
-		this._setStyles(ctx);
-		if (style._fillColor)
-			ctx.fill();
-		if (style._strokeColor)
-			ctx.stroke();
+		if (this._clipMask) {
+			ctx.clip();
+		} else {
+			this._setStyles(ctx);
+			if (style._fillColor)
+				ctx.fill();
+			if (style._strokeColor)
+				ctx.stroke();
+		}
 	}
 }, new function() { // Injection scope for PostScript-like drawing functions
 	/**
