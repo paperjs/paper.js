@@ -185,6 +185,56 @@ new function() {
 		return compoundPath || path;
 	}
 
+	function importGradient(svg, type) {
+		var nodes = svg.childNodes,
+			stops = [];
+		for (var i = 0, l = nodes.length; i < l; i++) {
+			var node = nodes[i];
+			if (node.nodeType == 1) {
+				var style = node.style,
+					color = new RgbColor(node.getAttribute('stop-color') || style['stop-color']),
+					opacity = node.getAttribute('stop-opacity') || style['stop-opacity'],
+					offset = node.getAttribute('offset');
+				if (opacity != '')
+					color.setAlpha(parseFloat(opacity, 10));
+				stops.push([color, offset]);
+			}
+		}
+		var gradient = new Gradient(stops),
+			isRadial = type == 'radialgradient',
+			origin, destination, highlight;
+		if (isRadial) {
+			gradient.type = 'radial';
+			var radius = parseFloat(svg.getAttribute('r'), 10);
+			origin = [
+				parseFloat(svg.getAttribute('cx'), 10),
+				parseFloat(svg.getAttribute('cy'), 10)
+			];
+			destination = [
+				parseFloat(origin[0] + radius, 10),
+				parseFloat(origin[1], 10)
+			];
+			var fx = svg.getAttribute('fx');
+			if (fx) {
+				highlight = [
+					parseFloat(fx, 10),
+					parseFloat(svg.getAttribute('fy'), 10)
+				];
+			}
+		} else {
+			origin = [
+				parseFloat(svg.getAttribute('x1'), 10),
+				parseFloat(svg.getAttribute('y1'), 10)
+			];
+			destination = [
+				parseFloat(svg.getAttribute('x2'), 10),
+				parseFloat(svg.getAttribute('y2'), 10)
+			];
+		}
+		var gradientColor = new GradientColor(gradient, origin, destination, highlight);
+		applyAttributes(gradientColor, svg);
+	}
+
 	var definitions = {};
 	function getDefinition(value) {
 		var match = value.match(/#([^)']+)/);
@@ -264,7 +314,9 @@ new function() {
 					.add(getPoint(svg, 'dx', 'dy', 0)));
 			text.content = svg.textContent || '';
 			return text;
-		}
+		},
+		lineargradient: importGradient,
+		radialgradient: importGradient
 	};
 
 	/**
@@ -307,12 +359,15 @@ new function() {
 					? parseFloat(value, 10)
 					: entry.type === 'array'
 						? value.split(/[\s,]+/g).map(parseFloat)
-						: value);
+						: entry.type === 'color'
+							? getDefinition(value)
+							: value);
 		} else {
 			switch (name) {
 			case 'id':
 				definitions[value] = item;
-				item.setName(value);
+				if (item.setName)
+					item.setName(value);
 				break;
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			case 'clip-path':
@@ -326,6 +381,7 @@ new function() {
 				item = group; 
 				break;
 			// http://www.w3.org/TR/SVG/coords.html#TransformAttribute
+			case 'gradientTransform':
 			case 'transform':
 				applyTransform(item, svg);
 				break;
@@ -392,8 +448,9 @@ new function() {
 	 * @param {SVGSVGElement} svg an SVG node
 	 * @param {Item} item a Paper.js item
 	 */
-	function applyTransform(item, svg) {
-		var transforms = svg.transform.baseVal,
+	function applyTransform(item, svg, name) {
+		var svgTransform = svg[name == 'transform' ? 'transform' : 'gradientTransform'],
+			transforms = svgTransform.baseVal,
 			matrix = new Matrix();
 		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
 			var transform = transforms.getItem(i);
@@ -433,8 +490,8 @@ new function() {
 
 	function importSvg(svg) {
 		var type = svg.nodeName.toLowerCase(),
-			importer = importers[type];
-		var item = importer && importer(svg, type);
+			importer = importers[type],
+			item = importer && importer(svg, type);
 		return item ? applyAttributes(item, svg) : item;
 	}
 
