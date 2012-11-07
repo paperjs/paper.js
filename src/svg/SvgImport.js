@@ -214,6 +214,11 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/struct.html#DefsElement
 		defs: importGroup,
+
+		// http://www.w3.org/TR/SVG/struct.html#UseElement
+		use: function(svg, type) {
+			var id = svg.getAttribute('xlink:href').substr(1);
+			return definitions[id].clone();
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
