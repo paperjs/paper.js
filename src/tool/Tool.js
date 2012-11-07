@@ -46,10 +46,10 @@
  * 	path.add(event.point);
  * }
  */
-var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
+var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	_list: 'tools',
 	_reference: '_tool', // PaperScope has accessor for #tool
-	_events: [ 'onEditOptions', 'onSelect', 'onDeselect', 'onReselect',
+	_events: [ 'onActivate', 'onDeactivate', 'onEditOptions',
 			'onMouseDown', 'onMouseUp', 'onMouseDrag', 'onMouseMove',
 			'onKeyDown', 'onKeyUp' ],
 
@@ -272,9 +272,9 @@ var Tool = this.Tool = PaperScopeItem.extend(Callback, /** @lends Tool# */{
 			needsChange, matchMaxDistance) {
 		if (!start) {
 			if (minDistance != null || maxDistance != null) {
-				var minDist = minDistance != null ? minDistance : 0;
-				var vector = pt.subtract(this._point);
-				var distance = vector.getLength();
+				var minDist = minDistance != null ? minDistance : 0,
+					vector = pt.subtract(this._point),
+					distance = vector.getLength();
 				if (distance < minDist)
 					return false;
 				// Produce a new point on the way to pt if pt is further away
