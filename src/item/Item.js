@@ -1157,7 +1157,7 @@ function(name) {
 	 * its children list. You can use this function for groups, compound
 	 * paths and layers.
 	 *
-	 * @param {item[]} items The items to be added as children
+	 * @param {Item[]} items The items to be added as children
 	 */
 	addChildren: function(items) {
 		this.insertChildren(this._children.length, items);

@@ -41,7 +41,7 @@
 				overlayColor.alpha = 0.5;
 				var overlayGradient = new Gradient([new RgbColor(1, 1, 1, 0.5), new RgbColor(1, 1, 1, 1)]);
 				overlay.fillColor = new GradientColor(overlayGradient, overlayPos, overlayPos + this.radius / 2);
-				this.item = new Group([compound, overlay]);
+				this.item = new Group(compound, overlay);
 			},
 
 			iterate: function() {

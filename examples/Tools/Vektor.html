@@ -49,14 +49,14 @@
 		items = [];
 		var arrowVector = vector.normalize(10);
 		var end = vectorStart + vector;
-		vectorItem = new Group([
-			new Path([vectorStart, end]),
-			new Path([
+		vectorItem = new Group(
+			new Path(vectorStart, end),
+			new Path(
 				end + arrowVector.rotate(135),
 				end,
 				end + arrowVector.rotate(-135)
-			])
-		]);
+			)
+		);
 		vectorItem.strokeWidth = 0.75;
 		vectorItem.strokeColor = '#e4141b';
 		// Display:
