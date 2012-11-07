@@ -353,11 +353,11 @@ new function() {
 			}
 		});
 
-		if (item._opacity != null)
+		if (item._opacity != null && item._opacity < 1)
 			attrs.opacity = item._opacity;
 
-		if (item._visibility != null)
-			attrs._visibility = item._visibility ? 'visible' : 'hidden';
+		if (item._visibility != null && !item._visibility)
+			attrs.visibility = 'hidden';
 
 		return setAttributes(svg, attrs);
 	}
