@@ -61,6 +61,13 @@ new function() {
 				}
 			}
 		}
+
+		if (type == 'defs') {
+			// I don't think we need to add defs to the DOM. But we might want
+			// to use Symbols for them?
+			group.remove();
+			grourp = null;
+		}
 		return group;
 	}
 
@@ -206,12 +213,7 @@ new function() {
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#DefsElement
-		defs: function(svg, type) {
-			var group = importGroup(svg, type);
-			group.remove();
-			// I don't think we need to add defs to the DOM. But we might want
-			// to use Symbols for them?
-			return null;
+		defs: importGroup,
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
