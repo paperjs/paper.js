@@ -1,3 +1,14 @@
+@font-face {
+    font-family: 'Tools';
+    src: url('fonts/tools.eot');
+    src: url('fonts/tools.eot?#iefix') format('embedded-opentype'),
+         url('fonts/tools.woff') format('woff'),
+         url('fonts/tools.svg#tools') format('svg'),
+         url('fonts/tools.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 body,
 html,
 .paperscript {
@@ -22,10 +33,12 @@ html,
 	border-radius: 4px;
 	margin: 8px 8px 0 0;
 	background: #eee;
+	display: none;
 }
 
-.paperscript .button {
-	display: none;
+.symbol {
+	font-family: 'Tools', 'Lucida Grande', Geneva, Verdana, Arial, sans-serif;
+	font-weight: normal;
 }
 
 .paperscript .explain {
@@ -33,13 +46,21 @@ html,
 }
 
 .paperscript .explain,
-.buttons-context:hover .button {
+.buttons-context:hover .button,
+.buttons-context:hover .info:not(.hidden) {
 	display: block;
+}
+
+.paperscript .button {
+	cursor: pointer;
 }
 
 .paperscript .button:hover {
 	background: #ddd;
-	cursor: pointer;
+}
+
+.paperscript .button.active {
+	background: #bbb;
 }
 
 .paperscript .CodeMirror-scroll {
@@ -112,6 +133,14 @@ html,
 	border: 0;
 	border-top: 0;
 }
+
+/* tools */
+
+.zoom {
+	cursor: url(assets/magnify.cur),default;
+}
+
+/* splitter */
 
 .splitter_panel {
  position: relative;

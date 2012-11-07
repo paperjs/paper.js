@@ -14,6 +14,15 @@ $.extend($.fn, {
 	}
 });
 
+function downloadDataUri(options) {
+	if (!options.url)
+		options.url = "http://download-data-uri.appspot.com/";
+	$('<form method="post" action="' + options.url
+		+ '" style="display:none"><input type="hidden" name="filename" value="'
+		+ options.filename + '"/><input type="hidden" name="data" value="'
+		+ options.data + '"/></form>').appendTo('body').submit().remove();
+}
+
 function createCodeMirror(place, options, source) {
 	return new CodeMirror(place, $.extend({
 		lineNumbers: true,
@@ -38,8 +47,7 @@ function createPaperScript(element) {
 		consoleContainer = $('.console', element).orNull(),
 		editor = null,
 		tools = $('.tools', element),
-		inspectorButton = $('.tools .button.inspector', element).orNull(),
-		inspectorInfo = $('.tools .info', element),
+		inspectorInfo = $('.toolbar .info', element),
 		source = $('.source', element),
 		code = localStorage[scriptName] || '',
 		scope;
@@ -51,17 +59,8 @@ function createPaperScript(element) {
 		runButton.text(show ? 'Run' : 'Source');
 		if (show && !editor) {
 			editor = createCodeMirror(source[0], {
-				onKeyEvent: function(editor, event) {
+				onKeyEvent: function(editor) {
 					localStorage[scriptName] = editor.getValue();
-					/*
-					event = new DomEvent(event);
-					if (event.type == 'keydown') {
-						var pos = editor.getCursor();
-						pos.ch += 4;
-						editor.setCursor(pos);
-						event.stop();
-					}
-					*/
 				}
 			}, script);
 		}
@@ -71,6 +70,7 @@ function createPaperScript(element) {
 		scope.setup(canvas[0]);
 		scope.evaluate(code);
 		createInspector();
+		setupTools();
 	}
 
 	function runCode() {
@@ -160,70 +160,129 @@ function createPaperScript(element) {
 	}
 
 	var inspectorTool,
-		previousTool,
-		toggleInspector = false;
+		prevSelection;
 
 	function createInspector() {
-		if (!inspectorButton)
-			return;
-		previousTool = scope.tools[0];
 		inspectorTool = new paper.Tool();
-		prevItem = null;
-		inspectorTool.onMouseDown = function(event) {
-			if (prevItem) {
-				prevItem.selected = false;
-			}
-			var item = event.item;
-			if (item) {
-				var handle = item.hitTest(event.point, {
-					segments: true,
-					tolerance: 4
-				});
-				if (handle) {
-					item = handle.segment;
+		inspectorTool.buttonTitle = '\x26';
+		inspectorTool.buttonClass = 'symbol';
+		prevSelection = null;
+		inspectorTool.attach({
+			mousedown: function(event) {
+				if (prevSelection) {
+					prevSelection.selected = false;
 				}
-				item.selected = true;
-			}
-			inspectorInfo.modifyClass('hidden', !item);
-			if (item) {
-				var text;
-				if (item instanceof paper.Segment) {
-					text = 'Segment';
-					text += '<br />point: ' + item.point;
-					if (!item.handleIn.isZero())
-						text += '<br />handleIn: ' + item.handleIn;
-					if (!item.handleOut.isZero())
-						text += '<br />handleOut: ' + item.handleOut;
-				} else {
-					text = item.constructor._name;
-					text += '<br />position: ' + item.position;
-					text += '<br />bounds: ' + item.bounds;
+				var selection = event.item;
+				if (selection) {
+					var handle = selection.hitTest(event.point, {
+						segments: true,
+						tolerance: 4
+					});
+					if (handle) {
+						selection = handle.segment;
+					}
+					selection.selected = true;
 				}
-				inspectorInfo.html(text);
-			}
-			prevItem = item;
-		};
-		inspectorTool.onSelect = function() {
-			console.log('select');
-		};
-		// reactivate previous tool for now
-		if (previousTool) {
-			previousTool.activate();
-		}
-	}
+				inspectorInfo.modifyClass('hidden', !selection);
+				inspectorInfo.html('');
+				if (selection) {
+					var text;
+					if (selection instanceof paper.Segment) {
+						text = 'Segment';
+						text += '<br />point: ' + selection.point;
+						if (!selection.handleIn.isZero())
+							text += '<br />handleIn: ' + selection.handleIn;
+						if (!selection.handleOut.isZero())
+							text += '<br />handleOut: ' + selection.handleOut;
+					} else {
+						text = selection.constructor._name;
+						text += '<br />position: ' + selection.position;
+						text += '<br />bounds: ' + selection.bounds;
+					}
+					inspectorInfo.html(text);
+				}
+				prevSelection = selection;
+			},
 
-	if (inspectorButton) {
-		inspectorButton.click(function(event) {
-			if (inspectorTool) {
-				(toggleInspector && previousTool ? previousTool : inspectorTool).activate();
-				if (toggleInspector) {
-					if (prevItem)
-						prevItem.selected = false;
-					prevItem = null;
-				}
-				toggleInspector = !toggleInspector;
+			deactivate: function() {
+				if (prevSelection)
+					prevSelection.selected = false;
+				prevSelection = null;
+				inspectorInfo.addClass('hidden');
+				inspectorInfo.html('');
+				paper.view.draw();
 			}
 		});
+
+		zoomTool = new paper.Tool();
+		zoomTool.buttonTitle = '\x21';
+		zoomTool.buttonClass = 'symbol';
+		zoomTool.attach({
+			mousedown: function(event) {
+				if (event.modifiers.space)
+					return;
+				var factor = 1.25;
+				if (event.modifiers.option)
+					factor = 1 / factor;
+				paper.view.center = event.point;
+				// paper.view.center = paper.view.center - event.point.subtract(paper.view.center) / factor;
+				paper.view.zoom *= factor;
+			},
+			mousedrag: function(event) {
+				if (event.modifiers.space) {
+					paper.view.scrollBy(event.delta.negate());
+				}
+			},
+			activate: function() {
+				$('body').addClass('zoom');
+			},
+			deactivate: function() {
+				$('body').removeClass('zoom');
+			}
+		});
+
+	saveTool = new paper.Tool();
+	saveTool.buttonTitle = 'Save';
+	saveTool.attach({
+		activate: function(prev) {
+			setTimeout(function() {
+				var svg = new XMLSerializer().serializeToString(paper.project.exportSvg());
+				downloadDataUri({
+					data: 'data:image/svg+xml;base64,' + btoa(svg),
+					filename: 'export.svg'
+				});
+				prev.activate();
+			}, 0);
+		}
+	});
+	}
+
+	function setupTools() {
+		tools.children().remove();
+		paper.tools.forEach(function(tool) {
+			var title = tool.buttonTitle || '\x23',
+				button = $('<div class="button">' + title + '</div>')
+					.prependTo(tools);
+			if (tool.buttonClass || !tool.buttonTitle)
+				button.addClass(tool.buttonClass || 'symbol');
+			button.click(function() {
+				tool.activate();
+			}).mousedown(function() {
+				return false;
+			});
+			tool.attach({
+				activate: function() {
+					button.addClass('active');
+				},
+				deactivate: function() {
+					button.removeClass('active');
+				}
+			});
+		});
+		// Activate first tool now, so it gets highlighted too
+		var tool = paper.tools[0];
+		if (tool)
+			tool.activate();
 	}
 
 	var panes = element.findAndSelf('.split-pane');
@@ -274,7 +333,7 @@ function createPaperScript(element) {
 		toggleView();
 	}
 
-	$('.button', element).mousedown(function(event) {
+	$('.button', element).mousedown(function() {
 		return false;
 	});
 
