@@ -44,7 +44,9 @@ new function() {
 
 	function importGroup(svg, type) {
 		var items = [],
-			nodes = svg.childNodes;
+			nodes = svg.childNodes,
+			compound = type === 'clippath';
+
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var child = nodes[i];
 			if (child.nodeType == 1) {
@@ -53,11 +55,18 @@ new function() {
 					var parent = item.getParent();
 					if (parent && !(parent instanceof Layer))
 						item = parent;
+				}
+				// If adding compound paths to other compound paths,
+				// we need to "unbox" them first:
+				if (compound && item instanceof CompoundPath) {
+					items.push.apply(items, item.removeChildren());
+					item.remove();
+				} else {
 					items.push(item);
 				}
 			}
 		}
-		return new (type === 'clippath' ? CompoundPath : Group)(items);
+		return new (compound ? CompoundPath : Group)(items);
 	}
 
 	function importPoly(svg, type) {
