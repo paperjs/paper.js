@@ -1489,7 +1489,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			} else if (!param.compound && (fillColor || strokeColor)) {
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
-				ctx.save();
 				this._setStyles(ctx);
 				if (fillColor)
 					ctx.fill();
@@ -1509,7 +1508,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					}
 					ctx.stroke();
 				}
-				ctx.restore();
 			}
 		},
 
