@@ -417,7 +417,9 @@ new function() {
 			// http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
 			// TODO: this can be a string with % at the end
 			case 'offset':
-				item.setRampPoint(parseFloat(value, 10));
+				var isPercentage = value[value.length - 1] == '%';
+				value = parseFloat(isPercentage ? value.slice(0, -1) : value, 10);
+				item.setRampPoint(isPercentage ? value / 100 : value);
 				break;
 			case 'xlink:href':
 				item = definitions[value.substr(1)].clone();
