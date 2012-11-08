@@ -237,8 +237,8 @@ new function() {
 
 	var definitions = {};
 	function getDefinition(value) {
-		var match = value.match(/#([^)']+)/);
-        return definitions[match ? match[1] : value];
+		var match = value.match(/\(#([^)']+)/);
+        return match && definitions[match[1]];
 	}
 
 	var importers = {
@@ -359,9 +359,8 @@ new function() {
 					? parseFloat(value, 10)
 					: entry.type === 'array'
 						? value.split(/[\s,]+/g).map(parseFloat)
-						: entry.type === 'color'
-							? getDefinition(value)
-							: value);
+						: entry.type === 'color' && getDefinition(value)
+							|| value);
 		} else {
 			switch (name) {
 			case 'id':
