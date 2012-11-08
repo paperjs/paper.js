@@ -29,18 +29,20 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 *                               ramp {@default 0}
 	 */
 	initialize: function(arg0, arg1) {
-		if (arg1 === undefined && Array.isArray(arg0)) {
-			// [color, rampPoint]
-			this.setColor(arg0[0]);
-			this.setRampPoint(arg0[1]);
-		} else if (arg0.color) {
-			// stop
-			this.setColor(arg0.color);
-			this.setRampPoint(arg0.rampPoint);
-		} else {
-			// color [, rampPoint]
-			this.setColor(arg0);
-			this.setRampPoint(arg1);
+		if (arg0) {
+			if (arg1 === undefined && Array.isArray(arg0)) {
+				// [color, rampPoint]
+				this.setColor(arg0[0]);
+				this.setRampPoint(arg0[1]);
+			} else if (arg0 && arg0.color) {
+				// stop
+				this.setColor(arg0.color);
+				this.setRampPoint(arg0.rampPoint);
+			} else {
+				// color [, rampPoint]
+				this.setColor(arg0);
+				this.setRampPoint(arg1);
+			}
 		}
 	},
 
