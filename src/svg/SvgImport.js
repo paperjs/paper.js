@@ -40,16 +40,16 @@ new function() {
 		return Size.create(getValue(svg, w, index), getValue(svg, h, index));
 	}
 
-	// Converts a string value to the specified type
-	function convertStringTo(value, type) {
-		return (value === 'none'
+	// Converts a string attribute value to the specified type
+	function convertValue(value, type) {
+		return value === 'none'
 				? null
 				: type === 'number'
 					? parseFloat(value, 10)
 					: type === 'array'
 						? value.split(/[\s,]+/g).map(parseFloat)
 						: type === 'color' && getDefinition(value)
-							|| value);
+							|| value;
 	}
 
 	function getSvgRadius(svg) {
@@ -373,7 +373,7 @@ new function() {
 			return item;
 		var entry = SvgStyles.attributes[name];
 		if (entry) {
-			item._style[entry.set](convertStringTo(value, entry.type));
+			item._style[entry.set](convertValue(value, entry.type));
 		} else {
 			switch (name) {
 			case 'id':
@@ -435,13 +435,11 @@ new function() {
 				break;
 			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
 			case 'viewBox':
-				var values = convertStringTo(value, 'array'),
+				var values = convertValue(value, 'array'),
 					rectangle = Rectangle.create.apply(this, values);
 				// TODO: how to deal with the svg element?
-				if (!name == 'svg')
+				if (name !== 'svg')
 					(item.getDefinition ? item.getDefinition() : item).setBounds(rectangle);
-			default:
-				// Not supported yet.
 				break;
 			}
 		}
