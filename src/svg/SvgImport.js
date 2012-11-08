@@ -207,11 +207,8 @@ new function() {
 			stops = [];
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var node = nodes[i];
-			if (node.nodeType == 1) {
-				var stop = new GradientStop();
-				applyAttributes(stop, node);
-				stops.push(stop);
-			}
+			if (node.nodeType == 1)
+				stops.push(applyAttributes(new GradientStop(), node));
 		}
 		var gradient = new Gradient(stops),
 			isRadial = type == 'radialgradient',
