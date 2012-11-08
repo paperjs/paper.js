@@ -434,7 +434,9 @@ new function() {
 			case 'viewBox':
 				var values = convertStringTo(value, 'array'),
 					rectangle = Rectangle.create.apply(this, values);
-				(item.getDefinition ? item.getDefinition() : item).setBounds(rectangle);
+				// TODO: how to deal with the svg element?
+				if (!name == 'svg')
+					(item.getDefinition ? item.getDefinition() : item).setBounds(rectangle);
 			default:
 				// Not supported yet.
 				break;
