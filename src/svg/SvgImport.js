@@ -430,6 +430,11 @@ new function() {
 				// Use place if we're dealing with a symbol:
 				item = definition.place ? definition.place() : definition.clone();
 				break;
+			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
+			case 'viewBox':
+				var values = convertStringTo(value, 'array'),
+					rectangle = Rectangle.create.apply(this, values);
+				(item.getDefinition ? item.getDefinition() : item).setBounds(rectangle);
 			default:
 				// Not supported yet.
 				break;
