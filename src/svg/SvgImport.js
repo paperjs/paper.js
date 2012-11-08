@@ -84,7 +84,7 @@ new function() {
 				if (compound && item instanceof CompoundPath) {
 					group.addChildren(item.removeChildren());
 					item.remove();
-				} else {
+				} else if (!(item instanceof Symbol)) {
 					group.addChild(item);
 				}
 			}
@@ -421,7 +421,10 @@ new function() {
 				item.setRampPoint(isPercentage ? value / 100 : value);
 				break;
 			case 'xlink:href':
-				item = definitions[value.substr(1)].clone();
+				var definition = definitions[value.substr(1)];
+				// Use place if we're dealing with a symbol:
+				item = definition.place ? definition.place() : definition.clone();
+				break;
 			default:
 				// Not supported yet.
 				break;
