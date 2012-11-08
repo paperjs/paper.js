@@ -350,6 +350,9 @@ new function() {
 			var name = svg.style[i];
 			item = applyAttribute(item, svg, name, svg.style[Base.camelize(name)]);
 		}
+		// Path items receive a black fill color by default:
+		if (item instanceof Path && !item.getFillColor())
+			item.setFillColor(new GrayColor(1));
 		for (var i = 0, l = svg.attributes.length; i < l; i++) {
 			var attr = svg.attributes[i];
 			item = applyAttribute(item, svg, attr.name, attr.value);
