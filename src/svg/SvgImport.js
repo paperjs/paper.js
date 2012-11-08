@@ -25,19 +25,24 @@ new function() {
 	// objects, dealing with baseVal, and item lists.
 	// index is option, and if passed, causes a lookup in a list.
 
-	function getValue(svg, key, index) {
-		var base = svg[key].baseVal;
-		return index !== undefined
-				? index < base.numberOfItems ? base.getItem(index).value || 0 : 0
-				: base.value || 0;
+	function getValue(svg, key, allowNull, index) {
+		var base = svg[key].baseVal,
+			value = index !== undefined
+				? index < base.numberOfItems ? base.getItem(index).value : null
+				: base.value;
+		return !allowNull && value == null ? 0 : value;
 	}
 
-	function getPoint(svg, x, y, index) {
-		return Point.create(getValue(svg, x, index), getValue(svg, y, index));
+	function getPoint(svg, x, y, allowNull, index) {
+		x = getValue(svg, x, allowNull, index);
+		y = getValue(svg, y, allowNull, index);
+		return x == null && y == null ? null : Point.create(x || 0, y || 0);
 	}
 
-	function getSize(svg, w, h, index) {
-		return Size.create(getValue(svg, w, index), getValue(svg, h, index));
+	function getSize(svg, w, h, allowNull, index) {
+		w = getValue(svg, w, allowNull, index);
+		h = getValue(svg, h, allowNull, index);
+		return w == null && h == null ? null : Size.create(w || 0, h || 0);
 	}
 
 	// Converts a string attribute value to the specified type
@@ -215,10 +220,7 @@ new function() {
 			gradient.type = 'radial';
 			origin = getPoint(svg, 'cx', 'cy');
 			destination = origin.add(getValue(svg, 'r'), 0);
-			var fx = svg.getAttribute('fx');
-			if (fx) {
-				highlight = getPoint(svg, 'fx', 'fy');
-			}
+			highlight = getPoint(svg, 'fx', 'fy', true);
 		} else {
 			origin = getPoint(svg, 'x1', 'y1');
 			destination = getPoint(svg, 'x2', 'y2');
@@ -305,8 +307,8 @@ new function() {
 			// TODO: Support for these is missing in Paper.js right now
 			// rotate: character rotation
 			// lengthAdjust:
-			var text = new PointText(getPoint(svg, 'x', 'y', 0)
-					.add(getPoint(svg, 'dx', 'dy', 0)));
+			var text = new PointText(getPoint(svg, 'x', 'y', false, 0)
+					.add(getPoint(svg, 'dx', 'dy', false, 0)));
 			text.content = svg.textContent || '';
 			return text;
 		}
