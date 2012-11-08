@@ -40,6 +40,18 @@ new function() {
 		return Size.create(getValue(svg, w, index), getValue(svg, h, index));
 	}
 
+	// Converts a string value to the specified type
+	function convertStringTo(value, type) {
+		return (value === 'none'
+				? null
+				: type === 'number'
+					? parseFloat(value, 10)
+					: type === 'array'
+						? value.split(/[\s,]+/g).map(parseFloat)
+						: type === 'color' && getDefinition(value)
+							|| value);
+	}
+
 	function getSvgRadius(svg) {
 		return getValue(svg, 'r');
 	}
@@ -358,14 +370,7 @@ new function() {
 			return item;
 		var entry = SvgStyles.attributes[name];
 		if (entry) {
-			item._style[entry.set](value === 'none'
-				? null
-				: entry.type === 'number'
-					? parseFloat(value, 10)
-					: entry.type === 'array'
-						? value.split(/[\s,]+/g).map(parseFloat)
-						: entry.type === 'color' && getDefinition(value)
-							|| value);
+			item._style[entry.set](convertStringTo(value, entry.type));
 		} else {
 			switch (name) {
 			case 'id':
