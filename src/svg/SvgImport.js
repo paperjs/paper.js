@@ -40,6 +40,34 @@ new function() {
 		return Size.create(getValue(svg, w, index), getValue(svg, h, index));
 	}
 
+	function getSvgRadius(svg) {
+		return getValue(svg, 'r');
+	}
+
+	function getSvgOrigin(svg) {
+		return getPoint(svg, 'x1', 'y1');
+	}
+
+	function getSvgDestination(svg) {
+		return getPoint(svg, 'x2', 'y2');
+	}
+
+	function getSvgCenter(svg) {
+		return getPoint(svg, 'cx', 'cy');
+	}
+
+	function getSvgPoint(svg, index) {
+		return getPoint(svg, 'x', 'y', index);
+	}
+
+	function getSvgRadiusSize(svg) {
+		return getSize(svg, 'rx', 'ry');
+	}
+
+	function getSvgSize(svg) {
+		return getSize(svg, 'width', 'height');
+	}
+
 	// Define importer functions for various SVG node types
 
 	function importGroup(svg, type) {
@@ -191,13 +219,9 @@ new function() {
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var node = nodes[i];
 			if (node.nodeType == 1) {
-				var style = node.style,
-					color = new RgbColor(node.getAttribute('stop-color') || style['stop-color']),
-					opacity = node.getAttribute('stop-opacity') || style['stop-opacity'],
-					offset = node.getAttribute('offset');
-				if (opacity != '')
-					color.setAlpha(parseFloat(opacity, 10));
-				stops.push([color, offset]);
+				var stop = new GradientStop();
+				applyAttributes(stop, node);
+				stops.push(stop);
 			}
 		}
 		var gradient = new Gradient(stops),
@@ -205,31 +229,15 @@ new function() {
 			origin, destination, highlight;
 		if (isRadial) {
 			gradient.type = 'radial';
-			var radius = parseFloat(svg.getAttribute('r'), 10);
-			origin = [
-				parseFloat(svg.getAttribute('cx'), 10),
-				parseFloat(svg.getAttribute('cy'), 10)
-			];
-			destination = [
-				parseFloat(origin[0] + radius, 10),
-				parseFloat(origin[1], 10)
-			];
+			origin = getSvgCenter(svg);
+			destination = origin.add(getSvgRadius(svg), 0);
 			var fx = svg.getAttribute('fx');
 			if (fx) {
-				highlight = [
-					parseFloat(fx, 10),
-					parseFloat(svg.getAttribute('fy'), 10)
-				];
+				highlight = getPoint(svg, 'fx', 'fy');
 			}
 		} else {
-			origin = [
-				parseFloat(svg.getAttribute('x1'), 10),
-				parseFloat(svg.getAttribute('y1'), 10)
-			];
-			destination = [
-				parseFloat(svg.getAttribute('x2'), 10),
-				parseFloat(svg.getAttribute('y2'), 10)
-			];
+			origin = getSvgOrigin(svg);
+			destination = getSvgDestination(svg);
 		}
 		var gradientColor = new GradientColor(gradient, origin, destination, highlight);
 		applyAttributes(gradientColor, svg);
@@ -267,29 +275,27 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/struct.html#UseElement
 		use: function(svg, type) {
-			var id = svg.getAttribute('xlink:href').substr(1);
-			return definitions[id].clone();
+			return applyAttributes(null, svg);
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
 		circle: function(svg) {
-			return new Path.Circle(getPoint(svg, 'cx', 'cy'),
-					getValue(svg, 'r'));
+			return new Path.Circle(getSvgCenter(svg), getSvgRadius(svg));
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
 		ellipse: function(svg) {
-			var center = getPoint(svg, 'cx', 'cy'),
-				radius = getSize(svg, 'rx', 'ry');
+			var center = getSvgCenter(svg),
+				radius = getSvgRadiusSize(svg);
 			return new Path.Ellipse(new Rectangle(center.subtract(radius),
 					center.add(radius)));
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#RectElement
 		rect: function(svg) {
-			var point = getPoint(svg, 'x', 'y'),
-				size = getSize(svg, 'width', 'height'),
-				radius = getSize(svg, 'rx', 'ry');
+			var point = getSvgPoint(svg),
+				size = getSvgSize(svg),
+				radius = getSvgRadiusSize(svg);
 			// If radius is 0, Path.RoundRectangle automatically produces a
 			// normal rectangle for us.
 			return new Path.RoundRectangle(new Rectangle(point, size), radius);
@@ -297,8 +303,7 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/shapes.html#LineElement
 		line: function(svg) {
-			return new Path.Line(getPoint(svg, 'x1', 'y1'),
-					getPoint(svg, 'x2', 'y2'));
+			return new Path.Line(getOrigin(svg), getDestination(svg));
 		},
 
 		text: function(svg) {
@@ -310,7 +315,7 @@ new function() {
 			// TODO: Support for these is missing in Paper.js right now
 			// rotate: character rotation
 			// lengthAdjust:
-			var text = new PointText(getPoint(svg, 'x', 'y', 0)
+			var text = new PointText(getSvgPoint(svg, 0)
 					.add(getPoint(svg, 'dx', 'dy', 0)));
 			text.content = svg.textContent || '';
 			return text;
@@ -379,13 +384,21 @@ new function() {
 				// applyAttribute(). So let's have this change propagate back up
 				item = group; 
 				break;
-			// http://www.w3.org/TR/SVG/coords.html#TransformAttribute
+			// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
 			case 'gradientTransform':
 			case 'transform':
-				applyTransform(item, svg);
+				applyTransform(item, svg, name);
 				break;
+			// http://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
+			case 'stop-opacity':
+			// http://www.w3.org/TR/SVG/masking.html#OpacityProperty
 			case 'opacity':
-				item.setOpacity(parseFloat(value, 10));
+				var opacity = parseFloat(value, 10);
+				if (name === 'stop-opacity') {
+					item.color.setAlpha(opacity);
+				} else {
+					item.setOpacity(opacity);
+				}
 				break;
 			case 'visibility':
 				item.setVisible(value === 'visible');
@@ -397,6 +410,17 @@ new function() {
 			case 'text-anchor':
 				applyTextAttribute(item, svg, name, value);
 				break;
+			// http://www.w3.org/TR/SVG/pservers.html#StopColorProperty
+			case 'stop-color':
+				item.setColor(value);
+				break;
+			// http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
+			// TODO: this can be a string with % at the end
+			case 'offset':
+				item.setRampPoint(parseFloat(value, 10));
+				break;
+			case 'xlink:href':
+				item = definitions[value.substr(1)].clone();
 			default:
 				// Not supported yet.
 				break;
@@ -448,7 +472,7 @@ new function() {
 	 * @param {Item} item a Paper.js item
 	 */
 	function applyTransform(item, svg, name) {
-		var svgTransform = svg[name == 'transform' ? 'transform' : 'gradientTransform'],
+		var svgTransform = svg[name],
 			transforms = svgTransform.baseVal,
 			matrix = new Matrix();
 		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
