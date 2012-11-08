@@ -428,7 +428,7 @@ new function() {
 				item.setRampPoint(percentage ? percentage[1] / 100 : value);
 				break;
 			case 'xlink:href':
-				var definition = definitions[value.substr(1)];
+				var definition = definitions[value.substring(1)];
 				// Use place if we're dealing with a symbol:
 				item = definition.place ? definition.place() : definition.clone();
 				break;
