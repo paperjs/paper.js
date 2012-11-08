@@ -52,34 +52,6 @@ new function() {
 							|| value;
 	}
 
-	function getSvgRadius(svg) {
-		return getValue(svg, 'r');
-	}
-
-	function getSvgOrigin(svg) {
-		return getPoint(svg, 'x1', 'y1');
-	}
-
-	function getSvgDestination(svg) {
-		return getPoint(svg, 'x2', 'y2');
-	}
-
-	function getSvgCenter(svg) {
-		return getPoint(svg, 'cx', 'cy');
-	}
-
-	function getSvgPoint(svg, index) {
-		return getPoint(svg, 'x', 'y', index);
-	}
-
-	function getSvgRadiusSize(svg) {
-		return getSize(svg, 'rx', 'ry');
-	}
-
-	function getSvgSize(svg) {
-		return getSize(svg, 'width', 'height');
-	}
-
 	// Define importer functions for various SVG node types
 
 	function importGroup(svg, type) {
@@ -241,15 +213,15 @@ new function() {
 			origin, destination, highlight;
 		if (isRadial) {
 			gradient.type = 'radial';
-			origin = getSvgCenter(svg);
-			destination = origin.add(getSvgRadius(svg), 0);
+			origin = getPoint(svg, 'cx', 'cy');
+			destination = origin.add(getValue(svg, 'r'), 0);
 			var fx = svg.getAttribute('fx');
 			if (fx) {
 				highlight = getPoint(svg, 'fx', 'fy');
 			}
 		} else {
-			origin = getSvgOrigin(svg);
-			destination = getSvgDestination(svg);
+			origin = getPoint(svg, 'x1', 'y1');
+			destination = getPoint(svg, 'x2', 'y2');
 		}
 		var gradientColor = new GradientColor(gradient, origin, destination, highlight);
 		applyAttributes(gradientColor, svg);
@@ -292,22 +264,23 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
 		circle: function(svg) {
-			return new Path.Circle(getSvgCenter(svg), getSvgRadius(svg));
+			return new Path.Circle(getPoint(svg, 'cx', 'cy'),
+					getValue(svg, 'r'));
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
 		ellipse: function(svg) {
-			var center = getSvgCenter(svg),
-				radius = getSvgRadiusSize(svg);
+			var center = getPoint(svg, 'cx', 'cy'),
+				radius = getSize(svg, 'rx', 'ry');
 			return new Path.Ellipse(new Rectangle(center.subtract(radius),
 					center.add(radius)));
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#RectElement
 		rect: function(svg) {
-			var point = getSvgPoint(svg),
-				size = getSvgSize(svg),
-				radius = getSvgRadiusSize(svg);
+			var point = getPoint(svg, 'x', 'y'),
+				size = getSize(svg, 'width', 'height'),
+				radius = getSize(svg, 'rx', 'ry');
 			// If radius is 0, Path.RoundRectangle automatically produces a
 			// normal rectangle for us.
 			return new Path.RoundRectangle(new Rectangle(point, size), radius);
@@ -315,7 +288,8 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/shapes.html#LineElement
 		line: function(svg) {
-			return new Path.Line(getOrigin(svg), getDestination(svg));
+			return new Path.Line(getPoint(svg, 'x1', 'y1'),
+					getPoint(svg, 'x2', 'y2'));
 		},
 
 		text: function(svg) {
@@ -327,7 +301,7 @@ new function() {
 			// TODO: Support for these is missing in Paper.js right now
 			// rotate: character rotation
 			// lengthAdjust:
-			var text = new PointText(getSvgPoint(svg, 0)
+			var text = new PointText(getPoint(svg, 'x', 'y', 0)
 					.add(getPoint(svg, 'dx', 'dy', 0)));
 			text.content = svg.textContent || '';
 			return text;
