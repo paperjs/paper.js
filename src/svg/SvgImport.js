@@ -245,6 +245,10 @@ new function() {
 		polyline: importPoly,
 		// http://www.w3.org/TR/SVG/paths.html
 		path: importPath,
+		// http://www.w3.org/TR/SVG/pservers.html#LinearGradients
+		lineargradient: importGradient,
+		// http://www.w3.org/TR/SVG/pservers.html#RadialGradients
+		radialgradient: importGradient,
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(svg, type) {
@@ -305,9 +309,7 @@ new function() {
 					.add(getPoint(svg, 'dx', 'dy', 0)));
 			text.content = svg.textContent || '';
 			return text;
-		},
-		lineargradient: importGradient,
-		radialgradient: importGradient
+		}
 	};
 
 	/**
