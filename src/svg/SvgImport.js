@@ -415,7 +415,6 @@ new function() {
 				item.setColor(value);
 				break;
 			// http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
-			// TODO: this can be a string with % at the end
 			case 'offset':
 				var isPercentage = value[value.length - 1] == '%';
 				value = parseFloat(isPercentage ? value.slice(0, -1) : value, 10);
