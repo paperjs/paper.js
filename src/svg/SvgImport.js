@@ -424,9 +424,8 @@ new function() {
 				break;
 			// http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
 			case 'offset':
-				var isPercentage = value[value.length - 1] == '%';
-				value = parseFloat(isPercentage ? value.slice(0, -1) : value, 10);
-				item.setRampPoint(isPercentage ? value / 100 : value);
+				var percentage = value.match(/(.*)%$/);
+				item.setRampPoint(percentage ? percentage[1] / 100 : value);
 				break;
 			case 'xlink:href':
 				var definition = definitions[value.substr(1)];
