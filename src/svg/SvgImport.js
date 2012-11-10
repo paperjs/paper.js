@@ -62,6 +62,15 @@ new function() {
 							|| value;
 	}
 
+	function clipItem(item, clip) {
+		if (clip instanceof Rectangle)
+			clip = new Path.Rectangle(clip);
+		var group = new Group(clip);
+		group.addChild(item);
+		group.setClipped(true);
+		return group;
+	}
+
 	// Define importer functions for various SVG node types
 
 	function importGroup(svg, type) {
@@ -258,7 +267,6 @@ new function() {
 		symbol: function(svg, type) {
 			var item = importGroup(svg, type);
 			item = applyAttributes(item, svg);
-			// TODO: We're returning a symbol. How to handle this?
 			return new Symbol(item);
 		},
 
@@ -267,7 +275,11 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/struct.html#UseElement
 		use: function(svg, type) {
-			return applyAttributes(null, svg);
+			// TODO: find another way than using getAttribute:
+			var id = getValue(svg, 'xlink:href').substring(1),
+				definition = definitions[id];
+			// Use place if we're dealing with a symbol:
+			return definition.place();
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
@@ -360,14 +372,8 @@ new function() {
 				break;
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			case 'clip-path':
-				var clipPath = getDefinition(value).clone().flatten(),
-					group = new Group(clipPath);
-				group.moveAbove(item);
-				group.addChild(item);
-				group.setClipped(true);
-				// item can be modified, since it gets returned from 
-				// applyAttribute(). So let's have this change propagate back up
-				item = group; 
+				var clipPath = getDefinition(value).clone().flatten();
+				item = clipItem(item, clipPath);
 				break;
 			// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
 			case 'gradientTransform':
@@ -404,18 +410,24 @@ new function() {
 				var percentage = value.match(/(.*)%$/);
 				item.setRampPoint(percentage ? percentage[1] / 100 : value);
 				break;
-			case 'xlink:href':
-				var definition = definitions[value.substring(1)];
-				// Use place if we're dealing with a symbol:
-				item = definition.place ? definition.place() : definition.clone();
-				break;
 			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
+			// TODO: implement preserveAspectRatio attribute
 			case 'viewBox':
+				if (item instanceof Symbol)
+					return;
 				var values = convertValue(value, 'array'),
-					rectangle = Rectangle.create.apply(this, values);
-				// TODO: how to deal with the svg element?
-				if (name !== 'svg')
-					(item.getDefinition ? item.getDefinition() : item).setBounds(rectangle);
+					rectangle = Rectangle.create.apply(this, values),
+					size = getSize(svg, 'width', 'height', false),
+					matrix = new Matrix(),
+					scale = size ? rectangle.getSize().divide(size) : 1,
+					offset = rectangle.getPoint();
+				matrix.translate(offset).scale(scale);
+				item.transform(matrix.createInverse());
+				if (size)
+					rectangle.setSize(size);
+				rectangle.setPoint(0);
+				// Todo: the viewbox does not always need to be clipped
+				item = clipItem(item, rectangle);
 				break;
 			}
 		}
