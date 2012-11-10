@@ -26,7 +26,6 @@ new function() {
 	// index is option, and if passed, causes a lookup in a list.
 
 	function getValue(svg, key, allowNull, index) {
-		var attribute = svg[key];
 		var attribute = svg[key] || svg.getAttribute(key);
 		if (!attribute)
 			return;
