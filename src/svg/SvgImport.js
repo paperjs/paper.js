@@ -429,10 +429,9 @@ new function() {
 				var values = convertValue(value, 'array'),
 					rectangle = Rectangle.create.apply(this, values),
 					size = getSize(svg, 'width', 'height', true),
-					matrix = new Matrix(),
 					scale = size ? rectangle.getSize().divide(size) : 1,
-					offset = rectangle.getPoint();
-				matrix.translate(offset).scale(scale);
+					offset = rectangle.getPoint(),
+					matrix = new Matrix().translate(offset).scale(scale);
 				item.transform(matrix.createInverse());
 				if (size)
 					rectangle.setSize(size);
