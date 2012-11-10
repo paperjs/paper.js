@@ -36,7 +36,7 @@ function createCodeMirror(place, options, source) {
 }
 
 function createPaperScript(element) {
-	var scriptName = 'paperjs_' + document.documentURI.match(/\/([^\/]*)$/)[1],
+	var scriptName = 'paperjs_' + window.location.pathname.match(/\/([^\/]*)$/)[1],
 		script = $('script', element).orNull(),
 		runButton = $('.button.run', element).orNull();
 	if (!script || !runButton)
@@ -325,7 +325,8 @@ function createPaperScript(element) {
 	}).trigger('resize');
 
 	// Run the script once the window is loaded
-	$(window).load(runCode);
+	if (window.location.search != '?fix')
+		$(window).load(runCode);
 
 	if (showSplit) {
 		showSource(true);
