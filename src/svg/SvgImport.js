@@ -231,7 +231,9 @@ new function() {
 			gradient.type = 'radial';
 			origin = getPoint(svg, 'cx', 'cy');
 			destination = origin.add(getValue(svg, 'r'), 0);
-			highlight = getPoint(svg, 'fx', 'fy', true);
+			highlight = getPoint(svg, 'fx', 'fy');
+			if (highlight.isZero())
+				highlight = null;
 		} else {
 			origin = getPoint(svg, 'x1', 'y1');
 			destination = getPoint(svg, 'x2', 'y2');
