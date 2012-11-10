@@ -279,7 +279,7 @@ new function() {
 			var id = getValue(svg, 'xlink:href').substring(1),
 				definition = definitions[id];
 			// Use place if we're dealing with a symbol:
-			return definition.place();
+			return definition instanceof Symbol ? definition.place() : definition.clone();
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
