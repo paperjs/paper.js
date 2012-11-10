@@ -239,8 +239,11 @@ new function() {
 			origin = getPoint(svg, 'x1', 'y1');
 			destination = getPoint(svg, 'x2', 'y2');
 		}
-		var gradientColor = new GradientColor(gradient, origin, destination, highlight);
-		applyAttributes(gradientColor, svg);
+		// We don't return the GradientColor, since we only need a reference to
+		// it in definitions, which is created in applyAttributes()
+		applyAttributes(
+			new GradientColor(gradient, origin, destination, highlight), svg);
+		return null;
 	}
 
 	var definitions = {};
@@ -268,9 +271,7 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(svg, type) {
-			var item = importGroup(svg, type);
-			item = applyAttributes(item, svg);
-			return new Symbol(item);
+			return new Symbol(applyAttributes(importGroup(svg, type), svg));
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#DefsElement
@@ -332,7 +333,7 @@ new function() {
 			// lengthAdjust:
 			var text = new PointText(getPoint(svg, 'x', 'y', false, 0)
 					.add(getPoint(svg, 'dx', 'dy', false, 0)));
-			text.content = svg.textContent || '';
+			text.setContent(svg.textContent || '');
 			return text;
 		}
 	};
