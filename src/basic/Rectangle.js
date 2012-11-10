@@ -101,14 +101,21 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 			}
 			if (this._read)
 				this._read = arguments._index;
-		} else if (arg0) {
-			// new Rectangle(rect)
-			// Use 0 as defaults, in case we're not reading from a Rectangle,
-			// but a Point or Size instead
-			this.x = arg0.x || 0;
-			this.y = arg0.y || 0;
-			this.width = arg0.width || 0;
-			this.height = arg0.height || 0;
+		} else {
+			if (Array.isArray(arg0)) {
+				this.x = arg0[0];
+				this.y = arg0[1];
+				this.width = arg0[2];
+				this.height = arg0[3];
+			} else {
+				// new Rectangle(rect)
+				// Use 0 as defaults, in case we're not reading from a Rectangle,
+				// but a Point or Size instead
+				this.x = arg0.x || 0;
+				this.y = arg0.y || 0;
+				this.width = arg0.width || 0;
+				this.height = arg0.height || 0;
+			}
 			if (this._read)
 				this._read = 1;
 		}
