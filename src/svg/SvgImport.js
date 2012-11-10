@@ -27,12 +27,15 @@ new function() {
 
 	function getValue(svg, key, allowNull, index) {
 		var attribute = svg[key];
+		var attribute = svg[key] || svg.getAttribute(key);
 		if (!attribute)
 			return;
-		var base = attribute.baseVal,
-			value = index !== undefined
-				? index < base.numberOfItems ? base.getItem(index).value : null
-				: base.value;
+		var base = attribute.baseVal;
+		var value = base
+				? index !== undefined
+					? index < base.numberOfItems ? base.getItem(index).value : null
+					: base.value
+				: attribute;
 		return !allowNull && value == null ? 0 : value;
 	}
 
