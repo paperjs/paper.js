@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Viewbox 1</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		project.importSvg(document.getElementById('svg'));
+	</script>
+</head>
+<body>	
+<svg width="300px" height="200px" 
+     viewBox="100 100 1500 1000" preserveAspectRatio="none"
+     xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg">
+  <desc>Example ViewBox - uses the viewBox 
+   attribute to automatically create an initial user coordinate
+   system which causes the graphic to scale to fit into the
+   viewport no matter what size the viewport is.</desc>
+
+  <!-- This rectangle goes from (0,0) to (1500,1000) in user space.
+       Because of the viewBox attribute above,
+       the rectangle will end up filling the entire area
+       reserved for the SVG content. -->
+  <rect x="0" y="0" width="1500" height="1000" 
+        fill="yellow" stroke="blue" stroke-width="12"  />
+
+  <!-- A large, red triangle -->
+  <path fill="red"  d="M 750,100 L 250,900 L 1250,900 z"/>
+
+  <!-- A text string that spans most of the viewport -->
+  <text x="100" y="600" font-size="200" font-family="Verdana" >
+    Stretch to fit
+  </text>
+</svg>
+	<canvas id="canvas" width="1500px" height="1000px"></canvas>
+</body>
+</html>
