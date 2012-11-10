@@ -25,59 +25,36 @@ new function() {
 	// objects, dealing with baseVal, and item lists.
 	// index is option, and if passed, causes a lookup in a list.
 
-	function getValue(svg, key, index) {
-		var base = svg[key].baseVal;
-		return index !== undefined
-				? index < base.numberOfItems ? base.getItem(index).value || 0 : 0
-				: base.value || 0;
+	function getValue(svg, key, allowNull, index) {
+		var base = svg[key].baseVal,
+			value = index !== undefined
+				? index < base.numberOfItems ? base.getItem(index).value : null
+				: base.value;
+		return !allowNull && value == null ? 0 : value;
 	}
 
-	function getPoint(svg, x, y, index) {
-		return Point.create(getValue(svg, x, index), getValue(svg, y, index));
+	function getPoint(svg, x, y, allowNull, index) {
+		x = getValue(svg, x, allowNull, index);
+		y = getValue(svg, y, allowNull, index);
+		return x == null && y == null ? null : Point.create(x || 0, y || 0);
 	}
 
-	function getSize(svg, w, h, index) {
-		return Size.create(getValue(svg, w, index), getValue(svg, h, index));
+	function getSize(svg, w, h, allowNull, index) {
+		w = getValue(svg, w, allowNull, index);
+		h = getValue(svg, h, allowNull, index);
+		return w == null && h == null ? null : Size.create(w || 0, h || 0);
 	}
 
-	// Converts a string value to the specified type
-	function convertStringTo(value, type) {
-		return (value === 'none'
+	// Converts a string attribute value to the specified type
+	function convertValue(value, type) {
+		return value === 'none'
 				? null
 				: type === 'number'
 					? parseFloat(value, 10)
 					: type === 'array'
 						? value.split(/[\s,]+/g).map(parseFloat)
 						: type === 'color' && getDefinition(value)
-							|| value);
-	}
-
-	function getSvgRadius(svg) {
-		return getValue(svg, 'r');
-	}
-
-	function getSvgOrigin(svg) {
-		return getPoint(svg, 'x1', 'y1');
-	}
-
-	function getSvgDestination(svg) {
-		return getPoint(svg, 'x2', 'y2');
-	}
-
-	function getSvgCenter(svg) {
-		return getPoint(svg, 'cx', 'cy');
-	}
-
-	function getSvgPoint(svg, index) {
-		return getPoint(svg, 'x', 'y', index);
-	}
-
-	function getSvgRadiusSize(svg) {
-		return getSize(svg, 'rx', 'ry');
-	}
-
-	function getSvgSize(svg) {
-		return getSize(svg, 'width', 'height');
+							|| value;
 	}
 
 	// Define importer functions for various SVG node types
@@ -230,26 +207,20 @@ new function() {
 			stops = [];
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var node = nodes[i];
-			if (node.nodeType == 1) {
-				var stop = new GradientStop();
-				applyAttributes(stop, node);
-				stops.push(stop);
-			}
+			if (node.nodeType == 1)
+				stops.push(applyAttributes(new GradientStop(), node));
 		}
 		var gradient = new Gradient(stops),
 			isRadial = type == 'radialgradient',
 			origin, destination, highlight;
 		if (isRadial) {
 			gradient.type = 'radial';
-			origin = getSvgCenter(svg);
-			destination = origin.add(getSvgRadius(svg), 0);
-			var fx = svg.getAttribute('fx');
-			if (fx) {
-				highlight = getPoint(svg, 'fx', 'fy');
-			}
+			origin = getPoint(svg, 'cx', 'cy');
+			destination = origin.add(getValue(svg, 'r'), 0);
+			highlight = getPoint(svg, 'fx', 'fy', true);
 		} else {
-			origin = getSvgOrigin(svg);
-			destination = getSvgDestination(svg);
+			origin = getPoint(svg, 'x1', 'y1');
+			destination = getPoint(svg, 'x2', 'y2');
 		}
 		var gradientColor = new GradientColor(gradient, origin, destination, highlight);
 		applyAttributes(gradientColor, svg);
@@ -273,6 +244,10 @@ new function() {
 		polyline: importPoly,
 		// http://www.w3.org/TR/SVG/paths.html
 		path: importPath,
+		// http://www.w3.org/TR/SVG/pservers.html#LinearGradients
+		lineargradient: importGradient,
+		// http://www.w3.org/TR/SVG/pservers.html#RadialGradients
+		radialgradient: importGradient,
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(svg, type) {
@@ -292,22 +267,23 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
 		circle: function(svg) {
-			return new Path.Circle(getSvgCenter(svg), getSvgRadius(svg));
+			return new Path.Circle(getPoint(svg, 'cx', 'cy'),
+					getValue(svg, 'r'));
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
 		ellipse: function(svg) {
-			var center = getSvgCenter(svg),
-				radius = getSvgRadiusSize(svg);
+			var center = getPoint(svg, 'cx', 'cy'),
+				radius = getSize(svg, 'rx', 'ry');
 			return new Path.Ellipse(new Rectangle(center.subtract(radius),
 					center.add(radius)));
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#RectElement
 		rect: function(svg) {
-			var point = getSvgPoint(svg),
-				size = getSvgSize(svg),
-				radius = getSvgRadiusSize(svg);
+			var point = getPoint(svg, 'x', 'y'),
+				size = getSize(svg, 'width', 'height'),
+				radius = getSize(svg, 'rx', 'ry');
 			// If radius is 0, Path.RoundRectangle automatically produces a
 			// normal rectangle for us.
 			return new Path.RoundRectangle(new Rectangle(point, size), radius);
@@ -315,7 +291,8 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/shapes.html#LineElement
 		line: function(svg) {
-			return new Path.Line(getOrigin(svg), getDestination(svg));
+			return new Path.Line(getPoint(svg, 'x1', 'y1'),
+					getPoint(svg, 'x2', 'y2'));
 		},
 
 		text: function(svg) {
@@ -327,13 +304,11 @@ new function() {
 			// TODO: Support for these is missing in Paper.js right now
 			// rotate: character rotation
 			// lengthAdjust:
-			var text = new PointText(getSvgPoint(svg, 0)
-					.add(getPoint(svg, 'dx', 'dy', 0)));
+			var text = new PointText(getPoint(svg, 'x', 'y', false, 0)
+					.add(getPoint(svg, 'dx', 'dy', false, 0)));
 			text.content = svg.textContent || '';
 			return text;
-		},
-		lineargradient: importGradient,
-		radialgradient: importGradient
+		}
 	};
 
 	/**
@@ -370,7 +345,7 @@ new function() {
 			return item;
 		var entry = SvgStyles.attributes[name];
 		if (entry) {
-			item._style[entry.set](convertStringTo(value, entry.type));
+			item._style[entry.set](convertValue(value, entry.type));
 		} else {
 			switch (name) {
 			case 'id':
@@ -421,24 +396,21 @@ new function() {
 				break;
 			// http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
 			case 'offset':
-				var isPercentage = value[value.length - 1] == '%';
-				value = parseFloat(isPercentage ? value.slice(0, -1) : value, 10);
-				item.setRampPoint(isPercentage ? value / 100 : value);
+				var percentage = value.match(/(.*)%$/);
+				item.setRampPoint(percentage ? percentage[1] / 100 : value);
 				break;
 			case 'xlink:href':
-				var definition = definitions[value.substr(1)];
+				var definition = definitions[value.substring(1)];
 				// Use place if we're dealing with a symbol:
 				item = definition.place ? definition.place() : definition.clone();
 				break;
 			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
 			case 'viewBox':
-				var values = convertStringTo(value, 'array'),
+				var values = convertValue(value, 'array'),
 					rectangle = Rectangle.create.apply(this, values);
 				// TODO: how to deal with the svg element?
-				if (!name == 'svg')
+				if (name !== 'svg')
 					(item.getDefinition ? item.getDefinition() : item).setBounds(rectangle);
-			default:
-				// Not supported yet.
 				break;
 			}
 		}
