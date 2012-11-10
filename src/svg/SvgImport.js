@@ -46,13 +46,15 @@ new function() {
 	function getPoint(svg, x, y, allowNull, index) {
 		x = getValue(svg, x, allowNull, index);
 		y = getValue(svg, y, allowNull, index);
-		return x == null && y == null ? null : Point.create(x || 0, y || 0);
+		return allowNull && x == null && y == null ? null
+				: Point.create(x || 0, y || 0);
 	}
 
 	function getSize(svg, w, h, allowNull, index) {
 		w = getValue(svg, w, allowNull, index);
 		h = getValue(svg, h, allowNull, index);
-		return w == null && h == null ? null : Size.create(w || 0, h || 0);
+		return allowNull && w == null && h == null ? null
+				: Size.create(w || 0, h || 0);
 	}
 
 	// Converts a string attribute value to the specified type
