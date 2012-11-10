@@ -26,16 +26,21 @@ new function() {
 	// index is option, and if passed, causes a lookup in a list.
 
 	function getValue(svg, key, allowNull, index) {
-		var attribute = svg[key] || svg.getAttribute(key);
-		if (!attribute)
-			return;
-		var base = attribute.baseVal;
-		var value = base
+		// svg[key].baseVal will even be set if the svg did not define the
+		// attribute, so if allowNull is true, we need to also check
+		// svg.getAttribute(key) == null
+		var base = (!allowNull || svg.getAttribute(key) != null)
+				&& svg[key] && svg[key].baseVal;
+		// Note: String values are unfortunately not stored in base.value, but
+		// in base directly, so we need to check both, also on item lists, using
+		// Base.pick(base.value, base)
+		return base
 				? index !== undefined
-					? index < base.numberOfItems ? base.getItem(index).value : null
-					: base.value
-				: attribute;
-		return !allowNull && value == null ? 0 : value;
+					? index < base.numberOfItems
+						? Base.pick((base = base.getItem(index)).value, base)
+						: null
+					: Base.pick(base.value, base)
+				: null;
 	}
 
 	function getPoint(svg, x, y, allowNull, index) {
@@ -277,11 +282,17 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/struct.html#UseElement
 		use: function(svg, type) {
-			// TODO: find another way than using getAttribute:
-			var id = getValue(svg, 'xlink:href').substring(1),
+			// Note the namespaced xlink:href attribute is just called href
+			// as a property on svg.
+			// TODO: Should getValue become namespace aware?
+			var id = (getValue(svg, 'href') || '').substring(1),
 				definition = definitions[id];
 			// Use place if we're dealing with a symbol:
-			return definition instanceof Symbol ? definition.place() : definition.clone();
+			return definition
+					? definition instanceof Symbol
+						? definition.place()
+						: definition.clone()
+					: null;
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
@@ -416,10 +427,10 @@ new function() {
 			// TODO: implement preserveAspectRatio attribute
 			case 'viewBox':
 				if (item instanceof Symbol)
-					return;
+					break;
 				var values = convertValue(value, 'array'),
 					rectangle = Rectangle.create.apply(this, values),
-					size = getSize(svg, 'width', 'height', false),
+					size = getSize(svg, 'width', 'height', true),
 					matrix = new Matrix(),
 					scale = size ? rectangle.getSize().divide(size) : 1,
 					offset = rectangle.getPoint();
@@ -428,7 +439,7 @@ new function() {
 				if (size)
 					rectangle.setSize(size);
 				rectangle.setPoint(0);
-				// Todo: the viewbox does not always need to be clipped
+				// TODO: the viewbox does not always need to be clipped
 				item = clipItem(item, rectangle);
 				break;
 			}
