@@ -68,9 +68,9 @@ new function() {
 	}
 
 	function clipItem(item, clip) {
-		if (clip instanceof Rectangle)
-			clip = new Path.Rectangle(clip);
 		var group = new Group(clip);
+		// Make sure group stays in the same place in the DOM as item:
+		group.moveAbove(item);
 		group.addChild(item);
 		group.setClipped(true);
 		return group;
@@ -437,7 +437,7 @@ new function() {
 					rectangle.setSize(size);
 				rectangle.setPoint(0);
 				// TODO: the viewbox does not always need to be clipped
-				item = clipItem(item, rectangle);
+				item = clipItem(item, new Path.Rectangle(rectangle));
 				break;
 			}
 		}
