@@ -69,13 +69,9 @@ new function() {
 							|| value;
 	}
 
-	function clipItem(item, clip) {
-		var group = new Group(clip);
-		// Make sure group stays in the same place in the DOM as item:
-		group.moveAbove(item);
-		group.addChild(item);
-		group.setClipped(true);
-		return group;
+	function createClipGroup(item, clip) {
+		clip.setClipMask(true);
+		return new Group(clip, item);
 	}
 
 	// Define importer functions for various SVG node types
@@ -386,7 +382,7 @@ new function() {
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			case 'clip-path':
 				var clipPath = getDefinition(value).clone().flatten();
-				item = clipItem(item, clipPath);
+				item = createClipGroup(item, clipPath);
 				break;
 			// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
 			case 'gradientTransform':
@@ -439,7 +435,7 @@ new function() {
 					rectangle.setSize(size);
 				rectangle.setPoint(0);
 				// TODO: the viewbox does not always need to be clipped
-				item = clipItem(item, new Path.Rectangle(rectangle));
+				item = createClipGroup(item, new Path.Rectangle(rectangle));
 				break;
 			}
 		}
