@@ -221,7 +221,7 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * Camelizes the passed hyphenated string: caps-lock -> capsLock
 		 */
 		camelize: function(str) {
-			return str.replace(/-(\w)/g, function(all, chr) {
+			return str.replace(/-(.)/g, function(all, chr) {
 				return chr.toUpperCase();
 			});
 		},
@@ -230,11 +230,7 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * Converst camelized strings to hyphenated ones: CapsLock -> caps-lock
 		 */
 		hyphenate: function(str) {
-			return str.replace(/[a-z][A-Z0-9]|[0-9][a-zA-Z]|[A-Z]{2}[a-z]/g,
-				function(match) {
-					return match.charAt(0) + '-' + match.substring(1);
-				}
-			).toLowerCase();
+			return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 		},
 
 		/**
