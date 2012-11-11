@@ -93,7 +93,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	},
 
 	isEmpty: function() {
-		return !!this._content;
+		return !this._content;
 	},
 
 	/**
