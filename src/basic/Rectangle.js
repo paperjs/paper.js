@@ -71,7 +71,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 			this.x = this.y = this.width = this.height = 0;
 			if (this._read)
 				this._read = arg0 === null ? 1 : 0;
-		} else if (arguments.length > 1 && typeof arg0.width === 'undefined') {
+		} else if (arguments.length > 1 && !('width' in arg0)) {
 			// We're checking arg0.width to rule out Rectangles, which are
 			// handled separately below.
 			// Read a point argument and look at the next value to see wether

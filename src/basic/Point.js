@@ -145,16 +145,16 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 			if (this._read)
 				this._read = arg0 === null ? 1 : 0;
 		} else {
-			if (typeof arg0.x !== 'undefined') {
-				this.x = arg0.x;
-				this.y = arg0.y;
-			} else if (Array.isArray(arg0)) {
+			if (Array.isArray(arg0)) {
 				this.x = arg0[0];
 				this.y = arg0.length > 1 ? arg0[1] : arg0[0];
-			} else if (typeof arg0.width !== 'undefined') {
+			} else if ('x' in arg0) {
+				this.x = arg0.x;
+				this.y = arg0.y;
+			} else if ('width' in arg0) {
 				this.x = arg0.width;
 				this.y = arg0.height;
-			} else if (typeof arg0.angle !== 'undefined') {
+			} else if ('angle' in arg0) {
 				this.x = arg0.length;
 				this.y = 0;
 				this.setAngle(arg0.angle);
