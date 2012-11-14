@@ -102,7 +102,7 @@ DomEvent.requestAnimationFrame = new function() {
 		// is defined in callbacks, and if not, clear request again so we won't
 		// use the faulty method.
 		request(function(time) {
-			if (time == undefined)
+			if (time == null)
 				request = null;
 		});
 	}
@@ -140,7 +140,7 @@ DomEvent.requestAnimationFrame = new function() {
 					func = entry[0],
 					el = entry[1];
 				if (!el || (PaperScript.getAttribute(el, 'keepalive') == 'true'
-						|| focused) && DomElement.isVisible(el)) {
+						|| focused) && DomElement.isInView(el)) {
 					// Handle callback and remove it from callbacks list.
 					callbacks.splice(i, 1);
 					func(Date.now());

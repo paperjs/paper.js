@@ -306,7 +306,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @return {Boolean} Whether the view is visible.
 	 */
 	isVisible: function() {
-		return DomElement.isVisible(this._element);
+		return DomElement.isInView(this._element);
 	},
 
 	/**
