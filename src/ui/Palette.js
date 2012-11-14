@@ -20,35 +20,31 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 	initialize: function(title, components, values) {
 		var parent = DomElement.find('.palettejs-panel')
 			|| DomElement.find('body').appendChild(
-				DomElement.create('div', { 'class': 'palettejs-panel' })),
-			table = parent.appendChild(
-				DomElement.create('table', { 'class': 'palettejs-pane' })),
-			that = this;
+				DomElement.create('div', { 'class': 'palettejs-panel' }));
+		this._element = parent.appendChild(
+			DomElement.create('table', { 'class': 'palettejs-pane' })),
 		this._title = title;
 		if (!values)
 			values = {};
-		this._components = Base.each(components, function(component, name) {
+		for (var name in (this._components = components)) {
+			var component = components[name];
 			if (!(component instanceof Component)) {
 				if (component.value == null)
 					component.value = values[name];
 				component.name = name;
 				component = components[name] = new Component(component);
 			}
-			component.palette = that;
+			this._element.appendChild(component._element);
+			component.palette = this;
 			// Make sure each component has an entry in values, so observers get
 			// installed further down.
 			if (values[name] === undefined)
 				values[name] = null;
-			var row = table.appendChild(
-				DomElement.create('tr', [
-					'td', { text: (component.label || name) + ':' },
-					'td', component.element
-				])
-			);
+		}
+		// Now replace each entry in values with a getter / setters so we can
+		// observe change.
 		});
 		this._values = Base.each(values, function(value, name) {
-			// Replace each entry with an getter / setters so we can observe
-			// change.
 			Base.define(values, name, {
 				enumerable: true,
 				configurable: true,
@@ -67,5 +63,9 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 	reset: function() {
 		for (var i in this._components)
 			this._components[i].reset();
+	},
+
+	remove: function() {
+		DomElement.remove(this._element);
 	}
 });

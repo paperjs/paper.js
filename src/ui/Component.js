@@ -41,22 +41,23 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 		},
 
 		slider: {
-			type: 'range'
+			type: 'range',
+			number: true
 		},
 
 		list: {
 			tag: 'select',
 
 			options: function() {
-				DomElement.removeChildren(this.element);
+				DomElement.removeChildren(this._inputItem);
 				DomElement.create(Base.each(this._options, function(option) {
 					this.push('option', { value: option, text: option });
-				}, []), this.element);
+				}, []), this._inputItem);
 			},
 
 			value: function(value) {
 				DomElement.set(
-					DomElement.find('option[value="' + value + '"]', this.element),
+					DomElement.find('option[value="' + value + '"]', this._inputItem),
 					'selected', true);
 			}
 		}
@@ -72,14 +73,14 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 		this._info = this._types[this._type] || { type: this._type };
 		var that = this,
 			fireChange = false;
-		this.element = DomElement.create(this._info.tag || 'input', {
+		this._inputItem = DomElement.create(this._info.tag || 'input', {
 			type: this._info.type,
 			events: {
 				change: function() {
 					var key = that._info.value;
 					if (typeof key === 'function')
 						key = null;
-					var value = DomElement.get(that.element, key || 'value');
+					var value = DomElement.get(this, key || 'value');
 					if (fireChange) {
 						that.palette.fire('change', that, that.name, value);
 						that.fire('change', value);
@@ -90,6 +91,10 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 				}
 			}
 		});
+		this._element = DomElement.create('tr', [
+			this._labelItem = DomElement.create('td'),
+			'td', this._inputItem
+		]);
 		Base.each(obj, function(value, key) {
 			this[key] = value;
 		}, this);
@@ -100,6 +105,15 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 
 	getType: function() {
 		return this._type;
+	},
+
+	getLabel: function() {
+		return this._label;
+	},
+
+	setLabel: function(label) {
+		this._label = label;
+		DomElement.set(this._labelItem, 'text', label + ':');
 	},
 
 	getOptions: function() {
@@ -121,18 +135,18 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 		if (typeof key === 'function')
 			key.call(this, value);
 		else
-			DomElement.set(this.element, key || 'value', value);
+			DomElement.set(this._inputItem, key || 'value', value);
 		this._value = value;
 	},
 
 	getRange: function() {
-		return [toFloat(DomElement.get(this.element, 'min')),
-				toFloat(DomElement.get(this.element, 'max'))];
+		return [toFloat(DomElement.get(this._inputItem, 'min')),
+				toFloat(DomElement.get(this._inputItem, 'max'))];
 	},
 
 	setRange: function(min, max) {
 		var range = Array.isArray(min) ? min : [min, max];
-		DomElement.set(this.element, { min: range[0], max: range[1] });
+		DomElement.set(this._inputItem, { min: range[0], max: range[1] });
 	},
 
 	getMin: function() {
@@ -152,11 +166,11 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 	},
 
 	getStep: function() {
-		return toFloat(DomElement.get(this.element, 'step'));
+		return toFloat(DomElement.get(this._inputItem, 'step'));
 	},
 
 	setStep: function(step) {
-		DomElement.set(this.element, 'step', step);
+		DomElement.set(this._inputItem, 'step', step);
 	},
 
 	reset: function() {
