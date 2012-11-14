@@ -28,7 +28,8 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 		},
 
 		number: {
-			type: 'number'
+			type: 'number',
+			number: true
 		},
 
 		button: {
@@ -81,6 +82,8 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 					if (typeof key === 'function')
 						key = null;
 					var value = DomElement.get(this, key || 'value');
+					if (that._info.number)
+						value = Base.toFloat(value);
 					if (fireChange) {
 						that.palette.fire('change', that, that.name, value);
 						that.fire('change', value);
