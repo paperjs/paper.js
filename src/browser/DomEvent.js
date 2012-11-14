@@ -132,7 +132,7 @@ DomEvent.requestAnimationFrame = new function() {
 			return;
 		// Installs interval timer that checks all callbacks. This results
 		// in faster animations than repeatedly installing timout timers.
-		timer = window.setInterval(function() {
+		timer = setInterval(function() {
 			// Checks all installed callbacks for element visibility and
 			// execute if needed.
 			for (var i = callbacks.length - 1; i >= 0; i--) {
