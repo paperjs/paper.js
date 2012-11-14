@@ -130,6 +130,11 @@ var DomElement = new function() {
 				new RegExp('\\s*' + cls + '\\s*'), ' ').trim();
 		},
 
+		remove: function(el) {
+			if (el.parentNode)
+				el.parentNode.removeChild(el);
+		},
+
 		removeChildren: function(el) {
 			while (el.firstChild)
 				el.removeChild(el.firstChild);
