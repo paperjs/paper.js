@@ -75,8 +75,8 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 					that.setValue(
 						DomElement.get(this, that._info.value || 'value'));
 					if (fireChange) {
-						that._palette.fire('change', that, that.name, value);
-						that.fire('change', value);
+						that._palette.fire('change', that, that.name, that._value);
+						that.fire('change', that._value);
 					}
 				},
 				click: function() {
