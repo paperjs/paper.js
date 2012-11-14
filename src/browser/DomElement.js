@@ -52,9 +52,9 @@ var DomElement = new function() {
 	}
 
 	return {
-		create: function(arg0, arg1) {
-			var isArray = Array.isArray(arg0),
-				res = create(isArray ? arg0 : arguments, isArray ? arg1 : null);
+		create: function(nodes, parent) {
+			var isArray = Array.isArray(nodes),
+				res = create(isArray ? nodes : arguments, isArray ? parent : null);
 			return res.length == 1 ? res[0] : res;
 		},
 
