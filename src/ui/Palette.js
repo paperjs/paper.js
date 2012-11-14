@@ -39,7 +39,7 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 			// Make sure each component has an entry in values, so observers get
 			// installed further down.
 			if (values[name] === undefined)
-				values[name] = null;
+				values[name] = component.value;
 		}
 		// Now replace each entry in values with a getter / setters so we can
 		// observe change.
