@@ -50,6 +50,7 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 			_values[name] = value;
 		});
 		this._values = Base.each(values, function(value, name) {
+			_values[name] = value;
 			Base.define(values, name, {
 				enumerable: true,
 				configurable: true,
