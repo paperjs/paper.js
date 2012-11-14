@@ -18,11 +18,11 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 	_events: [ 'onChange' ],
 
 	initialize: function(title, components, values) {
-		var parent = DomElement.find('.paperjs-palettes')
+		var parent = DomElement.find('.palettejs-panel')
 			|| DomElement.find('body').appendChild(
-				DomElement.create('div', { 'class': 'paperjs-palettes' })),
+				DomElement.create('div', { 'class': 'palettejs-panel' })),
 			table = parent.appendChild(
-				DomElement.create('table', { 'class': 'paperjs-palette' })),
+				DomElement.create('table', { 'class': 'palettejs-pane' })),
 			that = this;
 		this._title = title;
 		if (!values)
