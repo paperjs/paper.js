@@ -123,6 +123,9 @@ var paper = new function() {
 /*#*/ include('ui/Key.js');
 /*#*/ include('ui/MouseEvent.js');
 
+/*#*/ include('ui/Palette.js');
+/*#*/ include('ui/Component.js');
+
 /*#*/ include('tool/ToolEvent.js');
 /*#*/ include('tool/Tool.js');
 /*#*/ } // options.browser
