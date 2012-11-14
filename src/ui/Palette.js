@@ -43,6 +43,11 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 		}
 		// Now replace each entry in values with a getter / setters so we can
 		// observe change.
+		// Introduce a private _values list that actually keeps the values, and
+		// use change events to keep it up to date
+		var _values = {};
+		this.attach('change', function(component, name, value) {
+			_values[name] = value;
 		});
 		this._values = Base.each(values, function(value, name) {
 			Base.define(values, name, {
@@ -50,10 +55,10 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 				configurable: true,
 				writable: true,
 				get: function() {
-					return value;
+					return _values[name];
 				},
 				set: function(val) {
-					value = val;
+					_values[name] = val;
 					components[name].setValue(val);
 				}
 			});
