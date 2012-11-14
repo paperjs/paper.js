@@ -35,32 +35,25 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 				component = components[name] = new Component(component);
 			}
 			this._element.appendChild(component._element);
-			component.palette = this;
+			component._palette = this;
 			// Make sure each component has an entry in values, so observers get
 			// installed further down.
 			if (values[name] === undefined)
 				values[name] = component.value;
 		}
 		// Now replace each entry in values with a getter / setters so we can
-		// observe change.
-		// Introduce a private _values list that actually keeps the values, and
-		// use change events to keep it up to date
-		var _values = {};
-		this.attach('change', function(component, name, value) {
-			_values[name] = value;
-		});
+		// directly link the value to the component and  observe change.
 		this._values = Base.each(values, function(value, name) {
-			_values[name] = value;
+			var component = components[name];
 			Base.define(values, name, {
 				enumerable: true,
 				configurable: true,
 				writable: true,
 				get: function() {
-					return _values[name];
+					return component._value;
 				},
 				set: function(val) {
-					_values[name] = val;
-					components[name].setValue(val);
+					component.setValue(val);
 				}
 			});
 		});
