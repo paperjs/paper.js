@@ -20,9 +20,10 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 	initialize: function(title, components, values) {
 		var parent = DomElement.find('.paperjs-palettes')
 			|| DomElement.find('body').appendChild(
-				DomElement.create('div', { 'class': 'paperjs-palettes' }));
-		var table = parent.appendChild(
-				DomElement.create('table', { 'class': 'paperjs-palette' }));
+				DomElement.create('div', { 'class': 'paperjs-palettes' })),
+			table = parent.appendChild(
+				DomElement.create('table', { 'class': 'paperjs-palette' })),
+			that = this;
 		this._title = title;
 		if (!values)
 			values = {};
@@ -33,7 +34,7 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 				component.name = name;
 				component = components[name] = new Component(component);
 			}
-			component.palette = this;
+			component.palette = that;
 			// Make sure each component has an entry in values, so observers get
 			// installed further down.
 			if (values[name] === undefined)
@@ -44,7 +45,7 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 					'td', component.element
 				])
 			);
-		}, this);
+		});
 		this._values = Base.each(values, function(value, name) {
 			// Replace each entry with an getter / setters so we can observe
 			// change.
