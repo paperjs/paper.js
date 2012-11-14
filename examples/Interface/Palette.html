@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Paelette</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var values = {
+			number: 1,
+			string: 200,
+			checkbox: true,
+			list: 'Two',
+			text: 'Hello World!'
+		};
+		var components = {
+			number: {
+				type: 'number',
+				label: 'A Number',
+				step: 2.5
+			},
+			string: {
+				type: 'string',
+				label: 'A String'
+			},
+			checkbox: {
+				type: 'boolean',
+				label: 'A Checkbox',
+				onChange: function(value) {
+					values.list = 'Two';
+				}
+			},
+			list: {
+				type: 'list',
+				label: 'A List',
+				options: [ 'One', 'Two', 'Three' ]
+			},
+			text: {
+				type: 'text',
+				label: 'A Text'
+			},
+			button: {
+				type: 'button',
+				label: 'A Button',
+				value: 'Click Me!',
+				onClick: function() {
+					values.text = 'You clicked!';
+				}
+			},
+			slider: {
+				type: 'slider',
+				label: 'A Slider',
+				value: 10,
+				range: [0, 50],
+				step: 10
+			}
+		};
+		var palette = new Palette('Values', components, values);
+		palette.onChange = function(component, name, value) {
+			console.log(component, name + ' = ' + value);
+		}
+		values.number = 10;
+		values.string = 'Woop woop';
+		values.list = 'Three';
+		console.log(JSON.stringify(values));
+	</script>
+</head>
+<body>
+	<canvas id="canvas" width="640" height="480"></canvas>
+</body>
+</html>
