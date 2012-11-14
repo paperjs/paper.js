@@ -22,18 +22,18 @@
  */
 new function() {
 
-	// Shortcut to Base.formatNumber
-	var formatNumber = Base.formatNumber;
+	// Shortcut to Base.formatFloat
+	var formatFloat = Base.formatFloat;
 
 	function formatPoint(point) {
-		return formatNumber(point.x) + ',' + formatNumber(point.y);
+		return formatFloat(point.x) + ',' + formatFloat(point.y);
 	}
 
 	function setAttributes(svg, attrs) {
 		for (var key in attrs) {
 			var val = attrs[key];
 			if (typeof val === 'number')
-				val = formatNumber(val);
+				val = formatFloat(val);
 			svg.setAttribute(key, val);
 		}
 		return svg;
@@ -70,7 +70,7 @@ new function() {
 			scale = matrix.getScaling();
 		if (angle != null) {
 			transform.push(angle
-					? 'rotate(' + formatNumber(angle) + ')'
+					? 'rotate(' + formatFloat(angle) + ')'
 					: 'scale(' + formatPoint(scale) +')');
 		} else {
 			transform.push('matrix(' + matrix.getValues().join(',') + ')');
@@ -309,7 +309,7 @@ new function() {
 			break;
 		}
 		if (angle) {
-			attrs.transform = 'rotate(' + formatNumber(angle) + ','
+			attrs.transform = 'rotate(' + formatFloat(angle) + ','
 					+ formatPoint(center) + ')';
 		}
 		var svg = createElement(type, attrs);
@@ -348,7 +348,7 @@ new function() {
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'
-								? formatNumber(value)
+								? formatFloat(value)
 								: value;
 			}
 		});

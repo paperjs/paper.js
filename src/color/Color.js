@@ -459,7 +459,7 @@ var Color = this.Color = Base.extend(new function() {
 	 */
 	toString: function() {
 		var parts = [],
-			format = Base.formatNumber;
+			format = Base.formatFloat;
 		for (var i = 0, l = this._components.length; i < l; i++) {
 			var component = this._components[i],
 				value = this['_' + component];

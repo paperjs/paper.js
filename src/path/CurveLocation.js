@@ -201,9 +201,9 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 			parts.push('index: ' + index);
 		var parameter = this.getParameter();
 		if (parameter != null)
-			parts.push('parameter: ' + Base.formatNumber(parameter));
+			parts.push('parameter: ' + Base.formatFloat(parameter));
 		if (this._distance != null)
-			parts.push('distance: ' + Base.formatNumber(this._distance));
+			parts.push('distance: ' + Base.formatFloat(this._distance));
 		return '{ ' + parts.join(', ') + ' }';
 	}
 });

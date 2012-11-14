@@ -204,9 +204,8 @@ var PaperScript = this.PaperScript = new function() {
 		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
 				'Microsoft.XMLHTTP');
 		xhr.open('GET', url, true);
-		if (xhr.overrideMimeType) {
+		if (xhr.overrideMimeType)
 			xhr.overrideMimeType('text/plain');
-		}
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === 4) {
 				return evaluate(xhr.responseText, scope);

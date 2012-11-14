@@ -62,7 +62,7 @@ new function() {
 		return value === 'none'
 				? null
 				: type === 'number'
-					? parseFloat(value, 10)
+					? Base.toFloat(value)
 					: type === 'array'
 						? value.split(/[\s,]+/g).map(parseFloat)
 						: type === 'color' && getDefinition(value)
@@ -394,7 +394,7 @@ new function() {
 			case 'stop-opacity':
 			// http://www.w3.org/TR/SVG/masking.html#OpacityProperty
 			case 'opacity':
-				var opacity = parseFloat(value, 10);
+				var opacity = Base.toFloat(value);
 				if (name === 'stop-opacity') {
 					item.color.setAlpha(opacity);
 				} else {
@@ -459,7 +459,7 @@ new function() {
 				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
 				break;
 			case 'font-size':
-				item.setFontSize(parseFloat(value, 10));
+				item.setFontSize(Base.toFloat(value));
 				break;
 			case 'text-anchor':
 				item.setJustification({

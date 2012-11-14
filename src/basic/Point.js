@@ -209,7 +209,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @return {String} A string representation of the point.
 	 */
 	toString: function() {
-		var format = Base.formatNumber;
+		var format = Base.formatFloat;
 		return '{ x: ' + format(this.x) + ', y: ' + format(this.y) + ' }';
 	},
 

@@ -44,7 +44,7 @@ this.Base = Base.inject(/** @lends Base# */{
 			if (key.charAt(0) != '_') {
 				var type = typeof value;
 				this.push(key + ': ' + (type === 'number'
-						? Base.formatNumber(value)
+						? Base.formatFloat(value)
 						: type === 'string' ? "'" + value + "'" : value));
 			}
 		}, []).join(', ') + ' }';
@@ -239,8 +239,12 @@ this.Base = Base.inject(/** @lends Base# */{
 		 *
 		 * @param {Number} num the number to be converted to a string
 		 */
-		formatNumber: function(num) {
+		formatFloat: function(num) {
 			return (Math.round(num * 100000) / 100000).toString();
+		},
+
+		toFloat: function(str) {
+			return parseFloat(str, 10);
 		}
 	}
 });

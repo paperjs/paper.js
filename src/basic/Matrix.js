@@ -238,7 +238,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {String} A string representation of this transform.
 	 */
 	toString: function() {
-		var format = Base.formatNumber;
+		var format = Base.formatFloat;
 		return '[[' + [format(this._a), format(this._b),
 					format(this._tx)].join(', ') + '], ['
 				+ [format(this._c), format(this._d),
