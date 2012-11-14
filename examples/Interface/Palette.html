@@ -44,6 +44,7 @@
 				label: 'A Button',
 				value: 'Click Me!',
 				onClick: function() {
+					palette.reset();
 					values.text = 'You clicked!';
 				}
 			},
@@ -66,6 +67,6 @@
 	</script>
 </head>
 <body>
-	<canvas id="canvas" width="640" height="480"></canvas>
+	<canvas id="canvas" width="640" height="100"></canvas>
 </body>
 </html>
