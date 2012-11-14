@@ -31,44 +31,47 @@ var DomElement = new function() {
 	function create(nodes, parent) {
 		var res = [];
 		for (var i =  0, l = nodes && nodes.length; i < l;) {
-			var tag = nodes[i++];
-			if (typeof tag === 'string') {
-				var el = document.createElement(tag);
-				// Do we have attributes?
-				if (typeof nodes[i] === 'object' && !Array.isArray(nodes[i]))
-					DomElement.set(el, nodes[i++]);
-				// Do we have children?
-				if (Array.isArray(nodes[i]))
-					create(nodes[i++], el);
-				// Are we adding to a parent?
-				if (parent)
-					parent.appendChild(el);
-				res.push(el);
+			var el = nodes[i++];
+			if (typeof el === 'string') {
+				el = document.createElement(el);
+			} else if (!el || !el.nodeType) {
+				continue;
 			}
+			// Do we have attributes?
+			if (Base.isObject(nodes[i]))
+				DomElement.set(el, nodes[i++]);
+			// Do we have children?
+			if (Array.isArray(nodes[i]))
+				create(nodes[i++], el);
+			// Are we adding to a parent?
+			if (parent)
+				parent.appendChild(el);
+			res.push(el);
 		}
 		return res;
 	}
 
 	return {
-		create: function(tag, attributes, children) {
-			var res = create(arguments);
+		create: function(arg0, arg1) {
+			var isArray = Array.isArray(arg0),
+				res = create(isArray ? arg0 : arguments, isArray ? arg1 : null);
 			return res.length == 1 ? res[0] : res;
 		},
 
-		find: function(selector) {
-			return document.querySelector(selector);
+		find: function(selector, root) {
+			return (root || document).querySelector(selector);
 		},
 
-		findAll: function(selector) {
-			return document.querySelectorAll(selector);
+		findAll: function(selector, root) {
+			return (root || document).querySelectorAll(selector);
 		},
 
 		get: function(el, key) {
 			return el
 				? special.test(key)
-					? key === 'value'
+					? key === 'value' || typeof el[key] !== 'string'
 						? el[key]
-						: typeof el[key] === 'string'
+						: true
 					: key in translated
 						? el[translated[key]]
 						: el.getAttribute(key)
@@ -76,6 +79,8 @@ var DomElement = new function() {
 		},
 
 		set: function(el, key, value) {
+			if (!el)
+				return el;
 			if (typeof key !== 'string') {
 				for (var name in key)
 					if (key.hasOwnProperty(name))
@@ -123,6 +128,11 @@ var DomElement = new function() {
 		removeClass: function(el, cls) {
 			el.className = el.className.replace(
 				new RegExp('\\s*' + cls + '\\s*'), ' ').trim();
+		},
+
+		removeChildren: function(el) {
+			while (el.firstChild)
+				el.removeChild(el.firstChild);
 		},
 
 		getBounds: function(el, viewport) {
