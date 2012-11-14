@@ -54,12 +54,6 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 				DomElement.create(Base.each(this._options, function(option) {
 					this.push('option', { value: option, text: option });
 				}, []), this._inputItem);
-			},
-
-			value: function(value) {
-				DomElement.set(
-					DomElement.find('option[value="' + value + '"]', this._inputItem),
-					'selected', true);
 			}
 		}
 	},
@@ -78,14 +72,10 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 			type: this._info.type,
 			events: {
 				change: function() {
-					var key = that._info.value;
-					if (typeof key === 'function')
-						key = null;
-					var value = DomElement.get(this, key || 'value');
-					if (that._info.number)
-						value = Base.toFloat(value);
+					that.setValue(
+						DomElement.get(this, that._info.value || 'value'));
 					if (fireChange) {
-						that.palette.fire('change', that, that.name, value);
+						that._palette.fire('change', that, that.name, value);
 						that.fire('change', value);
 					}
 				},
@@ -134,12 +124,11 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 	},
 
 	setValue: function(value) {
-		var key = this._info.value;
-		if (typeof key === 'function')
-			key.call(this, value);
-		else
-			DomElement.set(this._inputItem, key || 'value', value);
-		this._value = value;
+		var key = this._info.value || 'value';
+		DomElement.set(this._inputItem, key, value);
+		// Read back and convert from input again, to make sure we're in sync
+		value = DomElement.get(this._inputItem, key);
+		this._value = this._info.number ? Base.toFloat(value) : value;
 	},
 
 	getRange: function() {
