@@ -72,11 +72,12 @@ var Callback = {
 		var handlers = this._handlers && this._handlers[type];
 		if (!handlers)
 			return false;
+		var args = [].slice.call(arguments, 1);
 		Base.each(handlers, function(func) {
 			// When the handler function returns false, prevent the default
 			// behaviour of the event by calling stop() on it
 			// PORT: Add to Sg
-			if (func.call(this, event) === false && event && event.stop)
+			if (func.apply(this, args) === false && event && event.stop)
 				event.stop();
 		}, this);
 		return true;
