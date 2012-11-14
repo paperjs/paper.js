@@ -52,6 +52,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		this.project = null;
 		this.projects = [];
 		this.tools = [];
+		this.palettes = [];
 		// Assign an id to this canvas that's either extracted from the script
 		// or automatically generated.
 		this._id = script && (script.getAttribute('id') || script.src)
@@ -170,6 +171,8 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 			this.projects[i].remove();
 		for (var i = this.tools.length - 1; i >= 0; i--)
 			this.tools[i].remove();
+		for (var i = this.palettes.length - 1; i >= 0; i--)
+			this.palettes[i].remove();
 	},
 
 	remove: function() {

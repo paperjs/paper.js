@@ -58,6 +58,8 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 				}
 			});
 		});
+		if (window.paper)
+			paper.palettes.push(this);
 	},
 
 	reset: function() {
