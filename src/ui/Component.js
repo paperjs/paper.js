@@ -46,6 +46,7 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 
 		list: {
 			tag: 'select',
+
 			options: function() {
 				DomElement.removeChildren(this.element);
 				DomElement.create(Base.each(this._options, function(option) {
@@ -129,10 +130,9 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 				toFloat(DomElement.get(this.element, 'max'))];
 	},
 
-	setRange: function(arg0, arg1) {
-		if (!Array.isArray(arg0))
-			arg0 = [arg0, arg1];
-		DomElement.set(this.element, { min: arg0[0], max: arg0[1] });
+	setRange: function(min, max) {
+		var range = Array.isArray(min) ? min : [min, max];
+		DomElement.set(this.element, { min: range[0], max: range[1] });
 	},
 
 	getMin: function() {
