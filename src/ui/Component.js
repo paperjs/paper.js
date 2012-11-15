@@ -87,7 +87,7 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 		});
 		this._element = DomElement.create('tr', [
 			this._labelItem = DomElement.create('td'),
-			'td', this._inputItem
+			'td', [this._inputItem]
 		]);
 		Base.each(obj, function(value, key) {
 			this[key] = value;

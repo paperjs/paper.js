@@ -79,12 +79,12 @@ var DomElement = new function() {
 		},
 
 		set: function(el, key, value) {
-			if (!el)
-				return el;
 			if (typeof key !== 'string') {
 				for (var name in key)
 					if (key.hasOwnProperty(name))
 						this.set(el, name, key[name]);
+			} else if (!el || value === undefined) {
+				return el;
 			} else if (special.test(key)) {
 				el[key] = value;
 			} else if (key in translated) {
