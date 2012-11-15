@@ -132,8 +132,8 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 	},
 
 	getRange: function() {
-		return [toFloat(DomElement.get(this._inputItem, 'min')),
-				toFloat(DomElement.get(this._inputItem, 'max'))];
+		return [Base.toFloat(DomElement.get(this._inputItem, 'min')),
+				Base.toFloat(DomElement.get(this._inputItem, 'max'))];
 	},
 
 	setRange: function(min, max) {
@@ -142,23 +142,23 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 	},
 
 	getMin: function() {
-		return getRange()[0];
+		return this.getRange()[0];
 	},
 
 	setMin: function(min) {
-		this.setRange(min, getMax());
+		this.setRange(min, this.getMax());
 	},
 
 	getMax: function() {
-		return getRange()[1];
+		return this.getRange()[1];
 	},
 
 	setMax: function(max) {
-		this.setRange(getMin(), max);
+		this.setRange(this.getMin(), max);
 	},
 
 	getStep: function() {
-		return toFloat(DomElement.get(this._inputItem, 'step'));
+		return Base.toFloat(DomElement.get(this._inputItem, 'step'));
 	},
 
 	setStep: function(step) {
