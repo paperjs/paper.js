@@ -45,17 +45,19 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 		// directly link the value to the component and  observe change.
 		this._values = Base.each(values, function(value, name) {
 			var component = components[name];
-			Base.define(values, name, {
-				enumerable: true,
-				configurable: true,
-				writable: true,
-				get: function() {
-					return component._value;
-				},
-				set: function(val) {
-					component.setValue(val);
-				}
-			});
+			if (component) {
+				Base.define(values, name, {
+					enumerable: true,
+					configurable: true,
+					writable: true,
+					get: function() {
+						return component._value;
+					},
+					set: function(val) {
+						component.setValue(val);
+					}
+				});
+			}
 		});
 		if (window.paper)
 			paper.palettes.push(this);
