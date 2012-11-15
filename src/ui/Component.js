@@ -59,12 +59,13 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 	},
 
 	initialize: function(obj) {
-		this._type = obj.type
-			|| ('options' in obj
+		this._type = obj.type in this._types
+			? obj.type
+			: 'options' in obj
 				? 'list'
 				: 'onClick' in obj
 					? 'button'
-					: typeof value);
+					: typeof obj.value;
 		this._info = this._types[this._type] || { type: this._type };
 		var that = this,
 			fireChange = false;
