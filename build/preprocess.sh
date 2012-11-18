@@ -42,7 +42,7 @@ case $1 in
 		;;
 	compressed)
 		eval $COMMAND > temp.js
-		../../uglifyjs/bin/uglifyjs temp.js --extra --unsafe --reserved-names "$eval,$sign" > $5
+		../../uglifyjs/bin/uglifyjs temp.js --extra --unsafe --reserved-names "_$_,$_" > $5
 		rm temp.js
 		;;
 esac
