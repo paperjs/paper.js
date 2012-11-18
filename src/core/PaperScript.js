@@ -62,8 +62,6 @@ var PaperScript = this.PaperScript = new function() {
 		case '%': return left % right;
 		case '==': return left == right;
 		case '!=': return left != right;
-		default:
-			throw new Error('Implement Operator: ' + operator);
 		}
 	}
 
@@ -75,8 +73,6 @@ var PaperScript = this.PaperScript = new function() {
 		switch (operator) {
 		case '+': return +value;
 		case '-': return -value;
-		default:
-			throw new Error('Implement Unary Operator: ' + operator);
 		}
 	}
 
