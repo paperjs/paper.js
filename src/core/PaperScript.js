@@ -18,12 +18,17 @@
  * @name PaperScript
  * @namespace
  */
+
+/*#*/ if (options.parser == 'acorn') {
+/*#*/ include('../../lib/acorn-min.js');
+/*#*/ } else {
+/*#*/ include('../../lib/esprima-min.js');
+/*#*/ }
+
 var PaperScript = this.PaperScript = new function() {
-/*#*/ include('../../lib/parse-js-min.js');
+	// Operators to overload
 
-	// Math Operators
-
-	var operators = {
+	var binaryOperators = {
 		'+': 'add',
 		'-': 'subtract',
 		'*': 'multiply',
@@ -33,8 +38,18 @@ var PaperScript = this.PaperScript = new function() {
 		'!=': 'equals'
 	};
 
-	function $eval(left, operator, right) {
-		var handler = operators[operator];
+	var unaryOperators = {
+		'-': 'negate',
+		'+': null
+	};
+
+	// Use very short name for the binary operator (_$_) as well as the
+	// unary operator ($_), as operations will be replaced with then.
+	// The underscores stands for the values, and the $ for the operators.
+
+	// Binary Operator Handler
+	function _$_(left, operator, right) {
+		var handler = binaryOperators[operator];
 		if (left && left[handler]) {
 			var res = left[handler](right);
 			return operator === '!=' ? !res : res;
@@ -52,41 +67,21 @@ var PaperScript = this.PaperScript = new function() {
 		}
 	}
 
-	// Sign Operators
-
-	var signOperators = {
-		'-': 'negate'
-	};
-
-	function $sign(operator, value) {
-		var handler = signOperators[operator];
-		if (value && value[handler]) {
+	// Unary Operator Handler
+	function $_(operator, value) {
+		var handler = unaryOperators[operator];
+		if (handler && value && value[handler])
 			return value[handler]();
-		}
 		switch (operator) {
 		case '+': return +value;
 		case '-': return -value;
 		default:
-			throw new Error('Implement Sign Operator: ' + operator);
+			throw new Error('Implement Unary Operator: ' + operator);
 		}
 	}
 
 	// AST Helpers
 
-	function isDynamic(exp) {
-		var type = exp[0];
-		return type != 'num' && type != 'string';
-	}
-
-	function handleOperator(operator, left, right) {
-		// Only replace operators with calls to $operator if the left hand side
-		// is potentially an object.
-		if (operators[operator] && isDynamic(left)) {
-			// Replace with call to $operator(left, operator, right):
-			return ['call', ['name', '$eval'],
-					[left, ['string', operator], right]];
-		}
-	}
 
 	/**
 	 * Compiles PaperScript code into JavaScript code.
@@ -97,49 +92,111 @@ var PaperScript = this.PaperScript = new function() {
 	 * @return {String} The compiled PaperScript as JavaScript code.
 	 */
 	function compile(code) {
-		// Use parse-js to translate the code into a AST structure which is then
-		// walked and parsed for operators to overload. The resulting AST is
-		// translated back to code and evaluated.
-		var ast = parse_js.parse(code),
-			walker = parse_js.ast_walker(),
-			walk = walker.walk;
+		// Use Acorn or Esprima to translate the code into an AST structure
+		// which is then walked and parsed for operators to overload.
+		// Instead of modifying the AST and converting back to code, we directly
+		// change the source code based on the parser's range information, so we
+		// can preserve line-numbers in syntax errors and remove the need for
+		// Escodegen.
 
-		ast = walker.with_walkers({
-			'binary': function(operator, left, right) {
-				// Handle simple mathematical operators here:
-				return handleOperator(operator, left = walk(left),
-						right = walk(right))
-						// Always return a new AST for this node, since we have
-						// processed left and right int he call above!
-						|| [this[0], operator, left, right];
-			},
+		// Tracks code insertions so we can add their differences to the
+		// original offsets.
+		var insertions = [];
 
-			'assign': function(operator, left, right) {
-				// Handle assignments like +=, -=, etc:
-				// Check if the assignment operator needs to be handled by paper
-				// if so, convert the assignment to a simple = and use result of
-				// of handleOperator on the right hand side.
-				var res = handleOperator(operator, left = walk(left),
-						right = walk(right));
-				return res
-					? [this[0], true, left, res]
-					// Always return a new AST for the same reason as in binary
-					: [this[0], operator, left, right];
-			},
+		// Converts an original offset to the one in the current state of the 
+		// modified code.
+		function getOffset(offset) {
+			var start = offset;
+			// Add all insertions before this location together to calculate
+			// the current offset
+			for (var i = 0, l = insertions.length; i < l; i++) {
+				var insertion = insertions[i];
+				if (insertion[0] >= offset)
+					break;
+				offset += insertion[1];
+			}
+			return offset;
+		}
 
-			'unary-prefix': function(operator, exp) {
-				if (signOperators[operator] && isDynamic(exp)) {
-					return ['call', ['name', '$sign'],
-							[['string', operator], walk(exp)]];
+		// Returns the node's code as a string, taking insertions into account.
+		function getCode(node) {
+			return code.substring(getOffset(node.range[0]),
+					getOffset(node.range[1]));
+		}
+
+		// Replaces the node's code with a new version and keeps insertions
+		// information up-to-date.
+		function replaceCode(node, str) {
+			var start = getOffset(node.range[0]),
+				end = getOffset(node.range[1]);
+			var insert = 0;
+			// Sort insertions by their offset, so getOffest() can do its thing
+			for (var i = insertions.length - 1; i >= 0; i--) {
+				if (start > insertions[i][0]) {
+					insert = i + 1;
+					break;
 				}
 			}
-		}, function() {
-			return walk(ast);
-		});
+			insertions.splice(insert, 0, [start, str.length - end + start]);
+			code = code.substring(0, start) + str + code.substring(end);
+		}
 
-		return parse_js.gen_code(ast, {
-			beautify: true
-		});
+		// Recursively walks the AST and replaces the code of certain nodes
+		function walkAst(node) {
+			for (var key in node) {
+				if (key === 'range')
+					continue;
+				var value = node[key];
+				if (Array.isArray(value)) {
+					for (var i = 0, l = value.length; i < l; i++)
+						walkAst(value[i]);
+				} else if (Base.isObject(value)) {
+					walkAst(value);
+				}
+			}
+			switch (node.type) {
+			case 'BinaryExpression':
+				if (node.operator in binaryOperators
+						&& node.left.type !== 'Literal') {
+					var left = getCode(node.left),
+						right = getCode(node.right);
+					replaceCode(node, '_$_(' + left + ', "' + node.operator
+							+ '", ' + right + ')');
+				}
+				break;
+			case 'AssignmentExpression':
+				if (/^.=$/.test(node.operator)
+						&& node.left.type !== 'Literal') {
+					var left = getCode(node.left),
+						right = getCode(node.right);
+					replaceCode(node, left + ' = _$_(' + left + ', "'
+							+ node.operator[0] + '", ' + right + ')');
+				}
+				break;
+			case 'UpdateExpression':
+				if (!node.prefix) {
+					var arg = getCode(node.argument);
+					replaceCode(node, arg + ' = _$_(' + arg + ', "'
+							+ node.operator[0] + '", 1)');
+				}
+				break;
+			case 'UnaryExpression':
+				if (node.operator in unaryOperators
+						&& node.argument.type !== 'Literal') {
+					var arg = getCode(node.argument);
+					replaceCode(node, '$_("' + node.operator + '", '
+							+ arg + ')');
+				}
+				break;
+			}
+		}
+		// Now do the parsing magic
+/*#*/ if (options.parser == 'acorn') {
+		walkAst(acorn.parse(code, { ranges: true }));
+/*#*/ } else {
+		walkAst(esprima.parse(code, { range: true }));
+/*#*/ }
+		return code;
 	}
 
 	/**
