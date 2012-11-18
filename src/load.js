@@ -22,7 +22,8 @@
 var options = {
 	browser: true,
 	stats: true,
-	version: 'dev'
+	version: 'dev',
+	parser: 'acorn'
 };
 
 // This folder is specified relatively to the lib folder from which prepro.js is
