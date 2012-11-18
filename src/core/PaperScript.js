@@ -21,7 +21,7 @@
 
 /*#*/ if (options.parser == 'acorn') {
 /*#*/ include('../../lib/acorn-min.js');
-/*#*/ } else {
+/*#*/ } else if (options.parser == 'esprima') {
 /*#*/ include('../../lib/esprima-min.js');
 /*#*/ }
 
@@ -189,7 +189,7 @@ var PaperScript = this.PaperScript = new function() {
 		// Now do the parsing magic
 /*#*/ if (options.parser == 'acorn') {
 		walkAst(acorn.parse(code, { ranges: true }));
-/*#*/ } else {
+/*#*/ } else if (options.parser == 'esprima') {
 		walkAst(esprima.parse(code, { range: true }));
 /*#*/ }
 		return code;

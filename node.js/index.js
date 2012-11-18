@@ -9,6 +9,7 @@ __dirname = path.resolve(__dirname, '../src/');
 var context = vm.createContext({
 	options: {
 		server: true,
+		parser: 'acorn',
 		version: 'dev'
 	},
 	fs: fs,
