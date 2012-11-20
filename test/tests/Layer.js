@@ -59,9 +59,19 @@ test('insertAbove / insertBelow', function() {
 	var project = paper.project;
 	var firstLayer = project.activeLayer;
 	var secondLayer = new Layer();
+	var thirdLayer = new Layer();
+
+	thirdLayer.insertBelow(firstLayer);
+	equals(function() {
+		return thirdLayer.previousSibling == null;
+	}, true);
+	equals(function() {
+		return thirdLayer.nextSibling == firstLayer;
+	}, true);
+
 	secondLayer.insertBelow(firstLayer);
 	equals(function() {
-		return secondLayer.previousSibling == null;
+		return secondLayer.previousSibling == thirdLayer;
 	}, true);
 	equals(function() {
 		return secondLayer.nextSibling == firstLayer;
@@ -78,10 +88,10 @@ test('insertAbove / insertBelow', function() {
 	equals(function() {
 		return secondLayer.parent == firstLayer;
 	}, true);
-	// There should now only be one layer left:
+	// There should now only be two layers left:
 	equals(function() {
 		return project.layers.length;
-	}, 1);
+	}, 2);
 });
 
 test('addChild / appendBottom / nesting', function() {
