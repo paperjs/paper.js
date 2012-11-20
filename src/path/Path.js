@@ -1691,8 +1691,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		},
 
 		cubicCurveTo: function(handle1, handle2, to) {
-			var _handle1 = Point.read(arguments);
-				_handle2 = Point.read(arguments);
+			var _handle1 = Point.read(arguments),
+				_handle2 = Point.read(arguments),
 				_to = Point.read(arguments);
 			// First modify the current segment:
 			var current = getCurrentSegment(this);
