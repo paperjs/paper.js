@@ -97,7 +97,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 						if (!onFrameItems.length)
 							this._project.view.detach('frame', onFrame);
 					}
-				}
+				},
+
+				// Only for external sources, e.g. Raster
+				onLoad: {}
 			});
 	},
 
