@@ -26,6 +26,9 @@
  * @extends Event
  */
 var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
+	// Have ToolEvent#item fall back to returning null, not undefined.
+	_item: null,
+
 	initialize: function(tool, type, event) {
 		this.tool = tool;
 		this.type = type;
