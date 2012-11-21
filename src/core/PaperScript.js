@@ -150,7 +150,7 @@ var PaperScript = this.PaperScript = new function() {
 					walkAst(value);
 				}
 			}
-			switch (node.type) {
+			switch (node && node.type) {
 			case 'BinaryExpression':
 				if (node.operator in binaryOperators
 						&& node.left.type !== 'Literal') {
