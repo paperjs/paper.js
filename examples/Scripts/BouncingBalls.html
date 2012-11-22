@@ -33,7 +33,7 @@
 				]);
 				var color = new HsbColor(Math.random() * 360, 1, 1);
 				var gradient = new Gradient([color, 'black'], 'radial');
-				compound.children[0].fillColor = new GradientColor(gradient, this.point,
+				compound.fillColor = new GradientColor(gradient, this.point,
 						this.point + this.radius, overlayPos);
 				var overlay = new Path.Circle(overlayPos, this.radius / 2);
 				var overlayColor = color.clone();
