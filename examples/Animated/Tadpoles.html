@@ -78,9 +78,7 @@
 				this.head.rotate(rot - this.lastRot);
 				this.lastRot = rot;
 
-				var shortSegments = this.shortPath.segments;
-				for (var i = 0; i < 3; i++)
-					shortSegments[i] = segments[i].clone();
+				this.shortPath.segments = segments.slice(0, 3);
 			},
 
 			// We accumulate a new acceleration each time based on three rules
