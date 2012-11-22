@@ -357,7 +357,7 @@ test('compare ellipse values', function() {
 	var shape = document.createElementNS(svgns, 'ellipse');
 	var cx = 100,
 		cy = 80,
-		rx = 50;
+		rx = 50,
 		ry = 30;
 	shape.setAttribute('cx', cx);
 	shape.setAttribute('cy', cy);
