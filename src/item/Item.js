@@ -1062,16 +1062,17 @@ function(name) {
 	 * hit.
 	 */
 	hitTest: function(point, options) {
-		options = HitResult.getOptions(point, options);
+		point = Point.read(arguments);
+		options = HitResult.getOptions(Base.readValue(arguments));
 		// Check if the point is withing roughBounds + tolerance, but only if
 		// this item does not have children, since we'd have to travel up the
 		// chain already to determine the rough bounds.
 		if (!this._children && !this.getRoughBounds()
-				.expand(options.tolerance)._containsPoint(options.point))
+				.expand(options.tolerance)._containsPoint(point))
 			return null;
 		// Transform point to local coordinates but use untransformed point
 		// for bounds check above.
-		point = options.point = this._matrix._inverseTransform(options.point);
+		point = this._matrix._inverseTransform(point);
 		if ((options.center || options.bounds) &&
 				// Ignore top level layers:
 				!(this instanceof Layer && !this._parent)) {
