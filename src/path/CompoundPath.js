@@ -72,7 +72,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	 *
 	 * @return {CompoundPath|Path} the flattened compound path
 	 */
-	flatten: function() {
+	reduce: function() {
 		if (this._children.length == 1) {
 			var child = this._children[0];
 			child.insertAbove(this);

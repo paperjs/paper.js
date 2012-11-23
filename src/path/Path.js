@@ -948,10 +948,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
-	 * For simple paths, flatten always returns the path itself. See
-	 * {@link CompoundPath#flatten()} for more explanations.
+	 * For simple paths, reduce always returns the path itself. See
+	 * {@link CompoundPath#reduce()} for more explanations.
 	 */
-	flatten: function() {
+	reduce: function() {
 		return this;
 	},
 
