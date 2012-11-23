@@ -518,4 +518,17 @@ test('Check hit testing of items that come after a transformed group.', function
 	}, true, 'After moving group before path1, hit testing path1 for point1 should give us path1.');
 });
 
+test('Check hit testing of placed symbols.', function() {
+	var point = new Point(100, 100);
+
+	var path = new Path.Circle([0, 0], 20);
+	path.fillColor = 'black';
+	var symbol = new Symbol(path);
+	var placedItem = symbol.place(point);
+	var hitResult = placedItem.hitTest(point);
+	equals(function() {
+		return hitResult && hitResult.item == placedItem;
+	}, true, 'hitResult.item should be placedItem');
+
+});
 // TODO: project.hitTest(point, {type: AnItemType});
