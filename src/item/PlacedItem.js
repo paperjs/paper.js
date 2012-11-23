@@ -28,8 +28,8 @@ var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 	_boundsType: { bounds: 'strokeBounds' },
 
 	_hitTest: function(point, options, matrix) {
-		point = point.transform(this.matrix);
-		var hitResult = this._symbol._definition.hitTest(point, options, matrix);
+		var hitResult = this._symbol._definition.hitTest(
+				point._transformPoint(this.matrix), options, matrix);
 		// TODO: When the symbol's definition is a path, should hitResult contain
 		// information like HitResult#curve?
 		if (hitResult)
