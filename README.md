@@ -58,9 +58,9 @@ You will then find the built library inside the `dist` folder, named `paper.js`.
 	stripped		Formated but without comments (default)
 	compressed		Uses UglifyJS to reduce file size
 
-In order for UglifyJS to work when building Paper.js, it needs to be located in a folder name `uglifyjs` on the same level as your `paper.js` project folder. Alternatively you can also adjust the path in `build/preprocess.sh`. You also need to make sure that node will find the uglifyjs library by making a symbolic link to it from `~/.node_libraries/uglify-js`, e.g.
+In to build a compressed version of Paper.js, UglifyJS version 1 needs to be installed:
 
-	ln -s ~/Development/JavaScript/uglifyjs ~/.node_libraries/uglify-js
+    npm install uglify-js@1
 
 ### Building the Documentation
 
