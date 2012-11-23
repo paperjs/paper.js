@@ -58,9 +58,9 @@ You will then find the built library inside the `dist` folder, named `paper.js`.
 	stripped		Formated but without comments (default)
 	compressed		Uses UglifyJS to reduce file size
 
-In order to build a compressed version of Paper.js, UglifyJS version 1 needs to be installed:
+In order to build a compressed version of Paper.js, UglifyJS2 needs to be installed:
 
-    npm install uglify-js@1
+    npm install uglify-js
 
 ### Building the Documentation
 
