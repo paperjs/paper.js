@@ -98,7 +98,7 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 			if (item instanceof Layer && !item._parent
 						&& this._remove(false, true)) {
 				Base.splice(item._project.layers, [this],
-						item._index + (above ? 1 : -1), 0);
+						item._index + (above ? 1 : 0), 0);
 				this._setProject(item._project);
 				return true;
 			}
