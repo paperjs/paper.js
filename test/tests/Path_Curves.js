@@ -60,3 +60,30 @@ test('path.flatten(maxDistance)', function() {
 		return path.lastSegment.point.toString() != path.segments[path.segments.length - 2].point.toString();
 	}, true, 'The points of the last and before last segments should not be so close, that calling toString on them returns the same string value.');
 });
+
+test('Curve list after removing a segment - 1', function() {
+	var path = new paper.Path([0, 0], [1, 1], [2, 2]);
+
+	equals(function() {
+		return path.curves.length;
+	}, 2, 'After creating a path with three segments, we should have two curves. By accessing path.curves we also make sure the curves are created internally.');
+
+	path.segments[1].remove();
+	equals(function() {
+		return path.curves.length;
+	}, 1, 'After removing the middle segment, we should be left with one curve');
+});
+
+test('Curve list after removing a segment - 2', function() {
+	var path = new paper.Path([0, 0], [1, 1], [2, 2]);
+
+	equals(function() {
+		return path.curves.length;
+	}, 2, 'After creating a path with three segments, we should have two curves. By accessing path.curves we also make sure the curves are created internally.');
+
+	path.segments[2].remove();
+
+	equals(function() {
+		return path.curves.length;
+	}, 1, 'After removing the last segment, we should be left with one curve');
+});
