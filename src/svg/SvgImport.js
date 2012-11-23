@@ -382,7 +382,7 @@ new function() {
 				break;
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			case 'clip-path':
-				var clipPath = getDefinition(value).clone().flatten();
+				var clipPath = getDefinition(value).clone().reduce();
 				item = createClipGroup(item, clipPath);
 				break;
 			// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
