@@ -457,5 +457,65 @@ test('hitting path with a text item in the project', function() {
 	
 });
 
+test('Check hit testing of items that come after a transformed group.', function() {
+	paper.project.currentStyle.fillColor = 'black';
+	var point1 = new Point(100, 100);
+	var point2 = new Point(140, 100);
+	var delta = new Point(250, 0);
+
+	var path1 = new Path.Circle(point1, 20);
+	var path2 = new Path.Circle(point2, 20);
+
+	var group = new Group(path2);
+
+	var hitResult = paper.project.hitTest(point1);
+	equals(function() {
+		return hitResult && hitResult.item == path1;
+	}, true, 'Hit testing project for point1 should give us path1.');
+
+	hitResult = paper.project.hitTest(point2);
+	equals(function() {
+		return hitResult && hitResult.item == path2;
+	}, true, 'Hit testing project for point2 should give us path2.');
+
+	hitResult = paper.project.hitTest(point2);
+	equals(function() {
+		return hitResult && hitResult.item == path2;
+	}, true, 'Hit testing project for point2 should give us path2.');
+
+	group.translate(delta)
+
+	hitResult = paper.project.hitTest(point1);
+	equals(function() {
+		return hitResult && hitResult.item == path1;
+	}, true, 'After translating group, hit testing project for point1 should give us path1.');
+
+	hitResult = paper.project.hitTest(point2.add(delta));
+	equals(function() {
+		return hitResult && hitResult.item == path2;
+	}, true, 'After translating group, hit testing project for point2 + delta should give us path2.');
+
+	hitResult = path1.hitTest(point1);
+	equals(function() {
+		return hitResult && hitResult.item == path1;
+	}, true, 'After translating group, hit testing path1 for point1 should give us path1.');
+
+	group.moveBelow(path1);
+
+	hitResult = paper.project.hitTest(point1);
+	equals(function() {
+		return hitResult && hitResult.item == path1;
+	}, true, 'After moving group before path1, hit testing project for point1 should give us path1.');
+
+	hitResult = paper.project.hitTest(point2.add(delta));
+	equals(function() {
+		return hitResult && hitResult.item == path2;
+	}, true, 'After moving group before path1, hit testing project for point2 + delta should give us path2.');
+
+	hitResult = path1.hitTest(point1);
+	equals(function() {
+		return hitResult && hitResult.item == path1;
+	}, true, 'After moving group before path1, hit testing path1 for point1 should give us path1.');
+});
 
 // TODO: project.hitTest(point, {type: AnItemType});
