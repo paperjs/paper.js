@@ -334,6 +334,10 @@ var Color = this.Color = Base.extend(new function() {
 					}, src);
 				}
 				return this.base(src);
+			},
+
+			random: function() {
+				return new RgbColor(Math.random(), Math.random(), Math.random());
 			}
 		}
 	};
