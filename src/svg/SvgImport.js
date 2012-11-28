@@ -401,6 +401,16 @@ new function() {
 					item.setOpacity(opacity);
 				}
 				break;
+			// http://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
+			case 'fill-opacity':
+			// http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
+			case 'stroke-opacity':
+				var opacity = Base.toFloat(value),
+					color = item[name == 'fill-opacity'
+							? 'getFillColor' : 'getStrokeColor']();
+				if (color)
+					color.setAlpha(opacity);
+				break;
 			case 'visibility':
 				item.setVisible(value === 'visible');
 				break;
