@@ -1261,12 +1261,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	contains: function(point) {
 		point = Point.read(arguments);
+		// If the path is not closed, it we should not bail out in case it has
+		// a fill color!
+		if (!this._closed && !this._style._fillColor
+				|| !this.getRoughBounds()._containsPoint(point))
+			return false;
 		// Note: This only works correctly with even-odd fill rule, or paths
 		// that do not overlap with themselves.
 		// TODO: Find out how to implement the "Point In Polygon" problem for
 		// non-zero fill rule.
-		if (!this._closed || !this.getRoughBounds()._containsPoint(point))
-			return false;
 		// Use the crossing number algorithm, by counting the crossings of the
 		// beam in right y-direction with the shape, and see if it's an odd
 		// number, meaning the starting point is inside the shape.
