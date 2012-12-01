@@ -53,7 +53,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 
 	insertChild: function(index, item) {
 		// Only allow the insertion of paths
-		if (!(item instanceof Path))
+		if (item._type !== 'path')
 			return null;
 		var res = this.base(index, item);
 		// All children except for the bottom one (first one in list) are set
