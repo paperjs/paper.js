@@ -835,6 +835,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// as what it is now demanded to be.
 			this.reverse();
 		}
+		// Reverse only flips _clockwise state if it was already set, so let's
+		// always set this here now.
+		this._clockwise = clockwise;
 	},
 
 	/**
