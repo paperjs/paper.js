@@ -20,38 +20,38 @@ test('Set named color', function() {
 	var path = new Path();
 	path.fillColor = 'red';
 	compareRgbColors(path.fillColor, new RgbColor(1, 0, 0));
-	equals(path.fillColor.toCssString(), 'rgba(255, 0, 0, 1)');
+	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
 });
 
 test('Set color to hex', function() {
 	var path = new Path();
 	path.fillColor = '#ff0000';
 	compareRgbColors(path.fillColor, new RgbColor(1, 0, 0));
-	equals(path.fillColor.toCssString(), 'rgba(255, 0, 0, 1)');
+	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
 
 	var path = new Path();
 	path.fillColor = '#f00';
 	compareRgbColors(path.fillColor, new RgbColor(1, 0, 0));
-	equals(path.fillColor.toCssString(), 'rgba(255, 0, 0, 1)');
+	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
 });
 
 test('Set color to object', function() {
 	var path = new Path();
 	path.fillColor = { red: 1, green: 0, blue: 1};
 	compareRgbColors(path.fillColor, new RgbColor(1, 0, 1));
-	equals(path.fillColor.toCssString(), 'rgba(255, 0, 255, 1)');
+	equals(path.fillColor.toCss(), 'rgb(255, 0, 255)');
 
 	var path = new Path();
 	path.fillColor = { gray: 0.2 };
 	compareRgbColors(path.fillColor, new RgbColor(0.8, 0.8, 0.8));
-	equals(path.fillColor.toCssString(), 'rgba(204, 204, 204, 1)');
+	equals(path.fillColor.toCss(), 'rgb(204, 204, 204)');
 });
 
 test('Set color to array', function() {
 	var path = new Path();
 	path.fillColor = [1, 0, 0];
 	compareRgbColors(path.fillColor, new RgbColor(1, 0, 0));
-	equals(path.fillColor.toCssString(), 'rgba(255, 0, 0, 1)');
+	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
 });
 
 test('Creating colors', function() {
