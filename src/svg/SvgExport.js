@@ -341,10 +341,15 @@ new function() {
 			// (A layer or group which can have style values in SVG).
 			var value = style[entry.get]();
 			if (!parentStyle || !Base.equals(parentStyle[entry.get](), value)) {
+				// Support for css-style rgba() values is not in SVG 1.1, so
+				// separate the alpha value of colors with alpha into the
+				// separate fill- / stroke-opacity attribute:
+				if (entry.type === 'color' && value != null && value.getAlpha() < 1)
+					attrs[entry.attribute + '-opacity'] = value.getAlpha();
 				attrs[entry.attribute] = value == null
 					? 'none'
 					: entry.type === 'color'
-						? value.toCss()
+						? value.toCss(false)
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'
