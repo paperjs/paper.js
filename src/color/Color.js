@@ -371,7 +371,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * Called by various setters whenever a color value changes
 	 */
 	_changed: function() {
-		this._cssString = null;
+		this._css = null;
 		if (this._owner)
 			this._owner._changed(/*#=*/ Change.STYLE);
 	},
@@ -477,23 +477,25 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * @return {String} A css string representation of the color.
 	 */
-	toCssString: function() {
-		if (!this._cssString) {
+	toCss: function() {
+		if (!this._css) {
 			var color = this.convert('rgb'),
 				alpha = color.getAlpha(),
 				components = [
 					Math.round(color._red * 255),
 					Math.round(color._green * 255),
-					Math.round(color._blue * 255),
-					alpha != null ? alpha : 1
+					Math.round(color._blue * 255)
 				];
-			this._cssString = 'rgba(' + components.join(', ') + ')';
+			if (alpha != null && alpha < 1)
+				components.push(alpha);
+			this._css = (components.length == 4 ? 'rgba(' : 'rgb(')
+					+ components.join(', ') + ')';
 		}
-		return this._cssString;
+		return this._css;
 	},
 
 	getCanvasStyle: function() {
-		return this.toCssString();
+		return this.toCss();
 	}
 
 	/**
