@@ -486,7 +486,7 @@ var Color = this.Color = Base.extend(new function() {
 					Math.round(color._green * 255),
 					Math.round(color._blue * 255)
 				];
-			if (alpha != null && alpha < 1)
+			if (alpha < 1)
 				components.push(alpha);
 			this._css = (components.length == 4 ? 'rgba(' : 'rgb(')
 					+ components.join(', ') + ')';
