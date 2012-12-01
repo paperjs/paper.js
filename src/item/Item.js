@@ -946,8 +946,10 @@ function(name) {
 		copy.setStyle(this._style);
 		// If this item has children, clone and append each of them:
 		if (this._children) {
+			// Clone all children and add them to the copy. tell #addChild we're
+			// cloning, as needed by CompoundPath#insertChild().
 			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.addChild(this._children[i].clone());
+				copy.addChild(this._children[i].clone(), true);
 		}
 		// Only copy over these fields if they are actually defined in 'this'
 		// TODO: Consider moving this to Base once it's useful in more than one
@@ -1128,8 +1130,9 @@ function(name) {
 	 *
 	 * @param {Item} item The item to be added as a child
 	 */
-	addChild: function(item) {
-		return this.insertChild(undefined, item);
+	addChild: function(item, _cloning) {
+		// Pass on internal _cloning boolean, for CompoundPath#insertChild
+		return this.insertChild(undefined, item, _cloning);
 	},
 
 	/**
