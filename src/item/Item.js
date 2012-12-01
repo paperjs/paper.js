@@ -2458,8 +2458,8 @@ function(name) {
 			// first, since otherwise their stroke is drawn half transparent
 			// over their fill.
 			if (item._blendMode !== 'normal' || item._opacity < 1
-					&& !(item._segments
-						&& (!item.getFillColor() || !item.getStrokeColor()))) {
+					&& (item._type !== 'path'
+						|| item.getFillColor() && item.getStrokeColor())) {
 				var bounds = item.getStrokeBounds();
 				if (!bounds.width || !bounds.height)
 					return;
