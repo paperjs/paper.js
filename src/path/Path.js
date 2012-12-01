@@ -834,7 +834,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Only revers the path if its clockwise orientation is not the same
 			// as what it is now demanded to be.
 			this.reverse();
-			this._clockwise = clockwise;
 		}
 	},
 
