@@ -477,10 +477,10 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * @return {String} A css string representation of the color.
 	 */
-	toCss: function() {
+	toCss: function(withAlpha) {
 		if (!this._css) {
 			var color = this.convert('rgb'),
-				alpha = color.getAlpha(),
+				alpha = withAlpha === undefined || withAlpha ? color.getAlpha() : 1,
 				components = [
 					Math.round(color._red * 255),
 					Math.round(color._green * 255),
