@@ -269,6 +269,24 @@ new function() {
 		// http://www.w3.org/TR/SVG/pservers.html#RadialGradients
 		radialgradient: importGradient,
 
+		// http://www.w3.org/TR/SVG/struct.html#ImageElement
+		image: function (svg) {
+			var raster = new Raster(getValue(svg, 'href'));
+			// TODO: for some reason Raster#onLoad is being fired twice,
+			// as a workaround work with alreadyLoaded variable
+			var alreadyLoaded = false;
+			raster.onLoad = function() {
+				if (alreadyLoaded) return;
+				var size = getSize(svg, 'width', 'height');
+				this.setSize(size);
+				// Since x and y start from the top left of an image, add
+				// half of its size:
+				this.translate(getPoint(svg, 'x', 'y').add(size.divide(2)));
+				alreadyLoaded = true;
+			};
+			return raster;
+		},
+
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(svg, type) {
 			return new Symbol(applyAttributes(importGroup(svg, type), svg));
