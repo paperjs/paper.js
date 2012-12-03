@@ -52,14 +52,14 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		// Activate straight away by passing true to base(), so paper.project is
 		// set, as required by Layer and DoumentView constructors.
 		this.base(true);
-		this._currentStyle = new PathStyle();
-		this._selectedItems = {};
-		this._selectedItemCount = 0;
 		this.layers = [];
 		this.symbols = [];
 		this.activeLayer = new Layer();
 		if (view)
 			this.view = view instanceof View ? view : View.create(view);
+		this._currentStyle = new PathStyle();
+		this._selectedItems = {};
+		this._selectedItemCount = 0;
 		// Change tracking, not in use for now. Activate once required:
 		// this._changes = [];
 		// this._changesById = {};
