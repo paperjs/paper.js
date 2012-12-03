@@ -24,7 +24,6 @@
  * screen.
  */
 var View = this.View = Base.extend(Callback, /** @lends View# */{
-
 	initialize: function(element) {
 		// Store reference to the currently active global paper scope, and the
 		// active project, which will be represented by this view
@@ -104,7 +103,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		if (!View._focused)
 			View._focused = this;
 		// Items that need the onFrame handler called on them
-		this._frameItems = [];
+		this._frameItems = {};
+		this._frameItemCount = 0;
 	},
 
 	/**
@@ -129,7 +129,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		// Removing all onFrame handlers makes the onFrame handler stop
 		// automatically through its uninstall method.
 		this.detach('frame');
-		this._frameItems = [];
+		this._frameItems = {};
 		return true;
 	},
 
@@ -197,18 +197,19 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	_animateItem: function(item, animate) {
 		var items = this._frameItems;
 		if (animate) {
-			if (!items.length)
+			items[item._id] = {
+				item: item,
+				// Additional information for the event callback
+				time: 0,
+				count: 0
+			};
+			if (++this._frameItemCount == 1)
 				this.attach('frame', this._handleFrameItems);
-			items.push(item);
 		} else {
-			// Mark for deletion, but do not remove it yet, since
-			// removing handlers from inside handlers would mess up
-			// onFrame loop in the view otherwise.
-			items[items.indexOf(this)] = null;
-			if (items.length == 1) {
+			delete items[item._id];
+			if (--this._frameItemCount == 0) {
 				// If this is the last one, just stop animating straight away.
 				this.detach('frame', this._handleFrameItems);
-				this._frameItems = [];
 			}
 		}
 	},
@@ -217,15 +218,13 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	// through the onFrame callback framework that automatically starts and
 	// stops the animation for us whenever there's one or more frame handlers
 	_handleFrameItems: function(event) {
-		var items = this._frameItems;
-		// Note: Do not optimaize onFrameItems.length since it may change!
-		for (var i = 0; i < items.length; i++) {
-			var item = items[i];
-			if (item)
-				item.fire('frame', event);
-			else
-				// item was marked for delition. Remove it, and reduce index
-				items.splice(i--, 1);
+		for (var i in this._frameItems) {
+			var entry = this._frameItems[i];
+			entry.item.fire('frame', Base.merge(event, {
+				// Time since first call of frame() in seconds:
+				time: entry.time += event.delta,
+				count: entry.count++
+			}));
 		}
 	},
 
