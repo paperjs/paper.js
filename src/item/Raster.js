@@ -44,30 +44,20 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			// If it's a string, get the element with this id first.
 			if (typeof object === 'string') {
 				var str = object,
-					that = this,
-					done = function() {
-						that.fire('load');
-						if (that._project.view)
-							that._project.view.draw(true);
-					};
-				object = document.getElementById(str);
-				if (!object) {
-					// str could be a URL to load the image from?
-					object = new Image();
-					object.src = str;
-				}
+					that = this;
+				// str can be a DOM ID or a URL to load the image from
+				object = document.getElementById(str) || new Image();
 				// Trigger the onLoad event on the image once it's loaded
 				DomEvent.add(object, {
 					load: function() {
 						that.setImage(object);
-						done();
+						that.fire('load');
+						if (that._project.view)
+							that._project.view.draw(true);
 					}
 				});
-				// If the image is already loaded, fire a 'load' event anyway,
-				// so code does not need to make the distinction, and cachig is
-				// transparently handled too.
-				if (object.naturalWidth)
-					setTimeout(done, 0);
+				if (!object.src)
+					object.src = str;
 			}
 /*#*/ } else if (options.server) {
 			// If we're running on the server and it's a string,
