@@ -75,19 +75,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		};
 
-		var onFrameItems = [];
-		function onFrame(event) {
-			// Note: Do not optimaize onFrameItems.length since it may change!
-			for (var i = 0; i < onFrameItems.length; i++) {
-				var item = onFrameItems[i];
-				if (item)
-					item.fire('frame', event);
-				else
-					// item was marked for delition. Remove it, and reduce index
-					onFrameItems.splice(i--, 1);
-			}
-		}
-
 		return Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
 			'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
 			function(name) {
@@ -95,21 +82,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			}, {
 				onFrame: {
 					install: function() {
-						if (!onFrameItems.length)
-							this._project.view.attach('frame', onFrame);
-						onFrameItems.push(this);
+						this._project.view._animateItem(this, true);
 					},
 					uninstall: function() {
-						// Mark for deletion, but do not remove it yet, since
-						// removing handlers from inside handlers would mess up
-						// onFrame loop above otherwise.
-						onFrameItems[onFrameItems.indexOf(this)] = null;
-						if (onFrameItems.length == 1) {
-							// If this is the last one, just stop animating
-							// straight away.
-							this._project.view.detach('frame', onFrame);
-							onFrameItems = [];
-						}
+						this._project.view._animateItem(this, false);
 					}
 				},
 
