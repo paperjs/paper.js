@@ -492,7 +492,6 @@ new function() {
 	}
 
 	function applyTextAttribute(item, svg, name, value) {
-	  console.log( "text attribute", name );
 		if (item instanceof TextItem) {
 			switch (name) {
 			case 'font':
