@@ -410,3 +410,24 @@ test('compare negative polyline values', function() {
 
 	compareSegmentLists(importedPolyline.segments, poly.segments, true);
 });
+
+test('make a text', function() {
+  var svgns = 'http://www.w3.org/2000/svg';
+	var text = document.createElementNS(svgns, 'text');
+	var tspanTextContent = "sample text";
+	text.textContent = tspanTextContent;
+	var importedText = paper.project.importSvg(text);
+	equals(text.textContent, importedText.content, true);
+});
+
+test('make a text with tspan', function() {
+  var svgns = 'http://www.w3.org/2000/svg';
+	var text = document.createElementNS(svgns, 'text');
+	var tspan = document.createElementNS(svgns, 'tspan');
+	var tspanTextContent = "sample text";
+	tspan.textContent = tspanTextContent;
+	text.appendChild(tspan);
+	var importedText = paper.project.importSvg(text);
+	equals(text.textContent, importedText.children[0].content, true);
+});
+
