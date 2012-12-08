@@ -245,6 +245,44 @@ new function() {
 			new GradientColor(gradient, origin, destination, highlight), svg);
 		return null;
 	}
+	
+	function isTextGroup(svg) {
+	  var res = false;
+	  if (svg.nodeName == "text") {
+	    for (var i = 0, l = svg.childNodes.length > 0; i < l; i++) {
+	      if (svg.childNodes[i].nodeType == 1) {
+	        res = true;
+	        break;
+	      }
+	    }
+	  }
+	  return res;
+	}
+	
+	function importTspan(svg) {
+	  var text = new PointText(getPoint(svg, 'x', 'y', false, 0)
+				.add(getPoint(svg, 'dx', 'dy', false, 0)));
+		text.setContent(svg.textContent || '');
+	  return text;
+	}
+	
+	function importText(svg) {
+	  var group;
+		if (isTextGroup(svg)) {
+      var nodes = svg.childNodes;
+      group = new Group();
+      for (var i = 0, l = nodes.length; i < l; i++) {
+       var child = nodes[i],
+         item;
+       if (child.nodeType == 1 && (item = importSvg(child))) {
+         group.addChild(item);
+       }
+      }
+		} else {
+		  group = importTspan(svg);
+		}
+		return group;
+	}
 
 	var definitions = {};
 	function getDefinition(value) {
@@ -335,20 +373,8 @@ new function() {
 					getPoint(svg, 'x2', 'y2'));
 		},
 
-		text: function(svg) {
-			// Not supported by Paper.js
-			// x: multiple values for x
-			// y: multiple values for y
-			// dx: multiple values for x
-			// dy: multiple values for y
-			// TODO: Support for these is missing in Paper.js right now
-			// rotate: character rotation
-			// lengthAdjust:
-			var text = new PointText(getPoint(svg, 'x', 'y', false, 0)
-					.add(getPoint(svg, 'dx', 'dy', false, 0)));
-			text.setContent(svg.textContent || '');
-			return text;
-		}
+		text: importText,
+		tspan: importTspan
 	};
 
 	/**
@@ -466,6 +492,7 @@ new function() {
 	}
 
 	function applyTextAttribute(item, svg, name, value) {
+	  console.log( "text attribute", name );
 		if (item instanceof TextItem) {
 			switch (name) {
 			case 'font':
@@ -478,7 +505,7 @@ new function() {
 				}
 				break;
 			case 'font-family':
-				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
+			  item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
 				break;
 			case 'font-size':
 				item.setFontSize(Base.toFloat(value));
