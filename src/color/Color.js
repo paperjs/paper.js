@@ -479,6 +479,8 @@ var Color = this.Color = Base.extend(new function() {
 	 */
 	toCss: function(noAlpha) {
 		var css = this._css;
+		// Only cache _css value if we're not ommiting alpha, as required
+		// by SVG export.
 		if (!css || noAlpha) {
 			var color = this.convert('rgb'),
 				alpha = noAlpha ? 1 : color.getAlpha(),
