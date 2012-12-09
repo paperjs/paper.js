@@ -67,8 +67,8 @@ var MouseEvent = this.MouseEvent = Event.extend(/** @lends MouseEvent# */{
 	 * @return {String} A string representation of the mouse event.
 	 */
 	toString: function() {
-		return '{ type: ' + this.type
-				+ ', point: ' + this.point
+		return "{ type: '" + this.type
+				+ "', point: " + this.point
 				+ ', target: ' + this.target
 				+ (this.delta ? ', delta: ' + this.delta : '')
 				+ ', modifiers: ' + this.getModifiers()
