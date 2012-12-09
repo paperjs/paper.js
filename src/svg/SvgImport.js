@@ -551,7 +551,7 @@ new function() {
 		var type = svg.nodeName.toLowerCase(),
 			importer = importers[type],
 			item = importer && importer(svg, type);
-		return item ? applyAttributes(item, svg) : item;
+		return item && applyAttributes(item, svg);
 	}
 
 
