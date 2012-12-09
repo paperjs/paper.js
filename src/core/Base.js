@@ -41,7 +41,7 @@ this.Base = Base.inject(/** @lends Base# */{
 	toString: function() {
 		return '{ ' + Base.each(this, function(value, key) {
 			// Hide internal properties even if they are enumerable
-			if (key.charAt(0) != '_') {
+			if (!/^_/.test(key)) {
 				var type = typeof value;
 				this.push(key + ': ' + (type === 'number'
 						? Base.formatFloat(value)
