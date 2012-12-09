@@ -48,34 +48,40 @@ new function() {
 		return segments[index1]._point.getDistance(segments[index2]._point);
 	}
 
-	function getTransform(item) {
-		// Note, we're taking out the translation part of the matrix and move it
-		// to x, y attributes, to produce more readable markup, and not have to
-		// use center points in rotate(). To do so, SVG requries us to inverse
-		// transform the translation point by the matrix itself, since they are
-		// provided in local coordinates.
-		var matrix = item._matrix.createShiftless(),
-			trans =  matrix._inverseTransform(item._matrix.getTranslation()),
-			attrs = {
-				x: trans.x,
-				y: trans.y
-			};
+	function getTransform(item, coordinates) {
+		var matrix = item._matrix,
+			trans = matrix.getTranslation(),
+			attrs = {};
+		if (coordinates) {
+			// If the item suppports x- and y- coordinates, we're taking out the
+			// translation part of the matrix and move it to x, y attributes, to
+			// produce more readable markup, and not have to use center points
+			// in rotate(). To do so, SVG requries us to inverse transform the
+			// translation point by the matrix itself, since they are provided
+			// in local coordinates.
+			matrix = matrix.createShiftless();
+			var point = matrix._inverseTransform(trans);
+			attrs.x = point.x;
+			attrs.y = point.y;
+			trans = null;
+		}
 		if (matrix.isIdentity())
 			return attrs;
 		// See if we can formulate this matrix as simple scale / rotate commands
 		// Note: getScaling() returns values also when it's not a simple scale,
 		// but angle is only != null if it is, so check for that.
-		var transform = [],
-			angle = matrix.getRotation(),
+		var angle = matrix.getRotation(),
 			scale = matrix.getScaling();
 		if (angle != null) {
-			transform.push(angle
+			attrs.transform = (!trans || trans.isZero()
+				? ''
+				: 'translate(' + formatFloat(trans.x) + ', ' + formatFloat(trans.y) + ')')
+				+ (angle
 					? 'rotate(' + formatFloat(angle) + ')'
 					: 'scale(' + formatPoint(scale) +')');
 		} else {
-			transform.push('matrix(' + matrix.getValues().join(',') + ')');
+			attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
 		}
-		attrs.transform = transform.join(' ');
 		return attrs;
 	}
 
@@ -209,7 +215,7 @@ new function() {
 	}
 
 	function exportText(item) {
-		var attrs = getTransform(item),
+		var attrs = getTransform(item, true),
 			style = item._style;
 		if (style._font != null)
 			attrs['font-family'] = style._font;
@@ -377,8 +383,8 @@ new function() {
 		 * @return {SVGSVGElement} the item converted to an SVG node
 		 */
 		exportSvg: function() {
-			var exporter = exporters[this._type];
-			var svg = exporter && exporter(this, this._type);
+			var exporter = exporters[this._type],
+				svg = exporter && exporter(this, this._type);
 			return svg && applyStyle(this, svg);
 		}
 	});
