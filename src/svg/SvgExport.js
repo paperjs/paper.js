@@ -349,7 +349,7 @@ new function() {
 				attrs[entry.attribute] = value == null
 					? 'none'
 					: entry.type === 'color'
-						? value.toCss(false) // false for withAlpha, see above
+						? value.toCss(true) // false for noAlpha, see above
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'

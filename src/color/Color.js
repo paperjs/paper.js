@@ -477,10 +477,11 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * @return {String} A css string representation of the color.
 	 */
-	toCss: function(withAlpha) {
-		if (!this._css) {
+	toCss: function(noAlpha) {
+		var css = this._css;
+		if (!css || noAlpha) {
 			var color = this.convert('rgb'),
-				alpha = withAlpha === undefined || withAlpha ? color.getAlpha() : 1,
+				alpha = noAlpha ? 1 : color.getAlpha(),
 				components = [
 					Math.round(color._red * 255),
 					Math.round(color._green * 255),
@@ -488,10 +489,12 @@ var Color = this.Color = Base.extend(new function() {
 				];
 			if (alpha < 1)
 				components.push(alpha);
-			this._css = (components.length == 4 ? 'rgba(' : 'rgb(')
+			var css = (components.length == 4 ? 'rgba(' : 'rgb(')
 					+ components.join(', ') + ')';
+			if (!noAlpha)
+				this._css = css;
 		}
-		return this._css;
+		return css;
 	},
 
 	getCanvasStyle: function() {
