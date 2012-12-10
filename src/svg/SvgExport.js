@@ -182,9 +182,11 @@ new function() {
 			return  segments.length === 4 && path._closed
 					&& isColinear(0, 2) && isColinear(1, 3)
 					? 'rect'
-					: segments.length >= 3
-						? path._closed ? 'polygon' : 'polyline'
-						: 'line';
+					: segments.length === 0
+						? 'empty'
+						: segments.length >= 3
+							? path._closed ? 'polygon' : 'polyline'
+							: 'line';
 		} else if (path._closed) {
 			if (segments.length === 8
 					&& isArc(0) && isArc(2) && isArc(4) && isArc(6)
@@ -236,6 +238,8 @@ new function() {
 			angle = determineAngle(path, segments, type, center),
 			attrs;
 		switch (type) {
+		case 'empty':
+			return null;
 		case 'path':
 			attrs = {
 				d: getPath(path, segments)
