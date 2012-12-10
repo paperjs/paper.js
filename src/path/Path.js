@@ -1857,8 +1857,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
 		var segments = this._segments,
 			first = segments[0];
+		// If there are no segments, return "empty" rectangle, just like groups,
+		// since #bounds is assumed to never return null.
 		if (!first)
-			return null;
+			return new Rectangle();
 		var coords = new Array(6),
 			prevCoords = new Array(6);
 		// Make coordinates for first segment available in prevCoords.
