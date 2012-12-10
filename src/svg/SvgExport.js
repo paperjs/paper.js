@@ -209,8 +209,11 @@ new function() {
 		// Override default SVG style on groups, then apply style.
 		attrs.fill = 'none';
 		var svg = createElement('g', attrs);
-		for (var i = 0, l = children.length; i < l; i++)
-			svg.appendChild(children[i].exportSvg());
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i].exportSvg();
+			if (child)
+				svg.appendChild(child);
+		}
 		return svg;
 	}
 
