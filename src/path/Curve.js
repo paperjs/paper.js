@@ -315,9 +315,9 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		// Solve the y-axis cubic polynominal for point.y and count all
 		// solutions to the right of point.x as crossings.
 		var vals = this.getValues(),
-			num = Curve.solveCubic(vals, 1, point.y, roots),
+			count = Curve.solveCubic(vals, 1, point.y, roots),
 			crossings = 0;
-		for (var i = 0; i < num; i++) {
+		for (var i = 0; i < count; i++) {
 			var t = roots[i];
 			if (t >= 0 && t <= 1 && Curve.evaluate(vals, t, 0).x > point.x) {
 				// If we're close to 0 and are not changing y-direction from the
