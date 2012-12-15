@@ -71,17 +71,20 @@ new function() {
 		// Note: getScaling() returns values also when it's not a simple scale,
 		// but angle is only != null if it is, so check for that.
 		var angle = matrix.getRotation(),
-			scale = matrix.getScaling();
+			parts = [];
 		if (angle != null) {
-			attrs.transform = (!trans || trans.isZero()
-				? ''
-				: 'translate(' + formatFloat(trans.x) + ', ' + formatFloat(trans.y) + ')')
-				+ (angle
-					? 'rotate(' + formatFloat(angle) + ')'
-					: 'scale(' + formatPoint(scale) +')');
+			matrix = matrix.clone().scale(1, -1);
+			if (trans && !trans.isZero())
+				parts.push('translate(' + formatPoint(trans) + ')');
+			if (angle)
+				parts.push('rotate(' + formatFloat(angle) + ')');
+			var scale = matrix.getScaling();
+			if (!Numerical.isZero(scale.x - 1) || !Numerical.isZero(scale.y - 1))
+				parts.push('scale(' + formatPoint(scale) +')');
 		} else {
-			attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
+			parts.push('matrix(' + matrix.getValues().join(',') + ')');
 		}
+		attrs.transform = parts.join(' ');
 		return attrs;
 	}
 
