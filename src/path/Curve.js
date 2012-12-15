@@ -327,7 +327,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				// a change of direction:
 				if (t < Numerical.TOLERANCE && Curve.evaluate(
 							this.getPrevious().getValues(), 1, 1).y
-						* Curve.evaluate(vals, t, 1).y >= 0)
+						* Curve.evaluate(vals, t, 1).y >= Numerical.TOLERANCE)
 					continue;
 				crossings++;
 			}
