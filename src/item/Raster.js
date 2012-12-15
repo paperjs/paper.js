@@ -154,13 +154,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @type Context
 	 * @bean
 	 */
-	getContext: function(/* notifyChange */) {
+	getContext: function(_notifyChange) {
 		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
 		// Support a hidden parameter that indicates if the context will be used
 		// to modify the Raster object. We can notify such changes ahead since
 		// they are only used afterwards for redrawing.
-		if (arguments[0])
+		if (_notifyChange)
 			this._changed(/*#=*/ Change.PIXELS);
 		return this._context;
 	},
