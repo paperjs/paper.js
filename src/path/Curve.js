@@ -319,7 +319,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			crossings = 0;
 		for (var i = 0; i < count; i++) {
 			var t = roots[i];
-			if (t >= 0 && t <= 1 && Curve.evaluate(vals, t, 0).x > point.x) {
+			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, 0).x > point.x) {
 				// If we're close to 0 and are not changing y-direction from the
 				// previous curve, do not count this root, as we're merely
 				// touching a tip. Passing 1 for Curve.evaluate()'s type means
