@@ -395,8 +395,8 @@ new function() {
 				break;
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			case 'clip-path':
-				var clipPath = getDefinition(value).clone().reduce();
-				item = createClipGroup(item, clipPath);
+				item = createClipGroup(item,
+					getDefinition(value).clone().reduce());
 				break;
 			// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
 			case 'gradientTransform':
@@ -425,8 +425,8 @@ new function() {
 			case 'fill-opacity':
 			// http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
 			case 'stroke-opacity':
-				var color = item[name == 'fill-opacity'
-							? 'getFillColor' : 'getStrokeColor']();
+				var color = item[name == 'fill-opacity' ? 'getFillColor'
+						: 'getStrokeColor']();
 				if (color)
 					color.setAlpha(Base.toFloat(value));
 				break;
