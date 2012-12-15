@@ -1857,15 +1857,26 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			this.setClosed(true);
 		}
 	};
-}, new function() { // A dedicated scope for the tricky bounds calculations
+}, {  // A dedicated scope for the tricky bounds calculations
+	// We define all the different getBounds functions as static methods on Path
+	// and have #_getBounds directly access these. All static bounds functions
+	// below have the same first four parameters: segments, closed, style,
+	// matrix, so they can be called from #_getBounds() and also be used in
+	// Curve. But not all of them use all these parameters, and some define
+	// additional ones after.
+
+	_getBounds: function(getter, matrix) {
+		// See #draw() for an explanation of why we can access _style
+		// properties directly here:
+		return Path[getter](this._segments, this._closed, this._style, matrix);
+	},
+
+// Mess with indentation in order to get more line-space below...
+statics: {
 	/**
 	 * Returns the bounding rectangle of the item excluding stroke width.
-	 * All bounds functions below have the same first four parameters: 
-	 * segments, closed, style, matrix, so they can be called from
-	 * Path#_getBounds() and also be used in Curve. But not all of them use all
-	 * these parameters, and some define additional ones after.
 	 */
-	function getBounds(segments, closed, style, matrix, strokePadding) {
+	getBounds: function(segments, closed, style, matrix, strokePadding) {
 		// Code ported and further optimised from:
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
 		var first = segments[0];
@@ -1943,61 +1954,61 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		if (closed)
 			processSegment(first);
 		return Rectangle.create(min[0], min[1], max[0] - min[0], max[1] - min[1]);
-	}
-
-	/**
-	 * Returns the horizontal and vertical padding that a transformed round
-	 * stroke adds to the bounding box, by calculating the dimensions of a
-	 * rotated ellipse.
-	 */
-	function getPenPadding(radius, matrix) {
-		if (!matrix)
-			return [radius, radius];
-		// If a matrix is provided, we need to rotate the stroke circle
-		// and calculate the bounding box of the resulting rotated elipse:
-		// Get rotated hor and ver vectors, and determine rotation angle
-		// and elipse values from them:
-		var mx = matrix.createShiftless(),
-			hor = mx.transform(Point.create(radius, 0)),
-			ver = mx.transform(Point.create(0, radius)),
-			phi = hor.getAngleInRadians(),
-			a = hor.getLength(),
-			b = ver.getLength();
-		// Formula for rotated ellipses:
-		// x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-		// y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-		// Derivates (by Wolfram Alpha):
-		// derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-		// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
-		// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-		// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
-		// This can be simplified to:
-		// tan(t) = -b * tan(phi) / a // x
-		// tan(t) =  b * cot(phi) / a // y
-		// Solving for t gives:
-		// t = pi * n - arctan(b * tan(phi) / a) // x
-		// t = pi * n + arctan(b * cot(phi) / a)
-		//   = pi * n + arctan(b / tan(phi) / a) // y
-		var sin = Math.sin(phi),
-			cos = Math.cos(phi),
-			tan = Math.tan(phi),
-			tx = -Math.atan(b * tan / a),
-			ty = Math.atan(b / (tan * a));
-		// Due to symetry, we don't need to cycle through pi * n solutions:
-		return [Math.abs(a * Math.cos(tx) * cos - b * Math.sin(tx) * sin),
-				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
-	}
+	},
 
 	/**
 	 * Returns the bounding rectangle of the item including stroke width.
 	 */
-	function getStrokeBounds(segments, closed, style, matrix) {
+	getStrokeBounds: function(segments, closed, style, matrix) {
+		/**
+		 * Returns the horizontal and vertical padding that a transformed round
+		 * stroke adds to the bounding box, by calculating the dimensions of a
+		 * rotated ellipse.
+		 */
+		function getPenPadding(radius, matrix) {
+			if (!matrix)
+				return [radius, radius];
+			// If a matrix is provided, we need to rotate the stroke circle
+			// and calculate the bounding box of the resulting rotated elipse:
+			// Get rotated hor and ver vectors, and determine rotation angle
+			// and elipse values from them:
+			var mx = matrix.createShiftless(),
+				hor = mx.transform(Point.create(radius, 0)),
+				ver = mx.transform(Point.create(0, radius)),
+				phi = hor.getAngleInRadians(),
+				a = hor.getLength(),
+				b = ver.getLength();
+			// Formula for rotated ellipses:
+			// x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+			// y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+			// Derivates (by Wolfram Alpha):
+			// derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+			// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
+			// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+			// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
+			// This can be simplified to:
+			// tan(t) = -b * tan(phi) / a // x
+			// tan(t) =  b * cot(phi) / a // y
+			// Solving for t gives:
+			// t = pi * n - arctan(b * tan(phi) / a) // x
+			// t = pi * n + arctan(b * cot(phi) / a)
+			//   = pi * n + arctan(b / tan(phi) / a) // y
+			var sin = Math.sin(phi),
+				cos = Math.cos(phi),
+				tan = Math.tan(phi),
+				tx = -Math.atan(b * tan / a),
+				ty = Math.atan(b / (tan * a));
+			// Due to symetry, we don't need to cycle through pi * n solutions:
+			return [Math.abs(a * Math.cos(tx) * cos - b * Math.sin(tx) * sin),
+					Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
+		}
+
 		// TODO: Find a way to reuse 'bounds' cache instead?
 		if (!style._strokeColor || !style._strokeWidth)
-			return getBounds(segments, closed, style, matrix);
+			return Path.getBounds(segments, closed, style, matrix);
 		var radius = style._strokeWidth / 2,
 			padding = getPenPadding(radius, matrix),
-			bounds = getBounds(segments, closed, style, matrix, padding),
+			bounds = Path.getBounds(segments, closed, style, matrix, padding),
 			join = style._strokeJoin,
 			cap = style._strokeCap,
 			// miter is relative to stroke width. Divide it by 2 since we're
@@ -2081,12 +2092,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			addCap(segments[segments.length - 1], cap, 1);
 		}
 		return bounds;
-	}
+	},
 
 	/**
 	 * Returns the bounding rectangle of the item including handles.
 	 */
-	function getHandleBounds(segments, closed, style, matrix, strokePadding, joinPadding) {
+	getHandleBounds: function(segments, closed, style, matrix, strokePadding,
+			joinPadding) {
 		var coords = new Array(6),
 			x1 = Infinity,
 			x2 = -x1,
@@ -2113,35 +2125,21 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	}
+	},
 
 	/**
 	 * Returns the rough bounding rectangle of the item that is shure to include
 	 * all of the drawing, including stroke width.
 	 */
-	function getRoughBounds(segments, closed, style, matrix) {
+	getRoughBounds: function(segments, closed, style, matrix) {
 		// Delegate to handleBounds, but pass on radius values for stroke and
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
 		var strokeWidth = style._strokeColor ? style._strokeWidth : 0;
-		return getHandleBounds(segments, closed, style, matrix, strokeWidth,
+		return Path.getHandleBounds(segments, closed, style, matrix,
+				strokeWidth,
 				style._strokeJoin == 'miter'
 					? strokeWidth * style._miterLimit
 					: strokeWidth);
 	}
-
-	return {
-		statics: {
-			getBounds: getBounds,
-			getStrokeBounds: getStrokeBounds,
-			getHandleBounds: getHandleBounds,
-			getRoughBounds: getRoughBounds
-		},
-
-		_getBounds: function(getter, matrix) {
-			// See #draw() for an explanation of why we can access _style
-			// properties directly here:
-			return Path[getter](this._segments, this._closed, this._style, matrix);
-		}
-	};
-});
+}});
