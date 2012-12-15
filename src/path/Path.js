@@ -1860,12 +1860,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 }, new function() { // A dedicated scope for the tricky bounds calculations
 	/**
 	 * Returns the bounding rectangle of the item excluding stroke width.
+	 * All bounds functions below have the same first four parameters: 
+	 * segments, closed, style, matrix, so they can be called from
+	 * Path#_getBounds() and also be used in Curve. But not all of them use all
+	 * these parameters, and some define additional ones after.
 	 */
-	function getBounds(matrix, strokePadding) {
+	function getBounds(segments, closed, style, matrix, strokePadding) {
 		// Code ported and further optimised from:
 		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-		var segments = this._segments,
-			first = segments[0];
+		var first = segments[0];
 		// If there are no segments, return "empty" rectangle, just like groups,
 		// since #bounds is assumed to never return null.
 		if (!first)
@@ -1937,10 +1940,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		}
 		for (var i = 1, l = segments.length; i < l; i++)
 			processSegment(segments[i]);
-		if (this._closed)
+		if (closed)
 			processSegment(first);
-		return Rectangle.create(min[0], min[1],
-					max[0] - min[0], max[1] - min[1]);
+		return Rectangle.create(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	}
 
 	/**
@@ -1989,22 +1991,18 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the bounding rectangle of the item including stroke width.
 	 */
-	function getStrokeBounds(matrix) {
-		// See #draw() for an explanation of why we can access _style
-		// properties directly here:
-		var style = this._style;
+	function getStrokeBounds(segments, closed, style, matrix) {
 		// TODO: Find a way to reuse 'bounds' cache instead?
 		if (!style._strokeColor || !style._strokeWidth)
-			return getBounds.call(this, matrix);
+			return getBounds(segments, closed, style, matrix);
 		var radius = style._strokeWidth / 2,
 			padding = getPenPadding(radius, matrix),
-			bounds = getBounds.call(this, matrix, padding),
+			bounds = getBounds(segments, closed, style, matrix, padding),
 			join = style._strokeJoin,
 			cap = style._strokeCap,
 			// miter is relative to stroke width. Divide it by 2 since we're
 			// measuring half the distance below
-			miter = style._miterLimit * style._strokeWidth / 2,
-			segments = this._segments;
+			miter = style._miterLimit * style._strokeWidth / 2;
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
 		var joinBounds = new Rectangle(new Size(padding).multiply(2));
@@ -2074,9 +2072,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 
-		for (var i = 1, l = segments.length - (this._closed ? 0 : 1); i < l; i++)
+		for (var i = 1, l = segments.length - (closed ? 0 : 1); i < l; i++)
 			addJoin(segments[i], join);
-		if (this._closed) {
+		if (closed) {
 			addJoin(segments[0], join);
 		} else {
 			addCap(segments[0], cap, 0);
@@ -2088,7 +2086,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the bounding rectangle of the item including handles.
 	 */
-	function getHandleBounds(matrix, strokePadding, joinPadding) {
+	function getHandleBounds(segments, closed, style, matrix, strokePadding, joinPadding) {
 		var coords = new Array(6),
 			x1 = Infinity,
 			x2 = -x1,
@@ -2096,8 +2094,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			y2 = x2;
 		strokePadding = strokePadding / 2 || 0;
 		joinPadding = joinPadding / 2 || 0;
-		for (var i = 0, l = this._segments.length; i < l; i++) {
-			var segment = this._segments[i];
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var segment = segments[i];
 			segment._transformCoordinates(matrix, coords, false);
 			for (var j = 0; j < 6; j += 2) {
 				// Use different padding for points or handles
@@ -2121,28 +2119,29 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * Returns the rough bounding rectangle of the item that is shure to include
 	 * all of the drawing, including stroke width.
 	 */
-	function getRoughBounds(matrix) {
+	function getRoughBounds(segments, closed, style, matrix) {
 		// Delegate to handleBounds, but pass on radius values for stroke and
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
-		var style = this._style,
-			strokeWidth = style._strokeColor ? style._strokeWidth : 0;
-		return getHandleBounds.call(this, matrix, strokeWidth,
+		var strokeWidth = style._strokeColor ? style._strokeWidth : 0;
+		return getHandleBounds(segments, closed, style, matrix, strokeWidth,
 				style._strokeJoin == 'miter'
 					? strokeWidth * style._miterLimit
 					: strokeWidth);
 	}
 
-	var get = {
-		bounds: getBounds,
-		strokeBounds: getStrokeBounds,
-		handleBounds: getHandleBounds,
-		roughBounds: getRoughBounds
-	};
-
 	return {
-		_getBounds: function(type, matrix) {
-			return get[type].call(this, matrix);
+		statics: {
+			getBounds: getBounds,
+			getStrokeBounds: getStrokeBounds,
+			getHandleBounds: getHandleBounds,
+			getRoughBounds: getRoughBounds
+		},
+
+		_getBounds: function(getter, matrix) {
+			// See #draw() for an explanation of why we can access _style
+			// properties directly here:
+			return Path[getter](this._segments, this._closed, this._style, matrix);
 		}
 	};
 });
