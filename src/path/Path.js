@@ -2014,17 +2014,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// TODO: Find a way to reuse 'bounds' cache instead?
 		if (!style._strokeColor || !style._strokeWidth)
 			return getBounds.call(this, matrix);
-		var width = style._strokeWidth,
-			radius = width / 2,
+		var radius = style._strokeWidth / 2,
 			padding = getPenPadding(radius, matrix),
+			bounds = getBounds.call(this, matrix, padding),
 			join = style._strokeJoin,
 			cap = style._strokeCap,
-			// miter is relative to width. Divide it by 2 since we're
+			// miter is relative to stroke width. Divide it by 2 since we're
 			// measuring half the distance below
-			miter = style._miterLimit * width / 2,
-			segments = this._segments,
-			length = segments.length,
-			bounds = getBounds.call(this, matrix, padding);
+			miter = style._miterLimit * style._strokeWidth / 2,
+			segments = this._segments;
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
 		var joinBounds = new Rectangle(new Size(padding).multiply(2));
@@ -2094,14 +2092,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 
-		for (var i = 1, l = length - (this._closed ? 0 : 1); i < l; i++) {
+		for (var i = 1, l = segments.length - (this._closed ? 0 : 1); i < l; i++)
 			addJoin(segments[i], join);
-		}
 		if (this._closed) {
 			addJoin(segments[0], join);
 		} else {
 			addCap(segments[0], cap, 0);
-			addCap(segments[length - 1], cap, 1);
+			addCap(segments[segments.length - 1], cap, 1);
 		}
 		return bounds;
 	}
@@ -2109,20 +2106,20 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the bounding rectangle of the item including handles.
 	 */
-	function getHandleBounds(matrix, stroke, join) {
+	function getHandleBounds(matrix, strokePadding, joinPadding) {
 		var coords = new Array(6),
 			x1 = Infinity,
 			x2 = -x1,
 			y1 = x1,
 			y2 = x2;
-		stroke = stroke / 2 || 0; // Stroke padding
-		join = join / 2 || 0; // Join padding, for miterLimit
+		strokePadding = strokePadding / 2 || 0;
+		joinPadding = joinPadding / 2 || 0;
 		for (var i = 0, l = this._segments.length; i < l; i++) {
 			var segment = this._segments[i];
 			segment._transformCoordinates(matrix, coords, false);
 			for (var j = 0; j < 6; j += 2) {
 				// Use different padding for points or handles
-				var padding = j == 0 ? join : stroke,
+				var padding = j == 0 ? joinPadding : strokePadding,
 					x = coords[j],
 					y = coords[j + 1],
 					xn = x - padding,
@@ -2147,11 +2144,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
 		var style = this._style,
-			width = style._strokeColor ? style._strokeWidth : 0;
-		return getHandleBounds.call(this, matrix, width,
+			strokeWidth = style._strokeColor ? style._strokeWidth : 0;
+		return getHandleBounds.call(this, matrix, strokeWidth,
 				style._strokeJoin == 'miter'
-					? width * style._miterLimit
-					: width);
+					? strokeWidth * style._miterLimit
+					: strokeWidth);
 	}
 
 	var get = {
