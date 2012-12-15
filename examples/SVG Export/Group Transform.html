@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Transform Testing</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+
+</head>
+<body>	
+	<canvas id="canvas" width="500px" height="500px"></canvas>
+	<script type="text/paperscript" canvas="canvas">
+		var circle1 = new Path.Circle(new Point(100, 100), 50);
+		circle1.fillColor = 'red';
+		var circle2 = new Path.Circle(new Point(200, 100), 50);
+		circle2.fillColor = 'blue';
+		var group = new Group(circle1, circle2);
+		group.translate([100, 100]);
+		group.scale(0.5);
+		group.rotate(10);
+		document.getElementById('svg').appendChild(project.exportSvg());
+	</script>
+	<svg id="svg" style="width: 500px; height: 500px"></svg>
+</body>
+</html>
