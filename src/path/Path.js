@@ -131,20 +131,29 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * @type Curve[]
 	 * @bean
 	 */
-	getCurves: function() {
-		if (!this._curves) {
-			var segments = this._segments,
-				length = segments.length;
+	getCurves: function(/* includeFill */) {
+		var curves = this._curves,
+			segments = this._segments;
+		if (!curves) {
+			var length = segments.length;
 			// Reduce length by one if it's an open path:
 			if (!this._closed && length > 0)
 				length--;
-			this._curves = new Array(length);
+			this._curves = curves = new Array(length);
 			for (var i = 0; i < length; i++)
-				this._curves[i] = Curve.create(this, segments[i],
+				curves[i] = Curve.create(this, segments[i],
 					// Use first segment for segment2 of closing curve
 					segments[i + 1] || segments[0]);
 		}
-		return this._curves;
+		// If we're asked to include the closing curve for fill, even if the
+		// path is not closed for stroke, create a new uncached array and add
+		// the closing curve. Used in Path#contains()
+		if (arguments[0] && !this._closed && this._style._fillColor) {
+			curves = curves.concat([
+				Curve.create(this, segments[segments.length - 1], segments[0])
+			]);
+		}
+		return curves;
 	},
 
 	/**
@@ -1276,7 +1285,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// beam in right y-direction with the shape, and see if it's an odd
 		// number, meaning the starting point is inside the shape.
 		// http://en.wikipedia.org/wiki/Point_in_polygon
-		var curves = this.getCurves(),
+		var curves = this.getCurves(true),
 			crossings = 0,
 			// Reuse one array for root-finding, give garbage collector a break
 			roots = [];
