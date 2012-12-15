@@ -508,41 +508,11 @@ new function() {
 	 * @param {Item} item a Paper.js item
 	 */
 	function applyTransform(item, svg, name) {
-		var svgTransform = svg[name],
-			transforms = svgTransform.baseVal,
+		var transforms = svg[name].baseVal,
 			matrix = new Matrix();
 		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
-			var transform = transforms.getItem(i);
-			if (transform.type === /*#=*/ SVGTransform.SVG_TRANSFORM_UNKNOWN)
-				continue;
-			// Convert SVG Matrix to Paper Matrix.
-			// TODO: Should this be moved to our Matrix constructor?
-			var mx = transform.matrix,
-				a = mx.a,
-				b = mx.b,
-				c = mx.c,
-				d = mx.d;
-			switch (transform.type) {
-			// Compensate for SVG's theta rotation going the opposite direction
-			case /*#=*/ SVGTransform.SVG_TRANSFORM_MATRIX:
-				var tmp = b;
-				b = c;
-				c = tmp;
-				break;
-			case /*#=*/ SVGTransform.SVG_TRANSFORM_SKEWX:
-				b = c;
-				c = 0;
-				break;
-			case /*#=*/ SVGTransform.SVG_TRANSFORM_SKEWY:
-				c = b;
-				b = 0;
-				break;
-			case /*#=*/ SVGTransform.SVG_TRANSFORM_ROTATE:
-				b = -b;
-				c = -c;
-				break;
-			}
-			matrix.concatenate(new Matrix(a, c, b, d, mx.e, mx.f));
+			var mx = transforms.getItem(i).matrix;
+			matrix.concatenate(new Matrix(mx.a, mx.b, mx.c, mx.d, mx.e, mx.f));
 		}
 		item.transform(matrix);
 	}
