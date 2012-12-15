@@ -131,7 +131,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * @type Curve[]
 	 * @bean
 	 */
-	getCurves: function(/* includeFill */) {
+	getCurves: function(_includeFill) {
 		var curves = this._curves,
 			segments = this._segments;
 		if (!curves) {
@@ -148,7 +148,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// If we're asked to include the closing curve for fill, even if the
 		// path is not closed for stroke, create a new uncached array and add
 		// the closing curve. Used in Path#contains()
-		if (arguments[0] && !this._closed && this._style._fillColor) {
+		if (_includeFill && !this._closed && this._style._fillColor) {
 			curves = curves.concat([
 				Curve.create(this, segments[segments.length - 1], segments[0])
 			]);
