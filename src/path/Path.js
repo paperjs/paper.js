@@ -1288,7 +1288,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		var curves = this.getCurves(true),
 			crossings = 0,
 			// Reuse one array for root-finding, give garbage collector a break
-			roots = [];
+			roots = new Array(3);
 		for (var i = 0, l = curves.length; i < l; i++)
 			crossings += curves[i].getCrossings(point, roots);
 		return (crossings & 1) == 1;
@@ -1871,7 +1871,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		if (!first)
 			return new Rectangle();
 		var coords = new Array(6),
-			prevCoords = new Array(6);
+			prevCoords = new Array(6),
+			roots = new Array(2);
 		// Make coordinates for first segment available in prevCoords.
 		first._transformCoordinates(matrix, prevCoords, false);
 		var min = prevCoords.slice(0, 2),
@@ -1916,39 +1917,20 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 				// Calculate derivative of our bezier polynomial, divided by 3.
 				// Dividing by 3 allows for simpler calculations of a, b, c and
-				// leads to the same quadratic roots below.
+				// leads to the same quadratic roots.
 				var a = 3 * (v1 - v2) - v0 + v3,
 					b = 2 * (v0 + v2) - 4 * v1,
 					c = v1 - v0;
-
-				// Solve for derivative for quadratic roots. Each good root
-				// (meaning a solution 0 < t < 1) is an extrema in the cubic
-				// polynomial and thus a potential point defining the bounds
-				// TODO: Use tolerance here, just like Numerical.solveQuadratic
-				if (a == 0) {
-					if (b == 0)
-					    continue;
-					var t = -c / b;
-					// Test for good root and add to bounds if good (same below)
+					count = Numerical.solveQuadratic(a, b, c, roots,
+						Numerical.TOLERANCE);
+				for (var j = 0; j < count; j++) {
+					var t = roots[j];
+					// Test for good roots and only add to bounds if good.
 					if (tMin < t && t < tMax)
 						add(null, t);
-					continue;
 				}
-
-				var q = b * b - 4 * a * c;
-				if (q < 0)
-					continue;
-				// TODO: Match this with Numerical.solveQuadratic
-				var sqrt = Math.sqrt(q),
-					f = -0.5 / a,
-				 	t1 = (b - sqrt) * f,
-					t2 = (b + sqrt) * f;
-				if (tMin < t1 && t1 < tMax)
-					add(null, t1);
-				if (tMin < t2 && t2 < tMax)
-					add(null, t2);
 			}
-			// Swap coordinate buffers
+			// Swap coordinate buffers.
 			var tmp = prevCoords;
 			prevCoords = coords;
 			coords = tmp;
