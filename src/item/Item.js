@@ -548,17 +548,18 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		this._matrix.initialize(matrix);
 		this._changed(/*#=*/ Change.GEOMETRY);
 	}
-}, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'],
+}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 function(name) {
 	// Produce getters for bounds properties. These handle caching, matrices
 	// and redirect the call to the private _getBounds, which can be
 	// overridden by subclasses, see below.
-	this['get' + Base.capitalize(name)] = function(/* matrix */) {
-		var type = this._boundsType,
+	this[name] = function(/* matrix */) {
+		var getter = this._boundsGetter,
 			bounds = this._getCachedBounds(
-				// Allow subclasses to override _boundsType if they use the same
-				// calculations for multiple types. The default is name:
-				typeof type == 'string' ? type : type && type[name] || name,
+				// Allow subclasses to override _boundsGetter if they use the
+				// same calculations for multiple type of bounds.
+				// The default is name:
+				typeof getter == 'string' ? getter : getter && getter[name] || name,
 				// Pass on the optional matrix
 				arguments[0]);
 		// If we're returning 'bounds', create a LinkedRectangle that uses the
@@ -572,11 +573,11 @@ function(name) {
 	 * Private method that deals with the calling of _getBounds, recursive
 	 * matrix concatenation and handles all the complicated caching mechanisms.
 	 */
-	_getCachedBounds: function(type, matrix, cacheItem) {
+	_getCachedBounds: function(getter, matrix, cacheItem) {
 		// See if we can cache these bounds. We only cache the bounds
 		// transformed with the internally stored _matrix, (the default if no
 		// matrix is passed).
-		var cache = (!matrix || matrix.equals(this._matrix)) && type;
+		var cache = (!matrix || matrix.equals(this._matrix)) && getter;
 		// Set up a boundsCache structure that keeps track of items that keep
 		// cached bounds that depend on this item. We store this in our parent,
 		// for multiple reasons:
@@ -614,7 +615,7 @@ function(name) {
 				: identity ? matrix : matrix.clone().concatenate(this._matrix);
 		// If we're caching bounds on this item, pass it on as cacheItem, so the
 		// children can setup the _boundsCache structures for it.
-		var bounds = this._getBounds(type, matrix, cache ? this : cacheItem);
+		var bounds = this._getBounds(getter, matrix, cache ? this : cacheItem);
 		// If we can cache the result, update the _bounds cache structure
 		// before returning
 		if (cache) {
@@ -654,7 +655,7 @@ function(name) {
 	 * Subclasses override it to define calculations for the various required
 	 * bounding types.
 	 */
-	_getBounds: function(type, matrix, cacheItem) {
+	_getBounds: function(getter, matrix, cacheItem) {
 		// Note: We cannot cache these results here, since we do not get
 		// _changed() notifications here for changing geometry in children.
 		// But cacheName is used in sub-classes such as PlacedItem.
@@ -670,7 +671,7 @@ function(name) {
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			if (child._visible && !child.isEmpty()) {
-				var rect = child._getCachedBounds(type, matrix, cacheItem);
+				var rect = child._getCachedBounds(getter, matrix, cacheItem);
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
 				x2 = Math.max(rect.x + rect.width, x2);
@@ -1871,11 +1872,11 @@ function(name) {
 				var rect = bounds[key];
 				matrix._transformBounds(rect, rect);
 			}
-			// If we have cached 'bounds', update _position again as its 
-			// center. We need to take into account _boundsType here too, in 
-			// case another type is assigned to it, e.g. 'strokeBounds'.
-			var type = this._boundsType,
-				rect = bounds[type && type.bounds || 'bounds'];
+			// If we have cached bounds, update _position again as its 
+			// center. We need to take into account _boundsGetter here too, in 
+			// case another getter is assigned to it, e.g. 'getStrokeBounds'.
+			var getter = this._boundsGetter,
+				rect = bounds[getter && getter.getBounds || getter || 'getBounds'];
 			if (rect)
 				this._position = rect.getCenter(true);
 			this._bounds = bounds;

@@ -25,7 +25,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	_type: 'raster',
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
-	_boundsType: 'bounds',
+	_boundsGetter: 'getBounds',
 
 	// TODO: Implement url / type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
@@ -404,7 +404,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
-	_getBounds: function(type, matrix) {
+	_getBounds: function(getter, matrix) {
 		var rect = new Rectangle(this._size).setCenter(0, 0);
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},

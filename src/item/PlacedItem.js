@@ -25,7 +25,7 @@
  */
 var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 	// PlacedItem uses strokeBounds for bounds
-	_boundsType: { bounds: 'strokeBounds' },
+	_boundsGetter: { getBounds: 'getStrokeBounds' },
 
 	_hitTest: function(point, options, matrix) {
 		var hitResult = this._symbol._definition._hitTest(point, options, matrix);
