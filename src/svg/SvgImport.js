@@ -401,7 +401,14 @@ new function() {
 			// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
 			case 'gradientTransform':
 			case 'transform':
-				applyTransform(item, svg, name);
+				var transforms = svg[name].baseVal,
+					matrix = new Matrix();
+				for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
+					var mx = transforms.getItem(i).matrix;
+					matrix.concatenate(
+						new Matrix(mx.a, mx.b, mx.c, mx.d, mx.e, mx.f));
+				}
+				item.transform(matrix);
 				break;
 			// http://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
 			case 'stop-opacity':
@@ -499,22 +506,6 @@ new function() {
 				applyTextAttribute(children[i], svg, name, value);
 			}
 		}
-	}
-
-	/**
-	 * Applies the transformations specified on the SVG node to a Paper.js item
-	 *
-	 * @param {SVGSVGElement} svg an SVG node
-	 * @param {Item} item a Paper.js item
-	 */
-	function applyTransform(item, svg, name) {
-		var transforms = svg[name].baseVal,
-			matrix = new Matrix();
-		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
-			var mx = transforms.getItem(i).matrix;
-			matrix.concatenate(new Matrix(mx.a, mx.b, mx.c, mx.d, mx.e, mx.f));
-		}
-		item.transform(matrix);
 	}
 
 	function importSvg(svg) {
