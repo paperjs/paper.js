@@ -70,7 +70,7 @@ this.Base = Base.inject(/** @lends Base# */{
 				if (obj1.length !== obj2.length)
 					return false;
 				for (var i = 0, l = obj1.length; i < l; i++) {
-					if (!Base.equals(obj1, obj2))
+					if (!Base.equals(obj1[i], obj2[i]))
 						return false;
 				}
 				return true;
