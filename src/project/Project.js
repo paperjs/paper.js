@@ -278,7 +278,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			// matrices by item id, to speed up drawing by eliminating repeated
 			// concatenation of parent's matrices through caching.
 			var matrices = {};
-			// Descriptionf of the paramters to getGlobalMatrix():
+			// Description of the paramters to getGlobalMatrix():
 			// mx is the container for the final concatenated matrix, passed
 			// to getGlobalMatrix() on the initial call.
 			// cached defines wether the result of the concatenation should be
@@ -309,7 +309,8 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			}
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id];
-				item.drawSelected(ctx, getGlobalMatrix(item, matrix.clone()));
+				item.drawSelected(ctx,
+					getGlobalMatrix(item, new Matrix()).preConcatenate(matrix));
 			}
 			ctx.restore();
 		}
