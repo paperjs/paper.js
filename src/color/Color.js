@@ -50,8 +50,10 @@ var Color = this.Color = Base.extend(new function() {
 	var components = {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],
-		hsb: ['hue', 'saturation', 'brightness'],
-		hsl: ['hue', 'saturation', 'lightness']
+		hsl: ['hue', 'saturation', 'lightness'],
+		// Define hsb last, so its converting saturation getter overrides the
+		// one of HSL:
+		hsb: ['hue', 'saturation', 'brightness']
 	};
 
 	var colorCache = {},
