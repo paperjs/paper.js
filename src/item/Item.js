@@ -547,6 +547,18 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
 		this._changed(/*#=*/ Change.GEOMETRY);
+	},
+
+	/**
+	 * Specifies wether the item has any content or not. The meaning of what
+	 * content is differs from  type to type. For example, a {@link Group} with
+	 * no children, a {@link TextItem} with no text content and a {@link Path}
+	 * with no segments all are considered empty.
+	 *
+	 * @type Boolean
+	 */
+	isEmpty: function() {
+		return true;
 	}
 }, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 function(name) {
@@ -678,10 +690,6 @@ function(name) {
 			}
 		}
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	},
-
-	isEmpty: function() {
-		return true;
 	},
 
 	setBounds: function(rect) {
