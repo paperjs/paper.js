@@ -2128,7 +2128,7 @@ statics: {
 	},
 
 	/**
-	 * Returns the rough bounding rectangle of the item that is shure to include
+	 * Returns the rough bounding rectangle of the item that is sure to include
 	 * all of the drawing, including stroke width.
 	 */
 	getRoughBounds: function(segments, closed, style, matrix) {
