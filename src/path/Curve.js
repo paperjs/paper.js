@@ -65,6 +65,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	_changed: function() {
 		// Clear cached values.
 		delete this._length;
+		delete this._bounds;
 	},
 
 	/**
@@ -549,7 +550,24 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy) < 1;
 		}
 	}
-}, new function() { // Scope for methods that require numerical integration
+}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+	function(name) {
+		this[name] = function() {
+			if (!this._bounds)
+				this._bounds = {};
+			var bounds = this._bounds[name];
+			if (!bounds) {
+				// Calculate the curve bounds by passing a segment list for the
+				// curve to the static Path.get*Boudns methods.
+				bounds = this._bounds[name] = Path[name](
+					[this._segment1, this._segment2], false, this._path._style);
+			}
+			return bounds.clone();
+		};
+	},
+/** @lends Curve# */{
+}),
+new function() { // Scope for methods that require numerical integration
 
 	function getLengthIntegrand(v) {
 		// Calculate the coefficients of a Bezier derivative.
