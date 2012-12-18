@@ -87,6 +87,20 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 			this._children[i].smooth();
 	},
 
+	/**
+	 * All the curves contained within the compound-path, from all its child
+	 * {@link Path} items.
+	 *
+	 * @type Curve[]
+	 * @bean
+	 */
+	getCurves: function() {
+		var curves = [];
+		for (var i = 0, l = this._children.length; i < l; i++)
+			curves = curves.concat(this._children[i].getCurves());
+		return curves;
+	},
+
 	isEmpty: function() {
 		return this._children.length == 0;
 	},
