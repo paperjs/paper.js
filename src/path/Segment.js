@@ -90,8 +90,10 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	_changed: function(point) {
 		if (!this._path)
 			return;
-		// Delegate changes to affected curves if they exist
-		var curve = this._path._curves && this.getCurve(), other;
+		// Delegate changes to affected curves if they exist. Check _curves
+		// first to make sure we're not creating it by calling this.getCurve().
+		var curve = this._path._curves && this.getCurve(),
+			other;
 		if (curve) {
 			curve._changed();
 			// Get the other affected curve, which is the previous one for
