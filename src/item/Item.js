@@ -561,25 +561,25 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		return true;
 	}
 }, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
-function(name) {
-	// Produce getters for bounds properties. These handle caching, matrices
-	// and redirect the call to the private _getBounds, which can be
-	// overridden by subclasses, see below.
-	this[name] = function(_matrix) {
-		var getter = this._boundsGetter,
-			bounds = this._getCachedBounds(
-				// Allow subclasses to override _boundsGetter if they use the
-				// same calculations for multiple type of bounds.
+	function(name) {
+		// Produce getters for bounds properties. These handle caching, matrices
+		// and redirect the call to the private _getBounds, which can be
+		// overridden by subclasses, see below.
+		this[name] = function(_matrix) {
+			var getter = this._boundsGetter,
+				// Allow subclasses to override _boundsGetter if they use
+				// the same calculations for multiple type of bounds.
 				// The default is name:
-				typeof getter == 'string' ? getter : getter && getter[name] || name,
-				_matrix);
-		// If we're returning 'bounds', create a LinkedRectangle that uses the
-		// setBounds() setter to update the Item whenever the bounds are
-		// changed:
-		return name == 'bounds' ? LinkedRectangle.create(this, 'setBounds',
-				bounds.x, bounds.y, bounds.width, bounds.height) : bounds;
-	};
-}, /** @lends Item# */{
+				bounds = this._getCachedBounds(typeof getter == 'string'
+						? getter : getter && getter[name] || name, _matrix);
+			// If we're returning 'bounds', create a LinkedRectangle that uses
+			// the setBounds() setter to update the Item whenever the bounds are
+			// changed:
+			return name == 'bounds' ? LinkedRectangle.create(this, 'setBounds',
+					bounds.x, bounds.y, bounds.width, bounds.height) : bounds;
+		};
+	},
+/** @lends Item# */{
 	/**
 	 * Private method that deals with the calling of _getBounds, recursive
 	 * matrix concatenation and handles all the complicated caching mechanisms.
