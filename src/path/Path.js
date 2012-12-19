@@ -1272,8 +1272,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	contains: function(point) {
 		point = Point.read(arguments);
-		// If the path is not closed, it we should not bail out in case it has
-		// a fill color!
+		// If the path is not closed, we should not bail out in case it has a
+		// fill color!
 		if (!this._closed && !this._style._fillColor
 				|| !this.getRoughBounds()._containsPoint(point))
 			return false;
