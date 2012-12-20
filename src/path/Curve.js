@@ -41,24 +41,29 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			this._segment1 = new Segment();
 			this._segment2 = new Segment();
 		} else if (count == 1) {
-			// TODO: If beans are not activated, this won't copy from
-			// an existing segment. OK?
+			// Note: This copies from existing segments through bean getters
 			this._segment1 = new Segment(arg0.segment1);
 			this._segment2 = new Segment(arg0.segment2);
 		} else if (count == 2) {
 			this._segment1 = new Segment(arg0);
 			this._segment2 = new Segment(arg1);
-		} else if (count == 4) {
-			this._segment1 = new Segment(arg0, null, arg1);
-			this._segment2 = new Segment(arg3, arg2, null);
-		} else if (count == 8) {
-			// An array as returned by getValues
-			var p1 = Point.create(arg0, arg1),
-				p2 = Point.create(arg6, arg7);
-			this._segment1 = new Segment(p1, null,
-					Point.create(arg2, arg3).subtract(p1));
-			this._segment2 = new Segment(p2,
-					Point.create(arg4, arg5).subtract(p2), null);
+		} else {
+			var point1, handle1, handle2, point2;
+			if (count == 4) {
+				point1 = arg0;
+				handle1 = arg1;
+				handle2 = arg2;
+				point2 = arg3;
+			} else if (count == 8) {
+				// Convert getValue() array back to points and handles so we
+				// can create segments for those.
+				point1 = [arg0, arg1];
+				point2 = [arg6, arg7];
+				handle1 = [arg2 - arg0, arg7 - arg1];
+				handle2 = [arg4 - arg6, arg5 - arg7];
+			}
+			this._segment1 = new Segment(point1, null, handle1);
+			this._segment2 = new Segment(point2, handle2, null);
 		}
 	},
 
