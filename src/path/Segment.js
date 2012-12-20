@@ -58,8 +58,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		if (count == 0) {
 			// Nothing
 		} else if (count == 1) {
-			// TODO: If beans are not activated, this won't copy from existing
-			// segments. OK?
+			// Note: This copies from existing segments through bean getters
 			if (arg0.point) {
 				point = arg0.point;
 				handleIn = arg0.handleIn;
