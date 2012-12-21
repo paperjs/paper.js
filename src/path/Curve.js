@@ -235,11 +235,13 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * @bean
 	 */
 	 // Hide parameters from Bootstrap so it injects bean too
-	getLength: function(_from, _to) {
-		var fullLength = arguments.length == 0 || _from == 0 && _to == 1;
+	getLength: function(/* from, to */) {
+		var from = arguments[0],
+			to = arguments[1],
+			fullLength = arguments.length == 0 || from == 0 && to == 1;
 		if (fullLength && this._length != null)
 			return this._length;
-		var length = Curve.getLength(this.getValues(), _from, _to);
+		var length = Curve.getLength(this.getValues(), from, to);
 		if (fullLength)
 			this._length = length;
 		return length;
