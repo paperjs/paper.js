@@ -50,8 +50,10 @@ var Color = this.Color = Base.extend(new function() {
 	var components = {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],
-		hsb: ['hue', 'saturation', 'brightness'],
-		hsl: ['hue', 'saturation', 'lightness']
+		hsl: ['hue', 'saturation', 'lightness'],
+		// Define hsb last, so its converting saturation getter overrides the
+		// one of HSL:
+		hsb: ['hue', 'saturation', 'brightness']
 	};
 
 	var colorCache = {},
@@ -334,6 +336,10 @@ var Color = this.Color = Base.extend(new function() {
 					}, src);
 				}
 				return this.base(src);
+			},
+
+			random: function() {
+				return new RgbColor(Math.random(), Math.random(), Math.random());
 			}
 		}
 	};
@@ -367,7 +373,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * Called by various setters whenever a color value changes
 	 */
 	_changed: function() {
-		this._cssString = null;
+		this._css = null;
 		if (this._owner)
 			this._owner._changed(/*#=*/ Change.STYLE);
 	},
@@ -473,23 +479,30 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * @return {String} A css string representation of the color.
 	 */
-	toCssString: function() {
-		if (!this._cssString) {
+	toCss: function(noAlpha) {
+		var css = this._css;
+		// Only cache _css value if we're not ommiting alpha, as required
+		// by SVG export.
+		if (!css || noAlpha) {
 			var color = this.convert('rgb'),
-				alpha = color.getAlpha(),
+				alpha = noAlpha ? 1 : color.getAlpha(),
 				components = [
 					Math.round(color._red * 255),
 					Math.round(color._green * 255),
-					Math.round(color._blue * 255),
-					alpha != null ? alpha : 1
+					Math.round(color._blue * 255)
 				];
-			this._cssString = 'rgba(' + components.join(', ') + ')';
+			if (alpha < 1)
+				components.push(alpha);
+			var css = (components.length == 4 ? 'rgba(' : 'rgb(')
+					+ components.join(', ') + ')';
+			if (!noAlpha)
+				this._css = css;
 		}
-		return this._cssString;
+		return css;
 	},
 
 	getCanvasStyle: function() {
-		return this.toCssString();
+		return this.toCss();
 	}
 
 	/**

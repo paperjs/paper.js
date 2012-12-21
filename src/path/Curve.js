@@ -41,30 +41,36 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			this._segment1 = new Segment();
 			this._segment2 = new Segment();
 		} else if (count == 1) {
-			// TODO: If beans are not activated, this won't copy from
-			// an existing segment. OK?
+			// Note: This copies from existing segments through bean getters
 			this._segment1 = new Segment(arg0.segment1);
 			this._segment2 = new Segment(arg0.segment2);
 		} else if (count == 2) {
 			this._segment1 = new Segment(arg0);
 			this._segment2 = new Segment(arg1);
-		} else if (count == 4) {
-			this._segment1 = new Segment(arg0, null, arg1);
-			this._segment2 = new Segment(arg3, arg2, null);
-		} else if (count == 8) {
-			// An array as returned by getValues
-			var p1 = Point.create(arg0, arg1),
-				p2 = Point.create(arg6, arg7);
-			this._segment1 = new Segment(p1, null,
-					Point.create(arg2, arg3).subtract(p1));
-			this._segment2 = new Segment(p2,
-					Point.create(arg4, arg5).subtract(p2), null);
+		} else {
+			var point1, handle1, handle2, point2;
+			if (count == 4) {
+				point1 = arg0;
+				handle1 = arg1;
+				handle2 = arg2;
+				point2 = arg3;
+			} else if (count == 8) {
+				// Convert getValue() array back to points and handles so we
+				// can create segments for those.
+				point1 = [arg0, arg1];
+				point2 = [arg6, arg7];
+				handle1 = [arg2 - arg0, arg7 - arg1];
+				handle2 = [arg4 - arg6, arg5 - arg7];
+			}
+			this._segment1 = new Segment(point1, null, handle1);
+			this._segment2 = new Segment(point2, handle2, null);
 		}
 	},
 
 	_changed: function() {
 		// Clear cached values.
 		delete this._length;
+		delete this._bounds;
 	},
 
 	/**
@@ -228,14 +234,12 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * @type Number
 	 * @bean
 	 */
-	getLength: function(/* from, to */) {
-		// Hide parameters from Bootstrap so it injects bean too
-		var from = arguments[0],
-			to = arguments[1],
-			fullLength = arguments.length == 0 || from == 0 && to == 1;
+	 // Hide parameters from Bootstrap so it injects bean too
+	getLength: function(_from, _to) {
+		var fullLength = arguments.length == 0 || _from == 0 && _to == 1;
 		if (fullLength && this._length != null)
 			return this._length;
-		var length = Curve.getLength(this.getValues(), from, to);
+		var length = Curve.getLength(this.getValues(), _from, _to);
 		if (fullLength)
 			this._length = length;
 		return length;
@@ -315,11 +319,11 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		// Solve the y-axis cubic polynominal for point.y and count all
 		// solutions to the right of point.x as crossings.
 		var vals = this.getValues(),
-			num = Curve.solveCubic(vals, 1, point.y, roots),
+			count = Curve.solveCubic(vals, 1, point.y, roots),
 			crossings = 0;
-		for (var i = 0; i < num; i++) {
+		for (var i = 0; i < count; i++) {
 			var t = roots[i];
-			if (t >= 0 && t <= 1 && Curve.evaluate(vals, t, 0).x > point.x) {
+			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, 0).x > point.x) {
 				// If we're close to 0 and are not changing y-direction from the
 				// previous curve, do not count this root, as we're merely
 				// touching a tip. Passing 1 for Curve.evaluate()'s type means
@@ -327,7 +331,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				// a change of direction:
 				if (t < Numerical.TOLERANCE && Curve.evaluate(
 							this.getPrevious().getValues(), 1, 1).y
-						* Curve.evaluate(vals, t, 1).y >= 0)
+						* Curve.evaluate(vals, t, 1).y >= Numerical.TOLERANCE)
 					continue;
 				crossings++;
 			}
@@ -551,7 +555,24 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy) < 1;
 		}
 	}
-}, new function() { // Scope for methods that require numerical integration
+}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+	function(name) {
+		this[name] = function() {
+			if (!this._bounds)
+				this._bounds = {};
+			var bounds = this._bounds[name];
+			if (!bounds) {
+				// Calculate the curve bounds by passing a segment list for the
+				// curve to the static Path.get*Boudns methods.
+				bounds = this._bounds[name] = Path[name](
+					[this._segment1, this._segment2], false, this._path._style);
+			}
+			return bounds.clone();
+		};
+	},
+/** @lends Curve# */{
+}),
+new function() { // Scope for methods that require numerical integration
 
 	function getLengthIntegrand(v) {
 		// Calculate the coefficients of a Bezier derivative.

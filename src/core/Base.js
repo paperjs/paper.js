@@ -41,7 +41,7 @@ this.Base = Base.inject(/** @lends Base# */{
 	toString: function() {
 		return '{ ' + Base.each(this, function(value, key) {
 			// Hide internal properties even if they are enumerable
-			if (key.charAt(0) != '_') {
+			if (!/^_/.test(key)) {
 				var type = typeof value;
 				this.push(key + ': ' + (type === 'number'
 						? Base.formatFloat(value)
@@ -70,7 +70,7 @@ this.Base = Base.inject(/** @lends Base# */{
 				if (obj1.length !== obj2.length)
 					return false;
 				for (var i = 0, l = obj1.length; i < l; i++) {
-					if (!Base.equals(obj1, obj2))
+					if (!Base.equals(obj1[i], obj2[i]))
 						return false;
 				}
 				return true;

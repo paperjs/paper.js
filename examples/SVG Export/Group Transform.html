@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Empty Path Testing</title>
+	<title>Transform Testing</title>
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 
@@ -10,17 +10,14 @@
 <body>	
 	<canvas id="canvas" width="500px" height="500px"></canvas>
 	<script type="text/paperscript" canvas="canvas">
-		var path = new Path();
-		path.strokeColor = 'black';
-		path.add(new Point(30, 30));
-		path.add(new Point(100, 100));
-		
-		var segments = [new Point(30, 90), new Point(100, 150)];
-		var path2 = new Path(segments);
-		path2.strokeColor = 'yellow';
-
-		var path3 = new Path();
-		
+		var circle1 = new Path.Circle(new Point(100, 100), 50);
+		circle1.fillColor = 'red';
+		var circle2 = new Path.Circle(new Point(200, 100), 50);
+		circle2.fillColor = 'blue';
+		var group = new Group(circle1, circle2);
+		group.translate([100, 100]);
+		group.scale(0.5);
+		group.rotate(10);
 		document.getElementById('svg').appendChild(project.exportSvg());
 	</script>
 	<svg id="svg" style="width: 500px; height: 500px"></svg>
