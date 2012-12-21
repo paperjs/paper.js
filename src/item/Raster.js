@@ -25,7 +25,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	_type: 'raster',
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
-	_boundsType: 'bounds',
+	_boundsGetter: 'getBounds',
 
 	// TODO: Implement url / type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
@@ -45,28 +45,19 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			if (typeof object === 'string') {
 				var str = object,
 					that = this;
-				object = document.getElementById(str);
-				if (!object) {
-					// str could be a URL to load the image from?
-					object = new Image();
-					object.src = str;
-				}
+				// str can be a DOM ID or a URL to load the image from
+				object = document.getElementById(str) || new Image();
 				// Trigger the onLoad event on the image once it's loaded
 				DomEvent.add(object, {
 					load: function() {
 						that.setImage(object);
 						that.fire('load');
+						if (that._project.view)
+							that._project.view.draw(true);
 					}
 				});
-				// If the image is already loaded, fire a 'load' event anyway,
-				// so code does not need to make the distinction, and cachig is
-				// transparently handled too.
-				if (object.naturalWidth) {
-					setTimeout(function() {
-						that.fire('load');
-					}, 0);
-				}
-
+				if (!object.src)
+					object.src = str;
 			}
 /*#*/ } else if (options.server) {
 			// If we're running on the server and it's a string,
@@ -105,13 +96,15 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	setSize: function() {
-		var size = Size.read(arguments),
+		var size = Size.read(arguments);
+		if (!this._size.equals(size)) {
 			// Get reference to image before changing canvas
-			image = this.getImage();
-		// Setting canvas internally sets _size
-		this.setCanvas(CanvasProvider.getCanvas(size));
-		// Draw image back onto new canvas
-		this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
+			var image = this.getImage();
+			// Setting canvas internally sets _size
+			this.setCanvas(CanvasProvider.getCanvas(size));
+			// Draw image back onto new canvas
+			this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
+		}
 	},
 
 	/**
@@ -161,13 +154,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @type Context
 	 * @bean
 	 */
-	getContext: function(/* notifyChange */) {
+	getContext: function(_notifyChange) {
 		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
 		// Support a hidden parameter that indicates if the context will be used
 		// to modify the Raster object. We can notify such changes ahead since
 		// they are only used afterwards for redrawing.
-		if (arguments[0])
+		if (_notifyChange)
 			this._changed(/*#=*/ Change.PIXELS);
 		return this._context;
 	},
@@ -411,7 +404,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
-	_getBounds: function(type, matrix) {
+	_getBounds: function(getter, matrix) {
 		var rect = new Rectangle(this._size).setCenter(0, 0);
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},

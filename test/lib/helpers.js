@@ -335,3 +335,9 @@ function compareItems(item, item2, checkIdentity) {
 		}
 	}
 }
+
+// SVG
+
+function createSvg(xml) {
+	return new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg">' + xml + '</svg>', 'application/xml');
+}

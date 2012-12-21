@@ -57,10 +57,10 @@ var KeyEvent = this.KeyEvent = Event.extend(/** @lends KeyEvent# */{
 	 * @return {String} A string representation of the key event.
 	 */
 	toString: function() {
-		return '{ type: ' + this.type
-				+ ', key: ' + this.key
-				+ ', character: ' + this.character
-				+ ', modifiers: ' + this.getModifiers()
-				+ ' }';
+		return "{ type: '" + this.type
+				+ "', key: '" + this.key
+				+ "', character: '" + this.character
+				+ "', modifiers: " + this.getModifiers()
+				+ " }";
 	}
 });

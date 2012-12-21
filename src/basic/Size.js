@@ -109,10 +109,10 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 			if (Array.isArray(arg0)) {
 				this.width = arg0[0];
 				this.height = arg0.length > 1 ? arg0[1] : arg0[0];
-			} else if ('width' in arg0) {
+			} else if (arg0.width != null) {
 				this.width = arg0.width;
 				this.height = arg0.height;
-			} else if ('x' in arg0) {
+			} else if (arg0.x != null) {
 				this.width = arg0.x;
 				this.height = arg0.y;
 			} else {

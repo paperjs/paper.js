@@ -75,12 +75,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		};
 
-		var onFrameItems = [];
-		function onFrame(event) {
-			for (var i = 0, l = onFrameItems.length; i < l; i++)
-				onFrameItems[i].fire('frame', event);
-		}
-
 		return Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
 			'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
 			function(name) {
@@ -88,14 +82,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			}, {
 				onFrame: {
 					install: function() {
-						if (!onFrameItems.length)
-							this._project.view.attach('frame', onFrame);
-						onFrameItems.push(this);
+						this._project.view._animateItem(this, true);
 					},
 					uninstall: function() {
-						onFrameItems.splice(onFrameItems.indexOf(this), 1);
-						if (!onFrameItems.length)
-							this._project.view.detach('frame', onFrame);
+						this._project.view._animateItem(this, false);
 					}
 				},
 
@@ -522,7 +512,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Move the circle 100 points to the right
 	 * circle.position.x += 100;
 	 */
-	getPosition: function(/* dontLink */) {
+	getPosition: function(_dontLink) {
 		// Cache position value.
 		// Pass true for dontLink in getCenter(), so receive back a normal point
 		var pos = this._position
@@ -531,7 +521,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// use them to calculate the difference in #setPosition, as when it is
 		// modified, it would hold new values already and only then cause the
 		// calling of #setPosition.
-		return arguments[0] ? pos
+		return _dontLink ? pos
 				: LinkedPoint.create(this, 'setPosition', pos.x, pos.y);
 	},
 
@@ -557,36 +547,48 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
 		this._changed(/*#=*/ Change.GEOMETRY);
+	},
+
+	/**
+	 * Specifies wether the item has any content or not. The meaning of what
+	 * content is differs from  type to type. For example, a {@link Group} with
+	 * no children, a {@link TextItem} with no text content and a {@link Path}
+	 * with no segments all are considered empty.
+	 *
+	 * @type Boolean
+	 */
+	isEmpty: function() {
+		return true;
 	}
-}, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'],
-function(name) {
-	// Produce getters for bounds properties. These handle caching, matrices
-	// and redirect the call to the private _getBounds, which can be
-	// overridden by subclasses, see below.
-	this['get' + Base.capitalize(name)] = function(/* matrix */) {
-		var type = this._boundsType,
-			bounds = this._getCachedBounds(
-				// Allow subclasses to override _boundsType if they use the same
-				// calculations for multiple types. The default is name:
-				typeof type == 'string' ? type : type && type[name] || name,
-				// Pass on the optional matrix
-				arguments[0]);
-		// If we're returning 'bounds', create a LinkedRectangle that uses the
-		// setBounds() setter to update the Item whenever the bounds are
-		// changed:
-		return name == 'bounds' ? LinkedRectangle.create(this, 'setBounds',
-				bounds.x, bounds.y, bounds.width, bounds.height) : bounds;
-	};
-}, /** @lends Item# */{
+}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+	function(name) {
+		// Produce getters for bounds properties. These handle caching, matrices
+		// and redirect the call to the private _getBounds, which can be
+		// overridden by subclasses, see below.
+		this[name] = function(_matrix) {
+			var getter = this._boundsGetter,
+				// Allow subclasses to override _boundsGetter if they use
+				// the same calculations for multiple type of bounds.
+				// The default is name:
+				bounds = this._getCachedBounds(typeof getter == 'string'
+						? getter : getter && getter[name] || name, _matrix);
+			// If we're returning 'bounds', create a LinkedRectangle that uses
+			// the setBounds() setter to update the Item whenever the bounds are
+			// changed:
+			return name == 'bounds' ? LinkedRectangle.create(this, 'setBounds',
+					bounds.x, bounds.y, bounds.width, bounds.height) : bounds;
+		};
+	},
+/** @lends Item# */{
 	/**
 	 * Private method that deals with the calling of _getBounds, recursive
 	 * matrix concatenation and handles all the complicated caching mechanisms.
 	 */
-	_getCachedBounds: function(type, matrix, cacheItem) {
+	_getCachedBounds: function(getter, matrix, cacheItem) {
 		// See if we can cache these bounds. We only cache the bounds
 		// transformed with the internally stored _matrix, (the default if no
 		// matrix is passed).
-		var cache = (!matrix || matrix.equals(this._matrix)) && type;
+		var cache = (!matrix || matrix.equals(this._matrix)) && getter;
 		// Set up a boundsCache structure that keeps track of items that keep
 		// cached bounds that depend on this item. We store this in our parent,
 		// for multiple reasons:
@@ -624,7 +626,7 @@ function(name) {
 				: identity ? matrix : matrix.clone().concatenate(this._matrix);
 		// If we're caching bounds on this item, pass it on as cacheItem, so the
 		// children can setup the _boundsCache structures for it.
-		var bounds = this._getBounds(type, matrix, cache ? this : cacheItem);
+		var bounds = this._getBounds(getter, matrix, cache ? this : cacheItem);
 		// If we can cache the result, update the _bounds cache structure
 		// before returning
 		if (cache) {
@@ -664,7 +666,7 @@ function(name) {
 	 * Subclasses override it to define calculations for the various required
 	 * bounding types.
 	 */
-	_getBounds: function(type, matrix, cacheItem) {
+	_getBounds: function(getter, matrix, cacheItem) {
 		// Note: We cannot cache these results here, since we do not get
 		// _changed() notifications here for changing geometry in children.
 		// But cacheName is used in sub-classes such as PlacedItem.
@@ -680,7 +682,7 @@ function(name) {
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			if (child._visible && !child.isEmpty()) {
-				var rect = child._getCachedBounds(type, matrix, cacheItem);
+				var rect = child._getCachedBounds(getter, matrix, cacheItem);
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
 				x2 = Math.max(rect.x + rect.width, x2);
@@ -688,10 +690,6 @@ function(name) {
 			}
 		}
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	},
-
-	isEmpty: function() {
-		return true;
 	},
 
 	setBounds: function(rect) {
@@ -946,8 +944,10 @@ function(name) {
 		copy.setStyle(this._style);
 		// If this item has children, clone and append each of them:
 		if (this._children) {
+			// Clone all children and add them to the copy. tell #addChild we're
+			// cloning, as needed by CompoundPath#insertChild().
 			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.addChild(this._children[i].clone());
+				copy.addChild(this._children[i].clone(), true);
 		}
 		// Only copy over these fields if they are actually defined in 'this'
 		// TODO: Consider moving this to Base once it's useful in more than one
@@ -1128,8 +1128,9 @@ function(name) {
 	 *
 	 * @param {Item} item The item to be added as a child
 	 */
-	addChild: function(item) {
-		return this.insertChild(undefined, item);
+	addChild: function(item, _cloning) {
+		// Pass on internal _cloning boolean, for CompoundPath#insertChild
+		return this.insertChild(undefined, item, _cloning);
 	},
 
 	/**
@@ -1878,11 +1879,11 @@ function(name) {
 				var rect = bounds[key];
 				matrix._transformBounds(rect, rect);
 			}
-			// If we have cached 'bounds', update _position again as its 
-			// center. We need to take into account _boundsType here too, in 
-			// case another type is assigned to it, e.g. 'strokeBounds'.
-			var type = this._boundsType,
-				rect = bounds[type && type.bounds || 'bounds'];
+			// If we have cached bounds, update _position again as its 
+			// center. We need to take into account _boundsGetter here too, in 
+			// case another getter is assigned to it, e.g. 'getStrokeBounds'.
+			var getter = this._boundsGetter,
+				rect = bounds[getter && getter.getBounds || getter || 'getBounds'];
 			if (rect)
 				this._position = rect.getCenter(true);
 			this._bounds = bounds;
@@ -2458,8 +2459,8 @@ function(name) {
 			// first, since otherwise their stroke is drawn half transparent
 			// over their fill.
 			if (item._blendMode !== 'normal' || item._opacity < 1
-					&& !(item._segments
-						&& (!item.getFillColor() || !item.getStrokeColor()))) {
+					&& (item._type !== 'path'
+						|| item.getFillColor() && item.getStrokeColor())) {
 				var bounds = item.getStrokeBounds();
 				if (!bounds.width || !bounds.height)
 					return;

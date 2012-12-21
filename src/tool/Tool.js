@@ -325,6 +325,8 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 			if (set) {
 				for (var id in set) {
 					var item = set[id];
+					// If we remove this item, we also need to erase it from all
+					// other sets.
 					for (var key in sets) {
 						var other = sets[key];
 						if (other && other != set && other[item._id])

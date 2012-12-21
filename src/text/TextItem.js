@@ -28,7 +28,7 @@
 var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	// TextItem doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
-	_boundsType: 'bounds',
+	_boundsGetter: 'getBounds',
 
 	initialize: function(pointOrMatrix) {
 		// Note that internally #characterStyle is the same as #style, but
@@ -93,7 +93,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	},
 
 	isEmpty: function() {
-		return !!this._content;
+		return !this._content;
 	},
 
 	/**

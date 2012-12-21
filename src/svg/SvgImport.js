@@ -269,6 +269,19 @@ new function() {
 		// http://www.w3.org/TR/SVG/pservers.html#RadialGradients
 		radialgradient: importGradient,
 
+		// http://www.w3.org/TR/SVG/struct.html#ImageElement
+		image: function (svg) {
+			var raster = new Raster(getValue(svg, 'href'));
+			raster.attach('load', function() {
+				var size = getSize(svg, 'width', 'height');
+				this.setSize(size);
+				// Since x and y start from the top left of an image, add
+				// half of its size:
+				this.translate(getPoint(svg, 'x', 'y').add(size.divide(2)));
+			});
+			return raster;
+		},
+
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(svg, type) {
 			return new Symbol(applyAttributes(importGroup(svg, type), svg));
@@ -382,13 +395,20 @@ new function() {
 				break;
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			case 'clip-path':
-				var clipPath = getDefinition(value).clone().reduce();
-				item = createClipGroup(item, clipPath);
+				item = createClipGroup(item,
+					getDefinition(value).clone().reduce());
 				break;
 			// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
 			case 'gradientTransform':
 			case 'transform':
-				applyTransform(item, svg, name);
+				var transforms = svg[name].baseVal,
+					matrix = new Matrix();
+				for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
+					var mx = transforms.getItem(i).matrix;
+					matrix.concatenate(
+						new Matrix(mx.a, mx.b, mx.c, mx.d, mx.e, mx.f));
+				}
+				item.transform(matrix);
 				break;
 			// http://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
 			case 'stop-opacity':
@@ -400,6 +420,15 @@ new function() {
 				} else {
 					item.setOpacity(opacity);
 				}
+				break;
+			// http://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
+			case 'fill-opacity':
+			// http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
+			case 'stroke-opacity':
+				var color = item[name == 'fill-opacity' ? 'getFillColor'
+						: 'getStrokeColor']();
+				if (color)
+					color.setAlpha(Base.toFloat(value));
 				break;
 			case 'visibility':
 				item.setVisible(value === 'visible');
@@ -479,57 +508,11 @@ new function() {
 		}
 	}
 
-	/**
-	 * Applies the transformations specified on the SVG node to a Paper.js item
-	 *
-	 * @param {SVGSVGElement} svg an SVG node
-	 * @param {Item} item a Paper.js item
-	 */
-	function applyTransform(item, svg, name) {
-		var svgTransform = svg[name],
-			transforms = svgTransform.baseVal,
-			matrix = new Matrix();
-		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
-			var transform = transforms.getItem(i);
-			if (transform.type === /*#=*/ SVGTransform.SVG_TRANSFORM_UNKNOWN)
-				continue;
-			// Convert SVG Matrix to Paper Matrix.
-			// TODO: Should this be moved to our Matrix constructor?
-			var mx = transform.matrix,
-				a = mx.a,
-				b = mx.b,
-				c = mx.c,
-				d = mx.d;
-			switch (transform.type) {
-			// Compensate for SVG's theta rotation going the opposite direction
-			case /*#=*/ SVGTransform.SVG_TRANSFORM_MATRIX:
-				var tmp = b;
-				b = c;
-				c = tmp;
-				break;
-			case /*#=*/ SVGTransform.SVG_TRANSFORM_SKEWX:
-				b = c;
-				c = 0;
-				break;
-			case /*#=*/ SVGTransform.SVG_TRANSFORM_SKEWY:
-				c = b;
-				b = 0;
-				break;
-			case /*#=*/ SVGTransform.SVG_TRANSFORM_ROTATE:
-				b = -b;
-				c = -c;
-				break;
-			}
-			matrix.concatenate(new Matrix(a, c, b, d, mx.e, mx.f));
-		}
-		item.transform(matrix);
-	}
-
 	function importSvg(svg) {
 		var type = svg.nodeName.toLowerCase(),
 			importer = importers[type],
 			item = importer && importer(svg, type);
-		return item ? applyAttributes(item, svg) : item;
+		return item && applyAttributes(item, svg);
 	}
 
 

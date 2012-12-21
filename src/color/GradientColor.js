@@ -238,7 +238,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 		}
 		for (var i = 0, l = this.gradient._stops.length; i < l; i++) {
 			var stop = this.gradient._stops[i];
-			gradient.addColorStop(stop._rampPoint, stop._color.toCssString());
+			gradient.addColorStop(stop._rampPoint, stop._color.toCss());
 		}
 		return gradient;
 	},
