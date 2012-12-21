@@ -42,7 +42,7 @@ case $1 in
 		;;
 	compressed)
 		eval $COMMAND > temp.js
-		uglifyjs temp.js -c -m -r '_$_,$_' > $5
+		uglifyjs temp.js -c unused=false -m -r "_$_,$_" -b ascii_only=true,beautify=false > $5
 		rm temp.js
 		;;
 esac
