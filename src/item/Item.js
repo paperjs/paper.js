@@ -512,7 +512,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Move the circle 100 points to the right
 	 * circle.position.x += 100;
 	 */
-	getPosition: function(_dontLink) {
+	getPosition: function(/* dontLink */) {
 		// Cache position value.
 		// Pass true for dontLink in getCenter(), so receive back a normal point
 		var pos = this._position
@@ -521,7 +521,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// use them to calculate the difference in #setPosition, as when it is
 		// modified, it would hold new values already and only then cause the
 		// calling of #setPosition.
-		return _dontLink ? pos
+		return arguments[0] ? pos
 				: LinkedPoint.create(this, 'setPosition', pos.x, pos.y);
 	},
 
@@ -565,13 +565,13 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Produce getters for bounds properties. These handle caching, matrices
 		// and redirect the call to the private _getBounds, which can be
 		// overridden by subclasses, see below.
-		this[name] = function(_matrix) {
+		this[name] = function(/* matrix */) {
 			var getter = this._boundsGetter,
 				// Allow subclasses to override _boundsGetter if they use
 				// the same calculations for multiple type of bounds.
 				// The default is name:
 				bounds = this._getCachedBounds(typeof getter == 'string'
-						? getter : getter && getter[name] || name, _matrix);
+						? getter : getter && getter[name] || name, arguments[0]);
 			// If we're returning 'bounds', create a LinkedRectangle that uses
 			// the setBounds() setter to update the Item whenever the bounds are
 			// changed:

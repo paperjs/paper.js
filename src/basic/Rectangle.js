@@ -167,10 +167,10 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @type Point
 	 * @bean
 	 */
-	getPoint: function(_dontLink) {
+	getPoint: function(/* dontLink */) {
 		// Pass on the optional argument _dontLink which tells LinkedPoint to
 		// produce a normal point instead. Used internally for speed reasons.
-		return LinkedPoint.create(this, 'setPoint', this.x, this.y, _dontLink);
+		return LinkedPoint.create(this, 'setPoint', this.x, this.y, arguments[0]);
 	},
 
 	setPoint: function(point) {
@@ -187,9 +187,9 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @type Size
 	 * @bean
 	 */
-	getSize: function(_dontLink) {
+	getSize: function(/* dontLink */) {
 		return LinkedSize.create(this, 'setSize', this.width, this.height,
-				_dontLink);
+				arguments[0]);
 	},
 
 	setSize: function(size) {
@@ -307,9 +307,9 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @type Point
 	 * @bean
 	 */
-	getCenter: function(_dontLink) {
+	getCenter: function(/* dontLink */) {
 		return LinkedPoint.create(this, 'setCenter',
-				this.getCenterX(), this.getCenterY(), _dontLink);
+				this.getCenterX(), this.getCenterY(), arguments[0]);
 	},
 
 	setCenter: function(point) {
@@ -725,9 +725,9 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 				setY = 'set' + y,
 				get = 'get' + part,
 				set = 'set' + part;
-			this[get] = function(_dontLink) {
+			this[get] = function(/* dontLink */) {
 				return LinkedPoint.create(this, set,
-						this[getX](), this[getY](), _dontLink);
+						this[getX](), this[getY](), arguments[0]);
 			};
 			this[set] = function(point) {
 				point = Point.read(arguments);
