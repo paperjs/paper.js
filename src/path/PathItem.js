@@ -24,8 +24,15 @@
  * @extends Item
  */
 var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
-	// Note: The PathItem class is currently empty but holds the documentation
-	// for all the methods that exist both on Path and CompoundPath.
+	getIntersections: function(path) {
+		// First check the bounds of the two paths. If they don't intersect,
+		// we don't need to iterate through the whole path.
+		if (this.getBounds().intersects(path.getBounds()))
+			return [];
+		var locations = [],
+			curves1 = this.getCurves(),
+			curves2 = path.getCurves();		
+	}
 	/**
 	 * Smooth bezier curves without changing the amount of segments or their
 	 * points, by only smoothing and adjusting their handle points, for both
