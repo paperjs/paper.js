@@ -380,6 +380,16 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	_guide: false,
 
 	/**
+	 * Specifies whether the item directly transforms its contents when
+	 * transformations are applied to it, or wether it simply stores them in
+	 * {@link Item#matrix}.
+	 *
+	 * @type Boolean
+	 * @default false
+	 */
+	transformContent: false,
+
+	/**
 	 * Specifies whether an item is selected and will also return {@code true}
 	 * if the item is partially selected (groups with some selected or partially
 	 * selected paths).
@@ -1855,7 +1865,8 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// transformation if it was possible to apply it. Application is not
 		// possible on Raster, PointText, PlacedSymbol, since the matrix is
 		// storing the actual location / transformation state.
-		if ((this._applyMatrix || arguments[1]) && this.applyMatrix(this._matrix))
+		if ((this.transformContent || arguments[1])
+				&& this.applyMatrix(this._matrix))
 			// TODO: This needs a _changed notification, but the GEOMETRY
 			// actually doesn't change! What to do?
 			this._matrix.setIdentity();
