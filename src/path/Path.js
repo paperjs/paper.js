@@ -24,6 +24,8 @@
 // DOCS: Explain that path matrix is always applied with each transformation.
 var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	_type: 'path',
+	// Paths always directly apply transformation matrices to the Segments.
+	_applyMatrix: true,
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 *
@@ -223,11 +225,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
 
-	// DOCS: Explain that path matrix is always applied with each transformation.
-	transform: function(matrix) {
-		return this.base(matrix, true);
-	},
-
 	getMatrix: function() {
 		// Override matrix getter to always return null, since Paths act as if
 		// they do not have a matrix, and always directly apply transformations
@@ -251,7 +248,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return true;
 	},
 
-	_apply: function(matrix) {
+	applyMatrix: function(matrix) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++) {
 			this._segments[i]._transformCoordinates(matrix, coords, true);
