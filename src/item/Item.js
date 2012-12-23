@@ -710,7 +710,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
 		// Now execute the transformation
-		// TODO: do we need to apply too, or just change the matrix?
 		this.transform(matrix);
 	}
 
@@ -1681,7 +1680,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 
 	// DOCS: Document the different arguments that this function can receive.
-	// DOCS: Document the apply parameter in all transform functions.
 	/**
 	 * {@grouptitle Transform Functions}
 	 *
@@ -1692,7 +1690,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @function
 	 * @param {Number} scale the scale factor
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 *
 	 * @example {@paperscript}
 	 * // Scaling an item from its center point:
@@ -1725,7 +1722,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Number} hor the horizontal scale factor
 	 * @param {Number} ver the vertical scale factor
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 *
 	 * @example {@paperscript}
 	 * // Scaling an item horizontally by 300%:
@@ -1738,26 +1734,24 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Scale the path horizontally by 300%
 	 * circle.scale(3, 1);
 	 */
-	scale: function(hor, ver /* | scale */, center, apply) {
+	scale: function(hor, ver /* | scale */, center) {
 		// See Matrix#scale for explanation of this:
 		if (arguments.length < 2 || typeof ver === 'object') {
-			apply = center;
 			center = ver;
 			ver = hor;
 		}
 		return this.transform(new Matrix().scale(hor, ver,
-				center || this.getPosition(true)), apply);
+				center || this.getPosition(true)));
 	},
 
 	/**
 	 * Translates (moves) the item by the given offset point.
 	 *
 	 * @param {Point} delta the offset to translate the item by
-	 * @param {Boolean} apply
 	 */
-	translate: function(delta, apply) {
+	translate: function(delta) {
 		var mx = new Matrix();
-		return this.transform(mx.translate.apply(mx, arguments), apply);
+		return this.transform(mx.translate.apply(mx, arguments));
 	},
 
 	/**
@@ -1767,7 +1761,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @param {Number} angle the rotation angle
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 * @see Matrix#rotate
 	 *
 	 * @example {@paperscript}
@@ -1802,9 +1795,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * 	path.rotate(3, view.center);
 	 * }
 	 */
-	rotate: function(angle, center, apply) {
+	rotate: function(angle, center) {
 		return this.transform(new Matrix().rotate(angle,
-				center || this.getPosition(true)), apply);
+				center || this.getPosition(true)));
 	},
 
 	// TODO: Add test for item shearing, as it might be behaving oddly.
@@ -1816,7 +1809,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @function
 	 * @param {Point} point
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 * @see Matrix#shear
 	 */
 	/**
@@ -1828,34 +1820,28 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Number} hor the horizontal shear factor.
 	 * @param {Number} ver the vertical shear factor.
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 * @see Matrix#shear
 	 */
-	shear: function(hor, ver, center, apply) {
-		// PORT: Add support for center and apply back to Scriptographer too!
+	shear: function(hor, ver, center) {
 		// See Matrix#scale for explanation of this:
 		if (arguments.length < 2 || typeof ver === 'object') {
-			apply = center;
 			center = ver;
 			ver = hor;
 		}
 		return this.transform(new Matrix().shear(hor, ver,
-				center || this.getPosition(true)), apply);
+				center || this.getPosition(true)));
 	},
 
 	/**
 	 * Transform the item.
 	 *
 	 * @param {Matrix} matrix the matrix by which the item shall be transformed.
-	 * @param {Boolean} apply controls wether the transformation should just be
-	 * concatenated to {@link #matrix} ({@code false}) or if it should directly
-	 * be applied to item's content and its children.
 	 */
 	// Remove this for now:
 	// @param {String[]} flags Array of any of the following: 'objects',
 	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
 	//        'lines'. Default: ['objects', 'children']
-	transform: function(matrix, apply) {
+	transform: function(matrix /*, applyMatrix */) {
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
 		var bounds = this._bounds,
@@ -1864,8 +1850,15 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		this._matrix.preConcatenate(matrix);
 		if (this._transform)
 			this._transform(matrix);
-		if (apply)
-			this.apply();
+		// If we need to directly apply the accumulated transformations, call
+		// #applyMatrix() with the internal _,atrix, and set it to the identity
+		// transformation if it was possible to apply it. Application is not
+		// possible on Raster, PointText, PlacedSymbol, since the matrix is
+		// storing the actual location / transformation state.
+		if ((this._applyMatrix || arguments[1]) && this.applyMatrix(this._matrix))
+			// TODO: This needs a _changed notification, but the GEOMETRY
+			// actually doesn't change! What to do?
+			this._matrix.setIdentity();
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(/*#=*/ Change.GEOMETRY);
@@ -1895,30 +1888,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		return this;
 	},
 
-	// DOCS: Document #apply()
-	apply: function() {
-		// Call the internal #_apply(), and set the internal _matrix to the
-		// identity transformation if it was possible to apply it.
-		// Application is not possible on Raster, PointText, PlacedSymbol, since
-		// the matrix is storing the actual location / transformation state.
-		// Pass on this._matrix to _apply calls, for reasons of faster access
-		// and code minification.
-		if (this._apply(this._matrix)) {
-			// Set _matrix to the identity
-			this._matrix.setIdentity();
-			// TODO: This needs a _changed notification, but the GEOMETRY
-			// actually doesn't change! What to do?
-		}
-	},
-
-	_apply: function(matrix) {
+	applyMatrix: function(matrix) {
 		// Pass on the transformation to the children, and apply it there too:
 		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				var child = this._children[i];
-				child.transform(matrix);
-				child.apply();
-			}
+			for (var i = 0, l = this._children.length; i < l; i++)
+				this._children[i].transform(matrix, true);
 			return true;
 		}
 	},
