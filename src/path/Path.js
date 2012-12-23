@@ -24,8 +24,9 @@
 // DOCS: Explain that path matrix is always applied with each transformation.
 var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	_type: 'path',
-	// Paths always directly apply transformation matrices to the Segments.
-	_applyMatrix: true,
+	// Paths directly apply transformation matrices to the Segments by default.
+	transformContent: true,
+
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 *
