@@ -17,10 +17,10 @@
 /**
  * @name KeyEvent
  *
- * @class KeyEvent The KeyEvent object is received by the {@link Tool}'s
- * keyboard handlers {@link Tool#onKeyDown}, {@link Tool#onKeyUp},
- * The KeyEvent object is the only parameter passed to these functions
- * and contains information about the keyboard event.
+ * @class The KeyEvent object is received by the {@link Tool}'s keyboard
+ * handlers {@link Tool#onKeyDown}, {@link Tool#onKeyUp}. The KeyEvent object is
+ * the only parameter passed to these functions and contains information about
+ * the keyboard event.
  *
  * @extends Event
  */
