@@ -28,6 +28,7 @@
 
 		// Create the group of circle shaped paths and scale it up a bit:
 		var group = createPhyllotaxis(values.amount);
+		group.transformContent = true;
 		group.scale(3);
 
 		function createPhyllotaxis(amount) {
@@ -81,7 +82,6 @@
 				group.position += delta;
 			// Rotate the group of paths by 1 degree:
 			group.rotate(1);
-			group.apply();
 			// Rotate each path in the group by 2 degrees:
 			for (var i = 0, l = group.children.length; i < l; i++) {
 				group.children[i].rotate(2);
