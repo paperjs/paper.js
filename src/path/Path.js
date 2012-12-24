@@ -24,8 +24,6 @@
 // DOCS: Explain that path matrix is always applied with each transformation.
 var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	_type: 'path',
-	// Paths directly apply transformation matrices to the Segments by default.
-	transformContent: true,
 
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
@@ -249,7 +247,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return true;
 	},
 
-	applyMatrix: function(matrix) {
+	// Paths directly apply transformation matrices to the Segments by default.
+	applyMatrix: true,
+
+	_applyMatrix: function(matrix) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++) {
 			this._segments[i]._transformCoordinates(matrix, coords, true);

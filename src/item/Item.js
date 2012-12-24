@@ -91,7 +91,8 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 
 				// Only for external sources, e.g. Raster
 				onLoad: {}
-			});
+			}
+		);
 	},
 
 	initialize: function(pointOrMatrix) {
@@ -387,7 +388,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Boolean
 	 * @default false
 	 */
-	transformContent: false,
+	applyMatrix: false,
 
 	/**
 	 * Specifies whether an item is selected and will also return {@code true}
@@ -1861,12 +1862,12 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		if (this._transform)
 			this._transform(matrix);
 		// If we need to directly apply the accumulated transformations, call
-		// #applyMatrix() with the internal _,atrix, and set it to the identity
+		// #_applyMatrix() with the internal _matrix, and set it to the identity
 		// transformation if it was possible to apply it. Application is not
 		// possible on Raster, PointText, PlacedSymbol, since the matrix is
 		// storing the actual location / transformation state.
-		if ((this.transformContent || arguments[1])
-				&& this.applyMatrix(this._matrix))
+		if ((this.applyMatrix || arguments[1])
+				&& this._applyMatrix(this._matrix))
 			// TODO: This needs a _changed notification, but the GEOMETRY
 			// actually doesn't change! What to do?
 			this._matrix.setIdentity();
@@ -1899,7 +1900,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		return this;
 	},
 
-	applyMatrix: function(matrix) {
+	_applyMatrix: function(matrix) {
 		// Pass on the transformation to the children, and apply it there too:
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++)
