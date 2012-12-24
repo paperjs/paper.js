@@ -24,9 +24,8 @@
 # preprocess.sh MODE SOURCE DEFINITIONS PREPRO_INCLUDE DESTINATION
 #
 # MODE:
-#	commented		Preprocessed but still formated and commented
-#	stripped		Formated but without comments
-#	compressed		Uses UglifyJS to reduce file size
+#	commented		Preprocessed, still formated and commented
+#	stripped		Preprocessed, formated but without comments
 
 VERSION=0.3
 DATE=$(git log -1 --pretty=format:%ad)
@@ -34,15 +33,10 @@ DATE=$(git log -1 --pretty=format:%ad)
 COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\" }' -d '$3' -i '$4' $2"
 
 case $1 in
-	stripped)
-		eval "$COMMAND -c" > $5
-		;;
 	commented)
 		eval $COMMAND > $5
 		;;
-	compressed)
-		eval $COMMAND > temp.js
-		uglifyjs temp.js -c unused=false -m -r "_$_,$_" -b ascii_only=true,beautify=false > $5
-		rm temp.js
+	stripped)
+		eval "$COMMAND -c" > $5
 		;;
 esac
