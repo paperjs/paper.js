@@ -28,7 +28,7 @@
 
 		// Create the group of circle shaped paths and scale it up a bit:
 		var group = createPhyllotaxis(values.amount);
-		group.transformContent = true;
+		group.applyMatrix = true;
 		group.scale(3);
 
 		function createPhyllotaxis(amount) {
