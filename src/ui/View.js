@@ -133,7 +133,14 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		return true;
 	},
 
+	/**
+	 * @namespace
+	 * @ignore
+	 */
 	_events: {
+		/**
+		 * @namespace
+		 */
 		onFrame: {
 			install: function() {
 /*#*/ if (options.browser) {
