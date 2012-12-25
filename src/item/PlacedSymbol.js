@@ -60,9 +60,15 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	 *     instance.scale(0.25 + Math.random() * 0.75);
 	 * }
 	 */
-	initialize: function(symbol, point) {
-		this.base(Point.read(arguments, 1));
-		this.setSymbol(symbol instanceof Symbol ? symbol : new Symbol(symbol));
+	initialize: function(arg0, arg1) {
+		// Support two forms of item initialization: Passing one object literal
+		// describing all the different properties to be set, or a symbol (arg0)
+		// and a point where it should be placed (arg1).
+		this.base(arg1 !== undefined && Point.read(arguments, 1));
+		// If we can handle setting properties through object literal, we're all
+		// set. Otherwise we need to set symbol.
+		if (!this.setProperties(arg0))
+			this.setSymbol(arg0 instanceof Symbol ? arg0 : new Symbol(arg0));
 	},
 
 	/**

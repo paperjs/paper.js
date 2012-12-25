@@ -111,6 +111,15 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			this._matrix.translate(point);
 	},
 
+	setProperties: function(props) {
+		if (Base.isObject(props)) {
+			for (var key in props)
+				if (props.hasOwnProperty(key))
+					this[key] = props[key];
+			return true;
+		}
+	},
+
 	/**
 	 * Private notifier that is called whenever a change occurs in this item or
 	 * its sub-elements, such as Segments, Curves, PathStyles, etc.

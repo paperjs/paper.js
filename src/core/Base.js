@@ -105,7 +105,7 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * @param {Boolean} clone controls wether passed objects should be
 		 *        cloned if they are already provided in the required type
 		 */
-		read: function(list, start, length, clone) {
+		read: function(list, start, length, clone, readNull) {
 			var proto = this.prototype,
 				readIndex = proto._readIndex,
 				index = start || readIndex && list._index || 0;
@@ -113,9 +113,9 @@ this.Base = Base.inject(/** @lends Base# */{
 				length = list.length - index;
 			var obj = list[index];
 			if (obj instanceof this
-					// If the class defines _readNull, return null when nothing
-					// was provided
-					|| proto._readNull && obj == null && length <= 1) {
+				// If the class defines _readNull, return null when nothing
+				// was provided
+				|| (proto._readNull || readNull) && obj == null && length <= 1) {
 				if (readIndex)
 					list._index = index + 1;
 				return obj && clone ? obj.clone() : obj;

@@ -30,18 +30,26 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	// so use the same name for all of them
 	_boundsGetter: 'getBounds',
 
-	initialize: function(point) {
+	initialize: function(arg) {
+		// Support two forms of item initialization: Passing one object literal
+		// describing all the different properties to be set, or a point where
+		// it should be placed (arg).
 		// Note that internally #characterStyle is the same as #style, but
 		// defined as an instance of CharacterStyle. We need to define it before
 		// calling this.base(), to override the default PathStyle instance.
 		this._style = CharacterStyle.create(this);
 		this._paragraphStyle = ParagraphStyle.create(this);
-		this.base(Point.read(arguments));
+		// See if a point is passed, and if so, pass it on to base(). If not, it
+		// might be a properties object literal for #setPropeties() at the end.
+		var point = Point.read(arguments, 0, 0, false, true); // readNull
+		this.base(point);
 		// No need to call setStyle(), since base() handles this already.
 		// Call with no parameter to initalize defaults now.
 		this.setParagraphStyle();
 		this._content = '';
 		this._lines = [];
+		if (!point)
+			this.setProperties(arg);
 	},
 
 	/**
