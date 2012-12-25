@@ -28,9 +28,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	 * Creates a new PlacedSymbol Item.
 	 *
 	 * @param {Symbol} symbol the symbol to place
-	 * @param {Point|Matrix} [pointOrMatrix] the center point of the placed
-	 * symbol or a {@link Matrix} transformation to transform the placed symbol
-	 * with.
+	 * @param {Point} [point] the center point of the placed symbol
 	 *
 	 * @example {@paperscript split=true height=240}
 	 * // Placing 100 instances of a symbol:
@@ -62,8 +60,8 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	 *     instance.scale(0.25 + Math.random() * 0.75);
 	 * }
 	 */
-	initialize: function(symbol, pointOrMatrix) {
-		this.base(pointOrMatrix);
+	initialize: function(symbol, point) {
+		this.base(Point.read(arguments, 1));
 		this.setSymbol(symbol instanceof Symbol ? symbol : new Symbol(symbol));
 	},
 

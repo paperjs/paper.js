@@ -35,8 +35,8 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 *
 	 * @param {HTMLImageElement|Canvas|string} [object]
 	 */
-	initialize: function(object, pointOrMatrix) {
-		this.base(pointOrMatrix, arguments);
+	initialize: function(object, point) {
+		this.base(Point.read(arguments, 1));
 		if (object.getContext) {
 			this.setCanvas(object);
 		} else if (typeof object === 'string') {

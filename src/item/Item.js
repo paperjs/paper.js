@@ -95,7 +95,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		);
 	},
 
-	initialize: function(pointOrMatrix) {
+	initialize: function(point) {
 		// Define this Item's unique id.
 		this._id = ++Item._id;
 		// If _project is already set, the item was already moved into the DOM
@@ -106,11 +106,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		if (!this._style)
 			this._style = PathStyle.create(this);
 		this.setStyle(this._project.getCurrentStyle());
-		this._matrix = pointOrMatrix !== undefined
-			? pointOrMatrix instanceof Matrix
-				? pointOrMatrix.clone()
-				: new Matrix().translate(Point.read(arguments))
-			: new Matrix();
+		this._matrix = new Matrix();
+		if (point)
+			this._matrix.translate(point);
 	},
 
 	/**
