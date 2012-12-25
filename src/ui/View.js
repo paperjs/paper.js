@@ -599,8 +599,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 				if ((curPoint = point || curPoint) 
 						&& tool._onHandleEvent('mousedrag', curPoint, event))
 					DomEvent.stop(event);
-			// PORT: If there is only an onMouseMove handler, also call it when
-			// the user is dragging:
 			} else if ((!dragging || onlyMove)
 					&& tool._onHandleEvent('mousemove', point, event)) {
 				DomEvent.stop(event);

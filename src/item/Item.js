@@ -1868,8 +1868,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// storing the actual location / transformation state.
 		if ((this.applyMatrix || arguments[1])
 				&& this._applyMatrix(this._matrix))
-			// TODO: This needs a _changed notification, but the GEOMETRY
-			// actually doesn't change! What to do?
 			this._matrix.setIdentity();
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
@@ -1896,12 +1894,12 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			// Transform position as well.
 			this._position = matrix._transformPoint(position, position);
 		}
-		// PORT: Return 'this' in all chainable commands
 		return this;
 	},
 
 	_applyMatrix: function(matrix) {
-		// Pass on the transformation to the children, and apply it there too:
+		// Pass on the transformation to the children, and apply it there too,
+		// by passing true for the 2nd hidden parameter.
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i].transform(matrix, true);
