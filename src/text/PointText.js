@@ -28,6 +28,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	/**
 	 * Creates a point text item
 	 *
+	 * @name PointText#initialize
 	 * @param {Point} point the position where the text will start
 	 *
 	 * @example
@@ -36,13 +37,9 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * text.fillColor = 'black';
 	 * text.content = 'The contents of the point text';
 	 */
-	initialize: function(pointOrMatrix) {
-		this.base(pointOrMatrix);
-		this._point = this._matrix.getTranslation();
-	},
 
 	clone: function() {
-		return this._clone(new PointText(this._matrix));
+		return this._clone(new PointText());
 	},
 
 	/**
@@ -54,17 +51,13 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	getPoint: function() {
 		// Se Item#getPosition for an explanation why we create new LinkedPoint
 		// objects each time.
-		return LinkedPoint.create(this, 'setPoint',
-				this._point.x, this._point.y);
+		var point = this._matrix.getTranslation();
+		return LinkedPoint.create(this, 'setPoint', point.x, point.y);
 	},
 
 	setPoint: function(point) {
-		this.translate(Point.read(arguments).subtract(this._point));
-	},
-
-	_transform: function(matrix) {
-		// Transform _point:
-		matrix._transformPoint(this._point, this._point);
+		this.translate(Point.read(arguments).subtract(
+				this._matrix.getTranslation()));
 	},
 
 	draw: function(ctx) {
