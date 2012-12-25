@@ -44,15 +44,27 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * var path = new Path(segments);
 	 * path.strokeColor = 'black';
 	 */
-	initialize: function(segments) {
-		this.base();
+	initialize: function(arg) {
 		this._closed = false;
-		this._selectedSegmentState = 0;
-		// Support both passing of segments as array or arguments
+		this._segments = [];
+		this.base();
+		// arg can either be an object literal describing properties to be set
+		// on the path, a list of segments to be set, or the first of multiple
+		// arguments describing separate segments.
 		// If it is an array, it can also be a description of a point, so
-		// check its first entry for object as well
-		this.setSegments(Array.isArray(segments)
-				&& typeof segments[0] === 'object' ? segments : arguments);
+		// check its first entry for object as well.
+		// But first see if segments are directly passed at all. If not, try
+		// #setProperties(arg).
+		var segments = Array.isArray(arg)
+			? typeof arg[0] === 'object'
+				? arg
+				: arguments
+			: arg && (arg.point !== undefined || arg.x !== undefined)
+				? arguments
+				: null;
+		this.setSegments(segments || []);
+		if (!segments)
+			this.setProperties(arg);
 	},
 
 	clone: function() {
@@ -94,15 +106,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	setSegments: function(segments) {
-		if (!this._segments) {
-			this._segments = [];
-		} else {
-			this._selectedSegmentState = 0;
-			this._segments.length = 0;
-			// Make sure new curves are calculated next time we call getCurves()
-			if (this._curves)
-				delete this._curves;
-		}
+		this._selectedSegmentState = 0;
+		this._segments.length = 0;
+		// Make sure new curves are calculated next time we call getCurves()
+		delete this._curves;
 		this._add(Segment.readAll(segments));
 	},
 

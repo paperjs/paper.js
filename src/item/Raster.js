@@ -35,14 +35,21 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 *
 	 * @param {HTMLImageElement|Canvas|string} [object]
 	 */
-	initialize: function(object, point) {
-		this.base(Point.read(arguments, 1));
-		if (object.getContext) {
-			this.setCanvas(object);
-		} else if (typeof object === 'string') {
-			this.setSource(object);
-		} else {
-			this.setImage(object);
+	initialize: function(arg0, arg1) {
+		// Support two forms of item initialization: Passing one object literal
+		// describing all the different properties to be set, or an image (arg0)
+		// and a point where it should be placed (arg1).
+		this.base(arg1 !== undefined && Point.read(arguments, 1));
+		// If we can handle setting properties through object literal, we're all
+		// set. Otherwise we need to check the type of arg0:
+		if (!this.setProperties(arg0)) {
+			if (arg0.getContext) {
+				this.setCanvas(arg0);
+			} else if (typeof arg0 === 'string') {
+				this.setSource(arg0);
+			} else {
+				this.setImage(arg0);
+			}
 		}
 	},
 

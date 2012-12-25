@@ -68,12 +68,13 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	 * 	group.rotate(1, view.center);
 	 * }
 	 */
-	initialize: function(items) {
+	initialize: function(arg) {
 		this.base();
 		// Allow Group to have children and named children
 		this._children = [];
 		this._namedChildren = {};
-		this.addChildren(Array.isArray(items) ? items : arguments);
+		if (!this.setProperties(arg))
+			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
 	_changed: function(flags) {
