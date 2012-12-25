@@ -963,7 +963,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// TODO: Consider moving this to Base once it's useful in more than one
 		// place
 		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-				'_clipMask', '_guide'];
+				'_clipMask', '_guide', 'applyMatrix'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
