@@ -329,7 +329,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return segs;
 	},
 
-	// PORT: Add support for adding multiple segments at once to Scriptographer
 	// DOCS: find a way to document the variable segment parameters of Path#add
 	/**
 	 * Adds one or more segments to the end of the {@link #segments} array of
@@ -402,7 +401,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			: this._add([ Segment.read(arguments) ])[0];
 	},
 
-	// PORT: Add support for adding multiple segments at once to Scriptographer
 	/**
 	 * Inserts one or more segments at a given index in the list of this path's
 	 * segments.
@@ -447,17 +445,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			: this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
-	// PORT: Add to Scriptographer
 	addSegment: function(segment) {
 		return this._add([ Segment.read(arguments) ])[0];
 	},
 
-	// PORT: Add to Scriptographer
 	insertSegment: function(index, segment) {
 		return this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
-	// PORT: Add to Scriptographer
 	/**
 	 * Adds an array of segments (or types that can be converted to segments)
 	 * to the end of the {@link #segments} array.
@@ -501,7 +496,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return this._add(Segment.readAll(segments));
 	},
 
-	// PORT: Add to Scriptographer
 	/**
 	 * Inserts an array of segments at a given index in the path's
 	 * {@link #segments} array.
@@ -516,7 +510,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return this._add(Segment.readAll(segments), index);
 	},
 
-	// PORT: Add to Scriptographer
 	/**
 	 * Removes the segment at the specified index of the path's
 	 * {@link #segments} array.
@@ -543,7 +536,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return segments[0] || null;
 	},
 
-	// PORT: Add to Scriptographer
 	/**
 	 * Removes all segments from the path's {@link #segments} array.
 	 *
@@ -1007,7 +999,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
-	// PORT: Rename functions and add new isParameter argument in Scriptographer
 	// DOCS: document Path#getLocationAt
 	/**
 	 * {@grouptitle Positions on Paths and Curves}
@@ -1749,7 +1740,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			this.quadraticCurveTo(handle, _to);
 		},
 
-		// PORT: New implementation back to Scriptographer
 		arcTo: function(to, clockwise /* | through, to */) {
 			// Get the start point:
 			var current = getCurrentSegment(this),

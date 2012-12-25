@@ -262,8 +262,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				&& this._segment2._handleIn.isZero();
 	},
 
-	// PORT: Add support for start parameter to Sg
-	// PORT: Rename #getParameter(length) -> #getParameterAt(offset)
 	// DOCS: Document #getParameter(length, start)
 	/**
 	 * @param {Number} offset
@@ -410,8 +408,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				x, y;
 
 			// Handle special case at beginning / end of curve
-			// PORT: Change in Sg too, so 0.000000000001 won't be
-			// required anymore
 			if (type == 0 && (t == 0 || t == 1)) {
 				x = t == 0 ? p1x : p2x;
 				y = t == 0 ? p1y : p2y;
