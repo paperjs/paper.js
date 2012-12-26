@@ -25,6 +25,23 @@
  * that they inherit from Item.
  */
 var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
+
+	initialize: function(point) {
+		// Define this Item's unique id.
+		this._id = ++Item._id;
+		// If _project is already set, the item was already moved into the DOM
+		// hierarchy. Used by Layer, where it's added to project.layers instead
+		if (!this._project)
+			paper.project.activeLayer.addChild(this);
+		// TextItem defines its own _style, based on CharacterStyle
+		if (!this._style)
+			this._style = PathStyle.create(this);
+		this.setStyle(this._project.getCurrentStyle());
+		this._matrix = new Matrix();
+		if (point)
+			this._matrix.translate(point);
+	},
+
 	_events: new function() {
 
 		// Flags defining which native events are required by which Paper events
@@ -95,22 +112,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		);
 	},
 
-	initialize: function(point) {
-		// Define this Item's unique id.
-		this._id = ++Item._id;
-		// If _project is already set, the item was already moved into the DOM
-		// hierarchy. Used by Layer, where it's added to project.layers instead
-		if (!this._project)
-			paper.project.activeLayer.addChild(this);
-		// TextItem defines its own _style, based on CharacterStyle
-		if (!this._style)
-			this._style = PathStyle.create(this);
-		this.setStyle(this._project.getCurrentStyle());
-		this._matrix = new Matrix();
-		if (point)
-			this._matrix.translate(point);
-	},
-
+	// #setProperties is part of the mechanism for Item constructors which take
+	// one object literal describing all the properties to be set on the created
+	// instance.
 	setProperties: function(props) {
 		if (Base.isObject(props)) {
 			for (var key in props)
