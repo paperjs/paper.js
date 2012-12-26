@@ -248,7 +248,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * @return {@true the GradientColor is the same}
 	 */
 	equals: function(color) {
-		return color == this || color && color._colorType === this._colorType
+		return color == this || color && color._type === this._type
 				&& this.gradient.equals(color.gradient)
 				&& this._origin.equals(color._origin)
 				&& this._destination.equals(color._destination);
