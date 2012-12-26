@@ -54,7 +54,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// If it is an array, it can also be a description of a point, so
 		// check its first entry for object as well.
 		// But first see if segments are directly passed at all. If not, try
-		// #setProperties(arg).
+		// _setProperties(arg).
 		var segments = Array.isArray(arg)
 			? typeof arg[0] === 'object'
 				? arg
@@ -64,7 +64,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				: null;
 		this.setSegments(segments || []);
 		if (!segments)
-			this.setProperties(arg);
+			this._setProperties(arg);
 	},
 
 	clone: function() {

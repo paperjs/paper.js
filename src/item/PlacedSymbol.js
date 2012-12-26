@@ -67,7 +67,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 		this.base(arg1 !== undefined && Point.read(arguments, 1));
 		// If we can handle setting properties through object literal, we're all
 		// set. Otherwise we need to set symbol.
-		if (!this.setProperties(arg0))
+		if (!this._setProperties(arg0))
 			this.setSymbol(arg0 instanceof Symbol ? arg0 : new Symbol(arg0));
 	},
 
