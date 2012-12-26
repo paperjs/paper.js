@@ -42,7 +42,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this.base(arg1 !== undefined && Point.read(arguments, 1));
 		// If we can handle setting properties through object literal, we're all
 		// set. Otherwise we need to check the type of arg0:
-		if (!this.setProperties(arg0)) {
+		if (!this._setProperties(arg0)) {
 			if (arg0.getContext) {
 				this.setCanvas(arg0);
 			} else if (typeof arg0 === 'string') {
