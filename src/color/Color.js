@@ -216,7 +216,7 @@ var Color = this.Color = Base.extend(new function() {
 
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg),
-				type = this._colorType,
+				type = this._type,
 				res;
 			if (typeof arg === 'object' && !isArray) {
 				if (!type) {
@@ -297,12 +297,12 @@ var Color = this.Color = Base.extend(new function() {
 
 		convert: function(type) {
 			var converter;
-			return this._colorType == type
+			return this._type == type
 					? this.clone()
-					: (converter = converters[this._colorType + '-' + type])
+					: (converter = converters[this._type + '-' + type])
 						? converter(this)
 						: converters['rgb-' + type](
-								converters[this._colorType + '-rgb'](this));
+								converters[this._type + '-rgb'](this));
 		},
 
 		statics: /** @lends Color */{
@@ -313,8 +313,8 @@ var Color = this.Color = Base.extend(new function() {
 			 * @ignore
 			 */
 			extend: function(src) {
-				if (src._colorType) {
-					var comps = components[src._colorType];
+				if (src._type) {
+					var comps = components[src._type];
 					// Automatically produce the _components field, adding alpha
 					src._components = comps.concat(['alpha']);
 					Base.each(comps, function(name) {
@@ -335,7 +335,7 @@ var Color = this.Color = Base.extend(new function() {
 						};
 					}, src);
 				}
-				return this.base(src);
+				return this.base.apply(this, arguments);
 			},
 
 			random: function() {
@@ -357,7 +357,7 @@ var Color = this.Color = Base.extend(new function() {
 			fields['set' + part] = function(value) {
 				var color = this.convert(type);
 				color[component] = value;
-				color = color.convert(this._colorType);
+				color = color.convert(this._type);
 				for (var i = 0, l = this._components.length; i < l; i++) {
 					var key = this._components[i];
 					this[key] = color[key];
@@ -389,7 +389,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * console.log(color.type); // 'rgb'
 	 */
 	getType: function() {
-		return this._colorType;
+		return this._type;
 	},
 
 	getComponents: function() {
@@ -448,7 +448,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * @return {Boolean} {@true if the colors are the same}
 	 */
 	equals: function(color) {
-		if (color && color._colorType === this._colorType) {
+		if (color && color._type === this._type) {
 			for (var i = 0, l = this._components.length; i < l; i++) {
 				var component = '_' + this._components[i];
 				if (this[component] !== color[component])
@@ -664,7 +664,7 @@ var GrayColor = this.GrayColor = Color.extend(/** @lends GrayColor# */{
 	 * @type Number
 	 */
 
-	_colorType: 'gray'
+	_type: 'gray'
 });
 
 /**
@@ -753,7 +753,7 @@ var RgbColor = this.RgbColor = this.RGBColor = Color.extend(/** @lends RgbColor#
 	 * circle.fillColor.blue = 1;
 	 */
 
-	_colorType: 'rgb'
+	_type: 'rgb'
 });
 
 /**
@@ -831,7 +831,7 @@ var HsbColor = this.HsbColor = this.HSBColor = Color.extend(/** @lends HsbColor#
 	 * @type Number
 	 */
 
-	_colorType: 'hsb'
+	_type: 'hsb'
 });
 
 
@@ -892,5 +892,5 @@ var HslColor = this.HslColor = this.HSLColor = Color.extend(/** @lends HslColor#
 	 * @type Number
 	 */
 
-	_colorType: 'hsl'
+	_type: 'hsl'
 });
