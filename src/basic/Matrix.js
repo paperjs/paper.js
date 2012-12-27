@@ -505,7 +505,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Boolean} {@true if the matrices are equal}
 	 */
 	equals: function(mx) {
-		return this._a == mx._a && this._b == mx._b && this._c == mx._c
+		return mx && this._a == mx._a && this._b == mx._b && this._c == mx._c
 				&& this._d == mx._d && this._tx == mx._tx && this._ty == mx._ty;
 	},
 
