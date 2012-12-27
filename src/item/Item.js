@@ -25,6 +25,13 @@
  * that they inherit from Item.
  */
 var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
+	// Provide information about fields to be serialized, with their defaults
+	// that can be ommited.
+	_serializeFields: {
+		name: null,
+		children: [],
+		matrix: new Matrix()
+	},
 
 	initialize: function(point) {
 		// Define this Item's unique id.
@@ -116,10 +123,8 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	// one object literal describing all the properties to be set on the created
 	// instance.
 	_setProperties: function(props) {
-		if (Base.isObject(props)) {
-			this.set(props);
-			return true;
-		}
+		if (Base.isObject(props))
+			return this.set(props);
 	},
 
 	/**
@@ -131,6 +136,27 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			if (props.hasOwnProperty(key))
 				this[key] = props[key];
 		return this;
+	},
+
+	_serialize: function() {
+		var props = {},
+			that = this;
+
+		function serialize(fields) {
+			for (var key in fields) {
+				var value = that[key];
+				if (!Base.equals(value, fields[key]))
+					props[key] = Base.serialize(value);
+			}
+		}
+
+		// Serialize fields that this Item subclass defines first
+		serialize(this._serializeFields);
+		// Serialize style fields, but only if they differ from defaults
+		serialize(this._style._defaults);
+		// There is no compact form for Item serialization, we always keep the
+		// type.
+		return [ this._type, props ];
 	},
 
 	/**

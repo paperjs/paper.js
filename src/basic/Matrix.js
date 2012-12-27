@@ -42,6 +42,8 @@
  * matrix multiplication).
  */
 var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
+	_type: 'matrix',
+
 	/**
 	 * Creates a 2D affine transform.
 	 *
@@ -72,6 +74,10 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		}
 		if (!ok)
 			throw new Error('Unsupported matrix parameters');
+	},
+
+	_serialize: function() {
+		return this.getValues();
 	},
 
 	/**
