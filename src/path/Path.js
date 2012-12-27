@@ -988,13 +988,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
-	getLocation: function(point) {
+	getLocationOf: function(point) {
+		point = Point.read(arguments);
 		var curves = this.getCurves();
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var curve = curves[i];
-			var t = curve.getParameterOf(point);
-			if (t != null)
-				return new CurveLocation(curve, t);
+			var loc = curves[i].getLocationOf(point);
+			if (loc != null)
+				return loc;
 		}
 		return null;
 	},
@@ -1014,7 +1014,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// offset consists of curve index and curve parameter, before and
 			// after the fractional digit.
 			var index = ~~offset; // = Math.floor()
-			return new CurveLocation(curves[index], offset - index);
+			return curves[index].getLocationAt(offset - index, true);
 		}
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var start = length,
@@ -1022,8 +1022,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			length += curve.getLength();
 			if (length >= offset) {
 				// Found the segment within which the length lies
-				return new CurveLocation(curve,
-						curve.getParameterAt(offset - start));
+				return curve.getLocationAt(offset - start);
 			}
 		}
 		// It may be that through impreciseness of getLength, that the end
@@ -1227,18 +1226,18 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the nearest location on the path to the specified point.
 	 *
-	 * @name Path#getNearestLocation
+	 * @name Path#getNearestLocationOf
 	 * @function
 	 * @param point {Point} The point for which we search the nearest location
 	 * @return {CurveLocation} The location on the path that's the closest to
 	 * the specified point
 	 */
-	getNearestLocation: function(point) {
+	getNearestLocationOf: function(point) {
 		var curves = this.getCurves(),
 			minDist = Infinity,
 			minLoc = null;
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var loc = curves[i].getNearestLocation(point);
+			var loc = curves[i].getNearestLocationOf(point);
 			if (loc._distance < minDist) {
 				minDist = loc._distance;
 				minLoc = loc;
@@ -1250,14 +1249,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the nearest point on the path to the specified point.
 	 *
-	 * @name Path#getNearestPoint
+	 * @name Path#getNearestPointOf
 	 * @function
 	 * @param point {Point} The point for which we search the nearest point
 	 * @return {Point} The point on the path that's the closest to the specified
 	 * point
 	 */
-	getNearestPoint: function(point) {
-		return this.getNearestLocation(point).getPoint();
+	getNearestPointOf: function(point) {
+		return this.getNearestLocationOf(point).getPoint();
 	},
 
 	contains: function(point) {
@@ -1325,7 +1324,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		}
 		// If we're querying for stroke, perform that before fill
 		if (options.stroke && radius > 0)
-			loc = this.getNearestLocation(point);
+			loc = this.getNearestLocationOf(point);
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
 		// stroke.
@@ -1334,7 +1333,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			return new HitResult('fill', this);
 		// Now query stroke if we haven't already
 		if (!loc && options.stroke && radius > 0)
-			loc = this.getNearestLocation(point);
+			loc = this.getNearestLocationOf(point);
 		if (loc && loc._distance <= radius)
 			// TODO: Do we need to transform the location back to the coordinate
 			// system of the DOM level on which the inquiry was started?

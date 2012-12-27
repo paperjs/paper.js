@@ -262,7 +262,10 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				&& this._segment2._handleIn.isZero();
 	},
 
-	// DOCS: Document #getParameter(length, start)
+	// DOCS: Document #getParameterAt(offset, start)
+	// DOCS: Document #getParameterOf(point)
+	// DOCS: Document #getLocationAt(offset, isParameter)
+	// DOCS: Document #getLocationOf(point)
 	/**
 	 * @param {Number} offset
 	 * @param {Number} [start]
@@ -280,6 +283,17 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	getParameterOf: function(point) {
 		point = Point.read(arguments);
 		return Curve.getParameterOf(this.getValues(), point.x, point.y);
+	},
+
+	getLocationAt: function(offset, isParameter) {
+		if (!isParameter)
+			offset = this.getParameterAt(offset);
+		return new CurveLocation(this, offset);
+	},
+
+	getLocationOf: function(point) {
+		var t = this.getParameterOf.apply(this, arguments);
+		return t != null ? CurveLocation(this, t) : null;
 	},
 
 	/**
@@ -334,9 +348,10 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				// touching a tip. Passing 1 for Curve.evaluate()'s type means
 				// we're calculating tangents, and then check their y-slope for
 				// a change of direction:
-				if (t < /*#=*/ Numerical.TOLERANCE && Curve.evaluate(
-							this.getPrevious().getValues(), 1, 1).y
-						* Curve.evaluate(vals, t, 1).y >= /*#=*/ Numerical.TOLERANCE)
+				if (t < /*#=*/ Numerical.TOLERANCE
+					&& Curve.evaluate(this.getPrevious().getValues(), 1, 1).y
+						* Curve.evaluate(vals, t, 1).y
+							>= /*#=*/ Numerical.TOLERANCE)
 					continue;
 				crossings++;
 			}
@@ -344,7 +359,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return crossings;
 	},
 
-	// TODO: getLocation
 	// TODO: adjustThroughPoint
 
 	/**
@@ -563,10 +577,9 @@ statics: {
 		var min = v.slice(0, 2),
 			max = min.slice(0), // clone
 			roots = new Array(2);
-		for (var i = 0; i < 2; i++) {
+		for (var i = 0; i < 2; i++)
 			Curve._addBounds(v[i], v[i + 2], v[i + 4], v[i + 6],
 					i, 0, min, max, roots);
-		}
 		return Rectangle.create(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 
@@ -979,7 +992,7 @@ new function() { // Scope for methods that require numerical integration
 	}
 
 	return {
-		getNearestLocation: function(point) {
+		getNearestLocationOf: function(point) {
 			// NOTE: If we allow #matrix on Path, we need to inverse-transform
 			// point here first.
 			// point = this._matrix.inverseTransform(point);
@@ -1003,8 +1016,8 @@ new function() { // Scope for methods that require numerical integration
 			return new CurveLocation(this, minT, minPoint, Math.sqrt(minDist));
 		},
 
-		getNearestPoint: function(point) {
-			return this.getNearestLocation(point).getPoint();
+		getNearestPointOf: function(point) {
+			return this.getNearestLocationOf(point).getPoint();
 		}
 	};
 });
