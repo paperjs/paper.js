@@ -1874,32 +1874,29 @@ statics: {
 		if (!first)
 			return new Rectangle();
 		var coords = new Array(6),
-			prevCoords = new Array(6),
-			roots = new Array(2);
-		// Make coordinates for first segment available in prevCoords.
-		first._transformCoordinates(matrix, prevCoords, false);
-		var min = prevCoords.slice(0, 2),
+			// Make coordinates for first segment available in prevCoords.
+			prevCoords = first._transformCoordinates(matrix, new Array(6), false),
+			roots = new Array(2),
+			min = prevCoords.slice(0, 2),
 			max = min.slice(0), // clone
 			// Add some tolerance for good roots, as t = 0 / 1 are added
 			// seperately anyhow, and we don't want joins to be added with
 			// radiuses in getStrokeBounds()
 			tMin = Numerical.TOLERANCE,
 			tMax = 1 - tMin;
+
+		function add(value, coord, padding) {
+			var left = value - padding,
+				right = value + padding;
+			if (left < min[coord])
+				min[coord] = left;
+			if (right > max[coord])
+				max[coord] = right;
+		}
+
 		function processSegment(segment) {
 			segment._transformCoordinates(matrix, coords, false);
-
 			for (var i = 0; i < 2; i++) {
-
-				function add(value, padding) {
-					var left = value - padding,
-						right = value + padding;
-					if (left < min[i])
-						min[i] = left;
-					if (right > max[i])
-						max[i] = right;
-
-				}
-
 				var v0 = prevCoords[i], // prev.point
 					v1 = prevCoords[i + 4], // prev.handleOut
 					v2 = coords[i + 2], // segment.handleIn
@@ -1912,12 +1909,10 @@ statics: {
 					c = v1 - v0;
 					count = Numerical.solveQuadratic(a, b, c, roots,
 							Numerical.TOLERANCE);
-
 				// Only add strokeWidth to bounds for points which lie  within
 				// 0 < t < 1. The corner cases for cap and join are handled in
 				// getStrokeBounds()
-				add(v3, 0);
-
+				add(v3, i, 0);
 				for (var j = 0; j < count; j++) {
 					var t = roots[j],
 						u = 1 - t;
@@ -1928,6 +1923,7 @@ statics: {
 							+ 3 * u * u * t * v1
 							+ 3 * u * t * t * v2
 							+ t * t * t * v3,
+							i,
 							strokePadding ? strokePadding[i] : 0);
 				}
 			}
@@ -1936,6 +1932,7 @@ statics: {
 			prevCoords = coords;
 			coords = tmp;
 		}
+
 		for (var i = 1, l = segments.length; i < l; i++)
 			processSegment(segments[i]);
 		if (closed)
