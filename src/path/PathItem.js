@@ -25,6 +25,15 @@
  */
 var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 
+	/**
+	 * Returns all interesections between two {@link PathItem} items as an array
+	 * of {@link CurveLocation} objects. {@link CompoundPath} items are also
+	 * supported.
+	 *
+	 * @param {PathItem} the other item to find the intersections to.
+	 * @return {CurveLocation[]} the locations of all intersection between the
+	 * paths
+	 */
 	getIntersections: function(path) {
 		// First check the bounds of the two paths. If they don't intersect,
 		// we don't need to iterate through the whole path.
