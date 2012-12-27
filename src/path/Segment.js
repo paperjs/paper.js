@@ -393,35 +393,36 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		}
 		// If no matrix was previded, this was just called to get the coords and
 		// we are done now.
-		if (!matrix)
-			return;
-		matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
-		x = coords[0];
-		y = coords[1];
-		if (change) {
-			// If change is true, we need to set the new values back
-			point._x = x;
-			point._y = y;
-			i  = 2;
-			if (handleIn) {
-				handleIn._x = coords[i++] - x;
-				handleIn._y = coords[i++] - y;
-			}
-			if (handleOut) {
-				handleOut._x = coords[i++] - x;
-				handleOut._y = coords[i++] - y;
-			}
-		} else {
-			// We want to receive the results in coords, so make sure
-			// handleIn and out are defined too, even if they're 0
-			if (!handleIn) {
-				coords[i++] = x;
-				coords[i++] = y;
-			}
-			if (!handleOut) {
-				coords[i++] = x;
-				coords[i++] = y;
+		if (matrix) {
+			matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
+			x = coords[0];
+			y = coords[1];
+			if (change) {
+				// If change is true, we need to set the new values back
+				point._x = x;
+				point._y = y;
+				i  = 2;
+				if (handleIn) {
+					handleIn._x = coords[i++] - x;
+					handleIn._y = coords[i++] - y;
+				}
+				if (handleOut) {
+					handleOut._x = coords[i++] - x;
+					handleOut._y = coords[i++] - y;
+				}
+			} else {
+				// We want to receive the results in coords, so make sure
+				// handleIn and out are defined too, even if they're 0
+				if (!handleIn) {
+					coords[i++] = x;
+					coords[i++] = y;
+				}
+				if (!handleOut) {
+					coords[i++] = x;
+					coords[i++] = y;
+				}
 			}
 		}
+		return coords;
 	}
 });
