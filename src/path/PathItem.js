@@ -36,7 +36,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	 */
 	getIntersections: function(path) {
 		// First check the bounds of the two paths. If they don't intersect,
-		// we don't need to iterate through the whole path.
+		// we don't need to iterate through their curves.
 		if (!this.getBounds().intersects(path.getBounds()))
 			return [];
 		var locations = [],
