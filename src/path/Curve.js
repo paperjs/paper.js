@@ -618,8 +618,8 @@ statics: {
 	},
 
 	// We need to provide the original left curve reference to the
-	// #_addIntersections() calls as it is required for the returned
-	// CurveLocation instances.
+	// #_addIntersections() calls as it is required to create the resulting
+	// CurveLocation objects.
 	_addIntersections: function(v1, v2, curve, locations) {
 		var bounds1 = Curve.getBounds(v1),
 			bounds2 = Curve.getBounds(v2);
@@ -642,10 +642,9 @@ statics: {
 				&& bounds1.y + bounds1.height >= bounds2.y
 				&& bounds1.x < bounds2.x + bounds2.width
 				&& bounds1.y < bounds2.y + bounds2.height) {
+			// See if both curves are flat enough to be treated as lines.
 			if (Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
 					&& Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
-				// Treat both curves as lines and see if their parametric
-				// equations interesct.
 /*#*/ if (options.debug) {
 				new Path.Line(v1[0], v1[1], v1[6], v1[7]).set({
 					strokeColor: 'green',
@@ -656,6 +655,7 @@ statics: {
 					strokeWidth: 0.1
 				});
 /*#*/ }
+				// See if the parametric equations of the lines interesct.
 				var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
 						.intersect(new Line(v2[0], v2[1], v2[6], v2[7], false));
 				// Passing null for parameter leads to lazy determination of
@@ -664,6 +664,7 @@ statics: {
 				if (point)
 					locations.push(new CurveLocation(curve, null, point));
 			} else {
+				// Subdivide both curves, and see if they intersect.
 				var v1s = Curve.subdivide(v1),
 					v2s = Curve.subdivide(v2);
 				this._addIntersections(v1s[0], v2s[0], curve, locations);
