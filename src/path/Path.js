@@ -1866,8 +1866,6 @@ statics: {
 	 * Returns the bounding rectangle of the item excluding stroke width.
 	 */
 	getBounds: function(segments, closed, style, matrix, strokePadding) {
-		// Code ported and further optimised from:
-		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
 		var first = segments[0];
 		// If there are no segments, return "empty" rectangle, just like groups,
 		// since #bounds is assumed to never return null.
@@ -1876,56 +1874,19 @@ statics: {
 		var coords = new Array(6),
 			// Make coordinates for first segment available in prevCoords.
 			prevCoords = first._transformCoordinates(matrix, new Array(6), false),
-			roots = new Array(2),
 			min = prevCoords.slice(0, 2),
 			max = min.slice(0), // clone
-			// Add some tolerance for good roots, as t = 0 / 1 are added
-			// seperately anyhow, and we don't want joins to be added with
-			// radiuses in getStrokeBounds()
-			tMin = Numerical.TOLERANCE,
-			tMax = 1 - tMin;
-
-		function add(value, coord, padding) {
-			var left = value - padding,
-				right = value + padding;
-			if (left < min[coord])
-				min[coord] = left;
-			if (right > max[coord])
-				max[coord] = right;
-		}
+			roots = new Array(2);
 
 		function processSegment(segment) {
 			segment._transformCoordinates(matrix, coords, false);
 			for (var i = 0; i < 2; i++) {
-				var v0 = prevCoords[i], // prev.point
-					v1 = prevCoords[i + 4], // prev.handleOut
-					v2 = coords[i + 2], // segment.handleIn
-					v3 = coords[i], // segment.point
-					// Calculate derivative of our bezier polynomial, divided by
-					// 3. Doing so allows for simpler calculations of a, b, c
-					// and leads to the same quadratic roots.
-					a = 3 * (v1 - v2) - v0 + v3,
-					b = 2 * (v0 + v2) - 4 * v1,
-					c = v1 - v0;
-					count = Numerical.solveQuadratic(a, b, c, roots,
-							Numerical.TOLERANCE);
-				// Only add strokeWidth to bounds for points which lie  within
-				// 0 < t < 1. The corner cases for cap and join are handled in
-				// getStrokeBounds()
-				add(v3, i, 0);
-				for (var j = 0; j < count; j++) {
-					var t = roots[j],
-						u = 1 - t;
-					// Test for good roots and only add to bounds if good.
-					if (tMin < t && t < tMax)
-						// Calculate bezier polynomial at t
-						add(u * u * u * v0
-							+ 3 * u * u * t * v1
-							+ 3 * u * t * t * v2
-							+ t * t * t * v3,
-							i,
-							strokePadding ? strokePadding[i] : 0);
-				}
+				Curve._addBounds(
+					prevCoords[i], // prev.point
+					prevCoords[i + 4], // prev.handleOut
+					coords[i + 2], // segment.handleIn
+					coords[i], // segment.point,
+					i, strokePadding ? strokePadding[i] : 0, min, max, roots);
 			}
 			// Swap coordinate buffers.
 			var tmp = prevCoords;
