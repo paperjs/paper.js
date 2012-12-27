@@ -117,8 +117,6 @@ var Style = Item.extend({
 						} else if (!Base.equals(style, childStyle)) {
 							// If there is another item with a different
 							// style, the style is not defined:
-							// PORT: Change this in Scriptographer
-							// (currently returns null)
 							return undefined;
 						}
 					}

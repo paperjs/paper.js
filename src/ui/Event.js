@@ -23,7 +23,6 @@ var Event = this.Event = Base.extend(/** @lends Event# */{
 		this.event = event;
 	},
 
-	// PORT: Add to Scriptographer
 	preventDefault: function() {
 		this._prevented = true;
 		DomEvent.preventDefault(this.event);

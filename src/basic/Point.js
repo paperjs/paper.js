@@ -148,13 +148,13 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 			if (Array.isArray(arg0)) {
 				this.x = arg0[0];
 				this.y = arg0.length > 1 ? arg0[1] : arg0[0];
-			} else if ('x' in arg0) {
+			} else if (arg0.x != null) {
 				this.x = arg0.x;
 				this.y = arg0.y;
-			} else if ('width' in arg0) {
+			} else if (arg0.width != null) {
 				this.x = arg0.width;
 				this.y = arg0.height;
-			} else if ('angle' in arg0) {
+			} else if (arg0.angle != null) {
 				this.x = arg0.length;
 				this.y = 0;
 				this.setAngle(arg0.angle);
@@ -166,6 +166,10 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 			if (this._read)
 				this._read = 1;
 		}
+	},
+
+	_serialize: function() {
+		return [this.x, this.y];
 	},
 
 	/**
@@ -683,7 +687,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @returns {Boolean} {@true it is parallel}
 	 */
 	isColinear: function(point) {
-		return this.cross(point) < Numerical.TOLERANCE;
+		return this.cross(point) < /*#=*/ Numerical.TOLERANCE;
 	},
 
 	/**
@@ -694,7 +698,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @returns {Boolean} {@true it is orthogonal}
 	 */
 	isOrthogonal: function(point) {
-		return this.dot(point) < Numerical.TOLERANCE;
+		return this.dot(point) < /*#=*/ Numerical.TOLERANCE;
 	},
 
 	/**

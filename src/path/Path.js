@@ -24,6 +24,11 @@
 // DOCS: Explain that path matrix is always applied with each transformation.
 var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	_type: 'path',
+	_serializeFields: Base.merge(Item.prototype._serializeFields, {
+		segments: [],
+		closed: false
+	}),
+
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 *
@@ -43,15 +48,27 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * var path = new Path(segments);
 	 * path.strokeColor = 'black';
 	 */
-	initialize: function(segments) {
-		this.base();
+	initialize: function(arg) {
 		this._closed = false;
-		this._selectedSegmentState = 0;
-		// Support both passing of segments as array or arguments
+		this._segments = [];
+		this.base();
+		// arg can either be an object literal describing properties to be set
+		// on the path, a list of segments to be set, or the first of multiple
+		// arguments describing separate segments.
 		// If it is an array, it can also be a description of a point, so
-		// check its first entry for object as well
-		this.setSegments(!segments || !Array.isArray(segments)
-				|| typeof segments[0] !== 'object' ? arguments : segments);
+		// check its first entry for object as well.
+		// But first see if segments are directly passed at all. If not, try
+		// _setProperties(arg).
+		var segments = Array.isArray(arg)
+			? typeof arg[0] === 'object'
+				? arg
+				: arguments
+			: arg && (arg.point !== undefined || arg.x !== undefined)
+				? arguments
+				: null;
+		this.setSegments(segments || []);
+		if (!segments)
+			this._setProperties(arg);
 	},
 
 	clone: function() {
@@ -93,15 +110,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	setSegments: function(segments) {
-		if (!this._segments) {
-			this._segments = [];
-		} else {
-			this._selectedSegmentState = 0;
-			this._segments.length = 0;
-			// Make sure new curves are calculated next time we call getCurves()
-			if (this._curves)
-				delete this._curves;
-		}
+		this._selectedSegmentState = 0;
+		this._segments.length = 0;
+		// Make sure new curves are calculated next time we call getCurves()
+		delete this._curves;
 		this._add(Segment.readAll(segments));
 	},
 
@@ -131,20 +143,29 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * @type Curve[]
 	 * @bean
 	 */
-	getCurves: function() {
-		if (!this._curves) {
-			var segments = this._segments,
-				length = segments.length;
+	getCurves: function(/* includeFill */) {
+		var curves = this._curves,
+			segments = this._segments;
+		if (!curves) {
+			var length = segments.length;
 			// Reduce length by one if it's an open path:
 			if (!this._closed && length > 0)
 				length--;
-			this._curves = new Array(length);
+			this._curves = curves = new Array(length);
 			for (var i = 0; i < length; i++)
-				this._curves[i] = Curve.create(this, segments[i],
+				curves[i] = Curve.create(this, segments[i],
 					// Use first segment for segment2 of closing curve
 					segments[i + 1] || segments[0]);
 		}
-		return this._curves;
+		// If we're asked to include the closing curve for fill, even if the
+		// path is not closed for stroke, create a new uncached array and add
+		// the closing curve. Used in Path#contains()
+		if (arguments[0] && !this._closed && this._style._fillColor) {
+			curves = curves.concat([
+				Curve.create(this, segments[segments.length - 1], segments[0])
+			]);
+		}
+		return curves;
 	},
 
 	/**
@@ -214,22 +235,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
 
-	// DOCS: Explain that path matrix is always applied with each transformation.
-	transform: function(matrix) {
-		return this.base(matrix, true);
-	},
-
-	getMatrix: function() {
-		// Override matrix getter to always return null, since Paths act as if
-		// they do not have a matrix, and always directly apply transformations
-		// to their segment points.
-		return null;
-	},
-
-	setMatrix: function(matrix) {
-		// Do nothing for the same reason as above.
-	},
-
 	isEmpty: function() {
 		return this._segments.length === 0;
 	},
@@ -242,7 +247,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return true;
 	},
 
-	_apply: function(matrix) {
+	// Paths directly apply transformation matrices to the Segments by default.
+	applyMatrix: true,
+
+	_applyMatrix: function(matrix) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++) {
 			this._segments[i]._transformCoordinates(matrix, coords, true);
@@ -321,7 +329,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return segs;
 	},
 
-	// PORT: Add support for adding multiple segments at once to Scriptographer
 	// DOCS: find a way to document the variable segment parameters of Path#add
 	/**
 	 * Adds one or more segments to the end of the {@link #segments} array of
@@ -394,7 +401,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			: this._add([ Segment.read(arguments) ])[0];
 	},
 
-	// PORT: Add support for adding multiple segments at once to Scriptographer
 	/**
 	 * Inserts one or more segments at a given index in the list of this path's
 	 * segments.
@@ -439,17 +445,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			: this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
-	// PORT: Add to Scriptographer
 	addSegment: function(segment) {
 		return this._add([ Segment.read(arguments) ])[0];
 	},
 
-	// PORT: Add to Scriptographer
 	insertSegment: function(index, segment) {
 		return this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
-	// PORT: Add to Scriptographer
 	/**
 	 * Adds an array of segments (or types that can be converted to segments)
 	 * to the end of the {@link #segments} array.
@@ -493,7 +496,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return this._add(Segment.readAll(segments));
 	},
 
-	// PORT: Add to Scriptographer
 	/**
 	 * Inserts an array of segments at a given index in the path's
 	 * {@link #segments} array.
@@ -508,7 +510,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return this._add(Segment.readAll(segments), index);
 	},
 
-	// PORT: Add to Scriptographer
 	/**
 	 * Removes the segment at the specified index of the path's
 	 * {@link #segments} array.
@@ -535,7 +536,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return segments[0] || null;
 	},
 
-	// PORT: Add to Scriptographer
 	/**
 	 * Removes all segments from the path's {@link #segments} array.
 	 *
@@ -588,7 +588,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			segments[i]._index = i;
 		// Keep curves in sync
 		if (curves) {
-			curves.splice(from, amount);
+			// If we're removing the last segment of a closing path, remove the
+			// last curve.
+			curves.splice(from == curves.length ? from - 1 : from, amount);
 			// Adjust segments for the curves before and after the removed ones
 			var curve;
 			if (curve = curves[from - 1])
@@ -832,8 +834,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Only revers the path if its clockwise orientation is not the same
 			// as what it is now demanded to be.
 			this.reverse();
-			this._clockwise = clockwise;
 		}
+		// Reverse only flips _clockwise state if it was already set, so let's
+		// always set this here now.
+		this._clockwise = clockwise;
 	},
 
 	/**
@@ -995,7 +999,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
-	// PORT: Rename functions and add new isParameter argument in Scriptographer
 	// DOCS: document Path#getLocationAt
 	/**
 	 * {@grouptitle Positions on Paths and Curves}
@@ -1259,20 +1262,23 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	contains: function(point) {
 		point = Point.read(arguments);
+		// If the path is not closed, we should not bail out in case it has a
+		// fill color!
+		if (!this._closed && !this._style._fillColor
+				|| !this.getRoughBounds()._containsPoint(point))
+			return false;
 		// Note: This only works correctly with even-odd fill rule, or paths
 		// that do not overlap with themselves.
 		// TODO: Find out how to implement the "Point In Polygon" problem for
 		// non-zero fill rule.
-		if (!this._closed || !this.getRoughBounds()._containsPoint(point))
-			return false;
 		// Use the crossing number algorithm, by counting the crossings of the
 		// beam in right y-direction with the shape, and see if it's an odd
 		// number, meaning the starting point is inside the shape.
 		// http://en.wikipedia.org/wiki/Point_in_polygon
-		var curves = this.getCurves(),
+		var curves = this.getCurves(true),
 			crossings = 0,
 			// Reuse one array for root-finding, give garbage collector a break
-			roots = [];
+			roots = new Array(3);
 		for (var i = 0, l = curves.length; i < l; i++)
 			crossings += curves[i].getCrossings(point, roots);
 		return (crossings & 1) == 1;
@@ -1734,7 +1740,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			this.quadraticCurveTo(handle, _to);
 		},
 
-		// PORT: New implementation back to Scriptographer
 		arcTo: function(to, clockwise /* | through, to */) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
@@ -1841,172 +1846,119 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			this.setClosed(true);
 		}
 	};
-}, new function() { // A dedicated scope for the tricky bounds calculations
+}, {  // A dedicated scope for the tricky bounds calculations
+	// We define all the different getBounds functions as static methods on Path
+	// and have #_getBounds directly access these. All static bounds functions
+	// below have the same first four parameters: segments, closed, style,
+	// matrix, so they can be called from #_getBounds() and also be used in
+	// Curve. But not all of them use all these parameters, and some define
+	// additional ones after.
+
+	_getBounds: function(getter, matrix) {
+		// See #draw() for an explanation of why we can access _style
+		// properties directly here:
+		return Path[getter](this._segments, this._closed, this._style, matrix);
+	},
+
+// Mess with indentation in order to get more line-space below...
+statics: {
 	/**
 	 * Returns the bounding rectangle of the item excluding stroke width.
 	 */
-	function getBounds(matrix, strokePadding) {
-		// Code ported and further optimised from:
-		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-		var segments = this._segments,
-			first = segments[0];
+	getBounds: function(segments, closed, style, matrix, strokePadding) {
+		var first = segments[0];
+		// If there are no segments, return "empty" rectangle, just like groups,
+		// since #bounds is assumed to never return null.
 		if (!first)
-			return null;
+			return new Rectangle();
 		var coords = new Array(6),
-			prevCoords = new Array(6);
-		// Make coordinates for first segment available in prevCoords.
-		first._transformCoordinates(matrix, prevCoords, false);
-		var min = prevCoords.slice(0, 2),
+			// Make coordinates for first segment available in prevCoords.
+			prevCoords = first._transformCoordinates(matrix, new Array(6), false),
+			min = prevCoords.slice(0, 2),
 			max = min.slice(0), // clone
-			// Add some tolerance for good roots, as t = 0 / 1 are added
-			// seperately anyhow, and we don't want joins to be added with
-			// radiuses in getStrokeBounds()
-			tMin = Numerical.TOLERANCE,
-			tMax = 1 - tMin;
+			roots = new Array(2);
+
 		function processSegment(segment) {
 			segment._transformCoordinates(matrix, coords, false);
-
 			for (var i = 0; i < 2; i++) {
-				var v0 = prevCoords[i], // prev.point
-					v1 = prevCoords[i + 4], // prev.handleOut
-					v2 = coords[i + 2], // segment.handleIn
-					v3 = coords[i]; // segment.point
-
-				function add(value, t) {
-					var padding = 0;
-					if (value == null) {
-						// Calculate bezier polynomial at t
-						var u = 1 - t;
-						value = u * u * u * v0
-								+ 3 * u * u * t * v1
-								+ 3 * u * t * t * v2
-								+ t * t * t * v3;
-						// Only add strokeWidth to bounds for points which lie
-						// within 0 < t < 1. The corner cases for cap and join
-						// are handled in getStrokeBounds()
-						padding = strokePadding ? strokePadding[i] : 0;
-					}
-					var left = value - padding,
-						right = value + padding;
-					if (left < min[i])
-						min[i] = left;
-					if (right > max[i])
-						max[i] = right;
-
-				}
-				add(v3, null);
-
-				// Calculate derivative of our bezier polynomial, divided by 3.
-				// Dividing by 3 allows for simpler calculations of a, b, c and
-				// leads to the same quadratic roots below.
-				var a = 3 * (v1 - v2) - v0 + v3,
-					b = 2 * (v0 + v2) - 4 * v1,
-					c = v1 - v0;
-
-				// Solve for derivative for quadratic roots. Each good root
-				// (meaning a solution 0 < t < 1) is an extrema in the cubic
-				// polynomial and thus a potential point defining the bounds
-				// TODO: Use tolerance here, just like Numerical.solveQuadratic
-				if (a == 0) {
-					if (b == 0)
-					    continue;
-					var t = -c / b;
-					// Test for good root and add to bounds if good (same below)
-					if (tMin < t && t < tMax)
-						add(null, t);
-					continue;
-				}
-
-				var q = b * b - 4 * a * c;
-				if (q < 0)
-					continue;
-				// TODO: Match this with Numerical.solveQuadratic
-				var sqrt = Math.sqrt(q),
-					f = -0.5 / a,
-				 	t1 = (b - sqrt) * f,
-					t2 = (b + sqrt) * f;
-				if (tMin < t1 && t1 < tMax)
-					add(null, t1);
-				if (tMin < t2 && t2 < tMax)
-					add(null, t2);
+				Curve._addBounds(
+					prevCoords[i], // prev.point
+					prevCoords[i + 4], // prev.handleOut
+					coords[i + 2], // segment.handleIn
+					coords[i], // segment.point,
+					i, strokePadding ? strokePadding[i] : 0, min, max, roots);
 			}
-			// Swap coordinate buffers
+			// Swap coordinate buffers.
 			var tmp = prevCoords;
 			prevCoords = coords;
 			coords = tmp;
 		}
+
 		for (var i = 1, l = segments.length; i < l; i++)
 			processSegment(segments[i]);
-		if (this._closed)
+		if (closed)
 			processSegment(first);
-		return Rectangle.create(min[0], min[1],
-					max[0] - min[0], max[1] - min[1]);
-	}
-
-	/**
-	 * Returns the horizontal and vertical padding that a transformed round
-	 * stroke adds to the bounding box, by calculating the dimensions of a
-	 * rotated ellipse.
-	 */
-	function getPenPadding(radius, matrix) {
-		if (!matrix)
-			return [radius, radius];
-		// If a matrix is provided, we need to rotate the stroke circle
-		// and calculate the bounding box of the resulting rotated elipse:
-		// Get rotated hor and ver vectors, and determine rotation angle
-		// and elipse values from them:
-		var mx = matrix.createShiftless(),
-			hor = mx.transform(Point.create(radius, 0)),
-			ver = mx.transform(Point.create(0, radius)),
-			phi = hor.getAngleInRadians(),
-			a = hor.getLength(),
-			b = ver.getLength();
-		// Formula for rotated ellipses:
-		// x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-		// y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-		// Derivates (by Wolfram Alpha):
-		// derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-		// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
-		// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-		// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
-		// This can be simplified to:
-		// tan(t) = -b * tan(phi) / a // x
-		// tan(t) =  b * cot(phi) / a // y
-		// Solving for t gives:
-		// t = pi * n - arctan(b * tan(phi) / a) // x
-		// t = pi * n + arctan(b * cot(phi) / a)
-		//   = pi * n + arctan(b / tan(phi) / a) // y
-		var sin = Math.sin(phi),
-			cos = Math.cos(phi),
-			tan = Math.tan(phi),
-			tx = -Math.atan(b * tan / a),
-			ty = Math.atan(b / (tan * a));
-		// Due to symetry, we don't need to cycle through pi * n solutions:
-		return [Math.abs(a * Math.cos(tx) * cos - b * Math.sin(tx) * sin),
-				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
-	}
+		return Rectangle.create(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+	},
 
 	/**
 	 * Returns the bounding rectangle of the item including stroke width.
 	 */
-	function getStrokeBounds(matrix) {
-		// See #draw() for an explanation of why we can access _style
-		// properties directly here:
-		var style = this._style;
+	getStrokeBounds: function(segments, closed, style, matrix) {
+		/**
+		 * Returns the horizontal and vertical padding that a transformed round
+		 * stroke adds to the bounding box, by calculating the dimensions of a
+		 * rotated ellipse.
+		 */
+		function getPenPadding(radius, matrix) {
+			if (!matrix)
+				return [radius, radius];
+			// If a matrix is provided, we need to rotate the stroke circle
+			// and calculate the bounding box of the resulting rotated elipse:
+			// Get rotated hor and ver vectors, and determine rotation angle
+			// and elipse values from them:
+			var mx = matrix.createShiftless(),
+				hor = mx.transform(Point.create(radius, 0)),
+				ver = mx.transform(Point.create(0, radius)),
+				phi = hor.getAngleInRadians(),
+				a = hor.getLength(),
+				b = ver.getLength();
+			// Formula for rotated ellipses:
+			// x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+			// y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+			// Derivates (by Wolfram Alpha):
+			// derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+			// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
+			// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+			// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
+			// This can be simplified to:
+			// tan(t) = -b * tan(phi) / a // x
+			// tan(t) =  b * cot(phi) / a // y
+			// Solving for t gives:
+			// t = pi * n - arctan(b * tan(phi) / a) // x
+			// t = pi * n + arctan(b * cot(phi) / a)
+			//   = pi * n + arctan(b / tan(phi) / a) // y
+			var sin = Math.sin(phi),
+				cos = Math.cos(phi),
+				tan = Math.tan(phi),
+				tx = -Math.atan(b * tan / a),
+				ty = Math.atan(b / (tan * a));
+			// Due to symetry, we don't need to cycle through pi * n solutions:
+			return [Math.abs(a * Math.cos(tx) * cos - b * Math.sin(tx) * sin),
+					Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
+		}
+
 		// TODO: Find a way to reuse 'bounds' cache instead?
 		if (!style._strokeColor || !style._strokeWidth)
-			return getBounds.call(this, matrix);
-		var width = style._strokeWidth,
-			radius = width / 2,
+			return Path.getBounds(segments, closed, style, matrix);
+		var radius = style._strokeWidth / 2,
 			padding = getPenPadding(radius, matrix),
+			bounds = Path.getBounds(segments, closed, style, matrix, padding),
 			join = style._strokeJoin,
 			cap = style._strokeCap,
-			// miter is relative to width. Divide it by 2 since we're
+			// miter is relative to stroke width. Divide it by 2 since we're
 			// measuring half the distance below
-			miter = style._miterLimit * width / 2,
-			segments = this._segments,
-			length = segments.length,
-			bounds = getBounds.call(this, matrix, padding);
+			miter = style._miterLimit * style._strokeWidth / 2;
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
 		var joinBounds = new Rectangle(new Size(padding).multiply(2));
@@ -2076,35 +2028,35 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 
-		for (var i = 1, l = length - (this._closed ? 0 : 1); i < l; i++) {
+		for (var i = 1, l = segments.length - (closed ? 0 : 1); i < l; i++)
 			addJoin(segments[i], join);
-		}
-		if (this._closed) {
+		if (closed) {
 			addJoin(segments[0], join);
 		} else {
 			addCap(segments[0], cap, 0);
-			addCap(segments[length - 1], cap, 1);
+			addCap(segments[segments.length - 1], cap, 1);
 		}
 		return bounds;
-	}
+	},
 
 	/**
 	 * Returns the bounding rectangle of the item including handles.
 	 */
-	function getHandleBounds(matrix, stroke, join) {
+	getHandleBounds: function(segments, closed, style, matrix, strokePadding,
+			joinPadding) {
 		var coords = new Array(6),
 			x1 = Infinity,
 			x2 = -x1,
 			y1 = x1,
 			y2 = x2;
-		stroke = stroke / 2 || 0; // Stroke padding
-		join = join / 2 || 0; // Join padding, for miterLimit
-		for (var i = 0, l = this._segments.length; i < l; i++) {
-			var segment = this._segments[i];
+		strokePadding = strokePadding / 2 || 0;
+		joinPadding = joinPadding / 2 || 0;
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var segment = segments[i];
 			segment._transformCoordinates(matrix, coords, false);
 			for (var j = 0; j < 6; j += 2) {
 				// Use different padding for points or handles
-				var padding = j == 0 ? join : stroke,
+				var padding = j == 0 ? joinPadding : strokePadding,
 					x = coords[j],
 					y = coords[j + 1],
 					xn = x - padding,
@@ -2118,34 +2070,21 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	}
+	},
 
 	/**
-	 * Returns the rough bounding rectangle of the item that is shure to include
+	 * Returns the rough bounding rectangle of the item that is sure to include
 	 * all of the drawing, including stroke width.
 	 */
-	function getRoughBounds(matrix) {
+	getRoughBounds: function(segments, closed, style, matrix) {
 		// Delegate to handleBounds, but pass on radius values for stroke and
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
-		var style = this._style,
-			width = style._strokeColor ? style._strokeWidth : 0;
-		return getHandleBounds.call(this, matrix, width,
+		var strokeWidth = style._strokeColor ? style._strokeWidth : 0;
+		return Path.getHandleBounds(segments, closed, style, matrix,
+				strokeWidth,
 				style._strokeJoin == 'miter'
-					? width * style._miterLimit
-					: width);
+					? strokeWidth * style._miterLimit
+					: strokeWidth);
 	}
-
-	var get = {
-		bounds: getBounds,
-		strokeBounds: getStrokeBounds,
-		handleBounds: getHandleBounds,
-		roughBounds: getRoughBounds
-	};
-
-	return {
-		_getBounds: function(type, matrix) {
-			return get[type].call(this, matrix);
-		}
-	};
-});
+}});

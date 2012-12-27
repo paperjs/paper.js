@@ -17,68 +17,13 @@
 /**
  * @name View
  *
- * @class The View object wraps an html element and handles drawing and user
+ * @class The View object wraps an HTML element and handles drawing and user
  * interaction through mouse and keyboard for it. It offer means to scroll the
  * view, find the currently visible bounds in project coordinates, or the
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
 var View = this.View = Base.extend(Callback, /** @lends View# */{
-	_events: {
-		onFrame: {
-			install: function() {
-/*#*/ if (options.browser) {
-				var that = this,
-					requested = false,
-					before,
-					time = 0,
-					count = 0;
-				this._onFrameCallback = function(param, dontRequest) {
-					requested = false;
-					// See if we need to stop due to a call to uninstall()
-					if (!that._onFrameCallback)
-						return;
-					// Set the global paper object to the current scope
-					paper = that._scope;
-					if (!dontRequest) {
-						// Request next frame already
-						requested = true;
-						DomEvent.requestAnimationFrame(that._onFrameCallback,
-								that._element);
-					}
-					var now = Date.now() / 1000,
-						delta = before ? now - before : 0;
-					// delta: Time elapsed since last redraw in seconds
-					// time: Time since first call of frame() in seconds
-					// Use Base.merge to convert into a Base object,
-					// for #toString()
-					that.fire('frame', Base.merge({
-						delta: delta,
-						time: time += delta,
-						count: count++
-					}));
-					before = now;
-					// Update framerate stats
-					if (that._stats)
-						that._stats.update();
-					// Automatically draw view on each frame.
-					that.draw(true);
-				};
-				// Call the onFrame handler straight away, initializing the
-				// sequence of onFrame calls.
-				if (!requested)
-					this._onFrameCallback();
-/*#*/ } // options.browser
-			},
-
-			uninstall: function() {
-				delete this._onFrameCallback;
-			}
-		},
-
-		onResize: {}
-	},
-
 	initialize: function(element) {
 		// Store reference to the currently active global paper scope, and the
 		// active project, which will be represented by this view
@@ -157,6 +102,9 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		// Make sure the first view is focused for keyboard input straight away
 		if (!View._focused)
 			View._focused = this;
+		// Items that need the onFrame handler called on them
+		this._frameItems = {};
+		this._frameItemCount = 0;
 	},
 
 	/**
@@ -178,18 +126,121 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		DomEvent.remove(this._element, this._viewHandlers);
 		DomEvent.remove(window, this._windowHandlers);
 		this._element = this._project = null;
-		// Removing all onFrame handlers makes the _onFrameCallback handler stop
+		// Removing all onFrame handlers makes the onFrame handler stop
 		// automatically through its uninstall method.
 		this.detach('frame');
+		this._frameItems = {};
 		return true;
+	},
+
+	/**
+	 * @namespace
+	 * @ignore
+	 */
+	_events: {
+		/**
+		 * @namespace
+		 */
+		onFrame: {
+			install: function() {
+/*#*/ if (options.browser) {
+				// Call the onFrame handler straight away and initialize the
+				// sequence of onFrame calls.
+				if (!this._requested) {
+					this._animate = true;
+					this._handleFrame(true);
+				}
+/*#*/ } // options.browser
+			},
+
+			uninstall: function() {
+				this._animate = false;
+			}
+		},
+
+		onResize: {}
+	},
+
+	// These are default values for event related properties on the prototype. 
+	// Writing item._count++ does not change the defaults, it creates / updates
+	// the property on the instance. Useful!
+	_animate: false,
+	_time: 0,
+	_count: 0,
+
+	_handleFrame: function(request) {
+		this._requested = false;
+		// See if we need to stop due to a call to uninstall()
+		if (!this._animate)
+			return;
+		// Set the global paper object to the current scope
+		paper = this._scope;
+		if (request) {
+			// Request next frame already
+			this._requested = true;
+			var that = this;
+			DomEvent.requestAnimationFrame(function() {
+				that._handleFrame(true);
+			}, this._element);
+		}
+		var now = Date.now() / 1000,
+			delta = this._before ? now - this._before : 0;
+		this._before = now;
+		// Use Base.merge to convert into a Base object, for #toString()
+		this.fire('frame', Base.merge({
+			// Time elapsed since last redraw in seconds:
+			delta: delta,
+			// Time since first call of frame() in seconds:
+			time: this._time += delta,
+			count: this._count++
+		}));
+		// Update framerate stats
+		if (this._stats)
+			this._stats.update();
+		// Automatically draw view on each frame.
+		this.draw(true);
+	},
+
+	_animateItem: function(item, animate) {
+		var items = this._frameItems;
+		if (animate) {
+			items[item._id] = {
+				item: item,
+				// Additional information for the event callback
+				time: 0,
+				count: 0
+			};
+			if (++this._frameItemCount == 1)
+				this.attach('frame', this._handleFrameItems);
+		} else {
+			delete items[item._id];
+			if (--this._frameItemCount == 0) {
+				// If this is the last one, just stop animating straight away.
+				this.detach('frame', this._handleFrameItems);
+			}
+		}
+	},
+
+	// An empty callback that's only there so _frameItems can be handled
+	// through the onFrame callback framework that automatically starts and
+	// stops the animation for us whenever there's one or more frame handlers
+	_handleFrameItems: function(event) {
+		for (var i in this._frameItems) {
+			var entry = this._frameItems[i];
+			entry.item.fire('frame', Base.merge(event, {
+				// Time since first call of frame() in seconds:
+				time: entry.time += event.delta,
+				count: entry.count++
+			}));
+		}
 	},
 
 	_redraw: function() {
 		this._redrawNeeded = true;
-		if (this._onFrameCallback) {
-			// If there's a _onFrameCallback, call it staight away,
-			// but without requesting another animation frame.
-			this._onFrameCallback(0, true);
+		if (this._animate) {
+			// If we're animating, call _handleFrame staight away, but without
+			// requesting another animation frame.
+			this._handleFrame();
 		} else {
 			// Otherwise simply redraw the view now
 			this.draw();
@@ -548,8 +599,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 				if ((curPoint = point || curPoint) 
 						&& tool._onHandleEvent('mousedrag', curPoint, event))
 					DomEvent.stop(event);
-			// PORT: If there is only an onMouseMove handler, also call it when
-			// the user is dragging:
 			} else if ((!dragging || onlyMove)
 					&& tool._onHandleEvent('mousemove', point, event)) {
 				DomEvent.stop(event);

@@ -133,7 +133,6 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	},
 
 	setOrigin: function(origin) {
-		// PORT: Add origin cloning to Scriptographer
 		origin = Point.read(arguments, 0, 0, true); // clone
 		this._origin = origin;
 		if (this._destination)
@@ -174,7 +173,6 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	},
 
 	setDestination: function(destination) {
-		// PORT: Add destination cloning to Scriptographer
 		destination = Point.read(arguments, 0, 0, true); // clone
 		this._destination = destination;
 		this._radius = this._destination.getDistance(this._origin);
@@ -213,7 +211,6 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	},
 
 	setHilite: function(hilite) {
-		// PORT: Add hilite cloning to Scriptographer
 		hilite = Point.read(arguments, 0, 0, true); // clone
 		var vector = hilite.subtract(this._origin);
 		if (vector.getLength() > this._radius) {
@@ -238,7 +235,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 		}
 		for (var i = 0, l = this.gradient._stops.length; i < l; i++) {
 			var stop = this.gradient._stops[i];
-			gradient.addColorStop(stop._rampPoint, stop._color.toCssString());
+			gradient.addColorStop(stop._rampPoint, stop._color.toCss());
 		}
 		return gradient;
 	},
@@ -251,7 +248,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * @return {@true the GradientColor is the same}
 	 */
 	equals: function(color) {
-		return color == this || color && color._colorType === this._colorType
+		return color == this || color && color._type === this._type
 				&& this.gradient.equals(color.gradient)
 				&& this._origin.equals(color._origin)
 				&& this._destination.equals(color._destination);

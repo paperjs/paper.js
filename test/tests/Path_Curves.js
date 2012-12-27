@@ -68,7 +68,10 @@ test('Curve list after removing a segment - 1', function() {
 		return path.curves.length;
 	}, 2, 'After creating a path with three segments, we should have two curves. By accessing path.curves we also make sure the curves are created internally.');
 
-	path.segments[1].remove();
+	equals(function() {
+		return path.segments[1].remove();
+	}, true, 'Removing the paths second segment should be succesfull.');
+
 	equals(function() {
 		return path.curves.length;
 	}, 1, 'After removing the middle segment, we should be left with one curve');
@@ -81,7 +84,9 @@ test('Curve list after removing a segment - 2', function() {
 		return path.curves.length;
 	}, 2, 'After creating a path with three segments, we should have two curves. By accessing path.curves we also make sure the curves are created internally.');
 
-	path.segments[2].remove();
+	equals(function() {
+		return path.segments[2].remove();
+	}, true, 'Removing the paths last segment should be succesfull.');
 
 	equals(function() {
 		return path.curves.length;

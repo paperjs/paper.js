@@ -17,8 +17,8 @@
 /**
  * @name MouseEvent
  *
- * @class MouseEvent The MouseEvent object is received by the {@link Item}'s
- * mouse event handlers {@link Item#onMouseDown}, {@link Item#onMouseDrag},
+ * @class The MouseEvent object is received by the {@link Item}'s mouse event
+ * handlers {@link Item#onMouseDown}, {@link Item#onMouseDrag},
  * {@link Item#onMouseMove}, {@link Item#onMouseUp}, {@link Item#onClick},
  * {@link Item#onDoubleClick}, {@link Item#onMouseEnter} and
  * {@link Item#onMouseLeave}. The MouseEvent object is the only parameter passed
@@ -67,8 +67,8 @@ var MouseEvent = this.MouseEvent = Event.extend(/** @lends MouseEvent# */{
 	 * @return {String} A string representation of the mouse event.
 	 */
 	toString: function() {
-		return '{ type: ' + this.type
-				+ ', point: ' + this.point
+		return "{ type: '" + this.type
+				+ "', point: " + this.point
 				+ ', target: ' + this.target
 				+ (this.delta ? ', delta: ' + this.delta : '')
 				+ ', modifiers: ' + this.getModifiers()

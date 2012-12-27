@@ -14,6 +14,10 @@
  * All rights reserved.
  */
 
+ /**
+  * @name Palette
+  * @class
+  */
 var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 	_events: [ 'onChange' ],
 
@@ -63,6 +67,10 @@ var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
 			paper.palettes.push(this);
 	},
 
+	/**
+	 * Resets the values of the components to their
+	 * {@link Component#defaultValue}.
+	 */
 	reset: function() {
 		for (var i in this._components)
 			this._components[i].reset();

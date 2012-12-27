@@ -62,7 +62,7 @@ var PathFlattener = Base.extend({
 			var x = curve[6] - curve[0],
 				y = curve[7] - curve[1],
 				dist = Math.sqrt(x * x + y * y);
-			if (dist > Numerical.TOLERANCE) {
+			if (dist > /*#=*/ Numerical.TOLERANCE) {
 				this.length += dist;
 				this.parts.push({
 					offset: this.length,

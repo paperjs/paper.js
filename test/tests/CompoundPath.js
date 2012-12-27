@@ -70,4 +70,23 @@ test('clockwise', function() {
 	equals(function() {
 		return path3.clockwise;
 	}, false);
-})
+});
+
+test('Cloning with non-standard clockwise settings', function() {
+	var path1 = new Path.Rectangle([200, 200], [100, 100]);
+	var path2 = new Path.Rectangle([50, 50], [200, 200]);
+	var path3 = new Path.Rectangle([0, 0], [400, 400]);
+	path1.clockwise = false;
+	path2.clockwise = true;
+	path3.clockwise = true;
+	var compound = new CompoundPath(path1, path2, path3);
+	equals(function() {
+		return path1.clockwise;
+	}, false);
+	equals(function() {
+		return path2.clockwise;
+	}, true);
+	equals(function() {
+		return path3.clockwise;
+	}, true);
+});

@@ -50,8 +50,10 @@ var Color = this.Color = Base.extend(new function() {
 	var components = {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],
-		hsb: ['hue', 'saturation', 'brightness'],
-		hsl: ['hue', 'saturation', 'lightness']
+		hsl: ['hue', 'saturation', 'lightness'],
+		// Define hsb last, so its converting saturation getter overrides the
+		// one of HSL:
+		hsb: ['hue', 'saturation', 'brightness']
 	};
 
 	var colorCache = {},
@@ -214,7 +216,7 @@ var Color = this.Color = Base.extend(new function() {
 
 		initialize: function(arg) {
 			var isArray = Array.isArray(arg),
-				type = this._colorType,
+				type = this._type,
 				res;
 			if (typeof arg === 'object' && !isArray) {
 				if (!type) {
@@ -280,6 +282,17 @@ var Color = this.Color = Base.extend(new function() {
 			return res;
 		},
 
+		_serialize: function() {
+			var res = [];
+			for (var i = 0, l = this._components.length; i < l; i++) {
+				var component = this._components[i],
+					value = this['_' + component];
+				if (component !== 'alpha' || value != null && value < 1)
+					res.push(value);
+			}
+			return res;
+		},
+
 		/**
 		 * @return {RgbColor|GrayColor|HsbColor} a copy of the color object
 		 */
@@ -295,12 +308,12 @@ var Color = this.Color = Base.extend(new function() {
 
 		convert: function(type) {
 			var converter;
-			return this._colorType == type
+			return this._type == type
 					? this.clone()
-					: (converter = converters[this._colorType + '-' + type])
+					: (converter = converters[this._type + '-' + type])
 						? converter(this)
 						: converters['rgb-' + type](
-								converters[this._colorType + '-rgb'](this));
+								converters[this._type + '-rgb'](this));
 		},
 
 		statics: /** @lends Color */{
@@ -311,8 +324,8 @@ var Color = this.Color = Base.extend(new function() {
 			 * @ignore
 			 */
 			extend: function(src) {
-				if (src._colorType) {
-					var comps = components[src._colorType];
+				if (src._type) {
+					var comps = components[src._type];
 					// Automatically produce the _components field, adding alpha
 					src._components = comps.concat(['alpha']);
 					Base.each(comps, function(name) {
@@ -333,7 +346,11 @@ var Color = this.Color = Base.extend(new function() {
 						};
 					}, src);
 				}
-				return this.base(src);
+				return this.base.apply(this, arguments);
+			},
+
+			random: function() {
+				return new RgbColor(Math.random(), Math.random(), Math.random());
 			}
 		}
 	};
@@ -351,7 +368,7 @@ var Color = this.Color = Base.extend(new function() {
 			fields['set' + part] = function(value) {
 				var color = this.convert(type);
 				color[component] = value;
-				color = color.convert(this._colorType);
+				color = color.convert(this._type);
 				for (var i = 0, l = this._components.length; i < l; i++) {
 					var key = this._components[i];
 					this[key] = color[key];
@@ -367,7 +384,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * Called by various setters whenever a color value changes
 	 */
 	_changed: function() {
-		this._cssString = null;
+		this._css = null;
 		if (this._owner)
 			this._owner._changed(/*#=*/ Change.STYLE);
 	},
@@ -383,7 +400,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * console.log(color.type); // 'rgb'
 	 */
 	getType: function() {
-		return this._colorType;
+		return this._type;
 	},
 
 	getComponents: function() {
@@ -442,7 +459,7 @@ var Color = this.Color = Base.extend(new function() {
 	 * @return {Boolean} {@true if the colors are the same}
 	 */
 	equals: function(color) {
-		if (color && color._colorType === this._colorType) {
+		if (color && color._type === this._type) {
 			for (var i = 0, l = this._components.length; i < l; i++) {
 				var component = '_' + this._components[i];
 				if (this[component] !== color[component])
@@ -473,23 +490,30 @@ var Color = this.Color = Base.extend(new function() {
 	/**
 	 * @return {String} A css string representation of the color.
 	 */
-	toCssString: function() {
-		if (!this._cssString) {
+	toCss: function(noAlpha) {
+		var css = this._css;
+		// Only cache _css value if we're not ommiting alpha, as required
+		// by SVG export.
+		if (!css || noAlpha) {
 			var color = this.convert('rgb'),
-				alpha = color.getAlpha(),
+				alpha = noAlpha ? 1 : color.getAlpha(),
 				components = [
 					Math.round(color._red * 255),
 					Math.round(color._green * 255),
-					Math.round(color._blue * 255),
-					alpha != null ? alpha : 1
+					Math.round(color._blue * 255)
 				];
-			this._cssString = 'rgba(' + components.join(', ') + ')';
+			if (alpha < 1)
+				components.push(alpha);
+			var css = (components.length == 4 ? 'rgba(' : 'rgb(')
+					+ components.join(', ') + ')';
+			if (!noAlpha)
+				this._css = css;
 		}
-		return this._cssString;
+		return css;
 	},
 
 	getCanvasStyle: function() {
-		return this.toCssString();
+		return this.toCss();
 	}
 
 	/**
@@ -651,7 +675,7 @@ var GrayColor = this.GrayColor = Color.extend(/** @lends GrayColor# */{
 	 * @type Number
 	 */
 
-	_colorType: 'gray'
+	_type: 'gray'
 });
 
 /**
@@ -740,7 +764,7 @@ var RgbColor = this.RgbColor = this.RGBColor = Color.extend(/** @lends RgbColor#
 	 * circle.fillColor.blue = 1;
 	 */
 
-	_colorType: 'rgb'
+	_type: 'rgb'
 });
 
 /**
@@ -818,7 +842,7 @@ var HsbColor = this.HsbColor = this.HSBColor = Color.extend(/** @lends HsbColor#
 	 * @type Number
 	 */
 
-	_colorType: 'hsb'
+	_type: 'hsb'
 });
 
 
@@ -879,5 +903,5 @@ var HslColor = this.HslColor = this.HSLColor = Color.extend(/** @lends HslColor#
 	 * @type Number
 	 */
 
-	_colorType: 'hsl'
+	_type: 'hsl'
 });
