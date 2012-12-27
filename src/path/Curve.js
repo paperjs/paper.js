@@ -667,10 +667,9 @@ statics: {
 				// Subdivide both curves, and see if they intersect.
 				var v1s = Curve.subdivide(v1),
 					v2s = Curve.subdivide(v2);
-				this._addIntersections(v1s[0], v2s[0], curve, locations);
-				this._addIntersections(v1s[0], v2s[1], curve, locations);
-				this._addIntersections(v1s[1], v2s[0], curve, locations);
-				this._addIntersections(v1s[1], v2s[1], curve, locations);
+				for (var i = 0; i < 2; i++)
+					for (var j = 0; j < 2; j++)
+						this._addIntersections(v1s[i], v2s[j], curve, locations);
 			}
 		}
 		return locations;
