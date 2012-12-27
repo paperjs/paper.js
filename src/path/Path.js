@@ -1889,25 +1889,8 @@ statics: {
 			segment._transformCoordinates(matrix, coords, false);
 
 			for (var i = 0; i < 2; i++) {
-				var v0 = prevCoords[i], // prev.point
-					v1 = prevCoords[i + 4], // prev.handleOut
-					v2 = coords[i + 2], // segment.handleIn
-					v3 = coords[i]; // segment.point
 
-				function add(value, t) {
-					var padding = 0;
-					if (value == null) {
-						// Calculate bezier polynomial at t
-						var u = 1 - t;
-						value = u * u * u * v0
-								+ 3 * u * u * t * v1
-								+ 3 * u * t * t * v2
-								+ t * t * t * v3;
-						// Only add strokeWidth to bounds for points which lie
-						// within 0 < t < 1. The corner cases for cap and join
-						// are handled in getStrokeBounds()
-						padding = strokePadding ? strokePadding[i] : 0;
-					}
+				function add(value, padding) {
 					var left = value - padding,
 						right = value + padding;
 					if (left < min[i])
@@ -1916,21 +1899,36 @@ statics: {
 						max[i] = right;
 
 				}
-				add(v3, null);
 
-				// Calculate derivative of our bezier polynomial, divided by 3.
-				// Dividing by 3 allows for simpler calculations of a, b, c and
-				// leads to the same quadratic roots.
-				var a = 3 * (v1 - v2) - v0 + v3,
+				var v0 = prevCoords[i], // prev.point
+					v1 = prevCoords[i + 4], // prev.handleOut
+					v2 = coords[i + 2], // segment.handleIn
+					v3 = coords[i], // segment.point
+					// Calculate derivative of our bezier polynomial, divided by
+					// 3. Doing so allows for simpler calculations of a, b, c
+					// and leads to the same quadratic roots.
+					a = 3 * (v1 - v2) - v0 + v3,
 					b = 2 * (v0 + v2) - 4 * v1,
 					c = v1 - v0;
 					count = Numerical.solveQuadratic(a, b, c, roots,
-						Numerical.TOLERANCE);
+							Numerical.TOLERANCE);
+
+				// Only add strokeWidth to bounds for points which lie  within
+				// 0 < t < 1. The corner cases for cap and join are handled in
+				// getStrokeBounds()
+				add(v3, 0);
+
 				for (var j = 0; j < count; j++) {
-					var t = roots[j];
+					var t = roots[j],
+						u = 1 - t;
 					// Test for good roots and only add to bounds if good.
 					if (tMin < t && t < tMax)
-						add(null, t);
+						// Calculate bezier polynomial at t
+						add(u * u * u * v0
+							+ 3 * u * u * t * v1
+							+ 3 * u * t * t * v2
+							+ t * t * t * v3,
+							strokePadding ? strokePadding[i] : 0);
 				}
 			}
 			// Swap coordinate buffers.
