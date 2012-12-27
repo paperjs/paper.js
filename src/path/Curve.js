@@ -313,6 +313,11 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return Curve.getParameter(this.getValues(), point.x, point.y);
 	},
 
+	getIntersections: function(curve) {
+		return Curve._addIntersections(this.getValues(), curve.getValues(),
+				this, []);
+	},
+
 	getCrossings: function(point, roots) {
 		// Implement the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
@@ -340,7 +345,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	// TODO: getLocation
-	// TODO: getIntersections
 	// TODO: adjustThroughPoint
 
 	/**
@@ -610,6 +614,63 @@ statics: {
 					+ t * t * t * v3,
 					padding);
 		}
+	},
+
+	// We need to provide the original left curve reference to the
+	// #_addIntersections() calls as it is required for the returned
+	// CurveLocation instances.
+	_addIntersections: function(v1, v2, curve, locations) {
+		var bounds1 = Curve.getBounds(v1),
+			bounds2 = Curve.getBounds(v2);
+/*#*/ if (options.debug) {
+		new Path.Rectangle(bounds1).set({
+			strokeColor: 'green',
+			strokeWidth: 0.1
+		});
+		new Path.Rectangle(bounds2).set({
+			strokeColor: 'red',
+			strokeWidth: 0.1
+		});
+/*#*/ }
+		// We are not using Rectangle#intersects() here, since in order to
+		// detect intersections that lie on curve bounds, we need to consider
+		// touching on one side of the tested rectangles as intersection as well
+		// If touch is condired at both sides, solutions lying on the border of
+		// bounds would turn up twice.
+		if (bounds1.x + bounds1.width >= bounds2.x
+				&& bounds1.y + bounds1.height >= bounds2.y
+				&& bounds1.x < bounds2.x + bounds2.width
+				&& bounds1.y < bounds2.y + bounds2.height) {
+			if (Curve.isFlatEnough(v1) && Curve.isFlatEnough(v2)) {
+				// Treat both curves as lines and see if their parametric
+				// equations interesct.
+/*#*/ if (options.debug) {
+				new Path.Line(v1[0], v1[1], v1[6], v1[7]).set({
+					strokeColor: 'green',
+					strokeWidth: 0.1
+				});
+				new Path.Line(v2[0], v2[1], v2[6], v2[7]).set({
+					strokeColor: 'red',
+					strokeWidth: 0.1
+				});
+/*#*/ }
+				var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
+						.intersect(new Line(v2[0], v2[1], v2[6], v2[7], false));
+				// Passing null for parameter leads to lazy determination of
+				// parameter values in CurveLocation#getParameter() only once
+				// they are requested.
+				if (point)
+					locations.push(new CurveLocation(curve, null, point));
+			} else {
+				var v1s = Curve.subdivide(v1),
+					v2s = Curve.subdivide(v2);
+				this._addIntersections(v1s[0], v2s[0], curve, locations);
+				this._addIntersections(v1s[0], v2s[1], curve, locations);
+				this._addIntersections(v1s[1], v2s[0], curve, locations);
+				this._addIntersections(v1s[1], v2s[1], curve, locations);
+			}
+		}
+		return locations;
 	}
 }}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
