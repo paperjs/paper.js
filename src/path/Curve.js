@@ -544,7 +544,7 @@ statics: {
 		return v;
 	},
 
-	isFlatEnough: function(v) {
+	isFlatEnough: function(v, tolerance) {
 		// Thanks to Kaspar Fischer for the following:
 		// http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
 		var p1x = v[0], p1y = v[1],
@@ -555,7 +555,8 @@ statics: {
 			uy = 3 * c1y - 2 * p1y - p2y,
 			vx = 3 * c2x - 2 * p2x - p1x,
 			vy = 3 * c2y - 2 * p2y - p1y;
-		return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy) < 1;
+		return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy)
+				< 16 * tolerance * tolerance;
 	},
 
 	getBounds: function(v) {
@@ -641,7 +642,8 @@ statics: {
 				&& bounds1.y + bounds1.height >= bounds2.y
 				&& bounds1.x < bounds2.x + bounds2.width
 				&& bounds1.y < bounds2.y + bounds2.height) {
-			if (Curve.isFlatEnough(v1) && Curve.isFlatEnough(v2)) {
+			if (Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
+					&& Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
 				// Treat both curves as lines and see if their parametric
 				// equations interesct.
 /*#*/ if (options.debug) {

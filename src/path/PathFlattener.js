@@ -51,7 +51,9 @@ var PathFlattener = Base.extend({
 	_computeParts: function(curve, index, minT, maxT) {
 		// Check if the t-span is big enough for subdivision.
 		// We're not subdividing more than 32 times...
-		if ((maxT - minT) > 1 / 32 && !Curve.isFlatEnough(curve)) {
+		// After quite a bit of testing, a tolerance of 0.25 appears to be a
+		// good trade-off between speed and precision.
+		if ((maxT - minT) > 1 / 32 && !Curve.isFlatEnough(curve, 0.25)) {
 			var curves = Curve.subdivide(curve);
 			var halfT = (minT + maxT) / 2;
 			// Recursively subdive and compute parts again.
