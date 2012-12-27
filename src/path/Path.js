@@ -1348,7 +1348,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// TODO: intersect(item)
 	// TODO: unite(item)
 	// TODO: exclude(item)
-	// TODO: getIntersections(path)
 }, new function() { // Scope for drawing
 
 	// Note that in the code below we're often accessing _x and _y on point

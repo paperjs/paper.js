@@ -24,14 +24,26 @@
  * @extends Item
  */
 var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
+
 	getIntersections: function(path) {
 		// First check the bounds of the two paths. If they don't intersect,
 		// we don't need to iterate through the whole path.
-		if (this.getBounds().intersects(path.getBounds()))
+		if (!this.getBounds().intersects(path.getBounds()))
 			return [];
 		var locations = [],
 			curves1 = this.getCurves(),
-			curves2 = path.getCurves();		
+			curves2 = path.getCurves(),
+			length2 = curves2.length,
+			values2 = [];
+		for (var i = 0; i < length2; i++)
+			values2[i] = curves2[i].getValues();
+		for (var i = 0, l = curves1.length; i < l; i++) {
+			var curve = curves1[i],
+				values1 = curve.getValues();
+			for (var j = 0; j < length2; j++)
+				Curve._addIntersections(values1, values2[j], curve, locations);
+		}
+		return locations;
 	}
 	/**
 	 * Smooth bezier curves without changing the amount of segments or their
