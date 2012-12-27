@@ -25,6 +25,30 @@
  * that they inherit from Item.
  */
 var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
+	// Provide information about fields to be serialized, with their defaults
+	// that can be ommited.
+	_serializeFields: {
+		name: null,
+		children: [],
+		matrix: new Matrix()
+	},
+
+	initialize: function(point) {
+		// Define this Item's unique id.
+		this._id = ++Item._id;
+		// If _project is already set, the item was already moved into the DOM
+		// hierarchy. Used by Layer, where it's added to project.layers instead
+		if (!this._project)
+			paper.project.activeLayer.addChild(this);
+		// TextItem defines its own _style, based on CharacterStyle
+		if (!this._style)
+			this._style = PathStyle.create(this);
+		this.setStyle(this._project.getCurrentStyle());
+		this._matrix = new Matrix();
+		if (point)
+			this._matrix.translate(point);
+	},
+
 	_events: new function() {
 
 		// Flags defining which native events are required by which Paper events
@@ -75,12 +99,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		};
 
-		var onFrameItems = [];
-		function onFrame(event) {
-			for (var i = 0, l = onFrameItems.length; i < l; i++)
-				onFrameItems[i].fire('frame', event);
-		}
-
 		return Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
 			'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
 			function(name) {
@@ -88,38 +106,57 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			}, {
 				onFrame: {
 					install: function() {
-						if (!onFrameItems.length)
-							this._project.view.attach('frame', onFrame);
-						onFrameItems.push(this);
+						this._project.view._animateItem(this, true);
 					},
 					uninstall: function() {
-						onFrameItems.splice(onFrameItems.indexOf(this), 1);
-						if (!onFrameItems.length)
-							this._project.view.detach('frame', onFrame);
+						this._project.view._animateItem(this, false);
 					}
 				},
 
 				// Only for external sources, e.g. Raster
 				onLoad: {}
-			});
+			}
+		);
 	},
 
-	initialize: function(pointOrMatrix) {
-		// Define this Item's unique id.
-		this._id = ++Item._id;
-		// If _project is already set, the item was already moved into the DOM
-		// hierarchy. Used by Layer, where it's added to project.layers instead
-		if (!this._project)
-			paper.project.activeLayer.addChild(this);
-		// TextItem defines its own _style, based on CharacterStyle
-		if (!this._style)
-			this._style = PathStyle.create(this);
-		this.setStyle(this._project.getCurrentStyle());
-		this._matrix = pointOrMatrix !== undefined
-			? pointOrMatrix instanceof Matrix
-				? pointOrMatrix.clone()
-				: new Matrix().translate(Point.read(arguments))
-			: new Matrix();
+	// #_setProperties is part of the mechanism for Item constructors which take
+	// one object literal describing all the properties to be set on the created
+	// instance.
+	_setProperties: function(props) {
+		if (Base.isObject(props))
+			return this.set(props);
+	},
+
+	/**
+	 * Sets all the properties of the passed object literal to their values on
+	 * the item it is called on, and returns the item itself.
+	 */
+	set: function(props) {
+		for (var key in props)
+			if (props.hasOwnProperty(key))
+				this[key] = props[key];
+		return this;
+	},
+
+	_serialize: function() {
+		var props = {},
+			that = this;
+
+		function serialize(fields) {
+			for (var key in fields) {
+				var value = that[key];
+				if (!Base.equals(value, fields[key]))
+					props[key] = Base.serialize(value);
+			}
+		}
+
+		// Serialize fields that this Item subclass defines first
+		serialize(this._serializeFields);
+		// Serialize style fields, but only if they differ from defaults
+		serialize(this._style._defaults);
+		// There is no compact form for Item serialization, we always keep the
+		// type.
+		return [ this._type, props ];
 	},
 
 	/**
@@ -390,6 +427,16 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	_guide: false,
 
 	/**
+	 * Specifies whether the item directly transforms its contents when
+	 * transformations are applied to it, or wether it simply stores them in
+	 * {@link Item#matrix}.
+	 *
+	 * @type Boolean
+	 * @default false
+	 */
+	applyMatrix: false,
+
+	/**
 	 * Specifies whether an item is selected and will also return {@code true}
 	 * if the item is partially selected (groups with some selected or partially
 	 * selected paths).
@@ -557,36 +604,48 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
 		this._changed(/*#=*/ Change.GEOMETRY);
+	},
+
+	/**
+	 * Specifies wether the item has any content or not. The meaning of what
+	 * content is differs from  type to type. For example, a {@link Group} with
+	 * no children, a {@link TextItem} with no text content and a {@link Path}
+	 * with no segments all are considered empty.
+	 *
+	 * @type Boolean
+	 */
+	isEmpty: function() {
+		return true;
 	}
-}, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds'],
-function(name) {
-	// Produce getters for bounds properties. These handle caching, matrices
-	// and redirect the call to the private _getBounds, which can be
-	// overridden by subclasses, see below.
-	this['get' + Base.capitalize(name)] = function(/* matrix */) {
-		var type = this._boundsType,
-			bounds = this._getCachedBounds(
-				// Allow subclasses to override _boundsType if they use the same
-				// calculations for multiple types. The default is name:
-				typeof type == 'string' ? type : type && type[name] || name,
-				// Pass on the optional matrix
-				arguments[0]);
-		// If we're returning 'bounds', create a LinkedRectangle that uses the
-		// setBounds() setter to update the Item whenever the bounds are
-		// changed:
-		return name == 'bounds' ? LinkedRectangle.create(this, 'setBounds',
-				bounds.x, bounds.y, bounds.width, bounds.height) : bounds;
-	};
-}, /** @lends Item# */{
+}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+	function(name) {
+		// Produce getters for bounds properties. These handle caching, matrices
+		// and redirect the call to the private _getBounds, which can be
+		// overridden by subclasses, see below.
+		this[name] = function(/* matrix */) {
+			var getter = this._boundsGetter,
+				// Allow subclasses to override _boundsGetter if they use
+				// the same calculations for multiple type of bounds.
+				// The default is name:
+				bounds = this._getCachedBounds(typeof getter == 'string'
+						? getter : getter && getter[name] || name, arguments[0]);
+			// If we're returning 'bounds', create a LinkedRectangle that uses
+			// the setBounds() setter to update the Item whenever the bounds are
+			// changed:
+			return name == 'bounds' ? LinkedRectangle.create(this, 'setBounds',
+					bounds.x, bounds.y, bounds.width, bounds.height) : bounds;
+		};
+	},
+/** @lends Item# */{
 	/**
 	 * Private method that deals with the calling of _getBounds, recursive
 	 * matrix concatenation and handles all the complicated caching mechanisms.
 	 */
-	_getCachedBounds: function(type, matrix, cacheItem) {
+	_getCachedBounds: function(getter, matrix, cacheItem) {
 		// See if we can cache these bounds. We only cache the bounds
 		// transformed with the internally stored _matrix, (the default if no
 		// matrix is passed).
-		var cache = (!matrix || matrix.equals(this._matrix)) && type;
+		var cache = (!matrix || matrix.equals(this._matrix)) && getter;
 		// Set up a boundsCache structure that keeps track of items that keep
 		// cached bounds that depend on this item. We store this in our parent,
 		// for multiple reasons:
@@ -624,7 +683,7 @@ function(name) {
 				: identity ? matrix : matrix.clone().concatenate(this._matrix);
 		// If we're caching bounds on this item, pass it on as cacheItem, so the
 		// children can setup the _boundsCache structures for it.
-		var bounds = this._getBounds(type, matrix, cache ? this : cacheItem);
+		var bounds = this._getBounds(getter, matrix, cache ? this : cacheItem);
 		// If we can cache the result, update the _bounds cache structure
 		// before returning
 		if (cache) {
@@ -664,7 +723,7 @@ function(name) {
 	 * Subclasses override it to define calculations for the various required
 	 * bounding types.
 	 */
-	_getBounds: function(type, matrix, cacheItem) {
+	_getBounds: function(getter, matrix, cacheItem) {
 		// Note: We cannot cache these results here, since we do not get
 		// _changed() notifications here for changing geometry in children.
 		// But cacheName is used in sub-classes such as PlacedItem.
@@ -680,7 +739,7 @@ function(name) {
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			if (child._visible && !child.isEmpty()) {
-				var rect = child._getCachedBounds(type, matrix, cacheItem);
+				var rect = child._getCachedBounds(getter, matrix, cacheItem);
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
 				x2 = Math.max(rect.x + rect.width, x2);
@@ -688,10 +747,6 @@ function(name) {
 			}
 		}
 		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
-	},
-
-	isEmpty: function() {
-		return true;
 	},
 
 	setBounds: function(rect) {
@@ -712,7 +767,6 @@ function(name) {
 		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
 		// Now execute the transformation
-		// TODO: do we need to apply too, or just change the matrix?
 		this.transform(matrix);
 	}
 
@@ -946,14 +1000,16 @@ function(name) {
 		copy.setStyle(this._style);
 		// If this item has children, clone and append each of them:
 		if (this._children) {
+			// Clone all children and add them to the copy. tell #addChild we're
+			// cloning, as needed by CompoundPath#insertChild().
 			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.addChild(this._children[i].clone());
+				copy.addChild(this._children[i].clone(), true);
 		}
 		// Only copy over these fields if they are actually defined in 'this'
 		// TODO: Consider moving this to Base once it's useful in more than one
 		// place
 		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-				'_clipMask', '_guide'];
+				'_clipMask', '_guide', 'applyMatrix'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
@@ -1128,8 +1184,9 @@ function(name) {
 	 *
 	 * @param {Item} item The item to be added as a child
 	 */
-	addChild: function(item) {
-		return this.insertChild(undefined, item);
+	addChild: function(item, _cloning) {
+		// Pass on internal _cloning boolean, for CompoundPath#insertChild
+		return this.insertChild(undefined, item, _cloning);
 	},
 
 	/**
@@ -1680,7 +1737,6 @@ function(name) {
 	 */
 
 	// DOCS: Document the different arguments that this function can receive.
-	// DOCS: Document the apply parameter in all transform functions.
 	/**
 	 * {@grouptitle Transform Functions}
 	 *
@@ -1691,7 +1747,6 @@ function(name) {
 	 * @function
 	 * @param {Number} scale the scale factor
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 *
 	 * @example {@paperscript}
 	 * // Scaling an item from its center point:
@@ -1724,7 +1779,6 @@ function(name) {
 	 * @param {Number} hor the horizontal scale factor
 	 * @param {Number} ver the vertical scale factor
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 *
 	 * @example {@paperscript}
 	 * // Scaling an item horizontally by 300%:
@@ -1737,26 +1791,24 @@ function(name) {
 	 * // Scale the path horizontally by 300%
 	 * circle.scale(3, 1);
 	 */
-	scale: function(hor, ver /* | scale */, center, apply) {
+	scale: function(hor, ver /* | scale */, center) {
 		// See Matrix#scale for explanation of this:
 		if (arguments.length < 2 || typeof ver === 'object') {
-			apply = center;
 			center = ver;
 			ver = hor;
 		}
 		return this.transform(new Matrix().scale(hor, ver,
-				center || this.getPosition(true)), apply);
+				center || this.getPosition(true)));
 	},
 
 	/**
 	 * Translates (moves) the item by the given offset point.
 	 *
 	 * @param {Point} delta the offset to translate the item by
-	 * @param {Boolean} apply
 	 */
-	translate: function(delta, apply) {
+	translate: function(delta) {
 		var mx = new Matrix();
-		return this.transform(mx.translate.apply(mx, arguments), apply);
+		return this.transform(mx.translate.apply(mx, arguments));
 	},
 
 	/**
@@ -1766,7 +1818,6 @@ function(name) {
 	 *
 	 * @param {Number} angle the rotation angle
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 * @see Matrix#rotate
 	 *
 	 * @example {@paperscript}
@@ -1801,9 +1852,9 @@ function(name) {
 	 * 	path.rotate(3, view.center);
 	 * }
 	 */
-	rotate: function(angle, center, apply) {
+	rotate: function(angle, center) {
 		return this.transform(new Matrix().rotate(angle,
-				center || this.getPosition(true)), apply);
+				center || this.getPosition(true)));
 	},
 
 	// TODO: Add test for item shearing, as it might be behaving oddly.
@@ -1815,7 +1866,6 @@ function(name) {
 	 * @function
 	 * @param {Point} point
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 * @see Matrix#shear
 	 */
 	/**
@@ -1827,34 +1877,28 @@ function(name) {
 	 * @param {Number} hor the horizontal shear factor.
 	 * @param {Number} ver the vertical shear factor.
 	 * @param {Point} [center={@link Item#position}]
-	 * @param {Boolean} apply
 	 * @see Matrix#shear
 	 */
-	shear: function(hor, ver, center, apply) {
-		// PORT: Add support for center and apply back to Scriptographer too!
+	shear: function(hor, ver, center) {
 		// See Matrix#scale for explanation of this:
 		if (arguments.length < 2 || typeof ver === 'object') {
-			apply = center;
 			center = ver;
 			ver = hor;
 		}
 		return this.transform(new Matrix().shear(hor, ver,
-				center || this.getPosition(true)), apply);
+				center || this.getPosition(true)));
 	},
 
 	/**
 	 * Transform the item.
 	 *
 	 * @param {Matrix} matrix the matrix by which the item shall be transformed.
-	 * @param {Boolean} apply controls wether the transformation should just be
-	 * concatenated to {@link #matrix} ({@code false}) or if it should directly
-	 * be applied to item's content and its children.
 	 */
 	// Remove this for now:
 	// @param {String[]} flags Array of any of the following: 'objects',
 	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
 	//        'lines'. Default: ['objects', 'children']
-	transform: function(matrix, apply) {
+	transform: function(matrix /*, applyMatrix */) {
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
 		var bounds = this._bounds,
@@ -1863,8 +1907,14 @@ function(name) {
 		this._matrix.preConcatenate(matrix);
 		if (this._transform)
 			this._transform(matrix);
-		if (apply)
-			this.apply();
+		// If we need to directly apply the accumulated transformations, call
+		// #_applyMatrix() with the internal _matrix, and set it to the identity
+		// transformation if it was possible to apply it. Application is not
+		// possible on Raster, PointText, PlacedSymbol, since the matrix is
+		// storing the actual location / transformation state.
+		if ((this.applyMatrix || arguments[1])
+				&& this._applyMatrix(this._matrix))
+			this._matrix.setIdentity();
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(/*#=*/ Change.GEOMETRY);
@@ -1878,11 +1928,11 @@ function(name) {
 				var rect = bounds[key];
 				matrix._transformBounds(rect, rect);
 			}
-			// If we have cached 'bounds', update _position again as its 
-			// center. We need to take into account _boundsType here too, in 
-			// case another type is assigned to it, e.g. 'strokeBounds'.
-			var type = this._boundsType,
-				rect = bounds[type && type.bounds || 'bounds'];
+			// If we have cached bounds, update _position again as its 
+			// center. We need to take into account _boundsGetter here too, in 
+			// case another getter is assigned to it, e.g. 'getStrokeBounds'.
+			var getter = this._boundsGetter,
+				rect = bounds[getter && getter.getBounds || getter || 'getBounds'];
 			if (rect)
 				this._position = rect.getCenter(true);
 			this._bounds = bounds;
@@ -1890,34 +1940,15 @@ function(name) {
 			// Transform position as well.
 			this._position = matrix._transformPoint(position, position);
 		}
-		// PORT: Return 'this' in all chainable commands
 		return this;
 	},
 
-	// DOCS: Document #apply()
-	apply: function() {
-		// Call the internal #_apply(), and set the internal _matrix to the
-		// identity transformation if it was possible to apply it.
-		// Application is not possible on Raster, PointText, PlacedSymbol, since
-		// the matrix is storing the actual location / transformation state.
-		// Pass on this._matrix to _apply calls, for reasons of faster access
-		// and code minification.
-		if (this._apply(this._matrix)) {
-			// Set _matrix to the identity
-			this._matrix.setIdentity();
-			// TODO: This needs a _changed notification, but the GEOMETRY
-			// actually doesn't change! What to do?
-		}
-	},
-
-	_apply: function(matrix) {
-		// Pass on the transformation to the children, and apply it there too:
+	_applyMatrix: function(matrix) {
+		// Pass on the transformation to the children, and apply it there too,
+		// by passing true for the 2nd hidden parameter.
 		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++) {
-				var child = this._children[i];
-				child.transform(matrix);
-				child.apply();
-			}
+			for (var i = 0, l = this._children.length; i < l; i++)
+				this._children[i].transform(matrix, true);
 			return true;
 		}
 	},
@@ -2458,8 +2489,8 @@ function(name) {
 			// first, since otherwise their stroke is drawn half transparent
 			// over their fill.
 			if (item._blendMode !== 'normal' || item._opacity < 1
-					&& !(item._segments
-						&& (!item.getFillColor() || !item.getStrokeColor()))) {
+					&& (item._type !== 'path'
+						|| item.getFillColor() && item.getStrokeColor())) {
 				var bounds = item.getStrokeBounds();
 				if (!bounds.width || !bounds.height)
 					return;

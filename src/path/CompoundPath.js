@@ -51,16 +51,16 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		this.addChildren(Array.isArray(paths) ? paths : arguments);
 	},
 
-	insertChild: function(index, item) {
+	insertChild: function(index, item, _cloning) {
 		// Only allow the insertion of paths
-		if (!(item instanceof Path))
+		if (item._type !== 'path')
 			return null;
 		var res = this.base(index, item);
 		// All children except for the bottom one (first one in list) are set
 		// to anti-clockwise orientation, so that they appear as holes, but
 		// only if their orientation was not already specified before
 		// (= _clockwise is defined).
-		if (res && item._clockwise === undefined)
+		if (!_cloning && res && item._clockwise === undefined)
 			item.setClockwise(item._index == 0);
 		return res;
 	},
@@ -85,6 +85,20 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	smooth: function() {
 		for (var i = 0, l = this._children.length; i < l; i++)
 			this._children[i].smooth();
+	},
+
+	/**
+	 * All the curves contained within the compound-path, from all its child
+	 * {@link Path} items.
+	 *
+	 * @type Curve[]
+	 * @bean
+	 */
+	getCurves: function() {
+		var curves = [];
+		for (var i = 0, l = this._children.length; i < l; i++)
+			curves = curves.concat(this._children[i].getCurves());
+		return curves;
 	},
 
 	isEmpty: function() {

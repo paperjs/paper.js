@@ -48,34 +48,43 @@ new function() {
 		return segments[index1]._point.getDistance(segments[index2]._point);
 	}
 
-	function getTransform(item) {
-		// Note, we're taking out the translation part of the matrix and move it
-		// to x, y attributes, to produce more readable markup, and not have to
-		// use center points in rotate(). To do so, SVG requries us to inverse
-		// transform the translation point by the matrix itself, since they are
-		// provided in local coordinates.
-		var matrix = item._matrix.createShiftless(),
-			trans =  matrix._inverseTransform(item._matrix.getTranslation()),
-			attrs = {
-				x: trans.x,
-				y: trans.y
-			};
+	function getTransform(item, coordinates) {
+		var matrix = item._matrix,
+			trans = matrix.getTranslation(),
+			attrs = {};
+		if (coordinates) {
+			// If the item suppports x- and y- coordinates, we're taking out the
+			// translation part of the matrix and move it to x, y attributes, to
+			// produce more readable markup, and not have to use center points
+			// in rotate(). To do so, SVG requries us to inverse transform the
+			// translation point by the matrix itself, since they are provided
+			// in local coordinates.
+			matrix = matrix.createShiftless();
+			var point = matrix._inverseTransform(trans);
+			attrs.x = point.x;
+			attrs.y = point.y;
+			trans = null;
+		}
 		if (matrix.isIdentity())
 			return attrs;
 		// See if we can formulate this matrix as simple scale / rotate commands
 		// Note: getScaling() returns values also when it's not a simple scale,
 		// but angle is only != null if it is, so check for that.
-		var transform = [],
-			angle = matrix.getRotation(),
-			scale = matrix.getScaling();
+		var angle = matrix.getRotation(),
+			parts = [];
 		if (angle != null) {
-			transform.push(angle
-					? 'rotate(' + formatFloat(angle) + ')'
-					: 'scale(' + formatPoint(scale) +')');
+			matrix = matrix.clone().scale(1, -1);
+			if (trans && !trans.isZero())
+				parts.push('translate(' + formatPoint(trans) + ')');
+			if (angle)
+				parts.push('rotate(' + formatFloat(angle) + ')');
+			var scale = matrix.getScaling();
+			if (!Numerical.isZero(scale.x - 1) || !Numerical.isZero(scale.y - 1))
+				parts.push('scale(' + formatPoint(scale) +')');
 		} else {
-			transform.push('matrix(' + matrix.getValues().join(',') + ')');
+			parts.push('matrix(' + matrix.getValues().join(',') + ')');
 		}
-		attrs.transform = transform.join(' ');
+		attrs.transform = parts.join(' ');
 		return attrs;
 	}
 
@@ -176,9 +185,11 @@ new function() {
 			return  segments.length === 4 && path._closed
 					&& isColinear(0, 2) && isColinear(1, 3)
 					? 'rect'
-					: segments.length >= 3
-						? path._closed ? 'polygon' : 'polyline'
-						: 'line';
+					: segments.length === 0
+						? 'empty'
+						: segments.length >= 3
+							? path._closed ? 'polygon' : 'polyline'
+							: 'line';
 		} else if (path._closed) {
 			if (segments.length === 8
 					&& isArc(0) && isArc(2) && isArc(4) && isArc(6)
@@ -203,13 +214,16 @@ new function() {
 		// Override default SVG style on groups, then apply style.
 		attrs.fill = 'none';
 		var svg = createElement('g', attrs);
-		for (var i = 0, l = children.length; i < l; i++)
-			svg.appendChild(children[i].exportSvg());
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i].exportSvg();
+			if (child)
+				svg.appendChild(child);
+		}
 		return svg;
 	}
 
 	function exportText(item) {
-		var attrs = getTransform(item),
+		var attrs = getTransform(item, true),
 			style = item._style;
 		if (style._font != null)
 			attrs['font-family'] = style._font;
@@ -227,6 +241,8 @@ new function() {
 			angle = determineAngle(path, segments, type, center),
 			attrs;
 		switch (type) {
+		case 'empty':
+			return null;
 		case 'path':
 			attrs = {
 				d: getPath(path, segments)
@@ -341,10 +357,15 @@ new function() {
 			// (A layer or group which can have style values in SVG).
 			var value = style[entry.get]();
 			if (!parentStyle || !Base.equals(parentStyle[entry.get](), value)) {
+				// Support for css-style rgba() values is not in SVG 1.1, so
+				// separate the alpha value of colors with alpha into the
+				// separate fill- / stroke-opacity attribute:
+				if (entry.type === 'color' && value != null && value.getAlpha() < 1)
+					attrs[entry.attribute + '-opacity'] = value.getAlpha();
 				attrs[entry.attribute] = value == null
 					? 'none'
 					: entry.type === 'color'
-						? value.toCssString()
+						? value.toCss(true) // false for noAlpha, see above
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'
@@ -372,8 +393,8 @@ new function() {
 		 * @return {SVGSVGElement} the item converted to an SVG node
 		 */
 		exportSvg: function() {
-			var exporter = exporters[this._type];
-			var svg = exporter && exporter(this, this._type);
+			var exporter = exporters[this._type],
+				svg = exporter && exporter(this, this._type);
 			return svg && applyStyle(this, svg);
 		}
 	});

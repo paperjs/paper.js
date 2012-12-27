@@ -13,11 +13,4 @@
 #
 # All rights reserved.
 
-echo "Building paper.js"
-./build.sh
-echo "Minifying paper.js"
-./minify.sh
-echo "Building docs"
-./docs.sh
-echo "Zipping paperjs.zip"
-./zip.sh
+uglifyjs ../dist/paper.js -o ../dist/paper-min.js -c unused=false -m -r "_$_,$_" -b ascii_only=true,beautify=false --comments /^!/

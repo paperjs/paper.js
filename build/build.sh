@@ -17,9 +17,8 @@
 # build.sh MODE
 #
 # MODE:
-#	commented		Preprocessed but still formated and commented
-#	stripped		Formated but without comments (default)
-#	compressed		Uses UglifyJS to reduce file size
+#	commented		Preprocessed, still formated and commented
+#	stripped		Preprocessed, formated but without comments
 
 if [ $# -eq 0 ]
 then

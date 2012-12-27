@@ -1,10 +1,8 @@
 /*!
  * Paper.js v*#=* options.version
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
  * http://paperjs.org/
- * http://scriptographer.org/
+ *
+ * Paper.js is a JavaScript Vector Graphics Library based on Scriptographer.org.
  *
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
@@ -27,20 +25,14 @@
  *
  ***
  *
- * Parse-js
+ * Acorn.js
+ * http://marijnhaverbeke.nl/acorn/
  *
- * A JavaScript tokenizer / parser / generator, originally written in Lisp.
- * Copyright (c) Marijn Haverbeke <marijnh@gmail.com>
- * http://marijn.haverbeke.nl/parse-js/
+ * Acorn is a tiny, fast JavaScript parser written in JavaScript.
+ * 
+ * Acorn was written by Marijn Haverbeke and released under an MIT
+ * license.
  *
- * Ported by to JavaScript by Mihai Bazon
- * Copyright (c) 2010, Mihai Bazon <mihai.bazon@gmail.com>
- * http://mihai.bazon.net/blog/
- *
- * Modifications and adaptions to browser (c) 2011, Juerg Lehni
- * http://lehni.org/
- *
- * Distributed under the BSD license.
  */
 
 var paper = new function() {

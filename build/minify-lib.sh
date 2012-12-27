@@ -13,11 +13,5 @@
 #
 # All rights reserved.
 
-echo "Building paper.js"
-./build.sh
-echo "Minifying paper.js"
-./minify.sh
-echo "Building docs"
-./docs.sh
-echo "Zipping paperjs.zip"
-./zip.sh
+uglifyjs ../lib/acorn.js -o ../lib/acorn-min.js -c -m -b ascii_only=true,beautify=false
+uglifyjs ../lib/esprima.js -o ../lib/esprima-min.js -c -m -b ascii_only=true,beautify=false

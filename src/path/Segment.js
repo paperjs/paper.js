@@ -27,6 +27,8 @@
  * objects that are connected by this segment.
  */
 var Segment = this.Segment = Base.extend(/** @lends Segment# */{
+	_type: 'segment',
+
 	/**
 	 * Creates a new Segment object.
 	 *
@@ -58,8 +60,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		if (count == 0) {
 			// Nothing
 		} else if (count == 1) {
-			// TODO: If beans are not activated, this won't copy from existing
-			// segments. OK?
+			// Note: This copies from existing segments through bean getters
 			if (arg0.point) {
 				point = arg0.point;
 				handleIn = arg0.handleIn;
@@ -87,11 +88,19 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		createPoint(this, '_handleOut', handleOut);
 	},
 
+	_serialize: function() {
+		return Base.serialize(this._handleIn.isZero() && this._handleOut.isZero()
+				? this._point
+				: [this._point, this._handleIn, this._handleOut], true);
+	},
+
 	_changed: function(point) {
 		if (!this._path)
 			return;
-		// Delegate changes to affected curves if they exist
-		var curve = this._path._curves && this.getCurve(), other;
+		// Delegate changes to affected curves if they exist. Check _curves
+		// first to make sure we're not creating it by calling this.getCurve().
+		var curve = this._path._curves && this.getCurve(),
+			other;
 		if (curve) {
 			curve._changed();
 			// Get the other affected curve, which is the previous one for
@@ -384,35 +393,36 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		}
 		// If no matrix was previded, this was just called to get the coords and
 		// we are done now.
-		if (!matrix)
-			return;
-		matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
-		x = coords[0];
-		y = coords[1];
-		if (change) {
-			// If change is true, we need to set the new values back
-			point._x = x;
-			point._y = y;
-			i  = 2;
-			if (handleIn) {
-				handleIn._x = coords[i++] - x;
-				handleIn._y = coords[i++] - y;
-			}
-			if (handleOut) {
-				handleOut._x = coords[i++] - x;
-				handleOut._y = coords[i++] - y;
-			}
-		} else {
-			// We want to receive the results in coords, so make sure
-			// handleIn and out are defined too, even if they're 0
-			if (!handleIn) {
-				coords[i++] = x;
-				coords[i++] = y;
-			}
-			if (!handleOut) {
-				coords[i++] = x;
-				coords[i++] = y;
+		if (matrix) {
+			matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
+			x = coords[0];
+			y = coords[1];
+			if (change) {
+				// If change is true, we need to set the new values back
+				point._x = x;
+				point._y = y;
+				i  = 2;
+				if (handleIn) {
+					handleIn._x = coords[i++] - x;
+					handleIn._y = coords[i++] - y;
+				}
+				if (handleOut) {
+					handleOut._x = coords[i++] - x;
+					handleOut._y = coords[i++] - y;
+				}
+			} else {
+				// We want to receive the results in coords, so make sure
+				// handleIn and out are defined too, even if they're 0
+				if (!handleIn) {
+					coords[i++] = x;
+					coords[i++] = y;
+				}
+				if (!handleOut) {
+					coords[i++] = x;
+					coords[i++] = y;
+				}
 			}
 		}
+		return coords;
 	}
 });

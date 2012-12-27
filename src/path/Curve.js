@@ -41,30 +41,36 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			this._segment1 = new Segment();
 			this._segment2 = new Segment();
 		} else if (count == 1) {
-			// TODO: If beans are not activated, this won't copy from
-			// an existing segment. OK?
+			// Note: This copies from existing segments through bean getters
 			this._segment1 = new Segment(arg0.segment1);
 			this._segment2 = new Segment(arg0.segment2);
 		} else if (count == 2) {
 			this._segment1 = new Segment(arg0);
 			this._segment2 = new Segment(arg1);
-		} else if (count == 4) {
-			this._segment1 = new Segment(arg0, null, arg1);
-			this._segment2 = new Segment(arg3, arg2, null);
-		} else if (count == 8) {
-			// An array as returned by getValues
-			var p1 = Point.create(arg0, arg1),
-				p2 = Point.create(arg6, arg7);
-			this._segment1 = new Segment(p1, null,
-					Point.create(arg2, arg3).subtract(p1));
-			this._segment2 = new Segment(p2,
-					Point.create(arg4, arg5).subtract(p2), null);
+		} else {
+			var point1, handle1, handle2, point2;
+			if (count == 4) {
+				point1 = arg0;
+				handle1 = arg1;
+				handle2 = arg2;
+				point2 = arg3;
+			} else if (count == 8) {
+				// Convert getValue() array back to points and handles so we
+				// can create segments for those.
+				point1 = [arg0, arg1];
+				point2 = [arg6, arg7];
+				handle1 = [arg2 - arg0, arg7 - arg1];
+				handle2 = [arg4 - arg6, arg5 - arg7];
+			}
+			this._segment1 = new Segment(point1, null, handle1);
+			this._segment2 = new Segment(point2, handle2, null);
 		}
 	},
 
 	_changed: function() {
 		// Clear cached values.
 		delete this._length;
+		delete this._bounds;
 	},
 
 	/**
@@ -228,8 +234,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * @type Number
 	 * @bean
 	 */
+	 // Hide parameters from Bootstrap so it injects bean too
 	getLength: function(/* from, to */) {
-		// Hide parameters from Bootstrap so it injects bean too
 		var from = arguments[0],
 			to = arguments[1],
 			fullLength = arguments.length == 0 || from == 0 && to == 1;
@@ -256,8 +262,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				&& this._segment2._handleIn.isZero();
 	},
 
-	// PORT: Add support for start parameter to Sg
-	// PORT: Rename #getParameter(length) -> #getParameterAt(offset)
 	// DOCS: Document #getParameter(length, start)
 	/**
 	 * @param {Number} offset
@@ -312,22 +316,22 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	getCrossings: function(point, roots) {
 		// Implement the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
-		// Solve the y-axis cubic polynominal for point.y and count all
-		// solutions to the right of point.x as crossings.
+		// Solve the y-axis cubic polynomial for point.y and count all solutions
+		// to the right of point.x as crossings.
 		var vals = this.getValues(),
-			num = Curve.solveCubic(vals, 1, point.y, roots),
+			count = Curve.solveCubic(vals, 1, point.y, roots),
 			crossings = 0;
-		for (var i = 0; i < num; i++) {
+		for (var i = 0; i < count; i++) {
 			var t = roots[i];
-			if (t >= 0 && t <= 1 && Curve.evaluate(vals, t, 0).x > point.x) {
+			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, 0).x > point.x) {
 				// If we're close to 0 and are not changing y-direction from the
 				// previous curve, do not count this root, as we're merely
 				// touching a tip. Passing 1 for Curve.evaluate()'s type means
 				// we're calculating tangents, and then check their y-slope for
 				// a change of direction:
-				if (t < Numerical.TOLERANCE && Curve.evaluate(
+				if (t < /*#=*/ Numerical.TOLERANCE && Curve.evaluate(
 							this.getPrevious().getValues(), 1, 1).y
-						* Curve.evaluate(vals, t, 1).y >= 0)
+						* Curve.evaluate(vals, t, 1).y >= /*#=*/ Numerical.TOLERANCE)
 					continue;
 				crossings++;
 			}
@@ -374,184 +378,295 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return '{ ' + parts.join(', ') + ' }';
 	},
 
-	statics: {
-		create: function(path, segment1, segment2) {
-			var curve = Base.create(Curve);
-			curve._path = path;
-			curve._segment1 = segment1;
-			curve._segment2 = segment2;
-			return curve;
-		},
+// Mess with indentation in order to get more line-space below...
+statics: {
+	create: function(path, segment1, segment2) {
+		var curve = Base.create(Curve);
+		curve._path = path;
+		curve._segment1 = segment1;
+		curve._segment2 = segment2;
+		return curve;
+	},
 
-		getValues: function(segment1, segment2) {
-			var p1 = segment1._point,
-				h1 = segment1._handleOut,
-				h2 = segment2._handleIn,
-				p2 = segment2._point;
-			return [
-				p1._x, p1._y,
-				p1._x + h1._x, p1._y + h1._y,
-				p2._x + h2._x, p2._y + h2._y,
-				p2._x, p2._y
-			];
-		},
+	getValues: function(segment1, segment2) {
+		var p1 = segment1._point,
+			h1 = segment1._handleOut,
+			h2 = segment2._handleIn,
+			p2 = segment2._point;
+		return [
+			p1._x, p1._y,
+			p1._x + h1._x, p1._y + h1._y,
+			p2._x + h2._x, p2._y + h2._y,
+			p2._x, p2._y
+		];
+	},
 
-		evaluate: function(v, t, type) {
-			var p1x = v[0], p1y = v[1],
-				c1x = v[2], c1y = v[3],
-				c2x = v[4], c2y = v[5],
-				p2x = v[6], p2y = v[7],
-				x, y;
+	evaluate: function(v, t, type) {
+		var p1x = v[0], p1y = v[1],
+			c1x = v[2], c1y = v[3],
+			c2x = v[4], c2y = v[5],
+			p2x = v[6], p2y = v[7],
+			x, y;
 
-			// Handle special case at beginning / end of curve
-			// PORT: Change in Sg too, so 0.000000000001 won't be
-			// required anymore
-			if (type == 0 && (t == 0 || t == 1)) {
-				x = t == 0 ? p1x : p2x;
-				y = t == 0 ? p1y : p2y;
-			} else {
-				// TODO: Find a better solution for this:
-				// Prevent tangents and normals of length 0:
-				var tMin = Numerical.TOLERANCE;
-				if (t < tMin && c1x == p1x && c1y == p1y)
-					t = tMin;
-				else if (t > 1 - tMin && c2x == p2x && c2y == p2y)
-					t = 1 - tMin;
-				// Calculate the polynomial coefficients.
-				var cx = 3 * (c1x - p1x),
-					bx = 3 * (c2x - c1x) - cx,
-					ax = p2x - p1x - cx - bx,
+		// Handle special case at beginning / end of curve
+		if (type == 0 && (t == 0 || t == 1)) {
+			x = t == 0 ? p1x : p2x;
+			y = t == 0 ? p1y : p2y;
+		} else {
+			// TODO: Find a better solution for this:
+			// Prevent tangents and normals of length 0:
+			var tMin = /*#=*/ Numerical.TOLERANCE;
+			if (t < tMin && c1x == p1x && c1y == p1y)
+				t = tMin;
+			else if (t > 1 - tMin && c2x == p2x && c2y == p2y)
+				t = 1 - tMin;
+			// Calculate the polynomial coefficients.
+			var cx = 3 * (c1x - p1x),
+				bx = 3 * (c2x - c1x) - cx,
+				ax = p2x - p1x - cx - bx,
 
-					cy = 3 * (c1y - p1y),
-					by = 3 * (c2y - c1y) - cy,
-					ay = p2y - p1y - cy - by;
+				cy = 3 * (c1y - p1y),
+				by = 3 * (c2y - c1y) - cy,
+				ay = p2y - p1y - cy - by;
 
-				switch (type) {
-				case 0: // point
-					// Calculate the curve point at parameter value t
-					x = ((ax * t + bx) * t + cx) * t + p1x;
-					y = ((ay * t + by) * t + cy) * t + p1y;
-					break;
-				case 1: // tangent
-				case 2: // normal
-					// Simply use the derivation of the bezier function for both
-					// the x and y coordinates:
-					x = (3 * ax * t + 2 * bx) * t + cx;
-					y = (3 * ay * t + 2 * by) * t + cy;
-					break;
-				}
+			switch (type) {
+			case 0: // point
+				// Calculate the curve point at parameter value t
+				x = ((ax * t + bx) * t + cx) * t + p1x;
+				y = ((ay * t + by) * t + cy) * t + p1y;
+				break;
+			case 1: // tangent
+			case 2: // normal
+				// Simply use the derivation of the bezier function for both
+				// the x and y coordinates:
+				x = (3 * ax * t + 2 * bx) * t + cx;
+				y = (3 * ay * t + 2 * by) * t + cy;
+				break;
 			}
-			// The normal is simply the rotated tangent:
-			// TODO: Rotate normals the other way in Scriptographer too?
-			// (Depending on orientation, I guess?)
-			return type == 2 ? new Point(y, -x) : new Point(x, y);
-		},
+		}
+		// The normal is simply the rotated tangent:
+		// TODO: Rotate normals the other way in Scriptographer too?
+		// (Depending on orientation, I guess?)
+		return type == 2 ? new Point(y, -x) : new Point(x, y);
+	},
 
-		subdivide: function(v, t) {
-			var p1x = v[0], p1y = v[1],
-				c1x = v[2], c1y = v[3],
-				c2x = v[4], c2y = v[5],
-				p2x = v[6], p2y = v[7];
-			if (t === undefined)
-				t = 0.5;
-			// Triangle computation, with loops unrolled.
-			var u = 1 - t,
-				// Interpolate from 4 to 3 points
-				p3x = u * p1x + t * c1x, p3y = u * p1y + t * c1y,
-				p4x = u * c1x + t * c2x, p4y = u * c1y + t * c2y,
-				p5x = u * c2x + t * p2x, p5y = u * c2y + t * p2y,
-				// Interpolate from 3 to 2 points
-				p6x = u * p3x + t * p4x, p6y = u * p3y + t * p4y,
-				p7x = u * p4x + t * p5x, p7y = u * p4y + t * p5y,
-				// Interpolate from 2 points to 1 point
-				p8x = u * p6x + t * p7x, p8y = u * p6y + t * p7y;
-			// We now have all the values we need to build the subcurves:
-			return [
-				[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
-				[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
-			];
-		},
+	subdivide: function(v, t) {
+		var p1x = v[0], p1y = v[1],
+			c1x = v[2], c1y = v[3],
+			c2x = v[4], c2y = v[5],
+			p2x = v[6], p2y = v[7];
+		if (t === undefined)
+			t = 0.5;
+		// Triangle computation, with loops unrolled.
+		var u = 1 - t,
+			// Interpolate from 4 to 3 points
+			p3x = u * p1x + t * c1x, p3y = u * p1y + t * c1y,
+			p4x = u * c1x + t * c2x, p4y = u * c1y + t * c2y,
+			p5x = u * c2x + t * p2x, p5y = u * c2y + t * p2y,
+			// Interpolate from 3 to 2 points
+			p6x = u * p3x + t * p4x, p6y = u * p3y + t * p4y,
+			p7x = u * p4x + t * p5x, p7y = u * p4y + t * p5y,
+			// Interpolate from 2 points to 1 point
+			p8x = u * p6x + t * p7x, p8y = u * p6y + t * p7y;
+		// We now have all the values we need to build the subcurves:
+		return [
+			[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
+			[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right
+		];
+	},
 
-		// Converts from the point coordinates (p1, c1, c2, p2) for one axis to
-		// the polynomial coefficients and solves the polynomial for val
-		solveCubic: function (v, coord, val, roots) {
-			var p1 = v[coord],
-				c1 = v[coord + 2],
-				c2 = v[coord + 4],
-				p2 = v[coord + 6],
-				c = 3 * (c1 - p1),
-				b = 3 * (c2 - c1) - c,
-				a = p2 - p1 - c - b;
-			return Numerical.solveCubic(a, b, c, p1 - val, roots,
-					Numerical.TOLERANCE);
-		},
+	// Converts from the point coordinates (p1, c1, c2, p2) for one axis to
+	// the polynomial coefficients and solves the polynomial for val
+	solveCubic: function (v, coord, val, roots) {
+		var p1 = v[coord],
+			c1 = v[coord + 2],
+			c2 = v[coord + 4],
+			p2 = v[coord + 6],
+			c = 3 * (c1 - p1),
+			b = 3 * (c2 - c1) - c,
+			a = p2 - p1 - c - b;
+		return Numerical.solveCubic(a, b, c, p1 - val, roots,
+				/*#=*/ Numerical.TOLERANCE);
+	},
 
-		getParameter: function(v, x, y) {
-			// Handle beginnings and end seperately, as they are not detected
-			// sometimes.
-			if (Math.abs(v[0] - x) < Numerical.TOLERANCE
-					&& Math.abs(v[1] - y) < Numerical.TOLERANCE)
-				return 0;
-			if (Math.abs(v[6] - x) < Numerical.TOLERANCE
-					&& Math.abs(v[7] - y) < Numerical.TOLERANCE)
-				return 1;
-			var txs = [],
-				tys = [],
-				sx = Curve.solveCubic(v, 0, x, txs),
-				sy = Curve.solveCubic(v, 1, y, tys),
-				tx, ty;
-			// sx, sy == -1 means infinite solutions:
-			// Loop through all solutions for x and match with solutions for y,
-			// to see if we either have a matching pair, or infinite solutions
-			// for one or the other.
-			for (var cx = 0;  sx == -1 || cx < sx;) {
-				if (sx == -1 || (tx = txs[cx++]) >= 0 && tx <= 1) {
-					for (var cy = 0; sy == -1 || cy < sy;) {
-						if (sy == -1 || (ty = tys[cy++]) >= 0 && ty <= 1) {
-							// Handle infinite solutions by assigning root of
-							// the other polynomial
-							if (sx == -1) tx = ty;
-							else if (sy == -1) ty = tx;
-							// Use average if we're within tolerance
-							if (Math.abs(tx - ty) < Numerical.TOLERANCE)
-								return (tx + ty) * 0.5;
-						}
+	getParameter: function(v, x, y) {
+		// Handle beginnings and end seperately, as they are not detected
+		// sometimes.
+		if (Math.abs(v[0] - x) < /*#=*/ Numerical.TOLERANCE
+				&& Math.abs(v[1] - y) < /*#=*/ Numerical.TOLERANCE)
+			return 0;
+		if (Math.abs(v[6] - x) < /*#=*/ Numerical.TOLERANCE
+				&& Math.abs(v[7] - y) < /*#=*/ Numerical.TOLERANCE)
+			return 1;
+		var txs = [],
+			tys = [],
+			sx = Curve.solveCubic(v, 0, x, txs),
+			sy = Curve.solveCubic(v, 1, y, tys),
+			tx, ty;
+		// sx, sy == -1 means infinite solutions:
+		// Loop through all solutions for x and match with solutions for y,
+		// to see if we either have a matching pair, or infinite solutions
+		// for one or the other.
+		for (var cx = 0;  sx == -1 || cx < sx;) {
+			if (sx == -1 || (tx = txs[cx++]) >= 0 && tx <= 1) {
+				for (var cy = 0; sy == -1 || cy < sy;) {
+					if (sy == -1 || (ty = tys[cy++]) >= 0 && ty <= 1) {
+						// Handle infinite solutions by assigning root of
+						// the other polynomial
+						if (sx == -1) tx = ty;
+						else if (sy == -1) ty = tx;
+						// Use average if we're within tolerance
+						if (Math.abs(tx - ty) < /*#=*/ Numerical.TOLERANCE)
+							return (tx + ty) * 0.5;
 					}
-					// Avoid endless loops here: If sx is infinite and there was
-					// no fitting ty, there's no solution for this bezier
-					if (sx == -1)
-						break;
 				}
+				// Avoid endless loops here: If sx is infinite and there was
+				// no fitting ty, there's no solution for this bezier
+				if (sx == -1)
+					break;
 			}
-			return null;
-		},
+		}
+		return null;
+	},
 
-		// TODO: Find better name
-		getPart: function(v, from, to) {
-			if (from > 0)
-				v = Curve.subdivide(v, from)[1]; // [1] right
-			// Interpolate the  parameter at 'to' in the new curve and
-			// cut there.
-			if (to < 1)
-				v = Curve.subdivide(v, (to - from) / (1 - from))[0]; // [0] left
-			return v;
-		},
+	// TODO: Find better name
+	getPart: function(v, from, to) {
+		if (from > 0)
+			v = Curve.subdivide(v, from)[1]; // [1] right
+		// Interpolate the  parameter at 'to' in the new curve and
+		// cut there.
+		if (to < 1)
+			v = Curve.subdivide(v, (to - from) / (1 - from))[0]; // [0] left
+		return v;
+	},
 
-		isFlatEnough: function(v) {
-			// Thanks to Kaspar Fischer for the following:
-			// http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
-			var p1x = v[0], p1y = v[1],
-				c1x = v[2], c1y = v[3],
-				c2x = v[4], c2y = v[5],
-				p2x = v[6], p2y = v[7],
-				ux = 3 * c1x - 2 * p1x - p2x,
-				uy = 3 * c1y - 2 * p1y - p2y,
-				vx = 3 * c2x - 2 * p2x - p1x,
-				vy = 3 * c2y - 2 * p2y - p1y;
-			return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy) < 1;
+	isFlatEnough: function(v) {
+		// Thanks to Kaspar Fischer for the following:
+		// http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
+		var p1x = v[0], p1y = v[1],
+			c1x = v[2], c1y = v[3],
+			c2x = v[4], c2y = v[5],
+			p2x = v[6], p2y = v[7],
+			ux = 3 * c1x - 2 * p1x - p2x,
+			uy = 3 * c1y - 2 * p1y - p2y,
+			vx = 3 * c2x - 2 * p2x - p1x,
+			vy = 3 * c2y - 2 * p2y - p1y;
+		return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy) < 1;
+	},
+
+	getBounds: function(v) {
+		var min = v.slice(0, 2),
+			max = min.slice(0), // clone
+			roots = new Array(2);
+		for (var i = 0; i < 2; i++) {
+			Curve._addBounds(v[i], v[i + 2], v[i + 4], v[i + 6],
+					i, 0, min, max, roots);
+		}
+		return Rectangle.create(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+	},
+
+	/**
+	 * Private helper for both Curve.getBounds() and Path.getBounds(), which
+	 * finds the 0-crossings of the derivative of a bezier curve polynomial, to
+	 * determine potential extremas when finding the bounds of a curve. 
+	 * Note: padding is only used for Path.getBounds().
+	 */
+	_addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
+		// Code ported and further optimised from:
+		// http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
+		function add(value, padding) {
+			var left = value - padding,
+				right = value + padding;
+			if (left < min[coord])
+				min[coord] = left;
+			if (right > max[coord])
+				max[coord] = right;
+		}
+		// Calculate derivative of our bezier polynomial, divided by 3.
+		// Doing so allows for simpler calculations of a, b, c and leads to the
+		// same quadratic roots.
+		var a = 3 * (v1 - v2) - v0 + v3,
+			b = 2 * (v0 + v2) - 4 * v1,
+			c = v1 - v0;
+			count = Numerical.solveQuadratic(a, b, c, roots,
+					/*#=*/ Numerical.TOLERANCE),
+			// Add some tolerance for good roots, as t = 0 / 1 are added
+			// seperately anyhow, and we don't want joins to be added with
+			// radiuses in getStrokeBounds()
+			tMin = /*#=*/ Numerical.TOLERANCE,
+			tMax = 1 - tMin;
+		// Only add strokeWidth to bounds for points which lie  within 0 < t < 1
+		// The corner cases for cap and join are handled in getStrokeBounds()
+		add(v3, 0);
+		for (var j = 0; j < count; j++) {
+			var t = roots[j],
+				u = 1 - t;
+			// Test for good roots and only add to bounds if good.
+			if (tMin < t && t < tMax)
+				// Calculate bezier polynomial at t.
+				add(u * u * u * v0
+					+ 3 * u * u * t * v1
+					+ 3 * u * t * t * v2
+					+ t * t * t * v3,
+					padding);
 		}
 	}
-}, new function() { // Scope for methods that require numerical integration
+}}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
+	// determine the bounds of Curve objects with defined segment1 and segment2
+	// values Curve.getBounds() can be used directly on curve arrays, without
+	// the need to create a Curve object first, as required by the code that
+	// finds path interesections.
+	function(name) {
+		this[name] = function() {
+			if (!this._bounds)
+				this._bounds = {};
+			var bounds = this._bounds[name];
+			if (!bounds) {
+				// Calculate the curve bounds by passing a segment list for the
+				// curve to the static Path.get*Boudns methods.
+				bounds = this._bounds[name] = Path[name](
+					[this._segment1, this._segment2], false, this._path._style);
+			}
+			return bounds.clone();
+		};
+	},
+/** @lends Curve# */{
+	/**
+	 * The bounding rectangle of the curve excluding stroke width.
+	 *
+	 * @name Curve#getBounds
+	 * @type Rectangle
+	 * @bean
+	 */
+
+	/**
+	 * The bounding rectangle of the curve including stroke width.
+	 *
+	 * @name Curve#getStrokeBounds
+	 * @type Rectangle
+	 * @bean
+	 */
+
+	/**
+	 * The bounding rectangle of the curve including handles.
+	 *
+	 * @name Curve#getHandleBounds
+	 * @type Rectangle
+	 * @bean
+	 */
+
+	/**
+	 * The rough bounding rectangle of the curve that is shure to include all of
+	 * the drawing, including stroke width.
+	 *
+	 * @name Curve#getRoughBounds
+	 * @type Rectangle
+	 * @bean
+	 * @ignore
+	 */
+}),
+new function() { // Scope for methods that require numerical integration
 
 	function getLengthIntegrand(v) {
 		// Calculate the coefficients of a Bezier derivative.
@@ -638,7 +753,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			}
 			return Numerical.findRoot(f, ds,
 					forward ? a + guess : b - guess, // Initial guess for x
-					a, b, 16, Numerical.TOLERANCE);
+					a, b, 16, /*#=*/ Numerical.TOLERANCE);
 		}
 	};
 }, new function() { // Scope for nearest point on curve problem

@@ -17,10 +17,10 @@
 /**
  * @name KeyEvent
  *
- * @class KeyEvent The KeyEvent object is received by the {@link Tool}'s
- * keyboard handlers {@link Tool#onKeyDown}, {@link Tool#onKeyUp},
- * The KeyEvent object is the only parameter passed to these functions
- * and contains information about the keyboard event.
+ * @class The KeyEvent object is received by the {@link Tool}'s keyboard
+ * handlers {@link Tool#onKeyDown}, {@link Tool#onKeyUp}. The KeyEvent object is
+ * the only parameter passed to these functions and contains information about
+ * the keyboard event.
  *
  * @extends Event
  */
@@ -57,10 +57,10 @@ var KeyEvent = this.KeyEvent = Event.extend(/** @lends KeyEvent# */{
 	 * @return {String} A string representation of the key event.
 	 */
 	toString: function() {
-		return '{ type: ' + this.type
-				+ ', key: ' + this.key
-				+ ', character: ' + this.character
-				+ ', modifiers: ' + this.getModifiers()
-				+ ' }';
+		return "{ type: '" + this.type
+				+ "', key: '" + this.key
+				+ "', character: '" + this.character
+				+ "', modifiers: " + this.getModifiers()
+				+ " }";
 	}
 });

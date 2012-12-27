@@ -71,7 +71,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 			this.x = this.y = this.width = this.height = 0;
 			if (this._read)
 				this._read = arg0 === null ? 1 : 0;
-		} else if (arguments.length > 1 && !('width' in arg0)) {
+		} else if (arguments.length > 1 && arg0.width == null) {
 			// We're checking arg0.width to rule out Rectangles, which are
 			// handled separately below.
 			// Read a point argument and look at the next value to see wether
@@ -168,10 +168,9 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @bean
 	 */
 	getPoint: function(/* dontLink */) {
-		// Pass on the optional argument dontLink which tells LinkedPoint to
+		// Pass on the optional argument _dontLink which tells LinkedPoint to
 		// produce a normal point instead. Used internally for speed reasons.
-		return LinkedPoint.create(this, 'setPoint', this.x, this.y,
-				arguments[0]);
+		return LinkedPoint.create(this, 'setPoint', this.x, this.y, arguments[0]);
 	},
 
 	setPoint: function(point) {
@@ -181,6 +180,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 		return this;
 	},
 
+
 	/**
 	 * The size of the rectangle
 	 *
@@ -188,7 +188,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @bean
 	 */
 	getSize: function(/* dontLink */) {
-		// See Rectangle#getPoint() about arguments[0]
 		return LinkedSize.create(this, 'setSize', this.width, this.height,
 				arguments[0]);
 	},

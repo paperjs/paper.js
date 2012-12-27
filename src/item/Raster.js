@@ -25,9 +25,9 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	_type: 'raster',
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
-	_boundsType: 'bounds',
+	_boundsGetter: 'getBounds',
 
-	// TODO: Implement url / type, width, height.
+	// TODO: Implement type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
 	// DOCS: Document Raster constructor.
 	/**
@@ -35,50 +35,21 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 *
 	 * @param {HTMLImageElement|Canvas|string} [object]
 	 */
-	initialize: function(object, pointOrMatrix) {
-		this.base(pointOrMatrix);
-		if (object.getContext) {
-			this.setCanvas(object);
-		} else {
-/*#*/ if (options.browser) {
-			// If it's a string, get the element with this id first.
-			if (typeof object === 'string') {
-				var str = object,
-					that = this;
-				object = document.getElementById(str);
-				if (!object) {
-					// str could be a URL to load the image from?
-					object = new Image();
-					object.src = str;
-				}
-				// Trigger the onLoad event on the image once it's loaded
-				DomEvent.add(object, {
-					load: function() {
-						that.setImage(object);
-						that.fire('load');
-					}
-				});
-				// If the image is already loaded, fire a 'load' event anyway,
-				// so code does not need to make the distinction, and cachig is
-				// transparently handled too.
-				if (object.naturalWidth) {
-					setTimeout(function() {
-						that.fire('load');
-					}, 0);
-				}
-
+	initialize: function(arg0, arg1) {
+		// Support two forms of item initialization: Passing one object literal
+		// describing all the different properties to be set, or an image (arg0)
+		// and a point where it should be placed (arg1).
+		this.base(arg1 !== undefined && Point.read(arguments, 1));
+		// If we can handle setting properties through object literal, we're all
+		// set. Otherwise we need to check the type of arg0:
+		if (!this._setProperties(arg0)) {
+			if (arg0.getContext) {
+				this.setCanvas(arg0);
+			} else if (typeof arg0 === 'string') {
+				this.setSource(arg0);
+			} else {
+				this.setImage(arg0);
 			}
-/*#*/ } else if (options.server) {
-			// If we're running on the server and it's a string,
-			// load it from disk:
-			if (typeof object === 'string') {
-				// TODO: load images async
-				var data = fs.readFileSync(object);
-				object = new Image();
-				object.src = data;
-			}
-/*#*/ } // options.server
-			this.setImage(object);
 		}
 	},
 
@@ -105,13 +76,15 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	setSize: function() {
-		var size = Size.read(arguments),
+		var size = Size.read(arguments);
+		if (!this._size.equals(size)) {
 			// Get reference to image before changing canvas
-			image = this.getImage();
-		// Setting canvas internally sets _size
-		this.setCanvas(CanvasProvider.getCanvas(size));
-		// Draw image back onto new canvas
-		this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
+			var image = this.getImage();
+			// Setting canvas internally sets _size
+			this.setCanvas(CanvasProvider.getCanvas(size));
+			// Draw image back onto new canvas
+			this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
+		}
 	},
 
 	/**
@@ -205,7 +178,6 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		return this._image || this.getCanvas();
 	},
 
-	// TODO: Support string id of image element.
 	setImage: function(image) {
 		if (this._canvas)
 			CanvasProvider.returnCanvas(this._canvas);
@@ -218,6 +190,36 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this._canvas = null;
 		this._context = null;
 		this._changed(/*#=*/ Change.GEOMETRY);
+	},
+
+	getSource: function() {
+		return this.getImage().src;
+	},
+
+	setSource: function(src) {
+/*#*/ if (options.browser) {
+		var that = this,
+			// src can be an URL or a DOM ID to load the image from
+			image = document.getElementById(src) || new Image();
+		// Trigger the onLoad event on the image once it's loaded
+		DomEvent.add(image, {
+			load: function() {
+				that.setImage(image);
+				that.fire('load');
+				if (that._project.view)
+					that._project.view.draw(true);
+			}
+		});
+		if (!image.src)
+			image.src = src;
+/*#*/ } else if (options.server) {
+		// If we're running on the server and it's a string,
+		// load it from disk:
+		// TODO: load images async, calling setImage once loaded as above
+		var image = new Image();
+		image.src = fs.readFileSync(src);
+/*#*/ } // options.server
+		this.setImage(image);
 	},
 
 	// DOCS: document Raster#getSubImage
@@ -411,7 +413,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
-	_getBounds: function(type, matrix) {
+	_getBounds: function(getter, matrix) {
 		var rect = new Rectangle(this._size).setCenter(0, 0);
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},

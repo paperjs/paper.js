@@ -72,6 +72,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		lastPoint,
 		overPoint,
 		downItem,
+		lastItem,
 		overItem,
 		hasDrag,
 		doubleClick,
@@ -122,8 +123,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			var item = handleEvent(this, 'mousedown', event, point);
 			// See if we're clicking again on the same item, within the
 			// double-click time. Firefox uses 300ms as the max time difference:
-			doubleClick = downItem == item && Date.now() - clickTime < 300;
-			downItem = item;
+			doubleClick = lastItem == item && (Date.now() - clickTime < 300);
+			downItem = lastItem = item;
 			downPoint = lastPoint = overPoint = point;
 			hasDrag = downItem && downItem.responds('mousedrag');
 		},

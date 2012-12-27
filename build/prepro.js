@@ -157,7 +157,7 @@ function stripComments(str) {
 		if (quote) {
 			// When checking for quote escaping, we also need to check that the
 			// escape sign itself is not escaped, as otherwise '\\' would cause
-			// the wrong impression of and endlessly open string:
+			// the wrong impression of an unclosed string:
 			if (str[i] === quoteSign && (str[i - 1] !== '\\' || str[i - 2] === '\\'))
 				quote = false;
 		} else if (blockComment) {

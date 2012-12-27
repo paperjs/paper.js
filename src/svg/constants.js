@@ -15,13 +15,12 @@
  */
 
 /**
- * To shrink code, we automatically replace the long SVGPathSeg and SVGTransform
- * constants with their actual numeric values on preprocessing time, using
- * prepro statements.
+ * To shrink code, we automatically replace the long SVGPathSeg constants with
+ * their actual numeric values on preprocessing time, using prepro statements.
  * To do so, we need their values defined, which happens here.
  */
 
- // http://dxr.mozilla.org/mozilla-central/dom/interfaces/svg/nsIDOMSVGPathSeg.idl.html
+// http://dxr.mozilla.org/mozilla-central/dom/interfaces/svg/nsIDOMSVGPathSeg.idl.html
 var SVGPathSeg = {
 	PATHSEG_UNKNOWN: 0,
 	PATHSEG_CLOSEPATH: 1,
@@ -43,15 +42,4 @@ var SVGPathSeg = {
 	PATHSEG_CURVETO_CUBIC_SMOOTH_REL: 17,
 	PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS: 18,
 	PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL: 19
-};
-
-// http://dxr.mozilla.org/mozilla-central/dom/interfaces/svg/nsIDOMSVGTransform.idl.html
-var SVGTransform = {
-	SVG_TRANSFORM_UNKNOWN: 0,
-	SVG_TRANSFORM_MATRIX: 1,
-	SVG_TRANSFORM_TRANSLATE: 2,
-	SVG_TRANSFORM_SCALE: 3,
-	SVG_TRANSFORM_ROTATE: 4,
-	SVG_TRANSFORM_SKEWX: 5,
-	SVG_TRANSFORM_SKEWY: 6
 };

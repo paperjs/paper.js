@@ -25,14 +25,14 @@
  */
 var PlacedItem = this.PlacedItem = Item.extend(/** @lends PlacedItem# */{
 	// PlacedItem uses strokeBounds for bounds
-	_boundsType: { bounds: 'strokeBounds' },
+	_boundsGetter: { getBounds: 'getStrokeBounds' },
 
 	_hitTest: function(point, options, matrix) {
-		var hitResult = this._symbol._definition._hitTest(point, options, matrix);
-		// TODO: When the symbol's definition is a path, should hitResult contain
-		// information like HitResult#curve?
-		if (hitResult)
-			hitResult.item = this;
-		return hitResult;
+		var result = this._symbol._definition._hitTest(point, options, matrix);
+		// TODO: When the symbol's definition is a path, should hitResult
+		// contain information like HitResult#curve?
+		if (result)
+			result.item = this;
+		return result;
 	}
 });
