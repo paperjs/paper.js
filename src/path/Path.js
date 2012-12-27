@@ -235,17 +235,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// path, with the added benefit that b can be < a, and closed looping is
 	// taken into account.
 
-	getMatrix: function() {
-		// Override matrix getter to always return null, since Paths act as if
-		// they do not have a matrix, and always directly apply transformations
-		// to their segment points.
-		return null;
-	},
-
-	setMatrix: function(matrix) {
-		// Do nothing for the same reason as above.
-	},
-
 	isEmpty: function() {
 		return this._segments.length === 0;
 	},
