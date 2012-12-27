@@ -274,6 +274,15 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	/**
+	 * @param {Point} point
+	 * @return {Number}
+	 */
+	getParameterOf: function(point) {
+		point = Point.read(arguments);
+		return Curve.getParameterOf(this.getValues(), point.x, point.y);
+	},
+
+	/**
 	 * Returns the point on the curve at the specified position.
 	 *
 	 * @param {Number} parameter the position at which to find the point as
@@ -302,15 +311,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 */
 	getNormal: function(parameter) {
 		return Curve.evaluate(this.getValues(), parameter, 2);
-	},
-
-	/**
-	 * @param {Point} point
-	 * @return {Number}
-	 */
-	getParameter: function(point) {
-		point = Point.read(point);
-		return Curve.getParameter(this.getValues(), point.x, point.y);
 	},
 
 	getIntersections: function(curve) {
@@ -493,7 +493,7 @@ statics: {
 				/*#=*/ Numerical.TOLERANCE);
 	},
 
-	getParameter: function(v, x, y) {
+	getParameterOf: function(v, x, y) {
 		// Handle beginnings and end seperately, as they are not detected
 		// sometimes.
 		if (Math.abs(v[0] - x) < /*#=*/ Numerical.TOLERANCE

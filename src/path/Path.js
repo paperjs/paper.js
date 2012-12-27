@@ -992,7 +992,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		var curves = this.getCurves();
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var curve = curves[i];
-			var t = curve.getParameter(point);
+			var t = curve.getParameterOf(point);
 			if (t != null)
 				return new CurveLocation(curve, t);
 		}
