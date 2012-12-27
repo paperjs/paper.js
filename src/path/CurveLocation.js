@@ -24,8 +24,11 @@
  * {@link Path#curves} array is also provided.
  *
  * The class is in use in many places, such as
- * {@link Path#getLocationAt(offset)}, Path#getNearestLocation(point),
- * {@link PathItem#getIntersections(path)}, etc.
+ * {@link Path#getLocationAt(offset)},
+ * {@link Path#getLocationOf(point)},
+ * {@link Path#getNearestLocationOf(point),
+ * {@link PathItem#getIntersections(path)},
+ * etc.
  */
 CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	// DOCS: CurveLocation class description: add these back when the  mentioned
