@@ -50,7 +50,22 @@ this.Base = Base.inject(/** @lends Base# */{
 		}, []).join(', ') + ' }';
 	},
 
+	toJson: function() {
+		return Base.toJson(this);
+	},
+
 	statics: /** @lends Base */{
+
+		_types: {},
+
+		extend: function(src) {
+			// Override Base.extend() with a version that registers classes that
+			// define #_type inside the Base._types lookup, for deserialization.
+			var res = this.base.apply(this, arguments);
+			if (src._type)
+				Base._types[src._type] = res;
+			return res;
+		},
 
 		/**
 		 * Checks if two values or objects are equals to each other, by using their
@@ -162,6 +177,75 @@ this.Base = Base.inject(/** @lends Base# */{
 					: this.read(list, i, 1, clone));
 			}
 			return res;
+		},
+
+		/**
+		 * Serializes the passed object into a format that can be passed to 
+		 * JSON.stringify() for JSON serialization.
+		 */
+		serialize: function(obj, compact) {
+			if (obj && obj._serialize) {
+				var res = obj._serialize();
+				if (!compact && res[0] !== obj._type)
+					res.unshift(obj._type);
+				return res;
+			}
+			if (typeof obj !== 'object')
+				return obj;
+			var res = obj;
+			if (Array.isArray(obj)) {
+				res = [];
+				for (var i = 0, l = obj.length; i < l; i++)
+					res[i] = Base.serialize(obj[i], true);
+			} else if (Base.isObject(obj)) {
+				res = {};
+				for (var i in obj)
+					if (obj.hasOwnProperty(i))
+						res[i] = Base.serialize(obj[i], true);
+			}
+			return res;
+		},
+
+		/**
+		 * Deserializes from parsed JSON data. A simple convention is followed:
+		 * Array values with a string at the first position are links to
+		 * deserializable types through Base._types, and the values following in
+		 * the array are the arguments to their initialize function.
+		 * Any other value is passed on unmodified.
+		 * The passed data is recoursively traversed and converted, leaves first
+		 */
+		deserialize: function(obj) {
+			var res = obj;
+			if (Array.isArray(obj)) {
+				// See if it's a serialized type. If so, the rest of the array
+				// are the arguments to #initialize(). Either way, we simply
+				// deserialize all elements of the array.
+				var type = Base._types[obj[0]];
+				res = [];
+				// Skip first type entry for arguments
+				for (var i = type ? 1 : 0, l = obj.length; i < l; i++)
+					res.push(Base.deserialize(obj[i]));
+				if (type) {
+					// Create serialized type and pass collected arguments to
+					// #initialize().
+					var args = res;
+					res = Base.create(type);
+					res.initialize.apply(res, args);
+				}
+			} else if (Base.isObject(obj)) {
+				res = {};
+				for (var key in obj)
+					res[key] = Base.deserialize(obj[key]);
+			}
+			return res;
+		},
+
+		toJson: function(obj) {
+			return JSON.stringify(Base.serialize(obj));
+		},
+
+		fromJson: function(json) {
+			return Base.deserialize(JSON.parse(json));
 		},
 
 		/**

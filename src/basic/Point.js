@@ -168,6 +168,10 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		}
 	},
 
+	_serialize: function() {
+		return [this.x, this.y];
+	},
+
 	/**
 	 * The x coordinate of the point
 	 *

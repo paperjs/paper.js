@@ -27,6 +27,8 @@
  * objects that are connected by this segment.
  */
 var Segment = this.Segment = Base.extend(/** @lends Segment# */{
+	_type: 'segment',
+
 	/**
 	 * Creates a new Segment object.
 	 *
@@ -84,6 +86,12 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		createPoint(this, '_point', point);
 		createPoint(this, '_handleIn', handleIn);
 		createPoint(this, '_handleOut', handleOut);
+	},
+
+	_serialize: function() {
+		return Base.serialize(this._handleIn.isZero() && this._handleOut.isZero()
+				? this._point
+				: [this._point, this._handleIn, this._handleOut], true);
 	},
 
 	_changed: function(point) {
