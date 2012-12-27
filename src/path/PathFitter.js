@@ -95,7 +95,7 @@ var PathFitter = Base.extend({
 
 	// Use least-squares method to find Bezier control points for region.
 	generateBezier: function(first, last, uPrime, tan1, tan2) {
-		var epsilon = Numerical.EPSILON,
+		var epsilon = /*#=*/ Numerical.EPSILON,
 			pt1 = this.points[first],
 			pt2 = this.points[last],
 			// Create the C and X matrices
@@ -194,7 +194,7 @@ var PathFitter = Base.extend({
 			diff = pt.subtract(point),
 			df = pt1.dot(pt1) + diff.dot(pt2);
 		// Compute f(u) / f'(u)
-		if (Math.abs(df) < Numerical.TOLERANCE)
+		if (Math.abs(df) < /*#=*/ Numerical.TOLERANCE)
 			return u;
 		// u = u - f(u) / f'(u)
 		return u - diff.dot(pt1) / df;

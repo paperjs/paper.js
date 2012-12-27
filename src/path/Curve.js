@@ -316,8 +316,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	getCrossings: function(point, roots) {
 		// Implement the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
-		// Solve the y-axis cubic polynominal for point.y and count all
-		// solutions to the right of point.x as crossings.
+		// Solve the y-axis cubic polynomial for point.y and count all solutions
+		// to the right of point.x as crossings.
 		var vals = this.getValues(),
 			count = Curve.solveCubic(vals, 1, point.y, roots),
 			crossings = 0;
@@ -329,9 +329,9 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				// touching a tip. Passing 1 for Curve.evaluate()'s type means
 				// we're calculating tangents, and then check their y-slope for
 				// a change of direction:
-				if (t < Numerical.TOLERANCE && Curve.evaluate(
+				if (t < /*#=*/ Numerical.TOLERANCE && Curve.evaluate(
 							this.getPrevious().getValues(), 1, 1).y
-						* Curve.evaluate(vals, t, 1).y >= Numerical.TOLERANCE)
+						* Curve.evaluate(vals, t, 1).y >= /*#=*/ Numerical.TOLERANCE)
 					continue;
 				crossings++;
 			}
@@ -657,7 +657,7 @@ new function() { // Scope for methods that require numerical integration
 			}
 			return Numerical.findRoot(f, ds,
 					forward ? a + guess : b - guess, // Initial guess for x
-					a, b, 16, Numerical.TOLERANCE);
+					a, b, 16, /*#=*/ Numerical.TOLERANCE);
 		}
 	};
 }, new function() { // Scope for nearest point on curve problem

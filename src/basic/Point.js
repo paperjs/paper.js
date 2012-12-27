@@ -687,7 +687,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @returns {Boolean} {@true it is parallel}
 	 */
 	isColinear: function(point) {
-		return this.cross(point) < Numerical.TOLERANCE;
+		return this.cross(point) < /*#=*/ Numerical.TOLERANCE;
 	},
 
 	/**
@@ -698,7 +698,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @returns {Boolean} {@true it is orthogonal}
 	 */
 	isOrthogonal: function(point) {
-		return this.dot(point) < Numerical.TOLERANCE;
+		return this.dot(point) < /*#=*/ Numerical.TOLERANCE;
 	},
 
 	/**
