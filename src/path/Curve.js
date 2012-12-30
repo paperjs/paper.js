@@ -371,7 +371,65 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return new Curve(this._segment2.reverse(), this._segment1.reverse());
 	},
 
-	// TODO: divide
+	/**
+	 * Divides the curve into two at the specified position. The curve itself is
+	 * modified and becomes the first part, the second part is returned as a new
+	 * curve. If the modified curve belongs to a path item, the second part is
+	 * added to it.
+	 * 
+	 * @param parameter the position at which to split the curve as a value
+	 *        between 0 and 1 {@default 0.5}
+	 * @return {Curve} the second part of the divided curve
+	 */
+	divide: function(parameter) {
+		var res = null;
+		// Accept CurveLocation objects, and objects that act like them:
+		if (parameter && parameter.curve === this)
+			parameter = parameter.parameter;
+		if (parameter > 0 && parameter < 1) {
+			var parts = Curve.subdivide(this.getValues(), parameter),
+				left = parts[0],
+				right = parts[1],
+				point1 = this._segment1._point,
+				point2 = this._segment2._point;
+	
+			// Write back the results:
+			this._segment1._handleOut.set(left[2] - point1._x,
+					left[3] - point1._y);
+			
+			// segment2 is the end segment. By inserting newSegment
+			// between segment1 and 2, 2 becomes the end segment.
+			// absolute->relative
+			this._segment2._handleIn.set(right[4] - point2._x,
+					right[5] - point2._y);
+
+			// Create the new segment, absolute -> relative:
+			var x = left[6], y = left[7],
+				segment = new Segment(Point.create(x, y),
+						Point.create(left[4] - x, left[5] - y),
+						Point.create(right[2] - x, right[3] - y));
+	
+			// Insert it in the segments list, if needed:
+			if (this._path) {
+				// Insert at the end if this curve is a closing curve
+				// of a closed path, since otherwise it would be inserted
+				// at 0
+				if (this._segment1._index > 0 && this._segment2._index == 0) {
+					this._path.add(segment);
+				} else {
+					this._path.insert(this._segment2._index, segment);
+				}
+				res = this.getNext();
+			} else {
+				// otherwise create it from the result of split
+				var end = this._segment2;
+				this._segment2 = segment;
+				res = new Curve(segment, end);
+			}
+		}
+		return res;
+	},
+
 	// TODO: split
 
 	/**
