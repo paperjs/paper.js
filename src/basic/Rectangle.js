@@ -92,8 +92,12 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 					// See if we define the rectangle by {point, size},
 					// or {center, size}
 					if (arg0.size) {
+						// We read point even if it's not defined in which case
+						// it's (0, 0), and set center so it can be changed at
+						// the end.
 						args = [Point.read([arg0.point]), Size.read([arg0.size])];
-						center = Point.read([arg0.center]);
+						if (arg0.center)
+							center = Point.read([arg0.center]);
 					} else {
 						// Another rectangle or a simple object literal
 						// describing one. Use duck typing, and 0 as defaults.
