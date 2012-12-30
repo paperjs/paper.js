@@ -192,6 +192,10 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 		return this._distance;
 	},
 
+	divide: function() {
+		return this._curve ? this._curve.divide(this.getParameter()) : null;
+	},
+
 	/**
 	 * @return {String} A string representation of the curve location.
 	 */
