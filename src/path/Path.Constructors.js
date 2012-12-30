@@ -173,7 +173,7 @@ Path.inject({ statics: new function() {
 				tr = _rect.getTopRight(true),
 				br = _rect.getBottomRight(true),
 				h = _radius.multiply(kappa * 2), // handle vector
-				path = new Path();
+				path = new Path(arguments._filtered);
 			path._add([
 				new Segment(bl.add(_radius.width, 0), null, [-h.width, 0]),
 				new Segment(bl.subtract(0, _radius.height), [0, h.height], null),
