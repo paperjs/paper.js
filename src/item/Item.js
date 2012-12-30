@@ -132,9 +132,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * the item it is called on, and returns the item itself.
 	 */
 	set: function(props) {
-		for (var key in props)
-			if (props.hasOwnProperty(key))
-				this[key] = props[key];
+		if (props) {
+			for (var key in props)
+				if (props.hasOwnProperty(key))
+					this[key] = props[key];
+		}
 		return this;
 	},
 

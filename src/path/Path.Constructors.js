@@ -16,13 +16,29 @@
 
 Path.inject({ statics: new function() {
 
-	function createRectangle(rect) {
-		rect = Rectangle.read(arguments);
-		var left = rect.x,
-			top = rect.y,
-			right = left + rect.width,
-			bottom = top + rect.height,
-			path = new Path();
+	function readRectangle(list) {
+		var rect;
+		if (Base.hasNamed(list, 'from')) {
+			rect = new Rectangle(Point.readNamed(list, 'from'),
+					Point.readNamed(list, 'to'));
+		} else if (Base.hasNamed(list, 'size')) {
+			rect = new Rectangle(Point.readNamed(list, 'point'),
+					Size.readNamed(list, 'size'));
+			if (Base.hasNamed(list, 'center'))
+				rect.setCenter(Point.readNamed(list, 'center'));
+		} else {
+			rect = Rectangle.readNamed(list, 'rectangle');
+		}
+		return rect;
+	}
+
+	function createRectangle() {
+		var rect = readRectangle(arguments),
+			left = rect.getLeft(),
+			top = rect.getTop(),
+			right = rect.getRight(),
+			bottom = rect.getBottom(),
+			path = new Path(arguments._filtered);
 		path._add([
 			new Segment(Point.create(left, bottom)),
 			new Segment(Point.create(left, top)),
@@ -43,12 +59,13 @@ Path.inject({ statics: new function() {
 		new Segment([0.5, 1], [kappa, 0 ], [-kappa, 0])
 	];
 
-	function createEllipse(rect) {
-		rect = Rectangle.read(arguments);
-		var path = new Path(),
+	function createEllipse() {
+		var rect = readRectangle(arguments),
+			path = new Path(arguments._filtered),
 			point = rect.getPoint(true),
 			size = rect.getSize(true),
 			segments = new Array(4);
+		console.log(JSON.stringify(arguments._filtered))
 		for (var i = 0; i < 4; i++) {
 			var segment = ellipseSegments[i];
 			segments[i] = new Segment(
@@ -68,8 +85,8 @@ Path.inject({ statics: new function() {
 		 *
 		 * Creates a Path Item with two anchor points forming a line.
 		 *
-		 * @param {Point} pt1 the first anchor point of the path
-		 * @param {Point} pt2 the second anchor point of the path
+		 * @param {Point} from the first anchor point of the path
+		 * @param {Point} to the second anchor point of the path
 		 * @return {Path} the newly created path
 		 *
 		 * @example
@@ -80,9 +97,9 @@ Path.inject({ statics: new function() {
 		 */
 		Line: function() {
 			return new Path(
-				Point.read(arguments),
-				Point.read(arguments)
-			);
+				Point.readNamed(arguments, 'from'),
+				Point.readNamed(arguments, 'to')
+			).set(arguments._filtered);
 		},
 
 		/**
@@ -106,8 +123,8 @@ Path.inject({ statics: new function() {
 		 * constructor figures out how to fit a rectangle between them.
 		 *
 		 * @name Path.Rectangle
-		 * @param {Point} point1 The first point defining the rectangle
-		 * @param {Point} point2 The second point defining the rectangle
+		 * @param {Point} from The first point defining the rectangle
+		 * @param {Point} to The second point defining the rectangle
 		 * @return {Path} the newly created path
 		 *
 		 * @example
@@ -120,7 +137,7 @@ Path.inject({ statics: new function() {
 		 * Creates a rectangle shaped Path Item from the passed abstract
 		 * {@link Rectangle}.
 		 *
-		 * @param {Rectangle} rect
+		 * @param {Rectangle} rectangle
 		 * @return {Path} the newly created path
 		 *
 		 * @example
@@ -135,8 +152,8 @@ Path.inject({ statics: new function() {
 		/**
 		 * Creates a rectangular Path Item with rounded corners.
 		 *
-		 * @param {Rectangle} rect
-		 * @param {Size} size the size of the rounded corners
+		 * @param {Rectangle} rectangle
+		 * @param {Size} radius the size of the rounded corners
 		 * @return {Path} the newly created path
 		 *
 		 * @example
@@ -146,30 +163,30 @@ Path.inject({ statics: new function() {
 		 * var cornerSize = new Size(30, 30);
 		 * var path = new Path.RoundRectangle(rectangle, cornerSize);
 		 */
-		RoundRectangle: function(rect, size) {
-			var _rect = Rectangle.read(arguments),
-				_size = Size.read(arguments);
-			if (_size.isZero())
+		RoundRectangle: function(rect, radius) {
+			var _rect = Rectangle.readNamed(arguments, 'rectangle'),
+				_radius = Size.readNamed(arguments, 'radius');
+			if (_radius.isZero())
 				return createRectangle(rect);
-			_size = Size.min(_size, _rect.getSize(true).divide(2));
+			_radius = Size.min(_radius, _rect.getSize(true).divide(2));
 			var bl = _rect.getBottomLeft(true),
 				tl = _rect.getTopLeft(true),
 				tr = _rect.getTopRight(true),
 				br = _rect.getBottomRight(true),
-				uSize = _size.multiply(kappa * 2),
+				h = _radius.multiply(kappa * 2), // handle vector
 				path = new Path();
 			path._add([
-				new Segment(bl.add(_size.width, 0), null, [-uSize.width, 0]),
-				new Segment(bl.subtract(0, _size.height), [0, uSize.height], null),
+				new Segment(bl.add(_radius.width, 0), null, [-h.width, 0]),
+				new Segment(bl.subtract(0, _radius.height), [0, h.height], null),
 
-				new Segment(tl.add(0, _size.height), null, [0, -uSize.height]),
-				new Segment(tl.add(_size.width, 0), [-uSize.width, 0], null),
+				new Segment(tl.add(0, _radius.height), null, [0, -h.height]),
+				new Segment(tl.add(_radius.width, 0), [-h.width, 0], null),
 
-				new Segment(tr.subtract(_size.width, 0), null, [uSize.width, 0]),
-				new Segment(tr.add(0, _size.height), [0, -uSize.height], null),
+				new Segment(tr.subtract(_radius.width, 0), null, [h.width, 0]),
+				new Segment(tr.add(0, _radius.height), [0, -h.height], null),
 
-				new Segment(br.subtract(0, _size.height), null, [0, uSize.height]),
-				new Segment(br.subtract(_size.width, 0), [uSize.width, 0], null)
+				new Segment(br.subtract(0, _radius.height), null, [0, h.height]),
+				new Segment(br.subtract(_radius.width, 0), [h.width, 0], null)
 			]);
 			path._closed = true;
 			return path;
@@ -178,7 +195,7 @@ Path.inject({ statics: new function() {
 		/**
 		* Creates an ellipse shaped Path Item.
 		 *
-		 * @param {Rectangle} rect
+		 * @param {Rectangle} rectangle
 		 * @param {Boolean} [circumscribed=false] when set to {@code true} the
 		 *        ellipse shaped path will be created so the rectangle fits into
 		 *        it. When set to {@code false} the ellipse path will fit within
@@ -210,10 +227,11 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Circle(new Point(100, 100), 50);
 		 */
 		Circle: function(center, radius) {
-			var _center = Point.read(arguments),
-				_radius = Base.read(arguments);
+			var _center = Point.readNamed(arguments, 'center'),
+				_radius = Base.readNamed(arguments, 'radius');
 			return createEllipse(new Rectangle(_center.subtract(_radius),
-					Size.create(_radius * 2, _radius * 2)));
+					Size.create(_radius * 2, _radius * 2)))
+					.set(arguments._filtered);
 		},
 
 		/**
@@ -232,9 +250,12 @@ Path.inject({ statics: new function() {
 		 * path.strokeColor = 'black';
 		 */
 		Arc: function(from, through, to) {
-			var path = new Path();
-			path.moveTo(from);
-			path.arcTo(through, to);
+			var _from = Point.readNamed(arguments, 'from'),
+				_through = Point.readNamed(arguments, 'through'),
+				_to = Point.readNamed(arguments, 'to'),
+				path = new Path(arguments._filtered);
+			path.moveTo(_from);
+			path.arcTo(_through, _to);
 			return path;
 		},
 
@@ -263,10 +284,10 @@ Path.inject({ statics: new function() {
 		 * decahedron.fillColor = 'black';
 		 */
 		RegularPolygon: function(center, numSides, radius) {
-			var _center = Point.read(arguments),
-				_numSides = Base.read(arguments),
-				_radius = Base.read(arguments),
-				path = new Path(),
+			var _center = Point.readNamed(arguments, 'center'),
+				_numSides = Base.readNamed(arguments, 'numSides'),
+				_radius = Base.readNamed(arguments, 'radius'),
+				path = new Path(arguments._filtered),
 				step = 360 / _numSides,
 				three = !(_numSides % 3),
 				vector = new Point(0, three ? -_radius : _radius),
@@ -303,11 +324,11 @@ Path.inject({ statics: new function() {
 		 * path.fillColor = 'black';
 		 */
 		Star: function(center, numPoints, radius1, radius2) {
-			var _center = Point.read(arguments),
-				_numPoints = Base.read(arguments) * 2,
-				_radius1 = Base.read(arguments),
-				_radius2 = Base.read(arguments),
-				path = new Path(),
+			var _center = Point.readNamed(arguments, 'center'),
+				_numPoints = Base.readNamed(arguments, 'numPoints') * 2,
+				_radius1 = Base.readNamed(arguments, 'radius1'),
+				_radius2 = Base.readNamed(arguments, 'radius2'),
+				path = new Path(arguments._filtered),
 				step = 360 / _numPoints,
 				vector = new Point(0, -1),
 				segments = new Array(_numPoints);
