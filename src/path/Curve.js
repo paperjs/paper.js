@@ -990,7 +990,7 @@ new function() { // Scope for methods that require numerical integration
 	}
 
 	return {
-		getNearestLocationOf: function(point) {
+		getNearestLocation: function(point) {
 			// NOTE: If we allow #matrix on Path, we need to inverse-transform
 			// point here first.
 			// point = this._matrix.inverseTransform(point);
@@ -1014,8 +1014,8 @@ new function() { // Scope for methods that require numerical integration
 			return new CurveLocation(this, minT, minPoint, Math.sqrt(minDist));
 		},
 
-		getNearestPointOf: function(point) {
-			return this.getNearestLocationOf(point).getPoint();
+		getNearestPoint: function(point) {
+			return this.getNearestLocation(point).getPoint();
 		}
 	};
 });

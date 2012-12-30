@@ -26,7 +26,7 @@
  * The class is in use in many places, such as
  * {@link Path#getLocationAt(offset)},
  * {@link Path#getLocationOf(point)},
- * {@link Path#getNearestLocationOf(point),
+ * {@link Path#getNearestLocation(point),
  * {@link PathItem#getIntersections(path)},
  * etc.
  */
