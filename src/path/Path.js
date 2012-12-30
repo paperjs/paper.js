@@ -1725,7 +1725,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		curveTo: function(through, to, parameter) {
 			var _through = Point.read(arguments),
 				_to = Point.read(arguments),
-				t = Base.pick(Base.readValue(arguments), 0.5),
+				t = Base.pick(Base.read(arguments), 0.5),
 				t1 = 1 - t,
 				current = getCurrentSegment(this)._point,
 				// handle = (through - (1 - t)^2 * current - t^2 * to) /
@@ -1746,7 +1746,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				point = Point.read(arguments),
 				// Peek at next value to see if it's clockwise,
 				// with true as default value.
-				next = Base.pick(Base.peekValue(arguments), true);
+				next = Base.pick(Base.peek(arguments), true);
 			if (typeof next === 'boolean') {
 				// arcTo(to, clockwise)
 				to = point;
@@ -1872,7 +1872,7 @@ statics: {
 		var coords = new Array(6),
 			// Make coordinates for first segment available in prevCoords.
 			prevCoords = first._transformCoordinates(matrix, new Array(6), false),
-			min = prevCoords.slice(0, 2),
+			min = prevCoords.slice(0, 2), // Start with values of first point
 			max = min.slice(0), // clone
 			roots = new Array(2);
 

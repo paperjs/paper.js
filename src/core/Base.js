@@ -110,17 +110,27 @@ this.Base = Base.inject(/** @lends Base# */{
 		},
 
 		/**
-		 * Reads arguments of the type of the class on which it is called on
-		 * from the passed arguments list or array, at the given index, up to
-		 * the specified length. This is used in argument conversion, e.g. by
-		 * all basic types (Point, Size, Rectangle) and also higher classes such
-		 * as Color and Segment.
+		 * When called on a subclass of Base, it reads arguments of the type of
+		 * the subclass from the passed arguments list or array, at the given
+		 * index, up to the specified length.
+		 * When called directly on Base, it reads any value without conversion
+		 * from the apssed arguments list or array.
+		 * This is used in argument conversion, e.g. by all basic types (Point,
+		 * Size, Rectangle) and also higher classes such as Color and Segment.
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {Number} length the amount of elements that can be read
 		 * @param {Boolean} clone controls wether passed objects should be
 		 *        cloned if they are already provided in the required type
 		 */
 		read: function(list, start, length, clone, readNull) {
+			// See if it's called directly on Base, and if so, read value and
+			// return without object conversion.
+			if (this === Base) {
+				var value = this.peek(list, start);
+				list._index++;
+				list._read = 1;
+				return value;
+			}
 			var proto = this.prototype,
 				readIndex = proto._readIndex,
 				index = start || readIndex && list._index || 0;
@@ -151,15 +161,8 @@ this.Base = Base.inject(/** @lends Base# */{
 			return obj;
 		},
 
-		peekValue: function(list, start) {
+		peek: function(list, start) {
 			return list[list._index = start || list._index || 0];
-		},
-
-		readValue: function(list, start) {
-			var value = this.peekValue(list, start);
-			list._index++;
-			list._read = 1;
-			return value;
 		},
 
 		/**

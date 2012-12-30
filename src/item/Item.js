@@ -1119,7 +1119,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	hitTest: function(point, options) {
 		point = Point.read(arguments);
-		options = HitResult.getOptions(Base.readValue(arguments));
+		options = HitResult.getOptions(Base.read(arguments));
 		// Check if the point is withing roughBounds + tolerance, but only if
 		// this item does not have children, since we'd have to travel up the
 		// chain already to determine the rough bounds.
