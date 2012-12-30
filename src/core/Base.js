@@ -68,9 +68,9 @@ this.Base = Base.inject(/** @lends Base# */{
 		},
 
 		/**
-		 * Checks if two values or objects are equals to each other, by using their
-		 * equals() methods if available, and also comparing elements of arrays
-		 * and properties of objects.
+		 * Checks if two values or objects are equals to each other, by using
+		 * their equals() methods if available, and also comparing elements of
+		 * arrays and properties of objects.
 		 */ 
 		equals: function(obj1, obj2) {
 			if (obj1 == obj2)
@@ -117,6 +117,8 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * from the apssed arguments list or array.
 		 * This is used in argument conversion, e.g. by all basic types (Point,
 		 * Size, Rectangle) and also higher classes such as Color and Segment.
+		 * @param {Array} list the list to read from, either an arguments object
+		 *        or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {Number} length the amount of elements that can be read
 		 * @param {Boolean} clone controls wether passed objects should be
@@ -161,6 +163,13 @@ this.Base = Base.inject(/** @lends Base# */{
 			return obj;
 		},
 
+		/**
+		 * Allows peeking ahead in reading of values and objects from arguments
+		 * list through Base.read().
+		 * @param {Array} list the list to read from, either an arguments object
+		 *        or a normal array.
+		 * @param {Number} start the index at which to start reading in the list
+		 */
 		peek: function(list, start) {
 			return list[list._index = start || list._index || 0];
 		},
@@ -168,6 +177,8 @@ this.Base = Base.inject(/** @lends Base# */{
 		/**
 		 * Reads all readable arguments from the list, handling nested arrays
 		 * seperately.
+		 * @param {Array} list the list to read from, either an arguments object
+		 *        or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {Boolean} clone controls wether passed objects should be
 		 *        cloned if they are already provided in the required type
@@ -180,6 +191,54 @@ this.Base = Base.inject(/** @lends Base# */{
 					: this.read(list, i, 1, clone));
 			}
 			return res;
+		},
+
+		/**
+		 * Allows using of Base.read() mechanism in combination with reading
+		 * named arguments form a passed property object literal. Calling 
+		 * Base.readNamed() can read both from such named properties and normal
+		 * unnamed arguments through Base.read(). In use for example for the
+		 * various Path.Constructors.
+		 * @param {Array} list the list to read from, either an arguments object
+		 *        or a normal array.
+		 * @param {Number} start the index at which to start reading in the list
+		 * @param {String} name the property name to read from.
+		 * @param {Boolean} [filter=true] controls wether a clone of the passed
+		 * object should be kept in list._filtered, of which the consumed
+		 * properties are removed. This can be passed on e.g. to Item#set(). 
+		 */
+		readNamed: function(list, name, filter) {
+			var value = this.getNamed(list, name),
+				// value is undefined if there is no arguments object, and null
+				// if there is one, but no value is defined.
+				hasObject = value !== undefined;
+			if (hasObject && filter !== false) {
+				if (!list._filtered)
+					list._filtered = Base.merge(list[0]);
+				delete list._filtered[name];
+			}
+			return this.read(hasObject ? [value] : list);
+		},
+
+		/**
+		 * @return the named value if the list provides an arguments object,
+		 * null if the named value is null or undefined, and undefined if there
+		 * is no arguments object. 
+		 */
+		getNamed: function(list, name) {
+			var arg = list[0];
+			if (list._hasObject === undefined)
+				list._hasObject = list.length === 1 && Base.isPlainObject(arg);
+			if (list._hasObject) {
+				value = arg[name];
+				// Convert undefined to null, to distinguish from undefined
+				// result, when there is no arguments object.
+				return value !== undefined ? value : null;
+			}
+		},
+
+		hasNamed: function(list, name) {
+			return !!this.getNamed(list, name);
 		},
 
 		/**
