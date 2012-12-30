@@ -463,8 +463,6 @@ statics: {
 			}
 		}
 		// The normal is simply the rotated tangent:
-		// TODO: Rotate normals the other way in Scriptographer too?
-		// (Depending on orientation, I guess?)
 		return type == 2 ? new Point(y, -x) : new Point(x, y);
 	},
 
@@ -574,7 +572,7 @@ statics: {
 	},
 
 	getBounds: function(v) {
-		var min = v.slice(0, 2),
+		var min = v.slice(0, 2), // Start with values of point1
 			max = min.slice(0), // clone
 			roots = new Array(2);
 		for (var i = 0; i < 2; i++)

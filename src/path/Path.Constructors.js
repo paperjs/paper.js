@@ -211,7 +211,7 @@ Path.inject({ statics: new function() {
 		 */
 		Circle: function(center, radius) {
 			var _center = Point.read(arguments),
-				_radius = Base.readValue(arguments);
+				_radius = Base.read(arguments);
 			return createEllipse(new Rectangle(_center.subtract(_radius),
 					Size.create(_radius * 2, _radius * 2)));
 		},
@@ -264,8 +264,8 @@ Path.inject({ statics: new function() {
 		 */
 		RegularPolygon: function(center, numSides, radius) {
 			var _center = Point.read(arguments),
-				_numSides = Base.readValue(arguments),
-				_radius = Base.readValue(arguments),
+				_numSides = Base.read(arguments),
+				_radius = Base.read(arguments),
 				path = new Path(),
 				step = 360 / _numSides,
 				three = !(_numSides % 3),
@@ -304,9 +304,9 @@ Path.inject({ statics: new function() {
 		 */
 		Star: function(center, numPoints, radius1, radius2) {
 			var _center = Point.read(arguments),
-				_numPoints = Base.readValue(arguments) * 2,
-				_radius1 = Base.readValue(arguments),
-				_radius2 = Base.readValue(arguments),
+				_numPoints = Base.read(arguments) * 2,
+				_radius1 = Base.read(arguments),
+				_radius2 = Base.read(arguments),
 				path = new Path(),
 				step = 360 / _numPoints,
 				vector = new Point(0, -1),

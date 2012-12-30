@@ -77,7 +77,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 			// Read a point argument and look at the next value to see wether
 			// it's a size or a point, then read accordingly
 			var point = Point.read(arguments),
-				next = Base.peekValue(arguments);
+				next = Base.peek(arguments);
 			this.x = point.x;
 			this.y = point.y;
 			if (next && next.x !== undefined) {

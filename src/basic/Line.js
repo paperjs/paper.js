@@ -36,7 +36,7 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 		// is automatially true, since we're describing an infinite line.
 		var _point1 = Point.read(arguments),
 			_point2 = Point.read(arguments),
-			_infinite = Base.readValue(arguments);
+			_infinite = Base.read(arguments);
 		if (_infinite !== undefined) {
 			this.point = _point1;
 			this.vector = _point2.subtract(_point1);
