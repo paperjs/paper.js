@@ -123,7 +123,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	// one object literal describing all the properties to be set on the created
 	// instance.
 	_setProperties: function(props) {
-		if (Base.isObject(props))
+		if (Base.isPlainObject(props))
 			return this.set(props);
 	},
 

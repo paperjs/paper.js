@@ -146,7 +146,7 @@ var PaperScript = this.PaperScript = new function() {
 				if (Array.isArray(value)) {
 					for (var i = 0, l = value.length; i < l; i++)
 						walkAst(value[i]);
-				} else if (Base.isObject(value)) {
+				} else if (Base.isPlainObject(value)) {
 					walkAst(value);
 				}
 			}
