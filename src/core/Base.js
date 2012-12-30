@@ -200,7 +200,7 @@ this.Base = Base.inject(/** @lends Base# */{
 				res = [];
 				for (var i = 0, l = obj.length; i < l; i++)
 					res[i] = Base.serialize(obj[i], true);
-			} else if (Base.isObject(obj)) {
+			} else if (Base.isPlainObject(obj)) {
 				res = {};
 				for (var i in obj)
 					if (obj.hasOwnProperty(i))
@@ -235,7 +235,7 @@ this.Base = Base.inject(/** @lends Base# */{
 					res = Base.create(type);
 					res.initialize.apply(res, args);
 				}
-			} else if (Base.isObject(obj)) {
+			} else if (Base.isPlainObject(obj)) {
 				res = {};
 				for (var key in obj)
 					res[key] = Base.deserialize(obj[key]);

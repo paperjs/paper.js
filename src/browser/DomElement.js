@@ -38,7 +38,7 @@ var DomElement = new function() {
 				continue;
 			}
 			// Do we have attributes?
-			if (Base.isObject(nodes[i]))
+			if (Base.isPlainObject(nodes[i]))
 				DomElement.set(el, nodes[i++]);
 			// Do we have children?
 			if (Array.isArray(nodes[i]))
