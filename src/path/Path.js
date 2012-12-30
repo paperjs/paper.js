@@ -1226,18 +1226,17 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the nearest location on the path to the specified point.
 	 *
-	 * @name Path#getNearestLocationOf
 	 * @function
 	 * @param point {Point} The point for which we search the nearest location
 	 * @return {CurveLocation} The location on the path that's the closest to
 	 * the specified point
 	 */
-	getNearestLocationOf: function(point) {
+	getNearestLocation: function(point) {
 		var curves = this.getCurves(),
 			minDist = Infinity,
 			minLoc = null;
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var loc = curves[i].getNearestLocationOf(point);
+			var loc = curves[i].getNearestLocation(point);
 			if (loc._distance < minDist) {
 				minDist = loc._distance;
 				minLoc = loc;
@@ -1249,14 +1248,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Returns the nearest point on the path to the specified point.
 	 *
-	 * @name Path#getNearestPointOf
 	 * @function
 	 * @param point {Point} The point for which we search the nearest point
 	 * @return {Point} The point on the path that's the closest to the specified
 	 * point
 	 */
-	getNearestPointOf: function(point) {
-		return this.getNearestLocationOf(point).getPoint();
+	getNearestPoint: function(point) {
+		return this.getNearestLocation(point).getPoint();
 	},
 
 	contains: function(point) {
@@ -1324,7 +1322,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		}
 		// If we're querying for stroke, perform that before fill
 		if (options.stroke && radius > 0)
-			loc = this.getNearestLocationOf(point);
+			loc = this.getNearestLocation(point);
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
 		// stroke.
@@ -1333,7 +1331,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			return new HitResult('fill', this);
 		// Now query stroke if we haven't already
 		if (!loc && options.stroke && radius > 0)
-			loc = this.getNearestLocationOf(point);
+			loc = this.getNearestLocation(point);
 		if (loc && loc._distance <= radius)
 			// TODO: Do we need to transform the location back to the coordinate
 			// system of the DOM level on which the inquiry was started?
