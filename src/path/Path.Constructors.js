@@ -65,7 +65,6 @@ Path.inject({ statics: new function() {
 			point = rect.getPoint(true),
 			size = rect.getSize(true),
 			segments = new Array(4);
-		console.log(JSON.stringify(arguments._filtered))
 		for (var i = 0; i < 4; i++) {
 			var segment = ellipseSegments[i];
 			segments[i] = new Segment(
