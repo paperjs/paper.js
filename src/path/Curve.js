@@ -430,7 +430,17 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		return res;
 	},
 
-	// TODO: split
+	/**
+	 * Splits the path that this curve belongs to at the given parameter, using
+	 * {@link Path#split(index, parameter)}.
+	 *
+	 * @return {Path} the second part of the split path
+	 */
+	split: function(parameter) {
+		return this._path
+			? this._path.split(this._segment1._index, parameter)
+			: null;
+	},
 
 	/**
 	 * Returns a copy of the curve.

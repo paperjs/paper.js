@@ -796,7 +796,52 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	// TODO: reduceSegments([flatness])
-	// TODO: split(offset) / split(location) / split(index[, parameter])
+
+	// DOCS: split(index, parameter) / split(offset) / split(location)
+	split: function(index, parameter) {
+		if (arguments.length == 1) {
+			var arg = index;
+			// split(offset), convert offset to location
+			if (typeof arg === 'number')
+				arg = this.getLocationAt(arg);
+			// split(location)
+			index = arg.index;
+			parameter = arg.parameter;
+		}
+		if (parameter >= 1) {
+			// t == 1 is the same as t == 0 and index ++
+			index++;
+			parameter--;
+		}
+		var curves = this.getCurves();
+		if (index >= 0 && index < curves.length) {
+			// Only divide curves if we're not on an existing segment already.
+			if (parameter > 0) {
+				// Divide the curve with the index at given parameter.
+				// Increase because dividing adds more segments to the path.
+				curves[index++].divide(parameter);
+			}
+			// Create the new path with the segments to the right of given
+			// parameter
+			var segs = this.removeSegments(index, this._segments.length);
+			// If the path is closed, open it and move the segments round,
+			// otherwise create two paths.
+			if (this._closed) {
+				this.setClosed(false);
+				this.insertSegments(0, segs);
+				this.addSegment(segs[0].clone());
+				return this;
+			} else if (index > 0) {
+				// Add dividing segment again
+				this.addSegment(segs[0]);
+				// TODO: Don't clone segments but everything else. How?
+				var path = new Path(segs);
+				path.setStyle(this.getStyle());
+				return path;
+			}
+		}
+		return null;
+	},
 
 	/**
 	 * Specifies whether the path is oriented clock-wise.
