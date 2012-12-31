@@ -138,10 +138,10 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @type Number
 	 * @bean
 	 */
-	getParameter: function() {
-		if (this._parameter == null && this._curve && this._point) {
+	getParameter: function(/* uncached */) {
+		if ((this._parameter == null || arguments[0])
+				&& this._curve && this._point)
 			this._parameter = this._curve.getParameterOf(this._point);
-		}
 		return this._parameter;
 	},
 
@@ -193,7 +193,11 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	},
 
 	divide: function() {
-		return this._curve ? this._curve.divide(this.getParameter()) : null;
+		return this._curve ? this._curve.divide(this.getParameter(true)) : null;
+	},
+
+	split: function() {
+		return this._curve ? this._curve.split(this.getParameter(true)) : null;
 	},
 
 	/**
