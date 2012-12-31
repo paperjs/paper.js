@@ -311,17 +311,19 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 		// Keep the curves list in sync all the time in case it as requested
-		// already. We need to step one index down from the inserted segment to
-		// get its curve:
-		if (curves && --index >= 0) {
+		// already.
+		if (curves) {
+			// We need to step one index down from the inserted segment to
+			// get its curve, except for the first segment.
+			// TODO: 
+			if (index > 0)
+				index--;
 			// Insert a new curve as well and update the curves above
-			curves.splice(index, 0, Curve.create(this, segments[index],
-				segments[index + 1]));
-			// Adjust segment1 now for the curves above the inserted one
-			var curve = curves[index + amount];
-			if (curve) {
-				curve._segment1 = segments[index + amount];
-			}
+			for (var i = index, l = index + amount; i < l; i++)
+				curves.splice(i, 0, Curve.create(this, segments[i],
+						segments[i + 1] || segments[0]));
+			// Adjust segments for the curves before and after the removed ones
+			this._adjustCurves(index - 1, index + amount);
 		}
 		this._changed(/*#=*/ Change.GEOMETRY);
 		return segs;
@@ -567,7 +569,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		to = Base.pick(to, this._segments.length);
 		var segments = this._segments,
 			curves = this._curves,
-			last = to >= segments.length,
 			removed = segments.splice(from, to - from),
 			amount = removed.length;
 		if (!amount)
@@ -588,21 +589,29 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// If we're removing the last segment, remove the last curve. Also
 			// take into account closed paths, which have one curve more than
 			// segments.
-			curves.splice(from == segments.length + (this._closed ? 1 : 0)
-					? from - 1 : from, amount);
+			var index = from == segments.length + (this._closed ? 1 : 0)
+					? from - 1 : from;
+			curves.splice(index, amount);
 			// Adjust segments for the curves before and after the removed ones
-			var curve;
-			if (curve = curves[from - 1])
-				curve._segment2 = segments[from];
-			if (curve = curves[from])
-				curve._segment1 = segments[from];
-			// If the last segment of a closing path was removed, we need to
-			// readjust the last curve of the list now.
-			if (last && this._closed && (curve = curves[curves.length - 1]))
-				curve._segment2 = segments[0];
+			this._adjustCurves(index - 1, index + amount);
 		}
 		this._changed(/*#=*/ Change.GEOMETRY);
 		return removed;
+	},
+
+	/**
+	 * Adjusts segments of curves before and after inserted / removed segments.
+	 */
+	_adjustCurves: function(left, right) {
+		var segments = this._segments,
+			curves = this._curves,
+			curve;
+		// If it's the first segment, correct the last segment of closed
+		// paths too:
+		if (curve = curves[this._closed && left == -1 ? segments.length - 1 : left])
+			curve._segment2 = segments[left + 1] || segments[0];
+		if (curve = curves[right])
+			curve._segment1 = segments[right];
 	},
 
 	/**
