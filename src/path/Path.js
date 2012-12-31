@@ -590,9 +590,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			segments[i]._index = i;
 		// Keep curves in sync
 		if (curves) {
-			// If we're removing the last segment of a closing path, remove the
-			// last curve.
-			curves.splice(from == curves.length ? from - 1 : from, amount);
+			// If we're removing the last segment, remove the last curve. Also
+			// take into account closed paths, which have one curve more than
+			// segments.
+			curves.splice(from == segments.length + (this._closed ? 1 : 0)
+					? from - 1 : from, amount);
 			// Adjust segments for the curves before and after the removed ones
 			var curve;
 			if (curve = curves[from - 1])
