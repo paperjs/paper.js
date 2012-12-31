@@ -216,16 +216,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			this._closed = closed;
 			// Update _curves length
 			if (this._curves) {
-				var length = this._segments.length,
-					i;
+				var length = this._segments.length;
 				// Reduce length by one if it's an open path:
 				if (!closed && length > 0)
 					length--;
 				this._curves.length = length;
 				// If we were closing this path, we need to add a new curve now
 				if (closed)
-					this._curves[i = length - 1] = Curve.create(this,
-						this._segments[i], this._segments[0]);
+					this._curves[length - 1] = Curve.create(this,
+						this._segments[length - 1], this._segments[0]);
 			}
 			this._changed(/*#=*/ Change.GEOMETRY);
 		}
@@ -288,9 +287,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			var segment = segs[i];
 			// If the segments belong to another path already, clone them before
 			// adding:
-			if (segment._path) {
-				segment = segs[i] = new Segment(segment);
-			}
+			if (segment._path)
+				segment = segs[i] = segment.clone();
 			segment._path = this;
 			segment._index = index + i;
 			// Select newly added segments if path was fully selected before
