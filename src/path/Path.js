@@ -530,8 +530,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * path.selected = true;
 	 */
 	removeSegment: function(index) {
-		var segments = this.removeSegments(index, index + 1);
-		return segments[0] || null;
+		return this.removeSegments(index, index + 1)[0] || null;
 	},
 
 	/**
@@ -579,7 +578,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (segment._selectionState)
 				this._updateSelection(segment, segment._selectionState, 0);
 			// Clear the indices and path references of the removed segments
-			removed._index = removed._path = undefined;
+			segment._index = segment._path = undefined;
 		}
 		// Adjust the indices of the segments above.
 		for (var i = from, l = segments.length; i < l; i++)
