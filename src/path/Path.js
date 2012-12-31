@@ -115,7 +115,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// Make sure new curves are calculated next time we call getCurves()
 		delete this._curves;
 		this._add(Segment.readAll(segments));
-		return this;
 	},
 
 	/**
@@ -230,7 +229,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 			this._changed(/*#=*/ Change.GEOMETRY);
 		}
-		return this;
 	},
 
 	// TODO: Consider adding getSubPath(a, b), returning a part of the current
@@ -687,7 +685,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			this._segments[i]._selectionState = selected
 					? /*#=*/ SelectionState.POINT : 0;
 		// No need to pass true for noChildren since Path has none anyway.
-		return this.setSelected(selected);
+		this.setSelected(selected);
 	},
 
 	_updateSelection: function(segment, oldState, newState) {
@@ -742,7 +740,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			segments.push(new Segment(flattener.evaluate(pos, 0)));
 			pos += step;
 		}
-		return this.setSegments(segments);
+		this.setSegments(segments);
 	},
 
 	/**
@@ -789,7 +787,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			var fitter = new PathFitter(this, tolerance || 2.5);
 			this.setSegments(fitter.fit());
 		}
-		return this;
 	},
 
 	// TODO: reduceSegments([flatness])
