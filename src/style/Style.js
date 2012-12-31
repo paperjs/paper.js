@@ -67,7 +67,6 @@ var Style = Item.extend({
 
 			owner['set' + stylePart] = function(style) {
 				this[styleKey].initialize(style);
-				return this;
 			};
 
 			Base.each(src._defaults, function(value, key) {
@@ -102,7 +101,6 @@ var Style = Item.extend({
 								this._item._changed(flags[key] || /*#=*/ Change.STYLE);
 						}
 					}
-					return this;
 				};
 				src[get] = function() {
 					var children = this._getChildren(),

@@ -206,7 +206,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				this._project._changes.push(entry);
 			}
 		}
-		return this;
 	},
 
 	/**
@@ -269,7 +268,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
 		}
-		return this._changed(/*#=*/ ChangeFlag.ATTRIBUTE);
+		this._changed(/*#=*/ ChangeFlag.ATTRIBUTE);
 	},
 
 	/**
@@ -329,7 +328,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			if (value != this[name]) {
 				this[name] = value;
 				// #locked does not change appearance, all others do:
-				return this._changed(name === '_locked'
+				this._changed(name === '_locked'
 						? /*#=*/ ChangeFlag.ATTRIBUTE : /*#=*/ Change.ATTRIBUTE);
 			}
 		};
@@ -481,7 +480,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			this._project._updateSelection(this);
 			this._changed(/*#=*/ Change.ATTRIBUTE);
 		}
-		return this;
 	},
 
 	_selected: false,
@@ -503,7 +501,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				this._children[i].setFullySelected(selected);
 		}
 		// Pass true for hidden noChildren argument
-		return this.setSelected(selected, true);
+		this.setSelected(selected, true);
 	},
 
 	/**
@@ -532,7 +530,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			if (this._parent)
 				this._parent._changed(/*#=*/ ChangeFlag.CLIPPING);
 		}
-		return this;
 	},
 
 	_clipMask: false,
@@ -591,7 +588,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Calculate the distance to the current position, by which to
 		// translate the item. Pass true for dontLink, as we do not need a
 		// LinkedPoint to simply calculate this distance.
-		return this.translate(Point.read(arguments).subtract(this.getPosition(true)));
+		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
 	},
 
 	/**
@@ -608,7 +605,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	setMatrix: function(matrix) {
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
-		return this._changed(/*#=*/ Change.GEOMETRY);
+		this._changed(/*#=*/ Change.GEOMETRY);
 	},
 
 	/**
@@ -1422,7 +1419,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				this._children[i]._index = i;
 			this._changed(/*#=*/ Change.HIERARCHY);
 		}
-		return this;
 	},
 
 	// TODO: Item#isEditable is currently ignored in the documentation, as
@@ -1463,7 +1459,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			var list = [];
 			do {
 				list.unshift(item);
-			} while (item = item._parent)
+			} while (item = item._parent);
 			return list;
 		}
 		var list1 = getList(this),
@@ -2027,7 +2023,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			newBounds = new Rectangle(new Point(),
 					Size.create(bounds.width * scale, bounds.height * scale));
 		newBounds.setCenter(rectangle.getCenter());
-		return this.setBounds(newBounds);
+		this.setBounds(newBounds);
 	},
 
 	toString: function() {
