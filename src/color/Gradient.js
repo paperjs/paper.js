@@ -105,6 +105,7 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 				stop.setRampPoint(i / (l - 1));
 		}
 		this._changed();
+		return this;
 	},
 
 	/**
