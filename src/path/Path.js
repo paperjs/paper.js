@@ -822,21 +822,23 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				curves[index++].divide(parameter);
 			}
 			// Create the new path with the segments to the right of given
-			// parameter
+			// parameter, which are removed from the current path.
 			var segs = this.removeSegments(index, this._segments.length);
 			// If the path is closed, open it and move the segments round,
 			// otherwise create two paths.
 			if (this._closed) {
 				this.setClosed(false);
 				this.insertSegments(0, segs);
-				this.addSegment(segs[0].clone());
+				// Add bginning segment again at the end, since we opened a
+				// closed path.
+				this.addSegment(segs[0]);
 				return this;
 			} else if (index > 0) {
 				// Add dividing segment again
 				this.addSegment(segs[0]);
-				// TODO: Don't clone segments but everything else. How?
 				var path = new Path(segs);
-				path.setStyle(this.getStyle());
+				// Copy over all other attributes, including style
+				this._clone(path);
 				return path;
 			}
 		}
