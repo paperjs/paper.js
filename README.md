@@ -67,7 +67,7 @@ In order to build a compressed version of Paper.js, UglifyJS2 needs to be instal
 Similarly to building the library, you can run `docs.sh` inside the `build` folder to build the documentation.
 
 	cd build
-	./build.sh
+	./docs.sh
 
 Your docs will then be located at `dist/docs`.
 
