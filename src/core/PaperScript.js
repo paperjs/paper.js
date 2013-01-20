@@ -269,6 +269,9 @@ var PaperScript = this.PaperScript = new function() {
 
 	function load() {
 		var scripts = document.getElementsByTagName('script');
+		// Scopes stores a mapping of canvas name to associated scope in order to
+		// reuse scopes for multiple scripts.
+		var scopes = {};
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
 			// Only load this script if it not loaded already.
@@ -282,8 +285,15 @@ var PaperScript = this.PaperScript = new function() {
 				// retrieved through PaperScope.get().
 				// If a canvas id is provided, pass it on to the PaperScope
 				// so a project is created for it now.
-				var scope = new PaperScope(script);
-				scope.setup(PaperScript.getAttribute(script, 'canvas'));
+				var canvas = PaperScript.getAttribute(script, 'canvas');
+				var scope;
+				if (scopes.hasOwnProperty(canvas)) {
+					scope = scopes[canvas];
+				} else {
+					scope = new PaperScope(script);
+					scope.setup(canvas);
+					scopes[canvas] = scope;
+				}
 				if (script.src) {
 					// If we're loading from a source, request that first and then
 					// run later.
