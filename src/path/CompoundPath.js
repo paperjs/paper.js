@@ -54,14 +54,14 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		// Only allow the insertion of paths
 		if (item._type !== 'path')
 			return null;
-		var res = this.base(index, item);
+		item = this.base(index, item);
 		// All children except for the bottom one (first one in list) are set
 		// to anti-clockwise orientation, so that they appear as holes, but
 		// only if their orientation was not already specified before
 		// (= _clockwise is defined).
-		if (!_cloning && res && item._clockwise === undefined)
+		if (!_cloning && item && item._closed && item._clockwise === undefined)
 			item.setClockwise(item._index == 0);
-		return res;
+		return item;
 	},
 
 	/**
