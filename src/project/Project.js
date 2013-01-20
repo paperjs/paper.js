@@ -169,6 +169,11 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		if (item._selected) {
 			this._selectedItemCount++;
 			this._selectedItems[item._id] = item;
+			// Make sure the item is considered selected right away if it is
+			// part of the DOM, even before it's getting drawn for the first
+			// time.
+			if (item.isInserted())
+				item._drawCount = this._drawCount;
 		} else {
 			this._selectedItemCount--;
 			delete this._selectedItems[item._id];

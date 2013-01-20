@@ -75,6 +75,10 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 				: this._project.layers[this._index - 1] || null;
 	},
 
+	isInserted: function() {
+		return this._index != null;
+	},
+
 	/**
 	 * Activates the layer.
 	 *
