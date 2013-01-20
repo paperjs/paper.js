@@ -2468,6 +2468,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			ctx.globalAlpha = this._opacity;
 	},
 
+	drawSelected: function(ctx, matrix) {
+		// Do nothing
+	},
+
 	statics: {
 		drawSelectedBounds: function(bounds, ctx, matrix) {
 			var coords = matrix._transformCorners(bounds);
