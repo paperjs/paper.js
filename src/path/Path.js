@@ -24,10 +24,12 @@
 // DOCS: Explain that path matrix is always applied with each transformation.
 var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	_type: 'path',
-	_serializeFields: Base.merge(Item.prototype._serializeFields, {
+	_serializeFields: {
+		name: null,
 		segments: [],
-		closed: false
-	}),
+		closed: false,
+		matrix: new Matrix()
+	},
 
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
