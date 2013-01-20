@@ -252,7 +252,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		return this._name;
 	},
 
-	setName: function(name) {
+	setName: function(name, unique) {
 		// Note: Don't check if the name has changed and bail out if it has not,
 		// because setName is used internally also to update internal structures
 		// when an item is moved from one parent to another.
@@ -261,13 +261,18 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// parent's children object:
 		if (this._name)
 			this._removeFromNamed();
-		this._name = name || undefined;
 		if (name && this._parent) {
 			var children = this._parent._children,
-				namedChildren = this._parent._namedChildren;
+				namedChildren = this._parent._namedChildren,
+				orig = name,
+				i = 1;
+			// If unique is true, make sure we're not overriding other names
+			while (unique && children[name])
+				name = orig + ' ' + (i++);
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
 		}
+		this._name = name || undefined;
 		this._changed(/*#=*/ ChangeFlag.ATTRIBUTE);
 	},
 
@@ -1022,10 +1027,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Copy over the selection state, use setSelected so the item
 		// is also added to Project#selectedItems if it is selected.
 		copy.setSelected(this._selected);
-		// Only set name once the copy is moved, to avoid setting and unsettting
-		// name related structures.
+		// Clone the name too, but make sure we're not overriding the original
+		// in the same parent, by passing true for the unique parameter.
 		if (this._name)
-			copy.setName(this._name);
+			copy.setName(this._name, true);
 		return copy;
 	},
 

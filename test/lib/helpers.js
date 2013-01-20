@@ -92,7 +92,7 @@ function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
 	Base.each(['origin', 'destination', 'hilite'], function(key) {
 		if (checkIdentity) {
 			equals(function() {
-				return gradientColor[key] != gradientColor2[key];
+				return gradientColor[key] !== gradientColor2[key];
 			}, true, 'Strict compare GradientColor#' + key);
 		}
 		equals(gradientColor[key].toString(), gradientColor2[key].toString(),
@@ -106,7 +106,7 @@ function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
 function comparePathStyles(style, style2, checkIdentity) {
 	if (checkIdentity) {
 		equals(function() {
-			return style != style2;
+			return style !== style2;
 		}, true);
 	}
 	Base.each(['fillColor', 'strokeColor'], function(key) {
@@ -120,7 +120,7 @@ function comparePathStyles(style, style2, checkIdentity) {
 			if (style[key] instanceof GradientColor) {
 				if (checkIdentity) {
 					equals(function() {
-						return style[key].gradient == style2[key].gradient;
+						return style[key].gradient === style2[key].gradient;
 					}, true, 'The ' + key + '.gradient should point to the same object:');
 				}
 				compareGradientColors(style[key], style2[key], checkIdentity);
@@ -149,7 +149,7 @@ function comparePathStyles(style, style2, checkIdentity) {
 function compareObjects(name, keys, obj, obj2, checkIdentity) {
 	if (checkIdentity) {
 		equals(function() {
-			return obj != obj2;
+			return obj !== obj2;
 		}, true);
 	}
 	Base.each(keys, function(key) {
@@ -203,14 +203,14 @@ function compareSegmentLists(segmentList, segmentList2, checkIdentity) {
 	}
 }
 
-function compareItems(item, item2, checkIdentity) {
+function compareItems(item, item2, cloned, checkIdentity) {
 	if (checkIdentity) {
 		equals(function() {
-			return item != item2;
+			return item !== item2;
 		}, true);
 
 		equals(function() {
-			return item.id != item2.id;
+			return item.id !== item2.id;
 		}, true);
 	}
 
@@ -219,14 +219,21 @@ function compareItems(item, item2, checkIdentity) {
 	}, true);
 
 	var itemProperties = ['opacity', 'locked', 'visible', 'blendMode', 'name',
-	 		'selected', 'clipMask'];
+			'selected', 'clipMask'];
 	Base.each(itemProperties, function(key) {
-		equals(item[key], item2[key], 'compare Item#' + key);
+		var value = item[key];
+		// When item was cloned and had a name, the name will be versioned
+		equals(
+			key == 'name' && cloned && value
+				? value + ' 1'
+				: value,
+			item2[key],
+			'compare Item#' + key);
 	});
 
 	if (checkIdentity) {
 		equals(function() {
-			return item.bounds != item2.bounds;
+			return item.bounds !== item2.bounds;
 		}, true);
 	}
 
@@ -235,7 +242,7 @@ function compareItems(item, item2, checkIdentity) {
 
 	if (checkIdentity) {
 		equals(function() {
-			return item.position != item2.position;
+			return item.position !== item2.position;
 		}, true);
 	}
 
@@ -245,7 +252,7 @@ function compareItems(item, item2, checkIdentity) {
 	if (item.matrix) {
 		if (checkIdentity) {
 			equals(function() {
-				return item.matrix != item2.matrix;
+				return item.matrix !== item2.matrix;
 			}, true);
 		}
 		equals(item.matrix.toString(), item2.matrix.toString(),
@@ -289,7 +296,7 @@ function compareItems(item, item2, checkIdentity) {
 		if (item._canvas) {
 			if (checkIdentity) {
 				equals(function() {
-					return item._canvas != item2._canvas;
+					return item._canvas !== item2._canvas;
 				}, true);
 			}
 		}
@@ -313,7 +320,7 @@ function compareItems(item, item2, checkIdentity) {
 	if (item instanceof PointText) {
 		if (checkIdentity) {
 			equals(function() {
-				return item.point != item2.point;
+				return item.point !== item2.point;
 			}, true);
 		}
 		equals(item.point.toString(), item2.point.toString(),
@@ -331,7 +338,7 @@ function compareItems(item, item2, checkIdentity) {
 			return item.children.length == item2.children.length;
 		}, true);
 		for (var i = 0, l = item.children.length; i < l; i++) {
-			compareItems(item.children[i], item2.children[i], checkIdentity);
+			compareItems(item.children[i], item2.children[i], cloned, checkIdentity);
 		}
 	}
 }
