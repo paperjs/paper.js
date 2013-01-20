@@ -113,6 +113,7 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 		this._definition = item;
 		// Remove item from DOM, as it's embedded in Symbol now.
 		item.remove();
+		item.setSelected(false);
 		// Move position to 0, 0, so it's centered when placed.
 		item.setPosition(new Point());
 		item._parentSymbol = this;
