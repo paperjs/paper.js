@@ -1206,7 +1206,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	insertChild: function(index, item) {
 		if (this._children) {
-			item._remove(false, true);
+			item._remove(true);
 			Base.splice(this._children, [item], index, 0);
 			item._parent = this;
 			item._setProject(this._project);
@@ -1353,10 +1353,8 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	* Removes the item from its parent's children list.
 	*/
-	_remove: function(deselect, notify) {
+	_remove: function(notify) {
 		if (this._parent) {
-			if (deselect)
-				this.setSelected(false);
 			if (this._name)
 				this._removeFromNamed();
 			if (this._index != null)
@@ -1377,7 +1375,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	* @return {Boolean} {@true the item was removed}
 	*/
 	remove: function() {
-		return this._remove(true, true);
+		return this._remove(true);
 	},
 
 	/**
@@ -1407,7 +1405,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// fine, since it only calls Base.splice() if #_index is set.
 		var removed = Base.splice(this._children, null, from, to - from);
 		for (var i = removed.length - 1; i >= 0; i--)
-			removed[i]._remove(true, false);
+			removed[i]._remove(false);
 		if (removed.length > 0)
 			this._changed(/*#=*/ Change.HIERARCHY);
 		return removed;
@@ -2493,6 +2491,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		draw: function(item, ctx, param) {
 			if (!item._visible || item._opacity == 0)
 				return;
+			// Each time the project gets drawn, it's _drawCount is increased.
+			// Keep the _drawCount of drawn items in sync, so we have an easy
+			// way to filter out selected items that are not being drawn, e.g.
+			// because they are currently not part of the DOM.
+			item._drawCount = item._project._drawCount;
 			var tempCanvas, parentCtx,
 			 	itemOffset, prevOffset;
 			// If the item has a blendMode or is defining an opacity, draw it on
