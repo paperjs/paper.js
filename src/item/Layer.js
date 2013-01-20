@@ -52,12 +52,10 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	* Removes the layer from its project's layers list
 	* or its parent's children list.
 	*/
-	_remove: function(deselect, notify) {
+	_remove: function(notify) {
 		if (this._parent)
-			return this.base(deselect, notify);
+			return this.base(notify);
 		if (this._index != null) {
-			if (deselect)
-				this.setSelected(false);
 			Base.splice(this._project.layers, null, this._index, 1);
 			// Tell project we need a redraw. This is similar to _changed()
 			// mechanism.
@@ -96,7 +94,7 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 			// If the item is a layer and contained within Project#layers, use
 			// our own version of move().
 			if (item instanceof Layer && !item._parent
-						&& this._remove(false, true)) {
+						&& this._remove(true)) {
 				Base.splice(item._project.layers, [this],
 						item._index + (above ? 1 : 0), 0);
 				this._setProject(item._project);

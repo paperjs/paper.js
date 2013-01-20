@@ -60,6 +60,8 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		this._currentStyle = new PathStyle();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
+		// See Item.draw() for an explanation of _drawCount
+		this._drawCount = 0;
 		// Change tracking, not in use for now. Activate once required:
 		// this._changes = [];
 		// this._changesById = {};
@@ -153,9 +155,11 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		// TODO: The order of these items should be that of their
 		// drawing order.
 		var items = [];
-		Base.each(this._selectedItems, function(item) {
-			items.push(item);
-		});
+		for (var id in this._selectedItems) {
+			var item = this._selectedItems[id];
+			if (item._drawCount === this._drawCount)
+				items.push(item);
+		}
 		return items;
 	},
 
@@ -184,7 +188,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 	deselectAll: function() {
 		for (var i in this._selectedItems)
-			this._selectedItems[i].setSelected(false);
+			this._selectedItems[i].item.setSelected(false);
 	},
 
 	/**
@@ -260,6 +264,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 
 	draw: function(ctx, matrix) {
+		this._drawCount++;
 		ctx.save();
 		if (!matrix.isIdentity())
 			matrix.applyToContext(ctx);
@@ -303,7 +308,8 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			}
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id];
-				item.drawSelected(ctx, getGlobalMatrix(item, matrix.clone()));
+				if (item._drawCount === this._drawCount)
+					item.drawSelected(ctx, getGlobalMatrix(item, matrix.clone()));
 			}
 			ctx.restore();
 		}
