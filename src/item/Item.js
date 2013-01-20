@@ -980,6 +980,16 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
+	 * Checks whether the item and all its parents are inserted into the DOM or
+	 * not.
+	 *
+	 * @return {Boolean} {@true if the item is inserted into the DOM}
+	 */
+	isInserted: function() {
+		return this._parent ? this._parent.isInserted() : false;
+	},
+
+	/**
 	 * Clones the item within the same project and places the copy above the
 	 * item.
 	 *
