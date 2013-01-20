@@ -293,7 +293,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	getLocationOf: function(point) {
 		var t = this.getParameterOf.apply(this, arguments);
-		return t != null ? CurveLocation(this, t) : null;
+		return t != null ? new CurveLocation(this, t) : null;
 	},
 
 	/**
