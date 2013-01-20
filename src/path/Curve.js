@@ -625,7 +625,7 @@ statics: {
 	},
 
 	isFlatEnough: function(v, tolerance) {
-		// Thanks to Kaspar Fischer for the following:
+		// Thanks to Kaspar Fischer and Roger Willcocks for the following:
 		// http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
 		var p1x = v[0], p1y = v[1],
 			c1x = v[2], c1y = v[3],
