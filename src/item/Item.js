@@ -1214,7 +1214,9 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Number} index
 	 * @param {Item} item The item to be appended as a child
 	 */
-	insertChild: function(index, item) {
+	insertChild: function(index, item, _cloning) {
+		// _cloning parameter is not used here, but CompoundPath#insertChild()
+		// needs it.
 		if (this._children) {
 			item._remove(true);
 			Base.splice(this._children, [item], index, 0);
@@ -1237,8 +1239,8 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @param {Item[]} items The items to be added as children
 	 */
-	addChildren: function(items) {
-		return this.insertChildren(this._children.length, items);
+	addChildren: function(items, _cloning) {
+		return this.insertChildren(this._children.length, items, _cloning);
 	},
 
 	/**
@@ -1249,14 +1251,14 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Number} index
 	 * @param {Item[]} items The items to be appended as children
 	 */
-	insertChildren: function(index, items) {
+	insertChildren: function(index, items, _cloning) {
 		// We need to clone items because it might be
 		// an Item#children array. Use Array.prototype.slice because
 		// in certain cases items is an arguments object
 		items = items && Array.prototype.slice.apply(items);
 		var i = index;
 		for (var j = 0, l = items && items.length; j < l; j++) {
-			if (this.insertChild(i, items[j]))
+			if (this.insertChild(i, items[j], _cloning))
 				i++;
 		}
 		return i != index;
@@ -1268,11 +1270,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Item} item The item above which it should be moved
 	 * @return {Boolean} {@true it was inserted}
 	 */
-	insertAbove: function(item) {
+	insertAbove: function(item, _cloning) {
 		var index = item._index;
 		if (item._parent == this._parent && index < this._index)
 			 index++;
-		return item._parent.insertChild(index, this);
+		return item._parent.insertChild(index, this, _cloning);
 	},
 
 	/**
@@ -1281,11 +1283,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Item} item The item above which it should be moved
 	 * @return {Boolean} {@true it was inserted}
 	 */
-	insertBelow: function(item) {
+	insertBelow: function(item, _cloning) {
 		var index = item._index;
 		if (item._parent == this._parent && index > this._index)
 			 index--;
-		return item._parent.insertChild(index, this);
+		return item._parent.insertChild(index, this, _cloning);
 	},
 
 	/**
