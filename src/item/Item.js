@@ -1291,6 +1291,20 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
+	 * Sends this item to the back of all other items within the same parent.
+	 */
+	sendToBack: function() {
+		return this._parent.insertChild(0, this);
+	},
+
+	/**
+	 * Brings this item to the front of all other items within the same parent.
+	 */
+	bringToFront: function() {
+		return this._parent.addChild(this);
+	},
+
+	/**
 	 * Inserts the specified item as a child of this item by appending it to
 	 * the list of children and moving it above all other children. You can
 	 * use this function for groups, compound paths and layers.
