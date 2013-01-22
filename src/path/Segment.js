@@ -57,6 +57,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		var count = arguments.length,
 			createPoint = SegmentPoint.create,
 			point, handleIn, handleOut;
+		// TODO: Use Point.read or Point.readNamed to read these?
 		if (count == 0) {
 			// Nothing
 		} else if (count == 1) {

@@ -89,7 +89,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Clockwise state becomes undefined as soon as geometry changes.
 			delete this._clockwise;
 			// Curves are no longer valid
-			if (this._curves != null) {
+			if (this._curves) {
 				for (var i = 0, l = this._curves.length; i < l; i++) {
 					this._curves[i]._changed(/*#=*/ Change.GEOMETRY);
 				}
@@ -114,7 +114,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	setSegments: function(segments) {
 		this._selectedSegmentState = 0;
 		this._segments.length = 0;
-		// Make sure new curves are calculated next time we call getCurves()
+		// Calculate new curves next time we call getCurves()
 		delete this._curves;
 		this._add(Segment.readAll(segments));
 	},
@@ -149,11 +149,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		var curves = this._curves,
 			segments = this._segments;
 		if (!curves) {
-			var length = segments.length;
-			// Reduce length by one if it's an open path:
-			if (!this._closed && length > 0)
-				length--;
-			this._curves = curves = new Array(length);
+			var length = this._getCurveCount();
+			curves = this._curves = new Array(length);
 			for (var i = 0; i < length; i++)
 				curves[i] = Curve.create(this, segments[i],
 					// Use first segment for segment2 of closing curve
@@ -162,12 +159,20 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// If we're asked to include the closing curve for fill, even if the
 		// path is not closed for stroke, create a new uncached array and add
 		// the closing curve. Used in Path#contains()
+		// TODO: This is not consistent with the filling in Illustrator. 
+		// I suggest to only fill closed paths (lehni).
 		if (arguments[0] && !this._closed && this._style._fillColor) {
 			curves = curves.concat([
 				Curve.create(this, segments[segments.length - 1], segments[0])
 			]);
 		}
 		return curves;
+	},
+
+	_getCurveCount: function() {
+		var length = this._segments.length;
+		// Reduce length by one if it's an open path:
+		return !this._closed && length > 0 ? length - 1 : length;
 	},
 
 	/**
@@ -218,11 +223,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			this._closed = closed;
 			// Update _curves length
 			if (this._curves) {
-				var length = this._segments.length;
-				// Reduce length by one if it's an open path:
-				if (!closed && length > 0)
-					length--;
-				this._curves.length = length;
+				var length = this._curves.length = this._getCurveCount();
 				// If we were closing this path, we need to add a new curve now
 				if (closed)
 					this._curves[length - 1] = Curve.create(this,
@@ -277,6 +278,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 */
 	_add: function(segs, index) {
 		// Local short-cuts:
+/*#*/ if (options.debug) {
+		var beforeSegments = this._segments.length,
+			beforeCurves = this._curves && this._curves.length;
+/*#*/ }
 		var segments = this._segments,
 			curves = this._curves,
 			amount = segs.length,
@@ -308,24 +313,49 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Insert somewhere else
 			segments.splice.apply(segments, [index, 0].concat(segs));
 			// Adjust the indices of the segments above.
-			for (var i = index + amount, l = segments.length; i < l; i++) {
+			for (var i = index + amount, l = segments.length; i < l; i++)
 				segments[i]._index = i;
-			}
 		}
 		// Keep the curves list in sync all the time in case it as requested
 		// already.
-		if (curves) {
+		if (curves || segs._curves) {
+			if (!curves)
+				curves = this._curves  = [];
 			// We need to step one index down from the inserted segment to
 			// get its curve, except for the first segment.
-			// TODO: 
-			if (index > 0)
-				index--;
-			// Insert a new curve as well and update the curves above
-			for (var i = index, l = index + amount; i < l; i++)
-				curves.splice(i, 0, Curve.create(this, segments[i],
-						segments[i + 1] || segments[0]));
+			var from = index > 0 ? index - 1 : index,
+				start = from,
+				to = Math.min(from + amount, this._getCurveCount());
+			if (segs._curves) {
+				// Reuse removed curves.
+				curves.splice.apply(curves, [from, 0].concat(segs._curves));
+				start += segs._curves.length;
+			}
+			// Insert new curves, but do not initialize them yet, since
+			// #_adjustCurves() handles all that for us.
+			for (var i = start; i < to; i++)
+				curves.splice(i, 0, Base.create(Curve));
 			// Adjust segments for the curves before and after the removed ones
-			this._adjustCurves(index - 1, index + amount);
+			this._adjustCurves(from, to);
+/*#*/ if (options.debug) {
+			var count = this._getCurveCount();
+			console.log('add',
+				'id', this._id,
+				'from', from,
+				'to', to,
+				'amount', amount,
+				'start', start,
+				'BEFORE:',
+				'segments', beforeSegments,
+				'curves', beforeCurves,
+				'AFTER:',
+				'segments', segments.length,
+				'curves', this._curves.length,
+				count != this._curves.length ? '(SHOULD BE ' + count + ')' : '',
+				'segs', segs.length,
+				'segs._curves', segs._curves && segs._curves.length
+			);
+/*#*/ }
 		}
 		this._changed(/*#=*/ Change.GEOMETRY);
 		return segs;
@@ -566,11 +596,16 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * // Select the path, so we can see its segments:
 	 * path.selected = true;
 	 */
-	removeSegments: function(from, to) {
+	removeSegments: function(from, to/*, includeCurves */) {
 		from = from || 0;
 		to = Base.pick(to, this._segments.length);
+/*#*/ if (options.debug) {
+		var beforeSegments = this._segments.length,
+			beforeCurves = this._curves && this._curves.length;
+/*#*/ }
 		var segments = this._segments,
 			curves = this._curves,
+			count = segments.length, // segment count before removal
 			removed = segments.splice(from, to - from),
 			amount = removed.length;
 		if (!amount)
@@ -581,21 +616,43 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (segment._selectionState)
 				this._updateSelection(segment, segment._selectionState, 0);
 			// Clear the indices and path references of the removed segments
-			segment._index = segment._path = undefined;
+			delete segment._index;
+			delete segment._path;
 		}
 		// Adjust the indices of the segments above.
 		for (var i = from, l = segments.length; i < l; i++)
 			segments[i]._index = i;
 		// Keep curves in sync
 		if (curves) {
-			// If we're removing the last segment, remove the last curve. Also
-			// take into account closed paths, which have one curve more than
-			// segments.
-			var index = from == segments.length + (this._closed ? 1 : 0)
-					? from - 1 : from;
-			curves.splice(index, amount);
+			// If we're removing the last segment, remove the last curve (the
+			// one to the left of the segment, not to the right, as normally).
+			// Also take into account closed paths, which have one curve more
+			// than segments.
+			var index = to == count + (this._closed ? 1 : 0) ? from - 1 : from,
+				curves = curves.splice(index, amount);
+/*#*/ if (options.debug) {
+			console.log('remove',
+				'id', this._id,
+				'from', from,
+				'to', to,
+				'amount', amount,
+				'index', index,
+				'BEFORE:',
+				'segments', beforeSegments,
+				'curves', beforeCurves,
+				'AFTER:',
+				'segments', segments.length,
+				'curves', this._curves.length,
+				'curves removed', curves.length
+			);
+/*#*/ }
+			// Return the removed curves as well, if we're asked to include
+			// them, but exclude the first curve, since that's shared with the
+			// previous segment and does not connect the returned segments.
+			if (arguments[2])
+				removed._curves = curves.slice(1);
 			// Adjust segments for the curves before and after the removed ones
-			this._adjustCurves(index - 1, index + amount);
+			this._adjustCurves(index, index);
 		}
 		this._changed(/*#=*/ Change.GEOMETRY);
 		return removed;
@@ -604,16 +661,24 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Adjusts segments of curves before and after inserted / removed segments.
 	 */
-	_adjustCurves: function(left, right) {
+	_adjustCurves: function(from, to) {
 		var segments = this._segments,
 			curves = this._curves,
 			curve;
+		for (var i = from; i < to; i++) {
+			curve = curves[i];
+			curve._path = this;
+			curve._segment1 = segments[i];
+			curve._segment2 = segments[i + 1] || segments[0];
+		}
 		// If it's the first segment, correct the last segment of closed
 		// paths too:
-		if (curve = curves[this._closed && left == -1 ? segments.length - 1 : left])
-			curve._segment2 = segments[left + 1] || segments[0];
-		if (curve = curves[right])
-			curve._segment1 = segments[right];
+		if (curve = curves[this._closed && from === 0 ? segments.length - 1
+				: from - 1])
+			curve._segment2 = segments[from] || segments[0];
+		// Fix the segment after the modified range, if it exists
+		if (curve = curves[to])
+			curve._segment1 = segments[to];
 	},
 
 	/**
@@ -801,6 +866,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	// DOCS: split(index, parameter) / split(offset) / split(location)
 	split: function(index, parameter) {
+/*#*/ if (options.debug) {
+		console.log('split',
+			'id:', this._id,
+			'index:', index,
+			'param:', parameter
+		);
+/*#*/ }
+		if (parameter === null)
+			return;
 		if (arguments.length == 1) {
 			var arg = index;
 			// split(offset), convert offset to location
@@ -824,25 +898,30 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				curves[index++].divide(parameter);
 			}
 			// Create the new path with the segments to the right of given
-			// parameter, which are removed from the current path.
-			var segs = this.removeSegments(index, this._segments.length);
-			// If the path is closed, open it and move the segments round,
-			// otherwise create two paths.
+			// parameter, which are removed from the current path. Pass true
+			// for includeCurves, since we want to preserve and move them to
+			// the new path through _add(), allowing us to have CurveLocation
+			// keep the connection to the new path through moved curves. 
+			var segs = this.removeSegments(index, this._segments.length, true),
+				path;
 			if (this._closed) {
+				// If the path is closed, open it and move the segments round,
+				// otherwise create two paths.
 				this.setClosed(false);
-				this.insertSegments(0, segs);
-				// Add bginning segment again at the end, since we opened a
-				// closed path.
-				this.addSegment(segs[0]);
-				return this;
+				// Just have path point to this. The moving around of segments
+				// will happen below.
+				path = this;
 			} else if (index > 0) {
-				// Add dividing segment again
-				this.addSegment(segs[0]);
-				var path = new Path(segs);
-				// Copy over all other attributes, including style
-				this._clone(path);
-				return path;
+				// Pass true for _cloning, in case of CompoundPath, to avoid 
+				// reversing of path direction, which would mess with segs!
+				// Use _clone to copy over all other attributes, including style
+				path = this._clone(new Path().insertAbove(this, true));
 			}
+			path._add(segs, 0);
+			// Add dividing segment again. In case of a closed path, that's the
+			// beginning segment again at the end, since we opened it.
+			this.addSegment(segs[0]);
+			return path;
 		}
 		return null;
 	},
@@ -1050,7 +1129,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		var curves = this.getCurves();
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var loc = curves[i].getLocationOf(point);
-			if (loc != null)
+			if (loc)
 				return loc;
 		}
 		return null;
