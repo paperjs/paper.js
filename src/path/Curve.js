@@ -411,9 +411,8 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	
 			// Insert it in the segments list, if needed:
 			if (this._path) {
-				// Insert at the end if this curve is a closing curve
-				// of a closed path, since otherwise it would be inserted
-				// at 0
+				// Insert at the end if this curve is a closing curve of a
+				// closed path, since otherwise it would be inserted at 0.
 				if (this._segment1._index > 0 && this._segment2._index == 0) {
 					this._path.add(segment);
 				} else {
