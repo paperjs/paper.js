@@ -278,10 +278,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 */
 	_add: function(segs, index) {
 		// Local short-cuts:
-/*#*/ if (options.debug) {
-		var beforeSegments = this._segments.length,
-			beforeCurves = this._curves && this._curves.length;
-/*#*/ }
 		var segments = this._segments,
 			curves = this._curves,
 			amount = segs.length,
@@ -337,25 +333,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				curves.splice(i, 0, Base.create(Curve));
 			// Adjust segments for the curves before and after the removed ones
 			this._adjustCurves(from, to);
-/*#*/ if (options.debug) {
-			var count = this._getCurveCount();
-			console.log('add',
-				'id', this._id,
-				'from', from,
-				'to', to,
-				'amount', amount,
-				'start', start,
-				'BEFORE:',
-				'segments', beforeSegments,
-				'curves', beforeCurves,
-				'AFTER:',
-				'segments', segments.length,
-				'curves', this._curves.length,
-				count != this._curves.length ? '(SHOULD BE ' + count + ')' : '',
-				'segs', segs.length,
-				'segs._curves', segs._curves && segs._curves.length
-			);
-/*#*/ }
 		}
 		this._changed(/*#=*/ Change.GEOMETRY);
 		return segs;
@@ -599,10 +576,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	removeSegments: function(from, to/*, includeCurves */) {
 		from = from || 0;
 		to = Base.pick(to, this._segments.length);
-/*#*/ if (options.debug) {
-		var beforeSegments = this._segments.length,
-			beforeCurves = this._curves && this._curves.length;
-/*#*/ }
 		var segments = this._segments,
 			curves = this._curves,
 			count = segments.length, // segment count before removal
@@ -630,22 +603,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// than segments.
 			var index = to == count + (this._closed ? 1 : 0) ? from - 1 : from,
 				curves = curves.splice(index, amount);
-/*#*/ if (options.debug) {
-			console.log('remove',
-				'id', this._id,
-				'from', from,
-				'to', to,
-				'amount', amount,
-				'index', index,
-				'BEFORE:',
-				'segments', beforeSegments,
-				'curves', beforeCurves,
-				'AFTER:',
-				'segments', segments.length,
-				'curves', this._curves.length,
-				'curves removed', curves.length
-			);
-/*#*/ }
 			// Return the removed curves as well, if we're asked to include
 			// them, but exclude the first curve, since that's shared with the
 			// previous segment and does not connect the returned segments.
@@ -866,13 +823,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	// DOCS: split(index, parameter) / split(offset) / split(location)
 	split: function(index, parameter) {
-/*#*/ if (options.debug) {
-		console.log('split',
-			'id:', this._id,
-			'index:', index,
-			'param:', parameter
-		);
-/*#*/ }
 		if (parameter === null)
 			return;
 		if (arguments.length == 1) {
