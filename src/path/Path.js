@@ -1123,7 +1123,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
-	 * Get the point on the path at the given offset.
+	 * Calculates the point on the path at the given offset.
 	 *
 	 * @param {Number} offset
 	 * @param {Boolean} [isParameter=false]
@@ -1177,8 +1177,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
-	 * Get the tangent to the path at the given offset as a vector
-	 * point.
+	 * Calculates the tangent to the path at the given offset as a vector point.
 	 *
 	 * @param {Number} offset
 	 * @param {Boolean} [isParameter=false]
@@ -1246,7 +1245,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
-	 * Get the normal to the path at the given offset as a vector point.
+	 * Calculates the normal to the path at the given offset as a vector point.
 	 *
 	 * @param {Number} offset
 	 * @param {Boolean} [isParameter=false]
