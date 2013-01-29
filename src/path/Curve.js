@@ -688,7 +688,61 @@ statics: {
 		}
 		return locations;
 	}
-}}, Base.each(['getPoint', 'getTangent', 'getNormal'],
+}}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
+	// determine the bounds of Curve objects with defined segment1 and segment2
+	// values Curve.getBounds() can be used directly on curve arrays, without
+	// the need to create a Curve object first, as required by the code that
+	// finds path interesections.
+	function(name) {
+		this[name] = function() {
+			if (!this._bounds)
+				this._bounds = {};
+			var bounds = this._bounds[name];
+			if (!bounds) {
+				// Calculate the curve bounds by passing a segment list for the
+				// curve to the static Path.get*Boudns methods.
+				bounds = this._bounds[name] = Path[name](
+					[this._segment1, this._segment2], false, this._path._style);
+			}
+			return bounds.clone();
+		};
+	},
+/** @lends Curve# */{
+	/**
+	 * The bounding rectangle of the curve excluding stroke width.
+	 *
+	 * @name Curve#getBounds
+	 * @type Rectangle
+	 * @bean
+	 */
+
+	/**
+	 * The bounding rectangle of the curve including stroke width.
+	 *
+	 * @name Curve#getStrokeBounds
+	 * @type Rectangle
+	 * @bean
+	 */
+
+	/**
+	 * The bounding rectangle of the curve including handles.
+	 *
+	 * @name Curve#getHandleBounds
+	 * @type Rectangle
+	 * @bean
+	 */
+
+	/**
+	 * The rough bounding rectangle of the curve that is shure to include all of
+	 * the drawing, including stroke width.
+	 *
+	 * @name Curve#getRoughBounds
+	 * @type Rectangle
+	 * @bean
+	 * @ignore
+	 */
+}), Base.each(['getPoint', 'getTangent', 'getNormal'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
 	// determine the bounds of Curve objects with defined segment1 and segment2
 	// values Curve.getBounds() can be used directly on curve arrays, without
@@ -765,60 +819,6 @@ statics: {
 	 * @function
 	 * @param {Number} parameter the position at which to find the normal
 	 *        point as a value between {@code 0} and {@code 1}.
-	 */
-}), Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
-	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
-	// determine the bounds of Curve objects with defined segment1 and segment2
-	// values Curve.getBounds() can be used directly on curve arrays, without
-	// the need to create a Curve object first, as required by the code that
-	// finds path interesections.
-	function(name) {
-		this[name] = function() {
-			if (!this._bounds)
-				this._bounds = {};
-			var bounds = this._bounds[name];
-			if (!bounds) {
-				// Calculate the curve bounds by passing a segment list for the
-				// curve to the static Path.get*Boudns methods.
-				bounds = this._bounds[name] = Path[name](
-					[this._segment1, this._segment2], false, this._path._style);
-			}
-			return bounds.clone();
-		};
-	},
-/** @lends Curve# */{
-	/**
-	 * The bounding rectangle of the curve excluding stroke width.
-	 *
-	 * @name Curve#getBounds
-	 * @type Rectangle
-	 * @bean
-	 */
-
-	/**
-	 * The bounding rectangle of the curve including stroke width.
-	 *
-	 * @name Curve#getStrokeBounds
-	 * @type Rectangle
-	 * @bean
-	 */
-
-	/**
-	 * The bounding rectangle of the curve including handles.
-	 *
-	 * @name Curve#getHandleBounds
-	 * @type Rectangle
-	 * @bean
-	 */
-
-	/**
-	 * The rough bounding rectangle of the curve that is shure to include all of
-	 * the drawing, including stroke width.
-	 *
-	 * @name Curve#getRoughBounds
-	 * @type Rectangle
-	 * @bean
-	 * @ignore
 	 */
 }),
 new function() { // Scope for methods that require numerical integration
