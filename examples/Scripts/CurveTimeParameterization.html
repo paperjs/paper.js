@@ -41,7 +41,7 @@
 					var t = iteratively
 							? curve.getParameterAt(step, prev)
 							: curve.getParameterAt(pos);
-					var point = curve.getPoint(t);
+					var point = curve.getPointAt(t, true);
 					var circle = new Path.Circle(point, step / 2);
 					circle.strokeColor = 'red';
 					if (remove)
