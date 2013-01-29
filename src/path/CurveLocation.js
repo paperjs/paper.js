@@ -24,7 +24,7 @@
  * {@link Path#curves} array is also provided.
  *
  * The class is in use in many places, such as
- * {@link Path#getLocationAt(offset)},
+ * {@link Path#getLocationAt(offset, isParameter)},
  * {@link Path#getLocationOf(point)},
  * {@link Path#getNearestLocation(point),
  * {@link PathItem#getIntersections(path)},
@@ -173,7 +173,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	getPoint: function() {
 		if (!this._point && this._parameter != null) {
 			var curve = this.getCurve();
-			this._point = curve && curve.getPoint(this._parameter);
+			this._point = curve && curve.getPointAt(this._parameter, true);
 		}
 		return this._point;
 	},
@@ -187,7 +187,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	getTangent: function() {
 		var parameter = this.getParameter(),
 			curve = this.getCurve();
-		return parameter != null && curve && curve.getTangent(parameter);
+		return parameter != null && curve && curve.getTangentAt(parameter, true);
 	},
 
 	/**
@@ -199,7 +199,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	getNormal: function() {
 		var parameter = this.getParameter(),
 			curve = this.getCurve();
-		return parameter != null && curve && curve.getNormal(parameter);
+		return parameter != null && curve && curve.getNormalAt(parameter, true);
 	},
 
 	/**

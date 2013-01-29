@@ -262,71 +262,6 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				&& this._segment2._handleIn.isZero();
 	},
 
-	// DOCS: Document #getParameterAt(offset, start)
-	// DOCS: Document #getParameterOf(point)
-	// DOCS: Document #getLocationAt(offset, isParameter)
-	// DOCS: Document #getLocationOf(point)
-	/**
-	 * @param {Number} offset
-	 * @param {Number} [start]
-	 * @return {Number}
-	 */
-	getParameterAt: function(offset, start) {
-		return Curve.getParameterAt(this.getValues(), offset,
-				start !== undefined ? start : offset < 0 ? 1 : 0);
-	},
-
-	/**
-	 * @param {Point} point
-	 * @return {Number}
-	 */
-	getParameterOf: function(point) {
-		point = Point.read(arguments);
-		return Curve.getParameterOf(this.getValues(), point.x, point.y);
-	},
-
-	getLocationAt: function(offset, isParameter) {
-		if (!isParameter)
-			offset = this.getParameterAt(offset);
-		return new CurveLocation(this, offset);
-	},
-
-	getLocationOf: function(point) {
-		var t = this.getParameterOf.apply(this, arguments);
-		return t != null ? new CurveLocation(this, t) : null;
-	},
-
-	/**
-	 * Returns the point on the curve at the specified position.
-	 *
-	 * @param {Number} parameter the position at which to find the point as
-	 *        a value between {@code 0} and {@code 1}.
-	 * @return {Point}
-	 */
-	getPoint: function(parameter) {
-		return Curve.evaluate(this.getValues(), parameter, 0);
-	},
-
-	/**
-	 * Returns the tangent point on the curve at the specified position.
-	 *
-	 * @param {Number} parameter the position at which to find the tangent
-	 *        point as a value between {@code 0} and {@code 1}.
-	 */
-	getTangent: function(parameter) {
-		return Curve.evaluate(this.getValues(), parameter, 1);
-	},
-
-	/**
-	 * Returns the normal point on the curve at the specified position.
-	 *
-	 * @param {Number} parameter the position at which to find the normal
-	 *        point as a value between {@code 0} and {@code 1}.
-	 */
-	getNormal: function(parameter) {
-		return Curve.evaluate(this.getValues(), parameter, 2);
-	},
-
 	getIntersections: function(curve) {
 		return Curve._addIntersections(this.getValues(), curve.getValues(),
 				this, []);
@@ -342,15 +277,15 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			crossings = 0;
 		for (var i = 0; i < count; i++) {
 			var t = roots[i];
-			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, 0).x > point.x) {
+			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, true, 0).x > point.x) {
 				// If we're close to 0 and are not changing y-direction from the
 				// previous curve, do not count this root, as we're merely
 				// touching a tip. Passing 1 for Curve.evaluate()'s type means
 				// we're calculating tangents, and then check their y-slope for
 				// a change of direction:
 				if (t < /*#=*/ Numerical.TOLERANCE
-					&& Curve.evaluate(this.getPrevious().getValues(), 1, 1).y
-						* Curve.evaluate(vals, t, 1).y
+					&& Curve.evaluate(this.getPrevious().getValues(), 1, true, 1).y
+						* Curve.evaluate(vals, t, true, 1).y
 							>= /*#=*/ Numerical.TOLERANCE)
 					continue;
 				crossings++;
@@ -486,8 +421,9 @@ statics: {
 		];
 	},
 
-	evaluate: function(v, t, type) {
-		var p1x = v[0], p1y = v[1],
+	evaluate: function(v, offset, isParameter, type) {
+		var t = isParameter ? offset : Curve.getParameterAt(v, offset, 0),
+			p1x = v[0], p1y = v[1],
 			c1x = v[2], c1y = v[3],
 			c2x = v[4], c2y = v[5],
 			p2x = v[6], p2y = v[7],
@@ -752,7 +688,85 @@ statics: {
 		}
 		return locations;
 	}
-}}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+}}, Base.each(['getPoint', 'getTangent', 'getNormal'],
+	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
+	// determine the bounds of Curve objects with defined segment1 and segment2
+	// values Curve.getBounds() can be used directly on curve arrays, without
+	// the need to create a Curve object first, as required by the code that
+	// finds path interesections.
+	function(name, index) {
+		this[name + 'At'] = function(offset, isParameter) {
+			return Curve.evaluate(this.getValues(), offset, isParameter, index);
+		};
+		// Deprecated and undocumented, but keep around for now.
+		// TODO: Remove once enough time has passed (28.01.2013)
+		this[name] = function(parameter) {
+			return Curve.evaluate(this.getValues(), parameter, true, index);
+		};
+	},
+/** @lends Curve# */{
+	// DOCS: Document #getParameterAt(offset, start)
+	// DOCS: Document #getParameterOf(point)
+	// DOCS: Document #getLocationAt(offset, isParameter)
+	// DOCS: Document #getLocationOf(point)
+	/**
+	 * @param {Number} offset
+	 * @param {Number} [start]
+	 * @return {Number}
+	 */
+	getParameterAt: function(offset, start) {
+		return Curve.getParameterAt(this.getValues(), offset,
+				start !== undefined ? start : offset < 0 ? 1 : 0);
+	},
+
+	/**
+	 * @param {Point} point
+	 * @return {Number}
+	 */
+	getParameterOf: function(point) {
+		point = Point.read(arguments);
+		return Curve.getParameterOf(this.getValues(), point.x, point.y);
+	},
+
+	getLocationAt: function(offset, isParameter) {
+		if (!isParameter)
+			offset = this.getParameterAt(offset);
+		return new CurveLocation(this, offset);
+	},
+
+	getLocationOf: function(point) {
+		var t = this.getParameterOf.apply(this, arguments);
+		return t != null ? new CurveLocation(this, t) : null;
+	}
+
+	/**
+	 * Returns the point on the curve at the specified position.
+	 *
+	 * @name Curve#getPointAt
+	 * @function
+	 * @param {Number} parameter the position at which to find the point as
+	 *        a value between {@code 0} and {@code 1}.
+	 * @return {Point}
+	 */
+
+	/**
+	 * Returns the tangent point on the curve at the specified position.
+	 *
+	 * @name Curve#getTangentAt
+	 * @function
+	 * @param {Number} parameter the position at which to find the tangent
+	 *        point as a value between {@code 0} and {@code 1}.
+	 */
+
+	/**
+	 * Returns the normal point on the curve at the specified position.
+	 *
+	 * @name Curve#getNormalAt
+	 * @function
+	 * @param {Number} parameter the position at which to find the normal
+	 *        point as a value between {@code 0} and {@code 1}.
+	 */
+}), Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
 	// determine the bounds of Curve objects with defined segment1 and segment2
 	// values Curve.getBounds() can be used directly on curve arrays, without
@@ -1069,7 +1083,7 @@ new function() { // Scope for methods that require numerical integration
 				minPoint;
 			// There are always roots, since we add [0, 1] above.
 			for (var i = 0; i < roots.length; i++) {
-				var pt = this.getPoint(roots[i]),
+				var pt = this.getPointAt(roots[i], true),
 					dist = point.getDistance(pt, true);
 				// We're comparing squared distances
 				if (dist < minDist) {

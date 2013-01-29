@@ -2055,8 +2055,8 @@ statics: {
 		}
 
 		function addBevelJoin(curve, t) {
-			var point = curve.getPoint(t),
-				normal = curve.getNormal(t).normalize(radius);
+			var point = curve.getPointAt(t, true),
+				normal = curve.getNormalAt(t, true).normalize(radius);
 			add(point.add(normal));
 			add(point.subtract(normal));
 		}
@@ -2075,9 +2075,9 @@ statics: {
 			} else if (join == 'miter') {
 				var curve2 = segment.getCurve(),
 					curve1 = curve2.getPrevious(),
-					point = curve2.getPoint(0),
-					normal1 = curve1.getNormal(1).normalize(radius),
-					normal2 = curve2.getNormal(0).normalize(radius),
+					point = curve2.getPointAt(0, true),
+					normal1 = curve1.getNormalAt(1, true).normalize(radius),
+					normal2 = curve2.getNormalAt(0, true).normalize(radius),
 					// Intersect the two lines
 					line1 = new Line(point.subtract(normal1),
 							Point.create(-normal1.y, normal1.x)),
@@ -2102,8 +2102,8 @@ statics: {
 			case 'square':
 				// Calculate the corner points of butt and square caps
 				var curve = segment.getCurve(),
-					point = curve.getPoint(t),
-					normal = curve.getNormal(t).normalize(radius);
+					point = curve.getPointAt(t, true),
+					normal = curve.getNormalAt(t, true).normalize(radius);
 				// For square caps, we need to step away from point in the
 				// direction of the tangent, which is the rotated normal
 				if (cap === 'square')
