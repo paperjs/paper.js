@@ -759,14 +759,15 @@ statics: {
 		};
 	},
 /** @lends Curve# */{
-	// DOCS: Document #getParameterAt(offset, start)
-	// DOCS: Document #getParameterOf(point)
-	// DOCS: Document #getLocationAt(offset, isParameter)
-	// DOCS: Document #getLocationOf(point)
 	/**
+	 * Calculates the curve time parameter of the specified offset on the path,
+	 * relative to the provided start parameter. If offset is a negative value,
+	 * the parameter is searched to the left of the start parameter. If no start 
+	 * parameter is provided, a default of {@code 0} for positive values of
+	 * {@code offset} and {@code 1} for negative values of {@code offset}.
 	 * @param {Number} offset
 	 * @param {Number} [start]
-	 * @return {Number}
+	 * @return {Number} the curve time parameter at the specified offset.
 	 */
 	getParameterAt: function(offset, start) {
 		return Curve.getParameterAt(this.getValues(), offset,
@@ -774,33 +775,52 @@ statics: {
 	},
 
 	/**
-	 * @param {Point} point
-	 * @return {Number}
+	 * Returns the curve time parameter of the specified point if it lies on the
+	 * curve, {@code null} otherwise.
+	 * @param {Point} point the point on the curve.
+	 * @return {Number} the curve time parameter of the specified point.
 	 */
 	getParameterOf: function(point) {
 		point = Point.read(arguments);
 		return Curve.getParameterOf(this.getValues(), point.x, point.y);
 	},
 
+	/**
+	 * Calculates the curve location at the specified offset or curve time
+	 * parameter.
+	 * @param {Number} offset the offset on the curve, or the curve time
+	 *        parameter if {@code isParameter} is {@code true}
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 *        is a curve time parameter.
+	 * @return {CurveLocation} the curve location at the specified the offset.
+	 */
 	getLocationAt: function(offset, isParameter) {
 		if (!isParameter)
 			offset = this.getParameterAt(offset);
 		return new CurveLocation(this, offset);
 	},
 
+	/**
+	 * Returns the curve location of the specified point if it lies on the
+	 * curve, {@code null} otherwise.
+	 * @param {Point} point the point on the curve.
+	 * @return {CurveLocation} the curve location of the specified point.
+	 */
 	getLocationOf: function(point) {
 		var t = this.getParameterOf.apply(this, arguments);
 		return t != null ? new CurveLocation(this, t) : null;
 	}
 
 	/**
-	 * Returns the point on the curve at the specified position.
+	 * Returns the point on the curve at the specified offset.
 	 *
 	 * @name Curve#getPointAt
 	 * @function
-	 * @param {Number} parameter the position at which to find the point as
-	 *        a value between {@code 0} and {@code 1}.
-	 * @return {Point}
+	 * @param {Number} offset the offset on the curve, or the curve time
+	 *        parameter if {@code isParameter} is {@code true}
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 *        is a curve time parameter.
+	 * @return {Point} the point on the curve at the specified offset.
 	 */
 
 	/**
@@ -808,8 +828,11 @@ statics: {
 	 *
 	 * @name Curve#getTangentAt
 	 * @function
-	 * @param {Number} parameter the position at which to find the tangent
-	 *        point as a value between {@code 0} and {@code 1}.
+	 * @param {Number} offset the offset on the curve, or the curve time
+	 *        parameter if {@code isParameter} is {@code true}
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 *        is a curve time parameter.
+	 * @return {Point} the tangent to the curve at the specified offset.
 	 */
 
 	/**
@@ -817,8 +840,11 @@ statics: {
 	 *
 	 * @name Curve#getNormalAt
 	 * @function
-	 * @param {Number} parameter the position at which to find the normal
-	 *        point as a value between {@code 0} and {@code 1}.
+	 * @param {Number} offset the offset on the curve, or the curve time
+	 *        parameter if {@code isParameter} is {@code true}
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 *        is a curve time parameter.
+	 * @return {Point} the normal of the curve at the specified offset.
 	 */
 }),
 new function() { // Scope for methods that require numerical integration
