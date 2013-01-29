@@ -1,10 +1,8 @@
 /*!
- * Paper.js v*#=* options.version
+ * Paper.js v*#=* options.version - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Paper.js is a JavaScript Vector Graphics Library based on Scriptographer.org.
- *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -15,10 +13,8 @@
  *
  ***
  *
- * Bootstrap.js JavaScript Framework.
- * http://bootstrapjs.org/
- *
- * Copyright (c) 2006 - 2011 Juerg Lehni
+ * Bootstrap.js JavaScript Inheritance Micro-Framework
+ * Copyright (c) 2006 - 2013 Juerg Lehni
  * http://lehni.org/
  *
  * Distributed under the MIT license.
@@ -28,10 +24,8 @@
  * Acorn.js
  * http://marijnhaverbeke.nl/acorn/
  *
- * Acorn is a tiny, fast JavaScript parser written in JavaScript.
- * 
- * Acorn was written by Marijn Haverbeke and released under an MIT
- * license.
+ * Acorn is a tiny, fast JavaScript parser written in JavaScript,
+ * created by Marijn Haverbeke and released under an MIT license.
  *
  */
 
