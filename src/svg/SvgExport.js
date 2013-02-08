@@ -64,7 +64,10 @@ new function() {
 		// See if we can formulate this matrix as simple scale / rotate commands
 		// Note: getScaling() returns values also when it's not a simple scale,
 		// but angle is only != null if it is, so check for that.
-		var angle = matrix.getRotation(),
+		// TODO: We disable transformation detection for now, until
+		// Matrix#getRotation() and Matrix#getScaling() work correctly for all
+		// angles and values of scaling.
+		var angle = null, // matrix.getRotation(),
 			parts = [];
 		if (angle != null) {
 			matrix = matrix.clone().scale(1, -1);
