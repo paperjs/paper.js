@@ -474,9 +474,12 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 
 	getScaling: function() {
 		// http://math.stackexchange.com/questions/13150/
-		var hor = Math.sqrt(this._a * this._a + this._c * this._c),
-			ver = Math.sqrt(this._b * this._b + this._d * this._d);
-		return Point.create(this._a < 0 ? -hor : hor, this._b < 0 ? -ver : ver);
+		// http://stackoverflow.com/questions/4361242/
+		var hor = Math.sqrt(this._a * this._a + this._b * this._b),
+			ver = Math.sqrt(this._c * this._c + this._d * this._d);
+		return Point.create(
+				this._a < 0 ? -hor : hor,
+				this._d < 0 ? -ver : ver);
 	},
 
 	/**
@@ -488,8 +491,8 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @bean
 	 */
 	getRotation: function() {
-		var angle1 = -Math.atan2(this._b, this._d),
-			angle2 = Math.atan2(this._c, this._a);
+		var angle1 = -Math.atan2(this._b, this._a),
+			angle2 = Math.atan2(this._c, this._d);
 		return Math.abs(angle1 - angle2) < /*#=*/ Numerical.EPSILON
 				? angle1 * 180 / Math.PI : undefined;
 	},
