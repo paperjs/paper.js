@@ -618,7 +618,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} The inverted matrix, or {@code null }, if the matrix is
 	 *         singular
 	 */
-	createInverse: function() {
+	inverted: function() {
 		var det = this._getDeterminant();
 		return det && Matrix.create(
 				this._d / det,
@@ -629,7 +629,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 				(this._c * this._tx - this._a * this._ty) / det);
 	},
 
-	createShiftless: function() {
+	shiftless: function() {
 		return Matrix.create(this._a, this._c, this._b, this._d, 0, 0);
 	},
 

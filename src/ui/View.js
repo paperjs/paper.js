@@ -393,7 +393,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 
 	_getInverse: function() {
 		if (!this._inverse)
-			this._inverse = this._matrix.createInverse();
+			this._inverse = this._matrix.inverted();
 		return this._inverse;
 	}
 

@@ -53,7 +53,7 @@ new function() {
 			// in rotate(). To do so, SVG requries us to inverse transform the
 			// translation point by the matrix itself, since they are provided
 			// in local coordinates.
-			matrix = matrix.createShiftless();
+			matrix = matrix.shiftless();
 			var point = matrix._inverseTransform(trans);
 			attrs.x = point.x;
 			attrs.y = point.y;
