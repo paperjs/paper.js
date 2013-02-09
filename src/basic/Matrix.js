@@ -607,60 +607,6 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * Sets this transform to a scaling transformation.
-	 *
-	 * @param {Number} hor The horizontal scaling factor
-	 * @param {Number} ver The vertical scaling factor
-	 * @return {Matrix} This affine transform
-	 */
-	setToScale: function(hor, ver) {
-		return this.set(hor, 0, 0, ver, 0, 0);
-	},
-
-	/**
-	 * Sets this transform to a translation transformation.
-	 *
-	 * @param {Number} dx The distance to translate in the x direction
-	 * @param {Number} dy The distance to translate in the y direction
-	 * @return {Matrix} This affine transform
-	 */
-	setToTranslation: function(delta) {
-		delta = Point.read(arguments);
-		return this.set(1, 0, 0, 1, delta.x, delta.y);
-	},
-
-	/**
-	 * Sets this transform to a shearing transformation.
-	 *
-	 * @param {Number} hor The horizontal shear factor
-	 * @param {Number} ver The vertical shear factor
-	 * @return {Matrix} This affine transform
-	 */
-	setToShear: function(hor, ver) {
-		return this.set(1, ver, hor, 1, 0, 0);
-	},
-
-	/**
-	 * Sets this transform to a rotation transformation.
-	 *
-	 * @param {Number} angle The angle of rotation measured in degrees
-	 * @param {Number} x The x coordinate of the anchor point
-	 * @param {Number} y The y coordinate of the anchor point
-	 * @return {Matrix} This affine transform
-	 */
-	setToRotation: function(angle, center) {
-		center = Point.read(arguments, 1);
-		angle = angle * Math.PI / 180;
-		var x = center.x,
-			y = center.y,
-			cos = Math.cos(angle),
-			sin = Math.sin(angle);
-		return this.set(cos, sin, -sin, cos,
-				x - x * cos + y * sin,
-				y - x * sin - y * cos);
-	},
-
-	/**
 	 * Applies this matrix to the specified Canvas Context.
 	 *
 	 * @param {CanvasRenderingContext2D} ctx
@@ -676,57 +622,6 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		// See Point.create()
 		create: function(a, c, b, d, tx, ty) {
 			return Base.create(Matrix).set(a, c, b, d, tx, ty);
-		},
-
-		/**
-		 * Creates a transform representing a scaling transformation.
-		 *
-		 * @param {Number} hor The horizontal scaling factor
-		 * @param {Number} ver The vertical scaling factor
-		 * @return {Matrix} A transform representing a scaling
-		 *         transformation
-		 */
-		getScaleInstance: function(hor, ver) {
-			var mx = new Matrix();
-			return mx.setToScale.apply(mx, arguments);
-		},
-
-		/**
-		 * Creates a transform representing a translation transformation.
-		 *
-		 * @param {Number} dx The distance to translate in the x direction
-		 * @param {Number} dy The distance to translate in the y direction
-		 * @return {Matrix} A transform representing a translation
-		 *         transformation
-		 */
-		getTranslateInstance: function(delta) {
-			var mx = new Matrix();
-			return mx.setToTranslation.apply(mx, arguments);
-		},
-
-		/**
-		 * Creates a transform representing a shearing transformation.
-		 *
-		 * @param {Number} hor The horizontal shear factor
-		 * @param {Number} ver The vertical shear factor
-		 * @return {Matrix} A transform representing a shearing transformation
-		 */
-		getShearInstance: function(hor, ver, center) {
-			var mx = new Matrix();
-			return mx.setToShear.apply(mx, arguments);
-		},
-
-		/**
-		 * Creates a transform representing a rotation transformation.
-		 *
-		 * @param {Number} angle The angle of rotation measured in degrees
-		 * @param {Number} x The x coordinate of the anchor point
-		 * @param {Number} y The y coordinate of the anchor point
-		 * @return {Matrix} A transform representing a rotation transformation
-		 */
-		getRotateInstance: function(angle, center) {
-			var mx = new Matrix();
-			return mx.setToRotation.apply(mx, arguments);
 		}
 	}
 }, new function() {
