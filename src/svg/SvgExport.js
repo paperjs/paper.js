@@ -81,9 +81,10 @@ new function() {
 		return attrs;
 	}
 
-	function getPath(path, segments) {
-		var parts = [],
-			style = path._style;
+	function getPath(path) {
+		var segments = path._segments,
+			style = path._style,
+			parts = [];
 
 		function addCurve(seg1, seg2, skipLine) {
 			var point1 = seg1._point,
@@ -250,7 +251,7 @@ new function() {
 			return null;
 		case 'path':
 			attrs = {
-				d: getPath(path, segments)
+				d: getPath(path)
 			};
 			break;
 		case 'polyline':
@@ -333,19 +334,28 @@ new function() {
 			attrs.transform = 'rotate(' + formatFloat(angle) + ','
 					+ formatPoint(center) + ')';
 		}
-		var svg = createElement(type, attrs);
-		return svg;
+		return createElement(type, attrs);
+	}
+
+	function exportCompoundPath(path) {
+		var children = path._children,
+			paths = [];
+		for (var i = 0, l = children.length; i < l; i++)
+			paths.push(getPath(children[i]));
+		return createElement('path', {
+			d: paths.join(' ')
+		});
 	}
 
 	var exporters = {
 		group: exportGroup,
 		layer: exportGroup,
-		path: exportPath,
 		raster: exportRaster,
-		pointtext: exportText
+		pointtext: exportText,
+		path: exportPath,
+		compoundpath: exportCompoundPath
 		// TODO:
 		// placedsymbol:
-		// compoundpath:
 		// gradients
 	};
 
