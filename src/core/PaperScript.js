@@ -322,6 +322,3 @@ var PaperScript = this.PaperScript = new function() {
 
 /*#*/ } // !options.browser
 };
-
-// Export load directly:
-this.load = PaperScript.load;
