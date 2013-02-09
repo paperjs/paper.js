@@ -26,13 +26,17 @@ function equals(actual, expected, message, tolerance) {
 		}
 		actual = actual();
 	}
-	// Let's be strict
+	// See if we need to compare with a tolerance, and if so, assume a number.
 	if (tolerance !== undefined) {
 		var ok = Math.abs(actual - expected) <= tolerance;
 		return QUnit.push(ok, ok ? expected : actual, expected, message);
 	} else if (expected && expected.equals) {
-		return QUnit.push(expected.equals(actual), actual + '', expected + '', message);
+		// Support calling of #equals() on the expected value, and automatically
+		// convert displayed values to strings.
+		return QUnit.push(expected.equals(actual), actual + '', expected + '',
+				message);
 	} else {
+		// Let's be strict
 		return strictEqual(actual, expected, message);
 	}
 }
