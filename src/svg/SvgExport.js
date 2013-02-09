@@ -44,7 +44,8 @@ new function() {
 
 	function getTransform(item, coordinates) {
 		var matrix = item._matrix,
-			trans = matrix.getTranslation(),
+			decomposed = matrix.decompose(),
+			trans = decomposed.translation,
 			attrs = {};
 		if (coordinates) {
 			// If the item suppports x- and y- coordinates, we're taking out the
@@ -61,27 +62,22 @@ new function() {
 		}
 		if (matrix.isIdentity())
 			return attrs;
-		// See if we can formulate this matrix as simple scale / rotate commands
-		// Note: getScaling() returns values also when it's not a simple scale,
-		// but angle is only != null if it is, so check for that.
-		// TODO: We disable transformation detection for now, until
-		// Matrix#getRotation() and Matrix#getScaling() work correctly for all
-		// angles and values of scaling.
-		var angle = null, // matrix.getRotation(),
-			parts = [];
-		if (angle != null) {
-			matrix = matrix.clone().scale(1, -1);
+		// See if we can formulate the decomposed matrix as a simple
+		// translate/scale/rotate command sequence.
+		if (!decomposed.shearing) {
+			var parts = [],
+				angle = decomposed.rotation,
+				scale = decomposed.scaling;
 			if (trans && !trans.isZero())
 				parts.push('translate(' + formatPoint(trans) + ')');
-			if (angle)
-				parts.push('rotate(' + formatFloat(angle) + ')');
-			var scale = matrix.getScaling();
 			if (!Numerical.isZero(scale.x - 1) || !Numerical.isZero(scale.y - 1))
 				parts.push('scale(' + formatPoint(scale) +')');
+			if (angle)
+				parts.push('rotate(' + formatFloat(angle) + ')');
+			attrs.transform = parts.join(' ');
 		} else {
-			parts.push('matrix(' + matrix.getValues().join(',') + ')');
+			attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
 		}
-		attrs.transform = parts.join(' ');
 		return attrs;
 	}
 

@@ -468,33 +468,61 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		);
 	},
 
+	decompose: function() {
+		// http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
+		// http://stackoverflow.com/questions/4361242/
+		var a = this._a, b = this._b, c = this._c, d = this._d;
+		if (Numerical.isZero(a * d - b * c))
+			return {};
+
+		var scaleX = Math.sqrt(a * a + b * b);
+		a /= scaleX;
+		b /= scaleX;
+
+		var shear = a * c + b * d;
+		c -= a * shear;
+		d -= b * shear;
+
+		var scaleY = Math.sqrt(c * c + d * d);
+		c /= scaleY;
+		d /= scaleY;
+		shear /= scaleY;
+
+		// a * d - b * c should now be 1 or -1
+		if (a * d < b * c) {
+			a = -a;
+			b = -b;
+			// We don't use c & d anymore, but this would be correct:
+			// c = -c;
+			// d = -d;
+			shear = -shear;
+			scaleX = -scaleX;
+		}
+
+		return {
+			scaling: Point.create(scaleX, scaleY),
+			rotation: -Math.atan2(b, a) * 180 / Math.PI,
+			shearing: shear,
+			translation: Point.create(this._tx, this._ty)
+		};
+	},
+
 	getTranslation: function() {
-		return Point.create(this._tx, this._ty);
+		return this.decompose().translation;
 	},
 
 	getScaling: function() {
-		// http://math.stackexchange.com/questions/13150/
-		// http://stackoverflow.com/questions/4361242/
-		var hor = Math.sqrt(this._a * this._a + this._b * this._b),
-			ver = Math.sqrt(this._c * this._c + this._d * this._d);
-		return Point.create(
-				this._a < 0 ? -hor : hor,
-				this._d < 0 ? -ver : ver);
+		return this.decompose().scaling;
 	},
 
 	/**
-	 * The rotation angle of the matrix. If a non-uniform rotation is applied as
-	 * a result of a shear() or scale() command, undefined is returned, as the
-	 * resulting transformation cannot be expressed in one rotation angle.
+	 * The rotation angle of the matrix.
 	 *
 	 * @type Number
 	 * @bean
 	 */
 	getRotation: function() {
-		var angle1 = -Math.atan2(this._b, this._a),
-			angle2 = Math.atan2(this._c, this._d);
-		return Math.abs(angle1 - angle2) < /*#=*/ Numerical.EPSILON
-				? angle1 * 180 / Math.PI : undefined;
+		return this.decompose().rotation;
 	},
 
 	/**
