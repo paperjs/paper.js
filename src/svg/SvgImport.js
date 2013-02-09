@@ -502,11 +502,15 @@ new function() {
 		}
 	}
 
-	function importSvg(svg) {
+	function importSvg(svg, clearDefs) {
 		var type = svg.nodeName.toLowerCase(),
 			importer = importers[type],
 			item = importer && importer(svg, type);
-		return item && applyAttributes(item, svg);
+		item = item && applyAttributes(item, svg);
+		// Clear definitions at the end of import?
+		if (clearDefs)
+			definitions = {};
+		return item;
 	}
 
 
@@ -519,7 +523,7 @@ new function() {
 		 * @return {Item} the converted Paper.js item
 		 */
 		importSvg: function(svg) {
-			return this.addChild(importSvg(svg));
+			return this.addChild(importSvg(svg, true));
 		}
 	});
 
@@ -533,7 +537,7 @@ new function() {
 		 */
 		importSvg: function(svg) {
 			this.activate();
-			return importSvg(svg);
+			return importSvg(svg, true);
 		}
 	});
 };
