@@ -17,7 +17,7 @@
  * test. It is returned by {@link Item#hitTest(point)} and
  * {@link Project#hitTest(point)}.
  */
-HitResult = Base.extend(/** @lends HitResult# */{
+var HitResult = this.HitResult = Base.extend(/** @lends HitResult# */{
 	initialize: function(type, item, values) {
 		this.type = type;
 		this.item = item;

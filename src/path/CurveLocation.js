@@ -26,7 +26,7 @@
  * {@link PathItem#getIntersections(path)},
  * etc.
  */
-CurveLocation = Base.extend(/** @lends CurveLocation# */{
+var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	// DOCS: CurveLocation class description: add these back when the  mentioned
 	// functioned have been added: {@link Path#split(location)}
 	/**

@@ -602,7 +602,7 @@ statics: {
 		// same quadratic roots.
 		var a = 3 * (v1 - v2) - v0 + v3,
 			b = 2 * (v0 + v2) - 4 * v1,
-			c = v1 - v0;
+			c = v1 - v0,
 			count = Numerical.solveQuadratic(a, b, c, roots,
 					/*#=*/ Numerical.TOLERANCE),
 			// Add some tolerance for good roots, as t = 0 / 1 are added
