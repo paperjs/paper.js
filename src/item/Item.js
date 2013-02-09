@@ -1131,6 +1131,15 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * hit.
 	 */
 	hitTest: function(point, options) {
+		function checkBounds(type, part) {
+			var pt = bounds['get' + part]();
+			// TODO: We need to transform the point back to the coordinate
+			// system of the DOM level on which the inquiry was started!
+			if (point.getDistance(pt) < options.tolerance)
+				return new HitResult(type, that,
+						{ name: Base.hyphenate(part), point: pt });
+		}
+
 		point = Point.read(arguments);
 		options = HitResult.getOptions(Base.read(arguments));
 		// Check if the point is withing roughBounds + tolerance, but only if
@@ -1153,14 +1162,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				points = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
 				'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'],
 				res;
-			function checkBounds(type, part) {
-				var pt = bounds['get' + part]();
-				// TODO: We need to transform the point back to the coordinate
-				// system of the DOM level on which the inquiry was started!
-				if (point.getDistance(pt) < options.tolerance)
-					return new HitResult(type, that,
-							{ name: Base.hyphenate(part), point: pt });
-			}
 			if (options.center && (res = checkBounds('center', 'Center')))
 				return res;
 			if (options.bounds) {

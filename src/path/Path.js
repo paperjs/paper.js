@@ -1442,6 +1442,20 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// performance.
 
 	function drawHandles(ctx, segments, matrix) {
+		function drawHandle(index) {
+			var hX = coords[index],
+				hY = coords[index + 1];
+			if (pX != hX || pY != hY) {
+				ctx.beginPath();
+				ctx.moveTo(pX, pY);
+				ctx.lineTo(hX, hY);
+				ctx.stroke();
+				ctx.beginPath();
+				ctx.arc(hX, hY, 1.75, 0, Math.PI * 2, true);
+				ctx.fill();
+			}
+		}
+
 		var coords = new Array(6);
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i];
@@ -1450,21 +1464,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				selected = state & /*#=*/ SelectionState.POINT,
 				pX = coords[0],
 				pY = coords[1];
-
-			function drawHandle(index) {
-				var hX = coords[index],
-					hY = coords[index + 1];
-				if (pX != hX || pY != hY) {
-					ctx.beginPath();
-					ctx.moveTo(pX, pY);
-					ctx.lineTo(hX, hY);
-					ctx.stroke();
-					ctx.beginPath();
-					ctx.arc(hX, hY, 1.75, 0, Math.PI * 2, true);
-					ctx.fill();
-				}
-			}
-
 			if (selected || (state & /*#=*/ SelectionState.HANDLE_IN))
 				drawHandle(2);
 			if (selected || (state & /*#=*/ SelectionState.HANDLE_OUT))
