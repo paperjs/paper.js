@@ -489,13 +489,22 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		);
 	},
 
+	/**
+	 * Attempts to decompose the affine transformation described by this matrix
+	 * into {@code translation}, {@code scaling}, {@code rotation} and
+	 * {@code shearing}, and returns an object with these properties if it
+	 * succeeded, {@code null} otherwise.
+	 *
+	 * @return {Object} the decomposed matrix, or {@code null} if decomposition
+	 * is not possible.
+	 */
 	decompose: function() {
 		// http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
 		// http://stackoverflow.com/questions/4361242/
 		// https://github.com/wisec/DOMinator/blob/master/layout/style/nsStyleAnimation.cpp#L946
 		var a = this._a, b = this._b, c = this._c, d = this._d;
 		if (Numerical.isZero(a * d - b * c))
-			return {};
+			return null;
 
 		var scaleX = Math.sqrt(a * a + b * b);
 		a /= scaleX;
@@ -522,29 +531,44 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		}
 
 		return {
-			translation: Point.create(this._tx, this._ty),
+			translation: this.getTranslation(),
 			scaling: Point.create(scaleX, scaleY),
 			rotation: -Math.atan2(b, a) * 180 / Math.PI,
 			shearing: shear
 		};
 	},
 
+	/**
+	 * The translation values of the matrix.
+	 *
+	 * @type Point
+	 * @bean
+	 */
 	getTranslation: function() {
-		return this.decompose().translation;
-	},
-
-	getScaling: function() {
-		return this.decompose().scaling;
+		// No decomposition is required to extract translation, so treat this
+		return Point.create(this._tx, this._ty);
 	},
 
 	/**
-	 * The rotation angle of the matrix.
+	 * The scaling values of the matrix, if it can be decomposed.
+	 *
+	 * @type Point
+	 * @bean
+	 * @see Matrix#decompose()
+	 */
+	getScaling: function() {
+		return (this.decompose() || {}).scaling;
+	},
+
+	/**
+	 * The rotation angle of the matrix, if it can be decomposed.
 	 *
 	 * @type Number
 	 * @bean
+	 * @see Matrix#decompose()
 	 */
 	getRotation: function() {
-		return this.decompose().rotation;
+		return (this.decompose() || {}).rotation;
 	},
 
 	/**
