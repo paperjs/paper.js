@@ -44,8 +44,7 @@ new function() {
 
 	function getTransform(item, coordinates) {
 		var matrix = item._matrix,
-			decomposed = matrix.decompose(),
-			trans = decomposed.translation,
+			trans = matrix.getTranslation(),
 			attrs = {};
 		if (coordinates) {
 			// If the item suppports x- and y- coordinates, we're taking out the
@@ -62,9 +61,10 @@ new function() {
 		}
 		if (matrix.isIdentity())
 			return attrs;
-		// See if we can formulate the decomposed matrix as a simple
+		// See if we can decompose the matrix and can formulate it as a simple
 		// translate/scale/rotate command sequence.
-		if (!decomposed.shearing) {
+		var decomposed = matrix.decompose();
+		if (decomposed && !decomposed.shearing) {
 			var parts = [],
 				angle = decomposed.rotation,
 				scale = decomposed.scaling;
