@@ -195,8 +195,26 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} This affine transform
 	 */
 	rotate: function(angle, center) {
-		return this.concatenate(
-				Matrix.getRotateInstance.apply(Matrix, arguments));
+		center = Point.read(arguments, 1);
+		angle = angle * Math.PI / 180;
+		// Concatenate rotation matrix into this one
+		var x = center.x,
+			y = center.y,
+			cos = Math.cos(angle),
+			sin = Math.sin(angle),
+			tx = x - x * cos + y * sin,
+			ty = y - x * sin - y * cos,
+			a = this._a,
+			b = this._b,
+			c = this._c,
+			d = this._d;
+		this._a = cos * a + sin * b;
+		this._b = -sin * a + cos * b;
+		this._c = cos * c + sin * d;
+		this._d = -sin * c + cos * d;
+		this._tx += tx * a + ty * b;
+		this._ty += tx * c + ty * d;
+		return this;
 	},
 
 	/**
