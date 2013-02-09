@@ -10,4 +10,6 @@
 #
 # All rights reserved.
 
-uglifyjs ../dist/paper.js -o ../dist/paper-min.js -c unused=false -m -r "_$_,$_" -b ascii_only=true,beautify=false --comments /^!/
+# We need to keep dead_code around for now, since the very odd JavaScriptCore
+# scope bug fix (nop().nop()) requires it.
+uglifyjs ../dist/paper.js -o ../dist/paper-min.js -c unused=false,dead_code=false -m -r "_$_,$_" -b ascii_only=true,beautify=false --comments /^!/
