@@ -15,7 +15,6 @@
  * Paper.js DOM to a Paper.js DOM.
  */
 new function() {
-
 	// Shortcut to Base.formatFloat
 	var formatFloat = Base.formatFloat;
 
