@@ -1944,7 +1944,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// storing the actual location / transformation state.
 		if ((this.applyMatrix || arguments[1])
 				&& this._applyMatrix(this._matrix))
-			this._matrix.setIdentity();
+			this._matrix.reset();
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(/*#=*/ Change.GEOMETRY);
