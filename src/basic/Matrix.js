@@ -493,7 +493,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		if (a * d < b * c) {
 			a = -a;
 			b = -b;
-			// We don't use c & d anymore, but this would be correct:
+			// We don't need c & d anymore, but if we did, we'd have to do this:
 			// c = -c;
 			// d = -d;
 			shear = -shear;
@@ -501,10 +501,10 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		}
 
 		return {
+			translation: Point.create(this._tx, this._ty),
 			scaling: Point.create(scaleX, scaleY),
 			rotation: -Math.atan2(b, a) * 180 / Math.PI,
-			shearing: shear,
-			translation: Point.create(this._tx, this._ty)
+			shearing: shear
 		};
 	},
 
