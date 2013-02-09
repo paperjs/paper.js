@@ -13,6 +13,7 @@
 /*#*/ include('Point.js');
 /*#*/ include('Size.js');
 /*#*/ include('Rectangle.js');
+/*#*/ include('Matrix.js');
 
 /*#*/ include('Color.js');
 
