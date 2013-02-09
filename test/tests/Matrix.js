@@ -11,67 +11,56 @@
  */
 
 module('Matrix');
-test('getRotation()', function() {
-	equals(function() {
-		return new Matrix().rotate(45).getRotation();
-	}, 45);
+test('Decomposition: rotate()', function() {
+	function testAngle(angle, expected) {
+		equals(new Matrix().rotate(angle).getRotation(),
+				Base.pick(expected, angle),
+				'new Matrix().rotate(' + angle + ').getRotation()',
+				Numerical.TOLERANCE);
+		equals(new Matrix().rotate(angle).getScaling(),
+				new Point(1, 1),
+				'new Matrix().rotate(' + angle + ').getScaling()');
+	}
 
-	equals(function() {
-		return new Matrix().rotate(90).getRotation();
-	}, 90);
-
-	equals(function() {
-		return new Matrix().rotate(180).getRotation();
-	}, 180);
-
-	equals(function() {
-		return new Matrix().rotate(270).getRotation();
-	}, -90, null, Numerical.TOLERANCE);
-
-	equals(function() {
-		return new Matrix().rotate(-45).getRotation();
-	}, -45);
-
-	equals(function() {
-		return new Matrix().rotate(-90).getRotation();
-	}, -90);
-
-	equals(function() {
-		return new Matrix().rotate(-180).getRotation();
-	}, -180);
-
-	equals(function() {
-		return new Matrix().rotate(-270).getRotation();
-	}, 90, null, Numerical.TOLERANCE);
+	testAngle(0);
+	testAngle(1);
+	testAngle(45);
+	testAngle(90);
+	testAngle(135);
+	testAngle(180);
+	testAngle(270, -90);
+	testAngle(-1);
+	testAngle(-45);
+	testAngle(-90);
+	testAngle(-135);
+	testAngle(-180);
+	testAngle(-270, 90);
 });
 
-test('getScaling()', function() {
-	equals(function() {
-		return new Matrix().scale(1, 1).getScaling();
-	}, new Point(1, 1));
+test('Decomposition: scale()', function() {
+	function testScale(sx, sy) {
+		var flipped = sx < 0 && sy < 0;
+		equals(new Matrix().scale(sx, sy).getScaling(),
+				new Point(flipped ? -sx : sx, flipped ? -sy : sy),
+				'new Matrix().scale(' + sx + ', ' + sy + ').getScaling()');
+		equals(new Matrix().scale(sx, sy).getRotation(),
+				flipped ? 180 : 0,
+				'new Matrix().scale(' + sx + ', ' + sy + ').getRotation()',
+				Numerical.TOLERANCE);
+	}
 
-	equals(function() {
-		return new Matrix().scale(1, -1).getScaling();
-	}, new Point(1, -1));
-
-	equals(function() {
-		return new Matrix().scale(-1, 1).getScaling();
-	}, new Point(-1, 1));
-
-	equals(function() {
-		return new Matrix().scale(2, -4).getScaling();
-	}, new Point(2, -4));
-
-	equals(function() {
-		return new Matrix().scale(-4, 2).getScaling();
-	}, new Point(-4, 2));
-
-	equals(function() {
-		return new Matrix().scale(-4, -4).getScaling();
-	}, new Point(-4, -4));
+	testScale(1, 1);
+	testScale(1, -1);
+	testScale(-1, 1);
+	testScale(-1, -1);
+	testScale(2, 4);
+	testScale(2, -4);
+	testScale(4, 2);
+	testScale(-4, 2);
+	testScale(-4, -4);
 });
 
-test('getRotation() & getScaling()', function() {
+test('Decomposition: rotate() & scale()', function() {
 	equals(function() {
 		return new Matrix().scale(2, 4).rotate(45).getScaling();
 	}, new Point(2, 4));
@@ -88,4 +77,19 @@ test('getRotation() & getScaling()', function() {
 		return new Matrix().scale(2, -4).rotate(45).getRotation();
 	}, 45);
 
+	equals(function() {
+		return new Matrix().scale(-2, 4).rotate(45).getScaling();
+	}, new Point(-2, 4));
+
+	equals(function() {
+		return new Matrix().scale(-2, 4).rotate(45).getRotation();
+	}, 45);
+
+	equals(function() {
+		return new Matrix().scale(-2, -4).rotate(45).getScaling();
+	}, new Point(-2, -4));
+
+	equals(function() {
+		return new Matrix().scale(-2, -4).rotate(45).getRotation();
+	}, 45);
 });
