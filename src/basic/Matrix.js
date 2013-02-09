@@ -269,56 +269,42 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * The scaling factor in the x-direction ({@code a}).
+	 * Checks whether the two matrices describe the same transformation.
 	 *
-	 * @name Matrix#scaleX
-	 * @type Number
+	 * @param {Matrix} matrix the matrix to compare this matrix to
+	 * @return {Boolean} {@true if the matrices are equal}
 	 */
+	equals: function(mx) {
+		return mx && this._a == mx._a && this._b == mx._b && this._c == mx._c
+				&& this._d == mx._d && this._tx == mx._tx && this._ty == mx._ty;
+	},
 
 	/**
-	 * The scaling factor in the y-direction ({@code d}).
-	 *
-	 * @name Matrix#scaleY
-	 * @type Number
+	 * @return {Boolean} Whether this transform is the identity transform
 	 */
+	isIdentity: function() {
+		return this._a == 1 && this._c == 0 && this._b == 0 && this._d == 1
+				&& this._tx == 0 && this._ty == 0;
+	},
 
 	/**
-	 * @return {Number} The shear factor in the x-direction ({@code b}).
+	 * Returns whether the transform is invertible. A transform is not
+	 * invertible if the determinant is 0 or any value is non-finite or NaN.
 	 *
-	 * @name Matrix#shearX
-	 * @type Number
+	 * @return {Boolean} Whether the transform is invertible
 	 */
+	isInvertible: function() {
+		return !!this._getDeterminant();
+	},
 
 	/**
-	 * @return {Number} The shear factor in the y-direction ({@code c}).
+	 * Checks whether the matrix is singular or not. Singular matrices cannot be
+	 * inverted.
 	 *
-	 * @name Matrix#shearY
-	 * @type Number
+	 * @return {Boolean} Whether the matrix is singular
 	 */
-
-	/**
-	 * The translation in the x-direction ({@code tx}).
-	 *
-	 * @name Matrix#translateX
-	 * @type Number
-	 */
-
-	/**
-	 * The translation in the y-direction ({@code ty}).
-	 *
-	 * @name Matrix#translateY
-	 * @type Number
-	 */
-
-	/**
-	 * The transform values as an array, in the same sequence as they are passed
-	 * to {@link #initialize(a, c, b, d, tx, ty)}.
-	 *
-	 * @type Number[]
-	 * @bean
-	 */
-	getValues: function() {
-		return [ this._a, this._c, this._b, this._d, this._tx, this._ty ];
+	isSingular: function() {
+		return !this._getDeterminant();
 	},
 
 	/**
@@ -539,6 +525,59 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
+	 * The scaling factor in the x-direction ({@code a}).
+	 *
+	 * @name Matrix#scaleX
+	 * @type Number
+	 */
+
+	/**
+	 * The scaling factor in the y-direction ({@code d}).
+	 *
+	 * @name Matrix#scaleY
+	 * @type Number
+	 */
+
+	/**
+	 * @return {Number} The shear factor in the x-direction ({@code b}).
+	 *
+	 * @name Matrix#shearX
+	 * @type Number
+	 */
+
+	/**
+	 * @return {Number} The shear factor in the y-direction ({@code c}).
+	 *
+	 * @name Matrix#shearY
+	 * @type Number
+	 */
+
+	/**
+	 * The translation in the x-direction ({@code tx}).
+	 *
+	 * @name Matrix#translateX
+	 * @type Number
+	 */
+
+	/**
+	 * The translation in the y-direction ({@code ty}).
+	 *
+	 * @name Matrix#translateY
+	 * @type Number
+	 */
+
+	/**
+	 * The transform values as an array, in the same sequence as they are passed
+	 * to {@link #initialize(a, c, b, d, tx, ty)}.
+	 *
+	 * @type Number[]
+	 * @bean
+	 */
+	getValues: function() {
+		return [ this._a, this._c, this._b, this._d, this._tx, this._ty ];
+	},
+
+	/**
 	 * The translation values of the matrix.
 	 *
 	 * @type Point
@@ -569,45 +608,6 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	getRotation: function() {
 		return (this.decompose() || {}).rotation;
-	},
-
-	/**
-	 * Checks whether the two matrices describe the same transformation.
-	 *
-	 * @param {Matrix} matrix the matrix to compare this matrix to
-	 * @return {Boolean} {@true if the matrices are equal}
-	 */
-	equals: function(mx) {
-		return mx && this._a == mx._a && this._b == mx._b && this._c == mx._c
-				&& this._d == mx._d && this._tx == mx._tx && this._ty == mx._ty;
-	},
-
-	/**
-	 * @return {Boolean} Whether this transform is the identity transform
-	 */
-	isIdentity: function() {
-		return this._a == 1 && this._c == 0 && this._b == 0 && this._d == 1
-				&& this._tx == 0 && this._ty == 0;
-	},
-
-	/**
-	 * Returns whether the transform is invertible. A transform is not
-	 * invertible if the determinant is 0 or any value is non-finite or NaN.
-	 *
-	 * @return {Boolean} Whether the transform is invertible
-	 */
-	isInvertible: function() {
-		return !!this._getDeterminant();
-	},
-
-	/**
-	 * Checks whether the matrix is singular or not. Singular matrices cannot be
-	 * inverted.
-	 *
-	 * @return {Boolean} Whether the matrix is singular
-	 */
-	isSingular: function() {
-		return !this._getDeterminant();
 	},
 
 	/**
