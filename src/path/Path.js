@@ -1997,7 +1997,7 @@ statics: {
 			// and calculate the bounding box of the resulting rotated elipse:
 			// Get rotated hor and ver vectors, and determine rotation angle
 			// and elipse values from them:
-			var mx = matrix.createShiftless(),
+			var mx = matrix.shiftless(),
 				hor = mx.transform(Point.create(radius, 0)),
 				ver = mx.transform(Point.create(0, radius)),
 				phi = hor.getAngleInRadians(),

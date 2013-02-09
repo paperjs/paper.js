@@ -454,7 +454,7 @@ new function() {
 					scale = size ? rectangle.getSize().divide(size) : 1,
 					offset = rectangle.getPoint(),
 					matrix = new Matrix().translate(offset).scale(scale);
-				item.transform(matrix.createInverse());
+				item.transform(matrix.inverted());
 				if (size)
 					rectangle.setSize(size);
 				rectangle.setPoint(0);
