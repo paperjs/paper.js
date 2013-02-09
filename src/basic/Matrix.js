@@ -64,7 +64,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 				ok = false;
 			}
 		} else if (count == 0) {
-			this.setIdentity();
+			this.reset();
 		} else {
 			ok = false;
 		}
@@ -105,7 +105,11 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		return this;
 	},
 
-	setIdentity: function() {
+	/**
+	 * "Resets" the matrix by setting its values to the ones of the identity
+	 * matrix that results in no transformation.
+	 */
+	reset: function() {
 		this._a = this._d = 1;
 		this._c = this._b = this._tx = this._ty = 0;
 		return this;
