@@ -471,6 +471,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	decompose: function() {
 		// http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
 		// http://stackoverflow.com/questions/4361242/
+		// https://github.com/wisec/DOMinator/blob/master/layout/style/nsStyleAnimation.cpp#L946
 		var a = this._a, b = this._b, c = this._c, d = this._d;
 		if (Numerical.isZero(a * d - b * c))
 			return {};

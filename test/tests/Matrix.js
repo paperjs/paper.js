@@ -12,14 +12,14 @@
 
 module('Matrix');
 test('Decomposition: rotate()', function() {
-	function testAngle(angle, expected) {
-		equals(new Matrix().rotate(angle).getRotation(),
-				Base.pick(expected, angle),
-				'new Matrix().rotate(' + angle + ').getRotation()',
-				Numerical.TOLERANCE);
-		equals(new Matrix().rotate(angle).getScaling(),
-				new Point(1, 1),
-				'new Matrix().rotate(' + angle + ').getScaling()');
+	function testAngle(a, ea) {
+		var m = new Matrix().rotate(a),
+			s = 'new Matrix().rotate(' + a + ')';
+		equals(m.getRotation(), Base.pick(ea, a),
+			s + '.getRotation()',
+			Numerical.TOLERANCE);
+		equals(m.getScaling(), new Point(1, 1),
+			s + '.getScaling()');
 	}
 
 	testAngle(0);
@@ -38,58 +38,40 @@ test('Decomposition: rotate()', function() {
 });
 
 test('Decomposition: scale()', function() {
-	function testScale(sx, sy) {
-		var flipped = sx < 0 && sy < 0;
-		equals(new Matrix().scale(sx, sy).getScaling(),
-				new Point(flipped ? -sx : sx, flipped ? -sy : sy),
-				'new Matrix().scale(' + sx + ', ' + sy + ').getScaling()');
-		equals(new Matrix().scale(sx, sy).getRotation(),
-				flipped ? 180 : 0,
-				'new Matrix().scale(' + sx + ', ' + sy + ').getRotation()',
-				Numerical.TOLERANCE);
+	function testScale(sx, sy, ex, ey, ea) {
+		var m = new Matrix().scale(sx, sy),
+			s = 'new Matrix().scale(' + sx + ', ' + sy + ')';
+		equals(m.getScaling(), new Point(Base.pick(ex, sx), Base.pick(ey, sy)),
+			s + '.getScaling()');
+		equals(m.getRotation(), ea || 0,
+			s + '.getRotation()',
+			Numerical.TOLERANCE);
 	}
 
 	testScale(1, 1);
-	testScale(1, -1);
+	testScale(1, -1, -1, 1, -180); // Decomposing results in correct flipping
 	testScale(-1, 1);
-	testScale(-1, -1);
+	testScale(-1, -1, 1, 1, 180); // Decomposing results in correct flipping
 	testScale(2, 4);
-	testScale(2, -4);
+	testScale(2, -4, -2, 4, -180); // Decomposing results in correct flipping
 	testScale(4, 2);
 	testScale(-4, 2);
-	testScale(-4, -4);
+	testScale(-4, -4, 4, 4, 180); // Decomposing results in correct flipping
 });
 
 test('Decomposition: rotate() & scale()', function() {
-	equals(function() {
-		return new Matrix().scale(2, 4).rotate(45).getScaling();
-	}, new Point(2, 4));
+	function testAngleAndScale(sx, sy, a, ex, ey, ea) {
+		var m = new Matrix().scale(sx, sy).rotate(a),
+			s = 'new Matrix().scale(' + sx + ', ' + sy + ').rotate(' + a + ')';
+		equals(m.getScaling(), new Point(Base.pick(ex, sx), Base.pick(ey, sy)),
+			s + '.getScaling()');
+		equals(m.getRotation(), ea || a,
+			s + '.getRotation()',
+			Numerical.TOLERANCE);
+	}
 
-	equals(function() {
-		return new Matrix().scale(2, 4).rotate(45).getRotation();
-	}, 45);
-
-	equals(function() {
-		return new Matrix().scale(2, -4).rotate(45).getScaling();
-	}, new Point(2, -4));
-
-	equals(function() {
-		return new Matrix().scale(2, -4).rotate(45).getRotation();
-	}, 45);
-
-	equals(function() {
-		return new Matrix().scale(-2, 4).rotate(45).getScaling();
-	}, new Point(-2, 4));
-
-	equals(function() {
-		return new Matrix().scale(-2, 4).rotate(45).getRotation();
-	}, 45);
-
-	equals(function() {
-		return new Matrix().scale(-2, -4).rotate(45).getScaling();
-	}, new Point(-2, -4));
-
-	equals(function() {
-		return new Matrix().scale(-2, -4).rotate(45).getRotation();
-	}, 45);
+	testAngleAndScale(2, 4, 45);
+	testAngleAndScale(2, -4, 45, -2, 4, -135);
+	testAngleAndScale(-2, 4, 45);
+	testAngleAndScale(-2, -4, 45, 2, 4, -135);
 });
