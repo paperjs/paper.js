@@ -422,10 +422,11 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		}
 		return coords;
 		// NOTE: There is a very strange bug in JavaScriptCore that causes
-		// segments to receive wrong values after the transformation of a very
-		// large  amount of segments. For some strange reason, this unreachable
-		// stamement causes JavaScriptCore to optimize code differently and not
-		// cause the error. There is no nop() function...
+		// segments to receive wrong handleIn values after the transformation of
+		// a very large amount of segments.
+		// For some strange reason, this unreachable stamement causes
+		// JavaScriptCore to optimize code differently and not cause the error.
+		// Note that there is no nop() function...
 		nop().nop();
 	}
 });
