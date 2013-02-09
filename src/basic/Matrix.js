@@ -393,8 +393,8 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		var i = srcOff, j = dstOff,
 			srcEnd = srcOff + 2 * numPts;
 		while (i < srcEnd) {
-			var x = src[i++];
-			var y = src[i++];
+			var x = src[i++],
+				y = src[i++];
 			dst[j++] = x * this._a + y * this._b + this._tx;
 			dst[j++] = x * this._c + y * this._d + this._ty;
 		}
