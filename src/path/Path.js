@@ -1635,7 +1635,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			x[n - i - 1] -= tmp[n - i] * x[n - i];
 		}
 		return x;
-	};
+	}
 
 	return {
 		// Note: Documentation for smooth() is in PathItem

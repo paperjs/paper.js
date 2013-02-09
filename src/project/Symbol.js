@@ -132,6 +132,6 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	 * @return {Symbol}
 	 */
 	clone: function() {
-	 	return new Symbol(this._definition.clone());
+		return new Symbol(this._definition.clone());
 	}
 });
