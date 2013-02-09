@@ -69,6 +69,13 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * arrays and properties of objects.
 		 */ 
 		equals: function(obj1, obj2) {
+			function checkKeys(o1, o2) {
+				for (var i in o1)
+					if (o1.hasOwnProperty(i) && typeof o2[i] === 'undefined')
+						return false;
+				return true;
+			}
+
 			if (obj1 == obj2)
 				return true;
 			// Call #equals() on both obj1 and obj2
@@ -88,12 +95,6 @@ this.Base = Base.inject(/** @lends Base# */{
 			}
 			// Compare objects
 			if (typeof obj1 === 'object' && typeof obj2 === 'object') {
-				function checkKeys(o1, o2) {
-					for (var i in o1)
-						if (o1.hasOwnProperty(i) && typeof o2[i] === 'undefined')
-							return false;
-					return true;
-				}
 				if (!checkKeys(obj1, obj2) || !checkKeys(obj2, obj1))
 					return false;
 				for (var i in obj1) {

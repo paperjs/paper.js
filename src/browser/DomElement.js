@@ -16,7 +16,6 @@
  * @private
  */
 var DomElement = new function() {
-
 	// We use a mix of Bootstrap.js legacy and Bonzo.js magic, ported over and
 	// furhter simplified to a subset actually required by Paper.js
 
