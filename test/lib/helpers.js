@@ -11,7 +11,7 @@
  */
 
 // Override equals to convert functions to message and execute them as tests()
-function equals(actual, expected, message) {
+function equals(actual, expected, message, tolerance) {
 	if (typeof actual === 'function') {
 		if (!message) {
 			message = actual.toString().match(
@@ -27,7 +27,14 @@ function equals(actual, expected, message) {
 		actual = actual();
 	}
 	// Let's be strict
-	return strictEqual(actual, expected, message);
+	if (tolerance !== undefined) {
+		var ok = Math.abs(actual - expected) <= tolerance;
+		return QUnit.push(ok, ok ? expected : actual, expected, message);
+	} else if (expected && expected.equals) {
+		return QUnit.push(expected.equals(actual), actual + '', expected + '', message);
+	} else {
+		return strictEqual(actual, expected, message);
+	}
 }
 
 function test(testName, expected) {
