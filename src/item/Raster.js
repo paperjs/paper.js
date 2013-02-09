@@ -130,14 +130,20 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @type Context
 	 * @bean
 	 */
-	getContext: function(/* notifyChange */) {
+	getContext: function(/* modify */) {
 		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
 		// Support a hidden parameter that indicates if the context will be used
 		// to modify the Raster object. We can notify such changes ahead since
 		// they are only used afterwards for redrawing.
-		if (arguments[0])
+		if (arguments[0]) {
+			// Also set _image to null since the Raster stops representing it.
+			// NOTE: This should theoretically be in our own _changed() handler
+			// for ChangeFlag.PIXELS, but since it's only happening in one place
+			// this is fine:
+			this._image = null;
 			this._changed(/*#=*/ Change.PIXELS);
+		}
 		return this._context;
 	},
 
@@ -231,6 +237,12 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		canvas.getContext('2d').drawImage(this.getCanvas(), rect.x, rect.y,
 				canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 		return canvas;
+	},
+
+	toDataURL: function() {
+		// See if the linked image is base64 encoded already, if so reuse it.
+		var src = this._image && this._image.src;
+		return /^data:/.test(src) ? src : this.getCanvas().toDataURL();
 	},
 
 	/**

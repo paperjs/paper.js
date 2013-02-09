@@ -215,6 +215,18 @@ new function() {
 		return svg;
 	}
 
+	function exportRaster(item) {
+		var attrs = getTransform(item, true),
+			size = item.getSize();
+		attrs.width = size.width;
+		attrs.height = size.height;
+		attrs.x -= size.width / 2;
+		attrs.y -= size.height / 2;
+		var svg = createElement('image', attrs);
+		svg.setAttributeNS('http://www.w3.org/1999/xlink','href', item.toDataURL());
+		return svg;
+	}
+
 	function exportText(item) {
 		var attrs = getTransform(item, true),
 			style = item._style;
@@ -329,11 +341,12 @@ new function() {
 		group: exportGroup,
 		layer: exportGroup,
 		path: exportPath,
+		raster: exportRaster,
 		pointtext: exportText
 		// TODO:
-		// raster: 
 		// placedsymbol:
 		// compoundpath:
+		// gradients
 	};
 
 	function applyStyle(item, svg) {
