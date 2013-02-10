@@ -31,7 +31,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 
 	initialize: function(point) {
 		// Define this Item's unique id.
-		this._id = ++Item._id;
+		this._id = ++Base._uid;
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project)
@@ -270,7 +270,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		this._name = name || undefined;
 		this._changed(/*#=*/ ChangeFlag.ATTRIBUTE);
-	},
+	}
 
 	/**
 	 * The path style of the item.
@@ -312,10 +312,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * var path2 = new Path.Circle(new Point(150, 50), 20);
 	 * path2.style = myStyle;
 	 */
-
-	statics: {
-		_id: 0
-	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	// Produce getter/setters for properties. We need setters because we want to
 	// call _changed() if a property was modified.
