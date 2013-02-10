@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Symbols</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+</head>
+<body>	
+	<canvas id="canvas" width="500" height="500"></canvas>
+	<script type="text/paperscript" canvas="canvas">
+		var ellipse = new Path.Ellipse({
+			from: [0, 0],
+			to: [200, 100],
+			fillColor: 'red'
+		});
+		var symbol = new Symbol(ellipse);
+		var p1 = symbol.place([100, 100]);
+		p1.rotate(45);
+		var p2 = symbol.place([300, 200]);
+		p2.rotate(-30);
+		document.getElementById('svg').appendChild(project.exportSvg());
+	</script>
+	<svg id="svg" style="width: 500px; height: 500px"></svg>
+</body>
+</html>

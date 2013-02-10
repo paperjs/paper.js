@@ -240,12 +240,6 @@ new function() {
 		return null;
 	}
 
-	var definitions = {};
-	function getDefinition(value) {
-		var match = value.match(/\(#([^)']+)/);
-        return match && definitions[match[1]];
-	}
-
 	var importers = {
 		// http://www.w3.org/TR/SVG/struct.html#Groups
 		g: importGroup,
@@ -500,6 +494,12 @@ new function() {
 				applyTextAttribute(children[i], svg, name, value);
 			}
 		}
+	}
+
+	var definitions = {};
+	function getDefinition(value) {
+		var match = value.match(/\(#([^)']+)/);
+        return match && definitions[match[1]];
 	}
 
 	function importSvg(svg, clearDefs) {
