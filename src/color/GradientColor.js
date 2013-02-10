@@ -79,6 +79,8 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * path.fillColor = gradientColor;
 	 */
 	initialize: function(gradient, origin, destination, hilite) {
+		// Define this GradientColor's unique id.
+		this._id = ++Base._uid;
 		this.gradient = gradient || new Gradient();
 		this.gradient._addOwner(this);
 		this.setOrigin(origin);

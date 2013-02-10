@@ -57,6 +57,8 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	 * }
 	 */
 	initialize: function(item) {
+		// Define this Symbols's unique id.
+		this._id = ++Base._uid;
 		this.project = paper.project;
 		this.project.symbols.push(this);
 		this.setDefinition(item);
