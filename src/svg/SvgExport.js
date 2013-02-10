@@ -22,12 +22,20 @@ new function() {
 		return formatFloat(point.x) + ',' + formatFloat(point.y);
 	}
 
+	function formatRectangle(rect) {
+		return formatFloat(rect.x) + ',' + formatFloat(rect.y)
+			+ ',' + formatFloat(rect.width) + ',' + formatFloat(rect.height);
+	}
+
 	function setAttributes(svg, attrs) {
 		for (var key in attrs) {
 			var val = attrs[key];
 			if (typeof val === 'number')
 				val = formatFloat(val);
-			svg.setAttribute(key, val);
+			if (key === 'href')
+				svg.setAttributeNS('http://www.w3.org/1999/xlink','href', val);
+			else
+				svg.setAttribute(key, val);
 		}
 		return svg;
 	}
@@ -208,7 +216,7 @@ new function() {
 		attrs.fill = 'none';
 		var svg = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
-			var child = children[i].exportSvg();
+			var child = exportSvg(children[i]);
 			if (child)
 				svg.appendChild(child);
 		}
@@ -218,13 +226,12 @@ new function() {
 	function exportRaster(item) {
 		var attrs = getTransform(item, true),
 			size = item.getSize();
-		attrs.width = size.width;
-		attrs.height = size.height;
 		attrs.x -= size.width / 2;
 		attrs.y -= size.height / 2;
-		var svg = createElement('image', attrs);
-		svg.setAttributeNS('http://www.w3.org/1999/xlink','href', item.toDataURL());
-		return svg;
+		attrs.width = size.width;
+		attrs.height = size.height;
+		attrs.href = item.toDataURL();
+		return createElement('image', attrs);
 	}
 
 	function exportText(item) {
@@ -336,14 +343,35 @@ new function() {
 		return createElement(type, attrs);
 	}
 
-	function exportCompoundPath(path) {
-		var children = path._children,
+	function exportCompoundPath(item) {
+		var attrs = getTransform(item, true),
+			children = item._children,
 			paths = [];
 		for (var i = 0, l = children.length; i < l; i++)
 			paths.push(getPath(children[i]));
-		return createElement('path', {
-			d: paths.join(' ')
-		});
+		attrs.d = paths.join(' ');
+		return createElement('path', attrs);
+	}
+
+	function exportPlacedSymbol(item) {
+		var attrs = getTransform(item, true),
+			symbol = item.getSymbol(),
+			symbolSvg = getDefinition(symbol);
+			definition = symbol.getDefinition(),
+			bounds = definition.getBounds();
+		if (!symbolSvg) {
+			symbolSvg = createElement('symbol', {
+				viewBox: formatRectangle(bounds)
+			});
+			symbolSvg.appendChild(exportSvg(definition));
+			setDefinition(symbol, symbolSvg, 'symbol');
+		}
+		attrs.href = '#' + symbolSvg.id;
+		attrs.x += bounds.x;
+		attrs.y += bounds.y;
+		attrs.width = formatFloat(bounds.width);
+		attrs.height = formatFloat(bounds.height);
+		return createElement('use', attrs);
 	}
 
 	var exporters = {
@@ -352,9 +380,9 @@ new function() {
 		raster: exportRaster,
 		pointtext: exportText,
 		path: exportPath,
-		compoundpath: exportCompoundPath
+		compoundpath: exportCompoundPath,
+		placedsymbol: exportPlacedSymbol
 		// TODO:
-		// placedsymbol:
 		// gradients
 	};
 
@@ -398,6 +426,45 @@ new function() {
 		return setAttributes(svg, attrs);
 	}
 
+	var definitions;
+	function getDefinition(item) {
+		if (!definitions)
+			definitions = { ids: {}, svgs: {} };
+		return definitions.svgs[item._id];
+	}
+
+	function setDefinition(item, svg, type) {
+		var id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
+		svg.id = type + '-' + id;
+		definitions.svgs[item._id] = svg;
+	}
+
+	function exportDefinitions(svg) {
+		if (!definitions)
+			return svg;
+		// We can only use svg nodes as defintion containers. Have the loop
+		// produce one if it's a single item of another type (when calling
+		// #exportSvg() on an item rather than a whole project)
+		var container = svg.nodeName.toLowerCase() == 'svg' && svg,
+			firstChild = container ? container.firstChild : svg;
+		for (var i in definitions.svgs) {
+			if (!container) {
+				container = createElement('svg');
+				container.appendChild(svg);
+			}
+			container.insertBefore(definitions.svgs[i], firstChild);
+		}
+		// Clear definitions at the end of export
+		definitions = null;
+		return container;
+	}
+
+	function exportSvg(item) {
+		var exporter = exporters[item._type],
+			svg = exporter && exporter(item, item._type);
+		return svg && applyStyle(item, svg);
+	}
+
 	Item.inject(/** @lends Item# */{
 		/**
 		 * {@grouptitle SVG Conversion}
@@ -408,9 +475,8 @@ new function() {
 		 * @return {SVGSVGElement} the item converted to an SVG node
 		 */
 		exportSvg: function() {
-			var exporter = exporters[this._type],
-				svg = exporter && exporter(this, this._type);
-			return svg && applyStyle(this, svg);
+			var svg = exportSvg(this);
+			return exportDefinitions(svg);
 		}
 	});
 
@@ -427,8 +493,8 @@ new function() {
 			var svg = createElement('svg'),
 				layers = this.layers;
 			for (var i = 0, l = layers.length; i < l; i++)
-				svg.appendChild(layers[i].exportSvg());
-			return svg;
+				svg.appendChild(exportSvg(layers[i]));
+			return exportDefinitions(svg);
 		}
 	});
 };
