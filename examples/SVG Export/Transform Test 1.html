@@ -5,10 +5,6 @@
 	<title>Transform Testing</title>
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
-
-</head>
-<body>	
-	<canvas id="canvas" width="500px" height="500px"></canvas>
 	<script type="text/paperscript" canvas="canvas">
 		var circlePath = new Path.Circle(new Point(280, 100), 25);
 		circlePath.strokeColor = 'black';
@@ -24,6 +20,9 @@
 
 		document.getElementById('svg').appendChild(project.exportSvg());
 	</script>
+</head>
+<body>	
+	<canvas id="canvas" width="500px" height="500px"></canvas>
 	<svg id="svg" style="width: 500px; height: 500px"></svg>
 </body>
 </html>
