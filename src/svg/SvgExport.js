@@ -27,17 +27,17 @@ new function() {
 			+ ',' + formatFloat(rect.width) + ',' + formatFloat(rect.height);
 	}
 
-	function setAttributes(svg, attrs) {
+	function setAttributes(node, attrs) {
 		for (var key in attrs) {
 			var val = attrs[key];
 			if (typeof val === 'number')
 				val = formatFloat(val);
 			if (key === 'href')
-				svg.setAttributeNS('http://www.w3.org/1999/xlink','href', val);
+				node.setAttributeNS('http://www.w3.org/1999/xlink','href', val);
 			else
-				svg.setAttribute(key, val);
+				node.setAttribute(key, val);
 		}
-		return svg;
+		return node;
 	}
 
 	function createElement(tag, attrs) {
@@ -209,18 +209,18 @@ new function() {
 		return 'path';
 	}
 
-	function exportGroup(group) {
-		var attrs = getTransform(group),
-			children = group._children;
+	function exportGroup(item) {
+		var attrs = getTransform(item),
+			children = item._children;
 		// Override default SVG style on groups, then apply style.
 		attrs.fill = 'none';
-		var svg = createElement('g', attrs);
+		var node = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = exportSvg(children[i]);
 			if (child)
-				svg.appendChild(child);
+				node.appendChild(child);
 		}
-		return svg;
+		return node;
 	}
 
 	function exportRaster(item) {
@@ -374,19 +374,32 @@ new function() {
 		return createElement('use', attrs);
 	}
 
+	function exportColor(color) {
+		/*
+		var gradientSvg = getDefinition(symbol)
+		<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="69" y1="239.5" x2="530" y2="239.5">
+			<stop  offset="0" style="stop-color:#231F20"/>
+			<stop  offset="0.0896" style="stop-color:#231F20;stop-opacity:0.9104"/>
+			<stop  offset="1" style="stop-color:#231F20;stop-opacity:0"/>
+		</linearGradient>
+		*/
+		if (color.gradient) {
+			return null;
+		}
+		return color.toCss(true); // false for noAlpha, see above
+	}
+
 	var exporters = {
 		group: exportGroup,
 		layer: exportGroup,
 		raster: exportRaster,
 		pointtext: exportText,
+		placedsymbol: exportPlacedSymbol,
 		path: exportPath,
-		compoundpath: exportCompoundPath,
-		placedsymbol: exportPlacedSymbol
-		// TODO:
-		// gradients
+		compoundpath: exportCompoundPath
 	};
 
-	function applyStyle(item, svg) {
+	function applyStyle(item, node) {
 		var attrs = {},
 			style = item._style,
 			parent = item.getParent(),
@@ -408,7 +421,7 @@ new function() {
 				attrs[entry.attribute] = value == null
 					? 'none'
 					: entry.type === 'color'
-						? value.toCss(true) // false for noAlpha, see above
+						? exportColor(value)
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'
@@ -423,7 +436,7 @@ new function() {
 		if (item._visibility != null && !item._visibility)
 			attrs.visibility = 'hidden';
 
-		return setAttributes(svg, attrs);
+		return setAttributes(node, attrs);
 	}
 
 	var definitions;
@@ -433,24 +446,24 @@ new function() {
 		return definitions.svgs[item._id];
 	}
 
-	function setDefinition(item, svg, type) {
+	function setDefinition(item, node, type) {
 		var id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
-		svg.id = type + '-' + id;
-		definitions.svgs[item._id] = svg;
+		node.id = type + '-' + id;
+		definitions.svgs[item._id] = node;
 	}
 
-	function exportDefinitions(svg) {
+	function exportDefinitions(node) {
 		if (!definitions)
-			return svg;
-		// We can only use svg nodes as defintion containers. Have the loop
+			return node;
+		// We can only use node nodes as defintion containers. Have the loop
 		// produce one if it's a single item of another type (when calling
 		// #exportSvg() on an item rather than a whole project)
-		var container = svg.nodeName.toLowerCase() == 'svg' && svg,
-			firstChild = container ? container.firstChild : svg;
+		var container = node.nodeName.toLowerCase() == 'svg' && node,
+			firstChild = container ? container.firstChild : node;
 		for (var i in definitions.svgs) {
 			if (!container) {
 				container = createElement('svg');
-				container.appendChild(svg);
+				container.appendChild(node);
 			}
 			container.insertBefore(definitions.svgs[i], firstChild);
 		}
@@ -461,8 +474,8 @@ new function() {
 
 	function exportSvg(item) {
 		var exporter = exporters[item._type],
-			svg = exporter && exporter(item, item._type);
-		return svg && applyStyle(item, svg);
+			node = exporter && exporter(item, item._type);
+		return node && applyStyle(item, node);
 	}
 
 	Item.inject(/** @lends Item# */{
@@ -475,8 +488,8 @@ new function() {
 		 * @return {SVGSVGElement} the item converted to an SVG node
 		 */
 		exportSvg: function() {
-			var svg = exportSvg(this);
-			return exportDefinitions(svg);
+			var node = exportSvg(this);
+			return exportDefinitions(node);
 		}
 	});
 
@@ -490,11 +503,11 @@ new function() {
 		 * @return {SVGSVGElement} the project converted to an SVG node
 		 */
 		exportSvg: function() {
-			var svg = createElement('svg'),
+			var node = createElement('svg'),
 				layers = this.layers;
 			for (var i = 0, l = layers.length; i < l; i++)
-				svg.appendChild(exportSvg(layers[i]));
-			return exportDefinitions(svg);
+				node.appendChild(exportSvg(layers[i]));
+			return exportDefinitions(node);
 		}
 	});
 };
