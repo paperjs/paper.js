@@ -379,7 +379,7 @@ new function() {
 		// we need to create a separate gradient object for each gradient,
 		// even when they share the same gradient defintion.
 		// http://www.svgopen.org/2011/papers/20-Separating_gradients_from_geometry/
-		// TODO: Implement gradient mergin in SvgImport
+		// TODO: Implement gradient merging in SvgImport
 		var gradient = color.gradient,
 			gradientNode = getDefinition(color);
 		if (!gradientNode) {
