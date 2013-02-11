@@ -241,23 +241,23 @@ new function() {
 			attrs['font-family'] = style._font;
 		if (style._fontSize != null)
 			attrs['font-size'] = style._fontSize;
-		var svg = createElement('text', attrs);
-		svg.textContent = item._content;
-		return svg;
+		var node = createElement('text', attrs);
+		node.textContent = item._content;
+		return node;
 	}
 
-	function exportPath(path) {
-		var segments = path._segments,
-			center = path.getPosition(true),
-			type = determineType(path, segments),
-			angle = determineAngle(path, segments, type, center),
+	function exportPath(item) {
+		var segments = item._segments,
+			center = item.getPosition(true),
+			type = determineType(item, segments),
+			angle = determineAngle(item, segments, type, center),
 			attrs;
 		switch (type) {
 		case 'empty':
 			return null;
 		case 'path':
 			attrs = {
-				d: getPath(path)
+				d: getPath(item)
 			};
 			break;
 		case 'polyline':
@@ -356,17 +356,17 @@ new function() {
 	function exportPlacedSymbol(item) {
 		var attrs = getTransform(item, true),
 			symbol = item.getSymbol(),
-			symbolSvg = getDefinition(symbol);
+			symbolNode = getDefinition(symbol);
 			definition = symbol.getDefinition(),
 			bounds = definition.getBounds();
-		if (!symbolSvg) {
-			symbolSvg = createElement('symbol', {
+		if (!symbolNode) {
+			symbolNode = createElement('symbol', {
 				viewBox: formatRectangle(bounds)
 			});
-			symbolSvg.appendChild(exportSvg(definition));
-			setDefinition(symbol, symbolSvg, 'symbol');
+			symbolNode.appendChild(exportSvg(definition));
+			setDefinition(symbol, symbolNode, 'symbol');
 		}
-		attrs.href = '#' + symbolSvg.id;
+		attrs.href = '#' + symbolNode.id;
 		attrs.x += bounds.x;
 		attrs.y += bounds.y;
 		attrs.width = formatFloat(bounds.width);
