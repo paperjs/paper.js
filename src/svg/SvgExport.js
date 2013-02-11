@@ -410,11 +410,11 @@ new function() {
 			var stops = gradient._stops;
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i],
-					color = stop._color,
-					attrs = {
-						offset: stop._rampPoint,
-						'stop-color': color.toCss(true)
-					};
+					color = stop._color;
+				attrs = {
+					offset: stop._rampPoint,
+					'stop-color': color.toCss(true)
+				};
 				// See applyStyle for an explanation of why there are separated
 				// opacity / color attributes.
 				if (color.getAlpha() < 1)
