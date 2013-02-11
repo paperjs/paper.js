@@ -5,10 +5,6 @@
 	<title>Rotated Primitives</title>
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
-
-</head>
-<body>	
-	<canvas id="canvas" width="500" height="500"></canvas>
 	<script type="text/paperscript" canvas="canvas">
 		// This "arbitrary" shape triggered rectangles in the original code,
 		// since point2 is as far from point0 as point3 is from point1.
@@ -36,6 +32,9 @@
 
 		document.getElementById('svg').appendChild(project.exportSvg());
 	</script>
+</head>
+<body>	
+	<canvas id="canvas" width="500" height="500"></canvas>
 	<svg id="svg" style="width: 500px; height: 500px"></svg>
 </body>
 </html>
