@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Gradients</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+		var gradient = new Gradient([ new RgbColor(1, 1, 0, 0), 'red', 'black'], 'radial');
+		var from = path.position;
+		var to = path.bounds.rightCenter;
+		var gradientColor = new GradientColor(gradient, from, to);
+		path.fillColor = gradientColor;
+		path.strokeColor = 'black';
+		document.getElementById('svg').appendChild(project.exportSvg());
+	</script>
+</head>
+<body>	
+	<canvas id="canvas" width="500" height="500"></canvas>
+	<svg id="svg" style="width: 500px; height: 500px"></svg>
+</body>
+</html>

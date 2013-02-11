@@ -25,6 +25,8 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	 * @param {String} [type='linear'] 'linear' or 'radial'
 	 */
 	initialize: function(stops, type) {
+		// Define this Gradient's unique id.
+		this._id = ++Base._uid;
 		this.setStops(stops || ['white', 'black']);
 		this.type = type || 'linear';
 	},

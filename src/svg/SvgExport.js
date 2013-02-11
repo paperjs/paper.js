@@ -374,19 +374,56 @@ new function() {
 		return createElement('use', attrs);
 	}
 
-	function exportColor(color) {
-		/*
-		var gradientSvg = getDefinition(symbol)
-		<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="69" y1="239.5" x2="530" y2="239.5">
-			<stop  offset="0" style="stop-color:#231F20"/>
-			<stop  offset="0.0896" style="stop-color:#231F20;stop-opacity:0.9104"/>
-			<stop  offset="1" style="stop-color:#231F20;stop-opacity:0"/>
-		</linearGradient>
-		*/
-		if (color.gradient) {
-			return null;
+	function exportGradient(color) {
+		// NOTE: As long as the fillTransform attribute is not implemented,
+		// we need to create a separate gradient object for each gradient,
+		// even when they share the same gradient defintion.
+		// http://www.svgopen.org/2011/papers/20-Separating_gradients_from_geometry/
+		// TODO: Implement gradient mergin in SvgImport
+		var gradient = color.gradient,
+			gradientNode = getDefinition(color);
+		if (!gradientNode) {
+			var origin = color._origin,
+				destination = color._destination,
+				highlight = color._hilite,
+				attrs;
+				if (gradient.type == 'radial') {
+					attrs = {
+						cx: origin.x,
+						cy: origin.y,
+						r: origin.getDistance(destination)
+					};
+					if (highlight) {
+						attrs.fx = highlight.x;
+						attrs.fy = highlight.y;
+					}
+				} else {
+					attrs = {
+						x1: origin.x,
+						y1: origin.y,
+						x2: destination.x,
+						y2: destination.y
+					};
+				}
+			attrs.gradientUnits = 'userSpaceOnUse';
+			gradientNode = createElement(gradient.type + 'Gradient', attrs);
+			var stops = gradient._stops;
+			for (var i = 0, l = stops.length; i < l; i++) {
+				var stop = stops[i],
+					color = stop._color,
+					attrs = {
+						offset: stop._rampPoint,
+						'stop-color': color.toCss(true)
+					};
+				// See applyStyle for an explanation of why there are separated
+				// opacity / color attributes.
+				if (color.getAlpha() < 1)
+					attrs['stop-opacity'] = color._alpha;
+				gradientNode.appendChild(createElement('stop', attrs));
+			}
+			setDefinition(gradient, gradientNode, 'gradient');
 		}
-		return color.toCss(true); // false for noAlpha, see above
+		return 'url(#' + gradientNode.id + ')';
 	}
 
 	var exporters = {
@@ -417,11 +454,13 @@ new function() {
 				// separate the alpha value of colors with alpha into the
 				// separate fill- / stroke-opacity attribute:
 				if (entry.type === 'color' && value != null && value.getAlpha() < 1)
-					attrs[entry.attribute + '-opacity'] = value.getAlpha();
+					attrs[entry.attribute + '-opacity'] = value._alpha;
 				attrs[entry.attribute] = value == null
 					? 'none'
 					: entry.type === 'color'
-						? exportColor(value)
+						? value.gradient
+							? exportGradient(value)
+							: value.toCss(true) // false for noAlpha, see above	
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'
