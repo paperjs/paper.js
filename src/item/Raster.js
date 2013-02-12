@@ -180,13 +180,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	/**
-	 * The HTMLImageElement or Canvas of the raster.
+	 * The HTMLImageElement of the raster, if one is associated.
 	 *
 	 * @type HTMLImageElement|Canvas
 	 * @bean
 	 */
 	getImage: function() {
-		return this._image || this.getCanvas();
+		return this._image;
 	},
 
 	setImage: function(image) {
