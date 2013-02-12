@@ -16,6 +16,8 @@
  * @class The Gradient object.
  */
 var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
+	_type: 'gradient',
+
 	// TODO: Should type here be called 'radial' and have it receive a
 	// boolean value?
 	/**
