@@ -259,14 +259,15 @@ this.Base = Base.inject(/** @lends Base# */{
 					length: 0,
 					definitions: {},
 					references: {},
-					get: function(item) {
-						return this.references['#' + item._id];
-					},
-					set: function(item, json) {
-						this.length++;
-						var id = '#' + item._id;
-						this.definitions[id] = json;
-						return this.references[id] = [id];
+					add: function(item, create) {
+						var id = '#' + item._id,
+							ref = this.references[id];
+						if (!ref) {
+							this.length++;
+							this.definitions[id] = create.call(item);
+							ref = this.references[id] = [id];
+						}
+						return ref;
 					}
 				};
 			}
