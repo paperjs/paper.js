@@ -250,7 +250,10 @@ this.Base = Base.inject(/** @lends Base# */{
 		serialize: function(obj, compact) {
 			if (obj && obj._serialize) {
 				var res = obj._serialize();
-				if (!compact && res[0] !== obj._type)
+				// If we don't serialize to compact form (meaning no type
+				// identifier), see if _serialize didn't already add the type,
+				// e.g. for types that do not support compact form.
+				if (obj._type && !compact && res[0] !== obj._type)
 					res.unshift(obj._type);
 				return res;
 			}
@@ -260,12 +263,12 @@ this.Base = Base.inject(/** @lends Base# */{
 			if (Array.isArray(obj)) {
 				res = [];
 				for (var i = 0, l = obj.length; i < l; i++)
-					res[i] = Base.serialize(obj[i], true);
+					res[i] = Base.serialize(obj[i], compact);
 			} else if (Base.isPlainObject(obj)) {
 				res = {};
 				for (var i in obj)
 					if (obj.hasOwnProperty(i))
-						res[i] = Base.serialize(obj[i], true);
+						res[i] = Base.serialize(obj[i], compact);
 			}
 			return res;
 		},

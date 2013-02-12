@@ -144,7 +144,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			for (var key in fields) {
 				var value = that[key];
 				if (!Base.equals(value, fields[key]))
-					props[key] = Base.serialize(value);
+					props[key] = Base.serialize(value, true);
 			}
 		}
 
