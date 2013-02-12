@@ -39,7 +39,12 @@ var Item = this.Item = Base.extend(Callback, {
 	_serializeFields: {
 		name: null,
 		children: [],
-		matrix: new Matrix()
+		matrix: new Matrix(),
+		locked: false,
+		visible: true,
+		blendMode: 'normal',
+		opacity: 1,
+		guide: false
 	},
 
 	initialize: function(point) {
