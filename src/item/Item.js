@@ -1105,10 +1105,13 @@ var Item = this.Item = Base.extend(Callback, {
 			ctx = canvas.getContext('2d'),
 			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(ctx);
-		// XXX: Decide how to handle _matrix
+		// TODO: Decide how to handle _matrix
 		this.draw(ctx, {});
 		var raster = new Raster(canvas);
 		raster.setBounds(bounds);
+		CanvasProvider.release(canvas);
+		// NOTE: We don't need to release the canvas since it now belongs to the
+		// Raster!
 		return raster;
 	},
 

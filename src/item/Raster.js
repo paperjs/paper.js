@@ -163,11 +163,12 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			// policies, wrap the call in try-catch and only set _canvas if we
 			// succeeded.
 			try {
-				if (this._image)
-					this.getContext(true).drawImage(this._image, 0, 0);
 				this._canvas = canvas;
+				if (this._image)
+					this.getContext().drawImage(this._image, 0, 0);
 			} catch (e) {
-				CanvasProvider.returnCanvas(canvas);
+				this._canvas = null;
+				CanvasProvider.release(canvas);
 			}
 		}
 		return this._canvas;
