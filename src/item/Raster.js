@@ -42,6 +42,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			if (arg0.getContext) {
 				this.setCanvas(arg0);
 			} else if (typeof arg0 === 'string') {
+				// Both data-urls and normal urls are supported here!
 				this.setSource(arg0);
 			} else {
 				this.setImage(arg0);
@@ -153,9 +154,17 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 
 	getCanvas: function() {
 		if (!this._canvas) {
-			this._canvas = CanvasProvider.getCanvas(this._size);
-			if (this._image)
-				this.getContext(true).drawImage(this._image, 0, 0);
+			var canvas = CanvasProvider.getCanvas(this._size);
+			// Since drawimage images into canvases might fail based on security
+			// policies, wrap the call in try-catch and only set _canvas if we
+			// succeeded.
+			try {
+				if (this._image)
+					this.getContext(true).drawImage(this._image, 0, 0);
+				this._canvas = canvas;
+			} catch (e) {
+				CanvasProvider.returnCanvas(canvas);
+			}
 		}
 		return this._canvas;
 	},
@@ -195,7 +204,8 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	getSource: function() {
-		return this.getImage().src;
+		var img = this.getImage();
+		return img && img.src || null;
 	},
 
 	setSource: function(src) {
@@ -240,9 +250,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	toDataURL: function() {
-		// See if the linked image is base64 encoded already, if so reuse it.
+		// See if the linked image is base64 encoded already, if so reuse it,
+		// otherwise try using canvas.toDataUrl()
 		var src = this._image && this._image.src;
-		return /^data:/.test(src) ? src : this.getCanvas().toDataURL();
+		if (/^data:/.test(src)) 
+			return src;
+		var canvas = this.getCanvas();
+		return canvas ? canvas.toDataURL() : null;
 	},
 
 	/**
@@ -442,8 +456,9 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	draw: function(ctx, param) {
-		ctx.drawImage(this._canvas || this._image,
-				-this._size.width / 2, -this._size.height / 2);
+		var img = this._canvas || this._image;
+		if (img)
+			ctx.drawImage(img, -this._size.width / 2, -this._size.height / 2);
 	},
 
 	drawSelected: function(ctx, matrix) {
