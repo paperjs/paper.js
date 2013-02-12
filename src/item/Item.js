@@ -154,7 +154,7 @@ var Item = this.Item = Base.extend(Callback, {
 		return this;
 	},
 
-	_serialize: function() {
+	_serialize: function(dictionary) {
 		var props = {},
 			that = this;
 
@@ -162,7 +162,7 @@ var Item = this.Item = Base.extend(Callback, {
 			for (var key in fields) {
 				var value = that[key];
 				if (!Base.equals(value, fields[key]))
-					props[key] = Base.serialize(value, compact);
+					props[key] = Base.serialize(value, compact, dictionary);
 			}
 		}
 
