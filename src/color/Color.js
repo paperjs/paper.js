@@ -278,13 +278,13 @@ var Color = this.Color = Base.extend(new function() {
 			return res;
 		},
 
-		_serialize: function() {
+		_serialize: function(options) {
 			var res = [];
 			for (var i = 0, l = this._components.length; i < l; i++) {
 				var component = this._components[i],
 					value = this['_' + component];
 				if (component !== 'alpha' || value != null && value < 1)
-					res.push(value);
+					res.push(Base.formatFloat(value, options.precision));
 			}
 			return res;
 		},

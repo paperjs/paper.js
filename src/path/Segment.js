@@ -85,10 +85,10 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		createPoint(this, '_handleOut', handleOut);
 	},
 
-	_serialize: function() {
+	_serialize: function(options) {
 		return Base.serialize(this._handleIn.isZero() && this._handleOut.isZero()
 				? this._point
-				: [this._point, this._handleIn, this._handleOut], true);
+				: [this._point, this._handleIn, this._handleOut], options, true);
 	},
 
 	_changed: function(point) {

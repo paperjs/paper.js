@@ -164,8 +164,13 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		}
 	},
 
-	_serialize: function() {
-		return [this.x, this.y];
+	_serialize: function(options) {
+		var format = Base.formatFloat;
+		// For speed reasons, we directly call formatFloat() here with
+		// precision, instead of converting array through Base.serialize() which
+		// makes a copy.
+		return [format(this.x, options.precision),
+				format(this.y, options.precision)];
 	},
 
 	/**

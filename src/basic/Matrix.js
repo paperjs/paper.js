@@ -72,8 +72,8 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 			throw new Error('Unsupported matrix parameters');
 	},
 
-	_serialize: function() {
-		return this.getValues();
+	_serialize: function(options) {
+		return Base.serialize(this.getValues(), options);
 	},
 
 	/**

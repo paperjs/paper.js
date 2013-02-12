@@ -46,8 +46,8 @@ this.Base = Base.inject(/** @lends Base# */{
 		}, []).join(', ') + ' }';
 	},
 
-	toJson: function() {
-		return Base.toJson(this);
+	toJson: function(options) {
+		return Base.toJson(this, options);
 	},
 
 	statics: /** @lends Base */{
@@ -247,7 +247,8 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * Serializes the passed object into a format that can be passed to 
 		 * JSON.stringify() for JSON serialization.
 		 */
-		serialize: function(obj, compact, dictionary) {
+		serialize: function(obj, options, compact, dictionary) {
+			options = options || {};
 			var root = !dictionary,
 				res;
 			if (root) {
@@ -276,7 +277,7 @@ this.Base = Base.inject(/** @lends Base# */{
 				};
 			}
 			if (obj && obj._serialize) {
-				res = obj._serialize(dictionary);
+				res = obj._serialize(options, dictionary);
 				// If we don't serialize to compact form (meaning no type
 				// identifier), see if _serialize didn't already add the type,
 				// e.g. for types that do not support compact form.
@@ -285,12 +286,16 @@ this.Base = Base.inject(/** @lends Base# */{
 			} else if (Array.isArray(obj)) {
 				res = [];
 				for (var i = 0, l = obj.length; i < l; i++)
-					res[i] = Base.serialize(obj[i], compact, dictionary);
+					res[i] = Base.serialize(obj[i], options, compact,
+							dictionary);
 			} else if (Base.isPlainObject(obj)) {
 				res = {};
 				for (var i in obj)
 					if (obj.hasOwnProperty(i))
-						res[i] = Base.serialize(obj[i], compact, dictionary);
+						res[i] = Base.serialize(obj[i], options, compact,
+								dictionary);
+			} else if (typeof obj === 'number') {
+				res = Base.formatFloat(obj, options.precision);
 			} else {
 				res = obj;
 			}
@@ -349,8 +354,8 @@ this.Base = Base.inject(/** @lends Base# */{
 			return res;
 		},
 
-		toJson: function(obj) {
-			return JSON.stringify(Base.serialize(obj));
+		toJson: function(obj, options) {
+			return JSON.stringify(Base.serialize(obj, options));
 		},
 
 		fromJson: function(json) {

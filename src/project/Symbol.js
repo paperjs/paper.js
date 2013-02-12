@@ -68,10 +68,10 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 		this._instances = {};
 	},
 
-	_serialize: function(dictionary) {
+	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
 			return Base.serialize([this._type, this._definition],
-					false, dictionary);
+					options, false, dictionary);
 		});
 	},
 

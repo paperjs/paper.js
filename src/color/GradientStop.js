@@ -53,8 +53,9 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 		return new GradientStop(this._color.clone(), this._rampPoint);
 	},
 
-	_serialize: function(dictionary) {
-		return Base.serialize([this._color, this._rampPoint], false, dictionary);
+	_serialize: function(options, dictionary) {
+		return Base.serialize([this._color, this._rampPoint], options, false, 
+				dictionary);
 	},
 
 	/**
