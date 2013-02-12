@@ -260,6 +260,10 @@ this.Base = Base.inject(/** @lends Base# */{
 					definitions: {},
 					references: {},
 					add: function(item, create) {
+						// See if we have reference entry with the given id
+						// already. If not, call create on the item to allow it
+						// to create the definition, then store the reference
+						// to it and return it.
 						var id = '#' + item._id,
 							ref = this.references[id];
 						if (!ref) {
