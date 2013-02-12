@@ -16,7 +16,10 @@
  */
 new function() {
 	// Shortcut to Base.formatFloat
-	var formatFloat = Base.formatFloat;
+	var formatFloat = Base.formatFloat,
+		namespaces = {
+			href: 'http://www.w3.org/1999/xlink'
+		};
 
 	function formatPoint(point) {
 		return formatFloat(point.x) + ',' + formatFloat(point.y);
@@ -29,13 +32,15 @@ new function() {
 
 	function setAttributes(node, attrs) {
 		for (var key in attrs) {
-			var val = attrs[key];
+			var val = attrs[key],
+				namespace = namespaces[key];
 			if (typeof val === 'number')
 				val = formatFloat(val);
-			if (key === 'href')
-				node.setAttributeNS('http://www.w3.org/1999/xlink','href', val);
-			else
+			if (namespace) {
+				node.setAttributeNS(namespace, key, val);
+			} else {
 				node.setAttribute(key, val);
+			}
 		}
 		return node;
 	}
