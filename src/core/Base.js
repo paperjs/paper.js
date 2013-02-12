@@ -282,19 +282,17 @@ this.Base = Base.inject(/** @lends Base# */{
 				// e.g. for types that do not support compact form.
 				if (obj._type && !compact && res[0] !== obj._type)
 					res.unshift(obj._type);
-			} else {
-				if (Array.isArray(obj)) {
-					res = [];
-					for (var i = 0, l = obj.length; i < l; i++)
+			} else if (Array.isArray(obj)) {
+				res = [];
+				for (var i = 0, l = obj.length; i < l; i++)
+					res[i] = Base.serialize(obj[i], compact, dictionary);
+			} else if (Base.isPlainObject(obj)) {
+				res = {};
+				for (var i in obj)
+					if (obj.hasOwnProperty(i))
 						res[i] = Base.serialize(obj[i], compact, dictionary);
-				} else if (Base.isPlainObject(obj)) {
-					res = {};
-					for (var i in obj)
-						if (obj.hasOwnProperty(i))
-							res[i] = Base.serialize(obj[i], compact, dictionary);
-				} else {
-					res = obj;
-				}
+			} else {
+				res = obj;
 			}
 			return root && dictionary.length > 0
 					? [['dictionary', dictionary.definitions], res]
