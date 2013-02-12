@@ -59,6 +59,16 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		if (script)
 			script.setAttribute('id', this._id);
 		PaperScope._scopes[this._id] = this;
+		if (!this.support) {
+			// Set up paper.support, as an object containing properties that
+			// describe the support of various features.
+			var canvas = CanvasProvider.getCanvas(Size.create(1, 1)),
+				ctx = canvas.getContext('2d');
+			PaperScope.prototype.support = {
+				nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx
+			};
+			CanvasProvider.returnCanvas(canvas);
+		}
 	},
 
 	/**
