@@ -208,22 +208,32 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		return img && img.src || null;
 	},
 
+	// DOCS: Document Raster#setSource
+	// NOTE: Both data-urls and normal urls are supported in setSource!
 	setSource: function(src) {
 /*#*/ if (options.browser) {
 		var that = this,
 			// src can be an URL or a DOM ID to load the image from
 			image = document.getElementById(src) || new Image();
+		function loaded() {
+			that.fire('load');
+			if (that._project.view)
+				that._project.view.draw(true);
+		}
 		// Trigger the onLoad event on the image once it's loaded
 		DomEvent.add(image, {
 			load: function() {
 				that.setImage(image);
-				that.fire('load');
-				if (that._project.view)
-					that._project.view.draw(true);
+				loaded();
 			}
 		});
-		if (!image.src)
+		if (image.width && image.height) {
+			// Fire load event delayed, so behavior is the same as when it's 
+			// actually loaded and we give the code time to install event
+			setTimeout(loaded, 0);
+		} else if (!image.src) {
 			image.src = src;
+		}
 /*#*/ } else if (options.server) {
 		// If we're running on the server and it's a string,
 		// load it from disk:
