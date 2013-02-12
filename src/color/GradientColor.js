@@ -98,11 +98,11 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 				this._hilite);
 	},
 
-	_serialize: function(dictionary) {
+	_serialize: function(options, dictionary) {
 		var values = [ this.gradient, this._origin, this._destination ];
 		if (this._hilite)
 			values.push(this._hilite);
-		return Base.serialize(values, true, dictionary);
+		return Base.serialize(values, options, true, dictionary);
 	},
 
 	/**

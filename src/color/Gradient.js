@@ -33,10 +33,10 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 		this.type = type || 'linear';
 	},
 
-	_serialize: function(dictionary) {
+	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
 			return Base.serialize([this._type, this._stops, this.type],
-					true, dictionary);
+					options, true, dictionary);
 		});
 	},
 

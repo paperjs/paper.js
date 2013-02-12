@@ -63,12 +63,12 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		// this._changesById = {};
 	},
 
-	_serialize: function(dictionary) {
+	_serialize: function(options, dictionary) {
 		// Just serialize layers to an array for now, they will be unserialized
 		// into the active project automatically. We might want to add proper
 		// project serialization later, but deserialization of a layers array
 		// will always work.
-		return Base.serialize(this.layers, false, dictionary);
+		return Base.serialize(this.layers, options, false, dictionary);
 	},
 
 	_needsRedraw: function() {
