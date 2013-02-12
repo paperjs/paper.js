@@ -320,8 +320,8 @@ var Color = this.Color = Base.extend(new function() {
 			 * @ignore
 			 */
 			extend: function(src) {
-				if (src._type) {
-					var comps = components[src._type];
+				var comps = components[src._type];
+				if (comps) {
 					// Automatically produce the _components field, adding alpha
 					src._components = comps.concat(['alpha']);
 					Base.each(comps, function(name) {
