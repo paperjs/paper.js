@@ -51,14 +51,14 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	clone: function() {
-		var image = this._image;
-		if (!image) {
+		var element = this._image;
+		if (!element) {
 			// If the Raster contains a Canvas object, we need to create
 			// a new one and draw this raster's canvas on it.
-			image = CanvasProvider.getCanvas(this._size);
-			image.getContext('2d').drawImage(this._canvas, 0, 0);
+			element = CanvasProvider.getCanvas(this._size);
+			element.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
-		var copy = new Raster(image);
+		var copy = new Raster(element);
 		return this._clone(copy);
 	},
 
@@ -76,11 +76,12 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		var size = Size.read(arguments);
 		if (!this._size.equals(size)) {
 			// Get reference to image before changing canvas
-			var image = this.getImage();
+			var element = this.getElement();
 			// Setting canvas internally sets _size
 			this.setCanvas(CanvasProvider.getCanvas(size));
-			// Draw image back onto new canvas
-			this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
+			// Draw element back onto new canvas
+			this.getContext(true).drawImage(element, 0, 0,
+					size.width, size.height);
 		}
 	},
 
@@ -204,8 +205,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	getSource: function() {
-		var img = this.getImage();
-		return img && img.src || null;
+		return this._image && this._image.src || null;
 	},
 
 	// DOCS: Document Raster#setSource
@@ -242,6 +242,11 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		image.src = fs.readFileSync(src);
 /*#*/ } // options.server
 		this.setImage(image);
+	},
+
+	// DOCS: document Raster#getElement
+	getElement: function() {
+		return this._canvas || this._image;
 	},
 
 	// DOCS: document Raster#getSubImage
@@ -330,7 +335,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			path.draw(ctx, { clip: true });
 		// Now draw the image clipped into it.
 		this._matrix.applyToContext(ctx);
-		ctx.drawImage(this._canvas || this._image,
+		ctx.drawImage(this.getElement(),
 				-this._size.width / 2, -this._size.height / 2);
 		ctx.restore();
 		// Get pixel data from the context and calculate the average color value
@@ -466,9 +471,10 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	draw: function(ctx, param) {
-		var img = this._canvas || this._image;
-		if (img)
-			ctx.drawImage(img, -this._size.width / 2, -this._size.height / 2);
+		var element = this.getElement();
+		if (element)
+			ctx.drawImage(element,
+					-this._size.width / 2, -this._size.height / 2);
 	},
 
 	drawSelected: function(ctx, matrix) {
