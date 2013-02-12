@@ -22,6 +22,9 @@
  * @extends Item
  */
 var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
+	_serializeFields: {
+		content: null
+	},
 	// TextItem doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
 	_boundsGetter: 'getBounds',
@@ -37,15 +40,17 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 		this._paragraphStyle = ParagraphStyle.create(this);
 		// See if a point is passed, and if so, pass it on to base(). If not, it
 		// might be a properties object literal for #setPropeties() at the end.
-		var point = Point.read(arguments, 0, 0, false, true); // readNull
-		this.base(point);
+		var hasProperties = Base.isPlainObject(arg)
+				&& arg.x === undefined && arg.y === undefined;
+		this.base(hasProperties ? null : Point.read(arguments));
 		// No need to call setStyle(), since base() handles this already.
 		// Call with no parameter to initalize defaults now.
 		this.setParagraphStyle();
 		this._content = '';
 		this._lines = [];
-		if (!point)
+		if (hasProperties) {
 			this._setProperties(arg);
+		}
 	},
 
 	/**
