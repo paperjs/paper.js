@@ -247,30 +247,53 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * Serializes the passed object into a format that can be passed to 
 		 * JSON.stringify() for JSON serialization.
 		 */
-		serialize: function(obj, compact) {
+		serialize: function(obj, compact, dictionary) {
+			var root = !dictionary,
+				res;
+			if (root) {
+				// Create a simple dictionary object that handles all the
+				// storing and retrieving of dictionary definitions and
+				// references, e.g. for symbols and gradients. Items that want
+				// to support this need to define globally unique _id attribute. 
+				dictionary = {
+					length: 0,
+					definitions: {},
+					references: {},
+					get: function(item) {
+						return this.references['#' + item._id];
+					},
+					set: function(item, json) {
+						this.length++;
+						var id = '#' + item._id;
+						this.definitions[id] = json;
+						return this.references[id] = [id];
+					}
+				};
+			}
 			if (obj && obj._serialize) {
-				var res = obj._serialize();
+				res = obj._serialize(dictionary);
 				// If we don't serialize to compact form (meaning no type
 				// identifier), see if _serialize didn't already add the type,
 				// e.g. for types that do not support compact form.
 				if (obj._type && !compact && res[0] !== obj._type)
 					res.unshift(obj._type);
-				return res;
+			} else {
+				if (Array.isArray(obj)) {
+					res = [];
+					for (var i = 0, l = obj.length; i < l; i++)
+						res[i] = Base.serialize(obj[i], compact, dictionary);
+				} else if (Base.isPlainObject(obj)) {
+					res = {};
+					for (var i in obj)
+						if (obj.hasOwnProperty(i))
+							res[i] = Base.serialize(obj[i], compact, dictionary);
+				} else {
+					res = obj;
+				}
 			}
-			if (typeof obj !== 'object')
-				return obj;
-			var res = obj;
-			if (Array.isArray(obj)) {
-				res = [];
-				for (var i = 0, l = obj.length; i < l; i++)
-					res[i] = Base.serialize(obj[i], compact);
-			} else if (Base.isPlainObject(obj)) {
-				res = {};
-				for (var i in obj)
-					if (obj.hasOwnProperty(i))
-						res[i] = Base.serialize(obj[i], compact);
-			}
-			return res;
+			return root && dictionary.length > 0
+					? [['dictionary', dictionary.definitions], res]
+					: res;
 		},
 
 		/**
@@ -281,18 +304,34 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * Any other value is passed on unmodified.
 		 * The passed data is recoursively traversed and converted, leaves first
 		 */
-		deserialize: function(obj) {
+		deserialize: function(obj, data) {
 			var res = obj;
+			// A data side-car to deserialize that can hold any kind of 'global'
+			// data across a deserialization. It's currently just used to hold
+			// dictionary definitions.
+			data = data || {};
 			if (Array.isArray(obj)) {
 				// See if it's a serialized type. If so, the rest of the array
 				// are the arguments to #initialize(). Either way, we simply
 				// deserialize all elements of the array.
-				var type = Base._types[obj[0]];
+				var type = obj[0],
+					// Handle stored dictionary specially, since we need to
+					// keep is a lookup table to retrieve referenced items from.
+					isDictionary = type === 'dictionary';
+				if (!isDictionary) {
+					// First see if this is perhaps a dictionary reference, and
+					// if so return its definition instead.
+					if (data.dictionary && obj.length == 1 && /^#/.test(type))
+						return data.dictionary[type];
+					type = Base._types[type];
+				}
 				res = [];
 				// Skip first type entry for arguments
 				for (var i = type ? 1 : 0, l = obj.length; i < l; i++)
-					res.push(Base.deserialize(obj[i]));
-				if (type) {
+					res.push(Base.deserialize(obj[i], data));
+				if (isDictionary) {
+					data.dictionary = res[0];
+				} else if (type) {
 					// Create serialized type and pass collected arguments to
 					// #initialize().
 					var args = res;
@@ -302,7 +341,7 @@ this.Base = Base.inject(/** @lends Base# */{
 			} else if (Base.isPlainObject(obj)) {
 				res = {};
 				for (var key in obj)
-					res[key] = Base.deserialize(obj[key]);
+					res[key] = Base.deserialize(obj[key], data);
 			}
 			return res;
 		},
