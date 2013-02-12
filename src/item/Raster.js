@@ -19,6 +19,11 @@
  */
 var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	_type: 'raster',
+	_serializeFields: {
+		name: null,
+		source: null,
+		matrix: new Matrix()
+	},
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
 	_boundsGetter: 'getBounds',
@@ -205,7 +210,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	getSource: function() {
-		return this._image && this._image.src || null;
+		return this._image && this._image.src || this.toDataURL();
 	},
 
 	// DOCS: Document Raster#setSource
