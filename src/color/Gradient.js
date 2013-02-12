@@ -33,6 +33,11 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 		this.type = type || 'linear';
 	},
 
+	_serialize: function(dictionary) {
+		return dictionary.get(this) || dictionary.set(this, Base.serialize(
+				[this._type, this._stops, this.type], true, dictionary));
+	},
+
 	/**
 	 * Called by various setters whenever a gradient value changes
 	 */

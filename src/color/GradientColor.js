@@ -16,6 +16,7 @@
  * @class The GradientColor object.
  */
 var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# */{
+	_type: 'gradientcolor',
 
 	/**
 	 * Creates a gradient color object.
@@ -95,6 +96,13 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	clone: function() {
 		return new GradientColor(this.gradient, this._origin, this._destination,
 				this._hilite);
+	},
+
+	_serialize: function(dictionary) {
+		var values = [ this.gradient, this._origin, this._destination ];
+		if (this._hilite)
+			values.push(this._hilite);
+		return Base.serialize(values, true, dictionary);
 	},
 
 	/**
