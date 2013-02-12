@@ -68,6 +68,11 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 		this._instances = {};
 	},
 
+	_serialize: function(dictionary) {
+		return dictionary.get(this) || dictionary.set(this, [this._type,
+				Base.serialize(this._definition, false, dictionary)]);
+	},
+
 	// TODO: Symbol#remove()
 	// TODO: Symbol#name (accessible by name through project#symbols)
 
