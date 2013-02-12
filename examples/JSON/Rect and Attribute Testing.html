@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Rectangle Testing</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas1">
+		var point1 = new Point(10, 10);
+		var size1 = new Size(50, 50);
+		var rectangle1 = new Rectangle(point1, size1);
+		var path1 = new Path.Rectangle(rectangle1);
+		path1.strokeColor = 'black';
+		path1.fillColor = 'red';
+		path1.id = "square1";
+		path1.strokeCap = "square";
+		path1.opacity = ".1";
+		path1.dashArray = [5, 2];
+		path1.dashOffset = "0";
+		
+		var point2 = new Point(75, 75);
+		var point22 = new Point(100, 100);
+		var path2 = new Path.Rectangle(point2, point22);
+		path2.strokeColor = 'red';
+		path2.strokeWidth = '4';
+		path2.fillColor = 'blue';
+		path2.id = "square2";
+		path2.strokeCap = "butt";
+		path2.opacity = "1";
+		
+		var point3 = new Point(150, 150);
+		var size3 = new Size(50, 50);
+		var rectangle3 = new Rectangle(point3, size3);
+		var path3 = new Path.Rectangle(rectangle3);
+		path3.strokeColor = 'blue';
+		
+		var point4 = new Point(200, 200);
+		var size4 = new Size(100, 100);
+		var rectangle4 = new Rectangle(point4, size4);
+		var cornerSize4 = new Size(30, 30);
+		var path4 = new Path.RoundRectangle(rectangle4, cornerSize4);
+		path4.strokeColor= 'yellow';
+		path4.fillColor='purple';
+		
+		window._json = project.toJson();
+		console.log(window._json);
+	</script>
+	<script type="text/paperscript" canvas="canvas2">
+		Base.fromJson(window._json);
+	</script>
+</head>
+<body>
+	<canvas id="canvas1" width="500" height="500"></canvas>
+	<canvas id="canvas2" width="500" height="500"></canvas>
+</body>
+</html>
