@@ -88,7 +88,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		_getBounds: function(getter, matrix) {
 			// Create an in-memory canvas on which to do the measuring
 			if (!context)
-				context = CanvasProvider.getCanvas(
+				context = CanvasProvider.get(
 						Size.create(1, 1)).getContext('2d');
 			var justification = this.getJustification(),
 				x = 0;
