@@ -417,13 +417,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		ctx.putImageData(imageData, _point.x, _point.y);
 	},
 
-	// DOCS: document Raster#createData
+	// DOCS: document Raster#createImageData
 	/**
 	 * {@grouptitle Image Data}
 	 * @param {Size} size
 	 * @return {ImageData}
 	 */
-	createData: function(size) {
+	createImageData: function(size) {
 		size = Size.read(arguments);
 		return this.getContext().createImageData(size.width, size.height);
 	},
@@ -434,7 +434,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @param {Rectangle} rect
 	 * @return {ImageData}
 	 */
-	getData: function(rect) {
+	getImageData: function(rect) {
 		rect = Rectangle.read(arguments);
 		if (rect.isEmpty())
 			rect = new Rectangle(this.getSize());
@@ -442,13 +442,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 				rect.width, rect.height);
 	},
 
-	// DOCS: document Raster#setData
+	// DOCS: document Raster#setImageData
 	/**
 	 * @param {ImageData} data
 	 * @param {Point} point
 	 * @return {ImageData}
 	 */
-	setData: function(data, point) {
+	setImageData: function(data, point) {
 		point = Point.read(arguments, 1);
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
