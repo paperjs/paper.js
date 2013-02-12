@@ -433,9 +433,11 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * up to the amount of fractional digits.
 		 *
 		 * @param {Number} num the number to be converted to a string
+		 * @param {Number} [precision=5] the amount of fractional digits.
 		 */
-		formatFloat: function(num) {
-			return (Math.round(num * 100000) / 100000).toString();
+		formatFloat: function(num, precision) {
+			precision = precision ? Math.pow(10, precision) : 100000;
+			return (Math.round(num * precision) / precision);
 		},
 
 		toFloat: function(str) {
