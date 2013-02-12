@@ -80,13 +80,12 @@ this.Base = Base.inject(/** @lends Base# */{
 						return false;
 				return true;
 			}
-
 			if (obj1 == obj2)
 				return true;
 			// Call #equals() on both obj1 and obj2
-			if (obj1 != null && obj1.equals)
+			if (obj1 && obj1.equals)
 				return obj1.equals(obj2);
-			if (obj2 != null && obj2.equals)
+			if (obj2 && obj2.equals)
 				return obj2.equals(obj1);
 			// Compare arrays
 			if (Array.isArray(obj1) && Array.isArray(obj2)) {
@@ -99,7 +98,8 @@ this.Base = Base.inject(/** @lends Base# */{
 				return true;
 			}
 			// Compare objects
-			if (typeof obj1 === 'object' && typeof obj2 === 'object') {
+			if (obj1 && typeof obj1 === 'object'
+					&& obj2 && typeof obj2 === 'object') {
 				if (!checkKeys(obj1, obj2) || !checkKeys(obj2, obj1))
 					return false;
 				for (var i in obj1) {
