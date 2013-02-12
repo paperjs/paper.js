@@ -21,10 +21,8 @@
 var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	_type: 'path',
 	_serializeFields: {
-		name: null,
 		segments: [],
-		closed: false,
-		matrix: new Matrix()
+		closed: false
 	},
 
 	/**

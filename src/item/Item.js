@@ -20,7 +20,20 @@
  * is unique to their type, but share the underlying properties and functions
  * that they inherit from Item.
  */
-var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
+var Item = this.Item = Base.extend(Callback, {
+	statics: {
+		/**
+		 * Override Item.extend() to merge the subclass' _serializeFields with
+		 * the parent class' _serializeFields.
+		 */
+		extend: function(src) {
+			if (src._serializeFields)
+				src._serializeFields = Base.merge(
+						this.prototype._serializeFields, src._serializeFields);
+			return this.base.apply(this, arguments);
+		}
+	}
+}, /** @lends Item# */{
 	// Provide information about fields to be serialized, with their defaults
 	// that can be ommited.
 	_serializeFields: {
@@ -140,18 +153,20 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		var props = {},
 			that = this;
 
-		function serialize(fields) {
+		function serialize(fields, compact) {
 			for (var key in fields) {
 				var value = that[key];
 				if (!Base.equals(value, fields[key]))
-					props[key] = Base.serialize(value, true);
+					props[key] = Base.serialize(value, compact);
 			}
 		}
 
 		// Serialize fields that this Item subclass defines first
-		serialize(this._serializeFields);
-		// Serialize style fields, but only if they differ from defaults
-		serialize(this._style._defaults);
+		serialize(this._serializeFields, true);
+		// Serialize style fields, but only if they differ from defaults.
+		// Use no compacting there, since colors always need their type
+		// identifiers.
+		serialize(this._style._defaults, false);
 		// There is no compact form for Item serialization, we always keep the
 		// type.
 		return [ this._type, props ];
