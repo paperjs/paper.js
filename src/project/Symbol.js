@@ -69,8 +69,10 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	},
 
 	_serialize: function(dictionary) {
-		return dictionary.get(this) || dictionary.set(this, [this._type,
-				Base.serialize(this._definition, false, dictionary)]);
+		return dictionary.add(this, function() {
+			return Base.serialize([this._type, this._definition],
+					false, dictionary);
+		});
 	},
 
 	// TODO: Symbol#remove()
