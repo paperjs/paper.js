@@ -20,9 +20,7 @@
 var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	_type: 'raster',
 	_serializeFields: {
-		name: null,
-		source: null,
-		matrix: new Matrix()
+		source: null
 	},
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
