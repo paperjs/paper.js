@@ -2492,13 +2492,31 @@ var Item = this.Item = Base.extend(Callback, {
 			cap = style._strokeCap,
 			limit = style._miterLimit,
 			fillColor = style._fillColor,
-			strokeColor = style._strokeColor;
-		if (width != null) ctx.lineWidth = width;
-		if (join) ctx.lineJoin = join;
-		if (cap) ctx.lineCap = cap;
-		if (limit) ctx.miterLimit = limit;
-		if (fillColor) ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-		if (strokeColor) ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+			strokeColor = style._strokeColor,
+			dashArray = style._dashArray,
+			dashOffset = style._dashOffset;
+		if (width != null)
+			ctx.lineWidth = width;
+		if (join)
+			ctx.lineJoin = join;
+		if (cap)
+			ctx.lineCap = cap;
+		if (limit)
+			ctx.miterLimit = limit;
+		if (fillColor)
+			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+		if (strokeColor) {
+			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+			if (paper.support.nativeDash && dashArray && dashArray.length) {
+				if ('setLineDash' in ctx) {
+					ctx.setLineDash(dashArray);
+					ctx.lineDashOffset = dashOffset;
+				} else {
+					ctx.mozDash = dashArray;
+					ctx.mozDashOffset = dashOffset;
+				}
+			}
+		}
 		// If the item only defines a strokeColor or a fillColor, draw it
 		// directly with the globalAlpha set, otherwise we will do it later when
 		// we composite the temporary canvas.

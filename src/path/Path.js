@@ -1556,14 +1556,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				fillColor = style._fillColor,
 				strokeColor = style._strokeColor,
 				dashArray = style._dashArray,
-				hasDash = strokeColor && dashArray && dashArray.length;
+				drawDash = !paper.support.nativeDash && strokeColor
+						&& dashArray && dashArray.length;
 
 			// Prepare the canvas path if we have any situation that requires it
 			// to be defined.
-			if (param.compound || this._clipMask || fillColor
-					|| strokeColor && !hasDash) {
+			if (param.compound || this._clipMask || fillColor || strokeColor
+					&& !drawDash)
 				drawSegments(ctx, this);
-			}
 
 			if (this._closed)
 				ctx.closePath();
@@ -1577,7 +1577,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				if (fillColor)
 					ctx.fill();
 				if (strokeColor) {
-					if (hasDash) {
+					if (drawDash) {
 						// We cannot use the path created by drawSegments above
 						// Use CurveFlatteners to draw dashed paths:
 						ctx.beginPath();
