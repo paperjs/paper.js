@@ -1101,7 +1101,7 @@ var Item = this.Item = Base.extend(Callback, {
 	rasterize: function(resolution) {
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || 72) / 72,
-			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
+			canvas = CanvasProvider.get(bounds.getSize().multiply(scale)),
 			ctx = canvas.getContext('2d'),
 			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(ctx);
@@ -2575,7 +2575,7 @@ var Item = this.Item = Base.extend(Callback, {
 				// Floor the offset and ceil the size, so we don't cut off any
 				// antialiased pixels when drawing onto the temporary canvas.
 				itemOffset = param.offset = bounds.getTopLeft().floor();
-				tempCanvas = CanvasProvider.getCanvas(
+				tempCanvas = CanvasProvider.get(
 						bounds.getSize().ceil().add(Size.create(1, 1)));
 				// Set ctx to the context of the temporary canvas,
 				// so we draw onto it, instead of the parentCtx
@@ -2612,7 +2612,7 @@ var Item = this.Item = Base.extend(Callback, {
 					parentCtx.restore();
 				}
 				// Return the temporary canvas, so it can be reused
-				CanvasProvider.returnCanvas(tempCanvas);
+				CanvasProvider.release(tempCanvas);
 			}
 		}
 	}

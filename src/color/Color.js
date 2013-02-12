@@ -62,7 +62,7 @@ var Color = this.Color = Base.extend(new function() {
 		// Use a canvas to draw to with the given name and then retrieve rgb
 		// values from. Build a cache for all the used colors.
 		if (!colorContext) {
-			var canvas = CanvasProvider.getCanvas(Size.create(1, 1));
+			var canvas = CanvasProvider.get(Size.create(1, 1));
 			colorContext = canvas.getContext('2d');
 			colorContext.globalCompositeOperation = 'copy';
 		}
