@@ -364,7 +364,7 @@ new function() {
 				viewBox: formatRectangle(bounds)
 			});
 			symbolNode.appendChild(exportSvg(definition));
-			setDefinition(symbol, symbolNode, 'symbol');
+			setDefinition(symbol, symbolNode);
 		}
 		attrs.href = '#' + symbolNode.id;
 		attrs.x += bounds.x;
@@ -421,7 +421,7 @@ new function() {
 					attrs['stop-opacity'] = color._alpha;
 				gradientNode.appendChild(createElement('stop', attrs));
 			}
-			setDefinition(gradient, gradientNode, 'gradient');
+			setDefinition(gradient, gradientNode);
 		}
 		return 'url(#' + gradientNode.id + ')';
 	}
@@ -485,8 +485,9 @@ new function() {
 		return definitions.svgs[item._id];
 	}
 
-	function setDefinition(item, node, type) {
-		var id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
+	function setDefinition(item, node) {
+		var type = item._type,
+			id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
 		node.id = type + '-' + id;
 		definitions.svgs[item._id] = node;
 	}
