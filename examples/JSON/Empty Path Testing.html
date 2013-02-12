@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Empty Path Testing</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas1">
+		var path = new Path();
+		path.strokeColor = 'black';
+		path.add(new Point(30, 30));
+		path.add(new Point(100, 100));
+		
+		var segments = [new Point(30, 90), new Point(100, 150)];
+		var path2 = new Path(segments);
+		path2.strokeColor = 'yellow';
+
+		var path3 = new Path();
+		
+		window._json = project.toJson();
+		console.log(window._json);
+	</script>
+	<script type="text/paperscript" canvas="canvas2">
+		Base.fromJson(window._json);
+	</script>
+</head>
+<body>
+	<canvas id="canvas1" width="500" height="500"></canvas>
+	<canvas id="canvas2" width="500" height="500"></canvas>
+</body>
+</html>

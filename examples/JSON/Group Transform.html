@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Group Transform</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas1">
+		var circle1 = new Path.Circle(new Point(100, 100), 50);
+		circle1.fillColor = 'red';
+		var circle2 = new Path.Circle(new Point(200, 100), 50);
+		circle2.fillColor = 'blue';
+		var group = new Group(circle1, circle2);
+		group.translate([100, 100]);
+		group.scale(0.5);
+		group.rotate(10);
+		window._json = project.toJson();
+		console.log(window._json);
+	</script>
+	<script type="text/paperscript" canvas="canvas2">
+		Base.fromJson(window._json);
+	</script>
+</head>
+<body>
+	<canvas id="canvas1" width="500" height="500"></canvas>
+	<canvas id="canvas2" width="500" height="500"></canvas>
+</body>
+</html>
