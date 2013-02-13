@@ -29,7 +29,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			var size = Size.read(arguments, 1);
 			if (size.isZero())
 				size = Size.create(1024, 768);
-			canvas = CanvasProvider.get(size);
+			canvas = CanvasProvider.getCanvas(size);
 		}
 		this._context = canvas.getContext('2d');
 		// Have Item count installed mouse events.

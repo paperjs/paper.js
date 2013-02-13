@@ -1101,7 +1101,7 @@ var Item = this.Item = Base.extend(Callback, {
 	rasterize: function(resolution) {
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || 72) / 72,
-			canvas = CanvasProvider.get(bounds.getSize().multiply(scale)),
+			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
 			ctx = canvas.getContext('2d'),
 			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(ctx);
@@ -2557,8 +2557,7 @@ var Item = this.Item = Base.extend(Callback, {
 			// way to filter out selected items that are not being drawn, e.g.
 			// because they are currently not part of the DOM.
 			item._drawCount = item._project._drawCount;
-			var tempCanvas, parentCtx,
-			 	itemOffset, prevOffset;
+			var parentCtx, itemOffset, prevOffset;
 			// If the item has a blendMode or is defining an opacity, draw it on
 			// a temporary canvas first and composite the canvas afterwards.
 			// Paths with an opacity < 1 that both define a fillColor
@@ -2574,21 +2573,20 @@ var Item = this.Item = Base.extend(Callback, {
 				// Store previous offset and save the parent context, so we can
 				// draw onto it later
 				prevOffset = param.offset;
-				parentCtx = ctx;
 				// Floor the offset and ceil the size, so we don't cut off any
 				// antialiased pixels when drawing onto the temporary canvas.
 				itemOffset = param.offset = bounds.getTopLeft().floor();
-				tempCanvas = CanvasProvider.get(
-						bounds.getSize().ceil().add(Size.create(1, 1)));
 				// Set ctx to the context of the temporary canvas,
 				// so we draw onto it, instead of the parentCtx
-				ctx = tempCanvas.getContext('2d');
+				parentCtx = ctx;
+				ctx = CanvasProvider.getContext(
+						bounds.getSize().ceil().add(Size.create(1, 1)));
 			}
 			if (!param.clipping)
 				ctx.save();
 			// Translate the context so the topLeft of the item is at (0, 0)
 			// on the temporary canvas.
-			if (tempCanvas)
+			if (parentCtx)
 				ctx.translate(-itemOffset.x, -itemOffset.y);
 			item._matrix.applyToContext(ctx);
 			item.draw(ctx, param);
@@ -2596,7 +2594,7 @@ var Item = this.Item = Base.extend(Callback, {
 				ctx.restore();
 			// If we created a temporary canvas before, composite it onto the
 			// parent canvas:
-			if (tempCanvas) {
+			if (parentCtx) {
 				// Restore previous offset.
 				param.offset = prevOffset;
 				// If the item has a blendMode, use BlendMode#process to
@@ -2611,11 +2609,11 @@ var Item = this.Item = Base.extend(Callback, {
 				// the temporary canvas on the parent canvas.
 					parentCtx.save();
 					parentCtx.globalAlpha = item._opacity;
-					parentCtx.drawImage(tempCanvas, itemOffset.x, itemOffset.y);
+					parentCtx.drawImage(ctx.canvas, itemOffset.x, itemOffset.y);
 					parentCtx.restore();
 				}
-				// Return the temporary canvas, so it can be reused
-				CanvasProvider.release(tempCanvas);
+				// Return the temporary context, so it can be reused
+				CanvasProvider.release(ctx);
 			}
 		}
 	}

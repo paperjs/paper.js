@@ -62,12 +62,11 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		if (!this.support) {
 			// Set up paper.support, as an object containing properties that
 			// describe the support of various features.
-			var canvas = CanvasProvider.get(1, 1),
-				ctx = canvas.getContext('2d');
+			var ctx = CanvasProvider.getContext(1, 1);
 			PaperScope.prototype.support = {
 				nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx
 			};
-			CanvasProvider.release(canvas);
+			CanvasProvider.release(ctx);
 		}
 	},
 
