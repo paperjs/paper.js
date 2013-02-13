@@ -244,7 +244,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	_transform: function(matrix) {
-		this._matrix.preConcatenate(matrix);
+		this._matrix.concatenate(matrix);
 		// Force recalculation of these values next time they are requested.
 		this._bounds = null;
 		this._inverse = null;
