@@ -327,7 +327,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 					new Size(sampleSize));
 		} else {
 			// Clear the sample canvas:
-			ctx.clearRect(0, 0, sampleSize, sampleSize);
+			ctx.clearRect(0, 0, sampleSize + 1, sampleSize + 1);
 		}
 		ctx.save();
 		// Scale the context so that the bounds ends up at the given sample size
