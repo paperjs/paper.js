@@ -58,7 +58,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		if (!element) {
 			// If the Raster contains a Canvas object, we need to create
 			// a new one and draw this raster's canvas on it.
-			element = CanvasProvider.get(this._size);
+			element = CanvasProvider.getCanvas(this._size);
 			element.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
 		var copy = new Raster(element);
@@ -81,7 +81,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			// Get reference to image before changing canvas
 			var element = this.getElement();
 			// Setting canvas internally sets _size
-			this.setCanvas(CanvasProvider.get(size));
+			this.setCanvas(CanvasProvider.getCanvas(size));
 			// Draw element back onto new canvas
 			this.getContext(true).drawImage(element, 0, 0,
 					size.width, size.height);
@@ -158,16 +158,15 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 
 	getCanvas: function() {
 		if (!this._canvas) {
-			var canvas = CanvasProvider.get(this._size);
+			var ctx = CanvasProvider.getContext(this._size);
 			// Since drawimage images into canvases might fail based on security
 			// policies, wrap the call in try-catch and only set _canvas if we
 			// succeeded.
 			try {
-				this._canvas = canvas;
 				if (this._image)
-					this.getContext().drawImage(this._image, 0, 0);
+					ctx.drawImage(this._image, 0, 0);
+				this._canvas = ctx.canvas;
 			} catch (e) {
-				this._canvas = null;
 				CanvasProvider.release(canvas);
 			}
 		}
@@ -262,10 +261,10 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 */
 	getSubImage: function(rect) {
 		rect = Rectangle.read(arguments);
-		var canvas = CanvasProvider.get(rect.getSize());
-		canvas.getContext('2d').drawImage(this.getCanvas(), rect.x, rect.y,
+		var ctx = CanvasProvider.getContext(rect.getSize());
+		ctx.drawImage(this.getCanvas(), rect.x, rect.y,
 				canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
-		return canvas;
+		return ctx.canvas;
 	},
 
 	toDataURL: function() {
@@ -324,8 +323,8 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		// since it's only 32 x 32 pixels.
 		var ctx = Raster._sampleContext;
 		if (!ctx) {
-			ctx = Raster._sampleContext = CanvasProvider.get(
-					new Size(sampleSize)).getContext('2d');
+			ctx = Raster._sampleContext = CanvasProvider.getContext(
+					new Size(sampleSize));
 		} else {
 			// Clear the sample canvas:
 			ctx.clearRect(0, 0, sampleSize, sampleSize);

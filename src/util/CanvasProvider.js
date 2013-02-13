@@ -15,8 +15,8 @@
 var CanvasProvider = {
 	canvases: [],
 
-	get: function(width, height) {
-		var size = arguments.length == 2 ? Size.create(width, height) : width;
+	getCanvas: function(width, height) {
+		var size = height === undefined ? Size.create(width, height) : width;
 		if (this.canvases.length) {
 			var canvas = this.canvases.pop();
 			// If they are not the same size, we don't need to clear them
@@ -43,7 +43,12 @@ var CanvasProvider = {
 		}
 	},
 
-	release: function(canvas) {
-		this.canvases.push(canvas);
-	}
+	getContext: function(width, height) {
+		return this.getCanvas(width, height).getContext('2d');
+	},
+
+	 // release can receive either a canvas or a context.
+	release: function(obj) {
+		this.canvases.push(obj.canvas ? obj.canvas : obj);
+	},
 };

@@ -53,7 +53,7 @@ var Color = this.Color = Base.extend(new function() {
 	};
 
 	var colorCache = {},
-		colorContext;
+		colorCtx;
 
 	function nameToRgbColor(name) {
 		var color = colorCache[name];
@@ -61,20 +61,19 @@ var Color = this.Color = Base.extend(new function() {
 			return color.clone();
 		// Use a canvas to draw to with the given name and then retrieve rgb
 		// values from. Build a cache for all the used colors.
-		if (!colorContext) {
-			var canvas = CanvasProvider.get(1, 1);
-			colorContext = canvas.getContext('2d');
-			colorContext.globalCompositeOperation = 'copy';
+		if (!colorCtx) {
+			colorCtx = CanvasProvider.getContext(1, 1);
+			colorCtx.globalCompositeOperation = 'copy';
 		}
 		// Set the current fillStyle to transparent, so that it will be
 		// transparent instead of the previously set color in case the new color
 		// can not be interpreted.
-		colorContext.fillStyle = 'rgba(0,0,0,0)';
+		colorCtx.fillStyle = 'rgba(0,0,0,0)';
 		// Set the fillStyle of the context to the passed name and fill the
 		// canvas with it, then retrieve the data for the drawn pixel:
-		colorContext.fillStyle = name;
-		colorContext.fillRect(0, 0, 1, 1);
-		var data = colorContext.getImageData(0, 0, 1, 1).data,
+		colorCtx.fillStyle = name;
+		colorCtx.fillRect(0, 0, 1, 1);
+		var data = colorCtx.getImageData(0, 0, 1, 1).data,
 			rgb = [data[0] / 255, data[1] / 255, data[2] / 255];
 		return (colorCache[name] = RgbColor.read(rgb)).clone();
 	}
