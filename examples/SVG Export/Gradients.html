@@ -6,18 +6,37 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var path = new Path.Circle(view.center, view.bounds.height * 0.4);
-		var gradient = new Gradient([ new RgbColor(1, 1, 0, 0), 'red', 'black'], 'radial');
-		var from = path.position;
-		var to = path.bounds.rightCenter;
-		var gradientColor = new GradientColor(gradient, from, to);
-		path.fillColor = gradientColor;
-		path.strokeColor = 'black';
+		var radial = new Gradient([ new RgbColor(1, 1, 0, 0), 'red', 'black'], 'radial');
+		var linear = new Gradient([ new RgbColor(1, 1, 0, 0), 'red', 'black'], 'linear');
+
+		var radius = view.bounds.width * 0.4,
+			from = new Point(view.center.x),
+			to = from + [radius, 0];
+
+		var circle = new Path.Circle({
+			center: from,
+			radius: radius,
+			fillColor: new GradientColor(radial, from, to),
+			strokeColor: 'black'
+		});
+
+		var from = view.bounds.leftCenter,
+			to = view.bounds.bottomRight;
+
+		var rect = new Path.Rectangle({
+			from: from,
+			to: to,
+			fillColor: new GradientColor(linear, from, to),
+			strokeColor: 'black'
+		});
+
+		rect.rotate(45).scale(0.7);
+
 		document.getElementById('svg').appendChild(project.exportSvg());
 	</script>
 </head>
 <body>
-	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
+	<canvas id="canvas" width="300" height="600"></canvas>
+	<svg id="svg" width="300" height="600"></svg>
 </body>
 </html>
