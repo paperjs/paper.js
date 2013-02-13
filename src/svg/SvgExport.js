@@ -387,10 +387,10 @@ new function() {
 		// even when they share the same gradient defintion.
 		// http://www.svgopen.org/2011/papers/20-Separating_gradients_from_geometry/
 		// TODO: Implement gradient merging in SvgImport
-		var gradient = color.gradient,
-			gradientNode = getDefinition(color);
+		var gradientNode = getDefinition(color);
 		if (!gradientNode) {
-			var matrix = item._gradientMatrix,
+			var gradient = color.gradient,
+				matrix = item._gradientMatrix,
 				origin = color._origin.transform(matrix),
 				destination = color._destination.transform(matrix),
 				highlight = color._hilite && color._hilite.transform(matrix),
