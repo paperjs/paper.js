@@ -344,6 +344,8 @@ new function() {
 		if (angle) {
 			attrs.transform = 'rotate(' + formatFloat(angle) + ','
 					+ formatPoint(center) + ')';
+			// Tell applyStyle() that to transform the gradient the other way
+			item._gradientMatrix = new Matrix().rotate(-angle, center);
 		}
 		return createElement(type, attrs);
 	}
@@ -379,7 +381,7 @@ new function() {
 		return createElement('use', attrs);
 	}
 
-	function exportGradient(color) {
+	function exportGradient(color, item) {
 		// NOTE: As long as the fillTransform attribute is not implemented,
 		// we need to create a separate gradient object for each gradient,
 		// even when they share the same gradient defintion.
@@ -388,9 +390,10 @@ new function() {
 		var gradient = color.gradient,
 			gradientNode = getDefinition(color);
 		if (!gradientNode) {
-			var origin = color._origin,
-				destination = color._destination,
-				highlight = color._hilite,
+			var matrix = item._gradientMatrix,
+				origin = color._origin.transform(matrix),
+				destination = color._destination.transform(matrix),
+				highlight = color._hilite && color._hilite.transform(matrix),
 				attrs;
 				if (gradient.type == 'radial') {
 					attrs = {
@@ -464,7 +467,7 @@ new function() {
 					? 'none'
 					: entry.type === 'color'
 						? value.gradient
-							? exportGradient(value)
+							? exportGradient(value, item)
 							: value.toCss(true) // false for noAlpha, see above	
 						: entry.type === 'array'
 							? value.join(',')
@@ -480,6 +483,7 @@ new function() {
 		if (item._visibility != null && !item._visibility)
 			attrs.visibility = 'hidden';
 
+		delete item._gradientMatrix; // see exportPath()
 		return setAttributes(node, attrs);
 	}
 
