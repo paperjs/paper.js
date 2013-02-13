@@ -415,18 +415,18 @@ new function() {
 			var stops = gradient._stops;
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i],
-					color = stop._color;
+					stopColor = stop._color;
 				attrs = {
 					offset: stop._rampPoint,
-					'stop-color': color.toCss(true)
+					'stop-color': stopColor.toCss(true)
 				};
 				// See applyStyle for an explanation of why there are separated
 				// opacity / color attributes.
-				if (color.getAlpha() < 1)
-					attrs['stop-opacity'] = color._alpha;
+				if (stopColor.getAlpha() < 1)
+					attrs['stop-opacity'] = stopColor._alpha;
 				gradientNode.appendChild(createElement('stop', attrs));
 			}
-			setDefinition(gradient, gradientNode);
+			setDefinition(color, gradientNode);
 		}
 		return 'url(#' + gradientNode.id + ')';
 	}
