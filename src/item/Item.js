@@ -1109,7 +1109,6 @@ var Item = this.Item = Base.extend(Callback, {
 		this.draw(ctx, {});
 		var raster = new Raster(canvas);
 		raster.setBounds(bounds);
-		CanvasProvider.release(canvas);
 		// NOTE: We don't need to release the canvas since it now belongs to the
 		// Raster!
 		return raster;

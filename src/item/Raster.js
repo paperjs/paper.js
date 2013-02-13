@@ -167,7 +167,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 					ctx.drawImage(this._image, 0, 0);
 				this._canvas = ctx.canvas;
 			} catch (e) {
-				CanvasProvider.release(canvas);
+				CanvasProvider.release(ctx);
 			}
 		}
 		return this._canvas;
