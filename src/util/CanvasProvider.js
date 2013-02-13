@@ -16,7 +16,7 @@ var CanvasProvider = {
 	canvases: [],
 
 	getCanvas: function(width, height) {
-		var size = height === undefined ? Size.create(width, height) : width;
+		var size = height === undefined ? width : Size.create(width, height);
 		if (this.canvases.length) {
 			var canvas = this.canvases.pop();
 			// If they are not the same size, we don't need to clear them
