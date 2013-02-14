@@ -475,9 +475,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 
 	draw: function(ctx, param) {
 		var element = this.getElement();
-		if (element)
+		if (element) {
+			// Handle opacity for Rasters separately from the rest, since
+			// Rasters never draw a stroke. See Item.draw().
+			ctx.globalAlpha = this._opacity;
 			ctx.drawImage(element,
 					-this._size.width / 2, -this._size.height / 2);
+		}
 	},
 
 	drawSelected: function(ctx, matrix) {
