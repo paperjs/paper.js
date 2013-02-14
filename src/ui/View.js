@@ -531,9 +531,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	function getView(event) {
 		// Get the view from the current event target.
 		var target = DomEvent.getTarget(event);
-		if (target.getAttribute === undefined)
-			return false;
-		return View._viewsById[DomEvent.getTarget(event).getAttribute('id')];
+		// Some node do not have the getAttribute method, e.g. SVG nodes.
+		return target.getAttribute && View._viewsById[target.getAttribute('id')];
 	}
 
 	function viewToProject(view, event) {
