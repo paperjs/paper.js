@@ -294,7 +294,13 @@ var PaperScript = this.PaperScript = new function() {
 		}
 	}
 
-	DomEvent.add(window, { load: load });
+	// Catch cases where paperjs is loaded after the browser event has already occurred.
+	if ( document.readyState === "complete" ) {
+		// Handle it asynchronously
+		setTimeout( load );
+	} else {
+		DomEvent.add(window, { load: load });
+	}
 
 	// Produces helpers to e.g. check for both 'canvas' and 'data-paper-canvas'
 	// attributes:
