@@ -294,10 +294,11 @@ var PaperScript = this.PaperScript = new function() {
 		}
 	}
 
-	// Catch cases where paperjs is loaded after the browser event has already occurred.
-	if ( document.readyState === "complete" ) {
+	// Catch cases where paper.js is loaded after the browser event has already
+	// occurred.
+	if (document.readyState === 'complete') {
 		// Handle it asynchronously
-		setTimeout( load );
+		setTimeout(load);
 	} else {
 		DomEvent.add(window, { load: load });
 	}
