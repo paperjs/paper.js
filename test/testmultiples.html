@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Test multiple scripts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <script type="text/javascript" src="../dist/paper.js"></script>
+    <script type="text/paperscript" src="paperscript1.js" canvas="pcanvas1"></script>
+    <script type="text/paperscript" src="paperscript2.js" canvas="pcanvas1"></script>
+    <script type="text/paperscript" src="paperscript3.js" canvas="pcanvas2"></script>
+    <style type="text/css">
+      #pcanvas1
+      {
+        border: 2px solid #f00;
+      }
+
+      #pcanvas2
+      {
+        border: 2px solid #00f;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <canvas id="pcanvas1"></canvas>
+      <canvas id="pcanvas2"></canvas>
+    </div>
+  </body>
+</html>
+
