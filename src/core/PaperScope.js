@@ -167,6 +167,8 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		// are automatically associated with it.
 		paper = this;
 		this.project = new Project(canvas);
+		// This is needed in PaperScript.load().
+		return this;
 	},
 
 	clear: function() {
