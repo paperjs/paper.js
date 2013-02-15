@@ -1106,7 +1106,7 @@ var Item = this.Item = Base.extend(Callback, {
 			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(ctx);
 		// XXX: Decide how to handle _matrix
-		this.draw(ctx, {});
+		Item.draw(this, ctx, {});
 		var raster = new Raster(canvas);
 		raster.setBounds(bounds);
 		return raster;
