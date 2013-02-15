@@ -28,11 +28,14 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 
 	// TODO: Implement type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
-	// DOCS: Document Raster constructor.
 	/**
-	 * Creates a new raster item and places it in the active layer.
+	 * Creates a new raster item from the passed argument, and places it in the
+	 * active layer. {@code object} can either be a DOM Image, a Canvas, or a
+	 * string describing the URL to load the image from, or the ID of a DOM
+	 * element to get the image from (either a DOM Image or a Canvas).
 	 *
-	 * @param {HTMLImageElement|Canvas|string} [object]
+	 * @param {HTMLImageElement|Canvas|String} [object] the argument describing
+	 * the source of the image.
 	 */
 	initialize: function(arg0, arg1) {
 		// Support two forms of item initialization: Passing one object literal
