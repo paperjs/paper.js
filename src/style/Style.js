@@ -18,7 +18,7 @@
  *
  * @private
  */
-var Style = Item.extend({
+var Style = Base.extend({
 	initialize: function(style) {
 		// If the passed style object is also a Style, clone its clonable
 		// fields rather than simply copying them.
