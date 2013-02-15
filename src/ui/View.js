@@ -58,12 +58,10 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 			DomEvent.add(window, this._windowHandlers);
 		} else {
 			// If the element is invisible, we cannot directly access
-			// element.width / height, because they would appear 0. Reading
-			// the attributes still works though:
-			size = DomElement.isInvisible(element)
-				? Size.create(parseInt(element.getAttribute('width')),
-						parseInt(element.getAttribute('height')))
-				: DomElement.getSize(element);
+			// element.width / height, because they would appear 0.
+			// Reading the attributes always works though.
+			size = Size.create(parseInt(element.getAttribute('width'), 10),
+						parseInt(element.getAttribute('height'), 10));
 		}
 		// Set canvas size even if we just deterined the size from it, since
 		// it might have been set to a % size, in which case it would use some
