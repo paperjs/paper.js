@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -78,10 +74,11 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		doubleClick,
 		clickTime;
 
+	// Returns false if event was stopped, true otherwise, wether handler was
+	// called or not!
 	function callEvent(type, event, point, target, lastPoint, bubble) {
 		var item = target,
-			mouseEvent,
-			called = false;
+			mouseEvent;
 		while (item) {
 			if (item.responds(type)) {
 				// Create an reuse the event object if we're bubbling
@@ -89,13 +86,13 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 					mouseEvent = new MouseEvent(type, event, point, target,
 							// Calculate delta if lastPoint was passed
 							lastPoint ? point.subtract(lastPoint) : null);
-				called = item.fire(type, mouseEvent) || called;
-				if (called && (!bubble || mouseEvent._stopped))
-					break;
+				if (item.fire(type, mouseEvent)
+						&& (!bubble || mouseEvent._stopped))
+					return false;
 			}
 			item = item.getParent();
 		}
-		return called;
+		return true;
 	}
 
 	function handleEvent(view, type, event, point, lastPoint) {
@@ -148,8 +145,10 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			}
 			if (item == downItem) {
 				clickTime = Date.now();
-				callEvent(doubleClick ? 'doubleclick' : 'click', event,
-						downPoint, overItem);
+				if (!doubleClick
+						// callEvent returns false if event is stopped.
+						|| callEvent('doubleclick', event, downPoint, overItem))
+					callEvent('click', event, downPoint, overItem);
 				doubleClick = false;
 			}
 			downItem = null;

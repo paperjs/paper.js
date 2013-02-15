@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -68,11 +64,12 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 	 */
 
 	/**
-	 * The font size of the character style in points.
+	 * The font size of the character style, as {@Number} in pixels, or as
+	 * {@String} with optional units {@code 'px'}, {@code 'pt'}, {@code 'em'}.
 	 *
 	 * @name CharacterStyle#fontSize
 	 * @default 10
-	 * @type Number
+	 * @type Number|String
 	 */
 }, {
 	getLeading: function() {
@@ -82,6 +79,7 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 	},
 
 	getFontStyle: function() {
-		return this._fontSize + 'px ' + this._font;
+		var size = this._fontSize;
+		return (/[a-z]/i.test(size) ? size + ' ' : size + 'px ') + this._font;
 	}
 });

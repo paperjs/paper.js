@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -20,7 +16,6 @@
  * @private
  */
 var DomElement = new function() {
-
 	// We use a mix of Bootstrap.js legacy and Bonzo.js magic, ported over and
 	// furhter simplified to a subset actually required by Paper.js
 

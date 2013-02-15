@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Gradients</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas1">
+		var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+		var gradient = new Gradient([ 'yellow', 'red', 'black'], 'radial');
+		var from = path.position;
+		var to = path.bounds.rightCenter;
+		var gradientColor = new GradientColor(gradient, from, to);
+		path.fillColor = gradientColor;
+		path.strokeColor = 'black';
+		window._json = project.toJson();
+		console.log(window._json);
+	</script>
+	<script type="text/paperscript" canvas="canvas2">
+		Base.fromJson(window._json);
+	</script>
+</head>
+<body>
+	<canvas id="canvas1" width="500" height="500"></canvas>
+	<canvas id="canvas2" width="500" height="500"></canvas>
+</body>
+</html>

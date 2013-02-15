@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -68,7 +64,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 				ok = false;
 			}
 		} else if (count == 0) {
-			this.setIdentity();
+			this.reset();
 		} else {
 			ok = false;
 		}
@@ -76,8 +72,8 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 			throw new Error('Unsupported matrix parameters');
 	},
 
-	_serialize: function() {
-		return this.getValues();
+	_serialize: function(options) {
+		return Base.serialize(this.getValues(), options);
 	},
 
 	/**
@@ -109,7 +105,11 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		return this;
 	},
 
-	setIdentity: function() {
+	/**
+	 * "Resets" the matrix by setting its values to the ones of the identity
+	 * matrix that results in no transformation.
+	 */
+	reset: function() {
 		this._a = this._d = 1;
 		this._c = this._b = this._tx = this._ty = 0;
 		return this;
@@ -138,8 +138,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		// Do not modify scale, center, since that would arguments of which
 		// we're reading from!
 		var _scale = Point.read(arguments),
-			_center = Point.read(arguments);
-		// TODO: Isn't center always set this way??
+			_center = Point.read(arguments, 0, 0, false, true); // readNull
 		if (_center)
 			this.translate(_center);
 		this._a *= _scale.x;
@@ -199,8 +198,26 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} This affine transform
 	 */
 	rotate: function(angle, center) {
-		return this.concatenate(
-				Matrix.getRotateInstance.apply(Matrix, arguments));
+		center = Point.read(arguments, 1);
+		angle = angle * Math.PI / 180;
+		// Concatenate rotation matrix into this one
+		var x = center.x,
+			y = center.y,
+			cos = Math.cos(angle),
+			sin = Math.sin(angle),
+			tx = x - x * cos + y * sin,
+			ty = y - x * sin - y * cos,
+			a = this._a,
+			b = this._b,
+			c = this._c,
+			d = this._d;
+		this._a = cos * a + sin * b;
+		this._b = -sin * a + cos * b;
+		this._c = cos * c + sin * d;
+		this._d = -sin * c + cos * d;
+		this._tx += tx * a + ty * b;
+		this._ty += tx * c + ty * d;
+		return this;
 	},
 
 	/**
@@ -252,56 +269,42 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * The scaling factor in the x-direction ({@code a}).
+	 * Checks whether the two matrices describe the same transformation.
 	 *
-	 * @name Matrix#scaleX
-	 * @type Number
+	 * @param {Matrix} matrix the matrix to compare this matrix to
+	 * @return {Boolean} {@true if the matrices are equal}
 	 */
+	equals: function(mx) {
+		return mx && this._a == mx._a && this._b == mx._b && this._c == mx._c
+				&& this._d == mx._d && this._tx == mx._tx && this._ty == mx._ty;
+	},
 
 	/**
-	 * The scaling factor in the y-direction ({@code d}).
-	 *
-	 * @name Matrix#scaleY
-	 * @type Number
+	 * @return {Boolean} Whether this transform is the identity transform
 	 */
+	isIdentity: function() {
+		return this._a == 1 && this._c == 0 && this._b == 0 && this._d == 1
+				&& this._tx == 0 && this._ty == 0;
+	},
 
 	/**
-	 * @return {Number} The shear factor in the x-direction ({@code b}).
+	 * Returns whether the transform is invertible. A transform is not
+	 * invertible if the determinant is 0 or any value is non-finite or NaN.
 	 *
-	 * @name Matrix#shearX
-	 * @type Number
+	 * @return {Boolean} Whether the transform is invertible
 	 */
+	isInvertible: function() {
+		return !!this._getDeterminant();
+	},
 
 	/**
-	 * @return {Number} The shear factor in the y-direction ({@code c}).
+	 * Checks whether the matrix is singular or not. Singular matrices cannot be
+	 * inverted.
 	 *
-	 * @name Matrix#shearY
-	 * @type Number
+	 * @return {Boolean} Whether the matrix is singular
 	 */
-
-	/**
-	 * The translation in the x-direction ({@code tx}).
-	 *
-	 * @name Matrix#translateX
-	 * @type Number
-	 */
-
-	/**
-	 * The translation in the y-direction ({@code ty}).
-	 *
-	 * @name Matrix#translateY
-	 * @type Number
-	 */
-
-	/**
-	 * The transform values as an array, in the same sequence as they are passed
-	 * to {@link #initialize(a, c, b, d, tx, ty)}.
-	 *
-	 * @type Number[]
-	 * @bean
-	 */
-	getValues: function() {
-		return [ this._a, this._c, this._b, this._d, this._tx, this._ty ];
+	isSingular: function() {
+		return !this._getDeterminant();
 	},
 
 	/**
@@ -397,8 +400,8 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		var i = srcOff, j = dstOff,
 			srcEnd = srcOff + 2 * numPts;
 		while (i < srcEnd) {
-			var x = src[i++];
-			var y = src[i++];
+			var x = src[i++],
+				y = src[i++];
 			dst[j++] = x * this._a + y * this._b + this._tx;
 			dst[j++] = x * this._c + y * this._d + this._ty;
 		}
@@ -472,69 +475,139 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		);
 	},
 
+	/**
+	 * Attempts to decompose the affine transformation described by this matrix
+	 * into {@code translation}, {@code scaling}, {@code rotation} and
+	 * {@code shearing}, and returns an object with these properties if it
+	 * succeeded, {@code null} otherwise.
+	 *
+	 * @return {Object} the decomposed matrix, or {@code null} if decomposition
+	 * is not possible.
+	 */
+	decompose: function() {
+		// http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
+		// http://stackoverflow.com/questions/4361242/
+		// https://github.com/wisec/DOMinator/blob/master/layout/style/nsStyleAnimation.cpp#L946
+		var a = this._a, b = this._b, c = this._c, d = this._d;
+		if (Numerical.isZero(a * d - b * c))
+			return null;
+
+		var scaleX = Math.sqrt(a * a + b * b);
+		a /= scaleX;
+		b /= scaleX;
+
+		var shear = a * c + b * d;
+		c -= a * shear;
+		d -= b * shear;
+
+		var scaleY = Math.sqrt(c * c + d * d);
+		c /= scaleY;
+		d /= scaleY;
+		shear /= scaleY;
+
+		// a * d - b * c should now be 1 or -1
+		if (a * d < b * c) {
+			a = -a;
+			b = -b;
+			// We don't need c & d anymore, but if we did, we'd have to do this:
+			// c = -c;
+			// d = -d;
+			shear = -shear;
+			scaleX = -scaleX;
+		}
+
+		return {
+			translation: this.getTranslation(),
+			scaling: Point.create(scaleX, scaleY),
+			rotation: -Math.atan2(b, a) * 180 / Math.PI,
+			shearing: shear
+		};
+	},
+
+	/**
+	 * The scaling factor in the x-direction ({@code a}).
+	 *
+	 * @name Matrix#scaleX
+	 * @type Number
+	 */
+
+	/**
+	 * The scaling factor in the y-direction ({@code d}).
+	 *
+	 * @name Matrix#scaleY
+	 * @type Number
+	 */
+
+	/**
+	 * @return {Number} The shear factor in the x-direction ({@code b}).
+	 *
+	 * @name Matrix#shearX
+	 * @type Number
+	 */
+
+	/**
+	 * @return {Number} The shear factor in the y-direction ({@code c}).
+	 *
+	 * @name Matrix#shearY
+	 * @type Number
+	 */
+
+	/**
+	 * The translation in the x-direction ({@code tx}).
+	 *
+	 * @name Matrix#translateX
+	 * @type Number
+	 */
+
+	/**
+	 * The translation in the y-direction ({@code ty}).
+	 *
+	 * @name Matrix#translateY
+	 * @type Number
+	 */
+
+	/**
+	 * The transform values as an array, in the same sequence as they are passed
+	 * to {@link #initialize(a, c, b, d, tx, ty)}.
+	 *
+	 * @type Number[]
+	 * @bean
+	 */
+	getValues: function() {
+		return [ this._a, this._c, this._b, this._d, this._tx, this._ty ];
+	},
+
+	/**
+	 * The translation values of the matrix.
+	 *
+	 * @type Point
+	 * @bean
+	 */
 	getTranslation: function() {
+		// No decomposition is required to extract translation, so treat this
 		return Point.create(this._tx, this._ty);
 	},
 
+	/**
+	 * The scaling values of the matrix, if it can be decomposed.
+	 *
+	 * @type Point
+	 * @bean
+	 * @see Matrix#decompose()
+	 */
 	getScaling: function() {
-		// http://math.stackexchange.com/questions/13150/
-		var hor = Math.sqrt(this._a * this._a + this._c * this._c),
-			ver = Math.sqrt(this._b * this._b + this._d * this._d);
-		return Point.create(this._a < 0 ? -hor : hor, this._b < 0 ? -ver : ver);
+		return (this.decompose() || {}).scaling;
 	},
 
 	/**
-	 * The rotation angle of the matrix. If a non-uniform rotation is applied as
-	 * a result of a shear() or scale() command, undefined is returned, as the
-	 * resulting transformation cannot be expressed in one rotation angle.
+	 * The rotation angle of the matrix, if it can be decomposed.
 	 *
 	 * @type Number
 	 * @bean
+	 * @see Matrix#decompose()
 	 */
 	getRotation: function() {
-		var angle1 = -Math.atan2(this._b, this._d),
-			angle2 = Math.atan2(this._c, this._a);
-		return Math.abs(angle1 - angle2) < /*#=*/ Numerical.EPSILON
-				? angle1 * 180 / Math.PI : undefined;
-	},
-
-	/**
-	 * Checks whether the two matrices describe the same transformation.
-	 *
-	 * @param {Matrix} matrix the matrix to compare this matrix to
-	 * @return {Boolean} {@true if the matrices are equal}
-	 */
-	equals: function(mx) {
-		return mx && this._a == mx._a && this._b == mx._b && this._c == mx._c
-				&& this._d == mx._d && this._tx == mx._tx && this._ty == mx._ty;
-	},
-
-	/**
-	 * @return {Boolean} Whether this transform is the identity transform
-	 */
-	isIdentity: function() {
-		return this._a == 1 && this._c == 0 && this._b == 0 && this._d == 1
-				&& this._tx == 0 && this._ty == 0;
-	},
-
-	/**
-	 * Returns whether the transform is invertible. A transform is not
-	 * invertible if the determinant is 0 or any value is non-finite or NaN.
-	 *
-	 * @return {Boolean} Whether the transform is invertible
-	 */
-	isInvertible: function() {
-		return !!this._getDeterminant();
-	},
-
-	/**
-	 * Checks whether the matrix is singular or not. Singular matrices cannot be
-	 * inverted.
-	 *
-	 * @return {Boolean} Whether the matrix is singular
-	 */
-	isSingular: function() {
-		return !this._getDeterminant();
+		return (this.decompose() || {}).rotation;
 	},
 
 	/**
@@ -545,7 +618,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} The inverted matrix, or {@code null }, if the matrix is
 	 *         singular
 	 */
-	createInverse: function() {
+	inverted: function() {
 		var det = this._getDeterminant();
 		return det && Matrix.create(
 				this._d / det,
@@ -556,62 +629,8 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 				(this._c * this._tx - this._a * this._ty) / det);
 	},
 
-	createShiftless: function() {
+	shiftless: function() {
 		return Matrix.create(this._a, this._c, this._b, this._d, 0, 0);
-	},
-
-	/**
-	 * Sets this transform to a scaling transformation.
-	 *
-	 * @param {Number} hor The horizontal scaling factor
-	 * @param {Number} ver The vertical scaling factor
-	 * @return {Matrix} This affine transform
-	 */
-	setToScale: function(hor, ver) {
-		return this.set(hor, 0, 0, ver, 0, 0);
-	},
-
-	/**
-	 * Sets this transform to a translation transformation.
-	 *
-	 * @param {Number} dx The distance to translate in the x direction
-	 * @param {Number} dy The distance to translate in the y direction
-	 * @return {Matrix} This affine transform
-	 */
-	setToTranslation: function(delta) {
-		delta = Point.read(arguments);
-		return this.set(1, 0, 0, 1, delta.x, delta.y);
-	},
-
-	/**
-	 * Sets this transform to a shearing transformation.
-	 *
-	 * @param {Number} hor The horizontal shear factor
-	 * @param {Number} ver The vertical shear factor
-	 * @return {Matrix} This affine transform
-	 */
-	setToShear: function(hor, ver) {
-		return this.set(1, ver, hor, 1, 0, 0);
-	},
-
-	/**
-	 * Sets this transform to a rotation transformation.
-	 *
-	 * @param {Number} angle The angle of rotation measured in degrees
-	 * @param {Number} x The x coordinate of the anchor point
-	 * @param {Number} y The y coordinate of the anchor point
-	 * @return {Matrix} This affine transform
-	 */
-	setToRotation: function(angle, center) {
-		center = Point.read(arguments, 1);
-		angle = angle * Math.PI / 180;
-		var x = center.x,
-			y = center.y,
-			cos = Math.cos(angle),
-			sin = Math.sin(angle);
-		return this.set(cos, sin, -sin, cos,
-				x - x * cos + y * sin,
-				y - x * sin - y * cos);
 	},
 
 	/**
@@ -630,57 +649,6 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		// See Point.create()
 		create: function(a, c, b, d, tx, ty) {
 			return Base.create(Matrix).set(a, c, b, d, tx, ty);
-		},
-
-		/**
-		 * Creates a transform representing a scaling transformation.
-		 *
-		 * @param {Number} hor The horizontal scaling factor
-		 * @param {Number} ver The vertical scaling factor
-		 * @return {Matrix} A transform representing a scaling
-		 *         transformation
-		 */
-		getScaleInstance: function(hor, ver) {
-			var mx = new Matrix();
-			return mx.setToScale.apply(mx, arguments);
-		},
-
-		/**
-		 * Creates a transform representing a translation transformation.
-		 *
-		 * @param {Number} dx The distance to translate in the x direction
-		 * @param {Number} dy The distance to translate in the y direction
-		 * @return {Matrix} A transform representing a translation
-		 *         transformation
-		 */
-		getTranslateInstance: function(delta) {
-			var mx = new Matrix();
-			return mx.setToTranslation.apply(mx, arguments);
-		},
-
-		/**
-		 * Creates a transform representing a shearing transformation.
-		 *
-		 * @param {Number} hor The horizontal shear factor
-		 * @param {Number} ver The vertical shear factor
-		 * @return {Matrix} A transform representing a shearing transformation
-		 */
-		getShearInstance: function(hor, ver, center) {
-			var mx = new Matrix();
-			return mx.setToShear.apply(mx, arguments);
-		},
-
-		/**
-		 * Creates a transform representing a rotation transformation.
-		 *
-		 * @param {Number} angle The angle of rotation measured in degrees
-		 * @param {Number} x The x coordinate of the anchor point
-		 * @param {Number} y The y coordinate of the anchor point
-		 * @return {Matrix} A transform representing a rotation transformation
-		 */
-		getRotateInstance: function(angle, center) {
-			var mx = new Matrix();
-			return mx.setToRotation.apply(mx, arguments);
 		}
 	}
 }, new function() {

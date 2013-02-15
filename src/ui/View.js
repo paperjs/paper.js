@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -62,12 +58,10 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 			DomEvent.add(window, this._windowHandlers);
 		} else {
 			// If the element is invisible, we cannot directly access
-			// element.width / height, because they would appear 0. Reading
-			// the attributes still works though:
-			size = DomElement.isInvisible(element)
-				? Size.create(parseInt(element.getAttribute('width')),
-						parseInt(element.getAttribute('height')))
-				: DomElement.getSize(element);
+			// element.width / height, because they would appear 0.
+			// Reading the attributes always works though.
+			size = Size.create(parseInt(element.getAttribute('width'), 10),
+						parseInt(element.getAttribute('height'), 10));
 		}
 		// Set canvas size even if we just deterined the size from it, since
 		// it might have been set to a % size, in which case it would use some
@@ -248,7 +242,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	_transform: function(matrix) {
-		this._matrix.preConcatenate(matrix);
+		this._matrix.concatenate(matrix);
 		// Force recalculation of these values next time they are requested.
 		this._bounds = null;
 		this._inverse = null;
@@ -397,7 +391,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 
 	_getInverse: function() {
 		if (!this._inverse)
-			this._inverse = this._matrix.createInverse();
+			this._inverse = this._matrix.inverted();
 		return this._inverse;
 	}
 
@@ -534,7 +528,9 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 
 	function getView(event) {
 		// Get the view from the current event target.
-		return View._viewsById[DomEvent.getTarget(event).getAttribute('id')];
+		var target = DomEvent.getTarget(event);
+		// Some node do not have the getAttribute method, e.g. SVG nodes.
+		return target.getAttribute && View._viewsById[target.getAttribute('id')];
 	}
 
 	function viewToProject(view, event) {

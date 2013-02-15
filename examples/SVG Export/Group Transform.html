@@ -2,13 +2,9 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Transform Testing</title>
+	<title>Group Transform</title>
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
-
-</head>
-<body>	
-	<canvas id="canvas" width="500px" height="500px"></canvas>
 	<script type="text/paperscript" canvas="canvas">
 		var circle1 = new Path.Circle(new Point(100, 100), 50);
 		circle1.fillColor = 'red';
@@ -20,6 +16,9 @@
 		group.rotate(10);
 		document.getElementById('svg').appendChild(project.exportSvg());
 	</script>
-	<svg id="svg" style="width: 500px; height: 500px"></svg>
+</head>
+<body>
+	<canvas id="canvas" width="500" height="500"></canvas>
+	<svg id="svg" width="500" height="500"></svg>
 </body>
 </html>

@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -168,8 +164,13 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		}
 	},
 
-	_serialize: function() {
-		return [this.x, this.y];
+	_serialize: function(options) {
+		var format = Base.formatFloat;
+		// For speed reasons, we directly call formatFloat() here with
+		// precision, instead of converting array through Base.serialize() which
+		// makes a copy.
+		return [format(this.x, options.precision),
+				format(this.y, options.precision)];
 	},
 
 	/**

@@ -1,15 +1,10 @@
 projectDirectory = "$CWD"
-windowTitle      = "$TM_DISPLAYNAME — Paper.js"
+windowTitle = "$TM_DISPLAYNAME — Paper.js"
+excludeDirectories = "{$excludeDirectories,dist,build/jsdoc-toolkit}"
 
 # JavaScript coding conventions
-showInvisibles	 = true
-softTabs         = false
-tabSize          = 4
-softWrap         = true
-wrapColumn       = 80
-
-# Hide some directories from search popups.
-myExtraExcludes = "files,dist,patches,build/jsdoc-toolkit"
-excludeInFileChooser  = "{$excludeInFileChooser,$myExtraExcludes}" 
-excludeInFolderSearch = "{$excludeInFolderSearch,$myExtraExcludes}" 
-excludeInBrowser      = "{$excludeInBrowser,$myExtraExcludes}" 
+showInvisibles = true
+softTabs = false
+tabSize = 4
+softWrap = false
+wrapColumn = 80

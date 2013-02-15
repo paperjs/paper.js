@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -22,7 +18,7 @@
  *
  * @private
  */
-var Style = Item.extend({
+var Style = Base.extend({
 	initialize: function(style) {
 		// If the passed style object is also a Style, clone its clonable
 		// fields rather than simply copying them.
@@ -80,7 +76,7 @@ var Style = Item.extend({
 					var children = this._getChildren();
 					// Clone color objects since they reference their owner
 					value = isColor ? Color.read(arguments, 0, 0, true) : value;
-					if (children) {
+					if (children && children.length > 0) {
 						for (var i = 0, l = children.length; i < l; i++)
 							children[i][styleKey][set](value);
 					} else {
@@ -107,7 +103,7 @@ var Style = Item.extend({
 						style;
 					// If this item has children, walk through all of them and
 					// see if they all have the same style.
-					if (!children)
+					if (!children || children.length === 0)
 						return this['_' + key];
 					for (var i = 0, l = children.length; i < l; i++) {
 						var childStyle = children[i][styleKey][get]();

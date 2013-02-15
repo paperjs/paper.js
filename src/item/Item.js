@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -24,18 +20,36 @@
  * is unique to their type, but share the underlying properties and functions
  * that they inherit from Item.
  */
-var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
+var Item = this.Item = Base.extend(Callback, {
+	statics: {
+		/**
+		 * Override Item.extend() to merge the subclass' _serializeFields with
+		 * the parent class' _serializeFields.
+		 */
+		extend: function(src) {
+			if (src._serializeFields)
+				src._serializeFields = Base.merge(
+						this.prototype._serializeFields, src._serializeFields);
+			return this.base.apply(this, arguments);
+		}
+	}
+}, /** @lends Item# */{
 	// Provide information about fields to be serialized, with their defaults
 	// that can be ommited.
 	_serializeFields: {
 		name: null,
 		children: [],
-		matrix: new Matrix()
+		matrix: new Matrix(),
+		locked: false,
+		visible: true,
+		blendMode: 'normal',
+		opacity: 1,
+		guide: false
 	},
 
 	initialize: function(point) {
 		// Define this Item's unique id.
-		this._id = ++Item._id;
+		this._id = ++Base._uid;
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project)
@@ -140,22 +154,25 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		return this;
 	},
 
-	_serialize: function() {
+	_serialize: function(options, dictionary) {
 		var props = {},
 			that = this;
 
-		function serialize(fields) {
+		function serialize(fields, compact) {
 			for (var key in fields) {
 				var value = that[key];
 				if (!Base.equals(value, fields[key]))
-					props[key] = Base.serialize(value);
+					props[key] = Base.serialize(value, options, compact,
+							dictionary);
 			}
 		}
 
 		// Serialize fields that this Item subclass defines first
-		serialize(this._serializeFields);
-		// Serialize style fields, but only if they differ from defaults
-		serialize(this._style._defaults);
+		serialize(this._serializeFields, true);
+		// Serialize style fields, but only if they differ from defaults.
+		// Use no compacting there, since colors always need their type
+		// identifiers.
+		serialize(this._style._defaults, false);
 		// There is no compact form for Item serialization, we always keep the
 		// type.
 		return [ this._type, props ];
@@ -252,7 +269,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		return this._name;
 	},
 
-	setName: function(name) {
+	setName: function(name, unique) {
 		// Note: Don't check if the name has changed and bail out if it has not,
 		// because setName is used internally also to update internal structures
 		// when an item is moved from one parent to another.
@@ -261,15 +278,20 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// parent's children object:
 		if (this._name)
 			this._removeFromNamed();
-		this._name = name || undefined;
 		if (name && this._parent) {
 			var children = this._parent._children,
-				namedChildren = this._parent._namedChildren;
+				namedChildren = this._parent._namedChildren,
+				orig = name,
+				i = 1;
+			// If unique is true, make sure we're not overriding other names
+			while (unique && children[name])
+				name = orig + ' ' + (i++);
 			(namedChildren[name] = namedChildren[name] || []).push(this);
 			children[name] = this;
 		}
+		this._name = name || undefined;
 		this._changed(/*#=*/ ChangeFlag.ATTRIBUTE);
-	},
+	}
 
 	/**
 	 * The path style of the item.
@@ -311,10 +333,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * var path2 = new Path.Circle(new Point(150, 50), 20);
 	 * path2.style = myStyle;
 	 */
-
-	statics: {
-		_id: 0
-	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	// Produce getter/setters for properties. We need setters because we want to
 	// call _changed() if a property was modified.
@@ -975,6 +993,16 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
+	 * Checks whether the item and all its parents are inserted into the DOM or
+	 * not.
+	 *
+	 * @return {Boolean} {@true if the item is inserted into the DOM}
+	 */
+	isInserted: function() {
+		return this._parent ? this._parent.isInserted() : false;
+	},
+
+	/**
 	 * Clones the item within the same project and places the copy above the
 	 * item.
 	 *
@@ -1022,10 +1050,10 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// Copy over the selection state, use setSelected so the item
 		// is also added to Project#selectedItems if it is selected.
 		copy.setSelected(this._selected);
-		// Only set name once the copy is moved, to avoid setting and unsettting
-		// name related structures.
+		// Clone the name too, but make sure we're not overriding the original
+		// in the same parent, by passing true for the unique parameter.
 		if (this._name)
-			copy.setName(this._name);
+			copy.setName(this._name, true);
 		return copy;
 	},
 
@@ -1074,13 +1102,14 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || 72) / 72,
 			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
-			ctx = canvas.getContext('2d'),
-			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
-		matrix.applyToContext(ctx);
-		// XXX: Decide how to handle _matrix
-		this.draw(ctx, {});
+			ctx = canvas.getContext('2d');
+		new Matrix().scale(scale).translate(-bounds.x, -bounds.y)
+			.applyToContext(ctx);
+		Item.draw(this, ctx, {});
 		var raster = new Raster(canvas);
 		raster.setBounds(bounds);
+		// NOTE: We don't need to release the canvas since it now belongs to the
+		// Raster!
 		return raster;
 	},
 
@@ -1120,6 +1149,15 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * hit.
 	 */
 	hitTest: function(point, options) {
+		function checkBounds(type, part) {
+			var pt = bounds['get' + part]();
+			// TODO: We need to transform the point back to the coordinate
+			// system of the DOM level on which the inquiry was started!
+			if (point.getDistance(pt) < options.tolerance)
+				return new HitResult(type, that,
+						{ name: Base.hyphenate(part), point: pt });
+		}
+
 		point = Point.read(arguments);
 		options = HitResult.getOptions(Base.read(arguments));
 		// Check if the point is withing roughBounds + tolerance, but only if
@@ -1142,14 +1180,6 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				points = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
 				'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'],
 				res;
-			function checkBounds(type, part) {
-				var pt = bounds['get' + part]();
-				// TODO: We need to transform the point back to the coordinate
-				// system of the DOM level on which the inquiry was started!
-				if (point.getDistance(pt) < options.tolerance)
-					return new HitResult(type, that,
-							{ name: Base.hyphenate(part), point: pt });
-			}
 			if (options.center && (res = checkBounds('center', 'Center')))
 				return res;
 			if (options.bounds) {
@@ -1199,9 +1229,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Number} index
 	 * @param {Item} item The item to be appended as a child
 	 */
-	insertChild: function(index, item) {
+	insertChild: function(index, item, _cloning) {
+		// _cloning parameter is not used here, but CompoundPath#insertChild()
+		// needs it.
 		if (this._children) {
-			item._remove(false, true);
+			item._remove(true);
 			Base.splice(this._children, [item], index, 0);
 			item._parent = this;
 			item._setProject(this._project);
@@ -1222,8 +1254,8 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @param {Item[]} items The items to be added as children
 	 */
-	addChildren: function(items) {
-		return this.insertChildren(this._children.length, items);
+	addChildren: function(items, _cloning) {
+		return this.insertChildren(this._children.length, items, _cloning);
 	},
 
 	/**
@@ -1234,14 +1266,14 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Number} index
 	 * @param {Item[]} items The items to be appended as children
 	 */
-	insertChildren: function(index, items) {
+	insertChildren: function(index, items, _cloning) {
 		// We need to clone items because it might be
 		// an Item#children array. Use Array.prototype.slice because
 		// in certain cases items is an arguments object
 		items = items && Array.prototype.slice.apply(items);
 		var i = index;
 		for (var j = 0, l = items && items.length; j < l; j++) {
-			if (this.insertChild(i, items[j]))
+			if (this.insertChild(i, items[j], _cloning))
 				i++;
 		}
 		return i != index;
@@ -1253,11 +1285,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Item} item The item above which it should be moved
 	 * @return {Boolean} {@true it was inserted}
 	 */
-	insertAbove: function(item) {
+	insertAbove: function(item, _cloning) {
 		var index = item._index;
 		if (item._parent == this._parent && index < this._index)
 			 index++;
-		return item._parent.insertChild(index, this);
+		return item._parent.insertChild(index, this, _cloning);
 	},
 
 	/**
@@ -1266,11 +1298,25 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Item} item The item above which it should be moved
 	 * @return {Boolean} {@true it was inserted}
 	 */
-	insertBelow: function(item) {
+	insertBelow: function(item, _cloning) {
 		var index = item._index;
 		if (item._parent == this._parent && index > this._index)
 			 index--;
-		return item._parent.insertChild(index, this);
+		return item._parent.insertChild(index, this, _cloning);
+	},
+
+	/**
+	 * Sends this item to the back of all other items within the same parent.
+	 */
+	sendToBack: function() {
+		return this._parent.insertChild(0, this);
+	},
+
+	/**
+	 * Brings this item to the front of all other items within the same parent.
+	 */
+	bringToFront: function() {
+		return this._parent.addChild(this);
 	},
 
 	/**
@@ -1348,10 +1394,8 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	* Removes the item from its parent's children list.
 	*/
-	_remove: function(deselect, notify) {
+	_remove: function(notify) {
 		if (this._parent) {
-			if (deselect)
-				this.setSelected(false);
 			if (this._name)
 				this._removeFromNamed();
 			if (this._index != null)
@@ -1372,7 +1416,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	* @return {Boolean} {@true the item was removed}
 	*/
 	remove: function() {
-		return this._remove(true, true);
+		return this._remove(true);
 	},
 
 	/**
@@ -1402,7 +1446,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// fine, since it only calls Base.splice() if #_index is set.
 		var removed = Base.splice(this._children, null, from, to - from);
 		for (var i = removed.length - 1; i >= 0; i--)
-			removed[i]._remove(true, false);
+			removed[i]._remove(false);
 		if (removed.length > 0)
 			this._changed(/*#=*/ Change.HIERARCHY);
 		return removed;
@@ -1918,7 +1962,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		// storing the actual location / transformation state.
 		if ((this.applyMatrix || arguments[1])
 				&& this._applyMatrix(this._matrix))
-			this._matrix.setIdentity();
+			this._matrix.reset();
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(/*#=*/ Change.GEOMETRY);
@@ -2449,18 +2493,40 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			cap = style._strokeCap,
 			limit = style._miterLimit,
 			fillColor = style._fillColor,
-			strokeColor = style._strokeColor;
-		if (width != null) ctx.lineWidth = width;
-		if (join) ctx.lineJoin = join;
-		if (cap) ctx.lineCap = cap;
-		if (limit) ctx.miterLimit = limit;
-		if (fillColor) ctx.fillStyle = fillColor.getCanvasStyle(ctx);
-		if (strokeColor) ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+			strokeColor = style._strokeColor,
+			dashArray = style._dashArray,
+			dashOffset = style._dashOffset;
+		if (width != null)
+			ctx.lineWidth = width;
+		if (join)
+			ctx.lineJoin = join;
+		if (cap)
+			ctx.lineCap = cap;
+		if (limit)
+			ctx.miterLimit = limit;
+		if (fillColor)
+			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+		if (strokeColor) {
+			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+			if (paper.support.nativeDash && dashArray && dashArray.length) {
+				if ('setLineDash' in ctx) {
+					ctx.setLineDash(dashArray);
+					ctx.lineDashOffset = dashOffset;
+				} else {
+					ctx.mozDash = dashArray;
+					ctx.mozDashOffset = dashOffset;
+				}
+			}
+		}
 		// If the item only defines a strokeColor or a fillColor, draw it
 		// directly with the globalAlpha set, otherwise we will do it later when
 		// we composite the temporary canvas.
 		if (!fillColor || !strokeColor)
 			ctx.globalAlpha = this._opacity;
+	},
+
+	drawSelected: function(ctx, matrix) {
+		// Do nothing
 	},
 
 	statics: {
@@ -2484,16 +2550,22 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		draw: function(item, ctx, param) {
 			if (!item._visible || item._opacity == 0)
 				return;
-			var tempCanvas, parentCtx,
-			 	itemOffset, prevOffset;
+			// Each time the project gets drawn, it's _drawCount is increased.
+			// Keep the _drawCount of drawn items in sync, so we have an easy
+			// way to filter out selected items that are not being drawn, e.g.
+			// because they are currently not part of the DOM.
+			item._drawCount = item._project._drawCount;
+			var parentCtx, itemOffset, prevOffset;
 			// If the item has a blendMode or is defining an opacity, draw it on
 			// a temporary canvas first and composite the canvas afterwards.
 			// Paths with an opacity < 1 that both define a fillColor
 			// and strokeColor also need to be drawn on a temporary canvas
 			// first, since otherwise their stroke is drawn half transparent
 			// over their fill.
+			// Exclude Raster items since they never draw a stroke and handle
+			// opacity by themselves (they also don't call _setStyles)
 			if (item._blendMode !== 'normal' || item._opacity < 1
-					&& (item._type !== 'path'
+					&& item._type !== 'raster' && (item._type !== 'path'
 						|| item.getFillColor() && item.getStrokeColor())) {
 				var bounds = item.getStrokeBounds();
 				if (!bounds.width || !bounds.height)
@@ -2501,21 +2573,20 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				// Store previous offset and save the parent context, so we can
 				// draw onto it later
 				prevOffset = param.offset;
-				parentCtx = ctx;
 				// Floor the offset and ceil the size, so we don't cut off any
 				// antialiased pixels when drawing onto the temporary canvas.
 				itemOffset = param.offset = bounds.getTopLeft().floor();
-				tempCanvas = CanvasProvider.getCanvas(
-						bounds.getSize().ceil().add(Size.create(1, 1)));
 				// Set ctx to the context of the temporary canvas,
 				// so we draw onto it, instead of the parentCtx
-				ctx = tempCanvas.getContext('2d');
+				parentCtx = ctx;
+				ctx = CanvasProvider.getContext(
+						bounds.getSize().ceil().add(Size.create(1, 1)));
 			}
 			if (!param.clipping)
 				ctx.save();
 			// Translate the context so the topLeft of the item is at (0, 0)
 			// on the temporary canvas.
-			if (tempCanvas)
+			if (parentCtx)
 				ctx.translate(-itemOffset.x, -itemOffset.y);
 			item._matrix.applyToContext(ctx);
 			item.draw(ctx, param);
@@ -2523,7 +2594,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				ctx.restore();
 			// If we created a temporary canvas before, composite it onto the
 			// parent canvas:
-			if (tempCanvas) {
+			if (parentCtx) {
 				// Restore previous offset.
 				param.offset = prevOffset;
 				// If the item has a blendMode, use BlendMode#process to
@@ -2538,11 +2609,11 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 				// the temporary canvas on the parent canvas.
 					parentCtx.save();
 					parentCtx.globalAlpha = item._opacity;
-					parentCtx.drawImage(tempCanvas, itemOffset.x, itemOffset.y);
+					parentCtx.drawImage(ctx.canvas, itemOffset.x, itemOffset.y);
 					parentCtx.restore();
 				}
-				// Return the temporary canvas, so it can be reused
-				CanvasProvider.returnCanvas(tempCanvas);
+				// Return the temporary context, so it can be reused
+				CanvasProvider.release(ctx);
 			}
 		}
 	}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Text Testing</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas1">
+		var text = new PointText(new Point(50, 100));
+		text.fillColor = 'black';
+		text.content = 'This is a test';
+		
+		var text = new PointText(new Point(100, 150));
+		text.fillColor = 'red';
+		text.strokeWidth = '4';
+		text.content = 'This is also a test';
+		/*
+		text.scale(5);
+		text.translate(15, 15);
+		text.rotate(20);
+		text.shear(20, 5);
+		*/
+		text.rotate(45);
+		text.shear(.85, .15);
+		text.scale(.85, 2);
+
+		window._json = project.toJson();
+		console.log(window._json);
+	</script>
+	<script type="text/paperscript" canvas="canvas2">
+		Base.fromJson(window._json);
+	</script>
+</head>
+<body>
+	<canvas id="canvas1" width="500" height="500"></canvas>
+	<canvas id="canvas2" width="500" height="500"></canvas>
+</body>
+</html>

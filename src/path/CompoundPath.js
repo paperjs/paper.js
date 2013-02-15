@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -41,28 +37,27 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	 * // Move the inner circle 5pt to the right:
 	 * compoundPath.children[1].position.x += 5;
 	 */
-	initialize: function(paths) {
+	initialize: function(arg) {
 		this.base();
-		// Allow CompoundPath to have children and named children.
+		// CompoundPath has children and supports named children.
 		this._children = [];
 		this._namedChildren = {};
-		// Do not reassign to paths, since arguments would get modified, which
-		// we potentially use as array, depending on what is passed.
-		this.addChildren(Array.isArray(paths) ? paths : arguments);
+		if (!this._setProperties(arg))
+			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
 	insertChild: function(index, item, _cloning) {
 		// Only allow the insertion of paths
 		if (item._type !== 'path')
 			return null;
-		var res = this.base(index, item);
+		item = this.base(index, item);
 		// All children except for the bottom one (first one in list) are set
 		// to anti-clockwise orientation, so that they appear as holes, but
 		// only if their orientation was not already specified before
 		// (= _clockwise is defined).
-		if (!_cloning && res && item._clockwise === undefined)
+		if (!_cloning && item && item._clockwise === undefined)
 			item.setClockwise(item._index == 0);
-		return res;
+		return item;
 	},
 
 	/**

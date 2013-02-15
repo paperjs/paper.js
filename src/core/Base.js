@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -50,13 +46,18 @@ this.Base = Base.inject(/** @lends Base# */{
 		}, []).join(', ') + ' }';
 	},
 
-	toJson: function() {
-		return Base.toJson(this);
+	toJson: function(options) {
+		return Base.toJson(this, options);
 	},
 
 	statics: /** @lends Base */{
 
 		_types: {},
+
+		/**
+		 * A uniqued id number, which when consumed needs to be increased by one
+		 */
+		_uid: 0,
 
 		extend: function(src) {
 			// Override Base.extend() with a version that registers classes that
@@ -73,12 +74,18 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * arrays and properties of objects.
 		 */ 
 		equals: function(obj1, obj2) {
+			function checkKeys(o1, o2) {
+				for (var i in o1)
+					if (o1.hasOwnProperty(i) && typeof o2[i] === 'undefined')
+						return false;
+				return true;
+			}
 			if (obj1 == obj2)
 				return true;
 			// Call #equals() on both obj1 and obj2
-			if (obj1 != null && obj1.equals)
+			if (obj1 && obj1.equals)
 				return obj1.equals(obj2);
-			if (obj2 != null && obj2.equals)
+			if (obj2 && obj2.equals)
 				return obj2.equals(obj1);
 			// Compare arrays
 			if (Array.isArray(obj1) && Array.isArray(obj2)) {
@@ -91,13 +98,8 @@ this.Base = Base.inject(/** @lends Base# */{
 				return true;
 			}
 			// Compare objects
-			if (typeof obj1 === 'object' && typeof obj2 === 'object') {
-				function checkKeys(o1, o2) {
-					for (var i in o1)
-						if (o1.hasOwnProperty(i) && typeof o2[i] === 'undefined')
-							return false;
-					return true;
-				}
+			if (obj1 && typeof obj1 === 'object'
+					&& obj2 && typeof obj2 === 'object') {
 				if (!checkKeys(obj1, obj2) || !checkKeys(obj2, obj1))
 					return false;
 				for (var i in obj1) {
@@ -245,27 +247,61 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * Serializes the passed object into a format that can be passed to 
 		 * JSON.stringify() for JSON serialization.
 		 */
-		serialize: function(obj, compact) {
-			if (obj && obj._serialize) {
-				var res = obj._serialize();
-				if (!compact && res[0] !== obj._type)
-					res.unshift(obj._type);
-				return res;
+		serialize: function(obj, options, compact, dictionary) {
+			options = options || {};
+			var root = !dictionary,
+				res;
+			if (root) {
+				// Create a simple dictionary object that handles all the
+				// storing and retrieving of dictionary definitions and
+				// references, e.g. for symbols and gradients. Items that want
+				// to support this need to define globally unique _id attribute. 
+				dictionary = {
+					length: 0,
+					definitions: {},
+					references: {},
+					add: function(item, create) {
+						// See if we have reference entry with the given id
+						// already. If not, call create on the item to allow it
+						// to create the definition, then store the reference
+						// to it and return it.
+						var id = '#' + item._id,
+							ref = this.references[id];
+						if (!ref) {
+							this.length++;
+							this.definitions[id] = create.call(item);
+							ref = this.references[id] = [id];
+						}
+						return ref;
+					}
+				};
 			}
-			if (typeof obj !== 'object')
-				return obj;
-			var res = obj;
-			if (Array.isArray(obj)) {
+			if (obj && obj._serialize) {
+				res = obj._serialize(options, dictionary);
+				// If we don't serialize to compact form (meaning no type
+				// identifier), see if _serialize didn't already add the type,
+				// e.g. for types that do not support compact form.
+				if (obj._type && !compact && res[0] !== obj._type)
+					res.unshift(obj._type);
+			} else if (Array.isArray(obj)) {
 				res = [];
 				for (var i = 0, l = obj.length; i < l; i++)
-					res[i] = Base.serialize(obj[i], true);
+					res[i] = Base.serialize(obj[i], options, compact,
+							dictionary);
 			} else if (Base.isPlainObject(obj)) {
 				res = {};
 				for (var i in obj)
 					if (obj.hasOwnProperty(i))
-						res[i] = Base.serialize(obj[i], true);
+						res[i] = Base.serialize(obj[i], options, compact,
+								dictionary);
+			} else if (typeof obj === 'number') {
+				res = Base.formatFloat(obj, options.precision);
+			} else {
+				res = obj;
 			}
-			return res;
+			return root && dictionary.length > 0
+					? [['dictionary', dictionary.definitions], res]
+					: res;
 		},
 
 		/**
@@ -276,18 +312,34 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * Any other value is passed on unmodified.
 		 * The passed data is recoursively traversed and converted, leaves first
 		 */
-		deserialize: function(obj) {
+		deserialize: function(obj, data) {
 			var res = obj;
+			// A data side-car to deserialize that can hold any kind of 'global'
+			// data across a deserialization. It's currently just used to hold
+			// dictionary definitions.
+			data = data || {};
 			if (Array.isArray(obj)) {
 				// See if it's a serialized type. If so, the rest of the array
 				// are the arguments to #initialize(). Either way, we simply
 				// deserialize all elements of the array.
-				var type = Base._types[obj[0]];
+				var type = obj[0],
+					// Handle stored dictionary specially, since we need to
+					// keep is a lookup table to retrieve referenced items from.
+					isDictionary = type === 'dictionary';
+				if (!isDictionary) {
+					// First see if this is perhaps a dictionary reference, and
+					// if so return its definition instead.
+					if (data.dictionary && obj.length == 1 && /^#/.test(type))
+						return data.dictionary[type];
+					type = Base._types[type];
+				}
 				res = [];
 				// Skip first type entry for arguments
 				for (var i = type ? 1 : 0, l = obj.length; i < l; i++)
-					res.push(Base.deserialize(obj[i]));
-				if (type) {
+					res.push(Base.deserialize(obj[i], data));
+				if (isDictionary) {
+					data.dictionary = res[0];
+				} else if (type) {
 					// Create serialized type and pass collected arguments to
 					// #initialize().
 					var args = res;
@@ -297,13 +349,13 @@ this.Base = Base.inject(/** @lends Base# */{
 			} else if (Base.isPlainObject(obj)) {
 				res = {};
 				for (var key in obj)
-					res[key] = Base.deserialize(obj[key]);
+					res[key] = Base.deserialize(obj[key], data);
 			}
 			return res;
 		},
 
-		toJson: function(obj) {
-			return JSON.stringify(Base.serialize(obj));
+		toJson: function(obj, options) {
+			return JSON.stringify(Base.serialize(obj, options));
 		},
 
 		fromJson: function(json) {
@@ -384,9 +436,11 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * up to the amount of fractional digits.
 		 *
 		 * @param {Number} num the number to be converted to a string
+		 * @param {Number} [precision=5] the amount of fractional digits.
 		 */
-		formatFloat: function(num) {
-			return (Math.round(num * 100000) / 100000).toString();
+		formatFloat: function(num, precision) {
+			precision = precision ? Math.pow(10, precision) : 100000;
+			return (Math.round(num * precision) / precision);
 		},
 
 		toFloat: function(str) {

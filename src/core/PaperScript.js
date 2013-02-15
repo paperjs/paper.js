@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -308,7 +304,14 @@ var PaperScript = this.PaperScript = new function() {
 		}
 	}
 
-	DomEvent.add(window, { load: load });
+	// Catch cases where paper.js is loaded after the browser event has already
+	// occurred.
+	if (document.readyState === 'complete') {
+		// Handle it asynchronously
+		setTimeout(load);
+	} else {
+		DomEvent.add(window, { load: load });
+	}
 
 	// Produces helpers to e.g. check for both 'canvas' and 'data-paper-canvas'
 	// attributes:
@@ -336,6 +339,3 @@ var PaperScript = this.PaperScript = new function() {
 
 /*#*/ } // !options.browser
 };
-
-// Export load directly:
-this.load = PaperScript.load;

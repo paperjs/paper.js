@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -23,6 +19,9 @@
  */
 var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	_type: 'raster',
+	_serializeFields: {
+		source: null
+	},
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
 	_boundsGetter: 'getBounds',
@@ -46,6 +45,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			if (arg0.getContext) {
 				this.setCanvas(arg0);
 			} else if (typeof arg0 === 'string') {
+				// Both data-urls and normal urls are supported here!
 				this.setSource(arg0);
 			} else {
 				this.setImage(arg0);
@@ -54,14 +54,14 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	clone: function() {
-		var image = this._image;
-		if (!image) {
+		var element = this._image;
+		if (!element) {
 			// If the Raster contains a Canvas object, we need to create
 			// a new one and draw this raster's canvas on it.
-			image = CanvasProvider.getCanvas(this._size);
-			image.getContext('2d').drawImage(this._canvas, 0, 0);
+			element = CanvasProvider.getCanvas(this._size);
+			element.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
-		var copy = new Raster(image);
+		var copy = new Raster(element);
 		return this._clone(copy);
 	},
 
@@ -79,11 +79,12 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		var size = Size.read(arguments);
 		if (!this._size.equals(size)) {
 			// Get reference to image before changing canvas
-			var image = this.getImage();
+			var element = this.getElement();
 			// Setting canvas internally sets _size
 			this.setCanvas(CanvasProvider.getCanvas(size));
-			// Draw image back onto new canvas
-			this.getContext(true).drawImage(image, 0, 0, size.width, size.height);
+			// Draw element back onto new canvas
+			this.getContext(true).drawImage(element, 0, 0,
+					size.width, size.height);
 		}
 	},
 
@@ -134,14 +135,20 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @type Context
 	 * @bean
 	 */
-	getContext: function(/* notifyChange */) {
+	getContext: function(/* modify */) {
 		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
 		// Support a hidden parameter that indicates if the context will be used
 		// to modify the Raster object. We can notify such changes ahead since
 		// they are only used afterwards for redrawing.
-		if (arguments[0])
+		if (arguments[0]) {
+			// Also set _image to null since the Raster stops representing it.
+			// NOTE: This should theoretically be in our own _changed() handler
+			// for ChangeFlag.PIXELS, but since it's only happening in one place
+			// this is fine:
+			this._image = null;
 			this._changed(/*#=*/ Change.PIXELS);
+		}
 		return this._context;
 	},
 
@@ -151,16 +158,24 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 
 	getCanvas: function() {
 		if (!this._canvas) {
-			this._canvas = CanvasProvider.getCanvas(this._size);
-			if (this._image)
-				this.getContext(true).drawImage(this._image, 0, 0);
+			var ctx = CanvasProvider.getContext(this._size);
+			// Since drawimage images into canvases might fail based on security
+			// policies, wrap the call in try-catch and only set _canvas if we
+			// succeeded.
+			try {
+				if (this._image)
+					ctx.drawImage(this._image, 0, 0);
+				this._canvas = ctx.canvas;
+			} catch (e) {
+				CanvasProvider.release(ctx);
+			}
 		}
 		return this._canvas;
 	},
 
 	setCanvas: function(canvas) {
 		if (this._canvas)
-			CanvasProvider.returnCanvas(this._canvas);
+			CanvasProvider.release(this._canvas);
 		this._canvas = canvas;
 		this._size = Size.create(canvas.width, canvas.height);
 		this._image = null;
@@ -169,18 +184,18 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	/**
-	 * The HTMLImageElement or Canvas of the raster.
+	 * The HTMLImageElement of the raster, if one is associated.
 	 *
 	 * @type HTMLImageElement|Canvas
 	 * @bean
 	 */
 	getImage: function() {
-		return this._image || this.getCanvas();
+		return this._image;
 	},
 
 	setImage: function(image) {
 		if (this._canvas)
-			CanvasProvider.returnCanvas(this._canvas);
+			CanvasProvider.release(this._canvas);
 		this._image = image;
 /*#*/ if (options.browser) {
 		this._size = Size.create(image.naturalWidth, image.naturalHeight);
@@ -193,25 +208,35 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	getSource: function() {
-		return this.getImage().src;
+		return this._image && this._image.src || this.toDataURL();
 	},
 
+	// DOCS: Document Raster#setSource
+	// NOTE: Both data-urls and normal urls are supported in setSource!
 	setSource: function(src) {
 /*#*/ if (options.browser) {
 		var that = this,
 			// src can be an URL or a DOM ID to load the image from
 			image = document.getElementById(src) || new Image();
+		function loaded() {
+			that.fire('load');
+			if (that._project.view)
+				that._project.view.draw(true);
+		}
 		// Trigger the onLoad event on the image once it's loaded
 		DomEvent.add(image, {
 			load: function() {
 				that.setImage(image);
-				that.fire('load');
-				if (that._project.view)
-					that._project.view.draw(true);
+				loaded();
 			}
 		});
-		if (!image.src)
+		if (image.width && image.height) {
+			// Fire load event delayed, so behavior is the same as when it's 
+			// actually loaded and we give the code time to install event
+			setTimeout(loaded, 0);
+		} else if (!image.src) {
 			image.src = src;
+		}
 /*#*/ } else if (options.server) {
 		// If we're running on the server and it's a string,
 		// load it from disk:
@@ -220,6 +245,11 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		image.src = fs.readFileSync(src);
 /*#*/ } // options.server
 		this.setImage(image);
+	},
+
+	// DOCS: document Raster#getElement
+	getElement: function() {
+		return this._canvas || this._image;
 	},
 
 	// DOCS: document Raster#getSubImage
@@ -231,10 +261,20 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 */
 	getSubImage: function(rect) {
 		rect = Rectangle.read(arguments);
-		var canvas = CanvasProvider.getCanvas(rect.getSize());
-		canvas.getContext('2d').drawImage(this.getCanvas(), rect.x, rect.y,
+		var ctx = CanvasProvider.getContext(rect.getSize());
+		ctx.drawImage(this.getCanvas(), rect.x, rect.y,
 				canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
-		return canvas;
+		return ctx.canvas;
+	},
+
+	toDataURL: function() {
+		// See if the linked image is base64 encoded already, if so reuse it,
+		// otherwise try using canvas.toDataUrl()
+		var src = this._image && this._image.src;
+		if (/^data:/.test(src)) 
+			return src;
+		var canvas = this.getCanvas();
+		return canvas ? canvas.toDataURL() : null;
 	},
 
 	/**
@@ -283,11 +323,11 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		// since it's only 32 x 32 pixels.
 		var ctx = Raster._sampleContext;
 		if (!ctx) {
-			ctx = Raster._sampleContext = CanvasProvider.getCanvas(
-					new Size(sampleSize)).getContext('2d');
+			ctx = Raster._sampleContext = CanvasProvider.getContext(
+					new Size(sampleSize));
 		} else {
 			// Clear the sample canvas:
-			ctx.clearRect(0, 0, sampleSize, sampleSize);
+			ctx.clearRect(0, 0, sampleSize + 1, sampleSize + 1);
 		}
 		ctx.save();
 		// Scale the context so that the bounds ends up at the given sample size
@@ -298,7 +338,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			path.draw(ctx, { clip: true });
 		// Now draw the image clipped into it.
 		this._matrix.applyToContext(ctx);
-		ctx.drawImage(this._canvas || this._image,
+		ctx.drawImage(this.getElement(),
 				-this._size.width / 2, -this._size.height / 2);
 		ctx.restore();
 		// Get pixel data from the context and calculate the average color value
@@ -377,13 +417,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		ctx.putImageData(imageData, _point.x, _point.y);
 	},
 
-	// DOCS: document Raster#createData
+	// DOCS: document Raster#createImageData
 	/**
 	 * {@grouptitle Image Data}
 	 * @param {Size} size
 	 * @return {ImageData}
 	 */
-	createData: function(size) {
+	createImageData: function(size) {
 		size = Size.read(arguments);
 		return this.getContext().createImageData(size.width, size.height);
 	},
@@ -394,7 +434,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @param {Rectangle} rect
 	 * @return {ImageData}
 	 */
-	getData: function(rect) {
+	getImageData: function(rect) {
 		rect = Rectangle.read(arguments);
 		if (rect.isEmpty())
 			rect = new Rectangle(this.getSize());
@@ -402,13 +442,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 				rect.width, rect.height);
 	},
 
-	// DOCS: document Raster#setData
+	// DOCS: document Raster#setImageData
 	/**
 	 * @param {ImageData} data
 	 * @param {Point} point
 	 * @return {ImageData}
 	 */
-	setData: function(data, point) {
+	setImageData: function(data, point) {
 		point = Point.read(arguments, 1);
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
@@ -434,8 +474,14 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	},
 
 	draw: function(ctx, param) {
-		ctx.drawImage(this._canvas || this._image,
-				-this._size.width / 2, -this._size.height / 2);
+		var element = this.getElement();
+		if (element) {
+			// Handle opacity for Rasters separately from the rest, since
+			// Rasters never draw a stroke. See Item.draw().
+			ctx.globalAlpha = this._opacity;
+			ctx.drawImage(element,
+					-this._size.width / 2, -this._size.height / 2);
+		}
 	},
 
 	drawSelected: function(ctx, matrix) {

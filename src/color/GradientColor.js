@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -20,6 +16,7 @@
  * @class The GradientColor object.
  */
 var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# */{
+	_type: 'gradientcolor',
 
 	/**
 	 * Creates a gradient color object.
@@ -83,6 +80,8 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * path.fillColor = gradientColor;
 	 */
 	initialize: function(gradient, origin, destination, hilite) {
+		// Define this GradientColor's unique id.
+		this._id = ++Base._uid;
 		this.gradient = gradient || new Gradient();
 		this.gradient._addOwner(this);
 		this.setOrigin(origin);
@@ -97,6 +96,13 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	clone: function() {
 		return new GradientColor(this.gradient, this._origin, this._destination,
 				this._hilite);
+	},
+
+	_serialize: function(options, dictionary) {
+		var values = [ this.gradient, this._origin, this._destination ];
+		if (this._hilite)
+			values.push(this._hilite);
+		return Base.serialize(values, options, true, dictionary);
 	},
 
 	/**

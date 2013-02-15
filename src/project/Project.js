@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -60,9 +56,19 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		this._currentStyle = new PathStyle();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
+		// See Item.draw() for an explanation of _drawCount
+		this._drawCount = 0;
 		// Change tracking, not in use for now. Activate once required:
 		// this._changes = [];
 		// this._changesById = {};
+	},
+
+	_serialize: function(options, dictionary) {
+		// Just serialize layers to an array for now, they will be unserialized
+		// into the active project automatically. We might want to add proper
+		// project serialization later, but deserialization of a layers array
+		// will always work.
+		return Base.serialize(this.layers, options, false, dictionary);
 	},
 
 	_needsRedraw: function() {
@@ -153,9 +159,11 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		// TODO: The order of these items should be that of their
 		// drawing order.
 		var items = [];
-		Base.each(this._selectedItems, function(item) {
-			items.push(item);
-		});
+		for (var id in this._selectedItems) {
+			var item = this._selectedItems[id];
+			if (item._drawCount === this._drawCount)
+				items.push(item);
+		}
 		return items;
 	},
 
@@ -165,6 +173,11 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		if (item._selected) {
 			this._selectedItemCount++;
 			this._selectedItems[item._id] = item;
+			// Make sure the item is considered selected right away if it is
+			// part of the DOM, even before it's getting drawn for the first
+			// time.
+			if (item.isInserted())
+				item._drawCount = this._drawCount;
 		} else {
 			this._selectedItemCount--;
 			delete this._selectedItems[item._id];
@@ -184,7 +197,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 	deselectAll: function() {
 		for (var i in this._selectedItems)
-			this._selectedItems[i].setSelected(false);
+			this._selectedItems[i].item.setSelected(false);
 	},
 
 	/**
@@ -260,6 +273,35 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 
 	draw: function(ctx, matrix) {
+		// Create a local lookup table for hierarchically concatenated matrices
+		// by item id, to speed up drawing by eliminating repeated concatenation
+		// of parent's matrices through caching.
+		var matrices = {};
+		// Description of the paramters to getGlobalMatrix():
+		// mx is the container for the final concatenated matrix, passed to
+		// getGlobalMatrix() on the initial call.
+		// cached defines wether the result of the concatenation should be
+		// cached, only used for parents of items that this is called for.
+		function getGlobalMatrix(item, mx, cached) {
+			var cache = cached && matrices[item._id];
+			// Found a cached version? Return a clone of it.
+			if (cache)
+				return cache.clone();
+			// Get concatenated matrix from all the parents, using
+			// local caching (passing true for cached):
+			if (item._parent)
+				mx = getGlobalMatrix(item._parent, mx, true);
+			// No need to concatenate if it's the identity matrix
+			if (!item._matrix.isIdentity())
+				mx.concatenate(item._matrix);
+			// If the result needs to be cached, create a copy since matrix
+			// might be further modified through recursive calls
+			if (cached)
+				matrices[item._id] = mx.clone();
+			return mx;
+		}
+
+		this._drawCount++;
 		ctx.save();
 		if (!matrix.isIdentity())
 			matrix.applyToContext(ctx);
@@ -274,36 +316,10 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.strokeWidth = 1;
 			// TODO: use Layer#color
 			ctx.strokeStyle = ctx.fillStyle = '#009dec';
-			// Create a local lookup table for hierarchically concatenated
-			// matrices by item id, to speed up drawing by eliminating repeated
-			// concatenation of parent's matrices through caching.
-			var matrices = {};
-			// Description of the paramters to getGlobalMatrix():
-			// mx is the container for the final concatenated matrix, passed
-			// to getGlobalMatrix() on the initial call.
-			// cached defines wether the result of the concatenation should be
-			// cached, only used for parents of items that this is called for.
-			function getGlobalMatrix(item, mx, cached) {
-				var cache = cached && matrices[item._id];
-				// Found a cached version? Return a clone of it.
-				if (cache)
-					return cache.clone();
-				// Get concatenated matrix from all the parents, using
-				// local caching (passing true for cached):
-				if (item._parent)
-					mx = getGlobalMatrix(item._parent, mx, true);
-				// No need to concatenate if it's the identity matrix
-				if (!item._matrix.isIdentity())
-					mx.concatenate(item._matrix);
-				// If the result needs to be cached, create a copy since matrix
-				// might be further modified through recursive calls
-				if (cached)
-					matrices[item._id] = mx.clone();
-				return mx;
-			}
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id];
-				item.drawSelected(ctx, getGlobalMatrix(item, matrix.clone()));
+				if (item._drawCount === this._drawCount)
+					item.drawSelected(ctx, getGlobalMatrix(item, matrix.clone()));
 			}
 			ctx.restore();
 		}

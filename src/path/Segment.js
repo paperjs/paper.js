@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -57,6 +53,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		var count = arguments.length,
 			createPoint = SegmentPoint.create,
 			point, handleIn, handleOut;
+		// TODO: Use Point.read or Point.readNamed to read these?
 		if (count == 0) {
 			// Nothing
 		} else if (count == 1) {
@@ -88,10 +85,10 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 		createPoint(this, '_handleOut', handleOut);
 	},
 
-	_serialize: function() {
+	_serialize: function(options) {
 		return Base.serialize(this._handleIn.isZero() && this._handleOut.isZero()
 				? this._point
-				: [this._point, this._handleIn, this._handleOut], true);
+				: [this._point, this._handleIn, this._handleOut], options, true);
 	},
 
 	_changed: function(point) {
@@ -424,5 +421,12 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 			}
 		}
 		return coords;
+		// NOTE: There is a very strange bug in JavaScriptCore that causes
+		// segments to receive wrong handleIn values after the transformation of
+		// a very large amount of segments.
+		// For some strange reason, this unreachable stamement causes
+		// JavaScriptCore to optimize code differently and not cause the error.
+		// Note that there is no nop() function...
+		nop().nop();
 	}
 });

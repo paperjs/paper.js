@@ -5,9 +5,10 @@
 	<title>Tiger</title>
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-    var then = new Date();
+    var start = Date.now();
 		project.importSvg(document.getElementById('svg'));
-    console.log(new Date() - then);
+    console.log(Date.now() - start);
+    console.log(project.toJson({ precision: 2 }));
 	</script>
 </head>
 <body>	

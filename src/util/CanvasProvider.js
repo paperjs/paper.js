@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -14,14 +10,13 @@
  * All rights reserved.
  */
 
-// TODO: It might be better to make a ContextProvider class, since you
-// can always find the canvas through context.canvas. This saves code and
-// speed by not having to do canvas.getContext('2d')
 // TODO: Run through the canvas array to find a canvas with the requested
 // width / height, so we don't need to resize it?
 var CanvasProvider = {
 	canvases: [],
-	getCanvas: function(size) {
+
+	getCanvas: function(width, height) {
+		var size = height === undefined ? width : Size.create(width, height);
 		if (this.canvases.length) {
 			var canvas = this.canvases.pop();
 			// If they are not the same size, we don't need to clear them
@@ -48,7 +43,12 @@ var CanvasProvider = {
 		}
 	},
 
-	returnCanvas: function(canvas) {
-		this.canvases.push(canvas);
-	}
+	getContext: function(width, height) {
+		return this.getCanvas(width, height).getContext('2d');
+	},
+
+	 // release can receive either a canvas or a context.
+	release: function(obj) {
+		this.canvases.push(obj.canvas ? obj.canvas : obj);
+	},
 };

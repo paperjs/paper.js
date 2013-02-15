@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -63,6 +59,15 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		if (script)
 			script.setAttribute('id', this._id);
 		PaperScope._scopes[this._id] = this;
+		if (!this.support) {
+			// Set up paper.support, as an object containing properties that
+			// describe the support of various features.
+			var ctx = CanvasProvider.getContext(1, 1);
+			PaperScope.prototype.support = {
+				nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx
+			};
+			CanvasProvider.release(ctx);
+		}
 	},
 
 	/**
@@ -144,7 +149,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		// Do not use Base.each, since we also want to enumerate over
 		// fields on PaperScope.prototype, e.g. all classes
 		for (var key in this) {
-			if (!/^(version|_id|load)/.test(key) && !(key in scope))
+			if (!/^(version|_id)/.test(key) && !(key in scope))
 				scope[key] = this[key];
 		}
 	},

@@ -1,19 +1,13 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
  * All rights reserved.
- *
- * The base for this code was donated by Stetson-Team-Alpha.
  */
 
 /**
@@ -25,12 +19,12 @@ new function() {
 	// objects, dealing with baseVal, and item lists.
 	// index is option, and if passed, causes a lookup in a list.
 
-	function getValue(svg, key, allowNull, index) {
-		// svg[key].baseVal will even be set if the svg did not define the
+	function getValue(node, key, allowNull, index) {
+		// node[key].baseVal will even be set if the node did not define the
 		// attribute, so if allowNull is true, we need to also check
-		// svg.getAttribute(key) == null
-		var base = (!allowNull || svg.getAttribute(key) != null)
-				&& svg[key] && svg[key].baseVal;
+		// node.getAttribute(key) == null
+		var base = (!allowNull || node.getAttribute(key) != null)
+				&& node[key] && node[key].baseVal;
 		// Note: String values are unfortunately not stored in base.value, but
 		// in base directly, so we need to check both, also on item lists, using
 		// Base.pick(base.value, base)
@@ -43,16 +37,16 @@ new function() {
 				: null;
 	}
 
-	function getPoint(svg, x, y, allowNull, index) {
-		x = getValue(svg, x, allowNull, index);
-		y = getValue(svg, y, allowNull, index);
+	function getPoint(node, x, y, allowNull, index) {
+		x = getValue(node, x, allowNull, index);
+		y = getValue(node, y, allowNull, index);
 		return allowNull && x == null && y == null ? null
 				: Point.create(x || 0, y || 0);
 	}
 
-	function getSize(svg, w, h, allowNull, index) {
-		w = getValue(svg, w, allowNull, index);
-		h = getValue(svg, h, allowNull, index);
+	function getSize(node, w, h, allowNull, index) {
+		w = getValue(node, w, allowNull, index);
+		h = getValue(node, h, allowNull, index);
 		return allowNull && w == null && h == null ? null
 				: Size.create(w || 0, h || 0);
 	}
@@ -64,7 +58,7 @@ new function() {
 				: type === 'number'
 					? Base.toFloat(value)
 					: type === 'array'
-						? value.split(/[\s,]+/g).map(parseFloat)
+						? value ? value.split(/[\s,]+/g).map(parseFloat) : []
 						: type === 'color' && getDefinition(value)
 							|| value;
 	}
@@ -76,11 +70,19 @@ new function() {
 
 	// Define importer functions for various SVG node types
 
-	function importGroup(svg, type) {
-		var nodes = svg.childNodes,
+	function importGroup(node, type) {
+		var nodes = node.childNodes,
 			compound = type === 'clippath',
-			group = compound ? new CompoundPath() : new Group();
-
+			group = compound ? new CompoundPath() : new Group(),
+			project = group._project,
+			currentStyle = project._currentStyle;
+		// Style on groups needs to be handled differently than all other items:
+		// We first apply the style to the group, then use it as the project's
+		// currentStyle, so it is used as a default for the creation of all
+		// nested items. importSvg then needs to check for groups and avoid
+		// calling applyAttributes() again.
+		applyAttributes(group, node);
+		project._currentStyle = group._style.clone();
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var child = nodes[i],
 				item;
@@ -95,7 +97,8 @@ new function() {
 				}
 			}
 		}
-
+		// Restore currentStyle
+		project._currentStyle = currentStyle;
 		if (type == 'defs') {
 			// I don't think we need to add defs to the DOM. But we might want
 			// to use Symbols for them?
@@ -105,9 +108,9 @@ new function() {
 		return group;
 	}
 
-	function importPoly(svg, type) {
+	function importPoly(node, type) {
 		var path = new Path(),
-			points = svg.points;
+			points = node.points;
 		path.moveTo(points.getItem(0));
 		for (var i = 1, l = points.numberOfItems; i < l; i++)
 			path.lineTo(points.getItem(i));
@@ -116,9 +119,9 @@ new function() {
 		return path;
 	}
 
-	function importPath(svg) {
+	function importPath(node) {
 		var path = new Path(),
-			list = svg.pathSegList,
+			list = node.pathSegList,
 			compoundPath, lastPoint;
 		for (var i = 0, l = list.numberOfItems; i < l; i++) {
 			var segment = list.getItem(i),
@@ -219,37 +222,31 @@ new function() {
 		return compoundPath || path;
 	}
 
-	function importGradient(svg, type) {
-		var nodes = svg.childNodes,
+	function importGradient(node, type) {
+		var nodes = node.childNodes,
 			stops = [];
 		for (var i = 0, l = nodes.length; i < l; i++) {
-			var node = nodes[i];
-			if (node.nodeType == 1)
-				stops.push(applyAttributes(new GradientStop(), node));
+			var child = nodes[i];
+			if (child.nodeType == 1)
+				stops.push(applyAttributes(new GradientStop(), child));
 		}
 		var gradient = new Gradient(stops),
 			isRadial = type == 'radialgradient',
 			origin, destination, highlight;
 		if (isRadial) {
 			gradient.type = 'radial';
-			origin = getPoint(svg, 'cx', 'cy');
-			destination = origin.add(getValue(svg, 'r'), 0);
-			highlight = getPoint(svg, 'fx', 'fy', true);
+			origin = getPoint(node, 'cx', 'cy');
+			destination = origin.add(getValue(node, 'r'), 0);
+			highlight = getPoint(node, 'fx', 'fy', true);
 		} else {
-			origin = getPoint(svg, 'x1', 'y1');
-			destination = getPoint(svg, 'x2', 'y2');
+			origin = getPoint(node, 'x1', 'y1');
+			destination = getPoint(node, 'x2', 'y2');
 		}
 		// We don't return the GradientColor, since we only need a reference to
 		// it in definitions, which is created in applyAttributes()
 		applyAttributes(
-			new GradientColor(gradient, origin, destination, highlight), svg);
+			new GradientColor(gradient, origin, destination, highlight), node);
 		return null;
-	}
-
-	var definitions = {};
-	function getDefinition(value) {
-		var match = value.match(/\(#([^)']+)/);
-        return match && definitions[match[1]];
 	}
 
 	var importers = {
@@ -270,32 +267,32 @@ new function() {
 		radialgradient: importGradient,
 
 		// http://www.w3.org/TR/SVG/struct.html#ImageElement
-		image: function (svg) {
-			var raster = new Raster(getValue(svg, 'href'));
+		image: function (node) {
+			var raster = new Raster(getValue(node, 'href'));
 			raster.attach('load', function() {
-				var size = getSize(svg, 'width', 'height');
+				var size = getSize(node, 'width', 'height');
 				this.setSize(size);
 				// Since x and y start from the top left of an image, add
 				// half of its size:
-				this.translate(getPoint(svg, 'x', 'y').add(size.divide(2)));
+				this.translate(getPoint(node, 'x', 'y').add(size.divide(2)));
 			});
 			return raster;
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
-		symbol: function(svg, type) {
-			return new Symbol(applyAttributes(importGroup(svg, type), svg));
+		symbol: function(node, type) {
+			return new Symbol(importGroup(node, type));
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#DefsElement
 		defs: importGroup,
 
 		// http://www.w3.org/TR/SVG/struct.html#UseElement
-		use: function(svg, type) {
+		use: function(node, type) {
 			// Note the namespaced xlink:href attribute is just called href
-			// as a property on svg.
+			// as a property on node.
 			// TODO: Should getValue become namespace aware?
-			var id = (getValue(svg, 'href') || '').substring(1),
+			var id = (getValue(node, 'href') || '').substring(1),
 				definition = definitions[id];
 			// Use place if we're dealing with a symbol:
 			return definition
@@ -306,36 +303,36 @@ new function() {
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
-		circle: function(svg) {
-			return new Path.Circle(getPoint(svg, 'cx', 'cy'),
-					getValue(svg, 'r'));
+		circle: function(node) {
+			return new Path.Circle(getPoint(node, 'cx', 'cy'),
+					getValue(node, 'r'));
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
-		ellipse: function(svg) {
-			var center = getPoint(svg, 'cx', 'cy'),
-				radius = getSize(svg, 'rx', 'ry');
+		ellipse: function(node) {
+			var center = getPoint(node, 'cx', 'cy'),
+				radius = getSize(node, 'rx', 'ry');
 			return new Path.Ellipse(new Rectangle(center.subtract(radius),
 					center.add(radius)));
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#RectElement
-		rect: function(svg) {
-			var point = getPoint(svg, 'x', 'y'),
-				size = getSize(svg, 'width', 'height'),
-				radius = getSize(svg, 'rx', 'ry');
+		rect: function(node) {
+			var point = getPoint(node, 'x', 'y'),
+				size = getSize(node, 'width', 'height'),
+				radius = getSize(node, 'rx', 'ry');
 			// If radius is 0, Path.RoundRectangle automatically produces a
 			// normal rectangle for us.
 			return new Path.RoundRectangle(new Rectangle(point, size), radius);
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#LineElement
-		line: function(svg) {
-			return new Path.Line(getPoint(svg, 'x1', 'y1'),
-					getPoint(svg, 'x2', 'y2'));
+		line: function(node) {
+			return new Path.Line(getPoint(node, 'x1', 'y1'),
+					getPoint(node, 'x2', 'y2'));
 		},
 
-		text: function(svg) {
+		text: function(node) {
 			// Not supported by Paper.js
 			// x: multiple values for x
 			// y: multiple values for y
@@ -344,9 +341,9 @@ new function() {
 			// TODO: Support for these is missing in Paper.js right now
 			// rotate: character rotation
 			// lengthAdjust:
-			var text = new PointText(getPoint(svg, 'x', 'y', false, 0)
-					.add(getPoint(svg, 'dx', 'dy', false, 0)));
-			text.setContent(svg.textContent || '');
+			var text = new PointText(getPoint(node, 'x', 'y', false, 0)
+					.add(getPoint(node, 'dx', 'dy', false, 0)));
+			text.setContent(node.textContent || '');
 			return text;
 		}
 	};
@@ -355,19 +352,19 @@ new function() {
 	 * Converts various SVG styles and attributes into Paper.js styles and
 	 * attributes and applies them to the passed item.
 	 *
-	 * @param {SVGSVGElement} svg an SVG node to read style and attributes from.
+	 * @param {SVGSVGElement} node an SVG node to read style and attributes from.
 	 * @param {Item} item the item to apply the style and attributes to.
 	 */
-	function applyAttributes(item, svg) {
+	function applyAttributes(item, node) {
 		// SVG attributes can be set both as styles and direct node attributes,
 		// so we need to parse both
-		for (var i = 0, l = svg.style.length; i < l; i++) {
-			var name = svg.style[i];
-			item = applyAttribute(item, svg, name, svg.style[Base.camelize(name)]);
+		for (var i = 0, l = node.style.length; i < l; i++) {
+			var name = node.style[i];
+			item = applyAttribute(item, node, name, node.style[Base.camelize(name)]);
 		}
-		for (var i = 0, l = svg.attributes.length; i < l; i++) {
-			var attr = svg.attributes[i];
-			item = applyAttribute(item, svg, attr.name, attr.value);
+		for (var i = 0, l = node.attributes.length; i < l; i++) {
+			var attr = node.attributes[i];
+			item = applyAttribute(item, node, attr.name, attr.value);
 		}
 		return item;
 	}
@@ -375,12 +372,12 @@ new function() {
 	/**
 	 * Parses an SVG style attibute and applies it to a Paper.js item.
 	 *
-	 * @param {SVGSVGElement} svg an SVG node
+	 * @param {SVGSVGElement} node an SVG node
 	 * @param {Item} item the item to apply the style or attribute to.
 	 * @param {String} name an SVG style name
 	 * @param value the value of the SVG style
 	 */
-	 function applyAttribute(item, svg, name, value) {
+	 function applyAttribute(item, node, name, value) {
 		if (value == null)
 			return item;
 		var entry = SvgStyles.attributes[name];
@@ -401,7 +398,7 @@ new function() {
 			// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
 			case 'gradientTransform':
 			case 'transform':
-				var transforms = svg[name].baseVal,
+				var transforms = node[name].baseVal,
 					matrix = new Matrix();
 				for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
 					var mx = transforms.getItem(i).matrix;
@@ -438,7 +435,7 @@ new function() {
 			case 'font-size':
 			// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
 			case 'text-anchor':
-				applyTextAttribute(item, svg, name, value);
+				applyTextAttribute(item, node, name, value);
 				break;
 			// http://www.w3.org/TR/SVG/pservers.html#StopColorProperty
 			case 'stop-color':
@@ -456,11 +453,11 @@ new function() {
 					break;
 				var values = convertValue(value, 'array'),
 					rectangle = Rectangle.create.apply(this, values),
-					size = getSize(svg, 'width', 'height', true),
+					size = getSize(node, 'width', 'height', true),
 					scale = size ? rectangle.getSize().divide(size) : 1,
 					offset = rectangle.getPoint(),
 					matrix = new Matrix().translate(offset).scale(scale);
-				item.transform(matrix.createInverse());
+				item.transform(matrix.inverted());
 				if (size)
 					rectangle.setSize(size);
 				rectangle.setPoint(0);
@@ -472,7 +469,7 @@ new function() {
 		return item;
 	}
 
-	function applyTextAttribute(item, svg, name, value) {
+	function applyTextAttribute(item, node, name, value) {
 		if (item instanceof TextItem) {
 			switch (name) {
 			case 'font':
@@ -481,7 +478,7 @@ new function() {
 				text.style.font = value;
 				for (var i = 0; i < text.style.length; i++) {
 					var name = text.style[i];
-					item = applyAttribute(item, svg, name, text.style[name]);
+					item = applyAttribute(item, node, name, text.style[name]);
 				}
 				break;
 			case 'font-family':
@@ -503,43 +500,55 @@ new function() {
 			// might be TextItems explicitely.
 			var children = item._children;
 			for (var i = 0, l = children.length; i < l; i++) {
-				applyTextAttribute(children[i], svg, name, value);
+				applyTextAttribute(children[i], node, name, value);
 			}
 		}
 	}
 
-	function importSvg(svg) {
-		var type = svg.nodeName.toLowerCase(),
+	var definitions = {};
+	function getDefinition(value) {
+		var match = value.match(/\(#([^)']+)/);
+        return match && definitions[match[1]];
+	}
+
+	function importSvg(node, clearDefs) {
+		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
-			item = importer && importer(svg, type);
-		return item && applyAttributes(item, svg);
+			item = importer && importer(node, type);
+		// See importGroup() for an explanation of this filtering:
+		if (item && item._type !== 'group')
+			item = applyAttributes(item, node);
+		// Clear definitions at the end of import?
+		if (clearDefs)
+			definitions = {};
+		return item;
 	}
 
 
 	Item.inject(/** @lends Item# */{
 		/**
-		 * Converts the passed svg node into a Paper.js item and adds it to the
+		 * Converts the passed node node into a Paper.js item and adds it to the
 		 * children of this item.
 		 *
-		 * @param {SVGSVGElement} svg the SVG DOM node to convert
+		 * @param {SVGSVGElement} node the SVG DOM node to convert
 		 * @return {Item} the converted Paper.js item
 		 */
-		importSvg: function(svg) {
-			return this.addChild(importSvg(svg));
+		importSvg: function(node) {
+			return this.addChild(importSvg(node, true));
 		}
 	});
 
 	Project.inject(/** @lends Project# */{
 		/**
-		 * Converts the passed svg node into a Paper.js item and adds it to the
+		 * Converts the passed node node into a Paper.js item and adds it to the
 		 * active layer of this project.
 		 *
-		 * @param {SVGSVGElement} svg the SVG DOM node to convert
+		 * @param {SVGSVGElement} node the SVG DOM node to convert
 		 * @return {Item} the converted Paper.js item
 		 */
-		importSvg: function(svg) {
+		importSvg: function(node) {
 			this.activate();
-			return importSvg(svg);
+			return importSvg(node, true);
 		}
 	});
 };

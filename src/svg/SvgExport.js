@@ -1,19 +1,13 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
  * All rights reserved.
- * 
- * The base for this code was donated by Stetson-Team-Alpha.
  */
 
 /**
@@ -21,22 +15,34 @@
  * Paper.js DOM to a Paper.js DOM.
  */
 new function() {
-
 	// Shortcut to Base.formatFloat
-	var formatFloat = Base.formatFloat;
+	var formatFloat = Base.formatFloat,
+		namespaces = {
+			href: 'http://www.w3.org/1999/xlink'
+		};
 
 	function formatPoint(point) {
 		return formatFloat(point.x) + ',' + formatFloat(point.y);
 	}
 
-	function setAttributes(svg, attrs) {
+	function formatRectangle(rect) {
+		return formatFloat(rect.x) + ',' + formatFloat(rect.y)
+			+ ',' + formatFloat(rect.width) + ',' + formatFloat(rect.height);
+	}
+
+	function setAttributes(node, attrs) {
 		for (var key in attrs) {
-			var val = attrs[key];
+			var val = attrs[key],
+				namespace = namespaces[key];
 			if (typeof val === 'number')
 				val = formatFloat(val);
-			svg.setAttribute(key, val);
+			if (namespace) {
+				node.setAttributeNS(namespace, key, val);
+			} else {
+				node.setAttribute(key, val);
+			}
 		}
-		return svg;
+		return node;
 	}
 
 	function createElement(tag, attrs) {
@@ -59,7 +65,7 @@ new function() {
 			// in rotate(). To do so, SVG requries us to inverse transform the
 			// translation point by the matrix itself, since they are provided
 			// in local coordinates.
-			matrix = matrix.createShiftless();
+			matrix = matrix.shiftless();
 			var point = matrix._inverseTransform(trans);
 			attrs.x = point.x;
 			attrs.y = point.y;
@@ -67,30 +73,30 @@ new function() {
 		}
 		if (matrix.isIdentity())
 			return attrs;
-		// See if we can formulate this matrix as simple scale / rotate commands
-		// Note: getScaling() returns values also when it's not a simple scale,
-		// but angle is only != null if it is, so check for that.
-		var angle = matrix.getRotation(),
-			parts = [];
-		if (angle != null) {
-			matrix = matrix.clone().scale(1, -1);
+		// See if we can decompose the matrix and can formulate it as a simple
+		// translate/scale/rotate command sequence.
+		var decomposed = matrix.decompose();
+		if (decomposed && !decomposed.shearing) {
+			var parts = [],
+				angle = decomposed.rotation,
+				scale = decomposed.scaling;
 			if (trans && !trans.isZero())
 				parts.push('translate(' + formatPoint(trans) + ')');
-			if (angle)
-				parts.push('rotate(' + formatFloat(angle) + ')');
-			var scale = matrix.getScaling();
 			if (!Numerical.isZero(scale.x - 1) || !Numerical.isZero(scale.y - 1))
 				parts.push('scale(' + formatPoint(scale) +')');
+			if (angle)
+				parts.push('rotate(' + formatFloat(angle) + ')');
+			attrs.transform = parts.join(' ');
 		} else {
-			parts.push('matrix(' + matrix.getValues().join(',') + ')');
+			attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
 		}
-		attrs.transform = parts.join(' ');
 		return attrs;
 	}
 
-	function getPath(path, segments) {
-		var parts = [],
-			style = path._style;
+	function getPath(path) {
+		var segments = path._segments,
+			style = path._style,
+			parts = [];
 
 		function addCurve(seg1, seg2, skipLine) {
 			var point1 = seg1._point,
@@ -208,18 +214,29 @@ new function() {
 		return 'path';
 	}
 
-	function exportGroup(group) {
-		var attrs = getTransform(group),
-			children = group._children;
+	function exportGroup(item) {
+		var attrs = getTransform(item),
+			children = item._children;
 		// Override default SVG style on groups, then apply style.
 		attrs.fill = 'none';
-		var svg = createElement('g', attrs);
+		var node = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
-			var child = children[i].exportSvg();
+			var child = exportSvg(children[i]);
 			if (child)
-				svg.appendChild(child);
+				node.appendChild(child);
 		}
-		return svg;
+		return node;
+	}
+
+	function exportRaster(item) {
+		var attrs = getTransform(item, true),
+			size = item.getSize();
+		attrs.x -= size.width / 2;
+		attrs.y -= size.height / 2;
+		attrs.width = size.width;
+		attrs.height = size.height;
+		attrs.href = item.toDataURL();
+		return createElement('image', attrs);
 	}
 
 	function exportText(item) {
@@ -229,23 +246,23 @@ new function() {
 			attrs['font-family'] = style._font;
 		if (style._fontSize != null)
 			attrs['font-size'] = style._fontSize;
-		var svg = createElement('text', attrs);
-		svg.textContent = item._content;
-		return svg;
+		var node = createElement('text', attrs);
+		node.textContent = item._content;
+		return node;
 	}
 
-	function exportPath(path) {
-		var segments = path._segments,
-			center = path.getPosition(true),
-			type = determineType(path, segments),
-			angle = determineAngle(path, segments, type, center),
+	function exportPath(item) {
+		var segments = item._segments,
+			center = item.getPosition(true),
+			type = determineType(item, segments),
+			angle = determineAngle(item, segments, type, center),
 			attrs;
 		switch (type) {
 		case 'empty':
 			return null;
 		case 'path':
 			attrs = {
-				d: getPath(path, segments)
+				d: getPath(item)
 			};
 			break;
 		case 'polyline':
@@ -327,23 +344,107 @@ new function() {
 		if (angle) {
 			attrs.transform = 'rotate(' + formatFloat(angle) + ','
 					+ formatPoint(center) + ')';
+			// Tell applyStyle() that to transform the gradient the other way
+			item._gradientMatrix = new Matrix().rotate(-angle, center);
 		}
-		var svg = createElement(type, attrs);
-		return svg;
+		return createElement(type, attrs);
+	}
+
+	function exportCompoundPath(item) {
+		var attrs = getTransform(item, true),
+			children = item._children,
+			paths = [];
+		for (var i = 0, l = children.length; i < l; i++)
+			paths.push(getPath(children[i]));
+		attrs.d = paths.join(' ');
+		return createElement('path', attrs);
+	}
+
+	function exportPlacedSymbol(item) {
+		var attrs = getTransform(item, true),
+			symbol = item.getSymbol(),
+			symbolNode = getDefinition(symbol);
+			definition = symbol.getDefinition(),
+			bounds = definition.getBounds();
+		if (!symbolNode) {
+			symbolNode = createElement('symbol', {
+				viewBox: formatRectangle(bounds)
+			});
+			symbolNode.appendChild(exportSvg(definition));
+			setDefinition(symbol, symbolNode);
+		}
+		attrs.href = '#' + symbolNode.id;
+		attrs.x += bounds.x;
+		attrs.y += bounds.y;
+		attrs.width = formatFloat(bounds.width);
+		attrs.height = formatFloat(bounds.height);
+		return createElement('use', attrs);
+	}
+
+	function exportGradient(color, item) {
+		// NOTE: As long as the fillTransform attribute is not implemented,
+		// we need to create a separate gradient object for each gradient,
+		// even when they share the same gradient defintion.
+		// http://www.svgopen.org/2011/papers/20-Separating_gradients_from_geometry/
+		// TODO: Implement gradient merging in SvgImport
+		var gradientNode = getDefinition(color);
+		if (!gradientNode) {
+			var gradient = color.gradient,
+				matrix = item._gradientMatrix,
+				origin = color._origin.transform(matrix),
+				destination = color._destination.transform(matrix),
+				highlight = color._hilite && color._hilite.transform(matrix),
+				attrs;
+				if (gradient.type == 'radial') {
+					attrs = {
+						cx: origin.x,
+						cy: origin.y,
+						r: origin.getDistance(destination)
+					};
+					if (highlight) {
+						attrs.fx = highlight.x;
+						attrs.fy = highlight.y;
+					}
+				} else {
+					attrs = {
+						x1: origin.x,
+						y1: origin.y,
+						x2: destination.x,
+						y2: destination.y
+					};
+				}
+			attrs.gradientUnits = 'userSpaceOnUse';
+			gradientNode = createElement(gradient.type + 'Gradient', attrs);
+			var stops = gradient._stops;
+			for (var i = 0, l = stops.length; i < l; i++) {
+				var stop = stops[i],
+					stopColor = stop._color;
+				attrs = {
+					offset: stop._rampPoint,
+					'stop-color': stopColor.toCss(true)
+				};
+				// See applyStyle for an explanation of why there are separated
+				// opacity / color attributes.
+				if (stopColor.getAlpha() < 1)
+					attrs['stop-opacity'] = stopColor._alpha;
+				gradientNode.appendChild(createElement('stop', attrs));
+			}
+			setDefinition(color, gradientNode);
+		}
+		return 'url(#' + gradientNode.id + ')';
 	}
 
 	var exporters = {
 		group: exportGroup,
 		layer: exportGroup,
+		raster: exportRaster,
+		pointtext: exportText,
+		placedsymbol: exportPlacedSymbol,
 		path: exportPath,
-		pointtext: exportText
-		// TODO:
-		// raster: 
-		// placedsymbol:
-		// compoundpath:
+		compoundpath: exportCompoundPath
 	};
 
-	function applyStyle(item, svg) {
+	function applyStyle(item, node) {
 		var attrs = {},
 			style = item._style,
 			parent = item.getParent(),
@@ -361,11 +462,13 @@ new function() {
 				// separate the alpha value of colors with alpha into the
 				// separate fill- / stroke-opacity attribute:
 				if (entry.type === 'color' && value != null && value.getAlpha() < 1)
-					attrs[entry.attribute + '-opacity'] = value.getAlpha();
+					attrs[entry.attribute + '-opacity'] = value._alpha;
 				attrs[entry.attribute] = value == null
 					? 'none'
 					: entry.type === 'color'
-						? value.toCss(true) // false for noAlpha, see above
+						? value.gradient
+							? exportGradient(value, item)
+							: value.toCss(true) // false for noAlpha, see above	
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'
@@ -380,7 +483,48 @@ new function() {
 		if (item._visibility != null && !item._visibility)
 			attrs.visibility = 'hidden';
 
-		return setAttributes(svg, attrs);
+		delete item._gradientMatrix; // see exportPath()
+		return setAttributes(node, attrs);
+	}
+
+	var definitions;
+	function getDefinition(item) {
+		if (!definitions)
+			definitions = { ids: {}, svgs: {} };
+		return definitions.svgs[item._id];
+	}
+
+	function setDefinition(item, node) {
+		var type = item._type,
+			id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
+		node.id = type + '-' + id;
+		definitions.svgs[item._id] = node;
+	}
+
+	function exportDefinitions(node) {
+		if (!definitions)
+			return node;
+		// We can only use node nodes as defintion containers. Have the loop
+		// produce one if it's a single item of another type (when calling
+		// #exportSvg() on an item rather than a whole project)
+		var container = node.nodeName.toLowerCase() == 'svg' && node,
+			firstChild = container ? container.firstChild : node;
+		for (var i in definitions.svgs) {
+			if (!container) {
+				container = createElement('svg');
+				container.appendChild(node);
+			}
+			container.insertBefore(definitions.svgs[i], firstChild);
+		}
+		// Clear definitions at the end of export
+		definitions = null;
+		return container;
+	}
+
+	function exportSvg(item) {
+		var exporter = exporters[item._type],
+			node = exporter && exporter(item, item._type);
+		return node && applyStyle(item, node);
 	}
 
 	Item.inject(/** @lends Item# */{
@@ -393,9 +537,8 @@ new function() {
 		 * @return {SVGSVGElement} the item converted to an SVG node
 		 */
 		exportSvg: function() {
-			var exporter = exporters[this._type],
-				svg = exporter && exporter(this, this._type);
-			return svg && applyStyle(this, svg);
+			var node = exportSvg(this);
+			return exportDefinitions(node);
 		}
 	});
 
@@ -409,11 +552,11 @@ new function() {
 		 * @return {SVGSVGElement} the project converted to an SVG node
 		 */
 		exportSvg: function() {
-			var svg = createElement('svg'),
+			var node = createElement('svg'),
 				layers = this.layers;
 			for (var i = 0, l = layers.length; i < l; i++)
-				svg.appendChild(layers[i].exportSvg());
-			return svg;
+				node.appendChild(exportSvg(layers[i]));
+			return exportDefinitions(node);
 		}
 	});
 };

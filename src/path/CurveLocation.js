@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -24,13 +20,13 @@
  * {@link Path#curves} array is also provided.
  *
  * The class is in use in many places, such as
- * {@link Path#getLocationAt(offset)},
+ * {@link Path#getLocationAt(offset, isParameter)},
  * {@link Path#getLocationOf(point)},
  * {@link Path#getNearestLocation(point),
  * {@link PathItem#getIntersections(path)},
  * etc.
  */
-CurveLocation = Base.extend(/** @lends CurveLocation# */{
+var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	// DOCS: CurveLocation class description: add these back when the  mentioned
 	// functioned have been added: {@link Path#split(location)}
 	/**
@@ -42,6 +38,11 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 */
 	initialize: function(curve, parameter, point, distance) {
 		this._curve = curve;
+		// Also store references to segment1 and segment2, in case path
+		// splitting / dividing is going to happen, in which case the segments
+		// can be used to determine the new curves, see #getCurve(true)
+		this._segment1 = curve._segment1;
+		this._segment2 = curve._segment2;
 		this._parameter = parameter;
 		this._point = point;
 		this._distance = distance;
@@ -55,7 +56,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 */
 	getSegment: function() {
 		if (!this._segment) {
-			var curve = this._curve,
+			var curve = this.getCurve(),
 				parameter = this.getParameter();
 			if (parameter == 0) {
 				this._segment = curve._segment1;
@@ -80,7 +81,17 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @type Curve
 	 * @bean
 	 */
-	getCurve: function() {
+	getCurve: function(/* uncached */) {
+		if (!this._curve || arguments[0]) {
+			// If we're asked to get the curve uncached, access current curve
+			// objects through segment1 / segment2. Since path splitting or
+			// dividing might have happened in the meantime, try segment1's
+			// curve, and see if _point lies on it still, otherwise assume it's
+			// the curve before segment2.
+			this._curve = this._segment1.getCurve();
+			if (this._curve.getParameterOf(this._point) == null)
+				this._curve = this._segment2.getPrevious().getCurve();
+		}
 		return this._curve;
 	},
 
@@ -91,7 +102,8 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getPath: function() {
-		return this._curve && this._curve._path;
+		var curve = this.getCurve();
+		return curve && curve._path;
 	},
 
 	/**
@@ -102,7 +114,8 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getIndex: function() {
-		return this._curve && this._curve.getIndex();
+		var curve = this.getCurve();
+		return curve && curve.getIndex();
 	},
 
 	/**
@@ -113,7 +126,7 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getOffset: function() {
-		var path = this._curve && this._curve._path;
+		var path = this.getPath();
 		return path && path._getOffset(this);
 	},
 
@@ -125,9 +138,9 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getCurveOffset: function() {
-		var parameter = this.getParameter();
-		return parameter != null && this._curve
-				&& this._curve.getLength(0, parameter);
+		var curve = this.getCurve(),
+			parameter = this.getParameter();
+		return parameter != null && curve && curve.getLength(0, parameter);
 	},
 
 	/**
@@ -139,9 +152,10 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getParameter: function(/* uncached */) {
-		if ((this._parameter == null || arguments[0])
-				&& this._curve && this._point)
-			this._parameter = this._curve.getParameterOf(this._point);
+		if ((this._parameter == null || arguments[0]) && this._point) {
+			var curve = this.getCurve(arguments[0] && this._point);
+			this._parameter = curve && curve.getParameterOf(this._point);
+		}
 		return this._parameter;
 	},
 
@@ -153,8 +167,10 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getPoint: function() {
-		if (!this._point && this._curve && this._parameter != null)
-			this._point = this._curve.getPoint(this._parameter);
+		if (!this._point && this._parameter != null) {
+			var curve = this.getCurve();
+			this._point = curve && curve.getPointAt(this._parameter, true);
+		}
 		return this._point;
 	},
 
@@ -165,9 +181,9 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getTangent: function() {
-		var parameter = this.getParameter();
-		return parameter != null && this._curve
-				&& this._curve.getTangent(parameter);
+		var parameter = this.getParameter(),
+			curve = this.getCurve();
+		return parameter != null && curve && curve.getTangentAt(parameter, true);
 	},
 
 	/**
@@ -177,9 +193,9 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @bean
 	 */
 	getNormal: function() {
-		var parameter = this.getParameter();
-		return parameter != null && this._curve
-				&& this._curve.getNormal(parameter);
+		var parameter = this.getParameter(),
+			curve = this.getCurve();
+		return parameter != null && curve && curve.getNormalAt(parameter, true);
 	},
 
 	/**
@@ -193,11 +209,13 @@ CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	},
 
 	divide: function() {
-		return this._curve ? this._curve.divide(this.getParameter(true)) : null;
+		var curve = this.getCurve();
+		return curve && curve.divide(this.getParameter(true));
 	},
 
 	split: function() {
-		return this._curve ? this._curve.split(this.getParameter(true)) : null;
+		var curve = this.getCurve();
+		return curve && curve.split(this.getParameter(true));
 	},
 
 	/**

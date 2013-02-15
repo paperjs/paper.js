@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -24,6 +20,8 @@
  * to be updated with every transformation.
  */
 var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
+	_type: 'symbol',
+
 	/**
 	 * Creates a Symbol item.
 	 *
@@ -61,11 +59,20 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	 * }
 	 */
 	initialize: function(item) {
+		// Define this Symbols's unique id.
+		this._id = ++Base._uid;
 		this.project = paper.project;
 		this.project.symbols.push(this);
 		this.setDefinition(item);
 		// Hash to keep track of placed instances
 		this._instances = {};
+	},
+
+	_serialize: function(options, dictionary) {
+		return dictionary.add(this, function() {
+			return Base.serialize([this._type, this._definition],
+					options, false, dictionary);
+		});
 	},
 
 	// TODO: Symbol#remove()
@@ -113,6 +120,7 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 		this._definition = item;
 		// Remove item from DOM, as it's embedded in Symbol now.
 		item.remove();
+		item.setSelected(false);
 		// Move position to 0, 0, so it's centered when placed.
 		item.setPosition(new Point());
 		item._parentSymbol = this;
@@ -135,6 +143,6 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	 * @return {Symbol}
 	 */
 	clone: function() {
-	 	return new Symbol(this._definition.clone());
+		return new Symbol(this._definition.clone());
 	}
 });

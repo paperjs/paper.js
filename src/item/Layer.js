@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -52,12 +48,10 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	* Removes the layer from its project's layers list
 	* or its parent's children list.
 	*/
-	_remove: function(deselect, notify) {
+	_remove: function(notify) {
 		if (this._parent)
-			return this.base(deselect, notify);
+			return this.base(notify);
 		if (this._index != null) {
-			if (deselect)
-				this.setSelected(false);
 			Base.splice(this._project.layers, null, this._index, 1);
 			// Tell project we need a redraw. This is similar to _changed()
 			// mechanism.
@@ -75,6 +69,10 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	getPreviousSibling: function() {
 		return this._parent ? this.base()
 				: this._project.layers[this._index - 1] || null;
+	},
+
+	isInserted: function() {
+		return this._index != null;
 	},
 
 	/**
@@ -96,7 +94,7 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 			// If the item is a layer and contained within Project#layers, use
 			// our own version of move().
 			if (item instanceof Layer && !item._parent
-						&& this._remove(false, true)) {
+						&& this._remove(true)) {
 				Base.splice(item._project.layers, [this],
 						item._index + (above ? 1 : 0), 0);
 				this._setProject(item._project);

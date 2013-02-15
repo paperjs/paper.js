@@ -1,12 +1,8 @@
 /*
- * Paper.js
- *
- * This file is part of Paper.js, a JavaScript Vector Graphics Library,
- * based on Scriptographer.org and designed to be largely API compatible.
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
- * http://scriptographer.org/
  *
- * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
  * http://lehni.org/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -86,22 +82,21 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 		Item.drawSelectedBounds(this._getBounds(), ctx, matrix);
 	}
 }, new function() {
-	var context = null;
+	var measureCtx = null;
 
 	return {
 		_getBounds: function(getter, matrix) {
 			// Create an in-memory canvas on which to do the measuring
-			if (!context)
-				context = CanvasProvider.getCanvas(
-						Size.create(1, 1)).getContext('2d');
+			if (!measureCtx)
+				measureCtx = CanvasProvider.getContext(1, 1);
 			var justification = this.getJustification(),
 				x = 0;
 			// Measure the real width of the text. Unfortunately, there is no
 			// sane way to measure text height with canvas
-			context.font = this._style.getFontStyle();
+			measureCtx.font = this._style.getFontStyle();
 			var width = 0;
 			for (var i = 0, l = this._lines.length; i < l; i++)
-				width = Math.max(width, context.measureText(
+				width = Math.max(width, measureCtx.measureText(
 						this._lines[i]).width);
 			// Adjust for different justifications
 			if (justification !== 'left')
