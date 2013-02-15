@@ -1103,7 +1103,8 @@ var Item = this.Item = Base.extend(Callback, {
 			scale = (resolution || 72) / 72,
 			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
 			ctx = canvas.getContext('2d'),
-			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
+			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y)
+					.concatenate(this._matrix);
 		matrix.applyToContext(ctx);
 		// TODO: Decide how to handle _matrix
 		this.draw(ctx, {});
