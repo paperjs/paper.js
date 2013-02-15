@@ -264,34 +264,34 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * }
 	 */
 
-	_updateEvent: function(type, pt, minDistance, maxDistance, start,
+	_updateEvent: function(type, point, minDistance, maxDistance, start,
 			needsChange, matchMaxDistance) {
 		if (!start) {
 			if (minDistance != null || maxDistance != null) {
 				var minDist = minDistance != null ? minDistance : 0,
-					vector = pt.subtract(this._point),
+					vector = point.subtract(this._point),
 					distance = vector.getLength();
 				if (distance < minDist)
 					return false;
-				// Produce a new point on the way to pt if pt is further away
-				// than maxDistance
+				// Produce a new point on the way to point if point is further
+				// away than maxDistance
 				var maxDist = maxDistance != null ? maxDistance : 0;
 				if (maxDist != 0) {
 					if (distance > maxDist) {
-						pt = this._point.add(vector.normalize(maxDist));
+						point = this._point.add(vector.normalize(maxDist));
 					} else if (matchMaxDistance) {
 						return false;
 					}
 				}
 			}
-			if (needsChange && pt.equals(this._point))
+			if (needsChange && point.equals(this._point))
 				return false;
 		}
 		// Make sure mousemove events have lastPoint set even for the first move
 		// so event.delta is always defined for them.
 		// TODO: Decide wether mousedown also should always have delta set.
-		this._lastPoint = start && type == 'mousemove' ? pt : this._point;
-		this._point = pt;
+		this._lastPoint = start && type == 'mousemove' ? point : this._point;
+		this._point = point;
 		switch (type) {
 		case 'mousedown':
 			this._lastPoint = this._downPoint;
@@ -308,7 +308,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		return true;
 	},
 
-	_onHandleEvent: function(type, pt, event) {
+	_onHandleEvent: function(type, point, event) {
 		// Update global reference to this scope.
 		paper = this._scope;
 		// Handle removeOn* calls first
@@ -337,7 +337,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		var called = false;
 		switch (type) {
 		case 'mousedown':
-			this._updateEvent(type, pt, null, null, true, false, false);
+			this._updateEvent(type, point, null, null, true, false, false);
 			if (this.responds(type))
 				called = this.fire(type, new ToolEvent(this, type, event));
 			break;
@@ -352,7 +352,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 			// case it is shorter than maxDistance, as this would produce weird
 			// results. matchMaxDistance controls this.
 				matchMaxDistance = false;
-			while (this._updateEvent(type, pt, this.minDistance,
+			while (this._updateEvent(type, point, this.minDistance,
 					this.maxDistance, false, needsChange, matchMaxDistance)) {
 				if (this.responds(type))
 					called = this.fire(type, new ToolEvent(this, type, event));
@@ -363,23 +363,23 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		case 'mouseup':
 			// If the last mouse drag happened in a different place, call mouse
 			// drag first, then mouse up.
-			if (!pt.equals(this._point)
-					&& this._updateEvent('mousedrag', pt, this.minDistance,
+			if (!point.equals(this._point)
+					&& this._updateEvent('mousedrag', point, this.minDistance,
 							this.maxDistance, false, false, false)) {
 				if (this.responds('mousedrag'))
 					called = this.fire('mousedrag',
 							new ToolEvent(this, type, event));
 			}
-			this._updateEvent(type, pt, null, this.maxDistance, false,
+			this._updateEvent(type, point, null, this.maxDistance, false,
 					false, false);
 			if (this.responds(type))
 				called = this.fire(type, new ToolEvent(this, type, event));
 			// Start with new values for 'mousemove'
-			this._updateEvent(type, pt, null, null, true, false, false);
+			this._updateEvent(type, point, null, null, true, false, false);
 			this._firstMove = true;
 			break;
 		case 'mousemove':
-			while (this._updateEvent(type, pt, this.minDistance,
+			while (this._updateEvent(type, point, this.minDistance,
 					this.maxDistance, this._firstMove, true, false)) {
 				if (this.responds(type))
 					called = this.fire(type, new ToolEvent(this, type, event));
