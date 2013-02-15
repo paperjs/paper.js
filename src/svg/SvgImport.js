@@ -73,8 +73,16 @@ new function() {
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
 			compound = type === 'clippath',
-			group = compound ? new CompoundPath() : new Group();
-
+			group = compound ? new CompoundPath() : new Group(),
+			project = group._project,
+			currentStyle = project._currentStyle;
+		// Style on groups needs to be handled differently than all other items:
+		// We first apply the style to the group, then use it as the project's
+		// currentStyle, so it is used as a default for the creation of all
+		// nested items. importSvg then needs to check for groups and avoid
+		// calling applyAttributes() again.
+		applyAttributes(group, node);
+		project._currentStyle = group._style.clone();
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var child = nodes[i],
 				item;
@@ -89,7 +97,8 @@ new function() {
 				}
 			}
 		}
-
+		// Restore currentStyle
+		project._currentStyle = currentStyle;
 		if (type == 'defs') {
 			// I don't think we need to add defs to the DOM. But we might want
 			// to use Symbols for them?
@@ -272,7 +281,7 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(node, type) {
-			return new Symbol(applyAttributes(importGroup(node, type), node));
+			return new Symbol(importGroup(node, type));
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#DefsElement
@@ -506,7 +515,9 @@ new function() {
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
 			item = importer && importer(node, type);
-		item = item && applyAttributes(item, node);
+		// See importGroup() for an explanation of this filtering:
+		if (item && item._type !== 'group')
+			item = applyAttributes(item, node);
 		// Clear definitions at the end of import?
 		if (clearDefs)
 			definitions = {};
