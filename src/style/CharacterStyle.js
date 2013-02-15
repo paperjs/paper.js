@@ -64,11 +64,12 @@ var CharacterStyle = this.CharacterStyle = PathStyle.extend(/** @lends Character
 	 */
 
 	/**
-	 * The font size of the character style in points.
+	 * The font size of the character style, as {@Number} in pixels, or as
+	 * {@String} with optional units {@code 'px'}, {@code 'pt'}, {@code 'em'}.
 	 *
 	 * @name CharacterStyle#fontSize
 	 * @default 10
-	 * @type Number
+	 * @type Number|String
 	 */
 }, {
 	getLeading: function() {
