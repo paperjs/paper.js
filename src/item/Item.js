@@ -172,7 +172,10 @@ var Item = this.Item = Base.extend(Callback, {
 		// Serialize style fields, but only if they differ from defaults.
 		// Use no compacting there, since colors always need their type
 		// identifiers.
-		serialize(this._style._defaults, false);
+		// Do not serialize styles on Groups and Layers, since they just unify
+		// their children's own styles.
+		if (!(this instanceof Group))
+			serialize(this._style._defaults, false);
 		// There is no compact form for Item serialization, we always keep the
 		// type.
 		return [ this._type, props ];
