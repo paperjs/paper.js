@@ -1102,13 +1102,14 @@ var Item = this.Item = Base.extend(Callback, {
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || 72) / 72,
 			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
-			ctx = canvas.getContext('2d'),
-			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
-		matrix.applyToContext(ctx);
-		// XXX: Decide how to handle _matrix
+			ctx = canvas.getContext('2d');
+		new Matrix().scale(scale).translate(-bounds.x, -bounds.y)
+			.applyToContext(ctx);
 		Item.draw(this, ctx, {});
 		var raster = new Raster(canvas);
 		raster.setBounds(bounds);
+		// NOTE: We don't need to release the canvas since it now belongs to the
+		// Raster!
 		return raster;
 	},
 
