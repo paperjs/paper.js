@@ -58,7 +58,7 @@ new function() {
 				: type === 'number'
 					? Base.toFloat(value)
 					: type === 'array'
-						? value.split(/[\s,]+/g).map(parseFloat)
+						? value ? value.split(/[\s,]+/g).map(parseFloat) : []
 						: type === 'color' && getDefinition(value)
 							|| value;
 	}
