@@ -363,7 +363,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		case 'mouseup':
 			// If the last mouse drag happened in a different place, call mouse
 			// drag first, then mouse up.
-			if ((this._point.x != pt.x || this._point.y != pt.y)
+			if (!pt.equals(this._point)
 					&& this._updateEvent('mousedrag', pt, this.minDistance,
 							this.maxDistance, false, false, false)) {
 				if (this.responds('mousedrag'))
