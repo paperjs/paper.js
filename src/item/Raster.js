@@ -35,23 +35,24 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * element to get the image from (either a DOM Image or a Canvas).
 	 *
 	 * @param {HTMLImageElement|Canvas|String} [object] the argument describing
-	 * the source of the image.
+	 * @param {HTMLImageElement|Canvas|String} [point] the center position at
+	 * which the raster item is placed.
 	 */
-	initialize: function(arg0, arg1) {
+	initialize: function(object, point) {
 		// Support two forms of item initialization: Passing one object literal
-		// describing all the different properties to be set, or an image (arg0)
-		// and a point where it should be placed (arg1).
-		this.base(arg1 !== undefined && Point.read(arguments, 1));
+		// describing all the different properties to be set, or an image
+		// (object) and a point where it should be placed (point).
+		this.base(point !== undefined && Point.read(arguments, 1));
 		// If we can handle setting properties through object literal, we're all
-		// set. Otherwise we need to check the type of arg0:
-		if (!this._setProperties(arg0)) {
-			if (arg0.getContext) {
-				this.setCanvas(arg0);
-			} else if (typeof arg0 === 'string') {
+		// set. Otherwise we need to check the type of object:
+		if (!this._setProperties(object)) {
+			if (object.getContext) {
+				this.setCanvas(object);
+			} else if (typeof object === 'string') {
 				// Both data-urls and normal urls are supported here!
-				this.setSource(arg0);
+				this.setSource(object);
 			} else {
-				this.setImage(arg0);
+				this.setImage(object);
 			}
 		}
 	},
