@@ -278,8 +278,12 @@ var PaperScript = this.PaperScript = new function() {
 				// retrieved through PaperScope.get().
 				// If a canvas id is provided, pass it on to the PaperScope
 				// so a project is created for it now.
-				var scope = new PaperScope(script);
-				scope.setup(PaperScript.getAttribute(script, 'canvas'));
+				var canvas = PaperScript.getAttribute(script, 'canvas'),
+					// See if there already is a scope for this canvas and reuse
+					// it, to support multiple scripts per canvas. Otherwise
+					// create a new one.
+					scope = PaperScope.get(canvas)
+							|| new PaperScope(script).setup(canvas);
 				if (script.src) {
 					// If we're loading from a source, request that first and then
 					// run later.
