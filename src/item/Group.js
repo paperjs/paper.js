@@ -69,7 +69,7 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 		// Allow Group to have children and named children
 		this._children = [];
 		this._namedChildren = {};
-		if (!this._setProperties(arg))
+		if (!this._set(arg))
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 

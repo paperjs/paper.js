@@ -50,6 +50,30 @@ this.Base = Base.inject(/** @lends Base# */{
 		return Base.toJson(this, options);
 	},
 
+	/**
+	 * Sets all the properties of the passed object literal to their values on
+	 * the item it is called on, and returns the item itself.
+	 */
+	set: function(props) {
+		if (props) {
+			for (var key in props)
+				if (props.hasOwnProperty(key))
+					this[key] = props[key];
+		}
+		return this;
+	},
+
+	/**
+	 * #_set() is part of the mechanism for constructors which take one object
+	 * literal describing all the properties to be set on the created instance.
+	 * It behaves the same as #set(), but only if the provided object is a plain
+	 * object. It returns undefined otherwise.
+	 */
+	_set: function(props) {
+		if (Base.isPlainObject(props))
+			return this.set(props);
+	},
+
 	statics: /** @lends Base */{
 
 		_types: {},

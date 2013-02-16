@@ -42,7 +42,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		// CompoundPath has children and supports named children.
 		this._children = [];
 		this._namedChildren = {};
-		if (!this._setProperties(arg))
+		if (!this._set(arg))
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
