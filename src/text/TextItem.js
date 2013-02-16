@@ -49,7 +49,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 		this._content = '';
 		this._lines = [];
 		if (hasProperties) {
-			this._setProperties(arg);
+			this._set(arg);
 		}
 	},
 

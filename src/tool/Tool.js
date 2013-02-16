@@ -50,11 +50,12 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 			'onKeyDown', 'onKeyUp' ],
 
 	// DOCS: rewrite Tool constructor explanation
-	initialize: function() {
+	initialize: function(props) {
 		this.base();
 		this._firstMove = true;
 		this._count = 0;
 		this._downCount = 0;
+		this._set(props);
 	},
 
 	/**
