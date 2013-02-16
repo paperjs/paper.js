@@ -96,10 +96,6 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		return curves;
 	},
 
-	isEmpty: function() {
-		return this._children.length == 0;
-	},
-
 	contains: function(point) {
 		point = Point.read(arguments);
 		var count = 0;

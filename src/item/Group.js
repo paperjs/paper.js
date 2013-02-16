@@ -116,10 +116,6 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 		return this;
 	},
 
-	isEmpty: function() {
-		return this._children.length == 0;
-	},
-
 	draw: function(ctx, param) {
 		var clipItem = this._getClipItem();
 		if (clipItem) {
