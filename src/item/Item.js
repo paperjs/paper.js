@@ -638,7 +638,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @type Boolean
 	 */
 	isEmpty: function() {
-		return true;
+		return this._children.length == 0;
 	}
 }, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	function(name) {
