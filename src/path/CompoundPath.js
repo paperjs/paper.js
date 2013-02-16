@@ -83,6 +83,28 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	},
 
 	/**
+	 * The first Segment contained within the path.
+	 *
+	 * @type Segment
+	 * @bean
+	 */
+	getFirstSegment: function() {
+		var first = this.getFirstChild();
+		return first && first.getFirstSegment();
+	},
+
+	/**
+	 * The last Segment contained within the path.
+	 *
+	 * @type Segment
+	 * @bean
+	 */
+	getLastSegment: function() {
+		var last = this.getLastChild();
+		return last && last.getLastSegment();
+	},
+
+	/**
 	 * All the curves contained within the compound-path, from all its child
 	 * {@link Path} items.
 	 *
@@ -94,6 +116,28 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		for (var i = 0, l = this._children.length; i < l; i++)
 			curves = curves.concat(this._children[i].getCurves());
 		return curves;
+	},
+
+	/**
+	 * The first Curve contained within the path.
+	 *
+	 * @type Curve
+	 * @bean
+	 */
+	getFirstCurve: function() {
+		var first = this.getFirstChild();
+		return first && first.getFirstCurve();
+	},
+
+	/**
+	 * The last Curve contained within the path.
+	 *
+	 * @type Curve
+	 * @bean
+	 */
+	getLastCurve: function() {
+		var last = this.getLastChild();
+		return last && last.getFirstCurve();
 	},
 
 	contains: function(point) {
