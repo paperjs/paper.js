@@ -516,7 +516,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 				element = document.getElementById(element);
 /*#*/ } // options.browser
 			// Factory to provide the right View subclass for a given element.
-			// Produces only Canvas-Views for now:
+			// Produces only CanvasViews for now:
 			return new CanvasView(element);
 		}
 	}
