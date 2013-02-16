@@ -197,7 +197,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 	deselectAll: function() {
 		for (var i in this._selectedItems)
-			this._selectedItems[i].item.setSelected(false);
+			this._selectedItems[i].setSelected(false);
 	},
 
 	/**
