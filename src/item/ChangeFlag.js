@@ -39,6 +39,6 @@ var Change = {
 	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
 	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
 	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
-	CONTENT: ChangeFlag.CONTENT | ChangeFlag.APPEARANCE,
+	CONTENT: ChangeFlag.CONTENT | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
 	PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE
 };
