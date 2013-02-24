@@ -142,7 +142,9 @@ var PaperScript = this.PaperScript = new function() {
 				if (Array.isArray(value)) {
 					for (var i = 0, l = value.length; i < l; i++)
 						walkAst(value[i]);
-				} else if (Base.isPlainObject(value)) {
+				} else if (value && typeof value === 'object') {
+					// We cannot use Base.isPlainObject() for these since
+					// Acorn.js uses its own internal prototypes now.
 					walkAst(value);
 				}
 			}
