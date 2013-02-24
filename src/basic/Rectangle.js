@@ -829,6 +829,32 @@ var LinkedRectangle = Rectangle.extend({
 				this._owner[this._setter](this);
 				return this;
 			};
-		}, {})
+		}, {
+			/**
+			 * Specifies whether an item's bounds are selected and will also
+			 *
+			 * Paper.js draws the visual bounds of selected items on top of your
+			 * project. This can be useful for debugging.
+			 *
+			 * @type Boolean
+			 * @default false
+			 * @bean
+			 */
+			isSelected: function() {
+				return this._owner._boundsSelected;
+			},
+
+			setSelected: function(selected) {
+				var owner = this._owner;
+				if (owner.setSelected) {
+					owner._boundsSelected = selected;
+					// Update the owner's selected state too, so the bounds
+					// actually get drawn. When deselecting, take a path's  
+					// _selectedSegmentState into account too, since it will
+					// have to remain selected even when bounds are deselected
+					owner.setSelected(selected || owner._selectedSegmentState > 0);
+				}
+			}
+		})
 	);
 });

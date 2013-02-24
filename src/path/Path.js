@@ -1601,10 +1601,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Now stroke it and draw its handles:
 			ctx.stroke();
 			drawHandles(ctx, this._segments, matrix);
-			// If the path has no selected segments, draw its bounds too
-			if (this._selectedSegmentState == 0) {
-				Item.drawSelectedBounds(this.getBounds(), ctx, matrix);
-			}
 		}
 	};
 }, new function() { // Path Smoothing
