@@ -19,6 +19,7 @@
  */
 var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	_type: 'raster',
+	_boundsSelected: true,
 	_serializeFields: {
 		source: null
 	},
@@ -486,10 +487,5 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			ctx.drawImage(element,
 					-this._size.width / 2, -this._size.height / 2);
 		}
-	},
-
-	drawSelected: function(ctx, matrix) {
-		Item.drawSelectedBounds(new Rectangle(this._size).setCenter(0, 0), ctx,
-				matrix);
 	}
 });

@@ -318,11 +318,13 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.strokeStyle = ctx.fillStyle = '#009dec';
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id];
-				if (item._drawCount === this._drawCount) {
+				if (item._drawCount === this._drawCount
+						&& (item.drawSelected || item._boundsSelected)) {
 					var mx = getGlobalMatrix(item, matrix.clone());
-					item.drawSelected(ctx, mx);
+					if (item.drawSelected)
+						item.drawSelected(ctx, mx);
 					if (item._boundsSelected)
-						Item.drawSelectedBounds(item.getBounds(), ctx, mx);
+						Item.drawSelectedBounds(item._getBounds(), ctx, mx);
 				}
 			}
 			ctx.restore();

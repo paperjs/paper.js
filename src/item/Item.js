@@ -34,6 +34,7 @@ var Item = this.Item = Base.extend(Callback, {
 		}
 	}
 }, /** @lends Item# */{
+	_boundsSelected: false,
 	// Provide information about fields to be serialized, with their defaults
 	// that can be ommited.
 	_serializeFields: {
@@ -2508,10 +2509,6 @@ var Item = this.Item = Base.extend(Callback, {
 		// we composite the temporary canvas.
 		if (!fillColor || !strokeColor)
 			ctx.globalAlpha = this._opacity;
-	},
-
-	drawSelected: function(ctx, matrix) {
-		// Do nothing
 	},
 
 	statics: {

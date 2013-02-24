@@ -20,6 +20,7 @@
  */
 var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol# */{
 	_type: 'placedsymbol',
+	_boundsSelected: true,
 	_serializeFields: {
 		symbol: null
 	},
@@ -106,12 +107,6 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 
 	draw: function(ctx, param) {
 		Item.draw(this.symbol._definition, ctx, param);
-	},
-
-	drawSelected: function(ctx, matrix) {
-		Item.drawSelectedBounds(this.symbol._definition.getBounds(), ctx,
-				matrix);
 	}
-
 	// TODO: PlacedSymbol#embed()
 });

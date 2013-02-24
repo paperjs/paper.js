@@ -22,6 +22,7 @@
  * @extends Item
  */
 var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
+	_boundsSelected: true,
 	_serializeFields: {
 		content: null
 	},
