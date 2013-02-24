@@ -634,8 +634,12 @@ var Item = this.Item = Base.extend(Callback, {
 			// If we're returning 'bounds', create a LinkedRectangle that uses
 			// the setBounds() setter to update the Item whenever the bounds are
 			// changed:
-			return name == 'bounds' ? LinkedRectangle.create(this, 'setBounds',
-					bounds.x, bounds.y, bounds.width, bounds.height) : bounds;
+			return name == 'getBounds'
+					? LinkedRectangle.create(this, 'setBounds',
+							bounds.x, bounds.y, bounds.width, bounds.height) 
+					// Return a clone of the cahce, so modifications won't
+					// affect it.
+					: bounds.clone();
 		};
 	},
 /** @lends Item# */{
@@ -691,9 +695,7 @@ var Item = this.Item = Base.extend(Callback, {
 		if (cache) {
 			if (!this._bounds)
 				this._bounds = {};
-			// Put a separate instance into the cache, so modifications of the
-			// returned one won't affect it.
-			this._bounds[cache] = bounds.clone();
+			this._bounds[cache] = bounds;
 		}
 		return bounds;
 	},
