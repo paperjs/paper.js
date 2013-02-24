@@ -152,9 +152,9 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 
 	_hitTest: function(point, options) {
 		return this.base(point, Base.merge(options, { fill: false }))
-			|| options.fill && this._style._fillColor && this.contains(point)
+			|| (options.fill && this._style._fillColor && this.contains(point)
 				? new HitResult('fill', this)
-				: null;
+				: null);
 	},
 
 	draw: function(ctx, param) {
