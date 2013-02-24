@@ -475,7 +475,8 @@ var Item = this.Item = Base.extend(Callback, {
 		if (this._children && !arguments[1]) {
 			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i].setSelected(selected);
-		} else if ((selected = !!selected) != this._selected) {
+		}
+		if ((selected = !!selected) != this._selected) {
 			this._selected = selected;
 			this._project._updateSelection(this);
 			this._changed(/*#=*/ Change.ATTRIBUTE);
