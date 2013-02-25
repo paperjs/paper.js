@@ -324,7 +324,10 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 					if (item.drawSelected)
 						item.drawSelected(ctx, mx);
 					if (item._boundsSelected)
-						Item.drawSelectedBounds(item._getBounds(), ctx, mx);
+						// We need to call the internal _getBounds, to get non-
+						// transformed bounds.
+						Item.drawSelectedBounds(item._getBounds('getBounds'),
+								ctx, mx);
 				}
 			}
 			ctx.restore();
