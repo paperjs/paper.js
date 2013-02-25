@@ -1144,6 +1144,9 @@ var Item = this.Item = Base.extend(Callback, {
 						{ name: Base.hyphenate(part), point: pt });
 		}
 
+		if (this._locked)
+			return null;
+
 		point = Point.read(arguments);
 		options = HitResult.getOptions(Base.read(arguments));
 		// Check if the point is withing roughBounds + tolerance, but only if
