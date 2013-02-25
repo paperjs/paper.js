@@ -144,13 +144,12 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	 * A private method to help with both #contains() and #_hitTest().
 	 */
 	_contains: function(point) {
-		// Compound-paths are a little complex: Due to the even-odd rule, in
-		// order to determine wether a point is inside a path or not, we need to
+		// Compound paths are a little complex: In order to determine wether a
+		// point is inside a path or not due to the even-odd rule, we need to
 		// check all the children and count how many intersect. If it's an odd
-		// number, the point is inside the path. Once we know we're inside the
+		// number, the point is inside the path. Once we know it's inside the
 		// path, _hitTest also needs access to the first intersecting element, 
-		// so we return a list here.
-		point = Point.read(arguments);
+		// for the HitResult, so we collect and return a list here.
 		var children = [];
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var child = this._children[i];
@@ -161,7 +160,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	},
 
 	contains: function(point) {
-		return !!this._contains(point);
+		return !!this._contains(Point.read(arguments));
 	},
 
 	_hitTest: function(point, options) {
