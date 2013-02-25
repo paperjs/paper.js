@@ -140,21 +140,37 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		return last && last.getFirstCurve();
 	},
 
-	contains: function(point) {
+	/**
+	 * A private method to help with both #contains() and #_hitTest().
+	 */
+	_contains: function(point) {
+		// Compound-paths are a little complex: Due to the even-odd rule, in
+		// order to determine wether a point is inside a path or not, we need to
+		// check all the children and count how many intersect. If it's an odd
+		// number, the point is inside the path. Once we know we're inside the
+		// path, _hitTest also needs access to the first intersecting element, 
+		// so we return a list here.
 		point = Point.read(arguments);
-		var count = 0;
+		var children = [];
 		for (var i = 0, l = this._children.length; i < l; i++) {
-			if (this._children[i].contains(point))
-				count++;
+			var child = this._children[i];
+			if (child.contains(point))
+				children.push(child);
 		}
-		return (count & 1) == 1;
+		return (children.length & 1) == 1 && children;
+	},
+
+	contains: function(point) {
+		return !!this._contains(point);
 	},
 
 	_hitTest: function(point, options) {
-		return this.base(point, Base.merge(options, { fill: false }))
-			|| (options.fill && this._style._fillColor && this.contains(point)
-				? new HitResult('fill', this)
-				: null);
+		var res = this.base(point, Base.merge(options, { fill: false }));
+		if (!res && options.fill && this._style._fillColor) {
+			res = this._contains(point);
+			res = res ? new HitResult('fill', res[0]) : null;
+		}
+		return res;
 	},
 
 	draw: function(ctx, param) {
