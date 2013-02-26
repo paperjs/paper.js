@@ -30,11 +30,11 @@
 		line3.strokeColor = "yellow";
 		line3.strokeWidth = "5";
 		
-		window._json = project.toJson();
+		window._json = project.exportJson();
 		console.log(window._json);
 	</script>
 	<script type="text/paperscript" canvas="canvas2">
-		Base.fromJson(window._json);
+		project.importJson(window._json);
 	</script>
 </head>
 <body>

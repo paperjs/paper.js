@@ -248,6 +248,14 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		return null;
 	},
 
+	// DOCS: document exportJson (documented in @private Base)
+	// DOCS: document importJson
+	// DOCS: Figure out a way to group these together with importSvg / exportSvg
+
+	importJson: function(json) {
+		return Base.importJson(json);
+	},
+
 	/**
 	 * {@grouptitle Project Hierarchy}
 	 *

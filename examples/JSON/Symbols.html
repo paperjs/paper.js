@@ -16,11 +16,11 @@
 		p1.rotate(45);
 		var p2 = symbol.place([300, 200]);
 		p2.rotate(-30);
-		window._json = project.toJson();
+		window._json = project.exportJson();
 		console.log(window._json);
 	</script>
 	<script type="text/paperscript" canvas="canvas2">
-		Base.fromJson(window._json);
+		project.importJson(window._json);
 	</script>
 </head>
 <body>
