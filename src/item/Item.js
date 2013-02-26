@@ -2065,6 +2065,14 @@ var Item = this.Item = Base.extend(Callback, {
 				: ' @' + this._id);
 	},
 
+	// DOCS: document exportJson (documented in @private Base)
+	// DOCS: document importJson
+	// DOCS: Figure out a way to group these together with importSvg / exportSvg
+
+	importJson: function(json) {
+		return this.addChild(Base.importJson(json));
+	},
+
 	/**
 	 * {@grouptitle Event Handlers}
 	 * Item level handler function to be called on each frame of an animation.

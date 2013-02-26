@@ -46,8 +46,13 @@ this.Base = Base.inject(/** @lends Base# */{
 		}, []).join(', ') + ' }';
 	},
 
-	toJson: function(options) {
-		return Base.toJson(this, options);
+	/**
+	 * Serializes this object to a JSON string.
+	 *
+	 * @param {Object} [options={ precision: 5 }]
+	 */
+	exportJson: function(options) {
+		return Base.exportJson(this, options);
 	},
 
 	/**
@@ -378,11 +383,11 @@ this.Base = Base.inject(/** @lends Base# */{
 			return res;
 		},
 
-		toJson: function(obj, options) {
+		exportJson: function(obj, options) {
 			return JSON.stringify(Base.serialize(obj, options));
 		},
 
-		fromJson: function(json) {
+		importJson: function(json) {
 			return Base.deserialize(JSON.parse(json));
 		},
 
