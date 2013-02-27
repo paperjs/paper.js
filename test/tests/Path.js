@@ -277,3 +277,8 @@ test('Path#fullySelected', function() {
 		return path.fullySelected;
 	}, false);
 });
+
+test('Simplifying a path with three segments of the same position should not throw an error', function() {
+	var path = new Path([20, 20], [20, 20], [20, 20]);
+	path.simplify();
+});
