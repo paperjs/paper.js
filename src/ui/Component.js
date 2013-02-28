@@ -129,12 +129,12 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 		DomElement.set(this._inputItem, key, value);
 		// Read back and convert from input again, to make sure we're in sync
 		value = DomElement.get(this._inputItem, key);
-		this._value = this._info.number ? Base.toFloat(value) : value;
+		this._value = this._info.number ? parseFloat(value, 10) : value;
 	},
 
 	getRange: function() {
-		return [Base.toFloat(DomElement.get(this._inputItem, 'min')),
-				Base.toFloat(DomElement.get(this._inputItem, 'max'))];
+		return [parseFloat(DomElement.get(this._inputItem, 'min')),
+				parseFloat(DomElement.get(this._inputItem, 'max'))];
 	},
 
 	setRange: function(min, max) {
@@ -159,7 +159,7 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 	},
 
 	getStep: function() {
-		return Base.toFloat(DomElement.get(this._inputItem, 'step'));
+		return parseFloat(DomElement.get(this._inputItem, 'step'));
 	},
 
 	setStep: function(step) {

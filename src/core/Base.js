@@ -469,11 +469,7 @@ this.Base = Base.inject(/** @lends Base# */{
 		 */
 		formatFloat: function(num, precision) {
 			precision = precision ? Math.pow(10, precision) : 100000;
-			return (Math.round(num * precision) / precision);
-		},
-
-		toFloat: function(str) {
-			return parseFloat(str, 10);
+			return Math.round(num * precision) / precision;
 		}
 	}
 });

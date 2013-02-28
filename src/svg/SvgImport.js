@@ -30,6 +30,7 @@ new function() {
 		// Base.pick(base.value, base)
 		return base
 				? index !== undefined
+					// Item list? Look up by index:
 					? index < base.numberOfItems
 						? Base.pick((base = base.getItem(index)).value, base)
 						: null
@@ -56,7 +57,7 @@ new function() {
 		return value === 'none'
 				? null
 				: type === 'number'
-					? Base.toFloat(value)
+					? parseFloat(value)
 					: type === 'array'
 						? value ? value.split(/[\s,]+/g).map(parseFloat) : []
 						: type === 'color' && getDefinition(value)
@@ -358,6 +359,9 @@ new function() {
 	function applyAttributes(item, node) {
 		// SVG attributes can be set both as styles and direct node attributes,
 		// so we need to parse both
+		// TODO: Instead of looping through the styles, we need to loop through
+		// a list of styles relevant to SVG, and calculate the computed style,
+		// to support style classes too.
 		for (var i = 0, l = node.style.length; i < l; i++) {
 			var name = node.style[i];
 			item = applyAttribute(item, node, name, node.style[Base.camelize(name)]);
@@ -411,7 +415,7 @@ new function() {
 			case 'stop-opacity':
 			// http://www.w3.org/TR/SVG/masking.html#OpacityProperty
 			case 'opacity':
-				var opacity = Base.toFloat(value);
+				var opacity = parseFloat(value);
 				if (name === 'stop-opacity') {
 					item.color.setAlpha(opacity);
 				} else {
@@ -425,7 +429,7 @@ new function() {
 				var color = item[name == 'fill-opacity' ? 'getFillColor'
 						: 'getStrokeColor']();
 				if (color)
-					color.setAlpha(Base.toFloat(value));
+					color.setAlpha(parseFloat(value));
 				break;
 			case 'visibility':
 				item.setVisible(value === 'visible');
@@ -485,7 +489,7 @@ new function() {
 				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
 				break;
 			case 'font-size':
-				item.setFontSize(Base.toFloat(value));
+				item.setFontSize(parseFloat(value));
 				break;
 			case 'text-anchor':
 				item.setJustification({
