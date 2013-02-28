@@ -15,27 +15,18 @@
  * Paper.js DOM to a Paper.js DOM.
  */
 new function() {
-	// Shortcut to Base.formatFloat
-	var formatFloat = Base.formatFloat,
+	// Shortcut to Format.number
+	var format = Format.number,
 		namespaces = {
 			href: 'http://www.w3.org/1999/xlink'
 		};
-
-	function formatPoint(point) {
-		return formatFloat(point.x) + ',' + formatFloat(point.y);
-	}
-
-	function formatRectangle(rect) {
-		return formatFloat(rect.x) + ',' + formatFloat(rect.y)
-			+ ',' + formatFloat(rect.width) + ',' + formatFloat(rect.height);
-	}
 
 	function setAttributes(node, attrs) {
 		for (var key in attrs) {
 			var val = attrs[key],
 				namespace = namespaces[key];
 			if (typeof val === 'number')
-				val = formatFloat(val);
+				val = format(val);
 			if (namespace) {
 				node.setAttributeNS(namespace, key, val);
 			} else {
@@ -81,11 +72,11 @@ new function() {
 				angle = decomposed.rotation,
 				scale = decomposed.scaling;
 			if (trans && !trans.isZero())
-				parts.push('translate(' + formatPoint(trans) + ')');
+				parts.push('translate(' + Format.point(trans) + ')');
 			if (!Numerical.isZero(scale.x - 1) || !Numerical.isZero(scale.y - 1))
-				parts.push('scale(' + formatPoint(scale) +')');
+				parts.push('scale(' + Format.point(scale) +')');
 			if (angle)
-				parts.push('rotate(' + formatFloat(angle) + ')');
+				parts.push('rotate(' + format(angle) + ')');
 			attrs.transform = parts.join(' ');
 		} else {
 			attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
@@ -269,7 +260,7 @@ new function() {
 		case 'polygon':
 			var parts = [];
 			for(i = 0, l = segments.length; i < l; i++)
-				parts.push(formatPoint(segments[i]._point));
+				parts.push(Format.point(segments[i]._point));
 			attrs = {
 				points: parts.join(' ')
 			};
@@ -342,8 +333,8 @@ new function() {
 			break;
 		}
 		if (angle) {
-			attrs.transform = 'rotate(' + formatFloat(angle) + ','
-					+ formatPoint(center) + ')';
+			attrs.transform = 'rotate(' + format(angle) + ','
+					+ Format.point(center) + ')';
 			// Tell applyStyle() that to transform the gradient the other way
 			item._gradientMatrix = new Matrix().rotate(-angle, center);
 		}
@@ -355,7 +346,7 @@ new function() {
 			children = item._children,
 			paths = [];
 		for (var i = 0, l = children.length; i < l; i++)
-			paths.push(getPath(children[i]));
+			paths.push(children[i].getPathData());
 		attrs.d = paths.join(' ');
 		return createElement('path', attrs);
 	}
@@ -368,7 +359,7 @@ new function() {
 			bounds = definition.getBounds();
 		if (!symbolNode) {
 			symbolNode = createElement('symbol', {
-				viewBox: formatRectangle(bounds)
+				viewBox: Format.rectangle(bounds)
 			});
 			symbolNode.appendChild(exportSvg(definition));
 			setDefinition(symbol, symbolNode);
@@ -376,8 +367,8 @@ new function() {
 		attrs.href = '#' + symbolNode.id;
 		attrs.x += bounds.x;
 		attrs.y += bounds.y;
-		attrs.width = formatFloat(bounds.width);
-		attrs.height = formatFloat(bounds.height);
+		attrs.width = format(bounds.width);
+		attrs.height = format(bounds.height);
 		return createElement('use', attrs);
 	}
 
@@ -472,7 +463,7 @@ new function() {
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'
-								? formatFloat(value)
+								? format(value)
 								: value;
 			}
 		});
