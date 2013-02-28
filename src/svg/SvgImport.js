@@ -69,7 +69,7 @@ new function() {
 		return new Group(clip, item);
 	}
 
-	// Define importer functions for various SVG node types
+	// Importer functions for various SVG node types //
 
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
@@ -292,7 +292,6 @@ new function() {
 		use: function(node, type) {
 			// Note the namespaced xlink:href attribute is just called href
 			// as a property on node.
-			// TODO: Should getValue become namespace aware?
 			var id = (getValue(node, 'href') || '').substring(1),
 				definition = definitions[id];
 			// Use place if we're dealing with a symbol:
@@ -349,6 +348,134 @@ new function() {
 		}
 	};
 
+	// Attributes & Styles //
+
+	function applyTransform(item, node, name, value) {
+		// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
+		var transforms = node[name].baseVal,
+			matrix = new Matrix();
+		for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
+			var mx = transforms.getItem(i).matrix;
+			matrix.concatenate(
+				new Matrix(mx.a, mx.b, mx.c, mx.d, mx.e, mx.f));
+		}
+		item.transform(matrix);
+	}
+
+	function applyOpacity(item, node, name, value) {
+		// http://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
+		// http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
+		var color = item[name == 'fill-opacity' ? 'getFillColor'
+				: 'getStrokeColor']();
+		if (color)
+			color.setAlpha(parseFloat(value));
+	}
+
+	function applyTextAttribute(item, node, name, value) {
+		if (item instanceof TextItem) {
+			switch (name) {
+			case 'font':
+				// TODO: Verify if there is not another way?
+				var text = document.createElement('span');
+				text.style.font = value;
+				for (var i = 0; i < text.style.length; i++) {
+					var name = text.style[i];
+					item = applyAttribute(item, node, name, text.style[name]);
+				}
+				break;
+			case 'font-family':
+				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
+				break;
+			case 'font-size':
+				item.setFontSize(parseFloat(value));
+				break;
+			case 'text-anchor':
+				// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
+				item.setJustification({
+					start: 'left',
+					middle: 'center',
+					end: 'right'
+				}[value]);
+				break;
+			}
+		} else if (item instanceof Group) {
+			// Text styles need to be recursively passed down to children that
+			// might be TextItems explicitely.
+			var children = item._children;
+			for (var i = 0, l = children.length; i < l; i++) {
+				applyTextAttribute(children[i], node, name, value);
+			}
+		}
+	}
+
+	var attributes = {
+		id: function(item, node, name, value) {
+			definitions[value] = item;
+			if (item.setName)
+				item.setName(value);
+		},
+
+		'clip-path': function(item, node, name, value) {
+			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
+			return createClipGroup(item, getDefinition(value).clone().reduce());
+		},
+
+		gradientTransform: applyTransform,
+		transform: applyTransform,
+
+		opacity: function(item, node, name, value) {
+			// http://www.w3.org/TR/SVG/masking.html#OpacityProperty
+			item.setOpacity(parseFloat(value));
+		},
+
+		'fill-opacity': applyOpacity,
+		'stroke-opacity': applyOpacity,
+
+		font: applyTextAttribute,
+		'font-family': applyTextAttribute,
+		'font-size': applyTextAttribute,
+		'text-anchor': applyTextAttribute,
+
+		'stop-opacity': function(item, node, name, value) {
+			// http://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
+			item.color.setAlpha(parseFloat(value));
+		},
+
+		visibility: function(item, node, name, value) {
+			item.setVisible(value === 'visible');
+		},
+
+		'stop-color': function(item, node, name, value) {
+			// http://www.w3.org/TR/SVG/pservers.html#StopColorProperty
+			item.setColor(value);
+		},
+
+		offset: function(item, node, name, value) {
+			// http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
+			var percentage = value.match(/(.*)%$/);
+			item.setRampPoint(percentage ? percentage[1] / 100 : value);
+		},
+
+		viewBox: function(item, node, name, value) {
+			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
+			// TODO: implement preserveAspectRatio attribute
+			if (item instanceof Symbol)
+				return;
+			var values = convertValue(value, 'array'),
+				rectangle = Rectangle.create.apply(this, values),
+				size = getSize(node, 'width', 'height', true),
+				scale = size ? rectangle.getSize().divide(size) : 1,
+				offset = rectangle.getPoint(),
+				matrix = new Matrix().translate(offset).scale(scale);
+			item.transform(matrix.inverted());
+			if (size)
+				rectangle.setSize(size);
+			rectangle.setPoint(0);
+			// TODO: the viewbox does not always need to be clipped
+			return createClipGroup(item, new Path.Rectangle(rectangle));
+		}
+	};
+
 	/**
 	 * Converts various SVG styles and attributes into Paper.js styles and
 	 * attributes and applies them to the passed item.
@@ -388,125 +515,14 @@ new function() {
 		if (entry) {
 			item._style[entry.set](convertValue(value, entry.type));
 		} else {
-			switch (name) {
-			case 'id':
-				definitions[value] = item;
-				if (item.setName)
-					item.setName(value);
-				break;
-			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-			case 'clip-path':
-				item = createClipGroup(item,
-					getDefinition(value).clone().reduce());
-				break;
-			// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
-			case 'gradientTransform':
-			case 'transform':
-				var transforms = node[name].baseVal,
-					matrix = new Matrix();
-				for (var i = 0, l = transforms.numberOfItems; i < l; i++) {
-					var mx = transforms.getItem(i).matrix;
-					matrix.concatenate(
-						new Matrix(mx.a, mx.b, mx.c, mx.d, mx.e, mx.f));
-				}
-				item.transform(matrix);
-				break;
-			// http://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
-			case 'stop-opacity':
-			// http://www.w3.org/TR/SVG/masking.html#OpacityProperty
-			case 'opacity':
-				var opacity = parseFloat(value);
-				if (name === 'stop-opacity') {
-					item.color.setAlpha(opacity);
-				} else {
-					item.setOpacity(opacity);
-				}
-				break;
-			// http://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
-			case 'fill-opacity':
-			// http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
-			case 'stroke-opacity':
-				var color = item[name == 'fill-opacity' ? 'getFillColor'
-						: 'getStrokeColor']();
-				if (color)
-					color.setAlpha(parseFloat(value));
-				break;
-			case 'visibility':
-				item.setVisible(value === 'visible');
-				break;
-			case 'font':
-			case 'font-family':
-			case 'font-size':
-			// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
-			case 'text-anchor':
-				applyTextAttribute(item, node, name, value);
-				break;
-			// http://www.w3.org/TR/SVG/pservers.html#StopColorProperty
-			case 'stop-color':
-				item.setColor(value);
-				break;
-			// http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
-			case 'offset':
-				var percentage = value.match(/(.*)%$/);
-				item.setRampPoint(percentage ? percentage[1] / 100 : value);
-				break;
-			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
-			// TODO: implement preserveAspectRatio attribute
-			case 'viewBox':
-				if (item instanceof Symbol)
-					break;
-				var values = convertValue(value, 'array'),
-					rectangle = Rectangle.create.apply(this, values),
-					size = getSize(node, 'width', 'height', true),
-					scale = size ? rectangle.getSize().divide(size) : 1,
-					offset = rectangle.getPoint(),
-					matrix = new Matrix().translate(offset).scale(scale);
-				item.transform(matrix.inverted());
-				if (size)
-					rectangle.setSize(size);
-				rectangle.setPoint(0);
-				// TODO: the viewbox does not always need to be clipped
-				item = createClipGroup(item, new Path.Rectangle(rectangle));
-				break;
+			var attribute = attributes[name];
+			if (attribute) {
+				var res = attribute(item, node, name, value);
+				if (res !== undefined)
+					item = res;
 			}
 		}
 		return item;
-	}
-
-	function applyTextAttribute(item, node, name, value) {
-		if (item instanceof TextItem) {
-			switch (name) {
-			case 'font':
-				// TODO: Verify if there is not another way?
-				var text = document.createElement('span');
-				text.style.font = value;
-				for (var i = 0; i < text.style.length; i++) {
-					var name = text.style[i];
-					item = applyAttribute(item, node, name, text.style[name]);
-				}
-				break;
-			case 'font-family':
-				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
-				break;
-			case 'font-size':
-				item.setFontSize(parseFloat(value));
-				break;
-			case 'text-anchor':
-				item.setJustification({
-					start: 'left',
-					middle: 'center',
-					end: 'right'
-				}[value]);
-				break;
-			}
-		} else if (item instanceof Group) {
-			// Text styles need to be recursively passed down to children that
-			// might be TextItems explicitely.
-			var children = item._children;
-			for (var i = 0, l = children.length; i < l; i++) {
-				applyTextAttribute(children[i], node, name, value);
-			}
-		}
 	}
 
 	var definitions = {};
