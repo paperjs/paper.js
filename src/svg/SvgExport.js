@@ -444,7 +444,7 @@ new function() {
 		if (item._name != null)
 			attrs.id = item._name;
 
-		Base.each(SvgStyles.properties, function(entry) {
+		Base.each(SvgStyles, function(entry) {
 			// Get a given style only if it differs from the value on the parent
 			// (A layer or group which can have style values in SVG).
 			var value = style[entry.get]();
