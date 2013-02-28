@@ -408,7 +408,12 @@ new function() {
 		}
 	}
 
-	var attributes = {
+	// Create apply methos for attributes, and merge in those for SvgStlyes:
+	var attributes = Base.each(SvgStyles, function(entry) {
+		this[entry.attribute] = function(item, node, name, value) {
+			item._style[entry.set](convertValue(value, entry.type));
+		};
+	}, {
 		id: function(item, node, name, value) {
 			definitions[value] = item;
 			if (item.setName)
@@ -474,7 +479,7 @@ new function() {
 			// TODO: the viewbox does not always need to be clipped
 			return createClipGroup(item, new Path.Rectangle(rectangle));
 		}
-	};
+	});
 
 	/**
 	 * Converts various SVG styles and attributes into Paper.js styles and
@@ -509,18 +514,11 @@ new function() {
 	 * @param value the value of the SVG style
 	 */
 	 function applyAttribute(item, node, name, value) {
-		if (value == null)
-			return item;
-		var entry = SvgStyles.attributes[name];
-		if (entry) {
-			item._style[entry.set](convertValue(value, entry.type));
-		} else {
-			var attribute = attributes[name];
-			if (attribute) {
-				var res = attribute(item, node, name, value);
-				if (res !== undefined)
-					item = res;
-			}
+		var attribute;
+		if (value != null && (attribute = attributes[name])) {
+			var res = attribute(item, node, name, value);
+			if (res !== undefined)
+				item = res;
 		}
 		return item;
 	}

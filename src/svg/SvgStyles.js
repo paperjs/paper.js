@@ -21,14 +21,11 @@ var SvgStyles = Base.each({
 	dashOffset: ['stroke-dashoffset', 'number']
 }, function(entry, key) {
 	var part = Base.capitalize(key);
-	this.attributes[entry[0]] = this.properties[key] = {
+	this[key] = {
 		type: entry[1],
 		property: key,
 		attribute: entry[0],
 		get: 'get' + part,
 		set: 'set' + part
 	};
-}, {
-	properties: {},
-	attributes: {}
-});
+}, {});
