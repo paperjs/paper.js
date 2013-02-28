@@ -18,6 +18,7 @@
 var options = {
 	browser: true,
 	stats: true,
+	svg: true,
 	version: 'dev',
 	parser: 'acorn',
 	debug: false

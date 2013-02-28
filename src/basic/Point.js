@@ -165,8 +165,8 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	},
 
 	_serialize: function(options) {
-		var format = Base.formatFloat;
-		// For speed reasons, we directly call formatFloat() here with
+		var format = Format.number;
+		// For speed reasons, we directly call Format.number() here with
 		// precision, instead of converting array through Base.serialize() which
 		// makes a copy.
 		return [format(this.x, options.precision),
@@ -214,7 +214,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @return {String} A string representation of the point.
 	 */
 	toString: function() {
-		var format = Base.formatFloat;
+		var format = Format.number;
 		return '{ x: ' + format(this.x) + ', y: ' + format(this.y) + ' }';
 	},
 

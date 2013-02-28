@@ -81,10 +81,6 @@ var paper = new function() {
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');
 
-/*#*/ include('svg/SvgStyles.js');
-/*#*/ include('svg/SvgExport.js');
-/*#*/ include('svg/SvgImport.js');
-
 /*#*/ include('style/Style.js');
 /*#*/ include('style/PathStyle.js');
 /*#*/ include('style/ParagraphStyle.js');
@@ -116,12 +112,19 @@ var paper = new function() {
 /*#*/ include('tool/Tool.js');
 /*#*/ } // options.browser
 
+/*#*/ include('util/Format.js');
 /*#*/ include('util/CanvasProvider.js');
 /*#*/ include('util/Numerical.js');
 /*#*/ include('util/BlendMode.js');
 /*#*/ if (options.version == 'dev') {
 /*#*/ include('util/ProxyContext.js');
 /*#*/ } // options.browser
+
+/*#*/ if (options.svg) {
+/*#*/ include('svg/SvgStyles.js');
+/*#*/ include('svg/SvgExport.js');
+/*#*/ include('svg/SvgImport.js');
+/*#*/ } // options.svg
 
 /*#*/ include('core/PaperScript.js');
 

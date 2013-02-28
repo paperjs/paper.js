@@ -419,7 +419,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @return {String} A string representation of this rectangle.
 	 */
 	toString: function() {
-		var format = Base.formatFloat;
+		var format = Format.number;
 		return '{ x: ' + format(this.x)
 				+ ', y: ' + format(this.y)
 				+ ', width: ' + format(this.width)

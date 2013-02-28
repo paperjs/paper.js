@@ -21,6 +21,7 @@ __dirname = path.resolve(__dirname, '../src/');
 var context = vm.createContext({
 	options: {
 		server: true,
+		svg: true,
 		parser: 'acorn',
 		version: 'dev'
 	},

@@ -125,7 +125,7 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	 * @return {String} A string representation of the size.
 	 */
 	toString: function() {
-		var format = Base.formatFloat;
+		var format = Format.number;
 		return '{ width: ' + format(this.width)
 				+ ', height: ' + format(this.height) + ' }';
 	},

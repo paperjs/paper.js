@@ -40,7 +40,7 @@ this.Base = Base.inject(/** @lends Base# */{
 			if (!/^_/.test(key)) {
 				var type = typeof value;
 				this.push(key + ': ' + (type === 'number'
-						? Base.formatFloat(value)
+						? Format.number(value)
 						: type === 'string' ? "'" + value + "'" : value));
 			}
 		}, []).join(', ') + ' }';
@@ -324,7 +324,7 @@ this.Base = Base.inject(/** @lends Base# */{
 						res[i] = Base.serialize(obj[i], options, compact,
 								dictionary);
 			} else if (typeof obj === 'number') {
-				res = Base.formatFloat(obj, options.precision);
+				res = Format.number(obj, options.precision);
 			} else {
 				res = obj;
 			}
@@ -458,18 +458,6 @@ this.Base = Base.inject(/** @lends Base# */{
 		 */
 		hyphenate: function(str) {
 			return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-		},
-
-		/**
-		 * Utility function for rendering numbers to strings at a precision of
-		 * up to the amount of fractional digits.
-		 *
-		 * @param {Number} num the number to be converted to a string
-		 * @param {Number} [precision=5] the amount of fractional digits.
-		 */
-		formatFloat: function(num, precision) {
-			precision = precision ? Math.pow(10, precision) : 100000;
-			return Math.round(num * precision) / precision;
 		}
 	}
 });
