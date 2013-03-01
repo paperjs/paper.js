@@ -185,6 +185,53 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
+	 * The segments contained within the path, described as SVG style path data.
+	 *
+	 * @type String
+	 * @bean
+	 */
+	getPathData: function(/* precision */) {
+		var segments = this._segments,
+			style = this._style,
+			format = Format.point,
+			precision = arguments[0],
+			parts = [];
+
+		// TODO: Add support for H/V and/or relative commands, where appropriate
+		// and resulting in shorter strings
+		function addCurve(seg1, seg2, skipLine) {
+			var point1 = seg1._point,
+				point2 = seg2._point,
+				handle1 = seg1._handleOut,
+				handle2 = seg2._handleIn;
+			if (handle1.isZero() && handle2.isZero()) {
+				if (!skipLine) {
+					// L = absolute lineto: moving to a point with drawing
+					parts.push('L' + format(point2));
+				}
+			} else {
+				// c = relative curveto: handle1, handle2 + end - start,
+				// end - start
+				var end = point2.subtract(point1);
+				parts.push('c' + format(handle1)
+						+ ' ' + format(end.add(handle2))
+						+ ' ' + format(end));
+			}
+		}
+
+		parts.push('M' + format(segments[0]._point));
+		for (i = 0, l = segments.length  - 1; i < l; i++)
+			addCurve(segments[i], segments[i + 1], false);
+		// We only need to draw the connecting curve if it is not a line, and if
+		// the path is cosed and has a stroke color, or if it is filled.
+		if (this._closed && style._strokeColor || style._fillColor)
+			addCurve(segments[segments.length - 1], segments[0], true);
+		if (this._closed)
+			parts.push('z');
+		return parts.join('');
+	},
+
+	/**
 	 * Specifies whether the path is closed. If it is closed, Paper.js connects
 	 * the first and last segments.
 	 *

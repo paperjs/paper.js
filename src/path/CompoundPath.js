@@ -112,9 +112,10 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	 * @bean
 	 */
 	getCurves: function() {
-		var curves = [];
-		for (var i = 0, l = this._children.length; i < l; i++)
-			curves = curves.concat(this._children[i].getCurves());
+		var children = this._children,
+			curves = [];
+		for (var i = 0, l = children.length; i < l; i++)
+			curves = curves.concat(children[i].getCurves());
 		return curves;
 	},
 
@@ -138,6 +139,14 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	getLastCurve: function() {
 		var last = this.getLastChild();
 		return last && last.getFirstCurve();
+	},
+
+	getPathData: function(/* precision */) {
+		var children = this._children,
+			paths = [];
+		for (var i = 0, l = children.length; i < l; i++)
+			paths.push(children[i].getPathData(arguments[0]));
+		return paths.join(' ');
 	},
 
 	/**

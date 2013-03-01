@@ -49,7 +49,87 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 				Curve._addIntersections(values1, values2[j], curve, locations);
 		}
 		return locations;
+	},
+
+	setPathData: function(data) {
+		// This is a very compact SVG Path Data parser that works both for Path
+		// and CompoundPath.
+
+		var parts = data.match(/[a-z][^a-z]*/ig),
+			coords,
+			relative = false,
+			control,
+			current = new Point(); // the current position
+
+		function getCoord(index, coord, update) {
+			var val = parseFloat(coords[index]); 
+			if (relative)
+				val += current[coord];
+			if (update)
+				current[coord] = val;
+			return val;
+		}
+
+		function getPoint(index, update) {
+			return new Point(
+				getCoord(index, 'x', update),
+				getCoord(index + 1, 'y', update)
+			);
+		}
+
+		for (var i = 0, l = parts.length; i < l; i++) {
+			var part = parts[i].trim();
+				cmd = part[0],
+				lower = cmd.toLowerCase();
+			// Split at white-space, commas but also before signs.
+			// Use positive ookahead to include signs.
+			coords = part.slice(1).split(/[\s,]+|(?=[+-])/);
+			relative = cmd === lower;
+			switch (lower) {
+			case 'm':
+			case 'l':
+				for (var j = 0; j < coords.length; j += 2)
+					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
+							getPoint(j, true));
+				break;
+			case 'h':
+			case 'v':
+				var coord = lower == 'h' ? 'x' : 'y';
+				for (var j = 0; j < coords.length; j++)
+					getCoord(j, coord, true);
+				this.lineTo(current);
+				break;
+			case 'c':
+				control = getPoint(2);
+				this.cubicCurveTo(getPoint(0), control, getPoint(4, true));
+				break;
+			case 's': // Shorthand cubic bezierCurveTo, absolute
+				// Calculate reflection of previous control points
+				var handle = current.multiply(2).subtract(control);
+				control = getPoint(0);
+				this.cubicCurveTo(handle, control, getPoint(2, true));
+				break;
+			case 'q':
+				control = getPoint(0);
+				this.quadraticCurveTo(control, getPoint(2, true));
+				break;
+			case 't':
+				for (var j = 0; j < coords.length; j += 2) {
+					// Calculate reflection of previous control points
+					control = current.multiply(2).subtract(control);
+					path.quadraticCurveTo(control, getPoint(j, true));
+				}
+				break;
+			case 'a':
+				// TODO: Implement Arcs!
+				break;
+			case 'z':
+				this.closePath();
+				break;
+			}
+		}
 	}
+
 	/**
 	 * Smooth bezier curves without changing the amount of segments or their
 	 * points, by only smoothing and adjusting their handle points, for both
