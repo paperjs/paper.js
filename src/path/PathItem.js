@@ -101,25 +101,30 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 				}
 				break;
 			case 'c':
-				control = getPoint(2);
-				this.cubicCurveTo(getPoint(0), control, getPoint(4, true));
+				this.cubicCurveTo(
+						getPoint(0),
+						control = getPoint(2),
+						getPoint(4, true));
 				break;
 			case 's':
 				// Shorthand cubic bezierCurveTo, absolute
-				// Calculate reflection of previous control points
-				var handle = current.multiply(2).subtract(control);
-				control = getPoint(0);
-				this.cubicCurveTo(handle, control, getPoint(2, true));
+				this.cubicCurveTo(
+						// Calculate reflection of previous control points
+						current.multiply(2).subtract(control),
+						control = getPoint(0),
+						getPoint(2, true));
 				break;
 			case 'q':
-				control = getPoint(0);
-				this.quadraticCurveTo(control, getPoint(2, true));
+				this.quadraticCurveTo(
+						control = getPoint(0),
+						getPoint(2, true));
 				break;
 			case 't':
 				for (var j = 0; j < coords.length; j += 2) {
-					// Calculate reflection of previous control points
-					control = current.multiply(2).subtract(control);
-					this.quadraticCurveTo(control, getPoint(j, true));
+					this.quadraticCurveTo(
+							// Calculate reflection of previous control points
+							control = current.multiply(2).subtract(control),
+							getPoint(j, true));
 				}
 				break;
 			case 'a':
