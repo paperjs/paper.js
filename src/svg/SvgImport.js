@@ -69,41 +69,47 @@ new function() {
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
 			clip = type === 'clipPath',
-			group = clip ? new CompoundPath() : new Group(),
-			project = group._project,
+			item = clip ? new CompoundPath() : new Group(),
+			project = item._project,
 			currentStyle = project._currentStyle;
-		// Style on groups needs to be handled differently than all other items:
-		// We first apply the style to the group, then use it as the project's
+		// Style on items needs to be handled differently than all other items:
+		// We first apply the style to the item, then use it as the project's
 		// currentStyle, so it is used as a default for the creation of all
-		// nested items. importSvg then needs to check for groups and avoid
+		// nested items. importSvg then needs to check for items and avoid
 		// calling applyAttributes() again.
 		// Set the default color to black, since that's how SVG handles fills.
-		group.setFillColor('black');
-		applyAttributes(group, node);
-		project._currentStyle = group._style.clone();
+		item.setFillColor('black');
+		if (!clip) {
+			item = applyAttributes(item, node);
+			project._currentStyle = item._style.clone();
+		}
 		for (var i = 0, l = nodes.length; i < l; i++) {
-			var child = nodes[i],
-				item;
-			if (child.nodeType == 1 && (item = importSvg(child))) {
+			var childNode = nodes[i],
+				child;
+			if (childNode.nodeType == 1 && (child = importSvg(childNode))) {
 				// If adding CompoundPaths to other CompoundPaths,
 				// we need to "unbox" them first:
-				if (clip && item instanceof CompoundPath) {
-					group.addChildren(item.removeChildren());
-					item.remove();
-				} else if (!(item instanceof Symbol)) {
-					group.addChild(item);
+				if (clip && child instanceof CompoundPath) {
+					item.addChildren(child.removeChildren());
+					child.remove();
+				} else if (!(child instanceof Symbol)) {
+					item.addChild(child);
 				}
 			}
 		}
+		// clip paths are reduced (unboxed) and their attributes applied at the
+		// end.
+		if (clip)
+			item = applyAttributes(item.reduce(), node);
 		// Restore currentStyle
 		project._currentStyle = currentStyle;
-		if (/^(defs|clipPath)$/.test(type)) {
-			// I don't think we need to add defs to the DOM. But we might want
-			// to use Symbols for them?
-			group.remove();
-			group = null;
+		if (clip || type === 'defs') {
+			// We don't want the defs in the DOM. But we might want to use
+			// Symbols for them to save memory?
+			item.remove();
+			item = null;
 		}
-		return group;
+		return item;
 	}
 
 	function importPoly(node, type) {
@@ -315,9 +321,8 @@ new function() {
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			var clip = getDefinition(value);
 			if (clip) {
-				clip = clip.clone().reduce();
+				clip = clip.clone();
 				clip.setClipMask(true);
-				clip.remove();
 				return new Group(clip, item);
 			}
 		},
