@@ -209,6 +209,8 @@ new function() {
 			// Use place if we're dealing with a symbol:
 			return definition
 					? definition instanceof Symbol
+						// When placing symbols, we nee to take both point and
+						// matrix into account. This just does the right thing:
 						? definition.place(getPoint(node, 'x', 'y'))
 						: definition.clone()
 					: null;
@@ -376,31 +378,26 @@ new function() {
 		viewBox: function(item, value, name, node, styles) {
 			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
 			// TODO: implement preserveAspectRatio attribute
+			// viewBox will be applied both to the group that's created for the
+			// content in Symbol.definition, and the Symbol itself.
+			if (item instanceof Group)
+				return;
 			var values = convertValue(value, 'array'),
-				rectangle = Rectangle.create.apply(this, values),
+				rect = Rectangle.create.apply(this, values),
 				size = getSize(node, 'width', 'height', true),
-				scale = size ? rectangle.getSize().divide(size) : 1,
-				offset = rectangle.getPoint(),
+				scale = size ? rect.getSize().divide(size) : 1,
+				offset = rect.getPoint(),
 				matrix = new Matrix().translate(offset).scale(scale),
-				clip = getAttribute(node, 'overflow', styles) != 'visible';
+				clip = getAttribute(node, 'overflow', styles) != 'visible',
+				group = item._definition; // Always a group, see importSymbol
 			if (size)
-				rectangle.setSize(size);
-			if (item instanceof Symbol) {
-				var definition = item._definition;
-				definition.transform(matrix);
-				if (clip && !rectangle.contains(definition.getBounds())) {
-					// Pass true for dontCenter, since we don't want to change
-					// positioning of our definition again.
-					item.setDefinition(createClipGroup(definition,
-							new Path.Rectangle(rectangle).transform(
-									definition._matrix)), true);
-				}
-			} else {
-				item.transform(matrix.inverted());
-				if (clip) {
-					rectangle.setPoint(0);
-					return createClipGroup(item, new Path.Rectangle(rectangle));
-				}
+				rect.setSize(size);
+			group.transform(matrix.inverted());
+			if (clip && !rect.contains(group.getBounds())) {
+				// Add a clip path at the top of this symbol's group
+				clip = new Path.Rectangle(rect).transform(group._matrix);
+				clip.setClipMask(true);
+				group.addChild(clip);
 			}
 		}
 	});
