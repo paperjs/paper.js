@@ -13,19 +13,13 @@
 Path.inject({ statics: new function() {
 
 	function readRectangle(list) {
-		var props = Base.getNamed(list),
-			rect;
-		if (props) {
-			if ('from' in props) {
-				rect = new Rectangle(Point.readNamed(list, 'from'),
-						Point.readNamed(list, 'to'));
-			} else {
-				rect = new Rectangle(props);
-			}
-		} else {
-			rect = Rectangle.read(list);
-		}
-		return rect;
+		var props = Base.getNamed(list);
+		return props
+				? 'from' in props
+					? new Rectangle(Point.readNamed(list, 'from'),
+						Point.readNamed(list, 'to'))
+					: new Rectangle(props)
+				: Rectangle.read(list);
 	}
 
 	function createRectangle(/* rect */) {
