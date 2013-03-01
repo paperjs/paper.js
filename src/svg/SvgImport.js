@@ -329,19 +329,19 @@ new function() {
 		'stroke-opacity': applyOpacity,
 
 		'font-family': function(item, value) {
-			applyTextAttribute(item, function() {
+			applyTextAttribute(item, function(item) {
 				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
 			});
 		},
 
 		'font-size': function(item, value) {
-			applyTextAttribute(item, function() {
+			applyTextAttribute(item, function(item) {
 				item.setFontSize(parseFloat(value));
 			});
 		},
 
 		'text-anchor': function(item, value) {
-			applyTextAttribute(item, function() {
+			applyTextAttribute(item, function(item) {
 				// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
 				item.setJustification({
 					start: 'left',
