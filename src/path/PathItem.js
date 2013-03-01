@@ -78,12 +78,12 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 		}
 
 		for (var i = 0, l = parts.length; i < l; i++) {
-			var part = parts[i].trim();
+			var part = parts[i];
 				cmd = part[0],
 				lower = cmd.toLowerCase();
 			// Split at white-space, commas but also before signs.
 			// Use positive lookahead to include signs.
-			coords = part.slice(1).split(/[\s,]+|(?=[+-])/);
+			coords = part.slice(1).trim().split(/[\s,]+|(?=[+-])/);
 			relative = cmd === lower;
 			switch (lower) {
 			case 'm':
