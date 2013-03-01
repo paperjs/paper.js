@@ -254,7 +254,7 @@ new function() {
 			// lengthAdjust:
 			var text = new PointText(getPoint(node, 'x', 'y', false, 0)
 					.add(getPoint(node, 'dx', 'dy', false, 0)));
-			text.setContent(node.textContent || '');
+			text.setContent(node.textContent.trim() || '');
 			return text;
 		}
 	};
@@ -385,7 +385,7 @@ new function() {
 			var rect = Rectangle.create.apply(this, convertValue(value, 'array')),
 				size = getSize(node, 'width', 'height', true);
 			if (item instanceof Group) {
-				// This is either a top-level sbg node, or the container for a
+				// This is either a top-level svg node, or the container for a
 				// symbol.
 				var scale = size ? rect.getSize().divide(size) : 1,
 					matrix = new Matrix().translate(rect.getPoint()).scale(scale);
