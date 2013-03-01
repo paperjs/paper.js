@@ -23,7 +23,7 @@
 var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	_type: 'compoundpath',
 	_serializeFields: {
-		pathData: null
+		pathData: ''
 	},
 
 	/**
