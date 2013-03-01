@@ -118,7 +118,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 				for (var j = 0; j < coords.length; j += 2) {
 					// Calculate reflection of previous control points
 					control = current.multiply(2).subtract(control);
-					path.quadraticCurveTo(control, getPoint(j, true));
+					this.quadraticCurveTo(control, getPoint(j, true));
 				}
 				break;
 			case 'a':
