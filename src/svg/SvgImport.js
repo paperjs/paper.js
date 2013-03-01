@@ -412,7 +412,7 @@ new function() {
 		}
 	}
 
-	// Create apply methos for attributes, and merge in those for SvgStlyes:
+	// Create apply-functions for attributes, and merge in those for SvgStlyes:
 	var attributes = Base.each(SvgStyles, function(entry) {
 		this[entry.attribute] = function(item, value, name, node) {
 			item._style[entry.set](convertValue(value, entry.type));
@@ -426,7 +426,7 @@ new function() {
 
 		'clip-path': function(item, value) {
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-			var def =  getDefinition(value);
+			var def = getDefinition(value);
 			return def && createClipGroup(item, def.clone().reduce());
 		},
 
