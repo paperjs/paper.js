@@ -392,6 +392,24 @@ new function() {
 		}
 	});
 
+	function getAttribute(node, name, styles) {
+		// First see if the given attribute is defined.
+		var attr = node.attributes[name],
+			value = attr && attr.value;
+		if (!value) {
+			// Fallback to using styles. See if there is a style, either set
+			// directly on the object or applied to it through CSS rules.
+			// We also need to filter out inheritance from their parents.
+			var style = Base.camelize(name);
+			value = node.style[style];
+			if (!value && styles.node[style] !== styles.parent[style])
+				value = styles.node[style];
+			if (value === 'none')
+				value = null;
+		}
+		return value;
+	}
+
 	/**
 	 * Converts various SVG styles and attributes into Paper.js styles and
 	 * attributes and applies them to the passed item.
@@ -402,25 +420,14 @@ new function() {
 	function applyAttributes(item, node) {
 		// SVG attributes can be set both as styles and direct node attributes,
 		// so we need to handle both.
-		var styles = DomElement.getStyles(node),
-			parentStyles = DomElement.getStyles(node.parentNode);
-		Base.each(attributes, function(apply, key) {
-			// First see if the given attribute is defined.
-			var attr = node.attributes[key],
-				value = attr && attr.value;
-			if (!value) {
-				// Fallback to using styles. See if there is a style, either set
-				// directly on the object or applied to it through CSS rules.
-				// We also need to filter out inheritance from their parents.
-				var name = Base.camelize(key);
-				value = node.style[name];
-				if (!value && styles[name] !== parentStyles[name])
-					value = styles[name];
-				if (value === 'none')
-					value = null;
-			}
+		var styles = {
+			node: DomElement.getStyles(node),
+			parent: DomElement.getStyles(node.parentNode)
+		};
+		Base.each(attributes, function(apply, name) {
+			var value = getAttribute(node, name, styles);
 			if (value)
-				item = Base.pick(apply(item, value, key, node), item);
+				item = Base.pick(apply(item, value, name, node, styles), item);
 		});
 		return item;
 	}
