@@ -20,8 +20,7 @@ Path.inject({ statics: new function() {
 				rect = new Rectangle(Point.readNamed(list, 'from'),
 						Point.readNamed(list, 'to'));
 			} else {
-				rect = new Rectangle();
-				rect._set(Base.getNamed(list));
+				rect = new Rectangle(props);
 			}
 		} else {
 			rect = Rectangle.read(list);

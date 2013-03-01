@@ -67,79 +67,56 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 			this.x = this.y = this.width = this.height = 0;
 			if (this._read)
 				this._read = arg0 === null ? 1 : 0;
-		} else {
-			// Handle a couple of cases, with a fallback to reading
-			// (Point, Point) or (Point, Size) from the arguments list, in case
-			// args is defined.
-			var args = arguments,
-				center = null;
-			if (arguments.length == 1) {
-				// This can either be an array, or an object literal. Clear args
-				// since we don't want to read from arguments below, except for
-				// when an object literal is converted (e.g. {point, size}...)
-				args = null;
-				if (Array.isArray(arg0)) {
-					this.x = arg0[0];
-					this.y = arg0[1];
-					this.width = arg0[2];
-					this.height = arg0[3];
-				} else {
-					// new Rectangle(obj)
-					// See if we define the rectangle by {point, size},
-					// or {center, size}
-					if (arg0.size) {
-						// We read point even if it's not defined in which case
-						// it's (0, 0), and set center so it can be changed at
-						// the end.
-						args = [Point.read([arg0.point]), Size.read([arg0.size])];
-						if (arg0.center)
-							center = Point.read([arg0.center]);
-					} else {
-						// Another rectangle or a simple object literal
-						// describing one. Use duck typing, and 0 as defaults.
-						this.x = arg0.x || 0;
-						this.y = arg0.y || 0;
-						this.width = arg0.width || 0;
-						this.height = arg0.height || 0;
-					}
-				}
-				if (this._read)
-					this._read = 1;
+		} else if (arguments.length === 1) {
+			// This can either be an array, or an object literal.
+			if (Array.isArray(arg0)) {
+				this.x = arg0[0];
+				this.y = arg0[1];
+				this.width = arg0[2];
+				this.height = arg0[3];
+			} else if (arg0.x !== undefined || arg0.width !== undefined) {
+				// Another rectangle or a simple object literal
+				// describing one. Use duck typing, and 0 as defaults.
+				this.x = arg0.x || 0;
+				this.y = arg0.y || 0;
+				this.width = arg0.width || 0;
+				this.height = arg0.height || 0;
+			} else {
+				// Use #_set to support whatever property the rectangle can
+				// take.
+				this.x = this.y = this.width = this.height = 0;
+				this._set(arg0);
 			}
-			// If args is defined, we either haven't been able to handle values
-			// above yet, or an object literal was converted to an arguments
-			// list.
-			if (args && args.length > 1) {
-				// Read a point argument and look at the next value to see
-				// wether it's a size or a point, then read accordingly.
-				var point = Point.read(args),
-					next = Base.peek(args);
-				this.x = point.x;
-				this.y = point.y;
-				if (next && next.x !== undefined) {
-					// new Rectangle(point1, point2)
-					var point2 = Point.read(args);
-					this.width = point2.x - point.x;
-					this.height = point2.y - point.y;
-					if (this.width < 0) {
-						this.x = point2.x;
-						this.width = -this.width;
-					}
-					if (this.height < 0) {
-						this.y = point2.y;
-						this.height = -this.height;
-					}
-				} else {
-					// new Rectangle(point, size)
-					var size = Size.read(args);
-					this.width = size.width;
-					this.height = size.height;
+			if (this._read)
+				this._read = 1;
+		} else if (arguments.length > 1) {
+			// Read a point argument and look at the next value to see wether
+			// it's a size or a point, then read accordingly.
+			var point = Point.read(arguments),
+				next = Base.peek(arguments);
+			this.x = point.x;
+			this.y = point.y;
+			if (next && next.x !== undefined) {
+				// new Rectangle(point1, point2)
+				var point2 = Point.read(arguments);
+				this.width = point2.x - point.x;
+				this.height = point2.y - point.y;
+				if (this.width < 0) {
+					this.x = point2.x;
+					this.width = -this.width;
 				}
-				if (this._read)
-					this._read = arguments._index;
+				if (this.height < 0) {
+					this.y = point2.y;
+					this.height = -this.height;
+				}
+			} else {
+				// new Rectangle(point, size)
+				var size = Size.read(arguments);
+				this.width = size.width;
+				this.height = size.height;
 			}
-			if (center)
-				this.setCenter(center);
+			if (this._read)
+				this._read = arguments._index;
 		}
 	},
 
