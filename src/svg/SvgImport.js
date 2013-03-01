@@ -60,7 +60,7 @@ new function() {
 					? parseFloat(value)
 					: type === 'array'
 						? value ? value.split(/[\s,]+/g).map(parseFloat) : []
-						: type === 'color' && getDefinition(value)
+						: type === 'color' && value && getDefinition(value)
 							|| value;
 	}
 
@@ -82,6 +82,8 @@ new function() {
 		// currentStyle, so it is used as a default for the creation of all
 		// nested items. importSvg then needs to check for groups and avoid
 		// calling applyAttributes() again.
+		// Set the default color to black, since that's how SVG handles fills.
+		group.setFillColor('black');
 		applyAttributes(group, node);
 		project._currentStyle = group._style.clone();
 		for (var i = 0, l = nodes.length; i < l; i++) {
@@ -283,7 +285,7 @@ new function() {
 	function applyOpacity(item, value, name) {
 		// http://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
 		// http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
-		var color = item[name === 'fill-opacity' ? 'getFillColor'
+		var color = item._style[name === 'fill-opacity' ? 'getFillColor'
 				: 'getStrokeColor']();
 		if (color)
 			color.setAlpha(parseFloat(value));
@@ -414,10 +416,14 @@ new function() {
 			value = node.style[style];
 			if (!value && styles.node[style] !== styles.parent[style])
 				value = styles.node[style];
-			if (value === 'none')
-				value = null;
 		}
-		return value;
+		// Return undefined if attribute is not defined, but null if it's
+		// defined as not set (e.g. fill / stroke).
+		return !value
+				? undefined
+				: value === 'none'
+					? null
+					: value;
 	}
 
 	/**
@@ -436,7 +442,7 @@ new function() {
 		};
 		Base.each(attributes, function(apply, name) {
 			var value = getAttribute(node, name, styles);
-			if (value)
+			if (value !== undefined)
 				item = Base.pick(apply(item, value, name, node, styles), item);
 		});
 		return item;
