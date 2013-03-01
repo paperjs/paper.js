@@ -69,7 +69,7 @@ new function() {
 		return new Group(clip, item);
 	}
 
-	// Importer functions for various SVG node types //
+	// Importer functions for various SVG node types
 
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
@@ -348,9 +348,13 @@ new function() {
 		}
 	};
 
-	// Attributes & Styles //
+	// Attributes and Styles
 
-	function applyTransform(item, node, name, value) {
+	// NOTE: Parmeter sequence for all apply*() functions is: 
+	// (item, value, name, node) rather than (item, node, name, value),
+	// so we can ommit the less likely parameters from right to left.
+
+	function applyTransform(item, value, name, node) {
 		// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
 		var transforms = node[name].baseVal,
 			matrix = new Matrix();
@@ -362,16 +366,16 @@ new function() {
 		item.transform(matrix);
 	}
 
-	function applyOpacity(item, node, name, value) {
+	function applyOpacity(item, value, name) {
 		// http://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
 		// http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
-		var color = item[name == 'fill-opacity' ? 'getFillColor'
+		var color = item[name === 'fill-opacity' ? 'getFillColor'
 				: 'getStrokeColor']();
 		if (color)
 			color.setAlpha(parseFloat(value));
 	}
 
-	function applyTextAttribute(item, node, name, value) {
+	function applyTextAttribute(item, value, name, node) {
 		if (item instanceof TextItem) {
 			switch (name) {
 			case 'font':
@@ -380,7 +384,7 @@ new function() {
 				text.style.font = value;
 				for (var i = 0; i < text.style.length; i++) {
 					var name = text.style[i];
-					item = applyAttribute(item, node, name, text.style[name]);
+					item = applyAttribute(item, text.style[name], name, node);
 				}
 				break;
 			case 'font-family':
@@ -410,17 +414,17 @@ new function() {
 
 	// Create apply methos for attributes, and merge in those for SvgStlyes:
 	var attributes = Base.each(SvgStyles, function(entry) {
-		this[entry.attribute] = function(item, node, name, value) {
+		this[entry.attribute] = function(item, value, name, node) {
 			item._style[entry.set](convertValue(value, entry.type));
 		};
 	}, {
-		id: function(item, node, name, value) {
+		id: function(item, value) {
 			definitions[value] = item;
 			if (item.setName)
 				item.setName(value);
 		},
 
-		'clip-path': function(item, node, name, value) {
+		'clip-path': function(item, value) {
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
 			var def =  getDefinition(value);
 			return def && createClipGroup(item, def.clone().reduce());
@@ -429,7 +433,7 @@ new function() {
 		gradientTransform: applyTransform,
 		transform: applyTransform,
 
-		opacity: function(item, node, name, value) {
+		opacity: function(item, value) {
 			// http://www.w3.org/TR/SVG/masking.html#OpacityProperty
 			item.setOpacity(parseFloat(value));
 		},
@@ -442,29 +446,29 @@ new function() {
 		'font-size': applyTextAttribute,
 		'text-anchor': applyTextAttribute,
 
-		visibility: function(item, node, name, value) {
+		visibility: function(item, value) {
 			item.setVisible(value === 'visible');
 		},
 
-		'stop-color': function(item, node, name, value) {
+		'stop-color': function(item, value) {
 			// http://www.w3.org/TR/SVG/pservers.html#StopColorProperty
 			item.setColor(value);
 		},
 
-		'stop-opacity': function(item, node, name, value) {
+		'stop-opacity': function(item, value) {
 			// http://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
 			// NOTE: It is important that this is applied after stop-color!
 			if (item._color)
 				item._color.setAlpha(parseFloat(value));
 		},
 
-		offset: function(item, node, name, value) {
+		offset: function(item, value) {
 			// http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
 			var percentage = value.match(/(.*)%$/);
 			item.setRampPoint(percentage ? percentage[1] / 100 : value);
 		},
 
-		viewBox: function(item, node, name, value) {
+		viewBox: function(item, value) {
 			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
 			// TODO: implement preserveAspectRatio attribute
 			if (item instanceof Symbol)
@@ -485,6 +489,24 @@ new function() {
 	});
 
 	/**
+	 * Parses an SVG style attibute and applies it to a Paper.js item.
+	 *
+	 * @param {SVGSVGElement} node an SVG node
+	 * @param {Item} item the item to apply the style or attribute to.
+	 * @param {String} name an SVG style name
+	 * @param value the value of the SVG style
+	 */
+	 function applyAttribute(item, value, name, node) {
+		var attribute;
+		if (value != null && (attribute = attributes[name])) {
+			var res = attribute(item, value, name, node);
+			if (res !== undefined)
+				item = res;
+		}
+		return item;
+	}
+
+	/**
 	 * Converts various SVG styles and attributes into Paper.js styles and
 	 * attributes and applies them to the passed item.
 	 *
@@ -493,13 +515,14 @@ new function() {
 	 */
 	function applyAttributes(item, node) {
 		// SVG attributes can be set both as styles and direct node attributes,
-		// so we need to parse both
+		// so we need to handle both.
 		var styles = DomElement.getStyles(node),
 			parentStyles = DomElement.getStyles(node.parentNode);
 		Base.each(attributes, function(apply, key) {
+			// First see if the given attribute is defined.
 			var attr = node.attributes[key];
 			if (attr) {
-				item = applyAttribute(item, node, attr.name, attr.value);
+				item = applyAttribute(item, attr.value, attr.name, node);
 			} else {
 				// Fallback to using styles. See if there is a style, either set
 				// directly on the object or applied to it through CSS rules.
@@ -509,27 +532,9 @@ new function() {
 				if (!value && styles[name] !== parentStyles[name])
 					value = styles[name];
 				if (value && value != 'none')
-					item = applyAttribute(item, node, key, value);
+					item = applyAttribute(item, value, key, node);
 			}
 		});
-		return item;
-	}
-
-	/**
-	 * Parses an SVG style attibute and applies it to a Paper.js item.
-	 *
-	 * @param {SVGSVGElement} node an SVG node
-	 * @param {Item} item the item to apply the style or attribute to.
-	 * @param {String} name an SVG style name
-	 * @param value the value of the SVG style
-	 */
-	 function applyAttribute(item, node, name, value) {
-		var attribute;
-		if (value != null && (attribute = attributes[name])) {
-			var res = attribute(item, node, name, value);
-			if (res !== undefined)
-				item = res;
-		}
 		return item;
 	}
 
