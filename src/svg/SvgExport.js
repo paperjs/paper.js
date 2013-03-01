@@ -458,7 +458,7 @@ new function() {
 		// We can only use node nodes as defintion containers. Have the loop
 		// produce one if it's a single item of another type (when calling
 		// #exportSvg() on an item rather than a whole project)
-		var container = node.nodeName.toLowerCase() == 'svg' && node,
+		var container = node.nodeName == 'svg' && node,
 			firstChild = container ? container.firstChild : node;
 		for (var i in definitions.svgs) {
 			if (!container) {

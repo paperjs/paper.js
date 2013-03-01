@@ -68,7 +68,7 @@ new function() {
 
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
-			compound = type === 'clippath',
+			compound = type === 'clipPath',
 			group = compound ? new CompoundPath() : new Group(),
 			project = group._project,
 			currentStyle = project._currentStyle;
@@ -97,7 +97,7 @@ new function() {
 		}
 		// Restore currentStyle
 		project._currentStyle = currentStyle;
-		if (/^(defs|clippath)$/.test(type)) {
+		if (/^(defs|clipPath)$/.test(type)) {
 			// I don't think we need to add defs to the DOM. But we might want
 			// to use Symbols for them?
 			group.remove();
@@ -137,7 +137,7 @@ new function() {
 				stops.push(applyAttributes(new GradientStop(), child));
 		}
 		var gradient = new Gradient(stops),
-			isRadial = type == 'radialgradient',
+			isRadial = type === 'radialGradient',
 			origin, destination, highlight;
 		if (isRadial) {
 			gradient.type = 'radial';
@@ -160,7 +160,7 @@ new function() {
 		g: importGroup,
 		// http://www.w3.org/TR/SVG/struct.html#NewDocument
 		svg: importGroup,
-		clippath: importGroup,
+		clipPath: importGroup,
 		// http://www.w3.org/TR/SVG/shapes.html#PolygonElement
 		polygon: importPoly,
 		// http://www.w3.org/TR/SVG/shapes.html#PolylineElement
@@ -168,9 +168,9 @@ new function() {
 		// http://www.w3.org/TR/SVG/paths.html
 		path: importPath,
 		// http://www.w3.org/TR/SVG/pservers.html#LinearGradients
-		lineargradient: importGradient,
+		linearGradient: importGradient,
 		// http://www.w3.org/TR/SVG/pservers.html#RadialGradients
-		radialgradient: importGradient,
+		radialGradient: importGradient,
 
 		// http://www.w3.org/TR/SVG/struct.html#ImageElement
 		image: function (node) {
@@ -457,7 +457,7 @@ new function() {
 	}
 
 	function importSvg(node, clearDefs) {
-		var type = node.nodeName.toLowerCase(),
+		var type = node.nodeName,
 			importer = importers[type],
 			item = importer && importer(node, type);
 		// See importGroup() for an explanation of this filtering:
