@@ -468,7 +468,7 @@ new function() {
 			item.setRampPoint(percentage ? percentage[1] / 100 : value);
 		},
 
-		viewBox: function(item, value) {
+		viewBox: function(item, value, name, node) {
 			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
 			// TODO: implement preserveAspectRatio attribute
 			if (item instanceof Symbol)
