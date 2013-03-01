@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Rect Testing</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		project.importSvg(document.getElementById('svg'));
+	</script>
+	<style type="text/css">
+		.Border { fill:none; stroke:blue; stroke-width:1 }
+		.Connect { fill:none; stroke:#888888; stroke-width:2 }
+		.SamplePath { fill:none; stroke:red; stroke-width:5 }
+		.EndPoint { fill:none; stroke:#888888; stroke-width:2 }
+		.CtlPoint { fill:#888888; stroke:none }
+		.AutoCtlPoint { fill:none; stroke:blue; stroke-width:4 }
+		.Label { font-size:22; font-family:Verdana }
+	</style>
+</head>
+<body>
+	<svg id="svg" width="500" height="500"
+	     xmlns="http://www.w3.org/2000/svg" version="1.1">
+	  <polyline class="Connect" points="100,200 100,100" />
+	  <polyline class="Connect" points="250,100 250,200" />
+	  <polyline class="Connect" points="250,200 250,300" />
+	  <polyline class="Connect" points="400,300 400,200" />
+	  <path class="SamplePath" d="M100,200 C100,100 250,100 250,200
+	                                       S400,300 400,200" />
+	  <circle class="EndPoint" cx="100" cy="200" r="10" />
+	  <circle class="EndPoint" cx="250" cy="200" r="10" />
+	  <circle class="EndPoint" cx="400" cy="200" r="10" />
+	  <circle class="CtlPoint" cx="100" cy="100" r="10" />
+	  <circle class="CtlPoint" cx="250" cy="100" r="10" />
+	  <circle class="CtlPoint" cx="400" cy="300" r="10" />
+	  <circle class="AutoCtlPoint" cx="250" cy="300" r="9" />
+	  <text class="Label" x="25" y="70">M100,200 C100,100 250,100 250,200</text>
+	  <text class="Label" x="325" y="350"
+	        style="text-anchor:middle">S400,300 400,200</text>
+	</svg>
+	<canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>
