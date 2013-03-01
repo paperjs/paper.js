@@ -21,6 +21,9 @@
  */
 var Group = this.Group = Item.extend(/** @lends Group# */{
 	_type: 'group',
+	_serializeFields: {
+		children: []
+	},
 
 	// DOCS: document new Group(item, item...);
 	/**

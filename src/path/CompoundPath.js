@@ -22,6 +22,10 @@
  */
 var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	_type: 'compoundpath',
+	_serializeFields: {
+		pathData: null
+	},
+
 	/**
 	 * Creates a new compound path item and places it in the active layer.
 	 *
