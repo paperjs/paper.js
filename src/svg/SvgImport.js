@@ -393,24 +393,6 @@ new function() {
 	});
 
 	/**
-	 * Parses an SVG style attibute and applies it to a Paper.js item.
-	 *
-	 * @param {SVGSVGElement} node an SVG node
-	 * @param {Item} item the item to apply the style or attribute to.
-	 * @param {String} name an SVG style name
-	 * @param value the value of the SVG style
-	 */
-	 function applyAttribute(item, value, name, node) {
-		var attribute;
-		if (value != null && (attribute = attributes[name])) {
-			var res = attribute(item, value, name, node);
-			if (res !== undefined)
-				item = res;
-		}
-		return item;
-	}
-
-	/**
 	 * Converts various SVG styles and attributes into Paper.js styles and
 	 * attributes and applies them to the passed item.
 	 *
@@ -438,7 +420,7 @@ new function() {
 					value = null;
 			}
 			if (value)
-				item = applyAttribute(item, value, key, node);
+				item = Base.pick(apply(item, value, key, node), item);
 		});
 		return item;
 	}
