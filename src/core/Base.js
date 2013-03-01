@@ -35,15 +35,19 @@ this.Base = Base.inject(/** @lends Base# */{
 	 * Renders base objects to strings in object literal notation.
 	 */
 	toString: function() {
-		return '{ ' + Base.each(this, function(value, key) {
-			// Hide internal properties even if they are enumerable
-			if (!/^_/.test(key)) {
-				var type = typeof value;
-				this.push(key + ': ' + (type === 'number'
-						? Format.number(value)
-						: type === 'string' ? "'" + value + "'" : value));
-			}
-		}, []).join(', ') + ' }';
+		return this._id != null
+			?  (this.constructor._name || 'Object') + (this._name
+				? " '" + this._name + "'"
+				: ' @' + this._id)
+			: '{ ' + Base.each(this, function(value, key) {
+				// Hide internal properties even if they are enumerable
+				if (!/^_/.test(key)) {
+					var type = typeof value;
+					this.push(key + ': ' + (type === 'number'
+							? Format.number(value)
+							: type === 'string' ? "'" + value + "'" : value));
+				}
+			}, []).join(', ') + ' }';
 	},
 
 	/**
