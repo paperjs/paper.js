@@ -84,42 +84,6 @@ new function() {
 		return attrs;
 	}
 
-	function getPath(path) {
-		var segments = path._segments,
-			style = path._style,
-			parts = [];
-
-		function addCurve(seg1, seg2, skipLine) {
-			var point1 = seg1._point,
-				point2 = seg2._point,
-				handle1 = seg1._handleOut,
-				handle2 = seg2._handleIn;
-			if (handle1.isZero() && handle2.isZero()) {
-				if (!skipLine) {
-					// L = lineto: moving to a point with drawing
-					parts.push('L' + formatPoint(point2));
-				}
-			} else {
-				// c = relative curveto: handle1, handle2 + end - start, end - start
-				var end = point2.subtract(point1);
-				parts.push('c' + formatPoint(handle1),
-					formatPoint(end.add(handle2)),
-					formatPoint(end));
-			}
-		}
-
-		parts.push('M' + formatPoint(segments[0]._point));
-		for (i = 0, l = segments.length  - 1; i < l; i++)
-			addCurve(segments[i], segments[i + 1], false);
-		// We only need to draw the connecting curve if it is not a line, and if
-		// the path is cosed and has a stroke color, or if it is filled.
-		if (path._closed && style._strokeColor || style._fillColor)
-			addCurve(segments[segments.length - 1], segments[0], true);
-		if (path._closed)
-			parts.push('z');
-		return parts.join(' ');
-	}
-
 	function determineAngle(path, segments, type, center) {
 		// If the object is a circle, ellipse, rectangle, or rounded rectangle,
 		// see if it is placed at an angle, by figuring out its topCenter point
@@ -253,7 +217,7 @@ new function() {
 			return null;
 		case 'path':
 			attrs = {
-				d: getPath(item)
+				d: item.getPathData()
 			};
 			break;
 		case 'polyline':
@@ -342,12 +306,8 @@ new function() {
 	}
 
 	function exportCompoundPath(item) {
-		var attrs = getTransform(item, true),
-			children = item._children,
-			paths = [];
-		for (var i = 0, l = children.length; i < l; i++)
-			paths.push(children[i].getPathData());
-		attrs.d = paths.join(' ');
+		var attrs = getTransform(item, true);
+		attrs.d = item.getPathData();
 		return createElement('path', attrs);
 	}
 
