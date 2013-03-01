@@ -190,7 +190,8 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
 		symbol: function(node, type) {
-			return new Symbol(importGroup(node, type));
+			// Pass true for dontCenter:
+			return new Symbol(importGroup(node, type), true);
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#DefsElement
@@ -200,12 +201,15 @@ new function() {
 		use: function(node, type) {
 			// Note the namespaced xlink:href attribute is just called href
 			// as a property on node.
+			// TODO: Support overflow and width, height, in combination with
+			// overflow: hidden. Paper.js currently does not suport PlacedSymbol
+			// clipping, but perhaps it should?
 			var id = (getValue(node, 'href') || '').substring(1),
 				definition = definitions[id];
 			// Use place if we're dealing with a symbol:
 			return definition
 					? definition instanceof Symbol
-						? definition.place()
+						? definition.place(getPoint(node, 'x', 'y'))
 						: definition.clone()
 					: null;
 		},
@@ -369,7 +373,7 @@ new function() {
 			item.setRampPoint(percentage ? percentage[1] / 100 : value);
 		},
 
-		viewBox: function(item, value, name, node) {
+		viewBox: function(item, value, name, node, styles) {
 			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
 			// TODO: implement preserveAspectRatio attribute
 			var values = convertValue(value, 'array'),
@@ -377,17 +381,26 @@ new function() {
 				size = getSize(node, 'width', 'height', true),
 				scale = size ? rectangle.getSize().divide(size) : 1,
 				offset = rectangle.getPoint(),
-				matrix = new Matrix().translate(offset).scale(scale);
+				matrix = new Matrix().translate(offset).scale(scale),
+				clip = getAttribute(node, 'overflow', styles) != 'visible';
 			if (size)
 				rectangle.setSize(size);
 			if (item instanceof Symbol) {
-				matrix.translate(rectangle.getSize().divide(-2));
-				item._definition.transform(matrix);
+				var definition = item._definition;
+				definition.transform(matrix);
+				if (clip && !rectangle.contains(definition.getBounds())) {
+					// Pass true for dontCenter, since we don't want to change
+					// positioning of our definition again.
+					item.setDefinition(createClipGroup(definition,
+							new Path.Rectangle(rectangle).transform(
+									definition._matrix)), true);
+				}
 			} else {
 				item.transform(matrix.inverted());
-				rectangle.setPoint(0);
-				// TODO: the viewBox does not always need to be clipped
-				return createClipGroup(item, new Path.Rectangle(rectangle));
+				if (clip) {
+					rectangle.setPoint(0);
+					return createClipGroup(item, new Path.Rectangle(rectangle));
+				}
 			}
 		}
 	});
