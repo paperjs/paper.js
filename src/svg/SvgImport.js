@@ -379,20 +379,23 @@ new function() {
 		viewBox: function(item, value, name, node) {
 			// http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
 			// TODO: implement preserveAspectRatio attribute
-			if (item instanceof Symbol)
-				return;
 			var values = convertValue(value, 'array'),
 				rectangle = Rectangle.create.apply(this, values),
 				size = getSize(node, 'width', 'height', true),
 				scale = size ? rectangle.getSize().divide(size) : 1,
 				offset = rectangle.getPoint(),
 				matrix = new Matrix().translate(offset).scale(scale);
-			item.transform(matrix.inverted());
 			if (size)
 				rectangle.setSize(size);
-			rectangle.setPoint(0);
-			// TODO: the viewbox does not always need to be clipped
-			return createClipGroup(item, new Path.Rectangle(rectangle));
+			if (item instanceof Symbol) {
+				matrix.translate(rectangle.getSize().divide(-2));
+				item._definition.transform(matrix);
+			} else {
+				item.transform(matrix.inverted());
+				rectangle.setPoint(0);
+				// TODO: the viewBox does not always need to be clipped
+				return createClipGroup(item, new Path.Rectangle(rectangle));
+			}
 		}
 	});
 
@@ -466,7 +469,6 @@ new function() {
 			definitions = {};
 		return item;
 	}
-
 
 	Item.inject(/** @lends Item# */{
 		/**

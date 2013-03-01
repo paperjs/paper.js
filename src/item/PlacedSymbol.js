@@ -24,6 +24,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	_serializeFields: {
 		symbol: null
 	},
+
 	/**
 	 * Creates a new PlacedSymbol Item.
 	 *
