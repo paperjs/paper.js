@@ -13,15 +13,16 @@
 Path.inject({ statics: new function() {
 
 	function readRectangle(list) {
-		var rect;
-		if (Base.hasNamed(list, 'from')) {
-			rect = new Rectangle(Point.readNamed(list, 'from'),
-					Point.readNamed(list, 'to'));
-		} else if (Base.hasNamed(list)) {
-			rect = Base.each(Base.getNamed(list), function(value, key) {
-				if (key in this)
-					this[key] = Base.readNamed(list, key);
-			}, new Rectangle());
+		var props = Base.getNamed(list),
+			rect;
+		if (props) {
+			if ('from' in props) {
+				rect = new Rectangle(Point.readNamed(list, 'from'),
+						Point.readNamed(list, 'to'));
+			} else {
+				rect = new Rectangle();
+				rect._set(Base.getNamed(list));
+			}
 		} else {
 			rect = Rectangle.read(list);
 		}
@@ -34,7 +35,7 @@ Path.inject({ statics: new function() {
 			top = rect.getTop(),
 			right = rect.getRight(),
 			bottom = rect.getBottom(),
-			path = new Path(arguments._filtered);
+			path = new Path(Base.getNamed(arguments));
 		path._add([
 			new Segment(Point.create(left, bottom)),
 			new Segment(Point.create(left, top)),
@@ -57,7 +58,7 @@ Path.inject({ statics: new function() {
 
 	function createEllipse(/* rect */) {
 		var rect = readRectangle(arguments),
-			path = new Path(arguments._filtered),
+			path = new Path(Base.getNamed(arguments)),
 			point = rect.getPoint(true),
 			size = rect.getSize(true),
 			segments = new Array(4);
@@ -94,7 +95,7 @@ Path.inject({ statics: new function() {
 			return new Path(
 				Point.readNamed(arguments, 'from'),
 				Point.readNamed(arguments, 'to')
-			).set(arguments._filtered);
+			).set(Base.getNamed(arguments));
 		},
 
 		/**
@@ -169,7 +170,7 @@ Path.inject({ statics: new function() {
 				tr = rect.getTopRight(true),
 				br = rect.getBottomRight(true),
 				h = radius.multiply(kappa * 2), // handle vector
-				path = new Path(arguments._filtered);
+				path = new Path(Base.getNamed(arguments));
 			path._add([
 				new Segment(bl.add(radius.width, 0), null, [-h.width, 0]),
 				new Segment(bl.subtract(0, radius.height), [0, h.height], null),
@@ -226,7 +227,7 @@ Path.inject({ statics: new function() {
 				radius = Base.readNamed(arguments, 'radius');
 			return createEllipse(new Rectangle(center.subtract(radius),
 					Size.create(radius * 2, radius * 2)))
-					.set(arguments._filtered);
+					.set(Base.getNamed(arguments));
 		},
 
 		/**
@@ -248,7 +249,7 @@ Path.inject({ statics: new function() {
 			var from = Point.readNamed(arguments, 'from'),
 				through = Point.readNamed(arguments, 'through'),
 				to = Point.readNamed(arguments, 'to'),
-				path = new Path(arguments._filtered);
+				path = new Path(Base.getNamed(arguments));
 			path.moveTo(from);
 			path.arcTo(through, to);
 			return path;
@@ -282,7 +283,7 @@ Path.inject({ statics: new function() {
 			var center = Point.readNamed(arguments, 'center'),
 				numSides = Base.readNamed(arguments, 'numSides'),
 				radius = Base.readNamed(arguments, 'radius'),
-				path = new Path(arguments._filtered),
+				path = new Path(Base.getNamed(arguments)),
 				step = 360 / numSides,
 				three = !(numSides % 3),
 				vector = new Point(0, three ? -radius : radius),
@@ -323,7 +324,7 @@ Path.inject({ statics: new function() {
 				numPoints = Base.readNamed(arguments, 'numPoints') * 2,
 				radius1 = Base.readNamed(arguments, 'radius1'),
 				radius2 = Base.readNamed(arguments, 'radius2'),
-				path = new Path(arguments._filtered),
+				path = new Path(Base.getNamed(arguments)),
 				step = 360 / numPoints,
 				vector = new Point(0, -1),
 				segments = new Array(numPoints);
