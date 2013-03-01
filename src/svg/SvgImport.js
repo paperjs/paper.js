@@ -283,31 +283,15 @@ new function() {
 			color.setAlpha(parseFloat(value));
 	}
 
-	function applyTextAttribute(item, value, name, node) {
+	function applyTextAttribute(item, apply) {
 		if (item instanceof TextItem) {
-			switch (name) {
-			case 'font-family':
-				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
-				break;
-			case 'font-size':
-				item.setFontSize(parseFloat(value));
-				break;
-			case 'text-anchor':
-				// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
-				item.setJustification({
-					start: 'left',
-					middle: 'center',
-					end: 'right'
-				}[value]);
-				break;
-			}
+			apply(item);
 		} else if (item instanceof Group) {
 			// Text styles need to be recursively passed down to children that
 			// might be TextItems explicitely.
 			var children = item._children;
-			for (var i = 0, l = children.length; i < l; i++) {
-				applyTextAttribute(children[i], node, name, value);
-			}
+			for (var i = 0, l = children.length; i < l; i++)
+				apply(children[i]);
 		}
 	}
 
@@ -340,9 +324,28 @@ new function() {
 		'fill-opacity': applyOpacity,
 		'stroke-opacity': applyOpacity,
 
-		'font-family': applyTextAttribute,
-		'font-size': applyTextAttribute,
-		'text-anchor': applyTextAttribute,
+		'font-family': function(item, value) {
+			applyTextAttribute(item, function() {
+				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
+			});
+		},
+
+		'font-size': function(item, value) {
+			applyTextAttribute(item, function() {
+				item.setFontSize(parseFloat(value));
+			});
+		},
+
+		'text-anchor': function(item, value) {
+			applyTextAttribute(item, function() {
+				// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
+				item.setJustification({
+					start: 'left',
+					middle: 'center',
+					end: 'right'
+				}[value]);
+			});
+		},
 
 		visibility: function(item, value) {
 			item.setVisible(value === 'visible');
