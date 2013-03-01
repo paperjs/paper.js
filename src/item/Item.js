@@ -39,7 +39,6 @@ var Item = this.Item = Base.extend(Callback, {
 	// that can be ommited.
 	_serializeFields: {
 		name: null,
-		children: [],
 		matrix: new Matrix(),
 		locked: false,
 		visible: true,
