@@ -422,7 +422,8 @@ new function() {
 
 		'clip-path': function(item, node, name, value) {
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-			return createClipGroup(item, getDefinition(value).clone().reduce());
+			var def =  getDefinition(value);
+			return def && createClipGroup(item, def.clone().reduce());
 		},
 
 		gradientTransform: applyTransform,
@@ -441,11 +442,6 @@ new function() {
 		'font-size': applyTextAttribute,
 		'text-anchor': applyTextAttribute,
 
-		'stop-opacity': function(item, node, name, value) {
-			// http://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
-			item.color.setAlpha(parseFloat(value));
-		},
-
 		visibility: function(item, node, name, value) {
 			item.setVisible(value === 'visible');
 		},
@@ -453,6 +449,13 @@ new function() {
 		'stop-color': function(item, node, name, value) {
 			// http://www.w3.org/TR/SVG/pservers.html#StopColorProperty
 			item.setColor(value);
+		},
+
+		'stop-opacity': function(item, node, name, value) {
+			// http://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
+			// NOTE: It is important that this is applied after stop-color!
+			if (item._color)
+				item._color.setAlpha(parseFloat(value));
 		},
 
 		offset: function(item, node, name, value) {
@@ -491,17 +494,24 @@ new function() {
 	function applyAttributes(item, node) {
 		// SVG attributes can be set both as styles and direct node attributes,
 		// so we need to parse both
-		// TODO: Instead of looping through the styles, we need to loop through
-		// a list of styles relevant to SVG, and calculate the computed style,
-		// to support style classes too.
-		for (var i = 0, l = node.style.length; i < l; i++) {
-			var name = node.style[i];
-			item = applyAttribute(item, node, name, node.style[Base.camelize(name)]);
-		}
-		for (var i = 0, l = node.attributes.length; i < l; i++) {
-			var attr = node.attributes[i];
-			item = applyAttribute(item, node, attr.name, attr.value);
-		}
+		var styles = DomElement.getStyles(node),
+			parentStyles = DomElement.getStyles(node.parentNode);
+		Base.each(attributes, function(apply, key) {
+			var attr = node.attributes[key];
+			if (attr) {
+				item = applyAttribute(item, node, attr.name, attr.value);
+			} else {
+				// Fallback to using styles. See if there is a style, either set
+				// directly on the object or applied to it through CSS rules.
+				// We also need to filter out inheritance from their parents.
+				var name = Base.camelize(key),
+					value = node.style[name];
+				if (!value && styles[name] !== parentStyles[name])
+					value = styles[name];
+				if (value && value != 'none')
+					item = applyAttribute(item, node, key, value);
+			}
+		});
 		return item;
 	}
 
@@ -525,7 +535,9 @@ new function() {
 
 	var definitions = {};
 	function getDefinition(value) {
-		var match = value.match(/\(#([^)']+)/);
+		// When url() comes from a style property, '#'' seems to be missing on 
+		// WebKit, so let's make it optional here:
+		var match = value.match(/\((?:#|)([^)']+)/);
         return match && definitions[match[1]];
 	}
 
