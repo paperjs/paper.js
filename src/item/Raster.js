@@ -276,7 +276,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		// See if the linked image is base64 encoded already, if so reuse it,
 		// otherwise try using canvas.toDataUrl()
 		var src = this._image && this._image.src;
-		if (/^data:/.test(src)) 
+		if (/^data:/.test(src))
 			return src;
 		var canvas = this.getCanvas();
 		return canvas ? canvas.toDataURL() : null;
