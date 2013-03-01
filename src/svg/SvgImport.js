@@ -286,15 +286,6 @@ new function() {
 	function applyTextAttribute(item, value, name, node) {
 		if (item instanceof TextItem) {
 			switch (name) {
-			case 'font':
-				// TODO: Verify if there is not another way?
-				var text = document.createElement('span');
-				text.style.font = value;
-				for (var i = 0; i < text.style.length; i++) {
-					var name = text.style[i];
-					item = applyAttribute(item, text.style[name], name, node);
-				}
-				break;
 			case 'font-family':
 				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
 				break;
@@ -349,7 +340,6 @@ new function() {
 		'fill-opacity': applyOpacity,
 		'stroke-opacity': applyOpacity,
 
-		font: applyTextAttribute,
 		'font-family': applyTextAttribute,
 		'font-size': applyTextAttribute,
 		'text-anchor': applyTextAttribute,
@@ -431,20 +421,21 @@ new function() {
 			parentStyles = DomElement.getStyles(node.parentNode);
 		Base.each(attributes, function(apply, key) {
 			// First see if the given attribute is defined.
-			var attr = node.attributes[key];
-			if (attr) {
-				item = applyAttribute(item, attr.value, attr.name, node);
-			} else {
+			var attr = node.attributes[key],
+				value = attr && attr.value;
+			if (!value) {
 				// Fallback to using styles. See if there is a style, either set
 				// directly on the object or applied to it through CSS rules.
 				// We also need to filter out inheritance from their parents.
-				var name = Base.camelize(key),
-					value = node.style[name];
+				var name = Base.camelize(key);
+				value = node.style[name];
 				if (!value && styles[name] !== parentStyles[name])
 					value = styles[name];
-				if (value && value != 'none')
-					item = applyAttribute(item, value, key, node);
+				if (value === 'none')
+					value = null;
 			}
+			if (value)
+				item = applyAttribute(item, value, key, node);
 		});
 		return item;
 	}
