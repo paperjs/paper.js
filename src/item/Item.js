@@ -208,6 +208,17 @@ var Item = this.Item = Base.extend(Callback, {
 	},
 
 	/**
+	 * Sets those properties of the passed object literal on this item to
+	 * the values defined in the object literal, if the item has property of the
+	 * given name (or a setter defined for it).
+	 * @return {Item} the item itself.
+	 */
+	set: function(props) {
+		this._set(props);
+		return this;
+	},
+
+	/**
 	 * The unique id of the item.
 	 *
 	 * @type Number

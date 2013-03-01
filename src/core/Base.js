@@ -60,27 +60,17 @@ this.Base = Base.inject(/** @lends Base# */{
 	},
 
 	/**
-	 * Sets all the properties of the passed object literal to their values on
-	 * the item it is called on, if the item has property of the given name (or
-	 * a setter defined for it), annd returns the item itself.
+	 * #_set() is part of the mechanism for constructors which take one object
+	 * literal describing all the properties to be set on the created instance.
+	 * @return {Boolean} {@true if the object is a plain object}
 	 */
-	set: function(props) {
-		if (props) {
+	_set: function(props) {
+		if (Base.isPlainObject(props)) {
 			for (var key in props)
 				if (props.hasOwnProperty(key) && key in this)
 					this[key] = props[key];
+			return true;
 		}
-		return this;
-	},
-
-	/**
-	 * #_set() is part of the mechanism for constructors which take one object
-	 * literal describing all the properties to be set on the created instance.
-	 * It behaves the same as #set(), but only if the provided object is a plain
-	 * object. It returns undefined otherwise.
-	 */
-	_set: function(props) {
-		return Base.isPlainObject(props) && this.set(props);
 	},
 
 	statics: /** @lends Base */{
@@ -238,21 +228,12 @@ this.Base = Base.inject(/** @lends Base# */{
 		 *        or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {String} name the property name to read from.
-		 * @param {Boolean} [filter=true] controls wether a clone of the passed
-		 * object should be kept in list._filtered, of which the consumed
-		 * properties are removed. This can be passed on e.g. to Item#set(). 
 		 */
-		readNamed: function(list, name, filter) {
-			var value = this.getNamed(list, name),
-				// value is undefined if there is no arguments object, and null
-				// if there is one, but no value is defined.
-				hasObject = value !== undefined;
-			if (hasObject && filter !== false) {
-				if (!list._filtered)
-					list._filtered = Base.merge(list[0]);
-				delete list._filtered[name];
-			}
-			return this.read(hasObject ? [value] : list);
+		readNamed: function(list, name) {
+			var value = this.getNamed(list, name);
+			// value is undefined if there is no arguments object, and null
+			// if there is one, but no value is defined.
+			return this.read(value !== undefined ? [value] : list);
 		},
 
 		/**
@@ -280,7 +261,7 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * named arguments.
 		 */
 		hasNamed: function(list, name) {
-			return !name && list._hasObject || !!this.getNamed(list, name);
+			return !!this.getNamed(list, name);
 		},
 
 		/**
