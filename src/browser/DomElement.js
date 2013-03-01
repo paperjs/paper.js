@@ -95,11 +95,12 @@ var DomElement = new function() {
 		},
 
 		getStyles: function(el) {
-			return el.ownerDocument.defaultView.getComputedStyle(el, '');
+			var view = el && el.ownerDocument.defaultView;
+			return view && view.getComputedStyle(el, '');
 		},
 
 		getStyle: function(el, key) {
-			return el.style[key] || this.getStyles(el)[key] || null;
+			return el && el.style[key] || this.getStyles(el)[key] || null;
 		},
 
 		setStyle: function(el, key, value) {

@@ -444,8 +444,8 @@ new function() {
 		// SVG attributes can be set both as styles and direct node attributes,
 		// so we need to handle both.
 		var styles = {
-			node: DomElement.getStyles(node),
-			parent: DomElement.getStyles(node.parentNode)
+			node: DomElement.getStyles(node) || {},
+			parent: DomElement.getStyles(node.parentNode) || {}
 		};
 		Base.each(attributes, function(apply, name) {
 			var value = getAttribute(node, name, styles);
