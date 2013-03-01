@@ -32,13 +32,15 @@ var PathFitter = Base.extend({
 	},
 
 	fit: function() {
-		this.segments = [new Segment(this.points[0])];
-		this.fitCubic(0, this.points.length - 1,
+		var points = this.points,
+			length = points.length;
+		this.segments = length > 0 ? [new Segment(points[0])] : [];
+		if (length > 1)
+			this.fitCubic(0, length - 1,
 				// Left Tangent
-				this.points[1].subtract(this.points[0]).normalize(),
+				points[1].subtract(points[0]).normalize(),
 				// Right Tangent
-				this.points[this.points.length - 2].subtract(
-					this.points[this.points.length - 1]).normalize());
+				points[length - 2].subtract(points[length - 1]).normalize());
 		return this.segments;
 	},
 
