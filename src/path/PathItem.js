@@ -82,7 +82,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 				cmd = part[0],
 				lower = cmd.toLowerCase();
 			// Split at white-space, commas but also before signs.
-			// Use positive ookahead to include signs.
+			// Use positive lookahead to include signs.
 			coords = part.slice(1).split(/[\s,]+|(?=[+-])/);
 			relative = cmd === lower;
 			switch (lower) {
@@ -103,7 +103,8 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 				control = getPoint(2);
 				this.cubicCurveTo(getPoint(0), control, getPoint(4, true));
 				break;
-			case 's': // Shorthand cubic bezierCurveTo, absolute
+			case 's':
+				// Shorthand cubic bezierCurveTo, absolute
 				// Calculate reflection of previous control points
 				var handle = current.multiply(2).subtract(control);
 				control = getPoint(0);
