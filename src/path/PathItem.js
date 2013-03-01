@@ -95,9 +95,10 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 			case 'h':
 			case 'v':
 				var coord = lower == 'h' ? 'x' : 'y';
-				for (var j = 0; j < coords.length; j++)
+				for (var j = 0; j < coords.length; j++) {
 					getCoord(j, coord, true);
-				this.lineTo(current);
+					this.lineTo(current);
+				}
 				break;
 			case 'c':
 				control = getPoint(2);
