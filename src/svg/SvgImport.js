@@ -60,13 +60,8 @@ new function() {
 					? parseFloat(value)
 					: type === 'array'
 						? value ? value.split(/[\s,]+/g).map(parseFloat) : []
-						: type === 'color' && value && getDefinition(value)
+						: type === 'color' && getDefinition(value)
 							|| value;
-	}
-
-	function createClipGroup(item, clip) {
-		clip.setClipMask(true);
-		return new Group(clip, item);
 	}
 
 	// Importer functions for various SVG node types
@@ -102,7 +97,7 @@ new function() {
 		}
 		// Restore currentStyle
 		project._currentStyle = currentStyle;
-		if (type == 'defs') {
+		if (/^(defs|clippath)$/.test(type)) {
 			// I don't think we need to add defs to the DOM. But we might want
 			// to use Symbols for them?
 			group.remove();
@@ -317,8 +312,13 @@ new function() {
 
 		'clip-path': function(item, value) {
 			// http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-			var def = getDefinition(value);
-			return def && createClipGroup(item, def.clone().reduce());
+			var clip = getDefinition(value);
+			if (clip) {
+				clip = clip.clone().reduce();
+				clip.setClipMask(true);
+				clip.remove();
+				return new Group(clip, item);
+			}
 		},
 
 		gradientTransform: applyTransform,
@@ -452,7 +452,7 @@ new function() {
 	function getDefinition(value) {
 		// When url() comes from a style property, '#'' seems to be missing on 
 		// WebKit, so let's make it optional here:
-		var match = value.match(/\((?:#|)([^)']+)/);
+		var match = value && value.match(/\((?:#|)([^)']+)/);
         return match && definitions[match[1]];
 	}
 
