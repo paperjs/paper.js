@@ -68,8 +68,8 @@ new function() {
 
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
-			compound = type === 'clipPath',
-			group = compound ? new CompoundPath() : new Group(),
+			clip = type === 'clipPath',
+			group = clip ? new CompoundPath() : new Group(),
 			project = group._project,
 			currentStyle = project._currentStyle;
 		// Style on groups needs to be handled differently than all other items:
@@ -87,7 +87,7 @@ new function() {
 			if (child.nodeType == 1 && (item = importSvg(child))) {
 				// If adding CompoundPaths to other CompoundPaths,
 				// we need to "unbox" them first:
-				if (compound && item instanceof CompoundPath) {
+				if (clip && item instanceof CompoundPath) {
 					group.addChildren(item.removeChildren());
 					item.remove();
 				} else if (!(item instanceof Symbol)) {
@@ -382,24 +382,31 @@ new function() {
 			// TODO: implement preserveAspectRatio attribute
 			// viewBox will be applied both to the group that's created for the
 			// content in Symbol.definition, and the Symbol itself.
-			if (item instanceof Group)
-				return;
-			var values = convertValue(value, 'array'),
-				rect = Rectangle.create.apply(this, values),
-				size = getSize(node, 'width', 'height', true),
-				scale = size ? rect.getSize().divide(size) : 1,
-				offset = rect.getPoint(),
-				matrix = new Matrix().translate(offset).scale(scale),
-				clip = getAttribute(node, 'overflow', styles) != 'visible',
-				group = item._definition; // Always a group, see importSymbol
-			if (size)
-				rect.setSize(size);
-			group.transform(matrix.inverted());
-			if (clip && !rect.contains(group.getBounds())) {
-				// Add a clip path at the top of this symbol's group
-				clip = new Path.Rectangle(rect).transform(group._matrix);
-				clip.setClipMask(true);
-				group.addChild(clip);
+			var rect = Rectangle.create.apply(this, convertValue(value, 'array')),
+				size = getSize(node, 'width', 'height', true);
+			if (item instanceof Group) {
+				// This is either a top-level sbg node, or the container for a
+				// symbol.
+				var scale = size ? rect.getSize().divide(size) : 1,
+					matrix = new Matrix().translate(rect.getPoint()).scale(scale);
+				item.transform(matrix.inverted());
+			} else if (item instanceof Symbol) {
+				// The symbol is wrapping a group. Note that viewBox was already
+				// applied to the group, and above code was executed for it.
+				// All that is left to handle here on the Symbol level is
+				// clipping. We can't do it at group level because
+				// applyAttributes() gets called for groups before their
+				// children are added, for styling reasons. See importGroup()
+				if (size)
+					rect.setSize(size);
+				var clip = getAttribute(node, 'overflow', styles) != 'visible',
+					group = item._definition;
+				if (clip && !rect.contains(group.getBounds())) {
+					// Add a clip path at the top of this symbol's group
+					clip = new Path.Rectangle(rect).transform(group._matrix);
+					clip.setClipMask(true);
+					group.addChild(clip);
+				}
 			}
 		}
 	});
