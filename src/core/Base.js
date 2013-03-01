@@ -61,12 +61,13 @@ this.Base = Base.inject(/** @lends Base# */{
 
 	/**
 	 * Sets all the properties of the passed object literal to their values on
-	 * the item it is called on, and returns the item itself.
+	 * the item it is called on, if the item has property of the given name (or
+	 * a setter defined for it), annd returns the item itself.
 	 */
 	set: function(props) {
 		if (props) {
 			for (var key in props)
-				if (props.hasOwnProperty(key))
+				if (props.hasOwnProperty(key) && key in this)
 					this[key] = props[key];
 		}
 		return this;
@@ -79,8 +80,7 @@ this.Base = Base.inject(/** @lends Base# */{
 	 * object. It returns undefined otherwise.
 	 */
 	_set: function(props) {
-		if (Base.isPlainObject(props))
-			return this.set(props);
+		return Base.isPlainObject(props) && this.set(props);
 	},
 
 	statics: /** @lends Base */{
@@ -257,23 +257,30 @@ this.Base = Base.inject(/** @lends Base# */{
 
 		/**
 		 * @return the named value if the list provides an arguments object,
-		 * null if the named value is null or undefined, and undefined if there
-		 * is no arguments object. 
+		 * {@code null} if the named value is {@code null} or {@code undefined},
+		 * and {@code undefined} if there is no arguments object. 
+		 * If no name is provided, it returns the whole arguments object.
 		 */
 		getNamed: function(list, name) {
 			var arg = list[0];
 			if (list._hasObject === undefined)
 				list._hasObject = list.length === 1 && Base.isPlainObject(arg);
 			if (list._hasObject) {
-				value = arg[name];
+				// Return the whole arguments object if no name is provided.
+				value = name ? arg[name] : arg;
 				// Convert undefined to null, to distinguish from undefined
 				// result, when there is no arguments object.
 				return value !== undefined ? value : null;
 			}
 		},
 
+		/**
+		 * Checks if the argument list has a named argument with the given name.
+		 * If name is {@code null}, it returns {@code true} if there are any
+		 * named arguments.
+		 */
 		hasNamed: function(list, name) {
-			return !!this.getNamed(list, name);
+			return !name && list._hasObject || !!this.getNamed(list, name);
 		},
 
 		/**

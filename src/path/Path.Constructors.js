@@ -17,13 +17,13 @@ Path.inject({ statics: new function() {
 		if (Base.hasNamed(list, 'from')) {
 			rect = new Rectangle(Point.readNamed(list, 'from'),
 					Point.readNamed(list, 'to'));
-		} else if (Base.hasNamed(list, 'size')) {
-			rect = new Rectangle(Point.readNamed(list, 'point'),
-					Size.readNamed(list, 'size'));
-			if (Base.hasNamed(list, 'center'))
-				rect.setCenter(Point.readNamed(list, 'center'));
+		} else if (Base.hasNamed(list)) {
+			rect = Base.each(Base.getNamed(list), function(value, key) {
+				if (key in this)
+					this[key] = Base.readNamed(list, key);
+			}, new Rectangle());
 		} else {
-			rect = Rectangle.readNamed(list, 'rectangle');
+			rect = Rectangle.read(list);
 		}
 		return rect;
 	}
