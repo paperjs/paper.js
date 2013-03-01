@@ -44,7 +44,8 @@ var Item = this.Item = Base.extend(Callback, {
 		visible: true,
 		blendMode: 'normal',
 		opacity: 1,
-		guide: false
+		guide: false,
+		clipMask: false
 	},
 
 	initialize: function(point) {
