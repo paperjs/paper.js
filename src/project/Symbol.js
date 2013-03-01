@@ -58,12 +58,13 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	 *     instance.scale(0.25 + Math.random() * 0.75);
 	 * }
 	 */
-	initialize: function(item) {
+	initialize: function(item, dontCenter) {
 		// Define this Symbols's unique id.
 		this._id = ++Base._uid;
 		this.project = paper.project;
 		this.project.symbols.push(this);
-		this.setDefinition(item);
+		if (item)
+			this.setDefinition(item, dontCenter);
 		// Hash to keep track of placed instances
 		this._instances = {};
 	},
@@ -110,7 +111,7 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 		return this._definition;
 	},
 
-	setDefinition: function(item) {
+	setDefinition: function(item /*, dontCenter */) {
 		// Make sure we're not steatling another symbol's definition
 		if (item._parentSymbol)
 			item = item.clone();
@@ -122,7 +123,8 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 		item.remove();
 		item.setSelected(false);
 		// Move position to 0, 0, so it's centered when placed.
-		item.setPosition(new Point());
+		if (!arguments[1])
+			item.setPosition(new Point());
 		item._parentSymbol = this;
 		this._changed(/*#=*/ Change.GEOMETRY);
 	},
