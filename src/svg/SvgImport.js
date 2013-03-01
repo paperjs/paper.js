@@ -202,14 +202,15 @@ new function() {
 			// overflow: hidden. Paper.js currently does not suport PlacedSymbol
 			// clipping, but perhaps it should?
 			var id = (getValue(node, 'href') || '').substring(1),
-				definition = definitions[id];
+				definition = definitions[id],
+				point = getPoint(node, 'x', 'y');
 			// Use place if we're dealing with a symbol:
 			return definition
 					? definition instanceof Symbol
 						// When placing symbols, we nee to take both point and
 						// matrix into account. This just does the right thing:
-						? definition.place(getPoint(node, 'x', 'y'))
-						: definition.clone()
+						? definition.place(point)
+						: definition.clone().translate(point)
 					: null;
 		},
 
