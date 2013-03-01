@@ -2058,12 +2058,6 @@ var Item = this.Item = Base.extend(Callback, {
 		this.setBounds(newBounds);
 	},
 
-	toString: function() {
-		return (this.constructor._name || 'Item') + (this._name
-				? " '" + this._name + "'"
-				: ' @' + this._id);
-	},
-
 	// DOCS: document exportJson (documented in @private Base)
 	// DOCS: document importJson
 	// DOCS: Figure out a way to group these together with importSvg / exportSvg
