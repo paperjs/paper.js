@@ -1487,7 +1487,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	// SegmentPoint objects maybe seem a bit tedious but is worth the benefit in
 	// performance.
 
-	function drawHandles(ctx, segments, matrix) {
+	function drawHandles(ctx, segments, matrix, size) {
+		var half = size / 2;
+
 		function drawHandle(index) {
 			var hX = coords[index],
 				hY = coords[index + 1];
@@ -1497,7 +1499,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				ctx.lineTo(hX, hY);
 				ctx.stroke();
 				ctx.beginPath();
-				ctx.arc(hX, hY, 1.75, 0, Math.PI * 2, true);
+				ctx.arc(hX, hY, half, 0, Math.PI * 2, true);
 				ctx.fill();
 			}
 		}
@@ -1517,13 +1519,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Draw a rectangle at segment.point:
 			ctx.save();
 			ctx.beginPath();
-			ctx.rect(pX - 2, pY - 2, 4, 4);
+			ctx.rect(pX - half, pY - half, size, size);
 			ctx.fill();
 			// If the point is not selected, draw a white square that is 1 px
 			// smaller on all sides:
 			if (!selected) {
 				ctx.beginPath();
-				ctx.rect(pX - 1, pY - 1, 2, 2);
+				ctx.rect(pX - half - 1, pY - half- 1, size - 2, size - 2);
 				ctx.fillStyle = '#ffffff';
 				ctx.fill();
 			}
@@ -1648,7 +1650,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			drawSegments(ctx, this, matrix);
 			// Now stroke it and draw its handles:
 			ctx.stroke();
-			drawHandles(ctx, this._segments, matrix);
+			drawHandles(ctx, this._segments, matrix,
+					this._project.options.handleSize || 4);
 		}
 	};
 }, new function() { // Path Smoothing
