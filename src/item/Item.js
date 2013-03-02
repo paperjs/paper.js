@@ -1271,10 +1271,18 @@ var Item = this.Item = Base.extend(Callback, {
 		// an Item#children array. Use Array.prototype.slice because
 		// in certain cases items is an arguments object
 		items = items && Array.prototype.slice.apply(items);
-		var i = index;
+		var children = this._children,
+			length = children.length,
+			i = index;
 		for (var j = 0, l = items && items.length; j < l; j++) {
-			if (this.insertChild(i, items[j], _cloning))
-				i++;
+			if (this.insertChild(i, items[j], _cloning)) {
+				// We need to keep track of how much the list actually grows,
+				// bcause we might be removing and inserting into the same list,
+				// in which case the size would not chage.
+				var newLength = children.length;
+				i += newLength - length;
+				length = newLength;
+			}
 		}
 		return i != index;
 	},
