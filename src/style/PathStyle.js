@@ -147,7 +147,7 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	 * @name PathStyle#strokeJoin
 	 * @property
 	 * @default 'miter'
-	 * @type String ('miter', 'round', 'bevel')
+	 * @type String('miter', 'round', 'bevel')
 	 *
 	 * @example {@paperscript height=120}
 	 * // A look at the different stroke joins:
