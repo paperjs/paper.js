@@ -1525,7 +1525,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// smaller on all sides:
 			if (!selected) {
 				ctx.beginPath();
-				ctx.rect(pX - half - 1, pY - half- 1, size - 2, size - 2);
+				ctx.rect(pX - half + 1, pY - half + 1, size - 2, size - 2);
 				ctx.fillStyle = '#ffffff';
 				ctx.fill();
 			}
