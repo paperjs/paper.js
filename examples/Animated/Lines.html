@@ -8,10 +8,11 @@
 	<script type="text/paperscript" canvas="canvas">
 		var amount = 180;
 		for (var i = 0; i < amount; i++) {
-			var path = new Path();
-			path.fillColor = new HsbColor(1, 1, Math.random());
-			path.strokeCap = 'round';
-			path.closed = true;
+			var path = new Path({
+				fillColor: new HsbColor(1, 1, Math.random()),
+				strokeCap: 'round',
+				closed: true
+			});
 		}
 
 		var position = view.center;
@@ -21,7 +22,7 @@
 
 		function iterate() {
 			count++;
-			var delta = (mousePos - position);
+			var delta = mousePos - position;
 			position += delta / 10;
 			for (var i = 1; i < amount; i++) {
 				var path = children[i];
