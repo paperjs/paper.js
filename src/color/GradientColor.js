@@ -41,7 +41,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 *
 	 * // Create the gradient, passing it an array of colors to be converted
 	 * // to evenly distributed color stops:
-	 * var gradient = new LinearGradient(['yellow', 'red', 'blue']);
+	 * var gradient = new LinearGradient('yellow', 'red', 'blue');
 	 *
 	 * // Have the gradient color run between the topLeft and
 	 * // bottomRight points we defined earlier:
@@ -118,7 +118,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * // Create a rectangle shaped path with the same dimensions as
 	 * // that of the view and fill it with a gradient color:
 	 * var path = new Path.Rectangle(view.bounds);
-	 * var gradient = new LinearGradient(['yellow', 'red', 'blue']);
+	 * var gradient = new LinearGradient('yellow', 'red', 'blue');
 	 *
 	 * // Have the gradient color run from the top left point of the view,
 	 * // to the bottom right point of the view:
@@ -162,7 +162,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * // and fill it with a radial gradient color:
 	 * var path = new Path.Circle(view.center, view.bounds.height * 0.4);
 	 *
-	 * var gradient = new RadialGradient(['yellow', 'red', 'black']);
+	 * var gradient = new RadialGradient('yellow', 'red', 'black');
 	 * var from = view.center;
 	 * var to = view.bounds.bottomRight;
 	 * var gradientColor = new GradientColor(gradient, from, to);
@@ -200,7 +200,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * // using 40% of the height of the view as its radius
 	 * // and fill it with a radial gradient color:
 	 * var path = new Path.Circle(view.center, view.bounds.height * 0.4);
-	 * var gradient = new RadialGradient(['yellow', 'red', 'black']);
+	 * var gradient = new RadialGradient('yellow', 'red', 'black');
 	 * var from = path.position;
 	 * var to = path.bounds.rightCenter;
 	 * var gradientColor = new GradientColor(gradient, from, to);

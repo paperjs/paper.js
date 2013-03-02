@@ -17,13 +17,14 @@
  */
 var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	initialize: function(stops, _type) {
-		// Support old way of creating gradients.
+		// Keep supporting the old way of creating gradients for the time being.
 		if (this.constructor === Gradient)
 			return new (_type === 'radial' ? RadialGradient : LinearGradient)(
 					stops);
 		// Define this Gradient's unique id.
 		this._id = ++Base._uid;
-		this.setStops(stops || ['white', 'black']);
+		this.setStops((arguments.length > 1 ? arguments : stops)
+				|| ['white', 'black']);
 	},
 
 	_serialize: function(options, dictionary) {

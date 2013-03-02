@@ -128,7 +128,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * var path = new Path.Circle(view.center, view.bounds.height * 0.4);
 	 *
 	 * // Create a radial gradient that mixes red and black evenly:
-	 * var gradient = new RadialGradient(['red', 'black']);
+	 * var gradient = new RadialGradient('red', 'black');
 	 *
 	 * // Fill the path with a gradient color that runs from its center,
 	 * // to the right center of its bounding rectangle:
