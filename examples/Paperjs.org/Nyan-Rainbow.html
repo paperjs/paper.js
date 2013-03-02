@@ -120,6 +120,7 @@
 
 			var count = 30;
 			var group = new Group(paths);
+			group.applyMatrix = true;
 			var headGroup;
 			var eyePosition = new Point();
 			var eyeFollow = (Point.random() - 0.5);
@@ -129,27 +130,29 @@
 				eyePosition -= eyeVector / 4;
 				if (eyeVector.length < 0.00001)
 					eyeFollow = (Point.random() - 0.5);
-				if (headGroup) {
-			        headGroup.remove();
-			    }
-			    var top = paths[0].lastSegment.point;
-			    var bottom = paths[paths.length - 1].firstSegment.point;
-			    var middle = top + (bottom - top) / 2;
+				if (headGroup)
+					headGroup.remove();
+				var top = paths[0].lastSegment.point;
+				var bottom = paths[paths.length - 1].firstSegment.point;
 				var radius = (bottom - top).length / 2;
-			    circle = new Path.Circle(middle, radius);
-			    circle.scale(vector.length / 100, 1);
-			    circle.rotate(vector.angle, circle.center);
-			    circle.fillColor = 'black';
-			    innerCircle = circle.clone();
-			    innerCircle.scale(0.5);
-			    innerCircle.fillColor = (count % blinkTime < 3)
+				var circle = new Path.Circle({
+					center: top + (bottom - top) / 2,
+					radius: radius,
+					fillColor: 'black'
+				});
+				circle.scale(vector.length / 100, 1);
+				circle.rotate(vector.angle, circle.center);
+
+				innerCircle = circle.clone();
+				innerCircle.scale(0.5);
+				innerCircle.fillColor = (count % blinkTime < 3)
 					|| (count % (blinkTime + 5) < 3) ? 'black' : 'white';
 				if (count % (blinkTime + 40) == 0)
 					blinkTime = Math.round(Math.random() * 40) + 200;
-			    eye = circle.clone();
+				var eye = circle.clone();
 				eye.position += eyePosition * radius;
-			    eye.scale(0.15, innerCircle.position);
-			    eye.fillColor = 'black';
+				eye.scale(0.15, innerCircle.position);
+				eye.fillColor = 'black';
 				headGroup = new Group(circle, innerCircle, eye);
 			}
 
