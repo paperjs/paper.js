@@ -6,8 +6,8 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var radial = new RadialGradient([ new RgbColor(1, 1, 0, 0), 'red', 'black']);
-		var linear = new LinearGradient([ new RgbColor(1, 1, 0, 0), 'red', 'black']);
+		var radial = new RadialGradient(new RgbColor(1, 1, 0, 0), 'red', 'black');
+		var linear = new LinearGradient(new RgbColor(1, 1, 0, 0), 'red', 'black');
 
 		var radius = view.bounds.width * 0.4,
 			from = new Point(view.center.x),
