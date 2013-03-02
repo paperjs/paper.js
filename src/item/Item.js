@@ -1700,7 +1700,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @name Item#strokeJoin
 	 * @property
 	 * @default 'miter'
-	 * @type String ('miter', 'round', 'bevel')
+	 * @type String('miter', 'round', 'bevel')
 	 *
 	 *
 	 * @example {@paperscript height=120}

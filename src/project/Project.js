@@ -168,6 +168,15 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		return items;
 	},
 
+	// DOCS: Project#options
+	/**
+	 * <b>options.handleSize:</b> 
+	 * <b>options.hitTolerance:</b>
+	 *
+	 * @name Project#options
+	 * @type Object
+	 */
+
 	// TODO: Implement setSelectedItems?
 
 	_updateSelection: function(item) {
