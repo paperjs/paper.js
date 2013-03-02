@@ -169,13 +169,19 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	},
 
 	/**
-	 * Checks whether the segment has no handles defined, meaning it connects
+	 * Specifies whether the segment has no handles defined, meaning it connects
 	 * two straight lines.
 	 *
-	 * @return {Boolean} {@true the segment is linear}
+	 * @type Point
+	 * @bean
 	 */
 	isLinear: function() {
 		return this._handleIn.isZero() && this._handleOut.isZero();
+	},
+
+	setLinear: function() {
+		this._handleIn.set(0, 0);
+		this._handleOut.set(0, 0);
 	},
 
 	_isSelected: function(point) {
