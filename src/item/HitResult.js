@@ -108,7 +108,7 @@ var HitResult = this.HitResult = Base.extend(/** @lends HitResult# */{
 				// Type of item, for instanceof check: PathItem, TexItem, etc
 				type: null,
 				// Tolerance
-				tolerance: 2,
+				tolerance: paper.project.options.hitTolerance || 2,
 				// Hit the fill of items
 				fill: !options,
 				// Hit the curves of path items, taking into account the stroke
