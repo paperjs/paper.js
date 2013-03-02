@@ -754,14 +754,28 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	setFullySelected: function(selected) {
+		// No need to call _selectSegments() when selected is false, since
+		// #setSelected() does that for us
+		if (selected)
+			this._selectSegments(true);
+		this.setSelected(selected);
+	},
+
+	setSelected: function(selected) {
+		// Deselect all segments when path is marked as not selected
+		if (!selected)
+			this._selectSegments(false);
+		// No need to pass true for noChildren since Path has none anyway.
+		this.base(selected);
+	},
+
+	_selectSegments: function(selected) {
 		var length = this._segments.length;
 		this._selectedSegmentState = selected
 				? length * /*#=*/ SelectionState.POINT : 0;
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
 					? /*#=*/ SelectionState.POINT : 0;
-		// No need to pass true for noChildren since Path has none anyway.
-		this.setSelected(selected);
 	},
 
 	_updateSelection: function(segment, oldState, newState) {
