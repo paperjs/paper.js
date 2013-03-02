@@ -9,26 +9,31 @@
 		// Adapted from the following Processing example:
 		// http://processing.org/learning/topics/follow3.html
 
-		var path = new Path();
-		path.style = {
+		// The amount of points in the path:
+		var points = 25;
+
+		// The distance between the points:
+		var length = 35;
+
+		var path = new Path({
 			strokeColor: '#E4141B',
 			strokeWidth: 20,
 			strokeCap: 'round'
-		};
-		var size = 25;
+		});
 		var segments = path.segments;
+
 		var start = view.center / [10, 1];
-		for (var i = 0; i < size; i++)
-			path.add(start + new Point(i * 100, 0));
+		for (var i = 0; i < points; i++)
+			path.add(start + new Point(i * length, 0));
 
 		function onMouseMove(event) {
 			segments[0].point = event.point;
-			for (var i = 0; i < size - 1; i++) {
-				var nextSegment = segments[i + 1];
-				var position = path.segments[i].point;
-				var vector = position - nextSegment.point;
-				vector.length = 35;
-				nextSegment.point = position - vector;
+			for (var i = 0; i < points - 1; i++) {
+				var segment = path.segments[i];
+				var nextSegment = segment.next;
+				var vector = segment.point - nextSegment.point;
+				vector.length = length;
+				nextSegment.point = segment.point - vector;
 			}
 			path.smooth();
 		}
