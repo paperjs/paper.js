@@ -218,6 +218,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 
+		if (segments.length === 0)
+			return '';
 		parts.push('M' + format(segments[0]._point));
 		for (i = 0, l = segments.length  - 1; i < l; i++)
 			addCurve(segments[i], segments[i + 1], false);
