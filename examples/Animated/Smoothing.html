@@ -9,10 +9,11 @@
 		var width, height, center;
 		var points = 10;
 		var smooth = true;
-		var path = new Path();
+		var path = new Path({
+			fillColor: 'black'
+		});
 		var mousePos = view.center / 2;
 		var pathHeight = mousePos.y;
-		path.fillColor = 'black';
 		initializePath();
 
 		function initializePath() {
