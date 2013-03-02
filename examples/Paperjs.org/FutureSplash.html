@@ -46,10 +46,11 @@
 		});
 
 		function createPath(strength) {
-			var path = new Path();
+			var path = new Path({
+				fillColor: 'black'
+			});
 			path.data = {};
 			path.data.springs = [];
-			path.fillColor = 'black';
 			segments = path.segments;
 			var previous;
 			for (var i = 0; i <= values.amount; i++) {
