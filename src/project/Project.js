@@ -61,6 +61,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		// Change tracking, not in use for now. Activate once required:
 		// this._changes = [];
 		// this._changesById = {};
+		this.options = {};
 	},
 
 	_serialize: function(options, dictionary) {
