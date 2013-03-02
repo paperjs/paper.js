@@ -14,11 +14,12 @@
 		};
 
 		for (var i = 0; i < values.count; i++) {
-			var offset = new Point(20 + 10 * i, 0);
-			var path = new Path();
-			path.fillColor = i % 2 ? 'red' : 'black';
-			path.closed = true;
+			var path = new Path({
+				fillColor: i % 2 ? 'red' : 'black',
+				closed: true
+			});
 
+			var offset = new Point(20 + 10 * i, 0);
 			var l = offset.length;
 			for (var j = 0; j < values.points * 2; j++) {
 				offset.angle += 360 / values.points;
@@ -29,10 +30,9 @@
 			var placedSymbol = new PlacedSymbol(path);
 			layer.insertChild(0, placedSymbol);
 		}
-		layer.position = view.center;
 
 		function onFrame(event) {
-			for (var i = 0, l = layer.children.length; i < l; i++) {
+			for (var i = 0; i < values.count; i++) {
 				var item = layer.children[i];
 				var angle = (values.count - i) * Math.sin(event.count / 128) / 10;
 				item.rotate(angle);
