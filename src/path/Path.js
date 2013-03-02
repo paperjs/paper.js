@@ -138,7 +138,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * @type Curve[]
 	 * @bean
 	 */
-	getCurves: function(/* includeFill */) {
+	getCurves: function() {
 		var curves = this._curves,
 			segments = this._segments;
 		if (!curves) {
@@ -148,16 +148,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				curves[i] = Curve.create(this, segments[i],
 					// Use first segment for segment2 of closing curve
 					segments[i + 1] || segments[0]);
-		}
-		// If we're asked to include the closing curve for fill, even if the
-		// path is not closed for stroke, create a new uncached array and add
-		// the closing curve. Used in Path#contains()
-		// TODO: This is not consistent with the filling in Illustrator. 
-		// I suggest to only fill closed paths (lehni).
-		if (arguments[0] && !this._closed && this._style._fillColor) {
-			curves = curves.concat([
-				Curve.create(this, segments[segments.length - 1], segments[0])
-			]);
 		}
 		return curves;
 	},
@@ -224,7 +214,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		for (i = 0, l = segments.length  - 1; i < l; i++)
 			addCurve(segments[i], segments[i + 1], false);
 		// We only need to draw the connecting curve if it is not a line, and if
-		// the path is cosed and has a stroke color, or if it is filled.
+		// the path is closed and has a stroke color, or if it is filled.
+		// TODO: Verify this, sound dodgy
 		if (this._closed && style._strokeColor || style._fillColor)
 			addCurve(segments[segments.length - 1], segments[0], true);
 		if (this._closed)
@@ -1402,11 +1393,19 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return this.getNearestLocation(point).getPoint();
 	},
 
+	hasFill: function() {
+		// If this path is part of a CompoundPath, we need to check that
+		// for fillColor too...
+		return this._style._fillColor || this._parent instanceof CompoundPath
+				&& this._parent._style._fillColor;
+	},
+
 	contains: function(point) {
 		point = Point.read(arguments);
 		// If the path is not closed, we should not bail out in case it has a
 		// fill color!
-		if (!this._closed && !this._style._fillColor
+		var hasFill = this.hasFill();
+		if (!this._closed && !hasFill
 				|| !this.getRoughBounds()._containsPoint(point))
 			return false;
 		// Note: This only works correctly with even-odd fill rule, or paths
@@ -1417,12 +1416,16 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// beam in right y-direction with the shape, and see if it's an odd
 		// number, meaning the starting point is inside the shape.
 		// http://en.wikipedia.org/wiki/Point_in_polygon
-		var curves = this.getCurves(true),
+		var curves = this.getCurves(),
+			segments = this._segments,
 			crossings = 0,
 			// Reuse one array for root-finding, give garbage collector a break
 			roots = new Array(3);
 		for (var i = 0, l = curves.length; i < l; i++)
 			crossings += curves[i].getCrossings(point, roots);
+		if (!this._closed && hasFill)
+			crossings += Curve.create(this, segments[segments.length - 1],
+					segments[0]).getCrossings(point, roots);
 		return (crossings & 1) == 1;
 	},
 
@@ -1472,7 +1475,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// in some cases. Simply skip fill query if we already have a matching
 		// stroke.
 		if (!(loc && loc._distance <= radius) && options.fill
-				&& style._fillColor && this.contains(point))
+				&& this.hasFill() && this.contains(point))
 			return new HitResult('fill', this);
 		// Now query stroke if we haven't already
 		if (!loc && options.stroke && radius > 0)
