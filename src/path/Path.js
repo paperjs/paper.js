@@ -19,7 +19,7 @@
  */
 // DOCS: Explain that path matrix is always applied with each transformation.
 var Path = this.Path = PathItem.extend(/** @lends Path# */{
-	_type: 'path',
+	_type: 'Path',
 	_serializeFields: {
 		pathData: ''
 	},

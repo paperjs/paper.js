@@ -38,8 +38,6 @@
  * matrix multiplication).
  */
 var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
-	_type: 'matrix',
-
 	/**
 	 * Creates a 2D affine transform.
 	 *

@@ -21,7 +21,7 @@
  * @extends PathItem
  */
 var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
-	_type: 'compoundpath',
+	_type: 'CompoundPath',
 	_serializeFields: {
 		pathData: ''
 	},
@@ -52,7 +52,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 
 	insertChild: function(index, item, _cloning) {
 		// Only allow the insertion of paths
-		if (item._type !== 'path')
+		if (item._type !== 'Path')
 			return null;
 		item = this.base(index, item);
 		// All children except for the bottom one (first one in list) are set

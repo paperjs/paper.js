@@ -20,7 +20,8 @@
  * @extends TextItem
  */
 var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
-	_type: 'pointtext',
+	_type: 'PointText',
+
 	/**
 	 * Creates a point text item
 	 *

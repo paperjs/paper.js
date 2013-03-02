@@ -36,7 +36,7 @@ this.Base = Base.inject(/** @lends Base# */{
 	 */
 	toString: function() {
 		return this._id != null
-			?  (this.constructor._name || 'Object') + (this._name
+			?  (this._type || 'Object') + (this._name
 				? " '" + this._name + "'"
 				: ' @' + this._id)
 			: '{ ' + Base.each(this, function(value, key) {
