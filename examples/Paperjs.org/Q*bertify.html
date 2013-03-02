@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Q*bertify</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		// Please note: dragging and dropping images only works for
+		// certain browsers when serving this script online:
+
+		var values = {
+			amount: 30
+		};
+
+		var raster, group;
+		var piece = createPiece();
+		var count = 0;
+
+		handleImage('mona');
+
+		var text = new PointText({
+			point: view.center,
+			justification: 'center',
+			fillColor: 'white',
+			fontSize: 15,
+			content: window.FileReader
+				? 'Drag & drop an image from your desktop'
+				: 'To drag & drop images, please use Webkit, Firefox, Chrome or IE 10'
+		});
+
+		function createPiece() {
+			var group = new Group();
+			var hexagon = new Path.RegularPolygon(view.center, 6, 50);
+			hexagon.fillColor = 'gray';
+			group.addChild(hexagon);
+			for (var i = 0; i < 2; i++) {
+				var path = new Path();
+				for (var j = 0; j < 3; j++) {
+					var index = (i * 2 + j) % hexagon.segments.length;
+					path.add(hexagon.segments[index].clone());
+				}
+				path.add(hexagon.bounds.center);
+				path.closed = true;
+				path.selected = true;
+				group.addChild(path);
+			}
+			group.children[1].fillColor = 'white';
+			group.lastChild.fillColor = 'black';
+			// Remove the group from the document, so it is not drawn:
+			group.remove();
+			return group;
+		}
+
+		function handleImage(image) {
+			count = 0;
+			var size = piece.bounds.size;
+
+			if (group)
+				group.remove();
+
+			raster = new Raster(image);
+			raster.remove();
+
+			// Transform the raster, so it fills the view:
+			raster.fitBounds(view.bounds, true);
+			group = new Group();
+			for (var y = 0; y < values.amount; y++) {
+				for (var x = 0; x < values.amount; x++) {
+					var copy = piece.clone();
+					copy.position += size * [x + (y % 2 ? 0.5 : 0), y * 0.75];
+					group.addChild(copy);
+				}
+			}
+			// Transform the group so it covers the view:
+			group.fitBounds(view.bounds, true);
+			group.scale(1.1);
+		}
+
+		function onFrame(event) {
+			// Loop through the hexagons in the group and fill them with the
+			// average color:
+			var length = Math.min(count + values.amount, group.children.length);
+			for (var i = count; i < length; i++) {
+				piece = group.children[i];
+				var hexagon = piece.children[0];
+				var color = raster.getAverageColor(hexagon);
+				if (color) {
+					hexagon.fillColor = color;
+					// hexagon.strokeColor = color;
+					var top = piece.children[1];
+					top.fillColor = color.clone();
+					top.fillColor.brightness *= 1.5;
+
+					var right = piece.children[2];
+					right.fillColor = color.clone();
+					right.fillColor.brightness *= 0.5;
+				}
+			}
+			count += values.amount;
+		}
+
+		function onResize() {
+			project.activeLayer.position = view.center;
+		}
+
+		function onDocumentDrag(event) {
+			event.preventDefault();
+		}
+
+		function onDocumentDrop(event) {
+			event.preventDefault();
+
+			var file = event.dataTransfer.files[0];
+			var reader = new FileReader();
+
+			reader.onload = function ( event ) {
+				var image = document.createElement('img');
+				image.onload = function () {
+					handleImage(image);
+					view.draw();
+				};
+				image.src = event.target.result;
+			};
+			reader.readAsDataURL(file);
+		}
+
+		DomEvent.add(document, {
+			drop: onDocumentDrop,
+			dragover: onDocumentDrag,
+			dragleave: onDocumentDrag
+		});
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+</body>
+</html>
