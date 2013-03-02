@@ -32,14 +32,14 @@
 					new Path.Circle(overlayPos, this.radius / 2)
 				]);
 				var color = new HsbColor(Math.random() * 360, 1, 1);
-				var gradient = new Gradient([color, 'black'], 'radial');
+				var gradient = new RadialGradient([color, 'black']);
 				compound.fillColor = new GradientColor(gradient, this.point,
 						this.point + this.radius, overlayPos);
 				var overlay = new Path.Circle(overlayPos, this.radius / 2);
 				var overlayColor = color.clone();
 				var fullOverlay = color.clone();
 				overlayColor.alpha = 0.5;
-				var overlayGradient = new Gradient([new RgbColor(1, 1, 1, 0.5), new RgbColor(1, 1, 1, 1)]);
+				var overlayGradient = new LinearGradient([new RgbColor(1, 1, 1, 0.5), new RgbColor(1, 1, 1, 1)]);
 				overlay.fillColor = new GradientColor(overlayGradient, overlayPos, overlayPos + this.radius / 2);
 				this.item = new Group(compound, overlay);
 			},
