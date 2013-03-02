@@ -38,7 +38,7 @@
 					var color = new HslColor(hue, saturation, lightness);
 					colors.push(color);
 				}
-				var gradient = new Gradient(colors, 'radial');
+				var gradient = new RadialGradient(colors);
 				var from = center;
 				var to = center + vector;
 				var gradientColor = new GradientColor(gradient, from, to);

@@ -7,7 +7,7 @@
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas1">
 		var path = new Path.Circle(view.center, view.bounds.height * 0.4);
-		var gradient = new Gradient([ 'yellow', 'red', 'black'], 'radial');
+		var gradient = new RadialGradient([ 'yellow', 'red', 'black']);
 		var from = path.position;
 		var to = path.bounds.rightCenter;
 		var gradientColor = new GradientColor(gradient, from, to);

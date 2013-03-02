@@ -142,11 +142,10 @@ new function() {
 			if (child.nodeType == 1)
 				stops.push(applyAttributes(new GradientStop(), child));
 		}
-		var gradient = new Gradient(stops),
-			isRadial = type === 'radialGradient',
+		var isRadial = type === 'radialGradient',
+			gradient = new (isRadial ? RadialGradient : LinearGradient)(stops),
 			origin, destination, highlight;
 		if (isRadial) {
-			gradient.type = 'radial';
 			origin = getPoint(node, 'cx', 'cy');
 			destination = origin.add(getValue(node, 'r'), 0);
 			highlight = getPoint(node, 'fx', 'fy', true);
