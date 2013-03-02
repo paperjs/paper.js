@@ -1,7 +1,7 @@
 ## Authors
 
 - Juerg Lehni <juerg@lehni.org>
-- Jonathan Puckey <me@jonathanpuckey.com>
+- Jonathan Puckey <jonathan@studiomoniker.com>
 
 ## Contributors
 
