@@ -14,12 +14,13 @@
 		var raster = new Raster('mona');
 		raster.remove();
 
-		var text = new PointText(view.bounds.bottomRight - [30, 30]);
-		text.justification = 'right';
-		text.fontSize = 12;
-		text.content = window.FileReader
+		var text = new PointText({
+			justification: 'right',
+			fontSize: 12,
+			content: window.FileReader
 				? 'drag & drop an image from your desktop to rasterize it'
-				: 'to drag & drop images, please use Webkit, Firefox, Chrome or IE 10';
+				: 'to drag & drop images, please use Webkit, Firefox, Chrome or IE 10'
+		});
 
 		resetSpiral();
 
@@ -62,18 +63,18 @@
 
 			position = view.center;
 			count = 0;
-			path = new Path();
-			path.fillColor = 'black';
-			path.closed = true;
+			path = new Path({
+				fillColor: 'black',
+				closed: true
+			});
 
 			position = view.center;
 			max = Math.min(raster.bounds.width, raster.bounds.height) * 0.5;
 		}
 
 		function onResize() {
-			text.remove();
-			if (count > 0)
-				resetSpiral();
+			resetSpiral();
+			text.point = view.bounds.bottomRight - [30, 30];
 		}
 
 		function onKeyDown(event) {
