@@ -169,6 +169,36 @@ test('isDescendant(item) / isAncestor(item)', function() {
 	}, false);
 });
 
+test('addChildren(items)', function() {
+	var project = paper.project;
+	var path1 = new Path(),
+		path2 = new Path(),
+		path3 = new Path(),
+		group = new Group([path1, path2, path3]);
+
+	function check(i1, i2, i3) {
+		equals(function() {
+			return group.children.length;
+		}, 3);
+		equals(function() {
+			return path1.index;
+		}, i1);
+		equals(function() {
+			return path2.index;
+		}, i2);
+		equals(function() {
+			return path3.index;
+		}, i3);
+	}
+	check(0, 1, 2);
+	group.addChild(path1);
+	check(2, 0, 1);
+	group.addChild(path2);
+	check(1, 2, 0);
+	group.addChildren([path1, path2, path3]);
+	check(0, 1, 2);
+});
+
 test('isGroupedWith', function() {
 	var project = paper.project;
 	var path = new Path();
