@@ -652,7 +652,7 @@ var Item = this.Item = Base.extend(Callback, {
 							bounds.x, bounds.y, bounds.width, bounds.height) 
 					// Return a clone of the cahce, so modifications won't
 					// affect it.
-					: bounds.clone();
+					: bounds;
 		};
 	},
 /** @lends Item# */{
@@ -692,7 +692,7 @@ var Item = this.Item = Base.extend(Callback, {
 			}
 		}
 		if (cache && this._bounds && this._bounds[cache])
-			return this._bounds[cache];
+			return this._bounds[cache].clone();
 		// If the result of concatinating the passed matrix with our internal
 		// one is an identity transformation, set it to null for faster
 		// processing
@@ -708,7 +708,7 @@ var Item = this.Item = Base.extend(Callback, {
 		if (cache) {
 			if (!this._bounds)
 				this._bounds = {};
-			this._bounds[cache] = bounds;
+			this._bounds[cache] = bounds.clone();
 		}
 		return bounds;
 	},
