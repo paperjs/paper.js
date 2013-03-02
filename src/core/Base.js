@@ -392,6 +392,8 @@ this.Base = Base.inject(/** @lends Base# */{
 			var amount = items && items.length,
 				append = index === undefined;
 			index = append ? list.length : index;
+			if (index > list.length)
+				index = list.length;
 			// Update _index on the items to be added first.
 			for (var i = 0; i < amount; i++)
 				items[i]._index = index + i;
