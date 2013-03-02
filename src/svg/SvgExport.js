@@ -386,13 +386,13 @@ new function() {
 	}
 
 	var exporters = {
-		group: exportGroup,
-		layer: exportGroup,
-		raster: exportRaster,
-		pointtext: exportText,
-		placedsymbol: exportPlacedSymbol,
-		path: exportPath,
-		compoundpath: exportCompoundPath
+		Group: exportGroup,
+		Layer: exportGroup,
+		Raster: exportRaster,
+		PointText: exportText,
+		PlacedSymbol: exportPlacedSymbol,
+		Path: exportPath,
+		CompoundPath: exportCompoundPath
 	};
 
 	function applyStyle(item, node) {

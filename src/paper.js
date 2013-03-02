@@ -127,10 +127,7 @@ var paper = new function() {
 /*#*/ } // options.svg
 
 /*#*/ include('core/PaperScript.js');
-
-/*#*/ if (options.browser) {
 /*#*/ include('core/initialize.js');
-/*#*/ } // options.browser
 
 /*#*/ if (options.version != 'dev') {
 // Finally inject the classes set on 'this' into the PaperScope class and create

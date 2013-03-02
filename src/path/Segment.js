@@ -23,7 +23,7 @@
  * objects that are connected by this segment.
  */
 var Segment = this.Segment = Base.extend(/** @lends Segment# */{
-	_type: 'segment',
+	_type: 'Segment',
 
 	/**
 	 * Creates a new Segment object.

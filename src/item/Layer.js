@@ -23,7 +23,7 @@
  * @extends Group
  */
 var Layer = this.Layer = Group.extend(/** @lends Layer# */{
-	_type: 'layer',
+	_type: 'Layer',
 	// DOCS: improve constructor code example.
 	/**
 	 * Creates a new Layer item and places it at the end of the

@@ -2563,7 +2563,7 @@ var Item = this.Item = Base.extend(Callback, {
 			// Exclude Raster items since they never draw a stroke and handle
 			// opacity by themselves (they also don't call _setStyles)
 			if (item._blendMode !== 'normal' || item._opacity < 1
-					&& item._type !== 'raster' && (item._type !== 'path'
+					&& item._type !== 'Raster' && (item._type !== 'Path'
 						|| item.getFillColor() && item.getStrokeColor())) {
 				var bounds = item.getStrokeBounds();
 				if (!bounds.width || !bounds.height)

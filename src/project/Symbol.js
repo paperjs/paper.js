@@ -20,7 +20,7 @@
  * to be updated with every transformation.
  */
 var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
-	_type: 'symbol',
+	_type: 'Symbol',
 
 	/**
 	 * Creates a Symbol item.

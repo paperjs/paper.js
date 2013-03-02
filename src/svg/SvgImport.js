@@ -474,7 +474,7 @@ new function() {
 			importer = importers[type],
 			item = importer && importer(node, type);
 		// See importGroup() for an explanation of this filtering:
-		if (item && item._type !== 'group')
+		if (item && item._type !== 'Group')
 			item = applyAttributes(item, node);
 		// Clear definitions at the end of import?
 		if (clearDefs)
