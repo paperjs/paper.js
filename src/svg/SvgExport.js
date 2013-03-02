@@ -216,9 +216,8 @@ new function() {
 		case 'empty':
 			return null;
 		case 'path':
-			attrs = {
-				d: item.getPathData()
-			};
+			var data = item.getPathData();
+			attrs = data && { d: data };
 			break;
 		case 'polyline':
 		case 'polygon':
@@ -307,7 +306,9 @@ new function() {
 
 	function exportCompoundPath(item) {
 		var attrs = getTransform(item, true);
-		attrs.d = item.getPathData();
+		var data = item.getPathData();
+		if (data)
+			attrs.d = data;
 		return createElement('path', attrs);
 	}
 
