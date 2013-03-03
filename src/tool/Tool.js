@@ -142,8 +142,11 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * function onMouseDown(event) {
 	 * 	// Create a new circle shaped path with a radius of 10
 	 * 	// at the position of the mouse (event.point):
-	 * 	var path = new Path.Circle(event.point, 10);
-	 * 	path.fillColor = 'black';
+	 * 	var path = new Path.Circle({
+	 * 		center: event.point,
+	 * 		radius: 10,
+	 * 		fillColor: 'black'
+	 * 	});
 	 * }
 	 */
 
@@ -160,9 +163,10 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * // Draw a line by adding a segment to a path on every mouse drag event:
 	 *
 	 * // Create an empty path:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
-	 *
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
 	 * function onMouseDrag(event) {
 	 * 	// Add a segment to the path at the position of the mouse:
 	 * 	path.add(event.point);
@@ -182,9 +186,12 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * // Moving a path to the position of the mouse:
 	 *
 	 * // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
-	 * var path = new Path.Circle([0, 0], 10);
-	 * path.fillColor = 'black';
-	 *
+	 * var path = new Path.Circle({
+	 * 	center: [0, 0],
+	 * 	radius: 10,
+	 * 	fillColor: 'black'
+	 * });
+	 * 
 	 * function onMouseMove(event) {
 	 * 	// Whenever the user moves the mouse, move the path
 	 * 	// to that position:
@@ -206,8 +213,11 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * function onMouseUp(event) {
 	 * 	// Create a new circle shaped path with a radius of 10
 	 * 	// at the position of the mouse (event.point):
-	 * 	var path = new Path.Circle(event.point, 10);
-	 * 	path.fillColor = 'black';
+	 * 	var path = new Path.Circle({
+	 * 		center: event.point,
+	 * 		radius: 10,
+	 * 		fillColor: 'black'
+	 * 	});
 	 * }
 	 */
 
@@ -230,8 +240,11 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * // Scaling a path whenever the user presses the space bar:
 	 *
 	 * // Create a circle shaped path:
-	 * var path = new Path.Circle(new Point(50, 50), 30);
-	 * path.fillColor = 'red';
+	 * 	var path = new Path.Circle({
+	 * 		center: new Point(50, 50),
+	 * 		radius: 30,
+	 * 		fillColor: 'red'
+	 * 	});
 	 *
 	 * function onKeyDown(event) {
 	 * 	if (event.key == 'space') {
