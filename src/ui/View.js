@@ -458,6 +458,19 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Function} function The function to be called when the event
 	 * occurs
+	 * 
+	 * @example {@paperscript}
+	 * // Create a rectangle shaped path with its top left point at:
+	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
+	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+	 * 
+	 * var frameHandler = function(event) {
+	 * 	// Every frame, rotate the path by 3 degrees:
+	 * 	path.rotate(3);
+	 * };
+	 * 
+	 * view.attach('frame', frameHandler);
 	 */
 	/**
 	 * Attach one or more event handlers to the view.
@@ -466,6 +479,19 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @function
 	 * @param {Object} param An object literal containing one or more of the
 	 * following properties: {@code frame, resize}.
+	 * // Create a rectangle shaped path with its top left point at:
+	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
+	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+	 * 
+	 * var frameHandler = function(event) {
+	 * 	// Every frame, rotate the path by 3 degrees:
+	 * 	path.rotate(3);
+	 * };
+	 * 
+	 * view.attach({
+	 * 	frame: frameHandler
+	 * });
 	 */
 
 	/**
@@ -475,6 +501,27 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Function} function The function to be detached
+	 * 
+	 * @example {@paperscript}
+	 * // Create a rectangle shaped path with its top left point at:
+	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
+	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+	 * 
+	 * var frameHandler = function(event) {
+	 * 	// Every frame, rotate the path by 3 degrees:
+	 * 	path.rotate(3);
+	 * };
+	 * 
+	 * view.attach({
+	 * 	frame: frameHandler
+	 * });
+	 * 
+	 * // When the user presses the mouse,
+	 * // detach the frame handler from the view:
+	 * function onMouseDown(event) {
+	 * 	view.detach('frame');
+	 * }
 	 */
 	/**
 	 * Detach one or more event handlers from the view.
