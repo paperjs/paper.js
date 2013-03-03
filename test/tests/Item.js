@@ -523,3 +523,15 @@ test('Item#type', function() {
 	equals(new PlacedSymbol().type, 'placedsymbol');
 	equals(new PointText().type, 'pointtext');
 });
+
+test('Item#isInserted', function() {
+	var item = new Path();
+	equals(item.isInserted(), true);
+	item.remove();
+	equals(item.isInserted(), false);
+
+	var group = new Group(item);
+	equals(item.isInserted(), true);
+	group.remove();
+	equals(item.isInserted(), false);
+});
