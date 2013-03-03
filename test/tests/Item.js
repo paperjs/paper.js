@@ -143,6 +143,26 @@ test('insertBelow(item)', function() {
 	}, true);
 });
 
+test('sendToBack()', function() {
+	var project = paper.project;
+	var firstPath = new Path();
+	var secondPath = new Path();
+	secondPath.sendToBack();
+	equals(function() {
+		return secondPath.index == 0;
+	}, true);
+});
+
+test('bringToFront()', function() {
+	var project = paper.project;
+	var firstPath = new Path();
+	var secondPath = new Path();
+	firstPath.bringToFront();
+	equals(function() {
+		return firstPath.index == 1;
+	}, true);
+});
+
 test('isDescendant(item) / isAncestor(item)', function() {
 	var project = paper.project;
 	var path = new Path();
