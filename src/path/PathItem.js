@@ -22,13 +22,37 @@
 var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 
 	/**
-	 * Returns all interesections between two {@link PathItem} items as an array
+	 * Returns all intersections between two {@link PathItem} items as an array
 	 * of {@link CurveLocation} objects. {@link CompoundPath} items are also
 	 * supported.
 	 *
-	 * @param {PathItem} the other item to find the intersections to.
+	 * @param {PathItem} path the other item to find the intersections to.
 	 * @return {CurveLocation[]} the locations of all intersection between the
 	 * paths
+	 * @example {@paperscript}
+	 * // Create a rectangular path with its top-left point at
+	 * // {x: 30, y: 25} and a size of {width: 50, height: 50}:
+	 * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
+	 * path.strokeColor = 'black';
+	 * 
+	 * var secondPath = path.clone();
+	 * var intersectionGroup = new Group();
+	 * 
+	 * function onFrame(event) {
+	 * 	secondPath.rotate(3);
+	 * 	
+	 * 	var intersections = path.getIntersections(secondPath);
+	 * 	intersectionGroup.removeChildren();
+	 * 
+	 * 	for (var i = 0; i < intersections.length; i++) {
+	 * 		var intersectionPath = new Path.Circle({
+	 * 			center: intersections[i].point,
+	 * 			radius: 4,
+	 * 			fillColor: 'red'
+	 * 		});
+	 * 		intersectionGroup.addChild(intersectionPath);
+	 * 	}
+	 * }
 	 */
 	getIntersections: function(path) {
 		// First check the bounds of the two paths. If they don't intersect,
@@ -242,33 +266,26 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	 * @param {Number} [parameter=0.5]
 	 *
 	 * @example {@paperscript height=300}
-	 * // Interactive example. Click and drag in the view below:
+	 * // Interactive example. Move your mouse around the view below:
 	 *
 	 * var myPath;
-	 * function onMouseDrag(event) {
+	 * function onMouseMove(event) {
 	 * 	// If we created a path before, remove it:
 	 * 	if (myPath) {
-	 * 	    myPath.remove();
+	 * 		myPath.remove();
 	 * 	}
-	 *
+	 * 
 	 * 	// Create a new path and add a segment point to it
 	 * 	// at {x: 150, y: 150):
 	 * 	myPath = new Path();
 	 * 	myPath.add(150, 150);
-	 *
+	 * 
 	 * 	// Draw a curve through the position of the mouse to 'toPoint'
 	 * 	var toPoint = new Point(350, 150);
 	 * 	myPath.curveTo(event.point, toPoint);
-	 *
+	 * 
 	 * 	// Select the path, so we can see its segments:
 	 * 	myPath.selected = true;
-	 * }
-     *
-	 * // When the mouse is released, deselect the path
-	 * // and set its stroke-color to black:
-	 * function onMouseUp(event) {
-	 * 	myPath.selected = false;
-	 * 	myPath.strokeColor = 'black';
 	 * }
 	 */
 
