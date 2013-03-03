@@ -8,9 +8,11 @@
 	<script type="text/paperscript" canvas="canvas">
 		var path;
 
-		var textItem = new PointText(new Point(20, 30));
-		textItem.fillColor = 'black';
-		textItem.content = 'Click and drag to draw a line.';
+		var textItem = new PointText({
+			content: 'Click and drag to draw a line.',
+			point: new Point(20, 30),
+			fillColor: 'black',
+		});
 
 		function onMouseDown(event) {
 			// If we produced a path before, deselect it:
@@ -19,12 +21,12 @@
 			}
 
 			// Create a new path and set its stroke color to black:
-			path = new Path();
-			path.add(event.point);
-			path.strokeColor = 'black';
-
-			// Select the path, so we can see its segment points:
-			path.fullySelected = true;
+			path = new Path({
+				segments: [event.point],
+				strokeColor: 'black',
+				// Select the path, so we can see its segment points:
+				fullySelected: true
+			});
 		}
 
 		// While the user drags the mouse, points are added to the path
