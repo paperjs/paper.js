@@ -27,7 +27,8 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	 *
 	 * @param {Item} item the source item which is copied as the definition of
 	 *               the symbol
-	 *
+	 * @param {Boolean} [dontCenter=false] 
+	 * 
 	 * @example {@paperscript split=true height=240}
 	 * // Placing 100 instances of a symbol:
 	 * var path = new Path.Star(new Point(0, 0), 6, 5, 13);
