@@ -22,7 +22,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 *
 	 * @param {Color} [color=new RgbColor(0, 0, 0)] the color of the stop
 	 * @param {Number} [rampPoint=0] the position of the stop on the gradient
-	 *                               ramp {@default 0}
+	 *                               ramp as a value between 0 and 1.
 	 */
 	initialize: function(arg0, arg1) {
 		if (arg0) {
@@ -82,22 +82,26 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * // Create a circle shaped path at the center of the view,
 	 * // using 40% of the height of the view as its radius
 	 * // and fill it with a radial gradient color:
-	 * var path = new Path.Circle(view.center, view.bounds.height * 0.4);
-	 *
+	 * var path = new Path.Circle({
+	 * 	center: view.center,
+	 * 	radius: view.bounds.height * 0.4
+	 * });
+	 * 
 	 * // Prepare the gradient color and apply it to the path:
 	 * var colors = [['yellow', 0.05], ['red', 0.2], ['black', 1]];
 	 * var gradient = new RadialGradient(colors);
 	 * var from = path.position;
 	 * var to = path.bounds.rightCenter;
 	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * 
 	 * path.fillColor = gradientColor;
-	 *
+	 * 
 	 * // This function is called each frame of the animation:
 	 * function onFrame(event) {
 	 * 	var blackStop = gradient.stops[2];
 	 * 	// Animate the rampPoint between 0.7 and 0.9:
 	 * 	blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
-	 *
+	 * 
 	 * 	// Animate the rampPoint between 0.2 and 0.4
 	 * 	var redStop = gradient.stops[1];
 	 * 	redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
@@ -125,7 +129,10 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * // Create a circle shaped path at the center of the view,
 	 * // using 40% of the height of the view as its radius
 	 * // and fill it with a radial gradient color:
-	 * var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+	 * var path = new Path.Circle({
+	 * 	center: view.center,
+	 * 	radius: view.bounds.height * 0.4
+	 * });
 	 *
 	 * // Create a radial gradient that mixes red and black evenly:
 	 * var gradient = new RadialGradient('red', 'black');
