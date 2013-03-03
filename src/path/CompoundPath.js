@@ -33,11 +33,19 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	 *
 	 * @example {@paperscript}
 	 * // Create a circle shaped path with a hole in it:
-	 * var circle = new Path.Circle(new Point(50, 50), 30);
-	 * var innerCircle = new Path.Circle(new Point(50, 50), 10);
+	 * var circle = new Path.Circle({
+	 * 	center: new Point(50, 50),
+	 * 	radius: 30
+	 * });
+	 * 
+	 * var innerCircle = new Path.Circle({
+	 * 	center: new Point(50, 50),
+	 * 	radius: 10
+	 * });
+	 * 
 	 * var compoundPath = new CompoundPath([circle, innerCircle]);
 	 * compoundPath.fillColor = 'red';
-	 *
+	 * 
 	 * // Move the inner circle 5pt to the right:
 	 * compoundPath.children[1].position.x += 5;
 	 */
