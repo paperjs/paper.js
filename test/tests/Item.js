@@ -514,3 +514,12 @@ test('Cloning a linked size', function() {
 		description += ': ' + error;
 	equals(error == null, true, description);
 });
+
+test('Item#type', function() {
+	equals(new Group().type, 'group');
+	equals(new Path().type, 'path');
+	equals(new CompoundPath().type, 'compoundpath');
+	equals(new Raster().type, 'raster');
+	equals(new PlacedSymbol().type, 'placedsymbol');
+	equals(new PointText().type, 'pointtext');
+});
