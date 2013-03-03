@@ -16,8 +16,18 @@ test('new Rectangle(new Point(10, 20), new Size(30, 40));', function() {
 	equals(rect.toString(), '{ x: 10, y: 20, width: 30, height: 40 }');
 });
 
+test('new Rectangle({ point: new Point(10, 20), size: new Size(30, 40)});', function() {
+	var rect = new Rectangle({ point: new Point(10, 20), size: new Size(30, 40)});
+	equals(rect.toString(), '{ x: 10, y: 20, width: 30, height: 40 }');
+});
+
 test('new Rectangle([10, 20], [30, 40]);', function() {
 	var rect = new Rectangle([10, 20], [30, 40]);
+	equals(rect.toString(), '{ x: 10, y: 20, width: 30, height: 40 }');
+});
+
+test('new Rectangle({from: [10, 20], to: [30, 40]});', function() {
+	var rect = new Rectangle({from: [10, 20], to: [30, 40]});
 	equals(rect.toString(), '{ x: 10, y: 20, width: 30, height: 40 }');
 });
 
