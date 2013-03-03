@@ -46,11 +46,12 @@
 			var count = 50;
 
 			// Create a symbol, which we will use to place instances of later:
-			var path = new Path.Circle(new Point(0, 0), 5);
-			path.style = {
+			var path = new Path.Circle({
+				center: new Point(0, 0),
+				radius: 5,
 				fillColor: 'white',
 				strokeColor: 'black'
-			};
+			});
 
 			var symbol = new Symbol(path);
 
@@ -60,11 +61,12 @@
 				var center = Point.random() * view.size;
 				var placed = symbol.place(center);
 				placed.scale(i / count + 0.01);
-				placed.data = {};
-				placed.data.vector = new Point({
-					angle: Math.random() * 360,
-					length : (i / count) * Math.random() / 5
-				});
+				placed.data = {
+					vector: new Point({
+						angle: Math.random() * 360,
+						length : (i / count) * Math.random() / 5
+					});
+				};
 			}
 
 			var vector = new Point({
@@ -113,8 +115,9 @@
 			var paths = [];
 			var colors = ['red', 'orange', 'yellow', 'lime', 'blue', 'purple'];
 			for (var i = 0; i < colors.length; i++) {
-				var path = new Path();
-				path.fillColor = colors[i];
+				var path = new Path({
+					fillColor: colors[i]
+				});
 				paths.push(path);
 			}
 
