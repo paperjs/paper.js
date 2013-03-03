@@ -12,18 +12,8 @@
 
 Path.inject({ statics: new function() {
 
-	function readRectangle(list) {
-		var props = Base.getNamed(list);
-		return props
-				? 'from' in props
-					? new Rectangle(Point.readNamed(list, 'from'),
-						Point.readNamed(list, 'to'))
-					: new Rectangle(props)
-				: Rectangle.read(list);
-	}
-
 	function createRectangle(/* rect */) {
-		var rect = readRectangle(arguments),
+		var rect = Rectangle.readNamed(arguments, 'rectangle'),
 			left = rect.getLeft(),
 			top = rect.getTop(),
 			right = rect.getRight(),
@@ -50,7 +40,7 @@ Path.inject({ statics: new function() {
 	];
 
 	function createEllipse(/* rect */) {
-		var rect = readRectangle(arguments),
+		var rect = Rectangle.readNamed(arguments, 'rectangle'),
 			path = new Path(Base.getNamed(arguments)),
 			point = rect.getPoint(true),
 			size = rect.getSize(true),
@@ -163,7 +153,7 @@ Path.inject({ statics: new function() {
 		 * path.strokeColor = 'black';
 		 */
 		RoundRectangle: function(/* rect, radius */) {
-			var rect = readRectangle(arguments),
+			var rect = Rectangle.readNamed(arguments, 'rectangle'),
 				radius = Size.readNamed(arguments, 'radius');
 			if (radius.isZero())
 				return createRectangle(rect);
