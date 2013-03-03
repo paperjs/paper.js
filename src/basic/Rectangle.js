@@ -43,8 +43,8 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * constructor figures out how to fit a rectangle between them.
 	 *
 	 * @name Rectangle#initialize
-	 * @param {Point} point1 The first point defining the rectangle
-	 * @param {Point} point2 The second point defining the rectangle
+	 * @param {Point} from The first point defining the rectangle
+	 * @param {Point} to The second point defining the rectangle
 	 */
 	/**
 	 * Creates a new rectangle object from the passed rectangle object.
