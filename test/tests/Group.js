@@ -40,6 +40,19 @@ test('new Group([item])', function() {
 	}, true);
 });
 
+test('new Group({children:[item]})', function() {
+	var path = new Path();
+	var group = new Group({
+		children: [path]
+	});
+	equals(function() {
+		return paper.project.activeLayer.children.length;
+	}, 1);
+	equals(function() {
+		return group.children[0] == path;
+	}, true);
+});
+
 test('Group bounds', function() {
 	paper.project.currentStyle = {
 		strokeWidth: 5,
