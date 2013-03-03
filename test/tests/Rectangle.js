@@ -28,7 +28,7 @@ test('new Rectangle([10, 20], [30, 40]);', function() {
 
 test('new Rectangle({from: [10, 20], to: [30, 40]});', function() {
 	var rect = new Rectangle({from: [10, 20], to: [30, 40]});
-	equals(rect.toString(), '{ x: 10, y: 20, width: 30, height: 40 }');
+	equals(rect.toString(), '{ x: 10, y: 20, width: 20, height: 20 }');
 });
 
 test('new Rectangle(new Point(10, 20), new Point(30, 40));', function() {
