@@ -33,11 +33,15 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	 *
 	 * @example {@paperscript split=true height=240}
 	 * // Placing 100 instances of a symbol:
-	 * var path = new Path.Star(new Point(0, 0), 6, 5, 13);
-	 * path.style = {
-	 *     fillColor: 'white',
-	 *     strokeColor: 'black'
-	 * };
+	 * // Create a star shaped path at {x: 0, y: 0}:
+	 * var path = new Path.Star({
+	 * 	center: new Point(0, 0),
+	 * 	numPoints: 6,
+	 * 	radius1: 5,
+	 * 	radius2: 13,
+	 * 	fillColor: 'white',
+	 * 	strokeColor: 'black'
+	 * });
      *
 	 * // Create a symbol from the path:
 	 * var symbol = new Symbol(path);
