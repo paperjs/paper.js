@@ -539,7 +539,9 @@ test('Item#type', function() {
 	equals(new Group().type, 'group');
 	equals(new Path().type, 'path');
 	equals(new CompoundPath().type, 'compoundpath');
-	equals(new Raster().type, 'raster');
+
+	var canvas = document.createElement('canvas');
+	equals(new Raster(canvas).type, 'raster');
 	equals(new PlacedSymbol().type, 'placedsymbol');
 	equals(new PointText().type, 'pointtext');
 });
