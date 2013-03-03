@@ -53,20 +53,19 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @param {Rectangle} rt
 	 */
 	initialize: function(arg0, arg1, arg2, arg3) {
-		var type = typeof arg0;
+		var type = typeof arg0,
+			read = 0;
 		if (type === 'number') {
 			// new Rectangle(x, y, width, height)
 			this.x = arg0;
 			this.y = arg1;
 			this.width = arg2;
 			this.height = arg3;
-			if (this._read)
-				this._read = 4;
+			read = 4;
 		} else if (type === 'undefined' || arg0 === null) {
 			// new Rectangle(), new Rectangle(null)
 			this.x = this.y = this.width = this.height = 0;
-			if (this._read)
-				this._read = arg0 === null ? 1 : 0;
+			read = arg0 === null ? 1 : 0;
 		} else if (arguments.length === 1) {
 			// This can either be an array, or an object literal.
 			if (Array.isArray(arg0)) {
@@ -74,6 +73,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 				this.y = arg0[1];
 				this.width = arg0[2];
 				this.height = arg0[3];
+				read = 1;
 			} else if (arg0.x !== undefined || arg0.width !== undefined) {
 				// Another rectangle or a simple object literal
 				// describing one. Use duck typing, and 0 as defaults.
@@ -81,32 +81,37 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 				this.y = arg0.y || 0;
 				this.width = arg0.width || 0;
 				this.height = arg0.height || 0;
-			} else {
+				read = 1;
+			} else if (arg0.from === undefined && arg0.to === undefined) {
 				// Use #_set to support whatever property the rectangle can
-				// take.
+				// take, but handle from/to separately below.
 				this.x = this.y = this.width = this.height = 0;
 				this._set(arg0);
+				read = 1;
 			}
-			if (this._read)
-				this._read = 1;
-		} else if (arguments.length > 1) {
+		}
+		if (!read) {
 			// Read a point argument and look at the next value to see wether
 			// it's a size or a point, then read accordingly.
-			var point = Point.read(arguments),
+			// We're supporting both reading from a normal arguments list and
+			// covering the Rectangle({ from: , to: }) constructor, through
+			// Point.readNamed().
+			var point = Point.readNamed(arguments, 'from'),
 				next = Base.peek(arguments);
 			this.x = point.x;
 			this.y = point.y;
-			if (next && next.x !== undefined) {
-				// new Rectangle(point1, point2)
-				var point2 = Point.read(arguments);
-				this.width = point2.x - point.x;
-				this.height = point2.y - point.y;
+			if (next && next.x !== undefined || Base.hasNamed(arguments, 'to')) {
+				// new Rectangle(from, to)
+				// Read above why we can use readNamed() to cover both cases.
+				var to = Point.readNamed(arguments, 'to');
+				this.width = to.x - point.x;
+				this.height = to.y - point.y;
 				if (this.width < 0) {
-					this.x = point2.x;
+					this.x = to.x;
 					this.width = -this.width;
 				}
 				if (this.height < 0) {
-					this.y = point2.y;
+					this.y = to.y;
 					this.height = -this.height;
 				}
 			} else {
@@ -115,9 +120,10 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 				this.width = size.width;
 				this.height = size.height;
 			}
-			if (this._read)
-				this._read = arguments._index;
+			read = arguments._index;
 		}
+		if (this._read)
+			this._read = read;
 	},
 
 	/**
