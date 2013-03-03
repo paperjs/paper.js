@@ -231,9 +231,7 @@ this.Base = Base.inject(/** @lends Base# */{
 		 */
 		readNamed: function(list, name) {
 			var value = this.getNamed(list, name);
-			// value is undefined if there is no arguments object, and null
-			// if there is one, but no value is defined.
-			return this.read(value !== undefined ? [value] : list);
+			return this.read(value != null ? [value] : list);
 		},
 
 		/**
@@ -246,13 +244,9 @@ this.Base = Base.inject(/** @lends Base# */{
 			var arg = list[0];
 			if (list._hasObject === undefined)
 				list._hasObject = list.length === 1 && Base.isPlainObject(arg);
-			if (list._hasObject) {
+			if (list._hasObject)
 				// Return the whole arguments object if no name is provided.
-				value = name ? arg[name] : arg;
-				// Convert undefined to null, to distinguish from undefined
-				// result, when there is no arguments object.
-				return value !== undefined ? value : null;
-			}
+				return name ? arg[name] : arg;
 		},
 
 		/**
