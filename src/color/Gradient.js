@@ -128,6 +128,11 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	}
 });
 
+/**
+ * @name LinearGradient
+ *
+ * @class The LinearGradient object.
+ */
 var LinearGradient = this.LinearGradient = Gradient.extend(/** @lends LinearGradient# */{
 	_type: 'LinearGradient'
 
@@ -139,6 +144,11 @@ var LinearGradient = this.LinearGradient = Gradient.extend(/** @lends LinearGrad
 	 */
 });
 
+/**
+ * @name RadialGradient
+ *
+ * @class The RadialGradient object.
+ */
 var RadialGradient = this.RadialGradient = Gradient.extend(/** @lends RadialGradient# */{
 	_type: 'RadialGradient'
 
