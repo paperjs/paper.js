@@ -247,6 +247,14 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	 * Specifies whether the {@link #point} of the segment is selected.
 	 * @type Boolean
 	 * @bean
+	 * @example {@paperscript}
+	 * var path = new Path.Circle({
+	 * 	center: [80, 50],
+	 * 	radius: 40
+	 * });
+	 * 
+	 * // Select the third segment point:
+	 * path.segments[2].selected = true;
 	 */
 	isSelected: function() {
 		return this._isSelected(this._point);
