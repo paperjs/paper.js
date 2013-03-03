@@ -410,8 +410,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * @example {@paperscript}
 	 * // Adding segments to a path using point objects:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
 	 *
 	 * // Add a segment at {x: 30, y: 75}
 	 * path.add(new Point(30, 75));
@@ -422,8 +423,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * @example {@paperscript}
 	 * // Adding segments to a path using arrays containing number pairs:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
 	 *
 	 * // Add a segment at {x: 30, y: 75}
 	 * path.add([30, 75]);
@@ -434,8 +436,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * @example {@paperscript}
 	 * // Adding segments to a path using objects:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
 	 *
 	 * // Add a segment at {x: 30, y: 75}
 	 * path.add({x: 30, y: 75});
@@ -446,8 +449,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * @example {@paperscript}
 	 * // Adding a segment with handles to a path:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
 	 *
 	 * path.add(new Point(30, 75));
 	 *
@@ -533,23 +537,26 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * @example {@paperscript}
 	 * // Adding an array of Point objects:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
 	 * var points = [new Point(30, 50), new Point(170, 50)];
 	 * path.addSegments(points);
 	 *
 	 * @example {@paperscript}
 	 * // Adding an array of [x, y] arrays:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
 	 * var array = [[30, 75], [100, 20], [170, 75]];
 	 * path.addSegments(array);
 	 *
 	 * @example {@paperscript}
 	 * // Adding segments from one path to another:
 	 *
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
 	 * path.addSegments([[30, 75], [100, 20], [170, 75]]);
 	 *
 	 * var path2 = new Path();
@@ -591,8 +598,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
-	 * var path = new Path.Circle(new Point(80, 50), 35);
-	 * path.strokeColor = 'black';
+	 * var path = new Path.Circle({
+	 * 	center: new Point(80, 50),
+	 * 	radius: 35,
+	 * 	strokeColor: 'black'
+	 * });
 	 *
 	 * // Remove its second segment:
 	 * path.removeSegment(1);
@@ -624,8 +634,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
-	 * var path = new Path.Circle(new Point(80, 50), 35);
-	 * path.strokeColor = 'black';
+	 * var path = new Path.Circle({
+	 * 	center: new Point(80, 50),
+	 * 	radius: 35,
+	 * 	strokeColor: 'black'
+	 * });
 	 *
 	 * // Remove the segments from index 1 till index 2:
 	 * path.removeSegments(1, 2);
@@ -693,12 +706,18 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * @example {@paperscript}
 	 * // Selecting an item:
-	 * var path = new Path.Circle(new Size(80, 50), 35);
+	 * var path = new Path.Circle({
+	 * 	center: new Size(80, 50),
+	 * 	radius: 35
+	 * });
 	 * path.selected = true; // Select the path
 	 *
 	 * @example {@paperscript}
 	 * // A path is selected, if one or more of its segments is selected:
-	 * var path = new Path.Circle(new Size(80, 50), 35);
+	 * var path = new Path.Circle({
+	 * 	center: new Size(80, 50),
+	 * 	radius: 35
+	 * });
 	 *
 	 * // Select the second segment of the path:
 	 * path.segments[1].selected = true;
@@ -717,11 +736,16 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * @example {@paperscript}
 	 * // A path is fully selected, if all of its segments are selected:
-	 * var path = new Path.Circle(new Size(80, 50), 35);
+	 * var path = new Path.Circle({
+	 * 	center: new Size(80, 50),
+	 * 	radius: 35
+	 * });
 	 * path.fullySelected = true;
 	 *
-	 * var path2 = new Path.Circle(new Size(180, 50), 35);
-	 * path2.fullySelected = true;
+	 * var path2 = new Path.Circle({
+	 * 	center: new Size(180, 50),
+	 * 	radius: 35
+	 * });
 	 *
 	 * // Deselect the second segment of the second path:
 	 * path2.segments[1].selected = false;
@@ -791,7 +815,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
-	 * var path = new Path.Circle(new Size(80, 50), 35);
+	 * var path = new Path.Circle({
+	 * 	center: new Size(80, 50),
+	 * 	radius: 35
+	 * });
 	 *
 	 * // Select the path, so we can inspect its segments:
 	 * path.selected = true;
@@ -802,9 +829,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * // Convert its curves to points, with a max distance of 20:
 	 * copy.flatten(20);
-	 *
-	 * // Select the copy, so we can inspect its segments:
-	 * copy.selected = true;
 	 */
 	flatten: function(maxDistance) {
 		var flattener = new PathFlattener(this),
@@ -841,22 +865,23 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * 	if (path) {
 	 * 		path.selected = false;
 	 * 	}
-	 *
+	 * 
 	 * 	// Create a new path and add the position of the mouse
 	 * 	// as its first segment. Select it, so we can see the
 	 * 	// segment points:
-	 * 	path = new Path();
-	 * 	path.strokeColor = 'black';
-	 * 	path.add(event.point);
-	 * 	path.selected = true;
+	 * 	path = new Path({
+	 * 		segments: [event.point],
+	 * 		strokeColor: 'black',
+	 * 		selected: true
+	 * 	});
 	 * }
-	 *
+	 * 
 	 * function onMouseDrag(event) {
 	 * 	// On every drag event, add a segment to the path
 	 * 	// at the position of the mouse:
 	 * 	path.add(event.point);
 	 * }
-	 *
+	 * 
 	 * function onMouseUp(event) {
 	 * 	// When the mouse is released, simplify the path:
 	 * 	path.simplify();
@@ -1004,48 +1029,60 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 * @example {@paperscript}
 	 * // Joining two paths:
-	 * var path = new Path([30, 25], [30, 75]);
-	 * path.strokeColor = 'black';
-	 *
-	 * var path2 = new Path([200, 25], [200, 75]);
-	 * path2.strokeColor = 'black';
-	 *
+	 * var path = new Path({
+	 * 	segments: [[30, 25], [30, 75]],
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
+	 * var path2 = new Path({
+	 * 	segments: [[200, 25], [200, 75]],
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
 	 * // Join the paths:
 	 * path.join(path2);
 	 *
 	 * @example {@paperscript}
 	 * // Joining two paths that share a point at the start or end of their
 	 * // segments array:
-	 * var path = new Path([30, 25], [30, 75]);
-	 * path.strokeColor = 'black';
-	 *
-	 * var path2 = new Path([30, 25], [80, 25]);
-	 * path2.strokeColor = 'black';
-	 *
+	 * var path = new Path({
+	 * 	segments: [[30, 25], [30, 75]],
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
+	 * var path2 = new Path({
+	 * 	segments: [[30, 25], [80, 25]],
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
 	 * // Join the paths:
 	 * path.join(path2);
-	 *
+	 * 
 	 * // After joining, path with have 3 segments, since it
 	 * // shared its first segment point with the first
 	 * // segment point of path2.
-	 *
+	 * 
 	 * // Select the path to show that they have joined:
 	 * path.selected = true;
 	 *
 	 * @example {@paperscript}
 	 * // Joining two paths that connect at two points:
-	 * var path = new Path([30, 25], [80, 25], [80, 75]);
-	 * path.strokeColor = 'black';
-	 *
-	 * var path2 = new Path([30, 25], [30, 75], [80, 75]);
-	 * path2.strokeColor = 'black';
-	 *
+	 * var path = new Path({
+	 * 	segments: [[30, 25], [80, 25], [80, 75]],
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
+	 * var path2 = new Path({
+	 * 	segments: [[30, 25], [30, 75], [80, 75]],
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
 	 * // Join the paths:
 	 * path.join(path2);
-	 *
+	 * 
 	 * // Because the paths were joined at two points, the path is closed
 	 * // and has 4 segments.
-	 *
+	 * 
 	 * // Select the path to show that they have joined:
 	 * path.selected = true;
 	 */
@@ -1180,28 +1217,35 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * // Finding the point on a path at a given offset:
 	 *
 	 * // Create an arc shaped path:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
 	 * path.add(new Point(40, 100));
 	 * path.arcTo(new Point(150, 100));
-	 *
+	 * 
 	 * // We're going to be working with a third of the length
 	 * // of the path as the offset:
 	 * var offset = path.length / 3;
-	 *
+	 * 
 	 * // Find the point on the path:
 	 * var point = path.getPointAt(offset);
-	 *
+	 * 
 	 * // Create a small circle shaped path at the point:
-	 * var circle = new Path.Circle(point, 3);
-	 * circle.fillColor = 'red';
+	 * var circle = new Path.Circle({
+	 * 	center: point,
+	 * 	radius: 3,
+	 * 	fillColor: 'red'
+	 * });
 	 *
 	 * @example {@paperscript height=150}
 	 * // Iterating over the length of a path:
 	 *
 	 * // Create an arc shaped path:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
+	 *
 	 * path.add(new Point(40, 100));
 	 * path.arcTo(new Point(150, 100));
 	 *
@@ -1214,8 +1258,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * 	var point = path.getPointAt(offset);
 	 *
 	 * 	// Create a small circle shaped path at the point:
-	 * 	var circle = new Path.Circle(point, 3);
-	 * 	circle.fillColor = 'red';
+	 * 	var circle = new Path.Circle({
+	 * 		center: point,
+	 * 		radius: 3,
+	 * 		fillColor: 'red'
+	 * 	});
 	 * }
 	 */
 	getPointAt: function(offset, isParameter) {
@@ -1234,8 +1281,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * // Working with the tangent vector at a given offset:
 	 *
 	 * // Create an arc shaped path:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
+	 *
 	 * path.add(new Point(40, 100));
 	 * path.arcTo(new Point(150, 100));
 	 *
@@ -1261,8 +1310,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * // Iterating over the length of a path:
 	 *
 	 * // Create an arc shaped path:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
+	 *
 	 * path.add(new Point(40, 100));
 	 * path.arcTo(new Point(150, 100));
 	 *
@@ -1302,8 +1353,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * // Working with the normal vector at a given offset:
 	 *
 	 * // Create an arc shaped path:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
+	 *
 	 * path.add(new Point(40, 100));
 	 * path.arcTo(new Point(150, 100));
 	 *
@@ -1329,8 +1382,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * // Iterating over the length of a path:
 	 *
 	 * // Create an arc shaped path:
-	 * var path = new Path();
-	 * path.strokeColor = 'black';
+	 * var path = new Path({
+	 * 	strokeColor: 'black'
+	 * });
+	 *
 	 * path.add(new Point(40, 100));
 	 * path.arcTo(new Point(150, 100));
 	 *
@@ -1348,11 +1403,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * 	// Make the normal vector 30pt long:
 	 * 	normal.length = 30;
 	 *
-	 * 	var line = new Path();
-	 * 	line.strokeColor = 'red';
-	 * 	line.add(point);
-	 * 	line.add(point + normal);
-	 * }
+	 * var path = new Path({
+	 * 	segments: [point, point + normal],
+	 * 	strokeColor: 'red'
+	 * });
 	 */
 	getNormalAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
@@ -1388,6 +1442,30 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * @param point {Point} The point for which we search the nearest point
 	 * @return {Point} The point on the path that's the closest to the specified
 	 * point
+	 * 
+	 * @example {@paperscript height=200}
+	 * var star = new Path.Star({
+	 * 	center: view.center,
+	 * 	numPoints: 10,
+	 * 	radius1: 30,
+	 * 	radius2: 60,
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
+	 * var circle = new Path.Circle({
+	 * 	center: view.center,
+	 * 	radius: 3,
+	 * 	fillColor: 'red'
+	 * });;
+	 * 
+	 * function onMouseMove(event) {
+	 * 	// Get the nearest point from the mouse position
+	 * 	// to the star shaped path:
+	 * 	var nearestPoint = star.getNearestPoint(event.point);
+	 * 
+	 * 	// Move the red circle to the nearest point:
+	 * 	circle.position = nearestPoint;
+	 * }
 	 */
 	getNearestPoint: function(point) {
 		return this.getNearestLocation(point).getPoint();
