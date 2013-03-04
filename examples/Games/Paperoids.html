@@ -125,6 +125,7 @@
 		path.closed = true;
 		var thrust = new Path([-8, -4], [-14, 0], [-8, 4]);
 		var group = new Group(path, thrust);
+		group.applyMatrix = true;
 		group.position = view.bounds.center;
 		return {
 			item: group,
@@ -231,28 +232,13 @@
 
 				// if bounding rect collision, do a line intersection test
 				if (crash > -1) {
-					var hit = false;
-					var pos = Rocks.children[crash].position;
-					var shipSegments = this.item.firstChild.segments;
 					var index = Rocks.children[crash].typeIndex;
 					var tempRock = Rocks.shapes[index].clone();
 					tempRock.transform(Rocks.children[crash].matrix);
 					tempRock.remove();
-					var rockSegments = tempRock.segments;
-					// This code should be able to be simplified alot very soon,
-					// when Paper.js implements Path#intersects(path);
-					for (var i = 0; i < rockSegments.length - 1; i++) {
-						var rockLine = new Line(rockSegments[i].point,
-								rockSegments[i + 1].point, false);
-						var shipLine = new Line(shipSegments[0].point,
-								shipSegments[1].point, false);
-						var lineHit = shipLine.intersect(rockLine);
-						if (lineHit) {
-							hit = true;
-							break;
-						}
-					}
-					if (hit) Lives.remove();
+					var intersections = this.item.firstChild.getIntersections(tempRock);
+					if (intersections.length > 0)
+						Lives.remove();
 				}
 			}
 		};
