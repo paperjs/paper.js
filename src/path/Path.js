@@ -1301,10 +1301,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * // Make the tangent vector 60pt long:
 	 * tangent.length = 60;
 	 *
-	 * var path = new Path();
-	 * path.strokeColor = 'red';
-	 * path.add(point);
-	 * path.add(point + tangent);
+	 * var line = new Path({
+	 * 	segments: [point, point + tangent],
+	 * 	strokeColor: 'red'
+	 * })
 	 *
 	 * @example {@paperscript height=200}
 	 * // Iterating over the length of a path:
@@ -1331,11 +1331,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * 	// Make the tangent vector 60pt long:
 	 * 	tangent.length = 60;
 	 *
-	 * 	var line = new Path();
-	 * 	line.strokeColor = 'red';
-	 * 	line.add(point);
-	 * 	line.add(point + tangent);
-	 * }
+	 * var line = new Path({
+	 * 	segments: [point, point + tangent],
+	 * 	strokeColor: 'red'
+	 * })
 	 */
 	getTangentAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
@@ -1373,10 +1372,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * // Make the normal vector 30pt long:
 	 * normal.length = 30;
 	 *
-	 * var path = new Path();
-	 * path.strokeColor = 'red';
-	 * path.add(point);
-	 * path.add(point + normal);
+	 * var line = new Path({
+	 * 	segments: [point, point + normal],
+	 * 	strokeColor: 'red'
+	 * });
 	 *
 	 * @example {@paperscript height=200}
 	 * // Iterating over the length of a path:
@@ -1403,10 +1402,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * 	// Make the normal vector 30pt long:
 	 * 	normal.length = 30;
 	 *
-	 * var path = new Path({
-	 * 	segments: [point, point + normal],
-	 * 	strokeColor: 'red'
-	 * });
+	 * 	var line = new Path({
+	 * 		segments: [point, point + normal],
+	 * 		strokeColor: 'red'
+	 * 	});
+	 * }
 	 */
 	getNormalAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
@@ -1456,7 +1456,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * 	center: view.center,
 	 * 	radius: 3,
 	 * 	fillColor: 'red'
-	 * });;
+	 * });
 	 * 
 	 * function onMouseMove(event) {
 	 * 	// Get the nearest point from the mouse position
