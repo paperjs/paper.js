@@ -101,6 +101,12 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 			);
 		}
 
+		// First clear the previous content
+		if (this._type === 'Path')
+			this.removeSegments();
+		else
+			this.removeChildren();
+
 		for (var i = 0, l = parts.length; i < l; i++) {
 			var part = parts[i];
 				cmd = part[0],
