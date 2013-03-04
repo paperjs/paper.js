@@ -1331,10 +1331,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * 	// Make the tangent vector 60pt long:
 	 * 	tangent.length = 60;
 	 *
-	 * var line = new Path({
-	 * 	segments: [point, point + tangent],
-	 * 	strokeColor: 'red'
-	 * })
+	 * 	var line = new Path({
+	 * 		segments: [point, point + tangent],
+	 * 		strokeColor: 'red'
+	 * 	})
+	 * }
 	 */
 	getTangentAt: function(offset, isParameter) {
 		var loc = this.getLocationAt(offset, isParameter);
