@@ -193,8 +193,8 @@ Path.inject({ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var rectangle = new Rectangle({
-		 * 	point: new Point(20, 20),
-		 * 	size: new Size(60, 60)
+		 * 	point: [20, 20],
+		 * 	size: [180, 60]
 		 * });
 		 * var path = new Path.Ellipse(rectangle);
 		 * path.fillColor = 'black';
