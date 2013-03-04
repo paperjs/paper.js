@@ -12,7 +12,7 @@
 
 /**
  * A function scope holding all the functionality needed to convert a
- * Paper.js DOM to a Paper.js DOM.
+ * Paper.js DOM to a SVG DOM.
  */
 new function() {
 	// Shortcut to Format.number

@@ -196,15 +196,15 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (handle1.isZero() && handle2.isZero()) {
 				if (!skipLine) {
 					// L = absolute lineto: moving to a point with drawing
-					parts.push('L' + format(point2));
+					parts.push('L' + format(point2, precision));
 				}
 			} else {
 				// c = relative curveto: handle1, handle2 + end - start,
 				// end - start
 				var end = point2.subtract(point1);
-				parts.push('c' + format(handle1)
-						+ ' ' + format(end.add(handle2))
-						+ ' ' + format(end));
+				parts.push('c' + format(handle1, precision)
+						+ ' ' + format(end.add(handle2), precision)
+						+ ' ' + format(end, precision));
 			}
 		}
 
