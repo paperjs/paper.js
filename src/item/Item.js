@@ -247,8 +247,8 @@ var Item = this.Item = Base.extend(Callback, {
 	/**
 	 * The type of the item as a string.
 	 *
-	 * @type String('group', 'layer', 'path', 'compoundpath', 'raster',
-	 * 'placedsymbol', 'pointtext')
+	 * @type String('Group', 'Layer', 'Path', 'CompoundPath', 'Raster',
+	 * 'PlacedSymbol', 'PointText')
 	 * @bean
 	 */
 	getType: function() {
