@@ -58,12 +58,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	}
 }, new function() { // Item based mouse handling:
 
-	var hitOptions = {
-		fill: true,
-		stroke: true,
-		tolerance: 0
-	};
-
 	var downPoint,
 		lastPoint,
 		overPoint,
@@ -97,18 +91,23 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 
 	function handleEvent(view, type, event, point, lastPoint) {
 		if (view._eventCounters[type]) {
-			var hit = view._project.hitTest(point, hitOptions),
+			var project = view._project,
+				hit = project.hitTest(point, {
+					tolerance: project.options.hitTolerance || 0,
+					fill: true,
+					stroke: true
+				}),
 				item = hit && hit.item;
 			if (item) {
 				// If this is a mousemove event and we change the overItem,
 				// reset lastPoint to point so delta is (0, 0)
-				if (type == 'mousemove' && item != overItem)
+				if (type === 'mousemove' && item != overItem)
 					lastPoint = point;
 				// If we have a downItem with a mousedrag event, do not send
 				// mousemove events to any item while we're dragging.
 				// TODO: Do we also need to lock mousenter / mouseleave in the
 				// same way?
-				if (type != 'mousemove' || !hasDrag)
+				if (type !== 'mousemove' || !hasDrag)
 					callEvent(type, event, point, item, lastPoint);
 				return item;
 			}
@@ -143,7 +142,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 					callEvent('mousemove', event, point, item, overPoint);
 				}
 			}
-			if (item == downItem) {
+			if (item === downItem) {
 				clickTime = Date.now();
 				if (!doubleClick
 						// callEvent returns false if event is stopped.
@@ -161,7 +160,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 				callEvent('mousedrag', event, point, downItem, lastPoint);
 			var item = handleEvent(this, 'mousemove', event, point, overPoint);
 			lastPoint = overPoint = point;
-			if (item != overItem) {
+			if (item !== overItem) {
 				callEvent('mouseleave', event, point, overItem);
 				overItem = item;
 				callEvent('mouseenter', event, point, item);
