@@ -12,13 +12,17 @@
 
 Path.inject({ statics: new function() {
 
+	function createPath(args) {
+		return new Path().set(Base.getNamed(args));
+	}
+
 	function createRectangle(/* rect */) {
 		var rect = Rectangle.readNamed(arguments, 'rectangle'),
 			left = rect.getLeft(),
 			top = rect.getTop(),
 			right = rect.getRight(),
 			bottom = rect.getBottom(),
-			path = new Path(Base.getNamed(arguments));
+			path = createPath(arguments);
 		path._add([
 			new Segment(Point.create(left, bottom)),
 			new Segment(Point.create(left, top)),
@@ -41,7 +45,7 @@ Path.inject({ statics: new function() {
 
 	function createEllipse(/* rect */) {
 		var rect = Rectangle.readNamed(arguments, 'rectangle'),
-			path = new Path(Base.getNamed(arguments)),
+			path = createPath(arguments),
 			point = rect.getPoint(true),
 			size = rect.getSize(true),
 			segments = new Array(4);
@@ -163,7 +167,7 @@ Path.inject({ statics: new function() {
 				tr = rect.getTopRight(true),
 				br = rect.getBottomRight(true),
 				h = radius.multiply(kappa * 2), // handle vector
-				path = new Path(Base.getNamed(arguments));
+				path = createPath(arguments);
 			path._add([
 				new Segment(bl.add(radius.width, 0), null, [-h.width, 0]),
 				new Segment(bl.subtract(0, radius.height), [0, h.height], null),
@@ -244,7 +248,7 @@ Path.inject({ statics: new function() {
 			var from = Point.readNamed(arguments, 'from'),
 				through = Point.readNamed(arguments, 'through'),
 				to = Point.readNamed(arguments, 'to'),
-				path = new Path(Base.getNamed(arguments));
+				path = createPath(arguments);
 			path.moveTo(from);
 			path.arcTo(through, to);
 			return path;
@@ -276,7 +280,7 @@ Path.inject({ statics: new function() {
 			var center = Point.readNamed(arguments, 'center'),
 				numSides = Base.readNamed(arguments, 'numSides'),
 				radius = Base.readNamed(arguments, 'radius'),
-				path = new Path(Base.getNamed(arguments)),
+				path = createPath(arguments),
 				step = 360 / numSides,
 				three = !(numSides % 3),
 				vector = new Point(0, three ? -radius : radius),
@@ -317,7 +321,7 @@ Path.inject({ statics: new function() {
 				numPoints = Base.readNamed(arguments, 'numPoints') * 2,
 				radius1 = Base.readNamed(arguments, 'radius1'),
 				radius2 = Base.readNamed(arguments, 'radius2'),
-				path = new Path(Base.getNamed(arguments)),
+				path = createPath(arguments),
 				step = 360 / numPoints,
 				vector = new Point(0, -1),
 				segments = new Array(numPoints);
