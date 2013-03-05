@@ -322,10 +322,9 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		return true;
 	},
 
-	_onHandleEvent: function(type, point, event) {
-		// Update global reference to this scope.
-		paper = this._scope;
-		// Handle removeOn* calls first
+	fire: function(type, event) {
+		// Override Callback#fire() so we can handle items marked in removeOn*()
+		// calls first,.
 		var sets = Tool._removeSets;
 		if (sets) {
 			// Always clear the drag set on mouseup
@@ -339,7 +338,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 					// other sets.
 					for (var key in sets) {
 						var other = sets[key];
-						if (other && other != set && other[item._id])
+						if (other && other != set)
 							delete other[item._id];
 					}
 					item.remove();
@@ -347,6 +346,12 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 				sets[type] = null;
 			}
 		}
+		return this.base(type, event);
+	},
+
+	_onHandleEvent: function(type, point, event) {
+		// Update global reference to this scope.
+		paper = this._scope;
 		// Now handle event callbacks
 		var called = false;
 		switch (type) {
