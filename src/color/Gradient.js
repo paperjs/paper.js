@@ -16,6 +16,7 @@
  * @class The Gradient object.
  */
 var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
+
 	initialize: function(stops, _type) {
 		// Keep supporting the old way of creating gradients for the time being.
 		if (this.constructor === Gradient)

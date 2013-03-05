@@ -16,7 +16,7 @@
  * @class The GradientColor object.
  */
 var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# */{
-	_type: 'GradientColor',
+	_type: 'gradient',
 
 	/**
 	 * Creates a gradient color object.
