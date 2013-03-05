@@ -146,8 +146,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 				clickTime = Date.now();
 				if (!doubleClick
 						// callEvent returns false if event is stopped.
-						|| callEvent('doubleclick', event, downPoint, overItem))
-					callEvent('click', event, downPoint, overItem);
+						|| callEvent('doubleclick', event, downPoint, item))
+					callEvent('click', event, downPoint, item);
 				doubleClick = false;
 			}
 			downItem = null;
