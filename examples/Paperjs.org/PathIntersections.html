@@ -34,14 +34,12 @@
 
 		function showIntersections(path1, path2) {
 			var intersections = path1.getIntersections(path2);
-			if (intersections.length) {
-				for (var j = 0; j < intersections.length; j++) {
-					new Path.Circle({
-						center: intersections[j].point,
-						radius: 5,
-						fillColor: '#009dec'
-					}).removeOnMove();
-				}
+			for (var i = 0; i < intersections.length; i++) {
+				new Path.Circle({
+					center: intersections[i].point,
+					radius: 5,
+					fillColor: '#009dec'
+				}).removeOnMove();
 			}
 		}
 	</script>
