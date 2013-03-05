@@ -282,9 +282,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		this._element.height = size.height;
 		// Update _viewSize but don't notify of change.
 		this._viewSize.set(size.width, size.height, true);
-		// Force recalculation
-		this._bounds = null;
-		this._redrawNeeded = true;
+		this._bounds = null; // Force recalculation
 		// Call onResize handler on any size change
 		this.fire('resize', {
 			size: size,
@@ -571,7 +569,6 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	// Injection scope for mouse events on the browser
 /*#*/ if (options.browser) {
 	var tool,
-		curPoint,
 		prevFocus,
 		tempFocus,
 		dragging = false;
@@ -603,15 +600,15 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	function mousedown(event) {
 		// Get the view from the event, and store a reference to the view that
 		// should receive keyboard input.
-		var view = View._focused = getView(event);
-		curPoint = viewToProject(view, event);
+		var view = View._focused = getView(event),
+			point = viewToProject(view, event);
 		dragging = true;
 		// Always first call the view's mouse handlers, as required by
 		// CanvasView, and then handle the active tool, if any.
 		if (view._onMouseDown)
-			view._onMouseDown(event, curPoint);
+			view._onMouseDown(event, point);
 		if (tool = view._scope._tool)
-			tool._onHandleEvent('mousedown', curPoint, event);
+			tool._onHandleEvent('mousedown', point, event);
 		// In the end we always call draw(), but pass checkRedraw = true, so we
 		// only redraw the view if anything has changed in the above calls.
 		view.draw(true);
@@ -640,15 +637,10 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		if (view._onMouseMove)
 			view._onMouseMove(event, point);
 		if (tool = view._scope._tool) {
-			var onlyMove = !!(!tool.onMouseDrag && tool.onMouseMove);
-			if (dragging && !onlyMove) {
-				if ((curPoint = point || curPoint) 
-						&& tool._onHandleEvent('mousedrag', curPoint, event))
-					DomEvent.stop(event);
-			} else if ((!dragging || onlyMove)
-					&& tool._onHandleEvent('mousemove', point, event)) {
+			// If there's no onMouseDrag, fire onMouseMove while dragging too.
+			if (tool._onHandleEvent(dragging && tool.responds('mousedrag')
+					? 'mousedrag' : 'mousemove', point, event))
 				DomEvent.stop(event);
-			}
 		}
 		view.draw(true);
 	}
