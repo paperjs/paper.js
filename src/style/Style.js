@@ -118,12 +118,11 @@ var Style = Base.extend({
 					return style;
 				};
 				// Style-getters and setters for owner class:
-				owner[set] = function(value) {
-					this[styleKey][set](value);
-					return this;
-				};
 				owner[get] = function() {
 					return this[styleKey][get]();
+				};
+				owner[set] = function(value) {
+					this[styleKey][set](value);
 				};
 			});
 			src._owner.inject(owner);

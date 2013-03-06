@@ -22,17 +22,16 @@ var Event = this.Event = Base.extend(/** @lends Event# */{
 	preventDefault: function() {
 		this._prevented = true;
 		DomEvent.preventDefault(this.event);
-		return this;
 	},
 
 	stopPropagation: function() {
 		this._stopped = true;
 		DomEvent.stopPropagation(this.event);
-		return this;
 	},
 
 	stop: function() {
-		return this.stopPropagation().preventDefault();
+		this.stopPropagation();
+		this.preventDefault();
 	},
 
 	// DOCS: Document Event#modifiers

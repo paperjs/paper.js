@@ -147,7 +147,6 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 		if (this._destination)
 			this._radius = this._destination.getDistance(this._origin);
 		this._changed();
-		return this;
 	},
 
 	/**
@@ -189,7 +188,6 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 		this._destination = destination;
 		this._radius = this._destination.getDistance(this._origin);
 		this._changed();
-		return this;
 	},
 
 	/**
@@ -234,7 +232,6 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 			this._hilite = hilite;
 		}
 		this._changed();
-		return this;
 	},
 
 	toCanvasStyle: function(ctx) {

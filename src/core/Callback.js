@@ -18,31 +18,32 @@ var Callback = {
 	attach: function(type, func) {
 		// If an object literal is passed, attach all callbacks defined in it
 		if (typeof type !== 'string') {
-			return Base.each(type, function(value, key) {
+			Base.each(type, function(value, key) {
 				this.attach(key, value);
 			}, this);
+			return;
 		}
 		var entry = this._eventTypes[type];
-		if (!entry)
-			return this;
-		var handlers = this._handlers = this._handlers || {};
-		handlers = handlers[type] = handlers[type] || [];
-		if (handlers.indexOf(func) == -1) { // Not added yet, add it now
-			handlers.push(func);
-			// See if this is the first handler that we're attaching, and 
-			// call install if defined.
-			if (entry.install && handlers.length == 1)
-				entry.install.call(this, type);
+		if (entry) {
+			var handlers = this._handlers = this._handlers || {};
+			handlers = handlers[type] = handlers[type] || [];
+			if (handlers.indexOf(func) == -1) { // Not added yet, add it now
+				handlers.push(func);
+				// See if this is the first handler that we're attaching, and 
+				// call install if defined.
+				if (entry.install && handlers.length == 1)
+					entry.install.call(this, type);
+			}
 		}
-		return this;
 	},
 
 	detach: function(type, func) {
 		// If an object literal is passed, detach all callbacks defined in it
 		if (typeof type !== 'string') {
-			return Base.each(type, function(value, key) {
+			Base.each(type, function(value, key) {
 				this.detach(key, value);
 			}, this);
+			return;
 		}
 		var entry = this._eventTypes[type],
 			handlers = this._handlers && this._handlers[type],
@@ -60,7 +61,6 @@ var Callback = {
 				handlers.splice(index, 1);
 			}
 		}
-		return this;
 	},
 
 	fire: function(type, event) {
