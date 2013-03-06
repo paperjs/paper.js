@@ -2656,9 +2656,9 @@ var Item = this.Item = Base.extend(Callback, {
 		if (limit)
 			ctx.miterLimit = limit;
 		if (fillColor)
-			ctx.fillStyle = fillColor.getCanvasStyle(ctx);
+			ctx.fillStyle = fillColor.toCanvasStyle(ctx);
 		if (strokeColor) {
-			ctx.strokeStyle = strokeColor.getCanvasStyle(ctx);
+			ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
 			if (paper.support.nativeDash && dashArray && dashArray.length) {
 				if ('setLineDash' in ctx) {
 					ctx.setLineDash(dashArray);
