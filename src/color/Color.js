@@ -507,7 +507,7 @@ var Color = this.Color = Base.extend(new function() {
 		return css;
 	},
 
-	getCanvasStyle: function() {
+	toCanvasStyle: function() {
 		return this.toCss();
 	}
 

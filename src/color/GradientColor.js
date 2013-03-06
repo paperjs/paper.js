@@ -237,7 +237,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 		return this;
 	},
 
-	getCanvasStyle: function(ctx) {
+	toCanvasStyle: function(ctx) {
 		var gradient,
 			stops = this.gradient._stops;
 		if (this.gradient._type === 'LinearGradient') {
