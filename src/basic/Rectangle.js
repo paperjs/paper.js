@@ -182,7 +182,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 		point = Point.read(arguments);
 		this.x = point.x;
 		this.y = point.y;
-		return this;
 	},
 
 
@@ -201,7 +200,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 		size = Size.read(arguments);
 		this.width = size.width;
 		this.height = size.height;
-		return this;
 	},
 
 	/**
@@ -220,7 +218,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	setLeft: function(left) {
 		this.width -= left - this.x;
 		this.x = left;
-		return this;
 	},
 
 	/**
@@ -237,7 +234,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	setTop: function(top) {
 		this.height -= top - this.y;
 		this.y = top;
-		return this;
 	},
 
 	/**
@@ -253,7 +249,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 
 	setRight: function(right) {
 		this.width = right - this.x;
-		return this;
 	},
 
 	/**
@@ -269,7 +264,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 
 	setBottom: function(bottom) {
 		this.height = bottom - this.y;
-		return this;
 	},
 
 	/**
@@ -285,7 +279,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 
 	setCenterX: function(x) {
 		this.x = x - this.width * 0.5;
-		return this;
 	},
 
 	/**
@@ -301,7 +294,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 
 	setCenterY: function(y) {
 		this.y = y - this.height * 0.5;
-		return this;
 	},
 
 	/**
@@ -319,7 +311,11 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 
 	setCenter: function(point) {
 		point = Point.read(arguments);
-		return this.setCenterX(point.x).setCenterY(point.y);
+		this.setCenterX(point.x);
+		this.setCenterY(point.y);
+		// A special setter where we allow chaining, because it comes in handy
+		// in a couple of places in core.
+		return this;
 	},
 
 	/**
@@ -736,8 +732,8 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 			};
 			this[set] = function(point) {
 				point = Point.read(arguments);
-				// Note: call chaining happens here.
-				return this[setX](point.x)[setY](point.y);
+				this[setX](point.x);
+				this[setY](point.y);
 			};
 		}, {});
 });
@@ -810,7 +806,6 @@ var LinkedRectangle = Rectangle.extend({
 				proto[name].apply(this, arguments);
 				delete this._dontNotify;
 				this._owner[this._setter](this);
-				return this;
 			};
 		}, {
 			/**

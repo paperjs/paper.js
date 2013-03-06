@@ -2089,6 +2089,7 @@ var Item = this.Item = Base.extend(Callback, {
 			// Transform position as well.
 			this._position = matrix._transformPoint(position, position);
 		}
+		// Allow chaining here, since transform() is related to Matrix functions
 		return this;
 	},
 

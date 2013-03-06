@@ -116,7 +116,6 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
-		return this;
 	},
 
 	draw: function(ctx, param) {

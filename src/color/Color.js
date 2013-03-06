@@ -337,7 +337,6 @@ var Color = this.Color = Base.extend(new function() {
 								// All other values are 0..1
 								: Math.min(Math.max(value, 0), 1);
 							this._changed();
-							return this;
 						};
 					}, src);
 				}
@@ -434,7 +433,6 @@ var Color = this.Color = Base.extend(new function() {
 	setAlpha: function(alpha) {
 		this._alpha = alpha == null ? null : Math.min(Math.max(alpha, 0), 1);
 		this._changed();
-		return this;
 	},
 
 	/**
