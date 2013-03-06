@@ -85,27 +85,45 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	initialize: function(gradient, origin, destination, hilite) {
 		// Define this GradientColor's unique id.
 		this._id = ++Base._uid;
-		this.gradient = gradient || new LinearGradient();
-		this.gradient._addOwner(this);
-		this.setOrigin(origin);
-		this.setDestination(destination);
-		if (hilite)
-			this.setHilite(hilite);
+		// Try object literal constructor first
+		if (!this._set(gradient)) {
+			this.setGradient(gradient || new LinearGradient());
+			this.setOrigin(origin);
+			this.setDestination(destination);
+			if (hilite)
+				this.setHilite(hilite);
+		}
 	},
 
 	/**
 	 * @return {GradientColor} a copy of the gradient color
 	 */
 	clone: function() {
-		return new GradientColor(this.gradient, this._origin, this._destination,
-				this._hilite);
+		return new GradientColor(this._gradient, this._origin,
+				this._destination, this._hilite);
 	},
 
 	_serialize: function(options, dictionary) {
-		var values = [ this.gradient, this._origin, this._destination ];
+		var values = [ this._gradient, this._origin, this._destination ];
 		if (this._hilite)
 			values.push(this._hilite);
 		return Base.serialize(values, options, true, dictionary);
+	},
+
+	/**
+	 * The gradient object describing the type of gradient and the stops.
+	 *
+	 * @type Gradient
+	 * @bean
+	 */
+	getGradient: function() {
+		return this._gradient;
+	},
+
+	setGradient: function(gradient) {
+		this._gradient = gradient;
+		gradient._addOwner(this);
+		this._changed();
 	},
 
 	/**
@@ -236,8 +254,8 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 
 	toCanvasStyle: function(ctx) {
 		var gradient,
-			stops = this.gradient._stops;
-		if (this.gradient._type === 'LinearGradient') {
+			stops = this._gradient._stops;
+		if (this._gradient._type === 'LinearGradient') {
 			gradient = ctx.createLinearGradient(this._origin.x, this._origin.y,
 					this._destination.x, this._destination.y);
 		} else {
@@ -261,7 +279,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 */
 	equals: function(color) {
 		return color == this || color && color._type === this._type
-				&& this.gradient.equals(color.gradient)
+				&& this._gradient.equals(color._gradient)
 				&& this._origin.equals(color._origin)
 				&& this._destination.equals(color._destination);
 	},
