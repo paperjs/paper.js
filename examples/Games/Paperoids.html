@@ -201,16 +201,15 @@
 			},
 			
 			checkCollisions: function() {
-				var crash = -1;
+				var crashRock;
 
 				// move rocks and do a hit test
 				// between bounding rect of rocks and ship
 				for (var i = 0; i < Rocks.children.length; i++) {
 					var rock = Rocks.children[i];
 					rock.position += rock.vector;
-					if (rock.bounds.intersects(this.item.bounds)) {
-						crash = i;
-					}
+					if (rock.bounds.intersects(this.item.bounds))
+						crashRock = rock;
 					keepInView(rock);
 				}
 
@@ -231,10 +230,9 @@
 
 
 				// if bounding rect collision, do a line intersection test
-				if (crash > -1) {
-					var index = Rocks.children[crash].typeIndex;
-					var tempRock = Rocks.shapes[index].clone();
-					tempRock.transform(Rocks.children[crash].matrix);
+				if (crashRock) {
+					var tempRock = crashRock.symbol.definition.clone();
+					tempRock.transform(crashRock.matrix);
 					tempRock.remove();
 					var intersections = this.item.firstChild.getIntersections(tempRock);
 					if (intersections.length > 0)
@@ -275,11 +273,11 @@
 						for (var r = 0; r < Rocks.children.length; r++) {
 							var rock = Rocks.children[r];
 							if (rock.bounds.contains(bullet.position) ) {
-								Score.update(rock.type);
+								Score.update(rock.shapeType);
 								Rocks.explode(rock);
-								if (rock.type < Rocks.TYPE_SMALL ) {
-									for (var i = 0; i < 2; i++) {
-										Rocks.add(1, rock.type + 4, rock.position);
+								if (rock.shapeType < Rocks.TYPE_SMALL ) {
+									for (var j = 0; j < 2; j++) {
+										Rocks.add(1, rock.shapeType + 4, rock.position);
 									}
 								}
 								rock.remove();
@@ -344,8 +342,7 @@
 					angle: 360 * Math.random(),
 					length: presets.maxRockSpeed * Math.random() + 0.1
 				});
-				rock.typeIndex = randomRock;
-				rock.type = type;
+				rock.shapeType = type;
 				return rock;
 			},
 			add: function(amount, type, position) {
@@ -355,7 +352,7 @@
 				}
 			},
 			explode: function(rock) {
-				var boomRock = shapes[rock.typeIndex].clone();
+				var boomRock = rock.symbol.definition.clone();
 				boomRock.position = rock.position;
 				for (var i = 0; i < boomRock.segments.length; i++) {
 					var segmentPoint = boomRock.segments[i].point;
