@@ -23,8 +23,9 @@
 
 		var path;
 		function onMouseDown(event) {
-			path = new Path();
-			path.strokeColor = '#000000';
+			path = new Path({
+				strokeColor: '#000000'
+			});
 		}
 
 		var mul = 1;
@@ -34,10 +35,11 @@
 			if (!values.mouseOffset)
 				step.length = values.offset;
 
-			var segment = new Segment(event.point + step);
-			segment.handleIn = -event.delta * values.curviness;
-			segment.handleOut = event.delta * values.curviness;
-			path.add(segment);
+			path.add({
+				point: event.point + step,
+				handleIn: -event.delta * values.curviness,
+				handleOut: event.delta * values.curviness
+			});
 			mul *= -1;
 		}
 	</script>

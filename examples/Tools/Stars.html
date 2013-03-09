@@ -15,8 +15,12 @@
 				var delta = event.point - event.downPoint;
 				var radius = delta.length;
 				var points = 5 + Math.round(radius / 50);
-				var position = event.downPoint;
-				var path = new Path.Star(position, points, radius / 2, radius);
+				var path = new Path.Star({
+					center: event.downPoint,
+					numPoints: points,
+					radius1: radius / 2,
+					radius2: radius
+				});
 				path.rotate(delta.angle);
 				// Remove the path automatically before the next mouse drag
 				// event:

@@ -16,12 +16,6 @@
 
 		checkValues();
 
-		project.currentStyle = {
-			strokeColor: 'black',
-			strokeWidth: 5,
-			strokeCap: 'round'
-		};
-
 		/////////////////////////////////////////////////////////////////////
 		// Mouse handling
 
@@ -34,15 +28,15 @@
 
 		var path;
 		function onMouseDown(event) {
-			path = new Path();
-			path.segments = [event.point, event.point];
+			path = new Path({
+				segments: [event.point, event.point],
+				strokeColor: 'black',
+				strokeWidth: 5,
+				strokeCap: 'round'
+			});
 			prevPoint = path.firstSegment.point;
 			curPoint = path.lastSegment.point;
 			curHandleSeg = null;
-		}
-
-		function onMouseUp(event) {
-		//	path.pointsToCurves(0, 0, 1, 0.001);
 		}
 
 		var curPoint, prevPoint, curHandleSeg;
