@@ -18,120 +18,103 @@
 		};
 		values.invMass = 1 / values.mass;
 
-		var path;
+		var path, springs;
 		var size = view.size * [1.2, 1];
 
-		var Spring = Base.extend({
-			initialize: function(a, b, param) {
-				if (!param)
-					param = {};
-				this.a = a;
-				this.b = b;
-				this.restLength = param.restLength || 80;
-				this.strength = param.strength ? param.strength : 0.55;
-				this.mamb = values.invMass * values.invMass;
-			},
+		var Spring = function(a, b, strength, restLength) {
+			this.a = a;
+			this.b = b;
+			this.restLength = restLength || 80;
+			this.strength = strength ? strength : 0.55;
+			this.mamb = values.invMass * values.invMass;
+		};
 
-			update: function() {
-				var delta = this.b - this.a;
-				var dist = delta.length;
-				var normDistStrength = (dist - this.restLength) /
-						(dist * (this.mamb)) * this.strength;
-				delta.y *= (normDistStrength * values.invMass) / 5;
-				if (!this.a.fixed)
-					this.a.y += delta.y;
-				if (!this.b.fixed)
-					this.b.y -= delta.y;
-			}
-		});
+		Spring.prototype.update = function() {
+			var delta = this.b - this.a;
+			var dist = delta.length;
+			var normDistStrength = (dist - this.restLength) /
+					(dist * this.mamb) * this.strength;
+			delta.y *= normDistStrength * values.invMass * 0.2;
+			if (!this.a.fixed)
+				this.a.y += delta.y;
+			if (!this.b.fixed)
+				this.b.y -= delta.y;
+		};
+
 
 		function createPath(strength) {
 			var path = new Path({
 				fillColor: 'black'
 			});
-			path.data = {};
-			path.data.springs = [];
-			segments = path.segments;
-			var previous;
+			springs = [];
 			for (var i = 0; i <= values.amount; i++) {
 				var segment = path.add(new Point(i / values.amount, 0.5) * size);
 				var point = segment.point;
+				if (i == 0 || i == values.amount)
+					point.y += size.height;
 				point.px = point.x;
 				point.py = point.y;
-				point.fixed = i === 0 || i == values.amount;
-				if (previous) {
-					var spring = new Spring(previous, point, {
-						strength: strength
-					});
-					path.data.springs.push(spring);
+				// The first two and last two points are fixed:
+				point.fixed = i < 2 || i > values.amount - 2;
+				if (i > 0) {
+					var spring = new Spring(segment.previous.point, point, strength);
+					springs.push(spring);
 				}
-				previous = point;
 			}
 			path.position.x -= size.width / 4;
 			return path;
 		}
 
 		function onResize() {
-			values.count = 0;
-			if (path) {
+			if (path)
 				path.remove();
-			}
 			size = view.bounds.size * [2, 1];
 			path = createPath(0.1);
 		}
 
 		function onMouseMove(event) {
-			var segments = path.segments;
-			var index = Math.floor((event.point.x + size.width / 4) * segments.length / size.width);
-			var y = event.point.y;
-			var range = size.height / 4;
-			var segment = segments[index];
+			var location = path.getNearestLocation(event.point);
+			var segment = location.segment;
 			var point = segment.point;
-			var prev, next;
-			if (segment.previous)
-				prev = segment.previous.point;
-			if (segment.next)
-				next = segment.next.point;
 
-			if (!point.fixed && y + range > point.y && y - range < point.y) {
+			if (!point.fixed && location.distance < size.height / 4) {
+				var y = event.point.y;
 				point.y += (y - point.y) / 6;
-				if (prev && !prev.fixed) prev.y += (y - prev.y) / 12;
-				if (next && !next.fixed) next.y += (y - next.y) / 12;
+				if (segment.previous && !segment.previous.fixed) {
+					var previous = segment.previous.point;
+					previous.y += (y - previous.y) / 24;
+				}
+				if (segment.next && !segment.next.fixed) {
+					var next = segment.next.point;
+					next.y += (y - next.y) / 24;
+				}
 			}
 		}
 
 		function onFrame(event) {
-			if (values.count != 0) {
-				path.firstSegment.remove();
-				path.lastSegment.remove();
-			}
 			updateWave(path);
-			values.count++;
 		}
 
 		function updateWave(path) {
-			var segments = path.segments;
 			var force = 1 - values.friction * values.timeStep * values.timeStep;
-			for (var i = 0, l = segments.length; i < l; i++) {
-				var point = segments[i].point;
-				var ty = point.y;
+			for (var i = 0, l = path.segments.length; i < l; i++) {
+				var point = path.segments[i].point;
 				var dy = (point.y - point.py) * force;
-				point.y += dy;
-				point.py = ty;
-				point.y = Math.max(0, point.y);
+				point.py = point.y;
+				point.y = Math.max(point.y + dy, 0);
 			}
 
-			for (var j = 0, l = path.data.springs.length; j < l; j++) {
-				path.data.springs[j].update(true);
+			for (var j = 0, l = springs.length; j < l; j++) {
+				springs[j].update();
 			}
 			path.smooth();
-			path.insert(0, new Point(0, size.height));
-			path.add(new Point(size));
 		}
 
 		function onKeyDown(event) {
-			if (event.key == 'space')
+			if (event.key == 'space') {
 				path.fullySelected = !path.fullySelected;
+				path.fillColor = path.fullySelected ? null : 'black';
+			}
 		}
 	</script>
 </head>
