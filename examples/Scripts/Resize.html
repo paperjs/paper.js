@@ -6,15 +6,23 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var redPath = new Path.Circle(view.center, 10);
-		redPath.fillColor = 'red';
+		var redPath = new Path.Circle({
+			center: view.center,
+			radius: 5,
+			fillColor: 'red'
+		});
 
-		var whitePath = new Path.Circle(view.center, 10);
-		whitePath.fillColor = 'white';
+		var whitePath = new Path.Circle({
+			center: view.center,
+			radius: 5,
+			fillColor: 'white'
+		});
 
-		var text = new PointText();
-		text.content = 'Resize your window';
-		text.justification = 'center';
+		var text = new PointText({
+			content: 'Resize your window',
+			justification: 'center',
+			point: view.center
+		});
 		
 		function onResize(event) {
 			// Resize the red circle to fill the bounds of the view:

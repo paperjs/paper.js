@@ -6,20 +6,18 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-			// All newly created items will receive
-			// these style properties:
-			project.currentStyle = {
-				fillColor: 'white',
-				strokeColor: 'black'
-			};
-
-			var path;
 			function onMouseDrag(event) {
 				// The radius is the distance between the position
 				// where the user clicked and the current position
 				// of the mouse.
-				var radius = (event.downPoint - event.point).length;
-				path = new Path.Circle(event.downPoint, radius);
+				var path = new Path.Circle({
+					center: event.downPoint,
+					radius: (event.downPoint - event.point).length,
+					fillColor: 'white',
+					strokeColor: 'black'
+				});
+
+				// Remove this path on the next drag event:
 				path.removeOnDrag();
 			};
 	</script>
