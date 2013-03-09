@@ -15,58 +15,41 @@ var raster = new Raster('mona');
 // Make the raster invisible:
 raster.visible = false;
 
-// Create a seperate layer that the paths will be placed on:
-var layer = new Layer();
+var lastPos = view.center;
+function moveHandler(event) {
+	if (lastPos.getDistance(event.point) < 10)
+		return;
+	lastPos = event.point;
 
-// The mouse has to drag at least 5pt until the next onMouseDrag
-// event is fired:
-tool.minDistance = 5;
+	var size = this.bounds.size.clone();
+	var isLandscape = size.width > size.height;
 
-function onMouseMove(event) {
-	// Each drag event, iterate through the children of group:
-	for (var i = 0; i < layer.children.length; i++) {
- 			var child = layer.children[i];
- 			var bounds = child.bounds;
+	// If the path is in landscape orientation, we're going to
+	// split the path horizontally, otherwise vertically:
 
- 			if (bounds.contains(event.point)) {
-			// If the mouse position intersects with the bounding
-			// box of the path, we're going to split it into two paths:
+	size /= isLandscape ? [2, 1] : [1, 2];
 
-			var size = bounds.size;
-			var isLandscape = size.width > size.height;
+	var path = new Path.Rectangle({
+		point: this.bounds.topLeft.floor(),
+		size: size.ceil(),
+		onMouseMove: moveHandler
+	});
+	path.fillColor = raster.getAverageColor(path);
 
-			// If the path is in landscape orientation, we're going to
-			// split the path horizontally, otherwise vertically:
-			if (isLandscape) {
-				size.width /= 2;
-			} else {
-				size.height /= 2;
-			}
+	var path = new Path.Rectangle({
+		point: isLandscape
+			? this.bounds.topCenter.ceil()
+			: this.bounds.leftCenter.ceil(),
+		size: size.floor(),
+		onMouseMove: moveHandler
+	});
+	path.fillColor = raster.getAverageColor(path);
 
-			var topLeft = bounds.topLeft.floor();
-			var path = new Path.Rectangle(topLeft, size.ceil());
-			path.fillColor = raster.getAverageColor(path);
-			path.insertBelow(child);
-
-			var secondPath = path.clone();
-			size = size.floor();
-			secondPath.position += isLandscape
-					? [size.width, 0]
-					: [0, size.height];
-			secondPath.fillColor = raster.getAverageColor(secondPath);
-			secondPath.insertBelow(path);
-
-			// Remove the path which was split:
-			child.remove();
-
-			// Avoid continuing looping through the rest of the items:
-			return;
-        }
-    }
+	this.remove();
 }
 
 function onResize(event) {
-	layer.removeChildren();
+	project.activeLayer.removeChildren();
 
 	// Transform the raster so that it fills the bounding rectangle
 	// of the view:
@@ -74,8 +57,11 @@ function onResize(event) {
 
 	// Create a path that fills the view, and fill it with
 	// the average color of the raster:
-	var path = new Path.Rectangle(view.bounds);
-	path.fillColor = raster.getAverageColor(path);
+	new Path.Rectangle({
+		rectangle: view.bounds,
+		fillColor: raster.getAverageColor(view.bounds),
+		onMouseMove: moveHandler
+	});
 }
 	</script>
 </head>
