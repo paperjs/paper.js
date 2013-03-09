@@ -7,14 +7,17 @@
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		var path;
-		var rect = new Rectangle([150, 150], [300, 300]);
-		project.currentStyle.fillColor = 'black';
 
 		function onFrame(event) {
 			if (path)
 				path.remove();
-			var size = Math.abs(Math.sin(event.count / 40)) * 150 + 10;
-			path = new Path.RoundRectangle(rect, size);
+			path = new Path.RoundRectangle({
+				radius: Math.abs(Math.sin(event.count / 40)) * 150 + 10,
+				rectangle: {
+					size: [300, 300]
+				},
+				fillColor: 'black'
+			});
 			path.position = view.center;
 		}
 	</script>

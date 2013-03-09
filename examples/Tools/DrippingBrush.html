@@ -14,8 +14,9 @@
 			if (event.delta.length > minSize) {
 				// If there is no path, make one:
 				if (!path) {
-					path = new Path();
-					path.fillColor = 'black';
+					path = new Path({
+						fillColor: 'black'
+					});
 					path.add(event.lastPoint);
 				}
 
