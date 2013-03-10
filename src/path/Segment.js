@@ -28,6 +28,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	/**
 	 * Creates a new Segment object.
 	 *
+	 * @name Segment#initialize
 	 * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
 	 * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
 	 *        anchor point of the segment that describes the in tangent of the
@@ -48,6 +49,65 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	 *
 	 * var path = new Path(firstSegment, secondSegment);
 	 * path.strokeColor = 'black';
+	 */
+	/**
+	 * Creates a new Segment object.
+	 *
+	 * @name Segment#initialize
+	 * @param {Object} properties An object literal containing properties to
+	 * be set on the segment.
+	 *
+	 * @example {@paperscript}
+	 * var firstSegment = new Segment({
+	 * 	point: [100, 50],
+	 * 	handleOut: [80, 100]
+	 * });
+	 * 
+	 * var secondSegment = new Segment({
+	 * 	point: [300, 50],
+	 * 	handleIn: [-80, -100]
+	 * });
+	 * 
+	 * var path = new Path({
+	 * 	segments: [firstSegment, secondSegment],
+	 * 	strokeColor: 'black'
+	 * });
+	 */
+	/**
+	 * Creates a new Segment object.
+	 *
+	 * @param {Number} x the x coordinate of the segment point
+	 * @param {Number} y the y coordinate of the segment point
+	 * @param {Number} inX the x coordinate of the the handle point relative
+	 * 	      to the anchor point of the segment that describes the in tangent
+	 *        of the segment.
+	 * @param {Number} inY the y coordinate of the the handle point relative
+	 * 	      to the anchor point of the segment that describes the in tangent
+	 *        of the segment.
+	 * @param {Number} outX the x coordinate of the the handle point relative
+	 * 	      to the anchor point of the segment that describes the out tangent
+	 *        of the segment.
+	 * @param {Number} outY the y coordinate of the the handle point relative
+	 * 	      to the anchor point of the segment that describes the out tangent
+	 *        of the segment.
+	 *
+	 * @example {@paperscript}
+	 * var inX = -80;
+	 * var inY = -100;
+	 * var outX = 80;
+	 * var outY = 100;
+	 * 
+	 * var x = 100;
+	 * var y = 50;
+	 * var firstSegment = new Segment(x, y, inX, inY, outX, outY);
+	 * 
+	 * var x2 = 300;
+	 * var y2 = 50;
+	 * var secondSegment = new Segment( x2, y2, inX, inY, outX, outY);
+	 * 
+	 * var path = new Path(firstSegment, secondSegment);
+	 * path.strokeColor = 'black';
+	 * @ignore
 	 */
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
