@@ -36,7 +36,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	 * // Create a star shaped path at {x: 0, y: 0}:
 	 * var path = new Path.Star({
 	 * 	center: new Point(0, 0),
-	 * 	numPoints: 6,
+	 * 	points: 6,
 	 * 	radius1: 5,
 	 * 	radius2: 13,
 	 * 	fillColor: 'white',
