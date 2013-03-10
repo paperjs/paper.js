@@ -63,6 +63,41 @@ test('addChild(item)', function() {
 	},  1);
 });
 
+test('setting item.parent', function() {
+	var layer1 = paper.project.activeLayer;
+	var layer2 = new Layer();
+	layer1.activate();
+	var group = new Group();
+
+	var path = new Path();
+	equals(function() {
+		return path.parent === layer1;
+	}, true, 'Path is a child of layer1 because it is active');
+
+	path.parent = layer2;
+	equals(function() {
+		return path.parent === layer2;
+	}, true, 'The parent of path was set to layer2');
+
+	path.parent = group;
+	equals(function() {
+		return path.parent === group;
+	}, true, 'The parent of path was set to group');
+	equals(function() {
+		return layer2.children.indexOf(path) === -1;
+	}, false, 'The path is no longer a child of layer2');
+
+	var path2 = new Path({
+		parent: group
+	});
+	equals(function() {
+		return path2.parent === group;
+	}, true, 'setting the parent in the constructor');
+	equals(function() {
+		return group.children.indexOf(path2) == 1;
+	}, true, 'the index of path2 is 1, because group already contains path from before');
+});
+
 test('item.parent / item.isChild / item.isParent / item.layer', function() {
 	var project = paper.project;
 	var secondDoc = new Project();
