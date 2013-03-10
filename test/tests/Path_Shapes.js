@@ -75,7 +75,7 @@ test('new Path.Arc({ from: from, through: through, to: to })', function() {
 	equals(path.segments.toString(), '{ point: { x: 0, y: 20 }, handleOut: { x: -2.62559, y: 23.01251 } },{ point: { x: 30.89325, y: 74.75812 }, handleIn: { x: -21.05455, y: -9.65273 }, handleOut: { x: 21.05455, y: 9.65273 } },{ point: { x: 92.54397, y: 62.42797 }, handleIn: { x: -15.72238, y: 17.00811 }, handleOut: { x: 15.72238, y: -17.00811 } },{ point: { x: 100, y: 0 }, handleIn: { x: 11.27458, y: 20.23247 } }');
 });
 
-test('new Path.RegularPolygon(center, numSides, radius)', function() {
+test('new Path.RegularPolygon(center, sides, radius)', function() {
 	var path = new Path.RegularPolygon(new Point(50, 50), 3, 10);
 	equals(path.segments.toString(), '{ point: { x: 41.33975, y: 55 } },{ point: { x: 50, y: 40 } },{ point: { x: 58.66025, y: 55 } }');
 
@@ -83,11 +83,11 @@ test('new Path.RegularPolygon(center, numSides, radius)', function() {
 	equals(path.segments.toString(), '{ point: { x: 219.0983, y: 345.10565 } },{ point: { x: 169.0983, y: 308.77853 } },{ point: { x: 150, y: 250 } },{ point: { x: 169.0983, y: 191.22147 } },{ point: { x: 219.0983, y: 154.89435 } },{ point: { x: 280.9017, y: 154.89435 } },{ point: { x: 330.9017, y: 191.22147 } },{ point: { x: 350, y: 250 } },{ point: { x: 330.9017, y: 308.77853 } },{ point: { x: 280.9017, y: 345.10565 } }');
 });
 
-test('new Path.RegularPolygon({ center: center, numSides: numSides, radius: radius })', function() {
-	var path = new Path.RegularPolygon({center: new Point(50, 50), numSides: 3, radius: 10});
+test('new Path.RegularPolygon({ center: center, sides: sides, radius: radius })', function() {
+	var path = new Path.RegularPolygon({center: new Point(50, 50), sides: 3, radius: 10});
 	equals(path.segments.toString(), '{ point: { x: 41.33975, y: 55 } },{ point: { x: 50, y: 40 } },{ point: { x: 58.66025, y: 55 } }');
 
-	var path = new Path.RegularPolygon({center: new Point(250, 250), numSides: 10, radius: 100});
+	var path = new Path.RegularPolygon({center: new Point(250, 250), sides: 10, radius: 100});
 	equals(path.segments.toString(), '{ point: { x: 219.0983, y: 345.10565 } },{ point: { x: 169.0983, y: 308.77853 } },{ point: { x: 150, y: 250 } },{ point: { x: 169.0983, y: 191.22147 } },{ point: { x: 219.0983, y: 154.89435 } },{ point: { x: 280.9017, y: 154.89435 } },{ point: { x: 330.9017, y: 191.22147 } },{ point: { x: 350, y: 250 } },{ point: { x: 330.9017, y: 308.77853 } },{ point: { x: 280.9017, y: 345.10565 } }');
 });
 
