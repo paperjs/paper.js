@@ -245,24 +245,47 @@
 	var Bullets = new function() {
 		var group = new Group();
 		var children = group.children;
+
+		function checkHits(bullet) {
+			for (var r = 0; r < Rocks.children.length; r++) {
+				var rock = Rocks.children[r];
+				if (rock.bounds.contains(bullet.position) ) {
+					Score.update(rock.shapeType);
+					Rocks.explode(rock);
+					if (rock.shapeType < Rocks.TYPE_SMALL ) {
+						for (var j = 0; j < 2; j++) {
+							Rocks.add(1, rock.shapeType + 4, rock.position);
+						}
+					}
+					rock.remove();
+					bullet.remove();
+				}
+			}
+		}
+
 		return {
 			fire: function(position, angle) {
-				if (children.length > 4) return; 
-				var bullet = new Path.Circle(position, 0.5);
-				bullet.fillColor = 'white';
-				bullet.strokeWidth = 0;
-				bullet.data = {
-					vector: new Point({
-						angle: angle,
-						length: 10
-					}),
-					timeToDie: 58
-				};
-				bullet.position += bullet.data.vector;
-				group.addChild(bullet);
+				// We can only fire 5 bullets at a time:
+				if (children.length == 5)
+					return;
+				var vector = new Point({
+					angle: angle,
+					length: 10
+				});
+				var bullet = new Path.Circle({
+					center: position + vector,
+					radius: 0.5,
+					parent: group,
+					fillColor: 'white',
+					strokeWidth: 'white',
+					strokeWidth: 0,
+					data: {
+						vector: vector,
+						timeToDie: 58
+					}
+				});
 			},
 			move: function() {
-				// check for bullet hit
 				for (var i = 0; i < children.length; i++) {
 					var bullet = children[i];
 					bullet.data.timeToDie--;
@@ -270,20 +293,7 @@
 						bullet.remove();
 					} else {
 						bullet.position += bullet.data.vector;
-						for (var r = 0; r < Rocks.children.length; r++) {
-							var rock = Rocks.children[r];
-							if (rock.bounds.contains(bullet.position) ) {
-								Score.update(rock.shapeType);
-								Rocks.explode(rock);
-								if (rock.shapeType < Rocks.TYPE_SMALL ) {
-									for (var j = 0; j < 2; j++) {
-										Rocks.add(1, rock.shapeType + 4, rock.position);
-									}
-								}
-								rock.remove();
-								bullet.remove();
-							}
-						}
+						checkHits(bullet);
 						keepInView(bullet);
 					}
 				}
