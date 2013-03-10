@@ -31,22 +31,26 @@
 
 		function createPiece() {
 			var group = new Group();
-			var hexagon = new Path.RegularPolygon(view.center, 6, 50);
-			hexagon.fillColor = 'gray';
-			group.addChild(hexagon);
+			var hexagon = new Path.RegularPolygon({
+				center: view.center,
+				numSides: 6,
+				radius: 50,
+				fillColor: 'gray',
+				parent: group
+			});
 			for (var i = 0; i < 2; i++) {
-				var path = new Path();
+				var path = new Path({
+					closed: true,
+					selected: true,
+					parent: group,
+					fillColor: i == 0 ? 'white' : 'black'
+				});
 				for (var j = 0; j < 3; j++) {
 					var index = (i * 2 + j) % hexagon.segments.length;
 					path.add(hexagon.segments[index].clone());
 				}
 				path.add(hexagon.bounds.center);
-				path.closed = true;
-				path.selected = true;
-				group.addChild(path);
 			}
-			group.children[1].fillColor = 'white';
-			group.lastChild.fillColor = 'black';
 			// Remove the group from the document, so it is not drawn:
 			group.remove();
 			return group;
@@ -80,8 +84,8 @@
 		}
 
 		function onFrame(event) {
-			// Loop through the hexagons in the group and fill them with the
-			// average color:
+			// Loop through the uncolored hexagons in the group and fill them
+			// with the average color:
 			var length = Math.min(count + values.amount, group.children.length);
 			for (var i = count; i < length; i++) {
 				piece = group.children[i];
