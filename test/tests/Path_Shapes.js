@@ -92,7 +92,7 @@ test('new Path.RegularPolygon({ center: center, sides: sides, radius: radius })'
 });
 
 
-test('new Path.Star(center, numPoints, radius1, radius2)', function() {
+test('new Path.Star(center, points, radius1, radius2)', function() {
 	var path = new Path.Star(new Point(100, 100), 10, 10, 20);
 	equals(path.segments.toString(), '{ point: { x: 100, y: 90 } },{ point: { x: 106.18034, y: 80.97887 } },{ point: { x: 105.87785, y: 91.90983 } },{ point: { x: 116.18034, y: 88.24429 } },{ point: { x: 109.51057, y: 96.90983 } },{ point: { x: 120, y: 100 } },{ point: { x: 109.51057, y: 103.09017 } },{ point: { x: 116.18034, y: 111.75571 } },{ point: { x: 105.87785, y: 108.09017 } },{ point: { x: 106.18034, y: 119.02113 } },{ point: { x: 100, y: 110 } },{ point: { x: 93.81966, y: 119.02113 } },{ point: { x: 94.12215, y: 108.09017 } },{ point: { x: 83.81966, y: 111.75571 } },{ point: { x: 90.48943, y: 103.09017 } },{ point: { x: 80, y: 100 } },{ point: { x: 90.48943, y: 96.90983 } },{ point: { x: 83.81966, y: 88.24429 } },{ point: { x: 94.12215, y: 91.90983 } },{ point: { x: 93.81966, y: 80.97887 } }');
 
@@ -100,10 +100,10 @@ test('new Path.Star(center, numPoints, radius1, radius2)', function() {
 	equals(path.segments.toString(), '{ point: { x: 100, y: 80 } },{ point: { x: 105.87785, y: 91.90983 } },{ point: { x: 119.02113, y: 93.81966 } },{ point: { x: 109.51057, y: 103.09017 } },{ point: { x: 111.75571, y: 116.18034 } },{ point: { x: 100, y: 110 } },{ point: { x: 88.24429, y: 116.18034 } },{ point: { x: 90.48943, y: 103.09017 } },{ point: { x: 80.97887, y: 93.81966 } },{ point: { x: 94.12215, y: 91.90983 } }');
 });
 
-test('new Path.Star({ center: center, numPoints: numPoints, radius1: radius1, radius2: radius2 })', function() {
+test('new Path.Star({ center: center, points: points, radius1: radius1, radius2: radius2 })', function() {
 	var path = new Path.Star({
 		center: new Point(100, 100),
-		numPoints: 10,
+		points: 10,
 		radius1: 10,
 		radius2: 20
 	});
@@ -111,7 +111,7 @@ test('new Path.Star({ center: center, numPoints: numPoints, radius1: radius1, ra
 
 	var path = new Path.Star({
 		center: new Point(100, 100),
-		numPoints: 5,
+		points: 5,
 		radius1: 20,
 		radius2: 10
 	});
