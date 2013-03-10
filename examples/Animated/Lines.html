@@ -6,38 +6,39 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var amount = 180;
+		var amount = 45;
 		for (var i = 0; i < amount; i++) {
 			var path = new Path({
-				fillColor: new HsbColor(1, 1, Math.random()),
-				strokeCap: 'round',
+				fillColor: {
+					hue: 1,
+					saturation: 1,
+					brightness: Math.random()
+				},
 				closed: true
 			});
 		}
 
 		var position = view.center;
-		var mousePos = position;
+		var mousePos = view.center;
 		var children = project.activeLayer.children;
-		var count = 0;
 
-		function iterate() {
-			count++;
+		function iterate(count) {
 			var delta = mousePos - position;
 			position += delta / 10;
 			for (var i = 1; i < amount; i++) {
 				var path = children[i];
-				var length = Math.abs(Math.sin(i + count / 20) * 300);
+				var length = Math.abs(Math.sin(i + count / 40) * 300);
 				path.segments = [
 					position + delta / 1.5,
-					position + { angle: i * 2, length: length },
-					position + { angle: (i + 1) * 2, length: length }
+					position + { angle: i / amount * 360, length: length },
+					position + { angle: (i + 1) / amount * 360, length: length }
 				];
 				path.fillColor.hue = count - length;
 			}
 		}
 
-		function onFrame() {
-			iterate();
+		function onFrame(event) {
+			iterate(event.count);
 		}
 
 		function onMouseMove(event) {
