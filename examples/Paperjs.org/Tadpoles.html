@@ -15,7 +15,7 @@
 				this.acceleration = new Point();
 				this.vector = Point.random() * 2 - 1;
 				this.position = position.clone();
-				this.radius = 50;
+				this.radius = 30;
 				this.maxSpeed = maxSpeed + strength;
 				this.maxForce = maxForce + strength;
 				this.points = [];
@@ -131,10 +131,15 @@
 				var size = view.size;
 				if (position.x < -radius) vector.x = size.width + radius;
 				if (position.y < -radius) vector.y = size.height + radius;
-				if (position.x > size.width + radius) vector.x = -radius;
-				if (position.y > size.height + radius) vector.y = -radius;
-				if (!vector.isZero())
+				if (position.x > size.width + radius) vector.x = -size.width -radius;
+				if (position.y > size.height + radius) vector.y = -size.height -radius;
+				if (!vector.isZero()) {
 					this.position += vector;
+					var points = this.points;
+					for (var i = 0, l = points.length; i < l; i++) {
+						points[i] += vector;
+					}
+				}
 			},
 
 			// A method that calculates a steering vector towards a target
