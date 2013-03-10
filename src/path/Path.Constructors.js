@@ -68,6 +68,7 @@ Path.inject({ statics: new function() {
 		 *
 		 * Creates a Path Item with two anchor points forming a line.
 		 *
+		 * @name Path.Line
 		 * @param {Point} from the first anchor point of the path
 		 * @param {Point} to the second anchor point of the path
 		 * @return {Path} the newly created path
@@ -80,8 +81,8 @@ Path.inject({ statics: new function() {
 		 * 
 		 * @example {@paperscript}
 		 * var path = new Path.Line({
-		 * 	from: new Point(20, 20),
-		 * 	to: new Point(80, 80),
+		 * 	from: [20, 20],
+		 * 	to: [80, 80],
 		 * 	strokeColor: 'black'
 		 * });
 		 */
@@ -103,9 +104,15 @@ Path.inject({ statics: new function() {
 		 * @example {@paperscript}
 		 * var point = new Point(20, 20);
 		 * var size = new Size(60, 60);
-		 * var rectangle = new Rectangle(point, size);
-		 * var path = new Path.Rectangle(rectangle);
+		 * var path = new Path.Rectangle(point, size);
 		 * path.strokeColor = 'black';
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.Rectangle({
+		 * 	point: [20, 20],
+		 * 	size: [60, 60],
+		 * 	strokeColor: 'black'
+		 * });
 		 */
 		/**
 		 * Creates a rectangle shaped Path Item from the passed points. These do not
@@ -122,6 +129,13 @@ Path.inject({ statics: new function() {
 		 * var to = new Point(80, 80);
 		 * var path = new Path.Rectangle(from, to);
 		 * path.strokeColor = 'black';
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.Rectangle({
+		 * 	from: [20, 20],
+		 * 	to: [80, 80],
+		 * 	strokeColor: 'black'
+		 * });
 		 */
 		/**
 		 * Creates a rectangle shaped Path Item from the passed abstract
@@ -137,6 +151,17 @@ Path.inject({ statics: new function() {
 		 * });
 		 * var path = new Path.Rectangle(rectangle);
 		 * path.strokeColor = 'black';
+		 *
+		 * @example {@paperscript}
+		 * var rectangle = new Rectangle({
+		 * 	point: [20, 20],
+		 * 	size: [60, 60]
+		 * });
+		 * 
+		 * var path = new Path.Rectangle({
+		 * 	rectangle: rectangle,
+		 * 	strokeColor: 'black'
+		 * });
 		 */
 		Rectangle: createRectangle,
 
@@ -155,6 +180,16 @@ Path.inject({ statics: new function() {
 		 * var cornerSize = new Size(10, 10);
 		 * var path = new Path.RoundRectangle(rectangle, cornerSize);
 		 * path.strokeColor = 'black';
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.RoundRectangle({
+		 * 	rectangle: {
+		 * 		point: [20, 20],
+		 * 		size: [60, 60]
+		 * 	},
+		 * 	radius: 10,
+		 * 	strokeColor: 'black'
+		 * });
 		 */
 		RoundRectangle: function(/* rect, radius */) {
 			var rect = Rectangle.readNamed(arguments, 'rectangle'),
@@ -202,6 +237,13 @@ Path.inject({ statics: new function() {
 		 * });
 		 * var path = new Path.Ellipse(rectangle);
 		 * path.fillColor = 'black';
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.Ellipse({
+		 * 	point: [20, 20],
+		 * 	size: [180, 60],
+		 * 	fillColor: 'black'
+		 * });
 		 */
 		Ellipse: createEllipse,
 
@@ -220,6 +262,13 @@ Path.inject({ statics: new function() {
 		 * @example {@paperscript}
 		 * var path = new Path.Circle(new Point(80, 50), 30);
 		 * path.strokeColor = 'black';
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.Circle({
+		 * 	center: [80, 50],
+		 * 	radius: 30,
+		 * 	strokeColor: 'black'
+		 * });
 		 */
 		Circle: function(/* center, radius */) {
 			var center = Point.readNamed(arguments, 'center'),
@@ -243,6 +292,14 @@ Path.inject({ statics: new function() {
 		 * var to = new Point(80, 80);
 		 * var path = new Path.Arc(from, through, to);
 		 * path.strokeColor = 'black';
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.Arc({
+		 * 	from: [20, 20],
+		 * 	through: [60, 20],
+		 * 	to: [80, 80],
+		 * 	strokeColor: 'black'
+		 * });
 		 */
 		Arc: function(/* from, through, to */) {
 			var from = Point.readNamed(arguments, 'from'),
@@ -270,11 +327,12 @@ Path.inject({ statics: new function() {
 		 * triangle.fillColor = 'black';
 		 *
 		 * @example {@paperscript}
-		 * var center = new Point(50, 50);
-		 * var sides = 10;
-		 * var radius = 40;
-		 * var triangle = new Path.RegularPolygon(center, sides, radius);
-		 * triangle.fillColor = 'black';
+		 * var triangle = new Path.RegularPolygon({
+		 * 	center: [50, 50],
+		 * 	sides: 10,
+		 * 	radius: 40,
+		 * 	fillColor: 'black'
+		 * });
 		 */
 		RegularPolygon: function(/* center, sides, radius */) {
 			var center = Point.readNamed(arguments, 'center'),
@@ -315,6 +373,15 @@ Path.inject({ statics: new function() {
 		 * var radius2 = 40;
 		 * var path = new Path.Star(center, points, radius1, radius2);
 		 * path.fillColor = 'black';
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.Star({
+		 * 	center: [50, 50],
+		 * 	points: 12,
+		 * 	radius1: 25,
+		 * 	radius2: 40,
+		 * 	fillColor: 'black'
+		 * });
 		 */
 		Star: function(/* center, points, radius1, radius2 */) {
 			var center = Point.readNamed(arguments, 'center'),
