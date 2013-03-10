@@ -258,7 +258,7 @@ Path.inject({ statics: new function() {
 		 * Creates a regular polygon shaped Path Item.
 		 *
 		 * @param {Point} center the center point of the polygon
-		 * @param {Number} numSides the number of sides of the polygon
+		 * @param {Number} sides the number of sides of the polygon
 		 * @param {Number} radius the radius of the polygon
 		 * @return {Path} the newly created path
 		 *
@@ -276,17 +276,17 @@ Path.inject({ statics: new function() {
 		 * var triangle = new Path.RegularPolygon(center, sides, radius);
 		 * triangle.fillColor = 'black';
 		 */
-		RegularPolygon: function(/* center, numSides, radius */) {
+		RegularPolygon: function(/* center, sides, radius */) {
 			var center = Point.readNamed(arguments, 'center'),
-				numSides = Base.readNamed(arguments, 'numSides'),
+				sides = Base.readNamed(arguments, 'sides'),
 				radius = Base.readNamed(arguments, 'radius'),
 				path = createPath(arguments),
-				step = 360 / numSides,
-				three = !(numSides % 3),
+				step = 360 / sides,
+				three = !(sides % 3),
 				vector = new Point(0, three ? -radius : radius),
 				offset = three ? -1 : 0.5,
-				segments = new Array(numSides);
-			for (var i = 0; i < numSides; i++) {
+				segments = new Array(sides);
+			for (var i = 0; i < sides; i++) {
 				segments[i] = new Segment(center.add(
 					vector.rotate((i + offset) * step)));
 			}
