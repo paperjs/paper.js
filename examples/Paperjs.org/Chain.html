@@ -20,14 +20,13 @@
 			strokeWidth: 20,
 			strokeCap: 'round'
 		});
-		var segments = path.segments;
 
 		var start = view.center / [10, 1];
 		for (var i = 0; i < points; i++)
 			path.add(start + new Point(i * length, 0));
 
 		function onMouseMove(event) {
-			segments[0].point = event.point;
+			path.firstSegment.point = event.point;
 			for (var i = 0; i < points - 1; i++) {
 				var segment = path.segments[i];
 				var nextSegment = segment.next;
