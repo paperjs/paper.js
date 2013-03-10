@@ -977,9 +977,41 @@ var Item = this.Item = Base.extend(Callback, {
 	 *
 	 * // Now the parent of the path has become the group:
 	 * console.log(path.parent == group); // true
+	 * 
+	 * @example // Setting the parent of the item to another item
+	 * var path = new Path();
+	 *
+	 * // New items are placed in the active layer:
+	 * console.log(path.parent == project.activeLayer); // true
+	 *
+	 * var group = new Group();
+	 * group.parent = path;
+	 *
+	 * // Now the parent of the path has become the group:
+	 * console.log(path.parent == group); // true
+	 * 
+	 * // The path is now contained in the children list of group:
+	 * console.log(group.children[0] == path); // true
+	 * 
+	 * @example // Setting the parent of an item in the constructor
+	 * var group = new Group();
+	 * 
+	 * var path = new Path({
+	 * 	parent: group
+	 * });
+	 * 
+	 * // The parent of the path is the group:
+	 * console.log(path.parent == group); // true
+	 * 
+	 * // The path is contained in the children list of group:
+	 * console.log(group.children[0] == path); // true
 	 */
 	getParent: function() {
 		return this._parent;
+	},
+
+	setParent: function(item) {
+		return item.addChild(this);
 	},
 
 	/**
