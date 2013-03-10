@@ -35,15 +35,47 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * string describing the URL to load the image from, or the ID of a DOM
 	 * element to get the image from (either a DOM Image or a Canvas).
 	 *
-	 * @param {HTMLImageElement|Canvas|String} [object] the argument describing
-	 * @param {HTMLImageElement|Canvas|String} [point] the center position at
+	 * @param {HTMLImageElement|Canvas|String} [source] the source of the raster
+	 * @param {HTMLImageElement|Canvas|String} [position] the center position at
 	 * which the raster item is placed.
+	 * 
+	 * @example {@paperscript height=300} // Creating a raster using a url
+	 * var url = 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png';
+	 * var raster = new Raster(url);
+	 * 
+	 * // If you create a Raster using a url, you can use the onLoad
+	 * // handler to do something once it is loaded:
+	 * raster.onLoad = function() {
+	 * 	console.log('The image has loaded.');
+	 * };
+	 * 
+	 * @example // Creating a raster using the id of a DOM Image:
+	 * 
+	 * // Create a raster using the id of the image:
+	 * var raster = new Raster('art');
+	 * 
+	 * @example // Creating a raster using a DOM Image:
+	 * 
+	 * // Find the element using its id:
+	 * var imageElement = document.getElementById('art');
+	 * 
+	 * // Create the raster:
+	 * var raster = new Raster(imageElement);
+	 * 
+	 * @example {@paperscript height=300}
+	 * var raster = new Raster({
+	 * 	source: 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png',
+	 * 	position: view.center
+	 * });
+	 * 
+	 * raster.scale(0.5);
+	 * raster.rotate(10);
 	 */
-	initialize: function(object, point) {
+	initialize: function(object, position) {
 		// Support two forms of item initialization: Passing one object literal
 		// describing all the different properties to be set, or an image
 		// (object) and a point where it should be placed (point).
-		this.base(point !== undefined && Point.read(arguments, 1));
+		this.base(position !== undefined && Point.read(arguments, 1));
 		// If we can handle setting properties through object literal, we're all
 		// set. Otherwise we need to check the type of object:
 		if (object && !this._set(object)) {
@@ -212,12 +244,30 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		this._changed(/*#=*/ Change.GEOMETRY);
 	},
 
+	/**
+	 * The source of the raster, which can be set using a DOM Image, a Canvas,
+	 * a data url, a string describing the URL to load the image from, or the
+	 * ID of a DOM element to get the image from (either a DOM Image or a Canvas). 
+	 * Reading this property will return the url of the source image or a data-url.
+	 * 
+	 * @bean
+	 * @type HTMLImageElement|Canvas|String
+	 * 
+	 * @example {@paperscript}
+	 * var raster = new Raster();
+	 * raster.source = 'http://paperjs.org/about/resources/paper-js.gif';
+	 * raster.position = view.center;
+	 * 
+	 * @example {@paperscript}
+	 * var raster = new Raster({
+	 * 	source: 'http://paperjs.org/about/resources/paper-js.gif',
+	 * 	position: view.center
+	 * });
+	 */
 	getSource: function() {
 		return this._image && this._image.src || this.toDataURL();
 	},
 
-	// DOCS: Document Raster#setSource
-	// NOTE: Both data-urls and normal urls are supported in setSource!
 	setSource: function(src) {
 /*#*/ if (options.browser) {
 		var that = this,
@@ -272,6 +322,11 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		return ctx.canvas;
 	},
 
+	/**
+	 * Returns a Base 64 encoded {@code data:} URL representation of the raster.
+	 *
+	 * @return {String}
+	 */
 	toDataURL: function() {
 		// See if the linked image is base64 encoded already, if so reuse it,
 		// otherwise try using canvas.toDataUrl()
