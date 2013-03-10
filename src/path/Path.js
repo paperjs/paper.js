@@ -27,6 +27,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 *
+	 * @name Path#initialize
 	 * @param {Segment[]} [segments] An array of segments (or points to be
 	 * converted to segments) that will be added to the path.
 	 *
@@ -42,6 +43,28 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * var segments = [new Point(30, 30), new Point(100, 100)];
 	 * var path = new Path(segments);
 	 * path.strokeColor = 'black';
+	 */
+	/**
+	 * Creates a new Path item and places it at the top of the active layer.
+	 *
+	 * @param {Object} properties An object literal containing properties to
+	 * be set on the path.
+	 *
+	 * @example {@paperscript}
+	 * var path = new Path({
+	 * 	segments: [[20, 20], [80, 80], [140, 20]],
+	 * 	fillColor: 'black',
+	 * 	closed: true
+	 * });
+	 *
+	 * @example {@paperscript}
+	 * var path = new Path({
+	 * 	segments: [[20, 20], [80, 80], [140, 20]],
+	 * 	strokeColor: 'red',
+	 * 	strokeWidth: 20,
+	 * 	strokeCap: 'round',
+	 * 	selected: true
+	 * });
 	 */
 	initialize: function(arg) {
 		this._closed = false;
