@@ -1447,7 +1447,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * @example {@paperscript height=200}
 	 * var star = new Path.Star({
 	 * 	center: view.center,
-	 * 	numPoints: 10,
+	 * 	points: 10,
 	 * 	radius1: 30,
 	 * 	radius2: 60,
 	 * 	strokeColor: 'black'

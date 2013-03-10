@@ -303,7 +303,7 @@ Path.inject({ statics: new function() {
 		 * inner radius.
 		 *
 		 * @param {Point} center the center point of the star
-		 * @param {Number} numPoints the number of points of the star
+		 * @param {Number} points the number of points of the star
 		 * @param {Number} radius1
 		 * @param {Number} radius2
 		 * @return {Path} the newly created path
@@ -316,16 +316,16 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Star(center, points, radius1, radius2);
 		 * path.fillColor = 'black';
 		 */
-		Star: function(/* center, numPoints, radius1, radius2 */) {
+		Star: function(/* center, points, radius1, radius2 */) {
 			var center = Point.readNamed(arguments, 'center'),
-				numPoints = Base.readNamed(arguments, 'numPoints') * 2,
+				points = Base.readNamed(arguments, 'points') * 2,
 				radius1 = Base.readNamed(arguments, 'radius1'),
 				radius2 = Base.readNamed(arguments, 'radius2'),
 				path = createPath(arguments),
-				step = 360 / numPoints,
+				step = 360 / points,
 				vector = new Point(0, -1),
-				segments = new Array(numPoints);
-			for (var i = 0; i < numPoints; i++) {
+				segments = new Array(points);
+			for (var i = 0; i < points; i++) {
 				segments[i] = new Segment(center.add(
 					vector.rotate(step * i).multiply(i % 2 ? radius2 : radius1)));
 			}
