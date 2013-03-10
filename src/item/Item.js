@@ -602,7 +602,51 @@ var Item = this.Item = Base.extend(Callback, {
 	// TODO: get/setIsolated (print specific feature)
 	// TODO: get/setKnockout (print specific feature)
 	// TODO: get/setAlphaIsShape
-	// TODO: get/setData
+
+	/**
+	 * A plain javascript object which can be used to store
+	 * arbitrary data on the item.
+	 *
+	 * @type Object
+	 * @bean
+	 *
+	 * @example
+	 * var path = new Path();
+	 * path.data.remember = 'milk';
+	 * 
+	 * @example
+	 * var path = new Path();
+	 * path.data.malcolm = new Point(20, 30);
+	 * console.log(path.data.malcolm.x); // 20
+	 * 
+	 * @example
+	 * var path = new Path();
+	 * path.data = {
+	 * 	home: 'Omicron Theta',
+	 * 	found: 2338,
+	 * 	pets: ['Spot']
+	 * };
+	 * console.log(path.data.pets.length); // 1
+	 * 
+	 * @example
+	 * var path = new Path({
+	 * 	data: {
+	 * 		home: 'Omicron Theta',
+	 * 		found: 2338,
+	 * 		pets: ['Spot']
+	 * 	}
+	 * });
+	 * console.log(path.data.pets.length); // 1
+	 */
+	getData: function() {
+		if (!this._data)
+			this._data = {};
+		return this._data;
+	},
+
+	setData: function(data) {
+		this._data = data;		
+	},
 
 	/**
 	 * {@grouptitle Position and Bounding Boxes}

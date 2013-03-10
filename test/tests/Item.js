@@ -557,3 +557,33 @@ test('Item#isInserted', function() {
 	group.remove();
 	equals(item.isInserted(), false);
 });
+
+test('Item#data', function() {
+	var item = new Path();
+	var description = 'When accessed before any data was set, a plain object is created for us';
+	equals(Base.isPlainObject(item.data), true, description);
+
+	var item = new Path();
+	item.data.test = true;
+	equals(item.data.test, true, description);
+
+	var item = new Path();
+	var point = new Point();
+	item.data.point = point;
+	equals(item.data.point, point, 'We can set basic types on data');
+
+	var item = new Path();
+	item.data = {
+		testing: true
+	}
+	equals(item.data.testing, true, 'we can set data using an object literal');
+
+	var item = new Path({
+		data: {
+			testing: true
+		}
+	});
+	equals(item.data.testing, true, 'we can set data using an object literal constructor');
+
+	// TODO: add tests to see if importing and exporting of Item#data works
+});
