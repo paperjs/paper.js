@@ -83,9 +83,10 @@ test('setting item.parent', function() {
 	equals(function() {
 		return path.parent === group;
 	}, true, 'The parent of path was set to group');
+
 	equals(function() {
 		return layer2.children.indexOf(path) === -1;
-	}, false, 'The path is no longer a child of layer2');
+	}, true, 'The path is no longer a child of layer2');
 
 	var path2 = new Path({
 		parent: group
