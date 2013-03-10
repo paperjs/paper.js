@@ -51,8 +51,8 @@
 			return group;
 		}
 
-		function colorizePaths() {
-			for (var i = 0, l = group.children.length; i < l; i++) {
+		function colorizePaths(offset) {
+			for (var i = offset % 50, l = group.children.length; i < l; i += 50) {
 				var path = group.children[i];
 				// Set the path's fill color to the average color of the
 				// raster pixels that fall within it:
@@ -86,9 +86,7 @@
 				group.children[i].rotate(2);
 			}
 			// Colorize the paths every other frame:
-			if (event.count % 2 == 0) {
-				colorizePaths();
-			}
+			colorizePaths(event.count);
 		}
 	</script>
 </head>
