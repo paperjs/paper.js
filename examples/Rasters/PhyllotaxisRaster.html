@@ -37,17 +37,16 @@
 			var rotation = 137.51;
 			var spacing = 5;
 			for (var i = 1; i <= amount; i++) {
-				var point = new Point({
-					length: spacing * Math.sqrt(i),
-					angle: i * rotation
-				});
 				var radius = 8 - (i / amount * 4);
-				var rectangleSize = new Size(0.95, 0.7) * radius;
-				var rectangle = new Rectangle(point, rectangleSize);
-				var cornerSize = new Size(radius / 4);
-				var path = new Path.RoundRectangle(rectangle, cornerSize);
-				path.rotate(i * rotation + 45);
-				group.addChild(path);
+				new Path.RoundRectangle({
+					point: {
+						length: spacing * Math.sqrt(i),
+						angle: i * rotation
+					},
+					size: new Size(0.95, 0.7) * radius,
+					radius: new Size(radius / 4),
+					parent: group
+				}).rotate(i * rotation + 45);
 			}
 			return group;
 		}
