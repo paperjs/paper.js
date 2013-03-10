@@ -117,3 +117,16 @@ test('new Path.Star({ center: center, numPoints: numPoints, radius1: radius1, ra
 	});
 	equals(path.segments.toString(), '{ point: { x: 100, y: 80 } },{ point: { x: 105.87785, y: 91.90983 } },{ point: { x: 119.02113, y: 93.81966 } },{ point: { x: 109.51057, y: 103.09017 } },{ point: { x: 111.75571, y: 116.18034 } },{ point: { x: 100, y: 110 } },{ point: { x: 88.24429, y: 116.18034 } },{ point: { x: 90.48943, y: 103.09017 } },{ point: { x: 80.97887, y: 93.81966 } },{ point: { x: 94.12215, y: 91.90983 } }');
 });
+
+test('new Path.Line(from, to)', function() {
+	var path = new Path.Line([20, 20], [40, 40]);
+	equals(path.segments.toString(), '{ point: { x: 20, y: 20 } },{ point: { x: 40, y: 40 } }');
+});
+
+test('new Path.Line({ from: from, to: to })', function() {
+	var path = new Path.Line({
+		from: [20, 20],
+		to: [40, 40]
+	});
+	equals(path.segments.toString(), '{ point: { x: 20, y: 20 } },{ point: { x: 40, y: 40 } }');
+});
