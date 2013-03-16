@@ -30,11 +30,32 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	 * {@link Project#layers} array. The newly created layer will be activated,
 	 * so all newly created items will be placed within it.
 	 *
+	 * @name Layer#initialize
 	 * @param {Item[]} [children] An array of items that will be added to the
 	 * newly created layer.
 	 *
 	 * @example
 	 * var layer = new Layer();
+	 */
+	/**
+	 * Creates a new Layer item and places it at the end of the
+	 * {@link Project#layers} array. The newly created layer will be activated,
+	 * so all newly created items will be placed within it.
+	 *
+	 * @param {Object} properties An object literal containing properties to
+	 * be set on the layer.
+	 *
+	 * @example {@paperscript}
+	 * var path = new Path([100, 100], [100, 200]);
+	 * var path2 = new Path([50, 150], [150, 150]);
+	 * 
+	 * // Create a layer. The properties in the object literal
+	 * // are set on the newly created layer.
+	 * var layer = new Layer({
+	 * 	children: [path, path2],
+	 * 	strokeColor: 'black',
+	 * 	position: view.center
+	 * });
 	 */
 	initialize: function(items) {
 		this._project = paper.project;
