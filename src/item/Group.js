@@ -29,13 +29,14 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	/**
 	 * Creates a new Group item and places it at the top of the active layer.
 	 *
+	 * @name Group#initialize
 	 * @param {Item[]} [children] An array of children that will be added to the
 	 * newly created group.
 	 *
-	 * @example {@paperscript split=true height=200}
+	 * @example {@paperscript}
 	 * // Create a group containing two paths:
-	 * var path = new Path(new Point(100, 100), new Point(100, 200));
-	 * var path2 = new Path(new Point(50, 150), new Point(150, 150));
+	 * var path = new Path([100, 100], [100, 200]);
+	 * var path2 = new Path([50, 150], [150, 150]);
 	 *
 	 * // Create a group from the two paths:
 	 * var group = new Group([path, path2]);
@@ -46,7 +47,7 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	 * // Move the group to the center of the view:
 	 * group.position = view.center;
 	 *
-	 * @example {@paperscript split=true height=320}
+	 * @example {@paperscript height=320}
 	 * // Click in the view to add a path to the group, which in turn is rotated
 	 * // every frame:
 	 * var group = new Group();
@@ -66,6 +67,26 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	 * 	// the centerpoint of the view:
 	 * 	group.rotate(1, view.center);
 	 * }
+	 */
+	/**
+	 * Creates a new Group item and places it at the top of the active layer.
+	 *
+	 * @name Group#initialize
+	 * @param {Object} properties An object literal containing properties to be
+	 * set on the Group.
+	 *
+	 * @example {@paperscript}
+	 * var path = new Path([100, 100], [100, 200]);
+	 * var path2 = new Path([50, 150], [150, 150]);
+	 * 
+	 * // Create a group from the two paths:
+	 * var group = new Group({
+	 * 	children: [path, path2],
+	 * 	// Set the stroke color of all items in the group:
+	 * 	strokeColor: 'black',
+	 * 	// Move the group to the center of the view:
+	 * 	position: view.center
+	 * });
 	 */
 	initialize: function(arg) {
 		this.base();
@@ -107,6 +128,31 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	 *
 	 * @type Boolean
 	 * @bean
+	 * 
+	 * @example {@paperscript}
+	 * var star = new Path.Star({
+	 * 	center: view.center,
+	 * 	points: 6,
+	 * 	radius1: 20,
+	 * 	radius2: 40,
+	 * 	fillColor: 'red'
+	 * });
+	 * 
+	 * var circle = new Path.Circle({
+	 * 	center: view.center,
+	 * 	radius: 25,
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
+	 * // Create a group of the two items and clip it:
+	 * var group = new Group(circle, star);
+	 * group.clipped = true;
+	 * 
+	 * // Lets animate the circle:
+	 * function onFrame(event) {
+	 * 	var offset = Math.sin(event.count / 30) * 30;
+	 * 	circle.position.x = view.center.x + offset;
+	 * }
 	 */
 	isClipped: function() {
 		return !!this._getClipItem();
