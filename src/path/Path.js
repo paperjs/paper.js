@@ -920,7 +920,115 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	// TODO: reduceSegments([flatness])
 
-	// DOCS: split(index, parameter) / split(offset) / split(location)
+	/**
+	 * Splits the path at the given offset. After splitting, the path will be
+	 * open. If the path was open already, splitting will result in two paths.
+	 * 
+	 * @name Path#split
+	 * @function
+	 * @param {Number} offset the offset at which to split the path
+	 * as a number between 0 and {@link Path#length}
+	 * @return {Path} The newly created path, if any.
+	 * 
+	 * @example {@paperscript} // Splitting an open path
+	 * var path = new Path();
+	 * path.strokeColor = 'black';
+	 * path.add(20, 20);
+	 * 
+	 * // Add an arc through {x: 90, y: 80} to {x: 160, y: 20}
+	 * path.arcTo([90, 80], [160, 20]);
+	 * 
+	 * // Split the path at 30% of its length:
+	 * var path2 = path.split(path.length * 0.3);
+	 * path2.strokeColor = 'red';
+	 * 
+	 * // Move the newly created path 40px to the right:
+	 * path2.position.x += 40;
+	 * 
+	 * @example {@paperscript} // Splitting a closed path
+	 * var path = new Path.Rectangle({
+	 * 	from: [20, 20],
+	 * 	to: [80, 80],
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
+	 * // Split the path at 60% of its length:
+	 * path.split(path.length * 0.6);
+	 * 
+	 * // Move the first segment, to show where the path
+	 * // was split:
+	 * path.firstSegment.point.x += 20;
+	 * 
+	 * // Select the first segment:
+	 * path.firstSegment.selected = true;
+	 */
+	/**
+	 * Splits the path at the given curve location. After splitting, the path
+	 * will be open. If the path was open already, splitting will result in two
+	 * paths.
+	 * 
+	 * @name Path#split
+	 * @function
+	 * @param {CurveLocation} location the curve location at which to split
+	 * the path
+	 * @return {Path} The newly created path, if any.
+	 * 
+	 * @example {@paperscript}
+	 * var path = new Path.Circle({
+	 * 	center: view.center,
+	 * 	radius: 40,
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
+	 * var pointOnCircle = view.center + {
+	 * 	length: 40,
+	 * 	angle: 30
+	 * };
+	 * 
+	 * var curveLocation = path.getNearestLocation(pointOnCircle);
+	 * 
+	 * path.split(curveLocation);
+	 * path.lastSegment.selected = true;
+	 */
+	/**
+	 * Splits the path. After splitting, the path will be open. If the path
+	 * was open already, splitting will result in two paths.
+	 * 
+	 * @example {@paperscript} // Splitting an open path
+	 * // Draw a V shaped path:
+	 * var path = new Path([20, 20], [50, 80], [80, 20]);
+	 * path.strokeColor = 'black';
+	 * 
+	 * // Split the path half-way down its second curve:
+	 * var path2 = path.split(1, 0.5);
+	 * 
+	 * // Give the resulting path a red stroke-color
+	 * // and move it 20px to the right:
+	 * path2.strokeColor = 'red';
+	 * path2.position.x += 20;
+	 * 
+	 * @example {@paperscript} // Splitting a closed path
+	 * var path = new Path.Rectangle({
+	 * 	from: [20, 20],
+	 * 	to: [80, 80],
+	 * 	strokeColor: 'black'
+	 * });
+	 * 
+	 * // Split the path half-way down its second curve:
+	 * path.split(2, 0.5);
+	 * 
+	 * // Move the first segment, to show where the path
+	 * // was split:
+	 * path.firstSegment.point.x += 20;
+	 * 
+	 * // Select the first segment:
+	 * path.firstSegment.selected = true;
+	 * 
+	 * @param {Number} index the index of the curve in the {@link Path#curves}
+	 * array at which to split
+	 * @param {Number} parameter the parameter at which the curve will be split
+	 * @return {Path} The newly created path after splitting, if any.
+	 */
 	split: function(index, parameter) {
 		if (parameter === null)
 			return;
