@@ -39,13 +39,13 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	 * var size = new Size(10, 5);
 	 * console.log(size.width); // 10
 	 * console.log(size.height); // 5
-	 *
+	 */
 	/**
 	 * Creates a Size object using the numbers in the given array as
 	 * dimensions.
 	 *
 	 * @name Size#initialize
-	 * @param {array} array
+	 * @param {Array} array
 	 *
 	 * @example
 	 * // Creating a size of width: 320, height: 240 using an array of numbers:
