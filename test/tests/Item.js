@@ -639,8 +639,8 @@ test('blendmode on an item in a transformed group', function() {
 	});
 
 	var raster = layer.rasterize();
-	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0), 'Top left pixel');
-	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0), 'Middle center pixel');
+	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0), 'Top left pixel should be red:');
+	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0), 'Middle center pixel should be yellow:');
 
 	raster.remove();
 	path2.position = [0, 0];
@@ -649,6 +649,6 @@ test('blendmode on an item in a transformed group', function() {
 	group.position = [50, 50];
 
 	var raster = layer.rasterize();
-	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0), 'Top left pixel');
-	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0), 'Middle center pixel');
+	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0), 'Top left pixel should be red:');
+	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0), 'Middle center pixel should be yellow:');
 });
