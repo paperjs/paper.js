@@ -543,7 +543,8 @@ test('Renaming item', function() {
 test('Changing item#position.x', function() {
 	var path = new Path.Circle(new Point(50, 50), 50);
 	path.position.x += 5;
-	equals(path.position.toString(), '{ x: 55, y: 50 }', 'path.position.x += 5');
+	equals(path.position.toString(), '{ x: 55, y: 50 }',
+			'path.position.x += 5');
 });
 
 test('Naming a removed item', function() {
@@ -619,7 +620,8 @@ test('Item#data', function() {
 			testing: true
 		}
 	});
-	equals(item.data.testing, true, 'we can set data using an object literal constructor');
+	equals(item.data.testing, true,
+			'we can set data using an object literal constructor');
 
 	// TODO: add tests to see if importing and exporting of Item#data works
 });
@@ -639,8 +641,10 @@ test('blendmode on an item in a transformed group', function() {
 	});
 
 	var raster = layer.rasterize();
-	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0), 'Top left pixel should be red:');
-	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0), 'Middle center pixel should be yellow:');
+	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0),
+			'Top left pixel should be red:');
+	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0),
+			'Middle center pixel should be yellow:');
 
 	raster.remove();
 	path2.position = [0, 0];
@@ -649,6 +653,8 @@ test('blendmode on an item in a transformed group', function() {
 	group.position = [50, 50];
 
 	var raster = layer.rasterize();
-	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0), 'Top left pixel should be red:');
-	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0), 'Middle center pixel should be yellow:');
+	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0),
+			'Top left pixel should be red:');
+	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0),
+			'Middle center pixel should be yellow:');
 });
