@@ -1293,6 +1293,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
+	/**
+	 * Returns the curve location of the specified point if it lies on the
+	 * path, {@code null} otherwise.
+	 * @param {Point} point the point on the path.
+	 * @return {CurveLocation} the curve location of the specified point.
+	 */
 	getLocationOf: function(point) {
 		point = Point.read(arguments);
 		var curves = this.getCurves();
