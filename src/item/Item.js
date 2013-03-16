@@ -1283,7 +1283,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * <b>options.center:</b> {@code Boolean} - Hit test the
 	 * {@link Rectangle#center} of the bounding rectangle of items
 	 * ({@link Item#bounds}).
-	 * <b>options.guide:</b> {@code Boolean} - Hit test items that have
+	 * <b>options.guides:</b> {@code Boolean} - Hit test items that have
 	 * {@link Item#guide} set to {@code true}.
 	 * <b>options.selected:</b> {@code Boolean} - Only hit selected items.
 	 *
