@@ -623,3 +623,32 @@ test('Item#data', function() {
 
 	// TODO: add tests to see if importing and exporting of Item#data works
 });
+
+test('blendmode on an item in a transformed group', function() {
+	var layer = new Layer();
+	var path1 = new Path.Rectangle({
+		size: [100, 100],
+		fillColor: new RgbColor(1, 0, 0)
+	});
+
+	var path2 = new Path.Circle({
+		radius: 25,
+		center: [50, 50],
+		fillColor: new RgbColor(0, 1, 0),
+		blendMode: 'screen'
+	});
+
+	var raster = layer.rasterize();
+	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0), 'Top left pixel');
+	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0), 'Middle center pixel');
+
+	raster.remove();
+	path2.position = [0, 0];
+
+	var group = new Group(path2);
+	group.position = [50, 50];
+
+	var raster = layer.rasterize();
+	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0), 'Top left pixel');
+	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0), 'Middle center pixel');
+});
