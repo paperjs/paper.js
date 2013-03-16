@@ -218,7 +218,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript}
 	 * // Setting properties through an object literal
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35
 	 * });
 	 * 
@@ -264,7 +264,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 *
 	 * @example {@paperscript}
 	 * var path = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35
 	 * });
 
@@ -317,7 +317,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * // Applying several styles to an item in one go, by passing an object
 	 * // to its style property:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 30
 	 * });
 	 * circle.style = {
@@ -329,7 +329,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript split=true height=100}
 	 * // Copying the style of another item:
 	 * var path = new Path.Circle({
-	 * 	center: new Point(50, 50),
+	 * 	center: [50, 50],
 	 * 	radius: 30,
 	 * 	fillColor: 'red'
 	 * });
@@ -351,7 +351,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * };
 	 *
 	 * var path = new Path.Circle({
-	 * 	center: new Point(50, 50),
+	 * 	center: [50, 50],
 	 * 	radius: 30
 	 * });
 	 * path.style = myStyle;
@@ -404,7 +404,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript}
 	 * // Hiding an item:
 	 * var path = new Path.Circle({
-	 * 	center: new Point(50, 50),
+	 * 	center: [50, 50],
 	 * 	radius: 20,
 	 * 	fillColor: 'red'
 	 * });
@@ -433,7 +433,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * background.fillColor = 'white';
 	 *
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35,
 	 * 	fillColor: 'red'
 	 * });
@@ -459,7 +459,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript}
 	 * // Making an item 50% transparent:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35,
 	 * 	fillColor: 'red'
 	 * });
@@ -519,7 +519,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript}
 	 * // Selecting an item:
 	 * var path = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35
 	 * });
 	 * path.selected = true; // Select the path
@@ -1030,7 +1030,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript}
 	 * // Accessing items in the children array:
 	 * var path = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35
 	 * });
 	 *
@@ -1044,7 +1044,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript}
 	 * // Accessing children by name:
 	 * var path = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35
 	 * });
 	 * // Set the name of the path:
@@ -1060,7 +1060,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript}
 	 * // Passing an array of items to item.children:
 	 * var path = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35
 	 * });
 	 *
@@ -1151,7 +1151,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript}
 	 * // Cloning items:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(50, 50),
+	 * 	center: [50, 50],
 	 * 	radius: 10,
 	 * 	fillColor: 'red'
 	 * });
@@ -1229,7 +1229,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript}
 	 * // Rasterizing an item:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(50, 50),
+	 * 	center: [50, 50],
 	 * 	radius: 5,
 	 * 	fillColor: 'red'
 	 * });
@@ -1792,7 +1792,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35
 	 * });
 	 *
@@ -1813,7 +1813,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35,
 	 * 	strokeColor: 'red'
 	 * });
@@ -1835,7 +1835,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * // A look at the different stroke caps:
 	 *
 	 * var line = new Path({
-	 * 	segments: [new Point(80, 50), new Point(420, 50)],
+	 * 	segments: [[80, 50], [420, 50],
 	 * 	strokeColor: 'black',
 	 * 	strokeWidth: 20,
 	 * 	selected: true
@@ -1897,7 +1897,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 *
 	 * @example {@paperscript}
 	 * var path = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 40,
 	 * 	strokeWidth: 2,
 	 * 	strokeColor: 'black'
@@ -1941,7 +1941,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 35
 	 * });
 	 *
@@ -1967,7 +1967,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 20:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 20,
 	 * 	fillColor: 'red'
 	 * });
@@ -1981,7 +1981,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 20:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 20,
 	 * 	fillColor: 'red'
 	 * });
@@ -2005,7 +2005,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * // Create a circle shaped path at { x: 100, y: 50 }
 	 * // with a radius of 20:
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(100, 50),
+	 * 	center: [100, 50],
 	 * 	radius: 20,
 	 * 	fillColor: 'red'
 	 * });
@@ -2192,18 +2192,20 @@ var Item = this.Item = Base.extend(Callback, {
 	 *
 	 * // Create a rectangle shaped path with its top left corner
 	 * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
-	 * var size = new Size(75, 50);
-	 * var path = new Path.Rectangle(new Point(80, 25), size);
-	 * path.fillColor = 'black';
-	 *
+	 * var path = new Path.Rectangle({
+	 * 	point: [80, 25],
+	 * 	size: [75, 50],
+	 * 	fillColor: 'black'
+	 * });
+	 * 
 	 * // Create a circle shaped path with its center at {x: 80, y: 50}
 	 * // and a radius of 30.
 	 * var circlePath = new Path.Circle({
-	 * 	center: new Point(80, 50),
-	 * 	radius: 30
+	 * 	center: [80, 50],
+	 * 	radius: 30,
+	 * 	fillColor: 'red'
 	 * });
-	 * circlePath.fillColor = 'red';
-	 *
+	 * 
 	 * // Fit the circlePath to the bounding rectangle of
 	 * // the rectangular path:
 	 * circlePath.fitBounds(path.bounds);
@@ -2214,18 +2216,20 @@ var Item = this.Item = Base.extend(Callback, {
 	 *
 	 * // Create a rectangle shaped path with its top left corner
 	 * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
-	 * var size = new Size(75, 50);
-	 * var path = new Path.Rectangle(new Point(80, 25), size);
-	 * path.fillColor = 'black';
-	 *
+	 * var path = new Path.Rectangle({
+	 * 	point: [80, 25],
+	 * 	size: [75, 50],
+	 * 	fillColor: 'black'
+	 * });
+	 * 
 	 * // Create a circle shaped path with its center at {x: 80, y: 50}
 	 * // and a radius of 30.
 	 * var circlePath = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 30,
 	 * 	fillColor: 'red'
 	 * });
-	 *
+	 * 
 	 * // Fit the circlePath to the bounding rectangle of
 	 * // the rectangular path:
 	 * circlePath.fitBounds(path.bounds, true);
@@ -2233,7 +2237,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @example {@paperscript height=200}
 	 * // Fitting an item to the bounding rectangle of the view
 	 * var path = new Path.Circle({
-	 * 	center: new Point(80, 50),
+	 * 	center: [80, 50],
 	 * 	radius: 30,
 	 * 	fillColor: 'red'
 	 * });
