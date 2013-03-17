@@ -1851,7 +1851,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (this._closed)
 				ctx.closePath();
 
-			if (this._clipMask) {
+			if (param.clip || this._clipMask) {
 				ctx.clip();
 			} else if (!param.compound && (fillColor || strokeColor)) {
 				// If the path is part of a compound path or doesn't have a fill
