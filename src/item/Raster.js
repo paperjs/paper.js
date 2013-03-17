@@ -321,7 +321,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		rect = Rectangle.read(arguments);
 		var ctx = CanvasProvider.getContext(rect.getSize());
 		ctx.drawImage(this.getCanvas(), rect.x, rect.y,
-				canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+				rect.width, rect.height, 0, 0, rect.width, rect.height);
 		return ctx.canvas;
 	},
 
