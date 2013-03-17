@@ -311,9 +311,15 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 
 	// PlacedSymbol specific
 	if (item instanceof PlacedSymbol) {
-		equals(function() {
-			return item.symbol == item2.symbol;
-		}, true);
+		if (dontShareProject) {
+			compareItems(item.symbol.definition, item.symbol2.definition,
+					cloned, checkIdentity, dontShareProject,
+					'Compare Symbol#definition');
+		} else {
+			equals(function() {
+				return item.symbol == item2.symbol;
+			}, true);
+		}
 	}
 
 	// Raster specific
