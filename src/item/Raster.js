@@ -88,6 +88,8 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 				this.setImage(object);
 			}
 		}
+		if (!this._size)
+			this._size = new Size();
 	},
 
 	clone: function() {
@@ -114,7 +116,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 
 	setSize: function() {
 		var size = Size.read(arguments);
-		if (!this._size || !this._size.equals(size)) {
+		if (!this._size.equals(size)) {
 			// Get reference to image before changing canvas
 			var element = this.getElement();
 			// Setting canvas internally sets _size
