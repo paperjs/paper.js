@@ -49,6 +49,16 @@ function test(testName, expected) {
 	});
 }
 
+function asyncTest(testName, expected) {
+	return QUnit.asyncTest(testName, function() {
+		var project = new Project();
+		expected(function() {
+			project.remove();
+			start();
+		});
+	});
+}
+
 function compareNumbers(number1, number2, message) {
 	equals(Format.number(number1, 2), Format.number(number2, 2), message);
 }
