@@ -114,14 +114,15 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 
 	setSize: function() {
 		var size = Size.read(arguments);
-		if (!this._size.equals(size)) {
+		if (!this._size || !this._size.equals(size)) {
 			// Get reference to image before changing canvas
 			var element = this.getElement();
 			// Setting canvas internally sets _size
 			this.setCanvas(CanvasProvider.getCanvas(size));
 			// Draw element back onto new canvas
-			this.getContext(true).drawImage(element, 0, 0,
-					size.width, size.height);
+			if (element)
+				this.getContext(true).drawImage(element, 0, 0,
+						size.width, size.height);
 		}
 	},
 
