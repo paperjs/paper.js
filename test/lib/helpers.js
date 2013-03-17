@@ -268,6 +268,10 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 	equals(item.position.toString(), item2.position.toString(),
 			'Compare Item#position');
 
+	equals(function() {
+		return Base.equals(item.data, item2.data)
+	}, true);
+
 	if (item.matrix) {
 		if (checkIdentity) {
 			equals(function() {
