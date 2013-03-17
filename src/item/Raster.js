@@ -469,7 +469,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 			_color = Color.read(arguments);
 		var ctx = this.getContext(true),
 			imageData = ctx.createImageData(1, 1),
-			alpha = color.getAlpha();
+			alpha = _color.getAlpha();
 		imageData.data[0] = _color.getRed() * 255;
 		imageData.data[1] = _color.getGreen() * 255;
 		imageData.data[2] = _color.getBlue() * 255;
