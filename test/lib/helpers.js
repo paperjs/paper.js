@@ -118,7 +118,7 @@ function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
 				return gradientColor[key] !== gradientColor2[key];
 			}, true, 'Strict compare GradientColor#' + key);
 		}
-		equals(gradientColor[key].toString(), gradientColor2[key].toString(),
+		equals(gradientColor[key] && gradientColor[key].toString(), gradientColor2[key] && gradientColor2[key].toString(),
 			'Compare GradientColor#' + key);
 	});
 	equals(function() {
