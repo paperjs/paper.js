@@ -45,7 +45,6 @@ asyncTest('Create a raster from a dom image', function(callback) {
 	});
 });
 
-
 test('Create a raster from a canvas', function(callback) {
 	var canvas = CanvasProvider.getCanvas(30, 20);
 	var raster = new Raster(canvas);
