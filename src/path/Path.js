@@ -1840,18 +1840,19 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				strokeColor = style._strokeColor,
 				dashArray = style._dashArray,
 				drawDash = !paper.support.nativeDash && strokeColor
-						&& dashArray && dashArray.length;
+						&& dashArray && dashArray.length,
+				clip = param.clip || this._clipMask;
 
 			// Prepare the canvas path if we have any situation that requires it
 			// to be defined.
-			if (param.compound || this._clipMask || fillColor || strokeColor
+			if (param.compound || clip || fillColor || strokeColor
 					&& !drawDash)
 				drawSegments(ctx, this);
 
 			if (this._closed)
 				ctx.closePath();
 
-			if (param.clip || this._clipMask) {
+			if (clip) {
 				ctx.clip();
 			} else if (!param.compound && (fillColor || strokeColor)) {
 				// If the path is part of a compound path or doesn't have a fill
