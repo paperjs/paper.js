@@ -31,6 +31,14 @@ asyncTest('Create a raster from a url', function(callback) {
 	};
 });
 
+asyncTest('Create a raster from a data url', function(callback) {
+	var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
+	raster.onLoad = function() {
+		equals(raster.size.toString(), new Size(2, 2).toString(), true);
+		callback();
+	};
+});
+
 asyncTest('Create a raster from a dom image', function(callback) {
 	var img = document.createElement('img');
 	img.src = 'resources/paper-js.gif';
@@ -65,4 +73,19 @@ asyncTest('Create a raster from a dom id', function(callback) {
 			callback();
 		}
 	});
+});
+
+asyncTest('Raster#getPixel / setPixel', function(callback) {
+	var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
+	raster.onLoad = function() {
+		compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0));
+		compareRgbColors(raster.getPixel(1, 0), new RgbColor(0, 1, 0));
+		compareRgbColors(raster.getPixel(0, 1), new RgbColor(0, 0, 1));
+		compareRgbColors(raster.getPixel(1, 1), new RgbColor(1, 1, 1));
+
+		var color = new RgbColor(1, 1, 0, 0.5);
+		raster.setPixel([0, 0], color);
+		compareRgbColors(raster.getPixel([0, 0]), color);
+		callback();
+	};
 });
