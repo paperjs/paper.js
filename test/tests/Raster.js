@@ -116,3 +116,19 @@ asyncTest('Raster#getSubImage', function(callback) {
 		callback();
 	};
 });
+
+test('Raster#getAverageColor(path)', function() {
+	new Path.Rectangle({
+		point: [0, 0],
+		size: [100, 100],
+		fillColor: new RgbColor(0, 1, 0)
+	});
+	var path = new Path.Circle({
+		center: [50, 50],
+		radius: 25,
+		fillColor: new RgbColor(1, 0, 0)
+	});
+	var raster = paper.project.activeLayer.rasterize();
+	path.scale(0.9);
+	compareRgbColors(raster.getAverageColor(path), new RgbColor(1, 0, 0));
+});
