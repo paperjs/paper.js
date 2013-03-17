@@ -89,3 +89,30 @@ asyncTest('Raster#getPixel / setPixel', function(callback) {
 		callback();
 	};
 });
+
+asyncTest('Raster#getSubImage', function(callback) {
+	var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
+	raster.onLoad = function() {
+		var canvas = raster.getSubImage(new Rectangle({
+			point: [1, 0],
+			size: [1, 2]
+		}));
+		equals(function() {
+			return canvas.width;
+		}, 1);
+		equals(function() {
+			return canvas.height;
+		}, 2);
+		var ctx = canvas.getContext('2d');
+		var expected = [
+			// green pixel:
+			0, 255, 0, 255,
+			// white pixel:
+			255, 255, 255, 255
+		];
+		equals(function() {
+			return Base.equals(Array.prototype.slice.call(ctx.getImageData(0, 0, 1, 2).data), expected);
+		}, true);
+		callback();
+	};
+});
