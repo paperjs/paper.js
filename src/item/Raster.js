@@ -488,7 +488,6 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		return this.getContext().createImageData(size.width, size.height);
 	},
 
-	// TODO: Rename to #get/setImageData, as it will conflict with Item#getData
 	// DOCS: document Raster#getData
 	/**
 	 * @param {Rectangle} rect
