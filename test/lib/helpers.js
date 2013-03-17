@@ -50,11 +50,7 @@ function test(testName, expected) {
 }
 
 function compareNumbers(number1, number2, message) {
-	if (number1 !== 0)
-		number1 = Math.round(number1 * 100) / 100;
-	if (number2 !== 0)
-		number2 = Math.round(number2 * 100) / 100;
-	equals(number1, number2, message);
+	equals(Format.number(number1, 2), Format.number(number2, 2), message);
 }
 
 function comparePoints(point1, point2, message) {
