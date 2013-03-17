@@ -148,7 +148,7 @@ function comparePathStyles(style, style2, checkIdentity) {
 				}
 				compareGradientColors(style[key], style2[key], checkIdentity);
 			} else {
-				equals(style[key].toString(), style2[key].toString(),
+				equals(style[key] && style[key].toString(), style2[key] && style2[key].toString(),
 						'Compare PathStyle#' + key);
 			}
 		}
