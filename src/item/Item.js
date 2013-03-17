@@ -725,7 +725,7 @@ var Item = this.Item = Base.extend(Callback, {
 
 	/**
 	 * Specifies wether the item has any content or not. The meaning of what
-	 * content is differs from  type to type. For example, a {@link Group} with
+	 * content is differs from type to type. For example, a {@link Group} with
 	 * no children, a {@link TextItem} with no text content and a {@link Path}
 	 * with no segments all are considered empty.
 	 *
