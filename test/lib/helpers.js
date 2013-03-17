@@ -226,7 +226,7 @@ function compareSegmentLists(segmentList, segmentList2, checkIdentity) {
 	}
 }
 
-function compareItems(item, item2, cloned, checkIdentity) {
+function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 	if (checkIdentity) {
 		equals(function() {
 			return item !== item2;
@@ -284,11 +284,12 @@ function compareItems(item, item2, cloned, checkIdentity) {
 
 	// Path specific
 	if (item2 instanceof Path) {
-		var keys = ['closed', 'fullySelected', 'clockwise', 'length'];
+		var keys = ['closed', 'fullySelected', 'clockwise'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			equals(item[key], item2[key], 'Compare Path#' + key);
 		}
+		compareNumbers(item.length, item2.length, 'Compare Path#length');
 		compareSegmentLists(item.segments, item2.segments, checkIdentity);
 	}
 
@@ -302,7 +303,9 @@ function compareItems(item, item2, cloned, checkIdentity) {
 	// Layer specific
 	if (item instanceof Layer) {
 		equals(function() {
-			return item.project == item2.project;
+			return dontShareProject
+					? item.project != item2.project
+					: item.project == item2.project;
 		}, true);
 	}
 
@@ -364,6 +367,36 @@ function compareItems(item, item2, cloned, checkIdentity) {
 			compareItems(item.children[i], item2.children[i], cloned, checkIdentity);
 		}
 	}
+}
+
+function compareProjects(project, project2) {
+	// Compare Project#symbols:
+	equals(function() {
+		return project.symbols.length == project2.symbols.length;
+	}, true);
+	for (var i = 0, l = project.symbols.length; i < l; i++) {
+		var definition1 = project.symbols[i].definition;
+		var definition2 = project2.symbols[i].definition;
+		compareItems(definition1, definition2, false, false, true, 'Compare Symbol#definition');
+	}
+
+	// Compare Project#layers:
+	equals(function() {
+		return project.layers.length == project2.layers.length
+	}, true);
+	for (var i = 0, l = project.layers.length; i < l; i++) {
+		compareItems(project.layers[i], project2.layers[i], false, false, true);
+	}
+}
+
+// JSON
+
+function testExportImportJson(project) {
+	var json = project.exportJson();
+	var project2 = new Project();
+	project2.activeLayer.remove();
+	project2.importJson(json);
+	compareProjects(project, project2);
 }
 
 // SVG
