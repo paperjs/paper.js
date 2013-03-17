@@ -12,6 +12,11 @@
 
 module('Raster');
 
+test('Create a raster without a source and check its size', function() {
+	var raster = new Raster();
+	equals(raster.size.toString(), new Size(0, 0).toString(), true);
+});
+
 test('Create a raster without a source and set its size', function() {
 	var raster = new Raster();
 	raster.size = [640, 480];
