@@ -39,6 +39,8 @@
 
 /*#*/ include('PlacedSymbol.js');
 
+/*#*/ include('Raster.js');
+
 /*#*/ include('HitResult.js');
 
 /*#*/ include('SvgImport.js');
