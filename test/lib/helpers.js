@@ -324,21 +324,18 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 
 	// Raster specific
 	if (item instanceof Raster) {
-		// TODO: remove access of private fields:
-		if (item._canvas) {
-			if (checkIdentity) {
-				equals(function() {
-					return item._canvas !== item2._canvas;
-				}, true);
-			}
+		equals(item.size.toString(), item2.size.toString(),
+				'Compare Raster#size');
+		compareNumbers(item.width, item2.width, 'Compare Raster#width');
+		compareNumbers(item.height, item2.height, 'Compare Raster#height');
+		compareNumbers(item.ppi, item2.ppi, 'Compare Raster#ppi');
+		equals(item.source, item2.source, 'Compare Raster#source');
+		if (checkIdentity) {
+			equals(item.image, item2.image, 'Compare Raster#image');
 		}
-		if (item._image) {
-			equals(function() {
-				return item._image == item2._image;
-			}, true);
-		}
-		equals(item._size.toString(), item2._size.toString(),
-				'Compare Item#size');
+		equals(item.size.toString(), item2.size.toString(),
+				'Compare Raster#size');
+		equals(item.toDataURL() == item2.toDataURL(), true, 'Compare Raster#toDataUrl()')
 	}
 
 	// TextItem specific:
@@ -402,7 +399,7 @@ function testExportImportJson(project) {
 	var project2 = new Project();
 	project2.activeLayer.remove();
 	project2.importJson(json);
-	compareProjects(project, project2);
+	compareProjects(project2, project);
 }
 
 // SVG
