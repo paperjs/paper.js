@@ -132,3 +132,25 @@ test('Raster#getAverageColor(path)', function() {
 	path.scale(0.9);
 	compareRgbColors(raster.getAverageColor(path), new RgbColor(1, 0, 0));
 });
+
+test('Raster#getAverageColor(path) with compound path', function() {
+	new Path.Rectangle({
+		point: [0, 0],
+		size: [100, 100],
+		fillColor: new RgbColor(0, 1, 0)
+	});
+	var path = new Path.Circle({
+		center: [50, 50],
+		radius: 25
+	});
+	var path2 = new Path.Circle({
+		center: [50, 50],
+		radius: 10
+	})
+	var compoundPath = new CompoundPath(path, path2);
+	compoundPath.fillColor = new RgbColor(1, 0, 0);
+	var raster = paper.project.activeLayer.rasterize();
+	path.scale(0.9);
+	path2.scale(1.1);
+	compareRgbColors(raster.getAverageColor(compoundPath), new RgbColor(1, 0, 0));
+});
