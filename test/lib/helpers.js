@@ -338,7 +338,10 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 				'Compare Raster#size');
 		compareNumbers(item.width, item2.width, 'Compare Raster#width');
 		compareNumbers(item.height, item2.height, 'Compare Raster#height');
-		compareNumbers(item.ppi, item2.ppi, 'Compare Raster#ppi');
+
+		equals(item.ppi.toString(), item2.ppi.toString(),
+				'Compare Raster#ppi');
+
 		equals(item.source, item2.source, 'Compare Raster#source');
 		if (checkIdentity) {
 			equals(item.image, item2.image, 'Compare Raster#image');
