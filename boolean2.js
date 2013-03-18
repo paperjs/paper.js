@@ -1,7 +1,7 @@
 
 project.currentStyle.fillColor = 'black';
 
-var path11 = new Path.Circle([100, 100], 50);
+var path11 = new Path.Circle([80, 80], 50);
 // var path11 = new Path.Rectangle([100, 100], [100, 100]);
 var path21 = new Path.Rectangle([100, 100], [100, 100]);
 // var path21 = new Path.Polygon
