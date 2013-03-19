@@ -319,26 +319,28 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			parameter = parameter.parameter;
 		if (parameter > 0 && parameter < 1) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
+				isLinear = this.isLinear(),
 				left = parts[0],
 				right = parts[1],
 				point1 = this._segment1._point,
 				point2 = this._segment2._point;
 	
 			// Write back the results:
-			this._segment1._handleOut.set(left[2] - point1._x,
-					left[3] - point1._y);
-			
-			// segment2 is the end segment. By inserting newSegment
-			// between segment1 and 2, 2 becomes the end segment.
-			// absolute->relative
-			this._segment2._handleIn.set(right[4] - point2._x,
-					right[5] - point2._y);
+			if (!isLinear) {
+				this._segment1._handleOut.set(left[2] - point1._x,
+						left[3] - point1._y);
+				// segment2 is the end segment. By inserting newSegment
+				// between segment1 and 2, 2 becomes the end segment.
+				// Convert absolute -> relative
+				this._segment2._handleIn.set(right[4] - point2._x,
+						right[5] - point2._y);
+			}
 
-			// Create the new segment, absolute -> relative:
+			// Create the new segment, convert absolute -> relative:
 			var x = left[6], y = left[7],
 				segment = new Segment(Point.create(x, y),
-						Point.create(left[4] - x, left[5] - y),
-						Point.create(right[2] - x, right[3] - y));
+						isLinear ? null : Point.create(left[4] - x, left[5] - y),
+						isLinear ? null : Point.create(right[2] - x, right[3] - y));
 	
 			// Insert it in the segments list, if needed:
 			if (this._path) {
