@@ -206,7 +206,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		var segments = this._segments,
 			style = this._style,
 			format = Format.point,
-			precision = arguments[0] || 3,
+			precision = arguments[0],
 			parts = [];
 
 		// TODO: Add support for H/V and/or relative commands, where appropriate
