@@ -405,16 +405,6 @@ function compareProjects(project, project2) {
 	}
 }
 
-// JSON
-
-function testExportImportJson(project) {
-	var json = project.exportJson();
-	var project2 = new Project();
-	project2.activeLayer.remove();
-	project2.importJson(json);
-	compareProjects(project2, project);
-}
-
 // SVG
 
 function createSvg(xml) {
