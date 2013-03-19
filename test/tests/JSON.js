@@ -12,12 +12,21 @@
 
 module('JSON');
 
+function testExportImportJson(project) {
+	var json = project.exportJson();
+	var project2 = new Project();
+	project2.activeLayer.remove();
+	project2.importJson(json);
+	compareProjects(project2, project);
+}
+
 test('Circles', function() {
 	var topLeft = new Point(200, 200);
 	var size = new Size(150, 100);
 	var rectangle = new Rectangle(topLeft, size);
 	var path = new Path.Ellipse(rectangle);
 	path.fillColor = 'black';
+	console.log('JSON', path.exportJson());
 	
 	var topLeft = new Point(5, 400);
 	var size = new Size(100, 50);
