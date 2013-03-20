@@ -241,7 +241,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		},
 
 		closePath: function() {
-			getCurrentPath(this).setClosed(true);
+			getCurrentPath(this).closePath();
 		}
 	};
 
