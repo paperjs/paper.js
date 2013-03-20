@@ -2202,6 +2202,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		},
 
 		closePath: function() {
+			var first = this.getFirstSegment(),
+				last = this.getLastSegment();
+			if (first._point.equals(last._point)) {
+				first.setHandleIn(last._handleIn);
+				last.remove();
+			}
 			this.setClosed(true);
 		}
 	};
