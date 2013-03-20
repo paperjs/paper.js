@@ -45,7 +45,8 @@ var Item = this.Item = Base.extend(Callback, {
 		blendMode: 'normal',
 		opacity: 1,
 		guide: false,
-		clipMask: false
+		clipMask: false,
+		data: {}
 	},
 
 	initialize: function(point) {
@@ -142,15 +143,16 @@ var Item = this.Item = Base.extend(Callback, {
 			for (var key in fields) {
 				var value = that[key];
 				if (!Base.equals(value, fields[key]))
-					props[key] = Base.serialize(value, options, compact,
-							dictionary);
+					props[key] = Base.serialize(value, options,
+							// Do not use compact mode for data
+							compact && key !== 'data', dictionary);
 			}
 		}
 
 		// Serialize fields that this Item subclass defines first
 		serialize(this._serializeFields, true);
 		// Serialize style fields, but only if they differ from defaults.
-		// Use no compacting there, since colors always need their type
+		// Do not use compact mode here, since colors always need their type
 		// identifiers.
 		// Do not serialize styles on Groups and Layers, since they just unify
 		// their children's own styles.
