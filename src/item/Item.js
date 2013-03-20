@@ -1251,11 +1251,13 @@ var Item = this.Item = Base.extend(Callback, {
 			scale = (resolution || 72) / 72,
 			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
 			ctx = canvas.getContext('2d');
+		ctx.save();
 		new Matrix().scale(scale).translate(-bounds.x, -bounds.y)
 			.applyToContext(ctx);
 		Item.draw(this, ctx, {});
 		var raster = new Raster(canvas);
 		raster.setBounds(bounds);
+		ctx.restore();
 		// NOTE: We don't need to release the canvas since it now belongs to the
 		// Raster!
 		return raster;
@@ -2822,7 +2824,7 @@ var Item = this.Item = Base.extend(Callback, {
 			item.draw(ctx, param);
 			if (!param.clipping)
 				ctx.restore();
-			// If we created a temporary canvas before, composite it onto the
+			// If a temporary canvas was created before, composite it onto the
 			// parent canvas:
 			if (parentCtx) {
 				// Restore previous offset.
@@ -2835,8 +2837,8 @@ var Item = this.Item = Base.extend(Callback, {
 					BlendMode.process(item._blendMode, ctx, parentCtx,
 						item._opacity, itemOffset.subtract(prevOffset));
 				} else {
-				// Otherwise we just need to set the globalAlpha before drawing
-				// the temporary canvas on the parent canvas.
+					// Otherwise just set the globalAlpha before drawing the
+					// temporary canvas on the parent canvas.
 					parentCtx.save();
 					parentCtx.globalAlpha = item._opacity;
 					parentCtx.drawImage(ctx.canvas, itemOffset.x, itemOffset.y);
