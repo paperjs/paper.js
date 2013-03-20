@@ -164,15 +164,6 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		}
 	},
 
-	_serialize: function(options) {
-		var format = Format.number;
-		// For speed reasons, we directly call Format.number() here with
-		// precision, instead of converting array through Base.serialize() which
-		// makes a copy.
-		return [format(this.x, options.precision),
-				format(this.y, options.precision)];
-	},
-
 	/**
 	 * The x coordinate of the point
 	 *
@@ -191,6 +182,24 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		this.x = x;
 		this.y = y;
 		return this;
+	},
+
+	/**
+	 * Checks whether the coordinates of the point are equal to that of the
+	 * supplied point.
+	 *
+	 * @param {Point} point
+	 * @return {Boolean} {@true if the points are equal}
+	 *
+	 * @example
+	 * var point = new Point(5, 10);
+	 * console.log(point == new Point(5, 10)); // true
+	 * console.log(point == new Point(1, 1)); // false
+	 * console.log(point != new Point(1, 1)); // true
+	 */
+	equals: function(point) {
+		point = Point.read(arguments);
+		return this.x == point.x && this.y == point.y;
 	},
 
 	/**
@@ -216,6 +225,16 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	toString: function() {
 		var format = Format.number;
 		return '{ x: ' + format(this.x) + ', y: ' + format(this.y) + ' }';
+	},
+
+	_serialize: function(options) {
+		var format = Format.number,
+			precision = options.precision;
+		// For speed reasons, we directly call Format.number() here with
+		// precision, instead of converting array through Base.serialize() which
+		// makes a copy.
+		return [format(this.x, precision),
+				format(this.y, precision)];
 	},
 
 	/**
@@ -637,24 +656,6 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 			point.y * c + point.x * s
 		);
 		return center ? point.add(center) : point;
-	},
-
-	/**
-	 * Checks whether the coordinates of the point are equal to that of the
-	 * supplied point.
-	 *
-	 * @param {Point} point
-	 * @return {Boolean} {@true if the points are equal}
-	 *
-	 * @example
-	 * var point = new Point(5, 10);
-	 * console.log(point == new Point(5, 10)); // true
-	 * console.log(point == new Point(1, 1)); // false
-	 * console.log(point != new Point(1, 1)); // true
-	 */
-	equals: function(point) {
-		point = Point.read(arguments);
-		return this.x == point.x && this.y == point.y;
 	},
 
 	/**

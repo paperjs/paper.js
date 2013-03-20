@@ -70,18 +70,6 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 			throw new Error('Unsupported matrix parameters');
 	},
 
-	_serialize: function(options) {
-		return Base.serialize(this.getValues(), options);
-	},
-
-	/**
-	 * @return {Matrix} A copy of this transform.
-	 */
-	clone: function() {
-		return Matrix.create(this._a, this._c, this._b, this._d,
-				this._tx, this._ty);
-	},
-
 	/**
 	 * Sets this transform to the matrix specified by the 6 values.
 	 *
@@ -101,6 +89,40 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		this._tx = tx;
 		this._ty = ty;
 		return this;
+	},
+
+	_serialize: function(options) {
+		return Base.serialize(this.getValues(), options);
+	},
+
+	/**
+	 * @return {Matrix} A copy of this transform.
+	 */
+	clone: function() {
+		return Matrix.create(this._a, this._c, this._b, this._d,
+				this._tx, this._ty);
+	},
+
+	/**
+	 * Checks whether the two matrices describe the same transformation.
+	 *
+	 * @param {Matrix} matrix the matrix to compare this matrix to
+	 * @return {Boolean} {@true if the matrices are equal}
+	 */
+	equals: function(mx) {
+		return mx && this._a == mx._a && this._b == mx._b && this._c == mx._c
+				&& this._d == mx._d && this._tx == mx._tx && this._ty == mx._ty;
+	},
+
+	/**
+	 * @return {String} A string representation of this transform.
+	 */
+	toString: function() {
+		var format = Format.number;
+		return '[[' + [format(this._a), format(this._b),
+					format(this._tx)].join(', ') + '], ['
+				+ [format(this._c), format(this._d),
+					format(this._ty)].join(', ') + ']]';
 	},
 
 	/**
@@ -253,28 +275,6 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 		if (_center)
 			this.translate(_center.negate());
 		return this;
-	},
-
-	/**
-	 * @return {String} A string representation of this transform.
-	 */
-	toString: function() {
-		var format = Format.number;
-		return '[[' + [format(this._a), format(this._b),
-					format(this._tx)].join(', ') + '], ['
-				+ [format(this._c), format(this._d),
-					format(this._ty)].join(', ') + ']]';
-	},
-
-	/**
-	 * Checks whether the two matrices describe the same transformation.
-	 *
-	 * @param {Matrix} matrix the matrix to compare this matrix to
-	 * @return {Boolean} {@true if the matrices are equal}
-	 */
-	equals: function(mx) {
-		return mx && this._a == mx._a && this._b == mx._b && this._c == mx._c
-				&& this._d == mx._d && this._tx == mx._tx && this._ty == mx._ty;
 	},
 
 	/**

@@ -122,15 +122,6 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	},
 
 	/**
-	 * @return {String} A string representation of the size.
-	 */
-	toString: function() {
-		var format = Format.number;
-		return '{ width: ' + format(this.width)
-				+ ', height: ' + format(this.height) + ' }';
-	},
-
-	/**
 	 * The width of the size
 	 *
 	 * @name Size#width
@@ -151,6 +142,24 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	},
 
 	/**
+	 * Checks whether the width and height of the size are equal to those of the
+	 * supplied size.
+	 *
+	 * @param {Size}
+	 * @return {Boolean}
+	 *
+	 * @example
+	 * var size = new Size(5, 10);
+	 * console.log(size == new Size(5, 10)); // true
+	 * console.log(size == new Size(1, 1)); // false
+	 * console.log(size != new Size(1, 1)); // true
+	 */
+	equals: function(size) {
+		size = Size.read(arguments);
+		return this.width == size.width && this.height == size.height;
+	},
+
+	/**
 	 * Returns a copy of the size.
 	 */
 	clone: function() {
@@ -158,6 +167,14 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	},
 
 	/**
+	 * @return {String} A string representation of the size.
+	 */
+	toString: function() {
+		var format = Format.number;
+		return '{ width: ' + format(this.width)
+				+ ', height: ' + format(this.height) + ' }';
+	},
+
 	 * Returns the addition of the supplied value to the width and height of the
 	 * size as a new size. The object itself is not modified!
 	 *
@@ -329,24 +346,6 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 
 	negate: function() {
 		return Size.create(-this.width, -this.height);
-	},
-
-	/**
-	 * Checks whether the width and height of the size are equal to those of the
-	 * supplied size.
-	 *
-	 * @param {Size}
-	 * @return {Boolean}
-	 *
-	 * @example
-	 * var size = new Size(5, 10);
-	 * console.log(size == new Size(5, 10)); // true
-	 * console.log(size == new Size(1, 1)); // false
-	 * console.log(size != new Size(1, 1)); // true
-	 */
-	equals: function(size) {
-		size = Size.read(arguments);
-		return this.width == size.width && this.height == size.height;
 	},
 
 	/**
