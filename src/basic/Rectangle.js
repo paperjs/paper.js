@@ -217,6 +217,18 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 				+ ', height: ' + format(this.height)
 				+ ' }';
 	},
+
+	_serialize: function(options) {
+		var format = Format.number,
+			precision = options.precision;
+		// See Point#_serialize()
+		return [format(this.x, precision),
+				format(this.y, precision),
+				format(this.width, precision),
+				format(this.height, precision)];
+	},
+
+	/**
 	 * The top-left point of the rectangle
 	 *
 	 * @type Point

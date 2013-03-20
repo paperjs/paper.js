@@ -23,6 +23,7 @@
  * console.log(size.height); // 5
  */
 var Size = this.Size = Base.extend(/** @lends Size# */{
+	_type: 'Size',
 	// Tell Base.read that the Point constructor supporst reading with index
 	_readIndex: true,
 
@@ -175,6 +176,15 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 				+ ', height: ' + format(this.height) + ' }';
 	},
 
+	_serialize: function(options) {
+		var format = Format.number,
+			precision = options.precision;
+		// See Point#_serialize()
+		return [format(this.width, precision),
+				format(this.height, precision)];
+	},
+
+	/**
 	 * Returns the addition of the supplied value to the width and height of the
 	 * size as a new size. The object itself is not modified!
 	 *
