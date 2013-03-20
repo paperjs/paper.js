@@ -322,7 +322,7 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 	// PlacedSymbol specific
 	if (item instanceof PlacedSymbol) {
 		if (dontShareProject) {
-			compareItems(item.symbol.definition, item.symbol2.definition,
+			compareItems(item.symbol.definition, item2.symbol.definition,
 					cloned, checkIdentity, dontShareProject,
 					'Compare Symbol#definition');
 		} else {
@@ -380,7 +380,8 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 			return item.children.length == item2.children.length;
 		}, true);
 		for (var i = 0, l = item.children.length; i < l; i++) {
-			compareItems(item.children[i], item2.children[i], cloned, checkIdentity);
+			compareItems(item.children[i], item2.children[i], cloned,
+					checkIdentity, dontShareProject);
 		}
 	}
 }
@@ -393,7 +394,8 @@ function compareProjects(project, project2) {
 	for (var i = 0, l = project.symbols.length; i < l; i++) {
 		var definition1 = project.symbols[i].definition;
 		var definition2 = project2.symbols[i].definition;
-		compareItems(definition1, definition2, false, false, true, 'Compare Symbol#definition');
+		compareItems(definition1, definition2, false, false, true,
+				'Compare Symbol#definition');
 	}
 
 	// Compare Project#layers:
