@@ -18,6 +18,7 @@
  * rectangular path, it is not an item.
  */
 var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
+	_type: 'Rectangle',
 	// Tell Base.read that the Rectangle constructor supporst reading with index
 	_readIndex: true,
 
@@ -173,7 +174,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @type Number
 	 */
 
-	// DOCS: why does jsdocs document this function, when there are no comments?
+	// DOCS: Why does jsdocs document this function, when there are no comments?
 	/**
 	 * @ignore
 	 */
@@ -186,6 +187,36 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	/**
+	 * Returns a copy of the rectangle.
+	 */
+	clone: function() {
+		return Rectangle.create(this.x, this.y, this.width, this.height);
+	},
+
+	/**
+	 * Checks whether the coordinates and size of the rectangle are equal to
+	 * that of the supplied rectangle.
+	 *
+	 * @param {Rectangle} rect
+	 * @return {Boolean} {@true if the rectangles are equal}
+	 */
+	equals: function(rect) {
+		rect = Rectangle.read(arguments);
+		return this.x == rect.x && this.y == rect.y
+				&& this.width == rect.width && this.height == rect.height;
+	},
+
+	/**
+	 * @return {String} A string representation of this rectangle.
+	 */
+	toString: function() {
+		var format = Format.number;
+		return '{ x: ' + format(this.x)
+				+ ', y: ' + format(this.y)
+				+ ', width: ' + format(this.width)
+				+ ', height: ' + format(this.height)
+				+ ' }';
+	},
 	 * The top-left point of the rectangle
 	 *
 	 * @type Point
@@ -394,35 +425,10 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 */
 
 	/**
-	 * Checks whether the coordinates and size of the rectangle are equal to
-	 * that of the supplied rectangle.
-	 *
-	 * @param {Rectangle} rect
-	 * @return {Boolean} {@true if the rectangles are equal}
-	 */
-	equals: function(rect) {
-		rect = Rectangle.read(arguments);
-		return this.x == rect.x && this.y == rect.y
-				&& this.width == rect.width && this.height == rect.height;
-	},
-
-	/**
 	 * @return {Boolean} {@true the rectangle is empty}
 	 */
 	isEmpty: function() {
 		return this.width == 0 || this.height == 0;
-	},
-
-	/**
-	 * @return {String} A string representation of this rectangle.
-	 */
-	toString: function() {
-		var format = Format.number;
-		return '{ x: ' + format(this.x)
-				+ ', y: ' + format(this.y)
-				+ ', width: ' + format(this.width)
-				+ ', height: ' + format(this.height)
-				+ ' }';
 	},
 
 	/**
