@@ -278,7 +278,7 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		_serialize: function(options) {
-			var res = [];
+			var res = [ this._type ];
 			for (var i = 0, l = this._components.length; i < l; i++) {
 				var component = this._components[i],
 					value = this['_' + component];
