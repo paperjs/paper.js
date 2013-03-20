@@ -637,12 +637,9 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * Applies this matrix to the specified Canvas Context.
 	 *
 	 * @param {CanvasRenderingContext2D} ctx
-	 * @param {Boolean} [reset=false]
 	 */
-	applyToContext: function(ctx, reset) {
-		ctx[reset ? 'setTransform' : 'transform'](
-				this._a, this._c, this._b, this._d, this._tx, this._ty);
-		return this;
+	applyToContext: function(ctx) {
+		ctx.transform(this._a, this._c, this._b, this._d, this._tx, this._ty);
 	},
 
 	statics: /** @lends Matrix */{
