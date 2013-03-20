@@ -55,7 +55,7 @@ test('Empty Path', function() {
 	testExportImportJson(paper.project);
 });
 
-test('gradients', function() {
+test('Gradients', function() {
 	var path = new Path.Circle([100, 100], 40);
 	var gradient = new RadialGradient('yellow', 'red', 'black');
 	var from = path.position;
@@ -66,7 +66,7 @@ test('gradients', function() {
 	testExportImportJson(paper.project);
 });
 
-test('group transform', function() {
+test('Group transform', function() {
 	var circle1 = new Path.Circle([100, 100], 50);
 	circle1.fillColor = 'red';
 	var circle2 = new Path.Circle([200, 100], 50);
@@ -78,7 +78,7 @@ test('group transform', function() {
 	testExportImportJson(paper.project);
 });
 
-test('rectangle testing', function() {
+test('Rectangle testing', function() {
 	var point1 = new Point(10, 10);
 	var size1 = new Size(50, 50);
 	var rectangle1 = new Rectangle(point1, size1);
@@ -116,7 +116,7 @@ test('rectangle testing', function() {
 	testExportImportJson(paper.project);
 });
 
-test('symbols', function() {
+test('Symbols', function() {
 	var ellipse = new Path.Ellipse({
 		from: [0, 0],
 		to: [200, 100],
@@ -131,7 +131,7 @@ test('symbols', function() {
 	testExportImportJson(paper.project);
 });
 
-test('text testing', function() {
+test('PointText testing', function() {
 	var text = new PointText(new Point(50, 100));
 	text.fillColor = 'black';
 	text.content = 'This is a test';
@@ -189,7 +189,7 @@ test('Item#data', function() {
 		number: 1234,
 		array: ['a ray', 'some rays'],
 		bool: true,
-		nully: null,
+		nil: null,
 		point: new Point(12, 34),
 		size: new Size(12, 34),
 		rectangle: new Rectangle([12, 34], [56, 78]),
