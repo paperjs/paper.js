@@ -59,6 +59,14 @@ this.Base = Base.inject(/** @lends Base# */{
 		return Base.exportJson(this, options);
 	},
 
+	// To support JSON.stringify:
+	toJSON: function() {
+		// TODO: We should probably have exportJson() / importJson() deal with
+		// objects rather than strings too, so we can just delegate to those
+		// here.
+		return Base.serialize(this);
+	},
+
 	/**
 	 * #_set() is part of the mechanism for constructors which take one object
 	 * literal describing all the properties to be set on the created instance.
