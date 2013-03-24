@@ -626,7 +626,7 @@ test('Item#data', function() {
 	// TODO: add tests to see if importing and exporting of Item#data works
 });
 
-test('blendmode on an item in a transformed group', function() {
+test('Item#blendMode in a transformed Group', function() {
 	var layer = new Layer();
 	var path1 = new Path.Rectangle({
 		size: [100, 100],
