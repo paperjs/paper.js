@@ -74,7 +74,7 @@ var Numerical = new function() {
 		 * Numerical.EPSILON.
 		 */
 		isZero: function(val) {
-			return Math.abs(val) <= this.EPSILON;
+			return abs(val) <= this.EPSILON;
 		},
 
 		/**
