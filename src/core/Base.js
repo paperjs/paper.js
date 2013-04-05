@@ -61,9 +61,6 @@ this.Base = Base.inject(/** @lends Base# */{
 
 	// To support JSON.stringify:
 	toJSON: function() {
-		// TODO: We should probably have exportJson() / importJson() deal with
-		// objects rather than strings too, so we can just delegate to those
-		// here.
 		return Base.serialize(this);
 	},
 
@@ -382,7 +379,8 @@ this.Base = Base.inject(/** @lends Base# */{
 		},
 
 		importJson: function(json) {
-			return Base.deserialize(JSON.parse(json));
+			return Base.deserialize(
+					typeof json === 'string' ? JSON.parse(json) : json);
 		},
 
 		/**
