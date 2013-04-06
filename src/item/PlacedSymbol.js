@@ -19,7 +19,7 @@
  * @extends PlacedItem
  */
 var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol# */{
-	_type: 'PlacedSymbol',
+	_class: 'PlacedSymbol',
 	_boundsSelected: true,
 	_serializeFields: {
 		symbol: null

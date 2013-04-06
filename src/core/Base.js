@@ -36,7 +36,7 @@ this.Base = Base.inject(/** @lends Base# */{
 	 */
 	toString: function() {
 		return this._id != null
-			?  (this._type || 'Object') + (this._name
+			?  (this._class || 'Object') + (this._name
 				? " '" + this._name + "'"
 				: ' @' + this._id)
 			: '{ ' + Base.each(this, function(value, key) {
@@ -80,7 +80,7 @@ this.Base = Base.inject(/** @lends Base# */{
 
 	statics: /** @lends Base */{
 
-		_types: {},
+		_classes: {},
 
 		/**
 		 * A uniqued id number, which when consumed needs to be increased by one
@@ -89,10 +89,11 @@ this.Base = Base.inject(/** @lends Base# */{
 
 		extend: function(src) {
 			// Override Base.extend() with a version that registers classes that
-			// define #_type inside the Base._types lookup, for deserialization.
+			// define #_class inside the Base._classes lookup, for
+			// deserialization.
 			var res = this.base.apply(this, arguments);
-			if (src._type)
-				Base._types[src._type] = res;
+			if (src._class)
+				Base._classes[src._class] = res;
 			return res;
 		},
 
@@ -301,8 +302,8 @@ this.Base = Base.inject(/** @lends Base# */{
 				// If we don't serialize to compact form (meaning no type
 				// identifier), see if _serialize didn't already add the type,
 				// e.g. for types that do not support compact form.
-				if (obj._type && !compact && res[0] !== obj._type)
-					res.unshift(obj._type);
+				if (obj._class && !compact && res[0] !== obj._class)
+					res.unshift(obj._class);
 			} else if (Array.isArray(obj)) {
 				res = [];
 				for (var i = 0, l = obj.length; i < l; i++)
@@ -327,8 +328,8 @@ this.Base = Base.inject(/** @lends Base# */{
 		/**
 		 * Deserializes from parsed JSON data. A simple convention is followed:
 		 * Array values with a string at the first position are links to
-		 * deserializable types through Base._types, and the values following in
-		 * the array are the arguments to their initialize function.
+		 * deserializable types through Base._classes, and the values following
+		 * in the array are the arguments to their initialize function.
 		 * Any other value is passed on unmodified.
 		 * The passed data is recoursively traversed and converted, leaves first
 		 */
@@ -351,7 +352,7 @@ this.Base = Base.inject(/** @lends Base# */{
 					// if so return its definition instead.
 					if (data.dictionary && obj.length == 1 && /^#/.test(type))
 						return data.dictionary[type];
-					type = Base._types[type];
+					type = Base._classes[type];
 				}
 				res = [];
 				// Skip first type entry for arguments

@@ -23,7 +23,7 @@
  * console.log(size.height); // 5
  */
 var Size = this.Size = Base.extend(/** @lends Size# */{
-	_type: 'Size',
+	_class: 'Size',
 	// Tell Base.read that the Point constructor supporst reading with index
 	_readIndex: true,
 

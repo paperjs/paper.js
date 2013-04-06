@@ -160,7 +160,7 @@ var Item = this.Item = Base.extend(Callback, {
 			serialize(this._style._defaults, false);
 		// There is no compact form for Item serialization, we always keep the
 		// type.
-		return [ this._type, props ];
+		return [ this._class, props ];
 	},
 
 	/**
@@ -247,14 +247,14 @@ var Item = this.Item = Base.extend(Callback, {
 	},
 
 	/**
-	 * The type of the item as a string.
+	 * The class-name of the item as a string.
 	 *
 	 * @type String('Group', 'Layer', 'Path', 'CompoundPath', 'Raster',
 	 * 'PlacedSymbol', 'PointText')
 	 * @bean
 	 */
-	getType: function() {
-		return this._type;
+	getClassName: function() {
+		return this._class;
 	},
 
 	/**
@@ -2797,7 +2797,7 @@ var Item = this.Item = Base.extend(Callback, {
 			// Exclude Raster items since they never draw a stroke and handle
 			// opacity by themselves (they also don't call _setStyles)
 			if (item._blendMode !== 'normal' || item._opacity < 1
-					&& item._type !== 'Raster' && (item._type !== 'Path'
+					&& item._class !== 'Raster' && (item._class !== 'Path'
 						|| item.getFillColor() && item.getStrokeColor())) {
 				var bounds = item.getStrokeBounds();
 				if (!bounds.width || !bounds.height)

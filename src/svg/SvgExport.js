@@ -449,7 +449,7 @@ new function() {
 	}
 
 	function setDefinition(item, node) {
-		var type = item._type,
+		var type = item._class.toLowerCase(),
 			id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
 		node.id = type + '-' + id;
 		definitions.svgs[item._id] = node;
@@ -476,8 +476,8 @@ new function() {
 	}
 
 	function exportSvg(item) {
-		var exporter = exporters[item._type],
-			node = exporter && exporter(item, item._type);
+		var exporter = exporters[item._class],
+			node = exporter && exporter(item, item._class);
 		return node && applyStyle(item, node);
 	}
 
