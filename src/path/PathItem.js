@@ -102,7 +102,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 		}
 
 		// First clear the previous content
-		if (this._type === 'Path')
+		if (this._class === 'Path')
 			this.removeSegments();
 		else
 			this.removeChildren();

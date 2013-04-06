@@ -18,7 +18,7 @@
  * @extends PlacedItem
  */
 var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
-	_type: 'Raster',
+	_class: 'Raster',
 	_boundsSelected: true,
 	_serializeFields: {
 		source: null
