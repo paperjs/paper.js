@@ -372,15 +372,16 @@ new function() {
 			var stops = gradient._stops;
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i],
-					stopColor = stop._color;
+					stopColor = stop._color,
+					alpha = stopColor.getAlpha();
 				attrs = {
 					offset: stop._rampPoint,
 					'stop-color': stopColor.toCss(true)
 				};
 				// See applyStyle for an explanation of why there are separated
 				// opacity / color attributes.
-				if (stopColor.getAlpha() < 1)
-					attrs['stop-opacity'] = stopColor._alpha;
+				if (alpha < 1)
+					attrs['stop-opacity'] = alpha;
 				gradientNode.appendChild(createElement('stop', attrs));
 			}
 			setDefinition(color, gradientNode);
@@ -412,11 +413,14 @@ new function() {
 			// (A layer or group which can have style values in SVG).
 			var value = style[entry.get]();
 			if (!parentStyle || !Base.equals(parentStyle[entry.get](), value)) {
-				// Support for css-style rgba() values is not in SVG 1.1, so
-				// separate the alpha value of colors with alpha into the
-				// separate fill- / stroke-opacity attribute:
-				if (entry.type === 'color' && value != null && value.getAlpha() < 1)
-					attrs[entry.attribute + '-opacity'] = value._alpha;
+				if (entry.type === 'color' && value != null) {
+					// Support for css-style rgba() values is not in SVG 1.1, so
+					// separate the alpha value of colors with alpha into the
+					// separate fill- / stroke-opacity attribute:
+					var alpha = value.getAlpha();
+					if (alpha < 1)
+						attrs[entry.attribute + '-opacity'] = alpha;
+				}
 				attrs[entry.attribute] = value == null
 					? 'none'
 					: entry.type === 'color'
