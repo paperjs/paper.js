@@ -1,4 +1,4 @@
-/*
+g/*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
@@ -102,7 +102,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 		}
 
 		// First clear the previous content
-		if (this._class === 'Path')
+		if (this._type === 'path')
 			this.removeSegments();
 		else
 			this.removeChildren();
