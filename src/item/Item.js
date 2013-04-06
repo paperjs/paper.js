@@ -30,6 +30,9 @@ var Item = this.Item = Base.extend(Callback, {
 			if (src._serializeFields)
 				src._serializeFields = Base.merge(
 						this.prototype._serializeFields, src._serializeFields);
+			// Derive the _type string from _class
+			if (src._class)
+				src._type = Base.hyphenate(src._class);
 			return this.base.apply(this, arguments);
 		}
 	}
@@ -247,14 +250,14 @@ var Item = this.Item = Base.extend(Callback, {
 	},
 
 	/**
-	 * The class-name of the item as a string.
+	 * The type of the item as a string.
 	 *
-	 * @type String('Group', 'Layer', 'Path', 'CompoundPath', 'Raster',
-	 * 'PlacedSymbol', 'PointText')
+	 * @type String('group', 'layer', 'path', 'compound-path', 'raster',
+	 * 'placed-symbol', 'point-text')
 	 * @bean
 	 */
-	getClassName: function() {
-		return this._class;
+	getType: function() {
+		return this._type;
 	},
 
 	/**
@@ -2797,7 +2800,7 @@ var Item = this.Item = Base.extend(Callback, {
 			// Exclude Raster items since they never draw a stroke and handle
 			// opacity by themselves (they also don't call _setStyles)
 			if (item._blendMode !== 'normal' || item._opacity < 1
-					&& item._class !== 'Raster' && (item._class !== 'Path'
+					&& item._type !== 'raster' && (item._type !== 'path'
 						|| item.getFillColor() && item.getStrokeColor())) {
 				var bounds = item.getStrokeBounds();
 				if (!bounds.width || !bounds.height)
