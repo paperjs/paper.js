@@ -579,7 +579,7 @@ statics: {
 
 	getBounds: function(v) {
 		var min = v.slice(0, 2), // Start with values of point1
-			max = min.slice(0), // clone
+			max = min.slice(), // clone
 			roots = new Array(2);
 		for (var i = 0; i < 2; i++)
 			Curve._addBounds(v[i], v[i + 2], v[i + 4], v[i + 6],
