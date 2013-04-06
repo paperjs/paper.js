@@ -1239,7 +1239,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					// Prepend all segments from path except the last one
 					this._add(segments.slice(0, segments.length - 1), 0);
 				} else {
-					this._add(segments.slice(0));
+					this._add(segments.slice());
 				}
 			}
 			path.remove();
@@ -2241,7 +2241,7 @@ statics: {
 			// Make coordinates for first segment available in prevCoords.
 			prevCoords = first._transformCoordinates(matrix, new Array(6), false),
 			min = prevCoords.slice(0, 2), // Start with values of first point
-			max = min.slice(0), // clone
+			max = min.slice(), // clone
 			roots = new Array(2);
 
 		function processSegment(segment) {
