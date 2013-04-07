@@ -36,7 +36,12 @@
 
 			if (!path) {
 				path = new Path();
-				path.fillColor = new HsbColor(360 * Math.random(), 1, 1, 0.5);
+				path.fillColor = {
+					hue: 360 * Math.random(),
+					saturation: 1,
+					brightness: 1,
+					alpha: 0.5
+				};
 			}
 
 			var result = findHandle(event.point);

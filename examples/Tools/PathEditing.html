@@ -29,10 +29,8 @@
 			var path = createBlob(view.size * Point.random(), radius, points);
 			var lightness = (Math.random() - 0.5) * 0.4 + 0.4;
 			var hue = Math.random() * 360;
-			path.style = {
-				fillColor: new HslColor(hue, 1, lightness),
-				strokeColor: 'black'
-			};
+			path.fillColor = { hue: hue, saturation: 1, lightness: lightness };
+			path.strokeColor = 'black';
 		};
 
 		function createBlob(center, maxRadius, points) {

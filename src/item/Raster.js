@@ -444,10 +444,10 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	getPixel: function(point) {
 		point = Point.read(arguments);
 		var pixels = this.getContext().getImageData(point.x, point.y, 1, 1).data,
-			channels = new Array(4);
+			components = new Array(4);
 		for (var i = 0; i < 4; i++)
-			channels[i] = pixels[i] / 255;
-		return RgbColor.read(channels);
+			components[i] = pixels[i] / 255;
+		return Color.create('rgb', components);
 	},
 
 	/**

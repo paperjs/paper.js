@@ -1804,7 +1804,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * });
 	 *
 	 * // Set its stroke color to RGB red:
-	 * circle.strokeColor = new RgbColor(1, 0, 0);
+	 * circle.strokeColor = new Color(1, 0, 0);
 	 */
 
 	/**
@@ -1953,7 +1953,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * });
 	 *
 	 * // Set the fill color of the circle to RGB red:
-	 * circle.fillColor = new RgbColor(1, 0, 0);
+	 * circle.fillColor = new Color(1, 0, 0);
 	 */
 
 	// DOCS: Document the different arguments that this function can receive.

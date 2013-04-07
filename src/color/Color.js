@@ -43,12 +43,12 @@
  */
 var Color = this.Color = Base.extend(new function() {
 
-	var components = {
+	var types = {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],
 		hsl: ['hue', 'saturation', 'lightness'],
-		// Define hsb last, so its converting saturation getter overrides the
-		// one of HSL:
+		// Define HSB after HSL, so the saturation getter uses HSB instead of
+		// HSL (the HSB getter is injected last and overrides the ones of HSL).
 		hsb: ['hue', 'saturation', 'brightness']
 	};
 
@@ -75,7 +75,7 @@ var Color = this.Color = Base.extend(new function() {
 		colorCtx.fillRect(0, 0, 1, 1);
 		var data = colorCtx.getImageData(0, 0, 1, 1).data,
 			rgb = [data[0] / 255, data[1] / 255, data[2] / 255];
-		return (colorCache[name] = RgbColor.read(rgb)).clone();
+		return (colorCache[name] = new Color(rgb)).clone();
 	}
 
 	function hexToRgbColor(string) {
@@ -87,7 +87,7 @@ var Color = this.Color = Base.extend(new function() {
 				rgb[i] = parseInt(channel.length == 1
 						? channel + channel : channel, 16) / 255;
 			}
-			return RgbColor.read(rgb);
+			return new Color(rgb);
 		}
 	}
 
@@ -102,27 +102,23 @@ var Color = this.Color = Base.extend(new function() {
 		[0, 1, 2]  // 5
 	];
 
+	// Calling convention for converters:
+	// The components are passed as an arguments list, and returned as an array.
+	// alpha is left out, because the conversion does not change it.
 	var converters = {
-		'rgb-hsb': function(color) {
-			var r = color._red,
-				g = color._green,
-				b = color._blue,
-				max = Math.max(r, g, b),
+		'rgb-hsb': function(r, g, b) {
+			var max = Math.max(r, g, b),
 				min = Math.min(r, g, b),
 				delta = max - min,
-				h = delta == 0 ? 0
+				h = delta === 0 ? 0
 					:   ( max == r ? (g - b) / delta + (g < b ? 6 : 0)
 						: max == g ? (b - r) / delta + 2
-						:            (r - g) / delta + 4) * 60, // max == b
-				s = max == 0 ? 0 : delta / max,
-				v = max; // = brightness, also called value
-			return new HsbColor(h, s, v, color._alpha);
+						:            (r - g) / delta + 4) * 60; // max == b
+			return [h, max === 0 ? 0 : delta / max, max];
 		},
 
-		'hsb-rgb': function(color) {
-			var h = (color._hue / 60) % 6, // Scale to 0..6
-				s = color._saturation,
-				b = color._brightness,
+		'hsb-rgb': function(h, s, b) {
+			var h = (h / 60) % 6, // Scale to 0..6
 				i = Math.floor(h), // 0..5
 				f = h - i,
 				i = hsbIndices[i],
@@ -132,19 +128,16 @@ var Color = this.Color = Base.extend(new function() {
 					b * (1 - s * f),		// q, index 2
 					b * (1 - s * (1 - f))	// t, index 3
 				];
-			return new RgbColor(v[i[0]], v[i[1]], v[i[2]], color._alpha);
+			return [v[i[0]], v[i[1]], v[i[2]]];
 		},
 
 		// HSL code is based on:
 		// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
-		'rgb-hsl': function(color) {
-			var r = color._red,
-				g = color._green,
-				b = color._blue,
-				max = Math.max(r, g, b),
+		'rgb-hsl': function(r, g, b) {
+			var max = Math.max(r, g, b),
 				min = Math.min(r, g, b),
 				delta = max - min,
-				achromatic = delta == 0,
+				achromatic = delta === 0,
 				h = achromatic ? 0
 					:   ( max == r ? (g - b) / delta + (g < b ? 6 : 0)
 						: max == g ? (b - r) / delta + 2
@@ -153,15 +146,13 @@ var Color = this.Color = Base.extend(new function() {
 				s = achromatic ? 0 : l < 0.5
 						? delta / (max + min)
 						: delta / (2 - max - min);
-			return new HslColor(h, s, l, color._alpha);
+			return [h, s, l];
 		},
 
-		'hsl-rgb': function(color) {
-			var s = color._saturation,
-				h = color._hue / 360,
-				l = color._lightness;
-			if (s == 0)
-				return new RgbColor(l, l, l, color._alpha);
+		'hsl-rgb': function(h, s, l) {
+			h /= 360;
+			if (s === 0)
+				return [l, l, l];
 			var t3s = [ h + 1 / 3, h, h - 1 / 3 ],
 				t2 = l < 0.5 ? l * (1 + s) : l + s - l * s,
 				t1 = 2 * l - t2,
@@ -178,723 +169,442 @@ var Color = this.Color = Base.extend(new function() {
 							? t1 + (t2 - t1) * ((2 / 3) - t3) * 6
 							: t1;
 			}
-			return new RgbColor(c[0], c[1], c[2], color._alpha);
+			return c;
 		},
 
-		'rgb-gray': function(color) {
+		'rgb-gray': function(r, g, b) {
 			// Using the standard NTSC conversion formula that is used for
 			// calculating the effective luminance of an RGB color:
 			// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
-			return new GrayColor(1 - (color._red * 0.2989 + color._green * 0.587
-					+ color._blue * 0.114), color._alpha);
+			return [1 - (r * 0.2989 + g * 0.587 + b * 0.114)];
 		},
 
-		'gray-rgb': function(color) {
-			var comp = 1 - color._gray;
-			return new RgbColor(comp, comp, comp, color._alpha);
+		'gray-rgb': function(g) {
+			var comp = 1 - g;
+			return [comp, comp, comp];
 		},
 
-		'gray-hsb': function(color) {
-			return new HsbColor(0, 0, 1 - color._gray, color._alpha);
+		'gray-hsb': function(g) {
+			return [0, 0, 1 - g];
 		},
 
-		'gray-hsl': function(color) {
-			return new HslColor(0, 0, 1 - color._gray, color._alpha);
+		'gray-hsl': function(g) {
+			// TODO: Is lightness really the same as brightness for gray?
+			return [0, 0, 1 - g];
 		}
 	};
 
+	/**
+	 * @return {Number[]} the converted components as an array.
+	 */
+	function convert(components, from, to) {
+		var converter;
+		return from == to
+				? components.slice()
+				: (converter = converters[from + '-' + to])
+					? converter.apply(this, components)
+					// Convert to and from rgb if no direct converter exists
+					: converters['rgb-' + to].apply(this,
+						converters[from + '-rgb'].apply(this, components));
+	}
+
 	var fields = /** @lends Color# */{
+		_class: 'Color',
 		// Tell Base.read that we do not want null to be converted to a color.
 		_readNull: true,
 		// Tell Base.read that the Point constructor supporst reading with index
 		_readIndex: true,
 
 		initialize: function(arg) {
-			var isArray = Array.isArray(arg),
-				type = this._type,
-				res;
-			if (typeof arg === 'object' && !isArray) {
-				if (!type) {
-					// Called on the abstract Color class. Guess color type
-					// from arg
-					res = arg.red !== undefined
-						? new RgbColor(arg.red, arg.green, arg.blue, arg.alpha)
-						: arg.gray !== undefined
-						? new GrayColor(arg.gray, arg.alpha)
-						: arg.lightness !== undefined
-						? new HslColor(arg.hue, arg.saturation, arg.lightness,
-								arg.alpha)
-						: arg.hue !== undefined
-						? new HsbColor(arg.hue, arg.saturation, arg.brightness,
-								arg.alpha)
-						: new RgbColor(); // Fallback
-					if (this._read)
-						res._read = 1;
-				} else {
-					// Called on a subclass instance. Return the converted
-					// color.
-					res = Color.read(arguments).convert(type);
-					if (this._read)
-						res._read = arguments._read;
+			// We are storing color internally as an array of components
+			var type,
+				components = typeof arg === 'number'
+					? arguments
+					: arg && arg.length != null
+					? arg
+					: [],
+				alpha;
+			if (components.length > 0) {
+				// type = arg.length >= 4
+				// 		? 'cmyk'
+				// 		: arg.length >= 3
+				type = components.length >= 3
+						? 'rgb'
+						: 'gray';
+				var length = types[type].length;
+				alpha = components[length];
+				components = Array.prototype.slice.call(components, 0, length);
+
+			} else if (arg) {
+				// Loop through all possible types and detect type by property
+				// names. Then convert to components array
+				for (var t in types) {
+					var properties = types[t];
+					if (properties[0] in arg) {
+						type = t;
+						for (var i = 0, l = properties.length; i < l; i++)
+							components[i] = arg[properties[i]];
+						break;
+					}
 				}
-			} else if (typeof arg === 'string') {
-				var rgbColor = arg.match(/^#[0-9a-f]{3,6}$/i)
-						? hexToRgbColor(arg)
-						: nameToRgbColor(arg);
-				res = type
-						? rgbColor.convert(type)
-						: rgbColor;
-				if (this._read)
-					res._read = 1;
-			} else {
-				var components = isArray ? arg
-						: Array.prototype.slice.call(arguments);
-				if (!type) {
-					// Called on the abstract Color class. Guess color type
-					// from arg
-					// var ctor = components.length >= 4
-					//		? CmykColor
-					//		: components.length >= 3
-					var ctor = components.length >= 3
-							? RgbColor
-							: GrayColor;
-					res = new ctor(components);
-				} else {
-					// Called on a subclass instance. Just copy over
-					// components.
-					res = Base.each(this._components,
-						function(name, i) {
-							var value = components[i];
-							// Set internal propery directly
-							this['_' + name] = value !== undefined
-									? value : null;
-						},
-					this);
-				}
-				if (this._read)
-					res._read = res._components.length;
+				alpha = arg.alpha;
 			}
-			return res;
+			if (!type) {
+				// Default fallback: rgb black
+				type = 'rgb';
+				components = [0, 0, 0];
+			}
+			this._type = type;
+			this._components = components;
+			this._alpha = alpha;
 		},
 
 		_serialize: function(options) {
-			var res = [ this._type ];
-			for (var i = 0, l = this._components.length; i < l; i++) {
-				var component = this._components[i],
-					value = this['_' + component];
-				if (component !== 'alpha' || value != null && value < 1)
-					res.push(Format.number(value, options.precision));
+			if (/^(gray|rgb)$/.test(this._type)) {
+				return this._components;
+			} else {
+				var properties = types[this._type],
+					res = {};
+				for (var i = 0, l = properties.length; i < l; i++)
+					res[properties[i]] = this._components[i];
+				if (this._alpha != null)
+					res.alpha = this._alpha;
+				return res;
 			}
-			return res;
 		},
 
 		/**
-		 * @return {RgbColor|GrayColor|HsbColor} a copy of the color object
+		 * Called by various setters whenever a color value changes
+		 */
+		_changed: function() {
+			this._css = null;
+			if (this._owner)
+				this._owner._changed(/*#=*/ Change.STYLE);
+		},
+
+		/**
+		 * @return {Color} a copy of the color object
 		 */
 		clone: function() {
-			var copy = Base.create(this.constructor),
-				components = this._components;
-			for (var i = 0, l = components.length; i < l; i++) {
-				var key = '_' + components[i];
-				copy[key] = this[key];
-			}
-			return copy;
+			return Color.create(this._type, this._components.slice(),
+					this._alpha);
 		},
 
 		convert: function(type) {
-			var converter;
-			return this._type == type
-					? this.clone()
-					: (converter = converters[this._type + '-' + type])
-						? converter(this)
-						: converters['rgb-' + type](
-								converters[this._type + '-rgb'](this));
+			return Color.create(type,
+					convert(this._components, this._type, type), this._alpha);
 		},
 
+		/**
+		 * The type of the color as a string.
+		 *
+		 * @type String('rgb', 'hsb', 'gray')
+		 * @bean
+		 *
+		 * @example
+		 * var color = new Color(1, 0, 0);
+		 * console.log(color.type); // 'rgb'
+		 */
+		getType: function() {
+			return this._type;
+		},
+
+		setType: function(type) {
+			this._components = convert(this._components, this._type, type);
+			this._type = type;
+		},
+
+		getComponents: function() {
+			var components = this._components.slice();
+			if (this._alpha != null)
+				components.push(this._alpha);
+			return components;
+		},
+
+		/**
+		 * The color's alpha value as a number between {@code 0} and {@code 1}.
+		 * All colors of the different subclasses support alpha values.
+		 *
+		 * @type Number
+		 * @bean
+		 *
+		 * @example {@paperscript}
+		 * // A filled path with a half transparent stroke:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // Fill the circle with red and give it a 20pt green stroke:
+		 * circle.style = {
+		 * 	fillColor: 'red',
+		 * 	strokeColor: 'green',
+		 * 	strokeWidth: 20
+		 * };
+		 *
+		 * // Make the stroke half transparent:
+		 * circle.strokeColor.alpha = 0.5;
+		 */
+		getAlpha: function() {
+			return this._alpha != null ? this._alpha : 1;
+		},
+
+		setAlpha: function(alpha) {
+			this._alpha = alpha == null ? null : Math.min(Math.max(alpha, 0), 1);
+			this._changed();
+		},
+
+		/**
+		 * Checks if the color has an alpha value.
+		 *
+		 * @return {Boolean} {@true if the color has an alpha value}
+		 */
+		hasAlpha: function() {
+			return this._alpha != null;
+		},
+
+		/**
+		 * Checks if the component color values of the color are the
+		 * same as those of the supplied one.
+		 *
+		 * @param {Color} color the color to compare with
+		 * @return {Boolean} {@true if the colors are the same}
+		 */
+		equals: function(color) {
+			return color && this._type === color._type
+					&& this._alpha === color._alpha
+					&& Base.equals(this._components, color._components);
+		},
+
+		/**
+		 * {@grouptitle String Representations}
+		 * @return {String} A string representation of the color.
+		 */
+		toString: function() {
+			var properties = types[this._type],
+				parts = [],
+				format = Format.number;
+			for (var i = 0, l = properties.length; i < l; i++)
+				parts.push(properties[i] + ': ' + format(this._components[i]));
+			if (this._alpha != null)
+				parts.push('alpha: ' + format(this._alpha));
+			return '{ ' + parts.join(', ') + ' }';
+		},
+
+		/**
+		 * @return {String} A css string representation of the color.
+		 */
+		toCss: function(noAlpha) {
+			var css = this._css;
+			// Only cache _css value if we're not ommiting alpha, as required
+			// by SVG export.
+			if (!css || noAlpha) {
+				var components = convert(this._components, this._type, 'rgb'),
+					alpha = noAlpha || this._alpha == null ? 1 : this._alpha;
+				components = [
+					Math.round(components[0] * 255),
+					Math.round(components[1] * 255),
+					Math.round(components[2] * 255)
+				];
+				if (alpha < 1)
+					components.push(alpha);
+				var css = (components.length == 4 ? 'rgba(' : 'rgb(')
+						+ components.join(', ') + ')';
+				if (!noAlpha)
+					this._css = css;
+			}
+			return css;
+		},
+
+		toCanvasStyle: function() {
+			return this.toCss();
+		},
+
+		/**
+		 * {@grouptitle RGB Components}
+		 *
+		 * The amount of red in the color as a value between {@code 0} and
+		 * {@code 1}.
+		 *
+		 * @name Color#red
+		 * @property
+		 * @type Number
+		 *
+		 * @example {@paperscript}
+		 * // Changing the amount of red in a color:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 * circle.fillColor = 'blue';
+		 *
+		 * // Blue + red = purple:
+		 * circle.fillColor.red = 1;
+		 */
+
+		/**
+		 * The amount of green in the color as a value between {@code 0} and
+		 * {@code 1}.
+		 *
+		 * @name Color#green
+		 * @property
+		 * @type Number
+		 *
+		 * @example {@paperscript}
+		 * // Changing the amount of green in a color:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // First we set the fill color to red:
+		 * circle.fillColor = 'red';
+		 *
+		 * // Red + green = yellow:
+		 * circle.fillColor.green = 1;
+		 */
+
+		/**
+		 * The amount of blue in the color as a value between {@code 0} and
+		 * {@code 1}.
+		 *
+		 * @name Color#blue
+		 * @property
+		 * @type Number
+		 *
+		 * @example {@paperscript}
+		 * // Changing the amount of blue in a color:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // First we set the fill color to red:
+		 * circle.fillColor = 'red';
+		 *
+		 * // Red + blue = purple:
+		 * circle.fillColor.blue = 1;
+		 */
+
+		/**
+		 * {@grouptitle Gray Components}
+		 *
+		 * The amount of gray in the color as a value between {@code 0} and
+		 * {@code 1}.
+		 *
+		 * @name Color#gray
+		 * @property
+		 * @type Number
+		 */
+
+		/**
+		 * {@grouptitle HSB Components}
+		 *
+		 * The hue of the color as a value in degrees between {@code 0} and
+		 * {@code 360}.
+		 *
+		 * @name Color#hue
+		 * @property
+		 * @type Number
+		 *
+		 * @example {@paperscript}
+		 * // Changing the hue of a color:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 * circle.fillColor = 'red';
+		 * circle.fillColor.hue += 30;
+		 *
+		 * @example {@paperscript}
+		 * // Hue cycling:
+		 *
+		 * // Create a rectangle shaped path, using the dimensions
+		 * // of the view:
+		 * var path = new Path.Rectangle(view.bounds);
+		 * path.fillColor = 'red';
+		 *
+		 * function onFrame(event) {
+		 * 	path.fillColor.hue += 0.5;
+		 * }
+		 */
+
+		/**
+		 * The saturation of the color as a value between {@code 0} and {@code 1}.
+		 *
+		 * @name Color#saturation
+		 * @property
+		 * @type Number
+		 */
+
+		/**
+		 * The brightness of the color as a value between {@code 0} and {@code 1}.
+		 *
+		 * @name Color#brightness
+		 * @property
+		 * @type Number
+		 */
+
+		/**
+		 * {@grouptitle HSL Components}
+		 *
+		 * The lightness of the color as a value between {@code 0} and {@code 1}.
+		 *
+		 * @name Color#lightness
+		 * @property
+		 * @type Number
+		 */
+
 		statics: /** @lends Color */{
-			/**
-			 * Override Color.extend() to produce getters and setters based
-			 * on the component types defined in _components.
-			 *
-			 * @ignore
-			 */
-			extend: function(src) {
-				var comps = components[src._type];
-				if (comps) {
-					// Automatically produce the _components field, adding alpha
-					src._components = comps.concat(['alpha']);
-					Base.each(comps, function(name) {
-						var isHue = name === 'hue',
-							part = Base.capitalize(name),
-							name = '_' + name;
-						this['get' + part] = function() {
-							return this[name];
-						};
-						this['set' + part] = function(value) {
-							this[name] = isHue
-								// Keep negative values within modulo 360 too:
-								? ((value % 360) + 360) % 360
-								// All other values are 0..1
-								: Math.min(Math.max(value, 0), 1);
-							this._changed();
-						};
-					}, src);
-				}
-				return this.base.apply(this, arguments);
+			create: function(type, components, alpha) {
+				var color = Base.create(Color);
+				color._type = type;
+				color._components = components;
+				color._alpha = alpha;
+				return color;
 			},
 
 			random: function() {
-				return new RgbColor(Math.random(), Math.random(), Math.random());
+				var random = Math.random;
+				return new Color(random(), random(), random());
 			}
 		}
 	};
 
-	// Produce conversion methods for the various color components known by the
-	// possible color types. Requesting any of these components on any color
-	// internally converts the color to the required type and then returns its
-	// component, using bean access.
-	Base.each(components, function(comps, type) {
-		Base.each(comps, function(component) {
-			var part = Base.capitalize(component);
-			fields['get' + part] = function() {
-				return this.convert(type)[component];
+	// Produce getters and setter methods for the various color components known
+	// by the different color types. Requesting any of these components on any
+	// color internally converts the color to the required type and then returns
+	// its component.
+	return Base.each(types, function(properties, type) {
+		Base.each(properties, function(name, index) {
+			var isHue = name === 'hue',
+				part = Base.capitalize(name);
+
+			this['get' + part] = function() {
+				return this._type === type
+						? this._components[index]
+						: convert(this._components, this._type, type)[index];
 			};
-			fields['set' + part] = function(value) {
-				var color = this.convert(type);
-				color[component] = value;
-				color = color.convert(this._type);
-				for (var i = 0, l = this._components.length; i < l; i++) {
-					var key = this._components[i];
-					this[key] = color[key];
+
+			this['set' + part] = function(value) {
+				// Convert to the requrested type before setting the value
+				if (this._type !== type) {
+					this._components = convert(this._components, this._type, type);
+					this._type = type;
 				}
+				this._components[index] = isHue
+						// Keep negative values within modulo 360 too:
+						? ((value % 360) + 360) % 360
+						// All other values are 0..1
+						: Math.min(Math.max(value, 0), 1);
 			};
-		});
-	});
-
-	return fields;
-}, /** @lends Color# */{
-
-	/**
-	 * Called by various setters whenever a color value changes
-	 */
-	_changed: function() {
-		this._css = null;
-		if (this._owner)
-			this._owner._changed(/*#=*/ Change.STYLE);
-	},
-
-	/**
-	 * Returns the type of the color as a string.
-	 *
-	 * @type String('rgb', 'hsb', 'gray')
-	 * @bean
-	 *
-	 * @example
-	 * var color = new RgbColor(1, 0, 0);
-	 * console.log(color.type); // 'rgb'
-	 */
-	getType: function() {
-		return this._type;
-	},
-
-	getComponents: function() {
-		var length = this._components.length;
-		var comps = new Array(length);
-		for (var i = 0; i < length; i++)
-			comps[i] = this['_' + this._components[i]];
-		return comps;
-	},
-
-	/**
-	 * The color's alpha value as a number between {@code 0} and {@code 1}. All
-	 * colors of the different subclasses support alpha values.
-	 *
-	 * @type Number
-	 * @bean
-	 *
-	 * @example {@paperscript}
-	 * // A filled path with a half transparent stroke:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
-	 * // Fill the circle with red and give it a 20pt green stroke:
-	 * circle.style = {
-	 * 	fillColor: 'red',
-	 * 	strokeColor: 'green',
-	 * 	strokeWidth: 20
-	 * };
-	 *
-	 * // Make the stroke half transparent:
-	 * circle.strokeColor.alpha = 0.5;
-	 */
-	getAlpha: function() {
-		return this._alpha != null ? this._alpha : 1;
-	},
-
-	setAlpha: function(alpha) {
-		this._alpha = alpha == null ? null : Math.min(Math.max(alpha, 0), 1);
-		this._changed();
-	},
-
-	/**
-	 * Checks if the color has an alpha value.
-	 *
-	 * @return {Boolean} {@true if the color has an alpha value}
-	 */
-	hasAlpha: function() {
-		return this._alpha != null;
-	},
-
-	/**
-	 * Checks if the component color values of the color are the
-	 * same as those of the supplied one.
-	 *
-	 * @param {Color} color the color to compare with
-	 * @return {Boolean} {@true if the colors are the same}
-	 */
-	equals: function(color) {
-		if (color && color._type === this._type) {
-			for (var i = 0, l = this._components.length; i < l; i++) {
-				var component = '_' + this._components[i];
-				if (this[component] !== color[component])
-					return false;
-			}
-			return true;
-		}
-		return false;
-	},
-
-	/**
-	 * {@grouptitle String Representations}
-	 * @return {String} A string representation of the color.
-	 */
-	toString: function() {
-		var parts = [],
-			format = Format.number;
-		for (var i = 0, l = this._components.length; i < l; i++) {
-			var component = this._components[i],
-				value = this['_' + component];
-			if (component === 'alpha' && value == null)
-				value = 1;
-			parts.push(component + ': ' + format(value));
-		}
-		return '{ ' + parts.join(', ') + ' }';
-	},
-
-	/**
-	 * @return {String} A css string representation of the color.
-	 */
-	toCss: function(noAlpha) {
-		var css = this._css;
-		// Only cache _css value if we're not ommiting alpha, as required
-		// by SVG export.
-		if (!css || noAlpha) {
-			var color = this.convert('rgb'),
-				alpha = noAlpha ? 1 : color.getAlpha(),
-				components = [
-					Math.round(color._red * 255),
-					Math.round(color._green * 255),
-					Math.round(color._blue * 255)
-				];
-			if (alpha < 1)
-				components.push(alpha);
-			var css = (components.length == 4 ? 'rgba(' : 'rgb(')
-					+ components.join(', ') + ')';
-			if (!noAlpha)
-				this._css = css;
-		}
-		return css;
-	},
-
-	toCanvasStyle: function() {
-		return this.toCss();
-	}
-
-	/**
-	 * {@grouptitle RGB Components}
-	 *
-	 * The amount of red in the color as a value between {@code 0} and
-	 * {@code 1}.
-	 *
-	 * @name Color#red
-	 * @property
-	 * @type Number
-	 *
-	 * @example {@paperscript}
-	 * // Changing the amount of red in a color:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * circle.fillColor = 'blue';
-	 *
-	 * // Blue + red = purple:
-	 * circle.fillColor.red = 1;
-	 */
-
-	/**
-	 * The amount of green in the color as a value between {@code 0} and
-	 * {@code 1}.
-	 *
-	 * @name Color#green
-	 * @property
-	 * @type Number
-	 *
-	 * @example {@paperscript}
-	 * // Changing the amount of green in a color:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
-	 * // First we set the fill color to red:
-	 * circle.fillColor = 'red';
-	 *
-	 * // Red + green = yellow:
-	 * circle.fillColor.green = 1;
-	 */
-
-	/**
-	 * The amount of blue in the color as a value between {@code 0} and
-	 * {@code 1}.
-	 *
-	 * @name Color#blue
-	 * @property
-	 * @type Number
-	 *
-	 * @example {@paperscript}
-	 * // Changing the amount of blue in a color:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
-	 * // First we set the fill color to red:
-	 * circle.fillColor = 'red';
-	 *
-	 * // Red + blue = purple:
-	 * circle.fillColor.blue = 1;
-	 */
-
-	/**
-	 * {@grouptitle Gray Components}
-	 *
-	 * The amount of gray in the color as a value between {@code 0} and
-	 * {@code 1}.
-	 *
-	 * @name Color#gray
-	 * @property
-	 * @type Number
-	 */
-
-	/**
-	 * {@grouptitle HSB Components}
-	 *
-	 * The hue of the color as a value in degrees between {@code 0} and
-	 * {@code 360}.
-	 *
-	 * @name Color#hue
-	 * @property
-	 * @type Number
-	 *
-	 * @example {@paperscript}
-	 * // Changing the hue of a color:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * circle.fillColor = 'red';
-	 * circle.fillColor.hue += 30;
-	 *
-	 * @example {@paperscript}
-	 * // Hue cycling:
-	 *
-	 * // Create a rectangle shaped path, using the dimensions
-	 * // of the view:
-	 * var path = new Path.Rectangle(view.bounds);
-	 * path.fillColor = 'red';
-	 *
-	 * function onFrame(event) {
-	 * 	path.fillColor.hue += 0.5;
-	 * }
-	 */
-
-	/**
-	 * The saturation of the color as a value between {@code 0} and {@code 1}.
-	 *
-	 * @name Color#saturation
-	 * @property
-	 * @type Number
-	 */
-
-	/**
-	 * The brightness of the color as a value between {@code 0} and {@code 1}.
-	 *
-	 * @name Color#brightness
-	 * @property
-	 * @type Number
-	 */
-
-	/**
-	 * {@grouptitle HSL Components}
-	 *
-	 * The lightness of the color as a value between {@code 0} and {@code 1}.
-	 *
-	 * @name Color#lightness
-	 * @property
-	 * @type Number
-	 */
+		}, this);
+	}, fields);
 });
 
-/**
- * @name GrayColor
- * @class A GrayColor object is used to represent any gray color value.
- * @extends Color
- */
-var GrayColor = this.GrayColor = Color.extend(/** @lends GrayColor# */{
-	/**
-	 * Creates a GrayColor object
-	 *
-	 * @name GrayColor#initialize
-	 * @param {Number} gray the amount of gray in the color as a value
-	 * between {@code 0} and {@code 1}
-	 * @param {Number} [alpha] the alpha of the color as a value between
-	 * {@code 0} and {@code 1}
-	 *
-	 * @example {@paperscript}
-	 * // Creating a GrayColor:
-	 *
-	 * // Create a circle shaped path at {x: 80, y: 50}
-	 * // with a radius of 30:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
-	 * // Create a GrayColor with 50% gray:
-	 * circle.fillColor = new GrayColor(0.5);
-	 */
+// TODO: Consider producing these in a loop instead, accessing the private
+// components data somehow.
 
-	/**
-	 * The amount of gray in the color as a value between {@code 0} and
-	 * {@code 1}.
-	 *
-	 * @name GrayColor#gray
-	 * @property
-	 * @type Number
-	 */
-
-	_type: 'gray'
-});
-
-/**
- * @name RgbColor
- * @class An RgbColor object is used to represent any RGB color value.
- * @extends Color
- */
 // RGBColor references RgbColor inside PaperScopes for backward compatibility
-var RgbColor = this.RgbColor = this.RGBColor = Color.extend(/** @lends RgbColor# */{
-	/**
-	 * Creates an RgbColor object
-	 *
-	 * @name RgbColor#initialize
-	 * @param {Number} red the amount of red in the color as a value
-	 * between {@code 0} and {@code 1}
-	 * @param {Number} green the amount of green in the color as a value
-	 * between {@code 0} and {@code 1}
-	 * @param {Number} blue the amount of blue in the color as a value
-	 * between {@code 0} and {@code 1}
-	 * @param {Number} [alpha] the alpha of the color as a value between
-	 * {@code 0} and {@code 1}
-	 *
-	 * @example {@paperscript}
-	 * // Creating an RgbColor:
-	 *
-	 * // Create a circle shaped path at {x: 80, y: 50}
-	 * // with a radius of 30:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
-	 * // 100% red, 0% blue, 50% blue:
-	 * circle.fillColor = new RgbColor(1, 0, 0.5);
-	 */
+var RgbColor = this.RgbColor = this.RGBColor = function(red, green, blue, alpha) {
+	return new Color(red, green, blue, alpha);
+};
 
-	/**
-	 * The amount of red in the color as a value between {@code 0} and
-	 * {@code 1}.
-	 *
-	 * @name RgbColor#red
-	 * @property
-	 * @type Number
-	 *
-	 * @example {@paperscript}
-	 * // Changing the amount of red in a color:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * circle.fillColor = 'blue';
-	 *
-	 * // Blue + red = purple:
-	 * circle.fillColor.red = 1;
-	 */
+var GrayColor = this.GrayColor = function(gray, alpha) {
+	return new Color({ gray: gray, alpha: alpha });
+};
 
-	/**
-	 * The amount of green in the color as a value between {@code 0} and
-	 * {@code 1}.
-	 *
-	 * @name RgbColor#green
-	 * @property
-	 * @type Number
-	 *
-	 * @example {@paperscript}
-	 * // Changing the amount of green in a color:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
-	 * // First we set the fill color to red:
-	 * circle.fillColor = 'red';
-	 *
-	 * // Red + green = yellow:
-	 * circle.fillColor.green = 1;
-	 */
-
-	/**
-	 * The amount of blue in the color as a value between {@code 0} and
-	 * {@code 1}.
-	 *
-	 * @name RgbColor#blue
-	 * @property
-	 * @type Number
-	 *
-	 * @example {@paperscript}
-	 * // Changing the amount of blue in a color:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
-	 * // First we set the fill color to red:
-	 * circle.fillColor = 'red';
-	 *
-	 * // Red + blue = purple:
-	 * circle.fillColor.blue = 1;
-	 */
-
-	_type: 'rgb'
-});
-
-/**
- * @name HsbColor
- * @class An HsbColor object is used to represent any HSB color value.
- * @extends Color
- */
 // HSBColor references HsbColor inside PaperScopes for backward compatibility
-var HsbColor = this.HsbColor = this.HSBColor = Color.extend(/** @lends HsbColor# */{
-	/**
-	 * Creates an HsbColor object
-	 *
-	 * @name HsbColor#initialize
-	 * @param {Number} hue the hue of the color as a value in degrees between
-	 * {@code 0} and {@code 360}.
-	 * @param {Number} saturation the saturation of the color as a value
-	 * between {@code 0} and {@code 1}
-	 * @param {Number} brightness the brightness of the color as a value
-	 * between {@code 0} and {@code 1}
-	 * @param {Number} [alpha] the alpha of the color as a value between
-	 * {@code 0} and {@code 1}
-	 *
-	 * @example {@paperscript}
-	 * // Creating an HsbColor:
-	 *
-	 * // Create a circle shaped path at {x: 80, y: 50}
-	 * // with a radius of 30:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
-	 * // Create an HsbColor with a hue of 90 degrees, a saturation
-	 * // 100% and a brightness of 100%:
-	 * circle.fillColor = new HsbColor(90, 1, 1);
-	 */
+var HsbColor = this.HsbColor = this.HSBColor = function(hue, saturation, brightness, alpha) {
+	return new Color({ hue: hue, saturation: saturation, brightness: brightness });
+};
 
-	/**
-	 * The hue of the color as a value in degrees between {@code 0} and
-	 * {@code 360}.
-	 *
-	 * @name HsbColor#hue
-	 * @property
-	 * @type Number
-	 *
-	 * @example {@paperscript}
-	 * // Changing the hue of a color:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 * circle.fillColor = 'red';
-	 * circle.fillColor.hue += 30;
-	 *
-	 * @example {@paperscript}
-	 * // Hue cycling:
-	 *
-	 * // Create a rectangle shaped path, using the dimensions
-	 * // of the view:
-	 * var path = new Path.Rectangle(view.bounds);
-	 * path.fillColor = 'red';
-	 *
-	 * function onFrame(event) {
-	 * 	path.fillColor.hue += 0.5;
-	 * }
-	 */
-
-	/**
-	 * The saturation of the color as a value between {@code 0} and {@code 1}.
-	 *
-	 * @name HsbColor#saturation
-	 * @property
-	 * @type Number
-	 */
-
-	/**
-	 * The brightness of the color as a value between {@code 0} and {@code 1}.
-	 *
-	 * @name HsbColor#brightness
-	 * @property
-	 * @type Number
-	 */
-
-	_type: 'hsb'
-});
-
-
-/**
- * @name HslColor
- * @class An HslColor object is used to represent any HSL color value.
- * @extends Color
- */
 // HSLColor references HslColor inside PaperScopes for backward compatibility
-var HslColor = this.HslColor = this.HSLColor = Color.extend(/** @lends HslColor# */{
-	/**
-	 * Creates an HslColor object
-	 *
-	 * @name HslColor#initialize
-	 * @param {Number} hue the hue of the color as a value in degrees between
-	 * {@code 0} and {@code 360}.
-	 * @param {Number} saturation the saturation of the color as a value
-	 * between {@code 0} and {@code 1}
-	 * @param {Number} lightness the lightness of the color as a value
-	 * between {@code 0} and {@code 1}
-	 * @param {Number} [alpha] the alpha of the color as a value between
-	 * {@code 0} and {@code 1}
-	 *
-	 * @example {@paperscript}
-	 * // Creating an HslColor:
-	 *
-	 * // Create a circle shaped path at {x: 80, y: 50}
-	 * // with a radius of 30:
-	 * var circle = new Path.Circle(new Point(80, 50), 30);
-	 *
-	 * // Create an HslColor with a hue of 90 degrees, a saturation
-	 * // 100% and a lightness of 50%:
-	 * circle.fillColor = new HslColor(90, 1, 0.5);
-	 */
-
-	/**
-	 * The hue of the color as a value in degrees between {@code 0} and
-	 * {@code 360}.
-	 *
-	 * @name HslColor#hue
-	 * @property
-	 * @type Number
-	 */
-
-	/**
-	 * The saturation of the color as a value between {@code 0} and {@code 1}.
-	 *
-	 * @name HslColor#saturation
-	 * @property
-	 * @type Number
-	 */
-
-	/**
-	 * The lightness of the color as a value between {@code 0} and {@code 1}.
-	 *
-	 * @name HslColor#lightness
-	 * @property
-	 * @type Number
-	 */
-
-	_type: 'hsl'
-});
+var HslColor = this.HslColor = this.HSLColor = function(hue, saturation, lightness, alpha) {
+	return new Color({ hue: hue, saturation: saturation, lightness: lightness });
+};
