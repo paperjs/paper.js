@@ -37,8 +37,8 @@ test('Path#clone()', function() {
 		strokeJoin: 'round',
 		dashOffset: 10,
 		dashArray: [10, 2, 10],
-		fillColor: new RgbColor(0, 0, 1),
-		strokeColor: new RgbColor(0, 0, 1),
+		fillColor: new Color(0, 0, 1),
+		strokeColor: new Color(0, 0, 1),
 		miterLimit: 5
 	};
 	path.clockwise = false;
@@ -92,8 +92,8 @@ test('Group#clone()', function() {
 		strokeJoin: 'round',
 		dashOffset: 10,
 		dashArray: [10, 2, 10],
-		fillColor: new RgbColor(0, 0, 1),
-		strokeColor: new RgbColor(0, 0, 1),
+		fillColor: new Color(0, 0, 1),
+		strokeColor: new Color(0, 0, 1),
 		miterLimit: 5
 	};
 	var secondPath = new Path.Circle([175, 175], 85);
@@ -129,8 +129,8 @@ test('Symbol#clone()', function() {
 		strokeJoin: 'round',
 		dashOffset: 10,
 		dashArray: [10, 2, 10],
-		fillColor: new RgbColor(0, 0, 1),
-		strokeColor: new RgbColor(0, 0, 1),
+		fillColor: new Color(0, 0, 1),
+		strokeColor: new Color(0, 0, 1),
 		miterLimit: 5
 	};
 	path.selected = true;
@@ -148,8 +148,8 @@ test('Symbol#clone()', function() {
 test('Raster#clone()', function() {
 	var path = new Path.Circle([150, 150], 60);
 	path.style = {
-		fillColor: new RgbColor(0, 0, 1),
-		strokeColor: new RgbColor(0, 0, 1)
+		fillColor: new Color(0, 0, 1),
+		strokeColor: new Color(0, 0, 1)
 	};
 	var raster = path.rasterize();
 	raster.opacity = 0.5;

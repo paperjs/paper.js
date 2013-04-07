@@ -15,56 +15,56 @@ module('Color');
 test('Set named color', function() {
 	var path = new Path();
 	path.fillColor = 'red';
-	compareRgbColors(path.fillColor, new RgbColor(1, 0, 0));
+	compareRgbColors(path.fillColor, new Color(1, 0, 0));
 	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
 });
 
 test('Set color to hex', function() {
 	var path = new Path();
 	path.fillColor = '#ff0000';
-	compareRgbColors(path.fillColor, new RgbColor(1, 0, 0));
+	compareRgbColors(path.fillColor, new Color(1, 0, 0));
 	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
 
 	var path = new Path();
 	path.fillColor = '#f00';
-	compareRgbColors(path.fillColor, new RgbColor(1, 0, 0));
+	compareRgbColors(path.fillColor, new Color(1, 0, 0));
 	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
 });
 
 test('Set color to object', function() {
 	var path = new Path();
 	path.fillColor = { red: 1, green: 0, blue: 1};
-	compareRgbColors(path.fillColor, new RgbColor(1, 0, 1));
+	compareRgbColors(path.fillColor, new Color(1, 0, 1));
 	equals(path.fillColor.toCss(), 'rgb(255, 0, 255)');
 
 	var path = new Path();
 	path.fillColor = { gray: 0.2 };
-	compareRgbColors(path.fillColor, new RgbColor(0.8, 0.8, 0.8));
+	compareRgbColors(path.fillColor, new Color(0.8, 0.8, 0.8));
 	equals(path.fillColor.toCss(), 'rgb(204, 204, 204)');
 });
 
 test('Set color to array', function() {
 	var path = new Path();
 	path.fillColor = [1, 0, 0];
-	compareRgbColors(path.fillColor, new RgbColor(1, 0, 0));
+	compareRgbColors(path.fillColor, new Color(1, 0, 0));
 	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
 });
 
 test('Creating colors', function() {
 
-	compareRgbColors(new RgbColor('#ff0000'), new RgbColor(1, 0, 0),
+	compareRgbColors(new Color('#ff0000'), new Color(1, 0, 0),
 			'RgbColor from hex code');
 
-	compareRgbColors(new RgbColor({ red: 1, green: 0, blue: 1}),
-			new RgbColor(1, 0, 1), 'RgbColor from rgb object literal');
+	compareRgbColors(new Color({ red: 1, green: 0, blue: 1}),
+			new Color(1, 0, 1), 'RgbColor from rgb object literal');
 
-	compareRgbColors(new RgbColor({ gray: 0.2 }),
-			new RgbColor(0.8, 0.8, 0.8), 'RgbColor from gray object literal');
+	compareRgbColors(new Color({ gray: 0.2 }),
+			new Color(0.8, 0.8, 0.8), 'RgbColor from gray object literal');
 
-	compareRgbColors(new RgbColor({ hue: 0, saturation: 1, brightness: 1}),
-			new RgbColor(1, 0, 0), 'RgbColor from hsb object literal');
+	compareRgbColors(new Color({ hue: 0, saturation: 1, brightness: 1}),
+			new Color(1, 0, 0), 'RgbColor from hsb object literal');
 
-	compareRgbColors(new RgbColor([1, 0, 0]), new RgbColor(1, 0, 0),
+	compareRgbColors(new Color([1, 0, 0]), new Color(1, 0, 0),
 			'RgbColor from array');
 
 	compareHsbColors(new HsbColor('#000000'), new HsbColor(0, 0, 0),
@@ -99,10 +99,10 @@ test('Creating colors', function() {
 });
 
 test('Get gray from RgbColor', function() {
-	var color = new RgbColor(1, 0.5, 0.2);
+	var color = new Color(1, 0.5, 0.2);
 	compareNumbers(color.gray, 0.38458251953125);
 
-	var color = new RgbColor(0.5, 0.2, 0.1);
+	var color = new Color(0.5, 0.2, 0.1);
 	compareNumbers(color.gray, 0.72137451171875);
 });
 
@@ -117,7 +117,7 @@ test('Get red from HsbColor', function() {
 });
 
 test('Get hue from RgbColor', function() {
-	var color = new RgbColor(1, 0, 0);
+	var color = new Color(1, 0, 0);
 	compareNumbers(color.hue, 0);
 	compareNumbers(color.saturation, 1);
 });
@@ -135,22 +135,22 @@ test('Gray Color', function() {
 });
 
 test('Converting Colors', function() {
-	var rgbColor = new RgbColor(1, 0.5, 0.2);
+	var rgbColor = new Color(1, 0.5, 0.2);
 	compareNumbers(new GrayColor(rgbColor).gray, 0.38299560546875);
 
 	var grayColor = new GrayColor(0.2);
-	var rgbColor = new RgbColor(grayColor);
+	var rgbColor = new Color(grayColor);
 	compareRgbColors(rgbColor, [ 0.8, 0.8, 0.8, 1]);
 
 	var hsbColor = new HsbColor(grayColor);
 	compareHsbColors(hsbColor, [ 0, 0, 0.8, 1]);
 
-	var rgbColor = new RgbColor(1, 0, 0);
+	var rgbColor = new Color(1, 0, 0);
 	compareHsbColors(new HsbColor(rgbColor), [0, 1, 1, 1]);
 });
 
 test('Setting RgbColor#gray', function() {
-	var color = new RgbColor(1, 0.5, 0.2);
+	var color = new Color(1, 0.5, 0.2);
 	color.gray = 0.1;
 	compareRgbColors(color, [ 0.9, 0.9, 0.9, 1]);
 });
@@ -173,18 +173,18 @@ test('Color.read(channels)', function() {
 });
 
 test('Cloning colors', function() {
-	var color = new RgbColor(0, 0, 0);
+	var color = new Color(0, 0, 0);
 	equals(function() {
 		return color.clone() != color;
 	}, true);
 
 	equals(function() {
-		return new RgbColor(color) != color;
+		return new Color(color) != color;
 	}, true);
 });
 
 test('Color#convert', function() {
-	var color = new RgbColor(0, 0, 0);
+	var color = new Color(0, 0, 0);
 	var converted = color.convert('rgb');
 	equals(function() {
 		return converted !== color;
@@ -196,6 +196,6 @@ test('Color#convert', function() {
 
 test('Saturation from black rgb', function() {
 	equals(function() {
-		return new RgbColor(0, 0, 0).saturation == 0;
+		return new Color(0, 0, 0).saturation == 0;
 	}, true);
 });

@@ -17,11 +17,11 @@
 			this.gravity = 3;
 			this.bounce = -0.6;
 
-			var color = new HsbColor({
+			var color = {
 				hue: Math.random() * 360,
 				saturation: 1,
 				brightness: 1
-			});
+			};
 			var gradient = new RadialGradient(color, 'black');
 
 			var radius = this.radius = 50 * Math.random() + 30;

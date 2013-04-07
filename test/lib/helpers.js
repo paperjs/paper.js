@@ -82,8 +82,8 @@ function compareRectangles(rect1, rect2, message) {
 }
 
 function compareRgbColors(color1, color2, message) {
-	color1 = new RgbColor(color1);
-	color2 = new RgbColor(color2);
+	color1 = new Color(color1);
+	color2 = new Color(color2);
 
 	compareNumbers(color1.red, color2.red,
 			(message || '') + ' red');
@@ -96,8 +96,8 @@ function compareRgbColors(color1, color2, message) {
 }
 
 function compareHsbColors(color1, color2, message) {
-	color1 = new HsbColor(color1);
-	color2 = new HsbColor(color2);
+	color1 = new Color(color1);
+	color2 = new Color(color2);
 
 	compareNumbers(color1.hue, color2.hue,
 			(message || '') + ' hue');
@@ -110,8 +110,8 @@ function compareHsbColors(color1, color2, message) {
 }
 
 function compareGrayColors(color1, color2, message) {
-	color1 = new GrayColor(color1);
-	color2 = new GrayColor(color2);
+	color1 = new Color(color1);
+	color2 = new Color(color2);
 
 	compareNumbers(color1.gray, color2.gray,
 			(message || '') + ' gray');

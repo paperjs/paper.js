@@ -630,20 +630,20 @@ test('Item#blendMode in a transformed Group', function() {
 	var layer = new Layer();
 	var path1 = new Path.Rectangle({
 		size: [100, 100],
-		fillColor: new RgbColor(1, 0, 0)
+		fillColor: new Color(1, 0, 0)
 	});
 
 	var path2 = new Path.Circle({
 		radius: 25,
 		center: [50, 50],
-		fillColor: new RgbColor(0, 1, 0),
+		fillColor: new Color(0, 1, 0),
 		blendMode: 'screen'
 	});
 
 	var raster = layer.rasterize();
-	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0),
+	compareRgbColors(raster.getPixel(0, 0), new Color(1, 0, 0),
 			'Top left pixel should be red:');
-	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0),
+	compareRgbColors(raster.getPixel(50, 50), new Color(1, 1, 0),
 			'Middle center pixel should be yellow:');
 
 	raster.remove();
@@ -653,8 +653,8 @@ test('Item#blendMode in a transformed Group', function() {
 	group.position = [50, 50];
 
 	var raster = layer.rasterize();
-	compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0),
+	compareRgbColors(raster.getPixel(0, 0), new Color(1, 0, 0),
 			'Top left pixel should be red:');
-	compareRgbColors(raster.getPixel(50, 50), new RgbColor(1, 1, 0),
+	compareRgbColors(raster.getPixel(50, 50), new Color(1, 1, 0),
 			'Middle center pixel should be yellow:');
 });

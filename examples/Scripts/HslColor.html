@@ -35,7 +35,7 @@
 				var colors = [];
 				for (var i = 0; i < steps.saturation; i++) {
 					var saturation = i / steps.saturation;
-					var color = new HslColor(hue, saturation, lightness);
+					var color = { hue: hue, saturation: saturation, lightness: lightness };
 					colors.push(color);
 				}
 				var gradient = new RadialGradient(colors);

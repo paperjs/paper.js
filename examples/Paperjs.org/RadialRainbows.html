@@ -13,7 +13,11 @@
 		for (var i = 0, l = 60; i < l; i++) {
 			var brightness = 1 - (i / l) * 1.5;
 			var hue = i / l * cycles * 360;
-			var color = new HsbColor(hue, 1, brightness);
+			var color = {
+				hue: hue,
+				saturation: 1,
+				brightness: brightness
+			};
 			colors.push(color);
 		}
 

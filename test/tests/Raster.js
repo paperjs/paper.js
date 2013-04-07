@@ -78,12 +78,12 @@ asyncTest('Create a raster from a dom id', function(callback) {
 asyncTest('Raster#getPixel / setPixel', function(callback) {
 	var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
 	raster.onLoad = function() {
-		compareRgbColors(raster.getPixel(0, 0), new RgbColor(1, 0, 0));
-		compareRgbColors(raster.getPixel(1, 0), new RgbColor(0, 1, 0));
-		compareRgbColors(raster.getPixel(0, 1), new RgbColor(0, 0, 1));
-		compareRgbColors(raster.getPixel(1, 1), new RgbColor(1, 1, 1));
+		compareRgbColors(raster.getPixel(0, 0), new Color(1, 0, 0));
+		compareRgbColors(raster.getPixel(1, 0), new Color(0, 1, 0));
+		compareRgbColors(raster.getPixel(0, 1), new Color(0, 0, 1));
+		compareRgbColors(raster.getPixel(1, 1), new Color(1, 1, 1));
 
-		var color = new RgbColor(1, 1, 0, 0.5);
+		var color = new Color(1, 1, 0, 0.5);
 		raster.setPixel([0, 0], color);
 		compareRgbColors(raster.getPixel([0, 0]), color);
 		callback();
@@ -121,23 +121,23 @@ test('Raster#getAverageColor(path)', function() {
 	new Path.Rectangle({
 		point: [0, 0],
 		size: [100, 100],
-		fillColor: new RgbColor(0, 1, 0)
+		fillColor: new Color(0, 1, 0)
 	});
 	var path = new Path.Circle({
 		center: [50, 50],
 		radius: 25,
-		fillColor: new RgbColor(1, 0, 0)
+		fillColor: new Color(1, 0, 0)
 	});
 	var raster = paper.project.activeLayer.rasterize();
 	path.scale(0.9);
-	compareRgbColors(raster.getAverageColor(path), new RgbColor(1, 0, 0));
+	compareRgbColors(raster.getAverageColor(path), new Color(1, 0, 0));
 });
 
 test('Raster#getAverageColor(path) with compound path', function() {
 	new Path.Rectangle({
 		point: [0, 0],
 		size: [100, 100],
-		fillColor: new RgbColor(0, 1, 0)
+		fillColor: new Color(0, 1, 0)
 	});
 	var path = new Path.Circle({
 		center: [50, 50],
@@ -148,9 +148,9 @@ test('Raster#getAverageColor(path) with compound path', function() {
 		radius: 10
 	})
 	var compoundPath = new CompoundPath(path, path2);
-	compoundPath.fillColor = new RgbColor(1, 0, 0);
+	compoundPath.fillColor = new Color(1, 0, 0);
 	var raster = paper.project.activeLayer.rasterize();
 	path.scale(0.9);
 	path2.scale(1.1);
-	compareRgbColors(raster.getAverageColor(compoundPath), new RgbColor(1, 0, 0));
+	compareRgbColors(raster.getAverageColor(compoundPath), new Color(1, 0, 0));
 });
