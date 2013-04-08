@@ -83,9 +83,10 @@ asyncTest('Raster#getPixel / setPixel', function(callback) {
 		compareColors(raster.getPixel(0, 1), new Color(0, 0, 1, 1));
 		compareColors(raster.getPixel(1, 1), new Color(1, 1, 1, 1));
 
-		var color = new Color(1, 1, 0, 0.5, 1);
+		// Alpha
+		var color = new Color(1, 1, 0, 0.50196);
 		raster.setPixel([0, 0], color);
-		compareColors(raster.getPixel([0, 0]), color);
+		compareColors(raster.getPixel([0, 0]), color, 'alpha');
 		callback();
 	};
 });
@@ -130,7 +131,7 @@ test('Raster#getAverageColor(path)', function() {
 	});
 	var raster = paper.project.activeLayer.rasterize();
 	path.scale(0.9);
-	compareColors(raster.getAverageColor(path), new Color(1, 0, 0, 1));
+	compareColors(raster.getAverageColor(path), new Color(1, 0, 0));
 });
 
 test('Raster#getAverageColor(path) with compound path', function() {
@@ -146,11 +147,11 @@ test('Raster#getAverageColor(path) with compound path', function() {
 	var path2 = new Path.Circle({
 		center: [50, 50],
 		radius: 10
-	})
+	});
 	var compoundPath = new CompoundPath(path, path2);
 	compoundPath.fillColor = new Color(1, 0, 0);
 	var raster = paper.project.activeLayer.rasterize();
 	path.scale(0.9);
 	path2.scale(1.1);
-	compareColors(raster.getAverageColor(compoundPath), new Color(1, 0, 0, 1));
+	compareColors(raster.getAverageColor(compoundPath), new Color(1, 0, 0));
 });
