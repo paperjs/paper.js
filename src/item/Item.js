@@ -1792,7 +1792,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 *
 	 * @name Item#strokeColor
 	 * @property
-	 * @type RgbColor|HsbColor|HslColor|GrayColor
+	 * @type Color
 	 *
 	 * @example {@paperscript}
 	 * // Setting the stroke color of a path:
@@ -1941,7 +1941,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 *
 	 * @name Item#fillColor
 	 * @property
-	 * @type RgbColor|HsbColor|HslColor|GrayColor
+	 * @type Color
 	 *
 	 * @example {@paperscript}
 	 * // Setting the fill color of a path to red:

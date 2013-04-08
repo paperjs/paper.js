@@ -73,7 +73,7 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	 *
 	 * @name PathStyle#strokeColor
 	 * @property
-	 * @type RgbColor|HsbColor|HslColor|GrayColor
+	 * @type Color
 	 *
 	 * @example {@paperscript}
 	 * // Setting the stroke color of a path:
@@ -216,7 +216,7 @@ var PathStyle = this.PathStyle = Style.extend(/** @lends PathStyle# */{
 	 *
 	 * @name PathStyle#fillColor
 	 * @property
-	 * @type RgbColor|HsbColor|HslColor|GrayColor
+	 * @type Color
 	 *
 	 * @example {@paperscript}
 	 * // Setting the fill color of a path to red:
