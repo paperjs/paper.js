@@ -86,7 +86,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				? arguments
 				: null;
 		this.setSegments(segments || []);
-		if (!segments)
+		if (arg && !segments)
 			this._set(arg);
 	},
 

@@ -41,7 +41,7 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 		this._paragraphStyle = ParagraphStyle.create(this);
 		// See if a point is passed, and if so, pass it on to base(). If not, it
 		// might be a properties object literal for #setPropeties() at the end.
-		var hasProperties = Base.isPlainObject(arg)
+		var hasProperties = arg && Base.isPlainObject(arg)
 				&& arg.x === undefined && arg.y === undefined;
 		this.base(hasProperties ? null : Point.read(arguments));
 		// No need to call setStyle(), since base() handles this already.
@@ -49,9 +49,8 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 		this.setParagraphStyle();
 		this._content = '';
 		this._lines = [];
-		if (hasProperties) {
+		if (hasProperties)
 			this._set(arg);
-		}
 	},
 
 	/**

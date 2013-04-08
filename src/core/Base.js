@@ -70,7 +70,7 @@ this.Base = Base.inject(/** @lends Base# */{
 	 * @return {Boolean} {@true if the object is a plain object}
 	 */
 	_set: function(props) {
-		if (Base.isPlainObject(props)) {
+		if (props && Base.isPlainObject(props)) {
 			for (var key in props)
 				if (props.hasOwnProperty(key) && key in this)
 					this[key] = props[key];

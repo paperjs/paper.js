@@ -13,7 +13,11 @@
 Path.inject({ statics: new function() {
 
 	function createPath(args) {
-		return new Path().set(Base.getNamed(args));
+		var path = new Path(),
+			named = Base.getNamed(args);
+		if (named)
+			path._set(named);
+		return path;
 	}
 
 	function createRectangle(/* rect */) {
