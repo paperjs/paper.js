@@ -73,7 +73,7 @@ var HitResult = this.HitResult = Base.extend(/** @lends HitResult# */{
 	 *
 	 * @name HitResult#color
 	 * @property
-	 * @type RgbColor
+	 * @type Color
 	 */
 
 	/**

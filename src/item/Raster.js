@@ -358,7 +358,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * effects.
 	 *
 	 * @param {Path|Rectangle|Point} object
-	 * @return {RgbColor} the average color contained in the area covered by the
+	 * @return {Color} the average color contained in the area covered by the
 	 * specified path, rectangle or point.
 	 */
 	getAverageColor: function(object) {
@@ -431,7 +431,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @function
 	 * @param x the x offset of the pixel in pixel coordinates
 	 * @param y the y offset of the pixel in pixel coordinates
-	 * @return {RgbColor} the color of the pixel
+	 * @return {Color} the color of the pixel
 	 */
 	/**
 	 * Gets the color of a pixel in the raster.
@@ -439,7 +439,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 	 * @name Raster#getPixel
 	 * @function
 	 * @param point the offset of the pixel as a point in pixel coordinates
-	 * @return {RgbColor} the color of the pixel
+	 * @return {Color} the color of the pixel
 	 */
 	getPixel: function(point) {
 		point = Point.read(arguments);

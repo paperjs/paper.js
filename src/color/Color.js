@@ -27,7 +27,7 @@
  * var circle = new Path.Circle(new Point(80, 50), 30);
  *
  * // Pass a color name to the fillColor property, which is internally
- * // converted to an RgbColor.
+ * // converted to a Color.
  * circle.fillColor = 'green';
  *
  * @classexample {@paperscript}
@@ -38,7 +38,7 @@
  * var circle = new Path.Circle(new Point(80, 50), 30);
  *
  * // Pass a hex string to the fillColor property, which is internally
- * // converted to an RgbColor.
+ * // converted to a Color.
  * circle.fillColor = '#ff0000';
  */
 var Color = this.Color = Base.extend(new function() {
@@ -245,8 +245,9 @@ var Color = this.Color = Base.extend(new function() {
 				components = Array.prototype.slice.call(components, 0, length);
 			} else {
 				if (argType === 'object') {
-					// Loop through all possible types and detect type by
-					// property names. Then convert to components array
+					if (arg instanceof Color)
+						return arg.clone();
+					// Determine type from property names
 					type = 'hue' in arg
 						? 'lightness' in arg
 							? 'hsl'
