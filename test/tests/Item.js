@@ -573,14 +573,14 @@ test('Cloning a linked size', function() {
 });
 
 test('Item#type', function() {
-	equals(new Group().type, 'Group');
-	equals(new Path().type, 'Path');
-	equals(new CompoundPath().type, 'CompoundPath');
+	equals(new Group().type, 'group');
+	equals(new Path().type, 'path');
+	equals(new CompoundPath().type, 'compound-path');
 
 	var canvas = document.createElement('canvas');
-	equals(new Raster(canvas).type, 'Raster');
-	equals(new PlacedSymbol().type, 'PlacedSymbol');
-	equals(new PointText().type, 'PointText');
+	equals(new Raster(canvas).type, 'raster');
+	equals(new PlacedSymbol().type, 'placed-symbol');
+	equals(new PointText().type, 'point-text');
 });
 
 test('Item#isInserted', function() {
