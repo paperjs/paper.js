@@ -142,25 +142,23 @@ var Item = this.Item = Base.extend(Callback, {
 		var props = {},
 			that = this;
 
-		function serialize(fields, compact) {
+		function serialize(fields) {
 			for (var key in fields) {
 				var value = that[key];
 				if (!Base.equals(value, fields[key]))
 					props[key] = Base.serialize(value, options,
 							// Do not use compact mode for data
-							compact && key !== 'data', dictionary);
+							key !== 'data', dictionary);
 			}
 		}
 
 		// Serialize fields that this Item subclass defines first
-		serialize(this._serializeFields, true);
+		serialize(this._serializeFields);
 		// Serialize style fields, but only if they differ from defaults.
-		// Do not use compact mode here, since colors always need their type
-		// identifiers.
 		// Do not serialize styles on Groups and Layers, since they just unify
 		// their children's own styles.
 		if (!(this instanceof Group))
-			serialize(this._style._defaults, false);
+			serialize(this._style._defaults);
 		// There is no compact form for Item serialization, we always keep the
 		// type.
 		return [ this._class, props ];
