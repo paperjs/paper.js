@@ -60,7 +60,7 @@ function asyncTest(testName, expected) {
 }
 
 function compareNumbers(number1, number2, message) {
-	equals(Format.number(number1, 2), Format.number(number2, 2), message);
+	equals(Format.number(number1, 5), Format.number(number2, 5), message);
 }
 
 function comparePoints(point1, point2, message) {
@@ -81,40 +81,11 @@ function compareRectangles(rect1, rect2, message) {
 			(message || '') + ' height');
 }
 
-function compareRgbColors(color1, color2, message) {
+function compareColors(color1, color2, message) {
 	color1 = new Color(color1);
 	color2 = new Color(color2);
-
-	compareNumbers(color1.red, color2.red,
-			(message || '') + ' red');
-	compareNumbers(color1.green, color2.green,
-			(message || '') + ' green');
-	compareNumbers(color1.blue, color2.blue,
-			(message || '') + ' blue');
-	compareNumbers(color1.alpha, color2.alpha,
-			(message || '') + ' alpha');
-}
-
-function compareHsbColors(color1, color2, message) {
-	color1 = new Color(color1);
-	color2 = new Color(color2);
-
-	compareNumbers(color1.hue, color2.hue,
-			(message || '') + ' hue');
-	compareNumbers(color1.saturation, color2.saturation,
-			(message || '') + ' saturation');
-	compareNumbers(color1.brightness, color2.brightness,
-			(message || '') + ' brightness');
-	compareNumbers(color1.alpha, color2.alpha,
-			(message || '') + ' alpha');
-}
-
-function compareGrayColors(color1, color2, message) {
-	color1 = new Color(color1);
-	color2 = new Color(color2);
-
-	compareNumbers(color1.gray, color2.gray,
-			(message || '') + ' gray');
+	equals(color1.type, color2.type, (message || '') + ' type');
+	equals(color1.components.toString(), color2.components.toString(), (message || '') + ' components');
 }
 
 function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
