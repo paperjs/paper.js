@@ -210,37 +210,72 @@ var Color = this.Color = Base.extend(new function() {
 						converters[from + '-rgb'].apply(this, components));
 	}
 
-	var fields = /** @lends Color# */{
+	// Produce getters and setter methods for the various color components known
+	// by the different color types. Requesting any of these components on any
+	// color internally converts the color to the required type and then returns
+	// its component.
+	return Base.each(types, function(properties, type) {
+		Base.each(properties, function(name, index) {
+			var isHue = name === 'hue',
+				// Both hue and saturation have overlapping properties between
+				// hsb and hsl. Handle this here separately, by testing for
+				// overlaps and skipping conversion if the type is /hs[bl]/
+				hasOverlap = /^(hue|saturation)$/.test(name),
+				part = Base.capitalize(name);
+
+			this['get' + part] = function() {
+				return this._type === type
+					|| hasOverlap && /^hs[bl]$/.test(this._type)
+						? this._components[index]
+						: convert(this._components, this._type, type)[index];
+			};
+
+			this['set' + part] = function(value) {
+				// Convert to the requrested type before setting the value
+				if (this._type !== type
+						&& !(hasOverlap && /^hs[bl]$/.test(this._type))) {
+					this._components = convert(this._components, this._type, type);
+					this._type = type;
+				}
+				this._components[index] = isHue
+						// Keep negative values within modulo 360 too:
+						? ((value % 360) + 360) % 360
+						// All other values are 0..1
+						: Math.min(Math.max(value, 0), 1);
+			};
+		}, this);
+	}, /** @lends Color# */{
 		_class: 'Color',
 		// Tell Base.read that we do not want null to be converted to a color.
 		_readNull: true,
 		// Tell Base.read that the Point constructor supporst reading with index
 		_readIndex: true,
 
-		initialize: function(arg) {
+		initialize: function(arg0, arg1) {
 			// We are storing color internally as an array of components
 			var slice = Array.prototype.slice,
-				argType = arg != null && typeof arg,
+				argType = arg0 != null && typeof arg0,
 				components = argType === 'number'
 					? arguments
-					: Array.isArray(arg)
-						? arg
+					: Array.isArray(arg0)
+						? arg0
 						: null,
 				read = 0,
 				type,
 				alpha;
-			// Try type arg first
-			if (argType === 'string' && arg in types) {
-				type = arg;
+			// Try type arg0 first
+			if (argType === 'string' && arg0 in types) {
+				type = arg0;
 				if (this._read)
 					read = 1; // will be increased below
-				components = slice.call(arguments, 1);
+				components = typeof arg1 === 'number'
+						? slice.call(arguments, 1) : arg1;
 			}
 			if (components) {
 				if (!type)
-					// type = arg.length >= 4
+					// type = components.length >= 4
 					// 		? 'cmyk'
-					// 		: arg.length >= 3
+					// 		: components.length >= 3
 					type = components.length >= 3
 							? 'rgb'
 							: 'gray';
@@ -254,31 +289,31 @@ var Color = this.Color = Base.extend(new function() {
 			} else {
 				if (argType === 'string') {
 					type = 'rgb';
-					components = arg.match(/^#[0-9a-f]{3,6}$/i)
-							? hexToRgb(arg)
-							: nameToRgb(arg);
+					components = arg0.match(/^#[0-9a-f]{3,6}$/i)
+							? hexToRgb(arg0)
+							: nameToRgb(arg0);
 				} else if (argType === 'object') {
-					if (arg._class === 'Color') {
-						type = arg._type;
-						components = arg._components.slice();
-						alpha = arg._alpha;
-					} else if (arg._class === 'Gradient') {
+					if (arg0._class === 'Color') {
+						type = arg0._type;
+						components = arg0._components.slice();
+						alpha = arg0._alpha;
+					} else if (arg0._class === 'Gradient') {
 						// TODO: Construct gradient
 						type = 'gradient';
 					} else {
 						// Determine type by presence of object property names
-						type = 'hue' in arg
-							? 'lightness' in arg
+						type = 'hue' in arg0
+							? 'lightness' in arg0
 								? 'hsl'
 								: 'hsb'
-							: 'gray' in arg
+							: 'gray' in arg0
 								? 'gray'
 								: 'rgb';
 						var properties = types[type];
 						components = [];
 						for (var i = 0, l = properties.length; i < l; i++)
-							components[i] = arg[properties[i]] || 0;
-						alpha = arg.alpha;
+							components[i] = arg0[properties[i]] || 0;
+						alpha = arg0.alpha;
 					}
 				}
 				if (this._read && type)
@@ -567,6 +602,9 @@ var Color = this.Color = Base.extend(new function() {
 		 */
 
 		statics: /** @lends Color */{
+			// Export for backward compatibility code below.
+			_types: types,
+
 			create: function(type, components, alpha) {
 				var color = Base.create(Color);
 				color._type = type;
@@ -580,63 +618,19 @@ var Color = this.Color = Base.extend(new function() {
 				return new Color(random(), random(), random());
 			}
 		}
-	};
-
-	// Produce getters and setter methods for the various color components known
-	// by the different color types. Requesting any of these components on any
-	// color internally converts the color to the required type and then returns
-	// its component.
-	return Base.each(types, function(properties, type) {
-		Base.each(properties, function(name, index) {
-			var isHue = name === 'hue',
-				// Both hue and saturation have overlapping properties between
-				// hsb and hsl. Handle this here separately, by testing for
-				// overlaps and skipping conversion if the type is /hs[bl]/
-				hasOverlap = /^(hue|saturation)$/.test(name),
-				part = Base.capitalize(name);
-
-			this['get' + part] = function() {
-				return this._type === type
-					|| hasOverlap && /^hs[bl]$/.test(this._type)
-						? this._components[index]
-						: convert(this._components, this._type, type)[index];
-			};
-
-			this['set' + part] = function(value) {
-				// Convert to the requrested type before setting the value
-				if (this._type !== type
-						&& !(hasOverlap && /^hs[bl]$/.test(this._type))) {
-					this._components = convert(this._components, this._type, type);
-					this._type = type;
-				}
-				this._components[index] = isHue
-						// Keep negative values within modulo 360 too:
-						? ((value % 360) + 360) % 360
-						// All other values are 0..1
-						: Math.min(Math.max(value, 0), 1);
-			};
-		}, this);
-	}, fields);
+	});
 });
 
-// TODO: Consider producing these in a loop instead, accessing the private
-// components data somehow.
-
-// RGBColor references RgbColor inside PaperScopes for backward compatibility
-var RgbColor = this.RgbColor = this.RGBColor = function(red, green, blue, alpha) {
-	return new Color(red, green, blue, alpha);
-};
-
-var GrayColor = this.GrayColor = function(gray, alpha) {
-	return new Color({ gray: gray, alpha: alpha });
-};
-
-// HSBColor references HsbColor inside PaperScopes for backward compatibility
-var HsbColor = this.HsbColor = this.HSBColor = function(hue, saturation, brightness, alpha) {
-	return new Color({ hue: hue, saturation: saturation, brightness: brightness });
-};
-
-// HSLColor references HslColor inside PaperScopes for backward compatibility
-var HslColor = this.HslColor = this.HSLColor = function(hue, saturation, lightness, alpha) {
-	return new Color({ hue: hue, saturation: saturation, lightness: lightness });
-};
+Base.each(Color._types, function(properties, type) {
+	this[Base.capitalize(type) + 'Color'] = this[type.toUpperCase() + 'Color'] =
+		function(arg) {
+			var components = typeof arg === 'number'
+					? arguments
+					: Array.isArray(arg)
+						? arg
+						: null;
+			return components
+					? new Color(type, components)
+					: new Color(arg);
+		};
+}, this);
