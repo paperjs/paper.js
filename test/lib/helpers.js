@@ -60,32 +60,36 @@ function asyncTest(testName, expected) {
 }
 
 function compareNumbers(number1, number2, message) {
-	equals(Format.number(number1, 5), Format.number(number2, 5), message);
+	equals(Format.number(number1), Format.number(number2), message);
+}
+
+function compareArrays(array1, array2, message) {
+	function format(array) {
+		return Base.each(array, function(value, index) {
+			this[index] = Format.number(value);
+		}, []).toString();
+	}
+	equals(format(array1), format(array2), message);
 }
 
 function comparePoints(point1, point2, message) {
-	compareNumbers(point1.x, point2.x,
-			(message || '') + ' x');
-	compareNumbers(point1.y, point2.y,
-			(message || '') + ' y');
+	compareNumbers(point1.x, point2.x, (message || '') + ' x');
+	compareNumbers(point1.y, point2.y, (message || '') + ' y');
 }
 
 function compareRectangles(rect1, rect2, message) {
-	compareNumbers(rect1.x, rect2.x,
-			(message || '') + ' x');
-	compareNumbers(rect1.y, rect2.y,
-			(message || '') + ' y');
-	compareNumbers(rect1.width, rect2.width,
-			(message || '') + ' width');
-	compareNumbers(rect1.height, rect2.height,
-			(message || '') + ' height');
+	compareNumbers(rect1.x, rect2.x, (message || '') + ' x');
+	compareNumbers(rect1.y, rect2.y, (message || '') + ' y');
+	compareNumbers(rect1.width, rect2.width, (message || '') + ' width');
+	compareNumbers(rect1.height, rect2.height, (message || '') + ' height');
 }
 
 function compareColors(color1, color2, message) {
 	color1 = new Color(color1);
 	color2 = new Color(color2);
 	equals(color1.type, color2.type, (message || '') + ' type');
-	equals(color1.components.toString(), color2.components.toString(), (message || '') + ' components');
+	compareArrays(color1.components, color2.components,
+			(message || '') + ' components');
 }
 
 function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
@@ -95,8 +99,9 @@ function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
 				return gradientColor[key] !== gradientColor2[key];
 			}, true, 'Strict compare GradientColor#' + key);
 		}
-		equals(gradientColor[key] && gradientColor[key].toString(), gradientColor2[key] && gradientColor2[key].toString(),
-			'Compare GradientColor#' + key);
+		equals(gradientColor[key] && gradientColor[key].toString(),
+				gradientColor2[key] && gradientColor2[key].toString(),
+				'Compare GradientColor#' + key);
 	});
 	equals(function() {
 		return gradientColor.gradient.equals(gradientColor2.gradient);
@@ -125,7 +130,8 @@ function comparePathStyles(style, style2, checkIdentity) {
 				}
 				compareGradientColors(style[key], style2[key], checkIdentity);
 			} else {
-				equals(style[key] && style[key].toString(), style2[key] && style2[key].toString(),
+				equals(style[key] && style[key].toString(),
+						style2[key] && style2[key].toString(),
 						'Compare PathStyle#' + key);
 			}
 		}
@@ -141,7 +147,7 @@ function comparePathStyles(style, style2, checkIdentity) {
 	});
 
 	if (style.dashArray) {
-		equals(style.dashArray.toString(), style2.dashArray.toString(),
+		compareArrays(style.dashArray, style2.dashArray,
 			'Compare CharacterStyle#dashArray');
 	}
 }
@@ -250,7 +256,7 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 			'Compare Item#position');
 
 	equals(function() {
-		return Base.equals(item.data, item2.data)
+		return Base.equals(item.data, item2.data);
 	}, true);
 
 	if (item.matrix) {
@@ -319,7 +325,8 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 		}
 		equals(item.size.toString(), item2.size.toString(),
 				'Compare Raster#size');
-		equals(item.toDataURL() == item2.toDataURL(), true, 'Compare Raster#toDataUrl()')
+		equals(item.toDataURL() == item2.toDataURL(), true,
+				'Compare Raster#toDataUrl()');
 	}
 
 	// TextItem specific:
@@ -371,7 +378,7 @@ function compareProjects(project, project2) {
 
 	// Compare Project#layers:
 	equals(function() {
-		return project.layers.length == project2.layers.length
+		return project.layers.length == project2.layers.length;
 	}, true);
 	for (var i = 0, l = project.layers.length; i < l; i++) {
 		compareItems(project.layers[i], project2.layers[i], false, false, true);

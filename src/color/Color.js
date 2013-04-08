@@ -221,7 +221,7 @@ var Color = this.Color = Base.extend(new function() {
 
 		initialize: function(arg) {
 			// We are storing color internally as an array of components
-			var argType = arg && typeof arg,
+			var argType = arg != null && typeof arg,
 				type,
 				components = argType === 'number'
 					? arguments

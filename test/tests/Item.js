@@ -641,9 +641,9 @@ test('Item#blendMode in a transformed Group', function() {
 	});
 
 	var raster = layer.rasterize();
-	compareColors(raster.getPixel(0, 0), new Color(1, 0, 0),
+	compareColors(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
 			'Top left pixel should be red:');
-	compareColors(raster.getPixel(50, 50), new Color(1, 1, 0),
+	compareColors(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
 			'Middle center pixel should be yellow:');
 
 	raster.remove();
@@ -653,8 +653,8 @@ test('Item#blendMode in a transformed Group', function() {
 	group.position = [50, 50];
 
 	var raster = layer.rasterize();
-	compareColors(raster.getPixel(0, 0), new Color(1, 0, 0),
+	compareColors(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
 			'Top left pixel should be red:');
-	compareColors(raster.getPixel(50, 50), new Color(1, 1, 0),
+	compareColors(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
 			'Middle center pixel should be yellow:');
 });

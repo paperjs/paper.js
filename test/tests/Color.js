@@ -59,7 +59,7 @@ test('Creating colors', function() {
 			new Color(1, 0, 1), 'Color from rgb object literal');
 
 	compareColors(new Color({ gray: 0.2 }),
-			new Color(0.8, 0.8, 0.8).convert('gray'), 'Color from gray object literal');
+			new Color(0.2), 'Color from gray object literal');
 
 	compareColors(new Color({ hue: 0, saturation: 1, brightness: 1}),
 			new Color(1, 0, 0).convert('hsb'), 'Color from hsb object literal');
@@ -73,15 +73,15 @@ test('Creating colors', function() {
 
 test('Get gray from RGB Color', function() {
 	var color = new Color(1, 0.5, 0.2);
-	compareNumbers(color.gray, 0.38458251953125);
+	compareNumbers(color.gray, 0.3848);
 
 	var color = new Color(0.5, 0.2, 0.1);
-	compareNumbers(color.gray, 0.72137451171875);
+	compareNumbers(color.gray, 0.72175);
 });
 
 test('Get gray from HSB Color', function() {
 	var color = new HsbColor(0, 0, 0.2);
-	compareNumbers(color.gray, 0.8);
+	compareNumbers(color.gray, 0.80002);
 });
 
 test('Get red from HSB Color', function() {
@@ -115,7 +115,7 @@ test('Gray Color', function() {
 
 test('Converting Colors', function() {
 	var rgbColor = new Color(1, 0.5, 0.2);
-	compareNumbers(rgbColor.gray, 0.38299560546875);
+	compareNumbers(rgbColor.gray, 0.3848);
 	var grayColor = new Color(0.2);
 	compareColors(grayColor.convert('rgb'), new Color(0.8, 0.8, 0.8));
 	compareColors(grayColor.convert('hsb'), { hue: 0, saturation: 0, brightness: 0.8 });
@@ -131,7 +131,7 @@ test('Setting Color#gray', function() {
 test('Setting Color#red', function() {
 	var color = new Color({ hue: 180, saturation: 0, brightness: 0 });
 	color.red = 1;
-	compareColors(color, new Color(0, 1, 1));
+	compareColors(color, new Color(1, 0, 0));
 });
 
 test('Setting Color#gray', function() {
