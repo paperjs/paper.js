@@ -46,10 +46,8 @@ var Color = this.Color = Base.extend(new function() {
 	var types = {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],
-		hsl: ['hue', 'saturation', 'lightness'],
-		// Define HSB after HSL, so the saturation getter uses HSB instead of
-		// HSL (the HSB getter is injected last and overrides the ones of HSL).
-		hsb: ['hue', 'saturation', 'brightness']
+		hsb: ['hue', 'saturation', 'brightness'],
+		hsl: ['hue', 'saturation', 'lightness']
 	};
 
 	var colorCache = {},
@@ -583,17 +581,23 @@ var Color = this.Color = Base.extend(new function() {
 	return Base.each(types, function(properties, type) {
 		Base.each(properties, function(name, index) {
 			var isHue = name === 'hue',
+				// Both hue and saturation have overlapping properties between
+				// hsb and hsl. Handle this here separately, by testing for
+				// overlaps and skipping conversion if the type is /hs[bl]/
+				hasOverlap = /^(hue|saturation)$/.test(name),
 				part = Base.capitalize(name);
 
 			this['get' + part] = function() {
 				return this._type === type
+					|| hasOverlap && /^hs[bl]$/.test(this._type)
 						? this._components[index]
 						: convert(this._components, this._type, type)[index];
 			};
 
 			this['set' + part] = function(value) {
 				// Convert to the requrested type before setting the value
-				if (this._type !== type) {
+				if (this._type !== type
+						&& !(hasOverlap && /^hs[bl]$/.test(this._type))) {
 					this._components = convert(this._components, this._type, type);
 					this._type = type;
 				}
