@@ -32,14 +32,6 @@ var Style = Base.extend({
 		}, this);
 	},
 
-	/**
-	 * Returns the children to be used to unify style attributes, if any.
-	 */
-	_getChildren: function() {
-		// Only unify styles on children of Group items, excluding CompoundPath.
-		return this._item instanceof Group && this._item._children;
-	},
-
 	statics: {
 		create: function(item) {
 			var style = Base.create(this);
@@ -73,10 +65,13 @@ var Style = Base.extend({
 				// Simply extend src with these getters and setters, to be
 				// injected into this class using this.base() further down.
 				src[set] = function(value) {
-					var children = this._getChildren();
+					var children = this._item && this._item._children;
 					// Clone color objects since they reference their owner
 					value = isColor ? Color.read(arguments, 0, 0, true) : value;
-					if (children && children.length > 0) {
+					// Only unify styles on children of Groups, excluding
+					// CompoundPaths.
+					if (children && children.length > 0
+							&& this._item._type !== 'compound-path') {
 						for (var i = 0, l = children.length; i < l; i++)
 							children[i][styleKey][set](value);
 					} else {
@@ -99,11 +94,12 @@ var Style = Base.extend({
 					}
 				};
 				src[get] = function() {
-					var children = this._getChildren(),
-						style;
+					var style,
+						children = this._item && this._item._children;
 					// If this item has children, walk through all of them and
 					// see if they all have the same style.
-					if (!children || children.length === 0)
+					if (!children || children.length === 0
+							|| this._item._type === 'compound-path')
 						return this['_' + key];
 					for (var i = 0, l = children.length; i < l; i++) {
 						var childStyle = children[i][styleKey][get]();
