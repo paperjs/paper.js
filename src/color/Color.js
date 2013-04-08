@@ -243,52 +243,47 @@ var Color = this.Color = Base.extend(new function() {
 				components = Array.prototype.slice.call(components, 0, length);
 			} else {
 				if (argType === 'object') {
-					if (arg instanceof Color)
-						return arg.clone();
-					// Determine type from property names
-					type = 'hue' in arg
-						? 'lightness' in arg
-							? 'hsl'
-							: 'hsb'
-						: 'gray' in arg
-							? 'gray'
-							: 'rgb';
-					var properties = types[type];
-					for (var i = 0, l = properties.length; i < l; i++)
-						components[i] = arg[properties[i]];
-					alpha = arg.alpha;
+					if (arg._class === 'Color') {
+						type = arg._type;
+						components = arg._components.slice();
+						alpha = arg._alpha;
+					} else if (arg._class === 'Gradient') {
+						// TODO: Construct gradient
+						type = 'gradient';
+					} else {
+						// Determine type by presence of object property names
+						type = 'hue' in arg
+							? 'lightness' in arg
+								? 'hsl'
+								: 'hsb'
+							: 'gray' in arg
+								? 'gray'
+								: 'rgb';
+						var properties = types[type];
+						for (var i = 0, l = properties.length; i < l; i++)
+							components[i] = arg[properties[i]] || 0;
+						alpha = arg.alpha;
+					}
 				} else if (argType === 'string') {
 					components = arg.match(/^#[0-9a-f]{3,6}$/i)
 							? hexToRgb(arg)
 							: nameToRgb(arg);
 					type = 'rgb';
 				}
-				if (type) {
-					if (this._read)
-						this._read = 1;
-				} else {
-					// Default fallback: rgb black
-					type = 'rgb';
-					components = [0, 0, 0];
-				}
+				if (this._read && type)
+					this._read = 1;
 			}
-			this._type = type;
-			this._components = components;
+			// Default fallbacks: rgb, black
+			this._type = type || 'rgb';
+			this._components = components || (type === 'gray' ? [1] : [0, 0, 0]);
 			this._alpha = alpha;
 		},
 
 		_serialize: function(options) {
-			if (/^(gray|rgb)$/.test(this._type)) {
-				return this._components;
-			} else {
-				var properties = types[this._type],
-					res = {};
-				for (var i = 0, l = properties.length; i < l; i++)
-					res[properties[i]] = this._components[i];
-				if (this._alpha != null)
-					res.alpha = this._alpha;
-				return res;
-			}
+			// We can ommit the type for gray and rgb:
+			return /^(gray|rgb)$/.test(this._type)
+					? this._components
+					: [this._type].concat(this._components);
 		},
 
 		/**
