@@ -55,39 +55,43 @@ var Color = this.Color = Base.extend(new function() {
 	var colorCache = {},
 		colorCtx;
 
-	function nameToRgbColor(name) {
-		var color = colorCache[name];
-		if (color)
-			return color.clone();
-		// Use a canvas to draw to with the given name and then retrieve rgb
-		// values from. Build a cache for all the used colors.
-		if (!colorCtx) {
-			colorCtx = CanvasProvider.getContext(1, 1);
-			colorCtx.globalCompositeOperation = 'copy';
+	function nameToRgb(name) {
+		var cached = colorCache[name];
+		if (!cached) {
+			// Use a canvas to draw to with the given name and then retrieve rgb
+			// values from. Build a cache for all the used colors.
+			if (!colorCtx) {
+				colorCtx = CanvasProvider.getContext(1, 1);
+				colorCtx.globalCompositeOperation = 'copy';
+			}
+			// Set the current fillStyle to transparent, so that it will be
+			// transparent instead of the previously set color in case the new
+			// color can not be interpreted.
+			colorCtx.fillStyle = 'rgba(0,0,0,0)';
+			// Set the fillStyle of the context to the passed name and fill the
+			// canvas with it, then retrieve the data for the drawn pixel:
+			colorCtx.fillStyle = name;
+			colorCtx.fillRect(0, 0, 1, 1);
+			var data = colorCtx.getImageData(0, 0, 1, 1).data;
+			cached = colorCache[name] = [
+				data[0] / 255,
+				data[1] / 255,
+				data[2] / 255
+			];
 		}
-		// Set the current fillStyle to transparent, so that it will be
-		// transparent instead of the previously set color in case the new color
-		// can not be interpreted.
-		colorCtx.fillStyle = 'rgba(0,0,0,0)';
-		// Set the fillStyle of the context to the passed name and fill the
-		// canvas with it, then retrieve the data for the drawn pixel:
-		colorCtx.fillStyle = name;
-		colorCtx.fillRect(0, 0, 1, 1);
-		var data = colorCtx.getImageData(0, 0, 1, 1).data,
-			rgb = [data[0] / 255, data[1] / 255, data[2] / 255];
-		return (colorCache[name] = new Color(rgb)).clone();
+		return cached.slice();
 	}
 
-	function hexToRgbColor(string) {
+	function hexToRgb(string) {
 		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
 		if (hex.length >= 4) {
-			var rgb = new Array(3);
+			var components = new Array(3);
 			for (var i = 0; i < 3; i++) {
-				var channel = hex[i + 1];
-				rgb[i] = parseInt(channel.length == 1
-						? channel + channel : channel, 16) / 255;
+				var value = hex[i + 1];
+				components[i] = parseInt(value.length == 1
+						? value + value : value, 16) / 255;
 			}
-			return new Color(rgb);
+			return components;
 		}
 	}
 
@@ -217,10 +221,11 @@ var Color = this.Color = Base.extend(new function() {
 
 		initialize: function(arg) {
 			// We are storing color internally as an array of components
-			var type,
-				components = typeof arg === 'number'
+			var argType = arg && typeof arg,
+				type,
+				components = argType === 'number'
 					? arguments
-					: arg && arg.length != null
+					: Array.isArray(arg)
 					? arg
 					: [],
 				alpha;
@@ -233,26 +238,40 @@ var Color = this.Color = Base.extend(new function() {
 						: 'gray';
 				var length = types[type].length;
 				alpha = components[length];
+				if (this._read)
+					this._read = components === arguments
+						? length + (alpha != null ? 1 : 0)
+						: 1;
 				components = Array.prototype.slice.call(components, 0, length);
-
-			} else if (arg) {
-				// Loop through all possible types and detect type by property
-				// names. Then convert to components array
-				for (var t in types) {
-					var properties = types[t];
-					if (properties[0] in arg) {
-						type = t;
-						for (var i = 0, l = properties.length; i < l; i++)
-							components[i] = arg[properties[i]];
-						break;
-					}
+			} else {
+				if (argType === 'object') {
+					// Loop through all possible types and detect type by
+					// property names. Then convert to components array
+					type = 'hue' in arg
+						? 'lightness' in arg
+							? 'hsl'
+							: 'hsb'
+						: 'gray' in arg
+							? 'gray'
+							: 'rgb';
+					var properties = types[type];
+					for (var i = 0, l = properties.length; i < l; i++)
+						components[i] = arg[properties[i]];
+					alpha = arg.alpha;
+				} else if (argType === 'string') {
+					components = arg.match(/^#[0-9a-f]{3,6}$/i)
+							? hexToRgb(arg)
+							: nameToRgb(arg);
+					type = 'rgb';
 				}
-				alpha = arg.alpha;
-			}
-			if (!type) {
-				// Default fallback: rgb black
-				type = 'rgb';
-				components = [0, 0, 0];
+				if (type) {
+					if (this._read)
+						this._read = 1;
+				} else {
+					// Default fallback: rgb black
+					type = 'rgb';
+					components = [0, 0, 0];
+				}
 			}
 			this._type = type;
 			this._components = components;
