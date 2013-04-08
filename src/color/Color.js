@@ -219,30 +219,45 @@ var Color = this.Color = Base.extend(new function() {
 
 		initialize: function(arg) {
 			// We are storing color internally as an array of components
-			var argType = arg != null && typeof arg,
-				type,
+			var slice = Array.prototype.slice,
+				argType = arg != null && typeof arg,
 				components = argType === 'number'
 					? arguments
 					: Array.isArray(arg)
-					? arg
-					: [],
+						? arg
+						: null,
+				read = 0,
+				type,
 				alpha;
-			if (components.length > 0) {
-				// type = arg.length >= 4
-				// 		? 'cmyk'
-				// 		: arg.length >= 3
-				type = components.length >= 3
-						? 'rgb'
-						: 'gray';
+			// Try type arg first
+			if (argType === 'string' && arg in types) {
+				type = arg;
+				if (this._read)
+					read = 1; // will be increased below
+				components = slice.call(arguments, 1);
+			}
+			if (components) {
+				if (!type)
+					// type = arg.length >= 4
+					// 		? 'cmyk'
+					// 		: arg.length >= 3
+					type = components.length >= 3
+							? 'rgb'
+							: 'gray';
 				var length = types[type].length;
 				alpha = components[length];
 				if (this._read)
-					this._read = components === arguments
+					read += components === arguments
 						? length + (alpha != null ? 1 : 0)
 						: 1;
-				components = Array.prototype.slice.call(components, 0, length);
+				components = slice.call(components, 0, length);
 			} else {
-				if (argType === 'object') {
+				if (argType === 'string') {
+					type = 'rgb';
+					components = arg.match(/^#[0-9a-f]{3,6}$/i)
+							? hexToRgb(arg)
+							: nameToRgb(arg);
+				} else if (argType === 'object') {
 					if (arg._class === 'Color') {
 						type = arg._type;
 						components = arg._components.slice();
@@ -260,23 +275,21 @@ var Color = this.Color = Base.extend(new function() {
 								? 'gray'
 								: 'rgb';
 						var properties = types[type];
+						components = [];
 						for (var i = 0, l = properties.length; i < l; i++)
 							components[i] = arg[properties[i]] || 0;
 						alpha = arg.alpha;
 					}
-				} else if (argType === 'string') {
-					components = arg.match(/^#[0-9a-f]{3,6}$/i)
-							? hexToRgb(arg)
-							: nameToRgb(arg);
-					type = 'rgb';
 				}
 				if (this._read && type)
-					this._read = 1;
+					read = 1;
 			}
 			// Default fallbacks: rgb, black
 			this._type = type || 'rgb';
 			this._components = components || (type === 'gray' ? [1] : [0, 0, 0]);
 			this._alpha = alpha;
+			if (this._read)
+				this._read = read;
 		},
 
 		_serialize: function(options) {
