@@ -235,7 +235,8 @@ var Item = this.Item = Base.extend(Callback, {
 	 * });
 	 */
 	set: function(props) {
-		this._set(props);
+		if (props)
+			this._set(props);
 		return this;
 	},
 
