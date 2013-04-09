@@ -41,7 +41,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 *
 	 * // Create the gradient, passing it an array of colors to be converted
 	 * // to evenly distributed color stops:
-	 * var gradient = new LinearGradient('yellow', 'red', 'blue');
+	 * var gradient = new Gradient(['yellow', 'red', 'blue']);
 	 *
 	 * // Have the gradient color run between the topLeft and
 	 * // bottomRight points we defined earlier:
@@ -66,7 +66,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * var stops = [['yellow', 0], ['red', 0.15], ['red', 0.3], ['black', 0.9]];
 	 *
 	 * // Create a radial gradient using the color stops array:
-	 * var gradient = new RadialGradient(stops);
+	 * var gradient = new Gradient(stops, true);
 	 *
 	 * // We will use the center point of the circle shaped path as
 	 * // the origin point for our gradient color
@@ -87,7 +87,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 		this._id = ++Base._uid;
 		// Try object literal constructor first
 		if (!this._set(gradient)) {
-			this.setGradient(gradient || new LinearGradient());
+			this.setGradient(gradient || new Gradient());
 			this.setOrigin(origin);
 			this.setDestination(destination);
 			if (hilite)
@@ -139,7 +139,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * // Create a rectangle shaped path with the same dimensions as
 	 * // that of the view and fill it with a gradient color:
 	 * var path = new Path.Rectangle(view.bounds);
-	 * var gradient = new LinearGradient('yellow', 'red', 'blue');
+	 * var gradient = new Gradient(['yellow', 'red', 'blue']);
 	 *
 	 * // Have the gradient color run from the top left point of the view,
 	 * // to the bottom right point of the view:
@@ -185,7 +185,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * 	radius: view.bounds.height * 0.4
 	 * });
 	 *
-	 * var gradient = new RadialGradient('yellow', 'red', 'black');
+	 * var gradient = new Gradient(['yellow', 'red', 'black'], true);
 	 * var from = view.center;
 	 * var to = view.bounds.bottomRight;
 	 * var gradientColor = new GradientColor(gradient, from, to);
@@ -223,7 +223,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * 	radius: view.bounds.height * 0.4
 	 * });
 	 * 
-	 * var gradient = new RadialGradient('yellow', 'red', 'black');
+	 * var gradient = new Gradient(['yellow', 'red', 'black'], true);
 	 * var from = path.position;
 	 * var to = path.bounds.rightCenter;
 	 * var gradientColor = new GradientColor(gradient, from, to);
@@ -255,13 +255,13 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	toCanvasStyle: function(ctx) {
 		var gradient,
 			stops = this._gradient._stops;
-		if (this._gradient._type === 'LinearGradient') {
-			gradient = ctx.createLinearGradient(this._origin.x, this._origin.y,
-					this._destination.x, this._destination.y);
-		} else {
+		if (this._gradient._radial) {
 			var origin = this._hilite || this._origin;
 			gradient = ctx.createRadialGradient(origin.x, origin.y,
 					0, this._origin.x, this._origin.y, this._radius);
+		} else {
+			gradient = ctx.createLinearGradient(this._origin.x, this._origin.y,
+					this._destination.x, this._destination.y);
 		}
 		for (var i = 0, l = stops.length; i < l; i++) {
 			var stop = stops[i];

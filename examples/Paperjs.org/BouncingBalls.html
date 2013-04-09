@@ -22,7 +22,7 @@
 				saturation: 1,
 				brightness: 1
 			};
-			var gradient = new RadialGradient(color, 'black');
+			var gradient = new Gradient([color, 'black'], true);
 
 			var radius = this.radius = 50 * Math.random() + 30;
 			this.item = new CompoundPath({

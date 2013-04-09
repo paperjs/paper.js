@@ -16,16 +16,15 @@
  * @class The Gradient object.
  */
 var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
+	_class: 'Gradient',
 
-	initialize: function(stops, _type) {
-		// Keep supporting the old way of creating gradients for the time being.
-		if (this.constructor === Gradient)
-			return new (_type === 'radial' ? RadialGradient : LinearGradient)(
-					stops);
+	initialize: function(stops, radial) {
 		// Define this Gradient's unique id.
 		this._id = ++Base._uid;
-		this.setStops((arguments.length > 1 ? arguments : stops)
-				|| ['white', 'black']);
+		this.setStops(stops || ['white', 'black']);
+		// Support old version of string type argument and new radial boolean.
+		this.setRadial(typeof radial === 'string' && radial === 'radial'
+				|| radial || false);
 	},
 
 	_serialize: function(options, dictionary) {
@@ -63,7 +62,7 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 		var index = this._owners ? this._owners.indexOf(color) : -1;
 		if (index != -1) {
 			this._owners.splice(index, 1);
-			if (this._owners.length == 0)
+			if (this._owners.length === 0)
 				delete this._owners;
 		}
 	},
@@ -109,6 +108,15 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 		this._changed();
 	},
 
+	getRadial: function() {
+		return this._radial;
+	},
+
+	setRadial: function(radial) {
+		this._radial = radial;
+		this._changed();
+	},
+
 	/**
 	 * Checks whether the gradient is equal to the supplied gradient.
 	 *
@@ -126,36 +134,4 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 		}
 		return false;
 	}
-});
-
-/**
- * @name LinearGradient
- *
- * @class The LinearGradient object.
- */
-var LinearGradient = this.LinearGradient = Gradient.extend(/** @lends LinearGradient# */{
-	_type: 'LinearGradient'
-
-	/**
-	 * Creates a linear gradient object
-	 *
-	 * @name LinearGradient#initialize
-	 * @param {GradientStop[]} stops
-	 */
-});
-
-/**
- * @name RadialGradient
- *
- * @class The RadialGradient object.
- */
-var RadialGradient = this.RadialGradient = Gradient.extend(/** @lends RadialGradient# */{
-	_type: 'RadialGradient'
-
-	/**
-	 * Creates a radial gradient object
-	 *
-	 * @name RadialGradient#initialize
-	 * @param {GradientStop[]} stops
-	 */
 });

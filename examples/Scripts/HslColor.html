@@ -38,7 +38,7 @@
 					var color = { hue: hue, saturation: saturation, lightness: lightness };
 					colors.push(color);
 				}
-				var gradient = new RadialGradient(colors);
+				var gradient = new Gradient(colors, true);
 				var from = center;
 				var to = center + vector;
 				var gradientColor = new GradientColor(gradient, from, to);

@@ -89,7 +89,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * 
 	 * // Prepare the gradient color and apply it to the path:
 	 * var colors = [['yellow', 0.05], ['red', 0.2], ['black', 1]];
-	 * var gradient = new RadialGradient(colors);
+	 * var gradient = new Gradient(colors, true);
 	 * var from = path.position;
 	 * var to = path.bounds.rightCenter;
 	 * var gradientColor = new GradientColor(gradient, from, to);
@@ -135,7 +135,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * });
 	 *
 	 * // Create a radial gradient that mixes red and black evenly:
-	 * var gradient = new RadialGradient('red', 'black');
+	 * var gradient = new Gradient(['red', 'black'], true);
 	 *
 	 * // Fill the path with a gradient color that runs from its center,
 	 * // to the right center of its bounding rectangle:
