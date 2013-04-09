@@ -6,8 +6,7 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		var radial = new Gradient([new Color(1, 1, 0, 0), 'red', 'black'], true);
-		var linear = new Gradient([new Color(1, 1, 0, 0), 'red', 'black'], false);
+		var stops = [new Color(1, 1, 0, 0), 'red', 'black'];
 
 		var radius = view.bounds.width * 0.4,
 			from = new Point(view.center.x),
@@ -16,7 +15,12 @@
 		var circle = new Path.Circle({
 			center: from,
 			radius: radius,
-			fillColor: new Color(radial, from, to),
+			fillColor: {
+				stops: stops,
+				radial: true,
+				origin: from,
+				destination: to
+			},
 			strokeColor: 'black'
 		});
 
@@ -26,7 +30,12 @@
 		var rect = new Path.Rectangle({
 			from: from,
 			to: to,
-			fillColor: new Color(linear, from, to),
+			fillColor: {
+				stops: stops,
+				radial: false,
+				origin: from,
+				destination: to
+			},
 			strokeColor: 'black'
 		});
 
