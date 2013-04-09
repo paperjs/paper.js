@@ -93,22 +93,6 @@ function compareColors(color1, color2, message) {
 			(message || '') + ' components');
 }
 
-function compareGradientColors(gradientColor, gradientColor2, checkIdentity) {
-	Base.each(['origin', 'destination', 'hilite'], function(key) {
-		if (checkIdentity) {
-			equals(function() {
-				return gradientColor[key] !== gradientColor2[key];
-			}, true, 'Strict compare GradientColor#' + key);
-		}
-		equals(gradientColor[key] && gradientColor[key].toString(),
-				gradientColor2[key] && gradientColor2[key].toString(),
-				'Compare GradientColor#' + key);
-	});
-	equals(function() {
-		return gradientColor.gradient.equals(gradientColor2.gradient);
-	}, true);
-}
-
 function comparePathStyles(style, style2, checkIdentity) {
 	if (checkIdentity) {
 		equals(function() {
@@ -123,13 +107,14 @@ function comparePathStyles(style, style2, checkIdentity) {
 					return style[key] !== style2[key];
 				}, true, 'The ' + key + ' should not point to the same color object:');
 			}
-			if (style[key] instanceof GradientColor) {
-				if (checkIdentity) {
+			if (style[key] instanceof Color) {
+				if (style[key].type === 'gradient' && checkIdentity) {
 					equals(function() {
 						return style[key].gradient === style2[key].gradient;
 					}, true, 'The ' + key + '.gradient should point to the same object:');
 				}
-				compareGradientColors(style[key], style2[key], checkIdentity);
+				compareColors(style[key], style2[key],
+						'Compare PathStyle#' + key);
 			} else {
 				equals(style[key] && style[key].toString(),
 						style2[key] && style2[key].toString(),
