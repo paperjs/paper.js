@@ -54,7 +54,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	},
 
 	_serialize: function(options, dictionary) {
-		return Base.serialize([this._color, this._rampPoint], options, false, 
+		return Base.serialize([this._color, this._rampPoint], options, true, 
 				dictionary);
 	},
 
@@ -92,7 +92,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * var gradient = new Gradient(colors, true);
 	 * var from = path.position;
 	 * var to = path.bounds.rightCenter;
-	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * var gradientColor = new Color(gradient, from, to);
 	 * 
 	 * path.fillColor = gradientColor;
 	 * 
@@ -141,7 +141,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * // to the right center of its bounding rectangle:
 	 * var from = path.position;
 	 * var to = path.bounds.rightCenter;
-	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * var gradientColor = new Color(gradient, from, to);
 	 * path.fillColor = gradientColor;
 	 *
 	 * // This function is called each frame of the animation:

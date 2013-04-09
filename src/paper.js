@@ -87,7 +87,6 @@ var paper = new function() {
 /*#*/ include('style/CharacterStyle.js');
 
 /*#*/ include('color/Color.js');
-/*#*/ include('color/GradientColor.js');
 /*#*/ include('color/Gradient.js');
 /*#*/ include('color/GradientStop.js');
 

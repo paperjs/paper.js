@@ -29,7 +29,7 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 
 	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
-			return Base.serialize([this._type, this._stops],
+			return Base.serialize([this._stops, this._radial],
 					options, true, dictionary);
 		});
 	},

@@ -24,7 +24,7 @@
 		var path = new Path.Rectangle(view.bounds);
 		var gradient = new Gradient(colors, true);
 		var radius = Math.max(view.size.width, view.size.height) * 0.75;
-		path.fillColor = new GradientColor(gradient, point, point + [radius, 0]);
+		path.fillColor = new Color(gradient, point, point + [radius, 0]);
 		var gradientColor = path.fillColor;
 
 		var mouseDown = false,

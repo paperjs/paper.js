@@ -47,7 +47,8 @@ var Color = this.Color = Base.extend(new function() {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],
 		hsb: ['hue', 'saturation', 'brightness'],
-		hsl: ['hue', 'saturation', 'lightness']
+		hsl: ['hue', 'saturation', 'lightness'],
+		gradient: ['gradient', 'origin', 'destination', 'hilite']
 	};
 
 	var colorCache = {},
@@ -192,7 +193,18 @@ var Color = this.Color = Base.extend(new function() {
 		'gray-hsl': function(g) {
 			// TODO: Is lightness really the same as brightness for gray?
 			return [0, 0, g];
+		},
+
+		'gradient-rgb': function(gradient) {
+			// TODO: Implement
+			return [];
+		},
+
+		'rgb-gradient': function(r, g, b) {
+			// TODO: Implement
+			return [];
 		}
+
 	};
 
 	// Produce getters and setter methods for the various color components known
@@ -201,12 +213,15 @@ var Color = this.Color = Base.extend(new function() {
 	// its component.
 	return Base.each(types, function(properties, type) {
 		Base.each(properties, function(name, index) {
-			var isHue = name === 'hue',
+			var part = Base.capitalize(name),
+				isHue = name === 'hue',
+				isGradient = name === 'gradient',
+				isPoint = type === 'gradient' && !isGradient,
+				isHilite = name === 'hilite',
 				// Both hue and saturation have overlapping properties between
 				// hsb and hsl. Handle this here separately, by testing for
 				// overlaps and skipping conversion if the type is /hs[bl]/
-				hasOverlap = /^(hue|saturation)$/.test(name),
-				part = Base.capitalize(name);
+				hasOverlap = /^(hue|saturation)$/.test(name);
 
 			this['get' + part] = function() {
 				return this._type === type
@@ -222,11 +237,20 @@ var Color = this.Color = Base.extend(new function() {
 					this._components = this._convert(type);
 					this._type = type;
 				}
-				this._components[index] = isHue
+				if (!isGradient)
+					value = isHue
 						// Keep negative values within modulo 360 too:
 						? ((value % 360) + 360) % 360
-						// All other values are 0..1
-						: Math.min(Math.max(value, 0), 1);
+						: isPoint
+							? Point.read(arguments, 0, 0, true, isHilite) // clone, readNull
+							// All other values are 0..1
+							: Math.min(Math.max(value, 0), 1);
+				if (value != null) {
+					this._components[index] = value;
+					if (isGradient)
+						value._addOwner(this);
+					this._changed();
+				}
 			};
 		}, this);
 	}, /** @lends Color# */{
@@ -242,6 +266,10 @@ var Color = this.Color = Base.extend(new function() {
 				args = arguments,
 				read = 0,
 				type;
+			if (Array.isArray(arg)) {
+				args = arg;
+				arg = args[0];
+			}
 			// Try type arg first
 			if (typeof arg === 'string' && arg in types) {
 				type = arg;
@@ -286,17 +314,19 @@ var Color = this.Color = Base.extend(new function() {
 						components = arg._components.slice();
 						alpha = arg._alpha;
 					} else if (arg._class === 'Gradient') {
-						// TODO: Construct gradient
 						type = 'gradient';
+						components = slice.call(args);
 					} else {
 						// Determine type by presence of object property names
 						type = 'hue' in arg
 							? 'lightness' in arg
 								? 'hsl'
 								: 'hsb'
-							: 'gray' in arg
-								? 'gray'
-								: 'rgb';
+							: 'gradient' in arg
+								? 'gradient'
+								: 'gray' in arg
+									? 'gray'
+									: 'rgb';
 						var properties = types[type];
 						components = [];
 						for (var i = 0, l = properties.length; i < l; i++)
@@ -307,19 +337,31 @@ var Color = this.Color = Base.extend(new function() {
 				if (this._read && type)
 					read = 1;
 			}
+			// Define this GradientColor's unique id.
+			if (type === 'gradient')
+				this._id = ++Base._uid;
 			// Default fallbacks: rgb, black
 			this._type = type || 'rgb';
 			this._components = components || (type === 'gray' ? [0] : [0, 0, 0]);
 			this._alpha = alpha;
+			// Trigger setters for each component by looping through properties
+			// and resseting component value. 
+			// TODO: This is a hack and should implemented better, e.g. with
+			// value handlers.
+			var properties = types[this._type];
+			for (var i = 0, l = properties.length; i < l; i++)
+				this[properties[i]] = this._components[i];
 			if (this._read)
 				this._read = read;
 		},
 
-		_serialize: function(options) {
-			// We can ommit the type for gray and rgb:
-			return /^(gray|rgb)$/.test(this._type)
-					? this._components
-					: [this._type].concat(this._components);
+		_serialize: function(options, dictionary) {
+			return Base.serialize(
+					// We can ommit the type for gray and rgb:
+					/^(gray|rgb)$/.test(this._type)
+						? this._components
+						: [this._type].concat(this._components),
+					options, true, dictionary);
 		},
 
 		/**
@@ -477,8 +519,53 @@ var Color = this.Color = Base.extend(new function() {
 			return css;
 		},
 
-		toCanvasStyle: function() {
-			return this.toCss();
+		toCanvasStyle: function(ctx) {
+			if (this._type !== 'gradient')
+				return this.toCss();
+			// Gradient code form here onwards, incudling caching
+			if (this._canvasGradient)
+				return this._canvasGradient;
+			var components = this._components,
+				gradient = components[0],
+				stops = gradient._stops,
+				origin = components[1],
+				destination = components[2],
+				canvasGradient;
+			if (gradient._radial) {
+				var radius = destination.getDistance(origin),
+					hilite = components[3];
+				if (hilite) {
+					var vector = hilite.subtract(origin);
+					if (vector.getLength() > radius)
+						hilite = origin.add(vector.normalize(radius - 0.1));
+				}
+				var start = hilite || origin;
+				canvasGradient = ctx.createRadialGradient(start.x, start.y,
+						0, origin.x, origin.y, radius);
+			} else {
+				canvasGradient = ctx.createLinearGradient(origin.x, origin.y,
+						destination.x, destination.y);
+			}
+			for (var i = 0, l = stops.length; i < l; i++) {
+				var stop = stops[i];
+				canvasGradient.addColorStop(stop._rampPoint, stop._color.toCss());
+			}
+			return this._canvasGradient = canvasGradient;
+		},
+
+		/**
+		 * Transform the gradient color by the specified matrix.
+		 *
+		 * @param {Matrix} matrix the matrix to transform the gradient color by
+		 */
+		transform: function(matrix) {
+			if (this._type === 'gradient') {
+				var components = this._components;
+				for (var i = 1, l = components.length; i < l; i++) {
+					var point = components[i];
+					matrix._transformPoint(point, point, true);
+				}
+			}
 		},
 
 		/**
@@ -613,6 +700,16 @@ var Color = this.Color = Base.extend(new function() {
 				color._type = type;
 				color._components = components;
 				color._alpha = alpha;
+				if (type === 'gradient') {
+					// Make sure gradients always have an id
+					color._id = ++Base._uid;
+					// Clone all points:
+					for (var i = 1, l = components.length; i < l; i++) {
+						var point = components[i];
+						if (point)
+							components[i] = point.clone();
+					}
+				}
 				return color;
 			},
 
@@ -626,16 +723,18 @@ var Color = this.Color = Base.extend(new function() {
 
 // Expose RgbColor, RGBColor, etc. constructors for backward compatibility.
 Base.each(Color._types, function(properties, type) {
-	this[Base.capitalize(type) + 'Color'] = this[type.toUpperCase() + 'Color'] =
+	var ctor = this[Base.capitalize(type) + 'Color'] =
 		function(arg) {
 			var argType = arg != null && typeof arg,
-				components = argType === 'number'
-					? arguments
-					: argType === 'object' && arg.length != null
-						? arg
-						: null;
+				components = argType === 'object' && arg.length != null
+					? arg
+					: argType === 'string'
+						? null
+						: arguments;
 			return components
 					? new Color(type, components)
 					: new Color(arg);
 		};
+	if (!/^(gray|gradient)$/.test(type))
+		this[type.toUpperCase() + 'Color'] = ctor;
 }, this);

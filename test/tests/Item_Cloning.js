@@ -54,7 +54,7 @@ test('Path#clone()', function() {
 test('Path#clone() with GradientColor', function() {
 	var colors = ['red', 'green', 'black'];
 	var gradient = new Gradient(colors, true);
-	var color = new GradientColor(gradient, [0, 0], [20, 20], [10, 10]);
+	var color = new Color(gradient, [0, 0], [20, 20], [10, 10]);
 
 	var path = new Path([10, 20], [30, 40]);
 	path.fillColor = color;
