@@ -58,7 +58,7 @@ test('Empty Path', function() {
 
 test('Gradients', function() {
 	var path = new Path.Circle([100, 100], 40);
-	var gradient = new RadialGradient('yellow', 'red', 'black');
+	var gradient = new Gradient(['yellow', 'red', 'black'], true);
 	var from = path.position;
 	var to = path.bounds.rightCenter;
 	var gradientColor = new GradientColor(gradient, from, to);

@@ -342,13 +342,13 @@ new function() {
 		var gradientNode = getDefinition(color);
 		if (!gradientNode) {
 			var gradient = color.gradient,
-				type = gradient._type,
+				radial = gradient._radial,
 				matrix = item._gradientMatrix,
 				origin = color._origin.transform(matrix),
 				destination = color._destination.transform(matrix),
 				highlight = color._hilite && color._hilite.transform(matrix),
 				attrs;
-				if (type == 'RadialGradient') {
+				if (radial) {
 					attrs = {
 						cx: origin.x,
 						cy: origin.y,
@@ -367,8 +367,8 @@ new function() {
 					};
 				}
 			attrs.gradientUnits = 'userSpaceOnUse';
-			gradientNode = createElement(type[0].toLowerCase() + type.slice(1),
-					attrs);
+			gradientNode = createElement(
+					(radial ? 'radial' : 'linear') + 'Gradient', attrs);
 			var stops = gradient._stops;
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i],
