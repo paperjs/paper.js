@@ -64,10 +64,10 @@ function compareNumbers(number1, number2, message, precision) {
 			Format.number(number2, precision), message);
 }
 
-function compareArrays(array1, array2, message) {
+function compareArrays(array1, array2, message, precision) {
 	function format(array) {
 		return Base.each(array, function(value, index) {
-			this[index] = Format.number(value);
+			this[index] = Format.number(value, precision);
 		}, []).toString();
 	}
 	equals(format(array1), format(array2), message);
@@ -85,12 +85,12 @@ function compareRectangles(rect1, rect2, message) {
 	compareNumbers(rect1.height, rect2.height, (message || '') + ' height');
 }
 
-function compareColors(color1, color2, message) {
+function compareColors(color1, color2, message, precision) {
 	color1 = new Color(color1);
 	color2 = new Color(color2);
 	equals(color1.type, color2.type, (message || '') + ' type');
 	compareArrays(color1.components, color2.components,
-			(message || '') + ' components');
+			(message || '') + ' components', precision);
 }
 
 function comparePathStyles(style, style2, checkIdentity) {
