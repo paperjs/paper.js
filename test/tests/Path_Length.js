@@ -19,10 +19,10 @@ test('path.length', function() {
 	]);
 
 	var length = path.length;
-	compareNumbers(length, 172.10122680664062, 'path.length', 4);
+	compareNumbers(length, 172.10122680664062, 'path.length', 3);
 
 	var param = path.curves[0].getParameterAt(length / 4);
-	compareNumbers(param, 0.2255849553116685, 'path.curves[0].getParameterAt(length / 4)', 4);
+	compareNumbers(param, 0.2255849553116685, 'path.curves[0].getParameterAt(length / 4)', 3);
 });
 
 test('curve.getParameter with straight curve', function() {
