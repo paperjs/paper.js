@@ -21,31 +21,31 @@ test('path.bounds', function() {
 	// Test both closed and open paths, as the bounds for them differ
 	path.closed = false;
 	compareRectangles(path.bounds,
-			{ x: 121, y: 275.06796, width: 149.49304, height: 145.87686 },
+			{ x: 121, y: 275.068, width: 149.49305, height: 145.87682 },
 			'open path.bounds');
 	comparePoints(path.position,
-			{ x: 195.74652, y: 348.00641 },
+			{ x: 195.74653, y: 348.00641 },
 			'open path.position');
 
 	// Test both closed and open paths, as the bounds for them differ
 	path.closed = true;
 	compareRectangles(path.bounds,
-			{ x: 114.82726, y: 275.06796, width: 155.66579, height: 148.12778 },
+			{ x: 114.82725, y: 275.068, width: 155.6658, height: 148.12773 },
 			'closed path.bounds');
 	comparePoints(path.position,
-			{ x: 192.66016, y: 349.13184 },
+			{ x: 192.66015, y: 349.13186 },
 			'closed path.position');
 
 	// Scale the path by 0.5 and check bounds
 	path.scale(0.5);
 	compareRectangles(path.bounds,
-			{ x: 153.7437, y: 312.09976, width: 77.8329, height: 74.06381 },
+			{ x: 153.7437, y: 312.09993, width: 77.8329, height: 74.06386 },
 			'scaled path.bounds');
 
 	// Move the path to another position and check bounds
 	path.position = [100, 100];
 	compareRectangles(path.bounds,
-			{ x: 61.08355, y: 62.96797, width: 77.83289, height: 74.06384 },
+			{ x: 61.08355, y: 62.96807, width: 77.8329, height: 74.06386 },
 			'moved path.bounds');
 
 	// Set new bounds and check segment list as result of resizing / positioning
@@ -57,7 +57,7 @@ test('path.bounds', function() {
 	// Now rotate by 40 degrees and test bounds and segments again.
 	path.rotate(40);
 	compareRectangles(path.bounds,
-			{ x: 92.38109, y: 106.78957, width: 191.4803, height: 203.66878 },
+			{ x: 92.38102, y: 106.78972, width: 191.48071, height: 203.66876 },
 			'rotated path.bounds');
 
 	equals(path.segments.toString(),
@@ -71,7 +71,7 @@ test('path.strokeBounds on path without stroke', function() {
 		new Segment(new Point(248, 320), new Point(-42, -74), new Point(42, 74)),
 		new Segment(new Point(205, 420.94482421875), new Point(66.7890625, -12.72802734375), new Point(-79, 15.05517578125))
 	]);
-	compareRectangles(path.strokeBounds, { x: 121, y: 275.06796, width: 149.49304, height: 145.87686 });
+	compareRectangles(path.strokeBounds, { x: 121, y: 275.068, width: 149.49305, height: 145.87682 });
 });
 
 test('path.bounds & path.strokeBounds with stroke styles', function() {

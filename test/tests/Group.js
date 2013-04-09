@@ -66,11 +66,11 @@ test('Group bounds', function() {
 	compareRectangles(group.strokeBounds, { x: 87.5, y: 87.5, width: 175, height: 175 }, 'group.strokeBounds');
 
 	group.rotate(20);
-	compareRectangles(group.bounds, { x: 89.97681, y: 82.94095, width: 170.04639, height: 177.08224 }, 'rotated group.bounds');
-	compareRectangles(group.strokeBounds, { x: 87.47681, y: 80.44095, width: 175.04639, height: 182.08224 }, 'rotated group.strokeBounds');
+	compareRectangles(group.bounds, { x: 89.97687, y: 82.94085, width: 170.04627, height: 177.08228 }, 'rotated group.bounds');
+	compareRectangles(group.strokeBounds, { x: 87.47687, y: 80.44085, width: 175.04627, height: 182.08228 }, 'rotated group.strokeBounds');
 	group.rotate(20, new Point(50, 50));
-	compareRectangles(group.bounds, { x: 39.70692, y: 114.99196, width: 170.00412, height: 180.22401 }, 'rotated group.bounds');
-	compareRectangles(group.strokeBounds, { x: 37.20692, y: 112.49196, width: 175.00412, height: 185.22401 }, 'rotated group.strokeBounds');
+	compareRectangles(group.bounds, { x: 39.70708, y: 114.9919, width: 170.00396, height: 180.22418 }, 'rotated group.bounds');
+	compareRectangles(group.strokeBounds, { x: 37.20708, y: 112.4919, width: 175.00396, height: 185.22418 }, 'rotated group.strokeBounds');
 });
 
 test('group.addChildren(otherGroup.children)', function() {
