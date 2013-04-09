@@ -178,21 +178,20 @@ var Color = this.Color = Base.extend(new function() {
 			// Using the standard NTSC conversion formula that is used for
 			// calculating the effective luminance of an RGB color:
 			// http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
-			return [1 - (r * 0.2989 + g * 0.587 + b * 0.114)];
+			return [r * 0.2989 + g * 0.587 + b * 0.114];
 		},
 
 		'gray-rgb': function(g) {
-			var comp = 1 - g;
-			return [comp, comp, comp];
+			return [g, g, g];
 		},
 
 		'gray-hsb': function(g) {
-			return [0, 0, 1 - g];
+			return [0, 0, g];
 		},
 
 		'gray-hsl': function(g) {
 			// TODO: Is lightness really the same as brightness for gray?
-			return [0, 0, 1 - g];
+			return [0, 0, g];
 		}
 	};
 
@@ -310,7 +309,7 @@ var Color = this.Color = Base.extend(new function() {
 			}
 			// Default fallbacks: rgb, black
 			this._type = type || 'rgb';
-			this._components = components || (type === 'gray' ? [1] : [0, 0, 0]);
+			this._components = components || (type === 'gray' ? [0] : [0, 0, 0]);
 			this._alpha = alpha;
 			if (this._read)
 				this._read = read;

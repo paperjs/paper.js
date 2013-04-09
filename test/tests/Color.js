@@ -40,7 +40,7 @@ test('Set color to object', function() {
 	var path = new Path();
 	path.fillColor = { gray: 0.2 };
 	compareColors(path.fillColor, new Color(0.2));
-	equals(path.fillColor.toCss(), 'rgb(204, 204, 204)');
+	equals(path.fillColor.toCss(), 'rgb(51, 51, 51)');
 });
 
 test('Set color to array', function() {
@@ -73,15 +73,15 @@ test('Creating colors', function() {
 
 test('Get gray from RGB Color', function() {
 	var color = new Color(1, 0.5, 0.2);
-	compareNumbers(color.gray, 0.3848);
+	compareNumbers(color.gray, 0.6152);
 
 	var color = new Color(0.5, 0.2, 0.1);
-	compareNumbers(color.gray, 0.72175);
+	compareNumbers(color.gray, 0.27825);
 });
 
 test('Get gray from HSB Color', function() {
 	var color = new HsbColor(0, 0, 0.2);
-	compareNumbers(color.gray, 0.80002);
+	compareNumbers(color.gray, 0.19998);
 });
 
 test('Get red from HSB Color', function() {
@@ -97,28 +97,29 @@ test('Get hue from RGB Color', function() {
 
 test('Gray Color', function() {
 	var color = new Color(1);
-	compareNumbers(color.gray, 1);
-	compareNumbers(color.red, 0);
-	compareNumbers(color.blue, 0);
+	compareNumbers(color.gray, 1, 'color.gray');
+	compareNumbers(color.red, 1, 'color.red');
+	compareNumbers(color.blue, 1, 'color.blue');
 
 	color.red = 0.5;
-	compareNumbers(color.gray, 0.85055);
+	console.log(color + '');
+	compareNumbers(color.gray, 0.85045, 'color.gray');
 
 	color.green = 0.2;
 
-	compareNumbers(color.red, 0.5);
-	compareNumbers(color.green, 0.2);
-	compareNumbers(color.blue, 0);
+	compareNumbers(color.red, 0.5, 'color.red');
+	compareNumbers(color.green, 0.2, 'color.green');
+	compareNumbers(color.blue, 1, 'color.blue');
 
-	compareNumbers(color.gray, 0.73315);
+	compareNumbers(color.gray, 0.38085, 'color.gray');
 });
 
 test('Converting Colors', function() {
 	var rgbColor = new Color(1, 0.5, 0.2);
-	compareNumbers(rgbColor.gray, 0.3848);
+	compareNumbers(rgbColor.gray, 0.6152);
 	var grayColor = new Color(0.2);
-	compareColors(grayColor.convert('rgb'), new Color(0.8, 0.8, 0.8));
-	compareColors(grayColor.convert('hsb'), { hue: 0, saturation: 0, brightness: 0.8 });
+	compareColors(grayColor.convert('rgb'), new Color(0.2, 0.2, 0.2));
+	compareColors(grayColor.convert('hsb'), { hue: 0, saturation: 0, brightness: 0.2 });
 	compareColors(new Color(1, 0, 0).convert('hsb'), { hue: 0, saturation: 1, brightness: 1 });
 });
 
