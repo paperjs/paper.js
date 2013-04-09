@@ -337,7 +337,7 @@ var Color = this.Color = Base.extend(new function() {
 				if (this._read && type)
 					read = 1;
 			}
-			// Define this GradientColor's unique id.
+			// Define this gradient Color's unique id.
 			if (type === 'gradient')
 				this._id = ++Base._uid;
 			// Default fallbacks: rgb, black
@@ -486,9 +486,14 @@ var Color = this.Color = Base.extend(new function() {
 		toString: function() {
 			var properties = types[this._type],
 				parts = [],
+				isGradient = this._type === 'gradient',
 				format = Format.number;
-			for (var i = 0, l = properties.length; i < l; i++)
-				parts.push(properties[i] + ': ' + format(this._components[i]));
+			for (var i = 0, l = properties.length; i < l; i++) {
+				var value = this._components[i];
+				if (value != null)
+					parts.push(properties[i] + ': '
+							+ (isGradient ? value : format(value)));
+			}
 			if (this._alpha != null)
 				parts.push('alpha: ' + format(this._alpha));
 			return '{ ' + parts.join(', ') + ' }';
