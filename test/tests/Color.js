@@ -50,7 +50,7 @@ test('Set color to array', function() {
 	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
 });
 
-test('Creating colors', function() {
+test('Creating Colors', function() {
 
 	compareColors(new Color('#ff0000'), new Color(1, 0, 0),
 			'Color from hex code');
@@ -71,6 +71,27 @@ test('Creating colors', function() {
 			'Gray Color from array');
 });
 
+test('Deprecated Colors Constructors', function() {
+
+	compareColors(new RgbColor('#ff0000'), new Color(1, 0, 0),
+			'Color from hex code');
+
+	compareColors(new RgbColor(1, 0, 1),
+			new Color(1, 0, 1), 'Color from rgb object literal');
+
+	compareColors(new GrayColor(0.2),
+			new Color(0.2), 'Color from gray object literal');
+
+	compareColors(new HsbColor(0, 1, 1),
+			new Color(1, 0, 0).convert('hsb'), 'Color from hsb object literal');
+
+	compareColors(new RgbColor([1, 0, 0]), new Color(1, 0, 0),
+			'Rgb Color from array');
+
+	compareColors(new GrayColor([1]), new Color(1),
+			'Gray Color from array');
+});
+
 test('Get gray from RGB Color', function() {
 	var color = new Color(1, 0.5, 0.2);
 	compareNumbers(color.gray, 0.6152);
@@ -80,12 +101,12 @@ test('Get gray from RGB Color', function() {
 });
 
 test('Get gray from HSB Color', function() {
-	var color = new HsbColor(0, 0, 0.2);
+	var color = new Color({hue: 0, saturation: 0, brightness: 0.2 });
 	compareNumbers(color.gray, 0.19998);
 });
 
 test('Get red from HSB Color', function() {
-	var color = new HsbColor(0, 1, 1);
+	var color = new Color({hue: 0, saturation: 1, brightness: 1 });
 	compareNumbers(color.red, 1);
 });
 
