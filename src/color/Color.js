@@ -504,7 +504,7 @@ var Color = this.Color = Base.extend(new function() {
 							? 'lightness' in arg
 								? 'hsl'
 								: 'hsb'
-							: 'gradient' in arg
+							: 'gradient' in arg || 'stops' in arg
 								? 'gradient'
 								: 'gray' in arg
 									? 'gray'
@@ -513,8 +513,20 @@ var Color = this.Color = Base.extend(new function() {
 						var properties = types[type];
 							parse = parsers[type];
 						this._components = components = [];
-						for (var i = 0, l = properties.length; i < l; i++)
-							components[i] = parse[i].call(this, arg[properties[i]]);
+						for (var i = 0, l = properties.length; i < l; i++) {
+							var value = arg[properties[i]];
+							// Allow implicit definition of gradients through
+							// stops / radial properties. Conversion happens
+							// here on the fly:
+							if (value == null && i === 0 && type === 'gradient'
+									&& 'stops' in arg) {
+								value = {
+									stops: arg.stops,
+									radial: arg.radial
+								};
+							}
+							components[i] = parse[i].call(this, value);
+						}
 						alpha = arg.alpha;
 					}
 				}
