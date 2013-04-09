@@ -59,8 +59,9 @@ function asyncTest(testName, expected) {
 	});
 }
 
-function compareNumbers(number1, number2, message) {
-	equals(Format.number(number1), Format.number(number2), message);
+function compareNumbers(number1, number2, message, precision) {
+	equals(Format.number(number1, precision),
+			Format.number(number2, precision), message);
 }
 
 function compareArrays(array1, array2, message) {
