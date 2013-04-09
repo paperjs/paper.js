@@ -160,10 +160,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	},
 
 	setOrigin: function(origin) {
-		origin = Point.read(arguments, 0, 0, true); // clone
-		this._origin = origin;
-		if (this._destination)
-			this._radius = this._destination.getDistance(this._origin);
+		this._origin = Point.read(arguments, 0, 0, true); // clone
 		this._changed();
 	},
 
@@ -202,9 +199,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	},
 
 	setDestination: function(destination) {
-		destination = Point.read(arguments, 0, 0, true); // clone
-		this._destination = destination;
-		this._radius = this._destination.getDistance(this._origin);
+		this._destination = Point.read(arguments, 0, 0, true); // clone
 		this._changed();
 	},
 
@@ -241,33 +236,37 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	},
 
 	setHilite: function(hilite) {
-		hilite = Point.read(arguments, 0, 0, true); // clone
-		var vector = hilite.subtract(this._origin);
-		if (vector.getLength() > this._radius) {
-			this._hilite = this._origin.add(
-					vector.normalize(this._radius - 0.1));
-		} else {
-			this._hilite = hilite;
-		}
+		this._hilite = Point.read(arguments, 0, 0, true); // clone
 		this._changed();
 	},
 
 	toCanvasStyle: function(ctx) {
-		var gradient,
-			stops = this._gradient._stops;
+		if (this._canvasGradient)
+			return this._canvasGradient;
+		var stops = this._gradient._stops,
+			origin = this._origin,
+			destination = this._destination,
+			gradient;
 		if (this._gradient._radial) {
-			var origin = this._hilite || this._origin;
-			gradient = ctx.createRadialGradient(origin.x, origin.y,
-					0, this._origin.x, this._origin.y, this._radius);
+			var radius = destination.getDistance(origin),
+				hilite = this._hilite;
+			if (hilite) {
+				var vector = hilite.subtract(origin);
+				if (vector.getLength() > radius)
+					hilite = origin.add(vector.normalize(radius - 0.1));
+			}
+			var start = hilite || origin;
+			gradient = ctx.createRadialGradient(start.x, start.y,
+					0, origin.x, origin.y, radius);
 		} else {
-			gradient = ctx.createLinearGradient(this._origin.x, this._origin.y,
-					this._destination.x, this._destination.y);
+			gradient = ctx.createLinearGradient(origin.x, origin.y,
+					destination.x, destination.y);
 		}
 		for (var i = 0, l = stops.length; i < l; i++) {
 			var stop = stops[i];
 			gradient.addColorStop(stop._rampPoint, stop._color.toCss());
 		}
-		return gradient;
+		return this._canvasGradient = gradient;
 	},
 
 	/**
@@ -294,7 +293,6 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 		matrix._transformPoint(this._destination, this._destination, true);
 		if (this._hilite)
 			matrix._transformPoint(this._hilite, this._hilite, true);
-		this._radius = this._destination.getDistance(this._origin);
 	}
 });
 

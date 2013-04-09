@@ -327,6 +327,7 @@ var Color = this.Color = Base.extend(new function() {
 		 */
 		_changed: function() {
 			this._css = null;
+			this._canvasGradient = null;
 			if (this._owner)
 				this._owner._changed(/*#=*/ Change.STYLE);
 		},
