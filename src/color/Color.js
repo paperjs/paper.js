@@ -225,8 +225,13 @@ var Color = this.Color = Base.extend(new function() {
 				// name combination.
 				parser = parsers[type][index] = name === 'gradient'
 					? function(value) {
-						if (value)
-							value._addOwner(this);
+						var current = this._components[0];
+						if (current !== value) {
+							if (current)
+								current._removeOwner(this);
+							if (value)
+								value._addOwner(this);
+						}
 						return value;
 					}
 					: name === 'hue'

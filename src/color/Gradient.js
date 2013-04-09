@@ -45,7 +45,7 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	},
 
 	/**
-	 * Called by GradientColor#initialize
+	 * Called by Color#setGradient()
 	 * This is required to pass on _changed() notifications to the _owners.
 	 */
 	_addOwner: function(color) {
@@ -54,9 +54,8 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 		this._owners.push(color);
 	},
 
-	// TODO: Where and when should this be called:
 	/**
-	 * Called by GradientColor whenever this gradient stops being used.
+	 * Called by Color whenever this gradient stops being used.
 	 */
 	_removeOwner: function(color) {
 		var index = this._owners ? this._owners.indexOf(color) : -1;
