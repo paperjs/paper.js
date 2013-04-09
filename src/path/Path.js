@@ -313,10 +313,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		var style = this._style,
 			fillColor = style._fillColor,
 			strokeColor = style._strokeColor;
-		// Try calling transform on colors in case they are GradientColors.
-		if (fillColor && fillColor.transform)
+		// Try calling transform on colors in case they are gradients.
+		if (fillColor && fillColor._type === 'gradient')
 			fillColor.transform(matrix);
-		if (strokeColor && strokeColor.transform)
+		if (strokeColor && strokeColor._type === 'gradient')
 			strokeColor.transform(matrix);
 		return true;
 	},
