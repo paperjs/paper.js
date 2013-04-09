@@ -226,6 +226,9 @@ var Color = this.Color = Base.extend(new function() {
 				parser = parsers[type][index] = name === 'gradient'
 					? function(value) {
 						var current = this._components[0];
+						value = Gradient.read(
+								Array.isArray(value) ? value : arguments,
+								0, 0, false, true); // readNull
 						if (current !== value) {
 							if (current)
 								current._removeOwner(this);
