@@ -8,7 +8,9 @@
 	<script type="text/paperscript" canvas="canvas1">
 		var path = new Path.Circle(view.center, view.bounds.height * 0.4);
 		path.fillColor = {
-			gradient: [['yellow', 'red', 'black'], true],
+			// gradient: [['yellow', 'red', 'black'], true],
+			stops: ['yellow', 'red', 'black'],
+			radial: true,
 			origin: path.position,
 			destination: path.bounds.rightCenter 
 		}
