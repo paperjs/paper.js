@@ -237,26 +237,29 @@ var Color = this.Color = Base.extend(new function() {
 		// Tell Base.read that the Point constructor supporst reading with index
 		_readIndex: true,
 
-		initialize: function(arg0, arg1) {
+		initialize: function(arg) {
 			// We are storing color internally as an array of components
 			var slice = Array.prototype.slice,
-				argType = arg0 != null && typeof arg0,
-				components = argType === 'number'
-					? arguments
-					: Array.isArray(arg0)
-						? arg0
-						: null,
+				args = arguments,
 				read = 0,
-				type,
-				alpha;
-			// Try type arg0 first
-			if (argType === 'string' && arg0 in types) {
-				type = arg0;
+				type;
+			// Try type arg first
+			if (typeof arg === 'string' && arg in types) {
+				type = arg;
 				if (this._read)
 					read = 1; // will be increased below
-				components = typeof arg1 === 'number'
-						? slice.call(arguments, 1) : arg1;
+				// Shift type out of the arguments list, and process normally.
+				args = slice.call(args, 1);
+				arg = args[0];
 			}
+			var argType = arg != null && typeof arg,
+				components = argType === 'number'
+					? args
+					// Do not use Array.isArray() to also support arguments list
+					: argType === 'object' && arg.length != null
+						? arg
+						: null,
+				alpha;
 			if (components) {
 				if (!type)
 					// type = components.length >= 4
@@ -274,32 +277,32 @@ var Color = this.Color = Base.extend(new function() {
 				components = slice.call(components, 0, length);
 			} else {
 				if (argType === 'string') {
+					components = arg.match(/^#[0-9a-f]{3,6}$/i)
+							? hexToRgb(arg)
+							: nameToRgb(arg);
 					type = 'rgb';
-					components = arg0.match(/^#[0-9a-f]{3,6}$/i)
-							? hexToRgb(arg0)
-							: nameToRgb(arg0);
 				} else if (argType === 'object') {
-					if (arg0._class === 'Color') {
-						type = arg0._type;
-						components = arg0._components.slice();
-						alpha = arg0._alpha;
-					} else if (arg0._class === 'Gradient') {
+					if (arg._class === 'Color') {
+						type = arg._type;
+						components = arg._components.slice();
+						alpha = arg._alpha;
+					} else if (arg._class === 'Gradient') {
 						// TODO: Construct gradient
 						type = 'gradient';
 					} else {
 						// Determine type by presence of object property names
-						type = 'hue' in arg0
-							? 'lightness' in arg0
+						type = 'hue' in arg
+							? 'lightness' in arg
 								? 'hsl'
 								: 'hsb'
-							: 'gray' in arg0
+							: 'gray' in arg
 								? 'gray'
 								: 'rgb';
 						var properties = types[type];
 						components = [];
 						for (var i = 0, l = properties.length; i < l; i++)
-							components[i] = arg0[properties[i]] || 0;
-						alpha = arg0.alpha;
+							components[i] = arg[properties[i]] || 0;
+						alpha = arg.alpha;
 					}
 				}
 				if (this._read && type)
@@ -625,9 +628,10 @@ var Color = this.Color = Base.extend(new function() {
 Base.each(Color._types, function(properties, type) {
 	this[Base.capitalize(type) + 'Color'] = this[type.toUpperCase() + 'Color'] =
 		function(arg) {
-			var components = typeof arg === 'number'
+			var argType = arg != null && typeof arg,
+				components = argType === 'number'
 					? arguments
-					: Array.isArray(arg)
+					: argType === 'object' && arg.length != null
 						? arg
 						: null;
 			return components
