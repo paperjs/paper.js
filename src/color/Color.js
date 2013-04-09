@@ -51,7 +51,8 @@ var Color = this.Color = Base.extend(new function() {
 		gradient: ['gradient', 'origin', 'destination', 'hilite']
 	};
 
-	var colorCache = {},
+	var parsers = {}, // Parsers of values for setters, by type and property
+		colorCache = {},
 		colorCtx;
 
 	function nameToRgb(name) {
@@ -212,16 +213,36 @@ var Color = this.Color = Base.extend(new function() {
 	// color internally converts the color to the required type and then returns
 	// its component.
 	return Base.each(types, function(properties, type) {
+		// Keep track of parser functions per type.
+		parsers[type] = [];
 		Base.each(properties, function(name, index) {
 			var part = Base.capitalize(name),
-				isHue = name === 'hue',
-				isGradient = name === 'gradient',
-				isPoint = type === 'gradient' && !isGradient,
-				isHilite = name === 'hilite',
 				// Both hue and saturation have overlapping properties between
 				// hsb and hsl. Handle this here separately, by testing for
 				// overlaps and skipping conversion if the type is /hs[bl]/
-				hasOverlap = /^(hue|saturation)$/.test(name);
+				hasOverlap = /^(hue|saturation)$/.test(name),
+				// Produce value parser function for the given type / propeprty
+				// name combination.
+				parser = parsers[type][index] = name === 'gradient'
+					? function(value) {
+						if (value)
+							value._addOwner(this);
+						return value;
+					}
+					: name === 'hue'
+						? function(value) {
+							// Keep negative values within modulo 360 too:
+							return ((value % 360) + 360) % 360;
+						}
+						: type === 'gradient'
+							? function(value) {
+								// ..., clone, readNull);
+								return Point.read(arguments, 0, 0, true,
+										name === 'hilite');
+							}
+							: function(value) {
+								return Math.min(Math.max(value, 0), 1);
+							};
 
 			this['get' + part] = function() {
 				return this._type === type
@@ -237,18 +258,9 @@ var Color = this.Color = Base.extend(new function() {
 					this._components = this._convert(type);
 					this._type = type;
 				}
-				if (!isGradient)
-					value = isHue
-						// Keep negative values within modulo 360 too:
-						? ((value % 360) + 360) % 360
-						: isPoint
-							? Point.read(arguments, 0, 0, true, isHilite) // clone, readNull
-							// All other values are 0..1
-							: Math.min(Math.max(value, 0), 1);
+				value = parser.call(this, value);
 				if (value != null) {
 					this._components[index] = value;
-					if (isGradient)
-						value._addOwner(this);
 					this._changed();
 				}
 			};
@@ -265,7 +277,9 @@ var Color = this.Color = Base.extend(new function() {
 			var slice = Array.prototype.slice,
 				args = arguments,
 				read = 0,
-				type;
+				type,
+				components,
+				alpha;
 			if (Array.isArray(arg)) {
 				args = arg;
 				arg = args[0];
@@ -280,28 +294,31 @@ var Color = this.Color = Base.extend(new function() {
 				arg = args[0];
 			}
 			var argType = arg != null && typeof arg,
-				components = argType === 'number'
+				values = argType === 'number'
 					? args
 					// Do not use Array.isArray() to also support arguments list
 					: argType === 'object' && arg.length != null
 						? arg
-						: null,
-				alpha;
-			if (components) {
+						: null;
+			// The various branches below produces a values array if the valus
+			// still need parsing, and a components array if they are already
+			// parsed.
+			if (values) {
 				if (!type)
-					// type = components.length >= 4
+					// type = values.length >= 4
 					// 		? 'cmyk'
-					// 		: components.length >= 3
-					type = components.length >= 3
+					// 		: values.length >= 3
+					type = values.length >= 3
 							? 'rgb'
 							: 'gray';
 				var length = types[type].length;
-				alpha = components[length];
+				alpha = values[length];
 				if (this._read)
-					read += components === arguments
+					read += values === arguments
 						? length + (alpha != null ? 1 : 0)
 						: 1;
-				components = slice.call(components, 0, length);
+				if (values.length > length)
+					values = slice.call(values, 0, length);
 			} else {
 				if (argType === 'string') {
 					components = arg.match(/^#[0-9a-f]{3,6}$/i)
@@ -315,7 +332,7 @@ var Color = this.Color = Base.extend(new function() {
 						alpha = arg._alpha;
 					} else if (arg._class === 'Gradient') {
 						type = 'gradient';
-						components = slice.call(args);
+						values = args;
 					} else {
 						// Determine type by presence of object property names
 						type = 'hue' in arg
@@ -327,30 +344,35 @@ var Color = this.Color = Base.extend(new function() {
 								: 'gray' in arg
 									? 'gray'
 									: 'rgb';
+						// Convert to array and parse in one loop, for efficiency
 						var properties = types[type];
+							parse = parsers[type];
 						components = [];
 						for (var i = 0, l = properties.length; i < l; i++)
-							components[i] = arg[properties[i]] || 0;
+							components[i] = parse[i].call(this, arg[properties[i]]);
 						alpha = arg.alpha;
 					}
 				}
 				if (this._read && type)
 					read = 1;
 			}
+			// Default fallbacks: rgb, black
+			this._type = type || 'rgb';
 			// Define this gradient Color's unique id.
 			if (type === 'gradient')
 				this._id = ++Base._uid;
-			// Default fallbacks: rgb, black
-			this._type = type || 'rgb';
-			this._components = components || (type === 'gray' ? [0] : [0, 0, 0]);
+			if (!components) {
+				// Produce a components array now, and parse values
+				components = [];
+				var parse = parsers[this._type];
+				for (var i = 0, l = parse.length; i < l; i++) {
+					var value = parse[i].call(this, values && values[i]);
+					if (value != null)
+						components[i] = value;
+				}
+			}
+			this._components = components;
 			this._alpha = alpha;
-			// Trigger setters for each component by looping through properties
-			// and resseting component value. 
-			// TODO: This is a hack and should implemented better, e.g. with
-			// value handlers.
-			var properties = types[this._type];
-			for (var i = 0, l = properties.length; i < l; i++)
-				this[properties[i]] = this._components[i];
 			if (this._read)
 				this._read = read;
 		},
