@@ -509,7 +509,7 @@ var Color = this.Color = Base.extend(new function() {
 						// Convert to array and parse in one loop, for efficiency
 						var properties = types[type];
 							parse = parsers[type];
-						components = [];
+						this._components = components = [];
 						for (var i = 0, l = properties.length; i < l; i++)
 							components[i] = parse[i].call(this, arg[properties[i]]);
 						alpha = arg.alpha;
@@ -525,7 +525,7 @@ var Color = this.Color = Base.extend(new function() {
 				this._id = ++Base._uid;
 			if (!components) {
 				// Produce a components array now, and parse values
-				components = [];
+				this._components = components = [];
 				var parse = parsers[this._type];
 				for (var i = 0, l = parse.length; i < l; i++) {
 					var value = parse[i].call(this, values && values[i]);
