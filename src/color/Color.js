@@ -1042,6 +1042,6 @@ Base.each(Color._types, function(properties, type) {
 					? new Color(type, components)
 					: new Color(arg);
 		};
-	if (!/^(gray|gradient)$/.test(type))
+	if (type.length == 3)
 		this[type.toUpperCase() + 'Color'] = ctor;
 }, this);
