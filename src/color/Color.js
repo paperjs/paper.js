@@ -525,7 +525,9 @@ var Color = this.Color = Base.extend(new function() {
 									radial: arg.radial
 								};
 							}
-							components[i] = parse[i].call(this, value);
+							value = parse[i].call(this, value);
+							if (value != null)
+								components[i] = value;
 						}
 						alpha = arg.alpha;
 					}
