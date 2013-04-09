@@ -21,10 +21,12 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	initialize: function(stops, radial) {
 		// Define this Gradient's unique id.
 		this._id = ++Base._uid;
-		this.setStops(stops || ['white', 'black']);
-		// Support old version of string type argument and new radial boolean.
-		this.setRadial(typeof radial === 'string' && radial === 'radial'
-				|| radial || false);
+		if (!stops || !this._set(stops)) {
+			this.setStops(stops || ['white', 'black']);
+			// Support old string type argument and new radial boolean.
+			this.setRadial(typeof radial === 'string' && radial === 'radial'
+					|| radial || false);
+		}
 	},
 
 	_serialize: function(options, dictionary) {
