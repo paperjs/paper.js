@@ -47,7 +47,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 
 	// TODO: Do we really need to also clone the color here?
 	/**
-	 * @return {GradientColor} a copy of the gradient-stop
+	 * @return {GradientStop} a copy of the gradient-stop
 	 */
 	clone: function() {
 		return new GradientStop(this._color.clone(), this._rampPoint);

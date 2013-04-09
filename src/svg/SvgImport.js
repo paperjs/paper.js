@@ -153,10 +153,10 @@ new function() {
 			origin = getPoint(node, 'x1', 'y1');
 			destination = getPoint(node, 'x2', 'y2');
 		}
-		// We don't return the GradientColor, since we only need a reference to
-		// it in definitions, which is created in applyAttributes()
 		applyAttributes(
 			new Color(gradient, origin, destination, highlight), node);
+		// We don't return the gradient, since we only need a reference to it in
+		// definitions, which is created in applyAttributes()
 		return null;
 	}
 
