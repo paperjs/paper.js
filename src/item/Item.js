@@ -306,7 +306,7 @@ var Item = this.Item = Base.extend(Callback, {
 		}
 		this._name = name || undefined;
 		this._changed(/*#=*/ ChangeFlag.ATTRIBUTE);
-	}
+	},
 
 	/**
 	 * The path style of the item.
@@ -364,6 +364,13 @@ var Item = this.Item = Base.extend(Callback, {
 	 * });
 	 * path2.style = myStyle;
 	 */
+	getStyle: function() {
+		return this._style;
+	},
+
+	setStyle: function(style) {
+		this._style.initialize(style);
+	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	// Produce getter/setters for properties. We need setters because we want to
 	// call _changed() if a property was modified.

@@ -65,6 +65,7 @@ var paper = new function() {
 /*#*/ include('item/PlacedItem.js');
 /*#*/ include('item/Raster.js');
 /*#*/ include('item/PlacedSymbol.js');
+/*#*/ include('item/Style.js');
 /*#*/ include('item/HitResult.js');
 
 /*#*/ include('path/Segment.js');
@@ -80,8 +81,6 @@ var paper = new function() {
 
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');
-
-/*#*/ include('style/Style.js');
 
 /*#*/ include('color/Color.js');
 /*#*/ include('color/Gradient.js');
