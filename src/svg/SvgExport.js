@@ -341,12 +341,11 @@ new function() {
 		// TODO: Implement gradient merging in SvgImport
 		var gradientNode = getDefinition(color);
 		if (!gradientNode) {
-			var gradient = color.gradient,
+			var gradient = color.getGradient(),
 				radial = gradient._radial,
 				matrix = item._gradientMatrix,
-				origin = color._origin.transform(matrix),
-				destination = color._destination.transform(matrix),
-				highlight = color._hilite && color._hilite.transform(matrix),
+				origin = color.getOrigin().transform(matrix),
+				destination = color.getDestination().transform(matrix),
 				attrs;
 				if (radial) {
 					attrs = {
@@ -354,7 +353,9 @@ new function() {
 						cy: origin.y,
 						r: origin.getDistance(destination)
 					};
+					var highlight = color.getHilite();
 					if (highlight) {
+						highlight = highlight.transform(matrix);
 						attrs.fx = highlight.x;
 						attrs.fy = highlight.y;
 					}

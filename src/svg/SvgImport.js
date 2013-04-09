@@ -156,7 +156,7 @@ new function() {
 		// We don't return the GradientColor, since we only need a reference to
 		// it in definitions, which is created in applyAttributes()
 		applyAttributes(
-			new GradientColor(gradient, origin, destination, highlight), node);
+			new Color(gradient, origin, destination, highlight), node);
 		return null;
 	}
 

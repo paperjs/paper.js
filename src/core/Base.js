@@ -290,7 +290,12 @@ this.Base = Base.inject(/** @lends Base# */{
 							ref = this.references[id];
 						if (!ref) {
 							this.length++;
-							this.definitions[id] = create.call(item);
+							var res = create.call(item);
+							// Also automatically insert class for dictionary
+							// entries.
+							if (item._class && res[0] !== item._class)
+								res.unshift(item._class);
+							this.definitions[id] = res;
 							ref = this.references[id] = [id];
 						}
 						return ref;
@@ -300,8 +305,8 @@ this.Base = Base.inject(/** @lends Base# */{
 			if (obj && obj._serialize) {
 				res = obj._serialize(options, dictionary);
 				// If we don't serialize to compact form (meaning no type
-				// identifier), see if _serialize didn't already add the type,
-				// e.g. for types that do not support compact form.
+				// identifier), see if _serialize didn't already add the class,
+				// e.g. for classes that do not support compact form.
 				if (obj._class && !compact && res[0] !== obj._class)
 					res.unshift(obj._class);
 			} else if (Array.isArray(obj)) {

@@ -61,7 +61,7 @@ test('Gradients', function() {
 	var gradient = new Gradient(['yellow', 'red', 'black'], true);
 	var from = path.position;
 	var to = path.bounds.rightCenter;
-	var gradientColor = new GradientColor(gradient, from, to);
+	var gradientColor = new Color(gradient, from, to);
 	path.fillColor = gradientColor;
 	path.strokeColor = 'black';
 	testExportImportJson(paper.project);

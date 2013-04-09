@@ -16,7 +16,7 @@
 		var circle = new Path.Circle({
 			center: from,
 			radius: radius,
-			fillColor: new GradientColor(radial, from, to),
+			fillColor: new Color(radial, from, to),
 			strokeColor: 'black'
 		});
 
@@ -26,7 +26,7 @@
 		var rect = new Path.Rectangle({
 			from: from,
 			to: to,
-			fillColor: new GradientColor(linear, from, to),
+			fillColor: new Color(linear, from, to),
 			strokeColor: 'black'
 		});
 

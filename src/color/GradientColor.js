@@ -16,7 +16,6 @@
  * @class The GradientColor object.
  */
 var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# */{
-	_type: 'gradient',
 
 	/**
 	 * Creates a gradient color object.
@@ -45,7 +44,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 *
 	 * // Have the gradient color run between the topLeft and
 	 * // bottomRight points we defined earlier:
-	 * var gradientColor = new GradientColor(gradient, topLeft, bottomRight);
+	 * var gradientColor = new Color(gradient, topLeft, bottomRight);
 	 *
 	 * // Set the fill color of the path to the gradient color:
 	 * path.fillColor = gradientColor;
@@ -77,7 +76,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * var to = path.position + [80, 0];
 	 *
 	 * // Create the gradient color:
-	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * var gradientColor = new Color(gradient, from, to);
 	 *
 	 * // Set the fill color of the path to the gradient color:
 	 * path.fillColor = gradientColor;
@@ -145,7 +144,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * // to the bottom right point of the view:
 	 * var from = view.bounds.topLeft;
 	 * var to = view.bounds.bottomRight;
-	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * var gradientColor = new Color(gradient, from, to);
 	 * path.fillColor = gradientColor;
 	 *
 	 * function onMouseMove(event) {
@@ -185,7 +184,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * var gradient = new Gradient(['yellow', 'red', 'black'], true);
 	 * var from = view.center;
 	 * var to = view.bounds.bottomRight;
-	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * var gradientColor = new Color(gradient, from, to);
 	 * path.fillColor = gradientColor;
 	 *
 	 * function onMouseMove(event) {
@@ -221,7 +220,7 @@ var GradientColor = this.GradientColor = Color.extend(/** @lends GradientColor# 
 	 * var gradient = new Gradient(['yellow', 'red', 'black'], true);
 	 * var from = path.position;
 	 * var to = path.bounds.rightCenter;
-	 * var gradientColor = new GradientColor(gradient, from, to);
+	 * var gradientColor = new Color(gradient, from, to);
 	 * 
 	 * path.fillColor = gradientColor;
 	 * 
