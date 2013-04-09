@@ -143,8 +143,8 @@ test('PointText testing', function() {
 	text.content = 'This is also a test';
 
 	text.rotate(45);
-	text.shear(.85, .15);
-	text.scale(.85, 2);
+	text.shear(0.85, 0.15);
+	text.scale(0.85, 2);
 	testExportImportJson(paper.project);
 });
 
