@@ -158,15 +158,6 @@ var Style = this.Style = Base.extend(new function() {
 		};
 	});
 
-	// Define accessor on Item class for this style.
-	item.getStyle = function() {
-		return this._style;
-	};
-
-	item.setStyle = function(style) {
-		this._style.initialize(style);
-	};
-
 	Item.inject(item);
 	return fields;
 }, /** @lends Style# */{
