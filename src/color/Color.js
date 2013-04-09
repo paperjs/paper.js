@@ -196,20 +196,6 @@ var Color = this.Color = Base.extend(new function() {
 		}
 	};
 
-	/**
-	 * @return {Number[]} the converted components as an array.
-	 */
-	function convert(components, from, to) {
-		var converter;
-		return from == to
-				? components.slice()
-				: (converter = converters[from + '-' + to])
-					? converter.apply(this, components)
-					// Convert to and from rgb if no direct converter exists
-					: converters['rgb-' + to].apply(this,
-						converters[from + '-rgb'].apply(this, components));
-	}
-
 	// Produce getters and setter methods for the various color components known
 	// by the different color types. Requesting any of these components on any
 	// color internally converts the color to the required type and then returns
@@ -227,14 +213,14 @@ var Color = this.Color = Base.extend(new function() {
 				return this._type === type
 					|| hasOverlap && /^hs[bl]$/.test(this._type)
 						? this._components[index]
-						: convert(this._components, this._type, type)[index];
+						: this._convert(type)[index];
 			};
 
 			this['set' + part] = function(value) {
 				// Convert to the requrested type before setting the value
 				if (this._type !== type
 						&& !(hasOverlap && /^hs[bl]$/.test(this._type))) {
-					this._components = convert(this._components, this._type, type);
+					this._components = this._convert(type);
 					this._type = type;
 				}
 				this._components[index] = isHue
@@ -351,9 +337,23 @@ var Color = this.Color = Base.extend(new function() {
 					this._alpha);
 		},
 
+		/**
+		 * @return {Number[]} the converted components as an array.
+		 */
+		_convert: function(type) {
+			var converter;
+			return this._type == type
+					? this._components.slice()
+					: (converter = converters[this._type + '-' + type])
+						? converter.apply(this, this._components)
+						// Convert to and from rgb if no direct converter exists
+						: converters['rgb-' + type].apply(this,
+							converters[this._type + '-rgb'].apply(this,
+									this._components));
+		},
+
 		convert: function(type) {
-			return Color.create(type,
-					convert(this._components, this._type, type), this._alpha);
+			return Color.create(type, this._convert(type), this._alpha);
 		},
 
 		/**
@@ -371,7 +371,7 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		setType: function(type) {
-			this._components = convert(this._components, this._type, type);
+			this._components = this._convert(type);
 			this._type = type;
 		},
 
@@ -457,7 +457,7 @@ var Color = this.Color = Base.extend(new function() {
 			// Only cache _css value if we're not ommiting alpha, as required
 			// by SVG export.
 			if (!css || noAlpha) {
-				var components = convert(this._components, this._type, 'rgb'),
+				var components = this._convert('rgb'),
 					alpha = noAlpha || this._alpha == null ? 1 : this._alpha;
 				components = [
 					Math.round(components[0] * 255),
@@ -621,6 +621,7 @@ var Color = this.Color = Base.extend(new function() {
 	});
 });
 
+// Expose RgbColor, RGBColor, etc. constructors for backward compatibility.
 Base.each(Color._types, function(properties, type) {
 	this[Base.capitalize(type) + 'Color'] = this[type.toUpperCase() + 'Color'] =
 		function(arg) {
