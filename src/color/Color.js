@@ -84,7 +84,7 @@ var Color = this.Color = Base.extend(new function() {
 	function hexToRgb(string) {
 		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
 		if (hex.length >= 4) {
-			var components = new Array(3);
+			var components = [0, 0, 0];
 			for (var i = 0; i < 3; i++) {
 				var value = hex[i + 1];
 				components[i] = parseInt(value.length == 1
