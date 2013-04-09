@@ -273,6 +273,48 @@ var Color = this.Color = Base.extend(new function() {
 		_readIndex: true,
 
 		/**
+		 * Creates a RGB Color object
+		 *
+		 * @name Color#initialize
+		 * @param {Number} red the amount of red in the color as a value
+		 * between {@code 0} and {@code 1}
+		 * @param {Number} green the amount of green in the color as a value
+		 * between {@code 0} and {@code 1}
+		 * @param {Number} blue the amount of blue in the color as a value
+		 * between {@code 0} and {@code 1}
+		 * @param {Number} [alpha] the alpha of the color as a value between
+		 * {@code 0} and {@code 1}
+		 *
+		 * @example {@paperscript}
+		 * // Creating a RGB Color:
+		 *
+		 * // Create a circle shaped path at {x: 80, y: 50}
+		 * // with a radius of 30:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // 100% red, 0% blue, 50% blue:
+		 * circle.fillColor = new Color(1, 0, 0.5);
+		 */
+		/**
+		 * Creates a GrayColor object
+		 *
+		 * @name Color#initialize
+		 * @param {Number} gray the amount of gray in the color as a value
+		 * between {@code 0} and {@code 1}
+		 * @param {Number} [alpha] the alpha of the color as a value between
+		 * {@code 0} and {@code 1}
+		 *
+		 * @example {@paperscript}
+		 * // Creating a gray Color:
+		 *
+		 * // Create a circle shaped path at {x: 80, y: 50}
+		 * // with a radius of 30:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // Create a GrayColor with 50% gray:
+		 * circle.fillColor = new Color(0.5);
+		 */
+		/**
 		 * Creates a gradient color object.
 		 *
 		 * @name Color#initialize
@@ -336,6 +378,56 @@ var Color = this.Color = Base.extend(new function() {
 		 *
 		 * // Set the fill color of the path to the gradient color:
 		 * path.fillColor = gradientColor;
+		 */
+		// DOCS: Fix HSB Color documentation
+		/**
+		 * Creates a HSB Color object
+		 *
+		 * @name Color#initialize
+		 * @param {Number} hue the hue of the color as a value in degrees between
+		 * {@code 0} and {@code 360}.
+		 * @param {Number} saturation the saturation of the color as a value
+		 * between {@code 0} and {@code 1}
+		 * @param {Number} brightness the brightness of the color as a value
+		 * between {@code 0} and {@code 1}
+		 * @param {Number} [alpha] the alpha of the color as a value between
+		 * {@code 0} and {@code 1}
+		 *
+		 * @example {@paperscript}
+		 * // Creating a HSB Color:
+		 *
+		 * // Create a circle shaped path at {x: 80, y: 50}
+		 * // with a radius of 30:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // Create a HSB Color with a hue of 90 degrees, a saturation
+		 * // 100% and a brightness of 100%:
+		 * circle.fillColor = { hue: 90, saturation: 1, brightness: 1 };
+		 */
+		// DOCS: Fix HSL Color documentation
+		/**
+		 * Creates a HSL Color object
+		 *
+		 * @name HSL Color#initialize
+		 * @param {Number} hue the hue of the color as a value in degrees between
+		 * {@code 0} and {@code 360}.
+		 * @param {Number} saturation the saturation of the color as a value
+		 * between {@code 0} and {@code 1}
+		 * @param {Number} lightness the lightness of the color as a value
+		 * between {@code 0} and {@code 1}
+		 * @param {Number} [alpha] the alpha of the color as a value between
+		 * {@code 0} and {@code 1}
+		 *
+		 * @example {@paperscript}
+		 * // Creating a HSL Color:
+		 *
+		 * // Create a circle shaped path at {x: 80, y: 50}
+		 * // with a radius of 30:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // Create an HslColor with a hue of 90 degrees, a saturation
+		 * // 100% and a lightness of 50%:
+		 * circle.fillColor = { hue: 90, saturation: 1, lightness: 0.5 };
 		 */
 		initialize: function(arg) {
 			// We are storing color internally as an array of components
