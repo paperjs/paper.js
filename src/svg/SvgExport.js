@@ -353,7 +353,7 @@ new function() {
 						cy: origin.y,
 						r: origin.getDistance(destination)
 					};
-					var highlight = color.getHilite();
+					var highlight = color.getHighlight();
 					if (highlight) {
 						highlight = highlight.transform(matrix);
 						attrs.fx = highlight.x;

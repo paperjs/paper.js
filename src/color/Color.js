@@ -48,7 +48,7 @@ var Color = this.Color = Base.extend(new function() {
 		rgb: ['red', 'green', 'blue'],
 		hsb: ['hue', 'saturation', 'brightness'],
 		hsl: ['hue', 'saturation', 'lightness'],
-		gradient: ['gradient', 'origin', 'destination', 'hilite']
+		gradient: ['gradient', 'origin', 'destination', 'highlight']
 	};
 
 	var parsers = {}, // Parsers of values for setters, by type and property
@@ -243,7 +243,7 @@ var Color = this.Color = Base.extend(new function() {
 							? function(value) {
 								// ..., clone, readNull);
 								return Point.read(arguments, 0, 0, true,
-										name === 'hilite');
+										name === 'highlight');
 							}
 							: function(value) {
 								return Math.min(Math.max(value, 0), 1);
@@ -326,7 +326,7 @@ var Color = this.Color = Base.extend(new function() {
 		 * @param {Gradient} gradient
 		 * @param {Point} origin
 		 * @param {Point} destination
-		 * @param {Point} [hilite]
+		 * @param {Point} [highlight]
 		 *
 		 * @example {@paperscript height=200}
 		 * // Applying a linear gradient color containing evenly distributed
@@ -462,7 +462,7 @@ var Color = this.Color = Base.extend(new function() {
 					: argType === 'object' && arg.length != null
 						? arg
 						: null;
-			// The various branches below produces a values array if the valus
+			// The various branches below produces a values array if the values
 			// still need parsing, and a components array if they are already
 			// parsed.
 			if (values) {
@@ -722,13 +722,13 @@ var Color = this.Color = Base.extend(new function() {
 				canvasGradient;
 			if (gradient._radial) {
 				var radius = destination.getDistance(origin),
-					hilite = components[3];
-				if (hilite) {
-					var vector = hilite.subtract(origin);
+					highlight = components[3];
+				if (highlight) {
+					var vector = highlight.subtract(origin);
 					if (vector.getLength() > radius)
-						hilite = origin.add(vector.normalize(radius - 0.1));
+						highlight = origin.add(vector.normalize(radius - 0.1));
 				}
-				var start = hilite || origin;
+				var start = highlight || origin;
 				canvasGradient = ctx.createRadialGradient(start.x, start.y,
 						0, origin.x, origin.y, radius);
 			} else {
@@ -952,9 +952,9 @@ var Color = this.Color = Base.extend(new function() {
 		 */
 
 		/**
-		 * The hilite point of the gradient.
+		 * The highlight point of the gradient.
 		 *
-		 * @name Color#hilite
+		 * @name Color#highlight
 		 * @property
 		 * @type Point
 		 *
@@ -975,9 +975,9 @@ var Color = this.Color = Base.extend(new function() {
 		 * path.fillColor = gradientColor;
 		 * 
 		 * function onMouseMove(event) {
-		 * 	// Set the origin hilite of the path's gradient color
+		 * 	// Set the origin highlight of the path's gradient color
 		 * 	// to the position of the mouse:
-		 * 	path.fillColor.hilite = event.point;
+		 * 	path.fillColor.highlight = event.point;
 		 * }
 		 */
 
