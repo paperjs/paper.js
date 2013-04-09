@@ -82,9 +82,6 @@ var paper = new function() {
 /*#*/ include('text/PointText.js');
 
 /*#*/ include('style/Style.js');
-/*#*/ include('style/PathStyle.js');
-/*#*/ include('style/ParagraphStyle.js');
-/*#*/ include('style/CharacterStyle.js');
 
 /*#*/ include('color/Color.js');
 /*#*/ include('color/Gradient.js');

@@ -292,18 +292,6 @@ new function() {
 			color.setAlpha(parseFloat(value));
 	}
 
-	function applyTextAttribute(item, apply) {
-		if (item instanceof TextItem) {
-			apply(item);
-		} else if (item instanceof Group) {
-			// Text styles need to be recursively passed down to children that
-			// might be TextItems explicitely.
-			var children = item._children;
-			for (var i = 0, l = children.length; i < l; i++)
-				apply(children[i]);
-		}
-	}
-
 	// Create apply-functions for attributes, and merge in those for SvgStlyes:
 	var attributes = Base.each(SvgStyles, function(entry) {
 		this[entry.attribute] = function(item, value, name, node) {
@@ -338,26 +326,20 @@ new function() {
 		'stroke-opacity': applyOpacity,
 
 		'font-family': function(item, value) {
-			applyTextAttribute(item, function(item) {
-				item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
-			});
+			item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
 		},
 
 		'font-size': function(item, value) {
-			applyTextAttribute(item, function(item) {
-				item.setFontSize(parseFloat(value));
-			});
+			item.setFontSize(parseFloat(value));
 		},
 
 		'text-anchor': function(item, value) {
-			applyTextAttribute(item, function(item) {
-				// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
-				item.setJustification({
-					start: 'left',
-					middle: 'center',
-					end: 'right'
-				}[value]);
-			});
+			// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
+			item.setJustification({
+				start: 'left',
+				middle: 'center',
+				end: 'right'
+			}[value]);
 		},
 
 		visibility: function(item, value) {

@@ -53,7 +53,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		this.activeLayer = new Layer();
 		if (view)
 			this.view = view instanceof View ? view : View.create(view);
-		this._currentStyle = new PathStyle();
+		this._currentStyle = new Style();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		// See Item.draw() for an explanation of _drawCount
@@ -107,7 +107,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * The currently active path style. All selected items and newly
 	 * created items will be styled with this style.
 	 *
-	 * @type PathStyle
+	 * @type Style
 	 * @bean
 	 *
 	 * @example {@paperscript}

@@ -29,7 +29,7 @@
 /*#*/ include('Segment.js');
 
 /*#*/ include('Path.js');
-/*#*/ include('PathStyle.js');
+/*#*/ include('Style.js');
 /*#*/ include('Path_Shapes.js');
 /*#*/ include('Path_Drawing_Commands.js');
 /*#*/ include('Path_Curves.js');

@@ -93,7 +93,7 @@ function compareColors(color1, color2, message, precision) {
 			(message || '') + ' components', precision);
 }
 
-function comparePathStyles(style, style2, checkIdentity) {
+function compareStyles(style, style2, checkIdentity) {
 	if (checkIdentity) {
 		equals(function() {
 			return style !== style2;
@@ -114,28 +114,19 @@ function comparePathStyles(style, style2, checkIdentity) {
 					}, true, 'The ' + key + '.gradient should point to the same object:');
 				}
 				compareColors(style[key], style2[key],
-						'Compare PathStyle#' + key);
+						'Compare Style#' + key);
 			} else {
 				equals(style[key] && style[key].toString(),
 						style2[key] && style2[key].toString(),
-						'Compare PathStyle#' + key);
+						'Compare Style#' + key);
 			}
 		}
 	});
 
-	Base.each(['strokeCap', 'strokeJoin', 'dashOffset', 'miterLimit',
-			'strokeOverprint', 'fillOverprint'], function(key) {
-		if (style[key]) {
-			equals(function() {
-				return style[key] == style2[key];
-			}, true, 'Compare PathStyle#' + key);
-		}
-	});
-
-	if (style.dashArray) {
-		compareArrays(style.dashArray, style2.dashArray,
-			'Compare CharacterStyle#dashArray');
-	}
+	compareObjects('Style', ['strokeCap', 'strokeJoin', 'dashArray',
+			'dashOffset', 'miterLimit', 'strokeOverprint', 'fillOverprint',
+			'fontSize', 'font', 'leading', 'justification'],
+			style, style2, checkIdentity);
 }
 
 function compareObjects(name, keys, obj, obj2, checkIdentity) {
@@ -145,18 +136,16 @@ function compareObjects(name, keys, obj, obj2, checkIdentity) {
 		}, true);
 	}
 	Base.each(keys, function(key) {
-		equals(obj[key], obj2[key], 'Compare ' + name + '#' + key);
+		var val = obj[key], val2 = obj2[key],
+			message = 'Compare ' + name + '#' + key;
+		if (typeof val === 'number') {
+			compareNumbers(val, val2, message);
+		} else if (Array.isArray(val)) {
+			compareArrays(val, val2, message);
+		} else {
+			equals(val, val2, message);
+		}
 	});
-}
-
-function compareCharacterStyles(characterStyle, characterStyle2, checkIdentity) {
-	compareObjects('CharacterStyle', ['fontSize', 'font'],
-			characterStyle, characterStyle2, checkIdentity);
-}
-
-function compareParagraphStyles(paragraphStyle, paragraphStyle2, checkIdentity) {
-	compareObjects('ParagraphStyle', ['justification'],
-			paragraphStyle, paragraphStyle2, checkIdentity);
 }
 
 function compareSegmentPoints(segmentPoint, segmentPoint2, checkIdentity) {
@@ -318,8 +307,6 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 	// TextItem specific:
 	if (item instanceof TextItem) {
 		equals(item.content, item2.content, 'Compare Item#content');
-		compareCharacterStyles(item.characterStyle, item2.characterStyle,
-				checkIdentity);
 	}
 
 	// PointText specific:
@@ -334,8 +321,8 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 	}
 
 	if (item.style) {
-		// Path Style
-		comparePathStyles(item.style, item2.style, checkIdentity);
+		// Style
+		compareStyles(item.style, item2.style, checkIdentity);
 	}
 
 	// Check length of children and recursively compare them:

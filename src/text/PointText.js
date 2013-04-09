@@ -62,10 +62,10 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 			return;
 		this._setStyles(ctx);
 		var style = this._style,
-			leading = this.getLeading(),
-			lines = this._lines;
+			lines = this._lines,
+			leading = style.getLeading();
 		ctx.font = style.getFontStyle();
-		ctx.textAlign = this.getJustification();
+		ctx.textAlign = style.getJustification();
 		for (var i = 0, l = lines.length; i < l; i++) {
 			var line = lines[i];
 			if (style._fillColor)
@@ -83,23 +83,24 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 			// Create an in-memory canvas on which to do the measuring
 			if (!measureCtx)
 				measureCtx = CanvasProvider.getContext(1, 1);
-			var justification = this.getJustification(),
+			var style = this._style,
+				lines = this._lines,
+				count = lines.length,
+				justification = style.getJustification(),
+				leading = style.getLeading(),
 				x = 0;
 			// Measure the real width of the text. Unfortunately, there is no
 			// sane way to measure text height with canvas
-			measureCtx.font = this._style.getFontStyle();
+			measureCtx.font = style.getFontStyle();
 			var width = 0;
-			for (var i = 0, l = this._lines.length; i < l; i++)
-				width = Math.max(width, measureCtx.measureText(
-						this._lines[i]).width);
+			for (var i = 0; i < count; i++)
+				width = Math.max(width, measureCtx.measureText(lines[i]).width);
 			// Adjust for different justifications
 			if (justification !== 'left')
 				x -= width / (justification === 'center' ? 2: 1);
-			var leading = this.getLeading(),
-				count = this._lines.length,
-				// Until we don't have baseline measuring, assume leading / 4 as
-				// a rough guess:
-				bounds = Rectangle.create(x,
+			// Until we don't have baseline measuring, assume leading / 4 as a
+			// rough guess:
+			var bounds = Rectangle.create(x,
 						count ? leading / 4 + (count - 1) * leading : 0,
 						width, -count * leading);
 			return matrix ? matrix._transformBounds(bounds, bounds) : bounds;

@@ -59,9 +59,7 @@ var Item = this.Item = Base.extend(Callback, {
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project)
 			paper.project.activeLayer.addChild(this);
-		// TextItem defines its own _style, based on CharacterStyle
-		if (!this._style)
-			this._style = PathStyle.create(this);
+		this._style = Style.create(this);
 		this.setStyle(this._project.getCurrentStyle());
 		this._matrix = new Matrix();
 		if (point)
@@ -158,7 +156,7 @@ var Item = this.Item = Base.extend(Callback, {
 		// Do not serialize styles on Groups and Layers, since they just unify
 		// their children's own styles.
 		if (!(this instanceof Group))
-			serialize(this._style._defaults);
+			serialize(this._style.getDefaults());
 		// There is no compact form for Item serialization, we always keep the
 		// type.
 		return [ this._class, props ];
@@ -166,7 +164,7 @@ var Item = this.Item = Base.extend(Callback, {
 
 	/**
 	 * Private notifier that is called whenever a change occurs in this item or
-	 * its sub-elements, such as Segments, Curves, PathStyles, etc.
+	 * its sub-elements, such as Segments, Curves, Styles, etc.
 	 *
 	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
@@ -314,7 +312,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * The path style of the item.
 	 *
 	 * @name Item#getStyle
-	 * @type PathStyle
+	 * @type Style
 	 * @bean
 	 *
 	 * @example {@paperscript}

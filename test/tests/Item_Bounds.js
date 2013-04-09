@@ -55,3 +55,10 @@ test('path.bounds when contained in a transformed group', function() {
 	group.translate(100, 100);
 	compareRectangles(path.bounds, { x: 10, y: 10, width: 50, height: 50 }, 'path.bounds after group translation');
 });
+
+test('text.bounds', function() {
+	var text = new PointText(new Point(50, 100));
+	text.fillColor = 'black';
+	text.content = 'This is a test';
+	compareRectangles(text.bounds, { x: 50, y: 89.2, width: 67, height: 14.4 } , 'text.bounds');
+});

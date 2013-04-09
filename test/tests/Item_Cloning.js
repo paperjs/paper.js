@@ -105,7 +105,7 @@ test('PointText#clone()', function() {
 	var pointText = new PointText(new Point(50, 50));
 	pointText.content = 'test';
 	pointText.position = pointText.position.add(100);
-	pointText.characterStyle = {
+	pointText.style = {
 		font: 'serif',
 		fontSize: 20
 	};
