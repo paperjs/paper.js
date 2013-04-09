@@ -16,7 +16,7 @@
 		for (var x = 0; x < size.width; x++) {
 			for (var y = 0; y < size.height; y++) {
 				var color = raster.getPixel(x, y);
-				var gray = color.gray * 0.9;
+				var gray = (1 - color.gray) * 0.9;
 				if (gray > 0.1) {
 					var pos = new Point(x, y) * colSize + colSize / 2;
 					var rectSize = gray * colSize.width;
