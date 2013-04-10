@@ -844,9 +844,10 @@ var LinkedRectangle = Rectangle.extend({
 				delete this._dontNotify;
 				this._owner[this._setter](this);
 			};
-		}, {
+		}, /** @lends Rectangle# */{
 			/**
 			 * Specifies whether an item's bounds are selected and will also
+			 * mark the item as selected.
 			 *
 			 * Paper.js draws the visual bounds of selected items on top of your
 			 * project. This can be useful for debugging.

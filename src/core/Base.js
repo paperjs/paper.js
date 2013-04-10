@@ -277,6 +277,10 @@ this.Base = Base.inject(/** @lends Base# */{
 				// storing and retrieving of dictionary definitions and
 				// references, e.g. for symbols and gradients. Items that want
 				// to support this need to define globally unique _id attribute. 
+				/**
+				 * @namespace
+				 * @private
+				 */
 				dictionary = {
 					length: 0,
 					definitions: {},
