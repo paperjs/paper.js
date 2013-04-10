@@ -45,7 +45,7 @@
 			    });
 				var rot = vector.rotate(90);
 				var color = raster.getAverageColor(position + vector / 2);
-				var value = color ? (color.gray) * 3.7 : 0;
+				var value = color ? (1 - color.gray) * 3.7 : 0;
 				rot.length = Math.max(value, 0.2);
 			    path.add(position + vector - rot);
 				path.insert(0, position + vector + rot);
