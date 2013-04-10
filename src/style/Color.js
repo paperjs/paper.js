@@ -416,7 +416,7 @@ var Color = this.Color = Base.extend(new function() {
 		/**
 		 * Creates a HSL Color object
 		 *
-		 * @name HSL Color#initialize
+		 * @name Color#initialize
 		 * @param {Number} hue the hue of the color as a value in degrees between
 		 * {@code 0} and {@code 360}.
 		 * @param {Number} saturation the saturation of the color as a value
