@@ -107,7 +107,7 @@ var paper = new function() {
 /*#*/ include('tool/Tool.js');
 /*#*/ } // options.browser
 
-/*#*/ include('util/Format.js');
+/*#*/ include('util/Formatter.js');
 /*#*/ include('util/CanvasProvider.js');
 /*#*/ include('util/Numerical.js');
 /*#*/ include('util/BlendMode.js');

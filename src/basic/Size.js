@@ -171,17 +171,16 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	 * @return {String} A string representation of the size.
 	 */
 	toString: function() {
-		var format = Format.number;
-		return '{ width: ' + format(this.width)
-				+ ', height: ' + format(this.height) + ' }';
+		var f = Formatter.instance;
+		return '{ width: ' + f.number(this.width)
+				+ ', height: ' + f.number(this.height) + ' }';
 	},
 
 	_serialize: function(options) {
-		var format = Format.number,
-			precision = options.precision;
+		var f = options.formatter;
 		// See Point#_serialize()
-		return [format(this.width, precision),
-				format(this.height, precision)];
+		return [f.number(this.width),
+				f.number(this.height)];
 	},
 
 	/**

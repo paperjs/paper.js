@@ -224,18 +224,16 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @return {String} A string representation of the point.
 	 */
 	toString: function() {
-		var format = Format.number;
-		return '{ x: ' + format(this.x) + ', y: ' + format(this.y) + ' }';
+		var f = Formatter.instance;
+		return '{ x: ' + f.number(this.x) + ', y: ' + f.number(this.y) + ' }';
 	},
 
 	_serialize: function(options) {
-		var format = Format.number,
-			precision = options.precision;
-		// For speed reasons, we directly call Format.number() here with
-		// precision, instead of converting array through Base.serialize() which
-		// makes a copy.
-		return [format(this.x, precision),
-				format(this.y, precision)];
+		var f = options.formatter;
+		// For speed reasons, we directly call formatter.number() here, instead
+		// of converting array through Base.serialize() which makes a copy.
+		return [f.number(this.x),
+				f.number(this.y)];
 	},
 
 	/**

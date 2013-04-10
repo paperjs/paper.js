@@ -688,15 +688,15 @@ var Color = this.Color = Base.extend(new function() {
 			var properties = types[this._type],
 				parts = [],
 				isGradient = this._type === 'gradient',
-				format = Format.number;
+				f = Formatter.instance;
 			for (var i = 0, l = properties.length; i < l; i++) {
 				var value = this._components[i];
 				if (value != null)
 					parts.push(properties[i] + ': '
-							+ (isGradient ? value : format(value)));
+							+ (isGradient ? value : f.number(value)));
 			}
 			if (this._alpha != null)
-				parts.push('alpha: ' + format(this._alpha));
+				parts.push('alpha: ' + f.number(this._alpha));
 			return '{ ' + parts.join(', ') + ' }';
 		},
 

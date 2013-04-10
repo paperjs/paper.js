@@ -15,8 +15,7 @@
  * Paper.js DOM to a SVG DOM.
  */
 new function() {
-	// Shortcut to Format.number
-	var format = Format.number,
+	var formatter = Formatter.instance,
 		namespaces = {
 			href: 'http://www.w3.org/1999/xlink'
 		};
@@ -26,7 +25,7 @@ new function() {
 			var val = attrs[key],
 				namespace = namespaces[key];
 			if (typeof val === 'number')
-				val = format(val);
+				val = formatter.number(val);
 			if (namespace) {
 				node.setAttributeNS(namespace, key, val);
 			} else {
@@ -72,11 +71,11 @@ new function() {
 				angle = decomposed.rotation,
 				scale = decomposed.scaling;
 			if (trans && !trans.isZero())
-				parts.push('translate(' + Format.point(trans) + ')');
+				parts.push('translate(' + formatter.point(trans) + ')');
 			if (!Numerical.isZero(scale.x - 1) || !Numerical.isZero(scale.y - 1))
-				parts.push('scale(' + Format.point(scale) +')');
+				parts.push('scale(' + formatter.point(scale) +')');
 			if (angle)
-				parts.push('rotate(' + format(angle) + ')');
+				parts.push('rotate(' + formatter.number(angle) + ')');
 			attrs.transform = parts.join(' ');
 		} else {
 			attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
@@ -223,7 +222,7 @@ new function() {
 		case 'polygon':
 			var parts = [];
 			for(i = 0, l = segments.length; i < l; i++)
-				parts.push(Format.point(segments[i]._point));
+				parts.push(formatter.point(segments[i]._point));
 			attrs = {
 				points: parts.join(' ')
 			};
@@ -296,8 +295,8 @@ new function() {
 			break;
 		}
 		if (angle) {
-			attrs.transform = 'rotate(' + format(angle) + ','
-					+ Format.point(center) + ')';
+			attrs.transform = 'rotate(' + formatter.number(angle) + ','
+					+ formatter.point(center) + ')';
 			// Tell applyStyle() that to transform the gradient the other way
 			item._gradientMatrix = new Matrix().rotate(-angle, center);
 		}
@@ -320,7 +319,7 @@ new function() {
 			bounds = definition.getBounds();
 		if (!symbolNode) {
 			symbolNode = createElement('symbol', {
-				viewBox: Format.rectangle(bounds)
+				viewBox: formatter.rectangle(bounds)
 			});
 			symbolNode.appendChild(exportSvg(definition));
 			setDefinition(symbol, symbolNode);
@@ -328,8 +327,8 @@ new function() {
 		attrs.href = '#' + symbolNode.id;
 		attrs.x += bounds.x;
 		attrs.y += bounds.y;
-		attrs.width = format(bounds.width);
-		attrs.height = format(bounds.height);
+		attrs.width = formatter.number(bounds.width);
+		attrs.height = formatter.number(bounds.height);
 		return createElement('use', attrs);
 	}
 
@@ -431,7 +430,7 @@ new function() {
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'
-								? format(value)
+								? formatter.number(value)
 								: value;
 			}
 		});

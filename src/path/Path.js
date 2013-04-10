@@ -206,8 +206,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	getPathData: function(/* precision */) {
 		var segments = this._segments,
 			style = this._style,
-			format = Format.point,
 			precision = arguments[0],
+			f = Formatter.instance,
 			parts = [];
 
 		// TODO: Add support for H/V and/or relative commands, where appropriate
@@ -220,21 +220,21 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			if (handle1.isZero() && handle2.isZero()) {
 				if (!skipLine) {
 					// L = absolute lineto: moving to a point with drawing
-					parts.push('L' + format(point2, precision));
+					parts.push('L' + f.point(point2, precision));
 				}
 			} else {
 				// c = relative curveto: handle1, handle2 + end - start,
 				// end - start
 				var end = point2.subtract(point1);
-				parts.push('c' + format(handle1, precision)
-						+ ' ' + format(end.add(handle2), precision)
-						+ ' ' + format(end, precision));
+				parts.push('c' + f.point(handle1, precision)
+						+ ' ' + f.point(end.add(handle2), precision)
+						+ ' ' + f.point(end, precision));
 			}
 		}
 
 		if (segments.length === 0)
 			return '';
-		parts.push('M' + format(segments[0]._point));
+		parts.push('M' + f.point(segments[0]._point));
 		for (i = 0, l = segments.length  - 1; i < l; i++)
 			addCurve(segments[i], segments[i + 1], false);
 		// We only need to draw the connecting curve if it is not a line, and if
