@@ -69,7 +69,7 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 * @param {Line} line
 	 * @return {Point} the intersection point of the lines
 	 */
-	intersect: function(line) {
+	intersect: function(line, excludeStart, excludeEnd) {
 		var cross = this.vector.cross(line.vector);
 		// Avoid divisions by 0, and errors when getting too close to 0
 		if (Numerical.isZero(cross))
@@ -79,8 +79,10 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 			t2 = v.cross(this.vector) / cross;
 		// Check the ranges of t parameters if the line is not allowed to
 		// extend beyond the definition points.
-		return (this.infinite || 0 <= t1 && t1 <= 1)
-				&& (line.infinite || 0 <= t2 && t2 <= 1)
+		return (this.infinite || (excludeStart ? 0 < t1 : 0 <= t1)
+				&& (excludeEnd ? t1 < 1 : t1 <= 1))
+			&& (line.infinite || (excludeStart ? 0 < t2 : 0 <= t2)
+				&& (excludeEnd ? t2 < 1 : t2 <= 1))
 			? this.point.add(this.vector.multiply(t1)) : null;
 	},
 
