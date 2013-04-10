@@ -2827,10 +2827,19 @@ var Item = this.Item = Base.extend(Callback, {
 			// on the temporary canvas.
 			if (parentCtx)
 				ctx.translate(-itemOffset.x, -itemOffset.y);
+			// Keep calculating the current global matrix, by keeping a history
+			// and pushing / popping as we go along.
+			var transforms = param.transforms,
+				global = transforms[transforms.length - 1].clone().concatenate(
+						item._matrix);
+			param.transforms.push(item._globalMatrix = global);
 			item._matrix.applyToContext(ctx);
 			item.draw(ctx, param);
-			if (!param.clipping)
+			if (!param.clipping) {
+				param.transforms.pop();
 				ctx.restore();
+
+			}
 			// If a temporary canvas was created before, composite it onto the
 			// parent canvas:
 			if (parentCtx) {
