@@ -167,9 +167,9 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	draw: function(ctx, param) {
 		var clipItem = this._getClipItem();
 		if (clipItem) {
-			param.clipping = true;
+			param.clip = true;
 			Item.draw(clipItem, ctx, param);
-			delete param.clipping;
+			delete param.clip;
 		}
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var item = this._children[i];

@@ -2821,25 +2821,22 @@ var Item = this.Item = Base.extend(Callback, {
 				ctx = CanvasProvider.getContext(
 						bounds.getSize().ceil().add(Size.create(1, 1)));
 			}
-			if (!param.clipping)
-				ctx.save();
+			ctx.save();
 			// Translate the context so the topLeft of the item is at (0, 0)
 			// on the temporary canvas.
 			if (parentCtx)
 				ctx.translate(-itemOffset.x, -itemOffset.y);
 			// Keep calculating the current global matrix, by keeping a history
 			// and pushing / popping as we go along.
-			var transforms = param.transforms,
-				global = transforms[transforms.length - 1].clone().concatenate(
-						item._matrix);
-			param.transforms.push(item._globalMatrix = global);
+			var transforms = param.transforms;
+			transforms.push(item._globalMatrix = transforms[transforms.length-1]
+					.clone().concatenate(item._matrix));
 			item._matrix.applyToContext(ctx);
 			item.draw(ctx, param);
-			if (!param.clipping) {
-				param.transforms.pop();
-				ctx.restore();
-
-			}
+			transforms.pop();
+			ctx.restore();
+			if (param.clip)
+				ctx.clip();
 			// If a temporary canvas was created before, composite it onto the
 			// parent canvas:
 			if (parentCtx) {
