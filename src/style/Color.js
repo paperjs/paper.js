@@ -240,7 +240,8 @@ var Color = this.Color = Base.extend(new function() {
 					: name === 'hue'
 						? function(value) {
 							// Keep negative values within modulo 360 too:
-							return ((value % 360) + 360) % 360;
+							return isNaN(value) ? 0
+									: ((value % 360) + 360) % 360;
 						}
 						: type === 'gradient'
 							? function(value) {
@@ -249,7 +250,8 @@ var Color = this.Color = Base.extend(new function() {
 										name === 'highlight');
 							}
 							: function(value) {
-								return Math.min(Math.max(value, 0), 1);
+								return isNaN(value) ? 0
+										: Math.min(Math.max(value, 0), 1);
 							};
 
 			this['get' + part] = function() {
