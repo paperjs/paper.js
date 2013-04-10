@@ -1,3 +1,8 @@
+/**
+ * @name Format
+ * @namespace
+ * @private
+ */
 var Format = new function() {
 	// Cache for precision values, linking prec -> Math.pow(10, prec)
 	var precisions = {};
