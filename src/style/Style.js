@@ -394,7 +394,7 @@ var Style = this.Style = Base.extend(new function() {
 	 */
 
 	/**
-	 * {@grouptitle Character Style}
+	 * {@grouptitle Paragraph Style}
 	 *
 	 * The justification of text paragraphs.
 	 *

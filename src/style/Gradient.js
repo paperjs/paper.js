@@ -18,6 +18,7 @@
 var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	_class: 'Gradient',
 
+	// DOCS: Document #initialize()
 	initialize: function(stops, radial) {
 		// Define this Gradient's unique id.
 		this._id = ++Base._uid;
@@ -111,6 +112,12 @@ var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 		this._changed();
 	},
 
+	/**
+	 * Specifies whether the gradient is radial or linear.
+	 *
+	 * @type Boolean
+	 * @bean
+	 */
 	getRadial: function() {
 		return this._radial;
 	},
