@@ -291,39 +291,13 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 
 	draw: function(ctx, matrix) {
-		// Create a local lookup table for hierarchically concatenated matrices
-		// by item id, to speed up drawing by eliminating repeated concatenation
-		// of parent's matrices through caching.
-		var matrices = {};
-		// Description of the paramters to getGlobalMatrix():
-		// mx is the container for the final concatenated matrix, passed to
-		// getGlobalMatrix() on the initial call.
-		// cached defines wether the result of the concatenation should be
-		// cached, only used for parents of items that this is called for.
-		function getGlobalMatrix(item, mx, cached) {
-			var cache = cached && matrices[item._id];
-			// Found a cached version? Return a clone of it.
-			if (cache)
-				return cache.clone();
-			// Get concatenated matrix from all the parents, using
-			// local caching (passing true for cached):
-			if (item._parent)
-				mx = getGlobalMatrix(item._parent, mx, true);
-			// No need to concatenate if it's the identity matrix
-			if (!item._matrix.isIdentity())
-				mx.concatenate(item._matrix);
-			// If the result needs to be cached, create a copy since matrix
-			// might be further modified through recursive calls
-			if (cached)
-				matrices[item._id] = mx.clone();
-			return mx;
-		}
-
 		this._drawCount++;
 		ctx.save();
-		if (!matrix.isIdentity())
-			matrix.applyToContext(ctx);
-		var param = { offset: new Point(0, 0) };
+		matrix.applyToContext(ctx);
+		var param = {
+			offset: new Point(0, 0),
+			transforms: [matrix]
+		};
 		for (var i = 0, l = this.layers.length; i < l; i++)
 			Item.draw(this.layers[i], ctx, param);
 		ctx.restore();
@@ -338,7 +312,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 				var item = this._selectedItems[id];
 				if (item._drawCount === this._drawCount
 						&& (item.drawSelected || item._boundsSelected)) {
-					var mx = getGlobalMatrix(item, matrix.clone());
+					var mx = item._globalMatrix;
 					if (item.drawSelected)
 						item.drawSelected(ctx, mx);
 					if (item._boundsSelected)
