@@ -183,6 +183,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		var now = Date.now() / 1000,
 			delta = this._before ? now - this._before : 0;
 		this._before = now;
+		this._handlingFrame = true;
 		// Use Base.merge to convert into a Base object, for #toString()
 		this.fire('frame', Base.merge({
 			// Time elapsed since last redraw in seconds:
@@ -194,6 +195,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 		// Update framerate stats
 		if (this._stats)
 			this._stats.update();
+		this._handlingFrame = false;
 		// Automatically draw view on each frame.
 		this.draw(true);
 	},
@@ -234,6 +236,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 
 	_redraw: function() {
 		this._redrawNeeded = true;
+		if (this._handlingFrame)
+			return;
 		if (this._animate) {
 			// If we're animating, call _handleFrame staight away, but without
 			// requesting another animation frame.
