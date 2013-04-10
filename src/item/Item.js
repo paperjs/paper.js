@@ -874,7 +874,9 @@ var Item = this.Item = Base.extend(Callback, {
 				y2 = Math.max(rect.y + rect.height, y2);
 			}
 		}
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return isFinite(x1)
+				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
+				: new Rectangle();
 	},
 
 	setBounds: function(rect) {
