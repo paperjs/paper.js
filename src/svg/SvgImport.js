@@ -453,10 +453,13 @@ new function() {
 	function importSvg(node, clearDefs) {
 		var type = node.nodeName,
 			importer = importers[type],
-			item = importer && importer(node, type);
+			item = importer && importer(node, type),
+			data = node.getAttribute('data-paper-data');
 		// See importGroup() for an explanation of this filtering:
 		if (item && item._type !== 'group')
 			item = applyAttributes(item, node);
+		if (item && data)
+			item._data = JSON.parse(data);
 		// Clear definitions at the end of import?
 		if (clearDefs)
 			definitions = {};

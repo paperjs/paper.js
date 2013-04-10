@@ -482,6 +482,8 @@ new function() {
 	function exportSvg(item) {
 		var exporter = exporters[item._type],
 			node = exporter && exporter(item, item._type);
+		if (node && item._data)
+			node.setAttribute('data-paper-data', JSON.stringify(item._data));
 		return node && applyStyle(item, node);
 	}
 
