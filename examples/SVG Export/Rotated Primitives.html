@@ -29,7 +29,21 @@
 		var rect = new Path.RoundRectangle(250, 20, 200, 300, 40, 20);
 		rect.fillColor = 'yellow';
 		rect.rotate(-20);
-
+		rect.data = {
+			string: '----',
+			number: 1234,
+			array: ['a ray', 'some rays'],
+			bool: true,
+			nil: null,
+			point: new Point(12, 34),
+			size: new Size(12, 34),
+			rectangle: new Rectangle([12, 34], [56, 78]),
+			deep: {
+				deeper: {
+					deepest: true
+				}
+			}
+		};
 		document.getElementById('svg').appendChild(project.exportSvg());
 	</script>
 </head>
