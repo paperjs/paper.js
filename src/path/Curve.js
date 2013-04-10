@@ -665,11 +665,11 @@ statics: {
 				});
 /*#*/ }
 				// See if the parametric equations of the lines interesct.
-				var line1 = new Line(v1[0], v1[1], v1[6], v1[7], false),
-					line2 = new Line(v2[0], v2[1], v2[6], v2[7], false),
-					// Filter out beginnings of the curves, to avoid duplicate
-					// solutions where curves join.
-					point = line1.intersect(line2, true, false);
+				var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
+						.intersect(new Line(v2[0], v2[1], v2[6], v2[7], false),
+							// Filter out beginnings of the curves, to avoid
+							// duplicate solutions where curves join.
+							true, false);
 				if (point)
 					// Passing null for parameter leads to lazy determination of
 					// parameter values in CurveLocation#getParameter() only
