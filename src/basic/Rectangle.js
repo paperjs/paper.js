@@ -596,6 +596,14 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 				&& rect.y < this.y + this.height;
 	},
 
+	touches: function(rect) {
+		rect = Rectangle.read(arguments);
+		return rect.x + rect.width >= this.x
+				&& rect.y + rect.height >= this.y
+				&& rect.x <= this.x + this.width
+				&& rect.y <= this.y + this.height;
+	},
+
 	/**
 	 * {@grouptitle Boolean Operations}
 	 *

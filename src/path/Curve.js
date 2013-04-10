@@ -650,15 +650,7 @@ statics: {
 			strokeWidth: 0.1
 		});
 /*#*/ }
-		// We are not using Rectangle#intersects() here, since in order to
-		// detect intersections that lie on curve bounds, we need to consider
-		// touching on one side of the tested rectangles as intersection as well
-		// If touch is condired at both sides, solutions lying on the border of
-		// bounds would turn up twice.
-		if (bounds1.x + bounds1.width >= bounds2.x
-				&& bounds1.y + bounds1.height >= bounds2.y
-				&& bounds1.x < bounds2.x + bounds2.width
-				&& bounds1.y < bounds2.y + bounds2.height) {
+		if (bounds1.touches(bounds2)) {
 			// See if both curves are flat enough to be treated as lines.
 			if (Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
 					&& Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
@@ -673,12 +665,16 @@ statics: {
 				});
 /*#*/ }
 				// See if the parametric equations of the lines interesct.
-				var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
-						.intersect(new Line(v2[0], v2[1], v2[6], v2[7], false));
-				// Passing null for parameter leads to lazy determination of
-				// parameter values in CurveLocation#getParameter() only once
-				// they are requested.
-				if (point)
+				var line1 = new Line(v1[0], v1[1], v1[6], v1[7], false),
+					line2 = new Line(v2[0], v2[1], v2[6], v2[7], false),
+					point = line1.intersect(line2);
+				// Filter out beginnings of the curves, to avoid duplicate
+				// solutions where curves join.
+				if (point && !point.equals(line1.point)
+						&& !point.equals(line2.point))
+					// Passing null for parameter leads to lazy determination of
+					// parameter values in CurveLocation#getParameter() only
+					// once they are requested.
 					locations.push(new CurveLocation(curve, null, point));
 			} else {
 				// Subdivide both curves, and see if they intersect.
