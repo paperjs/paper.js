@@ -2796,7 +2796,12 @@ var Item = this.Item = Base.extend(Callback, {
 			// way to filter out selected items that are not being drawn, e.g.
 			// because they are currently not part of the DOM.
 			item._drawCount = item._project._drawCount;
-			var parentCtx, itemOffset, prevOffset;
+			// Keep calculating the current global matrix, by keeping a history
+			// and pushing / popping as we go along.
+			var transforms = param.transforms,
+				parentMatrix = transforms[transforms.length - 1],
+				globalMatrix = parentMatrix.clone().concatenate(item._matrix);
+			transforms.push(item._globalMatrix = globalMatrix);
 			// If the item has a blendMode or is defining an opacity, draw it on
 			// a temporary canvas first and composite the canvas afterwards.
 			// Paths with an opacity < 1 that both define a fillColor
@@ -2805,10 +2810,13 @@ var Item = this.Item = Base.extend(Callback, {
 			// over their fill.
 			// Exclude Raster items since they never draw a stroke and handle
 			// opacity by themselves (they also don't call _setStyles)
+			var parentCtx, itemOffset, prevOffset;
 			if (item._blendMode !== 'normal' || item._opacity < 1
 					&& item._type !== 'raster' && (item._type !== 'path'
 						|| item.getFillColor() && item.getStrokeColor())) {
-				var bounds = item.getStrokeBounds();
+				// Apply the paren't global matrix to the calculation of correct
+				// bounds.
+				var bounds = item.getStrokeBounds(parentMatrix);
 				if (!bounds.width || !bounds.height)
 					return;
 				// Store previous offset and save the parent context, so we can
@@ -2828,15 +2836,11 @@ var Item = this.Item = Base.extend(Callback, {
 			// on the temporary canvas.
 			if (parentCtx)
 				ctx.translate(-itemOffset.x, -itemOffset.y);
-			// Keep calculating the current global matrix, by keeping a history
-			// and pushing / popping as we go along.
-			var transforms = param.transforms;
-			transforms.push(item._globalMatrix = transforms[transforms.length-1]
-					.clone().concatenate(item._matrix));
-			item._matrix.applyToContext(ctx);
+			// Apply globalMatrix when blitting into temporary canvas.
+			(parentCtx ? globalMatrix : item._matrix).applyToContext(ctx);
 			item.draw(ctx, param);
-			transforms.pop();
 			ctx.restore();
+			transforms.pop();
 			if (param.clip)
 				ctx.clip();
 			// If a temporary canvas was created before, composite it onto the
