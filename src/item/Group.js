@@ -169,7 +169,7 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 		if (clipItem) {
 			param.clip = true;
 			Item.draw(clipItem, ctx, param);
-			delete param.clip;
+			param.clip = false;
 		}
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var item = this._children[i];
