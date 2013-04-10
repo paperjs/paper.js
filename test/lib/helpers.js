@@ -60,14 +60,16 @@ function asyncTest(testName, expected) {
 }
 
 function compareNumbers(number1, number2, message, precision) {
-	equals(Format.number(number1, precision),
-			Format.number(number2, precision), message);
+	var formatter = new Formatter(precision);
+	equals(formatter.number(number1, precision),
+			formatter.number(number2, precision), message);
 }
 
 function compareArrays(array1, array2, message, precision) {
+	var formatter = new Formatter(precision);
 	function format(array) {
 		return Base.each(array, function(value, index) {
-			this[index] = Format.number(value, precision);
+			this[index] = formatter.number(value, precision);
 		}, []).toString();
 	}
 	equals(format(array1), format(array2), message);

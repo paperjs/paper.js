@@ -120,11 +120,11 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {String} A string representation of this transform.
 	 */
 	toString: function() {
-		var format = Format.number;
-		return '[[' + [format(this._a), format(this._b),
-					format(this._tx)].join(', ') + '], ['
-				+ [format(this._c), format(this._d),
-					format(this._ty)].join(', ') + ']]';
+		var f = Formatter.instance;
+		return '[[' + [f.number(this._a), f.number(this._b),
+					f.number(this._tx)].join(', ') + '], ['
+				+ [f.number(this._c), f.number(this._d),
+					f.number(this._ty)].join(', ') + ']]';
 	},
 
 	/**

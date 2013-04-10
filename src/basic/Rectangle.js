@@ -210,22 +210,21 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @return {String} A string representation of this rectangle.
 	 */
 	toString: function() {
-		var format = Format.number;
-		return '{ x: ' + format(this.x)
-				+ ', y: ' + format(this.y)
-				+ ', width: ' + format(this.width)
-				+ ', height: ' + format(this.height)
+		var f = Formatter.instance;
+		return '{ x: ' + f.number(this.x)
+				+ ', y: ' + f.number(this.y)
+				+ ', width: ' + f.number(this.width)
+				+ ', height: ' + f.number(this.height)
 				+ ' }';
 	},
 
 	_serialize: function(options) {
-		var format = Format.number,
-			precision = options.precision;
+		var f = options.formatter;
 		// See Point#_serialize()
-		return [format(this.x, precision),
-				format(this.y, precision),
-				format(this.width, precision),
-				format(this.height, precision)];
+		return [f.number(this.x),
+				f.number(this.y),
+				f.number(this.width),
+				f.number(this.height)];
 	},
 
 	/**
@@ -846,6 +845,8 @@ var LinkedRectangle = Rectangle.extend({
 			};
 		}, /** @lends Rectangle# */{
 			/**
+			 * {@grouptitle Item Bounds}
+			 *
 			 * Specifies whether an item's bounds are selected and will also
 			 * mark the item as selected.
 			 *

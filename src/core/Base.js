@@ -44,7 +44,7 @@ this.Base = Base.inject(/** @lends Base# */{
 				if (!/^_/.test(key)) {
 					var type = typeof value;
 					this.push(key + ': ' + (type === 'number'
-							? Format.number(value)
+							? Formatter.instance.number(value)
 							: type === 'string' ? "'" + value + "'" : value));
 				}
 			}, []).join(', ') + ' }';
@@ -270,9 +270,11 @@ this.Base = Base.inject(/** @lends Base# */{
 		 */
 		serialize: function(obj, options, compact, dictionary) {
 			options = options || {};
+
 			var root = !dictionary,
 				res;
 			if (root) {
+				options.formatter = new Formatter(options.precision);
 				// Create a simple dictionary object that handles all the
 				// storing and retrieving of dictionary definitions and
 				// references, e.g. for symbols and gradients. Items that want
@@ -325,7 +327,7 @@ this.Base = Base.inject(/** @lends Base# */{
 						res[i] = Base.serialize(obj[i], options, compact,
 								dictionary);
 			} else if (typeof obj === 'number') {
-				res = Format.number(obj, options.precision);
+				res = options.formatter.number(obj, options.precision);
 			} else {
 				res = obj;
 			}

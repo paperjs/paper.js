@@ -223,7 +223,8 @@ var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# *
 	 */
 	toString: function() {
 		var parts = [],
-			point = this.getPoint();
+			point = this.getPoint(),
+			f = Formatter.instance;
 		if (point)
 			parts.push('point: ' + point);
 		var index = this.getIndex();
@@ -231,9 +232,9 @@ var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# *
 			parts.push('index: ' + index);
 		var parameter = this.getParameter();
 		if (parameter != null)
-			parts.push('parameter: ' + Format.number(parameter));
+			parts.push('parameter: ' + f.number(parameter));
 		if (this._distance != null)
-			parts.push('distance: ' + Format.number(this._distance));
+			parts.push('distance: ' + f.number(this._distance));
 		return '{ ' + parts.join(', ') + ' }';
 	}
 });
