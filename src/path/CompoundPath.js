@@ -197,7 +197,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		var children = this._children,
 			style = this._style;
 		// Return early if the compound path doesn't have any children:
-		if (children.length == 0)
+		if (children.length === 0)
 			return;
 		ctx.beginPath();
 		param.compound = true;
