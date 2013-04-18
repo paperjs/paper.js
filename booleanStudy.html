@@ -1,13 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta charset="utf-8">
 	<title>Boolean Study</title>
-	<link rel="stylesheet" href="../dist/style.css">
 	<script type="text/javascript" src="../dist/paper.js"></script>
-	<script type="text/paperscript" canvas="canvas" src="boolean3.js"></script>
+	<script type="text/javascript" src="Boolean.js"></script>
+	<script type="text/javascript" src="booleanTests.js"></script>
+	<style>
+		body { height: 100%; overflow: auto; }
+		#container { display: block; width: 800px; margin: 0 auto 50px; }
+		h1, h3 { font-family: 'Helvetica Neue'; font-weight: 300; margin: 50px 0 20px; }
+		footer{display: block; width: 800px; height: 100px; margin: 30px auto; color: #999; }
+		footer p { font-family: 'Helvetica Neue'; font-style: italic; font-weight: 300; }
+		canvas { cursor: crosshair; width: 100%; height: 220px; margin: 5px 0;}
+		.error { color: #a00; } .hide{ display: none; }
+	</style>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+	<div id="container">
+		<h1>paperjs - Boolean Tests</h1>
+		<button id="testStart" value="Start tests" onClick="runTests();">Start tests</button>
+	</div>
+	<footer>
+		<p>Vector boolean operations on paperjs objects. <br />
+			Still under development, mostly written for clarity and compatibility, 
+			not optimised for performance, and has to be tested heavily.</p>
+		<p>--<br />
+			hari</p>
+	</footer>
+
+	<svg class="hide" version="1.1" id="glyphsys" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+		width="200px" height="200px" viewBox="0 0 200 200" enable-background="new 0 0 200 200" xml:space="preserve">
+		<path fill="none" d="M68.836,146.216c8.889,5.698,21.647,10.021,35.324,10.021c20.283,0,32.142-10.689,32.142-26.203
+		c0-14.122-8.203-22.557-28.949-30.305c-25.072-9.121-40.577-22.343-40.577-43.759c0-23.93,19.829-41.708,49.688-41.708
+		c15.495,0,27.112,3.646,33.719,7.516l-5.456,16.182c-4.787-2.959-15.031-7.293-28.949-7.293c-20.961,0-28.94,12.536-28.94,23.021
+		c0,14.354,9.344,21.425,30.536,29.627c25.981,10.03,38.971,22.565,38.971,45.123c0,23.717-17.313,44.444-53.557,44.444
+		c-14.809,0-30.991-4.546-39.194-10.039L68.836,146.216z"/>
+		<path fill="none" d="M82.734,183.337v-66.265L33.15,27.158h23.17l22.009,43.104c5.792,11.811,10.66,21.321,15.528,32.207h0.462
+		c4.17-10.207,9.736-20.396,15.764-32.207l22.473-43.104h22.707l-52.131,89.669v66.51H82.734z"/>
+	</svg>
+
 </body>
 </html>
