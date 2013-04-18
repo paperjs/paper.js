@@ -1828,7 +1828,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	}
 
 	return {
-		draw: function(ctx, param) {
+		_draw: function(ctx, param) {
 			if (!param.compound)
 				ctx.beginPath();
 

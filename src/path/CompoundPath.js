@@ -195,7 +195,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		return res;
 	},
 
-	draw: function(ctx, param) {
+	_draw: function(ctx, param) {
 		var children = this._children,
 			style = this._style;
 		// Return early if the compound path doesn't have any children:

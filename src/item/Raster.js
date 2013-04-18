@@ -537,7 +537,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		}
 	},
 
-	draw: function(ctx, param) {
+	_draw: function(ctx) {
 		var element = this.getElement();
 		if (element) {
 			// Handle opacity for Rasters separately from the rest, since

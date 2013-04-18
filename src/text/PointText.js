@@ -57,7 +57,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 				this._matrix.getTranslation()));
 	},
 
-	draw: function(ctx) {
+	_draw: function(ctx) {
 		if (!this._content)
 			return;
 		this._setStyles(ctx);

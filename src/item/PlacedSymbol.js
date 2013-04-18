@@ -110,7 +110,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 		return this.symbol._definition._getCachedBounds(getter, matrix);
 	},
 
-	draw: function(ctx, param) {
+	_draw: function(ctx, param) {
 		Item.draw(this.symbol._definition, ctx, param);
 	}
 

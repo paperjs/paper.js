@@ -2838,7 +2838,7 @@ var Item = this.Item = Base.extend(Callback, {
 				ctx.translate(-itemOffset.x, -itemOffset.y);
 			// Apply globalMatrix when blitting into temporary canvas.
 			(parentCtx ? globalMatrix : item._matrix).applyToContext(ctx);
-			item.draw(ctx, param);
+			item._draw(ctx, param);
 			ctx.restore();
 			transforms.pop();
 			if (param.clip)
