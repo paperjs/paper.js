@@ -25,6 +25,8 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	_serializeFields: {
 		pathData: ''
 	},
+	// CompoundPaths directly apply transformations to their Paths by default.
+	applyMatrix: true,
 
 	/**
 	 * Creates a new compound path item and places it in the active layer.
