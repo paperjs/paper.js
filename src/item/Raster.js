@@ -394,11 +394,13 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		}
 		ctx.save();
 		// Scale the context so that the bounds ends up at the given sample size
-		ctx.scale(width / bounds.width, height / bounds.height);
-		ctx.translate(-bounds.x, -bounds.y);
+		var matrix = new Matrix()
+				.scale(width / bounds.width, height / bounds.height)
+				.translate(-bounds.x, -bounds.y);
+		matrix.applyToContext(ctx);
 		// If a path was passed, draw it as a clipping mask:
 		if (path)
-			path.draw(ctx, { clip: true });
+			Item.draw(path, ctx, { clip: true, transforms: [matrix] });
 		// Now draw the image clipped into it.
 		this._matrix.applyToContext(ctx);
 		ctx.drawImage(this.getElement(),

@@ -119,19 +119,19 @@ asyncTest('Raster#getSubImage', function(callback) {
 });
 
 test('Raster#getAverageColor(path)', function() {
-	new Path.Rectangle({
+	var rect = new Path.Rectangle({
 		point: [0, 0],
 		size: [100, 100],
 		fillColor: new Color(0, 1, 0)
 	});
-	var path = new Path.Circle({
+	var circle = new Path.Circle({
 		center: [50, 50],
 		radius: 25,
 		fillColor: new Color(1, 0, 0)
 	});
 	var raster = paper.project.activeLayer.rasterize();
-	path.scale(0.9);
-	compareColors(raster.getAverageColor(path), new Color(1, 0, 0), null, 3);
+	circle.scale(0.9);
+	compareColors(raster.getAverageColor(circle), circle.fillColor, null, 3);
 });
 
 test('Raster#getAverageColor(path) with compound path', function() {
