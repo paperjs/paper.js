@@ -38,7 +38,7 @@
 			var spacing = 5;
 			for (var i = 1; i <= amount; i++) {
 				var radius = 8 - (i / amount * 4);
-				new Path.RoundRectangle({
+				new Path.Rectangle({
 					point: {
 						length: spacing * Math.sqrt(i),
 						angle: i * rotation

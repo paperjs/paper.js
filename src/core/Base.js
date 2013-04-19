@@ -235,9 +235,10 @@ this.Base = Base.inject(/** @lends Base# */{
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {String} name the property name to read from.
 		 */
-		readNamed: function(list, name) {
+		readNamed: function(list, name, start, length, clone, readNull) {
 			var value = this.getNamed(list, name);
-			return this.read(value != null ? [value] : list);
+			return this.read(value != null ? [value] : list, start, length,
+					clone, readNull);
 		},
 
 		/**

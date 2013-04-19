@@ -238,9 +238,7 @@ new function() {
 			var point = getPoint(node, 'x', 'y'),
 				size = getSize(node, 'width', 'height'),
 				radius = getSize(node, 'rx', 'ry');
-			// If radius is 0, Path.RoundRectangle automatically produces a
-			// normal rectangle for us.
-			return new Path.RoundRectangle(new Rectangle(point, size), radius);
+			return new Path.Rectangle(new Rectangle(point, size), radius);
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#LineElement

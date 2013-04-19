@@ -22,17 +22,36 @@ Path.inject({ statics: new function() {
 
 	function createRectangle(/* rect */) {
 		var rect = Rectangle.readNamed(arguments, 'rectangle'),
-			left = rect.getLeft(),
-			top = rect.getTop(),
-			right = rect.getRight(),
-			bottom = rect.getBottom(),
+			radius = Size.readNamed(arguments, 'radius', 0, 0, false, true), // readNull
+			bl = rect.getBottomLeft(true),
+			tl = rect.getTopLeft(true),
+			tr = rect.getTopRight(true),
+			br = rect.getBottomRight(true),
 			path = createPath(arguments);
-		path._add([
-			new Segment(Point.create(left, bottom)),
-			new Segment(Point.create(left, top)),
-			new Segment(Point.create(right, top)),
-			new Segment(Point.create(right, bottom))
-		]);
+		if (!radius || radius.isZero()) {
+			path._add([
+				new Segment(bl),
+				new Segment(tl),
+				new Segment(tr),
+				new Segment(br)
+			]);
+		} else {
+			radius = Size.min(radius, rect.getSize(true).divide(2));
+			var h = radius.multiply(kappa * 2); // handle vector
+			path._add([
+				new Segment(bl.add(radius.width, 0), null, [-h.width, 0]),
+				new Segment(bl.subtract(0, radius.height), [0, h.height], null),
+
+				new Segment(tl.add(0, radius.height), null, [0, -h.height]),
+				new Segment(tl.add(radius.width, 0), [-h.width, 0], null),
+
+				new Segment(tr.subtract(radius.width, 0), null, [h.width, 0]),
+				new Segment(tr.add(0, radius.height), [0, -h.height], null),
+
+				new Segment(br.subtract(0, radius.height), null, [0, h.height]),
+				new Segment(br.subtract(radius.width, 0), [h.width, 0], null)
+			]);
+		}
 		path._closed = true;
 		return path;
 	}
@@ -145,6 +164,7 @@ Path.inject({ statics: new function() {
 		 * Creates a rectangle shaped Path Item from the passed abstract
 		 * {@link Rectangle}.
 		 *
+		 * @name Path.Rectangle
 		 * @param {Rectangle} rectangle
 		 * @return {Path} the newly created path
 		 *
@@ -167,11 +187,10 @@ Path.inject({ statics: new function() {
 		 * 	strokeColor: 'black'
 		 * });
 		 */
-		Rectangle: createRectangle,
-
 		/**
 		 * Creates a rectangular Path Item with rounded corners.
 		 *
+		 * @name Path.Rectangle
 		 * @param {Rectangle} rectangle
 		 * @param {Size} radius the size of the rounded corners
 		 * @return {Path} the newly created path
@@ -182,11 +201,11 @@ Path.inject({ statics: new function() {
 		 * 	size: new Size(60, 60)
 		 * });
 		 * var cornerSize = new Size(10, 10);
-		 * var path = new Path.RoundRectangle(rectangle, cornerSize);
+		 * var path = new Path.Rectangle(rectangle, cornerSize);
 		 * path.strokeColor = 'black';
 		 *
 		 * @example {@paperscript}
-		 * var path = new Path.RoundRectangle({
+		 * var path = new Path.Rectangle({
 		 * 	rectangle: {
 		 * 		point: [20, 20],
 		 * 		size: [60, 60]
@@ -195,37 +214,15 @@ Path.inject({ statics: new function() {
 		 * 	strokeColor: 'black'
 		 * });
 		 */
-		RoundRectangle: function(/* rect, radius */) {
-			var rect = Rectangle.readNamed(arguments, 'rectangle'),
-				radius = Size.readNamed(arguments, 'radius');
-			if (radius.isZero())
-				return createRectangle(rect);
-			radius = Size.min(radius, rect.getSize(true).divide(2));
-			var bl = rect.getBottomLeft(true),
-				tl = rect.getTopLeft(true),
-				tr = rect.getTopRight(true),
-				br = rect.getBottomRight(true),
-				h = radius.multiply(kappa * 2), // handle vector
-				path = createPath(arguments);
-			path._add([
-				new Segment(bl.add(radius.width, 0), null, [-h.width, 0]),
-				new Segment(bl.subtract(0, radius.height), [0, h.height], null),
-
-				new Segment(tl.add(0, radius.height), null, [0, -h.height]),
-				new Segment(tl.add(radius.width, 0), [-h.width, 0], null),
-
-				new Segment(tr.subtract(radius.width, 0), null, [h.width, 0]),
-				new Segment(tr.add(0, radius.height), [0, -h.height], null),
-
-				new Segment(br.subtract(0, radius.height), null, [0, h.height]),
-				new Segment(br.subtract(radius.width, 0), [h.width, 0], null)
-			]);
-			path._closed = true;
-			return path;
-		},
+		Rectangle: createRectangle,
 
 		/**
-		* Creates an ellipse shaped Path Item.
+		 * @deprecated use {@link #Path.Rectangle(rectangle, size)} instead.
+		 */
+		RoundRectangle: createRectangle,
+
+		/**
+		 * Creates an ellipse shaped Path Item.
 		 *
 		 * @param {Rectangle} rectangle
 		 * @param {Boolean} [circumscribed=false] when set to {@code true} the
@@ -252,7 +249,7 @@ Path.inject({ statics: new function() {
 		Ellipse: createEllipse,
 
 		/**
-		 * @deprecated use {@link #Path.Ellipse(rect)} instead.
+		 * @deprecated use {@link #Path.Ellipse(rectangle)} instead.
 		 */
 		Oval: createEllipse,
 

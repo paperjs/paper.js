@@ -13,7 +13,7 @@
 		for (var i = 0; i < amount; i++) {
 			var rect = new Rectangle([0, 0], [25, 25]);
 			rect.center = mousePoint;
-			var path = new Path.RoundRectangle(rect, 6);
+			var path = new Path.Rectangle(rect, 6);
 			path.fillColor = colors[i % 4];
 			var scale = (1 - i / amount) * 20;
 			path.scale(scale);

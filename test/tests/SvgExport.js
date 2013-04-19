@@ -234,7 +234,7 @@ test('compare rounded rectangle values', function() {
 	var size = new Size(width, height);
 	var cornerSize = new Size(rx, ry);
 	var rect = new Rectangle(topLeft, size);
-	var roundRect = new Path.RoundRectangle(rect, cornerSize);
+	var roundRect = new Path.Rectangle(rect, cornerSize);
 
 	var exportedRectangle = rect.exportSvg();
 
@@ -278,7 +278,7 @@ test('compare negative rounded rectangle values', function() {
 	var size = new Size(width, height);
 	var cornerSize = new Size(rx, ry);
 	var rect = new Rectangle(topLeft, size);
-	var roundRect = new Path.RoundRectangle(rect, cornerSize);
+	var roundRect = new Path.Rectangle(rect, cornerSize);
 
 	var exportedRectangle = rect.exportSvg();
 
@@ -322,7 +322,7 @@ test('compare invalid rounded rectangle values', function() {
 	var size = new Size(width, height);
 	var cornerSize = new Size(rx, ry);
 	var rect = new Rectangle(topLeft, size);
-	var roundRect = new Path.RoundRectangle(rect, cornerSize);
+	var roundRect = new Path.Rectangle(rect, cornerSize);
 
 	var exportedRectangle = rect.exportSvg();
 

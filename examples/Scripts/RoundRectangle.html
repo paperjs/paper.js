@@ -11,7 +11,7 @@
 		function onFrame(event) {
 			if (path)
 				path.remove();
-			path = new Path.RoundRectangle({
+			path = new Path.Rectangle({
 				radius: Math.abs(Math.sin(event.count / 40)) * 150 + 10,
 				rectangle: {
 					size: [300, 300]

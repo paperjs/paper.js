@@ -138,7 +138,7 @@ test('compare round rectangle values', function() {
 	var size = new Size(width, height);
 	var cornerSize = new Size(rx, ry);
 	var rectangle = new Rectangle(topLeft, size);
-	var roundRect = new Path.RoundRectangle(rectangle, cornerSize);
+	var roundRect = new Path.Rectangle(rectangle, cornerSize);
 
 	compareSegmentLists(importedRectangle.segments, roundRect.segments, true);
 });
@@ -165,7 +165,7 @@ test('compare negative round rectangle values', function() {
 	var size = new Size(width, height);
 	var cornerSize = new Size(rx, ry);
 	var rectangle = new Rectangle(topLeft, size);
-	var roundRect = new Path.RoundRectangle(rectangle, cornerSize);
+	var roundRect = new Path.Rectangle(rectangle, cornerSize);
 
 	compareSegmentLists(importedRectangle.segments, roundRect.segments, true);
 });
@@ -192,7 +192,7 @@ test('compare invalid round rectangle values', function() {
 	var size = new Size(width, height);
 	var cornerSize = new Size(rx, ry);
 	var rectangle = new Rectangle(topLeft, size);
-	var roundRect = new Path.RoundRectangle(rectangle, cornerSize);
+	var roundRect = new Path.Rectangle(rectangle, cornerSize);
 
 	compareSegmentLists(importedRectangle.segments, roundRect.segments, true);
 });
