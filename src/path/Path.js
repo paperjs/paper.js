@@ -24,8 +24,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		segments: [],
 		closed: false
 	},
-	// Paths directly apply transformations to the Segments by default.
-	applyMatrix: true,
 
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.

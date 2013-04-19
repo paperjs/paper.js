@@ -20,6 +20,8 @@
  * @extends Item
  */
 var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
+	// All PathItems directly apply transformations by default.
+	applyMatrix: true,
 
 	/**
 	 * Returns all intersections between two {@link PathItem} items as an array
