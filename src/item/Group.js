@@ -168,13 +168,13 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 		var clipItem = this._getClipItem();
 		if (clipItem) {
 			param.clip = true;
-			Item.draw(clipItem, ctx, param);
+			clipItem.draw(ctx, param);
 			param.clip = false;
 		}
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var item = this._children[i];
-			if (item != clipItem)
-				Item.draw(item, ctx, param);
+			if (item !== clipItem)
+				item.draw(ctx, param);
 		}
 	}
 });

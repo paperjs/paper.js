@@ -400,7 +400,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		matrix.applyToContext(ctx);
 		// If a path was passed, draw it as a clipping mask:
 		if (path)
-			Item.draw(path, ctx, { clip: true, transforms: [matrix] });
+			path.draw(ctx, { clip: true, transforms: [matrix] });
 		// Now draw the image clipped into it.
 		this._matrix.applyToContext(ctx);
 		ctx.drawImage(this.getElement(),
@@ -541,7 +541,7 @@ var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
 		var element = this.getElement();
 		if (element) {
 			// Handle opacity for Rasters separately from the rest, since
-			// Rasters never draw a stroke. See Item.draw().
+			// Rasters never draw a stroke. See Item#draw().
 			ctx.globalAlpha = this._opacity;
 			ctx.drawImage(element,
 					-this._size.width / 2, -this._size.height / 2);

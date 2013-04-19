@@ -204,7 +204,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		ctx.beginPath();
 		param.compound = true;
 		for (var i = 0, l = children.length; i < l; i++)
-			Item.draw(children[i], ctx, param);
+			children[i].draw(ctx, param);
 		param.compound = false;
 		if (!param.clip) {
 			this._setStyles(ctx);

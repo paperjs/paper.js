@@ -1263,7 +1263,7 @@ var Item = this.Item = Base.extend(Callback, {
 			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		ctx.save();
 		matrix.applyToContext(ctx);
-		Item.draw(this, ctx, { transforms: [matrix] });
+		this.draw(ctx, { transforms: [matrix] });
 		var raster = new Raster(canvas);
 		raster.setBounds(bounds);
 		ctx.restore();
@@ -2770,6 +2770,89 @@ var Item = this.Item = Base.extend(Callback, {
 			ctx.globalAlpha = this._opacity;
 	},
 
+	// TODO: Implement View into the drawing.
+	// TODO: Optimize temporary canvas drawing to ignore parts that are
+	// outside of the visible view.
+	draw: function(ctx, param) {
+		if (!this._visible || this._opacity == 0)
+			return;
+		// Each time the project gets drawn, it's _drawCount is increased.
+		// Keep the _drawCount of drawn items in sync, so we have an easy
+		// way to filter out selected items that are not being drawn, e.g.
+		// because they are currently not part of the DOM.
+		this._drawCount = this._project._drawCount;
+		// Keep calculating the current global matrix, by keeping a history
+		// and pushing / popping as we go along.
+		var transforms = param.transforms,
+			parentMatrix = transforms[transforms.length - 1],
+			globalMatrix = parentMatrix.clone().concatenate(this._matrix);
+		transforms.push(this._globalMatrix = globalMatrix);
+		// If the item has a blendMode or is defining an opacity, draw it on
+		// a temporary canvas first and composite the canvas afterwards.
+		// Paths with an opacity < 1 that both define a fillColor
+		// and strokeColor also need to be drawn on a temporary canvas
+		// first, since otherwise their stroke is drawn half transparent
+		// over their fill.
+		// Exclude Raster items since they never draw a stroke and handle
+		// opacity by themselves (they also don't call _setStyles)
+		var parentCtx, itemOffset, prevOffset;
+		if (this._blendMode !== 'normal' || this._opacity < 1
+				&& this._type !== 'raster' && (this._type !== 'path'
+					|| this.getFillColor() && this.getStrokeColor())) {
+			// Apply the paren't global matrix to the calculation of correct
+			// bounds.
+			var bounds = this.getStrokeBounds(parentMatrix);
+			if (!bounds.width || !bounds.height)
+				return;
+			// Store previous offset and save the parent context, so we can
+			// draw onto it later
+			prevOffset = param.offset;
+			// Floor the offset and ceil the size, so we don't cut off any
+			// antialiased pixels when drawing onto the temporary canvas.
+			itemOffset = param.offset = bounds.getTopLeft().floor();
+			// Set ctx to the context of the temporary canvas,
+			// so we draw onto it, instead of the parentCtx
+			parentCtx = ctx;
+			ctx = CanvasProvider.getContext(
+					bounds.getSize().ceil().add(Size.create(1, 1)));
+		}
+		ctx.save();
+		// Translate the context so the topLeft of the item is at (0, 0)
+		// on the temporary canvas.
+		if (parentCtx)
+			ctx.translate(-itemOffset.x, -itemOffset.y);
+		// Apply globalMatrix when blitting into temporary canvas.
+		(parentCtx ? globalMatrix : this._matrix).applyToContext(ctx);
+		this._draw(ctx, param);
+		ctx.restore();
+		transforms.pop();
+		if (param.clip)
+			ctx.clip();
+		// If a temporary canvas was created before, composite it onto the
+		// parent canvas:
+		if (parentCtx) {
+			// Restore previous offset.
+			param.offset = prevOffset;
+			// If the item has a blendMode, use BlendMode#process to
+			// composite its canvas on the parentCanvas.
+			if (this._blendMode !== 'normal') {
+				// The pixel offset of the temporary canvas to the parent
+				// canvas.
+				BlendMode.process(this._blendMode, ctx, parentCtx,
+					this._opacity, itemOffset.subtract(prevOffset));
+			} else {
+				// Otherwise just set the globalAlpha before drawing the
+				// temporary canvas on the parent canvas.
+				parentCtx.save();
+				parentCtx.globalAlpha = this._opacity;
+				parentCtx.drawImage(ctx.canvas, itemOffset.x, itemOffset.y);
+				parentCtx.restore();
+			}
+			// Return the temporary context, so it can be reused
+			CanvasProvider.release(ctx);
+		}
+	},
+
 	statics: {
 		drawSelectedBounds: function(bounds, ctx, matrix) {
 			var coords = matrix._transformCorners(bounds);
@@ -2782,89 +2865,6 @@ var Item = this.Item = Base.extend(Callback, {
 				ctx.beginPath();
 				ctx.rect(coords[i] - 2, coords[++i] - 2, 4, 4);
 				ctx.fill();
-			}
-		},
-
-		// TODO: Implement View into the drawing.
-		// TODO: Optimize temporary canvas drawing to ignore parts that are
-		// outside of the visible view.
-		draw: function(item, ctx, param) {
-			if (!item._visible || item._opacity == 0)
-				return;
-			// Each time the project gets drawn, it's _drawCount is increased.
-			// Keep the _drawCount of drawn items in sync, so we have an easy
-			// way to filter out selected items that are not being drawn, e.g.
-			// because they are currently not part of the DOM.
-			item._drawCount = item._project._drawCount;
-			// Keep calculating the current global matrix, by keeping a history
-			// and pushing / popping as we go along.
-			var transforms = param.transforms,
-				parentMatrix = transforms[transforms.length - 1],
-				globalMatrix = parentMatrix.clone().concatenate(item._matrix);
-			transforms.push(item._globalMatrix = globalMatrix);
-			// If the item has a blendMode or is defining an opacity, draw it on
-			// a temporary canvas first and composite the canvas afterwards.
-			// Paths with an opacity < 1 that both define a fillColor
-			// and strokeColor also need to be drawn on a temporary canvas
-			// first, since otherwise their stroke is drawn half transparent
-			// over their fill.
-			// Exclude Raster items since they never draw a stroke and handle
-			// opacity by themselves (they also don't call _setStyles)
-			var parentCtx, itemOffset, prevOffset;
-			if (item._blendMode !== 'normal' || item._opacity < 1
-					&& item._type !== 'raster' && (item._type !== 'path'
-						|| item.getFillColor() && item.getStrokeColor())) {
-				// Apply the paren't global matrix to the calculation of correct
-				// bounds.
-				var bounds = item.getStrokeBounds(parentMatrix);
-				if (!bounds.width || !bounds.height)
-					return;
-				// Store previous offset and save the parent context, so we can
-				// draw onto it later
-				prevOffset = param.offset;
-				// Floor the offset and ceil the size, so we don't cut off any
-				// antialiased pixels when drawing onto the temporary canvas.
-				itemOffset = param.offset = bounds.getTopLeft().floor();
-				// Set ctx to the context of the temporary canvas,
-				// so we draw onto it, instead of the parentCtx
-				parentCtx = ctx;
-				ctx = CanvasProvider.getContext(
-						bounds.getSize().ceil().add(Size.create(1, 1)));
-			}
-			ctx.save();
-			// Translate the context so the topLeft of the item is at (0, 0)
-			// on the temporary canvas.
-			if (parentCtx)
-				ctx.translate(-itemOffset.x, -itemOffset.y);
-			// Apply globalMatrix when blitting into temporary canvas.
-			(parentCtx ? globalMatrix : item._matrix).applyToContext(ctx);
-			item._draw(ctx, param);
-			ctx.restore();
-			transforms.pop();
-			if (param.clip)
-				ctx.clip();
-			// If a temporary canvas was created before, composite it onto the
-			// parent canvas:
-			if (parentCtx) {
-				// Restore previous offset.
-				param.offset = prevOffset;
-				// If the item has a blendMode, use BlendMode#process to
-				// composite its canvas on the parentCanvas.
-				if (item._blendMode !== 'normal') {
-					// The pixel offset of the temporary canvas to the parent
-					// canvas.
-					BlendMode.process(item._blendMode, ctx, parentCtx,
-						item._opacity, itemOffset.subtract(prevOffset));
-				} else {
-					// Otherwise just set the globalAlpha before drawing the
-					// temporary canvas on the parent canvas.
-					parentCtx.save();
-					parentCtx.globalAlpha = item._opacity;
-					parentCtx.drawImage(ctx.canvas, itemOffset.x, itemOffset.y);
-					parentCtx.restore();
-				}
-				// Return the temporary context, so it can be reused
-				CanvasProvider.release(ctx);
 			}
 		}
 	}

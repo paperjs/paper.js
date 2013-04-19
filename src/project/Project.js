@@ -56,7 +56,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		this._currentStyle = new Style();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
-		// See Item.draw() for an explanation of _drawCount
+		// See Item#draw() for an explanation of _drawCount
 		this._drawCount = 0;
 		// Change tracking, not in use for now. Activate once required:
 		// this._changes = [];
@@ -301,7 +301,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			transforms: [matrix]
 		};
 		for (var i = 0, l = this.layers.length; i < l; i++)
-			Item.draw(this.layers[i], ctx, param);
+			this.layers[i].draw(ctx, param);
 		ctx.restore();
 
 		// Draw the selection of the selected items in the project:

@@ -111,7 +111,7 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 	},
 
 	_draw: function(ctx, param) {
-		Item.draw(this.symbol._definition, ctx, param);
+		this.symbol._definition.draw(ctx, param);
 	}
 
 	// TODO: PlacedSymbol#embed()
