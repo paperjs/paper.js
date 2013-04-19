@@ -57,6 +57,17 @@
       return false;
     }
     return true;
+  },
+
+  // path1 - path2
+  Subtraction: function( lnk, isInsidePath1, isInsidePath2 ){
+    var lnkid = lnk.id;
+    if( lnkid === 1 && isInsidePath2 ){
+      return false;
+    } else if( lnkid === 2 && !isInsidePath1 ){
+      return false;
+    }
+    return true;
   }
 };
 
@@ -81,9 +92,9 @@
  * @param {Point} _handleOut
  * @param {Any} _id
  */
- function Node( _point, _handleIn, _handleOut, _id, _childId ){
+ function Node( _point, _handleIn, _handleOut, _id, isBaseContour ){
   this.id = _id;
-  this.childId = _childId;
+  this.isBaseContour = isBaseContour;
   this.type = NORMAL_NODE;
   this.point   = _point;
   this.handleIn = _handleIn;  // handleIn
@@ -95,6 +106,7 @@
   // In case of an intersection this will be a merged node.
   // And we need space to save the "other Node's" parameters before merging.
   this.idB = null;
+  this.isBaseContourB = false;
   // this.pointB   = this.point; // point should be the same
   this.handleBIn = null;
   this.handleBOut = null;
@@ -120,6 +132,7 @@
       this.linkOut.nodeIn = this;  // linkOut.nodeStart
       this.handleIn = this.handleIn || this.handleBIn;
       this.handleOut = this.handleOut || this.handleBOut;
+      this.isBaseContour = this.isBaseContour | this.isBaseContourB;
     }
     this._segment = this._segment || new Segment( this.point, this.handleIn, this.handleOut );
     return this._segment;
@@ -132,9 +145,9 @@
  * @param {Node} _nodeOut
  * @param {Any} _id
  */
- function Link( _nodeIn, _nodeOut, _id, _childId ) {
+ function Link( _nodeIn, _nodeOut, _id, isBaseContour ) {
   this.id = _id;
-  this.childId = _childId;
+  this.isBaseContour = isBaseContour;
   this.nodeIn = _nodeIn;  // nodeStart
   this.nodeOut = _nodeOut;  // nodeEnd
   this.nodeIn.linkOut = this;  // nodeStart.linkOut
@@ -157,14 +170,14 @@
  * @param  {Integer} id
  * @return {Array} Links
  */
- function makeGraph( path, id, childId ){
+ function makeGraph( path, id, isBaseContour ){
   var graph = [];
   var segs = path.segments, prevNode = null, firstNode = null, nuLink, nuNode;
   for( i = 0, l = segs.length; i < l; i++ ){
     var nuSeg = segs[i].clone();
-    nuNode = new Node( nuSeg.point, nuSeg.handleIn, nuSeg.handleOut, id, childId );
+    nuNode = new Node( nuSeg.point, nuSeg.handleIn, nuSeg.handleOut, id, isBaseContour );
     if( prevNode ) {
-      nuLink = new Link( prevNode, nuNode, id, childId );
+      nuLink = new Link( prevNode, nuNode, id, isBaseContour );
       graph.push( nuLink );
     }
     prevNode = nuNode;
@@ -173,9 +186,25 @@
     }
   }
   // the path is closed
-  nuLink = new Link( prevNode, firstNode, id, childId );
+  nuLink = new Link( prevNode, firstNode, id, isBaseContour );
   graph.push( nuLink );
   return graph;
+}
+
+
+/**
+ * makes a graph for a pathItem
+ * @param  {Path} path
+ * @param  {Integer} id
+ * @return {Array} Links
+ */
+function makeGraph2( path, id ){
+  var graph = [];
+  var curves = path.getCurves(), firstChildCount , counter, isBaseContour = true, i, len;
+  firstChildCount = ( path instanceof CompoundPath )? path.children[0].curves.length : path.curves.length;
+  // Segments need an ID, so that we can compare them
+  for (i = 0, len = curves.length; i < len; i++, firstChildCount--) {
+  }
 }
 
 
@@ -186,7 +215,7 @@
  * @param  {Path} path2
  * @return {CompoundPath} union of path1 & path2
  */
- function boolUnion( path1, path2 ){
+function boolUnion( path1, path2 ){
   return computeBoolean( path1, path2, BooleanOps.Union );
 }
 
@@ -198,8 +227,20 @@
  * @param  {Path} path2
  * @return {CompoundPath} Intersection of path1 & path2
  */
- function boolIntersection( path1, path2 ){
+function boolIntersection( path1, path2 ){
   return computeBoolean( path1, path2, BooleanOps.Intersection );
+}
+
+
+/**
+ * Calculates path1—path2
+ * Boolean API.
+ * @param  {Path} path1
+ * @param  {Path} path2
+ * @return {CompoundPath} path1 <minus> path2
+ */
+function boolSubtract( path1, path2 ){
+  return computeBoolean( path1, path2, BooleanOps.Subtraction );
 }
 
 
@@ -210,7 +251,7 @@
  * @param  {BooleanOps type} operator
  * @return {CompoundPath} boolean result
  */
- function computeBoolean( _path1, _path2, operator ){
+function computeBoolean( _path1, _path2, operator ){
   IntersectionID = 1;
   UNIQUE_ID = 1;
 
@@ -226,33 +267,35 @@
   // full connectivity information. The order of links in a graph is not important
   // That allows us to sort and merge graphs and 'splice' links with their splits easily.
   // Also, this is the place to resolve self-intersecting paths
-  var graph = [], path1Children, path2Children;
+  var graph = [], path1Children, path2Children, base;
   if( path1 instanceof CompoundPath ){
     path1Children = path1.children;
-    for (i = 0, l = path1Children.length; i < l; i++) {
+    for (i = 0, base = true, l = path1Children.length; i < l; i++, base = false) {
       path1Children[i].closed = true;
-      graph = graph.concat( makeGraph( path1Children[i], 1, i + 1 ) );
+      graph = graph.concat( makeGraph( path1Children[i], 1, base ) );
     }
   } else {
     path1.closed = true;
-    path1.clockwise = true;
-    graph = graph.concat( makeGraph( path1, 1, 1 ) );
+    // path1.clockwise = true;
+    graph = graph.concat( makeGraph( path1, 1, 1, true ) );
   }
 
-  // TODO: if operator === BooleanOps.subtract, then for path2, clockwise must be false
+  // if operator === BooleanOps.Subtraction, then reverse path2
+  // so that the nodes and links will link correctly
+  var reverse = ( operator === BooleanOps.Subtraction )? true: false;
   if( path2 instanceof CompoundPath ){
     path2Children = path2.children;
-    for (i = 0, l = path2Children.length; i < l; i++) {
+    for (i = 0, base = true, l = path2Children.length; i < l; i++, base = false) {
       path2Children[i].closed = true;
-      graph = graph.concat( makeGraph( path2Children[i], 2, i + 1 ) );
+      if( reverse ){ path2Children[i].reverse(); }
+      graph = graph.concat( makeGraph( path2Children[i], 2, i + 1, base ) );
     }
   } else {
     path2.closed = true;
-    path2.clockwise = true;
-    graph = graph.concat( makeGraph( path2, 2, 1 ) );
+    // path2.clockwise = true;
+    if( reverse ){ path2.reverse(); }
+    graph = graph.concat( makeGraph( path2, 2, 1, true ) );
   }
-
-  window.g = graph
 
   // Sort function to sort intersections according to the 'parameter'(t) in a link (curve)
   function ixSort( a, b ){ return a._parameter - b._parameter; }
@@ -289,6 +332,7 @@
     }
   }
 
+
   /*  
    * Pass 2:
    * Walk the graph, sort the intersections on each individual link.
@@ -297,7 +341,8 @@
    for ( i = graph.length - 1; i >= 0; i--) {
     if( graph[i].intersections.length ){
       var ix = graph[i].intersections;
-      ix.sort( ixSort );
+      // Sort the intersections if there is more than one
+      if( graph[i].intersections.length > 1 ){ ix.sort( ixSort ); }
       // Remove the graph link, this link has to be split and replaced with the splits
       lnk = graph.splice( i, 1 )[0];
       for (j =0, l=ix.length; j<l && lnk; j++) {
@@ -328,7 +373,7 @@
           // TODO: check if link is linear and set handles to null
           var ixPoint = new Point( left[6], left[7] );
           nuNode = new Node( ixPoint, new Point(left[4] - ixPoint.x, left[5] - ixPoint.y),
-            new Point(right[2] - ixPoint.x, right[3] - ixPoint.y), lnk.id, lnk.childId );
+            new Point(right[2] - ixPoint.x, right[3] - ixPoint.y), lnk.id, lnk.isBaseContour );
           nuNode.type = INTERSECTION_NODE;
           nuNode._intersectionID = ix[j]._intersectionID;
           // clear the cached Segment on original end nodes and Update their handles
@@ -339,8 +384,8 @@
           tmppnt = lnk.nodeOut.point;
           lnk.nodeOut.handleIn = new Point( right[4] - tmppnt.x, right[5] - tmppnt.y );
           // Make new links after the split
-          leftLink = new Link( lnk.nodeIn, nuNode, lnk.id, lnk.childId);
-          rightLink = new Link( nuNode, lnk.nodeOut, lnk.id, lnk.childId );
+          leftLink = new Link( lnk.nodeIn, nuNode, lnk.id, lnk.isBaseContour );
+          rightLink = new Link( nuNode, lnk.nodeOut, lnk.id, lnk.isBaseContour );
         }
         // Add the first split link back to the graph, since we sorted the intersections
         // already, this link should contain no more intersections to the left.
@@ -427,6 +472,7 @@
         } else {
           // Merge the nodes together, by adding this node's information to the other node
           otherNode.idB = node.id;
+          otherNode.isBaseContourB = node.isBaseContour;
           otherNode.handleBIn = node.handleIn;
           otherNode.handleBOut = node.handleOut;
           otherNode.linkBIn = node.linkIn;
@@ -441,6 +487,7 @@
     }
   }
 
+
   // Final step: Retrieve the resulting paths from the graph
   // TODO: start from a path where childId === 1
   var boolResult = new CompoundPath();
@@ -450,7 +497,7 @@
     len = graph.length;
     while( len-- ){
       if( !graph[len].INVALID && !graph[len].nodeIn.visited && !firstNode ){
-        if( !foundBasePath && graph[len].childId === 1 ){
+        if( !foundBasePath && graph[len].isBaseContour === 1 ){
           firstNode = graph[len].nodeIn;
           foundBasePath = true;
           break;

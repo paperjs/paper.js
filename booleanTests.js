@@ -4,7 +4,7 @@ paper.install(window);
 
 
 function runTests() {
-  var caption, pathA, pathB;
+  var caption, pathA, pathB, group;
 
   var container = document.getElementById( 'container' );
 
@@ -49,10 +49,10 @@ function runTests() {
   pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
   testBooleanStatic( pathA, pathB, caption );
 
-  caption = prepareTest( 'Circles overlap exactly over each other', container );
-  pathA = new Path.Circle(new Point(110, 110), 100);
-  pathB = new Path.Circle(new Point(110, 110), 100 );
-  testBooleanStatic( pathA, pathB, caption );
+  // caption = prepareTest( 'Circles overlap exactly over each other', container );
+  // pathA = new Path.Circle(new Point(110, 110), 100);
+  // pathB = new Path.Circle(new Point(110, 110), 100 );
+  // testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'Maximum possible intersections between 2 cubic bezier curve segments - 9', container );
   pathA = new Path();
@@ -62,34 +62,33 @@ function runTests() {
   pathB = pathA.clone();
   pathB.rotate( -90 );
   // FIXME: hangs when I move pathA, pathB apart by [-10,0] & [10,0] or [9...] etc.
-  pathA.translate( [-11,0] );
-  pathB.translate( [11,0] );
+  pathA.translate( [-10,0] );
+  pathB.translate( [10,0] );
   testBooleanStatic( pathA, pathB, caption );
   annotatePath( pathA, null, '#008' );
   annotatePath( pathB, null, '#800' );
   view.draw();
 
   caption = prepareTest( 'Glyphs imported from SVG', container );
-  var group  = paper.project.importSvg( document.getElementById( 'glyphsys' ) );
+  group  = paper.project.importSvg( document.getElementById( 'glyphsys' ) );
   pathA = group.children[0];
   pathB = group.children[1];
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'CompoundPaths 1', container );
-  var group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
   pathA = group.children[0];
   pathB = group.children[1];
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'CompoundPaths 2', container );
-  var group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
   pathA = group.children[0];
   pathB = new CompoundPath();
+  group.children[1].clockwise = true;
   pathB.addChild(group.children[1]);
   var npath = new Path.Circle([110, 110], 30);
-  console.log(npath.clockwise)
   pathB.addChild( npath );
-  console.log(npath.clockwise)
   testBooleanStatic( pathA, pathB, caption );
 
   window.p = pathB;
@@ -129,23 +128,30 @@ var pathStyleBoolean = {
 // Better if path1 and path2 fit nicely inside a 200x200 pixels rect
 function testBooleanStatic( path1, path2, caption ) {
   try{
-    var _p1U = path1.clone().translate( [280, 0] );
-    var _p2U = path2.clone().translate( [280, 0] );
+    var _p1U = path1.clone().translate( [250, 0] );
+    var _p2U = path2.clone().translate( [250, 0] );
+    _p1U.style = _p2U.style = pathStyleBoolean;
     console.time( 'Union' );
     var boolPathU = boolUnion( _p1U, _p2U );
     console.timeEnd( 'Union' );
 
-    window.b = boolPathU
-
-    var _p1I = path1.clone().translate( [560, 0] );
-    var _p2I = path2.clone().translate( [560, 0] );
+    var _p1I = path1.clone().translate( [500, 0] );
+    var _p2I = path2.clone().translate( [500, 0] );
+    _p1I.style = _p2I.style = pathStyleBoolean;
     console.time( 'Intersection' );
     var boolPathI = boolIntersection( _p1I, _p2I );
     console.timeEnd( 'Intersection' );
-   
+
+    var _p1S = path1.clone().translate( [750, 0] );
+    var _p2S = path2.clone().translate( [750, 0] );
+    _p1S.style = _p2S.style = pathStyleBoolean;
+    console.time( 'Subtraction' );
+    var boolPathS = boolSubtract( _p1S, _p2S );
+    console.timeEnd( 'Subtraction' );
+
     path1.style = path2.style = pathStyleNormal;
-    _p1U.style = _p2U.style = _p1I.style = _p2I.style = pathStyleBoolean;
     boolPathU.style = boolPathI.style = booleanStyle;
+    boolPathS.style = booleanStyle;
   } catch( e ){
     console.error( e.message );
     if( caption ) { caption.className += ' error'; }
@@ -153,6 +159,7 @@ function testBooleanStatic( path1, path2, caption ) {
   } finally {
     console.timeEnd( 'Union' );
     console.timeEnd( 'Intersection' );
+    console.timeEnd( 'Subtraction' );
     view.draw();
   }
 }
