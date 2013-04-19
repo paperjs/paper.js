@@ -321,10 +321,12 @@ function computeBoolean( _path1, _path2, operator ){
         for (k = 0, l=loc.length; k<l; k++) {
           var loc1 = loc[k].clone();
           loc1._intersectionID = loc[k]._intersectionID;
+          // loc1._parameter = c1.getParameterOf( loc[k] ); // For sorting on curve1
           loc1._parameter = c1.getNearestLocation( loc[k] ).parameter; // For sorting on curve1
           graph[i].intersections.push( loc1 );
           var loc2 = loc[k].clone();
           loc2._intersectionID = loc[k]._intersectionID;
+          // loc2._parameter = c2.getParameterOf( loc[k] ); // For sorting on curve2
           loc2._parameter = c2.getNearestLocation( loc[k] ).parameter; // For sorting on curve2
           graph[j].intersections.push( loc2 );
         }
@@ -351,6 +353,7 @@ function computeBoolean( _path1, _path2, operator ){
         // We need to recalculate parameter after each curve split
         // This operation (except for recalculating the curve parameter),
         // is fairly similar to Curve.split method, except that it operates on Node and Link objects.
+        // var param = crv.getParameterOf( ix[j] );
         var param = crv.getNearestLocation( ix[j] ).parameter;
         if( param === 0.0 || param === 1.0) {
           // Intersection falls on an existing node
@@ -487,9 +490,7 @@ function computeBoolean( _path1, _path2, operator ){
     }
   }
 
-
   // Final step: Retrieve the resulting paths from the graph
-  // TODO: start from a path where childId === 1
   var boolResult = new CompoundPath();
   var firstNode = true, nextNode, foundBasePath = false;
   while( firstNode ){
