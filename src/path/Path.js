@@ -304,19 +304,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 	_applyMatrix: function(matrix) {
 		var coords = new Array(6);
-		for (var i = 0, l = this._segments.length; i < l; i++) {
+		for (var i = 0, l = this._segments.length; i < l; i++)
 			this._segments[i]._transformCoordinates(matrix, coords, true);
-		}
-		// See #draw() for an explanation of why we can access _style properties
-		// directly here:
-		var style = this._style,
-			fillColor = style._fillColor,
-			strokeColor = style._strokeColor;
-		// Try calling transform on colors in case they are gradients.
-		if (fillColor && fillColor._type === 'gradient')
-			fillColor.transform(matrix);
-		if (strokeColor && strokeColor._type === 'gradient')
-			strokeColor.transform(matrix);
 		return true;
 	},
 

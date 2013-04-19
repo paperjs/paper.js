@@ -2151,8 +2151,18 @@ var Item = this.Item = Base.extend(Callback, {
 		// possible on Raster, PointText, PlacedSymbol, since the matrix is
 		// storing the actual location / transformation state.
 		if ((this.applyMatrix || arguments[1])
-				&& this._applyMatrix(this._matrix))
+				&& this._applyMatrix(this._matrix)) {
+			// When the matrix could be applied, we also need to transform
+			// color styles with matrices (only gradients so far):
+			var style = this._style,
+				fillColor = style._fillColor,
+				strokeColor = style._strokeColor;
+			if (fillColor)
+				fillColor.transform(this._matrix);
+			if (strokeColor)
+				strokeColor.transform(this._matrix);
 			this._matrix.reset();
+		}
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(/*#=*/ Change.GEOMETRY);
