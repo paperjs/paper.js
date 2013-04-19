@@ -2851,22 +2851,6 @@ var Item = this.Item = Base.extend(Callback, {
 			// Return the temporary context, so it can be reused
 			CanvasProvider.release(ctx);
 		}
-	},
-
-	statics: {
-		drawSelectedBounds: function(bounds, ctx, matrix) {
-			var coords = matrix._transformCorners(bounds);
-			ctx.beginPath();
-			for (var i = 0; i < 8; i++)
-				ctx[i == 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
-			ctx.closePath();
-			ctx.stroke();
-			for (var i = 0; i < 8; i++) {
-				ctx.beginPath();
-				ctx.rect(coords[i] - 2, coords[++i] - 2, 4, 4);
-				ctx.fill();
-			}
-		}
 	}
 }, Base.each(['down', 'drag', 'up', 'move'], function(name) {
 	this['removeOn' + Base.capitalize(name)] = function() {

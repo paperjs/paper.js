@@ -317,11 +317,23 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 					var mx = item._globalMatrix;
 					if (item.drawSelected)
 						item.drawSelected(ctx, mx);
-					if (item._boundsSelected)
+					if (item._boundsSelected) {
 						// We need to call the internal _getBounds, to get non-
 						// transformed bounds.
-						Item.drawSelectedBounds(item._getBounds('getBounds'),
-								ctx, mx);
+						var coords = mx._transformCorners(
+								item._getBounds('getBounds'));
+						ctx.beginPath();
+						for (var i = 0; i < 8; i++)
+							ctx[i === 0 ? 'moveTo' : 'lineTo'](
+									coords[i], coords[++i]);
+						ctx.closePath();
+						ctx.stroke();
+						for (var i = 0; i < 8; i++) {
+							ctx.beginPath();
+							ctx.rect(coords[i] - 2, coords[++i] - 2, 4, 4);
+							ctx.fill();
+						}
+					}
 				}
 			}
 			ctx.restore();
