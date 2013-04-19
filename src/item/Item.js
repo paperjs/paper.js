@@ -1378,9 +1378,9 @@ var Item = this.Item = Base.extend(Callback, {
 	 *
 	 * @param {Item} item The item to be added as a child
 	 */
-	addChild: function(item, _cloning) {
-		// Pass on internal _cloning boolean, for CompoundPath#insertChild
-		return this.insertChild(undefined, item, _cloning);
+	addChild: function(item, _preserve) {
+		// Pass on internal _preserve boolean, for CompoundPath#insertChild
+		return this.insertChild(undefined, item, _preserve);
 	},
 
 	/**
@@ -1391,8 +1391,8 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @param {Number} index
 	 * @param {Item} item The item to be appended as a child
 	 */
-	insertChild: function(index, item, _cloning) {
-		// _cloning parameter is not used here, but CompoundPath#insertChild()
+	insertChild: function(index, item, _preserve) {
+		// _preserve parameter is not used here, but CompoundPath#insertChild()
 		// needs it.
 		if (this._children) {
 			item._remove(true);
@@ -1416,8 +1416,8 @@ var Item = this.Item = Base.extend(Callback, {
 	 *
 	 * @param {Item[]} items The items to be added as children
 	 */
-	addChildren: function(items, _cloning) {
-		return this.insertChildren(this._children.length, items, _cloning);
+	addChildren: function(items, _preserve) {
+		return this.insertChildren(this._children.length, items, _preserve);
 	},
 
 	/**
@@ -1428,7 +1428,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @param {Number} index
 	 * @param {Item[]} items The items to be appended as children
 	 */
-	insertChildren: function(index, items, _cloning) {
+	insertChildren: function(index, items, _preserve) {
 		// We need to clone items because it might be
 		// an Item#children array. Use Array.prototype.slice because
 		// in certain cases items is an arguments object
@@ -1437,7 +1437,7 @@ var Item = this.Item = Base.extend(Callback, {
 			length = children.length,
 			i = index;
 		for (var j = 0, l = items && items.length; j < l; j++) {
-			if (this.insertChild(i, items[j], _cloning)) {
+			if (this.insertChild(i, items[j], _preserve)) {
 				// We need to keep track of how much the list actually grows,
 				// bcause we might be removing and inserting into the same list,
 				// in which case the size would not chage.
@@ -1455,11 +1455,11 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @param {Item} item The item above which it should be inserted
 	 * @return {Boolean} {@true it was inserted}
 	 */
-	insertAbove: function(item, _cloning) {
+	insertAbove: function(item, _preserve) {
 		var index = item._index;
 		if (item._parent == this._parent && index < this._index)
 			 index++;
-		return item._parent.insertChild(index, this, _cloning);
+		return item._parent.insertChild(index, this, _preserve);
 	},
 
 	/**
@@ -1468,11 +1468,11 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @param {Item} item The item above which it should be inserted
 	 * @return {Boolean} {@true it was inserted}
 	 */
-	insertBelow: function(item, _cloning) {
+	insertBelow: function(item, _preserve) {
 		var index = item._index;
 		if (item._parent == this._parent && index > this._index)
 			 index--;
-		return item._parent.insertChild(index, this, _cloning);
+		return item._parent.insertChild(index, this, _preserve);
 	},
 
 	/**

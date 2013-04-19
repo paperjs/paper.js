@@ -60,7 +60,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
-	insertChild: function(index, item, _cloning) {
+	insertChild: function(index, item, _preserve) {
 		// Only allow the insertion of paths
 		if (item._type !== 'path')
 			return null;
@@ -69,7 +69,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		// to anti-clockwise orientation, so that they appear as holes, but
 		// only if their orientation was not already specified before
 		// (= _clockwise is defined).
-		if (!_cloning && item && item._clockwise === undefined)
+		if (!_preserve && item && item._clockwise === undefined)
 			item.setClockwise(item._index == 0);
 		return item;
 	},

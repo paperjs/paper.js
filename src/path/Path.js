@@ -1069,7 +1069,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				// will happen below.
 				path = this;
 			} else if (index > 0) {
-				// Pass true for _cloning, in case of CompoundPath, to avoid 
+				// Pass true for _preserve, in case of CompoundPath, to avoid 
 				// reversing of path direction, which would mess with segs!
 				// Use _clone to copy over all other attributes, including style
 				path = this._clone(new Path().insertAbove(this, true));
