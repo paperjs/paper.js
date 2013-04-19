@@ -25,8 +25,8 @@
 			var gradient = new Gradient([color, 'black'], true);
 
 			var radius = this.radius = 50 * Math.random() + 30;
-			// Wrap CompoundPath in a group, since CompoundPath applies matrix
-			// to its children, just like Path (since both are PathItem).
+			// Wrap CompoundPath in a Group, since CompoundPaths directly 
+			// applies the transformations to the content, just like Path.
 			this.item = new Group({
 				children: [
 					new CompoundPath({
