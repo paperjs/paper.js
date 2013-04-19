@@ -571,8 +571,7 @@ var Color = this.Color = Base.extend(new function() {
 		 * Called by various setters whenever a color value changes
 		 */
 		_changed: function() {
-			this._css = null;
-			this._canvasGradient = null;
+			this._canvasStyle = null;
 			if (this._owner)
 				this._owner._changed(/*#=*/ Change.STYLE);
 		},
@@ -706,33 +705,26 @@ var Color = this.Color = Base.extend(new function() {
 		 * @return {String} A css string representation of the color.
 		 */
 		toCss: function(noAlpha) {
-			var css = this._css;
-			// Only cache _css value if we're not ommiting alpha, as required
-			// by SVG export.
-			if (!css || noAlpha) {
-				var components = this._convert('rgb'),
-					alpha = noAlpha || this._alpha == null ? 1 : this._alpha;
-				components = [
-					Math.round(components[0] * 255),
-					Math.round(components[1] * 255),
-					Math.round(components[2] * 255)
-				];
-				if (alpha < 1)
-					components.push(alpha);
-				var css = (components.length == 4 ? 'rgba(' : 'rgb(')
-						+ components.join(', ') + ')';
-				if (!noAlpha)
-					this._css = css;
-			}
-			return css;
+			var components = this._convert('rgb'),
+				alpha = noAlpha || this._alpha == null ? 1 : this._alpha;
+			components = [
+				Math.round(components[0] * 255),
+				Math.round(components[1] * 255),
+				Math.round(components[2] * 255)
+			];
+			if (alpha < 1)
+				components.push(alpha);
+			return (components.length == 4 ? 'rgba(' : 'rgb(')
+					+ components.join(', ') + ')';
 		},
 
 		toCanvasStyle: function(ctx) {
+			if (this._canvasStyle)
+				return this._canvasStyle;
+			// Normal colors are simply represented by their css string.
 			if (this._type !== 'gradient')
-				return this.toCss();
-			// Gradient code form here onwards, incudling caching
-			if (this._canvasGradient)
-				return this._canvasGradient;
+				return this._canvasStyle = this.toCss();
+			// Gradient code form here onwards
 			var components = this._components,
 				gradient = components[0],
 				stops = gradient._stops,
@@ -756,9 +748,10 @@ var Color = this.Color = Base.extend(new function() {
 			}
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i];
-				canvasGradient.addColorStop(stop._rampPoint, stop._color.toCss());
+				canvasGradient.addColorStop(stop._rampPoint,
+						stop._color.toCanvasStyle());
 			}
-			return this._canvasGradient = canvasGradient;
+			return this._canvasStyle = canvasGradient;
 		},
 
 		/**
@@ -773,6 +766,7 @@ var Color = this.Color = Base.extend(new function() {
 					var point = components[i];
 					matrix._transformPoint(point, point, true);
 				}
+				this._changed();
 			}
 		},
 
