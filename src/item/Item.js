@@ -854,7 +854,7 @@ var Item = this.Item = Base.extend(Callback, {
 	_getBounds: function(getter, matrix, cacheItem) {
 		// Note: We cannot cache these results here, since we do not get
 		// _changed() notifications here for changing geometry in children.
-		// But cacheName is used in sub-classes such as PlacedItem.
+		// But cacheName is used in sub-classes such as PlacedSymbol and Raster.
 		var children = this._children;
 		// TODO: What to return if nothing is defined, e.g. empty Groups?
 		// Scriptographer behaves weirdly then too.

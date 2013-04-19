@@ -16,10 +16,12 @@
  * @class A PlacedSymbol represents an instance of a symbol which has been
  * placed in a Paper.js project.
  *
- * @extends PlacedItem
+ * @extends Item
  */
-var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol# */{
+var PlacedSymbol = this.PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 	_class: 'PlacedSymbol',
+	// PlacedSymbol uses strokeBounds for bounds
+	_boundsGetter: { getBounds: 'getStrokeBounds' },
 	_boundsSelected: true,
 	_serializeFields: {
 		symbol: null
@@ -108,6 +110,15 @@ var PlacedSymbol = this.PlacedSymbol = PlacedItem.extend(/** @lends PlacedSymbol
 		// TODO: Implement bounds caching through passing on of cacheItem, so
 		// that Symbol#_changed() notification become unnecessary!
 		return this.symbol._definition._getCachedBounds(getter, matrix);
+	},
+
+	_hitTest: function(point, options, matrix) {
+		var result = this._symbol._definition._hitTest(point, options, matrix);
+		// TODO: When the symbol's definition is a path, should hitResult
+		// contain information like HitResult#curve?
+		if (result)
+			result.item = this;
+		return result;
 	},
 
 	_draw: function(ctx, param) {

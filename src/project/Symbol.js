@@ -95,7 +95,7 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
-		// Notify all PlacedItems of the change in our definition, so they
+		// Notify all PlacedSymbols of the change in our definition, so they
 		// can clear cached bounds.
 		Base.each(this._instances, function(item) {
 			item._changed(flags);

@@ -15,17 +15,17 @@
  *
  * @class The Raster item represents an image in a Paper.js project.
  *
- * @extends PlacedItem
+ * @extends Item
  */
-var Raster = this.Raster = PlacedItem.extend(/** @lends Raster# */{
+var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	_class: 'Raster',
+	// Raster doesn't make the distinction between the different bounds,
+	// so use the same name for all of them
+	_boundsGetter: 'getBounds',
 	_boundsSelected: true,
 	_serializeFields: {
 		source: null
 	},
-	// Raster doesn't make the distinction between the different bounds,
-	// so use the same name for all of them
-	_boundsGetter: 'getBounds',
 
 	// TODO: Implement type, width, height.
 	// TODO: Have PlacedSymbol & Raster inherit from a shared class?
