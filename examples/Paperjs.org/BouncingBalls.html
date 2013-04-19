@@ -25,17 +25,23 @@
 			var gradient = new Gradient([color, 'black'], true);
 
 			var radius = this.radius = 50 * Math.random() + 30;
-			this.item = new CompoundPath({
+			// Wrap CompoundPath in a group, since CompoundPath applies matrix
+			// to its children, just like Path (since both are PathItem).
+			this.item = new Group({
 				children: [
-					new Path.Circle({
-						radius: radius
-					}),
-					new Path.Circle({
-						center: radius / 8,
-						radius: radius / 3
+					new CompoundPath({
+						children: [
+							new Path.Circle({
+								radius: radius
+							}),
+							new Path.Circle({
+								center: radius / 8,
+								radius: radius / 3
+							})
+						],
+						fillColor: new Color(gradient, 0, radius, radius / 8),
 					})
 				],
-				fillColor: new Color(gradient, 0, radius, radius / 8),
 				position: this.point
 			});
 		}
