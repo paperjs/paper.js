@@ -313,15 +313,17 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id];
 				if (item._drawCount === this._drawCount
-						&& (item.drawSelected || item._boundsSelected)) {
+						&& (item._drawSelected || item._boundsSelected)) {
 					var mx = item._globalMatrix;
-					if (item.drawSelected)
-						item.drawSelected(ctx, mx);
+					if (item._drawSelected)
+						item._drawSelected(ctx, mx);
 					if (item._boundsSelected) {
 						// We need to call the internal _getBounds, to get non-
 						// transformed bounds.
 						var coords = mx._transformCorners(
 								item._getBounds('getBounds'));
+						// Now draw a rectangle that connects the transformed
+						// bounds corners, and draw the corners.
 						ctx.beginPath();
 						for (var i = 0; i < 8; i++)
 							ctx[i === 0 ? 'moveTo' : 'lineTo'](

@@ -1876,7 +1876,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			}
 		},
 
-		drawSelected: function(ctx, matrix) {
+		_drawSelected: function(ctx, matrix) {
 			ctx.beginPath();
 			drawSegments(ctx, this, matrix);
 			// Now stroke it and draw its handles:
