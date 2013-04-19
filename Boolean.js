@@ -81,8 +81,9 @@
  * @param {Point} _handleOut
  * @param {Any} _id
  */
- function Node( _point, _handleIn, _handleOut, _id ){
+ function Node( _point, _handleIn, _handleOut, _id, _childId ){
   this.id = _id;
+  this.childId = _childId;
   this.type = NORMAL_NODE;
   this.point   = _point;
   this.handleIn = _handleIn;  // handleIn
@@ -131,8 +132,9 @@
  * @param {Node} _nodeOut
  * @param {Any} _id
  */
- function Link( _nodeIn, _nodeOut, _id ) {
+ function Link( _nodeIn, _nodeOut, _id, _childId ) {
   this.id = _id;
+  this.childId = _childId;
   this.nodeIn = _nodeIn;  // nodeStart
   this.nodeOut = _nodeOut;  // nodeEnd
   this.nodeIn.linkOut = this;  // nodeStart.linkOut
@@ -155,14 +157,14 @@
  * @param  {Integer} id
  * @return {Array} Links
  */
- function makeGraph( path, id ){
+ function makeGraph( path, id, childId ){
   var graph = [];
   var segs = path.segments, prevNode = null, firstNode = null, nuLink, nuNode;
   for( i = 0, l = segs.length; i < l; i++ ){
     var nuSeg = segs[i].clone();
-    nuNode = new Node( nuSeg.point, nuSeg.handleIn, nuSeg.handleOut, id );
+    nuNode = new Node( nuSeg.point, nuSeg.handleIn, nuSeg.handleOut, id, childId );
     if( prevNode ) {
-      nuLink = new Link( prevNode, nuNode, id );
+      nuLink = new Link( prevNode, nuNode, id, childId );
       graph.push( nuLink );
     }
     prevNode = nuNode;
@@ -171,7 +173,7 @@
     }
   }
   // the path is closed
-  nuLink = new Link( prevNode, firstNode, id );
+  nuLink = new Link( prevNode, firstNode, id, childId );
   graph.push( nuLink );
   return graph;
 }
@@ -215,23 +217,46 @@
   // The boolean operation may modify the original paths
   var path1 = _path1.clone();
   var path2 = _path2.clone();
-  if( !path1.clockwise ){ path1.reverse(); }
-  if( !path2.clockwise ){ path2.reverse(); }
+  // if( !path1.clockwise ){ path1.reverse(); }
+  // if( !path2.clockwise ){ path2.reverse(); }
+  // 
+  var i, j, k, l, lnk, crv, node, nuNode, leftLink, rightLink;
 
   // Prepare the graphs. Graphs are list of Links that retains 
   // full connectivity information. The order of links in a graph is not important
   // That allows us to sort and merge graphs and 'splice' links with their splits easily.
   // Also, this is the place to resolve self-intersecting paths
-  var graph = makeGraph( path1, 1 );
-  var graph2 = makeGraph( path2, 2 );
-  // Merge the two graphs. Since we have unique id's for each Link and Node, 
-  // retrieveing the original graphs is rather simple.
-  graph = graph.concat( graph2 );
+  var graph = [], path1Children, path2Children;
+  if( path1 instanceof CompoundPath ){
+    path1Children = path1.children;
+    for (i = 0, l = path1Children.length; i < l; i++) {
+      path1Children[i].closed = true;
+      graph = graph.concat( makeGraph( path1Children[i], 1, i + 1 ) );
+    }
+  } else {
+    path1.closed = true;
+    path1.clockwise = true;
+    graph = graph.concat( makeGraph( path1, 1, 1 ) );
+  }
+
+  // TODO: if operator === BooleanOps.subtract, then for path2, clockwise must be false
+  if( path2 instanceof CompoundPath ){
+    path2Children = path2.children;
+    for (i = 0, l = path2Children.length; i < l; i++) {
+      path2Children[i].closed = true;
+      graph = graph.concat( makeGraph( path2Children[i], 2, i + 1 ) );
+    }
+  } else {
+    path2.closed = true;
+    path2.clockwise = true;
+    graph = graph.concat( makeGraph( path2, 2, 1 ) );
+  }
+
+  window.g = graph
 
   // Sort function to sort intersections according to the 'parameter'(t) in a link (curve)
   function ixSort( a, b ){ return a._parameter - b._parameter; }
 
-  var i, j, k, l, lnk, crv, node, nuNode, leftLink, rightLink;
   /*
    * Pass 1:
    * Calculate the intersections for all graphs
@@ -263,7 +288,6 @@
       }
     }
   }
-
 
   /*  
    * Pass 2:
@@ -303,8 +327,8 @@
           // Make new link and convert handles from absolute to relative
           // TODO: check if link is linear and set handles to null
           var ixPoint = new Point( left[6], left[7] );
-          nuNode = new Node( ixPoint, new Point(left[4] - ixPoint.x, left[5] - ixPoint.y), 
-            new Point(right[2] - ixPoint.x, right[3] - ixPoint.y), lnk.id );
+          nuNode = new Node( ixPoint, new Point(left[4] - ixPoint.x, left[5] - ixPoint.y),
+            new Point(right[2] - ixPoint.x, right[3] - ixPoint.y), lnk.id, lnk.childId );
           nuNode.type = INTERSECTION_NODE;
           nuNode._intersectionID = ix[j]._intersectionID;
           // clear the cached Segment on original end nodes and Update their handles
@@ -315,8 +339,8 @@
           tmppnt = lnk.nodeOut.point;
           lnk.nodeOut.handleIn = new Point( right[4] - tmppnt.x, right[5] - tmppnt.y );
           // Make new links after the split
-          leftLink = new Link( lnk.nodeIn, nuNode, lnk.id );
-          rightLink = new Link( nuNode, lnk.nodeOut, lnk.id );
+          leftLink = new Link( lnk.nodeIn, nuNode, lnk.id, lnk.childId);
+          rightLink = new Link( nuNode, lnk.nodeOut, lnk.id, lnk.childId );
         }
         // Add the first split link back to the graph, since we sorted the intersections
         // already, this link should contain no more intersections to the left.
@@ -418,15 +442,22 @@
   }
 
   // Final step: Retrieve the resulting paths from the graph
+  // TODO: start from a path where childId === 1
   var boolResult = new CompoundPath();
-  var firstNode = true, nextNode;
+  var firstNode = true, nextNode, foundBasePath = false;
   while( firstNode ){
     firstNode = nextNode = null;
     len = graph.length;
     while( len-- ){
       if( !graph[len].INVALID && !graph[len].nodeIn.visited && !firstNode ){
-        firstNode = graph[len].nodeIn;
-        break;
+        if( !foundBasePath && graph[len].childId === 1 ){
+          firstNode = graph[len].nodeIn;
+          foundBasePath = true;
+          break;
+        } else if(foundBasePath){
+          firstNode = graph[len].nodeIn;
+          break;
+        }
       }
     }
     if( firstNode ){
@@ -449,6 +480,27 @@
   return boolResult;
 }
 
+
+function markPoint( pnt, t, c, tc, remove ) {
+  if( !pnt ) return;
+  c = c || '#000';
+  if( remove === undefined ){ remove = true; }
+  var cir = new Path.Circle( pnt, 2 );
+  cir.style.fillColor = c;
+  cir.style.strokeColor = tc;
+  if( t !== undefined || t !== null ){
+    var text = new PointText( pnt.add([0, -3]) );
+    text.justification = 'center';
+    text.fillColor = c;
+    text.content = t;
+    if( remove ){
+      text.removeOnMove();
+    }
+  }
+  if( remove ) {
+    cir.removeOnMove();
+  }
+}
 
 // Same as the paperjs' Numerical class, 
 // added here because I can't access the original from this scope

@@ -75,6 +75,26 @@ function runTests() {
   pathB = group.children[1];
   testBooleanStatic( pathA, pathB, caption );
 
+  caption = prepareTest( 'CompoundPaths 1', container );
+  var group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = group.children[1];
+  testBooleanStatic( pathA, pathB, caption );
+
+  caption = prepareTest( 'CompoundPaths 2', container );
+  var group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = new CompoundPath();
+  pathB.addChild(group.children[1]);
+  var npath = new Path.Circle([110, 110], 30);
+  console.log(npath.clockwise)
+  pathB.addChild( npath );
+  console.log(npath.clockwise)
+  testBooleanStatic( pathA, pathB, caption );
+
+  window.p = pathB;
+
+
 
   function prepareTest( testName, parentNode ){
     console.log( '\n' + testName );
@@ -115,12 +135,14 @@ function testBooleanStatic( path1, path2, caption ) {
     var boolPathU = boolUnion( _p1U, _p2U );
     console.timeEnd( 'Union' );
 
+    window.b = boolPathU
+
     var _p1I = path1.clone().translate( [560, 0] );
     var _p2I = path2.clone().translate( [560, 0] );
     console.time( 'Intersection' );
     var boolPathI = boolIntersection( _p1I, _p2I );
     console.timeEnd( 'Intersection' );
-    
+   
     path1.style = path2.style = pathStyleNormal;
     _p1U.style = _p2U.style = _p1I.style = _p2I.style = pathStyleBoolean;
     boolPathU.style = boolPathI.style = booleanStyle;
