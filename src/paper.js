@@ -84,10 +84,10 @@ var paper = new function() {
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');
 
-/*#*/ include('style/Style.js');
 /*#*/ include('style/Color.js');
 /*#*/ include('style/Gradient.js');
 /*#*/ include('style/GradientStop.js');
+/*#*/ include('style/Style.js');
 
 /*#*/ if (options.browser) {
 /*#*/ include('browser/DomElement.js');
