@@ -1831,8 +1831,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 
 			// Prepare the canvas path if we have any situation that requires it
 			// to be defined.
-			if (param.compound || param.clip || fillColor || strokeColor
-					&& !drawDash)
+			if (fillColor || strokeColor && !drawDash || param.compound
+					|| param.clip)
 				drawSegments(ctx, this);
 
 			if (this._closed)

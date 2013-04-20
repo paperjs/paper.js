@@ -20,7 +20,7 @@ Path.inject({ statics: new function() {
 		return path;
 	}
 
-	function createRectangle(/* rect */) {
+	function createRectangle(/* rectangle */) {
 		var rect = Rectangle.readNamed(arguments, 'rectangle'),
 			radius = Size.readNamed(arguments, 'radius', 0, 0, false, true), // readNull
 			bl = rect.getBottomLeft(true),
@@ -65,7 +65,7 @@ Path.inject({ statics: new function() {
 		new Segment([0.5, 1], [kappa, 0 ], [-kappa, 0])
 	];
 
-	function createEllipse(/* rect */) {
+	function createEllipse(/* rectangle */) {
 		var rect = Rectangle.readNamed(arguments, 'rectangle'),
 			path = createPath(arguments),
 			point = rect.getPoint(true),
