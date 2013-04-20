@@ -27,7 +27,7 @@
  *  
  * ------
  * Harikrishnan Gopalakrishnan
- * http://hkrish.com/playground/paperbool.html
+ * http://hkrish.com/playground/paperjs/booleanStudy.html
  *
  * ------
  * Paperjs
@@ -417,16 +417,13 @@ function computeBoolean( _path1, _path2, operator ){
    * Mark each Link(Curve) according to whether it is 
    *  case 1. inside Path1 ( and only Path1 )
    *       2. inside Path2 ( and only Path2 )
-   *       3. inside both ( fully contained holes that completely overlap )
-   *       4. outside (normal case)
+   *       3. outside (normal case)
    *       
    * Take a test function "operator" which will discard links
    * according to the above
-   *  * Union         -> discard cases 1, 2 and 3
-   *  * Intersection  -> discard case 4
-   *  * Path1-Path2   -> discard cases 2, 3[Path1] and 4[Path2]‡
-   *  * Path2-Path1   -> discard cases 1, 3[Path2] and 4[Path1]
-   *    ‡ - 4[Path2] means curves of case 4 that belongs to Path2
+   *  * Union         -> discard cases 1 and 2
+   *  * Intersection  -> discard case 3
+   *  * Path1-Path2   -> discard cases 2, 3[Path2]
    */
 
   // step 1: discard invalid links according to the boolean operator
