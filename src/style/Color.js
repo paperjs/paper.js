@@ -277,9 +277,7 @@ var Color = this.Color = Base.extend(new function() {
 		}, this);
 	}, /** @lends Color# */{
 		_class: 'Color',
-		// Tell Base.read that we do not want null to be converted to a color.
-		_readNull: true,
-		// Tell Base.read that the Point constructor supporst reading with index
+		// Tell Base.read that the Point constructor supports reading with index
 		_readIndex: true,
 
 		/**

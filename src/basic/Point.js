@@ -25,7 +25,7 @@
  */
 var Point = this.Point = Base.extend(/** @lends Point# */{
 	_class: 'Point',
-	// Tell Base.read that the Point constructor supporst reading with index
+	// Tell Base.read that the Point constructor supports reading with index
 	_readIndex: true,
 
 	/**

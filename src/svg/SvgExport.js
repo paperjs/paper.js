@@ -193,11 +193,13 @@ new function() {
 
 	function exportText(item) {
 		var attrs = getTransform(item, true),
-			style = item._style;
-		if (style._font != null)
-			attrs['font-family'] = style._font;
-		if (style._fontSize != null)
-			attrs['font-size'] = style._fontSize;
+			style = item._style,
+			font = style.getFont(),
+			fontSize = style.getFontSize();
+		if (font)
+			attrs['font-family'] = font;
+		if (fontSize)
+			attrs['font-size'] = fontSize;
 		var node = createElement('text', attrs);
 		node.textContent = item._content;
 		return node;

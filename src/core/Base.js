@@ -170,10 +170,7 @@ this.Base = Base.inject(/** @lends Base# */{
 			if (!length)
 				length = list.length - index;
 			var obj = list[index];
-			if (obj instanceof this
-				// If the class defines _readNull, return null when nothing
-				// was provided
-				|| (proto._readNull || readNull) && obj == null && length <= 1) {
+			if (obj instanceof this || readNull && obj == null && length <= 1) {
 				if (readIndex)
 					list._index = index + 1;
 				return obj && clone ? obj.clone() : obj;

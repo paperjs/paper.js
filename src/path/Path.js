@@ -240,7 +240,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// We only need to draw the connecting curve if it is not a line, and if
 		// the path is closed and has a stroke color, or if it is filled.
 		// TODO: Verify this, sound dodgy
-		if (this._closed && style._strokeColor || style._fillColor)
+		if (this._closed && style.getStrokeColor() || style.getFillColor())
 			addCurve(segments[segments.length - 1], segments[0], true);
 		if (this._closed)
 			parts.push('z');
@@ -1599,8 +1599,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	hasFill: function() {
 		// If this path is part of a CompoundPath, we need to check that
 		// for fillColor too...
-		return this._style._fillColor || this._parent instanceof CompoundPath
-				&& this._parent._style._fillColor;
+		return this._style.getFillColor()
+				|| this._parent._type === 'compound-path'
+				&& this._parent._style.getFillColor();
 	},
 
 	contains: function(point) {
@@ -1637,8 +1638,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		// directly here:
 		var style = this._style,
 			tolerance = options.tolerance || 0,
-			radius = (options.stroke && style._strokeColor
-					? style._strokeWidth / 2 : 0) + tolerance,
+			radius = (options.stroke && style.getStrokeColor()
+					? style.getStrokeWidth() / 2 : 0) + tolerance,
 			loc,
 			res;
 		// If we're asked to query for segments, ends or handles, do all that
@@ -1823,9 +1824,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// since Path items do not have children, thus do not need style
 			// accessors for merged styles.
 			var style = this._style,
-				fillColor = style._fillColor,
-				strokeColor = style._strokeColor,
-				dashArray = style._dashArray,
+				fillColor = style.getFillColor(),
+				strokeColor = style.getStrokeColor(),
+				dashArray = style.getDashArray(),
 				drawDash = !paper.support.nativeDash && strokeColor
 						&& dashArray && dashArray.length;
 
@@ -1850,7 +1851,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 						// Use CurveFlatteners to draw dashed paths:
 						ctx.beginPath();
 						var flattener = new PathFlattener(this),
-							from = style._dashOffset, to,
+							from = style.getDashOffset(), to,
 							i = 0;
 						while (from < flattener.length) {
 							to = from + dashArray[(i++) % dashArray.length];
@@ -2298,16 +2299,16 @@ statics: {
 		}
 
 		// TODO: Find a way to reuse 'bounds' cache instead?
-		if (!style._strokeColor || !style._strokeWidth)
+		if (!style.getStrokeColor() || !style.getStrokeWidth())
 			return Path.getBounds(segments, closed, style, matrix);
-		var radius = style._strokeWidth / 2,
+		var radius = style.getStrokeWidth() / 2,
 			padding = getPenPadding(radius, matrix),
 			bounds = Path.getBounds(segments, closed, style, matrix, padding),
-			join = style._strokeJoin,
-			cap = style._strokeCap,
+			join = style.getStrokeJoin(),
+			cap = style.getStrokeCap(),
 			// miter is relative to stroke width. Divide it by 2 since we're
 			// measuring half the distance below
-			miter = style._miterLimit * style._strokeWidth / 2;
+			miter = style.getMiterLimit() * style.getStrokeWidth() / 2;
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
 		var joinBounds = new Rectangle(new Size(padding).multiply(2));
@@ -2429,11 +2430,11 @@ statics: {
 		// Delegate to handleBounds, but pass on radius values for stroke and
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
-		var strokeWidth = style._strokeColor ? style._strokeWidth : 0;
+		var strokeWidth = style.getStrokeColor() ? style.getStrokeWidth() : 0;
 		return Path.getHandleBounds(segments, closed, style, matrix,
 				strokeWidth,
-				style._strokeJoin == 'miter'
-					? strokeWidth * style._miterLimit
+				style.getStrokeJoin() == 'miter'
+					? strokeWidth * style.getMiterLimit()
 					: strokeWidth);
 	}
 }});

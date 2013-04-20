@@ -31,8 +31,8 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 			size = this._size,
 			width = size.width,
 			height = size.height,
-			fillColor = style._fillColor,
-			strokeColor = style._strokeColor;
+			fillColor = style.getFillColor(),
+			strokeColor = style.getStrokeColor();
 		if (fillColor || strokeColor || param.clip) {
 			ctx.beginPath();
 			switch (this._type) {

@@ -24,7 +24,7 @@
  */
 var Size = this.Size = Base.extend(/** @lends Size# */{
 	_class: 'Size',
-	// Tell Base.read that the Point constructor supporst reading with index
+	// Tell Base.read that the Point constructor supports reading with index
 	_readIndex: true,
 
 	// DOCS: improve Size class description

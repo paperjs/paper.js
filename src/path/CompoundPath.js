@@ -186,7 +186,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 
 	_hitTest: function(point, options) {
 		var res = this.base(point, Base.merge(options, { fill: false }));
-		if (!res && options.fill && this._style._fillColor) {
+		if (!res && options.fill && this._style.getFillColor()) {
 			res = this._contains(point);
 			res = res ? new HitResult('fill', res[0]) : null;
 		}
@@ -206,9 +206,9 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		param.compound = false;
 		if (!param.clip) {
 			this._setStyles(ctx);
-			if (style._fillColor)
+			if (style.getFillColor())
 				ctx.fill();
-			if (style._strokeColor)
+			if (style.getStrokeColor())
 				ctx.stroke();
 		}
 	}

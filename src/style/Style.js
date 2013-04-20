@@ -68,11 +68,6 @@ var Style = this.Style = Base.extend(new function() {
 		justification: 'left'
 	};
 
-	// Override default fillColor for text items
-	var textDefaults = Base.merge(defaults, {
-		fillColor: 'black'
-	});
-
 	var flags = {
 		strokeWidth: /*#=*/ Change.STROKE,
 		strokeCap: /*#=*/ Change.STROKE,
@@ -86,14 +81,17 @@ var Style = this.Style = Base.extend(new function() {
 
 	var item = {},
 		fields = {
-			getDefaults: function() {
-				return this._item instanceof TextItem ? textDefaults : defaults;
-			}
+			_defaults: defaults,
+			// Override default fillColor for text items
+			_textDefaults: Base.merge(defaults, {
+				fillColor: 'black'
+			})
 		};
 
 	Base.each(defaults, function(value, key) {
 		var isColor = /Color$/.test(key),
 			part = Base.capitalize(key),
+			flag = flags[key],
 			set = 'set' + part,
 			get = 'get' + part;
 
@@ -101,50 +99,61 @@ var Style = this.Style = Base.extend(new function() {
 		fields[set] = function(value) {
 			var children = this._item && this._item._children;
 			// Clone color objects since they reference their owner
-			value = isColor ? Color.read(arguments, 0, 0, true) : value;
+			// value = isColor ? Color.read(arguments, 0, 0, true) : value;
 			// Only unify styles on children of Groups, excluding CompoundPaths.
 			if (children && children.length > 0
 					&& this._item._type !== 'compound-path') {
 				for (var i = 0, l = children.length; i < l; i++)
 					children[i]._style[set](value);
 			} else {
-				var old = this['_' + key];
-				if (!Base.equals(old, value)) {
+				var old = this._values[key];
+				if (old === undefined || !Base.equals(old, value)) {
 					if (isColor) {
 						if (old)
 							delete old._owner;
-						if (value) {
+						if (value && value.constructor === Color)
 							value._owner = this._item;
-						}
 					}
-					this['_' + key] = value;
+					this._values[key] = value;
 					// Notify the item of the style change STYLE is always set,
-					// additional flags come from _flags, as used for STROKE:
+					// additional flags come from flags, as used for STROKE:
 					if (this._item)
-						this._item._changed(flags[key] || /*#=*/ Change.STYLE);
+						this._item._changed(flag || /*#=*/ Change.STYLE);
 				}
 			}
 		};
 
 		fields[get] = function() {
-			var style,
+			var value,
 				children = this._item && this._item._children;
 			// If this item has children, walk through all of them and see if
 			// they all have the same style.
 			if (!children || children.length === 0
-					|| this._item._type === 'compound-path')
-				return this['_' + key];
+					|| this._item._type === 'compound-path') {
+				var value = this._values[key];
+				if (value === undefined) {
+					value = this._defaults[key];
+					if (value && value.clone)
+						value = value.clone();
+					this._values[key] = value;
+				} else if (isColor && !(value instanceof Color)) {
+					this._values[key] = value = Color.read([value], 0, 0, true, true);
+					if (value)
+						value._owner = this._item;
+				}
+				return value;
+			}
 			for (var i = 0, l = children.length; i < l; i++) {
-				var childStyle = children[i]._style[get]();
-				if (!style) {
-					style = childStyle;
-				} else if (!Base.equals(style, childStyle)) {
+				var childValue = children[i]._style[get]();
+				if (!value) {
+					value = childValue;
+				} else if (!Base.equals(value, childValue)) {
 					// If there is another item with a different
 					// style, the style is not defined:
 					return undefined;
 				}
 			}
-			return style;
+			return value;
 		};
 
 		// Inject style getters and setters into the Item class, which redirect
@@ -162,27 +171,37 @@ var Style = this.Style = Base.extend(new function() {
 	return fields;
 }, /** @lends Style# */{
 	initialize: function(style) {
-		// If the passed style object is also a Style, clone its clonable fields
-		// rather than simply copying them.
-		var clone = style instanceof Style;
-		// Note: This relies on bean getters and setters that get implicetly
-		// called when getting from style[key] and setting on this[key].
-		return Base.each(this.getDefaults(), function(value, key) {
-			value = style && style[key] || value;
-			this[key] = value && clone && value.clone
-					? value.clone() : value;
-		}, this);
+		// Keep values in a separate object that we can iterate over.
+		this._values = {};
+		if (this._item instanceof TextItem)
+			this._defaults = this._textDefaults;
+		if (style) {
+			// If the passed style object is also a Style, clone its clonable
+			// fields rather than simply copying them.
+			var isStyle = style instanceof Style,
+				// Use the other stlyle's _values object for iteration
+				values = isStyle ? style._values : style;
+			for (var key in values) {
+				if (key in this._defaults) {
+					var value = values[key];
+					// Delegate to setter, so Group styles work too.
+					this[key] = value && isStyle && value.clone
+							? value.clone() : value;
+				}
+			}
+		}
 	},
 
 	getLeading: function() {
 		// Override leading to return fontSize * 1.2 by default.
 		var leading = this.base();
-		return leading != null ? leading : this._fontSize * 1.2;
+		return leading != null ? leading : this.getFontSize() * 1.2;
 	},
 
 	getFontStyle: function() {
-		var size = this._fontSize;
-		return (/[a-z]/i.test(size) ? size + ' ' : size + 'px ') + this._font;
+		var size = this.getFontSize();
+		return (/[a-z]/i.test(size) ? size + ' ' : size + 'px ')
+				+ this.getFont();
 	},
 
 	statics: {

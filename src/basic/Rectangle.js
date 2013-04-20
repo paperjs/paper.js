@@ -19,7 +19,7 @@
  */
 var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	_class: 'Rectangle',
-	// Tell Base.read that the Rectangle constructor supporst reading with index
+	// Tell Base.read that the Rectangle constructor supports reading with index
 	_readIndex: true,
 
 	/**

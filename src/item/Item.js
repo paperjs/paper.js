@@ -156,7 +156,7 @@ var Item = this.Item = Base.extend(Callback, {
 		// Do not serialize styles on Groups and Layers, since they just unify
 		// their children's own styles.
 		if (!(this instanceof Group))
-			serialize(this._style.getDefaults());
+			serialize(this._style._defaults);
 		// There is no compact form for Item serialization, we always keep the
 		// type.
 		return [ this._class, props ];
@@ -2155,8 +2155,8 @@ var Item = this.Item = Base.extend(Callback, {
 			// When the matrix could be applied, we also need to transform
 			// color styles with matrices (only gradients so far):
 			var style = this._style,
-				fillColor = style._fillColor,
-				strokeColor = style._strokeColor;
+				fillColor = style.getFillColor(),
+				strokeColor = style.getStrokeColor();
 			if (fillColor)
 				fillColor.transform(this._matrix);
 			if (strokeColor)
@@ -2743,14 +2743,14 @@ var Item = this.Item = Base.extend(Callback, {
 		// We can access internal properties since we're only using this on
 		// items without children, where styles would be merged.
 		var style = this._style,
-			width = style._strokeWidth,
-			join = style._strokeJoin,
-			cap = style._strokeCap,
-			limit = style._miterLimit,
-			fillColor = style._fillColor,
-			strokeColor = style._strokeColor,
-			dashArray = style._dashArray,
-			dashOffset = style._dashOffset;
+			width = style.getStrokeWidth(),
+			join = style.getStrokeJoin(),
+			cap = style.getStrokeCap(),
+			limit = style.getMiterLimit(),
+			fillColor = style.getFillColor(),
+			strokeColor = style.getStrokeColor(),
+			dashArray = style.getDashArray(),
+			dashOffset = style.getDashOffset();
 		if (width != null)
 			ctx.lineWidth = width;
 		if (join)
