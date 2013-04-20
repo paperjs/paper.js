@@ -181,10 +181,9 @@ var ToolEvent = this.ToolEvent = Event.extend(/** @lends ToolEvent# */{
 			var result = this.tool._scope.project.hitTest(this.getPoint());
 			if (result) {
 				var item = result.item,
-					// Find group parent
+					// Find group parent, but exclude layers
 					parent = item._parent;
-				while ((parent instanceof Group && !(parent instanceof Layer))
-						|| parent instanceof CompoundPath) {
+				while (/^(group|compound-path)$/.test(parent._type)) {
 					item = parent;
 					parent = parent._parent;
 				}

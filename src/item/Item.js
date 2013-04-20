@@ -1779,7 +1779,7 @@ var Item = this.Item = Base.extend(Callback, {
 			// Find group parents. Check for parent._parent, since don't want
 			// top level layers, because they also inherit from Group
 			if (parent._parent
-				&& (parent instanceof Group || parent instanceof CompoundPath)
+				&& /^(group|layer|compound-path)$/.test(parent._type)
 				&& item.isDescendant(parent))
 					return true;
 			// Keep walking up otherwise

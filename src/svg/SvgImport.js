@@ -89,7 +89,7 @@ new function() {
 			if (childNode.nodeType == 1 && (child = importSvg(childNode))) {
 				// If adding CompoundPaths to other CompoundPaths,
 				// we need to "unbox" them first:
-				if (clip && child instanceof CompoundPath) {
+				if (clip && child._type === 'compound-path') {
 					item.addChildren(child.removeChildren());
 					child.remove();
 				} else if (!(child instanceof Symbol)) {
