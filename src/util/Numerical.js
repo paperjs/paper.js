@@ -69,7 +69,7 @@ var Numerical = this.Numerical = new function() {
 		// TODO: Find a good value
 		EPSILON: 10e-12,
 		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
-		KAPPA: 2 * (sqrt(2) - 1) / 3,
+		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
 		/**
 		 * Check if the value is 0, within a tolerance defined by

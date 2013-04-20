@@ -56,7 +56,7 @@ Path.inject({ statics: new function() {
 		return path;
 	}
 
-	var kappa = Numerical.KAPPA;
+	var kappa = Numerical.KAPPA / 2;
 
 	var ellipseSegments = [
 		new Segment([0, 0.5], [0, kappa ], [0, -kappa]),

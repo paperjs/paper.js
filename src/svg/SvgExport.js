@@ -120,7 +120,8 @@ new function() {
 			var segment = segments[i],
 				next = segment.getNext(),
 				handle1 = segment._handleOut,
-				handle2 = next._handleIn;
+				handle2 = next._handleIn,
+				kappa = Numerical.KAPPA;
 			if (handle1.isOrthogonal(handle2)) {
 				var from = segment._point,
 					to = next._point,
@@ -129,9 +130,9 @@ new function() {
 					corner = new Line(from, handle1).intersect(
 							new Line(to, handle2));
 				return corner && Numerical.isZero(handle1.getLength() /
-						corner.subtract(from).getLength() - Numerical.KAPPA)
+						corner.subtract(from).getLength() - kappa)
 					&& Numerical.isZero(handle2.getLength() /
-						corner.subtract(to).getLength() - Numerical.KAPPA);
+						corner.subtract(to).getLength() - kappa);
 			}
 		}
 
