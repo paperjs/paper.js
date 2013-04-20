@@ -46,6 +46,9 @@ var paper = new function() {
 /*#*/ include('core/PaperScope.js');
 /*#*/ include('core/PaperScopeItem.js');
 
+/*#*/ include('util/Formatter.js');
+/*#*/ include('util/Numerical.js');
+
 // Include Paper classes, which are later injected into PaperScope by setting
 // them on the 'this' object, e.g.:
 // var Point = this.Point = Base.extend(...);
@@ -107,12 +110,10 @@ var paper = new function() {
 /*#*/ include('tool/Tool.js');
 /*#*/ } // options.browser
 
-/*#*/ include('util/Formatter.js');
-/*#*/ include('util/CanvasProvider.js');
-/*#*/ include('util/Numerical.js');
-/*#*/ include('util/BlendMode.js');
+/*#*/ include('canvas/CanvasProvider.js');
+/*#*/ include('canvas/BlendMode.js');
 /*#*/ if (options.version == 'dev') {
-/*#*/ include('util/ProxyContext.js');
+/*#*/ include('canvas/ProxyContext.js');
 /*#*/ } // options.browser
 
 /*#*/ if (options.svg) {
