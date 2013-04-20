@@ -117,42 +117,49 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 			// Use positive lookahead to include signs.
 			coords = part.slice(1).trim().split(/[\s,]+|(?=[+-])/);
 			relative = cmd === lower;
+			var length = coords.length;
 			switch (lower) {
 			case 'm':
 			case 'l':
-				for (var j = 0; j < coords.length; j += 2)
+				for (var j = 0; j < length; j += 2)
 					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
 							getPoint(j, true));
 				break;
 			case 'h':
 			case 'v':
 				var coord = lower == 'h' ? 'x' : 'y';
-				for (var j = 0; j < coords.length; j++) {
+				for (var j = 0; j < length; j++) {
 					getCoord(j, coord, true);
 					this.lineTo(current);
 				}
 				break;
 			case 'c':
-				this.cubicCurveTo(
-						getPoint(0),
-						control = getPoint(2),
-						getPoint(4, true));
+				for (var j = 0; j < length; j += 6) {
+					this.cubicCurveTo(
+							getPoint(j),
+							control = getPoint(j + 2),
+							getPoint(j + 4, true));
+				}
 				break;
 			case 's':
 				// Shorthand cubic bezierCurveTo, absolute
-				this.cubicCurveTo(
-						// Calculate reflection of previous control points
-						current.multiply(2).subtract(control),
-						control = getPoint(0),
-						getPoint(2, true));
+				for (var j = 0; j < length; j += 4) {
+					this.cubicCurveTo(
+							// Calculate reflection of previous control points
+							current.multiply(2).subtract(control),
+							control = getPoint(j),
+							getPoint(j + 2, true));
+				}
 				break;
 			case 'q':
-				this.quadraticCurveTo(
-						control = getPoint(0),
-						getPoint(2, true));
+				for (var j = 0; j < length; j += 4) {
+					this.quadraticCurveTo(
+							control = getPoint(j),
+							getPoint(j + 2, true));
+				}
 				break;
 			case 't':
-				for (var j = 0; j < coords.length; j += 2) {
+				for (var j = 0; j < length; j += 2) {
 					this.quadraticCurveTo(
 							// Calculate reflection of previous control points
 							control = current.multiply(2).subtract(control),
