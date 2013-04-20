@@ -62,12 +62,18 @@ function runTests() {
   pathB = pathA.clone();
   pathB.rotate( -90 );
   // FIXME: hangs when I move pathA, pathB apart by [-10,0] & [10,0] or [9...] etc.
-  pathA.translate( [-10,0] );
-  pathB.translate( [10,0] );
+  pathA.translate( [-12,0] );
+  pathB.translate( [12,0] );
   testBooleanStatic( pathA, pathB, caption );
   annotatePath( pathA, null, '#008' );
   annotatePath( pathB, null, '#800' );
   view.draw();
+
+  caption = prepareTest( 'SVG gears', container );
+  group  = paper.project.importSvg( document.getElementById( 'svggears' ) );
+  pathA = group.children[0];
+  pathB = group.children[1];
+  testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'Glyphs imported from SVG', container );
   group  = paper.project.importSvg( document.getElementById( 'glyphsys' ) );
@@ -91,8 +97,14 @@ function runTests() {
   pathB.addChild( npath );
   testBooleanStatic( pathA, pathB, caption );
 
-  window.p = pathB;
+  caption = prepareTest( 'CompoundPaths 3 !', container );
+  group  = paper.project.importSvg( document.getElementById( 'svggreenland' ) );
+  pathA = group.children[0];
+  pathB = group.children[1];
+  pathB.scale( 0.75 ).translate( [25, 0] );
+  testBooleanStatic( pathA, pathB, caption );
 
+  // window.p = pathB;
 
 
   function prepareTest( testName, parentNode ){
