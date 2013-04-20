@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var Numerical = new function() {
+var Numerical = this.Numerical = new function() {
 
 	// Lookup tables for abscissas and weights with values for n = 2 .. 16.
 	// As values are symetric, only store half of them and addapt algorithm
@@ -68,6 +68,8 @@ var Numerical = new function() {
 		// Precision when comparing against 0
 		// TODO: Find a good value
 		EPSILON: 10e-12,
+		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
+		KAPPA: 2 * (sqrt(2) - 1) / 3,
 
 		/**
 		 * Check if the value is 0, within a tolerance defined by

@@ -23,7 +23,7 @@
 		function checkValues() {
 			var min = values.radius * 2;
 			if (values.tolerance < min) values.tolerance = min;
-			handle = values.radius * 0.5522847498; // kappa
+			handle = values.radius * Numerical.KAPPA;
 		}
 
 		var path;
