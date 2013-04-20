@@ -50,10 +50,10 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		this.base(true);
 		this.layers = [];
 		this.symbols = [];
+		this._currentStyle = new Style();
 		this.activeLayer = new Layer();
 		if (view)
 			this.view = view instanceof View ? view : View.create(view);
-		this._currentStyle = new Style();
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		// See Item#draw() for an explanation of _drawCount

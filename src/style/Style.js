@@ -216,14 +216,6 @@ var Style = this.Style = Base.extend(new function() {
 				+ this.getFont();
 	},
 
-	statics: {
-		create: function(item) {
-			var style = Base.create(this);
-			style._item = item;
-			return style;
-		}
-	}
-
 	// DOCS: why isn't the example code showing up?
 	/**
 	 * Style objects don't need to be created directly. Just pass an object to

@@ -59,8 +59,8 @@ var Item = this.Item = Base.extend(Callback, {
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project)
 			paper.project.activeLayer.addChild(this);
-		this._style = Style.create(this);
-		this.setStyle(this._project.getCurrentStyle());
+		this._style = new Style(this._project._currentStyle);
+		this._style._item = this;
 		this._matrix = new Matrix();
 		if (point)
 			this._matrix.translate(point);
