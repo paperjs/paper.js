@@ -95,7 +95,15 @@ var Style = this.Style = Base.extend(new function() {
 			set = 'set' + part,
 			get = 'get' + part;
 
-		// Define getters and setters to be injected into this class
+		// Define getters and setters to be injected into this class.
+		// This is how style values are handled:
+		// - Style values are all stored in this._values
+		// - The style object starts with an empty _values object, with fallback
+		//   on _defaults through code in the getter below.
+		// - Only the styles that are explicitely set on the object get defined
+		//   in _values.
+		// - Color values are not stored as converted colors immediately. The
+		//   raw value is stored, and conversion only happens in the getter.
 		fields[set] = function(value) {
 			var children = this._item && this._item._children;
 			// Clone color objects since they reference their owner
@@ -107,13 +115,15 @@ var Style = this.Style = Base.extend(new function() {
 					children[i]._style[set](value);
 			} else {
 				var old = this._values[key];
-				if (old === undefined || !Base.equals(old, value)) {
+				if (old != value) {
 					if (isColor) {
 						if (old)
 							delete old._owner;
 						if (value && value.constructor === Color)
 							value._owner = this._item;
 					}
+					// Note: We do not convert the values to Colors in the 
+					// setter. This only happens once the getter is called.
 					this._values[key] = value;
 					// Notify the item of the style change STYLE is always set,
 					// additional flags come from flags, as used for STROKE:
@@ -136,8 +146,10 @@ var Style = this.Style = Base.extend(new function() {
 					if (value && value.clone)
 						value = value.clone();
 					this._values[key] = value;
-				} else if (isColor && !(value instanceof Color)) {
-					this._values[key] = value = Color.read([value], 0, 0, true, true);
+				} else if (isColor && !(value && value.constructor === Color)) {
+					// Convert to a Color and stored result of conversion.
+					this._values[key] = value = Color.read(
+							[value], 0, 0, true, true); // readNull
 					if (value)
 						value._owner = this._item;
 				}
@@ -171,7 +183,7 @@ var Style = this.Style = Base.extend(new function() {
 	return fields;
 }, /** @lends Style# */{
 	initialize: function(style) {
-		// Keep values in a separate object that we can iterate over.
+		// We keep values in a separate object that we can iterate over.
 		this._values = {};
 		if (this._item instanceof TextItem)
 			this._defaults = this._textDefaults;
