@@ -68,7 +68,13 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 
 	contains: function(point) {
 		point = Point.read(arguments);
-		// TODO: Implement.
+		switch (this._type) {
+		case 'rect':
+			return this.base(point);
+		case 'circle':
+		case 'ellipse':
+			return point.divide(this._size).getLength() <= 0.5;
+		}
 	},
 
 	_getBounds: function(getter, matrix) {

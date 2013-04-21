@@ -23,6 +23,7 @@
 /*#*/ include('Item_Cloning.js');
 /*#*/ include('Item_Order.js');
 /*#*/ include('Item_Bounds.js');
+/*#*/ include('Item_Contains.js');
 
 /*#*/ include('Layer.js');
 /*#*/ include('Group.js');
@@ -35,7 +36,6 @@
 /*#*/ include('Path_Curves.js');
 /*#*/ include('Path_Bounds.js');
 /*#*/ include('Path_Length.js');
-/*#*/ include('Path_Contains.js');
 /*#*/ include('CompoundPath.js');
 
 /*#*/ include('PlacedSymbol.js');

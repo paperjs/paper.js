@@ -10,10 +10,10 @@
  * All rights reserved.
  */
 
-module('Path Contains');
+module('Item Contains');
 
-function testPoint(path, point, inside) {
-	equals(path.contains(point), inside, 'The point ' + point
+function testPoint(item, point, inside) {
+	equals(item.contains(point), inside, 'The point ' + point
 			+ ' should be ' + (inside ? 'inside' : 'outside') + '.');
 }
 
@@ -69,4 +69,14 @@ test('CompoundPath#contains (Donut)', function() {
 		'The bottom left point of bounding box should be outside the donut.');
 	equals(path.contains(new Point(-45, 45)), false,
 		'The near bottom left point of bounding box should be outside the donut.');
+});
+
+test('Shape#contains', function() {
+	var shape = new Shape.Circle([0, 0], 100);
+
+	testPoint(shape, new Point(0, 0), true);
+	testPoint(shape, new Point(0, -100), true);
+	testPoint(shape, new Point({ length: 99, angle: 45 }), true);
+	testPoint(shape, new Point({ length: 100, angle: 45 }), true);
+	testPoint(shape, new Point({ length: 101, angle: 45 }), false);
 });

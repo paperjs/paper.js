@@ -123,7 +123,6 @@ test('Gray Color', function() {
 	compareNumbers(color.blue, 1, 'color.blue');
 
 	color.red = 0.5;
-	console.log(color + '');
 	compareNumbers(color.gray, 0.85045, 'color.gray');
 
 	color.green = 0.2;
