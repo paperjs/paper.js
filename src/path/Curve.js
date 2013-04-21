@@ -264,27 +264,48 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	getCrossings: function(point, roots) {
-		// Implement the crossing number algorithm:
+		// Implementation of the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		// Solve the y-axis cubic polynomial for point.y and count all solutions
 		// to the right of point.x as crossings.
 		var vals = this.getValues(),
 			count = Curve.solveCubic(vals, 1, point.y, roots),
-			crossings = 0;
+			crossings = 0,
+			tolerance = /*#=*/ Numerical.TOLERANCE;
 		for (var i = 0; i < count; i++) {
 			var t = roots[i];
-			if (t >= 0 && t < 1 && Curve.evaluate(vals, t, true, 0).x > point.x) {
-				// If we're close to 0 and are not changing y-direction from the
-				// previous curve, do not count this root, as we're merely
-				// touching a tip. Passing 1 for Curve.evaluate()'s type means
-				// we're calculating tangents, and then check their y-slope for
-				// a change of direction:
-				if (t < /*#=*/ Numerical.TOLERANCE
-					&& Curve.evaluate(this.getPrevious().getValues(), 1, true, 1).y
-						* Curve.evaluate(vals, t, true, 1).y
-							>= /*#=*/ Numerical.TOLERANCE)
-					continue;
-				crossings++;
+			if (t >= -tolerance && t < 1 - tolerance) {
+				var pt = Curve.evaluate(vals, t, true, 0);
+/*#*/ if (options.debug) {
+				console.log(t, point.y, pt.y);
+				new Path.Circle({
+					center: Curve.evaluate(vals, t, true, 0),
+					radius: 2,
+					strokeColor: 'red',
+					strokeWidth: 0.25
+				});
+/*#*/ }
+				if (pt.x >= point.x - tolerance) {
+					// Passing 1 for Curve.evaluate()'s type calculates tangents. 
+					var tangent = Curve.evaluate(vals, t, true, 1);
+					if (
+						// Skip touching stationary points (tips), but if the
+						// actual point is on one, do not skip this solution!
+						Math.abs(pt.x - point.x) > tolerance
+						&& (
+							// Check derivate for stationary points
+							Math.abs(tangent.y) < tolerance
+							// If root is close to 0 and not changing vertical
+							// orientation from the previous curve, do not count
+							// this root, as it's touching a corner.
+							|| t < tolerance
+								// Check the y-slope for a change of orientation
+								&& tangent.y * Curve.evaluate(
+									this.getPrevious().getValues(), 1, true, 1).y
+								< tolerance))
+						continue;
+					crossings++;
+				}
 			}
 		}
 		return crossings;
@@ -513,7 +534,7 @@ statics: {
 			b = 3 * (c2 - c1) - c,
 			a = p2 - p1 - c - b;
 		return Numerical.solveCubic(a, b, c, p1 - val, roots,
-				/*#=*/ Numerical.TOLERANCE);
+				/*#=*/ Numerical.EPSILON);
 	},
 
 	getParameterOf: function(v, x, y) {
@@ -646,11 +667,13 @@ statics: {
 		var bounds1 = Curve.getBounds(v1),
 			bounds2 = Curve.getBounds(v2);
 /*#*/ if (options.debug) {
-		new Path.Rectangle(bounds1).set({
+		new Path.Rectangle({
+			rectangle: bounds1,
 			strokeColor: 'green',
 			strokeWidth: 0.1
 		});
-		new Path.Rectangle(bounds2).set({
+		new Path.Rectangle({
+			rectangle: bounds2,
 			strokeColor: 'red',
 			strokeWidth: 0.1
 		});
@@ -660,11 +683,15 @@ statics: {
 			if (Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
 					&& Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
 /*#*/ if (options.debug) {
-				new Path.Line(v1[0], v1[1], v1[6], v1[7]).set({
+				new Path.Line({
+					from: [v1[0], v1[1]],
+					to: [v1[6], v1[7]],
 					strokeColor: 'green',
 					strokeWidth: 0.1
 				});
-				new Path.Line(v2[0], v2[1], v2[6], v2[7]).set({
+				new Path.Line({
+					from: [v2[0], v2[1]],
+					to: [v2[6], v2[7]],
 					strokeColor: 'red',
 					strokeWidth: 0.1
 				});

@@ -171,35 +171,38 @@ var Numerical = this.Numerical = new function() {
 			d /= a;
 			// Compute discriminants
 			var bb = b * b,
-				p = 1 / 3 * (-1 / 3 * bb + c),
-				q = 1 / 2 * (2 / 27 * b * bb - 1 / 3 * b * c + d),
+				p = (bb - 3 * c) / 9,
+				q = (2 * bb * b - 9 * b * c + 27 * d) / 54,
 				// Use Cardano's formula
 				ppp = p * p * p,
-				D = q * q + ppp;
+				D = q * q - ppp;
 			// Substitute x = y - b/3 to eliminate quadric term: x^3 +px + q = 0
 			b /= 3;
 			if (abs(D) < tolerance) {
-			    if (abs(q) < tolerance) { // One triple solution.
-			        roots[0] = - b;
-			        return 1;
-			    } else { // One single and one double solution.
-			        var u = cbrt(-q);
-			        roots[0] = 2 * u - b;
-			        roots[1] = - u - b;
-			        return 2;
-			    }
+				if (abs(q) < tolerance) { // One triple solution.
+					roots[0] = - b;
+					return 1;
+				} else { // One single and one double solution.
+					var sqp = sqrt(p),
+						snq = q < 0 ? -1 : 1;
+					roots[0] = -snq * 2 * sqp - b;
+					roots[1] = snq * sqp - b;
+					return 2;
+				}
 			} else if (D < 0) { // Casus irreducibilis: three real solutions
-			    var phi = 1 / 3 * Math.acos(-q / sqrt(-ppp));
-			    var t = 2 * sqrt(-p);
-			    roots[0] =   t * cos(phi) - b;
-			    roots[1] = - t * cos(phi + PI / 3) - b;
-			    roots[2] = - t * cos(phi - PI / 3) - b;
-			    return 3;
-			} else { // One real solution
-			    D = sqrt(D);
-			    roots[0] = cbrt(D - q) - cbrt(D + q) - b;
-			    return 1;
+				var sqp = sqrt(p),
+					phi = Math.acos(q / (sqp * sqp * sqp)) / 3,
+					o = 2 * PI / 3,
+					t = -2 * sqp;
+				roots[0] = t * cos(phi) - b;
+				roots[1] = t * cos(phi + o) - b;
+				roots[2] = t * cos(phi - o) - b;
+				return 3;
 			}
+			// One real solution
+			var sqD = sqrt(D);
+			roots[0] = cbrt(sqD - q) - cbrt(sqD + q) - b;
+			return 1;
 		}
 	};
 };
