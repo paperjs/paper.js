@@ -33,7 +33,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * Creates a Rectangle object.
 	 *
 	 * @name Rectangle#initialize
-	 * @param {Object} properties An object literal containing properties to be
+	 * @param {Object} object An object literal containing properties to be
 	 * set on the rectangle.
 	 * 
 	 * @example // Create a rectangle between {x: 20, y: 20} and {x: 80, y:80}
