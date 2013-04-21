@@ -1,15 +1,15 @@
 
 
 /*!
- * 
+ *
  * Vector boolean operations on paperjs objects
- * This is mostly written for clarity (I hope it is clear) and compatibility, 
- * not optimised for performance, and has to be tested heavily for stability. 
- * (Looking up to Java's Area path boolean algorithms for stability, 
- * but the code is too complex —mainly because the operations are stored and 
- * enumerable, such as quadraticCurveTo, cubicCurveTo etc.; and is largely 
+ * This is mostly written for clarity (I hope it is clear) and compatibility,
+ * not optimised for performance, and has to be tested heavily for stability.
+ * (Looking up to Java's Area path boolean algorithms for stability,
+ * but the code is too complex —mainly because the operations are stored and
+ * enumerable, such as quadraticCurveTo, cubicCurveTo etc.; and is largely
  * undocumented to directly adapt from)
- * 
+ *
  * Supported
  *  - paperjs Path and CompoundPath objects
  *  - Boolean Union
@@ -19,7 +19,7 @@
  * Not supported yet ( which I would like to see supported )
  *  - Self-intersecting Paths
  *  - Paths are clones of each other that ovelap exactly on top of each other!
- *  
+ *
  * ------
  * Harikrishnan Gopalakrishnan
  * http://hkrish.com/playground/paperjs/booleanStudy.html
@@ -28,7 +28,7 @@
  * Paperjs
  * Copyright (c) 2011, Juerg Lehni & Jonathan Puckey
  * http://paperjs.org/license/
- * 
+ *
  */
 
 
@@ -163,7 +163,7 @@
 }
 
 /**
- * makes a graph. Only works on paths, for compound paths we need to 
+ * makes a graph. Only works on paths, for compound paths we need to
  * make graphs for each of the child paths and merge them.
  * @param  {Path} path
  * @param  {Integer} id
@@ -226,6 +226,32 @@
   return computeBoolean( path1, path2, BooleanOps.Subtraction );
 }
 
+/**
+ * Aims to cope with a HTML canvas requirement where CompoundPaths'
+ * child contours has to be of different winding direction for correctly filling holes.
+ * But if some individual countours are disjoint, i.e. islands, we have to reorient them
+ * so that
+ *   the holes have opposit winding direction ( already handled by paperjs )
+ *   islands has to have same winding direction ( as the first child of the path )
+ *
+ * Does NOT handle selfIntersecting CompoundPaths.
+ *
+ * @param  {[type]} path [description]
+ * @return {[type]}      [description]
+ */
+function sanitizePath( path ){
+  if( ! path instanceof CompoundPath ){
+    return path;
+  }
+  var children = path.children, len = children.length, baseWinding;
+  baseWinding = children[0].clockwise;
+  // Omit the first path
+  while( len-- > 0 ){
+    if( children[len] ){
+
+    }
+  }
+}
 
 /**
  * Actual function that computes the boolean
@@ -243,10 +269,16 @@
   var path2 = _path2.clone();
   // if( !path1.clockwise ){ path1.reverse(); }
   // if( !path2.clockwise ){ path2.reverse(); }
-  // 
+  //
   var i, j, k, l, lnk, crv, node, nuNode, leftLink, rightLink;
+  var path1Clockwise, path2Clockwise;
 
-  // Prepare the graphs. Graphs are list of Links that retains 
+  // If one of the operands is empty, resolve self-intersections on the second operand
+  var childCount1 = (_path1 instanceof CompoundPath)? _path1.children.length : _path1.curves.length;
+  var childCount2 = (_path2 instanceof CompoundPath)? _path2.children.length : _path2.curves.length;
+  var resolveSelfIntersections = !childCount1 | !childCount2;
+
+  // Prepare the graphs. Graphs are list of Links that retains
   // full connectivity information. The order of links in a graph is not important
   // That allows us to sort and merge graphs and 'splice' links with their splits easily.
   // Also, this is the place to resolve self-intersecting paths
@@ -255,10 +287,12 @@
     path1Children = path1.children;
     for (i = 0, base = true, l = path1Children.length; i < l; i++, base = false) {
       path1Children[i].closed = true;
+      if( base ){ path1Clockwise = path1Children[i].clockwise; }
       graph = graph.concat( makeGraph( path1Children[i], 1, base ) );
     }
   } else {
     path1.closed = true;
+    path1Clockwise = path1.clockwise;
     // path1.clockwise = true;
     graph = graph.concat( makeGraph( path1, 1, 1, true ) );
   }
@@ -271,12 +305,14 @@
     for (i = 0, base = true, l = path2Children.length; i < l; i++, base = false) {
       path2Children[i].closed = true;
       if( reverse ){ path2Children[i].reverse(); }
+      if( base ){ path1Clockwise = path1Children[i].clockwise; }
       graph = graph.concat( makeGraph( path2Children[i], 2, i + 1, base ) );
     }
   } else {
     path2.closed = true;
     // path2.clockwise = true;
     if( reverse ){ path2.reverse(); }
+    path2Clockwise = path2.clockwise;
     graph = graph.concat( makeGraph( path2, 2, 1, true ) );
   }
 
@@ -297,7 +333,7 @@
     var c1 = graph[i].getCurve();
     var v1 = c1.getValues();
     for ( j = i -1; j >= 0; j-- ) {
-      if( graph[j].id === graph[i].id ){ continue; }
+      if( !resolveSelfIntersections && graph[j].id === graph[i].id ){ continue; }
       var c2 = graph[j].getCurve();
       var v2 = c2.getValues();
       var loc = [];
@@ -315,7 +351,7 @@
   }
 
 
-  /*  
+  /*
    * Pass 2:
    * Walk the graph, sort the intersections on each individual link.
    * for each link that intersects with another one, replace it with new split links.
@@ -382,7 +418,7 @@
         if( leftLink ){
           graph.splice( i, 0, leftLink );
         }
-        // continue with the second split link, to see if 
+        // continue with the second split link, to see if
         // there are more intersections to deal with
         lnk = rightLink;
       }
@@ -398,12 +434,12 @@
    * Pass 3:
    * Merge matching intersection Node Pairs (type is INTERSECTION_NODE &&
    *  a._intersectionID == b._intersectionID )
-   *  
-   * Mark each Link(Curve) according to whether it is 
+   *
+   * Mark each Link(Curve) according to whether it is
    *  case 1. inside Path1 ( and only Path1 )
    *       2. inside Path2 ( and only Path2 )
    *       3. outside (normal case)
-   *       
+   *
    * Take a test function "operator" which will discard links
    * according to the above
    *  * Union         -> discard cases 1 and 2
@@ -508,7 +544,9 @@
       }
       path.closed = true;
       // path.clockwise = true;
-      boolResult.addChild( path );
+      if( path.segments.length > 1 ){ // avoid stray segments
+        boolResult.addChild( path );
+      }
     }
   }
   boolResult = boolResult.reduce();
@@ -542,7 +580,7 @@ function markPoint( pnt, t, c, tc, remove ) {
   }
 }
 
-// Same as the paperjs' Numerical class, 
+// Same as the paperjs' Numerical class,
 // added here because I can't access the original from this scope
 var Numerical = {
   TOLERANCE : 10e-6
