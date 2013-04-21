@@ -227,10 +227,10 @@
 }
 
 /**
- * Aims to cope with a HTML canvas requirement where CompoundPaths'
- * child contours has to be of different winding direction for correctly filling holes.
- * But if some individual countours are disjoint, i.e. islands, we have to reorient them
- * so that
+ * To deal with a HTML canvas requirement where CompoundPaths' child contours
+ * has to be of different winding direction for correctly filling holes.
+ * But if some individual countours are disjoint, i.e. islands, we have to
+ * reorient them so that
  *   the holes have opposit winding direction ( already handled by paperjs )
  *   islands has to have same winding direction ( as the first child of the path )
  *
@@ -239,16 +239,29 @@
  * @param  {[type]} path [description]
  * @return {[type]}      [description]
  */
-function sanitizePath( path ){
-  if( ! path instanceof CompoundPath ){
-    return path;
-  }
+ function reorientCompoundPath( path ){
+  if( !(path instanceof CompoundPath) ){ return; }
   var children = path.children, len = children.length, baseWinding;
+  var bounds = new Array( len );
+  var tmparray = new Array( len );
   baseWinding = children[0].clockwise;
   // Omit the first path
-  while( len-- > 0 ){
-    if( children[len] ){
-
+  for (i = 0; i < len; i++) {
+    bounds[i] = children[i].bounds;
+    tmparray[i] = 0;
+  }
+  for (i = 0; i < len; i++) {
+    var p1 = children[i];
+    for (j = 0; j < len; j++) {
+      var p2 = children[j];
+      if( i !== j && bounds[i].contains( bounds[j] ) ){
+        tmparray[j]++;
+      }
+    }
+  }
+  for (i = 1; i < len; i++) {
+    if ( tmparray[i] % 2 === 0 ) {
+      children[i].clockwise = baseWinding;
     }
   }
 }
@@ -277,6 +290,11 @@ function sanitizePath( path ){
   var childCount1 = (_path1 instanceof CompoundPath)? _path1.children.length : _path1.curves.length;
   var childCount2 = (_path2 instanceof CompoundPath)? _path2.children.length : _path2.curves.length;
   var resolveSelfIntersections = !childCount1 | !childCount2;
+
+  if( !resolveSelfIntersections ){
+    reorientCompoundPath( path1 );
+    reorientCompoundPath( path2 );
+  }
 
   // Prepare the graphs. Graphs are list of Links that retains
   // full connectivity information. The order of links in a graph is not important
