@@ -87,7 +87,7 @@ function runTests() {
   pathB = group.children[1];
   testBooleanStatic( pathA, pathB, caption );
 
-  caption = prepareTest( 'CompoundPaths 2', container );
+  caption = prepareTest( 'CompoundPaths 2 - holes', container );
   group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
   pathA = group.children[0];
   pathB = new CompoundPath();
@@ -106,7 +106,44 @@ function runTests() {
   // pathB.scale( 2 );
   testBooleanStatic( pathA, pathB, caption );
 
-  // window.p = pathB;
+  caption = prepareTest( 'CompoundPaths 4 - holes and islands 1', container );
+  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = new CompoundPath();
+  group.children[1].clockwise = true;
+  pathB.addChild(group.children[1]);
+  var npath = new Path.Circle([40, 80], 20);
+  pathB.addChild( npath );
+  testBooleanStatic( pathA, pathB, caption );
+
+  caption = prepareTest( 'CompoundPaths 5 - holes and islands 2', container );
+  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = new CompoundPath();
+  group.children[1].clockwise = true;
+  pathB.addChild(group.children[1]);
+  var npath = new Path.Circle([40, 80], 20);
+  pathB.addChild( npath );
+  npath = new Path.Circle([120, 110], 30);
+  pathB.addChild( npath );
+  testBooleanStatic( pathA, pathB, caption );
+
+  // To resolve self intersection on a single path,
+  // pass an empty second operand and do a Union operation
+  caption = prepareTest( 'Self-intersecting paths 1 - Resolve self-intersection on single path', container );
+  pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
+  pathA.smooth();
+  pathB = new Path();
+  testBooleanStatic( pathA, pathB, caption, false, true, true, true );
+
+  caption = prepareTest( 'Self-intersecting paths 2 - Resolve self-intersection on single path', container );
+  pathA = new CompoundPath();
+  pathA.addChild( new Path.Circle([100, 110], 60) );
+  pathA.addChild( new Path.Circle([160, 110], 30) );
+  pathB = new Path();
+  testBooleanStatic( pathA, pathB, caption, false, true, true, true );
+
+  // window.p = pathA;
 
 
   function prepareTest( testName, parentNode ){
@@ -140,33 +177,43 @@ var pathStyleBoolean = {
 };
 
 // Better if path1 and path2 fit nicely inside a 200x200 pixels rect
-function testBooleanStatic( path1, path2, caption ) {
+function testBooleanStatic( path1, path2, caption, noUnion, noIntersection, noSubtraction, _disperse ) {
   try{
     path1.style = path2.style = pathStyleNormal;
 
-    var _p1U = path1.clone().translate( [250, 0] );
-    var _p2U = path2.clone().translate( [250, 0] );
-    _p1U.style = _p2U.style = pathStyleBoolean;
-    console.time( 'Union' );
-    var boolPathU = boolUnion( _p1U, _p2U );
-    console.timeEnd( 'Union' );
-    boolPathU.style = booleanStyle;
+    if( !noUnion ) {
+      var _p1U = path1.clone().translate( [250, 0] );
+      var _p2U = path2.clone().translate( [250, 0] );
+      _p1U.style = _p2U.style = pathStyleBoolean;
+      console.time( 'Union' );
+      var boolPathU = boolUnion( _p1U, _p2U );
+      console.timeEnd( 'Union' );
+      boolPathU.style = booleanStyle;
+      if( _disperse ){ disperse( boolPathU ); }
+      window.p = boolPathU;
+    }
 
-    var _p1I = path1.clone().translate( [500, 0] );
-    var _p2I = path2.clone().translate( [500, 0] );
-    _p1I.style = _p2I.style = pathStyleBoolean;
-    console.time( 'Intersection' );
-    var boolPathI = boolIntersection( _p1I, _p2I );
-    console.timeEnd( 'Intersection' );
-    boolPathI.style = booleanStyle;
+    if( !noIntersection ) {
+      var _p1I = path1.clone().translate( [500, 0] );
+      var _p2I = path2.clone().translate( [500, 0] );
+      _p1I.style = _p2I.style = pathStyleBoolean;
+      console.time( 'Intersection' );
+      var boolPathI = boolIntersection( _p1I, _p2I );
+      console.timeEnd( 'Intersection' );
+      if( _disperse ){ disperse( boolPathI ); }
+      boolPathI.style = booleanStyle;
+    }
 
-    var _p1S = path1.clone().translate( [750, 0] );
-    var _p2S = path2.clone().translate( [750, 0] );
-    _p1S.style = _p2S.style = pathStyleBoolean;
-    console.time( 'Subtraction' );
-    var boolPathS = boolSubtract( _p1S, _p2S );
-    console.timeEnd( 'Subtraction' );
-    boolPathS.style = booleanStyle;
+    if( !noSubtraction ) {
+      var _p1S = path1.clone().translate( [750, 0] );
+      var _p2S = path2.clone().translate( [750, 0] );
+      _p1S.style = _p2S.style = pathStyleBoolean;
+      console.time( 'Subtraction' );
+      var boolPathS = boolSubtract( _p1S, _p2S );
+      console.timeEnd( 'Subtraction' );
+      if( _disperse ){ disperse( boolPathS ); }
+      boolPathS.style = booleanStyle;
+    }
 
   } catch( e ){
     console.error( e.name + ": " + e.message );
@@ -180,7 +227,18 @@ function testBooleanStatic( path1, path2, caption ) {
   }
 }
 
-
+function disperse( path, distance ){
+  distance = distance || 10;
+  if( ! path instanceof CompoundPath ){ return; }
+  var center = path.bounds.center;
+  var children = path.children, i ,len;
+  for (i = 0, len = children.length; i < len; i++) {
+    var cCenter = children[i].bounds.center;
+    var vec = cCenter.subtract( center );
+    vec = ( vec.isClose( [0,0], 0.5 ) )? vec : vec.normalize( distance );
+    children[i].translate( vec );
+  }
+}
 
 // ==============================================================
 // On screen debug helpers
