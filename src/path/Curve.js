@@ -533,8 +533,7 @@ statics: {
 			c = 3 * (c1 - p1),
 			b = 3 * (c2 - c1) - c,
 			a = p2 - p1 - c - b;
-		return Numerical.solveCubic(a, b, c, p1 - val, roots,
-				/*#=*/ Numerical.EPSILON);
+		return Numerical.solveCubic(a, b, c, p1 - val, roots);
 	},
 
 	getParameterOf: function(v, x, y) {
@@ -636,8 +635,7 @@ statics: {
 		var a = 3 * (v1 - v2) - v0 + v3,
 			b = 2 * (v0 + v2) - 4 * v1,
 			c = v1 - v0,
-			count = Numerical.solveQuadratic(a, b, c, roots,
-					/*#=*/ Numerical.TOLERANCE),
+			count = Numerical.solveQuadratic(a, b, c, roots),
 			// Add some tolerance for good roots, as t = 0 / 1 are added
 			// seperately anyhow, and we don't want joins to be added with
 			// radiuses in getStrokeBounds()

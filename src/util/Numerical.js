@@ -132,16 +132,17 @@ var Numerical = this.Numerical = new function() {
 		 *
 		 * a*x^2 + b*x + c = 0
 		 */
-		solveQuadratic: function(a, b, c, roots, tolerance) {
+		solveQuadratic: function(a, b, c, roots) {
 			// Code ported over and adapted from Uintah library (MIT license).
-			// If problem is actually linear, return 0 or 1 easy roots
-			if (abs(a) < tolerance) {
-				if (abs(b) >= tolerance) {
+			var epsilon = this.EPSILON;
+			// If a is 0, equation is actually linear, return 0 or 1 easy roots.
+			if (abs(a) < epsilon) {
+				if (abs(b) >= epsilon) {
 					roots[0] = -c / b;
 					return 1;
 				}
 				// If all the coefficients are 0, we have infinite solutions!
-				return abs(c) < tolerance ? -1 : 0; // Infinite or 0 solutions
+				return abs(c) < epsilon ? -1 : 0; // Infinite or 0 solutions
 			}
 			var q = b * b - 4 * a * c;
 			if (q < 0)
@@ -161,10 +162,12 @@ var Numerical = this.Numerical = new function() {
 		 *
 		 * a*x^3 + b*x^2 + c*x + d = 0
 		 */
-		solveCubic: function(a, b, c, d, roots, tolerance) {
+		solveCubic: function(a, b, c, d, roots) {
 			// Code ported over and adapted from Uintah library (MIT license).
-			if (abs(a) < tolerance)
-				return Numerical.solveQuadratic(b, c, d, roots, tolerance);
+			var epsilon = this.EPSILON;
+			// If a is 0, equation is actually quadratic.
+			if (abs(a) < epsilon)
+				return Numerical.solveQuadratic(b, c, d, roots);
 			// Normalize to form: x^3 + b x^2 + c x + d = 0:
 			b /= a;
 			c /= a;
@@ -178,8 +181,8 @@ var Numerical = this.Numerical = new function() {
 				D = q * q - ppp;
 			// Substitute x = y - b/3 to eliminate quadric term: x^3 +px + q = 0
 			b /= 3;
-			if (abs(D) < tolerance) {
-				if (abs(q) < tolerance) { // One triple solution.
+			if (abs(D) < epsilon) {
+				if (abs(q) < epsilon) { // One triple solution.
 					roots[0] = - b;
 					return 1;
 				} else { // One single and one double solution.
