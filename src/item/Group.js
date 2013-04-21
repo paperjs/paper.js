@@ -72,7 +72,7 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	 * Creates a new Group item and places it at the top of the active layer.
 	 *
 	 * @name Group#initialize
-	 * @param {Object} properties An object literal containing properties to be
+	 * @param {Object} object An object literal containing properties to be
 	 * set on the Group.
 	 *
 	 * @example {@paperscript}

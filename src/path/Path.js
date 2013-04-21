@@ -48,7 +48,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Creates a new Path item and places it at the top of the active layer.
 	 *
-	 * @param {Object} properties An object literal containing properties to
+	 * @param {Object} object An object literal containing properties to
 	 * be set on the path.
 	 *
 	 * @example {@paperscript}

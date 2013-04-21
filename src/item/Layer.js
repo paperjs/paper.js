@@ -42,7 +42,7 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	 * {@link Project#layers} array. The newly created layer will be activated,
 	 * so all newly created items will be placed within it.
 	 *
-	 * @param {Object} properties An object literal containing properties to
+	 * @param {Object} object An object literal containing properties to
 	 * be set on the layer.
 	 *
 	 * @example {@paperscript}
