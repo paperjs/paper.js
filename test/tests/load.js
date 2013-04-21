@@ -35,6 +35,7 @@
 /*#*/ include('Path_Curves.js');
 /*#*/ include('Path_Bounds.js');
 /*#*/ include('Path_Length.js');
+/*#*/ include('Path_Contains.js');
 /*#*/ include('CompoundPath.js');
 
 /*#*/ include('PlacedSymbol.js');
