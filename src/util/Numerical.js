@@ -180,18 +180,19 @@ var Numerical = this.Numerical = new function() {
 				if (abs(q) < epsilon) { // One triple solution.
 					roots[0] = - b;
 					return 1;
-				} else { // One single and one double solution.
-					var sqp = sqrt(p),
-						snq = q > 0 ? 1 : -1;
-					roots[0] = -snq * 2 * sqp - b;
-					roots[1] = snq * sqp - b;
-					return 2;
-				}
-			} else if (D < 0) { // Casus irreducibilis: three real solutions
+				} 
+				// One single and one double solution.
+				var sqp = sqrt(p),
+					snq = q > 0 ? 1 : -1;
+				roots[0] = -snq * 2 * sqp - b;
+				roots[1] = snq * sqp - b;
+				return 2;
+			}
+			if (D < 0) { // Casus irreducibilis: three real solutions
 				var sqp = sqrt(p),
 					phi = Math.acos(q / (sqp * sqp * sqp)) / 3,
-					o = 2 * PI / 3,
-					t = -2 * sqp;
+					t = -2 * sqp,
+					o = 2 * PI / 3;
 				roots[0] = t * cos(phi) - b;
 				roots[1] = t * cos(phi + o) - b;
 				roots[2] = t * cos(phi - o) - b;

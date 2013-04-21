@@ -301,7 +301,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			if (t >= -tolerance && t < 1 - tolerance) {
 				var pt = Curve.evaluate(vals, t, true, 0);
 /*#*/ if (options.debug) {
-				console.log(t, point.y, pt.y);
+				console.log(t, point + '', pt + '');
 				new Path.Circle({
 					center: Curve.evaluate(vals, t, true, 0),
 					radius: 2,
