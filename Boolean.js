@@ -307,6 +307,7 @@
         for (k = 0, l=loc.length; k<l; k++) {
           graph[i].intersections.push( loc[k] );
           var loc2 = new CurveLocation( c2, null, loc[k].point );
+          // TODO: change this to loc2._id when CurveLocation has an id property
           loc2.id = loc[k].id;
           graph[j].intersections.push( loc2 );
         }
@@ -320,20 +321,20 @@
    * Walk the graph, sort the intersections on each individual link.
    * for each link that intersects with another one, replace it with new split links.
    */
+   var ix, ixPoint, ixHandleI, ixHandleOut, param, isLinear, parts, left, right;
    for ( i = graph.length - 1; i >= 0; i--) {
     if( graph[i].intersections.length ){
-      var ix = graph[i].intersections;
+      ix = graph[i].intersections;
       // Sort the intersections if there is more than one
       if( graph[i].intersections.length > 1 ){ ix.sort( ixSort ); }
       // Remove the graph link, this link has to be split and replaced with the splits
       lnk = graph.splice( i, 1 )[0];
       for (j =0, l=ix.length; j<l && lnk; j++) {
-        var splitLinks = [];
         crv = lnk.getCurve();
         // We need to recalculate parameter after each curve split
         // This operation (except for recalculating the curve parameter),
         // is fairly similar to Curve.split method, except that it operates on Node and Link objects.
-        var param = crv.getParameterOf( ix[j].point );
+        param = crv.getParameterOf( ix[j].point );
         // var param = crv.getNearestLocation( ix[j] ).parameter;
         if( param === 0.0 || param === 1.0) {
           // Intersection falls on an existing node
@@ -349,23 +350,30 @@
             rightLink = null;
           }
         } else {
-          var parts = Curve.subdivide(crv.getValues(), param);
-          var left = parts[0];
-          var right = parts[1];
+          isLinear = crv.isLinear();
+          parts = Curve.subdivide(crv.getValues(), param);
+          left = parts[0];
+          right = parts[1];
           // Make new link and convert handles from absolute to relative
-          // TODO: check if link is linear and set handles to null
-          var ixPoint = new Point( left[6], left[7] );
-          nuNode = new Node( ixPoint, new Point(left[4] - ixPoint.x, left[5] - ixPoint.y),
-            new Point(right[2] - ixPoint.x, right[3] - ixPoint.y), lnk.id, lnk.isBaseContour );
+          ixPoint = new Point( left[6], left[7] );
+          if( !isLinear ){
+            ixHandleIn = new Point(left[4] - ixPoint.x, left[5] - ixPoint.y);
+            ixHandleOut = new Point(right[2] - ixPoint.x, right[3] - ixPoint.y);
+          } else {
+            ixHandleIn = ixHandleOut = null;
+          }
+          nuNode = new Node( ixPoint, ixHandleIn, ixHandleOut, lnk.id, lnk.isBaseContour );
           nuNode.type = INTERSECTION_NODE;
           nuNode._intersectionID = ix[j].id;
           // clear the cached Segment on original end nodes and Update their handles
           lnk.nodeIn._segment = null;
-          var tmppnt = lnk.nodeIn.point;
-          lnk.nodeIn.handleOut = new Point( left[2] - tmppnt.x, left[3] - tmppnt.y );
-          lnk.nodeOut._segment = null;
-          tmppnt = lnk.nodeOut.point;
-          lnk.nodeOut.handleIn = new Point( right[4] - tmppnt.x, right[5] - tmppnt.y );
+          if( !isLinear ){
+            var tmppnt = lnk.nodeIn.point;
+            lnk.nodeIn.handleOut = new Point( left[2] - tmppnt.x, left[3] - tmppnt.y );
+            lnk.nodeOut._segment = null;
+            tmppnt = lnk.nodeOut.point;
+            lnk.nodeOut.handleIn = new Point( right[4] - tmppnt.x, right[5] - tmppnt.y );
+          }
           // Make new links after the split
           leftLink = new Link( lnk.nodeIn, nuNode, lnk.id, lnk.isBaseContour );
           rightLink = new Link( nuNode, lnk.nodeOut, lnk.id, lnk.isBaseContour );
