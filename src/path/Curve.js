@@ -437,13 +437,6 @@ statics: {
 			x = t === 0 ? p1x : p2x;
 			y = t === 0 ? p1y : p2y;
 		} else {
-			// TODO: Find a better solution for this:
-			// Prevent tangents and normals of length 0:
-			var tMin = /*#=*/ Numerical.TOLERANCE;
-			if (t < tMin && c1x == p1x && c1y == p1y)
-				t = tMin;
-			else if (t > 1 - tMin && c2x == p2x && c2y == p2y)
-				t = 1 - tMin;
 			// Calculate the polynomial coefficients.
 			var cx = 3 * (c1x - p1x),
 				bx = 3 * (c2x - c1x) - cx,
@@ -460,10 +453,19 @@ statics: {
 				break;
 			case 1: // tangent, 1st derivative
 			case 2: // normal, 1st derivative
-				// Simply use the derivation of the bezier function for both
-				// the x and y coordinates:
-				x = (3 * ax * t + 2 * bx) * t + cx;
-				y = (3 * ay * t + 2 * by) * t + cy;
+				// Prevent tangents and normals of length 0:
+				// http://stackoverflow.com/questions/10506868/
+				var tMin = /*#=*/ Numerical.TOLERANCE;
+				if (t < tMin && c1x == p1x && c1y == p1y
+						|| t > 1 - tMin && c2x == p2x && c2y == p2y) {
+					x = c2x - c1x;
+					y = c2y - c1y;
+				} else {
+					// Simply use the derivation of the bezier function for both
+					// the x and y coordinates:
+					x = (3 * ax * t + 2 * bx) * t + cx;
+					y = (3 * ay * t + 2 * by) * t + cy;
+				}
 				break;
 			case 3: // curvature, 2nd derivative
 				x = 6 * ax * t + 2 * bx;
