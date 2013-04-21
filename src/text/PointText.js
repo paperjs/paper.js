@@ -28,11 +28,20 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * @name PointText#initialize
 	 * @param {Point} point the position where the text will start
 	 *
-	 * @example
-	 * var text = new PointText(new Point(50, 100));
+	 * @example {@paperscript}
+	 * var text = new PointText(new Point(200, 50));
 	 * text.justification = 'center';
 	 * text.fillColor = 'black';
 	 * text.content = 'The contents of the point text';
+	 * 
+	 * @example {@paperscript}
+	 * // Using object notation:
+	 * var text = new PointText({
+	 * 	point: [50, 50],
+	 * 	content: 'The contents of the point text',
+	 * 	fillColor: 'black',
+	 * 	fontSize: 25
+	 * });
 	 */
 
 	clone: function() {
