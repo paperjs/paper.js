@@ -433,9 +433,9 @@ statics: {
 			x, y;
 
 		// Handle special case at beginning / end of curve
-		if (type == 0 && (t == 0 || t == 1)) {
-			x = t == 0 ? p1x : p2x;
-			y = t == 0 ? p1y : p2y;
+		if (type === 0 && (t === 0 || t === 1)) {
+			x = t === 0 ? p1x : p2x;
+			y = t === 0 ? p1y : p2y;
 		} else {
 			// TODO: Find a better solution for this:
 			// Prevent tangents and normals of length 0:
@@ -452,19 +452,22 @@ statics: {
 				cy = 3 * (c1y - p1y),
 				by = 3 * (c2y - c1y) - cy,
 				ay = p2y - p1y - cy - by;
-
 			switch (type) {
 			case 0: // point
 				// Calculate the curve point at parameter value t
 				x = ((ax * t + bx) * t + cx) * t + p1x;
 				y = ((ay * t + by) * t + cy) * t + p1y;
 				break;
-			case 1: // tangent
-			case 2: // normal
+			case 1: // tangent, 1st derivative
+			case 2: // normal, 1st derivative
 				// Simply use the derivation of the bezier function for both
 				// the x and y coordinates:
 				x = (3 * ax * t + 2 * bx) * t + cx;
 				y = (3 * ay * t + 2 * by) * t + cy;
+				break;
+			case 3: // curvature, 2nd derivative
+				x = 6 * ax * t + 2 * bx;
+				y = 6 * ay * t + 2 * by;
 				break;
 			}
 		}
@@ -740,7 +743,7 @@ statics: {
 	 * @bean
 	 * @ignore
 	 */
-}), Base.each(['getPoint', 'getTangent', 'getNormal'],
+}), Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
 	// determine the bounds of Curve objects with defined segment1 and segment2
 	// values Curve.getBounds() can be used directly on curve arrays, without
@@ -822,7 +825,7 @@ statics: {
 	 */
 
 	/**
-	 * Returns the tangent point on the curve at the specified position.
+	 * Returns the tangent vector of the curve at the specified position.
 	 *
 	 * @name Curve#getTangentAt
 	 * @function
@@ -830,11 +833,11 @@ statics: {
 	 *        parameter if {@code isParameter} is {@code true}
 	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
 	 *        is a curve time parameter.
-	 * @return {Point} the tangent to the curve at the specified offset.
+	 * @return {Point} the tangent of the curve at the specified offset.
 	 */
 
 	/**
-	 * Returns the normal point on the curve at the specified position.
+	 * Returns the normal vector of the curve at the specified position.
 	 *
 	 * @name Curve#getNormalAt
 	 * @function
@@ -843,6 +846,18 @@ statics: {
 	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
 	 *        is a curve time parameter.
 	 * @return {Point} the normal of the curve at the specified offset.
+	 */
+
+	/**
+	 * Returns the curvature vector of the curve at the specified position.
+	 *
+	 * @name Curve#getCurvatureAt
+	 * @function
+	 * @param {Number} offset the offset on the curve, or the curve time
+	 *        parameter if {@code isParameter} is {@code true}
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 *        is a curve time parameter.
+	 * @return {Point} the curvature of the curve at the specified offset.
 	 */
 }),
 new function() { // Scope for methods that require numerical integration
