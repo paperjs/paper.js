@@ -1276,11 +1276,32 @@ var Item = this.Item = Base.extend(Callback, {
 		return raster;
 	},
 
-	// DOCS: Document Item#contains(point)
 	/**
 	 * Checks wether the item's geometry contains the given point in local
 	 * coordinates.
-	 *
+	 * 
+	 * @example {@paperscript} // Click within and outside the star below
+	 * // Create a star shaped path:
+	 * var path = new Path.Star({
+	 * 	center: [50, 50],
+	 * 	points: 12,
+	 * 	radius1: 20,
+	 * 	radius2: 40,
+	 * 	fillColor: 'black'
+	 * });
+	 * 
+	 * // Whenever the user presses the mouse:
+	 * function onMouseDown(event) {
+	 * 	// If the position of the mouse is within the path,
+	 * 	// set its fill color to red, otherwise set it to
+	 * 	// black:
+	 * 	if (path.contains(event.point)) {
+	 * 		path.fillColor = 'red';
+	 * 	} else {
+	 * 		path.fillColor = 'black';
+	 * 	}
+	 * }
+	 * 
 	 * @param {Point} point The point to check in local coordinates
 	 */
 	contains: function(point) {

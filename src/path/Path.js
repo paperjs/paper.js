@@ -1604,7 +1604,6 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				&& this._parent._style.getFillColor());
 	},
 
-	// DOCS: Document Path#contains()
 	contains: function(point) {
 		point = Point.read(arguments);
 		// If the path is not closed, we should not bail out in case it has a
