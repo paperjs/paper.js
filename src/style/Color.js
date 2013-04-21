@@ -13,11 +13,10 @@
 /**
  * @name Color
  *
- * @class All properties and functions that expect color values accept
- * instances of the different color classes such as {@link RgbColor},
- * {@link HsbColor} and {@link GrayColor}, and also accept named colors
- * and hex values as strings which are then converted to instances of
- * {@link RgbColor} internally.
+ * @class All properties and functions that expect color values in the form
+ * of instances of Color objects, also accept named colors and hex values as
+ * strings which are then converted to instances of
+ * {@link Color} internally.
  *
  * @classexample {@paperscript}
  * // Named color values:
@@ -389,7 +388,7 @@ var Color = this.Color = Base.extend(new function() {
 		 */
 		// DOCS: Fix HSB Color documentation
 		/**
-		 * Creates a HSB Color object
+		 * Creates an HSB Color object
 		 *
 		 * @name Color#initialize
 		 * @param {Number} hue the hue of the color as a value in degrees between
@@ -402,13 +401,13 @@ var Color = this.Color = Base.extend(new function() {
 		 * {@code 0} and {@code 1}
 		 *
 		 * @example {@paperscript}
-		 * // Creating a HSB Color:
+		 * // Creating an HSB Color:
 		 *
 		 * // Create a circle shaped path at {x: 80, y: 50}
 		 * // with a radius of 30:
 		 * var circle = new Path.Circle(new Point(80, 50), 30);
 		 *
-		 * // Create a HSB Color with a hue of 90 degrees, a saturation
+		 * // Create an HSB Color with a hue of 90 degrees, a saturation
 		 * // 100% and a brightness of 100%:
 		 * circle.fillColor = { hue: 90, saturation: 1, brightness: 1 };
 		 */
@@ -978,12 +977,14 @@ var Color = this.Color = Base.extend(new function() {
 		 * 	radius: view.bounds.height * 0.4
 		 * });
 		 * 
-		 * var gradient = new Gradient(['yellow', 'red', 'black'], true);
-		 * var from = path.position;
-		 * var to = path.bounds.rightCenter;
-		 * var gradientColor = new Color(gradient, from, to);
-		 * 
-		 * path.fillColor = gradientColor;
+		 * path.fillColor = {
+		 * 	gradient: {
+		 * 		stops: ['yellow', 'red', 'black'],
+		 * 		radial: true
+		 * 	},
+		 * 	origin: path.position,
+		 * 	destination: path.bounds.rightCenter
+		 * };
 		 * 
 		 * function onMouseMove(event) {
 		 * 	// Set the origin highlight of the path's gradient color
