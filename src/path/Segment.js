@@ -54,10 +54,11 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	 * Creates a new Segment object.
 	 *
 	 * @name Segment#initialize
-	 * @param {Object} properties An object literal containing properties to
+	 * @param {Object} object An object literal containing properties to
 	 * be set on the segment.
 	 *
 	 * @example {@paperscript}
+	 * // Creating segments using object notation:
 	 * var firstSegment = new Segment({
 	 * 	point: [100, 50],
 	 * 	handleOut: [80, 100]
