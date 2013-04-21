@@ -101,7 +101,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Line(from, to);
 		 * path.strokeColor = 'black';
 		 * 
-		 * @example {@paperscript}
+		 * @example {@paperscript} // Using object notation
 		 * var path = new Path.Line({
 		 * 	from: [20, 20],
 		 * 	to: [80, 80],
@@ -129,7 +129,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Rectangle(point, size);
 		 * path.strokeColor = 'black';
 		 *
-		 * @example {@paperscript}
+		 * @example {@paperscript} // Using object notation
 		 * var path = new Path.Rectangle({
 		 * 	point: [20, 20],
 		 * 	size: [60, 60],
@@ -152,7 +152,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Rectangle(from, to);
 		 * path.strokeColor = 'black';
 		 *
-		 * @example {@paperscript}
+		 * @example {@paperscript} // Using object notation
 		 * var path = new Path.Rectangle({
 		 * 	from: [20, 20],
 		 * 	to: [80, 80],
@@ -203,7 +203,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Rectangle(rectangle, cornerSize);
 		 * path.strokeColor = 'black';
 		 *
-		 * @example {@paperscript}
+		 * @example {@paperscript} // Using object notation
 		 * var path = new Path.Rectangle({
 		 * 	rectangle: {
 		 * 		point: [20, 20],
@@ -238,7 +238,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Ellipse(rectangle);
 		 * path.fillColor = 'black';
 		 *
-		 * @example {@paperscript}
+		 * @example {@paperscript} // Using object notation
 		 * var path = new Path.Ellipse({
 		 * 	point: [20, 20],
 		 * 	size: [180, 60],
@@ -263,7 +263,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Circle(new Point(80, 50), 30);
 		 * path.strokeColor = 'black';
 		 *
-		 * @example {@paperscript}
+		 * @example {@paperscript} // Using object notation
 		 * var path = new Path.Circle({
 		 * 	center: [80, 50],
 		 * 	radius: 30,
@@ -293,7 +293,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Arc(from, through, to);
 		 * path.strokeColor = 'black';
 		 *
-		 * @example {@paperscript}
+		 * @example {@paperscript} // Using object notation
 		 * var path = new Path.Arc({
 		 * 	from: [20, 20],
 		 * 	through: [60, 20],
@@ -326,7 +326,7 @@ Path.inject({ statics: new function() {
 		 * var triangle = new Path.RegularPolygon(center, sides, radius);
 		 * triangle.fillColor = 'black';
 		 *
-		 * @example {@paperscript}
+		 * @example {@paperscript} // Using object notation
 		 * var triangle = new Path.RegularPolygon({
 		 * 	center: [50, 50],
 		 * 	sides: 10,
@@ -374,7 +374,7 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Star(center, points, radius1, radius2);
 		 * path.fillColor = 'black';
 		 *
-		 * @example {@paperscript}
+		 * @example {@paperscript} // Using object notation
 		 * var path = new Path.Star({
 		 * 	center: [50, 50],
 		 * 	points: 12,
