@@ -1276,6 +1276,27 @@ var Item = this.Item = Base.extend(Callback, {
 		return raster;
 	},
 
+	// DOCS: Document Item#contains(point)
+	/**
+	 * Checks wether the item's geometry contains the given point in local
+	 * coordinates.
+	 *
+	 * @param {Point} point The point to check in local coordinates
+	 */
+	contains: function(point) {
+		point = Point.read(arguments);
+		if (this._children) {
+			for (var i = this._children.length - 1; i >= 0; i--) {
+				if (this._children[i].contains(point))
+					return true;
+			}
+			return false;
+		}
+		// We only implement it here for items with rectangular content,
+		// for anything else we need to override #contains()
+		return point.isInside(this._getBounds('getBounds'));
+	},
+
 	/**
 	 * Perform a hit test on the item (and its children, if it is a
 	 * {@link Group} or {@link Layer}) at the location of the specified point.

@@ -65,15 +65,20 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 		}
 	},
 
+	contains: function(point) {
+		point = Point.read(arguments);
+		// TODO: Implement.
+	},
+
 	_getBounds: function(getter, matrix) {
 		var rect = new Rectangle(this._size).setCenter(0, 0);
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},
 
 	_hitTest: function(point, options) {
-		// TODO: Implement!
-		if (point.isInside(this._getBounds())) {
-		}
+		if (this.hasFill() && this.contains(point))
+			return new HitResult('fill', this);
+		// TODO: Implement stokre!
 	},
 
 	statics: {

@@ -523,7 +523,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	},
 
 	_hitTest: function(point, options) {
-		if (point.isInside(this._getBounds())) {
+		if (this.contains(point)) {
 			var that = this;
 			return new HitResult('pixel', that, {
 				offset: point.add(that._size.divide(2)).round(),
