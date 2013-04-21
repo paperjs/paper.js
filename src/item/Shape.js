@@ -20,8 +20,8 @@
 var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 	_class: 'Shape',
 
-	initialize: function(type, size) {
-		this.base();
+	initialize: function(type, point, size) {
+		this.base(point);
 		this._type = type;
 		this._size = size;
 	},
@@ -70,23 +70,28 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},
 
+	_hitTest: function(point, options) {
+		// TODO: Implement!
+		if (point.isInside(this._getBounds())) {
+		}
+	},
+
 	statics: {
 		Circle: function(/* center, radius */) {
 			var center = Point.readNamed(arguments, 'center'),
 				radius = Base.readNamed(arguments, 'radius');
-			return new Shape('circle', new Size(radius)).translate(center);
+			return new Shape('circle', center, new Size(radius));
 		},
 
 		Rectangle: function(/* rectangle */) {
 			var rect = Rectangle.readNamed(arguments, 'rectangle');
-			return new Shape('rect', rect.getSize(true)).translate(
-					rect.getCenter(true));
+			return new Shape('rect', rect.getCenter(true), rect.getSize(true));
 		},
 
 		Ellipse: function(/* rectangle */) {
 			var rect = Rectangle.readNamed(arguments, 'rectangle');
-			return new Shape('ellipse', rect.getSize(true)).translate(
-					rect.getCenter(true));
+			return new Shape('ellipse', rect.getCenter(true),
+					rect.getSize(true));
 		}
 	}
 });
