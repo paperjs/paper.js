@@ -66,8 +66,7 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 		}
 	},
 
-	contains: function(point) {
-		point = Point.read(arguments);
+	_contains: function(point) {
 		switch (this._type) {
 		case 'rect':
 			return this.base(point);

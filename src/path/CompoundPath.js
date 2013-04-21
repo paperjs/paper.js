@@ -163,6 +163,9 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 
 	/**
 	 * A private method to help with both #contains() and #_hitTest().
+	 * Instead of simply returning a boolean, it returns a children of all the
+	 * children that contain the point. This is required by _hitTest(), and
+	 * Item#contains() is prepared for such a result.
 	 */
 	_contains: function(point) {
 		// Compound paths are a little complex: In order to determine wether a
@@ -178,10 +181,6 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 				children.push(child);
 		}
 		return (children.length & 1) == 1 && children;
-	},
-
-	contains: function(point) {
-		return !!this._contains(Point.read(arguments));
 	},
 
 	_hitTest: function(point, options) {

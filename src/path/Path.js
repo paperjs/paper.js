@@ -1604,13 +1604,14 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				&& this._parent._style.getFillColor());
 	},
 
-	contains: function(point) {
-		point = Point.read(arguments);
+	_contains: function(point) {
 		// If the path is not closed, we should not bail out in case it has a
 		// fill color!
 		var hasFill = this.hasFill();
 		if (!this._closed && !hasFill
-				|| !this.getRoughBounds()._containsPoint(point))
+				// We need to call the internal _getBounds, to get non-
+				// transformed bounds.
+				|| !this._getBounds('getRoughBounds')._containsPoint(point))
 			return false;
 		// Note: This only works correctly with even-odd fill rule, or paths
 		// that do not overlap with themselves.

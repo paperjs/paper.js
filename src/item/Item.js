@@ -1277,8 +1277,7 @@ var Item = this.Item = Base.extend(Callback, {
 	},
 
 	/**
-	 * Checks wether the item's geometry contains the given point in local
-	 * coordinates.
+	 * Checks wether the item's geometry contains the given point.
 	 * 
 	 * @example {@paperscript} // Click within and outside the star below
 	 * // Create a star shaped path:
@@ -1302,10 +1301,15 @@ var Item = this.Item = Base.extend(Callback, {
 	 * 	}
 	 * }
 	 * 
-	 * @param {Point} point The point to check in local coordinates
+	 * @param {Point} point The point to check for.
 	 */
 	contains: function(point) {
-		point = Point.read(arguments);
+		// See CompoundPath#_contains() for the reason for !!
+		return !!this._contains(
+				this._matrix._inverseTransform(Point.read(arguments)));
+	},
+
+	_contains: function(point) {
 		if (this._children) {
 			for (var i = this._children.length - 1; i >= 0; i--) {
 				if (this._children[i].contains(point))
