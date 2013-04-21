@@ -174,7 +174,8 @@
   var graph = [];
   var segs = path.segments, prevNode = null, firstNode = null, nuLink, nuNode;
   for( i = 0, l = segs.length; i < l; i++ ){
-    var nuSeg = segs[i].clone();
+    // var nuSeg = segs[i].clone();
+    var nuSeg = segs[i];
     nuNode = new Node( nuSeg.point, nuSeg.handleIn, nuSeg.handleOut, id, isBaseContour );
     if( prevNode ) {
       nuLink = new Link( prevNode, nuNode, id, isBaseContour );
@@ -191,23 +192,6 @@
   return graph;
 }
 
-
-/**
- * makes a graph for a pathItem
- * @param  {Path} path
- * @param  {Integer} id
- * @return {Array} Links
- */
-function makeGraph2( path, id ){
-  var graph = [];
-  var curves = path.getCurves(), firstChildCount , counter, isBaseContour = true, i, len;
-  firstChildCount = ( path instanceof CompoundPath )? path.children[0].curves.length : path.curves.length;
-  // Segments need an ID, so that we can compare them
-  for (i = 0, len = curves.length; i < len; i++, firstChildCount--) {
-  }
-}
-
-
 /**
  * Calculates the Union of two paths
  * Boolean API.
@@ -215,7 +199,7 @@ function makeGraph2( path, id ){
  * @param  {Path} path2
  * @return {CompoundPath} union of path1 & path2
  */
-function boolUnion( path1, path2 ){
+ function boolUnion( path1, path2 ){
   return computeBoolean( path1, path2, BooleanOps.Union );
 }
 
@@ -227,7 +211,7 @@ function boolUnion( path1, path2 ){
  * @param  {Path} path2
  * @return {CompoundPath} Intersection of path1 & path2
  */
-function boolIntersection( path1, path2 ){
+ function boolIntersection( path1, path2 ){
   return computeBoolean( path1, path2, BooleanOps.Intersection );
 }
 
@@ -239,7 +223,7 @@ function boolIntersection( path1, path2 ){
  * @param  {Path} path2
  * @return {CompoundPath} path1 <minus> path2
  */
-function boolSubtract( path1, path2 ){
+ function boolSubtract( path1, path2 ){
   return computeBoolean( path1, path2, BooleanOps.Subtraction );
 }
 
@@ -251,7 +235,7 @@ function boolSubtract( path1, path2 ){
  * @param  {BooleanOps type} operator
  * @return {CompoundPath} boolean result
  */
-function computeBoolean( _path1, _path2, operator ){
+ function computeBoolean( _path1, _path2, operator ){
   IntersectionID = 1;
   UNIQUE_ID = 1;
 
@@ -518,6 +502,10 @@ function computeBoolean( _path1, _path2, operator ){
   }
   boolResult = boolResult.reduce();
 
+  // Remove duplicate paths
+  path1.remove();
+  path2.remove();
+
   return boolResult;
 }
 
@@ -552,19 +540,19 @@ var Numerical = {
 // paperjs' Curve._addIntersections modified to return just intersection Point with a
 // unique id.
 paper.Curve._addIntersections =  function(v1, v2, curve, locations) {
-    var bounds1 = Curve.getBounds(v1),
-      bounds2 = Curve.getBounds(v2);
-    if (bounds1.touches(bounds2)) {
+  var bounds1 = Curve.getBounds(v1),
+  bounds2 = Curve.getBounds(v2);
+  if (bounds1.touches(bounds2)) {
       // See if both curves are flat enough to be treated as lines.
       if (Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
-          && Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
+        && Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
         // See if the parametric equations of the lines interesct.
-        var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
-            .intersect(new Line(v2[0], v2[1], v2[6], v2[7], false),
+      var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
+      .intersect(new Line(v2[0], v2[1], v2[6], v2[7], false),
               // Filter out beginnings of the curves, to avoid
               // duplicate solutions where curves join.
               true, false);
-        if (point){
+      if (point){
           // Passing null for parameter leads to lazy determination of
           // parameter values in CurveLocation#getParameter() only
           // once they are requested.
@@ -575,11 +563,11 @@ paper.Curve._addIntersections =  function(v1, v2, curve, locations) {
       } else {
         // Subdivide both curves, and see if they intersect.
         var v1s = Curve.subdivide(v1),
-          v2s = Curve.subdivide(v2);
+        v2s = Curve.subdivide(v2);
         for (var i = 0; i < 2; i++)
           for (var j = 0; j < 2; j++)
             this._addIntersections(v1s[i], v2s[j], curve, locations);
+        }
       }
-    }
-    return locations;
-  };
+      return locations;
+    };
