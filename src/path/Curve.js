@@ -28,8 +28,32 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * Creates a new curve object.
 	 *
+	 * @name Curve#initialize
 	 * @param {Segment} segment1
 	 * @param {Segment} segment2
+	 */
+	/**
+	 * Creates a new curve object.
+	 *
+	 * @name Curve#initialize
+	 * @param {Point} point1
+	 * @param {Point} handle1
+	 * @param {Point} handle2
+	 * @param {Point} point2
+	 */
+	/**
+	 * Creates a new curve object.
+	 *
+	 * @name Curve#initialize
+	 * @ignore
+	 * @param {Number} x1
+	 * @param {Number} y1
+	 * @param {Number} handle1x
+	 * @param {Number} handle1y
+	 * @param {Number} handle2x
+	 * @param {Number} handle2y
+	 * @param {Number} x2
+	 * @param {Number} y2
 	 */
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
