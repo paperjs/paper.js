@@ -40,7 +40,8 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 				ctx.rect(-width / 2, -height / 2, width, height);
 				break;
 			case 'circle':
-				ctx.arc(0, 0, width, 0, Math.PI * 2, true);
+				// Average half of width & height for radius...
+				ctx.arc(0, 0, (width + height) / 4, 0, Math.PI * 2, true);
 				break;
 			case 'ellipse':
 				var mx = width / 2,
@@ -85,7 +86,7 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 		Circle: function(/* center, radius */) {
 			var center = Point.readNamed(arguments, 'center'),
 				radius = Base.readNamed(arguments, 'radius');
-			return new Shape('circle', center, new Size(radius));
+			return new Shape('circle', center, new Size(radius * 2));
 		},
 
 		Rectangle: function(/* rectangle */) {
