@@ -182,7 +182,7 @@ var Numerical = this.Numerical = new function() {
 					return 1;
 				} else { // One single and one double solution.
 					var sqp = sqrt(p),
-						snq = q < 0 ? -1 : 1;
+						snq = q > 0 ? 1 : -1;
 					roots[0] = -snq * 2 * sqp - b;
 					roots[1] = snq * sqp - b;
 					return 2;
@@ -198,8 +198,8 @@ var Numerical = this.Numerical = new function() {
 				return 3;
 			}
 			// One real solution
-			var sqD = sqrt(D);
-			roots[0] = cbrt(sqD - q) - cbrt(sqD + q) - b;
+			var A = (q > 0 ? -1 : 1) * pow(abs(q) + sqrt(D), 1 / 3);
+			roots[0] = A + p / A - b;
 			return 1;
 		}
 	};
