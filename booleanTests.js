@@ -61,9 +61,8 @@ function runTests() {
   pathA.closed = true;
   pathB = pathA.clone();
   pathB.rotate( -90 );
-  // FIXME: hangs when I move pathA, pathB apart by [-10,0] & [10,0] or [9...] etc.
-  pathA.translate( [-12,0] );
-  pathB.translate( [12,0] );
+  pathA.translate( [-10,0] );
+  pathB.translate( [10,0] );
   testBooleanStatic( pathA, pathB, caption );
   annotatePath( pathA, null, '#008' );
   annotatePath( pathB, null, '#800' );

@@ -297,10 +297,10 @@ function computeBoolean( _path1, _path2, operator ){
     graph = graph.concat( makeGraph( path2, 2, 1, true ) );
   }
 
-  console.log( "Total curves: " + graph.length );
+  // console.log( "Total curves: " + graph.length );
 
   // Sort function to sort intersections according to the 'parameter'(t) in a link (curve)
-  function ixSort( a, b ){ return a._parameter - b._parameter; }
+  function ixSort( a, b ){ return a.parameter - b.parameter; }
 
   /*
    * Pass 1:
@@ -318,18 +318,12 @@ function computeBoolean( _path1, _path2, operator ){
       var c2 = graph[j].getCurve();
       var v2 = c2.getValues();
       var loc = [];
-      Curve._addIntersections( v1, v2, loc );
+      Curve._addIntersections( v1, v2, c1, loc );
       if( loc.length ){
         for (k = 0, l=loc.length; k<l; k++) {
-          var loc1 = loc[k].clone();
-          loc1._intersectionID = loc[k]._intersectionID;
-          loc1._parameter = c1.getParameterOf( loc[k] ); // For sorting on curve1
-          // loc1._parameter = c1.getNearestLocation( loc[k] ).parameter; // For sorting on curve1
-          graph[i].intersections.push( loc1 );
-          var loc2 = loc[k].clone();
-          loc2._intersectionID = loc[k]._intersectionID;
-          loc2._parameter = c2.getParameterOf( loc[k] ); // For sorting on curve2
-          // loc2._parameter = c2.getNearestLocation( loc[k] ).parameter; // For sorting on curve2
+          graph[i].intersections.push( loc[k] );
+          var loc2 = new CurveLocation( c2, null, loc[k].point );
+          loc2.id = loc[k].id;
           graph[j].intersections.push( loc2 );
         }
       }
@@ -355,14 +349,14 @@ function computeBoolean( _path1, _path2, operator ){
         // We need to recalculate parameter after each curve split
         // This operation (except for recalculating the curve parameter),
         // is fairly similar to Curve.split method, except that it operates on Node and Link objects.
-        var param = crv.getParameterOf( ix[j] );
+        var param = crv.getParameterOf( ix[j].point );
         // var param = crv.getNearestLocation( ix[j] ).parameter;
         if( param === 0.0 || param === 1.0) {
           // Intersection falls on an existing node
           // there is no need to split the link
           nuNode = ( param === 0.0 )? lnk.nodeIn : lnk.nodeOut;
           nuNode.type = INTERSECTION_NODE;
-          nuNode._intersectionID = ix[j]._intersectionID;
+          nuNode._intersectionID = ix[j].id;
           if( param === 1.0 ){
             leftLink = null;
             rightLink = lnk;
@@ -380,7 +374,7 @@ function computeBoolean( _path1, _path2, operator ){
           nuNode = new Node( ixPoint, new Point(left[4] - ixPoint.x, left[5] - ixPoint.y),
             new Point(right[2] - ixPoint.x, right[3] - ixPoint.y), lnk.id, lnk.isBaseContour );
           nuNode.type = INTERSECTION_NODE;
-          nuNode._intersectionID = ix[j]._intersectionID;
+          nuNode._intersectionID = ix[j].id;
           // clear the cached Segment on original end nodes and Update their handles
           lnk.nodeIn._segment = null;
           var tmppnt = lnk.nodeIn.point;
@@ -557,31 +551,35 @@ var Numerical = {
 
 // paperjs' Curve._addIntersections modified to return just intersection Point with a
 // unique id.
-paper.Curve._addIntersections = function(v1, v2, locations) {
-  var bounds1 = Curve.getBounds(v1),
-  bounds2 = Curve.getBounds(v2);
-  if (bounds1.touches(bounds2)) {
-    // See if both curves are flat enough to be treated as lines.
-    if (Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE) &&
-      Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
-      // See if the parametric equations of the lines interesct.
-    var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
-    .intersect(new Line(v2[0], v2[1], v2[6], v2[7], false),
+paper.Curve._addIntersections =  function(v1, v2, curve, locations) {
+    var bounds1 = Curve.getBounds(v1),
+      bounds2 = Curve.getBounds(v2);
+    if (bounds1.touches(bounds2)) {
+      // See if both curves are flat enough to be treated as lines.
+      if (Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
+          && Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
+        // See if the parametric equations of the lines interesct.
+        var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
+            .intersect(new Line(v2[0], v2[1], v2[6], v2[7], false),
               // Filter out beginnings of the curves, to avoid
               // duplicate solutions where curves join.
               true, false);
-    if (point){
-      point._intersectionID = IntersectionID++;
-      locations.push( point );
+        if (point){
+          // Passing null for parameter leads to lazy determination of
+          // parameter values in CurveLocation#getParameter() only
+          // once they are requested.
+          var cl = new CurveLocation(curve, null, point);
+          cl.id = UNIQUE_ID++;
+          locations.push( cl );
+        }
+      } else {
+        // Subdivide both curves, and see if they intersect.
+        var v1s = Curve.subdivide(v1),
+          v2s = Curve.subdivide(v2);
+        for (var i = 0; i < 2; i++)
+          for (var j = 0; j < 2; j++)
+            this._addIntersections(v1s[i], v2s[j], curve, locations);
+      }
     }
-  } else {
-    // Subdivide both curves, and see if they intersect.
-    var v1s = Curve.subdivide(v1),
-    v2s = Curve.subdivide(v2);
-    for (var i = 0; i < 2; i++)
-      for (var j = 0; j < 2; j++)
-        this._addIntersections(v1s[i], v2s[j], locations);
-    }
-  }
-  return locations;
-};
+    return locations;
+  };
