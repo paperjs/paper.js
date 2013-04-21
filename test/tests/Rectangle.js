@@ -11,6 +11,7 @@
  */
 
 module('Rectangle');
+
 test('new Rectangle(new Point(10, 20), new Size(30, 40));', function() {
 	var rect = new Rectangle(new Point(10, 20), new Size(30, 40));
 	equals(rect.toString(), '{ x: 10, y: 20, width: 30, height: 40 }');
@@ -244,4 +245,28 @@ test('include(point)', function() {
 test('toString()', function() {
 	var string = new Rectangle(10, 20, 30, 40).toString();
 	equals(string, '{ x: 10, y: 20, width: 30, height: 40 }');
+});
+
+test('new Rectangle(object)', function() {
+	equals(function() {
+		return new Rectangle({
+			center: [50, 100],
+			size: [100, 200]
+		}).toString();
+	}, '{ x: 0, y: 0, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			topLeft: [100, 50],
+			size: [100, 200]
+		}).toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			topRight: [200, 50],
+			size: [100, 200]
+		}).toString();
+	}, '{ x: 100, y: -150, width: 100, height: 200 }');
+
 });
