@@ -128,6 +128,10 @@
       this.linkIn = this.linkIn || this.linkBIn; // linkIn
       this.linkOut = this.linkOut || this.linkBOut; // linkOut
       // Also update the references in links to point to "this" Node
+      if( !this.linkIn || !this.linkOut ){
+        throw { name: 'Boolean Error', message: 'No matching link found at ixID: ' +
+        this._intersectionID + " point: " + this.point.toString() };
+      }
       this.linkIn.nodeOut = this;  // linkIn.nodeEnd
       this.linkOut.nodeIn = this;  // linkOut.nodeStart
       this.handleIn = this.handleIn || this.handleBIn;
@@ -482,13 +486,14 @@
     firstNode = nextNode = null;
     len = graph.length;
     while( len-- ){
-      if( !graph[len].INVALID && !graph[len].nodeIn.visited && !firstNode ){
-        if( !foundBasePath && graph[len].isBaseContour === 1 ){
-          firstNode = graph[len].nodeIn;
+      lnk = graph[len];
+      if( !lnk.INVALID && !lnk.nodeIn.visited && !firstNode ){
+        if( !foundBasePath && lnk.isBaseContour === 1 ){
+          firstNode = lnk.nodeIn;
           foundBasePath = true;
           break;
         } else if(foundBasePath){
-          firstNode = graph[len].nodeIn;
+          firstNode = lnk.nodeIn;
           break;
         }
       }
@@ -510,7 +515,7 @@
   }
   boolResult = boolResult.reduce();
 
-  // Remove duplicate paths
+  // Remove the paths we duplicated
   path1.remove();
   path2.remove();
 

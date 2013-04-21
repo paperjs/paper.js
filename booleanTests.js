@@ -52,6 +52,7 @@ function runTests() {
   // caption = prepareTest( 'Circles overlap exactly over each other', container );
   // pathA = new Path.Circle(new Point(110, 110), 100);
   // pathB = new Path.Circle(new Point(110, 110), 100 );
+  // // pathB.translate([0.5,0])
   // testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'Maximum possible intersections between 2 cubic bezier curve segments - 9', container );
@@ -100,7 +101,9 @@ function runTests() {
   group  = paper.project.importSvg( document.getElementById( 'svggreenland' ) );
   pathA = group.children[0];
   pathB = group.children[1];
-  pathB.scale( 0.75 ).translate( [25, 0] );
+  pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
+  // pathA.scale( 2 );
+  // pathB.scale( 2 );
   testBooleanStatic( pathA, pathB, caption );
 
   // window.p = pathB;
@@ -139,12 +142,15 @@ var pathStyleBoolean = {
 // Better if path1 and path2 fit nicely inside a 200x200 pixels rect
 function testBooleanStatic( path1, path2, caption ) {
   try{
+    path1.style = path2.style = pathStyleNormal;
+
     var _p1U = path1.clone().translate( [250, 0] );
     var _p2U = path2.clone().translate( [250, 0] );
     _p1U.style = _p2U.style = pathStyleBoolean;
     console.time( 'Union' );
     var boolPathU = boolUnion( _p1U, _p2U );
     console.timeEnd( 'Union' );
+    boolPathU.style = booleanStyle;
 
     var _p1I = path1.clone().translate( [500, 0] );
     var _p2I = path2.clone().translate( [500, 0] );
@@ -152,6 +158,7 @@ function testBooleanStatic( path1, path2, caption ) {
     console.time( 'Intersection' );
     var boolPathI = boolIntersection( _p1I, _p2I );
     console.timeEnd( 'Intersection' );
+    boolPathI.style = booleanStyle;
 
     var _p1S = path1.clone().translate( [750, 0] );
     var _p2S = path2.clone().translate( [750, 0] );
@@ -159,14 +166,12 @@ function testBooleanStatic( path1, path2, caption ) {
     console.time( 'Subtraction' );
     var boolPathS = boolSubtract( _p1S, _p2S );
     console.timeEnd( 'Subtraction' );
-
-    path1.style = path2.style = pathStyleNormal;
-    boolPathU.style = boolPathI.style = booleanStyle;
     boolPathS.style = booleanStyle;
+
   } catch( e ){
-    console.error( e.message );
+    console.error( e.name + ": " + e.message );
     if( caption ) { caption.className += ' error'; }
-    paper.project.view.element.className += ' hide';
+    // paper.project.view.element.className += ' hide';
   } finally {
     console.timeEnd( 'Union' );
     console.timeEnd( 'Intersection' );
@@ -255,7 +260,8 @@ function annotateCurve( crv, t, c, tc, remove ) {
   text.justification = 'center';
   text.fillColor = tc;
   text.content = t;
-  l.style.strokeColor = l2.style.strokeColor = cir.style.fillColor = c;
+  l.style.strokeColor = l2.style.strokeColor = c;
+  cir.style.fillColor = c;
   if( remove ) {
     l.removeOnMove();
     l2.removeOnMove();
