@@ -24,7 +24,7 @@
  * {@link Item#style}. This is a convenient way to define a style once and
  * apply it to a series of items:
  *
- * @classexample {@paperscript}
+ * @classexample {@paperscript} // Styling paths
  *
  * var path = new Path.Circle(new Point(80, 50), 30);
  * path.style = {
@@ -33,19 +33,37 @@
  * 	strokeWidth: 5
  * };
  *
- * @classexample
- * var text = new PointText(new Point(50, 50));
+ * @classexample {@paperscript} // Styling text items
+ * var text = new PointText(view.center);
  * text.content = 'Hello world.';
  * text.style = {
- * 	fontSize: 50,
- * 	fillColor: 'black',
+ * 	fontSize: 20,
+ * 	fillColor: 'red',
+ * 	justification: 'center'
  * };
- *
- * @classexample
- * var text = new PointText(new Point(0,0));
- * text.fillColor = 'black';
- * text.content = 'Hello world.';
- * text.justification = 'center';
+ * 
+ * @classexample {@paperscript} // Styling groups
+ * var path1 = new Path.Circle({
+ * 	center: [100, 50],
+ * 	radius: 30
+ * });
+ * 
+ * var path2 = new Path.Rectangle({
+ * 	from: [170, 20],
+ * 	to: [230, 80]
+ * });
+ * 
+ * var group = new Group(path1, path2);
+ * 
+ * // All styles set on a group are automatically
+ * // set on the children of the group:
+ * group.style = {
+ * 	strokeColor: 'black',
+ * 	dashArray: [4, 10],
+ * 	strokeWidth: 4,
+ * 	strokeCap: 'round'
+ * };
+ * 
  */
 var Style = this.Style = Base.extend(new function() {
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
