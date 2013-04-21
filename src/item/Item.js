@@ -1873,7 +1873,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * // A look at the different stroke caps:
 	 *
 	 * var line = new Path({
-	 * 	segments: [[80, 50], [420, 50],
+	 * 	segments: [[80, 50], [420, 50]],
 	 * 	strokeColor: 'black',
 	 * 	strokeWidth: 20,
 	 * 	selected: true
