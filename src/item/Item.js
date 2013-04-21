@@ -370,6 +370,10 @@ var Item = this.Item = Base.extend(Callback, {
 
 	setStyle: function(style) {
 		this._style.initialize(style);
+	},
+
+	hasFill: function() {
+		return !!this._style.getFillColor();
 	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	// Produce getter/setters for properties. We need setters because we want to

@@ -1599,9 +1599,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	hasFill: function() {
 		// If this path is part of a CompoundPath, we need to check that
 		// for fillColor too...
-		return this._style.getFillColor()
+		return !!(this._style.getFillColor()
 				|| this._parent._type === 'compound-path'
-				&& this._parent._style.getFillColor();
+				&& this._parent._style.getFillColor());
 	},
 
 	contains: function(point) {
