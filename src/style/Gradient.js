@@ -14,6 +14,50 @@
  * @name Gradient
  *
  * @class The Gradient object.
+ * 
+ * @classexample {@paperscript height=300}
+ * // Applying a linear gradient color containing evenly distributed
+ * // color stops:
+ *
+ * // Define two points which we will be using to construct
+ * // the path and to position the gradient color:
+ * var topLeft = view.center - [80, 80];
+ * var bottomRight = view.center + [80, 80];
+ * 
+ * // Create a rectangle shaped path between
+ * // the topLeft and bottomRight points:
+ * var path = new Path.Rectangle(topLeft, bottomRight);
+ * 
+ * // Fill the path with a gradient of three evenly divided color stops
+ * // that runs between the two points we defined earlier:
+ * path.fillColor = {
+ * 	gradient: {
+ * 		stops: ['yellow', 'red', 'blue']
+ * 	},
+ * 	origin: topLeft,
+ * 	destination: bottomRight
+ * };
+ * 
+ * @classexample {@paperscript height=300}
+ * // Create a circle shaped path at the center of the view,
+ * // using 40% of the height of the view as its radius
+ * // and fill it with a radial gradient color:
+ * var path = new Path.Circle({
+ * 	center: view.center,
+ * 	radius: view.bounds.height * 0.4
+ * });
+ * 
+ * // Fill the path with a radial gradient color with three stops:
+ * // yellow from 0% to 5%, mix between red from 5% to 20%,
+ * // mix between red and black from 20% to 100%:
+ * path.fillColor = {
+ * 	gradient: {
+ * 		stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
+ * 		radial: true
+ * 	},
+ * 	origin: path.position,
+ * 	destination: path.bounds.rightCenter
+ * };
  */
 var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
 	_class: 'Gradient',
