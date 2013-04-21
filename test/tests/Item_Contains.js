@@ -79,4 +79,25 @@ test('Shape#contains', function() {
 	testPoint(shape, new Point({ length: 99, angle: 45 }), true);
 	testPoint(shape, new Point({ length: 100, angle: 45 }), true);
 	testPoint(shape, new Point({ length: 101, angle: 45 }), false);
+
+	var size = new Size(100, 200),
+		half = size.divide(2),
+		shape = new Shape.Ellipse(half.negate(), size);
+	testPoint(shape, new Point(0, 0), true);
+	testPoint(shape, new Point(0, -1).multiply(half), true);
+	testPoint(shape, new Point({ length: 0.9, angle: 45 }).multiply(half), true);
+	testPoint(shape, new Point({ length: 1, angle: 45 }).multiply(half), true);
+	testPoint(shape, new Point({ length: 1.1, angle: 45 }).multiply(half), false);
+
+
+	var size = new Size(100, 200),
+		half = size.divide(2),
+		shape = new Shape.Rectangle(half.negate(), size);
+	testPoint(shape, new Point(0, 0), true);
+	testPoint(shape, new Point(0, 0.9).multiply(half), true);
+	testPoint(shape, new Point(0, 1).multiply(half), true);
+	testPoint(shape, new Point(0, 1.1).multiply(half), false);
+	testPoint(shape, new Point(0.9, 0).multiply(half), true);
+	testPoint(shape, new Point(1, 0).multiply(half), true);
+	testPoint(shape, new Point(1.1, 0).multiply(half), false);
 });
