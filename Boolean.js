@@ -11,19 +11,14 @@
  * undocumented to directly adapt from)
  * 
  * Supported
- *  - paperjs Path objects
- *  - Boolean Union operations
- *  - Boolean Intersection operations
- *  - handles path complexity quite nicely
+ *  - paperjs Path and CompoundPath objects
+ *  - Boolean Union
+ *  - Boolean Intersection
+ *  - Boolean Subtraction
  *
  * Not supported yet ( which I would like to see supported )
- *  - Compound Paths as input ( however compound paths are correctly handled in the output )
  *  - Self-intersecting Paths
- *  - Boolean Subtraction operation ( depends on compound paths as input )
  *  - Paths are clones of each other that ovelap exactly on top of each other!
- *
- * In the Not-supported-yet list, the first three can be easily implemented, 
- * as for the last point, I need help! Thanks! :)
  *  
  * ------
  * Harikrishnan Gopalakrishnan
