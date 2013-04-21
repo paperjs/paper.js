@@ -87,14 +87,16 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * 	radius: view.bounds.height * 0.4
 	 * });
 	 * 
-	 * // Prepare the gradient color and apply it to the path:
-	 * var colors = [['yellow', 0.05], ['red', 0.2], ['black', 1]];
-	 * var gradient = new Gradient(colors, true);
-	 * var from = path.position;
-	 * var to = path.bounds.rightCenter;
-	 * var gradientColor = new Color(gradient, from, to);
+	 * path.fillColor = {
+	 * 	gradient: {
+	 * 		stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
+	 * 		radial: true
+	 * 	},
+	 * 	origin: path.position,
+	 * 	destination: path.bounds.rightCenter
+	 * };
 	 * 
-	 * path.fillColor = gradientColor;
+	 * var gradient = path.fillColor.gradient;
 	 * 
 	 * // This function is called each frame of the animation:
 	 * function onFrame(event) {
@@ -133,21 +135,26 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * 	center: view.center,
 	 * 	radius: view.bounds.height * 0.4
 	 * });
-	 *
-	 * // Create a radial gradient that mixes red and black evenly:
-	 * var gradient = new Gradient(['red', 'black'], true);
-	 *
-	 * // Fill the path with a gradient color that runs from its center,
-	 * // to the right center of its bounding rectangle:
-	 * var from = path.position;
-	 * var to = path.bounds.rightCenter;
-	 * var gradientColor = new Color(gradient, from, to);
-	 * path.fillColor = gradientColor;
-	 *
+	 * 
+	 * path.fillColor = {
+	 * 	gradient: {
+	 * 		stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
+	 * 		radial: true
+	 * 	},
+	 * 	origin: path.position,
+	 * 	destination: path.bounds.rightCenter
+	 * };
+	 * 
+	 * var redStop = path.fillColor.gradient.stops[1];
+	 * var blackStop = path.fillColor.gradient.stops[2];
+	 * 
 	 * // This function is called each frame of the animation:
 	 * function onFrame(event) {
-	 * 	// Change the hue of the first stop's color:
-	 * 	gradient.stops[0].color.hue += 1;
+	 * 	// Animate the rampPoint between 0.7 and 0.9:
+	 * 	blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
+	 * 
+	 * 	// Animate the rampPoint between 0.2 and 0.4
+	 * 	redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
 	 * }
 	 */
 	getColor: function() {
