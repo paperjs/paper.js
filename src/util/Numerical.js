@@ -58,11 +58,6 @@ var Numerical = this.Numerical = new function() {
 		cos = Math.cos,
 		PI = Math.PI;
 
-	// Define the missing Math.cbrt()
-	function cbrt(x) {
-		return x > 0 ? pow(x, 1 / 3) : x < 0 ? -pow(-x, 1 / 3) : 0;
-	}
-
 	return {
 		TOLERANCE: 10e-6,
 		// Precision when comparing against 0
