@@ -506,6 +506,9 @@
       while( firstNode.uniqueID !== nextNode.uniqueID ){
         path.add( nextNode.getSegment( true ) );
         nextNode.visited = true;
+        if( !nextNode.linkOut ){
+          throw { name: 'Boolean Error', message: 'No link found at node id: ' + nextNode.id };
+        }
         nextNode = nextNode.linkOut.nodeOut;
       }
       path.closed = true;
