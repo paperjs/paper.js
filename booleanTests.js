@@ -128,15 +128,27 @@ function runTests() {
   pathB.addChild( npath );
   testBooleanStatic( pathA, pathB, caption );
 
+  caption = prepareTest( 'CompoundPaths 6 - holes and islands 3', container );
+  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = new CompoundPath();
+  var npath = new Path.Circle([110, 110], 100);
+  pathB.addChild( npath );
+  npath = new Path.Circle([110, 110], 60);
+  pathB.addChild( npath );
+  npath = new Path.Circle([110, 110], 30);
+  pathB.addChild( npath );
+  testBooleanStatic( pathA, pathB, caption );
+
   // To resolve self intersection on a single path,
   // pass an empty second operand and do a Union operation
   caption = prepareTest( 'Self-intersecting paths 1 - Resolve self-intersection on single path', container );
-  pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
+  pathA = new Path.Star(new Point(110, 110), 10, 20, 80);
   pathA.smooth();
   pathB = new Path();
   testBooleanStatic( pathA, pathB, caption, false, true, true, true );
 
-  caption = prepareTest( 'Self-intersecting paths 2 - Resolve self-intersection on single path', container );
+  caption = prepareTest( 'Self-intersecting paths 2 - Resolve self-intersecting CompoundPath', container );
   pathA = new CompoundPath();
   pathA.addChild( new Path.Circle([100, 110], 60) );
   pathA.addChild( new Path.Circle([160, 110], 30) );
@@ -166,7 +178,7 @@ var booleanStyle = {
 
 var pathStyleNormal = {
   strokeColor: new Color( 0, 0, 0 ),
-  fillColor: new Color( 0, 0, 0, 0.0 ),
+  fillColor: new Color( 0, 0, 0, 0.1 ),
   strokeWidth: 1
 };
 
