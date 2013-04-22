@@ -312,7 +312,7 @@
     path1.closed = true;
     path1Clockwise = path1.clockwise;
     // path1.clockwise = true;
-    graph = graph.concat( makeGraph( path1, 1, 1, true ) );
+    graph = graph.concat( makeGraph( path1, 1, true ) );
   }
 
   // if operator === BooleanOps.Subtraction, then reverse path2
@@ -323,18 +323,18 @@
     for (i = 0, base = true, l = path2Children.length; i < l; i++, base = false) {
       path2Children[i].closed = true;
       if( reverse ){ path2Children[i].reverse(); }
-      if( base ){ path1Clockwise = path1Children[i].clockwise; }
-      graph = graph.concat( makeGraph( path2Children[i], 2, i + 1, base ) );
+      if( base ){ path2Clockwise = path2Children[i].clockwise; }
+      graph = graph.concat( makeGraph( path2Children[i], 2, base ) );
     }
   } else {
     path2.closed = true;
     // path2.clockwise = true;
     if( reverse ){ path2.reverse(); }
     path2Clockwise = path2.clockwise;
-    graph = graph.concat( makeGraph( path2, 2, 1, true ) );
+    graph = graph.concat( makeGraph( path2, 2, true ) );
   }
 
-  // console.log( "Total curves: " + graph.length );
+  // console.log( path1Clockwise, path2Clockwise );
 
   // Sort function to sort intersections according to the 'parameter'(t) in a link (curve)
   function ixSort( a, b ){ return a.parameter - b.parameter; }
@@ -347,6 +347,7 @@
    *    intersections if the "id" of the links differ.
    * The rest of the algorithm can easily be modified to resolve self-intersections
    */
+  var ixCount = 0;
    for ( i = graph.length - 1; i >= 0; i--) {
     var c1 = graph[i].getCurve();
     var v1 = c1.getValues();
@@ -363,6 +364,7 @@
           // TODO: change this to loc2._id when CurveLocation has an id property
           loc2.id = loc[k].id;
           graph[j].intersections.push( loc2 );
+          ++ixCount;
         }
       }
     }
@@ -537,7 +539,7 @@
     while( len-- ){
       lnk = graph[len];
       if( !lnk.INVALID && !lnk.nodeIn.visited && !firstNode ){
-        if( !foundBasePath && lnk.isBaseContour === 1 ){
+        if( !foundBasePath && lnk.isBaseContour ){
           firstNode = lnk.nodeIn;
           foundBasePath = true;
           break;
