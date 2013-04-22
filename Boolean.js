@@ -347,7 +347,7 @@
    *    intersections if the "id" of the links differ.
    * The rest of the algorithm can easily be modified to resolve self-intersections
    */
-  var ixCount = 0;
+   var ixCount = 0;
    for ( i = graph.length - 1; i >= 0; i--) {
     var c1 = graph[i].getCurve();
     var v1 = c1.getValues();
@@ -359,6 +359,7 @@
       Curve._addIntersections( v1, v2, c1, loc );
       if( loc.length ){
         for (k = 0, l=loc.length; k<l; k++) {
+          loc[k].id = UNIQUE_ID++;
           graph[i].intersections.push( loc[k] );
           var loc2 = new CurveLocation( c2, null, loc[k].point );
           // TODO: change this to loc2._id when CurveLocation has an id property
@@ -469,6 +470,7 @@
 
   // step 1: discard invalid links according to the boolean operator
   for ( i = graph.length - 1; i >= 0; i--) {
+    if( graph[i].SKIP_CHECK ) { continue; }
     lnk = graph[i];
     crv = lnk.getCurve();
     // var midPoint = new Point(lnk.nodeIn.point);
@@ -577,66 +579,3 @@
 
   return boolResult;
 }
-
-
-function markPoint( pnt, t, c, tc, remove ) {
-  if( !pnt ) return;
-  c = c || '#000';
-  if( remove === undefined ){ remove = true; }
-  var cir = new Path.Circle( pnt, 2 );
-  cir.style.fillColor = c;
-  cir.style.strokeColor = tc;
-  if( t !== undefined || t !== null ){
-    var text = new PointText( pnt.add([0, -3]) );
-    text.justification = 'center';
-    text.fillColor = c;
-    text.content = t;
-    if( remove ){
-      text.removeOnMove();
-    }
-  }
-  if( remove ) {
-    cir.removeOnMove();
-  }
-}
-
-// Same as the paperjs' Numerical class,
-// added here because I can't access the original from this scope
-var Numerical = {
-  TOLERANCE : 10e-6
-};
-
-// paperjs' Curve._addIntersections modified to return just intersection Point with a
-// unique id.
-paper.Curve._addIntersections =  function(v1, v2, curve, locations) {
-  var bounds1 = Curve.getBounds(v1),
-  bounds2 = Curve.getBounds(v2);
-  if (bounds1.touches(bounds2)) {
-      // See if both curves are flat enough to be treated as lines.
-      if (Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
-        && Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
-        // See if the parametric equations of the lines interesct.
-      var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
-      .intersect(new Line(v2[0], v2[1], v2[6], v2[7], false),
-              // Filter out beginnings of the curves, to avoid
-              // duplicate solutions where curves join.
-              true, false);
-      if (point){
-          // Passing null for parameter leads to lazy determination of
-          // parameter values in CurveLocation#getParameter() only
-          // once they are requested.
-          var cl = new CurveLocation(curve, null, point);
-          cl.id = UNIQUE_ID++;
-          locations.push( cl );
-        }
-      } else {
-        // Subdivide both curves, and see if they intersect.
-        var v1s = Curve.subdivide(v1),
-        v2s = Curve.subdivide(v2);
-        for (var i = 0; i < 2; i++)
-          for (var j = 0; j < 2; j++)
-            this._addIntersections(v1s[i], v2s[j], curve, locations);
-        }
-      }
-      return locations;
-    };

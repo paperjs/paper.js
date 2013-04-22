@@ -155,7 +155,8 @@ function runTests() {
   pathB = new Path();
   testBooleanStatic( pathA, pathB, caption, false, true, true, true );
 
-  // window.p = pathA;
+  window.a = pathA;
+  window.b = pathB;
 
 
   function prepareTest( testName, parentNode ){
@@ -226,7 +227,6 @@ function testBooleanStatic( path1, path2, caption, noUnion, noIntersection, noSu
       if( _disperse ){ disperse( boolPathS ); }
       boolPathS.style = booleanStyle;
     }
-
   } catch( e ){
     console.error( e.name + ": " + e.message );
     if( caption ) { caption.className += ' error'; }
