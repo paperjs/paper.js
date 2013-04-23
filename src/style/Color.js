@@ -443,48 +443,61 @@ var Color = this.Color = Base.extend(new function() {
 				read = 0,
 				type,
 				components,
-				alpha;
+				alpha,
+				values;
+			// If first argument is an array, replace arguments with it.
 			if (Array.isArray(arg)) {
 				args = arg;
 				arg = args[0];
 			}
-			// Try type arg first
-			if (typeof arg === 'string' && arg in types) {
+			// First see if it's a type string argument, and if so, set it and
+			// shift it out of the arguments list.
+			var argType = arg != null && typeof arg;
+			if (argType === 'string' && arg in types) {
 				type = arg;
-				if (this._read)
-					read = 1; // will be increased below
-				// Shift type out of the arguments list, and process normally.
-				args = slice.call(args, 1);
-				arg = args[0];
+				arg = args[1];
+				if (Array.isArray(arg)) {
+					// Internal constructor that is called with the following
+					// arguments, without parsing: (type, componets, alpha)
+					components = arg;
+					alpha = args[2];
+				} else {
+					// For deserialization, shift out and process normally.
+					if (this._read)
+						read = 1; // Will be increased below
+					// Shift type out of the arguments, and process normally.
+					args = slice.call(args, 1);
+					argType = typeof arg;
+				}
 			}
-			var argType = arg != null && typeof arg,
+			if (!components) {
+				// Determine if there is a values array
 				values = argType === 'number'
-					? args
-					// Do not use Array.isArray() to also support arguments list
-					: argType === 'object' && arg.length != null
-						? arg
-						: null;
-			// The various branches below produces a values array if the values
-			// still need parsing, and a components array if they are already
-			// parsed.
-			if (values) {
-				if (!type)
-					// type = values.length >= 4
-					// 		? 'cmyk'
-					// 		: values.length >= 3
-					type = values.length >= 3
-							? 'rgb'
-							: 'gray';
-				var length = types[type].length;
-				alpha = values[length];
-				if (this._read)
-					read += values === arguments
-						? length + (alpha != null ? 1 : 0)
-						: 1;
-				if (values.length > length)
-					values = slice.call(values, 0, length);
-			} else {
-				if (argType === 'string') {
+						? args
+						// Do not use Array.isArray() to also support arguments
+						: argType === 'object' && arg.length != null
+							? arg
+							: null;
+				// The various branches below produces a values array if the
+				// values still need parsing, and a components array if they are
+				// already parsed.
+				if (values) {
+					if (!type)
+						// type = values.length >= 4
+						// 		? 'cmyk'
+						// 		: values.length >= 3
+						type = values.length >= 3
+								? 'rgb'
+								: 'gray';
+					var length = types[type].length;
+					alpha = values[length];
+					if (this._read)
+						read += values === arguments
+							? length + (alpha != null ? 1 : 0)
+							: 1;
+					if (values.length > length)
+						values = slice.call(values, 0, length);
+				} else if (argType === 'string') {
 					components = arg.match(/^#[0-9a-f]{3,6}$/i)
 							? hexToRgb(arg)
 							: nameToRgb(arg);
@@ -494,6 +507,15 @@ var Color = this.Color = Base.extend(new function() {
 						type = arg._type;
 						components = arg._components.slice();
 						alpha = arg._alpha;
+						if (type === 'gradient') {
+							// Clone all points, since they belong to the other
+							// color already.
+							for (var i = 1, l = components.length; i < l; i++) {
+								var point = components[i];
+								if (point)
+									components[i] = point.clone();
+							}
+						}
 					} else if (arg._class === 'Gradient') {
 						type = 'gradient';
 						values = args;
@@ -540,7 +562,9 @@ var Color = this.Color = Base.extend(new function() {
 			if (type === 'gradient')
 				this._id = ++Base._uid;
 			if (!components) {
-				// Produce a components array now, and parse values
+				// Produce a components array now, and parse values. Even if no
+				// values are defined, parsers are still called to produce
+				// defaults.
 				this._components = components = [];
 				var parse = parsers[this._type];
 				for (var i = 0, l = parse.length; i < l; i++) {
@@ -577,8 +601,7 @@ var Color = this.Color = Base.extend(new function() {
 		 * @return {Color} a copy of the color object
 		 */
 		clone: function() {
-			return Color.create(this._type, this._components.slice(),
-					this._alpha);
+			return new Color(this._type, this._components.slice(), this._alpha);
 		},
 
 		/**
@@ -597,7 +620,7 @@ var Color = this.Color = Base.extend(new function() {
 		},
 
 		convert: function(type) {
-			return Color.create(type, this._convert(type), this._alpha);
+			return new Color(type, this._convert(type), this._alpha);
 		},
 
 		/**
@@ -996,24 +1019,6 @@ var Color = this.Color = Base.extend(new function() {
 		statics: /** @lends Color */{
 			// Export for backward compatibility code below.
 			_types: types,
-
-			create: function(type, components, alpha) {
-				var color = Base.create(Color);
-				color._type = type;
-				color._components = components;
-				color._alpha = alpha;
-				if (type === 'gradient') {
-					// Make sure gradients always have an id
-					color._id = ++Base._uid;
-					// Clone all points:
-					for (var i = 1, l = components.length; i < l; i++) {
-						var point = components[i];
-						if (point)
-							components[i] = point.clone();
-					}
-				}
-				return color;
-			},
 
 			random: function() {
 				var random = Math.random;

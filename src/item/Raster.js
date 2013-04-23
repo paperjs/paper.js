@@ -449,7 +449,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 			components = [0, 0, 0, 0];
 		for (var i = 0; i < 4; i++)
 			components[i] = pixels[i] / 255;
-		return Color.create('rgb', components);
+		return new Color('rgb', components);
 	},
 
 	/**
