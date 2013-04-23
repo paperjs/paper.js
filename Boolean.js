@@ -364,10 +364,9 @@
         for (k = 0, l=loc.length; k<l; k++) {
           // markPoint( loc[k].point, loc[k].point.toString(), '#a00' );
           // TODO: change this to loc[k]._id and loc2._id when CurveLocation has an id property
-          loc[k].id = UNIQUE_ID++;
           graph[i].intersections.push( loc[k] );
           var loc2 = new CurveLocation( c2, null, loc[k].point );
-          loc2.id = loc[k].id;
+          loc2._id = loc[k]._id;
           graph[j].intersections.push( loc2 );
           ++ixCount;
         }
@@ -401,7 +400,7 @@
           // there is no need to split the link
           nuNode = ( param === 0.0 )? lnk.nodeIn : lnk.nodeOut;
           nuNode.type = INTERSECTION_NODE;
-          nuNode._intersectionID = ix[j].id;
+          nuNode._intersectionID = ix[j]._id;
           if( param === 1.0 ){
             leftLink = null;
             rightLink = lnk;
@@ -424,7 +423,7 @@
           }
           nuNode = new Node( ixPoint, ixHandleIn, ixHandleOut, lnk.id, lnk.isBaseContour );
           nuNode.type = INTERSECTION_NODE;
-          nuNode._intersectionID = ix[j].id;
+          nuNode._intersectionID = ix[j]._id;
           // clear the cached Segment on original end nodes and Update their handles
           lnk.nodeIn._segment = null;
           if( !isLinear ){
