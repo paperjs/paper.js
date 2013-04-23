@@ -73,6 +73,9 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 		if (this._parent)
 			return this.base(notify);
 		if (this._index != null) {
+			if (this._project.activeLayer === this)
+				this._project.activeLayer = this.getNextSibling()
+						|| this.getPreviousSibling();
 			Base.splice(this._project.layers, null, this._index, 1);
 			// Tell project we need a redraw. This is similar to _changed()
 			// mechanism.

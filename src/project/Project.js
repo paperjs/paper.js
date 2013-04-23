@@ -85,6 +85,14 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @function
 	 */
 
+	// DOCS: Project#clear()
+
+	clear: function() {
+		for (var i = 0; i < this.layers.length; i++)
+			this.layers[i].remove();
+		this.symbols = [];
+	},
+
 	/**
 	 * Removes this project from the {@link PaperScope#projects} list, and also
 	 * removes its view, if one was defined.
