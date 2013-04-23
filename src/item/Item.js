@@ -57,8 +57,14 @@ var Item = this.Item = Base.extend(Callback, {
 		this._id = Item._id = (Item._id || 0) + 1;
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
-		if (!this._project)
-			paper.project.activeLayer.addChild(this);
+		if (!this._project) {
+			var project = paper.project,
+				layer = project.activeLayer;
+			if (layer)
+				layer.addChild(this);
+			else
+				this._setProject(project);
+		}
 		this._style = new Style(this._project._currentStyle);
 		this._style._item = this;
 		this._matrix = new Matrix();
