@@ -16,7 +16,7 @@ function testExportImportJson(project) {
 	// Use higher precision than in comparissons, for bounds
 	var json = project.exportJson({ precision: 8 });
 	var project2 = new Project();
-	project2.activeLayer.remove();
+	project2.clear();
 	project2.importJson(json);
 	compareProjects(project2, project);
 }

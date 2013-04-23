@@ -57,7 +57,7 @@ test('Item Order', function() {
 test('Item#moveAbove(item) / Item#moveBelow(item)', function() {
 	var item0, item1, item2;
 	var testMove = function(command, indexes) {
-		paper.project.activeLayer.remove();
+		paper.project.clear();
 		new Layer();
 		item0 = new Group();
 		item1 = new Group();
