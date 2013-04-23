@@ -65,7 +65,7 @@ test('Creating Colors', function() {
 			new Color(1, 0, 0).convert('hsb'), 'Color from hsb object literal');
 
 	compareColors(new Color([1, 0, 0]), new Color(1, 0, 0),
-			'Rgb Color from array');
+			'RGB Color from array');
 
 	compareColors(new Color([1]), new Color(1),
 			'Gray Color from array');

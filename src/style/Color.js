@@ -54,7 +54,7 @@ var Color = this.Color = Base.extend(new function() {
 		colorCache = {},
 		colorCtx;
 
-	function nameToRgb(name) {
+	function nameToRGB(name) {
 		var cached = colorCache[name];
 		if (!cached) {
 			// Use a canvas to draw to with the given name and then retrieve rgb
@@ -81,7 +81,7 @@ var Color = this.Color = Base.extend(new function() {
 		return cached.slice();
 	}
 
-	function hexToRgb(string) {
+	function hexToRGB(string) {
 		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
 		if (hex.length >= 4) {
 			var components = [0, 0, 0];
@@ -499,8 +499,8 @@ var Color = this.Color = Base.extend(new function() {
 						values = slice.call(values, 0, length);
 				} else if (argType === 'string') {
 					components = arg.match(/^#[0-9a-f]{3,6}$/i)
-							? hexToRgb(arg)
-							: nameToRgb(arg);
+							? hexToRGB(arg)
+							: nameToRGB(arg);
 					type = 'rgb';
 				} else if (argType === 'object') {
 					if (arg._class === 'Color') {
@@ -1028,10 +1028,10 @@ var Color = this.Color = Base.extend(new function() {
 	});
 });
 
-// Expose RgbColor, RGBColor, etc. constructors for backward compatibility.
+// Expose Color.RGB, etc. constructors, as well as RgbColor, RGBColor, etc.for
+// backward compatibility.
 Base.each(Color._types, function(properties, type) {
-	var ctor = this[Base.capitalize(type) + 'Color'] =
-		function(arg) {
+	var ctor = this[Base.capitalize(type) + 'Color'] = function(arg) {
 			var argType = arg != null && typeof arg,
 				components = argType === 'object' && arg.length != null
 					? arg
@@ -1042,6 +1042,8 @@ Base.each(Color._types, function(properties, type) {
 					? new Color(type, components)
 					: new Color(arg);
 		};
-	if (type.length == 3)
-		this[type.toUpperCase() + 'Color'] = ctor;
+	if (type.length == 3) {
+		var acronym = type.toUpperCase();
+		Color[acronym] = this[acronym + 'Color'] = ctor;
+	}
 }, this);
