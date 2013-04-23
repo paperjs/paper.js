@@ -37,6 +37,8 @@ var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# *
 	 * @param {Point} point
 	 */
 	initialize: function(curve, parameter, point, distance) {
+		// Define this CurveLocation's unique id.
+		this._id = CurveLocation._id = (CurveLocation._id || 0) + 1;
 		this._curve = curve;
 		// Also store references to segment1 and segment2, in case path
 		// splitting / dividing is going to happen, in which case the segments
