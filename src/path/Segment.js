@@ -115,9 +115,9 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 			createPoint = SegmentPoint.create,
 			point, handleIn, handleOut;
 		// TODO: Use Point.read or Point.readNamed to read these?
-		if (count == 0) {
+		if (count === 0) {
 			// Nothing
-		} else if (count == 1) {
+		} else if (count === 1) {
 			// Note: This copies from existing segments through bean getters
 			if (arg0.point) {
 				point = arg0.point;
@@ -136,7 +136,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 				handleIn = arg1;
 				handleOut = arg2;
 			}
-		} else if (count == 6) {
+		} else if (count === 6) {
 			point = [ arg0, arg1 ];
 			handleIn = [ arg2, arg3 ];
 			handleOut = [ arg4, arg5 ];
@@ -147,8 +147,8 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	},
 
 	_serialize: function(options) {
-		return Base.serialize(this._handleIn.isZero() && this._handleOut.isZero()
-				? this._point
+		// If the Segment is linear, only serialize point, otherwise handles too
+		return Base.serialize(this.isLinear() ? this._point
 				: [this._point, this._handleIn, this._handleOut], options, true);
 	},
 
