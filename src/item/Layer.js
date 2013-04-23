@@ -93,7 +93,7 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	},
 
 	isInserted: function() {
-		return this._index != null;
+		return this._parent ? this.base() : this._index != null;
 	},
 
 	/**
