@@ -2342,7 +2342,7 @@ var Item = this.Item = Base.extend(Callback, {
 
 	// DOCS: document exportJSON (documented in @private Base)
 	// DOCS: document importJSON
-	// DOCS: Figure out a way to group these together with importSvg / exportSvg
+	// DOCS: Figure out a way to group these together with importSVG / exportSVG
 
 	importJSON: function(json) {
 		return this.addChild(Base.importJSON(json));

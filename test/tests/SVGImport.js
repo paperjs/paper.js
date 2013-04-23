@@ -10,11 +10,11 @@
  * All rights reserved.
  */
 
-module('SvgImport');
+module('SVGImport');
 
 test('Import complex CompoundPath and clone', function() {
-	var svg = createSvg('<path id="path" fill="red" d="M4,14h20v-2H4V14z M15,26h7v-2h-7V26z M15,22h9v-2h-9V22z M15,18h9v-2h-9V18z M4,26h9V16H4V26z M28,10V6H0v22c0,0,0,4,4,4 h25c0,0,3-0.062,3-4V10H28z M4,30c-2,0-2-2-2-2V8h24v20c0,0.921,0.284,1.558,0.676,2H4z"/>;');
-	var item = paper.project.importSvg(svg.getElementById('path'));
+	var svg = createSVG('<path id="path" fill="red" d="M4,14h20v-2H4V14z M15,26h7v-2h-7V26z M15,22h9v-2h-9V22z M15,18h9v-2h-9V18z M4,26h9V16H4V26z M28,10V6H0v22c0,0,0,4,4,4 h25c0,0,3-0.062,3-4V10H28z M4,30c-2,0-2-2-2-2V8h24v20c0,0.921,0.284,1.558,0.676,2H4z"/>;');
+	var item = paper.project.importSVG(svg.getElementById('path'));
 	compareItems(item, item.clone(), true, true);
 });
 
@@ -30,7 +30,7 @@ test('make an svg line', function() {
 	shape.setAttribute('x2', x2);
 	shape.setAttribute('y2', y2);
 
-	var importedLine = paper.project.importSvg(shape);
+	var importedLine = paper.project.importSVG(shape);
 
 	var line = new Path.Line([x1, y1], [x2, y2]);
 
@@ -45,7 +45,7 @@ test('make an svg line with invalid values', function() {
 	shape.setAttribute('x2', null);
 	shape.setAttribute('y2', null);
 
-	var importedLine = paper.project.importSvg(shape);
+	var importedLine = paper.project.importSVG(shape);
 
 	var line = new Path.Line([0, 0], [0, 0]);
 
@@ -64,7 +64,7 @@ test('compare rectangle values', function() {
 	shape.setAttribute('width', width);
 	shape.setAttribute('height', height);
 
-	var importedRectangle = paper.project.importSvg(shape);
+	var importedRectangle = paper.project.importSVG(shape);
 
 	var topLeft = new Point(x, y);
 	var size = new Size(width, height);
@@ -87,7 +87,7 @@ test('compare negative rectangle values', function() {
 	shape.setAttribute('width', width);
 	shape.setAttribute('height', height);
 
-	var importedRectangle = paper.project.importSvg(shape);
+	var importedRectangle = paper.project.importSVG(shape);
 		var topLeft = new Point(x, y);
 		var size = new Size(width, height);
 		var rectangle = new Rectangle(topLeft, size);
@@ -106,7 +106,7 @@ test('compare invalid rectangle values', function() {
 	shape.setAttribute('width', null);
 	shape.setAttribute('height', null);
 
-	var importedRectangle = paper.project.importSvg(shape);
+	var importedRectangle = paper.project.importSVG(shape);
 	
 	var topLeft = new Point(0, 0);
 	var size = new Size(0, 0);
@@ -132,7 +132,7 @@ test('compare round rectangle values', function() {
 	shape.setAttribute('width', width);
 	shape.setAttribute('height', height);
 
-	var importedRectangle = paper.project.importSvg(shape);
+	var importedRectangle = paper.project.importSVG(shape);
 
 	var topLeft = new Point(x, y);
 	var size = new Size(width, height);
@@ -159,7 +159,7 @@ test('compare negative round rectangle values', function() {
 	shape.setAttribute('width', width);
 	shape.setAttribute('height', height);
 
-	var importedRectangle = paper.project.importSvg(shape);
+	var importedRectangle = paper.project.importSVG(shape);
 
 	var topLeft = new Point(x, y);
 	var size = new Size(width, height);
@@ -186,7 +186,7 @@ test('compare invalid round rectangle values', function() {
 	shape.setAttribute('width', width);
 	shape.setAttribute('height', height);
 
-	var importedRectangle = paper.project.importSvg(shape);
+	var importedRectangle = paper.project.importSVG(shape);
 
 	var topLeft = new Point(x, y);
 	var size = new Size(width, height);
@@ -209,7 +209,7 @@ test('compare ellipse values', function() {
 	shape.setAttribute('rx', rx);
 	shape.setAttribute('ry', ry);
 
-	var importedEllipse = paper.project.importSvg(shape);
+	var importedEllipse = paper.project.importSVG(shape);
 
 	var center = new Point(cx, cy);
 	var offset = new Point(rx, ry);
@@ -234,7 +234,7 @@ test('compare negative ellipse values', function() {
 	shape.setAttribute('rx', rx);
 	shape.setAttribute('ry', ry);
 
-	var importedEllipse = paper.project.importSvg(shape);
+	var importedEllipse = paper.project.importSVG(shape);
 
 	var center = new Point(cx, cy);
 	var offset = new Point(rx, ry);
@@ -255,7 +255,7 @@ test('compare invalid ellipse values', function() {
 	shape.setAttribute('rx', null);
 	shape.setAttribute('ry', null);
 
-	var importedEllipse = paper.project.importSvg(shape);
+	var importedEllipse = paper.project.importSVG(shape);
 
 	var center = new Point(0, 0);
 	var offset = new Point(0, 0);
@@ -278,7 +278,7 @@ test('compare circle values', function() {
 	shape.setAttribute('cy', cy);
 	shape.setAttribute('r', r);
 
-	var importedCircle = paper.project.importSvg(shape);
+	var importedCircle = paper.project.importSVG(shape);
 
 	var center = new Point(cx, cy);
 	var circle = new Path.Circle(center, r);
@@ -296,7 +296,7 @@ test('compare negative circle values', function() {
 	shape.setAttribute('cy', cy);
 	shape.setAttribute('r', r);
 
-	var importedCircle = paper.project.importSvg(shape);
+	var importedCircle = paper.project.importSVG(shape);
 
 	var center = new Point(cx, cy);
 	var circle = new Path.Circle(center, r);
@@ -312,7 +312,7 @@ test('compare invalid circle values', function() {
 	shape.setAttribute('cy', null);
 	shape.setAttribute('r', null);
 
-	var importedCircle = paper.project.importSvg(shape);
+	var importedCircle = paper.project.importSVG(shape);
 
 	var center = new Point(0, 0);
 	var circle = new Path.Circle(center, 0);
@@ -327,7 +327,7 @@ test('compare polygon values', function() {
 	var svgpoints = "100,10 40,180 190,60 10,60 160,180";
 	shape.setAttribute('points', svgpoints);
 
-	var importedPolygon = paper.project.importSvg(shape);
+	var importedPolygon = paper.project.importSVG(shape);
 
 	var poly = new Path();
 	var points = shape.points;
@@ -348,7 +348,7 @@ test('compare negative polygon values', function() {
 	var svgpoints = "-100,-10 -40,-180 -190,-60 -10,-60 -160,-180";
 	shape.setAttribute('points', svgpoints);
 
-	var importedPolygon = paper.project.importSvg(shape);
+	var importedPolygon = paper.project.importSVG(shape);
 
 	var poly = new Path();
 	var points = shape.points;
@@ -369,7 +369,7 @@ test('compare polyline values', function() {
 	var svgpoints = "5,5 45,45 5,45 45,5";
 	shape.setAttribute('points', svgpoints);
 
-	var importedPolyline = paper.project.importSvg(shape);
+	var importedPolyline = paper.project.importSVG(shape);
 
 	var poly = new Path();
 	var points = shape.points;
@@ -390,7 +390,7 @@ test('compare negative polyline values', function() {
 	var svgpoints = "-5,-5 -45,-45 -5,-45 -45,-5";
 	shape.setAttribute('points', svgpoints);
 
-	var importedPolyline = paper.project.importSvg(shape);
+	var importedPolyline = paper.project.importSVG(shape);
 
 	var poly = new Path();
 	var points = shape.points;

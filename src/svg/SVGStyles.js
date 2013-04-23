@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var SvgStyles = Base.each({
+var SVGStyles = Base.each({
 	fillColor: ['fill', 'color'],
 	strokeColor: ['stroke', 'color'],
 	strokeWidth: ['stroke-width', 'number'],

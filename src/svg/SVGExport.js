@@ -173,7 +173,7 @@ new function() {
 		attrs.fill = 'none';
 		var node = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
-			var child = exportSvg(children[i]);
+			var child = exportSVG(children[i]);
 			if (child)
 				node.appendChild(child);
 		}
@@ -321,7 +321,7 @@ new function() {
 			symbolNode = createElement('symbol', {
 				viewBox: formatter.rectangle(bounds)
 			});
-			symbolNode.appendChild(exportSvg(definition));
+			symbolNode.appendChild(exportSVG(definition));
 			setDefinition(symbol, symbolNode);
 		}
 		attrs.href = '#' + symbolNode.id;
@@ -337,7 +337,7 @@ new function() {
 		// we need to create a separate gradient object for each gradient,
 		// even when they share the same gradient defintion.
 		// http://www.svgopen.org/2011/papers/20-Separating_gradients_from_geometry/
-		// TODO: Implement gradient merging in SvgImport
+		// TODO: Implement gradient merging in SVGImport
 		var gradientNode = getDefinition(color);
 		if (!gradientNode) {
 			var gradient = color.getGradient(),
@@ -408,7 +408,7 @@ new function() {
 		if (item._name != null)
 			attrs.id = item._name;
 
-		Base.each(SvgStyles, function(entry) {
+		Base.each(SVGStyles, function(entry) {
 			// Get a given style only if it differs from the value on the parent
 			// (A layer or group which can have style values in SVG).
 			var value = style[entry.get]();
@@ -464,7 +464,7 @@ new function() {
 			return node;
 		// We can only use node nodes as defintion containers. Have the loop
 		// produce one if it's a single item of another type (when calling
-		// #exportSvg() on an item rather than a whole project)
+		// #exportSVG() on an item rather than a whole project)
 		var container = node.nodeName == 'svg' && node,
 			firstChild = container ? container.firstChild : node;
 		for (var i in definitions.svgs) {
@@ -479,7 +479,7 @@ new function() {
 		return container;
 	}
 
-	function exportSvg(item) {
+	function exportSVG(item) {
 		var exporter = exporters[item._type],
 			node = exporter && exporter(item, item._type);
 		if (node && item._data)
@@ -496,8 +496,8 @@ new function() {
 		 *
 		 * @return {SVGSVGElement} the item converted to an SVG node
 		 */
-		exportSvg: function() {
-			var node = exportSvg(this);
+		exportSVG: function() {
+			var node = exportSVG(this);
 			return exportDefinitions(node);
 		}
 	});
@@ -511,11 +511,11 @@ new function() {
 		 *
 		 * @return {SVGSVGElement} the project converted to an SVG node
 		 */
-		exportSvg: function() {
+		exportSVG: function() {
 			var node = createElement('svg'),
 				layers = this.layers;
 			for (var i = 0, l = layers.length; i < l; i++)
-				node.appendChild(exportSvg(layers[i]));
+				node.appendChild(exportSVG(layers[i]));
 			return exportDefinitions(node);
 		}
 	});

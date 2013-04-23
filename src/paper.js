@@ -117,9 +117,9 @@ var paper = new function() {
 /*#*/ } // options.browser
 
 /*#*/ if (options.svg) {
-/*#*/ include('svg/SvgStyles.js');
-/*#*/ include('svg/SvgExport.js');
-/*#*/ include('svg/SvgImport.js');
+/*#*/ include('svg/SVGStyles.js');
+/*#*/ include('svg/SVGExport.js');
+/*#*/ include('svg/SVGImport.js');
 /*#*/ } // options.svg
 
 /*#*/ include('core/PaperScript.js');

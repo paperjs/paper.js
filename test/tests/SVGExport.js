@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('SvgExport');
+module('SVGExport');
 
 test('compare line path functions', function() {
 	var svgns = 'http://www.w3.org/2000/svg';
@@ -26,7 +26,7 @@ test('compare line path functions', function() {
 
 	var line = new Path.Line([x1, y1], [x2, y2]);
 
-	var exportedLine = line.exportSvg();
+	var exportedLine = line.exportSVG();
 
 	var shapex1 = shape.getAttribute('x1');
 	var shapey1 = shape.getAttribute('y1');
@@ -59,7 +59,7 @@ test('compare negative line path functions', function() {
 
 	var line = new Path.Line([x1, y1], [x2, y2]);
 
-	var exportedLine = line.exportSvg();
+	var exportedLine = line.exportSVG();
 
 	var shapex1 = shape.getAttribute('x1');
 	var shapey1 = shape.getAttribute('y1');
@@ -92,7 +92,7 @@ test('compare invalid line path functions', function() {
 	
 	var line = new Path.Line([x1, y1], [x2, y2]);
 
-	var exportedLine = line.exportSvg();
+	var exportedLine = line.exportSVG();
 
 	var shapex1 = shape.getAttribute('x1');
 	var shapey1 = shape.getAttribute('y1');
@@ -127,7 +127,7 @@ test('compare invalid line path functions', function() {
 	var size = new Size(100, 100);
 	var path = new Path.Rectangle(point, size);
 	
-	var exportedRectangle = path.exportSvg();
+	var exportedRectangle = path.exportSVG();
 
 	var shapex1 = shape.getAttribute('x');
 	var shapey1 = shape.getAttribute('y1');
@@ -162,7 +162,7 @@ test('compare negative rectangle values', function() {
 	var size = new Size(width, height);
 	var rect = new Rectangle(topLeft, size);
 
-	var exportedRectangle = rect.exportSvg();
+	var exportedRectangle = rect.exportSVG();
 
 	var shapex = shape.getAttribute('x');
 	var shapey = shape.getAttribute('y');
@@ -196,7 +196,7 @@ test('compare invalid rectangle values', function() {
 	var size = new Size(width, height);
 	var rect = new Rectangle(topLeft, size);
 
-	var exportedRectangle = rect.exportSvg();
+	var exportedRectangle = rect.exportSVG();
 
 	var shapex = shape.getAttribute('x');
 	var shapey = shape.getAttribute('y');
@@ -236,7 +236,7 @@ test('compare rounded rectangle values', function() {
 	var rect = new Rectangle(topLeft, size);
 	var roundRect = new Path.Rectangle(rect, cornerSize);
 
-	var exportedRectangle = rect.exportSvg();
+	var exportedRectangle = rect.exportSVG();
 
 	var shapex = shape.getAttribute('x');
 	var shapey = shape.getAttribute('y');
@@ -280,7 +280,7 @@ test('compare negative rounded rectangle values', function() {
 	var rect = new Rectangle(topLeft, size);
 	var roundRect = new Path.Rectangle(rect, cornerSize);
 
-	var exportedRectangle = rect.exportSvg();
+	var exportedRectangle = rect.exportSVG();
 
 	var shapex = shape.getAttribute('x');
 	var shapey = shape.getAttribute('y');
@@ -324,7 +324,7 @@ test('compare invalid rounded rectangle values', function() {
 	var rect = new Rectangle(topLeft, size);
 	var roundRect = new Path.Rectangle(rect, cornerSize);
 
-	var exportedRectangle = rect.exportSvg();
+	var exportedRectangle = rect.exportSVG();
 
 	var shapex = shape.getAttribute('x');
 	var shapey = shape.getAttribute('y');
@@ -366,7 +366,7 @@ test('compare ellipse values', function() {
 	var rect = new Rectangle(topLeft, bottomRight);
 	var ellipse = new Path.Ellipse(rect);
 
-	var exportedEllipse = ellipse.exportSvg();
+	var exportedEllipse = ellipse.exportSVG();
 
 	var shapecx = shape.getAttribute('cx');
 	var shapecy = shape.getAttribute('cy');
@@ -398,7 +398,7 @@ test('compare circle values', function() {
 	var center = new Point(cx, cy);
 	var circle = new Path.Circle(center, r);
 
-	var exportedCircle = circle.exportSvg();
+	var exportedCircle = circle.exportSVG();
 
 	var shapecx = shape.getAttribute('cx');
 	var shapecy = shape.getAttribute('cy');
@@ -434,7 +434,7 @@ test('compare polygon values', function() {
 		poly.closePath();
 	}
 
-	var exportedPolygon = poly.exportSvg();
+	var exportedPolygon = poly.exportSVG();
 
 	var svgPoints = shape.getAttribute('points');
 
@@ -464,7 +464,7 @@ test('compare negative polygon values', function() {
 		poly.closePath();
 	}
 
-	var exportedPolygon = poly.exportSvg();
+	var exportedPolygon = poly.exportSVG();
 
 	var svgPoints = shape.getAttribute('points');
 
@@ -494,7 +494,7 @@ test('compare polyline values', function() {
 		poly.closePath();
 	}
 
-	var exportedPolygon = poly.exportSvg();
+	var exportedPolygon = poly.exportSVG();
 
 	var svgPoints = shape.getAttribute('points');
 
@@ -524,7 +524,7 @@ test('compare negative polyline values', function() {
 		poly.closePath();
 	}
 
-	var exportedPolygon = poly.exportSvg();
+	var exportedPolygon = poly.exportSVG();
 
 	var svgPoints = shape.getAttribute('points');
 

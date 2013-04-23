@@ -44,6 +44,6 @@
 
 /*#*/ include('HitResult.js');
 
-/*#*/ include('SvgImport.js');
-/*#*/ include('SvgExport.js');
+/*#*/ include('SVGImport.js');
+/*#*/ include('SVGExport.js');
 /*#*/ include('JSON.js');
