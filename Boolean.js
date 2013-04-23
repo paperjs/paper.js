@@ -15,9 +15,10 @@
  *  - Boolean Union
  *  - Boolean Intersection
  *  - Boolean Subtraction
+ *  - Resolving a self-intersecting Path
  *
  * Not supported yet ( which I would like to see supported )
- *  - Self-intersecting Paths
+ *  - Boolean operations on self-intersecting Paths, these has to be resolved first
  *  - Paths are clones of each other that ovelap exactly on top of each other!
  *
  * ------
@@ -334,6 +335,8 @@
     graph = graph.concat( makeGraph( path2, 2, true ) );
   }
 
+  window.g = graph;
+
   // console.log( path1Clockwise, path2Clockwise );
 
   // Sort function to sort intersections according to the 'parameter'(t) in a link (curve)
@@ -342,10 +345,6 @@
   /*
    * Pass 1:
    * Calculate the intersections for all graphs
-   * TODO: test if this takes are of self intersecting paths - NO
-   *    And since it doesn't take self-intersecting curves, we need to only calculate
-   *    intersections if the "id" of the links differ.
-   * The rest of the algorithm can easily be modified to resolve self-intersections
    */
    var ixCount = 0;
    for ( i = graph.length - 1; i >= 0; i--) {
@@ -356,13 +355,18 @@
       var c2 = graph[j].getCurve();
       var v2 = c2.getValues();
       var loc = [];
-      Curve._addIntersections( v1, v2, c1, loc );
+      if( c1.isLinear() && c2.isLinear() ){
+        _addLineIntersections( v1, v2, c1, loc );
+      } else {
+        Curve._addIntersections( v1, v2, c1, loc );
+      }
       if( loc.length ){
         for (k = 0, l=loc.length; k<l; k++) {
+          // markPoint( loc[k].point, loc[k].point.toString(), '#a00' );
+          // TODO: change this to loc[k]._id and loc2._id when CurveLocation has an id property
           loc[k].id = UNIQUE_ID++;
           graph[i].intersections.push( loc[k] );
           var loc2 = new CurveLocation( c2, null, loc[k].point );
-          // TODO: change this to loc2._id when CurveLocation has an id property
           loc2.id = loc[k].id;
           graph[j].intersections.push( loc2 );
           ++ixCount;
@@ -450,6 +454,54 @@
     }
   }
 
+//   var EPSILON = 10e-12;
+
+//   for ( i = graph.length - 1; i >= 0; i--) {
+//     var lnk1 = graph[i];
+//     var lnk1nodeIn = lnk1.nodeIn, lnk1nodeOut = lnk1.nodeOut;
+//     if( graph[i].nodeIn.type !== INTERSECTION_NODE && graph[i].nodeOut.type !== INTERSECTION_NODE ) { continue; }
+//     annotateCurve( graph[i].getCurve(), "" )
+//     for ( j = i -1; j >= 0; j-- ) {
+//       if( graph[j].nodeIn.type !== INTERSECTION_NODE && graph[j].nodeOut.type !== INTERSECTION_NODE ) { continue; }
+//       var lnk2 = graph[j];
+//       var lnk2nodeIn = lnk2.nodeIn, lnk2nodeOut = lnk2.nodeOut;
+
+
+//       var he1 = false, he2 = false, he3 = false, he4 = false;
+//       if( lnk1nodeIn.handleOut ){ he1 = lnk1nodeIn.handleOut.isClose(lnk2nodeIn.handleOut, EPSILON); }
+//       if( lnk1nodeOut.handleIn ){ he2 = lnk1nodeOut.handleIn.isClose(lnk2nodeOut.handleIn, EPSILON); }
+//       if( lnk1nodeIn.handleOut ){ he3 = lnk1nodeIn.handleOut.isClose(lnk2nodeOut.handleIn, EPSILON); }
+//       if( lnk1nodeOut.handleIn ){ he4 = lnk1nodeOut.handleIn.isClose(lnk2nodeIn.handleOut, EPSILON); }
+//       var handleEq1 = ((lnk1nodeIn.handleOut && lnk1nodeIn.handleOut.isZero()) && (lnk2nodeIn.handleOut && lnk2nodeIn.handleOut.isZero()) || he1);
+//       var handleEq2 = ((lnk1nodeOut.handleIn && lnk1nodeOut.handleIn.isZero()) && (lnk2nodeOut.handleIn && lnk2nodeOut.handleIn.isZero()) || he2);
+//       var handleEq3 = ((lnk1nodeIn.handleOut && lnk1nodeIn.handleOut.isZero()) && (lnk2nodeOut.handleIn && lnk2nodeOut.handleIn.isZero()) || he3);
+//       var handleEq4 = ((lnk1nodeOut.handleIn && lnk1nodeOut.handleIn.isZero()) && (lnk2nodeIn.handleOut && lnk2nodeIn.handleOut.isZero()) || he4);
+
+//       if( i === 5 && j === 2 ){
+//         console.log( handleEq3, handleEq4, lnk1nodeIn.handleOut, lnk2nodeOut.handleIn, i, j )
+//       }
+
+//       if( (lnk1nodeIn.point.isClose(lnk2nodeIn.point, EPSILON) && lnk1nodeOut.point.isClose(lnk2nodeOut.point, EPSILON) &&
+//        handleEq1 && handleEq2 ) ||
+//         (lnk1nodeIn.point.isClose(lnk2nodeOut.point, EPSILON) && lnk1nodeOut.point.isClose(lnk2nodeIn.point, EPSILON) &&
+//          handleEq3 && handleEq4 ) ){
+
+//         annotateCurve( graph[i].getCurve(), "", '#f00' )
+//       annotateCurve( graph[j].getCurve(), "", '#f00' )
+
+//       if( operator === BooleanOps.Union ){
+//         graph[i].INVALID = true;
+//         graph[j].INVALID = true;
+//       } else if( operator === BooleanOps.Intersection ){
+//         graph[i].SKIP_OPERATOR = true;
+//         graph[j].SKIP_OPERATOR = true;
+//       } else if( operator === BooleanOps.Subtraction ){
+//         graph[i].SKIP_OPERATOR = true;
+//         graph[j].INVALID = true;
+//       }
+//     }
+//   }
+// }
 
   /**
    * Pass 3:
@@ -470,20 +522,25 @@
 
   // step 1: discard invalid links according to the boolean operator
   for ( i = graph.length - 1; i >= 0; i--) {
-    if( graph[i].SKIP_CHECK ) { continue; }
+    var insidePath1, insidePath2;
     lnk = graph[i];
-    crv = lnk.getCurve();
-    // var midPoint = new Point(lnk.nodeIn.point);
-    var midPoint = crv.getPoint( 0.5 );
-    var insidePath1 = (lnk.id === 1 )? false : path1.contains( midPoint );
-    var insidePath2 = (lnk.id === 2 )? false : path2.contains( midPoint );
-    if( !operator( lnk, insidePath1, insidePath2 ) ){
+    if( lnk.SKIP_OPERATOR ) { continue; }
+    if( !lnk.INVALID ) {
+      crv = lnk.getCurve();
+      // var midPoint = new Point(lnk.nodeIn.point);
+      var midPoint = crv.getPoint( 0.5 );
+      // FIXME: new contains function : http://jsfiddle.net/QawX8/
+      insidePath1 = (lnk.id === 1 )? false : path1.contains( midPoint );
+      insidePath2 = (lnk.id === 2 )? false : path2.contains( midPoint );
+    }
+    if( lnk.INVALID || !operator( lnk, insidePath1, insidePath2 ) ){
       // lnk = graph.splice( i, 1 )[0];
       lnk.INVALID = true;
       lnk.nodeIn.linkOut = null;
       lnk.nodeOut.linkIn = null;
     }
   }
+
 
   // step 2: Match nodes according to their _intersectionID and merge them together
   var len = graph.length;
@@ -556,7 +613,8 @@
       path.add( firstNode.getSegment( true ) );
       firstNode.visited = true;
       nextNode = firstNode.linkOut.nodeOut;
-      while( firstNode.uniqueID !== nextNode.uniqueID ){
+      var linkCount = graph.length + 1;
+      while( firstNode.uniqueID !== nextNode.uniqueID && linkCount-- ){
         path.add( nextNode.getSegment( true ) );
         nextNode.visited = true;
         if( !nextNode.linkOut ){
@@ -566,7 +624,7 @@
       }
       path.closed = true;
       // path.clockwise = true;
-      if( path.segments.length > 1 ){ // avoid stray segments
+      if( path.segments.length > 1 && linkCount > 0 ){ // avoid stray segments and incomplete paths
         boolResult.addChild( path );
       }
     }
@@ -579,3 +637,25 @@
 
   return boolResult;
 }
+
+
+var _addLineIntersections = function(v1, v2, curve, locations) {
+  var result, a1x, a2x, b1x, b2x, a1y, a2y, b1y, b2y;
+  a1x = v1[0]; a1y = v1[1];
+  a2x = v1[6]; a2y = v1[7];
+  b1x = v2[0]; b1y = v2[1];
+  b2x = v2[6]; b2y = v2[7];
+
+  var ua_t = (b2x - b1x) * (a1y - b1y) - (b2y - b1y) * (a1x - b1x);
+  var ub_t = (a2x - a1x) * (a1y - b1y) - (a2y - a1y) * (a1x - b1x);
+  var u_b  = (b2y - b1y) * (a2x - a1x) - (b2x - b1x) * (a2y - a1y);
+  if ( u_b !== 0 ) {
+    var ua = ua_t / u_b;
+    var ub = ub_t / u_b;
+
+    if ( 0 <= ua && ua <= 1 && 0 <= ub && ub <= 1 ) {
+      locations.push( new CurveLocation(curve, null, new Point(a1x + ua * (a2x - a1x), a1y + ua * (a2y - a1y))) );
+    }
+  }
+};
+

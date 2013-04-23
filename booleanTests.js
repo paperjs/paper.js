@@ -33,6 +33,14 @@ function runTests() {
   pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
   testBooleanStatic( pathA, pathB, caption );
 
+  caption = prepareTest( 'Rectangle and rectangle (overlaps exactly on existing curves)', container );
+  pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 150]);
+  pathB = new Path.Rectangle(new Point(150.5, 60.5), [100, 150]);
+  // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
+  window.a = pathA;
+  window.b = pathB;
+  testBooleanStatic( pathA, pathB, caption );
+
   caption = prepareTest( 'Circle and banana (multiple intersections within same curve segment)', container );
   pathA = new Path.Circle(new Point(80, 110), 80);
   pathB = new Path.Circle(new Point(130, 110), 80 );
