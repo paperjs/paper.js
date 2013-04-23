@@ -78,25 +78,25 @@ function runTests() {
   view.draw();
 
   caption = prepareTest( 'SVG gears', container );
-  group  = paper.project.importSvg( document.getElementById( 'svggears' ) );
+  group  = paper.project.importSVG( document.getElementById( 'svggears' ) );
   pathA = group.children[0];
   pathB = group.children[1];
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'Glyphs imported from SVG', container );
-  group  = paper.project.importSvg( document.getElementById( 'glyphsys' ) );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
   pathA = group.children[0];
   pathB = group.children[1];
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'CompoundPaths 1', container );
-  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
   pathA = group.children[0];
   pathB = group.children[1];
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'CompoundPaths 2 - holes', container );
-  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
   pathA = group.children[0];
   pathB = new CompoundPath();
   group.children[1].clockwise = true;
@@ -106,7 +106,7 @@ function runTests() {
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'CompoundPaths 3 !', container );
-  group  = paper.project.importSvg( document.getElementById( 'svggreenland' ) );
+  group  = paper.project.importSVG( document.getElementById( 'svggreenland' ) );
   pathA = group.children[0];
   pathB = group.children[1];
   pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
@@ -115,7 +115,7 @@ function runTests() {
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'CompoundPaths 4 - holes and islands 1', container );
-  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
   pathA = group.children[0];
   pathB = new CompoundPath();
   group.children[1].clockwise = true;
@@ -125,7 +125,7 @@ function runTests() {
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'CompoundPaths 5 - holes and islands 2', container );
-  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
   pathA = group.children[0];
   pathB = new CompoundPath();
   group.children[1].clockwise = true;
@@ -137,7 +137,7 @@ function runTests() {
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'CompoundPaths 6 - holes and islands 3', container );
-  group  = paper.project.importSvg( document.getElementById( 'glyphsacirc' ) );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
   pathA = group.children[0];
   pathB = new CompoundPath();
   var npath = new Path.Circle([110, 110], 100);
