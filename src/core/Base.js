@@ -82,11 +82,6 @@ this.Base = Base.inject(/** @lends Base# */{
 
 		_classes: {},
 
-		/**
-		 * A uniqued id number, which when consumed needs to be increased by one
-		 */
-		_uid: 0,
-
 		extend: function(src) {
 			// Override Base.extend() with a version that registers classes that
 			// define #_class inside the Base._classes lookup, for

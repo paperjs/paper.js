@@ -54,7 +54,7 @@ var Item = this.Item = Base.extend(Callback, {
 
 	initialize: function(point) {
 		// Define this Item's unique id.
-		this._id = ++Base._uid;
+		this._id = Item._id = (Item._id || 0) + 1;
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project)

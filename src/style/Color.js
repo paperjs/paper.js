@@ -560,7 +560,7 @@ var Color = this.Color = Base.extend(new function() {
 			this._type = type || 'rgb';
 			// Define this gradient Color's unique id.
 			if (type === 'gradient')
-				this._id = ++Base._uid;
+				this._id = Color._id = (Color._id || 0) + 1;
 			if (!components) {
 				// Produce a components array now, and parse values. Even if no
 				// values are defined, parsers are still called to produce
