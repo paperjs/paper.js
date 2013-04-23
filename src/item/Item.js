@@ -2340,12 +2340,12 @@ var Item = this.Item = Base.extend(Callback, {
 		this.setBounds(newBounds);
 	},
 
-	// DOCS: document exportJson (documented in @private Base)
-	// DOCS: document importJson
+	// DOCS: document exportJSON (documented in @private Base)
+	// DOCS: document importJSON
 	// DOCS: Figure out a way to group these together with importSvg / exportSvg
 
-	importJson: function(json) {
-		return this.addChild(Base.importJson(json));
+	importJSON: function(json) {
+		return this.addChild(Base.importJSON(json));
 	},
 
 	/**

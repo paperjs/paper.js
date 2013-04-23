@@ -12,12 +12,12 @@
 
 module('JSON');
 
-function testExportImportJson(project) {
+function testExportImportJSON(project) {
 	// Use higher precision than in comparissons, for bounds
-	var json = project.exportJson({ precision: 8 });
+	var json = project.exportJSON({ precision: 8 });
 	var project2 = new Project();
 	project2.clear();
-	project2.importJson(json);
+	project2.importJSON(json);
 	compareProjects(project2, project);
 }
 
@@ -27,7 +27,7 @@ test('Circles', function() {
 	var rectangle = new Rectangle(topLeft, size);
 	var path = new Path.Ellipse(rectangle);
 	path.fillColor = 'black';
-	console.log('JSON', path.exportJson());
+	console.log('JSON', path.exportJSON());
 	
 	var topLeft = new Point(5, 400);
 	var size = new Size(100, 50);
@@ -38,7 +38,7 @@ test('Circles', function() {
 	var path = new Path.Circle(new Point(50, 50), 25);
 	path.fillColor = 'red';
 
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('CompoundPath', function() {
@@ -48,12 +48,12 @@ test('CompoundPath', function() {
 	var path3 = new Path.Rectangle([0, 0], [400, 400]);
 	new CompoundPath(path1, path2, path3);
 
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('Empty Path', function() {
 	new Path();
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('Gradients', function() {
@@ -64,7 +64,7 @@ test('Gradients', function() {
 	var gradientColor = new Color(gradient, from, to);
 	path.fillColor = gradientColor;
 	path.strokeColor = 'black';
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('Group transform', function() {
@@ -76,7 +76,7 @@ test('Group transform', function() {
 	group.translate([100, 100]);
 	group.scale(0.5);
 	group.rotate(10);
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('Rectangle testing', function() {
@@ -114,7 +114,7 @@ test('Rectangle testing', function() {
 	var path4 = new Path.Rectangle(rectangle4, cornerSize4);
 	path4.strokeColor= 'yellow';
 	path4.fillColor='purple';
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('Symbols', function() {
@@ -129,7 +129,7 @@ test('Symbols', function() {
 	var p2 = symbol.place([300, 200]);
 	p2.rotate(-30);
 
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('PointText testing', function() {
@@ -145,7 +145,7 @@ test('PointText testing', function() {
 	text.rotate(45);
 	text.shear(0.85, 0.15);
 	text.scale(0.85, 2);
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('transform test 1', function() {
@@ -160,7 +160,7 @@ test('transform test 1', function() {
 		var clonedPath = circlePath.clone();
 		clonedPath.rotate(angle * i, circlePath.bounds.topLeft);
 	};
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('transform test 2', function() {
@@ -173,14 +173,14 @@ test('transform test 2', function() {
 	copy.strokeColor = 'red';
 	copy.rotate(-45);
 	copy.scale(0.5);
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('Item#name', function() {
 	var path = new Path({
 		name: 'dave'
 	});
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 
 test('Item#data', function() {
@@ -200,6 +200,6 @@ test('Item#data', function() {
 			}
 		}
 	};
-	testExportImportJson(paper.project);
+	testExportImportJSON(paper.project);
 });
 

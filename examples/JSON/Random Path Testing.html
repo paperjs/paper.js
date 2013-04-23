@@ -28,11 +28,11 @@
 		var path = new Path.Star(center, points, radius1, radius2);
 		path.fillColor = 'black';
 		
-		window._json = project.exportJson();
+		window._json = project.exportJSON();
 		console.log(window._json);
 	</script>
 	<script type="text/paperscript" canvas="canvas2">
-		project.importJson(window._json);
+		project.importJSON(window._json);
 	</script>
 </head>
 <body>

@@ -55,8 +55,8 @@ this.Base = Base.inject(/** @lends Base# */{
 	 *
 	 * @param {Object} [options={ precision: 5 }]
 	 */
-	exportJson: function(options) {
-		return Base.exportJson(this, options);
+	exportJSON: function(options) {
+		return Base.exportJSON(this, options);
 	},
 
 	// To support JSON.stringify:
@@ -379,11 +379,11 @@ this.Base = Base.inject(/** @lends Base# */{
 			return res;
 		},
 
-		exportJson: function(obj, options) {
+		exportJSON: function(obj, options) {
 			return JSON.stringify(Base.serialize(obj, options));
 		},
 
-		importJson: function(json) {
+		importJSON: function(json) {
 			return Base.deserialize(
 					typeof json === 'string' ? JSON.parse(json) : json);
 		},

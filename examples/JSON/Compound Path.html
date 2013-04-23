@@ -11,11 +11,11 @@
 		var path2 = new Path.Rectangle([50, 50], [200, 200]);
 		var path3 = new Path.Rectangle([0, 0], [400, 400]);
 		new CompoundPath(path1, path2, path3);
-		window._json = project.exportJson();
+		window._json = project.exportJSON();
 		console.log(window._json);
 	</script>
 	<script type="text/paperscript" canvas="canvas2">
-		project.importJson(window._json);
+		project.importJSON(window._json);
 	</script>
 </head>
 <body>

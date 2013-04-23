@@ -10,14 +10,14 @@
 		raster.onLoad = function() {
 			raster.position = view.center;
 			raster.rotate(45);
-			window.importJson(project.exportJson());
+			window.importJSON(project.exportJSON());
 		}
 	</script>
 	<script type="text/paperscript" canvas="canvas2">
-		window.importJson = function(json) {
+		window.importJSON = function(json) {
 			project.activate();
 			console.log(json);
-			project.importJson(json);
+			project.importJSON(json);
 		}
 	</script>
 </head>
