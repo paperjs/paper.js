@@ -362,8 +362,6 @@
       }
       if( loc.length ){
         for (k = 0, l=loc.length; k<l; k++) {
-          // markPoint( loc[k].point, loc[k].point.toString(), '#a00' );
-          // TODO: change this to loc[k]._id and loc2._id when CurveLocation has an id property
           graph[i].intersections.push( loc[k] );
           var loc2 = new CurveLocation( c2, null, loc[k].point );
           loc2._id = loc[k]._id;
@@ -389,10 +387,12 @@
       // Remove the graph link, this link has to be split and replaced with the splits
       lnk = graph.splice( i, 1 )[0];
       for (j =0, l=ix.length; j<l && lnk; j++) {
+        // TODO: optimize getCurve out of here, we only need the values to calculate subdivide
         crv = lnk.getCurve();
         // We need to recalculate parameter after each curve split
         // This operation (except for recalculating the curve parameter),
         // is fairly similar to Curve.split method, except that it operates on Node and Link objects.
+        // TODO: Interpolate parameters instead of recalculating from points
         param = crv.getParameterOf( ix[j].point );
         // var param = crv.getNearestLocation( ix[j] ).parameter;
         if( param === 0.0 || param === 1.0) {
@@ -644,14 +644,12 @@ var _addLineIntersections = function(v1, v2, curve, locations) {
   a2x = v1[6]; a2y = v1[7];
   b1x = v2[0]; b1y = v2[1];
   b2x = v2[6]; b2y = v2[7];
-
   var ua_t = (b2x - b1x) * (a1y - b1y) - (b2y - b1y) * (a1x - b1x);
   var ub_t = (a2x - a1x) * (a1y - b1y) - (a2y - a1y) * (a1x - b1x);
   var u_b  = (b2y - b1y) * (a2x - a1x) - (b2x - b1x) * (a2y - a1y);
   if ( u_b !== 0 ) {
     var ua = ua_t / u_b;
     var ub = ub_t / u_b;
-
     if ( 0 <= ua && ua <= 1 && 0 <= ub && ub <= 1 ) {
       locations.push( new CurveLocation(curve, null, new Point(a1x + ua * (a2x - a1x), a1y + ua * (a2y - a1y))) );
     }
