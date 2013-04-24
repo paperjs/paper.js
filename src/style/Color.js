@@ -609,7 +609,7 @@ var Color = this.Color = Base.extend(new function() {
 		 */
 		_convert: function(type) {
 			var converter;
-			return this._type == type
+			return this._type === type
 					? this._components.slice()
 					: (converter = converters[this._type + '-' + type])
 						? converter.apply(this, this._components)
