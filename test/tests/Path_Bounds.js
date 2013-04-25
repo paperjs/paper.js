@@ -190,9 +190,13 @@ test('path.bounds & path.strokeBounds with stroke styles', function() {
 });
 
 test('path.strokeBounds with rectangles', function() {
-	var path = new paper.Path.Rectangle([100, 100], [100, 100]);
-	path.strokeWidth = 50;
+	var path = new paper.Path.Rectangle({
+		point: [100, 100],
+		size: [100, 100],
+		strokeWidth: 50,
+		strokeColor: 'black'
+	});
 	compareRectangles(path.strokeBounds,
-			{ x: 50, y: 50, width: 200, height: 200 },
+			{ x: 75, y: 75, width: 150, height: 150 },
 			'path.strokeBounds');
 });

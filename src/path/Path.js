@@ -1079,33 +1079,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	isClockwise: function() {
 		if (this._clockwise !== undefined)
 			return this._clockwise;
-		var sum = 0,
-			xPre, yPre;
-		function edge(x, y) {
-			if (xPre !== undefined)
-				sum += (xPre - x) * (y + yPre);
-			xPre = x;
-			yPre = y;
-		}
-		// Method derived from:
-		// http://stackoverflow.com/questions/1165647
-		// We treat the curve points and handles as the outline of a polygon of
-		// which we determine the orientation using the method of calculating
-		// the sum over the edges. This will work even with non-convex polygons,
-		// telling you whether it's mostly clockwise
-		for (var i = 0, l = this._segments.length; i < l; i++) {
-			var seg1 = this._segments[i],
-				seg2 = this._segments[i + 1 < l ? i + 1 : 0],
-				point1 = seg1._point,
-				handle1 = seg1._handleOut,
-				handle2 = seg2._handleIn,
-				point2 = seg2._point;
-			edge(point1._x, point1._y);
-			edge(point1._x + handle1._x, point1._y + handle1._y);
-			edge(point2._x + handle2._x, point2._y + handle2._y);
-			edge(point2._x, point2._y);
-		}
-		return sum > 0;
+		return Path.isClockwise(this._segments);
 	},
 
 	setClockwise: function(clockwise) {
@@ -2214,7 +2188,46 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 // Mess with indentation in order to get more line-space below...
 statics: {
 	/**
+	 * Determines wether the segments describe a path in clockwise or counter-
+	 * clockwise orientation.
+	 *
+	 * @private
+	 */
+	isClockwise: function(segments) {
+		var sum = 0,
+			xPre, yPre;
+		function edge(x, y) {
+			if (xPre !== undefined)
+				sum += (xPre - x) * (y + yPre);
+			xPre = x;
+			yPre = y;
+		}
+		// Method derived from:
+		// http://stackoverflow.com/questions/1165647
+		// We treat the curve points and handles as the outline of a polygon of
+		// which we determine the orientation using the method of calculating
+		// the sum over the edges. This will work even with non-convex polygons,
+		// telling you whether it's mostly clockwise
+		// TODO: Check if this works correctly for all open paths.
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var seg1 = segments[i],
+				seg2 = segments[i + 1 < l ? i + 1 : 0],
+				point1 = seg1._point,
+				handle1 = seg1._handleOut,
+				handle2 = seg2._handleIn,
+				point2 = seg2._point;
+			edge(point1._x, point1._y);
+			edge(point1._x + handle1._x, point1._y + handle1._y);
+			edge(point2._x + handle2._x, point2._y + handle2._y);
+			edge(point2._x, point2._y);
+		}
+		return sum > 0;
+	},
+
+	/**
 	 * Returns the bounding rectangle of the item excluding stroke width.
+	 *
+	 * @private
 	 */
 	getBounds: function(segments, closed, style, matrix, strokePadding) {
 		var first = segments[0];
@@ -2254,6 +2267,8 @@ statics: {
 
 	/**
 	 * Returns the bounding rectangle of the item including stroke width.
+	 *
+	 * @private
 	 */
 	getStrokeBounds: function(segments, closed, style, matrix) {
 		/**
@@ -2302,14 +2317,22 @@ statics: {
 		// TODO: Find a way to reuse 'bounds' cache instead?
 		if (!style.getStrokeColor() || !style.getStrokeWidth())
 			return Path.getBounds(segments, closed, style, matrix);
-		var radius = style.getStrokeWidth() / 2,
+		var length = segments.length - (closed ? 0 : 1),
+			radius = style.getStrokeWidth() / 2,
 			padding = getPenPadding(radius, matrix),
 			bounds = Path.getBounds(segments, closed, style, matrix, padding),
 			join = style.getStrokeJoin(),
 			cap = style.getStrokeCap(),
+			miterLimit,
+			miterRadius;
+		if (join == 'miter' && length > 1) {
 			// miter is relative to stroke width. Divide it by 2 since we're
 			// measuring half the distance below
-			miter = style.getMiterLimit() * style.getStrokeWidth() / 2;
+			miterLimit = style.getMiterLimit() * style.getStrokeWidth() / 2;
+			// Depending on the path's orientation, mitters are created towards
+			// one side or the other
+			miterRadius = radius * (Path.isClockwise(segments) ? 1 : -1);
+		}
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
 		var joinBounds = new Rectangle(new Size(padding).multiply(2));
@@ -2333,25 +2356,26 @@ statics: {
 					&& !segment._handleOut.isZero()) {
 				bounds = bounds.unite(joinBounds.setCenter(matrix
 					? matrix._transformPoint(segment._point) : segment._point));
-			} else if (join == 'bevel') {
+			} else if (join === 'bevel') {
 				var curve = segment.getCurve();
 				addBevelJoin(curve, 0);
 				addBevelJoin(curve.getPrevious(), 1);
-			} else if (join == 'miter') {
+			} else if (join === 'miter') {
 				var curve2 = segment.getCurve(),
 					curve1 = curve2.getPrevious(),
 					point = curve2.getPointAt(0, true),
-					normal1 = curve1.getNormalAt(1, true).normalize(radius),
-					normal2 = curve2.getNormalAt(0, true).normalize(radius),
+					normal1 = curve1.getNormalAt(1, true).normalize(miterRadius),
+					normal2 = curve2.getNormalAt(0, true).normalize(miterRadius),
 					// Intersect the two lines
-					line1 = new Line(point.subtract(normal1),
+					line1 = new Line(point.add(normal1),
 							Point.create(-normal1.y, normal1.x)),
-					line2 = new Line(point.subtract(normal2),
+					line2 = new Line(point.add(normal2),
 							Point.create(-normal2.y, normal2.x)),
 					corner = line1.intersect(line2);
+				new Path.Circle(corner, 5).strokeColor = 'red';
 				// Now measure the distance from the segment to the
 				// intersection, which his half of the miter distance
-				if (!corner || point.getDistance(corner) > miter) {
+				if (!corner || point.getDistance(corner) > miterLimit) {
 					addJoin(segment, 'bevel');
 				} else {
 					add(corner);
@@ -2379,7 +2403,7 @@ statics: {
 			}
 		}
 
-		for (var i = 1, l = segments.length - (closed ? 0 : 1); i < l; i++)
+		for (var i = 1; i < length; i++)
 			addJoin(segments[i], join);
 		if (closed) {
 			addJoin(segments[0], join);
@@ -2392,6 +2416,8 @@ statics: {
 
 	/**
 	 * Returns the bounding rectangle of the item including handles.
+	 *
+	 * @private
 	 */
 	getHandleBounds: function(segments, closed, style, matrix, strokePadding,
 			joinPadding) {
@@ -2426,6 +2452,8 @@ statics: {
 	/**
 	 * Returns the rough bounding rectangle of the item that is sure to include
 	 * all of the drawing, including stroke width.
+	 *
+	 * @private
 	 */
 	getRoughBounds: function(segments, closed, style, matrix) {
 		// Delegate to handleBounds, but pass on radius values for stroke and
