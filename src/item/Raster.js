@@ -445,12 +445,10 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 */
 	getPixel: function(point) {
 		point = Point.read(arguments);
-		var pixels = this.getContext().getImageData(point.x, point.y, 1, 1).data,
-			components = [0, 0, 0];
-		for (var i = 0; i < 3; i++)
-			components[i] = pixels[i] / 255;
+		var data = this.getContext().getImageData(point.x, point.y, 1, 1).data;
 		// Alpha is separate now:
-		return new Color('rgb', components, pixels[3] / 255);
+		return new Color('rgb', [data[0] / 255, data[1] / 255, data[2] / 255],
+				data[3] / 255);
 	},
 
 	/**
@@ -472,15 +470,16 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 */
 	setPixel: function(point, color) {
 		var _point = Point.read(arguments),
-			_color = Color.read(arguments);
-		var ctx = this.getContext(true),
-			imageData = ctx.createImageData(1, 1),
+			_color = Color.read(arguments),
 			components = _color._convert('rgb'),
-			alpha = _color.getAlpha();
-		imageData.data[0] = components[0] * 255;
-		imageData.data[1] = components[1] * 255;
-		imageData.data[2] = components[2] * 255;
-		imageData.data[3] = alpha != null ? alpha * 255 : 255;
+			alpha = _color._alpha,
+			ctx = this.getContext(true),
+			imageData = ctx.createImageData(1, 1),
+			data = imageData.data;
+		data[0] = components[0] * 255;
+		data[1] = components[1] * 255;
+		data[2] = components[2] * 255;
+		data[3] = alpha != null ? alpha * 255 : 255;
 		ctx.putImageData(imageData, _point.x, _point.y);
 	},
 
