@@ -17,7 +17,7 @@ function testPoint(item, point, inside) {
 			+ ' should be ' + (inside ? 'inside' : 'outside') + '.');
 }
 
-test('Path#contains (Regular Polygon)', function() {
+test('Path#contains() (Regular Polygon)', function() {
 	var path = new Path.RegularPolygon([0, 0], 6, 20);
 
 	testPoint(path, new Point(0, -20), true);
@@ -39,7 +39,7 @@ test('Path#contains (Regular Polygon)', function() {
 	testPoint(path, new Point(10, 20), false);
 });
 
-test('CompoundPath#contains (Donut)', function() {
+test('CompoundPath#contains() (Donut)', function() {
 	var path = new CompoundPath([
 		new Path.Circle([0, 0], 50),
 		new Path.Circle([0, 0], 25)
@@ -71,7 +71,7 @@ test('CompoundPath#contains (Donut)', function() {
 		'The near bottom left point of bounding box should be outside the donut.');
 });
 
-test('Shape#contains', function() {
+test('Shape#contains()', function() {
 	var shape = new Shape.Circle([0, 0], 100);
 
 	testPoint(shape, new Point(0, 0), true);
@@ -100,4 +100,12 @@ test('Shape#contains', function() {
 	testPoint(shape, new Point(0.9, 0).multiply(half), true);
 	testPoint(shape, new Point(1, 0).multiply(half), true);
 	testPoint(shape, new Point(1.1, 0).multiply(half), false);
+});
+
+test('Path#contains() (Rectangle Contours)', function() {
+	var path = new Path.Rectangle(new Point(100, 100), [200, 200]),
+		curves = path.getCurves();
+
+	for (var i = 0; i < curves.length; i++)
+	    testPoint(path, curves[i].getPoint(0.5), true);
 });
