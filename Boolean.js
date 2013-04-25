@@ -125,8 +125,7 @@
       this.linkOut = this.linkOut || this.linkBOut; // linkOut
       // Also update the references in links to point to "this" Node
       if( !this.linkIn || !this.linkOut ){
-        markPoint( this.point, this._intersectionID )
-        console.log( this )
+        // markPoint( this.point, this._intersectionID );
         throw { name: 'Boolean Error', message: 'No matching link found at ixID: ' +
         this._intersectionID + " point: " + this.point.toString() };
       }
@@ -348,8 +347,6 @@
 
   window.g = graph;
 
-  // console.log( path1Clockwise, path2Clockwise );
-
   // Sort function to sort intersections according to the 'parameter'(t) in a link (curve)
   function ixSort( a, b ){ return a.parameter - b.parameter; }
 
@@ -426,7 +423,6 @@
             rightLink = null;
           }
         } else {
-          // parts = Curve.subdivide(crv.getValues(), param);
           parts = Curve.subdivide(values, param);
           left = parts[0];
           right = parts[1];
@@ -445,10 +441,10 @@
           nuNode._intersectionID = ix[j]._id;
           // clear the cached Segment on original end nodes and Update their handles
           lnk.nodeIn._segment = null;
+          lnk.nodeOut._segment = null;
           if( !isLinear ){
             var tmppnt = lnk.nodeIn.point;
             lnk.nodeIn.handleOut = new Point( left[2] - tmppnt.x, left[3] - tmppnt.y );
-            lnk.nodeOut._segment = null;
             tmppnt = lnk.nodeOut.point;
             lnk.nodeOut.handleIn = new Point( right[4] - tmppnt.x, right[5] - tmppnt.y );
           }
@@ -615,7 +611,11 @@
       path.closed = true;
       // path.clockwise = true;
       if( path.segments.length > 1 && linkCount > 0 ){ // avoid stray segments and incomplete paths
-        boolResult.addChild( path );
+        if( path.segments.length === 2 ){
+        }
+        if( path.segments.length > 2 || !path.curves[0].isLinear() ){
+          boolResult.addChild( path );
+        }
       }
     }
   }
