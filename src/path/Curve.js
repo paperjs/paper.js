@@ -322,27 +322,27 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 			if (t > -tolerance && t < 1 - tolerance) {
 				var pt = Curve.evaluate(vals, t, true, 0);
 				if (point.x < pt.x + tolerance) {
-					// Passing 1 for Curve.evaluate()'s type calculates tangents. 
-					var tan = Curve.evaluate(vals, t, true, 1),
-						diff = abs(pt.x - point.x);
-					// Wee need to handle all kind of edge cases when points are
-					// on contours, ore rays are touching countours, do termine
-					// wether the corssings counts or not.
-					// Is the actual point is on the countour? 
-					if (diff < tolerance) {
-						// Do not count the crossing if it is on the left
-						// hand side of the shape (tangent pointing upwards)
-						// since the ray will go out the other end and the 
-						// point is on the contour, so inside.
+					// Passing 1 for Curve.evaluate() type calculates tangents
+					var tan = Curve.evaluate(vals, t, true, 1);
+					// Handle all kind of edge cases when points are on contours
+					// or rays are touching countours, to termine wether the
+					// crossing counts or not.
+					// See if the actual point is on the countour:
+					if (abs(pt.x - point.x) < tolerance) {
+						// Do not count the crossing if it is on the left hand
+						// side of the shape (tangent pointing upwards), since
+						// the ray will go out the other end, count as
+						// crossing there, and the point is on the contour, so
+						// to be considered inside.
 						var angle = tan.getAngle();
 						if (angle > -180 && angle < 0
 							// Handle special case where point is on a corner,
-							// in which case we only skip this crossing if both
-							// tangents have the same orientation (see below)
+							// in which case this crossing is skipped if both
+							// tangents have the same orientation.
 							&& (t > tolerance || changesOrientation(this, tan)))
 								continue;
 					} else  {
-						// Skip touching stationary points
+						// Skip touching stationary points:
 						if (abs(tan.y) < tolerance
 							// Check derivate for stationary points. If root is
 							// close to 0 and not changing vertical orientation
