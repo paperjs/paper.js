@@ -295,39 +295,62 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		var vals = this.getValues(),
 			count = Curve.solveCubic(vals, 1, point.y, roots),
 			crossings = 0,
-			tolerance = /*#=*/ Numerical.TOLERANCE;
+			tolerance = /*#=*/ Numerical.TOLERANCE,
+			abs = Math.abs;
+
+		// Checks the y-slope between the current curve and the previous for a
+		// change of orientation, when a solution is found at t == 0
+		function changesOrientation(curve, tangent) {
+			return Curve.evaluate(curve.getPrevious().getValues(), 1, true, 1).y
+					* tangent.y > 0;
+		}
+
+		// TODO: See if this speeds up code, or slows it down:
+		// var bounds = this.getBounds();
+		// if (point.y < bounds.getTop() || point.y > bounds.getBottom()
+		// 		|| point.x > bounds.getRight())
+		// 	return 0;
+
+		if (count === -1) {
+			// Infinite solutions, so we have a horizontal curve.
+			// Find parameter through getParameterOf()
+			roots[0] = Curve.getParameterOf(vals, point.x, point.y);
+			count = roots[0] !== null ? 1 : 0;
+		}
 		for (var i = 0; i < count; i++) {
 			var t = roots[i];
-			if (t >= -tolerance && t < 1 - tolerance) {
+			if (t > -tolerance && t < 1 - tolerance) {
 				var pt = Curve.evaluate(vals, t, true, 0);
-/*#*/ if (options.debug) {
-				console.log(t, point + '', pt + '');
-				new Path.Circle({
-					center: Curve.evaluate(vals, t, true, 0),
-					radius: 2,
-					strokeColor: 'red',
-					strokeWidth: 0.25
-				});
-/*#*/ }
-				if (pt.x >= point.x - tolerance) {
+				if (point.x < pt.x + tolerance) {
 					// Passing 1 for Curve.evaluate()'s type calculates tangents. 
-					var tangent = Curve.evaluate(vals, t, true, 1);
-					if (
-						// Skip touching stationary points (tips), but if the
-						// actual point is on one, do not skip this solution!
-						Math.abs(pt.x - point.x) > tolerance
-						&& (
-							// Check derivate for stationary points
-							Math.abs(tangent.y) < tolerance
-							// If root is close to 0 and not changing vertical
-							// orientation from the previous curve, do not count
-							// this root, as it's touching a corner.
-							|| t < tolerance
-								// Check the y-slope for a change of orientation
-								&& tangent.y * Curve.evaluate(
-									this.getPrevious().getValues(), 1, true, 1).y
-								< tolerance))
-						continue;
+					var tan = Curve.evaluate(vals, t, true, 1),
+						diff = abs(pt.x - point.x);
+					// Wee need to handle all kind of edge cases when points are
+					// on contours, ore rays are touching countours, do termine
+					// wether the corssings counts or not.
+					// Is the actual point is on the countour? 
+					if (diff < tolerance) {
+						// Do not count the crossing if it is on the left
+						// hand side of the shape (tangent pointing upwards)
+						// since the ray will go out the other end and the 
+						// point is on the contour, so inside.
+						var angle = tan.getAngle();
+						if (angle > -180 && angle < 0
+							// Handle special case where point is on a corner,
+							// in which case we only skip this crossing if both
+							// tangents have the same orientation (see below)
+							&& (t > tolerance || changesOrientation(this, tan)))
+								continue;
+					} else  {
+						// Skip touching stationary points
+						if (abs(tan.y) < tolerance
+							// Check derivate for stationary points. If root is
+							// close to 0 and not changing vertical orientation
+							// from the previous curve, do not count this root,
+							// as it's touching a corner.
+							|| t < tolerance && !changesOrientation(this, tan))
+								continue;
+					}
 					crossings++;
 				}
 			}

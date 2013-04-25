@@ -1602,10 +1602,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			roots = new Array(3);
 		for (var i = 0, l = curves.length; i < l; i++)
 			crossings += curves[i].getCrossings(point, roots);
+		// TODO: Do not close open path for contains(), but create a straight
+		// closing lines instead, just like how filling open paths works.
 		if (!this._closed && hasFill)
 			crossings += Curve.create(this, segments[segments.length - 1],
 					segments[0]).getCrossings(point, roots);
-		return (crossings & 1) == 1;
+		return (crossings & 1) === 1;
 	},
 
 	_hitTest: function(point, options) {

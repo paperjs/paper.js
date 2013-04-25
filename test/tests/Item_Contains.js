@@ -106,6 +106,21 @@ test('Path#contains() (Rectangle Contours)', function() {
 	var path = new Path.Rectangle(new Point(100, 100), [200, 200]),
 		curves = path.getCurves();
 
-	for (var i = 0; i < curves.length; i++)
+	for (var i = 0; i < curves.length; i++) {
+		testPoint(path, curves[i].getPoint(0), true);
 	    testPoint(path, curves[i].getPoint(0.5), true);
+	}
+});
+
+
+test('Path#contains() (Rotated Rectangle Contours)', function() {
+	var path = new Path.Rectangle(new Point(100, 100), [200, 200]),
+		curves = path.getCurves();
+
+	path.rotate(45);
+
+	for (var i = 0; i < curves.length; i++) {
+		testPoint(path, curves[i].getPoint(0), true);
+	    testPoint(path, curves[i].getPoint(0.5), true);
+	}
 });
