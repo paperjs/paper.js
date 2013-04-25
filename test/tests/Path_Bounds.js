@@ -188,3 +188,11 @@ test('path.bounds & path.strokeBounds with stroke styles', function() {
 			{ x: 484.01325, y: 301.78419, width: 143.50622, height: 133.64882 },
 			'round/miter path.strokeBounds');
 });
+
+test('path.strokeBounds with rectangles', function() {
+	var path = new paper.Path.Rectangle([100, 100], [100, 100]);
+	path.strokeWidth = 50;
+	compareRectangles(path.strokeBounds,
+			{ x: 50, y: 50, width: 200, height: 200 },
+			'path.strokeBounds');
+});
