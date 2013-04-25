@@ -34,11 +34,8 @@ function runTests() {
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'Rectangle and rectangle (overlaps exactly on existing curves)', container );
-  pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 150]);
-  pathB = new Path.Rectangle(new Point(150.5, 60.5), [100, 150]);
-  // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
-  window.a = pathA;
-  window.b = pathB;
+  pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
+  pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
   testBooleanStatic( pathA, pathB, caption );
 
   caption = prepareTest( 'Circle and banana (multiple intersections within same curve segment)', container );
@@ -147,6 +144,15 @@ function runTests() {
   npath = new Path.Circle([110, 110], 30);
   pathB.addChild( npath );
   testBooleanStatic( pathA, pathB, caption );
+
+  caption = prepareTest( 'CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', container );
+  pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
+  pathB = new CompoundPath();
+  pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
+  pathB.addChild( new Path.Rectangle(new Point(150.5, 60.5), [50, 100]) );
+  // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
+  testBooleanStatic( pathA, pathB, caption );
+
 
   // To resolve self intersection on a single path,
   // pass an empty second operand and do a Union operation
