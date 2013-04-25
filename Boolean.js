@@ -125,6 +125,8 @@
       this.linkOut = this.linkOut || this.linkBOut; // linkOut
       // Also update the references in links to point to "this" Node
       if( !this.linkIn || !this.linkOut ){
+        markPoint( this.point, this._intersectionID )
+        console.log( this )
         throw { name: 'Boolean Error', message: 'No matching link found at ixID: ' +
         this._intersectionID + " point: " + this.point.toString() };
       }
@@ -145,9 +147,10 @@
  * @param {Node} _nodeOut
  * @param {Any} _id
  */
- function Link( _nodeIn, _nodeOut, _id, isBaseContour ) {
+ function Link( _nodeIn, _nodeOut, _id, isBaseContour, _winding ) {
   this.id = _id;
   this.isBaseContour = isBaseContour;
+  this.winding = _winding;
   this.nodeIn = _nodeIn;  // nodeStart
   this.nodeOut = _nodeOut;  // nodeEnd
   this.nodeIn.linkOut = this;  // nodeStart.linkOut
@@ -172,13 +175,14 @@
  */
  function makeGraph( path, id, isBaseContour ){
   var graph = [];
-  var segs = path.segments, prevNode = null, firstNode = null, nuLink, nuNode;
+  var segs = path.segments, prevNode = null, firstNode = null, nuLink, nuNode,
+  winding = path.clockwise;
   for( i = 0, l = segs.length; i < l; i++ ){
     // var nuSeg = segs[i].clone();
     var nuSeg = segs[i];
     nuNode = new Node( nuSeg.point, nuSeg.handleIn, nuSeg.handleOut, id, isBaseContour );
     if( prevNode ) {
-      nuLink = new Link( prevNode, nuNode, id, isBaseContour );
+      nuLink = new Link( prevNode, nuNode, id, isBaseContour, winding );
       graph.push( nuLink );
     }
     prevNode = nuNode;
@@ -187,7 +191,7 @@
     }
   }
   // the path is closed
-  nuLink = new Link( prevNode, firstNode, id, isBaseContour );
+  nuLink = new Link( prevNode, firstNode, id, isBaseContour, winding );
   graph.push( nuLink );
   return graph;
 }
@@ -237,11 +241,11 @@
  *
  * Does NOT handle selfIntersecting CompoundPaths.
  *
- * @param  {[type]} path [description]
- * @return {[type]}      [description]
+ * @param  {CompoundPath} path Input CompoundPath, Note: This path could be modified if need be.
+ * @return {boolean}      the winding direction of the base contour( true if clockwise )
  */
  function reorientCompoundPath( path ){
-  if( !(path instanceof CompoundPath) ){ return; }
+  if( !(path instanceof CompoundPath) ){ return path.clockwise; }
   var children = path.children, len = children.length, baseWinding;
   var bounds = new Array( len );
   var tmparray = new Array( len );
@@ -265,6 +269,7 @@
       children[i].clockwise = baseWinding;
     }
   }
+  return baseWinding;
 }
 
 /**
@@ -278,24 +283,31 @@
   IntersectionID = 1;
   UNIQUE_ID = 1;
 
-  // The boolean operation may modify the original paths
+  // We work on duplicate paths since the algorithm may modify the original paths
   var path1 = _path1.clone();
   var path2 = _path2.clone();
-  // if( !path1.clockwise ){ path1.reverse(); }
-  // if( !path2.clockwise ){ path2.reverse(); }
-  //
+
   var i, j, k, l, lnk, crv, node, nuNode, leftLink, rightLink;
-  var path1Clockwise, path2Clockwise;
+  var path1Clockwise = true, path2Clockwise = true;
 
   // If one of the operands is empty, resolve self-intersections on the second operand
   var childCount1 = (_path1 instanceof CompoundPath)? _path1.children.length : _path1.curves.length;
   var childCount2 = (_path2 instanceof CompoundPath)? _path2.children.length : _path2.curves.length;
   var resolveSelfIntersections = !childCount1 | !childCount2;
 
+  // Reorient the compound paths, i.e. make all the islands wind in the same direction
+  // and holes in the opposit direction.
+  // Do this only if we are not resolving selfIntersections:
+  //    Resolving self-intersections work on compound paths, but, we might get different results!
   if( !resolveSelfIntersections ){
-    reorientCompoundPath( path1 );
-    reorientCompoundPath( path2 );
+    path1Clockwise = reorientCompoundPath( path1 );
+    path2Clockwise = reorientCompoundPath( path2 );
   }
+
+  // Cache the bounding rectangle of paths
+  // so we can make the test for containment quite a bit faster
+  path1._bounds = (childCount1)? path1.bounds : null;
+  path2._bounds = (childCount2)? path2.bounds : null;
 
   // Prepare the graphs. Graphs are list of Links that retains
   // full connectivity information. The order of links in a graph is not important
@@ -306,7 +318,6 @@
     path1Children = path1.children;
     for (i = 0, base = true, l = path1Children.length; i < l; i++, base = false) {
       path1Children[i].closed = true;
-      if( base ){ path1Clockwise = path1Children[i].clockwise; }
       graph = graph.concat( makeGraph( path1Children[i], 1, base ) );
     }
   } else {
@@ -319,12 +330,12 @@
   // if operator === BooleanOps.Subtraction, then reverse path2
   // so that the nodes and links will link correctly
   var reverse = ( operator === BooleanOps.Subtraction )? true: false;
+  path2Clockwise = (reverse)? !path2Clockwise : path2Clockwise;
   if( path2 instanceof CompoundPath ){
     path2Children = path2.children;
     for (i = 0, base = true, l = path2Children.length; i < l; i++, base = false) {
       path2Children[i].closed = true;
-      if( reverse ){ path2Children[i].reverse(); }
-      if( base ){ path2Clockwise = path2Children[i].clockwise; }
+      if( reverse ){path2Children[i].reverse(); }
       graph = graph.concat( makeGraph( path2Children[i], 2, base ) );
     }
   } else {
@@ -379,6 +390,7 @@
    * for each link that intersects with another one, replace it with new split links.
    */
    var ix, ixPoint, ixHandleI, ixHandleOut, param, isLinear, parts, left, right;
+   var values, nix, niy,nox, noy, niho, nohi, nihox, nihoy, nohix, nohiy;
    for ( i = graph.length - 1; i >= 0; i--) {
     if( graph[i].intersections.length ){
       ix = graph[i].intersections;
@@ -386,15 +398,20 @@
       if( graph[i].intersections.length > 1 ){ ix.sort( ixSort ); }
       // Remove the graph link, this link has to be split and replaced with the splits
       lnk = graph.splice( i, 1 )[0];
+
+      nix = lnk.nodeIn.point.x; niy = lnk.nodeIn.point.y;
+      nox = lnk.nodeOut.point.x; noy = lnk.nodeOut.point.y;
+      niho = lnk.nodeIn.handleOut; nohi = lnk.nodeOut.handleIn;
+      nihox = nihoy = nohix = nohiy = 0;
+      isLinear = true;
+      if( niho ){ nihox = niho.x; nihoy = niho.y; isLinear = false; }
+      if( nohi ){ nohix = nohi.x; nohiy = nohi.y; isLinear = false; }
+      values = [ nix, niy, nihox + nix, nihoy + niy,
+      nohix + nox, nohiy + noy, nox, noy ];
+
       for (j =0, l=ix.length; j<l && lnk; j++) {
-        // TODO: optimize getCurve out of here, we only need the values to calculate subdivide
-        crv = lnk.getCurve();
-        // We need to recalculate parameter after each curve split
-        // This operation (except for recalculating the curve parameter),
-        // is fairly similar to Curve.split method, except that it operates on Node and Link objects.
-        // TODO: Interpolate parameters instead of recalculating from points
-        param = crv.getParameterOf( ix[j].point );
-        // var param = crv.getNearestLocation( ix[j] ).parameter;
+        param = ix[j].parameter;
+        // param = crv.getParameterOf( ix[j].point );
         if( param === 0.0 || param === 1.0) {
           // Intersection falls on an existing node
           // there is no need to split the link
@@ -409,8 +426,8 @@
             rightLink = null;
           }
         } else {
-          isLinear = crv.isLinear();
-          parts = Curve.subdivide(crv.getValues(), param);
+          // parts = Curve.subdivide(crv.getValues(), param);
+          parts = Curve.subdivide(values, param);
           left = parts[0];
           right = parts[1];
           // Make new link and convert handles from absolute to relative
@@ -420,6 +437,8 @@
             ixHandleOut = new Point(right[2] - ixPoint.x, right[3] - ixPoint.y);
           } else {
             ixHandleIn = ixHandleOut = null;
+            right[2] = right[0];
+            right[3] = right[1];
           }
           nuNode = new Node( ixPoint, ixHandleIn, ixHandleOut, lnk.id, lnk.isBaseContour );
           nuNode.type = INTERSECTION_NODE;
@@ -434,8 +453,10 @@
             lnk.nodeOut.handleIn = new Point( right[4] - tmppnt.x, right[5] - tmppnt.y );
           }
           // Make new links after the split
-          leftLink = new Link( lnk.nodeIn, nuNode, lnk.id, lnk.isBaseContour );
-          rightLink = new Link( nuNode, lnk.nodeOut, lnk.id, lnk.isBaseContour );
+          leftLink = new Link( lnk.nodeIn, nuNode, lnk.id, lnk.isBaseContour, lnk.winding );
+          rightLink = new Link( nuNode, lnk.nodeOut, lnk.id, lnk.isBaseContour, lnk.winding );
+
+          values = right;
         }
         // Add the first split link back to the graph, since we sorted the intersections
         // already, this link should contain no more intersections to the left.
@@ -445,6 +466,13 @@
         // continue with the second split link, to see if
         // there are more intersections to deal with
         lnk = rightLink;
+        // Interpolate the rest of the parameters
+        if( lnk ) {
+          var one_minus_param = (1.0 - param);
+          for (k =j + 1, l=ix.length; k<l; k++) {
+            ix[k]._parameter = ( ix[k].parameter - param ) / one_minus_param;
+          }
+        }
       }
       // Add the last split link back to the graph
       if( lnk ){
@@ -452,55 +480,6 @@
       }
     }
   }
-
-//   var EPSILON = 10e-12;
-
-//   for ( i = graph.length - 1; i >= 0; i--) {
-//     var lnk1 = graph[i];
-//     var lnk1nodeIn = lnk1.nodeIn, lnk1nodeOut = lnk1.nodeOut;
-//     if( graph[i].nodeIn.type !== INTERSECTION_NODE && graph[i].nodeOut.type !== INTERSECTION_NODE ) { continue; }
-//     annotateCurve( graph[i].getCurve(), "" )
-//     for ( j = i -1; j >= 0; j-- ) {
-//       if( graph[j].nodeIn.type !== INTERSECTION_NODE && graph[j].nodeOut.type !== INTERSECTION_NODE ) { continue; }
-//       var lnk2 = graph[j];
-//       var lnk2nodeIn = lnk2.nodeIn, lnk2nodeOut = lnk2.nodeOut;
-
-
-//       var he1 = false, he2 = false, he3 = false, he4 = false;
-//       if( lnk1nodeIn.handleOut ){ he1 = lnk1nodeIn.handleOut.isClose(lnk2nodeIn.handleOut, EPSILON); }
-//       if( lnk1nodeOut.handleIn ){ he2 = lnk1nodeOut.handleIn.isClose(lnk2nodeOut.handleIn, EPSILON); }
-//       if( lnk1nodeIn.handleOut ){ he3 = lnk1nodeIn.handleOut.isClose(lnk2nodeOut.handleIn, EPSILON); }
-//       if( lnk1nodeOut.handleIn ){ he4 = lnk1nodeOut.handleIn.isClose(lnk2nodeIn.handleOut, EPSILON); }
-//       var handleEq1 = ((lnk1nodeIn.handleOut && lnk1nodeIn.handleOut.isZero()) && (lnk2nodeIn.handleOut && lnk2nodeIn.handleOut.isZero()) || he1);
-//       var handleEq2 = ((lnk1nodeOut.handleIn && lnk1nodeOut.handleIn.isZero()) && (lnk2nodeOut.handleIn && lnk2nodeOut.handleIn.isZero()) || he2);
-//       var handleEq3 = ((lnk1nodeIn.handleOut && lnk1nodeIn.handleOut.isZero()) && (lnk2nodeOut.handleIn && lnk2nodeOut.handleIn.isZero()) || he3);
-//       var handleEq4 = ((lnk1nodeOut.handleIn && lnk1nodeOut.handleIn.isZero()) && (lnk2nodeIn.handleOut && lnk2nodeIn.handleOut.isZero()) || he4);
-
-//       if( i === 5 && j === 2 ){
-//         console.log( handleEq3, handleEq4, lnk1nodeIn.handleOut, lnk2nodeOut.handleIn, i, j )
-//       }
-
-//       if( (lnk1nodeIn.point.isClose(lnk2nodeIn.point, EPSILON) && lnk1nodeOut.point.isClose(lnk2nodeOut.point, EPSILON) &&
-//        handleEq1 && handleEq2 ) ||
-//         (lnk1nodeIn.point.isClose(lnk2nodeOut.point, EPSILON) && lnk1nodeOut.point.isClose(lnk2nodeIn.point, EPSILON) &&
-//          handleEq3 && handleEq4 ) ){
-
-//         annotateCurve( graph[i].getCurve(), "", '#f00' )
-//       annotateCurve( graph[j].getCurve(), "", '#f00' )
-
-//       if( operator === BooleanOps.Union ){
-//         graph[i].INVALID = true;
-//         graph[j].INVALID = true;
-//       } else if( operator === BooleanOps.Intersection ){
-//         graph[i].SKIP_OPERATOR = true;
-//         graph[j].SKIP_OPERATOR = true;
-//       } else if( operator === BooleanOps.Subtraction ){
-//         graph[i].SKIP_OPERATOR = true;
-//         graph[j].INVALID = true;
-//       }
-//     }
-//   }
-// }
 
   /**
    * Pass 3:
@@ -521,16 +500,28 @@
 
   // step 1: discard invalid links according to the boolean operator
   for ( i = graph.length - 1; i >= 0; i--) {
-    var insidePath1, insidePath2;
+    var insidePath1 = false, insidePath2 = false, contains;
     lnk = graph[i];
-    if( lnk.SKIP_OPERATOR ) { continue; }
+    // if( lnk.SKIP_OPERATOR ) { continue; }
     if( !lnk.INVALID ) {
       crv = lnk.getCurve();
       // var midPoint = new Point(lnk.nodeIn.point);
       var midPoint = crv.getPoint( 0.5 );
       // FIXME: new contains function : http://jsfiddle.net/QawX8/
-      insidePath1 = (lnk.id === 1 )? false : path1.contains( midPoint );
-      insidePath2 = (lnk.id === 2 )? false : path2.contains( midPoint );
+      // If on a base curve, consider points on the curve and inside,
+      // if not —for example a hole, points on the curve falls outside
+      if( lnk.id !== 1 ){
+        contains = contains2( path1, midPoint );
+        insidePath1 = (lnk.winding === path1Clockwise)? contains > 0: contains > 1;
+      }
+      if( lnk.id !== 2 ){
+        contains = contains2( path2, midPoint );
+        insidePath2 = (lnk.winding === path2Clockwise)? contains > 0: contains > 1;
+      }
+      // insidePath1 = (lnk.id === 1 )? false : contains2( path1, midPoint );
+      // insidePath2 = (lnk.id === 2 )? false : contains2( path2, midPoint );
+      // insidePath1 = (lnk.id === 1 )? false : path1.contains( midPoint );
+      // insidePath2 = (lnk.id === 2 )? false : path2.contains( midPoint );
     }
     if( lnk.INVALID || !operator( lnk, insidePath1, insidePath2 ) ){
       // lnk = graph.splice( i, 1 )[0];
@@ -656,3 +647,21 @@ var _addLineIntersections = function(v1, v2, curve, locations) {
   }
 };
 
+function contains2( path, point ){
+  var res = 0;
+  var crv = path.getCurves();
+  var i = 0;
+  var bounds = path._bounds;
+  if( bounds && bounds.contains( point ) ){
+    for( i = 0; i < crv.length && !res; i++ ){
+      var crvi = crv[i];
+      if( crvi.bounds.contains( point ) && crvi.getParameterOf( point ) ){
+        res = 1;
+      }
+    }
+    if( !res ){
+      res = (path.contains(point))? 2: res;
+    }
+  }
+  return res;
+}
