@@ -2372,7 +2372,6 @@ statics: {
 					line2 = new Line(point.add(normal2),
 							Point.create(-normal2.y, normal2.x)),
 					corner = line1.intersect(line2);
-				new Path.Circle(corner, 5).strokeColor = 'red';
 				// Now measure the distance from the segment to the
 				// intersection, which his half of the miter distance
 				if (!corner || point.getDistance(corner) > miterLimit) {
