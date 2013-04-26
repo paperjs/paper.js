@@ -57,7 +57,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 */
 	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
-		if (count == 0) {
+		if (count === 0) {
 			this._segment1 = new Segment();
 			this._segment2 = new Segment();
 		} else if (count == 1) {
@@ -258,7 +258,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	getLength: function(/* from, to */) {
 		var from = arguments[0],
 			to = arguments[1],
-			fullLength = arguments.length == 0 || from == 0 && to == 1;
+			fullLength = arguments.length === 0 || from === 0 && to === 1;
 		if (fullLength && this._length != null)
 			return this._length;
 		var length = Curve.getLength(this.getValues(), from, to);
@@ -996,16 +996,16 @@ new function() { // Scope for methods that require numerical integration
 				c2x = v[4], c2y = v[5],
 				p2x = v[6], p2y = v[7];
 			// http://objectmix.com/graphics/133553-area-closed-bezier-curve.html
-			return 3 / 10 * c1y * p1x - 3 / 20 * c1y * c2x
-					- 3 / 20 * c1y * p2x - 3 / 10 * p1y * c1x
-					- 3 / 20 * p1y * c2x - 1 / 20 * p1y * p2x
-					+ 3 / 20 * c2y * p1x + 3 / 20 * c2y * c1x
-					- 3 / 10 * c2y * p2x + 1 / 20 * p2y * p1x
-					+ 3 / 20 * p2y * c1x + 3 / 10 * p2y * c2x;
+			return (  3.0 * c1y * p1x - 1.5 * c1y * c2x
+					- 1.5 * c1y * p2x - 3.0 * p1y * c1x
+					- 1.5 * p1y * c2x - 0.5 * p1y * p2x
+					+ 1.5 * c2y * p1x + 1.5 * c2y * c1x
+					- 3.0 * c2y * p2x + 0.5 * p2y * p1x
+					+ 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
 		},
 
 		getParameterAt: function(v, offset, start) {
-			if (offset == 0)
+			if (offset === 0)
 				return start;
 			// See if we're going forward or backward, and handle cases
 			// differently
@@ -1137,7 +1137,7 @@ new function() { // Scope for methods that require numerical integration
 			left = [],
 			right = [];
 		for (var j = 0; j <= 5; j++)
-		 	p[0][j] = new Point(w[j]);
+			p[0][j] = new Point(w[j]);
 
 		// Triangle computation
 		for (var i = 1; i <= 5; i++) {
