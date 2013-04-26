@@ -709,8 +709,8 @@ statics: {
 	// #getIntersections() calls as it is required to create the resulting
 	// CurveLocation objects.
 	getIntersections: function(v1, v2, curve, locations) {
-		var bounds1 = Curve.getBounds(v1),
-			bounds2 = Curve.getBounds(v2);
+		var bounds1 = this.getBounds(v1),
+			bounds2 = this.getBounds(v2);
 /*#*/ if (options.debug) {
 		new Path.Rectangle({
 			rectangle: bounds1,
@@ -725,8 +725,8 @@ statics: {
 /*#*/ }
 		if (bounds1.touches(bounds2)) {
 			// See if both curves are flat enough to be treated as lines.
-			if (Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
-					&& Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
+			if (this.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
+					&& this.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
 /*#*/ if (options.debug) {
 				new Path.Line({
 					from: [v1[0], v1[1]],
@@ -754,8 +754,8 @@ statics: {
 					locations.push(new CurveLocation(curve, null, point));
 			} else {
 				// Subdivide both curves, and see if they intersect.
-				var v1s = Curve.subdivide(v1),
-					v2s = Curve.subdivide(v2);
+				var v1s = this.subdivide(v1),
+					v2s = this.subdivide(v2);
 				for (var i = 0; i < 2; i++)
 					for (var j = 0; j < 2; j++)
 						this.getIntersections(v1s[i], v2s[j], curve, locations);
