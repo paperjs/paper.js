@@ -67,23 +67,23 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 
 	/**
 	 * @param {Line} line
-	 * @return {Point} the intersection point of the lines
+	 * @return {Point} the intersection point of the lines, {@code undefined}
+	 * if the two lines are colinear, or {@code null} if they don't intersect.
 	 */
-	intersect: function(line, excludeStart, excludeEnd) {
+	intersect: function(line) {
 		var cross = this.vector.cross(line.vector);
 		// Avoid divisions by 0, and errors when getting too close to 0
 		if (Numerical.isZero(cross))
-			return null;
+			return undefined;
 		var v = line.point.subtract(this.point),
 			t1 = v.cross(line.vector) / cross,
 			t2 = v.cross(this.vector) / cross;
 		// Check the ranges of t parameters if the line is not allowed to
 		// extend beyond the definition points.
-		return (this.infinite || (excludeStart ? 0 < t1 : 0 <= t1)
-				&& (excludeEnd ? t1 < 1 : t1 <= 1))
-			&& (line.infinite || (excludeStart ? 0 < t2 : 0 <= t2)
-				&& (excludeEnd ? t2 < 1 : t2 <= 1))
-			? this.point.add(this.vector.multiply(t1)) : null;
+		return (this.infinite || 0 <= t1 && t1 <= 1)
+				&& (line.infinite || 0 <= t2 && t2 <= 1)
+			? this.point.add(this.vector.multiply(t1))
+			: null;
 	},
 
 	// DOCS: document Line#getSide(point)

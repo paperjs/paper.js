@@ -638,6 +638,10 @@ statics: {
 		return v;
 	},
 
+	isLinear: function(v) {
+		return v[0] === v[2] && v[1] === v[3] && v[4] === v[6] && v[5] === v[7];
+	},
+
 	isFlatEnough: function(v, tolerance) {
 		// Thanks to Kaspar Fischer and Roger Willcocks for the following:
 		// http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
@@ -728,8 +732,10 @@ statics: {
 		});
 /*#*/ }
 		if (bounds1.touches(bounds2)) {
-			// See if both curves are flat enough to be treated as lines.
-			if (this.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
+			// See if both curves are flat enough to be treated as lines, either
+			// because they have no control points at all, or are "flat enough"
+			if (this.isLinear(v1) && this.isLinear(v2)
+				|| this.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
 					&& this.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
 /*#*/ if (options.debug) {
 				new Path.Line({
@@ -747,15 +753,18 @@ statics: {
 /*#*/ }
 				// See if the parametric equations of the lines interesct.
 				var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
-						.intersect(new Line(v2[0], v2[1], v2[6], v2[7], false),
-							// Filter out beginnings of the curves, to avoid
-							// duplicate solutions where curves join.
-							true, false);
-				if (point)
-					// Passing null for parameter leads to lazy determination of
-					// parameter values in CurveLocation#getParameter() only
-					// once they are requested.
-					locations.push(new CurveLocation(curve, null, point));
+						.intersect(new Line(v2[0], v2[1], v2[6], v2[7], false));
+				if (point) {
+					// Avoid duplicates when hitting segments (closed paths too)
+					var first = locations[0], 
+						last = locations[locations.length - 1];
+					if ((!first || !point.equals(first._point))
+							&& (!last || !point.equals(last._point)))
+						// Passing null for parameter leads to lazy determination
+						// of parameter values in CurveLocation#getParameter()
+						// only once they are requested.
+						locations.push(new CurveLocation(curve, null, point));
+				}
 			} else {
 				// Subdivide both curves, and see if they intersect.
 				var v1s = this.subdivide(v1),

@@ -685,7 +685,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * another vector.
 	 *
 	 * @param {Point} point the vector to check against
-	 * @returns {Boolean} {@true it is parallel}
+	 * @returns {Boolean} {@true it is colinear}
 	 */
 	isColinear: function(point) {
 		return this.cross(point) < /*#=*/ Numerical.TOLERANCE;
