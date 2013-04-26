@@ -12,7 +12,7 @@
 
 module('Path Curves');
 
-test('path.curves Synchronisation', function() {
+test('path.curves synchronisation', function() {
 	var path = new Path();
 
 	path.add(new Point(100, 100));
@@ -52,7 +52,7 @@ test('path.curves Synchronisation', function() {
 	equals(path.curves.length, 0, 'curves.length');
 });
 
-test('path.curves on Closed Paths', function() {
+test('path.curves on closed paths', function() {
 	var path = new Path.Circle(new Point(100, 100) , 100);
 	equals(path.curves.toString(), "{ point1: { x: 0, y: 100 }, handle1: { x: 0, y: -55.22847 }, handle2: { x: -55.22847, y: 0 }, point2: { x: 100, y: 0 } },{ point1: { x: 100, y: 0 }, handle1: { x: 55.22847, y: 0 }, handle2: { x: 0, y: -55.22847 }, point2: { x: 200, y: 100 } },{ point1: { x: 200, y: 100 }, handle1: { x: 0, y: 55.22847 }, handle2: { x: 55.22847, y: 0 }, point2: { x: 100, y: 200 } },{ point1: { x: 100, y: 200 }, handle1: { x: -55.22847, y: 0 }, handle2: { x: 0, y: 55.22847 }, point2: { x: 0, y: 100 } }");
 	path.removeSegments(0, 1);
@@ -111,6 +111,6 @@ test('Splitting a straight path should produce linear segments', function() {
 	var path = new Path.Line([0, 0], [50, 50]);
 	var path2 = path.split(0, 0.5);
 	equals(function() {
-		return path2.firstSegment.linear
+		return path2.firstSegment.linear;
 	}, true);
 });

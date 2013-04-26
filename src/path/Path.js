@@ -684,7 +684,9 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// one to the left of the segment, not to the right, as normally).
 			// Also take into account closed paths, which have one curve more
 			// than segments.
-			var index = to == count + (this._closed ? 1 : 0) ? from - 1 : from,
+			var index = from > 0 && to === count + (this._closed ? 1 : 0)
+					? from - 1
+					: from,
 				curves = curves.splice(index, amount);
 			// Return the removed curves as well, if we're asked to include
 			// them, but exclude the first curve, since that's shared with the
