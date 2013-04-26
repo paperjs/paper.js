@@ -283,7 +283,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	getIntersections: function(curve) {
-		return Curve._addIntersections(this.getValues(), curve.getValues(),
+		return Curve.getIntersections(this.getValues(), curve.getValues(),
 				this, []);
 	},
 
@@ -706,9 +706,9 @@ statics: {
 	},
 
 	// We need to provide the original left curve reference to the
-	// #_addIntersections() calls as it is required to create the resulting
+	// #getIntersections() calls as it is required to create the resulting
 	// CurveLocation objects.
-	_addIntersections: function(v1, v2, curve, locations) {
+	getIntersections: function(v1, v2, curve, locations) {
 		var bounds1 = Curve.getBounds(v1),
 			bounds2 = Curve.getBounds(v2);
 /*#*/ if (options.debug) {
@@ -758,7 +758,7 @@ statics: {
 					v2s = Curve.subdivide(v2);
 				for (var i = 0; i < 2; i++)
 					for (var j = 0; j < 2; j++)
-						this._addIntersections(v1s[i], v2s[j], curve, locations);
+						this.getIntersections(v1s[i], v2s[j], curve, locations);
 			}
 		}
 		return locations;
