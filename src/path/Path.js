@@ -1226,7 +1226,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
-	 * The length of the perimeter of the path.
+	 * The approximate length of the path in points.
 	 *
 	 * @type Number
 	 * @bean
@@ -1239,6 +1239,21 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 				this._length += curves[i].getLength();
 		}
 		return this._length;
+	},
+
+	/**
+	 * The area of the path in square points. Self-intersecting paths can
+	 * contain sub-areas that cancel each other out.
+	 *
+	 * @type Number
+	 * @bean
+	 */
+	getArea: function() {
+		var curves = this.getCurves();
+		var area = 0;
+		for (var i = 0, l = curves.length; i < l; i++)
+			area += curves[i].getArea();
+		return area;
 	},
 
 	_getOffset: function(location) {

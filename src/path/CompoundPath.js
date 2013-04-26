@@ -153,6 +153,21 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		return last && last.getFirstCurve();
 	},
 
+	/**
+	 * The area of the path in square points. Self-intersecting paths can
+	 * contain sub-areas that cancel each other out.
+	 *
+	 * @type Number
+	 * @bean
+	 */
+	getArea: function() {
+		var children = this._children,
+			area = 0;
+		for (var i = 0, l = children.length; i < l; i++)
+			area += children[i].getArea();
+		return area;
+	},
+
 	getPathData: function(/* precision */) {
 		var children = this._children,
 			paths = [];
