@@ -734,9 +734,10 @@ statics: {
 		if (bounds1.touches(bounds2)) {
 			// See if both curves are flat enough to be treated as lines, either
 			// because they have no control points at all, or are "flat enough"
-			if (this.isLinear(v1) && this.isLinear(v2)
-				|| this.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE)
-					&& this.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE)) {
+			if ((this.isLinear(v1)
+					|| this.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE))
+				&& (this.isLinear(v2)
+					|| this.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE))) {
 /*#*/ if (options.debug) {
 				new Path.Line({
 					from: [v1[0], v1[1]],
