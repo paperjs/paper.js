@@ -188,7 +188,7 @@ function runTests() {
 var booleanStyle = {
   fillColor: new Color( 1, 0, 0, 0.5 ),
   strokeColor: new Color( 0, 0, 0 ),
-  strokeWidth: 2
+  strokeWidth: 1.5
 };
 
 var pathStyleNormal = {

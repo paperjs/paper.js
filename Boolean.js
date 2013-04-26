@@ -364,9 +364,9 @@
       var v2 = c2.getValues();
       var loc = [];
       if( c1.isLinear() && c2.isLinear() ){
-        _addLineIntersections( v1, v2, c1, loc );
+        getLineIntersections( v1, v2, c1, loc );
       } else {
-        Curve._addIntersections( v1, v2, c1, loc );
+        Curve.getIntersections( v1, v2, c1, loc );
       }
       if( loc.length ){
         for (k = 0, l=loc.length; k<l; k++) {
@@ -495,7 +495,7 @@
    */
 
   // step 1: discard invalid links according to the boolean operator
-  for ( i = graph.length - 1; i >= 0; i--) {
+  for ( i = graph.length - 1; i >= 0; i-- ) {
     var insidePath1 = false, insidePath2 = false, contains;
     lnk = graph[i];
     // if( lnk.SKIP_OPERATOR ) { continue; }
@@ -503,21 +503,18 @@
       crv = lnk.getCurve();
       // var midPoint = new Point(lnk.nodeIn.point);
       var midPoint = crv.getPoint( 0.5 );
-      // FIXME: new contains function : http://jsfiddle.net/QawX8/
       // If on a base curve, consider points on the curve and inside,
       // if not —for example a hole, points on the curve falls outside
       if( lnk.id !== 1 ){
-        contains = contains2( path1, midPoint );
-        insidePath1 = (lnk.winding === path1Clockwise)? contains > 0: contains > 1;
+        contains = path1.contains( midPoint );
+        insidePath1 = (lnk.winding === path1Clockwise)? contains :
+          contains && !testOnCurve( path1, midPoint );
       }
       if( lnk.id !== 2 ){
-        contains = contains2( path2, midPoint );
-        insidePath2 = (lnk.winding === path2Clockwise)? contains > 0: contains > 1;
+        contains = path2.contains( midPoint );
+        insidePath2 = (lnk.winding === path2Clockwise)? contains :
+          contains && !testOnCurve( path2, midPoint );
       }
-      // insidePath1 = (lnk.id === 1 )? false : contains2( path1, midPoint );
-      // insidePath2 = (lnk.id === 2 )? false : contains2( path2, midPoint );
-      // insidePath1 = (lnk.id === 1 )? false : path1.contains( midPoint );
-      // insidePath2 = (lnk.id === 2 )? false : path2.contains( midPoint );
     }
     if( lnk.INVALID || !operator( lnk, insidePath1, insidePath2 ) ){
       // lnk = graph.splice( i, 1 )[0];
@@ -629,7 +626,7 @@
 }
 
 
-var _addLineIntersections = function(v1, v2, curve, locations) {
+var getLineIntersections = function(v1, v2, curve, locations) {
   var result, a1x, a2x, b1x, b2x, a1y, a2y, b1y, b2y;
   a1x = v1[0]; a1y = v1[1];
   a2x = v1[6]; a2y = v1[7];
@@ -647,7 +644,7 @@ var _addLineIntersections = function(v1, v2, curve, locations) {
   }
 };
 
-function contains2( path, point ){
+function testOnCurve( path, point ){
   var res = 0;
   var crv = path.getCurves();
   var i = 0;
@@ -658,9 +655,6 @@ function contains2( path, point ){
       if( crvi.bounds.contains( point ) && crvi.getParameterOf( point ) ){
         res = 1;
       }
-    }
-    if( !res ){
-      res = (path.contains(point))? 2: res;
     }
   }
   return res;
