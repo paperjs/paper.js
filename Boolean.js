@@ -363,13 +363,18 @@
       var c2 = graph[j].getCurve();
       var v2 = c2.getValues();
       var loc = [];
-      if( c1.isLinear() && c2.isLinear() ){
-        getLineIntersections( v1, v2, c1, loc );
-      } else {
-        Curve.getIntersections( v1, v2, c1, loc );
-      }
+      Curve.getIntersections( v1, v2, c1, loc );
       if( loc.length ){
         for (k = 0, l=loc.length; k<l; k++) {
+          // Ignore segment overlaps if both curve are part of same contour
+          // This is a degenerate case while resolving self-intersections,
+          // after paperjs rev#8d35d92
+          if( graph[j].id === graph[i].id &&
+            ( loc[k].parameter === 0.0 || loc[k].parameter === 1.0) ){
+            continue;
+          }
+          // markPoint( loc[k].point, loc[k]._id )
+          // console.log( loc[k].point, loc[k]._id )
           graph[i].intersections.push( loc[k] );
           var loc2 = new CurveLocation( c2, null, loc[k].point );
           loc2._id = loc[k]._id;
@@ -508,12 +513,12 @@
       if( lnk.id !== 1 ){
         contains = path1.contains( midPoint );
         insidePath1 = (lnk.winding === path1Clockwise)? contains :
-          contains && !testOnCurve( path1, midPoint );
+        contains && !testOnCurve( path1, midPoint );
       }
       if( lnk.id !== 2 ){
         contains = path2.contains( midPoint );
         insidePath2 = (lnk.winding === path2Clockwise)? contains :
-          contains && !testOnCurve( path2, midPoint );
+        contains && !testOnCurve( path2, midPoint );
       }
     }
     if( lnk.INVALID || !operator( lnk, insidePath1, insidePath2 ) ){
@@ -607,7 +612,7 @@
       }
       path.closed = true;
       // path.clockwise = true;
-      if( path.segments.length > 1 && linkCount > 0 ){ // avoid stray segments and incomplete paths
+      if( path.segments.length > 1 && linkCount >= 0 ){ // avoid stray segments and incomplete paths
         if( path.segments.length === 2 ){
         }
         if( path.segments.length > 2 || !path.curves[0].isLinear() ){
@@ -626,23 +631,23 @@
 }
 
 
-var getLineIntersections = function(v1, v2, curve, locations) {
-  var result, a1x, a2x, b1x, b2x, a1y, a2y, b1y, b2y;
-  a1x = v1[0]; a1y = v1[1];
-  a2x = v1[6]; a2y = v1[7];
-  b1x = v2[0]; b1y = v2[1];
-  b2x = v2[6]; b2y = v2[7];
-  var ua_t = (b2x - b1x) * (a1y - b1y) - (b2y - b1y) * (a1x - b1x);
-  var ub_t = (a2x - a1x) * (a1y - b1y) - (a2y - a1y) * (a1x - b1x);
-  var u_b  = (b2y - b1y) * (a2x - a1x) - (b2x - b1x) * (a2y - a1y);
-  if ( u_b !== 0 ) {
-    var ua = ua_t / u_b;
-    var ub = ub_t / u_b;
-    if ( 0 <= ua && ua <= 1 && 0 <= ub && ub <= 1 ) {
-      locations.push( new CurveLocation(curve, null, new Point(a1x + ua * (a2x - a1x), a1y + ua * (a2y - a1y))) );
-    }
-  }
-};
+// var getLineIntersections = function(v1, v2, curve, locations) {
+//   var result, a1x, a2x, b1x, b2x, a1y, a2y, b1y, b2y;
+//   a1x = v1[0]; a1y = v1[1];
+//   a2x = v1[6]; a2y = v1[7];
+//   b1x = v2[0]; b1y = v2[1];
+//   b2x = v2[6]; b2y = v2[7];
+//   var ua_t = (b2x - b1x) * (a1y - b1y) - (b2y - b1y) * (a1x - b1x);
+//   var ub_t = (a2x - a1x) * (a1y - b1y) - (a2y - a1y) * (a1x - b1x);
+//   var u_b  = (b2y - b1y) * (a2x - a1x) - (b2x - b1x) * (a2y - a1y);
+//   if ( u_b !== 0 ) {
+//     var ua = ua_t / u_b;
+//     var ub = ub_t / u_b;
+//     if ( 0 <= ua && ua <= 1 && 0 <= ub && ub <= 1 ) {
+//       locations.push( new CurveLocation(curve, null, new Point(a1x + ua * (a2x - a1x), a1y + ua * (a2y - a1y))) );
+//     }
+//   }
+// };
 
 function testOnCurve( path, point ){
   var res = 0;
