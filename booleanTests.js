@@ -33,6 +33,17 @@ function runTests() {
   pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
   testBooleanStatic( pathA, pathB, caption );
 
+  caption = prepareTest( 'Circle and square (existing segments overlaps on curves)', container );
+  pathA = new Path.Circle(new Point(110, 110), 80);
+  pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
+  testBooleanStatic( pathA, pathB, caption );
+
+  caption = prepareTest( 'Square and square (one segment overlaps on a line)', container );
+  pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
+  pathA.rotate( 45 );
+  pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
+  testBooleanStatic( pathA, pathB, caption );
+
   caption = prepareTest( 'Rectangle and rectangle (overlaps exactly on existing curves)', container );
   pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
   pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
