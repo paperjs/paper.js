@@ -354,7 +354,7 @@
    * Pass 1:
    * Calculate the intersections for all graphs
    */
-   var ixCount = 0;
+   var ix, loc, loc2, ixCount = 0;
    for ( i = graph.length - 1; i >= 0; i--) {
     var c1 = graph[i].getCurve();
     var v1 = c1.getValues();
@@ -362,7 +362,7 @@
       if( !resolveSelfIntersections && graph[j].id === graph[i].id ){ continue; }
       var c2 = graph[j].getCurve();
       var v2 = c2.getValues();
-      var loc = [];
+      loc = [];
       Curve.getIntersections( v1, v2, c1, loc );
       if( loc.length ){
         for (k = 0, l=loc.length; k<l; k++) {
@@ -370,28 +370,57 @@
           // This is a degenerate case while resolving self-intersections,
           // after paperjs rev#8d35d92
           if( graph[j].id === graph[i].id &&
-            ( loc[k].parameter === 0.0 || loc[k].parameter === 1.0) ){
+            ( loc[k].parameter === 0.0 || loc[k].parameter === 1.0) ) {
             continue;
-          }
+        }
           // markPoint( loc[k].point, loc[k]._id )
           // console.log( loc[k].point, loc[k]._id )
           graph[i].intersections.push( loc[k] );
-          var loc2 = new CurveLocation( c2, null, loc[k].point );
+          loc2 = new CurveLocation( c2, null, loc[k].point );
           loc2._id = loc[k]._id;
           graph[j].intersections.push( loc2 );
+          loc[k]._ixpair = loc2;
+          loc2._ixpair = loc[k];
           ++ixCount;
         }
       }
     }
   }
 
+  /*
+   * Avoid duplicate intersections when a curve that belongs to one contour
+   * passes through a segment on another contour
+   */
+   len = graph.length;
+   while( len-- ){
+    ix = graph[len].intersections;
+    for (i =0, l=ix.length; i<l; i++) {
+      // In case of an over lap over the first segment on a link we
+      // look for duplicates and mark them INVALID
+      loc = ix[i];
+      if ( loc.parameter === 0.0 ){
+        j = graph.length;
+        while( j-- ) {
+          var ix2 = graph[j].intersections;
+          k = ix2.length;
+          while ( k-- ) {
+            loc2 = ix2[k];
+            if( !loc2.INVALID && loc._id !== loc2._id && loc2.parameter !== 1.0 &&
+              loc2.point.equals( loc.point ) ) {
+              loc2.INVALID = loc2._ixpair.INVALID = true;
+            }
+          }
+        }
+      }
+    }
+  }
 
   /*
    * Pass 2:
    * Walk the graph, sort the intersections on each individual link.
    * for each link that intersects with another one, replace it with new split links.
    */
-   var ix, ixPoint, ixHandleI, ixHandleOut, param, isLinear, parts, left, right;
+   var ixPoint, ixHandleI, ixHandleOut, param, isLinear, parts, left, right;
    var values, nix, niy,nox, noy, niho, nohi, nihox, nihoy, nohix, nohiy;
    for ( i = graph.length - 1; i >= 0; i--) {
     if( graph[i].intersections.length ){
@@ -412,6 +441,7 @@
       nohix + nox, nohiy + noy, nox, noy ];
 
       for (j =0, l=ix.length; j<l && lnk; j++) {
+        if( ix[j].INVALID ){ continue; }
         param = ix[j].parameter;
         // param = crv.getParameterOf( ix[j].point );
         if( param === 0.0 || param === 1.0) {
