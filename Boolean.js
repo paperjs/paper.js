@@ -240,7 +240,7 @@
  *
  * Does NOT handle selfIntersecting CompoundPaths.
  *
- * @param  {CompoundPath} path Input CompoundPath, Note: This path could be modified if need be.
+ * @param  {CompoundPath} path - Input CompoundPath, Note: This path could be modified if need be.
  * @return {boolean}      the winding direction of the base contour( true if clockwise )
  */
  function reorientCompoundPath( path ){
@@ -411,7 +411,7 @@
             }
           }
         }
-      }
+      } // if( loc.parameter === 0.0 )
     }
   }
 
