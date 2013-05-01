@@ -326,12 +326,23 @@ function subtract( path1, path2, _cache ){
 
 // a.k.a. eXclusiveOR
 function exclude( path1, path2 ){
-    var cache = null;
-    // computeBoolean( path1, path2, null, cache );
-    var res1 = subtract( path1, path2, cache );
-    var res2 = subtract( path2, path1, cache );
-    res1 = new CompoundPath( res1.children, res2.children );
-    return res1;
+    var res1 = subtract( path1, path2 );
+    var res2 = subtract( path2, path1 );
+    res1 = ( res1 instanceof CompoundPath )? res1.children : [ res1 ];
+    res2 = ( res2 instanceof CompoundPath )? res2.children : [ res2 ];
+    var res = new CompoundPath();
+    res.addChildren( res1.concat( res2 ), true );
+    return res;
+}
+
+function divide( path1, path2 ){
+    var res1 = subtract( path1, path2 );
+    var res2 = intersect( path1, path2 );
+    res1 = ( res1 instanceof CompoundPath )? res1.children : [ res1 ];
+    res2 = ( res2 instanceof CompoundPath )? res2.children : [ res2 ];
+    var res = new CompoundPath();
+    res.addChildren( res1.concat( res2 ), true );
+    return res;
 }
 
 
