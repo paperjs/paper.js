@@ -247,8 +247,13 @@ function computeBoolean( path1, path2, operator, _splitCache ){
             // view.draw()
             node = node.next;
         }
-        nuPath.closed = true;
-        boolResult.addChild( nuPath, true );
+        if( nuPath.segments.length > 1 ) {
+            // avoid stray segments and incomplete paths
+            if( nuPath.segments.length > 2 || !nuPath.curves[0].isLinear() ){
+                nuPath.closed = true;
+                boolResult.addChild( nuPath, true );
+            }
+        }
     }
     // if( operator.name === 'intersection' ){
     //     window.p = boolResult.reduce();
