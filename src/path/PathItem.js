@@ -69,10 +69,11 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 		for (var i = 0; i < length2; i++)
 			values2[i] = curves2[i].getValues();
 		for (var i = 0, l = curves1.length; i < l; i++) {
-			var curve = curves1[i],
-				values1 = curve.getValues();
+			var curve1 = curves1[i],
+				values1 = curve1.getValues();
 			for (var j = 0; j < length2; j++)
-				Curve.getIntersections(values1, values2[j], curve, locations);
+				Curve.getIntersections(values1, values2[j], curve1, curves2[j],
+						locations);
 		}
 		return locations;
 	},
