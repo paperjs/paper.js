@@ -36,7 +36,7 @@ var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# *
 	 * @param {Number} parameter
 	 * @param {Point} point
 	 */
-	initialize: function(curve, parameter, point, distance) {
+	initialize: function(curve, parameter, point, _otherCurve, _distance) {
 		// Define this CurveLocation's unique id.
 		this._id = CurveLocation._id = (CurveLocation._id || 0) + 1;
 		this._curve = curve;
@@ -47,7 +47,8 @@ var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# *
 		this._segment2 = curve._segment2;
 		this._parameter = parameter;
 		this._point = point;
-		this._distance = distance;
+		this._otherCurve = _otherCurve;
+		this._distance = _distance;
 	},
 
 	/**
@@ -60,9 +61,9 @@ var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# *
 		if (!this._segment) {
 			var curve = this.getCurve(),
 				parameter = this.getParameter();
-			if (parameter == 0) {
+			if (parameter === 0) {
 				this._segment = curve._segment1;
-			} else if (parameter == 1) {
+			} else if (parameter === 1) {
 				this._segment = curve._segment2;
 			} else if (parameter == null) {
 				return null;
@@ -95,6 +96,26 @@ var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# *
 				this._curve = this._segment2.getPrevious().getCurve();
 		}
 		return this._curve;
+	},
+
+	/**
+	 * The curve location on the intersecting curve, if this location is the
+	 * result of a call to {@link PathItem#getIntersections(path)} /
+	 * {@link Curve#getIntersections(curve)}.
+	 *
+	 * @type CurveLocation
+	 * @bean
+	 */
+	getIntersection: function() {
+		var intersection = this._intersection;
+		if (!intersection && this._otherCurve) {
+			// _point is always defined for intersection
+			intersection = this._intersection = new CurveLocation(
+					this._otherCurve, null, this._point, this);
+			// Link both ways
+			intersection._intersection = this;
+		}
+		return intersection;
 	},
 
 	/**
