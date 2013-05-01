@@ -113,39 +113,58 @@ function splitPath( _ixs, other ) {
 }
 
 function reversePath( path ){
+    var baseWinding;
     if( path instanceof CompoundPath ){
         var children = path.children, i, len;
         for (i = 0, len = children.length; i < len; i++) {
             children[i].reverse();
+            children[i]._curves = null;
         }
+        baseWinding = children[0].clockwise;
     } else {
         path.reverse();
+        baseWinding = path.clockwise;
+        path._curves = null;
     }
+    return baseWinding;
 }
 
-function computeBoolean( path1, path2, operator ){
+function computeBoolean( path1, path2, operator, _splitCache ){
+    var _path1, _path2, path1Clockwise, path2Clockwise;
+    var ixs, path1Id, path2Id;
     // We do not modify the operands themselves
     // The result might not belong to the same type
-    // i.e. subtraction< A:Path, B:Path >:CompoundPath etc.
-    var _path1 = path1.clone();
-    var _path2 = path2.clone();
-    // Do operator specific calculations before we begin
-    if( operator.name === "subtraction" ) {
-        reversePath( _path2 );
+    // i.e. subtraction( A:Path, B:Path ):CompoundPath etc.
+    _path1 = path1.clone();
+    _path2 = path2.clone();
+    _path1.style = _path2.style = null;
+    _path1.selected = _path2.selected = false;
+    path1Clockwise = reorientCompoundPath( _path1 );
+    path2Clockwise = reorientCompoundPath( _path2 );
+    path1Id = _path1.id;
+    path2Id = _path2.id;
+    // Calculate all the intersections
+    ixs = ( _splitCache && _splitCache.intersections )?
+        _splitCache.intersections : _path1.getIntersections( _path2 );
+    // if we have a empty _splitCache object as an operand,
+    // skip calculating boolean and cache the intersections
+    if( _splitCache && !_splitCache.intersections ){
+        _splitCache.intersections = ixs;
+        return;
     }
-    var path1Clockwise = reorientCompoundPath( _path1 );
-    var path2Clockwise = reorientCompoundPath( _path2 );
-
-    var ixs = _path1.getIntersections( _path2 );
-    var path1Id = _path1.id;
-    var path2Id = _path2.id;
     splitPath( ixs );
     splitPath( ixs, true );
+    path1Id = _path1.id;
+    path2Id = _path2.id;
+    // Do operator specific calculations before we begin
+    if( operator.name === "subtraction" ) {
+        path2Clockwise = reversePath( _path2 );
+    }
 
     var i, j, len, path, crv;
-    var paths;
+    var paths = [];
     if( _path1 instanceof CompoundPath ){
-        paths = new Array().concat( _path1.children );
+        paths = paths.concat( _path1.children );
     } else {
         paths = [ _path1 ];
     }
