@@ -773,7 +773,7 @@ statics: {
 					v2s = this.subdivide(v2);
 				for (var i = 0; i < 2; i++)
 					for (var j = 0; j < 2; j++)
-						this.getIntersections(v1s[i], v2s[j], curve1, locations);
+						this.getIntersections(v1s[i], v2s[j], curve1, curve2, locations);
 			}
 		}
 		return locations;
