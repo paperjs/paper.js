@@ -84,7 +84,7 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 	_hitTest: function(point, options) {
 		if (this.hasFill() && this.contains(point))
 			return new HitResult('fill', this);
-		// TODO: Implement stokre!
+		// TODO: Implement stroke!
 	},
 
 	statics: {

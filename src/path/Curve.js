@@ -288,7 +288,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 	getIntersections: function(curve) {
 		return Curve.getIntersections(this.getValues(), curve.getValues(),
-				this, []);
+				this, curve, []);
 	},
 
 	getCrossings: function(point, roots) {
@@ -716,7 +716,7 @@ statics: {
 	// We need to provide the original left curve reference to the
 	// #getIntersections() calls as it is required to create the resulting
 	// CurveLocation objects.
-	getIntersections: function(v1, v2, curve, locations) {
+	getIntersections: function(v1, v2, curve1, curve2, locations) {
 		var bounds1 = this.getBounds(v1),
 			bounds2 = this.getBounds(v2);
 /*#*/ if (options.debug) {
@@ -764,7 +764,8 @@ statics: {
 						// Passing null for parameter leads to lazy determination
 						// of parameter values in CurveLocation#getParameter()
 						// only once they are requested.
-						locations.push(new CurveLocation(curve, null, point));
+						locations.push(new CurveLocation(curve1, null, point,
+								curve2));
 				}
 			} else {
 				// Subdivide both curves, and see if they intersect.
@@ -772,7 +773,7 @@ statics: {
 					v2s = this.subdivide(v2);
 				for (var i = 0; i < 2; i++)
 					for (var j = 0; j < 2; j++)
-						this.getIntersections(v1s[i], v2s[j], curve, locations);
+						this.getIntersections(v1s[i], v2s[j], curve1, locations);
 			}
 		}
 		return locations;
@@ -1233,7 +1234,8 @@ new function() { // Scope for methods that require numerical integration
 					minPoint = pt;
 				}
 			}
-			return new CurveLocation(this, minT, minPoint, Math.sqrt(minDist));
+			return new CurveLocation(this, minT, minPoint, null,
+					Math.sqrt(minDist));
 		},
 
 		getNearestPoint: function(point) {
