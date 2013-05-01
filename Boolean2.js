@@ -26,12 +26,12 @@ function splitPath( _ixs, other ) {
             if( nextNode.curve._ixParams ){
                 ixs = nextNode.curve._ixParams;
                 ixs.sort( sortIx );
-                crv = nextNode.curve;
+                crv = nextNode.getCurve();
                 isLinear = crv.isLinear();
                 crv = vals = null;
                 for (i = 0, l = ixs.length; i < l; i++) {
                     ix = ixs[i];
-                    crv = nextNode.curve;
+                    crv = nextNode.getCurve();
                     if( !vals ) vals = crv.getValues();
                     if( ix.parameter === 0.0 || ix.parameter === 1.0 ){
                         // Intersection is on an existing node
@@ -219,6 +219,7 @@ function computeBoolean( path1, path2, operator, _splitCache ){
         thisId = ( path.parent instanceof CompoundPath )? path.parent.id : path.id;
         thisWinding = path.clockwise;
         nuPath = new Path();
+        // nuPath.selected = true;
         firstNode = null;
         firstNode_ix = null;
         if( node.previous.curve._INVALID ) {
@@ -226,17 +227,14 @@ function computeBoolean( path1, path2, operator, _splitCache ){
             node._ixPair.getIntersection()._segment.handleIn : [ 0, 0 ];
         }
         while( node && !node._visited && ( node !== firstNode && node !== firstNode_ix ) ){
-            // markPoint( node.point, node.index );
-            // view.draw()
-
             node._visited = true;
             firstNode = ( firstNode )? firstNode: node;
             firstNode_ix = ( !firstNode_ix && firstNode._ixPair )?
-                firstNode._ixPair.getIntersection()._segment: firstNode_ix;
+            firstNode._ixPair.getIntersection()._segment: firstNode_ix;
+            // node._ixPair is this node's intersection CurveLocation object
+            // node._ixPair.getIntersection() is the other CurveLocation object this node intersects with
             nextNode = ( node._ixPair && node.curve._INVALID )? node._ixPair.getIntersection()._segment : node;
             if( node._ixPair ) {
-                // node._ixPair is this node's intersection CurveLocation object
-                // node._ixPair._ixPair is the other CurveLocation object this node intersects with
                 nextNode._visited = true;
                 nuNode = new Segment( node.point, node.handleIn, nextNode.handleOut );
                 nuPath.add( nuNode );
@@ -246,6 +244,7 @@ function computeBoolean( path1, path2, operator, _splitCache ){
             } else {
                 nuPath.add( node );
             }
+            // view.draw()
             node = node.next;
         }
         nuPath.closed = true;
@@ -257,12 +256,13 @@ function computeBoolean( path1, path2, operator, _splitCache ){
     // window.a = _path1;
     // window.b = _path2;
     // Delete the proxies
-    _path1.remove();
-    _path2.remove();
+    // _path1.remove();
+    // _path2.remove();
     // And then, we are done.
     return boolResult.reduce();
 }
 
+// Bottleneck no: 2
 function testOnCurve( path, point ){
     var res = 0;
     var crv = path.getCurves();
@@ -298,25 +298,35 @@ function testOnCurve( path, point ){
  *  return false - discard the curve
  */
 
- function unite( path1, path2 ){
+ function unite( path1, path2, _cache ){
     var unionOp = function union( isPath1, isInsidePath1, isInsidePath2 ){
         return ( isInsidePath1 || isInsidePath2 )? false : true;
     };
-    return computeBoolean( path1, path2, unionOp );
+    return computeBoolean( path1, path2, unionOp, _cache );
 }
 
-function intersect( path1, path2 ){
+function intersect( path1, path2, _cache ){
     var intersectionOp = function intersection( isPath1, isInsidePath1, isInsidePath2 ){
         return ( !isInsidePath1 && !isInsidePath2 )? false : true;
     };
-    return computeBoolean( path1, path2, intersectionOp );
+    return computeBoolean( path1, path2, intersectionOp, _cache );
 }
 
-function subtract( path1, path2 ){
+function subtract( path1, path2, _cache ){
     var subtractionOp = function subtraction( isPath1, isInsidePath1, isInsidePath2 ){
         return ( (isPath1 && isInsidePath2) || (!isPath1 && !isInsidePath1) )? false : true;
     };
-    return computeBoolean( path1, path2, subtractionOp );
+    return computeBoolean( path1, path2, subtractionOp, _cache );
+}
+
+// a.k.a. eXclusiveOR
+function exclude( path1, path2 ){
+    var cache = null;
+    // computeBoolean( path1, path2, null, cache );
+    var res1 = subtract( path1, path2, cache );
+    var res2 = subtract( path2, path1, cache );
+    res1 = new CompoundPath( res1.children, res2.children );
+    return res1;
 }
 
 
