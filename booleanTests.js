@@ -160,7 +160,7 @@ function runTests() {
   pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
   pathB = new CompoundPath();
   pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
-  pathB.addChild( new Path.Rectangle(new Point(150.5, 60.5), [50, 100]) );
+  pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
   // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
   testBooleanStatic( pathA, pathB, caption );
 
@@ -283,7 +283,6 @@ function testBooleanStatic( path1, path2, caption, noUnion, noIntersection, noSu
       var boolPathI = intersect( _p1I, _p2I );
       console.timeEnd( 'Intersection' );
       boolPathI.style = booleanStyle;
-      window.p = boolPathI
     }
 
     if( !noSubtraction ) {
@@ -294,6 +293,27 @@ function testBooleanStatic( path1, path2, caption, noUnion, noIntersection, noSu
       var boolPathS = subtract( _p1S, _p2S );
       console.timeEnd( 'Subtraction' );
       boolPathS.style = booleanStyle;
+    }
+
+    if( !noSubtraction ) {
+      var _p1E = path1.clone().translate( [250, 220] );
+      var _p2E = path2.clone().translate( [250, 220] );
+      _p1E.style = _p2E.style = pathStyleBoolean;
+      console.time( 'Exclusion' );
+      var boolPathE = exclude( _p1E, _p2E );
+      console.timeEnd( 'Exclusion' );
+      boolPathE.style = booleanStyle;
+    }
+
+    if( !noSubtraction && !noIntersection) {
+      var _p1D = path1.clone().translate( [500, 220] );
+      var _p2D = path2.clone().translate( [500, 220] );
+      _p1D.style = _p2D.style = pathStyleBoolean;
+      console.time( 'Division' );
+      var boolPathD = divide( _p1D, _p2D );
+      console.timeEnd( 'Division' );
+      disperse( boolPathD );
+      boolPathD.style = booleanStyle;
     }
   // } catch( e ){
   //   console.error( e.name + ": " + e.message );
@@ -309,7 +329,7 @@ function testBooleanStatic( path1, path2, caption, noUnion, noIntersection, noSu
 
 function disperse( path, distance ){
   distance = distance || 10;
-  if( ! path instanceof CompoundPath ){ return; }
+  if( ! path instanceof CompoundPath || ! path instanceof Group ){ return; }
   var center = path.bounds.center;
   var children = path.children, i ,len;
   for (i = 0, len = children.length; i < len; i++) {
