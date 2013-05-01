@@ -155,10 +155,9 @@ function computeBoolean( path1, path2, operator ){
         paths.push( _path2 );
     }
 
-    _path2.selected = true;
     // step 1: discard invalid links according to the boolean operator
     var lastNode, firstNode, nextNode, midPoint, insidePath1, insidePath2;
-    var thisId, thisWinding, contains;
+    var thisId, thisWinding, contains, subtractionOp = (operator.name === 'subtraction');
     for (i = 0, len = paths.length; i < len; i++) {
         insidePath1 = insidePath2 = false;
         path = paths[i];
@@ -173,12 +172,12 @@ function computeBoolean( path1, path2, operator ){
             midPoint = crv.getPoint( 0.5 );
             if( thisId !== path1Id ){
                 contains = _path1.contains( midPoint );
-                insidePath1 = (thisWinding === path1Clockwise)? contains :
+                insidePath1 = (thisWinding === path1Clockwise || subtractionOp )? contains :
                 contains && !testOnCurve( _path1, midPoint );
             }
             if( thisId !== path2Id ){
                 contains = _path2.contains( midPoint );
-                insidePath2 = (thisWinding === path2Clockwise)? contains :
+                insidePath2 = (thisWinding === path2Clockwise )? contains :
                 contains && !testOnCurve( _path2, midPoint );
             }
             if( !operator( thisId === path1Id, insidePath1, insidePath2 ) ){
