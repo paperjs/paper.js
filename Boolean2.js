@@ -74,11 +74,11 @@ function splitPath( _ixs, other ) {
  * @return {boolean}      the winding direction of the base contour( true if clockwise )
  */
  function reorientCompoundPath( path ){
-	if( !(path instanceof CompoundPath) ){ return path.clockwise; }
-	var children = path.children, len = children.length, baseWinding;
-	var bounds = new Array( len );
-	var tmparray = new Array( len );
-	baseWinding = children[0].clockwise;
+ 	if( !(path instanceof CompoundPath) ){ return path.clockwise; }
+ 	var children = path.children, len = children.length, baseWinding;
+ 	var bounds = new Array( len );
+ 	var tmparray = new Array( len );
+ 	baseWinding = children[0].clockwise;
 	// Omit the first path
 	for (i = 0; i < len; i++) {
 		bounds[i] = children[i].bounds;
@@ -125,12 +125,16 @@ function computeBoolean( _path1, _path2, operator ){
 	}
 
 	// step 1: discard invalid links according to the boolean operator
+	var lastNode, firstNode, nextNode, midPoint, insidePath1, insidePath2;
+	var thisId, thisWinding;
 	for (i = 0, len = paths.length; i < len; i++) {
 		path = paths[i];
-		var thisId = ( path.parent instanceof CompoundPath )? path.parent.id : path.id;
-		var thisWinding = path.clockwise;
-		var lastNode = path.lastSegment, firstNode = path.firstSegment;
-		var nextNode = null, midPoint, insidePath1, insidePath2;
+		thisId = ( path.parent instanceof CompoundPath )? path.parent.id : path.id;
+		thisWinding = path.clockwise;
+		lastNode = path.lastSegment;
+		firstNode = path.firstSegment;
+		nextNode = null;
+		console.log( thisId, path1Id, path2Id )
 		while( nextNode !== firstNode){
 			nextNode = ( nextNode )? nextNode.previous: lastNode;
 			crv = nextNode.curve;
@@ -150,27 +154,71 @@ function computeBoolean( _path1, _path2, operator ){
 			}
 		}
 	}
+
+	// Final step: Retrieve the resulting paths from the graph
+	var boolResult = new CompoundPath();
+	boolResult.style = booleanStyle;
+	var node, nuNode, nuPath, nodeList = [], handle;
+	for (i = 0, len = paths.length; i < len; i++) {
+		nodeList = nodeList.concat( paths[i].segments );
+	}
+	for (i = 0, len = nodeList.length; i < len; i++) {
+		node = nodeList[i];
+		if( node.curve._INVALID || node._visited ){ continue; }
+		path = node.path;
+		thisId = ( path.parent instanceof CompoundPath )? path.parent.id : path.id;
+		thisWinding = path.clockwise;
+		nuPath = new Path();
+	// nuPath.selected = true;
+		firstNode = null;
+		while( node && !node._visited ){
+			node._visited = true;
+			firstNode = ( firstNode )? firstNode: node;
+			if( node._ixPair ) {
+				// node._ixPair is this node's intersection CurveLocation object
+				// node._ixPair._ixPair is the other CurveLocation object this node intersects with
+				nextNode = ( node.curve._INVALID )? node._ixPair._ixPair._segment : node;
+				nextNode._visited = true;
+				nuNode = new Segment( node.point, node.handleIn, nextNode.handleOut );
+				nuPath.add( nuNode );
+				node = nextNode;
+				path = node.path;
+				thisWinding = path.clockwise;
+			} else {
+				nuPath.add( node );
+			}
+			node = node.next;
+			view.draw();
+		}
+		nuPath.closed = true;
+		boolResult.addChild( nuPath );
+	}
+
+	window.pp = boolResult.reduce();
+
+	return boolResult.reduce();
 }
 
 function testOnCurve( path, point ){
-  var res = 0;
-  var crv = path.getCurves();
-  var i = 0;
-  var bounds = path._bounds;
-  if( bounds && bounds.contains( point ) ){
-    for( i = 0; i < crv.length && !res; i++ ){
-      var crvi = crv[i];
-      if( crvi.bounds.contains( point ) && crvi.getParameterOf( point ) ){
-        res = 1;
-      }
-    }
-  }
-  return res;
+	var res = 0;
+	var crv = path.getCurves();
+	var i = 0;
+	var bounds = path._bounds;
+	if( bounds && bounds.contains( point ) ){
+		for( i = 0; i < crv.length && !res; i++ ){
+			var crvi = crv[i];
+			if( crvi.bounds.contains( point ) && crvi.getParameterOf( point ) ){
+				res = 1;
+			}
+		}
+	}
+	return res;
 }
 
 function unite( path1, path2 ){
 	var unionOp = function( isPath1, isInsidePath1, isInsidePath2 ){
-	    return ( isInsidePath1 || isInsidePath2 )? false : true;
+		this.type = 1;
+		return ( isInsidePath1 || isInsidePath2 )? false : true;
 	};
 	return computeBoolean( path1, path2, unionOp );
 }
