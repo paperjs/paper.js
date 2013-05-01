@@ -173,7 +173,6 @@ function computeBoolean( path1, path2, operator, _splitCache ){
     } else {
         paths.push( _path2 );
     }
-
     // step 1: discard invalid links according to the boolean operator
     var lastNode, firstNode, nextNode, midPoint, insidePath1, insidePath2;
     var thisId, thisWinding, contains, subtractionOp = (operator.name === 'subtraction');
@@ -219,7 +218,6 @@ function computeBoolean( path1, path2, operator, _splitCache ){
         thisId = ( path.parent instanceof CompoundPath )? path.parent.id : path.id;
         thisWinding = path.clockwise;
         nuPath = new Path();
-        // nuPath.selected = true;
         firstNode = null;
         firstNode_ix = null;
         if( node.previous.curve._INVALID ) {
@@ -244,7 +242,6 @@ function computeBoolean( path1, path2, operator, _splitCache ){
             } else {
                 nuPath.add( node );
             }
-            // view.draw()
             node = node.next;
         }
         if( nuPath.segments.length > 1 ) {
@@ -255,14 +252,9 @@ function computeBoolean( path1, path2, operator, _splitCache ){
             }
         }
     }
-    // if( operator.name === 'intersection' ){
-    //     window.p = boolResult.reduce();
-    // }
-    // window.a = _path1;
-    // window.b = _path2;
     // Delete the proxies
-    // _path1.remove();
-    // _path2.remove();
+    _path1.remove();
+    _path2.remove();
     // And then, we are done.
     return boolResult.reduce();
 }
@@ -338,5 +330,3 @@ function divide( path1, path2 ){
     var res = new Group( [res1, res2] );
     return res;
 }
-
-
