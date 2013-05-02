@@ -200,21 +200,21 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	    var unionOp = function union( isPath1, isInsidePath1, isInsidePath2 ){
 	        return ( isInsidePath1 || isInsidePath2 )? false : true;
 	    };
-	    return computeBoolean( this, path, unionOp, _cache );
+	    return this._computeBoolean( this, path, unionOp, _cache );
 	},
 
 	intersect: function( path, _cache ){
 	    var intersectionOp = function intersection( isPath1, isInsidePath1, isInsidePath2 ){
 	        return ( !isInsidePath1 && !isInsidePath2 )? false : true;
 	    };
-	    return computeBoolean( this, path, intersectionOp, _cache );
+	    return this._computeBoolean( this, path, intersectionOp, _cache );
 	},
 
 	subtract: function( path, _cache ){
 	    var subtractionOp = function subtraction( isPath1, isInsidePath1, isInsidePath2 ){
 	        return ( (isPath1 && isInsidePath2) || (!isPath1 && !isInsidePath1) )? false : true;
 	    };
-	    return computeBoolean( this, path, subtractionOp, _cache );
+	    return this._computeBoolean( this, path, subtractionOp, _cache );
 	},
 
 	/*
@@ -351,7 +351,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	    return baseWinding;
 	},
 
-	reversePath: function( path ){
+	_reversePath: function( path ){
 	    var baseWinding;
 	    if( path instanceof CompoundPath ){
 	        var children = path.children, i, len;
@@ -378,8 +378,8 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	    _path2 = path2.clone();
 	    _path1.style = _path2.style = null;
 	    _path1.selected = _path2.selected = false;
-	    path1Clockwise = _reorientCompoundPath( _path1 );
-	    path2Clockwise = _reorientCompoundPath( _path2 );
+	    path1Clockwise = this._reorientCompoundPath( _path1 );
+	    path2Clockwise = this._reorientCompoundPath( _path2 );
 	    path1Id = _path1.id;
 	    path2Id = _path2.id;
 	    // Calculate all the intersections
@@ -391,13 +391,13 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	        _splitCache.intersections = ixs;
 	        return;
 	    }
-	    _splitPath( ixs );
-	    _splitPath( ixs, true );
+	    this._splitPath( ixs );
+	    this._splitPath( ixs, true );
 	    path1Id = _path1.id;
 	    path2Id = _path2.id;
 	    // Do operator specific calculations before we begin
 	    if( operator.name === "subtraction" ) {
-	        path2Clockwise = _reversePath( _path2 );
+	        path2Clockwise = this._reversePath( _path2 );
 	    }
 
 	    var i, j, len, path, crv;
@@ -428,14 +428,15 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 	            crv = nextNode.curve;
 	            midPoint = crv.getPoint( 0.5 );
 	            if( thisId !== path1Id ){
-	                contains = _path1.contains( midPoint );
+	                contains = _path1.
+	                contains( midPoint );
 	                insidePath1 = (thisWinding === path1Clockwise || subtractionOp )? contains :
-	                contains && !_testOnCurve( _path1, midPoint );
+	                contains && !this._testOnCurve( _path1, midPoint );
 	            }
 	            if( thisId !== path2Id ){
 	                contains = _path2.contains( midPoint );
 	                insidePath2 = (thisWinding === path2Clockwise )? contains :
-	                contains && !_testOnCurve( _path2, midPoint );
+	                contains && !this._testOnCurve( _path2, midPoint );
 	            }
 	            if( !operator( thisId === path1Id, insidePath1, insidePath2 ) ){
 	                crv._INVALID = true;
