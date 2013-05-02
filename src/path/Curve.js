@@ -716,7 +716,9 @@ statics: {
 	// We need to provide the original left curve reference to the
 	// #getIntersections() calls as it is required to create the resulting
 	// CurveLocation objects.
-	getIntersections: function(v1, v2, curve1, curve2, locations) {
+	getIntersections: function(v1, v2, curve1, curve2, locations,
+			// Pass on isFlat1 / isFlat2 parameters in iterative calls
+			isFlat1, isFlat2) {
 		var bounds1 = this.getBounds(v1),
 			bounds2 = this.getBounds(v2);
 /*#*/ if (options.debug) {
@@ -734,10 +736,15 @@ statics: {
 		if (bounds1.touches(bounds2)) {
 			// See if both curves are flat enough to be treated as lines, either
 			// because they have no control points at all, or are "flat enough"
-			if ((this.isLinear(v1)
-					|| this.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE))
-				&& (this.isLinear(v2)
-					|| this.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE))) {
+			// If the curve was flat in a previous iteration, we don't need to
+			// recalculate since it does not need further subdivision then.
+			if (!isFlat1)
+				isFlat1 = this.isLinear(v1)
+						|| this.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE);
+			if (!isFlat2)
+				isFlat2 = this.isLinear(v2)
+						|| this.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE);
+			if (isFlat1 && isFlat2) {
 /*#*/ if (options.debug) {
 				new Path.Line({
 					from: [v1[0], v1[1]],
@@ -769,11 +776,14 @@ statics: {
 				}
 			} else {
 				// Subdivide both curves, and see if they intersect.
-				var v1s = this.subdivide(v1),
-					v2s = this.subdivide(v2);
-				for (var i = 0; i < 2; i++)
-					for (var j = 0; j < 2; j++)
-						this.getIntersections(v1s[i], v2s[j], curve1, curve2, locations);
+				// If one of the curves is flat already, no further subdivion
+				// is required.
+				var v1s = isFlat1 ? [v1] : this.subdivide(v1),
+					v2s = isFlat2 ? [v2] : this.subdivide(v2);
+				for (var i = 0, l = v1s.length; i < l; i++)
+					for (var j = 0, k = v2s.length; j < k; j++)
+						this.getIntersections(v1s[i], v2s[j], curve1, curve2,
+								locations, isFlat1, isFlat2);
 			}
 		}
 		return locations;
