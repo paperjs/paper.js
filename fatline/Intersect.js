@@ -54,6 +54,7 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
     var dq3 = new Point( 1.0, lp.getSide(q3) * lp.getDistance(q3) );
     // Ideally we need to calculate the convex hull for D(ti, di(t))
     // here we are just checking against all possibilities
+
     var Dt = [
         new Line( dq0, dq1, false ),
         new Line( dq1, dq2, false ),
@@ -180,12 +181,12 @@ function signum(num) {
     return ( num > 0 )? 1 : ( num < 0 )? -1 : 0;
 }
 
-var _addLineIntersections = function(v1, v2, curve, locations) {
+var _intersectLines = function(v1, v2) {
     var result, a1x, a2x, b1x, b2x, a1y, a2y, b1y, b2y;
     a1x = v1[0]; a1y = v1[1];
-    a2x = v1[6]; a2y = v1[7];
+    a2x = v1[2]; a2y = v1[3];
     b1x = v2[0]; b1y = v2[1];
-    b2x = v2[6]; b2y = v2[7];
+    b2x = v2[3]; b2y = v2[3];
     var ua_t = (b2x - b1x) * (a1y - b1y) - (b2y - b1y) * (a1x - b1x);
     var ub_t = (a2x - a1x) * (a1y - b1y) - (a2y - a1y) * (a1x - b1x);
     var u_b  = (b2y - b1y) * (a2x - a1x) - (b2x - b1x) * (a2y - a1y);
@@ -193,7 +194,7 @@ var _addLineIntersections = function(v1, v2, curve, locations) {
         var ua = ua_t / u_b;
         var ub = ub_t / u_b;
         if ( 0 <= ua && ua <= 1 && 0 <= ub && ub <= 1 ) {
-            locations.push( new CurveLocation(curve, null, new Point(a1x + ua * (a2x - a1x), a1y + ua * (a2y - a1y))) );
+            return new Point(a1x + ua * (a2x - a1x), a1y + ua * (a2y - a1y));
         }
     }
 };
