@@ -33,51 +33,49 @@
 
 PathItem.inject({
 
-	/**
-	 * A boolean operator is a binary operator function of the form
-	 * f(isPath1:boolean, isInsidePath1:Boolean, isInsidePath2:Boolean) :Boolean
-	 *
-	 * Boolean operator determines whether a curve segment in the operands is part
-	 * of the boolean result, and will be called for each curve segment in the graph after
-	 * all the intersections between the operands are calculated and curves in the operands
-	 * are split at intersections.
-	 *
-	 * These functions should have a name ("union", "subtraction" etc. below), if we need to
-	 * do operator specific operations on paths inside the computeBoolean function.
-	 *  for example: if the name of the operator is "subtraction" then we need to reverse the second
-	 *				  operand. Subtraction is neither associative nor commutative.
-	 *
-	 *  The boolean operator should return a Boolean value indicating whether to keep the curve or not.
-	 *  return true - keep the curve
-	 *  return false - discard the curve
-	*/
+	// A boolean operator is a binary operator function of the form
+	// function(isPath1, isInPath1, isInPath2)
+	//
+	// Operators return true if a curve in the operands is to be removed,
+	// and they aare called for each curve segment in the graph after all the
+	// intersections between the operands are calculated and curves in the
+	// operands were split at intersections.
+	//
+	// These functions should have a name ("union", "subtraction" etc. below),
+	// if we need to do operator specific operations on paths inside the
+	// computeBoolean function.
+	// For example: If the name of the operator is "subtraction" then we need to
+	// reverse the second operand. Subtraction is neither associative nor
+	// commutative.
+	//
+	//  The boolean operator return a Boolean value indicating whether to
+	// keep the curve or not.
+	//  return true - discard the curve
+	//  return false - keep the curve
 	unite: function(path, _cache) {
-		var unionOp = function union(isPath1, isInsidePath1, isInsidePath2) {
-			return (isInsidePath1 || isInsidePath2)? false : true;
-		};
-		return this._computeBoolean(this, path, unionOp, _cache);
+		return this._computeBoolean(this, path,
+				function union(isPath1, isInPath1, isInPath2) {
+					return isInPath1 || isInPath2;
+				}, _cache);
 	},
 
 	intersect: function(path, _cache) {
-		var intersectionOp = function intersection(isPath1, isInsidePath1, isInsidePath2) {
-			return (!isInsidePath1 && !isInsidePath2)? false : true;
-		};
-		return this._computeBoolean(this, path, intersectionOp, _cache);
+		return this._computeBoolean(this, path,
+				function intersection(isPath1, isInPath1, isInPath2) {
+					return !(isInPath1 || isInPath2);
+				}, _cache);
 	},
 
 	subtract: function(path, _cache) {
-		var subtractionOp = function subtraction(isPath1, isInsidePath1, isInsidePath2) {
-			return ((isPath1 && isInsidePath2) || (!isPath1 && !isInsidePath1))? false : true;
-		};
-		return this._computeBoolean(this, path, subtractionOp, _cache);
+		return this._computeBoolean(this, path,
+				function subtraction(isPath1, isInPath1, isInPath2) {
+					return isPath1 && isInPath2 || !isPath1 && !isInPath1;
+				}, _cache);
 	},
 
-	/*
-	 * Compound boolean operators combine the basic boolean operations such as union, intersection,
-	 * subtract etc.
-	 *
-	 * TODO: cache the split objects and find a way to properly clone them!
-	 */
+	// Compound boolean operators combine the basic boolean operations such as
+	// union, intersection, subtract etc. 
+	// TODO: cache the split objects and find a way to properly clone them!
 	// a.k.a. eXclusiveOR
 	exclude: function(path) {
 		var res1 = this.subtract(path);
@@ -293,7 +291,7 @@ PathItem.inject({
 					insidePath2 = (thisWinding === path2Clockwise)? contains :
 					contains && !this._testOnCurve(_path2, midPoint);
 				}
-				if (!operator(thisId === path1Id, insidePath1, insidePath2)) {
+				if (operator(thisId === path1Id, insidePath1, insidePath2)) {
 					crv._INVALID = true;
 					// markPoint(midPoint, '+');
 				}
