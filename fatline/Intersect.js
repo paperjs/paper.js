@@ -19,20 +19,22 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
     if( count === undefined ) { count = 0; }
     else { ++count; }
     if( t1 >= t2 - _tolerence && t1 <= t2 + _tolerence && u1 >= u2 - _tolerence && u1 <= u2 + _tolerence ){
-        var curve = tvalue ? curve2 : curve1;
-        locations.push( new CurveLocation( curve, t1 ) );
+        var loc = tvalue ? new CurveLocation( curve2, t1, null, curve1 ) :
+         new CurveLocation( curve1, u1, null, curve2 );
+        locations.push( loc );
         return;
     }
-
-    var p0 = new Point( v1[0], v1[1] ), p3 = new Point( v1[6], v1[7] );
-    var p1 = new Point( v1[2], v1[3] ), p2 = new Point( v1[4], v1[5] );
-    var q0 = new Point( v2[0], v2[1] ), q3 = new Point( v2[6], v2[7] );
-    var q1 = new Point( v2[2], v2[3] ), q2 = new Point( v2[4], v2[5] );
-
+    p0x = v1[0]; p0y = v1[1];
+    p3x = v1[6]; p3y = v1[7];
+    p1x = v1[2]; p1y = v1[3];
+    p2x = v1[4]; p2y = v1[5];
+    q0x = v2[0]; q0y = v2[1];
+    q3x = v2[6]; q3y = v2[7];
+    q1x = v2[2]; q1y = v2[3];
+    q2x = v2[4]; q2y = v2[5];
     // Calculate L
-    var lp = new Line( p0, p3, false );
-    var d1 = lp.getSide( p1 ) * lp.getDistance( p1 );
-    var d2 = lp.getSide( p2 ) * lp.getDistance( p2 );
+    var d1 = _getSignedDist( p0x, p0y, p3x, p3y, p1x, p1y );
+    var d2 = _getSignedDist( p0x, p0y, p3x, p3y, p2x, p2y );
     var dmin, dmax;
     if( d1 * d2 > 0){
         // 3/4 * min{0, d1, d2}
@@ -43,57 +45,66 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         dmin = 4 * Math.min( 0, d1, d2 ) / 9.0;
         dmax = 4 * Math.max( 0, d1, d2 ) / 9.0;
     }
-
-    // Infinite lines for dmin and dmax for clipping
-    var vecdmin = new Line( [0, dmin], [1, 0] );
-    var vecdmax = new Line( [0, dmax], [1, 0] );
     // The convex hull for the non-parametric bezier curve D(ti, di(t))
-    var dq0 = new Point( 0.0, lp.getSide(q0) * lp.getDistance(q0) );
-    var dq1 = new Point( 0.3333333333333333, lp.getSide(q1) * lp.getDistance(q1) );
-    var dq2 = new Point( 0.6666666666666666, lp.getSide(q2) * lp.getDistance(q2) );
-    var dq3 = new Point( 1.0, lp.getSide(q3) * lp.getDistance(q3) );
+    var dq0 = _getSignedDist( p0x, p0y, p3x, p3y, q0x, q0y );
+    var dq1 = _getSignedDist( p0x, p0y, p3x, p3y, q1x, q1y );
+    var dq2 = _getSignedDist( p0x, p0y, p3x, p3y, q2x, q2y );
+    var dq3 = _getSignedDist( p0x, p0y, p3x, p3y, q3x, q3y );
+
+    var mindist = Math.min( dq0, dq3 );
+    var maxdist = Math.max( dq0, dq3 );
+    // If the fatlines don't overlap, we have no intersections!
+    if( dmin > maxdist || dmax < mindist ){
+        return;
+    }
     // Ideally we need to calculate the convex hull for D(ti, di(t))
     // here we are just checking against all possibilities
-
     var Dt = [
-        new Line( dq0, dq1, false ),
-        new Line( dq1, dq2, false ),
-        new Line( dq2, dq3, false ),
-        new Line( dq3, dq0, false ),
-        new Line( dq0, dq2, false ),
-        new Line( dq3, dq1, false )
+        [ 0.0, dq0, 0.3333333333333333, dq1 ],
+        [ 0.3333333333333333, dq1, 0.6666666666666666, dq2 ],
+        [ 0.6666666666666666, dq2, 1.0, dq3 ],
+        [ 1.0, dq3, 0.0, dq0 ],
+        [ 0.0, dq0, 0.6666666666666666, dq2 ],
+        [ 1.0, dq3, 0.3333333333333333, dq1 ]
     ];
     // Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
     // for the coorresponding t values
     var tmindmin = Infinity, tmaxdmin = -Infinity,
     tmindmax = Infinity, tmaxdmax = -Infinity, ixd, ixdx, i;
+    var dmina = [0, dmin, 2, dmin];
+    var dmaxa = [0, dmax, 2, dmax];
     for (i = 0; i < 6; i++) {
         var Dtl = Dt[i];
-        ixd = Dtl.intersect( vecdmin );
+        // ixd = Dtl.intersect( vecdmin );
+        ixd = _intersectLines( Dtl, dmina);
         if( ixd ){
-            ixdx = ixd.x;
+            ixdx = ixd[0];
             tmindmin = ( ixdx < tmindmin )? ixdx : tmindmin;
             tmaxdmin = ( ixdx > tmaxdmin )? ixdx : tmaxdmin;
         }
-        ixd = Dtl.intersect( vecdmax );
+        // ixd = Dtl.intersect( vecdmax );
+        ixd = _intersectLines( Dtl, dmaxa);
         if( ixd ){
-            ixdx = ixd.x;
+            ixdx = ixd[0];
             tmindmax = ( ixdx < tmindmax )? ixdx : tmindmax;
             tmaxdmax = ( ixdx > tmaxdmax )? ixdx : tmaxdmax;
         }
     }
+    // if dmin doesnot intersect with the convexhull, reset it to 0
+    tmindmin = ( tmindmin === Infinity )? 0 : tmindmin;
+    tmaxdmin = ( tmaxdmin === -Infinity )? 0 : tmaxdmin;
+    // if dmax doesnot intersect with the convexhull, reset it to 1
+    tmindmax = ( tmindmax === Infinity )? 1 : tmindmax;
+    tmaxdmax = ( tmaxdmax === -Infinity )? 1 : tmaxdmax;
     var tmin = Math.min( tmindmin, tmaxdmin, tmindmax, tmaxdmax );
-    var tmax = Math.max( tmindmin, tmaxdmin, tmindmax, tmaxdmax );
-
-    if( tmin < 0 || tmax > 1 ) {
-        return;
-    }
-
+    var tmax = Math.max( tmindmin, tmaxdmin, tmindmax, tmaxdmax);
 
     // if( count === 1 ){
-    //   // console.log( dmin, dmax, tmin, tmax )
+    //   console.log( dmin, dmax, tmin, tmax, " - ", tmindmin, tmaxdmin, tmindmax, tmaxdmax )
     //   plotD_vs_t( 250, 110, Dt, dmin, dmax, tmin, tmax, 1, tvalue );
     // }
+
+    // return;
 
     // We need to toggle clipping both curves alternatively
     // tvalue indicates whether to compare t or u for testing for convergence
@@ -109,8 +120,6 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         if( convRate <= 0.2) {
 
         }
-
-        // console.log( nuT1, nuT2, t1, t2 );
         _clipFatLine( nuV2, v1, nuT1, nuT2, u1, u2, (tmax - tmin), udiff, !tvalue, curve1, curve2, locations, count );
     } else {
         nuU1 = u1 + tmin * ( u2 - u1 );
@@ -168,8 +177,8 @@ function plotD_vs_t( x, y, arr, dmin, dmax, tmin, tmax, yscale, tvalue ){
 
     var pnt = [];
     for (var i = 0; i < arr.length; i++) {
-        pnt.push( new Point( x + arr[i].point.x * 190, y + arr[i].point.y * yscale ) );
-    	// pnt.push( new Point( x + arr[i][0] * 190, y + arr[i][1] * yscale ) );
+        // pnt.push( new Point( x + arr[i].point.x * 190, y + arr[i].point.y * yscale ) );
+        pnt.push( new Point( x + arr[i][0] * 190, y + arr[i][1] * yscale ) );
     }
     var pth = new Path( pnt[0], pnt[1], pnt[2], pnt[3] );
     pth.closed = true;
@@ -186,7 +195,7 @@ var _intersectLines = function(v1, v2) {
     a1x = v1[0]; a1y = v1[1];
     a2x = v1[2]; a2y = v1[3];
     b1x = v2[0]; b1y = v2[1];
-    b2x = v2[3]; b2y = v2[3];
+    b2x = v2[2]; b2y = v2[3];
     var ua_t = (b2x - b1x) * (a1y - b1y) - (b2y - b1y) * (a1x - b1x);
     var ub_t = (a2x - a1x) * (a1y - b1y) - (a2y - a1y) * (a1x - b1x);
     var u_b  = (b2y - b1y) * (a2x - a1x) - (b2x - b1x) * (a2y - a1y);
@@ -194,7 +203,29 @@ var _intersectLines = function(v1, v2) {
         var ua = ua_t / u_b;
         var ub = ub_t / u_b;
         if ( 0 <= ua && ua <= 1 && 0 <= ub && ub <= 1 ) {
-            return new Point(a1x + ua * (a2x - a1x), a1y + ua * (a2y - a1y));
+            return [a1x + ua * (a2x - a1x), a1y + ua * (a2y - a1y)];
         }
     }
 };
+
+var _getSignedDist = function( a1x, a1y, a2x, a2y, bx, by ){
+    var vx = a2x - a1x, vy = a2y - a1y;
+    var bax = bx - a1x, bay =  by - a1y;
+    var ba2x = bx - a2x, ba2y =  by - a2y;
+    var cvb = bax * vy - bay * vx;
+    if (cvb === 0) {
+        cvb = bax * vx + bay * vy;
+        if (cvb > 0) {
+            cvb = (bax - vx) * vx + (bay -vy) * vy;
+            if (cvb < 0){ cvb = 0; }
+        }
+    }
+    var side = cvb < 0 ? -1 : cvb > 0 ? 1 : 0;
+    // Calculate the distance
+    var m = vy / vx, b = a1y - ( m * a1x );
+    var dist = Math.abs( by - ( m * bx ) - b ) / Math.sqrt( m*m + 1 );
+    var dista1 = Math.sqrt( bax * bax + bay * bay );
+    var dista2 = Math.sqrt( ba2x * ba2x + ba2y * ba2y );
+    return side * Math.min( dist, dista1, dista2 );
+};
+
