@@ -78,18 +78,12 @@ PathItem.inject({
 	// TODO: cache the split objects and find a way to properly clone them!
 	// a.k.a. eXclusiveOR
 	exclude: function(path) {
-		var res1 = this.subtract(path);
-		var res2 = path.subtract(this);
-		var res = new Group([res1, res2]);
-		return res;
+		return new Group([this.subtract(path), path.subtract(this)]);
 	},
 
 	// Divide path1 by path2
 	divide: function(path) {
-		var res1 = this.subtract(path);
-		var res2 = this.intersect(path);
-		var res = new Group([res1, res2]);
-		return res;
+		return new Group([this.subtract(path), this.intersect(path)]);
 	},
 
 	_splitPath: function(_ixs, other) {
