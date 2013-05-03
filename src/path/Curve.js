@@ -379,7 +379,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * modified and becomes the first part, the second part is returned as a new
 	 * curve. If the modified curve belongs to a path item, the second part is
 	 * added to it.
-	 * 
+	 *
 	 * @param parameter the position at which to split the curve as a value
 	 *        between 0 and 1 {@default 0.5}
 	 * @return {Curve} the second part of the divided curve
@@ -396,7 +396,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				right = parts[1],
 				point1 = this._segment1._point,
 				point2 = this._segment2._point;
-	
+
 			// Write back the results:
 			if (!isLinear) {
 				this._segment1._handleOut.set(left[2] - point1._x,
@@ -413,7 +413,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				segment = new Segment(Point.create(x, y),
 						isLinear ? null : Point.create(left[4] - x, left[5] - y),
 						isLinear ? null : Point.create(right[2] - x, right[3] - y));
-	
+
 			// Insert it in the segments list, if needed:
 			if (this._path) {
 				// Insert at the end if this curve is a closing curve of a
@@ -670,7 +670,7 @@ statics: {
 	/**
 	 * Private helper for both Curve.getBounds() and Path.getBounds(), which
 	 * finds the 0-crossings of the derivative of a bezier curve polynomial, to
-	 * determine potential extremas when finding the bounds of a curve. 
+	 * determine potential extremas when finding the bounds of a curve.
 	 * Note: padding is only used for Path.getBounds().
 	 */
 	_addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
@@ -759,7 +759,7 @@ statics: {
 						.intersect(new Line(v2[0], v2[1], v2[6], v2[7], false));
 				if (point) {
 					// Avoid duplicates when hitting segments (closed paths too)
-					var first = locations[0], 
+					var first = locations[0],
 						last = locations[locations.length - 1];
 					if ((!first || !point.equals(first._point))
 							&& (!last || !point.equals(last._point)))
@@ -857,7 +857,7 @@ statics: {
 	/**
 	 * Calculates the curve time parameter of the specified offset on the path,
 	 * relative to the provided start parameter. If offset is a negative value,
-	 * the parameter is searched to the left of the start parameter. If no start 
+	 * the parameter is searched to the left of the start parameter. If no start
 	 * parameter is provided, a default of {@code 0} for positive values of
 	 * {@code offset} and {@code 1} for negative values of {@code offset}.
 	 * @param {Number} offset
@@ -885,7 +885,7 @@ statics: {
 	 * parameter.
 	 * @param {Number} offset the offset on the curve, or the curve time
 	 *        parameter if {@code isParameter} is {@code true}
-	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
 	 *        is a curve time parameter.
 	 * @return {CurveLocation} the curve location at the specified the offset.
 	 */
@@ -913,7 +913,7 @@ statics: {
 	 * @function
 	 * @param {Number} offset the offset on the curve, or the curve time
 	 *        parameter if {@code isParameter} is {@code true}
-	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
 	 *        is a curve time parameter.
 	 * @return {Point} the point on the curve at the specified offset.
 	 */
@@ -925,7 +925,7 @@ statics: {
 	 * @function
 	 * @param {Number} offset the offset on the curve, or the curve time
 	 *        parameter if {@code isParameter} is {@code true}
-	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
 	 *        is a curve time parameter.
 	 * @return {Point} the tangent of the curve at the specified offset.
 	 */
@@ -937,7 +937,7 @@ statics: {
 	 * @function
 	 * @param {Number} offset the offset on the curve, or the curve time
 	 *        parameter if {@code isParameter} is {@code true}
-	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
 	 *        is a curve time parameter.
 	 * @return {Point} the normal of the curve at the specified offset.
 	 */
@@ -949,7 +949,7 @@ statics: {
 	 * @function
 	 * @param {Number} offset the offset on the curve, or the curve time
 	 *        parameter if {@code isParameter} is {@code true}
-	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset} 
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
 	 *        is a curve time parameter.
 	 * @return {Point} the curvature of the curve at the specified offset.
 	 */
