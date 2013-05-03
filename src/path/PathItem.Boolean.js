@@ -11,7 +11,7 @@
  */
 
 /*
- * Geometric Vector Boolean Operations
+ * Boolean Geometric Path Operations
  *
  * This is mostly written for clarity and compatibility, not optimised for
  * performance, and has to be tested heavily for stability.
