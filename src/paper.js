@@ -80,6 +80,7 @@ var paper = new function() {
 /*#*/ include('path/CompoundPath.js');
 /*#*/ include('path/PathFlattener.js');
 /*#*/ include('path/PathFitter.js');
+/*#*/ include('path/PathItem.Boolean.js');
 
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');
