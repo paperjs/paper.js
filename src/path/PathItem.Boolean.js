@@ -114,13 +114,11 @@ PathItem.inject(new function() {
 			var children = path.children, i, len;
 			for (i = 0, len = children.length; i < len; i++) {
 				children[i].reverse();
-				children[i]._curves = null;
 			}
 			baseWinding = children[0].clockwise;
 		} else {
 			path.reverse();
 			baseWinding = path.clockwise;
-			path._curves = null;
 		}
 		return baseWinding;
 	}

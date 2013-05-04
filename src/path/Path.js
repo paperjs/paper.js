@@ -1109,6 +1109,8 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			segment._handleOut = handleIn;
 			segment._index = i;
 		}
+		// Clear curves since it all has changed.
+		delete this._curves;
 		// Flip clockwise state if it's defined
 		if (this._clockwise !== undefined)
 			this._clockwise = !this._clockwise;
