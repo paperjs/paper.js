@@ -11,7 +11,7 @@ function getIntersections2( path1, path2 ){
 }
 
 
-paper.Curve.prototype._addIntersections2 = function( v1, v2, curve, locations ) {
+paper.Curve.prototype._addIntersections2 = function( v1, v2, curve1, curve2, locations ) {
 
 };
 
@@ -23,7 +23,7 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
          new CurveLocation( curve1, u1, null, curve2 );
          // console.log( t1, t2, u1, u2 )
         locations.push( loc );
-        // return;
+        return 1;
     } else {
         p0x = v1[0]; p0y = v1[1];
         p3x = v1[6]; p3y = v1[7];
@@ -56,7 +56,7 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         var maxdist = Math.max( dq0, dq1, dq2, dq3 );
         // If the fatlines don't overlap, we have no intersections!
         if( dmin > maxdist || dmax < mindist ){
-            return;
+            return 0;
         }
         // Ideally we need to calculate the convex hull for D(ti, di(t))
         // here we are just checking against all possibilities and sorting them
@@ -101,13 +101,11 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         var tmin = Math.min( tmindmin, tmaxdmin, tmindmax, tmaxdmax );
         var tmax = Math.max( tmindmin, tmaxdmin, tmindmax, tmaxdmax);
 
-        if( count === 1 ){
-          // console.log( dmin, dmax, tmin, tmax, " - ", tmindmin, tmaxdmin, tmindmax, tmaxdmax )
-          plotD_vs_t( 250, 110, Dt, dmin, dmax, tmin, tmax, 1, tvalue );
-                // markPoint( curve1.getPoint(0.5452178926340512), " " );
-                // markPoint( curve1.getPoint(0.9462539004114424), " " );
-        // return;
-        }
+        // if( count === 1 ){
+        //   // console.log( dmin, dmax, tmin, tmax, " - ", tmindmin, tmaxdmin, tmindmax, tmaxdmax )
+        //   plotD_vs_t( 250, 110, Dt, dmin, dmax, tmin, tmax, 1, tvalue );
+        // // return;
+        // }
 
 
         // We need to toggle clipping both curves alternatively
@@ -124,14 +122,9 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
             console.log( 'convergence rate for t = ' + convRate + "%" );
             if( convRate <= 0.2) {
                 // subdivide the curve and try again
-                parts = Curve.subdivide( v1 );
-                nuTHalf = (u2 + u1) / 2.0;
-                // _clipFatLine( v2, parts[0], u1, nuTHalf, t1, t2, udiff, (nuTHalf - u1 )/(u2 - u1), tvalue, curve2, curve1, locations, count );
-                // _clipFatLine( v2, parts[1], nuTHalf, u2, t1, t2, udiff, (u2 - nuTHalf )/(u2 - u1), tvalue, curve2, curve1, locations, count );
-                _clipFatLine( parts[0], v2, t1, t2, u1, nuTHalf, (nuTHalf - u1 )/(u2 - u1), udiff, !tvalue, curve1, curve2, locations, count );
-                _clipFatLine( parts[1], v2, t1, t2, nuTHalf, u2, (u2 - nuTHalf )/(u2 - u1), udiff, !tvalue, curve1, curve2, locations, count );
+                return 2;
             } else {
-                _clipFatLine( nuV2, v1, nuT1, nuT2, u1, u2, (tmax - tmin), udiff, !tvalue, curve1, curve2, locations, count );
+                return _clipFatLine( nuV2, v1, nuT1, nuT2, u1, u2, (tmax - tmin), udiff, !tvalue, curve1, curve2, locations, count );
             }
         } else {
             nuU1 = u1 + tmin * ( u2 - u1 );
@@ -141,14 +134,9 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
             console.log( 'convergence rate for u = ' + convRate + "%" );
             if( convRate <= 0.2) {
                 // subdivide the curve and try again
-                parts = Curve.subdivide( v2 );
-                nuTHalf = (t2 + t1) / 2.0;
-                // _clipFatLine( v2, parts[0], u1, nuTHalf, t1, t2, udiff, (nuTHalf - u1 )/(u2 - u1), tvalue, curve2, curve1, locations, count );
-                // _clipFatLine( v2, parts[1], nuTHalf, u2, t1, t2, udiff, (u2 - nuTHalf )/(u2 - u1), tvalue, curve2, curve1, locations, count );
-                _clipFatLine( parts[0], v1, t1, nuTHalf, u1, u2, tdiff, (nuTHalf - t1 )/(t2 - t1), !tvalue, curve1, curve2, locations, count );
-                _clipFatLine( parts[1], v1, nuTHalf, t2, u1, u2, tdiff, (t2 - nuTHalf )/(t2 - 1), !tvalue, curve1, curve2, locations, count );
+                return 2;
             } else {
-                _clipFatLine( nuV2, v1, t1, t2, nuU1, nuU2 , tdiff, (tmax - tmin), !tvalue, curve1, curve2, locations, count );
+                return _clipFatLine( nuV2, v1, t1, t2, nuU1, nuU2 , tdiff, (tmax - tmin), !tvalue, curve1, curve2, locations, count );
             }
         }
     }
