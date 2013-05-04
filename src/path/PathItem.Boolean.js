@@ -104,133 +104,124 @@ PathItem.inject(new function() {
 	}
 
 	function computeBoolean(path1, path2, operator, subtract, _cache) {
-		var _path1, _path2, path1Clockwise, path2Clockwise;
 		var ixs, path1Id, path2Id;
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
-		_path1 = path1.clone();
-		_path2 = path2.clone();
-		_path1.style = _path2.style = null;
-		_path1.selected = _path2.selected = false;
-		path1Clockwise = reorientCompoundPath(_path1);
-		path2Clockwise = reorientCompoundPath(_path2);
-		path1Id = _path1.id;
-		path2Id = _path2.id;
-		// Calculate all the intersections
-		ixs = _cache && _cache.intersections || _path1.getIntersections(_path2);
-		// if we have a empty _cache object as an operand,
-		// skip calculating boolean and cache the intersections
-		if (_cache && !_cache.intersections)
-			return _cache.intersections = ixs;
-		splitPath(splitPath(ixs, true));
-		path1Id = _path1.id;
-		path2Id = _path2.id;
+		var _path1 = path1.clone(),
+			_path2 = path2.clone(),
+			path1Id = _path1.id,
+			path2Id = _path2.id,
+			path1Clockwise = reorientCompoundPath(_path1),
+			path2Clockwise = reorientCompoundPath(_path2),
+			// Calculate all the intersections
+			intersections = _cache && _cache.intersections
+					|| _path1.getIntersections(_path2);
+		// if we have a empty _cache object as an operand, skip calculating
+		// boolean and cache the intersections
+		if (_cache && !_cache.intersections) {
+			// TODO: Don't we need to clear up and remove _path1 & _path2 again?
+			return _cache.intersections = intersections;
+		}
+		// Now split intersections on both curves, by asking the first call to
+		// collect the 'other' intersections for us and passing that on to the
+		// second call.
+		splitPath(splitPath(intersections, true));
 		// Do operator specific calculations before we begin
 		if (subtract) {
 			_path2.reverse();
 			path2Clockwise = !path2Clockwise;
 		}
 
-		var i, j, len, path, crv;
-		var paths = [];
+		var paths = [],
+			nodes = [],
+			result = new CompoundPath(),
+			push = paths.push;
 		if (_path1 instanceof CompoundPath) {
-			paths = paths.concat(_path1.children);
+			push.apply(paths, _path1._children);
 		} else {
-			paths = [ _path1 ];
+			paths.push(_path1);
 		}
 		if (_path2 instanceof CompoundPath) {
-			paths = paths.concat(_path2.children);
+			push.apply(paths, _path2._children);
 		} else {
 			paths.push(_path2);
 		}
-		// step 1: discard invalid links according to the boolean operator
-		var lastNode, firstNode, nextNode, midPoint, insidePath1, insidePath2;
-		var thisId, thisWinding, contains;
-		for (i = 0, len = paths.length; i < len; i++) {
-			insidePath1 = insidePath2 = false;
-			path = paths[i];
-			thisId = (path.parent instanceof CompoundPath)? path.parent.id : path.id;
-			thisWinding = path.clockwise;
-			lastNode = path.lastSegment;
-			firstNode = path.firstSegment;
-			nextNode = null;
-			while (nextNode !== firstNode) {
-				nextNode = (nextNode)? nextNode.previous: lastNode;
-				crv = nextNode.curve;
-				midPoint = crv.getPoint(0.5);
+		// Step 1: Discard invalid links according to the boolean operator
+		for (var i = 0, l = paths.length; i < l; i++) {
+			var path = paths[i],
+				insidePath1 = false,
+				insidePath2 = false,
+				thisId = path.parent instanceof CompoundPath
+						? path.parent.id : path.id,
+				clockwise = path.isClockwise(),
+				segments = path._segments;
+			for (var j = 0, k = segments.length; j < k; j++) {
+				var segment = segments[j],
+					curve = segment.getCurve(),
+					midPoint = curve.getPoint(0.5);
 				if (thisId !== path1Id) {
-					contains = _path1.
-					contains(midPoint);
-					insidePath1 = thisWinding === path1Clockwise || subtract
-							? contains
-							: contains && !testOnCurve(_path1, midPoint);
+					insidePath1 = _path1.contains(midPoint)
+							&& (clockwise === path1Clockwise || subtract
+									|| !testOnCurve(_path1, midPoint));
 				}
 				if (thisId !== path2Id) {
-					contains = _path2.contains(midPoint);
-					insidePath2 = thisWinding === path2Clockwise
-							? contains
-							: contains && !testOnCurve(_path2, midPoint);
+					insidePath2 = _path2.contains(midPoint)
+							&& (clockwise === path2Clockwise
+									|| !testOnCurve(_path2, midPoint));
 				}
 				if (operator(thisId === path1Id, insidePath1, insidePath2)) {
-					crv._INVALID = true;
+					curve._INVALID = true;
 					// markPoint(midPoint, '+');
 				}
 			}
+			nodes = nodes.concat(path._segments);
 		}
 
-		// Final step: Retrieve the resulting paths from the graph
-		var boolResult = new CompoundPath();
-		var node, nuNode, nuPath, nodeList = [], handle;
-		for (i = 0, len = paths.length; i < len; i++) {
-			nodeList = nodeList.concat(paths[i].segments);
-		}
-		for (i = 0, len = nodeList.length; i < len; i++) {
-			node = nodeList[i];
+		// Step 2: Retrieve the resulting paths from the graph
+		for (var i = 0, l = nodes.length; i < l; i++) {
+			var node = nodes[i];
 			if (node.curve._INVALID || node._visited) { continue; }
-			path = node.path;
-			thisId = (path.parent instanceof CompoundPath)? path.parent.id : path.id;
-			thisWinding = path.clockwise;
-			nuPath = new Path();
-			firstNode = null;
-			firstNode_ix = null;
+			var path = node.path,
+				thisId = (path.parent instanceof CompoundPath)? path.parent.id : path.id,
+				nuPath = new Path(),
+				firstNode = null,
+				firstNode_ix = null;
 			if (node.previous.curve._INVALID) {
-				node.handleIn = (node._ixPair)?
-				node._ixPair.getIntersection().__segment.handleIn : [ 0, 0 ];
+				node.setHandleIn(node._ixPair
+						? node._ixPair.getIntersection().__segment._handleIn
+						: Point.create(0, 0));
 			}
 			while (node && !node._visited && (node !== firstNode && node !== firstNode_ix)) {
 				node._visited = true;
-				firstNode = (firstNode)? firstNode: node;
-				firstNode_ix = (!firstNode_ix && firstNode._ixPair)?
-				firstNode._ixPair.getIntersection().__segment: firstNode_ix;
+				firstNode = firstNode || node;
+				firstNode_ix = !firstNode_ix && firstNode._ixPair
+						? firstNode._ixPair.getIntersection().__segment
+						: firstNode_ix;
 				// node._ixPair is this node's intersection CurveLocation object
 				// node._ixPair.getIntersection() is the other CurveLocation object this node intersects with
-				nextNode = (node._ixPair && node.curve._INVALID)? node._ixPair.getIntersection().__segment : node;
+				var nextNode = (node._ixPair && node.curve._INVALID)? node._ixPair.getIntersection().__segment : node;
 				if (node._ixPair) {
 					nextNode._visited = true;
-					nuNode = new Segment(node.point, node.handleIn, nextNode.handleOut);
-					nuPath.add(nuNode);
+					nuPath.add(new Segment(node._point, node._handleIn,
+							nextNode._handleOut));
 					node = nextNode;
-					path = node.path;
-					thisWinding = path.clockwise;
 				} else {
 					nuPath.add(node);
 				}
 				node = node.next;
 			}
-			if (nuPath.segments.length > 1) {
-				// avoid stray segments and incomplete paths
-				if (nuPath.segments.length > 2 || !nuPath.curves[0].isLinear()) {
-					nuPath.closed = true;
-					boolResult.addChild(nuPath, true);
-				}
+			// Avoid stray segments and incomplete paths
+			if (nuPath.segments.length > 2 || !nuPath.curves[0].isLinear()) {
+				nuPath.closed = true;
+				result.addChild(nuPath, true);
 			}
 		}
 		// Delete the proxies
 		_path1.remove();
 		_path2.remove();
 		// And then, we are done.
-		return boolResult.reduce();
+		return result.reduce();
 	}
 
 	function testOnCurve(path, point) {
