@@ -86,85 +86,34 @@ PathItem.inject({
 		return new Group([this.subtract(path), this.intersect(path)]);
 	},
 
-	_splitPath: function(_ixs, other) {
-		// Sort function for sorting intersections in the descending order
-		function sortIx(a, b) {
-			return b.parameter - a.parameter;
+	_splitPath: function(intersections, collectOthers) {
+		// Sort intersections by paths ids, curve index and parameter, so we
+		// can loop through all intersections, divide paths and never need to
+		// readjust indices.
+		intersections.sort(function(loc1, loc2) {
+			var path1 = loc1.getPath(),
+				path2 = loc2.getPath();
+			return path1 === path2
+					// We can add parameter (0 <= t <= 1) to index (a integer)
+					// to compare both at the same time
+					? (loc1.getIndex() + loc1.getParameter())
+						- (loc2.getIndex() + loc2.getParameter())
+					: path1._id - path2._id;
+		});
+		var others = collectOthers && [];
+		for (var i = intersections.length - 1; i >= 0; i--) {
+			var loc = intersections[i],
+				other = loc.getIntersection(),
+				curve = loc.divide(),
+				// When the curve doesn't need to be divided since t = 0, 1,
+				// #divide() returns null and we can use the existing segment.
+				segment = curve && curve.getSegment1() || loc.getSegment();
+			if (others)
+				others.push(other);
+			other.__segment = segment;
+			segment._ixPair = other;
 		}
-		var pathIds = {},
-			paths = [];
-		for (var i = 0, l = _ixs.length; i < l; i++) {
-			var ix = other ? _ixs[i].getIntersection() : _ixs[i],
-				path = ix.getPath(),
-				curve = ix.getCurve();
-			// Add each path only once to the array
-			if (!pathIds[path._id]) {
-				paths.push(path);
-				pathIds[path._id] = true;
-			}
-			if (!curve._ixParams)
-				curve._ixParams = [];
-			curve._ixParams.push({
-				parameter: ix.getParameter(),
-				pair: ix.getIntersection()
-			});
-		}
-		for (var i = 0, l = paths.length; i < l; i++) {
-			var path = paths[i],
-				segments = path._segments;
-			for (var j = segments.length - 1; j >= 0; j--) {
-				var nextNode = segments[j],
-					curve = nextNode.getCurve(),
-					ixs = curve._ixParams,
-					amount = ixs && ixs.length;
-				if (amount > 0) {
-					ixs.sort(sortIx);
-					var isLinear = curve.isLinear(),
-						vals = null,
-						segment;
-					for (var k = 0; k < amount; k++) {
-						var ix = ixs[k],
-							t = ix.parameter;
-						if (!vals)
-							vals = curve.getValues();
-						if (t === 0 || t === 1) {
-							// Intersection is on an existing node: No need to
-							// create a new segment, we just link the
-							// corresponding intersections together
-							segment = t === 0 ? curve.segment1 : curve.segment2;
-						} else {
-							var parts = Curve.subdivide(vals, t),
-								left = parts[0],
-								right = parts[1],
-								segment = new Segment(
-										new Point(right[0], right[1]));
-							if (!isLinear) {
-								curve.segment1.handleOut = new Point(
-										left[2] - left[0],
-										left[3] - left[1]);
-								curve.segment2.handleIn = new Point(
-										right[4] - right[6],
-										right[5] - right[7]);
-								segment.handleIn = new Point(
-										left[4] - left[6], 
-										left[5] - left[7]);
-								segment.handleOut = new Point(
-										right[2] - left[6],
-										right[3] - left[7]);
-							}
-							path.insert(j + 1,  segment);
-							curve = nextNode.getCurve();
-							vals = left;
-						}
-						segment._ixPair = ix.pair;
-						segment._ixPair._segment = segment;
-						// Readjust parameters after splitting
-						for (var n = k + 1; n < amount; n++)
-							ixs[n].parameter /= t;
-					}
-				}
-			}
-		}
+		return others;
 	},
 
 	/**
@@ -252,8 +201,7 @@ PathItem.inject({
 			_splitCache.intersections = ixs;
 			return;
 		}
-		this._splitPath(ixs, false);
-		this._splitPath(ixs, true);
+		this._splitPath(this._splitPath(ixs, true));
 		path1Id = _path1.id;
 		path2Id = _path2.id;
 		// Do operator specific calculations before we begin
@@ -323,16 +271,16 @@ PathItem.inject({
 			firstNode_ix = null;
 			if (node.previous.curve._INVALID) {
 				node.handleIn = (node._ixPair)?
-				node._ixPair.getIntersection()._segment.handleIn : [ 0, 0 ];
+				node._ixPair.getIntersection().__segment.handleIn : [ 0, 0 ];
 			}
 			while (node && !node._visited && (node !== firstNode && node !== firstNode_ix)) {
 				node._visited = true;
 				firstNode = (firstNode)? firstNode: node;
 				firstNode_ix = (!firstNode_ix && firstNode._ixPair)?
-				firstNode._ixPair.getIntersection()._segment: firstNode_ix;
+				firstNode._ixPair.getIntersection().__segment: firstNode_ix;
 				// node._ixPair is this node's intersection CurveLocation object
 				// node._ixPair.getIntersection() is the other CurveLocation object this node intersects with
-				nextNode = (node._ixPair && node.curve._INVALID)? node._ixPair.getIntersection()._segment : node;
+				nextNode = (node._ixPair && node.curve._INVALID)? node._ixPair.getIntersection().__segment : node;
 				if (node._ixPair) {
 					nextNode._visited = true;
 					nuNode = new Segment(node.point, node.handleIn, nextNode.handleOut);
