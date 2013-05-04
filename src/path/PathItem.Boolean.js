@@ -45,6 +45,7 @@ PathItem.inject(new function() {
 					// to compare both at the same time
 					? (loc1.getIndex() + loc1.getParameter())
 						- (loc2.getIndex() + loc2.getParameter())
+					// Sort by path id to group all locations on the same path.
 					: path1._id - path2._id;
 		});
 		var others = collectOthers && [];
@@ -109,10 +110,10 @@ PathItem.inject(new function() {
 					|| _path1.getIntersections(_path2);
 		// if we have a empty _cache object as an operand, skip calculating
 		// boolean and cache the intersections
-		if (_cache && !_cache.intersections) {
-			// TODO: Don't we need to clear up and remove _path1 & _path2 again?
-			return _cache.intersections = intersections;
-		}
+		// if (_cache && !_cache.intersections) {
+		// 	// TODO: Don't we need to clear up and remove _path1 & _path2 again?
+		// 	return _cache.intersections = intersections;
+		// }
 		// Now split intersections on both curves, by asking the first call to
 		// collect the 'other' intersections for us and passing that on to the
 		// second call.
@@ -144,6 +145,8 @@ PathItem.inject(new function() {
 							&& (clockwise === path2Clockwise
 									|| !testOnCurve(_path2, midPoint));
 				if (operator(path === _path1, insidePath1, insidePath2)) {
+					// Mark as invalid, but do not remove yet, so the graph
+					// structure is preserved.
 					segment._invalid = true;
 				} else {
 					segments.push(segment);
