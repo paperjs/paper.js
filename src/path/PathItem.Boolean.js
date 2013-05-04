@@ -101,17 +101,17 @@ PathItem.inject(new function() {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
-		var _path1 = reorientPath(path1.clone()),
-			_path2 = reorientPath(path2.clone()),
-			path1Clockwise = _path1.isClockwise(),
-			path2Clockwise = _path2.isClockwise(),
+		path1 = reorientPath(path1.clone());
+		path2 = reorientPath(path2.clone());
+		var path1Clockwise = path1.isClockwise(),
+			path2Clockwise = path2.isClockwise(),
 			// Calculate all the intersections
 			intersections = _cache && _cache.intersections
-					|| _path1.getIntersections(_path2);
+					|| path1.getIntersections(path2);
 		// if we have a empty _cache object as an operand, skip calculating
 		// boolean and cache the intersections
 		// if (_cache && !_cache.intersections) {
-		// 	// TODO: Don't we need to clear up and remove _path1 & _path2 again?
+		// 	// TODO: Don't we need to clear up and remove path1 & path2 again?
 		// 	return _cache.intersections = intersections;
 		// }
 		// Now split intersections on both curves, by asking the first call to
@@ -120,12 +120,12 @@ PathItem.inject(new function() {
 		splitPath(splitPath(intersections, true));
 		// Do operator specific calculations before we begin
 		if (subtract) {
-			_path2.reverse();
+			path2.reverse();
 			path2Clockwise = !path2Clockwise;
 		}
 		var paths = []
-				.concat(_path1._children || [_path1])
-				.concat(_path2._children || [_path2]),
+				.concat(path1._children || [path1])
+				.concat(path2._children || [path2]),
 			segments = [],
 			result = new CompoundPath();
 		// Step 1: Discard invalid links according to the boolean operator
@@ -138,13 +138,13 @@ PathItem.inject(new function() {
 			for (var j = segs.length - 1; j >= 0; j--) {
 				var segment = segs[j],
 					midPoint = segment.getCurve().getPoint(0.5),
-					insidePath1 = path !== _path1 && _path1.contains(midPoint)
+					insidePath1 = path !== path1 && path1.contains(midPoint)
 							&& (clockwise === path1Clockwise || subtract
-									|| !testOnCurve(_path1, midPoint)),
-					insidePath2 = path !== _path2 && _path2.contains(midPoint)
+									|| !testOnCurve(path1, midPoint)),
+					insidePath2 = path !== path2 && path2.contains(midPoint)
 							&& (clockwise === path2Clockwise
-									|| !testOnCurve(_path2, midPoint));
-				if (operator(path === _path1, insidePath1, insidePath2)) {
+									|| !testOnCurve(path2, midPoint));
+				if (operator(path === path1, insidePath1, insidePath2)) {
 					// Mark as invalid, but do not remove yet, so the graph
 					// structure is preserved.
 					segment._invalid = true;
@@ -165,12 +165,12 @@ PathItem.inject(new function() {
 				segment.setHandleIn(last ? last._handleIn : Point.create(0, 0));
 			do {
 				segment._visited = true;
-				if (segment._intersection && segment._invalid) {
-					var next = segment._intersection.getSegment(true);
+				if (segment._invalid && segment._intersection) {
+					var other = segment._intersection.getSegment(true);
 					path.add(new Segment(segment._point, segment._handleIn,
-							next._handleOut));
-					next._visited = true;
-					segment = next;
+							other._handleOut));
+					other._visited = true;
+					segment = other;
 				} else {
 					path.add(segment.clone());
 				}
@@ -185,8 +185,8 @@ PathItem.inject(new function() {
 			}
 		}
 		// Delete the proxies
-		_path1.remove();
-		_path2.remove();
+		path1.remove();
+		path2.remove();
 		// And then, we are done.
 		return result.reduce();
 	}
