@@ -76,44 +76,43 @@ PathItem.inject(new function() {
 	 * @param  {CompoundPath} path - Input CompoundPath, Note: This path could be modified if need be.
 	 * @return {boolean}	  the winding direction of the base contour(true if clockwise)
 	 */
-	function reorientCompoundPath(path) {
-		if (!(path instanceof CompoundPath))
-			return path.isClockwise();
-		var children = path._children,
-			length = children.length,
-			bounds = new Array(length),
-			counters = new Array(length),
-			clockwise = children[0].isClockwise();
-		for (var i = 0; i < length; i++) {
-			bounds[i] = children[i].getBounds();
-			counters[i] = 0;
-		}
-		for (var i = 0; i < length; i++) {
-			for (var j = 1; j < length; j++) {
-				if (i !== j && bounds[i].contains(bounds[j]))
-					counters[j]++;
+	function reorientPath(path) {
+		if (path instanceof CompoundPath) {
+			var children = path._children,
+				length = children.length,
+				bounds = new Array(length),
+				counters = new Array(length),
+				clockwise = children[0].isClockwise();
+			for (var i = 0; i < length; i++) {
+				bounds[i] = children[i].getBounds();
+				counters[i] = 0;
+			}
+			for (var i = 0; i < length; i++) {
+				for (var j = 1; j < length; j++) {
+					if (i !== j && bounds[i].contains(bounds[j]))
+						counters[j]++;
+				}
+			}
+			// Omit the first child
+			for (var i = 1; i < length; i++) {
+				if (counters[i] % 2 === 0) {
+					children[i].setClockwise(clockwise);
+				}
 			}
 		}
-		// Omit the first child
-		for (var i = 1; i < length; i++) {
-			if (counters[i] % 2 === 0) {
-				children[i].setClockwise(clockwise);
-			}
-		}
-		return clockwise;
+		return path;
 	}
 
 	function computeBoolean(path1, path2, operator, subtract, _cache) {
-		var ixs, path1Id, path2Id;
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
-		var _path1 = path1.clone(),
-			_path2 = path2.clone(),
+		var _path1 = reorientPath(path1.clone()),
+			_path2 = reorientPath(path2.clone()),
+			path1Clockwise = _path1.isClockwise(),
+			path2Clockwise = _path2.isClockwise(),
 			path1Id = _path1.id,
 			path2Id = _path2.id,
-			path1Clockwise = reorientCompoundPath(_path1),
-			path2Clockwise = reorientCompoundPath(_path2),
 			// Calculate all the intersections
 			intersections = _cache && _cache.intersections
 					|| _path1.getIntersections(_path2);
@@ -133,88 +132,80 @@ PathItem.inject(new function() {
 			path2Clockwise = !path2Clockwise;
 		}
 
-		var paths = [],
+		var paths = []
+				.concat(_path1._children || [_path1])
+				.concat(_path2._children || [_path2]),
 			nodes = [],
-			result = new CompoundPath(),
-			push = paths.push;
-		if (_path1 instanceof CompoundPath) {
-			push.apply(paths, _path1._children);
-		} else {
-			paths.push(_path1);
-		}
-		if (_path2 instanceof CompoundPath) {
-			push.apply(paths, _path2._children);
-		} else {
-			paths.push(_path2);
-		}
+			result = new CompoundPath();
 		// Step 1: Discard invalid links according to the boolean operator
 		for (var i = 0, l = paths.length; i < l; i++) {
 			var path = paths[i],
-				insidePath1 = false,
-				insidePath2 = false,
-				thisId = path.parent instanceof CompoundPath
-						? path.parent.id : path.id,
+				parent = path._parent,
+				id = parent instanceof CompoundPath ? parent._id : path._id,
 				clockwise = path.isClockwise(),
-				segments = path._segments;
-			for (var j = 0, k = segments.length; j < k; j++) {
+				segments = path._segments,
+				insidePath1 = false,
+				insidePath2 = false;
+			for (var j = segments.length - 1; j >= 0; j--) {
 				var segment = segments[j],
-					curve = segment.getCurve(),
-					midPoint = curve.getPoint(0.5);
-				if (thisId !== path1Id) {
+					midPoint = segment.getCurve().getPoint(0.5);
+				if (id !== path1Id) {
 					insidePath1 = _path1.contains(midPoint)
 							&& (clockwise === path1Clockwise || subtract
 									|| !testOnCurve(_path1, midPoint));
 				}
-				if (thisId !== path2Id) {
+				if (id !== path2Id) {
 					insidePath2 = _path2.contains(midPoint)
 							&& (clockwise === path2Clockwise
 									|| !testOnCurve(_path2, midPoint));
 				}
-				if (operator(thisId === path1Id, insidePath1, insidePath2)) {
-					curve._INVALID = true;
+				if (operator(id === path1Id, insidePath1, insidePath2)) {
+					segment._INVALID = true;
 					// markPoint(midPoint, '+');
+				} else {
+					nodes.push(segment);
 				}
 			}
-			nodes = nodes.concat(path._segments);
 		}
-
 		// Step 2: Retrieve the resulting paths from the graph
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var node = nodes[i];
-			if (node.curve._INVALID || node._visited) { continue; }
+			if (node._visited)
+				continue;
 			var path = node.path,
-				thisId = (path.parent instanceof CompoundPath)? path.parent.id : path.id,
 				nuPath = new Path(),
-				firstNode = null,
+				firstNode = node,
 				firstNode_ix = null;
-			if (node.previous.curve._INVALID) {
+			if (node.getPrevious()._INVALID) {
 				node.setHandleIn(node._ixPair
 						? node._ixPair.getIntersection().__segment._handleIn
 						: Point.create(0, 0));
 			}
-			while (node && !node._visited && (node !== firstNode && node !== firstNode_ix)) {
+			while (node && !node._visited && node !== firstNode_ix) {
 				node._visited = true;
-				firstNode = firstNode || node;
-				firstNode_ix = !firstNode_ix && firstNode._ixPair
-						? firstNode._ixPair.getIntersection().__segment
-						: firstNode_ix;
+				firstNode_ix = firstNode_ix || firstNode._ixPair
+						&& firstNode._ixPair.getIntersection().__segment;
 				// node._ixPair is this node's intersection CurveLocation object
 				// node._ixPair.getIntersection() is the other CurveLocation object this node intersects with
-				var nextNode = (node._ixPair && node.curve._INVALID)? node._ixPair.getIntersection().__segment : node;
+				var nextNode = node._ixPair && node._INVALID
+						? node._ixPair.getIntersection().__segment
+						: node;
 				if (node._ixPair) {
-					nextNode._visited = true;
 					nuPath.add(new Segment(node._point, node._handleIn,
 							nextNode._handleOut));
+					nextNode._visited = true;
 					node = nextNode;
 				} else {
 					nuPath.add(node);
 				}
-				node = node.next;
+				node = node.getNext();
 			}
 			// Avoid stray segments and incomplete paths
-			if (nuPath.segments.length > 2 || !nuPath.curves[0].isLinear()) {
-				nuPath.closed = true;
+			if (nuPath._segments.length > 2) {
+				nuPath.setClosed(true);
 				result.addChild(nuPath, true);
+			} else {
+				nuPath.remove();
 			}
 		}
 		// Delete the proxies
