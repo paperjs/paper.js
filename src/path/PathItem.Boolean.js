@@ -57,7 +57,7 @@ PathItem.inject(new function() {
 				segment = curve && curve.getSegment1() || loc.getSegment();
 			if (others)
 				others.push(other);
-			segment._ixPair = other;
+			segment._intersection = other;
 		}
 		return others;
 	}
@@ -153,7 +153,7 @@ PathItem.inject(new function() {
 									|| !testOnCurve(_path2, midPoint));
 				}
 				if (operator(id === path1Id, insidePath1, insidePath2)) {
-					segment._INVALID = true;
+					segment._invalid = true;
 					// markPoint(midPoint, '+');
 				} else {
 					nodes.push(segment);
@@ -162,39 +162,38 @@ PathItem.inject(new function() {
 		}
 		// Step 2: Retrieve the resulting paths from the graph
 		for (var i = 0, l = nodes.length; i < l; i++) {
-			var node = nodes[i];
-			if (node._visited)
+			var segment = nodes[i];
+			if (segment._visited)
 				continue;
-			var path = node.path,
-				nuPath = new Path(),
-				end = node._ixPair && node._ixPair.getSegment(true);
-			if (node.getPrevious()._INVALID) {
-				node.setHandleIn(node._ixPair
-						? node._ixPair.getSegment(true)._handleIn
-						: Point.create(0, 0));
-			}
+			var path = new Path(),
+				loc = segment._intersection,
+				last = loc && loc.getSegment(true);
+			if (segment.getPrevious()._invalid)
+				segment.setHandleIn(last ? last._handleIn : Point.create(0, 0));
 			do {
-				node._visited = true;
-				// node._ixPair is this node's intersection CurveLocation object
-				if (node._ixPair) {
-					var nextNode = node._INVALID
-							? node._ixPair.getSegment(true)
-							: node;
-					nuPath.add(new Segment(node._point, node._handleIn,
-							nextNode._handleOut));
-					nextNode._visited = true;
-					node = nextNode;
+				segment._visited = true;
+				if (segment._intersection) {
+					var next = segment._invalid
+							? segment._intersection.getSegment(true)
+							: segment;
+					path.add(new Segment(segment._point, segment._handleIn,
+							next._handleOut));
+					next._visited = true;
+					segment = next;
 				} else {
-					nuPath.add(node);
+					// Remove temporary digraph data structures from segment 
+					delete segment._invalid;
+					delete segment._intersection;
+					path.add(segment);
 				}
-				node = node.getNext();
-			} while (node && !node._visited && node !== end);
+				segment = segment.getNext();
+			} while (segment && !segment._visited && segment !== last);
 			// Avoid stray segments and incomplete paths
-			if (nuPath._segments.length > 2) {
-				nuPath.setClosed(true);
-				result.addChild(nuPath, true);
+			if (path._segments.length > 2) {
+				path.setClosed(true);
+				result.addChild(path, true);
 			} else {
-				nuPath.remove();
+				path.remove();
 			}
 		}
 		// Delete the proxies
