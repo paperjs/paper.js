@@ -5,6 +5,7 @@
 
 ## Contributors
 
+- Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
 - Jt Whissel <jtwhissel@gmail.com>
 - Andrew Roles <jaroles58@gmail.com>
 - Jacob Lites <jnightlight@gmail.com>
