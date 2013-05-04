@@ -57,14 +57,14 @@ var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# *
 	 * @type Segment
 	 * @bean
 	 */
-	getSegment: function() {
+	getSegment: function(/* preferFirst */) {
 		if (!this._segment) {
 			var curve = this.getCurve(),
 				parameter = this.getParameter();
-			if (parameter === 0) {
-				this._segment = curve._segment1;
-			} else if (parameter === 1) {
+			if (parameter === 1) {
 				this._segment = curve._segment2;
+			} else if (parameter === 0 || arguments[0]) {
+				this._segment = curve._segment1;
 			} else if (parameter == null) {
 				return null;
 			} else {

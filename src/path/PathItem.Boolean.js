@@ -57,7 +57,6 @@ PathItem.inject(new function() {
 				segment = curve && curve.getSegment1() || loc.getSegment();
 			if (others)
 				others.push(other);
-			other.__segment = segment;
 			segment._ixPair = other;
 		}
 		return others;
@@ -168,22 +167,18 @@ PathItem.inject(new function() {
 				continue;
 			var path = node.path,
 				nuPath = new Path(),
-				firstNode = node,
-				intersectNode = null;
+				end = node._ixPair && node._ixPair.getSegment(true);
 			if (node.getPrevious()._INVALID) {
 				node.setHandleIn(node._ixPair
-						? node._ixPair.getIntersection().__segment._handleIn
+						? node._ixPair.getSegment(true)._handleIn
 						: Point.create(0, 0));
 			}
-			while (node && !node._visited && node !== intersectNode) {
+			do {
 				node._visited = true;
-				intersectNode = intersectNode || firstNode._ixPair
-						&& firstNode._ixPair.getIntersection().__segment;
 				// node._ixPair is this node's intersection CurveLocation object
-				// node._ixPair.getIntersection() is the other CurveLocation object this node intersects with
 				if (node._ixPair) {
 					var nextNode = node._INVALID
-							? node._ixPair.getIntersection().__segment
+							? node._ixPair.getSegment(true)
 							: node;
 					nuPath.add(new Segment(node._point, node._handleIn,
 							nextNode._handleOut));
@@ -193,7 +188,7 @@ PathItem.inject(new function() {
 					nuPath.add(node);
 				}
 				node = node.getNext();
-			}
+			} while (node && !node._visited && node !== end);
 			// Avoid stray segments and incomplete paths
 			if (nuPath._segments.length > 2) {
 				nuPath.setClosed(true);
