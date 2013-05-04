@@ -120,18 +120,17 @@ PathItem.inject({
 						segment;
 					ixs.sort(sortIx);
 					for (var i = 0, l = ixs.length; i < l; i++) {
-						var ix = ixs[i];
+						var ix = ixs[i],
+							t = ix.parameter;
 						if (!vals)
 							vals = crv.getValues();
-						if (ix.parameter === 0 || ix.parameter === 1) {
+						if (t === 0 || t === 1) {
 							// Intersection is on an existing node: No need to
 							// create a new segment, we just link the
 							// corresponding intersections together
-							segment = ix.parameter === 0
-									? crv.segment1
-									: crv.segment2;
+							segment = t === 0 ? crv.segment1 : crv.segment2;
 						} else {
-							var parts = Curve.subdivide(vals, ix.parameter),
+							var parts = Curve.subdivide(vals, t),
 								left = parts[0],
 								right = parts[1],
 								segment = new Segment(
@@ -156,8 +155,9 @@ PathItem.inject({
 						}
 						segment._ixPair = ix.pair;
 						segment._ixPair._segment = segment;
+						// Readjust parameters after splitting
 						for (var j = i + 1; j < l; j++)
-							ixs[j].parameter = ixs[j].parameter / ix.parameter;
+							ixs[j].parameter /= t;
 					}
 				}
 			}
