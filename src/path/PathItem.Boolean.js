@@ -175,22 +175,22 @@ PathItem.inject(new function() {
 			var path = node.path,
 				nuPath = new Path(),
 				firstNode = node,
-				firstNode_ix = null;
+				intersectNode = null;
 			if (node.getPrevious()._INVALID) {
 				node.setHandleIn(node._ixPair
 						? node._ixPair.getIntersection().__segment._handleIn
 						: Point.create(0, 0));
 			}
-			while (node && !node._visited && node !== firstNode_ix) {
+			while (node && !node._visited && node !== intersectNode) {
 				node._visited = true;
-				firstNode_ix = firstNode_ix || firstNode._ixPair
+				intersectNode = intersectNode || firstNode._ixPair
 						&& firstNode._ixPair.getIntersection().__segment;
 				// node._ixPair is this node's intersection CurveLocation object
 				// node._ixPair.getIntersection() is the other CurveLocation object this node intersects with
-				var nextNode = node._ixPair && node._INVALID
-						? node._ixPair.getIntersection().__segment
-						: node;
 				if (node._ixPair) {
+					var nextNode = node._INVALID
+							? node._ixPair.getIntersection().__segment
+							: node;
 					nuPath.add(new Segment(node._point, node._handleIn,
 							nextNode._handleOut));
 					nextNode._visited = true;
