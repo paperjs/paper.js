@@ -88,65 +88,76 @@ PathItem.inject({
 
 	_splitPath: function(_ixs, other) {
 		// Sort function for sorting intersections in the descending order
-		function sortIx(a, b) { return b.parameter - a.parameter; }
-		other = other || false;
-		var i, j, k, l, len, ixs, ix, path, crv, vals;
-		var ixPoint, nuSeg;
-		var paths = {}, lastPathId = null;
-		for (i = 0, l = _ixs.length; i < l; i++) {
-			ix = (other)? _ixs[i].getIntersection() : _ixs[i];
-			if (!paths[ix.path.id]) {
-				paths[ix.path.id] = ix.path;
-			}
-			if (!ix.curve._ixParams) {ix.curve._ixParams = []; }
-			ix.curve._ixParams.push({ parameter: ix.parameter, pair: ix.getIntersection() });
+		function sortIx(a, b) {
+			return b.parameter - a.parameter;
 		}
-		for (k in paths) {
-			if (!paths.hasOwnProperty(k)) { continue; }
-			path = paths[k];
-			var lastNode = path.lastSegment, firstNode = path.firstSegment;
-			var nextNode = null, left = null, right = null, parts = null, isLinear;
-			var handleIn, handleOut;
+		var paths = {};
+		for (var i = 0, l = _ixs.length; i < l; i++) {
+			var ix = other ? _ixs[i].getIntersection() : _ixs[i];
+			if (!paths[ix.path.id])
+				paths[ix.path.id] = ix.path;
+			if (!ix.curve._ixParams)
+				ix.curve._ixParams = [];
+			ix.curve._ixParams.push({
+				parameter: ix.parameter,
+				pair: ix.getIntersection()
+			});
+		}
+		for (var k in paths) {
+			if (!paths.hasOwnProperty(k))
+				continue;
+			var path = paths[k],
+				lastNode = path.lastSegment,
+				firstNode = path.firstSegment,
+				nextNode = null;
 			while (nextNode !== firstNode) {
 				nextNode = (nextNode)? nextNode.previous: lastNode;
 				if (nextNode.curve._ixParams) {
-					ixs = nextNode.curve._ixParams;
+					var ixs = nextNode.curve._ixParams,
+						crv = nextNode.getCurve(),
+						isLinear = crv.isLinear(),
+						vals = null,
+						segment;
 					ixs.sort(sortIx);
-					crv = nextNode.getCurve();
-					isLinear = crv.isLinear();
-					crv = vals = null;
-					for (i = 0, l = ixs.length; i < l; i++) {
-						ix = ixs[i];
-						crv = nextNode.getCurve();
-						if (!vals) vals = crv.getValues();
-						if (ix.parameter === 0.0 || ix.parameter === 1.0) {
-							// Intersection is on an existing node
-							// no need to create a new segment,
-							// we just link the corresponding intersections together
-							nuSeg = (ix.parameter === 0.0)? crv.segment1 : crv.segment2;
-							nuSeg._ixPair = ix.pair;
-							nuSeg._ixPair._segment = nuSeg;
+					for (var i = 0, l = ixs.length; i < l; i++) {
+						var ix = ixs[i];
+						if (!vals)
+							vals = crv.getValues();
+						if (ix.parameter === 0 || ix.parameter === 1) {
+							// Intersection is on an existing node: No need to
+							// create a new segment, we just link the
+							// corresponding intersections together
+							segment = ix.parameter === 0
+									? crv.segment1
+									: crv.segment2;
 						} else {
-							parts = Curve.subdivide(vals, ix.parameter);
-							left = parts[0];
-							right = parts[1];
-							handleIn = handleOut = null;
-							ixPoint = new Point(right[0], right[1]);
+							var parts = Curve.subdivide(vals, ix.parameter),
+								left = parts[0],
+								right = parts[1],
+								segment = new Segment(
+										new Point(right[0], right[1]));
 							if (!isLinear) {
-								crv.segment1.handleOut = new Point(left[2] - left[0], left[3] - left[1]);
-								crv.segment2.handleIn = new Point(right[4] - right[6], right[5] - right[7]);
-								handleIn = new Point(left[4] - ixPoint.x, left[5] - ixPoint.y);
-								handleOut = new Point(right[2] - ixPoint.x, right[3] - ixPoint.y);
+								crv.segment1.handleOut = new Point(
+										left[2] - left[0],
+										left[3] - left[1]);
+								crv.segment2.handleIn = new Point(
+										right[4] - right[6],
+										right[5] - right[7]);
+								segment.handleIn = new Point(
+										left[4] - left[6], 
+										left[5] - left[7]);
+								segment.handleOut = new Point(
+										right[2] - left[6],
+										right[3] - left[7]);
 							}
-							nuSeg = new Segment(ixPoint, handleIn, handleOut);
-							nuSeg._ixPair = ix.pair;
-							nuSeg._ixPair._segment = nuSeg;
-							path.insert(nextNode.index + 1,  nuSeg);
+							path.insert(nextNode.index + 1,  segment);
+							crv = nextNode.getCurve();
+							vals = left;
 						}
-						for (j = i + 1; j < l; j++) {
+						segment._ixPair = ix.pair;
+						segment._ixPair._segment = segment;
+						for (var j = i + 1; j < l; j++)
 							ixs[j].parameter = ixs[j].parameter / ix.parameter;
-						}
-						vals = left;
 					}
 				}
 			}
@@ -238,7 +249,7 @@ PathItem.inject({
 			_splitCache.intersections = ixs;
 			return;
 		}
-		this._splitPath(ixs);
+		this._splitPath(ixs, false);
 		this._splitPath(ixs, true);
 		path1Id = _path1.id;
 		path2Id = _path2.id;
