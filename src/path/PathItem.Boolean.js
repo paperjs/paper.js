@@ -139,7 +139,7 @@ PathItem.inject(new function() {
 					midPoint = segment.getCurve().getPoint(0.5),
 					insidePath1 = path !== _path1 && _path1.contains(midPoint)
 							&& (clockwise === path1Clockwise || subtract
-									|| !testOnCurve(_path1, midPoint));
+									|| !testOnCurve(_path1, midPoint)),
 					insidePath2 = path !== _path2 && _path2.contains(midPoint)
 							&& (clockwise === path2Clockwise
 									|| !testOnCurve(_path2, midPoint));
