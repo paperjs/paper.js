@@ -7,177 +7,216 @@
 	<script type="text/javascript">
 	paper.install(window);
 
+	var operations = {
+		union: true,
+		intersection: true,
+		subtraction: true,
+		exclusion: true,
+		division: true
+	};
+
 	function runTests() {
-		var caption, pathA, pathB, group;
+		var pathA, pathB, group;
 
 		var container = document.getElementById('container');
 
-		caption = prepareTest('Overlapping circles', container);
-		pathA = new Path.Circle(new Point(80, 110), 50);
-		pathB = new Path.Circle(new Point(150, 110), 70);
-		testBooleanStatic(pathA, pathB, caption);
+		function runTest(testName, handler) {
+			console.log('\n' + testName);
+			var caption = document.createElement('h3');
+			var canvas = document.createElement('canvas');
+			caption.appendChild(document.createTextNode(testName));
+			container.appendChild(caption);
+			container.appendChild(canvas);
+			setTimeout(function() {
+				paper.setup(canvas);
+				var paths = handler();
+				testBooleanStatic(paths[0], paths[1]);
+			}, 0);
+			return caption;
+		}
 
-		caption = prepareTest('Disjoint circles', container);
-		pathA = new Path.Circle(new Point(60, 110), 50);
-		pathB = new Path.Circle(new Point(170, 110), 50);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Overlapping circles', function() {
+			return [
+				new Path.Circle(new Point(80, 110), 50),
+				new Path.Circle(new Point(150, 110), 70)
+			];
+		});
 
-		caption = prepareTest('Overlapping circles - enveloping', container);
-		pathA = new Path.Circle(new Point(110, 110), 100);
-		pathB = new Path.Circle(new Point(120, 110), 60);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Disjoint circles', function() {
+			return [
+				new Path.Circle(new Point(60, 110), 50),
+				new Path.Circle(new Point(170, 110), 50)
+			];
+		});
 
-		caption = prepareTest('Polygon and square', container);
-		pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
-		pathB = new Path.Rectangle(new Point(100, 80), [80, 80]);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Overlapping circles - enveloping', function() {
+			return [
+				new Path.Circle(new Point(110, 110), 100),
+				new Path.Circle(new Point(120, 110), 60)
+			];
+		});
 
-		caption = prepareTest('Circle and square (overlaps exactly on existing segments)', container);
-		pathA = new Path.Circle(new Point(110, 110), 80);
-		pathB = new Path.Rectangle(new Point(110, 110), [80, 80]);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Polygon and square', function() {
+			return [
+				new Path.RegularPolygon(new Point(80, 110), 12, 80),
+				new Path.Rectangle(new Point(100, 80), [80, 80])
+			];
+		});
 
-		caption = prepareTest('Circle and square (existing segments overlaps on curves)', container);
-		pathA = new Path.Circle(new Point(110, 110), 80);
-		pathB = new Path.Rectangle(new Point(110, 110), [100, 100]);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Circle and square (overlaps exactly on existing segments)', function() {
+			return [
+				new Path.Circle(new Point(110, 110), 80),
+				new Path.Rectangle(new Point(110, 110), [80, 80])
+			];
+		});
 
-		caption = prepareTest('Square and square (one segment overlaps on a line)', container);
-		pathA = new Path.Rectangle(new Point(80, 125), [50, 50]);
-		pathA.rotate(45);
-		pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80]);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Circle and square (existing segments overlaps on curves)', function() {
+			return [
+				new Path.Circle(new Point(110, 110), 80),
+				new Path.Rectangle(new Point(110, 110), [100, 100])
+			];
+		});
 
-		caption = prepareTest('Rectangle and rectangle (overlaps exactly on existing curves)', container);
-		pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
-		pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Square and square (one segment overlaps on a line)', function() {
+			var pathA = new Path.Rectangle(new Point(80, 125), [50, 50]).rotate(45);
+			var pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80]);
+			return [pathA, pathB];
+		});
 
-		caption = prepareTest('Circle and banana (multiple intersections within same curve segment)', container);
-		pathA = new Path.Circle(new Point(80, 110), 80);
-		pathB = new Path.Circle(new Point(130, 110), 80);
-		pathB.segments[3].point = pathB.segments[3].point.add([ 0, -120 ]);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Rectangle and rectangle (overlaps exactly on existing curves)', function() {
+			return [
+				new Path.Rectangle(new Point(30.5, 50.5), [100, 150]),
+				new Path.Rectangle(new Point(130.5, 60.5), [100, 150])
+			];
+		});
 
-		caption = prepareTest('Overlapping stars 1', container);
-		pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
-		pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Circle and banana (multiple intersections within same curve segment)', function() {
+			var pathA = new Path.Circle(new Point(80, 110), 80);
+			var pathB = new Path.Circle(new Point(130, 110), 80);
+			pathB.segments[3].point = pathB.segments[3].point.add([ 0, -120 ]);
+			return [pathA, pathB];
+		});
 
-		caption = prepareTest('Overlapping stars 2', container);
-		pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
-		pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Overlapping stars 1', function() {
+			return [
+				new Path.Star(new Point(80, 110), 10, 20, 80),
+				new Path.Star(new Point(120, 110), 10, 30, 100)
+			];
+		});
 
-		// caption = prepareTest('Circles overlap exactly over each other', container);
+		runTest('Overlapping stars 2', function() {
+			return [
+				new Path.Star(new Point(110, 110), 20, 20, 80),
+				new Path.Star(new Point(110, 110), 6, 30, 100)
+			];
+		});
+
+		// runTest('Circles overlap exactly over each other');
 		// pathA = new Path.Circle(new Point(110, 110), 100);
 		// pathB = new Path.Circle(new Point(110, 110), 100);
 		// // pathB.translate([0.5,0])
-		// testBooleanStatic(pathA, pathB, caption);
+		// testBooleanStatic(pathA, pathB);
 
-		caption = prepareTest('Maximum possible intersections between 2 cubic bezier curve segments - 9', container);
-		pathA = new Path();
-		pathA.add(new Segment([173, 44], [-281, 268], [-86, 152]));
-		pathA.add(new Segment([47, 93], [-89, 100], [240, -239]));
-		pathA.closed = true;
-		pathB = pathA.clone();
-		pathB.rotate(-90);
-		pathA.translate([-10,0]);
-		pathB.translate([10,0]);
-		testBooleanStatic(pathA, pathB, caption);
-		annotatePath(pathA, null, '#008');
-		annotatePath(pathB, null, '#800');
-		view.draw();
+		runTest('Maximum possible intersections between 2 cubic bezier curve segments - 9', function() {
+			var pathA = new Path();
+			pathA.add(new Segment([173, 44], [-281, 268], [-86, 152]));
+			pathA.add(new Segment([47, 93], [-89, 100], [240, -239]));
+			pathA.closed = true;
+			var pathB = pathA.clone();
+			pathB.rotate(-90);
+			pathA.translate([-10,0]);
+			pathB.translate([10,0]);
+			annotatePath(pathA, null, '#008');
+			annotatePath(pathB, null, '#800');
+			return [pathA, pathB];
+		});
 
-		caption = prepareTest('SVG gears', container);
-		group	= paper.project.importSVG(document.getElementById('svggears'));
-		pathA = group.children[0];
-		pathB = group.children[1];
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('SVG gears', function() {
+			var group = paper.project.importSVG(document.getElementById('svggears'));
+			return group.children;
+		});
 
-		caption = prepareTest('Glyphs imported from SVG', container);
-		group	= paper.project.importSVG(document.getElementById('glyphsys'));
-		pathA = group.children[0];
-		pathB = group.children[1];
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('Glyphs imported from SVG', function() {
+			var group = paper.project.importSVG(document.getElementById('glyphsys'));
+			return group.children;
+		});
 
-		caption = prepareTest('CompoundPaths 1', container);
-		group	= paper.project.importSVG(document.getElementById('glyphsacirc'));
-		pathA = group.children[0];
-		pathB = group.children[1];
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('CompoundPaths 1', function() {
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			return group.children;
+		});
 
-		caption = prepareTest('CompoundPaths 2 - holes', container);
-		group	= paper.project.importSVG(document.getElementById('glyphsacirc'));
-		pathA = group.children[0];
-		pathB = new CompoundPath();
-		group.children[1].clockwise = true;
-		pathB.addChild(group.children[1]);
-		var npath = new Path.Circle([110, 110], 30);
-		pathB.addChild(npath);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('CompoundPaths 2 - holes', function() {
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			var pathA = group.children[0];
+			var pathB = new CompoundPath();
+			group.children[1].clockwise = true;
+			pathB.addChild(group.children[1]);
+			pathB.addChild(new Path.Circle([110, 110], 30));
+			return [pathA, pathB];
+		});
 
-		caption = prepareTest('CompoundPaths 3 !', container);
-		group	= paper.project.importSVG(document.getElementById('svggreenland'));
-		pathA = group.children[0];
-		pathB = group.children[1];
-		pathB.scale(0.5, 1).translate([25.5, 0]);
-		// pathA.scale(2);
-		// pathB.scale(2);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('CompoundPaths 3 !', function() {
+			var group = paper.project.importSVG(document.getElementById('svggreenland'));
+			group.children[1].scale(0.5, 1).translate([25.5, 0]);
+			return group.children;
+		});
 
-		caption = prepareTest('CompoundPaths 4 - holes and islands 1', container);
-		group	= paper.project.importSVG(document.getElementById('glyphsacirc'));
-		pathA = group.children[0];
-		pathB = new CompoundPath();
-		group.children[1].clockwise = true;
-		pathB.addChild(group.children[1]);
-		var npath = new Path.Circle([40, 80], 20);
-		pathB.addChild(npath);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('CompoundPaths 4 - holes and islands 1', function() {
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			var pathA = group.children[0];
+			var pathB = new CompoundPath();
+			group.children[1].clockwise = true;
+			pathB.addChild(group.children[1]);
+			pathB.addChild(new Path.Circle([40, 80], 20));
+			return [pathA, pathB];
+		});
 
-		caption = prepareTest('CompoundPaths 5 - holes and islands 2', container);
-		group	= paper.project.importSVG(document.getElementById('glyphsacirc'));
-		pathA = group.children[0];
-		pathB = new CompoundPath();
-		group.children[1].clockwise = true;
-		pathB.addChild(group.children[1]);
-		var npath = new Path.Circle([40, 80], 20);
-		pathB.addChild(npath);
-		npath = new Path.Circle([120, 110], 30);
-		pathB.addChild(npath);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('CompoundPaths 5 - holes and islands 2', function() {
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			var pathA = group.children[0];
+			var pathB = new CompoundPath();
+			group.children[1].clockwise = true;
+			pathB.addChild(group.children[1]);
+			var npath = new Path.Circle([40, 80], 20);
+			pathB.addChild(npath);
+			npath = new Path.Circle([120, 110], 30);
+			pathB.addChild(npath);
+			return [pathA, pathB];
+		});
 
-		caption = prepareTest('CompoundPaths 6 - holes and islands 3', container);
-		group	= paper.project.importSVG(document.getElementById('glyphsacirc'));
-		pathA = group.children[0];
-		pathB = new CompoundPath();
-		var npath = new Path.Circle([110, 110], 100);
-		pathB.addChild(npath);
-		npath = new Path.Circle([110, 110], 60);
-		pathB.addChild(npath);
-		npath = new Path.Circle([110, 110], 30);
-		pathB.addChild(npath);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('CompoundPaths 6 - holes and islands 3', function() {
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			var pathA = group.children[0];
+			var pathB = new CompoundPath();
+			var npath = new Path.Circle([110, 110], 100);
+			pathB.addChild(npath);
+			npath = new Path.Circle([110, 110], 60);
+			pathB.addChild(npath);
+			npath = new Path.Circle([110, 110], 30);
+			pathB.addChild(npath);
+			return [pathA, pathB];
+		});
 
-		caption = prepareTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', container);
-		pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
-		pathB = new CompoundPath();
-		pathB.addChild(new Path.Rectangle(new Point(140.5, 30.5), [100, 150]));
-		pathB.addChild(new Path.Rectangle(new Point(150.5, 65.5), [50, 100]));
-		// pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80]);
-		testBooleanStatic(pathA, pathB, caption);
+		runTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', function() {
+			var pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
+			var pathB = new CompoundPath();
+			pathB.addChild(new Path.Rectangle(new Point(140.5, 30.5), [100, 150]));
+			pathB.addChild(new Path.Rectangle(new Point(150.5, 65.5), [50, 100]));
+			// pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80])
+			return [pathA, pathB];
+		});
 
 
 		// // To resolve self intersection on a single path,
 		// // pass an empty second operand and do a Union operation
-		// caption = prepareTest('Self-intersecting paths 1 - Resolve self-intersection on single path', container);
+		// runTest('Self-intersecting paths 1 - Resolve self-intersection on single path');
 		// pathA = new Path.Star(new Point(110, 110), 10, 20, 80);
 		// pathA.smooth();
 		// pathB = new Path();
 		// testBooleanStatic(pathA, pathB, caption, false, true, true, true);
 
-		// caption = prepareTest('Self-intersecting paths 2 - Resolve self-intersecting CompoundPath', container);
+		// runTest('Self-intersecting paths 2 - Resolve self-intersecting CompoundPath');
 		// pathA = new CompoundPath();
 		// pathA.addChild(new Path.Circle([100, 110], 60));
 		// pathA.addChild(new Path.Circle([160, 110], 30));
@@ -199,9 +238,6 @@
 		//		 }
 		//	 }
 		// };
-
-		window.a = pathA;
-		window.b = pathB;
 
 		// // pathA.selected = true;
 		// // pathA.fullySelected = true;
@@ -228,21 +264,8 @@
 		// var nup = unite(pathA, pathB);
 		// console.timeEnd('unite');
 		// // nup.style = booleanStyle;
-		// window.p = nup;
 
 		// view.draw();
-
-
-		function prepareTest(testName, parentNode) {
-			console.log('\n' + testName);
-			var caption = document.createElement('h3');
-			caption.appendChild(document.createTextNode(testName));
-			var canvas = document.createElement('CANVAS');
-			parentNode.appendChild(caption);
-			parentNode.appendChild(canvas);
-			paper.setup(canvas);
-			return caption;
-		}
 	}
 
 	var booleanStyle = {
@@ -264,71 +287,64 @@
 	};
 
 	// Better if path1 and path2 fit nicely inside a 200x200 pixels rect
-	function testBooleanStatic(path1, path2, caption, noUnion, noIntersection, noSubtraction, _disperse) {
-		// try{
-			path1.style = path2.style = pathStyleNormal;
+	function testBooleanStatic(path1, path2) {
+		path1.style = path2.style = pathStyleNormal;
 
-			if (!noUnion) {
-				var _p1U = path1.clone().translate([250, 0]);
-				var _p2U = path2.clone().translate([250, 0]);
-				_p1U.style = _p2U.style = pathStyleBoolean;
-				console.time('Union');
-				var boolPathU = _p1U.unite(_p2U);
-				console.timeEnd('Union');
-				boolPathU.style = booleanStyle;
-				if (_disperse) { disperse(boolPathU); }
-			}
-
-			if (!noIntersection) {
-				var _p1I = path1.clone().translate([500, 0]);
-				var _p2I = path2.clone().translate([500, 0]);
-				_p1I.style = _p2I.style = pathStyleBoolean;
-				console.time('Intersection');
-				var boolPathI = _p1I.intersect(_p2I);
-				console.timeEnd('Intersection');
-				boolPathI.style = booleanStyle;
-			}
-
-			if (!noSubtraction) {
-				var _p1S = path1.clone().translate([750, 0]);
-				var _p2S = path2.clone().translate([750, 0]);
-				_p1S.style = _p2S.style = pathStyleBoolean;
-				console.time('Subtraction');
-				var boolPathS = _p1S.subtract(_p2S);
-				console.timeEnd('Subtraction');
-				boolPathS.style = booleanStyle;
-			}
-
-			if (!noSubtraction) {
-				var _p1E = path1.clone().translate([250, 220]);
-				var _p2E = path2.clone().translate([250, 220]);
-				_p1E.style = _p2E.style = pathStyleBoolean;
-				console.time('Exclusion');
-				var boolPathE = _p1E.exclude(_p2E);
-				console.timeEnd('Exclusion');
-				boolPathE.style = booleanStyle;
-			}
-
-			if (!noSubtraction && !noIntersection) {
-				var _p1D = path1.clone().translate([500, 220]);
-				var _p2D = path2.clone().translate([500, 220]);
-				_p1D.style = _p2D.style = pathStyleBoolean;
-				console.time('Division');
-				var boolPathD = _p1D.divide(_p2D);
-				console.timeEnd('Division');
-				disperse(boolPathD);
-				boolPathD.style = booleanStyle;
-			}
-		// } catch(e) {
-		//	 console.error(e.name + ": " + e.message);
-		//	 if (caption) { caption.className += ' error'; }
-		//	 // paper.project.view.element.className += ' hide';
-		// } finally {
+		if (operations.union) {
+			var _p1U = path1.clone().translate([250, 0]);
+			var _p2U = path2.clone().translate([250, 0]);
+			_p1U.style = _p2U.style = pathStyleBoolean;
+			console.time('Union');
+			var boolPathU = _p1U.unite(_p2U);
 			console.timeEnd('Union');
-			console.timeEnd('Intersection');
-			console.timeEnd('Subtraction');
+			boolPathU.style = booleanStyle;
 			view.draw();
-		// }
+		}
+
+		if (operations.intersection) {
+			var _p1I = path1.clone().translate([500, 0]);
+			var _p2I = path2.clone().translate([500, 0]);
+			_p1I.style = _p2I.style = pathStyleBoolean;
+			console.time('Intersection');
+			var boolPathI = _p1I.intersect(_p2I);
+			console.timeEnd('Intersection');
+			boolPathI.style = booleanStyle;
+			view.draw();
+		}
+
+		if (operations.subtraction) {
+			var _p1S = path1.clone().translate([750, 0]);
+			var _p2S = path2.clone().translate([750, 0]);
+			_p1S.style = _p2S.style = pathStyleBoolean;
+			console.time('Subtraction');
+			var boolPathS = _p1S.subtract(_p2S);
+			console.timeEnd('Subtraction');
+			boolPathS.style = booleanStyle;
+			view.draw();
+		}
+
+		if (operations.exclusion) {
+			var _p1E = path1.clone().translate([250, 220]);
+			var _p2E = path2.clone().translate([250, 220]);
+			_p1E.style = _p2E.style = pathStyleBoolean;
+			console.time('Exclusion');
+			var boolPathE = _p1E.exclude(_p2E);
+			console.timeEnd('Exclusion');
+			boolPathE.style = booleanStyle;
+			view.draw();
+		}
+
+		if (operations.division) {
+			var _p1D = path1.clone().translate([500, 220]);
+			var _p2D = path2.clone().translate([500, 220]);
+			_p1D.style = _p2D.style = pathStyleBoolean;
+			console.time('Division');
+			var boolPathD = _p1D.divide(_p2D);
+			console.timeEnd('Division');
+			disperse(boolPathD);
+			boolPathD.style = booleanStyle;
+			view.draw();
+		}
 	}
 
 	function disperse(path, distance) {
@@ -436,6 +452,8 @@
 		body {
 			height: 100%;
 			overflow: auto;
+			font-family: 'Helvetica Neue';
+			font-weight: 300;
 		}
 		#container {
 			display: block;
@@ -443,18 +461,14 @@
 			margin: 0 auto 50px;
 		}
 		h1, h3 {
-			font-family: 'Helvetica Neue';
 			font-weight: 300;
 			margin: 50px 0 20px;
 		}
-		footer{
+		footer {
 			display: block;
 			width: 1000px;
 			margin: 30px auto;
 			color: #999;
-			font-family: 'Helvetica Neue';
-			font-weight: 300;
-			font-style: italic;
 		}
 		canvas {
 			cursor: crosshair;
@@ -476,30 +490,21 @@
 		<button id="testStart" value="Start tests" onClick="runTests();">Start tests</button>
 	</div>
 	<footer>
-		<p>Vector boolean operations on paperjs objects.</p>
-		<p>
-		This is mostly written for clarity (I hope it is clear) and compatibility,
-		not optimised for performance, and has to be tested heavily for stability.
-		</p>
 		<p>Supported</p>
 		<ul>
-			<li>paperjs Path and CompoundPath objects</li>
+			<li>All PathItem classes (Path and CompoundPath)</li>
 			<li>Boolean Union</li>
 			<li>Boolean Intersection</li>
 			<li>Boolean Subtraction</li>
 			<li>Resolving a self-intersecting Path</li>
 		</ul>
-		<p>Not supported yet ( which I would like to see supported )</p>
+		<p>Not supported yet</p>
 		<ul>
 			<li>Boolean operations between self-intersecting Paths</li>
-			<li>Paths are clones of each other that ovelap exactly on top of each other!</li>
+			<li>Paths that are clones of each other and lie in the exact same position</li>
 		</ul>
 		<p>
-		This is meant to be integrated into the paperjs library in the near future.
-		</p>
-		<p>
-			Harikrishnan Gopalakrishnan<br>
-			http://hkrish.com/playground/paperjs/booleanStudy.html
+			<a href="http://hkrish.com">Harikrishnan Gopalakrishnan</a>
 		<p>
 	</footer>
 
