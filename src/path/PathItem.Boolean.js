@@ -64,17 +64,14 @@ PathItem.inject(new function() {
 	}
 
 	/**
-	 * To deal with a HTML canvas requirement where CompoundPaths' child contours
-	 * has to be of different winding direction for correctly filling holes.
-	 * But if some individual countours are disjoint, i.e. islands, we have to
-	 * reorient them so that
-	 *   the holes have opposit winding direction (already handled by paperjs)
-	 *   islands has to have same winding direction (as the first child of the path)
+	 * To deal with a HTML5 canvas requirement where CompoundPaths' child
+	 * contours has to be of different winding direction for correctly filling
+	 * holes. But if some individual countours are disjoint, i.e. islands, we
+	 * have to reorient them so that:
+	 * - the holes have opposit winding direction (already handled by paper.js)
+	 * - islands have to have the same winding direction as the first child
 	 *
-	 * Does NOT handle selfIntersecting CompoundPaths.
-	 *
-	 * @param  {CompoundPath} path - Input CompoundPath, Note: This path could be modified if need be.
-	 * @return {boolean}	  the winding direction of the base contour(true if clockwise)
+	 * NOTE: Does NOT handle self-intersecting CompoundPaths.
 	 */
 	function reorientPath(path) {
 		if (path instanceof CompoundPath) {
@@ -92,12 +89,9 @@ PathItem.inject(new function() {
 					if (i !== j && bounds[i].contains(bounds[j]))
 						counters[j]++;
 				}
-			}
-			// Omit the first child
-			for (var i = 1; i < length; i++) {
-				if (counters[i] % 2 === 0) {
+				// Omit the first child
+				if (i > 0 && counters[i] % 2 === 0)
 					children[i].setClockwise(clockwise);
-				}
 			}
 		}
 		return path;
