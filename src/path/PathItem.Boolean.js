@@ -108,12 +108,10 @@ PathItem.inject(new function() {
 			// Calculate all the intersections
 			intersections = _cache && _cache.intersections
 					|| path1.getIntersections(path2);
-		// if we have a empty _cache object as an operand, skip calculating
-		// boolean and cache the intersections
-		// if (_cache && !_cache.intersections) {
-		// 	// TODO: Don't we need to clear up and remove path1 & path2 again?
+		// If we have an empty _cache object as an operand, skip calculating
+		// boolean and cache the intersections.
+		// if (_cache && !_cache.intersections)
 		// 	return _cache.intersections = intersections;
-		// }
 		// Now split intersections on both paths, by asking the first call to
 		// collect the intersections on the other path for us and passing the
 		// result of that on to the second call.
@@ -206,19 +204,13 @@ PathItem.inject(new function() {
 		return false;
 	}
 
-	// A boolean operator is a binary operator function of the form
+	// Boolean operators are binary operator functions of the form:
 	// function(isPath1, isInPath1, isInPath2)
 	//
-	// Operators return true if a curve in the operands is to be removed,
-	// and they aare called for each curve segment in the graph after all the
-	// intersections between the operands are calculated and curves in the
-	// operands were split at intersections.
-	//
-	//  The boolean operator return a Boolean value indicating whether to
-	// keep the curve or not.
-	//  return true - discard the curve
-	//  return false - keep the curve
-
+	// Operators return true if a segment in the operands is to be discarded.
+	// They are called for each segment in the graph after all the intersections
+	// between the operands are calculated and curves in the operands were split
+	// at intersections.
 	return /** @lends Path# */{
 		/**
 		 * Merges the geometry of the specified path from this path's
