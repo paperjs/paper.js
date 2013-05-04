@@ -21,13 +21,13 @@
 		var container = document.getElementById('container');
 
 		function runTest(testName, handler) {
-			console.log('\n' + testName);
 			var caption = document.createElement('h3');
 			var canvas = document.createElement('canvas');
 			caption.appendChild(document.createTextNode(testName));
 			container.appendChild(caption);
 			container.appendChild(canvas);
 			setTimeout(function() {
+				console.log('\n' + testName);
 				paper.setup(canvas);
 				var paths = handler();
 				testBooleanStatic(paths[0], paths[1]);
