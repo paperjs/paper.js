@@ -31,55 +31,9 @@
  * http://hkrish.com/playground/paperjs/booleanStudy.html
  */
 
-PathItem.inject({
+PathItem.inject(new function() {
 
-	// A boolean operator is a binary operator function of the form
-	// function(isPath1, isInPath1, isInPath2)
-	//
-	// Operators return true if a curve in the operands is to be removed,
-	// and they aare called for each curve segment in the graph after all the
-	// intersections between the operands are calculated and curves in the
-	// operands were split at intersections.
-	//
-	//  The boolean operator return a Boolean value indicating whether to
-	// keep the curve or not.
-	//  return true - discard the curve
-	//  return false - keep the curve
-	unite: function(path, _cache) {
-		return this._computeBoolean(this, path,
-				function(isPath1, isInPath1, isInPath2) {
-					return isInPath1 || isInPath2;
-				}, false, _cache);
-	},
-
-	intersect: function(path, _cache) {
-		return this._computeBoolean(this, path,
-				function(isPath1, isInPath1, isInPath2) {
-					return !(isInPath1 || isInPath2);
-				}, false, _cache);
-	},
-
-	subtract: function(path, _cache) {
-		return this._computeBoolean(this, path,
-				function(isPath1, isInPath1, isInPath2) {
-					return isPath1 && isInPath2 || !isPath1 && !isInPath1;
-				}, true, _cache);
-	},
-
-	// Compound boolean operators combine the basic boolean operations such as
-	// union, intersection, subtract etc. 
-	// TODO: cache the split objects and find a way to properly clone them!
-	// a.k.a. eXclusiveOR
-	exclude: function(path) {
-		return new Group([this.subtract(path), path.subtract(this)]);
-	},
-
-	// Divide path1 by path2
-	divide: function(path) {
-		return new Group([this.subtract(path), this.intersect(path)]);
-	},
-
-	_splitPath: function(intersections, collectOthers) {
+	function splitPath(intersections, collectOthers) {
 		// Sort intersections by paths ids, curve index and parameter, so we
 		// can loop through all intersections, divide paths and never need to
 		// readjust indices.
@@ -107,7 +61,7 @@ PathItem.inject({
 			segment._ixPair = other;
 		}
 		return others;
-	},
+	}
 
 	/**
 	 * To deal with a HTML canvas requirement where CompoundPaths' child contours
@@ -122,7 +76,7 @@ PathItem.inject({
 	 * @param  {CompoundPath} path - Input CompoundPath, Note: This path could be modified if need be.
 	 * @return {boolean}	  the winding direction of the base contour(true if clockwise)
 	 */
-	_reorientCompoundPath: function(path) {
+	function reorientCompoundPath(path) {
 		if (!(path instanceof CompoundPath)) {
 			path.closed = true;
 			return path.clockwise;
@@ -152,9 +106,9 @@ PathItem.inject({
 			}
 		}
 		return baseWinding;
-	},
+	}
 
-	_reversePath: function(path) {
+	function reversePath(path) {
 		var baseWinding;
 		if (path instanceof CompoundPath) {
 			var children = path.children, i, len;
@@ -169,9 +123,9 @@ PathItem.inject({
 			path._curves = null;
 		}
 		return baseWinding;
-	},
+	}
 
-	_computeBoolean: function(path1, path2, operator, isSubtraction, _cache) {
+	function computeBoolean(path1, path2, operator, subtract, _cache) {
 		var _path1, _path2, path1Clockwise, path2Clockwise;
 		var ixs, path1Id, path2Id;
 		// We do not modify the operands themselves
@@ -181,8 +135,8 @@ PathItem.inject({
 		_path2 = path2.clone();
 		_path1.style = _path2.style = null;
 		_path1.selected = _path2.selected = false;
-		path1Clockwise = this._reorientCompoundPath(_path1);
-		path2Clockwise = this._reorientCompoundPath(_path2);
+		path1Clockwise = reorientCompoundPath(_path1);
+		path2Clockwise = reorientCompoundPath(_path2);
 		path1Id = _path1.id;
 		path2Id = _path2.id;
 		// Calculate all the intersections
@@ -191,12 +145,12 @@ PathItem.inject({
 		// skip calculating boolean and cache the intersections
 		if (_cache && !_cache.intersections)
 			return _cache.intersections = ixs;
-		this._splitPath(this._splitPath(ixs, true));
+		splitPath(splitPath(ixs, true));
 		path1Id = _path1.id;
 		path2Id = _path2.id;
 		// Do operator specific calculations before we begin
-		if (isSubtraction)
-			path2Clockwise = this._reversePath(_path2);
+		if (subtract)
+			path2Clockwise = reversePath(_path2);
 
 		var i, j, len, path, crv;
 		var paths = [];
@@ -228,15 +182,15 @@ PathItem.inject({
 				if (thisId !== path1Id) {
 					contains = _path1.
 					contains(midPoint);
-					insidePath1 = thisWinding === path1Clockwise || isSubtraction
+					insidePath1 = thisWinding === path1Clockwise || subtract
 							? contains
-							: contains && !this._testOnCurve(_path1, midPoint);
+							: contains && !testOnCurve(_path1, midPoint);
 				}
 				if (thisId !== path2Id) {
 					contains = _path2.contains(midPoint);
 					insidePath2 = thisWinding === path2Clockwise
 							? contains
-							: contains && !this._testOnCurve(_path2, midPoint);
+							: contains && !testOnCurve(_path2, midPoint);
 				}
 				if (operator(thisId === path1Id, insidePath1, insidePath2)) {
 					crv._INVALID = true;
@@ -297,9 +251,9 @@ PathItem.inject({
 		_path2.remove();
 		// And then, we are done.
 		return boolResult.reduce();
-	},
+	}
 
-	_testOnCurve: function(path, point) {
+	function testOnCurve(path, point) {
 		var res = 0;
 		var crv = path.getCurves();
 		var i = 0;
@@ -314,4 +268,53 @@ PathItem.inject({
 		}
 		return res;
 	}
+
+	// A boolean operator is a binary operator function of the form
+	// function(isPath1, isInPath1, isInPath2)
+	//
+	// Operators return true if a curve in the operands is to be removed,
+	// and they aare called for each curve segment in the graph after all the
+	// intersections between the operands are calculated and curves in the
+	// operands were split at intersections.
+	//
+	//  The boolean operator return a Boolean value indicating whether to
+	// keep the curve or not.
+	//  return true - discard the curve
+	//  return false - keep the curve
+
+	return {
+		unite: function(path, _cache) {
+			return computeBoolean(this, path,
+					function(isPath1, isInPath1, isInPath2) {
+						return isInPath1 || isInPath2;
+					}, false, _cache);
+		},
+
+		intersect: function(path, _cache) {
+			return computeBoolean(this, path,
+					function(isPath1, isInPath1, isInPath2) {
+						return !(isInPath1 || isInPath2);
+					}, false, _cache);
+		},
+
+		subtract: function(path, _cache) {
+			return computeBoolean(this, path,
+					function(isPath1, isInPath1, isInPath2) {
+						return isPath1 && isInPath2 || !isPath1 && !isInPath1;
+					}, true, _cache);
+		},
+
+		// Compound boolean operators combine the basic boolean operations such
+		// as union, intersection, subtract etc. 
+		// TODO: cache the split objects and find a way to properly clone them!
+		// a.k.a. eXclusiveOR
+		exclude: function(path) {
+			return new Group([this.subtract(path), path.subtract(this)]);
+		},
+
+		// Divide path1 by path2
+		divide: function(path) {
+			return new Group([this.subtract(path), this.intersect(path)]);
+		}
+	};
 });
