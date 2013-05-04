@@ -753,8 +753,13 @@ statics: {
 				});
 /*#*/ }
 				// See if the parametric equations of the lines interesct.
-				var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
-						.intersect(new Line(v2[0], v2[1], v2[6], v2[7], false));
+				// var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
+				//		.intersect(new Line(v2[0], v2[1], v2[6], v2[7], false));
+				// Use static version without creation of Line objects, but it
+				// doesn't seem to yield measurable speed improvements!
+				var point = Line.intersect(
+							v1[0], v1[1], v1[6], v1[7],
+							v2[0], v2[1], v2[6], v2[7], false);
 				if (point) {
 					// Avoid duplicates when hitting segments (closed paths too)
 					var first = locations[0],

@@ -119,5 +119,26 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 		return this.infinite ? dist : Math.min(dist,
 				point.getDistance(this.point),
 				point.getDistance(this.point.add(this.vector)));
+	},
+
+	statics: {
+		intersect: function(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, infinite) {
+			var adx = ax2 - ax1,
+				ady = ay2 - ay1,
+				bdx = bx2 - bx1,
+				bdy = by2 - by1,
+				dx = ax1 - bx1,
+				dy = ay1 - by1,
+				cross = bdy * adx - bdx * ady;
+			if (!Numerical.isZero(cross)) {
+				var ta = (bdx * dy - bdy * dx) / cross,
+					tb = (adx * dy - ady * dx) / cross;
+					if ((infinite || 0 <= ta && ta <= 1)
+							&& (infinite || 0 <= tb && tb <= 1))
+						return Point.create(
+									ax1 + ta * adx,
+									ay1 + ta * ady);
+			}
+		}
 	}
 });
