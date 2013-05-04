@@ -219,7 +219,14 @@ PathItem.inject(new function() {
 	//  return true - discard the curve
 	//  return false - keep the curve
 
-	return {
+	return /** @lends Path# */{
+		/**
+		 * Merges the geometry of the specified path from this path's
+		 * geometry and returns the result as a new path item.
+		 * 
+		 * @param {PathItem} path the path to unite with
+		 * @return {PathItem} the resulting path item
+		 */
 		unite: function(path, _cache) {
 			return computeBoolean(this, path,
 					function(isPath1, isInPath1, isInPath2) {
@@ -227,6 +234,13 @@ PathItem.inject(new function() {
 					}, false, _cache);
 		},
 
+		/**
+		 * Intersects the geometry of the specified path with this path's
+		 * geometry and returns the result as a new path item.
+		 * 
+		 * @param {PathItem} path the path to intersect with
+		 * @return {PathItem} the resulting path item
+		 */
 		intersect: function(path, _cache) {
 			return computeBoolean(this, path,
 					function(isPath1, isInPath1, isInPath2) {
@@ -234,6 +248,13 @@ PathItem.inject(new function() {
 					}, false, _cache);
 		},
 
+		/**
+		 * Subtracts the geometry of the specified path from this path's
+		 * geometry and returns the result as a new path item.
+		 * 
+		 * @param {PathItem} path the path to subtract
+		 * @return {PathItem} the resulting path item
+		 */
 		subtract: function(path, _cache) {
 			return computeBoolean(this, path,
 					function(isPath1, isInPath1, isInPath2) {
@@ -244,12 +265,24 @@ PathItem.inject(new function() {
 		// Compound boolean operators combine the basic boolean operations such
 		// as union, intersection, subtract etc. 
 		// TODO: cache the split objects and find a way to properly clone them!
-		// a.k.a. eXclusiveOR
+		/**
+		 * Excludes the intersection of the geometry of the specified path with
+		 * this path's geometry and returns the result as a new group item.
+		 * 
+		 * @param {PathItem} path the path to exclude the intersection of
+		 * @return {Group} the resulting group item
+		 */
 		exclude: function(path) {
 			return new Group([this.subtract(path), path.subtract(this)]);
 		},
 
-		// Divide path1 by path2
+		/**
+		 * Splits the geometry of this path along the geometry of the specified
+		 * path returns the result as a new group item.
+		 * 
+		 * @param {PathItem} path the path to divide by
+		 * @return {Group} the resulting group item
+		 */
 		divide: function(path) {
 			return new Group([this.subtract(path), this.intersect(path)]);
 		}
