@@ -89,9 +89,34 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		return this;
 	},
 
+	/**
+	 * Reverses the orientation of all nested paths.
+	 */
+	reverse: function() {
+		var children = this._children;
+		for (var i = 0, l = children.length; i < l; i++)
+			children[i].reverse();
+	},
+
 	smooth: function() {
 		for (var i = 0, l = this._children.length; i < l; i++)
 			this._children[i].smooth();
+	},
+
+	/**
+	 * Specifies whether the compound path is oriented clock-wise.
+	 *
+	 * @type Boolean
+	 * @bean
+	 */
+	isClockwise: function() {
+		var child = this.getFirstChild();
+		return child && child.isClockwise();
+	},
+
+	setClockwise: function(clockwise) {
+		if (this.isClockwise() != !!clockwise)
+			this.reverse();
 	},
 
 	/**
