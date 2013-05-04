@@ -104,8 +104,6 @@ PathItem.inject(new function() {
 			_path2 = reorientPath(path2.clone()),
 			path1Clockwise = _path1.isClockwise(),
 			path2Clockwise = _path2.isClockwise(),
-			path1Id = _path1.id,
-			path2Id = _path2.id,
 			// Calculate all the intersections
 			intersections = _cache && _cache.intersections
 					|| _path1.getIntersections(_path2);
@@ -124,45 +122,37 @@ PathItem.inject(new function() {
 			_path2.reverse();
 			path2Clockwise = !path2Clockwise;
 		}
-
 		var paths = []
 				.concat(_path1._children || [_path1])
 				.concat(_path2._children || [_path2]),
-			nodes = [],
+			segments = [],
 			result = new CompoundPath();
 		// Step 1: Discard invalid links according to the boolean operator
 		for (var i = 0, l = paths.length; i < l; i++) {
 			var path = paths[i],
 				parent = path._parent,
-				id = parent instanceof CompoundPath ? parent._id : path._id,
 				clockwise = path.isClockwise(),
-				segments = path._segments,
-				insidePath1 = false,
-				insidePath2 = false;
-			for (var j = segments.length - 1; j >= 0; j--) {
-				var segment = segments[j],
-					midPoint = segment.getCurve().getPoint(0.5);
-				if (id !== path1Id) {
-					insidePath1 = _path1.contains(midPoint)
+				segs = path._segments;
+			path = parent instanceof CompoundPath ? parent : path;
+			for (var j = segs.length - 1; j >= 0; j--) {
+				var segment = segs[j],
+					midPoint = segment.getCurve().getPoint(0.5),
+					insidePath1 = path !== _path1 && _path1.contains(midPoint)
 							&& (clockwise === path1Clockwise || subtract
 									|| !testOnCurve(_path1, midPoint));
-				}
-				if (id !== path2Id) {
-					insidePath2 = _path2.contains(midPoint)
+					insidePath2 = path !== _path2 && _path2.contains(midPoint)
 							&& (clockwise === path2Clockwise
 									|| !testOnCurve(_path2, midPoint));
-				}
-				if (operator(id === path1Id, insidePath1, insidePath2)) {
+				if (operator(path === _path1, insidePath1, insidePath2)) {
 					segment._invalid = true;
-					// markPoint(midPoint, '+');
 				} else {
-					nodes.push(segment);
+					segments.push(segment);
 				}
 			}
 		}
 		// Step 2: Retrieve the resulting paths from the graph
-		for (var i = 0, l = nodes.length; i < l; i++) {
-			var segment = nodes[i];
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var segment = segments[i];
 			if (segment._visited)
 				continue;
 			var path = new Path(),
