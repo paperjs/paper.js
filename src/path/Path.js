@@ -1085,19 +1085,18 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	setClockwise: function(clockwise) {
+		// Only revers the path if its clockwise orientation is not the same
+		// as what it is now demanded to be.
 		// On-the-fly conversion to boolean:
-		if (this.isClockwise() != (clockwise = !!clockwise)) {
-			// Only revers the path if its clockwise orientation is not the same
-			// as what it is now demanded to be.
+		if (this.isClockwise() != (clockwise = !!clockwise))
 			this.reverse();
-		}
 		// Reverse only flips _clockwise state if it was already set, so let's
 		// always set this here now.
 		this._clockwise = clockwise;
 	},
 
 	/**
-	 * Reverses the segments of the path.
+	 * Reverses the orientation of the path, by reversing all its segments.
 	 */
 	reverse: function() {
 		this._segments.reverse();

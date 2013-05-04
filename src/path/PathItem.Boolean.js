@@ -108,21 +108,6 @@ PathItem.inject(new function() {
 		return baseWinding;
 	}
 
-	function reversePath(path) {
-		var baseWinding;
-		if (path instanceof CompoundPath) {
-			var children = path.children, i, len;
-			for (i = 0, len = children.length; i < len; i++) {
-				children[i].reverse();
-			}
-			baseWinding = children[0].clockwise;
-		} else {
-			path.reverse();
-			baseWinding = path.clockwise;
-		}
-		return baseWinding;
-	}
-
 	function computeBoolean(path1, path2, operator, subtract, _cache) {
 		var _path1, _path2, path1Clockwise, path2Clockwise;
 		var ixs, path1Id, path2Id;
@@ -147,8 +132,10 @@ PathItem.inject(new function() {
 		path1Id = _path1.id;
 		path2Id = _path2.id;
 		// Do operator specific calculations before we begin
-		if (subtract)
-			path2Clockwise = reversePath(_path2);
+		if (subtract) {
+			_path2.reverse();
+			path2Clockwise = !path2Clockwise;
+		}
 
 		var i, j, len, path, crv;
 		var paths = [];
