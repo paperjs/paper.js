@@ -654,7 +654,7 @@ statics: {
 			vx = 3 * c2x - 2 * p2x - p1x,
 			vy = 3 * c2y - 2 * p2y - p1y;
 		return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy)
-				< 16 * tolerance * tolerance;
+				< 10 * tolerance * tolerance;
 	},
 
 	getBounds: function(v) {
