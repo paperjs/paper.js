@@ -165,19 +165,14 @@ PathItem.inject(new function() {
 				segment.setHandleIn(last ? last._handleIn : Point.create(0, 0));
 			do {
 				segment._visited = true;
-				if (segment._intersection) {
-					var next = segment._invalid
-							? segment._intersection.getSegment(true)
-							: segment;
+				if (segment._intersection && segment._invalid) {
+					var next = segment._intersection.getSegment(true);
 					path.add(new Segment(segment._point, segment._handleIn,
 							next._handleOut));
 					next._visited = true;
 					segment = next;
 				} else {
-					// Remove temporary digraph data structures from segment 
-					delete segment._invalid;
-					delete segment._intersection;
-					path.add(segment);
+					path.add(segment.clone());
 				}
 				segment = segment.getNext();
 			} while (segment && !segment._visited && segment !== last);
