@@ -41,36 +41,29 @@ PathItem.inject({
 	// intersections between the operands are calculated and curves in the
 	// operands were split at intersections.
 	//
-	// These functions should have a name ("union", "subtraction" etc. below),
-	// if we need to do operator specific operations on paths inside the
-	// computeBoolean function.
-	// For example: If the name of the operator is "subtraction" then we need to
-	// reverse the second operand. Subtraction is neither associative nor
-	// commutative.
-	//
 	//  The boolean operator return a Boolean value indicating whether to
 	// keep the curve or not.
 	//  return true - discard the curve
 	//  return false - keep the curve
 	unite: function(path, _cache) {
 		return this._computeBoolean(this, path,
-				function union(isPath1, isInPath1, isInPath2) {
+				function(isPath1, isInPath1, isInPath2) {
 					return isInPath1 || isInPath2;
-				}, _cache);
+				}, false, _cache);
 	},
 
 	intersect: function(path, _cache) {
 		return this._computeBoolean(this, path,
-				function intersection(isPath1, isInPath1, isInPath2) {
+				function(isPath1, isInPath1, isInPath2) {
 					return !(isInPath1 || isInPath2);
-				}, _cache);
+				}, false, _cache);
 	},
 
 	subtract: function(path, _cache) {
 		return this._computeBoolean(this, path,
-				function subtraction(isPath1, isInPath1, isInPath2) {
+				function(isPath1, isInPath1, isInPath2) {
 					return isPath1 && isInPath2 || !isPath1 && !isInPath1;
-				}, _cache);
+				}, true, _cache);
 	},
 
 	// Compound boolean operators combine the basic boolean operations such as
@@ -178,7 +171,7 @@ PathItem.inject({
 		return baseWinding;
 	},
 
-	_computeBoolean: function(path1, path2, operator, _splitCache) {
+	_computeBoolean: function(path1, path2, operator, isSubtraction, _cache) {
 		var _path1, _path2, path1Clockwise, path2Clockwise;
 		var ixs, path1Id, path2Id;
 		// We do not modify the operands themselves
@@ -193,21 +186,17 @@ PathItem.inject({
 		path1Id = _path1.id;
 		path2Id = _path2.id;
 		// Calculate all the intersections
-		ixs = (_splitCache && _splitCache.intersections)?
-		_splitCache.intersections : _path1.getIntersections(_path2);
-		// if we have a empty _splitCache object as an operand,
+		ixs = _cache && _cache.intersections || _path1.getIntersections(_path2);
+		// if we have a empty _cache object as an operand,
 		// skip calculating boolean and cache the intersections
-		if (_splitCache && !_splitCache.intersections) {
-			_splitCache.intersections = ixs;
-			return;
-		}
+		if (_cache && !_cache.intersections)
+			return _cache.intersections = ixs;
 		this._splitPath(this._splitPath(ixs, true));
 		path1Id = _path1.id;
 		path2Id = _path2.id;
 		// Do operator specific calculations before we begin
-		if (operator.name === "subtraction") {
+		if (isSubtraction)
 			path2Clockwise = this._reversePath(_path2);
-		}
 
 		var i, j, len, path, crv;
 		var paths = [];
@@ -223,7 +212,7 @@ PathItem.inject({
 		}
 		// step 1: discard invalid links according to the boolean operator
 		var lastNode, firstNode, nextNode, midPoint, insidePath1, insidePath2;
-		var thisId, thisWinding, contains, subtractionOp = (operator.name === 'subtraction');
+		var thisId, thisWinding, contains;
 		for (i = 0, len = paths.length; i < len; i++) {
 			insidePath1 = insidePath2 = false;
 			path = paths[i];
@@ -239,13 +228,15 @@ PathItem.inject({
 				if (thisId !== path1Id) {
 					contains = _path1.
 					contains(midPoint);
-					insidePath1 = (thisWinding === path1Clockwise || subtractionOp)? contains :
-					contains && !this._testOnCurve(_path1, midPoint);
+					insidePath1 = thisWinding === path1Clockwise || isSubtraction
+							? contains
+							: contains && !this._testOnCurve(_path1, midPoint);
 				}
 				if (thisId !== path2Id) {
 					contains = _path2.contains(midPoint);
-					insidePath2 = (thisWinding === path2Clockwise)? contains :
-					contains && !this._testOnCurve(_path2, midPoint);
+					insidePath2 = thisWinding === path2Clockwise
+							? contains
+							: contains && !this._testOnCurve(_path2, midPoint);
 				}
 				if (operator(thisId === path1Id, insidePath1, insidePath2)) {
 					crv._INVALID = true;
