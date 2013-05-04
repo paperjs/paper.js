@@ -254,19 +254,17 @@ PathItem.inject(new function() {
 	}
 
 	function testOnCurve(path, point) {
-		var res = 0;
-		var crv = path.getCurves();
-		var i = 0;
-		var bounds = path.bounds;
-		if (bounds && bounds.contains(point)) {
-			for(i = 0; i < crv.length && !res; i++) {
-				var crvi = crv[i];
-				if (crvi.bounds.contains(point) && crvi.getParameterOf(point)) {
-					res = 1;
-				}
+		var curves = path.getCurves(),
+			bounds = path.getBounds();
+		if (bounds.contains(point)) {
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var curve = curves[i];
+				if (curve.getBounds().contains(point)
+						&& curve.getParameterOf(point))
+					return true;
 			}
 		}
-		return res;
+		return false;
 	}
 
 	// A boolean operator is a binary operator function of the form
