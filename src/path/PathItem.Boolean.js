@@ -77,35 +77,30 @@ PathItem.inject(new function() {
 	 * @return {boolean}	  the winding direction of the base contour(true if clockwise)
 	 */
 	function reorientCompoundPath(path) {
-		if (!(path instanceof CompoundPath)) {
-			path.closed = true;
-			return path.clockwise;
+		if (!(path instanceof CompoundPath))
+			return path.isClockwise();
+		var children = path._children,
+			length = children.length,
+			bounds = new Array(length),
+			counters = new Array(length),
+			clockwise = children[0].isClockwise();
+		for (var i = 0; i < length; i++) {
+			bounds[i] = children[i].getBounds();
+			counters[i] = 0;
 		}
-		var children = path.children, len = children.length, baseWinding;
-		var bounds = new Array(len);
-		var tmparray = new Array(len);
-		baseWinding = children[0].clockwise;
-		// Omit the first path
-		for (i = 0; i < len; i++) {
-			children[i].closed = true;
-			bounds[i] = children[i].bounds;
-			tmparray[i] = 0;
-		}
-		for (i = 0; i < len; i++) {
-			var p1 = children[i];
-			for (j = 0; j < len; j++) {
-				var p2 = children[j];
-				if (i !== j && bounds[i].contains(bounds[j])) {
-					tmparray[j]++;
-				}
+		for (var i = 0; i < length; i++) {
+			for (var j = 1; j < length; j++) {
+				if (i !== j && bounds[i].contains(bounds[j]))
+					counters[j]++;
 			}
 		}
-		for (i = 1; i < len; i++) {
-			if (tmparray[i] % 2 === 0) {
-				children[i].clockwise = baseWinding;
+		// Omit the first child
+		for (var i = 1; i < length; i++) {
+			if (counters[i] % 2 === 0) {
+				children[i].setClockwise(clockwise);
 			}
 		}
-		return baseWinding;
+		return clockwise;
 	}
 
 	function computeBoolean(path1, path2, operator, subtract, _cache) {
