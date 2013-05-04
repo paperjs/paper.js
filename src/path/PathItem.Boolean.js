@@ -114,9 +114,9 @@ PathItem.inject(new function() {
 		// 	// TODO: Don't we need to clear up and remove path1 & path2 again?
 		// 	return _cache.intersections = intersections;
 		// }
-		// Now split intersections on both curves, by asking the first call to
-		// collect the 'other' intersections for us and passing that on to the
-		// second call.
+		// Now split intersections on both paths, by asking the first call to
+		// collect the intersections on the other path for us and passing the
+		// result of that on to the second call.
 		splitPath(splitPath(intersections, true));
 		// Do operator specific calculations before we begin
 		if (subtract) {
@@ -160,22 +160,23 @@ PathItem.inject(new function() {
 				continue;
 			var path = new Path(),
 				loc = segment._intersection,
-				last = loc && loc.getSegment(true);
+				intersection = loc && loc.getSegment(true);
 			if (segment.getPrevious()._invalid)
-				segment.setHandleIn(last ? last._handleIn : Point.create(0, 0));
+				segment.setHandleIn(intersection ? intersection._handleIn
+						: Point.create(0, 0));
 			do {
 				segment._visited = true;
 				if (segment._invalid && segment._intersection) {
-					var other = segment._intersection.getSegment(true);
+					var inter = segment._intersection.getSegment(true);
 					path.add(new Segment(segment._point, segment._handleIn,
-							other._handleOut));
-					other._visited = true;
-					segment = other;
+							inter._handleOut));
+					inter._visited = true;
+					segment = inter;
 				} else {
 					path.add(segment.clone());
 				}
 				segment = segment.getNext();
-			} while (segment && !segment._visited && segment !== last);
+			} while (segment && !segment._visited && segment !== intersection);
 			// Avoid stray segments and incomplete paths
 			if (path._segments.length > 2) {
 				path.setClosed(true);
