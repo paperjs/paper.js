@@ -63,7 +63,7 @@ function runTests() {
   }
 
 
-  convexhull( 20, 20 , 30 , -20 );
+  convexhull( 20, 30 , 3 , -20 );
 
   view.draw();
 
@@ -160,36 +160,34 @@ function convexhull( dq0, dq1, dq2, dq3 ){
       var dqmin, dqmax, dqapex1, dqapex2;
       distq1 = Math.abs(distq1);
       distq2 = Math.abs(distq2);
+      var vqa1a2x, vqa1a2y, vqa1Maxx, vqa1Maxy, vqa1Minx, vqa1Miny;
+      console.log( " distq1 =  " + distq1 + " , distq2 = " + distq2 )
       if( distq1 > distq2 ){
-          dqapex1 = dq3;
-          dqapex2 = dq0;
+          dqapex1 = [ 1.0, dq3 ];
+          dqapex2 = [ 0.0, dq0 ];
           dqmin = [ 0.6666666666666666, dq2 ];
           dqmax = [ 0.3333333333333333, dq1 ];
       } else {
-          dqapex1 = dq0;
-          dqapex2 = dq3;
+          dqapex1 = [ 0.0, dq0 ];
+          dqapex2 = [ 1.0, dq3 ];
           dqmin = [ 0.3333333333333333, dq1 ];
           dqmax = [ 0.6666666666666666, dq2 ];
       }
-      // vector dq3->dq0
-      var vq30x = 1.0, vq30y = dq3 - dq1;
-      // vector dq3->dqmax
-      var vq3Maxx = 1 - dqmax[0], vq3Maxy = dq3 - dqmax[1];
-      // vector dq3->dqmin
-      var vq3Minx = 1 - dqmin[0], vq3Miny = dq3 - dqmin[1];
-      // vector dq0->dq3
-      var vq03x = -vq30x, vq03y = -vq30y;
-      // vector dq0->dqmax
-      var vq0Maxx = -dqmax[0], vq0Maxy = dq0 - dqmax[1];
-      // vector dq0->dqmin
-      var vq0Minx = -dqmin[0], vq0Miny = dq0 - dqmin[1];
+      // vector dqapex1->dqapex2
+      var vqa1a2x = dqapex1[0] - dqapex2[0], vqa1a2y = dqapex1[1] - dqapex2[1];
+      // vector dqapex1->dqmax
+      var vqa1Maxx = dqapex1[0] - dqmax[0], vqa1Maxy = dqapex1[1] - dqmax[1];
+      // vector dqapex1->dqmin
+      var vqa1Minx = dqapex1[1] - dqmin[0], vqa1Miny = dqapex1[1] - dqmin[1];
       // compare cross products of these vectors to determine, if
       // point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
-      var vcross303Max = vq30x * vq3Maxy - vq30y * vq3Maxx;
-      var vcross3Max3Min = vq3Maxx * vq3Miny - vq3Maxy * vq3Minx;
-      var vcross030Max = vq03x * vq0Maxy - vq03y * vq0Maxx;
-      var vcross0Max0Min = vq0Maxx * vq0Miny - vq0Maxy * vq0Minx;
-      if(( ( distq1 > distq2 ) && vcross303Max * vcross3Max3Min < 0) || (( distq1 <= distq2 ) && vcross030Max * vcross0Max0Min < 0)){
+      var vcrossa1a2_a1Max = vqa1a2x * vqa1Maxy - vqa1a2y * vqa1Maxx;
+      var vcrossa1a2_a1Min = vqa1a2x * vqa1Miny - vqa1a2y * vqa1Minx;
+      var vcrossa1Max_a1Min = vqa1Maxx * vqa1Miny - vqa1Maxy * vqa1Minx;
+      var sign1 = signum( vcrossa1Max_a1Min );
+      var sign2 = signum( vcrossa1a2_a1Min );
+      console.log( vcrossa1a2_a1Max, vcrossa1a2_a1Min, vcrossa1Max_a1Min )
+      if( sign1 === sign2 ){
           // Point [2/3, dq2] is inside the triangle and the convex hull is a triangle
           Dt = [
               [ 0.0, dq0, dqmax[0], dqmax[1] ],
