@@ -64,13 +64,9 @@ function runTests() {
 
 
   convexhull( 20, -30 , -30 , -20, 250, 80 );
-  convexhull( 20, -30 , -10 , -20, 250, 180 );
-  convexhull( 20, -15 , -40 , -20, 500, 80 );
-  convexhull( 20, -5 , -40 , -20, 500, 180 );
-  // convexhull( 20, 30 , 10 , -20, 250, 80 );
-  // convexhull( 20, 30 , 2 , -20, 250, 180 );
-  // convexhull( 20, 10 , 30 , -20, 500, 80 );
-  // convexhull( 20, 30 , 30 , -20, 500, 180 );
+  convexhull( 20, -30 , -20, -20, 250, 180 );
+  convexhull( 20, -25 , -20 , -20, 500, 80 );
+  convexhull( 20, -17 , -25 , -20, 500, 180 );
 
   view.draw();
 
@@ -167,7 +163,6 @@ function convexhull( dq0, dq1, dq2, dq3 , x, y){
       var dqmin, dqmax, dqapex1, dqapex2;
       distq1 = Math.abs(distq1);
       distq2 = Math.abs(distq2);
-      var vqa1a2x, vqa1a2y, vqa1Maxx, vqa1Maxy, vqa1Minx, vqa1Miny;
       if( distq1 > distq2 ){
           dqapex1 = [ 1.0, dq3 ];
           dqapex2 = [ 0.0, dq0 ];
@@ -180,19 +175,17 @@ function convexhull( dq0, dq1, dq2, dq3 , x, y){
           dqmax = [ 0.6666666666666666, dq2 ];
       }
       // vector dqapex1->dqapex2
-      vqa1a2x = dqapex1[0] - dqapex2[0]; vqa1a2y = dqapex1[1] - dqapex2[1];
+      var vqa1a2x = dqapex1[0] - dqapex2[0], vqa1a2y = dqapex1[1] - dqapex2[1];
       // vector dqapex1->dqmax
-      vqa1Maxx = dqapex1[0] - dqmax[0]; vqa1Maxy = dqapex1[1] - dqmax[1];
+      var vqa1Maxx = dqapex1[0] - dqmax[0], vqa1Maxy = dqapex1[1] - dqmax[1];
       // vector dqapex1->dqmin
-      vqa1Minx = dqapex1[0] - dqmin[0]; vqa1Miny = dqapex1[1] - dqmin[1];
+      var vqa1Minx = dqapex1[0] - dqmin[0], vqa1Miny = dqapex1[1] - dqmin[1];
       // compare cross products of these vectors to determine, if
       // point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
       var vcrossa1a2_a1Max = vqa1a2x * vqa1Maxy - vqa1a2y * vqa1Maxx;
       var vcrossa1a2_a1Min = vqa1a2x * vqa1Miny - vqa1a2y * vqa1Minx;
       var vcrossa1Max_a1Min = vqa1Maxx * vqa1Miny - vqa1Maxy * vqa1Minx;
-      var sign1 = signum( vcrossa1Max_a1Min );
-      var sign2 = signum( vcrossa1a2_a1Max );
-      if( sign1 !== sign2 ){
+      if( vcrossa1Max_a1Min * vcrossa1a2_a1Min < 0 ){
           // Point [2/3, dq2] is inside the triangle and the convex hull is a triangle
           Dt = [
               [ 0.0, dq0, dqmax[0], dqmax[1] ],
