@@ -40,27 +40,26 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _t1
     }
 };
 
-function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, curve2, locations, tstart, count ){
+function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, curve2, locations, count ){
     // DEBUG: count the iterations
     if( count === undefined ) { count = 0; }
     else { ++count; }
     if( t1 >= t2 - _tolerence && t1 <= t2 + _tolerence && u1 >= u2 - _tolerence && u1 <= u2 + _tolerence ){
-        tstart = tstart || 0;
-        loc = new CurveLocation( curve1, Math.abs( tstart - t1 ), null, curve2 );
+        loc = new CurveLocation( curve2, Math.abs( t1 ), null, curve1 );
         // var loc = tvalue ? new CurveLocation( curve2, Math.abs( tstart - t1 ), null, curve1 ) :
         //  new CurveLocation( curve1, Math.abs( ustart - u1 ), null, curve2 );
          // console.log( t1, t2, u1, u2 )
         locations.push( loc );
         return 1;
     } else {
-        p0x = v1[0]; p0y = v1[1];
-        p3x = v1[6]; p3y = v1[7];
-        p1x = v1[2]; p1y = v1[3];
-        p2x = v1[4]; p2y = v1[5];
-        q0x = v2[0]; q0y = v2[1];
-        q3x = v2[6]; q3y = v2[7];
-        q1x = v2[2]; q1y = v2[3];
-        q2x = v2[4]; q2y = v2[5];
+        var p0x = v1[0], p0y = v1[1];
+        var p3x = v1[6], p3y = v1[7];
+        var p1x = v1[2], p1y = v1[3];
+        var p2x = v1[4], p2y = v1[5];
+        var q0x = v2[0], q0y = v2[1];
+        var q3x = v2[6], q3y = v2[7];
+        var q1x = v2[2], q1y = v2[3];
+        var q2x = v2[4], q2y = v2[5];
         // Calculate the fat-line L
         var d1 = _getSignedDist( p0x, p0y, p3x, p3y, p1x, p1y );
         var d2 = _getSignedDist( p0x, p0y, p3x, p3y, p2x, p2y );
@@ -97,13 +96,63 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
             [ 0.0, dq0, 0.6666666666666666, dq2 ],
             [ 1.0, dq3, 0.3333333333333333, dq1 ]
         ];
+
+        // Prepare the convex hull
+        var distq1 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.3333333333333333, dq1 );
+        var distq2 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.6666666666666666, dq2 );
+        // Check if [1/3, dq1] and [2/3, dq2] are on the same side of line [0,dq0, 1,dq3]
+        if( distq1 * distq2 < 0 ) {
+            Dt = [
+                [ 0.0, dq0, 0.3333333333333333, dq1 ],
+                [ 0.3333333333333333, dq1, 1.0, dq3 ],
+                [ 0.6666666666666666, dq2, 0.0, dq0 ],
+                [ 1.0, dq3, 0.6666666666666666, dq2 ]
+            ];
+        } else {
+            // Check if the hull is a triangle or a quadrilatteral
+            var dqmin, dqmax;
+            if( distq1 > distq2 ){
+                dqmin = [ 0.6666666666666666, dq2 ];
+                dqmax = [ 0.3333333333333333, dq1 ];
+            } else {
+                dqmin = [ 0.3333333333333333, dq1 ];
+                dqmax = [ 0.6666666666666666, dq2 ];
+            }
+            if( distq1 > distq2 ){
+                // vector dq3->dq0
+                var vq30x = 1.0, vq30y = dq3 - dq1;
+                // vector dq3->dq1
+                var vq31x = 0.6666666666666666, vq31y = dq3 - dq1;
+                // vector dq3->dq2
+                var vq32x = 0.3333333333333333, vq32y = dq3 - dq2;
+                // compare cross products of these vectors to determine, if point is in triangle
+                var vcross3031 = vq30x * vq31y - vq30y * vq31x;
+                var vcross3132 = vq31x * vq32y - vq31y * vq32x;
+                if( vcross3031 * vcross3132 < 0 ){
+                    // Point [2/3, dq2] is inside the triangle and the convex hull is a triangle
+                    Dt = [
+                        [ 0.0, dq0, 0.3333333333333333, dq1 ],
+                        [ 0.3333333333333333, dq1, 1.0, dq3 ],
+                        [ 1.0, dq3, 0.0, dq0 ]
+                    ];
+                } else {
+                    Dt = [
+                        [ 0.0, dq0, 0.3333333333333333, dq1 ],
+                        [ 0.3333333333333333, dq1, 0.6666666666666666, dq2 ],
+                        [ 0.6666666666666666, dq2, 1.0, dq3 ],
+                        [ 1.0, dq3, 0.0, dq0 ]
+                    ];
+                }
+            }
+        }
+
         // Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
         // for the coorresponding t values
         var tmindmin = Infinity, tmaxdmin = -Infinity,
-        tmindmax = Infinity, tmaxdmax = -Infinity, ixd, ixdx, i;
+        tmindmax = Infinity, tmaxdmax = -Infinity, ixd, ixdx, i, len;
         var dmina = [0, dmin, 2, dmin];
         var dmaxa = [0, dmax, 2, dmax];
-        for (i = 0; i < 6; i++) {
+        for (i = 0, len = Dt.length; i < len; i++) {
             var Dtl = Dt[i];
             // ixd = Dtl.intersect( vecdmin );
             ixd = _intersectLines( Dtl, dmina);
@@ -129,11 +178,12 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         var tmin = Math.min( tmindmin, tmaxdmin, tmindmax, tmaxdmax );
         var tmax = Math.max( tmindmin, tmaxdmin, tmindmax, tmaxdmax);
 
-        // if( count === 0 ){
-        //   // console.log( dmin, dmax, tmin, tmax, " - ", tmindmin, tmaxdmin, tmindmax, tmaxdmax )
-        //   plotD_vs_t( 250, 110, Dt, dmin, dmax, tmin, tmax, 1, tvalue );
-        // // return;
-        // }
+        if( count === 1 ){
+            console.log( Dt )
+            // console.log( dmin, dmax, tmin, tmax, " - ", tmindmin, tmaxdmin, tmindmax, tmaxdmax )
+            plotD_vs_t( 250, 110, Dt, dmin, dmax, tmin, tmax, 1, tvalue );
+            // return;
+        }
 
 
         // We need to toggle clipping both curves alternatively
@@ -152,7 +202,7 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
                 // subdivide the curve and try again
                 return 2;
             } else {
-                return _clipFatLine( nuV2, v1, nuT1, nuT2, u1, u2, (tmax - tmin), udiff, !tvalue, curve1, curve2, locations, tstart, count );
+                return _clipFatLine( nuV2, v1, nuT1, nuT2, u1, u2, (tmax - tmin), udiff, !tvalue, curve1, curve2, locations, count );
             }
         } else {
             nuU1 = u1 + tmin * ( u2 - u1 );
@@ -163,10 +213,27 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
                 // subdivide the curve and try again
                 return 2;
             } else {
-                return _clipFatLine( nuV2, v1, t1, t2, nuU1, nuU2 , tdiff, (tmax - tmin), !tvalue, curve1, curve2, locations, tstart, count );
+                return _clipFatLine( nuV2, v1, t1, t2, nuU1, nuU2 , tdiff, (tmax - tmin), !tvalue, curve1, curve2, locations, count );
             }
         }
     }
+}
+
+
+/**
+ * Clip curve values V2 with fatline of v
+ * @param  {Array}  v - Section of the first curve, for which we will make a fatline
+ * @param  {Number} t1 - start parameter for v in vOrg
+ * @param  {Number} t2 - end parameter for v in vOrg
+ * @param  {Array}  v2 - Section of the second curve; we will clip this curve with the fatline of v
+ * @param  {Number} u1 - start parameter for v2 in v2Org
+ * @param  {Number} u2 - end parameter for v2 in v2Org
+ * @param  {Array}  vOrg - The original curve values for v
+ * @param  {Array}  v2Org - The original curve values for v2
+ * @return {[type]}
+ */
+function _clipWithFatline( v, t1, t2, v2, u1, u2, vOrg, v2Org ){
+
 }
 
 
@@ -217,10 +284,12 @@ function plotD_vs_t( x, y, arr, dmin, dmax, tmin, tmax, yscale, tvalue ){
     for (var i = 0; i < arr.length; i++) {
         // pnt.push( new Point( x + arr[i].point.x * 190, y + arr[i].point.y * yscale ) );
         pnt.push( new Point( x + arr[i][0] * 190, y + arr[i][1] * yscale ) );
+        var pth = new Path.Line( new Point( x + arr[i][0] * 190, y + arr[i][1] * yscale ),
+         new Point( x + arr[i][2] * 190, y + arr[i][3] * yscale ) );
+        pth.style.strokeColor = '#999';
     }
-    var pth = new Path( pnt[0], pnt[1], pnt[2], pnt[3] );
-    pth.closed = true;
-    pth.style.strokeColor = '#000';
+    // var pth = new Path( pnt[0], pnt[1], pnt[2], pnt[3] );
+    // pth.closed = true;
     new Path( new Segment(pnt[0], null, pnt[1].subtract(pnt[0])), new Segment( pnt[3], pnt[2].subtract(pnt[3]), null ) ).style.strokeColor = clr;
 }
 
@@ -250,6 +319,7 @@ var _getSignedDist = function( a1x, a1y, a2x, a2y, bx, by ){
     var vx = a2x - a1x, vy = a2y - a1y;
     var bax = bx - a1x, bay =  by - a1y;
     var ba2x = bx - a2x, ba2y =  by - a2y;
+    // ba *cross* v
     var cvb = bax * vy - bay * vx;
     if (cvb === 0) {
         cvb = bax * vx + bay * vy;
