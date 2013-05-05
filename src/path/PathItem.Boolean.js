@@ -176,7 +176,7 @@ PathItem.inject(new function() {
 				segment = segment.getNext();
 			} while (segment && !segment._visited && segment !== intersection);
 			// Avoid stray segments and incomplete paths
-			if (path._segments.length > 2) {
+			if (path._segments.length > 2 || !path.isPolygon()) {
 				path.setClosed(true);
 				result.addChild(path, true);
 			} else {
