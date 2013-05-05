@@ -88,63 +88,7 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         // Ideally we need to calculate the convex hull for D(ti, di(t))
         // here we are just checking against all possibilities and sorting them
         // TODO: implement simple polygon convexhull method.
-        var Dt = [
-            [ 0.0, dq0, 0.3333333333333333, dq1 ],
-            [ 0.3333333333333333, dq1, 0.6666666666666666, dq2 ],
-            [ 0.6666666666666666, dq2, 1.0, dq3 ],
-            [ 1.0, dq3, 0.0, dq0 ],
-            [ 0.0, dq0, 0.6666666666666666, dq2 ],
-            [ 1.0, dq3, 0.3333333333333333, dq1 ]
-        ];
-
-        // Prepare the convex hull
-        var distq1 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.3333333333333333, dq1 );
-        var distq2 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.6666666666666666, dq2 );
-        // Check if [1/3, dq1] and [2/3, dq2] are on the same side of line [0,dq0, 1,dq3]
-        if( distq1 * distq2 < 0 ) {
-            Dt = [
-                [ 0.0, dq0, 0.3333333333333333, dq1 ],
-                [ 0.3333333333333333, dq1, 1.0, dq3 ],
-                [ 0.6666666666666666, dq2, 0.0, dq0 ],
-                [ 1.0, dq3, 0.6666666666666666, dq2 ]
-            ];
-        } else {
-            // Check if the hull is a triangle or a quadrilatteral
-            var dqmin, dqmax;
-            if( distq1 > distq2 ){
-                dqmin = [ 0.6666666666666666, dq2 ];
-                dqmax = [ 0.3333333333333333, dq1 ];
-            } else {
-                dqmin = [ 0.3333333333333333, dq1 ];
-                dqmax = [ 0.6666666666666666, dq2 ];
-            }
-            if( distq1 > distq2 ){
-                // vector dq3->dq0
-                var vq30x = 1.0, vq30y = dq3 - dq1;
-                // vector dq3->dq1
-                var vq31x = 0.6666666666666666, vq31y = dq3 - dq1;
-                // vector dq3->dq2
-                var vq32x = 0.3333333333333333, vq32y = dq3 - dq2;
-                // compare cross products of these vectors to determine, if point is in triangle
-                var vcross3031 = vq30x * vq31y - vq30y * vq31x;
-                var vcross3132 = vq31x * vq32y - vq31y * vq32x;
-                if( vcross3031 * vcross3132 < 0 ){
-                    // Point [2/3, dq2] is inside the triangle and the convex hull is a triangle
-                    Dt = [
-                        [ 0.0, dq0, 0.3333333333333333, dq1 ],
-                        [ 0.3333333333333333, dq1, 1.0, dq3 ],
-                        [ 1.0, dq3, 0.0, dq0 ]
-                    ];
-                } else {
-                    Dt = [
-                        [ 0.0, dq0, 0.3333333333333333, dq1 ],
-                        [ 0.3333333333333333, dq1, 0.6666666666666666, dq2 ],
-                        [ 0.6666666666666666, dq2, 1.0, dq3 ],
-                        [ 1.0, dq3, 0.0, dq0 ]
-                    ];
-                }
-            }
-        }
+        var Dt  = _convexhull( dq0, dq1, dq2, dq3 );
 
         // Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
         // for the coorresponding t values
@@ -178,12 +122,12 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         var tmin = Math.min( tmindmin, tmaxdmin, tmindmax, tmaxdmax );
         var tmax = Math.max( tmindmin, tmaxdmin, tmindmax, tmaxdmax);
 
-        if( count === 1 ){
-            console.log( Dt )
-            // console.log( dmin, dmax, tmin, tmax, " - ", tmindmin, tmaxdmin, tmindmax, tmaxdmax )
-            plotD_vs_t( 250, 110, Dt, dmin, dmax, tmin, tmax, 1, tvalue );
-            // return;
-        }
+        // if( count === 1 ){
+        //     console.log( Dt )
+        //     // console.log( dmin, dmax, tmin, tmax, " - ", tmindmin, tmaxdmin, tmindmax, tmaxdmax )
+        //     plotD_vs_t( 250, 110, Dt, dmin, dmax, tmin, tmax, 1, tvalue );
+        //     // return;
+        // }
 
 
         // We need to toggle clipping both curves alternatively
@@ -234,6 +178,68 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
  */
 function _clipWithFatline( v, t1, t2, v2, u1, u2, vOrg, v2Org ){
 
+}
+
+function _convexhull( dq0, dq1, dq2, dq3 ){
+    // Prepare the convex hull for D(ti, di(t))
+    var distq1 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.3333333333333333, dq1 );
+    var distq2 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.6666666666666666, dq2 );
+    // Check if [1/3, dq1] and [2/3, dq2] are on the same side of line [0,dq0, 1,dq3]
+    if( distq1 * distq2 < 0 ) {
+        // dq1 and dq2 lie on different sides on [0, q0, 1, q3]
+        // Convexhull is a quadrilatteral and line [0, q0, 1, q3] is not part of the convexhull
+        Dt = [
+            [ 0.0, dq0, 0.3333333333333333, dq1 ],
+            [ 0.3333333333333333, dq1, 1.0, dq3 ],
+            [ 0.6666666666666666, dq2, 0.0, dq0 ],
+            [ 1.0, dq3, 0.6666666666666666, dq2 ]
+        ];
+    } else {
+        // Check if the hull is a triangle or a quadrilatteral
+        var dqmin, dqmax, dqapex1, dqapex2;
+        distq1 = Math.abs(distq1);
+        distq2 = Math.abs(distq2);
+        if( distq1 > distq2 ){
+              dqapex1 = [ 1.0, dq3 ];
+              dqapex2 = [ 0.0, dq0 ];
+              dqmin = [ 0.6666666666666666, dq2 ];
+              dqmax = [ 0.3333333333333333, dq1 ];
+        } else {
+              dqapex1 = [ 0.0, dq0 ];
+              dqapex2 = [ 1.0, dq3 ];
+              dqmin = [ 0.3333333333333333, dq1 ];
+              dqmax = [ 0.6666666666666666, dq2 ];
+        }
+        // vector dqapex1->dqapex2
+        var vqa1a2x = dqapex1[0] - dqapex2[0], vqa1a2y = dqapex1[1] - dqapex2[1];
+        // vector dqapex1->dqmax
+        var vqa1Maxx = dqapex1[0] - dqmax[0], vqa1Maxy = dqapex1[1] - dqmax[1];
+        // vector dqapex1->dqmin
+        var vqa1Minx = dqapex1[0] - dqmin[0], vqa1Miny = dqapex1[1] - dqmin[1];
+        // compare cross products of these vectors to determine, if
+        // point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
+        var vcrossa1a2_a1Max = vqa1a2x * vqa1Maxy - vqa1a2y * vqa1Maxx;
+        var vcrossa1a2_a1Min = vqa1a2x * vqa1Miny - vqa1a2y * vqa1Minx;
+        var vcrossa1Max_a1Min = vqa1Maxx * vqa1Miny - vqa1Maxy * vqa1Minx;
+        if( vcrossa1Max_a1Min * vcrossa1a2_a1Min < 0 ){
+              // Point [2/3, dq2] is inside the triangle and the convex hull is a triangle
+              Dt = [
+                  [ 0.0, dq0, dqmax[0], dqmax[1] ],
+                  [ dqmax[0], dqmax[1], 1.0, dq3 ],
+                  [ 1.0, dq3, 0.0, dq0 ]
+              ];
+        } else {
+              // Convexhull is a quadrilatteral and we need all lines in the correct order where
+              // line [0, q0, 1, q3] is part of the convex hull
+              Dt = [
+                  [ 0.0, dq0, 0.3333333333333333, dq1 ],
+                  [ 0.3333333333333333, dq1, 0.6666666666666666, dq2 ],
+                  [ 0.6666666666666666, dq2, 1.0, dq3 ],
+                  [ 1.0, dq3, 0.0, dq0 ]
+              ];
+        }
+    }
+    return Dt;
 }
 
 

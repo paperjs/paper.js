@@ -13,7 +13,7 @@ function runTests() {
   // pathA.rotate( 45 );
   pathB = new Path.Circle(new Point(160, 110), 50);
   // pathB.rotate( 45 );
-  // pathB.segments[3].point = pathB.segments[3].point.add( [10, -120] );
+  pathB.segments[3].point = pathB.segments[3].point.add( [10, -120] );
   // pathB.segments[0].handleIn = pathB.segments[0].handleIn.add( [-100, 0] );
   pathB.translate( [ -20, -10 ] );
   // testIntersection( pathA, pathB, caption );
@@ -24,7 +24,7 @@ function runTests() {
   var _p1U = new Path( pathA.segments[1], pathA.segments[2] );
   // var _p1U = new Path( pathA.segments[1], pathA.segments[2] );
   // _p1U.reverse();
-  var _p2U = new Path( pathB.segments[0], pathB.segments[1] );
+  var _p2U = new Path( pathB.segments[3], pathB.segments[0] );
   _p1U.style = _p2U.style = pathStyleBoolean;
   var crvs = _p2U.curves;
   // for (var i = 0; i < crvs.length; i++) {
@@ -48,7 +48,7 @@ function runTests() {
     loc2 = [];
     Curve.getIntersections( v1, v2, crvs[0], _p1U.curves[0], loc2 );
   }
-  console.timeEnd('pa perjs');
+  console.timeEnd('paperjs');
 
   console.log( ' ' );
   for( i =0; i < loc.length; i++){
@@ -61,12 +61,6 @@ function runTests() {
     markPoint( loc2[i].getIntersection().point, loc2[i].getIntersection().parameter, '#00f' );
     console.log( 'paperjs t = ' + loc2[i].getIntersection().parameter );
   }
-
-
-  convexhull( 20, -30 , -30 , -20, 250, 80 );
-  convexhull( 20, -30 , -20, -20, 250, 180 );
-  convexhull( 20, -25 , -20 , -20, 500, 80 );
-  convexhull( 20, -17 , -25 , -20, 500, 180 );
 
   view.draw();
 
@@ -144,85 +138,6 @@ function markIntersections( ixs ){
   for (i = 0, len = ixs.length; i < len; i++) {
     markPoint( ixs[i].point, ixs[i].parameter );
   }
-}
-
-function convexhull( dq0, dq1, dq2, dq3 , x, y){
-  // Prepare the convex hull for D(ti, di(t))
-  var distq1 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.3333333333333333, dq1 );
-  var distq2 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.6666666666666666, dq2 );
-  // Check if [1/3, dq1] and [2/3, dq2] are on the same side of line [0,dq0, 1,dq3]
-  if( distq1 * distq2 < 0 ) {
-      Dt = [
-          [ 0.0, dq0, 0.3333333333333333, dq1 ],
-          [ 0.3333333333333333, dq1, 1.0, dq3 ],
-          [ 0.6666666666666666, dq2, 0.0, dq0 ],
-          [ 1.0, dq3, 0.6666666666666666, dq2 ]
-      ];
-  } else {
-      // Check if the hull is a triangle or a quadrilatteral
-      var dqmin, dqmax, dqapex1, dqapex2;
-      distq1 = Math.abs(distq1);
-      distq2 = Math.abs(distq2);
-      if( distq1 > distq2 ){
-          dqapex1 = [ 1.0, dq3 ];
-          dqapex2 = [ 0.0, dq0 ];
-          dqmin = [ 0.6666666666666666, dq2 ];
-          dqmax = [ 0.3333333333333333, dq1 ];
-      } else {
-          dqapex1 = [ 0.0, dq0 ];
-          dqapex2 = [ 1.0, dq3 ];
-          dqmin = [ 0.3333333333333333, dq1 ];
-          dqmax = [ 0.6666666666666666, dq2 ];
-      }
-      // vector dqapex1->dqapex2
-      var vqa1a2x = dqapex1[0] - dqapex2[0], vqa1a2y = dqapex1[1] - dqapex2[1];
-      // vector dqapex1->dqmax
-      var vqa1Maxx = dqapex1[0] - dqmax[0], vqa1Maxy = dqapex1[1] - dqmax[1];
-      // vector dqapex1->dqmin
-      var vqa1Minx = dqapex1[0] - dqmin[0], vqa1Miny = dqapex1[1] - dqmin[1];
-      // compare cross products of these vectors to determine, if
-      // point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
-      var vcrossa1a2_a1Max = vqa1a2x * vqa1Maxy - vqa1a2y * vqa1Maxx;
-      var vcrossa1a2_a1Min = vqa1a2x * vqa1Miny - vqa1a2y * vqa1Minx;
-      var vcrossa1Max_a1Min = vqa1Maxx * vqa1Miny - vqa1Maxy * vqa1Minx;
-      if( vcrossa1Max_a1Min * vcrossa1a2_a1Min < 0 ){
-          // Point [2/3, dq2] is inside the triangle and the convex hull is a triangle
-          Dt = [
-              [ 0.0, dq0, dqmax[0], dqmax[1] ],
-              [ dqmax[0], dqmax[1], 1.0, dq3 ],
-              [ 1.0, dq3, 0.0, dq0 ]
-          ];
-      } else {
-          // Convexhull is a quadrilatteral and we need all lines in the correct order
-          Dt = [
-              [ 0.0, dq0, 0.3333333333333333, dq1 ],
-              [ 0.3333333333333333, dq1, 0.6666666666666666, dq2 ],
-              [ 0.6666666666666666, dq2, 1.0, dq3 ],
-              [ 1.0, dq3, 0.0, dq0 ]
-          ];
-      }
-  }
-  Dt2 = [
-  [ 0.0, dq0, 0.3333333333333333, dq1 ],
-  [ 0.3333333333333333, dq1, 0.6666666666666666, dq2 ],
-  [ 0.6666666666666666, dq2, 1.0, dq3 ],
-  [ 1.0, dq3, 0.0, dq0 ]
-  ];
-  var yscale = 1;
-  // var x = 500, y = 110;
-  for (var i = 0; i < Dt.length; i++) {
-      var pth = new Path.Line( new Point( x + Dt[i][0] * 190, y + Dt[i][1] * yscale ),
-       new Point( x + Dt[i][2] * 190, y + Dt[i][3] * yscale ) );
-      pth.style.strokeColor = '#999';
-  }
-  var pnt = [];
-  for ( i = 0; i < Dt2.length; i++) {
-    pnt.push( new Point( x + Dt2[i][0] * 190, y + Dt2[i][1] * yscale ) );
-    markPoint( pnt[i], " " );
-  }
-  new Path( new Segment(pnt[0], null, pnt[1].subtract(pnt[0])), new Segment( pnt[3], pnt[2].subtract(pnt[3]), null ) ).style.strokeColor = '#f00';
-
-  return Dt;
 }
 
 // ==============================================================
