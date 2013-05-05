@@ -14,9 +14,18 @@ function runTests() {
   pathB = new Path.Circle(new Point(160, 110), 50);
   // pathB.rotate( 45 );
   pathB.segments[3].point = pathB.segments[3].point.add( [10, -120] );
-  // pathB.segments[0].handleIn = pathB.segments[0].handleIn.add( [-100, 0] );
-  pathB.translate( [ -20, -10 ] );
+  // pathB.translate( [ -20, -30 ] );
+  pathB.segments[0].handleIn = pathB.segments[0].handleIn.add( [-100, 30] );
+  pathB.translate( [ 20, -30 ] );
   // testIntersection( pathA, pathB, caption );
+
+  // pathA = new Path();
+  // pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
+  // pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
+  // pathB = pathA.clone();
+  // pathB.rotate( -90 );
+  // pathA.translate( [-10,0] );
+  // pathB.translate( [10,0] );
 
   window.a = pathA;
   window.b = pathB;
@@ -37,8 +46,8 @@ function runTests() {
   console.time('fatline');
   while( count-- ){
     loc = [];
-    // Curve.getIntersections2( v1, v2, crvs[0], _p1U.curves[0], loc );
-    var ret = _clipFatLine( v1, v2, 0, 1, 0, 1, 1, 1, true, crvs[0], _p1U.curves[0], loc );
+    Curve.getIntersections2( v1, v2, crvs[0], _p1U.curves[0], loc );
+    // var ret = _clipFatLine( v1, v2, 0, 1, 0, 1, true, crvs[0], _p1U.curves[0], loc );
   }
   console.timeEnd('fatline');
 
@@ -53,13 +62,13 @@ function runTests() {
   console.log( ' ' );
   for( i =0; i < loc.length; i++){
     markPoint( loc[i].point, loc[i].parameter, '#f00' );
-    console.log( 'fatline t = ' + loc[i].parameter );
+    console.log( 'fatline t = ' + loc2[i].parameter + ' , u = ' + loc2[i].getIntersection().parameter );
   }
   for( i =0; i < loc2.length; i++){
     // markPoint( loc2[i].point, loc2[i].parameter, '#00f' );
     // console.log( 'paperjs t = ' + loc2[i].parameter );
-    markPoint( loc2[i].getIntersection().point, loc2[i].getIntersection().parameter, '#00f' );
-    console.log( 'paperjs t = ' + loc2[i].getIntersection().parameter );
+    markPoint( loc2[i].point, loc2[i].parameter, '#00f' );
+    console.log( 'paperjs t = ' + loc2[i].parameter + ' , u = ' + loc2[i].getIntersection().parameter );
   }
 
   view.draw();
