@@ -11,16 +11,44 @@ function getIntersections2( path1, path2 ){
 }
 
 
-paper.Curve.prototype._addIntersections2 = function( v1, v2, curve1, curve2, locations ) {
-
+paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _t1,  _t2, _u1, _u2, tstart ) {
+    _t1 = _t1 || 0; _t2 = _t2 || 1;
+    _u1 = _u1 || 0; _u2 = _u2 || 1;
+    var ret = _clipFatLine( v1, v2, _t1, _t2, _u1, _u2, (_t2 - _t1), (_u2 - _u1), true, curve1, curve2, locations, tstart );
+    if( ret > 1) {
+        // We need to subdivide one of the curves
+        // Better if we can subdivide the longest curve
+        var v1lx = v1[6] - v1[0];
+        var v1ly = v1[7] - v1[1];
+        var v2lx = v2[6] - v2[0];
+        var v2ly = v2[7] - v2[1];
+        var sqrDist1 = v1lx * v1lx  + v1ly * v1ly;
+        var sqrDist2 = v2lx * v2lx  + v2ly * v2ly;
+        var parts;
+        // This is a quick but dirty way to determine which curve to subdivide
+        if( sqrDist1 > sqrDist2 ){
+            parts = Curve.subdivide( v1 );
+            nuT = ( _t1 + _t2 ) / 2;
+            Curve.getIntersections2( parts[0], v2, curve1, curve2, locations, _t1, nuT, _u1, _u2, -0.5 );
+            Curve.getIntersections2( parts[1], v2, curve1, curve2, locations, nuT, _t2, _u1, _u2, 0.5 );
+        } else {
+            parts = Curve.subdivide( v2 );
+            nuU = ( _u1 + _u2 ) / 2;
+            Curve.getIntersections2( v1, parts[0], curve1, curve2, locations, _t1, _t2, _u1, nuU, -0.5 );
+            Curve.getIntersections2( v1, parts[1], curve1, curve2, locations, _t1, _t2, nuU, _u2, 0.5 );
+        }
+    }
 };
 
-function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, curve2, locations, count ){
+function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, curve2, locations, tstart, count ){
+    // DEBUG: count the iterations
     if( count === undefined ) { count = 0; }
     else { ++count; }
     if( t1 >= t2 - _tolerence && t1 <= t2 + _tolerence && u1 >= u2 - _tolerence && u1 <= u2 + _tolerence ){
-        var loc = tvalue ? new CurveLocation( curve2, t1, null, curve1 ) :
-         new CurveLocation( curve1, u1, null, curve2 );
+        tstart = tstart || 0;
+        loc = new CurveLocation( curve1, Math.abs( tstart - t1 ), null, curve2 );
+        // var loc = tvalue ? new CurveLocation( curve2, Math.abs( tstart - t1 ), null, curve1 ) :
+        //  new CurveLocation( curve1, Math.abs( ustart - u1 ), null, curve2 );
          // console.log( t1, t2, u1, u2 )
         locations.push( loc );
         return 1;
@@ -33,7 +61,7 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         q3x = v2[6]; q3y = v2[7];
         q1x = v2[2]; q1y = v2[3];
         q2x = v2[4]; q2y = v2[5];
-        // Calculate L
+        // Calculate the fat-line L
         var d1 = _getSignedDist( p0x, p0y, p3x, p3y, p1x, p1y );
         var d2 = _getSignedDist( p0x, p0y, p3x, p3y, p2x, p2y );
         var dmin, dmax;
@@ -101,7 +129,7 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         var tmin = Math.min( tmindmin, tmaxdmin, tmindmax, tmaxdmax );
         var tmax = Math.max( tmindmin, tmaxdmin, tmindmax, tmaxdmax);
 
-        // if( count === 1 ){
+        // if( count === 0 ){
         //   // console.log( dmin, dmax, tmin, tmax, " - ", tmindmin, tmaxdmin, tmindmax, tmaxdmax )
         //   plotD_vs_t( 250, 110, Dt, dmin, dmax, tmin, tmax, 1, tvalue );
         // // return;
@@ -116,27 +144,26 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
             nuT1 = t1 + tmin * ( t2 - t1 );
             nuT2 = t1 + tmax * ( t2 - t1 );
             // Test the convergence rate
-            // if the clipping fails to converge atleast 20%,
-            // subdivide the longest curve.
+            // if the clipping fails to converge by atleast 20%,
+            // we need to subdivide the longest curve and try again.
             convRate = (tdiff - tmax + tmin ) / tdiff;
-            console.log( 'convergence rate for t = ' + convRate + "%" );
+            // console.log( 'convergence rate for t = ' + convRate + "%" );
             if( convRate <= 0.2) {
                 // subdivide the curve and try again
                 return 2;
             } else {
-                return _clipFatLine( nuV2, v1, nuT1, nuT2, u1, u2, (tmax - tmin), udiff, !tvalue, curve1, curve2, locations, count );
+                return _clipFatLine( nuV2, v1, nuT1, nuT2, u1, u2, (tmax - tmin), udiff, !tvalue, curve1, curve2, locations, tstart, count );
             }
         } else {
             nuU1 = u1 + tmin * ( u2 - u1 );
             nuU2 = u1 + tmax * ( u2 - u1 );
-
             convRate = ( udiff - tmax + tmin ) / udiff;
-            console.log( 'convergence rate for u = ' + convRate + "%" );
+            // console.log( 'convergence rate for u = ' + convRate + "%" );
             if( convRate <= 0.2) {
                 // subdivide the curve and try again
                 return 2;
             } else {
-                return _clipFatLine( nuV2, v1, t1, t2, nuU1, nuU2 , tdiff, (tmax - tmin), !tvalue, curve1, curve2, locations, count );
+                return _clipFatLine( nuV2, v1, t1, t2, nuU1, nuU2 , tdiff, (tmax - tmin), !tvalue, curve1, curve2, locations, tstart, count );
             }
         }
     }
