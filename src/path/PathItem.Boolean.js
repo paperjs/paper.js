@@ -17,7 +17,7 @@
  * performance, and has to be tested heavily for stability.
  *
  * Supported
- *  - paperjs Path and CompoundPath objects
+ *  - Path and CompoundPath items
  *  - Boolean Union
  *  - Boolean Intersection
  *  - Boolean Subtraction
@@ -97,7 +97,7 @@ PathItem.inject(new function() {
 		return path;
 	}
 
-	function computeBoolean(path1, path2, operator, subtract, _cache) {
+	function computeBoolean(path1, path2, operator, subtract) {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
@@ -106,13 +106,8 @@ PathItem.inject(new function() {
 		var path1Clockwise = path1.isClockwise(),
 			path2Clockwise = path2.isClockwise(),
 			// Calculate all the intersections
-			intersections = _cache && _cache.intersections
-					|| path1.getIntersections(path2);
-		// If we have an empty _cache object as an operand, skip calculating
-		// boolean and cache the intersections.
-		// if (_cache && !_cache.intersections)
-		// 	return _cache.intersections = intersections;
-		// Now split intersections on both paths, by asking the first call to
+			intersections = path1.getIntersections(path2);
+		// Split intersections on both paths, by asking the first call to
 		// collect the intersections on the other path for us and passing the
 		// result of that on to the second call.
 		splitPath(splitPath(intersections, true));
@@ -220,11 +215,11 @@ PathItem.inject(new function() {
 		 * @param {PathItem} path the path to unite with
 		 * @return {PathItem} the resulting path item
 		 */
-		unite: function(path, _cache) {
+		unite: function(path) {
 			return computeBoolean(this, path,
 					function(isPath1, isInPath1, isInPath2) {
 						return isInPath1 || isInPath2;
-					}, false, _cache);
+					});
 		},
 
 		/**
@@ -234,11 +229,11 @@ PathItem.inject(new function() {
 		 * @param {PathItem} path the path to intersect with
 		 * @return {PathItem} the resulting path item
 		 */
-		intersect: function(path, _cache) {
+		intersect: function(path) {
 			return computeBoolean(this, path,
 					function(isPath1, isInPath1, isInPath2) {
 						return !(isInPath1 || isInPath2);
-					}, false, _cache);
+					});
 		},
 
 		/**
@@ -248,11 +243,11 @@ PathItem.inject(new function() {
 		 * @param {PathItem} path the path to subtract
 		 * @return {PathItem} the resulting path item
 		 */
-		subtract: function(path, _cache) {
+		subtract: function(path) {
 			return computeBoolean(this, path,
 					function(isPath1, isInPath1, isInPath2) {
 						return isPath1 && isInPath2 || !isPath1 && !isInPath1;
-					}, true, _cache);
+					}, true);
 		},
 
 		// Compound boolean operators combine the basic boolean operations such
