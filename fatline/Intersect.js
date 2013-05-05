@@ -3,7 +3,7 @@
 var EPSILON = 10e-12;
 var TOLERANCE = 10e-6;
 
-var _tolerence = TOLERANCE;
+var _tolerence = EPSILON;
 
 function getIntersections2( path1, path2 ){
     var locations = [];
@@ -11,11 +11,15 @@ function getIntersections2( path1, path2 ){
 }
 
 
-paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _t1,  _t2, _u1, _u2, tstart ) {
+paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _t1,  _t2, _u1, _u2 ) {
     _t1 = _t1 || 0; _t2 = _t2 || 1;
     _u1 = _u1 || 0; _u2 = _u2 || 1;
-    var ret = _clipFatLine( v1, v2, _t1, _t2, _u1, _u2, (_t2 - _t1), (_u2 - _u1), true, curve1, curve2, locations, tstart );
-    if( ret > 1) {
+    var loc = { parameter: null };
+    var ret = _clipFatLine( v1, v2, 0, 1, 0, 1, true, curve1, curve2, loc );
+    if( ret === 1 ){
+        var parameter = _t1 + loc.parameter * ( _t2 - _t1 );
+        locations.push( new CurveLocation( curve1, parameter, curve1.getPoint(parameter), curve2 ) );
+    } else if( ret < 0) {
         // We need to subdivide one of the curves
         // Better if we can subdivide the longest curve
         var v1lx = v1[6] - v1[0];
@@ -25,31 +29,24 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _t1
         var sqrDist1 = v1lx * v1lx  + v1ly * v1ly;
         var sqrDist2 = v2lx * v2lx  + v2ly * v2ly;
         var parts;
-        // This is a quick but dirty way to determine which curve to subdivide
+        // A quick and dirty way to determine which curve to subdivide
         if( sqrDist1 > sqrDist2 ){
             parts = Curve.subdivide( v1 );
             nuT = ( _t1 + _t2 ) / 2;
-            Curve.getIntersections2( parts[0], v2, curve1, curve2, locations, _t1, nuT, _u1, _u2, -0.5 );
-            Curve.getIntersections2( parts[1], v2, curve1, curve2, locations, nuT, _t2, _u1, _u2, 0.5 );
+            Curve.getIntersections2( parts[0], v2, curve1, curve2, locations, _t1, nuT, _u1, _u2 );
+            Curve.getIntersections2( parts[1], v2, curve1, curve2, locations, nuT, _t2, _u1, _u2 );
         } else {
             parts = Curve.subdivide( v2 );
             nuU = ( _u1 + _u2 ) / 2;
-            Curve.getIntersections2( v1, parts[0], curve1, curve2, locations, _t1, _t2, _u1, nuU, -0.5 );
-            Curve.getIntersections2( v1, parts[1], curve1, curve2, locations, _t1, _t2, nuU, _u2, 0.5 );
+            Curve.getIntersections2( v1, parts[0], curve1, curve2, locations, _t1, _t2, _u1, nuU );
+            Curve.getIntersections2( v1, parts[1], curve1, curve2, locations, _t1, _t2, nuU, _u2 );
         }
     }
 };
 
-function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, curve2, locations, count ){
-    // DEBUG: count the iterations
-    if( count === undefined ) { count = 0; }
-    else { ++count; }
+function _clipFatLine( v1, v2, t1, t2, u1, u2, tvalue, curve1, curve2, location ){
     if( t1 >= t2 - _tolerence && t1 <= t2 + _tolerence && u1 >= u2 - _tolerence && u1 <= u2 + _tolerence ){
-        loc = new CurveLocation( curve2, Math.abs( t1 ), null, curve1 );
-        // var loc = tvalue ? new CurveLocation( curve2, Math.abs( tstart - t1 ), null, curve1 ) :
-        //  new CurveLocation( curve1, Math.abs( ustart - u1 ), null, curve2 );
-         // console.log( t1, t2, u1, u2 )
-        locations.push( loc );
+        location.parameter = u1;
         return 1;
     } else {
         var p0x = v1[0], p0y = v1[1];
@@ -85,9 +82,7 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         if( dmin > maxdist || dmax < mindist ){
             return 0;
         }
-        // Ideally we need to calculate the convex hull for D(ti, di(t))
-        // here we are just checking against all possibilities and sorting them
-        // TODO: implement simple polygon convexhull method.
+        // Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
         var Dt  = _convexhull( dq0, dq1, dq2, dq3 );
 
         // Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
@@ -121,15 +116,6 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
         tmaxdmax = ( tmaxdmax === -Infinity )? 1 : tmaxdmax;
         var tmin = Math.min( tmindmin, tmaxdmin, tmindmax, tmaxdmax );
         var tmax = Math.max( tmindmin, tmaxdmin, tmindmax, tmaxdmax);
-
-        // if( count === 1 ){
-        //     console.log( Dt )
-        //     // console.log( dmin, dmax, tmin, tmax, " - ", tmindmin, tmaxdmin, tmindmax, tmaxdmax )
-        //     plotD_vs_t( 250, 110, Dt, dmin, dmax, tmin, tmax, 1, tvalue );
-        //     // return;
-        // }
-
-
         // We need to toggle clipping both curves alternatively
         // tvalue indicates whether to compare t or u for testing for convergence
         var nuV2 = Curve.getPart( v2, tmin, tmax );
@@ -140,24 +126,26 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
             // Test the convergence rate
             // if the clipping fails to converge by atleast 20%,
             // we need to subdivide the longest curve and try again.
-            convRate = (tdiff - tmax + tmin ) / tdiff;
+            var td = ( t2 - t1 );
+            convRate = ( td - ( nuT2 - nuT1 ) ) / td;
             // console.log( 'convergence rate for t = ' + convRate + "%" );
             if( convRate <= 0.2) {
                 // subdivide the curve and try again
-                return 2;
+                return -1;
             } else {
-                return _clipFatLine( nuV2, v1, nuT1, nuT2, u1, u2, (tmax - tmin), udiff, !tvalue, curve1, curve2, locations, count );
+                return _clipFatLine( nuV2, v1, nuT1, nuT2, u1, u2, !tvalue, curve1, curve2, location );
             }
         } else {
             nuU1 = u1 + tmin * ( u2 - u1 );
             nuU2 = u1 + tmax * ( u2 - u1 );
-            convRate = ( udiff - tmax + tmin ) / udiff;
+            var ud = ( u2 - u1 );
+            convRate = ( ud - ( nuU2 - nuU1 ) ) / ud;
             // console.log( 'convergence rate for u = ' + convRate + "%" );
             if( convRate <= 0.2) {
                 // subdivide the curve and try again
-                return 2;
+                return -1;
             } else {
-                return _clipFatLine( nuV2, v1, t1, t2, nuU1, nuU2 , tdiff, (tmax - tmin), !tvalue, curve1, curve2, locations, count );
+                return _clipFatLine( nuV2, v1, t1, t2, nuU1, nuU2 , !tvalue, curve1, curve2, location );
             }
         }
     }
@@ -165,18 +153,18 @@ function _clipFatLine( v1, v2, t1, t2, u1, u2, tdiff, udiff, tvalue, curve1, cur
 
 
 /**
- * Clip curve values V2 with fatline of v
- * @param  {Array}  v - Section of the first curve, for which we will make a fatline
+ * Clip curve values V2 with fat-line of v1 and vice versa
+ * @param  {Array}  v - Section of the first curve, for which we will make a fat-line
  * @param  {Number} t1 - start parameter for v in vOrg
  * @param  {Number} t2 - end parameter for v in vOrg
- * @param  {Array}  v2 - Section of the second curve; we will clip this curve with the fatline of v
+ * @param  {Array}  v2 - Section of the second curve; we will clip this curve with the fat-line of v
  * @param  {Number} u1 - start parameter for v2 in v2Org
  * @param  {Number} u2 - end parameter for v2 in v2Org
  * @param  {Array}  vOrg - The original curve values for v
  * @param  {Array}  v2Org - The original curve values for v2
  * @return {[type]}
  */
-function _clipWithFatline( v, t1, t2, v2, u1, u2, vOrg, v2Org ){
+function _clipBezFatLine( v1, t1, t2, v2, u1, u2, vOrg, v2Org ){
 
 }
 
@@ -187,7 +175,8 @@ function _convexhull( dq0, dq1, dq2, dq3 ){
     // Check if [1/3, dq1] and [2/3, dq2] are on the same side of line [0,dq0, 1,dq3]
     if( distq1 * distq2 < 0 ) {
         // dq1 and dq2 lie on different sides on [0, q0, 1, q3]
-        // Convexhull is a quadrilatteral and line [0, q0, 1, q3] is not part of the convexhull
+        // Convexhull is a quadrilatteral and line [0, q0, 1, q3] is NOT part of the convexhull
+        // so we are pretty much done here.
         Dt = [
             [ 0.0, dq0, 0.3333333333333333, dq1 ],
             [ 0.3333333333333333, dq1, 1.0, dq3 ],
@@ -195,48 +184,56 @@ function _convexhull( dq0, dq1, dq2, dq3 ){
             [ 1.0, dq3, 0.6666666666666666, dq2 ]
         ];
     } else {
+        // dq1 and dq2 lie on the same sides on [0, q0, 1, q3]
+        // Convexhull can be a triangle or a quadrilatteral and
+        // line [0, q0, 1, q3] is part of the convexhull.
         // Check if the hull is a triangle or a quadrilatteral
         var dqmin, dqmax, dqapex1, dqapex2;
         distq1 = Math.abs(distq1);
         distq2 = Math.abs(distq2);
+        var vqa1a2x, vqa1a2y, vqa1Maxx, vqa1Maxy, vqa1Minx, vqa1Miny;
         if( distq1 > distq2 ){
-              dqapex1 = [ 1.0, dq3 ];
-              dqapex2 = [ 0.0, dq0 ];
-              dqmin = [ 0.6666666666666666, dq2 ];
-              dqmax = [ 0.3333333333333333, dq1 ];
+            dqmin = [ 0.6666666666666666, dq2 ];
+            dqmax = [ 0.3333333333333333, dq1 ];
+            // apex is dq3 and the other apex point is dq0
+            // vector dqapex->dqapex2 or the base vector which is already part of c-hull
+            vqa1a2x = 1.0, vqa1a2y = dq3 - dq0;
+            // vector dqapex->dqmax
+            vqa1Maxx = 0.6666666666666666, vqa1Maxy = dq3 - dq1;
+            // vector dqapex->dqmin
+            vqa1Minx = 0.3333333333333333, vqa1Miny = dq3 - dq2;
         } else {
-              dqapex1 = [ 0.0, dq0 ];
-              dqapex2 = [ 1.0, dq3 ];
-              dqmin = [ 0.3333333333333333, dq1 ];
-              dqmax = [ 0.6666666666666666, dq2 ];
+            dqmin = [ 0.3333333333333333, dq1 ];
+            dqmax = [ 0.6666666666666666, dq2 ];
+            // apex is dq0 in this case, and the other apex point is dq3
+            // vector dqapex->dqapex2 or the base vector which is already part of c-hull
+            vqa1a2x = -1.0, vqa1a2y = dq0 - dq3;
+            // vector dqapex->dqmax
+            vqa1Maxx = -0.6666666666666666, vqa1Maxy = dq0 - dq2;
+            // vector dqapex->dqmin
+            vqa1Minx = -0.3333333333333333, vqa1Miny = dq0 - dq1;
         }
-        // vector dqapex1->dqapex2
-        var vqa1a2x = dqapex1[0] - dqapex2[0], vqa1a2y = dqapex1[1] - dqapex2[1];
-        // vector dqapex1->dqmax
-        var vqa1Maxx = dqapex1[0] - dqmax[0], vqa1Maxy = dqapex1[1] - dqmax[1];
-        // vector dqapex1->dqmin
-        var vqa1Minx = dqapex1[0] - dqmin[0], vqa1Miny = dqapex1[1] - dqmin[1];
         // compare cross products of these vectors to determine, if
         // point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
         var vcrossa1a2_a1Max = vqa1a2x * vqa1Maxy - vqa1a2y * vqa1Maxx;
         var vcrossa1a2_a1Min = vqa1a2x * vqa1Miny - vqa1a2y * vqa1Minx;
         var vcrossa1Max_a1Min = vqa1Maxx * vqa1Miny - vqa1Maxy * vqa1Minx;
         if( vcrossa1Max_a1Min * vcrossa1a2_a1Min < 0 ){
-              // Point [2/3, dq2] is inside the triangle and the convex hull is a triangle
-              Dt = [
-                  [ 0.0, dq0, dqmax[0], dqmax[1] ],
-                  [ dqmax[0], dqmax[1], 1.0, dq3 ],
-                  [ 1.0, dq3, 0.0, dq0 ]
-              ];
+            // Point [2/3, dq2] is inside the triangle and the convex hull is a triangle
+            Dt = [
+                [ 0.0, dq0, dqmax[0], dqmax[1] ],
+                [ dqmax[0], dqmax[1], 1.0, dq3 ],
+                [ 1.0, dq3, 0.0, dq0 ]
+            ];
         } else {
-              // Convexhull is a quadrilatteral and we need all lines in the correct order where
-              // line [0, q0, 1, q3] is part of the convex hull
-              Dt = [
-                  [ 0.0, dq0, 0.3333333333333333, dq1 ],
-                  [ 0.3333333333333333, dq1, 0.6666666666666666, dq2 ],
-                  [ 0.6666666666666666, dq2, 1.0, dq3 ],
-                  [ 1.0, dq3, 0.0, dq0 ]
-              ];
+            // Convexhull is a quadrilatteral and we need all lines in the correct order where
+            // line [0, q0, 1, q3] is part of the convex hull
+            Dt = [
+                [ 0.0, dq0, 0.3333333333333333, dq1 ],
+                [ 0.3333333333333333, dq1, 0.6666666666666666, dq2 ],
+                [ 0.6666666666666666, dq2, 1.0, dq3 ],
+                [ 1.0, dq3, 0.0, dq0 ]
+            ];
         }
     }
     return Dt;
