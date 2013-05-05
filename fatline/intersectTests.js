@@ -8,12 +8,14 @@ function runTests() {
 
   var container = document.getElementById( 'container' );
 
-  caption = prepareTest( 'Overlapping circles', container );
+  caption = prepareTest( 'Find Curve Intersections - 10,000 times.', container );
   pathA = new Path.Circle(new Point(70, 110), 50);
   // pathA.rotate( 45 );
-  pathB = new Path.Circle(new Point(160, 110), 80);
+  pathB = new Path.Circle(new Point(160, 110), 50);
   // pathB.rotate( 45 );
-  pathB.segments[3].point = pathB.segments[3].point.add( [10, -100] );
+  pathB.segments[3].point = pathB.segments[3].point.add( [10, -120] );
+  pathB.segments[0].handleIn = pathB.segments[0].handleIn.add( [-100, 0] );
+  // pathB.translate( [ 50, -20 ] );
   // testIntersection( pathA, pathB, caption );
 
   window.a = pathA;
@@ -22,34 +24,43 @@ function runTests() {
   var _p1U = new Path( pathA.segments[1], pathA.segments[2] );
   // var _p1U = new Path( pathA.segments[1], pathA.segments[2] );
   // _p1U.reverse();
-  var _p2U = new Path( pathB.segments[0], pathB.segments[1] );
+  var _p2U = new Path( pathB.segments[3], pathB.segments[0] );
   _p1U.style = _p2U.style = pathStyleBoolean;
   var crvs = _p2U.curves;
   // for (var i = 0; i < crvs.length; i++) {
-  //   drawFatline( crvs[i].getValues() );
+    drawFatline( _p1U.curves[0].getValues() );
+    drawFatline( crvs[0].getValues() );
   // }
 
-  var count = 1000;
+  var maxCount = 1000, count = maxCount, loc, loc2;
+  var v1 = crvs[0].getValues(), v2 = _p1U.curves[0].getValues();
   console.time('fatline');
   while( count-- ){
-  var loc = [];
-  _clipFatLine( crvs[0].getValues(), _p1U.curves[0].getValues(), 0, 1, 0, 1, 1, 1, true, crvs[0], _p1U.curves[0], loc );
+    loc = [];
+    Curve.getIntersections2( v1, v2, crvs[0], _p1U.curves[0], loc );
+    // var ret = _clipFatLine( v2, v1, 0, 1, 0, 1, 1, 1, true, crvs[0], _p1U.curves[0], loc );
   }
   console.timeEnd('fatline');
 
-  var count = 1000;
+  count = maxCount;
   console.time('paperjs');
   while( count-- ){
-  var loc = [];
-  Curve.getIntersections( crvs[0].getValues(), _p1U.curves[0].getValues(), crvs[0], loc );
+    loc2 = [];
+    Curve.getIntersections( v1, v2, crvs[0], _p1U.curves[0], loc2 );
   }
-  console.timeEnd('paperjs');
+  console.timeEnd('pa perjs');
 
-  // _clipFatLine( Curve.getPart( crvs[0].getValues(), 0.3, 0.4 ), _p1U.curves[0].getValues(), 0, 1, 0, 1, 1, 1, true, crvs[0], _p1U.curves[0], loc );
-
-  // for( i =0; i < loc.length; i++){
-  //   markPoint( loc[i].point, loc[i].parameter )
-  // }
+  console.log( ' ' );
+  for( i =0; i < loc.length; i++){
+    markPoint( loc[i].point, loc[i].parameter, '#f00' );
+    console.log( 'fatline t = ' + loc[i].parameter );
+  }
+  for( i =0; i < loc2.length; i++){
+    // markPoint( loc2[i].point, loc2[i].parameter, '#00f' );
+    // console.log( 'paperjs t = ' + loc2[i].parameter );
+    markPoint( loc2[i].getIntersection().point, loc2[i].getIntersection().parameter, '#00f' );
+    console.log( 'paperjs t = ' + loc2[i].getIntersection().parameter );
+  }
 
   view.draw();
 
