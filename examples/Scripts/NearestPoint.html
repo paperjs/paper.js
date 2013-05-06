@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>NearestPoint</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		window.performance = window.performance || {};
+		performance.now = (function() {
+		  return performance.now       ||
+		         performance.mozNow    ||
+		         performance.msNow     ||
+		         performance.oNow      ||
+		         performance.webkitNow ||
+		         function() { return new Date().getTime(); };
+		})();
+
+		var path = project.importSVG(document.getElementById('svg')).firstChild,
+			total = 0,
+			slower = 0;
+
+		function getNearest(point) {
+			var t1 = performance.now();
+			var loc1 = path.getNearestLocation(point);
+			t1 = performance.now() - t1;
+			var t2 = performance.now();
+			var loc2 = path._getNearestLocation(point);
+			t2 = performance.now() - t2;
+			total++;
+			if (t2 > t1) {
+				slower++;
+				console.log('slower', slower / total, t1, t2, point)
+			}
+			if (loc2.distance > loc1.distance) {
+				console.log('not precise');
+			}
+			return [loc1.point, loc2.point];
+		}
+
+		for (var i = 0; i < 1000; i++) {
+			getNearest(new Point(1028, 286));
+		}
+		/*
+		*/
+
+		function onMouseMove(event) {
+			var res = getNearest(event.point);
+			console.log(res.join());
+			var circle = new Path.Circle({
+				center: res[0],
+				radius: 2,
+				strokeColor: 'red'
+			}).removeOnMove();
+			var line = new Path.Line({
+				from: res[0],
+				to: event.point,
+				strokeColor: 'red'
+			}).removeOnMove();
+			var circle = new Path.Circle({
+				center: res[1],
+				radius: 4,
+				strokeColor: 'green'
+			}).removeOnMove();
+		}
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+	<svg id="svg" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" xml:space="preserve" style="display: none;">
+		<path fill="none" stroke="#000000" stroke-miterlimit="10" d="M167,265c33.321,23.568,53,38,72.886,109.353
+			c22.516,80.792-52.284,163.541-74.631,92.135C95,242,393.045,246.871,399.326,431.434C402,510,286.311,474.239,289,369
+			c1.961-76.747,78.663-125.069,162.393-91.026C540,314,562.299,442.872,476.159,390.783C424.547,359.573,382.365,317.41,383,221"/>
+	</svg>
+</body>
+</html>

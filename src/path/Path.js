@@ -1552,6 +1552,20 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		return minLoc;
 	},
 
+	_getNearestLocation: function(point) {
+		var curves = this.getCurves(),
+			minDist = Infinity,
+			minLoc = null;
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var loc = curves[i]._getNearestLocation(point);
+			if (loc._distance < minDist) {
+				minDist = loc._distance;
+				minLoc = loc;
+			}
+		}
+		return minLoc;
+	},
+
 	/**
 	 * Returns the nearest point on the path to the specified point.
 	 *

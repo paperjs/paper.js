@@ -1246,6 +1246,48 @@ new function() { // Scope for methods that require numerical integration
 					Math.sqrt(minDist));
 		},
 
+		_getNearestLocation: function(point) {
+			var values = this.getValues(),
+				step = 1 / 100,
+				minDist = Infinity,
+				minT = 0;
+
+			for (var t = 0; t <= 1; t += step) {
+				var pt = Curve.evaluate(values, t, true, 0),
+					dist = point.getDistance(pt, true);
+				if (dist < minDist) {
+					minDist = dist;
+					minT = t;
+				}
+			}
+
+			function refine(t, dist, precision) {
+				if(precision < 0.0000001) return t;
+				// refinement
+				// smaller distances?
+				var t1 = t - precision;
+				if (t1 >= 0) {
+					var dist1 = point.getDistance(
+							Curve.evaluate(values, t1, true, 0), true);
+					if (dist1 < dist)
+						return refine(t1, dist1, precision);
+				}
+				var t2 = t + precision;
+				if (t2 <= 1) {
+					var dist2 = point.getDistance(
+							Curve.evaluate(values, t2, true, 0), true);
+					if (dist2 < dist)
+						return refine(t2, dist2, precision);
+				}
+				// larger distances
+				return refine(t, dist, precision / 2);
+			}
+
+			minT = refine(minT, minDist, step);
+			var pt = Curve.evaluate(values, minT, true, 0);
+			return new CurveLocation(this, minT, pt, null, point.getDistance(pt));
+		},
+
 		getNearestPoint: function(point) {
 			return this.getNearestLocation(point).getPoint();
 		}
