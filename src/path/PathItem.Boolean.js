@@ -138,8 +138,9 @@ PathItem.inject(new function() {
 							&& (clockwise === path2Clockwise
 									|| !testOnCurve(path2, midPoint));
 				if (operator(path === path1, insidePath1, insidePath2)) {
-					// Mark as invalid, but do not remove yet, so the graph
-					// structure is preserved.
+					// The segment is to be discarded. Don't add it to segments,
+					// and mark it as invalid since it might still be found
+					// through curves / intersections, see below.
 					segment._invalid = true;
 				} else {
 					segments.push(segment);
@@ -155,7 +156,8 @@ PathItem.inject(new function() {
 				loc = segment._intersection,
 				intersection = loc && loc.getSegment(true);
 			if (segment.getPrevious()._invalid)
-				segment.setHandleIn(intersection ? intersection._handleIn
+				segment.setHandleIn(intersection
+						? intersection._handleIn
 						: Point.create(0, 0));
 			do {
 				segment._visited = true;

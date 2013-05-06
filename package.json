@@ -1,7 +1,7 @@
 {
 	"name": "paper",
-	"description":  "Vector graphics scripting framework",
-	"version":  "0.2.2",
+	"version":  "0.8.0",
+	"description":  "The Swiss Army Knife of Vector Graphics Scripting",
 	"contributors": [{
 		"name" : "Jürg Lehni",
 		"url" : "http://lehni.org"
@@ -10,7 +10,7 @@
 		"url" : "http://jonathanpuckey.com"
 	}],
 	"homepage": "http://paperjs.org",
-	"keywords": ["canvas", "graphic", "graphics", "vector", "paper.js"], 	
+	"keywords": ["canvas", "vector", "graphic", "graphics", "bezier", "paper.js"], 	
 	"repository": "git://github.com/paperjs/paper.js/",
 	"dependencies": {
 		"canvas": ">= 0.7.0"
