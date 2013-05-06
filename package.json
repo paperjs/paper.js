@@ -2,7 +2,7 @@
 	"name": "paper",
 	"version":  "0.8.0",
 	"description":  "The Swiss Army Knife of Vector Graphics Scripting",
-	"contributors": [{
+	"authors": [{
 		"name" : "Jürg Lehni",
 		"url" : "http://lehni.org"
 	}, {
