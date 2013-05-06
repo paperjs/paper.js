@@ -24,7 +24,7 @@
 #	commented		Preprocessed, still formated and commented
 #	stripped		Preprocessed, formated but without comments
 
-VERSION=0.8.0
+VERSION=0.8
 DATE=$(git log -1 --pretty=format:%ad)
 
 COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\", \"parser\": \"acorn\", \"svg\": true }' $3 $2"
