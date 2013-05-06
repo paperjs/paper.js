@@ -175,7 +175,7 @@ var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
 				break;
 			}
 		}
-	},
+	}
 
 	/**
 	 * Smooth bezier curves without changing the amount of segments or their

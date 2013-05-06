@@ -2104,7 +2104,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// and (through, to), and intersect them to get the center
 			var l1 = new Line(from.add(through).divide(2),
 					through.subtract(from).rotate(90)),
-			 	l2 = new Line(through.add(to).divide(2),
+				l2 = new Line(through.add(to).divide(2),
 					to.subtract(through).rotate(90)),
 				center = l1.intersect(l2),
 				line = new Line(from, to, true),
