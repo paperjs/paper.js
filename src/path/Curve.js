@@ -999,4 +999,109 @@ statics: {
 	 *        is a curve time parameter.
 	 * @return {Point} the curvature of the curve at the specified offset.
 	 */
-}));
+}),
+new function() { // Scope for methods that require numerical integration
+
+	function getLengthIntegrand(v) {
+		// Calculate the coefficients of a Bezier derivative.
+		var p1x = v[0], p1y = v[1],
+			c1x = v[2], c1y = v[3],
+			c2x = v[4], c2y = v[5],
+			p2x = v[6], p2y = v[7],
+
+			ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
+			bx = 6 * (p1x + c2x) - 12 * c1x,
+			cx = 3 * (c1x - p1x),
+
+			ay = 9 * (c1y - c2y) + 3 * (p2y - p1y),
+			by = 6 * (p1y + c2y) - 12 * c1y,
+			cy = 3 * (c1y - p1y);
+
+		return function(t) {
+			// Calculate quadratic equations of derivatives for x and y
+			var dx = (ax * t + bx) * t + cx,
+				dy = (ay * t + by) * t + cy;
+			return Math.sqrt(dx * dx + dy * dy);
+		};
+	}
+
+	// Amount of integral evaluations for the interval 0 <= a < b <= 1
+	function getIterations(a, b) {
+		// Guess required precision based and size of range...
+		// TODO: There should be much better educated guesses for
+		// this. Also, what does this depend on? Required precision?
+		return Math.max(2, Math.min(16, Math.ceil(Math.abs(b - a) * 32)));
+	}
+
+	return {
+		statics: true,
+
+		getLength: function(v, a, b) {
+			if (a === undefined)
+				a = 0;
+			if (b === undefined)
+				b = 1;
+			// if (p1 == c1 && p2 == c2):
+			if (v[0] == v[2] && v[1] == v[3] && v[6] == v[4] && v[7] == v[5]) {
+				// Straight line
+				var dx = v[6] - v[0], // p2x - p1x
+					dy = v[7] - v[1]; // p2y - p1y
+				return (b - a) * Math.sqrt(dx * dx + dy * dy);
+			}
+			var ds = getLengthIntegrand(v);
+			return Numerical.integrate(ds, a, b, getIterations(a, b));
+		},
+
+		getArea: function(v) {
+			var p1x = v[0], p1y = v[1],
+				c1x = v[2], c1y = v[3],
+				c2x = v[4], c2y = v[5],
+				p2x = v[6], p2y = v[7];
+			// http://objectmix.com/graphics/133553-area-closed-bezier-curve.html
+			return (  3.0 * c1y * p1x - 1.5 * c1y * c2x
+					- 1.5 * c1y * p2x - 3.0 * p1y * c1x
+					- 1.5 * p1y * c2x - 0.5 * p1y * p2x
+					+ 1.5 * c2y * p1x + 1.5 * c2y * c1x
+					- 3.0 * c2y * p2x + 0.5 * p2y * p1x
+					+ 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
+		},
+
+		getParameterAt: function(v, offset, start) {
+			if (offset === 0)
+				return start;
+			// See if we're going forward or backward, and handle cases
+			// differently
+			var forward = offset > 0,
+				a = forward ? start : 0,
+				b = forward ? 1 : start,
+				offset = Math.abs(offset),
+				// Use integrand to calculate both range length and part
+				// lengths in f(t) below.
+				ds = getLengthIntegrand(v),
+				// Get length of total range
+				rangeLength = Numerical.integrate(ds, a, b,
+						getIterations(a, b));
+			if (offset >= rangeLength)
+				return forward ? b : a;
+			// Use offset / rangeLength for an initial guess for t, to
+			// bring us closer:
+			var guess = offset / rangeLength,
+				length = 0;
+			// Iteratively calculate curve range lengths, and add them up,
+			// using integration precision depending on the size of the
+			// range. This is much faster and also more precise than not
+			// modifing start and calculating total length each time.
+			function f(t) {
+				var count = getIterations(start, t);
+				length += start < t
+						? Numerical.integrate(ds, start, t, count)
+						: -Numerical.integrate(ds, t, start, count);
+				start = t;
+				return length - offset;
+			}
+			return Numerical.findRoot(f, ds,
+					forward ? a + guess : b - guess, // Initial guess for x
+					a, b, 16, /*#=*/ Numerical.TOLERANCE);
+		}
+	};
+});
