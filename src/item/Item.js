@@ -1553,9 +1553,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @param {Item} item The item to be appended as a child
 	 * @deprecated use {@link #addChild(item)} instead.
 	 */
-	appendTop: function(item) {
-		return this.addChild(item);
-	},
+	appendTop: '#addChild',
 
 	/**
 	 * Inserts the specified item as a child of this item by appending it to
@@ -1576,9 +1574,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @return {Boolean} {@true it was moved}
 	 * @deprecated use {@link #insertAbove(item)} instead.
 	 */
-	moveAbove: function(item) {
-		return this.insertAbove(item);
-	},
+	moveAbove: '#insertAbove',
 
 	/**
 	 * Moves the item below the specified item.
@@ -1587,9 +1583,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @return {Boolean} {@true it was moved}
 	 * @deprecated use {@link #insertBelow(item)} instead.
 	 */
-	moveBelow: function(item) {
-		return this.insertBelow(item);
-	},
+	moveBelow: '#insertBelow',
 
 	/**
 	* Removes the item from its parent's named children list.
