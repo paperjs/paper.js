@@ -64,6 +64,13 @@ var Callback = {
 		}
 	},
 
+	once: function(type, func) {
+		this.attach(type, function() {
+			func.apply(this, arguments);
+			this.detach(type, func);
+		});
+	},
+
 	fire: function(type, event) {
 		// Returns true if fired, false otherwise
 		var handlers = this._handlers && this._handlers[type];
