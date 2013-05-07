@@ -1539,6 +1539,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * the specified point
 	 */
 	getNearestLocation: function(point) {
+		point = this._matrix.inverseTransform(Point.read(arguments));
 		var curves = this.getCurves(),
 			minDist = Infinity,
 			minLoc = null;

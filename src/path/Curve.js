@@ -910,46 +910,41 @@ statics: {
 	},
 
 	getNearestLocation: function(point) {
+		point = Point.read(arguments);
 		var values = this.getValues(),
-			precision = 1 / 100,
+			step = 1 / 100,
 			tolerance = Numerical.TOLERANCE,
 			minDist = Infinity,
 			minT = 0,
 			max = 1 + tolerance; // Accomodate imprecision
 
-		// First scan roughly for a close location
-		for (var t = 0; t <= max; t += precision) {
-			var pt = Curve.evaluate(values, t, true, 0),
-				dist = point.getDistance(pt, true);
-			if (dist < minDist) {
-				minDist = dist;
-				minT = t;
-			}
-		}
-
-		function closer(t) {
+		function refine(t) {
 			if (t >= 0 && t <= 1) {
 				var dist = point.getDistance(
 						Curve.evaluate(values, t, true, 0), true);
 				if (dist < minDist) {
-					minT = t;
 					minDist = dist;
+					minT = t;
 					return true;
 				}
 			}
 		}
 
+		for (var t = 0; t <= max; t += step)
+			refine(t);
+
 		// Now iteratively refine solution until we reach desired precision.
-		while (precision > tolerance) {
-			if (!closer(minT - precision) && !closer(minT + precision))
-				precision /= 2;
+		step /= 2;
+		while (step > tolerance) {
+			if (!refine(minT - step) && !refine(minT + step))
+				step /= 2;
 		}
 		var pt = Curve.evaluate(values, minT, true, 0);
 		return new CurveLocation(this, minT, pt, null, point.getDistance(pt));
 	},
 
 	getNearestPoint: function(point) {
-		return this.getNearestLocation(point).getPoint();
+		return this.getNearestLocation.apply(this, arguments).getPoint();
 	}
 
 	/**
