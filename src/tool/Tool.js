@@ -414,7 +414,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * 
 	 * Attach an event handler to the tool.
 	 *
-	 * @name Tool#attach
+	 * @name Tool#on
 	 * @function
 	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
 	 * 'keydown', 'keyup')} type the event type
@@ -424,7 +424,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	/**
 	 * Attach one or more event handlers to the tool.
 	 *
-	 * @name Tool#attach^2
+	 * @name Tool#on^2
 	 * @function
 	 * @param {Object} param An object literal containing one or more of the
 	 * following properties: {@code mousedown, mouseup, mousedrag, mousemove,

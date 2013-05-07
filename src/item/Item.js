@@ -2660,7 +2660,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * 
 	 * Attach an event handler to the item.
 	 *
-	 * @name Item#attach
+	 * @name Item#on
 	 * @function
 	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
 	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
@@ -2680,19 +2680,19 @@ var Item = this.Item = Base.extend(Callback, {
 	 * });
 	 * 
 	 * // When the mouse enters the item, set its fill color to red:
-	 * path.attach('mouseenter', function() {
+	 * path.on('mouseenter', function() {
 	 * 	this.fillColor = 'red';
 	 * });
 	 * 
 	 * // When the mouse leaves the item, set its fill color to black:
-	 * path.attach('mouseleave', function() {
+	 * path.on('mouseleave', function() {
 	 * 	this.fillColor = 'black';
 	 * });
 	 */
 	/**
 	 * Attach one or more event handlers to the item.
 	 *
-	 * @name Item#attach^2
+	 * @name Item#on^2
 	 * @function
 	 * @param {Object} param An object literal containing one or more of the
 	 * following properties: {@code mousedown, mouseup, mousedrag, click,
@@ -2710,7 +2710,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * path.fillColor = 'black';
 	 * 
 	 * // When the mouse enters the item, set its fill color to red:
-	 * path.attach({
+	 * path.on({
 	 * 	mouseenter: function(event) {
 	 * 		this.fillColor = 'red';
 	 * 	},
@@ -2742,7 +2742,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * 	});
 	 * 
 	 * 	// Attach the handers inside the object literal to the path:
-	 * 	path.attach(pathHandlers);
+	 * 	path.on(pathHandlers);
 	 * }
 	 */
 
