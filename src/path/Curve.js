@@ -1222,9 +1222,6 @@ new function() { // Scope for methods that require numerical integration
 
 	return {
 		getNearestLocation: function(point) {
-			// NOTE: If we allow #matrix on Path, we need to inverse-transform
-			// point here first.
-			// point = this._matrix.inverseTransform(point);
 			var w = toBezierForm(this.getPoints(), point);
 			// Also look at beginning and end of curve (t = 0 / 1)
 			var roots = findRoots(w, 0).concat([0, 1]);
@@ -1248,36 +1245,31 @@ new function() { // Scope for methods that require numerical integration
 
 		_getNearestLocation: function(point) {
 			var values = this.getValues(),
-				precision = 1 / 100,
+				step = 1 / 100,
 				tolerance = Numerical.TOLERANCE,
 				minDist = Infinity,
 				minT = 0,
 				max = 1 + tolerance; // Accomodate imprecision
-
-			for (var t = 0; t <= max; t += precision) {
-				var pt = Curve.evaluate(values, t, true, 0),
-					dist = point.getDistance(pt, true);
-				if (dist < minDist) {
-					minDist = dist;
-					minT = t;
-				}
-			}
 
 			function refine(t) {
 				if (t >= 0 && t <= 1) {
 					var dist = point.getDistance(
 							Curve.evaluate(values, t, true, 0), true);
 					if (dist < minDist) {
-						minT = t;
 						minDist = dist;
+						minT = t;
 						return true;
 					}
 				}
 			}
 
-			while (precision > tolerance) {
-				if (!refine(minT - precision) && !refine(minT + precision))
-					precision /= 2;
+			for (var t = 0; t <= max; t += step)
+				refine(t);
+
+			step /= 2;
+			while (step > tolerance) {
+				if (!refine(minT - step) && !refine(minT + step))
+					step /= 2;
 			}
 			var pt = Curve.evaluate(values, minT, true, 0);
 			return new CurveLocation(this, minT, pt, null, point.getDistance(pt));
