@@ -1,4 +1,4 @@
-require('../../node.js/');
+require('paper');
 var paper = require('./Tadpoles');
 paper.view.exportFrames({
 	amount: 400,
