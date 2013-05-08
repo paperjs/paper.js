@@ -13,9 +13,14 @@
 var fs = require('fs'),
 	vm = require('vm'),
 	path = require('path'),
-	Canvas = require('canvas');
+	Canvas = require('canvas'),
+	jsdom = require('jsdom');
 
 __dirname = path.resolve(__dirname, '..');
+
+// Create a window and document using jsdom, e.g. for exportSVG()
+var win = jsdom.createWindow(),
+	doc = win.document = jsdom.jsdom("<html><body></body></html>");
 
 // Create the context within which we will run the source files:
 var context = vm.createContext({
@@ -31,6 +36,9 @@ var context = vm.createContext({
 	HTMLCanvasElement: Canvas,
 	Image: Canvas.Image,
 	// Copy over global variables:
+	window: win,
+    document: doc,
+    navigator: win.navigator,
     console: console,
 	require: require,
 	__dirname: __dirname,
