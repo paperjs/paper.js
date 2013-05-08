@@ -15,7 +15,7 @@ var fs = require('fs'),
 	path = require('path'),
 	Canvas = require('canvas');
 
-__dirname = path.resolve(__dirname, '../src/');
+__dirname = path.resolve(__dirname, '..');
 
 // Create the context within which we will run the source files:
 var context = vm.createContext({

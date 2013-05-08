@@ -19,9 +19,6 @@
 			"folder_exclude_patterns": ["jsdoc-toolkit"]
 		},
 		{
-			"path": "../node.js"
-		},
-		{
 			"path": "..",
 			"name": "root",
             "folder_exclude_patterns": ["*"]

@@ -1,7 +1,7 @@
 {
 	"name": "paper",
 	"version": "0.8.1",
-	"main": "./node.js/index.js",
+	"main": "./src/node/index.js",
 	"engines": { "node": ">= 0.4.0" },
 	"dependencies": {
 		"canvas": ">= 0.7.0"
