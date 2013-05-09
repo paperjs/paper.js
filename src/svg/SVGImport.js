@@ -322,12 +322,15 @@ new function() {
 			color.setAlpha(parseFloat(value));
 	}
 
-	// Create apply-functions for attributes, and merge in those for SVGStlyes:
-	var attributes = Base.each(SVGStyles, function(entry) {
+	// Create apply-functions for attributes, and merge in those for SVGStlyes.
+	// We need to define style attributes first, and merge in all others after,
+	// since transform needs to be applied after fill color, as transformations
+	// can affect gradient fills.
+	var attributes = Base.merge(Base.each(SVGStyles, function(entry) {
 		this[entry.attribute] = function(item, value, name, node) {
 			item._style[entry.set](convertValue(value, entry.type));
 		};
-	}, {
+	}, {}), {
 		id: function(item, value) {
 			definitions[value] = item;
 			if (item.setName)
