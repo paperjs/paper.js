@@ -27,9 +27,9 @@ var options = {
 	version: 'dev'
 };
 
-// Create a window and document using jsdom, e.g. for exportSVG()
-var win = jsdom.createWindow(),
-	doc = win.document = jsdom.jsdom("<html><body></body></html>");
+// Create a document and a window using jsdom, e.g. for exportSVG()
+var doc = jsdom.jsdom("<html><body></body></html>"),
+	win = doc.createWindow();
 
 // Define XMLSerializer.
 // TODO: Put this into a simple node module, with dependency on jsdom
@@ -43,6 +43,15 @@ XMLSerializer.prototype.serializeToString = function(node) {
 	return text.replace(/(linear|radial)(gradient)/g, function(all, type) {
 		return type + 'Gradient';
 	});
+};
+
+function DOMParser() {
+}
+
+DOMParser.prototype.parseFromString = function(string, contenType) {
+	var div = doc.createElement('div');
+	div.innerHTML = string;
+	return div.firstChild;
 };
 
 // Create the context within which we will run the source files:
@@ -67,6 +76,8 @@ var context = vm.createContext({
 	Canvas: Canvas,
 	// Expose global browser variables:
 	HTMLCanvasElement: Canvas,
+	XMLSerializer: XMLSerializer,
+	DOMParser: DOMParser,
 	Image: Canvas.Image,
 	window: win,
     document: doc,
@@ -96,7 +107,8 @@ Base.isPlainObject = function(obj) {
 // Expose the Canvas, XMLSerializer to paper scopes:
 Base.each({
 	Canvas: Canvas,
-	XMLSerializer: XMLSerializer
+	XMLSerializer: XMLSerializer,
+	DOMParser: DOMParser
 }, function(value, key) {
 	this[key] = value;
 }, context.PaperScope.prototype);
