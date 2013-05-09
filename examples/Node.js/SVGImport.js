@@ -2,7 +2,7 @@ var paper = require('paper'),
 	path = require('path'),
 	fs = require('fs');
 
-paper.setup(new paper.Canvas(600, 600));
+paper.setup(new paper.Canvas(300, 600));
 with (paper) {
 	fs.readFile('./in.svg', { encoding: 'utf8' }, function (err, data) {
 		if (err)
