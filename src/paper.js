@@ -92,10 +92,8 @@ var paper = new function() {
 /*#*/ include('style/GradientStop.js');
 /*#*/ include('style/Style.js');
 
-/*#*/ if (options.browser) {
-/*#*/ include('browser/DomElement.js');
-/*#*/ include('browser/DomEvent.js');
-/*#*/ } // options.browser
+/*#*/ include('dom/DomElement.js');
+/*#*/ include('dom/DomEvent.js');
 
 /*#*/ include('ui/View.js');
 /*#*/ include('ui/CanvasView.js');
