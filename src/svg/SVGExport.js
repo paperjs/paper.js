@@ -347,26 +347,26 @@ new function() {
 				origin = color.getOrigin().transform(matrix),
 				destination = color.getDestination().transform(matrix),
 				attrs;
-				if (radial) {
-					attrs = {
-						cx: origin.x,
-						cy: origin.y,
-						r: origin.getDistance(destination)
-					};
-					var highlight = color.getHighlight();
-					if (highlight) {
-						highlight = highlight.transform(matrix);
-						attrs.fx = highlight.x;
-						attrs.fy = highlight.y;
-					}
-				} else {
-					attrs = {
-						x1: origin.x,
-						y1: origin.y,
-						x2: destination.x,
-						y2: destination.y
-					};
+			if (radial) {
+				attrs = {
+					cx: origin.x,
+					cy: origin.y,
+					r: origin.getDistance(destination)
+				};
+				var highlight = color.getHighlight();
+				if (highlight) {
+					highlight = highlight.transform(matrix);
+					attrs.fx = highlight.x;
+					attrs.fy = highlight.y;
 				}
+			} else {
+				attrs = {
+					x1: origin.x,
+					y1: origin.y,
+					x2: destination.x,
+					y2: destination.y
+				};
+			}
 			attrs.gradientUnits = 'userSpaceOnUse';
 			gradientNode = createElement(
 					(radial ? 'radial' : 'linear') + 'Gradient', attrs);
