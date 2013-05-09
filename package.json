@@ -14,5 +14,5 @@
 	],
 	"homepage": "http://paperjs.org",
 	"repository": "git://github.com/paperjs/paper.js",
-	"keywords": ["canvas", "vector", "graphic", "graphics", "bezier", "canvas", "svg", "paper.js"]
+	"keywords": ["vector", "graphic", "graphics", "bezier", "curve", "curves", "canvas", "svg", "paper.js"]
 }
