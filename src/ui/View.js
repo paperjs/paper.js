@@ -314,8 +314,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @type Size
 	 * @bean
 	 */
-	getSize: function() {
-		return this.getBounds().getSize();
+	getSize: function(/* dontLink */) {
+		return this.getBounds().getSize(arguments[0]);
 	},
 
 	/**
@@ -324,8 +324,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @type Point
 	 * @bean
 	 */
-	getCenter: function() {
-		return this.getBounds().getCenter();
+	getCenter: function(/* dontLink */) {
+		return this.getBounds().getCenter(arguments[0]);
 	},
 
 	setCenter: function(center) {
