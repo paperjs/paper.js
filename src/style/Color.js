@@ -526,6 +526,7 @@ var Color = this.Color = Base.extend(new function() {
 								? 'hsl'
 								: 'hsb'
 							: 'gradient' in arg || 'stops' in arg
+									|| 'radial' in arg
 								? 'gradient'
 								: 'gray' in arg
 									? 'gray'
