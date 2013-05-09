@@ -9,31 +9,33 @@ function runTests() {
   var container = document.getElementById( 'container' );
 
   caption = prepareTest( 'Find Curve Intersections - 10,000 times.', container );
-  pathA = new Path.Circle(new Point(70, 110), 50);
-  // pathA.rotate( 45 );
-  pathB = new Path.Circle(new Point(160, 110), 50);
-  // pathB.rotate( 45 );
-  pathB.segments[3].point = pathB.segments[3].point.add( [10, -120] );
-  // pathB.translate( [ -20, -30 ] );
-  pathB.segments[0].handleIn = pathB.segments[0].handleIn.add( [-100, 30] );
-  pathB.translate( [ 20, -30 ] );
-  // testIntersection( pathA, pathB, caption );
 
-  // pathA = new Path();
-  // pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
-  // pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
-  // pathB = pathA.clone();
-  // pathB.rotate( -90 );
-  // pathA.translate( [-10,0] );
-  // pathB.translate( [10,0] );
+  // pathA = new Path.Circle(new Point(70, 110), 50);
+  // // pathA.rotate( 45 );
+  // pathB = new Path.Circle(new Point(160, 110), 50);
+  // // pathB.rotate( 45 );
+  // pathB.segments[3].point = pathB.segments[3].point.add( [10, -120] );
+  // // pathB.translate( [ -20, -30 ] );
+  // pathB.segments[0].handleIn = pathB.segments[0].handleIn.add( [-100, 30] );
+  // pathB.translate( [ 20, -30 ] );
+  // // testIntersection( pathA, pathB, caption );
+
+  pathA = new Path();
+  pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
+  pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
+  pathA.closed = true;
+  pathB = pathA.clone();
+  pathB.rotate( -90 );
+  pathA.translate( [-10,0] );
+  pathB.translate( [10,0] );
 
   window.a = pathA;
   window.b = pathB;
 
-  var _p1U = new Path( pathA.segments[1], pathA.segments[2] );
+  var _p1U = new Path( pathA.segments[0], pathA.segments[1] );
   // var _p1U = new Path( pathA.segments[1], pathA.segments[2] );
   // _p1U.reverse();
-  var _p2U = new Path( pathB.segments[3], pathB.segments[0] );
+  var _p2U = new Path( pathB.segments[0], pathB.segments[1] );
   _p1U.style = _p2U.style = pathStyleBoolean;
   var crvs = _p2U.curves;
   // for (var i = 0; i < crvs.length; i++) {
@@ -60,15 +62,15 @@ function runTests() {
   console.timeEnd('paperjs');
 
   console.log( ' ' );
-  for( i =0; i < loc.length; i++){
-    markPoint( loc[i].point, loc[i].parameter, '#f00' );
-    console.log( 'fatline t = ' + loc2[i].parameter + ' , u = ' + loc2[i].getIntersection().parameter );
-  }
   for( i =0; i < loc2.length; i++){
+    markPoint( loc2[i].point, ' ', '#00f' );
     // markPoint( loc2[i].point, loc2[i].parameter, '#00f' );
-    // console.log( 'paperjs t = ' + loc2[i].parameter );
-    markPoint( loc2[i].point, loc2[i].parameter, '#00f' );
     console.log( 'paperjs t = ' + loc2[i].parameter + ' , u = ' + loc2[i].getIntersection().parameter );
+  }
+  for( i =0; i < loc.length; i++){
+    markPoint( loc[i].point, ' ', '#f00' );
+    // markPoint( loc[i].point, loc[i].parameter, '#f00' );
+    console.log( 'fatline t = ' + loc2[i].parameter + ' , u = ' + loc2[i].getIntersection().parameter );
   }
 
   view.draw();

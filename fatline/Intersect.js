@@ -14,11 +14,17 @@ function getIntersections2( path1, path2 ){
 paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _t1,  _t2, _u1, _u2 ) {
     _t1 = _t1 || 0; _t2 = _t2 || 1;
     _u1 = _u1 || 0; _u2 = _u2 || 1;
-    var loc = { parameter: null };
+    var loc = { parameter: null, tvalue: null };
     var ret = _clipFatLine( v1, v2, 0, 1, 0, 1, true, curve1, curve2, loc );
     if( ret === 1 ){
-        var parameter = _t1 + loc.parameter * ( _t2 - _t1 );
-        locations.push( new CurveLocation( curve1, parameter, curve1.getPoint(parameter), curve2 ) );
+        var parameter;
+        if( locations.tvalue ){
+            parameter = _t1 + loc.parameter * ( _t2 - _t1 );
+            locations.push( new CurveLocation( curve1, parameter, curve1.getPoint(parameter), curve2 ) );
+        } else {
+            parameter = _u1 + loc.parameter * ( _u2 - _u1 );
+            locations.push( new CurveLocation( curve2, parameter, curve2.getPoint(parameter), curve1 ) );
+        }
     } else if( ret < 0) {
         // We need to subdivide one of the curves
         // Better if we can subdivide the longest curve
@@ -46,7 +52,8 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _t1
 
 function _clipFatLine( v1, v2, t1, t2, u1, u2, tvalue, curve1, curve2, location ){
     if( t1 >= t2 - _tolerence && t1 <= t2 + _tolerence && u1 >= u2 - _tolerence && u1 <= u2 + _tolerence ){
-        location.parameter = u1;
+        location.parameter = ( tvalue )? u1 : t1;
+        location.tvalue = !tvalue;
         return 1;
     } else {
         var p0x = v1[0], p0y = v1[1];
