@@ -4,7 +4,8 @@
 	"main": "./src/node/index.js",
 	"engines": { "node": ">= 0.4.0" },
 	"dependencies": {
-		"canvas": ">= 0.7.0"
+		"canvas": ">= 0.7.0",
+		"jsdom": ">= 0.6.0"
 	},
 	"description": "The Swiss Army Knife of Vector Graphics Scripting",
 	"contributors": [
