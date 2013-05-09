@@ -1,6 +1,6 @@
 {
 	"name": "paper",
-	"version": "0.8.1",
+	"version": "0.8.2",
 	"main": "./src/node/index.js",
 	"engines": { "node": ">= 0.4.0" },
 	"dependencies": {
@@ -14,5 +14,5 @@
 	],
 	"homepage": "http://paperjs.org",
 	"repository": "git://github.com/paperjs/paper.js",
-	"keywords": ["canvas", "vector", "graphic", "graphics", "bezier", "paper.js"]
+	"keywords": ["canvas", "vector", "graphic", "graphics", "bezier", "canvs", "svg", "paper.js"]
 }
