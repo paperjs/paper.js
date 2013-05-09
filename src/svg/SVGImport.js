@@ -68,7 +68,7 @@ new function() {
 
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
-			clip = type === 'clipPath',
+			clip = type === 'clippath',
 			item = clip ? new CompoundPath() : new Group(),
 			project = item._project,
 			currentStyle = project._currentStyle;
@@ -142,7 +142,7 @@ new function() {
 			if (child.nodeType == 1)
 				stops.push(applyAttributes(new GradientStop(), child));
 		}
-		var isRadial = type === 'radialGradient',
+		var isRadial = type === 'radialgradient',
 			gradient = new Gradient(stops, isRadial),
 			origin, destination, highlight;
 		if (isRadial) {
@@ -160,12 +160,14 @@ new function() {
 		return null;
 	}
 
+	// NOTE: All importers are lowercase, since jsdom is using uppercase
+	// nodeNames still.
 	var importers = {
 		// http://www.w3.org/TR/SVG/struct.html#Groups
 		g: importGroup,
 		// http://www.w3.org/TR/SVG/struct.html#NewDocument
 		svg: importGroup,
-		clipPath: importGroup,
+		clippath: importGroup,
 		// http://www.w3.org/TR/SVG/shapes.html#PolygonElement
 		polygon: importPoly,
 		// http://www.w3.org/TR/SVG/shapes.html#PolylineElement
@@ -173,9 +175,9 @@ new function() {
 		// http://www.w3.org/TR/SVG/paths.html
 		path: importPath,
 		// http://www.w3.org/TR/SVG/pservers.html#LinearGradients
-		linearGradient: importGradient,
+		lineargradient: importGradient,
 		// http://www.w3.org/TR/SVG/pservers.html#RadialGradients
-		radialGradient: importGradient,
+		radialgradient: importGradient,
 
 		// http://www.w3.org/TR/SVG/struct.html#ImageElement
 		image: function (node) {
