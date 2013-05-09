@@ -1553,9 +1553,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @param {Item} item The item to be appended as a child
 	 * @deprecated use {@link #addChild(item)} instead.
 	 */
-	appendTop: function(item) {
-		return this.addChild(item);
-	},
+	appendTop: '#addChild',
 
 	/**
 	 * Inserts the specified item as a child of this item by appending it to
@@ -1576,9 +1574,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @return {Boolean} {@true it was moved}
 	 * @deprecated use {@link #insertAbove(item)} instead.
 	 */
-	moveAbove: function(item) {
-		return this.insertAbove(item);
-	},
+	moveAbove: '#insertAbove',
 
 	/**
 	 * Moves the item below the specified item.
@@ -1587,9 +1583,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @return {Boolean} {@true it was moved}
 	 * @deprecated use {@link #insertBelow(item)} instead.
 	 */
-	moveBelow: function(item) {
-		return this.insertBelow(item);
-	},
+	moveBelow: '#insertBelow',
 
 	/**
 	* Removes the item from its parent's named children list.
@@ -2660,7 +2654,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * 
 	 * Attach an event handler to the item.
 	 *
-	 * @name Item#attach
+	 * @name Item#on
 	 * @function
 	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
 	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
@@ -2680,19 +2674,19 @@ var Item = this.Item = Base.extend(Callback, {
 	 * });
 	 * 
 	 * // When the mouse enters the item, set its fill color to red:
-	 * path.attach('mouseenter', function() {
+	 * path.on('mouseenter', function() {
 	 * 	this.fillColor = 'red';
 	 * });
 	 * 
 	 * // When the mouse leaves the item, set its fill color to black:
-	 * path.attach('mouseleave', function() {
+	 * path.on('mouseleave', function() {
 	 * 	this.fillColor = 'black';
 	 * });
 	 */
 	/**
 	 * Attach one or more event handlers to the item.
 	 *
-	 * @name Item#attach^2
+	 * @name Item#on^2
 	 * @function
 	 * @param {Object} param An object literal containing one or more of the
 	 * following properties: {@code mousedown, mouseup, mousedrag, click,
@@ -2710,7 +2704,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * path.fillColor = 'black';
 	 * 
 	 * // When the mouse enters the item, set its fill color to red:
-	 * path.attach({
+	 * path.on({
 	 * 	mouseenter: function(event) {
 	 * 		this.fillColor = 'red';
 	 * 	},
@@ -2742,7 +2736,7 @@ var Item = this.Item = Base.extend(Callback, {
 	 * 	});
 	 * 
 	 * 	// Attach the handers inside the object literal to the path:
-	 * 	path.attach(pathHandlers);
+	 * 	path.on(pathHandlers);
 	 * }
 	 */
 

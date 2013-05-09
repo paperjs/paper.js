@@ -907,6 +907,44 @@ statics: {
 	getLocationOf: function(point) {
 		var t = this.getParameterOf.apply(this, arguments);
 		return t != null ? new CurveLocation(this, t) : null;
+	},
+
+	getNearestLocation: function(point) {
+		point = Point.read(arguments);
+		var values = this.getValues(),
+			step = 1 / 100,
+			tolerance = Numerical.TOLERANCE,
+			minDist = Infinity,
+			minT = 0,
+			max = 1 + tolerance; // Accomodate imprecision
+
+		function refine(t) {
+			if (t >= 0 && t <= 1) {
+				var dist = point.getDistance(
+						Curve.evaluate(values, t, true, 0), true);
+				if (dist < minDist) {
+					minDist = dist;
+					minT = t;
+					return true;
+				}
+			}
+		}
+
+		for (var t = 0; t <= max; t += step)
+			refine(t);
+
+		// Now iteratively refine solution until we reach desired precision.
+		step /= 2;
+		while (step > tolerance) {
+			if (!refine(minT - step) && !refine(minT + step))
+				step /= 2;
+		}
+		var pt = Curve.evaluate(values, minT, true, 0);
+		return new CurveLocation(this, minT, pt, null, point.getDistance(pt));
+	},
+
+	getNearestPoint: function(point) {
+		return this.getNearestLocation.apply(this, arguments).getPoint();
 	}
 
 	/**
@@ -1059,195 +1097,6 @@ new function() { // Scope for methods that require numerical integration
 			return Numerical.findRoot(f, ds,
 					forward ? a + guess : b - guess, // Initial guess for x
 					a, b, 16, /*#=*/ Numerical.TOLERANCE);
-		}
-	};
-}, new function() { // Scope for nearest point on curve problem
-
-	// Solving the Nearest Point-on-Curve Problem and A Bezier-Based Root-Finder
-	// by Philip J. Schneider from "Graphics Gems", Academic Press, 1990
-	// Optimised for Paper.js
-
-	var maxDepth = 32,
-		epsilon = Math.pow(2, -maxDepth - 1);
-
-	var zCubic = [
-		[1.0, 0.6, 0.3, 0.1],
-		[0.4, 0.6, 0.6, 0.4],
-		[0.1, 0.3, 0.6, 1.0]
-	];
-
-	var xAxis = new Line(new Point(0, 0), new Point(1, 0));
-
-	 /**
-	  * Given a point and a Bezier curve, generate a 5th-degree Bezier-format
-	  * equation whose solution finds the point on the curve nearest the
-	  * user-defined point.
-	  */
-	function toBezierForm(v, point) {
-		var n = 3, // degree of B(t)
-			degree = 5, // degree of B(t) . P
-			c = [],
-			d = [],
-			cd = [],
-			w = [];
-		for(var i = 0; i <= n; i++) {
-			// Determine the c's -- these are vectors created by subtracting
-			// point point from each of the control points
-			c[i] = v[i].subtract(point);
-			// Determine the d's -- these are vectors created by subtracting
-			// each control point from the next
-			if (i < n)
-				d[i] = v[i + 1].subtract(v[i]).multiply(n);
-		}
-
-		// Create the c,d table -- this is a table of dot products of the
-		// c's and d's
-		for (var row = 0; row < n; row++) {
-			cd[row] = [];
-			for (var column = 0; column <= n; column++)
-				cd[row][column] = d[row].dot(c[column]);
-		}
-
-		// Now, apply the z's to the dot products, on the skew diagonal
-		// Also, set up the x-values, making these "points"
-		for (var i = 0; i <= degree; i++)
-			w[i] = new Point(i / degree, 0);
-
-		for (var k = 0; k <= degree; k++) {
-			var lb = Math.max(0, k - n + 1),
-				ub = Math.min(k, n);
-			for (var i = lb; i <= ub; i++) {
-				var j = k - i;
-				w[k].y += cd[j][i] * zCubic[j][i];
-			}
-		}
-
-		return w;
-	}
-
-	/**
-	 * Given a 5th-degree equation in Bernstein-Bezier form, find all of the
-	 * roots in the interval [0, 1].  Return the number of roots found.
-	 */
-	function findRoots(w, depth) {
-		switch (countCrossings(w)) {
-		case 0:
-			// No solutions here
-			return [];
-		case 1:
-			// Unique solution
-			// Stop recursion when the tree is deep enough
-			// if deep enough, return 1 solution at midpoint
-			if (depth >= maxDepth)
-				return [0.5 * (w[0].x + w[5].x)];
-			// Compute intersection of chord from first control point to last
-			// with x-axis.
-			if (isFlatEnough(w)) {
-				var line = new Line(w[0], w[5], true);
-				return [ Numerical.isZero(line.vector.getLength(true))
-						? line.point.x
-						: xAxis.intersect(line).x ];
-			}
-		}
-
-		// Otherwise, solve recursively after
-		// subdividing control polygon
-		var p = [[]],
-			left = [],
-			right = [];
-		for (var j = 0; j <= 5; j++)
-			p[0][j] = new Point(w[j]);
-
-		// Triangle computation
-		for (var i = 1; i <= 5; i++) {
-			p[i] = [];
-			for (var j = 0 ; j <= 5 - i; j++)
-				p[i][j] = p[i - 1][j].add(p[i - 1][j + 1]).multiply(0.5);
-		}
-		for (var j = 0; j <= 5; j++) {
-			left[j]  = p[j][0];
-			right[j] = p[5 - j][j];
-		}
-
-		return findRoots(left, depth + 1).concat(findRoots(right, depth + 1));
-	}
-
-	/**
-	 * Count the number of times a Bezier control polygon  crosses the x-axis.
-	 * This number is >= the number of roots.
-	 */
-	function countCrossings(v) {
-		var crossings = 0,
-			prevSign = null;
-		for (var i = 0, l = v.length; i < l; i++)  {
-			var sign = v[i].y < 0 ? -1 : 1;
-			if (prevSign != null && sign != prevSign)
-				crossings++;
-			prevSign = sign;
-		}
-		return crossings;
-	}
-
-	/**
-	 * Check if the control polygon of a Bezier curve is flat enough for
-	 * recursive subdivision to bottom out.
-	 */
-	function isFlatEnough(v) {
-		// Find the  perpendicular distance from each interior control point to
-		// line connecting v[0] and v[degree]
-
-		// Derive the implicit equation for line connecting first
-		// and last control points
-		var n = v.length - 1,
-			a = v[0].y - v[n].y,
-			b = v[n].x - v[0].x,
-			c = v[0].x * v[n].y - v[n].x * v[0].y,
-			maxAbove = 0,
-			maxBelow = 0;
-		// Find the largest distance
-		for (var i = 1; i < n; i++) {
-			// Compute distance from each of the points to that line
-			var val = a * v[i].x + b * v[i].y + c,
-				dist = val * val;
-			if (val < 0 && dist > maxBelow) {
-				maxBelow = dist;
-			} else if (dist > maxAbove) {
-				maxAbove = dist;
-			}
-		}
-		// Compute intercepts of bounding box
-		return Math.abs((maxAbove + maxBelow) / (2 * a * (a * a + b * b)))
-				< epsilon;
-	}
-
-	return {
-		getNearestLocation: function(point) {
-			// NOTE: If we allow #matrix on Path, we need to inverse-transform
-			// point here first.
-			// point = this._matrix.inverseTransform(point);
-			var w = toBezierForm(this.getPoints(), point);
-			// Also look at beginning and end of curve (t = 0 / 1)
-			var roots = findRoots(w, 0).concat([0, 1]);
-			var minDist = Infinity,
-				minT,
-				minPoint;
-			// There are always roots, since we add [0, 1] above.
-			for (var i = 0; i < roots.length; i++) {
-				var pt = this.getPointAt(roots[i], true),
-					dist = point.getDistance(pt, true);
-				// We're comparing squared distances
-				if (dist < minDist) {
-					minDist = dist;
-					minT = roots[i];
-					minPoint = pt;
-				}
-			}
-			return new CurveLocation(this, minT, minPoint, null,
-					Math.sqrt(minDist));
-		},
-
-		getNearestPoint: function(point) {
-			return this.getNearestLocation(point).getPoint();
 		}
 	};
 });

@@ -13,7 +13,9 @@
  *
  ***
  *
- * Bootstrap.js JavaScript Inheritance Micro-Framework
+ * Straps.js - Inheritance library with support for bean-style accessors and
+ * AOP patterns.
+ *
  * Copyright (c) 2006 - 2013 Juerg Lehni
  * http://lehni.org/
  *
@@ -31,7 +33,7 @@
 
 var paper = new function() {
 // Inline Bootstrap core (the Base class) inside the paper scope first:
-/*#*/ include('../lib/bootstrap.js');
+/*#*/ include('../lib/straps.js');
 
 /*#*/ if (options.version == 'dev') {
 /*#*/ include('constants.js');
@@ -90,10 +92,8 @@ var paper = new function() {
 /*#*/ include('style/GradientStop.js');
 /*#*/ include('style/Style.js');
 
-/*#*/ if (options.browser) {
-/*#*/ include('browser/DomElement.js');
-/*#*/ include('browser/DomEvent.js');
-/*#*/ } // options.browser
+/*#*/ include('dom/DomElement.js');
+/*#*/ include('dom/DomEvent.js');
 
 /*#*/ include('ui/View.js');
 /*#*/ include('ui/CanvasView.js');
@@ -119,6 +119,7 @@ var paper = new function() {
 
 /*#*/ if (options.svg) {
 /*#*/ include('svg/SVGStyles.js');
+/*#*/ include('svg/SVGNamespaces.js');
 /*#*/ include('svg/SVGExport.js');
 /*#*/ include('svg/SVGImport.js');
 /*#*/ } // options.svg

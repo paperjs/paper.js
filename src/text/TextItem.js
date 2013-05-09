@@ -100,23 +100,13 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	 * @private
 	 * @deprecated use {@link #getStyle()} instead.
 	 */
-	getCharacterStyle: function() {
-		return this.getStyle();
-	},
-
-	setCharacterStyle: function(style) {
-		this.setStyle(style);
-	},
+	getCharacterStyle: '#getStyle',
+	setCharacterStyle: '#setStyle',
 
 	/**
 	 * @private
 	 * @deprecated use {@link #getStyle()} instead.
 	 */
-	getParagraphStyle: function() {
-		return this.getStyle();
-	},
-
-	setParagraphStyle: function(style) {
-		this.setStyle(style);
-	}
+	getParagraphStyle: '#getStyle',
+	setParagraphStyle: '#setStyle'
 });

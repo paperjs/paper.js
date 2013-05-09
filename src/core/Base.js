@@ -16,7 +16,7 @@
  * @private
  */
 // Extend Base with utility functions used across the library. Also set
-// this.Base on the injection scope, since bootstrap.js ommits that.
+// this.Base on the injection scope, since straps.js ommits that.
 this.Base = Base.inject(/** @lends Base# */{
 	// Have generics versions of #clone() and #toString():
 	generics: true,

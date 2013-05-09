@@ -203,3 +203,9 @@ test('Item#data', function() {
 	testExportImportJSON(paper.project);
 });
 
+test('Color', function() {
+	var path = new Path({
+	    fillColor: new Color(1, 1, 0, 0.5)
+	});
+	testExportImportJSON(paper.project);
+});

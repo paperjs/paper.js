@@ -13,6 +13,7 @@
 /**
  * @name Callback
  * @namespace
+ * @private
  */
 var Callback = {
 	attach: function(type, func) {
@@ -63,6 +64,13 @@ var Callback = {
 		}
 	},
 
+	once: function(type, func) {
+		this.attach(type, function() {
+			func.apply(this, arguments);
+			this.detach(type, func);
+		});
+	},
+
 	fire: function(type, event) {
 		// Returns true if fired, false otherwise
 		var handlers = this._handlers && this._handlers[type];
@@ -82,7 +90,14 @@ var Callback = {
 		return !!(this._handlers && this._handlers[type]);
 	},
 
+	// Install jQuery-style aliases to our event handler methods
+	on: '#attach',
+	off: '#detach',
+	trigger: '#fire',
+
 	statics: {
+		// Override inject() so that sub-classes automatically add the accessors
+		// for the event handler functions (e.g. #onMouseDown) for each property
 		inject: function(/* src, ... */) {
 			for (var i = 0, l = arguments.length; i < l; i++) {
 				var src = arguments[i],

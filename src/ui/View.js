@@ -314,8 +314,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @type Size
 	 * @bean
 	 */
-	getSize: function() {
-		return this.getBounds().getSize();
+	getSize: function(/* dontLink */) {
+		return this.getBounds().getSize(arguments[0]);
 	},
 
 	/**
@@ -324,8 +324,8 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * @type Point
 	 * @bean
 	 */
-	getCenter: function() {
-		return this.getBounds().getCenter();
+	getCenter: function(/* dontLink */) {
+		return this.getBounds().getCenter(arguments[0]);
 	},
 
 	setCenter: function(center) {
@@ -455,7 +455,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * 
 	 * Attach an event handler to the view.
 	 *
-	 * @name View#attach
+	 * @name View#on
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Function} function The function to be called when the event
@@ -472,12 +472,12 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * 	path.rotate(3);
 	 * };
 	 * 
-	 * view.attach('frame', frameHandler);
+	 * view.on('frame', frameHandler);
 	 */
 	/**
 	 * Attach one or more event handlers to the view.
 	 *
-	 * @name View#attach^2
+	 * @name View#on^2
 	 * @function
 	 * @param {Object} param An object literal containing one or more of the
 	 * following properties: {@code frame, resize}.
@@ -491,7 +491,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * 	path.rotate(3);
 	 * };
 	 * 
-	 * view.attach({
+	 * view.on({
 	 * 	frame: frameHandler
 	 * });
 	 */
@@ -515,7 +515,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	 * 	path.rotate(3);
 	 * };
 	 * 
-	 * view.attach({
+	 * view.on({
 	 * 	frame: frameHandler
 	 * });
 	 * 

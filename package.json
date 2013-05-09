@@ -1,20 +1,18 @@
 {
 	"name": "paper",
-	"description":  "Vector graphics scripting framework",
-	"version":  "0.2.2",
-	"contributors": [{
-		"name" : "Jürg Lehni",
-		"url" : "http://lehni.org"
-	}, {
-		"name" : "Jonathan Puckey",
-		"url" : "http://jonathanpuckey.com"
-	}],
-	"homepage": "http://paperjs.org",
-	"keywords": ["canvas", "graphic", "graphics", "vector", "paper.js"], 	
-	"repository": "git://github.com/paperjs/paper.js/",
-	"dependencies": {
-		"canvas": ">= 0.7.0"
-	},
+	"version": "0.8.3",
+	"main": "./src/node/index.js",
 	"engines": { "node": ">= 0.4.0" },
-	"main": "./node.js/index.js"
+	"dependencies": {
+		"canvas": ">= 0.7.0",
+		"jsdom": ">= 0.6.0"
+	},
+	"description": "The Swiss Army Knife of Vector Graphics Scripting",
+	"contributors": [
+		"Jürg Lehni <juerg@lehni.org> (http://lehni.org)",
+		"Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
+	],
+	"homepage": "http://paperjs.org",
+	"repository": "git://github.com/paperjs/paper.js",
+	"keywords": ["vector", "graphic", "graphics", "bezier", "curve", "curves", "canvas", "svg", "paper.js"]
 }

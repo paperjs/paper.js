@@ -1,0 +1,16 @@
+<svg x="0" y="0" width="300" height="600" version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink">
+  <linearGradient x1="45" y1="345" x2="255" y2="555" gradientUnits="userSpaceOnUse" id="gradient-2">
+    <stop offset="0" stop-color="rgb(255, 255, 0)" stop-opacity="0"></stop>
+    <stop offset="0.5" stop-color="rgb(255, 0, 0)"></stop>
+    <stop offset="1" stop-color="rgb(0, 0, 0)"></stop>
+  </linearGradient>
+  <radialGradient cx="150" cy="150" r="120" gradientUnits="userSpaceOnUse" id="gradient-1">
+    <stop offset="0" stop-color="rgb(255, 255, 0)" stop-opacity="0"></stop>
+    <stop offset="0.5" stop-color="rgb(255, 0, 0)"></stop>
+    <stop offset="1" stop-color="rgb(0, 0, 0)"></stop>
+  </radialGradient>
+  <g fill="none" stroke="rgb(0, 0, 0)" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0">
+    <circle cx="150" cy="150" r="120" fill="url(#gradient-1)"></circle>
+    <rect x="45" y="345" width="210" height="210" transform="rotate(45,150,450)" fill="url(#gradient-2)"></rect>
+  </g>
+</svg>
