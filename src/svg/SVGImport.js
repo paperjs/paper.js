@@ -24,12 +24,20 @@ new function() {
 			value = namespace
 				? node.getAttributeNS(namespace, name)
 				: node.getAttribute(name);
-		return isString
-				? value
-				// Interpret value as number. Never return NaN, but 0 instead.
-				// If the value is a sequence of numbers, parseFloat will
-				// return the first occuring number, which is enough for now.
-				: value == 'null' ? 0 : parseFloat(value);
+		if (value == 'null')
+			value = null;
+		// Interpret value as number. Never return NaN, but 0 instead.
+		// If the value is a sequence of numbers, parseFloat will
+		// return the first occuring number, which is enough for now.
+		return value == null
+				? allowNull
+					? null
+					: isString
+						? ''
+						: 0
+				: isString
+					? value
+					: parseFloat(value);
 	}
 
 	function getPoint(node, x, y, allowNull) {
