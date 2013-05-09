@@ -489,8 +489,8 @@ new function() {
 		/**
 		 * {@grouptitle SVG Conversion}
 		 *
-		 * Exports the item and all its child items as an SVG DOM, all contained
-		 * in one top level SVG group node.
+		 * Exports the item and all its children as an SVG DOM, all contained
+		 * in one top level SVG node.
 		 *
 		 * @return {SVGSVGElement} the item converted to an SVG node
 		 */
