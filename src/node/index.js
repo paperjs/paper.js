@@ -13,10 +13,17 @@
 var fs = require('fs'),
 	vm = require('vm'),
 	path = require('path'),
+	// Node Canvas library: https://github.com/learnboost/node-canvas
 	Canvas = require('canvas'),
-	jsdom = require('jsdom');
+	jsdom = require('jsdom'),
+	dirname = path.resolve(__dirname, '..');
 
-__dirname = path.resolve(__dirname, '..');
+var options = {
+	server: true,
+	svg: true,
+	parser: 'acorn',
+	version: 'dev'
+};
 
 // Create a window and document using jsdom, e.g. for exportSVG()
 var win = jsdom.createWindow(),
@@ -24,14 +31,12 @@ var win = jsdom.createWindow(),
 
 // Create the context within which we will run the source files:
 var context = vm.createContext({
-	options: {
-		server: true,
-		svg: true,
-		parser: 'acorn',
-		version: 'dev'
-	},
+	options: options,
 	fs: fs,
-	// Node Canvas library: https://github.com/learnboost/node-canvas
+	// We need to export the local Object definition, so Base.isPlainObject()
+	// works. See http://nodejs.org/api/vm.html#vm_globals
+	Object: Object,
+	Array: Array,
 	Canvas: Canvas,
 	HTMLCanvasElement: Canvas,
 	Image: Canvas.Image,
@@ -41,17 +46,16 @@ var context = vm.createContext({
     navigator: win.navigator,
     console: console,
 	require: require,
-	__dirname: __dirname,
-	__filename: __filename,
+	__dirname: dirname,
 	// Used to load and run source files within the same context:
 	include: function(uri) {
-		var source = fs.readFileSync(path.resolve(__dirname, uri), 'utf8');
-		// For relative includes, we save the current directory and then
-		// add the uri directory to __dirname:
-		var oldDirname = __dirname;
-		__dirname = path.resolve(__dirname, path.dirname(uri));
+		var source = fs.readFileSync(path.resolve(dirname, uri), 'utf8'),
+			// For relative includes, we save the current directory and then
+			// add the uri directory to dirname:
+			prevDirname = dirname;
+		dirname = path.resolve(dirname, path.dirname(uri));
 		vm.runInContext(source, context, uri);
-		__dirname = oldDirname;
+		dirname = prevDirname;
 	}
 });
 
@@ -63,15 +67,18 @@ context.Base.each(context, function(val, key) {
 	if (val && val.prototype instanceof context.Base)
 		context.PaperScope.prototype[key] = val;
 });
-context.PaperScope.prototype['Canvas'] = context.Canvas;
+context.PaperScope.prototype.Canvas = Canvas;
 
 require.extensions['.pjs'] = function(module, uri) {
 	var source = context.PaperScript.compile(fs.readFileSync(uri, 'utf8'));
-	var envVars = 'var __dirname = \'' + path.dirname(uri) + '\';' + 
-				 'var __filename = \'' + uri + '\';';
-	vm.runInContext(envVars, context);
+	var prevDirname = context.__dirname,
+		prevFilename = context.__filename;
+	context.__dirname = path.dirname(uri);
+	context.__filename = uri;
 	var scope = new context.PaperScope();
 	context.PaperScript.evaluate(source, scope);
+	context.__dirname = prevDirname;
+	context.__filename = prevFilename;
 	module.exports = scope;
 };
 

@@ -172,7 +172,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 /*#*/ if (options.server) {
 // Node.js server based image exporting code.
 CanvasView.inject(new function() {
-	var path = require('path');
 	// Utility function that converts a number to a string with
 	// x amount of padded 0 digits:
 	function toPaddedString(number, length) {
@@ -196,7 +195,8 @@ CanvasView.inject(new function() {
 			var view = this,
 				count = 0,
 				frameDuration = 1 / param.fps,
-				lastTime = startTime = Date.now();
+				startTime = Date.now(),
+				lastTime = startTime;
 
 			// Start exporting frames by exporting the first frame:
 			exportFrame(param);
@@ -204,8 +204,8 @@ CanvasView.inject(new function() {
 			function exportFrame(param) {
 				count++;
 				var filename = param.prefix + toPaddedString(count, 6) + '.png',
-					uri = param.directory + '/' + filename;
-				var out = view.exportImage(uri, function() {
+					path = param.directory + '/' + filename;
+				var out = view.exportImage(path, function() {
 					// When the file has been closed, export the next fame:
 					var then = Date.now();
 					if (param.onProgress) {
@@ -237,11 +237,11 @@ CanvasView.inject(new function() {
 				}
 			}
 		},
-		// DOCS: View#exportImage(uri, callback);
-		exportImage: function(uri, callback) {
+
+		// DOCS: View#exportImage(path, callback);
+		exportImage: function(path, callback) {
 			this.draw();
-			// TODO: is it necessary to resolve the path?
-			var out = fs.createWriteStream(path.resolve(__dirname, uri)),
+			var out = fs.createWriteStream(path),
 				stream = this._element.createPNGStream();
 			// Pipe the png stream to the write stream:
 			stream.pipe(out);
