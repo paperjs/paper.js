@@ -361,7 +361,9 @@ new function() {
 		offset: function(item, value) {
 			// http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
 			var percentage = value.match(/(.*)%$/);
-			item.setRampPoint(percentage ? percentage[1] / 100 : value);
+			item.setRampPoint(percentage
+					? percentage[1] / 100
+					: parseFloat(value));
 		},
 
 		viewBox: function(item, value, name, node, styles) {
