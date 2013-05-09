@@ -119,6 +119,7 @@ var paper = new function() {
 
 /*#*/ if (options.svg) {
 /*#*/ include('svg/SVGStyles.js');
+/*#*/ include('svg/SVGNamespaces.js');
 /*#*/ include('svg/SVGExport.js');
 /*#*/ include('svg/SVGImport.js');
 /*#*/ } // options.svg

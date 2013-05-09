@@ -15,16 +15,12 @@
  * Paper.js DOM to a SVG DOM.
  */
 new function() {
-	var formatter = Formatter.instance,
-		namespaces = {
-			href: 'http://www.w3.org/1999/xlink',
-			xlink: 'http://www.w3.org/2000/xmlns'
-		};
+	var formatter = Formatter.instance;
 
 	function setAttributes(node, attrs) {
 		for (var key in attrs) {
 			var val = attrs[key],
-				namespace = namespaces[key];
+				namespace = SVGNamespaces[key];
 			if (typeof val === 'number')
 				val = formatter.number(val);
 			if (namespace) {
