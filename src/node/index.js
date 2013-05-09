@@ -22,6 +22,7 @@ var options = {
 	server: true,
 	svg: true,
 	parser: 'acorn',
+	// Use 'dev' for on-the fly compilation of separate files ,but update after.
 	version: 'dev'
 };
 
@@ -31,22 +32,6 @@ var win = jsdom.createWindow(),
 
 // Create the context within which we will run the source files:
 var context = vm.createContext({
-	options: options,
-	fs: fs,
-	// We need to export the local Object definition, so Base.isPlainObject()
-	// works. See http://nodejs.org/api/vm.html#vm_globals
-	Object: Object,
-	Array: Array,
-	Canvas: Canvas,
-	HTMLCanvasElement: Canvas,
-	Image: Canvas.Image,
-	// Copy over global variables:
-	window: win,
-    document: doc,
-    navigator: win.navigator,
-    console: console,
-	require: require,
-	__dirname: dirname,
 	// Used to load and run source files within the same context:
 	include: function(uri) {
 		var source = fs.readFileSync(path.resolve(dirname, uri), 'utf8'),
@@ -56,18 +41,47 @@ var context = vm.createContext({
 		dirname = path.resolve(dirname, path.dirname(uri));
 		vm.runInContext(source, context, uri);
 		dirname = prevDirname;
-	}
+	},
+	// Expose core methods and values
+	__dirname: dirname,
+	require: require,
+	options: options,
+	// Expose node modules
+	fs: fs,
+	Canvas: Canvas,
+	// Expose global browser variables:
+	HTMLCanvasElement: Canvas,
+	Image: Canvas.Image,
+	window: win,
+    document: doc,
+    navigator: win.navigator,
+    console: console
 });
 
 // Load Paper.js library files:
 context.include('paper.js');
 
-// Export all classes through PaperScope:
-context.Base.each(context, function(val, key) {
-	if (val && val.prototype instanceof context.Base)
-		context.PaperScope.prototype[key] = val;
-});
-context.PaperScope.prototype.Canvas = Canvas;
+// Since the created context fo Paper.js compilation, and the context in which
+// Node.js scripts are executed do not share the definition of Object and Array,
+// we need to redefine Base.isPlainObject() here.
+// Object(obj) === obj is a trick from underscore, but also returns true for all
+// Base objects. So we are filtering these out with an instanceof check, but
+// Include Base instances since we're using them as hashes. 
+// TODO: Benchmark the speed and consider this implementation instead of the
+// current one.
+var Base = context.Base;
+Base.isPlainObject = function(obj) {
+	return Object(obj) === obj && (!(obj instanceof Base)
+			|| Object.getPrototypeOf(obj) === Base.prototype);
+};
+
+// Expose the Canvas, XMLSerializer to paper scopes:
+Base.each({
+	Canvas: Canvas,
+	XMLSerializer: XMLSerializer
+}, function(value, key) {
+	this[key] = value;
+}, context.PaperScope.prototype);
 
 require.extensions['.pjs'] = function(module, uri) {
 	var source = context.PaperScript.compile(fs.readFileSync(uri, 'utf8'));
