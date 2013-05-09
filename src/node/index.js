@@ -100,7 +100,7 @@ options.version = parseFloat(json.version.replace(/(.)(\d)$/, '$2'));
 // current one.
 var Base = context.Base;
 Base.isPlainObject = function(obj) {
-	return Object(obj) === obj && (!(obj instanceof Base)
+	return Object(obj) === obj && !Array.isArray(obj) && (!(obj instanceof Base)
 			|| Object.getPrototypeOf(obj) === Base.prototype);
 };
 
