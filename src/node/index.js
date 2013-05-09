@@ -16,6 +16,7 @@ var fs = require('fs'),
 	// Node Canvas library: https://github.com/learnboost/node-canvas
 	Canvas = require('canvas'),
 	jsdom = require('jsdom'),
+	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml,
 	dirname = path.resolve(__dirname, '..');
 
 var options = {
@@ -29,6 +30,20 @@ var options = {
 // Create a window and document using jsdom, e.g. for exportSVG()
 var win = jsdom.createWindow(),
 	doc = win.document = jsdom.jsdom("<html><body></body></html>");
+
+// Define XMLSerializer.
+// TODO: Put this into a simple node module, with dependency on jsdom
+function XMLSerializer() {
+}
+
+XMLSerializer.prototype.serializeToString = function(node) {
+	var text = domToHtml(node);
+	// Fix a jsdom issue where linearGradient gets converted to lineargradient:
+	// https://github.com/tmpvar/jsdom/issues/620
+	return text.replace(/(linear|radial)(gradient)/g, function(all, type) {
+		return type + 'Gradient';
+	});
+};
 
 // Create the context within which we will run the source files:
 var context = vm.createContext({
