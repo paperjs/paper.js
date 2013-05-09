@@ -449,6 +449,8 @@ new function() {
 	}
 
 	function importSVG(node, clearDefs) {
+		if (typeof node === 'string')
+			node = new DOMParser().parseFromString(node, 'image/svg+xml');
 		// jsdom in Node.js uses uppercase values for nodeName...
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
