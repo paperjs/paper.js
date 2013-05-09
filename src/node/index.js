@@ -100,14 +100,12 @@ Base.each({
 
 require.extensions['.pjs'] = function(module, uri) {
 	var source = context.PaperScript.compile(fs.readFileSync(uri, 'utf8'));
-	var prevDirname = context.__dirname,
-		prevFilename = context.__filename;
-	context.__dirname = path.dirname(uri);
-	context.__filename = uri;
+	// Temporarily override __dirname and __filename
+	var envVars = 'var __dirname = \'' + path.dirname(uri) + '\';'
+			+ 'var __filename = \'' + uri + '\';';
+	vm.runInContext(envVars, context);
 	var scope = new context.PaperScope();
 	context.PaperScript.evaluate(source, scope);
-	context.__dirname = prevDirname;
-	context.__filename = prevFilename;
 	module.exports = scope;
 };
 

@@ -1,5 +1,6 @@
 require('paper');
-var paper = require('./Tadpoles');
+var paper = require('./Tadpoles.pjs');
+
 paper.view.exportFrames({
 	amount: 400,
 	directory: __dirname,
