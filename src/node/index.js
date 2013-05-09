@@ -87,8 +87,6 @@ var context = vm.createContext({
 
 // Load Paper.js library files:
 context.include('paper.js');
-// Fix version now. Remove 2nd dot, so we can make a float out of it:
-options.version = parseFloat(json.version.replace(/(.)(\d)$/, '$2'));
 
 // Since the context used for Paper.js compilation, and the context in which
 // Node.js scripts are executed do not share the definition of Object, we need
@@ -109,7 +107,9 @@ Base.isPlainObject = function(obj) {
 Base.each({
 	Canvas: Canvas,
 	XMLSerializer: XMLSerializer,
-	DOMParser: DOMParser
+	DOMParser: DOMParser,
+	// Also fix version. Remove 2nd dot, so we can make a float out of it:
+	version: parseFloat(json.version.replace(/(.)(\d)$/, '$2'))
 }, function(value, key) {
 	this[key] = value;
 }, context.PaperScope.prototype);
@@ -125,4 +125,4 @@ require.extensions['.pjs'] = function(module, uri) {
 	module.exports = scope;
 };
 
-module.exports = new context.PaperScope();
+module.exports = context.paper;

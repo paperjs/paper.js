@@ -20,5 +20,5 @@ Base.each(this, function(val, key) {
 // See paper.js for the non-dev version of this code. We cannot handle dev there
 // due to the seperate loading of all source files, which are only availabe
 // after the execution of paper.js
-paper = new PaperScope();
+var paper = new PaperScope();
 /*#*/ } // options.version == 'dev'

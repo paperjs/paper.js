@@ -127,7 +127,9 @@ var paper = new function() {
 /*#*/ include('core/PaperScript.js');
 /*#*/ include('core/initialize.js');
 
-/*#*/ if (options.version != 'dev') {
+/*#*/ if (options.server) {
+return paper;
+/*#*/ } else if (options.version != 'dev') {
 // Finally inject the classes set on 'this' into the PaperScope class and create
 // the first PaperScope and return it, all in one statement.
 // The version for 'dev' of this happens in core/initialize.js, since it depends
