@@ -17,7 +17,7 @@ var fs = require('fs'),
 	Canvas = require('canvas'),
 	jsdom = require('jsdom'),
 	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml,
-	dirname = path.resolve(__dirname, '..');
+	json = require('../../package.json');
 
 var options = {
 	server: true,
@@ -46,6 +46,7 @@ XMLSerializer.prototype.serializeToString = function(node) {
 };
 
 // Create the context within which we will run the source files:
+var dirname = path.resolve(__dirname, '..');
 var context = vm.createContext({
 	// Used to load and run source files within the same context:
 	include: function(uri) {
@@ -75,6 +76,8 @@ var context = vm.createContext({
 
 // Load Paper.js library files:
 context.include('paper.js');
+// Fix version now. Remove 2nd dot, so we can make a float out of it:
+options.version = parseFloat(json.version.replace(/(.)(\d)$/, '$2'));
 
 // Since the created context fo Paper.js compilation, and the context in which
 // Node.js scripts are executed do not share the definition of Object and Array,
