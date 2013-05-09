@@ -17,7 +17,6 @@
  */
 var DomEvent = {
 	add: function(el, events) {
-		console.log('add', el.nodeName, events);
 		for (var type in events) {
 			var func = events[type];
 			if (el.addEventListener) {
