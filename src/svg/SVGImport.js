@@ -449,7 +449,8 @@ new function() {
 	}
 
 	function importSVG(node, clearDefs) {
-		var type = node.nodeName,
+		// jsdom in Node.js uses uppercase values for nodeName...
+		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
 			item = importer && importer(node, type),
 			data = node.getAttribute('data-paper-data');

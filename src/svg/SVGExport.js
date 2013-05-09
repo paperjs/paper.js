@@ -462,10 +462,11 @@ new function() {
 	function exportDefinitions(node) {
 		if (!definitions)
 			return node;
-		// We can only use node nodes as defintion containers. Have the loop
+		// We can only use svg nodes as defintion containers. Have the loop
 		// produce one if it's a single item of another type (when calling
 		// #exportSVG() on an item rather than a whole project)
-		var container = node.nodeName == 'svg' && node,
+		// jsdom in Node.js uses uppercase values for nodeName...
+		var container = node.nodeName.toLowerCase() === 'svg' && node,
 			firstChild = container ? container.firstChild : node;
 		for (var i in definitions.svgs) {
 			if (!container) {
