@@ -10,31 +10,31 @@ function runTests() {
 
   caption = prepareTest( 'Find Curve Intersections - 10,000 times.', container );
 
-  pathA = new Path.Circle(new Point(70, 110), 50);
-  pathA.rotate( 45 );
-  pathB = new Path.Circle(new Point(160, 110), 50);
-  pathB.rotate( 45 );
-  // pathB.segments[3].point = pathB.segments[3].point.add( [10, -120] );
-  // pathB.translate( [ -20, -30 ] );
-  // pathB.segments[0].handleIn = pathB.segments[0].handleIn.add( [-100, 30] );
-  // pathB.translate( [ 20, -30 ] );
-  // testIntersection( pathA, pathB, caption );
+  // pathA = new Path.Circle(new Point(70, 110), 50);
+  // pathA.rotate( 45 );
+  // pathB = new Path.Circle(new Point(160, 110), 50);
+  // pathB.rotate( 45 );
+  // // pathB.segments[3].point = pathB.segments[3].point.add( [10, -120] );
+  // // pathB.translate( [ -20, -30 ] );
+  // // pathB.segments[0].handleIn = pathB.segments[0].handleIn.add( [-100, 30] );
+  // // pathB.translate( [ 20, -30 ] );
+  // // testIntersection( pathA, pathB, caption );
 
-  // pathA = new Path();
-  // pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
-  // pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
-  // pathA.closed = true;
-  // pathB = pathA.clone();
-  // pathB.rotate( -90 );
-  // pathA.translate( [-10,0] );
-  // pathB.translate( [10,0] );
+  pathA = new Path();
+  pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
+  pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
+  pathA.closed = true;
+  pathB = pathA.clone();
+  pathB.rotate( -90 );
+  pathA.translate( [-10,0] );
+  pathB.translate( [10,0] );
 
   window.a = pathA;
   window.b = pathB;
 
   view.draw();
 
-  window.setTimeout( function(){doTest( pathA, pathB, 1000 )}, 100 );
+  window.setTimeout( function(){doTest( pathA, pathB, 100 )}, 100 );
 
   // var v1 = [84.625,79.375,51,130.5,22.5,178,163,44];
   // var v2 = [91.81412502271213,92.91643774058434,142.93912502271212,126.54143774058434,190.43912502271212,155.04143774058434,56.43912502271214,14.541437740584342]
@@ -78,11 +78,11 @@ var pathStyleBoolean = {
 
 
 function doTest( pathA, pathB, count ){
-  // var _p1U = new Path( pathA.segments[0], pathA.segments[1] );
-  var _p1U = new Path( pathA.segments[1], pathA.segments[2] );
+  var _p1U = new Path( pathA.segments[0], pathA.segments[1] );
+  // var _p1U = new Path( pathA.segments[1], pathA.segments[2] );
   // _p1U.reverse();
-  // var _p2U = new Path( pathB.segments[0], pathB.segments[1] );
-  var _p2U = new Path( pathB.segments[3], pathB.segments[0] );
+  var _p2U = new Path( pathB.segments[0], pathB.segments[1] );
+  // var _p2U = new Path( pathB.segments[3], pathB.segments[0] );
   _p1U.style = _p2U.style = pathStyleBoolean;
   // for (var i = 0; i < crvs.length; i++) {
     // drawFatline( _p1U.curves[0].getValues() );
