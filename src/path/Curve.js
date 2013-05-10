@@ -79,7 +79,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 				// can create segments for those.
 				point1 = [arg0, arg1];
 				point2 = [arg6, arg7];
-				handle1 = [arg2 - arg0, arg7 - arg1];
+				handle1 = [arg2 - arg0, arg3 - arg1];
 				handle2 = [arg4 - arg6, arg5 - arg7];
 			}
 			this._segment1 = new Segment(point1, null, handle1);
