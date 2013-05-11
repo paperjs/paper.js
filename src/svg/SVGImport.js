@@ -19,35 +19,37 @@ new function() {
 	// objects, dealing with baseVal, and item lists.
 	// index is option, and if passed, causes a lookup in a list.
 
-	function getValue(node, key, allowNull, index) {
-		var namespace = SVGNamespaces[key];
-		var value = namespace
-				? node.getAttributeNS(namespace, key)
-				: node.getAttribute(key);
-		// Note: String values are unfortunately not stored in base.value, but
-		// in base directly, so we need to check both, also on item lists, using
-		// Base.pick(base.value, base)
-		if (index != null && value != null) {
-			var values = value.split(',');
-			value = values[index];
-			if (value == null)
-				value = values[values.length - 1];
-		}
-		if (/^[\d.+-]/.test(value))
-			value = parseFloat(value);
-		return value;
+	function getValue(node, name, isString, allowNull) {
+		var namespace = SVGNamespaces[name],
+			value = namespace
+				? node.getAttributeNS(namespace, name)
+				: node.getAttribute(name);
+		if (value == 'null')
+			value = null;
+		// Interpret value as number. Never return NaN, but 0 instead.
+		// If the value is a sequence of numbers, parseFloat will
+		// return the first occuring number, which is enough for now.
+		return value == null
+				? allowNull
+					? null
+					: isString
+						? ''
+						: 0
+				: isString
+					? value
+					: parseFloat(value);
 	}
 
-	function getPoint(node, x, y, allowNull, index) {
-		x = getValue(node, x, allowNull, index);
-		y = getValue(node, y, allowNull, index);
+	function getPoint(node, x, y, allowNull) {
+		x = getValue(node, x, false, allowNull);
+		y = getValue(node, y, false, allowNull);
 		return allowNull && x == null && y == null ? null
 				: Point.create(x || 0, y || 0);
 	}
 
-	function getSize(node, w, h, allowNull, index) {
-		w = getValue(node, w, allowNull, index);
-		h = getValue(node, h, allowNull, index);
+	function getSize(node, w, h, allowNull) {
+		w = getValue(node, w, false, allowNull);
+		h = getValue(node, h, false, allowNull);
 		return allowNull && w == null && h == null ? null
 				: Size.create(w || 0, h || 0);
 	}
@@ -181,7 +183,7 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/struct.html#ImageElement
 		image: function (node) {
-			var raster = new Raster(getValue(node, 'href'));
+			var raster = new Raster(getValue(node, 'href', true));
 			raster.attach('load', function() {
 				var size = getSize(node, 'width', 'height');
 				this.setSize(size);
@@ -208,7 +210,7 @@ new function() {
 			// TODO: Support overflow and width, height, in combination with
 			// overflow: hidden. Paper.js currently does not suport PlacedSymbol
 			// clipping, but perhaps it should?
-			var id = (getValue(node, 'href') || '').substring(1),
+			var id = (getValue(node, 'href', true) || '').substring(1),
 				definition = definitions[id],
 				point = getPoint(node, 'x', 'y');
 			// Use place if we're dealing with a symbol:
@@ -258,8 +260,8 @@ new function() {
 			// TODO: Support for these is missing in Paper.js right now
 			// rotate: character rotation
 			// lengthAdjust:
-			var text = new PointText(getPoint(node, 'x', 'y', false, 0)
-					.add(getPoint(node, 'dx', 'dy', false, 0)));
+			var text = new PointText(getPoint(node, 'x', 'y', false)
+					.add(getPoint(node, 'dx', 'dy', false)));
 			text.setContent(node.textContent.trim() || '');
 			return text;
 		}

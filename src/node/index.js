@@ -87,28 +87,29 @@ var context = vm.createContext({
 
 // Load Paper.js library files:
 context.include('paper.js');
-// Fix version now. Remove 2nd dot, so we can make a float out of it:
-options.version = parseFloat(json.version.replace(/(.)(\d)$/, '$2'));
 
-// Since the created context fo Paper.js compilation, and the context in which
-// Node.js scripts are executed do not share the definition of Object and Array,
-// we need to redefine Base.isPlainObject() here.
-// Object(obj) === obj is a trick from underscore, but also returns true for all
-// Base objects. So we are filtering these out with an instanceof check, but
-// Include Base instances since we're using them as hashes. 
+// Since the context used for Paper.js compilation, and the context in which
+// Node.js scripts are executed do not share the definition of Object, we need
+// to redefine Base.isPlainObject() here.
+// So instead of checking for Object.prototype, we're checking
+// proto.constructor.name for 'Object'
 // TODO: Benchmark the speed and consider this implementation instead of the
-// current one.
+// current one in straps.js too
 var Base = context.Base;
 Base.isPlainObject = function(obj) {
-	return Object(obj) === obj && !Array.isArray(obj) && (!(obj instanceof Base)
-			|| Object.getPrototypeOf(obj) === Base.prototype);
+	var proto = obj !== null && typeof obj === 'object'
+			&& Object.getPrototypeOf(obj);
+	return proto && (proto.constructor.name === 'Object'
+			|| proto === Base.prototype);
 };
 
 // Expose the Canvas, XMLSerializer to paper scopes:
 Base.each({
 	Canvas: Canvas,
 	XMLSerializer: XMLSerializer,
-	DOMParser: DOMParser
+	DOMParser: DOMParser,
+	// Also fix version. Remove 2nd dot, so we can make a float out of it:
+	version: parseFloat(json.version.replace(/(.)(\d)$/, '$2'))
 }, function(value, key) {
 	this[key] = value;
 }, context.PaperScope.prototype);
@@ -124,4 +125,4 @@ require.extensions['.pjs'] = function(module, uri) {
 	module.exports = scope;
 };
 
-module.exports = new context.PaperScope();
+module.exports = context.paper;
