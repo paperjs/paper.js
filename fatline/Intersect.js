@@ -1,11 +1,22 @@
 
 var TOLERANCE = 10e-6;
 
+// TODO:
 function getIntersections2( path1, path2 ){
     var locations = [];
     return locations;
 }
 
+/**
+ * This method is analogous to paperjs#Curve.getIntersections
+ * @param  {[type]} v1
+ * @param  {[type]} v2
+ * @param  {[type]} curve1
+ * @param  {[type]} curve2
+ * @param  {[type]} locations
+ * @param  {[type]} _v1t      - Only used for recusion
+ * @param  {[type]} _v2t      - Only used for recusion
+ */
 paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1t, _v2t ) {
     // cache the original parameter range.
     _v1t = _v1t || { t1: 0, t2: 1 };
@@ -212,8 +223,14 @@ function _clipBezierFatLine( v1, v2, v2t ){
     return 1;
 }
 
+/**
+ * Calculate the convex hull for the non-paramertic bezier curve D(ti, di(t)).
+ * The ti is equally spaced across [0..1] — [0, 1/3, 2/3, 1] for
+ * di(t), [dq0, dq1, dq2, dq3] respectively. In other words our CVs for the curve are
+ * already sorted in the X axis in the increasing order. Calculating convex-hull is
+ * much easier than a set of arbitrary points.
+ */
 function _convexhull( dq0, dq1, dq2, dq3 ){
-    // Prepare the convex hull for D(ti, di(t))
     var distq1 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.3333333333333333, dq1 );
     var distq2 = _getSignedDist( 0.0, dq0, 1.0, dq3, 0.6666666666666666, dq2 );
     // Check if [1/3, dq1] and [2/3, dq2] are on the same side of line [0,dq0, 1,dq3]
