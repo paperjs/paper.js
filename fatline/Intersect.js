@@ -1,9 +1,28 @@
 
 var TOLERANCE = 10e-6;
 
-// TODO:
+/**
+ * This method is analogous to paperjs#PathItem.getIntersections
+ */
 function getIntersections2( path1, path2 ){
-    var locations = [];
+    // First check the bounds of the two paths. If they don't intersect,
+    // we don't need to iterate through their curves.
+    if (!path1.getBounds().touches(path2.getBounds()))
+        return [];
+    var locations = [],
+        curves1 = path1.getCurves(),
+        curves2 = path2.getCurves(),
+        length2 = curves2.length,
+        values2 = [];
+    for (var i = 0; i < length2; i++)
+        values2[i] = curves2[i].getValues();
+    for (var i = 0, l = curves1.length; i < l; i++) {
+        var curve1 = curves1[i],
+            values1 = curve1.getValues();
+        for (var j = 0; j < length2; j++)
+            Curve.getIntersections2(values1, values2[j], curve1, curves2[j],
+                    locations);
+    }
     return locations;
 }
 
