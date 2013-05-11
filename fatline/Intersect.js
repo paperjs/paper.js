@@ -1,6 +1,5 @@
 
 var TOLERANCE = 10e-6;
-var _tolerence = TOLERANCE;
 
 function getIntersections2( path1, path2 ){
     var locations = [];
@@ -22,9 +21,7 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
     // Loop until both parameter range converge. We have to handle the degenerate case
     // seperately, where fat-line clipping can become numerically unstable when one of the
     // curves has converged to a point and the other hasn't.
-    while( Math.abs(v1t.t2 - v1t.t1) > _tolerence || Math.abs(v2t.t2 - v2t.t1) > _tolerence ){
-    // while( !(v1t.t1 >= v1t.t2 - _tolerence && v1t.t1 <= v1t.t2 + _tolerence) ||
-    //     !(v2t.t1 >= v2t.t2 - _tolerence && v2t.t1 <= v2t.t2 + _tolerence) ){
+    while( Math.abs(v1t.t2 - v1t.t1) > TOLERANCE || Math.abs(v2t.t2 - v2t.t1) > TOLERANCE ){
         // First we clip v2 with v1's fat-line
         tmpt.t1 = v2t.t1; tmpt.t2 = v2t.t2;
         var intersects1 = _clipBezierFatLine( _v1, _v2, tmpt );
@@ -33,6 +30,7 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
             return;
         } else if( intersects1 > 0 ){
             // Get the clipped parts from the original v2, to avoid cumulative errors
+            // ...and reuse some objects.
             v2t.t1 = tmpt.t1; v2t.t2 = tmpt.t2;
             _v2 = Curve.getPart( v2, v2t.t1, v2t.t2 );
         }
@@ -73,13 +71,13 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
         // because they have no control points at all, or are "flat enough"
         // If the curve was flat in a previous iteration, we don't need to
         // recalculate since it does not need further subdivision then.
-        if( Math.abs(v1t.t2 - v1t.t1) <= _tolerence && Math.abs(v2t.t2 - v2t.t1) <= _tolerence ){
+        if( Math.abs(v1t.t2 - v1t.t1) <= TOLERANCE && Math.abs(v2t.t2 - v2t.t1) <= TOLERANCE ){
             locations.push(new CurveLocation(curve1, v1t.t1, null, curve2));
             return;
         } else {
             //!code from: paperjs#Curve.getIntersections method
-            if ( Curve.isFlatEnough(_v1, _tolerence)
-                && Curve.isFlatEnough(_v2, _tolerence) ) {
+            if ( Curve.isFlatEnough(_v1, TOLERANCE)
+                && Curve.isFlatEnough(_v2, TOLERANCE) ) {
                 var point = Line.intersect(
                                 _v1[0], _v1[1], _v1[6], _v1[7],
                                 _v2[0], _v2[1], _v2[6], _v2[7], false);
@@ -158,6 +156,8 @@ function _clipBezierFatLine( v1, v2, v2t ){
     for (i = 0, len = Dt.length; i < len; i++) {
         var Dtl = Dt[i];
         // ixd = _intersectLines( Dtl, dmina);
+        // TODO: Optimize: Avaoid creating point objects in Line.intersect?!
+        //  speeds up by 30%!
         ixd = Line.intersect( Dtl[0], Dtl[1], Dtl[2], Dtl[3], 0, dmin, 2, dmin, false);
         if( ixd ){
             ixdx = ixd.x;
@@ -259,7 +259,6 @@ function _convexhull( dq0, dq1, dq2, dq3 ){
         }
         // compare cross products of these vectors to determine, if
         // point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
-        var vcrossa1a2_a1Max = vqa1a2x * vqa1Maxy - vqa1a2y * vqa1Maxx;
         var vcrossa1a2_a1Min = vqa1a2x * vqa1Miny - vqa1a2y * vqa1Minx;
         var vcrossa1Max_a1Min = vqa1Maxx * vqa1Miny - vqa1Maxy * vqa1Minx;
         if( vcrossa1Max_a1Min * vcrossa1a2_a1Min < 0 ){

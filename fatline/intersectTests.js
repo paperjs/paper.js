@@ -34,7 +34,7 @@ function runTests() {
 
   view.draw();
 
-  window.setTimeout( function(){doTest( pathA, pathB, 100 )}, 100 );
+  window.setTimeout( function(){doTest( pathA, pathB, 1000 )}, 10 );
 
   // var v1 = [84.625,79.375,51,130.5,22.5,178,163,44];
   // var v2 = [91.81412502271213,92.91643774058434,142.93912502271212,126.54143774058434,190.43912502271212,155.04143774058434,56.43912502271214,14.541437740584342]
