@@ -18,7 +18,7 @@ if (window.performance.now) {
 }
 
 function runTests() {
-  var caption, pathA, pathB, group, testname, testdata = [];
+  var caption, pathA, pathB, group, testdata = [];
 
   var container = document.getElementById( 'container' );
 
@@ -32,288 +32,282 @@ function runTests() {
       console.log('\n' + testName);
       paper.setup(canvas);
       var paths = handler();
-      testBooleanStatic(paths[0], paths[1]);
+      testIntersections(paths[0], paths[1], caption, testName, testdata);
+      if( paths.length > 2 ){
+        plotData();
+      }
     }, 0);
     return caption;
   }
 
-  testname = 'Overlapping circles';
-  caption = prepareTest( testname, container );
-  pathA = new Path.Circle(new Point(80, 110), 50);
-  pathB = new Path.Circle(new Point(150, 110), 70);
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Overlapping circles', function(){
+    pathA = new Path.Circle(new Point(80, 110), 50);
+    pathB = new Path.Circle(new Point(150, 110), 70);
+    return [pathA, pathB];
+  });
 
-  testname = 'Polygon and square';
-  caption = prepareTest( testname, container );
-  pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
-  pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Polygon and square', function(){
+    pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
+    pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
+    return [pathA, pathB];
+  });
 
-  testname = 'Circle and square (overlaps exactly on existing segments)';
-  caption = prepareTest( testname, container );
-  pathA = new Path.Circle(new Point(110, 110), 80);
-  pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Circle and square (overlaps exactly on existing segments)', function(){
+    pathA = new Path.Circle(new Point(110, 110), 80);
+    pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
+    return [pathA, pathB];
+  });
 
-  testname = 'Circle and square (existing segments overlaps on curves)';
-  caption = prepareTest( testname, container );
-  pathA = new Path.Circle(new Point(110, 110), 80);
-  pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Circle and square (existing segments overlaps on curves)', function(){
+    pathA = new Path.Circle(new Point(110, 110), 80);
+    pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
+    return [pathA, pathB];
+  });
 
-  testname = 'Square and square (one segment overlaps on a line)';
-  caption = prepareTest( testname, container );
-  pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
-  pathA.rotate( 45 );
-  pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Square and square (one segment overlaps on a line)', function(){
+    pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
+    pathA.rotate( 45 );
+    pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
+    return [pathA, pathB];
+  });
 
-  testname = 'Rectangle and rectangle (overlaps exactly on existing curves)';
-  caption = prepareTest( testname, container );
-  pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
-  pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Rectangle and rectangle (overlaps exactly on existing curves)', function(){
+    pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
+    pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
+    return [pathA, pathB];
+  });
 
-  testname = 'Circle and banana (multiple intersections within same curve segment)';
-  caption = prepareTest( testname, container );
-  pathA = new Path.Circle(new Point(80, 110), 80);
-  pathB = new Path.Circle(new Point(130, 110), 80 );
-  pathB.segments[3].point = pathB.segments[3].point.add( [ 0, -120 ] );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Circle and banana (multiple intersections within same curve segment)', function(){
+    pathA = new Path.Circle(new Point(80, 110), 80);
+    pathB = new Path.Circle(new Point(130, 110), 80 );
+    pathB.segments[3].point = pathB.segments[3].point.add( [ 0, -120 ] );
+    return [pathA, pathB];
+  });
 
-  testname = 'Overlapping stars 1';
-  caption = prepareTest( testname, container );
-  pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
-  pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Overlapping stars 1', function(){
+    pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
+    pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
+    return [pathA, pathB];
+  });
 
-  testname = 'Overlapping stars 2';
-  caption = prepareTest( testname, container );
-  pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
-  pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Overlapping stars 2', function(){
+    pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
+    pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
+    return [pathA, pathB];
+  });
 
-  testname = 'Circles overlap exactly over each other';
-  // caption = prepareTest( testname, container );
-  // pathA = new Path.Circle(new Point(110, 110), 100);
-  // pathB = new Path.Circle(new Point(110, 110), 100 );
-  // // pathB.translate([0.5,0])
-  // testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('Maximum possible intersections between 2 cubic bezier curve segments - 9', function(){
+    pathA = new Path();
+    pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
+    pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
+    pathA.closed = true;
+    pathB = pathA.clone();
+    pathB.rotate( -90 );
+    pathA.translate( [-10,0] );
+    pathB.translate( [10,0] );
+    return [pathA, pathB];
+  });
 
-  testname = 'Maximum possible intersections between 2 cubic bezier curve segments - 9';
-  caption = prepareTest( testname, container );
-  pathA = new Path();
-  pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
-  pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
-  pathA.closed = true;
-  pathB = pathA.clone();
-  pathB.rotate( -90 );
-  pathA.translate( [-10,0] );
-  pathB.translate( [10,0] );
-  testIntersections( pathA, pathB, caption, testname, testdata );
-  // annotatePath( pathA, null, '#008' );
-  // annotatePath( pathB, null, '#800' );
-  view.draw();
+  runTest('SVG gears', function(){
+      group  = paper.project.importSVG( document.getElementById( 'svggears' ) );
+      pathA = group.children[0];
+      pathB = group.children[1];
+      return [pathA, pathB];
+    });
 
-  testname = 'SVG gears';
-  caption = prepareTest( testname, container );
-  group  = paper.project.importSVG( document.getElementById( 'svggears' ) );
-  pathA = group.children[0];
-  pathB = group.children[1];
-  testIntersections( pathA, pathB, caption, testname, testdata );
+    runTest('Glyphs imported from SVG', function(){
+      group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
+      pathA = group.children[0];
+      pathB = group.children[1];
+      return [pathA, pathB];
+    });
 
-  testname = 'Glyphs imported from SVG';
-  caption = prepareTest( testname, container );
-  group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
-  pathA = group.children[0];
-  pathB = group.children[1];
-  testIntersections( pathA, pathB, caption, testname, testdata );
+    runTest('CompoundPaths 1', function(){
+      group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+      pathA = group.children[0];
+      pathB = group.children[1];
+      return [pathA, pathB];
+    });
 
-  testname = 'CompoundPaths 1';
-  caption = prepareTest( testname, container );
-  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  pathA = group.children[0];
-  pathB = group.children[1];
-  testIntersections( pathA, pathB, caption, testname, testdata );
+    runTest('CompoundPaths 2 - holes', function(){
+      group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+      pathA = group.children[0];
+      pathB = new CompoundPath();
+      group.children[1].clockwise = true;
+      pathB.addChild(group.children[1]);
+      var npath = new Path.Circle([110, 110], 30);
+      pathB.addChild( npath );
+      return [pathA, pathB];
+    });
 
-  testname = 'CompoundPaths 2 - holes';
-  caption = prepareTest( testname, container );
-  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  pathA = group.children[0];
-  pathB = new CompoundPath();
-  group.children[1].clockwise = true;
-  pathB.addChild(group.children[1]);
-  var npath = new Path.Circle([110, 110], 30);
-  pathB.addChild( npath );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+    runTest('CompoundPaths 3 !', function(){
+      group  = paper.project.importSVG( document.getElementById( 'svggreenland' ) );
+      pathA = group.children[0];
+      pathB = group.children[1];
+      pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
+    // pathA.scale( 2 );
+    // pathB.scale( 2 );
+    return [pathA, pathB];
+  });
 
-  testname = 'CompoundPaths 3 !';
-  caption = prepareTest( testname, container );
-  group  = paper.project.importSVG( document.getElementById( 'svggreenland' ) );
-  pathA = group.children[0];
-  pathB = group.children[1];
-  pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
-  // pathA.scale( 2 );
-  // pathB.scale( 2 );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('CompoundPaths 4 - holes and islands 1', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = new CompoundPath();
+    group.children[1].clockwise = true;
+    pathB.addChild(group.children[1]);
+    var npath = new Path.Circle([40, 80], 20);
+    pathB.addChild( npath );
+    return [pathA, pathB];
+  });
 
-  testname = 'CompoundPaths 4 - holes and islands 1';
-  caption = prepareTest( testname, container );
-  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  pathA = group.children[0];
-  pathB = new CompoundPath();
-  group.children[1].clockwise = true;
-  pathB.addChild(group.children[1]);
-  var npath = new Path.Circle([40, 80], 20);
-  pathB.addChild( npath );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('CompoundPaths 5 - holes and islands 2', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = new CompoundPath();
+    group.children[1].clockwise = true;
+    pathB.addChild(group.children[1]);
+    var npath = new Path.Circle([40, 80], 20);
+    pathB.addChild( npath );
+    npath = new Path.Circle([120, 110], 30);
+    pathB.addChild( npath );
+    return [pathA, pathB];
+  });
 
-  testname = 'CompoundPaths 5 - holes and islands 2';
-  caption = prepareTest( testname, container );
-  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  pathA = group.children[0];
-  pathB = new CompoundPath();
-  group.children[1].clockwise = true;
-  pathB.addChild(group.children[1]);
-  var npath = new Path.Circle([40, 80], 20);
-  pathB.addChild( npath );
-  npath = new Path.Circle([120, 110], 30);
-  pathB.addChild( npath );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('CompoundPaths 6 - holes and islands 3', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = new CompoundPath();
+    var npath = new Path.Circle([110, 110], 100);
+    pathB.addChild( npath );
+    npath = new Path.Circle([110, 110], 60);
+    pathB.addChild( npath );
+    npath = new Path.Circle([110, 110], 30);
+    pathB.addChild( npath );
+    return [pathA, pathB];
+  });
 
-  testname = 'CompoundPaths 6 - holes and islands 3';
-  caption = prepareTest( testname, container );
-  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  pathA = group.children[0];
-  pathB = new CompoundPath();
-  var npath = new Path.Circle([110, 110], 100);
-  pathB.addChild( npath );
-  npath = new Path.Circle([110, 110], 60);
-  pathB.addChild( npath );
-  npath = new Path.Circle([110, 110], 30);
-  pathB.addChild( npath );
-  testIntersections( pathA, pathB, caption, testname, testdata );
-
-  testname = 'CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)';
-  caption = prepareTest( testname, container );
-  pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
-  pathB = new CompoundPath();
-  pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
-  pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
-  // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
-  testIntersections( pathA, pathB, caption, testname, testdata );
+  runTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', function(){
+    pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
+    pathB = new CompoundPath();
+    pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
+    pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
+    // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
+    return [pathA, pathB, true];
+  });
 
 
   // Plot the run times
-  prepareTest( 'Results', container, true );
-  var x = 80.5, y = 15.5, width = 500, height = 190, i, txt, ny,
-    yy = y + height, xx = x + width;
-  var ppaperfill = new Path(), pfatfill = new Path();
-  var ppaper = new Path(), pfat = new Path();
-  var max = testdata.reduce(function( a, b ){ return Math.max( a, b.paperTime + b.fatTime ); }, 0) + 20;
-  var vscale = height / max, hscale = width / testdata.length;
-  var caxes = '#999', ctxt = '#222', ctxt2 = '#555', cpaper = '#268BD2', cpaperfill ='#B5E1FF',
-    cfat = '#D33682', cfatfill = '#FFADD4';
-  new Path.Line( x, yy, xx, yy ).style.strokeColor = caxes;
-  new Path.Line( x, yy, x, y ).style.strokeColor = caxes;
-  for( i = 0; i < 10 ; i++ ){
-    ny = yy - vscale * max * i / 10;
-    new Path.Line( x, ny, x-5, ny ).style.strokeColor = caxes;
-    txt = new PointText( [x-10, ny] );
+  function plotData(){
+    prepareTest( 'Results', container, true );
+    var x = 80.5, y = 15.5, width = 500, height = 190, i, txt, ny,
+      yy = y + height, xx = x + width;
+    var ppaperfill = new Path(), pfatfill = new Path();
+    var ppaper = new Path(), pfat = new Path();
+    var max = testdata.reduce(function( a, b ){ return Math.max( a, b.paperTime + b.fatTime ); }, 0) + 20;
+    var vscale = height / max, hscale = width / testdata.length;
+    var caxes = '#999', ctxt = '#222', ctxt2 = '#555', cpaper = '#268BD2', cpaperfill ='#B5E1FF',
+      cfat = '#D33682', cfatfill = '#FFADD4';
+    new Path.Line( x, yy, xx, yy ).style.strokeColor = caxes;
+    new Path.Line( x, yy, x, y ).style.strokeColor = caxes;
+    for( i = 0; i < 10 ; i++ ){
+      ny = yy - vscale * max * i / 10;
+      new Path.Line( x, ny, x-5, ny ).style.strokeColor = caxes;
+      txt = new PointText( [x-10, ny] );
+      txt.justification = 'right';
+      txt.fillColor = (i%2)? ctxt: ctxt2;
+      txt.content = (max * i / 10).toFixed(1) + ((!i)? ' ms' : '');
+    }
+    ppaperfill.add( new Segment( x, yy ) );
+    pfatfill.add( new Segment( x, yy ) );
+    var vx = x, clr = ctxt;
+    var coords = [], avgPaper = 0, avgFat = 0;
+    testdata.map(function(data){
+      avgPaper += data.paperTime;
+      ny = yy - (data.paperTime + data.fatTime) * vscale;
+      ppaper.add( new Segment([vx, ny]) );
+      ppaperfill.add( new Segment([vx, ny]) );
+      var np = new Point( vx, ny );
+      np._data = data;
+      np._datatype = 'paper';
+      coords.push( np );
+      avgFat += data.fatTime;
+      ny = yy - (data.fatTime) * vscale;
+      pfat.add( new Segment([vx, ny]) );
+      pfatfill.add( new Segment([vx, ny]) );
+      np = new Point( vx, ny );
+      np._data = data;
+      np._datatype = 'fat';
+      coords.push( np );
+
+      new Path.Line( vx, yy, vx, yy + 5 ).style.strokeColor = caxes;
+      txt = new PointText( [vx, yy+18] );
+      txt.justification = 'left';
+      txt.fillColor = clr;
+      txt.content = data.name;
+      txt.rotate( 30, new Point(vx, yy+10) );
+
+      clr = ( clr === ctxt )? ctxt2 : ctxt;
+      vx += hscale;
+    });
+    ppaper.style.strokeWidth = 2;
+    ppaper.style.strokeColor = cpaper;
+    ppaperfill.add( new Segment( xx, yy ) );
+    ppaperfill.closed = true;
+    ppaperfill.style.fillColor = cpaperfill;
+    pfat.style.strokeWidth = 2;
+    pfat.style.strokeColor = cfat;
+    pfatfill.add( new Segment( xx, yy ) );
+    pfatfill.closed = true;
+    pfatfill.style.fillColor = cfatfill;
+
+    avgPaper/= testdata.length;
+    avgFat/= testdata.length;
+    ny = Math.round(yy - avgPaper * vscale) + 0.5;
+    new Path.Line(x, ny, xx, ny).style.strokeColor = cpaper;
+    txt = new PointText( [xx, ny] );
     txt.justification = 'right';
-    txt.fillColor = (i%2)? ctxt: ctxt2;
-    txt.content = (max * i / 10).toFixed(1) + ((!i)? ' ms' : '');
-  }
-  ppaperfill.add( new Segment( x, yy ) );
-  pfatfill.add( new Segment( x, yy ) );
-  var vx = x, clr = ctxt;
-  var coords = [], avgPaper = 0, avgFat = 0;
-  testdata.map(function(data){
-    avgPaper += data.paperTime;
-    ny = yy - (data.paperTime + data.fatTime) * vscale;
-    ppaper.add( new Segment([vx, ny]) );
-    ppaperfill.add( new Segment([vx, ny]) );
-    var np = new Point( vx, ny );
-    np._data = data;
-    np._datatype = 'paper';
-    coords.push( np );
-    avgFat += data.fatTime;
-    ny = yy - (data.fatTime) * vscale;
-    pfat.add( new Segment([vx, ny]) );
-    pfatfill.add( new Segment([vx, ny]) );
-    np = new Point( vx, ny );
-    np._data = data;
-    np._datatype = 'fat';
-    coords.push( np );
+    txt.fillColor = cpaper;
+    txt.content = avgPaper.toFixed(1);
+    ny = Math.round(yy - avgFat * vscale) + 0.5;
+    new Path.Line(x, ny, xx, ny).style.strokeColor = cfat;
+    txt = new PointText( [xx, ny] );
+    txt.justification = 'right';
+    txt.fillColor = cfat;
+    txt.content = avgFat.toFixed(1);
 
-    new Path.Line( vx, yy, vx, yy + 5 ).style.strokeColor = caxes;
-    txt = new PointText( [vx, yy+18] );
-    txt.justification = 'left';
-    txt.fillColor = clr;
-    txt.content = data.name;
-    txt.rotate( 30, new Point(vx, yy+10) );
-
-    clr = ( clr === ctxt )? ctxt2 : ctxt;
-    vx += hscale;
-  });
-  ppaper.style.strokeWidth = 2;
-  ppaper.style.strokeColor = cpaper;
-  ppaperfill.add( new Segment( xx, yy ) );
-  ppaperfill.closed = true;
-  ppaperfill.style.fillColor = cpaperfill;
-  pfat.style.strokeWidth = 2;
-  pfat.style.strokeColor = cfat;
-  pfatfill.add( new Segment( xx, yy ) );
-  pfatfill.closed = true;
-  pfatfill.style.fillColor = cfatfill;
-
-  avgPaper/= testdata.length;
-  avgFat/= testdata.length;
-  ny = Math.round(yy - avgPaper * vscale) + 0.5;
-  new Path.Line(x, ny, xx, ny).style.strokeColor = cpaper;
-  txt = new PointText( [xx, ny] );
-  txt.justification = 'right';
-  txt.fillColor = cpaper;
-  txt.content = avgPaper.toFixed(1);
-  ny = Math.round(yy - avgFat * vscale) + 0.5;
-  new Path.Line(x, ny, xx, ny).style.strokeColor = cfat;
-  txt = new PointText( [xx, ny] );
-  txt.justification = 'right';
-  txt.fillColor = cfat;
-  txt.content = avgFat.toFixed(1);
-
-  var tool = new Tool();
-  tool.onMouseMove = function( e ){
-    var len = coords.length;
-    var data = null, dist = Infinity, dst, pnt = null, type = 'paper';
-    while( len-- ){
-      dst = e.point.getDistance( coords[len], true );
-      if( dst < dist ){
-        pnt = coords[len];
-        data = coords[len]._data;
-        type = coords[len]._datatype;
-        dist = dst;
+    var tool = new Tool();
+    tool.onMouseMove = function( e ){
+      var len = coords.length;
+      var data = null, dist = Infinity, dst, pnt = null, type = 'paper';
+      while( len-- ){
+        dst = e.point.getDistance( coords[len], true );
+        if( dst < dist ){
+          pnt = coords[len];
+          data = coords[len]._data;
+          type = coords[len]._datatype;
+          dist = dst;
+        }
       }
-    }
-    if( dist > 500 ){ return; }
-    if( pnt && data ){
-      var p = new Path.Line( pnt.x+0.5, y, pnt.x+0.5, yy );
-      p.style.strokeColor = '#000';
-      p.removeOnMove();
-      p = new Path.Circle( pnt, 3 );
-      p.style.fillColor = (type === 'fat')? '#D33682' :'#268BD2';
-      p.removeOnMove();
-      var txt = new PointText( [ 500, 20 ] );
-      txt.content = 'paper.js : ' + data.paperTime.toFixed(1) + ' ms';
-      txt.fillColor = '#222';
-      txt.removeOnMove();
-      txt = new PointText( [ 500, 36 ] );
-      txt.content = 'fatline :  ' + data.fatTime.toFixed(1) + ' ms';
-      txt.fillColor = '#222';
-      txt.removeOnMove();
-    }
-  };
-
+      if( dist > 500 ){ return; }
+      if( pnt && data ){
+        var p = new Path.Line( pnt.x+0.5, y, pnt.x+0.5, yy );
+        p.style.strokeColor = '#000';
+        p.removeOnMove();
+        p = new Path.Circle( pnt, 3 );
+        p.style.fillColor = (type === 'fat')? '#D33682' :'#268BD2';
+        p.removeOnMove();
+        var txt = new PointText( [ 500, 20 ] );
+        txt.content = 'paper.js : ' + data.paperTime.toFixed(1) + ' ms';
+        txt.fillColor = '#222';
+        txt.removeOnMove();
+        txt = new PointText( [ 500, 36 ] );
+        txt.content = 'fatline :  ' + data.fatTime.toFixed(1) + ' ms';
+        txt.fillColor = '#222';
+        txt.removeOnMove();
+      }
+    };
+  }
 
 
   function prepareTest( testName, parentNode, _big ){
