@@ -40,6 +40,14 @@ function runTests() {
     return caption;
   }
 
+  var caption = document.createElement('h3');
+  caption.appendChild(document.createTextNode("Randomised tests"));
+  container.appendChild(caption);
+  var count = 100, randomData = [];
+  while( count-- ){
+
+  }
+
   runTest('Overlapping circles', function(){
     pathA = new Path.Circle(new Point(80, 110), 50);
     pathB = new Path.Circle(new Point(150, 110), 70);
@@ -115,36 +123,36 @@ function runTests() {
       return [pathA, pathB];
     });
 
-    runTest('Glyphs imported from SVG', function(){
-      group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
-      pathA = group.children[0];
-      pathB = group.children[1];
-      return [pathA, pathB];
-    });
+  runTest('Glyphs imported from SVG', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
+    pathA = group.children[0];
+    pathB = group.children[1];
+    return [pathA, pathB];
+  });
 
-    runTest('CompoundPaths 1', function(){
-      group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-      pathA = group.children[0];
-      pathB = group.children[1];
-      return [pathA, pathB];
-    });
+  runTest('CompoundPaths 1', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = group.children[1];
+    return [pathA, pathB];
+  });
 
-    runTest('CompoundPaths 2 - holes', function(){
-      group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-      pathA = group.children[0];
-      pathB = new CompoundPath();
-      group.children[1].clockwise = true;
-      pathB.addChild(group.children[1]);
-      var npath = new Path.Circle([110, 110], 30);
-      pathB.addChild( npath );
-      return [pathA, pathB];
-    });
+  runTest('CompoundPaths 2 - holes', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = new CompoundPath();
+    group.children[1].clockwise = true;
+    pathB.addChild(group.children[1]);
+    var npath = new Path.Circle([110, 110], 30);
+    pathB.addChild( npath );
+    return [pathA, pathB];
+  });
 
-    runTest('CompoundPaths 3 !', function(){
-      group  = paper.project.importSVG( document.getElementById( 'svggreenland' ) );
-      pathA = group.children[0];
-      pathB = group.children[1];
-      pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
+  runTest('CompoundPaths 3 !', function(){
+    group  = paper.project.importSVG( document.getElementById( 'svggreenland' ) );
+    pathA = group.children[0];
+    pathB = group.children[1];
+    pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
     // pathA.scale( 2 );
     // pathB.scale( 2 );
     return [pathA, pathB];
@@ -197,6 +205,9 @@ function runTests() {
   });
 
 
+  // Do randomised tests
+
+
   // Plot the run times
   function plotData(){
     prepareTest( 'Results', container, true );
@@ -221,7 +232,8 @@ function runTests() {
     ppaperfill.add( new Segment( x, yy ) );
     pfatfill.add( new Segment( x, yy ) );
     var vx = x, clr = ctxt;
-    var coords = [], avgPaper = 0, avgFat = 0;
+    var coords = [], avgPaper = 0, avgFat = 0,
+      maxSpeedup = -Infinity, minSpeedup = Infinity, avgSpeedup = 0;
     testdata.map(function(data){
       avgPaper += data.paperTime;
       ny = yy - (data.paperTime + data.fatTime) * vscale;
@@ -240,12 +252,23 @@ function runTests() {
       np._datatype = 'fat';
       coords.push( np );
 
+      var speedup = data.paperTime / data.fatTime;
+      if( speedup > maxSpeedup ) maxSpeedup = speedup;
+      if( speedup < minSpeedup ) minSpeedup = speedup;
+      avgSpeedup += speedup;
+
       new Path.Line( vx, yy, vx, yy + 5 ).style.strokeColor = caxes;
       txt = new PointText( [vx, yy+18] );
       txt.justification = 'left';
       txt.fillColor = clr;
       txt.content = data.name;
       txt.rotate( 30, new Point(vx, yy+10) );
+
+      if( !data.success ){
+        var p = new Path.Line( vx, y, vx, yy );
+        p.style.strokeWidth = 5;
+        p.style.strokeColor = '#f00';
+      }
 
       clr = ( clr === ctxt )? ctxt2 : ctxt;
       vx += hscale;
@@ -263,6 +286,9 @@ function runTests() {
 
     avgPaper/= testdata.length;
     avgFat/= testdata.length;
+    avgSpeedup = Math.round(avgSpeedup / testdata.length);
+    maxSpeedup = Math.round( maxSpeedup );
+    minSpeedup = Math.round( minSpeedup );
     ny = Math.round(yy - avgPaper * vscale) + 0.5;
     new Path.Line(x, ny, xx, ny).style.strokeColor = cpaper;
     txt = new PointText( [xx, ny] );
@@ -275,6 +301,23 @@ function runTests() {
     txt.justification = 'right';
     txt.fillColor = cfat;
     txt.content = avgFat.toFixed(1);
+
+    txt = new PointText([610, 75]);
+    txt.justification = 'center';
+    txt.fillColor = '#000';
+    txt.content = 'fatline vs subdiv';
+    new Path.Rectangle( [600, 90], [20, 100] ).style = { fillColor: '#ccc', strokeColor: '#000' };
+    ny = 90 + (avgSpeedup - minSpeedup) * 100.0 / (maxSpeedup - minSpeedup);
+    new Path.Line( [600, ny], [620, ny] ).style = { strokeWidth: 2, strokeColor: '#000' };
+    txt = new PointText([630, 95]);
+    txt.fillColor = '#000';
+    txt.content = maxSpeedup;
+    txt = new PointText([630, 195]);
+    txt.fillColor = '#000';
+    txt.content = minSpeedup;
+    txt = new PointText([630, ny+5]);
+    txt.fillColor = '#000';
+    txt.content = avgSpeedup + ' times';
 
     var tool = new Tool();
     tool.onMouseMove = function( e ){
@@ -298,11 +341,11 @@ function runTests() {
         p.style.fillColor = (type === 'fat')? '#D33682' :'#268BD2';
         p.removeOnMove();
         var txt = new PointText( [ 500, 20 ] );
-        txt.content = 'paper.js : ' + data.paperTime.toFixed(1) + ' ms';
+        txt.content = 'subdiv : ' + data.paperTime.toFixed(1) + ' ms';
         txt.fillColor = '#222';
         txt.removeOnMove();
         txt = new PointText( [ 500, 36 ] );
-        txt.content = 'fatline :  ' + data.fatTime.toFixed(1) + ' ms';
+        txt.content = 'fatline : ' + data.fatTime.toFixed(1) + ' ms';
         txt.fillColor = '#222';
         txt.removeOnMove();
       }
@@ -344,43 +387,53 @@ var pathStyleBoolean = {
 
 
 // Better if path1 and path2 fit nicely inside a 200x200 pixels rect
-function testIntersections( path1, path2, caption, testname, testdata) {
-  var maxCount = 10, count = maxCount, st, t1, t2, ixsPaper, ixsFatline;
+function testIntersections( path1, path2, caption, testname, testdata, nomark) {
+  var i, l, maxCount = 10, count = maxCount, st, t1, t2,
+    ixsPaper, ixsFatline, success = false;
   try{
     path1.style = path2.style = pathStyleNormal;
 
-    console.time('paperjs x ' + maxCount);
+    if( !nomark ) console.time('paperjs x ' + maxCount);
     st = getTimestamp();
     while(count--){
       ixsPaper = path1.getIntersections( path2 );
     }
     t1 = (getTimestamp() - st) / maxCount;
-    console.timeEnd('paperjs x ' + maxCount);
+    if( !nomark ) console.timeEnd('paperjs x ' + maxCount);
 
     count = maxCount;
-    console.time('fatline x ' + maxCount);
+    if( !nomark ) console.time('fatline x ' + maxCount);
     st = getTimestamp();
     while(count--){
       ixsFatline = getIntersections2( path1, path2 );
     }
     t2 = (getTimestamp() - st) / maxCount;
-    console.timeEnd('fatline x ' + maxCount);
+    if( !nomark ) console.timeEnd('fatline x ' + maxCount);
 
-    markIntersections( ixsPaper, '#00f', 'paperjs' );
-    markIntersections( ixsFatline, '#f00', 'fatline' );
+    var equal = true;
+    for(i=0, l=ixsFatline.length; i<l && ixsPaper[i]; i++){
+      equal = equal && ixsPaper[i].point.equals( ixsPaper[i].point );
+    }
+    success = ( ixsPaper.length === ixsFatline.length ) && equal;
+
+    if( !nomark ){
+      markIntersections( ixsPaper, '#00f', 'paperjs' );
+      markIntersections( ixsFatline, '#f00', 'fatline' );
+    }
   } catch(e){
+    console.timeEnd('paperjs x ' + maxCount);
+    console.timeEnd('fatline x ' + maxCount);
     t1 = t2 = 0;
     console.error( e.name + ": " + e.message );
     if( caption ) { caption.className += ' error'; }
   }finally{
-    console.timeEnd(caption + ' paperjs');
-    console.timeEnd(caption + ' fatline');
     view.draw();
     testdata.push({
       name: testname,
+      ratio: ixsFatline.length / (path1.curves.length + path2.curves.length),
       paperTime: t1,
       fatTime: t2,
-      success: ixsPaper.length === ixsFatline.length
+      success: success
     });
   }
 }
