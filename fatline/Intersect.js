@@ -22,9 +22,18 @@ function getIntersections2( path1, path2 ){
     for (var i = 0, l = curves1.length; i < l; i++) {
         var curve1 = curves1[i],
             values1 = curve1.getValues();
-        for (var j = 0; j < length2; j++)
-            Curve.getIntersections2(values1, values2[j], curve1, curves2[j],
-                    locations);
+        for (var j = 0; j < length2; j++){
+            value2 = values2[j];
+            var v1Linear = Curve.isLinear(values1);
+            var v2Linear = Curve.isLinear(value2);
+            if( v1Linear && v2Linear ){
+                _getLineLineIntersection(values1, value2, curve1, curves2[j], locations);
+            } else if ( v1Linear || v2Linear ){
+                _getCurveLineIntersection(values1, value2, curve1, curves2[j], locations);
+            } else {
+                Curve.getIntersections2(values1, value2, curve1, curves2[j], locations);
+            }
+        }
     }
     return locations;
 }
@@ -56,32 +65,6 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
     var _v2 = Curve.getPart( v2, v2t.t1, v2t.t2 );
 // markCurve( _v1, '#f0f', true );
 // markCurve( _v2, '#0ff', false );
-    // Handle special cases where one or both curves are linear
-    // TODO: this check could be made before calling this method, since
-    // during further recursive calls we don't need to check this.
-    var v1Linear = Curve.isLinear(v1);
-    var v2Linear = Curve.isLinear(v2);
-    if( v1Linear && v2Linear ){
-        var point = Line.intersect(
-                        _v1[0], _v1[1], _v1[6], _v1[7],
-                        _v2[0], _v2[1], _v2[6], _v2[7], false);
-        if (point) {
-            // point = new Point( point );
-            // Avoid duplicates when hitting segments (closed paths too)
-            var first = locations[0],
-                last = locations[locations.length - 1];
-            if ((!first || !point.equals(first._point))
-                    && (!last || !point.equals(last._point)))
-                // Passing null for parameter leads to lazy determination
-                // of parameter values in CurveLocation#getParameter()
-                // only once they are requested.
-                locations.push(new CurveLocation(curve1, null, point, curve2));
-        }
-        return;
-    } else if( v1Linear || v2Linear ) {
-        _getCurveLineIntersection( v1, v2, curve1, curve2, locations );
-        return;
-    }
     var nuT, parts, tmpt = { t1:null, t2:null }, iterate = 0;
     // Loop until both parameter range converge. We have to handle the degenerate case
     // seperately, where fat-line clipping can become numerically unstable when one of the
@@ -159,20 +142,7 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
             var curve1Flat = Curve.isFlatEnough( _v1, /*#=*/ TOLERANCE );
             var curve2Flat = Curve.isFlatEnough( _v2, /*#=*/ TOLERANCE );
             if ( curve1Flat && curve2Flat ) {
-                var point = Line.intersect(
-                                _v1[0], _v1[1], _v1[6], _v1[7],
-                                _v2[0], _v2[1], _v2[6], _v2[7], false);
-                if (point) {
-                    // Avoid duplicates when hitting segments (closed paths too)
-                    var first = locations[0],
-                        last = locations[locations.length - 1];
-                    if ((!first || !point.equals(first._point))
-                            && (!last || !point.equals(last._point)))
-                        // Passing null for parameter leads to lazy determination
-                        // of parameter values in CurveLocation#getParameter()
-                        // only once they are requested.
-                        locations.push(new CurveLocation(curve1, null, point, curve2));
-                }
+                _getLineLineIntersection( _v1, _v2, curve1, curve2, locations );
                 return;
             } else if( curve1Flat || curve2Flat ){
                 // Use curve line intersection method while specifying which curve to be treated as line
@@ -284,9 +254,7 @@ function _clipBezierFatLine( v1, v2, v2t ){
     }
 // Debug: Plot the non-parametric graph and hull
 // plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )
-
     if( tmin === 0.0 && tmax === 1.0 ){
-        // FIXME: Not sure about this! Needs testing.
         return 0;
     }
     // tmin and tmax are within the range (0, 1). We need to project it to the original
@@ -454,31 +422,12 @@ function plotD_vs_t( x, y, arr, arr2, v, dmin, dmax, tmin, tmax, yscale, tvalue 
     view.draw();
 }
 
-// This is basically an "unrolled" version of two methods from paperjs'
-// Line class —#Line.getSide() and #Line.getDistance()
-// If we create Point and Line objects, the code slows down significantly!
+// This is basically an "unrolled" version of #Line.getDistance() with sign
 // May be a static method could be better!
 var _getSignedDist = function( a1x, a1y, a2x, a2y, bx, by ){
     var vx = a2x - a1x, vy = a2y - a1y;
-    var bax = bx - a1x, bay =  by - a1y;
-    var ba2x = bx - a2x, ba2y =  by - a2y;
-    // ba *cross* v
-    var cvb = bax * vy - bay * vx;
-    if (cvb === 0) {
-        // ba *dot* v
-        cvb = bax * vx + bay * vy;
-        if (cvb > 0) {
-            cvb = (bax - vx) * vx + (bay -vy) * vy;
-            if (cvb < 0){ cvb = 0; }
-        }
-    }
-    var side = cvb < 0 ? -1 : cvb > 0 ? 1 : 0;
-    // Calculate the distance
     var m = vy / vx, b = a1y - ( m * a1x );
-    var dist = Math.abs( by - ( m * bx ) - b ) / Math.sqrt( m*m + 1 );
-    var dista1 = Math.sqrt( bax * bax + bay * bay );
-    var dista2 = Math.sqrt( ba2x * ba2x + ba2y * ba2y );
-    return side * Math.min( dist, dista1, dista2 );
+    return ( by - ( m * bx ) - b ) / Math.sqrt( m*m + 1 );
 };
 
 /**
@@ -526,5 +475,22 @@ var _getCurveLineIntersection = function( v1, v2, curve1, curve2, locations, _ot
                     locations.push( new CurveLocation( curve1, root, point, curve2 ) );
             }
         }
+    }
+};
+
+var _getLineLineIntersection = function( v1, v2, curve1, curve2, locations ){
+    var point = Line.intersect(
+                        v1[0], v1[1], v1[6], v1[7],
+                        v2[0], v2[1], v2[6], v2[7], false);
+    if (point) {
+        // Avoid duplicates when hitting segments (closed paths too)
+        var first = locations[0],
+            last = locations[locations.length - 1];
+        if ((!first || !point.equals(first._point))
+                && (!last || !point.equals(last._point)))
+            // Passing null for parameter leads to lazy determination
+            // of parameter values in CurveLocation#getParameter()
+            // only once they are requested.
+            locations.push(new CurveLocation(curve1, null, point, curve2));
     }
 };
