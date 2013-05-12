@@ -75,11 +75,11 @@ function runTests() {
   // annotatePath( pathB, null, '#800' );
   view.draw();
 
-  // caption = prepareTest( 'SVG gears', container );
-  // group  = paper.project.importSVG( document.getElementById( 'svggears' ) );
-  // pathA = group.children[0];
-  // pathB = group.children[1];
-  // testIntersections( pathA, pathB, caption );
+  caption = prepareTest( 'SVG gears', container );
+  group  = paper.project.importSVG( document.getElementById( 'svggears' ) );
+  pathA = group.children[0];
+  pathB = group.children[1];
+  testIntersections( pathA, pathB, caption );
 
   caption = prepareTest( 'Glyphs imported from SVG', container );
   group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
