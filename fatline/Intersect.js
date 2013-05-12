@@ -46,8 +46,8 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
     // Get the clipped parts from the original curve, to avoid cumulative errors
     var _v1 = Curve.getPart( v1, v1t.t1, v1t.t2 );
     var _v2 = Curve.getPart( v2, v2t.t1, v2t.t2 );
-markCurve( _v1, '#f0f', true );
-markCurve( _v2, '#0ff', false );
+// markCurve( _v1, '#f0f', true );
+// markCurve( _v2, '#0ff', false );
     // Handle special cases where one or both curves are linear
     // TODO: this check could be made before calling this method, since
     // during further recursive calls we don't need to check this.
@@ -91,7 +91,7 @@ markCurve( _v2, '#0ff', false );
             v2t.t1 = tmpt.t1; v2t.t2 = tmpt.t2;
             _v2 = Curve.getPart( v2, v2t.t1, v2t.t2 );
         }
-markCurve( _v2, '#0ff', false );
+// markCurve( _v2, '#0ff', false );
         // Next we clip v1 with nuv2's fat-line
         tmpt.t1 = v1t.t1; tmpt.t2 = v1t.t2;
         var intersects2 = _clipBezierFatLine( _v2, _v1, tmpt );
@@ -103,7 +103,7 @@ markCurve( _v2, '#0ff', false );
             v1t.t1 = tmpt.t1; v1t.t2 = tmpt.t2;
             _v1 = Curve.getPart( v1, v1t.t1, v1t.t2 );
         }
-markCurve( _v1, '#f0f', true );
+// markCurve( _v1, '#f0f', true );
         // Get the clipped parts from the original v1
         // Check if there could be multiple intersections
         if( intersects1 < 0 || intersects2 < 0 ){
@@ -249,10 +249,10 @@ function _clipBezierFatLine( v1, v2, v2t ){
     var tmin, tmax;
     if( dq3 > dq0 ){
         // if dmin or dmax doesnot intersect with the convexhull, reset the parameter limits
-        if( tmindmin === Infinity ) tmindmin = 0;
-        if( tmaxdmin === -Infinity )  tmaxdmin = 0;
-        if( tmindmax === Infinity ) tmindmax = 1;
-        if( tmaxdmax === -Infinity )  tmaxdmax = 1;
+        if( tmindmin === Infinity ) tmindmin = 1e-11;
+        if( tmaxdmin === -Infinity )  tmaxdmin = 1e-11;
+        if( tmindmax === Infinity ) tmindmax = 0.9999999999999999;
+        if( tmaxdmax === -Infinity )  tmaxdmax = 0.9999999999999999;
         tmin = Math.min( tmindmin, tmaxdmin );
         tmax = Math.max( tmindmax, tmaxdmax );
         if( Math.min( tmindmax, tmaxdmax ) < tmin )
@@ -261,10 +261,10 @@ function _clipBezierFatLine( v1, v2, v2t ){
             tmax = 1;
     }else{
         // if dmin or dmax doesnot intersect with the convexhull, reset the parameter limits
-        if( tmindmin === Infinity ) tmindmin = 1;
-        if( tmaxdmin === -Infinity ) tmaxdmin = 1;
-        if( tmindmax === Infinity ) tmindmax = 0;
-        if( tmaxdmax === -Infinity ) tmaxdmax = 0;
+        if( tmindmin === Infinity ) tmindmin = 0.9999999999999999;
+        if( tmaxdmin === -Infinity ) tmaxdmin = 0.9999999999999999;
+        if( tmindmax === Infinity ) tmindmax = 1e-11;
+        if( tmaxdmax === -Infinity ) tmaxdmax = 1e-11;
         tmax = Math.max( tmindmin, tmaxdmin );
         tmin = Math.min( tmindmax, tmaxdmax );
         if( Math.min( tmindmin, tmaxdmin ) < tmin )
@@ -273,7 +273,7 @@ function _clipBezierFatLine( v1, v2, v2t ){
             tmax = 1;
     }
 // Debug: Plot the non-parametric graph and hull
-plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )
+// plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )
 
     if( tmin === 0.0 && tmax === 1.0 ){
         // FIXME: Not sure about this! Needs testing.
