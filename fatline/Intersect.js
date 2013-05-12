@@ -46,9 +46,11 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
     // Get the clipped parts from the original curve, to avoid cumulative errors
     var _v1 = Curve.getPart( v1, v1t.t1, v1t.t2 );
     var _v2 = Curve.getPart( v2, v2t.t1, v2t.t2 );
-// markCurve( _v1, '#f0f', true );
-// markCurve( _v2, '#0ff', false );
-    // Handle special cases where one or both curves are actually lines
+markCurve( _v1, '#f0f', true );
+markCurve( _v2, '#0ff', false );
+    // Handle special cases where one or both curves are linear
+    // TODO: this check could be made before calling this method, since
+    // during further recursive calls we don't need to check this.
     var v1Linear = Curve.isLinear(v1);
     var v2Linear = Curve.isLinear(v2);
     if( v1Linear && v2Linear ){
@@ -67,11 +69,9 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
                 // only once they are requested.
                 locations.push(new CurveLocation(curve1, null, point, curve2));
         }
-        // This method can find only one intersection at a time and we just found it.
         return;
     } else if( v1Linear || v2Linear ) {
-        // if only one of the curves are linear we just use the binary subdivision for now!
-        Curve.getIntersections( v1, v2, curve1, curve2, locations );
+        _getCurveLineIntersection( v1, v2, curve1, curve2, locations );
         return;
     }
     var nuT, parts, tmpt = { t1:null, t2:null };
@@ -91,7 +91,7 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
             v2t.t1 = tmpt.t1; v2t.t2 = tmpt.t2;
             _v2 = Curve.getPart( v2, v2t.t1, v2t.t2 );
         }
-// markCurve( _v2, '#0ff', false );
+markCurve( _v2, '#0ff', false );
         // Next we clip v1 with nuv2's fat-line
         tmpt.t1 = v1t.t1; tmpt.t2 = v1t.t2;
         var intersects2 = _clipBezierFatLine( _v2, _v1, tmpt );
@@ -103,7 +103,7 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
             v1t.t1 = tmpt.t1; v1t.t2 = tmpt.t2;
             _v1 = Curve.getPart( v1, v1t.t1, v1t.t2 );
         }
-// markCurve( _v1, '#f0f', true );
+markCurve( _v1, '#f0f', true );
         // Get the clipped parts from the original v1
         // Check if there could be multiple intersections
         if( intersects1 < 0 || intersects2 < 0 ){
@@ -123,32 +123,36 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
                 return;
             }
         }
-        // Check if one of the parameter range has converged completely. Now things could get only worse
-        //  if we iterate more for the other curve to converge if it hasn't yet happened so.
+        // We need to bailout of clipping and try a numerically stable method if
+        // any of the following are true.
+        //  1. One of the parameter ranges is converged to a point.
+        //  2. Both of the parameter ranges have converged reasonably well ( according to TOLERENCE ).
+        //  3. One of the parameter range is converged enough so that it is *flat enough* to
+        //      calculate line curve intersection implicitly.
+        //
+        // Check if one of the parameter range has converged completely to a point.
+        // Now things could get only worse if we iterate more for the other
+        // curve to converge if it hasn't yet happened so.
         if( Math.abs(v1t.t2 - v1t.t1) < EPSILON ){
-            locations.push(new CurveLocation(curve1, v1t.t1, curve1.getPoint(v1t.t1), curve2));
+            locations.push(new CurveLocation(curve1, v1t.t1, curve1.getPointAt(v1t.t1, true), curve2));
             return;
         }else if( Math.abs(v2t.t2 - v2t.t1) < EPSILON ){
-            locations.push(new CurveLocation(curve1, null, curve2.getPoint(v1t.t1), curve2));
+            locations.push(new CurveLocation(curve1, null, curve2.getPointAt(v1t.t1, true), curve2));
             return;
         }
-        // Check to see if either parameter ranges have converged or else,
-        // see if both curves are flat enough to be treated as lines, either
-        // because they have no control points at all, or are "flat enough"
-        // If the curve was flat in a previous iteration, we don't need to
-        // recalculate since it does not need further subdivision then.
+        // Check to see if both parameter ranges have converged or else,
+        // see if either or both of the curves are flat enough to be treated as lines
         if( Math.abs(v1t.t2 - v1t.t1) <= TOLERANCE || Math.abs(v2t.t2 - v2t.t1) <= TOLERANCE ){
-            locations.push(new CurveLocation(curve1, v1t.t1, curve1.getPoint(v1t.t1), curve2));
+            locations.push(new CurveLocation(curve1, v1t.t1, curve1.getPointAt(v1t.t1, true), curve2));
             return;
         } else {
-            //!code from: paperjs#Curve.getIntersections method
-            if (Curve.isFlatEnough(v1, /*#=*/ TOLERANCE)
-                && Curve.isFlatEnough(v2, /*#=*/ TOLERANCE)) {
+            var curve1Flat = Curve.isFlatEnough( _v1, /*#=*/ TOLERANCE );
+            var curve2Flat = Curve.isFlatEnough( _v2, /*#=*/ TOLERANCE );
+            if ( curve1Flat && curve2Flat ) {
                 var point = Line.intersect(
                                 _v1[0], _v1[1], _v1[6], _v1[7],
                                 _v2[0], _v2[1], _v2[6], _v2[7], false);
                 if (point) {
-                    // point = new Point( point );
                     // Avoid duplicates when hitting segments (closed paths too)
                     var first = locations[0],
                         last = locations[locations.length - 1];
@@ -159,7 +163,10 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
                         // only once they are requested.
                         locations.push(new CurveLocation(curve1, null, point, curve2));
                 }
-                // This method can find only one intersection at a time and we just found it.
+                return;
+            } else if( curve1Flat || curve2Flat ){
+                // Use curve line intersection method while specifying which curve to be treated as line
+                _getCurveLineIntersection( _v1, _v2, curve1, curve2, locations, curve1Flat );
                 return;
             }
         }
@@ -208,28 +215,6 @@ function _clipBezierFatLine( v1, v2, v2t ){
     // If the fatlines don't overlap, we have no intersections!
     if( dmin > maxdist || dmax < mindist ){
         return 0;
-    // } else {
-    //     // Calculate the alternate fatline and check if the curves overlap
-    //     // The alternate fatline is perpendicular to line [p0, p3] and passes through p0
-    //     // this fatline extends d1 and d2 from point p0
-    //     var pvx = p3y - p0y, pvy = p3x - p0x;
-    //     var len = Math.sqrt( pvx*pvx + pvy*pvy ), scale1 = d1/len, scale2 = d2/len;
-    //     var pv1x = p0x + pvx * scale1, pv1y = p0y + pvy * scale1;
-    //     var pv2x = p0x + pvx * scale2, pv2y = p0y + pvy * scale2;
-    //     var pdmin = 0;
-    //     var pdmax = _getSignedDist( pv1x, pv1y, pv2x, pv2y, p3x, p3y );
-    //     // Calculate the distance of Q from the perpendicular fatline
-    //     var pdq0 = _getSignedDist( pv1x, pv1y, pv2x, pv2y, q0x, q0y );
-    //     var pdq1 = _getSignedDist( pv1x, pv1y, pv2x, pv2y, q1x, q1y );
-    //     var pdq2 = _getSignedDist( pv1x, pv1y, pv2x, pv2y, q2x, q2y );
-    //     var pdq3 = _getSignedDist( pv1x, pv1y, pv2x, pv2y, q3x, q3y );
-    //     // Find the minimum and maximum distances from l,
-    //     // this is useful for checking whether the curves intersect with each other or not.
-    //     var mindist = Math.min( pdq0, pdq1, pdq2, pdq3 );
-    //     var maxdist = Math.max( pdq0, pdq1, pdq2, pdq3 );
-    //     if( pdmin > maxdist || pdmax < mindist ){
-    //         return 0;
-    //     }
     }
     // Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
     var Dt  = _convexhull( dq0, dq1, dq2, dq3 );
@@ -244,18 +229,17 @@ function _clipBezierFatLine( v1, v2, v2t ){
     for (i = 0, len = Dt.length; i < len; i++) {
         var Dtl = Dt[i];
         // ixd = _intersectLines( Dtl, dmina);
-        // TODO: Optimize: Avaoid creating point objects in Line.intersect?!
-        //  speeds up by 30%!
-        ixd = Line.intersect( Dtl[0], Dtl[1], Dtl[2], Dtl[3], 0, dmin, 2, dmin, false);
+        // TODO: Optimize: Avaoid creating point objects in Line.intersect?! - speeds up by 30%!
+        ixd = Line.intersectRaw( Dtl[0], Dtl[1], Dtl[2], Dtl[3], 0, dmin, 2, dmin, false);
         if( ixd ){
-            ixdx = ixd.x;
+            ixdx = ixd[0];
             tmindmin = ( ixdx < tmindmin )? ixdx : tmindmin;
             tmaxdmin = ( ixdx > tmaxdmin )? ixdx : tmaxdmin;
         }
         // ixd = _intersectLines( Dtl, dmaxa);
-        ixd = Line.intersect( Dtl[0], Dtl[1], Dtl[2], Dtl[3], 0, dmax, 2, dmax, false);
+        ixd = Line.intersectRaw( Dtl[0], Dtl[1], Dtl[2], Dtl[3], 0, dmax, 2, dmax, false);
         if( ixd ){
-            ixdx = ixd.x;
+            ixdx = ixd[0];
             tmindmax = ( ixdx < tmindmax )? ixdx : tmindmax;
             tmaxdmax = ( ixdx > tmaxdmax )? ixdx : tmaxdmax;
         }
@@ -264,12 +248,11 @@ function _clipBezierFatLine( v1, v2, v2t ){
     // intersection with v1 lies within.
     var tmin, tmax;
     if( dq3 > dq0 ){
-        // if dmin doesnot intersect with the convexhull, reset the parameter limits to 0
-        tmindmin = ( tmindmin === Infinity )? 0 : tmindmin;
-        tmaxdmin = ( tmaxdmin === -Infinity )? 0 : tmaxdmin;
-        // if dmax doesnot intersect with the convexhull, reset the parameter limits to 1
-        tmindmax = ( tmindmax === Infinity )? 1 : tmindmax;
-        tmaxdmax = ( tmaxdmax === -Infinity )? 1 : tmaxdmax;
+        // if dmin or dmax doesnot intersect with the convexhull, reset the parameter limits
+        if( tmindmin === Infinity ) tmindmin = 0;
+        if( tmaxdmin === -Infinity )  tmaxdmin = 0;
+        if( tmindmax === Infinity ) tmindmax = 1;
+        if( tmaxdmax === -Infinity )  tmaxdmax = 1;
         tmin = Math.min( tmindmin, tmaxdmin );
         tmax = Math.max( tmindmax, tmaxdmax );
         if( Math.min( tmindmax, tmaxdmax ) < tmin )
@@ -277,12 +260,11 @@ function _clipBezierFatLine( v1, v2, v2t ){
         if( Math.max( tmindmin, tmaxdmin ) > tmax )
             tmax = 1;
     }else{
-        // if dmin doesnot intersect with the convexhull, reset the parameter limits to 1
-        tmindmin = ( tmindmin === Infinity )? 1 : tmindmin;
-        tmaxdmin = ( tmaxdmin === -Infinity )? 1 : tmaxdmin;
-        // if dmax doesnot intersect with the convexhull, reset the parameter limits to 0
-        tmindmax = ( tmindmax === Infinity )? 0 : tmindmax;
-        tmaxdmax = ( tmaxdmax === -Infinity )? 0 : tmaxdmax;
+        // if dmin or dmax doesnot intersect with the convexhull, reset the parameter limits
+        if( tmindmin === Infinity ) tmindmin = 1;
+        if( tmaxdmin === -Infinity ) tmaxdmin = 1;
+        if( tmindmax === Infinity ) tmindmax = 0;
+        if( tmaxdmax === -Infinity ) tmaxdmax = 0;
         tmax = Math.max( tmindmin, tmaxdmin );
         tmin = Math.min( tmindmax, tmaxdmax );
         if( Math.min( tmindmin, tmaxdmin ) < tmin )
@@ -291,8 +273,10 @@ function _clipBezierFatLine( v1, v2, v2t ){
             tmax = 1;
     }
 // Debug: Plot the non-parametric graph and hull
-// plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )
+plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )
+
     if( tmin === 0.0 && tmax === 1.0 ){
+        // FIXME: Not sure about this! Needs testing.
         return 0;
     }
     // tmin and tmax are within the range (0, 1). We need to project it to the original
@@ -404,7 +388,6 @@ function drawFatline( v1 ) {
         dmin = 4 * Math.min( 0, d1, d2 ) / 9.0;
         dmax = 4 * Math.max( 0, d1, d2 ) / 9.0;
     }
-
     var ll = new Path.Line( v1[0], v1[1], v1[6], v1[7] );
     window.__p3.push( ll );
     window.__p3[window.__p3.length-1].style.strokeColor = new Color( 0,0,0.9, 0.8);
@@ -472,6 +455,7 @@ var _getSignedDist = function( a1x, a1y, a2x, a2y, bx, by ){
     // ba *cross* v
     var cvb = bax * vy - bay * vx;
     if (cvb === 0) {
+        // ba *dot* v
         cvb = bax * vx + bay * vy;
         if (cvb > 0) {
             cvb = (bax - vx) * vx + (bay -vy) * vy;
@@ -492,8 +476,13 @@ var _getSignedDist = function( a1x, a1y, a2x, a2y, bx, by ){
  * because of paperjs Numerical class. We can rotate the curve and line so that
  * the line is on X axis, and solve the implicit equations for X axis and the curve
  */
-var _getCurveLineIntersection = function( vc, vl, curve1, curve2, locations ){
-    var i, root, point;
+var _getCurveLineIntersection = function( v1, v2, curve1, curve2, locations, _other ){
+    var i, root, point, vc = v1, vl = v2;
+    var other = ( _other === undefined )? Curve.isLinear( v1 ) : _other;
+    if( other ){
+        vl = v1;
+        vc = v2;
+    }
     var l1x = vl[0], l1y = vl[1], l2x = vl[6], l2y = vl[7];
     // rotate both the curve and line around l1 so that line is on x axis
     var lvx = l2x - l1x, lvy = l2y - l1y;
@@ -518,7 +507,8 @@ var _getCurveLineIntersection = function( vc, vl, curve1, curve2, locations ){
             // We do have a point on the infinite line. Check if it falls on the line *segment*.
             if( point.x  >= 0 && point.x <= rl2x ){
                 // The actual intersection point
-                point = curve1.getPointAt( root, true );
+                point = Curve.evaluate(vc, root, true, 0);
+                if( other ) root = null;
                 var first = locations[0],
                 last = locations[locations.length - 1];
                 if ((!first || !point.equals(first._point))
@@ -528,4 +518,3 @@ var _getCurveLineIntersection = function( vc, vl, curve1, curve2, locations ){
         }
     }
 };
-
