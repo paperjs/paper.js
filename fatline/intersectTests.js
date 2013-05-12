@@ -4,11 +4,11 @@ paper.install(window);
 /**
  * http://stackoverflow.com/questions/6875625/does-javascript-provide-a-high-resolution-timer
  */
-if (window.performance.now) {
+if (window.performance && window.performance.now) {
   console.log("Using high performance timer");
   getTimestamp = function() { return window.performance.now(); };
 } else {
-  if (window.performance.webkitNow) {
+  if (window.performance && window.performance.webkitNow) {
     console.log("Using webkit high performance timer");
     getTimestamp = function() { return window.performance.webkitNow(); };
   } else {
@@ -307,7 +307,7 @@ function runTests() {
     txt.fillColor = '#000';
     txt.content = 'fatline vs subdiv';
     new Path.Rectangle( [600, 90], [20, 100] ).style = { fillColor: '#ccc', strokeColor: '#000' };
-    ny = 90 + (avgSpeedup - minSpeedup) * 100.0 / (maxSpeedup - minSpeedup);
+    ny = 190 - (avgSpeedup - minSpeedup) * 100.0 / (maxSpeedup - minSpeedup);
     new Path.Line( [600, ny], [620, ny] ).style = { strokeWidth: 2, strokeColor: '#000' };
     txt = new PointText([630, 95]);
     txt.fillColor = '#000';
