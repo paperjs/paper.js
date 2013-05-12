@@ -22,6 +22,21 @@ function runTests() {
 
   var container = document.getElementById( 'container' );
 
+  function runTest(testName, handler) {
+    var caption = document.createElement('h3');
+    var canvas = document.createElement('canvas');
+    caption.appendChild(document.createTextNode(testName));
+    container.appendChild(caption);
+    container.appendChild(canvas);
+    setTimeout(function() {
+      console.log('\n' + testName);
+      paper.setup(canvas);
+      var paths = handler();
+      testBooleanStatic(paths[0], paths[1]);
+    }, 0);
+    return caption;
+  }
+
   testname = 'Overlapping circles';
   caption = prepareTest( testname, container );
   pathA = new Path.Circle(new Point(80, 110), 50);
@@ -201,8 +216,8 @@ function runTests() {
     cfat = '#D33682', cfatfill = '#FFADD4';
   new Path.Line( x, yy, xx, yy ).style.strokeColor = caxes;
   new Path.Line( x, yy, x, y ).style.strokeColor = caxes;
-  for( i = 0; i < 9 ; i++ ){
-    ny = yy - vscale * height * i / 10;
+  for( i = 0; i < 10 ; i++ ){
+    ny = yy - vscale * max * i / 10;
     new Path.Line( x, ny, x-5, ny ).style.strokeColor = caxes;
     txt = new PointText( [x-10, ny] );
     txt.justification = 'right';
@@ -212,8 +227,9 @@ function runTests() {
   ppaperfill.add( new Segment( x, yy ) );
   pfatfill.add( new Segment( x, yy ) );
   var vx = x, clr = ctxt;
-  var coords = [];
+  var coords = [], avgPaper = 0, avgFat = 0;
   testdata.map(function(data){
+    avgPaper += data.paperTime;
     ny = yy - (data.paperTime + data.fatTime) * vscale;
     ppaper.add( new Segment([vx, ny]) );
     ppaperfill.add( new Segment([vx, ny]) );
@@ -221,6 +237,7 @@ function runTests() {
     np._data = data;
     np._datatype = 'paper';
     coords.push( np );
+    avgFat += data.fatTime;
     ny = yy - (data.fatTime) * vscale;
     pfat.add( new Segment([vx, ny]) );
     pfatfill.add( new Segment([vx, ny]) );
@@ -249,6 +266,21 @@ function runTests() {
   pfatfill.add( new Segment( xx, yy ) );
   pfatfill.closed = true;
   pfatfill.style.fillColor = cfatfill;
+
+  avgPaper/= testdata.length;
+  avgFat/= testdata.length;
+  ny = Math.round(yy - avgPaper * vscale) + 0.5;
+  new Path.Line(x, ny, xx, ny).style.strokeColor = cpaper;
+  txt = new PointText( [xx, ny] );
+  txt.justification = 'right';
+  txt.fillColor = cpaper;
+  txt.content = avgPaper.toFixed(1);
+  ny = Math.round(yy - avgFat * vscale) + 0.5;
+  new Path.Line(x, ny, xx, ny).style.strokeColor = cfat;
+  txt = new PointText( [xx, ny] );
+  txt.justification = 'right';
+  txt.fillColor = cfat;
+  txt.content = avgFat.toFixed(1);
 
   var tool = new Tool();
   tool.onMouseMove = function( e ){
