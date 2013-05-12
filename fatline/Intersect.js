@@ -487,3 +487,45 @@ var _getSignedDist = function( a1x, a1y, a2x, a2y, bx, by ){
     return side * Math.min( dist, dista1, dista2 );
 };
 
+/**
+ * Intersections between curve and line becomes rather simple here mostly
+ * because of paperjs Numerical class. We can rotate the curve and line so that
+ * the line is on X axis, and solve the implicit equations for X axis and the curve
+ */
+var _getCurveLineIntersection = function( vc, vl, curve1, curve2, locations ){
+    var i, root, point;
+    var l1x = vl[0], l1y = vl[1], l2x = vl[6], l2y = vl[7];
+    // rotate both the curve and line around l1 so that line is on x axis
+    var lvx = l2x - l1x, lvy = l2y - l1y;
+    // Angle with x axis (1, 0)
+    var angle = Math.atan2( -lvy, lvx ), sina = Math.sin( angle ), cosa = Math.cos( angle );
+    // rotated line and curve values
+    // (rl1x, rl1y) = (0, 0)
+    var rl2x = lvx * cosa - lvy * sina, rl2y = lvy * cosa + lvx * sina;
+    var rvc = [];
+    for( i=0; i<8; i+=2 ){
+        var vcx = vc[i] - l1x, vcy = vc[i+1] - l1y;
+        rvc.push( vcx * cosa - vcy * sina );
+        rvc.push( vcy * cosa + vcx * sina );
+    }
+    var roots = [];
+    Curve.solveCubic(rvc, 1, 0, roots);
+    i = roots.length;
+    while( i-- ){
+        root = roots[i];
+        if( root >= 0 && root <= 1 ){
+            point = Curve.evaluate(rvc, root, true, 0);
+            // We do have a point on the infinite line. Check if it falls on the line *segment*.
+            if( point.x  >= 0 && point.x <= rl2x ){
+                // The actual intersection point
+                point = curve1.getPointAt( root, true );
+                var first = locations[0],
+                last = locations[locations.length - 1];
+                if ((!first || !point.equals(first._point))
+                        && (!last || !point.equals(last._point)))
+                    locations.push( new CurveLocation( curve1, root, point, curve2 ) );
+            }
+        }
+    }
+};
+
