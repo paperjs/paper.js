@@ -18,7 +18,7 @@ if (window.performance && window.performance.now) {
 }
 
 function runTests() {
-  var caption, pathA, pathB, group, testdata = [];
+  var caption, pathA, pathB, group, testdata = [], testQueued = 0, testExecuted = 0;;
 
   var container = document.getElementById( 'container' );
 
@@ -28,12 +28,14 @@ function runTests() {
     caption.appendChild(document.createTextNode(testName));
     container.appendChild(caption);
     container.appendChild(canvas);
+    ++testQueued;
     setTimeout(function() {
       console.log('\n' + testName);
       paper.setup(canvas);
       var paths = handler();
       testIntersections(paths[0], paths[1], caption, testName, testdata);
-      if( paths.length > 2 ){
+      testExecuted++;
+      if( testExecuted === testQueued ){
         plotData();
       }
     }, 0);
@@ -201,7 +203,7 @@ function runTests() {
     pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
     pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
     // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
-    return [pathA, pathB, true];
+    return [pathA, pathB];
   });
 
 
@@ -275,12 +277,12 @@ function runTests() {
     });
     ppaper.style.strokeWidth = 2;
     ppaper.style.strokeColor = cpaper;
-    ppaperfill.add( new Segment( xx, yy ) );
+    ppaperfill.add( new Segment( vx-hscale, yy ) );
     ppaperfill.closed = true;
     ppaperfill.style.fillColor = cpaperfill;
     pfat.style.strokeWidth = 2;
     pfat.style.strokeColor = cfat;
-    pfatfill.add( new Segment( xx, yy ) );
+    pfatfill.add( new Segment( vx-hscale, yy ) );
     pfatfill.closed = true;
     pfatfill.style.fillColor = cfatfill;
 
