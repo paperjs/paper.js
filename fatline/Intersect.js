@@ -1,6 +1,8 @@
 
 var EPSILON = 10e-12;
 var TOLERANCE = 10e-6;
+var MAX_RECURSE = 10;
+var MAX_ITERATE = 20;
 
 /**
  * This method is analogous to paperjs#PathItem.getIntersections
@@ -37,7 +39,13 @@ function getIntersections2( path1, path2 ){
  * @param  {[type]} _v1t      - Only used for recusion
  * @param  {[type]} _v2t      - Only used for recusion
  */
-paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1t, _v2t ) {
+paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1t, _v2t, _recurseDepth ) {
+    _recurseDepth = _recurseDepth ? _recurseDepth + 1 : 1;
+    // Avoid endless recursion.
+    // Perhaps we should fall back to a more expensive method after this, but
+    // so far endless recursion happens only when there is no real intersection and
+    // the infinite fatline continue to intersect with the other curve outside its bounds!
+    if( _recurseDepth > MAX_RECURSE ) return;
     // cache the original parameter range.
     _v1t = _v1t || { t1: 0, t2: 1 };
     _v2t = _v2t || { t1: 0, t2: 1 };
@@ -74,11 +82,13 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
         _getCurveLineIntersection( v1, v2, curve1, curve2, locations );
         return;
     }
-    var nuT, parts, tmpt = { t1:null, t2:null };
+    var nuT, parts, tmpt = { t1:null, t2:null }, iterate = 0;
     // Loop until both parameter range converge. We have to handle the degenerate case
     // seperately, where fat-line clipping can become numerically unstable when one of the
     // curves has converged to a point and the other hasn't.
-    while( Math.abs(v1t.t2 - v1t.t1) > TOLERANCE || Math.abs(v2t.t2 - v2t.t1) > TOLERANCE ){
+    while( iterate < MAX_ITERATE &&
+        ( Math.abs(v1t.t2 - v1t.t1) > TOLERANCE || Math.abs(v2t.t2 - v2t.t1) > TOLERANCE ) ){
+        ++iterate;
         // First we clip v2 with v1's fat-line
         tmpt.t1 = v2t.t1; tmpt.t2 = v2t.t2;
         var intersects1 = _clipBezierFatLine( _v1, _v2, tmpt );
@@ -112,14 +122,14 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
             if( v1t.t2 - v1t.t1 > v2t.t2 - v2t.t1 ){
                 // subdivide _v1 and recurse
                 nuT = ( _v1t.t1 + _v1t.t2 ) / 2.0;
-                Curve.getIntersections2( v1, v2, curve1, curve2, locations, { t1: _v1t.t1, t2: nuT }, _v2t );
-                Curve.getIntersections2( v1, v2, curve1, curve2, locations, { t1: nuT, t2: _v1t.t2 }, _v2t );
+                Curve.getIntersections2( v1, v2, curve1, curve2, locations, { t1: _v1t.t1, t2: nuT }, _v2t, _recurseDepth );
+                Curve.getIntersections2( v1, v2, curve1, curve2, locations, { t1: nuT, t2: _v1t.t2 }, _v2t, _recurseDepth );
                 return;
             } else {
                 // subdivide _v2 and recurse
                 nuT = ( _v2t.t1 + _v2t.t2 ) / 2.0;
-                Curve.getIntersections2( v1, v2, curve1, curve2, locations, _v1t, { t1: _v2t.t1, t2: nuT } );
-                Curve.getIntersections2( v1, v2, curve1, curve2, locations, _v1t, { t1: nuT, t2: _v2t.t2 } );
+                Curve.getIntersections2( v1, v2, curve1, curve2, locations, _v1t, { t1: _v2t.t1, t2: nuT }, _recurseDepth );
+                Curve.getIntersections2( v1, v2, curve1, curve2, locations, _v1t, { t1: nuT, t2: _v2t.t2 }, _recurseDepth );
                 return;
             }
         }
