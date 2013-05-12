@@ -8,72 +8,72 @@ function runTests() {
 
   var container = document.getElementById( 'container' );
 
-  // caption = prepareTest( 'Overlapping circles', container );
-  // pathA = new Path.Circle(new Point(80, 110), 50);
-  // pathB = new Path.Circle(new Point(150, 110), 70);
+  caption = prepareTest( 'Overlapping circles', container );
+  pathA = new Path.Circle(new Point(80, 110), 50);
+  pathB = new Path.Circle(new Point(150, 110), 70);
+  testIntersections( pathA, pathB, caption );
+
+  caption = prepareTest( 'Polygon and square', container );
+  pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
+  pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
+  testIntersections( pathA, pathB, caption );
+
+  caption = prepareTest( 'Circle and square (overlaps exactly on existing segments)', container );
+  pathA = new Path.Circle(new Point(110, 110), 80);
+  pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
+  testIntersections( pathA, pathB, caption );
+
+  caption = prepareTest( 'Circle and square (existing segments overlaps on curves)', container );
+  pathA = new Path.Circle(new Point(110, 110), 80);
+  pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
+  testIntersections( pathA, pathB, caption );
+
+  caption = prepareTest( 'Square and square (one segment overlaps on a line)', container );
+  pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
+  pathA.rotate( 45 );
+  pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
+  testIntersections( pathA, pathB, caption );
+
+  caption = prepareTest( 'Rectangle and rectangle (overlaps exactly on existing curves)', container );
+  pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
+  pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
+  testIntersections( pathA, pathB, caption );
+
+  caption = prepareTest( 'Circle and banana (multiple intersections within same curve segment)', container );
+  pathA = new Path.Circle(new Point(80, 110), 80);
+  pathB = new Path.Circle(new Point(130, 110), 80 );
+  pathB.segments[3].point = pathB.segments[3].point.add( [ 0, -120 ] );
+  testIntersections( pathA, pathB, caption );
+
+  caption = prepareTest( 'Overlapping stars 1', container );
+  pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
+  pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
+  testIntersections( pathA, pathB, caption );
+
+  caption = prepareTest( 'Overlapping stars 2', container );
+  pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
+  pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
+  testIntersections( pathA, pathB, caption );
+
+  // caption = prepareTest( 'Circles overlap exactly over each other', container );
+  // pathA = new Path.Circle(new Point(110, 110), 100);
+  // pathB = new Path.Circle(new Point(110, 110), 100 );
+  // // pathB.translate([0.5,0])
   // testIntersections( pathA, pathB, caption );
 
-  // caption = prepareTest( 'Polygon and square', container );
-  // pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
-  // pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
-  // testIntersections( pathA, pathB, caption );
-
-  // caption = prepareTest( 'Circle and square (overlaps exactly on existing segments)', container );
-  // pathA = new Path.Circle(new Point(110, 110), 80);
-  // pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
-  // testIntersections( pathA, pathB, caption );
-
-  // caption = prepareTest( 'Circle and square (existing segments overlaps on curves)', container );
-  // pathA = new Path.Circle(new Point(110, 110), 80);
-  // pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
-  // testIntersections( pathA, pathB, caption );
-
-  // caption = prepareTest( 'Square and square (one segment overlaps on a line)', container );
-  // pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
-  // pathA.rotate( 45 );
-  // pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
-  // testIntersections( pathA, pathB, caption );
-
-  // caption = prepareTest( 'Rectangle and rectangle (overlaps exactly on existing curves)', container );
-  // pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
-  // pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
-  // testIntersections( pathA, pathB, caption );
-
-  // caption = prepareTest( 'Circle and banana (multiple intersections within same curve segment)', container );
-  // pathA = new Path.Circle(new Point(80, 110), 80);
-  // pathB = new Path.Circle(new Point(130, 110), 80 );
-  // pathB.segments[3].point = pathB.segments[3].point.add( [ 0, -120 ] );
-  // testIntersections( pathA, pathB, caption );
-
-  // caption = prepareTest( 'Overlapping stars 1', container );
-  // pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
-  // pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
-  // testIntersections( pathA, pathB, caption );
-
-  // caption = prepareTest( 'Overlapping stars 2', container );
-  // pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
-  // pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
-  // testIntersections( pathA, pathB, caption );
-
-  // // caption = prepareTest( 'Circles overlap exactly over each other', container );
-  // // pathA = new Path.Circle(new Point(110, 110), 100);
-  // // pathB = new Path.Circle(new Point(110, 110), 100 );
-  // // // pathB.translate([0.5,0])
-  // // testIntersections( pathA, pathB, caption );
-
-  // caption = prepareTest( 'Maximum possible intersections between 2 cubic bezier curve segments - 9', container );
-  // pathA = new Path();
-  // pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
-  // pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
-  // pathA.closed = true;
-  // pathB = pathA.clone();
-  // pathB.rotate( -90 );
-  // pathA.translate( [-10,0] );
-  // pathB.translate( [10,0] );
-  // testIntersections( pathA, pathB, caption );
-  // // annotatePath( pathA, null, '#008' );
-  // // annotatePath( pathB, null, '#800' );
-  // view.draw();
+  caption = prepareTest( 'Maximum possible intersections between 2 cubic bezier curve segments - 9', container );
+  pathA = new Path();
+  pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
+  pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
+  pathA.closed = true;
+  pathB = pathA.clone();
+  pathB.rotate( -90 );
+  pathA.translate( [-10,0] );
+  pathB.translate( [10,0] );
+  testIntersections( pathA, pathB, caption );
+  // annotatePath( pathA, null, '#008' );
+  // annotatePath( pathB, null, '#800' );
+  view.draw();
 
   // caption = prepareTest( 'SVG gears', container );
   // group  = paper.project.importSVG( document.getElementById( 'svggears' ) );
@@ -81,78 +81,78 @@ function runTests() {
   // pathB = group.children[1];
   // testIntersections( pathA, pathB, caption );
 
-  // caption = prepareTest( 'Glyphs imported from SVG', container );
-  // group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
-  // pathA = group.children[0];
-  // pathB = group.children[1];
-  // testIntersections( pathA, pathB, caption );
+  caption = prepareTest( 'Glyphs imported from SVG', container );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
+  pathA = group.children[0];
+  pathB = group.children[1];
+  testIntersections( pathA, pathB, caption );
 
-  // caption = prepareTest( 'CompoundPaths 1', container );
-  // group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  // pathA = group.children[0];
-  // pathB = group.children[1];
-  // testIntersections( pathA, pathB, caption );
+  caption = prepareTest( 'CompoundPaths 1', container );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = group.children[1];
+  testIntersections( pathA, pathB, caption );
 
-  // caption = prepareTest( 'CompoundPaths 2 - holes', container );
-  // group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  // pathA = group.children[0];
-  // pathB = new CompoundPath();
-  // group.children[1].clockwise = true;
-  // pathB.addChild(group.children[1]);
-  // var npath = new Path.Circle([110, 110], 30);
-  // pathB.addChild( npath );
-  // testIntersections( pathA, pathB, caption );
+  caption = prepareTest( 'CompoundPaths 2 - holes', container );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = new CompoundPath();
+  group.children[1].clockwise = true;
+  pathB.addChild(group.children[1]);
+  var npath = new Path.Circle([110, 110], 30);
+  pathB.addChild( npath );
+  testIntersections( pathA, pathB, caption );
 
-  // caption = prepareTest( 'CompoundPaths 3 !', container );
-  // group  = paper.project.importSVG( document.getElementById( 'svggreenland' ) );
-  // pathA = group.children[0];
-  // pathB = group.children[1];
-  // pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
-  // // pathA.scale( 2 );
-  // // pathB.scale( 2 );
-  // testIntersections( pathA, pathB, caption );
+  caption = prepareTest( 'CompoundPaths 3 !', container );
+  group  = paper.project.importSVG( document.getElementById( 'svggreenland' ) );
+  pathA = group.children[0];
+  pathB = group.children[1];
+  pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
+  // pathA.scale( 2 );
+  // pathB.scale( 2 );
+  testIntersections( pathA, pathB, caption );
 
-  // caption = prepareTest( 'CompoundPaths 4 - holes and islands 1', container );
-  // group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  // pathA = group.children[0];
-  // pathB = new CompoundPath();
-  // group.children[1].clockwise = true;
-  // pathB.addChild(group.children[1]);
-  // var npath = new Path.Circle([40, 80], 20);
-  // pathB.addChild( npath );
-  // testIntersections( pathA, pathB, caption );
+  caption = prepareTest( 'CompoundPaths 4 - holes and islands 1', container );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = new CompoundPath();
+  group.children[1].clockwise = true;
+  pathB.addChild(group.children[1]);
+  var npath = new Path.Circle([40, 80], 20);
+  pathB.addChild( npath );
+  testIntersections( pathA, pathB, caption );
 
-  // caption = prepareTest( 'CompoundPaths 5 - holes and islands 2', container );
-  // group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  // pathA = group.children[0];
-  // pathB = new CompoundPath();
-  // group.children[1].clockwise = true;
-  // pathB.addChild(group.children[1]);
-  // var npath = new Path.Circle([40, 80], 20);
-  // pathB.addChild( npath );
-  // npath = new Path.Circle([120, 110], 30);
-  // pathB.addChild( npath );
-  // testIntersections( pathA, pathB, caption );
+  caption = prepareTest( 'CompoundPaths 5 - holes and islands 2', container );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = new CompoundPath();
+  group.children[1].clockwise = true;
+  pathB.addChild(group.children[1]);
+  var npath = new Path.Circle([40, 80], 20);
+  pathB.addChild( npath );
+  npath = new Path.Circle([120, 110], 30);
+  pathB.addChild( npath );
+  testIntersections( pathA, pathB, caption );
 
-  // caption = prepareTest( 'CompoundPaths 6 - holes and islands 3', container );
-  // group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  // pathA = group.children[0];
-  // pathB = new CompoundPath();
-  // var npath = new Path.Circle([110, 110], 100);
-  // pathB.addChild( npath );
-  // npath = new Path.Circle([110, 110], 60);
-  // pathB.addChild( npath );
-  // npath = new Path.Circle([110, 110], 30);
-  // pathB.addChild( npath );
-  // testIntersections( pathA, pathB, caption );
+  caption = prepareTest( 'CompoundPaths 6 - holes and islands 3', container );
+  group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+  pathA = group.children[0];
+  pathB = new CompoundPath();
+  var npath = new Path.Circle([110, 110], 100);
+  pathB.addChild( npath );
+  npath = new Path.Circle([110, 110], 60);
+  pathB.addChild( npath );
+  npath = new Path.Circle([110, 110], 30);
+  pathB.addChild( npath );
+  testIntersections( pathA, pathB, caption );
 
-  // caption = prepareTest( 'CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', container );
-  // pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
-  // pathB = new CompoundPath();
-  // pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
-  // pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
-  // // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
-  // testIntersections( pathA, pathB, caption );
+  caption = prepareTest( 'CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', container );
+  pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
+  pathB = new CompoundPath();
+  pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
+  pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
+  // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
+  testIntersections( pathA, pathB, caption );
 
   // var tool = new Tool();
   // tool.onMouseMove = function( e ){
@@ -171,27 +171,6 @@ function runTests() {
 
   window.a = pathA;
   window.b = pathB;
-
-  prepareTest( 'none', container );
-
-  // var pa = new Path( new Segment([100, 100], null, [70, 0]), new Segment([200, 200], [0, -70], null) );
-  var pa = new Path( new Segment([100, 100], null, [150, 0]), new Segment([230, 180], [-150, -20], null) );
-  var pb = new Path.Line( [120, 80], [ 210, 200 ] );
-  // pb.reverse();
-  // pb.scale(0.6);
-  pa.style = pb.style = pathStyleBoolean;
-
-  var vc = pa.curves[0].getValues();
-  var vl = pb.curves[0].getValues();
-
-  var loc = [];
-  // _getCurveLineIntersection( vc, vl, pa.curves[0], pb.curves[0], loc );
-  _getCurveLineIntersection( vl, vc, pb.curves[0], pa.curves[0], loc );
-
-  console.log( loc )
-  markIntersections( loc )
-
-  view.draw();
 
   function prepareTest( testName, parentNode ){
     console.log( '\n' + testName );
@@ -229,20 +208,20 @@ function testIntersections( path1, path2, caption ) {
     path1.style = path2.style = pathStyleNormal;
     var maxCount = 1, count = maxCount;
     console.time('paperjs');
-    while(count--){
+    // while(count--){
       var ixsPaper = path1.getIntersections( path2 );
-    }
+    // }
     console.timeEnd('paperjs');
 
     count = maxCount;
     console.time('fatline');
-    while(count--){
+    // while(count--){
       var ixsFatline = getIntersections2( path1, path2 );
-    }
+    // }
     console.timeEnd('fatline');
 
-    markIntersections( ixsPaper, '#00f' );
-    markIntersections( ixsFatline, '#f00' );
+    markIntersections( ixsPaper, '#00f', 'paperjs' );
+    markIntersections( ixsFatline, '#f00', 'fatline' );
     view.draw();
   // } catch(e){
   //   console.error( e.name + ": " + e.message );
@@ -254,10 +233,11 @@ function testIntersections( path1, path2, caption ) {
   // }
 }
 
-function markIntersections( ixs, c ){
+function markIntersections( ixs, c, txt ){
   for (i = 0, len = ixs.length; i < len; i++) {
     // markPoint( ixs[i].point, ixs[i].parameter );
     markPoint( ixs[i].point, ' ', c );
+    // console.log( txt , ixs[i].parameter )
   }
 }
 
