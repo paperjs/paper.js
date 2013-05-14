@@ -196,14 +196,18 @@ function _clipBezierFatLine( v1, v2, v2t ){
     if( dmin > maxdist || dmax < mindist ){
         return 0;
     }
+    if( dq3 < dq0 ){
+        var tmp = dmin;
+        dmin = dmax;
+        dmax = tmp;
+    }
     // Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
     var Dt  = _convexhull( dq0, dq1, dq2, dq3 );
     // Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
     // for the coorresponding t values (tmin, tmax):
     // Portions of curve v2 before tmin and after tmax can safely be clipped away
-    // TODO: try to calculate tmin and tmax directly here
-    var tmindmin = Infinity, tmaxdmin = -Infinity,
-    tmindmax = Infinity, tmaxdmax = -Infinity, ixd, ixdx, i, len;
+    var tmaxdmin = -Infinity, ixd, ixdx, i, len;
+    var tmin = Infinity, tmax = -Infinity;
     // var dmina = [0, dmin, 2, dmin];
     // var dmaxa = [0, dmax, 2, dmax];
     for (i = 0, len = Dt.length; i < len; i++) {
@@ -213,49 +217,23 @@ function _clipBezierFatLine( v1, v2, v2t ){
         ixd = Line.intersectRaw( Dtl[0], Dtl[1], Dtl[2], Dtl[3], 0, dmin, 2, dmin, false);
         if( ixd ){
             ixdx = ixd[0];
-            tmindmin = ( ixdx < tmindmin )? ixdx : tmindmin;
-            tmaxdmin = ( ixdx > tmaxdmin )? ixdx : tmaxdmin;
+            if ( ixdx < tmin ) tmin = ixdx;
+            if ( ixdx > tmaxdmin ) tmaxdmin = ixdx;
         }
         // ixd = _intersectLines( Dtl, dmaxa);
         ixd = Line.intersectRaw( Dtl[0], Dtl[1], Dtl[2], Dtl[3], 0, dmax, 2, dmax, false);
         if( ixd ){
             ixdx = ixd[0];
-            tmindmax = ( ixdx < tmindmax )? ixdx : tmindmax;
-            tmaxdmax = ( ixdx > tmaxdmax )? ixdx : tmaxdmax;
+            if( ixdx > tmax ) tmax = ixdx;
+            if( ixdx < tmin ) tmin = 0;
         }
     }
     // Return the parameter values for v2 for which we can be sure that the
     // intersection with v1 lies within.
-    var tmin, tmax;
-    if(tmindmin === Infinity || tmaxdmin === -Infinity || tmindmax === Infinity || tmaxdmax === -Infinity){
+    if(tmin === Infinity || tmax === -Infinity){
         return -1;
     }
-
-    if( dq3 > dq0 ){
-        // if dmin or dmax doesnot intersect with the convexhull, reset the parameter limits
-        // if( tmindmin === Infinity ) tmindmin = 0;
-        // if( tmaxdmin === -Infinity )  tmaxdmin = 0;
-        // if( tmindmax === Infinity ) tmindmax = 1;
-        // if( tmaxdmax === -Infinity )  tmaxdmax =1;
-        tmin = Math.min( tmindmin, tmaxdmin );
-        tmax = Math.max( tmindmax, tmaxdmax );
-        if( Math.min( tmindmax, tmaxdmax ) < tmin )
-            tmin = 0;
-        if( Math.max( tmindmin, tmaxdmin ) > tmax )
-            tmax = 1;
-    }else{
-        // if dmin or dmax doesnot intersect with the convexhull, reset the parameter limits
-        // if( tmindmin === Infinity ) tmindmin =1;
-        // if( tmaxdmin === -Infinity ) tmaxdmin =1;
-        // if( tmindmax === Infinity ) tmindmax = 0;
-        // if( tmaxdmax === -Infinity ) tmaxdmax = 0;
-        tmax = Math.max( tmindmin, tmaxdmin );
-        tmin = Math.min( tmindmax, tmaxdmax );
-        if( Math.min( tmindmin, tmaxdmin ) < tmin )
-            tmin = 0;
-        if( Math.max( tmindmax, tmaxdmax ) > tmax )
-            tmax = 1;
-    }
+    if( tmaxdmin > tmax ) tmax = 1;
 // Debug: Plot the non-parametric graph and hull
 // plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )
     // tmin and tmax are within the range (0, 1). We need to project it to the original
