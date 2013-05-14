@@ -229,10 +229,10 @@ function _clipBezierFatLine( v1, v2, v2t ){
     var tmin, tmax;
     if( dq3 > dq0 ){
         // if dmin or dmax doesnot intersect with the convexhull, reset the parameter limits
-        if( tmindmin === Infinity ) tmindmin = 1e-11;
-        if( tmaxdmin === -Infinity )  tmaxdmin = 1e-11;
-        if( tmindmax === Infinity ) tmindmax = 0.9999999999999999;
-        if( tmaxdmax === -Infinity )  tmaxdmax = 0.9999999999999999;
+        if( tmindmin === Infinity ) tmindmin = 0;
+        if( tmaxdmin === -Infinity )  tmaxdmin = 0;
+        if( tmindmax === Infinity ) tmindmax = 1;
+        if( tmaxdmax === -Infinity )  tmaxdmax =1;
         tmin = Math.min( tmindmin, tmaxdmin );
         tmax = Math.max( tmindmax, tmaxdmax );
         if( Math.min( tmindmax, tmaxdmax ) < tmin )
@@ -241,10 +241,10 @@ function _clipBezierFatLine( v1, v2, v2t ){
             tmax = 1;
     }else{
         // if dmin or dmax doesnot intersect with the convexhull, reset the parameter limits
-        if( tmindmin === Infinity ) tmindmin = 0.9999999999999999;
-        if( tmaxdmin === -Infinity ) tmaxdmin = 0.9999999999999999;
-        if( tmindmax === Infinity ) tmindmax = 1e-11;
-        if( tmaxdmax === -Infinity ) tmaxdmax = 1e-11;
+        if( tmindmin === Infinity ) tmindmin =1;
+        if( tmaxdmin === -Infinity ) tmaxdmin =1;
+        if( tmindmax === Infinity ) tmindmax = 0;
+        if( tmaxdmax === -Infinity ) tmaxdmax = 0;
         tmax = Math.max( tmindmin, tmaxdmin );
         tmin = Math.min( tmindmax, tmaxdmax );
         if( Math.min( tmindmin, tmaxdmin ) < tmin )
@@ -254,9 +254,9 @@ function _clipBezierFatLine( v1, v2, v2t ){
     }
 // Debug: Plot the non-parametric graph and hull
 // plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )
-    if( tmin === 0.0 && tmax === 1.0 ){
-        return 0;
-    }
+    // if( tmin === 0.0 && tmax === 1.0 ){
+    //     return 0;
+    // }
     // tmin and tmax are within the range (0, 1). We need to project it to the original
     // parameter range for v2.
     var v2tmin = v2t.t1;
