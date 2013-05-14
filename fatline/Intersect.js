@@ -196,34 +196,33 @@ function _clipBezierFatLine( v1, v2, v2t ){
     if( dmin > maxdist || dmax < mindist ){
         return 0;
     }
+    var tmp;
     if( dq3 < dq0 ){
-        var tmp = dmin;
-        dmin = dmax;
-        dmax = tmp;
+        tmp = dmin; dmin = dmax; dmax = tmp;
     }
     // Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
     var Dt  = _convexhull( dq0, dq1, dq2, dq3 );
     // Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
     // for the coorresponding t values (tmin, tmax):
     // Portions of curve v2 before tmin and after tmax can safely be clipped away
-    var tmaxdmin = -Infinity, ixd, ixdx, i, len;
-    var tmin = Infinity, tmax = -Infinity;
-    // var dmina = [0, dmin, 2, dmin];
-    // var dmaxa = [0, dmax, 2, dmax];
+    var tmaxdmin = -Infinity, ixd, ixdx, i, len, inv_m;
+    var tmin = Infinity, tmax = -Infinity, Dtl, dtlx1, dtly1, dtlx2, dtly2;
     for (i = 0, len = Dt.length; i < len; i++) {
-        var Dtl = Dt[i];
-        // ixd = _intersectLines( Dtl, dmina);
-        // TODO: Optimize: Avaoid creating point objects in Line.intersect?! - speeds up by 30%!
-        ixd = Line.intersectRaw( Dtl[0], Dtl[1], Dtl[2], Dtl[3], 0, dmin, 2, dmin, false);
-        if( ixd ){
-            ixdx = ixd[0];
+        Dtl = Dt[i];
+        dtlx1 = Dtl[0]; dtly1 = Dtl[1]; dtlx2 = Dtl[2]; dtly2 = Dtl[3];
+        if( dtly2 < dtly1 ){
+            tmp = dtly2; dtly2 = dtly1; dtly1 = tmp;
+            tmp = dtlx2; dtlx2 = dtlx1; dtlx1 = tmp;
+        }
+        // we know that (dtlx2 - dtlx1) is never 0
+        inv_m =  (dtly2 - dtly1) / (dtlx2 - dtlx1);
+        if( dmin >= dtly1 && dmin <= dtly2 ){
+            ixdx = dtlx1 + (dmin - dtly1) / inv_m;
             if ( ixdx < tmin ) tmin = ixdx;
             if ( ixdx > tmaxdmin ) tmaxdmin = ixdx;
         }
-        // ixd = _intersectLines( Dtl, dmaxa);
-        ixd = Line.intersectRaw( Dtl[0], Dtl[1], Dtl[2], Dtl[3], 0, dmax, 2, dmax, false);
-        if( ixd ){
-            ixdx = ixd[0];
+        if( dmax >= dtly1 && dmax <= dtly2 ){
+            ixdx = dtlx1 + (dmax - dtly1) / inv_m;
             if( ixdx > tmax ) tmax = ixdx;
             if( ixdx < tmin ) tmin = 0;
         }
@@ -233,7 +232,7 @@ function _clipBezierFatLine( v1, v2, v2t ){
     if(tmin === Infinity || tmax === -Infinity){
         return -1;
     }
-    if( tmaxdmin > tmax ) tmax = 1;
+    if( tmaxdmin > tmax ){ tmax = 1; }
 // Debug: Plot the non-parametric graph and hull
 // plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )
     // tmin and tmax are within the range (0, 1). We need to project it to the original
