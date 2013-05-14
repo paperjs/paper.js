@@ -66,7 +66,11 @@ function runTests() {
     group  = paper.project.importSVG( document.getElementById( 'svgrandom1' ) );
     pathA = group.children[0];
     pathB = group.children[1];
+    pathA.style = pathB.style = null;
+    var np1 = new Path( [pathA.segments[0], pathA.segments[1]] );
+    var np2 = new Path( [pathB.segments[0], pathB.segments[1]] );
     return [pathA, pathB];
+    return [np1, np2];
   });
 
   runTest('Overlapping circles', function(){
@@ -75,53 +79,53 @@ function runTests() {
     return [pathA, pathB];
   });
 
-  runTest('Polygon and square', function(){
-    pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
-    pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
-    return [pathA, pathB];
-  });
+  // runTest('Polygon and square', function(){
+  //   pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
+  //   pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
+  //   return [pathA, pathB];
+  // });
 
-  runTest('Circle and square (overlaps exactly on existing segments)', function(){
-    pathA = new Path.Circle(new Point(110, 110), 80);
-    pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
-    return [pathA, pathB];
-  });
+  // runTest('Circle and square (overlaps exactly on existing segments)', function(){
+  //   pathA = new Path.Circle(new Point(110, 110), 80);
+  //   pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
+  //   return [pathA, pathB];
+  // });
 
-  runTest('Circle and square (existing segments overlaps on curves)', function(){
-    pathA = new Path.Circle(new Point(110, 110), 80);
-    pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
-    return [pathA, pathB];
-  });
+  // runTest('Circle and square (existing segments overlaps on curves)', function(){
+  //   pathA = new Path.Circle(new Point(110, 110), 80);
+  //   pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
+  //   return [pathA, pathB];
+  // });
 
-  runTest('Square and square (one segment overlaps on a line)', function(){
-    pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
-    pathA.rotate( 45 );
-    pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
-    return [pathA, pathB];
-  });
+  // runTest('Square and square (one segment overlaps on a line)', function(){
+  //   pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
+  //   pathA.rotate( 45 );
+  //   pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
+  //   return [pathA, pathB];
+  // });
 
-  runTest('Rectangle and rectangle (overlaps exactly on existing curves)', function(){
-    pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
-    pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
-    return [pathA, pathB];
-  });
+  // runTest('Rectangle and rectangle (overlaps exactly on existing curves)', function(){
+  //   pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
+  //   pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
+  //   return [pathA, pathB];
+  // });
+
+  // runTest('Overlapping stars 1', function(){
+  //   pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
+  //   pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
+  //   return [pathA, pathB];
+  // });
+
+  // runTest('Overlapping stars 2', function(){
+  //   pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
+  //   pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
+  //   return [pathA, pathB];
+  // });
 
   runTest('Circle and banana (multiple intersections within same curve segment)', function(){
     pathA = new Path.Circle(new Point(80, 110), 80);
     pathB = new Path.Circle(new Point(130, 110), 80 );
     pathB.segments[3].point = pathB.segments[3].point.add( [ 0, -120 ] );
-    return [pathA, pathB];
-  });
-
-  runTest('Overlapping stars 1', function(){
-    pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
-    pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
-    return [pathA, pathB];
-  });
-
-  runTest('Overlapping stars 2', function(){
-    pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
-    pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
     return [pathA, pathB];
   });
 
@@ -216,14 +220,14 @@ function runTests() {
     return [pathA, pathB];
   });
 
-  runTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', function(){
-    pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
-    pathB = new CompoundPath();
-    pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
-    pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
-    // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
-    return [pathA, pathB];
-  });
+  // runTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', function(){
+  //   pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
+  //   pathB = new CompoundPath();
+  //   pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
+  //   pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
+  //   // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
+  //   return [pathA, pathB];
+  // });
 
 
   // Plot the run times
@@ -394,7 +398,7 @@ var pathStyleIx = {
 
 var pathStyleNormal = {
   strokeColor: new Color( 0, 0, 0 ),
-  fillColor: new Color( 0, 0, 0, 0.1 ),
+  // fillColor: new Color( 0, 0, 0, 0.1 ),
   strokeWidth: 1
 };
 
@@ -407,7 +411,7 @@ var pathStyleBoolean = {
 
 // Better if path1 and path2 fit nicely inside a 200x200 pixels rect
 function testIntersections( path1, path2, caption, testname, testdata, nomark) {
-  var i, l, maxCount = 1, count = maxCount, st, t1, t2,
+  var i, l, maxCount = 100, count = maxCount, st, t1, t2,
     ixsPaper, ixsFatline, success = false, maxdiff = -Infinity;
   try{
     path1.style = path2.style = pathStyleNormal;
@@ -445,6 +449,9 @@ function testIntersections( path1, path2, caption, testname, testdata, nomark) {
       }
     }
     success = ixsPaper.length === found;
+
+    window.pap = ixsPaper;
+    window.fat = ixsFatline;
 
     if( !nomark ){
       markIntersections( ixsPaper, '#00f', 'paperjs' );
@@ -542,6 +549,8 @@ function getRandomPath(seg){
 
 function markIntersections( ixs, c, txt ){
   for (i = 0, len = ixs.length; i < len; i++) {
+    // force calculate the parameter for debugging
+    var a = ixs[i].parameter;
     // markPoint( ixs[i].point, ixs[i].parameter );
     markPoint( ixs[i].point, ' ', c, null, false );
     // console.log( txt , ixs[i].parameter )
