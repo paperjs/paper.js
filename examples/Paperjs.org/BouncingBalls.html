@@ -27,21 +27,21 @@
 			var radius = this.radius = 50 * Math.random() + 30;
 			// Wrap CompoundPath in a Group, since CompoundPaths directly 
 			// applies the transformations to the content, just like Path.
-			this.item = new Group({
+			var ball = new CompoundPath({
 				children: [
-					new CompoundPath({
-						children: [
-							new Path.Circle({
-								radius: radius
-							}),
-							new Path.Circle({
-								center: radius / 8,
-								radius: radius / 3
-							})
-						],
-						fillColor: new Color(gradient, 0, radius, radius / 8),
+					new Path.Circle({
+						radius: radius
+					}),
+					new Path.Circle({
+						center: radius / 8,
+						radius: radius / 3
 					})
 				],
+				fillColor: new Color(gradient, 0, radius, radius / 8),
+			});
+
+			this.item = new Clip({
+				children: [ball],
 				position: this.point
 			});
 		}

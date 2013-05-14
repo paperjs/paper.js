@@ -69,7 +69,6 @@
 			// Transform the raster, so it fills the view:
 			raster.fitBounds(view.bounds, true);
 			group = new Group();
-			group.applyMatrix = true;
 			for (var y = 0; y < values.amount; y++) {
 				for (var x = 0; x < values.amount; x++) {
 					var copy = piece.clone();
