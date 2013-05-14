@@ -18,7 +18,7 @@ if (window.performance && window.performance.now) {
 }
 
 function runTests() {
-  var caption, pathA, pathB, group, testdata = [], testQueued = 0, testExecuted = 0;;
+  var caption, pathA, pathB, group, testdata = [], randomtestdata = [], testQueued = 0, testExecuted = 0;
 
   var container = document.getElementById( 'container' );
 
@@ -33,7 +33,11 @@ function runTests() {
       console.log('\n' + testName);
       paper.setup(canvas);
       var paths = handler();
-      testIntersections(paths[0], paths[1], caption, testName, testdata);
+      var success = testIntersections(paths[0], paths[1], caption, testName, testdata);
+      if( !success ){
+        window.p1 = paths[0].exportSVG();
+        window.p2 = paths[1].exportSVG();
+      }
       testExecuted++;
       if( testExecuted === testQueued ){
         plotData();
@@ -42,13 +46,28 @@ function runTests() {
     return caption;
   }
 
-  var caption = document.createElement('h3');
-  caption.appendChild(document.createTextNode("Randomised tests"));
-  container.appendChild(caption);
-  var count = 100, randomData = [];
-  while( count-- ){
+  // var caption = document.createElement('h3');
+  // caption.appendChild(document.createTextNode("Randomised tests (may take a while...)"));
+  // container.appendChild(caption);
+  // var canvas = document.createElement('CANVAS');
+  // container.appendChild( canvas );
+  // paper.setup( canvas );
+  // doRandomTests( randomtestdata );
+  // window.d = randomtestdata;
+  // container.removeChild( canvas );
 
-  }
+  // runTest('random', function(){
+  //   pathA = getRandomPath(5);
+  //   pathB = getRandomPath(5);
+  //   return [pathA, pathB];
+  // });
+
+  runTest('random 2', function(){
+    group  = paper.project.importSVG( document.getElementById( 'svgrandom1' ) );
+    pathA = group.children[0];
+    pathB = group.children[1];
+    return [pathA, pathB];
+  });
 
   runTest('Overlapping circles', function(){
     pathA = new Path.Circle(new Point(80, 110), 50);
@@ -207,9 +226,6 @@ function runTests() {
   });
 
 
-  // Do randomised tests
-
-
   // Plot the run times
   function plotData(){
     prepareTest( 'Results', container, true );
@@ -320,6 +336,7 @@ function runTests() {
     txt = new PointText([630, ny+5]);
     txt.fillColor = '#000';
     txt.content = avgSpeedup + ' times';
+    view.draw();
 
     var tool = new Tool();
     tool.onMouseMove = function( e ){
@@ -390,8 +407,8 @@ var pathStyleBoolean = {
 
 // Better if path1 and path2 fit nicely inside a 200x200 pixels rect
 function testIntersections( path1, path2, caption, testname, testdata, nomark) {
-  var i, l, maxCount = 10, count = maxCount, st, t1, t2,
-    ixsPaper, ixsFatline, success = false;
+  var i, l, maxCount = 1, count = maxCount, st, t1, t2,
+    ixsPaper, ixsFatline, success = false, maxdiff = -Infinity;
   try{
     path1.style = path2.style = pathStyleNormal;
 
@@ -412,11 +429,22 @@ function testIntersections( path1, path2, caption, testname, testdata, nomark) {
     t2 = (getTimestamp() - st) / maxCount;
     if( !nomark ) console.timeEnd('fatline x ' + maxCount);
 
-    var equal = true;
-    for(i=0, l=ixsFatline.length; i<l && ixsPaper[i]; i++){
-      equal = equal && ixsPaper[i].point.equals( ixsPaper[i].point );
+    var found = 0, tol = 0.1;
+    if( ixsFatline.length === ixsPaper.length ){
+      for(i=0, l=ixsFatline.length; i<l; i++){
+        pa = ixsFatline[i].point;
+        for (j = 0; j < ixsPaper.length; j++) {
+          if( !ixsPaper[j]._found ){
+            pb = ixsPaper[j].point;
+            if( Math.abs( pa.x - pb.x ) < tol && Math.abs( pa.y - pb.y ) < tol ){
+              ++found;
+              ixsPaper[j]._found = true;
+            }
+          }
+        }
+      }
     }
-    success = ( ixsPaper.length === ixsFatline.length ) && equal;
+    success = ixsPaper.length === found;
 
     if( !nomark ){
       markIntersections( ixsPaper, '#00f', 'paperjs' );
@@ -437,7 +465,79 @@ function testIntersections( path1, path2, caption, testname, testdata, nomark) {
       fatTime: t2,
       success: success
     });
+    console.log( found );
   }
+  return success;
+}
+
+function doRandomTests( testdata ){
+  var p1 = new Path(), p2 = new Path(), ixspaper, ixsfat;
+  var seg = 5, maxseg = 20, maxiter = 10;
+  var i, j, halfseg = (maxseg / 2) | 0;
+  var p, hi, ho, st, t1, t2, success;
+  while( seg <= maxseg ){
+    for (i = 0; i < maxiter; i++) {
+      p1.removeSegments();
+      p2.removeSegments();
+      for (j = 0; j < seg; j++) {
+        p = new Point.random().multiply( [100, 100] );
+        v = new Point.random().multiply( [20, 20] );
+        p1.add( new Segment( p, v, v.multiply(-1) ) );
+        p1.closed = true;
+        p = new Point.random().multiply( [100, 100] );
+        v = new Point.random().multiply( [20, 20] );
+        p2.add( new Segment( p, v, v.multiply(-1) ) );
+        p2.closed = true;
+      }
+      st = getTimestamp();
+      ixspaper = p1.getIntersections( p2 );
+      t1 = (getTimestamp() - st);
+      st = getTimestamp();
+      ixsfat = getIntersections2( p1, p2 );
+      t2 = (getTimestamp() - st);
+      // Check against paperjs output
+      var found = 0, tol = 1;
+      if( ixsfat.length === ixspaper.length ){
+        for(i=0, l=ixsfat.length; i<l; i++){
+          pa = ixsfat[i].point;
+          for (j = 0; j < ixspaper.length; j++) {
+            if( !ixspaper[j]._found ){
+              pb = ixspaper[j].point;
+              if( Math.abs( pa.x - pb.x ) < tol && Math.abs( pa.y - pb.y ) < tol ){
+                ++found;
+                ixspaper[j]._found = true;
+              }
+            }
+          }
+        }
+      }
+      success = ixspaper.length === found;
+      testdata.push({
+        curves: seg,
+        ixsfat: ixsfat.length,
+        ixspaper: ixspaper.length,
+        ratio: ixsfat.length / (seg),
+        paperTime: t1,
+        fatTime: t2,
+        speedup: t1 / t2,
+        success: success
+      });
+    }
+    ++seg;
+    if( seg === halfseg ) maxiter = (maxiter / 2) | 0;
+  }
+}
+
+function getRandomPath(seg){
+  seg = seg || 3;
+  var p = new Path(), pnt, hi, ho, v;
+  for (j = 0; j < seg; j++) {
+    pnt = new Point.random().multiply( [130, 130] );
+    v = new Point.random().multiply( [20, 20] );
+    p.add( new Segment( pnt, v, v.multiply(-1) ) );
+    p.closed = true;
+  }
+  return p;
 }
 
 function markIntersections( ixs, c, txt ){
