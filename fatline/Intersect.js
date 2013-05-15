@@ -229,24 +229,28 @@ function _clipBezierFatLine( v1, v2, v2t ){
     }
     // Return the parameter values for v2 for which we can be sure that the
     // intersection with v1 lies within.
-    if(tmin === Infinity || tmax === -Infinity){
-        return -1;
-    }
-    if( tmaxdmin > tmax ){ tmax = 1; }
+    if(tmin !== Infinity && tmax !== -Infinity){
+        if( tmaxdmin > tmax ){ tmax = 1; }
 // Debug: Plot the non-parametric graph and hull
 // plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )
-    // tmin and tmax are within the range (0, 1). We need to project it to the original
-    // parameter range for v2.
-    var v2tmin = v2t.t1;
-    var tdiff = ( v2t.t2 - v2tmin );
-    v2t.t1 = v2tmin + tmin * tdiff;
-    v2t.t2 = v2tmin + tmax * tdiff;
-    // If the new parameter range fails to converge by atleast 20% of the original range,
-    // possibly we have multiple intersections. We need to subdivide one of the curves.
-    if( (tdiff - ( v2t.t2 - v2t.t1 ))/tdiff < 0.2 ){
+        // tmin and tmax are within the range (0, 1). We need to project it to the original
+        // parameter range for v2.
+        var v2tmin = v2t.t1;
+        var tdiff = ( v2t.t2 - v2tmin );
+        v2t.t1 = v2tmin + tmin * tdiff;
+        v2t.t2 = v2tmin + tmax * tdiff;
+        // If the new parameter range fails to converge by atleast 20% of the original range,
+        // possibly we have multiple intersections. We need to subdivide one of the curves.
+        if( (tdiff - ( v2t.t2 - v2t.t1 ))/tdiff >= 0.2 ){
+            return 1;
+        }
+    }
+    // TODO: Try checking with a perpendicular fatline to see if the curves overlap
+    //  if it is any faster than this
+    if( Curve.getBounds( v1 ).touches( Curve.getBounds( v2 ) ) ){
         return -1;
     }
-    return 1;
+    return 0;
 }
 
 /**
