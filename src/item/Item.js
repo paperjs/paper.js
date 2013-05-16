@@ -37,6 +37,9 @@ var Item = this.Item = Base.extend(Callback, {
 		}
 	}
 }, /** @lends Item# */{
+	// All items apply their matrix by default.
+	// Exceptions are Raster, PlacedSymbol, Clip and Shape.
+	_applyMatrix: true,
 	_boundsSelected: false,
 	// Provide information about fields to be serialized, with their defaults
 	// that can be ommited.
@@ -507,16 +510,6 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @ignore
 	 */
 	_guide: false,
-
-	/**
-	 * Specifies whether the item directly transforms its contents when
-	 * transformations are applied to it, or wether it simply stores them in
-	 * {@link Item#matrix}.
-	 *
-	 * @type Boolean
-	 * @default false
-	 */
-	applyMatrix: false,
 
 	/**
 	 * Specifies whether an item is selected and will also return {@code true}
@@ -1203,7 +1196,7 @@ var Item = this.Item = Base.extend(Callback, {
 		// TODO: Consider moving this to Base once it's useful in more than one
 		// place
 		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-				'_clipMask', '_guide', 'applyMatrix'];
+				'_clipMask', '_guide'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
@@ -2193,26 +2186,10 @@ var Item = this.Item = Base.extend(Callback, {
 			position = this._position;
 		// Simply preconcatenate the internal matrix with the passed one:
 		this._matrix.preConcatenate(matrix);
-		if (this._transform)
-			this._transform(matrix);
-		// If we need to directly apply the accumulated transformations, call
-		// #_applyMatrix() with the internal _matrix, and set it to the identity
-		// transformation if it was possible to apply it. Application is not
-		// possible on Raster, PointText, PlacedSymbol, since the matrix is
-		// storing the actual location / transformation state.
-		if ((this.applyMatrix || arguments[1])
-				&& this._applyMatrix(this._matrix)) {
-			// When the matrix could be applied, we also need to transform
-			// color styles with matrices (only gradients so far):
-			var style = this._style,
-				fillColor = style.getFillColor(),
-				strokeColor = style.getStrokeColor();
-			if (fillColor)
-				fillColor.transform(this._matrix);
-			if (strokeColor)
-				strokeColor.transform(this._matrix);
-			this._matrix.reset();
-		}
+		// Call applyMatrix if we need to directly apply the accumulated
+		// transformations to the item's content.
+		if (this._applyMatrix || arguments[1])
+			this.applyMatrix(false);
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(/*#=*/ Change.GEOMETRY);
@@ -2242,14 +2219,37 @@ var Item = this.Item = Base.extend(Callback, {
 		return this;
 	},
 
-	_applyMatrix: function(matrix) {
-		// Pass on the transformation to the children, and apply it there too,
-		// by passing true for the 2nd hidden parameter.
+	_transformContent: function(matrix, applyMatrix) {
 		if (this._children) {
 			for (var i = 0, l = this._children.length; i < l; i++)
-				this._children[i].transform(matrix, true);
+				this._children[i].transform(matrix, applyMatrix);
 			return true;
 		}
+	},
+
+	applyMatrix: function(_dontNotify) {
+		// Call #_transformContent() with the internal _matrix and pass true for
+		// applyMatrix. Application is not possible on Raster, PointText,
+		// PlacedSymbol, since the matrix is where the actual location /
+		// transformation state is stored.
+		// Pass on the transformation to the content, and apply it there too,
+		// by passing true for the 2nd hidden parameter.
+		if (this._transformContent(this._matrix, true)) {
+			// When the matrix could be applied, we also need to transform
+			// color styles with matrices (only gradients so far):
+			var style = this._style,
+				fillColor = style.getFillColor(true),
+				strokeColor = style.getStrokeColor(true);
+			if (fillColor)
+				fillColor.transform(this._matrix);
+			if (strokeColor)
+				strokeColor.transform(this._matrix);
+			// Reset the internal matrix to the identity transformation if it
+			// was possible to apply it.
+			this._matrix.reset();
+		}
+		if (!_dontNotify)
+			this._changed(/*#=*/ Change.GEOMETRY);
 	},
 
 	/**

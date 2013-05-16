@@ -151,12 +151,13 @@ var Style = this.Style = Base.extend(new function() {
 			}
 		};
 
-		fields[get] = function() {
+		fields[get] = function(/* dontMerge */) {
 			var value,
 				children = this._item && this._item._children;
 			// If this item has children, walk through all of them and see if
 			// they all have the same style.
-			if (!children || children.length === 0
+			// If true is passed for dontMerge, don't merge children styles
+			if (!children || children.length === 0 || arguments[0]
 					|| this._item._type === 'compound-path') {
 				var value = this._values[key];
 				if (value === undefined) {

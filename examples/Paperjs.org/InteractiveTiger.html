@@ -9,7 +9,6 @@
 		project.importSVG(document.getElementById('svg'));
 
 		// Resize the tiger to fit within the window:
-		project.activeLayer.applyMatrix = true;
 		project.activeLayer.fitBounds(view.bounds);
 
 		var items = project.activeLayer.firstChild.children;

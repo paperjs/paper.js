@@ -93,8 +93,6 @@ context.include('paper.js');
 // to redefine Base.isPlainObject() here.
 // So instead of checking for Object.prototype, we're checking
 // proto.constructor.name for 'Object'
-// TODO: Benchmark the speed and consider this implementation instead of the
-// current one in straps.js too
 var Base = context.Base;
 Base.isPlainObject = function(obj) {
 	var proto = obj !== null && typeof obj === 'object'
@@ -103,16 +101,14 @@ Base.isPlainObject = function(obj) {
 			|| proto === Base.prototype);
 };
 
-// Expose the Canvas, XMLSerializer to paper scopes:
-Base.each({
+context.PaperScope.inject({
+	// Expose the Canvas, XMLSerializer & DOMParser to PaperScope:
 	Canvas: Canvas,
 	XMLSerializer: XMLSerializer,
 	DOMParser: DOMParser,
 	// Also fix version. Remove 2nd dot, so we can make a float out of it:
 	version: parseFloat(json.version.replace(/(.)(\d)$/, '$2'))
-}, function(value, key) {
-	this[key] = value;
-}, context.PaperScope.prototype);
+});
 
 require.extensions['.pjs'] = function(module, uri) {
 	var source = context.PaperScript.compile(fs.readFileSync(uri, 'utf8'));

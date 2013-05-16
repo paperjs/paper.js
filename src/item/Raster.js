@@ -19,6 +19,7 @@
  */
 var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	_class: 'Raster',
+	_applyMatrix: false,
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
 	_boundsGetter: 'getBounds',

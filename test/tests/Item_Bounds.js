@@ -53,7 +53,7 @@ test('path.bounds when contained in a transformed group', function() {
 	var group = new Group([path]);
 	compareRectangles(path.bounds, { x: 10, y: 10, width: 50, height: 50 }, 'path.bounds before group translation');
 	group.translate(100, 100);
-	compareRectangles(path.bounds, { x: 10, y: 10, width: 50, height: 50 }, 'path.bounds after group translation');
+	compareRectangles(path.bounds, { x: 110, y: 110, width: 50, height: 50 }, 'path.bounds after group translation');
 });
 
 test('text.bounds', function() {

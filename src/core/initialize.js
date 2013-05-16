@@ -14,7 +14,7 @@
 // When in dev mode, also export all classes through PaperScope, to mimick
 // scoping behavior of the built library.
 Base.each(this, function(val, key) {
-	if (val && val.prototype instanceof Base)
+	if (val && val.prototype instanceof Base || val === Base)
 		PaperScope.prototype[key] = val;
 });
 // See paper.js for the non-dev version of this code. We cannot handle dev there

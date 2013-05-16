@@ -12,10 +12,6 @@
 		var yesGroup = words.children.yes;
 		var noGroup = words.children.no;
 
-		project.activeLayer.applyMatrix = true;
-		noGroup.applyMatrix = true;
-		yesGroup.applyMatrix = true;
-
 		// Resize the words to fit snugly inside the view:
 		project.activeLayer.fitBounds(view.bounds);
 		project.activeLayer.scale(0.8);
