@@ -200,8 +200,8 @@ function _clipBezierFatLine( v1, v2, v2t ){
     if( dq3 < dq0 ){
         tmp = dmin; dmin = dmax; dmax = tmp;
     }
-    // Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
     var Dt  = _convexhull( dq0, dq1, dq2, dq3 );
+    // Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
     // Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
     // for the coorresponding t values (tmin, tmax):
     // Portions of curve v2 before tmin and after tmax can safely be clipped away
@@ -230,6 +230,14 @@ function _clipBezierFatLine( v1, v2, v2t ){
     // Return the parameter values for v2 for which we can be sure that the
     // intersection with v1 lies within.
     if(tmin !== Infinity && tmax !== -Infinity){
+        var mindmin = Math.min(dmin, dmax);
+        var mindmax = Math.max(dmin, dmax);
+        if( dq3 > mindmin && dq3 < mindmax ){
+            tmax = 1;
+        }
+        if( dq0 > mindmin && dq0 < mindmax ){
+            tmin = 0;
+        }
         if( tmaxdmin > tmax ){ tmax = 1; }
 // Debug: Plot the non-parametric graph and hull
 // plotD_vs_t( 500, 110, Dt, [dq0, dq1, dq2, dq3], v1, dmin, dmax, tmin, tmax, 1.0 / ( tmax - tmin + 0.3 ) )

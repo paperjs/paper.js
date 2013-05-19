@@ -46,32 +46,32 @@ function runTests() {
     return caption;
   }
 
-  // var caption = document.createElement('h3');
-  // caption.appendChild(document.createTextNode("Randomised tests (may take a while...)"));
-  // container.appendChild(caption);
-  // var canvas = document.createElement('CANVAS');
-  // container.appendChild( canvas );
-  // paper.setup( canvas );
-  // doRandomTests( randomtestdata );
-  // window.d = randomtestdata;
-  // container.removeChild( canvas );
+  var caption = document.createElement('h3');
+  caption.appendChild(document.createTextNode("Randomised tests (may take a while...)"));
+  container.appendChild(caption);
+  var canvas = document.createElement('CANVAS');
+  container.appendChild( canvas );
+  paper.setup( canvas );
+  doRandomTests( randomtestdata );
+  window.d = randomtestdata;
+  container.removeChild( canvas );
 
   runTest('random', function(){
-    pathA = getRandomPath(5);
-    pathB = getRandomPath(5);
+    pathA = getRandomPath(10);
+    pathB = getRandomPath(10);
     return [pathA, pathB];
   });
 
-  // runTest('failcase 1', function(){
-  //   group  = paper.project.importSVG( document.getElementById( 'svgrandom1' ) );
-  //   pathA = group.children[0];
-  //   pathB = group.children[1];
-  //   pathA.style = pathB.style = null;
-  //   var np1 = new Path( [pathA.segments[0], pathA.segments[1]] );
-  //   var np2 = new Path( [pathB.segments[0], pathB.segments[1]] );
-  //   return [pathA, pathB];
-  //   return [np1, np2];
-  // });
+  runTest('failcase 1', function(){
+    group  = paper.project.importSVG( document.getElementById( 'svgrandom1' ) );
+    pathA = group.children[0];
+    pathB = group.children[1];
+    pathA.style = pathB.style = null;
+    var np1 = new Path( [pathA.segments[0], pathA.segments[1]] );
+    var np2 = new Path( [pathB.segments[0], pathB.segments[1]] );
+    return [pathA, pathB];
+    // return [np1, np2];
+  });
 
   // runTest('failcase 2', function(){
   //   group  = paper.project.importSVG( document.getElementById( 'svgrandom2' ) );
@@ -84,161 +84,161 @@ function runTests() {
   //   return [np1, np2];
   // });
 
-  // runTest('Overlapping circles', function(){
-  //   pathA = new Path.Circle(new Point(80, 110), 50);
-  //   pathB = new Path.Circle(new Point(150, 110), 70);
+  runTest('Overlapping circles', function(){
+    pathA = new Path.Circle(new Point(80, 110), 50);
+    pathB = new Path.Circle(new Point(150, 110), 70);
+    return [pathA, pathB];
+  });
+
+  // runTest('Polygon and square', function(){
+  //   pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
+  //   pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
   //   return [pathA, pathB];
   // });
 
-  // // runTest('Polygon and square', function(){
-  // //   pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
-  // //   pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
-  // //   return [pathA, pathB];
-  // // });
-
-  // // runTest('Circle and square (overlaps exactly on existing segments)', function(){
-  // //   pathA = new Path.Circle(new Point(110, 110), 80);
-  // //   pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
-  // //   return [pathA, pathB];
-  // // });
-
-  // // runTest('Circle and square (existing segments overlaps on curves)', function(){
-  // //   pathA = new Path.Circle(new Point(110, 110), 80);
-  // //   pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
-  // //   return [pathA, pathB];
-  // // });
-
-  // // runTest('Square and square (one segment overlaps on a line)', function(){
-  // //   pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
-  // //   pathA.rotate( 45 );
-  // //   pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
-  // //   return [pathA, pathB];
-  // // });
-
-  // // runTest('Rectangle and rectangle (overlaps exactly on existing curves)', function(){
-  // //   pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
-  // //   pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
-  // //   return [pathA, pathB];
-  // // });
-
-  // // runTest('Overlapping stars 1', function(){
-  // //   pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
-  // //   pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
-  // //   return [pathA, pathB];
-  // // });
-
-  // // runTest('Overlapping stars 2', function(){
-  // //   pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
-  // //   pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
-  // //   return [pathA, pathB];
-  // // });
-
-  // runTest('Circle and banana (multiple intersections within same curve segment)', function(){
-  //   pathA = new Path.Circle(new Point(80, 110), 80);
-  //   pathB = new Path.Circle(new Point(130, 110), 80 );
-  //   pathB.segments[3].point = pathB.segments[3].point.add( [ 0, -120 ] );
+  // runTest('Circle and square (overlaps exactly on existing segments)', function(){
+  //   pathA = new Path.Circle(new Point(110, 110), 80);
+  //   pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
   //   return [pathA, pathB];
   // });
 
-  // runTest('Maximum possible intersections between 2 cubic bezier curve segments - 9', function(){
-  //   pathA = new Path();
-  //   pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
-  //   pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
-  //   pathA.closed = true;
-  //   pathB = pathA.clone();
-  //   pathB.rotate( -90 );
-  //   pathA.translate( [-10,0] );
-  //   pathB.translate( [10,0] );
+  // runTest('Circle and square (existing segments overlaps on curves)', function(){
+  //   pathA = new Path.Circle(new Point(110, 110), 80);
+  //   pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
   //   return [pathA, pathB];
   // });
 
-  // runTest('SVG gears', function(){
-  //     group  = paper.project.importSVG( document.getElementById( 'svggears' ) );
-  //     pathA = group.children[0];
-  //     pathB = group.children[1];
-  //     return [pathA, pathB];
-  //   });
-
-  // runTest('Glyphs imported from SVG', function(){
-  //   group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
-  //   pathA = group.children[0];
-  //   pathB = group.children[1];
+  // runTest('Square and square (one segment overlaps on a line)', function(){
+  //   pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
+  //   pathA.rotate( 45 );
+  //   pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
   //   return [pathA, pathB];
   // });
 
-  // runTest('CompoundPaths 1', function(){
-  //   group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  //   pathA = group.children[0];
-  //   pathB = group.children[1];
+  // runTest('Rectangle and rectangle (overlaps exactly on existing curves)', function(){
+  //   pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
+  //   pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
   //   return [pathA, pathB];
   // });
 
-  // runTest('CompoundPaths 2 - holes', function(){
-  //   group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  //   pathA = group.children[0];
+  // runTest('Overlapping stars 1', function(){
+  //   pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
+  //   pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
+  //   return [pathA, pathB];
+  // });
+
+  // runTest('Overlapping stars 2', function(){
+  //   pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
+  //   pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
+  //   return [pathA, pathB];
+  // });
+
+  runTest('Circle and banana (multiple intersections within same curve segment)', function(){
+    pathA = new Path.Circle(new Point(80, 110), 80);
+    pathB = new Path.Circle(new Point(130, 110), 80 );
+    pathB.segments[3].point = pathB.segments[3].point.add( [ 0, -120 ] );
+    return [pathA, pathB];
+  });
+
+  runTest('Maximum possible intersections between 2 cubic bezier curve segments - 9', function(){
+    pathA = new Path();
+    pathA.add( new Segment( [173, 44], [-281, 268], [-86, 152] ) );
+    pathA.add( new Segment( [47, 93], [-89, 100], [240, -239] ) );
+    pathA.closed = true;
+    pathB = pathA.clone();
+    pathB.rotate( -90 );
+    pathA.translate( [-10,0] );
+    pathB.translate( [10,0] );
+    return [pathA, pathB];
+  });
+
+  runTest('SVG gears', function(){
+      group  = paper.project.importSVG( document.getElementById( 'svggears' ) );
+      pathA = group.children[0];
+      pathB = group.children[1];
+      return [pathA, pathB];
+    });
+
+  runTest('Glyphs imported from SVG', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsys' ) );
+    pathA = group.children[0];
+    pathB = group.children[1];
+    return [pathA, pathB];
+  });
+
+  runTest('CompoundPaths 1', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = group.children[1];
+    return [pathA, pathB];
+  });
+
+  runTest('CompoundPaths 2 - holes', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = new CompoundPath();
+    group.children[1].clockwise = true;
+    pathB.addChild(group.children[1]);
+    var npath = new Path.Circle([110, 110], 30);
+    pathB.addChild( npath );
+    return [pathA, pathB];
+  });
+
+  runTest('CompoundPaths 3 !', function(){
+    group  = paper.project.importSVG( document.getElementById( 'svggreenland' ) );
+    pathA = group.children[0];
+    pathB = group.children[1];
+    pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
+    // pathA.scale( 2 );
+    // pathB.scale( 2 );
+    return [pathA, pathB];
+  });
+
+  runTest('CompoundPaths 4 - holes and islands 1', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = new CompoundPath();
+    group.children[1].clockwise = true;
+    pathB.addChild(group.children[1]);
+    var npath = new Path.Circle([40, 80], 20);
+    pathB.addChild( npath );
+    return [pathA, pathB];
+  });
+
+  runTest('CompoundPaths 5 - holes and islands 2', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = new CompoundPath();
+    group.children[1].clockwise = true;
+    pathB.addChild(group.children[1]);
+    var npath = new Path.Circle([40, 80], 20);
+    pathB.addChild( npath );
+    npath = new Path.Circle([120, 110], 30);
+    pathB.addChild( npath );
+    return [pathA, pathB];
+  });
+
+  runTest('CompoundPaths 6 - holes and islands 3', function(){
+    group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
+    pathA = group.children[0];
+    pathB = new CompoundPath();
+    var npath = new Path.Circle([110, 110], 100);
+    pathB.addChild( npath );
+    npath = new Path.Circle([110, 110], 60);
+    pathB.addChild( npath );
+    npath = new Path.Circle([110, 110], 30);
+    pathB.addChild( npath );
+    return [pathA, pathB];
+  });
+
+  // runTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', function(){
+  //   pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
   //   pathB = new CompoundPath();
-  //   group.children[1].clockwise = true;
-  //   pathB.addChild(group.children[1]);
-  //   var npath = new Path.Circle([110, 110], 30);
-  //   pathB.addChild( npath );
+  //   pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
+  //   pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
+  //   // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
   //   return [pathA, pathB];
   // });
-
-  // runTest('CompoundPaths 3 !', function(){
-  //   group  = paper.project.importSVG( document.getElementById( 'svggreenland' ) );
-  //   pathA = group.children[0];
-  //   pathB = group.children[1];
-  //   pathB.scale( 0.5, 1 ).translate( [25.5, 0] );
-  //   // pathA.scale( 2 );
-  //   // pathB.scale( 2 );
-  //   return [pathA, pathB];
-  // });
-
-  // runTest('CompoundPaths 4 - holes and islands 1', function(){
-  //   group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  //   pathA = group.children[0];
-  //   pathB = new CompoundPath();
-  //   group.children[1].clockwise = true;
-  //   pathB.addChild(group.children[1]);
-  //   var npath = new Path.Circle([40, 80], 20);
-  //   pathB.addChild( npath );
-  //   return [pathA, pathB];
-  // });
-
-  // runTest('CompoundPaths 5 - holes and islands 2', function(){
-  //   group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  //   pathA = group.children[0];
-  //   pathB = new CompoundPath();
-  //   group.children[1].clockwise = true;
-  //   pathB.addChild(group.children[1]);
-  //   var npath = new Path.Circle([40, 80], 20);
-  //   pathB.addChild( npath );
-  //   npath = new Path.Circle([120, 110], 30);
-  //   pathB.addChild( npath );
-  //   return [pathA, pathB];
-  // });
-
-  // runTest('CompoundPaths 6 - holes and islands 3', function(){
-  //   group  = paper.project.importSVG( document.getElementById( 'glyphsacirc' ) );
-  //   pathA = group.children[0];
-  //   pathB = new CompoundPath();
-  //   var npath = new Path.Circle([110, 110], 100);
-  //   pathB.addChild( npath );
-  //   npath = new Path.Circle([110, 110], 60);
-  //   pathB.addChild( npath );
-  //   npath = new Path.Circle([110, 110], 30);
-  //   pathB.addChild( npath );
-  //   return [pathA, pathB];
-  // });
-
-  // // runTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', function(){
-  // //   pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
-  // //   pathB = new CompoundPath();
-  // //   pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
-  // //   pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
-  // //   // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
-  // //   return [pathA, pathB];
-  // // });
 
 
   // Plot the run times
