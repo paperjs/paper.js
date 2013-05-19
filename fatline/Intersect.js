@@ -1,7 +1,7 @@
 
 var EPSILON = 10e-12;
 var TOLERANCE = 10e-6;
-var MAX_RECURSE = 10;
+var MAX_RECURSE = 20;
 var MAX_ITERATE = 20;
 
 /**
@@ -16,15 +16,15 @@ function getIntersections2( path1, path2 ){
         curves1 = path1.getCurves(),
         curves2 = path2.getCurves(),
         length2 = curves2.length,
-        values2 = [];
-    for (var i = 0; i < length2; i++)
+        values2 = [], i;
+    for (i = 0; i < length2; i++)
         values2[i] = curves2[i].getValues();
-    for (var i = 0, l = curves1.length; i < l; i++) {
+    for (i = 0, l = curves1.length; i < l; i++) {
         var curve1 = curves1[i],
             values1 = curve1.getValues();
+        var v1Linear = Curve.isLinear(values1);
         for (var j = 0; j < length2; j++){
             value2 = values2[j];
-            var v1Linear = Curve.isLinear(values1);
             var v2Linear = Curve.isLinear(value2);
             if( v1Linear && v2Linear ){
                 _getLineLineIntersection(values1, value2, curve1, curves2[j], locations);
