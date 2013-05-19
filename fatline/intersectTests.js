@@ -57,8 +57,8 @@ function runTests() {
   container.removeChild( canvas );
 
   runTest('random', function(){
-    pathA = getRandomPath(10);
-    pathB = getRandomPath(10);
+    pathA = getRandomPath(20);
+    pathB = getRandomPath(20);
     return [pathA, pathB];
   });
 
@@ -67,22 +67,8 @@ function runTests() {
     pathA = group.children[0];
     pathB = group.children[1];
     pathA.style = pathB.style = null;
-    var np1 = new Path( [pathA.segments[0], pathA.segments[1]] );
-    var np2 = new Path( [pathB.segments[0], pathB.segments[1]] );
     return [pathA, pathB];
-    // return [np1, np2];
   });
-
-  // runTest('failcase 2', function(){
-  //   group  = paper.project.importSVG( document.getElementById( 'svgrandom2' ) );
-  //   pathA = group.children[0];
-  //   pathB = group.children[1];
-  //   pathA.style = pathB.style = null;
-  //   var np1 = new Path( [pathA.segments[0], pathA.segments[1]] );
-  //   var np2 = new Path( [pathB.segments[0], pathB.segments[1]] );
-  //   return [pathA, pathB];
-  //   return [np1, np2];
-  // });
 
   runTest('Overlapping circles', function(){
     pathA = new Path.Circle(new Point(80, 110), 50);
@@ -90,48 +76,48 @@ function runTests() {
     return [pathA, pathB];
   });
 
-  // runTest('Polygon and square', function(){
-  //   pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
-  //   pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
-  //   return [pathA, pathB];
-  // });
+  runTest('Polygon and square', function(){
+    pathA = new Path.RegularPolygon(new Point(80, 110), 12, 80);
+    pathB = new Path.Rectangle(new Point(100, 80), [80, 80] );
+    return [pathA, pathB];
+  });
 
-  // runTest('Circle and square (overlaps exactly on existing segments)', function(){
-  //   pathA = new Path.Circle(new Point(110, 110), 80);
-  //   pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
-  //   return [pathA, pathB];
-  // });
+  runTest('Circle and square (overlaps exactly on existing segments)', function(){
+    pathA = new Path.Circle(new Point(110, 110), 80);
+    pathB = new Path.Rectangle(new Point(110, 110), [80, 80] );
+    return [pathA, pathB];
+  });
 
-  // runTest('Circle and square (existing segments overlaps on curves)', function(){
-  //   pathA = new Path.Circle(new Point(110, 110), 80);
-  //   pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
-  //   return [pathA, pathB];
-  // });
+  runTest('Circle and square (existing segments overlaps on curves)', function(){
+    pathA = new Path.Circle(new Point(110, 110), 80);
+    pathB = new Path.Rectangle(new Point(110, 110), [100, 100] );
+    return [pathA, pathB];
+  });
 
-  // runTest('Square and square (one segment overlaps on a line)', function(){
-  //   pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
-  //   pathA.rotate( 45 );
-  //   pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
-  //   return [pathA, pathB];
-  // });
+  runTest('Square and square (one segment overlaps on a line)', function(){
+    pathA = new Path.Rectangle(new Point(80, 125), [50, 50] );
+    pathA.rotate( 45 );
+    pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80] );
+    return [pathA, pathB];
+  });
 
-  // runTest('Rectangle and rectangle (overlaps exactly on existing curves)', function(){
-  //   pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
-  //   pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
-  //   return [pathA, pathB];
-  // });
+  runTest('Rectangle and rectangle (overlaps exactly on existing curves)', function(){
+    pathA = new Path.Rectangle(new Point(30.5, 50.5), [100, 150]);
+    pathB = new Path.Rectangle(new Point(130.5, 60.5), [100, 150]);
+    return [pathA, pathB];
+  });
 
-  // runTest('Overlapping stars 1', function(){
-  //   pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
-  //   pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
-  //   return [pathA, pathB];
-  // });
+  runTest('Overlapping stars 1', function(){
+    pathA = new Path.Star(new Point(80, 110), 10, 20, 80);
+    pathB = new Path.Star(new Point(120, 110), 10, 30, 100);
+    return [pathA, pathB];
+  });
 
-  // runTest('Overlapping stars 2', function(){
-  //   pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
-  //   pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
-  //   return [pathA, pathB];
-  // });
+  runTest('Overlapping stars 2', function(){
+    pathA = new Path.Star(new Point(110, 110), 20, 20, 80);
+    pathB = new Path.Star(new Point(110, 110), 6, 30, 100);
+    return [pathA, pathB];
+  });
 
   runTest('Circle and banana (multiple intersections within same curve segment)', function(){
     pathA = new Path.Circle(new Point(80, 110), 80);
@@ -231,19 +217,22 @@ function runTests() {
     return [pathA, pathB];
   });
 
-  // runTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', function(){
-  //   pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
-  //   pathB = new CompoundPath();
-  //   pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
-  //   pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
-  //   // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
-  //   return [pathA, pathB];
-  // });
+  runTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', function(){
+    pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
+    pathB = new CompoundPath();
+    pathB.addChild( new Path.Rectangle(new Point(140.5, 30.5), [100, 150]) );
+    pathB.addChild( new Path.Rectangle(new Point(150.5, 65.5), [50, 100]) );
+    // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80] );
+    return [pathA, pathB];
+  });
 
 
   // Plot the run times
   function plotData(){
-    prepareTest( 'Results', container, true );
+    prepareTest( 'Results - Random tests ( Intersections/Curve vs Time)', container, 'big2' );
+    plotDataRandom( randomtestdata );
+
+    prepareTest( 'Results - Boolean tests ( Time taken per test )', container, 'big' );
     var x = 80.5, y = 15.5, width = 500, height = 190, i, txt, ny,
       yy = y + height, xx = x + width;
     var ppaperfill = new Path(), pfatfill = new Path();
@@ -392,9 +381,7 @@ function runTests() {
     var caption = document.createElement('h3');
     caption.appendChild( document.createTextNode( testName ) );
     var canvas = document.createElement('CANVAS');
-    if(_big){
-      canvas.className += ' big';
-    }
+    canvas.className += ' ' + _big;
     parentNode.appendChild( caption );
     parentNode.appendChild( canvas );
     paper.setup( canvas );
@@ -422,7 +409,7 @@ var pathStyleBoolean = {
 
 // Better if path1 and path2 fit nicely inside a 200x200 pixels rect
 function testIntersections( path1, path2, caption, testname, testdata, nomark) {
-  var i, l, maxCount = 1, count = maxCount, st, t1, t2,
+  var i, l, maxCount = 10, count = maxCount, st, t1, t2,
     ixsPaper, ixsFatline, success = false, maxdiff = -Infinity;
   try{
     path1.style = path2.style = pathStyleNormal;
@@ -490,7 +477,7 @@ function testIntersections( path1, path2, caption, testname, testdata, nomark) {
 
 function doRandomTests( testdata ){
   var p1 = new Path(), p2 = new Path(), ixspaper, ixsfat;
-  var seg = 5, maxseg = 20, maxiter = 10;
+  var seg = 5, maxseg = 30, maxiter = 10;
   var i, j, halfseg = (maxseg / 2) | 0;
   var p, hi, ho, st, t1, t2, success;
   while( seg <= maxseg ){
@@ -678,3 +665,85 @@ function annotateCurve( crv, t, c, tc, remove ) {
     text.removeOnMove();
   }
 }
+
+
+// Plot the run times
+  function plotDataRandom( testdata ){
+    var x = 80.5, y = 15.5, width = 500, height = 190, i, txt, ny,
+      yy = y + height, xx = x + width;
+    var ppaper = new Path(), pfat = new Path();
+    var max = testdata.reduce(function( a, b ){ return Math.max( a, b.paperTime, b.fatTime ); }, 0) + 20;
+    testdata.sort( function(a,b){ return a.ratio - b.ratio; } );
+    var vscale = height / max, hscale = width / testdata.length;
+    var caxes = '#999', ctxt = '#222', cpaper = '#268BD2', cfat = '#D33682';
+    new Path.Line( x, yy, xx, yy ).style.strokeColor = caxes;
+    new Path.Line( x, yy, x, y ).style.strokeColor = caxes;
+    for( i = 0; i < 10 ; i++ ){
+      ny = yy - vscale * max * i / 10;
+      new Path.Line( x, ny, x-5, ny ).style.strokeColor = caxes;
+      txt = new PointText( [x-10, ny] );
+      txt.justification = 'right';
+      txt.fillColor = ctxt;
+      txt.content = (max * i / 10).toFixed(1) + ((!i)? ' ms' : '');
+    }
+    txt = new PointText([xx + 20, yy + 18 ]);
+    txt.justification = 'left';
+    txt.fillColor = ctxt;
+    txt.content = 'ixs / curve';
+    txt = new PointText([xx + 20, yy + 40]);
+    txt.justification = 'left';
+    txt.fillColor = '#999';
+    txt.content = '( Total Curves )';
+    var vx = x, step = 15, count = 0;
+    var avgPaper = 0, avgFat = 0;
+    testdata.map(function(data){
+      avgPaper += data.paperTime;
+      ny = yy - (data.paperTime + data.fatTime) * vscale;
+      ppaper.add( new Segment([vx, ny]) );
+      avgFat += data.fatTime;
+      ny = yy - (data.fatTime) * vscale;
+      pfat.add( new Segment([vx, ny]) );
+
+      new Path.Line( vx, yy, vx, yy + 5 + ((count%2)? step:0) ).style.strokeColor = caxes;
+      txt = new PointText( [vx, yy+18 + ((count%2)? step:0) ] );
+      txt.justification = 'center';
+      txt.fillColor = ctxt;
+      txt.content = data.ratio.toFixed(1);
+      txt = new PointText( [vx -5, yy+40 ] );
+      txt.justification = 'left';
+      txt.fillColor = '#999';
+      txt.content = data.curves;
+      txt.rotate( 90, [vx-5, yy+40 ] );
+
+      if( !data.success ){
+        var p = new Path.Line( vx, y, vx, yy );
+        p.style.strokeWidth = 5;
+        p.style.strokeColor = '#f00';
+      }
+      ++count;
+      vx += hscale;
+    });
+    ppaper.smooth();
+    ppaper.style.strokeWidth = 2;
+    ppaper.style.strokeColor = cpaper;
+    pfat.smooth();
+    pfat.style.strokeWidth = 2;
+    pfat.style.strokeColor = cfat;
+
+    avgPaper/= testdata.length;
+    avgFat/= testdata.length;
+    ny = Math.round(yy - avgPaper * vscale) + 0.5;
+    new Path.Line(x, ny, xx, ny).style.strokeColor = cpaper;
+    txt = new PointText( [xx, ny] );
+    txt.justification = 'right';
+    txt.fillColor = cpaper;
+    txt.content = avgPaper.toFixed(1);
+    ny = Math.round(yy - avgFat * vscale) + 0.5;
+    new Path.Line(x, ny, xx, ny).style.strokeColor = cfat;
+    txt = new PointText( [xx, ny] );
+    txt.justification = 'right';
+    txt.fillColor = cfat;
+    txt.content = avgFat.toFixed(1);
+
+    view.draw();
+  }
