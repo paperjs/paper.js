@@ -518,7 +518,7 @@ function doRandomTests( testdata ){
       }
       success = ixspaper.length === found;
       testdata.push({
-        curves: seg,
+        curves: p1.curves.length + p2.curves.length,
         ixsfat: ixsfat.length,
         ixspaper: ixspaper.length,
         ratio: ixsfat.length / (seg),
