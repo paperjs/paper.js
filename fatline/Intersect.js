@@ -126,16 +126,21 @@ paper.Curve.getIntersections2 = function( v1, v2, curve1, curve2, locations, _v1
         // Check if one of the parameter range has converged completely to a point.
         // Now things could get only worse if we iterate more for the other
         // curve to converge if it hasn't yet happened so.
-        if( Math.abs(v1t.t2 - v1t.t1) < EPSILON ){
-            locations.push(new CurveLocation(curve1, v1t.t1, curve1.getPointAt(v1t.t1, true), curve2));
-            return;
-        }else if( Math.abs(v2t.t2 - v2t.t1) < EPSILON ){
-            locations.push(new CurveLocation(curve1, null, curve2.getPointAt(v1t.t1, true), curve2));
+        var v1Converged = (Math.abs(v1t.t2 - v1t.t1) < EPSILON),
+            v2Converged = (Math.abs(v2t.t2 - v2t.t1) < EPSILON);
+        if( v1Converged || v2Converged ){
+            var first = locations[0],
+            last = locations[locations.length - 1];
+            if ((!first || !point.equals(first._point))
+                    && (!last || !point.equals(last._point))){
+                var point = (v1Converged)? curve1.getPointAt(v1t.t1, true) : curve2.getPointAt(v2t.t1, true);
+                locations.push(new CurveLocation(curve1, null, point, curve2));
+            }
             return;
         }
         // Check to see if both parameter ranges have converged or else,
         // see if either or both of the curves are flat enough to be treated as lines
-        if( Math.abs(v1t.t2 - v1t.t1) <= TOLERANCE || Math.abs(v2t.t2 - v2t.t1) <= TOLERANCE ){
+        if( Math.abs(v1t.t2 - v1t.t1) <= TOLERANCE && Math.abs(v2t.t2 - v2t.t1) <= TOLERANCE ){
             locations.push(new CurveLocation(curve1, v1t.t1, curve1.getPointAt(v1t.t1, true), curve2));
             return;
         } else {
@@ -335,81 +340,6 @@ function _convexhull( dq0, dq1, dq2, dq3 ){
         }
     }
     return Dt;
-}
-
-
-function drawFatline( v1 ) {
-    function signum(num) {
-        return ( num > 0 )? 1 : ( num < 0 )? -1 : 0;
-    }
-    var l = new Line( [v1[0], v1[1]], [v1[6], v1[7]], false );
-    var p1 = new Point( v1[2], v1[3] ), p2 = new Point( v1[4], v1[5] );
-    var d1 = l.getSide( p1 ) * l.getDistance( p1 ) || 0;
-    var d2 = l.getSide( p2 ) * l.getDistance( p2 ) || 0;
-    var dmin, dmax;
-    if( d1 * d2 > 0){
-        // 3/4 * min{0, d1, d2}
-        dmin = 0.75 * Math.min( 0, d1, d2 );
-        dmax = 0.75 * Math.max( 0, d1, d2 );
-    } else {
-        // 4/9 * min{0, d1, d2}
-        dmin = 4 * Math.min( 0, d1, d2 ) / 9.0;
-        dmax = 4 * Math.max( 0, d1, d2 ) / 9.0;
-    }
-    var ll = new Path.Line( v1[0], v1[1], v1[6], v1[7] );
-    window.__p3.push( ll );
-    window.__p3[window.__p3.length-1].style.strokeColor = new Color( 0,0,0.9, 0.8);
-    var lp1 = ll.segments[0].point;
-    var lp2 = ll.segments[1].point;
-    var pm = l.vector, pm1 = pm.rotate( signum( dmin ) * -90 ), pm2 = pm.rotate( signum( dmax ) * -90 );
-    var p11 = lp1.add( pm1.normalize( Math.abs(dmin) ) );
-    var p12 = lp2.add( pm1.normalize( Math.abs(dmin) ) );
-    var p21 = lp1.add( pm2.normalize( Math.abs(dmax) ) );
-    var p22 = lp2.add( pm2.normalize( Math.abs(dmax) ) );
-    window.__p3.push( new Path.Line( p11, p12 ) );
-    window.__p3[window.__p3.length-1].style.strokeColor = new Color( 0,0,0.9);
-    window.__p3.push( new Path.Line( p21, p22 ) );
-    window.__p3[window.__p3.length-1].style.strokeColor = new Color( 0,0,0.9);
-}
-
-function plotD_vs_t( x, y, arr, arr2, v, dmin, dmax, tmin, tmax, yscale, tvalue ){
-    yscale = yscale || 1;
-    new Path.Line( x, y-100, x, y+100 ).style.strokeColor = '#aaa';
-    new Path.Line( x, y, x + 200, y ).style.strokeColor = '#aaa';
-
-    var clr = (tvalue)? '#a00' : '#00a';
-    if( window.__p3 ) window.__p3.map(function(a){a.remove();});
-
-    window.__p3 = [];
-
-    drawFatline( v );
-
-    window.__p3.push( new Path.Line( x, y + dmin * yscale, x + 200, y + dmin * yscale ) );
-    window.__p3[window.__p3.length-1].style.strokeColor = '#000'
-    window.__p3.push( new Path.Line( x, y + dmax * yscale, x + 200, y + dmax * yscale ) );
-    window.__p3[window.__p3.length-1].style.strokeColor = '#000'
-    window.__p3.push( new Path.Line( x + tmin * 190, y-100, x + tmin * 190, y+100 ) );
-    window.__p3[window.__p3.length-1].style.strokeColor = clr
-    window.__p3.push( new Path.Line( x + tmax * 190, y-100, x + tmax * 190, y+100 ) );
-    window.__p3[window.__p3.length-1].style.strokeColor = clr
-
-    for (var i = 0; i < arr.length; i++) {
-        window.__p3.push( new Path.Line( new Point( x + arr[i][0] * 190, y + arr[i][1] * yscale ),
-         new Point( x + arr[i][2] * 190, y + arr[i][3] * yscale ) ) );
-        window.__p3[window.__p3.length-1].style.strokeColor = '#999';
-    }
-    var pnt = [];
-    var arr2x = [ 0.0, 0.333333333, 0.6666666666, 1.0 ];
-    for (var i = 0; i < arr2.length; i++) {
-        pnt.push( new Point( x + arr2x[i] * 190, y + arr2[i] * yscale ) );
-        window.__p3.push( new Path.Circle( pnt[pnt.length-1], 2 ) );
-        window.__p3[window.__p3.length-1].style.fillColor = '#000'
-    }
-    // var pth = new Path( pnt[0], pnt[1], pnt[2], pnt[3] );
-    // pth.closed = true;
-    window.__p3.push( new Path( new Segment(pnt[0], null, pnt[1].subtract(pnt[0])), new Segment( pnt[3], pnt[2].subtract(pnt[3]), null ) ) );
-    window.__p3[window.__p3.length-1].style.strokeColor = clr
-    view.draw();
 }
 
 // This is basically an "unrolled" version of #Line.getDistance() with sign
