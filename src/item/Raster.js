@@ -297,11 +297,17 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 			image.src = src;
 		}
 /*#*/ } else if (options.server) {
-		// If we're running on the server and it's a string,
-		// load it from disk:
-		// TODO: load images async, calling setImage once loaded as above
 		var image = new Image();
-		image.src = fs.readFileSync(src);
+		// If we're running on the server and it's a string,
+		// check if it is a data URL
+		var protocol = src.split('/')[0];
+		if (protocol && protocol.equals("data:image")) {
+			image.src = src;
+		} else {
+			// load it from disk:
+			// TODO: load images async, calling setImage once loaded as above
+			image.src = fs.readFileSync(src);
+		}
 /*#*/ } // options.server
 		this.setImage(image);
 	},
