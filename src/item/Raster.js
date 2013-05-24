@@ -301,7 +301,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		// If we're running on the server and it's a string,
 		// check if it is a data URL
 		var protocol = src.split('/')[0];
-		if (protocol && protocol.equals("data:image")) {
+		if (protocol && protocol == "data:image") {
 			image.src = src;
 		} else {
 			// load it from disk:
