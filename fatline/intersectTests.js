@@ -426,7 +426,7 @@ function testIntersections( path1, path2, caption, testname, testdata, nomark) {
 		if( !nomark ) console.time('fatline x ' + maxCount);
 		st = getTimestamp();
 		while(count--){
-			ixsFatline = getIntersections2( path1, path2 );
+			ixsFatline = path1.getIntersections2( path2 );
 		}
 		t2 = (getTimestamp() - st) / maxCount;
 		if( !nomark ) console.timeEnd('fatline x ' + maxCount);
@@ -498,7 +498,7 @@ function doRandomTests( testdata ){
 			ixspaper = p1.getIntersections( p2 );
 			t1 = (getTimestamp() - st);
 			st = getTimestamp();
-			ixsfat = getIntersections2( p1, p2 );
+			ixsfat = p1.getIntersections2( p2 );
 			t2 = (getTimestamp() - st);
 			// Check against paperjs output
 			// tol - tolerence for computed points with in 1/10 th of a pixel

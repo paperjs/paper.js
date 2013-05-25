@@ -7,14 +7,14 @@ var MAX_ITERATE = 20;
 /**
  * This method is analogous to paperjs#PathItem.getIntersections
  */
-function getIntersections2(path1, path2) {
+ paper.PathItem.prototype.getIntersections2 = function(path) {
 	// First check the bounds of the two paths. If they don't intersect,
 	// we don't need to iterate through their curves.
-	if (!path1.getBounds().touches(path2.getBounds()))
+	if (!this.getBounds().touches(path.getBounds()))
 		return [];
 	var locations = [],
-		curves1 = path1.getCurves(),
-		curves2 = path2.getCurves(),
+		curves1 = this.getCurves(),
+		curves2 = path.getCurves(),
 		length2 = curves2.length,
 		values2 = [], i;
 	for (var i = 0; i < length2; i++)
@@ -36,7 +36,7 @@ function getIntersections2(path1, path2) {
 		}
 	}
 	return locations;
-}
+};
 
 /**
  * This method is analogous to paperjs#Curve.getIntersections
@@ -132,7 +132,7 @@ paper.Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations, _v1t
 			v2Converged = (Math.abs(v2t.t2 - v2t.t1) < EPSILON);
 		if (v1Converged || v2Converged) {
 			var first = locations[0],
-			last = locations[locations.length - 1];
+                last = locations[locations.length - 1];
 			if ((!first || !point.equals(first._point))
 					&& (!last || !point.equals(last._point))) {
 				var point = (v1Converged)? curve1.getPointAt(v1t.t1, true) : curve2.getPointAt(v2t.t1, true);
@@ -397,7 +397,7 @@ var _getCurveLineIntersection = function(v1, v2, curve1, curve2, locations, _oth
 				point = Curve.evaluate(vc, root, true, 0);
 				if (other) root = null;
 				var first = locations[0],
-				last = locations[locations.length - 1];
+				    last = locations[locations.length - 1];
 				if ((!first || !point.equals(first._point))
 						&& (!last || !point.equals(last._point)))
 					locations.push(new CurveLocation(curve1, root, point, curve2));
