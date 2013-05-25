@@ -39,6 +39,19 @@ var MAX_ITERATE = 20;
 };
 
 /**
+ * Passing null for parameter leads to lazy determination of parameter values in
+ * CurveLocation#getParameter() only once they are requested.
+ */
+function addLocation(locations, curve1, parameter, point, curve2) {
+	// Avoid duplicates when hitting segments (closed paths too)
+	var first = locations[0],
+		last = locations[locations.length - 1];
+	if ((!first || !point.equals(first._point))
+			&& (!last || !point.equals(last._point)))
+		locations.push(new CurveLocation(curve1, parameter, point, curve2));
+}
+
+/**
  * This method is analogous to paperjs#Curve.getIntersections
  * @param  {[type]} v1
  * @param  {[type]} v2
@@ -48,7 +61,6 @@ var MAX_ITERATE = 20;
  * @param  {[type]} _v1t	  - Only used for recusion
  * @param  {[type]} _v2t	  - Only used for recusion
  */
-
 function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 		_recurseDepth) {
 	_recurseDepth = (_recurseDepth || 0) + 1;
@@ -147,15 +159,9 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 		var v1Converged = (Math.abs(v1t.t2 - v1t.t1) < EPSILON),
 			v2Converged = (Math.abs(v2t.t2 - v2t.t1) < EPSILON);
 		if (v1Converged || v2Converged) {
-			var first = locations[0],
-				last = locations[locations.length - 1],
-				point = v1Converged
-						? curve1.getPointAt(v1t.t1, true)
-						: curve2.getPointAt(v2t.t1, true);
-			if ((!first || !point.equals(first._point))
-					&& (!last || !point.equals(last._point))) {
-				locations.push(new CurveLocation(curve1, null, point, curve2));
-			}
+			addLocation(locations, curve1, null, v1Converged
+					? curve1.getPointAt(v1t.t1, true)
+					: curve2.getPointAt(v2t.t1, true), curve2);
 			return;
 		}
 		// Check to see if both parameter ranges have converged or else,
@@ -163,8 +169,8 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 		// lines
 		if (Math.abs(v1t.t2 - v1t.t1) <= TOLERANCE
 				&& Math.abs(v2t.t2 - v2t.t1) <= TOLERANCE) {
-			locations.push(new CurveLocation(curve1, v1t.t1,
-					curve1.getPointAt(v1t.t1, true), curve2));
+			addLocation(locations, curve1, v1t.t1,
+					curve1.getPointAt(v1t.t1, true), curve2);
 			return;
 		} else {
 			var curve1Flat = Curve.isFlatEnough(_v1, TOLERANCE);
@@ -424,16 +430,11 @@ function getCurveLineIntersections(v1, v2, curve1, curve2, locations, _flip) {
 			// We do have a point on the infinite line. Check if it falls on the
 			// line *segment*.
 			if (point.x  >= 0 && point.x <= rl2x) {
-				// The actual intersection point
-				point = Curve.evaluate(vc, t, true, 0);
-				var first = locations[0],
-					last = locations[locations.length - 1];
-				if ((!first || !point.equals(first._point))
-						&& (!last || !point.equals(last._point)))
-					locations.push(new CurveLocation(
-							_flip ? curve2 : curve1,
-							t, point, 
-							_flip ? curve1 : curve2));
+				addLocation(locations,
+						_flip ? curve2 : curve1,
+						// The actual intersection point
+						t, Curve.evaluate(vc, t, true, 0), 
+						_flip ? curve1 : curve2);
 			}
 		}
 	}
@@ -443,17 +444,10 @@ function getLineLineIntersection(v1, v2, curve1, curve2, locations) {
 	var point = Line.intersect(
 			v1[0], v1[1], v1[6], v1[7],
 			v2[0], v2[1], v2[6], v2[7], false);
-	if (point) {
-		// Avoid duplicates when hitting segments (closed paths too)
-		var first = locations[0],
-			last = locations[locations.length - 1];
-		if ((!first || !point.equals(first._point))
-				&& (!last || !point.equals(last._point)))
-			// Passing null for parameter leads to lazy determination
-			// of parameter values in CurveLocation#getParameter()
-			// only once they are requested.
-			locations.push(new CurveLocation(curve1, null, point, curve2));
-	}
+	// Passing null for parameter leads to lazy determination of parameter
+	// values in CurveLocation#getParameter() only once they are requested.
+	if (point)
+		addLocation(locations, curve1, null, point, curve2);
 }
 
 };
