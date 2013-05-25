@@ -80,16 +80,16 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	 * @param {Number} x the x coordinate of the segment point
 	 * @param {Number} y the y coordinate of the segment point
 	 * @param {Number} inX the x coordinate of the the handle point relative
-	 * 	      to the anchor point of the segment that describes the in tangent
+	 *        to the anchor point of the segment that describes the in tangent
 	 *        of the segment.
 	 * @param {Number} inY the y coordinate of the the handle point relative
-	 * 	      to the anchor point of the segment that describes the in tangent
+	 *        to the anchor point of the segment that describes the in tangent
 	 *        of the segment.
 	 * @param {Number} outX the x coordinate of the the handle point relative
-	 * 	      to the anchor point of the segment that describes the out tangent
+	 *        to the anchor point of the segment that describes the out tangent
 	 *        of the segment.
 	 * @param {Number} outY the y coordinate of the the handle point relative
-	 * 	      to the anchor point of the segment that describes the out tangent
+	 *        to the anchor point of the segment that describes the out tangent
 	 *        of the segment.
 	 *
 	 * @example {@paperscript}

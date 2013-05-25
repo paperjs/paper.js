@@ -27,7 +27,7 @@
 VERSION=0.8
 DATE=$(git log -1 --pretty=format:%ad)
 
-COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\", \"parser\": \"acorn\", \"svg\": true }' $3 $2"
+COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\", \"parser\": \"acorn\", \"svg\": true, \"fatline\": false }' $3 $2"
 
 case $1 in
 	commented)

@@ -484,7 +484,7 @@ new function() {
 		// When url() comes from a style property, '#'' seems to be missing on 
 		// WebKit, so let's make it optional here:
 		var match = value && value.match(/\((?:#|)([^)']+)/);
-        return match && definitions[match[1]];
+		return match && definitions[match[1]];
 	}
 
 	function importSVG(node, clearDefs) {

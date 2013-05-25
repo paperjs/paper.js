@@ -2234,19 +2234,22 @@ var Item = this.Item = Base.extend(Callback, {
 		// transformation state is stored.
 		// Pass on the transformation to the content, and apply it there too,
 		// by passing true for the 2nd hidden parameter.
-		if (this._transformContent(this._matrix, true)) {
+		var matrix = this._matrix;
+		if (this._transformContent(matrix, true)) {
 			// When the matrix could be applied, we also need to transform
 			// color styles with matrices (only gradients so far):
 			var style = this._style,
+				// pass true for dontMerge so we don't recursively transform
+				// styles on groups' children.
 				fillColor = style.getFillColor(true),
 				strokeColor = style.getStrokeColor(true);
 			if (fillColor)
-				fillColor.transform(this._matrix);
+				fillColor.transform(matrix);
 			if (strokeColor)
-				strokeColor.transform(this._matrix);
+				strokeColor.transform(matrix);
 			// Reset the internal matrix to the identity transformation if it
 			// was possible to apply it.
-			this._matrix.reset();
+			matrix.reset();
 		}
 		if (!_dontNotify)
 			this._changed(/*#=*/ Change.GEOMETRY);
