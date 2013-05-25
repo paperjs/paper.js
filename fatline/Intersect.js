@@ -386,38 +386,37 @@ function getSignedDistance(a1x, a1y, a2x, a2y, bx, by) {
  * because of Numerical class. We can rotate the curve and line so that the line 
  * is on X axis, and solve the implicit equations for X axis and the curve
  */
-function _getCurveLineIntersection(v1, v2, curve1, curve2, locations, _other) {
-	var vc = v1,
-		vl = v2;
-	if (_other === undefined)
-		_other = Curve.isLinear(v1);
-	if (_other) {
-		vl = v1;
-		vc = v2;
-	}
-	var l1x = vl[0], l1y = vl[1],
-		l2x = vl[6], l2y = vl[7];
-	// rotate both the curve and line around l1 so that line is on x axis
-	var lvx = l2x - l1x,
-		lvy = l2y - l1y;
-	// Angle with x axis (1, 0)
-	var angle = Math.atan2(-lvy, lvx),
-		sina = Math.sin(angle),
-		cosa = Math.cos(angle);
-	// Rotated line and curve values
-	// (rl1x, rl1y) = (0, 0)
-	var rl2x = lvx * cosa - lvy * sina,
-		rl2y = lvy * cosa + lvx * sina;
-	// Rotate the curve so the line is horizontal
-	var vcr = [];
+function _getCurveLineIntersection(v1, v2, curve1, curve2, locations, _flip) {
+	if (_flip === undefined)
+		_flip = Curve.isLinear(v1);
+	var vc = _flip ? v2 : v1,
+		vl = _flip ? v1 : v2,
+		l1x = vl[0], l1y = vl[1],
+		l2x = vl[6], l2y = vl[7],
+		// Rotate both the curve and line around l1 so that line is on x axis
+		lvx = l2x - l1x,
+		lvy = l2y - l1y,
+		// Angle with x axis (1, 0)
+		angle = Math.atan2(-lvy, lvx),
+		sin = Math.sin(angle),
+		cos = Math.cos(angle),
+		// (rl1x, rl1y) = (0, 0)
+		rl2x = lvx * cos - lvy * sin,
+		rl2y = lvy * cos + lvx * sin,
+		vcr = [];
+
 	for(var i = 0; i < 8; i += 2) {
 		var x = vc[i] - l1x,
 			y = vc[i + 1] - l1y;
-		vcr.push(x * cosa - y * sina, y * cosa + x * sina);
+		vcr.push(
+			x * cos - y * sin,
+			y * cos + x * sin);
 	}
-	var rootsvcr = [];
-	var i = Curve.solveCubic(vcr, 1, 0, roots);
-	while (i--) {
+	var roots = [],
+		count = Curve.solveCubic(vcr, 1, 0, roots);
+	// NOTE: i could theoretically be -1 for inifnite solutions, although that
+	// should only happen with lines, in which case we should not be here.
+	for (var i = 0; i < count; i++) {
 		var t = roots[i];
 		if (t >= 0 && t <= 1) {
 			var point = Curve.evaluate(vcr, t, true, 0);
@@ -426,13 +425,14 @@ function _getCurveLineIntersection(v1, v2, curve1, curve2, locations, _other) {
 			if (point.x  >= 0 && point.x <= rl2x) {
 				// The actual intersection point
 				point = Curve.evaluate(vc, t, true, 0);
-				if (_other)
-					t = null;
 				var first = locations[0],
 					last = locations[locations.length - 1];
 				if ((!first || !point.equals(first._point))
 						&& (!last || !point.equals(last._point)))
-					locations.push(new CurveLocation(curve1, t, point, curve2));
+					locations.push(new CurveLocation(
+							_flip ? curve2 : curve1,
+							t, point, 
+							_flip ? curve1 : curve2));
 			}
 		}
 	}
