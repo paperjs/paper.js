@@ -153,15 +153,13 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations,
 		// as lines.
 		var flat1 = Curve.isFlatEnough(part1, /*#=*/ Numerical.TOLERANCE),
 			flat2 = Curve.isFlatEnough(part2, /*#=*/ Numerical.TOLERANCE);
-		if (flat1 && flat2) {
-			getLineLineIntersection(part1, part2, curve1, curve2, locations);
-			break;
-		}
 		if (flat1 || flat2) {
-			// Use curve line intersection method while specifying which
-			// curve to be treated as line
-			getCurveLineIntersections(part1, part2, curve1, curve2, locations,
-					flat1);
+			(flat1 && flat2
+					? getLineLineIntersection
+					// Use curve line intersection method while specifying
+					// which curve to be treated as line
+					: getCurveLineIntersections)(part1, part2,
+							curve1, curve2, locations, flat1);
 			break;
 		}
 	}
