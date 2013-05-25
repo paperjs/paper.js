@@ -81,8 +81,8 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations,
 			&& (Math.abs(range1[1] - range1[0]) > /*#=*/ Numerical.TOLERANCE
 			|| Math.abs(range2[1] - range2[0]) > /*#=*/ Numerical.TOLERANCE)) {
 		// First we clip v2 with v1's fat-line
-		var range = range2.slice();
-		var intersects1 = clipFatLine(part1, part2, range),
+		var range,
+			intersects1 = clipFatLine(part1, part2, range = range2.slice()),
 			intersects2 = 0;
 		// Stop if there are no possible intersections
 		if (intersects1 === 0)
@@ -141,16 +141,18 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations,
 		// Check if one of the parameter range has converged completely to a
 		// point. Now things could get only worse if we iterate more for the
 		// other curve to converge if it hasn't yet happened so.
-		var converged1 = (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.EPSILON),
-			converged2 = (Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.EPSILON);
+		var span1 = Math.abs(range1[1] - range1[0]),
+			span2 = Math.abs(range2[1] - range2[0]),
+			converged1 = span1 < /*#=*/ Numerical.EPSILON,
+			converged2 = span2 < /*#=*/ Numerical.EPSILON;
 		if (converged1 || converged2) {
 			addLocation(locations, curve1, null, converged1
 					? curve1.getPointAt(range1[0], true)
 					: curve2.getPointAt(range2[0], true), curve2);
 			break;
 		}
-		if (Math.abs(range1[1] - range1[0]) <= /*#=*/ Numerical.TOLERANCE
-				&& Math.abs(range2[1] - range2[0]) <= /*#=*/ Numerical.TOLERANCE) {
+		if (span1 <= /*#=*/ Numerical.TOLERANCE
+				&& span2 <= /*#=*/ Numerical.TOLERANCE) {
 			// Both parameter ranges have converged.
 			addLocation(locations, curve1, range1[0],
 					curve1.getPointAt(range1[0], true), curve2);
