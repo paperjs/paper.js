@@ -23,20 +23,16 @@ var MAX_ITERATE = 20;
 	for (var i = 0, l = curves1.length; i < l; i++) {
 		var curve1 = curves1[i],
 			values1 = curve1.getValues();
-		var v1Linear = Curve.isLinear(values1);
+		var linear1 = Curve.isLinear(values1);
 		for (var j = 0; j < length2; j++) {
 			var value2 = values2[j];
-			var v2Linear = Curve.isLinear(value2);
-			if (v1Linear && v2Linear) {
-				_getLineLineIntersection(values1, value2, curve1, curves2[j],
-						locations);
-			} else if (v1Linear || v2Linear) {
-				_getCurveLineIntersection(values1, value2, curve1, curves2[j],
-						locations);
-			} else {
-				Curve.getIntersections2(values1, value2, curve1, curves2[j],
-						locations);
-			}
+			var linear2 = Curve.isLinear(value2);
+			var intersect = linear1 && linear2
+					? _getLineLineIntersection
+					: linear1 || linear2
+						? _getCurveLineIntersection
+						: Curve.getIntersections2;
+			intersect(values1, value2, curve1, curves2[j], locations);
 		}
 	}
 	return locations;
@@ -207,14 +203,9 @@ function clipFatLine(v1, v2, v2t) {
 	// offsets which completely encloses the curve P.
 	var d1 = _getSignedDist(p0x, p0y, p3x, p3y, p1x, p1y) || 0;
 	var d2 = _getSignedDist(p0x, p0y, p3x, p3y, p2x, p2y) || 0;
-	var dmin, dmax;
-	if (d1 * d2 > 0) {
-		dmin = 3 / 4 * Math.min(0, d1, d2);
-		dmax = 3 / 4 * Math.max(0, d1, d2);
-	} else {
-		dmin = 4 / 9 * Math.min(0, d1, d2);
-		dmax = 4 / 9 * Math.max(0, d1, d2);
-	}
+	var factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9;
+	var dmin = factor * Math.min(0, d1, d2);
+	var dmax = factor * Math.max(0, d1, d2);
 	// Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
 	// distance of Q from the baseline l of the fat-line, ti is equally spaced
 	// in [0, 1]
@@ -309,14 +300,14 @@ function clipFatLine(v1, v2, v2t) {
 function getConvexHull(dq0, dq1, dq2, dq3) {
 	var distq1 = _getSignedDist(0, dq0, 1, dq3, 1 / 3, dq1);
 	var distq2 = _getSignedDist(0, dq0, 1, dq3, 2 / 3, dq2);
-	var Dt;
+	var hull;
 	// Check if [1/3, dq1] and [2/3, dq2] are on the same side of line
 	// [0,dq0, 1,dq3]
 	if (distq1 * distq2 < 0) {
 		// dq1 and dq2 lie on different sides on [0, q0, 1, q3]
 		// Convexhull is a quadrilateral and line [0, q0, 1, q3] is NOT part of
 		// the convexhull so we are pretty much done here.
-		Dt = [
+		hull = [
 			[ 0, dq0, 1 / 3, dq1 ],
 			[ 1 / 3, dq1, 1, dq3 ],
 			[ 2 / 3, dq2, 0, dq0 ],
@@ -363,7 +354,7 @@ function getConvexHull(dq0, dq1, dq2, dq3) {
 		var vcrossa1Max_a1Min = vqa1Maxx * vqa1Miny - vqa1Maxy * vqa1Minx;
 		if (vcrossa1Max_a1Min * vcrossa1a2_a1Min < 0) {
 			// Point [2/3, dq2] is inside the triangle and c-hull is a triangle
-			Dt = [
+			hull = [
 				[ 0, dq0, dqmax[0], dqmax[1] ],
 				[ dqmax[0], dqmax[1], 1, dq3 ],
 				[ 1, dq3, 0, dq0 ]
@@ -371,7 +362,7 @@ function getConvexHull(dq0, dq1, dq2, dq3) {
 		} else {
 			// Convexhull is a quadrilateral and we need all lines in the
 			// correct order where line [0, q0, 1, q3] is part of the c-hull
-			Dt = [
+			hull = [
 				[ 0, dq0, 1 / 3, dq1 ],
 				[ 1 / 3, dq1, 2 / 3, dq2 ],
 				[ 2 / 3, dq2, 1, dq3 ],
@@ -379,7 +370,7 @@ function getConvexHull(dq0, dq1, dq2, dq3) {
 			];
 		}
 	}
-	return Dt;
+	return hull;
 }
 
 // This is basically an "unrolled" version of #Line.getDistance() with sign
@@ -397,8 +388,9 @@ function _getSignedDist(a1x, a1y, a2x, a2y, bx, by) {
  */
 function _getCurveLineIntersection(v1, v2, curve1, curve2, locations, _other) {
 	var i, root, point, vc = v1, vl = v2;
-	var other = _other === undefined ? Curve.isLinear(v1) : _other;
-	if (other) {
+	if (_other === undefined)
+		_other = Curve.isLinear(v1);
+	if (_other) {
 		vl = v1;
 		vc = v2;
 	}
@@ -430,7 +422,8 @@ function _getCurveLineIntersection(v1, v2, curve1, curve2, locations, _other) {
 			if (point.x  >= 0 && point.x <= rl2x) {
 				// The actual intersection point
 				point = Curve.evaluate(vc, root, true, 0);
-				if (other) root = null;
+				if (_other)
+					root = null;
 				var first = locations[0],
 					last = locations[locations.length - 1];
 				if ((!first || !point.equals(first._point))
@@ -458,4 +451,4 @@ function _getLineLineIntersection(v1, v2, curve1, curve2, locations) {
 	}
 }
 
-}
+};
