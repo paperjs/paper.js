@@ -6,9 +6,10 @@ var MAX_RECURSE = 20;
 var MAX_ITERATE = 20;
 
 /**
- * This method is analogous to paperjs#PathItem.getIntersections
+ * This method is analogous to paperjs#PathItem.getIntersections, but calls
+ * Curve.getIntersections2 instead.
  */
- paper.PathItem.prototype.getIntersections2 = function(path) {
+ PathItem.prototype.getIntersections2 = function(path) {
 	// First check the bounds of the two paths. If they don't intersect,
 	// we don't need to iterate through their curves.
 	if (!this.getBounds().touches(path.getBounds()))
@@ -17,31 +18,34 @@ var MAX_ITERATE = 20;
 		curves1 = this.getCurves(),
 		curves2 = path.getCurves(),
 		length2 = curves2.length,
-		values2 = [], i;
+		values2 = [];
 	for (var i = 0; i < length2; i++)
 		values2[i] = curves2[i].getValues();
 	for (var i = 0, l = curves1.length; i < l; i++) {
 		var curve1 = curves1[i],
 			values1 = curve1.getValues();
-		var linear1 = Curve.isLinear(values1);
-		for (var j = 0; j < length2; j++) {
-			var value2 = values2[j];
-			var linear2 = Curve.isLinear(value2);
-			var intersect = linear1 && linear2
-					? getLineLineIntersection
-					: linear1 || linear2
-						? getCurveLineIntersections
-						: getCurveIntersections;
-			intersect(values1, value2, curve1, curves2[j], locations);
-		}
+		for (var j = 0; j < length2; j++)
+			Curve.getIntersections2(values1, values2[j], curve1, curves2[j],
+					locations);
 	}
 	return locations;
 };
 
 /**
- * Passing null for parameter leads to lazy determination of parameter values in
- * CurveLocation#getParameter() only once they are requested.
+ * This method is analogous to paperjs#Curve.getIntersections
  */
+Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations) {
+	var linear1 = Curve.isLinear(v1),
+		linear2 = Curve.isLinear(v2);
+	// Determine the correct intersection method based on values of linear1 & 2:
+	(linear1 && linear2
+			? getLineLineIntersection
+			: linear1 || linear2
+				? getCurveLineIntersections
+				: getCurveIntersections)(v1, v2, curve1, curve2, locations);
+	return locations;
+};
+
 function addLocation(locations, curve1, parameter, point, curve2) {
 	// Avoid duplicates when hitting segments (closed paths too)
 	var first = locations[0],
@@ -51,18 +55,9 @@ function addLocation(locations, curve1, parameter, point, curve2) {
 		locations.push(new CurveLocation(curve1, parameter, point, curve2));
 }
 
-/**
- * This method is analogous to paperjs#Curve.getIntersections
- * @param  {[type]} v1
- * @param  {[type]} v2
- * @param  {[type]} curve1
- * @param  {[type]} curve2
- * @param  {[type]} locations
- * @param  {[type]} _v1t	  - Only used for recusion
- * @param  {[type]} _v2t	  - Only used for recusion
- */
 function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 		_recurseDepth) {
+	// NOTE: _v1t and _v1t are only used for recusion
 	_recurseDepth = (_recurseDepth || 0) + 1;
 	// Avoid endless recursion.
 	// Perhaps we should fall back to a more expensive method after this, but
