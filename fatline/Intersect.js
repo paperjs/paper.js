@@ -141,21 +141,12 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations,
 		// Check if one of the parameter range has converged completely to a
 		// point. Now things could get only worse if we iterate more for the
 		// other curve to converge if it hasn't yet happened so.
-		var span1 = Math.abs(range1[1] - range1[0]),
-			span2 = Math.abs(range2[1] - range2[0]),
-			converged1 = span1 < /*#=*/ Numerical.EPSILON,
-			converged2 = span2 < /*#=*/ Numerical.EPSILON;
+		var converged1 = Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE,
+			converged2 = Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE;
 		if (converged1 || converged2) {
 			addLocation(locations, curve1, null, converged1
 					? curve1.getPointAt(range1[0], true)
 					: curve2.getPointAt(range2[0], true), curve2);
-			break;
-		}
-		if (span1 <= /*#=*/ Numerical.TOLERANCE
-				&& span2 <= /*#=*/ Numerical.TOLERANCE) {
-			// Both parameter ranges have converged.
-			addLocation(locations, curve1, range1[0],
-					curve1.getPointAt(range1[0], true), curve2);
 			break;
 		}
 		// see if either or both of the curves are flat enough to be treated
