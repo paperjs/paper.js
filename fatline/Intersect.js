@@ -1,3 +1,5 @@
+new function() {
+
 var EPSILON = 10e-12;
 var TOLERANCE = 10e-6;
 var MAX_RECURSE = 20;
@@ -23,7 +25,7 @@ var MAX_ITERATE = 20;
 			values1 = curve1.getValues();
 		var v1Linear = Curve.isLinear(values1);
 		for (var j = 0; j < length2; j++) {
-			value2 = values2[j];
+			var value2 = values2[j];
 			var v2Linear = Curve.isLinear(value2);
 			if (v1Linear && v2Linear) {
 				_getLineLineIntersection(values1, value2, curve1, curves2[j],
@@ -68,8 +70,8 @@ paper.Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations,
 	// Get the clipped parts from the original curve, to avoid cumulative errors
 	var _v1 = Curve.getPart(v1, v1t.t1, v1t.t2);
 	var _v2 = Curve.getPart(v2, v2t.t1, v2t.t2);
-// markCurve(_v1, '#f0f', true);
-// markCurve(_v2, '#0ff', false);
+	// markCurve(_v1, '#f0f', true);
+	// markCurve(_v2, '#0ff', false);
 	var nuT, parts, tmpt = { t1: null, t2: null }, iterate = 0;
 	// Loop until both parameter range converge. We have to handle the
 	// degenerate case seperately, where fat-line clipping can become
@@ -81,7 +83,7 @@ paper.Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations,
 		// First we clip v2 with v1's fat-line
 		tmpt.t1 = v2t.t1;
 		tmpt.t2 = v2t.t2;
-		var intersects1 = _clipBezierFatLine(_v1, _v2, tmpt),
+		var intersects1 = clipFatLine(_v1, _v2, tmpt),
 			intersects2 = 0;
 		// Stop if there are no possible intersections
 		if (intersects1 === 0) {
@@ -89,19 +91,22 @@ paper.Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations,
 		} else if (intersects1 > 0) {
 			// Get the clipped parts from the original v2, to avoid cumulative
 			// errors ...and reuse some objects.
-			v2t.t1 = tmpt.t1; v2t.t2 = tmpt.t2;
+			v2t.t1 = tmpt.t1;
+			v2t.t2 = tmpt.t2;
 			_v2 = Curve.getPart(v2, v2t.t1, v2t.t2);
 			// markCurve(_v2, '#0ff', false);
 			// Next we clip v1 with nuv2's fat-line
-			tmpt.t1 = v1t.t1; tmpt.t2 = v1t.t2;
-			intersects2 = _clipBezierFatLine(_v2, _v1, tmpt);
+			tmpt.t1 = v1t.t1;
+			tmpt.t2 = v1t.t2;
+			intersects2 = clipFatLine(_v2, _v1, tmpt);
 			// Stop if there are no possible intersections
 			if (intersects2 === 0) {
 				return;
 			}else if (intersects1 > 0) {
 				// Get the clipped parts from the original v2, to avoid
 				// cumulative errors
-				v1t.t1 = tmpt.t1; v1t.t2 = tmpt.t2;
+				v1t.t1 = tmpt.t1;
+				v1t.t2 = tmpt.t2;
 				_v1 = Curve.getPart(v1, v1t.t1, v1t.t2);
 			}
 			// markCurve(_v1, '#f0f', true);
@@ -191,7 +196,7 @@ paper.Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations,
  * @return {Number} 0: no Intersection, 1: one intersection, -1: more than one 
  * ntersection
  */
-function _clipBezierFatLine(v1, v2, v2t) {
+function clipFatLine(v1, v2, v2t) {
 	// first curve, P
 	var p0x = v1[0], p0y = v1[1], p3x = v1[6], p3y = v1[7];
 	var p1x = v1[2], p1y = v1[3], p2x = v1[4], p2y = v1[5];
@@ -230,7 +235,7 @@ function _clipBezierFatLine(v1, v2, v2t) {
 		dmin = dmax;
 		dmax = tmp;
 	}
-	var Dt = _convexhull(dq0, dq1, dq2, dq3);
+	var Dt = getConvexHull(dq0, dq1, dq2, dq3);
 	// Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
 	// Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
 	// for the coorresponding t values (tmin, tmax): Portions of curve v2 before
@@ -301,9 +306,10 @@ function _clipBezierFatLine(v1, v2, v2t) {
  * curve are already sorted in the X axis in the increasing order. Calculating
  * convex-hull is much easier than a set of arbitrary points.
  */
-function _convexhull(dq0, dq1, dq2, dq3) {
+function getConvexHull(dq0, dq1, dq2, dq3) {
 	var distq1 = _getSignedDist(0, dq0, 1, dq3, 1 / 3, dq1);
 	var distq2 = _getSignedDist(0, dq0, 1, dq3, 2 / 3, dq2);
+	var Dt;
 	// Check if [1/3, dq1] and [2/3, dq2] are on the same side of line
 	// [0,dq0, 1,dq3]
 	if (distq1 * distq2 < 0) {
@@ -317,10 +323,9 @@ function _convexhull(dq0, dq1, dq2, dq3) {
 			[ 1, dq3, 2 / 3, dq2 ]
 		];
 	} else {
-		// dq1 and dq2 lie on the same sides on [0, q0, 1, q3]
-		// Convexhull can be a triangle or a quadrilateral and
-		// line [0, q0, 1, q3] is part of the convexhull.
-		// Check if the hull is a triangle or a quadrilateral
+		// dq1 and dq2 lie on the same sides on [0, q0, 1, q3]. c-hull can be a
+		// triangle or a quadrilateral and line [0, q0, 1, q3] is part of the
+		// c-hull. Check if the hull is a triangle or a quadrilateral
 		var dqmin, dqmax, dqapex1, dqapex2;
 		distq1 = Math.abs(distq1);
 		distq2 = Math.abs(distq2);
@@ -357,8 +362,7 @@ function _convexhull(dq0, dq1, dq2, dq3) {
 		var vcrossa1a2_a1Min = vqa1a2x * vqa1Miny - vqa1a2y * vqa1Minx;
 		var vcrossa1Max_a1Min = vqa1Maxx * vqa1Miny - vqa1Maxy * vqa1Minx;
 		if (vcrossa1Max_a1Min * vcrossa1a2_a1Min < 0) {
-			// Point [2/3, dq2] is inside the triangle and the c-hull is a
-			// triangle
+			// Point [2/3, dq2] is inside the triangle and c-hull is a triangle
 			Dt = [
 				[ 0, dq0, dqmax[0], dqmax[1] ],
 				[ dqmax[0], dqmax[1], 1, dq3 ],
@@ -452,4 +456,6 @@ function _getLineLineIntersection(v1, v2, curve1, curve2, locations) {
 			// only once they are requested.
 			locations.push(new CurveLocation(curve1, null, point, curve2));
 	}
+}
+
 }
