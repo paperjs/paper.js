@@ -697,8 +697,8 @@ statics: {
 		// Only add strokeWidth to bounds for points which lie  within 0 < t < 1
 		// The corner cases for cap and join are handled in getStrokeBounds()
 		add(v3, 0);
-		for (var j = 0; j < count; j++) {
-			var t = roots[j],
+		for (var i = 0; i < count; i++) {
+			var t = roots[i],
 				u = 1 - t;
 			// Test for good roots and only add to bounds if good.
 			if (tMin < t && t < tMax)
@@ -1123,12 +1123,16 @@ new function() { // Scope for methods that require numerical integration
 			// Check if one of the parameter range has converged completely to a
 			// point. Now things could get only worse if we iterate more for the
 			// other curve to converge if it hasn't yet happened so.
-			var converged1 = Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE,
-				converged2 = Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE;
-			if (converged1 || converged2) {
-				addLocation(locations, curve1, null, converged1
-						? curve1.getPointAt(range1[0], true)
-						: curve2.getPointAt(range2[0], true), curve2);
+			if (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE) {
+				var t = (range1[0] + range1[1]) / 2;
+				addLocation(locations, curve1, t,
+						Curve.evaluate(v1, t, true, 0), curve2);
+				break;
+			}
+			if (Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE) {
+				var t = (range2[0] + range2[1]) / 2;
+				addLocation(locations, curve2, t,
+						Curve.evaluate(v2, t, true, 0), curve1);
 				break;
 			}
 			// see if either or both of the curves are flat enough to be treated
@@ -1442,7 +1446,7 @@ new function() { // Scope for methods that require numerical integration
 			addLocation(locations, curve1, null, point, curve2);
 	}
 
-	return { statics: {
+	return { statics: /** @lends Curve */{
 		// We need to provide the original left curve reference to the
 		// #getIntersections() calls as it is required to create the resulting
 		// CurveLocation objects.
