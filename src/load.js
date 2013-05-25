@@ -16,11 +16,12 @@
 
 // Define options for compile-time preprocessing.
 var options = {
+	parser: 'acorn',
+	version: 'dev',
 	browser: true,
 	stats: true,
 	svg: true,
-	version: 'dev',
-	parser: 'acorn',
+	fatline: true,
 	debug: false
 };
 

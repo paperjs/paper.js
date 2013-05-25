@@ -20,11 +20,12 @@ var fs = require('fs'),
 	json = require('../../package.json');
 
 var options = {
-	server: true,
-	svg: true,
 	parser: 'acorn',
 	// Use 'dev' for on-the fly compilation of separate files ,but update after.
-	version: 'dev'
+	version: 'dev',
+	server: true,
+	svg: true,
+	fatline: false
 };
 
 // Create a document and a window using jsdom, e.g. for exportSVG()
