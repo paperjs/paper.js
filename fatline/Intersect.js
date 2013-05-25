@@ -95,9 +95,9 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 		var intersects1 = clipFatLine(_v1, _v2, tmpt),
 			intersects2 = 0;
 		// Stop if there are no possible intersections
-		if (intersects1 === 0) {
-			return;
-		} else if (intersects1 > 0) {
+		if (intersects1 === 0)
+			break;
+		if (intersects1 > 0) {
 			// Get the clipped parts from the original v2, to avoid cumulative
 			// errors ...and reuse some objects.
 			v2t.t1 = tmpt.t1;
@@ -109,9 +109,9 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 			tmpt.t2 = v1t.t2;
 			intersects2 = clipFatLine(_v2, _v1, tmpt);
 			// Stop if there are no possible intersections
-			if (intersects2 === 0) {
-				return;
-			}else if (intersects1 > 0) {
+			if (intersects2 === 0)
+				break;
+			if (intersects1 > 0) {
 				// Get the clipped parts from the original v2, to avoid
 				// cumulative errors
 				v1t.t1 = tmpt.t1;
@@ -133,7 +133,7 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 						{ t1: _v1t.t1, t2: nuT }, _v2t, _recurseDepth);
 				getCurveIntersections(v1, v2, curve1, curve2, locations,
 						{ t1: nuT, t2: _v1t.t2 }, _v2t, _recurseDepth);
-				return;
+				break;
 			} else {
 				// subdivide _v2 and recurse
 				nuT = (_v2t.t1 + _v2t.t2) / 2;
@@ -141,7 +141,7 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 						{ t1: _v2t.t1, t2: nuT }, _recurseDepth);
 				getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t,
 						{ t1: nuT, t2: _v2t.t2 }, _recurseDepth);
-				return;
+				break;
 			}
 		}
 		// We need to bailout of clipping and try a numerically stable method if
@@ -162,29 +162,29 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 			addLocation(locations, curve1, null, v1Converged
 					? curve1.getPointAt(v1t.t1, true)
 					: curve2.getPointAt(v2t.t1, true), curve2);
-			return;
+			break;
 		}
-		// Check to see if both parameter ranges have converged or else,
-		// see if either or both of the curves are flat enough to be treated as
-		// lines
 		if (Math.abs(v1t.t2 - v1t.t1) <= TOLERANCE
 				&& Math.abs(v2t.t2 - v2t.t1) <= TOLERANCE) {
+			// Both parameter ranges have converged.
 			addLocation(locations, curve1, v1t.t1,
 					curve1.getPointAt(v1t.t1, true), curve2);
-			return;
-		} else {
-			var curve1Flat = Curve.isFlatEnough(_v1, TOLERANCE);
-			var curve2Flat = Curve.isFlatEnough(_v2, TOLERANCE);
-			if (curve1Flat && curve2Flat) {
-				getLineLineIntersection(_v1, _v2, curve1, curve2, locations);
-				return;
-			} else if (curve1Flat || curve2Flat) {
-				// Use curve line intersection method while specifying which
-				// curve to be treated as line
-				getCurveLineIntersections(_v1, _v2, curve1, curve2, locations,
-						curve1Flat);
-				return;
-			}
+			break;
+		}
+		// see if either or both of the curves are flat enough to be treated
+		// as lines.
+		var curve1Flat = Curve.isFlatEnough(_v1, TOLERANCE),
+			curve2Flat = Curve.isFlatEnough(_v2, TOLERANCE);
+		if (curve1Flat && curve2Flat) {
+			getLineLineIntersection(_v1, _v2, curve1, curve2, locations);
+			break;
+		}
+		if (curve1Flat || curve2Flat) {
+			// Use curve line intersection method while specifying which
+			// curve to be treated as line
+			getCurveLineIntersections(_v1, _v2, curve1, curve2, locations,
+					curve1Flat);
+			break;
 		}
 	}
 }
@@ -421,21 +421,20 @@ function getCurveLineIntersections(v1, v2, curve1, curve2, locations, _flip) {
 	}
 	var roots = [],
 		count = Curve.solveCubic(vcr, 1, 0, roots);
-	// NOTE: i could theoretically be -1 for inifnite solutions, although that
-	// should only happen with lines, in which case we should not be here.
+	// NOTE: count could theoretically be -1 for inifnite solutions, although
+	// that should only happen with lines, in which case we should not be here.
 	for (var i = 0; i < count; i++) {
 		var t = roots[i];
 		if (t >= 0 && t <= 1) {
 			var point = Curve.evaluate(vcr, t, true, 0);
 			// We do have a point on the infinite line. Check if it falls on the
 			// line *segment*.
-			if (point.x  >= 0 && point.x <= rl2x) {
+			if (point.x  >= 0 && point.x <= rl2x)
 				addLocation(locations,
 						_flip ? curve2 : curve1,
 						// The actual intersection point
 						t, Curve.evaluate(vc, t, true, 0), 
 						_flip ? curve1 : curve2);
-			}
 		}
 	}
 }
