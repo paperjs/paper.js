@@ -300,9 +300,10 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		var image = new Image();
 		// If we're running on the server and it's a string,
 		// check if it is a data URL
-		var protocol = src.split('/')[0];
-		if (protocol && protocol == "data:image") {
+		if (src.indexOf('data:') == 0) {
 			image.src = src;
+			// Preserve the src as canvas-node eats it
+			image._src = src;
 		} else {
 			// load it from disk:
 			// TODO: load images async, calling setImage once loaded as above
@@ -341,6 +342,9 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		// See if the linked image is base64 encoded already, if so reuse it,
 		// otherwise try using canvas.toDataURL()
 		var src = this._image && this._image.src;
+/*#*/	if (options.server) {
+			src = this._image._src;
+		}
 		if (/^data:/.test(src))
 			return src;
 		var canvas = this.getCanvas();
