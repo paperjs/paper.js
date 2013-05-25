@@ -308,9 +308,8 @@ function getConvexHull(dq0, dq1, dq2, dq3) {
 		// hull. Check if the hull is a triangle or a quadrilateral.
 		distq1 = Math.abs(distq1);
 		distq2 = Math.abs(distq2);
-		var dqmin, dqmax, vqa1a2x, vqa1a2y, vqa1Maxx, vqa1Maxy, vqa1Minx, vqa1Miny;
+		var dqmax, vqa1a2x, vqa1a2y, vqa1Maxx, vqa1Maxy, vqa1Minx, vqa1Miny;
 		if (distq1 > distq2) {
-			dqmin = [ 2 / 3, dq2 ];
 			dqmax = [ 1 / 3, dq1 ];
 			// apex is dq3 and the other apex point is dq0 vector
 			// dqapex->dqapex2 or base vector which is already part of the hull.
@@ -323,7 +322,6 @@ function getConvexHull(dq0, dq1, dq2, dq3) {
 			vqa1Minx = 1 / 3;
 			vqa1Miny = dq3 - dq2;
 		} else {
-			dqmin = [ 1 / 3, dq1 ];
 			dqmax = [ 2 / 3, dq2 ];
 			// apex is dq0 in this case, and the other apex point is dq3 vector
 			// dqapex->dqapex2 or base vector which is already part of the hull.
