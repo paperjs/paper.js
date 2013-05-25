@@ -148,12 +148,12 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
 			v2Converged = (Math.abs(v2t.t2 - v2t.t1) < EPSILON);
 		if (v1Converged || v2Converged) {
 			var first = locations[0],
-				last = locations[locations.length - 1];
-			if ((!first || !point.equals(first._point))
-					&& (!last || !point.equals(last._point))) {
-				var point = v1Converged
+				last = locations[locations.length - 1],
+				point = v1Converged
 						? curve1.getPointAt(v1t.t1, true)
 						: curve2.getPointAt(v2t.t1, true);
+			if ((!first || !point.equals(first._point))
+					&& (!last || !point.equals(last._point))) {
 				locations.push(new CurveLocation(curve1, null, point, curve2));
 			}
 			return;
