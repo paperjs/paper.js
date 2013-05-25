@@ -28,10 +28,10 @@ var MAX_ITERATE = 20;
 			var value2 = values2[j];
 			var linear2 = Curve.isLinear(value2);
 			var intersect = linear1 && linear2
-					? _getLineLineIntersection
+					? getLineLineIntersection
 					: linear1 || linear2
-						? _getCurveLineIntersection
-						: Curve.getIntersections2;
+						? getCurveLineIntersections
+						: getCurveIntersections;
 			intersect(values1, value2, curve1, curves2[j], locations);
 		}
 	}
@@ -48,8 +48,9 @@ var MAX_ITERATE = 20;
  * @param  {[type]} _v1t	  - Only used for recusion
  * @param  {[type]} _v2t	  - Only used for recusion
  */
-paper.Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations,
-		_v1t, _v2t, _recurseDepth) {
+
+function getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t, _v2t,
+		_recurseDepth) {
 	_recurseDepth = (_recurseDepth || 0) + 1;
 	// Avoid endless recursion.
 	// Perhaps we should fall back to a more expensive method after this, but
@@ -115,18 +116,18 @@ paper.Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations,
 			// parameter range after clipping
 			if (v1t.t2 - v1t.t1 > v2t.t2 - v2t.t1) {
 				// subdivide _v1 and recurse
-				nuT = (_v1t.t1 + _v1t.t2) / 2.0;
-				Curve.getIntersections2(v1, v2, curve1, curve2, locations,
+				nuT = (_v1t.t1 + _v1t.t2) / 2;
+				getCurveIntersections(v1, v2, curve1, curve2, locations,
 						{ t1: _v1t.t1, t2: nuT }, _v2t, _recurseDepth);
-				Curve.getIntersections2(v1, v2, curve1, curve2, locations,
+				getCurveIntersections(v1, v2, curve1, curve2, locations,
 						{ t1: nuT, t2: _v1t.t2 }, _v2t, _recurseDepth);
 				return;
 			} else {
 				// subdivide _v2 and recurse
-				nuT = (_v2t.t1 + _v2t.t2) / 2.0;
-				Curve.getIntersections2(v1, v2, curve1, curve2, locations, _v1t,
+				nuT = (_v2t.t1 + _v2t.t2) / 2;
+				getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t,
 						{ t1: _v2t.t1, t2: nuT }, _recurseDepth);
-				Curve.getIntersections2(v1, v2, curve1, curve2, locations, _v1t,
+				getCurveIntersections(v1, v2, curve1, curve2, locations, _v1t,
 						{ t1: nuT, t2: _v2t.t2 }, _recurseDepth);
 				return;
 			}
@@ -169,18 +170,18 @@ paper.Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations,
 			var curve1Flat = Curve.isFlatEnough(_v1, TOLERANCE);
 			var curve2Flat = Curve.isFlatEnough(_v2, TOLERANCE);
 			if (curve1Flat && curve2Flat) {
-				_getLineLineIntersection(_v1, _v2, curve1, curve2, locations);
+				getLineLineIntersection(_v1, _v2, curve1, curve2, locations);
 				return;
 			} else if (curve1Flat || curve2Flat) {
 				// Use curve line intersection method while specifying which
 				// curve to be treated as line
-				_getCurveLineIntersection(_v1, _v2, curve1, curve2, locations,
+				getCurveLineIntersections(_v1, _v2, curve1, curve2, locations,
 						curve1Flat);
 				return;
 			}
 		}
 	}
-};
+}
 
 /**
  * Clip curve V2 with fat-line of v1
@@ -386,7 +387,7 @@ function getSignedDistance(a1x, a1y, a2x, a2y, bx, by) {
  * because of Numerical class. We can rotate the curve and line so that the line 
  * is on X axis, and solve the implicit equations for X axis and the curve
  */
-function _getCurveLineIntersection(v1, v2, curve1, curve2, locations, _flip) {
+function getCurveLineIntersections(v1, v2, curve1, curve2, locations, _flip) {
 	if (_flip === undefined)
 		_flip = Curve.isLinear(v1);
 	var vc = _flip ? v2 : v1,
@@ -438,7 +439,7 @@ function _getCurveLineIntersection(v1, v2, curve1, curve2, locations, _flip) {
 	}
 }
 
-function _getLineLineIntersection(v1, v2, curve1, curve2, locations) {
+function getLineLineIntersection(v1, v2, curve1, curve2, locations) {
 	var point = Line.intersect(
 			v1[0], v1[1], v1[6], v1[7],
 			v2[0], v2[1], v2[6], v2[7], false);
