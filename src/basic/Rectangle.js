@@ -126,6 +126,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 				var to = Point.readNamed(arguments, 'to');
 				this.width = to.x - point.x;
 				this.height = to.y - point.y;
+				// Check if horizontal or vertical order needs to be reversed.
 				if (this.width < 0) {
 					this.x = to.x;
 					this.width = -this.width;
