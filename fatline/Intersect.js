@@ -173,7 +173,7 @@ function getCurveIntersections(v1, v2, curve1, curve2, locations,
  * fat-line
  * @param {Array} v2 section of the second curve; we will clip this curve with
  * the fat-line of v1
- * @param {Object} range2 the parameter range of v2
+ * @param {Array} range2 the parameter range of v2
  * @return {Number} 0: no Intersection, 1: one intersection, -1: more than one 
  * ntersection
  */
@@ -202,28 +202,29 @@ function clipFatLine(v1, v2, range2) {
 		// checking whether the curves intersect with each other or not.
 		mindist = Math.min(dq0, dq1, dq2, dq3),
 		maxdist = Math.max(dq0, dq1, dq2, dq3);
-		// If the fatlines don't overlap, we have no intersections!
+	// If the fatlines don't overlap, we have no intersections!
 	if (dmin > maxdist || dmax < mindist)
 		return 0;
-	var tmp;
+	var Dt = getConvexHull(dq0, dq1, dq2, dq3),
+		tmp;
 	if (dq3 < dq0) {
 		tmp = dmin;
 		dmin = dmax;
 		dmax = tmp;
 	}
-	var Dt = getConvexHull(dq0, dq1, dq2, dq3);
 	// Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
 	// Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
 	// for the coorresponding t values (tmin, tmax): Portions of curve v2 before
 	// tmin and after tmax can safely be clipped away
-	var tmaxdmin = -Infinity, ixd, ixdx, i, len, inv_m;
-	var tmin = Infinity, tmax = -Infinity, Dtl, dtlx1, dtly1, dtlx2, dtly2;
-	for (i = 0, len = Dt.length; i < len; i++) {
-		Dtl = Dt[i];
-		dtlx1 = Dtl[0];
-		dtly1 = Dtl[1];
-		dtlx2 = Dtl[2];
-		dtly2 = Dtl[3];
+	var tmaxdmin = -Infinity,
+		tmin = Infinity,
+		tmax = -Infinity;
+	for (var i = 0, l = Dt.length; i < l; i++) {
+		var Dtl = Dt[i],
+			dtlx1 = Dtl[0],
+			dtly1 = Dtl[1],
+			dtlx2 = Dtl[2],
+			dtly2 = Dtl[3];
 		if (dtly2 < dtly1) {
 			tmp = dtly2;
 			dtly2 = dtly1;
@@ -232,24 +233,28 @@ function clipFatLine(v1, v2, range2) {
 			dtlx2 = dtlx1;
 			dtlx1 = tmp;
 		}
-		// we know that (dtlx2 - dtlx1) is never 0
-		inv_m =  (dtly2 - dtly1) / (dtlx2 - dtlx1);
+		// We know that (dtlx2 - dtlx1) is never 0
+		var inv_m =  (dtly2 - dtly1) / (dtlx2 - dtlx1);
 		if (dmin >= dtly1 && dmin <= dtly2) {
-			ixdx = dtlx1 + (dmin - dtly1) / inv_m;
-			if (ixdx < tmin) tmin = ixdx;
-			if (ixdx > tmaxdmin) tmaxdmin = ixdx;
+			var ixdx = dtlx1 + (dmin - dtly1) / inv_m;
+			if (ixdx < tmin)
+				tmin = ixdx;
+			if (ixdx > tmaxdmin)
+				tmaxdmin = ixdx;
 		}
 		if (dmax >= dtly1 && dmax <= dtly2) {
-			ixdx = dtlx1 + (dmax - dtly1) / inv_m;
-			if (ixdx > tmax) tmax = ixdx;
-			if (ixdx < tmin) tmin = 0;
+			var ixdx = dtlx1 + (dmax - dtly1) / inv_m;
+			if (ixdx > tmax)
+				tmax = ixdx;
+			if (ixdx < tmin)
+				tmin = 0;
 		}
 	}
 	// Return the parameter values for v2 for which we can be sure that the
 	// intersection with v1 lies within.
 	if (tmin !== Infinity && tmax !== -Infinity) {
-		var mindmin = Math.min(dmin, dmax);
-		var mindmax = Math.max(dmin, dmax);
+		var mindmin = Math.min(dmin, dmax),
+			mindmax = Math.max(dmin, dmax);
 		if (dq3 > mindmin && dq3 < mindmax)
 			tmax = 1;
 		if (dq0 > mindmin && dq0 < mindmax)
@@ -258,8 +263,8 @@ function clipFatLine(v1, v2, range2) {
 			tmax = 1;
 		// tmin and tmax are within the range (0, 1). We need to project it to
 		// the original parameter range for v2.
-		var v2tmin = range2[0];
-		var tdiff = (range2[1] - v2tmin);
+		var v2tmin = range2[0],
+			tdiff = range2[1] - v2tmin;
 		range2[0] = v2tmin + tmin * tdiff;
 		range2[1] = v2tmin + tmax * tdiff;
 		// If the new parameter range fails to converge by atleast 20% of the
