@@ -80,9 +80,9 @@ var context = vm.createContext({
 	DOMParser: DOMParser,
 	Image: Canvas.Image,
 	window: win,
-    document: doc,
-    navigator: win.navigator,
-    console: console
+	document: doc,
+	navigator: win.navigator,
+	console: console
 });
 
 // Load Paper.js library files:
