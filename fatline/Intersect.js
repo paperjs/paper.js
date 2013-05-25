@@ -194,25 +194,25 @@ paper.Curve.getIntersections2 = function(v1, v2, curve1, curve2, locations,
  */
 function clipFatLine(v1, v2, v2t) {
 	// first curve, P
-	var p0x = v1[0], p0y = v1[1], p3x = v1[6], p3y = v1[7];
-	var p1x = v1[2], p1y = v1[3], p2x = v1[4], p2y = v1[5];
+	var p0x = v1[0], p0y = v1[1], p1x = v1[2], p1y = v1[3],
+		p2x = v1[4], p2y = v1[5], p3x = v1[6], p3y = v1[7];
 	// second curve, Q
-	var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7];
-	var q1x = v2[2], q1y = v2[3], q2x = v2[4], q2y = v2[5];
+	var q0x = v2[0], q0y = v2[1], q1x = v2[2], q1y = v2[3],
+		q2x = v2[4], q2y = v2[5], q3x = v2[6], q3y = v2[7];
 	// Calculate the fat-line L for P is the baseline l and two
 	// offsets which completely encloses the curve P.
-	var d1 = _getSignedDist(p0x, p0y, p3x, p3y, p1x, p1y) || 0;
-	var d2 = _getSignedDist(p0x, p0y, p3x, p3y, p2x, p2y) || 0;
+	var d1 = getSignedDistance(p0x, p0y, p3x, p3y, p1x, p1y) || 0;
+	var d2 = getSignedDistance(p0x, p0y, p3x, p3y, p2x, p2y) || 0;
 	var factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9;
 	var dmin = factor * Math.min(0, d1, d2);
 	var dmax = factor * Math.max(0, d1, d2);
 	// Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
 	// distance of Q from the baseline l of the fat-line, ti is equally spaced
 	// in [0, 1]
-	var dq0 = _getSignedDist(p0x, p0y, p3x, p3y, q0x, q0y);
-	var dq1 = _getSignedDist(p0x, p0y, p3x, p3y, q1x, q1y);
-	var dq2 = _getSignedDist(p0x, p0y, p3x, p3y, q2x, q2y);
-	var dq3 = _getSignedDist(p0x, p0y, p3x, p3y, q3x, q3y);
+	var dq0 = getSignedDistance(p0x, p0y, p3x, p3y, q0x, q0y);
+	var dq1 = getSignedDistance(p0x, p0y, p3x, p3y, q1x, q1y);
+	var dq2 = getSignedDistance(p0x, p0y, p3x, p3y, q2x, q2y);
+	var dq3 = getSignedDistance(p0x, p0y, p3x, p3y, q3x, q3y);
 	// Find the minimum and maximum distances from l, this is useful for
 	// checking whether the curves intersect with each other or not.
 	var mindist = Math.min(dq0, dq1, dq2, dq3);
@@ -298,8 +298,8 @@ function clipFatLine(v1, v2, v2t) {
  * convex-hull is much easier than a set of arbitrary points.
  */
 function getConvexHull(dq0, dq1, dq2, dq3) {
-	var distq1 = _getSignedDist(0, dq0, 1, dq3, 1 / 3, dq1);
-	var distq2 = _getSignedDist(0, dq0, 1, dq3, 2 / 3, dq2);
+	var distq1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1);
+	var distq2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2);
 	var hull;
 	// Check if [1/3, dq1] and [2/3, dq2] are on the same side of line
 	// [0,dq0, 1,dq3]
@@ -375,10 +375,10 @@ function getConvexHull(dq0, dq1, dq2, dq3) {
 
 // This is basically an "unrolled" version of #Line.getDistance() with sign
 // May be a static method could be better!
-function _getSignedDist(a1x, a1y, a2x, a2y, bx, by) {
-	var vx = a2x - a1x, vy = a2y - a1y;
-	var m = vy / vx, b = a1y - (m * a1x);
-	return (by - (m * bx) - b) / Math.sqrt(m*m + 1);
+function getSignedDistance(a1x, a1y, a2x, a2y, bx, by) {
+	var m = (a2y - a1y) / (a2x - a1x),
+		b = a1y - (m * a1x);
+	return (by - (m * bx) - b) / Math.sqrt(m * m + 1);
 }
 
 /**
@@ -387,48 +387,52 @@ function _getSignedDist(a1x, a1y, a2x, a2y, bx, by) {
  * is on X axis, and solve the implicit equations for X axis and the curve
  */
 function _getCurveLineIntersection(v1, v2, curve1, curve2, locations, _other) {
-	var i, root, point, vc = v1, vl = v2;
+	var vc = v1,
+		vl = v2;
 	if (_other === undefined)
 		_other = Curve.isLinear(v1);
 	if (_other) {
 		vl = v1;
 		vc = v2;
 	}
-	var l1x = vl[0], l1y = vl[1], l2x = vl[6], l2y = vl[7];
+	var l1x = vl[0], l1y = vl[1],
+		l2x = vl[6], l2y = vl[7];
 	// rotate both the curve and line around l1 so that line is on x axis
-	var lvx = l2x - l1x, lvy = l2y - l1y;
+	var lvx = l2x - l1x,
+		lvy = l2y - l1y;
 	// Angle with x axis (1, 0)
 	var angle = Math.atan2(-lvy, lvx),
 		sina = Math.sin(angle),
 		cosa = Math.cos(angle);
-	// rotated line and curve values
+	// Rotated line and curve values
 	// (rl1x, rl1y) = (0, 0)
-	var rl2x = lvx * cosa - lvy * sina, rl2y = lvy * cosa + lvx * sina;
-	var rvc = [];
-	for(i=0; i<8; i+=2) {
-		var vcx = vc[i] - l1x, vcy = vc[i+1] - l1y;
-		rvc.push(vcx * cosa - vcy * sina);
-		rvc.push(vcy * cosa + vcx * sina);
+	var rl2x = lvx * cosa - lvy * sina,
+		rl2y = lvy * cosa + lvx * sina;
+	// Rotate the curve so the line is horizontal
+	var vcr = [];
+	for(var i = 0; i < 8; i += 2) {
+		var x = vc[i] - l1x,
+			y = vc[i + 1] - l1y;
+		vcr.push(x * cosa - y * sina, y * cosa + x * sina);
 	}
-	var roots = [];
-	Curve.solveCubic(rvc, 1, 0, roots);
-	i = roots.length;
+	var rootsvcr = [];
+	var i = Curve.solveCubic(vcr, 1, 0, roots);
 	while (i--) {
-		root = roots[i];
-		if (root >= 0 && root <= 1) {
-			point = Curve.evaluate(rvc, root, true, 0);
+		var t = roots[i];
+		if (t >= 0 && t <= 1) {
+			var point = Curve.evaluate(vcr, t, true, 0);
 			// We do have a point on the infinite line. Check if it falls on the
 			// line *segment*.
 			if (point.x  >= 0 && point.x <= rl2x) {
 				// The actual intersection point
-				point = Curve.evaluate(vc, root, true, 0);
+				point = Curve.evaluate(vc, t, true, 0);
 				if (_other)
-					root = null;
+					t = null;
 				var first = locations[0],
 					last = locations[locations.length - 1];
 				if ((!first || !point.equals(first._point))
 						&& (!last || !point.equals(last._point)))
-					locations.push(new CurveLocation(curve1, root, point, curve2));
+					locations.push(new CurveLocation(curve1, t, point, curve2));
 			}
 		}
 	}
