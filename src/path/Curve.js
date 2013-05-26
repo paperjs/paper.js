@@ -1200,6 +1200,7 @@ new function() { // Scope for methods that require numerical integration
 			p2x = v1[4], p2y = v1[5], p3x = v1[6], p3y = v1[7],
 			q0x = v2[0], q0y = v2[1], q1x = v2[2], q1y = v2[3],
 			q2x = v2[4], q2y = v2[5], q3x = v2[6], q3y = v2[7],
+			getSignedDistance = Line.getSignedDistance,
 			// Calculate the fat-line L for P is the baseline l and two
 			// offsets which completely encloses the curve P.
 			d1 = getSignedDistance(p0x, p0y, p3x, p3y, p1x, p1y) || 0,
@@ -1304,7 +1305,8 @@ new function() { // Scope for methods that require numerical integration
 	 * Calculating convex-hull is much easier than a set of arbitrary points.
 	 */
 	function getConvexHull(dq0, dq1, dq2, dq3) {
-		var distq1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
+		var getSignedDistance = Line.getSignedDistance,
+			distq1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
 			distq2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2);
 		// Check if [1/3, dq1] and [2/3, dq2] are on the same side of line
 		// [0,dq0, 1,dq3]
@@ -1369,14 +1371,6 @@ new function() { // Scope for methods that require numerical integration
 					[ 2 / 3, dq2, 1, dq3 ],
 					[ 1, dq3, 0, dq0 ]
 				];
-	}
-
-	// This is basically an "unrolled" version of #Line.getDistance() with sign
-	// May be a static method could be better!
-	function getSignedDistance(a1x, a1y, a2x, a2y, bx, by) {
-		var m = (a2y - a1y) / (a2x - a1x),
-			b = a1y - (m * a1x);
-		return (by - (m * bx) - b) / Math.sqrt(m * m + 1);
 	}
 /*#*/ } // options.fatline
 
