@@ -2104,11 +2104,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Construct the two perpendicular middle lines to (from, through)
 			// and (through, to), and intersect them to get the center
 			var l1 = new Line(from.add(through).divide(2),
-					through.subtract(from).rotate(90)),
+						through.subtract(from).rotate(90), true),
 				l2 = new Line(through.add(to).divide(2),
-					to.subtract(through).rotate(90)),
-				center = l1.intersect(l2),
-				line = new Line(from, to, true),
+						to.subtract(through).rotate(90), true),
+				center = l1.intersect(l2, true),
+				line = new Line(from, to),
 				throughSide = line.getSide(through);
 			if (!center) {
 				// If the two lines are colinear, there cannot be an arc as the
@@ -2389,10 +2389,10 @@ statics: {
 					normal2 = curve2.getNormalAt(0, true).normalize(miterRadius),
 					// Intersect the two lines
 					line1 = new Line(point.add(normal1),
-							Point.create(-normal1.y, normal1.x)),
+							Point.create(-normal1.y, normal1.x), true),
 					line2 = new Line(point.add(normal2),
-							Point.create(-normal2.y, normal2.x)),
-					corner = line1.intersect(line2);
+							Point.create(-normal2.y, normal2.x), true),
+					corner = line1.intersect(line2, true);
 				// Now measure the distance from the segment to the
 				// intersection, which his half of the miter distance
 				if (!corner || point.getDistance(corner) > miterLimit) {

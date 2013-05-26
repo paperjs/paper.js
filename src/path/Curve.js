@@ -1162,13 +1162,9 @@ new function() { // Scope for methods that require numerical integration
 				&& (Curve.isLinear(v2)
 					|| Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE))) {
 				// See if the parametric equations of the lines interesct.
-				// var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
-				//	  .intersect(new Line(v2[0], v2[1], v2[6], v2[7], false));
-				// Use static version without creation of Line objects, but it
-				// doesn't seem to yield measurable speed improvements!
 				var point = Line.intersect(
 							v1[0], v1[1], v1[6], v1[7],
-							v2[0], v2[1], v2[6], v2[7], false);
+							v2[0], v2[1], v2[6], v2[7]);
 				if (point)
 					addLocation(locations, curve1, null, point, curve2);
 			} else {
@@ -1439,7 +1435,7 @@ new function() { // Scope for methods that require numerical integration
 	function getLineLineIntersection(v1, v2, curve1, curve2, locations) {
 		var point = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
-				v2[0], v2[1], v2[6], v2[7], false);
+				v2[0], v2[1], v2[6], v2[7]);
 		// Passing null for parameter leads to lazy determination of parameter
 		// values in CurveLocation#getParameter() only once they are requested.
 		if (point)

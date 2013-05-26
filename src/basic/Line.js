@@ -22,26 +22,13 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 *
 	 * @param {Point} point1
 	 * @param {Point} point2
-	 * @param {Boolean} [infinite=true]
+	 * @param {Boolean} [asVector=false]
 	 */
-	initialize: function(point1, point2, infinite) {
-		// Convention: With 3 parameters, both points are absolute, and infinite
-		// controls wether the line extends beyond the defining points, meaning
-		// intersection outside the line segment are allowed.
-		// With two parameters, the 2nd parameter is a direction, and infinite
-		// is automatially true, since we're describing an infinite line.
-		var _point1 = Point.read(arguments),
-			_point2 = Point.read(arguments),
-			_infinite = Base.read(arguments);
-		if (_infinite !== undefined) {
-			this.point = _point1;
-			this.vector = _point2.subtract(_point1);
-			this.infinite = _infinite;
-		} else {
-			this.point = _point1;
-			this.vector = _point2;
-			this.infinite = true;
-		}
+	initialize: function(point1, point2, asVector) {
+		this.point = Point.read(arguments);
+		this.vector = Point.read(arguments);
+		if (!Base.read(arguments))
+			this.vector = this.vector.subtract(this.point);
 	},
 
 	/**
@@ -59,31 +46,18 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 */
 
 	/**
-	 * Specifies whether the line extends infinitely
-	 *
-	 * @name Line#infinite
-	 * @type Boolean
-	 */
-
-	/**
 	 * @param {Line} line
+	 * @param {Boolean} [isInfinite=false]
 	 * @return {Point} the intersection point of the lines, {@code undefined}
 	 * if the two lines are colinear, or {@code null} if they don't intersect.
 	 */
-	intersect: function(line) {
-		var cross = this.vector.cross(line.vector);
-		// Avoid divisions by 0, and errors when getting too close to 0
-		if (Numerical.isZero(cross))
-			return undefined;
-		var v = line.point.subtract(this.point),
-			t1 = v.cross(line.vector) / cross,
-			t2 = v.cross(this.vector) / cross;
-		// Check the ranges of t parameters if the line is not allowed to
-		// extend beyond the definition points.
-		return (this.infinite || 0 <= t1 && t1 <= 1)
-				&& (line.infinite || 0 <= t2 && t2 <= 1)
-			? this.point.add(this.vector.multiply(t1))
-			: null;
+	intersect: function(line, isInfinite) {
+		var p1 = this.point,
+			v1 = this.vector,
+			p2 = line.point,
+			v2 = line.vector;
+		return Line.intersect(p1.x, p1.y, v1.x, v1.y, p2.x, p2.y, v2.x, v2.y,
+				true, isInfinite);
 	},
 
 	// DOCS: document Line#getSide(point)
@@ -92,6 +66,7 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 * @return {Number}
 	 */
 	getSide: function(point) {
+		point = Point.read(arguments);
 		var v1 = this.vector,
 			v2 = point.subtract(this.point),
 			ccw = v2.cross(v1);
@@ -100,10 +75,22 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 			if (ccw > 0) {
 				ccw = v2.subtract(v1).dot(v1);
 				if (ccw < 0)
-				    ccw = 0;
+					ccw = 0;
 			}
 		}
 		return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
+	},
+
+	// DOCS: document Line#getSignedDistance(point)
+	/**
+	 * @param {Point} point
+	 * @return {Number}
+	 */
+	getSignedDistance: function(point) {
+		var m = this.vector.y / this.vector.x, // slope
+			b = this.point.y - (m * this.point.x); // y offset
+		// Distance to the linear equation
+		return (point.y - (m * point.x) - b) / Math.sqrt(m * m + 1);
 	},
 
 	// DOCS: document Line#getDistance(point)
@@ -112,32 +99,33 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 * @return {Number}
 	 */
 	getDistance: function(point) {
-		var m = this.vector.y / this.vector.x, // slope
-			b = this.point.y - (m * this.point.x); // y offset
-		// Distance to the linear equation
-		var dist = Math.abs(point.y - (m * point.x) - b) / Math.sqrt(m * m + 1);
-		return this.infinite ? dist : Math.min(dist,
-				point.getDistance(this.point),
-				point.getDistance(this.point.add(this.vector)));
+		return Math.abs(this.getSignedDistance(point));
 	},
 
-	statics: {
-		intersect: function(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, infinite) {
-			var adx = ax2 - ax1,
-				ady = ay2 - ay1,
-				bdx = bx2 - bx1,
-				bdy = by2 - by1,
-				dx = ax1 - bx1,
-				dy = ay1 - by1,
-				cross = bdy * adx - bdx * ady;
+	statics: /** @lends Line */{
+		intersect: function(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, asVectors,
+				isInfinite) {
+			// Convert 2nd points to vectors if they are not specified as such.
+			if (!asVectors) {
+				ax2 -= ax1;
+				ay2 -= ay1;
+				bx2 -= bx1;
+				by2 -= by1;
+			}
+			var cross = by2 * ax2 - bx2 * ay2;
+			// Avoid divisions by 0, and errors when getting too close to 0
 			if (!Numerical.isZero(cross)) {
-				var ta = (bdx * dy - bdy * dx) / cross,
-					tb = (adx * dy - ady * dx) / cross;
-					if ((infinite || 0 <= ta && ta <= 1)
-							&& (infinite || 0 <= tb && tb <= 1))
-						return Point.create(
-									ax1 + ta * adx,
-									ay1 + ta * ady);
+				var dx = ax1 - bx1,
+					dy = ay1 - by1,
+					ta = (bx2 * dy - by2 * dx) / cross,
+					tb = (ax2 * dy - ay2 * dx) / cross;
+				// Check the ranges of t parameters if the line is not allowed
+				// to extend beyond the definition points.
+				if ((isInfinite || 0 <= ta && ta <= 1)
+						&& (isInfinite || 0 <= tb && tb <= 1))
+					return Point.create(
+								ax1 + ta * ax2,
+								ay1 + ta * ay2);
 			}
 		}
 	}
