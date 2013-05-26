@@ -726,11 +726,11 @@ function plotDataRandom(testdata) {
 		++count;
 		vx += hscale;
 	});
-	ppaper.smooth();
+//	ppaper.smooth();
 	ppaper.strokeWidth = 2;
 	ppaper.strokeColor = cpaper;
 	ppaper.opacity = 0.75;
-	pfat.smooth();
+//	pfat.smooth();
 	pfat.strokeWidth = 2;
 	pfat.strokeColor = cfat;
 	pfat.opacity = 0.75;
