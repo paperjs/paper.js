@@ -18,14 +18,13 @@ var fs = require('fs'),
 	jsdom = require('jsdom'),
 	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml;
 
-var options = {
-	parser: 'acorn',
-	// Use 'dev' for on-the fly compilation of separate files ,but update after.
-	version: 'dev',
-	server: true,
-	svg: true,
-	fatline: false
-};
+// Load the options from load.js, but evaluate into local scope:
+eval(fs.readFileSync(path.resolve(__dirname, '../options.js'), 'utf8'));
+// Change node.js specific settings. Use 'dev' version for on-the fly
+// compilation of separate files, and set to correct value after.
+options.version = 'dev';
+options.browser = false;
+options.server = true;
 
 // Create a document and a window using jsdom, e.g. for exportSVG()
 var doc = jsdom.jsdom("<html><body></body></html>"),

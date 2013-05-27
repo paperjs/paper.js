@@ -24,10 +24,19 @@
 #	commented		Preprocessed, still formated and commented
 #	stripped		Preprocessed, formated but without comments
 
-# Extract paper.js version from package.json
-VERSION=$(node -e "process.stdout.write(require('../package.json').version)")
+# Get the date from the git log:
 DATE=$(git log -1 --pretty=format:%ad)
-COMMAND="./prepro.js -d '{ \"version\": \"$VERSION\", \"date\": \"$DATE\", \"parser\": \"acorn\", \"svg\": true, \"fatline\": false }' $3 $2"
+# Extract the paper.js version from package.json:
+VERSION=$(node -e "
+	process.stdout.write(require('../package.json').version)
+")
+# Load and evaluate the options from options.js, and convert it an escaped json:
+OPTIONS=$(printf '%q' $(node -e "
+	eval(require('fs').readFileSync('../src/options.js', 'utf8'));
+	process.stdout.write(JSON.stringify(options));
+"))
+# Build the prepo.js command out of it, passing on version and date as defines:
+COMMAND="./prepro.js -d $OPTIONS -d '{ \"version\": \"$VERSION\", \"date\": \"$DATE\" }' $3 $2"
 
 case $1 in
 	commented)

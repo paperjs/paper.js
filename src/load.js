@@ -14,17 +14,7 @@
 // 'preprocess' it on the fly in the browser, avoiding the step of having to
 // manually preprocess it after each change.
 
-// Define options for compile-time preprocessing.
-var options = {
-	parser: 'acorn',
-	version: 'dev',
-	browser: true,
-	stats: true,
-	svg: true,
-	fatline: true,
-	debug: false
-};
-
 // This folder is specified relatively to the lib folder from which prepro.js is
 // loaded, and which is referenced as the root.
+include('../src/options.js');
 include('../src/paper.js');
