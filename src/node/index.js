@@ -25,6 +25,7 @@ eval(fs.readFileSync(path.resolve(__dirname, '../options.js'), 'utf8'));
 options.version = 'dev';
 options.browser = false;
 options.server = true;
+options.stats = false;
 
 // Create a document and a window using jsdom, e.g. for exportSVG()
 var doc = jsdom.jsdom("<html><body></body></html>"),
