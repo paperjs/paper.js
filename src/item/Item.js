@@ -26,14 +26,14 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		 * Override Item.extend() to merge the subclass' _serializeFields with
 		 * the parent class' _serializeFields.
 		 */
-		extend: function(src) {
+		extend: function extend(src) {
 			if (src._serializeFields)
 				src._serializeFields = Base.merge(
 						this.prototype._serializeFields, src._serializeFields);
 			// Derive the _type string from _class
 			if (src._class)
 				src._type = Base.hyphenate(src._class);
-			return this.base.apply(this, arguments);
+			return extend.base.apply(this, arguments);
 		}
 	},
 

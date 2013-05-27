@@ -97,9 +97,8 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
-	_changed: function(flags) {
-		// Don't use this.base() for reasons of performance.
-		Item.prototype._changed.call(this, flags);
+	_changed: function _changed(flags) {
+		_changed.base.call(this, flags);
 		if (flags & (/*#=*/ ChangeFlag.HIERARCHY | /*#=*/ ChangeFlag.CLIPPING)) {
 			// Clear cached clip item whenever hierarchy changes
 			delete this._clipItem;

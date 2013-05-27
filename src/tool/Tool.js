@@ -322,7 +322,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		return true;
 	},
 
-	fire: function(type, event) {
+	fire: function fire(type, event) {
 		// Override Callback#fire() so we can handle items marked in removeOn*()
 		// calls first,.
 		var sets = Tool._removeSets;
@@ -346,7 +346,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 				sets[type] = null;
 			}
 		}
-		return this.base(type, event);
+		return fire.base.call(this, type, event);
 	},
 
 	_onHandleEvent: function(type, point, event) {

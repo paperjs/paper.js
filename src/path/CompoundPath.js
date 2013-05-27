@@ -58,11 +58,11 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
-	insertChild: function(index, item, _preserve) {
+	insertChild: function insertChild(index, item, _preserve) {
 		// Only allow the insertion of paths
 		if (item._type !== 'path')
 			return null;
-		item = this.base(index, item);
+		item = insertChild.base.call(this, index, item);
 		// All children except for the bottom one (first one in list) are set
 		// to anti-clockwise orientation, so that they appear as holes, but
 		// only if their orientation was not already specified before
@@ -223,8 +223,9 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		return (children.length & 1) == 1 && children;
 	},
 
-	_hitTest: function(point, options) {
-		var res = this.base(point, Base.merge(options, { fill: false }));
+	_hitTest: function _hitTest(point, options) {
+		var res = _hitTest.base.call(this, point,
+				Base.merge(options, { fill: false }));
 		if (!res && options.fill && this._style.getFillColor()) {
 			res = this._contains(point);
 			res = res ? new HitResult('fill', res[0]) : null;

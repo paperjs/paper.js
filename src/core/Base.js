@@ -82,11 +82,11 @@ this.Base = Base.inject(/** @lends Base# */{
 
 		_classes: {},
 
-		extend: function(src) {
+		extend: function extend(src) {
 			// Override Base.extend() with a version that registers classes that
 			// define #_class inside the Base._classes lookup, for
 			// deserialization.
-			var res = this.base.apply(this, arguments);
+			var res = extend.base.apply(this, arguments);
 			if (src._class)
 				Base._classes[src._class] = res;
 			return res;

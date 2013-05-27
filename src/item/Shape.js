@@ -67,10 +67,10 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 		}
 	},
 
-	_contains: function(point) {
+	_contains: function _contains(point) {
 		switch (this._type) {
 		case 'rect':
-			return this.base(point);
+			return _contains.base.call(this, point);
 		case 'circle':
 		case 'ellipse':
 			return point.divide(this._size).getLength() <= 0.5;

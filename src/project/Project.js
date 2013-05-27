@@ -97,8 +97,8 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * Removes this project from the {@link PaperScope#projects} list, and also
 	 * removes its view, if one was defined.
 	 */
-	remove: function() {
-		if (!this.base())
+	remove: function remove() {
+		if (!remove.base.call(this))
 			return false;
 		if (this.view)
 			this.view.remove();

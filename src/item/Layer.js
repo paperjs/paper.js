@@ -69,9 +69,9 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	* Removes the layer from its project's layers list
 	* or its parent's children list.
 	*/
-	_remove: function(notify) {
+	_remove: function _remove(notify) {
 		if (this._parent)
-			return this.base(notify);
+			return _remove.base.call(this, notify);
 		if (this._index != null) {
 			if (this._project.activeLayer === this)
 				this._project.activeLayer = this.getNextSibling()
@@ -85,18 +85,18 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 		return false;
 	},
 
-	getNextSibling: function() {
-		return this._parent ? this.base()
+	getNextSibling: function getNextSibling() {		
+		return this._parent ? getNextSibling.base.call(this)
 				: this._project.layers[this._index + 1] || null;
 	},
 
-	getPreviousSibling: function() {
-		return this._parent ? this.base()
+	getPreviousSibling: function getPreviousSibling() {
+		return this._parent ? getPreviousSibling.base.call(this)
 				: this._project.layers[this._index - 1] || null;
 	},
 
-	isInserted: function() {
-		return this._parent ? this.base() : this._index != null;
+	isInserted: function isInserted() {
+		return this._parent ? isInserted.base.call(this) : this._index != null;
 	},
 
 	/**
@@ -114,7 +114,7 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	}
 }, new function () {
 	function insert(above) {
-		return function(item) {
+		return function insert(item) {
 			// If the item is a layer and contained within Project#layers, use
 			// our own version of move().
 			if (item instanceof Layer && !item._parent
@@ -124,7 +124,7 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 				this._setProject(item._project);
 				return true;
 			}
-			return this.base(item);
+			return insert.base.call(this, item);
 		};
 	}
 

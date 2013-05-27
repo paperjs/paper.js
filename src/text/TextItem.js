@@ -77,9 +77,9 @@ var TextItem = this.TextItem = Item.extend(/** @lends TextItem# */{
 	 * }
 	 */
 
-	_clone: function(copy) {
+	_clone: function _clone(copy) {
 		copy.setContent(this._content);
-		return this.base(copy);
+		return _clone.base.call(this, copy);
 	},
 
 	getContent: function() {

@@ -223,9 +223,9 @@ var Style = this.Style = Base.extend(new function() {
 		}
 	},
 
-	getLeading: function() {
+	getLeading: function getLeading() {
 		// Override leading to return fontSize * 1.2 by default.
-		var leading = this.base();
+		var leading = getLeading.base.call(this);
 		return leading != null ? leading : this.getFontSize() * 1.2;
 	},
 

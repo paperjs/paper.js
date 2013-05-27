@@ -788,12 +788,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		this.setSelected(selected);
 	},
 
-	setSelected: function(selected) {
+	setSelected: function setSelected(selected) {
 		// Deselect all segments when path is marked as not selected
 		if (!selected)
 			this._selectSegments(false);
 		// No need to pass true for noChildren since Path has none anyway.
-		this.base(selected);
+		setSelected.base.call(this, selected);
 	},
 
 	_selectSegments: function(selected) {
