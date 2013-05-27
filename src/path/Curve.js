@@ -1218,7 +1218,7 @@ new function() { // Scope for methods that require numerical integration
 		// If the fatlines don't overlap, we have no intersections!
 		if (dmin > maxdist || dmax < mindist)
 			return 0;
-		var Dt = getConvexHull(dq0, dq1, dq2, dq3),
+		var hull = getConvexHull(dq0, dq1, dq2, dq3),
 			tmp;
 		if (dq3 < dq0) {
 			tmp = dmin;
@@ -1232,31 +1232,29 @@ new function() { // Scope for methods that require numerical integration
 		var tmaxdmin = -Infinity,
 			tmin = Infinity,
 			tmax = -Infinity;
-		for (var i = 0, l = Dt.length; i < l; i++) {
-			var Dtl = Dt[i],
-				dtlx1 = Dtl[0],
-				dtly1 = Dtl[1],
-				dtlx2 = Dtl[2],
-				dtly2 = Dtl[3];
-			if (dtly2 < dtly1) {
-				tmp = dtly2;
-				dtly2 = dtly1;
-				dtly1 = tmp;
-				tmp = dtlx2;
-				dtlx2 = dtlx1;
-				dtlx1 = tmp;
+		for (var i = 0, l = hull.length; i < l; i++) {
+			var p1 = hull[i],
+				p2 = hull[(i + 1) % l];
+			if (p2[1] < p1[1]) {
+				tmp = p2;
+				p2 = p1;
+				p1 = tmp;
 			}
-			// We know that (dtlx2 - dtlx1) is never 0
-			var inv = (dtly2 - dtly1) / (dtlx2 - dtlx1);
-			if (dmin >= dtly1 && dmin <= dtly2) {
-				var ixdx = dtlx1 + (dmin - dtly1) / inv;
+			var	x1 = p1[0],
+				y1 = p1[1],
+				x2 = p2[0],
+				y2 = p2[1];
+			// We know that (x2 - x1) is never 0
+			var inv = (y2 - y1) / (x2 - x1);
+			if (dmin >= y1 && dmin <= y2) {
+				var ixdx = x1 + (dmin - y1) / inv;
 				if (ixdx < tmin)
 					tmin = ixdx;
 				if (ixdx > tmaxdmin)
 					tmaxdmin = ixdx;
 			}
-			if (dmax >= dtly1 && dmax <= dtly2) {
-				var ixdx = dtlx1 + (dmax - dtly1) / inv;
+			if (dmax >= y1 && dmax <= y2) {
+				var ixdx = x1 + (dmax - y1) / inv;
 				if (ixdx > tmax)
 					tmax = ixdx;
 				if (ixdx < tmin)
@@ -1311,10 +1309,10 @@ new function() { // Scope for methods that require numerical integration
 			// a quadrilateral and line [0, q0, 1, q3] is NOT part of the hull
 			// so we are pretty much done here.
 			return [
-				[ 0, dq0, 1 / 3, dq1 ],
-				[ 1 / 3, dq1, 1, dq3 ],
-				[ 2 / 3, dq2, 0, dq0 ],
-				[ 1, dq3, 2 / 3, dq2 ]
+				[ 2 / 3, dq2 ],
+				[ 0, dq0 ],
+				[ 1 / 3, dq1 ],
+				[ 1, dq3 ]
 			];
 		}
 		// dq1 and dq2 lie on the same sides on [0, q0, 1, q3]. The hull can be
@@ -1350,22 +1348,21 @@ new function() { // Scope for methods that require numerical integration
 		}
 		// Compare cross products of these vectors to determine, if
 		// point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
-		var a1a2_a1Min = vqa1a2X * vqa1MinY - vqa1a2Y * vqa1MinX,
-			a1Max_a1Min = vqa1MaxX * vqa1MinY - vqa1MaxY * vqa1MinX;
-		return a1a2_a1Min * a1Max_a1Min < 0
+		return (vqa1a2X * vqa1MinY - vqa1a2Y * vqa1MinX)
+				* (vqa1MaxX * vqa1MinY - vqa1MaxY * vqa1MinX) < 0
 				// Point [2/3, dq2] is inside the triangle, hull is a triangle.
 				? [
-					[ 0, dq0, dqMaxX, dqMaxY ],
-					[ dqMaxX, dqMaxY, 1, dq3 ],
-					[ 1, dq3, 0, dq0 ]
+					[ 0, dq0 ],
+					[ dqMaxX, dqMaxY ],
+					[ 1, dq3 ]
 				]
 				// Convexhull is a quadrilateral and we need all lines in the
 				// correct order where line [0, q0, 1, q3] is part of the hull.
 				: [
-					[ 0, dq0, 1 / 3, dq1 ],
-					[ 1 / 3, dq1, 2 / 3, dq2 ],
-					[ 2 / 3, dq2, 1, dq3 ],
-					[ 1, dq3, 0, dq0 ]
+					[ 0, dq0 ],
+					[ 1 / 3, dq1 ],
+					[ 2 / 3, dq2 ],
+					[ 1, dq3 ]
 				];
 	}
 /*#*/ } // options.fatline
