@@ -61,7 +61,7 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 		this._project = paper.project;
 		// Push it onto project.layers and set index:
 		this._index = this._project.layers.push(this) - 1;
-		this.base.apply(this, arguments);
+		Group.apply(this, arguments);
 		this.activate();
 	},
 

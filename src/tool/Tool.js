@@ -51,7 +51,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
 	// DOCS: rewrite Tool constructor explanation
 	initialize: function(props) {
-		this.base();
+		PaperScopeItem.call(this);
 		this._firstMove = true;
 		this._count = 0;
 		this._downCount = 0;

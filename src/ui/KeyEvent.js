@@ -22,7 +22,7 @@
  */
 var KeyEvent = this.KeyEvent = Event.extend(/** @lends KeyEvent# */{
 	initialize: function(down, key, character, event) {
-		this.base(event);
+		Event.call(this, event);
 		this.type = down ? 'keydown' : 'keyup';
 		this.key = key;
 		this.character = character;

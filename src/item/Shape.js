@@ -22,7 +22,7 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 	_applyMatrix: false,
 
 	initialize: function(type, point, size) {
-		this.base(point);
+		Item.call(this, point);
 		this._type = type;
 		this._size = size;
 	},

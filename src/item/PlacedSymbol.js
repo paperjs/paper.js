@@ -72,7 +72,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 		// Support two forms of item initialization: Passing one object literal
 		// describing all the different properties to be set, or a symbol (arg0)
 		// and a point where it should be placed (arg1).
-		this.base(arg1 !== undefined && Point.read(arguments, 1));
+		Item.call(this, arg1 !== undefined && Point.read(arguments, 1));
 		// If we can handle setting properties through object literal, we're all
 		// set. Otherwise we need to set symbol.
 		if (arg0 && !this._set(arg0))

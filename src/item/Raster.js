@@ -76,7 +76,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		// Support two forms of item initialization: Passing one object literal
 		// describing all the different properties to be set, or an image
 		// (object) and a point where it should be placed (point).
-		this.base(position !== undefined && Point.read(arguments, 1));
+		Item.call(this, position !== undefined && Point.read(arguments, 1));
 		// If we can handle setting properties through object literal, we're all
 		// set. Otherwise we need to check the type of object:
 		if (object && !this._set(object)) {

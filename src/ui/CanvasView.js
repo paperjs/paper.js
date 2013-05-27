@@ -34,7 +34,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		this._context = canvas.getContext('2d');
 		// Have Item count installed mouse events.
 		this._eventCounters = {};
-		this.base(canvas);
+		View.call(this, canvas);
 	},
 
 	/**

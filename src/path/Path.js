@@ -70,7 +70,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	initialize: function(arg) {
 		this._closed = false;
 		this._segments = [];
-		this.base();
+		Item.call(this);
 		// arg can either be an object literal describing properties to be set
 		// on the path, a list of segments to be set, or the first of multiple
 		// arguments describing separate segments.
