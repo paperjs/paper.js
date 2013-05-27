@@ -1,4 +1,5 @@
-	
+// Uncomment this to turn on fatline clipping in paper.js too
+options.fatline = true;
 paper.install(window);
 
 /**
