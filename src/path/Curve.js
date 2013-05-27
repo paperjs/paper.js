@@ -1318,42 +1318,29 @@ new function() { // Scope for methods that require numerical integration
 		// dq1 and dq2 lie on the same sides on [0, q0, 1, q3]. The hull can be
 		// a triangle or a quadrilateral and line [0, q0, 1, q3] is part of the
 		// hull. Check if the hull is a triangle or a quadrilateral.
-		var dqMaxX, dqMaxY, vqa1a2X, vqa1a2Y, vqa1MaxX, vqa1MaxY, vqa1MinX, vqa1MinY;
+		var dqmax, cross;
 		if (Math.abs(distq1) > Math.abs(distq2)) {
-			dqMaxX = 1 / 3;
-			dqMaxY = dq1;
+			dqmax = [ 1 / 3, dq1 ];
 			// apex is dq3 and the other apex point is dq0 vector
 			// dqapex->dqapex2 or base vector which is already part of the hull.
-			vqa1a2X = 1;
-			vqa1a2Y = dq3 - dq0;
-			// vector dqapex->dqMax
-			vqa1MaxX = 2 / 3;
-			vqa1MaxY = dq3 - dq1;
-			// vector dqapex->dqmin
-			vqa1MinX = 1 / 3;
-			vqa1MinY = dq3 - dq2;
+			// cross = (vqa1a2X * vqa1MinY - vqa1a2Y * vqa1MinX)
+			//		* (vqa1MaxX * vqa1MinY - vqa1MaxY * vqa1MinX)
+			cross = (dq3 - dq2 - (dq3 - dq0) / 3)
+					* (2 * (dq3 - dq2) - dq3 + dq1) / 3;
 		} else {
-			dqMaxX = 2 / 3;
-			dqMaxY = dq2;
+			dqmax = [ 2 / 3, dq2 ];
 			// apex is dq0 in this case, and the other apex point is dq3 vector
 			// dqapex->dqapex2 or base vector which is already part of the hull.
-			vqa1a2X = -1;
-			vqa1a2Y = dq0 - dq3;
-			// vector dqapex->dqMax
-			vqa1MaxX = -2 / 3;
-			vqa1MaxY = dq0 - dq2;
-			// vector dqapex->dqmin
-			vqa1MinX = -1 / 3;
-			vqa1MinY = dq0 - dq1;
+			cross = (dq1 - dq0 + (dq0 - dq3) / 3)
+					* (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
 		}
 		// Compare cross products of these vectors to determine, if
 		// point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
-		return (vqa1a2X * vqa1MinY - vqa1a2Y * vqa1MinX)
-				* (vqa1MaxX * vqa1MinY - vqa1MaxY * vqa1MinX) < 0
+		return cross < 0
 				// Point [2/3, dq2] is inside the triangle, hull is a triangle.
 				? [
 					[ 0, dq0 ],
-					[ dqMaxX, dqMaxY ],
+					dqmax,
 					[ 1, dq3 ]
 				]
 				// Convexhull is a quadrilateral and we need all lines in the
