@@ -1308,12 +1308,12 @@ new function() { // Scope for methods that require numerical integration
 			p3 = [ 1, dq3 ];
 		// Check if p1 and p2 are on the same side of the line [ p0, p3 ]
 		if (distq1 * distq2 < 0) {
-			// dq1 and dq2 lie on different sides on [ p0, p3 ]. The hull is
-			// a quadrilateral and line [0, q0, 1, q3] is NOT part of the hull
-			// so we are pretty much done here.
+			// dq1 and dq2 lie on different sides of [ p0, p3 ]. The hull is
+			// a quadrilateral and line [ p0, p3 ] is NOT part of the hull so we
+			// are pretty much done here.
 			return [ p0, p1, p3, p2 ];
 		}
-		// dq1 and dq2 lie on the same sides on [ p0, p3 ]. The hull can be
+		// dq1 and dq2 lie on the same sides of [ p0, p3 ]. The hull can be
 		// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
 		// hull. Check if the hull is a triangle or a quadrilateral.
 		var pmax, cross;
@@ -1332,8 +1332,8 @@ new function() { // Scope for methods that require numerical integration
 			cross = (dq1 - dq0 + (dq0 - dq3) / 3)
 					* (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
 		}
-		// Compare cross products of these vectors to determine, if
-		// point is in triangles [ p3, pmax, p0 ] or [ p0, pmax, p3 ]
+		// Compare cross products of these vectors to determine if the point is
+		// in the triangle [ p3, pmax, p0 ], or if it is a quadrilateral.
 		return cross < 0
 				// p2 is inside the triangle, hull is a triangle.
 				? [ p0, pmax, p3 ]
