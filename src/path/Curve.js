@@ -1300,24 +1300,25 @@ new function() { // Scope for methods that require numerical integration
 	 */
 	function getConvexHull(dq0, dq1, dq2, dq3) {
 		var getSignedDistance = Line.getSignedDistance,
-			distq1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
-			distq2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2),
 			p0 = [ 0, dq0 ],
 			p1 = [ 1 / 3, dq1 ],
 			p2 = [ 2 / 3, dq2 ],
-			p3 = [ 1, dq3 ];
+			p3 = [ 1, dq3 ],
+			// Find signed distance of p1 and p2 from line [ p0, p3 ]
+			dist1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
+			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2);
 		// Check if p1 and p2 are on the same side of the line [ p0, p3 ]
-		if (distq1 * distq2 < 0) {
-			// dq1 and dq2 lie on different sides of [ p0, p3 ]. The hull is
-			// a quadrilateral and line [ p0, p3 ] is NOT part of the hull so we
+		if (dist1 * dist2 < 0) {
+			// p1 and p2 lie on different sides of [ p0, p3 ]. The hull is a
+			// quadrilateral and line [ p0, p3 ] is NOT part of the hull so we
 			// are pretty much done here.
 			return [ p0, p1, p3, p2 ];
 		}
-		// dq1 and dq2 lie on the same sides of [ p0, p3 ]. The hull can be
+		// p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
 		// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
 		// hull. Check if the hull is a triangle or a quadrilateral.
 		var pmax, cross;
-		if (Math.abs(distq1) > Math.abs(distq2)) {
+		if (Math.abs(dist1) > Math.abs(dist2)) {
 			pmax = p1;
 			// apex is dq3 and the other apex point is dq0 vector
 			// dqapex->dqapex2 or base vector which is already part of the hull.
