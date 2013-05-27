@@ -2222,9 +2222,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	_transformContent: function(matrix, applyMatrix) {
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++)
-				this._children[i].transform(matrix, applyMatrix);
+		var children = this._children;
+		if (children && children.length > 0) {
+			for (var i = 0, l = children.length; i < l; i++)
+				children[i].transform(matrix, applyMatrix);
 			return true;
 		}
 	},
