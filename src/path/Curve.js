@@ -1311,7 +1311,7 @@ new function() { // Scope for methods that require numerical integration
 			// dq1 and dq2 lie on different sides on [ p0, p3 ]. The hull is
 			// a quadrilateral and line [0, q0, 1, q3] is NOT part of the hull
 			// so we are pretty much done here.
-			return [ p2, p0, p1, p3 ];
+			return [ p0, p1, p3, p2 ];
 		}
 		// dq1 and dq2 lie on the same sides on [ p0, p3 ]. The hull can be
 		// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
