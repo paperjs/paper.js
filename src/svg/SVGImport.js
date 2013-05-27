@@ -383,7 +383,8 @@ new function() {
 
 		'stop-color': function(item, value) {
 			// http://www.w3.org/TR/SVG/pservers.html#StopColorProperty
-			item.setColor(value);
+			if (item.setColor)
+				item.setColor(value);
 		},
 
 		'stop-opacity': function(item, value) {
