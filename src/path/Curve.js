@@ -1301,26 +1301,24 @@ new function() { // Scope for methods that require numerical integration
 	function getConvexHull(dq0, dq1, dq2, dq3) {
 		var getSignedDistance = Line.getSignedDistance,
 			distq1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
-			distq2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2);
-		// Check if [1/3, dq1] and [2/3, dq2] are on the same side of line
-		// [0,dq0, 1,dq3]
+			distq2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2),
+			p0 = [ 0, dq0 ],
+			p1 = [ 1 / 3, dq1 ],
+			p2 = [ 2 / 3, dq2 ],
+			p3 = [ 1, dq3 ];
+		// Check if p1 and p2 are on the same side of the line [ p0, p3 ]
 		if (distq1 * distq2 < 0) {
-			// dq1 and dq2 lie on different sides on [0, q0, 1, q3]. The hull is
+			// dq1 and dq2 lie on different sides on [ p0, p3 ]. The hull is
 			// a quadrilateral and line [0, q0, 1, q3] is NOT part of the hull
 			// so we are pretty much done here.
-			return [
-				[ 2 / 3, dq2 ],
-				[ 0, dq0 ],
-				[ 1 / 3, dq1 ],
-				[ 1, dq3 ]
-			];
+			return [ p2, p0, p1, p3 ];
 		}
-		// dq1 and dq2 lie on the same sides on [0, q0, 1, q3]. The hull can be
-		// a triangle or a quadrilateral and line [0, q0, 1, q3] is part of the
+		// dq1 and dq2 lie on the same sides on [ p0, p3 ]. The hull can be
+		// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
 		// hull. Check if the hull is a triangle or a quadrilateral.
-		var dqmax, cross;
+		var pmax, cross;
 		if (Math.abs(distq1) > Math.abs(distq2)) {
-			dqmax = [ 1 / 3, dq1 ];
+			pmax = p1;
 			// apex is dq3 and the other apex point is dq0 vector
 			// dqapex->dqapex2 or base vector which is already part of the hull.
 			// cross = (vqa1a2X * vqa1MinY - vqa1a2Y * vqa1MinX)
@@ -1328,29 +1326,20 @@ new function() { // Scope for methods that require numerical integration
 			cross = (dq3 - dq2 - (dq3 - dq0) / 3)
 					* (2 * (dq3 - dq2) - dq3 + dq1) / 3;
 		} else {
-			dqmax = [ 2 / 3, dq2 ];
+			pmax = p2;
 			// apex is dq0 in this case, and the other apex point is dq3 vector
 			// dqapex->dqapex2 or base vector which is already part of the hull.
 			cross = (dq1 - dq0 + (dq0 - dq3) / 3)
 					* (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
 		}
 		// Compare cross products of these vectors to determine, if
-		// point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
+		// point is in triangles [ p3, pmax, p0 ] or [ p0, pmax, p3 ]
 		return cross < 0
-				// Point [2/3, dq2] is inside the triangle, hull is a triangle.
-				? [
-					[ 0, dq0 ],
-					dqmax,
-					[ 1, dq3 ]
-				]
+				// p2 is inside the triangle, hull is a triangle.
+				? [ p0, pmax, p3 ]
 				// Convexhull is a quadrilateral and we need all lines in the
-				// correct order where line [0, q0, 1, q3] is part of the hull.
-				: [
-					[ 0, dq0 ],
-					[ 1 / 3, dq1 ],
-					[ 2 / 3, dq2 ],
-					[ 1, dq3 ]
-				];
+				// correct order where line [ p1, p3 ] is part of the hull.
+				: [ p0, p1, p2, p3 ];
 	}
 /*#*/ } // options.fatline
 
