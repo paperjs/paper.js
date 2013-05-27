@@ -11,4 +11,4 @@
  */
 
 // Export all named classes to PaperScope and create the initial paper object.
-var paper = new (PaperScope.inject(Base._classes))();
+var paper = new (PaperScope.inject(Base.exports))();

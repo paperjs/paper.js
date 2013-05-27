@@ -20,6 +20,10 @@
  * @extends Item
  */
 var PathItem = Item.extend(/** @lends PathItem# */{
+	initialize: function PathItem() {
+		Item.apply(this, arguments);
+	},
+
 	/**
 	 * Returns all intersections between two {@link PathItem} items as an array
 	 * of {@link CurveLocation} objects. {@link CompoundPath} items are also

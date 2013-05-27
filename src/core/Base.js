@@ -82,16 +82,15 @@ Base.inject(/** @lends Base# */{
 
 		// Keep track of all named classes for serialization and exporting.
 		// Also register the Base class itself.
-		_classes: { 'Base': Base },
+		exports: { 'Base': Base },
 
 		extend: function extend(src) {
-			// Override Base.extend() with a version that registers classes that
-			// define #_class inside the Base._classes lookup, for
-			// deserialization.
+			// Override Base.extend() to register named classes in Base.exports,
+			// for deserialization and injection into PaperScope.
 			var res = extend.base.apply(this, arguments),
 				name = res.name;
 			if (name)
-				Base._classes[name] = res;
+				Base.exports[name] = res;
 			return res;
 		},
 
@@ -337,7 +336,7 @@ Base.inject(/** @lends Base# */{
 		/**
 		 * Deserializes from parsed JSON data. A simple convention is followed:
 		 * Array values with a string at the first position are links to
-		 * deserializable types through Base._classes, and the values following
+		 * deserializable types through Base.exports, and the values following
 		 * in the array are the arguments to their initialize function.
 		 * Any other value is passed on unmodified.
 		 * The passed data is recoursively traversed and converted, leaves first
@@ -361,7 +360,7 @@ Base.inject(/** @lends Base# */{
 					// if so return its definition instead.
 					if (data.dictionary && obj.length == 1 && /^#/.test(type))
 						return data.dictionary[type];
-					type = Base._classes[type];
+					type = Base.exports[type];
 				}
 				res = [];
 				// Skip first type entry for arguments

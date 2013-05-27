@@ -35,10 +35,6 @@ var paper = new function() {
 // Inline Bootstrap core (the Base class) inside the paper scope first:
 /*#*/ include('../lib/straps.js');
 
-/*#*/ if (options.version == 'dev') {
-/*#*/ include('constants.js');
-/*#*/ } // options.version == 'dev'
-
 /*#*/ if (options.stats) {
 /*#*/ include('../lib/stats.js');
 /*#*/ } // options.stats
@@ -47,6 +43,12 @@ var paper = new function() {
 /*#*/ include('core/Callback.js');
 /*#*/ include('core/PaperScope.js');
 /*#*/ include('core/PaperScopeItem.js');
+
+/*#*/ if (options.version == 'dev') {
+// We can only load constants after core, since Numerical.js is loaded and
+// requires on Base.exports for exporting.
+/*#*/ include('constants.js');
+/*#*/ } // options.version == 'dev'
 
 /*#*/ include('util/Formatter.js');
 /*#*/ include('util/Numerical.js');
