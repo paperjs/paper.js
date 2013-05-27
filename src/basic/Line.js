@@ -132,16 +132,16 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 				vx -= px;
 				vy -= py;
 			}
-			var vx = x - px,
-				vy = y - py,
-				ccw = vx * vy - vy * vx; // ccw = v2.cross(v1);
+			var v2x = x - px,
+				v2y = y - py,
+				ccw = v2x * vy - v2y * vx; // ccw = v2.cross(v1);
 			if (ccw === 0) {
-				ccw = vx * vx + vy * vy; // ccw = v2.dot(v1);
+				ccw = v2x * vx + v2y * vy; // ccw = v2.dot(v1);
 				if (ccw > 0) {
 					// ccw = v2.subtract(v1).dot(v1);
-					vx -= vx;
-					vy -= vy;
-					ccw = vx * vx + vy * vy;
+					v2x -= vx;
+					v2y -= vy;
+					ccw = v2x * vx + v2y * vy;
 					if (ccw < 0)
 						ccw = 0;
 				}
