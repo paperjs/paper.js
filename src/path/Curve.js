@@ -1033,7 +1033,7 @@ new function() { // Scope for methods that require numerical integration
 			locations.push(new CurveLocation(curve1, parameter, point, curve2));
 	}
 
-	function getCurveIntersections(v1, v2, curve1, curve2, locations,
+	function addCurveIntersections(v1, v2, curve1, curve2, locations,
 			range1, range2, recursion) {
 /*#*/ if (options.fatline) {
 		// NOTE: range1 and range1 are only used for recusion
@@ -1097,17 +1097,17 @@ new function() { // Scope for methods that require numerical integration
 				if (range1[1] - range1[0] > range2[1] - range2[0]) {
 					// subdivide v1 and recurse
 					var t = (range1[0] + range1[1]) / 2;
-					getCurveIntersections(v1, v2, curve1, curve2, locations,
+					addCurveIntersections(v1, v2, curve1, curve2, locations,
 							[ range1[0], t ], range2, recursion);
-					getCurveIntersections(v1, v2, curve1, curve2, locations,
+					addCurveIntersections(v1, v2, curve1, curve2, locations,
 							[ t, range1[1] ], range2, recursion);
 					break;
 				} else {
 					// subdivide v2 and recurse
 					var t = (range2[0] + range2[1]) / 2;
-					getCurveIntersections(v1, v2, curve1, curve2, locations,
+					addCurveIntersections(v1, v2, curve1, curve2, locations,
 							range1, [ range2[0], t ], recursion);
-					getCurveIntersections(v1, v2, curve1, curve2, locations,
+					addCurveIntersections(v1, v2, curve1, curve2, locations,
 							range1, [ t, range2[1] ], recursion);
 					break;
 				}
@@ -1141,10 +1141,10 @@ new function() { // Scope for methods that require numerical integration
 				flat2 = Curve.isFlatEnough(part2, /*#=*/ Numerical.TOLERANCE);
 			if (flat1 || flat2) {
 				(flat1 && flat2
-						? getLineLineIntersection
+						? addLineIntersection
 						// Use curve line intersection method while specifying
 						// which curve to be treated as line
-						: getCurveLineIntersections)(part1, part2,
+						: addCurveLineIntersections)(part1, part2,
 								curve1, curve2, locations, flat1);
 				break;
 			}
@@ -1380,7 +1380,7 @@ new function() { // Scope for methods that require numerical integration
 	 * line is on the X axis, and solve the implicit equations for the X axis
 	 * and the curve.
 	 */
-	function getCurveLineIntersections(v1, v2, curve1, curve2, locations, flip) {
+	function addCurveLineIntersections(v1, v2, curve1, curve2, locations, flip) {
 		if (flip === undefined)
 			flip = Curve.isLinear(v1);
 		var vc = flip ? v2 : v1,
@@ -1426,7 +1426,7 @@ new function() { // Scope for methods that require numerical integration
 		}
 	}
 
-	function getLineLineIntersection(v1, v2, curve1, curve2, locations) {
+	function addLineIntersection(v1, v2, curve1, curve2, locations) {
 		var point = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
 				v2[0], v2[1], v2[6], v2[7]);
@@ -1446,10 +1446,10 @@ new function() { // Scope for methods that require numerical integration
 			// Determine the correct intersection method based on values of
 			// linear1 & 2:
 			(linear1 && linear2
-				? getLineLineIntersection
+				? addLineIntersection
 				: linear1 || linear2
-					? getCurveLineIntersections
-					: getCurveIntersections)(v1, v2, curve1, curve2, locations);
+					? addCurveLineIntersections
+					: addCurveIntersections)(v1, v2, curve1, curve2, locations);
 			return locations;
 		}
 	}};
