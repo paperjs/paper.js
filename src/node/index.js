@@ -32,8 +32,8 @@ var options = {
 var doc = jsdom.jsdom("<html><body></body></html>"),
 	win = doc.createWindow();
 
-// Define XMLSerializer.
-// TODO: Put this into a simple node module, with dependency on jsdom
+// Define XMLSerializer and DOMParser shims, to emulate browser behavior.
+// TODO: Put this into a simple node module, with dependency on jsdom?
 function XMLSerializer() {
 }
 
@@ -88,19 +88,6 @@ var context = vm.createContext({
 
 // Load Paper.js library files:
 context.include('paper.js');
-
-// Since the context used for Paper.js compilation, and the context in which
-// Node.js scripts are executed do not share the definition of Object, we need
-// to redefine Base.isPlainObject() here.
-// So instead of checking for Object.prototype, we're checking
-// proto.constructor.name for 'Object'
-var Base = context.Base;
-Base.isPlainObject = function(obj) {
-	var proto = obj !== null && typeof obj === 'object'
-			&& Object.getPrototypeOf(obj);
-	return proto && (proto.constructor.name === 'Object'
-			|| proto === Base.prototype);
-};
 
 context.PaperScope.inject({
 	// Expose the Canvas, XMLSerializer & DOMParser to PaperScope:
