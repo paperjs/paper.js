@@ -16,8 +16,7 @@ var fs = require('fs'),
 	// Node Canvas library: https://github.com/learnboost/node-canvas
 	Canvas = require('canvas'),
 	jsdom = require('jsdom'),
-	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml,
-	json = require('../../package.json');
+	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml;
 
 var options = {
 	parser: 'acorn',
@@ -41,7 +40,7 @@ XMLSerializer.prototype.serializeToString = function(node) {
 	var text = domToHtml(node);
 	// Fix a jsdom issue where linearGradient gets converted to lineargradient:
 	// https://github.com/tmpvar/jsdom/issues/620
-	return text.replace(/(linear|radial)(gradient)/g, function(all, type) {
+	return text.replace(/(linear|radial)gradient/g, function(all, type) {
 		return type + 'Gradient';
 	});
 };
@@ -94,8 +93,8 @@ context.PaperScope.inject({
 	Canvas: Canvas,
 	XMLSerializer: XMLSerializer,
 	DOMParser: DOMParser,
-	// Also fix version. Remove 2nd dot, so we can make a float out of it:
-	version: parseFloat(json.version.replace(/(.)(\d)$/, '$2'))
+	// Also set the correct version from package.json
+	version: require('../../package.json').version
 });
 
 require.extensions['.pjs'] = function(module, uri) {

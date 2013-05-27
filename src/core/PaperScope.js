@@ -71,11 +71,11 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 	},
 
 	/**
-	 * The version of Paper.js, as a float number.
+	 * The version of Paper.js, as a string.
 	 *
-	 * @type Number
+	 * @type String
 	 */
-	version: /*#=*/ options.version,
+	version: '/*#=*/ options.version',
 
 	/**
 	 * The currently active project.

@@ -24,10 +24,12 @@
 #	commented		Preprocessed, still formated and commented
 #	stripped		Preprocessed, formated but without comments
 
-VERSION=0.8
+# Extract paper.js version from package.json
+VERSION=`node -e "process.stdout.write(require('../package.json').version)"`
+
 DATE=$(git log -1 --pretty=format:%ad)
 
-COMMAND="./prepro.js -d '{ \"version\": $VERSION, \"date\": \"$DATE\", \"parser\": \"acorn\", \"svg\": true, \"fatline\": false }' $3 $2"
+COMMAND="./prepro.js -d '{ \"version\": \"$VERSION\", \"date\": \"$DATE\", \"parser\": \"acorn\", \"svg\": true, \"fatline\": false }' $3 $2"
 
 case $1 in
 	commented)
