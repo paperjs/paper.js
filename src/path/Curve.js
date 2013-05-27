@@ -1023,7 +1023,7 @@ new function() { // Scope for methods that require numerical integration
 					a, b, 16, /*#=*/ Numerical.TOLERANCE);
 		}
 	};
-}, new function() { // Scope for Curve intersection
+}, new function() { // Scope for intersection using bezier fat-line clipping
 	function addLocation(locations, curve1, parameter, point, curve2) {
 		// Avoid duplicates when hitting segments (closed paths too)
 		var first = locations[0],
@@ -1210,20 +1210,19 @@ new function() { // Scope for methods that require numerical integration
 			dq0 = getSignedDistance(p0x, p0y, p3x, p3y, q0x, q0y),
 			dq1 = getSignedDistance(p0x, p0y, p3x, p3y, q1x, q1y),
 			dq2 = getSignedDistance(p0x, p0y, p3x, p3y, q2x, q2y),
-			dq3 = getSignedDistance(p0x, p0y, p3x, p3y, q3x, q3y),
-			// Find the minimum and maximum distances from l, this is useful for
-			// checking whether the curves intersect with each other or not.
-			mindist = Math.min(dq0, dq1, dq2, dq3),
-			maxdist = Math.max(dq0, dq1, dq2, dq3);
+			dq3 = getSignedDistance(p0x, p0y, p3x, p3y, q3x, q3y);
+		// Find the minimum and maximum distances from l, this is useful for
+		// checking whether the curves intersect with each other or not.
 		// If the fatlines don't overlap, we have no intersections!
-		if (dmin > maxdist || dmax < mindist)
+		if (dmin > Math.max(dq0, dq1, dq2, dq3)
+				|| dmax < Math.min(dq0, dq1, dq2, dq3))
 			return 0;
 		var hull = getConvexHull(dq0, dq1, dq2, dq3),
-			tmp;
+			swap;
 		if (dq3 < dq0) {
-			tmp = dmin;
+			swap = dmin;
 			dmin = dmax;
-			dmax = tmp;
+			dmax = swap;
 		}
 		// Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
 		// Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
@@ -1236,9 +1235,9 @@ new function() { // Scope for methods that require numerical integration
 			var p1 = hull[i],
 				p2 = hull[(i + 1) % l];
 			if (p2[1] < p1[1]) {
-				tmp = p2;
+				swap = p2;
 				p2 = p1;
-				p1 = tmp;
+				p1 = swap;
 			}
 			var	x1 = p1[0],
 				y1 = p1[1],
@@ -1264,11 +1263,11 @@ new function() { // Scope for methods that require numerical integration
 		// Return the parameter values for v2 for which we can be sure that the
 		// intersection with v1 lies within.
 		if (tmin !== Infinity && tmax !== -Infinity) {
-			var mindmin = Math.min(dmin, dmax),
-				mindmax = Math.max(dmin, dmax);
-			if (dq3 > mindmin && dq3 < mindmax)
+			var min = Math.min(dmin, dmax),
+				max = Math.max(dmin, dmax);
+			if (dq3 > min && dq3 < max)
 				tmax = 1;
-			if (dq0 > mindmin && dq0 < mindmax)
+			if (dq0 > min && dq0 < max)
 				tmin = 0;
 			if (tmaxdmin > tmax)
 				tmax = 1;
@@ -1299,12 +1298,12 @@ new function() { // Scope for methods that require numerical integration
 	 * Calculating convex-hull is much easier than a set of arbitrary points.
 	 */
 	function getConvexHull(dq0, dq1, dq2, dq3) {
-		var getSignedDistance = Line.getSignedDistance,
-			p0 = [ 0, dq0 ],
+		var p0 = [ 0, dq0 ],
 			p1 = [ 1 / 3, dq1 ],
 			p2 = [ 2 / 3, dq2 ],
 			p3 = [ 1, dq3 ],
 			// Find signed distance of p1 and p2 from line [ p0, p3 ]
+			getSignedDistance = Line.getSignedDistance,
 			dist1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
 			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2);
 		// Check if p1 and p2 are on the same side of the line [ p0, p3 ]
