@@ -20,7 +20,7 @@
  * is unique to their type, but share the underlying properties and functions
  * that they inherit from Item.
  */
-var Item = this.Item = Base.extend(Callback, {
+var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 	statics: {
 		/**
 		 * Override Item.extend() to merge the subclass' _serializeFields with
@@ -35,8 +35,8 @@ var Item = this.Item = Base.extend(Callback, {
 				src._type = Base.hyphenate(src._class);
 			return this.base.apply(this, arguments);
 		}
-	}
-}, /** @lends Item# */{
+	},
+
 	// All items apply their matrix by default.
 	// Exceptions are Raster, PlacedSymbol, Clip and Shape.
 	_applyMatrix: true,
