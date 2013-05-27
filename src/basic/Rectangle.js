@@ -17,8 +17,7 @@
  * point (x, y), its width, and its height. It should not be confused with a
  * rectangular path, it is not an item.
  */
-var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
-	_class: 'Rectangle',
+var Rectangle = Base.extend(/** @lends Rectangle# */{
 	// Tell Base.read that the Rectangle constructor supports reading with index
 	_readIndex: true,
 
@@ -72,7 +71,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @name Rectangle#initialize
 	 * @param {Rectangle} rt
 	 */
-	initialize: function(arg0, arg1, arg2, arg3) {
+	initialize: function Rectangle(arg0, arg1, arg2, arg3) {
 		var type = typeof arg0,
 			read = 0;
 		if (type === 'number') {

@@ -42,7 +42,7 @@
  * 	path.add(event.point);
  * }
  */
-var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
+var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	_list: 'tools',
 	_reference: '_tool', // PaperScope has accessor for #tool
 	_events: [ 'onActivate', 'onDeactivate', 'onEditOptions',
@@ -50,7 +50,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 			'onKeyDown', 'onKeyUp' ],
 
 	// DOCS: rewrite Tool constructor explanation
-	initialize: function(props) {
+	initialize: function Tool(props) {
 		PaperScopeItem.call(this);
 		this._firstMove = true;
 		this._count = 0;

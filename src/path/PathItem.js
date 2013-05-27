@@ -19,7 +19,7 @@
  *
  * @extends Item
  */
-var PathItem = this.PathItem = Item.extend(/** @lends PathItem# */{
+var PathItem = Item.extend(/** @lends PathItem# */{
 	/**
 	 * Returns all intersections between two {@link PathItem} items as an array
 	 * of {@link CurveLocation} objects. {@link CompoundPath} items are also

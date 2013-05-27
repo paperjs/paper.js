@@ -19,8 +19,7 @@
  *
  * @extends Item
  */
-var Group = this.Group = Item.extend(/** @lends Group# */{
-	_class: 'Group',
+var Group = Item.extend(/** @lends Group# */{
 	_serializeFields: {
 		children: []
 	},
@@ -88,7 +87,7 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	 * 	position: view.center
 	 * });
 	 */
-	initialize: function(arg) {
+	initialize: function Group(arg) {
 		Item.call(this);
 		// Allow Group to have children and named children
 		this._children = [];

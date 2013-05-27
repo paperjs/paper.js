@@ -17,7 +17,7 @@
  */
 // Extend Base with utility functions used across the library. Also set
 // this.Base on the injection scope, since straps.js ommits that.
-this.Base = Base.inject(/** @lends Base# */{
+Base.inject(/** @lends Base# */{
 	// Have generics versions of #clone() and #toString():
 	generics: true,
 
@@ -36,7 +36,7 @@ this.Base = Base.inject(/** @lends Base# */{
 	 */
 	toString: function() {
 		return this._id != null
-			?  (this._class || 'Object') + (this._name
+			?  (this.constructor.name || 'Object') + (this._name
 				? " '" + this._name + "'"
 				: ' @' + this._id)
 			: '{ ' + Base.each(this, function(value, key) {
@@ -80,15 +80,18 @@ this.Base = Base.inject(/** @lends Base# */{
 
 	statics: /** @lends Base */{
 
-		_classes: {},
+		// Keep track of all named classes for serialization and exporting.
+		// Also register the Base class itself.
+		_classes: { 'Base': Base },
 
 		extend: function extend(src) {
 			// Override Base.extend() with a version that registers classes that
 			// define #_class inside the Base._classes lookup, for
 			// deserialization.
-			var res = extend.base.apply(this, arguments);
-			if (src._class)
-				Base._classes[src._class] = res;
+			var res = extend.base.apply(this, arguments),
+				name = res.name;
+			if (name)
+				Base._classes[name] = res;
 			return res;
 		},
 
@@ -289,11 +292,12 @@ this.Base = Base.inject(/** @lends Base# */{
 							ref = this.references[id];
 						if (!ref) {
 							this.length++;
-							var res = create.call(item);
+							var res = create.call(item),
+								name = item.constructor.name;
 							// Also automatically insert class for dictionary
 							// entries.
-							if (item._class && res[0] !== item._class)
-								res.unshift(item._class);
+							if (name && res[0] !== name)
+								res.unshift(name);
 							this.definitions[id] = res;
 							ref = this.references[id] = [id];
 						}
@@ -306,8 +310,9 @@ this.Base = Base.inject(/** @lends Base# */{
 				// If we don't serialize to compact form (meaning no type
 				// identifier), see if _serialize didn't already add the class,
 				// e.g. for classes that do not support compact form.
-				if (obj._class && !compact && res[0] !== obj._class)
-					res.unshift(obj._class);
+				var name = obj.constructor.name;
+				if (name && !compact && res[0] !== name)
+					res.unshift(name);
 			} else if (Array.isArray(obj)) {
 				res = [];
 				for (var i = 0, l = obj.length; i < l; i++)

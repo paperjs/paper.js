@@ -22,7 +22,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	 * @param {HTMLCanvasElement} canvas The canvas object that this view should
 	 * wrap
 	 */
-	initialize: function(canvas) {
+	initialize: function CanvasView(canvas) {
 		// Handle canvas argument
 		if (!(canvas instanceof HTMLCanvasElement)) {
 			// 2nd argument onwards could be view size, otherwise use default:

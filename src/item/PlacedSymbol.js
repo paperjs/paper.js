@@ -18,8 +18,7 @@
  *
  * @extends Item
  */
-var PlacedSymbol = this.PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
-	_class: 'PlacedSymbol',
+var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 	_applyMatrix: false,
 	// PlacedSymbol uses strokeBounds for bounds
 	_boundsGetter: { getBounds: 'getStrokeBounds' },
@@ -68,7 +67,7 @@ var PlacedSymbol = this.PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 	 *     instance.scale(0.25 + Math.random() * 0.75);
 	 * }
 	 */
-	initialize: function(arg0, arg1) {
+	initialize: function PlacedSymbol(arg0, arg1) {
 		// Support two forms of item initialization: Passing one object literal
 		// describing all the different properties to be set, or a symbol (arg0)
 		// and a point where it should be placed (arg1).

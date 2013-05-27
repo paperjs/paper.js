@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var Numerical = this.Numerical = new function() {
+var Numerical = new function() {
 
 	// Lookup tables for abscissas and weights with values for n = 2 .. 16.
 	// As values are symetric, only store half of them and addapt algorithm

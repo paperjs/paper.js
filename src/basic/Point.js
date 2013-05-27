@@ -23,8 +23,7 @@
  * console.log(point.x); // 10
  * console.log(point.y); // 5
  */
-var Point = this.Point = Base.extend(/** @lends Point# */{
-	_class: 'Point',
+var Point = Base.extend(/** @lends Point# */{
 	// Tell Base.read that the Point constructor supports reading with index
 	_readIndex: true,
 
@@ -129,7 +128,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @name Point#initialize
 	 */
-	initialize: function(arg0, arg1) {
+	initialize: function Point(arg0, arg1) {
 		var type = typeof arg0;
 		if (type === 'number') {
 			var hasY = typeof arg1 === 'number';

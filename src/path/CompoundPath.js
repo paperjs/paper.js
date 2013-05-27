@@ -20,8 +20,7 @@
  *
  * @extends PathItem
  */
-var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
-	_class: 'CompoundPath',
+var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	_serializeFields: {
 		pathData: ''
 	},
@@ -49,7 +48,7 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	 * // Move the inner circle 5pt to the right:
 	 * compoundPath.children[1].position.x += 5;
 	 */
-	initialize: function(arg) {
+	initialize: function CompoundPath(arg) {
 		PathItem.call(this);
 		// CompoundPath has children and supports named children.
 		this._children = [];

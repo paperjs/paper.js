@@ -17,8 +17,7 @@
  *
  * @extends Item
  */
-var Raster = this.Raster = Item.extend(/** @lends Raster# */{
-	_class: 'Raster',
+var Raster = Item.extend(/** @lends Raster# */{
 	_applyMatrix: false,
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
@@ -72,7 +71,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 * raster.scale(0.5);
 	 * raster.rotate(10);
 	 */
-	initialize: function(object, position) {
+	initialize: function Raster(object, position) {
 		// Support two forms of item initialization: Passing one object literal
 		// describing all the different properties to be set, or an image
 		// (object) and a point where it should be placed (point).

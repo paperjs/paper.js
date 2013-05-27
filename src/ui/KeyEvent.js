@@ -20,8 +20,8 @@
  *
  * @extends Event
  */
-var KeyEvent = this.KeyEvent = Event.extend(/** @lends KeyEvent# */{
-	initialize: function(down, key, character, event) {
+var KeyEvent = Event.extend(/** @lends KeyEvent# */{
+	initialize: function KeyEvent(down, key, character, event) {
 		Event.call(this, event);
 		this.type = down ? 'keydown' : 'keyup';
 		this.key = key;

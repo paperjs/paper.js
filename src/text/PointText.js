@@ -19,9 +19,7 @@
  *
  * @extends TextItem
  */
-var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
-	_class: 'PointText',
-
+var PointText = TextItem.extend(/** @lends PointText# */{
 	/**
 	 * Creates a point text item
 	 *
@@ -43,6 +41,9 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * 	fontSize: 25
 	 * });
 	 */
+	initialize: function PointText() {
+		TextItem.apply(this, arguments);
+	},
 
 	clone: function() {
 		return this._clone(new PointText());

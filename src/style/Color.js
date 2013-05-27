@@ -40,7 +40,7 @@
  * // converted to a Color.
  * circle.fillColor = '#ff0000';
  */
-var Color = this.Color = Base.extend(new function() {
+var Color = Base.extend(new function() {
 
 	var types = {
 		gray: ['gray'],
@@ -275,7 +275,6 @@ var Color = this.Color = Base.extend(new function() {
 			};
 		}, this);
 	}, /** @lends Color# */{
-		_class: 'Color',
 		// Tell Base.read that the Point constructor supports reading with index
 		_readIndex: true,
 
@@ -436,7 +435,7 @@ var Color = this.Color = Base.extend(new function() {
 		 * // 100% and a lightness of 50%:
 		 * circle.fillColor = { hue: 90, saturation: 1, lightness: 0.5 };
 		 */
-		initialize: function(arg) {
+		initialize: function Color(arg) {
 			// We are storing color internally as an array of components
 			var slice = Array.prototype.slice,
 				args = arguments,
@@ -503,7 +502,7 @@ var Color = this.Color = Base.extend(new function() {
 							: nameToRGB(arg);
 					type = 'rgb';
 				} else if (argType === 'object') {
-					if (arg._class === 'Color') {
+					if (arg.constructor === Color) {
 						type = arg._type;
 						components = arg._components.slice();
 						alpha = arg._alpha;
@@ -516,7 +515,7 @@ var Color = this.Color = Base.extend(new function() {
 									components[i] = point.clone();
 							}
 						}
-					} else if (arg._class === 'Gradient') {
+					} else if (arg.constructor === Gradient) {
 						type = 'gradient';
 						values = args;
 					} else {

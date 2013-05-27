@@ -19,8 +19,8 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-var View = this.View = Base.extend(Callback, /** @lends View# */{
-	initialize: function(element) {
+var View = Base.extend(Callback, /** @lends View# */{
+	initialize: function View(element) {
 		// Store reference to the currently active global paper scope, and the
 		// active project, which will be represented by this view
 		this._scope = paper;

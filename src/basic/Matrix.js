@@ -37,9 +37,7 @@
  * knowledge of the underlying matrix (as opposed to say simply performing
  * matrix multiplication).
  */
-var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
-	_class: 'Matrix',
-
+var Matrix = Base.extend(/** @lends Matrix# */{
 	/**
 	 * Creates a 2D affine transform.
 	 *
@@ -50,7 +48,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Number} tx The translateX coordinate of the transform
 	 * @param {Number} ty The translateY coordinate of the transform
 	 */
-	initialize: function(arg) {
+	initialize: function Matrix(arg) {
 		var count = arguments.length,
 			ok = true;
 		if (count == 6) {

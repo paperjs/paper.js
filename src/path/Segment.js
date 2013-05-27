@@ -22,9 +22,7 @@
  * {@link Segment#handleOut}), describing the tangents of the two {@link Curve}
  * objects that are connected by this segment.
  */
-var Segment = this.Segment = Base.extend(/** @lends Segment# */{
-	_class: 'Segment',
-
+var Segment = Base.extend(/** @lends Segment# */{
 	/**
 	 * Creates a new Segment object.
 	 *
@@ -110,7 +108,7 @@ var Segment = this.Segment = Base.extend(/** @lends Segment# */{
 	 * path.strokeColor = 'black';
 	 * @ignore
 	 */
-	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5) {
+	initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
 			createPoint = SegmentPoint.create,
 			point, handleIn, handleOut;

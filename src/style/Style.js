@@ -65,7 +65,7 @@
  * };
  * 
  */
-var Style = this.Style = Base.extend(new function() {
+var Style = Base.extend(new function() {
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
 	// not supported.
 	var defaults = {
@@ -201,7 +201,7 @@ var Style = this.Style = Base.extend(new function() {
 	Item.inject(item);
 	return fields;
 }, /** @lends Style# */{
-	initialize: function(style) {
+	initialize: function Style(style) {
 		// We keep values in a separate object that we can iterate over.
 		this._values = {};
 		if (this._item instanceof TextItem)

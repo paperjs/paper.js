@@ -15,7 +15,7 @@
  *
  * @class The Line object represents..
  */
-var Line = this.Line = Base.extend(/** @lends Line# */{
+var Line = Base.extend(/** @lends Line# */{
 	// DOCS: document Line class and constructor
 	/**
 	 * Creates a Line object.
@@ -24,7 +24,7 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 * @param {Point} point2
 	 * @param {Boolean} [asVector=false]
 	 */
-	initialize: function(arg0, arg1, arg2, arg3, arg4) {
+	initialize: function Line(arg0, arg1, arg2, arg3, arg4) {
 		var asVector = false;
 		if (arguments.length >= 4) {
 			this._px = arg0;

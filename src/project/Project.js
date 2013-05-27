@@ -30,7 +30,7 @@
  * An array of all open projects is accessible through the
  * {@link PaperScope#projects} variable.
  */
-var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
+var Project = PaperScopeItem.extend(/** @lends Project# */{
 	_list: 'projects',
 	_reference: 'project',
 
@@ -44,7 +44,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @param {View|HTMLCanvasElement} view Either a view object or an HTML
 	 * Canvas element that should be wrapped in a newly created view.
 	 */
-	initialize: function(view) {
+	initialize: function Project(view) {
 		// Activate straight away by passing true to base(), so paper.project is
 		// set, as required by Layer and DoumentView constructors.
 		PaperScopeItem.call(this, true);

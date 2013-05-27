@@ -22,8 +22,7 @@
  * console.log(size.width); // 10
  * console.log(size.height); // 5
  */
-var Size = this.Size = Base.extend(/** @lends Size# */{
-	_class: 'Size',
+var Size = Base.extend(/** @lends Size# */{
 	// Tell Base.read that the Point constructor supports reading with index
 	_readIndex: true,
 
@@ -90,7 +89,7 @@ var Size = this.Size = Base.extend(/** @lends Size# */{
 	 * console.log(size.width); // 50
 	 * console.log(size.height); // 50
 	 */
-	initialize: function(arg0, arg1) {
+	initialize: function Size(arg0, arg1) {
 		var type = typeof arg0;
 		if (type === 'number') {
 			var hasHeight = typeof arg1 === 'number';

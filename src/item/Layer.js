@@ -22,8 +22,7 @@
  *
  * @extends Group
  */
-var Layer = this.Layer = Group.extend(/** @lends Layer# */{
-	_class: 'Layer',
+var Layer = Group.extend(/** @lends Layer# */{
 	// DOCS: improve constructor code example.
 	/**
 	 * Creates a new Layer item and places it at the end of the
@@ -57,7 +56,7 @@ var Layer = this.Layer = Group.extend(/** @lends Layer# */{
 	 * 	position: view.center
 	 * });
 	 */
-	initialize: function(items) {
+	initialize: function Layer(items) {
 		this._project = paper.project;
 		// Push it onto project.layers and set index:
 		this._index = this._project.layers.push(this) - 1;

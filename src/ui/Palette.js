@@ -14,10 +14,10 @@
   * @name Palette
   * @class
   */
-var Palette = this.Palette = Base.extend(Callback, /** @lends Palette# */{
+var Palette = Base.extend(Callback, /** @lends Palette# */{
 	_events: [ 'onChange' ],
 
-	initialize: function(title, components, values) {
+	initialize: function Palette(title, components, values) {
 		var parent = DomElement.find('.palettejs-panel')
 			|| DomElement.find('body').appendChild(
 				DomElement.create('div', { 'class': 'palettejs-panel' }));

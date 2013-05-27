@@ -20,7 +20,7 @@
  * is unique to their type, but share the underlying properties and functions
  * that they inherit from Item.
  */
-var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
+var Item = Base.extend(Callback, /** @lends Item# */{
 	statics: {
 		/**
 		 * Override Item.extend() to merge the subclass' _serializeFields with
@@ -30,10 +30,12 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			if (src._serializeFields)
 				src._serializeFields = Base.merge(
 						this.prototype._serializeFields, src._serializeFields);
-			// Derive the _type string from _class
-			if (src._class)
-				src._type = Base.hyphenate(src._class);
-			return extend.base.apply(this, arguments);
+			var res = extend.base.apply(this, arguments),
+				name = res.name;
+			// Derive the _type string from constructor name
+			if (name)
+				res.prototype._type = Base.hyphenate(name);
+			return res;
 		}
 	},
 
@@ -55,7 +57,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 		data: {}
 	},
 
-	initialize: function(point) {
+	initialize: function Item(point) {
 		// Define this Item's unique id.
 		this._id = Item._id = (Item._id || 0) + 1;
 		// If _project is already set, the item was already moved into the DOM
@@ -168,7 +170,7 @@ var Item = this.Item = Base.extend(Callback, /** @lends Item# */{
 			serialize(this._style._defaults);
 		// There is no compact form for Item serialization, we always keep the
 		// type.
-		return [ this._class, props ];
+		return [ this.constructor.name, props ];
 	},
 
 	/**

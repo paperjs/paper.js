@@ -17,11 +17,10 @@
  *
  * @extends Item
  */
-var Shape = this.Shape = Item.extend(/** @lends Shape# */{
-	_class: 'Shape',
+var Shape = Item.extend(/** @lends Shape# */{
 	_applyMatrix: false,
 
-	initialize: function(type, point, size) {
+	initialize: function Shape(type, point, size) {
 		Item.call(this, point);
 		this._type = type;
 		this._size = size;

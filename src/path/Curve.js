@@ -24,7 +24,7 @@
  * convenient ways to work with parts of the path, finding lengths, positions or
  * tangents at given offsets.
  */
-var Curve = this.Curve = Base.extend(/** @lends Curve# */{
+var Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * Creates a new curve object.
 	 *
@@ -55,7 +55,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * @param {Number} x2
 	 * @param {Number} y2
 	 */
-	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+	initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
 		if (count === 0) {
 			this._segment1 = new Segment();

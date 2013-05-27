@@ -59,11 +59,9 @@
  * 	destination: path.bounds.rightCenter
  * };
  */
-var Gradient = this.Gradient = Base.extend(/** @lends Gradient# */{
-	_class: 'Gradient',
-
+var Gradient = Base.extend(/** @lends Gradient# */{
 	// DOCS: Document #initialize()
-	initialize: function(stops, radial) {
+	initialize: function Gradient(stops, radial) {
 		// Define this Gradient's unique id.
 		this._id = Gradient._id = (Gradient._id || 0) + 1;
 		if (stops && this._set(stops))

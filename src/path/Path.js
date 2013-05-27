@@ -18,8 +18,7 @@
  * @extends PathItem
  */
 // DOCS: Explain that path matrix is always applied with each transformation.
-var Path = this.Path = PathItem.extend(/** @lends Path# */{
-	_class: 'Path',
+var Path = PathItem.extend(/** @lends Path# */{
 	_serializeFields: {
 		segments: [],
 		closed: false
@@ -67,7 +66,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * 	selected: true
 	 * });
 	 */
-	initialize: function(arg) {
+	initialize: function Path(arg) {
 		this._closed = false;
 		this._segments = [];
 		Item.call(this);

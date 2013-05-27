@@ -19,9 +19,7 @@
  * internal properties such as segment lists and gradient positions don't need
  * to be updated with every transformation.
  */
-var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
-	_class: 'Symbol',
-
+var Symbol = Base.extend(/** @lends Symbol# */{
 	/**
 	 * Creates a Symbol item.
 	 *
@@ -59,7 +57,7 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 	 *     instance.scale(0.25 + Math.random() * 0.75);
 	 * }
 	 */
-	initialize: function(item, dontCenter) {
+	initialize: function Symbol(item, dontCenter) {
 		// Define this Symbols's unique id.
 		this._id = Symbol._id = (Symbol._id || 0) + 1;
 		this.project = paper.project;
@@ -72,7 +70,7 @@ var Symbol = this.Symbol = Base.extend(/** @lends Symbol# */{
 
 	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
-			return Base.serialize([this._class, this._definition],
+			return Base.serialize([this.constructor.name, this._definition],
 					options, false, dictionary);
 		});
 	},
