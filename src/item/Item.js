@@ -25,6 +25,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		/**
 		 * Override Item.extend() to merge the subclass' _serializeFields with
 		 * the parent class' _serializeFields.
+		 *
+		 * @private
 		 */
 		extend: function extend(src) {
 			if (src._serializeFields)
