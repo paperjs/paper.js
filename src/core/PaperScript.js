@@ -21,7 +21,7 @@
 /*#*/ include('../../lib/esprima-min.js');
 /*#*/ }
  
-var PaperScript = Base.exports.PaperScript = new function() {
+var PaperScript = new function() {
 	// Operators to overload
 
 	var binaryOperators = {

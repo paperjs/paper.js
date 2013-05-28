@@ -10,5 +10,9 @@
  * All rights reserved.
  */
 
-// Export all named classes to PaperScope and create the initial paper object.
-var paper = new (PaperScope.inject(Base.exports))();
+// Add PaperScript and Numerical to exports, inject all exports into PaperScope,
+// and create the initial paper object, all in one condensed statement:
+var paper = new (PaperScope.inject(Base.exports.inject({
+	PaperScript: PaperScript,
+	Numerical: Numerical
+})))();
