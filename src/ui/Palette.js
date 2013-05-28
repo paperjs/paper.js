@@ -49,7 +49,6 @@ var Palette = Base.extend(Callback, /** @lends Palette# */{
 				Base.define(values, name, {
 					enumerable: true,
 					configurable: true,
-					writable: true,
 					get: function() {
 						return component._value;
 					},

@@ -139,7 +139,6 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		Base.each(['project', 'view', 'tool'], function(key) {
 			Base.define(scope, key, {
 				configurable: true,
-				writable: true,
 				get: function() {
 					return that[key];
 				}
