@@ -2178,7 +2178,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
 			var current = getCurrentSegment(this)._point;
-			this.arcBy(current.add(throughVector), current.add(toVector));
+			this.arcTo(current.add(throughVector), current.add(toVector));
 		},
 
 		closePath: function() {
