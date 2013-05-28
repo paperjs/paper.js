@@ -202,7 +202,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			this._clearBoundsCache();
 		}
 		if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
-			this._project._needsRedraw();
+			this._project._needsRedraw = true;
 		}
 		// If this item is a symbol's definition, notify it of the change too
 		if (this._parentSymbol)

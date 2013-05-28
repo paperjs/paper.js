@@ -78,7 +78,7 @@ var Layer = Group.extend(/** @lends Layer# */{
 			Base.splice(this._project.layers, null, this._index, 1);
 			// Tell project we need a redraw. This is similar to _changed()
 			// mechanism.
-			this._project._needsRedraw();
+			this._project._needsRedraw = true;
 			return true;
 		}
 		return false;

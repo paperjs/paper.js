@@ -72,11 +72,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		return Base.serialize(this.layers, options, false, dictionary);
 	},
 
-	_needsRedraw: function() {
-		if (this.view)
-			this.view._redrawNeeded = true;
-	},
-
 	/**
 	 * Activates this project, so all newly created items will be placed
 	 * in it.

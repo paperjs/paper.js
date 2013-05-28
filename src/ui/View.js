@@ -235,7 +235,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	_redraw: function() {
-		this._redrawNeeded = true;
+		this._project._needsRedraw = true;
 		if (this._handlingFrame)
 			return;
 		if (this._animate) {
