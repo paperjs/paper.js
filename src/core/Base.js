@@ -310,13 +310,17 @@ Base.inject(/** @lends Base# */{
 				// identifier), see if _serialize didn't already add the class,
 				// e.g. for classes that do not support compact form.
 				var name = obj.constructor.name;
-				if (name && !compact && res[0] !== name)
+				if (name && !compact && !res._compact && res[0] !== name)
 					res.unshift(name);
 			} else if (Array.isArray(obj)) {
 				res = [];
 				for (var i = 0, l = obj.length; i < l; i++)
 					res[i] = Base.serialize(obj[i], options, compact,
 							dictionary);
+				// Mark array as compact, so obj._serialize handling above
+				// doesn't add the constructor name again.
+				if (compact)
+					res._compact = true;
 			} else if (Base.isPlainObject(obj)) {
 				res = {};
 				for (var i in obj)

@@ -69,7 +69,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		// into the active project automatically. We might want to add proper
 		// project serialization later, but deserialization of a layers array
 		// will always work.
-		return Base.serialize(this.layers, options, false, dictionary);
+		return Base.serialize(this.layers, options, true, dictionary);
 	},
 
 	/**
@@ -266,10 +266,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	// DOCS: Figure out a way to group these together with importSVG / exportSVG
 
 	importJSON: function(json) {
-		json = typeof json === 'string' ? JSON.parse(json) : json;
-		// Unbox project data, as we don't want to create a new project object.
-		if (json[0] === 'Project')
-			json = json[1];
 		this.activate();
 		return Base.importJSON(json);
 	},
