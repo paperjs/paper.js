@@ -270,6 +270,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		// Unbox project data, as we don't want to create a new project object.
 		if (json[0] === 'Project')
 			json = json[1];
+		this.activate();
 		return Base.importJSON(json);
 	},
 
