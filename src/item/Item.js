@@ -1432,7 +1432,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Item} item The item to be added as a child
 	 */
 	addChild: function(item, _preserve) {
-		// Pass on internal _preserve boolean, for CompoundPath#insertChild
 		return this.insertChild(undefined, item, _preserve);
 	},
 
@@ -1445,21 +1444,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Item} item The item to be appended as a child
 	 */
 	insertChild: function(index, item, _preserve) {
-		// _preserve parameter is not used here, but CompoundPath#insertChild()
-		// needs it.
-		if (this._children) {
-			item._remove(true);
-			Base.splice(this._children, [item], index, 0);
-			item._parent = this;
-			item._setProject(this._project);
-			// Setting the name again makes sure all name lookup structures are
-			// kept in sync.
-			if (item._name)
-				item.setName(item._name);
-			this._changed(/*#=*/ Change.HIERARCHY);
-			return item;
-		}
-		return null;
+		var res = this.insertChildren(index, [item], _preserve);
+		return res && res[0];
 	},
 
 	/**
@@ -1481,25 +1467,42 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Number} index
 	 * @param {Item[]} items The items to be appended as children
 	 */
-	insertChildren: function(index, items, _preserve) {
-		// We need to clone items because it might be
-		// an Item#children array. Use Array.prototype.slice because
-		// in certain cases items is an arguments object
-		items = items && Array.prototype.slice.apply(items);
-		var children = this._children,
-			length = children.length,
-			i = index;
-		for (var j = 0, l = items && items.length; j < l; j++) {
-			if (this.insertChild(i, items[j], _preserve)) {
-				// We need to keep track of how much the list actually grows,
-				// bcause we might be removing and inserting into the same list,
-				// in which case the size would not chage.
-				var newLength = children.length;
-				i += newLength - length;
-				length = newLength;
+	insertChildren: function(index, items, _preserve, _type) {
+		// CompoundPath#insertChildren() requires _preserve and _type:
+		// _preserve avoids changing of the children's path orientation
+		// _type enforces the inserted type.
+		var children = this._children;
+		if (children && items && items.length > 0) {
+			// We need to clone items because it might be
+			// an Item#children array. Also, we're removing elements if they
+			// don't match _type. Use Array.prototype.slice becaus items can be
+			// an arguments object.
+			items = Array.prototype.slice.apply(items);
+			// Remove the items from their parents first, since they might be
+			// inserted into their own parents, affecting indices.
+			// Use the loop also to filter out wrong _type.
+			for (var i = items.length - 1; i >= 0; i--) {
+				var item = items[i];
+				if (_type && item._type !== _type)
+					items.splice(i, 1);
+				else
+					item._remove(true);
 			}
+			Base.splice(children, items, index, 0);
+			for (var i = 0, l = items.length; i < l; i++) {
+				var item = items[i];
+				item._parent = this;
+				item._setProject(this._project);
+				// Setting the name again makes sure all name lookup structures
+				// are kept in sync.
+				if (item._name)
+					item.setName(item._name);
+			}
+			this._changed(/*#=*/ Change.HIERARCHY);
+		} else {
+			items = null;
 		}
-		return i != index;
+		return items;
 	},
 
 	/**

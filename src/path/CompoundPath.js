@@ -57,18 +57,20 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
-	insertChild: function insertChild(index, item, _preserve) {
-		// Only allow the insertion of paths
-		if (item._type !== 'path')
-			return null;
-		item = insertChild.base.call(this, index, item);
+	insertChildren: function insertChildren(index, items, _preserve) {
+		// Pass on 'path' for _type, to make sure that only paths are added as
+		// children.
+		items = insertChildren.base.call(this, index, items, _preserve, 'path');
 		// All children except for the bottom one (first one in list) are set
 		// to anti-clockwise orientation, so that they appear as holes, but
 		// only if their orientation was not already specified before
 		// (= _clockwise is defined).
-		if (!_preserve && item && item._clockwise === undefined)
-			item.setClockwise(item._index == 0);
-		return item;
+		for (var i = 0, l = !_preserve && items && items.length; i < l; i++) {
+			var item = items[i];
+			if (item._clockwise === undefined)
+				item.setClockwise(item._index === 0);
+		}
+		return items;
 	},
 
 	/**
