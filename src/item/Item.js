@@ -882,7 +882,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		}
 		return isFinite(x1)
-				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
+				? new Rectangle(x1, y1, x2 - x1, y2 - y1)
 				: new Rectangle();
 	},
 
@@ -2340,7 +2340,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					? rectangle.width / bounds.width
 					: rectangle.height / bounds.height,
 			newBounds = new Rectangle(new Point(),
-					Size.create(bounds.width * scale, bounds.height * scale));
+					new Size(bounds.width * scale, bounds.height * scale));
 		newBounds.setCenter(rectangle.getCenter());
 		this.setBounds(newBounds);
 	},
@@ -2885,7 +2885,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// so we draw onto it, instead of the parentCtx
 			parentCtx = ctx;
 			ctx = CanvasProvider.getContext(
-					bounds.getSize().ceil().add(Size.create(1, 1)));
+					bounds.getSize().ceil().add(new Size(1, 1)));
 		}
 		ctx.save();
 		// Translate the context so the topLeft of the item is at (0, 0)

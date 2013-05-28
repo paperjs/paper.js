@@ -1981,13 +1981,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 					segment.setHandleIn(handleIn.subtract(segment._point));
 				if (i < n) {
 					segment.setHandleOut(
-							Point.create(x[i], y[i]).subtract(segment._point));
+							new Point(x[i], y[i]).subtract(segment._point));
 					if (i < n - 1)
-						handleIn = Point.create(
+						handleIn = new Point(
 								2 * knots[i + 1]._x - x[i + 1],
 								2 * knots[i + 1]._y - y[i + 1]);
 					else
-						handleIn = Point.create(
+						handleIn = new Point(
 								(knots[n]._x + x[n - 1]) / 2,
 								(knots[n]._y + y[n - 1]) / 2);
 				}
@@ -2282,7 +2282,7 @@ statics: {
 			processSegment(segments[i]);
 		if (closed)
 			processSegment(first);
-		return Rectangle.create(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 
 	/**
@@ -2304,8 +2304,8 @@ statics: {
 			// Get rotated hor and ver vectors, and determine rotation angle
 			// and elipse values from them:
 			var mx = matrix.shiftless(),
-				hor = mx.transform(Point.create(radius, 0)),
-				ver = mx.transform(Point.create(0, radius)),
+				hor = mx.transform(new Point(radius, 0)),
+				ver = mx.transform(new Point(0, radius)),
 				phi = hor.getAngleInRadians(),
 				a = hor.getLength(),
 				b = ver.getLength();
@@ -2388,9 +2388,9 @@ statics: {
 					normal2 = curve2.getNormalAt(0, true).normalize(miterRadius),
 					// Intersect the two lines
 					line1 = new Line(point.add(normal1),
-							Point.create(-normal1.y, normal1.x), true),
+							new Point(-normal1.y, normal1.x), true),
 					line2 = new Line(point.add(normal2),
-							Point.create(-normal2.y, normal2.x), true),
+							new Point(-normal2.y, normal2.x), true),
 					corner = line1.intersect(line2, true);
 				// Now measure the distance from the segment to the
 				// intersection, which his half of the miter distance
@@ -2465,7 +2465,7 @@ statics: {
 				if (yx > y2) y2 = yx;
 			}
 		}
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**

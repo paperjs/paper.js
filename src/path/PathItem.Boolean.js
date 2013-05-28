@@ -158,7 +158,7 @@ PathItem.inject(new function() {
 			if (segment.getPrevious()._invalid)
 				segment.setHandleIn(intersection
 						? intersection._handleIn
-						: Point.create(0, 0));
+						: new Point(0, 0));
 			do {
 				segment._visited = true;
 				if (segment._invalid && segment._intersection) {

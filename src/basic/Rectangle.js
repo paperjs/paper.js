@@ -190,7 +190,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * Returns a copy of the rectangle.
 	 */
 	clone: function() {
-		return Rectangle.create(this.x, this.y, this.width, this.height);
+		return new Rectangle(this.x, this.y, this.width, this.height);
 	},
 
 	/**
@@ -651,7 +651,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 			y1 = Math.max(this.y, rect.y),
 			x2 = Math.min(this.x + this.width, rect.x + rect.width),
 			y2 = Math.min(this.y + this.height, rect.y + rect.height);
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**
@@ -668,7 +668,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 			y1 = Math.min(this.y, rect.y),
 			x2 = Math.max(this.x + this.width, rect.x + rect.width),
 			y2 = Math.max(this.y + this.height, rect.y + rect.height);
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**
@@ -691,7 +691,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 			y1 = Math.min(this.y, point.y),
 			x2 = Math.max(this.x + this.width, point.x),
 			y2 = Math.max(this.y + this.height, point.y);
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**
@@ -715,7 +715,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	expand: function(hor, ver) {
 		if (ver === undefined)
 			ver = hor;
-		return Rectangle.create(this.x - hor / 2, this.y - ver / 2,
+		return new Rectangle(this.x - hor / 2, this.y - ver / 2,
 				this.width + hor, this.height + ver);
 	},
 
@@ -739,13 +739,6 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	scale: function(hor, ver) {
 		return this.expand(this.width * hor - this.width,
 				this.height * (ver === undefined ? hor : ver) - this.height);
-	},
-
-	statics: {
-		// See Point.create()
-		create: function(x, y, width, height) {
-			return Base.create(Rectangle).set(x, y, width, height);
-		}
 	}
 }, new function() {
 	return Base.each([

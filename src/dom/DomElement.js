@@ -158,7 +158,7 @@ var DomElement = new function() {
 			var doc = el.ownerDocument,
 				view = doc.defaultView,
 				html = doc.documentElement;
-			return Rectangle.create(0, 0, 
+			return new Rectangle(0, 0, 
 				view.innerWidth || html.clientWidth,
 				view.innerHeight || html.clientHeight
 			);

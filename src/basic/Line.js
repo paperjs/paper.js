@@ -52,7 +52,7 @@ var Line = Base.extend(/** @lends Line# */{
 	 * @type Point
 	 */
 	getPoint: function() {
-		return Point.create(this._px, this._py);
+		return new Point(this._px, this._py);
 	},
 
 	/**
@@ -62,7 +62,7 @@ var Line = Base.extend(/** @lends Line# */{
 	 * @type Point
 	 */
 	getVector: function() {
-		return Point.create(this._vx, this._vy);
+		return new Point(this._vx, this._vy);
 	},
 
 	/**
@@ -121,7 +121,7 @@ var Line = Base.extend(/** @lends Line# */{
 				// to extend beyond the definition points.
 				if ((isInfinite || 0 <= ta && ta <= 1)
 						&& (isInfinite || 0 <= tb && tb <= 1))
-					return Point.create(
+					return new Point(
 								apx + ta * avx,
 								apy + ta * avy);
 			}

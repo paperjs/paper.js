@@ -163,7 +163,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			orig = new Point(0, 0).transform(matrix),
 			u = new Point(1, 0).transform(matrix).subtract(orig),
 			v = new Point(0, 1).transform(matrix).subtract(orig);
-		return Size.create(
+		return new Size(
 			72 / u.getLength(),
 			72 / v.getLength()
 		);
@@ -217,7 +217,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		if (this._canvas)
 			CanvasProvider.release(this._canvas);
 		this._canvas = canvas;
-		this._size = Size.create(canvas.width, canvas.height);
+		this._size = new Size(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
 		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
@@ -238,9 +238,9 @@ var Raster = Item.extend(/** @lends Raster# */{
 			CanvasProvider.release(this._canvas);
 		this._image = image;
 /*#*/ if (options.browser) {
-		this._size = Size.create(image.naturalWidth, image.naturalHeight);
+		this._size = new Size(image.naturalWidth, image.naturalHeight);
 /*#*/ } else if (options.server) {
-		this._size = Size.create(image.width, image.height);
+		this._size = new Size(image.width, image.height);
 /*#*/ } // options.server
 		this._canvas = null;
 		this._context = null;
@@ -374,7 +374,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			bounds = new Rectangle(object);
 		} else if (object.x) {
 			// Create a rectangle of 1px size around the specified coordinates
-			bounds = Rectangle.create(object.x - 0.5, object.y - 0.5, 1, 1);
+			bounds = new Rectangle(object.x - 0.5, object.y - 0.5, 1, 1);
 		}
 		// Use a sample size of max 32 x 32 pixels, into which the path is
 		// scaled as a clipping path, and then the actual image is drawn in and

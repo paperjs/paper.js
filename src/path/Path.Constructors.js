@@ -274,7 +274,7 @@ Path.inject({ statics: new function() {
 			var center = Point.readNamed(arguments, 'center'),
 				radius = Base.readNamed(arguments, 'radius');
 			return createEllipse(new Rectangle(center.subtract(radius),
-					Size.create(radius * 2, radius * 2)))
+					new Size(radius * 2, radius * 2)))
 					.set(Base.getNamed(arguments));
 		},
 

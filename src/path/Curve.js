@@ -243,7 +243,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 		var coords = this.getValues(),
 			points = [];
 		for (var i = 0; i < 8; i += 2)
-			points.push(Point.create(coords[i], coords[i + 1]));
+			points.push(new Point(coords[i], coords[i + 1]));
 		return points;
 	},
 
@@ -408,9 +408,9 @@ var Curve = Base.extend(/** @lends Curve# */{
 
 			// Create the new segment, convert absolute -> relative:
 			var x = left[6], y = left[7],
-				segment = new Segment(Point.create(x, y),
-						!isLinear && Point.create(left[4] - x, left[5] - y),
-						!isLinear && Point.create(right[2] - x, right[3] - y));
+				segment = new Segment(new Point(x, y),
+						!isLinear && new Point(left[4] - x, left[5] - y),
+						!isLinear && new Point(right[2] - x, right[3] - y));
 
 			// Insert it in the segments list, if needed:
 			if (this._path) {
@@ -662,7 +662,7 @@ statics: {
 		for (var i = 0; i < 2; i++)
 			Curve._addBounds(v[i], v[i + 2], v[i + 4], v[i + 6],
 					i, 0, min, max, roots);
-		return Rectangle.create(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 
 	/**

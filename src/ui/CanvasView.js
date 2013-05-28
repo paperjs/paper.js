@@ -28,7 +28,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			// 2nd argument onwards could be view size, otherwise use default:
 			var size = Size.read(arguments, 1);
 			if (size.isZero())
-				size = Size.create(1024, 768);
+				size = new Size(1024, 768);
 			canvas = CanvasProvider.getCanvas(size);
 		}
 		this._context = canvas.getContext('2d');
