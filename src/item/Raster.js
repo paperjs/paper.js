@@ -239,9 +239,9 @@ var Raster = Item.extend(/** @lends Raster# */{
 		this._image = image;
 /*#*/ if (options.browser) {
 		this._size = new Size(image.naturalWidth, image.naturalHeight);
-/*#*/ } else if (options.server) {
+/*#*/ } else if (options.node) {
 		this._size = new Size(image.width, image.height);
-/*#*/ } // options.server
+/*#*/ } // options.node
 		this._canvas = null;
 		this._context = null;
 		this._changed(/*#=*/ Change.GEOMETRY);
@@ -295,13 +295,13 @@ var Raster = Item.extend(/** @lends Raster# */{
 		} else if (!image.src) {
 			image.src = src;
 		}
-/*#*/ } else if (options.server) {
+/*#*/ } else if (options.node) {
 		// If we're running on the server and it's a string,
 		// load it from disk:
 		// TODO: load images async, calling setImage once loaded as above
 		var image = new Image();
 		image.src = fs.readFileSync(src);
-/*#*/ } // options.server
+/*#*/ } // options.node
 		this.setImage(image);
 	},
 

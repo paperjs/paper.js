@@ -83,11 +83,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 			style.top = offset.y + 'px';
 			document.body.appendChild(stats);
 		}
-/*#*/ } else if (options.server) {
+/*#*/ } else if (options.node) {
 		// Generate an id for this view
 		this._id = 'view-' + View._id++;
 		size = new Size(element.width, element.height);
-/*#*/ } // options.server
+/*#*/ } // options.node
 		// Keep track of views internally
 		View._views.push(this);
 		// Link this id to our view

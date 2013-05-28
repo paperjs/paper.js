@@ -169,8 +169,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	};
 });
 
-/*#*/ if (options.server) {
-// Node.js server based image exporting code.
+/*#*/ if (options.node) {
+// Node.js based image exporting code.
 CanvasView.inject(new function() {
 	// Utility function that converts a number to a string with
 	// x amount of padded 0 digits:
@@ -252,4 +252,4 @@ CanvasView.inject(new function() {
 		}
 	};
 });
-/*#*/ } // options.server
+/*#*/ } // options.node
