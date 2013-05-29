@@ -14,7 +14,7 @@
   * @name Component
   * @class
   */
-var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
+var Component = Base.extend(Callback, /** @lends Component# */{
 	_events: [ 'onChange', 'onClick' ],
 
 	_types: {
@@ -58,7 +58,7 @@ var Component = this.Component = Base.extend(Callback, /** @lends Component# */{
 		}
 	},
 
-	initialize: function(obj) {
+	initialize: function Component(obj) {
 		this._type = obj.type in this._types
 			? obj.type
 			: 'options' in obj

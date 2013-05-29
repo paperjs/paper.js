@@ -17,12 +17,11 @@
  *
  * @extends Item
  */
-var Shape = this.Shape = Item.extend(/** @lends Shape# */{
-	_class: 'Shape',
+var Shape = Item.extend(/** @lends Shape# */{
 	_applyMatrix: false,
 
-	initialize: function(type, point, size) {
-		this.base(point);
+	initialize: function Shape(type, point, size) {
+		Item.call(this, point);
 		this._type = type;
 		this._size = size;
 	},
@@ -67,10 +66,10 @@ var Shape = this.Shape = Item.extend(/** @lends Shape# */{
 		}
 	},
 
-	_contains: function(point) {
+	_contains: function _contains(point) {
 		switch (this._type) {
 		case 'rect':
-			return this.base(point);
+			return _contains.base.call(this, point);
 		case 'circle':
 		case 'ellipse':
 			return point.divide(this._size).getLength() <= 0.5;

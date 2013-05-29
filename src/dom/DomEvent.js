@@ -49,7 +49,7 @@ var DomEvent = {
 					? event.targetTouches[0]
 					: event.changedTouches[0]
 				: event;
-		return Point.create(
+		return new Point(
 			pos.pageX || pos.clientX + document.documentElement.scrollLeft,
 			pos.pageY || pos.clientY + document.documentElement.scrollTop
 		);

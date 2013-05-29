@@ -98,7 +98,7 @@ var Callback = {
 	statics: {
 		// Override inject() so that sub-classes automatically add the accessors
 		// for the event handler functions (e.g. #onMouseDown) for each property
-		inject: function(/* src, ... */) {
+		inject: function inject(/* src, ... */) {
 			for (var i = 0, l = arguments.length; i < l; i++) {
 				var src = arguments[i],
 					events = src._events;
@@ -132,7 +132,7 @@ var Callback = {
 					});
 					src._eventTypes = types;
 				}
-				this.base(src);
+				inject.base.call(this, src);
 			}
 			return this;
 		}

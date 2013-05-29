@@ -17,8 +17,7 @@
  *
  * @extends Item
  */
-var Raster = this.Raster = Item.extend(/** @lends Raster# */{
-	_class: 'Raster',
+var Raster = Item.extend(/** @lends Raster# */{
 	_applyMatrix: false,
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
@@ -72,11 +71,11 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	 * raster.scale(0.5);
 	 * raster.rotate(10);
 	 */
-	initialize: function(object, position) {
+	initialize: function Raster(object, position) {
 		// Support two forms of item initialization: Passing one object literal
 		// describing all the different properties to be set, or an image
 		// (object) and a point where it should be placed (point).
-		this.base(position !== undefined && Point.read(arguments, 1));
+		Item.call(this, position !== undefined && Point.read(arguments, 1));
 		// If we can handle setting properties through object literal, we're all
 		// set. Otherwise we need to check the type of object:
 		if (object && !this._set(object)) {
@@ -164,7 +163,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 			orig = new Point(0, 0).transform(matrix),
 			u = new Point(1, 0).transform(matrix).subtract(orig),
 			v = new Point(0, 1).transform(matrix).subtract(orig);
-		return Size.create(
+		return new Size(
 			72 / u.getLength(),
 			72 / v.getLength()
 		);
@@ -218,7 +217,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		if (this._canvas)
 			CanvasProvider.release(this._canvas);
 		this._canvas = canvas;
-		this._size = Size.create(canvas.width, canvas.height);
+		this._size = new Size(canvas.width, canvas.height);
 		this._image = null;
 		this._context = null;
 		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
@@ -239,10 +238,10 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 			CanvasProvider.release(this._canvas);
 		this._image = image;
 /*#*/ if (options.browser) {
-		this._size = Size.create(image.naturalWidth, image.naturalHeight);
-/*#*/ } else if (options.server) {
-		this._size = Size.create(image.width, image.height);
-/*#*/ } // options.server
+		this._size = new Size(image.naturalWidth, image.naturalHeight);
+/*#*/ } else if (options.node) {
+		this._size = new Size(image.width, image.height);
+/*#*/ } // options.node
 		this._canvas = null;
 		this._context = null;
 		this._changed(/*#=*/ Change.GEOMETRY);
@@ -296,14 +295,22 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 		} else if (!image.src) {
 			image.src = src;
 		}
-/*#*/ } else if (options.server) {
-		// If we're running on the server and it's a string,
-		// load it from disk:
-		// TODO: load images async, calling setImage once loaded as above
-		var image = new Image();
-		image.src = fs.readFileSync(src);
-/*#*/ } // options.server
 		this.setImage(image);
+/*#*/ } else if (options.node) {
+		var image = new Image();
+		// If we're running on the server and it's a string,
+		// check if it is a data URL
+		if (/^data:/.test(src)) {
+			// Preserve the data in this._data since canvas-node eats it.
+			// TODO: Fix canvas-node instead
+			image.src = this._data = src;
+		} else {
+			// Load it from disk:
+			// TODO: load images async, calling setImage once loaded as above.
+			image.src = fs.readFileSync(src);
+		}
+		this.setImage(image);
+/*#*/ } // options.node
 	},
 
 	// DOCS: document Raster#getElement
@@ -334,9 +341,14 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 	toDataURL: function() {
 		// See if the linked image is base64 encoded already, if so reuse it,
 		// otherwise try using canvas.toDataURL()
+/*#*/ if (options.node) {
+		if (this._data)
+			return this._data;
+/*#*/ } else {
 		var src = this._image && this._image.src;
 		if (/^data:/.test(src))
 			return src;
+/*#*/ }
 		var canvas = this.getCanvas();
 		return canvas ? canvas.toDataURL() : null;
 	},
@@ -375,7 +387,7 @@ var Raster = this.Raster = Item.extend(/** @lends Raster# */{
 			bounds = new Rectangle(object);
 		} else if (object.x) {
 			// Create a rectangle of 1px size around the specified coordinates
-			bounds = Rectangle.create(object.x - 0.5, object.y - 0.5, 1, 1);
+			bounds = new Rectangle(object.x - 0.5, object.y - 0.5, 1, 1);
 		}
 		// Use a sample size of max 32 x 32 pixels, into which the path is
 		// scaled as a clipping path, and then the actual image is drawn in and

@@ -37,9 +37,7 @@
  * knowledge of the underlying matrix (as opposed to say simply performing
  * matrix multiplication).
  */
-var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
-	_class: 'Matrix',
-
+var Matrix = Base.extend(/** @lends Matrix# */{
 	/**
 	 * Creates a 2D affine transform.
 	 *
@@ -50,7 +48,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Number} tx The translateX coordinate of the transform
 	 * @param {Number} ty The translateY coordinate of the transform
 	 */
-	initialize: function(arg) {
+	initialize: function Matrix(arg) {
 		var count = arguments.length,
 			ok = true;
 		if (count == 6) {
@@ -101,7 +99,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} A copy of this transform.
 	 */
 	clone: function() {
-		return Matrix.create(this._a, this._c, this._b, this._d,
+		return new Matrix(this._a, this._c, this._b, this._d,
 				this._tx, this._ty);
 	},
 
@@ -518,7 +516,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 
 		return {
 			translation: this.getTranslation(),
-			scaling: Point.create(scaleX, scaleY),
+			scaling: new Point(scaleX, scaleY),
 			rotation: -Math.atan2(b, a) * 180 / Math.PI,
 			shearing: shear
 		};
@@ -585,7 +583,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	getTranslation: function() {
 		// No decomposition is required to extract translation, so treat this
-		return Point.create(this._tx, this._ty);
+		return new Point(this._tx, this._ty);
 	},
 
 	/**
@@ -620,7 +618,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	inverted: function() {
 		var det = this._getDeterminant();
-		return det && Matrix.create(
+		return det && new Matrix(
 				this._d / det,
 				-this._c / det,
 				-this._b / det,
@@ -630,7 +628,7 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	shiftless: function() {
-		return Matrix.create(this._a, this._c, this._b, this._d, 0, 0);
+		return new Matrix(this._a, this._c, this._b, this._d, 0, 0);
 	},
 
 	/**
@@ -640,13 +638,6 @@ var Matrix = this.Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	applyToContext: function(ctx) {
 		ctx.transform(this._a, this._c, this._b, this._d, this._tx, this._ty);
-	},
-
-	statics: /** @lends Matrix */{
-		// See Point.create()
-		create: function(a, c, b, d, tx, ty) {
-			return Base.create(Matrix).set(a, c, b, d, tx, ty);
-		}
 	}
 }, new function() {
 	return Base.each({

@@ -19,8 +19,7 @@
  *
  * @extends Item
  */
-var Group = this.Group = Item.extend(/** @lends Group# */{
-	_class: 'Group',
+var Group = Item.extend(/** @lends Group# */{
 	_serializeFields: {
 		children: []
 	},
@@ -88,8 +87,8 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 	 * 	position: view.center
 	 * });
 	 */
-	initialize: function(arg) {
-		this.base();
+	initialize: function Group(arg) {
+		Item.call(this);
 		// Allow Group to have children and named children
 		this._children = [];
 		this._namedChildren = {};
@@ -97,9 +96,12 @@ var Group = this.Group = Item.extend(/** @lends Group# */{
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
-	_changed: function(flags) {
-		// Don't use this.base() for reasons of performance.
-		Item.prototype._changed.call(this, flags);
+	_changed: function _changed(flags) {
+		_changed.base.call(this, flags);
+		if (flags & /*#=*/ ChangeFlag.HIERARCHY && !this._matrix.isIdentity()) {
+			// Apply matrix now that we have content.
+			this.applyMatrix();
+		}
 		if (flags & (/*#=*/ ChangeFlag.HIERARCHY | /*#=*/ ChangeFlag.CLIPPING)) {
 			// Clear cached clip item whenever hierarchy changes
 			delete this._clipItem;

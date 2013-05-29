@@ -14,8 +14,8 @@
  * @name Event
  * @class
  */
-var Event = this.Event = Base.extend(/** @lends Event# */{
-	initialize: function(event) {
+var Event = Base.extend(/** @lends Event# */{
+	initialize: function Event(event) {
 		this.event = event;
 	},
 

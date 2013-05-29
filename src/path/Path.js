@@ -18,8 +18,7 @@
  * @extends PathItem
  */
 // DOCS: Explain that path matrix is always applied with each transformation.
-var Path = this.Path = PathItem.extend(/** @lends Path# */{
-	_class: 'Path',
+var Path = PathItem.extend(/** @lends Path# */{
 	_serializeFields: {
 		segments: [],
 		closed: false
@@ -67,10 +66,10 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 	 * 	selected: true
 	 * });
 	 */
-	initialize: function(arg) {
+	initialize: function Path(arg) {
 		this._closed = false;
 		this._segments = [];
-		this.base();
+		Item.call(this);
 		// arg can either be an object literal describing properties to be set
 		// on the path, a list of segments to be set, or the first of multiple
 		// arguments describing separate segments.
@@ -788,12 +787,12 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 		this.setSelected(selected);
 	},
 
-	setSelected: function(selected) {
+	setSelected: function setSelected(selected) {
 		// Deselect all segments when path is marked as not selected
 		if (!selected)
 			this._selectSegments(false);
 		// No need to pass true for noChildren since Path has none anyway.
-		this.base(selected);
+		setSelected.base.call(this, selected);
 	},
 
 	_selectSegments: function(selected) {
@@ -1982,13 +1981,13 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 					segment.setHandleIn(handleIn.subtract(segment._point));
 				if (i < n) {
 					segment.setHandleOut(
-							Point.create(x[i], y[i]).subtract(segment._point));
+							new Point(x[i], y[i]).subtract(segment._point));
 					if (i < n - 1)
-						handleIn = Point.create(
+						handleIn = new Point(
 								2 * knots[i + 1]._x - x[i + 1],
 								2 * knots[i + 1]._y - y[i + 1]);
 					else
-						handleIn = Point.create(
+						handleIn = new Point(
 								(knots[n]._x + x[n - 1]) / 2,
 								(knots[n]._y + y[n - 1]) / 2);
 				}
@@ -2104,11 +2103,11 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			// Construct the two perpendicular middle lines to (from, through)
 			// and (through, to), and intersect them to get the center
 			var l1 = new Line(from.add(through).divide(2),
-					through.subtract(from).rotate(90)),
+						through.subtract(from).rotate(90), true),
 				l2 = new Line(through.add(to).divide(2),
-					to.subtract(through).rotate(90)),
-				center = l1.intersect(l2),
-				line = new Line(from, to, true),
+						to.subtract(through).rotate(90), true),
+				center = l1.intersect(l2, true),
+				line = new Line(from, to),
 				throughSide = line.getSide(through);
 			if (!center) {
 				// If the two lines are colinear, there cannot be an arc as the
@@ -2179,7 +2178,7 @@ var Path = this.Path = PathItem.extend(/** @lends Path# */{
 			throughVector = Point.read(throughVector);
 			toVector = Point.read(toVector);
 			var current = getCurrentSegment(this)._point;
-			this.arcBy(current.add(throughVector), current.add(toVector));
+			this.arcTo(current.add(throughVector), current.add(toVector));
 		},
 
 		closePath: function() {
@@ -2283,7 +2282,7 @@ statics: {
 			processSegment(segments[i]);
 		if (closed)
 			processSegment(first);
-		return Rectangle.create(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 
 	/**
@@ -2305,8 +2304,8 @@ statics: {
 			// Get rotated hor and ver vectors, and determine rotation angle
 			// and elipse values from them:
 			var mx = matrix.shiftless(),
-				hor = mx.transform(Point.create(radius, 0)),
-				ver = mx.transform(Point.create(0, radius)),
+				hor = mx.transform(new Point(radius, 0)),
+				ver = mx.transform(new Point(0, radius)),
 				phi = hor.getAngleInRadians(),
 				a = hor.getLength(),
 				b = ver.getLength();
@@ -2389,10 +2388,10 @@ statics: {
 					normal2 = curve2.getNormalAt(0, true).normalize(miterRadius),
 					// Intersect the two lines
 					line1 = new Line(point.add(normal1),
-							Point.create(-normal1.y, normal1.x)),
+							new Point(-normal1.y, normal1.x), true),
 					line2 = new Line(point.add(normal2),
-							Point.create(-normal2.y, normal2.x)),
-					corner = line1.intersect(line2);
+							new Point(-normal2.y, normal2.x), true),
+					corner = line1.intersect(line2, true);
 				// Now measure the distance from the segment to the
 				// intersection, which his half of the miter distance
 				if (!corner || point.getDistance(corner) > miterLimit) {
@@ -2466,7 +2465,7 @@ statics: {
 				if (yx > y2) y2 = yx;
 			}
 		}
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**

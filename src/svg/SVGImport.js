@@ -44,14 +44,14 @@ new function() {
 		x = getValue(node, x, false, allowNull);
 		y = getValue(node, y, false, allowNull);
 		return allowNull && x == null && y == null ? null
-				: Point.create(x || 0, y || 0);
+				: new Point(x || 0, y || 0);
 	}
 
 	function getSize(node, w, h, allowNull) {
 		w = getValue(node, w, false, allowNull);
 		h = getValue(node, h, false, allowNull);
 		return allowNull && w == null && h == null ? null
-				: Size.create(w || 0, h || 0);
+				: new Size(w || 0, h || 0);
 	}
 
 	// Converts a string attribute value to the specified type
@@ -383,7 +383,8 @@ new function() {
 
 		'stop-color': function(item, value) {
 			// http://www.w3.org/TR/SVG/pservers.html#StopColorProperty
-			item.setColor(value);
+			if (item.setColor)
+				item.setColor(value);
 		},
 
 		'stop-opacity': function(item, value) {

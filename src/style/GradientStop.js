@@ -16,7 +16,7 @@
  *
  * @class The GradientStop object.
  */
-var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
+var GradientStop = Base.extend(/** @lends GradientStop# */{
 	/**
 	 * Creates a GradientStop object.
 	 *
@@ -24,7 +24,7 @@ var GradientStop = this.GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * @param {Number} [rampPoint=0] the position of the stop on the gradient
 	 *                               ramp as a value between 0 and 1.
 	 */
-	initialize: function(arg0, arg1) {
+	initialize: function GradientStop(arg0, arg1) {
 		if (arg0) {
 			var color, rampPoint;
 			if (arg1 === undefined && Array.isArray(arg0)) {

@@ -19,9 +19,7 @@
  *
  * @extends TextItem
  */
-var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
-	_class: 'PointText',
-
+var PointText = TextItem.extend(/** @lends PointText# */{
 	/**
 	 * Creates a point text item
 	 *
@@ -43,6 +41,9 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 	 * 	fontSize: 25
 	 * });
 	 */
+	initialize: function PointText() {
+		TextItem.apply(this, arguments);
+	},
 
 	clone: function() {
 		return this._clone(new PointText());
@@ -109,7 +110,7 @@ var PointText = this.PointText = TextItem.extend(/** @lends PointText# */{
 				x -= width / (justification === 'center' ? 2: 1);
 			// Until we don't have baseline measuring, assume leading / 4 as a
 			// rough guess:
-			var bounds = Rectangle.create(x,
+			var bounds = new Rectangle(x,
 						count ? leading / 4 + (count - 1) * leading : 0,
 						width, -count * leading);
 			return matrix ? matrix._transformBounds(bounds, bounds) : bounds;

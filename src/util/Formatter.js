@@ -30,6 +30,8 @@ var Formatter = Base.extend({
 	 * @param {Number} num the number to be converted to a string
 	 */
 	number: function(val) {
+		// It would be nice to use Number#toFixed() instead, but it pads with 0,
+		// unecessarily consuming space.
 		return Math.round(val * this.multiplier) / this.multiplier;
 	},
 

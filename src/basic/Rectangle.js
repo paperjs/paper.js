@@ -17,8 +17,7 @@
  * point (x, y), its width, and its height. It should not be confused with a
  * rectangular path, it is not an item.
  */
-var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
-	_class: 'Rectangle',
+var Rectangle = Base.extend(/** @lends Rectangle# */{
 	// Tell Base.read that the Rectangle constructor supports reading with index
 	_readIndex: true,
 
@@ -72,7 +71,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @name Rectangle#initialize
 	 * @param {Rectangle} rt
 	 */
-	initialize: function(arg0, arg1, arg2, arg3) {
+	initialize: function Rectangle(arg0, arg1, arg2, arg3) {
 		var type = typeof arg0,
 			read = 0;
 		if (type === 'number') {
@@ -191,7 +190,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * Returns a copy of the rectangle.
 	 */
 	clone: function() {
-		return Rectangle.create(this.x, this.y, this.width, this.height);
+		return new Rectangle(this.x, this.y, this.width, this.height);
 	},
 
 	/**
@@ -652,7 +651,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 			y1 = Math.max(this.y, rect.y),
 			x2 = Math.min(this.x + this.width, rect.x + rect.width),
 			y2 = Math.min(this.y + this.height, rect.y + rect.height);
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**
@@ -669,7 +668,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 			y1 = Math.min(this.y, rect.y),
 			x2 = Math.max(this.x + this.width, rect.x + rect.width),
 			y2 = Math.max(this.y + this.height, rect.y + rect.height);
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**
@@ -692,7 +691,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 			y1 = Math.min(this.y, point.y),
 			x2 = Math.max(this.x + this.width, point.x),
 			y2 = Math.max(this.y + this.height, point.y);
-		return Rectangle.create(x1, y1, x2 - x1, y2 - y1);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
 
 	/**
@@ -716,7 +715,7 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	expand: function(hor, ver) {
 		if (ver === undefined)
 			ver = hor;
-		return Rectangle.create(this.x - hor / 2, this.y - ver / 2,
+		return new Rectangle(this.x - hor / 2, this.y - ver / 2,
 				this.width + hor, this.height + ver);
 	},
 
@@ -740,13 +739,6 @@ var Rectangle = this.Rectangle = Base.extend(/** @lends Rectangle# */{
 	scale: function(hor, ver) {
 		return this.expand(this.width * hor - this.width,
 				this.height * (ver === undefined ? hor : ver) - this.height);
-	},
-
-	statics: {
-		// See Point.create()
-		create: function(x, y, width, height) {
-			return Base.create(Rectangle).set(x, y, width, height);
-		}
 	}
 }, new function() {
 	return Base.each([

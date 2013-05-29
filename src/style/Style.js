@@ -65,7 +65,7 @@
  * };
  * 
  */
-var Style = this.Style = Base.extend(new function() {
+var Style = Base.extend(new function() {
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
 	// not supported.
 	var defaults = {
@@ -201,7 +201,7 @@ var Style = this.Style = Base.extend(new function() {
 	Item.inject(item);
 	return fields;
 }, /** @lends Style# */{
-	initialize: function(style) {
+	initialize: function Style(style) {
 		// We keep values in a separate object that we can iterate over.
 		this._values = {};
 		if (this._item instanceof TextItem)
@@ -223,9 +223,9 @@ var Style = this.Style = Base.extend(new function() {
 		}
 	},
 
-	getLeading: function() {
+	getLeading: function getLeading() {
 		// Override leading to return fontSize * 1.2 by default.
-		var leading = this.base();
+		var leading = getLeading.base.call(this);
 		return leading != null ? leading : this.getFontSize() * 1.2;
 	},
 

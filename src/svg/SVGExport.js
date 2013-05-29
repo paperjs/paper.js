@@ -122,10 +122,10 @@ new function() {
 			if (handle1.isOrthogonal(handle2)) {
 				var from = segment._point,
 					to = next._point,
-					// Find hte corner point by intersecting the lines described
+					// Find the corner point by intersecting the lines described
 					// by both handles:
-					corner = new Line(from, handle1).intersect(
-							new Line(to, handle2));
+					corner = new Line(from, handle1, true).intersect(
+							new Line(to, handle2, true), true);
 				return corner && Numerical.isZero(handle1.getLength() /
 						corner.subtract(from).getLength() - kappa)
 					&& Numerical.isZero(handle2.getLength() /

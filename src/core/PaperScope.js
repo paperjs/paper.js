@@ -32,7 +32,7 @@
  * The global {@link paper} object is simply a reference to the currently active
  * {@code PaperScope}.
  */
-var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
+var PaperScope = Base.extend(/** @lends PaperScope# */{
 
 	/**
 	 * Creates a PaperScope object.
@@ -40,7 +40,7 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 	 * @name PaperScope#initialize
 	 * @function
 	 */
-	initialize: function(script) {
+	initialize: function PaperScope(script) {
 		// script is only used internally, when creating scopes for PaperScript.
 		// Whenever a PaperScope is created, it automatically becomes the active
 		// one.
@@ -71,11 +71,11 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 	},
 
 	/**
-	 * The version of Paper.js, as a float number.
+	 * The version of Paper.js, as a string.
 	 *
-	 * @type Number
+	 * @type String
 	 */
-	version: /*#=*/ options.version,
+	version: '/*#=*/ options.version',
 
 	/**
 	 * The currently active project.
@@ -139,7 +139,6 @@ var PaperScope = this.PaperScope = Base.extend(/** @lends PaperScope# */{
 		Base.each(['project', 'view', 'tool'], function(key) {
 			Base.define(scope, key, {
 				configurable: true,
-				writable: true,
 				get: function() {
 					return that[key];
 				}

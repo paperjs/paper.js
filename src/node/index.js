@@ -16,24 +16,23 @@ var fs = require('fs'),
 	// Node Canvas library: https://github.com/learnboost/node-canvas
 	Canvas = require('canvas'),
 	jsdom = require('jsdom'),
-	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml,
-	json = require('../../package.json');
+	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml;
 
-var options = {
-	parser: 'acorn',
-	// Use 'dev' for on-the fly compilation of separate files ,but update after.
-	version: 'dev',
-	server: true,
-	svg: true,
-	fatline: false
-};
+// Load the options from load.js, but evaluate into local scope:
+eval(fs.readFileSync(path.resolve(__dirname, '../options.js'), 'utf8'));
+// Change node.js specific settings. Use 'dev' version for on-the fly
+// compilation of separate files, and set to correct value after.
+options.version = 'dev';
+options.browser = false;
+options.node = true;
+options.stats = false;
 
 // Create a document and a window using jsdom, e.g. for exportSVG()
 var doc = jsdom.jsdom("<html><body></body></html>"),
 	win = doc.createWindow();
 
-// Define XMLSerializer.
-// TODO: Put this into a simple node module, with dependency on jsdom
+// Define XMLSerializer and DOMParser shims, to emulate browser behavior.
+// TODO: Put this into a simple node module, with dependency on jsdom?
 function XMLSerializer() {
 }
 
@@ -41,7 +40,7 @@ XMLSerializer.prototype.serializeToString = function(node) {
 	var text = domToHtml(node);
 	// Fix a jsdom issue where linearGradient gets converted to lineargradient:
 	// https://github.com/tmpvar/jsdom/issues/620
-	return text.replace(/(linear|radial)(gradient)/g, function(all, type) {
+	return text.replace(/(linear|radial)gradient/g, function(all, type) {
 		return type + 'Gradient';
 	});
 };
@@ -89,26 +88,13 @@ var context = vm.createContext({
 // Load Paper.js library files:
 context.include('paper.js');
 
-// Since the context used for Paper.js compilation, and the context in which
-// Node.js scripts are executed do not share the definition of Object, we need
-// to redefine Base.isPlainObject() here.
-// So instead of checking for Object.prototype, we're checking
-// proto.constructor.name for 'Object'
-var Base = context.Base;
-Base.isPlainObject = function(obj) {
-	var proto = obj !== null && typeof obj === 'object'
-			&& Object.getPrototypeOf(obj);
-	return proto && (proto.constructor.name === 'Object'
-			|| proto === Base.prototype);
-};
-
 context.PaperScope.inject({
 	// Expose the Canvas, XMLSerializer & DOMParser to PaperScope:
 	Canvas: Canvas,
 	XMLSerializer: XMLSerializer,
 	DOMParser: DOMParser,
-	// Also fix version. Remove 2nd dot, so we can make a float out of it:
-	version: parseFloat(json.version.replace(/(.)(\d)$/, '$2'))
+	// Also set the correct version from package.json
+	version: require('../../package.json').version
 });
 
 require.extensions['.pjs'] = function(module, uri) {

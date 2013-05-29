@@ -20,23 +20,27 @@
  * is unique to their type, but share the underlying properties and functions
  * that they inherit from Item.
  */
-var Item = this.Item = Base.extend(Callback, {
+var Item = Base.extend(Callback, /** @lends Item# */{
 	statics: {
 		/**
 		 * Override Item.extend() to merge the subclass' _serializeFields with
 		 * the parent class' _serializeFields.
+		 *
+		 * @private
 		 */
-		extend: function(src) {
+		extend: function extend(src) {
 			if (src._serializeFields)
 				src._serializeFields = Base.merge(
 						this.prototype._serializeFields, src._serializeFields);
-			// Derive the _type string from _class
-			if (src._class)
-				src._type = Base.hyphenate(src._class);
-			return this.base.apply(this, arguments);
+			var res = extend.base.apply(this, arguments),
+				name = res.name;
+			// Derive the _type string from constructor name
+			if (name)
+				res.prototype._type = Base.hyphenate(name);
+			return res;
 		}
-	}
-}, /** @lends Item# */{
+	},
+
 	// All items apply their matrix by default.
 	// Exceptions are Raster, PlacedSymbol, Clip and Shape.
 	_applyMatrix: true,
@@ -55,7 +59,7 @@ var Item = this.Item = Base.extend(Callback, {
 		data: {}
 	},
 
-	initialize: function(point) {
+	initialize: function Item(point) {
 		// Define this Item's unique id.
 		this._id = Item._id = (Item._id || 0) + 1;
 		// If _project is already set, the item was already moved into the DOM
@@ -168,7 +172,7 @@ var Item = this.Item = Base.extend(Callback, {
 			serialize(this._style._defaults);
 		// There is no compact form for Item serialization, we always keep the
 		// type.
-		return [ this._class, props ];
+		return [ this.constructor.name, props ];
 	},
 
 	/**
@@ -198,7 +202,7 @@ var Item = this.Item = Base.extend(Callback, {
 			this._clearBoundsCache();
 		}
 		if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
-			this._project._needsRedraw();
+			this._project._needsRedraw = true;
 		}
 		// If this item is a symbol's definition, notify it of the change too
 		if (this._parentSymbol)
@@ -878,7 +882,7 @@ var Item = this.Item = Base.extend(Callback, {
 			}
 		}
 		return isFinite(x1)
-				? Rectangle.create(x1, y1, x2 - x1, y2 - y1)
+				? new Rectangle(x1, y1, x2 - x1, y2 - y1)
 				: new Rectangle();
 	},
 
@@ -1428,7 +1432,6 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @param {Item} item The item to be added as a child
 	 */
 	addChild: function(item, _preserve) {
-		// Pass on internal _preserve boolean, for CompoundPath#insertChild
 		return this.insertChild(undefined, item, _preserve);
 	},
 
@@ -1441,21 +1444,8 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @param {Item} item The item to be appended as a child
 	 */
 	insertChild: function(index, item, _preserve) {
-		// _preserve parameter is not used here, but CompoundPath#insertChild()
-		// needs it.
-		if (this._children) {
-			item._remove(true);
-			Base.splice(this._children, [item], index, 0);
-			item._parent = this;
-			item._setProject(this._project);
-			// Setting the name again makes sure all name lookup structures are
-			// kept in sync.
-			if (item._name)
-				item.setName(item._name);
-			this._changed(/*#=*/ Change.HIERARCHY);
-			return item;
-		}
-		return null;
+		var res = this.insertChildren(index, [item], _preserve);
+		return res && res[0];
 	},
 
 	/**
@@ -1477,25 +1467,42 @@ var Item = this.Item = Base.extend(Callback, {
 	 * @param {Number} index
 	 * @param {Item[]} items The items to be appended as children
 	 */
-	insertChildren: function(index, items, _preserve) {
-		// We need to clone items because it might be
-		// an Item#children array. Use Array.prototype.slice because
-		// in certain cases items is an arguments object
-		items = items && Array.prototype.slice.apply(items);
-		var children = this._children,
-			length = children.length,
-			i = index;
-		for (var j = 0, l = items && items.length; j < l; j++) {
-			if (this.insertChild(i, items[j], _preserve)) {
-				// We need to keep track of how much the list actually grows,
-				// bcause we might be removing and inserting into the same list,
-				// in which case the size would not chage.
-				var newLength = children.length;
-				i += newLength - length;
-				length = newLength;
+	insertChildren: function(index, items, _preserve, _type) {
+		// CompoundPath#insertChildren() requires _preserve and _type:
+		// _preserve avoids changing of the children's path orientation
+		// _type enforces the inserted type.
+		var children = this._children;
+		if (children && items && items.length > 0) {
+			// We need to clone items because it might be
+			// an Item#children array. Also, we're removing elements if they
+			// don't match _type. Use Array.prototype.slice becaus items can be
+			// an arguments object.
+			items = Array.prototype.slice.apply(items);
+			// Remove the items from their parents first, since they might be
+			// inserted into their own parents, affecting indices.
+			// Use the loop also to filter out wrong _type.
+			for (var i = items.length - 1; i >= 0; i--) {
+				var item = items[i];
+				if (_type && item._type !== _type)
+					items.splice(i, 1);
+				else
+					item._remove(true);
 			}
+			Base.splice(children, items, index, 0);
+			for (var i = 0, l = items.length; i < l; i++) {
+				var item = items[i];
+				item._parent = this;
+				item._setProject(this._project);
+				// Setting the name again makes sure all name lookup structures
+				// are kept in sync.
+				if (item._name)
+					item.setName(item._name);
+			}
+			this._changed(/*#=*/ Change.HIERARCHY);
+		} else {
+			items = null;
 		}
-		return i != index;
+		return items;
 	},
 
 	/**
@@ -2220,9 +2227,10 @@ var Item = this.Item = Base.extend(Callback, {
 	},
 
 	_transformContent: function(matrix, applyMatrix) {
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++)
-				this._children[i].transform(matrix, applyMatrix);
+		var children = this._children;
+		if (children && children.length > 0) {
+			for (var i = 0, l = children.length; i < l; i++)
+				children[i].transform(matrix, applyMatrix);
 			return true;
 		}
 	},
@@ -2332,7 +2340,7 @@ var Item = this.Item = Base.extend(Callback, {
 					? rectangle.width / bounds.width
 					: rectangle.height / bounds.height,
 			newBounds = new Rectangle(new Point(),
-					Size.create(bounds.width * scale, bounds.height * scale));
+					new Size(bounds.width * scale, bounds.height * scale));
 		newBounds.setCenter(rectangle.getCenter());
 		this.setBounds(newBounds);
 	},
@@ -2877,7 +2885,7 @@ var Item = this.Item = Base.extend(Callback, {
 			// so we draw onto it, instead of the parentCtx
 			parentCtx = ctx;
 			ctx = CanvasProvider.getContext(
-					bounds.getSize().ceil().add(Size.create(1, 1)));
+					bounds.getSize().ceil().add(new Size(1, 1)));
 		}
 		ctx.save();
 		// Translate the context so the topLeft of the item is at (0, 0)

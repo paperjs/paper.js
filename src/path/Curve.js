@@ -24,7 +24,7 @@
  * convenient ways to work with parts of the path, finding lengths, positions or
  * tangents at given offsets.
  */
-var Curve = this.Curve = Base.extend(/** @lends Curve# */{
+var Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * Creates a new curve object.
 	 *
@@ -55,7 +55,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 	 * @param {Number} x2
 	 * @param {Number} y2
 	 */
-	initialize: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
+	initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
 		if (count === 0) {
 			this._segment1 = new Segment();
@@ -243,7 +243,7 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 		var coords = this.getValues(),
 			points = [];
 		for (var i = 0; i < 8; i += 2)
-			points.push(Point.create(coords[i], coords[i + 1]));
+			points.push(new Point(coords[i], coords[i + 1]));
 		return points;
 	},
 
@@ -408,9 +408,9 @@ var Curve = this.Curve = Base.extend(/** @lends Curve# */{
 
 			// Create the new segment, convert absolute -> relative:
 			var x = left[6], y = left[7],
-				segment = new Segment(Point.create(x, y),
-						!isLinear && Point.create(left[4] - x, left[5] - y),
-						!isLinear && Point.create(right[2] - x, right[3] - y));
+				segment = new Segment(new Point(x, y),
+						!isLinear && new Point(left[4] - x, left[5] - y),
+						!isLinear && new Point(right[2] - x, right[3] - y));
 
 			// Insert it in the segments list, if needed:
 			if (this._path) {
@@ -662,7 +662,7 @@ statics: {
 		for (var i = 0; i < 2; i++)
 			Curve._addBounds(v[i], v[i + 2], v[i + 4], v[i + 6],
 					i, 0, min, max, roots);
-		return Rectangle.create(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 
 	/**
@@ -697,8 +697,8 @@ statics: {
 		// Only add strokeWidth to bounds for points which lie  within 0 < t < 1
 		// The corner cases for cap and join are handled in getStrokeBounds()
 		add(v3, 0);
-		for (var j = 0; j < count; j++) {
-			var t = roots[j],
+		for (var i = 0; i < count; i++) {
+			var t = roots[i],
 				u = 1 - t;
 			// Test for good roots and only add to bounds if good.
 			if (tMin < t && t < tMax)
@@ -1023,7 +1023,7 @@ new function() { // Scope for methods that require numerical integration
 					a, b, 16, /*#=*/ Numerical.TOLERANCE);
 		}
 	};
-}, new function() { // Scope for Curve intersection
+}, new function() { // Scope for intersection using bezier fat-line clipping
 	function addLocation(locations, curve1, parameter, point, curve2) {
 		// Avoid duplicates when hitting segments (closed paths too)
 		var first = locations[0],
@@ -1033,7 +1033,7 @@ new function() { // Scope for methods that require numerical integration
 			locations.push(new CurveLocation(curve1, parameter, point, curve2));
 	}
 
-	function getCurveIntersections(v1, v2, curve1, curve2, locations,
+	function addCurveIntersections(v1, v2, curve1, curve2, locations,
 			range1, range2, recursion) {
 /*#*/ if (options.fatline) {
 		// NOTE: range1 and range1 are only used for recusion
@@ -1097,17 +1097,17 @@ new function() { // Scope for methods that require numerical integration
 				if (range1[1] - range1[0] > range2[1] - range2[0]) {
 					// subdivide v1 and recurse
 					var t = (range1[0] + range1[1]) / 2;
-					getCurveIntersections(v1, v2, curve1, curve2, locations,
+					addCurveIntersections(v1, v2, curve1, curve2, locations,
 							[ range1[0], t ], range2, recursion);
-					getCurveIntersections(v1, v2, curve1, curve2, locations,
+					addCurveIntersections(v1, v2, curve1, curve2, locations,
 							[ t, range1[1] ], range2, recursion);
 					break;
 				} else {
 					// subdivide v2 and recurse
 					var t = (range2[0] + range2[1]) / 2;
-					getCurveIntersections(v1, v2, curve1, curve2, locations,
+					addCurveIntersections(v1, v2, curve1, curve2, locations,
 							range1, [ range2[0], t ], recursion);
-					getCurveIntersections(v1, v2, curve1, curve2, locations,
+					addCurveIntersections(v1, v2, curve1, curve2, locations,
 							range1, [ t, range2[1] ], recursion);
 					break;
 				}
@@ -1123,12 +1123,16 @@ new function() { // Scope for methods that require numerical integration
 			// Check if one of the parameter range has converged completely to a
 			// point. Now things could get only worse if we iterate more for the
 			// other curve to converge if it hasn't yet happened so.
-			var converged1 = Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE,
-				converged2 = Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE;
-			if (converged1 || converged2) {
-				addLocation(locations, curve1, null, converged1
-						? curve1.getPointAt(range1[0], true)
-						: curve2.getPointAt(range2[0], true), curve2);
+			if (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE) {
+				var t = (range1[0] + range1[1]) / 2;
+				addLocation(locations, curve1, t,
+						Curve.evaluate(v1, t, true, 0), curve2);
+				break;
+			}
+			if (Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE) {
+				var t = (range2[0] + range2[1]) / 2;
+				addLocation(locations, curve2, t,
+						Curve.evaluate(v2, t, true, 0), curve1);
 				break;
 			}
 			// see if either or both of the curves are flat enough to be treated
@@ -1137,10 +1141,10 @@ new function() { // Scope for methods that require numerical integration
 				flat2 = Curve.isFlatEnough(part2, /*#=*/ Numerical.TOLERANCE);
 			if (flat1 || flat2) {
 				(flat1 && flat2
-						? getLineLineIntersection
+						? addLineIntersection
 						// Use curve line intersection method while specifying
 						// which curve to be treated as line
-						: getCurveLineIntersections)(part1, part2,
+						: addCurveLineIntersections)(part1, part2,
 								curve1, curve2, locations, flat1);
 				break;
 			}
@@ -1158,15 +1162,7 @@ new function() { // Scope for methods that require numerical integration
 				&& (Curve.isLinear(v2)
 					|| Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE))) {
 				// See if the parametric equations of the lines interesct.
-				// var point = new Line(v1[0], v1[1], v1[6], v1[7], false)
-				//	  .intersect(new Line(v2[0], v2[1], v2[6], v2[7], false));
-				// Use static version without creation of Line objects, but it
-				// doesn't seem to yield measurable speed improvements!
-				var point = Line.intersect(
-							v1[0], v1[1], v1[6], v1[7],
-							v2[0], v2[1], v2[6], v2[7], false);
-				if (point)
-					addLocation(locations, curve1, null, point, curve2);
+				addLineIntersection(v1, v2, curve1, curve2, locations);
 			} else {
 				// Subdivide both curves, and see if they intersect.
 				// If one of the curves is flat already, no further subdivion
@@ -1200,6 +1196,7 @@ new function() { // Scope for methods that require numerical integration
 			p2x = v1[4], p2y = v1[5], p3x = v1[6], p3y = v1[7],
 			q0x = v2[0], q0y = v2[1], q1x = v2[2], q1y = v2[3],
 			q2x = v2[4], q2y = v2[5], q3x = v2[6], q3y = v2[7],
+			getSignedDistance = Line.getSignedDistance,
 			// Calculate the fat-line L for P is the baseline l and two
 			// offsets which completely encloses the curve P.
 			d1 = getSignedDistance(p0x, p0y, p3x, p3y, p1x, p1y) || 0,
@@ -1213,20 +1210,19 @@ new function() { // Scope for methods that require numerical integration
 			dq0 = getSignedDistance(p0x, p0y, p3x, p3y, q0x, q0y),
 			dq1 = getSignedDistance(p0x, p0y, p3x, p3y, q1x, q1y),
 			dq2 = getSignedDistance(p0x, p0y, p3x, p3y, q2x, q2y),
-			dq3 = getSignedDistance(p0x, p0y, p3x, p3y, q3x, q3y),
-			// Find the minimum and maximum distances from l, this is useful for
-			// checking whether the curves intersect with each other or not.
-			mindist = Math.min(dq0, dq1, dq2, dq3),
-			maxdist = Math.max(dq0, dq1, dq2, dq3);
+			dq3 = getSignedDistance(p0x, p0y, p3x, p3y, q3x, q3y);
+		// Find the minimum and maximum distances from l, this is useful for
+		// checking whether the curves intersect with each other or not.
 		// If the fatlines don't overlap, we have no intersections!
-		if (dmin > maxdist || dmax < mindist)
+		if (dmin > Math.max(dq0, dq1, dq2, dq3)
+				|| dmax < Math.min(dq0, dq1, dq2, dq3))
 			return 0;
-		var Dt = getConvexHull(dq0, dq1, dq2, dq3),
-			tmp;
+		var hull = getConvexHull(dq0, dq1, dq2, dq3),
+			swap;
 		if (dq3 < dq0) {
-			tmp = dmin;
+			swap = dmin;
 			dmin = dmax;
-			dmax = tmp;
+			dmax = swap;
 		}
 		// Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
 		// Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
@@ -1235,31 +1231,29 @@ new function() { // Scope for methods that require numerical integration
 		var tmaxdmin = -Infinity,
 			tmin = Infinity,
 			tmax = -Infinity;
-		for (var i = 0, l = Dt.length; i < l; i++) {
-			var Dtl = Dt[i],
-				dtlx1 = Dtl[0],
-				dtly1 = Dtl[1],
-				dtlx2 = Dtl[2],
-				dtly2 = Dtl[3];
-			if (dtly2 < dtly1) {
-				tmp = dtly2;
-				dtly2 = dtly1;
-				dtly1 = tmp;
-				tmp = dtlx2;
-				dtlx2 = dtlx1;
-				dtlx1 = tmp;
+		for (var i = 0, l = hull.length; i < l; i++) {
+			var p1 = hull[i],
+				p2 = hull[(i + 1) % l];
+			if (p2[1] < p1[1]) {
+				swap = p2;
+				p2 = p1;
+				p1 = swap;
 			}
-			// We know that (dtlx2 - dtlx1) is never 0
-			var inv = (dtly2 - dtly1) / (dtlx2 - dtlx1);
-			if (dmin >= dtly1 && dmin <= dtly2) {
-				var ixdx = dtlx1 + (dmin - dtly1) / inv;
+			var	x1 = p1[0],
+				y1 = p1[1],
+				x2 = p2[0],
+				y2 = p2[1];
+			// We know that (x2 - x1) is never 0
+			var inv = (y2 - y1) / (x2 - x1);
+			if (dmin >= y1 && dmin <= y2) {
+				var ixdx = x1 + (dmin - y1) / inv;
 				if (ixdx < tmin)
 					tmin = ixdx;
 				if (ixdx > tmaxdmin)
 					tmaxdmin = ixdx;
 			}
-			if (dmax >= dtly1 && dmax <= dtly2) {
-				var ixdx = dtlx1 + (dmax - dtly1) / inv;
+			if (dmax >= y1 && dmax <= y2) {
+				var ixdx = x1 + (dmax - y1) / inv;
 				if (ixdx > tmax)
 					tmax = ixdx;
 				if (ixdx < tmin)
@@ -1269,11 +1263,11 @@ new function() { // Scope for methods that require numerical integration
 		// Return the parameter values for v2 for which we can be sure that the
 		// intersection with v1 lies within.
 		if (tmin !== Infinity && tmax !== -Infinity) {
-			var mindmin = Math.min(dmin, dmax),
-				mindmax = Math.max(dmin, dmax);
-			if (dq3 > mindmin && dq3 < mindmax)
+			var min = Math.min(dmin, dmax),
+				max = Math.max(dmin, dmax);
+			if (dq3 > min && dq3 < max)
 				tmax = 1;
-			if (dq0 > mindmin && dq0 < mindmax)
+			if (dq0 > min && dq0 < max)
 				tmin = 0;
 			if (tmaxdmin > tmax)
 				tmax = 1;
@@ -1304,79 +1298,48 @@ new function() { // Scope for methods that require numerical integration
 	 * Calculating convex-hull is much easier than a set of arbitrary points.
 	 */
 	function getConvexHull(dq0, dq1, dq2, dq3) {
-		var distq1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
-			distq2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2);
-		// Check if [1/3, dq1] and [2/3, dq2] are on the same side of line
-		// [0,dq0, 1,dq3]
-		if (distq1 * distq2 < 0) {
-			// dq1 and dq2 lie on different sides on [0, q0, 1, q3]. The hull is
-			// a quadrilateral and line [0, q0, 1, q3] is NOT part of the hull
-			// so we are pretty much done here.
-			return [
-				[ 0, dq0, 1 / 3, dq1 ],
-				[ 1 / 3, dq1, 1, dq3 ],
-				[ 2 / 3, dq2, 0, dq0 ],
-				[ 1, dq3, 2 / 3, dq2 ]
-			];
+		var p0 = [ 0, dq0 ],
+			p1 = [ 1 / 3, dq1 ],
+			p2 = [ 2 / 3, dq2 ],
+			p3 = [ 1, dq3 ],
+			// Find signed distance of p1 and p2 from line [ p0, p3 ]
+			getSignedDistance = Line.getSignedDistance,
+			dist1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
+			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2);
+		// Check if p1 and p2 are on the same side of the line [ p0, p3 ]
+		if (dist1 * dist2 < 0) {
+			// p1 and p2 lie on different sides of [ p0, p3 ]. The hull is a
+			// quadrilateral and line [ p0, p3 ] is NOT part of the hull so we
+			// are pretty much done here.
+			return [ p0, p1, p3, p2 ];
 		}
-		// dq1 and dq2 lie on the same sides on [0, q0, 1, q3]. The hull can be
-		// a triangle or a quadrilateral and line [0, q0, 1, q3] is part of the
+		// p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
+		// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
 		// hull. Check if the hull is a triangle or a quadrilateral.
-		var dqMaxX, dqMaxY, vqa1a2X, vqa1a2Y, vqa1MaxX, vqa1MaxY, vqa1MinX, vqa1MinY;
-		if (Math.abs(distq1) > Math.abs(distq2)) {
-			dqMaxX = 1 / 3;
-			dqMaxY = dq1;
+		var pmax, cross;
+		if (Math.abs(dist1) > Math.abs(dist2)) {
+			pmax = p1;
 			// apex is dq3 and the other apex point is dq0 vector
 			// dqapex->dqapex2 or base vector which is already part of the hull.
-			vqa1a2X = 1;
-			vqa1a2Y = dq3 - dq0;
-			// vector dqapex->dqMax
-			vqa1MaxX = 2 / 3;
-			vqa1MaxY = dq3 - dq1;
-			// vector dqapex->dqmin
-			vqa1MinX = 1 / 3;
-			vqa1MinY = dq3 - dq2;
+			// cross = (vqa1a2X * vqa1MinY - vqa1a2Y * vqa1MinX)
+			//		* (vqa1MaxX * vqa1MinY - vqa1MaxY * vqa1MinX)
+			cross = (dq3 - dq2 - (dq3 - dq0) / 3)
+					* (2 * (dq3 - dq2) - dq3 + dq1) / 3;
 		} else {
-			dqMaxX = 2 / 3;
-			dqMaxY = dq2;
+			pmax = p2;
 			// apex is dq0 in this case, and the other apex point is dq3 vector
 			// dqapex->dqapex2 or base vector which is already part of the hull.
-			vqa1a2X = -1;
-			vqa1a2Y = dq0 - dq3;
-			// vector dqapex->dqMax
-			vqa1MaxX = -2 / 3;
-			vqa1MaxY = dq0 - dq2;
-			// vector dqapex->dqmin
-			vqa1MinX = -1 / 3;
-			vqa1MinY = dq0 - dq1;
+			cross = (dq1 - dq0 + (dq0 - dq3) / 3)
+					* (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
 		}
-		// Compare cross products of these vectors to determine, if
-		// point is in triangles [ dq3, dqMax, dq0 ] or [ dq0, dqMax, dq3 ]
-		var a1a2_a1Min = vqa1a2X * vqa1MinY - vqa1a2Y * vqa1MinX,
-			a1Max_a1Min = vqa1MaxX * vqa1MinY - vqa1MaxY * vqa1MinX;
-		return a1a2_a1Min * a1Max_a1Min < 0
-				// Point [2/3, dq2] is inside the triangle, hull is a triangle.
-				? [
-					[ 0, dq0, dqMaxX, dqMaxY ],
-					[ dqMaxX, dqMaxY, 1, dq3 ],
-					[ 1, dq3, 0, dq0 ]
-				]
+		// Compare cross products of these vectors to determine if the point is
+		// in the triangle [ p3, pmax, p0 ], or if it is a quadrilateral.
+		return cross < 0
+				// p2 is inside the triangle, hull is a triangle.
+				? [ p0, pmax, p3 ]
 				// Convexhull is a quadrilateral and we need all lines in the
-				// correct order where line [0, q0, 1, q3] is part of the hull.
-				: [
-					[ 0, dq0, 1 / 3, dq1 ],
-					[ 1 / 3, dq1, 2 / 3, dq2 ],
-					[ 2 / 3, dq2, 1, dq3 ],
-					[ 1, dq3, 0, dq0 ]
-				];
-	}
-
-	// This is basically an "unrolled" version of #Line.getDistance() with sign
-	// May be a static method could be better!
-	function getSignedDistance(a1x, a1y, a2x, a2y, bx, by) {
-		var m = (a2y - a1y) / (a2x - a1x),
-			b = a1y - (m * a1x);
-		return (by - (m * bx) - b) / Math.sqrt(m * m + 1);
+				// correct order where line [ p1, p3 ] is part of the hull.
+				: [ p0, p1, p2, p3 ];
 	}
 /*#*/ } // options.fatline
 
@@ -1386,7 +1349,7 @@ new function() { // Scope for methods that require numerical integration
 	 * line is on the X axis, and solve the implicit equations for the X axis
 	 * and the curve.
 	 */
-	function getCurveLineIntersections(v1, v2, curve1, curve2, locations, flip) {
+	function addCurveLineIntersections(v1, v2, curve1, curve2, locations, flip) {
 		if (flip === undefined)
 			flip = Curve.isLinear(v1);
 		var vc = flip ? v2 : v1,
@@ -1432,17 +1395,17 @@ new function() { // Scope for methods that require numerical integration
 		}
 	}
 
-	function getLineLineIntersection(v1, v2, curve1, curve2, locations) {
+	function addLineIntersection(v1, v2, curve1, curve2, locations) {
 		var point = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
-				v2[0], v2[1], v2[6], v2[7], false);
+				v2[0], v2[1], v2[6], v2[7]);
 		// Passing null for parameter leads to lazy determination of parameter
 		// values in CurveLocation#getParameter() only once they are requested.
 		if (point)
 			addLocation(locations, curve1, null, point, curve2);
 	}
 
-	return { statics: {
+	return { statics: /** @lends Curve */{
 		// We need to provide the original left curve reference to the
 		// #getIntersections() calls as it is required to create the resulting
 		// CurveLocation objects.
@@ -1452,10 +1415,10 @@ new function() { // Scope for methods that require numerical integration
 			// Determine the correct intersection method based on values of
 			// linear1 & 2:
 			(linear1 && linear2
-				? getLineLineIntersection
+				? addLineIntersection
 				: linear1 || linear2
-					? getCurveLineIntersections
-					: getCurveIntersections)(v1, v2, curve1, curve2, locations);
+					? addCurveLineIntersections
+					: addCurveIntersections)(v1, v2, curve1, curve2, locations);
 			return locations;
 		}
 	}};

@@ -20,7 +20,10 @@
  *
  * @extends Group
  */
-var Clip = this.Clip = Group.extend(/** @lends Clip# */{
-	_class: 'Clip',
-	_applyMatrix: false
+var Clip = Group.extend(/** @lends Clip# */{
+	_applyMatrix: false,
+
+	initialize: function Clip() {
+		Group.apply(this, arguments);
+	}
 });

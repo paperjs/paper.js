@@ -35,13 +35,13 @@ var paper = new function() {
 // Inline Bootstrap core (the Base class) inside the paper scope first:
 /*#*/ include('../lib/straps.js');
 
-/*#*/ if (options.version == 'dev') {
-/*#*/ include('constants.js');
-/*#*/ } // options.version == 'dev'
-
 /*#*/ if (options.stats) {
 /*#*/ include('../lib/stats.js');
 /*#*/ } // options.stats
+
+/*#*/ if (options.version == 'dev') {
+/*#*/ include('constants.js');
+/*#*/ } // options.version == 'dev'
 
 /*#*/ include('core/Base.js');
 /*#*/ include('core/Callback.js');
@@ -53,7 +53,7 @@ var paper = new function() {
 
 // Include Paper classes, which are later injected into PaperScope by setting
 // them on the 'this' object, e.g.:
-// var Point = this.Point = Base.extend(...);
+// var Point = Base.extend(...);
 
 /*#*/ include('basic/Point.js');
 /*#*/ include('basic/Size.js');
@@ -126,18 +126,7 @@ var paper = new function() {
 /*#*/ } // options.svg
 
 /*#*/ include('core/PaperScript.js');
-/*#*/ include('core/initialize.js');
 
-/*#*/ if (options.server) {
+/*#*/ include('export.js');
 return paper;
-/*#*/ } else if (options.version != 'dev') {
-// Finally inject the classes set on 'this' into the PaperScope class and create
-// the first PaperScope and return it, all in one statement.
-// The version for 'dev' of this happens in core/initialize.js, since it depends
-// on sequentiality of include() loading.
-// Mark this object as enumerable, so all the injected classes can be enumerated
-// again in PaperScope#install().
-this.enumerable = true;
-return new (PaperScope.inject(this));
-/*#*/ } // options.version != 'dev'
 };

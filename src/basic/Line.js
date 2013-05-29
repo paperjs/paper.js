@@ -15,32 +15,33 @@
  *
  * @class The Line object represents..
  */
-var Line = this.Line = Base.extend(/** @lends Line# */{
+var Line = Base.extend(/** @lends Line# */{
 	// DOCS: document Line class and constructor
 	/**
 	 * Creates a Line object.
 	 *
 	 * @param {Point} point1
 	 * @param {Point} point2
-	 * @param {Boolean} [infinite=true]
+	 * @param {Boolean} [asVector=false]
 	 */
-	initialize: function(point1, point2, infinite) {
-		// Convention: With 3 parameters, both points are absolute, and infinite
-		// controls wether the line extends beyond the defining points, meaning
-		// intersection outside the line segment are allowed.
-		// With two parameters, the 2nd parameter is a direction, and infinite
-		// is automatially true, since we're describing an infinite line.
-		var _point1 = Point.read(arguments),
-			_point2 = Point.read(arguments),
-			_infinite = Base.read(arguments);
-		if (_infinite !== undefined) {
-			this.point = _point1;
-			this.vector = _point2.subtract(_point1);
-			this.infinite = _infinite;
+	initialize: function Line(arg0, arg1, arg2, arg3, arg4) {
+		var asVector = false;
+		if (arguments.length >= 4) {
+			this._px = arg0;
+			this._py = arg1;
+			this._vx = arg2;
+			this._vy = arg3;
+			asVector = arg4;
 		} else {
-			this.point = _point1;
-			this.vector = _point2;
-			this.infinite = true;
+			this._px = arg0.x;
+			this._py = arg0.y;
+			this._vx = arg1.x;
+			this._vy = arg1.y;
+			asVector = arg2;
+		}
+		if (!asVector) {
+			this._vx -= this._px;
+			this._vy -= this._py;
 		}
 	},
 
@@ -50,6 +51,9 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 * @name Line#point
 	 * @type Point
 	 */
+	getPoint: function() {
+		return new Point(this._px, this._py);
+	},
 
 	/**
 	 * The vector of the line
@@ -57,33 +61,21 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 * @name Line#vector
 	 * @type Point
 	 */
-
-	/**
-	 * Specifies whether the line extends infinitely
-	 *
-	 * @name Line#infinite
-	 * @type Boolean
-	 */
+	getVector: function() {
+		return new Point(this._vx, this._vy);
+	},
 
 	/**
 	 * @param {Line} line
+	 * @param {Boolean} [isInfinite=false]
 	 * @return {Point} the intersection point of the lines, {@code undefined}
 	 * if the two lines are colinear, or {@code null} if they don't intersect.
 	 */
-	intersect: function(line) {
-		var cross = this.vector.cross(line.vector);
-		// Avoid divisions by 0, and errors when getting too close to 0
-		if (Numerical.isZero(cross))
-			return undefined;
-		var v = line.point.subtract(this.point),
-			t1 = v.cross(line.vector) / cross,
-			t2 = v.cross(this.vector) / cross;
-		// Check the ranges of t parameters if the line is not allowed to
-		// extend beyond the definition points.
-		return (this.infinite || 0 <= t1 && t1 <= 1)
-				&& (line.infinite || 0 <= t2 && t2 <= 1)
-			? this.point.add(this.vector.multiply(t1))
-			: null;
+	intersect: function(line, isInfinite) {
+		return Line.intersect(
+				this._px, this._py, this._vx, this._vy,
+				line._px, line._py, line._vx, line._vy,
+				true, isInfinite);
 	},
 
 	// DOCS: document Line#getSide(point)
@@ -92,18 +84,9 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 * @return {Number}
 	 */
 	getSide: function(point) {
-		var v1 = this.vector,
-			v2 = point.subtract(this.point),
-			ccw = v2.cross(v1);
-		if (ccw === 0) {
-			ccw = v2.dot(v1);
-			if (ccw > 0) {
-				ccw = v2.subtract(v1).dot(v1);
-				if (ccw < 0)
-				    ccw = 0;
-			}
-		}
-		return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
+		return Line.getSide(
+				this._px, this._py, this._vx, this._vy,
+				point.x, point.y, true);
 	},
 
 	// DOCS: document Line#getDistance(point)
@@ -112,33 +95,70 @@ var Line = this.Line = Base.extend(/** @lends Line# */{
 	 * @return {Number}
 	 */
 	getDistance: function(point) {
-		var m = this.vector.y / this.vector.x, // slope
-			b = this.point.y - (m * this.point.x); // y offset
-		// Distance to the linear equation
-		var dist = Math.abs(point.y - (m * point.x) - b) / Math.sqrt(m * m + 1);
-		return this.infinite ? dist : Math.min(dist,
-				point.getDistance(this.point),
-				point.getDistance(this.point.add(this.vector)));
+		return Math.abs(Line.getSignedDistance(
+				this._px, this._py, this._vx, this._vy,
+				point.x, point.y, true));
 	},
 
-	statics: {
-		intersect: function(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, infinite) {
-			var adx = ax2 - ax1,
-				ady = ay2 - ay1,
-				bdx = bx2 - bx1,
-				bdy = by2 - by1,
-				dx = ax1 - bx1,
-				dy = ay1 - by1,
-				cross = bdy * adx - bdx * ady;
-			if (!Numerical.isZero(cross)) {
-				var ta = (bdx * dy - bdy * dx) / cross,
-					tb = (adx * dy - ady * dx) / cross;
-					if ((infinite || 0 <= ta && ta <= 1)
-							&& (infinite || 0 <= tb && tb <= 1))
-						return Point.create(
-									ax1 + ta * adx,
-									ay1 + ta * ady);
+	statics: /** @lends Line */{
+		intersect: function(apx, apy, avx, avy, bpx, bpy, bvx, bvy, asVector,
+				isInfinite) {
+			// Convert 2nd points to vectors if they are not specified as such.
+			if (!asVector) {
+				avx -= apx;
+				avy -= apy;
+				bvx -= bpx;
+				bvy -= bpy;
 			}
+			var cross = bvy * avx - bvx * avy;
+			// Avoid divisions by 0, and errors when getting too close to 0
+			if (!Numerical.isZero(cross)) {
+				var dx = apx - bpx,
+					dy = apy - bpy,
+					ta = (bvx * dy - bvy * dx) / cross,
+					tb = (avx * dy - avy * dx) / cross;
+				// Check the ranges of t parameters if the line is not allowed
+				// to extend beyond the definition points.
+				if ((isInfinite || 0 <= ta && ta <= 1)
+						&& (isInfinite || 0 <= tb && tb <= 1))
+					return new Point(
+								apx + ta * avx,
+								apy + ta * avy);
+			}
+		},
+
+		getSide: function(px, py, vx, vy, x, y, asVector) {
+			if (!asVector) {
+				vx -= px;
+				vy -= py;
+			}
+			var v2x = x - px,
+				v2y = y - py,
+				ccw = v2x * vy - v2y * vx; // ccw = v2.cross(v1);
+			if (ccw === 0) {
+				ccw = v2x * vx + v2y * vy; // ccw = v2.dot(v1);
+				if (ccw > 0) {
+					// ccw = v2.subtract(v1).dot(v1);
+					v2x -= vx;
+					v2y -= vy;
+					ccw = v2x * vx + v2y * vy;
+					if (ccw < 0)
+						ccw = 0;
+				}
+			}
+			return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
+		},
+
+		getSignedDistance: function(px, py, vx, vy, x, y, asVector) {
+			if (!asVector) {
+				vx -= px;
+				vy -= py;
+			}
+			// Cache these values since they're used heavily in fatline code
+			var m = vy / vx, // slope
+				b = py - m * px; // y offset
+			// Distance to the linear equation
+			return (y - (m * x) - b) / Math.sqrt(m * m + 1);
 		}
 	}
 });

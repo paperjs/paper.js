@@ -26,7 +26,7 @@
  * {@link PathItem#getIntersections(path)},
  * etc.
  */
-var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# */{
+var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	// DOCS: CurveLocation class description: add these back when the  mentioned
 	// functioned have been added: {@link Path#split(location)}
 	/**
@@ -36,7 +36,8 @@ var CurveLocation = this.CurveLocation = Base.extend(/** @lends CurveLocation# *
 	 * @param {Number} parameter
 	 * @param {Point} point
 	 */
-	initialize: function(curve, parameter, point, _otherCurve, _distance) {
+	initialize: function CurveLocation(curve, parameter, point, _otherCurve,
+			_distance) {
 		// Define this CurveLocation's unique id.
 		this._id = CurveLocation._id = (CurveLocation._id || 0) + 1;
 		this._curve = curve;

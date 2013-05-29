@@ -30,7 +30,7 @@
  * An array of all open projects is accessible through the
  * {@link PaperScope#projects} variable.
  */
-var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
+var Project = PaperScopeItem.extend(/** @lends Project# */{
 	_list: 'projects',
 	_reference: 'project',
 
@@ -44,10 +44,10 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @param {View|HTMLCanvasElement} view Either a view object or an HTML
 	 * Canvas element that should be wrapped in a newly created view.
 	 */
-	initialize: function(view) {
+	initialize: function Project(view) {
 		// Activate straight away by passing true to base(), so paper.project is
 		// set, as required by Layer and DoumentView constructors.
-		this.base(true);
+		PaperScopeItem.call(this, true);
 		this.layers = [];
 		this.symbols = [];
 		this._currentStyle = new Style();
@@ -69,12 +69,8 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 		// into the active project automatically. We might want to add proper
 		// project serialization later, but deserialization of a layers array
 		// will always work.
-		return Base.serialize(this.layers, options, false, dictionary);
-	},
-
-	_needsRedraw: function() {
-		if (this.view)
-			this.view._redrawNeeded = true;
+		// Pass true for compact, so 'Project' does not get added as the class
+		return Base.serialize(this.layers, options, true, dictionary);
 	},
 
 	/**
@@ -97,8 +93,8 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * Removes this project from the {@link PaperScope#projects} list, and also
 	 * removes its view, if one was defined.
 	 */
-	remove: function() {
-		if (!this.base())
+	remove: function remove() {
+		if (!remove.base.call(this))
 			return false;
 		if (this.view)
 			this.view.remove();
@@ -271,6 +267,7 @@ var Project = this.Project = PaperScopeItem.extend(/** @lends Project# */{
 	// DOCS: Figure out a way to group these together with importSVG / exportSVG
 
 	importJSON: function(json) {
+		this.activate();
 		return Base.importJSON(json);
 	},
 

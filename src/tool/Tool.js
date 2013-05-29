@@ -42,7 +42,7 @@
  * 	path.add(event.point);
  * }
  */
-var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
+var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	_list: 'tools',
 	_reference: '_tool', // PaperScope has accessor for #tool
 	_events: [ 'onActivate', 'onDeactivate', 'onEditOptions',
@@ -50,8 +50,8 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 			'onKeyDown', 'onKeyUp' ],
 
 	// DOCS: rewrite Tool constructor explanation
-	initialize: function(props) {
-		this.base();
+	initialize: function Tool(props) {
+		PaperScopeItem.call(this);
 		this._firstMove = true;
 		this._count = 0;
 		this._downCount = 0;
@@ -322,7 +322,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		return true;
 	},
 
-	fire: function(type, event) {
+	fire: function fire(type, event) {
 		// Override Callback#fire() so we can handle items marked in removeOn*()
 		// calls first,.
 		var sets = Tool._removeSets;
@@ -346,7 +346,7 @@ var Tool = this.Tool = PaperScopeItem.extend(/** @lends Tool# */{
 				sets[type] = null;
 			}
 		}
-		return this.base(type, event);
+		return fire.base.call(this, type, event);
 	},
 
 	_onHandleEvent: function(type, point, event) {

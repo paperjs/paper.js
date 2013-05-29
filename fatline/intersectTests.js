@@ -1,4 +1,5 @@
-	
+// Uncomment this to turn on fatline clipping in paper.js too
+options.fatline = true;
 paper.install(window);
 
 /**
@@ -235,40 +236,40 @@ function runTests() {
 		prepareTest('Results - Boolean tests (Time taken per test)', container, 'big');
 		var x = 80.5, y = 15.5, width = 500, height = 190, i, txt, ny,
 			yy = y + height, xx = x + width;
-		var ppaperfill = new Path(), pfatfill = new Path();
-		var ppaper = new Path(), pfat = new Path();
-		var max = testdata.reduce(function(a, b) { return Math.max(a, b.paperTime + b.fatTime); }, 0) + 20;
+		var ppaper = new Path(),
+			pfat = new Path();
+		var max = testdata.reduce(function(a, b) {
+			return Math.max(a, b.paperTime + b.fatTime);
+		}, 0) + 20;
 		var vscale = height / max, hscale = width / testdata.length;
 		var caxes = '#999', ctxt = '#222', ctxt2 = '#555', cpaper = '#268BD2', cpaperfill ='#B5E1FF',
 			cfat = '#D33682', cfatfill = '#FFADD4';
-		new Path.Line(x, yy, xx, yy).style.strokeColor = caxes;
-		new Path.Line(x, yy, x, y).style.strokeColor = caxes;
+		new Path.Line(x, yy, xx, yy).strokeColor = caxes;
+		new Path.Line(x, yy, x, y).strokeColor = caxes;
 		for (i = 0; i < 10 ; i++) {
 			ny = yy - vscale * max * i / 10;
-			new Path.Line(x, ny, x-5, ny).style.strokeColor = caxes;
+			new Path.Line(x, ny, x-5, ny).strokeColor = caxes;
 			txt = new PointText([x-10, ny]);
 			txt.justification = 'right';
 			txt.fillColor = (i%2)? ctxt: ctxt2;
 			txt.content = (max * i / 10).toFixed(1) + ((!i)? ' ms' : '');
 		}
-		ppaperfill.add(new Segment(x, yy));
-		pfatfill.add(new Segment(x, yy));
+		ppaper.add(x, yy);
+		pfat.add(x, yy);
 		var vx = x, clr = ctxt;
 		var coords = [], avgPaper = 0, avgFat = 0,
 			maxSpeedup = -Infinity, minSpeedup = Infinity, avgSpeedup = 0;
 		testdata.map(function(data) {
 			avgPaper += data.paperTime;
-			ny = yy - (data.paperTime + data.fatTime) * vscale;
-			ppaper.add(new Segment([vx, ny]));
-			ppaperfill.add(new Segment([vx, ny]));
+			ny = yy - (data.paperTime /*+ data.fatTime */) * vscale;
+			ppaper.add(vx, ny);
 			var np = new Point(vx, ny);
 			np._data = data;
 			np._datatype = 'paper';
 			coords.push(np);
 			avgFat += data.fatTime;
 			ny = yy - (data.fatTime) * vscale;
-			pfat.add(new Segment([vx, ny]));
-			pfatfill.add(new Segment([vx, ny]));
+			pfat.add(vx, ny);
 			np = new Point(vx, ny);
 			np._data = data;
 			np._datatype = 'fat';
@@ -279,7 +280,7 @@ function runTests() {
 			if (speedup < minSpeedup) minSpeedup = speedup;
 			avgSpeedup += speedup;
 
-			new Path.Line(vx, yy, vx, yy + 5).style.strokeColor = caxes;
+			new Path.Line(vx, yy, vx, yy + 5).strokeColor = caxes;
 			txt = new PointText([vx, yy+18]);
 			txt.justification = 'left';
 			txt.fillColor = clr;
@@ -288,23 +289,25 @@ function runTests() {
 
 			if (!data.success) {
 				var p = new Path.Line(vx, y, vx, yy);
-				p.style.strokeWidth = 5;
-				p.style.strokeColor = '#f00';
+				p.strokeWidth = 5;
+				p.strokeColor = '#f00';
 			}
 
 			clr = (clr === ctxt)? ctxt2 : ctxt;
 			vx += hscale;
 		});
-		ppaper.style.strokeWidth = 2;
-		ppaper.style.strokeColor = cpaper;
-		ppaperfill.add(new Segment(vx-hscale, yy));
-		ppaperfill.closed = true;
-		ppaperfill.style.fillColor = cpaperfill;
-		pfat.style.strokeWidth = 2;
-		pfat.style.strokeColor = cfat;
-		pfatfill.add(new Segment(vx-hscale, yy));
-		pfatfill.closed = true;
-		pfatfill.style.fillColor = cfatfill;
+		ppaper.strokeWidth = 2;
+		ppaper.strokeColor = cpaper;
+		ppaper.add(vx-hscale, yy);
+		ppaper.closed = true;
+		ppaper.fillColor = cpaperfill;
+		ppaper.opacity = 0.75;
+		pfat.strokeWidth = 2;
+		pfat.strokeColor = cfat;
+		pfat.add(vx-hscale, yy);
+		pfat.closed = true;
+		pfat.fillColor = cfatfill;
+		pfat.opacity = 0.75;
 
 		avgPaper/= testdata.length;
 		avgFat/= testdata.length;
@@ -312,13 +315,13 @@ function runTests() {
 		maxSpeedup = Math.round(maxSpeedup);
 		minSpeedup = Math.round(minSpeedup);
 		ny = Math.round(yy - avgPaper * vscale) + 0.5;
-		new Path.Line(x, ny, xx, ny).style.strokeColor = cpaper;
+		new Path.Line(x, ny, xx, ny).strokeColor = cpaper;
 		txt = new PointText([xx, ny]);
 		txt.justification = 'right';
 		txt.fillColor = cpaper;
 		txt.content = avgPaper.toFixed(1);
 		ny = Math.round(yy - avgFat * vscale) + 0.5;
-		new Path.Line(x, ny, xx, ny).style.strokeColor = cfat;
+		new Path.Line(x, ny, xx, ny).strokeColor = cfat;
 		txt = new PointText([xx, ny]);
 		txt.justification = 'right';
 		txt.fillColor = cfat;
@@ -358,10 +361,10 @@ function runTests() {
 			if (dist > 500) { return; }
 			if (pnt && data) {
 				var p = new Path.Line(pnt.x+0.5, y, pnt.x+0.5, yy);
-				p.style.strokeColor = '#000';
+				p.strokeColor = '#000';
 				p.removeOnMove();
 				p = new Path.Circle(pnt, 3);
-				p.style.fillColor = (type === 'fat')? '#D33682' :'#268BD2';
+				p.fillColor = (type === 'fat')? '#D33682' :'#268BD2';
 				p.removeOnMove();
 				var txt = new PointText([ 500, 20 ]);
 				txt.content = 'subdiv : ' + data.paperTime.toFixed(1) + ' ms';
@@ -563,8 +566,8 @@ function markPoint(pnt, t, c, tc, remove) {
 	c = c || '#000';
 	if (remove === undefined) { remove = true; }
 	var cir = new Path.Circle(pnt, 2);
-	cir.style.fillColor = c;
-	cir.style.strokeColor = tc;
+	cir.fillColor = c;
+	cir.strokeColor = tc;
 	if (t !== undefined || t !== null) {
 		var text = new PointText(pnt.add([0, -3]));
 		text.justification = 'center';
@@ -588,7 +591,7 @@ function markCurve(crv, c, flag) {
 			new Segment([crv[0], crv[1]], null, [crv[2] - crv[0], crv[3] - crv[1]]),
 			new Segment([crv[6], crv[7]], [crv[4] - crv[6], crv[5] - crv[7]], null)
 			);
-		window.__p1.style.strokeColor = c;
+		window.__p1.strokeColor = c;
 		// window.__p1.fullySelected = true;
 	} else {
 		if (window.__p2) window.__p2.remove();
@@ -596,7 +599,7 @@ function markCurve(crv, c, flag) {
 			new Segment([crv[0], crv[1]], null, [crv[2] - crv[0], crv[3] - crv[1]]),
 			new Segment([crv[6], crv[7]], [crv[4] - crv[6], crv[5] - crv[7]], null)
 			);
-		window.__p2.style.strokeColor = c;
+		window.__p2.strokeColor = c;
 		// window.__p2.fullySelected = true;
 	}
 	view.draw();
@@ -624,8 +627,8 @@ function annotateSegment(s, t, c, tc, remove, skipCurves) {
 	var t1 = crv.getNormal(0).normalize(10);
 	var p = s.point.clone().add(t1);
 	var cir = new Path.Circle(s.point, 2);
-	cir.style.fillColor = c;
-	cir.style.strokeColor = tc;
+	cir.fillColor = c;
+	cir.strokeColor = tc;
 	var text = new PointText(p);
 	text.justification = 'center';
 	text.fillColor = c;
@@ -657,8 +660,8 @@ function annotateCurve(crv, t, c, tc, remove) {
 	text.justification = 'center';
 	text.fillColor = tc;
 	text.content = t;
-	l.style.strokeColor = l2.style.strokeColor = c;
-	cir.style.fillColor = c;
+	l.strokeColor = l2.strokeColor = c;
+	cir.fillColor = c;
 	if (remove) {
 		l.removeOnMove();
 		l2.removeOnMove();
@@ -677,11 +680,11 @@ function plotDataRandom(testdata) {
 	testdata.sort(function(a,b) { return a.ratio - b.ratio; });
 	var vscale = height / max, hscale = width / testdata.length;
 	var caxes = '#999', ctxt = '#222', cpaper = '#268BD2', cfat = '#D33682';
-	new Path.Line(x, yy, xx, yy).style.strokeColor = caxes;
-	new Path.Line(x, yy, x, y).style.strokeColor = caxes;
+	new Path.Line(x, yy, xx, yy).strokeColor = caxes;
+	new Path.Line(x, yy, x, y).strokeColor = caxes;
 	for (i = 0; i < 10 ; i++) {
 		ny = yy - vscale * max * i / 10;
-		new Path.Line(x, ny, x-5, ny).style.strokeColor = caxes;
+		new Path.Line(x, ny, x-5, ny).strokeColor = caxes;
 		txt = new PointText([x-10, ny]);
 		txt.justification = 'right';
 		txt.fillColor = ctxt;
@@ -699,13 +702,13 @@ function plotDataRandom(testdata) {
 	var avgPaper = 0, avgFat = 0;
 	testdata.map(function(data) {
 		avgPaper += data.paperTime;
-		ny = yy - (data.paperTime + data.fatTime) * vscale;
-		ppaper.add(new Segment([vx, ny]));
+		ny = yy - (data.paperTime /* + data.fatTime*/) * vscale;
+		ppaper.add(vx, ny);
 		avgFat += data.fatTime;
 		ny = yy - (data.fatTime) * vscale;
-		pfat.add(new Segment([vx, ny]));
+		pfat.add(vx, ny);
 
-		new Path.Line(vx, yy, vx, yy + 5 + ((count%2)? step:0)).style.strokeColor = caxes;
+		new Path.Line(vx, yy, vx, yy + 5 + ((count%2)? step:0)).strokeColor = caxes;
 		txt = new PointText([vx, yy+18 + ((count%2)? step:0) ]);
 		txt.justification = 'center';
 		txt.fillColor = ctxt;
@@ -718,29 +721,31 @@ function plotDataRandom(testdata) {
 
 		if (!data.success) {
 			var p = new Path.Line(vx, y, vx, yy);
-			p.style.strokeWidth = 5;
-			p.style.strokeColor = '#f00';
+			p.strokeWidth = 5;
+			p.strokeColor = '#f00';
 		}
 		++count;
 		vx += hscale;
 	});
-	ppaper.smooth();
-	ppaper.style.strokeWidth = 2;
-	ppaper.style.strokeColor = cpaper;
-	pfat.smooth();
-	pfat.style.strokeWidth = 2;
-	pfat.style.strokeColor = cfat;
+//	ppaper.smooth();
+	ppaper.strokeWidth = 2;
+	ppaper.strokeColor = cpaper;
+	ppaper.opacity = 0.75;
+//	pfat.smooth();
+	pfat.strokeWidth = 2;
+	pfat.strokeColor = cfat;
+	pfat.opacity = 0.75;
 
 	avgPaper/= testdata.length;
 	avgFat/= testdata.length;
 	ny = Math.round(yy - avgPaper * vscale) + 0.5;
-	new Path.Line(x, ny, xx, ny).style.strokeColor = cpaper;
+	new Path.Line(x, ny, xx, ny).strokeColor = cpaper;
 	txt = new PointText([xx, ny]);
 	txt.justification = 'right';
 	txt.fillColor = cpaper;
 	txt.content = avgPaper.toFixed(1);
 	ny = Math.round(yy - avgFat * vscale) + 0.5;
-	new Path.Line(x, ny, xx, ny).style.strokeColor = cfat;
+	new Path.Line(x, ny, xx, ny).strokeColor = cfat;
 	txt = new PointText([xx, ny]);
 	txt.justification = 'right';
 	txt.fillColor = cfat;
@@ -749,80 +754,78 @@ function plotDataRandom(testdata) {
 	view.draw();
 }
 
-
-
 function drawFatline(v1) {
-		function signum(num) {
-				return (num > 0)? 1 : (num < 0)? -1 : 0;
-		}
-		var l = new Line([v1[0], v1[1]], [v1[6], v1[7]], false);
-		var p1 = new Point(v1[2], v1[3]), p2 = new Point(v1[4], v1[5]);
-		var d1 = l.getSide(p1) * l.getDistance(p1) || 0;
-		var d2 = l.getSide(p2) * l.getDistance(p2) || 0;
-		var dmin, dmax;
-		if (d1 * d2 > 0) {
-				// 3/4 * min{0, d1, d2}
-				dmin = 0.75 * Math.min(0, d1, d2);
-				dmax = 0.75 * Math.max(0, d1, d2);
-		} else {
-				// 4/9 * min{0, d1, d2}
-				dmin = 4 * Math.min(0, d1, d2) / 9.0;
-				dmax = 4 * Math.max(0, d1, d2) / 9.0;
-		}
-		var ll = new Path.Line(v1[0], v1[1], v1[6], v1[7]);
-		window.__p3.push(ll);
-		window.__p3[window.__p3.length-1].style.strokeColor = new Color(0,0,0.9, 0.8);
-		var lp1 = ll.segments[0].point;
-		var lp2 = ll.segments[1].point;
-		var pm = l.vector, pm1 = pm.rotate(signum(dmin) * -90), pm2 = pm.rotate(signum(dmax) * -90);
-		var p11 = lp1.add(pm1.normalize(Math.abs(dmin)));
-		var p12 = lp2.add(pm1.normalize(Math.abs(dmin)));
-		var p21 = lp1.add(pm2.normalize(Math.abs(dmax)));
-		var p22 = lp2.add(pm2.normalize(Math.abs(dmax)));
-		window.__p3.push(new Path.Line(p11, p12));
-		window.__p3[window.__p3.length-1].style.strokeColor = new Color(0,0,0.9);
-		window.__p3.push(new Path.Line(p21, p22));
-		window.__p3[window.__p3.length-1].style.strokeColor = new Color(0,0,0.9);
+	function signum(num) {
+			return (num > 0)? 1 : (num < 0)? -1 : 0;
+	}
+	var l = new Line([v1[0], v1[1]], [v1[6], v1[7]], false);
+	var p1 = new Point(v1[2], v1[3]), p2 = new Point(v1[4], v1[5]);
+	var d1 = l.getSide(p1) * l.getDistance(p1) || 0;
+	var d2 = l.getSide(p2) * l.getDistance(p2) || 0;
+	var dmin, dmax;
+	if (d1 * d2 > 0) {
+			// 3/4 * min{0, d1, d2}
+			dmin = 0.75 * Math.min(0, d1, d2);
+			dmax = 0.75 * Math.max(0, d1, d2);
+	} else {
+			// 4/9 * min{0, d1, d2}
+			dmin = 4 * Math.min(0, d1, d2) / 9.0;
+			dmax = 4 * Math.max(0, d1, d2) / 9.0;
+	}
+	var ll = new Path.Line(v1[0], v1[1], v1[6], v1[7]);
+	window.__p3.push(ll);
+	window.__p3[window.__p3.length-1].strokeColor = new Color(0,0,0.9, 0.8);
+	var lp1 = ll.segments[0].point;
+	var lp2 = ll.segments[1].point;
+	var pm = l.vector, pm1 = pm.rotate(signum(dmin) * -90), pm2 = pm.rotate(signum(dmax) * -90);
+	var p11 = lp1.add(pm1.normalize(Math.abs(dmin)));
+	var p12 = lp2.add(pm1.normalize(Math.abs(dmin)));
+	var p21 = lp1.add(pm2.normalize(Math.abs(dmax)));
+	var p22 = lp2.add(pm2.normalize(Math.abs(dmax)));
+	window.__p3.push(new Path.Line(p11, p12));
+	window.__p3[window.__p3.length-1].strokeColor = new Color(0,0,0.9);
+	window.__p3.push(new Path.Line(p21, p22));
+	window.__p3[window.__p3.length-1].strokeColor = new Color(0,0,0.9);
 }
 
 function plotD_vs_t(x, y, arr, arr2, v, dmin, dmax, tmin, tmax, yscale, tvalue) {
-		yscale = yscale || 1;
-		new Path.Line(x, y-100, x, y+100).style.strokeColor = '#aaa';
-		new Path.Line(x, y, x + 200, y).style.strokeColor = '#aaa';
+	yscale = yscale || 1;
+	new Path.Line(x, y-100, x, y+100).strokeColor = '#aaa';
+	new Path.Line(x, y, x + 200, y).strokeColor = '#aaa';
 
-		var clr = (tvalue)? '#a00' : '#00a';
-		if (window.__p3) window.__p3.map(function(a) {a.remove();});
+	var clr = (tvalue)? '#a00' : '#00a';
+	if (window.__p3) window.__p3.map(function(a) {a.remove();});
 
-		window.__p3 = [];
+	window.__p3 = [];
 
-		drawFatline(v);
+	drawFatline(v);
 
-		window.__p3.push(new Path.Line(x, y + dmin * yscale, x + 200, y + dmin * yscale));
-		window.__p3[window.__p3.length-1].style.strokeColor = '#000';
-		window.__p3.push(new Path.Line(x, y + dmax * yscale, x + 200, y + dmax * yscale));
-		window.__p3[window.__p3.length-1].style.strokeColor = '#000';
-		window.__p3.push(new Path.Line(x + tmin * 190, y-100, x + tmin * 190, y+100));
-		window.__p3[window.__p3.length-1].style.strokeColor = clr;
-		window.__p3.push(new Path.Line(x + tmax * 190, y-100, x + tmax * 190, y+100));
-		window.__p3[window.__p3.length-1].style.strokeColor = clr;
+	window.__p3.push(new Path.Line(x, y + dmin * yscale, x + 200, y + dmin * yscale));
+	window.__p3[window.__p3.length-1].strokeColor = '#000';
+	window.__p3.push(new Path.Line(x, y + dmax * yscale, x + 200, y + dmax * yscale));
+	window.__p3[window.__p3.length-1].strokeColor = '#000';
+	window.__p3.push(new Path.Line(x + tmin * 190, y-100, x + tmin * 190, y+100));
+	window.__p3[window.__p3.length-1].strokeColor = clr;
+	window.__p3.push(new Path.Line(x + tmax * 190, y-100, x + tmax * 190, y+100));
+	window.__p3[window.__p3.length-1].strokeColor = clr;
 
-		for (var i = 0; i < arr.length; i++) {
-				window.__p3.push(new Path.Line(new Point(x + arr[i][0] * 190, y + arr[i][1] * yscale),
-					new Point(x + arr[i][2] * 190, y + arr[i][3] * yscale)));
-				window.__p3[window.__p3.length-1].style.strokeColor = '#999';
-		}
-		var pnt = [];
-		var arr2x = [ 0.0, 0.333333333, 0.6666666666, 1.0 ];
-		for (var i = 0; i < arr2.length; i++) {
-				pnt.push(new Point(x + arr2x[i] * 190, y + arr2[i] * yscale));
-				window.__p3.push(new Path.Circle(pnt[pnt.length-1], 2));
-				window.__p3[window.__p3.length-1].style.fillColor = '#000';
-		}
-		// var pth = new Path(pnt[0], pnt[1], pnt[2], pnt[3]);
-		// pth.closed = true;
-		window.__p3.push(new Path(
-			new Segment(pnt[0], null, pnt[1].subtract(pnt[0])),
-			new Segment(pnt[3], pnt[2].subtract(pnt[3]), null)));
-		window.__p3[window.__p3.length-1].style.strokeColor = clr;
-		view.draw();
+	for (var i = 0; i < arr.length; i++) {
+			window.__p3.push(new Path.Line(new Point(x + arr[i][0] * 190, y + arr[i][1] * yscale),
+				new Point(x + arr[i][2] * 190, y + arr[i][3] * yscale)));
+			window.__p3[window.__p3.length-1].strokeColor = '#999';
+	}
+	var pnt = [];
+	var arr2x = [ 0.0, 0.333333333, 0.6666666666, 1.0 ];
+	for (var i = 0; i < arr2.length; i++) {
+			pnt.push(new Point(x + arr2x[i] * 190, y + arr2[i] * yscale));
+			window.__p3.push(new Path.Circle(pnt[pnt.length-1], 2));
+			window.__p3[window.__p3.length-1].fillColor = '#000';
+	}
+	// var pth = new Path(pnt[0], pnt[1], pnt[2], pnt[3]);
+	// pth.closed = true;
+	window.__p3.push(new Path(
+		new Segment(pnt[0], null, pnt[1].subtract(pnt[0])),
+		new Segment(pnt[3], pnt[2].subtract(pnt[3]), null)));
+	window.__p3[window.__p3.length-1].strokeColor = clr;
+	view.draw();
 }

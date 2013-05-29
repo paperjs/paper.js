@@ -20,8 +20,8 @@
 /*#*/ } else if (options.parser == 'esprima') {
 /*#*/ include('../../lib/esprima-min.js');
 /*#*/ }
-
-var PaperScript = this.PaperScript = new function() {
+ 
+var PaperScript = new function() {
 	// Operators to overload
 
 	var binaryOperators = {

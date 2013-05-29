@@ -20,8 +20,7 @@
  *
  * @extends PathItem
  */
-var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
-	_class: 'CompoundPath',
+var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	_serializeFields: {
 		pathData: ''
 	},
@@ -49,8 +48,8 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 	 * // Move the inner circle 5pt to the right:
 	 * compoundPath.children[1].position.x += 5;
 	 */
-	initialize: function(arg) {
-		this.base();
+	initialize: function CompoundPath(arg) {
+		PathItem.call(this);
 		// CompoundPath has children and supports named children.
 		this._children = [];
 		this._namedChildren = {};
@@ -58,18 +57,20 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
-	insertChild: function(index, item, _preserve) {
-		// Only allow the insertion of paths
-		if (item._type !== 'path')
-			return null;
-		item = this.base(index, item);
+	insertChildren: function insertChildren(index, items, _preserve) {
+		// Pass on 'path' for _type, to make sure that only paths are added as
+		// children.
+		items = insertChildren.base.call(this, index, items, _preserve, 'path');
 		// All children except for the bottom one (first one in list) are set
 		// to anti-clockwise orientation, so that they appear as holes, but
 		// only if their orientation was not already specified before
 		// (= _clockwise is defined).
-		if (!_preserve && item && item._clockwise === undefined)
-			item.setClockwise(item._index == 0);
-		return item;
+		for (var i = 0, l = !_preserve && items && items.length; i < l; i++) {
+			var item = items[i];
+			if (item._clockwise === undefined)
+				item.setClockwise(item._index === 0);
+		}
+		return items;
 	},
 
 	/**
@@ -223,8 +224,9 @@ var CompoundPath = this.CompoundPath = PathItem.extend(/** @lends CompoundPath# 
 		return (children.length & 1) == 1 && children;
 	},
 
-	_hitTest: function(point, options) {
-		var res = this.base(point, Base.merge(options, { fill: false }));
+	_hitTest: function _hitTest(point, options) {
+		var res = _hitTest.base.call(this, point,
+				Base.merge(options, { fill: false }));
 		if (!res && options.fill && this._style.getFillColor()) {
 			res = this._contains(point);
 			res = res ? new HitResult('fill', res[0]) : null;

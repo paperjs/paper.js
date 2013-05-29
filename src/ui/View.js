@@ -19,8 +19,8 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-var View = this.View = Base.extend(Callback, /** @lends View# */{
-	initialize: function(element) {
+var View = Base.extend(Callback, /** @lends View# */{
+	initialize: function View(element) {
 		// Store reference to the currently active global paper scope, and the
 		// active project, which will be represented by this view
 		this._scope = paper;
@@ -60,7 +60,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 			// If the element is invisible, we cannot directly access
 			// element.width / height, because they would appear 0.
 			// Reading the attributes still works.
-			size = Size.create(parseInt(element.getAttribute('width'), 10),
+			size = new Size(parseInt(element.getAttribute('width'), 10),
 						parseInt(element.getAttribute('height'), 10));
 			// If no size was specified on the canvas, read it from CSS
 			if (size.isNaN())
@@ -83,11 +83,11 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 			style.top = offset.y + 'px';
 			document.body.appendChild(stats);
 		}
-/*#*/ } else if (options.server) {
+/*#*/ } else if (options.node) {
 		// Generate an id for this view
 		this._id = 'view-' + View._id++;
-		size = Size.create(element.width, element.height);
-/*#*/ } // options.server
+		size = new Size(element.width, element.height);
+/*#*/ } // options.node
 		// Keep track of views internally
 		View._views.push(this);
 		// Link this id to our view
@@ -235,7 +235,7 @@ var View = this.View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	_redraw: function() {
-		this._redrawNeeded = true;
+		this._project._needsRedraw = true;
 		if (this._handlingFrame)
 			return;
 		if (this._animate) {

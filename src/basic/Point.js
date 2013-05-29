@@ -23,8 +23,7 @@
  * console.log(point.x); // 10
  * console.log(point.y); // 5
  */
-var Point = this.Point = Base.extend(/** @lends Point# */{
-	_class: 'Point',
+var Point = Base.extend(/** @lends Point# */{
 	// Tell Base.read that the Point constructor supports reading with index
 	_readIndex: true,
 
@@ -129,7 +128,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @name Point#initialize
 	 */
-	initialize: function(arg0, arg1) {
+	initialize: function Point(arg0, arg1) {
 		var type = typeof arg0;
 		if (type === 'number') {
 			var hasY = typeof arg1 === 'number';
@@ -217,7 +216,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 * @returns {Point} the cloned point
 	 */
 	clone: function() {
-		return Point.create(this.x, this.y);
+		return new Point(this.x, this.y);
 	},
 
 	/**
@@ -269,7 +268,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 */
 	add: function(point) {
 		point = Point.read(arguments);
-		return Point.create(this.x + point.x, this.y + point.y);
+		return new Point(this.x + point.x, this.y + point.y);
 	},
 
 	/**
@@ -305,7 +304,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 */
 	subtract: function(point) {
 		point = Point.read(arguments);
-		return Point.create(this.x - point.x, this.y - point.y);
+		return new Point(this.x - point.x, this.y - point.y);
 	},
 
 	/**
@@ -341,7 +340,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 */
 	multiply: function(point) {
 		point = Point.read(arguments);
-		return Point.create(this.x * point.x, this.y * point.y);
+		return new Point(this.x * point.x, this.y * point.y);
 	},
 
 	/**
@@ -377,7 +376,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 */
 	divide: function(point) {
 		point = Point.read(arguments);
-		return Point.create(this.x / point.x, this.y / point.y);
+		return new Point(this.x / point.x, this.y / point.y);
 	},
 
 	/**
@@ -410,11 +409,11 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	 */
 	modulo: function(point) {
 		point = Point.read(arguments);
-		return Point.create(this.x % point.x, this.y % point.y);
+		return new Point(this.x % point.x, this.y % point.y);
 	},
 
 	negate: function() {
-		return Point.create(-this.x, -this.y);
+		return new Point(-this.x, -this.y);
 	},
 
 	/**
@@ -501,7 +500,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 			length = 1;
 		var current = this.getLength(),
 			scale = current != 0 ? length / current : 0,
-			point = Point.create(this.x * scale, this.y * scale);
+			point = new Point(this.x * scale, this.y * scale);
 		// Preserve angle.
 		point._angle = this._angle;
 		return point;
@@ -650,7 +649,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		var point = center ? this.subtract(center) : this,
 			s = Math.sin(angle),
 			c = Math.cos(angle);
-		point = Point.create(
+		point = new Point(
 			point.x * c - point.y * s,
 			point.y * c + point.x * s
 		);
@@ -754,10 +753,10 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	project: function(point) {
 		point = Point.read(arguments);
 		if (point.isZero()) {
-			return Point.create(0, 0);
+			return new Point(0, 0);
 		} else {
 			var scale = this.dot(point) / point.dot(point);
-			return Point.create(
+			return new Point(
 				point.x * scale,
 				point.y * scale
 			);
@@ -776,23 +775,6 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 
 	statics: /** @lends Point */{
 		/**
-		 * Provide a faster creator for Points out of two coordinates that
-		 * does not rely on Point#initialize at all. This speeds up all math
-		 * operations a lot.
-		 *
-		 * @ignore
-		 */
-		create: function(x, y) {
-			// Don't use the shorter form as we want absolute maximum
-			// performance here:
-			// return Base.create(Point).set(x, y);
-			var point = Base.create(Point);
-			point.x = x;
-			point.y = y;
-			return point;
-		},
-
-		/**
 		 * Returns a new point object with the smallest {@link #x} and
 		 * {@link #y} of the supplied points.
 		 *
@@ -810,7 +792,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		min: function(point1, point2) {
 			var _point1 = Point.read(arguments);
 				_point2 = Point.read(arguments);
-			return Point.create(
+			return new Point(
 				Math.min(_point1.x, _point2.x),
 				Math.min(_point1.y, _point2.y)
 			);
@@ -834,7 +816,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		max: function(point1, point2) {
 			var _point1 = Point.read(arguments);
 				_point2 = Point.read(arguments);
-			return Point.create(
+			return new Point(
 				Math.max(_point1.x, _point2.x),
 				Math.max(_point1.y, _point2.y)
 			);
@@ -855,7 +837,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 		 * var point = maxPoint * randomPoint;
 		 */
 		random: function() {
-			return Point.create(Math.random(), Math.random());
+			return new Point(Math.random(), Math.random());
 		}
 	}
 }, new function() { // Scope for injecting round, ceil, floor, abs:
@@ -922,7 +904,7 @@ var Point = this.Point = Base.extend(/** @lends Point# */{
 	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
 		var op = Math[name];
 		this[name] = function() {
-			return Point.create(op(this.x), op(this.y));
+			return new Point(op(this.x), op(this.y));
 		};
 	}, {});
 });
@@ -970,7 +952,7 @@ var LinkedPoint = Point.extend({
 			// through an optional parameter that can be passed to the getters.
 			// See e.g. Rectangle#getPoint(true).
 			if (dontLink)
-				return Point.create(x, y);
+				return new Point(x, y);
 			var point = Base.create(LinkedPoint);
 			point._x = x;
 			point._y = y;
