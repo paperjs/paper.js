@@ -27,7 +27,7 @@ var PaperScopeItem = Base.extend(Callback, /** @lends PaperScopeItem# */{
 	initialize: function(activate) {
 		// Store reference to the currently active global paper scope:
 		this._scope = paper;
-		// Push it onto this._scope.projects and set index:
+		// Push it onto this._scope[this._list] and set _index:
 		this._index = this._scope[this._list].push(this) - 1;
 		// If the project has no active reference, activate this one
 		if (activate || !this._scope[this._reference])

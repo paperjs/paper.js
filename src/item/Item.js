@@ -2915,6 +2915,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				// Otherwise just set the globalAlpha before drawing the
 				// temporary canvas on the parent canvas.
 				parentCtx.save();
+				// Reset transformations, since we're blitting and pixel
+				// scale and with a given offset.
+				parentCtx.setTransform(1, 0, 0, 1, 0, 0);
 				parentCtx.globalAlpha = this._opacity;
 				parentCtx.drawImage(ctx.canvas, itemOffset.x, itemOffset.y);
 				parentCtx.restore();
