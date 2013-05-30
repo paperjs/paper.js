@@ -12,7 +12,7 @@
 
 // Add PaperScript and Numerical to exports, inject all exports into PaperScope,
 // and create the initial paper object, all in one condensed statement:
-var paper = new (PaperScope.inject(Base.exports.inject({
+paper = new (PaperScope.inject(Base.exports.inject({
 	PaperScript: PaperScript,
 	Numerical: Numerical
 })))();
