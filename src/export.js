@@ -10,9 +10,12 @@
  * All rights reserved.
  */
 
-// Add PaperScript and Numerical to exports, inject all exports into PaperScope,
-// and create the initial paper object, all in one condensed statement:
+// First add Base, PaperScript and Numerical to exports, then inject all exports
+// into PaperScope, and create the initial paper object, all in one statement:
 paper = new (PaperScope.inject(Base.exports.inject({
+	// Mark fields as enumeralbe so PaperScope.inject can pick them up
+	enumerable: true,
+	Base: Base,
 	PaperScript: PaperScript,
 	Numerical: Numerical
 })))();
