@@ -1,6 +1,6 @@
 {
 	"name": "paper",
-	"version": "0.9.0",
+	"version": "0.9.1",
 	"main": "./src/node/index.js",
 	"engines": { "node": ">= 0.4.0" },
 	"dependencies": {
