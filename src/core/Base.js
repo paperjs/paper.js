@@ -81,8 +81,7 @@ Base.inject(/** @lends Base# */{
 	statics: /** @lends Base */{
 
 		// Keep track of all named classes for serialization and exporting.
-		// Also register the Base class itself.
-		exports: new Base({ Base: Base }),
+		exports: new Base(),
 
 		extend: function extend(src) {
 			// Override Base.extend() to register named classes in Base.exports,
