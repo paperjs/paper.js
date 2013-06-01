@@ -23,6 +23,7 @@ cp $BASE/LICENSE.txt .
 # Make library folder and copy paper.js there
 mkdir lib
 cp $BASE/dist/paper.js lib
+cp $BASE/dist/paper-min.js lib
 # Copy examples over
 cp -r $BASE/examples .
 # Replace ../../dist/ with ../../lib/ in each example
