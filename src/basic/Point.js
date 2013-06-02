@@ -458,8 +458,8 @@ var Point = Base.extend(/** @lends Point# */{
 		// Supports a hidden parameter 'squared', which controls whether the
 		// squared length should be returned. Hide it so it produces a bean
 		// property called #length.
-		var l = this.x * this.x + this.y * this.y;
-		return arguments.length && arguments[0] ? l : Math.sqrt(l);
+		var length = this.x * this.x + this.y * this.y;
+		return arguments.length && arguments[0] ? length : Math.sqrt(length);
 	},
 
 	setLength: function(length) {
@@ -475,7 +475,7 @@ var Point = Base.extend(/** @lends Point# */{
 			var scale = length / this.getLength();
 			// Force calculation of angle now, so it will be preserved even when
 			// x and y are 0
-			if (scale == 0)
+			if (scale === 0)
 				this.getAngle();
 			this.set(
 				this.x * scale,
@@ -499,7 +499,7 @@ var Point = Base.extend(/** @lends Point# */{
 		if (length === undefined)
 			length = 1;
 		var current = this.getLength(),
-			scale = current != 0 ? length / current : 0,
+			scale = current !== 0 ? length / current : 0,
 			point = new Point(this.x * scale, this.y * scale);
 		// Preserve angle.
 		point._angle = this._angle;
