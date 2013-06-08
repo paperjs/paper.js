@@ -407,7 +407,7 @@ new function() {
 			// TODO: implement preserveAspectRatio attribute
 			// viewBox will be applied both to the group that's created for the
 			// content in Symbol.definition, and the Symbol itself.
-			var rect = Rectangle.create.apply(this, convertValue(value, 'array')),
+			var rect = new Rectangle(convertValue(value, 'array')),
 				size = getSize(node, 'width', 'height', true);
 			if (item instanceof Group) {
 				// This is either a top-level svg node, or the container for a
