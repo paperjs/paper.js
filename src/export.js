@@ -12,7 +12,7 @@
 
 // First add Base, PaperScript and Numerical to exports, then inject all exports
 // into PaperScope, and create the initial paper object, all in one statement:
-paper = new (PaperScope.inject(Base.exports.inject({
+paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	// Mark fields as enumeralbe so PaperScope.inject can pick them up
 	enumerable: true,
 	Base: Base,
