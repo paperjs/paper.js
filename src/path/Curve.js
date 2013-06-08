@@ -1024,13 +1024,13 @@ new function() { // Scope for methods that require numerical integration
 		}
 	};
 }, new function() { // Scope for intersection using bezier fat-line clipping
-	function addLocation(locations, curve1, parameter, point, curve2) {
+	function addLocation(locations, curve1, parameter, point, curve2, parameter2) {
 		// Avoid duplicates when hitting segments (closed paths too)
 		var first = locations[0],
 			last = locations[locations.length - 1];
 		if ((!first || !point.equals(first._point))
 				&& (!last || !point.equals(last._point)))
-			locations.push(new CurveLocation(curve1, parameter, point, curve2));
+			locations.push(new CurveLocation(curve1, parameter, point, curve2, null, parameter2));
 	}
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
@@ -1123,31 +1123,37 @@ new function() { // Scope for methods that require numerical integration
 			// Check if one of the parameter range has converged completely to a
 			// point. Now things could get only worse if we iterate more for the
 			// other curve to converge if it hasn't yet happened so.
-			if (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE) {
+			if (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE &&
+				Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE) {
 				var t = (range1[0] + range1[1]) / 2;
+				var t2 = (range2[0] + range2[1]) / 2;
 				addLocation(locations, curve1, t,
-						Curve.evaluate(v1, t, true, 0), curve2);
+						Curve.evaluate(v1, t, true, 0), curve2, t2);
 				break;
 			}
-			if (Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE) {
-				var t = (range2[0] + range2[1]) / 2;
-				addLocation(locations, curve2, t,
-						Curve.evaluate(v2, t, true, 0), curve1);
-				break;
-			}
+			// if (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE) {
+			// 	var t = (range1[0] + range1[1]) / 2;
+			// 	addLocation(locations, curve1, t,
+			// 			Curve.evaluate(v1, t, true, 0), curve2);
+			// 	break;
+			// }
+			// if (Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE) {
+			// 	var t = (range2[0] + range2[1]) / 2;
+			// 	addLocation(locations, curve2, t,
+			// 			Curve.evaluate(v2, t, true, 0), curve1);
+			// 	break;
+			// }
 			// see if either or both of the curves are flat enough to be treated
 			// as lines.
-			var flat1 = Curve.isFlatEnough(part1, /*#=*/ Numerical.TOLERANCE),
-				flat2 = Curve.isFlatEnough(part2, /*#=*/ Numerical.TOLERANCE);
-			if (flat1 || flat2) {
-				(flat1 && flat2
-						? addLineIntersection
-						// Use curve line intersection method while specifying
-						// which curve to be treated as line
-						: addCurveLineIntersections)(part1, part2,
-								curve1, curve2, locations, flat1);
-				break;
-			}
+			// if (flat1 || flat2) {
+			// 	(flat1 && flat2
+			// 			? addLineIntersection
+			// 			// Use curve line intersection method while specifying
+			// 			// which curve to be treated as line
+			// 			: addCurveLineIntersections)(part1, part2,
+			// 					curve1, curve2, locations, flat1);
+			// 	break;
+			// }
 		}
 /*#*/ } else { // !options.fatline
 		var bounds1 = Curve.getBounds(v1),
@@ -1389,7 +1395,7 @@ new function() { // Scope for methods that require numerical integration
 					addLocation(locations,
 							flip ? curve2 : curve1,
 							// The actual intersection point
-							t, Curve.evaluate(vc, t, true, 0), 
+							t, Curve.evaluate(vc, t, true, 0),
 							flip ? curve1 : curve2);
 			}
 		}
