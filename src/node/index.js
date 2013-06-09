@@ -28,7 +28,7 @@ options.node = true;
 options.stats = false;
 
 // Create a document and a window using jsdom, e.g. for exportSVG()
-var doc = jsdom.jsdom("<html><body></body></html>"),
+var doc = jsdom.jsdom('<html><body></body></html>'),
 	win = doc.createWindow();
 
 // Define XMLSerializer and DOMParser shims, to emulate browser behavior.
