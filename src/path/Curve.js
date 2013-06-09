@@ -1113,16 +1113,8 @@ new function() { // Scope for methods that require numerical integration
 				}
 			}
 			// We need to bailout of clipping and try a numerically stable
-			// method if any of the following are true.
-			//  1. One of the parameter ranges is converged to a point.
-			//  2. Both of the parameter ranges have converged reasonably well
+			// method if both of the parameter ranges have converged reasonably well
 			//     (according to Numerical.TOLERANCE).
-			//  3. One of the parameter range is converged enough so that it is
-			//     *flat enough* to calculate line curve intersection implicitly
-			//
-			// Check if one of the parameter range has converged completely to a
-			// point. Now things could get only worse if we iterate more for the
-			// other curve to converge if it hasn't yet happened so.
 			if (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE &&
 				Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE) {
 				var t = (range1[0] + range1[1]) / 2;
@@ -1131,29 +1123,6 @@ new function() { // Scope for methods that require numerical integration
 						Curve.evaluate(v1, t, true, 0), curve2, t2);
 				break;
 			}
-			// if (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE) {
-			// 	var t = (range1[0] + range1[1]) / 2;
-			// 	addLocation(locations, curve1, t,
-			// 			Curve.evaluate(v1, t, true, 0), curve2);
-			// 	break;
-			// }
-			// if (Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE) {
-			// 	var t = (range2[0] + range2[1]) / 2;
-			// 	addLocation(locations, curve2, t,
-			// 			Curve.evaluate(v2, t, true, 0), curve1);
-			// 	break;
-			// }
-			// see if either or both of the curves are flat enough to be treated
-			// as lines.
-			// if (flat1 || flat2) {
-			// 	(flat1 && flat2
-			// 			? addLineIntersection
-			// 			// Use curve line intersection method while specifying
-			// 			// which curve to be treated as line
-			// 			: addCurveLineIntersections)(part1, part2,
-			// 					curve1, curve2, locations, flat1);
-			// 	break;
-			// }
 		}
 /*#*/ } else { // !options.fatline
 		var bounds1 = Curve.getBounds(v1),
