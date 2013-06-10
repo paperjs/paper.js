@@ -35,10 +35,6 @@ function runTests() {
 			paper.setup(canvas);
 			var paths = handler();
 			var success = testIntersections(paths[0], paths[1], caption, testName, testdata);
-			if (!success) {
-				window.p1 = paths[0].exportSVG();
-				window.p2 = paths[1].exportSVG();
-			}
 			testExecuted++;
 			if (testExecuted === testQueued) {
 				plotData();
@@ -65,6 +61,22 @@ function runTests() {
 
 	runTest('failcase 1', function() {
 		group = paper.project.importSVG(document.getElementById('svgrandom1'));
+		pathA = group.children[0];
+		pathB = group.children[1];
+		pathA.style = pathB.style = null;
+		return [pathA, pathB];
+	});
+
+	runTest('failcase 2', function() {
+		group = paper.project.importSVG(document.getElementById('svgrandom2'));
+		pathA = group.children[0];
+		pathB = group.children[1];
+		pathA.style = pathB.style = null;
+		return [pathA, pathB];
+	});
+
+	runTest('failcase 3', function() {
+		group = paper.project.importSVG(document.getElementById('svgrandom3'));
 		pathA = group.children[0];
 		pathB = group.children[1];
 		pathA.style = pathB.style = null;
@@ -474,6 +486,11 @@ function testIntersections(path1, path2, caption, testname, testdata, nomark) {
 			success: success
 		});
 		console.log(found);
+		if (!success) {
+			var ser = new XMLSerializer();
+			console.log('failcase:', ser.serializeToString(path1.exportSVG()),
+					ser.serializeToString(path2.exportSVG()));
+		}
 	}
 	return success;
 }
