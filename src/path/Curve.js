@@ -864,7 +864,8 @@ statics: {
 				step /= 2;
 		}
 		var pt = Curve.evaluate(values, minT, true, 0);
-		return new CurveLocation(this, minT, pt, null, point.getDistance(pt));
+		return new CurveLocation(this, minT, pt, null, null,
+				point.getDistance(pt));
 	},
 
 	getNearestPoint: function(point) {
@@ -1024,13 +1025,13 @@ new function() { // Scope for methods that require numerical integration
 		}
 	};
 }, new function() { // Scope for intersection using bezier fat-line clipping
-	function addLocation(locations, curve1, parameter, point, curve2, parameter2) {
+	function addLocation(locations, curve1, t1, point, curve2, t2) {
 		// Avoid duplicates when hitting segments (closed paths too)
 		var first = locations[0],
 			last = locations[locations.length - 1];
 		if ((!first || !point.equals(first._point))
 				&& (!last || !point.equals(last._point)))
-			locations.push(new CurveLocation(curve1, parameter, point, curve2, null, parameter2));
+			locations.push(new CurveLocation(curve1, t1, point, curve2, t2));
 	}
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
@@ -1117,10 +1118,10 @@ new function() { // Scope for methods that require numerical integration
 			//     (according to Numerical.TOLERANCE).
 			if (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE &&
 				Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE) {
-				var t = (range1[0] + range1[1]) / 2;
-				var t2 = (range2[0] + range2[1]) / 2;
-				addLocation(locations, curve1, t,
-						Curve.evaluate(v1, t, true, 0), curve2, t2);
+				var t1 = (range1[0] + range1[1]) / 2,
+					t2 = (range2[0] + range2[1]) / 2;
+				addLocation(locations, curve1, t1,
+						Curve.evaluate(v1, t1, true, 0), curve2, t2);
 				break;
 			}
 		}
