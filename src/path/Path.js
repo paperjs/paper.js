@@ -236,13 +236,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 		parts.push('M' + f.point(segments[0]._point));
 		for (i = 0, l = segments.length  - 1; i < l; i++)
 			addCurve(segments[i], segments[i + 1], false);
-		// We only need to draw the connecting curve if it is not a line, and if
-		// the path is closed and has a stroke color, or if it is filled.
-		// TODO: Verify this, sound dodgy
-		if (this._closed && style.getStrokeColor() || style.getFillColor())
+		if (this._closed) {
 			addCurve(segments[segments.length - 1], segments[0], true);
-		if (this._closed)
 			parts.push('z');
+		}
 		return parts.join('');
 	},
 
