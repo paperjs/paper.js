@@ -103,11 +103,15 @@ function compareRectangles(rect1, rect2, message) {
 }
 
 function compareColors(color1, color2, message, precision) {
-	color1 = new Color(color1);
-	color2 = new Color(color2);
-	equals(color1.type, color2.type, (message || '') + ' type');
-	compareArrays(color1.components, color2.components,
-			(message || '') + ' components', precision);
+	color1 = color1 && new Color(color1);
+	color2 = color2 && new Color(color2);
+	if (color1 && color2) {
+		equals(color1.type, color2.type, (message || '') + ' type');
+		compareArrays(color1.components, color2.components,
+				(message || '') + ' components', precision);
+	} else {
+		equals(color1, color2, message);
+	}
 }
 
 function compareStyles(style, style2, checkIdentity) {
