@@ -10,6 +10,20 @@
  * All rights reserved.
  */
 
+// Register a jsDump parser for Base and override object parser to handle it
+
+var objectParser = QUnit.jsDump.parsers.object;
+
+QUnit.jsDump.setParser('Base', function (obj, stack) {
+	return obj.toString();
+});
+
+QUnit.jsDump.setParser('object', function (obj, stack) {
+	return (obj instanceof Base
+			? QUnit.jsDump.parsers.Base
+			: objectParser).call(this, obj, stack);
+});
+
 // Override equals to convert functions to message and execute them as tests()
 function equals(actual, expected, message, tolerance) {
 	if (typeof actual === 'function') {
