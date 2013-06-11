@@ -166,8 +166,6 @@ new function() {
 	function exportGroup(item) {
 		var attrs = getTransform(item),
 			children = item._children;
-		// Override default SVG style on groups, then apply style.
-		attrs.fill = 'none';
 		var node = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = exportSVG(children[i]);
