@@ -345,7 +345,12 @@ new function() {
 			if (clip) {
 				clip = clip.clone();
 				clip.setClipMask(true);
-				return new Group(clip, item);
+				// If item is already a group, move the clip-path inside
+				if (item instanceof Group) {
+					item.insertChild(0, clip);
+				} else {
+					return new Group(clip, item);
+				}
 			}
 		},
 
