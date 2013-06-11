@@ -275,10 +275,10 @@ new function() {
 			var first = segments[0]._point,
 				last = segments[segments.length - 1]._point;
 			attrs = {
-				x1: first._x,
-				y1: first._y,
-				x2: last._x,
-				y2: last._y
+				x1: first.x,
+				y1: first.y,
+				x2: last.x,
+				y2: last.y
 			};
 			break;
 		case 'circle':
