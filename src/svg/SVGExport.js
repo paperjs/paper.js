@@ -448,8 +448,10 @@ new function() {
 	}
 
 	function setDefinition(item, node) {
+		// Have different id ranges per type
 		var type = item._type,
 			id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
+		// Give the svg node an ide, and link to it from the item id.
 		node.id = type + '-' + id;
 		definitions.svgs[item._id] = node;
 	}
@@ -461,18 +463,24 @@ new function() {
 		// produce one if it's a single item of another type (when calling
 		// #exportSVG() on an item rather than a whole project)
 		// jsdom in Node.js uses uppercase values for nodeName...
-		var container = node.nodeName.toLowerCase() === 'svg' && node,
-			firstChild = container ? container.firstChild : node;
+		var svg = node.nodeName.toLowerCase() === 'svg' && node,
+			firstChild = svg ? svg.firstChild : node,
+			defs = null;
 		for (var i in definitions.svgs) {
-			if (!container) {
-				container = createElement('svg');
-				container.appendChild(node);
+			// This code is inside the loop so we only create a container if we
+			// actually have svgs.
+			if (!defs) {
+				if (!svg) {
+					svg = createElement('svg');
+					svg.appendChild(node);
+				}
+				defs = svg.insertBefore(createElement('defs'), svg.firstChild);
 			}
-			container.insertBefore(definitions.svgs[i], firstChild);
+			defs.appendChild(definitions.svgs[i]);
 		}
 		// Clear definitions at the end of export
 		definitions = null;
-		return container;
+		return svg;
 	}
 
 	function exportSVG(item) {
