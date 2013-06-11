@@ -38,11 +38,18 @@ function XMLSerializer() {
 
 XMLSerializer.prototype.serializeToString = function(node) {
 	var text = domToHtml(node);
-	// Fix a jsdom issue where linearGradient gets converted to lineargradient:
+	// Fix a jsdom issue where all SVG tagNames are lowercased:
 	// https://github.com/tmpvar/jsdom/issues/620
-	return text.replace(/(linear|radial)gradient/g, function(all, type) {
-		return type + 'Gradient';
-	});
+	var tagNames = ['linearGradient', 'radialGradient', 'clipPath'];
+	for (var i = 0, l = tagNames.length; i < l; i++) {
+		var tagName = tagNames[i];
+		text = text.replace(
+			new RegExp('(<|</)' + tagName.toLowerCase() + '\\b', 'g'),
+			function(all, start) {
+				return start + tagName;
+			});
+	}
+	return text;
 };
 
 function DOMParser() {
