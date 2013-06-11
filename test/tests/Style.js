@@ -146,6 +146,7 @@ test('setting group styles', function() {
 test('setting group styles 2', function() {
 	var group = new Group();
 	var path = new Path();
+	path.strokeColor = 'red';
 	path.fillColor = 'red';
 	group.addChild(path);
 
