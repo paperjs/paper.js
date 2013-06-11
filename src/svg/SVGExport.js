@@ -493,8 +493,7 @@ new function() {
 		 * @return {SVGSVGElement} the item converted to an SVG node
 		 */
 		exportSVG: function() {
-			var node = exportSVG(this);
-			return exportDefinitions(node);
+			return exportDefinitions(exportSVG(this));
 		}
 	});
 
@@ -508,20 +507,20 @@ new function() {
 		 * @return {SVGSVGElement} the project converted to an SVG node
 		 */
 		exportSVG: function() {
-			var node = createElement('svg'),
-				layers = this.layers,
-				size = this.view.getSize();
+			var layers = this.layers,
+				size = this.view.getSize(),
+				node = createElement('svg', {
+					x: 0,
+					y: 0,
+					width: size.width,
+					height: size.height,
+					version: '1.1',
+					xmlns: 'http://www.w3.org/2000/svg',
+					xlink: 'http://www.w3.org/1999/xlink'
+				});
 			for (var i = 0, l = layers.length; i < l; i++)
 				node.appendChild(exportSVG(layers[i]));
-			return setAttributes(exportDefinitions(node), {
-				x: 0,
-				y: 0,
-				width: size.width,
-				height: size.height,
-				version: '1.1',
-				xmlns: 'http://www.w3.org/2000/svg',
-				xlink: 'http://www.w3.org/1999/xlink'
-			});
+			return exportDefinitions(node);
 		}
 	});
 };
