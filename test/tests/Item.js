@@ -551,11 +551,17 @@ test('Naming a removed item', function() {
 	var path = new Path();
 	path.remove();
 	path.name = 'test';
+	equals(function() {
+		return path.name;
+	}, 'test');
 });
 
 test('Naming a layer', function() {
 	var layer = new Layer();
 	layer.name = 'test';
+	equals(function() {
+		return layer.name;
+	}, 'test');
 });
 
 test('Cloning a linked size', function() {

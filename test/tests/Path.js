@@ -281,4 +281,7 @@ test('Path#fullySelected', function() {
 test('Simplifying a path with three segments of the same position should not throw an error', function() {
 	var path = new Path([20, 20], [20, 20], [20, 20]);
 	path.simplify();
+	equals(function() {
+		return path.segments.length;
+	}, 1);
 });
