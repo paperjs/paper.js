@@ -168,9 +168,20 @@ new function() {
 			children = item._children;
 		var node = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
-			var child = exportSVG(children[i]);
-			if (child)
-				node.appendChild(child);
+			var child = children[i];
+			var childNode = exportSVG(child);
+			if (childNode) {
+				if (child.isClipMask()) {
+					var clip = createElement('clipPath');
+					clip.appendChild(childNode);
+					setDefinition(child, clip, 'clip');
+					setAttributes(node, {
+						'clip-path': 'url(#' + clip.id + ')'
+					});
+				} else {
+					node.appendChild(childNode);
+				}
+			}
 		}
 		return node;
 	}
@@ -444,13 +455,15 @@ new function() {
 	function getDefinition(item) {
 		if (!definitions)
 			definitions = { ids: {}, svgs: {} };
-		return definitions.svgs[item._id];
+		return item && definitions.svgs[item._id];
 	}
 
-	function setDefinition(item, node) {
+	function setDefinition(item, node, type) {
+		if (!definitions)
+			getDefinition();
 		// Have different id ranges per type
-		var type = item._type,
-			id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
+		type = type || item._type;
+		var id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
 		// Give the svg node an ide, and link to it from the item id.
 		node.id = type + '-' + id;
 		definitions.svgs[item._id] = node;
