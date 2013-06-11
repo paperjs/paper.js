@@ -101,11 +101,9 @@ test('getting group styles', function() {
 });
 
 test('getting group styles 2', function() {
-	var star = new Path.Star({
+	var star = new Path.Circle({
 	   center: [100, 100],
-	   points: 6,
-	   radius1: 20,
-	   radius2: 40,
+	   radius: 40,
 	   fillColor: 'red'
 	});
 
