@@ -176,7 +176,7 @@ var Style = Base.extend(new function() {
 			}
 			for (var i = 0, l = children.length; i < l; i++) {
 				var childValue = children[i]._style[get]();
-				if (!value) {
+				if (i === 0) {
 					value = childValue;
 				} else if (!Base.equals(value, childValue)) {
 					// If there is another item with a different
