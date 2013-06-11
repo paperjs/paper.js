@@ -10,13 +10,14 @@
  * All rights reserved.
  */
 
-// Register a jsDump parser for Base and override object parser to handle it
-
-var objectParser = QUnit.jsDump.parsers.object;
-
+// Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
 	return obj.toString();
 });
+
+// Override the default object parser to handle Base objects.
+// We need to keep a reference to the previous implementation.
+var objectParser = QUnit.jsDump.parsers.object;
 
 QUnit.jsDump.setParser('object', function (obj, stack) {
 	return (obj instanceof Base
