@@ -100,6 +100,28 @@ test('getting group styles', function() {
 	compareColors(group.fillColor, 'black', 'group.fillColor');
 });
 
+test('getting group styles 2', function() {
+	var star = new Path.Star({
+	   center: [100, 100],
+	   points: 6,
+	   radius1: 20,
+	   radius2: 40,
+	   fillColor: 'red'
+	});
+
+	var circle = new Path.Circle({
+	   center: [100, 100],
+	   radius: 25,
+	   strokeColor: 'black'
+	});
+	// Create a group of the two items and clip it:
+	var group = new Group(circle, star);
+
+	equals(function() {
+		return group.fillColor;
+	}, undefined);
+});
+
 test('setting group styles', function() {
 	var group = new Group();
 	var path = new Path();
