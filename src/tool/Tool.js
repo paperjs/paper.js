@@ -324,7 +324,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
 	_fireEvent: function(type, event) {
 		// Handle items marked in removeOn*() calls first,.
-		var sets = Tool._removeSets;
+		var sets = paper.project._removeSets;
 		if (sets) {
 			// Always clear the drag set on mouseup
 			if (type === 'mouseup')

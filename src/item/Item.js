@@ -3072,7 +3072,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		for (var name in obj) {
 			if (obj[name]) {
 				var key = 'mouse' + name,
-					sets = Tool._removeSets = Tool._removeSets || {};
+					project = this._project,
+					sets = project._removeSets = project._removeSets || {};
 				sets[key] = sets[key] || {};
 				sets[key][this._id] = this;
 			}
