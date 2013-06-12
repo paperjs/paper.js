@@ -1594,10 +1594,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	_contains: function(point) {
+		var closed = this._closed;
 		// If the path is not closed, we should not bail out in case it has a
 		// fill color!
-		var hasFill = this.hasFill();
-		if (!this._closed && !hasFill
+		if (!closed && !this.hasFill()
 				// We need to call the internal _getBounds, to get non-
 				// transformed bounds.
 				|| !this._getBounds('getRoughBounds')._containsPoint(point))
@@ -1615,7 +1615,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 			crossings = 0,
 			// Reuse one array for root-finding, give garbage collector a break
 			roots = new Array(3),
-			previous = curves[curves.length - 1];
+			last = closed
+					? curves[curves.length - 1]
+					// Create a straight closing line for open paths, just like
+					// how filling open paths works.
+					: new Curve(segments[segments.length - 1]._point,
+						segments[0]._point),
+			previous = last;
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var curve = curves[i];
 			if (!curve.isZero()) {
@@ -1623,11 +1629,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 				previous = curve;
 			}
 		}
-		// TODO: Do not close open path for contains(), but create a straight
-		// closing lines instead, just like how filling open paths works.
-		if (!this._closed && hasFill)
-			crossings += Curve.create(this, segments[segments.length - 1],
-					segments[0])._getCrossings(point, previous, roots);
+		if (!closed)
+			crossings += last._getCrossings(point, previous, roots);
 		return (crossings & 1) === 1;
 	},
 
