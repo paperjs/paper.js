@@ -155,8 +155,10 @@ var Size = Base.extend(/** @lends Size# */{
 	 * console.log(size != new Size(1, 1)); // true
 	 */
 	equals: function(size) {
-		size = Size.read(arguments);
-		return this.width == size.width && this.height == size.height;
+		return size === this || size && (this.width === size.width
+				&& this.height === size.height
+				|| Array.isArray(size) && this.width === size[0]
+					&& this.height === size[1]) || false;
 	},
 
 	/**

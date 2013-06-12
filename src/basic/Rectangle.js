@@ -201,9 +201,11 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @return {Boolean} {@true if the rectangles are equal}
 	 */
 	equals: function(rect) {
-		rect = Rectangle.read(arguments);
-		return this.x == rect.x && this.y == rect.y
-				&& this.width == rect.width && this.height == rect.height;
+		return rect === this || rect && (this.x === rect.x && this.y === rect.y
+				&& this.width === rect.width && this.height=== rect.height
+				|| Array.isArray(rect) && this.x === rect[0]
+					&& this.y === rect[1] && this.width === rect[2]
+					&& this.height === rect[3]) || false;
 	},
 
 	/**

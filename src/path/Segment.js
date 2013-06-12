@@ -413,7 +413,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 	},
 
 	equals: function(segment) {
-		return segment == this || segment
+		return segment === this || segment
 				&& this._point.equals(segment._point)
 				&& this._handleIn.equals(segment._handleIn)
 				&& this._handleOut.equals(segment._handleOut);
