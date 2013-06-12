@@ -2867,9 +2867,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// over their fill.
 		// Exclude Raster items since they never draw a stroke and handle
 		// opacity by themselves (they also don't call _setStyles)
-		var parentCtx, itemOffset, prevOffset;
-		if (this._blendMode !== 'normal' || this._opacity < 1
-				&& this._type !== 'raster' && (this._type !== 'path'
+		var blending = this._blendMode !== 'normal',
+			parentCtx, itemOffset, prevOffset;
+		if (blending || this._opacity < 1 && this._type !== 'raster'
+				&& (this._type !== 'path'
 					|| this.getFillColor() && this.getStrokeColor())) {
 			// Apply the paren't global matrix to the calculation of correct
 			// bounds.
@@ -2895,6 +2896,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			ctx.translate(-itemOffset.x, -itemOffset.y);
 		// Apply globalMatrix when blitting into temporary canvas.
 		(parentCtx ? globalMatrix : this._matrix).applyToContext(ctx);
+		// If we're blending and a clipItem is defined for the current rendering
+		// loop, we need to draw the clip item again into the separate canvas.
+		if (blending && param.clipItem)
+			param.clipItem.draw(ctx, param.extend({ clip: true }));
 		this._draw(ctx, param);
 		ctx.restore();
 		transforms.pop();
@@ -2907,7 +2912,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			param.offset = prevOffset;
 			// If the item has a blendMode, use BlendMode#process to
 			// composite its canvas on the parentCanvas.
-			if (this._blendMode !== 'normal') {
+			if (blending) {
 				// The pixel offset of the temporary canvas to the parent
 				// canvas.
 				BlendMode.process(this._blendMode, ctx, parentCtx,
