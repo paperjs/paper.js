@@ -286,12 +286,17 @@ var Curve = Base.extend(/** @lends Curve# */{
 				&& this._segment2._handleIn.isZero();
 	},
 
+	isZero: function() {
+		return this._segment1._point.equals(this._segment2._point)
+				&& this.isLinear();
+	},
+
 	getIntersections: function(curve) {
 		return Curve.getIntersections(this.getValues(), curve.getValues(),
 				this, curve, []);
 	},
 
-	getCrossings: function(point, roots) {
+	_getCrossings: function(point, previous, roots) {
 		// Implementation of the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		// Solve the y-axis cubic polynomial for point.y and count all solutions
@@ -304,8 +309,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 
 		// Checks the y-slope between the current curve and the previous for a
 		// change of orientation, when a solution is found at t == 0
-		function changesOrientation(curve, tangent) {
-			return Curve.evaluate(curve.getPrevious().getValues(), 1, true, 1).y
+		function changesOrientation(tangent) {
+			return Curve.evaluate(previous.getValues(), 1, true, 1).y
 					* tangent.y > 0;
 		}
 
@@ -343,7 +348,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 							// Handle special case where point is on a corner,
 							// in which case this crossing is skipped if both
 							// tangents have the same orientation.
-							&& (t > tolerance || changesOrientation(this, tan)))
+							&& (t > tolerance || changesOrientation(tan)))
 								continue;
 					} else  {
 						// Skip touching stationary points:
@@ -352,7 +357,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 							// close to 0 and not changing vertical orientation
 							// from the previous curve, do not count this root,
 							// as it's touching a corner.
-							|| t < tolerance && !changesOrientation(this, tan))
+							|| t < tolerance && !changesOrientation(tan))
 								continue;
 					}
 					crossings++;

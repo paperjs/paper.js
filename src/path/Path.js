@@ -1614,14 +1614,20 @@ var Path = PathItem.extend(/** @lends Path# */{
 			segments = this._segments,
 			crossings = 0,
 			// Reuse one array for root-finding, give garbage collector a break
-			roots = new Array(3);
-		for (var i = 0, l = curves.length; i < l; i++)
-			crossings += curves[i].getCrossings(point, roots);
+			roots = new Array(3),
+			previous = curves[curves.length - 1];
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var curve = curves[i];
+			if (!curve.isZero()) {
+				crossings += curve._getCrossings(point, previous, roots);
+				previous = curve;
+			}
+		}
 		// TODO: Do not close open path for contains(), but create a straight
 		// closing lines instead, just like how filling open paths works.
 		if (!this._closed && hasFill)
 			crossings += Curve.create(this, segments[segments.length - 1],
-					segments[0]).getCrossings(point, roots);
+					segments[0])._getCrossings(point, previous, roots);
 		return (crossings & 1) === 1;
 	},
 
