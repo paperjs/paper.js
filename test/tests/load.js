@@ -42,6 +42,8 @@
 
 /*#*/ include('Raster.js');
 
+/*#*/ include('TextItem.js');
+
 /*#*/ include('HitResult.js');
 
 /*#*/ include('SVGImport.js');
