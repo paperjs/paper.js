@@ -322,9 +322,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		return true;
 	},
 
-	fire: function fire(type, event) {
-		// Override Callback#fire() so we can handle items marked in removeOn*()
-		// calls first,.
+	_fireEvent: function(type, event) {
+		// Handle items marked in removeOn*() calls first,.
 		var sets = Tool._removeSets;
 		if (sets) {
 			// Always clear the drag set on mouseup
@@ -346,7 +345,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 				sets[type] = null;
 			}
 		}
-		return fire.base.call(this, type, event);
+		return this.responds(type)
+				&& this.fire(type, new ToolEvent(this, type, event));
 	},
 
 	_onHandleEvent: function(type, point, event) {
@@ -357,8 +357,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		switch (type) {
 		case 'mousedown':
 			this._updateEvent(type, point, null, null, true, false, false);
-			if (this.responds(type))
-				called = this.fire(type, new ToolEvent(this, type, event));
+			called = this._fireEvent(type, event);
 			break;
 		case 'mousedrag':
 			// In order for idleInterval drag events to work, we need to not
@@ -373,8 +372,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 				matchMaxDistance = false;
 			while (this._updateEvent(type, point, this.minDistance,
 					this.maxDistance, false, needsChange, matchMaxDistance)) {
-				if (this.responds(type))
-					called = this.fire(type, new ToolEvent(this, type, event));
+				called = this._fireEvent(type, event) || called;
 				needsChange = true;
 				matchMaxDistance = true;
 			}
@@ -385,14 +383,11 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 			if (!point.equals(this._point)
 					&& this._updateEvent('mousedrag', point, this.minDistance,
 							this.maxDistance, false, false, false)) {
-				if (this.responds('mousedrag'))
-					called = this.fire('mousedrag',
-							new ToolEvent(this, type, event));
+				called = this._fireEvent('mousedrag', event);
 			}
 			this._updateEvent(type, point, null, this.maxDistance, false,
 					false, false);
-			if (this.responds(type))
-				called = this.fire(type, new ToolEvent(this, type, event));
+			called = this._fireEvent(type, event) || called;
 			// Start with new values for 'mousemove'
 			this._updateEvent(type, point, null, null, true, false, false);
 			this._firstMove = true;
@@ -400,8 +395,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 		case 'mousemove':
 			while (this._updateEvent(type, point, this.minDistance,
 					this.maxDistance, this._firstMove, true, false)) {
-				if (this.responds(type))
-					called = this.fire(type, new ToolEvent(this, type, event));
+				called = this._fireEvent(type, event) || called;
 				this._firstMove = false;
 			}
 			break;
