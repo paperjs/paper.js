@@ -259,8 +259,19 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 
 	setSize: function(size) {
 		size = Size.read(arguments);
+		this._fixed = this._fixed || {};
+		if (this._fixed.centerX)
+			this.x += (this.width - size.width) / 2;
+		else if (this._fixed.right)
+			this.x += this.width - size.width;
+		if (this._fixed.centerY)
+			this.y += (this.height - size.height) / 2;
+		else if (this._fixed.bottom)
+			this.y += this.height - size.height;
 		this.width = size.width;
 		this.height = size.height;
+		this._fixed.width = true;
+		this._fixed.height = true;
 	},
 
 	/**
@@ -277,8 +288,11 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	setLeft: function(left) {
-		this.width -= left - this.x;
+		this._fixed = this._fixed || {};
+		if (!this._fixed.width)
+			this.width -= left - this.x;
 		this.x = left;
+		this._fixed.left = true;
 	},
 
 	/**
@@ -293,8 +307,11 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	setTop: function(top) {
-		this.height -= top - this.y;
+		this._fixed = this._fixed || {};
+		if (!this._fixed.height)
+			this.height -= top - this.y;
 		this.y = top;
+		this._fixed.top = true;
 	},
 
 	/**
@@ -309,7 +326,12 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	setRight: function(right) {
-		this.width = right - this.x;
+		this._fixed = this._fixed || {};
+		if (this._fixed.width)
+			this.x = right - this.width;
+		else
+			this.width = right - this.x;
+		this._fixed.right = true;
 	},
 
 	/**
@@ -324,7 +346,11 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	setBottom: function(bottom) {
-		this.height = bottom - this.y;
+		if (this._fixed && this._fixed.height)
+			this.y = bottom - this.height;
+		else
+			this.height = bottom - this.y;
+		this._fixed.bottom = true;
 	},
 
 	/**
@@ -339,6 +365,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	setCenterX: function(x) {
+		this._fixed = this._fixed || {};
+		this._fixed.centerX = true;
 		this.x = x - this.width * 0.5;
 	},
 
@@ -354,6 +382,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	setCenterY: function(y) {
+		this._fixed = this._fixed || {};
+		this._fixed.centerY = true;
 		this.y = y - this.height * 0.5;
 	},
 
