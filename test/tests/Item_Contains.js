@@ -48,6 +48,13 @@ test('Path#contains() (Round Rectangle)', function() {
 	testPoint(path, new Point(100, 20), true);
 });
 
+test('Path#contains() (Open Circle)', function() {
+	var path = new Path.Circle([100, 100], 100);
+	path.closed = false;
+	path.fillColor = '#ff0000';
+	testPoint(path, new Point(40, 160), false);
+});
+
 test('CompoundPath#contains() (Donut)', function() {
 	var path = new CompoundPath([
 		new Path.Circle([0, 0], 50),
