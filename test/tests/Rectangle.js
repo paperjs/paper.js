@@ -256,9 +256,19 @@ test('new Rectangle(object)', function() {
 	}, '{ x: 0, y: 0, width: 100, height: 200 }');
 
 	equals(function() {
-		return new Rectangle({
+		var rect = new Rectangle({
 			topLeft: [100, 50],
 			size: [100, 200]
+		});
+		rect.topLeft = [100, 50];
+		rect.size = [100, 200];
+		return rect.toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			size: [100, 200],
+			topLeft: [100, 50]
 		}).toString();
 	}, '{ x: 100, y: 50, width: 100, height: 200 }');
 
@@ -267,6 +277,63 @@ test('new Rectangle(object)', function() {
 			topRight: [200, 50],
 			size: [100, 200]
 		}).toString();
-	}, '{ x: 100, y: -150, width: 100, height: 200 }');
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
 
+	equals(function() {
+		return new Rectangle({
+			size: [100, 200],
+			topRight: [200, 50]
+		}).toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			bottomRight: [200, 250],
+			size: [100, 200]
+		}).toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			size: [100, 200],
+			bottomRight: [200, 250]
+		}).toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			bottomLeft: [100, 250],
+			size: [100, 200]
+		}).toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			size: [100, 200],
+			bottomLeft: [100, 250]
+		}).toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			topRight: [200, 50],
+			bottomLeft: [100, 250]
+		}).toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			topLeft: [100, 50],
+			bottomRight: [200, 250]
+		}).toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
+
+	equals(function() {
+		return new Rectangle({
+			top: 50,
+			right: 200,
+			bottom: 250,
+			left: 100
+		}).toString();
+	}, '{ x: 100, y: 50, width: 100, height: 200 }');
 });
