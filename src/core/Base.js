@@ -10,6 +10,15 @@
  * All rights reserved.
  */
 
+// First check if Function#name works, and if not, fix it by injecting a getter
+if (!(function f() {}).name) {
+	Base.define(Function.prototype, 'name', {
+		get: function() {
+			return this.toString().match(/^function\s?(\w*)\(/)[1];
+		}
+	});
+}
+
 /**
  * @name Base
  * @class
