@@ -299,12 +299,14 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		this._drawCount++;
 		ctx.save();
 		matrix.applyToContext(ctx);
-		var param = {
+		// Use Base.merge() so we can use param.extend() to easily override
+		// values
+		var param = Base.merge({
 			offset: new Point(0, 0),
 			// A stack of concatenated matrices, to keep track of the current
 			// global matrix, since Canvas is not able tell us (yet).
 			transforms: [matrix]
-		};
+		});
 		for (var i = 0, l = this.layers.length; i < l; i++)
 			this.layers[i].draw(ctx, param);
 		ctx.restore();

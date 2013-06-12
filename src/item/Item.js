@@ -1270,7 +1270,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
 		ctx.save();
 		matrix.applyToContext(ctx);
-		this.draw(ctx, { transforms: [matrix] });
+		// See Project#draw() for an explanation of Base.merge()
+		this.draw(ctx, Base.merge({ transforms: [matrix] }));
 		var raster = new Raster(canvas);
 		raster.setBounds(bounds);
 		ctx.restore();

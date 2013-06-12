@@ -1809,7 +1809,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 	return {
 		_draw: function(ctx, param) {
-			if (!param.compound)
+			var clip = param.clip,
+				compound = param.compound;
+			if (!compound)
 				ctx.beginPath();
 
 			// We can access styles directly on the internal _styles object,
@@ -1824,14 +1826,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 			// Prepare the canvas path if we have any situation that requires it
 			// to be defined.
-			if (fillColor || strokeColor && !drawDash || param.compound
-					|| param.clip)
+			if (fillColor || strokeColor && !drawDash || compound || clip)
 				drawSegments(ctx, this);
 
 			if (this._closed)
 				ctx.closePath();
 
-			if (!param.clip && !param.compound && (fillColor || strokeColor)) {
+			if (!clip && !compound && (fillColor || strokeColor)) {
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
 				this._setStyles(ctx);

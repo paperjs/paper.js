@@ -241,10 +241,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		if (children.length === 0)
 			return;
 		ctx.beginPath();
-		param.compound = true;
+		param = param.extend({ compound: true });
 		for (var i = 0, l = children.length; i < l; i++)
 			children[i].draw(ctx, param);
-		param.compound = false;
 		if (!param.clip) {
 			this._setStyles(ctx);
 			if (style.getFillColor())

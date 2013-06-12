@@ -167,16 +167,14 @@ var Group = Item.extend(/** @lends Group# */{
 	},
 
 	_draw: function(ctx, param) {
-		var clipItem = this._getClipItem();
-		if (clipItem) {
-			param.clip = true;
-			clipItem.draw(ctx, param);
-			param.clip = false;
-		}
+		var clipItem = param.clipItem = this._getClipItem();
+		if (clipItem)
+			clipItem.draw(ctx, param.extend({ clip: true }));
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var item = this._children[i];
 			if (item !== clipItem)
 				item.draw(ctx, param);
 		}
+		param.clipItem = null;
 	}
 });
