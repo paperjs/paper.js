@@ -199,7 +199,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 */
 	equals: function(point) {
 		point = Point.read(arguments, 0, 0, true); // readNull
-		return this.x == point.x && this.y == point.y;
+		return point ? this.x == point.x && this.y == point.y : false;
 	},
 
 	/**
