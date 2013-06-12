@@ -352,7 +352,7 @@
 		if (! path instanceof CompoundPath || ! path instanceof Group) { return; }
 		var center = path.bounds.center;
 		var children = path.children, i ,len;
-		for (i = 0, len = children.length; i < len; i++) {
+		for (var i = 0, len = children.length; i < len; i++) {
 			var cCenter = children[i].bounds.center;
 			var vec = cCenter.subtract(center);
 			vec = (vec.isClose([0,0], 0.5))? vec : vec.normalize(distance);
@@ -386,11 +386,11 @@
 	function annotatePath(path, t, c, tc, remove) {
 		if (!path) return;
 		var crvs = path.curves;
-		for (i = crvs.length - 1; i >= 0; i--) {
+		for (var i = crvs.length - 1; i >= 0; i--) {
 			annotateCurve(crvs[i], t, c, tc, remove);
 		}
 		var segs = path.segments;
-		for (i = segs.length - 1; i >= 0; i--) {
+		for (var i = segs.length - 1; i >= 0; i--) {
 			annotateSegment(segs[i], t, c, tc, remove, true);
 		}
 	}
