@@ -45,15 +45,15 @@ function equals(actual, expected, message, tolerance) {
 	if (tolerance !== undefined) {
 		var ok = Math.abs(actual - expected) <= tolerance;
 		return QUnit.push(ok, ok ? expected : actual, expected, message);
+	} else if (actual && actual.equals) {
+		// Support calling of #equals() on the actual or expected value, and
+		// automatically convert displayed values to strings.
+		return QUnit.push(actual.equals(expected), actual, expected, message);
 	} else if (expected && expected.equals) {
-		// Support calling of #equals() on the expected value, and automatically
-		// convert displayed values to strings.
-		return QUnit.push(expected.equals(actual), actual + '', expected + '',
-				message);
-	} else {
-		// Let's be strict
-		return strictEqual(actual, expected, message);
+		return QUnit.push(expected.equals(actual), actual, expected, message);
 	}
+	// Let's be strict
+	return strictEqual(actual, expected, message);
 }
 
 function test(testName, expected) {
