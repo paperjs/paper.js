@@ -132,5 +132,5 @@ return paper;
 };
 
 // Support AMD (e.g. require.js)
-if (define && define.amd)
+if (typeof define === 'function' && define.amd)
 	define(paper);
