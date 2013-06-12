@@ -198,7 +198,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 * console.log(point != new Point(1, 1)); // true
 	 */
 	equals: function(point) {
-		point = Point.read(arguments);
+		point = Point.read(arguments, 0, 0, true); // readNull
 		return this.x == point.x && this.y == point.y;
 	},
 

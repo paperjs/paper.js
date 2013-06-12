@@ -158,7 +158,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		// Do not modify scale, center, since that would arguments of which
 		// we're reading from!
 		var _scale = Point.read(arguments),
-			_center = Point.read(arguments, 0, 0, false, true); // readNull
+			_center = Point.read(arguments, 0, 0, true); // readNull
 		if (_center)
 			this.translate(_center);
 		this._a *= _scale.x;
@@ -263,7 +263,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		// Do not modify point, center, since that would arguments of which
 		// we're reading from!
 		var _point = Point.read(arguments),
-			_center = Point.read(arguments, 0, 0, false, true); // readNull
+			_center = Point.read(arguments, 0, 0, true); // readNull
 		if (_center)
 			this.translate(_center);
 		var a = this._a,

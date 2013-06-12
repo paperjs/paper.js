@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-// First check if Function#name works, and if not, fix it by injecting a getter
+// First see if Function#name works, and emulate it through an accessor if not.
 if (!(function f() {}).name) {
 	Base.define(Function.prototype, 'name', {
 		get: function() {
@@ -160,7 +160,7 @@ Base.inject(/** @lends Base# */{
 		 * @param {Boolean} clone controls wether passed objects should be
 		 *        cloned if they are already provided in the required type
 		 */
-		read: function(list, start, length, clone, readNull) {
+		read: function(list, start, length, readNull, clone) {
 			// See if it's called directly on Base, and if so, read value and
 			// return without object conversion.
 			if (this === Base) {
@@ -216,12 +216,13 @@ Base.inject(/** @lends Base# */{
 		 * @param {Boolean} clone controls wether passed objects should be
 		 *        cloned if they are already provided in the required type
 		 */
-		readAll: function(list, start, clone) {
+		readAll: function(list, start, readNull, clone) {
 			var res = [], entry;
 			for (var i = start || 0, l = list.length; i < l; i++) {
 				res.push(Array.isArray(entry = list[i])
-					? this.read(entry, 0, 0, clone) // 0 for length = max
-					: this.read(list, i, 1, clone));
+						// lenghh = 0 for length = max
+						? this.read(entry, 0, 0, readNull, clone)
+						: this.read(list, i, 1, readNull, clone));
 			}
 			return res;
 		},
@@ -237,10 +238,10 @@ Base.inject(/** @lends Base# */{
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {String} name the property name to read from.
 		 */
-		readNamed: function(list, name, start, length, clone, readNull) {
+		readNamed: function(list, name, start, length, readNull, clone) {
 			var value = this.getNamed(list, name);
 			return this.read(value != null ? [value] : list, start, length,
-					clone, readNull);
+					readNull, clone);
 		},
 
 		/**

@@ -22,7 +22,7 @@ Path.inject({ statics: new function() {
 
 	function createRectangle(/* rectangle */) {
 		var rect = Rectangle.readNamed(arguments, 'rectangle'),
-			radius = Size.readNamed(arguments, 'radius', 0, 0, false, true), // readNull
+			radius = Size.readNamed(arguments, 'radius', 0, 0, true), // readNull
 			bl = rect.getBottomLeft(true),
 			tl = rect.getTopLeft(true),
 			tr = rect.getTopRight(true),

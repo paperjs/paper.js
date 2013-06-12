@@ -227,7 +227,7 @@ var Color = Base.extend(new function() {
 						var current = this._components[0];
 						value = Gradient.read(
 								Array.isArray(value) ? value : arguments,
-								0, 0, false, true); // readNull
+								0, 0, true); // readNull
 						if (current !== value) {
 							if (current)
 								current._removeOwner(this);
@@ -244,9 +244,9 @@ var Color = Base.extend(new function() {
 						}
 						: type === 'gradient'
 							? function(value) {
-								// ..., clone, readNull);
-								return Point.read(arguments, 0, 0, true,
-										name === 'highlight');
+								// ..., readNull, clone);
+								return Point.read(arguments, 0, 0,
+										name === 'highlight', true);
 							}
 							: function(value) {
 								return isNaN(value) ? 0
