@@ -15,6 +15,8 @@
  * @namespace
  */
 
+// Locally override define, so acorn.js does not export itself
+var define = null;
 /*#*/ if (options.parser == 'acorn') {
 /*#*/ include('../../lib/acorn-min.js');
 /*#*/ } else if (options.parser == 'esprima') {

@@ -130,3 +130,7 @@ var paper = new function() {
 /*#*/ include('export.js');
 return paper;
 };
+
+// Support AMD (e.g. require.js)
+if (define && define.amd)
+	define(paper);
