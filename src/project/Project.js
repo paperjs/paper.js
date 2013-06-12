@@ -315,12 +315,16 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		if (this._selectedItemCount > 0) {
 			ctx.save();
 			ctx.strokeWidth = 1;
-			// TODO: use Layer#color
-			ctx.strokeStyle = ctx.fillStyle = '#009dec';
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id];
 				if (item._drawCount === this._drawCount
 						&& (item._drawSelected || item._boundsSelected)) {
+					// Allow definition of selected color on a per item and per
+					// layer level, with a fallback to #009dec
+					var color = item.getSelectedColor()
+							|| item.getLayer().getSelectedColor();
+					ctx.strokeStyle = ctx.fillStyle = color
+							? color.toCanvasStyle(ctx) : '#009dec';
 					var mx = item._globalMatrix;
 					if (item._drawSelected)
 						item._drawSelected(ctx, mx);

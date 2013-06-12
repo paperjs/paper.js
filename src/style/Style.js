@@ -72,6 +72,7 @@ var Style = Base.extend(new function() {
 		// path styles
 		fillColor: undefined,
 		strokeColor: undefined,
+		selectedColor: undefined,
 		strokeWidth: 1,
 		strokeCap: 'butt',
 		strokeJoin: 'miter',
@@ -406,6 +407,17 @@ var Style = Base.extend(new function() {
 	 *
 	 * // Set the fill color of the circle to RGB red:
 	 * circle.fillColor = new Color(1, 0, 0);
+	 */
+
+	/**
+	 * {@grouptitle Selection Style}
+	 *
+	 * The color the item is highlighted with when selected. If the item does
+	 * not specify its own color, the color defined by its layer is used instead.
+	 *
+	 * @name Style#selectedColor
+	 * @property
+	 * @type Color
 	 */
 
 	/**

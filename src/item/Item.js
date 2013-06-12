@@ -2013,6 +2013,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * circle.fillColor = new Color(1, 0, 0);
 	 */
 
+	/**
+	 * {@grouptitle Selection Style}
+	 *
+	 * The color the item is highlighted with when selected. If the item does
+	 * not specify its own color, the color defined by its layer is used instead.
+	 *
+	 * @name Style#selectedColor
+	 * @property
+	 * @type Color
+	 */
+
 	// DOCS: Document the different arguments that this function can receive.
 	/**
 	 * {@grouptitle Transform Functions}
