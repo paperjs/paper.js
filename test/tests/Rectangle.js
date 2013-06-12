@@ -256,13 +256,10 @@ test('new Rectangle(object)', function() {
 	}, '{ x: 0, y: 0, width: 100, height: 200 }');
 
 	equals(function() {
-		var rect = new Rectangle({
+		return new Rectangle({
 			topLeft: [100, 50],
 			size: [100, 200]
-		});
-		rect.topLeft = [100, 50];
-		rect.size = [100, 200];
-		return rect.toString();
+		}).toString();
 	}, '{ x: 100, y: 50, width: 100, height: 200 }');
 
 	equals(function() {
