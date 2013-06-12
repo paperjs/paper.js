@@ -725,7 +725,7 @@ var Color = Base.extend(new function() {
 		/**
 		 * @return {String} A css string representation of the color.
 		 */
-		toCss: function(noAlpha) {
+		toCSS: function(noAlpha) {
 			var components = this._convert('rgb'),
 				alpha = noAlpha || this._alpha == null ? 1 : this._alpha;
 			components = [
@@ -744,7 +744,7 @@ var Color = Base.extend(new function() {
 				return this._canvasStyle;
 			// Normal colors are simply represented by their css string.
 			if (this._type !== 'gradient')
-				return this._canvasStyle = this.toCss();
+				return this._canvasStyle = this.toCSS();
 			// Gradient code form here onwards
 			var components = this._components,
 				gradient = components[0],

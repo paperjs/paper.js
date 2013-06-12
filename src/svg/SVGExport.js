@@ -382,7 +382,7 @@ new function() {
 					alpha = stopColor.getAlpha();
 				attrs = {
 					offset: stop._rampPoint,
-					'stop-color': stopColor.toCss(true)
+					'stop-color': stopColor.toCSS(true)
 				};
 				// See applyStyle for an explanation of why there are separated
 				// opacity / color attributes.
@@ -432,7 +432,7 @@ new function() {
 					: entry.type === 'color'
 						? value.gradient
 							? exportGradient(value, item)
-							: value.toCss(true) // false for noAlpha, see above	
+							: value.toCSS(true) // false for noAlpha, see above	
 						: entry.type === 'array'
 							? value.join(',')
 							: entry.type === 'number'

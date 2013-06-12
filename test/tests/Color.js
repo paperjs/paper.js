@@ -16,38 +16,38 @@ test('Set named color', function() {
 	var path = new Path();
 	path.fillColor = 'red';
 	compareColors(path.fillColor, new Color(1, 0, 0));
-	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
+	equals(path.fillColor.toCSS(), 'rgb(255, 0, 0)');
 });
 
 test('Set color to hex', function() {
 	var path = new Path();
 	path.fillColor = '#ff0000';
 	compareColors(path.fillColor, new Color(1, 0, 0));
-	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
+	equals(path.fillColor.toCSS(), 'rgb(255, 0, 0)');
 
 	var path = new Path();
 	path.fillColor = '#f00';
 	compareColors(path.fillColor, new Color(1, 0, 0));
-	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
+	equals(path.fillColor.toCSS(), 'rgb(255, 0, 0)');
 });
 
 test('Set color to object', function() {
 	var path = new Path();
 	path.fillColor = { red: 1, green: 0, blue: 1};
 	compareColors(path.fillColor, new Color(1, 0, 1));
-	equals(path.fillColor.toCss(), 'rgb(255, 0, 255)');
+	equals(path.fillColor.toCSS(), 'rgb(255, 0, 255)');
 
 	var path = new Path();
 	path.fillColor = { gray: 0.2 };
 	compareColors(path.fillColor, new Color(0.2));
-	equals(path.fillColor.toCss(), 'rgb(51, 51, 51)');
+	equals(path.fillColor.toCSS(), 'rgb(51, 51, 51)');
 });
 
 test('Set color to array', function() {
 	var path = new Path();
 	path.fillColor = [1, 0, 0];
 	compareColors(path.fillColor, new Color(1, 0, 0));
-	equals(path.fillColor.toCss(), 'rgb(255, 0, 0)');
+	equals(path.fillColor.toCSS(), 'rgb(255, 0, 0)');
 });
 
 test('Creating Colors', function() {
