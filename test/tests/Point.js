@@ -88,3 +88,17 @@ test('getDirectedAngle(point)', function() {
 	var angle = new Point(10, -10).getDirectedAngle(new Point(1, 0));
 	equals(angle, 45);
 });
+
+test('equals()', function() {
+	equals(function() {
+		return new Point(10, 10).equals([10, 10]);
+	}, true);
+
+	equals(function() {
+		return new Point(0, 0).equals({});
+	}, false);
+
+	equals(function() {
+		return new Point(0, 0).equals(null);
+	}, false);
+});
