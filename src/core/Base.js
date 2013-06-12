@@ -14,7 +14,7 @@
 if (!(function f() {}).name) {
 	Base.define(Function.prototype, 'name', {
 		get: function() {
-			return this.toString().match(/^function\s?(\w*)\(/)[1];
+			return this.toString().match(/^function\s*(\w*)\s*\(/)[1];
 		}
 	});
 }
