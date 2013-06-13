@@ -50,5 +50,5 @@ var CanvasProvider = {
 	 // release can receive either a canvas or a context.
 	release: function(obj) {
 		this.canvases.push(obj.canvas ? obj.canvas : obj);
-	},
+	}
 };

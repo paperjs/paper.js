@@ -240,7 +240,7 @@ var Style = Base.extend(new function() {
 		var size = this.getFontSize();
 		return (/[a-z]/i.test(size) ? size + ' ' : size + 'px ')
 				+ this.getFont();
-	},
+	}
 
 	// DOCS: why isn't the example code showing up?
 	/**
