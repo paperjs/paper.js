@@ -67,6 +67,13 @@ var Shape = Item.extend(/** @lends Shape# */{
 		}
 	},
 
+	_getBounds: function(getter, matrix) {
+		var rect = new Rectangle(this._size).setCenter(0, 0);
+		if (this.hasStroke())
+			rect = rect.expand(this.getStrokeWidth());
+		return matrix ? matrix._transformBounds(rect) : rect;
+	},
+
 	_contains: function _contains(point) {
 		switch (this._type) {
 		case 'rect':
@@ -77,13 +84,34 @@ var Shape = Item.extend(/** @lends Shape# */{
 		}
 	},
 
-	_getBounds: function(getter, matrix) {
-		var rect = new Rectangle(this._size).setCenter(0, 0);
-		return matrix ? matrix._transformBounds(rect) : rect;
-	},
-
 	_hitTest: function _hitTest(point, options) {
-		// TODO: Implement stroke!
+		if (this.hasStroke()) {
+			var type = this._type,
+				strokeWidth = this.getStrokeWidth();
+			switch (type) {
+			case 'rect':
+				// TODO: Implement stroke!
+				break;
+			case 'circle':
+			case 'ellipse':
+				var size = this._size,
+					width = size.width,
+					height = size.height,
+					radius;
+				if (type === 'ellipse') {
+					// Calculate ellipse radius at angle
+					var angle = point.getAngleInRadians(),
+						x = width * Math.sin(angle),
+						y = height * Math.cos(angle);
+					radius = width * height / (2 * Math.sqrt(x * x + y * y));
+				} else {
+					// Average half of width & height for radius...
+					radius = (width + height) / 4;
+				}
+				if (2 * Math.abs(point.getLength() - radius) <= strokeWidth)
+					return new HitResult('stroke', this);
+			}
+		}
 		return _hitTest.base.apply(this, arguments);
 	},
 
