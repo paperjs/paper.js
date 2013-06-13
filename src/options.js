@@ -19,6 +19,6 @@ var options = {
 	browser: true,
 	stats: true,
 	svg: true,
-	fatline: false,
+	fatline: true,
 	debug: false
 };

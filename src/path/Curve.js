@@ -869,7 +869,7 @@ statics: {
 				step /= 2;
 		}
 		var pt = Curve.evaluate(values, minT, true, 0);
-		return new CurveLocation(this, minT, pt, null, null,
+		return new CurveLocation(this, minT, pt, null, null, null,
 				point.getDistance(pt));
 	},
 
@@ -966,7 +966,7 @@ new function() { // Scope for methods that require numerical integration
 				a = 0;
 			if (b === undefined)
 				b = 1;
-			// if (p1 == c1 && p2 == c2):
+			// See if the curve is linear by checking p1 == c1 and p2 == c2
 			if (v[0] == v[2] && v[1] == v[3] && v[6] == v[4] && v[7] == v[5]) {
 				// Straight line
 				var dx = v[6] - v[0], // p2x - p1x
@@ -1030,13 +1030,14 @@ new function() { // Scope for methods that require numerical integration
 		}
 	};
 }, new function() { // Scope for intersection using bezier fat-line clipping
-	function addLocation(locations, curve1, t1, point, curve2, t2) {
+	function addLocation(locations, curve1, t1, point1, curve2, t2, point2) {
 		// Avoid duplicates when hitting segments (closed paths too)
 		var first = locations[0],
 			last = locations[locations.length - 1];
-		if ((!first || !point.equals(first._point))
-				&& (!last || !point.equals(last._point)))
-			locations.push(new CurveLocation(curve1, t1, point, curve2, t2));
+		if ((!first || !point1.equals(first._point))
+				&& (!last || !point1.equals(last._point)))
+			locations.push(
+					new CurveLocation(curve1, t1, point1, curve2, t2, point2));
 	}
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
@@ -1065,9 +1066,7 @@ new function() { // Scope for methods that require numerical integration
 		// degenerate case seperately, where fat-line clipping can become
 		// numerically unstable when one of the curves has converged to a point
 		// and the other hasn't.
-		while (iteration++ < 20
-				&& (Math.abs(range1[1] - range1[0]) > /*#=*/ Numerical.TOLERANCE
-				|| Math.abs(range2[1] - range2[0]) > /*#=*/ Numerical.TOLERANCE)) {
+		while (iteration++ < 20) {
 			// First we clip v2 with v1's fat-line
 			var range,
 				intersects1 = clipFatLine(part1, part2, range = range2.slice()),
@@ -1119,14 +1118,15 @@ new function() { // Scope for methods that require numerical integration
 				}
 			}
 			// We need to bailout of clipping and try a numerically stable
-			// method if both of the parameter ranges have converged reasonably well
-			//     (according to Numerical.TOLERANCE).
-			if (Math.abs(range1[1] - range1[0]) < /*#=*/ Numerical.TOLERANCE &&
-				Math.abs(range2[1] - range2[0]) < /*#=*/ Numerical.TOLERANCE) {
+			// method if both of the parameter ranges have converged reasonably
+			// well (according to Numerical.TOLERANCE).
+			if (Math.abs(range1[1] - range1[0]) <= /*#=*/ Numerical.TOLERANCE &&
+				Math.abs(range2[1] - range2[0]) <= /*#=*/ Numerical.TOLERANCE) {
 				var t1 = (range1[0] + range1[1]) / 2,
 					t2 = (range2[0] + range2[1]) / 2;
-				addLocation(locations, curve1, t1,
-						Curve.evaluate(v1, t1, true, 0), curve2, t2);
+				addLocation(locations,
+						curve1, t1, Curve.evaluate(v1, t1, true, 0),
+						curve2, t2, Curve.evaluate(v2, t2, true, 0));
 				break;
 			}
 		}
@@ -1330,10 +1330,9 @@ new function() { // Scope for methods that require numerical integration
 	 * line is on the X axis, and solve the implicit equations for the X axis
 	 * and the curve.
 	 */
-	function addCurveLineIntersections(v1, v2, curve1, curve2, locations, flip) {
-		if (flip === undefined)
-			flip = Curve.isLinear(v1);
-		var vc = flip ? v2 : v1,
+	function addCurveLineIntersections(v1, v2, curve1, curve2, locations) {
+		var flip = Curve.isLinear(v1),
+			vc = flip ? v2 : v1,
 			vl = flip ? v1 : v2,
 			l1x = vl[0], l1y = vl[1],
 			l2x = vl[6], l2y = vl[7],

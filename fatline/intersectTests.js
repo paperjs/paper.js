@@ -485,7 +485,7 @@ function testIntersections(path1, path2, caption, testname, testdata, nomark) {
 			fatTime: t2,
 			success: success
 		});
-		console.log(found);
+		console.log(ixsPaper.length, found);
 		if (!success) {
 			var ser = new XMLSerializer();
 			console.log('failcase:', ser.serializeToString(path1.exportSVG()),

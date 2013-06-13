@@ -61,7 +61,6 @@ var Numerical = new function() {
 	return {
 		TOLERANCE: 10e-6,
 		// Precision when comparing against 0
-		// TODO: Find a good value
 		EPSILON: 10e-12,
 		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
