@@ -10,15 +10,6 @@
  * All rights reserved.
  */
 
-// First see if Function#name works, and emulate it through an accessor if not.
-if (!(function f() {}).name) {
-	Base.define(Function.prototype, 'name', {
-		get: function() {
-			return this.toString().match(/^function\s*(\w*)\s*\(/)[1];
-		}
-	});
-}
-
 /**
  * @name Base
  * @class
