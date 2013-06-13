@@ -1637,18 +1637,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 			tolerance = options.tolerance || 0,
 			radius = (options.stroke && style.getStrokeColor()
 					? style.getStrokeWidth() / 2 : 0) + tolerance,
+			that = this,
 			loc,
 			res;
-		// If we're asked to query for segments, ends or handles, do all that
-		// before stroke or fill.
-		var coords = [],
-			that = this;
+
 		function checkPoint(seg, pt, name) {
 			// TODO: We need to transform the point back to the coordinate
 			// system of the DOM level on which the inquiry was started!
 			if (point.getDistance(pt) < tolerance)
 				return new HitResult(name, that, { segment: seg, point: pt });
 		}
+
 		function checkSegment(seg, ends) {
 			var point = seg._point;
 			// Note, when checking for ends, we don't also check for handles,
@@ -1659,6 +1658,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 					checkPoint(seg, point.add(seg._handleIn), 'handle-in') ||
 					checkPoint(seg, point.add(seg._handleOut), 'handle-out'));
 		}
+
+		// If we're asked to query for segments, ends or handles, do all that
+		// before stroke or fill.
 		if (options.ends && !options.segments && !this._closed) {
 			if (res = checkSegment(this.getFirstSegment(), true)
 					|| checkSegment(this.getLastSegment(), true))
@@ -1670,23 +1672,25 @@ var Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 		// If we're querying for stroke, perform that before fill
-		if (options.stroke && radius > 0)
+		if (options.stroke && radius > 0) {
 			loc = this.getNearestLocation(point);
+			// Check only for stroke radius for now.
+			// TODO: Implement checks for various stroke caps and joins!
+			// A simple solution could be to first implement stroke expansion
+			// and then use that to check if loc is close enough to a segment.
+			if (loc && loc._distance > radius)
+				loc = null;
+		}
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
 		// stroke.
-		if (!(loc && loc._distance <= radius) && options.fill
-				&& this.hasFill() && this.contains(point))
-			return new HitResult('fill', this);
-		// Now query stroke if we haven't already
-		if (!loc && options.stroke && radius > 0)
-			loc = this.getNearestLocation(point);
-		if (loc && loc._distance <= radius)
-			// TODO: Do we need to transform the location back to the coordinate
-			// system of the DOM level on which the inquiry was started?
-			return options.stroke
+		return !loc && options.fill && this.hasFill() && this.contains(point)
+				? new HitResult('fill', this)
+				: loc && options.stroke
+					// TODO: Do we need to transform loc back to the  coordinate
+					// system of the DOM level on which the inquiry was started?
 					? new HitResult('stroke', this, { location: loc })
-					: new HitResult('fill', this);
+					: null;
 	}
 
 	// TODO: intersects(item)
