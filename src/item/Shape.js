@@ -50,11 +50,11 @@ var Shape = Item.extend(/** @lends Shape# */{
 					kappa = Numerical.KAPPA,
 					cx = mx * kappa,
 					cy = my * kappa;
-				ctx.moveTo(0, my);
-				ctx.bezierCurveTo(0, my - cy, mx - cx, 0, mx, 0);
-				ctx.bezierCurveTo(mx + cx, 0, width, my - cy, width, my);
-				ctx.bezierCurveTo(width, my + cy, mx + cx, height, mx, height);
-				ctx.bezierCurveTo(mx - cx, height, 0, my + cy, 0, my);
+				ctx.moveTo(-mx, 0);
+				ctx.bezierCurveTo(-mx, -cy, -cx, -my, 0, -my);
+				ctx.bezierCurveTo(cx, -my, mx, -cy, mx, 0);
+				ctx.bezierCurveTo(mx, cy, cx, my, 0, my);
+				ctx.bezierCurveTo(-cx, my, -mx, cy, -mx, 0);
 				break;
 			}
 		}
