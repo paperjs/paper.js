@@ -69,7 +69,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 	_getBounds: function(getter, matrix) {
 		var rect = new Rectangle(this._size).setCenter(0, 0);
-		if (this.hasStroke())
+		if (getter !== 'getBounds' && this.hasStroke())
 			rect = rect.expand(this.getStrokeWidth());
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},
@@ -90,7 +90,11 @@ var Shape = Item.extend(/** @lends Shape# */{
 				strokeWidth = this.getStrokeWidth();
 			switch (type) {
 			case 'rect':
-				// TODO: Implement stroke!
+				var rect = new Rectangle(this._size).setCenter(0, 0),
+					outer = rect.expand(strokeWidth),
+					inner = rect.expand(-strokeWidth);
+				if (outer._containsPoint(point) && !inner._containsPoint(point))
+					return new HitResult('stroke', this);
 				break;
 			case 'circle':
 			case 'ellipse':
@@ -110,6 +114,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 				}
 				if (2 * Math.abs(point.getLength() - radius) <= strokeWidth)
 					return new HitResult('stroke', this);
+				break;
 			}
 		}
 		return _hitTest.base.apply(this, arguments);
