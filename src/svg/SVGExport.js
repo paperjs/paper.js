@@ -199,7 +199,7 @@ new function() {
 
 	function exportText(item) {
 		var attrs = getTransform(item, true),
-			style = item._style,
+			style = item.getStyle(),
 			font = style.getFont(),
 			fontSize = style.getFontSize();
 		if (font)
@@ -407,9 +407,9 @@ new function() {
 
 	function applyStyle(item, node) {
 		var attrs = {},
-			style = item._style,
+			style = item.getStyle(),
 			parent = item.getParent(),
-			parentStyle = parent && parent._style;
+			parentStyle = parent && parent.getStyle();
 
 		if (item._name != null)
 			attrs.id = item._name;

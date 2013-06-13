@@ -729,8 +729,8 @@ statics: {
 			if (!bounds) {
 				// Calculate the curve bounds by passing a segment list for the
 				// curve to the static Path.get*Boudns methods.
-				bounds = this._bounds[name] = Path[name](
-					[this._segment1, this._segment2], false, this._path._style);
+				bounds = this._bounds[name] = Path[name]([this._segment1,
+						this._segment2], false, this._path.getStyle());
 			}
 			return bounds.clone();
 		};

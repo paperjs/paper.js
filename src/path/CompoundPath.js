@@ -227,7 +227,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	_hitTest: function _hitTest(point, options) {
 		var res = _hitTest.base.call(this, point,
 				Base.merge(options, { fill: false }));
-		if (!res && options.fill && this._style.getFillColor()) {
+		if (!res && options.fill && this.hasFill()) {
 			res = this._contains(point);
 			res = res ? new HitResult('fill', res[0]) : null;
 		}

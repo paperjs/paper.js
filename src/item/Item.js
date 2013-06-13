@@ -381,15 +381,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	setStyle: function(style) {
-		this._style.set(style);
+		// Don't access _style directly so Path#getStyle() can be overriden for
+		// CompoundPaths.
+		this.getStyle().set(style);
 	},
 
 	hasFill: function() {
-		return !!this._style.getFillColor();
+		return !!this.getStyle().getFillColor();
 	},
 
 	hasStroke: function() {
-		return !!this._style.getStrokeColor();
+		return !!this.getStyle().getStrokeColor();
 	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	// Produce getter/setters for properties. We need setters because we want to
@@ -2890,8 +2892,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var blending = this._blendMode !== 'normal',
 			parentCtx, itemOffset, prevOffset;
 		if (blending || this._opacity < 1 && this._type !== 'raster'
-				&& (this._type !== 'path'
-					|| this.getFillColor() && this.getStrokeColor())) {
+				&& (this._type !== 'path' 
+					|| this.hasFill() && this.hasStroke())) {
 			// Apply the paren't global matrix to the calculation of correct
 			// bounds.
 			var bounds = this.getStrokeBounds(parentMatrix);

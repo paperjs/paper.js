@@ -204,7 +204,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 */
 	getPathData: function(/* precision */) {
 		var segments = this._segments,
-			style = this._style,
 			precision = arguments[0],
 			f = Formatter.instance,
 			parts = [];
@@ -1585,18 +1584,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return this.getNearestLocation(point).getPoint();
 	},
 
-	hasFill: function() {
-		// If this path is part of a CompoundPath, we need to check that
-		// for fillColor...
+	getStyle: function() {
+		// If this path is part of a CompoundPath, use the paren't style instead
 		var parent = this._parent;
-		return !!(parent && parent._type === 'compound-path'
-				? parent : this)._style.getFillColor();
-	},
-
-	hasStroke: function() {
-		var parent = this._parent;
-		return !!(parent && parent._type === 'compound-path'
-				? parent : this)._style.getStrokeColor();
+		return (parent && parent._type === 'compound-path'
+				? parent : this)._style;
 	},
 
 	_contains: function(point) {
@@ -1641,9 +1633,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	_hitTest: function(point, options) {
-		// See #draw() for an explanation of why we can access _style properties
-		// directly here:
-		var style = this._style,
+		var style = this.getStyle(),
 			tolerance = options.tolerance || 0,
 			radius = (options.stroke && style.getStrokeColor()
 					? style.getStrokeWidth() / 2 : 0) + tolerance,
@@ -1829,10 +1819,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (!compound)
 				ctx.beginPath();
 
-			// We can access styles directly on the internal _styles object,
-			// since Path items do not have children, thus do not need style
-			// accessors for merged styles.
-			var style = this._style,
+			var style = this.getStyle(),
 				fillColor = style.getFillColor(),
 				strokeColor = style.getStrokeColor(),
 				dashArray = style.getDashArray(),
@@ -2215,7 +2202,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_getBounds: function(getter, matrix) {
 		// See #draw() for an explanation of why we can access _style
 		// properties directly here:
-		return Path[getter](this._segments, this._closed, this._style, matrix);
+		return Path[getter](this._segments, this._closed, this.getStyle(),
+				matrix);
 	},
 
 // Mess with indentation in order to get more line-space below...
