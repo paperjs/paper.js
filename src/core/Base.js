@@ -260,6 +260,14 @@ Base.inject(/** @lends Base# */{
 		},
 
 		/**
+		 * Returns true if obj is either a plain object or an array, as used by
+		 * many argument reading methods.
+		 */
+		isPlainValue: function(obj) {
+			return this.isPlainObject(obj) || Array.isArray(obj);
+		},
+
+		/**
 		 * Serializes the passed object into a format that can be passed to 
 		 * JSON.stringify() for JSON serialization.
 		 */

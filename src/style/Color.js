@@ -697,6 +697,8 @@ var Color = Base.extend(new function() {
 		 * @return {Boolean} {@true if the colors are the same}
 		 */
 		equals: function(color) {
+			if (Base.isPlainValue(color))
+				color = Color.read(arguments);
 			return color && this._type === color._type
 					&& this._alpha === color._alpha
 					&& Base.equals(this._components, color._components);

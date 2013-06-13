@@ -18,5 +18,5 @@ test('PointText', function() {
 		content: 'Hello World!'
 	});
 	equals(text.point, { x: 100, y: 100 });
-	equals(text.fillColor, 'black', 'text.fillColor should be black by default');
+	equals(text.fillColor, { red: 0, green: 0, blue: 0 }, 'text.fillColor should be black by default');
 });
