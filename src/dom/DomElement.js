@@ -149,7 +149,7 @@ var DomElement = new function() {
 				// exception. Emulate the behavior of all other browsers, which
 				// return a rectangle of 0 dimensions.
 				rect = el.getBoundingClientRect();
-			} catch(e) {
+			} catch (e) {
 				rect = { left: 0, top: 0, width: 0, height: 0 };
 			}
 			var x = rect.left - (html.clientLeft || body.clientLeft || 0),
@@ -184,7 +184,7 @@ var DomElement = new function() {
 		 * Checks if element is invisibile (display: none, ...)
 		 */
 		isInvisible: function(el) {
-			return this.getSize(el).equals([0, 0]);
+			return this.getSize(el).equals(new Size(0, 0));
 		},
 
 		/**
