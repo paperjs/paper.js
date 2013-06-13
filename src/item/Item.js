@@ -2030,7 +2030,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * The color the item is highlighted with when selected. If the item does
 	 * not specify its own color, the color defined by its layer is used instead.
 	 *
-	 * @name Style#selectedColor
+	 * @name Item#selectedColor
 	 * @property
 	 * @type Color
 	 */
