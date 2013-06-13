@@ -527,4 +527,18 @@ test('Check hit testing of placed symbols.', function() {
 	}, true, 'hitResult.item should be placedItem');
 
 });
+
+test('Hit testing the corner of a rectangle with miter stroke.', function() {
+	var rect = new Path.Rectangle({
+	    rectangle: [100, 100, 300, 200],
+	    fillColor: '#f00',
+	    strokeColor: 'blue',
+	    strokeJoin: 'miter',
+	    strokeWidth: 20
+	});
+	equals(function() {
+		return rect.hitTest(rect.strokeBounds.topRight) != null;
+	}, true);
+});
+
 // TODO: project.hitTest(point, {type: AnItemType});
