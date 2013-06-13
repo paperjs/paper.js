@@ -44,6 +44,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 				ctx.arc(0, 0, (width + height) / 4, 0, Math.PI * 2, true);
 				break;
 			case 'ellipse':
+				// Use four bezier curves and KAPPA value to aproximate ellipse
 				var mx = width / 2,
 					my = height / 2,
 					kappa = Numerical.KAPPA,
@@ -86,22 +87,34 @@ var Shape = Item.extend(/** @lends Shape# */{
 		return _hitTest.base.apply(this, arguments);
 	},
 
-	statics: {
-		Circle: function(/* center, radius */) {
-			var center = Point.readNamed(arguments, 'center'),
-				radius = Base.readNamed(arguments, 'radius');
-			return new Shape('circle', center, new Size(radius * 2));
-		},
-
-		Rectangle: function(/* rectangle */) {
-			var rect = Rectangle.readNamed(arguments, 'rectangle');
-			return new Shape('rect', rect.getCenter(true), rect.getSize(true));
-		},
-
-		Ellipse: function(/* rectangle */) {
-			var rect = Rectangle.readNamed(arguments, 'rectangle');
-			return new Shape('ellipse', rect.getCenter(true),
-					rect.getSize(true));
+	statics: new function() {
+		function createShape(type, point, size, args) {
+			var shape = new Shape(type, point, size),
+				named = Base.getNamed(args);
+			if (named)
+				shape._set(named);
+			return shape;
 		}
+
+		return {
+			Circle: function(/* center, radius */) {
+				var center = Point.readNamed(arguments, 'center'),
+					radius = Base.readNamed(arguments, 'radius');
+				return createShape('circle', center, new Size(radius * 2),
+						arguments);
+			},
+
+			Rectangle: function(/* rectangle */) {
+				var rect = Rectangle.readNamed(arguments, 'rectangle');
+				return createShape('rect', rect.getCenter(true),
+						rect.getSize(true), arguments);
+			},
+
+			Ellipse: function(/* rectangle */) {
+				var rect = Rectangle.readNamed(arguments, 'rectangle');
+				return createShape('ellipse', rect.getCenter(true),
+						rect.getSize(true), arguments);
+			}
+		};
 	}
 });
