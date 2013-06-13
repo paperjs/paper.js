@@ -105,7 +105,7 @@ Base.inject(/** @lends Base# */{
 						return false;
 				return true;
 			}
-			if (obj1 == obj2)
+			if (obj1 === obj2)
 				return true;
 			// Call #equals() on both obj1 and obj2
 			if (obj1 && obj1.equals)
