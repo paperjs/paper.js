@@ -202,17 +202,23 @@ var Style = Base.extend(new function() {
 	Item.inject(item);
 	return fields;
 }, /** @lends Style# */{
-	initialize: function Style(style) {
+	initialize: function Style(style, _item) {
 		// We keep values in a separate object that we can iterate over.
 		this._values = {};
-		if (this._item instanceof TextItem)
+		this._item = _item;
+		if (_item instanceof TextItem)
 			this._defaults = this._textDefaults;
-		if (style) {
-			// If the passed style object is also a Style, clone its clonable
-			// fields rather than simply copying them.
-			var isStyle = style instanceof Style,
-				// Use the other stlyle's _values object for iteration
-				values = isStyle ? style._values : style;
+		if (style)
+			this.set(style);
+	},
+
+	set: function(style) {
+		// If the passed style object is also a Style, clone its clonable
+		// fields rather than simply copying them.
+		var isStyle = style instanceof Style,
+			// Use the other stlyle's _values object for iteration
+			values = isStyle ? style._values : style;
+		if (values) {
 			for (var key in values) {
 				if (key in this._defaults) {
 					var value = values[key];

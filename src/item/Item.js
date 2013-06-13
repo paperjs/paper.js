@@ -72,8 +72,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			else
 				this._setProject(project);
 		}
-		this._style = new Style(this._project._currentStyle);
-		this._style._item = this;
+		this._style = new Style(this._project._currentStyle, this);
 		this._matrix = new Matrix();
 		if (point)
 			this._matrix.translate(point);
@@ -382,7 +381,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	setStyle: function(style) {
-		this._style.initialize(style);
+		this._style.set(style);
 	},
 
 	hasFill: function() {
