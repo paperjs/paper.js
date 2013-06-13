@@ -112,7 +112,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			this.removeChildren();
 
 		for (var i = 0, l = parts.length; i < l; i++) {
-			var part = parts[i];
+			var part = parts[i],
 				cmd = part[0],
 				lower = cmd.toLowerCase();
 			// Split at white-space, commas but also before signs.
