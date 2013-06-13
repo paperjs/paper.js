@@ -81,10 +81,9 @@ var Shape = Item.extend(/** @lends Shape# */{
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},
 
-	_hitTest: function(point, options) {
-		if (this.hasFill() && this.contains(point))
-			return new HitResult('fill', this);
+	_hitTest: function _hitTest(point, options) {
 		// TODO: Implement stroke!
+		return _hitTest.base.apply(this, arguments);
 	},
 
 	statics: {

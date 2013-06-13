@@ -1322,6 +1322,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		// We only implement it here for items with rectangular content,
 		// for anything else we need to override #contains()
+		// TODO: There currently is no caching for the results of direct calls
+		// to this._getBounds('getBounds') (without the application of the
+		// internal matrix). Performance improvements could be achieved if
+		// these were cached too. See #_getCachedBounds().
 		return point.isInside(this._getBounds('getBounds'));
 	},
 
@@ -1420,6 +1424,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				var res = this._children[i].hitTest(point, options);
 				if (res) return res;
 			}
+		} else if (this.hasFill() && this._contains(point)) {
+			return new HitResult('fill', this);
 		}
 	},
 

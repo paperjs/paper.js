@@ -12,6 +12,8 @@
 
 // Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
+	// Just compare the string representation of classes inheriting from Base,
+	// since they hide the internal values.
 	return obj.toString();
 });
 
