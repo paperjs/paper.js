@@ -34,7 +34,10 @@ var ChangeFlag = {
 
 // Shortcuts to often used ChangeFlag values including APPEARANCE
 var Change = {
-	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.APPEARANCE,
+	// HIERARCHY also changes GEOMETRY, since removing children from groups
+	// change bounds
+	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.GEOMETRY
+			| ChangeFlag.APPEARANCE,
 	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
 	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
 	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
