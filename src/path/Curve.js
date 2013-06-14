@@ -584,6 +584,20 @@ statics: {
 				< 10 * tolerance * tolerance;
 	},
 
+	getArea: function(v) {
+		var p1x = v[0], p1y = v[1],
+			c1x = v[2], c1y = v[3],
+			c2x = v[4], c2y = v[5],
+			p2x = v[6], p2y = v[7];
+		// http://objectmix.com/graphics/133553-area-closed-bezier-curve.html
+		return (  3.0 * c1y * p1x - 1.5 * c1y * c2x
+				- 1.5 * c1y * p2x - 3.0 * p1y * c1x
+				- 1.5 * p1y * c2x - 0.5 * p1y * p2x
+				+ 1.5 * c2y * p1x + 1.5 * c2y * c1x
+				- 3.0 * c2y * p2x + 0.5 * p2y * p1x
+				+ 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
+	},
+
 	getBounds: function(v) {
 		var min = v.slice(0, 2), // Start with values of point1
 			max = min.slice(), // clone
@@ -963,20 +977,6 @@ new function() { // Scope for methods that require numerical integration
 			}
 			var ds = getLengthIntegrand(v);
 			return Numerical.integrate(ds, a, b, getIterations(a, b));
-		},
-
-		getArea: function(v) {
-			var p1x = v[0], p1y = v[1],
-				c1x = v[2], c1y = v[3],
-				c2x = v[4], c2y = v[5],
-				p2x = v[6], p2y = v[7];
-			// http://objectmix.com/graphics/133553-area-closed-bezier-curve.html
-			return (  3.0 * c1y * p1x - 1.5 * c1y * c2x
-					- 1.5 * c1y * p2x - 3.0 * p1y * c1x
-					- 1.5 * p1y * c2x - 0.5 * p1y * p2x
-					+ 1.5 * c2y * p1x + 1.5 * c2y * c1x
-					- 3.0 * c2y * p2x + 0.5 * p2y * p1x
-					+ 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
 		},
 
 		getParameterAt: function(v, offset, start) {
