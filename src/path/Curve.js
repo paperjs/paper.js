@@ -286,85 +286,9 @@ var Curve = Base.extend(/** @lends Curve# */{
 				&& this._segment2._handleIn.isZero();
 	},
 
-	isZero: function() {
-		return this._segment1._point.equals(this._segment2._point)
-				&& this.isLinear();
-	},
-
 	getIntersections: function(curve) {
 		return Curve.getIntersections(this.getValues(), curve.getValues(),
 				this, curve, []);
-	},
-
-	_getCrossings: function(point, previous, roots) {
-		// Implementation of the crossing number algorithm:
-		// http://en.wikipedia.org/wiki/Point_in_polygon
-		// Solve the y-axis cubic polynomial for point.y and count all solutions
-		// to the right of point.x as crossings.
-		var vals = this.getValues(),
-			count = Curve.solveCubic(vals, 1, point.y, roots),
-			crossings = 0,
-			tolerance = /*#=*/ Numerical.TOLERANCE,
-			abs = Math.abs;
-
-		// Checks the y-slope between the current curve and the previous for a
-		// change of orientation, when a solution is found at t == 0
-		function changesOrientation(tangent) {
-			return Curve.evaluate(previous.getValues(), 1, true, 1).y
-					* tangent.y > 0;
-		}
-
-		// TODO: See if this speeds up code, or slows it down:
-		// var bounds = this.getBounds();
-		// if (point.y < bounds.getTop() || point.y > bounds.getBottom()
-		// 		|| point.x > bounds.getRight())
-		// 	return 0;
-
-		if (count === -1) {
-			// Infinite solutions, so we have a horizontal curve.
-			// Find parameter through getParameterOf()
-			roots[0] = Curve.getParameterOf(vals, point.x, point.y);
-			count = roots[0] !== null ? 1 : 0;
-		}
-		for (var i = 0; i < count; i++) {
-			var t = roots[i];
-			if (t > -tolerance && t < 1 - tolerance) {
-				var pt = Curve.evaluate(vals, t, true, 0);
-				if (point.x < pt.x + tolerance) {
-					// Passing 1 for Curve.evaluate() type calculates tangents
-					var tan = Curve.evaluate(vals, t, true, 1);
-					// Handle all kind of edge cases when points are on contours
-					// or rays are touching countours, to termine wether the
-					// crossing counts or not.
-					// See if the actual point is on the countour:
-					if (abs(pt.x - point.x) < tolerance) {
-						// Do not count the crossing if it is on the left hand
-						// side of the shape (tangent pointing upwards), since
-						// the ray will go out the other end, count as
-						// crossing there, and the point is on the contour, so
-						// to be considered inside.
-						var angle = tan.getAngle();
-						if (angle > -180 && angle < 0
-							// Handle special case where point is on a corner,
-							// in which case this crossing is skipped if both
-							// tangents have the same orientation.
-							&& (t > tolerance || changesOrientation(tan)))
-								continue;
-					} else  {
-						// Skip touching stationary points:
-						if (abs(tan.y) < tolerance
-							// Check derivate for stationary points. If root is
-							// close to 0 and not changing vertical orientation
-							// from the previous curve, do not count this root,
-							// as it's touching a corner.
-							|| t < tolerance && !changesOrientation(tan))
-								continue;
-					}
-					crossings++;
-				}
-			}
-		}
-		return crossings;
 	},
 
 	// TODO: adjustThroughPoint
@@ -668,6 +592,70 @@ statics: {
 			Curve._addBounds(v[i], v[i + 2], v[i + 4], v[i + 6],
 					i, 0, min, max, roots);
 		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+	},
+
+	_getCrossings: function(v, prev, x, y, roots) {
+		// Implementation of the crossing number algorithm:
+		// http://en.wikipedia.org/wiki/Point_in_polygon
+		// Solve the y-axis cubic polynomial for y and count all solutions
+		// to the right of x as crossings.
+		var count = Curve.solveCubic(v, 1, y, roots),
+			crossings = 0,
+			tolerance = /*#=*/ Numerical.TOLERANCE,
+			abs = Math.abs;
+
+		// Checks the y-slope between the current curve and the previous for a
+		// change of orientation, when a solution is found at t == 0
+		function changesOrientation(tangent) {
+			return Curve.evaluate(prev, 1, true, 1).y
+					* tangent.y > 0;
+		}
+
+		if (count === -1) {
+			// Infinite solutions, so we have a horizontal curve.
+			// Find parameter through getParameterOf()
+			roots[0] = Curve.getParameterOf(v, x, y);
+			count = roots[0] !== null ? 1 : 0;
+		}
+		for (var i = 0; i < count; i++) {
+			var t = roots[i];
+			if (t > -tolerance && t < 1 - tolerance) {
+				var pt = Curve.evaluate(v, t, true, 0);
+				if (x < pt.x + tolerance) {
+					// Pass 1 for Curve.evaluate() type to calculate tangent
+					var tan = Curve.evaluate(v, t, true, 1);
+					// Handle all kind of edge cases when points are on
+					// contours or rays are touching countours, to termine
+					// wether the crossing counts or not.
+					// See if the actual point is on the countour:
+					if (abs(pt.x - x) < tolerance) {
+						// Do not count the crossing if it is on the left hand
+						// side of the shape (tangent pointing upwards), since
+						// the ray will go out the other end, count as crossing
+						// there, and the point is on the contour, so to be
+						// considered inside.
+						var angle = tan.getAngle();
+						if (angle > -180 && angle < 0
+							// Handle special case where point is on a corner,
+							// in which case this crossing is skipped if both
+							// tangents have the same orientation.
+							&& (t > tolerance || changesOrientation(tan)))
+								continue;
+					} else  {
+						// Skip touching stationary points:
+						if (abs(tan.y) < tolerance
+							// Check derivate for stationary points. If root is
+							// close to 0 and not changing vertical orientation
+							// from the previous curve, do not count this root,
+							// as it's touching a corner.
+							|| t < tolerance && !changesOrientation(tan))
+								continue;
+					}
+					crossings++;
+				}
+			}
+		}
+		return crossings;
 	},
 
 	/**
