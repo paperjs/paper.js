@@ -1734,8 +1734,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// If we're asked to query for segments, ends or handles, do all that
 		// before stroke or fill.
 		if (options.ends && !options.segments && !closed) {
-			if (res = checkSegmentPoints(this.getFirstSegment(), true)
-					|| checkSegmentPoints(this.getLastSegment(), true))
+			if (res = checkSegmentPoints(segments[0], true)
+					|| checkSegmentPoints(segments[segments.length - 1], true))
 				return res;
 		} else if (options.segments || options.handles) {
 			for (var i = 0, l = segments.length; i < l; i++) {
@@ -1750,8 +1750,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// Now see if we're on a segment, and if so, check for its
 				// stroke join / cap first. If not, do a normal radius check
 				// for round strokes.
-				var param = loc.getParameter();
-				if (param === 0 || param === 1) {
+				var parameter = loc.getParameter();
+				if (parameter === 0 || parameter === 1) {
 					if (!checkSegmentStroke(loc.getSegment()))
 						loc = null;
 				} else  if (loc._distance > radius) {
@@ -1764,8 +1764,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 				for (var i = 0, l = segments.length; i < l; i++) {
 					var segment = segments[i];
 					if (point.getDistance(segment._point) <= miterLimit
-							&& checkSegmentStroke(segment))
+							&& checkSegmentStroke(segment)) {
 						loc = segment.getLocation();
+						break;
+					}
 				}
 			}
 		}
@@ -2586,10 +2588,12 @@ statics: {
 		// possible.
 		var strokeWidth = style.getStrokeColor() ? style.getStrokeWidth() : 0,
 			joinWidth = strokeWidth;
-		if (style.getStrokeJoin() === 'miter')
-			joinWidth = strokeWidth * style.getMiterLimit();
-		if (style.getStrokeCap() === 'square')
-			joinWidth = Math.max(joinWidth, strokeWidth * Math.sqrt(2));
+		if (strokeWidth > 0) {
+			if (style.getStrokeJoin() === 'miter')
+				joinWidth = strokeWidth * style.getMiterLimit();
+			if (style.getStrokeCap() === 'square')
+				joinWidth = Math.max(joinWidth, strokeWidth * Math.sqrt(2));
+		}
 		return Path.getHandleBounds(segments, closed, style, matrix,
 				strokeWidth, joinWidth);
 	}
