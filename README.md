@@ -6,7 +6,7 @@ If you want to work with Paper.js, simply download the latest "stable" version f
 - Discussion forum: <http://groups.google.com/group/paperjs>
 - Mainline source code: <https://github.com/paperjs/paper.js>
 - Twitter: [@paperjs](http://twitter.com/paperjs)
-- Daily development builds: <http://paperjs.org/downloads/>
+- Daily development builds: <http://paperjs.org/download/>
 
 ## Development
 
