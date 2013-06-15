@@ -1694,7 +1694,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 			}
 			crossings += Curve._getCrossings(last, previous,
 					point.x, point.y, roots);
-			console.log(crossings);
 			return (crossings & 1) === 1;
 		}
 
