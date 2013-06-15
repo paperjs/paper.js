@@ -2406,15 +2406,13 @@ statics: {
 	},
 
 	_addSquareJoin: function(segment, join, radius, miterLimit, add, all) {
-		// Treat bevel and miter in one go, since they share a lot of
-		// code.
+		// Treat bevel and miter in one go, since they share a lot of code.
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
 			point = curve2.getPointAt(0, true),
 			normal1 = curve1.getNormalAt(1, true),
 			normal2 = curve2.getNormalAt(0, true),
-			step = normal1.getDirectedAngle(normal2) < 0
-					? -radius : radius;
+			step = normal1.getDirectedAngle(normal2) < 0 ? -radius : radius;
 		normal1.setLength(step);
 		normal2.setLength(step);
 		if (all) {
@@ -2430,8 +2428,8 @@ statics: {
 					point.add(normal2),
 					new Point(-normal2.y, normal2.x), true
 				), true);
-			// See if we actually get a bevel point and if its distance
-			// is below the miterLimit. If not, make a normal bevel.
+			// See if we actually get a bevel point and if its distance is below
+			// the miterLimit. If not, make a normal bevel.
 			if (corner && point.getDistance(corner) <= miterLimit) {
 				add(corner);
 				if (!all)
@@ -2453,8 +2451,8 @@ statics: {
 			add(point.subtract(normal));
 			add(point.add(normal));
 		}
-		// For square caps, we need to step away from point in the
-		// direction of the tangent, which is the rotated normal
+		// For square caps, we need to step away from point in the direction of
+		// the tangent, which is the rotated normal
 		if (cap === 'square')
 			point = point.add(normal.rotate(t == 0 ? -90 : 90));
 		add(point.add(normal));
