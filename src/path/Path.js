@@ -1653,7 +1653,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			join = style.getStrokeJoin();
 			cap = style.getStrokeCap();
 			radius = style.getStrokeWidth() / 2 + tolerance;
-			miterLimit = style.getMiterLimit();
+			miterLimit = radius * style.getMiterLimit();
 		}
 
 		function checkPoint(seg, pt, name) {
@@ -1756,7 +1756,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (!loc && join === 'miter') {
 				for (var i = 0, l = segments.length; i < l; i++) {
 					var segment = segments[i];
-					if (checkSegmentStroke(segment))
+					if (point.getDistance(segment._point) <= miterLimit
+							&& checkSegmentStroke(segment))
 						loc = segment.getLocation();
 				}
 			}
@@ -2430,7 +2431,7 @@ statics: {
 			bounds = Path.getBounds(segments, closed, style, matrix, padding),
 			join = style.getStrokeJoin(),
 			cap = style.getStrokeCap(),
-			miterLimit = style.getMiterLimit();
+			miterLimit = radius * style.getMiterLimit();
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
 		var joinBounds = new Rectangle(new Size(padding).multiply(2));
@@ -2500,7 +2501,7 @@ statics: {
 				), true);
 			// See if we actually get a bevel point and if its distance is below
 			// the miterLimit. If not, make a normal bevel.
-			if (corner && point.getDistance(corner) <= radius * miterLimit) {
+			if (corner && point.getDistance(corner) <= miterLimit) {
 				addPoint(corner);
 				if (!area)
 					return;
