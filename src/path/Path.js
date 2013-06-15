@@ -1682,6 +1682,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 			area.push(point);
 		}
 
+		// In order to be able to reuse crossings counting code, we describe
+		// each line as a curve values array.
 		function getAreaCurve(index) {
 			var p1 = area[index],
 				p2 = area[(index + 1) % area.length];
@@ -1745,6 +1747,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 		if (radius > 0) {
 			loc = this.getNearestLocation(point);
 			if (loc) {
+				// Now see if we're on a segment, and if so, check for its
+				// stroke join / cap first. If not, do a normal radius check
+				// for round strokes.
 				var param = loc.getParameter();
 				if (param === 0 || param === 1) {
 					if (!checkSegmentStroke(loc.getSegment()))
@@ -1753,6 +1758,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 					loc = null;
 				}
 			}
+			// If we have miter joins, we may not be done yet, since they can be
+			// longer than the radius. Check for each segment within reach now.
 			if (!loc && join === 'miter') {
 				for (var i = 0, l = segments.length; i < l; i++) {
 					var segment = segments[i];
@@ -2577,11 +2584,13 @@ statics: {
 		// Delegate to handleBounds, but pass on radius values for stroke and
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
-		var strokeWidth = style.getStrokeColor() ? style.getStrokeWidth() : 0;
+		var strokeWidth = style.getStrokeColor() ? style.getStrokeWidth() : 0,
+			joinWidth = strokeWidth;
+		if (style.getStrokeJoin() === 'miter')
+			joinWidth = strokeWidth * style.getMiterLimit();
+		if (style.getStrokeCap() === 'square')
+			joinWidth = Math.max(joinWidth, strokeWidth * Math.sqrt(2));
 		return Path.getHandleBounds(segments, closed, style, matrix,
-				strokeWidth,
-				style.getStrokeJoin() == 'miter'
-					? strokeWidth * style.getMiterLimit()
-					: strokeWidth);
+				strokeWidth, joinWidth);
 	}
 }});
