@@ -1646,8 +1646,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			tolerance = options.tolerance || 0,
 			radius = 0, join, cap, miterLimit,
 			that = this,
-			loc,
-			res;
+			area, loc, res;
 
 		if (options.stroke && style.getStrokeColor()) {
 			join = style.getStrokeJoin();
@@ -1667,16 +1666,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 			var pt = seg._point;
 			// Note, when checking for ends, we don't also check for handles,
 			// since this will happen afterwards in a separate loop, see below.
-			return (ends || options.segments)
-					&& checkPoint(seg, pt, 'segment')
+			return (ends || options.segments) && checkPoint(seg, pt, 'segment')
 				|| (!ends && options.handles) && (
 					checkPoint(seg, pt.add(seg._handleIn), 'handle-in') ||
 					checkPoint(seg, pt.add(seg._handleOut), 'handle-out'));
 		}
 
 		// Code to check stroke join / cap areas
-
-		var area;
 
 		function addAreaPoint(point) {
 			area.push(point);
@@ -1692,8 +1688,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 		function isInArea(point) {
 			var length = area.length,
-				last = getAreaCurve(length - 1),
-				previous = last,
+				previous = getAreaCurve(length - 1),
 				roots = new Array(3),
 				crossings = 0;
 			for (var i = 0; i < length; i++) {
@@ -1716,8 +1711,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 					// the handles has to be zero too for this!)
 					if (join !== 'round' && (segment._handleIn.isZero() 
 							|| segment._handleOut.isZero()))
-						Path._addSquareJoin(segment, join, radius,
-							miterLimit, addAreaPoint, true);
+						Path._addSquareJoin(segment, join, radius, miterLimit,
+								addAreaPoint, true);
 				} else if (cap !== 'round') {
 					// It's a cap
 					Path._addSquareCap(segment, cap, radius, addAreaPoint, true);
