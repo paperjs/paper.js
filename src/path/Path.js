@@ -2355,15 +2355,11 @@ statics: {
 			bounds = Path.getBounds(segments, closed, style, matrix, padding),
 			join = style.getStrokeJoin(),
 			cap = style.getStrokeCap(),
-			miterLimit,
-			miterRadius;
+			miterLimit;
 		if (join == 'miter' && length > 1) {
 			// miter is relative to stroke width. Divide it by 2 since we're
 			// measuring half the distance below
 			miterLimit = style.getMiterLimit() * style.getStrokeWidth() / 2;
-			// Depending on the path's orientation, mitters are created towards
-			// one side or the other
-			miterRadius = radius * (Path.isClockwise(segments) ? 1 : -1);
 		}
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
@@ -2374,13 +2370,6 @@ statics: {
 				? matrix._transformPoint(point, point) : point);
 		}
 
-		function addBevelJoin(curve, t) {
-			var point = curve.getPointAt(t, true),
-				normal = curve.getNormalAt(t, true).normalize(radius);
-			add(point.add(normal));
-			add(point.subtract(normal));
-		}
-
 		function addJoin(segment, join) {
 			// When both handles are set in a segment, the join setting is
 			// ignored and round is always used.
@@ -2388,29 +2377,35 @@ statics: {
 					&& !segment._handleOut.isZero()) {
 				bounds = bounds.unite(joinBounds.setCenter(matrix
 					? matrix._transformPoint(segment._point) : segment._point));
-			} else if (join === 'bevel') {
-				var curve = segment.getCurve();
-				addBevelJoin(curve, 0);
-				addBevelJoin(curve.getPrevious(), 1);
-			} else if (join === 'miter') {
+			} else {
+				// Treat bevel and miter in one go, since they share a lot of
+				// code.
 				var curve2 = segment.getCurve(),
 					curve1 = curve2.getPrevious(),
 					point = curve2.getPointAt(0, true),
-					normal1 = curve1.getNormalAt(1, true).normalize(miterRadius),
-					normal2 = curve2.getNormalAt(0, true).normalize(miterRadius),
+					normal1 = curve1.getNormalAt(1, true),
+					normal2 = curve2.getNormalAt(0, true),
+					step = normal1.getDirectedAngle(normal2) < 0
+							? -radius : radius;
+				if (join === 'miter') {
 					// Intersect the two lines
-					line1 = new Line(point.add(normal1),
-							new Point(-normal1.y, normal1.x), true),
-					line2 = new Line(point.add(normal2),
-							new Point(-normal2.y, normal2.x), true),
-					corner = line1.intersect(line2, true);
-				// Now measure the distance from the segment to the
-				// intersection, which his half of the miter distance
-				if (!corner || point.getDistance(corner) > miterLimit) {
-					addJoin(segment, 'bevel');
-				} else {
-					add(corner);
+					var corner = new Line(
+							point.add(normal1.normalize(step)),
+							new Point(-normal1.y, normal1.x), true
+						).intersect(new Line(
+							point.add(normal2.normalize(step)),
+							new Point(-normal2.y, normal2.x), true
+						), true);
+					// See if we actually get a bevel point and if its distance
+					// is below the miterLimit. If not, make a normal bevel.
+					if (corner && point.getDistance(corner) <= miterLimit) {
+						add(corner);
+						return;
+					}
 				}
+				// Produce a normal bevel
+				add(point.add(normal1.normalize(step)));
+				add(point.add(normal2.normalize(step)));
 			}
 		}
 
