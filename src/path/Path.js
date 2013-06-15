@@ -1641,13 +1641,20 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 	_hitTest: function(point, options) {
 		var style = this.getStyle(),
+			segments = this._segments,
+			closed = this._closed,
 			tolerance = options.tolerance || 0,
-			strokeRadius = options.stroke && style.getStrokeColor()
-					? style.getStrokeWidth() / 2 : 0,
-			radius = strokeRadius + tolerance,
+			radius = 0, join, cap, miterLimit,
 			that = this,
 			loc,
 			res;
+
+		if (options.stroke && style.getStrokeColor()) {
+			join = style.getStrokeJoin();
+			cap = style.getStrokeCap();
+			radius = style.getStrokeWidth() / 2 + tolerance;
+			miterLimit = style.getMiterLimit();
+		}
 
 		function checkPoint(seg, pt, name) {
 			// TODO: We need to transform the point back to the coordinate
@@ -1656,20 +1663,20 @@ var Path = PathItem.extend(/** @lends Path# */{
 				return new HitResult(name, that, { segment: seg, point: pt });
 		}
 
-		function checkSegment(seg, ends) {
-			var point = seg._point;
+		function checkSegmentPoints(seg, ends) {
+			var pt = seg._point;
 			// Note, when checking for ends, we don't also check for handles,
 			// since this will happen afterwards in a separate loop, see below.
 			return (ends || options.segments)
-					&& checkPoint(seg, point, 'segment')
+					&& checkPoint(seg, pt, 'segment')
 				|| (!ends && options.handles) && (
-					checkPoint(seg, point.add(seg._handleIn), 'handle-in') ||
-					checkPoint(seg, point.add(seg._handleOut), 'handle-out'));
+					checkPoint(seg, pt.add(seg._handleIn), 'handle-in') ||
+					checkPoint(seg, pt.add(seg._handleOut), 'handle-out'));
 		}
 
 		// Code to check stroke join / cap areas
 
-		var area = [];
+		var area;
 
 		function addAreaPoint(point) {
 			area.push(point);
@@ -1696,51 +1703,62 @@ var Path = PathItem.extend(/** @lends Path# */{
 			return (crossings & 1) === 1;
 		}
 
+		function checkSegmentStroke(segment) {
+			// Handle joins / caps that are not round specificelly, by
+			// hit-testing their polygon areas.
+			if (join !== 'round' || cap !== 'round') {
+				area = [];
+				if (closed || segment._index > 0
+						&& segment._index < segments.length - 1) {
+					// It's a join. See that it's not a round one (one of
+					// the handles has to be zero too for this!)
+					if (join !== 'round' && (segment._handleIn.isZero() 
+							|| segment._handleOut.isZero()))
+						Path._addSquareJoin(segment, join, radius,
+							miterLimit, addAreaPoint, true);
+				} else if (cap !== 'round') {
+					// It's a cap
+					Path._addSquareCap(segment, cap, radius, addAreaPoint, true);
+				}
+				// See if the above produced an area to check for
+				if (area.length > 0)
+					return isInArea(point);
+			}
+			// Fallback scenario is a round join / cap, but make sure we
+			// didn't check for areas already.
+			return point.getDistance(segment._point) <= radius;
+		}
+
 		// If we're asked to query for segments, ends or handles, do all that
 		// before stroke or fill.
-		if (options.ends && !options.segments && !this._closed) {
-			if (res = checkSegment(this.getFirstSegment(), true)
-					|| checkSegment(this.getLastSegment(), true))
+		if (options.ends && !options.segments && !closed) {
+			if (res = checkSegmentPoints(this.getFirstSegment(), true)
+					|| checkSegmentPoints(this.getLastSegment(), true))
 				return res;
 		} else if (options.segments || options.handles) {
-			for (var i = 0, l = this._segments.length; i < l; i++) {
-				if (res = checkSegment(this._segments[i]))
+			for (var i = 0, l = segments.length; i < l; i++) {
+				if (res = checkSegmentPoints(segments[i]))
 					return res;
 			}
 		}
 		// If we're querying for stroke, perform that before fill
-		if (options.stroke && radius > 0) {
+		if (radius > 0) {
 			loc = this.getNearestLocation(point);
 			if (loc) {
-				var join = style.getStrokeJoin(),
-					cap = style.getStrokeCap(),
-					param = loc.getParameter();
-				// Handle joins / caps that are not round specificelly, by
-				// hit-testing their polygon areas.
-				if ((join !== 'round' || cap !== 'round')
-						&& (param === 0 || param === 1)) {
-					var segment = loc.getSegment();
-					if (this._closed || segment._index > 0
-							&& segment._index < this._segments.length - 1) {
-						// It's a join. See that it's not a round one (one of
-						// the handles has to be zero too for this!)
-						if (join !== 'round' && (segment._handleIn.isZero() 
-								|| segment._handleOut.isZero()))
-							Path._addSquareJoin(segment, join, strokeRadius,
-								style.getMiterLimit(), addAreaPoint, true);
-					} else if (cap !== 'round') {
-						// It's a cap
-						Path._addSquareCap(segment, cap, param, strokeRadius,
-								addAreaPoint, true);
-					}
-					// See if the above produced an area to check for
-					if (area.length > 0 && !isInArea(point))
+				var param = loc.getParameter();
+				if (param === 0 || param === 1) {
+					if (!checkSegmentStroke(loc.getSegment()))
 						loc = null;
-				}
-				// Fallback scenario is a round join / cap, but make sure we
-				// didn't check for areas already.
-				if (loc && !area.length && loc._distance > radius)
+				} else  if (loc._distance > radius) {
 					loc = null;
+				}
+			}
+			if (!loc && join === 'miter') {
+				for (var i = 0, l = segments.length; i < l; i++) {
+					var segment = segments[i];
+					if (checkSegmentStroke(segment))
+						loc = segment.getLocation();
+				}
 			}
 		}
 		// Don't process loc yet, as we also need to query for stroke after fill
@@ -1748,7 +1766,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// stroke.
 		return !loc && options.fill && this.hasFill() && this.contains(point)
 				? new HitResult('fill', this)
-				: loc && options.stroke
+				: loc
 					// TODO: Do we need to transform loc back to the  coordinate
 					// system of the DOM level on which the inquiry was started?
 					? new HitResult('stroke', this, { location: loc })
@@ -2434,14 +2452,14 @@ statics: {
 			}
 		}
 
-		function addCap(segment, cap, t) {
+		function addCap(segment, cap) {
 			switch (cap) {
 			case 'round':
 				addJoin(segment, cap);
 				break;
 			case 'butt':
 			case 'square':
-				Path._addSquareCap(segment, cap, t, radius, add); 
+				Path._addSquareCap(segment, cap, radius, add); 
 				break;
 			}
 		}
@@ -2451,8 +2469,8 @@ statics: {
 		if (closed) {
 			addJoin(segments[0], join);
 		} else {
-			addCap(segments[0], cap, 0);
-			addCap(segments[segments.length - 1], cap, 1);
+			addCap(segments[0], cap);
+			addCap(segments[segments.length - 1], cap);
 		}
 		return bounds;
 	},
@@ -2494,19 +2512,21 @@ statics: {
 		addPoint(point.add(normal2));
 	},
 
-	_addSquareCap: function(segment, cap, t, radius, addPoint, area) {
+	_addSquareCap: function(segment, cap, radius, addPoint, area) {
 		// Calculate the corner points of butt and square caps
-		var curve = segment.getCurve(),
-			point = curve.getPointAt(t, true),
-			normal = curve.getNormalAt(t, true).normalize(radius);
+		var point = segment._point,
+			loc = segment.getLocation(),
+			normal = loc.getNormal().normalize(radius);
 		if (area) {
 			addPoint(point.subtract(normal));
 			addPoint(point.add(normal));
 		}
 		// For square caps, we need to step away from point in the direction of
-		// the tangent, which is the rotated normal
+		// the tangent, which is the rotated normal.
+		// Checking loc.getParameter() for 0 is to see wether this is the first
+		// or the last segment of the open path.
 		if (cap === 'square')
-			point = point.add(normal.rotate(t == 0 ? -90 : 90));
+			point = point.add(normal.rotate(loc.getParameter() == 0 ? -90 : 90));
 		addPoint(point.add(normal));
 		addPoint(point.subtract(normal));
 	},
