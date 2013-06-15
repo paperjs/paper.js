@@ -2227,12 +2227,14 @@ statics: {
 	 */
 	isClockwise: function(segments) {
 		var sum = 0,
-			xPre, yPre;
+			xPre, yPre,
+			add = false;
 		function edge(x, y) {
-			if (xPre !== undefined)
+			if (add)
 				sum += (xPre - x) * (y + yPre);
 			xPre = x;
 			yPre = y;
+			add = true;
 		}
 		// Method derived from:
 		// http://stackoverflow.com/questions/1165647
