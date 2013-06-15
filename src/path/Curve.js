@@ -843,11 +843,11 @@ statics: {
 	getNearestLocation: function(point) {
 		point = Point.read(arguments);
 		var values = this.getValues(),
-			step = 1 / 100,
+			count = 100,
 			tolerance = Numerical.TOLERANCE,
 			minDist = Infinity,
 			minT = 0,
-			max = 1 + tolerance; // Accomodate imprecision
+			max = 1 + tolerance; // Accomodate imprecision in comparisson
 
 		function refine(t) {
 			if (t >= 0 && t <= 1) {
@@ -861,11 +861,11 @@ statics: {
 			}
 		}
 
-		for (var t = 0; t <= max; t += step)
-			refine(t);
+		for (var i = 0; i <= count; i++)
+			refine(i / count);
 
 		// Now iteratively refine solution until we reach desired precision.
-		step /= 2;
+		var step = 1 / (count * 2);
 		while (step > tolerance) {
 			if (!refine(minT - step) && !refine(minT + step))
 				step /= 2;
