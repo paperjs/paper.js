@@ -2378,53 +2378,18 @@ statics: {
 				bounds = bounds.unite(joinBounds.setCenter(matrix
 					? matrix._transformPoint(segment._point) : segment._point));
 			} else {
-				// Treat bevel and miter in one go, since they share a lot of
-				// code.
-				var curve2 = segment.getCurve(),
-					curve1 = curve2.getPrevious(),
-					point = curve2.getPointAt(0, true),
-					normal1 = curve1.getNormalAt(1, true),
-					normal2 = curve2.getNormalAt(0, true),
-					step = normal1.getDirectedAngle(normal2) < 0
-							? -radius : radius;
-				if (join === 'miter') {
-					// Intersect the two lines
-					var corner = new Line(
-							point.add(normal1.normalize(step)),
-							new Point(-normal1.y, normal1.x), true
-						).intersect(new Line(
-							point.add(normal2.normalize(step)),
-							new Point(-normal2.y, normal2.x), true
-						), true);
-					// See if we actually get a bevel point and if its distance
-					// is below the miterLimit. If not, make a normal bevel.
-					if (corner && point.getDistance(corner) <= miterLimit) {
-						add(corner);
-						return;
-					}
-				}
-				// Produce a normal bevel
-				add(point.add(normal1.normalize(step)));
-				add(point.add(normal2.normalize(step)));
+				Path._addSquareJoin(segment, join, radius, miterLimit, add);
 			}
 		}
 
 		function addCap(segment, cap, t) {
 			switch (cap) {
 			case 'round':
-				return addJoin(segment, cap);
+				addJoin(segment, cap);
+				break;
 			case 'butt':
 			case 'square':
-				// Calculate the corner points of butt and square caps
-				var curve = segment.getCurve(),
-					point = curve.getPointAt(t, true),
-					normal = curve.getNormalAt(t, true).normalize(radius);
-				// For square caps, we need to step away from point in the
-				// direction of the tangent, which is the rotated normal
-				if (cap === 'square')
-					point = point.add(normal.rotate(t == 0 ? -90 : 90));
-				add(point.add(normal));
-				add(point.subtract(normal));
+				Path._addSquareCap(segment, cap, t, radius, add); 
 				break;
 			}
 		}
@@ -2438,6 +2403,62 @@ statics: {
 			addCap(segments[segments.length - 1], cap, 1);
 		}
 		return bounds;
+	},
+
+	_addSquareJoin: function(segment, join, radius, miterLimit, add, all) {
+		// Treat bevel and miter in one go, since they share a lot of
+		// code.
+		var curve2 = segment.getCurve(),
+			curve1 = curve2.getPrevious(),
+			point = curve2.getPointAt(0, true),
+			normal1 = curve1.getNormalAt(1, true),
+			normal2 = curve2.getNormalAt(0, true),
+			step = normal1.getDirectedAngle(normal2) < 0
+					? -radius : radius;
+		normal1.setLength(step);
+		normal2.setLength(step);
+		if (all) {
+			add(point);
+			add(point.add(normal1));
+		}
+		if (join === 'miter') {
+			// Intersect the two lines
+			var corner = new Line(
+					point.add(normal1),
+					new Point(-normal1.y, normal1.x), true
+				).intersect(new Line(
+					point.add(normal2),
+					new Point(-normal2.y, normal2.x), true
+				), true);
+			// See if we actually get a bevel point and if its distance
+			// is below the miterLimit. If not, make a normal bevel.
+			if (corner && point.getDistance(corner) <= miterLimit) {
+				add(corner);
+				if (!all)
+					return;
+			}
+		}
+		// Produce a normal bevel
+		if (!all)
+			add(point.add(normal1));
+		add(point.add(normal2));
+	},
+
+	_addSquareCap: function(segment, cap, t, radius, add, all) {
+		// Calculate the corner points of butt and square caps
+		var curve = segment.getCurve(),
+			point = curve.getPointAt(t, true),
+			normal = curve.getNormalAt(t, true).normalize(radius);
+		if (all) {
+			add(point.subtract(normal));
+			add(point.add(normal));
+		}
+		// For square caps, we need to step away from point in the
+		// direction of the tangent, which is the rotated normal
+		if (cap === 'square')
+			point = point.add(normal.rotate(t == 0 ? -90 : 90));
+		add(point.add(normal));
+		add(point.subtract(normal));
 	},
 
 	/**
