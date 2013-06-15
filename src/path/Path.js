@@ -1642,8 +1642,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_hitTest: function(point, options) {
 		var style = this.getStyle(),
 			tolerance = options.tolerance || 0,
-			radius = (options.stroke && style.getStrokeColor()
-					? style.getStrokeWidth() / 2 : 0) + tolerance,
+			strokeRadius = options.stroke && style.getStrokeColor()
+					? style.getStrokeWidth() / 2 : 0,
+			radius = strokeRadius + tolerance,
 			that = this,
 			loc,
 			res;
@@ -1692,8 +1693,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 						point.x, point.y, roots);
 				previous = curve;
 			}
-			crossings += Curve._getCrossings(last, previous,
-					point.x, point.y, roots);
 			return (crossings & 1) === 1;
 		}
 
@@ -1716,27 +1715,32 @@ var Path = PathItem.extend(/** @lends Path# */{
 				var join = style.getStrokeJoin(),
 					cap = style.getStrokeCap(),
 					param = loc.getParameter();
-				if (join !== 'round' || cap !== 'round'
+				// Handle joins / caps that are not round specificelly, by
+				// hit-testing their polygon areas.
+				if ((join !== 'round' || cap !== 'round')
 						&& (param === 0 || param === 1)) {
-					var segments = this._segments,
-						segment = loc.getSegment(),
-						strokeRadius = style.getStrokeWidth() / 2;
+					var segment = loc.getSegment();
 					if (this._closed || segment._index > 0
-							&& segment._index < segments.length - 1) {
-						// It's a join
-						Path._addSquareJoin(segment, join, strokeRadius,
-							style.getMiterLimit() * strokeRadius,
-							addAreaPoint, true);
-					} else {
+							&& segment._index < this._segments.length - 1) {
+						// It's a join. See that it's not a round one (one of
+						// the handles has to be zero too for this!)
+						if (join !== 'round' && (segment._handleIn.isZero() 
+								|| segment._handleOut.isZero()))
+							Path._addSquareJoin(segment, join, strokeRadius,
+								style.getMiterLimit(), addAreaPoint, true);
+					} else if (cap !== 'round') {
 						// It's a cap
 						Path._addSquareCap(segment, cap, param, strokeRadius,
-							addAreaPoint, true);
+								addAreaPoint, true);
 					}
-					if (!isInArea(point))
+					// See if the above produced an area to check for
+					if (area.length > 0 && !isInArea(point))
 						loc = null;
-				} else if (loc._distance > radius) {
-					loc = null;
 				}
+				// Fallback scenario is a round join / cap, but make sure we
+				// didn't check for areas already.
+				if (loc && !area.length && loc._distance > radius)
+					loc = null;
 			}
 		}
 		// Don't process loc yet, as we also need to query for stroke after fill
@@ -2408,12 +2412,7 @@ statics: {
 			bounds = Path.getBounds(segments, closed, style, matrix, padding),
 			join = style.getStrokeJoin(),
 			cap = style.getStrokeCap(),
-			miterLimit;
-		if (join == 'miter' && length > 1) {
-			// miter is relative to stroke width. Divide it by 2 since we're
-			// measuring half the distance below
-			miterLimit = style.getMiterLimit() * radius;
-		}
+			miterLimit = style.getMiterLimit();
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
 		var joinBounds = new Rectangle(new Size(padding).multiply(2));
@@ -2483,7 +2482,7 @@ statics: {
 				), true);
 			// See if we actually get a bevel point and if its distance is below
 			// the miterLimit. If not, make a normal bevel.
-			if (corner && point.getDistance(corner) <= miterLimit) {
+			if (corner && point.getDistance(corner) <= radius * miterLimit) {
 				addPoint(corner);
 				if (!area)
 					return;
