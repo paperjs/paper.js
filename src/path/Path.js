@@ -1666,6 +1666,38 @@ var Path = PathItem.extend(/** @lends Path# */{
 					checkPoint(seg, point.add(seg._handleOut), 'handle-out'));
 		}
 
+		// Code to check stroke join / cap areas
+
+		var area = [];
+
+		function addAreaPoint(point) {
+			area.push(point);
+		}
+
+		function getAreaCurve(index) {
+			var p1 = area[index],
+				p2 = area[(index + 1) % area.length];
+			return [p1.x, p1.y, p1.x, p1.y, p2.x, p2.y, p2.x ,p2.y];
+		}
+
+		function isInArea(point) {
+			var length = area.length,
+				last = getAreaCurve(length - 1),
+				previous = last,
+				roots = new Array(3),
+				crossings = 0;
+			for (var i = 0; i < length; i++) {
+				var curve = getAreaCurve(i);
+				crossings += Curve._getCrossings(curve, previous,
+						point.x, point.y, roots);
+				previous = curve;
+			}
+			crossings += Curve._getCrossings(last, previous,
+					point.x, point.y, roots);
+			console.log(crossings);
+			return (crossings & 1) === 1;
+		}
+
 		// If we're asked to query for segments, ends or handles, do all that
 		// before stroke or fill.
 		if (options.ends && !options.segments && !this._closed) {
@@ -1681,12 +1713,32 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// If we're querying for stroke, perform that before fill
 		if (options.stroke && radius > 0) {
 			loc = this.getNearestLocation(point);
-			// Check only for stroke radius for now.
-			// TODO: Implement checks for various stroke caps and joins!
-			// A simple solution could be to first implement stroke expansion
-			// and then use that to check if loc is close enough to a segment.
-			if (loc && loc._distance > radius)
-				loc = null;
+			if (loc) {
+				var join = style.getStrokeJoin(),
+					cap = style.getStrokeCap(),
+					param = loc.getParameter();
+				if (join !== 'round' || cap !== 'round'
+						&& (param === 0 || param === 1)) {
+					var segments = this._segments,
+						segment = loc.getSegment(),
+						strokeRadius = style.getStrokeWidth() / 2;
+					if (this._closed || segment._index > 0
+							&& segment._index < segments.length - 1) {
+						// It's a join
+						Path._addSquareJoin(segment, join, strokeRadius,
+							style.getMiterLimit() * strokeRadius,
+							addAreaPoint, true);
+					} else {
+						// It's a cap
+						Path._addSquareCap(segment, cap, param, strokeRadius,
+							addAreaPoint, true);
+					}
+					if (!isInArea(point))
+						loc = null;
+				} else if (loc._distance > radius) {
+					loc = null;
+				}
+			}
 		}
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
@@ -2361,7 +2413,7 @@ statics: {
 		if (join == 'miter' && length > 1) {
 			// miter is relative to stroke width. Divide it by 2 since we're
 			// measuring half the distance below
-			miterLimit = style.getMiterLimit() * style.getStrokeWidth() / 2;
+			miterLimit = style.getMiterLimit() * radius;
 		}
 		// Create a rectangle of padding size, used for union with bounds
 		// further down
@@ -2407,7 +2459,7 @@ statics: {
 		return bounds;
 	},
 
-	_addSquareJoin: function(segment, join, radius, miterLimit, add, all) {
+	_addSquareJoin: function(segment, join, radius, miterLimit, addPoint, area) {
 		// Treat bevel and miter in one go, since they share a lot of code.
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
@@ -2417,9 +2469,9 @@ statics: {
 			step = normal1.getDirectedAngle(normal2) < 0 ? -radius : radius;
 		normal1.setLength(step);
 		normal2.setLength(step);
-		if (all) {
-			add(point);
-			add(point.add(normal1));
+		if (area) {
+			addPoint(point);
+			addPoint(point.add(normal1));
 		}
 		if (join === 'miter') {
 			// Intersect the two lines
@@ -2433,32 +2485,32 @@ statics: {
 			// See if we actually get a bevel point and if its distance is below
 			// the miterLimit. If not, make a normal bevel.
 			if (corner && point.getDistance(corner) <= miterLimit) {
-				add(corner);
-				if (!all)
+				addPoint(corner);
+				if (!area)
 					return;
 			}
 		}
 		// Produce a normal bevel
-		if (!all)
-			add(point.add(normal1));
-		add(point.add(normal2));
+		if (!area)
+			addPoint(point.add(normal1));
+		addPoint(point.add(normal2));
 	},
 
-	_addSquareCap: function(segment, cap, t, radius, add, all) {
+	_addSquareCap: function(segment, cap, t, radius, addPoint, area) {
 		// Calculate the corner points of butt and square caps
 		var curve = segment.getCurve(),
 			point = curve.getPointAt(t, true),
 			normal = curve.getNormalAt(t, true).normalize(radius);
-		if (all) {
-			add(point.subtract(normal));
-			add(point.add(normal));
+		if (area) {
+			addPoint(point.subtract(normal));
+			addPoint(point.add(normal));
 		}
 		// For square caps, we need to step away from point in the direction of
 		// the tangent, which is the rotated normal
 		if (cap === 'square')
 			point = point.add(normal.rotate(t == 0 ? -90 : 90));
-		add(point.add(normal));
-		add(point.subtract(normal));
+		addPoint(point.add(normal));
+		addPoint(point.subtract(normal));
 	},
 
 	/**
