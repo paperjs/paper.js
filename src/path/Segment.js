@@ -300,8 +300,6 @@ var Segment = Base.extend(/** @lends Segment# */{
 		}
 	},
 
-
-
 	/**
 	 * Specifies whether the {@link #point} of the segment is selected.
 	 * @type Boolean
@@ -353,14 +351,29 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 * @bean
 	 */
 	getCurve: function() {
-		if (this._path) {
-			var index = this._index;
+		var path = this._path,
+			index = this._index;
+		if (path) {
 			// The last segment of an open path belongs to the last curve
-			if (!this._path._closed && index == this._path._segments.length - 1)
+			if (!path._closed && index == path._segments.length - 1)
 				index--;
-			return this._path.getCurves()[index] || null;
+			return path.getCurves()[index] || null;
 		}
 		return null;
+	},
+
+	/**
+	 * The curve location that describes this segment's position ont the path.
+	 *
+	 * @type CurveLocation
+	 * @bean
+	 */
+	getLocation: function() {
+		var curve = this.getCurve();
+		// Determine whether the parameter for this segment is 0 or 1 based on
+		// whether there is a next curve or not, as #getNext() takes closed into
+		// account and all.
+		return curve ? new CurveLocation(curve, curve.getNext() ? 0 : 1) : null;
 	},
 
 	/**
