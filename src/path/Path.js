@@ -1772,7 +1772,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return !loc && options.fill && this.hasFill() && this.contains(point)
 				? new HitResult('fill', this)
 				: loc
-					// TODO: Do we need to transform loc back to the  coordinate
+					// TODO: Do we need to transform loc back to the coordinate
 					// system of the DOM level on which the inquiry was started?
 					? new HitResult('stroke', this, { location: loc })
 					: null;
@@ -1912,7 +1912,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				fillColor = style.getFillColor(),
 				strokeColor = style.getStrokeColor(),
 				dashArray = style.getDashArray(),
-				drawDash = !paper.support.nativeDash && strokeColor
+				drawDash = !paper.support.dash && strokeColor
 						&& dashArray && dashArray.length;
 
 			// Prepare the canvas path if we have any situation that requires it
@@ -2529,7 +2529,8 @@ statics: {
 		// For square caps, we need to step away from point in the direction of
 		// the tangent, which is the rotated normal.
 		// Checking loc.getParameter() for 0 is to see wether this is the first
-		// or the last segment of the open path.
+		// or the last segment of the open path, in order to determine in which
+		// direction to move the point.
 		if (cap === 'square')
 			point = point.add(normal.rotate(loc.getParameter() == 0 ? -90 : 90));
 		addPoint(point.add(normal));

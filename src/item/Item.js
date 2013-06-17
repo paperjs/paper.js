@@ -2847,7 +2847,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			ctx.fillStyle = fillColor.toCanvasStyle(ctx);
 		if (strokeColor) {
 			ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
-			if (paper.support.nativeDash && dashArray && dashArray.length) {
+			if (paper.support.dash && dashArray && dashArray.length) {
 				if ('setLineDash' in ctx) {
 					ctx.setLineDash(dashArray);
 					ctx.lineDashOffset = dashOffset;

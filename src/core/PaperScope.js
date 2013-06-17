@@ -64,7 +64,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 			// describe the support of various features.
 			var ctx = CanvasProvider.getContext(1, 1);
 			PaperScope.prototype.support = {
-				nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx
+				dash: 'setLineDash' in ctx || 'mozDash' in ctx,
 			};
 			CanvasProvider.release(ctx);
 		}
