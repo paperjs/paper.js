@@ -66,6 +66,17 @@ var Line = Base.extend(/** @lends Line# */{
 	},
 
 	/**
+	 * The length of the line
+	 *
+	 * @name Line#vector
+	 * @return {Number}
+	 */
+	getLength: function() {
+		var v = this.getVector();
+		return Math.sqrt(v.x * v.x + v.y * v.y);
+	},
+
+	/**
 	 * @param {Line} line
 	 * @param {Boolean} [isInfinite=false]
 	 * @return {Point} the intersection point of the lines, {@code undefined}

@@ -466,7 +466,7 @@ statics: {
 					y = (3 * ay * t + 2 * by) * t + cy;
 				}
 				break;
-			case 3: // curvature, 2nd derivative
+			case 3: // 2nd derivative
 				x = 6 * ax * t + 2 * bx;
 				y = 6 * ay * t + 2 * by;
 				break;
@@ -771,7 +771,7 @@ statics: {
 	 * @bean
 	 * @ignore
 	 */
-}), Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
+}), Base.each(['getPoint', 'getTangent', 'getNormal'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
 	// determine the bounds of Curve objects with defined segment1 and segment2
 	// values Curve.getBounds() can be used directly on curve arrays, without
@@ -788,6 +788,51 @@ statics: {
 		};
 	},
 /** @lends Curve# */{
+	/**
+	 * Calculate the curvature at the specified offset on the path.
+	 * Curvature indicates how sharply it curves. A straight line has zero
+	 * curvature where as a circle has a constant curvature.
+	 *
+	 * Curvature at a point, by definition, is a scalar value equal to
+	 * the reciprocal of the 'osculating circle' at that point on the path.
+	 *
+	 * Reference:
+	 * http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
+	 *
+	 * @param {Number} offset the offset on the curve, or the curve time
+	 *        parameter if {@code isParameter} is {@code true}
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
+	 *        is a curve time parameter.
+	 * @return {Number} Curvatue of the curve at specified offset
+	 */
+	getCurvatureAt: function(offset, isParameter) {
+		values = this.getValues();
+		// First derivative at offset/parameter
+		var dt = Curve.evaluate(values, offset, isParameter, 1);
+		// Second derivative at offset/parameter
+		var d2t = Curve.evaluate(values, offset, isParameter, 3);
+		var dx = dt.x, dy = dt.y, d2x = d2t.x, d2y = d2t.y;
+		var isEnd = offset === 0 || ( isParameter )? offset === 1 :
+			offset === this.getLength();
+		//Calculate Curvature
+		//		if at an end point, k = (2/3) * h / a^2
+		//		else, 				k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
+		var line, point, a, h;
+		if( isEnd ){
+			if( offset === 0 ){
+				line = new Line( values[0], values[1], values[2], values[3], true );
+				point = new Point( values[6]+values[4], values[7]+values[5] );
+			} else {
+				line = new Line( values[6], values[7], values[4], values[5], true );
+				point = new Point( values[0]+values[2], values[1]+values[3] );
+			}
+			a = line.getLength();
+			h = line.getDistance( point, true );
+			return ( 2 * h) / ( 3 * a * a );
+		} else
+			return ( dx*d2y - dy*d2x ) / Math.pow( dx*dx + dy*dy, 3/2 );
+	},
+
 	/**
 	 * Calculates the curve time parameter of the specified offset on the path,
 	 * relative to the provided start parameter. If offset is a negative value,
