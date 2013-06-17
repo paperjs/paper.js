@@ -68,7 +68,7 @@ var Line = Base.extend(/** @lends Line# */{
 	/**
 	 * The length of the line
 	 *
-	 * @name Line#vector
+	 * @name Line#length
 	 * @type Number
 	 */
 	getLength: function() {
