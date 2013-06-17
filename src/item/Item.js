@@ -2918,9 +2918,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			ctx.translate(-itemOffset.x, -itemOffset.y);
 		// Apply globalMatrix when blitting into temporary canvas.
 		(parentCtx ? globalMatrix : this._matrix).applyToContext(ctx);
-		// If we're blending and a clipItem is defined for the current rendering
-		// loop, we need to draw the clip item again into the separate canvas.
-		if (blending && param.clipItem)
+		// If we're drawing into a separate canvas and a clipItem is defined for
+		// the current rendering loop, we need to draw the clip item again.
+		if (parentCtx && param.clipItem)
 			param.clipItem.draw(ctx, param.extend({ clip: true }));
 		this._draw(ctx, param);
 		ctx.restore();
