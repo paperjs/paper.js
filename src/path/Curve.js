@@ -807,11 +807,6 @@ statics: {
 	 */
 	getCurvatureAt: function(offset, isParameter) {
 		var values = this.getValues(),
-			// First derivative at offset/parameter
-			dt = Curve.evaluate(values, offset, isParameter, 1),
-			// Second derivative at offset/parameter
-			d2t = Curve.evaluate(values, offset, isParameter, 3),
-			dx = dt.x, dy = dt.y, d2x = d2t.x, d2y = d2t.y,
 			isEnd = offset === 0 || ( isParameter )? offset === 1 :
 				offset === this.getLength();
 		//Calculate Curvature
@@ -829,8 +824,14 @@ statics: {
 			a = line.getLength();
 			h = line.getDistance( point, true );
 			return ( 2 * h) / ( 3 * a * a );
-		} else
+		} else {
+			// First derivative at offset/parameter
+			var dt = Curve.evaluate(values, offset, isParameter, 1),
+				// Second derivative at offset/parameter
+				d2t = Curve.evaluate(values, offset, isParameter, 3),
+				dx = dt.x, dy = dt.y, d2x = d2t.x, d2y = d2t.y;
 			return ( dx*d2y - dy*d2x ) / Math.pow( dx*dx + dy*dy, 3/2 );
+		}
 	},
 
 	/**
