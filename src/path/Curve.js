@@ -807,30 +807,30 @@ statics: {
 	 */
 	getCurvatureAt: function(offset, isParameter) {
 		var values = this.getValues(),
-			isEnd = offset === 0 || ( isParameter )? offset === 1 :
-				offset === this.getLength();
+			isEnd = offset === 0 || isParameter
+					? offset === 1 : offset === this.getLength();
 		//Calculate Curvature
-		//		if at an end point, k = (2/3) * h / a^2
-		//		else, 				k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
-		var line, point, a, h;
-		if( isEnd ){
-			if( offset === 0 ){
-				line = new Line( values[0], values[1], values[2], values[3], true );
-				point = new Point( values[6]+values[4], values[7]+values[5] );
+		//	if at an end point: k = (2/3) * h / a^2
+		//	else: k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
+		if (isEnd) {
+			var line, point;
+			if (offset === 0) {
+				line = new Line(values[0], values[1], values[2], values[3], true);
+				point = new Point(values[6]+values[4], values[7]+values[5]);
 			} else {
-				line = new Line( values[6], values[7], values[4], values[5], true );
-				point = new Point( values[0]+values[2], values[1]+values[3] );
+				line = new Line(values[6], values[7], values[4], values[5], true);
+				point = new Point(values[0]+values[2], values[1]+values[3]);
 			}
-			a = line.getLength();
-			h = line.getDistance( point, true );
-			return ( 2 * h) / ( 3 * a * a );
+			var a = line.getLength(),
+				h = line.getDistance(point);
+			return 2 * h / (3 * a * a);
 		} else {
 			// First derivative at offset/parameter
 			var dt = Curve.evaluate(values, offset, isParameter, 1),
 				// Second derivative at offset/parameter
 				d2t = Curve.evaluate(values, offset, isParameter, 3),
 				dx = dt.x, dy = dt.y, d2x = d2t.x, d2y = d2t.y;
-			return ( dx*d2y - dy*d2x ) / Math.pow( dx*dx + dy*dy, 3/2 );
+			return (dx * d2y - dy * d2x) / Math.pow(dx * dx + dy * dy, 3 / 2);
 		}
 	},
 
