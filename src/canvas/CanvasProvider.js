@@ -16,31 +16,34 @@ var CanvasProvider = {
 	canvases: [],
 
 	getCanvas: function(width, height) {
-		var size = height === undefined ? width : new Size(width, height);
+		var size = height === undefined ? width : new Size(width, height),
+			canvas,
+			init = true;
 		if (this.canvases.length) {
-			var canvas = this.canvases.pop();
-			// If they are not the same size, we don't need to clear them
-			// using clearRect and visa versa.
-			if ((canvas.width != size.width)
-					|| (canvas.height != size.height)) {
-				canvas.width = size.width;
-				canvas.height = size.height;
-			} else {
-				// +1 is needed on some browsers to really clear the borders
-				canvas.getContext('2d').clearRect(0, 0,
-						size.width + 1, size.height + 1);
-			}
-			return canvas;
+			canvas = this.canvases.pop();
 		} else {
 /*#*/ if (options.browser) {
-			var canvas = document.createElement('canvas');
+			canvas = document.createElement('canvas');
+/*#*/ } else { // !options.browser
+			canvas = new Canvas(size.width, size.height);
+			init = false; // It's already initialized through constructor.
+/*#*/ } // !options.browser
+
+		}
+		var ctx = canvas.getContext('2d');
+		// We save on retrieval and restore on release.
+		ctx.save();
+		// If they are not the same size, we don't need to clear them
+		// using clearRect and visa versa.
+		if (canvas.width === size.width && canvas.height === size.height) {
+			// +1 is needed on some browsers to really clear the borders
+			if (init)
+				ctx.clearRect(0, 0, size.width + 1, size.height + 1);
+		} else {
 			canvas.width = size.width;
 			canvas.height = size.height;
-			return canvas;
-/*#*/ } else { // !options.browser
-			return new Canvas(size.width, size.height);
-/*#*/ } // !options.browser
 		}
+		return canvas;
 	},
 
 	getContext: function(width, height) {
@@ -49,6 +52,9 @@ var CanvasProvider = {
 
 	 // release can receive either a canvas or a context.
 	release: function(obj) {
-		this.canvases.push(obj.canvas ? obj.canvas : obj);
+		var canvas = obj.canvas ? obj.canvas : obj;
+		// We restore contexts on release(), see getCanvas()
+		canvas.getContext('2d').restore();
+		this.canvases.push(canvas);
 	}
 };
