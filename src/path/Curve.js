@@ -806,14 +806,14 @@ statics: {
 	 * @return {Number} Curvatue of the curve at specified offset
 	 */
 	getCurvatureAt: function(offset, isParameter) {
-		values = this.getValues();
-		// First derivative at offset/parameter
-		var dt = Curve.evaluate(values, offset, isParameter, 1);
-		// Second derivative at offset/parameter
-		var d2t = Curve.evaluate(values, offset, isParameter, 3);
-		var dx = dt.x, dy = dt.y, d2x = d2t.x, d2y = d2t.y;
-		var isEnd = offset === 0 || ( isParameter )? offset === 1 :
-			offset === this.getLength();
+		var values = this.getValues(),
+			// First derivative at offset/parameter
+			dt = Curve.evaluate(values, offset, isParameter, 1),
+			// Second derivative at offset/parameter
+			d2t = Curve.evaluate(values, offset, isParameter, 3),
+			dx = dt.x, dy = dt.y, d2x = d2t.x, d2y = d2t.y,
+			isEnd = offset === 0 || ( isParameter )? offset === 1 :
+				offset === this.getLength();
 		//Calculate Curvature
 		//		if at an end point, k = (2/3) * h / a^2
 		//		else, 				k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
