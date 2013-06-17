@@ -72,8 +72,7 @@ var Line = Base.extend(/** @lends Line# */{
 	 * @type Number
 	 */
 	getLength: function() {
-		var v = this.getVector();
-		return Math.sqrt(v.x * v.x + v.y * v.y);
+		return this.getVector().getLength();
 	},
 
 	/**
