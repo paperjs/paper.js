@@ -806,13 +806,12 @@ statics: {
 	 * @return {Number} Curvatue of the curve at specified offset
 	 */
 	getCurvatureAt: function(offset, isParameter) {
-		var values = this.getValues(),
-			isEnd = offset === 0 || isParameter
-					? offset === 1 : offset === this.getLength();
+		var values = this.getValues();
 		//Calculate Curvature
 		//	if at an end point: k = (2/3) * h / a^2
 		//	else: k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
-		if (isEnd) {
+		if (offset === 0
+				|| isParameter ? offset === 1 : offset === this.getLength()) {
 			var line, point;
 			if (offset === 0) {
 				line = new Line(values[0], values[1], values[2], values[3], true);
