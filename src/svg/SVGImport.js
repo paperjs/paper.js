@@ -71,19 +71,22 @@ new function() {
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
 			clip = type === 'clippath',
-			item = clip ? new CompoundPath() : new Clip(),
+			item = clip ? new CompoundPath() : new Group(),
 			project = item._project,
 			currentStyle = project._currentStyle,
 			children = [];
-		// Style on items needs to be handled differently than all other items:
-		// We first apply the style to the item, then use it as the project's
-		// currentStyle, so it is used as a default for the creation of all
-		// nested items. importSVG then needs to check for items and avoid
-		// calling applyAttributes() again.
 		// Set the default color to black, since that's how SVG handles fills.
 		item.setFillColor('black');
 		if (!clip) {
+			// Have the group not pass on all transformations to its children,
+			// as this is how SVG works too.
+			item._transformContent = false;
 			item = applyAttributes(item, node);
+			// Style on items needs to be handled differently than all other
+			// items: We first apply the style to the item, then use it as the
+			// project's currentStyle, so it is used as a default for the
+			// creation of all nested items. importSVG then needs to check for
+			// items and avoid calling applyAttributes() again.
 			project._currentStyle = item._style.clone();
 		}
 		// Collect the children in an array and apply them all at once.
@@ -93,7 +96,7 @@ new function() {
 			if (childNode.nodeType == 1 && (child = importSVG(childNode))) {
 				// If adding CompoundPaths to other CompoundPaths,
 				// we need to "unbox" them first:
-				if (clip && child._type === 'compound-path') {
+				if (clip && child instanceof CompoundPath) {
 					children.push.apply(children, child.removeChildren());
 					child.remove();
 				} else if (!(child instanceof Symbol)) {
