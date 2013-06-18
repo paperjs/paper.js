@@ -2889,10 +2889,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// over their fill.
 		// Exclude Raster items since they never draw a stroke and handle
 		// opacity by themselves (they also don't call _setStyles)
-		var blending = this._blendMode !== 'normal',
+		var blendMode = this._blendMode,
 			parentCtx, itemOffset, prevOffset;
-		if (blending || this._opacity < 1 && this._type !== 'raster'
-				&& (this._type !== 'path' 
+		if (blendMode !== 'normal' || this._opacity < 1
+				&& this._type !== 'raster' && (this._type !== 'path' 
 					|| this.hasFill() && this.hasStroke())) {
 			// Apply the paren't global matrix to the calculation of correct
 			// bounds.
@@ -2930,29 +2930,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// If a temporary canvas was created before, composite it onto the
 		// parent canvas:
 		if (parentCtx) {
-			// Restore previous offset.
-			param.offset = prevOffset;
-			var offset = itemOffset.subtract(prevOffset);
-			// If the item has a blendMode, use BlendMode#process to
-			// composite its canvas on the parentCanvas.
-			if (blending) {
-				// The pixel offset of the temporary canvas to the parent
-				// canvas.
-				BlendMode.process(this._blendMode, ctx, parentCtx,
-					this._opacity, offset);
-			} else {
-				// Otherwise just set the globalAlpha before drawing the
-				// temporary canvas on the parent canvas.
-				parentCtx.save();
-				// Reset transformations, since we're blitting and pixel
-				// scale and with a given offset.
-				parentCtx.setTransform(1, 0, 0, 1, 0, 0);
-				parentCtx.globalAlpha = this._opacity;
-				parentCtx.drawImage(ctx.canvas, offset.x, offset.y);
-				parentCtx.restore();
-			}
+			// Use BlendMode.process even for processing normal blendMode with
+			// opacity.
+			BlendMode.process(blendMode, ctx, parentCtx, this._opacity,
+					// Calculate the pixel offset of the temporary canvas to the
+					// parent canvas.
+					itemOffset.subtract(prevOffset));
 			// Return the temporary context, so it can be reused
 			CanvasProvider.release(ctx);
+			// Restore previous offset.
+			param.offset = prevOffset;
 		}
 	}
 }, Base.each(['down', 'drag', 'up', 'move'], function(name) {

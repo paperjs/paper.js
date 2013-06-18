@@ -234,18 +234,24 @@ var BlendMode = new function() {
 	}, {});
 	CanvasProvider.release(ctx);
 
-	this.process = function(blendMode, srcContext, dstContext, opacity, offset) {
-		var process = modes[blendMode];
-		if (!process)
-			return;
-		var srcCanvas = srcContext.canvas;
+	this.process = function(blendMode, srcContext, dstContext, alpha, offset) {
+		var srcCanvas = srcContext.canvas,
+			normal = blendMode === 'normal';
 		// Use native blend-modes if supported, and fall back to emulation.
-		if (this.nativeModes[blendMode]) {
+		if (normal || this.nativeModes[blendMode]) {
 			dstContext.save();
-			dstContext.globalCompositeOperation = blendMode;
+			// Reset transformations, since we're blitting and pixel scale and
+			// with a given offset.
+			dstContext.setTransform(1, 0, 0, 1, 0, 0);
+			dstContext.globalAlpha = alpha;
+			if (!normal)
+				dstContext.globalCompositeOperation = blendMode;
 			dstContext.drawImage(srcCanvas, offset.x, offset.y);
 			dstContext.restore();	
 		} else {
+			var process = modes[blendMode];
+			if (!process)
+				return;
 			var dstData = dstContext.getImageData(offset.x, offset.y,
 					srcCanvas.width, srcCanvas.height),
 				dst  = dstData.data,
@@ -261,12 +267,12 @@ var BlendMode = new function() {
 				sa = src[i + 3];
 				ba = dst[i + 3];
 				process();
-				var a1 = sa * opacity / 255,
+				var a1 = sa * alpha / 255,
 					a2 = 1 - a1;
 				dst[i] = a1 * dr + a2 * br;
 				dst[i + 1] = a1 * dg + a2 * bg;
 				dst[i + 2] = a1 * db + a2 * bb;
-				dst[i + 3] = sa * opacity + a2 * ba;
+				dst[i + 3] = sa * alpha + a2 * ba;
 			}
 			dstContext.putImageData(dstData, offset.x, offset.y);
 		}
