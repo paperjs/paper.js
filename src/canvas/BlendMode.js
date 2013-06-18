@@ -215,10 +215,9 @@ var BlendMode = new function() {
 		}
 	};
 
-	// Build a lookup table for natively supported blend-modes (on browsers)
-	// where the CSS blend-modes are supported. Just check for 
-	// globalCompositeOperation to actually be sticky is not enough, since 
-	// Chome 27 pretends for them to work, but does not apply the modes. 
+	// Build a lookup table for natively supported CSS blend-modes. Just seeing
+	// if globalCompositeOperation is actually sticky is not enough, as Chome 27
+	// pretends for blend-modes to work, but does not actually apply them. 
 	var ctx = CanvasProvider.getContext(1, 1);
 	// Multiply #300 (51) and #a00 (170) and see if we get #200 (34)
 	ctx.fillStyle = '#300';
@@ -227,7 +226,7 @@ var BlendMode = new function() {
 	ctx.fillStyle = '#a00';
 	ctx.fillRect(0, 0, 1, 1);
 	var data = ctx.getImageData(0, 0, 1, 1).data;
-	// If data[0] is 34, the mode has worked. Now feature detect all modes that
+	// If data[0] is 34, the mode has worked. Now feature-detect all modes that
 	// the browser claims to support.
 	this.nativeModes = data[0] === 34 && Base.each(modes, function(func, mode) {
 		ctx.globalCompositeOperation = mode;
