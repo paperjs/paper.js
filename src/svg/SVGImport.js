@@ -78,8 +78,6 @@ new function() {
 			project = item._project,
 			currentStyle = project._currentStyle,
 			children = [];
-		// Set the default color to black, since that's how SVG handles fills.
-		item.setFillColor('black');
 		if (!clip) {
 			// Have the group not pass on all transformations to its children,
 			// as this is how SVG works too.
