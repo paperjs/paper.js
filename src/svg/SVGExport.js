@@ -197,12 +197,6 @@ new function() {
 		return createElement('image', attrs);
 	}
 
-	function exportText(item) {
-		var node = createElement('text', getTransform(item, true));
-		node.textContent = item._content;
-		return node;
-	}
-
 	function exportPath(item) {
 		var segments = item._segments,
 			center = item.getPosition(true),
@@ -387,14 +381,20 @@ new function() {
 		return 'url(#' + gradientNode.id + ')';
 	}
 
+	function exportText(item) {
+		var node = createElement('text', getTransform(item, true));
+		node.textContent = item._content;
+		return node;
+	}
+
 	var exporters = {
 		group: exportGroup,
 		layer: exportGroup,
 		raster: exportRaster,
 		path: exportPath,
-		'point-text': exportText,
+		'compound-path': exportCompoundPath,
 		'placed-symbol': exportPlacedSymbol,
-		'compound-path': exportCompoundPath
+		'point-text': exportText
 	};
 
 	function applyStyle(item, node) {
