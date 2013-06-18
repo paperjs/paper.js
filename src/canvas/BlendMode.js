@@ -234,7 +234,10 @@ var BlendMode = new function() {
 	}, {});
 	CanvasProvider.release(ctx);
 
-	this.process = function(blendMode, srcContext, dstContext, alpha, offset) {
+	this.process = function(blendMode, srcContext, dstContext, opacity, offset) {
+		var process = modes[blendMode];
+		if (!process)
+			return;
 		var srcCanvas = srcContext.canvas;
 		// Use native blend-modes if supported, and fall back to emulation.
 		if (this.nativeModes[blendMode]) {
@@ -248,11 +251,6 @@ var BlendMode = new function() {
 				dst  = dstData.data,
 				src  = srcContext.getImageData(0, 0,
 					srcCanvas.width, srcCanvas.height).data;
-
-			var process = modes[blendMode];
-			if (!process)
-				return;
-
 			for (var i = 0, l = dst.length; i < l; i += 4) {
 				sr = src[i];
 				br = dst[i];
@@ -263,12 +261,12 @@ var BlendMode = new function() {
 				sa = src[i + 3];
 				ba = dst[i + 3];
 				process();
-				var a1 = sa * alpha / 255,
+				var a1 = sa * opacity / 255,
 					a2 = 1 - a1;
 				dst[i] = a1 * dr + a2 * br;
 				dst[i + 1] = a1 * dg + a2 * bg;
 				dst[i + 2] = a1 * db + a2 * bb;
-				dst[i + 3] = sa * alpha + a2 * ba;
+				dst[i + 3] = sa * opacity + a2 * ba;
 			}
 			dstContext.putImageData(dstData, offset.x, offset.y);
 		}
