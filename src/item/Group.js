@@ -98,7 +98,8 @@ var Group = Item.extend(/** @lends Group# */{
 
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
-		if (flags & /*#=*/ ChangeFlag.HIERARCHY && !this._matrix.isIdentity()) {
+		if (flags & /*#=*/ ChangeFlag.HIERARCHY && this._applyMatrix
+				&& !this._matrix.isIdentity()) {
 			// Apply matrix now that we have content.
 			this.applyMatrix();
 		}
