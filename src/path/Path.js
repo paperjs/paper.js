@@ -1912,7 +1912,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				fillColor = style.getFillColor(),
 				strokeColor = style.getStrokeColor(),
 				dashArray = style.getDashArray(),
-				drawDash = !paper.support.dash && strokeColor
+				drawDash = !paper.support.nativeDash && strokeColor
 						&& dashArray && dashArray.length;
 
 			// Prepare the canvas path if we have any situation that requires it

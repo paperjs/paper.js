@@ -2848,7 +2848,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			ctx.fillStyle = fillColor.toCanvasStyle(ctx);
 		if (strokeColor) {
 			ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
-			if (paper.support.dash && dashArray && dashArray.length) {
+			if (paper.support.nativeDash && dashArray && dashArray.length) {
 				if ('setLineDash' in ctx) {
 					ctx.setLineDash(dashArray);
 					ctx.lineDashOffset = dashOffset;
@@ -2858,11 +2858,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				}
 			}
 		}
-		// If the item only defines a strokeColor or a fillColor, draw it
-		// directly with the globalAlpha set, otherwise we will do it later when
-		// we composite the temporary canvas.
-		if (!fillColor || !strokeColor)
-			ctx.globalAlpha = this._opacity;
 	},
 
 	// TODO: Implement View into the drawing.
@@ -2891,51 +2886,68 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Exclude Raster items since they never draw a stroke and handle
 		// opacity by themselves (they also don't call _setStyles)
 		var blendMode = this._blendMode,
-			parentCtx, itemOffset, prevOffset;
-		if (blendMode !== 'normal' || this._opacity < 1
-				&& this._type !== 'raster' && (this._type !== 'path' 
-					|| this.hasFill() && this.hasStroke())) {
+			opacity = this._opacity,
+			type = this._type,
+			nativeBlend = BlendMode.nativeModes[blendMode],
+			// Determine if we can draw directly, or if we need to draw into a
+			// separate canvas and then composite onto the main canvas.
+			direct = blendMode === 'normal' && opacity === 1
+					// If blending natively is possible, see if the type of item
+					// and its color settings allow it. A path with only a fill 
+					// or a stroke can be directly blended, but if it has both,
+					// it needs to be drawn into a separate canvas first.
+					|| (nativeBlend || opacity < 1) && (type === 'raster'
+					|| (type === 'path' || type === 'compound-path')
+					&& !(this.hasFill() && this.hasStroke())),
+			mainCtx, itemOffset, prevOffset;
+		if (!direct) {
 			// Apply the paren't global matrix to the calculation of correct
 			// bounds.
 			var bounds = this.getStrokeBounds(parentMatrix);
 			if (!bounds.width || !bounds.height)
 				return;
-			// Store previous offset and save the parent context, so we can
-			// draw onto it later
+			// Store previous offset and save the main context, so we can
+			// draw onto it later.
 			prevOffset = param.offset;
 			// Floor the offset and ceil the size, so we don't cut off any
 			// antialiased pixels when drawing onto the temporary canvas.
 			itemOffset = param.offset = bounds.getTopLeft().floor();
-			// Set ctx to the context of the temporary canvas,
-			// so we draw onto it, instead of the parentCtx
-			parentCtx = ctx;
+			// Set ctx to the context of the temporary canvas, so we draw onto
+			// it, instead of the mainCtx.
+			mainCtx = ctx;
 			ctx = CanvasProvider.getContext(
 					bounds.getSize().ceil().add(new Size(1, 1)));
 		}
 		ctx.save();
-		// Translate the context so the topLeft of the item is at (0, 0)
-		// on the temporary canvas.
-		if (parentCtx)
+		// If drawing directly, handle opacity and native blending now,
+		// otherwise we will do it later when the temporary canvas is composited.
+		if (direct) {
+			ctx.globalAlpha = opacity;
+			if (nativeBlend)
+				ctx.globalCompositeOperation = blendMode;
+		} else {
+			// Translate the context so the topLeft of the item is at (0, 0)
+			// on the temporary canvas.
 			ctx.translate(-itemOffset.x, -itemOffset.y);
-		// Apply globalMatrix when blitting into temporary canvas.
-		(parentCtx ? globalMatrix : this._matrix).applyToContext(ctx);
+		}
+		// Apply globalMatrix when drawing into temporary canvas.
+		(direct ? this._matrix : globalMatrix).applyToContext(ctx);
 		// If we're drawing into a separate canvas and a clipItem is defined for
 		// the current rendering loop, we need to draw the clip item again.
-		if (parentCtx && param.clipItem)
+		if (!direct && param.clipItem)
 			param.clipItem.draw(ctx, param.extend({ clip: true }));
 		this._draw(ctx, param);
 		ctx.restore();
 		transforms.pop();
 		if (param.clip)
 			ctx.clip();
-		// If a temporary canvas was created before, composite it onto the
-		// parent canvas:
-		if (parentCtx) {
+		// If a temporary canvas was created, composite it onto the main canvas:
+		if (!direct) {
 			// Use BlendMode.process even for processing normal blendMode with
 			// opacity.
-			BlendMode.process(blendMode, ctx, parentCtx, this._opacity,
+			BlendMode.process(blendMode, ctx, mainCtx, opacity,
 					// Calculate the pixel offset of the temporary canvas to the
-					// parent canvas.
+					// main canvas.
 					itemOffset.subtract(prevOffset));
 			// Return the temporary context, so it can be reused
 			CanvasProvider.release(ctx);
