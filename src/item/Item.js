@@ -2932,13 +2932,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (parentCtx) {
 			// Restore previous offset.
 			param.offset = prevOffset;
+			var offset = itemOffset.subtract(prevOffset);
 			// If the item has a blendMode, use BlendMode#process to
 			// composite its canvas on the parentCanvas.
 			if (blending) {
 				// The pixel offset of the temporary canvas to the parent
 				// canvas.
 				BlendMode.process(this._blendMode, ctx, parentCtx,
-					this._opacity, itemOffset.subtract(prevOffset));
+					this._opacity, offset);
 			} else {
 				// Otherwise just set the globalAlpha before drawing the
 				// temporary canvas on the parent canvas.
@@ -2947,7 +2948,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				// scale and with a given offset.
 				parentCtx.setTransform(1, 0, 0, 1, 0, 0);
 				parentCtx.globalAlpha = this._opacity;
-				parentCtx.drawImage(ctx.canvas, itemOffset.x, itemOffset.y);
+				parentCtx.drawImage(ctx.canvas, offset.x, offset.y);
 				parentCtx.restore();
 			}
 			// Return the temporary context, so it can be reused
