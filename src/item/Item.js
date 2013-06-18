@@ -391,7 +391,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	hasStroke: function() {
-		return !!this.getStyle().getStrokeColor();
+		var style = this.getStyle();
+		return !!style.getStrokeColor() && style.getStrokeWidth() > 0;
 	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	// Produce getter/setters for properties. We need setters because we want to
