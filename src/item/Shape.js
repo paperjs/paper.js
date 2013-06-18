@@ -18,7 +18,7 @@
  * @extends Item
  */
 var Shape = Item.extend(/** @lends Shape# */{
-	_applyMatrix: false,
+	_transformContent: false,
 
 	initialize: function Shape(type, point, size) {
 		Item.call(this, point);

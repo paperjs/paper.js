@@ -18,7 +18,7 @@
  * @extends Item
  */
 var Raster = Item.extend(/** @lends Raster# */{
-	_applyMatrix: false,
+	_transformContent: false,
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
 	_boundsGetter: 'getBounds',

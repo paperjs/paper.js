@@ -295,7 +295,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return true;
 	},
 
-	_transformContent: function(matrix) {
+	_applyMatrix: function(matrix) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++)
 			this._segments[i]._transformCoordinates(matrix, coords, true);

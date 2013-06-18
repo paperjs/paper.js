@@ -43,7 +43,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	// All items apply their matrix by default.
 	// Exceptions are Raster, PlacedSymbol, Clip and Shape.
-	_applyMatrix: true,
+	_transformContent: true,
 	_boundsSelected: false,
 	// Provide information about fields to be serialized, with their defaults
 	// that can be ommited.
@@ -2219,7 +2219,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		this._matrix.preConcatenate(matrix);
 		// Call applyMatrix if we need to directly apply the accumulated
 		// transformations to the item's content.
-		if (this._applyMatrix || arguments[1])
+		if (this._transformContent || arguments[1])
 			this.applyMatrix(true);
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
@@ -2250,7 +2250,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return this;
 	},
 
-	_transformContent: function(matrix, applyMatrix) {
+	_applyMatrix: function(matrix, applyMatrix) {
 		var children = this._children;
 		if (children && children.length > 0) {
 			for (var i = 0, l = children.length; i < l; i++)
@@ -2260,14 +2260,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	applyMatrix: function(_dontNotify) {
-		// Call #_transformContent() with the internal _matrix and pass true for
+		// Call #_applyMatrix() with the internal _matrix and pass true for
 		// applyMatrix. Application is not possible on Raster, PointText,
 		// PlacedSymbol, since the matrix is where the actual location /
 		// transformation state is stored.
 		// Pass on the transformation to the content, and apply it there too,
 		// by passing true for the 2nd hidden parameter.
 		var matrix = this._matrix;
-		if (this._transformContent(matrix, true)) {
+		if (this._applyMatrix(matrix, true)) {
 			// When the matrix could be applied, we also need to transform
 			// color styles with matrices (only gradients so far):
 			var style = this._style,

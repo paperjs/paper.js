@@ -21,7 +21,7 @@
  * @extends Group
  */
 var Clip = Group.extend(/** @lends Clip# */{
-	_applyMatrix: false,
+	_transformContent: false,
 
 	initialize: function Clip() {
 		Group.apply(this, arguments);
