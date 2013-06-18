@@ -320,7 +320,7 @@ new function() {
 	function exportPlacedSymbol(item) {
 		var attrs = getTransform(item, true),
 			symbol = item.getSymbol(),
-			symbolNode = getDefinition(symbol);
+			symbolNode = getDefinition(symbol, 'symbol');
 			definition = symbol.getDefinition(),
 			bounds = definition.getBounds();
 		if (!symbolNode) {
@@ -328,7 +328,7 @@ new function() {
 				viewBox: formatter.rectangle(bounds)
 			});
 			symbolNode.appendChild(exportSVG(definition));
-			setDefinition(symbol, symbolNode);
+			setDefinition(symbol, symbolNode, 'symbol');
 		}
 		attrs.href = '#' + symbolNode.id;
 		attrs.x += bounds.x;
@@ -344,7 +344,7 @@ new function() {
 		// even when they share the same gradient defintion.
 		// http://www.svgopen.org/2011/papers/20-Separating_gradients_from_geometry/
 		// TODO: Implement gradient merging in SVGImport
-		var gradientNode = getDefinition(color);
+		var gradientNode = getDefinition(color, 'color');
 		if (!gradientNode) {
 			var gradient = color.getGradient(),
 				radial = gradient._radial,
@@ -390,7 +390,7 @@ new function() {
 					attrs['stop-opacity'] = alpha;
 				gradientNode.appendChild(createElement('stop', attrs));
 			}
-			setDefinition(color, gradientNode);
+			setDefinition(color, gradientNode, 'color');
 		}
 		return 'url(#' + gradientNode.id + ')';
 	}
@@ -452,21 +452,22 @@ new function() {
 	}
 
 	var definitions;
-	function getDefinition(item) {
+	function getDefinition(item, type) {
 		if (!definitions)
 			definitions = { ids: {}, svgs: {} };
-		return item && definitions.svgs[item._id];
+		return item && definitions.svgs[type + '-' + item._id];
 	}
 
 	function setDefinition(item, node, type) {
+		// Make sure the definitions lookup is created before we use it.
+		// This is required by 'clip', where getDefinition() is not called.
 		if (!definitions)
 			getDefinition();
 		// Have different id ranges per type
-		type = type || item._type;
 		var id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
-		// Give the svg node an ide, and link to it from the item id.
+		// Give the svg node an id, and link to it from the id.
 		node.id = type + '-' + id;
-		definitions.svgs[item._id] = node;
+		definitions.svgs[node.id] = node;
 	}
 
 	function exportDefinitions(node) {
