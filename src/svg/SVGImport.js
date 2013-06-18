@@ -367,11 +367,6 @@ new function() {
 		gradientTransform: applyTransform,
 		transform: applyTransform,
 
-		opacity: function(item, value) {
-			// http://www.w3.org/TR/SVG/masking.html#OpacityProperty
-			item.setOpacity(parseFloat(value));
-		},
-
 		'fill-opacity': applyOpacity,
 		'stroke-opacity': applyOpacity,
 

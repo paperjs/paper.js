@@ -25,7 +25,8 @@ var SVGStyles = Base.each({
 		right: 'end'
 	}],
 	font: ['font-family', 'string'],
-	fontSize: ['font-size', 'number']
+	fontSize: ['font-size', 'number'],
+	opacity: ['opacity', 'number']
 }, function(entry, key) {
 	var part = Base.capitalize(key),
 		lookup = entry[2];

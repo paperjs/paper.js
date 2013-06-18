@@ -399,9 +399,7 @@ new function() {
 
 	function applyStyle(item, node) {
 		var attrs = {},
-			style = item.getStyle(),
-			parent = item.getParent(),
-			parentStyle = parent && parent.getStyle();
+			parent = item.getParent();
 
 		if (item._name != null)
 			attrs.id = item._name;
@@ -411,8 +409,8 @@ new function() {
 			// (A layer or group which can have style values in SVG).
 			var get = entry.get,
 				type = entry.type,
-				value = style[get]();
-			if (!parentStyle || !Base.equals(parentStyle[get](), value)) {
+				value = item[get]();
+			if (!parent || !Base.equals(parent[get](), value)) {
 				if (type === 'color' && value != null) {
 					// Support for css-style rgba() values is not in SVG 1.1, so
 					// separate the alpha value of colors with alpha into the
@@ -438,8 +436,8 @@ new function() {
 			}
 		});
 
-		if (item._opacity != null && item._opacity < 1)
-			attrs.opacity = item._opacity;
+		if (attrs.opacity === 1)
+			delete attrs.opacity;
 
 		if (item._visibility != null && !item._visibility)
 			attrs.visibility = 'hidden';
