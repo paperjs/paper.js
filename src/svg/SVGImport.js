@@ -327,7 +327,7 @@ new function() {
 	function applyOpacity(item, value, name) {
 		// http://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
 		// http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
-		var color = item._style[name === 'fill-opacity' ? 'getFillColor'
+		var color = item[name === 'fill-opacity' ? 'getFillColor'
 				: 'getStrokeColor']();
 		if (color)
 			color.setAlpha(parseFloat(value));
@@ -339,7 +339,7 @@ new function() {
 	// can affect gradient fills.
 	var attributes = Base.merge(Base.each(SVGStyles, function(entry) {
 		this[entry.attribute] = function(item, value, name, node) {
-			item._style[entry.set](
+			item[entry.set](
 					convertValue(value, entry.type, entry.fromSVG));
 		};
 	}, {}), {
