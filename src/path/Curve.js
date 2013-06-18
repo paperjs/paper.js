@@ -813,11 +813,11 @@ statics: {
 			// k = (2/3) * h / a^2
 			var line, point;
 			if (offset === 0) {
-				line = new Line(values[0], values[1], values[2], values[3], true);
-				point = new Point(values[6]+values[4], values[7]+values[5]);
+				line = new Line(values[0], values[1], values[2], values[3]);
+				point = new Point(values[4], values[5]);
 			} else {
-				line = new Line(values[6], values[7], values[4], values[5], true);
-				point = new Point(values[0]+values[2], values[1]+values[3]);
+				line = new Line(values[6], values[7], values[4], values[5]);
+				point = new Point(values[2], values[3]);
 			}
 			var a = line.getLength(),
 				h = line.getDistance(point);
