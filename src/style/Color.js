@@ -739,7 +739,7 @@ var Color = Base.extend(new function() {
 			if (alpha < 1)
 				components.push(alpha);
 			return (components.length == 4 ? 'rgba(' : 'rgb(')
-					+ components.join(', ') + ')';
+					+ components.join(',') + ')';
 		},
 
 		toCanvasStyle: function(ctx) {
