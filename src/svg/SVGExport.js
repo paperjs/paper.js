@@ -429,15 +429,18 @@ new function() {
 				}
 				attrs[entry.attribute] = value == null
 					? 'none'
-					: entry.type === 'color'
-						? value.gradient
-							? exportGradient(value, item)
-							: value.toCSS(true) // false for noAlpha, see above	
-						: entry.type === 'array'
-							? value.join(',')
-							: entry.type === 'number'
-								? formatter.number(value)
-								: value;
+					: entry.type === 'number'
+						? formatter.number(value)
+						: entry.type === 'color'
+							? value.gradient
+								? exportGradient(value, item)
+								// true for noAlpha, see above	
+								: value.toCSS(true)
+							: entry.type === 'array'
+								? value.join(',')
+								: entry.type === 'lookup'
+									? entry.toSVG[value]
+									: value;
 			}
 		});
 

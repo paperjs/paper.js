@@ -55,15 +55,18 @@ new function() {
 	}
 
 	// Converts a string attribute value to the specified type
-	function convertValue(value, type) {
+	function convertValue(value, type, lookup) {
 		return value === 'none'
 				? null
 				: type === 'number'
 					? parseFloat(value)
 					: type === 'array'
 						? value ? value.split(/[\s,]+/g).map(parseFloat) : []
-						: type === 'color' && getDefinition(value)
-							|| value;
+						: type === 'color'
+							? getDefinition(value) || value
+							: type === 'lookup'
+								? lookup[value]
+								: value;
 	}
 
 	// Importer functions for various SVG node types
@@ -336,7 +339,8 @@ new function() {
 	// can affect gradient fills.
 	var attributes = Base.merge(Base.each(SVGStyles, function(entry) {
 		this[entry.attribute] = function(item, value, name, node) {
-			item._style[entry.set](convertValue(value, entry.type));
+			item._style[entry.set](
+					convertValue(value, entry.type, entry.fromSVG));
 		};
 	}, {}), {
 		id: function(item, value) {
@@ -373,19 +377,6 @@ new function() {
 
 		'font-family': function(item, value) {
 			item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
-		},
-
-		'font-size': function(item, value) {
-			item.setFontSize(parseFloat(value));
-		},
-
-		'text-anchor': function(item, value) {
-			// http://www.w3.org/TR/SVG/text.html#TextAnchorProperty
-			item.setJustification({
-				start: 'left',
-				middle: 'center',
-				end: 'right'
-			}[value]);
 		},
 
 		visibility: function(item, value) {
