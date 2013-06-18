@@ -215,36 +215,63 @@ var BlendMode = new function() {
 		}
 	};
 
+	// Build a lookup table for natively supported blend-modes (on browsers)
+	// where the CSS blend-modes are supported. Just check for 
+	// globalCompositeOperation to actually be sticky is not enough, since 
+	// Chome 27 pretends for them to work, but does not apply the modes. 
+	var ctx = CanvasProvider.getContext(1, 1);
+	// Multiply #300 (51) and #a00 (170) and see if we get #200 (34)
+	ctx.fillStyle = '#300';
+	ctx.fillRect(0, 0, 1, 1);
+	ctx.globalCompositeOperation = 'multiply';
+	ctx.fillStyle = '#a00';
+	ctx.fillRect(0, 0, 1, 1);
+	var data = ctx.getImageData(0, 0, 1, 1).data;
+	// If data[0] is 34, the mode has worked. Now feature detect all modes that
+	// the browser claims to support.
+	this.nativeModes = data[0] === 34 && Base.each(modes, function(func, mode) {
+		ctx.globalCompositeOperation = mode;
+		this[mode] = ctx.globalCompositeOperation === mode;
+	}, {});
+	CanvasProvider.release(ctx);
+
 	this.process = function(blendMode, srcContext, dstContext, alpha, offset) {
-		var srcCanvas = srcContext.canvas,
-			dstData = dstContext.getImageData(offset.x, offset.y,
+		var srcCanvas = srcContext.canvas;
+		// Use native blend-modes if supported, and fall back to emulation.
+		if (this.nativeModes[blendMode]) {
+			dstContext.save();
+			dstContext.globalCompositeOperation = blendMode;
+			dstContext.drawImage(srcCanvas, offset.x, offset.y);
+			dstContext.restore();	
+		} else {
+			var dstData = dstContext.getImageData(offset.x, offset.y,
 					srcCanvas.width, srcCanvas.height),
-			dst  = dstData.data,
-			src  = srcContext.getImageData(0, 0,
+				dst  = dstData.data,
+				src  = srcContext.getImageData(0, 0,
 					srcCanvas.width, srcCanvas.height).data;
 
+			var process = modes[blendMode];
+			if (!process)
+				return;
 
-		var process = modes[blendMode];
-		if (!process)
-			return;
-
-		for (var i = 0, l = dst.length; i < l; i += 4) {
-			sr = src[i];
-			br = dst[i];
-			sg = src[i + 1];
-			bg = dst[i + 1];
-			sb = src[i + 2];
-			bb = dst[i + 2];
-			sa = src[i + 3];
-			ba = dst[i + 3];
-			process();
-			var a1 = sa * alpha / 255,
-				a2 = 1 - a1;
-			dst[i] = a1 * dr + a2 * br;
-			dst[i + 1] = a1 * dg + a2 * bg;
-			dst[i + 2] = a1 * db + a2 * bb;
-			dst[i + 3] = sa * alpha + a2 * ba;
+			for (var i = 0, l = dst.length; i < l; i += 4) {
+				sr = src[i];
+				br = dst[i];
+				sg = src[i + 1];
+				bg = dst[i + 1];
+				sb = src[i + 2];
+				bb = dst[i + 2];
+				sa = src[i + 3];
+				ba = dst[i + 3];
+				process();
+				var a1 = sa * alpha / 255,
+					a2 = 1 - a1;
+				dst[i] = a1 * dr + a2 * br;
+				dst[i + 1] = a1 * dg + a2 * bg;
+				dst[i + 2] = a1 * db + a2 * bb;
+				dst[i + 3] = sa * alpha + a2 * ba;
+			}
+			dstContext.putImageData(dstData, offset.x, offset.y);
 		}
-		dstContext.putImageData(dstData, offset.x, offset.y);
 	};
 };
