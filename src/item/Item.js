@@ -2220,7 +2220,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Call applyMatrix if we need to directly apply the accumulated
 		// transformations to the item's content.
 		if (this._applyMatrix || arguments[1])
-			this.applyMatrix(false);
+			this.applyMatrix(true);
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(/*#=*/ Change.GEOMETRY);
