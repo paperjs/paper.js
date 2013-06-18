@@ -71,9 +71,10 @@ new function() {
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
 			clip = type === 'clippath',
-			item = clip ? new CompoundPath() : new Group(),
+			item = clip ? new CompoundPath() : new Clip(),
 			project = item._project,
-			currentStyle = project._currentStyle;
+			currentStyle = project._currentStyle,
+			children = [];
 		// Style on items needs to be handled differently than all other items:
 		// We first apply the style to the item, then use it as the project's
 		// currentStyle, so it is used as a default for the creation of all
@@ -85,6 +86,7 @@ new function() {
 			item = applyAttributes(item, node);
 			project._currentStyle = item._style.clone();
 		}
+		// Collect the children in an array and apply them all at once.
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var childNode = nodes[i],
 				child;
@@ -92,13 +94,14 @@ new function() {
 				// If adding CompoundPaths to other CompoundPaths,
 				// we need to "unbox" them first:
 				if (clip && child._type === 'compound-path') {
-					item.addChildren(child.removeChildren());
+					children.push.apply(children, child.removeChildren());
 					child.remove();
 				} else if (!(child instanceof Symbol)) {
-					item.addChild(child);
+					children.push(child);
 				}
 			}
 		}
+		item.addChildren(children);
 		// clip paths are reduced (unboxed) and their attributes applied at the
 		// end.
 		if (clip)
@@ -502,7 +505,7 @@ new function() {
 			item = importer && importer(node, type),
 			data = node.getAttribute('data-paper-data');
 		// See importGroup() for an explanation of this filtering:
-		if (item && item._type !== 'group')
+		if (item && !(item instanceof Group))
 			item = applyAttributes(item, node);
 		if (item && data)
 			item._data = JSON.parse(data);
