@@ -417,9 +417,11 @@ new function() {
 		Base.each(SVGStyles, function(entry) {
 			// Get a given style only if it differs from the value on the parent
 			// (A layer or group which can have style values in SVG).
-			var value = style[entry.get]();
-			if (!parentStyle || !Base.equals(parentStyle[entry.get](), value)) {
-				if (entry.type === 'color' && value != null) {
+			var get = entry.get,
+				type = entry.type,
+				value = style[get]();
+			if (!parentStyle || !Base.equals(parentStyle[get](), value)) {
+				if (type === 'color' && value != null) {
 					// Support for css-style rgba() values is not in SVG 1.1, so
 					// separate the alpha value of colors with alpha into the
 					// separate fill- / stroke-opacity attribute:
@@ -429,16 +431,16 @@ new function() {
 				}
 				attrs[entry.attribute] = value == null
 					? 'none'
-					: entry.type === 'number'
+					: type === 'number'
 						? formatter.number(value)
-						: entry.type === 'color'
+						: type === 'color'
 							? value.gradient
 								? exportGradient(value, item)
 								// true for noAlpha, see above	
 								: value.toCSS(true)
-							: entry.type === 'array'
+							: type === 'array'
 								? value.join(',')
-								: entry.type === 'lookup'
+								: type === 'lookup'
 									? entry.toSVG[value]
 									: value;
 			}
