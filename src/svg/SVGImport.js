@@ -375,10 +375,6 @@ new function() {
 		'fill-opacity': applyOpacity,
 		'stroke-opacity': applyOpacity,
 
-		'font-family': function(item, value) {
-			item.setFont(value.split(',')[0].replace(/^\s+|\s+$/g, ''));
-		},
-
 		visibility: function(item, value) {
 			item.setVisible(value === 'visible');
 		},

@@ -24,6 +24,7 @@ var SVGStyles = Base.each({
 		center: 'middle',
 		right: 'end'
 	}],
+	font: ['font-family', 'string'],
 	fontSize: ['font-size', 'number']
 }, function(entry, key) {
 	var part = Base.capitalize(key),

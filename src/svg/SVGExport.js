@@ -198,15 +198,7 @@ new function() {
 	}
 
 	function exportText(item) {
-		var attrs = getTransform(item, true),
-			style = item.getStyle(),
-			font = style.getFont(),
-			fontSize = style.getFontSize();
-		if (font)
-			attrs['font-family'] = font;
-		if (fontSize)
-			attrs['font-size'] = fontSize;
-		var node = createElement('text', attrs);
+		var node = createElement('text', getTransform(item, true));
 		node.textContent = item._content;
 		return node;
 	}
