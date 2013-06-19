@@ -24,7 +24,7 @@ new function() {
 			value = namespace
 				? node.getAttributeNS(namespace, name)
 				: node.getAttribute(name);
-		if (value == 'null')
+		if (value === 'null')
 			value = null;
 		// Interpret value as number. Never return NaN, but 0 instead.
 		// If the value is a sequence of numbers, parseFloat will
@@ -95,9 +95,9 @@ new function() {
 			var childNode = nodes[i],
 				child;
 			if (childNode.nodeType == 1 && (child = importSVG(childNode))) {
-				// If adding CompoundPaths to other CompoundPaths,
+				// When adding CompoundPaths to other CompoundPaths,
 				// we need to "unbox" them first:
-				if (clip && child instanceof CompoundPath) {
+				if (child instanceof CompoundPath) {
 					children.push.apply(children, child.removeChildren());
 					child.remove();
 				} else if (!(child instanceof Symbol)) {
