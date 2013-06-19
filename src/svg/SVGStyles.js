@@ -11,7 +11,9 @@
  */
 
 var SVGStyles = Base.each({
+	// Fill
 	fillColor: ['fill', 'color'],
+	// Stroke
 	strokeColor: ['stroke', 'color'],
 	strokeWidth: ['stroke-width', 'number'],
 	strokeCap: ['stroke-linecap', 'string'],
@@ -19,14 +21,17 @@ var SVGStyles = Base.each({
 	miterLimit: ['stroke-miterlimit', 'number'],
 	dashArray: ['stroke-dasharray', 'array'],
 	dashOffset: ['stroke-dashoffset', 'number'],
+	// Text
+	font: ['font-family', 'string'],
+	fontSize: ['font-size', 'number'],
 	justification: ['text-anchor', 'lookup', {
 		left: 'start',
 		center: 'middle',
 		right: 'end'
 	}],
-	font: ['font-family', 'string'],
-	fontSize: ['font-size', 'number'],
-	opacity: ['opacity', 'number']
+	// Item
+	opacity: ['opacity', 'number'],
+	blendMode: ['mix-blend-mode', 'string']
 }, function(entry, key) {
 	var part = Base.capitalize(key),
 		lookup = entry[2];

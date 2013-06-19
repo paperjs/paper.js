@@ -189,6 +189,7 @@ new function() {
 	function exportRaster(item) {
 		var attrs = getTransform(item, true),
 			size = item.getSize();
+		// Take into account that rasters are centered:
 		attrs.x -= size.width / 2;
 		attrs.y -= size.height / 2;
 		attrs.width = size.width;
