@@ -97,7 +97,7 @@ new function() {
 			if (childNode.nodeType == 1 && (child = importSVG(childNode))) {
 				// When adding CompoundPaths to other CompoundPaths,
 				// we need to "unbox" them first:
-				if (child instanceof CompoundPath) {
+				if (clip && child instanceof CompoundPath) {
 					children.push.apply(children, child.removeChildren());
 					child.remove();
 				} else if (!(child instanceof Symbol)) {
