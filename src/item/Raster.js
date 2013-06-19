@@ -508,7 +508,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		return this.getContext().createImageData(size.width, size.height);
 	},
 
-	// DOCS: document Raster#getData
+	// DOCS: document Raster#getImageData
 	/**
 	 * @param {Rectangle} rect
 	 * @return {ImageData}

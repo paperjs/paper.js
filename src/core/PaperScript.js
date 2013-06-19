@@ -137,6 +137,11 @@ var PaperScript = new function() {
 
 		// Recursively walks the AST and replaces the code of certain nodes
 		function walkAst(node) {
+			// array[i++] is a MemberExpression with computed = true.
+			// We cannot replace that with array[_$_(i, "+", 1)], as it would
+			// break the code, so let's bail out.
+			if (!node || node.type === 'MemberExpression' && node.computed)
+				return;
 			for (var key in node) {
 				if (key === 'range')
 					continue;
