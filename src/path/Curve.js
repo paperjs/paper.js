@@ -828,8 +828,9 @@ statics: {
 			var dt = Curve.evaluate(values, offset, isParameter, 1),
 				// Second derivative at offset/parameter
 				d2t = Curve.evaluate(values, offset, isParameter, 3),
-				dx = dt.x, dy = dt.y, d2x = d2t.x, d2y = d2t.y;
-			return (dx * d2y - dy * d2x) / Math.pow(dx * dx + dy * dy, 3 / 2);
+				dx = dt.x,
+				dy = dt.y;
+			return (dx * d2t.y - dy * d2t.x) / Math.pow(dx * dx + dy * dy, 3 / 2);
 		}
 	},
 
