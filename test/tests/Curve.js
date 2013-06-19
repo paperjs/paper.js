@@ -32,3 +32,45 @@ test('Curve#getPointAt()', function() {
 				'curve.getPointAt(' + entry[0] + ', true);');
 	}
 });
+
+test('Curve#getTangentAt()', function() {
+	var curve = new Path.Circle({
+		center: [100, 100],
+		radius: 100
+	}).getFirstCurve();
+
+	var points = [
+		[0, new Point(0, -165.68542 )],
+		[0.25, new Point(60.7233, -143.56602)],
+		[0.5, new Point(108.57864, -108.57864)],
+		[0.75, new Point(143.56602, -60.7233)],
+		[1, new Point(165.68542, 0)]
+	];
+
+	for (var i = 0; i < points.length; i++) {
+		var entry = points[i];
+		comparePoints(curve.getTangentAt(entry[0], true), entry[1],
+				'curve.getPointAt(' + entry[0] + ', true);');
+	}
+});
+
+test('Curve#getNormalAt()', function() {
+	var curve = new Path.Circle({
+		center: [100, 100],
+		radius: 100
+	}).getFirstCurve();
+
+	var points = [
+		[0, new Point(-165.68542, 0)],
+		[0.25, new Point(-143.56602, -60.7233)],
+		[0.5, new Point(-108.57864, -108.57864)],
+		[0.75, new Point(-60.7233, -143.56602)],
+		[1, new Point(0, -165.68542)]
+	];
+
+	for (var i = 0; i < points.length; i++) {
+		var entry = points[i];
+		comparePoints(curve.getNormalAt(entry[0], true), entry[1],
+				'curve.getPointAt(' + entry[0] + ', true);');
+	}
+});
