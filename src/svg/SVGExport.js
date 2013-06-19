@@ -534,7 +534,7 @@ new function() {
 					height: size.height,
 					version: '1.1',
 					xmlns: 'http://www.w3.org/2000/svg',
-					xlink: 'http://www.w3.org/1999/xlink'
+					'xmlns:xlink': 'http://www.w3.org/1999/xlink'
 				});
 			for (var i = 0, l = layers.length; i < l; i++)
 				node.appendChild(exportSVG(layers[i]));
