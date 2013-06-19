@@ -444,14 +444,14 @@ statics: {
 				cy = 3 * (c1y - p1y),
 				by = 3 * (c2y - c1y) - cy,
 				ay = p2y - p1y - cy - by;
-			switch (type) {
-			case 0: // point
+			if (type === 0) {
 				// Calculate the curve point at parameter value t
 				x = ((ax * t + bx) * t + cx) * t + p1x;
 				y = ((ay * t + by) * t + cy) * t + p1y;
-				break;
-			case 1: // tangent, 1st derivative
-			case 2: // normal, 1st derivative
+			} else {
+				// 1: tangent, 1st derivative
+				// 2: normal, 1st derivative
+				// 3: curvature, 1st derivative & 2nd derivative
 				// Prevent tangents and normals of length 0:
 				// http://stackoverflow.com/questions/10506868/
 				var tMin = /*#=*/ Numerical.TOLERANCE;
@@ -465,11 +465,14 @@ statics: {
 					x = (3 * ax * t + 2 * bx) * t + cx;
 					y = (3 * ay * t + 2 * by) * t + cy;
 				}
-				break;
-			case 3: // 2nd derivative
-				x = 6 * ax * t + 2 * bx;
-				y = 6 * ay * t + 2 * by;
-				break;
+				if (type === 3) {
+					// Calculate 2nd derivative, and curvature from there:
+					// http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
+					// k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
+					var x2 = 6 * ax * t + 2 * bx,
+						y2 = 6 * ay * t + 2 * by;
+					return (x * y2 - y * x2) / Math.pow(x * x + y * y, 3 / 2);
+				}
 			}
 		}
 		// The normal is simply the rotated tangent:
@@ -771,7 +774,7 @@ statics: {
 	 * @bean
 	 * @ignore
 	 */
-}), Base.each(['getPoint', 'getTangent', 'getNormal'],
+}), Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvatureAt'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
 	// determine the bounds of Curve objects with defined segment1 and segment2
 	// values Curve.getBounds() can be used directly on curve arrays, without
@@ -788,52 +791,6 @@ statics: {
 		};
 	},
 /** @lends Curve# */{
-	/**
-	 * Calculate the curvature at the specified offset on the path.
-	 * Curvature indicates how sharply it curves. A straight line has zero
-	 * curvature where as a circle has a constant curvature.
-	 *
-	 * Curvature at a point, by definition, is a scalar value equal to
-	 * the reciprocal of the 'osculating circle' at that point on the path.
-	 *
-	 * Reference:
-	 * http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
-	 *
-	 * @param {Number} offset the offset on the curve, or the curve time
-	 *        parameter if {@code isParameter} is {@code true}
-	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-	 *        is a curve time parameter.
-	 * @return {Number} Curvatue of the curve at specified offset
-	 */
-	getCurvatureAt: function(offset, isParameter) {
-		var values = this.getValues();
-		if (offset === 0
-				|| isParameter ? offset === 1 : offset === this.getLength()) {
-			//	We're at an end point:
-			// k = (2/3) * h / a^2
-			var line, point;
-			if (offset === 0) {
-				line = new Line(values[0], values[1], values[2], values[3]);
-				point = new Point(values[4], values[5]);
-			} else {
-				line = new Line(values[6], values[7], values[4], values[5]);
-				point = new Point(values[2], values[3]);
-			}
-			var a = line.getLength(),
-				h = line.getDistance(point);
-			return 2 * h / (3 * a * a);
-		} else {
-			//	k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
-			// First derivative at offset/parameter
-			var dt = Curve.evaluate(values, offset, isParameter, 1),
-				// Second derivative at offset/parameter
-				d2t = Curve.evaluate(values, offset, isParameter, 3),
-				dx = dt.x,
-				dy = dt.y;
-			return (dx * d2t.y - dy * d2t.x) / Math.pow(dx * dx + dy * dy, 3 / 2);
-		}
-	},
-
 	/**
 	 * Calculates the curve time parameter of the specified offset on the path,
 	 * relative to the provided start parameter. If offset is a negative value,
@@ -963,6 +920,8 @@ statics: {
 
 	/**
 	 * Returns the curvature vector of the curve at the specified position.
+	 * Curvatures indicate how sharply a curve changes direction. A straight
+	 * line has zero curvature where as a circle has a constant curvature.
 	 *
 	 * @name Curve#getCurvatureAt
 	 * @function

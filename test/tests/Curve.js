@@ -95,3 +95,25 @@ test('Curve#getCurvatureAt()', function() {
 				'curve.getCurvatureAt(' + entry[0] + ', true);');
 	}
 });
+
+
+test('Curve#getCurvatureAt()', function() {
+	var curve = new Path.Line({
+		from: [100, 100],
+		to: [200, 200],
+	}).getFirstCurve();
+
+	var curvatures = [
+		[0, 0],
+		[0.25, 0],
+		[0.5, 0],
+		[0.75, 0],
+		[1, 0]
+	];
+
+	for (var i = 0; i < curvatures.length; i++) {
+		var entry = curvatures[i];
+		compareNumbers(curve.getCurvatureAt(entry[0], true), entry[1],
+				'curve.getCurvatureAt(' + entry[0] + ', true);');
+	}
+});
