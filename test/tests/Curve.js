@@ -39,7 +39,7 @@ test('Curve#getTangentAt()', function() {
 		radius: 100
 	}).getFirstCurve();
 
-	var points = [
+	var tangents = [
 		[0, new Point(0, -165.68542 )],
 		[0.25, new Point(60.7233, -143.56602)],
 		[0.5, new Point(108.57864, -108.57864)],
@@ -47,10 +47,10 @@ test('Curve#getTangentAt()', function() {
 		[1, new Point(165.68542, 0)]
 	];
 
-	for (var i = 0; i < points.length; i++) {
-		var entry = points[i];
+	for (var i = 0; i < tangents.length; i++) {
+		var entry = tangents[i];
 		comparePoints(curve.getTangentAt(entry[0], true), entry[1],
-				'curve.getPointAt(' + entry[0] + ', true);');
+				'curve.getTangentAt(' + entry[0] + ', true);');
 	}
 });
 
@@ -60,7 +60,7 @@ test('Curve#getNormalAt()', function() {
 		radius: 100
 	}).getFirstCurve();
 
-	var points = [
+	var normals = [
 		[0, new Point(-165.68542, 0)],
 		[0.25, new Point(-143.56602, -60.7233)],
 		[0.5, new Point(-108.57864, -108.57864)],
@@ -68,9 +68,30 @@ test('Curve#getNormalAt()', function() {
 		[1, new Point(0, -165.68542)]
 	];
 
-	for (var i = 0; i < points.length; i++) {
-		var entry = points[i];
+	for (var i = 0; i < normals.length; i++) {
+		var entry = normals[i];
 		comparePoints(curve.getNormalAt(entry[0], true), entry[1],
-				'curve.getPointAt(' + entry[0] + ', true);');
+				'curve.getNormalAt(' + entry[0] + ', true);');
+	}
+});
+
+test('Curve#getCurvatureAt()', function() {
+	var curve = new Path.Circle({
+		center: [100, 100],
+		radius: 100
+	}).getFirstCurve();
+
+	var curvatures = [
+		[0, 0.009785533905932729],
+		[0.25, 0.010062133221584524],
+		[0.5, 0.009937576453041297],
+		[0.75, 0.010062133221584524],
+		[1, 0.009785533905932727]
+	];
+
+	for (var i = 0; i < curvatures.length; i++) {
+		var entry = curvatures[i];
+		compareNumbers(curve.getCurvatureAt(entry[0], true), entry[1],
+				'curve.getCurvatureAt(' + entry[0] + ', true);');
 	}
 });
