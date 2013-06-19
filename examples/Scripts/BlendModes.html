@@ -37,9 +37,9 @@
 				justification: 'center',
 				content: mode
 			})
-			var clip = new Group(rect, img, text);
-			clip.position = point;
-			all.addChild(clip);
+			var group = new Group(rect, img, text);
+			group.position = point;
+			all.addChild(group);
 		}
 
 		var modes = [ 'normal', 'multiply', 'screen', 'overlay', 'soft-light',

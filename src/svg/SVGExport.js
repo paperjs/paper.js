@@ -461,9 +461,9 @@ new function() {
 			getDefinition();
 		// Have different id ranges per type
 		var id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
-		// Give the svg node an id, and link to it from the id.
+		// Give the svg node an id, and link to it from the item id.
 		node.id = type + '-' + id;
-		definitions.svgs[node.id] = node;
+		definitions.svgs[type + '-' + item._id] = node;
 	}
 
 	function exportDefinitions(node) {
