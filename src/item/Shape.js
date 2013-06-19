@@ -67,6 +67,12 @@ var Shape = Item.extend(/** @lends Shape# */{
 		}
 	},
 
+	_canComposite: function() {
+		// A path with only a fill  or a stroke can be directly blended, but if
+		// it has both, it needs to be drawn into a separate canvas first.
+		return !(this.hasFill() && this.hasStroke());
+	},
+
 	_getBounds: function(getter, matrix) {
 		var rect = new Rectangle(this._size).setCenter(0, 0);
 		if (getter !== 'getBounds' && this.hasStroke())

@@ -561,5 +561,9 @@ var Raster = Item.extend(/** @lends Raster# */{
 			ctx.drawImage(element,
 					-this._size.width / 2, -this._size.height / 2);
 		}
+	},
+
+	_canComposite: function() {
+		return true;
 	}
 });

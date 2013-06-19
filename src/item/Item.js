@@ -2892,13 +2892,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Determine if we can draw directly, or if we need to draw into a
 			// separate canvas and then composite onto the main canvas.
 			direct = blendMode === 'normal' && opacity === 1
-					// If blending natively is possible, see if the type of item
-					// and its color settings allow it. A path with only a fill 
-					// or a stroke can be directly blended, but if it has both,
-					// it needs to be drawn into a separate canvas first.
-					|| (nativeBlend || opacity < 1) && (type === 'raster'
-					|| (type === 'path' || type === 'compound-path')
-					&& !(this.hasFill() && this.hasStroke())),
+					// If native blending is possible, see if the item allows it
+					|| (nativeBlend || opacity < 1) && this._canComposite(),
 			mainCtx, itemOffset, prevOffset;
 		if (!direct) {
 			// Apply the paren't global matrix to the calculation of correct
@@ -2954,6 +2949,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Restore previous offset.
 			param.offset = prevOffset;
 		}
+	},
+
+	_canComposite: function() {
+		return false;
 	}
 }, Base.each(['down', 'drag', 'up', 'move'], function(name) {
 	this['removeOn' + Base.capitalize(name)] = function() {
