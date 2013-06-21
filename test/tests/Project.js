@@ -24,3 +24,12 @@ test('activate()', function() {
 		return secondDoc.activeLayer.children.length == 0;
 	}, true);
 });
+
+test('clear()', function() {
+    var project = new Project();
+    new Layer();
+    new Layer();
+    equals(project.layers.length, 3);
+    project.clear();
+    equals(project.layers.length, 0);
+});
