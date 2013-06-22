@@ -84,7 +84,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	// DOCS: Project#clear()
 
 	clear: function() {
-		for (var i = 0; i < this.layers.length; i++)
+		for (var i = this.layers.length - 1; i >= 0; i--)
 			this.layers[i].remove();
 		this.symbols = [];
 	},
