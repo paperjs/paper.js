@@ -13,8 +13,7 @@
  *
  ***
  *
- * Straps.js - Inheritance library with support for bean-style accessors and
- * AOP patterns.
+ * straps.js - Class inheritance library with support for bean-style accessors
  *
  * Copyright (c) 2006 - 2013 Juerg Lehni
  * http://lehni.org/
@@ -23,7 +22,7 @@
  *
  ***
  *
- * Acorn.js
+ * acorn.js
  * http://marijnhaverbeke.nl/acorn/
  *
  * Acorn is a tiny, fast JavaScript parser written in JavaScript,
