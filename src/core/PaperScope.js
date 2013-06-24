@@ -188,21 +188,35 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		delete PaperScope._scopes[this._id];
 	},
 
-	statics: /** @lends PaperScope */{
-		_scopes: {},
-		_id: 0,
-
-		/**
-		 * Retrieves a PaperScope object with the given id or associated with
-		 * the passed canvas element.
-		 *
-		 * @param id
-		 */
-		get: function(id) {
-			// If a script tag is passed, get the id from it.
-			if (typeof id === 'object')
-				id = id.getAttribute('id');
-			return this._scopes[id] || null;
+	statics: new function() {
+		// Produces helpers to e.g. check for both 'canvas' and
+		// 'data-paper-canvas' attributes:
+		function handleAttribute(name) {
+			name += 'Attribute';
+			return function(el, attr) {
+				return el[name](attr) || el[name]('data-paper-' + attr);
+			};
 		}
+
+		return /** @lends PaperScope */{
+			_scopes: {},
+			_id: 0,
+
+			/**
+			 * Retrieves a PaperScope object with the given id or associated with
+			 * the passed canvas element.
+			 *
+			 * @param id
+			 */
+			get: function(id) {
+				// If a script tag is passed, get the id from it.
+				if (typeof id === 'object')
+					id = id.getAttribute('id');
+				return this._scopes[id] || null;
+			},
+
+			getAttribute: handleAttribute('get'),
+			hasAttribute: handleAttribute('has')
+		};
 	}
 });

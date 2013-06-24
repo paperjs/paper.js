@@ -38,7 +38,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		DomEvent.add(element, this._viewHandlers);
 		// If the element has the resize attribute, resize the it to fill the
 		// window and resize it again whenever the user resizes the window.
-		if (PaperScript.hasAttribute(element, 'resize')) {
+		if (PaperScope.hasAttribute(element, 'resize')) {
 			// Subtract element' viewport offset from the total size, to
 			// stretch it in
 			var offset = DomElement.getOffset(element, true),
@@ -74,7 +74,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		element.width = size.width;
 		element.height = size.height;
 		// TODO: Test this on IE:
-		if (PaperScript.hasAttribute(element, 'stats')) {
+		if (PaperScope.hasAttribute(element, 'stats')) {
 			this._stats = new Stats();
 			// Align top-left to the element
 			var stats = this._stats.domElement,

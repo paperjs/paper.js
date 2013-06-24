@@ -135,7 +135,7 @@ DomEvent.requestAnimationFrame = new function() {
 				var entry = callbacks[i],
 					func = entry[0],
 					el = entry[1];
-				if (!el || (PaperScript.getAttribute(el, 'keepalive') == 'true'
+				if (!el || (PaperScope.getAttribute(el, 'keepalive') == 'true'
 						|| focused) && DomElement.isInView(el)) {
 					// Handle callback and remove it from callbacks list.
 					callbacks.splice(i, 1);

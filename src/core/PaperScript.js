@@ -287,7 +287,7 @@ var PaperScript = new function() {
 				// retrieved through PaperScope.get().
 				// If a canvas id is provided, pass it on to the PaperScope
 				// so a project is created for it now.
-				var canvas = PaperScript.getAttribute(script, 'canvas'),
+				var canvas = PaperScope.getAttribute(script, 'canvas'),
 					// See if there already is a scope for this canvas and reuse
 					// it, to support multiple scripts per canvas. Otherwise
 					// create a new one.
@@ -316,21 +316,10 @@ var PaperScript = new function() {
 		DomEvent.add(window, { load: load });
 	}
 
-	// Produces helpers to e.g. check for both 'canvas' and 'data-paper-canvas'
-	// attributes:
-	function handleAttribute(name) {
-		name += 'Attribute';
-		return function(el, attr) {
-			return el[name](attr) || el[name]('data-paper-' + attr);
-		};
-	}
-
 	return {
 		compile: compile,
 		evaluate: evaluate,
-		load: load,
-		getAttribute: handleAttribute('get'),
-		hasAttribute: handleAttribute('has')
+		load: load
 	};
 
 /*#*/ } else { // !options.browser
