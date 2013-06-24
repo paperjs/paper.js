@@ -565,4 +565,35 @@ test('Hit testing invisible items.', function() {
 	}, true);
 });
 
+test('Hit testing guides.', function() {
+	var point = new Point(0, 0);
+	var circle1 = new Path.Circle({
+		center: point.subtract([25, 0]),
+		radius: 50,
+		fillColor: 'red'
+	});
+	var circle2 = new Path.Circle({
+		center: point.add([25, 0]),
+		radius: 50,
+		fillColor: 'blue'
+	});
+
+	var strokePoint = circle2.bounds.rightCenter;
+
+	equals(function() {
+		return paper.project.hitTest(strokePoint).item === circle2;
+	}, true);
+
+	circle2.guide = true;
+
+	equals(function() {
+		var result = paper.project.hitTest(strokePoint, { guides: true });
+		return result && result.item === circle1;
+	}, true);
+
+	equals(function() {
+		return paper.project.hitTest(point).item === circle1;
+	}, true);
+});
+
 // TODO: project.hitTest(point, {type: AnItemType});
