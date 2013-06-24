@@ -1656,8 +1656,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 		}
 
 		function checkPoint(seg, pt, name) {
-			// TODO: We need to transform the point back to the coordinate
-			// system of the DOM level on which the inquiry was started!
 			if (point.getDistance(pt) < tolerance)
 				return new HitResult(name, that, { segment: seg, point: pt });
 		}

@@ -1404,18 +1404,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				!(this instanceof Layer && !this._parent)) {
 			// Don't get the transformed bounds, check against transformed
 			// points instead
-			var bounds = this.getBounds();
-			if (options.center && (res = checkBounds('center', 'Center')))
-				return res;
-			if (options.bounds) {
+			var bounds = this._getBounds('getBounds');
+			if (options.center)
+				res = checkBounds('center', 'Center');
+			if (!res && options.bounds) {
 				// TODO: Move these into a private scope
 				var points = [
 					'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
 					'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'
 				];
-				for (var i = 0; i < 8; i++)
-					if (res = checkBounds('bounds', points[i]))
-						return res;
+				for (var i = 0; i < 8 && !res; i++)
+					res = checkBounds('bounds', points[i]);
 			}
 		}
 
@@ -1423,9 +1422,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// children are matched but the parent is returned.
 
 		// Filter for guides or selected items if that's required
-		return this._children || !(options.guides && !this._guide
+		if ((res || (res = this._children || !(options.guides && !this._guide
 				|| options.selected && !this._selected)
-					? this._hitTest(point, options) : null;
+					? this._hitTest(point, options) : null))
+				&& res.point) {
+			// Transform the point back to the outer coordinate system.
+			res.point = that._matrix.transform(res.point);
+		}
+		return res;
 	},
 
 	_hitTest: function(point, options) {
