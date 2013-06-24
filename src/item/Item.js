@@ -1372,14 +1372,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * hit.
 	 */
 	hitTest: function(point, options) {
-		function checkBounds(type, part) {
-			var pt = bounds['get' + part]();
-			// TODO: We need to transform the point back to the coordinate
-			// system of the DOM level on which the inquiry was started!
-			if (point.getDistance(pt) < options.tolerance)
-				return new HitResult(type, that,
-						{ name: Base.hyphenate(part), point: pt });
-		}
 		point = Point.read(arguments);
 		options = HitResult.getOptions(Base.read(arguments));
 
@@ -1395,20 +1387,32 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Transform point to local coordinates but use untransformed point
 		// for bounds check above.
 		point = this._matrix._inverseTransform(point);
+
+		var that = this,
+			res;
+		function checkBounds(type, part) {
+			var pt = bounds['get' + part]();
+			// TODO: We need to transform the point back to the coordinate
+			// system of the DOM level on which the inquiry was started!
+			if (point.getDistance(pt) < options.tolerance)
+				return new HitResult(type, that,
+						{ name: Base.hyphenate(part), point: pt });
+		}
+
 		if ((options.center || options.bounds) &&
 				// Ignore top level layers:
 				!(this instanceof Layer && !this._parent)) {
 			// Don't get the transformed bounds, check against transformed
 			// points instead
-			var bounds = this.getBounds(),
-				that = this,
-				// TODO: Move these into a private scope
-				points = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
-				'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'],
-				res;
+			var bounds = this.getBounds();
 			if (options.center && (res = checkBounds('center', 'Center')))
 				return res;
 			if (options.bounds) {
+				// TODO: Move these into a private scope
+				var points = [
+					'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
+					'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'
+				];
 				for (var i = 0; i < 8; i++)
 					if (res = checkBounds('bounds', points[i]))
 						return res;
@@ -1427,10 +1431,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_hitTest: function(point, options) {
 		if (this._children) {
 			// Loop backwards, so items that get drawn last are tested first
-			for (var i = this._children.length - 1; i >= 0; i--) {
-				var res = this._children[i].hitTest(point, options);
-				if (res) return res;
-			}
+			for (var i = this._children.length - 1; i >= 0; i--)
+				if (res = this._children[i].hitTest(point, options))
+					return res;
 		} else if (this.hasFill() && this._contains(point)) {
 			return new HitResult('fill', this);
 		}
