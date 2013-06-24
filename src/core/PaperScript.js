@@ -14,16 +14,19 @@
  * @name PaperScript
  * @namespace
  */
+// Note that due to the use of with(), PaperScript gets compiled outside the
+// main paper scope, and is added to the PaperScope class. This allows for
+// better minification and the future use of strict mode once it makes sense
+// in terms of performance.
+paper.PaperScope.prototype.PaperScript = new function() {
+	// Locally override define, so acorn.js does not export itself
+	var define = null;
+	/*#*/ if (options.parser == 'acorn') {
+	/*#*/ include('../../lib/acorn-min.js');
+	/*#*/ } else if (options.parser == 'esprima') {
+	/*#*/ include('../../lib/esprima-min.js');
+	/*#*/ }
 
-// Locally override define, so acorn.js does not export itself
-var define = null;
-/*#*/ if (options.parser == 'acorn') {
-/*#*/ include('../../lib/acorn-min.js');
-/*#*/ } else if (options.parser == 'esprima') {
-/*#*/ include('../../lib/esprima-min.js');
-/*#*/ }
- 
-var PaperScript = new function() {
 	// Operators to overload
 
 	var binaryOperators = {
@@ -230,7 +233,7 @@ var PaperScript = new function() {
 				// Only look for tool handlers if something resembling their
 				// name is contained in the code.
 				if (/on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)) {
-					Base.each(Tool.prototype._events, function(key) {
+					Base.each(paper.Tool.prototype._events, function(key) {
 						var value = eval(key);
 						if (value) {
 							// Use the getTool accessor that handles auto tool
@@ -273,7 +276,8 @@ var PaperScript = new function() {
 	}
 
 	function load() {
-		var scripts = document.getElementsByTagName('script');
+		var scripts = document.getElementsByTagName('script'),
+			PaperScope = paper.PaperScope;
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
 			// Only load this script if it not loaded already.
@@ -313,7 +317,7 @@ var PaperScript = new function() {
 		// Handle it asynchronously
 		setTimeout(load);
 	} else {
-		DomEvent.add(window, { load: load });
+		paper.DomEvent.add(window, { load: load });
 	}
 
 	return {

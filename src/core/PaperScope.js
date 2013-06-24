@@ -120,7 +120,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 	 */
 
 	evaluate: function(code) {
-		var res = PaperScript.evaluate(code, this);
+		var res = paper.PaperScript.evaluate(code, this);
 		View.updateFocus();
 		return res;
 	},
