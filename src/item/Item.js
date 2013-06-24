@@ -1437,7 +1437,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_hitTest: function(point, options) {
 		if (this._children) {
 			// Loop backwards, so items that get drawn last are tested first
-			for (var i = this._children.length - 1; i >= 0; i--)
+			for (var i = this._children.length - 1, res; i >= 0; i--)
 				if (res = this._children[i].hitTest(point, options))
 					return res;
 		} else if (this.hasFill() && this._contains(point)) {
