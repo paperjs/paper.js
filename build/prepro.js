@@ -146,22 +146,40 @@ function stripComments(str) {
 	str = ('__' + str + '__').split('');
 	var quote = false,
 		quoteSign,
+		regularExpression = false,
+		characterClass = false,
 		blockComment = false,
 		lineComment = false,
 		preserveComment = false;
+
 	for (var i = 0, l = str.length; i < l; i++) {
+		// When checking for quote escaping, we also need to check that the
+		// escape sign itself is not escaped, as otherwise '\\' would cause
+		// the wrong impression of an unclosed string:
+		var unescaped = str[i - 1] !== '\\' || str[i - 2] === '\\';
+
 		if (quote) {
-			// When checking for quote escaping, we also need to check that the
-			// escape sign itself is not escaped, as otherwise '\\' would cause
-			// the wrong impression of an unclosed string:
-			if (str[i] === quoteSign && (str[i - 1] !== '\\' || str[i - 2] === '\\'))
+			if (str[i] === quoteSign && unescaped)
 				quote = false;
+		} else if (regularExpression) {
+			// Make sure '/'' inside character classes is not considered the end
+			// of the regular expression.
+			if (str[i] === '[' && unescaped) {
+				characterClass = true;
+			} else if (str[i] === ']' && unescaped && characterClass) {
+				characterClass = false;
+			} else if (str[i] === '/' && unescaped && !characterClass) {
+				regularExpression = false;
+			}
 		} else if (blockComment) {
 			// Is the block comment closing?
 			if (str[i] === '*' && str[i + 1] === '/') {
 				if (!preserveComment)
 					str[i] = str[i + 1] = '';
 				blockComment = preserveComment = false;
+				// Increase by 1 to skip closing '/', as it would be mistaken
+				// for a regexp otherwise
+				i++;
 			} else if (!preserveComment) {
 				str[i] = '';
 			}
@@ -171,10 +189,10 @@ function stripComments(str) {
 				lineComment = false;
 			str[i] = '';
 		} else {
-			quote = /['"]/.test(str[i]);
-			if (quote)
+			if (/['"]/.test(str[i])) {
+				quote = true;
 				quoteSign = str[i];
-			if (!blockComment && str[i] === '/') {
+			} else if (str[i] === '/') {
 				if (str[i + 1] === '*') {
 					// Do not filter out conditional comments /*@ ... */
 					// and comments marked as protected /*! ... */
@@ -185,6 +203,16 @@ function stripComments(str) {
 				} else if (str[i + 1] === '/') {
 					str[i] = '';
 					lineComment = true;
+				} else {
+					// We need to make sure we don't count normal divisions as
+					// regular expresions. Matching this properly is difficult,
+					// but if we assume that normal division always have a space
+					// after /, a simple check for white space or '='' (for /=)
+					// is enough to distinguish divisions from regexps.
+					// TODO: Develop a proper check for regexps.
+					if (!/[\s=]/.test(str[i + 1])) {
+						regularExpression = true;
+					}
 				}
 			}
 		}
