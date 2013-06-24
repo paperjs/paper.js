@@ -25,6 +25,7 @@
  * tangents at given offsets.
  */
 var Curve = Base.extend(/** @lends Curve# */{
+	_class: 'Curve',
 	/**
 	 * Creates a new curve object.
 	 *

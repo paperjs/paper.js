@@ -20,6 +20,8 @@
  * screen.
  */
 var View = Base.extend(Callback, /** @lends View# */{
+	_class: 'View',
+
 	initialize: function View(element) {
 		// Store reference to the currently active global paper scope, and the
 		// active project, which will be represented by this view

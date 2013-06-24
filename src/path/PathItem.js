@@ -20,6 +20,8 @@
  * @extends Item
  */
 var PathItem = Item.extend(/** @lends PathItem# */{
+	_class: 'PathItem',
+
 	initialize: function PathItem() {
 		Item.apply(this, arguments);
 	},

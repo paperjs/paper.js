@@ -20,6 +20,8 @@
  * to be updated with every transformation.
  */
 var Symbol = Base.extend(/** @lends Symbol# */{
+	_class: 'Symbol',
+
 	/**
 	 * Creates a Symbol item.
 	 *
@@ -70,7 +72,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
 
 	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
-			return Base.serialize([this.constructor.name, this._definition],
+			return Base.serialize([this._class, this._definition],
 					options, false, dictionary);
 		});
 	},

@@ -17,6 +17,8 @@
  * @class The GradientStop object.
  */
 var GradientStop = Base.extend(/** @lends GradientStop# */{
+	_class: 'GradientStop',
+
 	/**
 	 * Creates a GradientStop object.
 	 *

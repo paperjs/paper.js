@@ -43,6 +43,7 @@
  * }
  */
 var Tool = PaperScopeItem.extend(/** @lends Tool# */{
+	_class: 'Tool',
 	_list: 'tools',
 	_reference: '_tool', // PaperScope has accessor for #tool
 	_events: [ 'onActivate', 'onDeactivate', 'onEditOptions',

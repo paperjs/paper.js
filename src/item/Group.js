@@ -20,6 +20,7 @@
  * @extends Item
  */
 var Group = Item.extend(/** @lends Group# */{
+	_class: 'Group',
 	_serializeFields: {
 		children: []
 	},

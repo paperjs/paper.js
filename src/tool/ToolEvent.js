@@ -22,6 +22,7 @@
  * @extends Event
  */
 var ToolEvent = Event.extend(/** @lends ToolEvent# */{
+	_class: 'ToolEvent',
 	// Have ToolEvent#item fall back to returning null, not undefined.
 	_item: null,
 

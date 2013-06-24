@@ -24,6 +24,7 @@
  * console.log(point.y); // 5
  */
 var Point = Base.extend(/** @lends Point# */{
+	_class: 'Point',
 	// Tell Base.read that the Point constructor supports reading with index
 	_readIndex: true,
 

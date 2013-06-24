@@ -31,6 +31,7 @@
  * {@link PaperScope#projects} variable.
  */
 var Project = PaperScopeItem.extend(/** @lends Project# */{
+	_class: 'Project',
 	_list: 'projects',
 	_reference: 'project',
 

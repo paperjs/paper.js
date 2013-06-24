@@ -18,6 +18,7 @@
  * @extends Item
  */
 var Shape = Item.extend(/** @lends Shape# */{
+	_class: 'Shape',
 	_transformContent: false,
 
 	initialize: function Shape(type, point, size) {

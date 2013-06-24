@@ -23,6 +23,8 @@
  * objects that are connected by this segment.
  */
 var Segment = Base.extend(/** @lends Segment# */{
+	_class: 'Segment',
+
 	/**
 	 * Creates a new Segment object.
 	 *

@@ -33,6 +33,7 @@
  * {@code PaperScope}.
  */
 var PaperScope = Base.extend(/** @lends PaperScope# */{
+	_class: 'PaperScope',
 
 	/**
 	 * Creates a PaperScope object.

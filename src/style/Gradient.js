@@ -60,6 +60,8 @@
  * };
  */
 var Gradient = Base.extend(/** @lends Gradient# */{
+	_class: 'Gradient',
+
 	// DOCS: Document #initialize()
 	initialize: function Gradient(stops, radial) {
 		// Define this Gradient's unique id.

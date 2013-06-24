@@ -36,7 +36,7 @@ Base.inject(/** @lends Base# */{
 	 */
 	toString: function() {
 		return this._id != null
-			?  (this.constructor.name || 'Object') + (this._name
+			?  (this._class || 'Object') + (this._name
 				? " '" + this._name + "'"
 				: ' @' + this._id)
 			: '{ ' + Base.each(this, function(value, key) {
@@ -87,7 +87,7 @@ Base.inject(/** @lends Base# */{
 			// Override Base.extend() to register named classes in Base.exports,
 			// for deserialization and injection into PaperScope.
 			var res = extend.base.apply(this, arguments),
-				name = res.name;
+				name = res.prototype._class;
 			if (name)
 				Base.exports[name] = res;
 			return res;
@@ -300,7 +300,7 @@ Base.inject(/** @lends Base# */{
 						if (!ref) {
 							this.length++;
 							var res = create.call(item),
-								name = item.constructor.name;
+								name = item._class;
 							// Also automatically insert class for dictionary
 							// entries.
 							if (name && res[0] !== name)
@@ -317,7 +317,7 @@ Base.inject(/** @lends Base# */{
 				// If we don't serialize to compact form (meaning no type
 				// identifier), see if _serialize didn't already add the class,
 				// e.g. for classes that do not support compact form.
-				var name = obj.constructor.name;
+				var name = obj._class;
 				if (name && !compact && !res._compact && res[0] !== name)
 					res.unshift(name);
 			} else if (Array.isArray(obj)) {
@@ -326,7 +326,7 @@ Base.inject(/** @lends Base# */{
 					res[i] = Base.serialize(obj[i], options, compact,
 							dictionary);
 				// Mark array as compact, so obj._serialize handling above
-				// doesn't add the constructor name again.
+				// doesn't add the class name again.
 				if (compact)
 					res._compact = true;
 			} else if (Base.isPlainObject(obj)) {

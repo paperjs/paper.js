@@ -18,6 +18,8 @@
  * {@link Project#hitTest(point)}.
  */
 var HitResult = Base.extend(/** @lends HitResult# */{
+	_class: 'HitResult',
+
 	initialize: function HitResult(type, item, values) {
 		this.type = type;
 		this.item = item;

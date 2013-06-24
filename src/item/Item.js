@@ -33,14 +33,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				src._serializeFields = Base.merge(
 						this.prototype._serializeFields, src._serializeFields);
 			var res = extend.base.apply(this, arguments),
-				name = res.name;
-			// Derive the _type string from constructor name
+				proto = res.prototype,
+				name = proto._class;
+			// Derive the _type string from class name
 			if (name)
-				res.prototype._type = Base.hyphenate(name);
+				proto._type = Base.hyphenate(name);
 			return res;
 		}
 	},
 
+	_class: 'Item',
 	// All items apply their matrix by default.
 	// Exceptions are Raster, PlacedSymbol, Clip and Shape.
 	_transformContent: true,
@@ -170,8 +172,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (!(this instanceof Group))
 			serialize(this._style._defaults);
 		// There is no compact form for Item serialization, we always keep the
-		// type.
-		return [ this.constructor.name, props ];
+		// class.
+		return [ this._class, props ];
 	},
 
 	/**

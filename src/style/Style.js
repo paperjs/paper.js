@@ -202,6 +202,8 @@ var Style = Base.extend(new function() {
 	Item.inject(item);
 	return fields;
 }, /** @lends Style# */{
+	_class: 'Style',
+
 	initialize: function Style(style, _item) {
 		// We keep values in a separate object that we can iterate over.
 		this._values = {};

@@ -16,6 +16,8 @@
  * @private
  */
 var CanvasView = View.extend(/** @lends CanvasView# */{
+	_class: 'CanvasView',
+
 	/**
 	 * Creates a view object that wraps a canvas element.
 	 * 

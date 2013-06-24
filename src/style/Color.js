@@ -275,6 +275,7 @@ var Color = Base.extend(new function() {
 			};
 		}, this);
 	}, /** @lends Color# */{
+		_class: 'Color',
 		// Tell Base.read that the Point constructor supports reading with index
 		_readIndex: true,
 

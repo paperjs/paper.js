@@ -16,6 +16,8 @@
  * @class The Line object represents..
  */
 var Line = Base.extend(/** @lends Line# */{
+	_class: 'Line',
+
 	// DOCS: document Line class and constructor
 	/**
 	 * Creates a Line object.

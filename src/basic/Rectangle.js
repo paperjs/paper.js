@@ -18,6 +18,7 @@
  * rectangular path, it is not an item.
  */
 var Rectangle = Base.extend(/** @lends Rectangle# */{
+	_class: 'Rectangle',
 	// Tell Base.read that the Rectangle constructor supports reading with index
 	_readIndex: true,
 

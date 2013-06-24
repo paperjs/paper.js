@@ -15,6 +15,7 @@
   * @class
   */
 var Palette = Base.extend(Callback, /** @lends Palette# */{
+	_class: 'Palette',
 	_events: [ 'onChange' ],
 
 	initialize: function Palette(title, components, values) {

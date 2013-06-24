@@ -15,6 +15,7 @@
   * @class
   */
 var Component = Base.extend(Callback, /** @lends Component# */{
+	_class: 'Component',
 	_events: [ 'onChange', 'onClick' ],
 
 	_types: {
