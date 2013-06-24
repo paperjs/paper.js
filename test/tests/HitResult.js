@@ -345,15 +345,17 @@ test('When a path is closed, the end of a path cannot be hit.', function() {
 });
 
 test('hitting path bounding box', function() {
-	var path = new Path.Circle(new Point(100, 100), 50);
+	var path = new Path.Circle({
+		center: [100, 100],
+		radius: 50,
+		fillColor: 'red'
+	});
 
 	var hitResult = paper.project.hitTest(path.bounds.topLeft, {
 		bounds: true
 	});
 
-	equals(function() {
-		return !!hitResult;
-	}, true, 'A HitResult should be returned (1)');
+	equals(!!hitResult, true, 'A HitResult should be returned');
 	
 	if (hitResult) {
 		equals(function() {
@@ -365,8 +367,38 @@ test('hitting path bounding box', function() {
 		}, 'top-left');
 
 		equals(function() {
-			return hitResult.point.toString();
-		}, path.bounds.topLeft.toString());
+			return hitResult.point;
+		}, path.bounds.topLeft);
+	}
+});
+
+test('hitting raster bounding box', function() {
+	var path = new Path.Circle({
+		center: [100, 100],
+		radius: 50,
+		fillColor: 'red'
+	});
+	var raster = path.rasterize();
+	path.remove();
+
+	var hitResult = paper.project.hitTest(raster.bounds.topLeft, {
+		bounds: true
+	});
+
+	equals(!!hitResult, true, 'A HitResult should be returned');
+	
+	if (hitResult) {
+		equals(function() {
+			return hitResult.type;
+		}, 'bounds');
+
+		equals(function() {
+			return hitResult.name;
+		}, 'top-left');
+
+		equals(function() {
+			return hitResult.point;
+		}, path.bounds.topLeft);
 	}
 });
 
