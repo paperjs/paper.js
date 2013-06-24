@@ -371,39 +371,27 @@ test('hitting path bounding box', function() {
 });
 
 test('hitting guides', function() {
-	var path = new Path.Circle(new Point(100, 100), 50);
-	path.fillColor = 'red';
-
+	var path = new Path.Circle({
+		center: [100, 100],
+		radius: 50,
+		fillColor: 'red'
+	});
 	var copy = path.clone();
 
-	var hitResult = paper.project.hitTest(path.position);
+	var result = paper.project.hitTest(path.position);
 
-	equals(function() {
-		return !!hitResult;
-	}, true, 'A HitResult should be returned (1)');
-	
-	if (hitResult) {
-		equals(function() {
-			return hitResult.item == copy;
-		}, true, 'The copy is returned, because it is on top.');
-	}
+	equals(result && result.item, copy,
+			'The copy should be returned, because it is on top.');
 	
 	path.guide = true;
 	
-	var hitResult = paper.project.hitTest(path.position, {
+	var result = paper.project.hitTest(path.position, {
 		guides: true,
 		fill: true
 	});
 	
-	equals(function() {
-		return !!hitResult;
-	}, true, 'A HitResult should be returned (2)');
-	
-	if (hitResult) {
-		equals(function() {
-			return hitResult.item == path;
-		}, true, 'The path is returned, because it is a guide.');
-	}
+	equals(result && result.item, path,
+			'The path should be returned, because it is a guide.');
 });
 
 test('hitting raster items', function() {
@@ -578,7 +566,7 @@ test('Hit testing guides.', function() {
 		fillColor: 'blue'
 	});
 
-	var strokePoint = circle2.bounds.rightCenter;
+	var strokePoint = circle2.bounds.leftCenter;
 
 	equals(function() {
 		return paper.project.hitTest(strokePoint).item === circle2;
@@ -587,12 +575,15 @@ test('Hit testing guides.', function() {
 	circle2.guide = true;
 
 	equals(function() {
-		var result = paper.project.hitTest(strokePoint, { guides: true });
-		return result && result.item === circle1;
+		return paper.project.hitTest(strokePoint).item === circle1;
 	}, true);
 
 	equals(function() {
-		return paper.project.hitTest(point).item === circle1;
+		var result = paper.project.hitTest(strokePoint, {
+			guides: true,
+			fill: true
+		});
+		return result && result.item === circle2;
 	}, true);
 });
 
