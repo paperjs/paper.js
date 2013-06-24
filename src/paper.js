@@ -130,4 +130,6 @@ return paper;
 
 // include PaperScript separately outside the main paper scope, due to its use
 // of with(). This also simplifies making its inclusion optional.
+/*#*/ if (options.paperscript) {
 /*#*/ include('core/PaperScript.js');
+/*#*/ } // options.paperscript

@@ -20,5 +20,6 @@ var options = {
 	stats: true,
 	svg: true,
 	fatline: true,
+	paperscript: true,
 	debug: false
 };

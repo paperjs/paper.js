@@ -31,4 +31,5 @@ then
 fi
 
 ./preprocess.sh $MODE ../src/paper.js "-d '{ \"browser\": true }' -i '../src/constants.js'" ../dist/paper.js
+./preprocess.sh $MODE ../src/paper.js "-d '{ \"browser\": true, \"paperscript\": false }' -i '../src/constants.js'" ../dist/paper-core.js
 #./preprocess.sh $MODE ../src/paper.js "-d '{ \"node\": true }' -i '../src/constants.js'" ../dist/paper-node.js 
