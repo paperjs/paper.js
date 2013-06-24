@@ -465,7 +465,7 @@ var Point = Base.extend(/** @lends Point# */{
 	},
 
 	setLength: function(length) {
-		// Whenever setting x/y, use #set() instead of direct assignment,
+		// Whenever chaning both x & y, use #set() instead of direct assignment,
 		// so LinkedPoint does not report changes twice.
 		if (this.isZero()) {
 			var angle = this._angle || 0;
@@ -477,7 +477,7 @@ var Point = Base.extend(/** @lends Point# */{
 			var scale = length / this.getLength();
 			// Force calculation of angle now, so it will be preserved even when
 			// x and y are 0
-			if (scale === 0)
+			if (Numerical.isZero(scale))
 				this.getAngle();
 			this.set(
 				this.x * scale,

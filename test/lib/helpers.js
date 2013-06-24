@@ -78,15 +78,15 @@ function asyncTest(testName, expected) {
 
 function compareNumbers(number1, number2, message, precision) {
 	var formatter = new Formatter(precision);
-	equals(formatter.number(number1, precision),
-			formatter.number(number2, precision), message);
+	equals(formatter.number(number1),
+			formatter.number(number2), message);
 }
 
 function compareArrays(array1, array2, message, precision) {
 	var formatter = new Formatter(precision);
 	function format(array) {
 		return Base.each(array, function(value, index) {
-			this[index] = formatter.number(value, precision);
+			this[index] = formatter.number(value);
 		}, []).toString();
 	}
 	equals(format(array1), format(array2), message);
