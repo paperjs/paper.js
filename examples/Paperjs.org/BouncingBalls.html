@@ -40,8 +40,9 @@
 				fillColor: new Color(gradient, 0, radius, radius / 8),
 			});
 
-			this.item = new Clip({
+			this.item = new Group({
 				children: [ball],
+				transformContent: false,
 				position: this.point
 			});
 		}
