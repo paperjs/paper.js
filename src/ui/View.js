@@ -139,6 +139,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	_events: {
 		/**
 		 * @namespace
+		 * @ignore
 		 */
 		onFrame: {
 			install: function() {
