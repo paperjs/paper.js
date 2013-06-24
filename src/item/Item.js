@@ -1380,12 +1380,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				return new HitResult(type, that,
 						{ name: Base.hyphenate(part), point: pt });
 		}
-
-		if (this._locked || !this._visible)
-			return null;
-
 		point = Point.read(arguments);
 		options = HitResult.getOptions(Base.read(arguments));
+
+		if (this._locked || !this._visible || this._guide && !options.guides)
+			return null;
+
 		// Check if the point is withing roughBounds + tolerance, but only if
 		// this item does not have children, since we'd have to travel up the
 		// chain already to determine the rough bounds.
