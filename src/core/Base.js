@@ -83,7 +83,7 @@ Base.inject(/** @lends Base# */{
 		// Keep track of all named classes for serialization and exporting.
 		exports: {},
 
-		extend: function extend(src) {
+		extend: function extend() {
 			// Override Base.extend() to register named classes in Base.exports,
 			// for deserialization and injection into PaperScope.
 			var res = extend.base.apply(this, arguments),

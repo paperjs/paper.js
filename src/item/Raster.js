@@ -483,11 +483,11 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @param point the offset of the pixel as a point in pixel coordinates
 	 * @param color the color that the pixel will be set to
 	 */
-	setPixel: function(point, color) {
-		var _point = Point.read(arguments),
-			_color = Color.read(arguments),
-			components = _color._convert('rgb'),
-			alpha = _color._alpha,
+	setPixel: function(/* point, color */) {
+		var point = Point.read(arguments),
+			color = Color.read(arguments),
+			components = color._convert('rgb'),
+			alpha = color._alpha,
 			ctx = this.getContext(true),
 			imageData = ctx.createImageData(1, 1),
 			data = imageData.data;
@@ -495,7 +495,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		data[1] = components[1] * 255;
 		data[2] = components[2] * 255;
 		data[3] = alpha != null ? alpha * 255 : 255;
-		ctx.putImageData(imageData, _point.x, _point.y);
+		ctx.putImageData(imageData, point.x, point.y);
 	},
 
 	// DOCS: document Raster#createImageData
@@ -538,7 +538,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},
 
-	_hitTest: function(point, options) {
+	_hitTest: function(point) {
 		if (this._contains(point)) {
 			var that = this;
 			return new HitResult('pixel', that, {

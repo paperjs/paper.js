@@ -268,13 +268,13 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		// Note: Documentation for these methods is found in PathItem, as they
 		// are considered abstract methods of PathItem and need to be defined in
 		// all implementing classes.
-		moveTo: function(point) {
+		moveTo: function(/* point */) {
 			var path = new Path();
 			this.addChild(path);
 			path.moveTo.apply(path, arguments);
 		},
 
-		moveBy: function(point) {
+		moveBy: function(/* point */) {
 			this.moveTo(getCurrentPath(this).getLastSegment()._point.add(
 					Point.read(arguments)));
 		},

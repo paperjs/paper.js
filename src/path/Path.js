@@ -524,11 +524,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 			: this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
-	addSegment: function(segment) {
+	addSegment: function(/* segment */) {
 		return this._add([ Segment.read(arguments) ])[0];
 	},
 
-	insertSegment: function(index, segment) {
+	insertSegment: function(index /*, segment */) {
 		return this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
@@ -1582,6 +1582,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * }
 	 */
 	getNearestPoint: function(point) {
+		// We need to use point to avoid minification issues and prevent method
+		// from turning into a bean (by removal of the point argument).
+		point = Point.read(arguments);
 		return this.getNearestLocation(point).getPoint();
 	},
 
@@ -2102,7 +2105,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// Note: Documentation for these methods is found in PathItem, as they
 		// are considered abstract methods of PathItem and need to be defined in
 		// all implementing classes.
-		moveTo: function(point) {
+		moveTo: function(/* point */) {
 			// moveTo should only be called at the beginning of paths. But it 
 			// can ce called again if there is nothing drawn yet, in which case
 			// the first segment gets readjusted.
@@ -2114,29 +2117,29 @@ var Path = PathItem.extend(/** @lends Path# */{
 				this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
-		moveBy: function(point) {
+		moveBy: function(/* point */) {
 			throw new Error('moveBy() is unsupported on Path items.');
 		},
 
-		lineTo: function(point) {
+		lineTo: function(/* point */) {
 			// Let's not be picky about calling moveTo() first:
 			this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
-		cubicCurveTo: function(handle1, handle2, to) {
-			var _handle1 = Point.read(arguments),
-				_handle2 = Point.read(arguments),
-				_to = Point.read(arguments);
+		cubicCurveTo: function(/* handle1, handle2, to */) {
+			var handle1 = Point.read(arguments),
+				handle2 = Point.read(arguments),
+				to = Point.read(arguments);
 			// First modify the current segment:
 			var current = getCurrentSegment(this);
 			// Convert to relative values:
-			current.setHandleOut(_handle1.subtract(current._point));
+			current.setHandleOut(handle1.subtract(current._point));
 			// And add the new segment, with handleIn set to c2
-			this._add([ new Segment(_to, _handle2.subtract(to)) ]);
+			this._add([ new Segment(to, handle2.subtract(to)) ]);
 		},
 
-		quadraticCurveTo: function(handle, to) {
-			var _handle = Point.read(arguments),
+		quadraticCurveTo: function(/* handle, to */) {
+			var handle = Point.read(arguments),
 				to = Point.read(arguments);
 			// This is exact:
 			// If we have the three quad points: A E D,
@@ -2145,26 +2148,26 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// C = E + 1/3 (D - E)
 			var current = getCurrentSegment(this)._point;
 			this.cubicCurveTo(
-				_handle.add(current.subtract(_handle).multiply(1 / 3)),
-				_handle.add(to.subtract(_handle).multiply(1 / 3)),
+				handle.add(current.subtract(handle).multiply(1 / 3)),
+				handle.add(to.subtract(handle).multiply(1 / 3)),
 				to
 			);
 		},
 
-		curveTo: function(through, to, parameter) {
-			var _through = Point.read(arguments),
-				_to = Point.read(arguments),
+		curveTo: function(/* through, to, parameter */) {
+			var through = Point.read(arguments),
+				to = Point.read(arguments),
 				t = Base.pick(Base.read(arguments), 0.5),
 				t1 = 1 - t,
 				current = getCurrentSegment(this)._point,
 				// handle = (through - (1 - t)^2 * current - t^2 * to) /
 				// (2 * (1 - t) * t)
-				handle = _through.subtract(current.multiply(t1 * t1))
-					.subtract(_to.multiply(t * t)).divide(2 * t * t1);
+				handle = through.subtract(current.multiply(t1 * t1))
+					.subtract(to.multiply(t * t)).divide(2 * t * t1);
 			if (handle.isNaN())
 				throw new Error(
 					'Cannot put a curve through points with parameter = ' + t);
-			this.quadraticCurveTo(handle, _to);
+			this.quadraticCurveTo(handle, to);
 		},
 
 		arcTo: function(to, clockwise /* | through, to */) {
@@ -2209,7 +2212,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 					+ [from, through, to]);
 			}
 			var vector = from.subtract(center),
-				radius = vector.getLength(),
 				extent = vector.getDirectedAngle(to.subtract(center)),
 				centerSide = line.getSide(center);
 			if (centerSide == 0) {

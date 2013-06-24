@@ -91,7 +91,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 		}
 	},
 
-	_hitTest: function _hitTest(point, options) {
+	_hitTest: function _hitTest(point) {
 		if (this.hasStroke()) {
 			var type = this._type,
 				strokeWidth = this.getStrokeWidth();

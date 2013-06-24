@@ -211,7 +211,7 @@ new function() {
 		defs: importGroup,
 
 		// http://www.w3.org/TR/SVG/struct.html#UseElement
-		use: function(node, type) {
+		use: function(node) {
 			// Note the namespaced xlink:href attribute is just called href
 			// as a property on node.
 			// TODO: Support overflow and width, height, in combination with
@@ -336,7 +336,7 @@ new function() {
 	// since transform needs to be applied after fill color, as transformations
 	// can affect gradient fills.
 	var attributes = Base.merge(Base.each(SVGStyles, function(entry) {
-		this[entry.attribute] = function(item, value, name, node) {
+		this[entry.attribute] = function(item, value) {
 			item[entry.set](
 					convertValue(value, entry.type, entry.fromSVG));
 		};

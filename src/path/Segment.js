@@ -222,6 +222,8 @@ var Segment = Base.extend(/** @lends Segment# */{
 	},
 
 	setHandleOut: function(point) {
+		// We need to use point to avoid minification issues and prevent method
+		// from turning into a bean (by removal of the point argument).
 		point = Point.read(arguments);
 		// See #setPoint:
 		this._handleOut.set(point.x, point.y);

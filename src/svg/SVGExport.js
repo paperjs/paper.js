@@ -474,7 +474,6 @@ new function() {
 		// #exportSVG() on an item rather than a whole project)
 		// jsdom in Node.js uses uppercase values for nodeName...
 		var svg = node.nodeName.toLowerCase() === 'svg' && node,
-			firstChild = svg ? svg.firstChild : node,
 			defs = null;
 		for (var i in definitions.svgs) {
 			// This code is inside the loop so we only create a container if we

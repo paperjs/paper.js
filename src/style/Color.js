@@ -195,12 +195,12 @@ var Color = Base.extend(new function() {
 			return [0, 0, g];
 		},
 
-		'gradient-rgb': function(gradient) {
+		'gradient-rgb': function(/* gradient */) {
 			// TODO: Implement
 			return [];
 		},
 
-		'rgb-gradient': function(r, g, b) {
+		'rgb-gradient': function(/* r, g, b */) {
 			// TODO: Implement
 			return [];
 		}
@@ -243,7 +243,7 @@ var Color = Base.extend(new function() {
 									: ((value % 360) + 360) % 360;
 						}
 						: type === 'gradient'
-							? function(value) {
+							? function(/* value */) {
 								// ..., readNull, clone);
 								return Point.read(arguments, 0, 0,
 										name === 'highlight', true);

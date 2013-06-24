@@ -101,7 +101,6 @@ paper.PaperScope.prototype.PaperScript = new function() {
 		// Converts an original offset to the one in the current state of the 
 		// modified code.
 		function getOffset(offset) {
-			var start = offset;
 			// Add all insertions before this location together to calculate
 			// the current offset
 			for (var i = 0, l = insertions.length; i < l; i++) {

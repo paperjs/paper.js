@@ -158,19 +158,19 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Point} [center] The center for the scaling transformation
 	 * @return {Matrix} This affine transform
 	 */
-	scale: function(scale, center) {
+	scale: function(/* scale, center */) {
 		// Do not modify scale, center, since that would arguments of which
 		// we're reading from!
-		var _scale = Point.read(arguments),
-			_center = Point.read(arguments, 0, 0, true); // readNull
-		if (_center)
-			this.translate(_center);
-		this._a *= _scale.x;
-		this._c *= _scale.x;
-		this._b *= _scale.y;
-		this._d *= _scale.y;
-		if (_center)
-			this.translate(_center.negate());
+		var scale = Point.read(arguments),
+			center = Point.read(arguments, 0, 0, true); // readNull
+		if (center)
+			this.translate(center);
+		this._a *= scale.x;
+		this._c *= scale.x;
+		this._b *= scale.y;
+		this._d *= scale.y;
+		if (center)
+			this.translate(center.negate());
 		return this;
 	},
 
@@ -263,21 +263,21 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Point} [center] The center for the shear transformation
 	 * @return {Matrix} This affine transform
 	 */
-	shear: function(point, center) {
+	shear: function(/* point, center */) {
 		// Do not modify point, center, since that would arguments of which
 		// we're reading from!
-		var _point = Point.read(arguments),
-			_center = Point.read(arguments, 0, 0, true); // readNull
-		if (_center)
-			this.translate(_center);
+		var point = Point.read(arguments),
+			center = Point.read(arguments, 0, 0, true); // readNull
+		if (center)
+			this.translate(center);
 		var a = this._a,
 			c = this._c;
-		this._a += _point.y * this._b;
-		this._c += _point.y * this._d;
-		this._b += _point.x * a;
-		this._d += _point.x * c;
-		if (_center)
-			this.translate(_center.negate());
+		this._a += point.y * this._b;
+		this._c += point.y * this._d;
+		this._b += point.x * a;
+		this._d += point.x * c;
+		if (center)
+			this.translate(center.negate());
 		return this;
 	},
 
@@ -447,7 +447,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 *
 	 * @param {Point} point The point to be transformed
 	 */
-	inverseTransform: function(point) {
+	inverseTransform: function(/* point */) {
 		return this._inverseTransform(Point.read(arguments));
 	},
 

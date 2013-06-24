@@ -58,7 +58,6 @@ var PathFitter = Base.extend({
 		// Parameterize points, and attempt to fit curve
 		var uPrime = this.chordLengthParameterize(first, last),
 			maxError = Math.max(this.error, this.error * this.error),
-			error,
 			split;
 		// Try 4 iterations
 		for (var i = 0; i <= 4; i++) {

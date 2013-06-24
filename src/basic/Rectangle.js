@@ -872,7 +872,7 @@ var LinkedRectangle = Rectangle.extend({
 			'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'],
 		function(key) {
 			var name = 'set' + key;
-			this[name] = function(value) {
+			this[name] = function(/* value */) {
 				// Make sure the above setters of x, y, width, height do not
 				// each notify the owner, as we're going to take care of this
 				// afterwards here, only once per change.

@@ -58,7 +58,7 @@ var Layer = Group.extend(/** @lends Layer# */{
 	 * 	position: view.center
 	 * });
 	 */
-	initialize: function Layer(items) {
+	initialize: function Layer(/* items */) {
 		this._project = paper.project;
 		// Push it onto project.layers and set index:
 		this._index = this._project.layers.push(this) - 1;

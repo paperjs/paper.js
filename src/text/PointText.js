@@ -65,8 +65,8 @@ var PointText = TextItem.extend(/** @lends PointText# */{
 	},
 
 	setPoint: function(point) {
-		this.translate(Point.read(arguments).subtract(
-				this._matrix.getTranslation()));
+		point = Point.read(arguments);
+		this.translate(point.subtract(this._matrix.getTranslation()));
 	},
 
 	_draw: function(ctx) {

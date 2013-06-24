@@ -14,7 +14,7 @@
   * @name Palette
   * @class
   */
-var Palette = Base.extend(Callback, /** @lends Palette# */{
+/* var Palette = */ Base.extend(Callback, /** @lends Palette# */{
 	_class: 'Palette',
 	_events: [ 'onChange' ],
 

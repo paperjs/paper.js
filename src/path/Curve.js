@@ -840,7 +840,10 @@ statics: {
 	 * @return {CurveLocation} the curve location of the specified point.
 	 */
 	getLocationOf: function(point) {
-		var t = this.getParameterOf.apply(this, arguments);
+		// We need to use point to avoid minification issues and prevent method
+		// from turning into a bean (by removal of the point argument).
+		point = Point.read(arguments);
+		var t = this.getParameterOf(point);
 		return t != null ? new CurveLocation(this, t) : null;
 	},
 
@@ -850,8 +853,7 @@ statics: {
 			count = 100,
 			tolerance = Numerical.TOLERANCE,
 			minDist = Infinity,
-			minT = 0,
-			max = 1 + tolerance; // Accomodate imprecision in comparisson
+			minT = 0;
 
 		function refine(t) {
 			if (t >= 0 && t <= 1) {
@@ -880,7 +882,10 @@ statics: {
 	},
 
 	getNearestPoint: function(point) {
-		return this.getNearestLocation.apply(this, arguments).getPoint();
+		// We need to use point to avoid minification issues and prevent method
+		// from turning into a bean (by removal of the point argument).
+		point = Point.read(arguments);
+		return this.getNearestLocation(point).getPoint();
 	}
 
 	/**
@@ -1339,7 +1344,6 @@ new function() { // Scope for methods that require numerical integration
 			cos = Math.cos(angle),
 			// (rl1x, rl1y) = (0, 0)
 			rl2x = lvx * cos - lvy * sin,
-			rl2y = lvy * cos + lvx * sin,
 			vcr = [];
 
 		for(var i = 0; i < 8; i += 2) {

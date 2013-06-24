@@ -10,7 +10,5 @@
 #
 # All rights reserved.
 
-# We need to keep dead_code around for now, since the very odd JavaScriptCore
-# scope bug fix (nop().nop()) requires it.
-uglifyjs ../dist/paper.js -o ../dist/paper-min.js -c unsafe=true,unused=false -m -b ascii_only=true,beautify=false --comments /^!/
-uglifyjs ../dist/paper-core.js -o ../dist/paper-core-min.js -c unsafe=true,unused=false -m --comments /^!/
+uglifyjs ../dist/paper.js -o ../dist/paper-min.js -c unsafe=true -m -b ascii_only=true,beautify=false --comments /^!/
+uglifyjs ../dist/paper-core.js -o ../dist/paper-core-min.js -c unsafe=true -m --comments /^!/

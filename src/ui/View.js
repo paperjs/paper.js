@@ -46,7 +46,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 			size = DomElement.getViewportBounds(element)
 					.getSize().subtract(offset);
 			this._windowHandlers = {
-				resize: function(event) {
+				resize: function() {
 					// Only update element offset if it's not invisible, as
 					// otherwise the offset would be wrong.
 					if (!DomElement.isInvisible(element))
@@ -332,7 +332,10 @@ var View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	setCenter: function(center) {
-		this.scrollBy(Point.read(arguments).subtract(this.getCenter()));
+		// We need to use center to avoid minification issues and prevent method
+		// from turning into a bean (by removal of the center argument).
+		center = Point.read(arguments);
+		this.scrollBy(center.subtract(this.getCenter()));
 	},
 
 	/**
@@ -367,7 +370,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 *
 	 * @param {Point} point
 	 */
-	scrollBy: function(point) {
+	scrollBy: function(/* point */) {
 		this._transform(new Matrix().translate(Point.read(arguments).negate()));
 	},
 
@@ -389,11 +392,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 	// TODO: getMousePoint
 	// TODO: projectToView(rect)
 
-	projectToView: function(point) {
+	projectToView: function(/* point */) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
-	viewToProject: function(point) {
+	viewToProject: function(/* point */) {
 		return this._getInverse()._transformPoint(Point.read(arguments));
 	},
 

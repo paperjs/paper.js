@@ -723,7 +723,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				: LinkedPoint.create(this, 'setPosition', pos.x, pos.y);
 	},
 
-	setPosition: function(point) {
+	setPosition: function(/* point */) {
 		// Calculate the distance to the current position, by which to
 		// translate the item. Pass true for dontLink, as we do not need a
 		// LinkedPoint to simply calculate this distance.
@@ -1315,7 +1315,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * 
 	 * @param {Point} point The point to check for.
 	 */
-	contains: function(point) {
+	contains: function(/* point */) {
 		// See CompoundPath#_contains() for the reason for !!
 		return !!this._contains(
 				this._matrix._inverseTransform(Point.read(arguments)));
@@ -2124,7 +2124,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @param {Point} delta the offset to translate the item by
 	 */
-	translate: function(delta) {
+	translate: function(/* delta */) {
 		var mx = new Matrix();
 		return this.transform(mx.translate.apply(mx, arguments));
 	},
@@ -2896,7 +2896,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// opacity by themselves (they also don't call _setStyles)
 		var blendMode = this._blendMode,
 			opacity = this._opacity,
-			type = this._type,
 			nativeBlend = BlendMode.nativeModes[blendMode],
 			// Determine if we can draw directly, or if we need to draw into a
 			// separate canvas and then composite onto the main canvas.
