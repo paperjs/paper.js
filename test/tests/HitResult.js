@@ -541,4 +541,28 @@ test('Hit testing the corner of a rectangle with miter stroke.', function() {
 	}, true);
 });
 
+test('Hit testing invisible items', function() {
+	var point = new Point(0, 0);
+	var circle1 = new Path.Circle({
+		center: point.subtract([25, 0]),
+		radius: 50,
+		fillColor: 'red'
+	});
+	var circle2 = new Path.Circle({
+		center: point.add([25, 0]),
+		radius: 50,
+		fillColor: 'blue'
+	});
+
+	equals(function() {
+		return paper.project.hitTest(point).item;
+	}, circle2, 'circle2 should be returned.');
+
+	circle2.visible = false;
+
+	equals(function() {
+		return paper.project.hitTest(point).item;
+	}, circle1, 'circle1 should be returned.');
+});
+
 // TODO: project.hitTest(point, {type: AnItemType});
