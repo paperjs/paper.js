@@ -541,7 +541,7 @@ test('Hit testing the corner of a rectangle with miter stroke.', function() {
 	}, true);
 });
 
-test('Hit testing invisible items', function() {
+test('Hit testing invisible items.', function() {
 	var point = new Point(0, 0);
 	var circle1 = new Path.Circle({
 		center: point.subtract([25, 0]),
@@ -555,14 +555,14 @@ test('Hit testing invisible items', function() {
 	});
 
 	equals(function() {
-		return paper.project.hitTest(point).item;
-	}, circle2, 'circle2 should be returned.');
+		return paper.project.hitTest(point).item === circle2;
+	}, true);
 
 	circle2.visible = false;
 
 	equals(function() {
-		return paper.project.hitTest(point).item;
-	}, circle1, 'circle1 should be returned.');
+		return paper.project.hitTest(point).item === circle1;
+	}, true);
 });
 
 // TODO: project.hitTest(point, {type: AnItemType});
