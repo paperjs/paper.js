@@ -88,7 +88,7 @@ Base.inject(/** @lends Base# */{
 			// for deserialization and injection into PaperScope.
 			var res = extend.base.apply(this, arguments),
 				name = res.prototype._class;
-			if (name)
+			if (name && !Base.exports[name])
 				Base.exports[name] = res;
 			return res;
 		},
