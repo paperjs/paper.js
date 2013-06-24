@@ -19,8 +19,6 @@
 // better minification and the future use of strict mode once it makes sense
 // in terms of performance.
 paper.PaperScope.prototype.PaperScript = new function() {
-	// Locally override define, so acorn.js does not export itself
-	var define = null;
 	/*#*/ if (options.parser == 'acorn') {
 	/*#*/ include('../../lib/acorn-min.js');
 	/*#*/ } else if (options.parser == 'esprima') {

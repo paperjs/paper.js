@@ -20,3 +20,7 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	DomElement: DomElement,
 	DomEvent: DomEvent
 })))();
+
+// Support AMD (e.g. require.js)
+if (typeof define === 'function' && define.amd)
+	define(paper);

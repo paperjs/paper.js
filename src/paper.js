@@ -131,7 +131,3 @@ return paper;
 // include PaperScript separately outside the main paper scope, due to its use
 // of with(). This also simplifies making its inclusion optional.
 /*#*/ include('core/PaperScript.js');
-
-// Support AMD (e.g. require.js)
-if (typeof define === 'function' && define.amd)
-	define(paper);
