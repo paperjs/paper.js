@@ -1381,7 +1381,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 						{ name: Base.hyphenate(part), point: pt });
 		}
 
-		if (this._locked)
+		if (this._locked || !this._visible)
 			return null;
 
 		point = Point.read(arguments);
