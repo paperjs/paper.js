@@ -61,7 +61,7 @@ var PointText = TextItem.extend(/** @lends PointText# */{
 		// Se Item#getPosition for an explanation why we create new LinkedPoint
 		// objects each time.
 		var point = this._matrix.getTranslation();
-		return LinkedPoint.create(this, 'setPoint', point.x, point.y);
+		return new LinkedPoint(point.x, point.y, this, 'setPoint');
 	},
 
 	setPoint: function(point) {

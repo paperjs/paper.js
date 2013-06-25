@@ -917,12 +917,20 @@ var Point = Base.extend(/** @lends Point# */{
  *
  * @class An internal version of Point that notifies its owner of each change
  * through setting itself again on the setter that corresponds to the getter
- * that produced this LinkedPoint. See uses of LinkedPoint.create()
+ * that produced this LinkedPoint.
  * Note: This prototype is not exported.
  *
  * @ignore
  */
 var LinkedPoint = Point.extend({
+	// Have LinkedPoint appear as a normal Point in debugging
+	initialize: function Point(x, y, owner, setter) {
+		this._x = x;
+		this._y = y;
+		this._owner = owner;
+		this._setter = setter;
+	},
+
 	set: function(x, y, dontNotify) {
 		this._x = x;
 		this._y = y;
@@ -947,21 +955,5 @@ var LinkedPoint = Point.extend({
 	setY: function(y) {
 		this._y = y;
 		this._owner[this._setter](this);
-	},
-
-	statics: {
-		create: function(owner, setter, x, y, dontLink) {
-			// Support creation of normal Points rather than LinkedPoints
-			// through an optional parameter that can be passed to the getters.
-			// See e.g. Rectangle#getPoint(true).
-			if (dontLink)
-				return new Point(x, y);
-			var point = Base.create(LinkedPoint);
-			point._x = x;
-			point._y = y;
-			point._owner = owner;
-			point._setter = setter;
-			return point;
-		}
 	}
 });

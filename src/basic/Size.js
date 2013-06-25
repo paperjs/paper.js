@@ -512,12 +512,20 @@ var Size = Base.extend(/** @lends Size# */{
  *
  * @class An internal version of Size that notifies its owner of each change
  * through setting itself again on the setter that corresponds to the getter
- * that produced this LinkedSize. See uses of LinkedSize.create()
+ * that produced this LinkedSize.
  * Note: This prototype is not exported.
  *
  * @private
  */
 var LinkedSize = Size.extend({
+	// Have LinkedSize appear as a normal Size in debugging
+	initialize: function Size(width, height, owner, setter) {
+		this._width = width;
+		this._height = height;
+		this._owner = owner;
+		this._setter = setter;
+	},
+
 	set: function(width, height, dontNotify) {
 		this._width = width;
 		this._height = height;
@@ -542,19 +550,5 @@ var LinkedSize = Size.extend({
 	setHeight: function(height) {
 		this._height = height;
 		this._owner[this._setter](this);
-	},
-
-	statics: {
-		create: function(owner, setter, width, height, dontLink) {
-			// See LinkedPoint.create() for an explanation about dontLink.
-			if (dontLink)
-				return new Size(width, height);
-			var size = Base.create(LinkedSize);
-			size._width = width;
-			size._height = height;
-			size._owner = owner;
-			size._setter = setter;
-			return size;
-		}
 	}
 });

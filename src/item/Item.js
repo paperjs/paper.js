@@ -719,8 +719,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// use them to calculate the difference in #setPosition, as when it is
 		// modified, it would hold new values already and only then cause the
 		// calling of #setPosition.
-		return arguments[0] ? pos
-				: LinkedPoint.create(this, 'setPosition', pos.x, pos.y);
+		return new (arguments[0] ? Point : LinkedPoint)
+				(pos.x, pos.y, this, 'setPosition');
 	},
 
 	setPosition: function(/* point */) {
@@ -773,11 +773,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// If we're returning 'bounds', create a LinkedRectangle that uses
 			// the setBounds() setter to update the Item whenever the bounds are
 			// changed:
-			return name == 'getBounds'
-					? LinkedRectangle.create(this, 'setBounds',
-							bounds.x, bounds.y, bounds.width, bounds.height) 
-					// Return a clone of the cahce, so modifications won't
-					// affect it.
+			return name === 'getBounds'
+					? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
+							bounds.height, this, 'setBounds') 
 					: bounds;
 		};
 	},

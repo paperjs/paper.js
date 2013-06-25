@@ -238,9 +238,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @bean
 	 */
 	getPoint: function(/* dontLink */) {
-		// Pass on the optional argument _dontLink which tells LinkedPoint to
-		// produce a normal point instead. Used internally for speed reasons.
-		return LinkedPoint.create(this, 'setPoint', this.x, this.y, arguments[0]);
+		return new (arguments[0] ? Point : LinkedPoint)
+				(this.x, this.y, this, 'setPoint');
 	},
 
 	setPoint: function(point) {
@@ -257,8 +256,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @bean
 	 */
 	getSize: function(/* dontLink */) {
-		return LinkedSize.create(this, 'setSize', this.width, this.height,
-				arguments[0]);
+		return new (arguments[0] ? Size : LinkedSize)
+				(this.width, this.height, this, 'setSize');
 	},
 
 	setSize: function(size) {
@@ -403,8 +402,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @bean
 	 */
 	getCenter: function(/* dontLink */) {
-		return LinkedPoint.create(this, 'setCenter',
-				this.getCenterX(), this.getCenterY(), arguments[0]);
+		return new (arguments[0] ? Point : LinkedPoint)
+				(this.getCenterX(), this.getCenterY(), this, 'setCenter');
 	},
 
 	setCenter: function(point) {
@@ -801,8 +800,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 				get = 'get' + part,
 				set = 'set' + part;
 			this[get] = function(/* dontLink */) {
-				return LinkedPoint.create(this, set,
-						this[getX](), this[getY](), arguments[0]);
+				return new (arguments[0] ? Point : LinkedPoint)
+						(this[getX](), this[getY](), this, set);
 			};
 			this[set] = function(point) {
 				point = Point.read(arguments);
@@ -824,6 +823,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
  * @private
  */
 var LinkedRectangle = Rectangle.extend({
+	// Have LinkedRectangle appear as a normal Rectangle in debugging
+	initialize: function Rectangle(x, y, width, height, owner, setter) {
+		this.set(x, y, width, height, true);
+		this._owner = owner;
+		this._setter = setter;
+	},
+
 	set: function(x, y, width, height, dontNotify) {
 		this._x = x;
 		this._y = y;
@@ -832,22 +838,6 @@ var LinkedRectangle = Rectangle.extend({
 		if (!dontNotify)
 			this._owner[this._setter](this);
 		return this;
-	},
-
-	statics: {
-		/**
-		 * Provide a faster creator for Points out of two coordinates that
-		 * does not rely on Point#initialize at all. This speeds up all math
-		 * operations a lot.
-		 *
-		 * @ignore
-		 */
-		create: function(owner, setter, x, y, width, height) {
-			var rect = Base.create(LinkedRectangle).set(x, y, width, height, true);
-			rect._owner = owner;
-			rect._setter = setter;
-			return rect;
-		}
 	}
 }, new function() {
 	var proto = Rectangle.prototype;

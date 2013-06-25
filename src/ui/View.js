@@ -94,8 +94,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		View._views.push(this);
 		// Link this id to our view
 		View._viewsById[this._id] = this;
-		this._viewSize = LinkedSize.create(this, 'setViewSize',
-				size.width, size.height);
+		this._viewSize = new LinkedSize(size.width, size.height,
+				this, 'setViewSize');
 		this._matrix = new Matrix();
 		this._zoom = 1;
 		// Make sure the first view is focused for keyboard input straight away
