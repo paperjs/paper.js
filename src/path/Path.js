@@ -169,7 +169,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			var length = this._countCurves();
 			curves = this._curves = new Array(length);
 			for (var i = 0; i < length; i++)
-				curves[i] = Curve.create(this, segments[i],
+				curves[i] = new Curve(this, segments[i],
 					// Use first segment for segment2 of closing curve
 					segments[i + 1] || segments[0]);
 		}
@@ -273,7 +273,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				var length = this._curves.length = this._countCurves();
 				// If we were closing this path, we need to add a new curve now
 				if (closed)
-					this._curves[length - 1] = Curve.create(this,
+					this._curves[length - 1] = new Curve(this,
 						this._segments[length - 1], this._segments[0]);
 			}
 			this._changed(/*#=*/ Change.GEOMETRY);

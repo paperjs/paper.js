@@ -58,24 +58,32 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 */
 	initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
-		if (count === 0) {
+		if (count === 3) {
+			// Undocumented internal constructor, used by Path#getCurves()
+			// new Segment(path, segment1, segment2);
+			this._path = arg0;
+			this._segment1 = arg1;
+			this._segment2 = arg2;
+		} else if (count === 0) {
 			this._segment1 = new Segment();
 			this._segment2 = new Segment();
-		} else if (count == 1) {
+		} else if (count === 1) {
+			// new Segment(segment);
 			// Note: This copies from existing segments through bean getters
 			this._segment1 = new Segment(arg0.segment1);
 			this._segment2 = new Segment(arg0.segment2);
-		} else if (count == 2) {
+		} else if (count === 2) {
+			// new Segment(segment1, segment2);
 			this._segment1 = new Segment(arg0);
 			this._segment2 = new Segment(arg1);
 		} else {
 			var point1, handle1, handle2, point2;
-			if (count == 4) {
+			if (count === 4) {
 				point1 = arg0;
 				handle1 = arg1;
 				handle2 = arg2;
 				point2 = arg3;
-			} else if (count == 8) {
+			} else if (count === 8) {
 				// Convert getValue() array back to points and handles so we
 				// can create segments for those.
 				point1 = [arg0, arg1];
@@ -403,14 +411,6 @@ var Curve = Base.extend(/** @lends Curve# */{
 
 // Mess with indentation in order to get more line-space below...
 statics: {
-	create: function(path, segment1, segment2) {
-		var curve = Base.create(Curve);
-		curve._path = path;
-		curve._segment1 = segment1;
-		curve._segment2 = segment2;
-		return curve;
-	},
-
 	getValues: function(segment1, segment2) {
 		var p1 = segment1._point,
 			h1 = segment1._handleOut,
