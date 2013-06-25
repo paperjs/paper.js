@@ -382,10 +382,10 @@ Base.inject(/** @lends Base# */{
 					data.dictionary = res[0];
 				} else if (type) {
 					// Create serialized type and pass collected arguments to
-					// #initialize().
+					// constructor().
 					var args = res;
 					res = Base.create(type);
-					res.initialize.apply(res, args);
+					type.apply(res, args);
 				}
 			} else if (Base.isPlainObject(obj)) {
 				res = {};
