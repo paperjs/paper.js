@@ -390,7 +390,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		var x = point.x,
 			y = point.y;
 		if (!dest)
-			dest = Base.create(Point);
+			dest = new Point();
 		return dest.set(
 			x * this._a + y * this._b + this._tx,
 			x * this._c + y * this._d + this._ty,
@@ -437,7 +437,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 				max[j] = val;
 		}
 		if (!dest)
-			dest = Base.create(Rectangle);
+			dest = new Rectangle();
 		return dest.set(min[0], min[1], max[0] - min[0], max[1] - min[1],
 				dontNotify);
 	},
@@ -469,7 +469,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		var x = point.x - this._tx,
 			y = point.y - this._ty;
 		if (!dest)
-			dest = Base.create(Point);
+			dest = new Point();
 		return dest.set(
 			(x * this._d - y * this._b) / det,
 			(y * this._a - x * this._c) / det,
