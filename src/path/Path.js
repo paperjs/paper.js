@@ -360,10 +360,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 				curves.splice.apply(curves, [from, 0].concat(segs._curves));
 				start += segs._curves.length;
 			}
-			// Insert new curves, but do not initialize them yet, since
-			// #_adjustCurves() handles all that for us.
+			// Insert new curves, but do not initialize their segments yet,
+			// since #_adjustCurves() handles all that for us.
 			for (var i = start; i < to; i++)
-				curves.splice(i, 0, Base.create(Curve));
+				curves.splice(i, 0, new Curve(this, null, null));
 			// Adjust segments for the curves before and after the removed ones
 			this._adjustCurves(from, to);
 		}
