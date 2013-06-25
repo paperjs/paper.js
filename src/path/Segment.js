@@ -112,7 +112,6 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 */
 	initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
-			createPoint = SegmentPoint.create,
 			point, handleIn, handleOut;
 		// TODO: Use Point.read or Point.readNamed to read these?
 		if (count === 0) {
@@ -141,9 +140,9 @@ var Segment = Base.extend(/** @lends Segment# */{
 			handleIn = [ arg2, arg3 ];
 			handleOut = [ arg4, arg5 ];
 		}
-		createPoint(this, '_point', point);
-		createPoint(this, '_handleIn', handleIn);
-		createPoint(this, '_handleOut', handleOut);
+		this._point = new SegmentPoint(point, this);
+		this._handleIn = new SegmentPoint(handleIn, this);
+		this._handleOut = new SegmentPoint(handleOut, this);
 	},
 
 	_serialize: function(options) {
