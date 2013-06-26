@@ -232,7 +232,7 @@ var BlendMode = new function() {
 		if (ctx.globalCompositeOperation === mode) {
 			ctx.fillStyle = darken ? '#a00' : '#300';
 			ctx.fillRect(0, 0, 1, 1);
-			ok = ctx.getImageData(0, 0, 1, 1).data[0] !== darken ? 170 : 51;
+			ok = ctx.getImageData(0, 0, 1, 1).data[0] !== (darken ? 170 : 51);
 		}
 		ctx.restore();
 		return ok;
