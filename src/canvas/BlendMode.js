@@ -219,19 +219,28 @@ var BlendMode = new function() {
 	// if globalCompositeOperation is actually sticky is not enough, as Chome 27
 	// pretends for blend-modes to work, but does not actually apply them. 
 	var ctx = CanvasProvider.getContext(1, 1);
-	// Multiply #300 (51) and #a00 (170) and see if we get #200 (34)
-	ctx.fillStyle = '#300';
-	ctx.fillRect(0, 0, 1, 1);
-	ctx.globalCompositeOperation = 'multiply';
-	ctx.fillStyle = '#a00';
-	ctx.fillRect(0, 0, 1, 1);
-	var data = ctx.getImageData(0, 0, 1, 1).data;
-	// If data[0] is 34, the mode has worked. Now feature-detect all modes that
-	// the browser claims to support.
-	this.nativeModes = data[0] === 34 && Base.each(modes, function(func, mode) {
+	// Blend #330000 (51) and #aa0000 (170). Multiplying should lead to
+	// #220000 (34)
+	function testMode(mode) {
+		ctx.save();
+		// For darken we need to reverse color parameters in order to test mode.
+		var darken = mode === 'darken',
+			ok = false;
+		ctx.fillStyle = darken ? '#300' : '#a00';
+		ctx.fillRect(0, 0, 1, 1);
 		ctx.globalCompositeOperation = mode;
-		this[mode] = ctx.globalCompositeOperation === mode;
-	}, {});
+		if (ctx.globalCompositeOperation === mode) {
+			ctx.fillStyle = darken ? '#a00' : '#300';
+			ctx.fillRect(0, 0, 1, 1);
+			ok = ctx.getImageData(0, 0, 1, 1).data[0] !== darken ? 170 : 51;
+		}
+		ctx.restore();
+		return ok;
+	}
+	this.nativeModes = testMode('multiply') && Base.each(modes,
+			function(func, mode) {
+				this[mode] = testMode(mode); 
+			}, {});
 	CanvasProvider.release(ctx);
 
 	this.process = function(mode, srcContext, dstContext, alpha, offset) {
