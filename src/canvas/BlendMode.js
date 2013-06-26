@@ -234,22 +234,22 @@ var BlendMode = new function() {
 	}, {});
 	CanvasProvider.release(ctx);
 
-	this.process = function(blendMode, srcContext, dstContext, alpha, offset) {
+	this.process = function(mode, srcContext, dstContext, alpha, offset) {
 		var srcCanvas = srcContext.canvas,
-			normal = blendMode === 'normal';
+			normal = mode === 'normal';
 		// Use native blend-modes if supported, and fall back to emulation.
-		if (normal || this.nativeModes[blendMode]) {
+		if (normal || this.nativeModes[mode]) {
 			dstContext.save();
 			// Reset transformations, since we're blitting and pixel scale and
 			// with a given offset.
 			dstContext.setTransform(1, 0, 0, 1, 0, 0);
 			dstContext.globalAlpha = alpha;
 			if (!normal)
-				dstContext.globalCompositeOperation = blendMode;
+				dstContext.globalCompositeOperation = mode;
 			dstContext.drawImage(srcCanvas, offset.x, offset.y);
 			dstContext.restore();	
 		} else {
-			var process = modes[blendMode];
+			var process = modes[mode];
 			if (!process)
 				return;
 			var dstData = dstContext.getImageData(offset.x, offset.y,
