@@ -10,13 +10,17 @@ If you want to work with Paper.js, simply download the latest "stable" version f
 
 ## Installing Paper.js
 
-As of July 2013, the recommended way to install and maintain Paper.js is through Bower for browsers, and through NPM for Node.js. See <http://madebyhoundstooth.com/blog/install-node-with-homebrew-on-os-x/> for a tutorial explaining how to install Node.js, NPM and Bower on OSX.
+You can download prebuilt packages from <http://paperjs.org/download/>.
 
-Once Bower is installed, simply execute this command in your project folder:
+As of July 2013, the recommended way to install and maintain Paper.js is through Bower for browsers, and through NPM for Node.js.
+
+See <http://madebyhoundstooth.com/blog/install-node-with-homebrew-on-os-x/> for a tutorial explaining how to install Node.js, NPM and Bower on OSX.
+
+With Bower installed, simply type this command in your project folder:
 
 	bower install paper
 
-Upon executing this, you will find a `paper` folder inside the project's `component` folder. For more information on Bower and to learn about its features for dependence tracking, see <http://bower.io/>.
+Upon execution, you will find a `paper` folder inside the project's `component` folder. For more information on Bower and to learn about its features for dependence tracking, see <http://bower.io/>.
 
 ## Installing for Node.js
 
@@ -30,7 +34,7 @@ Once Homebrew has installed this for you, you can then install the Paper.js modu
 
 	npm install paper
 
-Note that currently there is an issue on OSX with Cairo. If the above causes errors, this will most likely fix it:
+Note that currently there is an issue on OSX with Cairo. If the above causes errors, the following will most likely fix it:
 
 	PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm insetall paper
 
@@ -117,7 +121,7 @@ And to go back to a built library
 	cd build
 	./build.sh
 
-Note that your PaperScripts examples do not need to change, they can simply load `dist/paper.js`, which will always do the right rhing.
+Note that your PaperScripts examples do not need to change, they can simply load `dist/paper.js`, which will always do the right rhing. Note also that `src/load.js` handles both browsers and Node.js, through the handy PrePro library <http://github.com/lehni/prepro.js>.
 
 ### Testing
 
