@@ -10,8 +10,8 @@
 #
 # All rights reserved.
 
-# This script simply generates a symbolic link from dist/paper.js to src/load.js
-# which loads the library from separate sources through PrePro.
+# This script simply copies src/load.js to dist/paper.js to, which loads the
+# library from separate sources through PrePro.
 
 if [ -f ../dist/paper.js ]
 then

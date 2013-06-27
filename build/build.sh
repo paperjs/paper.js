@@ -34,7 +34,7 @@ fi
 ./preprocess.sh $MODE ../src/paper.js "-o '{ \"browser\": true, \"paperscript\": false }' -i '../src/constants.js'" ../dist/paper-core.js
 #./preprocess.sh $MODE ../src/paper.js "-o '{ \"node\": true }' -i '../src/constants.js'" ../dist/paper-node.js 
 
-# Remove the existing file or symbolic link and copy paper-full.js to paper.js now
+# Remove the existing file and copy paper-full.js to paper.js now
 if [ -f ../dist/paper.js ]
 then
 	rm ../dist/paper.js
