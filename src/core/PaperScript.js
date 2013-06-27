@@ -18,7 +18,7 @@
 // main paper scope, and is added to the PaperScope class. This allows for
 // better minification and the future use of strict mode once it makes sense
 // in terms of performance.
-var PaperScript = paper.PaperScope.prototype.PaperScript = new function() {
+paper.PaperScope.prototype.PaperScript = new function() {
 /*#*/ if (options.parser == 'acorn') {
 /*#*/ include('../../components/acorn/acorn.min.js');
 /*#*/ } else if (options.parser == 'esprima') {
@@ -324,6 +324,26 @@ var PaperScript = paper.PaperScope.prototype.PaperScript = new function() {
 	};
 
 /*#*/ } else { // !options.browser
+/*#*/ if (options.node) {
+
+	// Register the .pjs extension for automatic compilation as PaperScript
+
+	var fs = require('fs'),
+		path = require('path');
+
+	require.extensions['.pjs'] = function(module, uri) {
+		var source = compile(fs.readFileSync(uri, 'utf8')),
+			scope = new PaperScope();
+		scope.__filename = uri;
+		scope.__dirname = path.dirname(uri);
+		// Expose core methods and values
+		scope.require = require;
+		scope.console = console;
+		evaluate(source, scope);
+		module.exports = scope;
+	};
+
+/*#*/ } // options.node
 
 	return {
 		compile: compile,
@@ -332,24 +352,3 @@ var PaperScript = paper.PaperScope.prototype.PaperScript = new function() {
 
 /*#*/ } // !options.browser
 };
-
-/*#*/ if (options.node) {
-
-// Register the .pjs extension and have it automatically compile as PaperScript
-
-var fs = require('fs'),
-	path = require('path');
-
-require.extensions['.pjs'] = function(module, uri) {
-	var source = PaperScript.compile(fs.readFileSync(uri, 'utf8')),
-		scope = new PaperScope();
-	scope.__filename = uri;
-	scope.__dirname = path.dirname(uri);
-	// Expose core methods and values
-	scope.require = require;
-	scope.console = console;
-	PaperScript.evaluate(source, scope);
-	module.exports = scope;
-};
-
-/*#*/ } // options.node
