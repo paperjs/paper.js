@@ -183,6 +183,9 @@ CanvasView.inject(new function() {
 		}
 		return str;
 	}
+
+	var fs = require('fs');
+
 	return {
 		// DOCS: CanvasView#exportFrames(param);
 		exportFrames: function(param) {

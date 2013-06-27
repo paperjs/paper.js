@@ -91,8 +91,14 @@ var paper = new function() {
 /*#*/ include('style/GradientStop.js');
 /*#*/ include('style/Style.js');
 
+/*#*/ if (options.node) {
+/*#*/ include('dom/node.js');
+/*#*/ } // options.node
 /*#*/ include('dom/DomElement.js');
+/*#*/ if (options.browser) {
+// DomEvent doesn't make sense outside of the browser (yet)
 /*#*/ include('dom/DomEvent.js');
+/*#*/ } // options.browser
 
 /*#*/ include('ui/View.js');
 /*#*/ include('ui/CanvasView.js');

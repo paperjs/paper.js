@@ -6,7 +6,6 @@ var data = "data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEd
 paper.setup(new paper.Canvas(600, 600));
 
 with (paper) {
-	console.log(Raster);
 	var raster = new paper.Raster(data);
 	raster.position = view.center;
 	paper.view.exportFrames({
