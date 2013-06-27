@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.6 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.7 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jun 27 03:21:56 2013 -0700
+ * Date: Thu Jun 27 14:31:03 2013 -0700
  *
  ***
  *
@@ -241,6 +241,9 @@ var Base = new function() {
 		}
 	});
 };
+
+if (typeof module !== 'undefined')
+	module.exports = Base;
 
 Base.inject({
 	generics: true,
@@ -667,7 +670,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: '0.9.6',
+	version: '0.9.7',
 
 	getView: function() {
 		return this.project && this.project.view;
@@ -8825,7 +8828,8 @@ var View = Base.extend(Callback, {
 		}
 		element.width = size.width;
 		element.height = size.height;
-		if (PaperScope.hasAttribute(element, 'stats')) {
+		if (PaperScope.hasAttribute(element, 'stats')
+				&& typeof Stats !== 'undefined') {
 			this._stats = new Stats();
 			var stats = this._stats.domElement,
 				style = stats.style,
@@ -11051,7 +11055,8 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	Base: Base,
 	Numerical: Numerical,
 	DomElement: DomElement,
-	DomEvent: DomEvent
+	DomEvent: DomEvent,
+	Key: Key
 })))();
 
 if (typeof define === 'function' && define.amd)

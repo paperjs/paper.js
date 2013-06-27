@@ -3859,7 +3859,7 @@ var Raster = Item.extend({
 		if (this._canvas)
 			CanvasProvider.release(this._canvas);
 		this._image = image;
-		this._size = new Size(image.naturalWidth, image.naturalHeight);
+		this._size = new Size(image.width, image.height);
 		this._canvas = null;
 		this._context = null;
 		this._changed(5);
@@ -3870,23 +3870,11 @@ var Raster = Item.extend({
 	},
 
 	setSource: function(src) {
-		var that = this,
-			image = document.getElementById(src) || new Image();
-		function loaded() {
-			that.fire('load');
-			if (that._project.view)
-				that._project.view.draw(true);
-		}
-		DomEvent.add(image, {
-			load: function() {
-				that.setImage(image);
-				loaded();
-			}
-		});
-		if (image.width && image.height) {
-			setTimeout(loaded, 0);
-		} else if (!image.src) {
-			image.src = src;
+		var image = new Image();
+		if (/^data:/.test(src)) {
+			image.src = this._data = src;
+		} else {
+			image.src = fs.readFileSync(src);
 		}
 		this.setImage(image);
 	},
@@ -3904,9 +3892,8 @@ var Raster = Item.extend({
 	},
 
 	toDataURL: function() {
-		var src = this._image && this._image.src;
-		if (/^data:/.test(src))
-			return src;
+		if (this._data)
+			return this._data;
 		var canvas = this.getCanvas();
 		return canvas ? canvas.toDataURL() : null;
 	},
@@ -8512,6 +8499,42 @@ var Style = Base.extend(new function() {
 
 });
 
+var jsdom = require('jsdom'),
+	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml,
+	Canvas = require('canvas');
+
+var document = jsdom.jsdom('<html><body></body></html>'),
+	window = document.createWindow(),
+	navigator = window.navigator,
+	HTMLCanvasElement = Canvas,
+	Image = Canvas.Image;
+
+function XMLSerializer() {
+}
+
+XMLSerializer.prototype.serializeToString = function(node) {
+	var text = domToHtml(node);
+	var tagNames = ['linearGradient', 'radialGradient', 'clipPath'];
+	for (var i = 0, l = tagNames.length; i < l; i++) {
+		var tagName = tagNames[i];
+		text = text.replace(
+			new RegExp('(<|</)' + tagName.toLowerCase() + '\\b', 'g'),
+			function(all, start) {
+				return start + tagName;
+			});
+	}
+	return text;
+};
+
+function DOMParser() {
+}
+
+DOMParser.prototype.parseFromString = function(string, contenType) {
+	var div = doc.createElement('div');
+	div.innerHTML = string;
+	return div.firstChild;
+};
+
 var DomElement = new function() {
 
 	var special = /^(checked|value|selected|disabled)$/i,
@@ -8680,120 +8703,6 @@ var DomElement = new function() {
 	};
 };
 
-var DomEvent = {
-	add: function(el, events) {
-		for (var type in events) {
-			var func = events[type];
-			if (el.addEventListener) {
-				el.addEventListener(type, func, false);
-			} else if (el.attachEvent) {
-				el.attachEvent('on' + type, func.bound = function() {
-					func.call(el, window.event);
-				});
-			}
-		}
-	},
-
-	remove: function(el, events) {
-		for (var type in events) {
-			var func = events[type];
-			if (el.removeEventListener) {
-				el.removeEventListener(type, func, false);
-			} else if (el.detachEvent) {
-				el.detachEvent('on' + type, func.bound);
-			}
-		}
-	},
-
-	getPoint: function(event) {
-		var pos = event.targetTouches
-				? event.targetTouches.length
-					? event.targetTouches[0]
-					: event.changedTouches[0]
-				: event;
-		return new Point(
-			pos.pageX || pos.clientX + document.documentElement.scrollLeft,
-			pos.pageY || pos.clientY + document.documentElement.scrollTop
-		);
-	},
-
-	getTarget: function(event) {
-		return event.target || event.srcElement;
-	},
-
-	getOffset: function(event, target) {
-		return DomEvent.getPoint(event).subtract(DomElement.getOffset(
-				target || DomEvent.getTarget(event)));
-	},
-
-	preventDefault: function(event) {
-		if (event.preventDefault) {
-			event.preventDefault();
-		} else {
-			event.returnValue = false;
-		}
-	},
-
-	stopPropagation: function(event) {
-		if (event.stopPropagation) {
-			event.stopPropagation();
-		} else {
-			event.cancelBubble = true;
-		}
-	},
-
-	stop: function(event) {
-		DomEvent.stopPropagation(event);
-		DomEvent.preventDefault(event);
-	}
-};
-
-DomEvent.requestAnimationFrame = new function() {
-	var part = 'equestAnimationFrame',
-		request = window['r' + part] || window['webkitR' + part]
-			|| window['mozR' + part] || window['oR' + part]
-			|| window['msR' + part];
-	if (request) {
-		request(function(time) {
-			if (time == null)
-				request = null;
-		});
-	}
-
-	var callbacks = [],
-		focused = true,
-		timer;
-
-	DomEvent.add(window, {
-		focus: function() {
-			focused = true;
-		},
-		blur: function() {
-			focused = false;
-		}
-	});
-
-	return function(callback, element) {
-		if (request)
-			return request(callback, element);
-		callbacks.push([callback, element]);
-		if (timer)
-			return;
-		timer = setInterval(function() {
-			for (var i = callbacks.length - 1; i >= 0; i--) {
-				var entry = callbacks[i],
-					func = entry[0],
-					el = entry[1];
-				if (!el || (PaperScope.getAttribute(el, 'keepalive') == 'true'
-						|| focused) && DomElement.isInView(el)) {
-					callbacks.splice(i, 1);
-					func(Date.now());
-				}
-			}
-		}, 1000 / 60);
-	};
-};
-
 var View = Base.extend(Callback, {
 	_class: 'View',
 
@@ -8802,43 +8711,8 @@ var View = Base.extend(Callback, {
 		this._project = paper.project;
 		this._element = element;
 		var size;
-		this._id = element.getAttribute('id');
-		if (this._id == null)
-			element.setAttribute('id', this._id = 'view-' + View._id++);
-		DomEvent.add(element, this._viewHandlers);
-		if (PaperScope.hasAttribute(element, 'resize')) {
-			var offset = DomElement.getOffset(element, true),
-				that = this;
-			size = DomElement.getViewportBounds(element)
-					.getSize().subtract(offset);
-			this._windowHandlers = {
-				resize: function() {
-					if (!DomElement.isInvisible(element))
-						offset = DomElement.getOffset(element, true);
-					that.setViewSize(DomElement.getViewportBounds(element)
-							.getSize().subtract(offset));
-				}
-			};
-			DomEvent.add(window, this._windowHandlers);
-		} else {
-			size = new Size(parseInt(element.getAttribute('width'), 10),
-						parseInt(element.getAttribute('height'), 10));
-			if (size.isNaN())
-				size = DomElement.getSize(element);
-		}
-		element.width = size.width;
-		element.height = size.height;
-		if (PaperScope.hasAttribute(element, 'stats')
-				&& typeof Stats !== 'undefined') {
-			this._stats = new Stats();
-			var stats = this._stats.domElement,
-				style = stats.style,
-				offset = DomElement.getOffset(element);
-			style.position = 'absolute';
-			style.left = offset.x + 'px';
-			style.top = offset.y + 'px';
-			document.body.appendChild(stats);
-		}
+		this._id = 'view-' + View._id++;
+		size = new Size(element.width, element.height);
 		View._views.push(this);
 		View._viewsById[this._id] = this;
 		this._viewSize = new LinkedSize(size.width, size.height,
@@ -8871,10 +8745,6 @@ var View = Base.extend(Callback, {
 	_events: {
 		onFrame: {
 			install: function() {
-				if (!this._requested) {
-					this._animate = true;
-					this._handleFrame(true);
-				}
 			},
 
 			uninstall: function() {
@@ -9045,117 +8915,10 @@ var View = Base.extend(Callback, {
 		_id: 0,
 
 		create: function(element) {
-			if (typeof element === 'string')
-				element = document.getElementById(element);
 			return new CanvasView(element);
 		}
 	}
 }, new function() {
-	var tool,
-		prevFocus,
-		tempFocus,
-		dragging = false;
-
-	function getView(event) {
-		var target = DomEvent.getTarget(event);
-		return target.getAttribute && View._viewsById[target.getAttribute('id')];
-	}
-
-	function viewToProject(view, event) {
-		return view.viewToProject(DomEvent.getOffset(event, view._element));
-	}
-
-	function updateFocus() {
-		if (!View._focused || !View._focused.isVisible()) {
-			for (var i = 0, l = View._views.length; i < l; i++) {
-				var view = View._views[i];
-				if (view && view.isVisible()) {
-					View._focused = tempFocus = view;
-					break;
-				}
-			}
-		}
-	}
-
-	function mousedown(event) {
-		var view = View._focused = getView(event),
-			point = viewToProject(view, event);
-		dragging = true;
-		if (view._onMouseDown)
-			view._onMouseDown(event, point);
-		if (tool = view._scope._tool)
-			tool._onHandleEvent('mousedown', point, event);
-		view.draw(true);
-	}
-
-	function mousemove(event) {
-		var view;
-		if (!dragging) {
-			view = getView(event);
-			if (view) {
-				prevFocus = View._focused;
-				View._focused = tempFocus = view;
-			} else if (tempFocus && tempFocus == View._focused) {
-				View._focused = prevFocus;
-				updateFocus();
-			}
-		}
-		if (!(view = view || View._focused))
-			return;
-		var point = event && viewToProject(view, event);
-		if (view._onMouseMove)
-			view._onMouseMove(event, point);
-		if (tool = view._scope._tool) {
-			if (tool._onHandleEvent(dragging && tool.responds('mousedrag')
-					? 'mousedrag' : 'mousemove', point, event))
-				DomEvent.stop(event);
-		}
-		view.draw(true);
-	}
-
-	function mouseup(event) {
-		var view = View._focused;
-		if (!view || !dragging)
-			return;
-		var point = viewToProject(view, event);
-		curPoint = null;
-		dragging = false;
-		if (view._onMouseUp)
-			view._onMouseUp(event, point);
-		if (tool && tool._onHandleEvent('mouseup', point, event))
-			DomEvent.stop(event);
-		view.draw(true);
-	}
-
-	function selectstart(event) {
-		if (dragging)
-			DomEvent.stop(event);
-	}
-
-	DomEvent.add(document, {
-		mousemove: mousemove,
-		mouseup: mouseup,
-		touchmove: mousemove,
-		touchend: mouseup,
-		selectstart: selectstart,
-		scroll: updateFocus
-	});
-
-	DomEvent.add(window, {
-		load: updateFocus
-	});
-
-	return {
-		_viewHandlers: {
-			mousedown: mousedown,
-			touchstart: mousedown,
-			selectstart: selectstart
-		},
-
-		statics: {
-			updateFocus: updateFocus
-		}
-	};
 });
 
 var CanvasView = View.extend({
@@ -9275,630 +9038,81 @@ var CanvasView = View.extend({
 	};
 });
 
-var Event = Base.extend({
-	_class: 'Event',
-
-	initialize: function Event(event) {
-		this.event = event;
-	},
-
-	preventDefault: function() {
-		this._prevented = true;
-		DomEvent.preventDefault(this.event);
-	},
-
-	stopPropagation: function() {
-		this._stopped = true;
-		DomEvent.stopPropagation(this.event);
-	},
-
-	stop: function() {
-		this.stopPropagation();
-		this.preventDefault();
-	},
-
-	getModifiers: function() {
-		return Key.modifiers;
-	}
-});
-
-var KeyEvent = Event.extend({
-	_class: 'KeyEvent',
-
-	initialize: function KeyEvent(down, key, character, event) {
-		Event.call(this, event);
-		this.type = down ? 'keydown' : 'keyup';
-		this.key = key;
-		this.character = character;
-	},
-
-	toString: function() {
-		return "{ type: '" + this.type
-				+ "', key: '" + this.key
-				+ "', character: '" + this.character
-				+ "', modifiers: " + this.getModifiers()
-				+ " }";
-	}
-});
-
-var Key = new function() {
-
-	var keys = {
-		8: 'backspace',
-		9: 'tab',
-		13: 'enter',
-		16: 'shift',
-		17: 'control',
-		18: 'option',
-		19: 'pause',
-		20: 'caps-lock',
-		27: 'escape',
-		32: 'space',
-		35: 'end',
-		36: 'home',
-		37: 'left',
-		38: 'up',
-		39: 'right',
-		40: 'down',
-		46: 'delete',
-		91: 'command',
-		93: 'command', 
-		224: 'command'  
-	},
-
-	modifiers = Base.merge({
-		shift: false,
-		control: false,
-		option: false,
-		command: false,
-		capsLock: false,
-		space: false
-	}),
-
-	charCodeMap = {}, 
-	keyMap = {}, 
-	downCode; 
-
-	function handleKey(down, keyCode, charCode, event) {
-		var character = String.fromCharCode(charCode),
-			key = keys[keyCode] || character.toLowerCase(),
-			type = down ? 'keydown' : 'keyup',
-			view = View._focused,
-			scope = view && view.isVisible() && view._scope,
-			tool = scope && scope._tool;
-		keyMap[key] = down;
-		if (tool && tool.responds(type)) {
-			tool.fire(type, new KeyEvent(down, key, character, event));
-			if (view)
-				view.draw(true);
+CanvasView.inject(new function() {
+	function toPaddedString(number, length) {
+		var str = number.toString(10);
+		for (var i = 0, l = length - str.length; i < l; i++) {
+			str = '0' + str;
 		}
+		return str;
 	}
 
-	DomEvent.add(document, {
-		keydown: function(event) {
-			var code = event.which || event.keyCode;
-			var key = keys[code], name;
-			if (key) {
-				if ((name = Base.camelize(key)) in modifiers)
-					modifiers[name] = true;
-				charCodeMap[code] = 0;
-				handleKey(true, code, null, event);
-			} else {
-				downCode = code;
-			}
-		},
-
-		keypress: function(event) {
-			if (downCode != null) {
-				var code = event.which || event.keyCode;
-				charCodeMap[downCode] = code;
-				handleKey(true, downCode, code, event);
-				downCode = null;
-			}
-		},
-
-		keyup: function(event) {
-			var code = event.which || event.keyCode,
-				key = keys[code], name;
-			if (key && (name = Base.camelize(key)) in modifiers)
-				modifiers[name] = false;
-			if (charCodeMap[code] != null) {
-				handleKey(false, code, charCodeMap[code], event);
-				delete charCodeMap[code];
-			}
-		}
-	});
+	var fs = require('fs');
 
 	return {
-		modifiers: modifiers,
-
-		isDown: function(key) {
-			return !!keyMap[key];
-		}
-	};
-};
-
-var MouseEvent = Event.extend({
-	_class: 'MouseEvent',
-
-	initialize: function MouseEvent(type, event, point, target, delta) {
-		Event.call(this, event);
-		this.type = type;
-		this.point = point;
-		this.target = target;
-		this.delta = delta;
-	},
-
-	toString: function() {
-		return "{ type: '" + this.type
-				+ "', point: " + this.point
-				+ ', target: ' + this.target
-				+ (this.delta ? ', delta: ' + this.delta : '')
-				+ ', modifiers: ' + this.getModifiers()
-				+ ' }';
-	}
-});
-
- Base.extend(Callback, {
-	_class: 'Palette',
-	_events: [ 'onChange' ],
-
-	initialize: function Palette(title, components, values) {
-		var parent = DomElement.find('.palettejs-panel')
-			|| DomElement.find('body').appendChild(
-				DomElement.create('div', { 'class': 'palettejs-panel' }));
-		this._element = parent.appendChild(
-			DomElement.create('table', { 'class': 'palettejs-pane' })),
-		this._title = title;
-		if (!values)
-			values = {};
-		for (var name in (this._components = components)) {
-			var component = components[name];
-			if (!(component instanceof Component)) {
-				if (component.value == null)
-					component.value = values[name];
-				component.name = name;
-				component = components[name] = new Component(component);
+		exportFrames: function(param) {
+			param = Base.merge({
+				fps: 30,
+				prefix: 'frame-',
+				amount: 1
+			}, param);
+			if (!param.directory) {
+				throw new Error('Missing param.directory');
 			}
-			this._element.appendChild(component._element);
-			component._palette = this;
-			if (values[name] === undefined)
-				values[name] = component.value;
-		}
-		this._values = Base.each(values, function(value, name) {
-			var component = components[name];
-			if (component) {
-				Base.define(values, name, {
-					enumerable: true,
-					configurable: true,
-					get: function() {
-						return component._value;
-					},
-					set: function(val) {
-						component.setValue(val);
+			var view = this,
+				count = 0,
+				frameDuration = 1 / param.fps,
+				startTime = Date.now(),
+				lastTime = startTime;
+
+			exportFrame(param);
+
+			function exportFrame(param) {
+				count++;
+				var filename = param.prefix + toPaddedString(count, 6) + '.png',
+					path = param.directory + '/' + filename;
+				var out = view.exportImage(path, function() {
+					var then = Date.now();
+					if (param.onProgress) {
+						param.onProgress({
+							count: count,
+							amount: param.amount,
+							percentage: Math.round(count / param.amount
+									* 10000) / 100,
+							time: then - startTime,
+							delta: then - lastTime
+						});
+					}
+					lastTime = then;
+					if (count < param.amount) {
+						exportFrame(param);
+					} else {
+						if (param.onComplete) {
+							param.onComplete();
+						}
 					}
 				});
-			}
-		});
-		if (window.paper)
-			paper.palettes.push(this);
-	},
-
-	reset: function() {
-		for (var i in this._components)
-			this._components[i].reset();
-	},
-
-	remove: function() {
-		DomElement.remove(this._element);
-	}
-});
-
-var Component = Base.extend(Callback, {
-	_class: 'Component',
-	_events: [ 'onChange', 'onClick' ],
-
-	_types: {
-		'boolean': {
-			type: 'checkbox',
-			value: 'checked'
-		},
-
-		string: {
-			type: 'text'
-		},
-
-		number: {
-			type: 'number',
-			number: true
-		},
-
-		button: {
-			type: 'button'
-		},
-
-		text: {
-			tag: 'div',
-			value: 'text'
-		},
-
-		slider: {
-			type: 'range',
-			number: true
-		},
-
-		list: {
-			tag: 'select',
-
-			options: function() {
-				DomElement.removeChildren(this._inputItem);
-				DomElement.create(Base.each(this._options, function(option) {
-					this.push('option', { value: option, text: option });
-				}, []), this._inputItem);
-			}
-		}
-	},
-
-	initialize: function Component(obj) {
-		this._type = obj.type in this._types
-			? obj.type
-			: 'options' in obj
-				? 'list'
-				: 'onClick' in obj
-					? 'button'
-					: typeof obj.value;
-		this._info = this._types[this._type] || { type: this._type };
-		var that = this,
-			fireChange = false;
-		this._inputItem = DomElement.create(this._info.tag || 'input', {
-			type: this._info.type,
-			events: {
-				change: function() {
-					that.setValue(
-						DomElement.get(this, that._info.value || 'value'));
-					if (fireChange) {
-						that._palette.fire('change', that, that.name, that._value);
-						that.fire('change', that._value);
-					}
-				},
-				click: function() {
-					that.fire('click');
+				if (view.onFrame) {
+					view.onFrame({
+						delta: frameDuration,
+						time: frameDuration * count,
+						count: count
+					});
 				}
 			}
-		});
-		this._element = DomElement.create('tr', [
-			this._labelItem = DomElement.create('td'),
-			'td', [this._inputItem]
-		]);
-		Base.each(obj, function(value, key) {
-			this[key] = value;
-		}, this);
-		this._defaultValue = this._value;
-		fireChange = true;
-	},
+		},
 
-	getType: function() {
-		return this._type;
-	},
-
-	getLabel: function() {
-		return this._label;
-	},
-
-	setLabel: function(label) {
-		this._label = label;
-		DomElement.set(this._labelItem, 'text', label + ':');
-	},
-
-	getOptions: function() {
-		return this._options;
-	},
-
-	setOptions: function(options) {
-		this._options = options;
-		if (this._info.options)
-			this._info.options.call(this);
-	},
-
-	getValue: function() {
-		return this._value;
-	},
-
-	setValue: function(value) {
-		var key = this._info.value || 'value';
-		DomElement.set(this._inputItem, key, value);
-		value = DomElement.get(this._inputItem, key);
-		this._value = this._info.number ? parseFloat(value, 10) : value;
-	},
-
-	getRange: function() {
-		return [parseFloat(DomElement.get(this._inputItem, 'min')),
-				parseFloat(DomElement.get(this._inputItem, 'max'))];
-	},
-
-	setRange: function(min, max) {
-		var range = Array.isArray(min) ? min : [min, max];
-		DomElement.set(this._inputItem, { min: range[0], max: range[1] });
-	},
-
-	getMin: function() {
-		return this.getRange()[0];
-	},
-
-	setMin: function(min) {
-		this.setRange(min, this.getMax());
-	},
-
-	getMax: function() {
-		return this.getRange()[1];
-	},
-
-	setMax: function(max) {
-		this.setRange(this.getMin(), max);
-	},
-
-	getStep: function() {
-		return parseFloat(DomElement.get(this._inputItem, 'step'));
-	},
-
-	setStep: function(step) {
-		DomElement.set(this._inputItem, 'step', step);
-	},
-
-	reset: function() {
-		this.setValue(this._defaultValue);
-	}
-});
-
-var ToolEvent = Event.extend({
-	_class: 'ToolEvent',
-	_item: null,
-
-	initialize: function ToolEvent(tool, type, event) {
-		this.tool = tool;
-		this.type = type;
-		this.event = event;
-	},
-
-	_choosePoint: function(point, toolPoint) {
-		return point ? point : toolPoint ? toolPoint.clone() : null;
-	},
-
-	getPoint: function() {
-		return this._choosePoint(this._point, this.tool._point);
-	},
-
-	setPoint: function(point) {
-		this._point = point;
-	},
-
-	getLastPoint: function() {
-		return this._choosePoint(this._lastPoint, this.tool._lastPoint);
-	},
-
-	setLastPoint: function(lastPoint) {
-		this._lastPoint = lastPoint;
-	},
-
-	getDownPoint: function() {
-		return this._choosePoint(this._downPoint, this.tool._downPoint);
-	},
-
-	setDownPoint: function(downPoint) {
-		this._downPoint = downPoint;
-	},
-
-	getMiddlePoint: function() {
-		if (!this._middlePoint && this.tool._lastPoint) {
-			return this.tool._point.add(this.tool._lastPoint).divide(2);
-		}
-		return this.middlePoint;
-	},
-
-	setMiddlePoint: function(middlePoint) {
-		this._middlePoint = middlePoint;
-	},
-
-	getDelta: function() {
-		return !this._delta && this.tool._lastPoint
-		 		? this.tool._point.subtract(this.tool._lastPoint)
-				: this._delta;
-	},
-
-	setDelta: function(delta) {
-		this._delta = delta;
-	},
-
-	getCount: function() {
-		return /^mouse(down|up)$/.test(this.type)
-				? this.tool._downCount
-				: this.tool._count;
-	},
-
-	setCount: function(count) {
-		this.tool[/^mouse(down|up)$/.test(this.type) ? 'downCount' : 'count']
-			= count;
-	},
-
-	getItem: function() {
-		if (!this._item) {
-			var result = this.tool._scope.project.hitTest(this.getPoint());
-			if (result) {
-				var item = result.item,
-					parent = item._parent;
-				while (/^(group|compound-path)$/.test(parent._type)) {
-					item = parent;
-					parent = parent._parent;
-				}
-				this._item = item;
+		exportImage: function(path, callback) {
+			this.draw();
+			var out = fs.createWriteStream(path),
+				stream = this._element.createPNGStream();
+			stream.pipe(out);
+			if (callback) {
+				out.on('close', callback);
 			}
+			return out;
 		}
-		return this._item;
-	},
-	setItem: function(item) {
-		this._item = item;
-	},
-
-	toString: function() {
-		return '{ type: ' + this.type
-				+ ', point: ' + this.getPoint()
-				+ ', count: ' + this.getCount()
-				+ ', modifiers: ' + this.getModifiers()
-				+ ' }';
-	}
-});
-
-var Tool = PaperScopeItem.extend({
-	_class: 'Tool',
-	_list: 'tools',
-	_reference: '_tool', 
-	_events: [ 'onActivate', 'onDeactivate', 'onEditOptions',
-			'onMouseDown', 'onMouseUp', 'onMouseDrag', 'onMouseMove',
-			'onKeyDown', 'onKeyUp' ],
-
-	initialize: function Tool(props) {
-		PaperScopeItem.call(this);
-		this._firstMove = true;
-		this._count = 0;
-		this._downCount = 0;
-		this._set(props);
-	},
-
-	getMinDistance: function() {
-		return this._minDistance;
-	},
-
-	setMinDistance: function(minDistance) {
-		this._minDistance = minDistance;
-		if (this._minDistance != null && this._maxDistance != null
-				&& this._minDistance > this._maxDistance) {
-			this._maxDistance = this._minDistance;
-		}
-	},
-
-	getMaxDistance: function() {
-		return this._maxDistance;
-	},
-
-	setMaxDistance: function(maxDistance) {
-		this._maxDistance = maxDistance;
-		if (this._minDistance != null && this._maxDistance != null
-				&& this._maxDistance < this._minDistance) {
-			this._minDistance = maxDistance;
-		}
-	},
-
-	getFixedDistance: function() {
-		return this._minDistance == this._maxDistance
-			? this._minDistance : null;
-	},
-
-	setFixedDistance: function(distance) {
-		this._minDistance = distance;
-		this._maxDistance = distance;
-	},
-
-	_updateEvent: function(type, point, minDistance, maxDistance, start,
-			needsChange, matchMaxDistance) {
-		if (!start) {
-			if (minDistance != null || maxDistance != null) {
-				var minDist = minDistance != null ? minDistance : 0,
-					vector = point.subtract(this._point),
-					distance = vector.getLength();
-				if (distance < minDist)
-					return false;
-				var maxDist = maxDistance != null ? maxDistance : 0;
-				if (maxDist != 0) {
-					if (distance > maxDist) {
-						point = this._point.add(vector.normalize(maxDist));
-					} else if (matchMaxDistance) {
-						return false;
-					}
-				}
-			}
-			if (needsChange && point.equals(this._point))
-				return false;
-		}
-		this._lastPoint = start && type == 'mousemove' ? point : this._point;
-		this._point = point;
-		switch (type) {
-		case 'mousedown':
-			this._lastPoint = this._downPoint;
-			this._downPoint = this._point;
-			this._downCount++;
-			break;
-		case 'mouseup':
-			this._lastPoint = this._downPoint;
-			break;
-		}
-		this._count = start ? 0 : this._count + 1;
-		return true;
-	},
-
-	_fireEvent: function(type, event) {
-		var sets = paper.project._removeSets;
-		if (sets) {
-			if (type === 'mouseup')
-				sets.mousedrag = null;
-			var set = sets[type];
-			if (set) {
-				for (var id in set) {
-					var item = set[id];
-					for (var key in sets) {
-						var other = sets[key];
-						if (other && other != set)
-							delete other[item._id];
-					}
-					item.remove();
-				}
-				sets[type] = null;
-			}
-		}
-		return this.responds(type)
-				&& this.fire(type, new ToolEvent(this, type, event));
-	},
-
-	_onHandleEvent: function(type, point, event) {
-		paper = this._scope;
-		var called = false;
-		switch (type) {
-		case 'mousedown':
-			this._updateEvent(type, point, null, null, true, false, false);
-			called = this._fireEvent(type, event);
-			break;
-		case 'mousedrag':
-			var needsChange = false,
-				matchMaxDistance = false;
-			while (this._updateEvent(type, point, this.minDistance,
-					this.maxDistance, false, needsChange, matchMaxDistance)) {
-				called = this._fireEvent(type, event) || called;
-				needsChange = true;
-				matchMaxDistance = true;
-			}
-			break;
-		case 'mouseup':
-			if (!point.equals(this._point)
-					&& this._updateEvent('mousedrag', point, this.minDistance,
-							this.maxDistance, false, false, false)) {
-				called = this._fireEvent('mousedrag', event);
-			}
-			this._updateEvent(type, point, null, this.maxDistance, false,
-					false, false);
-			called = this._fireEvent(type, event) || called;
-			this._updateEvent(type, point, null, null, true, false, false);
-			this._firstMove = true;
-			break;
-		case 'mousemove':
-			while (this._updateEvent(type, point, this.minDistance,
-					this.maxDistance, this._firstMove, true, false)) {
-				called = this._fireEvent(type, event) || called;
-				this._firstMove = false;
-			}
-			break;
-		}
-		return called;
-	}
-
+	};
 });
 
 var CanvasProvider = {
@@ -9911,7 +9125,8 @@ var CanvasProvider = {
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
 		} else {
-			canvas = document.createElement('canvas');
+			canvas = new Canvas(size.width, size.height);
+			init = false; 
 
 		}
 		var ctx = canvas.getContext('2d');
@@ -11055,12 +10270,12 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	Base: Base,
 	Numerical: Numerical,
 	DomElement: DomElement,
-	DomEvent: DomEvent,
-	Key: Key
+	XMLSerializer: XMLSerializer,
+	DOMParser: DOMParser,
+	Canvas: Canvas
 })))();
 
-if (typeof define === 'function' && define.amd)
-	define(paper);
+module.exports = paper;
 
 return paper;
 };
@@ -11231,49 +10446,23 @@ paper.PaperScope.prototype.PaperScript = new function() {
 		return res;
 	}
 
-	function request(url, scope) {
-		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
-				'Microsoft.XMLHTTP');
-		xhr.open('GET', url, true);
-		if (xhr.overrideMimeType)
-			xhr.overrideMimeType('text/plain');
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState === 4) {
-				return evaluate(xhr.responseText, scope);
-			}
-		};
-		return xhr.send(null);
-	}
+	var fs = require('fs'),
+		path = require('path');
 
-	function load() {
-		var scripts = document.getElementsByTagName('script');
-		for (var i = 0, l = scripts.length; i < l; i++) {
-			var script = scripts[i];
-			if (/^text\/(?:x-|)paperscript$/.test(script.type)
-					&& !script.getAttribute('data-paper-ignore')) {
-				var canvas = PaperScope.getAttribute(script, 'canvas'),
-					scope = PaperScope.get(canvas)
-							|| new PaperScope(script).setup(canvas);
-				if (script.src) {
-					request(script.src, scope);
-				} else {
-					evaluate(script.innerHTML, scope);
-				}
-				script.setAttribute('data-paper-ignore', true);
-			}
-		}
-	}
-
-	if (document.readyState === 'complete') {
-		setTimeout(load);
-	} else {
-		paper.DomEvent.add(window, { load: load });
-	}
+	require.extensions['.pjs'] = function(module, uri) {
+		var source = compile(fs.readFileSync(uri, 'utf8')),
+			scope = new PaperScope();
+		scope.__filename = uri;
+		scope.__dirname = path.dirname(uri);
+		scope.require = require;
+		scope.console = console;
+		evaluate(source, scope);
+		module.exports = scope;
+	};
 
 	return {
 		compile: compile,
-		evaluate: evaluate,
-		load: load
+		evaluate: evaluate
 	};
 
 };
