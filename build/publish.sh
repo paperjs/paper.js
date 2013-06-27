@@ -15,8 +15,10 @@ echo "Building paper.js"
 echo "Minifying paper.js"
 ./minify.sh
 echo "Commiting Version"
-# Add all changed files in dist
+# Add changed json configuration files
 git add -u ../package.json
+git add -u ../bower.json
+# Add all changed files in dist
 git add -u ../dist
 # Extract the paper.js version from package.json:
 VERSION=$(node -e "
