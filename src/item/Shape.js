@@ -27,6 +27,42 @@ var Shape = Item.extend(/** @lends Shape# */{
 		this._size = size;
 	},
 
+	/**
+	 * The size of the shape.
+	 *
+	 * @type Size
+	 * @bean
+	 */
+	getSize: function() {
+		var size = this._size;
+		return new LinkedSize(size.width, size.height, this, 'setSize');
+	},
+
+	setSize: function(/* size */) {
+		var size = Size.read(arguments);
+		if (!this._size.equals(size)) {
+			this._size.set(size.width, size.height);
+			this._changed(/*#=*/ Change.GEOMETRY);
+		}
+	},
+
+	/**
+	 * The radius of the shape if it is a circle.
+	 *
+	 * @type Size
+	 * @bean
+	 */
+	getRadius: function() {
+		var size = this._size;
+		// Average half of width & height for radius...
+		return (size.width + size.height) / 4;
+	},
+
+	setRadius: function(radius) {
+		var size = radius * 2;
+		this.setSize(size, size);
+	},
+
 	_draw: function(ctx, param) {
 		var style = this._style,
 			size = this._size,
