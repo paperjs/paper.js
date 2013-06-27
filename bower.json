@@ -4,17 +4,18 @@
   "main": "dist/paper-full.js",
   "ignore": [
     "build",
-    "dist/paper.js"
+    "components",
+    "dist/paper.js",
     "fatline",
     "projects",
     "lib",
     "node_modules",
-    "package.json"
+    "package.json",
     "src",
-    "test",
+    "test"
   ],
   "devDependencies": {
-    "acorn": "~0.3.2",
-    "esprima": "~1.1.0"
+    "acorn": "~0.3.1",
+    "esprima": "~1.0.3"
   }
 }
