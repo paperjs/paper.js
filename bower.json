@@ -1,0 +1,20 @@
+{
+  "name": "paper",
+  "version": "0.9.5",
+  "main": "dist/paper-full.js",
+  "ignore": [
+    "build",
+    "dist/paper.js"
+    "fatline",
+    "projects",
+    "lib",
+    "node_modules",
+    "package.json"
+    "src",
+    "test",
+  ],
+  "devDependencies": {
+    "acorn": "~0.3.2",
+    "esprima": "~1.1.0"
+  }
+}
