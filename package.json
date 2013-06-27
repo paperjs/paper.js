@@ -29,7 +29,7 @@
   ],
   "devDependencies": {
     "uglify-js": "~2.3.6",
-    "prepro": "~0.5.0",
+    "prepro": "~0.6.0",
     "grunt": "~0.4.1",
     "grunt-contrib-uglify": "~0.2.2"
   }

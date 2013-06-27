@@ -10,6 +10,6 @@
  * All rights reserved.
  */
 
-/*#*/ include('qunit/qunit.js');
-/*#*/ include('helpers.js');
-/*#*/ include('../tests/load.js');
+/*#*/ include('lib/qunit/qunit.js');
+/*#*/ include('lib/helpers.js');
+/*#*/ include('tests/load.js');

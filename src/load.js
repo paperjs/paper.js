@@ -10,11 +10,9 @@
  * All rights reserved.
  */
 
-// This file is only used by examples and unit tests, using prepro.js to
+// This file is only used by examples and unit tests, using Prepro's load.js to
 // 'preprocess' it on the fly in the browser, avoiding the step of having to
 // manually preprocess it after each change.
 
-// This folder is specified relatively to the lib folder from which prepro.js is
-// loaded, and which is referenced as the root.
-include('../src/options.js');
-include('../src/paper.js');
+include('options.js');
+include('paper.js');
