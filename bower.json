@@ -12,12 +12,15 @@
     "components",
     "fatline",
     "projects",
-    "lib",
     "node_modules",
     "package.json",
     "src",
     "test"
   ],
+  "dependencies": {
+    "straps": "~1.1.2",
+    "stats.js": "r11"
+  },
   "devDependencies": {
     "acorn": "~0.3.1",
     "esprima": "~1.0.3"
