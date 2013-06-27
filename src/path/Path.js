@@ -1184,12 +1184,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 				last2 = path.getLastSegment();
 			if (last1._point.equals(last2._point))
 				path.reverse();
-			var first2 = path.getFirstSegment();
+			var first1,
+				first2 = path.getFirstSegment();
 			if (last1._point.equals(first2._point)) {
 				last1.setHandleOut(first2._handleOut);
 				this._add(segments.slice(1));
 			} else {
-				var first1 = this.getFirstSegment();
+				first1 = this.getFirstSegment();
 				if (first1._point.equals(first2._point))
 					path.reverse();
 				last2 = path.getLastSegment();
@@ -1204,8 +1205,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (path.closed)
 				this._add([segments[0]]);
 			path.remove();
-			// Close if they touch in both places
-			var first1 = this.getFirstSegment();
+			// Close if they touch in both places. Fetch the segments again
+			// since they may have changed.
+			first1 = this.getFirstSegment();
 			last1 = this.getLastSegment();
 			if (last1._point.equals(first1._point)) {
 				first1.setHandleIn(last1._handleIn);
