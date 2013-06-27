@@ -20,9 +20,9 @@
 // in terms of performance.
 paper.PaperScope.prototype.PaperScript = new function() {
 	/*#*/ if (options.parser == 'acorn') {
-	/*#*/ include('../../lib/acorn-min.js');
+	/*#*/ include('../../components/acorn/acorn.min.js');
 	/*#*/ } else if (options.parser == 'esprima') {
-	/*#*/ include('../../lib/esprima-min.js');
+	/*#*/ include('../../components/esprima/esprima.min.js');
 	/*#*/ }
 
 	// Operators to overload

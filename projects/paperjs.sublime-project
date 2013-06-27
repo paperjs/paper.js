@@ -11,9 +11,6 @@
 			"path": "../examples"
 		},
 		{
-			"path": "../lib"
-		},
-		{
 			"path": "../build",
             // jsdoc-toolkit will have its own project file
 			"folder_exclude_patterns": ["jsdoc-toolkit"]
