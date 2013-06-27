@@ -10,14 +10,8 @@
 #
 # All rights reserved.
 
-# Generate a paper.js file that uses load.js to directly load the library from
-# the seperate source files in the src directory using PrePro.
-# This is very useful during development of the library itself.
+# This script simply generates a symbolic link from dist/paper.js to src/load.js
+# which loads the library from separate sources through PrePro.
 
-echo "// Paper.js loader for development, as produced by the build/load.sh script
-document.write('<script type=\"text/javascript\" src=\"../../node_modules/prepro/lib/load.js\"></script>');
-document.write('<script type=\"text/javascript\" src=\"../../src/load.js\"></script>');
-
-// For more information on building the library please refer to the
-// 'Building the Library' section of README.md:
-// https://github.com/paperjs/paper.js#building-the-library" > ../dist/paper.js;
+rm ../dist/paper.js
+ln -s ../src/load.js ../dist/paper.js
