@@ -112,10 +112,11 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @bean
 	 */
 	getSize: function() {
-		return this._size;
+		var size = this._size;
+		return new LinkedSize(size.width, size.height, this, 'setSize');
 	},
 
-	setSize: function() {
+	setSize: function(/* size */) {
 		var size = Size.read(arguments);
 		if (!this._size.equals(size)) {
 			// Get reference to image before changing canvas
@@ -517,7 +518,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	getImageData: function(rect) {
 		rect = Rectangle.read(arguments);
 		if (rect.isEmpty())
-			rect = new Rectangle(this.getSize());
+			rect = new Rectangle(this._size);
 		return this.getContext().getImageData(rect.x, rect.y,
 				rect.width, rect.height);
 	},
