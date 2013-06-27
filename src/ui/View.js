@@ -74,7 +74,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		element.width = size.width;
 		element.height = size.height;
 		// TODO: Test this on IE:
-		if (PaperScope.hasAttribute(element, 'stats')) {
+		if (PaperScope.hasAttribute(element, 'stats')
+				&& typeof Stats !== 'undefined') {
 			this._stats = new Stats();
 			// Align top-left to the element
 			var stats = this._stats.domElement,

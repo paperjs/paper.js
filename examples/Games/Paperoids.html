@@ -5,7 +5,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 	<title>Paperoids</title>
 	<script type="text/javascript" src="../../dist/paper.js"></script>
-	<script type="text/javascript" src="../../lib/stats.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 
 	//
@@ -38,7 +37,6 @@
 		Rocks.add(presets.rockCount);
 		Score.update();
 		Lives.initialize();
-		document.getElementById('statholder').style.display = 'block';
 	}
 
 	function onKeyUp(event) {
@@ -51,9 +49,11 @@
 		}
 		// Show stats:
 		if (event.key == 'f') {
-			var statHolder = document.getElementById('statholder');
-			statHolder.style.display = (statHolder.style.display == 'block')
-					? 'none' : 'block';
+			var stats = document.getElementById('stats');
+			if (stats) {
+				stats.style.display = (stats.style.display == 'block')
+						? 'none' : 'block';
+			}
 		}
 	}
 
@@ -73,7 +73,6 @@
 			Ship.coast();
 		}
 		Ship.move();
-		Game.updateStats();
 	}
 
 	project.currentStyle.strokeColor = 'white';
@@ -88,18 +87,6 @@
 			Rocks.add(presets.rockCount);
 		},
 		// Stats.js by Mr. Doob - https://github.com/mrdoob/stats.js
-		updateStats: new function() {
-			var stats = new Stats();
-
-			// Align top-left
-			stats.domElement.style.position = 'absolute';
-			stats.domElement.style.left = '0px';
-			stats.domElement.style.top = '0px';
-
-			document.getElementById('statholder').appendChild( stats.domElement );
-			document.getElementById('statholder').style.display = "none";
-			return stats.update;
-		}
 	};
 
 	var assets = {
@@ -502,60 +489,69 @@
 			position.y = bounds.height  + itemBounds.height / 2;
 		}
 	}
-		</script>
-		<style type="text/css">
-				body { 
-					margin: 0;
-					overflow: hidden;
-					background-color: #000;
-					font-family:Helvetica,Arial;
-				} 
-				.footer {
-					position:absolute;
-					bottom:0;
-					color:#ff0000;
-					background-color: rgba(60,60,60,0.8);
-					font-size:0.75em;
-					padding:0.5em;
-					color:#ddd;
-					width: 100%
-				}
-				.footer a {
-					color: #fff;
-					font-weight:
-					bold; text-decoration: none;
-					border-bottom: 1px solid #555;
-				}
-				.footer b {
-					background-color: #660000;
-					padding-left: 0.25em;
-					padding-right: 0.25em; }
-				.gameover {
-					display: none;
-					position: absolute;
-					left: 40%;
-					top: 40%;
-					color: #fff;
-					background-color: rgba(60,60,60,0.8);
-					padding: 32px;
-					-moz-border-radius: 12px; 
-					-webkit-border-radius: 12px; 
-					border-radius: 12px; 
-					-moz-background-clip: padding;
-					-webkit-background-clip: padding-box;
-					background-clip: padding-box; 
-				}
-				.gameover a {
-					color: #fff;
-					font-weight: bold;
-				}
-		</style>
+	</script>
+	<style type="text/css">
+		body { 
+			margin: 0;
+			overflow: hidden;
+			background-color: #000;
+			font-family:Helvetica,Arial;
+		}
+
+		.footer {
+			position:absolute;
+			bottom:0;
+			color:#ff0000;
+			background-color: rgba(60,60,60,0.8);
+			font-size:0.75em;
+			padding:0.5em;
+			color:#ddd;
+			width: 100%
+		}
+
+		.footer a {
+			color: #fff;
+			font-weight:
+			bold; text-decoration: none;
+			border-bottom: 1px solid #555;
+		}
+
+		.footer b {
+			background-color: #660000;
+			padding-left: 0.25em;
+			padding-right: 0.25em;
+		}
+
+		.gameover {
+			display: none;
+			position: absolute;
+			left: 40%;
+			top: 40%;
+			color: #fff;
+			background-color: rgba(60,60,60,0.8);
+			padding: 32px;
+			-moz-border-radius: 12px; 
+			-webkit-border-radius: 12px; 
+			border-radius: 12px; 
+			-moz-background-clip: padding;
+			-webkit-background-clip: padding-box;
+			background-clip: padding-box; 
+		}
+
+		.gameover a {
+			color: #fff;
+			font-weight: bold;
+		}
+
+		#stats {
+			position: absolute;
+			left: auto !important;
+			right: 0px;
+		}
+	</style>
 </head>
 <body style="background:black">
-	<canvas style="position:absolute" id="canvas" resize></canvas>
-	
-	<div style="position:absolute;right:51px;color:#ff0000;" id="statholder">FPS</div>
-	
+	<canvas style="position:absolute" id="canvas" resize stats></canvas>
 	<div id="footer" class="footer"><a href=#">Paperoids</a>.  To Play: <b>&#8592;</b> and <b>&#8594;</b> to rotate.  <b>&#8593;</b> for thrust.  <b>Z</b> to fire. <b>F</b> to show FPS. Follow @<a href="http://twitter.com/#/hirmes">hirmes</a> for updates. Made with the amazing <a href="http://paperjs.org">Paper.js</a></div>
 	
 	<div id="gameover" class="gameover">Game Over.  <a href="Paperoids.html">Play again</a>?</div>
