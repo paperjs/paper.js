@@ -39,7 +39,8 @@ if (typeof window !== 'undefined') {
 	// Node based loading through PrePro:
 	var prepro = require('prepro/lib/node.js');
 	// Include deafult browser options.
-	prepro.include('options.js');
+	// Step out and back into src in case this is loaded from dist/paper-node.js
+	prepro.include('../src/options.js');
 	// Override node specific options.
 	prepro.setOptions({
 		browser: false,
@@ -47,5 +48,5 @@ if (typeof window !== 'undefined') {
 		stats: false
 	});
 	// Load Paper.js library files.
-	prepro.include('paper.js');
+	prepro.include('../src/paper.js');
 }
