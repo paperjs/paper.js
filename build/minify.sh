@@ -10,5 +10,5 @@
 #
 # All rights reserved.
 
-../node_modules/.bin/uglifyjs ../dist/paper.js -o ../dist/paper-min.js -c unsafe=true -m -b ascii_only=true,beautify=false --comments /^!/
-../node_modules/.bin/uglifyjs ../dist/paper-core.js -o ../dist/paper-core-min.js -c unsafe=true -m --comments /^!/
+../node_modules/.bin/uglifyjs ../dist/paper-full.js -o ../dist/paper-full.min.js -c unsafe=true -m -b ascii_only=true,beautify=false --comments /^!/
+../node_modules/.bin/uglifyjs ../dist/paper-core.js -o ../dist/paper-core.min.js -c unsafe=true -m --comments /^!/

@@ -30,6 +30,13 @@ then
 	mkdir ../dist/
 fi
 
-./preprocess.sh $MODE ../src/paper.js "-o '{ \"browser\": true }' -i '../src/constants.js'" ../dist/paper.js
+./preprocess.sh $MODE ../src/paper.js "-o '{ \"browser\": true }' -i '../src/constants.js'" ../dist/paper-full.js
 ./preprocess.sh $MODE ../src/paper.js "-o '{ \"browser\": true, \"paperscript\": false }' -i '../src/constants.js'" ../dist/paper-core.js
 #./preprocess.sh $MODE ../src/paper.js "-o '{ \"node\": true }' -i '../src/constants.js'" ../dist/paper-node.js 
+
+# Remove the symbolic link and create a new one to the built library now
+if [ -f ../dist/paper.js ]
+then
+	rm ../dist/paper.js
+fi
+ln -s paper-full.js ../dist/paper.js

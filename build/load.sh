@@ -13,5 +13,8 @@
 # This script simply generates a symbolic link from dist/paper.js to src/load.js
 # which loads the library from separate sources through PrePro.
 
-rm ../dist/paper.js
+if [ -f ../dist/paper.js ]
+then
+	rm ../dist/paper.js
+fi
 ln -s ../src/load.js ../dist/paper.js
