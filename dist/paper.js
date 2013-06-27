@@ -1,1 +1,1 @@
-../src/load.js
+paper-full.js
