@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-// First add Base and Numerical to exports, then inject all exports into
+// First add Base and a couple of other objects that are not automatically
+// exported to exports (Numerical, Key, etc), then inject all exports into
 // PaperScope, and create the initial paper object, all in one statement:
 paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	// Mark fields as enumeralbe so PaperScope.inject can pick them up
@@ -18,7 +19,8 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	Base: Base,
 	Numerical: Numerical,
 	DomElement: DomElement,
-	DomEvent: DomEvent
+	DomEvent: DomEvent,
+	Key: Key
 })))();
 
 // Support AMD (e.g. require.js)
