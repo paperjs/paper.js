@@ -23,6 +23,10 @@ VERSION=$(node -e "
 	process.stdout.write(require('../package.json').version)
 ")
 # Commit
-git commit -m "Update version to v$VERSION."
+git commit -m "Bump version to v$VERSION"
 # Tag
 git tag "v$VERSION"
+# Push
+git push
+# Publish
+npm publish ..
