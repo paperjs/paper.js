@@ -1201,6 +1201,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 					this._add(segments.slice());
 				}
 			}
+			if (path.closed)
+				this._add([segments[0]]);
 			path.remove();
 			// Close if they touch in both places
 			var first1 = this.getFirstSegment();
