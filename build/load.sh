@@ -17,4 +17,4 @@ if [ -f ../dist/paper.js ]
 then
 	rm ../dist/paper.js
 fi
-ln -s ../src/load.js ../dist/paper.js
+cp ../src/load.js ../dist/paper.js

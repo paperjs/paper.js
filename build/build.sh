@@ -34,9 +34,9 @@ fi
 ./preprocess.sh $MODE ../src/paper.js "-o '{ \"browser\": true, \"paperscript\": false }' -i '../src/constants.js'" ../dist/paper-core.js
 #./preprocess.sh $MODE ../src/paper.js "-o '{ \"node\": true }' -i '../src/constants.js'" ../dist/paper-node.js 
 
-# Remove the symbolic link and create a new one to the built library now
+# Remove the existing file or symbolic link and copy paper-full.js to paper.js now
 if [ -f ../dist/paper.js ]
 then
 	rm ../dist/paper.js
 fi
-ln -s paper-full.js ../dist/paper.js
+cp ../dist/paper-full.js ../dist/paper.js
