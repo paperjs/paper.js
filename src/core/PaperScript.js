@@ -19,11 +19,11 @@
 // better minification and the future use of strict mode once it makes sense
 // in terms of performance.
 paper.PaperScope.prototype.PaperScript = new function() {
-	/*#*/ if (options.parser == 'acorn') {
-	/*#*/ include('../../components/acorn/acorn.min.js');
-	/*#*/ } else if (options.parser == 'esprima') {
-	/*#*/ include('../../components/esprima/esprima.min.js');
-	/*#*/ }
+/*#*/ if (options.parser == 'acorn') {
+/*#*/ include('../../components/acorn/acorn.min.js');
+/*#*/ } else if (options.parser == 'esprima') {
+/*#*/ include('../../components/esprima/esprima.min.js');
+/*#*/ }
 
 	// Operators to overload
 
