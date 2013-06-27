@@ -10,7 +10,6 @@
   "ignore": [
     "build",
     "components",
-    "dist/paper.js",
     "fatline",
     "projects",
     "lib",
