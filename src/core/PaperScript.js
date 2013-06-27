@@ -19,10 +19,13 @@
 // better minification and the future use of strict mode once it makes sense
 // in terms of performance.
 paper.PaperScope.prototype.PaperScript = new function() {
+	var PaperScope = paper.PaperScope,
+		// Locally turn of exporst for inlined acorn / esprima.
+		exports = undefined;
 /*#*/ if (options.parser == 'acorn') {
-/*#*/ include('../../components/acorn/acorn.min.js');
+/*#*/ include('../../components/acorn/acorn.min.js', { exports: false });
 /*#*/ } else if (options.parser == 'esprima') {
-/*#*/ include('../../components/esprima/esprima.min.js');
+/*#*/ include('../../components/esprima/esprima.min.js', { exports: false });
 /*#*/ }
 
 	// Operators to overload
@@ -273,8 +276,7 @@ paper.PaperScope.prototype.PaperScript = new function() {
 	}
 
 	function load() {
-		var scripts = document.getElementsByTagName('script'),
-			PaperScope = paper.PaperScope;
+		var scripts = document.getElementsByTagName('script');
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			var script = scripts[i];
 			// Only load this script if it not loaded already.

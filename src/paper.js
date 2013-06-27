@@ -32,7 +32,7 @@
 
 var paper = new function() {
 // Inline Bootstrap core (the Base class) inside the paper scope first:
-/*#*/ include('../components/straps/straps.js');
+/*#*/ include('../components/straps/straps.js', { exports: false });
 
 /*#*/ if (options.stats) {
 /*#*/ include('../components/stats.js/build/stats.min.js');

@@ -48,6 +48,4 @@ if (typeof window !== 'undefined') {
 	});
 	// Load Paper.js library files.
 	prepro.include('paper.js');
-	// Export the paper scope.
-	module.exports = prepro.context.paper;
 }

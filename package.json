@@ -6,7 +6,14 @@
     "Jürg Lehni <juerg@lehni.org> (http://lehni.org)",
     "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
   ],
-  "main": "./src/load.js",
+  "main": "./dist/paper-node.js",
+  "files": [
+    "AUTHORS.md",
+    "dist/paper-node.js",
+    "examples/Node.js",
+    "LICENSE.txt",
+    "README.md"
+  ],
   "engines": {
     "node": ">= 0.4.0"
   },
@@ -29,7 +36,7 @@
   ],
   "devDependencies": {
     "uglify-js": "~2.3.6",
-    "prepro": "~0.7.0",
+    "prepro": "~0.7.1",
     "grunt": "~0.4.1",
     "grunt-contrib-uglify": "~0.2.2"
   }

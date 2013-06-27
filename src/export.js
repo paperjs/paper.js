@@ -43,4 +43,7 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	Canvas: Canvas
 })))();
 
+// Export the paper scope.
+module.exports = paper;
+
 /*#*/ } // options.node
