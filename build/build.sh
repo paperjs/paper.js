@@ -30,6 +30,6 @@ then
 	mkdir ../dist/
 fi
 
-./preprocess.sh $MODE ../src/paper.js "-d '{ \"browser\": true }' -i '../src/constants.js'" ../dist/paper.js
-./preprocess.sh $MODE ../src/paper.js "-d '{ \"browser\": true, \"paperscript\": false }' -i '../src/constants.js'" ../dist/paper-core.js
-#./preprocess.sh $MODE ../src/paper.js "-d '{ \"node\": true }' -i '../src/constants.js'" ../dist/paper-node.js 
+./preprocess.sh $MODE ../src/paper.js "-o '{ \"browser\": true }' -i '../src/constants.js'" ../dist/paper.js
+./preprocess.sh $MODE ../src/paper.js "-o '{ \"browser\": true, \"paperscript\": false }' -i '../src/constants.js'" ../dist/paper-core.js
+#./preprocess.sh $MODE ../src/paper.js "-o '{ \"node\": true }' -i '../src/constants.js'" ../dist/paper-node.js 

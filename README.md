@@ -12,15 +12,7 @@ If you want to work with Paper.js, simply download the latest "stable" version f
 
 **Get the source (for building):**
 
-Git 1.6.5 and later:
-
     git clone --recursive git://github.com/paperjs/paper.js.git
-
-Git 1.6.4 and earlier:
-
-	git clone git://github.com/paperjs/paper.js.git
-	cd paper.js
-	git submodule update --init
 
 **Get the source (for contributing):**
 
@@ -58,9 +50,9 @@ You will then find the built library inside the `dist` folder, named `paper.js`.
 	stripped		Formated but without comments (default)
 	compressed		Uses UglifyJS to reduce file size
 
-In order to build a compressed version of Paper.js, UglifyJS2 needs to be installed:
+In order to build your own versions of Paper.js, both PrePro and UglifyJS need to be installed locally. Make sure you have Node.js and NPM installed and run this command the root folder:
 
-    npm install uglify-js
+    npm install
 
 ### Building the Documentation
 
