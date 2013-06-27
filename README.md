@@ -37,22 +37,34 @@ To update the `jsdoc-toolkit` submodule inside the `build` folder, used to gener
 
 ### Building the Library
 
-The Paper.js sources are distributed across many separate files, organised in subfolders inside the `src` folder. To compile them all into one distributable file, yo need to run the `build.sh` script inside the `build` folder:
+Paper.js has a couple of dependencies as Bower and NPM modules. See <http://madebyhoundstooth.com/blog/install-node-with-homebrew-on-os-x/> for a tutorial explaining how to install Node.js, NPM and Bower on OSX.
+
+In order to be able to build Paper.js, these dependencies need to be installed first after checking out the repository:
+
+    npm install
+    bower install
+
+Next you need to create minified versions of some of these dependencies. This is handled by the `minify-components.sh` script inside the `build` folder:
+
+    cd build
+    ./minify-components.sh
+
+The Paper.js sources are distributed across many separate files, organised in subfolders inside the `src` folder. To compile them all into one distributable file, you can run the `build.sh` script inside the `build` folder:
 
 	cd build
 	./build.sh
 
 You will then find the built library inside the `dist` folder, named `paper.js`.
 
-`build.sh` offer a row of modes:
+`build.sh` offer two modes:
 
 	commented		Preprocessed but still formated and commented
 	stripped		Formated but without comments (default)
-	compressed		Uses UglifyJS to reduce file size
 
-In order to build your own versions of Paper.js, both PrePro and UglifyJS need to be installed locally. Make sure you have Node.js and NPM installed and run this command the root folder:
+In order to minify the resulting built versions, you can run the `minify.sh` script:
 
-    npm install
+	cd build
+	./minify.sh
 
 ### Building the Documentation
 
