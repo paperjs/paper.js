@@ -6,7 +6,7 @@
     "Jürg Lehni <juerg@lehni.org> (http://lehni.org)",
     "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
   ],
-  "main": "dist/paper-full.js",
+  "main": "dist/paper.js",
   "ignore": [
     "build",
     "components",
