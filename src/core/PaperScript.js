@@ -31,19 +31,33 @@ paper.PaperScope.prototype.PaperScript = new function() {
 	// Operators to overload
 
 	var binaryOperators = {
-		'+': 'add',
-		'-': 'subtract',
-		'*': 'multiply',
-		'/': 'divide',
-		'%': 'modulo',
+		// The hidden math functions are to be injected specifically, see below.
+		'+': '_add',
+		'-': '_subtract',
+		'*': '_multiply',
+		'/': '_divide',
+		'%': '_modulo',
+		// Use the real equals.
 		'==': 'equals',
 		'!=': 'equals'
 	};
 
 	var unaryOperators = {
-		'-': 'negate',
+		'-': '_negate',
 		'+': null
 	};
+
+	// Add hidden math functions to Point, Size and Color
+	var fields = Base.each(
+		'add,subtract,multiply,divide,modulo,negate'.split(','),
+		function(name) {
+			this['_' + name] = '#' + name;
+		}, 
+		{}
+	);
+	paper.Point.inject(fields);
+	paper.Size.inject(fields);
+	paper.Color.inject(fields);
 
 	// Use very short name for the binary operator (_$_) as well as the
 	// unary operator ($_), as operations will be replaced with then.
@@ -79,7 +93,6 @@ paper.PaperScope.prototype.PaperScript = new function() {
 	}
 
 	// AST Helpers
-
 
 	/**
 	 * Compiles PaperScript code into JavaScript code.
