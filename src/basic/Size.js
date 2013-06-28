@@ -98,12 +98,12 @@ var Size = Base.extend(/** @lends Size# */{
 			var hasHeight = typeof arg1 === 'number';
 			this.width = arg0;
 			this.height = hasHeight ? arg1 : arg0;
-			if (this._read)
-				this._read = hasHeight ? 2 : 1;
+			if (this.__read)
+				this.__read = hasHeight ? 2 : 1;
 		} else if (type === 'undefined' || arg0 === null) {
 			this.width = this.height = 0;
-			if (this._read)
-				this._read = arg0 === null ? 1 : 0;
+			if (this.__read)
+				this.__read = arg0 === null ? 1 : 0;
 		} else {
 			if (Array.isArray(arg0)) {
 				this.width = arg0[0];
@@ -116,11 +116,11 @@ var Size = Base.extend(/** @lends Size# */{
 				this.height = arg0.y;
 			} else {
 				this.width = this.height = 0;
-				if (this._read)
-					this._read = 0;
+				if (this.__read)
+					this.__read = 0;
 			}
-			if (this._read)
-				this._read = 1;
+			if (this.__read)
+				this.__read = 1;
 		}
 	},
 

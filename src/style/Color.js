@@ -227,7 +227,7 @@ var Color = Base.extend(new function() {
 						var current = this._components[0];
 						value = Gradient.read(
 								Array.isArray(value) ? value : arguments,
-								0, 0, true); // readNull
+								0, 0, { readNull: true });
 						if (current !== value) {
 							if (current)
 								current._removeOwner(this);
@@ -244,9 +244,10 @@ var Color = Base.extend(new function() {
 						}
 						: type === 'gradient'
 							? function(/* value */) {
-								// ..., readNull, clone);
-								return Point.read(arguments, 0, 0,
-										name === 'highlight', true);
+								return Point.read(arguments, 0, 0, {
+										readNull: name === 'highlight',
+										clone: true
+								});
 							}
 							: function(value) {
 								return isNaN(value) ? 0
@@ -494,7 +495,7 @@ var Color = Base.extend(new function() {
 					alpha = args[2];
 				} else {
 					// For deserialization, shift out and process normally.
-					if (this._read)
+					if (this.__read)
 						read = 1; // Will be increased below
 					// Shift type out of the arguments, and process normally.
 					args = slice.call(args, 1);
@@ -522,7 +523,7 @@ var Color = Base.extend(new function() {
 								: 'gray';
 					var length = types[type].length;
 					alpha = values[length];
-					if (this._read)
+					if (this.__read)
 						read += values === arguments
 							? length + (alpha != null ? 1 : 0)
 							: 1;
@@ -585,7 +586,7 @@ var Color = Base.extend(new function() {
 						alpha = arg.alpha;
 					}
 				}
-				if (this._read && type)
+				if (this.__read && type)
 					read = 1;
 			}
 			// Default fallbacks: rgb, black
@@ -608,8 +609,8 @@ var Color = Base.extend(new function() {
 			this._components = components;
 			this._properties = types[this._type];
 			this._alpha = alpha;
-			if (this._read)
-				this._read = read;
+			if (this.__read)
+				this.__read = read;
 		},
 
 		_serialize: function(options, dictionary) {
@@ -1084,9 +1085,9 @@ var Color = Base.extend(new function() {
 		 * @return {Color} the addition of the color and the value as a new color
 		 *
 		 * @example
-		 * var color = new Color(0.5, 1.0, 1.0);
-		 * var result = color + 1.0;
-		 * console.log(result); // {red: 1.0, blue: 1.0, green: 1.0}
+		 * var color = new Color(0.5, 1, 1);
+		 * var result = color + 1;
+		 * console.log(result); // { red: 1, blue: 1, green: 1 }
 		 */
 		/**
 		 * Returns the addition of the supplied color to the color as a new
@@ -1100,10 +1101,10 @@ var Color = Base.extend(new function() {
 		 * @return {Color} the addition of the two colors as a new color
 		 *
 		 * @example
-		 * var color1 = new Color(0.0, 1.0, 1.0);
-		 * var color2 = new Color(1.0, 0.0, 0.0);
+		 * var color1 = new Color(0, 1, 1);
+		 * var color2 = new Color(1, 0, 0);
 		 * var result = color1 + color2;
-		 * console.log(result); // {red: 1.0, blue: 1.0, green: 1.0}
+		 * console.log(result); // { red: 1, blue: 1, green: 1 }
 		 */
 		/**
 		 * Returns the subtraction of the supplied value to both coordinates of
@@ -1118,9 +1119,9 @@ var Color = Base.extend(new function() {
 		 *         color
 		 *
 		 * @example
-		 * var color = new Color(0.5, 1.0, 1.0);
-		 * var result = color - 1.0;
-		 * console.log(result); // {red: 0.0, blue: 0.0, green: 0.0}
+		 * var color = new Color(0.5, 1, 1);
+		 * var result = color - 1;
+		 * console.log(result); // { red: 0, blue: 0, green: 0 }
 		 */
 		/**
 		 * Returns the subtraction of the supplied color to the color as a new
@@ -1134,10 +1135,10 @@ var Color = Base.extend(new function() {
 		 * @return {Color} the subtraction of the two colors as a new color
 		 *
 		 * @example
-		 * var color1 = new Color(0.0, 1.0, 1.0);
-		 * var color2 = new Color(1.0, 0.0, 0.0);
+		 * var color1 = new Color(0, 1, 1);
+		 * var color2 = new Color(1, 0, 0);
 		 * var result = color1 - color2;
-		 * console.log(result); // {red: 0.0, blue: 1.0, green: 1.0}
+		 * console.log(result); // { red: 0, blue: 1, green: 1 }
 		 */
 		/**
 		 * Returns the multiplication of the supplied value to both coordinates
@@ -1152,9 +1153,9 @@ var Color = Base.extend(new function() {
 		 *         new color
 		 *
 		 * @example
-		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var color = new Color(0.5, 1, 1);
 		 * var result = color * 0.5;
-		 * console.log(result); // {red: 0.20, blue: 0.5, green: 0.5}
+		 * console.log(result); // { red: 0.25, blue: 0.5, green: 0.5 }
 		 */
 		/**
 		 * Returns the multiplication of the supplied color to the color as a
@@ -1168,10 +1169,10 @@ var Color = Base.extend(new function() {
 		 * @return {Color} the multiplication of the two colors as a new color
 		 *
 		 * @example
-		 * var color1 = new Color(0.0, 1.0, 1.0);
-		 * var color2 = new Color(0.5, 0.0, 0.5);
+		 * var color1 = new Color(0, 1, 1);
+		 * var color2 = new Color(0.5, 0, 0.5);
 		 * var result = color1 * color2;
-		 * console.log(result); // {red: 0.0, blue: 0.0, green: 0.5}
+		 * console.log(result); // { red: 0, blue: 0, green: 0.5 }
 		 */
 		/**
 		 * Returns the division of the supplied value to both coordinates of
@@ -1186,9 +1187,9 @@ var Color = Base.extend(new function() {
 		 *         color
 		 *
 		 * @example
-		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var color = new Color(0.5, 1, 1);
 		 * var result = color / 2;
-		 * console.log(result); // {red: 0.20, blue: 0.5, green: 0.5}
+		 * console.log(result); // { red: 0.25, blue: 0.5, green: 0.5 }
 		 */
 		/**
 		 * Returns the division of the supplied color to the color as a new
@@ -1202,10 +1203,10 @@ var Color = Base.extend(new function() {
 		 * @return {Color} the division of the two colors as a new color
 		 *
 		 * @example
-		 * var color1 = new Color(0.0, 1.0, 1.0);
-		 * var color2 = new Color(0.5, 0.0, 0.5);
+		 * var color1 = new Color(0, 1, 1);
+		 * var color2 = new Color(0.5, 0, 0.5);
 		 * var result = color1 / color2;
-		 * console.log(result); // {red: 0.0, blue: 0.0, green: 1.0}
+		 * console.log(result); // { red: 0, blue: 0, green: 1 }
 		 */
 		/**
 		 * {@grouptitle RGB Components}

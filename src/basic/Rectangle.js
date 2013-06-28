@@ -143,8 +143,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 			}
 			read = arguments._index;
 		}
-		if (this._read)
-			this._read = read;
+		if (this.__read)
+			this.__read = read;
 	},
 
 	/**

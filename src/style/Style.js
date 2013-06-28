@@ -125,8 +125,6 @@ var Style = Base.extend(new function() {
 		//   raw value is stored, and conversion only happens in the getter.
 		fields[set] = function(value) {
 			var children = this._item && this._item._children;
-			// Clone color objects since they reference their owner
-			// value = isColor ? Color.read(arguments, 0, 0, true) : value;
 			// Only unify styles on children of Groups, excluding CompoundPaths.
 			if (children && children.length > 0
 					&& this._item._type !== 'compound-path') {
@@ -169,7 +167,7 @@ var Style = Base.extend(new function() {
 				} else if (isColor && !(value && value.constructor === Color)) {
 					// Convert to a Color and stored result of conversion.
 					this._values[key] = value = Color.read(
-							[value], 0, 0, true, true); // readNull, clone);
+							[value], 0, 0, { readNull: true, clone: true });
 					if (value)
 						value._owner = this._item;
 				}

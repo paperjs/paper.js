@@ -135,12 +135,12 @@ var Point = Base.extend(/** @lends Point# */{
 			var hasY = typeof arg1 === 'number';
 			this.x = arg0;
 			this.y = hasY ? arg1 : arg0;
-			if (this._read)
-				this._read = hasY ? 2 : 1;
+			if (this.__read)
+				this.__read = hasY ? 2 : 1;
 		} else if (type === 'undefined' || arg0 === null) {
 			this.x = this.y = 0;
-			if (this._read)
-				this._read = arg0 === null ? 1 : 0;
+			if (this.__read)
+				this.__read = arg0 === null ? 1 : 0;
 		} else {
 			if (Array.isArray(arg0)) {
 				this.x = arg0[0];
@@ -157,11 +157,11 @@ var Point = Base.extend(/** @lends Point# */{
 				this.setAngle(arg0.angle);
 			} else {
 				this.x = this.y = 0;
-				if (this._read)
-					this._read = 0;
+				if (this.__read)
+					this.__read = 0;
 			}
-			if (this._read)
-				this._read = 1;
+			if (this.__read)
+				this.__read = 1;
 		}
 	},
 
