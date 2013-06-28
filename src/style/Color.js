@@ -265,6 +265,7 @@ var Color = Base.extend(new function() {
 				if (this._type !== type
 						&& !(hasOverlap && /^hs[bl]$/.test(this._type))) {
 					this._components = this._convert(type);
+					this._properties = types[type];
 					this._type = type;
 				}
 				value = parser.call(this, value);
@@ -605,6 +606,7 @@ var Color = Base.extend(new function() {
 				}
 			}
 			this._components = components;
+			this._properties = types[this._type];
 			this._alpha = alpha;
 			if (this._read)
 				this._read = read;
@@ -671,6 +673,7 @@ var Color = Base.extend(new function() {
 
 		setType: function(type) {
 			this._components = this._convert(type);
+			this._properties = types[type];
 			this._type = type;
 		},
 
@@ -741,7 +744,7 @@ var Color = Base.extend(new function() {
 		 * @return {String} A string representation of the color.
 		 */
 		toString: function() {
-			var properties = types[this._type],
+			var properties = this._properties,
 				parts = [],
 				isGradient = this._type === 'gradient',
 				f = Formatter.instance;
@@ -824,215 +827,6 @@ var Color = Base.extend(new function() {
 				this._changed();
 			}
 		},
-
-		/**
-		 * Returns the addition of the supplied value to both coordinates of
-		 * the color as a new color.
-		 * The object itself is not modified!
-		 *
-		 * @name Color#add
-		 * @function
-		 * @operator
-		 * @param {Number} number the number to add
-		 * @return {Color} the addition of the color and the value as a new color
-		 *
-		 * @example
-		 * var color = new Color(0.5, 1.0, 1.0);
-		 * var result = color + 1.0;
-		 * console.log(result); // {red: 1.0, blue: 1.0, green: 1.0}
-		 */
-		/**
-		 * Returns the addition of the supplied color to the color as a new
-		 * color.
-		 * The object itself is not modified!
-		 *
-		 * @name Color#add
-		 * @function
-		 * @operator
-		 * @param {Color} color the color to add
-		 * @return {Color} the addition of the two colors as a new color
-		 *
-		 * @example
-		 * var color1 = new Color(0.0, 1.0, 1.0);
-		 * var color2 = new Color(1.0, 0.0, 0.0);
-		 * var result = color1 + color2;
-		 * console.log(result); // {red: 1.0, blue: 1.0, green: 1.0}
-		 */
-		add: function(color) {
-			return new Color(
-				this.red + point.red,
-				this.green + point.green,
-				this.blue + point.blue,
-				this.alpha + point.alpha
-			);
-		},
-
-		/**
-		 * Returns the subtraction of the supplied value to both coordinates of
-		 * the color as a new color.
-		 * The object itself is not modified!
-		 *
-		 * @name Color#subtract
-		 * @function
-		 * @operator
-		 * @param {Number} number the number to subtract
-		 * @return {Color} the subtraction of the color and the value as a new
-		 *         color
-		 *
-		 * @example
-		 * var color = new Color(0.5, 1.0, 1.0);
-		 * var result = color - 1.0;
-		 * console.log(result); // {red: 0.0, blue: 0.0, green: 0.0}
-		 */
-		/**
-		 * Returns the subtraction of the supplied color to the color as a new
-		 * color.
-		 * The object itself is not modified!
-		 *
-		 * @name Color#subtract
-		 * @function
-		 * @operator
-		 * @param {Color} color the color to subtract
-		 * @return {Color} the subtraction of the two colors as a new color
-		 *
-		 * @example
-		 * var color1 = new Color(0.0, 1.0, 1.0);
-		 * var color2 = new Color(1.0, 0.0, 0.0);
-		 * var result = color1 - color2;
-		 * console.log(result); // {red: 0.0, blue: 1.0, green: 1.0}
-		 */
-		subtract: function(color) {
-			return new Color(
-				this.red - point.red,
-				this.green - point.green,
-				this.blue - point.blue,
-				this.alpha - point.alpha
-			);
-		},
-
-		/**
-		 * Returns the multiplication of the supplied value to both coordinates
-		 * of the color as a new color.
-		 * The object itself is not modified!
-		 *
-		 * @name Color#multiply
-		 * @function
-		 * @operator
-		 * @param {Number} number the number to multiply
-		 * @return {Color} the multiplication of the color and the value as a
-		 *         new color
-		 *
-		 * @example
-		 * var color = new Color(0.5, 1.0, 1.0);
-		 * var result = color * 0.5;
-		 * console.log(result); // {red: 0.20, blue: 0.5, green: 0.5}
-		 */
-		/**
-		 * Returns the multiplication of the supplied color to the color as a
-		 * new color.
-		 * The object itself is not modified!
-		 *
-		 * @name Color#multiply
-		 * @function
-		 * @operator
-		 * @param {Color} color the color to multiply
-		 * @return {Color} the multiplication of the two colors as a new color
-		 *
-		 * @example
-		 * var color1 = new Color(0.0, 1.0, 1.0);
-		 * var color2 = new Color(0.5, 0.0, 0.5);
-		 * var result = color1 * color2;
-		 * console.log(result); // {red: 0.0, blue: 0.0, green: 0.5}
-		 */
-		multiply: function(color) {
-			return new Color(
-				this.red * point.red,
-				this.green * point.green,
-				this.blue * point.blue,
-				this.alpha * point.alpha
-			);
-		},
-
-		/**
-		 * Returns the division of the supplied value to both coordinates of
-		 * the color as a new color.
-		 * The object itself is not modified!
-		 *
-		 * @name Color#divide
-		 * @function
-		 * @operator
-		 * @param {Number} number the number to divide
-		 * @return {Color} the division of the color and the value as a new
-		 *         color
-		 *
-		 * @example
-		 * var color = new Color(0.5, 1.0, 1.0);
-		 * var result = color / 2;
-		 * console.log(result); // {red: 0.20, blue: 0.5, green: 0.5}
-		 */
-		/**
-		 * Returns the division of the supplied color to the color as a new
-		 * color.
-		 * The object itself is not modified!
-		 *
-		 * @name Color#divide
-		 * @function
-		 * @operator
-		 * @param {Color} color the color to divide
-		 * @return {Color} the division of the two colors as a new color
-		 *
-		 * @example
-		 * var color1 = new Color(0.0, 1.0, 1.0);
-		 * var color2 = new Color(0.5, 0.0, 0.5);
-		 * var result = color1 / color2;
-		 * console.log(result); // {red: 0.0, blue: 0.0, green: 1.0}
-		 */
-		divide: function(color) {
-			return new Color(
-				this.red / point.red,
-				this.green / point.green,
-				this.blue / point.blue,
-				this.alpha / point.alpha
-			);
-		},
-
-		/**
-		 * {@grouptitle RGB Components}
-		 *
-		 * The amount of red in the color as a value between {@code 0} and
-		 * {@code 1}.
-		 *
-		 * @name Color#red
-		 * @property
-		 * @type Number
-		 *
-		 * @example {@paperscript}
-		 * // Changing the amount of red in a color:
-		 * var circle = new Path.Circle(new Point(80, 50), 30);
-		 * circle.fillColor = 'blue';
-		 *
-		 * // Blue + red = purple:
-		 * circle.fillColor.red = 1;
-		 */
-
-		/**
-		 * The amount of green in the color as a value between {@code 0} and
-		 * {@code 1}.
-		 *
-		 * @name Color#green
-		 * @property
-		 * @type Number
-		 *
-		 * @example {@paperscript}
-		 * // Changing the amount of green in a color:
-		 * var circle = new Path.Circle(new Point(80, 50), 30);
-		 *
-		 * // First we set the fill color to red:
-		 * circle.fillColor = 'red';
-		 *
-		 * // Red + green = yellow:
-		 * circle.fillColor.green = 1;
-		 */
 
 		/**
 		 * The amount of blue in the color as a value between {@code 0} and
@@ -1231,6 +1025,224 @@ var Color = Base.extend(new function() {
 				return new Color(random(), random(), random());
 			}
 		}
+	});
+}, new function() {
+	function clamp(value, hue) {
+		return value < 0
+				? 0
+				: hue && value > 360
+					? 360
+					: !hue && value > 1
+						? 1
+						: value;
+	}
+
+	var operators = {
+		add: function(a, b, hue) {
+			return clamp(a + b, hue);
+		},
+
+		subtract: function(a, b, hue) {
+			return clamp(a - b, hue);
+		},
+
+		multiply: function(a, b, hue) {
+			return clamp(a * b, hue);
+		},
+
+		divide: function(a, b, hue) {
+			return clamp(a / b, hue);
+		}
+	};
+
+	return Base.each(operators, function(operator, name) {
+		this[name] = function(color) {
+			debugger;
+			color = Color.read(arguments);
+			var type = this._type,
+				properties = this._properties,
+				components1 = this._components,
+				components2 = color._convert(type);
+			for (var i = 0, l = components1.length; i < l; i++)
+				components2[i] = operator(components1[i], components2[i],
+						properties[i] === 'hue');
+			return new Color(type, components2,
+					this._alpha != null
+							? operator(this._alpha, color.getAlpha())
+							: null);
+		};
+	}, /** @lends Color# */{
+		/**
+		 * Returns the addition of the supplied value to both coordinates of
+		 * the color as a new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#add
+		 * @function
+		 * @operator
+		 * @param {Number} number the number to add
+		 * @return {Color} the addition of the color and the value as a new color
+		 *
+		 * @example
+		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var result = color + 1.0;
+		 * console.log(result); // {red: 1.0, blue: 1.0, green: 1.0}
+		 */
+		/**
+		 * Returns the addition of the supplied color to the color as a new
+		 * color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#add
+		 * @function
+		 * @operator
+		 * @param {Color} color the color to add
+		 * @return {Color} the addition of the two colors as a new color
+		 *
+		 * @example
+		 * var color1 = new Color(0.0, 1.0, 1.0);
+		 * var color2 = new Color(1.0, 0.0, 0.0);
+		 * var result = color1 + color2;
+		 * console.log(result); // {red: 1.0, blue: 1.0, green: 1.0}
+		 */
+		/**
+		 * Returns the subtraction of the supplied value to both coordinates of
+		 * the color as a new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#subtract
+		 * @function
+		 * @operator
+		 * @param {Number} number the number to subtract
+		 * @return {Color} the subtraction of the color and the value as a new
+		 *         color
+		 *
+		 * @example
+		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var result = color - 1.0;
+		 * console.log(result); // {red: 0.0, blue: 0.0, green: 0.0}
+		 */
+		/**
+		 * Returns the subtraction of the supplied color to the color as a new
+		 * color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#subtract
+		 * @function
+		 * @operator
+		 * @param {Color} color the color to subtract
+		 * @return {Color} the subtraction of the two colors as a new color
+		 *
+		 * @example
+		 * var color1 = new Color(0.0, 1.0, 1.0);
+		 * var color2 = new Color(1.0, 0.0, 0.0);
+		 * var result = color1 - color2;
+		 * console.log(result); // {red: 0.0, blue: 1.0, green: 1.0}
+		 */
+		/**
+		 * Returns the multiplication of the supplied value to both coordinates
+		 * of the color as a new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#multiply
+		 * @function
+		 * @operator
+		 * @param {Number} number the number to multiply
+		 * @return {Color} the multiplication of the color and the value as a
+		 *         new color
+		 *
+		 * @example
+		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var result = color * 0.5;
+		 * console.log(result); // {red: 0.20, blue: 0.5, green: 0.5}
+		 */
+		/**
+		 * Returns the multiplication of the supplied color to the color as a
+		 * new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#multiply
+		 * @function
+		 * @operator
+		 * @param {Color} color the color to multiply
+		 * @return {Color} the multiplication of the two colors as a new color
+		 *
+		 * @example
+		 * var color1 = new Color(0.0, 1.0, 1.0);
+		 * var color2 = new Color(0.5, 0.0, 0.5);
+		 * var result = color1 * color2;
+		 * console.log(result); // {red: 0.0, blue: 0.0, green: 0.5}
+		 */
+		/**
+		 * Returns the division of the supplied value to both coordinates of
+		 * the color as a new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#divide
+		 * @function
+		 * @operator
+		 * @param {Number} number the number to divide
+		 * @return {Color} the division of the color and the value as a new
+		 *         color
+		 *
+		 * @example
+		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var result = color / 2;
+		 * console.log(result); // {red: 0.20, blue: 0.5, green: 0.5}
+		 */
+		/**
+		 * Returns the division of the supplied color to the color as a new
+		 * color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#divide
+		 * @function
+		 * @operator
+		 * @param {Color} color the color to divide
+		 * @return {Color} the division of the two colors as a new color
+		 *
+		 * @example
+		 * var color1 = new Color(0.0, 1.0, 1.0);
+		 * var color2 = new Color(0.5, 0.0, 0.5);
+		 * var result = color1 / color2;
+		 * console.log(result); // {red: 0.0, blue: 0.0, green: 1.0}
+		 */
+		/**
+		 * {@grouptitle RGB Components}
+		 *
+		 * The amount of red in the color as a value between {@code 0} and
+		 * {@code 1}.
+		 *
+		 * @name Color#red
+		 * @property
+		 * @type Number
+		 *
+		 * @example {@paperscript}
+		 * // Changing the amount of red in a color:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 * circle.fillColor = 'blue';
+		 *
+		 * // Blue + red = purple:
+		 * circle.fillColor.red = 1;
+		 */
+		/**
+		 * The amount of green in the color as a value between {@code 0} and
+		 * {@code 1}.
+		 *
+		 * @name Color#green
+		 * @property
+		 * @type Number
+		 *
+		 * @example {@paperscript}
+		 * // Changing the amount of green in a color:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // First we set the fill color to red:
+		 * circle.fillColor = 'red';
+		 *
+		 * // Red + green = yellow:
+		 * circle.fillColor.green = 1;
+		 */
 	});
 });
 

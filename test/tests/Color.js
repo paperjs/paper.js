@@ -193,3 +193,30 @@ test('Saturation from black rgb', function() {
 		return new Color(0, 0, 0).saturation === 0;
 	}, true);
 });
+
+test('Color#add', function() {
+	var color = new Color(0, 1, 1);
+	compareColors(color.add([1, 0, 0]), [1, 1, 1]);
+	compareColors(color.add([1, 0.5, 0]), [1, 1, 1]);
+	var color = new Color(0, 0.5, 0);
+	compareColors(color.add(0.5), [0.5, 1, 0.5]);
+});
+
+test('Color#subtract', function() {
+	var color = new Color(0, 1, 1);
+	compareColors(color.subtract([0, 1, 1]), [0, 0, 0]);
+	compareColors(color.subtract([0, 0.5, 1]), [0, 0.5, 0]);
+	var color = new Color(1, 1, 1);
+	compareColors(color.subtract(0.5), [0.5, 0.5, 0.5]);
+});
+
+test('Color#multiply', function() {
+	var color = new Color(1, 0.5, 0.25);
+	compareColors(color.multiply([0.25, 0.5, 1]), [0.25, 0.25, 0.25]);
+	var color = new Color(1, 1, 1);
+	compareColors(color.multiply(0.5), [0.5, 0.5, 0.5]);
+});
+
+
+
+
