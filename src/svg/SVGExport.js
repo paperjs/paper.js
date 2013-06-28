@@ -15,7 +15,7 @@
  * Paper.js DOM to a SVG DOM.
  */
 new function() {
-	var formatter = Formatter.instance;
+	var formatter;
 
 	function setAttributes(node, attrs) {
 		for (var key in attrs) {
@@ -466,7 +466,7 @@ new function() {
 		definitions.svgs[type + '-' + item._id] = node;
 	}
 
-	function exportDefinitions(node, asString) {
+	function exportDefinitions(node, options) {
 		if (!definitions)
 			return node;
 		// We can only use svg nodes as defintion containers. Have the loop
@@ -489,7 +489,9 @@ new function() {
 		}
 		// Clear definitions at the end of export
 		definitions = null;
-		return asString ? new XMLSerializer().serializeToString(svg) : svg;
+		return options && options.asString
+				? new XMLSerializer().serializeToString(svg)
+				: svg;
 	}
 
 	function exportSVG(item) {
@@ -500,14 +502,22 @@ new function() {
 		return node && applyStyle(item, node);
 	}
 
+	function setOptions(options) {
+		formatter = options && options.precision
+				? new Formatter(options.precision)
+				: Formatter.instance;
+	}
+
 	Item.inject({
-		exportSVG: function(asString) {
-			return exportDefinitions(exportSVG(this), asString);
+		exportSVG: function(options) {
+			setOptions(options);
+			return exportDefinitions(exportSVG(this), options);
 		}
 	});
 
 	Project.inject({
-		exportSVG: function(asString) {
+		exportSVG: function(options) {
+			setOptions(options);
 			var layers = this.layers,
 				size = this.view.getSize(),
 				node = createElement('svg', {
@@ -521,7 +531,7 @@ new function() {
 				});
 			for (var i = 0, l = layers.length; i < l; i++)
 				node.appendChild(exportSVG(layers[i]));
-			return exportDefinitions(node, asString);
+			return exportDefinitions(node, options);
 		}
 	});
 };
