@@ -776,6 +776,65 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @return {Boolean} {@true the point is selected}
 	 */
 
+	/**
+	 * {@grouptitle Math Functions}
+	 *
+	 * Returns a new point with rounded {@link #x} and {@link #y} values. The
+	 * object itself is not modified!
+	 *
+	 * @name Point#round
+	 * @function
+	 * @return {Point}
+	 *
+	 * @example
+	 * var point = new Point(10.2, 10.9);
+	 * var roundPoint = point.round();
+	 * console.log(roundPoint); // {x: 10, y: 11}
+	 */
+
+	/**
+	 * Returns a new point with the nearest greater non-fractional values to the
+	 * specified {@link #x} and {@link #y} values. The object itself is not
+	 * modified!
+	 *
+	 * @name Point#ceil
+	 * @function
+	 * @return {Point}
+	 *
+	 * @example
+	 * var point = new Point(10.2, 10.9);
+	 * var ceilPoint = point.ceil();
+	 * console.log(ceilPoint); // {x: 11, y: 11}
+	 */
+
+	/**
+	 * Returns a new point with the nearest smaller non-fractional values to the
+	 * specified {@link #x} and {@link #y} values. The object itself is not
+	 * modified!
+	 *
+	 * @name Point#floor
+	 * @function
+	 * @return {Point}
+	 *
+	 * @example
+	 * var point = new Point(10.2, 10.9);
+	 * var floorPoint = point.floor();
+	 * console.log(floorPoint); // {x: 10, y: 10}
+	 */
+
+	/**
+	 * Returns a new point with the absolute values of the specified {@link #x}
+	 * and {@link #y} values. The object itself is not modified!
+	 *
+	 * @name Point#abs
+	 * @function
+	 * @return {Point}
+	 *
+	 * @example
+	 * var point = new Point(-5, 10);
+	 * var absPoint = point.abs();
+	 * console.log(absPoint); // {x: 5, y: 10}
+	 */
 	statics: /** @lends Point */{
 		/**
 		 * Returns a new point object with the smallest {@link #x} and
@@ -843,74 +902,13 @@ var Point = Base.extend(/** @lends Point# */{
 			return new Point(Math.random(), Math.random());
 		}
 	}
-}, new function() { // Scope for injecting round, ceil, floor, abs:
-	/**
-	 * {@grouptitle Math Functions}
-	 *
-	 * Returns a new point with rounded {@link #x} and {@link #y} values. The
-	 * object itself is not modified!
-	 *
-	 * @name Point#round
-	 * @function
-	 * @return {Point}
-	 *
-	 * @example
-	 * var point = new Point(10.2, 10.9);
-	 * var roundPoint = point.round();
-	 * console.log(roundPoint); // {x: 10, y: 11}
-	 */
-
-	/**
-	 * Returns a new point with the nearest greater non-fractional values to the
-	 * specified {@link #x} and {@link #y} values. The object itself is not
-	 * modified!
-	 *
-	 * @name Point#ceil
-	 * @function
-	 * @return {Point}
-	 *
-	 * @example
-	 * var point = new Point(10.2, 10.9);
-	 * var ceilPoint = point.ceil();
-	 * console.log(ceilPoint); // {x: 11, y: 11}
-	 */
-
-	/**
-	 * Returns a new point with the nearest smaller non-fractional values to the
-	 * specified {@link #x} and {@link #y} values. The object itself is not
-	 * modified!
-	 *
-	 * @name Point#floor
-	 * @function
-	 * @return {Point}
-	 *
-	 * @example
-	 * var point = new Point(10.2, 10.9);
-	 * var floorPoint = point.floor();
-	 * console.log(floorPoint); // {x: 10, y: 10}
-	 */
-
-	/**
-	 * Returns a new point with the absolute values of the specified {@link #x}
-	 * and {@link #y} values. The object itself is not modified!
-	 *
-	 * @name Point#abs
-	 * @function
-	 * @return {Point}
-	 *
-	 * @example
-	 * var point = new Point(-5, 10);
-	 * var absPoint = point.abs();
-	 * console.log(absPoint); // {x: 5, y: 10}
-	 */
-
-	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
-		var op = Math[name];
-		this[name] = function() {
-			return new Point(op(this.x), op(this.y));
-		};
-	}, {});
-});
+}, Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
+	// Inject round, ceil, floor, abs:
+	var op = Math[name];
+	this[name] = function() {
+		return new Point(op(this.x), op(this.y));
+	};
+}, {}));
 
 /**
  * @name LinkedPoint

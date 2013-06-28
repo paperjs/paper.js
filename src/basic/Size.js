@@ -380,6 +380,67 @@ var Size = Base.extend(/** @lends Size# */{
 		return isNaN(this.width) || isNaN(this.height);
 	},
 
+	/**
+	 * {@grouptitle Math Functions}
+	 *
+	 * Returns a new size with rounded {@link #width} and {@link #height}
+	 * values. The object itself is not modified!
+	 *
+	 * @name Size#round
+	 * @function
+	 * @return {Size}
+	 *
+	 * @example
+	 * var size = new Size(10.2, 10.9);
+	 * var roundSize = size.round();
+	 * console.log(roundSize); // {x: 10, y: 11}
+	 */
+
+	/**
+	 * Returns a new size with the nearest greater non-fractional values to the
+	 * specified {@link #width} and {@link #height} values. The object itself is
+	 * not modified!
+	 *
+	 * @name Size#ceil
+	 * @function
+	 * @return {Size}
+	 *
+	 * @example
+	 * var size = new Size(10.2, 10.9);
+	 * var ceilSize = size.ceil();
+	 * console.log(ceilSize); // {x: 11, y: 11}
+	 */
+
+	/**
+	 * Returns a new size with the nearest smaller non-fractional values to the
+	 * specified {@link #width} and {@link #height} values. The object itself is
+	 * not modified!
+	 *
+	 * @name Size#floor
+	 * @function
+	 * @return {Size}
+	 *
+	 * @example
+	 * var size = new Size(10.2, 10.9);
+	 * var floorSize = size.floor();
+	 * console.log(floorSize); // {x: 10, y: 10}
+	 */
+
+	/**
+	 * Returns a new size with the absolute values of the specified
+	 * {@link #width} and {@link #height} values. The object itself is not
+	 * modified!
+	 *
+	 * @name Size#abs
+	 * @function
+	 * @return {Size}
+	 *
+	 * @example
+	 * var size = new Size(-5, 10);
+	 * var absSize = size.abs();
+	 * console.log(absSize); // {x: 5, y: 10}
+	 */
+
 	statics: /** @lends Size */{
 		/**
 		 * Returns a new size object with the smallest {@link #width} and
@@ -439,75 +500,13 @@ var Size = Base.extend(/** @lends Size# */{
 			return new Size(Math.random(), Math.random());
 		}
 	}
-}, new function() { // Scope for injecting round, ceil, floor, abs:
-
-	/**
-	 * {@grouptitle Math Functions}
-	 *
-	 * Returns a new size with rounded {@link #width} and {@link #height} values.
-	 * The object itself is not modified!
-	 *
-	 * @name Size#round
-	 * @function
-	 * @return {Size}
-	 *
-	 * @example
-	 * var size = new Size(10.2, 10.9);
-	 * var roundSize = size.round();
-	 * console.log(roundSize); // {x: 10, y: 11}
-	 */
-
-	/**
-	 * Returns a new size with the nearest greater non-fractional values to the
-	 * specified {@link #width} and {@link #height} values. The object itself is not
-	 * modified!
-	 *
-	 * @name Size#ceil
-	 * @function
-	 * @return {Size}
-	 *
-	 * @example
-	 * var size = new Size(10.2, 10.9);
-	 * var ceilSize = size.ceil();
-	 * console.log(ceilSize); // {x: 11, y: 11}
-	 */
-
-	/**
-	 * Returns a new size with the nearest smaller non-fractional values to the
-	 * specified {@link #width} and {@link #height} values. The object itself is not
-	 * modified!
-	 *
-	 * @name Size#floor
-	 * @function
-	 * @return {Size}
-	 *
-	 * @example
-	 * var size = new Size(10.2, 10.9);
-	 * var floorSize = size.floor();
-	 * console.log(floorSize); // {x: 10, y: 10}
-	 */
-
-	/**
-	 * Returns a new size with the absolute values of the specified {@link #width}
-	 * and {@link #height} values. The object itself is not modified!
-	 *
-	 * @name Size#abs
-	 * @function
-	 * @return {Size}
-	 *
-	 * @example
-	 * var size = new Size(-5, 10);
-	 * var absSize = size.abs();
-	 * console.log(absSize); // {x: 5, y: 10}
-	 */
-
-	return Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
-		var op = Math[name];
-		this[name] = function() {
-			return new Size(op(this.width), op(this.height));
-		};
-	}, {});
-});
+}, Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
+	// Inject round, ceil, floor, abs:
+	var op = Math[name];
+	this[name] = function() {
+		return new Size(op(this.width), op(this.height));
+	};
+}, {}));
 
 /**
  * @name LinkedSize
