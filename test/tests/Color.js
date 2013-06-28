@@ -215,8 +215,18 @@ test('Color#multiply', function() {
 	compareColors(color.multiply([0.25, 0.5, 1]), [0.25, 0.25, 0.25]);
 	var color = new Color(1, 1, 1);
 	compareColors(color.multiply(0.5), [0.5, 0.5, 0.5]);
+	var color = new Color(0.5, 0.5, 0.5);
+	compareColors(color.multiply(2), [1, 1, 1]);
 });
 
+test('Color#divide', function() {
+	var color = new Color(1, 1, 1);
+	compareColors(color.divide([1, 2, 4]), [1, 0.5, 0.25]);
+	var color = new Color(1, 0.5, 0.25);
+	compareColors(color.divide(0.25), [1, 1, 1]);
+	var color = new Color(1, 1, 1);
+	compareColors(color.divide(4), [0.25, 0.25, 0.25]);
+});
 
 
 

@@ -50,7 +50,7 @@ var Color = Base.extend(new function() {
 		gradient: ['gradient', 'origin', 'destination', 'highlight']
 	};
 
-	var parsers = {}, // Parsers of values for setters, by type and property
+	var componentParsers = {}, // Parsers of values for setters, by type and property
 		colorCache = {},
 		colorCtx;
 
@@ -213,7 +213,7 @@ var Color = Base.extend(new function() {
 	// its component.
 	return Base.each(types, function(properties, type) {
 		// Keep track of parser functions per type.
-		parsers[type] = [];
+		componentParsers[type] = [];
 		Base.each(properties, function(name, index) {
 			var part = Base.capitalize(name),
 				// Both hue and saturation have overlapping properties between
@@ -222,7 +222,7 @@ var Color = Base.extend(new function() {
 				hasOverlap = /^(hue|saturation)$/.test(name),
 				// Produce value parser function for the given type / propeprty
 				// name combination.
-				parser = parsers[type][index] = name === 'gradient'
+				parser = componentParsers[type][index] = name === 'gradient'
 					? function(value) {
 						var current = this._components[0];
 						value = Gradient.read(
@@ -473,6 +473,7 @@ var Color = Base.extend(new function() {
 			var slice = Array.prototype.slice,
 				args = arguments,
 				read = 0,
+				parse = true,
 				type,
 				components,
 				alpha,
@@ -503,6 +504,8 @@ var Color = Base.extend(new function() {
 				}
 			}
 			if (!components) {
+				// Only parse values if we're not told to not do so
+				parse = !(this.__options && this.__options.dontParse);
 				// Determine if there is a values array
 				values = argType === 'number'
 						? args
@@ -565,7 +568,7 @@ var Color = Base.extend(new function() {
 									: 'rgb';
 						// Convert to array and parse in one loop, for efficiency
 						var properties = types[type];
-							parse = parsers[type];
+							parsers = parse && componentParsers[type];
 						this._components = components = [];
 						for (var i = 0, l = properties.length; i < l; i++) {
 							var value = arg[properties[i]];
@@ -579,7 +582,8 @@ var Color = Base.extend(new function() {
 									radial: arg.radial
 								};
 							}
-							value = parse[i].call(this, value);
+							if (parse)
+								value = parsers[i].call(this, value);
 							if (value != null)
 								components[i] = value;
 						}
@@ -599,9 +603,11 @@ var Color = Base.extend(new function() {
 				// values are defined, parsers are still called to produce
 				// defaults.
 				this._components = components = [];
-				var parse = parsers[this._type];
-				for (var i = 0, l = parse.length; i < l; i++) {
-					var value = parse[i].call(this, values && values[i]);
+				var parsers = componentParsers[this._type];
+				for (var i = 0, l = parsers.length; i < l; i++) {
+					var value = values && values[i];
+					if (parse)
+						value = parsers[i].call(this, value);
 					if (value != null)
 						components[i] = value;
 				}
@@ -1057,9 +1063,12 @@ var Color = Base.extend(new function() {
 	};
 
 	return Base.each(operators, function(operator, name) {
+		// Tell the argument reader not to parse values for multiply and divide,
+		// so the are not clamped yet.
+		var options = { dontParse: /^(multiply|divide)$/.test(name) };
+
 		this[name] = function(color) {
-			debugger;
-			color = Color.read(arguments);
+			color = Color.read(arguments, 0, 0, options);
 			var type = this._type,
 				properties = this._properties,
 				components1 = this._components,
