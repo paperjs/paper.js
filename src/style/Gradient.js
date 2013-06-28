@@ -26,17 +26,19 @@
  * 
  * // Create a rectangle shaped path between
  * // the topLeft and bottomRight points:
- * var path = new Path.Rectangle(topLeft, bottomRight);
- * 
- * // Fill the path with a gradient of three evenly divided color stops
- * // that runs between the two points we defined earlier:
- * path.fillColor = {
- * 	gradient: {
- * 		stops: ['yellow', 'red', 'blue']
- * 	},
- * 	origin: topLeft,
- * 	destination: bottomRight
- * };
+ * var path = new Path.Rectangle({
+ * 	topLeft: topLeft,
+ * 	bottomRight: bottomRight,
+ * 	// Fill the path with a gradient of three color stops
+ * 	// that runs between the two points we defined earlier:
+ * 	fillColor: {
+ * 		gradient: {
+ * 			stops: ['yellow', 'red', 'blue']
+ * 		},
+ * 		origin: topLeft,
+ * 		destination: bottomRight
+ * 	}
+ * });
  * 
  * @classexample {@paperscript height=300}
  * // Create a circle shaped path at the center of the view,
