@@ -336,9 +336,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 *
 	 * @name Curve#divide
 	 * @function
-	 * @param {Number} offset the offset on the curve at which to split, or the
-	 *        curve time parameter if {@code isParameter} is {@code true}
-	 *        {@default 0.5}
+	 * @param {Number} [offset=0.5] the offset on the curve at which to split,
+	 *        or the curve time parameter if {@code isParameter} is {@code true}
 	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
 	 *        is a curve time parameter.
 	 * @return {Curve} the second part of the divided curve
@@ -401,9 +400,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 *
 	 * @name Curve#split
 	 * @function
-	 * @param {Number} offset the offset on the curve at which to split, or the
-	 *        curve time parameter if {@code isParameter} is {@code true} 
-	 *        {@default 0.5}
+	 * @param {Number} [offset=0.5] the offset on the curve at which to split,
+	 *        or the curve time parameter if {@code isParameter} is {@code true}
 	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
 	 *        is a curve time parameter.
 	 * @return {Path} The newly created path after splitting, if any
