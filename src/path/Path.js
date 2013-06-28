@@ -913,7 +913,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @function
 	 * @param {Number} offset the offset at which to split the path
 	 * as a number between 0 and {@link Path#length}
-	 * @return {Path} The newly created path, if any.
+	 * @return {Path} The newly created path after splitting, if any
 	 * 
 	 * @example {@paperscript} // Splitting an open path
 	 * var path = new Path();
@@ -956,7 +956,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @function
 	 * @param {CurveLocation} location the curve location at which to split
 	 * the path
-	 * @return {Path} The newly created path, if any.
+	 * @return {Path} The newly created path after splitting, if any
 	 * 
 	 * @example {@paperscript}
 	 * var path = new Path.Circle({
@@ -976,8 +976,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * path.lastSegment.selected = true;
 	 */
 	/**
-	 * Splits the path. After splitting, the path will be open. If the path
-	 * was open already, splitting will result in two paths.
+	 * Splits the path at the given curve index and parameter. After splitting,
+	 * the path will be open. If the path was open already, splitting will
+	 * result in two paths.
 	 * 
 	 * @example {@paperscript} // Splitting an open path
 	 * // Draw a V shaped path:
@@ -1012,12 +1013,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @param {Number} index the index of the curve in the {@link Path#curves}
 	 * array at which to split
 	 * @param {Number} parameter the parameter at which the curve will be split
-	 * @return {Path} The newly created path after splitting, if any.
+	 * @return {Path} The newly created path after splitting, if any
 	 */
 	split: function(index, parameter) {
 		if (parameter === null)
 			return;
-		if (arguments.length == 1) {
+		if (arguments.length === 1) {
 			var arg = index;
 			// split(offset), convert offset to location
 			if (typeof arg === 'number')

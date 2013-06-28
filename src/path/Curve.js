@@ -313,20 +313,39 @@ var Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	/**
-	 * Divides the curve into two at the specified position. The curve itself is
-	 * modified and becomes the first part, the second part is returned as a new
-	 * curve. If the modified curve belongs to a path item, the second part is
-	 * added to it.
+	 * Private method that handles all types of offset / isParameter pairs and
+	 * converts it to a curve parameter.
+	 */
+	_getParameter: function(offset, isParameter) {
+		return isParameter
+				? offset
+				// Accept CurveLocation objects, and objects that act like
+				// them:
+				: offset && offset.curve === this
+					? offset.parameter
+					: offset === undefined && isParameter === undefined
+						? 0.5 // default is in the middle
+						: this.getParameterAt(offset, 0);
+	},
+
+	/**
+	 * Divides the curve into two curves at the given offset. The curve itself
+	 * is modified and becomes the first part, the second part is returned as a
+	 * new curve. If the modified curve belongs to a path item, the second part
+	 * is also added to the path.
 	 *
-	 * @param parameter the position at which to split the curve as a value
-	 *        between 0 and 1 {@default 0.5}
+	 * @name Curve#divide
+	 * @function
+	 * @param {Number} offset the offset on the curve at which to split, or the
+	 *        curve time parameter if {@code isParameter} is {@code true}
+	 *        {@default 0.5}
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
+	 *        is a curve time parameter.
 	 * @return {Curve} the second part of the divided curve
 	 */
-	divide: function(parameter) {
-		var res = null;
-		// Accept CurveLocation objects, and objects that act like them:
-		if (parameter && parameter.curve === this)
-			parameter = parameter.parameter;
+	divide: function(offset, isParameter) {
+		var parameter = this._getParameter(offset, isParameter),
+			res = null;
 		if (parameter > 0 && parameter < 1) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
 				isLinear = this.isLinear(),
@@ -376,14 +395,24 @@ var Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	/**
-	 * Splits the path that this curve belongs to at the given parameter, using
-	 * {@link Path#split(index, parameter)}.
+	 * Splits the path this curve belongs to at the given offset. After
+	 * splitting, the path will be open. If the path was open already, splitting
+	 * will result in two paths.
 	 *
-	 * @return {Path} the second part of the split path
+	 * @name Curve#split
+	 * @function
+	 * @param {Number} offset the offset on the curve at which to split, or the
+	 *        curve time parameter if {@code isParameter} is {@code true} 
+	 *        {@default 0.5}
+	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
+	 *        is a curve time parameter.
+	 * @return {Path} The newly created path after splitting, if any
+	 * @see Path#split(index, parameter)
 	 */
-	split: function(parameter) {
+	split: function(offset, isParameter) {
 		return this._path
-			? this._path.split(this._segment1._index, parameter)
+			? this._path.split(this._segment1._index,
+					this._getParameter(offset, isParameter))
 			: null;
 	},
 
