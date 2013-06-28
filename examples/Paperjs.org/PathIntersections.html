@@ -11,6 +11,8 @@
 
 		var yesGroup = words.children.yes;
 		var noGroup = words.children.no;
+		yesGroup.transformContent = true;
+		noGroup.transformContent = true;
 
 		// Resize the words to fit snugly inside the view:
 		project.activeLayer.fitBounds(view.bounds);
