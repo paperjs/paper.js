@@ -19,7 +19,8 @@
 // better minification and the future use of strict mode once it makes sense
 // in terms of performance.
 paper.PaperScope.prototype.PaperScript = new function() {
-	var PaperScope = paper.PaperScope,
+	var Base = paper.Base,
+		PaperScope = paper.PaperScope,
 		// Locally turn of exporst for inlined acorn / esprima.
 		exports = undefined;
 /*#*/ if (options.parser == 'acorn') {
