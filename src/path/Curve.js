@@ -774,7 +774,7 @@ statics: {
 	 * @bean
 	 * @ignore
 	 */
-}), Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvatureAt'],
+}), Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
 	// determine the bounds of Curve objects with defined segment1 and segment2
 	// values Curve.getBounds() can be used directly on curve arrays, without
