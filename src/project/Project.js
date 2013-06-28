@@ -293,8 +293,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *
 	 * @name Project#exportSVG
 	 * @function
-	 * @param {Boolean} [asString=false] wether to convert the SVG node directly
-	 *        to a string
+	 * @param {Object} [options={ asString: false, precision: 5 }] the export
+	 *        options.
 	 * @return {SVGSVGElement} the project converted to an SVG node
 	 */
 

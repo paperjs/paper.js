@@ -1471,8 +1471,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @name Item#exportSVG
 	 * @function
-	 * @param {Boolean} [asString=false] wether to convert the SVG node directly
-	 *        to a string
+	 * @param {Object} [options={ asString: false, precision: 5 }] the export
+	 *        options.
 	 * @return {SVGSVGElement} the item converted to an SVG node
 	 */
 
