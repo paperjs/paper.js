@@ -116,6 +116,32 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
+		 * Creates a circle shaped Path Item.
+		 *
+		 * @param {Point} center the center point of the circle
+		 * @param {Number} radius the radius of the circle
+		 * @return {Path} the newly created path
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.Circle(new Point(80, 50), 30);
+		 * path.strokeColor = 'black';
+		 *
+		 * @example {@paperscript} // Using object notation
+		 * var path = new Path.Circle({
+		 * 	center: [80, 50],
+		 * 	radius: 30,
+		 * 	strokeColor: 'black'
+		 * });
+		 */
+		Circle: function(/* center, radius */) {
+			var center = Point.readNamed(arguments, 'center'),
+				radius = Base.readNamed(arguments, 'radius');
+			return createEllipse(new Rectangle(center.subtract(radius),
+					new Size(radius * 2, radius * 2)))
+					.set(Base.getNamed(arguments));
+		},
+
+		/**
 		 * Creates a rectangle shaped Path Item from the passed point and size.
 		 *
 		 * @name Path.Rectangle
@@ -251,32 +277,6 @@ Path.inject({ statics: new function() {
 		 * @deprecated use {@link #Path.Ellipse(rectangle)} instead.
 		 */
 		Oval: createEllipse,
-
-		/**
-		 * Creates a circle shaped Path Item.
-		 *
-		 * @param {Point} center the center point of the circle
-		 * @param {Number} radius the radius of the circle
-		 * @return {Path} the newly created path
-		 *
-		 * @example {@paperscript}
-		 * var path = new Path.Circle(new Point(80, 50), 30);
-		 * path.strokeColor = 'black';
-		 *
-		 * @example {@paperscript} // Using object notation
-		 * var path = new Path.Circle({
-		 * 	center: [80, 50],
-		 * 	radius: 30,
-		 * 	strokeColor: 'black'
-		 * });
-		 */
-		Circle: function(/* center, radius */) {
-			var center = Point.readNamed(arguments, 'center'),
-				radius = Base.readNamed(arguments, 'radius');
-			return createEllipse(new Rectangle(center.subtract(radius),
-					new Size(radius * 2, radius * 2)))
-					.set(Base.getNamed(arguments));
-		},
 
 		/**
 		 * Creates a circular arc shaped Path Item.
