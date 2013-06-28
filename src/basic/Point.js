@@ -245,6 +245,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#add
 	 * @function
+	 * @operator
 	 * @param {Number} number the number to add
 	 * @return {Point} the addition of the point and the value as a new point
 	 *
@@ -260,6 +261,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#add
 	 * @function
+	 * @operator
 	 * @param {Point} point the point to add
 	 * @return {Point} the addition of the two points as a new point
 	 *
@@ -281,6 +283,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#subtract
 	 * @function
+	 * @operator
 	 * @param {Number} number the number to subtract
 	 * @return {Point} the subtraction of the point and the value as a new point
 	 *
@@ -296,6 +299,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#subtract
 	 * @function
+	 * @operator
 	 * @param {Point} point the point to subtract
 	 * @return {Point} the subtraction of the two points as a new point
 	 *
@@ -317,6 +321,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#multiply
 	 * @function
+	 * @operator
 	 * @param {Number} number the number to multiply by
 	 * @return {Point} the multiplication of the point and the value as a new point
 	 *
@@ -332,6 +337,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#multiply
 	 * @function
+	 * @operator
 	 * @param {Point} point the point to multiply by
 	 * @return {Point} the multiplication of the two points as a new point
 	 *
@@ -353,6 +359,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#divide
 	 * @function
+	 * @operator
 	 * @param {Number} number the number to divide by
 	 * @return {Point} the division of the point and the value as a new point
 	 *
@@ -368,6 +375,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#divide
 	 * @function
+	 * @operator
 	 * @param {Point} point the point to divide by
 	 * @return {Point} the division of the two points as a new point
 	 *
@@ -388,6 +396,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#modulo
 	 * @function
+	 * @operator
 	 * @param {Number} value
 	 * @return {Point} the integer remainders of dividing the point by the value
 	 *                 as a new point
@@ -402,6 +411,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#modulo
 	 * @function
+	 * @operator
 	 * @param {Point} point
 	 * @return {Point} the integer remainders of dividing the points by each
 	 *                 other as a new point

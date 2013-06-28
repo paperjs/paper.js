@@ -193,6 +193,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#add
 	 * @function
+	 * @operator
 	 * @param {Number} number the number to add
 	 * @return {Size} the addition of the size and the value as a new size
 	 *
@@ -207,6 +208,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#add
 	 * @function
+	 * @operator
 	 * @param {Size} size the size to add
 	 * @return {Size} the addition of the two sizes as a new size
 	 *
@@ -228,6 +230,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#subtract
 	 * @function
+	 * @operator
 	 * @param {Number} number the number to subtract
 	 * @return {Size} the subtraction of the size and the value as a new size
 	 *
@@ -242,6 +245,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#subtract
 	 * @function
+	 * @operator
 	 * @param {Size} size the size to subtract
 	 * @return {Size} the subtraction of the two sizes as a new size
 	 *
@@ -262,6 +266,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#multiply
 	 * @function
+	 * @operator
 	 * @param {Number} number the number to multiply by
 	 * @return {Size} the multiplication of the size and the value as a new size
 	 *
@@ -276,6 +281,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#multiply
 	 * @function
+	 * @operator
 	 * @param {Size} size the size to multiply by
 	 * @return {Size} the multiplication of the two sizes as a new size
 	 *
@@ -296,6 +302,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#divide
 	 * @function
+	 * @operator
 	 * @param {Number} number the number to divide by
 	 * @return {Size} the division of the size and the value as a new size
 	 *
@@ -310,6 +317,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#divide
 	 * @function
+	 * @operator
 	 * @param {Size} size the size to divide by
 	 * @return {Size} the division of the two sizes as a new size
 	 *
@@ -330,6 +338,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#modulo
 	 * @function
+	 * @operator
 	 * @param {Number} value
 	 * @return {Size} the integer remainders of dividing the size by the value
 	 *                 as a new size
@@ -344,6 +353,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 *
 	 * @name Size#modulo
 	 * @function
+	 * @operator
 	 * @param {Size} size
 	 * @return {Size} the integer remainders of dividing the sizes by each
 	 *                 other as a new size

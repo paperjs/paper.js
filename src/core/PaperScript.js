@@ -47,7 +47,7 @@ paper.PaperScope.prototype.PaperScript = new function() {
 		'+': null
 	};
 
-	// Add hidden math functions to Point, Size and Color
+	// Add hidden math functions to Point, Size and Color.
 	var fields = Base.each(
 		'add,subtract,multiply,divide,modulo,negate'.split(','),
 		function(name) {

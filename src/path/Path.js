@@ -412,7 +412,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @param {Segment|Point} segment the segment or point to be added.
 	 * @return {Segment} the added segment. This is not necessarily the same
 	 * object, e.g. if the segment to be added already belongs to another path.
-	 * @operator none
 	 *
 	 * @example {@paperscript}
 	 * // Adding segments to a path using point objects:
