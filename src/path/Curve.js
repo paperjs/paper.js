@@ -424,9 +424,8 @@ statics: {
 		];
 	},
 
-	evaluate: function(v, offset, isParameter, type) {
-		var t = isParameter ? offset : Curve.getParameterAt(v, offset, 0),
-			p1x = v[0], p1y = v[1],
+	evaluate: function(v, t, type) {
+		var p1x = v[0], p1y = v[1],
 			c1x = v[2], c1y = v[3],
 			c2x = v[4], c2y = v[5],
 			p2x = v[6], p2y = v[7],
@@ -625,7 +624,7 @@ statics: {
 		// Checks the y-slope between the current curve and the previous for a
 		// change of orientation, when a solution is found at t == 0
 		function changesOrientation(tangent) {
-			return Curve.evaluate(prev, 1, true, 1).y
+			return Curve.evaluate(prev, 1, 1).y
 					* tangent.y > 0;
 		}
 
@@ -638,10 +637,10 @@ statics: {
 		for (var i = 0; i < count; i++) {
 			var t = roots[i];
 			if (t > -tolerance && t < 1 - tolerance) {
-				var pt = Curve.evaluate(v, t, true, 0);
+				var pt = Curve.evaluate(v, t, 0);
 				if (x < pt.x + tolerance) {
 					// Pass 1 for Curve.evaluate() type to calculate tangent
-					var tan = Curve.evaluate(v, t, true, 1);
+					var tan = Curve.evaluate(v, t, 1);
 					// Handle all kind of edge cases when points are on
 					// contours or rays are touching countours, to termine
 					// wether the crossing counts or not.
@@ -783,12 +782,14 @@ statics: {
 	// finds path interesections.
 	function(name, index) {
 		this[name + 'At'] = function(offset, isParameter) {
-			return Curve.evaluate(this.getValues(), offset, isParameter, index);
+			var values = this.getValues();
+			return Curve.evaluate(values, isParameter
+					? offset : Curve.getParameterAt(values, offset, 0), index);
 		};
 		// Deprecated and undocumented, but keep around for now.
 		// TODO: Remove once enough time has passed (28.01.2013)
 		this[name] = function(parameter) {
-			return Curve.evaluate(this.getValues(), parameter, true, index);
+			return Curve.evaluate(this.getValues(), parameter, index);
 		};
 	},
 /** @lends Curve# */{
@@ -858,7 +859,7 @@ statics: {
 		function refine(t) {
 			if (t >= 0 && t <= 1) {
 				var dist = point.getDistance(
-						Curve.evaluate(values, t, true, 0), true);
+						Curve.evaluate(values, t, 0), true);
 				if (dist < minDist) {
 					minDist = dist;
 					minT = t;
@@ -876,7 +877,7 @@ statics: {
 			if (!refine(minT - step) && !refine(minT + step))
 				step /= 2;
 		}
-		var pt = Curve.evaluate(values, minT, true, 0);
+		var pt = Curve.evaluate(values, minT, 0);
 		return new CurveLocation(this, minT, pt, null, null, null,
 				point.getDistance(pt));
 	},
@@ -1124,8 +1125,8 @@ new function() { // Scope for methods that require numerical integration
 				var t1 = (range1[0] + range1[1]) / 2,
 					t2 = (range2[0] + range2[1]) / 2;
 				addLocation(locations,
-						curve1, t1, Curve.evaluate(v1, t1, true, 0),
-						curve2, t2, Curve.evaluate(v2, t2, true, 0));
+						curve1, t1, Curve.evaluate(v1, t1, 0),
+						curve2, t2, Curve.evaluate(v2, t2, 0));
 				break;
 			}
 		}
@@ -1360,14 +1361,14 @@ new function() { // Scope for methods that require numerical integration
 		for (var i = 0; i < count; i++) {
 			var t = roots[i];
 			if (t >= 0 && t <= 1) {
-				var point = Curve.evaluate(vcr, t, true, 0);
+				var point = Curve.evaluate(vcr, t, 0);
 				// We do have a point on the infinite line. Check if it falls on
 				// the line *segment*.
 				if (point.x  >= 0 && point.x <= rl2x)
 					addLocation(locations,
 							flip ? curve2 : curve1,
 							// The actual intersection point
-							t, Curve.evaluate(vc, t, true, 0),
+							t, Curve.evaluate(vc, t, 0),
 							flip ? curve1 : curve2);
 			}
 		}
