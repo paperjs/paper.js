@@ -1444,6 +1444,49 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
+	 * {@grouptitle Import / Export to JSON & SVG}
+	 *
+	 * Exports (serializes) the item with its content and child items to a JSON
+	 * data string.
+	 *
+	 * @name Item#exportJSON
+	 * @function
+	 * @param {Object} [options={ precision: 5 }] the serialization options 
+	 * @return {String} the exported JSON data
+	 */
+
+	/**
+	 * Imports (deserializes) the stored JSON data into this item's
+	 * {@link Item#children} list. Note that the item is not cleared first.
+	 * You can call {@link Item#removeChildren()} to do so.
+	 *
+	 * @param {String} json the JSON data to import from.
+	 */
+	importJSON: function(json) {
+		return this.addChild(Base.importJSON(json));
+	},
+
+	/**
+	 * Exports the item with its content and child items as an SVG DOM.
+	 *
+	 * @name Item#exportSVG
+	 * @function
+	 * @param {Boolean} [asString=false] wether to convert the SVG node directly
+	 *        to a string
+	 * @return {SVGSVGElement} the item converted to an SVG node
+	 */
+
+	/**
+	 * Converts the SVG node and all its child nodes into Paper.js items and
+	 * adds them as children to the this item.
+	 *
+	 * @name Item#importSVG
+	 * @function
+	 * @param {SVGSVGElement} node the SVG node to import
+	 * @return {Item} the imported Paper.js parent item
+	 */
+
+	/**
 	 * {@grouptitle Hierarchy Operations}
 	 * Adds the specified item as a child of this item at the end of the
 	 * its children list. You can use this function for groups, compound
@@ -2374,14 +2417,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					new Size(bounds.width * scale, bounds.height * scale));
 		newBounds.setCenter(rectangle.getCenter());
 		this.setBounds(newBounds);
-	},
-
-	// DOCS: document exportJSON (documented in @private Base)
-	// DOCS: document importJSON
-	// DOCS: Figure out a way to group these together with importSVG / exportSVG
-
-	importJSON: function(json) {
-		return this.addChild(Base.importJSON(json));
 	},
 
 	/**

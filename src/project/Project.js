@@ -263,14 +263,50 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		return null;
 	},
 
-	// DOCS: document exportJSON (documented in @private Base)
-	// DOCS: document importJSON
-	// DOCS: Figure out a way to group these together with importSVG / exportSVG
+	/**
+	 * {@grouptitle Import / Export to JSON & SVG}
+	 *
+	 * Exports (serializes) the project with all its layers and child items to
+	 * a JSON data string.
+	 *
+	 * @name Project#exportJSON
+	 * @function
+	 * @param {Object} [options={ precision: 5 }] the serialization options 
+	 * @return {String} the exported JSON data
+	 */
 
+	/**
+	 * Imports (deserializes) the stored JSON data into the project. Note that
+	 * the project is not cleared first. You can call {@link Project#clear()} to
+	 * do so.
+	 *
+	 * @param {String} json the JSON data to import from.
+	 */
 	importJSON: function(json) {
 		this.activate();
 		return Base.importJSON(json);
 	},
+
+	/**
+	 * Exports the project with all its layers and child items as an SVG DOM,
+	 * all contained in one top level SVG group node.
+	 *
+	 * @name Project#exportSVG
+	 * @function
+	 * @param {Boolean} [asString=false] wether to convert the SVG node directly
+	 *        to a string
+	 * @return {SVGSVGElement} the project converted to an SVG node
+	 */
+
+	/**
+	 * Converts the SVG node and all its child nodes into Paper.js items and
+	 * adds them to the active layer of this project.
+	 *
+	 * @name Project#importSVG
+	 * @function
+	 * @param {SVGSVGElement} node the SVG node to import
+	 * @return {Item} the imported Paper.js parent item
+	 */
 
 	/**
 	 * {@grouptitle Project Hierarchy}

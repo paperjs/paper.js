@@ -498,27 +498,13 @@ new function() {
 		return item;
 	}
 
-	Item.inject(/** @lends Item# */{
-		/**
-		 * Converts the passed node node into a Paper.js item and adds it to the
-		 * children of this item.
-		 *
-		 * @param {SVGSVGElement} node the SVG DOM node to convert
-		 * @return {Item} the converted Paper.js item
-		 */
+	Item.inject({
 		importSVG: function(node) {
 			return this.addChild(importSVG(node, true));
 		}
 	});
 
-	Project.inject(/** @lends Project# */{
-		/**
-		 * Converts the passed node node into a Paper.js item and adds it to the
-		 * active layer of this project.
-		 *
-		 * @param {SVGSVGElement} node the SVG DOM node to convert
-		 * @return {Item} the converted Paper.js item
-		 */
+	Project.inject({
 		importSVG: function(node) {
 			this.activate();
 			return importSVG(node, true);

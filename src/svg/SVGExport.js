@@ -500,29 +500,13 @@ new function() {
 		return node && applyStyle(item, node);
 	}
 
-	Item.inject(/** @lends Item# */{
-		/**
-		 * {@grouptitle SVG Conversion}
-		 *
-		 * Exports the item and all its children as an SVG DOM, all contained
-		 * in one top level SVG node.
-		 *
-		 * @return {SVGSVGElement} the item converted to an SVG node
-		 */
+	Item.inject({
 		exportSVG: function(asString) {
 			return exportDefinitions(exportSVG(this), asString);
 		}
 	});
 
-	Project.inject(/** @lends Project# */{
-		/**
-		 * {@grouptitle SVG Conversion}
-		 *
-		 * Exports the project and all its layers and child items as an SVG DOM,
-		 * all contained in one top level SVG group node.
-		 *
-		 * @return {SVGSVGElement} the project converted to an SVG node
-		 */
+	Project.inject({
 		exportSVG: function(asString) {
 			var layers = this.layers,
 				size = this.view.getSize(),
