@@ -88,7 +88,7 @@ Path.inject({ statics: new function() {
 		/**
 		 * {@grouptitle Shaped Paths}
 		 *
-		 * Creates a Path Item with two anchor points forming a line.
+		 * Creates a Path item with two anchor points forming a line.
 		 *
 		 * @name Path.Line
 		 * @param {Point} from the first anchor point of the path
@@ -116,7 +116,7 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-		 * Creates a circle shaped Path Item.
+		 * Creates a circle shaped Path item.
 		 *
 		 * @param {Point} center the center point of the circle
 		 * @param {Number} radius the radius of the circle
@@ -142,7 +142,7 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-		 * Creates a rectangle shaped Path Item from the passed point and size.
+		 * Creates a rectangle shaped Path item from the passed point and size.
 		 *
 		 * @name Path.Rectangle
 		 * @param {Point} point
@@ -163,8 +163,8 @@ Path.inject({ statics: new function() {
 		 * });
 		 */
 		/**
-		 * Creates a rectangle shaped Path Item from the passed points. These do not
-		 * necessarily need to be the top left and bottom right corners, the
+		 * Creates a rectangle shaped Path item from the passed points. These do
+		 * not necessarily need to be the top left and bottom right corners, the
 		 * constructor figures out how to fit a rectangle between them.
 		 *
 		 * @name Path.Rectangle
@@ -186,7 +186,7 @@ Path.inject({ statics: new function() {
 		 * });
 		 */
 		/**
-		 * Creates a rectangle shaped Path Item from the passed abstract
+		 * Creates a rectangle shaped Path item from the passed abstract
 		 * {@link Rectangle}.
 		 *
 		 * @name Path.Rectangle
@@ -213,7 +213,7 @@ Path.inject({ statics: new function() {
 		 * });
 		 */
 		/**
-		 * Creates a rectangular Path Item with rounded corners.
+		 * Creates a rectangular Path item with rounded corners.
 		 *
 		 * @name Path.Rectangle
 		 * @param {Rectangle} rectangle
@@ -247,7 +247,7 @@ Path.inject({ statics: new function() {
 		RoundRectangle: createRectangle,
 
 		/**
-		 * Creates an ellipse shaped Path Item.
+		 * Creates an ellipse shaped Path item.
 		 *
 		 * @param {Rectangle} rectangle
 		 * @param {Boolean} [circumscribed=false] when set to {@code true} the
@@ -279,7 +279,7 @@ Path.inject({ statics: new function() {
 		Oval: createEllipse,
 
 		/**
-		 * Creates a circular arc shaped Path Item.
+		 * Creates a circular arc shaped Path item.
 		 *
 		 * @param {Point} from the starting point of the circular arc
 		 * @param {Point} through the point the arc passes through
@@ -312,7 +312,7 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-		 * Creates a regular polygon shaped Path Item.
+		 * Creates a regular polygon shaped Path item.
 		 *
 		 * @param {Point} center the center point of the polygon
 		 * @param {Number} sides the number of sides of the polygon
@@ -354,7 +354,7 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-		 * Creates a star shaped Path Item.
+		 * Creates a star shaped Path item.
 		 *
 		 * The largest of {@code radius1} and {@code radius2} will be the outer
 		 * radius of the star. The smallest of radius1 and radius2 will be the

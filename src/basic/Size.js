@@ -13,21 +13,23 @@
 /**
  * @name Size
  *
- * @class The Size object is used to describe the size of something, through
- * its {@link #width} and {@link #height} properties.
+ * @class The Size object is used to describe the size or dimensions of
+ * somethign, through its {@link #width} and {@link #height} properties.
  *
  * @classexample
- * // Create a size that is 10pt wide and 5pt high
+ * // Create a size that is 10pt wide and 5pt high,
+ * // and use it to define a rectangle:
  * var size = new Size(10, 5);
  * console.log(size.width); // 10
  * console.log(size.height); // 5
+ * var rect = new Rectangle(new Point(20, 15), size);
+ * console.log(rect); // { x: 20, y: 15, width: 10, height: 5 }
  */
 var Size = Base.extend(/** @lends Size# */{
 	_class: 'Size',
 	// Tell Base.read that the Point constructor supports reading with index
 	_readIndex: true,
 
-	// DOCS: improve Size class description
 	/**
 	 * Creates a Size object with the given width and height values.
 	 *

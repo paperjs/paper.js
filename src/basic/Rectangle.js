@@ -175,7 +175,6 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @type Number
 	 */
 
-	// DOCS: Why does jsdocs document this function, when there are no comments?
 	/**
 	 * @ignore
 	 */
