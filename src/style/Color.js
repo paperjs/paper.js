@@ -280,7 +280,7 @@ var Color = Base.extend(new function() {
 		_readIndex: true,
 
 		/**
-		 * Creates a RGB Color object
+		 * Creates a RGB Color object.
 		 *
 		 * @name Color#initialize
 		 * @param {Number} red the amount of red in the color as a value
@@ -303,7 +303,7 @@ var Color = Base.extend(new function() {
 		 * circle.fillColor = new Color(1, 0, 0.5);
 		 */
 		/**
-		 * Creates a GrayColor object
+		 * Creates a gray Color object.
 		 *
 		 * @name Color#initialize
 		 * @param {Number} gray the amount of gray in the color as a value
@@ -322,7 +322,87 @@ var Color = Base.extend(new function() {
 		 * circle.fillColor = new Color(0.5);
 		 */
 		/**
-		 * Creates a gradient color object.
+		 * Creates a HSB, HSL or gradient Color object from the properties of
+		 * the provided object:
+  		 *
+  		 * <b>HSB Color</b>:<br>
+ 		 * {@code hue: Number} — the hue of the color as a value in
+ 		 * degrees between {@code 0} and {@code 360}<br>
+ 		 * {@code saturation: Number} — the saturation of the color as a
+ 		 * value between {@code 0} and {@code 1}<br>
+ 		 * {@code brightness: Number} — the brightness of the color as a
+ 		 * value between {@code 0} and {@code 1}<br>
+ 		 * {@code alpha: Number} — the alpha of the color as a value between
+ 		 * {@code 0} and {@code 1}
+ 		 *
+  		 * <b>HSL Color</b>:<br>
+ 		 * {@code hue: Number} — the hue of the color as a value in
+ 		 * degrees between {@code 0} and {@code 360}<br>
+ 		 * {@code saturation: Number} — the saturation of the color as a
+ 		 * value between {@code 0} and {@code 1}<br>
+ 		 * {@code lightness: Number} — the lightness of the color as a
+ 		 * value between {@code 0} and {@code 1}<br>
+ 		 * {@code alpha: Number} — the alpha of the color as a value between
+ 		 * {@code 0} and {@code 1}
+ 		 *
+  		 * <b>Gradient Color</b>:<br>
+		 * {@code gradient: Gradient} — the gradient object that describes the
+		 *  color stops and type of gradient to be used.<br>
+		 * {@code origin: Point} — the origin point of the gradient<br>
+		 * {@code destination: Point} — the destination point of the gradient
+		 * {@code stops: Array of GradientStop} — the gradient stops describing
+		 * the gradient, as an alternative to providing a gradient object<br>
+		 * {@code radial: Boolean} — controls wether the gradient is radial, as
+		 * an alternative to providing a gradient object<br>
+		 *
+		 * @name Color#initialize
+		 * @param {Object} object an object describing the components and 
+		 *        properties of the color.
+		 *
+		 * @example {@paperscript}
+		 * // Creating a HSB Color:
+		 *
+		 * // Create a circle shaped path at {x: 80, y: 50}
+		 * // with a radius of 30:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // Create an HSB Color with a hue of 90 degrees, a saturation
+		 * // 100% and a brightness of 100%:
+		 * circle.fillColor = { hue: 90, saturation: 1, brightness: 1 };
+ 		 *
+ 		 * @example {@paperscript}
+ 		 * // Creating a HSL Color:
+ 		 *
+ 		 * // Create a circle shaped path at {x: 80, y: 50}
+ 		 * // with a radius of 30:
+ 		 * var circle = new Path.Circle(new Point(80, 50), 30);
+ 		 *
+ 		 * // Create an HSL Color with a hue of 90 degrees, a saturation
+ 		 * // 100% and a lightness of 50%:
+ 		 * circle.fillColor = { hue: 90, saturation: 1, lightness: 0.5 };
+ 		 *
+ 		 * @example {@paperscript height=200}
+ 		 * // Creating a gradient color from an object literal:
+ 		 *
+ 		 * // Define two points which we will be using to construct
+ 		 * // the path and to position the gradient color:
+ 		 * var topLeft = view.center - [80, 80];
+ 		 * var bottomRight = view.center + [80, 80];
+  		 * 
+ 		 * var path = new Path.Rectangle({
+ 		 * 	topLeft: topLeft,
+ 		 * 	bottomRight: bottomRight,
+ 		 * 	// Fill the path with a gradient of three color stops
+ 		 * 	// that runs between the two points we defined earlier:
+ 		 * 	fillColor: {
+		 * 		stops: ['yellow', 'red', 'blue'],
+ 		 * 		origin: topLeft,
+ 		 * 		destination: bottomRight
+ 		 * 	}
+ 		 * });
+ 		 */
+		/**
+		 * Creates a gradient Color object.
 		 *
 		 * @name Color#initialize
 		 * @param {Gradient} gradient
@@ -385,56 +465,6 @@ var Color = Base.extend(new function() {
 		 *
 		 * // Set the fill color of the path to the gradient color:
 		 * path.fillColor = gradientColor;
-		 */
-		// DOCS: Fix HSB Color documentation
-		/**
-		 * Creates an HSB Color object
-		 *
-		 * @name Color#initialize
-		 * @param {Number} hue the hue of the color as a value in degrees between
-		 * {@code 0} and {@code 360}.
-		 * @param {Number} saturation the saturation of the color as a value
-		 * between {@code 0} and {@code 1}
-		 * @param {Number} brightness the brightness of the color as a value
-		 * between {@code 0} and {@code 1}
-		 * @param {Number} [alpha] the alpha of the color as a value between
-		 * {@code 0} and {@code 1}
-		 *
-		 * @example {@paperscript}
-		 * // Creating an HSB Color:
-		 *
-		 * // Create a circle shaped path at {x: 80, y: 50}
-		 * // with a radius of 30:
-		 * var circle = new Path.Circle(new Point(80, 50), 30);
-		 *
-		 * // Create an HSB Color with a hue of 90 degrees, a saturation
-		 * // 100% and a brightness of 100%:
-		 * circle.fillColor = { hue: 90, saturation: 1, brightness: 1 };
-		 */
-		// DOCS: Fix HSL Color documentation
-		/**
-		 * Creates a HSL Color object
-		 *
-		 * @name Color#initialize
-		 * @param {Number} hue the hue of the color as a value in degrees between
-		 * {@code 0} and {@code 360}.
-		 * @param {Number} saturation the saturation of the color as a value
-		 * between {@code 0} and {@code 1}
-		 * @param {Number} lightness the lightness of the color as a value
-		 * between {@code 0} and {@code 1}
-		 * @param {Number} [alpha] the alpha of the color as a value between
-		 * {@code 0} and {@code 1}
-		 *
-		 * @example {@paperscript}
-		 * // Creating a HSL Color:
-		 *
-		 * // Create a circle shaped path at {x: 80, y: 50}
-		 * // with a radius of 30:
-		 * var circle = new Path.Circle(new Point(80, 50), 30);
-		 *
-		 * // Create an HslColor with a hue of 90 degrees, a saturation
-		 * // 100% and a lightness of 50%:
-		 * circle.fillColor = { hue: 90, saturation: 1, lightness: 0.5 };
 		 */
 		initialize: function Color(arg) {
 			// We are storing color internally as an array of components
@@ -793,6 +823,177 @@ var Color = Base.extend(new function() {
 				}
 				this._changed();
 			}
+		},
+
+		/**
+		 * Returns the addition of the supplied value to both coordinates of
+		 * the color as a new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#add
+		 * @function
+		 * @operator
+		 * @param {Number} number the number to add
+		 * @return {Color} the addition of the color and the value as a new color
+		 *
+		 * @example
+		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var result = color + 1.0;
+		 * console.log(result); // {red: 1.0, blue: 1.0, green: 1.0}
+		 */
+		/**
+		 * Returns the addition of the supplied color to the color as a new
+		 * color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#add
+		 * @function
+		 * @operator
+		 * @param {Color} color the color to add
+		 * @return {Color} the addition of the two colors as a new color
+		 *
+		 * @example
+		 * var color1 = new Color(0.0, 1.0, 1.0);
+		 * var color2 = new Color(1.0, 0.0, 0.0);
+		 * var result = color1 + color2;
+		 * console.log(result); // {red: 1.0, blue: 1.0, green: 1.0}
+		 */
+		add: function(color) {
+			return new Color(
+				this.red + point.red,
+				this.green + point.green,
+				this.blue + point.blue,
+				this.alpha + point.alpha
+			);
+		},
+
+		/**
+		 * Returns the subtraction of the supplied value to both coordinates of
+		 * the color as a new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#subtract
+		 * @function
+		 * @operator
+		 * @param {Number} number the number to subtract
+		 * @return {Color} the subtraction of the color and the value as a new
+		 *         color
+		 *
+		 * @example
+		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var result = color - 1.0;
+		 * console.log(result); // {red: 0.0, blue: 0.0, green: 0.0}
+		 */
+		/**
+		 * Returns the subtraction of the supplied color to the color as a new
+		 * color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#subtract
+		 * @function
+		 * @operator
+		 * @param {Color} color the color to subtract
+		 * @return {Color} the subtraction of the two colors as a new color
+		 *
+		 * @example
+		 * var color1 = new Color(0.0, 1.0, 1.0);
+		 * var color2 = new Color(1.0, 0.0, 0.0);
+		 * var result = color1 - color2;
+		 * console.log(result); // {red: 0.0, blue: 1.0, green: 1.0}
+		 */
+		subtract: function(color) {
+			return new Color(
+				this.red - point.red,
+				this.green - point.green,
+				this.blue - point.blue,
+				this.alpha - point.alpha
+			);
+		},
+
+		/**
+		 * Returns the multiplication of the supplied value to both coordinates
+		 * of the color as a new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#multiply
+		 * @function
+		 * @operator
+		 * @param {Number} number the number to multiply
+		 * @return {Color} the multiplication of the color and the value as a
+		 *         new color
+		 *
+		 * @example
+		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var result = color * 0.5;
+		 * console.log(result); // {red: 0.20, blue: 0.5, green: 0.5}
+		 */
+		/**
+		 * Returns the multiplication of the supplied color to the color as a
+		 * new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#multiply
+		 * @function
+		 * @operator
+		 * @param {Color} color the color to multiply
+		 * @return {Color} the multiplication of the two colors as a new color
+		 *
+		 * @example
+		 * var color1 = new Color(0.0, 1.0, 1.0);
+		 * var color2 = new Color(0.5, 0.0, 0.5);
+		 * var result = color1 * color2;
+		 * console.log(result); // {red: 0.0, blue: 0.0, green: 0.5}
+		 */
+		multiply: function(color) {
+			return new Color(
+				this.red * point.red,
+				this.green * point.green,
+				this.blue * point.blue,
+				this.alpha * point.alpha
+			);
+		},
+
+		/**
+		 * Returns the division of the supplied value to both coordinates of
+		 * the color as a new color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#divide
+		 * @function
+		 * @operator
+		 * @param {Number} number the number to divide
+		 * @return {Color} the division of the color and the value as a new
+		 *         color
+		 *
+		 * @example
+		 * var color = new Color(0.5, 1.0, 1.0);
+		 * var result = color / 2;
+		 * console.log(result); // {red: 0.20, blue: 0.5, green: 0.5}
+		 */
+		/**
+		 * Returns the division of the supplied color to the color as a new
+		 * color.
+		 * The object itself is not modified!
+		 *
+		 * @name Color#divide
+		 * @function
+		 * @operator
+		 * @param {Color} color the color to divide
+		 * @return {Color} the division of the two colors as a new color
+		 *
+		 * @example
+		 * var color1 = new Color(0.0, 1.0, 1.0);
+		 * var color2 = new Color(0.5, 0.0, 0.5);
+		 * var result = color1 / color2;
+		 * console.log(result); // {red: 0.0, blue: 0.0, green: 1.0}
+		 */
+		divide: function(color) {
+			return new Color(
+				this.red / point.red,
+				this.green / point.green,
+				this.blue / point.blue,
+				this.alpha / point.alpha
+			);
 		},
 
 		/**
