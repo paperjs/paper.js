@@ -53,7 +53,7 @@ function DOMParser() {
 }
 
 DOMParser.prototype.parseFromString = function(string, contenType) {
-	var div = doc.createElement('div');
+	var div = document.createElement('div');
 	div.innerHTML = string;
 	return div.firstChild;
 };
