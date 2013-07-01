@@ -1,11 +1,6 @@
 {
   "name": "paper",
   "version": "0.9.7",
-  "description": "The Swiss Army Knife of Vector Graphics Scripting",
-  "contributors": [
-    "Jürg Lehni <juerg@lehni.org> (http://lehni.org)",
-    "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
-  ],
   "main": "dist/paper.js",
   "ignore": [
     "build",
