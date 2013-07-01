@@ -1274,4 +1274,4 @@ Base.each(Color._types, function(properties, type) {
 		var acronym = type.toUpperCase();
 		Color[acronym] = this[acronym + 'Color'] = ctor;
 	}
-}, this);
+}, Base.exports);
