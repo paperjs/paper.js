@@ -61,7 +61,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 * Creates a Size object using the properties in the given object.
 	 *
 	 * @name Size#initialize
-	 * @param {object} object
+	 * @param {Object} object
 	 *
 	 * @example
 	 * // Creating a size of width: 10, height: 20 using an object literal:

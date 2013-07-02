@@ -249,7 +249,7 @@ var Style = Base.extend(new function() {
 	 * to a Style object internally.
 	 *
 	 * @name Style#initialize
-	 * @param {object} style
+	 * @param {Object} style
 	 */
 
 	/**

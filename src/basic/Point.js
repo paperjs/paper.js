@@ -71,7 +71,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 * Creates a Point object using the properties in the given object.
 	 *
 	 * @name Point#initialize
-	 * @param {object} the object describing the point's properties
+	 * @param {Object} object the object describing the point's properties
 	 *
 	 * @example
 	 * // Creating a point using an object literal with length and angle
