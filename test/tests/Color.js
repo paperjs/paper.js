@@ -73,22 +73,22 @@ test('Creating Colors', function() {
 
 test('Deprecated Colors Constructors', function() {
 
-	compareColors(new RgbColor('#ff0000'), new Color(1, 0, 0),
+	compareColors(new paper.RgbColor('#ff0000'), new Color(1, 0, 0),
 			'Color from hex code');
 
-	compareColors(new RgbColor(1, 0, 1),
+	compareColors(new paper.RgbColor(1, 0, 1),
 			new Color(1, 0, 1), 'Color from rgb object literal');
 
-	compareColors(new GrayColor(0.2),
+	compareColors(new paper.GrayColor(0.2),
 			new Color(0.2), 'Color from gray object literal');
 
-	compareColors(new HsbColor(0, 1, 1),
+	compareColors(new paper.HsbColor(0, 1, 1),
 			new Color(1, 0, 0).convert('hsb'), 'Color from hsb object literal');
 
-	compareColors(new RgbColor([1, 0, 0]), new Color(1, 0, 0),
+	compareColors(new paper.RgbColor([1, 0, 0]), new Color(1, 0, 0),
 			'Rgb Color from array');
 
-	compareColors(new GrayColor([1]), new Color(1),
+	compareColors(new paper.GrayColor([1]), new Color(1),
 			'Gray Color from array');
 });
 
