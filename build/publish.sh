@@ -10,10 +10,7 @@
 #
 # All rights reserved.
 
-echo "Building paper.js"
-./build.sh
-echo "Minifying paper.js"
-./minify.sh
+./dist.sh
 echo "Commiting Version"
 # Add changed json configuration files
 git add -u ../package.json
