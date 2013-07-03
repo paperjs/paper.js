@@ -29,6 +29,6 @@ git commit -m "Bump version to v$VERSION"
 # Tag
 git tag "v$VERSION"
 # Push
-git push
+git push --tags
 # Publish
 npm publish ..
