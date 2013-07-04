@@ -239,11 +239,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		if (this._canvas)
 			CanvasProvider.release(this._canvas);
 		this._image = image;
-/*#*/ if (options.browser) {
-		this._size = new Size(image.naturalWidth, image.naturalHeight);
-/*#*/ } else if (options.node) {
 		this._size = new Size(image.width, image.height);
-/*#*/ } // options.node
 		this._canvas = null;
 		this._context = null;
 		this._changed(/*#=*/ Change.GEOMETRY);
