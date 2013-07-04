@@ -274,23 +274,25 @@ var Raster = Item.extend(/** @lends Raster# */{
 		var that = this,
 			// src can be an URL or a DOM ID to load the image from
 			image = document.getElementById(src) || new Image();
+
 		function loaded() {
 			that.fire('load');
 			if (that._project.view)
 				that._project.view.draw(true);
 		}
-		// Trigger the onLoad event on the image once it's loaded
-		DomEvent.add(image, {
-			load: function() {
-				that.setImage(image);
-				loaded();
-			}
-		});
+
 		if (image.width && image.height) {
 			// Fire load event delayed, so behavior is the same as when it's 
 			// actually loaded and we give the code time to install event
 			setTimeout(loaded, 0);
 		} else if (!image.src) {
+			// Trigger the onLoad event on the image once it's loaded
+			DomEvent.add(image, {
+				load: function() {
+					that.setImage(image);
+					loaded();
+				}
+			});
 			image.src = src;
 		}
 		this.setImage(image);
