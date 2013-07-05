@@ -1037,7 +1037,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (parameter > 0) {
 				// Divide the curve with the index at given parameter.
 				// Increase because dividing adds more segments to the path.
-				curves[index++].divide(parameter);
+				curves[index++].divide(parameter, true);
 			}
 			// Create the new path with the segments to the right of given
 			// parameter, which are removed from the current path. Pass true

@@ -238,12 +238,12 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
 	divide: function() {
 		var curve = this.getCurve(true);
-		return curve && curve.divide(this.getParameter(true));
+		return curve && curve.divide(this.getParameter(true), true);
 	},
 
 	split: function() {
 		var curve = this.getCurve(true);
-		return curve && curve.split(this.getParameter(true));
+		return curve && curve.split(this.getParameter(true), true);
 	},
 
 	/**

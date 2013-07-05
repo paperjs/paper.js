@@ -342,6 +342,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 *        is a curve time parameter.
 	 * @return {Curve} the second part of the divided curve
 	 */
+	// TODO: Rename to divideAt()?
 	divide: function(offset, isParameter) {
 		var parameter = this._getParameter(offset, isParameter),
 			res = null;
@@ -407,6 +408,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 * @return {Path} The newly created path after splitting, if any
 	 * @see Path#split(index, parameter)
 	 */
+	// TODO: Rename to splitAt()?
 	split: function(offset, isParameter) {
 		return this._path
 			? this._path.split(this._segment1._index,
