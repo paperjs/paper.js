@@ -118,7 +118,7 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
 			// (point + lastPoint) / 2
 			return this.tool._point.add(this.tool._lastPoint).divide(2);
 		}
-		return this.middlePoint;
+		return this._middlePoint;
 	},
 
 	setMiddlePoint: function(middlePoint) {
