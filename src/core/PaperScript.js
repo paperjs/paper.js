@@ -21,8 +21,16 @@
 paper.PaperScope.prototype.PaperScript = new function() {
 	var Base = paper.Base,
 		PaperScope = paper.PaperScope,
-		// Locally turn of exporst for inlined acorn / esprima.
-		exports = undefined;
+		// Locally turn of exports and define for inlined acorn / esprima.
+		// Just declaring the local vars is enough, as they will be undefined.
+		exports, define,
+		// The scope into which the library is loaded.
+		scope = this;
+/*#*/ if (options.version == 'dev') {
+	// As the above inclusion loads code into the global scope during dev,
+	// set scope to window, so we can find the library.
+	scope = window;
+/*#*/ }
 /*#*/ if (options.parser == 'acorn') {
 /*#*/ include('../../components/acorn/acorn.min.js', { exports: false });
 /*#*/ } else if (options.parser == 'esprima') {
@@ -210,9 +218,9 @@ paper.PaperScope.prototype.PaperScript = new function() {
 		}
 		// Now do the parsing magic
 /*#*/ if (options.parser == 'acorn') {
-		walkAst(acorn.parse(code, { ranges: true }));
+		walkAst(scope.acorn.parse(code, { ranges: true }));
 /*#*/ } else if (options.parser == 'esprima') {
-		walkAst(esprima.parse(code, { range: true }));
+		walkAst(scope.esprima.parse(code, { range: true }));
 /*#*/ }
 		return code;
 	}
