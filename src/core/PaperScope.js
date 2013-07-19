@@ -172,6 +172,14 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		return this;
 	},
 
+	/**
+	 * Activates this PaperScope, so all newly created items will be placed
+	 * in its active project.
+	 */
+	activate: function() {
+		paper = this;
+	},
+
 	clear: function() {
 		// Remove all projects, views and tools.
 		// This also removes the installed event handlers.
