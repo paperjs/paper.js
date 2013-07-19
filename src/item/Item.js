@@ -1271,15 +1271,20 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	rasterize: function(resolution) {
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || 72) / 72,
-			canvas = CanvasProvider.getCanvas(bounds.getSize().multiply(scale)),
+			// floor top-left corner and ceil bottom-right corner, to never
+			// blur or cut pixels.
+			topLeft = bounds.getTopLeft().floor(),
+			bottomRight = bounds.getBottomRight().ceil()
+			size = new Size(bottomRight.subtract(topLeft)),
+			canvas = CanvasProvider.getCanvas(size),
 			ctx = canvas.getContext('2d'),
-			matrix = new Matrix().scale(scale).translate(-bounds.x, -bounds.y);
+			matrix = new Matrix().scale(scale).translate(topLeft.negate());
 		ctx.save();
 		matrix.applyToContext(ctx);
 		// See Project#draw() for an explanation of Base.merge()
 		this.draw(ctx, Base.merge({ transforms: [matrix] }));
 		var raster = new Raster(canvas);
-		raster.setBounds(bounds);
+		raster.setPosition(topLeft.add(size.divide(2)));
 		ctx.restore();
 		// NOTE: We don't need to release the canvas since it now belongs to the
 		// Raster!
