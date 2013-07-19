@@ -2911,7 +2911,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	// TODO: Optimize temporary canvas drawing to ignore parts that are
 	// outside of the visible view.
 	draw: function(ctx, param) {
-		if (!this._visible || this._opacity == 0)
+		if (!this._visible || this._opacity === 0)
 			return;
 		// Each time the project gets drawn, it's _drawCount is increased.
 		// Keep the _drawCount of drawn items in sync, so we have an easy
@@ -2934,12 +2934,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// opacity by themselves (they also don't call _setStyles)
 		var blendMode = this._blendMode,
 			opacity = this._opacity,
+			normalBlend = blendMode === 'normal',
 			nativeBlend = BlendMode.nativeModes[blendMode],
 			// Determine if we can draw directly, or if we need to draw into a
 			// separate canvas and then composite onto the main canvas.
-			direct = blendMode === 'normal' && opacity === 1
+			direct = normalBlend && opacity === 1
 					// If native blending is possible, see if the item allows it
-					|| (nativeBlend || opacity < 1) && this._canComposite(),
+					|| (nativeBlend || normalBlend && opacity < 1)
+						&& this._canComposite(),
 			mainCtx, itemOffset, prevOffset;
 		if (!direct) {
 			// Apply the paren't global matrix to the calculation of correct
