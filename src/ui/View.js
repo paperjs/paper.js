@@ -224,9 +224,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		}
 	},
 
-	// An empty callback that's only there so _frameItems can be handled
-	// through the onFrame callback framework that automatically starts and
-	// stops the animation for us whenever there's one or more frame handlers
+	// Handles _frameItems and fires the 'frame' event on them.
 	_handleFrameItems: function(event) {
 		for (var i in this._frameItems) {
 			var entry = this._frameItems[i];
