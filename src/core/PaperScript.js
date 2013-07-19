@@ -18,7 +18,7 @@
 // main paper scope, and is added to the PaperScope class. This allows for
 // better minification and the future use of strict mode once it makes sense
 // in terms of performance.
-paper.PaperScope.prototype.PaperScript = new function() {
+paper.PaperScope.prototype.PaperScript = (function(root) {
 	var Base = paper.Base,
 		PaperScope = paper.PaperScope,
 		// Locally turn of exports and define for inlined acorn / esprima.
@@ -27,10 +27,10 @@ paper.PaperScope.prototype.PaperScript = new function() {
 		// The scope into which the library is loaded.
 		scope = this;
 /*#*/ if (options.version == 'dev') {
-	// As the above inclusion loads code into the global scope during dev,
-	// set scope to window, so we can find the library.
-	scope = window;
-/*#*/ }
+	// As the above inclusion loads code into the root scope during dev,
+	// set scope to root, so we can find the library.
+	scope = root;
+/*#*/ } // options.version == 'dev'
 /*#*/ if (options.parser == 'acorn') {
 /*#*/ include('../../components/acorn/acorn.min.js', { exports: false });
 /*#*/ } else if (options.parser == 'esprima') {
@@ -375,4 +375,4 @@ paper.PaperScope.prototype.PaperScript = new function() {
 	};
 
 /*#*/ } // !options.browser
-};
+})(this);
