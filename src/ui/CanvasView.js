@@ -207,7 +207,6 @@ CanvasView.inject(new function() {
 			exportFrame(param);
 
 			function exportFrame(param) {
-				count++;
 				var filename = param.prefix + toPaddedString(count, 6) + '.png',
 					path = param.directory + '/' + filename;
 				var out = view.exportImage(path, function() {
@@ -233,13 +232,13 @@ CanvasView.inject(new function() {
 						}
 					}
 				});
-				if (view.onFrame) {
-					view.onFrame({
-						delta: frameDuration,
-						time: frameDuration * count,
-						count: count
-					});
-				}
+				// Use Base.merge to convert into a Base object, for #toString()
+				view.fire('frame', Base.merge({
+					delta: frameDuration,
+					time: frameDuration * count,
+					count: count
+				}));
+				count++;
 			}
 		},
 
