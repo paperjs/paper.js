@@ -215,13 +215,23 @@ var BlendMode = new function() {
 		}
 	};
 
-	// Build a lookup table for natively supported CSS blend-modes. Just seeing
-	// if globalCompositeOperation is actually sticky is not enough, as Chome 27
-	// pretends for blend-modes to work, but does not actually apply them. 
+	// Build a lookup table for natively supported CSS composite- & blend-modes.
+	// The canvas composite modes are always natively supported:
+	var nativeModes = this.nativeModes = Base.each([
+		'source-over', 'source-in', 'source-out', 'source-atop',
+		'destination-over', 'destination-in', 'destination-out',
+		'destination-atop', 'lighter', 'darker', 'copy', 'xor'
+	], function(mode) {
+		this[mode] = true;
+	}, {});
+
+	// Now test for the new blend modes. Just seeing if globalCompositeOperation
+	// is sticky is not enough, as Chome 27 pretends for blend-modes to work,
+	// but does not actually apply them. 
 	var ctx = CanvasProvider.getContext(1, 1);
-	// Blend #330000 (51) and #aa0000 (170). Multiplying should lead to
-	// #220000 (34)
-	function testMode(mode) {
+	Base.each(modes, function(func, mode) {
+		// Blend #330000 (51) and #aa0000 (170):
+		// Multiplying should lead to #220000 (34)
 		ctx.save();
 		// For darken we need to reverse color parameters in order to test mode.
 		var darken = mode === 'darken',
@@ -234,20 +244,16 @@ var BlendMode = new function() {
 			ctx.fillRect(0, 0, 1, 1);
 			ok = ctx.getImageData(0, 0, 1, 1).data[0] !== (darken ? 170 : 51);
 		}
+		nativeModes[mode] = ok; 
 		ctx.restore();
-		return ok;
-	}
-	this.nativeModes = testMode('multiply') && Base.each(modes,
-			function(func, mode) {
-				this[mode] = testMode(mode); 
-			}, {});
+	});
 	CanvasProvider.release(ctx);
 
 	this.process = function(mode, srcContext, dstContext, alpha, offset) {
 		var srcCanvas = srcContext.canvas,
 			normal = mode === 'normal';
 		// Use native blend-modes if supported, and fall back to emulation.
-		if (normal || this.nativeModes[mode]) {
+		if (normal || nativeModes[mode]) {
 			dstContext.save();
 			// Reset transformations, since we're blitting and pixel scale and
 			// with a given offset.

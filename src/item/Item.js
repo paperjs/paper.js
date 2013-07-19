@@ -449,13 +449,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_visible: true,
 
 	/**
-	 * The blend mode of the item.
+	 * The blend mode with which the item is composited onto the canvas. Both
+	 * the standard canvas compositing modes, as well as the new CSS blend modes
+	 * are supported. If blend-modes cannot be rendered natively, they are
+	 * emulated. Be aware that emulation can have an impact on performance.
 	 *
 	 * @name Item#blendMode
 	 * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light',
 	 * 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten',
 	 * 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color',
-	 * 'add', 'subtract', 'average', 'pin-light', 'negation')
+	 * 'add', 'subtract', 'average', 'pin-light', 'negation', 'source-over',
+	 * 'source-in', 'source-out', 'source-atop', 'destination-over',
+	 * 'destination-in', 'destination-out', 'destination-atop', 'lighter',
+	 * 'darker', 'copy', 'xor')
 	 * @default 'normal'
 	 *
 	 * @example {@paperscript}
