@@ -166,3 +166,15 @@ test('Group with clipmask', function() {
 	group.clipped = true;
 	cloneAndCompare(group);
 });
+
+test('Item#clone() Hierarchy', function() {
+	var path1 = new Path.Circle([150, 150], 60);
+	var path2 = new Path.Circle([150, 150], 60);
+	var clone = path1.clone();
+	equals(function() {
+		return clone.isAbove(path1);
+	}, true);
+	equals(function() {
+		return clone.isBelow(path2);
+	}, true);
+});
