@@ -72,7 +72,9 @@ Base.inject(/** @lends Base# */{
 	_set: function(props) {
 		if (props && Base.isPlainObject(props)) {
 			for (var key in props)
-				if (props.hasOwnProperty(key) && key in this)
+				// TODO: Filter out 'insert' parameter for now. This needs
+				// proper handling in Item constructor instead.
+				if (key !== 'insert' && props.hasOwnProperty(key) && key in this)
 					this[key] = props[key];
 			return true;
 		}
