@@ -2887,8 +2887,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			limit = style.getMiterLimit(),
 			fillColor = style.getFillColor(),
 			strokeColor = style.getStrokeColor(),
-			dashArray = style.getDashArray(),
-			dashOffset = style.getDashOffset();
+			shadowColor = style.getShadowColor();
 		if (width != null)
 			ctx.lineWidth = width;
 		if (join)
@@ -2901,6 +2900,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			ctx.fillStyle = fillColor.toCanvasStyle(ctx);
 		if (strokeColor) {
 			ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
+			var dashArray = style.getDashArray(),
+				dashOffset = style.getDashOffset();
 			if (paper.support.nativeDash && dashArray && dashArray.length) {
 				if ('setLineDash' in ctx) {
 					ctx.setLineDash(dashArray);
@@ -2910,6 +2911,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					ctx.mozDashOffset = dashOffset;
 				}
 			}
+		}
+		if (shadowColor) {
+			ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
+			ctx.shadowBlur = style.getShadowBlur();
+			var offset = this.getShadowOffset();
+			ctx.shadowOffsetX = offset.x;
+			ctx.shadowOffsetY = offset.y;
 		}
 	},
 

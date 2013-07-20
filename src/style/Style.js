@@ -69,21 +69,26 @@ var Style = Base.extend(new function() {
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
 	// not supported.
 	var defaults = {
-		// path styles
+		// Paths
 		fillColor: undefined,
 		strokeColor: undefined,
-		selectedColor: undefined,
 		strokeWidth: 1,
 		strokeCap: 'butt',
 		strokeJoin: 'miter',
 		miterLimit: 10,
 		dashOffset: 0,
 		dashArray: [],
-		// character styles
+		// Shadows
+		shadowColor: undefined,
+		shadowBlur: 0,
+		shadowOffset: new Point(),
+		// Selection
+		selectedColor: undefined,
+		// Characters
 		font: 'sans-serif',
 		fontSize: 12,
 		leading: null,
-		// paragraph styles
+		// Paragraphs
 		justification: 'left'
 	};
 
@@ -413,6 +418,48 @@ var Style = Base.extend(new function() {
 	 *
 	 * // Set the fill color of the circle to RGB red:
 	 * circle.fillColor = new Color(1, 0, 0);
+	 */
+
+	/**
+	 * {@grouptitle Shadow Style}
+	 *
+	 * The shadow color.
+	 *
+	 * @property
+	 * @name Style#shadowColor
+	 * @type Color
+	 *
+	 * @example {@paperscript}
+	 * // Setting the shadow color of a path to black:
+	 *
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
+	 *
+	 * // Set the shadow color of the circle to RGB black:
+	 * circle.shadowColor = new Color(0, 0, 0);
+	 *
+	 * // Set the shadow blur, offset to { x: 10, y: 10 }
+	 * circle.shadowBlur = 10;
+	 * circle.shadowOffset = new Poit(10, 10);
+	 */
+
+	/**
+	 * The shadow's blur radius.
+	 *
+	 * @property
+	 * @default 0
+	 * @name Style#shadowBlur
+	 * @type Number
+	 */
+
+	/**
+	 * The shadow's offset.
+	 *
+	 * @property
+	 * @default 0
+	 * @name Style#shadowOffset
+	 * @type Point
 	 */
 
 	/**
