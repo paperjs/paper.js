@@ -91,7 +91,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	clone: function(insert) {
-		var copy = this._clone(new Path(this._segments), insert);
+		var copy = this._clone(new Path({
+			segments: this._segments,
+			insert: false
+		}), insert);
+		// Speed up things a little by copy over values that don't need checking
 		copy._closed = this._closed;
 		if (this._clockwise !== undefined)
 			copy._clockwise = this._clockwise;

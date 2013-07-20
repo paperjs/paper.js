@@ -94,14 +94,17 @@ var Raster = Item.extend(/** @lends Raster# */{
 	},
 
 	clone: function(insert) {
-		var element = this._image;
-		if (!element) {
+		var param = { insert: false },
+			image = this._image;
+		if (image) {
+			param.image = image;
+		} else {
 			// If the Raster contains a Canvas object, we need to create
 			// a new one and draw this raster's canvas on it.
-			element = CanvasProvider.getCanvas(this._size);
-			element.getContext('2d').drawImage(this._canvas, 0, 0);
+			var canvas = param.canvas = CanvasProvider.getCanvas(this._size);
+			canvas.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
-		return this._clone(new Raster(element), insert);
+		return this._clone(new Raster(param), insert);
 	},
 
 	/**
