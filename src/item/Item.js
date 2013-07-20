@@ -1449,7 +1449,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			for (var i = this._children.length - 1, res; i >= 0; i--)
 				if (res = this._children[i].hitTest(point, options))
 					return res;
-		} else if (this.hasFill() && this._contains(point)) {
+		} else if (options.fill && this.hasFill() && this._contains(point)) {
 			return new HitResult('fill', this);
 		}
 	},
