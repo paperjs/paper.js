@@ -145,11 +145,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 		onFrame: {
 			install: function() {
 /*#*/ if (options.browser) {
-				// Call the onFrame handler straight away and initialize the
+				// Request a frame handler straight away to initialize the
 				// sequence of onFrame calls.
 				if (!this._requested) {
 					this._animate = true;
-					this._handleFrame(true);
+					this._requestFrame();
 				}
 /*#*/ } // options.browser
 			},
@@ -169,21 +169,23 @@ var View = Base.extend(Callback, /** @lends View# */{
 	_time: 0,
 	_count: 0,
 
-	_handleFrame: function(request) {
-		this._requested = false;
-		// See if we need to stop due to a call to uninstall()
-		if (!this._animate)
-			return;
+	_requestFrame: function() {
+		var that = this;
+		DomEvent.requestAnimationFrame(function() {
+			that._requested = false;
+			// Do we need to stop due to a call to the frame event's uninstall()
+			if (!that._animate)
+				return;
+			// Request next frame already before handling the current frame
+			that._requestFrame();
+			that._handleFrame();
+		}, this._element);
+		this._requested = true;
+	},
+
+	_handleFrame: function() {
 		// Set the global paper object to the current scope
 		paper = this._scope;
-		if (request) {
-			// Request next frame already
-			this._requested = true;
-			var that = this;
-			DomEvent.requestAnimationFrame(function() {
-				that._handleFrame(true);
-			}, this._element);
-		}
 		var now = Date.now() / 1000,
 			delta = this._before ? now - this._before : 0;
 		this._before = now;
@@ -213,11 +215,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 				time: 0,
 				count: 0
 			};
-			if (++this._frameItemCount == 1)
+			if (++this._frameItemCount === 1)
 				this.attach('frame', this._handleFrameItems);
 		} else {
 			delete items[item._id];
-			if (--this._frameItemCount == 0) {
+			if (--this._frameItemCount === 0) {
 				// If this is the last one, just stop animating straight away.
 				this.detach('frame', this._handleFrameItems);
 			}
