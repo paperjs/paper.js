@@ -1176,6 +1176,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Clones the item within the same project and places the copy above the
 	 * item.
 	 *
+	 * @param {Boolean} [insert=true] specifies wether the copy should be
+	 * inserted into the DOM. When set to {@code true}, it is inserted above the
+	 * original.
 	 * @return {Item} the newly cloned item
 	 *
 	 * @example {@paperscript}
@@ -1194,11 +1197,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * 	copy.position.x += i * copy.bounds.width;
 	 * }
 	 */
-	clone: function() {
-		return this._clone(new this.constructor());
+	clone: function(insert) {
+		return this._clone(new this.constructor({ insert: false }), insert);
 	},
 
-	_clone: function(copy) {
+	_clone: function(copy, insert) {
 		// Copy over style
 		copy.setStyle(this._style);
 		// If this item has children, clone and append each of them:
@@ -1206,7 +1209,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Clone all children and add them to the copy. tell #addChild we're
 			// cloning, as needed by CompoundPath#insertChild().
 			for (var i = 0, l = this._children.length; i < l; i++)
-				copy.addChild(this._children[i].clone(), true);
+				copy.addChild(this._children[i].clone(false), true);
 		}
 		// Only copy over these fields if they are actually defined in 'this'
 		// TODO: Consider moving this to Base once it's useful in more than one
@@ -1227,6 +1230,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// in the same parent, by passing true for the unique parameter.
 		if (this._name)
 			copy.setName(this._name, true);
+		// Insert is true by default.
+		if (insert || insert === undefined)
+			copy.insertAbove(this);
 		return copy;
 	},
 
@@ -1586,8 +1592,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Boolean} {@true it was inserted}
 	 */
 	insertAbove: function(item, _preserve) {
+		if (!item._parent)
+			return null;
 		var index = item._index;
-		if (item._parent == this._parent && index < this._index)
+		if (item._parent === this._parent && index < this._index)
 			 index++;
 		return item._parent.insertChild(index, this, _preserve);
 	},
@@ -1599,8 +1607,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Boolean} {@true it was inserted}
 	 */
 	insertBelow: function(item, _preserve) {
+		if (!item._parent)
+			return null;
 		var index = item._index;
-		if (item._parent == this._parent && index > this._index)
+		if (item._parent === this._parent && index > this._index)
 			 index--;
 		return item._parent.insertChild(index, this, _preserve);
 	},
@@ -1831,7 +1841,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Boolean} {@true if it is above the specified item}
 	 */
 	isAbove: function(item) {
-		return this._getOrder(item) == -1;
+		return this._getOrder(item) === -1;
 	},
 
 	/**
@@ -1842,7 +1852,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Boolean} {@true if it is below the specified item}
 	 */
 	isBelow: function(item) {
-		return this._getOrder(item) == 1;
+		return this._getOrder(item) === 1;
 	},
 
 	/**
@@ -1852,7 +1862,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Boolean} {@true if it is the parent of the item}
 	 */
 	isParent: function(item) {
-		return this._parent == item;
+		return this._parent === item;
 	},
 
 	/**
@@ -1862,7 +1872,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Boolean} {@true it is a child of the item}
 	 */
 	isChild: function(item) {
-		return item && item._parent == this;
+		return item && item._parent === this;
 	},
 
 	/**

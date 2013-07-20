@@ -98,8 +98,8 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 		symbol._instances[this._id] = this;
 	},
 
-	clone: function() {
-		return this._clone(new PlacedSymbol(this.symbol));
+	clone: function(insert) {
+		return this._clone(new PlacedSymbol(this.symbol), insert);
 	},
 
 	isEmpty: function() {

@@ -93,7 +93,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			this._size = new Size();
 	},
 
-	clone: function() {
+	clone: function(insert) {
 		var element = this._image;
 		if (!element) {
 			// If the Raster contains a Canvas object, we need to create
@@ -101,8 +101,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			element = CanvasProvider.getCanvas(this._size);
 			element.getContext('2d').drawImage(this._canvas, 0, 0);
 		}
-		var copy = new Raster(element);
-		return this._clone(copy);
+		return this._clone(new Raster(element), insert);
 	},
 
 	/**

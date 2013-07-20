@@ -47,8 +47,8 @@ var PointText = TextItem.extend(/** @lends PointText# */{
 		TextItem.apply(this, arguments);
 	},
 
-	clone: function() {
-		return this._clone(new PointText());
+	clone: function(insert) {
+		return this._clone(new PointText(), insert);
 	},
 
 	/**

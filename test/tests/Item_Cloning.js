@@ -172,6 +172,9 @@ test('Item#clone() Hierarchy', function() {
 	var path2 = new Path.Circle([150, 150], 60);
 	var clone = path1.clone();
 	equals(function() {
+		return path2.isAbove(path1);
+	}, true);
+	equals(function() {
 		return clone.isAbove(path1);
 	}, true);
 	equals(function() {
