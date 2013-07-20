@@ -76,11 +76,9 @@ test('Layer#clone() - check activeLayer', function() {
 	var project = paper.project,
 		activeLayer = project.activeLayer,
 		layer = activeLayer.clone();
+	// The active layer should not change when cloning layers.
 	equals(function() {
-		return layer == project.activeLayer;
-	}, true);
-	equals(function() {
-		return activeLayer != project.activeLayer;
+		return activeLayer == project.activeLayer;
 	}, true);
 });
 
