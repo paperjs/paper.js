@@ -54,7 +54,7 @@ test('Item Order', function() {
 	}, false);
 });
 
-test('Item#moveAbove(item) / Item#moveBelow(item)', function() {
+test('Item#insertAbove(item) / Item#insertBelow(item)', function() {
 	var item0, item1, item2;
 
 	function testMove(command, indexes) {
@@ -70,24 +70,24 @@ test('Item#moveAbove(item) / Item#moveBelow(item)', function() {
 		equals(item2.index, indexes[2], str + ': item2.index');
 	}
 
-	testMove(function() { item0.moveBelow(item0) }, [0,1,2]);
-	testMove(function() { item0.moveBelow(item1) }, [0,1,2]);
-	testMove(function() { item0.moveBelow(item2) }, [1,0,2]);
-	testMove(function() { item1.moveBelow(item0) }, [1,0,2]);
-	testMove(function() { item1.moveBelow(item1) }, [0,1,2]);
-	testMove(function() { item1.moveBelow(item2) }, [0,1,2]);
+	testMove(function() { item0.insertBelow(item0) }, [0,1,2]);
+	testMove(function() { item0.insertBelow(item1) }, [0,1,2]);
+	testMove(function() { item0.insertBelow(item2) }, [1,0,2]);
+	testMove(function() { item1.insertBelow(item0) }, [1,0,2]);
+	testMove(function() { item1.insertBelow(item1) }, [0,1,2]);
+	testMove(function() { item1.insertBelow(item2) }, [0,1,2]);
 
-	testMove(function() { item2.moveBelow(item0) }, [1,2,0]);
-	testMove(function() { item2.moveBelow(item1) }, [0,2,1]);
-	testMove(function() { item2.moveBelow(item2) }, [0,1,2]);
+	testMove(function() { item2.insertBelow(item0) }, [1,2,0]);
+	testMove(function() { item2.insertBelow(item1) }, [0,2,1]);
+	testMove(function() { item2.insertBelow(item2) }, [0,1,2]);
  
-	testMove(function() { item0.moveAbove(item0) }, [0,1,2]);
-	testMove(function() { item0.moveAbove(item1) }, [1,0,2]);
-	testMove(function() { item0.moveAbove(item2) }, [2,0,1]);
-	testMove(function() { item1.moveAbove(item0) }, [0,1,2]);
-	testMove(function() { item1.moveAbove(item1) }, [0,1,2]);
-	testMove(function() { item1.moveAbove(item2) }, [0,2,1]);
-	testMove(function() { item2.moveAbove(item0) }, [0,2,1]);
-	testMove(function() { item2.moveAbove(item1) }, [0,1,2]);
-	testMove(function() { item2.moveAbove(item2) }, [0,1,2]);
+	testMove(function() { item0.insertAbove(item0) }, [0,1,2]);
+	testMove(function() { item0.insertAbove(item1) }, [1,0,2]);
+	testMove(function() { item0.insertAbove(item2) }, [2,0,1]);
+	testMove(function() { item1.insertAbove(item0) }, [0,1,2]);
+	testMove(function() { item1.insertAbove(item1) }, [0,1,2]);
+	testMove(function() { item1.insertAbove(item2) }, [0,2,1]);
+	testMove(function() { item2.insertAbove(item0) }, [0,2,1]);
+	testMove(function() { item2.insertAbove(item1) }, [0,1,2]);
+	testMove(function() { item2.insertAbove(item2) }, [0,1,2]);
 });
