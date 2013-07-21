@@ -76,10 +76,11 @@ test('insertAbove / insertBelow', function() {
 	var path = new Path();
 	firstLayer.addChild(path);
 
-	// move the layer above the path, inside the firstLayer:
+	// move the layer above the path, inside the firstLayer.
+	// 'Above' means visually appearing on top, thus with a larger index.
 	secondLayer.insertAbove(path);
 	equals(function() {
-		return secondLayer.nextSibling == path;
+		return path.nextSibling == secondLayer;
 	}, true);
 	equals(function() {
 		return secondLayer.parent == firstLayer;

@@ -16,6 +16,7 @@ function cloneAndCompare(item) {
 		return item.parent == copy.parent;
 	}, true);
 	equals(function() {
+		// Cloned items appear above the original.
 		return item.nextSibling == copy;
 	}, true);
 	if (item.name) {
