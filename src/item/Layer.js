@@ -122,7 +122,7 @@ var Layer = Group.extend(/** @lends Layer# */{
 				Base.splice(item._project.layers, [this],
 						item._index + (above ? 1 : 0), 0);
 				this._setProject(item._project);
-				return true;
+				return this;
 			}
 			return insert.base.call(this, item);
 		};

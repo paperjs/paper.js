@@ -1614,7 +1614,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// the index needs to be adjusted accordingly.
 			if (item._parent === this._parent && index > this._index)
 				 index--;
-			return !!item._parent.insertChild(index, this, _preserve);
+			return item._parent.insertChild(index, this, _preserve);
 		};
 	}
 
@@ -1622,16 +1622,18 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		/**
 		 * Inserts this item above the specified item.
 		 *
-		 * @param {Item} item The item above which it should be inserted
-		 * @return {Boolean} {@true it was inserted}
+		 * @param {Item} item the item above which it should be inserted
+		 * @return {Item} the inserted item, or {@code null} if inserting was
+		 * not possible.
 		 */
 		insertAbove: insert(true),
 
 		/**
 		 * Inserts this item below the specified item.
 		 *
-		 * @param {Item} item The item above which it should be inserted
-		 * @return {Boolean} {@true it was inserted}
+		 * @param {Item} item the item above which it should be inserted
+		 * @return {Item} the inserted item, or {@code null} if inserting was
+		 * not possible.
 		 */
 		insertBelow: insert(false)
 	};
