@@ -1603,41 +1603,41 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			items = null;
 		}
 		return items;
-	}
-}, new function () { // Scope for insertAbove / insertBelow
-	function insert(above) {
-		return function(item, _preserve) {
-			if (!item._parent)
-				return null;
-			var index = item._index + (above ? 1 : 0);
-			// If the item is removed and inserted it again further above,
-			// the index needs to be adjusted accordingly.
-			if (item._parent === this._parent && index > this._index)
-				 index--;
-			return item._parent.insertChild(index, this, _preserve);
-		};
-	}
+	},
 
-	return /** @lends Item# */{
-		/**
-		 * Inserts this item above the specified item.
-		 *
-		 * @param {Item} item the item above which it should be inserted
-		 * @return {Item} the inserted item, or {@code null} if inserting was
-		 * not possible.
-		 */
-		insertAbove: insert(true),
+	// Private helper for #insertAbove() / #insertBelow()
+	_insert: function(above, item, _preserve) {
+		if (!item._parent)
+			return null;
+		var index = item._index + (above ? 1 : 0);
+		// If the item is removed and inserted it again further above,
+		// the index needs to be adjusted accordingly.
+		if (item._parent === this._parent && index > this._index)
+			 index--;
+		return item._parent.insertChild(index, this, _preserve);
+	},
 
-		/**
-		 * Inserts this item below the specified item.
-		 *
-		 * @param {Item} item the item above which it should be inserted
-		 * @return {Item} the inserted item, or {@code null} if inserting was
-		 * not possible.
-		 */
-		insertBelow: insert(false)
-	};
-}, /** @lends Item# */{
+	/**
+	 * Inserts this item above the specified item.
+	 *
+	 * @param {Item} item the item above which it should be inserted
+	 * @return {Item} the inserted item, or {@code null} if inserting was not
+	 * possible.
+	 */
+	insertAbove: function(item, _preserve) {
+		return this._insert(true, item, _preserve);
+	},
+
+	/**
+	 * Inserts this item below the specified item.
+	 *
+	 * @param {Item} item the item above which it should be inserted
+	 * @return {Item} the inserted item, or {@code null} if inserting was not
+	 * possible.
+	 */
+	insertBelow: function(item, _preserve) {
+	 	return this._insert(false, item, _preserve);
+	 },
 
 	/**
 	 * Sends this item to the back of all other items within the same parent.

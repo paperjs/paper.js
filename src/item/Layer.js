@@ -112,25 +112,18 @@ var Layer = Group.extend(/** @lends Layer# */{
 	 */
 	activate: function() {
 		this._project.activeLayer = this;
-	}
-}, new function () {
-	function insert(above) {
-		return function insert(item) {
-			// If the item is a layer and contained within Project#layers, use
-			// our own version of move().
-			if (item instanceof Layer && !item._parent && this._remove(true)) {
-				Base.splice(item._project.layers, [this],
-						item._index + (above ? 1 : 0), 0);
-				this._setProject(item._project);
-				return this;
-			}
-			return insert.base.call(this, item);
-		};
-	}
+	},
 
-	return {
-		insertAbove: insert(true),
-
-		insertBelow: insert(false)
-	};
+	// Private helper for #insertAbove() / #insertBelow()
+	_insert: function _insert(above, item, _preserve) {
+		// If the item is a layer and contained within Project#layers, use
+		// our own version of move().
+		if (item instanceof Layer && !item._parent && this._remove(true)) {
+			Base.splice(item._project.layers, [this],
+					item._index + (above ? 1 : 0), 0);
+			this._setProject(item._project);
+			return this;
+		}
+		return _insert.base.call(this, above, item, _preserve);
+	}
 });
