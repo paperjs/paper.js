@@ -1521,7 +1521,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * its children list. You can use this function for groups, compound
 	 * paths and layers.
 	 *
-	 * @param {Item} item The item to be added as a child
+	 * @param {Item} item the item to be added as a child
+	 * @return {Item} the added item, or {@code null} if adding was not
+	 * possible.
 	 */
 	addChild: function(item, _preserve) {
 		return this.insertChild(undefined, item, _preserve);
@@ -1533,7 +1535,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * groups, compound paths and layers.
 	 *
 	 * @param {Number} index
-	 * @param {Item} item The item to be appended as a child
+	 * @param {Item} item the item to be inserted as a child
+	 * @return {Item} the inserted item, or {@code null} if inserting was not
+	 * possible.
 	 */
 	insertChild: function(index, item, _preserve) {
 		var res = this.insertChildren(index, [item], _preserve);
@@ -1546,6 +1550,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * paths and layers.
 	 *
 	 * @param {Item[]} items The items to be added as children
+	 * @return {Item[]} the added items, or {@code null} if adding was not
+	 * possible.
 	 */
 	addChildren: function(items, _preserve) {
 		return this.insertChildren(this._children.length, items, _preserve);
@@ -1558,6 +1564,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @param {Number} index
 	 * @param {Item[]} items The items to be appended as children
+	 * @return {Item[]} the inserted items, or {@code null} if inserted was not
+	 * possible.
 	 */
 	insertChildren: function(index, items, _preserve, _type) {
 		// CompoundPath#insertChildren() requires _preserve and _type:
