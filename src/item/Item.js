@@ -1606,7 +1606,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// the index needs to be adjusted accordingly.
 			if (item._parent === this._parent && index > this._index)
 				 index--;
-			return item._parent.insertChild(index, this, _preserve);
+			return !!item._parent.insertChild(index, this, _preserve);
 		};
 	}
 
