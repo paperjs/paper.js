@@ -1223,6 +1223,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			for (var i = 0, l = this._children.length; i < l; i++)
 				copy.addChild(this._children[i].clone(false), true);
 		}
+		// Insert is true by default.
+		if (insert || insert === undefined)
+			copy.insertAbove(this);
 		// Only copy over these fields if they are actually defined in 'this'
 		// TODO: Consider moving this to Base once it's useful in more than one
 		// place
@@ -1238,9 +1241,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Copy over the selection state, use setSelected so the item
 		// is also added to Project#selectedItems if it is selected.
 		copy.setSelected(this._selected);
-		// Insert is true by default.
-		if (insert || insert === undefined)
-			copy.insertAbove(this);
 		// Clone the name too, but make sure we're not overriding the original
 		// in the same parent, by passing true for the unique parameter.
 		if (this._name)
@@ -1595,37 +1595,39 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			items = null;
 		}
 		return items;
-	},
+	}
+}, new function () { // Scope for insertAbove / insertBelow
+	function insert(above) {
+		return function(item, _preserve) {
+			if (!item._parent)
+				return null;
+			var index = item._index + (above ? 1 : 0);
+			// If the item is removed and inserted it again further above,
+			// the index needs to be adjusted accordingly.
+			if (item._parent === this._parent && index > this._index)
+				 index--;
+			return item._parent.insertChild(index, this, _preserve);
+		};
+	}
 
-	/**
-	 * Inserts this item above the specified item.
-	 *
-	 * @param {Item} item The item above which it should be inserted
-	 * @return {Boolean} {@true it was inserted}
-	 */
-	insertAbove: function(item, _preserve) {
-		if (!item._parent)
-			return null;
-		var index = item._index;
-		if (item._parent === this._parent && index < this._index)
-			 index++;
-		return item._parent.insertChild(index, this, _preserve);
-	},
+	return /** @lends Item# */{
+		/**
+		 * Inserts this item above the specified item.
+		 *
+		 * @param {Item} item The item above which it should be inserted
+		 * @return {Boolean} {@true it was inserted}
+		 */
+		insertAbove: insert(true),
 
-	/**
-	 * Inserts this item below the specified item.
-	 *
-	 * @param {Item} item The item above which it should be inserted
-	 * @return {Boolean} {@true it was inserted}
-	 */
-	insertBelow: function(item, _preserve) {
-		if (!item._parent)
-			return null;
-		var index = item._index;
-		if (item._parent === this._parent && index > this._index)
-			 index--;
-		return item._parent.insertChild(index, this, _preserve);
-	},
+		/**
+		 * Inserts this item below the specified item.
+		 *
+		 * @param {Item} item The item above which it should be inserted
+		 * @return {Boolean} {@true it was inserted}
+		 */
+		insertBelow: insert(false)
+	};
+}, /** @lends Item# */{
 
 	/**
 	 * Sends this item to the back of all other items within the same parent.
