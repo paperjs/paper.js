@@ -183,17 +183,20 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
+		var parent = this._parent,
+			project = this._project,
+			symbol = this._parentSymbol;
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			// Clear cached bounds and position whenever geometry changes
 			delete this._bounds;
 			delete this._position;
 		}
-		if (this._parent
-				&& (flags & (/*#=*/ ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STROKE))) {
+		if (parent && (flags
+				& (/*#=*/ ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STROKE))) {
 			// Clear cached bounds of all items that this item contributes to.
 			// We call this on the parent, since the information is cached on
 			// the parent, see getBounds().
-			this._parent._clearBoundsCache();
+			parent._clearBoundsCache();
 		}
 		if (flags & /*#=*/ ChangeFlag.HIERARCHY) {
 			// Clear cached bounds of all items that this item contributes to.
@@ -202,25 +205,27 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// HIERARCHY notifications go)
 			this._clearBoundsCache();
 		}
-		if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
-			this._project._needsRedraw = true;
-		}
-		// If this item is a symbol's definition, notify it of the change too
-		if (this._parentSymbol)
-			this._parentSymbol._changed(flags);
-		// Have project keep track of changed items, so they can be iterated.
-		// This can be used for example to update the SVG tree. Needs to be
-		// activated in Project
-		if (this._project._changes) {
-			var entry = this._project._changesById[this._id];
-			if (entry) {
-				entry.flags |= flags;
-			} else {
-				entry = { item: this, flags: flags };
-				this._project._changesById[this._id] = entry;
-				this._project._changes.push(entry);
+		if (project) {
+			if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
+				project._needsRedraw = true;
+			}
+			// Have project keep track of changed items so they can be iterated.
+			// This can be used for example to update the SVG tree. Needs to be
+			// activated in Project
+			if (project._changes) {
+				var entry = project._changesById[this._id];
+				if (entry) {
+					entry.flags |= flags;
+				} else {
+					entry = { item: this, flags: flags };
+					project._changesById[this._id] = entry;
+					project._changes.push(entry);
+				}
 			}
 		}
+		// If this item is a symbol's definition, notify it of the change too
+		if (symbol)
+			symbol._changed(flags);
 	},
 
 	/**
