@@ -67,14 +67,17 @@ Base.inject(/** @lends Base# */{
 	/**
 	 * #_set() is part of the mechanism for constructors which take one object
 	 * literal describing all the properties to be set on the created instance.
+	 *
+	 * @param {Object} props an object describing the properties to set
+	 * @param {Object} [exclude=undefined] a lookup table listing properties to
+	 * exclude.
 	 * @return {Boolean} {@true if the object is a plain object}
 	 */
-	_set: function(props) {
+	_set: function(props, exclude) {
 		if (props && Base.isPlainObject(props)) {
 			for (var key in props)
-				// TODO: Filter out 'insert' parameter for now. This needs
-				// proper handling in Item constructor instead.
-				if (key !== 'insert' && props.hasOwnProperty(key) && key in this)
+				if (props.hasOwnProperty(key) && key in this
+						&& (!exclude || !exclude[key]))
 					this[key] = props[key];
 			return true;
 		}
