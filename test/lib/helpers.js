@@ -27,14 +27,18 @@ QUnit.jsDump.setParser('object', function (obj, stack) {
 			: objectParser).call(this, obj, stack);
 });
 
+function getFunctionBody(func) {
+	return func.toString().match(
+		/^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
+			.replace(/    /g, '')
+			.replace(/^\s+|\s+$/g, '');
+}
+
 // Override equals to convert functions to message and execute them as tests()
 function equals(actual, expected, message, tolerance) {
 	if (typeof actual === 'function') {
 		if (!message) {
-			message = actual.toString().match(
-				/^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
-					.replace(/    /g, '')
-					.replace(/^\s+|\s+$/g, '');
+			message = getFunctionBody(actual);
 			if (/^return /.test(message)) {
 				message = message
 					.replace(/^return /, '')

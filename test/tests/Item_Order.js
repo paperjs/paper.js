@@ -56,22 +56,18 @@ test('Item Order', function() {
 
 test('Item#moveAbove(item) / Item#moveBelow(item)', function() {
 	var item0, item1, item2;
-	var testMove = function(command, indexes) {
+
+	function testMove(command, indexes) {
 		paper.project.clear();
 		new Layer();
 		item0 = new Group();
 		item1 = new Group();
 		item2 = new Group();
 		command();
-		equals(function() {
-			return item0.index;
-		}, indexes[0], command.toString());
-		equals(function() {
-			return item1.index;
-		}, indexes[1]);
-		equals(function() {
-			return item2.index;
-		}, indexes[2]);
+		var str = getFunctionBody(command);
+		equals(item0.index, indexes[0], str + ': item0.index');
+		equals(item1.index, indexes[1], str + ': item1.index');
+		equals(item2.index, indexes[2], str + ': item2.index');
 	}
 
 	testMove(function() { item0.moveBelow(item0) }, [0,1,2]);
