@@ -73,7 +73,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (!this._project) {
 			var project = paper.project,
 				layer = project.activeLayer;
-			// Do not insert into DOM if insert: false is provided in props.
+			// Do not insert into DOM if props.insert is false.
 			if (layer && !(props && props.insert === false)) {
 				layer.addChild(this);
 			} else {
