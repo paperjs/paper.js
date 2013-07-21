@@ -1238,13 +1238,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Copy over the selection state, use setSelected so the item
 		// is also added to Project#selectedItems if it is selected.
 		copy.setSelected(this._selected);
+		// Insert is true by default.
+		if (insert || insert === undefined)
+			copy.insertAbove(this);
 		// Clone the name too, but make sure we're not overriding the original
 		// in the same parent, by passing true for the unique parameter.
 		if (this._name)
 			copy.setName(this._name, true);
-		// Insert is true by default.
-		if (insert || insert === undefined)
-			copy.insertAbove(this);
 		return copy;
 	},
 
