@@ -76,10 +76,10 @@ var Raster = Item.extend(/** @lends Raster# */{
 		// Support two forms of item initialization: Passing one object literal
 		// describing all the different properties to be set, or an image
 		// (object) and a point where it should be placed (point).
-		Item.call(this, position !== undefined && Point.read(arguments, 1));
-		// If we can handle setting properties through object literal, we're all
-		// set. Otherwise we need to check the type of object:
-		if (object && !this._set(object)) {
+		// If _initialize can set properties through object literal, we're done.
+		// Otherwise we need to check the type of object:
+		if (!this._initialize(object,
+				position !== undefined && Point.read(arguments, 1))) {
 			if (object.getContext) {
 				this.setCanvas(object);
 			} else if (typeof object === 'string') {
@@ -98,7 +98,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			image = this._image;
 		if (image) {
 			param.image = image;
-		} else {
+		} else if (this._canvas) {
 			// If the Raster contains a Canvas object, we need to create
 			// a new one and draw this raster's canvas on it.
 			var canvas = param.canvas = CanvasProvider.getCanvas(this._size);

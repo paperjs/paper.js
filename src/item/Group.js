@@ -89,11 +89,10 @@ var Group = Item.extend(/** @lends Group# */{
 	 * });
 	 */
 	initialize: function Group(arg) {
-		Item.call(this);
 		// Allow Group to have children and named children
 		this._children = [];
 		this._namedChildren = {};
-		if (arg && !this._set(arg))
+		if (!this._initialize(arg))
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 

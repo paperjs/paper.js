@@ -50,11 +50,10 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	 * compoundPath.children[1].position.x += 5;
 	 */
 	initialize: function CompoundPath(arg) {
-		PathItem.call(this);
 		// CompoundPath has children and supports named children.
 		this._children = [];
 		this._namedChildren = {};
-		if (arg && !this._set(arg))
+		if (!this._initialize(arg))
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 

@@ -46,8 +46,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * Canvas element that should be wrapped in a newly created view.
 	 */
 	initialize: function Project(view) {
-		// Activate straight away by passing true to base(), so paper.project is
-		// set, as required by Layer and DoumentView constructors.
+		// Activate straight away by passing true to PaperScopeItem constructor,
+		// so paper.project is set, as required by Layer and DoumentView
+		// constructors.
 		PaperScopeItem.call(this, true);
 		this.layers = [];
 		this.symbols = [];

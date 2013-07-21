@@ -32,18 +32,16 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	_boundsGetter: 'getBounds',
 
 	initialize: function TextItem(arg) {
+		this._content = '';
+		this._lines = [];
 		// Support two forms of item initialization: Passing one object literal
 		// describing all the different properties to be set, or a point where
 		// it should be placed (arg).
-		// See if a point is passed, and if so, pass it on to base(). If not, it
-		// might be a properties object literal for #setPropeties() at the end.
-		var hasProperties = arg && Base.isPlainObject(arg)
+		// See if a point is passed, and if so, pass it on to _initialize().
+		// If not, it might be a properties object literal.
+		var hasProps = arg && Base.isPlainObject(arg)
 				&& arg.x === undefined && arg.y === undefined;
-		Item.call(this, hasProperties ? null : Point.read(arguments));
-		this._content = '';
-		this._lines = [];
-		if (hasProperties)
-			this._set(arg);
+		this._initialize(hasProps && arg, !hasProps && Point.read(arguments));
 	},
 
 	/**

@@ -21,8 +21,8 @@ var Shape = Item.extend(/** @lends Shape# */{
 	_class: 'Shape',
 	_transformContent: false,
 
-	initialize: function Shape(type, point, size) {
-		Item.call(this, point);
+	initialize: function Shape(type, point, size, props) {
+		this._initialize(props, point);
 		this._type = type;
 		this._size = size;
 	},
@@ -165,11 +165,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 	statics: new function() {
 		function createShape(type, point, size, args) {
-			var shape = new Shape(type, point, size),
-				named = Base.getNamed(args);
-			if (named)
-				shape._set(named);
-			return shape;
+			return new Shape(type, point, size, Base.getNamed(args));
 		}
 
 		return /** @lends Shape */{

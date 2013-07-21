@@ -61,7 +61,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		data: {}
 	},
 
-	initialize: function Item(point) {
+	initialize: function Item() {
+		// Do nothing.
+	},
+
+	_initialize: function(props, point) {
 		// Define this Item's unique id.
 		this._id = Item._id = (Item._id || 0) + 1;
 		// If _project is already set, the item was already moved into the DOM
@@ -69,15 +73,18 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (!this._project) {
 			var project = paper.project,
 				layer = project.activeLayer;
-			if (layer)
+			// Do not insert into DOM if insert: false is provided in props.
+			if (layer && !(props && props.insert === false)) {
 				layer.addChild(this);
-			else
+			} else {
 				this._setProject(project);
+			}
 		}
 		this._style = new Style(this._project._currentStyle, this);
 		this._matrix = new Matrix();
 		if (point)
 			this._matrix.translate(point);
+		return props ? this._set(props, { insert: true }) : true;
 	},
 
 	_events: new function() {

@@ -70,7 +70,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 	initialize: function Path(arg) {
 		this._closed = false;
 		this._segments = [];
-		Item.call(this);
 		// arg can either be an object literal describing properties to be set
 		// on the path, a list of segments to be set, or the first of multiple
 		// arguments describing separate segments.
@@ -82,12 +81,16 @@ var Path = PathItem.extend(/** @lends Path# */{
 			? typeof arg[0] === 'object'
 				? arg
 				: arguments
-			: arg && (arg.point !== undefined || arg.x !== undefined)
+			// See if it behaves like a segment or a point, but filter out
+			// rectangles, as accepted by some Path.Constructor constructors.
+			: arg && (arg.point !== undefined && arg.size === undefined
+					|| arg.x !== undefined)
 				? arguments
 				: null;
+		// Always call setSegments() to initialize a few related variables.
 		this.setSegments(segments || []);
-		if (arg && !segments)
-			this._set(arg);
+		// Only pass on arg as props if it wasn't consumed for segments already.
+		this._initialize(!segments && arg);
 	},
 
 	clone: function(insert) {
@@ -102,9 +105,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return copy;
 	},
 
-	_changed: function(flags) {
-		// Don't use base() for reasons of performance.
-		Item.prototype._changed.call(this, flags);
+	_changed: function _changed(flags) {
+		_changed.base.call(this, flags);
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.
