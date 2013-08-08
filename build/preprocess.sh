@@ -14,7 +14,7 @@
 #
 # A simple code preprocessing wrapper that uses a combination of cpp, jssrip.py
 # and sed to preprocess JavaScript files containing C-style preprocess macros
-# (#include, #ifdef, etc.). Three options offer control over wether comments
+# (#include, #ifdef, etc.). Three options offer control over whether comments
 # are preserved or stripped and whitespaces are compressed.
 #
 # Usage:

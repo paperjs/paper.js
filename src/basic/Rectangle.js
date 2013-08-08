@@ -111,7 +111,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 			}
 		}
 		if (!read) {
-			// Read a point argument and look at the next value to see wether
+			// Read a point argument and look at the next value to see whether
 			// it's a size or a point, then read accordingly.
 			// We're supporting both reading from a normal arguments list and
 			// covering the Rectangle({ from: , to: }) constructor, through

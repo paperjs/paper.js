@@ -70,7 +70,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		doubleClick,
 		clickTime;
 
-	// Returns false if event was stopped, true otherwise, wether handler was
+	// Returns false if event was stopped, true otherwise, whether handler was
 	// called or not!
 	function callEvent(type, event, point, target, lastPoint, bubble) {
 		var item = target,

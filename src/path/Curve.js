@@ -672,7 +672,7 @@ statics: {
 					var tan = Curve.evaluate(v, t, 1);
 					// Handle all kind of edge cases when points are on
 					// contours or rays are touching countours, to termine
-					// wether the crossing counts or not.
+					// whether the crossing counts or not.
 					// See if the actual point is on the countour:
 					if (abs(pt.x - x) < tolerance) {
 						// Do not count the crossing if it is on the left hand

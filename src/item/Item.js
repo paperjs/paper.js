@@ -766,7 +766,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * Specifies wether the item has any content or not. The meaning of what
+	 * Specifies whether the item has any content or not. The meaning of what
 	 * content is differs from type to type. For example, a {@link Group} with
 	 * no children, a {@link TextItem} with no text content and a {@link Path}
 	 * with no segments all are considered empty.
@@ -1188,7 +1188,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Clones the item within the same project and places the copy above the
 	 * item.
 	 *
-	 * @param {Boolean} [insert=true] specifies wether the copy should be
+	 * @param {Boolean} [insert=true] specifies whether the copy should be
 	 * inserted into the DOM. When set to {@code true}, it is inserted above the
 	 * original.
 	 * @return {Item} the newly cloned item
@@ -1316,7 +1316,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * Checks wether the item's geometry contains the given point.
+	 * Checks whether the item's geometry contains the given point.
 	 * 
 	 * @example {@paperscript} // Click within and outside the star below
 	 * // Create a star shaped path:

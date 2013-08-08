@@ -126,7 +126,7 @@ var Group = Item.extend(/** @lends Group# */{
 
 	/**
 	 * Specifies whether the group applies transformations directly to its
-	 * children, or wether they are to be stored in its {@link Item#matrix}
+	 * children, or whether they are to be stored in its {@link Item#matrix}
 	 *
 	 * @type Boolean
 	 * @default true

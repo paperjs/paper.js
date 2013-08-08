@@ -153,9 +153,9 @@ Base.inject(/** @lends Base# */{
 		 *        or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {Number} length the amount of elements that can be read
-		 * @param {Object} options {@code options.readNull} controls wether null
+		 * @param {Object} options {@code options.readNull} controls whether null
 		 *        is returned or converted. {@code options.clone} controls
-		 *        wether passed objects should be cloned if they are already
+		 *        whether passed objects should be cloned if they are already
 		 *        provided in the required type
 		 */
 		read: function(list, start, length, options) {
@@ -217,9 +217,9 @@ Base.inject(/** @lends Base# */{
 		 * @param {Array} list the list to read from, either an arguments object
 		 *        or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
-		 * @param {Object} options {@code options.readNull} controls wether null
+		 * @param {Object} options {@code options.readNull} controls whether null
 		 *        is returned or converted. {@code options.clone} controls
-		 *        wether passed objects should be cloned if they are already
+		 *        whether passed objects should be cloned if they are already
 		 *        provided in the required type
 		 */
 		readAll: function(list, start, options) {

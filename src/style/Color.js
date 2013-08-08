@@ -354,7 +354,7 @@ var Color = Base.extend(new function() {
 		 * {@code destination: Point} — the destination point of the gradient
 		 * {@code stops: Array of GradientStop} — the gradient stops describing
 		 * the gradient, as an alternative to providing a gradient object<br>
-		 * {@code radial: Boolean} — controls wether the gradient is radial, as
+		 * {@code radial: Boolean} — controls whether the gradient is radial, as
 		 * an alternative to providing a gradient object<br>
 		 *
 		 * @name Color#initialize

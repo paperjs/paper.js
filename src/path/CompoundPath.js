@@ -209,7 +209,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	 * Item#contains() is prepared for such a result.
 	 */
 	_contains: function(point) {
-		// Compound paths are a little complex: In order to determine wether a
+		// Compound paths are a little complex: In order to determine whether a
 		// point is inside a path or not due to the even-odd rule, we need to
 		// check all the children and count how many intersect. If it's an odd
 		// number, the point is inside the path. Once we know it's inside the

@@ -2309,7 +2309,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 // Mess with indentation in order to get more line-space below...
 statics: {
 	/**
-	 * Determines wether the segments describe a path in clockwise or counter-
+	 * Determines whether the segments describe a path in clockwise or counter-
 	 * clockwise orientation.
 	 *
 	 * @private
@@ -2539,7 +2539,7 @@ statics: {
 		}
 		// For square caps, we need to step away from point in the direction of
 		// the tangent, which is the rotated normal.
-		// Checking loc.getParameter() for 0 is to see wether this is the first
+		// Checking loc.getParameter() for 0 is to see whether this is the first
 		// or the last segment of the open path, in order to determine in which
 		// direction to move the point.
 		if (cap === 'square')
