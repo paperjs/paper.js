@@ -161,11 +161,8 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		}
 
 		// Recursively walks the AST and replaces the code of certain nodes
-		function walkAst(node) {
-			// array[i++] is a MemberExpression with computed = true.
-			// We cannot replace that with array[_$_(i, "+", 1)], as it would
-			// break the code, so let's bail out.
-			if (!node || node.type === 'MemberExpression' && node.computed)
+		function walkAst(node, parent) {
+			if (!node)
 				return;
 			for (var key in node) {
 				if (key === 'range')
@@ -173,11 +170,11 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				var value = node[key];
 				if (Array.isArray(value)) {
 					for (var i = 0, l = value.length; i < l; i++)
-						walkAst(value[i]);
+						walkAst(value[i], node);
 				} else if (value && typeof value === 'object') {
 					// We cannot use Base.isPlainObject() for these since
 					// Acorn.js uses its own internal prototypes now.
-					walkAst(value);
+					walkAst(value, node);
 				}
 			}
 			switch (node && node.type) {
@@ -200,7 +197,17 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				}
 				break;
 			case 'UpdateExpression':
-				if (!node.prefix) {
+				if (!node.prefix && !(parent && (
+						// We need to filter out parents that are comparison
+						// operators, e.g. for situations like if (++i < 1),
+						// as we can't replace that with if (_$_(i, "+", 1) < 1)
+						// Match any operator beginning with =, !, < and >.
+						parent.type === 'BinaryExpression'
+							&& /^[=!<>]/.test(parent.operator)
+						// array[i++] is a MemberExpression with computed = true
+						// We can't replace that with array[_$_(i, "+", 1)].
+						|| parent.type === 'MemberExpression'
+							&& parent.computed))) {
 					var arg = getCode(node.argument);
 					replaceCode(node, arg + ' = _$_(' + arg + ', "'
 							+ node.operator[0] + '", 1)');
