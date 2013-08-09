@@ -140,7 +140,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * Concatentates this transform with a scaling transformation.
+	 * Concatenates this transform with a scaling transformation.
 	 *
 	 * @name Matrix#scale
 	 * @function
@@ -149,7 +149,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} This affine transform
 	 */
 	/**
-	 * Concatentates this transform with a scaling transformation.
+	 * Concatenates this transform with a scaling transformation.
 	 *
 	 * @name Matrix#scale
 	 * @function
@@ -175,7 +175,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * Concatentates this transform with a translate transformation.
+	 * Concatenates this transform with a translate transformation.
 	 *
 	 * @name Matrix#translate
 	 * @function
@@ -183,7 +183,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} This affine transform
 	 */
 	/**
-	 * Concatentates this transform with a translate transformation.
+	 * Concatenates this transform with a translate transformation.
 	 *
 	 * @name Matrix#translate
 	 * @function
@@ -201,7 +201,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * Concatentates this transform with a rotation transformation around an
+	 * Concatenates this transform with a rotation transformation around an
 	 * anchor point.
 	 *
 	 * @name Matrix#rotate
@@ -211,7 +211,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} This affine transform
 	 */
 	/**
-	 * Concatentates this transform with a rotation transformation around an
+	 * Concatenates this transform with a rotation transformation around an
 	 * anchor point.
 	 *
 	 * @name Matrix#rotate
@@ -245,7 +245,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * Concatentates this transform with a shear transformation.
+	 * Concatenates this transform with a shear transformation.
 	 *
 	 * @name Matrix#shear
 	 * @function
@@ -254,7 +254,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} This affine transform
 	 */
 	/**
-	 * Concatentates this transform with a shear transformation.
+	 * Concatenates this transform with a shear transformation.
 	 *
 	 * @name Matrix#shear
 	 * @function
@@ -616,7 +616,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * Inverts the transformation of the matrix. If the matrix is not invertible
 	 * (in which case {@link #isSingular()} returns true), {@code null } is
 	 * returned.
-	 * 
+	 *
 	 * @return {Matrix} The inverted matrix, or {@code null }, if the matrix is
 	 *         singular
 	 */
