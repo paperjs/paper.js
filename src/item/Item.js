@@ -774,7 +774,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Boolean
 	 */
 	isEmpty: function() {
-		return this._children.length == 0;
+		return !this._children || this._children.length == 0;
 	}
 }, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	function(name) {
