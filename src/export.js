@@ -27,7 +27,7 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 
 // Support AMD (e.g. require.js)
 if (typeof define === 'function' && define.amd)
-	define(paper);
+	define('paper', [], function() { return paper; });
 
 /*#*/ } else if (options.node) {
 
