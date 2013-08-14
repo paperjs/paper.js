@@ -783,7 +783,7 @@ var Color = Base.extend(new function() {
 					+ components.join(',') + ')';
 		},
 
-		toCanvasStyle: function(ctx) {
+		toCanvasStyle: function(ctx, matrix) {
 			if (this._canvasStyle)
 				return this._canvasStyle;
 			// Normal colors are simply represented by their css string.
@@ -791,16 +791,20 @@ var Color = Base.extend(new function() {
 				return this._canvasStyle = this.toCSS();
 			// Gradient code form here onwards
 			var components = this._components,
+				// We need to counteract the matrix translation. The other
+				// transformations will be handled by the matrix which was
+				// applied to ctx.
+				translation = matrix ? matrix.getTranslation() : new Point(),
 				gradient = components[0],
 				stops = gradient._stops,
-				origin = components[1],
-				destination = components[2],
+				origin = components[1].subtract(translation),
+				destination = components[2].subtract(translation),
 				canvasGradient;
 			if (gradient._radial) {
 				var radius = destination.getDistance(origin),
 					highlight = components[3];
 				if (highlight) {
-					var vector = highlight.subtract(origin);
+					var vector = highlight.subtract(translation).subtract(origin);
 					if (vector.getLength() > radius)
 						highlight = origin.add(vector.normalize(radius - 0.1));
 				}
