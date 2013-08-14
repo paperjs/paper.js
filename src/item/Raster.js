@@ -80,12 +80,11 @@ var Raster = Item.extend(/** @lends Raster# */{
 		// Otherwise we need to check the type of object:
 		if (!this._initialize(object,
 				position !== undefined && Point.read(arguments, 1))) {
-			if (object.getContext) {
-				this.setCanvas(object);
-			} else if (typeof object === 'string') {
+			if (typeof object === 'string') {
 				// Both data-urls and normal urls are supported here!
 				this.setSource(object);
 			} else {
+				// #setImage() handles both canvas and image types.
 				this.setImage(object);
 			}
 		}
@@ -174,7 +173,64 @@ var Raster = Item.extend(/** @lends Raster# */{
 	},
 
 	/**
-	 * The Canvas 2d drawing context of the raster.
+	 * The HTMLImageElement of the raster, if one is associated.
+	 *
+	 * @type HTMLImageElement|Canvas
+	 * @bean
+	 */
+	getImage: function() {
+		return this._image;
+	},
+
+	setImage: function(image) {
+		if (this._canvas)
+			CanvasProvider.release(this._canvas);
+		// Due to similarities, we can handle both canvas and image types here.
+		if (image.getContext) {
+			// A canvas object
+			this._image = null;
+			this._canvas = image;
+		} else {
+			// A image object
+			this._image = image;
+			this._canvas = null;
+		}
+		// Both canvas and image have width / height attributes
+		this._size = new Size(image.width, image.height);
+		this._context = null;
+		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
+	},
+
+	/**
+	 * The Canvas object of the raster. If the raster was created from an image,
+	 * accessing its canvas causes the raster to try and create one and draw the
+	 * image into it. Depending on security policies, this might fail, in which
+	 * case {@code null} is returned instead.
+	 *
+	 * @type Canvas
+	 * @bean
+	 */
+	getCanvas: function() {
+		if (!this._canvas) {
+			var ctx = CanvasProvider.getContext(this._size);
+			// Since drawImage into canvas might fail based on security policies
+			// wrap the call in try-catch and only set _canvas if we succeeded.
+			try {
+				if (this._image)
+					ctx.drawImage(this._image, 0, 0);
+				this._canvas = ctx.canvas;
+			} catch (e) {
+				CanvasProvider.release(ctx);
+			}
+		}
+		return this._canvas;
+	},
+
+	// #setCanvas() is a simple alias to #setImage()
+	setCanvas: '#setImage',
+
+	/**
+	 * The Canvas 2D drawing context of the raster.
 	 *
 	 * @type Context
 	 * @bean
@@ -198,53 +254,6 @@ var Raster = Item.extend(/** @lends Raster# */{
 
 	setContext: function(context) {
 		this._context = context;
-	},
-
-	getCanvas: function() {
-		if (!this._canvas) {
-			var ctx = CanvasProvider.getContext(this._size);
-			// Since drawimage images into canvases might fail based on security
-			// policies, wrap the call in try-catch and only set _canvas if we
-			// succeeded.
-			try {
-				if (this._image)
-					ctx.drawImage(this._image, 0, 0);
-				this._canvas = ctx.canvas;
-			} catch (e) {
-				CanvasProvider.release(ctx);
-			}
-		}
-		return this._canvas;
-	},
-
-	setCanvas: function(canvas) {
-		if (this._canvas)
-			CanvasProvider.release(this._canvas);
-		this._canvas = canvas;
-		this._size = new Size(canvas.width, canvas.height);
-		this._image = null;
-		this._context = null;
-		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
-	},
-
-	/**
-	 * The HTMLImageElement of the raster, if one is associated.
-	 *
-	 * @type HTMLImageElement|Canvas
-	 * @bean
-	 */
-	getImage: function() {
-		return this._image;
-	},
-
-	setImage: function(image) {
-		if (this._canvas)
-			CanvasProvider.release(this._canvas);
-		this._image = image;
-		this._size = new Size(image.width, image.height);
-		this._canvas = null;
-		this._context = null;
-		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
 	},
 
 	/**
