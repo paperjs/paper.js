@@ -26,8 +26,11 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 })))();
 
 // Support AMD (e.g. require.js)
+// Use named module AMD syntax since there are other unnamed calls to define()
+// inside the built library (from inlined Acorn / Esprima) that apparently
+// confuse the require.js optimizer.
 if (typeof define === 'function' && define.amd)
-	define(paper);
+	define('paper', paper);
 
 /*#*/ } else if (options.node) {
 
