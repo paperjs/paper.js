@@ -91,10 +91,10 @@ asyncTest('Raster#getPixel / setPixel', function(callback) {
 	};
 });
 
-asyncTest('Raster#getSubImage', function(callback) {
+asyncTest('Raster#getSubCanvas', function(callback) {
 	var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
 	raster.onLoad = function() {
-		var canvas = raster.getSubImage(new Rectangle({
+		var canvas = raster.getSubCanvas(new Rectangle({
 			point: [1, 0],
 			size: [1, 2]
 		}));

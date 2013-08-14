@@ -1307,9 +1307,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		matrix.applyToContext(ctx);
 		// See Project#draw() for an explanation of Base.merge()
 		this.draw(ctx, Base.merge({ transforms: [matrix] }));
-		var raster = new Raster(canvas);
-		raster.setPosition(topLeft.add(size.divide(2)));
 		ctx.restore();
+		var raster = new Raster({
+			canvas: canvas,
+			insert: false
+		});
+		raster.setPosition(topLeft.add(size.divide(2)));
+		raster.insertAbove(this);
 		// NOTE: We don't need to release the canvas since it now belongs to the
 		// Raster!
 		return raster;

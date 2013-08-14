@@ -244,7 +244,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		this._size = new Size(image.width, image.height);
 		this._canvas = null;
 		this._context = null;
-		this._changed(/*#=*/ Change.GEOMETRY);
+		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
 	},
 
 	/**
@@ -330,7 +330,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 *
 	 * @return {Canvas} the sub image as a Canvas object
 	 */
-	getSubImage: function(rect) {
+	getSubCanvas: function(rect) {
 		rect = Rectangle.read(arguments);
 		var ctx = CanvasProvider.getContext(rect.getSize());
 		ctx.drawImage(this.getCanvas(), rect.x, rect.y,
@@ -349,9 +349,13 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 */
 	getSubRaster: function(rect) {
 		rect = Rectangle.read(arguments);
-		var raster = new Raster(this.getSubImage(rect));
+		var raster = new Raster({
+			canvas: this.getSubCanvas(rect),
+			insert: false
+		});
 		raster.translate(rect.getCenter().subtract(this.getSize().divide(2)));
 		raster._matrix.preConcatenate(this._matrix);
+		raster.insertAbove(this);
 		return raster;
 	},
 
