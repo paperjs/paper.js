@@ -250,8 +250,9 @@ var Raster = Item.extend(/** @lends Raster# */{
 	/**
 	 * The source of the raster, which can be set using a DOM Image, a Canvas,
 	 * a data url, a string describing the URL to load the image from, or the
-	 * ID of a DOM element to get the image from (either a DOM Image or a Canvas). 
-	 * Reading this property will return the url of the source image or a data-url.
+	 * ID of a DOM element to get the image from (either a DOM Image or a
+	 * Canvas). Reading this property will return the url of the source image or
+	 * a data-url.
 	 * 
 	 * @bean
 	 * @type HTMLImageElement|Canvas|String
@@ -320,12 +321,14 @@ var Raster = Item.extend(/** @lends Raster# */{
 		return this._canvas || this._image;
 	},
 
-	// DOCS: document Raster#getSubImage
 	/**
+	 * Extracts a part of the Raster's content as a sub image, and returns it as
+	 * a Canvas object.
+	 *
 	 * @param {Rectangle} rect the boundaries of the sub image in pixel
 	 * coordinates
 	 *
-	 * @return {Canvas}
+	 * @return {Canvas} the sub image as a Canvas object
 	 */
 	getSubImage: function(rect) {
 		rect = Rectangle.read(arguments);
@@ -333,6 +336,23 @@ var Raster = Item.extend(/** @lends Raster# */{
 		ctx.drawImage(this.getCanvas(), rect.x, rect.y,
 				rect.width, rect.height, 0, 0, rect.width, rect.height);
 		return ctx.canvas;
+	},
+
+	/**
+	 * Extracts a part of the raster item's content as a new raster item, placed
+	 * in exactly the same place as the original content.
+	 *
+	 * @param {Rectangle} rect the boundaries of the sub raster in pixel
+	 * coordinates
+	 *
+	 * @return {Raster} the sub raster as a newly created raster item
+	 */
+	getSubRaster: function(rect) {
+		rect = Rectangle.read(arguments);
+		var raster = new Raster(this.getSubImage(rect));
+		raster.translate(rect.getCenter().subtract(this.getSize().divide(2)));
+		raster._matrix.preConcatenate(this._matrix);
+		return raster;
 	},
 
 	/**
