@@ -195,8 +195,13 @@ var Raster = Item.extend(/** @lends Raster# */{
 			this._image = image;
 			this._canvas = null;
 		}
-		// Both canvas and image have width / height attributes
-		this._size = new Size(image.width, image.height);
+		// Both canvas and image have width / height attributes. Due to IE,
+		// naturalWidth / Height needs to be checked for a swell, because it
+		// apparently can have width / height set to 0 when the image is
+		// invisible in the document.
+		this._size = new Size(
+				image.naturalWidth || image.width,
+				image.naturalHeight || image.height);
 		this._context = null;
 		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
 	},
@@ -293,11 +298,13 @@ var Raster = Item.extend(/** @lends Raster# */{
 				that._project.view.draw(true);
 		}
 
-		if (image.width && image.height) {
+		// IE has naturalWidth / Height defined, but width / height set to 0
+		// when the image is invisible in the document.
+		if (image.naturalWidth && image.naturalHeight) {
 			// Fire load event delayed, so behavior is the same as when it's 
 			// actually loaded and we give the code time to install event
 			setTimeout(loaded, 0);
-		} else if (!image.src) {
+		} else {
 			// Trigger the onLoad event on the image once it's loaded
 			DomEvent.add(image, {
 				load: function() {
@@ -305,7 +312,9 @@ var Raster = Item.extend(/** @lends Raster# */{
 					loaded();
 				}
 			});
-			image.src = src;
+			// A new image created above? Set the source now.
+			if (!image.src)
+				image.src = src;
 		}
 		this.setImage(image);
 /*#*/ } else if (options.node) {
