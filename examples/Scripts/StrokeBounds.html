@@ -83,6 +83,13 @@
 			rect.strokeWidth = 0.25;
 			rect.strokeColor = 'green';
 			rect.fillColor = null;
+
+			path.onMouseEnter = function() {
+				this.strokeColor = 'red';
+			}
+			path.onMouseLeave = function() {
+				this.strokeColor = 'black';
+			}
 		}
 
 		project.activeLayer.position = view.center;
