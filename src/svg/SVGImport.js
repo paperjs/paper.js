@@ -267,8 +267,8 @@ new function() {
 			// TODO: Support for these is missing in Paper.js right now
 			// rotate: character rotation
 			// lengthAdjust:
-			var text = new PointText(getPoint(node, 'x', 'y', false)
-					.add(getPoint(node, 'dx', 'dy', false)));
+			var text = new PointText(getPoint(node, 'x', 'y')
+					.add(getPoint(node, 'dx', 'dy')));
 			text.setContent(node.textContent.trim() || '');
 			return text;
 		}
