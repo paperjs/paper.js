@@ -256,7 +256,6 @@ var View = Base.extend(Callback, /** @lends View# */{
 		this._matrix.concatenate(matrix);
 		// Force recalculation of these values next time they are requested.
 		this._bounds = null;
-		this._inverse = null;
 		this._redraw();
 	},
 
@@ -307,7 +306,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 */
 	getBounds: function() {
 		if (!this._bounds)
-			this._bounds = this._getInverse()._transformBounds(
+			this._bounds = this._matrix.inverted()._transformBounds(
 					new Rectangle(new Point(), this._viewSize));
 		return this._bounds;
 	},
@@ -398,14 +397,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	viewToProject: function(/* point */) {
-		return this._getInverse()._transformPoint(Point.read(arguments));
+		return this._matrix._inverseTransform(Point.read(arguments));
 	},
-
-	_getInverse: function() {
-		if (!this._inverse)
-			this._inverse = this._matrix.inverted();
-		return this._inverse;
-	}
 
 	/**
 	 * {@grouptitle Event Handlers}
