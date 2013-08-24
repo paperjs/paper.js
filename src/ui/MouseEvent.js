@@ -62,7 +62,7 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
 	 */
 
 	/**
-	 * @return {String} A string representation of the mouse event.
+	 * @return {String} a string representation of the mouse event
 	 */
 	toString: function() {
 		return "{ type: '" + this.type

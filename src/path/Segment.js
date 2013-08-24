@@ -437,7 +437,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 	},
 
 	/**
-	 * @return {String} A string representation of the segment.
+	 * @return {String} a string representation of the segment
 	 */
 	toString: function() {
 		var parts = [ 'point: ' + this._point ];

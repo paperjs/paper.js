@@ -247,9 +247,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @param {Point} point The point where the hit test should be performed
 	 * @param {Object} [options={ fill: true, stroke: true, segments: true,
 	 * tolerance: true }]
-	 * @return {HitResult} A hit result object that contains more
+	 * @return {HitResult} a hit result object that contains more
 	 * information about what exactly was hit or {@code null} if nothing was
-	 * hit.
+	 * hit
 	 */
 	hitTest: function(point, options) {
 		// We don't need to do this here, but it speeds up things since we won't
@@ -334,6 +334,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 
 	draw: function(ctx, matrix) {
+		// Increase the drawCount before the draw-loop. After that, items that
+		// are visible will have their drawCount set to the new value.
 		this._drawCount++;
 		ctx.save();
 		matrix.applyToContext(ctx);

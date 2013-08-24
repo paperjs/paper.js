@@ -247,7 +247,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	},
 
 	/**
-	 * @return {String} A string representation of the curve location.
+	 * @return {String} a string representation of the curve location
 	 */
 	toString: function() {
 		var parts = [],

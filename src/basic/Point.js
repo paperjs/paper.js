@@ -223,7 +223,7 @@ var Point = Base.extend(/** @lends Point# */{
 	},
 
 	/**
-	 * @return {String} A string representation of the point.
+	 * @return {String} a string representation of the point
 	 */
 	toString: function() {
 		var f = Formatter.instance;
@@ -434,7 +434,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 * is not modified!
 	 *
 	 * @param {Matrix} matrix
-	 * @return {Point} The transformed point
+	 * @return {Point} the transformed point
 	 */
 	transform: function(matrix) {
 		return matrix ? matrix._transformPoint(this) : this;
@@ -505,8 +505,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * The object itself is not modified!
 	 *
 	 * @param {Number} [length=1] The length of the normalized vector
-	 * @return {Point} The normalized vector of the vector that is represented
-	 *                 by this point's coordinates.
+	 * @return {Point} the normalized vector of the vector that is represented
+	 *                 by this point's coordinates
 	 */
 	normalize: function(length) {
 		if (length === undefined)
@@ -853,7 +853,7 @@ var Point = Base.extend(/** @lends Point# */{
 		 * @static
 		 * @param {Point} point1
 		 * @param {Point} point2
-		 * @returns {Point} The newly created point object
+		 * @returns {Point} the newly created point object
 		 *
 		 * @example
 		 * var point1 = new Point(10, 100);
@@ -877,7 +877,7 @@ var Point = Base.extend(/** @lends Point# */{
 		 * @static
 		 * @param {Point} point1
 		 * @param {Point} point2
-		 * @returns {Point} The newly created point object
+		 * @returns {Point} the newly created point object
 		 *
 		 * @example
 		 * var point1 = new Point(10, 100);
@@ -898,7 +898,7 @@ var Point = Base.extend(/** @lends Point# */{
 		 * Returns a point object with random {@link #x} and {@link #y} values
 		 * between {@code 0} and {@code 1}.
 		 *
-		 * @returns {Point} The newly created point object
+		 * @returns {Point} the newly created point object
 		 * @static
 		 *
 		 * @example

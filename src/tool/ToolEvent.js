@@ -199,7 +199,7 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	},
 
 	/**
-	 * @return {String} A string representation of the tool event.
+	 * @return {String} a string representation of the tool event
 	 */
 	toString: function() {
 		return '{ type: ' + this.type

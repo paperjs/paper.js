@@ -359,7 +359,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * Checks whether the view is currently visible within the current browser
 	 * viewport.
 	 *
-	 * @return {Boolean} Whether the view is visible.
+	 * @return {Boolean} whether the view is visible.
 	 */
 	isVisible: function() {
 		return DomElement.isInView(this._element);
@@ -392,6 +392,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	// TODO: getMousePoint
 	// TODO: projectToView(rect)
 
+	// DOCS: projectToView(point), viewToProject(point)
 	projectToView: function(/* point */) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},

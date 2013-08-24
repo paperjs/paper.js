@@ -405,7 +405,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 *        or the curve time parameter if {@code isParameter} is {@code true}
 	 * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
 	 *        is a curve time parameter.
-	 * @return {Path} The newly created path after splitting, if any
+	 * @return {Path} the newly created path after splitting, if any
 	 * @see Path#split(index, parameter)
 	 */
 	// TODO: Rename to splitAt()?
@@ -426,7 +426,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	/**
-	 * @return {String} A string representation of the curve.
+	 * @return {String} a string representation of the curve
 	 */
 	toString: function() {
 		var parts = [ 'point1: ' + this._segment1._point ];

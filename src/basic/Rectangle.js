@@ -210,7 +210,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	/**
-	 * @return {String} A string representation of this rectangle.
+	 * @return {String} a string representation of this rectangle
 	 */
 	toString: function() {
 		var f = Formatter.instance;
@@ -647,8 +647,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 *
 	 * @param {Rectangle} rect The rectangle to be intersected with this
 	 *                         rectangle
-	 * @return {Rectangle} The largest rectangle contained in both the specified
-	 *                     rectangle and in this rectangle.
+	 * @return {Rectangle} the largest rectangle contained in both the specified
+	 *                     rectangle and in this rectangle
 	 *
 	 * @example {@paperscript}
 	 * // Intersecting two rectangles and visualizing the result using rectangle

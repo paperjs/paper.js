@@ -748,7 +748,7 @@ var Color = Base.extend(new function() {
 
 		/**
 		 * {@grouptitle String Representations}
-		 * @return {String} A string representation of the color.
+		 * @return {String} a string representation of the color
 		 */
 		toString: function() {
 			var properties = this._properties,
@@ -767,7 +767,7 @@ var Color = Base.extend(new function() {
 		},
 
 		/**
-		 * @return {String} A css string representation of the color.
+		 * @return {String} a css string representation of the color
 		 */
 		toCSS: function(noAlpha) {
 			var components = this._convert('rgb'),

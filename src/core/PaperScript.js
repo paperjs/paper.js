@@ -108,8 +108,8 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 	 *
 	 * @name PaperScript.compile
 	 * @function
-	 * @param {String} code The PaperScript code.
-	 * @return {String} The compiled PaperScript as JavaScript code.
+	 * @param {String} code The PaperScript code
+	 * @return {String} the compiled PaperScript as JavaScript code
 	 */
 	function compile(code) {
 		// Use Acorn or Esprima to translate the code into an AST structure
@@ -238,9 +238,9 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 	 *
 	 * @name PaperScript.evaluate
 	 * @function
-	 * @param {String} code The PaperScript code.
-	 * @param {PaperScript} scope The scope in which the code is executed.
-	 * @return {Object} The result of the code evaluation.
+	 * @param {String} code The PaperScript code
+	 * @param {PaperScript} scope The scope in which the code is executed
+	 * @return {Object} the result of the code evaluation
 	 */
 	function evaluate(code, scope) {
 		// Set currently active scope.

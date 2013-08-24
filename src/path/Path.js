@@ -918,7 +918,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @function
 	 * @param {Number} offset the offset at which to split the path
 	 * as a number between 0 and {@link Path#length}
-	 * @return {Path} The newly created path after splitting, if any
+	 * @return {Path} the newly created path after splitting, if any
 	 * 
 	 * @example {@paperscript} // Splitting an open path
 	 * var path = new Path();
@@ -961,7 +961,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @function
 	 * @param {CurveLocation} location the curve location at which to split
 	 * the path
-	 * @return {Path} The newly created path after splitting, if any
+	 * @return {Path} the newly created path after splitting, if any
 	 * 
 	 * @example {@paperscript}
 	 * var path = new Path.Circle({
@@ -1018,7 +1018,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @param {Number} index the index of the curve in the {@link Path#curves}
 	 * array at which to split
 	 * @param {Number} parameter the parameter at which the curve will be split
-	 * @return {Path} The newly created path after splitting, if any
+	 * @return {Path} the newly created path after splitting, if any
 	 */
 	split: function(index, parameter) {
 		if (parameter === null)
@@ -1540,8 +1540,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * Returns the nearest location on the path to the specified point.
 	 *
 	 * @function
-	 * @param point {Point} The point for which we search the nearest location
-	 * @return {CurveLocation} The location on the path that's the closest to
+	 * @param point {Point} the point for which we search the nearest location
+	 * @return {CurveLocation} the location on the path that's the closest to
 	 * the specified point
 	 */
 	getNearestLocation: function(point) {
@@ -1563,8 +1563,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * Returns the nearest point on the path to the specified point.
 	 *
 	 * @function
-	 * @param point {Point} The point for which we search the nearest point
-	 * @return {Point} The point on the path that's the closest to the specified
+	 * @param point {Point} the point for which we search the nearest point
+	 * @return {Point} the point on the path that's the closest to the specified
 	 * point
 	 * 
 	 * @example {@paperscript height=200}

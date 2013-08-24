@@ -749,8 +749,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * The item's transformation matrix, defining position and dimensions in the
-	 * document.
+	 * The item's transformation matrix, defining position and dimensions in
+	 * relation to its parent item in which it is contained.
 	 *
 	 * @type Matrix
 	 * @bean
@@ -1400,9 +1400,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {Point} point The point where the hit test should be performed
 	 * @param {Object} [options={ fill: true, stroke: true, segments: true,
 	 * tolerance: 2 }]
-	 * @return {HitResult} A hit result object that contains more
+	 * @return {HitResult} a hit result object that contains more
 	 * information about what exactly was hit or {@code null} if nothing was
-	 * hit.
+	 * hit
 	 */
 	hitTest: function(point, options) {
 		point = Point.read(arguments);
