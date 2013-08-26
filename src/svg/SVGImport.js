@@ -94,7 +94,7 @@ new function() {
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var childNode = nodes[i],
 				child;
-			if (childNode.nodeType == 1 && (child = importSVG(childNode))) {
+			if (childNode.nodeType === 1 && (child = importSVG(childNode))) {
 				// When adding CompoundPaths to other CompoundPaths,
 				// we need to "unbox" them first:
 				if (clip && child instanceof CompoundPath) {
@@ -148,7 +148,7 @@ new function() {
 			stops = [];
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var child = nodes[i];
-			if (child.nodeType == 1)
+			if (child.nodeType === 1)
 				stops.push(applyAttributes(new GradientStop(), child));
 		}
 		var isRadial = type === 'radialgradient',
@@ -172,6 +172,10 @@ new function() {
 	// NOTE: All importers are lowercase, since jsdom is using uppercase
 	// nodeNames still.
 	var importers = {
+		'#document': function(node) {
+			return importSVG(node.childNodes[0]);
+		},
+
 		// http://www.w3.org/TR/SVG/struct.html#Groups
 		g: importGroup,
 		// http://www.w3.org/TR/SVG/struct.html#NewDocument
@@ -486,7 +490,7 @@ new function() {
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
 			item = importer && importer(node, type),
-			data = node.getAttribute('data-paper-data');
+			data = type !== '#document' && node.getAttribute('data-paper-data');
 		// See importGroup() for an explanation of this filtering:
 		if (item && !(item instanceof Group))
 			item = applyAttributes(item, node);

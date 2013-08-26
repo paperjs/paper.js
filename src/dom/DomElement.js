@@ -95,7 +95,9 @@ var DomElement = new function() {
 		},
 
 		getStyles: function(el) {
-			var view = el && el.ownerDocument.defaultView;
+			// If el is a document (nodeType == 9), use it directly
+			var doc = el && el.nodeType !== 9 ? el.ownerDocument : el,
+				view = doc && doc.defaultView;
 			return view && view.getComputedStyle(el, '');
 		},
 
