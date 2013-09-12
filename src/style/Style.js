@@ -430,18 +430,19 @@ var Style = Base.extend(new function() {
 	 * @type Color
 	 *
 	 * @example {@paperscript}
-	 * // Setting the shadow color of a path to black:
+	 * // Creating a circle with a black shadow:
 	 *
-	 * // Create a circle shaped path at { x: 80, y: 50 }
-	 * // with a radius of 35:
-	 * var circle = new Path.Circle(new Point(80, 50), 35);
-	 *
-	 * // Set the shadow color of the circle to RGB black:
-	 * circle.shadowColor = new Color(0, 0, 0);
-	 *
-	 * // Set the shadow blur, offset to { x: 10, y: 10 }
-	 * circle.shadowBlur = 10;
-	 * circle.shadowOffset = new Poit(10, 10);
+	 * var circle = new Path.Circle({
+	 *     center: [80, 50],
+	 *     radius: 35,
+	 *     fillColor: 'white',
+	 *     // Set the shadow color of the circle to RGB black:
+	 *     shadowColor: new Color(0, 0, 0),
+	 *     // Set the shadow blur radius to 12:
+	 *     shadowBlur: 12,
+	 *     // Offset the shadow by { x: 5, y: 5 }
+	 *     shadowOffset: new Point(5, 5)
+	 * });
 	 */
 
 	/**
