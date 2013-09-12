@@ -59,6 +59,7 @@ PathItem.inject(new function() {
 			if (others)
 				others.push(other);
 			segment._intersection = other;
+			loc._segment = segment;
 		}
 		return others;
 	}
@@ -213,7 +214,7 @@ PathItem.inject(new function() {
 		/**
 		 * Merges the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to unite with
 		 * @return {PathItem} the resulting path item
 		 */
@@ -227,7 +228,7 @@ PathItem.inject(new function() {
 		/**
 		 * Intersects the geometry of the specified path with this path's
 		 * geometry and returns the result as a new path item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to intersect with
 		 * @return {PathItem} the resulting path item
 		 */
@@ -241,7 +242,7 @@ PathItem.inject(new function() {
 		/**
 		 * Subtracts the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to subtract
 		 * @return {PathItem} the resulting path item
 		 */
@@ -253,12 +254,12 @@ PathItem.inject(new function() {
 		},
 
 		// Compound boolean operators combine the basic boolean operations such
-		// as union, intersection, subtract etc. 
+		// as union, intersection, subtract etc.
 		// TODO: cache the split objects and find a way to properly clone them!
 		/**
 		 * Excludes the intersection of the geometry of the specified path with
 		 * this path's geometry and returns the result as a new group item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to exclude the intersection of
 		 * @return {Group} the resulting group item
 		 */
@@ -269,7 +270,7 @@ PathItem.inject(new function() {
 		/**
 		 * Splits the geometry of this path along the geometry of the specified
 		 * path returns the result as a new group item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to divide by
 		 * @return {Group} the resulting group item
 		 */
