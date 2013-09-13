@@ -1394,11 +1394,12 @@ new function() { // Scope for methods that require numerical integration
 				// We do have a point on the infinite line. Check if it falls on
 				// the line *segment*.
 				if (point.x  >= 0 && point.x <= rl2x)
-					addLocation(locations,
-							flip ? curve2 : curve1,
-							// The actual intersection point
-							t, Curve.evaluate(vc, t, 0),
-							flip ? curve1 : curve2);
+					if(flip)
+						addLocation(locations, curve1, undefined, Curve.evaluate(vc, t, 0),
+							curve2, t, Curve.evaluate(vc, t, 0));
+					else
+						addLocation(locations, curve1, t,
+							Curve.evaluate(vc, t, 0), curve2);
 			}
 		}
 	}
