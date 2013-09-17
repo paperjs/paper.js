@@ -113,10 +113,12 @@ PathItem.inject(new function() {
 		// result of that on to the second call.
 		splitPath(splitPath(intersections, true));
 		// Do operator specific calculations before we begin
-		if (subtract) {
-			path2.reverse();
-			path2Clockwise = !path2Clockwise;
-		}
+		//  Make both paths at clockwise orientation, except when @subtract = true
+		//  We need both paths at opposit orientation for subtraction
+		!path1Clockwise && path1.reverse();
+		!(subtract ^ path2Clockwise) && path2.reverse();
+		path1Clockwise = true;
+		path2Clockwise = !subtract;
 		var paths = []
 				.concat(path1._children || [path1])
 				.concat(path2._children || [path2]),
