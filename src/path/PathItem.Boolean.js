@@ -115,8 +115,10 @@ PathItem.inject(new function() {
 		// Do operator specific calculations before we begin
 		//  Make both paths at clockwise orientation, except when @subtract = true
 		//  We need both paths at opposit orientation for subtraction
-		!path1Clockwise && path1.reverse();
-		!(subtract ^ path2Clockwise) && path2.reverse();
+		if (!path1Clockwise)
+				path1.reverse();
+		if (!(subtract ^ path2Clockwise)
+				path2.reverse();
 		path1Clockwise = true;
 		path2Clockwise = !subtract;
 		var paths = []
@@ -216,7 +218,7 @@ PathItem.inject(new function() {
 		/**
 		 * Merges the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
-		 *
+		 * 
 		 * @param {PathItem} path the path to unite with
 		 * @return {PathItem} the resulting path item
 		 */
@@ -230,7 +232,7 @@ PathItem.inject(new function() {
 		/**
 		 * Intersects the geometry of the specified path with this path's
 		 * geometry and returns the result as a new path item.
-		 *
+		 * 
 		 * @param {PathItem} path the path to intersect with
 		 * @return {PathItem} the resulting path item
 		 */
@@ -244,7 +246,7 @@ PathItem.inject(new function() {
 		/**
 		 * Subtracts the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
-		 *
+		 * 
 		 * @param {PathItem} path the path to subtract
 		 * @return {PathItem} the resulting path item
 		 */
@@ -256,12 +258,12 @@ PathItem.inject(new function() {
 		},
 
 		// Compound boolean operators combine the basic boolean operations such
-		// as union, intersection, subtract etc.
+		// as union, intersection, subtract etc. 
 		// TODO: cache the split objects and find a way to properly clone them!
 		/**
 		 * Excludes the intersection of the geometry of the specified path with
 		 * this path's geometry and returns the result as a new group item.
-		 *
+		 * 
 		 * @param {PathItem} path the path to exclude the intersection of
 		 * @return {Group} the resulting group item
 		 */
@@ -272,7 +274,7 @@ PathItem.inject(new function() {
 		/**
 		 * Splits the geometry of this path along the geometry of the specified
 		 * path returns the result as a new group item.
-		 *
+		 * 
 		 * @param {PathItem} path the path to divide by
 		 * @return {Group} the resulting group item
 		 */

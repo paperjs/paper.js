@@ -1396,10 +1396,10 @@ new function() { // Scope for methods that require numerical integration
 				if (point.x  >= 0 && point.x <= rl2x)
 					if(flip)
 						addLocation(locations, curve1, undefined, Curve.evaluate(vc, t, 0),
-							curve2, t, Curve.evaluate(vc, t, 0));
+								curve2, t, Curve.evaluate(vc, t, 0));
 					else
 						addLocation(locations, curve1, t,
-							Curve.evaluate(vc, t, 0), curve2);
+								Curve.evaluate(vc, t, 0), curve2);
 			}
 		}
 	}
