@@ -1395,13 +1395,11 @@ new function() { // Scope for methods that require numerical integration
 				// the line *segment*.
 				if (point.x  >= 0 && point.x <= rl2x){
 					// Interpolate for the parameter for the intersection on line
-					var tl = point.x / rl2x;
-					if(flip)
-						addLocation(locations, curve1, tl, Curve.evaluate(vl, tl, 0),
-								curve2, t, Curve.evaluate(vc, t, 0));
-					else
-						addLocation(locations, curve1, t, Curve.evaluate(vc, t, 0), 
-								curve2, tl, Curve.evaluate(vl, tl, 0));
+					var tl = point.x / rl2x,
+						t1 = flip ? tl : t,
+						t2 = flip ? t : tl;
+					addLocation(locations, curve1, t1, Curve.evaluate(v1, t1, 0),
+							curve2, t2, Curve.evaluate(v2, t2, 0));
 				}
 			}
 		}
