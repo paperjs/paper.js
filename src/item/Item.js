@@ -766,6 +766,45 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
+	 * The item's global transformation matrix in relation to the global project
+	 * coordinate space.
+	 *
+	 * @type Matrix
+	 * @bean
+	 */
+	getGlobalMatrix: function() {
+		// TODO: This only works correctly if Item#draw() is in use. For other
+		// possible future backends and items that aren't drawn, we need have to
+		// implement another approach.
+		return this._drawCount === this._project._drawCount
+				&& this._globalMatrix || null;
+	},
+
+	/**
+	 * Converts the specified point from global project coordinates to local
+	 * coordinates in relation to the the item's own coordinate space.
+	 *
+	 * @param {Point} point the point to be transformed
+	 * @return {Point} the transformed point as a new instance
+	 */
+	globalToLocal: function(/* point */) {
+		var matrix = this.getGlobalMatrix();
+		return matrix && matrix._transformPoint(Point.read(arguments));
+	},
+
+	/**
+	 * Converts the specified point from local coordinates to global coordinates
+	 * in relation to the the project coordinate space.
+	 *
+	 * @param {Point} point the point to be transformed
+	 * @return {Point} the transformed point as a new instance
+	 */
+	localToGlobal: function(/* point */) {
+		var matrix = this.getGlobalMatrix();
+		return matrix && matrix._inverseTransform(Point.read(arguments));
+	},
+
+	/**
 	 * Specifies whether the item has any content or not. The meaning of what
 	 * content is differs from type to type. For example, a {@link Group} with
 	 * no children, a {@link TextItem} with no text content and a {@link Path}
