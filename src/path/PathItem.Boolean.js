@@ -116,9 +116,9 @@ PathItem.inject(new function() {
 		//  Make both paths at clockwise orientation, except when @subtract = true
 		//  We need both paths at opposit orientation for subtraction
 		if (!path1Clockwise)
-				path1.reverse();
+			path1.reverse();
 		if (!(subtract ^ path2Clockwise))
-				path2.reverse();
+			path2.reverse();
 		path1Clockwise = true;
 		path2Clockwise = !subtract;
 		var paths = []
