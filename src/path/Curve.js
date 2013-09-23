@@ -1009,8 +1009,10 @@ new function() { // Scope for methods that require numerical integration
 				a = 0;
 			if (b === undefined)
 				b = 1;
+			var isZero = Numerical.isZero;
 			// See if the curve is linear by checking p1 == c1 and p2 == c2
-			if (v[0] == v[2] && v[1] == v[3] && v[6] == v[4] && v[7] == v[5]) {
+			if (isZero(v[0] - v[2]) && isZero(v[1] - v[3])
+					&& isZero(v[6] - v[4]) && isZero(v[7] - v[5])) {
 				// Straight line
 				var dx = v[6] - v[0], // p2x - p1x
 					dy = v[7] - v[1]; // p2y - p1y
