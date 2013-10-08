@@ -1924,12 +1924,19 @@ var Path = PathItem.extend(/** @lends Path# */{
 				fillColor = style.getFillColor(),
 				strokeColor = style.getStrokeColor(),
 				dashArray = style.getDashArray(),
-				drawDash = !paper.support.nativeDash && strokeColor
+				// dashLength is only set if we can't draw dashes natively
+				dashLength = !paper.support.nativeDash && strokeColor
 						&& dashArray && dashArray.length;
+
+			function getOffset(i) {
+				// Negative modulo is necessary since we're stepping back 
+				// in the dash sequence first.
+				return dashArray[((i % dashLength) + dashLength) % dashLength];
+			}
 
 			// Prepare the canvas path if we have any situation that requires it
 			// to be defined.
-			if (fillColor || strokeColor && !drawDash || compound || clip)
+			if (fillColor || strokeColor && !dashLength || compound || clip)
 				drawSegments(ctx, this);
 
 			if (this._closed)
@@ -1942,17 +1949,26 @@ var Path = PathItem.extend(/** @lends Path# */{
 				if (fillColor)
 					ctx.fill();
 				if (strokeColor) {
-					if (drawDash) {
+					if (dashLength) {
 						// We cannot use the path created by drawSegments above
 						// Use CurveFlatteners to draw dashed paths:
 						ctx.beginPath();
 						var flattener = new PathFlattener(this),
-							from = style.getDashOffset(), to,
+							length = flattener.length,
+							from = -style.getDashOffset(), to,
 							i = 0;
-						while (from < flattener.length) {
-							to = from + dashArray[(i++) % dashArray.length];
-							flattener.drawPart(ctx, from, to);
-							from = to + dashArray[(i++) % dashArray.length];
+						from = from % length;
+						// Step backwards in the dash sequence first until the
+						// from parameter is below 0.
+						while (from > 0) {
+							from -= getOffset(i--) + getOffset(i--);
+						}
+						while (from < length) {
+							to = from + getOffset(i++);
+							if (from > 0 || to > 0)
+								flattener.drawPart(ctx,
+										Math.max(from, 0), Math.max(to, 0));
+							from = to + getOffset(i++);
 						}
 					}
 					ctx.stroke();
