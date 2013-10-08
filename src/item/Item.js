@@ -318,7 +318,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// If the item already had a name, remove the reference to it from the
 		// parent's children object:
 		if (this._name)
-			this._removeFromNamed();
+			this._removeNamed();
+		// See if the name is a simple number, which we cannot support due to
+		// the named lookup on the children array.
+		if (name === (+name) + '')
+			throw 'Names consisting only of numbers are not supported.'
 		if (name && this._parent) {
 			var children = this._parent._children,
 				namedChildren = this._parent._namedChildren,
@@ -1739,7 +1743,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	* Removes the item from its parent's named children list.
 	*/
-	_removeFromNamed: function() {
+	_removeNamed: function() {
 		var children = this._parent._children,
 			namedChildren = this._parent._namedChildren,
 			name = this._name,
@@ -1768,7 +1772,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_remove: function(notify) {
 		if (this._parent) {
 			if (this._name)
-				this._removeFromNamed();
+				this._removeNamed();
 			if (this._index != null)
 				Base.splice(this._parent._children, null, this._index, 1);
 			// Notify parent of changed hierarchy
