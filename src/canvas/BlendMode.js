@@ -212,6 +212,11 @@ var BlendMode = new function() {
 			dr = 255 - abs(255 - sr - br);
 			dg = 255 - abs(255 - sg - bg);
 			db = 255 - abs(255 - sb - bb);
+		},
+
+		'black-and-white': function() {
+			var gray = br * 0.3 + bg * 0.59 + bb * 0.11;
+			dr = dg = db = gray;
 		}
 	};
 
