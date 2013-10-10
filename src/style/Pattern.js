@@ -5,6 +5,9 @@ var Pattern = Base.extend({
   initialize: function Pattern(url, repeat, width, height) {
     this._id = Pattern._id = (Pattern._id || 0) + 1;
     this.setUrl(url);
+    if(!repeat)
+      repeat = 'repeat'
+
     this.setRepeat(repeat);
     this.setWidth(width);
     this.setHeight(height);

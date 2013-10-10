@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 10 14:00:04 2013 +0200
+ * Date: Thu Oct 10 14:16:47 2013 +0200
  *
  ***
  *
@@ -8425,6 +8425,9 @@ var Pattern = Base.extend({
   initialize: function Pattern(url, repeat, width, height) {
     this._id = Pattern._id = (Pattern._id || 0) + 1;
     this.setUrl(url);
+    if(!repeat)
+      repeat = 'repeat'
+
     this.setRepeat(repeat);
     this.setWidth(width);
     this.setHeight(height);
