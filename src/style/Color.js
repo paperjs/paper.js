@@ -881,7 +881,6 @@ var Color = Base.extend(new function() {
 					image.src = fs.readFileSync(pattern._url);
 				}
 		/*#*/ } // options.node
-				console.log('repeat: ', pattern._repeat)
 				if(image.complete)
 					return this._canvasStyle = ctx.createPattern(image, pattern._repeat);
 

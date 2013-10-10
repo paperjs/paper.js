@@ -12,3 +12,4 @@
 - Justin Ridgewell <justinridgewell@gmail.com>
 - Andrew Wagenheim <abwagenheim@gmail.com>
 - Scott Kieronski <baroes0239@gmail.com>
+- Ceslovas Lopan (IngeniumGolf) <l.ceslovas@gmail.com>
