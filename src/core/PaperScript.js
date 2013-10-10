@@ -32,9 +32,9 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 	scope = root;
 /*#*/ } // options.version == 'dev'
 /*#*/ if (options.parser == 'acorn') {
-/*#*/ include('../../components/acorn/acorn.min.js', { exports: false });
+/*#*/ include('../../bower_components/acorn/acorn.min.js', { exports: false });
 /*#*/ } else if (options.parser == 'esprima') {
-/*#*/ include('../../components/esprima/esprima.min.js', { exports: false });
+/*#*/ include('../../bower_components/esprima/esprima.min.js', { exports: false });
 /*#*/ }
 
 	// Operators to overload

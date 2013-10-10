@@ -10,5 +10,5 @@
 #
 # All rights reserved.
 
-../node_modules/.bin/uglifyjs ../components/acorn/acorn.js -o ../components/acorn/acorn.min.js -c -m -b ascii_only=true,beautify=false
-../node_modules/.bin/uglifyjs ../components/esprima/esprima.js -o ../components/esprima/esprima.min.js -c -m -b ascii_only=true,beautify=false
+../node_modules/.bin/uglifyjs ../bower_components/acorn/acorn.js -o ../bower_components/acorn/acorn.min.js -c -m -b ascii_only=true,beautify=false
+../node_modules/.bin/uglifyjs ../bower_components/esprima/esprima.js -o ../bower_components/esprima/esprima.min.js -c -m -b ascii_only=true,beautify=false

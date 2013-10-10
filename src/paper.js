@@ -34,10 +34,10 @@
 // parameter inside the paper scope.
 var paper = new function(undefined) {
 // Inline Bootstrap core (the Base class) inside the paper scope first:
-/*#*/ include('../components/straps/straps.js', { exports: false });
+/*#*/ include('../bower_components/straps/straps.js', { exports: false });
 
 /*#*/ if (options.stats) {
-/*#*/ include('../components/stats.js/build/stats.min.js');
+/*#*/ include('../bower_components/stats.js/build/stats.min.js');
 /*#*/ } // options.stats
 
 /*#*/ if (options.version == 'dev') {
