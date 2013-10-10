@@ -33,9 +33,26 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 				size = new Size(1024, 768);
 			canvas = CanvasProvider.getCanvas(size);
 		}
-		this._context = canvas.getContext('2d');
+		var ctx = this._context = canvas.getContext('2d');
 		// Have Item count installed mouse events.
 		this._eventCounters = {};
+		// Hi-DPI Canvas support based on:
+		// http://www.html5rocks.com/en/tutorials/canvas/hidpi/
+		var ratio = (window.devicePixelRatio || 1) / (DomElement.getPrefixValue(
+				ctx, 'backingStorePixelRatio') || 1);
+		// Upscale the canvas if the two ratios don't match
+		if (ratio > 1) {
+			var width = canvas.clientWidth,
+				height = canvas.clientHeight,
+				style = canvas.style;
+			canvas.width = width * ratio;
+			canvas.height = height * ratio;
+			style.width = width + 'px';
+			style.height = height + 'px';
+			// Now scale the context to counter the fact that we've manually
+			// scaled our canvas element.
+			cxt.scale(ratio, ratio);
+		}
 		View.call(this, canvas);
 	},
 

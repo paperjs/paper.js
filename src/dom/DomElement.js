@@ -197,6 +197,19 @@ var DomElement = new function() {
 			// which always starts at 0, 0
 			return !this.isInvisible(el) && this.getViewportBounds(el).intersects(
 					this.getBounds(el, true));
+		},
+
+		/**
+		 * Gets the given property from the element, trying out all browser
+		 * prefix variants.
+		 */
+		getPrefixValue: function(el, name) {
+			var value = el[name],
+				suffix = name[0].toUpperCase() + name.substring(1);
+			Base.each(['webkit', 'moz', 'ms', 'o'], function(prefix) {
+				value = el[prefix + suffix] || value;
+			});
+			return value;
 		}
 	};
 };
