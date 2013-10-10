@@ -50,4 +50,4 @@ var Formatter = Base.extend({
 	}
 });
 
-Formatter.instance = new Formatter(5);
+Formatter.instance = new Formatter();
