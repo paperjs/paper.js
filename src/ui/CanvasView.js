@@ -40,7 +40,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		// http://www.html5rocks.com/en/tutorials/canvas/hidpi/
 		var ratio = (window.devicePixelRatio || 1) / (DomElement.getPrefixValue(
 				ctx, 'backingStorePixelRatio') || 1);
-		// Upscale the canvas if the two ratios don't match
+		// Upscale the canvas if the two ratios don't match.
 		if (ratio > 1) {
 			var width = canvas.clientWidth,
 				height = canvas.clientHeight,

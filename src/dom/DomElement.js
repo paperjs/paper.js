@@ -205,10 +205,10 @@ var DomElement = new function() {
 		 */
 		getPrefixValue: function(el, name) {
 			var value = el[name],
+				prefixes = ['webkit', 'moz', 'ms', 'o'],
 				suffix = name[0].toUpperCase() + name.substring(1);
-			Base.each(['webkit', 'moz', 'ms', 'o'], function(prefix) {
-				value = el[prefix + suffix] || value;
-			});
+			for (var i = 0; i < 4 && value == null; i++)
+				value = el[prefixes[i] + suffix];
 			return value;
 		}
 	};
