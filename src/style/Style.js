@@ -243,8 +243,12 @@ var Style = Base.extend(new function() {
 
 	getFontStyle: function() {
 		var size = this.getFontSize();
-		return (/[a-z]/i.test(size) ? size + ' ' : size + 'px ')
-				+ this.getFont();
+		// To prevent an obscure iOS 7 crash, we have to convert the size to a
+		// string first before passing it to the regular expression.
+		// This nonsensical statement would also prevent the bug, prooving that
+		// the issue is not the regular expression itself, but something deeper
+		// down in the optimizer: if (size === 0) size = 0;
+		return size + (/[a-z]/i.test(size + '') ? ' ' : 'px ') + this.getFont();
 	}
 
 	// DOCS: why isn't the example code showing up?
