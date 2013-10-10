@@ -22,12 +22,12 @@ var CanvasProvider = {
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
 		} else {
-/*#*/ if (options.browser) {
+/*#*/ if (options.environment == 'browser') {
 			canvas = document.createElement('canvas');
-/*#*/ } else { // !options.browser
+/*#*/ } else { // !options.environment == 'browser'
 			canvas = new Canvas(size.width, size.height);
 			init = false; // It's already initialized through constructor.
-/*#*/ } // !options.browser
+/*#*/ } // !options.environment == 'browser'
 
 		}
 		var ctx = canvas.getContext('2d');

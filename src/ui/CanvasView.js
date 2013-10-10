@@ -188,7 +188,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	};
 });
 
-/*#*/ if (options.node) {
+/*#*/ if (options.environment == 'node') {
 // Node.js based image exporting code.
 CanvasView.inject(new function() {
 	// Utility function that converts a number to a string with
@@ -273,4 +273,4 @@ CanvasView.inject(new function() {
 		}
 	};
 });
-/*#*/ } // options.node
+/*#*/ } // options.environment == 'node'

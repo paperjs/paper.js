@@ -17,7 +17,7 @@
 var options = {
 	parser: 'acorn',
 	version: 'dev',
-	browser: true,
+	environment: 'browser',
 	stats: true,
 	svg: true,
 	fatline: true,

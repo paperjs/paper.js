@@ -93,19 +93,19 @@ var paper = new function(undefined) {
 /*#*/ include('style/GradientStop.js');
 /*#*/ include('style/Style.js');
 
-/*#*/ if (options.node) {
+/*#*/ if (options.environment == 'node') {
 /*#*/ include('dom/node.js');
-/*#*/ } // options.node
+/*#*/ } // options.environment == 'node'
 /*#*/ include('dom/DomElement.js');
-/*#*/ if (options.browser) {
+/*#*/ if (options.environment == 'browser') {
 // DomEvent doesn't make sense outside of the browser (yet)
 /*#*/ include('dom/DomEvent.js');
-/*#*/ } // options.browser
+/*#*/ } // options.environment == 'browser'
 
 /*#*/ include('ui/View.js');
 /*#*/ include('ui/CanvasView.js');
 
-/*#*/ if (options.browser) {
+/*#*/ if (options.environment == 'browser') {
 /*#*/ include('ui/Event.js');
 /*#*/ include('ui/KeyEvent.js');
 /*#*/ include('ui/Key.js');
@@ -116,13 +116,13 @@ var paper = new function(undefined) {
 
 /*#*/ include('tool/ToolEvent.js');
 /*#*/ include('tool/Tool.js');
-/*#*/ } // options.browser
+/*#*/ } // options.environment == 'browser'
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');
 /*#*/ if (options.version == 'dev') {
 /*#*/ include('canvas/ProxyContext.js');
-/*#*/ } // options.browser
+/*#*/ } // options.environment == 'browser'
 
 /*#*/ if (options.svg) {
 /*#*/ include('svg/SVGStyles.js');

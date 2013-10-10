@@ -288,7 +288,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		return res;
 	}
 
-/*#*/ if (options.browser) {
+/*#*/ if (options.environment == 'browser') {
 	// Code borrowed from Coffee Script:
 	function request(url, scope) {
 		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
@@ -354,8 +354,8 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		load: load
 	};
 
-/*#*/ } else { // !options.browser
-/*#*/ if (options.node) {
+/*#*/ } else { // !options.environment == 'browser'
+/*#*/ if (options.environment == 'node') {
 
 	// Register the .pjs extension for automatic compilation as PaperScript
 
@@ -374,12 +374,12 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		module.exports = scope;
 	};
 
-/*#*/ } // options.node
+/*#*/ } // options.environment == 'node'
 
 	return {
 		compile: compile,
 		evaluate: evaluate
 	};
 
-/*#*/ } // !options.browser
+/*#*/ } // !options.environment == 'browser'
 })(this);

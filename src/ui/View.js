@@ -29,7 +29,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		this._project = paper.project;
 		this._element = element;
 		var size;
-/*#*/ if (options.browser) {
+/*#*/ if (options.environment == 'browser') {
 		// Generate an id for this view / element if it does not have one
 		this._id = element.getAttribute('id');
 		if (this._id == null)
@@ -86,11 +86,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 			style.top = offset.y + 'px';
 			document.body.appendChild(stats);
 		}
-/*#*/ } else if (options.node) {
+/*#*/ } else if (options.environment == 'node') {
 		// Generate an id for this view
 		this._id = 'view-' + View._id++;
 		size = new Size(element.width, element.height);
-/*#*/ } // options.node
+/*#*/ } // options.environment == 'node'
 		// Keep track of views internally
 		View._views.push(this);
 		// Link this id to our view
@@ -122,9 +122,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 		// Unlink from project
 		if (this._project.view == this)
 			this._project.view = null;
+/*#*/ if (options.environment == 'browser') {
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._element, this._viewHandlers);
 		DomEvent.remove(window, this._windowHandlers);
+/*#*/ } // options.environment == 'browser'
 		this._element = this._project = null;
 		// Removing all onFrame handlers makes the onFrame handler stop
 		// automatically through its uninstall method.
@@ -144,14 +146,14 @@ var View = Base.extend(Callback, /** @lends View# */{
 		 */
 		onFrame: {
 			install: function() {
-/*#*/ if (options.browser) {
+/*#*/ if (options.environment == 'browser') {
 				// Request a frame handler straight away to initialize the
 				// sequence of onFrame calls.
 				if (!this._requested) {
 					this._animate = true;
 					this._requestFrame();
 				}
-/*#*/ } // options.browser
+/*#*/ } // options.environment == 'browser'
 			},
 
 			uninstall: function() {
@@ -170,6 +172,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	_count: 0,
 
 	_requestFrame: function() {
+/*#*/ if (options.environment == 'browser') {
 		var that = this;
 		DomEvent.requestAnimationFrame(function() {
 			that._requested = false;
@@ -181,6 +184,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 			that._handleFrame();
 		}, this._element);
 		this._requested = true;
+/*#*/ } // options.environment == 'browser'
 	},
 
 	_handleFrame: function() {
@@ -561,10 +565,10 @@ var View = Base.extend(Callback, /** @lends View# */{
 		_id: 0,
 
 		create: function(element) {
-/*#*/ if (options.browser) {
+/*#*/ if (options.environment == 'browser') {
 			if (typeof element === 'string')
 				element = document.getElementById(element);
-/*#*/ } // options.browser
+/*#*/ } // options.environment == 'browser'
 			// Factory to provide the right View subclass for a given element.
 			// Produces only CanvasViews for now:
 			return new CanvasView(element);
@@ -572,7 +576,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	}
 }, new function() {
 	// Injection scope for mouse events on the browser
-/*#*/ if (options.browser) {
+/*#*/ if (options.environment == 'browser') {
 	var tool,
 		prevFocus,
 		tempFocus,
@@ -705,5 +709,5 @@ var View = Base.extend(Callback, /** @lends View# */{
 			updateFocus: updateFocus
 		}
 	};
-/*#*/ } // options.browser
+/*#*/ } // options.environment == 'browser'
 });

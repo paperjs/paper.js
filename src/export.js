@@ -13,7 +13,7 @@
 // First add Base and a couple of other objects that are not automatically
 // exported to exports (Numerical, Key, etc), then inject all exports into
 // PaperScope, and create the initial paper object, all in one statement:
-/*#*/ if (options.browser) {
+/*#*/ if (options.environment == 'browser') {
 
 paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	// Mark fields as enumeralbe so PaperScope.inject can pick them up
@@ -32,7 +32,7 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 if (typeof define === 'function' && define.amd)
 	define('paper', paper);
 
-/*#*/ } else if (options.node) {
+/*#*/ } else if (options.environment == 'node') {
 
 paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	// Mark fields as enumeralbe so PaperScope.inject can pick them up
@@ -49,4 +49,4 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 // Export the paper scope.
 module.exports = paper;
 
-/*#*/ } // options.node
+/*#*/ } // options.environment == 'node'
