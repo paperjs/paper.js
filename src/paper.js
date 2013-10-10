@@ -30,7 +30,9 @@
  *
  */
 
-var paper = new function() {
+// Allow the minification of the undefined variable by defining it as a local
+// parameter inside the paper scope.
+var paper = new function(undefined) {
 // Inline Bootstrap core (the Base class) inside the paper scope first:
 /*#*/ include('../components/straps/straps.js', { exports: false });
 
