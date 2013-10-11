@@ -1386,7 +1386,7 @@ new function() { // Scope for methods that require numerical integration
 			b = A*bx1 + B*by1,	/*t^2*/
 			c = A*bx2 + B*by2,	/*t*/
 			d = A*bx3 + B*by3 + C,	/*1*/
-			roots = [], count, x0, x1, t, tl;
+			roots = [], count, x, y, t, tl;
 
 		// Solve the cubic equation
 		count = Numerical.solveCubic(a, b, c, d, roots);
@@ -1395,13 +1395,16 @@ new function() { // Scope for methods that require numerical integration
 		for (var i=0;i<count;i++) {
 			t = roots[i];
 			if(t >= 0 && t <= 1.0){
-				x0 = bx0*t*t*t + bx1*t*t + bx2*t + bx3;
-				x1 = by0*t*t*t + by1*t*t + by2*t + by3;            
+				x = bx0*t*t*t + bx1*t*t + bx2*t + bx3;
+				y = by0*t*t*t + by1*t*t + by2*t + by3;            
+				// tl is the parameter of the intersection point in line segment.
+				// Special case to override the tight tolerence in 
+				// Curve.solveQuadratic when line is horizontal
+				if (l2y-l1y === 0)
+					y = l1y;
+				tl = Curve.getParameterOf(vl, x, y);
 				// We do have a point on the infinite line. Check if it falls on
 				// the line *segment*.
-				// tl is the parameter of the intersection point in line segment.
-				// First check if line is vertical
-				tl = (l2x-l1x) != 0 ? (x0-l1x)/(l2x-l1x) : (x1-l1y)/(l2y-l1y);
 				if(tl >= 0 && tl <= 1.0){
 					// Interpolate the parameter for the intersection on line.
 					var t1 = flip ? tl : t,
