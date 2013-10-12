@@ -21,6 +21,16 @@ var Shape = Item.extend(/** @lends Shape# */{
 	_class: 'Shape',
 	_transformContent: false,
 
+	/**
+	 * Assumed that shape can never be empty.
+	 * Fixes (new Group([new Shape.Rectangle(...)])).bounds throwing ReferenceError.
+	 * 
+	 * @returns bool
+	 */
+	isEmpty: function() {
+		return false;
+	},
+
 	initialize: function Shape(type, point, size, props) {
 		this._initialize(props, point);
 		this._type = type;
