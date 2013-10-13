@@ -30,12 +30,15 @@ var View = Base.extend(Callback, /** @lends View# */{
 		this._element = element;
 		var size;
 /*#*/ if (options.environment == 'browser') {
+		this._viewDoc = element.ownerDocument;		// remember owner doc
 		// Generate an id for this view / element if it does not have one
 		this._id = element.getAttribute('id');
 		if (this._id == null)
 			element.setAttribute('id', this._id = 'view-' + View._id++);
 		// Install event handlers
 		DomEvent.add(element, this._viewHandlers);
+		if (this._viewDoc !== document)			// if a different doc (iframe)
+			DomEvent.add(this._viewDoc, this._docHandlers)
 		// If the element has the resize attribute, resize the it to fill the
 		// window and resize it again whenever the user resizes the window.
 		if (PaperScope.hasAttribute(element, 'resize')) {
@@ -124,10 +127,22 @@ var View = Base.extend(Callback, /** @lends View# */{
 			this._project.view = null;
 /*#*/ if (options.environment == 'browser') {
 		// Uninstall event handlers again for this view.
+		if (this._viewDoc !== document) {
+			var anotherRef = false;
+			for (var i = 0, len = View._views.length; i < len; i++) {
+				if (View._views[i]._viewDoc == this._viewDoc) {
+					anotherRef = true;
+					break
+				}
+			}
+			// remove the handlers if this is the only reference
+			if (!anotherRef)
+				DomEvent.remove(this._viewDoc, this._docHandlers)
+		}
 		DomEvent.remove(this._element, this._viewHandlers);
 		DomEvent.remove(window, this._windowHandlers);
 /*#*/ } // options.environment == 'browser'
-		this._element = this._project = null;
+		this._viewDoc = this._element = this._project = null;
 		// Removing all onFrame handlers makes the onFrame handler stop
 		// automatically through its uninstall method.
 		this.detach('frame');
@@ -163,6 +178,10 @@ var View = Base.extend(Callback, /** @lends View# */{
 
 		onResize: {}
 	},
+
+/*#*/ if (options.environment == 'browser')
+	_viewDoc = null,		// remember view.ownerDocument
+/*#*/	// option.environment == 'browser'
 
 	// These are default values for event related properties on the prototype. 
 	// Writing item._count++ does not change the defaults, it creates / updates
@@ -680,15 +699,16 @@ var View = Base.extend(Callback, /** @lends View# */{
 	// view element, since we want to catch the end of drag events even outside
 	// our view. Only the mousedown events are installed on the view, as handled
 	// by _createHandlers below.
-
-	DomEvent.add(document, {
+	var docHandlers = {
 		mousemove: mousemove,
 		mouseup: mouseup,
 		touchmove: mousemove,
 		touchend: mouseup,
 		selectstart: selectstart,
 		scroll: updateFocus
-	});
+	}
+
+	DomEvent.add(document, docHandlers);
 
 	DomEvent.add(window, {
 		load: updateFocus
@@ -700,6 +720,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 			touchstart: mousedown,
 			selectstart: selectstart
 		},
+		
+		_docHandlers: docHandlers,
 
 		statics: {
 			/**
