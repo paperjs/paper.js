@@ -706,7 +706,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		touchend: mouseup,
 		selectstart: selectstart,
 		scroll: updateFocus
-	}
+	};
 
 	DomEvent.add(document, docHandlers);
 
