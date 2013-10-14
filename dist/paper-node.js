@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 10 14:16:47 2013 +0200
+ * Date: Thu Oct 10 14:34:24 2013 +0200
  *
  ***
  *
@@ -6430,8 +6430,19 @@ var Path = PathItem.extend({
 
 			if (!clip && !compound && (fillColor || strokeColor)) {
 				this._setStyles(ctx);
-				if (fillColor)
+				if (fillColor){
+					var bounds;
+
+					if (fillColor._type === 'pattern'){
+						bounds = this._getBounds('getRoughBounds');
+						ctx.translate(bounds.x, bounds.y); 	
+					}
+
 					ctx.fill();
+
+					if (fillColor._type === 'pattern')
+						ctx.translate(-bounds.x, -bounds.y); 
+				}
 				if (strokeColor) {
 					if (dashLength) {
 						ctx.beginPath();

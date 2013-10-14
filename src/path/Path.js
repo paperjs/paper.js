@@ -1946,8 +1946,21 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
 				this._setStyles(ctx);
-				if (fillColor)
+				if (fillColor){
+					var bounds;
+
+					if (fillColor._type === 'pattern'){
+						bounds = this._getBounds('getRoughBounds');
+						ctx.translate(bounds.x, bounds.y); 	// Prevents pattern to appear moving when path is dragged
+																								// (actually sticks pattern start position to path start position)
+					}
+
 					ctx.fill();
+
+					if (fillColor._type === 'pattern')
+						ctx.translate(-bounds.x, -bounds.y); // Return to initial position
+				}
+					
 				if (strokeColor) {
 					if (dashLength) {
 						// We cannot use the path created by drawSegments above
