@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Shapes</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var rect = new Shape.Rectangle({
+			point: [200, 100],
+			size: [200, 300],
+			fillColor: 'red'
+		});
+		rect.rotate(40);
+
+		var circle = new Shape.Circle({
+			center: [200, 300],
+			radius: 100,
+			fillColor: 'green'
+		});
+		circle.scale(0.5, 1);
+		circle.rotate(40);
+
+		var ellipse = new Shape.Ellipse({
+			point: [300, 300],
+			size: [100, 200],
+			fillColor: 'blue'
+		});
+		ellipse.rotate(-40);
+
+		var rect = new Shape.Rectangle({
+			point: [250, 20],
+			size: [200, 300],
+			radius: [40, 20],
+			fillColor: 'yellow'
+		});
+		rect.rotate(-20);
+		document.getElementById('svg').appendChild(project.exportSVG());
+
+		var prev = null;
+		function onMouseMove(event) {
+			if (prev)
+				prev.selected = false;
+			var result = project.hitTest(event.point);
+			if (result) {
+				var item = result.item;
+				item.selected = true;
+				prev = item;
+			}
+		}
+	</script>
+</head>
+<body>
+	<canvas id="canvas" width="500" height="500"></canvas>
+	<svg id="svg" width="500" height="500"></svg>
+</body>
+</html>

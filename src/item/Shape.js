@@ -20,11 +20,15 @@
 var Shape = Item.extend(/** @lends Shape# */{
 	_class: 'Shape',
 	_transformContent: false,
+	_boundsSelected: true,
 
-	initialize: function Shape(type, point, size, props) {
-		this._initialize(props, point);
+	// TODO: SVG, serialization
+
+	initialize: function Shape(type, point, size, radius, props) {
 		this._type = type;
 		this._size = size;
+		this._radius = radius;
+		this._initialize(props, point);
 	},
 
 	/**
@@ -39,28 +43,55 @@ var Shape = Item.extend(/** @lends Shape# */{
 	},
 
 	setSize: function(/* size */) {
-		var size = Size.read(arguments);
+		var type = this._type,
+			size = Size.read(arguments);
 		if (!this._size.equals(size)) {
-			this._size.set(size.width, size.height);
+			var width = size.width,
+				height = size.height;
+			if (type === 'circle') {
+				// Use average of width and height as new size, then calculate
+				// radius as a number from that:
+				width = height = (width + height) / 2;
+				this._radius = width / 2;
+			} else if (type === 'ellipse') {
+				// The radius is a size.
+				this._radius.set(width / 2, height / 2);
+			}
+			this._size.set(width, height);
 			this._changed(/*#=*/ Change.GEOMETRY);
 		}
 	},
 
 	/**
-	 * The radius of the shape if it is a circle.
+	 * The radius of the shape, as a number if it is a circle, or a size object
+	 * for ellipses and rounded rectangles.
 	 *
-	 * @type Size
+	 * @type Number|Size
 	 * @bean
 	 */
 	getRadius: function() {
-		var size = this._size;
-		// Average half of width & height for radius...
-		return (size.width + size.height) / 4;
+		var rad = this._radius;
+		return this._type === 'circle'
+				? rad
+				: new LinkedSize(rad.width, rad.height, this, 'setRadius');
 	},
 
 	setRadius: function(radius) {
-		var size = radius * 2;
-		this.setSize(size, size);
+		var type = this._type;
+		if (type === 'circle') {
+			if (radius === this._radius)
+				return;
+			var size = radius * 2;
+			this._size.set(size, size);
+		} else {
+			radius = Size.read(arguments);
+			if (this._radius.equals(radius))
+				return;
+			this._radius.set(radius.width, radius.height);
+			if (type === 'ellipse')
+				this._size.set(radius.width * 2, radius.height * 2);
+		}
+		this._changed(/*#=*/ Change.GEOMETRY);
 	},
 
 	isEmpty: function() {
@@ -72,34 +103,52 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 	_draw: function(ctx, param) {
 		var style = this._style,
-			size = this._size,
-			width = size.width,
-			height = size.height,
 			fillColor = style.getFillColor(),
 			strokeColor = style.getStrokeColor();
 		if (fillColor || strokeColor || param.clip) {
+			var radius = this._radius,
+				type = this._type;
 			ctx.beginPath();
-			switch (this._type) {
-			case 'rect':
-				ctx.rect(-width / 2, -height / 2, width, height);
-				break;
-			case 'circle':
-				// Average half of width & height for radius...
-				ctx.arc(0, 0, (width + height) / 4, 0, Math.PI * 2, true);
-				break;
-			case 'ellipse':
-				// Use four bezier curves and KAPPA value to aproximate ellipse
-				var mx = width / 2,
-					my = height / 2,
-					kappa = Numerical.KAPPA,
-					cx = mx * kappa,
-					cy = my * kappa;
-				ctx.moveTo(-mx, 0);
-				ctx.bezierCurveTo(-mx, -cy, -cx, -my, 0, -my);
-				ctx.bezierCurveTo(cx, -my, mx, -cy, mx, 0);
-				ctx.bezierCurveTo(mx, cy, cx, my, 0, my);
-				ctx.bezierCurveTo(-cx, my, -mx, cy, -mx, 0);
-				break;
+			if (type === 'circle') {
+				ctx.arc(0, 0, radius, 0, Math.PI * 2, true);
+			} else {
+				var rx = radius.width,
+					ry = radius.height,
+					kappa = Numerical.KAPPA;
+				if (type === 'ellipse') {
+					// Use four bezier curves and KAPPA value to aproximate ellipse
+					var	cx = rx * kappa,
+						cy = ry * kappa;
+					ctx.moveTo(-rx, 0);
+					ctx.bezierCurveTo(-rx, -cy, -cx, -ry, 0, -ry);
+					ctx.bezierCurveTo(cx, -ry, rx, -cy, rx, 0);
+					ctx.bezierCurveTo(rx, cy, cx, ry, 0, ry);
+					ctx.bezierCurveTo(-cx, ry, -rx, cy, -rx, 0);
+				} else { // rect
+					var size = this._size,
+						width = size.width,
+						height = size.height;
+					if (rx === 0 && ry === 0) {
+						// straight rect
+						ctx.rect(-width / 2, -height / 2, width, height);
+					} else {
+						// rounded rect. Use inverse kappa to calculate position
+						// of control points from the corners inwards.
+						kappa = 1 - kappa;
+						var x = width / 2,
+							y = height / 2,
+							cx = rx * kappa,
+							cy = ry * kappa;
+						ctx.moveTo(-x, -y + ry);
+						ctx.bezierCurveTo(-x, -y + cy, -x + cx, -y, -x + rx, -y);
+						ctx.lineTo(x - rx, -y);
+						ctx.bezierCurveTo(x - cx, -y, x, -y + cy, x, -y + ry);
+						ctx.lineTo(x, y - ry);
+						ctx.bezierCurveTo(x, y - cy, x - cx, y, x - rx, y);
+						ctx.lineTo(-x + rx, y);
+						ctx.bezierCurveTo(-x + cx, y, -x, y - cy, -x, y - ry);
+					}
+				}
 			}
 		}
 		if (!param.clip && (fillColor || strokeColor)) {
@@ -148,19 +197,18 @@ var Shape = Item.extend(/** @lends Shape# */{
 				break;
 			case 'circle':
 			case 'ellipse':
-				var size = this._size,
-					width = size.width,
-					height = size.height,
-					radius;
+				var radius;
 				if (type === 'ellipse') {
 					// Calculate ellipse radius at angle
 					var angle = point.getAngleInRadians(),
+						size = this._size,
+						width = size.width,
+						height = size.height,
 						x = width * Math.sin(angle),
 						y = height * Math.cos(angle);
 					radius = width * height / (2 * Math.sqrt(x * x + y * y));
 				} else {
-					// Average half of width & height for radius...
-					radius = (width + height) / 4;
+					radius = this._radius;
 				}
 				if (2 * Math.abs(point.getLength() - radius) <= strokeWidth)
 					return new HitResult('stroke', this);
@@ -171,8 +219,8 @@ var Shape = Item.extend(/** @lends Shape# */{
 	},
 
 	statics: new function() {
-		function createShape(type, point, size, args) {
-			return new Shape(type, point, size, Base.getNamed(args));
+		function createShape(type, point, size, radius, args) {
+			return new Shape(type, point, size, radius, Base.getNamed(args));
 		}
 
 		return /** @lends Shape */{
@@ -198,7 +246,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 				var center = Point.readNamed(arguments, 'center'),
 					radius = Base.readNamed(arguments, 'radius');
 				return createShape('circle', center, new Size(radius * 2),
-						arguments);
+						radius, arguments);
 			},
 
 			/**
@@ -276,7 +324,8 @@ var Shape = Item.extend(/** @lends Shape# */{
 			Rectangle: function(/* rectangle */) {
 				var rect = Rectangle.readNamed(arguments, 'rectangle');
 				return createShape('rect', rect.getCenter(true),
-						rect.getSize(true), arguments);
+						rect.getSize(true), Size.readNamed(arguments, 'radius'),
+						arguments);
 			},
 
 			/**
@@ -301,9 +350,10 @@ var Shape = Item.extend(/** @lends Shape# */{
 			 * });
 			 */
 			Ellipse: function(/* rectangle */) {
-				var rect = Rectangle.readNamed(arguments, 'rectangle');
-				return createShape('ellipse', rect.getCenter(true),
-						rect.getSize(true), arguments);
+				var rect = Rectangle.readNamed(arguments, 'rectangle'),
+					size = rect.getSize(true);
+				return createShape('ellipse', rect.getCenter(true), size,
+						new Size(size.width / 2, size.height / 2), arguments);
 			}
 		};
 	}
