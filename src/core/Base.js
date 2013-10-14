@@ -179,7 +179,7 @@ Base.inject(/** @lends Base# */{
 					list._index = index + 1;
 				return obj && options && options.clone ? obj.clone() : obj;
 			}
-			obj = Base.create(this);
+			obj = Base.create(this.prototype);
 			if (readIndex)
 				obj.__read = true;
 			// If options were provided, pass them on to the constructed object
@@ -399,7 +399,7 @@ Base.inject(/** @lends Base# */{
 					// Create serialized type and pass collected arguments to
 					// constructor().
 					var args = res;
-					res = Base.create(type);
+					res = Base.create(type.prototype);
 					type.apply(res, args);
 				}
 			} else if (Base.isPlainObject(obj)) {
