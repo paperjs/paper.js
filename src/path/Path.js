@@ -2234,7 +2234,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// Otherwise we bail out:
 				if (!throughSide)
 					return this.lineTo(to);
-				throw new Error("Cannot put an arc through the given points: "
+				throw new Error('Cannot put an arc through the given points: '
 					+ [from, through, to]);
 			}
 			var vector = from.subtract(center),

@@ -322,7 +322,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// See if the name is a simple number, which we cannot support due to
 		// the named lookup on the children array.
 		if (name === (+name) + '')
-			throw 'Names consisting only of numbers are not supported.'
+			throw new Error(
+					'Names consisting only of numbers are not supported.');
 		if (name && this._parent) {
 			var children = this._parent._children,
 				namedChildren = this._parent._namedChildren,
