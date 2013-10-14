@@ -21,13 +21,10 @@ var Shape = Item.extend(/** @lends Shape# */{
 	_class: 'Shape',
 	_transformContent: false,
 
-	/**
-	 * Assumed that shape can never be empty.
-	 * Fixes (new Group([new Shape.Rectangle(...)])).bounds throwing ReferenceError.
-	 * 
-	 * @returns bool
-	 */
 	isEmpty: function() {
+		// A shape can never be "empty" in the sense that it does not hold a
+		// definition. This is required for Group#bounds to work correctly when
+		// containing a Shape.
 		return false;
 	},
 
