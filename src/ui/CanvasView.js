@@ -21,16 +21,25 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	/**
 	 * Creates a view object that wraps a canvas element.
 	 * 
-	 * @param {HTMLCanvasElement} canvas The canvas object that this view should
+	 * @name CanvasView#initialize
+	 * @param {HTMLCanvasElement} canvas the canvas object that this view should
 	 * wrap
+	 */
+	/**
+	 * Creates a view object that wraps a newly created canvas element.
+	 * 
+	 * @name CanvasView#initialize
+	 * @param {Size} size the size of the canvas to be created
 	 */
 	initialize: function CanvasView(canvas) {
 		// Handle canvas argument
 		if (!(canvas instanceof HTMLCanvasElement)) {
-			// 2nd argument onwards could be view size, otherwise use default:
-			var size = Size.read(arguments, 1);
+			// See if the arguments describe the view size:
+			var size = Size.read(arguments);
 			if (size.isZero())
-				size = new Size(1024, 768);
+				throw new Error(
+						'Cannot create CanvasView with the provided arguments: '
+						+ arguments);
 			canvas = CanvasProvider.getCanvas(size);
 		}
 		var ctx = this._context = canvas.getContext('2d');
