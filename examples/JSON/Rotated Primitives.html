@@ -8,26 +8,37 @@
 	<script type="text/paperscript" canvas="canvas1">
 		// This "arbitrary" shape triggered rectangles in the original code,
 		// since point2 is as far from point0 as point3 is from point1.
-		var path = new Path();
+		var path = new Path({
+			closed: true,
+			strokeColor: 'black'
+		});
 		path.moveTo(0, 0);
 		path.lineTo(50, 50);
 		path.lineTo(100, 100);
 		path.lineTo(-50, 150);
-		path.closed = true;
-		path.strokeColor = 'black';
 		path.position += 100;
 
-		var rect = new Path.Rectangle(200, 100, 200, 300);
-		rect.fillColor = 'red';
+		var rect = new Path.Rectangle({
+			point: [200, 100],
+			size: [200, 300],
+			fillColor: 'red'
+		});
 		rect.rotate(40);
 
-		var circle = new Path.Circle(200, 300, 100);
-		circle.fillColor = 'green';
+		var circle = new Path.Circle({
+			center: [200, 300],
+			radius: 100,
+			fillColor: 'green'
+		});
 		circle.scale(0.5, 1);
 		circle.rotate(40);
 
-		var rect = new Path.Rectangle(250, 20, 200, 300, 40, 20);
-		rect.fillColor = 'yellow';
+		var rect = new Path.Rectangle({
+			point: [250, 20],
+			size: [200, 300],
+			radius: [40, 20],
+			fillColor: 'yellow'
+		});
 		rect.rotate(-20);
 
 		window._json = project.exportJSON();
