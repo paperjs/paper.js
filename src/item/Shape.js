@@ -21,13 +21,6 @@ var Shape = Item.extend(/** @lends Shape# */{
 	_class: 'Shape',
 	_transformContent: false,
 
-	isEmpty: function() {
-		// A shape can never be "empty" in the sense that it does not hold a
-		// definition. This is required for Group#bounds to work correctly when
-		// containing a Shape.
-		return false;
-	},
-
 	initialize: function Shape(type, point, size, props) {
 		this._initialize(props, point);
 		this._type = type;
@@ -68,6 +61,13 @@ var Shape = Item.extend(/** @lends Shape# */{
 	setRadius: function(radius) {
 		var size = radius * 2;
 		this.setSize(size, size);
+	},
+
+	isEmpty: function() {
+		// A shape can never be "empty" in the sense that it does not hold a
+		// definition. This is required for Group#bounds to work correctly when
+		// containing a Shape.
+		return false;
 	},
 
 	_draw: function(ctx, param) {
