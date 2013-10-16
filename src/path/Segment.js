@@ -125,20 +125,18 @@ var Segment = Base.extend(/** @lends Segment# */{
 			} else {
 				point = arg0;
 			}
-		} else if (count < 6) {
-			if (count == 2 && arg1.x === undefined) {
-				point = [ arg0, arg1 ];
-			} else {
-				point = arg0;
-				// Doesn't matter if these arguments exist, SegmentPointcreate
-				// produces creates points with (0, 0) otherwise
-				handleIn = arg1;
-				handleOut = arg2;
-			}
-		} else if (count === 6) {
+		} else if (count === 2 && typeof arg0 === 'number') {
 			point = [ arg0, arg1 ];
-			handleIn = [ arg2, arg3 ];
-			handleOut = [ arg4, arg5 ];
+		} else if (count <= 3) {
+			point = arg0;
+			// Doesn't matter if these arguments exist, SegmentPointcreate
+			// produces creates points with (0, 0) otherwise
+			handleIn = arg1;
+			handleOut = arg2;
+		} else {
+			point = arg0 !== undefined ? [ arg0, arg1 ] : null;
+			handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
+			handleOut = arg4 !== undefined ? [ arg4, arg5 ] : null;
 		}
 		this._point = new SegmentPoint(point, this);
 		this._handleIn = new SegmentPoint(handleIn, this);
