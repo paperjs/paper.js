@@ -22,7 +22,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 	_transformContent: false,
 	_boundsSelected: true,
 
-	// TODO: SVG, serialization
+	// TODO: serialization
 
 	initialize: function Shape(shape, point, size, radius, props) {
 		this._shape = shape;

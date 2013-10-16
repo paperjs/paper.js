@@ -41,7 +41,7 @@ new function() {
 		return segments[index1]._point.getDistance(segments[index2]._point);
 	}
 
-	function getTransform(item, coordinates) {
+	function getTransform(item, coordinates, center) {
 		var matrix = item._matrix,
 			trans = matrix.getTranslation(),
 			attrs = {};
@@ -54,8 +54,8 @@ new function() {
 			// in local coordinates.
 			matrix = matrix.shiftless();
 			var point = matrix._inverseTransform(trans);
-			attrs.x = point.x;
-			attrs.y = point.y;
+			attrs[center ? 'cx' : 'x'] = point.x;
+			attrs[center ? 'cy' : 'y'] = point.y;
 			trans = null;
 		}
 		if (matrix.isIdentity())
@@ -296,6 +296,34 @@ new function() {
 		return createElement(type, attrs);
 	}
 
+	function exportShape(item) {
+		var shape = item._shape,
+			center = item.getPosition(true),
+			radius = item._radius,
+			attrs = getTransform(item, true, shape !== 'rectangle');
+		if (shape === 'rectangle') {
+			shape = 'rect'; // SVG
+			var size = item._size,
+				width = size.width,
+				height = size.height;
+			attrs.x -= width / 2;
+			attrs.y -= height / 2;
+			attrs.width = width;
+			attrs.height = height;
+			if (radius.isZero())
+				radius = null;
+		}
+		if (radius) {
+			if (shape === 'circle') {
+				attrs.r = radius;
+			} else {
+				attrs.rx = radius.width;
+				attrs.ry = radius.height;
+			}
+		}
+		return createElement(shape, attrs);
+	}
+
 	function exportCompoundPath(item) {
 		var attrs = getTransform(item, true);
 		var data = item.getPathData();
@@ -393,6 +421,7 @@ new function() {
 		layer: exportGroup,
 		raster: exportRaster,
 		path: exportPath,
+		shape: exportShape,
 		'compound-path': exportCompoundPath,
 		'placed-symbol': exportPlacedSymbol,
 		'point-text': exportText
