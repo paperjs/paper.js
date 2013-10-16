@@ -85,7 +85,7 @@ var ProxyContext = new function() {
 							+ JSON.stringify(value) + ';');
 					return this._ctx[name] = value;
 				}
-			}
+			};
 		}
 	});
 	return Base.extend(fields);
