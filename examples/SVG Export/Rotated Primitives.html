@@ -62,6 +62,13 @@
 				}
 			}
 		};
+
+		var parallelogram = new Path({
+			closed: true,
+			segments: [[50, 0], [50, 100], [90, 120], [90, 20]],
+			fillColor: '#99c'
+		});
+
 		document.getElementById('svg').appendChild(project.exportSVG());
 	</script>
 </head>
