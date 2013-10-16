@@ -307,7 +307,7 @@ new function() {
 	function exportPlacedSymbol(item) {
 		var attrs = getTransform(item, true),
 			symbol = item.getSymbol(),
-			symbolNode = getDefinition(symbol, 'symbol');
+			symbolNode = getDefinition(symbol, 'symbol'),
 			definition = symbol.getDefinition(),
 			bounds = definition.getBounds();
 		if (!symbolNode) {
