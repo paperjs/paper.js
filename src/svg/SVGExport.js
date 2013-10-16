@@ -108,6 +108,13 @@ new function() {
 					&& seg2._point.subtract(seg1._point).isColinear(
 						seg4._point.subtract(seg3._point));
 		}
+		function hasOneRightAngle() {
+			var seg1 = segments[0],
+				seg2 = seg1.getNext(),
+				seg3 = seg2.getNext();
+			return seg2._point.subtract(seg1._point).isOrthogonal(
+				   seg3._point.subtract(seg2._point));
+		}
 
 		// Returns true if the segment at the given index is the beginning of
 		// a orthogonal arc segment. The code is looking at the length of the
@@ -139,6 +146,7 @@ new function() {
 		if (path.isPolygon()) {
 			return  segments.length === 4 && path._closed
 					&& isColinear(0, 2) && isColinear(1, 3)
+					&& hasOneRightAngle()
 					? 'rect'
 					: segments.length === 0
 						? 'empty'
