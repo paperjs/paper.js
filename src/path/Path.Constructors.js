@@ -25,6 +25,24 @@ Path.inject({ statics: new function() {
 			new Segment([0.5, 1], [halfKappa, 0 ], [-halfKappa, 0])
 		];
 
+	function createEllipse(rect, args) {
+		var path = createPath(args),
+			point = rect.getPoint(true),
+			size = rect.getSize(true),
+			segments = new Array(4);
+		for (var i = 0; i < 4; i++) {
+			var segment = ellipseSegments[i];
+			segments[i] = new Segment(
+				segment._point.multiply(size).add(point),
+				segment._handleIn.multiply(size),
+				segment._handleOut.multiply(size)
+			);
+		}
+		path._add(segments);
+		path._closed = true;
+		return path;
+	}
+
 	return /** @lends Path */{
 		/**
 		 * {@grouptitle Shaped Paths}
@@ -77,10 +95,8 @@ Path.inject({ statics: new function() {
 		Circle: function(/* center, radius */) {
 			var center = Point.readNamed(arguments, 'center'),
 				radius = Base.readNamed(arguments, 'radius');
-			// No need for new, since that's happening inside Path.Ellipse
-			return Path.Ellipse(new Rectangle(center.subtract(radius),
-					new Size(radius * 2, radius * 2)))
-					.set(Base.getNamed(arguments));
+			return createEllipse(new Rectangle(center.subtract(radius),
+					new Size(radius * 2, radius * 2)), arguments);
 		},
 
 		/**
@@ -250,22 +266,16 @@ Path.inject({ statics: new function() {
 		 * });
 		 */
 		Ellipse: function(/* rectangle */) {
-			var rect = Rectangle.readNamed(arguments, 'rectangle'),
-				path = createPath(arguments),
-				point = rect.getPoint(true),
-				size = rect.getSize(true),
-				segments = new Array(4);
-			for (var i = 0; i < 4; i++) {
-				var segment = ellipseSegments[i];
-				segments[i] = new Segment(
-					segment._point.multiply(size).add(point),
-					segment._handleIn.multiply(size),
-					segment._handleOut.multiply(size)
-				);
+			var rect;
+			if (Base.hasNamed(arguments, 'center')) {
+				var center = Point.readNamed(arguments, 'center'),
+					radius = Size.readNamed(arguments, 'radius');
+				rect = new Rectangle(center.subtract(radius),
+						radius.multiply(2));
+			} else {
+				rect = Rectangle.readNamed(arguments, 'rectangle');
 			}
-			path._add(segments);
-			path._closed = true;
-			return path;
+			return createEllipse(rect, arguments);
 		},
 
 		/**
