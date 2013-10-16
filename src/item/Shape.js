@@ -104,8 +104,9 @@ var Shape = Item.extend(/** @lends Shape# */{
 	_draw: function(ctx, param) {
 		var style = this._style,
 			fillColor = style.getFillColor(),
-			strokeColor = style.getStrokeColor();
-		if (fillColor || strokeColor || param.clip) {
+			strokeColor = style.getStrokeColor(),
+			clip = param.clip;
+		if (fillColor || strokeColor || clip) {
 			var radius = this._radius,
 				type = this._type;
 			ctx.beginPath();
@@ -150,8 +151,9 @@ var Shape = Item.extend(/** @lends Shape# */{
 					}
 				}
 			}
+			ctx.closePath();
 		}
-		if (!param.clip && (fillColor || strokeColor)) {
+		if (!clip && (fillColor || strokeColor)) {
 			this._setStyles(ctx);
 			if (fillColor)
 				ctx.fill();
@@ -218,143 +220,194 @@ var Shape = Item.extend(/** @lends Shape# */{
 		return _hitTest.base.apply(this, arguments);
 	},
 
-	statics: new function() {
-		function createShape(type, point, size, radius, args) {
-			return new Shape(type, point, size, radius, Base.getNamed(args));
-		}
-
-		return /** @lends Shape */{
-			/**
-			 * Creates a circular Shape item.
-			 *
-			 * @param {Point} center the center point of the circle
-			 * @param {Number} radius the radius of the circle
-			 * @return {Shape} the newly created shape
-			 *
-			 * @example {@paperscript}
-			 * var shape = new Shape.Circle(new Point(80, 50), 30);
-			 * shape.strokeColor = 'black';
-			 *
-			 * @example {@paperscript} // Using object notation
-			 * var shape = new Shape.Circle({
-			 * 	center: [80, 50],
-			 * 	radius: 30,
-			 * 	strokeColor: 'black'
-			 * });
-			 */
-			Circle: function(/* center, radius */) {
-				var center = Point.readNamed(arguments, 'center'),
-					radius = Base.readNamed(arguments, 'radius');
-				return createShape('circle', center, new Size(radius * 2),
-						radius, arguments);
-			},
-
-			/**
-			 * Creates a rectangular Shape item from the passed point and size.
-			 *
-			 * @name Shape.Rectangle
-			 * @param {Point} point
-			 * @param {Size} size
-			 * @return {Shape} the newly created shape
-			 *
-			 * @example {@paperscript}
-			 * var point = new Point(20, 20);
-			 * var size = new Size(60, 60);
-			 * var shape = new Shape.Rectangle(point, size);
-			 * shape.strokeColor = 'black';
-			 *
-			 * @example {@paperscript} // Using object notation
-			 * var shape = new Shape.Rectangle({
-			 * 	point: [20, 20],
-			 * 	size: [60, 60],
-			 * 	strokeColor: 'black'
-			 * });
-			 */
-			/**
-			 * Creates a rectanglular Shape item from the passed points. These
-			 * do not necessarily need to be the top left and bottom right
-			 * corners, the constructor figures out how to fit a rectangle
-			 * between them.
-			 *
-			 * @name Shape.Rectangle
-			 * @param {Point} from The first point defining the rectangle
-			 * @param {Point} to The second point defining the rectangle
-			 * @return {Shape} the newly created shape
-			 *
-			 * @example {@paperscript}
-			 * var from = new Point(20, 20);
-			 * var to = new Point(80, 80);
-			 * var shape = new Shape.Rectangle(from, to);
-			 * shape.strokeColor = 'black';
-			 *
-			 * @example {@paperscript} // Using object notation
-			 * var shape = new Shape.Rectangle({
-			 * 	from: [20, 20],
-			 * 	to: [80, 80],
-			 * 	strokeColor: 'black'
-			 * });
-			 */
-			/**
-			 * Creates a rectangular Shape item from the passed abstract
-			 * {@link Rectangle}.
-			 *
-			 * @name Shape.Rectangle
-			 * @param {Rectangle} rectangle
-			 * @return {Shape} the newly created shape
-			 *
-			 * @example {@paperscript}
-			 * var rectangle = new Rectangle({
-			 * 	point: new Point(20, 20),
-			 * 	size: new Size(60, 60)
-			 * });
-			 * var shape = new Shape.Rectangle(rectangle);
-			 * shape.strokeColor = 'black';
-			 *
-			 * @example {@paperscript}
-			 * var rectangle = new Rectangle({
-			 * 	point: [20, 20],
-			 * 	size: [60, 60]
-			 * });
-			 * 
-			 * var shape = new Shape.Rectangle({
-			 * 	rectangle: rectangle,
-			 * 	strokeColor: 'black'
-			 * });
-			 */
-			Rectangle: function(/* rectangle */) {
-				var rect = Rectangle.readNamed(arguments, 'rectangle');
-				return createShape('rect', rect.getCenter(true),
-						rect.getSize(true), Size.readNamed(arguments, 'radius'),
-						arguments);
-			},
-
-			/**
-			 * Creates an elliptic Shape item.
-			 *
-			 * @param {Rectangle} rectangle
-			 * @return {Shape} the newly created shape
-			 *
-			 * @example {@paperscript}
-			 * var rectangle = new Rectangle({
-			 * 	point: [20, 20],
-			 * 	size: [180, 60]
-			 * });
-			 * var shape = new Shape.Ellipse(rectangle);
-			 * shape.fillColor = 'black';
-			 *
-			 * @example {@paperscript} // Using object notation
-			 * var shape = new Shape.Ellipse({
-			 * 	point: [20, 20],
-			 * 	size: [180, 60],
-			 * 	fillColor: 'black'
-			 * });
-			 */
-			Ellipse: function(/* rectangle */) {
-				var rect = Rectangle.readNamed(arguments, 'rectangle'),
-					size = rect.getSize(true);
-				return createShape('ellipse', rect.getCenter(true), size,
-						new Size(size.width / 2, size.height / 2), arguments);
-			}
-		};
+// Mess with indentation in order to get more line-space below:
+statics: new function() {
+	function createShape(type, point, size, radius, args) {
+		return new Shape(type, point, size, radius, Base.getNamed(args));
 	}
-});
+
+	return /** @lends Shape */{
+		/**
+		 * Creates a circular shape item.
+		 *
+		 * @name Shape.Circle
+		 * @param {Point} center the center point of the circle
+		 * @param {Number} radius the radius of the circle
+		 * @return {Shape} the newly created shape
+		 *
+		 * @example {@paperscript}
+		 * var shape = new Shape.Circle(new Point(80, 50), 30);
+		 * shape.strokeColor = 'black';
+		 */
+		/**
+		 * Creates a circular shape item from the properties described by an
+		 * object literal.
+		 *
+		 * @name Shape.Circle
+		 * @param {Object} object an object literal containing properties
+		 * describing the shape's attributes
+		 * @return {Shape} the newly created shape
+		 *
+		 * @example {@paperscript}
+		 * var shape = new Shape.Circle({
+		 * 	center: [80, 50],
+		 * 	radius: 30,
+		 * 	strokeColor: 'black'
+		 * });
+		 */
+		Circle: function(/* center, radius */) {
+			var center = Point.readNamed(arguments, 'center'),
+				radius = Base.readNamed(arguments, 'radius');
+			return createShape('circle', center, new Size(radius * 2), radius,
+					arguments);
+		},
+
+		/**
+		 * Creates a rectangular shape item, with optionally rounded corners.
+		 *
+		 * @name Shape.Rectangle
+		 * @param {Rectangle} rectangle the rectangle object describing the
+		 * geometry of the rectangular shape to be created.
+		 * @param {Size} [radius=null] the size of the rounded corners
+		 * @return {Shape} the newly created shape
+		 *
+		 * @example {@paperscript}
+		 * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
+		 * var shape = new Shape.Rectangle(rectangle);
+		 * shape.strokeColor = 'black';
+		 *
+		 * @example {@paperscript} // The same, with rounder corners
+		 * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
+		 * var cornerSize = new Size(10, 10);
+		 * var shape = new Shape.Rectangle(rectangle, cornerSize);
+		 * shape.strokeColor = 'black';
+		 */
+		/**
+		 * Creates a rectangular shape item from a point and a size object.
+		 *
+		 * @name Shape.Rectangle
+		 * @param {Point} point the rectangle's top-left corner.
+		 * @param {Size} size the rectangle's size.
+		 * @return {Shape} the newly created shape
+		 *
+		 * @example {@paperscript}
+		 * var point = new Point(20, 20);
+		 * var size = new Size(60, 60);
+		 * var shape = new Shape.Rectangle(point, size);
+		 * shape.strokeColor = 'black';
+		 */
+		/**
+		 * Creates a rectangular shape item from the passed points. These do not
+		 * necessarily need to be the top left and bottom right corners, the
+		 * constructor figures out how to fit a rectangle between them.
+		 *
+		 * @name Shape.Rectangle
+		 * @param {Point} from the first point defining the rectangle
+		 * @param {Point} to the second point defining the rectangle
+		 * @return {Shape} the newly created shape
+		 *
+		 * @example {@paperscript}
+		 * var from = new Point(20, 20);
+		 * var to = new Point(80, 80);
+		 * var shape = new Shape.Rectangle(from, to);
+		 * shape.strokeColor = 'black';
+		 */
+		/**
+		 * Creates a rectangular shape item from the properties described by an
+		 * object literal.
+		 *
+		 * @name Shape.Rectangle
+		 * @param {Object} object an object literal containing properties
+		 * describing the shape's attributes
+		 * @return {Shape} the newly created shape
+		 *
+		 * @example {@paperscript}
+		 * var shape = new Shape.Rectangle({
+		 * 	point: [20, 20],
+		 * 	size: [60, 60],
+		 * 	strokeColor: 'black'
+		 * });
+		 *
+		 * @example {@paperscript}
+		 * var shape = new Shape.Rectangle({
+		 * 	from: [20, 20],
+		 * 	to: [80, 80],
+		 * 	strokeColor: 'black'
+		 * });
+		 *
+		 * @example {@paperscript}
+		 * var shape = new Shape.Rectangle({
+		 * 	rectangle: {
+		 * 		topLeft: [20, 20],
+		 * 		bottomRight: [80, 80]
+		 * 	},
+		 * 	strokeColor: 'black'
+		 * });
+		 *
+		 * @example {@paperscript}
+		 * var shape = new Shape.Rectangle({
+	 	 *	topLeft: [20, 20],
+	 	 * 	bottomRight: [80, 80],
+		 * 	radius: 10,
+		 * 	strokeColor: 'black'
+		 * });
+		 */
+		Rectangle: function(/* rectangle */) {
+			var rect = Rectangle.readNamed(arguments, 'rectangle');
+			return createShape('rect', rect.getCenter(true), rect.getSize(true),
+					Size.readNamed(arguments, 'radius'), arguments);
+		},
+
+		/**
+		 * Creates an elliptical shape item.
+		 *
+		 * @name Shape.Ellipse
+		 * @param {Rectangle} rectangle the rectangle circumscribing the ellipse
+		 * @return {Shape} the newly created shape
+		 *
+		 * @example {@paperscript}
+		 * var rectangle = new Rectangle(new Point(20, 20), new Size(180, 60));
+		 * var shape = new Shape.Ellipse(rectangle);
+		 * shape.fillColor = 'black';
+		 */
+		/**
+		 * Creates an elliptical shape item from the properties described by an
+		 * object literal.
+		 *
+		 * @name Shape.Ellipse
+		 * @param {Object} object an object literal containing properties
+		 * describing the shape's attributes
+		 * @return {Shape} the newly created shape
+		 *
+		 * @example {@paperscript}
+		 * var shape = new Shape.Ellipse({
+		 * 	point: [20, 20],
+		 * 	size: [180, 60],
+		 * 	fillColor: 'black'
+		 * });
+		 *
+		 * @example {@paperscript} // Placing by center and radius
+		 * var shape = new Shape.Ellipse({
+		 * 	center: [110, 50],
+		 * 	radius: [90, 30],
+		 * 	fillColor: 'black'
+		 * });
+		 */
+		Ellipse: function(/* rectangle */) {
+			var center,
+				size,
+				radius;
+			if (Base.hasNamed(arguments, 'center')) {
+				center = Point.readNamed(arguments, 'center');
+				radius = Size.readNamed(arguments, 'radius');
+				size = radius.multiply(2);
+			} else {
+				var rect = Rectangle.readNamed(arguments, 'rectangle');
+				center = rect.getCenter(true);
+				size = rect.getSize(true);
+				radius = size.divide(2);
+			}
+			return createShape('ellipse', center, size, radius, arguments);
+		}
+	};
+}});
