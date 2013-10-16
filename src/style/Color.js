@@ -804,7 +804,8 @@ var Color = Base.extend(new function() {
 				var radius = destination.getDistance(origin),
 					highlight = components[3];
 				if (highlight) {
-					var vector = highlight.subtract(translation).subtract(origin);
+					highlight = highlight.subtract(translation);
+					var vector = highlight.subtract(origin);
 					if (vector.getLength() > radius)
 						highlight = origin.add(vector.normalize(radius - 0.1));
 				}
