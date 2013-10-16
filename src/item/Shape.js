@@ -118,6 +118,18 @@ var Shape = Item.extend(/** @lends Shape# */{
 		return false;
 	},
 
+	// DOCS: #toPath()
+	toPath: function() {
+		var path = new Path[Base.capitalize(this._shape)]({
+			center: new Point(),
+			size: this._size,
+			radius: this._radius
+		});
+		path.transform(this._matrix);
+		path.setStyle(this._style);
+		return path;
+	},
+
 	_draw: function(ctx, param) {
 		var style = this._style,
 			fillColor = style.getFillColor(),
