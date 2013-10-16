@@ -64,28 +64,27 @@ var ProxyContext = new function() {
 			isFunction = !!match[2];
 		if (isFunction) {
 			fields[name] = function() {
-				if (name == 'restore') {
+				if (name === 'restore')
 					this._indents--;
-				}
-				var args = Array.prototype.slice.call(arguments, 0).join(', '),
-					string = 'ctx.' + name + '(' + args + ');';
-				console.log(this.getIndentation() + string);
-				if (name == 'save') {
+				console.log(this.getIndentation() + 'ctx.' + name + '('
+						+ Array.prototype.slice.call(arguments, 0)
+							.map(JSON.stringify).join(', ') 
+						+ ');');
+				if (name === 'save')
 					this._indents++;
-				}
 				return this._ctx[name].apply(this._ctx, arguments);
 			};
 		} else {
-			var capitalized = Base.capitalize(name);
-			fields['set' + capitalized] = function(value) {
-				var logValue = value && value.substring ? '\'' + value + '\'' : value,
-					string = 'ctx.' + name + ' = ' + logValue + ';';
-				console.log(this.getIndentation() + string);
-				return this._ctx[name] = value;
-			};
-			fields['get' + capitalized] = function() {
+			fields[name] = {
+				get: function() {
 				return this._ctx[name];
-			};
+				},
+				set: function(value) {
+					console.log(this.getIndentation() + 'ctx.' + name + ' = '
+							+ JSON.stringify(value) + ';');
+					return this._ctx[name] = value;
+				}
+			}
 		}
 	});
 	return Base.extend(fields);
