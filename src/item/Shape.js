@@ -24,18 +24,28 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 	// TODO: SVG, serialization
 
-	initialize: function Shape(type, point, size, radius, props) {
-		this._type = type;
+	initialize: function Shape(shape, point, size, radius, props) {
+		this._shape = shape;
 		this._size = size;
 		this._radius = radius;
 		this._initialize(props, point);
 	},
 
 	clone: function(insert) {
-		return this._clone(new Shape(this._type, this.getPosition(true),
+		return this._clone(new Shape(this._shape, this.getPosition(true),
 				this._size.clone(),
 				this._radius.clone ? this._radius.clone() : this._radius,
 				{ insert: false }), insert);
+	},
+
+	/**
+	 * The type of shape of the item as a string.
+	 *
+	 * @type String('rectangle', 'circle', 'ellipse')
+	 * @bean
+	 */
+	getShape: function() {
+		return this._shape;
 	},
 
 	/**
@@ -50,17 +60,17 @@ var Shape = Item.extend(/** @lends Shape# */{
 	},
 
 	setSize: function(/* size */) {
-		var type = this._type,
+		var shape = this._shape,
 			size = Size.read(arguments);
 		if (!this._size.equals(size)) {
 			var width = size.width,
 				height = size.height;
-			if (type === 'circle') {
+			if (shape === 'circle') {
 				// Use average of width and height as new size, then calculate
 				// radius as a number from that:
 				width = height = (width + height) / 2;
 				this._radius = width / 2;
-			} else if (type === 'ellipse') {
+			} else if (shape === 'ellipse') {
 				// The radius is a size.
 				this._radius.set(width / 2, height / 2);
 			}
@@ -78,14 +88,14 @@ var Shape = Item.extend(/** @lends Shape# */{
 	 */
 	getRadius: function() {
 		var rad = this._radius;
-		return this._type === 'circle'
+		return this._shape === 'circle'
 				? rad
 				: new LinkedSize(rad.width, rad.height, this, 'setRadius');
 	},
 
 	setRadius: function(radius) {
-		var type = this._type;
-		if (type === 'circle') {
+		var shape = this._shape;
+		if (shape === 'circle') {
 			if (radius === this._radius)
 				return;
 			var size = radius * 2;
@@ -95,7 +105,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 			if (this._radius.equals(radius))
 				return;
 			this._radius.set(radius.width, radius.height);
-			if (type === 'ellipse')
+			if (shape === 'ellipse')
 				this._size.set(radius.width * 2, radius.height * 2);
 		}
 		this._changed(/*#=*/ Change.GEOMETRY);
@@ -115,15 +125,15 @@ var Shape = Item.extend(/** @lends Shape# */{
 			clip = param.clip;
 		if (fillColor || strokeColor || clip) {
 			var radius = this._radius,
-				type = this._type;
+				shape = this._shape;
 			ctx.beginPath();
-			if (type === 'circle') {
+			if (shape === 'circle') {
 				ctx.arc(0, 0, radius, 0, Math.PI * 2, true);
 			} else {
 				var rx = radius.width,
 					ry = radius.height,
 					kappa = Numerical.KAPPA;
-				if (type === 'ellipse') {
+				if (shape === 'ellipse') {
 					// Use four bezier curves and KAPPA value to aproximate ellipse
 					var	cx = rx * kappa,
 						cy = ry * kappa;
@@ -183,8 +193,8 @@ var Shape = Item.extend(/** @lends Shape# */{
 	},
 
 	_contains: function _contains(point) {
-		switch (this._type) {
-		case 'rect':
+		switch (this._shape) {
+		case 'rectangle':
 			return _contains.base.call(this, point);
 		case 'circle':
 		case 'ellipse':
@@ -194,10 +204,10 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 	_hitTest: function _hitTest(point) {
 		if (this.hasStroke()) {
-			var type = this._type,
+			var shape = this._shape,
 				strokeWidth = this.getStrokeWidth();
-			switch (type) {
-			case 'rect':
+			switch (shape) {
+			case 'rectangle':
 				var rect = new Rectangle(this._size).setCenter(0, 0),
 					outer = rect.expand(strokeWidth),
 					inner = rect.expand(-strokeWidth);
@@ -207,7 +217,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 			case 'circle':
 			case 'ellipse':
 				var radius;
-				if (type === 'ellipse') {
+				if (shape === 'ellipse') {
 					// Calculate ellipse radius at angle
 					var angle = point.getAngleInRadians(),
 						size = this._size,
@@ -229,8 +239,8 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 // Mess with indentation in order to get more line-space below:
 statics: new function() {
-	function createShape(type, point, size, radius, args) {
-		return new Shape(type, point, size, radius, Base.getNamed(args));
+	function createShape(shape, point, size, radius, args) {
+		return new Shape(shape, point, size, radius, Base.getNamed(args));
 	}
 
 	return /** @lends Shape */{
@@ -361,8 +371,9 @@ statics: new function() {
 		 */
 		Rectangle: function(/* rectangle */) {
 			var rect = Rectangle.readNamed(arguments, 'rectangle');
-			return createShape('rect', rect.getCenter(true), rect.getSize(true),
-					Size.readNamed(arguments, 'radius'), arguments);
+			return createShape('rectangle', rect.getCenter(true),
+					rect.getSize(true), Size.readNamed(arguments, 'radius'),
+					arguments);
 		},
 
 		/**
