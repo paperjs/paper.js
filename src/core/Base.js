@@ -75,10 +75,17 @@ Base.inject(/** @lends Base# */{
 	 */
 	_set: function(props, exclude) {
 		if (props && Base.isPlainObject(props)) {
-			for (var key in props)
-				if (props.hasOwnProperty(key) && key in this
-						&& (!exclude || !exclude[key]))
-					this[key] = props[key];
+			for (var key in props) {
+				// Note: We don't use key.hasOwnProperty() so we can use the
+				// efficient _filtered inheritance trick in the argument reading
+				// code, where undefined is used to mask already consumed
+				// named arguments in the inherited object.
+				if (key in this && (!exclude || !exclude[key])) {
+					var value = props[key];
+					if (value !== undefined)
+						this[key] = value;
+				}
+			}
 			return true;
 		}
 	},
@@ -245,9 +252,16 @@ Base.inject(/** @lends Base# */{
 		 * @param {String} name the property name to read from.
 		 */
 		readNamed: function(list, name, start, length, options) {
-			var value = this.getNamed(list, name);
-			return this.read(value != null ? [value] : list, start, length,
-					options);
+			var value = this.getNamed(list, name),
+				hasObject = value !== undefined;
+			if (hasObject) {
+				// Create a _filtered object that inherits from argument 0, and
+				// override all fields that were already read with undefined.
+				if (!list._filtered)
+					list._filtered = Base.create(list[0]);
+				list._filtered[name] = undefined; // Delete won't work
+			}
+			return this.read(hasObject ? [value] : list, start, length, options);
 		},
 
 		/**
@@ -262,7 +276,7 @@ Base.inject(/** @lends Base# */{
 				list._hasObject = list.length === 1 && Base.isPlainObject(arg);
 			if (list._hasObject)
 				// Return the whole arguments object if no name is provided.
-				return name ? arg[name] : arg;
+				return name ? arg[name] : list._filtered || arg;
 		},
 
 		/**
