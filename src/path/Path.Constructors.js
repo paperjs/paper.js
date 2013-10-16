@@ -43,15 +43,16 @@ Path.inject({ statics: new function() {
 		return path;
 	}
 
+	 
 	return /** @lends Path */{
 		/**
 		 * {@grouptitle Shaped Paths}
 		 *
-		 * Creates a Path item with two anchor points forming a line.
+		 * Creates a linear path item from two points describing a line.
 		 *
 		 * @name Path.Line
-		 * @param {Point} from the first anchor point of the path
-		 * @param {Point} to the second anchor point of the path
+		 * @param {Point} from the line's starting point 
+		 * @param {Point} to the line's ending point
 		 * @return {Path} the newly created path
 		 *
 		 * @example {@paperscript}
@@ -59,8 +60,17 @@ Path.inject({ statics: new function() {
 		 * var to = new Point(80, 80);
 		 * var path = new Path.Line(from, to);
 		 * path.strokeColor = 'black';
-		 * 
-		 * @example {@paperscript} // Using object notation
+		 */
+		/**
+		 * Creates a linear path item from the properties described by an object
+		 * literal.
+		 *
+		 * @name Path.Line
+		 * @param {Object} object an object literal containing properties
+		 * describing the path's attributes
+		 * @return {Path} the newly created path
+		 *
+		 * @example {@paperscript}
 		 * var path = new Path.Line({
 		 * 	from: [20, 20],
 		 * 	to: [80, 80],
@@ -75,8 +85,9 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-		 * Creates a circle shaped Path item.
+		 * Creates a circular path item.
 		 *
+		 * @name Path.Circle
 		 * @param {Point} center the center point of the circle
 		 * @param {Number} radius the radius of the circle
 		 * @return {Path} the newly created path
@@ -84,8 +95,17 @@ Path.inject({ statics: new function() {
 		 * @example {@paperscript}
 		 * var path = new Path.Circle(new Point(80, 50), 30);
 		 * path.strokeColor = 'black';
+		 */
+		/**
+		 * Creates a circular path item from the properties described by an
+		 * object literal.
 		 *
-		 * @example {@paperscript} // Using object notation
+		 * @name Path.Circle
+		 * @param {Object} object an object literal containing properties
+		 * describing the path's attributes
+		 * @return {Path} the newly created path
+		 *
+		 * @example {@paperscript}
 		 * var path = new Path.Circle({
 		 * 	center: [80, 50],
 		 * 	radius: 30,
@@ -100,11 +120,31 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-		 * Creates a rectangle shaped Path item from the passed point and size.
+		 * Creates a rectangular path item, with optionally rounded corners.
 		 *
 		 * @name Path.Rectangle
-		 * @param {Point} point
-		 * @param {Size} size
+		 * @param {Rectangle} rectangle the rectangle object describing the
+		 * geometry of the rectangular path to be created.
+		 * @param {Size} [radius=null] the size of the rounded corners
+		 * @return {Path} the newly created path
+		 *
+		 * @example {@paperscript}
+		 * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
+		 * var path = new Path.Rectangle(rectangle);
+		 * path.strokeColor = 'black';
+		 *
+		 * @example {@paperscript} // The same, with rounder corners
+		 * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
+		 * var cornerSize = new Size(10, 10);
+		 * var path = new Path.Rectangle(rectangle, cornerSize);
+		 * path.strokeColor = 'black';
+		 */
+		/**
+		 * Creates a rectangular path item from a point and a size object.
+		 *
+		 * @name Path.Rectangle
+		 * @param {Point} point the rectangle's top-left corner.
+		 * @param {Size} size the rectangle's size.
 		 * @return {Path} the newly created path
 		 *
 		 * @example {@paperscript}
@@ -112,22 +152,15 @@ Path.inject({ statics: new function() {
 		 * var size = new Size(60, 60);
 		 * var path = new Path.Rectangle(point, size);
 		 * path.strokeColor = 'black';
-		 *
-		 * @example {@paperscript} // Using object notation
-		 * var path = new Path.Rectangle({
-		 * 	point: [20, 20],
-		 * 	size: [60, 60],
-		 * 	strokeColor: 'black'
-		 * });
 		 */
 		/**
-		 * Creates a rectangle shaped Path item from the passed points. These do
-		 * not necessarily need to be the top left and bottom right corners, the
+		 * Creates a rectangular path item from the passed points. These do not
+		 * necessarily need to be the top left and bottom right corners, the
 		 * constructor figures out how to fit a rectangle between them.
 		 *
 		 * @name Path.Rectangle
-		 * @param {Point} from The first point defining the rectangle
-		 * @param {Point} to The second point defining the rectangle
+		 * @param {Point} from the first point defining the rectangle
+		 * @param {Point} to the second point defining the rectangle
 		 * @return {Path} the newly created path
 		 *
 		 * @example {@paperscript}
@@ -135,64 +168,43 @@ Path.inject({ statics: new function() {
 		 * var to = new Point(80, 80);
 		 * var path = new Path.Rectangle(from, to);
 		 * path.strokeColor = 'black';
+		 */
+		/**
+		 * Creates a rectangular path item from the properties described by an
+		 * object literal.
 		 *
-		 * @example {@paperscript} // Using object notation
+		 * @name Path.Rectangle
+		 * @param {Object} object an object literal containing properties
+		 * describing the path's attributes
+		 * @return {Path} the newly created path
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.Rectangle({
+		 * 	point: [20, 20],
+		 * 	size: [60, 60],
+		 * 	strokeColor: 'black'
+		 * });
+		 *
+		 * @example {@paperscript}
 		 * var path = new Path.Rectangle({
 		 * 	from: [20, 20],
 		 * 	to: [80, 80],
 		 * 	strokeColor: 'black'
 		 * });
-		 */
-		/**
-		 * Creates a rectangle shaped Path item from the passed abstract
-		 * {@link Rectangle}.
-		 *
-		 * @name Path.Rectangle
-		 * @param {Rectangle} rectangle
-		 * @return {Path} the newly created path
 		 *
 		 * @example {@paperscript}
-		 * var rectangle = new Rectangle({
-		 * 	point: new Point(20, 20),
-		 * 	size: new Size(60, 60)
-		 * });
-		 * var path = new Path.Rectangle(rectangle);
-		 * path.strokeColor = 'black';
-		 *
-		 * @example {@paperscript}
-		 * var rectangle = new Rectangle({
-		 * 	point: [20, 20],
-		 * 	size: [60, 60]
-		 * });
-		 * 
-		 * var path = new Path.Rectangle({
-		 * 	rectangle: rectangle,
-		 * 	strokeColor: 'black'
-		 * });
-		 */
-		/**
-		 * Creates a rectangular Path item with rounded corners.
-		 *
-		 * @name Path.Rectangle
-		 * @param {Rectangle} rectangle
-		 * @param {Size} radius the size of the rounded corners
-		 * @return {Path} the newly created path
-		 *
-		 * @example {@paperscript}
-		 * var rectangle = new Rectangle({
-		 * 	point: new Point(20, 20),
-		 * 	size: new Size(60, 60)
-		 * });
-		 * var cornerSize = new Size(10, 10);
-		 * var path = new Path.Rectangle(rectangle, cornerSize);
-		 * path.strokeColor = 'black';
-		 *
-		 * @example {@paperscript} // Using object notation
 		 * var path = new Path.Rectangle({
 		 * 	rectangle: {
-		 * 		point: [20, 20],
-		 * 		size: [60, 60]
+		 * 		topLeft: [20, 20],
+		 * 		bottomRight: [80, 80]
 		 * 	},
+		 * 	strokeColor: 'black'
+		 * });
+		 *
+		 * @example {@paperscript}
+		 * var path = new Path.Rectangle({
+	 	 *	topLeft: [20, 20],
+	 	 * 	bottomRight: [80, 80],
 		 * 	radius: 10,
 		 * 	strokeColor: 'black'
 		 * });
@@ -241,24 +253,27 @@ Path.inject({ statics: new function() {
 		RoundRectangle: '#Rectangle',
 
 		/**
-		 * Creates an ellipse shaped Path item.
+		 * Creates an elliptical path item.
 		 *
-		 * @param {Rectangle} rectangle
-		 * @param {Boolean} [circumscribed=false] when set to {@code true} the
-		 *        ellipse shaped path will be created so the rectangle fits into
-		 *        it. When set to {@code false} the ellipse path will fit within
-		 *        the rectangle.
+		 * @name Path.Ellipse
+		 * @param {Rectangle} rectangle the rectangle circumscribing the ellipse
 		 * @return {Path} the newly created path
 		 *
 		 * @example {@paperscript}
-		 * var rectangle = new Rectangle({
-		 * 	point: [20, 20],
-		 * 	size: [180, 60]
-		 * });
+		 * var rectangle = new Rectangle(new Point(20, 20), new Size(180, 60));
 		 * var path = new Path.Ellipse(rectangle);
 		 * path.fillColor = 'black';
+		 */
+		/**
+		 * Creates an elliptical path item from the properties described by an
+		 * object literal.
 		 *
-		 * @example {@paperscript} // Using object notation
+		 * @name Path.Ellipse
+		 * @param {Object} object an object literal containing properties
+		 * describing the path's attributes
+		 * @return {Path} the newly created path
+		 *
+		 * @example {@paperscript}
 		 * var path = new Path.Ellipse({
 		 * 	point: [20, 20],
 		 * 	size: [180, 60],
@@ -284,8 +299,9 @@ Path.inject({ statics: new function() {
 		Oval: '#Ellipse',
 
 		/**
-		 * Creates a circular arc shaped Path item.
+		 * Creates a circular arc path item.
 		 *
+		 * @name Path.Arc
 		 * @param {Point} from the starting point of the circular arc
 		 * @param {Point} through the point the arc passes through
 		 * @param {Point} to the end point of the arc
@@ -298,7 +314,17 @@ Path.inject({ statics: new function() {
 		 * var path = new Path.Arc(from, through, to);
 		 * path.strokeColor = 'black';
 		 *
-		 * @example {@paperscript} // Using object notation
+		 */
+		/**
+		 * Creates an circular arc path item from the properties described by an
+		 * object literal.
+		 *
+		 * @name Path.Arc
+		 * @param {Object} object an object literal containing properties
+		 * describing the path's attributes
+		 * @return {Path} the newly created path
+		 *
+		 * @example {@paperscript}
 		 * var path = new Path.Arc({
 		 * 	from: [20, 20],
 		 * 	through: [60, 20],
@@ -317,8 +343,9 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-		 * Creates a regular polygon shaped Path item.
+		 * Creates a regular polygon shaped path item.
 		 *
+		 * @name Path.RegularPolygon
 		 * @param {Point} center the center point of the polygon
 		 * @param {Number} sides the number of sides of the polygon
 		 * @param {Number} radius the radius of the polygon
@@ -330,8 +357,17 @@ Path.inject({ statics: new function() {
 		 * var radius = 40;
 		 * var triangle = new Path.RegularPolygon(center, sides, radius);
 		 * triangle.fillColor = 'black';
+		 */
+		/**
+		 * Creates a regular polygon shaped path item from the properties
+		 * described by an object literal.
 		 *
-		 * @example {@paperscript} // Using object notation
+		 * @name Path.RegularPolygon
+		 * @param {Object} object an object literal containing properties
+		 * describing the path's attributes
+		 * @return {Path} the newly created path
+		 *
+		 * @example {@paperscript}
 		 * var triangle = new Path.RegularPolygon({
 		 * 	center: [50, 50],
 		 * 	sides: 10,
@@ -359,12 +395,13 @@ Path.inject({ statics: new function() {
 		},
 
 		/**
-		 * Creates a star shaped Path item.
+		 * Creates a star shaped path item.
 		 *
 		 * The largest of {@code radius1} and {@code radius2} will be the outer
 		 * radius of the star. The smallest of radius1 and radius2 will be the
 		 * inner radius.
 		 *
+		 * @name Path.Star
 		 * @param {Point} center the center point of the star
 		 * @param {Number} points the number of points of the star
 		 * @param {Number} radius1
@@ -378,8 +415,17 @@ Path.inject({ statics: new function() {
 		 * var radius2 = 40;
 		 * var path = new Path.Star(center, points, radius1, radius2);
 		 * path.fillColor = 'black';
+		 */
+		/**
+		 * Creates a star shaped path item from the properties described by an
+		 * object literal.
 		 *
-		 * @example {@paperscript} // Using object notation
+		 * @name Path.Star
+		 * @param {Object} object an object literal containing properties
+		 * describing the path's attributes
+		 * @return {Path} the newly created path
+		 *
+		 * @example {@paperscript}
 		 * var path = new Path.Star({
 		 * 	center: [50, 50],
 		 * 	points: 12,

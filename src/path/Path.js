@@ -13,7 +13,7 @@
 /**
  * @name Path
  *
- * @class The Path item represents a path in a Paper.js project.
+ * @class The path item represents a path in a Paper.js project.
  *
  * @extends PathItem
  */
@@ -26,11 +26,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
-	 * Creates a new Path item and places it at the top of the active layer.
+	 * Creates a new path item and places it at the top of the active layer.
 	 *
 	 * @name Path#initialize
 	 * @param {Segment[]} [segments] An array of segments (or points to be
-	 * converted to segments) that will be added to the path.
+	 * converted to segments) that will be added to the path
+	 * @return {Path} the newly created path
 	 *
 	 * @example
 	 * // Create an empty path and add segments to it:
@@ -46,10 +47,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * path.strokeColor = 'black';
 	 */
 	/**
-	 * Creates a new Path item and places it at the top of the active layer.
+	 * Creates a new path item and places it at the top of the active layer.
 	 *
-	 * @param {Object} object An object literal containing properties to
-	 * be set on the path.
+	 * @name Path#initialize
+	 * @param {Object} object an object literal containing properties to
+	 * be set on the path
+	 * @return {Path} the newly created path
 	 *
 	 * @example {@paperscript}
 	 * var path = new Path({
@@ -70,7 +73,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	initialize: function Path(arg) {
 		this._closed = false;
 		this._segments = [];
-		// arg can either be an object literal describing properties to be set
+		// arg can either be an object literal containing properties to be set
 		// on the path, a list of segments to be set, or the first of multiple
 		// arguments describing separate segments.
 		// If it is an array, it can also be a description of a point, so
