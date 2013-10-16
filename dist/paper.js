@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 10 14:34:24 2013 +0200
+ * Date: Mon Oct 14 13:03:23 2013 +0200
  *
  ***
  *
@@ -7975,6 +7975,14 @@ var Color = Base.extend(new function() {
 			return [];
 		},
 
+		'pattern-rgb': function() {
+			return [];
+		},
+
+		'rgb-pattern': function() {
+			return [];
+		},
+
 		'rgb-gradient': function() {
 			return [];
 		}
@@ -10804,6 +10812,21 @@ new function() {
 		return createElement('use', attrs);
 	}
 
+	function exportPattern(color, item) {
+		var patternNode = getDefinition(color.getPattern(), 'pattern');
+		console.log('item', item, 'item matrix rotation', item._matrix.getRotation());
+		if(!patternNode) {
+			var pattern = color.getPattern(), 
+				attrs = { 'patternUnits': 'userSpaceOnUse', 'width': pattern.width, 'height': pattern.height};
+
+			patternNode = createElement('pattern', attrs);
+			patternNode.appendChild(createElement('image', {'href': pattern.url, 'width': pattern.width, 'height': pattern.height }));
+			setDefinition(color.getPattern(), patternNode, 'pattern');
+		}
+
+		return 'url(#' + patternNode.id + ')';
+	}
+
 	function exportGradient(color, item) {
 		var gradientNode = getDefinition(color, 'color');
 		if (!gradientNode) {
@@ -10865,6 +10888,7 @@ new function() {
 		layer: exportGroup,
 		raster: exportRaster,
 		path: exportPath,
+		pattern: exportPattern,
 		'compound-path': exportCompoundPath,
 		'placed-symbol': exportPlacedSymbol,
 		'point-text': exportText
@@ -10887,19 +10911,26 @@ new function() {
 					if (alpha < 1)
 						attrs[entry.attribute + '-opacity'] = alpha;
 				}
-				attrs[entry.attribute] = value == null
-					? 'none'
-					: type === 'number'
-						? formatter.number(value)
-						: type === 'color'
-							? value.gradient
-								? exportGradient(value, item)
-								: value.toCSS(true)
-							: type === 'array'
-								? value.join(',')
-								: type === 'lookup'
-									? entry.toSVG[value]
-									: value;
+				if(value == null)
+					attrs[entry.attribute] = 'none';
+				else if(type === 'color' && value.pattern){
+					attrs[entry.attribute] = exportPattern(value, item);
+				}
+				else {
+					attrs[entry.attribute] = value == null
+						? 'none'
+						: type === 'number'
+							? formatter.number(value)
+							: type === 'color'
+								? value.gradient
+									? exportGradient(value, item)
+									: value.toCSS(true)
+								: type === 'array'
+										? value.join(',')
+										: type === 'lookup'
+											? entry.toSVG[value]
+											: value;
+				}
 			}
 		});
 

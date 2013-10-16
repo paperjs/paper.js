@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Patterns</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var radius = view.bounds.width * 0.4,
+			from = new Point(view.center.x),
+			to = from + [radius, 0];
+
+		var circle = new Path.Circle({
+			center: from,
+			radius: radius,
+			fillColor: {pattern: {url: 'pattern.png', width: 25, height: 25}},
+			strokeColor: '#F00'
+		});
+
+		var from = view.bounds.leftCenter,
+			to = view.bounds.bottomRight;
+
+		var rect = new Path.Rectangle({
+			from: from,
+			to: to,
+			fillColor: new Pattern('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcAQMAAABIw03XAAAABlBMVEUAAAAUFBSKPLFLAAAANUlEQVR4Xi3EqREAAAwCwZvBUgz9v5QWQcxCkyd02GJIPG2fJI/NI9FBxWj8QDJMOyIxiscB2WUVGSCrVmAAAAAASUVORK5CYII=', 'repeat', 30, 30),
+			strokeColor: '#F00'
+		});
+
+		rect.rotate(45).scale(0.7);
+
+		document.getElementById('svg').appendChild(project.exportSVG());
+	</script>
+</head>
+<body>
+	<canvas id="canvas" width="300" height="600"></canvas>
+	<svg id="svg" width="300" height="600"></svg>
+</body>
+</html>

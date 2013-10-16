@@ -201,6 +201,16 @@ var Color = Base.extend(new function() {
 			return [];
 		},
 
+		'pattern-rgb': function(/* pattern */) {
+			// TODO: Implement
+			return [];
+		},
+
+		'rgb-pattern': function(/* pattern */) {
+			// TODO: Implement
+			return [];
+		},
+
 		'rgb-gradient': function(/* r, g, b */) {
 			// TODO: Implement
 			return [];

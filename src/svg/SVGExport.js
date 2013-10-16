@@ -325,6 +325,24 @@ new function() {
 		return createElement('use', attrs);
 	}
 
+
+	function exportPattern(color, item) {
+		// TODO: Handle rotation of the shape, so pattern looks exactly the same as on canvas
+		var patternNode = getDefinition(color.getPattern(), 'pattern');
+		// console.log('item', item, 'item matrix rotation', item._matrix.getRotation());
+		if(!patternNode) {
+			var pattern = color.getPattern(), 
+				attrs = { 'patternUnits': 'userSpaceOnUse', 'width': pattern.width, 'height': pattern.height};
+
+			// 'patternTransform': 'rotate('+ item._matrix.getRotation() +')' 
+			patternNode = createElement('pattern', attrs);
+			patternNode.appendChild(createElement('image', {'href': pattern.url, 'width': pattern.width, 'height': pattern.height }));
+			setDefinition(color.getPattern(), patternNode, 'pattern');
+		}
+
+		return 'url(#' + patternNode.id + ')';
+	}
+
 	function exportGradient(color, item) {
 		// NOTE: As long as the fillTransform attribute is not implemented,
 		// we need to create a separate gradient object for each gradient,
@@ -393,6 +411,7 @@ new function() {
 		layer: exportGroup,
 		raster: exportRaster,
 		path: exportPath,
+		pattern: exportPattern,
 		'compound-path': exportCompoundPath,
 		'placed-symbol': exportPlacedSymbol,
 		'point-text': exportText
@@ -420,20 +439,27 @@ new function() {
 					if (alpha < 1)
 						attrs[entry.attribute + '-opacity'] = alpha;
 				}
-				attrs[entry.attribute] = value == null
-					? 'none'
-					: type === 'number'
-						? formatter.number(value)
-						: type === 'color'
-							? value.gradient
-								? exportGradient(value, item)
-								// true for noAlpha, see above	
-								: value.toCSS(true)
-							: type === 'array'
-								? value.join(',')
-								: type === 'lookup'
-									? entry.toSVG[value]
-									: value;
+				if(value == null)
+					attrs[entry.attribute] = 'none';
+				else if(type === 'color' && value.pattern){
+					attrs[entry.attribute] = exportPattern(value, item);
+				}
+				else {
+					attrs[entry.attribute] = value == null
+						? 'none'
+						: type === 'number'
+							? formatter.number(value)
+							: type === 'color'
+								? value.gradient
+									? exportGradient(value, item)
+									// true for noAlpha, see above	
+									: value.toCSS(true)
+								: type === 'array'
+										? value.join(',')
+										: type === 'lookup'
+											? entry.toSVG[value]
+											: value;
+				}
 			}
 		});
 
