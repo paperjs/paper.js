@@ -74,7 +74,7 @@ new function() {
 	function importGroup(node, type) {
 		var nodes = node.childNodes,
 			clip = type === 'clippath',
-			item = clip ? new CompoundPath() : new Group(),
+			item = new Group(),
 			project = item._project,
 			currentStyle = project._currentStyle,
 			children = [];
@@ -94,19 +94,12 @@ new function() {
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var childNode = nodes[i],
 				child;
-			if (childNode.nodeType === 1 && (child = importSVG(childNode))) {
-				// When adding CompoundPaths to other CompoundPaths,
-				// we need to "unbox" them first:
-				if (clip && child instanceof CompoundPath) {
-					children.push.apply(children, child.removeChildren());
-					child.remove();
-				} else if (!(child instanceof Symbol)) {
-					children.push(child);
-				}
-			}
+			if (childNode.nodeType === 1 && (child = importSVG(childNode))
+					&& !(child instanceof Symbol))
+				children.push(child);
 		}
 		item.addChildren(children);
-		// clip paths are reduced (unboxed) and their attributes applied at the
+		// Clip paths are reduced (unboxed) and their attributes applied at the
 		// end.
 		if (clip)
 			item = applyAttributes(item.reduce(), node);
@@ -236,15 +229,15 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
 		circle: function(node) {
-			return new Path.Circle(getPoint(node, 'cx', 'cy'),
+			return new Shape.Circle(getPoint(node, 'cx', 'cy'),
 					getValue(node, 'r'));
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
 		ellipse: function(node) {
 			// We only use object literal notation where the default one is not
-			// supported (e.g. center / radius fo Path.Ellipse).
-			return new Path.Ellipse({
+			// supported (e.g. center / radius fo Shape.Ellipse).
+			return new Shape.Ellipse({
 				center: getPoint(node, 'cx', 'cy'),
 				radius: getSize(node, 'rx', 'ry')
 			});
@@ -255,7 +248,7 @@ new function() {
 			var point = getPoint(node, 'x', 'y'),
 				size = getSize(node, 'width', 'height'),
 				radius = getSize(node, 'rx', 'ry');
-			return new Path.Rectangle(new Rectangle(point, size), radius);
+			return new Shape.Rectangle(new Rectangle(point, size), radius);
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#LineElement
@@ -425,7 +418,7 @@ new function() {
 					group = item._definition;
 				if (clip && !rect.contains(group.getBounds())) {
 					// Add a clip path at the top of this symbol's group
-					clip = new Path.Rectangle(rect).transform(group._matrix);
+					clip = new Shape.Rectangle(rect).transform(group._matrix);
 					clip.setClipMask(true);
 					group.addChild(clip);
 				}
