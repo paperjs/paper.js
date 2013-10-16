@@ -2822,9 +2822,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * {@grouptitle Event Handling}
 	 * 
-	 * Attach an event handler to the item.
+	 * Attaches an event handler to the item.
 	 *
-	 * @name Item#on
+	 * @name Item#attach
+	 * @alias Item#on
 	 * @function
 	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
 	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
@@ -2854,11 +2855,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * });
 	 */
 	/**
-	 * Attach one or more event handlers to the item.
+	 * Attaches one or more event handlers to the item.
 	 *
-	 * @name Item#on^2
+	 * @name Item#attach
+	 * @alias Item#on
 	 * @function
-	 * @param {Object} param An object literal containing one or more of the
+	 * @param {Object} object an object literal containing one or more of the
 	 * following properties: {@code mousedown, mouseup, mousedrag, click,
 	 * doubleclick, mousemove, mouseenter, mouseleave}.
 	 *
@@ -2914,6 +2916,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Detach an event handler from the item.
 	 *
 	 * @name Item#detach
+	 * @alias Item#off
 	 * @function
 	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
 	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
@@ -2923,9 +2926,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * Detach one or more event handlers to the item.
 	 *
-	 * @name Item#detach^2
+	 * @name Item#detach
+	 * @alias Item#off
 	 * @function
-	 * @param {Object} param An object literal containing one or more of the
+	 * @param {Object} object an object literal containing one or more of the
 	 * following properties: {@code mousedown, mouseup, mousedrag, click,
 	 * doubleclick, mousemove, mouseenter, mouseleave}
 	 */
@@ -2934,11 +2938,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Fire an event on the item.
 	 *
 	 * @name Item#fire
+	 * @alias Item#trigger
 	 * @function
 	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
 	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
 	 * type
-	 * @param {Object} event An object literal containing properties describing
+	 * @param {Object} event an object literal containing properties describing
 	 * the event.
 	 */
 

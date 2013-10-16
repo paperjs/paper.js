@@ -421,7 +421,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 *
 	 * @name Tool#on^2
 	 * @function
-	 * @param {Object} param An object literal containing one or more of the
+	 * @param {Object} param an object literal containing one or more of the
 	 * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
 	 * keydown, keyup}.
 	 */
@@ -440,7 +440,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 *
 	 * @name Tool#detach^2
 	 * @function
-	 * @param {Object} param An object literal containing one or more of the
+	 * @param {Object} param an object literal containing one or more of the
 	 * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
 	 * keydown, keyup}
 	 */
@@ -452,7 +452,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * @function
 	 * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
 	 * 'keydown', 'keyup')} type the event type
-	 * @param {Object} event An object literal containing properties describing
+	 * @param {Object} event an object literal containing properties describing
 	 * the event.
 	 */
 

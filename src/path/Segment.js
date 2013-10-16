@@ -54,7 +54,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 * Creates a new Segment object.
 	 *
 	 * @name Segment#initialize
-	 * @param {Object} object An object literal containing properties to
+	 * @param {Object} object an object literal containing properties to
 	 * be set on the segment.
 	 *
 	 * @example {@paperscript}

@@ -43,8 +43,9 @@ var Layer = Group.extend(/** @lends Layer# */{
 	 * {@link Project#layers} array. The newly created layer will be activated,
 	 * so all newly created items will be placed within it.
 	 *
-	 * @param {Object} object An object literal containing properties to
-	 * be set on the layer.
+	 * @name Layer#initialize
+	 * @param {Object} object an object literal containing the properties to be
+	 * set on the layer.
 	 *
 	 * @example {@paperscript}
 	 * var path = new Path([100, 100], [100, 200]);

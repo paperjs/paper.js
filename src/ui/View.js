@@ -484,7 +484,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 *
 	 * @name View#on^2
 	 * @function
-	 * @param {Object} param An object literal containing one or more of the
+	 * @param {Object} param an object literal containing one or more of the
 	 * following properties: {@code frame, resize}.
 	 * // Create a rectangle shaped path with its top left point at:
 	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
@@ -535,7 +535,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 *
 	 * @name View#detach^2
 	 * @function
-	 * @param {Object} param An object literal containing one or more of the
+	 * @param {Object} param an object literal containing one or more of the
 	 * following properties: {@code frame, resize}
 	 */
 
@@ -545,7 +545,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * @name View#fire
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
-	 * @param {Object} event An object literal containing properties describing
+	 * @param {Object} event an object literal containing properties describing
 	 * the event.
 	 */
 
