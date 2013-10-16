@@ -77,8 +77,9 @@ var ProxyContext = new function() {
 		} else {
 			fields[name] = {
 				get: function() {
-				return this._ctx[name];
+					return this._ctx[name];
 				},
+
 				set: function(value) {
 					console.log(this.getIndentation() + 'ctx.' + name + ' = '
 							+ JSON.stringify(value) + ';');
