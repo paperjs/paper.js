@@ -1600,13 +1600,19 @@ var Path = PathItem.extend(/** @lends Path# */{
 				? parent : this)._style;
 	},
 
-	toShape: function() {
+	// DOCS: toShape
+
+	toShape: function(insert) {
 		if (!this._closed)
 			return null;
 
+		if (insert === undefined)
+			insert = true;
+
 		var segments = this._segments,
-			center = this.getPosition(true),
-			shape = null,
+			type,
+			size,
+			radius,
 			topCenter;
 
 		function isColinear(i, j) {
@@ -1630,46 +1636,47 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// objects with curves(circle, ellipse, roundedRectangle).
 		if (this.isPolygon() && segments.length === 4
 				&& isColinear(0, 2) && isColinear(1, 3) && isOrthogonal(1)) {
-			shape = new Shape.Rectangle({
-				center: center,
-				size: new Size(getDistance(0, 3), getDistance(0, 1))
-			});
+			type = Shape.Rectangle;
+			size = new Size(getDistance(0, 3), getDistance(0, 1));
 			topCenter = segments[1]._point.add(segments[2]._point).divide(2);
 		} else if (segments.length === 8 && isArc(0) && isArc(2) && isArc(4)
 				&& isArc(6) && isColinear(1, 5) && isColinear(3, 7)) {
 			// It's a rounded rectangle.
-			var size = new Size(getDistance(1, 6), getDistance(0, 3));
-			shape = new Shape.Rectangle({
-				center: center,
-				size: size,
-				// Subtract side lengths from total width and divide by 2 to
-				// get corner radius size.
-				radius: size.subtract(new Size(getDistance(0, 7),
-						getDistance(1, 2))).divide(2)
-			});
+			type = Shape.Rectangle;
+			size = new Size(getDistance(1, 6), getDistance(0, 3));
+			// Subtract side lengths from total width and divide by 2 to get the
+			// corner radius size.
+			radius = size.subtract(new Size(getDistance(0, 7),
+					getDistance(1, 2))).divide(2);
 			topCenter = segments[3]._point.add(segments[4]._point).divide(2);
 		} else if (segments.length === 4
 				&& isArc(0) && isArc(1) && isArc(2) && isArc(3)) {
 			// If the distance between (point0 and point2) and (point1
 			// and point3) are equal, then it is a circle
 			if (Numerical.isZero(getDistance(0, 2) - getDistance(1, 3))) {
-				shape = new Shape.Circle(center, getDistance(0, 2) / 2);
+				type = Shape.Circle;
+				radius = getDistance(0, 2) / 2;
 			} else {
-				shape = new Shape.Ellipse({
-					center: center,
-					radius: new Size(getDistance(2, 0) / 2,
-							getDistance(3, 1) / 2)
-				});
+				type = Shape.Ellipse;
+				radius = new Size(getDistance(2, 0) / 2, getDistance(3, 1) / 2);
 			}
 			topCenter = segments[1]._point;
 		}
 
-		if (shape) {
+		if (type) {
+			var center = this.getPosition(true),
+				shape = new type({
+					center: center,
+					size: size,
+					radius: radius,
+					insert: insert
+				});
 			// Determine and apply the shape's angle of rotation.
 			shape.rotate(topCenter.subtract(center).getAngle() + 90);
 			shape.setStyle(this._style);
+			return shape;
 		}
-		return shape;
+		return null;
 	},
 
 	_contains: function(point) {
