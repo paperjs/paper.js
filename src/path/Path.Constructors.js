@@ -286,7 +286,7 @@ Path.inject({ statics: new function() {
 				var center = Point.readNamed(arguments, 'center'),
 					radius = Size.readNamed(arguments, 'radius');
 				rect = new Rectangle(center.subtract(radius),
-						radius.multiply(2));
+						center.add(radius));
 			} else {
 				rect = Rectangle.readNamed(arguments, 'rectangle');
 			}
