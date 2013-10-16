@@ -74,23 +74,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	},
 
 	/**
-	 * If this is a compound path with only one path inside,
-	 * the path is moved outside and the compound path is erased.
-	 * Otherwise, the compound path is returned unmodified.
-	 *
-	 * @return {CompoundPath|Path} the flattened compound path
-	 */
-	reduce: function() {
-		if (this._children.length == 1) {
-			var child = this._children[0];
-			child.insertAbove(this);
-			this.remove();
-			return child;
-		}
-		return this;
-	},
-
-	/**
 	 * Reverses the orientation of all nested paths.
 	 */
 	reverse: function() {

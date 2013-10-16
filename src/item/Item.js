@@ -1742,6 +1742,23 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	moveBelow: '#insertBelow',
 
 	/**
+	 * If this is a group, layer or compound-path with only one child-item,
+	 * the child-item is moved outside and the parent is erased. Otherwise, the
+	 * item itself is returned unmodified.
+	 *
+	 * @return {Item} the reduced item
+	 */
+	reduce: function() {
+		if (this._children && this._children.length === 1) {
+			var child = this._children[0];
+			child.insertAbove(this);
+			this.remove();
+			return child;
+		}
+		return this;
+	},
+
+	/**
 	* Removes the item from its parent's named children list.
 	*/
 	_removeNamed: function() {

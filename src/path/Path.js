@@ -1230,14 +1230,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
-	 * For simple paths, reduce always returns the path itself. See
-	 * {@link CompoundPath#reduce()} for more explanations.
-	 */
-	reduce: function() {
-		return this;
-	},
-
-	/**
 	 * The approximate length of the path in points.
 	 *
 	 * @type Number
