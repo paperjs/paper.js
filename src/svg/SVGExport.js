@@ -109,6 +109,14 @@ new function() {
 						seg4._point.subtract(seg3._point));
 		}
 
+		function isOrthogonal(i) {
+			var seg2 = segments[i],
+				seg1 = seg2.getPrevious(),
+				seg3 = seg2.getNext();
+			return seg2._point.subtract(seg1._point).isOrthogonal(
+					seg3._point.subtract(seg2._point));
+		}
+
 		// Returns true if the segment at the given index is the beginning of
 		// a orthogonal arc segment. The code is looking at the length of the
 		// handles and their relation to the distance to the imaginary corner
@@ -138,7 +146,7 @@ new function() {
 		// objects with curves(circle, ellipse, roundedRectangle).
 		if (path.isPolygon()) {
 			return  segments.length === 4 && path._closed
-					&& isColinear(0, 2) && isColinear(1, 3)
+					&& isColinear(0, 2) && isColinear(1, 3) && isOrthogonal(1)
 					? 'rect'
 					: segments.length === 0
 						? 'empty'
