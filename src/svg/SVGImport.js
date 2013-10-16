@@ -242,10 +242,12 @@ new function() {
 
 		// http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
 		ellipse: function(node) {
-			var center = getPoint(node, 'cx', 'cy'),
-				radius = getSize(node, 'rx', 'ry');
-			return new Path.Ellipse(new Rectangle(center.subtract(radius),
-					center.add(radius)));
+			// We only use object literal notation where the default one is not
+			// supported (e.g. center / radius fo Path.Ellipse).
+			return new Path.Ellipse({
+				center: getPoint(node, 'cx', 'cy'),
+				radius: getSize(node, 'rx', 'ry')
+			});
 		},
 
 		// http://www.w3.org/TR/SVG/shapes.html#RectElement
