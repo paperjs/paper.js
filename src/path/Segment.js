@@ -228,6 +228,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 		// this.corner = !this._handleIn.isColinear(this._handleOut);
 	},
 
+	// TODO: Rename this to #corner?
 	/**
 	 * Specifies whether the segment has no handles defined, meaning it connects
 	 * two straight lines.
@@ -242,6 +243,56 @@ var Segment = Base.extend(/** @lends Segment# */{
 	setLinear: function() {
 		this._handleIn.set(0, 0);
 		this._handleOut.set(0, 0);
+	},
+
+	// DOCS: #isColinear(segment), #isOrthogonal(), #isArc()
+
+	/**
+	 * Returns true if the the two segments are the beggining of two lines and
+	 * if these two lines are running parallel.
+	 */
+	isColinear: function(segment) {
+		var next1 = this.getNext(),
+			next2 = segment.getNext();
+		return this._handleOut.isZero() && next1._handleIn.isZero()
+				&& segment._handleOut.isZero() && next2._handleIn.isZero()
+				&& next1._point.subtract(this._point).isColinear(
+					next2._point.subtract(segment._point));
+	},
+
+	isOrthogonal: function() {
+		var prev = this.getPrevious(),
+			next = this.getNext();
+		return prev._handleOut.isZero() && this._handleIn.isZero()
+			&& this._handleOut.isZero() && next._handleIn.isZero()
+			&& this._point.subtract(prev._point).isOrthogonal(
+					next._point.subtract(this._point));
+	},
+
+	/**
+	 * Returns true if the segment at the given index is the beginning of an
+	 * orthogonal arc segment. The code looks at the length of the handles and
+	 * their relation to the distance to the imaginary corner point. If the
+	 * relation is kappa, then it's an arc.
+	 */
+	isArc: function() {
+		var next = this.getNext(),
+			handle1 = this._handleOut,
+			handle2 = next._handleIn,
+			kappa = Numerical.KAPPA;
+		if (handle1.isOrthogonal(handle2)) {
+			var from = this._point,
+				to = next._point,
+				// Find the corner point by intersecting the lines described
+				// by both handles:
+				corner = new Line(from, handle1, true).intersect(
+						new Line(to, handle2, true), true);
+			return corner && Numerical.isZero(handle1.getLength() /
+					corner.subtract(from).getLength() - kappa)
+				&& Numerical.isZero(handle2.getLength() /
+					corner.subtract(to).getLength() - kappa);
+		}
+		return false;
 	},
 
 	_isSelected: function(point) {

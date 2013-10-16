@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Resize</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var path = new Path.Circle({
+			center: [100, 100],
+			radius: 50,
+			fillColor: 'red'
+		});
+		var shape = path.toShape();
+		shape.position += [200, 0];
+
+		var path = new Path.Ellipse({
+			center: [100, 200],
+			radius: [50, 25],
+			fillColor: 'blue',
+			strokeColor: 'black',
+			strokeWidth: 10
+		});
+		path.rotate(20);
+		var shape = path.toShape();
+		shape.position += [200, 0];
+
+		var path = new Path.Rectangle({
+			center: [100, 300],
+			size: [100, 50],
+			fillColor: 'green',
+			strokeColor: 'black',
+			strokeWidth: 10
+		});
+		path.rotate(-20);
+		var shape = path.toShape();
+		shape.position += [200, 0];
+
+		var path = new Path.Rectangle({
+			center: [100, 400],
+			size: [50, 100],
+			radius: [5, 10],
+			fillColor: 'orange',
+			strokeColor: 'black',
+			strokeWidth: 10
+		});
+		path.rotate(20);
+		var shape = path.toShape();
+		shape.position += [200, 0];
+	</script>
+</head>
+<body>
+	<canvas id="canvas" resize></canvas>
+</body>
+</html>

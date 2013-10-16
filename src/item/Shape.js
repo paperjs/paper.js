@@ -24,11 +24,11 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 	// TODO: serialization
 
-	initialize: function Shape(shape, point, size, radius, props) {
+	initialize: function Shape(shape, center, size, radius, props) {
 		this._shape = shape;
 		this._size = size;
 		this._radius = radius;
-		this._initialize(props, point);
+		this._initialize(props, center);
 	},
 
 	clone: function(insert) {
