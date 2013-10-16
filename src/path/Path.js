@@ -2325,7 +2325,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				matrix);
 	},
 
-// Mess with indentation in order to get more line-space below...
+// Mess with indentation in order to get more line-space below:
 statics: {
 	/**
 	 * Determines whether the segments describe a path in clockwise or counter-

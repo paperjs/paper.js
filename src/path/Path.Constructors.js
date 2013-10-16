@@ -279,6 +279,13 @@ Path.inject({ statics: new function() {
 		 * 	size: [180, 60],
 		 * 	fillColor: 'black'
 		 * });
+		 *
+		 * @example {@paperscript} // Placing by center and radius
+		 * var shape = new Path.Ellipse({
+		 * 	center: [110, 50],
+		 * 	radius: [90, 30],
+		 * 	fillColor: 'black'
+		 * });
 		 */
 		Ellipse: function(/* rectangle */) {
 			var rect;
