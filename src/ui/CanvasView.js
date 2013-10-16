@@ -26,7 +26,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	 */
 	initialize: function CanvasView(canvas) {
 		// Handle canvas argument
-		if (!canvas.constructor.name === "HTMLCanvasElement") {
+		if (canvas.constructor.name !== "HTMLCanvasElement") {
 			// 2nd argument onwards could be view size, otherwise use default:
 			var size = Size.read(arguments, 1);
 			if (size.isZero())
