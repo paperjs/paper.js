@@ -31,6 +31,13 @@ var Shape = Item.extend(/** @lends Shape# */{
 		this._initialize(props, point);
 	},
 
+	clone: function(insert) {
+		return this._clone(new Shape(this._type, this.getPosition(true),
+				this._size.clone(),
+				this._radius.clone ? this._radius.clone() : this._radius,
+				{ insert: false }), insert);
+	},
+
 	/**
 	 * The size of the shape.
 	 *
