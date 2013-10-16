@@ -16,70 +16,14 @@ Path.inject({ statics: new function() {
 		return new Path(Base.getNamed(args));
 	}
 
-	function createRectangle(/* rectangle */) {
-		var rect = Rectangle.readNamed(arguments, 'rectangle'),
-			radius = Size.readNamed(arguments, 'radius', 0, 0,
-					{ readNull: true }),
-			bl = rect.getBottomLeft(true),
-			tl = rect.getTopLeft(true),
-			tr = rect.getTopRight(true),
-			br = rect.getBottomRight(true),
-			path = createPath(arguments);
-		if (!radius || radius.isZero()) {
-			path._add([
-				new Segment(bl),
-				new Segment(tl),
-				new Segment(tr),
-				new Segment(br)
-			]);
-		} else {
-			radius = Size.min(radius, rect.getSize(true).divide(2));
-			var h = radius.multiply(kappa * 2); // handle vector
-			path._add([
-				new Segment(bl.add(radius.width, 0), null, [-h.width, 0]),
-				new Segment(bl.subtract(0, radius.height), [0, h.height], null),
-
-				new Segment(tl.add(0, radius.height), null, [0, -h.height]),
-				new Segment(tl.add(radius.width, 0), [-h.width, 0], null),
-
-				new Segment(tr.subtract(radius.width, 0), null, [h.width, 0]),
-				new Segment(tr.add(0, radius.height), [0, -h.height], null),
-
-				new Segment(br.subtract(0, radius.height), null, [0, h.height]),
-				new Segment(br.subtract(radius.width, 0), [h.width, 0], null)
-			]);
-		}
-		path._closed = true;
-		return path;
-	}
-
-	var kappa = Numerical.KAPPA / 2;
-
-	var ellipseSegments = [
-		new Segment([0, 0.5], [0, kappa ], [0, -kappa]),
-		new Segment([0.5, 0], [-kappa, 0], [kappa, 0 ]),
-		new Segment([1, 0.5], [0, -kappa], [0, kappa ]),
-		new Segment([0.5, 1], [kappa, 0 ], [-kappa, 0])
-	];
-
-	function createEllipse(/* rectangle */) {
-		var rect = Rectangle.readNamed(arguments, 'rectangle'),
-			path = createPath(arguments),
-			point = rect.getPoint(true),
-			size = rect.getSize(true),
-			segments = new Array(4);
-		for (var i = 0; i < 4; i++) {
-			var segment = ellipseSegments[i];
-			segments[i] = new Segment(
-				segment._point.multiply(size).add(point),
-				segment._handleIn.multiply(size),
-				segment._handleOut.multiply(size)
-			);
-		}
-		path._add(segments);
-		path._closed = true;
-		return path;
-	}
+	var kappa = Numerical.KAPPA,
+		halfKappa = kappa / 2,
+		ellipseSegments = [
+			new Segment([0, 0.5], [0, halfKappa ], [0, -halfKappa]),
+			new Segment([0.5, 0], [-halfKappa, 0], [halfKappa, 0 ]),
+			new Segment([1, 0.5], [0, -halfKappa], [0, halfKappa ]),
+			new Segment([0.5, 1], [halfKappa, 0 ], [-halfKappa, 0])
+		];
 
 	return /** @lends Path */{
 		/**
@@ -133,7 +77,8 @@ Path.inject({ statics: new function() {
 		Circle: function(/* center, radius */) {
 			var center = Point.readNamed(arguments, 'center'),
 				radius = Base.readNamed(arguments, 'radius');
-			return createEllipse(new Rectangle(center.subtract(radius),
+			// No need for new, since that's happening inside Path.Ellipse
+			return Path.Ellipse(new Rectangle(center.subtract(radius),
 					new Size(radius * 2, radius * 2)))
 					.set(Base.getNamed(arguments));
 		},
@@ -236,12 +181,48 @@ Path.inject({ statics: new function() {
 		 * 	strokeColor: 'black'
 		 * });
 		 */
-		Rectangle: createRectangle,
+		Rectangle: function(/* rectangle */) {
+			var rect = Rectangle.readNamed(arguments, 'rectangle'),
+				radius = Size.readNamed(arguments, 'radius', 0, 0,
+						{ readNull: true }),
+				bl = rect.getBottomLeft(true),
+				tl = rect.getTopLeft(true),
+				tr = rect.getTopRight(true),
+				br = rect.getBottomRight(true),
+				path = createPath(arguments);
+			if (!radius || radius.isZero()) {
+				path._add([
+					new Segment(bl),
+					new Segment(tl),
+					new Segment(tr),
+					new Segment(br)
+				]);
+			} else {
+				radius = Size.min(radius, rect.getSize(true).divide(2));
+				var rx = radius.width,
+					ry = radius.height,
+					hx = rx * kappa,
+					hy = ry * kappa;
+				path._add([
+					new Segment(bl.add(rx, 0), null, [-hx, 0]),
+					new Segment(bl.subtract(0, ry), [0, hy]),
+					new Segment(tl.add(0, ry), null, [0, -hy]),
+					new Segment(tl.add(rx, 0), [-hx, 0], null),
+					new Segment(tr.subtract(rx, 0), null, [hx, 0]),
+					new Segment(tr.add(0, ry), [0, -hy], null),
+					new Segment(br.subtract(0, ry), null, [0, hy]),
+					new Segment(br.subtract(rx, 0), [hx, 0])
+				]);
+			}
+			// No need to use setter for _closed since _add() called _changed().
+			path._closed = true;
+			return path;
+		},
 
 		/**
 		 * @deprecated use {@link #Path.Rectangle(rectangle, size)} instead.
 		 */
-		RoundRectangle: createRectangle,
+		RoundRectangle: '#Rectangle',
 
 		/**
 		 * Creates an ellipse shaped Path item.
@@ -268,12 +249,29 @@ Path.inject({ statics: new function() {
 		 * 	fillColor: 'black'
 		 * });
 		 */
-		Ellipse: createEllipse,
+		Ellipse: function(/* rectangle */) {
+			var rect = Rectangle.readNamed(arguments, 'rectangle'),
+				path = createPath(arguments),
+				point = rect.getPoint(true),
+				size = rect.getSize(true),
+				segments = new Array(4);
+			for (var i = 0; i < 4; i++) {
+				var segment = ellipseSegments[i];
+				segments[i] = new Segment(
+					segment._point.multiply(size).add(point),
+					segment._handleIn.multiply(size),
+					segment._handleOut.multiply(size)
+				);
+			}
+			path._add(segments);
+			path._closed = true;
+			return path;
+		},
 
 		/**
 		 * @deprecated use {@link #Path.Ellipse(rectangle)} instead.
 		 */
-		Oval: createEllipse,
+		Oval: '#Ellipse',
 
 		/**
 		 * Creates a circular arc shaped Path item.
