@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Patterns</title>
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		project.importSVG(document.getElementById('svg'));
+	</script>
+</head>
+<body>	
+	<!-- <svg id="svg" x="0" y="0" width="300" height="600" version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink">
+	  <pattern width="25" height="25" gradientUnits="userSpaceOnUse" id="pattern-1">
+	  	<image href="pattern.png" width="25" height="25"></image>
+	  </pattern>
+	  <g fill="none" stroke="rgb(0, 0, 0)" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0">
+	    <circle cx="150" cy="150" r="120" fill="url(#pattern-1)"></circle>
+	  </g>
+	</svg> -->
+
+	<svg id="svg" x="0" y="0" width="300" height="600" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><pattern patternUnits="userSpaceOnUse" width="25" height="25" id="pattern-1"><image xlink:href="pattern.png" width="25" height="25"></image></pattern><pattern patternUnits="userSpaceOnUse" width="30" height="30" id="pattern-2"><image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcAQMAAABIw03XAAAABlBMVEUAAAAUFBSKPLFLAAAANUlEQVR4Xi3EqREAAAwCwZvBUgz9v5QWQcxCkyd02GJIPG2fJI/NI9FBxWj8QDJMOyIxiscB2WUVGSCrVmAAAAAASUVORK5CYII=" width="30" height="30"></image></pattern></defs><g fill="none" stroke="rgb(255,0,0)" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="sans-serif" font-size="12" text-anchor="start" mix-blend-mode="normal"><circle cx="150" cy="150" r="120" fill="url(#pattern-1)"></circle><rect x="45" y="345" width="210" height="210" transform="rotate(45,150,450)" fill="url(#pattern-2)"></rect></g></svg>
+
+	<canvas id="canvas" width="300" height="600"></canvas>
+</body>
+</html>

@@ -169,6 +169,29 @@ new function() {
 		return null;
 	}
 
+	function importPattern(node, type) {
+		var nodes = node.childNodes, image;
+		// Takes first actual node, and assumes that it is an image
+		// TODO: handle cases when it is not an image
+
+		for(var i = 0; i < nodes.length; i++) {
+			if (nodes[i].nodeType === 1 && nodes[i].nodeName === 'image') {
+				image = nodes[i];
+				break;
+			}
+		}
+
+		if(image){
+			applyAttributes(new Pattern(
+				image.getAttribute('xlink:href') || image.getAttribute('xlink:href'),
+				'repeat', 
+				image.getAttribute('width'), 
+				image.getAttribute('height')), node);
+		}
+		return null;
+
+	}
+
 	// NOTE: All importers are lowercase, since jsdom is using uppercase
 	// nodeNames still.
 	var importers = {
@@ -191,6 +214,7 @@ new function() {
 		lineargradient: importGradient,
 		// http://www.w3.org/TR/SVG/pservers.html#RadialGradients
 		radialgradient: importGradient,
+		pattern: importPattern,
 
 		// http://www.w3.org/TR/SVG/struct.html#ImageElement
 		image: function (node) {

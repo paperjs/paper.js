@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 14 13:03:23 2013 +0200
+ * Date: Wed Oct 16 13:42:48 2013 +0200
  *
  ***
  *
@@ -10814,7 +10814,6 @@ new function() {
 
 	function exportPattern(color, item) {
 		var patternNode = getDefinition(color.getPattern(), 'pattern');
-		console.log('item', item, 'item matrix rotation', item._matrix.getRotation());
 		if(!patternNode) {
 			var pattern = color.getPattern(), 
 				attrs = { 'patternUnits': 'userSpaceOnUse', 'width': pattern.width, 'height': pattern.height};
@@ -11149,6 +11148,27 @@ new function() {
 		return null;
 	}
 
+	function importPattern(node, type) {
+		var nodes = node.childNodes, image;
+
+		for(var i = 0; i < nodes.length; i++) {
+			if (nodes[i].nodeType === 1 && nodes[i].nodeName === 'image') {
+				image = nodes[i];
+				break;
+			}
+		}
+
+		if(image){
+			applyAttributes(new Pattern(
+				image.getAttribute('xlink:href') || image.getAttribute('xlink:href'),
+				'repeat', 
+				image.getAttribute('width'), 
+				image.getAttribute('height')), node);
+		}
+		return null;
+
+	}
+
 	var importers = {
 		'#document': function(node) {
 			return importSVG(node.childNodes[0]);
@@ -11162,6 +11182,7 @@ new function() {
 		path: importPath,
 		lineargradient: importGradient,
 		radialgradient: importGradient,
+		pattern: importPattern,
 
 		image: function (node) {
 			var raster = new Raster(getValue(node, 'href', true));
