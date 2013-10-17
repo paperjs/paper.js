@@ -68,49 +68,49 @@
 var Style = Base.extend(new function() {
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
 	// not supported.
-	var fontSize = 12,
-		leadingFactor = 1.2,
-		defaults = {
-			// Paths
-			fillColor: undefined,
-			strokeColor: undefined,
-			strokeWidth: 1,
-			strokeCap: 'butt',
-			strokeJoin: 'miter',
-			miterLimit: 10,
-			dashOffset: 0,
-			dashArray: [],
-			// Shadows
-			shadowColor: undefined,
-			shadowBlur: 0,
-			shadowOffset: new Point(),
-			// Selection
-			selectedColor: undefined,
-			// Characters
-			font: 'sans-serif',
-			fontSize: fontSize,
-			leading: fontSize * leadingFactor,
-			// Paragraphs
-			justification: 'left'
-		},
-		flags = {
-			strokeWidth: /*#=*/ Change.STROKE,
-			strokeCap: /*#=*/ Change.STROKE,
-			strokeJoin: /*#=*/ Change.STROKE,
-			miterLimit: /*#=*/ Change.STROKE,
-			font: /*#=*/ Change.GEOMETRY,
-			fontSize: /*#=*/ Change.GEOMETRY,
-			leading: /*#=*/ Change.GEOMETRY,
-			justification: /*#=*/ Change.GEOMETRY
-		},
+	var defaults = {
+		// Paths
+		fillColor: undefined,
+		strokeColor: undefined,
+		strokeWidth: 1,
+		strokeCap: 'butt',
+		strokeJoin: 'miter',
+		miterLimit: 10,
+		dashOffset: 0,
+		dashArray: [],
+		// Shadows
+		shadowColor: undefined,
+		shadowBlur: 0,
+		shadowOffset: new Point(),
+		// Selection
+		selectedColor: undefined,
+		// Characters
+		font: 'sans-serif',
+		fontSize: 12,
+		leading: null,
+		// Paragraphs
+		justification: 'left'
+	};
+
+	var flags = {
+		strokeWidth: /*#=*/ Change.STROKE,
+		strokeCap: /*#=*/ Change.STROKE,
+		strokeJoin: /*#=*/ Change.STROKE,
+		miterLimit: /*#=*/ Change.STROKE,
+		font: /*#=*/ Change.GEOMETRY,
+		fontSize: /*#=*/ Change.GEOMETRY,
+		leading: /*#=*/ Change.GEOMETRY,
+		justification: /*#=*/ Change.GEOMETRY
+	};
+
+	var item = {},
 		fields = {
 			_defaults: defaults,
 			// Override default fillColor for text items
 			_textDefaults: Base.merge(defaults, {
 				fillColor: new Color() // black
 			})
-		},
-		item = {};
+		};
 
 	Base.each(defaults, function(value, key) {
 		var isColor = /Color$/.test(key),
@@ -236,9 +236,9 @@ var Style = Base.extend(new function() {
 	},
 
 	getLeading: function getLeading() {
-		// Override leading to return fontSize * leadingFactor by default.
+		// Override leading to return fontSize * 1.2 by default.
 		var leading = getLeading.base.call(this);
-		return leading != null ? leading : this.getFontSize() * leadingFactor;
+		return leading != null ? leading : this.getFontSize() * 1.2;
 	},
 
 	getFontStyle: function() {
