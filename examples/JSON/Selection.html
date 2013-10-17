@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Symbols</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas1">
+		var path = new Path.Ellipse({
+			from: [10, 10],
+			to: [200, 100],
+			fillColor: 'red'
+		});
+		path.firstSegment.handleOut.selected = true;
+
+		var circle = new Path.Circle({
+			center: [50, 150],
+			radius: 25,
+			fillColor: 'blue'
+		});
+		circle.selected = true;
+
+		var rectangle = new Path.Rectangle({
+			from: [25, 200],
+			to: [100, 225],
+			fillColor: 'green'
+		});
+
+		var group = new Group(circle, rectangle);
+
+		window._json = project.exportJSON();
+		console.log(window._json);
+	</script>
+	<script type="text/paperscript" canvas="canvas2">
+		project.importJSON(window._json);
+	</script>
+</head>
+<body>
+	<canvas id="canvas1" width="500" height="500"></canvas>
+	<canvas id="canvas2" width="500" height="500"></canvas>
+</body>
+</html>

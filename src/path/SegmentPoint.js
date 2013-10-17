@@ -24,6 +24,7 @@ var SegmentPoint = Point.extend({
 			x = y = 0;
 		} else if ((x = point[0]) !== undefined) { // Array-like
 			y = point[1];
+			selected = point[2]; // See #_serialize()
 		} else {
 			// If not Point-like already, read Point from arguments
 			if ((x = point.x) === undefined) {
@@ -45,6 +46,15 @@ var SegmentPoint = Point.extend({
 		this._y = y;
 		this._owner._changed(this);
 		return this;
+	},
+
+	_serialize: function(options) {
+		var f = options.formatter,
+			values = [f.number(this._x), f.number(this._y)];
+		// Included the selected state of the segment point
+		if (this.isSelected())
+			values.push(true);
+		return values;
 	},
 
 	getX: function() {

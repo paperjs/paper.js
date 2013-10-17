@@ -234,8 +234,7 @@ var Point = Base.extend(/** @lends Point# */{
 		var f = options.formatter;
 		// For speed reasons, we directly call formatter.number() here, instead
 		// of converting array through Base.serialize() which makes a copy.
-		return [f.number(this.x),
-				f.number(this.y)];
+		return [f.number(this.x), f.number(this.y)];
 	},
 
 	/**

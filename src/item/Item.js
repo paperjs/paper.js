@@ -57,6 +57,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		blendMode: 'normal',
 		opacity: 1,
 		guide: false,
+		selected: false,
 		clipMask: false,
 		data: {}
 	},
