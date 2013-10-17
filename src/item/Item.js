@@ -164,10 +164,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		function serialize(fields) {
 			for (var key in fields) {
 				var value = that[key];
-				if (!Base.equals(value, fields[key]))
+				// Allow returned values to mark themselves as default through
+				// the "hidden" _default property. See Style#getLeading()
+				if (!(value && value._default)
+						&& !Base.equals(value, fields[key])) {
 					props[key] = Base.serialize(value, options,
 							// Do not use compact mode for data
 							key !== 'data', dictionary);
+				}
 			}
 		}
 
