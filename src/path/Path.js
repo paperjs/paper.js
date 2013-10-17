@@ -138,11 +138,14 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	setSegments: function(segments) {
-		this._selectedSegmentState = 0;
+		var fullySelected = this.isFullySelected();
 		this._segments.length = 0;
+		this._selectedSegmentState = 0;
 		// Calculate new curves next time we call getCurves()
 		delete this._curves;
 		this._add(Segment.readAll(segments));
+		if (fullySelected)
+			this.setFullySelected(true);
 	},
 
 	/**
@@ -324,8 +327,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			curves = this._curves,
 			amount = segs.length,
 			append = index == null,
-			index = append ? segments.length : index,
-			fullySelected = this.isFullySelected();
+			index = append ? segments.length : index;
 		// Scan through segments to add first, convert if necessary and set
 		// _path and _index references on them.
 		for (var i = 0; i < amount; i++) {
@@ -336,9 +338,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 				segment = segs[i] = segment.clone();
 			segment._path = this;
 			segment._index = index + i;
-			// Select newly added segments if path was fully selected before
-			if (fullySelected)
-				segment._selectionState = /*#=*/ SelectionState.POINT;
 			// If parts of this segment are selected, adjust the internal
 			// _selectedSegmentState now
 			if (segment._selectionState)
@@ -745,7 +744,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 */
 	/**
-	 * Specifies whether the path and all its segments are selected.
+	 * Specifies whether the path and all its segments are selected. Cannot be 
+	 * {@code true} on an empty path.
 	 *
 	 * @type Boolean
 	 * @bean
@@ -780,8 +780,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * }
 	 */
 	isFullySelected: function() {
-		return this._selected && this._selectedSegmentState
-				== this._segments.length * /*#=*/ SelectionState.POINT;
+		var length = this._segments.length;
+		return this._selected && length > 0 && this._selectedSegmentState
+				=== length * /*#=*/ SelectionState.POINT;
 	},
 
 	setFullySelected: function(selected) {
