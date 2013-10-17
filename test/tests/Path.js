@@ -164,27 +164,7 @@ test('After simplifying a path using #simplify(), the path should stay fullySele
 	var path = new Path();
 	for (var i = 0; i < 30; i++) {
 		path.add(i * 10, 10);
-	};
-	path.fullySelected = true;
-	equals(function() {
-		return path.selected;
-	}, true);
-
-	path.simplify();
-
-	equals(function() {
-		return path.selected;
-	}, true);
-	equals(function() {
-		return path.fullySelected;
-	}, true);
-});
-
-test('After simplifying a path using #simplify(), the path should stay fullySelected', function() {
-	var path = new Path();
-	for (var i = 0; i < 30; i++) {
-		path.add(i * 10, 10);
-	};
+	}
 	path.fullySelected = true;
 	equals(function() {
 		return path.selected;
@@ -206,7 +186,7 @@ test('After cloning a selected item, it should be added to the Project#selectedI
 	var copy = path.clone();
 
 	equals(function() {
-		return paper.project.selectedItems.length
+		return paper.project.selectedItems.length;
 	}, 2);
 });
 
@@ -214,7 +194,7 @@ test('After simplifying a path using #simplify(), the path should stay selected'
 	var path = new Path();
 	for (var i = 0; i < 30; i++) {
 		path.add(i * 10, (i % 2 ? 20 : 40));
-	};
+	}
 	path.selected = true;
 	path.simplify();
 	equals(function() {
@@ -226,7 +206,7 @@ test('After smoothing a path using #smooth(), the path should stay fullySelected
 	var path = new Path();
 	for (var i = 0; i < 30; i++) {
 		path.add(i * 10, (i % 2 ? 20 : 40));
-	};
+	}
 	path.fullySelected = true;
 	path.smooth();
 	equals(function() {
@@ -238,7 +218,7 @@ test('After smoothing a path using #smooth(), the path should stay selected', fu
 	var path = new Path();
 	for (var i = 0; i < 30; i++) {
 		path.add(i * 10, (i % 2 ? 20 : 40));
-	};
+	}
 	path.selected = true;
 	path.smooth();
 	equals(function() {
