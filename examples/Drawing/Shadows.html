@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Shadows</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var makeBox = function(center, fillColor, strokeColor, shadowColor, shadowBlur, shadowOffset) {
+            var path = new Path.Rectangle({
+                radius: 10,
+                rectangle: { size: [50, 50] },
+                fillColor: fillColor,
+                strokeColor: strokeColor,
+                shadowColor: shadowColor,
+                shadowBlur: shadowBlur || 5,
+                shadowOffset: shadowOffset || new Point(5,5)
+                });
+            path.position = center;
+        }
+
+        var makeCircle = function(center, fillColor, strokeColor, shadowColor, shadowBlur, shadowOffset) {
+            var circle = new Shape.Circle({
+            radius: 25,
+            fillColor: fillColor,
+            strokeColor: strokeColor,
+            shadowColor: shadowColor,
+            shadowBlur: shadowBlur || 5,
+            shadowOffset: shadowOffset || new Point(5,5)
+            });
+            circle.position = center;
+        }
+
+        var y = 50;
+        var dx = 70;
+        var left = 10;
+        makeBox(new Point(left + dx, y), 'red', null, null);
+        makeBox(new Point(left + 2*dx, y), null, 'green', null);
+        makeBox(new Point(left + 3*dx , y), 'red', 'green', null);
+
+        y = 120;
+        makeBox(new Point(left + dx, y), 'red', null, 'gray');
+        makeBox(new Point(left + 2*dx, y), null, 'green', 'gray');
+        makeBox(new Point(left + 3*dx, y), 'red', 'green', 'gray');
+
+        y = 220;
+        makeCircle(new Point(left + dx, y), 'orange', null, null);
+        makeCircle(new Point(left + 2*dx, y), null, 'green', null);
+        makeCircle(new Point(left + 3*dx , y), 'orange', 'green', null);
+
+
+        y = 290;
+        makeCircle(new Point(left + dx, y), 'orange', null, 'gray');
+        makeCircle(new Point(left + 2*dx, y), null, 'green', 'gray');
+        makeCircle(new Point(left + 3*dx, y), 'orange', 'green', 'gray');
+
+
+    </script>
+</head>
+<body>
+<canvas id="canvas" resize></canvas>
+</body>
+</html>

@@ -141,6 +141,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 		var style = this._style,
 			fillColor = style.getFillColor(),
 			strokeColor = style.getStrokeColor(),
+			shadowColor = style.getShadowColor(),
 			clip = param.clip;
 		if (fillColor || strokeColor || clip) {
 			var radius = this._radius,
@@ -189,13 +190,25 @@ var Shape = Item.extend(/** @lends Shape# */{
 			}
 			ctx.closePath();
 		}
-		if (!clip && (fillColor || strokeColor)) {
+
+        function drawFillAndStroke() {
+            if (fillColor)
+                ctx.fill();
+            if (strokeColor)
+                ctx.stroke();
+        }
+
+        if (!clip && (fillColor || strokeColor)) {
 			this._setStyles(ctx);
-			if (fillColor)
-				ctx.fill();
-			if (strokeColor)
-				ctx.stroke();
-		}
+            drawFillAndStroke();
+            if (shadowColor) {
+                // draw the object again, without a shadow
+                var _saved = ctx.shadowColor;
+                ctx.shadowColor = "transparent";
+                drawFillAndStroke(ctx, fillColor, strokeColor);
+                ctx.shadowColor = _saved;
+            }
+        }
 	},
 
 	_canComposite: function() {

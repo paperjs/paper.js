@@ -2002,6 +2002,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			var style = this.getStyle(),
 				fillColor = style.getFillColor(),
 				strokeColor = style.getStrokeColor(),
+				shadowColor = style.getShadowColor(),
 				dashArray = style.getDashArray(),
 				// dashLength is only set if we can't draw dashes natively
 				dashLength = !paper.support.nativeDash && strokeColor
@@ -2021,38 +2022,50 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (this._closed)
 				ctx.closePath();
 
-			if (!clip && !compound && (fillColor || strokeColor)) {
+            function drawFillAndStroke() {
+                if (fillColor)
+                    ctx.fill();
+                if (strokeColor) {
+                    if (dashLength) {
+                        // We cannot use the path created by drawSegments above
+                        // Use CurveFlatteners to draw dashed paths:
+                        ctx.beginPath();
+                        var flattener = new PathFlattener(this),
+                            length = flattener.length,
+                            from = -style.getDashOffset(), to,
+                            i = 0;
+                        from = from % length;
+                        // Step backwards in the dash sequence first until the
+                        // from parameter is below 0.
+                        while (from > 0) {
+                            from -= getOffset(i--) + getOffset(i--);
+                        }
+                        while (from < length) {
+                            to = from + getOffset(i++);
+                            if (from > 0 || to > 0)
+                                flattener.drawPart(ctx,
+                                    Math.max(from, 0), Math.max(to, 0));
+                            from = to + getOffset(i++);
+                        }
+                    }
+                    ctx.stroke();
+                }
+            }
+
+            if (!clip && !compound && (fillColor || strokeColor)) {
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
 				this._setStyles(ctx);
-				if (fillColor)
-					ctx.fill();
-				if (strokeColor) {
-					if (dashLength) {
-						// We cannot use the path created by drawSegments above
-						// Use CurveFlatteners to draw dashed paths:
-						ctx.beginPath();
-						var flattener = new PathFlattener(this),
-							length = flattener.length,
-							from = -style.getDashOffset(), to,
-							i = 0;
-						from = from % length;
-						// Step backwards in the dash sequence first until the
-						// from parameter is below 0.
-						while (from > 0) {
-							from -= getOffset(i--) + getOffset(i--);
-						}
-						while (from < length) {
-							to = from + getOffset(i++);
-							if (from > 0 || to > 0)
-								flattener.drawPart(ctx,
-										Math.max(from, 0), Math.max(to, 0));
-							from = to + getOffset(i++);
-						}
-					}
-					ctx.stroke();
-				}
-			}
+                drawFillAndStroke();
+                if (shadowColor) {
+                    // draw the object again, without a shadow
+                    var _saved = ctx.shadowColor;
+                    ctx.shadowColor = "transparent";
+                    drawFillAndStroke(ctx, fillColor, strokeColor);
+                    ctx.shadowColor = _saved;
+                }
+
+            }
 		},
 
 		_drawSelected: function(ctx, matrix) {
