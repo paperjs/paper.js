@@ -12,10 +12,6 @@
 
 Path.inject({ statics: new function() {
 
-	function createPath(args) {
-		return new Path(Base.getNamed(args));
-	}
-
 	var kappa = Numerical.KAPPA,
 		halfKappa = kappa / 2,
 		ellipseSegments = [
@@ -26,7 +22,7 @@ Path.inject({ statics: new function() {
 		];
 
 	function createEllipse(rect, args) {
-		var path = createPath(args),
+		var path = new Path(),
 			point = rect.getPoint(true),
 			size = rect.getSize(true),
 			segments = new Array(4);
@@ -40,7 +36,9 @@ Path.inject({ statics: new function() {
 		}
 		path._add(segments);
 		path._closed = true;
-		return path;
+		// Set named arguments at the end, since some depend on geometry to be
+		// defined (e.g. #clockwise)
+		return path.set(Base.getNamed(args));
 	}
 
 	 
@@ -216,8 +214,8 @@ Path.inject({ statics: new function() {
 				bl = rect.getBottomLeft(true),
 				tl = rect.getTopLeft(true),
 				tr = rect.getTopRight(true),
-				br = rect.getBottomRight(true),
-				path = createPath(arguments);
+				br = rect.getBottomRight(true);
+				path = new Path();
 			if (!radius || radius.isZero()) {
 				path._add([
 					new Segment(bl),
@@ -244,7 +242,7 @@ Path.inject({ statics: new function() {
 			}
 			// No need to use setter for _closed since _add() called _changed().
 			path._closed = true;
-			return path;
+			return path.set(Base.getNamed(arguments));
 		},
 
 		/**
@@ -343,10 +341,10 @@ Path.inject({ statics: new function() {
 			var from = Point.readNamed(arguments, 'from'),
 				through = Point.readNamed(arguments, 'through'),
 				to = Point.readNamed(arguments, 'to'),
-				path = createPath(arguments);
+				path = new Path();
 			path.moveTo(from);
 			path.arcTo(through, to);
-			return path;
+			return path.set(Base.getNamed(arguments));
 		},
 
 		/**
@@ -386,7 +384,7 @@ Path.inject({ statics: new function() {
 			var center = Point.readNamed(arguments, 'center'),
 				sides = Base.readNamed(arguments, 'sides'),
 				radius = Base.readNamed(arguments, 'radius'),
-				path = createPath(arguments),
+				path = new Path(),
 				step = 360 / sides,
 				three = !(sides % 3),
 				vector = new Point(0, three ? -radius : radius),
@@ -398,7 +396,7 @@ Path.inject({ statics: new function() {
 			}
 			path._add(segments);
 			path._closed = true;
-			return path;
+			return path.set(Base.getNamed(arguments));
 		},
 
 		/**
@@ -446,7 +444,7 @@ Path.inject({ statics: new function() {
 				points = Base.readNamed(arguments, 'points') * 2,
 				radius1 = Base.readNamed(arguments, 'radius1'),
 				radius2 = Base.readNamed(arguments, 'radius2'),
-				path = createPath(arguments),
+				path = new Path(),
 				step = 360 / points,
 				vector = new Point(0, -1),
 				segments = new Array(points);
@@ -456,7 +454,7 @@ Path.inject({ statics: new function() {
 			}
 			path._add(segments);
 			path._closed = true;
-			return path;
+			return path.set(Base.getNamed(arguments));
 		}
 	};
 }});
