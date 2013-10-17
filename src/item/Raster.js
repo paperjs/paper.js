@@ -92,6 +92,10 @@ var Raster = Item.extend(/** @lends Raster# */{
 			this._size = new Size();
 	},
 
+	_equals: function(item) {
+		return this.getSource() === item.getSource();
+	},
+
 	clone: function(insert) {
 		var param = { insert: false },
 			image = this._image;

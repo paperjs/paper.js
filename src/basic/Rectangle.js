@@ -205,7 +205,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 			rect = Rectangle.read(arguments);
 		return rect === this
 				|| rect && this.x === rect.x && this.y === rect.y
-					&& this.width === rect.width && this.height=== rect.height
+					&& this.width === rect.width && this.height === rect.height
 				|| false;
 	},
 

@@ -112,9 +112,9 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Boolean} {@true if the matrices are equal}
 	 */
 	equals: function(mx) {
-		return mx === this || mx && this._a == mx._a && this._b == mx._b
-				&& this._c == mx._c && this._d == mx._d && this._tx == mx._tx
-				&& this._ty == mx._ty
+		return mx === this || mx && this._a === mx._a && this._b === mx._b
+				&& this._c === mx._c && this._d === mx._d
+				&& this._tx === mx._tx && this._ty === mx._ty
 				|| false;
 	},
 

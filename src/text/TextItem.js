@@ -44,11 +44,20 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 		this._initialize(hasProps && arg, !hasProps && Point.read(arguments));
 	},
 
+	_equals: function(item) {
+		return this._content === item._content;
+	},
+
+	_clone: function _clone(copy) {
+		copy.setContent(this._content);
+		return _clone.base.call(this, copy);
+	},
+
 	/**
 	 * The text contents of the text item.
 	 *
-	 * @name TextItem#content
 	 * @type String
+	 * @bean
 	 *
 	 * @example {@paperscript}
 	 * // Setting the content of a PointText item:
@@ -75,12 +84,6 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	 * 	text.content = 'Your position is: ' + event.point.toString();
 	 * }
 	 */
-
-	_clone: function _clone(copy) {
-		copy.setContent(this._content);
-		return _clone.base.call(this, copy);
-	},
-
 	getContent: function() {
 		return this._content;
 	},

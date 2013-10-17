@@ -31,6 +31,13 @@ var Shape = Item.extend(/** @lends Shape# */{
 		this._initialize(props, center);
 	},
 
+	_equals: function(item) {
+		return this._shape === item._shape
+			&& this._size.equals(item._size)
+			// Radius can be a number or size:
+			&& Base.equals(this._radius, item._radius);
+	},
+
 	clone: function(insert) {
 		return this._clone(new Shape(this._shape, this.getPosition(true),
 				this._size.clone(),

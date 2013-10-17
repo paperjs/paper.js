@@ -96,6 +96,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 		this._initialize(!segments && arg);
 	},
 
+	_equals: function(item) {
+		return Base.equals(this._segments, item._segments);
+	},
+
 	clone: function(insert) {
 		var copy = this._clone(new Path({
 			segments: this._segments,

@@ -174,7 +174,7 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
 	},
 
 	equals: function(stop) {
-		return stop === this || stop instanceof GradientStop
+		return stop === this || stop && this._class === stop._class
 				&& this._color.equals(stop._color)
 				&& this._rampPoint == stop._rampPoint
 				|| false;

@@ -740,7 +740,8 @@ var Color = Base.extend(new function() {
 		equals: function(color) {
 			if (Base.isPlainValue(color))
 				color = Color.read(arguments);
-			return color === this || color && this._type === color._type
+			return color === this || color && this._class === color._class
+					&& this._type === color._type
 					&& this._alpha === color._alpha
 					&& Base.equals(this._components, color._components)
 					|| false;

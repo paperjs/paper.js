@@ -235,6 +235,12 @@ var Style = Base.extend(new function() {
 		}
 	},
 
+	equals: function(style) {
+		return style === this || style && this._class === style._class
+				&& Base.equals(this._values, style._values)
+				|| false;
+	},
+
 	getLeading: function getLeading() {
 		// Override leading to return fontSize * 1.2 by default.
 		var leading = getLeading.base.call(this);

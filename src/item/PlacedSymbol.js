@@ -79,6 +79,10 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 			this.setSymbol(arg0 instanceof Symbol ? arg0 : new Symbol(arg0));
 	},
 
+	_equals: function(item) {
+		return this._symbol === item._symbol;
+	},
+
 	/**
 	 * The symbol that the placed symbol refers to.
 	 *

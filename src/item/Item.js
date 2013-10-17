@@ -1233,6 +1233,30 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return this._parent ? this._parent.isInserted() : false;
 	},
 
+	equals: function(item) {
+		// Note: We do not compare name and selected state.
+		return item === this || item && this._class === item._class
+				&& this._style.equals(item._style) 
+				&& this._matrix.equals(item._matrix)
+				&& this._locked === item._locked
+				&& this._visible === item._visible
+				&& this._blendMode === item._blendMode
+				&& this._opacity === item._opacity
+				&& this._clipMask === item._clipMask
+				&& this._guide === item._guide
+				&& this._equals(item)
+				|| false;
+	},
+
+	/**
+	 * A private helper for #equals(), to be overridden in sub-classes. When it
+	 * is called, item is always defined, of the same class as `this` and has
+	 * equal general state attributes such as matrix, style, opacity, etc.
+	 */
+	_equals: function(item) {
+		return Base.equals(this._children, item._children);
+	},
+
 	/**
 	 * Clones the item within the same project and places the copy above the
 	 * item.
