@@ -39,6 +39,19 @@ test('Path#contains() (Regular Polygon)', function() {
 	testPoint(path, new Point(10, 20), false);
 });
 
+test('Path#contains() (Circle Contours)', function() {
+	var path = new Path.Circle({
+		center: [100, 100],
+		radius: 50,
+		fillColor: 'blue',
+	});
+
+	testPoint(path, path.bounds.topCenter, true);
+	testPoint(path, path.bounds.leftCenter, true);
+	testPoint(path, path.bounds.rightCenter, true);
+	testPoint(path, path.bounds.bottomCenter, true);
+});
+
 test('Path#contains() (Round Rectangle)', function() {
 	var rectangle = new Rectangle({
 	    point: new Point(0, 0),
