@@ -70,7 +70,7 @@ var Numerical = new function() {
 		 * Numerical.EPSILON.
 		 */
 		isZero: function(val) {
-			return abs(val) <= this.EPSILON;
+			return abs(val) <= Numerical.EPSILON;
 		},
 
 		/**
