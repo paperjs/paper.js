@@ -12,6 +12,8 @@
 
 module('SVGExport');
 
+// TODO: Implement proper tests and clean up testing code
+
 test('compare line path functions', function() {
 	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'line');
@@ -111,7 +113,8 @@ test('compare invalid line path functions', function() {
 
 });
 
-/*test('compare rectangle values', function() {
+/*
+test('compare rectangle values', function() {
 	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'rect');
 	var x = 25,
@@ -347,7 +350,7 @@ test('compare invalid rounded rectangle values', function() {
 });*/
 
 test('compare ellipse values', function() {
-	var svgns = 'http://www.w3.org/2000/svg'
+	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'ellipse');
 	var cx = 100,
 		cy = 80,
@@ -364,7 +367,7 @@ test('compare ellipse values', function() {
 	var bottomRight = center.add(offset);
 
 	var rect = new Rectangle(topLeft, bottomRight);
-	var ellipse = new Path.Ellipse(rect);
+	var ellipse = new Shape.Ellipse(rect);
 
 	var exportedEllipse = ellipse.exportSVG();
 
@@ -386,7 +389,7 @@ test('compare ellipse values', function() {
 });
 
 test('compare circle values', function() {
-	var svgns = 'http://www.w3.org/2000/svg'
+	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'circle');
 	var cx = 100,
 		cy = 80,
@@ -396,7 +399,7 @@ test('compare circle values', function() {
 	shape.setAttribute('r', r);
 
 	var center = new Point(cx, cy);
-	var circle = new Path.Circle(center, r);
+	var circle = new Shape.Circle(center, r);
 
 	var exportedCircle = circle.exportSVG();
 
@@ -415,14 +418,14 @@ test('compare circle values', function() {
 });
 
 test('compare polygon values', function() {
-	var svgns = 'http://www.w3.org/2000/svg'
+	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'polygon');
 	var svgpoints = "100,10 40,180 190,60 10,60 160,180";
 	shape.setAttribute('points', svgpoints);
 
 	var poly = new Path();
 	var points = shape.points;
-	var start = points.getItem(0)
+	var start = points.getItem(0);
 	var point;
 	poly.moveTo([start.x, start.y]);
 
@@ -445,14 +448,14 @@ test('compare polygon values', function() {
 });
 
 test('compare negative polygon values', function() {
-	var svgns = 'http://www.w3.org/2000/svg'
+	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'polygon');
 	var svgpoints = "-100,-10 -40,-180 -190,-60 -10,-60 -160,-180";
 	shape.setAttribute('points', svgpoints);
 
 	var poly = new Path();
 	var points = shape.points;
-	var start = points.getItem(0)
+	var start = points.getItem(0);
 	var point;
 	poly.moveTo([start.x, start.y]);
 
@@ -475,14 +478,14 @@ test('compare negative polygon values', function() {
 });
 
 test('compare polyline values', function() {
-	var svgns = 'http://www.w3.org/2000/svg'
+	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'polyline');
 	var svgpoints = "5,5 45,45 5,45 45,5";
 	shape.setAttribute('points', svgpoints);
 
 	var poly = new Path();
 	var points = shape.points;
-	var start = points.getItem(0)
+	var start = points.getItem(0);
 	var point;
 	poly.moveTo([start.x, start.y]);
 
@@ -505,14 +508,14 @@ test('compare polyline values', function() {
 });
 
 test('compare negative polyline values', function() {
-	var svgns = 'http://www.w3.org/2000/svg'
+	var svgns = 'http://www.w3.org/2000/svg';
 	var shape = document.createElementNS(svgns, 'polyline');
 	var svgpoints = "-5,-5 -45,-45 -5,-45 -45,-5";
 	shape.setAttribute('points', svgpoints);
 
 	var poly = new Path();
 	var points = shape.points;
-	var start = points.getItem(0)
+	var start = points.getItem(0);
 	var point;
 	poly.moveTo([start.x, start.y]);
 
