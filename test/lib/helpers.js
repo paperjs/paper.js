@@ -227,7 +227,7 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 	}, true);
 
 	var itemProperties = ['opacity', 'locked', 'visible', 'blendMode', 'name',
-			'selected', 'clipMask'];
+			'selected', 'clipMask', 'guide'];
 	Base.each(itemProperties, function(key) {
 		var value = item[key];
 		// When item was cloned and had a name, the name will be versioned
@@ -272,7 +272,7 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 	}
 
 	// Path specific
-	if (item2 instanceof Path) {
+	if (item instanceof Path) {
 		var keys = ['closed', 'fullySelected', 'clockwise'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
@@ -280,6 +280,15 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
 		}
 		compareNumbers(item.length, item2.length, 'Compare Path#length');
 		compareSegmentLists(item.segments, item2.segments, checkIdentity);
+	}
+
+	// Shape specific
+	if (item instanceof Shape) {
+		var keys = ['shape', 'size', 'radius'];
+		for (var i = 0, l = keys.length; i < l; i++) {
+			var key = keys[i];
+			equals(item[key], item2[key], 'Compare Shape#' + key);
+		}
 	}
 
 	// Group specific

@@ -34,7 +34,7 @@ test('make an svg line', function() {
 
 	var line = new Path.Line([x1, y1], [x2, y2]);
 
-	compareSegmentLists(importedLine.segments, line.segments, true);
+	compareItems(importedLine, line);
 });
 
 test('make an svg line with invalid values', function() {
@@ -49,7 +49,7 @@ test('make an svg line with invalid values', function() {
 
 	var line = new Path.Line([0, 0], [0, 0]);
 
-	compareSegmentLists(importedLine.segments, line.segments, true);
+	compareItems(importedLine, line);
 });
 
 test('compare rectangle values', function() {
@@ -69,9 +69,9 @@ test('compare rectangle values', function() {
 	var topLeft = new Point(x, y);
 	var size = new Size(width, height);
 	var rectangle = new Rectangle(topLeft, size);
-	var realRectangle = new Path.Rectangle(rectangle);
+	var realRectangle = new Shape.Rectangle(rectangle);
 
-	compareSegmentLists(importedRectangle.segments, realRectangle.segments, true);
+	compareItems(importedRectangle, realRectangle);
 });
 
 
@@ -91,9 +91,9 @@ test('compare negative rectangle values', function() {
 		var topLeft = new Point(x, y);
 		var size = new Size(width, height);
 		var rectangle = new Rectangle(topLeft, size);
-		var realRectangle = new Path.Rectangle(rectangle);
+		var realRectangle = new Shape.Rectangle(rectangle);
 	
-	compareSegmentLists(importedRectangle.segments, realRectangle.segments, true);
+	compareItems(importedRectangle, realRectangle);
 });
 
 
@@ -111,9 +111,9 @@ test('compare invalid rectangle values', function() {
 	var topLeft = new Point(0, 0);
 	var size = new Size(0, 0);
 	var rectangle = new Rectangle(topLeft, size);
-	var realRectangle = new Path.Rectangle(rectangle);
+	var realRectangle = new Shape.Rectangle(rectangle);
 
-	compareSegmentLists(importedRectangle.segments, realRectangle.segments, true);
+	compareItems(importedRectangle, realRectangle);
 });
 
 test('compare round rectangle values', function() {
@@ -138,9 +138,9 @@ test('compare round rectangle values', function() {
 	var size = new Size(width, height);
 	var cornerSize = new Size(rx, ry);
 	var rectangle = new Rectangle(topLeft, size);
-	var roundRect = new Path.Rectangle(rectangle, cornerSize);
+	var roundRect = new Shape.Rectangle(rectangle, cornerSize);
 
-	compareSegmentLists(importedRectangle.segments, roundRect.segments, true);
+	compareItems(importedRectangle, roundRect);
 });
 
 test('compare negative round rectangle values', function() {
@@ -165,9 +165,9 @@ test('compare negative round rectangle values', function() {
 	var size = new Size(width, height);
 	var cornerSize = new Size(rx, ry);
 	var rectangle = new Rectangle(topLeft, size);
-	var roundRect = new Path.Rectangle(rectangle, cornerSize);
+	var roundRect = new Shape.Rectangle(rectangle, cornerSize);
 
-	compareSegmentLists(importedRectangle.segments, roundRect.segments, true);
+	compareItems(importedRectangle, roundRect);
 });
 
 test('compare invalid round rectangle values', function() {
@@ -192,9 +192,9 @@ test('compare invalid round rectangle values', function() {
 	var size = new Size(width, height);
 	var cornerSize = new Size(rx, ry);
 	var rectangle = new Rectangle(topLeft, size);
-	var roundRect = new Path.Rectangle(rectangle, cornerSize);
+	var roundRect = new Shape.Rectangle(rectangle, cornerSize);
 
-	compareSegmentLists(importedRectangle.segments, roundRect.segments, true);
+	compareItems(importedRectangle, roundRect);
 });
 
 test('compare ellipse values', function() {
@@ -211,15 +211,12 @@ test('compare ellipse values', function() {
 
 	var importedEllipse = paper.project.importSVG(shape);
 
-	var center = new Point(cx, cy);
-	var offset = new Point(rx, ry);
-	var topLeft = center.subtract(offset);
-	var bottomRight = center.add(offset);
+	var ellipse = new Shape.Ellipse({
+		center: new Point(cx, cy),
+		radius: new Point(rx, ry)
+	});
 
-	var rect = new Rectangle(topLeft, bottomRight);
-	var ellipse = new Path.Ellipse(rect);
-
-	compareSegmentLists(importedEllipse.segments, ellipse.segments, true);
+	compareItems(importedEllipse, ellipse);
 });
 
 test('compare negative ellipse values', function() {
@@ -236,15 +233,12 @@ test('compare negative ellipse values', function() {
 
 	var importedEllipse = paper.project.importSVG(shape);
 
-	var center = new Point(cx, cy);
-	var offset = new Point(rx, ry);
-	var topLeft = center.subtract(offset);
-	var bottomRight = center.add(offset);
+	var ellipse = new Shape.Ellipse({
+		center: new Point(cx, cy),
+		radius: new Point(rx, ry)
+	});
 
-	var rect = new Rectangle(topLeft, bottomRight);
-	var ellipse = new Path.Ellipse(rect);
-
-	compareSegmentLists(importedEllipse.segments, ellipse.segments, true);
+	compareItems(importedEllipse, ellipse);
 });
 
 test('compare invalid ellipse values', function() {
@@ -257,15 +251,12 @@ test('compare invalid ellipse values', function() {
 
 	var importedEllipse = paper.project.importSVG(shape);
 
-	var center = new Point(0, 0);
-	var offset = new Point(0, 0);
-	var topLeft = center.subtract(offset);
-	var bottomRight = center.add(offset);
+	var ellipse = new Shape.Ellipse({
+		center: new Point(0, 0),
+		radius: new Point(0, 0)
+	});
 
-	var rect = new Rectangle(topLeft, bottomRight);
-	var ellipse = new Path.Ellipse(rect);
-
-	compareSegmentLists(importedEllipse.segments, ellipse.segments, true);
+	compareItems(importedEllipse, ellipse);
 });
 
 test('compare circle values', function() {
@@ -281,9 +272,9 @@ test('compare circle values', function() {
 	var importedCircle = paper.project.importSVG(shape);
 
 	var center = new Point(cx, cy);
-	var circle = new Path.Circle(center, r);
+	var circle = new Shape.Circle(center, r);
 
-	compareSegmentLists(importedCircle.segments, circle.segments, true);
+	compareItems(importedCircle, circle);
 });
 
 test('compare negative circle values', function() {
@@ -299,9 +290,9 @@ test('compare negative circle values', function() {
 	var importedCircle = paper.project.importSVG(shape);
 
 	var center = new Point(cx, cy);
-	var circle = new Path.Circle(center, r);
+	var circle = new Shape.Circle(center, r);
 
-	compareSegmentLists(importedCircle.segments, circle.segments, true);
+	compareItems(importedCircle, circle);
 });
 
 
@@ -315,9 +306,9 @@ test('compare invalid circle values', function() {
 	var importedCircle = paper.project.importSVG(shape);
 
 	var center = new Point(0, 0);
-	var circle = new Path.Circle(center, 0);
+	var circle = new Shape.Circle(center, 0);
 
-	compareSegmentLists(importedCircle.segments, circle.segments, true);
+	compareItems(importedCircle, circle);
 
 });
 
@@ -339,7 +330,7 @@ test('compare polygon values', function() {
 		poly.closePath();
 	}
 
-	compareSegmentLists(importedPolygon.segments, poly.segments, true);
+	compareItems(importedPolygon, poly);
 });
 
 test('compare negative polygon values', function() {
@@ -360,7 +351,7 @@ test('compare negative polygon values', function() {
 		poly.closePath();
 	}
 
-	compareSegmentLists(importedPolygon.segments, poly.segments, true);
+	compareItems(importedPolygon, poly);
 });
 
 test('compare polyline values', function() {
@@ -381,7 +372,7 @@ test('compare polyline values', function() {
 		poly.closePath();
 	}
 
-	compareSegmentLists(importedPolyline.segments, poly.segments, true);
+	compareItems(importedPolyline, poly);
 });
 
 test('compare negative polyline values', function() {
@@ -402,5 +393,5 @@ test('compare negative polyline values', function() {
 		poly.closePath();
 	}
 
-	compareSegmentLists(importedPolyline.segments, poly.segments, true);
+	compareItems(importedPolyline, poly);
 });
