@@ -164,10 +164,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		function serialize(fields) {
 			for (var key in fields) {
 				var value = that[key];
-				// Allow returned values to mark themselves as default through
-				// the "hidden" _default property. See Style#getLeading()
-				if (!(value && value._default)
-						&& !Base.equals(value, fields[key])) {
+				// Style#leading is a special case, as its default value is
+				// dependent on the fontSize. Handle this here separately.
+				if (!Base.equals(value, key === 'leading'
+						? fields.fontSize * 1.2 : fields[key])) {
 					props[key] = Base.serialize(value, options,
 							// Do not use compact mode for data
 							key !== 'data', dictionary);

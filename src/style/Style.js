@@ -238,13 +238,7 @@ var Style = Base.extend(new function() {
 	getLeading: function getLeading() {
 		// Override leading to return fontSize * 1.2 by default.
 		var leading = getLeading.base.call(this);
-		if (leading == null) {
-			// Box default leading in a Number, and mark it as default, for
-			// serialization.
-			leading = new Number(this.getFontSize() * 1.2);
-			leading._default = true;
-		}
-		return leading;
+		return leading != null ? leading : this.getFontSize() * 1.2;
 	},
 
 	getFontStyle: function() {
