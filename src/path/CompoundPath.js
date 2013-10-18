@@ -205,34 +205,33 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 			children[i]._draw(ctx, param);
 		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
 		CanvasProvider.release(ctx);
-		return res && children;
-/*#*/ } // options.nativeContains
-
+		return res;
+/*#*/ } else { // !options.nativeContains
 		// Compound paths are a little complex: In order to determine whether a
 		// point is inside a path or not due to the winding rule, we need to
 		// check all the children and count how many intersect. If it's an odd
 		// number, the point is inside the path. Once we know it's inside the
 		// path, _hitTest also needs access to the first intersecting element, 
 		// for the HitResult, so we return it here.
-		var total = 0,
-			first = null,
-			evenOdd = this.getWindingRule() === 'evenodd';
-		for (var i = 0, l = this._children.length; i < l; i++) {
-			var child = this._children[i],
-				winding = child._getWinding(point);
-			total += winding;
-			if (!first && (evenOdd ? winding & 1 : winding))
-				first = child;
-		}
-		return (evenOdd ? total & 1 : total) && first;
+		var children =  this._children,
+			winding = 0;
+		for (var i = 0, l = children.length; i < l; i++)
+			winding += children[i]._getWinding(point);
+		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
+/*#*/ } // !options.nativeContains
 	},
 
 	_hitTest: function _hitTest(point, options) {
 		var res = _hitTest.base.call(this, point,
 				Base.merge(options, { fill: false }));
 		if (!res && options.fill && this.hasFill()) {
-			res = this._contains(point);
-			res = res ? new HitResult('fill', res) : null;
+			if (options.compoundChildren) {
+				var children =  this._children;
+				for (var i = children.length - 1; i >= 0 && !res; i--)
+					res = children[i]._hitTest(point, options);
+			} else if (this._contains(point)) {
+				res = new HitResult('fill', this);
+			} 
 		}
 		return res;
 	},

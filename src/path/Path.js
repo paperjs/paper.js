@@ -1735,9 +1735,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
 		CanvasProvider.release(ctx);
 		return res;
-/*#*/ } // options.nativeContains
+/*#*/ } else { // !options.nativeContains
 		var winding = this._getWinding(point);
 		return !!(this.getWindingRule() == 'evenodd' ? winding & 1 : winding);
+/*#*/ } // !options.nativeContains
 	},
 
 	_hitTest: function(point, options) {
