@@ -286,8 +286,19 @@
 		strokeWidth: 1
 	};
 
+	function convertToPath(item) {
+		if (item instanceof Shape) {
+			var path = item.toPath();
+			item.remove();
+			return path;
+		}
+		return item;
+	}
+
 	// Better if path1 and path2 fit nicely inside a 200x200 pixels rect
 	function testBooleanStatic(path1, path2) {
+		path1 = convertToPath(path1);
+		path2 = convertToPath(path2);
 		path1.style = path2.style = pathStyleNormal;
 
 		if (operations.union) {

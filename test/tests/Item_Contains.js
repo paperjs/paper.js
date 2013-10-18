@@ -153,3 +153,17 @@ test('Path#contains() (Rotated Rectangle Contours)', function() {
 	    testPoint(path, curves[i].getPoint(0.5), true);
 	}
 });
+
+test('Path#contains() (touching stationary point with changing orientation)', function() {
+	var path = new Path({
+		segments: [
+			new Segment([100, 100]),
+			new Segment([200, 200], [-50, 0], [50, 0]),
+			new Segment([300, 300]),
+			new Segment([300, 100])
+		],
+		closed: true
+	});
+
+	testPoint(path, new Point(200, 200), true);
+})

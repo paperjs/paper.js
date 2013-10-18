@@ -535,7 +535,7 @@ statics: {
 
 	// Converts from the point coordinates (p1, c1, c2, p2) for one axis to
 	// the polynomial coefficients and solves the polynomial for val
-	solveCubic: function (v, coord, val, roots) {
+	solveCubic: function (v, coord, val, roots, min, max) {
 		var p1 = v[coord],
 			c1 = v[coord + 2],
 			c2 = v[coord + 4],
@@ -543,7 +543,7 @@ statics: {
 			c = 3 * (c1 - p1),
 			b = 3 * (c2 - c1) - c,
 			a = p2 - p1 - c - b;
-		return Numerical.solveCubic(a, b, c, p1 - val, roots);
+		return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
 	},
 
 	getParameterOf: function(v, x, y) {
@@ -642,68 +642,8 @@ statics: {
 		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 
-	_getCrossings: function(v, prev, x, y, roots) {
-		// Implementation of the crossing number algorithm:
-		// http://en.wikipedia.org/wiki/Point_in_polygon
-		// Solve the y-axis cubic polynomial for y and count all solutions
-		// to the right of x as crossings.
-		var count = Curve.solveCubic(v, 1, y, roots),
-			crossings = 0,
-			tolerance = /*#=*/ Numerical.TOLERANCE,
-			abs = Math.abs;
-
-		// Checks the y-slope between the current curve and the previous for a
-		// change of orientation, when a solution is found at t == 0
-		function changesOrientation(tangent) {
-			return Curve.evaluate(prev, 1, 1).y
-					* tangent.y > 0;
-		}
-
-		if (count === -1) {
-			// Infinite solutions, so we have a horizontal curve.
-			// Find parameter through getParameterOf()
-			roots[0] = Curve.getParameterOf(v, x, y);
-			count = roots[0] !== null ? 1 : 0;
-		}
-		for (var i = 0; i < count; i++) {
-			var t = roots[i];
-			if (t > -tolerance && t < 1 - tolerance) {
-				var pt = Curve.evaluate(v, t, 0);
-				if (x < pt.x + tolerance) {
-					// Pass 1 for Curve.evaluate() type to calculate tangent
-					var tan = Curve.evaluate(v, t, 1);
-					// Handle all kind of edge cases when points are on
-					// contours or rays are touching countours, to termine
-					// whether the crossing counts or not.
-					// See if the actual point is on the countour:
-					if (abs(pt.x - x) < tolerance) {
-						// Do not count the crossing if it is on the left hand
-						// side of the shape (tangent pointing upwards), since
-						// the ray will go out the other end, count as crossing
-						// there, and the point is on the contour, so to be
-						// considered inside.
-						var angle = tan.getAngle();
-						if (angle > -180 && angle < 0
-							// Handle special case where point is on a corner,
-							// in which case this crossing is skipped if both
-							// tangents have the same orientation.
-							&& (t > tolerance || changesOrientation(tan)))
-								continue;
-					} else  {
-						// Skip touching stationary points:
-						if (abs(tan.y) < tolerance
-							// Check derivate for stationary points. If root is
-							// close to 0 and not changing vertical orientation
-							// from the previous curve, do not count this root,
-							// as it's touching a corner.
-							|| t < tolerance && !changesOrientation(tan))
-								continue;
-					}
-					crossings++;
-				}
-			}
-		}
-		return crossings;
+	isClockwise: function(v) {
+		return Curve._getEdgeSum(v) > 0;
 	},
 
 	/**
@@ -750,6 +690,131 @@ statics: {
 					+ t * t * t * v3,
 					padding);
 		}
+	},
+
+	_getWinding: function(v, x, y, roots1, roots2) {
+		var tolerance = /*#=*/ Numerical.TOLERANCE,
+			abs = Math.abs;
+
+		// Implementation of the crossing number algorithm:
+		// http://en.wikipedia.org/wiki/Point_in_polygon
+		// Solve the y-axis cubic polynomial for y and count all solutions
+		// to the right of x as crossings.
+		if (Curve.isLinear(v)) {
+			// Special case for handling lines.
+			var y0 = v[1],
+				y1 = v[7],
+				dir = 1;
+			if (y0 > y1) {
+				var tmp = y0;
+				y0 = y1;
+				y1 = tmp;
+			    dir = -1;
+			}
+			if (y < y0 || y > y1)
+			    return 0;
+			var cross = (v[6] - v[0]) * (y - v[1]) - (v[7] - v[1]) * (x - v[0]);
+			if ((cross < -tolerance ? -1 : 1) == dir)
+			    dir = 0;
+			return dir;
+		}
+
+		// Handle bezier curves. We need to chop them into smaller curves with
+		// defined orientation, by solving the derrivative curve for Y extrema.
+		var y0 = v[1],
+			y1 = v[3],
+			y2 = v[5],
+			y3 = v[7];
+		// Split the curve at Y extremas, to get mono bezier curves
+		var a = 3 * (y1 - y2) - y0 + y3,
+			b = 2 * (y0 + y2) - 4 * y1,
+			c = y1 - y0,
+			// Keep then range to 0 .. 1 (excluding) in the search for y extrema
+			count = Numerical.solveQuadratic(a, b, c, roots1, tolerance,
+					1 - tolerance);
+
+		var winding = 0,
+			left,
+			right = v;
+		var t = roots1[0];
+		for (var i = 0; i <= count; i++) {
+			if (i === count) {
+				left = right;
+			} else {
+				// Divide the curve at t.
+				var curves = Curve.subdivide(right, t);
+				left = curves[0];
+				right = curves[1];
+				t = roots1[i];
+				// TODO: Watch for divide by 0
+				// Now renormalize t to the range of the next iteration.
+				t = (roots1[i + 1] - t) / (1 - t);
+			}
+			// Make sure that the connecting y extrema are flat
+			if (i > 0)
+				left[3] = left[1]; // curve2.handle1.y = curve2.point1.y;
+			if (i < count)
+				left[5] = right[1]; // curve1.handle2.y = curve2.point1.y;
+			var dir = 1;
+			if (left[1] > left[7]) {
+				left = [
+					left[6], left[7],
+					left[4], left[5],
+					left[2], left[3],
+					left[0], left[1]
+				];
+				dir = -1;
+			}
+			if (y < left[1] || y > left[7])
+			    continue;
+			// Adjust start and end range depending on if curve was flipped.
+			// In normal orientation we exclude the end point since it's also
+			// the start point of the next curve. If flipped, we have to exclude
+			// the end point instead.
+			var min = -tolerance * dir,
+				root,
+				xt;
+			if (Curve.solveCubic(left, 1, y, roots2, min, 1 + min) === 1) {
+				root = roots2[0];
+				xt = Curve.evaluate(left, root, 0).x;
+			} else {
+				var mid = (left[1] + left[7]) / 2;
+				xt = y < mid ? left[0] : left[6];
+				root = y < mid ? 0 : 1;
+				// Filter out end points based on direction.
+				if (dir < 0 && root === 0 && abs(y - left[1]) < tolerance ||
+					dir > 0 && root === 1 && abs(y - left[7]) < tolerance)
+					continue;
+			}
+			// See if we're touching a horizontal stationary point.
+			var flat = abs(Curve.evaluate(left, root, 1).y) < tolerance;
+			// Calculate compare tolerance based on curve orientation (dir), to
+			// add a bit of tolerance when considering points lying on the curve
+			// as inside. But if we're touching a horizontal stationary point,
+			// set compare tolerance to -tolerance, since we don't want to step
+			// side-ways in tolerance based on orientation. This is needed e.g.
+			// when touching the bottom tip of a circle.
+			// Pass 1 for Curve.evaluate() type to calculate tangent
+			if (x >= xt + (flat ? -tolerance : tolerance * dir)) {
+				// If this is a horizontal stationary point, and we're at the
+				// end of the curve, flip the orientation of dir.
+				winding += flat && abs(root - 1) < tolerance ? -dir : dir;
+			}
+		}
+		return winding;
+	},
+
+	_getEdgeSum: function(v) {
+		// Method derived from:
+		// http://stackoverflow.com/questions/1165647
+		// We treat the curve points and handles as the outline of a polygon of
+		// which we determine the orientation using the method of calculating
+		// the sum over the edges. This will work even with non-convex polygons,
+		// telling you whether it's mostly clockwise
+		var sum = 0;
+		for (var j = 2; j < 8; j += 2)
+			sum += (v[j - 2] - v[j]) * (v[j + 1] + v[j - 1]);
+		return sum;
 	}
 }}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to

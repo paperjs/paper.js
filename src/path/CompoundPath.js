@@ -192,19 +192,42 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	 * Item#contains() is prepared for such a result.
 	 */
 	_contains: function(point) {
+/*#*/ if (options.nativeContains) {
+		// To compare with native canvas approach:
+		var ctx = CanvasProvider.getContext(1, 1),
+			children = this._children,
+			param = Base.merge({ compound: true });
+		// Return early if the compound path doesn't have any children:
+		if (children.length === 0)
+			return [];
+		ctx.beginPath();
+		for (var i = 0, l = children.length; i < l; i++)
+			children[i]._draw(ctx, param);
+		var res = ctx.isPointInPath(point.x, point.y);
+		CanvasProvider.release(ctx);
+		return res && children;
+/*#*/ } // options.nativeContains
+
 		// Compound paths are a little complex: In order to determine whether a
 		// point is inside a path or not due to the even-odd rule, we need to
 		// check all the children and count how many intersect. If it's an odd
 		// number, the point is inside the path. Once we know it's inside the
 		// path, _hitTest also needs access to the first intersecting element, 
 		// for the HitResult, so we collect and return a list here.
-		var children = [];
+		var total = 0,
+			children = [];
 		for (var i = 0, l = this._children.length; i < l; i++) {
-			var child = this._children[i];
-			if (child.contains(point))
+			var child = this._children[i],
+				winding = child._getWinding(point);
+			total += winding;
+			/*
+			if (winding & 1)
+				children.push(child);
+			*/
+			if (winding)
 				children.push(child);
 		}
-		return (children.length & 1) == 1 && children;
+		return total && children; // <- non-zero // even-odd: (total & 1) && children;
 	},
 
 	_hitTest: function _hitTest(point, options) {

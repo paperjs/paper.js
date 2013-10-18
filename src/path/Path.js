@@ -1684,7 +1684,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
-	_contains: function(point) {
+	_getWinding: function(point) {
 		var closed = this._closed;
 		// If the path is not closed, we should not bail out in case it has a
 		// fill color!
@@ -1692,44 +1692,55 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// We need to call the internal _getBounds, to get non-
 				// transformed bounds.
 				|| !this._getBounds('getRoughBounds')._containsPoint(point))
-			return false;
-		// Note: This only works correctly with even-odd fill rule, or paths
-		// that do not overlap with themselves.
-		// TODO: Find out how to implement the "Point In Polygon" problem for
-		// non-zero fill rule.
+			return 0;
 		// Use the crossing number algorithm, by counting the crossings of the
 		// beam in right y-direction with the shape, and see if it's an odd
 		// number, meaning the starting point is inside the shape.
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		var curves = this.getCurves(),
 			segments = this._segments,
-			crossings = 0,
-			// Reuse one array for root-finding, give garbage collector a break
-			roots = new Array(3),
+			winding = 0,
+			// Reuse arrays for root-finding, give garbage collector a break
+			roots1 = [],
+			roots2 = [],
 			last = (closed
 					? curves[curves.length - 1]
 					// Create a straight closing line for open paths, just like
 					// how filling open paths works.
 					: new Curve(segments[segments.length - 1]._point,
-						segments[0]._point)).getValues(),
-			previous = last;
+						segments[0]._point)).getValues();
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var vals = curves[i].getValues(),
 				x = vals[0],
 				y = vals[1];
-			// Filter out curves with 0-lenght (all 4 points in the same place):
+			// Filter out curves with 0-length (all 4 points in the same place):
 			if (!(x === vals[2] && y === vals[3] && x === vals[4]
 					&& y === vals[5] && x === vals[6] && y === vals[7])) {
-				crossings += Curve._getCrossings(vals, previous,
-						point.x, point.y, roots);
-				previous = vals;
+				winding += Curve._getWinding(vals, point.x, point.y,
+						roots1, roots2);
 			}
 		}
 		if (!closed) {
-			crossings += Curve._getCrossings(last, previous, point.x, point.y,
-					roots);
+			winding += Curve._getWinding(last, point.x, point.y,
+					roots1, roots2);
 		}
-		return (crossings & 1) === 1;
+		return winding;
+	},
+
+	_contains: function(point) {
+/*#*/ if (options.nativeContains) {
+		// To compare with native canvas approach:
+		var ctx = CanvasProvider.getContext(1, 1);
+		this._draw(ctx, Base.merge({ clip: true }));
+		var res = ctx.isPointInPath(point.x, point.y);
+		CanvasProvider.release(ctx);
+		return res;
+/*#*/ } // options.nativeContains
+
+		// even-odd:
+		// return !!(this._getWinding(point) & 1);
+		// non-zero:
+		return !!this._getWinding(point);
 	},
 
 	_hitTest: function(point, options) {
@@ -1779,16 +1790,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 		function isInArea(point) {
 			var length = area.length,
-				previous = getAreaCurve(length - 1),
-				roots = new Array(3),
-				crossings = 0;
-			for (var i = 0; i < length; i++) {
-				var curve = getAreaCurve(i);
-				crossings += Curve._getCrossings(curve, previous,
-						point.x, point.y, roots);
-				previous = curve;
-			}
-			return (crossings & 1) === 1;
+				roots1 = [],
+				roots2 = [],
+				winding = 0;
+			for (var i = 0; i < length; i++)
+				winding += Curve._getWinding(getAreaCurve(i), point.x, point.y,
+						roots1, roots2);
+			return !!winding;
 		}
 
 		function checkSegmentStroke(segment) {
@@ -2410,35 +2418,11 @@ statics: {
 	 * @private
 	 */
 	isClockwise: function(segments) {
-		var sum = 0,
-			xPre, yPre,
-			add = false;
-		function edge(x, y) {
-			if (add)
-				sum += (xPre - x) * (y + yPre);
-			xPre = x;
-			yPre = y;
-			add = true;
-		}
-		// Method derived from:
-		// http://stackoverflow.com/questions/1165647
-		// We treat the curve points and handles as the outline of a polygon of
-		// which we determine the orientation using the method of calculating
-		// the sum over the edges. This will work even with non-convex polygons,
-		// telling you whether it's mostly clockwise
+		var sum = 0;
 		// TODO: Check if this works correctly for all open paths.
-		for (var i = 0, l = segments.length; i < l; i++) {
-			var seg1 = segments[i],
-				seg2 = segments[i + 1 < l ? i + 1 : 0],
-				point1 = seg1._point,
-				handle1 = seg1._handleOut,
-				handle2 = seg2._handleIn,
-				point2 = seg2._point;
-			edge(point1._x, point1._y);
-			edge(point1._x + handle1._x, point1._y + handle1._y);
-			edge(point2._x + handle2._x, point2._y + handle2._y);
-			edge(point2._x, point2._y);
-		}
+		for (var i = 0, l = segments.length; i < l; i++)
+			sum += Curve._getEdgeSum(Curve.getValues(segments[i],
+					segments[i + 1 < l ? i + 1 : 0]));
 		return sum > 0;
 	},
 
@@ -2690,7 +2674,9 @@ statics: {
 		// possible.
 		var strokeWidth = style.getStrokeColor() ? style.getStrokeWidth() : 0,
 			joinWidth = strokeWidth;
-		if (strokeWidth > 0) {
+		if (strokeWidth === 0) {
+			strokeWidth = /*#=*/ Numerical.TOLERANCE;
+		} else {
 			if (style.getStrokeJoin() === 'miter')
 				joinWidth = strokeWidth * style.getMiterLimit();
 			if (style.getStrokeCap() === 'square')
