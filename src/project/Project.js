@@ -168,7 +168,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		var items = [];
 		for (var id in this._selectedItems) {
 			var item = this._selectedItems[id];
-			if (item._drawCount === this._drawCount)
+			if (item.isInserted())
 				items.push(item);
 		}
 		return items;
@@ -184,19 +184,17 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 
 	// TODO: Implement setSelectedItems?
-
 	_updateSelection: function(item) {
+		var id = item._id,
+			selectedItems = this._selectedItems;
 		if (item._selected) {
-			this._selectedItemCount++;
-			this._selectedItems[item._id] = item;
-			// Make sure the item is considered selected right away if it is
-			// part of the DOM, even before it's getting drawn for the first
-			// time.
-			if (item.isInserted())
-				item._drawCount = this._drawCount;
-		} else {
+			if (selectedItems[id] !== item) {
+				this._selectedItemCount++;
+				selectedItems[id] = item;
+			}
+		} else if (selectedItems[id] === item) {
 			this._selectedItemCount--;
-			delete this._selectedItems[item._id];
+			delete selectedItems[id];
 		}
 	},
 
@@ -205,7 +203,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 	selectAll: function() {
 		for (var i = 0, l = this.layers.length; i < l; i++)
-			this.layers[i].setSelected(true);
+			this.layers[i].setFullySelected(true);
 	},
 
 	/**
@@ -213,7 +211,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 	deselectAll: function() {
 		for (var i in this._selectedItems)
-			this._selectedItems[i].setSelected(false);
+			this._selectedItems[i].setFullySelected(false);
 	},
 
 	/**

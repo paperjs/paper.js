@@ -198,6 +198,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var parent = this._parent,
 			project = this._project,
 			symbol = this._parentSymbol;
+		// Reset _drawCount on each change.
+		this._drawCount = null;
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			// Clear cached bounds and position whenever geometry changes
 			delete this._bounds;
@@ -783,9 +785,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 */
 	getGlobalMatrix: function() {
-		// TODO: This only works correctly if Item#draw() is in use. For other
-		// possible future backends and items that aren't drawn, we need have to
-		// implement another approach.
+		// TODO: if drawCount is out of sync, we still need to walk up the chain
+		// and concatenate the matrices.
 		return this._drawCount === this._project._drawCount
 				&& this._globalMatrix || null;
 	},
@@ -3078,8 +3079,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			return;
 		// Each time the project gets drawn, it's _drawCount is increased.
 		// Keep the _drawCount of drawn items in sync, so we have an easy
-		// way to filter out selected items that are not being drawn, e.g.
-		// because they are currently not part of the DOM.
+		// way to know for which selected items we need to draw selection info.
 		this._drawCount = this._project._drawCount;
 		// Keep calculating the current global matrix, by keeping a history
 		// and pushing / popping as we go along.
