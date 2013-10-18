@@ -780,8 +780,8 @@ statics: {
 				xt = y < mid ? left[0] : left[6];
 				root = y < mid ? 0 : 1;
 				// Filter out end points based on direction.
-				if (dir < 0 && root == 0 && y == left[1] ||
-					dir > 0 && root == 1 && y == left[7])
+				if (dir < 0 && abs(root) < tolerance && y == left[1] ||
+					dir > 0 && abs(root - 1) < tolerance && y == left[7])
 					continue;
 			}
 			// See if we're touching a horizontal stationary point by looking at
@@ -797,8 +797,8 @@ statics: {
 			if (x >= xt + (flat ? -tolerance : tolerance * dir)) {
 				// When touching a stationary point, only count it if we're
 				// actuall on it.
-				if (flat && root == 0 && x != left[0]
-						|| root == 1 && x != left[6])
+				if (flat && (abs(root) < tolerance && x != left[0]
+						|| abs(root - 1) < tolerance && x != left[6]))
 					continue;
 				// If this is a horizontal stationary point, and we're at the
 				// end of the curve, flip the orientation of dir.

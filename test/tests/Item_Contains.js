@@ -56,6 +56,24 @@ test('Path#contains() (Circle Contours)', function() {
 	testPoint(path, path.bounds.bottomRight, false);
 });
 
+test('Path#contains() (Transformed Circle Contours)', function() {
+	var path = new Path.Circle({
+		center: [200, 200],
+		radius: 50,
+		fillColor: 'blue',
+	});
+	path.translate(100, 100);
+
+	testPoint(path, path.bounds.topCenter, true);
+	testPoint(path, path.bounds.leftCenter, true);
+	testPoint(path, path.bounds.rightCenter, true);
+	testPoint(path, path.bounds.bottomCenter, true);
+	testPoint(path, path.bounds.topLeft, false);
+	testPoint(path, path.bounds.topRight, false);
+	testPoint(path, path.bounds.bottomLeft, false);
+	testPoint(path, path.bounds.bottomRight, false);
+});
+
 test('Path#contains() (Round Rectangle)', function() {
 	var rectangle = new Rectangle({
 	    point: new Point(0, 0),
