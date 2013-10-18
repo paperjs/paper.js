@@ -125,9 +125,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 			} else {
 				point = arg0;
 			}
-		} else if ((count === 2 || count === 3) && typeof arg0 === 'number') {
-			// We check for 3 and 2 because there is an optional boolean
-			// argument for segment points to mark them as selected.
+		} else if (count === 2 && typeof arg0 === 'number') {
 			point = arguments;
 		} else if (count <= 3) {
 			point = arg0;
@@ -140,9 +138,9 @@ var Segment = Base.extend(/** @lends Segment# */{
 			handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
 			handleOut = arg4 !== undefined ? [ arg4, arg5 ] : null;
 		}
-		this._point = new SegmentPoint(point, this);
-		this._handleIn = new SegmentPoint(handleIn, this);
-		this._handleOut = new SegmentPoint(handleOut, this);
+		new SegmentPoint(point, this, '_point');
+		new SegmentPoint(handleIn, this, '_handleIn');
+		new SegmentPoint(handleOut, this, '_handleOut');
 	},
 
 	_serialize: function(options) {
@@ -316,7 +314,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 				!!(state & /*#=*/ SelectionState.HANDLE_IN),
 				!!(state & /*#=*/ SelectionState.HANDLE_OUT)
 			];
-		if (point == this._point) {
+		if (point === this._point) {
 			if (selected) {
 				// We're selecting point, deselect the handles
 				selection[1] = selection[2] = false;
@@ -332,7 +330,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 			}
 			selection[0] = selected;
 		} else {
-			var index = point == this._handleIn ? 1 : 2;
+			var index = point === this._handleIn ? 1 : 2;
 			if (selection[index] != selected) {
 				// When selecting handles, the point get deselected.
 				if (selected)

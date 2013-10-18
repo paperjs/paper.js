@@ -18,13 +18,12 @@
  * @private
  */
 var SegmentPoint = Point.extend({
-	initialize: function SegmentPoint(point, owner) {
+	initialize: function SegmentPoint(point, owner, key) {
 		var x, y, selected;
 		if (!point) {
 			x = y = 0;
 		} else if ((x = point[0]) !== undefined) { // Array-like
 			y = point[1];
-			selected = point[2]; // See #_serialize()
 		} else {
 			// If not Point-like already, read Point from arguments
 			if ((x = point.x) === undefined) {
@@ -37,6 +36,9 @@ var SegmentPoint = Point.extend({
 		this._x = x;
 		this._y = y;
 		this._owner = owner;
+		// We have to set the owner's property that points to this point already
+		// now, so #setSelected(true) can work.
+		owner[key] = this;
 		if (selected)
 			this.setSelected(true);
 	},
@@ -50,11 +52,11 @@ var SegmentPoint = Point.extend({
 
 	_serialize: function(options) {
 		var f = options.formatter,
-			values = [f.number(this._x), f.number(this._y)];
-		// Included the selected state of the segment point
-		if (this.isSelected())
-			values.push(true);
-		return values;
+			x = f.number(this._x),
+			y = f.number(this._y);
+		return this.isSelected()
+				? { x: x, y: y, selected: true }
+				: [x, y];
 	},
 
 	getX: function() {
