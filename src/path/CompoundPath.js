@@ -199,7 +199,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 			param = Base.merge({ compound: true });
 		// Return early if the compound path doesn't have any children:
 		if (children.length === 0)
-			return [];
+			return false;
 		ctx.beginPath();
 		for (var i = 0, l = children.length; i < l; i++)
 			children[i]._draw(ctx, param);
@@ -222,16 +222,16 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	},
 
 	_hitTest: function _hitTest(point, options) {
+		// Do not test children for fill, since a compound path forms one shape.
+		// options.compoundChildren allows to specifically do so, see below.
 		var res = _hitTest.base.call(this, point,
 				Base.merge(options, { fill: false }));
-		if (!res && options.fill && this.hasFill()) {
-			if (options.compoundChildren) {
-				var children =  this._children;
-				for (var i = children.length - 1; i >= 0 && !res; i--)
-					res = children[i]._hitTest(point, options);
-			} else if (this._contains(point)) {
-				res = new HitResult('fill', this);
-			} 
+		// If asked to query all children seperately, perform the same loop as
+		// Item#hitTest() now on the compound children.
+		if (!res && options.compoundChildren) {
+			var children =  this._children;
+			for (var i = children.length - 1; i >= 0 && !res; i--)
+				res = children[i]._hitTest(point, options);
 		}
 		return res;
 	},

@@ -1539,10 +1539,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	_hitTest: function(point, options) {
-		if (this._children) {
+		var children = this._children;
+		if (children) {
 			// Loop backwards, so items that get drawn last are tested first
-			for (var i = this._children.length - 1, res; i >= 0; i--)
-				if (res = this._children[i].hitTest(point, options))
+			for (var i = children.length - 1, res; i >= 0; i--)
+				if (res = children[i].hitTest(point, options))
 					return res;
 		} else if (options.fill && this.hasFill() && this._contains(point)) {
 			return new HitResult('fill', this);
@@ -2224,6 +2225,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * circle.fillColor = new Color(1, 0, 0);
 	 */
 
+	// TODO: Find a better name than selectedColor. It should also be used for
+	// guides, etc.
 	/**
 	 * {@grouptitle Selection Style}
 	 *
