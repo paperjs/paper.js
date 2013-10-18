@@ -138,16 +138,17 @@ var Numerical = new function() {
 				// If all the coefficients are 0, we have infinite solutions!
 				return abs(c) < epsilon ? -1 : 0; // Infinite or 0 solutions
 			}
-			var q = b * b - 4 * a * c;
-			if (q < 0)
-				return 0; // 0 solutions
-			q = sqrt(q);
-			a *= 2; // Prepare division by (2 * a)
-			var n = 0;
-			roots[n++] = (-b - q) / a;
-			if (q > 0)
-				roots[n++] = (-b + q) / a;
-			return n; // 1 or 2 solutions
+			// Convert to normal form: x^2 + px + q = 0
+			var p = b / (2 * a);
+			var q = c / a;
+			var p2 = p * p;
+			if (!abs(p2 - q) < epsilon && p2 < q)
+				return 0;
+			var s = p2 > q ? sqrt(p2 - q) : 0;
+			roots[0] = s - p;
+			if (s > 0)
+				roots[1] = -s - p;
+			return s > 0 ? 2 : 1;
 		},
 
 		/**
