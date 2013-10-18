@@ -1750,11 +1750,18 @@ var Path = PathItem.extend(/** @lends Path# */{
 			that = this,
 			area, loc, res;
 
-		if (options.stroke && style.getStrokeColor()) {
-			join = style.getStrokeJoin();
-			cap = style.getStrokeCap();
-			radius = style.getStrokeWidth() / 2 + tolerance;
-			miterLimit = radius * style.getMiterLimit();
+		if (options.stroke) {
+			radius = style.getStrokeWidth() / 2;
+			if (radius > 0) {
+				join = style.getStrokeJoin();
+				cap = style.getStrokeCap();
+				miterLimit = radius * style.getMiterLimit();
+			} else {
+				join = cap = 'round';
+			}
+			// Add some tolerance, so even when no stroke is set, will match for
+			// stroke locations.
+			radius += tolerance;
 		}
 
 		function checkPoint(seg, pt, name) {
