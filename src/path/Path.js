@@ -1732,15 +1732,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// To compare with native canvas approach:
 		var ctx = CanvasProvider.getContext(1, 1);
 		this._draw(ctx, Base.merge({ clip: true }));
-		var res = ctx.isPointInPath(point.x, point.y);
+		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
 		CanvasProvider.release(ctx);
 		return res;
 /*#*/ } // options.nativeContains
-
-		// even-odd:
-		// return !!(this._getWinding(point) & 1);
-		// non-zero:
-		return !!this._getWinding(point);
+		var winding = this._getWinding(point);
+		return !!(this.getWindingRule() == 'evenodd' ? winding & 1 : winding);
 	},
 
 	_hitTest: function(point, options) {
@@ -2034,7 +2031,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// or stroke, there is no need to continue.
 				this._setStyles(ctx);
 				if (fillColor)
-					ctx.fill();
+					ctx.fill(style.getWindingRule());
 				if (strokeColor) {
 					if (dashLength) {
 						// We cannot use the path created by drawSegments above

@@ -203,31 +203,28 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		ctx.beginPath();
 		for (var i = 0, l = children.length; i < l; i++)
 			children[i]._draw(ctx, param);
-		var res = ctx.isPointInPath(point.x, point.y);
+		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
 		CanvasProvider.release(ctx);
 		return res && children;
 /*#*/ } // options.nativeContains
 
 		// Compound paths are a little complex: In order to determine whether a
-		// point is inside a path or not due to the even-odd rule, we need to
+		// point is inside a path or not due to the winding rule, we need to
 		// check all the children and count how many intersect. If it's an odd
 		// number, the point is inside the path. Once we know it's inside the
 		// path, _hitTest also needs access to the first intersecting element, 
-		// for the HitResult, so we collect and return a list here.
+		// for the HitResult, so we return it here.
 		var total = 0,
-			children = [];
+			first = null,
+			evenOdd = this.getWindingRule() === 'evenodd';
 		for (var i = 0, l = this._children.length; i < l; i++) {
 			var child = this._children[i],
 				winding = child._getWinding(point);
 			total += winding;
-			/*
-			if (winding & 1)
-				children.push(child);
-			*/
-			if (winding)
-				children.push(child);
+			if (!first && (evenOdd ? winding & 1 : winding))
+				first = child;
 		}
-		return total && children; // <- non-zero // even-odd: (total & 1) && children;
+		return (evenOdd ? total & 1 : total) && first;
 	},
 
 	_hitTest: function _hitTest(point, options) {
@@ -235,7 +232,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 				Base.merge(options, { fill: false }));
 		if (!res && options.fill && this.hasFill()) {
 			res = this._contains(point);
-			res = res ? new HitResult('fill', res[0]) : null;
+			res = res ? new HitResult('fill', res) : null;
 		}
 		return res;
 	},
@@ -253,7 +250,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		if (!param.clip) {
 			this._setStyles(ctx);
 			if (style.getFillColor())
-				ctx.fill();
+				ctx.fill(style.getWindingRule());
 			if (style.getStrokeColor())
 				ctx.stroke();
 		}

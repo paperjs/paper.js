@@ -192,7 +192,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 		if (!clip && (fillColor || strokeColor)) {
 			this._setStyles(ctx);
 			if (fillColor)
-				ctx.fill();
+				ctx.fill(style.getWindingRule());
 			if (strokeColor)
 				ctx.stroke();
 		}

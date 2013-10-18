@@ -2185,10 +2185,20 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * miterLimit imposes a limit on the ratio of the miter length to the
 	 * {@link Item#strokeWidth}.
 	 *
-	 * @default 10
 	 * @property
 	 * @name Item#miterLimit
+	 * @default 10
 	 * @type Number
+	 */
+
+	/**
+	 * The winding-rule with which the shape gets filled. Please note that only
+	 * modern browsers support winding-rules other than {@code 'nonzero'}.
+	 *
+	 * @property
+	 * @name Item#windingRule
+	 * @default 'nonzero'
+	 * @type String('nonzero', 'evenodd')
 	 */
 
 	/**

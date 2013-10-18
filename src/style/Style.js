@@ -78,6 +78,7 @@ var Style = Base.extend(new function() {
 		miterLimit: 10,
 		dashOffset: 0,
 		dashArray: [],
+		windingRule: 'nonzero',
 		// Shadows
 		shadowColor: undefined,
 		shadowBlur: 0,
