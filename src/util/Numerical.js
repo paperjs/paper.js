@@ -142,7 +142,7 @@ var Numerical = new function() {
 			var p = b / (2 * a);
 			var q = c / a;
 			var p2 = p * p;
-			if (!abs(p2 - q) < epsilon && p2 < q)
+			if (p2 < q - epsilon)
 				return 0;
 			var s = p2 > q ? sqrt(p2 - q) : 0;
 			roots[0] = s - p;
