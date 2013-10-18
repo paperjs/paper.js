@@ -714,9 +714,7 @@ statics: {
 			if (y < y0 || y > y1)
 			    return 0;
 			var cross = (v[6] - v[0]) * (y - v[1]) - (v[7] - v[1]) * (x - v[0]);
-			if ((cross < -tolerance ? -1 : 1) == dir)
-			    dir = 0;
-			return dir;
+			return (cross < -tolerance ? -1 : 1) == dir ? 0 : dir;
 		}
 
 		// Handle bezier curves. We need to chop them into smaller curves with
@@ -782,11 +780,12 @@ statics: {
 				xt = y < mid ? left[0] : left[6];
 				root = y < mid ? 0 : 1;
 				// Filter out end points based on direction.
-				if (dir < 0 && root === 0 && abs(y - left[1]) < tolerance ||
-					dir > 0 && root === 1 && abs(y - left[7]) < tolerance)
+				if (dir < 0 && root == 0 && y == left[1] ||
+					dir > 0 && root == 1 && y == left[7])
 					continue;
 			}
-			// See if we're touching a horizontal stationary point.
+			// See if we're touching a horizontal stationary point by looking at
+			// the tanget's y coordinate.
 			var flat = abs(Curve.evaluate(left, root, 1).y) < tolerance;
 			// Calculate compare tolerance based on curve orientation (dir), to
 			// add a bit of tolerance when considering points lying on the curve
@@ -796,6 +795,11 @@ statics: {
 			// when touching the bottom tip of a circle.
 			// Pass 1 for Curve.evaluate() type to calculate tangent
 			if (x >= xt + (flat ? -tolerance : tolerance * dir)) {
+				// When touching a stationary point, only count it if we're
+				// actuall on it.
+				if (flat && root == 0 && x != left[0]
+						|| root == 1 && x != left[6])
+					continue;
 				// If this is a horizontal stationary point, and we're at the
 				// end of the curve, flip the orientation of dir.
 				winding += flat && abs(root - 1) < tolerance ? -dir : dir;

@@ -50,6 +50,10 @@ test('Path#contains() (Circle Contours)', function() {
 	testPoint(path, path.bounds.leftCenter, true);
 	testPoint(path, path.bounds.rightCenter, true);
 	testPoint(path, path.bounds.bottomCenter, true);
+	testPoint(path, path.bounds.topLeft, false);
+	testPoint(path, path.bounds.topRight, false);
+	testPoint(path, path.bounds.bottomLeft, false);
+	testPoint(path, path.bounds.bottomRight, false);
 });
 
 test('Path#contains() (Round Rectangle)', function() {
