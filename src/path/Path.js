@@ -2417,10 +2417,19 @@ statics: {
 	 */
 	isClockwise: function(segments) {
 		var sum = 0;
+		// Method derived from:
+		// http://stackoverflow.com/questions/1165647
+		// We treat the curve points and handles as the outline of a polygon of
+		// which we determine the orientation using the method of calculating
+		// the sum over the edges. This will work even with non-convex polygons,
+		// telling you whether it's mostly clockwise
 		// TODO: Check if this works correctly for all open paths.
-		for (var i = 0, l = segments.length; i < l; i++)
-			sum += Curve._getEdgeSum(Curve.getValues(segments[i],
-					segments[i + 1 < l ? i + 1 : 0]));
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var v = Curve.getValues(
+					segments[i], segments[i + 1 < l ? i + 1 : 0]);
+			for (var j = 2; j < 8; j += 2)
+				sum += (v[j - 2] - v[j]) * (v[j + 1] + v[j - 1]);
+		}
 		return sum > 0;
 	},
 

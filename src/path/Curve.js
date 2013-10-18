@@ -642,10 +642,6 @@ statics: {
 		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 
-	isClockwise: function(v) {
-		return Curve._getEdgeSum(v) > 0;
-	},
-
 	/**
 	 * Private helper for both Curve.getBounds() and Path.getBounds(), which
 	 * finds the 0-crossings of the derivative of a bezier curve polynomial, to
@@ -806,19 +802,6 @@ statics: {
 			}
 		}
 		return winding;
-	},
-
-	_getEdgeSum: function(v) {
-		// Method derived from:
-		// http://stackoverflow.com/questions/1165647
-		// We treat the curve points and handles as the outline of a polygon of
-		// which we determine the orientation using the method of calculating
-		// the sum over the edges. This will work even with non-convex polygons,
-		// telling you whether it's mostly clockwise
-		var sum = 0;
-		for (var j = 2; j < 8; j += 2)
-			sum += (v[j - 2] - v[j]) * (v[j + 1] + v[j - 1]);
-		return sum;
 	}
 }}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
