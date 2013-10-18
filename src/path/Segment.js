@@ -117,7 +117,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 		if (count === 0) {
 			// Nothing
 		} else if (count === 1) {
-			// Note: This copies from existing segments through bean getters
+			// Note: This copies from existing segments through accessors.
 			if (arg0.point) {
 				point = arg0.point;
 				handleIn = arg0.handleIn;
@@ -125,15 +125,17 @@ var Segment = Base.extend(/** @lends Segment# */{
 			} else {
 				point = arg0;
 			}
-		} else if (count === 2 && typeof arg0 === 'number') {
-			point = [ arg0, arg1 ];
+		} else if ((count === 2 || count === 3) && typeof arg0 === 'number') {
+			// We check for 3 and 2 because there is an optional boolean
+			// argument for segment points to mark them as selected.
+			point = arguments;
 		} else if (count <= 3) {
 			point = arg0;
 			// Doesn't matter if these arguments exist, SegmentPointcreate
 			// produces creates points with (0, 0) otherwise
 			handleIn = arg1;
 			handleOut = arg2;
-		} else {
+		} else { // Read points from the arguments list as a row of numbers
 			point = arg0 !== undefined ? [ arg0, arg1 ] : null;
 			handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
 			handleOut = arg4 !== undefined ? [ arg4, arg5 ] : null;
