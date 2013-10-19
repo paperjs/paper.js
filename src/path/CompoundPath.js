@@ -226,9 +226,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		// options.compoundChildren allows to specifically do so, see below.
 		var res = _hitTest.base.call(this, point,
 				Base.merge(options, { fill: false }));
-		// If asked to query all children seperately, perform the same loop as
-		// Item#hitTest() now on the compound children.
 		if (!res) {
+			// If asked to query all children seperately, perform the same loop
+			// as Item#hitTest() now on the compound children.
 			if (options.compoundChildren) {
 				var children =  this._children;
 				for (var i = children.length - 1; i >= 0 && !res; i--)
