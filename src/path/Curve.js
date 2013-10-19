@@ -730,19 +730,19 @@ statics: {
 		var winding = 0,
 			left,
 			right = v;
-		var t = roots1[0];
+		var t1 = roots1[0];
 		for (var i = 0; i <= count; i++) {
 			if (i === count) {
 				left = right;
 			} else {
-				// Divide the curve at t.
-				var curves = Curve.subdivide(right, t);
+				// Divide the curve at t1.
+				var curves = Curve.subdivide(right, t1);
 				left = curves[0];
 				right = curves[1];
-				t = roots1[i];
+				t1 = roots1[i];
 				// TODO: Watch for divide by 0
-				// Now renormalize t to the range of the next iteration.
-				t = (roots1[i + 1] - t) / (1 - t);
+				// Now renormalize t1 to the range of the next iteration.
+				t1 = (roots1[i + 1] - t1) / (1 - t1);
 			}
 			// Make sure that the connecting y extrema are flat
 			if (i > 0)
@@ -766,23 +766,23 @@ statics: {
 			// the start point of the next curve. If flipped, we have to exclude
 			// the end point instead.
 			var min = -tolerance * dir,
-				root,
-				xt;
+				t2,
+				px;
 			if (Curve.solveCubic(left, 1, y, roots2, min, 1 + min) === 1) {
-				root = roots2[0];
-				xt = Curve.evaluate(left, root, 0).x;
+				t2 = roots2[0];
+				px = Curve.evaluate(left, t2, 0).x;
 			} else {
 				var mid = (left[1] + left[7]) / 2;
-				xt = y < mid ? left[0] : left[6];
-				root = y < mid ? 0 : 1;
+				px = y < mid ? left[0] : left[6];
+				t2 = y < mid ? 0 : 1;
 				// Filter out end points based on direction.
-				if (dir < 0 && abs(root) < tolerance && y == left[1] ||
-					dir > 0 && abs(root - 1) < tolerance && y == left[7])
+				if (dir < 0 && abs(t2) < tolerance && y == left[1] ||
+					dir > 0 && abs(t2 - 1) < tolerance && y == left[7])
 					continue;
 			}
 			// See if we're touching a horizontal stationary point by looking at
 			// the tanget's y coordinate.
-			var flat = abs(Curve.evaluate(left, root, 1).y) < tolerance;
+			var flat = abs(Curve.evaluate(left, t2, 1).y) < tolerance;
 			// Calculate compare tolerance based on curve orientation (dir), to
 			// add a bit of tolerance when considering points lying on the curve
 			// as inside. But if we're touching a horizontal stationary point,
@@ -790,15 +790,15 @@ statics: {
 			// side-ways in tolerance based on orientation. This is needed e.g.
 			// when touching the bottom tip of a circle.
 			// Pass 1 for Curve.evaluate() type to calculate tangent
-			if (x >= xt + (flat ? -tolerance : tolerance * dir)) {
+			if (x >= px + (flat ? -tolerance : tolerance * dir)) {
 				// When touching a stationary point, only count it if we're
 				// actuall on it.
-				if (flat && (abs(root) < tolerance && x != left[0]
-						|| abs(root - 1) < tolerance && x != left[6]))
+				if (flat && (abs(t2) < tolerance && x != left[0]
+						|| abs(t2 - 1) < tolerance && x != left[6]))
 					continue;
 				// If this is a horizontal stationary point, and we're at the
 				// end of the curve, flip the orientation of dir.
-				winding += flat && abs(root - 1) < tolerance ? -dir : dir;
+				winding += flat && abs(t2 - 1) < tolerance ? -dir : dir;
 			}
 		}
 		return winding;
