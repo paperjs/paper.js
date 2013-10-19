@@ -798,12 +798,11 @@ statics: {
 			// side-ways in tolerance based on orientation. This is needed e.g.
 			// when touching the bottom tip of a circle.
 			// Pass 1 for Curve.evaluate() type to calculate tangent
-			if (x >= px + (flat ? -tolerance : tolerance * dir)) {
-				// When touching a stationary point, only count it if we're
-				// actuall on it.
-				if (flat && (abs(t2) < tolerance && x != left[0]
-						|| abs(t2 - 1) < tolerance && x != left[6]))
-					continue;
+			if (x >= px + (flat ? -tolerance : tolerance * dir)
+					// When touching a stationary point, only count it if we're
+					// actuall on it.
+					&& !(flat && (abs(t2) < tolerance && x != left[0]
+						|| abs(t2 - 1) < tolerance && x != left[6]))) {
 				// If this is a horizontal stationary point, and we're at the
 				// end of the curve (or at the beginning of a curve with
 				// negative direction, as we're not actually flipping them),
