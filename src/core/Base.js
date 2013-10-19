@@ -78,7 +78,7 @@ Base.inject(/** @lends Base# */{
 			// If props is a filtering object, we need to execute hasOwnProperty
 			// on the original object (it's parent / prototype). See _filtered
 			// inheritance trick in the argument reading code.
-			var orig = props._filtering ? Object.getPrototypeOf(props) : props;
+			var orig = props._filtering || props;
 			for (var key in orig) {
 				if (key in this && orig.hasOwnProperty(key)
 						&& (!exclude || !exclude[key])) {
@@ -263,9 +263,9 @@ Base.inject(/** @lends Base# */{
 				var filtered = list._filtered;
 				if (!filtered) {
 					filtered = list._filtered = Base.create(list[0]);
-					// Mark as _filtering so Base#_set() can execute
-					// hasOwnProperty on its parent.
-					filtered._filtering = true;
+					// Point _filtering to the original so Base#_set() can
+					// execute hasOwnProperty on it.
+					filtered._filtering = list[0];
 				}
 				// delete wouldn't work since the masked parent's value would
 				// shine through.
