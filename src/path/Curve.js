@@ -739,18 +739,18 @@ statics: {
 		// Keep then range to 0 .. 1 (excluding) in the search for y extrema
 		var count = Numerical.solveQuadratic(a, b, c, roots1, tolerance,
 				1 - tolerance),
-			left, // The part of the curve that's chopped off.
-			right = v, // The part that's left to be chopped.
+			part, // The part of the curve that's chopped off.
+			rest = v, // The part that's left to be chopped.
 			t1 = roots1[0], // The first root
 			winding = 0;
 		for (var i = 0; i <= count; i++) {
 			if (i === count) {
-				left = right;
+				part = rest;
 			} else {
 				// Divide the curve at t1.
-				var curves = Curve.subdivide(right, t1);
-				left = curves[0];
-				right = curves[1];
+				var curves = Curve.subdivide(rest, t1);
+				part = curves[0];
+				rest = curves[1];
 				t1 = roots1[i];
 				// TODO: Watch for divide by 0
 				// Now renormalize t1 to the range of the next iteration.
@@ -758,10 +758,10 @@ statics: {
 			}
 			// Make sure that the connecting y extrema are flat
 			if (i > 0)
-				left[3] = left[1]; // curve2.handle1.y = curve2.point1.y;
+				part[3] = part[1]; // curve2.handle1.y = curve2.point1.y;
 			if (i < count)
-				left[5] = right[1]; // curve1.handle2.y = curve2.point1.y;
-			var dir = getOrientation(left);
+				part[5] = rest[1]; // curve1.handle2.y = curve2.point1.y;
+			var dir = getOrientation(part);
 			if (!dir)
 			    continue;
 			// Adjust start and end range depending on if curve was flipped.
@@ -772,25 +772,25 @@ statics: {
 				px;
 			// Since we've split at y extrema, there can only be 0, 1, or
 			// infinite solutions now.
-			if (Curve.solveCubic(left, 1, y, roots2, -tolerance, 1 + -tolerance)
+			if (Curve.solveCubic(part, 1, y, roots2, -tolerance, 1 + -tolerance)
 					=== 1) {
 				t2 = roots2[0];
-				px = Curve.evaluate(left, t2, 0).x;
+				px = Curve.evaluate(part, t2, 0).x;
 			} else {
-				var mid = (left[1] + left[7]) / 2;
+				var mid = (part[1] + part[7]) / 2;
 				// Pick t2 based on the direction of the curve. If y < mid,
 				// choose the beginning (which is the end of a curve with
 				// negative orientation, as we're not actually flipping curves).
 				t2 = y < mid && dir > 0 ? 0 : 1;
 				// Filter out the end point, as it'll be the start point of the
 				// next curve.
-				if (t2 === 1 && y == left[7])
+				if (t2 === 1 && y == part[7])
 					continue;
-				px = t2 === 0 ? left[0] : left[6];
+				px = t2 === 0 ? part[0] : part[6];
 			}
 			// See if we're touching a horizontal stationary point by looking at
 			// the tanget's y coordinate.
-			var flat = abs(Curve.evaluate(left, t2, 1).y) < tolerance;
+			var flat = abs(Curve.evaluate(part, t2, 1).y) < tolerance;
 			// Calculate compare tolerance based on curve orientation (dir), to
 			// add a bit of tolerance when considering points lying on the curve
 			// as inside. But if we're touching a horizontal stationary point,
@@ -801,8 +801,8 @@ statics: {
 			if (x >= px + (flat ? -tolerance : tolerance * dir)
 					// When touching a stationary point, only count it if we're
 					// actuall on it.
-					&& !(flat && (abs(t2) < tolerance && x != left[0]
-						|| abs(t2 - 1) < tolerance && x != left[6]))) {
+					&& !(flat && (abs(t2) < tolerance && x != part[0]
+						|| abs(t2 - 1) < tolerance && x != part[6]))) {
 				// If this is a horizontal stationary point, and we're at the
 				// end of the curve (or at the beginning of a curve with
 				// negative direction, as we're not actually flipping them),
