@@ -689,15 +689,19 @@ statics: {
 	},
 
 	_getWinding: function(v, x, y, roots1, roots2) {
-		var tolerance = /*#=*/ Numerical.TOLERANCE,
-			abs = Math.abs;
-
 		// Implementation of the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		// Solve the y-axis cubic polynomial for y and count all solutions
 		// to the right of x as crossings.
-		if (Curve.isLinear(v)) {
-			// Special case for handling lines.
+		var tolerance = /*#=*/ Numerical.TOLERANCE,
+			abs = Math.abs;
+
+		// Looks at the curve's start and end y coordinates to determine
+		// orientation. This only makes sense for curves with clear orientation,
+		// which is why we need to split them at y extrema, see below.
+		// Returns 0 if the curve is outside the boundaries and is not to be
+		// considered.
+		function getOrientation(v) {
 			var y0 = v[1],
 				y1 = v[7],
 				dir = 1;
@@ -708,7 +712,15 @@ statics: {
 			    dir = -1;
 			}
 			if (y < y0 || y > y1)
-			    return 0;
+			    dir = 0;
+			return dir;
+		}
+
+		if (Curve.isLinear(v)) {
+			// Special simplified case for handling lines.
+			var dir = getOrientation(v);
+			if (!dir)
+				return 0;
 			var cross = (v[6] - v[0]) * (y - v[1]) - (v[7] - v[1]) * (x - v[0]);
 			return (cross < -tolerance ? -1 : 1) == dir ? 0 : dir;
 		}
@@ -719,18 +731,18 @@ statics: {
 			y1 = v[3],
 			y2 = v[5],
 			y3 = v[7];
-		// Split the curve at Y extremas, to get mono bezier curves
+		// Split the curve at y extrema, to get bezier curves with clear
+		// orientation: Calculate the derivative and find its roots.
 		var a = 3 * (y1 - y2) - y0 + y3,
 			b = 2 * (y0 + y2) - 4 * y1,
-			c = y1 - y0,
-			// Keep then range to 0 .. 1 (excluding) in the search for y extrema
-			count = Numerical.solveQuadratic(a, b, c, roots1, tolerance,
-					1 - tolerance);
-
-		var winding = 0,
-			left,
-			right = v;
-		var t1 = roots1[0];
+			c = y1 - y0;
+		// Keep then range to 0 .. 1 (excluding) in the search for y extrema
+		var count = Numerical.solveQuadratic(a, b, c, roots1, tolerance,
+				1 - tolerance),
+			left, // The part of the curve that's chopped off.
+			right = v, // The part that's left to be chopped.
+			t1 = roots1[0], // The first root
+			winding = 0;
 		for (var i = 0; i <= count; i++) {
 			if (i === count) {
 				left = right;
@@ -749,36 +761,32 @@ statics: {
 				left[3] = left[1]; // curve2.handle1.y = curve2.point1.y;
 			if (i < count)
 				left[5] = right[1]; // curve1.handle2.y = curve2.point1.y;
-			var dir = 1;
-			if (left[1] > left[7]) {
-				left = [
-					left[6], left[7],
-					left[4], left[5],
-					left[2], left[3],
-					left[0], left[1]
-				];
-				dir = -1;
-			}
-			if (y < left[1] || y > left[7])
+			var dir = getOrientation(left);
+			if (!dir)
 			    continue;
 			// Adjust start and end range depending on if curve was flipped.
 			// In normal orientation we exclude the end point since it's also
 			// the start point of the next curve. If flipped, we have to exclude
 			// the end point instead.
-			var min = -tolerance * dir,
-				t2,
+			var t2,
 				px;
-			if (Curve.solveCubic(left, 1, y, roots2, min, 1 + min) === 1) {
+			// Since we've split at y extrema, there can only be 0, 1, or
+			// infinite solutions now.
+			if (Curve.solveCubic(left, 1, y, roots2, -tolerance, 1 + -tolerance)
+					=== 1) {
 				t2 = roots2[0];
 				px = Curve.evaluate(left, t2, 0).x;
 			} else {
 				var mid = (left[1] + left[7]) / 2;
-				px = y < mid ? left[0] : left[6];
-				t2 = y < mid ? 0 : 1;
-				// Filter out end points based on direction.
-				if (dir < 0 && abs(t2) < tolerance && y == left[1] ||
-					dir > 0 && abs(t2 - 1) < tolerance && y == left[7])
+				// Pick t2 based on the direction of the curve. If y < mid,
+				// choose the beginning (which is the end of a curve with
+				// negative orientation, as we're not actually flipping curves).
+				t2 = y < mid && dir > 0 ? 0 : 1;
+				// Filter out the end point, as it'll be the start point of the
+				// next curve.
+				if (t2 === 1 && y == left[7])
 					continue;
+				px = t2 === 0 ? left[0] : left[6];
 			}
 			// See if we're touching a horizontal stationary point by looking at
 			// the tanget's y coordinate.
@@ -797,8 +805,11 @@ statics: {
 						|| abs(t2 - 1) < tolerance && x != left[6]))
 					continue;
 				// If this is a horizontal stationary point, and we're at the
-				// end of the curve, flip the orientation of dir.
-				winding += flat && abs(t2 - 1) < tolerance ? -dir : dir;
+				// end of the curve (or at the beginning of a curve with
+				// negative direction, as we're not actually flipping them),
+				// flip dir, as the curve is about to change orientation.
+				winding += flat && abs(t2 - (dir > 0 ? 1 : 0)) < tolerance
+						? -dir : dir;
 			}
 		}
 		return winding;
