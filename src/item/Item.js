@@ -1273,6 +1273,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				if (compare instanceof RegExp) {
 					if (!compare.test(value))
 						return false;
+				} else if (typeof compare === 'function') {
+					if (!compare(value))
+						return false;
 				} else if (Base.isPlainObject(compare)) {
 					if (!matchObject(compare, value))
 						return false;
