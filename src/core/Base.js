@@ -75,13 +75,16 @@ Base.inject(/** @lends Base# */{
 	 */
 	_set: function(props, exclude) {
 		if (props && Base.isPlainObject(props)) {
-			for (var key in props) {
-				// Note: We don't use key.hasOwnProperty() so we can use the
-				// efficient _filtered inheritance trick in the argument reading
-				// code, where undefined is used to mask already consumed
-				// named arguments in the inherited object.
-				if (key in this && (!exclude || !exclude[key])) {
+			// If props is a filtering object, we need to execute hasOwnProperty
+			// on the original object (it's parent / prototype). See _filtered
+			// inheritance trick in the argument reading code.
+			var orig = props._filtering ? Object.getPrototypeOf(props) : props;
+			for (var key in orig) {
+				if (key in this && orig.hasOwnProperty(key)
+						&& (!exclude || !exclude[key])) {
 					var value = props[key];
+					// Due to the _filtered inheritance trick, undefined is used
+					// to mask already consumed named arguments.
 					if (value !== undefined)
 						this[key] = value;
 				}
@@ -257,9 +260,16 @@ Base.inject(/** @lends Base# */{
 			if (hasObject) {
 				// Create a _filtered object that inherits from argument 0, and
 				// override all fields that were already read with undefined.
-				if (!list._filtered)
-					list._filtered = Base.create(list[0]);
-				list._filtered[name] = undefined; // Delete won't work
+				var filtered = list._filtered;
+				if (!filtered) {
+					filtered = list._filtered = Base.create(list[0]);
+					// Mark as _filtering so Base#_set() can execute
+					// hasOwnProperty on its parent.
+					filtered._filtering = true;
+				}
+				// delete wouldn't work since the masked parent's value would
+				// shine through.
+				filtered[name] = undefined;
 			}
 			return this.read(hasObject ? [value] : list, start, length, options);
 		},
