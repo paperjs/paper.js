@@ -154,6 +154,15 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		return this._index;
 	},
 
+	// DOCS: Project#getItems
+	getItems: function(match) {
+		var layers = this.layers,
+			items = [];
+		for (var i = 0, l = layers.length; i < l; i++)
+			items.push.apply(items, layers[i].getItems(match));
+		return items;
+	},
+
 	/**
 	 * The selected items contained within the project.
 	 *
@@ -202,16 +211,18 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * Selects all items in the project.
 	 */
 	selectAll: function() {
-		for (var i = 0, l = this.layers.length; i < l; i++)
-			this.layers[i].setFullySelected(true);
+		var layers = this.layers;
+		for (var i = 0, l = layers.length; i < l; i++)
+			layers[i].setFullySelected(true);
 	},
 
 	/**
 	 * Deselects all selected items in the project.
 	 */
 	deselectAll: function() {
-		for (var i in this._selectedItems)
-			this._selectedItems[i].setFullySelected(false);
+		var selectedItems = this._selectedItems;
+		for (var i in selectedItems)
+			selectedItems[i].setFullySelected(false);
 	},
 
 	/**

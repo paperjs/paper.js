@@ -1234,6 +1234,56 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return this._parent ? this._parent.isInserted() : false;
 	},
 
+	// DOCS: Item#getItems
+	getItems: function(match) {
+		var children = this.children,
+			items = [];
+		for (var i = 0, l = children && children.length; i < l; i++) {
+			var child = children[i];
+			if (child.matches(match))
+				items.push(child);
+			items.push.apply(items, child.getItems(match));
+		}
+		return items;
+	},
+
+	// DOCS: Item#matches
+	matches: function(match) {
+		// matchObject() is used to match against objects in a nested manner.
+		// This is useful for matching against Item#data.
+		function matchObject(obj1, obj2) {
+			for (var i in obj1) {
+				if (obj1.hasOwnProperty(i)) {
+					var val1 = obj1[i],
+						val2 = obj2[i];
+					if (Base.isPlainObject(val1) && Base.isPlainObject(val2)) {
+						if (!matchObject(val1, val2))
+							return false;
+					} else if (!Base.equals(val1, val2)) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		for (var key in match) {
+			if (match.hasOwnProperty(key)) {
+				var value = this[key],
+					compare = match[key];
+				if (compare instanceof RegExp) {
+					if (!compare.test(value))
+						return false;
+				} else if (Base.isPlainObject(compare)) {
+					if (!matchObject(compare, value))
+						return false;
+				} else if (!Base.equals(value, compare)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	},
+
 	equals: function(item) {
 		// Note: We do not compare name and selected state.
 		return item === this || item && this._class === item._class
