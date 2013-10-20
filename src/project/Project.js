@@ -325,12 +325,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 
 	/**
-	 * Converts the SVG node and all its child nodes into Paper.js items and
-	 * adds them to the active layer of this project.
+	 * Converts the provided SVG content into Paper.js items and adds them to
+	 * the active layer of this project.
 	 *
 	 * @name Project#importSVG
 	 * @function
-	 * @param {SVGSVGElement} node the SVG node to import
+	 * @param {SVGSVGElement|String} svg the SVG content to import
 	 * @return {Item} the imported Paper.js parent item
 	 */
 

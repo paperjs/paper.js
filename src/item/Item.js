@@ -1659,12 +1659,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 
 	/**
-	 * Converts the SVG node and all its child nodes into Paper.js items and
-	 * adds them as children to the this item.
+	 * Converts the provided SVG content into Paper.js items and adds them to
+	 * the this item's children list.
 	 *
 	 * @name Item#importSVG
 	 * @function
-	 * @param {SVGSVGElement} node the SVG node to import
+	 * @param {SVGSVGElement|String} svg the SVG content to import
 	 * @return {Item} the imported Paper.js parent item
 	 */
 
