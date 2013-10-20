@@ -297,9 +297,12 @@ var Raster = Item.extend(/** @lends Raster# */{
 			image = document.getElementById(src) || new Image();
 
 		function loaded() {
+			var view = that._project.view;
+			if (view)
+				paper = view._scope;
 			that.fire('load');
-			if (that._project.view)
-				that._project.view.draw(true);
+			if (view)
+				view.draw(true);
 		}
 
 		// IE has naturalWidth / Height defined, but width / height set to 0
