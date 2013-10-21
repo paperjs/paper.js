@@ -55,7 +55,17 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		this._currentStyle = new Style();
 		this.activeLayer = new Layer();
 		if (view)
-			this.view = view instanceof View ? view : View.create(view);
+		{
+			if(view instanceof View)
+			{
+				this.view = view;
+				this.view._addProject(this);
+			}
+			else
+			{
+				this.view = View.create(view);
+			}
+		}
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		// See Item#draw() for an explanation of _drawCount
@@ -99,7 +109,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		if (!remove.base.call(this))
 			return false;
 		if (this.view)
-			this.view.remove();
+			this.view.remove(this);
 		return true;
 	},
 
@@ -320,7 +330,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @name Project#exportSVG
 	 * @function
 	 * @param {Object} [options={ asString: false, precision: 5 }] the export
-	 *        options.
+	 *	    options.
 	 * @return {SVGSVGElement} the project converted to an SVG node
 	 */
 

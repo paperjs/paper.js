@@ -26,7 +26,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		// Store reference to the currently active global paper scope, and the
 		// active project, which will be represented by this view
 		this._scope = paper;
-		this._project = paper.project;
+		this._projects = [];
+		this._projects.push(paper.project);
 		this._element = element;
 		var size;
 /*#*/ if (options.environment == 'browser') {
@@ -106,12 +107,48 @@ var View = Base.extend(Callback, /** @lends View# */{
 		this._frameItems = {};
 		this._frameItemCount = 0;
 	},
-
+	
+	_addProject: function(project) {
+		this._projects.push(project);
+	},
+	
 	/**
-	 * Removes this view from and frees the associated element.
+	 * Removes this view and frees the associated element if
+	 * called without arguments.
+	 * 
+	 * Removes a specific project if first argument is a project.
+	 * 
+	 * @param {Project} The project to remove from this view.
+	 * @return {Boolean} {@true if a project was removed and/or associated element
+	 * 					was removed. @false if view was no longer in use.}
 	 */
-	remove: function() {
-		if (!this._project)
+	remove: function(project) {
+		
+		{
+			var index_to_remove = null;
+			if(project && this._projects)
+			{
+				for(var i = 0; i<this._projects.length; i++)
+				{
+					if (this._projects[i].view == project)
+					{
+						index_to_remove = i;
+					}
+				}
+			}
+			if(index_to_remove)
+			{
+				if (this._projects[index_to_remove].view == this)
+				{
+					this._projects[index_to_remove].view = null;
+				}
+				this.projects.splice(index_to_remove, 1);
+				if(this._projects.length)
+					return true;
+			}
+		}
+	
+		if ( !this._projects )
 			return false;
 		// Clear focus if removed view had it
 		if (View._focused == this)
@@ -119,15 +156,20 @@ var View = Base.extend(Callback, /** @lends View# */{
 		// Remove view from internal structures
 		View._views.splice(View._views.indexOf(this), 1);
 		delete View._viewsById[this._id];
-		// Unlink from project
-		if (this._project.view == this)
-			this._project.view = null;
+		// Unlink from all projects
+		for(var i = 0; i<this._projects.length; i++)
+		{
+			if (this._projects[i].view == this)
+			{
+				this._projects[i].view = null;
+			}
+		}
 /*#*/ if (options.environment == 'browser') {
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._element, this._viewHandlers);
 		DomEvent.remove(window, this._windowHandlers);
 /*#*/ } // options.environment == 'browser'
-		this._element = this._project = null;
+		this._element = this._projects = null;
 		// Removing all onFrame handlers makes the onFrame handler stop
 		// automatically through its uninstall method.
 		this.detach('frame');
@@ -243,7 +285,10 @@ var View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	_redraw: function() {
-		this._project._needsRedraw = true;
+		for(var i = 0; i<this._projects.length; i++)
+		{
+			this._projects[i]._needsRedraw = true;
+		}
 		if (this._handlingFrame)
 			return;
 		if (this._animate) {

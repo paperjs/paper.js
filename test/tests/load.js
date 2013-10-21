@@ -18,6 +18,7 @@
 /*#*/ include('Color.js');
 
 /*#*/ include('Project.js');
+/*#*/ include('Multiple_Projects_View.js');
 
 /*#*/ include('Item.js');
 /*#*/ include('Item_Cloning.js');

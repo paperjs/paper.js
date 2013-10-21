@@ -72,16 +72,28 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	 * @function
 	 */
 	draw: function(checkRedraw) {
-		if (checkRedraw && !this._project._needsRedraw)
-			return false;
+		if (checkRedraw)
+		{
+			var needsRedraw = false;
+			for(var i = 0; i<this._projects.length; i++)
+			{
+				needsRedraw = needsRedraw || this._projects[i]._needsRedraw;
+			}
+			if(!needsRedraw)
+				return false;
+		}
 		// Initial tests conclude that clearing the canvas using clearRect
 		// is always faster than setting canvas.width = canvas.width
 		// http://jsperf.com/clearrect-vs-setting-width/7
 		var ctx = this._context,
 			size = this._viewSize;
 		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
-		this._project.draw(ctx, this._matrix);
-		this._project._needsRedraw = false;
+		
+		for(var i = 0; i<this._projects.length; i++)
+		{
+			this._projects[i].draw(ctx, this._matrix);
+			this._projects[i]._needsRedraw = false;
+		}
 		return true;
 	}
 }, new function() { // Item based mouse handling:
@@ -119,25 +131,29 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 
 	function handleEvent(view, type, event, point, lastPoint) {
 		if (view._eventCounters[type]) {
-			var project = view._project,
-				hit = project.hitTest(point, {
-					tolerance: project.options.hitTolerance || 0,
-					fill: true,
-					stroke: true
-				}),
-				item = hit && hit.item;
-			if (item) {
-				// If this is a mousemove event and we change the overItem,
-				// reset lastPoint to point so delta is (0, 0)
-				if (type === 'mousemove' && item != overItem)
-					lastPoint = point;
-				// If we have a downItem with a mousedrag event, do not send
-				// mousemove events to any item while we're dragging.
-				// TODO: Do we also need to lock mousenter / mouseleave in the
-				// same way?
-				if (type !== 'mousemove' || !hasDrag)
-					callEvent(type, event, point, item, lastPoint);
-				return item;
+		
+			for(var i = 0; i<view._projects.length; i++)
+			{
+				var project = view._projects[i],
+					hit = project.hitTest(point, {
+						tolerance: project.options.hitTolerance || 0,
+						fill: true,
+						stroke: true
+					}),
+					item = hit && hit.item;
+				if (item) {
+					// If this is a mousemove event and we change the overItem,
+					// reset lastPoint to point so delta is (0, 0)
+					if (type === 'mousemove' && item != overItem)
+						lastPoint = point;
+					// If we have a downItem with a mousedrag event, do not send
+					// mousemove events to any item while we're dragging.
+					// TODO: Do we also need to lock mousenter / mouseleave in the
+					// same way?
+					if (type !== 'mousemove' || !hasDrag)
+						callEvent(type, event, point, item, lastPoint);
+					return item;
+				}
 			}
 		}
 	}
