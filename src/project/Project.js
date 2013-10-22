@@ -109,7 +109,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		if (!remove.base.call(this))
 			return false;
 		if (this.view)
-			this.view.remove(this);
+			this.view._removeProject(this);
 		return true;
 	},
 

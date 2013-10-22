@@ -23,7 +23,11 @@ test('Two projects, same view', function() {
 	equals( second_project.view , first_project.view );
 	
 	equals( first_project.remove() , true );
+	equals( first_project.remove() , false );
+	
 	equals( second_project.remove() , true );
+	
+	equals( view.remove() , true );
 	equals( view.remove() , false );
 });
 

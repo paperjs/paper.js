@@ -113,40 +113,42 @@ var View = Base.extend(Callback, /** @lends View# */{
 	},
 	
 	/**
-	 * Removes this view and frees the associated element if
-	 * called without arguments.
+	 * Removes a project
 	 * 
-	 * Removes a specific project if first argument is a project.
-	 * 
-	 * @param {Project} The project to remove from this view.
-	 * @return {Boolean} {@true if a project was removed and/or associated element
-	 * 					was removed. @false if view was no longer in use.}
+	 * @return {Boolean} {@true if project was removed.
+	 *						@false if nothing was removed.}
 	 */
-	remove: function(project) {
-		
+	_removeProject: function(project) {
+		var index_to_remove = null;
+		if(project && this._projects)
 		{
-			var index_to_remove = null;
-			if(project && this._projects)
+			for(var i = 0; i<this._projects.length; i++)
 			{
-				for(var i = 0; i<this._projects.length; i++)
+				if (this._projects[i] == project)
 				{
-					if (this._projects[i].view == project)
-					{
-						index_to_remove = i;
-					}
+					index_to_remove = i;
 				}
-			}
-			if(index_to_remove != null)
-			{
-				if (this._projects[index_to_remove].view == this)
-				{
-					this._projects[index_to_remove].view = null;
-				}
-				this.projects.splice(index_to_remove, 1);
-				if(this._projects.length)
-					return true;
 			}
 		}
+		if(index_to_remove != null)
+		{
+			if (this._projects[index_to_remove].view == this)
+			{
+				this._projects[index_to_remove].view = null;
+			}
+			this._projects.splice(index_to_remove, 1);
+			return true;
+		}
+		return false;
+	},
+	
+	/**
+	 * Removes this view and frees the associated element
+	 * 
+	 * @return {Boolean} {@true if associated element was removed.
+	 *						@false if view was already removed.}
+	 */
+	remove: function(project) {
 	
 		if ( !this._projects )
 			return false;
