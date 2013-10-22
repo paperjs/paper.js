@@ -136,7 +136,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 					}
 				}
 			}
-			if(index_to_remove)
+			if(index_to_remove != null)
 			{
 				if (this._projects[index_to_remove].view == this)
 				{
