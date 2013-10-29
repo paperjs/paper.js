@@ -1727,20 +1727,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return winding;
 	},
 
-	_contains: function(point) {
-/*#*/ if (options.nativeContains) {
-		// To compare with native canvas approach:
-		var ctx = CanvasProvider.getContext(1, 1);
-		this._draw(ctx, Base.merge({ clip: true }));
-		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
-		CanvasProvider.release(ctx);
-		return res;
-/*#*/ } else { // !options.nativeContains
-		var winding = this._getWinding(point);
-		return !!(this.getWindingRule() == 'evenodd' ? winding & 1 : winding);
-/*#*/ } // !options.nativeContains
-	},
-
 	_hitTest: function(point, options) {
 		var style = this.getStyle(),
 			segments = this._segments,

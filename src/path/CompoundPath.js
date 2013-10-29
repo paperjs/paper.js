@@ -185,40 +185,12 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		return paths.join(' ');
 	},
 
-	/**
-	 * A private method to help with both #contains() and #_hitTest().
-	 * Instead of simply returning a boolean, it returns a children of all the
-	 * children that contain the point. This is required by _hitTest(), and
-	 * Item#contains() is prepared for such a result.
-	 */
-	_contains: function(point) {
-/*#*/ if (options.nativeContains) {
-		// To compare with native canvas approach:
-		var ctx = CanvasProvider.getContext(1, 1),
-			children = this._children,
-			param = Base.merge({ compound: true });
-		// Return early if the compound path doesn't have any children:
-		if (children.length === 0)
-			return false;
-		ctx.beginPath();
-		for (var i = 0, l = children.length; i < l; i++)
-			children[i]._draw(ctx, param);
-		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
-		CanvasProvider.release(ctx);
-		return res;
-/*#*/ } else { // !options.nativeContains
-		// Compound paths are a little complex: In order to determine whether a
-		// point is inside a path or not due to the winding rule, we need to
-		// check all the children and count how many intersect. If it's an odd
-		// number, the point is inside the path. Once we know it's inside the
-		// path, _hitTest also needs access to the first intersecting element, 
-		// for the HitResult, so we return it here.
+	_getWinding: function(point) {
 		var children =  this._children,
 			winding = 0;
 		for (var i = 0, l = children.length; i < l; i++)
 			winding += children[i]._getWinding(point);
-		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
-/*#*/ } // !options.nativeContains
+		return winding;
 	},
 
 	_hitTest : function _hitTest(point, options) {
@@ -242,8 +214,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	},
 
 	_draw: function(ctx, param) {
-		var children = this._children,
-			style = this._style;
+		var children = this._children;
 		// Return early if the compound path doesn't have any children:
 		if (children.length === 0)
 			return;
@@ -253,6 +224,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 			children[i].draw(ctx, param);
 		if (!param.clip) {
 			this._setStyles(ctx);
+			var style = this._style;
 			if (style.getFillColor())
 				ctx.fill(style.getWindingRule());
 			if (style.getStrokeColor())
