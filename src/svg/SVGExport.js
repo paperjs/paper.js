@@ -365,7 +365,7 @@ new function() {
 		}
 		// Clear definitions at the end of export
 		definitions = null;
-		return options && options.asString
+		return options.asString
 				? new XMLSerializer().serializeToString(svg)
 				: svg;
 	}
@@ -379,21 +379,22 @@ new function() {
 	}
 
 	function setOptions(options) {
-		formatter = options && options.precision
-				? new Formatter(options.precision)
-				: Formatter.instance;
+		if (!options)
+			options = {};
+		formatter = new Formatter(options.precision);
+		return options;
 	}
 
 	Item.inject({
 		exportSVG: function(options) {
-			setOptions(options);
+			options = setOptions(options);
 			return exportDefinitions(exportSVG(this), options);
 		}
 	});
 
 	Project.inject({
 		exportSVG: function(options) {
-			setOptions(options);
+			options = setOptions(options);
 			var layers = this.layers,
 				size = this.view.getSize(),
 				node = createElement('svg', {
