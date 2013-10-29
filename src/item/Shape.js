@@ -72,7 +72,11 @@ var Shape = Item.extend(/** @lends Shape# */{
 		if (!this._size.equals(size)) {
 			var width = size.width,
 				height = size.height;
-			if (shape === 'circle') {
+			if (shape === 'rectangle') {
+				// Shrink radius accordingly
+				var radius = Size.min(this._radius, size.divide(2));
+				this._radius.set(radius.width, radius.height);
+			} else if (shape === 'circle') {
 				// Use average of width and height as new size, then calculate
 				// radius as a number from that:
 				width = height = (width + height) / 2;
@@ -112,8 +116,13 @@ var Shape = Item.extend(/** @lends Shape# */{
 			if (this._radius.equals(radius))
 				return;
 			this._radius.set(radius.width, radius.height);
-			if (shape === 'ellipse')
+			if (shape === 'rectangle') {
+				// Grow size accordingly
+				var size = Size.max(this._size, radius.multiply(2));
+				this._size.set(size.width, size.height);
+			} else if (shape === 'ellipse') {
 				this._size.set(radius.width * 2, radius.height * 2);
+			}
 		}
 		this._changed(/*#=*/ Change.GEOMETRY);
 	},
@@ -394,10 +403,11 @@ statics: new function() {
 		 * });
 		 */
 		Rectangle: function(/* rectangle */) {
-			var rect = Rectangle.readNamed(arguments, 'rectangle');
+			var rect = Rectangle.readNamed(arguments, 'rectangle'),
+				radius = Size.min(Size.readNamed(arguments, 'radius'),
+						rect.getSize(true).divide(2));
 			return createShape('rectangle', rect.getCenter(true),
-					rect.getSize(true), Size.readNamed(arguments, 'radius'),
-					arguments);
+					rect.getSize(true), radius, arguments);
 		},
 
 		/**
