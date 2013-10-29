@@ -370,7 +370,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			offset: new Point(0, 0),
 			// A stack of concatenated matrices, to keep track of the current
 			// global matrix, since Canvas is not able tell us (yet).
-			transforms: [matrix]
+			transforms: [matrix],
+			// Tell the drawing routine that we want to track nested matrices
+			// in param.transforms, and that we want it to set _globalMatrix
+			// as used below. Item#rasterize() and Raster#getAverageColor() do
+			// not need to set this.
+			trackTransforms: true
 		});
 		for (var i = 0, l = this.layers.length; i < l; i++)
 			this.layers[i].draw(ctx, param);

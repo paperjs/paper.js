@@ -3160,7 +3160,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var transforms = param.transforms,
 			parentMatrix = transforms[transforms.length - 1],
 			globalMatrix = parentMatrix.clone().concatenate(this._matrix);
-		transforms.push(this._globalMatrix = globalMatrix);
+		// Only keep track of transformation if told so. See Project#draw()
+		if (param.trackTransforms)
+			transforms.push(this._globalMatrix = globalMatrix);
 		// If the item has a blendMode or is defining an opacity, draw it on
 		// a temporary canvas first and composite the canvas afterwards.
 		// Paths with an opacity < 1 that both define a fillColor
