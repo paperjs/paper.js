@@ -71,7 +71,7 @@ new function() {
 
 	// Importer functions for various SVG node types
 
-	function importGroup(node, type) {
+	function importGroup(node, type, options) {
 		var nodes = node.childNodes,
 			clip = type === 'clippath',
 			item = new Group(),
@@ -94,7 +94,8 @@ new function() {
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var childNode = nodes[i],
 				child;
-			if (childNode.nodeType === 1 && (child = importSVG(childNode))
+			if (childNode.nodeType === 1
+					&& (child = importSVG(childNode, options))
 					&& !(child instanceof Symbol))
 				children.push(child);
 		}
@@ -165,8 +166,8 @@ new function() {
 	// NOTE: All importers are lowercase, since jsdom is using uppercase
 	// nodeNames still.
 	var importers = {
-		'#document': function(node) {
-			return importSVG(node.childNodes[0]);
+		'#document': function(node, type, options) {
+			return importSVG(node.childNodes[0], options);
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#Groups
@@ -478,15 +479,21 @@ new function() {
 		return match && definitions[match[1]];
 	}
 
-	function importSVG(node, clearDefs) {
+	function importSVG(node, options, clearDefs) {
+		if (!options)
+			options = {};
 		if (typeof node === 'string')
 			node = new DOMParser().parseFromString(node, 'image/svg+xml');
 		// jsdom in Node.js uses uppercase values for nodeName...
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
-			item = importer && importer(node, type),
+			item = importer && importer(node, type, options),
 			data = type !== '#document' && node.getAttribute('data-paper-data');
 		// See importGroup() for an explanation of this filtering:
+		if (options.expandShapes && item instanceof Shape) {
+			item.remove();
+			item = item.toPath();
+		}
 		if (item && !(item instanceof Group))
 			item = applyAttributes(item, node);
 		if (item && data)
@@ -498,15 +505,15 @@ new function() {
 	}
 
 	Item.inject({
-		importSVG: function(node) {
-			return this.addChild(importSVG(node, true));
+		importSVG: function(node, options) {
+			return this.addChild(importSVG(node, options, true));
 		}
 	});
 
 	Project.inject({
-		importSVG: function(node) {
+		importSVG: function(node, options) {
 			this.activate();
-			return importSVG(node, true);
+			return importSVG(node, options, true);
 		}
 	});
 };
