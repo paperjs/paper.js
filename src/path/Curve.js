@@ -1429,54 +1429,58 @@ new function() { // Scope for methods that require numerical integration
 			vl = flip ? v1 : v2,
 			l1x = vl[0], l1y = vl[1],
 			l2x = vl[6], l2y = vl[7],
-			vc0 = vc[0], vc1 = vc[1], vc2 = vc[2], vc3 = vc[3],
+			vc0 = vc[0], vc1 = vc[1],
+			vc2 = vc[2], vc3 = vc[3],
 			vc4 = vc[4], vc5 = vc[5],
 			// Equation of the line Ax + By + C = 0
-			A = l2y-l1y,	//A=y2-y1
-			B = l1x-l2x,	//B=x1-x2
-			C = l1x*(l1y-l2y) + l1y*(l2x-l1x),	//C=x1*(y1-y2)+y1*(x2-x1)
+			// A = y2 - y1
+			// B = x1 - x2
+			// C = x1 * (y1 - y2) + y1 * (x2 - x1)
+			A = l2y - l1y, 
+			B = l1x - l2x,
+			C = l1x * (l1y - l2y) + l1y * (l2x - l1x),
 			// Bernstein coefficients for the curve
-			bx0 = -vc0 + 3*vc2 + -3*vc4 + vc[6],
-			bx1 = 3*vc0 - 6*vc2 + 3*vc4,
-			bx2 = -3*vc0 + 3*vc2,
+			bx0 = -vc0 + 3 * vc2 + -3 * vc4 + vc[6],
+			bx1 = 3 * vc0 - 6 * vc2 + 3 * vc4,
+			bx2 = -3 * vc0 + 3 * vc2,
 			bx3 = vc0,
-			by0 = -vc1 + 3*vc3 + -3*vc5 + vc[7],
-			by1 = 3*vc1 - 6*vc3 + 3*vc5,
-			by2 = -3*vc1 + 3*vc3,
+			by0 = -vc1 + 3 * vc3 + -3 * vc5 + vc[7],
+			by1 = 3 * vc1 - 6 * vc3 + 3 * vc5,
+			by2 = -3 * vc1 + 3 * vc3,
 			by3 = vc1,
 			// Form the cubic equation
-			// a*t^3 + b*t^2 + c*t + d = 0
-			a = A*bx0 + B*by0,	/*t^3*/
-			b = A*bx1 + B*by1,	/*t^2*/
-			c = A*bx2 + B*by2,	/*t*/
-			d = A*bx3 + B*by3 + C,	/*1*/
-			roots = [], count, x, y, t, tl;
-
-		// Solve the cubic equation
-		count = Numerical.solveCubic(a, b, c, d, roots);
+			// a * t^3 + b*t^2 + c*t + d = 0
+			a = A * bx0 + B * by0, // t^3
+			b = A * bx1 + B * by1, // t^2
+			c = A * bx2 + B * by2, // t
+			d = A * bx3 + B * by3 + C, // t1
+			roots = [],
+			// Solve the cubic equation, interested only in results in [0 .. 1]
+			count = Numerical.solveCubic(a, b, c, d, roots, 0, 1);
 		// NOTE: count could be -1 for inifnite solutions, but that should only
 		// happen with lines, in which case we should not be here.
-		for (var i=0;i<count;i++) {
-			t = roots[i];
-			if(t >= 0 && t <= 1.0){
-				x = bx0*t*t*t + bx1*t*t + bx2*t + bx3;
-				y = by0*t*t*t + by1*t*t + by2*t + by3;            
-				// tl is the parameter of the intersection point in line segment.
-				// Special case to override the tight tolerence in 
-				// Curve.solveQuadratic when line is horizontal
-				if (l2y-l1y === 0)
-					y = l1y;
-				tl = Curve.getParameterOf(vl, x, y);
-				// We do have a point on the infinite line. Check if it falls on
-				// the line *segment*.
-				if(tl >= 0 && tl <= 1.0){
-					// Interpolate the parameter for the intersection on line.
-					var t1 = flip ? tl : t,
-						t2 = flip ? t : tl;
-					addLocation(locations,
-							curve1, t1, Curve.evaluate(v1, t1, 0),
-							curve2, t2, Curve.evaluate(v2, t2, 0));
-				}
+		for (var i = 0; i < count; i++) {
+			var t = roots[i],
+				tt = t * t,
+				ttt = tt * t,
+				x = bx0 * ttt + bx1 * tt + bx2 * t + bx3,
+				y = by0 * ttt + by1 * tt + by2 * t + by3;            
+			// tl is the parameter of the intersection point in line segment.
+			// Special case to override the tight tolerence in 
+			// Curve.solveQuadratic when line is horizontal
+			if (l2y === l1y)
+				y = l1y;
+			var tl = Curve.getParameterOf(vl, x, y),
+				t2;
+			// We do have a point on the infinite line. Check if it falls on
+			// the line *segment*.
+			if (tl >= 0 && tl <= 1) {
+				// Interpolate the parameter for the intersection on line.
+				t1 = flip ? tl : t;
+				t2 = flip ? t : tl;
+				addLocation(locations,
+						curve1, t1, Curve.evaluate(v1, t1, 0),
+						curve2, t2, Curve.evaluate(v2, t2, 0));
 			}
 		}
 	}
