@@ -166,7 +166,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 					ry = radius.height,
 					kappa = Numerical.KAPPA;
 				if (shape === 'ellipse') {
-					// Use four bezier curves and KAPPA value to aproximate ellipse
+					// Approximate ellipse with four bezier curves and KAPPA. 
 					var	cx = rx * kappa,
 						cy = ry * kappa;
 					ctx.moveTo(-rx, 0);
@@ -182,8 +182,8 @@ var Shape = Item.extend(/** @lends Shape# */{
 						// straight rect
 						ctx.rect(-width / 2, -height / 2, width, height);
 					} else {
-						// rounded rect. Use inverse kappa to calculate position
-						// of control points from the corners inwards.
+						// rounded rect. Use 1 - KAPPA to calculate position of
+						// control points from the corners inwards.
 						kappa = 1 - kappa;
 						var x = width / 2,
 							y = height / 2,
