@@ -1611,9 +1611,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 		if (!this._closed)
 			return null;
 
-		if (insert === undefined)
-			insert = true;
-
 		var segments = this._segments,
 			type,
 			size,
@@ -1674,11 +1671,14 @@ var Path = PathItem.extend(/** @lends Path# */{
 					center: center,
 					size: size,
 					radius: radius,
-					insert: insert
+					insert: false
 				});
 			// Determine and apply the shape's angle of rotation.
 			shape.rotate(topCenter.subtract(center).getAngle() + 90);
 			shape.setStyle(this._style);
+			// Insert is true by default.
+			if (insert || insert === undefined)
+				shape.insertAbove(this);
 			return shape;
 		}
 		return null;

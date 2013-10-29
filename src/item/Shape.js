@@ -125,15 +125,19 @@ var Shape = Item.extend(/** @lends Shape# */{
 		return false;
 	},
 
-	// DOCS: #toPath()
-	toPath: function() {
+	// DOCS: #toPath([insert=true])
+	toPath: function(insert) {
 		var path = new Path[Base.capitalize(this._shape)]({
 			center: new Point(),
 			size: this._size,
-			radius: this._radius
+			radius: this._radius,
+			insert: false
 		});
 		path.transform(this._matrix);
 		path.setStyle(this._style);
+		// Insert is true by default.
+		if (insert || insert === undefined)
+			path.insertAbove(this);
 		return path;
 	},
 
