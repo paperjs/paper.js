@@ -22,6 +22,7 @@ var options = {
 	svg: true,
 	fatline: true,
 	paperscript: true,
+	palette: true,
 	nativeContains: false,
 	debug: false
 };
