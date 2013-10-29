@@ -225,10 +225,11 @@ var Shape = Item.extend(/** @lends Shape# */{
 		}
 	},
 
-	_hitTest: function _hitTest(point) {
+	_hitTest: function _hitTest(point, options) {
 		if (this.hasStroke()) {
 			var shape = this._shape,
-				strokeWidth = this.getStrokeWidth();
+				strokeWidth = this.getStrokeWidth()
+						+ 2 * (options.tolerance || 0);
 			switch (shape) {
 			case 'rectangle':
 				var rect = new Rectangle(this._size).setCenter(0, 0),
