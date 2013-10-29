@@ -5,13 +5,13 @@
 	<title>Nyan Rainbow</title>
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
-	<script type="text/javascript" src="http://paperjs.org/static/mediaelement/mediaelement.js"></script>
+	<script type="text/javascript" src="http://paperjs.org/assets/mediaelement/mediaelement.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		// A tribute to Nyan Cat http://www.youtube.com/watch?v=QH2-TGUlwu4
 		var mediaElement;
 		var playing = false;
 		MediaElement('nyan', {
-			pluginPath: '/static/mediaelement/',
+			pluginPath: '/assets/mediaelement/',
 			success: function(me) {
 				mediaElement = me;
 				me.play();
