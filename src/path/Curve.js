@@ -1455,11 +1455,11 @@ new function() { // Scope for methods that require numerical integration
 		// happen with lines, in which case we should not be here.
 		for (var i = 0; i < count; i++) {
 			var tc = roots[i],
-				point = Curve.evaluate(vcr, tc, 0);
+				point = Curve.evaluate(vc, tc, 0),
+				tl = Curve.getParameterOf(vl, point.x, point.y);
 			// We do have a point on the infinite line. Check if it falls on
 			// the line *segment*.
-			if (point.x  >= 0 && point.x <= rl2x){
-				var tl = Curve.getParameterOf(vl, point.x, point.y);
+			if (tl >= 0 && tl <= 1) {
 				// Interpolate the parameter for the intersection on line.
 				var t1 = flip ? tl : tc,
 					t2 = flip ? tc : tl;
