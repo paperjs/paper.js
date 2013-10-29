@@ -1431,18 +1431,18 @@ new function() { // Scope for methods that require numerical integration
 			vl = flip ? v1 : v2,
 			lx1 = vl[0], ly1 = vl[1],
 			lx2 = vl[6], ly2 = vl[7],
-			// Rotate both curve and line around l1 so that line is on x axis
+			// Rotate both curve and line around l1 so that line is on x axis.
 			ldx = lx2 - lx1,
 			ldy = ly2 - ly1,
-			// Angle with x axis (1, 0)
+			// Calculate angle to the x-axis (1, 0).
 			angle = Math.atan2(-ldy, ldx),
 			sin = Math.sin(angle),
 			cos = Math.cos(angle),
 			// (rlx1, rly1) = (0, 0)
 			rlx2 = ldx * cos - ldy * sin,
-			// The curve values for the rotated line
+			// The curve values for the rotated line.
 			rvl = [0, 0, 0, 0, rlx2, 0, rlx2, 0],
-			// Now calculate the rotated curve
+			// Calculate the curve values of the rotated curve.
 			rvc = [];
 		for(var i = 0; i < 8; i += 2) {
 			var x = vc[i] - lx1,
@@ -1461,7 +1461,7 @@ new function() { // Scope for methods that require numerical integration
 			// We do have a point on the infinite line. Check if it falls on
 			// the line *segment*.
 			if (x >= 0 && x <= rlx2) {
-				// Find the parameter of the intersection on the rotated line 
+				// Find the parameter of the intersection on the rotated line. 
 				var tl = Curve.getParameterOf(rvl, x, 0),
 					t1 = flip ? tl : tc,
 					t2 = flip ? tc : tl;
