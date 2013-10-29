@@ -23,7 +23,7 @@
 			|| DomElement.find('body').appendChild(
 				DomElement.create('div', { 'class': 'palettejs-panel' }));
 		this._element = parent.appendChild(
-			DomElement.create('table', { 'class': 'palettejs-pane' })),
+			DomElement.create('table', { 'class': 'palettejs-pane' }));
 		this._title = title;
 		if (!values)
 			values = {};
