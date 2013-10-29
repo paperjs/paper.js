@@ -1489,7 +1489,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// this item does not have children, since we'd have to travel up the
 		// chain already to determine the rough bounds.
 		if (!this._children && !this.getRoughBounds()
-				.expand(options.tolerance)._containsPoint(point))
+				.expand(2 * options.tolerance)._containsPoint(point))
 			return null;
 		// Transform point to local coordinates but use untransformed point
 		// for bounds check above.

@@ -277,8 +277,7 @@ new function() { // Scope for _contains() and _hitTest() code.
 			if (this.hasStroke()) {
 				var shape = this._shape,
 					radius = this._radius,
-					strokeWidth = this.getStrokeWidth()
-							+ 2 * (options.tolerance || 0);
+					strokeWidth = this.getStrokeWidth() + 2 * options.tolerance;
 				switch (shape) {
 				case 'rectangle':
 					var center = getCornerCenter(this, point, strokeWidth);

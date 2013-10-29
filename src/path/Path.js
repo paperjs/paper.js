@@ -1731,7 +1731,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		var style = this.getStyle(),
 			segments = this._segments,
 			closed = this._closed,
-			tolerance = options.tolerance || 0,
+			tolerance = options.tolerance,
 			radius = 0, join, cap, miterLimit,
 			that = this,
 			area, loc, res;
