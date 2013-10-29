@@ -13,25 +13,22 @@
 Path.inject({ statics: new function() {
 
 	var kappa = Numerical.KAPPA,
-		halfKappa = kappa / 2,
 		ellipseSegments = [
-			new Segment([0, 0.5], [0, halfKappa ], [0, -halfKappa]),
-			new Segment([0.5, 0], [-halfKappa, 0], [halfKappa, 0 ]),
-			new Segment([1, 0.5], [0, -halfKappa], [0, halfKappa ]),
-			new Segment([0.5, 1], [halfKappa, 0 ], [-halfKappa, 0])
+			new Segment([-1, 0], [0, kappa ], [0, -kappa]),
+			new Segment([0, -1], [-kappa, 0], [kappa, 0 ]),
+			new Segment([1, 0], [0, -kappa], [0, kappa ]),
+			new Segment([0, 1], [kappa, 0 ], [-kappa, 0])
 		];
 
-	function createEllipse(rect, args) {
+	function createEllipse(center, radius, args) {
 		var path = new Path(),
-			point = rect.getPoint(true),
-			size = rect.getSize(true),
 			segments = new Array(4);
 		for (var i = 0; i < 4; i++) {
 			var segment = ellipseSegments[i];
 			segments[i] = new Segment(
-				segment._point.multiply(size).add(point),
-				segment._handleIn.multiply(size),
-				segment._handleOut.multiply(size)
+				segment._point.multiply(radius).add(center),
+				segment._handleIn.multiply(radius),
+				segment._handleOut.multiply(radius)
 			);
 		}
 		path._add(segments);
@@ -113,8 +110,7 @@ Path.inject({ statics: new function() {
 		Circle: function(/* center, radius */) {
 			var center = Point.readNamed(arguments, 'center'),
 				radius = Base.readNamed(arguments, 'radius');
-			return createEllipse(new Rectangle(center.subtract(radius),
-					new Size(radius * 2, radius * 2)), arguments);
+			return createEllipse(center, new Size(radius), arguments);
 		},
 
 		/**
@@ -286,16 +282,17 @@ Path.inject({ statics: new function() {
 		 * });
 		 */
 		Ellipse: function(/* rectangle */) {
-			var rect;
+			var center,
+				radius;
 			if (Base.hasNamed(arguments, 'center')) {
-				var center = Point.readNamed(arguments, 'center'),
-					radius = Size.readNamed(arguments, 'radius');
-				rect = new Rectangle(center.subtract(radius),
-						center.add(radius));
+				center = Point.readNamed(arguments, 'center');
+				radius = Size.readNamed(arguments, 'radius');
 			} else {
-				rect = Rectangle.readNamed(arguments, 'rectangle');
+				var rect = Rectangle.readNamed(arguments, 'rectangle');
+				center = rect.getCenter(true);
+				radius = rect.getSize(true).divide(2);
 			}
-			return createEllipse(rect, arguments);
+			return createEllipse(center, radius, arguments);
 		},
 
 		/**

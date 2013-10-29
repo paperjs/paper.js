@@ -436,19 +436,17 @@ statics: new function() {
 		 */
 		Ellipse: function(/* rectangle */) {
 			var center,
-				size,
 				radius;
 			if (Base.hasNamed(arguments, 'center')) {
 				center = Point.readNamed(arguments, 'center');
 				radius = Size.readNamed(arguments, 'radius');
-				size = radius.multiply(2);
 			} else {
 				var rect = Rectangle.readNamed(arguments, 'rectangle');
 				center = rect.getCenter(true);
-				size = rect.getSize(true);
-				radius = size.divide(2);
+				radius = rect.getSize(true).divide(2);
 			}
-			return createShape('ellipse', center, size, radius, arguments);
+			return createShape('ellipse', center, radius.multiply(2), radius,
+					arguments);
 		}
 	};
 }});
