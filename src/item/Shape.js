@@ -204,8 +204,10 @@ var Shape = Item.extend(/** @lends Shape# */{
 		}
 		if (!clip && (hasFill || hasStroke)) {
 			this._setStyles(ctx);
-			if (hasFill)
+			if (hasFill) {
 				ctx.fill(style.getWindingRule());
+				ctx.shadowColor = 'rgba(0,0,0,0)';
+			}
 			if (hasStroke)
 				ctx.stroke();
 		}

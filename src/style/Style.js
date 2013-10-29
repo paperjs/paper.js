@@ -252,6 +252,11 @@ var Style = Base.extend(new function() {
 		return !!this.getStrokeColor() && this.getStrokeWidth() > 0;
 	},
 
+	// DOCS: Style#hasShadow()
+	hasShadow: function() {
+		return !!this.getShadowColor() && this.getShadowBlur() > 0;
+	},
+
 	// Overrides
 
 	getLeading: function getLeading() {

@@ -420,6 +420,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	// DOCS: Item#hasStroke()
 	hasStroke: function() {
 		return this.getStyle().hasStroke();
+	},
+
+	// DOCS: Item#hasShadow()
+	hasShadow: function() {
+		return this.getStyle().hasShadow();
 	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	// Produce getter/setters for properties. We need setters because we want to
@@ -3105,7 +3110,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// items without children, where styles would be merged.
 		var style = this._style,
 			matrix = this._matrix,
-			strokeWidth = style.getStrokeWidth(),
 			fillColor = style.getFillColor(),
 			strokeColor = style.getStrokeColor(),
 			shadowColor = style.getShadowColor();
@@ -3113,36 +3117,44 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// see #toCanvasStyle()
 		if (fillColor)
 			ctx.fillStyle = fillColor.toCanvasStyle(ctx, matrix);
-		if (strokeColor && strokeWidth > 0) {
-			ctx.strokeStyle = strokeColor.toCanvasStyle(ctx, matrix);
-			ctx.lineWidth = strokeWidth;
-			var strokeJoin = style.getStrokeJoin(),
-				strokeCap = style.getStrokeCap(),
-				miterLimit = style.getMiterLimit(),
-				dashArray = style.getDashArray(),
-				dashOffset = style.getDashOffset();
-			if (strokeJoin)
-				ctx.lineJoin = strokeJoin;
-			if (strokeCap)
-				ctx.lineCap = strokeCap;
-			if (miterLimit)
-				ctx.miterLimit = miterLimit;
-			if (paper.support.nativeDash && dashArray && dashArray.length) {
-				if ('setLineDash' in ctx) {
-					ctx.setLineDash(dashArray);
-					ctx.lineDashOffset = dashOffset;
-				} else {
-					ctx.mozDash = dashArray;
-					ctx.mozDashOffset = dashOffset;
+		if (strokeColor) {
+			var strokeWidth = style.getStrokeWidth();
+			if (strokeWidth > 0) {
+				ctx.strokeStyle = strokeColor.toCanvasStyle(ctx, matrix);
+				ctx.lineWidth = strokeWidth;
+				var strokeJoin = style.getStrokeJoin(),
+					strokeCap = style.getStrokeCap(),
+					miterLimit = style.getMiterLimit();
+				if (strokeJoin)
+					ctx.lineJoin = strokeJoin;
+				if (strokeCap)
+					ctx.lineCap = strokeCap;
+				if (miterLimit)
+					ctx.miterLimit = miterLimit;
+				if (paper.support.nativeDash) {
+					var dashArray = style.getDashArray(),
+						dashOffset = style.getDashOffset();
+					if (dashArray && dashArray.length) {
+						if ('setLineDash' in ctx) {
+							ctx.setLineDash(dashArray);
+							ctx.lineDashOffset = dashOffset;
+						} else {
+							ctx.mozDash = dashArray;
+							ctx.mozDashOffset = dashOffset;
+						}
+					}
 				}
 			}
 		}
 		if (shadowColor) {
-			ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
-			ctx.shadowBlur = style.getShadowBlur();
-			var offset = this.getShadowOffset();
-			ctx.shadowOffsetX = offset.x;
-			ctx.shadowOffsetY = offset.y;
+			var shadowBlur = style.getShadowBlur();
+			if (shadowBlur > 0) {
+				ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
+				ctx.shadowBlur = shadowBlur;
+				var offset = this.getShadowOffset();
+				ctx.shadowOffsetX = offset.x;
+				ctx.shadowOffsetY = offset.y;
+			}
 		}
 	},
 

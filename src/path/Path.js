@@ -2024,8 +2024,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
 				this._setStyles(ctx);
-				if (hasFill)
+				// If shadowColor is defined, clear it after fill, so it won't
+				// be applied to both fill and stroke. If the path is only
+				// stroked, we don't have to clear it.
+				if (hasFill) {
 					ctx.fill(style.getWindingRule());
+					ctx.shadowColor = 'rgba(0,0,0,0)';
+				}
 				if (hasStroke) {
 					if (dashLength) {
 						// We cannot use the path created by drawSegments above
