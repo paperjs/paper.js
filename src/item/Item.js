@@ -1626,7 +1626,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	};
 }, /** @lends Item# */{
 	/**
-	 * {@grouptitle Import / Export to JSON & SVG}
+	 * {@grouptitle Importing To / Exporting From JSON & SVG}
 	 *
 	 * Exports (serializes) the item with its content and child items to a JSON
 	 * data string.

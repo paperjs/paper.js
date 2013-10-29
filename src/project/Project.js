@@ -290,7 +290,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	};
 }, /** @lends Project# */{
 	/**
-	 * {@grouptitle Import / Export to JSON & SVG}
+	 * {@grouptitle Importing To / Exporting From JSON & SVG}
 	 *
 	 * Exports (serializes) the project with all its layers and child items to
 	 * a JSON data string.
