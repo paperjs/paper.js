@@ -480,18 +480,26 @@ statics: new function() {
 		 * });
 		 */
 		Ellipse: function(/* rectangle */) {
+			var ellipse = Shape._readEllipse(arguments);
+				radius = ellipse.radius;
+			return createShape('ellipse', ellipse.center, radius.multiply(2),
+					radius, arguments);
+		},
+
+		// Private method to read ellipse center and radius from arguments list,
+		// shared with Path.Ellipse constructor.
+		_readEllipse: function(args) {
 			var center,
 				radius;
-			if (Base.hasNamed(arguments, 'radius')) {
-				center = Point.readNamed(arguments, 'center');
-				radius = Size.readNamed(arguments, 'radius');
+			if (Base.hasNamed(args, 'radius')) {
+				center = Point.readNamed(args, 'center');
+				radius = Size.readNamed(args, 'radius');
 			} else {
-				var rect = Rectangle.readNamed(arguments, 'rectangle');
+				var rect = Rectangle.readNamed(args, 'rectangle');
 				center = rect.getCenter(true);
 				radius = rect.getSize(true).divide(2);
 			}
-			return createShape('ellipse', center, radius.multiply(2), radius,
-					arguments);
+			return { center: center, radius: radius };
 		}
 	};
 }});
