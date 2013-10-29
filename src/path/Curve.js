@@ -1429,38 +1429,40 @@ new function() { // Scope for methods that require numerical integration
 		var flip = Curve.isLinear(v1),
 			vc = flip ? v2 : v1,
 			vl = flip ? v1 : v2,
-			l1x = vl[0], l1y = vl[1],
-			l2x = vl[6], l2y = vl[7],
+			lx1 = vl[0], ly1 = vl[1],
+			lx2 = vl[6], ly2 = vl[7],
 			// Rotate both curve and line around l1 so that line is on x axis
-			lvx = l2x - l1x,
-			lvy = l2y - l1y,
+			ldx = lx2 - lx1,
+			ldy = ly2 - ly1,
 			// Angle with x axis (1, 0)
-			angle = Math.atan2(-lvy, lvx),
+			angle = Math.atan2(-ldy, ldx),
 			sin = Math.sin(angle),
 			cos = Math.cos(angle),
-			// (rl1x, rl1y) = (0, 0)
-			rl2x = lvx * cos - lvy * sin,
-			vcr = [];
-
+			// (rlx1, rly1) = (0, 0)
+			rlx2 = ldx * cos - ldy * sin,
+			// The curve values for the rotated line
+			rvl = [0, 0, 0, 0, rlx2, 0, rlx2, 0],
+			// Now calculate the rotated curve
+			rvc = [];
 		for(var i = 0; i < 8; i += 2) {
-			var x = vc[i] - l1x,
-				y = vc[i + 1] - l1y;
-			vcr.push(
+			var x = vc[i] - lx1,
+				y = vc[i + 1] - ly1;
+			rvc.push(
 				x * cos - y * sin,
 				y * cos + x * sin);
 		}
 		var roots = [],
-			count = Curve.solveCubic(vcr, 1, 0, roots, 0, 1);
+			count = Curve.solveCubic(rvc, 1, 0, roots, 0, 1);
 		// NOTE: count could be -1 for inifnite solutions, but that should only
 		// happen with lines, in which case we should not be here.
 		for (var i = 0; i < count; i++) {
 			var tc = roots[i],
-				x = Curve.evaluate(vcr, tc, 0).x;
+				x = Curve.evaluate(rvc, tc, 0).x;
 			// We do have a point on the infinite line. Check if it falls on
 			// the line *segment*.
-			if (x >= 0 && x <= rl2x) {
-				var tl = Curve.getParameterOf([0, 0, 0, 0, rl2x, 0, rl2x, 0],
-						x, 0),
+			if (x >= 0 && x <= rlx2) {
+				// Find the parameter of the intersection on the rotated line 
+				var tl = Curve.getParameterOf(rvl, x, 0),
 					t1 = flip ? tl : tc,
 					t2 = flip ? tc : tl;
 				addLocation(locations,
