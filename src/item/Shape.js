@@ -257,8 +257,7 @@ new function() { // Scope for _contains() and _hitTest() code.
 
 	return /** @lends Shape# */{
 		_contains: function _contains(point) {
-			switch (this._shape) {
-			case 'rectangle':
+			if (this._shape === 'rectangle') {
 				var center = getCornerCenter(this, point);
 				return center
 						// If there's a quarter ellipse center, use the same
@@ -266,8 +265,7 @@ new function() { // Scope for _contains() and _hitTest() code.
 						? point.subtract(center).divide(this._radius)
 							.getLength() <= 1
 						: _contains.base.call(this, point);
-			case 'circle':
-			case 'ellipse':
+			} else {
 				return point.divide(this.size).getLength() <= 0.5;
 			}
 		},
