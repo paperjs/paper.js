@@ -242,6 +242,18 @@ var Style = Base.extend(new function() {
 				|| false;
 	},
 
+	// DOCS: Style#hasFill()
+	hasFill: function() {
+		return !!this.getFillColor();
+	},
+
+	// DOCS: Style#hasStroke()
+	hasStroke: function() {
+		return !!this.getStrokeColor() && this.getStrokeWidth() > 0;
+	},
+
+	// Overrides
+
 	getLeading: function getLeading() {
 		// Override leading to return fontSize * 1.2 by default.
 		var leading = getLeading.base.call(this);

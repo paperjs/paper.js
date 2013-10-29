@@ -413,12 +413,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	hasFill: function() {
-		return !!this.getStyle().getFillColor();
+		return this.getStyle().hasFill();
 	},
 
 	hasStroke: function() {
-		var style = this.getStyle();
-		return !!style.getStrokeColor() && style.getStrokeWidth() > 0;
+		return this.getStyle().hasStroke();
 	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	// Produce getter/setters for properties. We need setters because we want to
@@ -3104,29 +3103,28 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// items without children, where styles would be merged.
 		var style = this._style,
 			matrix = this._matrix,
-			width = style.getStrokeWidth(),
-			join = style.getStrokeJoin(),
-			cap = style.getStrokeCap(),
-			limit = style.getMiterLimit(),
+			strokeWidth = style.getStrokeWidth(),
 			fillColor = style.getFillColor(),
 			strokeColor = style.getStrokeColor(),
 			shadowColor = style.getShadowColor();
-		if (width != null)
-			ctx.lineWidth = width;
-		if (join)
-			ctx.lineJoin = join;
-		if (cap)
-			ctx.lineCap = cap;
-		if (limit)
-			ctx.miterLimit = limit;
 		// We need to take matrix into account for gradients,
 		// see #toCanvasStyle()
 		if (fillColor)
 			ctx.fillStyle = fillColor.toCanvasStyle(ctx, matrix);
-		if (strokeColor) {
+		if (strokeColor && strokeWidth > 0) {
 			ctx.strokeStyle = strokeColor.toCanvasStyle(ctx, matrix);
-			var dashArray = style.getDashArray(),
+			ctx.lineWidth = strokeWidth;
+			var strokeJoin = style.getStrokeJoin(),
+				strokeCap = style.getStrokeCap(),
+				miterLimit = style.getMiterLimit(),
+				dashArray = style.getDashArray(),
 				dashOffset = style.getDashOffset();
+			if (strokeJoin)
+				ctx.lineJoin = strokeJoin;
+			if (strokeCap)
+				ctx.lineCap = strokeCap;
+			if (miterLimit)
+				ctx.miterLimit = miterLimit;
 			if (paper.support.nativeDash && dashArray && dashArray.length) {
 				if ('setLineDash' in ctx) {
 					ctx.setLineDash(dashArray);

@@ -152,10 +152,10 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 	_draw: function(ctx, param) {
 		var style = this._style,
-			fillColor = style.getFillColor(),
-			strokeColor = style.getStrokeColor(),
+			hasFill = style.hasFill(),
+			hasStroke = style.hasStroke(),
 			clip = param.clip;
-		if (fillColor || strokeColor || clip) {
+		if (hasFill || hasStroke || clip) {
 			var radius = this._radius,
 				shape = this._shape;
 			ctx.beginPath();
@@ -202,11 +202,11 @@ var Shape = Item.extend(/** @lends Shape# */{
 			}
 			ctx.closePath();
 		}
-		if (!clip && (fillColor || strokeColor)) {
+		if (!clip && (hasFill || hasStroke)) {
 			this._setStyles(ctx);
-			if (fillColor)
+			if (hasFill)
 				ctx.fill(style.getWindingRule());
-			if (strokeColor)
+			if (hasStroke)
 				ctx.stroke();
 		}
 	},

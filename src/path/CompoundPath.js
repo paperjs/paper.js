@@ -225,9 +225,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		if (!param.clip) {
 			this._setStyles(ctx);
 			var style = this._style;
-			if (style.getFillColor())
+			if (style.hasFill())
 				ctx.fill(style.getWindingRule());
-			if (style.getStrokeColor())
+			if (style.hasStroke())
 				ctx.stroke();
 		}
 	}

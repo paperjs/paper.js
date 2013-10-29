@@ -89,9 +89,9 @@ var PointText = TextItem.extend(/** @lends PointText# */{
 		ctx.textAlign = style.getJustification();
 		for (var i = 0, l = lines.length; i < l; i++) {
 			var line = lines[i];
-			if (style.getFillColor())
+			if (style.hasFill())
 				ctx.fillText(line, 0, 0);
-			if (style.getStrokeColor())
+			if (style.hasStroke())
 				ctx.strokeText(line, 0, 0);
 			ctx.translate(0, leading);
 		}

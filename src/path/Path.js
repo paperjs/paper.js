@@ -1999,11 +1999,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 				ctx.beginPath();
 
 			var style = this.getStyle(),
-				fillColor = style.getFillColor(),
-				strokeColor = style.getStrokeColor(),
+				hasFill = style.hasFill(),
+				hasStroke = style.hasStroke(),
 				dashArray = style.getDashArray(),
 				// dashLength is only set if we can't draw dashes natively
-				dashLength = !paper.support.nativeDash && strokeColor
+				dashLength = !paper.support.nativeDash && hasStroke
 						&& dashArray && dashArray.length;
 
 			function getOffset(i) {
@@ -2014,19 +2014,19 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 			// Prepare the canvas path if we have any situation that requires it
 			// to be defined.
-			if (fillColor || strokeColor && !dashLength || compound || clip)
+			if (hasFill || hasStroke && !dashLength || compound || clip)
 				drawSegments(ctx, this);
 
 			if (this._closed)
 				ctx.closePath();
 
-			if (!clip && !compound && (fillColor || strokeColor)) {
+			if (!clip && !compound && (hasFill || hasStroke)) {
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
 				this._setStyles(ctx);
-				if (fillColor)
+				if (hasFill)
 					ctx.fill(style.getWindingRule());
-				if (strokeColor) {
+				if (hasStroke) {
 					if (dashLength) {
 						// We cannot use the path created by drawSegments above
 						// Use CurveFlatteners to draw dashed paths:
@@ -2517,7 +2517,7 @@ statics: {
 		}
 
 		// TODO: Find a way to reuse 'bounds' cache instead?
-		if (!style.getStrokeColor() || !style.getStrokeWidth())
+		if (!style.hasStroke())
 			return Path.getBounds(segments, closed, style, matrix);
 		var length = segments.length - (closed ? 0 : 1),
 			radius = style.getStrokeWidth() / 2,
