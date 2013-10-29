@@ -222,54 +222,99 @@ var Shape = Item.extend(/** @lends Shape# */{
 		if (getter !== 'getBounds' && this.hasStroke())
 			rect = rect.expand(this.getStrokeWidth());
 		return matrix ? matrix._transformBounds(rect) : rect;
-	},
+	}
+},
+new function() { // Scope for _contains() and _hitTest() code.
 
-	_contains: function _contains(point) {
-		switch (this._shape) {
-		case 'rectangle':
-			return _contains.base.call(this, point);
-		case 'circle':
-		case 'ellipse':
-			return point.divide(this._size).getLength() <= 0.5;
-		}
-	},
-
-	_hitTest: function _hitTest(point, options) {
-		if (this.hasStroke()) {
-			var shape = this._shape,
-				strokeWidth = this.getStrokeWidth()
-						+ 2 * (options.tolerance || 0);
-			switch (shape) {
-			case 'rectangle':
-				var rect = new Rectangle(this._size).setCenter(0, 0),
-					outer = rect.expand(strokeWidth),
-					inner = rect.expand(-strokeWidth);
-				if (outer._containsPoint(point) && !inner._containsPoint(point))
-					return new HitResult('stroke', this);
-				break;
-			case 'circle':
-			case 'ellipse':
-				var radius;
-				if (shape === 'ellipse') {
-					// Calculate ellipse radius at angle
-					var angle = point.getAngleInRadians(),
-						size = this._size,
-						width = size.width,
-						height = size.height,
-						x = width * Math.sin(angle),
-						y = height * Math.cos(angle);
-					radius = width * height / (2 * Math.sqrt(x * x + y * y));
-				} else {
-					radius = this._radius;
-				}
-				if (2 * Math.abs(point.getLength() - radius) <= strokeWidth)
-					return new HitResult('stroke', this);
-				break;
+	// Returns the center of the quarter corner ellipse for rounded rectangle,
+	// if the point lies within its bounding box.
+	function getCornerCenter(that, point, expand) {
+		var radius = that._radius,
+			halfSize = that._size.divide(2);
+		if (!radius.isZero()) {
+			for (var i = 0; i < 4; i++) {
+				// Calculate the bounding boxes of the four quarter ellipses
+				// that define the rounded rectangle, and hit-test these.
+				var dir = new Point(i & 1 ? 1 : -1, i > 1 ? 1 : -1),
+					corner = dir.multiply(halfSize),
+					center = corner.subtract(dir.multiply(radius)),
+					rect = new Rectangle(corner, center);
+				if ((expand ? rect.expand(expand) : rect).contains(point))
+					return center;
 			}
 		}
-		return _hitTest.base.apply(this, arguments);
-	},
+	}
 
+	// Calculates the length of the ellipse radius that passes through the point
+	function getEllipseRadius(point, radius) {
+		var angle = point.getAngleInRadians(),
+			width = radius.width * 2,
+			height = radius.height * 2,
+			x = width * Math.sin(angle),
+			y = height * Math.cos(angle);
+		return width * height / (2 * Math.sqrt(x * x + y * y));
+	}
+
+	return /** @lends Shape# */{
+		_contains: function _contains(point) {
+			switch (this._shape) {
+			case 'rectangle':
+				var center = getCornerCenter(this, point);
+				return center
+						// If there's a quarter ellipse center, use the same
+						// check as for ellipses below.
+						? point.subtract(center).divide(this._radius)
+							.getLength() <= 1
+						: _contains.base.call(this, point);
+			case 'circle':
+			case 'ellipse':
+				return point.divide(this.size).getLength() <= 0.5;
+			}
+		},
+
+		_hitTest: function _hitTest(point, options) {
+			var hit = false;
+			if (this.hasStroke()) {
+				var shape = this._shape,
+					radius = this._radius,
+					strokeWidth = this.getStrokeWidth()
+							+ 2 * (options.tolerance || 0);
+				switch (shape) {
+				case 'rectangle':
+					var center = getCornerCenter(this, point, strokeWidth);
+					if (center) {
+						// Check the stroke of the quarter corner ellipse,
+						// similar to the ellipse check further down:
+						var pt = point.subtract(center);
+						hit = 2 * Math.abs(pt.getLength()
+								- getEllipseRadius(pt, radius)) <= strokeWidth;
+					} else {
+						var rect = new Rectangle(this._size).setCenter(0, 0),
+							outer = rect.expand(strokeWidth),
+							inner = rect.expand(-strokeWidth);
+						hit = outer._containsPoint(point)
+								&& !inner._containsPoint(point);
+					}
+					break;
+				case 'circle':
+				case 'ellipse':
+					var radius;
+					if (shape === 'ellipse') {
+						radius = getEllipseRadius(point, this._radius);
+					} else {
+						radius = this._radius;
+					}
+					hit = 2 * Math.abs(point.getLength() - radius)
+							<= strokeWidth;
+					break;
+				}
+			}
+			return hit
+					? new HitResult('stroke', this)
+					: _hitTest.base.apply(this, arguments);
+		}
+	};
+}, {
 // Mess with indentation in order to get more line-space below:
 statics: new function() {
 	function createShape(shape, point, size, radius, args) {
