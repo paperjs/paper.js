@@ -1460,7 +1460,7 @@ new function() { // Scope for methods that require numerical integration
 				// We do have a point on the infinite line. Check if it falls on
 				// the line *segment*.
 				if (point.x  >= 0 && point.x <= rl2x){
-					var tl = Curve.getParameterOf(vl, point.x, point.y);
+					var tl = Curve.getParameterOf([0, 0, 0, 0, rl2x, 0, rl2x, 0], point.x, 0);
 					// Interpolate the parameter for the intersection on line.
 					var t1 = flip ? tl : t,
 						t2 = flip ? t : tl;
