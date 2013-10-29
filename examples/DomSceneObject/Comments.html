@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <style media="screen" type="text/css">
+        .hint {
+            position: absolute;
+            font-family: Arial;
+        }
+
+        .modal {
+            font-family: Arial;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+            border: 1px solid #bbb;
+            background: -webkit-linear-gradient(top, #fff, #ddd);
+            background: -moz-linear-gradient(top, #fff, #ddd);
+            background: linear-gradient(top, #fff, #ddd);
+            display: inline-block;
+            padding: 20px 20px 20px 20px;
+        }
+
+    </style>
+    <script type="text/javascript" src="../../dist/paper.js"></script>
+    <script type="text/javascript">
+        paper.install(window);
+        window.onload = function () {
+            paper.setup('myCanvas');
+            // Create a simple drawing tool:
+            var tool = new Tool();
+            var path = new Path();
+            path.strokeColor = 'black';
+
+            // Define a mousedown and mousedrag handler
+            tool.onMouseDown = function (event) {
+                //Create DOM element somehow
+                var elementToAdd = document.createElement('div');
+                elementToAdd.className = 'modal';
+                elementToAdd.innerHTML = 'Hello, I am DOM scene object.';
+
+                var domSceneObject = new DomSceneObject(event.point.x, event.point.y);
+                domSceneObject.appendChild(elementToAdd);
+            }
+
+            tool.onMouseMove = function (event) {
+                path.add(event.point);
+            }
+        }
+
+        if (document.addEventListener) {
+            if ('onwheel' in document) {
+                document.addEventListener("wheel", onWheel, false);
+            } else if ('onmousewheel' in document) {
+                document.addEventListener("mousewheel", onWheel, false);
+            } else {
+                document.addEventListener("MozMousePixelScroll", onWheel, false);
+            }
+        } else {
+            document.attachEvent("onmousewheel", onWheel);
+        }
+
+        function onWheel(e) {
+            e = e || window.event;
+            var delta = e.deltaY || e.detail || e.wheelDelta;
+            paper.view.zoom = paper.view.zoom + (delta * 0.01);
+            e.preventDefault ? e.preventDefault() : (e.returnValue = false);
+        }
+    </script>
+</head>
+<body>
+<p class="hint">DomSceneObject is a DOM element which sticks to given paper.js scene coordinates.<br> Click to place DOM comment to scene.<br> Mouse wheel to resize. </p>
+<canvas id="myCanvas" resize></canvas>
+</body>
+</html>
