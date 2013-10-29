@@ -284,7 +284,7 @@ Path.inject({ statics: new function() {
 		Ellipse: function(/* rectangle */) {
 			var center,
 				radius;
-			if (Base.hasNamed(arguments, 'center')) {
+			if (Base.hasNamed(arguments, 'radius')) {
 				center = Point.readNamed(arguments, 'center');
 				radius = Size.readNamed(arguments, 'radius');
 			} else {
