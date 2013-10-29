@@ -15,6 +15,10 @@
 		division: true
 	};
 
+	var svgOptions = {
+		expandShapes: true
+	};
+
 	function runTests() {
 		var pathA, pathB, group;
 
@@ -132,22 +136,22 @@
 		});
 
 		runTest('SVG gears', function() {
-			var group = paper.project.importSVG(document.getElementById('svggears'));
+			var group = paper.project.importSVG(document.getElementById('svggears'), svgOptions);
 			return group.children;
 		});
 
 		runTest('Glyphs imported from SVG', function() {
-			var group = paper.project.importSVG(document.getElementById('glyphsys'));
+			var group = paper.project.importSVG(document.getElementById('glyphsys'), svgOptions);
 			return group.children;
 		});
 
 		runTest('CompoundPaths 1', function() {
-			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'), svgOptions);
 			return group.children;
 		});
 
 		runTest('CompoundPaths 2 - holes', function() {
-			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'), svgOptions);
 			var pathA = group.children[0];
 			var pathB = new CompoundPath();
 			group.children[1].clockwise = true;
@@ -157,13 +161,13 @@
 		});
 
 		runTest('CompoundPaths 3 !', function() {
-			var group = paper.project.importSVG(document.getElementById('svggreenland'));
+			var group = paper.project.importSVG(document.getElementById('svggreenland'), svgOptions);
 			group.children[1].scale(0.5, 1).translate([25.5, 0]);
 			return group.children;
 		});
 
 		runTest('CompoundPaths 4 - holes and islands 1', function() {
-			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'), svgOptions);
 			var pathA = group.children[0];
 			var pathB = new CompoundPath();
 			group.children[1].clockwise = true;
@@ -173,7 +177,7 @@
 		});
 
 		runTest('CompoundPaths 5 - holes and islands 2', function() {
-			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'), svgOptions);
 			var pathA = group.children[0];
 			var pathB = new CompoundPath();
 			group.children[1].clockwise = true;
@@ -186,7 +190,7 @@
 		});
 
 		runTest('CompoundPaths 6 - holes and islands 3', function() {
-			var group = paper.project.importSVG(document.getElementById('glyphsacirc'));
+			var group = paper.project.importSVG(document.getElementById('glyphsacirc'), svgOptions);
 			var pathA = group.children[0];
 			var pathB = new CompoundPath();
 			var npath = new Path.Circle([110, 110], 100);
@@ -286,19 +290,8 @@
 		strokeWidth: 1
 	};
 
-	function convertToPath(item) {
-		if (item instanceof Shape) {
-			var path = item.toPath();
-			item.remove();
-			return path;
-		}
-		return item;
-	}
-
 	// Better if path1 and path2 fit nicely inside a 200x200 pixels rect
 	function testBooleanStatic(path1, path2) {
-		path1 = convertToPath(path1);
-		path2 = convertToPath(path2);
 		path1.style = path2.style = pathStyleNormal;
 
 		if (operations.union) {
