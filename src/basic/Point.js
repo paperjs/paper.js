@@ -531,9 +531,6 @@ var Point = Base.extend(/** @lends Point# */{
 	/**
 	 * The vector's angle in degrees, measured from the x-axis to the vector.
 	 *
-	 * The angle is unsigned, no information about rotational direction is
-	 * given.
-	 *
 	 * @name Point#getAngle
 	 * @bean
 	 * @type Number
@@ -568,9 +565,6 @@ var Point = Base.extend(/** @lends Point# */{
 	 */
 	/**
 	 * The vector's angle in radians, measured from the x-axis to the vector.
-	 *
-	 * The angle is unsigned, no information about rotational direction is
-	 * given.
 	 *
 	 * @name Point#getAngleInRadians
 	 * @bean
