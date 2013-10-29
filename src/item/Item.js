@@ -3157,11 +3157,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		this._drawCount = this._project._drawCount;
 		// Keep calculating the current global matrix, by keeping a history
 		// and pushing / popping as we go along.
-		var transforms = param.transforms,
+		var trackTransforms = param.trackTransforms,
+			transforms = param.transforms,
 			parentMatrix = transforms[transforms.length - 1],
 			globalMatrix = parentMatrix.clone().concatenate(this._matrix);
 		// Only keep track of transformation if told so. See Project#draw()
-		if (param.trackTransforms)
+		if (trackTransforms)
 			transforms.push(this._globalMatrix = globalMatrix);
 		// If the item has a blendMode or is defining an opacity, draw it on
 		// a temporary canvas first and composite the canvas afterwards.
@@ -3220,7 +3221,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			param.clipItem.draw(ctx, param.extend({ clip: true }));
 		this._draw(ctx, param);
 		ctx.restore();
-		transforms.pop();
+		if (trackTransforms)
+			transforms.pop();
 		if (param.clip)
 			ctx.clip();
 		// If a temporary canvas was created, composite it onto the main canvas:
