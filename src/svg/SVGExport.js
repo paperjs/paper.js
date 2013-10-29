@@ -147,7 +147,6 @@ new function() {
 
 	function exportShape(item) {
 		var shape = item._shape,
-			center = item.getPosition(true),
 			radius = item._radius,
 			attrs = getTransform(item, true, shape !== 'rectangle');
 		if (shape === 'rectangle') {
