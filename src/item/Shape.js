@@ -229,9 +229,9 @@ new function() { // Scope for _contains() and _hitTest() code.
 	// Returns the center of the quarter corner ellipse for rounded rectangle,
 	// if the point lies within its bounding box.
 	function getCornerCenter(that, point, expand) {
-		var radius = that._radius,
-			halfSize = that._size.divide(2);
+		var radius = that._radius;
 		if (!radius.isZero()) {
+			var halfSize = that._size.divide(2);
 			for (var i = 0; i < 4; i++) {
 				// Calculate the bounding boxes of the four quarter ellipses
 				// that define the rounded rectangle, and hit-test these.
@@ -278,8 +278,7 @@ new function() { // Scope for _contains() and _hitTest() code.
 				var shape = this._shape,
 					radius = this._radius,
 					strokeWidth = this.getStrokeWidth() + 2 * options.tolerance;
-				switch (shape) {
-				case 'rectangle':
+				if (shape === 'rectangle') {
 					var center = getCornerCenter(this, point, strokeWidth);
 					if (center) {
 						// Check the stroke of the quarter corner ellipse,
@@ -294,18 +293,11 @@ new function() { // Scope for _contains() and _hitTest() code.
 						hit = outer._containsPoint(point)
 								&& !inner._containsPoint(point);
 					}
-					break;
-				case 'circle':
-				case 'ellipse':
-					var radius;
-					if (shape === 'ellipse') {
-						radius = getEllipseRadius(point, this._radius);
-					} else {
-						radius = this._radius;
-					}
+				} else {
+					if (shape === 'ellipse')
+						radius = getEllipseRadius(point, radius);
 					hit = 2 * Math.abs(point.getLength() - radius)
 							<= strokeWidth;
-					break;
 				}
 			}
 			return hit
