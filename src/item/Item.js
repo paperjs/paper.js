@@ -412,10 +412,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		this.getStyle().set(style);
 	},
 
+	// DOCS: Item#hasFill()
 	hasFill: function() {
 		return this.getStyle().hasFill();
 	},
 
+	// DOCS: Item#hasStroke()
 	hasStroke: function() {
 		return this.getStyle().hasStroke();
 	}
