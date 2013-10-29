@@ -202,7 +202,7 @@ new function() {
 		return createElement('use', attrs);
 	}
 
-	function exportGradient(color, item) {
+	function exportGradient(color) {
 		// NOTE: As long as the fillTransform attribute is not implemented,
 		// we need to create a separate gradient object for each gradient,
 		// even when they share the same gradient defintion.
