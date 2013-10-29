@@ -642,7 +642,7 @@ var Color = Base.extend(new function() {
 		 * @return {Color} a copy of the color object
 		 */
 		clone: function() {
-			return new Color(this._type, this._components.slice(), this._alpha);
+			return new Color(this);
 		},
 
 		/**
