@@ -1449,8 +1449,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * 
 	 * The optional options object allows you to control the specifics of the
 	 * hit test and may contain a combination of the following values:
-	 * <b>tolerance:</b> {@code Number} - The tolerance of the hit test in
-	 * points.
+	 * <b>options.tolerance:</b> {@code Number} - The tolerance of the hit test in
+	 * points, default: {@code 2}. Can also be controlled through
+	 * {@link Project#options}{@code .hitTolerance}.
 	 * <b>options.type:</b> Only hit test again a certain item
 	 * type: {@link PathItem}, {@link Raster}, {@link TextItem}, etc.
 	 * <b>options.fill:</b> {@code Boolean} - Hit test the fill of items.

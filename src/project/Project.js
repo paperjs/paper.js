@@ -177,6 +177,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	// DOCS: Project#options
 	/**
 	 * <b>options.handleSize:</b> 
+	 *
 	 * <b>options.hitTolerance:</b>
 	 *
 	 * @name Project#options
