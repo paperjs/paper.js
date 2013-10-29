@@ -134,9 +134,11 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 		value = DomElement.get(this._inputItem, key);
 		if (this._info.number)
 			value = parseFloat(value, 10);
-		this._value = value;
-		if (!_dontFire)
-			this.fire('change', value);
+		if (this._value !== value) {
+			this._value = value;
+			if (!_dontFire)
+				this.fire('change', value);
+		}
 	},
 
 	getRange: function() {

@@ -27,7 +27,7 @@
 				type: 'boolean',
 				label: 'A Checkbox',
 				onChange: function(value) {
-					values.list = 'Two';
+					values.list = value ? 'Two' : 'One';
 				}
 			},
 			list: {
