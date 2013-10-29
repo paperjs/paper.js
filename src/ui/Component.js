@@ -69,22 +69,24 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 					: typeof obj.value;
 		this._info = this._types[this._type] || { type: this._type };
 		var that = this,
-			fireChange = false;
+			dontFire = true;
 		this._inputItem = DomElement.create(this._info.tag || 'input', {
 			type: this._info.type,
 			events: {
 				change: function() {
 					that.setValue(
-						DomElement.get(this, that._info.value || 'value'));
-					if (fireChange) {
-						that._palette.fire('change', that, that.name, that._value);
-						that.fire('change', that._value);
-					}
+						DomElement.get(this, that._info.value || 'value'),
+						dontFire);
 				},
 				click: function() {
 					that.fire('click');
 				}
 			}
+		});
+		// Attach default 'change' even that delegates to palette
+		this.attach('change', function(value) {
+			if (!dontFire)
+				this._palette.fire('change', this, this.name, value);
 		});
 		this._element = DomElement.create('tr', [
 			this._labelItem = DomElement.create('td'),
@@ -94,8 +96,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 			this[key] = value;
 		}, this);
 		this._defaultValue = this._value;
-		// Only fire change events after we have initalized
-		fireChange = true;
+		// Start firing change events after we have initalized.
+		dontFire = false;
 	},
 
 	getType: function() {
@@ -125,12 +127,16 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 		return this._value;
 	},
 
-	setValue: function(value) {
+	setValue: function(value, _dontFire) {
 		var key = this._info.value || 'value';
 		DomElement.set(this._inputItem, key, value);
 		// Read back and convert from input again, to make sure we're in sync
 		value = DomElement.get(this._inputItem, key);
-		this._value = this._info.number ? parseFloat(value, 10) : value;
+		if (this._info.number)
+			value = parseFloat(value, 10);
+		this._value = value;
+		if (!_dontFire)
+			this.fire('change', value);
 	},
 
 	getRange: function() {
