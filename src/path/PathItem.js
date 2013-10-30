@@ -457,7 +457,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *
 	 * @name PathItem#moveBy
 	 * @function
-	 * @param {Point} vector
+	 * @param {Point} to
 	 */
 
 	/**
@@ -465,8 +465,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *
 	 * @name PathItem#lineBy
 	 * @function
-	 * @param {Point} vector The vector which is added to the position of the
-	 *        last segment of the path, to become the new segment.
+	 * @param {Point} to the vector which is added to the position of the last
+	 * segment of the path, to get to the position of the new segment.
 	 *
 	 * @example {@paperscript}
 	 * var path = new Path();
@@ -514,16 +514,33 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	/**
 	 * @name PathItem#curveBy
 	 * @function
-	 * @param {Point} throughVector
-	 * @param {Point} toVector
+	 * @param {Point} through
+	 * @param {Point} to
 	 * @param {Number} [parameter=0.5]
 	 */
+
+	 // DOCS: Document Path#cubicCurveBy()
+	 /**
+	  * @name PathItem#cubicCurveBy
+	  * @function
+	  * @param {Point} handle1
+	  * @param {Point} handle2
+	  * @param {Point} to
+	  */
+
+	  // DOCS: Document Path#quadraticCurveBy()
+	  /**
+	   * @name PathItem#quadraticCurveBy
+	   * @function
+	   * @param {Point} handle
+	   * @param {Point} to
+	   */
 
 	// DOCS: Document Path#arcBy()
 	/**
 	 * @name PathItem#arcBy
 	 * @function
-	 * @param {Point} throughVector
-	 * @param {Point} toVector
+	 * @param {Point} through
+	 * @param {Point} to
 	 */
 });

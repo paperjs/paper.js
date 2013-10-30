@@ -265,13 +265,15 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	};
 
 	// Redirect all other drawing commands to the current path
-	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
-			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
-		fields[key] = function() {
-			var path = getCurrentPath(this);
-			path[key].apply(path, arguments);
-		};
-	});
+	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo', 'arcTo',
+			'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy', 'arcBy'],
+			function(key) {
+				fields[key] = function() {
+					var path = getCurrentPath(this);
+					path[key].apply(path, arguments);
+				};
+			}
+	);
 
 	return fields;
 });

@@ -2238,9 +2238,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 		cubicCurveTo: function(/* handle1, handle2, to */) {
 			var handle1 = Point.read(arguments),
 				handle2 = Point.read(arguments),
-				to = Point.read(arguments);
-			// First modify the current segment:
-			var current = getCurrentSegment(this);
+				to = Point.read(arguments),
+				// First modify the current segment:
+				current = getCurrentSegment(this);
 			// Convert to relative values:
 			current.setHandleOut(handle1.subtract(current._point));
 			// And add the new segment, with handleIn set to c2
@@ -2249,13 +2249,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 		quadraticCurveTo: function(/* handle, to */) {
 			var handle = Point.read(arguments),
-				to = Point.read(arguments);
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
 			// This is exact:
 			// If we have the three quad points: A E D,
 			// and the cubic is A B C D,
 			// B = E + 1/3 (A - E)
 			// C = E + 1/3 (D - E)
-			var current = getCurrentSegment(this)._point;
 			this.cubicCurveTo(
 				handle.add(current.subtract(handle).multiply(1 / 3)),
 				handle.add(to.subtract(handle).multiply(1 / 3)),
@@ -2359,25 +2359,41 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this._add(segments);
 		},
 
-		lineBy: function(vector) {
-			vector = Point.read(arguments);
-			var current = getCurrentSegment(this);
-			this.lineTo(current._point.add(vector));
+		lineBy: function(/* to */) {
+			var to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.lineTo(current.add(to));
 		},
 
-		curveBy: function(throughVector, toVector, parameter) {
-			throughVector = Point.read(throughVector);
-			toVector = Point.read(toVector);
-			var current = getCurrentSegment(this)._point;
-			this.curveTo(current.add(throughVector), current.add(toVector),
-					parameter);
+		curveBy: function(/* through, to, parameter */) {
+			var through = Point.read(arguments),
+				to = Point.read(arguments),
+				parameter = Base.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.curveTo(current.add(through), current.add(to), parameter);
 		},
 
-		arcBy: function(throughVector, toVector) {
-			throughVector = Point.read(throughVector);
-			toVector = Point.read(toVector);
-			var current = getCurrentSegment(this)._point;
-			this.arcTo(current.add(throughVector), current.add(toVector));
+		cubicCurveBy: function(/* handle1, handle2, to */) {
+			var handle1 = Point.read(arguments),
+				handle2 = Point.read(arguments),
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.cubicCurveTo(current.add(handle1), current.add(handle2),
+					current.add(to));
+		},
+
+		quadraticCurveBy: function(/* handle, to */) {
+			var handle = Point.read(arguments),
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.quadraticCurveTo(current.add(handle), current.add(to));
+		},
+
+		arcBy: function(/* through, to */) {
+			var through = Point.read(arguments),
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.arcTo(current.add(through), current.add(to));
 		},
 
 		closePath: function() {
