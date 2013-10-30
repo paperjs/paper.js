@@ -3116,11 +3116,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// We need to take matrix into account for gradients,
 		// see #toCanvasStyle()
 		if (fillColor)
-			ctx.fillStyle = fillColor.toCanvasStyle(ctx, matrix);
+			ctx.fillStyle = fillColor.toCanvasStyle(ctx);
 		if (strokeColor) {
 			var strokeWidth = style.getStrokeWidth();
 			if (strokeWidth > 0) {
-				ctx.strokeStyle = strokeColor.toCanvasStyle(ctx, matrix);
+				ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
 				ctx.lineWidth = strokeWidth;
 				var strokeJoin = style.getStrokeJoin(),
 					strokeCap = style.getStrokeCap(),

@@ -336,9 +336,19 @@ new function() {
 	// since transform needs to be applied after fill color, as transformations
 	// can affect gradient fills.
 	var attributes = Base.merge(Base.each(SVGStyles, function(entry) {
-		this[entry.attribute] = function(item, value) {
+		this[entry.attribute] = function(item, value, name) {
 			item[entry.set](
 					convertValue(value, entry.type, entry.fromSVG));
+			// When applying gradient colors to shapes, we need to offset the
+			// shape's initial position to get the same results as SVG.
+			if (entry.type === 'color' && item instanceof Shape) {
+				// Do not use result of convertValue() above, since calling the
+				// setter will produce a new cloned color.
+				var color = item[entry.get]();
+				if (color)
+					color.transform(new Matrix().translate(
+							item.getPosition(true).negate()));
+			}
 		};
 	}, {}), {
 		id: function(item, value) {
@@ -490,14 +500,16 @@ new function() {
 			item = importer && importer(node, type, options),
 			data = type !== '#document' && node.getAttribute('data-paper-data');
 		// See importGroup() for an explanation of this filtering:
-		if (options.expandShapes && item instanceof Shape) {
-			item.remove();
-			item = item.toPath();
+		if (item) {
+			if (!(item instanceof Group))
+				item = applyAttributes(item, node);
+			if (options.expandShapes && item instanceof Shape) {
+				item.remove();
+				item = item.toPath();
+			}
+			if (data)
+				item._data = JSON.parse(data);
 		}
-		if (item && !(item instanceof Group))
-			item = applyAttributes(item, node);
-		if (item && data)
-			item._data = JSON.parse(data);
 		// Clear definitions at the end of import?
 		if (clearDefs)
 			definitions = {};

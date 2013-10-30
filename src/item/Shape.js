@@ -142,8 +142,8 @@ var Shape = Item.extend(/** @lends Shape# */{
 			radius: this._radius,
 			insert: false
 		});
-		path.transform(this._matrix);
 		path.setStyle(this._style);
+		path.transform(this._matrix);
 		// Insert is true by default.
 		if (insert || insert === undefined)
 			path.insertAbove(this);
