@@ -336,7 +336,7 @@ new function() {
 	// since transform needs to be applied after fill color, as transformations
 	// can affect gradient fills.
 	var attributes = Base.merge(Base.each(SVGStyles, function(entry) {
-		this[entry.attribute] = function(item, value, name) {
+		this[entry.attribute] = function(item, value) {
 			item[entry.set](
 					convertValue(value, entry.type, entry.fromSVG));
 			// When applying gradient colors to shapes, we need to offset the
