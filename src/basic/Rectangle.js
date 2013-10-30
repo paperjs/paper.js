@@ -742,7 +742,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * {@code hor} amount and in vertical direction by the specified {@code ver}
 	 * amount.
 	 *
-	 * @name Rectangle#expand^2
+	 * @name Rectangle#expand
 	 * @function
 	 * @param {Number} hor
 	 * @param {Number} ver
@@ -766,7 +766,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * {@code hor} amount and in vertical direction by the specified {@code ver}
 	 * amount from its center.
 	 *
-	 * @name Rectangle#scale^2
+	 * @name Rectangle#scale
 	 * @function
 	 * @param {Number} hor
 	 * @param {Number} ver

@@ -460,7 +460,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * 
 	 * Attach an event handler to the view.
 	 *
-	 * @name View#on
+	 * @name View#attach
+	 * @alias View#on
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Function} function The function to be called when the event
@@ -482,7 +483,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	/**
 	 * Attach one or more event handlers to the view.
 	 *
-	 * @name View#on^2
+	 * @name View#attach
+	 * @alias View#on
 	 * @function
 	 * @param {Object} param an object literal containing one or more of the
 	 * following properties: {@code frame, resize}.
@@ -505,6 +507,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * Detach an event handler from the view.
 	 *
 	 * @name View#detach
+	 * @alias View#off
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Function} function The function to be detached
@@ -533,7 +536,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	/**
 	 * Detach one or more event handlers from the view.
 	 *
-	 * @name View#detach^2
+	 * @name View#detach
+	 * @alias View#off
 	 * @function
 	 * @param {Object} param an object literal containing one or more of the
 	 * following properties: {@code frame, resize}
@@ -543,6 +547,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * Fire an event on the view.
 	 *
 	 * @name View#fire
+	 * @alias View#trigger
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Object} event an object literal containing properties describing
