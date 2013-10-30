@@ -1453,30 +1453,30 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Perform a hit test on the item (and its children, if it is a
 	 * {@link Group} or {@link Layer}) at the location of the specified point.
 	 * 
-	 * The optional options object allows you to control the specifics of the
-	 * hit test and may contain a combination of the following values:
-	 * <b>options.tolerance:</b> {@code Number} - The tolerance of the hit test in
-	 * points, default: {@code 2}. Can also be controlled through
+	 * The options object allows you to control the specifics of the hit test
+	 * and may contain a combination of the following values:
+	 * <b>options.tolerance:</b> {@code Number} – the tolerance of the hit test
+	 * in points. Can also be controlled through
 	 * {@link Project#options}{@code .hitTolerance}.
 	 * <b>options.type:</b> Only hit test again a certain item
 	 * type: {@link PathItem}, {@link Raster}, {@link TextItem}, etc.
-	 * <b>options.fill:</b> {@code Boolean} - Hit test the fill of items.
-	 * <b>options.stroke:</b> {@code Boolean} - Hit test the curves of path
+	 * <b>options.fill:</b> {@code Boolean} – hit test the fill of items.
+	 * <b>options.stroke:</b> {@code Boolean} – hit test the curves of path
 	 * items, taking into account stroke width.
-	 * <b>options.segment:</b> {@code Boolean} - Hit test for
+	 * <b>options.segment:</b> {@code Boolean} – hit test for
 	 * {@link Segment#point} of {@link Path} items.
-	 * <b>options.handles:</b> {@code Boolean} - Hit test for the handles
+	 * <b>options.handles:</b> {@code Boolean} – hit test for the handles
 	 * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
-	 * <b>options.ends:</b> {@code Boolean} - Only hit test for the first or
+	 * <b>options.ends:</b> {@code Boolean} – only hit test for the first or
 	 * last segment points of open path items.
-	 * <b>options.bounds:</b> {@code Boolean} - Hit test the corners and
+	 * <b>options.bounds:</b> {@code Boolean} – hit test the corners and
 	 * side-centers of the bounding rectangle of items ({@link Item#bounds}).
-	 * <b>options.center:</b> {@code Boolean} - Hit test the
+	 * <b>options.center:</b> {@code Boolean} – hit test the
 	 * {@link Rectangle#center} of the bounding rectangle of items
 	 * ({@link Item#bounds}).
-	 * <b>options.guides:</b> {@code Boolean} - Hit test items that have
+	 * <b>options.guides:</b> {@code Boolean} – hit test items that have
 	 * {@link Item#guide} set to {@code true}.
-	 * <b>options.selected:</b> {@code Boolean} - Only hit selected items.
+	 * <b>options.selected:</b> {@code Boolean} – only hit selected items.<b
 	 *
 	 * @param {Point} point The point where the hit test should be performed
 	 * @param {Object} [options={ fill: true, stroke: true, segments: true,
