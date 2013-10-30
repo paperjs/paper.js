@@ -499,8 +499,8 @@ new function() {
 			importer = importers[type],
 			item = importer && importer(node, type, options),
 			data = type !== '#document' && node.getAttribute('data-paper-data');
-		// See importGroup() for an explanation of this filtering:
 		if (item) {
+			// See importGroup() for an explanation of this filtering:
 			if (!(item instanceof Group))
 				item = applyAttributes(item, node);
 			if (options.expandShapes && item instanceof Shape) {
