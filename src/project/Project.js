@@ -292,10 +292,14 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	};
 }, /** @lends Project# */{
 	/**
-	 * {@grouptitle Importing To / Exporting From JSON & SVG}
+	 * {@grouptitle Importing / Exporting JSON and SVG}
 	 *
 	 * Exports (serializes) the project with all its layers and child items to
 	 * a JSON data string.
+	 *
+	 * The options object offers control over some aspects of the SVG export:
+	 * <b>options.precision:</b> {@code Number} – the amount of fractional
+	 * digits in numbers used in JSON data.
 	 *
 	 * @name Project#exportJSON
 	 * @function
@@ -304,9 +308,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 
 	/**
-	 * Imports (deserializes) the stored JSON data into the project. Note that
-	 * the project is not cleared first. You can call {@link Project#clear()} to
-	 * do so.
+	 * Imports (deserializes) the stored JSON data into the project.
+	 * Note that the project is not cleared first. You can call
+	 * {@link Project#clear()} to do so.
 	 *
 	 * @param {String} json the JSON data to import from.
 	 */
@@ -319,20 +323,36 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * Exports the project with all its layers and child items as an SVG DOM,
 	 * all contained in one top level SVG group node.
 	 *
+	 * The options object offers control over some aspects of the SVG export:
+	 * <b>options.asString:</b> {@code Boolean} – wether a SVG node or a String
+	 * is to be returned.
+	 * <b>options.precision:</b> {@code Number} – the amount of fractional
+	 * digits in numbers used in SVG data.
+	 * <b>options.matchShapes:</b> {@code Boolean} – wether imported path
+	 * items should tried to be converted to shape items, if their geometries
+	 * match.
+	 *
 	 * @name Project#exportSVG
 	 * @function
-	 * @param {Object} [options={ asString: false, precision: 5 }] the export
-	 *        options.
+	 * @param {Object} [options={ asString: false, precision: 5,
+	 * matchShapes: false }] the export options.
 	 * @return {SVGSVGElement} the project converted to an SVG node
 	 */
 
 	/**
 	 * Converts the provided SVG content into Paper.js items and adds them to
 	 * the active layer of this project.
+	 * Note that the project is not cleared first. You can call
+	 * {@link Project#clear()} to do so.
+	 *
+	 * The options object offers control over some aspects of the SVG import:
+	 * <b>options.expandShapes:</b> {@code Boolean} – wether imported shape
+	 * items should be expanded to path items.
 	 *
 	 * @name Project#importSVG
 	 * @function
 	 * @param {SVGSVGElement|String} svg the SVG content to import
+	 * @param {Object} [options={ expandShapes: false }] the import options
 	 * @return {Item} the imported Paper.js parent item
 	 */
 

@@ -15,6 +15,7 @@
  * Paper.js DOM to a SVG DOM.
  */
 new function() {
+	// TODO: Consider moving formatter into options object, and pass it along.
 	var formatter;
 
 	function setAttributes(node, attrs) {
@@ -76,13 +77,13 @@ new function() {
 		return attrs;
 	}
 
-	function exportGroup(item) {
+	function exportGroup(item, options) {
 		var attrs = getTransform(item),
 			children = item._children;
 		var node = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
-			var childNode = exportSVG(child);
+			var childNode = exportSVG(child, options);
 			if (childNode) {
 				if (child.isClipMask()) {
 					var clip = createElement('clipPath');
@@ -111,7 +112,12 @@ new function() {
 		return createElement('image', attrs);
 	}
 
-	function exportPath(item) {
+	function exportPath(item, options) {
+		if (options.matchShapes) {
+			var shape = item.toShape(false);
+			if (shape)
+				return exportShape(shape, options);
+		}
 		var segments = item._segments,
 			type,
 			attrs;
@@ -180,7 +186,7 @@ new function() {
 		return createElement('path', attrs);
 	}
 
-	function exportPlacedSymbol(item) {
+	function exportPlacedSymbol(item, options) {
 		var attrs = getTransform(item, true),
 			symbol = item.getSymbol(),
 			symbolNode = getDefinition(symbol, 'symbol'),
@@ -190,7 +196,7 @@ new function() {
 			symbolNode = createElement('symbol', {
 				viewBox: formatter.rectangle(bounds)
 			});
-			symbolNode.appendChild(exportSVG(definition));
+			symbolNode.appendChild(exportSVG(definition, options));
 			setDefinition(symbol, symbolNode, 'symbol');
 		}
 		attrs.href = '#' + symbolNode.id;
@@ -369,9 +375,9 @@ new function() {
 				: svg;
 	}
 
-	function exportSVG(item) {
+	function exportSVG(item, options) {
 		var exporter = exporters[item._type],
-			node = exporter && exporter(item, item._type);
+			node = exporter && exporter(item, options);
 		if (node && item._data)
 			node.setAttribute('data-paper-data', JSON.stringify(item._data));
 		return node && applyStyle(item, node);
@@ -387,7 +393,7 @@ new function() {
 	Item.inject({
 		exportSVG: function(options) {
 			options = setOptions(options);
-			return exportDefinitions(exportSVG(this), options);
+			return exportDefinitions(exportSVG(this, options), options);
 		}
 	});
 
@@ -406,7 +412,7 @@ new function() {
 					'xmlns:xlink': 'http://www.w3.org/1999/xlink'
 				});
 			for (var i = 0, l = layers.length; i < l; i++)
-				node.appendChild(exportSVG(layers[i]));
+				node.appendChild(exportSVG(layers[i], options));
 			return exportDefinitions(node, options);
 		}
 	});
