@@ -326,28 +326,28 @@ var Color = Base.extend(new function() {
 		/**
 		 * Creates a HSB, HSL or gradient Color object from the properties of
 		 * the provided object:
-  		 *
-  		 * <b>HSB Color</b>:<br>
- 		 * {@code hue: Number} — the hue of the color as a value in
- 		 * degrees between {@code 0} and {@code 360}<br>
- 		 * {@code saturation: Number} — the saturation of the color as a
- 		 * value between {@code 0} and {@code 1}<br>
- 		 * {@code brightness: Number} — the brightness of the color as a
- 		 * value between {@code 0} and {@code 1}<br>
- 		 * {@code alpha: Number} — the alpha of the color as a value between
- 		 * {@code 0} and {@code 1}
- 		 *
-  		 * <b>HSL Color</b>:<br>
- 		 * {@code hue: Number} — the hue of the color as a value in
- 		 * degrees between {@code 0} and {@code 360}<br>
- 		 * {@code saturation: Number} — the saturation of the color as a
- 		 * value between {@code 0} and {@code 1}<br>
- 		 * {@code lightness: Number} — the lightness of the color as a
- 		 * value between {@code 0} and {@code 1}<br>
- 		 * {@code alpha: Number} — the alpha of the color as a value between
- 		 * {@code 0} and {@code 1}
- 		 *
-  		 * <b>Gradient Color</b>:<br>
+		 *
+		 * <b>HSB Color</b>:<br>
+		 * {@code hue: Number} — the hue of the color as a value in
+		 * degrees between {@code 0} and {@code 360}<br>
+		 * {@code saturation: Number} — the saturation of the color as a
+		 * value between {@code 0} and {@code 1}<br>
+		 * {@code brightness: Number} — the brightness of the color as a
+		 * value between {@code 0} and {@code 1}<br>
+		 * {@code alpha: Number} — the alpha of the color as a value between
+		 * {@code 0} and {@code 1}
+		 *
+		 * <b>HSL Color</b>:<br>
+		 * {@code hue: Number} — the hue of the color as a value in
+		 * degrees between {@code 0} and {@code 360}<br>
+		 * {@code saturation: Number} — the saturation of the color as a
+		 * value between {@code 0} and {@code 1}<br>
+		 * {@code lightness: Number} — the lightness of the color as a
+		 * value between {@code 0} and {@code 1}<br>
+		 * {@code alpha: Number} — the alpha of the color as a value between
+		 * {@code 0} and {@code 1}
+		 *
+		 * <b>Gradient Color</b>:<br>
 		 * {@code gradient: Gradient} — the gradient object that describes the
 		 *  color stops and type of gradient to be used.<br>
 		 * {@code origin: Point} — the origin point of the gradient<br>
@@ -371,38 +371,38 @@ var Color = Base.extend(new function() {
 		 * // Create an HSB Color with a hue of 90 degrees, a saturation
 		 * // 100% and a brightness of 100%:
 		 * circle.fillColor = { hue: 90, saturation: 1, brightness: 1 };
- 		 *
- 		 * @example {@paperscript}
- 		 * // Creating a HSL Color:
- 		 *
- 		 * // Create a circle shaped path at {x: 80, y: 50}
- 		 * // with a radius of 30:
- 		 * var circle = new Path.Circle(new Point(80, 50), 30);
- 		 *
- 		 * // Create an HSL Color with a hue of 90 degrees, a saturation
- 		 * // 100% and a lightness of 50%:
- 		 * circle.fillColor = { hue: 90, saturation: 1, lightness: 0.5 };
- 		 *
- 		 * @example {@paperscript height=200}
- 		 * // Creating a gradient color from an object literal:
- 		 *
- 		 * // Define two points which we will be using to construct
- 		 * // the path and to position the gradient color:
- 		 * var topLeft = view.center - [80, 80];
- 		 * var bottomRight = view.center + [80, 80];
-  		 * 
- 		 * var path = new Path.Rectangle({
- 		 * 	topLeft: topLeft,
- 		 * 	bottomRight: bottomRight,
- 		 * 	// Fill the path with a gradient of three color stops
- 		 * 	// that runs between the two points we defined earlier:
- 		 * 	fillColor: {
-		 * 		stops: ['yellow', 'red', 'blue'],
- 		 * 		origin: topLeft,
- 		 * 		destination: bottomRight
- 		 * 	}
- 		 * });
- 		 */
+		 *
+		 * @example {@paperscript}
+		 * // Creating a HSL Color:
+		 *
+		 * // Create a circle shaped path at {x: 80, y: 50}
+		 * // with a radius of 30:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // Create an HSL Color with a hue of 90 degrees, a saturation
+		 * // 100% and a lightness of 50%:
+		 * circle.fillColor = { hue: 90, saturation: 1, lightness: 0.5 };
+		 *
+		 * @example {@paperscript height=200}
+		 * // Creating a gradient color from an object literal:
+		 *
+		 * // Define two points which we will be using to construct
+		 * // the path and to position the gradient color:
+		 * var topLeft = view.center - [80, 80];
+		 * var bottomRight = view.center + [80, 80];
+ 		 * 
+		 * var path = new Path.Rectangle({
+		 *	topLeft: topLeft,
+		 *	bottomRight: bottomRight,
+		 *	// Fill the path with a gradient of three color stops
+		 *	// that runs between the two points we defined earlier:
+		 *	fillColor: {
+		 *		stops: ['yellow', 'red', 'blue'],
+		 *		origin: topLeft,
+		 *		destination: bottomRight
+		 *	}
+		 * });
+		 */
 		/**
 		 * Creates a gradient Color object.
 		 *
@@ -443,8 +443,8 @@ var Color = Base.extend(new function() {
 		 * // Create a circle shaped path at the center of the view
 		 * // with a radius of 80:
 		 * var path = new Path.Circle({
-		 * 	center: view.center,
-		 * 	radius: 80
+		 *	center: view.center,
+		 *	radius: 80
 		 * });
 		 *
 		 * // The stops array: yellow mixes with red between 0 and 15%,
@@ -519,8 +519,8 @@ var Color = Base.extend(new function() {
 				if (values) {
 					if (!type)
 						// type = values.length >= 4
-						// 		? 'cmyk'
-						// 		: values.length >= 3
+						//		? 'cmyk'
+						//		: values.length >= 3
 						type = values.length >= 3
 								? 'rgb'
 								: 'gray';
@@ -704,9 +704,9 @@ var Color = Base.extend(new function() {
 		 *
 		 * // Fill the circle with red and give it a 20pt green stroke:
 		 * circle.style = {
-		 * 	fillColor: 'red',
-		 * 	strokeColor: 'green',
-		 * 	strokeWidth: 20
+		 *	fillColor: 'red',
+		 *	strokeColor: 'green',
+		 *	strokeWidth: 20
 		 * };
 		 *
 		 * // Make the stroke half transparent:
@@ -891,7 +891,7 @@ var Color = Base.extend(new function() {
 		 * path.fillColor = 'red';
 		 *
 		 * function onFrame(event) {
-		 * 	path.fillColor.hue += 0.5;
+		 *	path.fillColor.hue += 0.5;
 		 * }
 		 */
 
@@ -954,9 +954,9 @@ var Color = Base.extend(new function() {
 		 * path.fillColor = gradientColor;
 		 *
 		 * function onMouseMove(event) {
-		 * 	// Set the origin point of the path's gradient color
-		 * 	// to the position of the mouse:
-		 * 	path.fillColor.origin = event.point;
+		 *	// Set the origin point of the path's gradient color
+		 *	// to the position of the mouse:
+		 *	path.fillColor.origin = event.point;
 		 * }
 		 */
 
@@ -975,8 +975,8 @@ var Color = Base.extend(new function() {
 		 * // using 40% of the height of the view as its radius
 		 * // and fill it with a radial gradient color:
 		 * var path = new Path.Circle({
-		 * 	center: view.center,
-		 * 	radius: view.bounds.height * 0.4
+		 *	center: view.center,
+		 *	radius: view.bounds.height * 0.4
 		 * });
 		 *
 		 * var gradient = new Gradient(['yellow', 'red', 'black'], true);
@@ -986,9 +986,9 @@ var Color = Base.extend(new function() {
 		 * path.fillColor = gradientColor;
 		 *
 		 * function onMouseMove(event) {
-		 * 	// Set the origin point of the path's gradient color
-		 * 	// to the position of the mouse:
-		 * 	path.fillColor.destination = event.point;
+		 *	// Set the origin point of the path's gradient color
+		 *	// to the position of the mouse:
+		 *	path.fillColor.destination = event.point;
 		 * }
 		 */
 
@@ -1004,23 +1004,23 @@ var Color = Base.extend(new function() {
 		 * // using 40% of the height of the view as its radius
 		 * // and fill it with a radial gradient color:
 		 * var path = new Path.Circle({
-		 * 	center: view.center,
-		 * 	radius: view.bounds.height * 0.4
+		 *	center: view.center,
+		 *	radius: view.bounds.height * 0.4
 		 * });
 		 * 
 		 * path.fillColor = {
-		 * 	gradient: {
-		 * 		stops: ['yellow', 'red', 'black'],
-		 * 		radial: true
-		 * 	},
-		 * 	origin: path.position,
-		 * 	destination: path.bounds.rightCenter
+		 *	gradient: {
+		 *		stops: ['yellow', 'red', 'black'],
+		 *		radial: true
+		 *	},
+		 *	origin: path.position,
+		 *	destination: path.bounds.rightCenter
 		 * };
 		 * 
 		 * function onMouseMove(event) {
-		 * 	// Set the origin highlight of the path's gradient color
-		 * 	// to the position of the mouse:
-		 * 	path.fillColor.highlight = event.point;
+		 *	// Set the origin highlight of the path's gradient color
+		 *	// to the position of the mouse:
+		 *	path.fillColor.highlight = event.point;
 		 * }
 		 */
 
