@@ -348,28 +348,30 @@ new function() {
 	}
 
 	function exportDefinitions(node, options) {
-		if (!definitions)
-			return node;
-		// We can only use svg nodes as defintion containers. Have the loop
-		// produce one if it's a single item of another type (when calling
-		// #exportSVG() on an item rather than a whole project)
-		// jsdom in Node.js uses uppercase values for nodeName...
-		var svg = node.nodeName.toLowerCase() === 'svg' && node,
+		var svg = node,
 			defs = null;
-		for (var i in definitions.svgs) {
-			// This code is inside the loop so we only create a container if we
-			// actually have svgs.
-			if (!defs) {
-				if (!svg) {
-					svg = createElement('svg');
-					svg.appendChild(node);
+		if (definitions) {
+			// We can only use svg nodes as defintion containers. Have the loop
+			// produce one if it's a single item of another type (when calling
+			// #exportSVG() on an item rather than a whole project)
+			// jsdom in Node.js uses uppercase values for nodeName...
+			svg = node.nodeName.toLowerCase() === 'svg' && node;
+			for (var i in definitions.svgs) {
+				// This code is inside the loop so we only create a container if
+				// we actually have svgs.
+				if (!defs) {
+					if (!svg) {
+						svg = createElement('svg');
+						svg.appendChild(node);
+					}
+					defs = svg.insertBefore(createElement('defs'),
+							svg.firstChild);
 				}
-				defs = svg.insertBefore(createElement('defs'), svg.firstChild);
+				defs.appendChild(definitions.svgs[i]);
 			}
-			defs.appendChild(definitions.svgs[i]);
+			// Clear definitions at the end of export
+			definitions = null;
 		}
-		// Clear definitions at the end of export
-		definitions = null;
 		return options.asString
 				? new XMLSerializer().serializeToString(svg)
 				: svg;
