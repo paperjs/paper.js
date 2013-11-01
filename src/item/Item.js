@@ -1956,6 +1956,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Removes all of the item's {@link #children} (if any).
 	 *
 	 * @name Item#removeChildren
+	 * @alias Item#clear
 	 * @function
 	 * @return {Item[]} an array containing the removed items
 	 */
@@ -1984,6 +1985,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			this._changed(/*#=*/ Change.HIERARCHY);
 		return removed;
 	},
+
+	clear: '#removeChildren',
 
 	/**
 	 * Reverses the order of the item's children

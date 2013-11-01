@@ -635,6 +635,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * Removes all segments from the path's {@link #segments} array.
 	 *
 	 * @name Path#removeSegments
+	 * @alias Path#clear
 	 * @function
 	 * @return {Segment[]} an array containing the removed segments
 	 */
@@ -706,6 +707,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 		this._changed(/*#=*/ Change.GEOMETRY);
 		return removed;
 	},
+
+	clear: '#removeSegments',
 
 	/**
 	 * Specifies whether an path is selected and will also return {@code true}
