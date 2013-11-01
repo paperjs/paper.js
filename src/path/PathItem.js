@@ -87,12 +87,23 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 
 		var parts = data.match(/[a-z][^a-z]*/ig),
 			coords,
+			coordsLength,
 			relative = false,
 			control,
 			current = new Point(); // the current position
 
 		function getCoord(index, coord, update) {
-			var val = parseFloat(coords[index]);
+			var val = coords[index];
+			// Before parsing the value, we might actually have to further split
+			// it, in case it contains two '.':
+			var match = val.match(/^([+-]?\d*\.\d+)(\.\d*)$/);
+			if (match) {
+				// Insert the 2nd half as the next value.
+				coords.splice(index + 1, 0, match[2]);
+				coordsLength++;
+				val = match[1];
+			}
+			val = parseFloat(val);
 			if (relative)
 				val += current[coord];
 			if (update)
@@ -116,26 +127,34 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				lower = cmd.toLowerCase();
 			// Split at white-space, commas but also before signs.
 			// Use positive lookahead to include signs.
+			// Note that we should also check for coordinate values that contain
+			// two decimal periods, as these should be plit into two separate
+			// values. With positive lookbehind, this would look like this:
+			// |(?<=\d*\.\d+)(?=\.\d+)
+			// Unfortunately, JavaScript does not have lookbehind in RegExps, so
+			// instead we leave these values that way and parse them further in
+			// getCoord() above. Note that coordsLength may increase as we're 
+			// reading values.
 			coords = part.slice(1).trim().split(/[\s,]+|(?=[+-])/);
+			coordsLength = coords.length;
 			relative = cmd === lower;
-			var length = coords.length;
 			switch (lower) {
 			case 'm':
 			case 'l':
-				for (var j = 0; j < length; j += 2)
+				for (var j = 0; j < coordsLength; j += 2)
 					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
 							getPoint(j, true));
 				break;
 			case 'h':
 			case 'v':
 				var coord = lower == 'h' ? 'x' : 'y';
-				for (var j = 0; j < length; j++) {
+				for (var j = 0; j < coordsLength; j++) {
 					getCoord(j, coord, true);
 					this.lineTo(current);
 				}
 				break;
 			case 'c':
-				for (var j = 0; j < length; j += 6) {
+				for (var j = 0; j < coordsLength; j += 6) {
 					this.cubicCurveTo(
 							getPoint(j),
 							control = getPoint(j + 2),
@@ -144,7 +163,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				break;
 			case 's':
 				// Shorthand cubic bezierCurveTo, absolute
-				for (var j = 0; j < length; j += 4) {
+				for (var j = 0; j < coordsLength; j += 4) {
 					this.cubicCurveTo(
 							// Calculate reflection of previous control points
 							current.multiply(2).subtract(control),
@@ -153,14 +172,14 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				}
 				break;
 			case 'q':
-				for (var j = 0; j < length; j += 4) {
+				for (var j = 0; j < coordsLength; j += 4) {
 					this.quadraticCurveTo(
 							control = getPoint(j),
 							getPoint(j + 2, true));
 				}
 				break;
 			case 't':
-				for (var j = 0; j < length; j += 2) {
+				for (var j = 0; j < coordsLength; j += 2) {
 					this.quadraticCurveTo(
 							// Calculate reflection of previous control points
 							control = current.multiply(2).subtract(control),
