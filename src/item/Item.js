@@ -1306,9 +1306,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Insert is true by default.
 		if (insert || insert === undefined)
 			copy.insertAbove(this);
-		// Only copy over these fields if they are actually defined in 'this'
-		// TODO: Consider moving this to Base once it's useful in more than one
-		// place
+		// Only copy over these fields if they are actually defined in 'this',
+		// meaning the default value has been overwritten (default is on
+		// prototype).
 		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
 				'_clipMask', '_guide'];
 		for (var i = 0, l = keys.length; i < l; i++) {
@@ -1649,15 +1649,22 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 
 	/**
-	 * Imports (deserializes) the stored JSON data into this item's
-	 * {@link Item#children} list.
-	 * Note that the item is not cleared first. You can call
-	 * {@link Item#removeChildren()} to do so.
+	 * Imports (deserializes) the stored JSON data into this item. If the data
+	 * describes an item of the same class or a parent class of the item, the
+	 * data is imported into the item itself. If not, the imported item is added
+	 * to this item's {@link Item#children} list. Note that not all type of
+	 * items can have children.
 	 *
 	 * @param {String} json the JSON data to import from.
 	 */
 	importJSON: function(json) {
-		return this.addChild(Base.importJSON(json));
+		// Try importing into `this`. If another item is returned, try adding
+		// it as a child (this won't be successful on some classes, returning
+		// null).
+		var res = Base.importJSON(json, this);
+		return res !== this
+				? this.addChild(res)
+				: res;
 	},
 
 	/**

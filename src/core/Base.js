@@ -390,46 +390,51 @@ Base.inject(/** @lends Base# */{
 		 * deserializable types through Base.exports, and the values following
 		 * in the array are the arguments to their initialize function.
 		 * Any other value is passed on unmodified.
-		 * The passed data is recoursively traversed and converted, leaves first
+		 * The passed json data is recoursively traversed and converted, leaves
+		 * first
 		 */
-		deserialize: function(obj, data) {
-			var res = obj;
-			// A data side-car to deserialize that can hold any kind of 'global'
-			// data across a deserialization. It's currently just used to hold
-			// dictionary definitions.
-			data = data || {};
-			if (Array.isArray(obj)) {
+		deserialize: function(json, target, _data) {
+			var res = json;
+			// A _data side-car to deserialize that can hold any kind of
+			// 'global' data across a deserialization. It's currently only used
+			// to hold dictionary definitions.
+			_data = _data || {};
+			if (Array.isArray(json)) {
 				// See if it's a serialized type. If so, the rest of the array
 				// are the arguments to #initialize(). Either way, we simply
 				// deserialize all elements of the array.
-				var type = obj[0],
+				var type = json[0],
 					// Handle stored dictionary specially, since we need to
 					// keep is a lookup table to retrieve referenced items from.
 					isDictionary = type === 'dictionary';
 				if (!isDictionary) {
 					// First see if this is perhaps a dictionary reference, and
 					// if so return its definition instead.
-					if (data.dictionary && obj.length == 1 && /^#/.test(type))
-						return data.dictionary[type];
+					if (_data.dictionary && json.length == 1 && /^#/.test(type))
+						return _data.dictionary[type];
 					type = Base.exports[type];
 				}
 				res = [];
 				// Skip first type entry for arguments
-				for (var i = type ? 1 : 0, l = obj.length; i < l; i++)
-					res.push(Base.deserialize(obj[i], data));
+				for (var i = type ? 1 : 0, l = json.length; i < l; i++)
+					res.push(Base.deserialize(json[i], null, _data));
 				if (isDictionary) {
-					data.dictionary = res[0];
+					_data.dictionary = res[0];
 				} else if (type) {
 					// Create serialized type and pass collected arguments to
 					// constructor().
 					var args = res;
-					res = Base.create(type.prototype);
+					// If a target is provided and its of the right type,
+					// import right into it.
+					res = target instanceof type
+							? target
+							: Base.create(type.prototype);
 					type.apply(res, args);
 				}
-			} else if (Base.isPlainObject(obj)) {
+			} else if (Base.isPlainObject(json)) {
 				res = {};
-				for (var key in obj)
-					res[key] = Base.deserialize(obj[key], data);
+				for (var key in json)
+					res[key] = Base.deserialize(json[key], null, _data);
 			}
 			return res;
 		},
@@ -438,9 +443,9 @@ Base.inject(/** @lends Base# */{
 			return JSON.stringify(Base.serialize(obj, options));
 		},
 
-		importJSON: function(json) {
+		importJSON: function(json, target) {
 			return Base.deserialize(
-					typeof json === 'string' ? JSON.parse(json) : json);
+					typeof json === 'string' ? JSON.parse(json) : json, target);
 		},
 
 		/**
