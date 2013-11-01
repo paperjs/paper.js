@@ -71,7 +71,7 @@ new function() {
 
 	// Importer functions for various SVG node types
 
-	function importGroup(node, type, options) {
+	function importGroup(node, type, isRoot, options) {
 		var nodes = node.childNodes,
 			clip = type === 'clippath',
 			item = new Group(),
@@ -82,7 +82,7 @@ new function() {
 			// Have the group not pass on all transformations to its children,
 			// as this is how SVG works too.
 			item._transformContent = false;
-			item = applyAttributes(item, node);
+			item = applyAttributes(item, node, isRoot);
 			// Style on items needs to be handled differently than all other
 			// items: We first apply the style to the item, then use it as the
 			// project's currentStyle, so it is used as a default for the
@@ -95,7 +95,7 @@ new function() {
 			var childNode = nodes[i],
 				child;
 			if (childNode.nodeType === 1
-					&& (child = importSVG(childNode, options))
+					&& (child = importSVG(childNode, false, options))
 					&& !(child instanceof Symbol))
 				children.push(child);
 		}
@@ -103,7 +103,7 @@ new function() {
 		// Clip paths are reduced (unboxed) and their attributes applied at the
 		// end.
 		if (clip)
-			item = applyAttributes(item.reduce(), node);
+			item = applyAttributes(item.reduce(), node, isRoot);
 		// Restore currentStyle
 		project._currentStyle = currentStyle;
 		if (clip || type === 'defs') {
@@ -166,8 +166,8 @@ new function() {
 	// NOTE: All importers are lowercase, since jsdom is using uppercase
 	// nodeNames still.
 	var importers = {
-		'#document': function(node, type, options) {
-			return importSVG(node.childNodes[0], options);
+		'#document': function(node, type, isRoot, options) {
+			return importSVG(node.childNodes[0], isRoot, options);
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#Groups
@@ -200,9 +200,9 @@ new function() {
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
-		symbol: function(node, type) {
+		symbol: function(node, type, isRoot, options) {
 			// Pass true for dontCenter:
-			return new Symbol(importGroup(node, type), true);
+			return new Symbol(importGroup(node, type, isRoot, options), true);
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#DefsElement
@@ -337,13 +337,12 @@ new function() {
 	// can affect gradient fills.
 	var attributes = Base.merge(Base.each(SVGStyles, function(entry) {
 		this[entry.attribute] = function(item, value) {
-			item[entry.set](
-					convertValue(value, entry.type, entry.fromSVG));
-			// When applying gradient colors to shapes, we need to offset the
-			// shape's initial position to get the same results as SVG.
+			item[entry.set](convertValue(value, entry.type, entry.fromSVG));
+			// When applying gradient colors to shapes, we need to offset
+			// the shape's initial position to get the same results as SVG.
 			if (entry.type === 'color' && item instanceof Shape) {
-				// Do not use result of convertValue() above, since calling the
-				// setter will produce a new cloned color.
+				// Do not use result of convertValue() above, since calling
+				// the setter will produce a new cloned color.
 				var color = item[entry.get]();
 				if (color)
 					color.transform(new Matrix().translate(
@@ -466,12 +465,14 @@ new function() {
 	 * @param {SVGSVGElement} node an SVG node to read style and attributes from.
 	 * @param {Item} item the item to apply the style and attributes to.
 	 */
-	function applyAttributes(item, node) {
+	function applyAttributes(item, node, isRoot) {
 		// SVG attributes can be set both as styles and direct node attributes,
 		// so we need to handle both.
 		var styles = {
 			node: DomElement.getStyles(node) || {},
-			parent: DomElement.getStyles(node.parentNode) || {}
+			// Do not check for inheritance if this is the root, since we want
+			// the default SVG settings to stick.
+			parent: !isRoot && DomElement.getStyles(node.parentNode) || {}
 		};
 		Base.each(attributes, function(apply, name) {
 			var value = getAttribute(node, name, styles);
@@ -489,7 +490,7 @@ new function() {
 		return match && definitions[match[1]];
 	}
 
-	function importSVG(node, options, clearDefs) {
+	function importSVG(node, isRoot, options) {
 		if (!options)
 			options = {};
 		if (typeof node === 'string')
@@ -497,12 +498,12 @@ new function() {
 		// jsdom in Node.js uses uppercase values for nodeName...
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
-			item = importer && importer(node, type, options),
+			item = importer && importer(node, type, isRoot, options),
 			data = type !== '#document' && node.getAttribute('data-paper-data');
 		if (item) {
 			// See importGroup() for an explanation of this filtering:
 			if (!(item instanceof Group))
-				item = applyAttributes(item, node);
+				item = applyAttributes(item, node, isRoot);
 			if (options.expandShapes && item instanceof Shape) {
 				item.remove();
 				item = item.toPath();
@@ -511,21 +512,21 @@ new function() {
 				item._data = JSON.parse(data);
 		}
 		// Clear definitions at the end of import?
-		if (clearDefs)
+		if (isRoot)
 			definitions = {};
 		return item;
 	}
 
 	Item.inject({
 		importSVG: function(node, options) {
-			return this.addChild(importSVG(node, options, true));
+			return this.addChild(importSVG(node, true, options));
 		}
 	});
 
 	Project.inject({
 		importSVG: function(node, options) {
 			this.activate();
-			return importSVG(node, options, true);
+			return importSVG(node, true, options);
 		}
 	});
 };
