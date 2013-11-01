@@ -367,19 +367,19 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @function
 	 * @param {Number[]} src the array containing the source points
 	 *        as x, y value pairs
-	 * @param {Number} srcOff the offset to the first point to be transformed
+	 * @param {Number} srcOffset the offset to the first point to be transformed
 	 * @param {Number[]} dst the array into which to store the transformed
 	 *        point pairs
-	 * @param {Number} dstOff the offset of the location of the first
+	 * @param {Number} dstOffset the offset of the location of the first
 	 *        transformed point in the destination array
-	 * @param {Number} numPts the number of points to tranform
+	 * @param {Number} count the number of points to tranform
 	 * @return {Number[]} the dst array, containing the transformed coordinates.
 	 */
-	transform: function(/* point | */ src, srcOff, dst, dstOff, numPts) {
+	transform: function(/* point | */ src, srcOffset, dst, dstOffset, count) {
 		return arguments.length < 5
 			// TODO: Check for rectangle and use _tranformBounds?
 			? this._transformPoint(Point.read(arguments))
-			: this._transformCoordinates(src, srcOff, dst, dstOff, numPts);
+			: this._transformCoordinates(src, srcOffset, dst, dstOffset, count);
 	},
 
 	/**
@@ -398,10 +398,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		);
 	},
 
-	_transformCoordinates: function(src, srcOff, dst, dstOff, numPts) {
-		var i = srcOff, j = dstOff,
-			srcEnd = srcOff + 2 * numPts;
-		while (i < srcEnd) {
+	_transformCoordinates: function(src, srcOffset, dst, dstOffset, count) {
+		var i = srcOffset,
+			j = dstOffset,
+			max = i + 2 * count;
+		while (i < max) {
 			var x = src[i++],
 				y = src[i++];
 			dst[j++] = x * this._a + y * this._b + this._tx;
