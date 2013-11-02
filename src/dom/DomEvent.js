@@ -106,7 +106,6 @@ DomEvent.requestAnimationFrame = new function() {
 	});
 
 	function handleCallbacks() {
-		requested = false;
 		// Checks all installed callbacks for element visibility and
 		// execute if needed.
 		for (var i = callbacks.length - 1; i >= 0; i--) {
@@ -115,9 +114,20 @@ DomEvent.requestAnimationFrame = new function() {
 				el = entry[1];
 			if (!el || (PaperScope.getAttribute(el, 'keepalive') == 'true'
 					|| focused) && DomElement.isInView(el)) {
-				// Handle callback and remove it from callbacks list.
+				// Only remove from the list once the callback was called. This
+				// could take a long time based on visibility. But this way we
+				// are sure to keep the animation loop running.
 				callbacks.splice(i, 1);
 				func();
+			}
+		}
+		if (nativeRequest) {
+			if (callbacks.length) {
+				// If we haven't processed all callbacks yet, we need to keep
+				// the loop running, as otherwise it would die off.
+				nativeRequest(handleCallbacks);
+			} else {
+				requested = false;
 			}
 		}
 	}
