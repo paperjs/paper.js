@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.9.9",
+  "version": "0.9.11",
   "main": "dist/paper.js",
   "ignore": [
     "build",
