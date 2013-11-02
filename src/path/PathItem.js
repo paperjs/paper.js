@@ -87,7 +87,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 
 		// First split the path data into parts of command-coordinates pairs
 		// Commands are any of these characters: mzlhvcsqta
-		var parts = data.match(/[mzlhvcsqta][^mzlhvcsqta]*/ig),
+		var parts = data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/ig),
 			coords,
 			relative = false,
 			control,
