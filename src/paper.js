@@ -118,6 +118,11 @@ var paper = new function(undefined) {
 
 /*#*/ include('tool/ToolEvent.js');
 /*#*/ include('tool/Tool.js');
+
+// Http is used both for PaperScript and SVGImport
+/*#*/ if (options.paperscript || options.svg) {
+/*#*/ include('net/Http.js');
+/*#*/ } // options.paperscript || options.svg
 /*#*/ } // options.environment == 'browser'
 
 /*#*/ include('canvas/CanvasProvider.js');

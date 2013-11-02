@@ -493,8 +493,26 @@ new function() {
 	function importSVG(node, isRoot, options) {
 		if (!options)
 			options = {};
-		if (typeof node === 'string')
+		if (typeof node === 'string') {
+			// Check if the string does not represent SVG data, in which case
+			// it must be a url of a SVG to be loaded.
+			if (isRoot && !/^.*</.test(node)) {
+				if (typeof options === 'function')
+					options = { onLoad: options };
+				// Remember current scope so we can restore it in the callback.
+				var scope = paper;
+				return Http.request('get', node, function(xml) {
+					paper = scope;
+					var item = importSVG(xml, isRoot, options),
+						onLoad = options.onLoad,
+						view = scope.project && scope.project.view;
+					if (onLoad)
+						onLoad.call(this, item);
+					view.draw(true);
+				});
+			}
 			node = new DOMParser().parseFromString(node, 'image/svg+xml');
+		}
 		// jsdom in Node.js uses uppercase values for nodeName...
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
@@ -517,12 +535,14 @@ new function() {
 		return item;
 	}
 
+	// NOTE: Documentation is in Item.js
 	Item.inject({
 		importSVG: function(node, options) {
 			return this.addChild(importSVG(node, true, options));
 		}
 	});
 
+	// NOTE: Documentation is in Project.js
 	Project.inject({
 		importSVG: function(node, options) {
 			this.activate();

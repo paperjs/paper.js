@@ -289,20 +289,6 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 	}
 
 /*#*/ if (options.environment == 'browser') {
-	// Code borrowed from Coffee Script:
-	function request(url, scope) {
-		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
-				'Microsoft.XMLHTTP');
-		xhr.open('GET', url, true);
-		if (xhr.overrideMimeType)
-			xhr.overrideMimeType('text/plain');
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState === 4) {
-				return evaluate(xhr.responseText, scope);
-			}
-		};
-		return xhr.send(null);
-	}
 
 	function load() {
 		var scripts = document.getElementsByTagName('script');
@@ -324,11 +310,14 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 					// it, to support multiple scripts per canvas. Otherwise
 					// create a new one.
 					scope = PaperScope.get(canvas)
-							|| new PaperScope(script).setup(canvas);
-				if (script.src) {
-					// If we're loading from a source, request that first and then
-					// run later.
-					request(script.src, scope);
+							|| new PaperScope(script).setup(canvas),
+					src = script.src;
+				if (src) {
+					// If we're loading from a source, request that first and
+					// then run later.
+					Http.request('get', src, function(code) {
+						evaluate(code, scope);
+					});
 				} else {
 					// We can simply get the code form the script tag.
 					evaluate(script.innerHTML, scope);
