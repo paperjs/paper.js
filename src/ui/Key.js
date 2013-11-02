@@ -71,6 +71,8 @@ var Key = new function() {
 			tool = scope && scope._tool;
 		keyMap[key] = down;
 		if (tool && tool.responds(type)) {
+			// Update global reference to this scope.
+			paper = scope;
 			// Call the onKeyDown or onKeyUp handler if present
 			tool.fire(type, new KeyEvent(down, key, character, event));
 			if (view)
