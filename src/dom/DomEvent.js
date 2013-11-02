@@ -89,22 +89,10 @@ var DomEvent = {
 };
 
 DomEvent.requestAnimationFrame = new function() {
-	var part = 'equestAnimationFrame',
-		request = window['r' + part] || window['webkitR' + part]
-			|| window['mozR' + part] || window['oR' + part]
-			|| window['msR' + part];
-	if (request) {
-		// Chrome shipped without the time arg in m10. We need to check if time
-		// is defined in callbacks, and if not, clear request again so we won't
-		// use the faulty method.
-		request(function(time) {
-			if (time == null)
-				request = null;
-		});
-	}
-
-	// So we need to fake it. Define helper functions first:
-	var callbacks = [],
+	var nativeRequest = DomElement.getPrefixValue(window,
+			'requestAnimationFrame'),
+		requested = false,
+		callbacks = [],
 		focused = true,
 		timer;
 
@@ -117,31 +105,39 @@ DomEvent.requestAnimationFrame = new function() {
 		}
 	});
 
-	return function(callback, element) {
-		// See if we can handle natively first
-		if (request)
-			return request(callback, element);
-		// If not, do the callback handling ourself:
-		callbacks.push([callback, element]);
-		// We're done if there's already a timer installed
-		if (timer)
-			return;
-		// Installs interval timer that checks all callbacks. This results
-		// in faster animations than repeatedly installing timout timers.
-		timer = setInterval(function() {
-			// Checks all installed callbacks for element visibility and
-			// execute if needed.
-			for (var i = callbacks.length - 1; i >= 0; i--) {
-				var entry = callbacks[i],
-					func = entry[0],
-					el = entry[1];
-				if (!el || (PaperScope.getAttribute(el, 'keepalive') == 'true'
-						|| focused) && DomElement.isInView(el)) {
-					// Handle callback and remove it from callbacks list.
-					callbacks.splice(i, 1);
-					func(Date.now());
-				}
+	function handleCallbacks() {
+		requested = false;
+		// Checks all installed callbacks for element visibility and
+		// execute if needed.
+		for (var i = callbacks.length - 1; i >= 0; i--) {
+			var entry = callbacks[i],
+				func = entry[0],
+				el = entry[1];
+			if (!el || (PaperScope.getAttribute(el, 'keepalive') == 'true'
+					|| focused) && DomElement.isInView(el)) {
+				// Handle callback and remove it from callbacks list.
+				callbacks.splice(i, 1);
+				func();
 			}
-		}, 1000 / 60);
+		}
+	}
+
+	return function(callback, element) {
+		// Add to the list of callbacks to be called in the next animation
+		// frame.
+		callbacks.push([callback, element]);
+		if (nativeRequest) {
+			// Handle animation natively. We only need to request the frame
+			// once for all collected callbacks.
+			if (!requested) {
+				nativeRequest(handleCallbacks);
+				requested = true;
+			}
+		} else if (!timer) {
+			// Install interval timer that checks all callbacks. This
+			// results in faster animations than repeatedly installing
+			// timout timers.
+			timer = setInterval(handleCallbacks, 1000 / 60);
+		}
 	};
 };
