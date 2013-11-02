@@ -117,7 +117,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				cmd = part[0],
 				lower = cmd.toLowerCase();
 			// Match all coordinate values
-			coords = part.match(/([+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?)/g);
+			coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
 			var length = coords && coords.length;
 			relative = cmd === lower;
 			switch (lower) {
