@@ -496,7 +496,7 @@ new function() {
 		if (typeof node === 'string') {
 			// Check if the string does not represent SVG data, in which case
 			// it must be a url of a SVG to be loaded.
-			if (isRoot && !/^.*</.test(node)) {
+			if (isRoot && node && !/^.*</.test(node)) {
 				if (typeof options === 'function')
 					options = { onLoad: options };
 				// Remember current scope so we can restore it in the callback.
@@ -516,7 +516,7 @@ new function() {
 		// jsdom in Node.js uses uppercase values for nodeName...
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
-			item = importer && importer(node, type, isRoot, options),
+			item = importer && importer(node, type, isRoot, options) || null,
 			data = type !== '#document' && node.getAttribute('data-paper-data');
 		if (item) {
 			// See importGroup() for an explanation of this filtering:
