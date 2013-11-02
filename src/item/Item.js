@@ -3140,12 +3140,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// We can access internal properties since we're only using this on
 		// items without children, where styles would be merged.
 		var style = this._style,
-			matrix = this._matrix,
 			fillColor = style.getFillColor(),
 			strokeColor = style.getStrokeColor(),
 			shadowColor = style.getShadowColor();
-		// We need to take matrix into account for gradients,
-		// see #toCanvasStyle()
 		if (fillColor)
 			ctx.fillStyle = fillColor.toCanvasStyle(ctx);
 		if (strokeColor) {
