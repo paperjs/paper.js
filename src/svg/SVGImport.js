@@ -501,9 +501,9 @@ new function() {
 					options = { onLoad: options };
 				// Remember current scope so we can restore it in the callback.
 				var scope = paper;
-				return Http.request('get', node, function(xml) {
+				return Http.request('get', node, function(svg) {
 					paper = scope;
-					var item = importSVG(xml, isRoot, options),
+					var item = importSVG(svg, isRoot, options),
 						onLoad = options.onLoad,
 						view = scope.project && scope.project.view;
 					if (onLoad)
