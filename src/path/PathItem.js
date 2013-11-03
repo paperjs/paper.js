@@ -93,19 +93,19 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			control,
 			current = new Point(); // the current position
 
-		function getCoord(index, coord, update) {
+		function getCoord(index, coord, isCurrent) {
 			var val = parseFloat(coords[index]);
 			if (relative)
 				val += current[coord];
-			if (update)
+			if (isCurrent)
 				current[coord] = val;
 			return val;
 		}
 
-		function getPoint(index, update) {
+		function getPoint(index, isCurrent) {
 			return new Point(
-				getCoord(index, 'x', update),
-				getCoord(index + 1, 'y', update)
+				getCoord(index, 'x', isCurrent),
+				getCoord(index + 1, 'y', isCurrent)
 			);
 		}
 
@@ -126,6 +126,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				for (var j = 0; j < length; j += 2)
 					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
 							getPoint(j, true));
+				control = current;
 				break;
 			case 'h':
 			case 'v':
@@ -134,6 +135,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					getCoord(j, coord, true);
 					this.lineTo(current);
 				}
+				control = current;
 				break;
 			case 'c':
 				for (var j = 0; j < length; j += 6) {
@@ -144,7 +146,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				}
 				break;
 			case 's':
-				// Shorthand cubic bezierCurveTo, absolute
+				// Smooth cubicCurveTo
 				for (var j = 0; j < length; j += 4) {
 					this.cubicCurveTo(
 							// Calculate reflection of previous control points
@@ -161,6 +163,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				}
 				break;
 			case 't':
+				// Smooth quadraticCurveTo
 				for (var j = 0; j < length; j += 2) {
 					this.quadraticCurveTo(
 							// Calculate reflection of previous control points
