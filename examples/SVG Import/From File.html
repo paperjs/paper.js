@@ -8,15 +8,15 @@
 	<script type="text/paperscript" canvas="canvas">
 		var file = document.getElementById('file');
 		file.addEventListener('change', function (event) {
-		    var files = event.target.files;
-		    for (var i = 0; i < files.length; i++) {
-		        var file = files[i];
-		        if (file.type.match('svg')) {
-			        project.importSVG(file, function(item) {
-			        	console.log(item);
-			        });
-			    }
-		    }
+			var files = event.target.files;
+			for (var i = 0; i < files.length; i++) {
+				var file = files[i];
+				if (file.type.match('svg')) {
+					project.importSVG(file, function(item) {
+						console.log(item);
+					});
+				}
+			}
 		});
 	</script>
 </head>
