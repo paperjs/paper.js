@@ -167,7 +167,13 @@ new function() {
 	// nodeNames still.
 	var importers = {
 		'#document': function(node, type, isRoot, options) {
-			return importSVG(node.children[0], isRoot, options);
+			var children = node.childNodes;
+			for (var i = 0, l = children.length; i < l; i++) {
+				var child = children[i];
+				if (child.nodeType === 1)
+					return importSVG(child, isRoot, options);
+			}
+			return null;
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#Groups
