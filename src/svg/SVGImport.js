@@ -490,29 +490,48 @@ new function() {
 		return match && definitions[match[1]];
 	}
 
-	function importSVG(node, isRoot, options) {
-		if (!options)
+	function importSVG(source, isRoot, options) {
+		if (!source)
+			return null;
+		if (!options) {
 			options = {};
-		if (typeof node === 'string') {
-			// Check if the string does not represent SVG data, in which case
-			// it must be a url of a SVG to be loaded.
-			if (isRoot && node && !/^.*</.test(node)) {
-				if (typeof options === 'function')
-					options = { onLoad: options };
-				// Remember current scope so we can restore it in the callback.
-				var scope = paper;
-				return Http.request('get', node, function(svg) {
-					paper = scope;
-					var item = importSVG(svg, isRoot, options),
-						onLoad = options.onLoad,
-						view = scope.project && scope.project.view;
-					if (onLoad)
-						onLoad.call(this, item);
-					view.draw(true);
-				});
-			}
-			node = new DOMParser().parseFromString(node, 'image/svg+xml');
+		} else if (typeof options === 'function') {
+			options = { onLoad: options };
 		}
+
+		var node = source,
+			// Remember current scope so we can restore it in onLoad.
+			scope = paper;
+
+		function onLoadCallback(svg) {
+			paper = scope;
+			var item = importSVG(svg, isRoot, options),
+				onLoad = options.onLoad,
+				view = scope.project && scope.project.view;
+			if (onLoad)
+				onLoad.call(this, item);
+			view.draw(true);
+		}
+
+		if (isRoot) {
+			if (typeof source === 'string' && !/^.*</.test(source)) {
+				// Check if the string does not represent SVG data, in which case
+				// it must be a url of a SVG to be loaded.
+				return Http.request('get', source, onLoadCallback);
+			} else if (typeof File !== 'undefined' && source instanceof File) {
+				// Load local file through FileReader
+				var reader = new FileReader();
+				reader.onload = function() {
+					onLoadCallback(reader.result);
+				};
+				return reader.readAsText(source);
+			}
+		}
+
+		if (typeof source === 'string')
+			node = new DOMParser().parseFromString(source, 'image/svg+xml');
+		if (!node.nodeName)
+			throw new Error('Unsupported SVG source: ' + source);
 		// jsdom in Node.js uses uppercase values for nodeName...
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
