@@ -73,12 +73,13 @@ new function() {
 
 	function importGroup(node, type, isRoot, options) {
 		var nodes = node.childNodes,
-			clip = type === 'clippath',
+			isClip = type === 'clippath',
+			isDocument = type === '#document',
 			item = new Group(),
 			project = item._project,
 			currentStyle = project._currentStyle,
 			children = [];
-		if (!clip) {
+		if (!isClip && !isDocument) {
 			// Have the group not pass on all transformations to its children,
 			// as this is how SVG works too.
 			item._transformContent = false;
@@ -102,11 +103,17 @@ new function() {
 		item.addChildren(children);
 		// Clip paths are reduced (unboxed) and their attributes applied at the
 		// end.
-		if (clip)
-			item = applyAttributes(item.reduce(), node, isRoot);
-		// Restore currentStyle
-		project._currentStyle = currentStyle;
-		if (clip || type === 'defs') {
+		if (isClip || isDocument) {
+			// If a document or a clip item only contain one child, remove the
+			// group.
+			item = item.reduce();
+			if (isClip)
+				item = applyAttributes(item, node, isRoot);
+		} else {
+			// Restore currentStyle
+			project._currentStyle = currentStyle;
+		}
+		if (isClip || type === 'defs') {
 			// We don't want the defs in the DOM. But we might want to use
 			// Symbols for them to save memory?
 			item.remove();
@@ -166,16 +173,7 @@ new function() {
 	// NOTE: All importers are lowercase, since jsdom is using uppercase
 	// nodeNames still.
 	var importers = {
-		'#document': function(node, type, isRoot, options) {
-			var children = node.childNodes;
-			for (var i = 0, l = children.length; i < l; i++) {
-				var child = children[i];
-				if (child.nodeType === 1)
-					return importSVG(child, isRoot, options);
-			}
-			return null;
-		},
-
+		'#document': importGroup,
 		// http://www.w3.org/TR/SVG/struct.html#Groups
 		g: importGroup,
 		// http://www.w3.org/TR/SVG/struct.html#NewDocument
