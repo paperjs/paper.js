@@ -45,6 +45,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		var ctx = this._context = canvas.getContext('2d');
 		// Have Item count installed mouse events.
 		this._eventCounters = {};
+/*#*/ if (options.hiDPI) {
 		// Hi-DPI Canvas support based on:
 		// http://www.html5rocks.com/en/tutorials/canvas/hidpi/
 		var ratio = (window.devicePixelRatio || 1) / (DomElement.getPrefixValue(
@@ -62,6 +63,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			// scaled our canvas element.
 			ctx.scale(ratio, ratio);
 		}
+/*#*/ } // options.hiDPI
 		View.call(this, canvas);
 	},
 
