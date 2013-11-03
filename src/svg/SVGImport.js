@@ -167,7 +167,7 @@ new function() {
 	// nodeNames still.
 	var importers = {
 		'#document': function(node, type, isRoot, options) {
-			return importSVG(node.childNodes[0], isRoot, options);
+			return importSVG(node.children[0], isRoot, options);
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#Groups
@@ -536,7 +536,7 @@ new function() {
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
 			item = importer && importer(node, type, isRoot, options) || null,
-			data = type !== '#document' && node.getAttribute('data-paper-data');
+			data = node.getAttribute && node.getAttribute('data-paper-data');
 		if (item) {
 			// See importGroup() for an explanation of this filtering:
 			if (!(item instanceof Group))
