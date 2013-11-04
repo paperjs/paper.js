@@ -38,8 +38,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			var size = Size.read(arguments);
 			if (size.isZero())
 				throw new Error(
-						'Cannot create CanvasView with the provided arguments: '
-						+ arguments);
+						'Cannot create CanvasView with the provided argument: '
+						+ canvas);
 			canvas = CanvasProvider.getCanvas(size);
 		}
 		var ctx = this._context = canvas.getContext('2d');
