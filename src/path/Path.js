@@ -115,14 +115,15 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
+			// Delete cached native Path
+			delete (this._compound ? this._parent : this)._currentPath;
 			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.
 			delete this._clockwise;
 			// Curves are no longer valid
 			if (this._curves) {
-				for (var i = 0, l = this._curves.length; i < l; i++) {
+				for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed(/*#=*/ Change.GEOMETRY);
-				}
 			}
 		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
@@ -1997,7 +1998,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	return {
 		_draw: function(ctx, param) {
 			var clip = param.clip,
-				compound = param.compound;
+				// Also mark this Path as _compound so _changed() knows about it
+				compound = this._compound = param.compound;
 			if (!compound)
 				ctx.beginPath();
 
@@ -2015,29 +2017,38 @@ var Path = PathItem.extend(/** @lends Path# */{
 				return dashArray[((i % dashLength) + dashLength) % dashLength];
 			}
 
-			// Prepare the canvas path if we have any situation that requires it
-			// to be defined.
-			if (hasFill || hasStroke && !dashLength || compound || clip)
-				drawSegments(ctx, this);
-
-			if (this._closed)
-				ctx.closePath();
+			// CompoundPath collects its own _currentPath
+			if (!compound && this._currentPath) {
+				ctx.currentPath = this._currentPath;
+			} else {
+				// Prepare the canvas path if we have any situation that
+				// requires it to be defined.
+				if (hasFill || hasStroke && !dashLength || compound || clip)
+					drawSegments(ctx, this);
+				if (this._closed)
+					ctx.closePath();
+				if (!compound)
+					this._currentPath = ctx.currentPath;
+			}
 
 			if (!clip && !compound && (hasFill || hasStroke)) {
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
 				this._setStyles(ctx);
-				// If shadowColor is defined, clear it after fill, so it won't
-				// be applied to both fill and stroke. If the path is only
-				// stroked, we don't have to clear it.
 				if (hasFill) {
 					ctx.fill(style.getWindingRule());
+					// If shadowColor is defined, clear it after fill, so it
+					// won't be applied to both fill and stroke. If the path is
+					// only stroked, we don't have to clear it.
 					ctx.shadowColor = 'rgba(0,0,0,0)';
 				}
 				if (hasStroke) {
 					if (dashLength) {
 						// We cannot use the path created by drawSegments above
 						// Use CurveFlatteners to draw dashed paths:
+						// NOTE: We don't cache this path in another currentPath
+						// since browsers that support currentPath also support
+						// native dashes.
 						ctx.beginPath();
 						var flattener = new PathFlattener(this),
 							length = flattener.length,

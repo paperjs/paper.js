@@ -57,6 +57,13 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
+	_changed: function _changed(flags) {
+		_changed.base.call(this, flags);
+		// Delete cached native Path
+		if (flags & (/*#=*/ ChangeFlag.HIERARCHY | /*#=*/ ChangeFlag.GEOMETRY))
+			delete this._currentPath;
+	},
+
 	insertChildren: function insertChildren(index, items, _preserve) {
 		// Pass on 'path' for _type, to make sure that only paths are added as
 		// children.
@@ -218,10 +225,17 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		// Return early if the compound path doesn't have any children:
 		if (children.length === 0)
 			return;
-		ctx.beginPath();
-		param = param.extend({ compound: true });
-		for (var i = 0, l = children.length; i < l; i++)
-			children[i].draw(ctx, param);
+
+		if (this._currentPath) {
+			ctx.currentPath = this._currentPath;
+		} else {
+			ctx.beginPath();
+			param = param.extend({ compound: true });
+			for (var i = 0, l = children.length; i < l; i++)
+				children[i].draw(ctx, param);
+			this._currentPath = ctx.currentPath;
+		}
+
 		if (!param.clip) {
 			this._setStyles(ctx);
 			var style = this._style;
