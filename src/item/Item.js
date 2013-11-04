@@ -780,6 +780,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	setMatrix: function(matrix) {
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
+		if (this._transformContent)
+			this.applyMatrix(true);
 		this._changed(/*#=*/ Change.GEOMETRY);
 	},
 
