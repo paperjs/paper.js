@@ -42,15 +42,15 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 						+ canvas);
 			canvas = CanvasProvider.getCanvas(size);
 		}
-		var ctx = this._context = canvas.getContext('2d');
+		this._context = canvas.getContext('2d');
 		// Have Item count installed mouse events.
 		this._eventCounters = {};
 		this._ratio = 1;
-		if (PaperScope.hasAttribute(canvas, 'hidpi')) {
+		if (PaperScope.getAttribute(canvas, 'hidpi') !== 'off') {
 			// Hi-DPI Canvas support based on:
 			// http://www.html5rocks.com/en/tutorials/canvas/hidpi/
 			var deviceRatio = window.devicePixelRatio || 1,
-				backingStoreRatio = DomElement.getPrefixValue(ctx,
+				backingStoreRatio = DomElement.getPrefixValue(this._context,
 						'backingStorePixelRatio') || 1;
 			this._ratio = deviceRatio / backingStoreRatio;
 		}
