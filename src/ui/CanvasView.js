@@ -90,7 +90,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		var ctx = this._context,
 			size = this._viewSize;
 		ctx.clearRect(0, 0, size.width + 1, size.height + 1);
-		this._project.draw(ctx, this._matrix);
+		this._project.draw(ctx, this._matrix, this._ratio);
 		this._project._needsRedraw = false;
 		return true;
 	}

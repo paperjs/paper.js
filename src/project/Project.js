@@ -380,7 +380,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @type Symbol[]
 	 */
 
-	draw: function(ctx, matrix) {
+	draw: function(ctx, matrix, ratio) {
 		// Increase the drawCount before the draw-loop. After that, items that
 		// are visible will have their drawCount set to the new value.
 		this._drawCount++;
@@ -390,6 +390,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		// values
 		var param = Base.merge({
 			offset: new Point(0, 0),
+			ratio: ratio,
 			// A stack of concatenated matrices, to keep track of the current
 			// global matrix, since Canvas is not able tell us (yet).
 			transforms: [matrix],
