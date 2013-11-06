@@ -45,26 +45,34 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		var ctx = this._context = canvas.getContext('2d');
 		// Have Item count installed mouse events.
 		this._eventCounters = {};
-/*#*/ if (options.hiDPI) {
-		// Hi-DPI Canvas support based on:
-		// http://www.html5rocks.com/en/tutorials/canvas/hidpi/
-		var ratio = (window.devicePixelRatio || 1) / (DomElement.getPrefixValue(
-				ctx, 'backingStorePixelRatio') || 1);
+		this._ratio = 1;
+		if (PaperScope.hasAttribute(canvas, 'hidpi')) {
+			// Hi-DPI Canvas support based on:
+			// http://www.html5rocks.com/en/tutorials/canvas/hidpi/
+			var deviceRatio = window.devicePixelRatio || 1,
+				backingStoreRatio = DomElement.getPrefixValue(ctx,
+						'backingStorePixelRatio') || 1;
+			this._ratio = deviceRatio / backingStoreRatio;
+		}
+		View.call(this, canvas);
+	},
+
+	_setViewSize: function(size) {
+		var width = size.width,
+			height = size.height,
+			ratio = this._ratio,
+			element = this._element,
+			style = element.style;
 		// Upscale the canvas if the two ratios don't match.
-		if (ratio > 1) {
-			var width = canvas.clientWidth,
-				height = canvas.clientHeight,
-				style = canvas.style;
-			canvas.width = width * ratio;
-			canvas.height = height * ratio;
+		element.width = width * ratio;
+		element.height = height * ratio;
+		if (ratio !== 1) {
 			style.width = width + 'px';
 			style.height = height + 'px';
 			// Now scale the context to counter the fact that we've manually
 			// scaled our canvas element.
-			ctx.scale(ratio, ratio);
+			this._context.scale(ratio, ratio);
 		}
-/*#*/ } // options.hiDPI
-		View.call(this, canvas);
 	},
 
 	/**
@@ -81,7 +89,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		// http://jsperf.com/clearrect-vs-setting-width/7
 		var ctx = this._context,
 			size = this._viewSize;
-		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
+		ctx.clearRect(0, 0, size.width + 1, size.height + 1);
 		this._project.draw(ctx, this._matrix);
 		this._project._needsRedraw = false;
 		return true;

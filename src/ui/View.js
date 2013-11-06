@@ -71,8 +71,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		// Set canvas size even if we just deterined the size from it, since
 		// it might have been set to a % size, in which case it would use some
 		// default internal size (300x150 on WebKit) and scale up the pixels.
-		element.width = size.width;
-		element.height = size.height;
+		// We also need this call here for HiDPI support.
+		this._setViewSize(size);
 		// TODO: Test this on IE:
 		if (PaperScope.hasAttribute(element, 'stats')
 				&& typeof Stats !== 'undefined') {
@@ -95,8 +95,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		View._views.push(this);
 		// Link this id to our view
 		View._viewsById[this._id] = this;
-		this._viewSize = new LinkedSize(size.width, size.height,
-				this, 'setViewSize');
+		this._viewSize = size;
 		this._matrix = new Matrix();
 		this._zoom = 1;
 		// Make sure the first view is focused for keyboard input straight away
@@ -281,7 +280,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * @bean
 	 */
 	getViewSize: function() {
-		return this._viewSize;
+		var size = this._viewSize;
+		return new LinkedSize(size.width, size.height, this, 'setViewSize');
 	},
 
 	setViewSize: function(size) {
@@ -289,10 +289,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		var delta = size.subtract(this._viewSize);
 		if (delta.isZero())
 			return;
-		this._element.width = size.width;
-		this._element.height = size.height;
-		// Update _viewSize but don't notify of change.
-		this._viewSize.set(size.width, size.height, true);
+		this._viewSize.set(size.width, size.height);
+		this._setViewSize(size);
 		this._bounds = null; // Force recalculation
 		// Call onResize handler on any size change
 		this.fire('resize', {
@@ -300,6 +298,15 @@ var View = Base.extend(Callback, /** @lends View# */{
 			delta: delta
 		});
 		this._redraw();
+	},
+
+	/**
+	 * Private method, overriden in CanvasView for HiDPI support.
+	 */
+	_setViewSize: function(size) {
+		var element = this._element;
+		element.width = size.width;
+		element.height = size.height;
 	},
 
 	/**
