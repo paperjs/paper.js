@@ -22,6 +22,7 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	Numerical: Numerical,
 	DomElement: DomElement,
 	DomEvent: DomEvent,
+	Http: Http,
 	Key: Key
 })))();
 

@@ -315,7 +315,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				if (src) {
 					// If we're loading from a source, request that first and
 					// then run later.
-					Http.request('get', src, function(code) {
+					paper.Http.request('get', src, function(code) {
 						evaluate(code, scope);
 					});
 				} else {
