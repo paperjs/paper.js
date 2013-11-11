@@ -345,8 +345,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 	// TODO: Rename to divideAt()?
 	divide: function(offset, isParameter) {
 		var parameter = this._getParameter(offset, isParameter),
-			res = null;
-		if (parameter > 0 && parameter < 1) {
+			res = null, tolerance = Numerical.TOLERANCE;
+		if (parameter > tolerance && parameter < 1-tolerance) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
 				isLinear = this.isLinear(),
 				left = parts[0],
@@ -1129,8 +1129,8 @@ new function() { // Scope for methods that require numerical integration
 		// Avoid duplicates when hitting segments (closed paths too)
 		var first = locations[0],
 			last = locations[locations.length - 1];
-		if ((!first || !point1.equals(first._point))
-				&& (!last || !point1.equals(last._point)))
+		if ((!first || !point1.isClose(first._point, Numerical.EPSILON))
+				&& (!last || !point1.isClose(last._point, Numerical.EPSILON)))
 			locations.push(
 					new CurveLocation(curve1, t1, point1, curve2, t2, point2));
 	}
@@ -1155,8 +1155,6 @@ new function() { // Scope for methods that require numerical integration
 		var part1 = Curve.getPart(v1, range1[0], range1[1]),
 			part2 = Curve.getPart(v2, range2[0], range2[1]),
 			iteration = 0;
-		// markCurve(part1, '#f0f', true);
-		// markCurve(part2, '#0ff', false);
 		// Loop until both parameter range converge. We have to handle the
 		// degenerate case seperately, where fat-line clipping can become
 		// numerically unstable when one of the curves has converged to a point
@@ -1174,7 +1172,6 @@ new function() { // Scope for methods that require numerical integration
 				// cumulative errors
 				range2 = range;
 				part2 = Curve.getPart(v2, range2[0], range2[1]);
-				// markCurve(part2, '#0ff', false);
 				// Next we clip v1 with nuv2's fat-line
 				intersects2 = clipFatLine(part2, part1, range = range1.slice());
 				// Stop if there are no possible intersections
@@ -1186,7 +1183,6 @@ new function() { // Scope for methods that require numerical integration
 					range1 = range;
 					part1 = Curve.getPart(v1, range1[0], range1[1]);
 				}
-				// markCurve(part1, '#f0f', true);
 			}
 			// Get the clipped parts from the original v1
 			// Check if there could be multiple intersections
@@ -1489,6 +1485,18 @@ new function() { // Scope for methods that require numerical integration
 		getIntersections: function(v1, v2, curve1, curve2, locations) {
 			var linear1 = Curve.isLinear(v1),
 				linear2 = Curve.isLinear(v2);
+			// Handle a special case where if both curves start or end at the same point
+			// The same endpoint case will be handled after we calculate other
+			// intersections within the curve
+			var c1p1 = curve1.segment1.point,
+				c1p2 = curve1.segment2.point,
+				c2p1 = curve2.segment1.point,
+				c2p2 = curve2.segment2.point,
+				tolerance = Numerical.TOLERANCE;
+			if(c1p1.isClose(c2p1, tolerance))
+				addLocation(locations, curve1, 0, c1p1, curve2, 0, c1p1);
+			if(c1p1.isClose(c2p2, tolerance))
+				addLocation(locations, curve1, 0, c1p1, curve2, 1, c1p1);
 			// Determine the correct intersection method based on values of
 			// linear1 & 2:
 			(linear1 && linear2
@@ -1496,6 +1504,12 @@ new function() { // Scope for methods that require numerical integration
 				: linear1 || linear2
 					? addCurveLineIntersections
 					: addCurveIntersections)(v1, v2, curve1, curve2, locations);
+			// Handle the spacial case where curve1's endpoint overlap with curve2's
+			// segments
+			if(c1p2.isClose(c2p1, tolerance))
+				addLocation(locations, curve1, 1, c1p2, curve2, 0, c1p2);
+			if(c1p2.isClose(c2p2, tolerance))
+				addLocation(locations, curve1, 1, c1p2, curve2, 1, c1p2);
 			return locations;
 		}
 	}};
