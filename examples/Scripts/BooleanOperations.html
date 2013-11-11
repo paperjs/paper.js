@@ -46,6 +46,13 @@
 			];
 		});
 
+		runTest('Overlapping circles 2', function() {
+	        return [
+	            new paper.Path.Circle(new paper.Point(50, 50), 50),
+	            new paper.Path.Circle(new paper.Point(100, 100), 50)
+	        ];
+	    });
+
 		runTest('Disjoint circles', function() {
 			return [
 				new Path.Circle(new Point(60, 110), 50),
