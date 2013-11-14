@@ -56,9 +56,9 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		'+': null
 	};
 
-	// Add hidden math functions to Point, Size and Color.
+	// Inject underscored math functions as aliases to Point, Size and Color.
 	var fields = Base.each(
-		'add,subtract,multiply,divide,modulo,negate'.split(','),
+		['add', 'subtract', 'multiply', 'divide', 'modulo', 'negate'],
 		function(name) {
 			this['_' + name] = '#' + name;
 		}, 
