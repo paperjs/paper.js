@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.11 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.12 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Nov 2 21:26:32 2013 +0100
+ * Date: Thu Nov 14 14:42:28 2013 +0100
  *
  ***
  *
@@ -684,7 +684,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: '0.9.11',
+	version: '0.9.12',
 
 	getView: function() {
 		return this.project && this.project.view;
@@ -2420,12 +2420,13 @@ var Project = PaperScopeItem.extend({
 		return Base.importJSON(json);
 	},
 
-	draw: function(ctx, matrix) {
+	draw: function(ctx, matrix, ratio) {
 		this._drawCount++;
 		ctx.save();
 		matrix.applyToContext(ctx);
 		var param = Base.merge({
 			offset: new Point(0, 0),
+			ratio: ratio,
 			transforms: [matrix],
 			trackTransforms: true
 		});
@@ -2861,6 +2862,8 @@ var Item = Base.extend(Callback, {
 
 	setMatrix: function(matrix) {
 		this._matrix.initialize(matrix);
+		if (this._transformContent)
+			this.applyMatrix(true);
 		this._changed(5);
 	},
 
@@ -3649,7 +3652,7 @@ var Item = Base.extend(Callback, {
 			itemOffset = param.offset = bounds.getTopLeft().floor();
 			mainCtx = ctx;
 			ctx = CanvasProvider.getContext(
-					bounds.getSize().ceil().add(new Size(1, 1)));
+					bounds.getSize().ceil().add(new Size(1, 1)), param.ratio);
 		}
 		ctx.save();
 		if (direct) {
@@ -3670,7 +3673,7 @@ var Item = Base.extend(Callback, {
 			ctx.clip();
 		if (!direct) {
 			BlendMode.process(blendMode, ctx, mainCtx, opacity,
-					itemOffset.subtract(prevOffset));
+					itemOffset.subtract(prevOffset).multiply(param.ratio));
 			CanvasProvider.release(ctx);
 			param.offset = prevOffset;
 		}
@@ -5923,19 +5926,19 @@ var PathItem = Item.extend({
 			control,
 			current = new Point(); 
 
-		function getCoord(index, coord, update) {
+		function getCoord(index, coord, isCurrent) {
 			var val = parseFloat(coords[index]);
 			if (relative)
 				val += current[coord];
-			if (update)
+			if (isCurrent)
 				current[coord] = val;
 			return val;
 		}
 
-		function getPoint(index, update) {
+		function getPoint(index, isCurrent) {
 			return new Point(
-				getCoord(index, 'x', update),
-				getCoord(index + 1, 'y', update)
+				getCoord(index, 'x', isCurrent),
+				getCoord(index + 1, 'y', isCurrent)
 			);
 		}
 
@@ -5954,6 +5957,7 @@ var PathItem = Item.extend({
 				for (var j = 0; j < length; j += 2)
 					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
 							getPoint(j, true));
+				control = current;
 				break;
 			case 'h':
 			case 'v':
@@ -5962,6 +5966,7 @@ var PathItem = Item.extend({
 					getCoord(j, coord, true);
 					this.lineTo(current);
 				}
+				control = current;
 				break;
 			case 'c':
 				for (var j = 0; j < length; j += 6) {
@@ -6056,9 +6061,8 @@ var Path = PathItem.extend({
 			delete this._length;
 			delete this._clockwise;
 			if (this._curves) {
-				for (var i = 0, l = this._curves.length; i < l; i++) {
+				for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed(5);
-				}
 			}
 		} else if (flags & 8) {
 			delete this._bounds;
@@ -6897,7 +6901,6 @@ var Path = PathItem.extend({
 
 			if (hasFill || hasStroke && !dashLength || compound || clip)
 				drawSegments(ctx, this);
-
 			if (this._closed)
 				ctx.closePath();
 
@@ -7659,10 +7662,12 @@ var CompoundPath = PathItem.extend({
 		var children = this._children;
 		if (children.length === 0)
 			return;
+
 		ctx.beginPath();
 		param = param.extend({ compound: true });
 		for (var i = 0, l = children.length; i < l; i++)
 			children[i].draw(ctx, param);
+
 		if (!param.clip) {
 			this._setStyles(ctx);
 			var style = this._style;
@@ -9392,8 +9397,7 @@ var View = Base.extend(Callback, {
 		size = new Size(element.width, element.height);
 		View._views.push(this);
 		View._viewsById[this._id] = this;
-		this._viewSize = new LinkedSize(size.width, size.height,
-				this, 'setViewSize');
+		this._viewSize = size;
 		this._matrix = new Matrix();
 		this._zoom = 1;
 		if (!View._focused)
@@ -9504,7 +9508,8 @@ var View = Base.extend(Callback, {
 	},
 
 	getViewSize: function() {
-		return this._viewSize;
+		var size = this._viewSize;
+		return new LinkedSize(size.width, size.height, this, 'setViewSize');
 	},
 
 	setViewSize: function(size) {
@@ -9512,15 +9517,20 @@ var View = Base.extend(Callback, {
 		var delta = size.subtract(this._viewSize);
 		if (delta.isZero())
 			return;
-		this._element.width = size.width;
-		this._element.height = size.height;
-		this._viewSize.set(size.width, size.height, true);
+		this._viewSize.set(size.width, size.height);
+		this._setViewSize(size);
 		this._bounds = null; 
 		this.fire('resize', {
 			size: size,
 			delta: delta
 		});
 		this._redraw();
+	},
+
+	_setViewSize: function(size) {
+		var element = this._element;
+		element.width = size.width;
+		element.height = size.height;
 	},
 
 	getBounds: function() {
@@ -9590,25 +9600,35 @@ var CanvasView = View.extend({
 			var size = Size.read(arguments);
 			if (size.isZero())
 				throw new Error(
-						'Cannot create CanvasView with the provided arguments: '
-						+ arguments);
+						'Cannot create CanvasView with the provided argument: '
+						+ canvas);
 			canvas = CanvasProvider.getCanvas(size);
 		}
-		var ctx = this._context = canvas.getContext('2d');
+		this._context = canvas.getContext('2d');
 		this._eventCounters = {};
-		var ratio = (window.devicePixelRatio || 1) / (DomElement.getPrefixValue(
-				ctx, 'backingStorePixelRatio') || 1);
-		if (ratio > 1) {
-			var width = canvas.clientWidth,
-				height = canvas.clientHeight,
-				style = canvas.style;
-			canvas.width = width * ratio;
-			canvas.height = height * ratio;
-			style.width = width + 'px';
-			style.height = height + 'px';
-			ctx.scale(ratio, ratio);
+		this._ratio = 1;
+		if (PaperScope.getAttribute(canvas, 'hidpi') !== 'off') {
+			var deviceRatio = window.devicePixelRatio || 1,
+				backingStoreRatio = DomElement.getPrefixValue(this._context,
+						'backingStorePixelRatio') || 1;
+			this._ratio = deviceRatio / backingStoreRatio;
 		}
 		View.call(this, canvas);
+	},
+
+	_setViewSize: function(size) {
+		var width = size.width,
+			height = size.height,
+			ratio = this._ratio,
+			element = this._element,
+			style = element.style;
+		element.width = width * ratio;
+		element.height = height * ratio;
+		if (ratio !== 1) {
+			style.width = width + 'px';
+			style.height = height + 'px';
+			this._context.scale(ratio, ratio);
+		}
 	},
 
 	draw: function(checkRedraw) {
@@ -9616,8 +9636,8 @@ var CanvasView = View.extend({
 			return false;
 		var ctx = this._context,
 			size = this._viewSize;
-		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
-		this._project.draw(ctx, this._matrix);
+		ctx.clearRect(0, 0, size.width + 1, size.height + 1);
+		this._project.draw(ctx, this._matrix, this._ratio);
 		this._project._needsRedraw = false;
 		return true;
 	}
@@ -9791,26 +9811,37 @@ CanvasView.inject(new function() {
 var CanvasProvider = {
 	canvases: [],
 
-	getCanvas: function(width, height) {
-		var size = height === undefined ? width : new Size(width, height),
-			canvas,
+	getCanvas: function(width, height, ratio) {
+		var canvas,
 			init = true;
+		if (typeof width === 'object') {
+			ratio = height;
+			height = width.height;
+			width = width.width;
+		}
+		if (!ratio) {
+			ratio = 1;
+		} else if (ratio !== 1) {
+			width *= ratio;
+			height *= ratio;
+		}
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
 		} else {
-			canvas = new Canvas(size.width, size.height);
+			canvas = new Canvas(width, height);
 			init = false; 
-
 		}
 		var ctx = canvas.getContext('2d');
-		ctx.save();
-		if (canvas.width === size.width && canvas.height === size.height) {
+		if (canvas.width === width && canvas.height === height) {
 			if (init)
-				ctx.clearRect(0, 0, size.width + 1, size.height + 1);
+				ctx.clearRect(0, 0, width + 1, height + 1);
 		} else {
-			canvas.width = size.width;
-			canvas.height = size.height;
+			canvas.width = width;
+			canvas.height = height;
 		}
+		ctx.save();
+		if (ratio !== 1)
+			ctx.scale(ratio, ratio);
 		return canvas;
 	},
 
@@ -10532,12 +10563,12 @@ new function() {
 
 	function importGroup(node, type, isRoot, options) {
 		var nodes = node.childNodes,
-			clip = type === 'clippath',
+			isClip = type === 'clippath',
 			item = new Group(),
 			project = item._project,
 			currentStyle = project._currentStyle,
 			children = [];
-		if (!clip) {
+		if (!isClip) {
 			item._transformContent = false;
 			item = applyAttributes(item, node, isRoot);
 			project._currentStyle = item._style.clone();
@@ -10551,10 +10582,10 @@ new function() {
 				children.push(child);
 		}
 		item.addChildren(children);
-		if (clip)
+		if (isClip)
 			item = applyAttributes(item.reduce(), node, isRoot);
 		project._currentStyle = currentStyle;
-		if (clip || type === 'defs') {
+		if (isClip || type === 'defs') {
 			item.remove();
 			item = null;
 		}
@@ -10606,10 +10637,23 @@ new function() {
 	}
 
 	var importers = {
-		'#document': function(node, type, isRoot, options) {
-			return importSVG(node.childNodes[0], isRoot, options);
+		'#document': function (node, type, isRoot, options) {
+			var nodes = node.childNodes;
+			for (var i = 0, l = nodes.length; i < l; i++) {
+				var child = nodes[i];
+				if (child.nodeType === 1) {
+					var next = child.nextSibling;
+					document.body.appendChild(child);
+					var item = importSVG(child, isRoot, options);
+					if (next) {
+						node.insertBefore(child, next);
+					} else {
+						node.appendChild(child);
+					}
+					return item;
+				}
+			}
 		},
-
 		g: importGroup,
 		svg: importGroup,
 		clippath: importGroup,
@@ -10835,30 +10879,48 @@ new function() {
 		return match && definitions[match[1]];
 	}
 
-	function importSVG(node, isRoot, options) {
-		if (!options)
+	function importSVG(source, isRoot, options) {
+		if (!source)
+			return null;
+		if (!options) {
 			options = {};
-		if (typeof node === 'string') {
-			if (isRoot && !/^.*</.test(node)) {
-				if (typeof options === 'function')
-					options = { onLoad: options };
-				var scope = paper;
-				return Http.request('get', node, function(svg) {
-					paper = scope;
-					var item = importSVG(svg, isRoot, options),
-						onLoad = options.onLoad,
-						view = scope.project && scope.project.view;
-					if (onLoad)
-						onLoad.call(this, item);
-					view.draw(true);
-				});
-			}
-			node = new DOMParser().parseFromString(node, 'image/svg+xml');
+		} else if (typeof options === 'function') {
+			options = { onLoad: options };
 		}
+
+		var node = source,
+			scope = paper;
+
+		function onLoadCallback(svg) {
+			paper = scope;
+			var item = importSVG(svg, isRoot, options),
+				onLoad = options.onLoad,
+				view = scope.project && scope.project.view;
+			if (onLoad)
+				onLoad.call(this, item);
+			view.draw(true);
+		}
+
+		if (isRoot) {
+			if (typeof source === 'string' && !/^.*</.test(source)) {
+				return Http.request('get', source, onLoadCallback);
+			} else if (typeof File !== 'undefined' && source instanceof File) {
+				var reader = new FileReader();
+				reader.onload = function() {
+					onLoadCallback(reader.result);
+				};
+				return reader.readAsText(source);
+			}
+		}
+
+		if (typeof source === 'string')
+			node = new DOMParser().parseFromString(source, 'image/svg+xml');
+		if (!node.nodeName)
+			throw new Error('Unsupported SVG source: ' + source);
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
-			item = importer && importer(node, type, isRoot, options),
-			data = type !== '#document' && node.getAttribute('data-paper-data');
+			item = importer && importer(node, type, isRoot, options) || null,
+			data = node.getAttribute && node.getAttribute('data-paper-data');
 		if (item) {
 			if (!(item instanceof Group))
 				item = applyAttributes(item, node, isRoot);
@@ -10926,7 +10988,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 	};
 
 	var fields = Base.each(
-		'add,subtract,multiply,divide,modulo,negate'.split(','),
+		['add', 'subtract', 'multiply', 'divide', 'modulo', 'negate'],
 		function(name) {
 			this['_' + name] = '#' + name;
 		}, 
