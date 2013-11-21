@@ -313,11 +313,12 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 							|| new PaperScope(script).setup(canvas),
 					src = script.src;
 				if (src) {
-					// If we're loading from a source, request that first and
-					// then run later.
-					paper.Http.request('get', src, function(code) {
-						evaluate(code, scope);
-					});
+					(function() {
+			                        const local_scope = scope;
+			                        paper.Http.request('get', src, function(code) {
+			                              evaluate(code, local_scope);
+			                	});
+		                        })();
 				} else {
 					// We can simply get the code form the script tag.
 					evaluate(script.innerHTML, scope);
