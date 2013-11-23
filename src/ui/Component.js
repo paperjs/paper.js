@@ -64,6 +64,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 			type: 'color',
 
 			getValue: function(value) {
+				// Always convert internal string representation back to a
+				// paper.js color object.
 				return new Color(value);
 			},
 
@@ -165,7 +167,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 		if (this._value !== value) {
 			this._value = value;
 			if (!_dontFire)
-				this.fire('change', value);
+				this.fire('change', this.getValue());
 		}
 	},
 
