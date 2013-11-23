@@ -18,6 +18,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 	_class: 'Component',
 	_events: [ 'onChange', 'onClick' ],
 
+	// Meta-information, by type. This is stored in _meta on the components.
 	_types: {
 		'boolean': {
 			type: 'checkbox',
@@ -39,6 +40,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
 		text: {
 			tag: 'div',
+			// This will return the native textContent through DomElement.get():
 			value: 'text'
 		},
 
@@ -50,16 +52,33 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 		list: {
 			tag: 'select',
 
-			options: function() {
-				DomElement.removeChildren(this._inputItem);
+			setOptions: function() {
+				DomElement.removeChildren(this._input);
 				DomElement.create(Base.each(this._options, function(option) {
 					this.push('option', { value: option, text: option });
-				}, []), this._inputItem);
+				}, []), this._input);
+			}
+		},
+
+		color: {
+			type: 'color',
+
+			getValue: function(value) {
+				return new Color(value);
+			},
+
+			setValue: function(value) {
+				// Only enfore hex values if the input field is indeed of
+				// color type. This allows sketch.paperjs.org to plug in
+				// the Spectrum.js library with alpha support.
+				return new Color(value).toCSS(
+						DomElement.get(this._input, 'type') === 'color');
 			}
 		}
 	},
 
 	initialize: function Component(obj) {
+		this._id = Component._id = (Component._id || 0) + 1;
 		this._type = obj.type in this._types
 			? obj.type
 			: 'options' in obj
@@ -67,15 +86,17 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 				: 'onClick' in obj
 					? 'button'
 					: typeof obj.value;
-		this._info = this._types[this._type] || { type: this._type };
+		this._meta = this._types[this._type] || { type: this._type };
 		var that = this,
-			dontFire = true;
-		this._inputItem = DomElement.create(this._info.tag || 'input', {
-			type: this._info.type,
+			dontFire = true,
+			id = 'component-' + this._id;
+		this._input = DomElement.create(this._meta.tag || 'input', {
+			id: id,
+			type: this._meta.type,
 			events: {
 				change: function() {
 					that.setValue(
-						DomElement.get(this, that._info.value || 'value'),
+						DomElement.get(this, that._meta.value || 'value'),
 						dontFire);
 				},
 				click: function() {
@@ -89,8 +110,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 				this._palette.fire('change', this, this.name, value);
 		});
 		this._element = DomElement.create('tr', [
-			this._labelItem = DomElement.create('td'),
-			'td', [this._inputItem]
+			'td', [this._label = DomElement.create('label', { 'for': id })],
+			'td', [this._input]
 		]);
 		Base.each(obj, function(value, key) {
 			this[key] = value;
@@ -105,12 +126,13 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 	},
 
 	getLabel: function() {
-		return this._label;
+		// Prefix wit '__' since _label is already the element.
+		return this.__label;
 	},
 
 	setLabel: function(label) {
-		this._label = label;
-		DomElement.set(this._labelItem, 'text', label + ':');
+		this.__label = label;
+		DomElement.set(this._label, 'text', label + ':');
 	},
 
 	getOptions: function() {
@@ -119,20 +141,26 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
 	setOptions: function(options) {
 		this._options = options;
-		if (this._info.options)
-			this._info.options.call(this);
+		var setOptions = this._meta.setOptions;
+		if (setOptions)
+			setOptions.call(this);
 	},
 
 	getValue: function() {
-		return this._value;
+		var value = this._value,
+			getValue = this._meta.getValue;
+		return getValue ? getValue.call(this, value) : value;
 	},
 
 	setValue: function(value, _dontFire) {
-		var key = this._info.value || 'value';
-		DomElement.set(this._inputItem, key, value);
+		var key = this._meta.value || 'value',
+			setValue = this._meta.setValue;
+		if (setValue)
+			value = setValue.call(this, value);
+		DomElement.set(this._input, key, value);
 		// Read back and convert from input again, to make sure we're in sync
-		value = DomElement.get(this._inputItem, key);
-		if (this._info.number)
+		value = DomElement.get(this._input, key);
+		if (this._meta.number)
 			value = parseFloat(value, 10);
 		if (this._value !== value) {
 			this._value = value;
@@ -142,13 +170,13 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 	},
 
 	getRange: function() {
-		return [parseFloat(DomElement.get(this._inputItem, 'min')),
-				parseFloat(DomElement.get(this._inputItem, 'max'))];
+		return [parseFloat(DomElement.get(this._input, 'min')),
+				parseFloat(DomElement.get(this._input, 'max'))];
 	},
 
 	setRange: function(min, max) {
 		var range = Array.isArray(min) ? min : [min, max];
-		DomElement.set(this._inputItem, { min: range[0], max: range[1] });
+		DomElement.set(this._input, { min: range[0], max: range[1] });
 	},
 
 	getMin: function() {
@@ -168,11 +196,11 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 	},
 
 	getStep: function() {
-		return parseFloat(DomElement.get(this._inputItem, 'step'));
+		return parseFloat(DomElement.get(this._input, 'step'));
 	},
 
 	setStep: function(step) {
-		DomElement.set(this._inputItem, 'step', step);
+		DomElement.set(this._input, 'step', step);
 	},
 
 	reset: function() {
