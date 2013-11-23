@@ -50,48 +50,57 @@ var Color = Base.extend(new function() {
 		gradient: ['gradient', 'origin', 'destination', 'highlight']
 	};
 
-	var componentParsers = {}, // Parsers of values for setters, by type and property
+	// Parsers of values for setters, by type and property
+	var componentParsers = {},
+		// Cache and canvas context for color name lookup
 		colorCache = {},
 		colorCtx;
 
-	function nameToRGB(name) {
-		var cached = colorCache[name];
-		if (!cached) {
-			// Use a canvas to draw to with the given name and then retrieve rgb
-			// values from. Build a cache for all the used colors.
-			if (!colorCtx) {
-				colorCtx = CanvasProvider.getContext(1, 1);
-				colorCtx.globalCompositeOperation = 'copy';
-			}
-			// Set the current fillStyle to transparent, so that it will be
-			// transparent instead of the previously set color in case the new
-			// color can not be interpreted.
-			colorCtx.fillStyle = 'rgba(0,0,0,0)';
-			// Set the fillStyle of the context to the passed name and fill the
-			// canvas with it, then retrieve the data for the drawn pixel:
-			colorCtx.fillStyle = name;
-			colorCtx.fillRect(0, 0, 1, 1);
-			var data = colorCtx.getImageData(0, 0, 1, 1).data;
-			cached = colorCache[name] = [
-				data[0] / 255,
-				data[1] / 255,
-				data[2] / 255
-			];
-		}
-		return cached.slice();
-	}
-
-	function hexToRGB(string) {
-		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
-		if (hex.length >= 4) {
-			var components = [0, 0, 0];
+	function fromCSS(string) {
+		var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
+			components;
+		if (match) {
+			components = [0, 0, 0];
 			for (var i = 0; i < 3; i++) {
-				var value = hex[i + 1];
+				var value = match[i + 1];
 				components[i] = parseInt(value.length == 1
 						? value + value : value, 16) / 255;
 			}
-			return components;
+		} else if (match = string.match(/^rgba?\((.*)\)$/)) {
+			components = match[1].split(',');
+			for (var i = 0, l = components.length; i < l; i++) {
+				var value = parseFloat(components[i]);
+				components[i] = i < 3 ? value / 255 : value;
+			}
+		} else {
+			// Named
+			var cached = colorCache[string];
+			if (!cached) {
+				// Use a canvas to draw to with the given name and then retrieve
+				// RGB values from. Build a cache for all the used colors.
+				if (!colorCtx) {
+					colorCtx = CanvasProvider.getContext(1, 1);
+					colorCtx.globalCompositeOperation = 'copy';
+				}
+				// Set the current fillStyle to transparent, so that it will be
+				// transparent instead of the previously set color in case the
+				// new color can not be interpreted.
+				colorCtx.fillStyle = 'rgba(0,0,0,0)';
+				// Set the fillStyle of the context to the passed name and fill
+				// the canvas with it, then retrieve the data for the drawn
+				// pixel:
+				colorCtx.fillStyle = string;
+				colorCtx.fillRect(0, 0, 1, 1);
+				var data = colorCtx.getImageData(0, 0, 1, 1).data;
+				cached = colorCache[string] = [
+					data[0] / 255,
+					data[1] / 255,
+					data[2] / 255				
+				];
+			}
+			components = cached.slice();
 		}
+		return components;
 	}
 
 	// For hsb-rgb conversion, used to lookup the right parameters in the
@@ -533,9 +542,7 @@ var Color = Base.extend(new function() {
 					if (values.length > length)
 						values = slice.call(values, 0, length);
 				} else if (argType === 'string') {
-					components = arg.match(/^#[0-9a-f]{3,6}$/i)
-							? hexToRGB(arg)
-							: nameToRGB(arg);
+					components = fromCSS(arg);
 					type = 'rgb';
 				} else if (argType === 'object') {
 					if (arg.constructor === Color) {
