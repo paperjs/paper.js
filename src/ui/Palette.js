@@ -18,6 +18,11 @@
 	_class: 'Palette',
 	_events: [ 'onChange' ],
 
+	// DOCS: Palette#initialize
+	// DOCS: Palette#components
+	// DOCS: Palette#values
+	// DOCS: Palette#remove()
+
 	initialize: function Palette(title, components, values) {
 		var parent = DomElement.find('.palettejs-panel')
 			|| DomElement.find('body').appendChild(
@@ -27,7 +32,7 @@
 		this._title = title;
 		if (!values)
 			values = {};
-		for (var name in (this._components = components)) {
+		for (var name in (this.components = components)) {
 			var component = components[name];
 			if (!(component instanceof Component)) {
 				if (component.value == null)
@@ -44,7 +49,7 @@
 		}
 		// Now replace each entry in values with a getter / setters so we can
 		// directly link the value to the component and  observe change.
-		this._values = Base.each(values, function(value, name) {
+		this.values = Base.each(values, function(value, name) {
 			var component = components[name];
 			if (component) {
 				Base.define(values, name, {
@@ -68,8 +73,8 @@
 	 * {@link Component#defaultValue}.
 	 */
 	reset: function() {
-		for (var i in this._components)
-			this._components[i].reset();
+		for (var i in this.components)
+			this.components[i].reset();
 	},
 
 	remove: function() {
