@@ -60,6 +60,7 @@ var Color = Base.extend(new function() {
 		var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
 			components;
 		if (match) {
+			// Hex
 			components = [0, 0, 0];
 			for (var i = 0; i < 3; i++) {
 				var value = match[i + 1];
@@ -67,6 +68,7 @@ var Color = Base.extend(new function() {
 						? value + value : value, 16) / 255;
 			}
 		} else if (match = string.match(/^rgba?\((.*)\)$/)) {
+			// RGB / RGBA
 			components = match[1].split(',');
 			for (var i = 0, l = components.length; i < l; i++) {
 				var value = parseFloat(components[i]);
@@ -542,8 +544,12 @@ var Color = Base.extend(new function() {
 					if (values.length > length)
 						values = slice.call(values, 0, length);
 				} else if (argType === 'string') {
-					components = fromCSS(arg);
 					type = 'rgb';
+					components = fromCSS(arg);
+					if (components.length === 4) {
+						alpha = components[3];
+						components.length--;
+					}
 				} else if (argType === 'object') {
 					if (arg.constructor === Color) {
 						type = arg._type;
