@@ -768,11 +768,16 @@ var Color = Base.extend(new function() {
 		},
 
 		/**
-		 * @return {String} a css string representation of the color
+		 * Returns the color as a CSS string.
+		 *
+		 * @param {Boolean} hex wether to return the color in hex-representation
+		 * or as a CSS rgb / rgba string.
+		 * @return {String} a css string representation of the color.
 		 */
-		toCSS: function(noAlpha) {
+		toCSS: function(hex) {
+			// TODO: Support HSL / HSLA CSS3 colors directly, without conversion
 			var components = this._convert('rgb'),
-				alpha = noAlpha || this._alpha == null ? 1 : this._alpha;
+				alpha = hex || this._alpha == null ? 1 : this._alpha;
 			components = [
 				Math.round(components[0] * 255),
 				Math.round(components[1] * 255),
@@ -780,8 +785,12 @@ var Color = Base.extend(new function() {
 			];
 			if (alpha < 1)
 				components.push(alpha);
-			return (components.length == 4 ? 'rgba(' : 'rgb(')
-					+ components.join(',') + ')';
+			return hex
+					? '#' + ((1 << 24) + (components[0] << 16)
+						+ (components[1] << 8)
+						+ components[2]).toString(16).slice(1)
+					: (components.length == 4 ? 'rgba(' : 'rgb(')
+						+ components.join(',') + ')';
 		},
 
 		toCanvasStyle: function(ctx) {
