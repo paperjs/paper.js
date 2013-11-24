@@ -131,13 +131,17 @@ var Numerical = new function() {
 				count = 0;
 
 			function add(root) {
-				if (unbound || root >= min && root <= max)
+				if (unbound || root >= minE && root <= maxE){
+					root = root < min ? min : (root > max ? max : root);
 					roots[count++] = root;
+				}
 				return count;
 			}
 
 			// Code ported over and adapted from Uintah library (MIT license).
-			var epsilon = this.EPSILON;
+			var epsilon = this.EPSILON,
+				minE = unbound ? undefined : min - epsilon,
+				maxE = unbound ? undefined : max + epsilon;
 			// If a is 0, equation is actually linear, return 0 or 1 easy roots.
 			if (abs(a) < epsilon) {
 				if (abs(b) >= epsilon)
@@ -171,11 +175,15 @@ var Numerical = new function() {
 				return Numerical.solveQuadratic(b, c, d, roots, min, max);
 
 			var unbound = min === undefined,
+				minE = unbound ? undefined : min - epsilon,
+				maxE = unbound ? undefined : max + epsilon,
 				count = 0;
 
 			function add(root) {
-				if (unbound || root >= min && root <= max)
+				if (unbound || root >= minE && root <= maxE){
+					root = root < min ? min : (root > max ? max : root);
 					roots[count++] = root;
+				}
 				return count;
 			}
 
