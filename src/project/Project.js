@@ -93,6 +93,18 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	},
 
 	/**
+	 * Specifies whether the project has any content or not. Note that since
+	 * projects by default are created with one empty layer, this returns alos
+	 * {@code true} if that layer exists but is itself empty.
+	 *
+	 * @return Boolean
+	 */
+	isEmpty: function() {
+		return this.layers.length <= 1
+			&& (!this.activeLayer || this.activeLayer.isEmpty());
+	},
+
+	/**
 	 * Removes this project from the {@link PaperScope#projects} list, and also
 	 * removes its view, if one was defined.
 	 */

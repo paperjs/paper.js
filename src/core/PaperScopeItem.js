@@ -38,7 +38,7 @@ var PaperScopeItem = Base.extend(Callback, /** @lends PaperScopeItem# */{
 		if (!this._scope)
 			return false;
 		var prev = this._scope[this._reference];
-		if (prev && prev != this)
+		if (prev && prev !== this)
 			prev.fire('deactivate');
 		this._scope[this._reference] = this;
 		this.fire('activate', prev);

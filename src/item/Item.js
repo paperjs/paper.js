@@ -830,7 +830,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * no children, a {@link TextItem} with no text content and a {@link Path}
 	 * with no segments all are considered empty.
 	 *
-	 * @type Boolean
+	 * @return Boolean
 	 */
 	isEmpty: function() {
 		return !this._children || this._children.length == 0;
