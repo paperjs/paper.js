@@ -484,14 +484,17 @@ Base.inject(/** @lends Base# */{
 		},
 
 		/**
-		 * Merge all passed hash objects into a newly creted Base object.
+		 * Merge all passed plain objects into a newly creted Base object.
 		 */
 		merge: function() {
-			return Base.each(arguments, function(hash) {
-				Base.each(hash, function(value, key) {
-					this[key] = value;
-				}, this);
-			}, new Base(), true); // Pass true for asArray, as arguments is none
+			var res = new Base();
+			for (var i = 0, l = arguments.length; i < l; i++) {
+				var obj = arguments[i];
+				for (var j in obj)
+					if (obj.hasOwnProperty(j))
+						res[j] = obj[j];
+			}
+			return res;
 		},
 
 		/**
