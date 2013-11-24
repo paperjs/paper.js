@@ -315,9 +315,9 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				if (src) {
 					// If we're loading from a source, request that first and
 					// then run later.
-                    paper.Http.request('get', src, function(scope, code) {
-                        evaluate(code, scope);
-                    }.bind(this, scope));
+					paper.Http.request('get', src, function(scope, code) {
+						evaluate(code, scope);
+					}.bind(this, scope));
 				} else {
 					// We can simply get the code form the script tag.
 					evaluate(script.innerHTML, scope);
