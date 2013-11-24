@@ -59,14 +59,15 @@ var View = Base.extend(Callback, /** @lends View# */{
 			};
 			DomEvent.add(window, this._windowHandlers);
 		} else {
+			// Try visible size first, since that will help handling previously
+			// scaled canvases (e.g. when dealing with ratio)
+			size = DomElement.getSize(element);
 			// If the element is invisible, we cannot directly access
 			// element.width / height, because they would appear 0.
-			// Reading the attributes still works.
-			size = new Size(parseInt(element.getAttribute('width'), 10),
-						parseInt(element.getAttribute('height'), 10));
-			// If no size was specified on the canvas, read it from CSS
-			if (size.isNaN())
-				size = DomElement.getSize(element);
+			// Reading the attributes should still work.
+			if (size.isNaN() || size.isZero())
+				size = new Size(parseInt(element.getAttribute('width'), 10),
+							parseInt(element.getAttribute('height'), 10));
 		}
 		// Set canvas size even if we just deterined the size from it, since
 		// it might have been set to a % size, in which case it would use some
