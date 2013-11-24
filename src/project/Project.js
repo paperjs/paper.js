@@ -37,10 +37,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
 	// TODO: Add arguments to define pages
 	/**
-	 * Creates a Paper.js project.
+	 * Creates a Paper.js project containing one empty {@link Layer}, referenced
+	 * by {@link Project#activeLayer}.
 	 *
-	 * When working with PaperScript, a project is automatically created for us
-	 * and the {@link PaperScope#project} variable points to it.
+	 * Note that when working with PaperScript, a project is automatically
+	 * created for us and the {@link PaperScope#project} variable points to it.
 	 *
 	 * @param {View|HTMLCanvasElement} view Either a view object or an HTML
 	 * Canvas element that should be wrapped in a newly created view.
@@ -152,6 +153,29 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 	getIndex: function() {
 		return this._index;
+	},
+
+	// Helper function used in Item#copyTo and Layer#initialize
+	// It's called the same as Item#addChild so Item#copyTo does not need to
+	// make the distinction.
+	// TODO: Consider private function with alias in Item?
+	addChild: function(child) {
+		if (child instanceof Layer) {
+			Base.splice(this.layers, [child]);
+			// Also activate this layer if there was none before
+			if (!this.activeLayer)
+				this.activeLayer = child;
+		} else if (child instanceof Item) {
+			// Anything else than layers needs to be added to a layer first
+			(this.activeLayer
+				// NOTE: If there is no layer and this project is not the active
+				// one, passing insert: false and calling addChild on the
+				// project will handle it correctly.
+				|| this.addChild(new Layer({ insert: false }))).addChild(child);
+		} else {
+			child = null;
+		}
+		return child;
 	},
 
 	/**
@@ -316,7 +340,10 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 	importJSON: function(json) {
 		this.activate();
-		return Base.importJSON(json);
+		// Provide the activeLayer as a possible target for layers, but only if
+		// it's empty.
+		var layer = this.activeLayer;
+		return Base.importJSON(json, layer && layer.isEmpty() && layer);
 	},
 
 	/**

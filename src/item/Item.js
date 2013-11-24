@@ -63,7 +63,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	initialize: function Item() {
-		// Do nothing.
+		// Do nothing, but declare it for named constructors.
 	},
 
 	_initialize: function(props, point) {
@@ -72,13 +72,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project) {
-			var project = paper.project,
-				layer = project.activeLayer;
+			var project = paper.project;
 			// Do not insert into DOM if props.insert is false.
-			if (layer && !(props && props.insert === false)) {
-				layer.addChild(this);
-			} else {
+			if (props && props.insert === false) {
 				this._setProject(project);
+			} else {
+				// Create a new layer if there is no active one. This will
+				// automatically make it the new activeLayer.
+				(project.activeLayer || new Layer()).addChild(this);
 			}
 		}
 		this._style = new Style(this._project._currentStyle, this);
@@ -1340,13 +1341,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Item} the new copy of the item
 	 */
 	copyTo: function(itemOrProject) {
-		var copy = this.clone();
-		if (itemOrProject.layers) {
-			itemOrProject.activeLayer.addChild(copy);
-		} else {
-			itemOrProject.addChild(copy);
-		}
-		return copy;
+		// Pass false fo insert, since we're inserting at a specific location.
+		return itemOrProject.addChild(this.clone(false));
 	},
 
 	/**

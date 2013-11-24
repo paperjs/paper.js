@@ -393,7 +393,7 @@ Base.inject(/** @lends Base# */{
 		 * The passed json data is recoursively traversed and converted, leaves
 		 * first
 		 */
-		deserialize: function(json, target, _data) {
+		deserialize: function(json, create, _data) {
 			var res = json;
 			// A _data side-car to deserialize that can hold any kind of
 			// 'global' data across a deserialization. It's currently only used
@@ -417,24 +417,28 @@ Base.inject(/** @lends Base# */{
 				res = [];
 				// Skip first type entry for arguments
 				for (var i = type ? 1 : 0, l = json.length; i < l; i++)
-					res.push(Base.deserialize(json[i], null, _data));
+					res.push(Base.deserialize(json[i], create, _data));
 				if (isDictionary) {
 					_data.dictionary = res[0];
 				} else if (type) {
 					// Create serialized type and pass collected arguments to
 					// constructor().
 					var args = res;
-					// If a target is provided and its of the right type,
-					// import right into it.
-					res = target instanceof type
-							? target
-							: Base.create(type.prototype);
-					type.apply(res, args);
+					// If a create method is provided, handle our own 
+					// creation. This is used in #importJSON() to pass
+					// on insert = false to all items except layers.
+					if (create) {
+						res = create(type, args);
+					} else {
+						res = Base.create(type.prototype);
+						type.apply(res, args);
+					}
+					
 				}
 			} else if (Base.isPlainObject(json)) {
 				res = {};
 				for (var key in json)
-					res[key] = Base.deserialize(json[key], null, _data);
+					res[key] = Base.deserialize(json[key], create, _data);
 			}
 			return res;
 		},
@@ -445,7 +449,32 @@ Base.inject(/** @lends Base# */{
 
 		importJSON: function(json, target) {
 			return Base.deserialize(
-					typeof json === 'string' ? JSON.parse(json) : json, target);
+					typeof json === 'string' ? JSON.parse(json) : json,
+					// Provide our own create function to handle target and
+					// insertion
+					function(type, args) {
+						// If a target is provided and its of the right type,
+						// import right into it.
+						var obj = target.constructor === type
+								? target
+								: Base.create(type.prototype),
+							isTarget = obj === target;
+						// Note: We don't set insert false for layers since
+						// we want these to be created on the fly in the active
+						// project into which we're importing (except for if
+						// it's a preexisting target layer).
+						if (args.length === 1 && obj instanceof Item
+								&& (!(obj instanceof Layer) || isTarget)) {
+							var arg = args[0];
+							if (Base.isPlainObject(arg))
+								arg.insert = false;
+						}
+						type.apply(obj, args);
+						// Clear target to only use it once
+						if (isTarget)
+							target = null;
+						return obj;
+					});
 		},
 
 		/**
