@@ -2283,25 +2283,23 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this.quadraticCurveTo(handle, to);
 		},
 
-		arcTo: function(to, clockwise /* | through, to */) {
+		arcTo: function(/* to, clockwise | through, to */) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
 				from = current._point,
 				through,
-				point = Point.read(arguments),
+				to = Point.read(arguments),
 				// Peek at next value to see if it's clockwise,
 				// with true as default value.
-				next = Base.pick(Base.peek(arguments), true);
-			if (typeof next === 'boolean') {
+				clockwise = Base.pick(Base.peek(arguments), true);
+			if (typeof clockwise === 'boolean') {
 				// arcTo(to, clockwise)
-				to = point;
-				clockwise = next;
 				var middle = from.add(to).divide(2),
 				through = middle.add(middle.subtract(from).rotate(
 						clockwise ? -90 : 90));
 			} else {
 				// arcTo(through, to)
-				through = point;
+				through = to;
 				to = Point.read(arguments);
 			}
 			// Construct the two perpendicular middle lines to (from, through)
@@ -2393,11 +2391,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this.quadraticCurveTo(current.add(handle), current.add(to));
 		},
 
-		arcBy: function(/* through, to */) {
-			var through = Point.read(arguments),
-				to = Point.read(arguments),
-				current = getCurrentSegment(this)._point;
-			this.arcTo(current.add(through), current.add(to));
+		arcBy: function(/* to, clockwise | through, to */) {
+			var current = getCurrentSegment(this)._point,
+				point = current.add(Point.read(arguments)),
+				// Peek at next value to see if it's clockwise, with true as
+				// default value.
+				clockwise = Base.pick(Base.peek(arguments), true);
+			if (typeof clockwise === 'boolean') {
+				this.arcTo(point, clockwise);
+			} else {
+				this.arcTo(point, current.add(Point.read(arguments)));
+			}
 		},
 
 		closePath: function() {

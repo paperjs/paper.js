@@ -520,28 +520,36 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * @param {Number} [parameter=0.5]
 	 */
 
-	 // DOCS: Document Path#cubicCurveBy()
-	 /**
-	  * @name PathItem#cubicCurveBy
-	  * @function
-	  * @param {Point} handle1
-	  * @param {Point} handle2
-	  * @param {Point} to
-	  */
+	// DOCS: Document Path#cubicCurveBy()
+	/**
+	 * @name PathItem#cubicCurveBy
+	 * @function
+	 * @param {Point} handle1
+	 * @param {Point} handle2
+	 * @param {Point} to
+	 */
 
-	  // DOCS: Document Path#quadraticCurveBy()
-	  /**
-	   * @name PathItem#quadraticCurveBy
-	   * @function
-	   * @param {Point} handle
-	   * @param {Point} to
-	   */
+	// DOCS: Document Path#quadraticCurveBy()
+	/**
+	 * @name PathItem#quadraticCurveBy
+	 * @function
+	 * @param {Point} handle
+	 * @param {Point} to
+	 */
 
-	// DOCS: Document Path#arcBy()
+	// DOCS: Document Path#arcBy(through, to)
 	/**
 	 * @name PathItem#arcBy
 	 * @function
 	 * @param {Point} through
 	 * @param {Point} to
+	 */
+
+	// DOCS: Document Path#arcBy(to, clockwise)
+	/**
+	 * @name PathItem#arcBy
+	 * @function
+	 * @param {Point} to
+	 * @param {Boolean} [clockwise=true]
 	 */
 });
