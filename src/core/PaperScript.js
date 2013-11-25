@@ -161,7 +161,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		}
 
 		// Recursively walks the AST and replaces the code of certain nodes
-		function walkAst(node, parent) {
+		function walkAST(node, parent) {
 			if (!node)
 				return;
 			for (var key in node) {
@@ -170,11 +170,11 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				var value = node[key];
 				if (Array.isArray(value)) {
 					for (var i = 0, l = value.length; i < l; i++)
-						walkAst(value[i], node);
+						walkAST(value[i], node);
 				} else if (value && typeof value === 'object') {
 					// We cannot use Base.isPlainObject() for these since
 					// Acorn.js uses its own internal prototypes now.
-					walkAst(value, node);
+					walkAST(value, node);
 				}
 			}
 			switch (node && node.type) {
@@ -225,9 +225,9 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		}
 		// Now do the parsing magic
 /*#*/ if (options.parser == 'acorn') {
-		walkAst(scope.acorn.parse(code, { ranges: true }));
+		walkAST(scope.acorn.parse(code, { ranges: true }));
 /*#*/ } else if (options.parser == 'esprima') {
-		walkAst(scope.esprima.parse(code, { range: true }));
+		walkAST(scope.esprima.parse(code, { range: true }));
 /*#*/ }
 		return code;
 	}
