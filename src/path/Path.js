@@ -2112,25 +2112,22 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// well, so it is preferred.
 			var segments = this._segments,
 				size = segments.length,
+				closed = this._closed,
 				n = size,
 				// Add overlapping ends for averaging handles in closed paths
-				overlap;
-
+				overlap = 0;
 			if (size <= 2)
 				return;
-
-			if (this._closed) {
+			if (closed) {
 				// Overlap up to 4 points since averaging beziers affect the 4
 				// neighboring points
 				overlap = Math.min(size, 4);
 				n += Math.min(size, overlap) * 2;
-			} else {
-				overlap = 0;
 			}
 			var knots = [];
 			for (var i = 0; i < size; i++)
 				knots[i + overlap] = segments[i]._point;
-			if (this._closed) {
+			if (closed) {
 				// If we're averaging, add the 4 last points again at the
 				// beginning, and the 4 first ones at the end.
 				for (var i = 0; i < overlap; i++) {
@@ -2160,7 +2157,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// Get first control points Y-values
 			var y = getFirstControlPoints(rhs);
 
-			if (this._closed) {
+			if (closed) {
 				// Do the actual averaging simply by linearly fading between the
 				// overlapping values.
 				for (var i = 0, j = size; i < overlap; i++, j++) {
@@ -2186,17 +2183,16 @@ var Path = PathItem.extend(/** @lends Path# */{
 				if (i < n) {
 					segment.setHandleOut(
 							new Point(x[i], y[i]).subtract(segment._point));
-					if (i < n - 1)
-						handleIn = new Point(
+					handleIn = i < n - 1
+							? new Point(
 								2 * knots[i + 1]._x - x[i + 1],
-								2 * knots[i + 1]._y - y[i + 1]);
-					else
-						handleIn = new Point(
+								2 * knots[i + 1]._y - y[i + 1])
+							: new Point(
 								(knots[n]._x + x[n - 1]) / 2,
 								(knots[n]._y + y[n - 1]) / 2);
 				}
 			}
-			if (this._closed && handleIn) {
+			if (closed && handleIn) {
 				var segment = this._segments[0];
 				segment.setHandleIn(handleIn.subtract(segment._point));
 			}
