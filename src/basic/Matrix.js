@@ -605,6 +605,13 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		return new Point(this._tx, this._ty);
 	},
 
+	setTranslation: function(/* point */) {
+		var point = Point.read(arguments);
+		this._tx = point.x;
+		this._ty = point.y;
+		this._changed();
+	},
+
 	/**
 	 * The scaling values of the matrix, if it can be decomposed.
 	 *
@@ -616,6 +623,15 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		return (this.decompose() || {}).scaling;
 	},
 
+	setScaling: function(/* scale */) {
+		var scaling = this.getScaling();
+		if (scaling != null) {
+			var scale = Point.read(arguments);
+			(this._owner || this).scale(
+					scale.x / scaling.x, scale.y / scaling.y);
+		}
+	},
+
 	/**
 	 * The rotation angle of the matrix, if it can be decomposed.
 	 *
@@ -625,6 +641,12 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	getRotation: function() {
 		return (this.decompose() || {}).rotation;
+	},
+
+	setRotation: function(angle) {
+		var rotation = this.getRotation();
+		if (rotation != null)
+			(this._owner || this).rotate(angle - rotation);
 	},
 
 	/**
