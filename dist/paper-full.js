@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.12 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.13 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Nov 14 14:42:28 2013 +0100
+ * Date: Tue Nov 26 17:33:03 2013 +0100
  *
  ***
  *
@@ -466,7 +466,7 @@ Base.inject({
 					: res;
 		},
 
-		deserialize: function(json, target, _data) {
+		deserialize: function(json, create, _data) {
 			var res = json;
 			_data = _data || {};
 			if (Array.isArray(json)) {
@@ -479,20 +479,22 @@ Base.inject({
 				}
 				res = [];
 				for (var i = type ? 1 : 0, l = json.length; i < l; i++)
-					res.push(Base.deserialize(json[i], null, _data));
+					res.push(Base.deserialize(json[i], create, _data));
 				if (isDictionary) {
 					_data.dictionary = res[0];
 				} else if (type) {
 					var args = res;
-					res = target instanceof type
-							? target
-							: Base.create(type.prototype);
-					type.apply(res, args);
+					if (create) {
+						res = create(type, args);
+					} else {
+						res = Base.create(type.prototype);
+						type.apply(res, args);
+					}
 				}
 			} else if (Base.isPlainObject(json)) {
 				res = {};
 				for (var key in json)
-					res[key] = Base.deserialize(json[key], null, _data);
+					res[key] = Base.deserialize(json[key], create, _data);
 			}
 			return res;
 		},
@@ -503,7 +505,23 @@ Base.inject({
 
 		importJSON: function(json, target) {
 			return Base.deserialize(
-					typeof json === 'string' ? JSON.parse(json) : json, target);
+					typeof json === 'string' ? JSON.parse(json) : json,
+					function(type, args) {
+						var obj = target.constructor === type
+								? target
+								: Base.create(type.prototype),
+							isTarget = obj === target;
+						if (args.length === 1 && obj instanceof Item
+								&& (!(obj instanceof Layer) || isTarget)) {
+							var arg = args[0];
+							if (Base.isPlainObject(arg))
+								arg.insert = false;
+						}
+						type.apply(obj, args);
+						if (isTarget)
+							target = null;
+						return obj;
+					});
 		},
 
 		splice: function(list, items, index, remove) {
@@ -531,11 +549,14 @@ Base.inject({
 		},
 
 		merge: function() {
-			return Base.each(arguments, function(hash) {
-				Base.each(hash, function(value, key) {
-					this[key] = value;
-				}, this);
-			}, new Base(), true); 
+			var res = new Base();
+			for (var i = 0, l = arguments.length; i < l; i++) {
+				var obj = arguments[i];
+				for (var j in obj)
+					if (obj.hasOwnProperty(j))
+						res[j] = obj[j];
+			}
+			return res;
 		},
 
 		capitalize: function(str) {
@@ -684,7 +705,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: '0.9.12',
+	version: '0.9.13',
 
 	getView: function() {
 		return this.project && this.project.view;
@@ -783,7 +804,7 @@ var PaperScopeItem = Base.extend(Callback, {
 		if (!this._scope)
 			return false;
 		var prev = this._scope[this._reference];
-		if (prev && prev != this)
+		if (prev && prev !== this)
 			prev.fire('deactivate');
 		this._scope[this._reference] = this;
 		this.fire('activate', prev);
@@ -2325,6 +2346,11 @@ var Project = PaperScopeItem.extend({
 		this.symbols = [];
 	},
 
+	isEmpty: function() {
+		return this.layers.length <= 1
+			&& (!this.activeLayer || this.activeLayer.isEmpty());
+	},
+
 	remove: function remove() {
 		if (!remove.base.call(this))
 			return false;
@@ -2343,6 +2369,20 @@ var Project = PaperScopeItem.extend({
 
 	getIndex: function() {
 		return this._index;
+	},
+
+	addChild: function(child) {
+		if (child instanceof Layer) {
+			Base.splice(this.layers, [child]);
+			if (!this.activeLayer)
+				this.activeLayer = child;
+		} else if (child instanceof Item) {
+			(this.activeLayer
+				|| this.addChild(new Layer({ insert: false }))).addChild(child);
+		} else {
+			child = null;
+		}
+		return child;
 	},
 
 	getSelectedItems: function() {
@@ -2417,7 +2457,8 @@ var Project = PaperScopeItem.extend({
 
 	importJSON: function(json) {
 		this.activate();
-		return Base.importJSON(json);
+		var layer = this.activeLayer;
+		return Base.importJSON(json, layer && layer.isEmpty() && layer);
 	},
 
 	draw: function(ctx, matrix, ratio) {
@@ -2559,12 +2600,11 @@ var Item = Base.extend(Callback, {
 	_initialize: function(props, point) {
 		this._id = Item._id = (Item._id || 0) + 1;
 		if (!this._project) {
-			var project = paper.project,
-				layer = project.activeLayer;
-			if (layer && !(props && props.insert === false)) {
-				layer.addChild(this);
-			} else {
+			var project = paper.project;
+			if (props && props.insert === false) {
 				this._setProject(project);
+			} else {
+				(project.activeLayer || new Layer()).addChild(this);
 			}
 		}
 		this._style = new Style(this._project._currentStyle, this);
@@ -3091,13 +3131,7 @@ var Item = Base.extend(Callback, {
 	},
 
 	copyTo: function(itemOrProject) {
-		var copy = this.clone();
-		if (itemOrProject.layers) {
-			itemOrProject.activeLayer.addChild(copy);
-		} else {
-			itemOrProject.addChild(copy);
-		}
-		return copy;
+		return itemOrProject.addChild(this.clone(false));
 	},
 
 	rasterize: function(resolution) {
@@ -3775,11 +3809,17 @@ var Group = Item.extend({
 var Layer = Group.extend({
 	_class: 'Layer',
 
-	initialize: function Layer() {
-		this._project = paper.project;
-		this._index = this._project.layers.push(this) - 1;
-		Group.apply(this, arguments);
-		this.activate();
+	initialize: function Layer(arg) {
+		var props = Base.isPlainObject(arg)
+				? Base.merge(arg) 
+				: { children: Array.isArray(arg) ? arg : arguments },
+			insert = props.insert;
+		props.insert = false;
+		Group.call(this, props);
+		if (insert || insert === undefined) {
+			this._project.addChild(this);
+			this.activate();
+		}
 	},
 
 	_remove: function _remove(notify) {
@@ -3815,7 +3855,8 @@ var Layer = Group.extend({
 	},
 
 	_insert: function _insert(above, item, _preserve) {
-		if (item instanceof Layer && !item._parent && this._remove(true)) {
+		if (item instanceof Layer && !item._parent) {
+			this._remove(true);
 			Base.splice(item._project.layers, [this],
 					item._index + (above ? 1 : 0), 0);
 			this._setProject(item._project);
@@ -6984,22 +7025,19 @@ var Path = PathItem.extend({
 		smooth: function() {
 			var segments = this._segments,
 				size = segments.length,
+				closed = this._closed,
 				n = size,
-				overlap;
-
+				overlap = 0;
 			if (size <= 2)
 				return;
-
-			if (this._closed) {
+			if (closed) {
 				overlap = Math.min(size, 4);
 				n += Math.min(size, overlap) * 2;
-			} else {
-				overlap = 0;
 			}
 			var knots = [];
 			for (var i = 0; i < size; i++)
 				knots[i + overlap] = segments[i]._point;
-			if (this._closed) {
+			if (closed) {
 				for (var i = 0; i < overlap; i++) {
 					knots[i] = segments[i + size - overlap]._point;
 					knots[i + size + overlap] = segments[i]._point;
@@ -7021,7 +7059,7 @@ var Path = PathItem.extend({
 			rhs[n - 1] = 3 * knots[n - 1]._y;
 			var y = getFirstControlPoints(rhs);
 
-			if (this._closed) {
+			if (closed) {
 				for (var i = 0, j = size; i < overlap; i++, j++) {
 					var f1 = i / overlap,
 						f2 = 1 - f1,
@@ -7042,17 +7080,16 @@ var Path = PathItem.extend({
 				if (i < n) {
 					segment.setHandleOut(
 							new Point(x[i], y[i]).subtract(segment._point));
-					if (i < n - 1)
-						handleIn = new Point(
+					handleIn = i < n - 1
+							? new Point(
 								2 * knots[i + 1]._x - x[i + 1],
-								2 * knots[i + 1]._y - y[i + 1]);
-					else
-						handleIn = new Point(
+								2 * knots[i + 1]._y - y[i + 1])
+							: new Point(
 								(knots[n]._x + x[n - 1]) / 2,
 								(knots[n]._y + y[n - 1]) / 2);
 				}
 			}
-			if (this._closed && handleIn) {
+			if (closed && handleIn) {
 				var segment = this._segments[0];
 				segment.setHandleIn(handleIn.subtract(segment._point));
 			}
@@ -7116,20 +7153,18 @@ var Path = PathItem.extend({
 			this.quadraticCurveTo(handle, to);
 		},
 
-		arcTo: function(to, clockwise ) {
+		arcTo: function() {
 			var current = getCurrentSegment(this),
 				from = current._point,
 				through,
-				point = Point.read(arguments),
-				next = Base.pick(Base.peek(arguments), true);
-			if (typeof next === 'boolean') {
-				to = point;
-				clockwise = next;
+				to = Point.read(arguments),
+				clockwise = Base.pick(Base.peek(arguments), true);
+			if (typeof clockwise === 'boolean') {
 				var middle = from.add(to).divide(2),
 				through = middle.add(middle.subtract(from).rotate(
 						clockwise ? -90 : 90));
 			} else {
-				through = point;
+				through = to;
 				to = Point.read(arguments);
 			}
 			var l1 = new Line(from.add(through).divide(2),
@@ -7204,10 +7239,14 @@ var Path = PathItem.extend({
 		},
 
 		arcBy: function() {
-			var through = Point.read(arguments),
-				to = Point.read(arguments),
-				current = getCurrentSegment(this)._point;
-			this.arcTo(current.add(through), current.add(to));
+			var current = getCurrentSegment(this)._point,
+				point = current.add(Point.read(arguments)),
+				clockwise = Base.pick(Base.peek(arguments), true);
+			if (typeof clockwise === 'boolean') {
+				this.arcTo(point, clockwise);
+			} else {
+				this.arcTo(point, current.add(Point.read(arguments)));
+			}
 		},
 
 		closePath: function() {
@@ -8316,41 +8355,46 @@ var Color = Base.extend(new function() {
 		gradient: ['gradient', 'origin', 'destination', 'highlight']
 	};
 
-	var componentParsers = {}, 
+	var componentParsers = {},
 		colorCache = {},
 		colorCtx;
 
-	function nameToRGB(name) {
-		var cached = colorCache[name];
-		if (!cached) {
-			if (!colorCtx) {
-				colorCtx = CanvasProvider.getContext(1, 1);
-				colorCtx.globalCompositeOperation = 'copy';
-			}
-			colorCtx.fillStyle = 'rgba(0,0,0,0)';
-			colorCtx.fillStyle = name;
-			colorCtx.fillRect(0, 0, 1, 1);
-			var data = colorCtx.getImageData(0, 0, 1, 1).data;
-			cached = colorCache[name] = [
-				data[0] / 255,
-				data[1] / 255,
-				data[2] / 255
-			];
-		}
-		return cached.slice();
-	}
-
-	function hexToRGB(string) {
-		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
-		if (hex.length >= 4) {
-			var components = [0, 0, 0];
+	function fromCSS(string) {
+		var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
+			components;
+		if (match) {
+			components = [0, 0, 0];
 			for (var i = 0; i < 3; i++) {
-				var value = hex[i + 1];
+				var value = match[i + 1];
 				components[i] = parseInt(value.length == 1
 						? value + value : value, 16) / 255;
 			}
-			return components;
+		} else if (match = string.match(/^rgba?\((.*)\)$/)) {
+			components = match[1].split(',');
+			for (var i = 0, l = components.length; i < l; i++) {
+				var value = parseFloat(components[i]);
+				components[i] = i < 3 ? value / 255 : value;
+			}
+		} else {
+			var cached = colorCache[string];
+			if (!cached) {
+				if (!colorCtx) {
+					colorCtx = CanvasProvider.getContext(1, 1);
+					colorCtx.globalCompositeOperation = 'copy';
+				}
+				colorCtx.fillStyle = 'rgba(0,0,0,0)';
+				colorCtx.fillStyle = string;
+				colorCtx.fillRect(0, 0, 1, 1);
+				var data = colorCtx.getImageData(0, 0, 1, 1).data;
+				cached = colorCache[string] = [
+					data[0] / 255,
+					data[1] / 255,
+					data[2] / 255				
+				];
+			}
+			components = cached.slice();
 		}
+		return components;
 	}
 
 	var hsbIndices = [
@@ -8562,10 +8606,12 @@ var Color = Base.extend(new function() {
 					if (values.length > length)
 						values = slice.call(values, 0, length);
 				} else if (argType === 'string') {
-					components = arg.match(/^#[0-9a-f]{3,6}$/i)
-							? hexToRGB(arg)
-							: nameToRGB(arg);
 					type = 'rgb';
+					components = fromCSS(arg);
+					if (components.length === 4) {
+						alpha = components[3];
+						components.length--;
+					}
 				} else if (argType === 'object') {
 					if (arg.constructor === Color) {
 						type = arg._type;
@@ -8726,9 +8772,9 @@ var Color = Base.extend(new function() {
 			return '{ ' + parts.join(', ') + ' }';
 		},
 
-		toCSS: function(noAlpha) {
+		toCSS: function(hex) {
 			var components = this._convert('rgb'),
-				alpha = noAlpha || this._alpha == null ? 1 : this._alpha;
+				alpha = hex || this._alpha == null ? 1 : this._alpha;
 			components = [
 				Math.round(components[0] * 255),
 				Math.round(components[1] * 255),
@@ -8736,8 +8782,12 @@ var Color = Base.extend(new function() {
 			];
 			if (alpha < 1)
 				components.push(alpha);
-			return (components.length == 4 ? 'rgba(' : 'rgb(')
-					+ components.join(',') + ')';
+			return hex
+					? '#' + ((1 << 24) + (components[0] << 16)
+						+ (components[1] << 8)
+						+ components[2]).toString(16).slice(1)
+					: (components.length == 4 ? 'rgba(' : 'rgb(')
+						+ components.join(',') + ')';
 		},
 
 		toCanvasStyle: function(ctx) {
@@ -9513,10 +9563,10 @@ var View = Base.extend(Callback, {
 			};
 			DomEvent.add(window, this._windowHandlers);
 		} else {
-			size = new Size(parseInt(element.getAttribute('width'), 10),
-						parseInt(element.getAttribute('height'), 10));
-			if (size.isNaN())
-				size = DomElement.getSize(element);
+			size = DomElement.getSize(element);
+			if (size.isNaN() || size.isZero())
+				size = new Size(parseInt(element.getAttribute('width'), 10),
+							parseInt(element.getAttribute('height'), 10));
 		}
 		this._setViewSize(size);
 		if (PaperScope.hasAttribute(element, 'stats')
@@ -10168,7 +10218,7 @@ var MouseEvent = Event.extend({
 		this._title = title;
 		if (!values)
 			values = {};
-		for (var name in (this._components = components)) {
+		for (var name in (this.components = components)) {
 			var component = components[name];
 			if (!(component instanceof Component)) {
 				if (component.value == null)
@@ -10181,7 +10231,7 @@ var MouseEvent = Event.extend({
 			if (values[name] === undefined)
 				values[name] = component.value;
 		}
-		this._values = Base.each(values, function(value, name) {
+		this.values = Base.each(values, function(value, name) {
 			var component = components[name];
 			if (component) {
 				Base.define(values, name, {
@@ -10201,8 +10251,8 @@ var MouseEvent = Event.extend({
 	},
 
 	reset: function() {
-		for (var i in this._components)
-			this._components[i].reset();
+		for (var i in this.components)
+			this.components[i].reset();
 	},
 
 	remove: function() {
@@ -10246,16 +10296,30 @@ var Component = Base.extend(Callback, {
 		list: {
 			tag: 'select',
 
-			options: function() {
-				DomElement.removeChildren(this._inputItem);
+			setOptions: function() {
+				DomElement.removeChildren(this._input);
 				DomElement.create(Base.each(this._options, function(option) {
 					this.push('option', { value: option, text: option });
-				}, []), this._inputItem);
+				}, []), this._input);
+			}
+		},
+
+		color: {
+			type: 'color',
+
+			getValue: function(value) {
+				return new Color(value);
+			},
+
+			setValue: function(value) {
+				return new Color(value).toCSS(
+						DomElement.get(this._input, 'type') === 'color');
 			}
 		}
 	},
 
 	initialize: function Component(obj) {
+		this._id = Component._id = (Component._id || 0) + 1;
 		this._type = obj.type in this._types
 			? obj.type
 			: 'options' in obj
@@ -10263,16 +10327,17 @@ var Component = Base.extend(Callback, {
 				: 'onClick' in obj
 					? 'button'
 					: typeof obj.value;
-		this._info = this._types[this._type] || { type: this._type };
+		this._meta = this._types[this._type] || { type: this._type };
 		var that = this,
-			dontFire = true;
-		this._inputItem = DomElement.create(this._info.tag || 'input', {
-			type: this._info.type,
+			id = 'component-' + this._id;
+		this._dontFire = true;
+		this._input = DomElement.create(this._meta.tag || 'input', {
+			id: id,
+			type: this._meta.type,
 			events: {
 				change: function() {
 					that.setValue(
-						DomElement.get(this, that._info.value || 'value'),
-						dontFire);
+						DomElement.get(this, that._meta.value || 'value'));
 				},
 				click: function() {
 					that.fire('click');
@@ -10280,18 +10345,18 @@ var Component = Base.extend(Callback, {
 			}
 		});
 		this.attach('change', function(value) {
-			if (!dontFire)
+			if (!this._dontFire)
 				this._palette.fire('change', this, this.name, value);
 		});
 		this._element = DomElement.create('tr', [
-			this._labelItem = DomElement.create('td'),
-			'td', [this._inputItem]
+			'td', [this._label = DomElement.create('label', { 'for': id })],
+			'td', [this._input]
 		]);
 		Base.each(obj, function(value, key) {
 			this[key] = value;
 		}, this);
 		this._defaultValue = this._value;
-		dontFire = false;
+		this._dontFire = false;
 	},
 
 	getType: function() {
@@ -10299,12 +10364,12 @@ var Component = Base.extend(Callback, {
 	},
 
 	getLabel: function() {
-		return this._label;
+		return this.__label;
 	},
 
 	setLabel: function(label) {
-		this._label = label;
-		DomElement.set(this._labelItem, 'text', label + ':');
+		this.__label = label;
+		DomElement.set(this._label, 'text', label + ':');
 	},
 
 	getOptions: function() {
@@ -10313,35 +10378,41 @@ var Component = Base.extend(Callback, {
 
 	setOptions: function(options) {
 		this._options = options;
-		if (this._info.options)
-			this._info.options.call(this);
+		var setOptions = this._meta.setOptions;
+		if (setOptions)
+			setOptions.call(this);
 	},
 
 	getValue: function() {
-		return this._value;
+		var value = this._value,
+			getValue = this._meta.getValue;
+		return getValue ? getValue.call(this, value) : value;
 	},
 
-	setValue: function(value, _dontFire) {
-		var key = this._info.value || 'value';
-		DomElement.set(this._inputItem, key, value);
-		value = DomElement.get(this._inputItem, key);
-		if (this._info.number)
+	setValue: function(value) {
+		var key = this._meta.value || 'value',
+			setValue = this._meta.setValue;
+		if (setValue)
+			value = setValue.call(this, value);
+		DomElement.set(this._input, key, value);
+		value = DomElement.get(this._input, key);
+		if (this._meta.number)
 			value = parseFloat(value, 10);
 		if (this._value !== value) {
 			this._value = value;
-			if (!_dontFire)
-				this.fire('change', value);
+			if (!this._dontFire)
+				this.fire('change', this.getValue());
 		}
 	},
 
 	getRange: function() {
-		return [parseFloat(DomElement.get(this._inputItem, 'min')),
-				parseFloat(DomElement.get(this._inputItem, 'max'))];
+		return [parseFloat(DomElement.get(this._input, 'min')),
+				parseFloat(DomElement.get(this._input, 'max'))];
 	},
 
 	setRange: function(min, max) {
 		var range = Array.isArray(min) ? min : [min, max];
-		DomElement.set(this._inputItem, { min: range[0], max: range[1] });
+		DomElement.set(this._input, { min: range[0], max: range[1] });
 	},
 
 	getMin: function() {
@@ -10361,11 +10432,11 @@ var Component = Base.extend(Callback, {
 	},
 
 	getStep: function() {
-		return parseFloat(DomElement.get(this._inputItem, 'step'));
+		return parseFloat(DomElement.get(this._input, 'step'));
 	},
 
 	setStep: function(step) {
-		DomElement.set(this._inputItem, 'step', step);
+		DomElement.set(this._input, 'step', step);
 	},
 
 	reset: function() {
@@ -11896,7 +11967,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 			code = code.substring(0, start) + str + code.substring(end);
 		}
 
-		function walkAst(node, parent) {
+		function walkAST(node, parent) {
 			if (!node)
 				return;
 			for (var key in node) {
@@ -11905,9 +11976,9 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				var value = node[key];
 				if (Array.isArray(value)) {
 					for (var i = 0, l = value.length; i < l; i++)
-						walkAst(value[i], node);
+						walkAST(value[i], node);
 				} else if (value && typeof value === 'object') {
-					walkAst(value, node);
+					walkAST(value, node);
 				}
 			}
 			switch (node && node.type) {
@@ -11950,7 +12021,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				break;
 			}
 		}
-		walkAst(scope.acorn.parse(code, { ranges: true }));
+		walkAST(scope.acorn.parse(code, { ranges: true }));
 		return code;
 	}
 
