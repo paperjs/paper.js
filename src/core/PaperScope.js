@@ -219,7 +219,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		function handleAttribute(name) {
 			name += 'Attribute';
 			return function(el, attr) {
-				return el[name] && (el[name](attr) || el[name]('data-paper-' + attr));
+				return el[name](attr) || el[name]('data-paper-' + attr);
 			};
 		}
 
