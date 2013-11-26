@@ -990,6 +990,24 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
+	 * Specifies whether the group applies transformations directly to its
+	 * children, or whether they are to be stored in its {@link Item#matrix}
+	 *
+	 * @type Boolean
+	 * @default true
+	 * @bean
+	 */
+	getTransformContent: function() {
+		return this._transformContent;
+	},
+
+	setTransformContent: function(transform) {
+		this._transformContent = transform;
+		if (transform)
+			this.applyMatrix();
+	},
+
+	/**
 	 * {@grouptitle Project Hierarchy}
 	 * The project that this item belongs to.
 	 *
