@@ -291,9 +291,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 /*#*/ if (options.environment == 'browser') {
 
 	function load() {
-		var scripts = document.getElementsByTagName('script');
-		for (var i = 0, l = scripts.length; i < l; i++) {
-			var script = scripts[i];
+		Base.each(document.getElementsByTagName('script'), function(script) {
 			// Only load this script if it not loaded already.
 			// Support both text/paperscript and text/x-paperscript:
 			if (/^text\/(?:x-|)paperscript$/.test(script.type)
@@ -315,9 +313,9 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				if (src) {
 					// If we're loading from a source, request that first and
 					// then run later.
-					paper.Http.request('get', src, function(scope, code) {
+					paper.Http.request('get', src, function(code) {
 						evaluate(code, scope);
-					}.bind(this, scope));
+					});
 				} else {
 					// We can simply get the code form the script tag.
 					evaluate(script.innerHTML, scope);
@@ -325,7 +323,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				// Mark script as loaded now.
 				script.setAttribute('data-paper-ignore', true);
 			}
-		}
+		}, this, true); // Pass true for asArray to handle HTMLCollection
 	}
 
 	// Catch cases where paper.js is loaded after the browser event has already
