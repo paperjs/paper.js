@@ -46,6 +46,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		// Have Item count installed mouse events.
 		this._eventCounters = {};
 		this._ratio = 1;
+/*#*/ if (options.environment == 'browser') {
 		if (PaperScope.getAttribute(canvas, 'hidpi') !== 'off') {
 			// Hi-DPI Canvas support based on:
 			// http://www.html5rocks.com/en/tutorials/canvas/hidpi/
@@ -54,6 +55,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 						'backingStorePixelRatio') || 1;
 			this._ratio = deviceRatio / backingStoreRatio;
 		}
+/*#*/ } // options.environment == 'browser'
 		View.call(this, canvas);
 	},
 
