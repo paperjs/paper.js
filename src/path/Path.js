@@ -1861,7 +1861,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
 		// stroke.
-		return !loc && options.fill && this.hasFill() && this.contains(point)
+		return !loc && options.fill && this.hasFill() && this._contains(point)
 				? new HitResult('fill', this)
 				: loc
 					// TODO: Do we need to transform loc back to the coordinate
