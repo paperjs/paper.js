@@ -83,9 +83,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		}
 		this._style = new Style(this._project._currentStyle, this);
-		this._matrix = new Matrix();
+		var matrix = this._matrix = new Matrix();
 		if (point)
-			this._matrix.translate(point);
+			matrix.translate(point);
+		matrix._owner = this;
 		return props ? this._set(props, { insert: true }) : true;
 	},
 

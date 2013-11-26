@@ -932,10 +932,10 @@ var LinkedPoint = Point.extend({
 		this._setter = setter;
 	},
 
-	set: function(x, y, dontNotify) {
+	set: function(x, y, _dontNotify) {
 		this._x = x;
 		this._y = y;
-		if (!dontNotify)
+		if (!_dontNotify)
 			this._owner[this._setter](this);
 		return this;
 	},

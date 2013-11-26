@@ -97,7 +97,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		// Link this id to our view
 		View._viewsById[this._id] = this;
 		this._viewSize = size;
-		this._matrix = new Matrix();
+		(this._matrix = new Matrix())._owner = this;
 		this._zoom = 1;
 		// Make sure the first view is focused for keyboard input straight away
 		if (!View._focused)
@@ -254,6 +254,17 @@ var View = Base.extend(Callback, /** @lends View# */{
 			// Otherwise simply redraw the view now
 			this.draw();
 		}
+	},
+
+	/**
+	 * Private notifier that is called whenever a change occurs in this view.
+	 * Used only by Matrix for now.
+	 *
+	 * @param {ChangeFlag} flags describes what exactly has changed.
+	 */
+	_changed: function(flags) {
+		if (flags & /*#=*/ ChangeFlag.APPEARANCE)
+			this._project._needsRedraw = true;
 	},
 
 	_transform: function(matrix) {

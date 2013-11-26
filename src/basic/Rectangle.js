@@ -829,12 +829,12 @@ var LinkedRectangle = Rectangle.extend({
 		this._setter = setter;
 	},
 
-	set: function(x, y, width, height, dontNotify) {
+	set: function(x, y, width, height, _dontNotify) {
 		this._x = x;
 		this._y = y;
 		this._width = width;
 		this._height = height;
-		if (!dontNotify)
+		if (!_dontNotify)
 			this._owner[this._setter](this);
 		return this;
 	}
