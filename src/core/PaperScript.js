@@ -21,6 +21,9 @@
 paper.PaperScope.prototype.PaperScript = (function(root) {
 	var Base = paper.Base,
 		PaperScope = paper.PaperScope,
+		// For local reference, for now only when setting lineNumberBase on
+		// Firefox.
+		PaperScript,
 		// Locally turn of exports and define for inlined acorn / esprima.
 		// Just declaring the local vars is enough, as they will be undefined.
 		exports, define,
@@ -258,7 +261,19 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				var onActivate, onDeactivate, onEditOptions,
 					onMouseDown, onMouseUp, onMouseDrag, onMouseMove,
 					onKeyDown, onKeyUp, onFrame, onResize;
-				res = eval(compile(code));
+				code = compile(code);
+				if (root.InstallTrigger) { // Firefox
+					// Add a semi-colon at the start so Firefox doesn't swallow
+					// empty lines and shift error messages. 
+					code = ';' + code;
+					// On Firefox, all error numbers inside evaled code are
+					// relative to the line where the eval happened. Totally
+					// silly, but that's how it is. So we're exposing it through
+					// PaperScript.lineNumberBase, to remove it again from
+					// reported errors:
+					PaperScript.lineNumberBase = new Error().lineNumber + 1;
+				}
+				res = eval(code);
 				// Only look for tool handlers if something resembling their
 				// name is contained in the code.
 				if (/on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)) {
@@ -335,17 +350,17 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		paper.DomEvent.add(window, { load: load });
 	}
 
-	return {
+	return PaperScript = {
 		compile: compile,
 		evaluate: evaluate,
-		load: load
+		load: load,
+		lineNumberBase: 0
 	};
 
 /*#*/ } else { // !options.environment == 'browser'
 /*#*/ if (options.environment == 'node') {
 
 	// Register the .pjs extension for automatic compilation as PaperScript
-
 	var fs = require('fs'),
 		path = require('path');
 
@@ -363,7 +378,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 
 /*#*/ } // options.environment == 'node'
 
-	return {
+	return PaperScript = {
 		compile: compile,
 		evaluate: evaluate
 	};
