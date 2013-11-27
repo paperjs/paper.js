@@ -76,12 +76,30 @@ var Callback = {
 		var handlers = this._handlers && this._handlers[type];
 		if (!handlers)
 			return false;
-		var args = [].slice.call(arguments, 1);
-		for (var i in handlers) {
-			// When the handler function returns false, prevent the default
-			// behaviour of the event by calling stop() on it.
-			if (handlers[i].apply(this, args) === false && event && event.stop)
-				event.stop();
+		var args = [].slice.call(arguments, 1),
+			PaperScript = paper.PaperScript,
+			handleException = PaperScript && PaperScript.handleException;
+
+		function callHandlers() {
+			for (var i in handlers) {
+				// When the handler function returns false, prevent the default
+				// behaviour of the event by calling stop() on it.
+				if (handlers[i].apply(this, args) === false
+						&& event && event.stop)
+					event.stop();
+			}
+		}
+
+		// See PaperScript.handleException for an explanation of the following.
+		// Firefox is to blame for the necessity of this... 
+		if (handleException) {
+			try {
+				callHandlers();
+			} catch (e) {
+				handleException(e);
+			}
+		} else {
+			callHandlers();
 		}
 		return true;
 	},

@@ -262,18 +262,43 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 					onMouseDown, onMouseUp, onMouseDrag, onMouseMove,
 					onKeyDown, onKeyUp, onFrame, onResize;
 				code = compile(code);
+/*#*/ if (options.environment == 'browser') {
 				if (root.InstallTrigger) { // Firefox
-					// Add a semi-colon at the start so Firefox doesn't swallow
-					// empty lines and shift error messages. 
-					code = ';' + code;
 					// On Firefox, all error numbers inside evaled code are
 					// relative to the line where the eval happened. Totally
-					// silly, but that's how it is. So we're exposing it through
-					// PaperScript.lineNumberBase, to remove it again from
-					// reported errors:
-					PaperScript.lineNumberBase = new Error().lineNumber + 1;
+					// silly, but that's how it is. So we're calculating the
+					// base of lineNumbers, to remove it again from reported
+					// errors. Luckily, Firefox is the only browser where we can
+					// define the lineNumber for exceptions.
+					var handle = PaperScript.handleException;
+					if (!handle) {
+						handle = PaperScript.handleException = function(e) {
+							throw e.lineNumber >= lineNumber
+									? new Error(e.message, e.fileName,
+										e.lineNumber - lineNumber)
+									: e;
+						}
+						// We're using a crazy hack to detect wether the library
+						// is minified or not: By generating a second error on
+						// the 2nd line and using the difference in line numbers
+						// to calculate the offset to the eval, it works in both
+						// casees.
+						var lineNumber = new Error().lineNumber;
+						lineNumber += (new Error().lineNumber - lineNumber) * 3;
+					}
+					try {
+						// Add a semi-colon at the start so Firefox doesn't
+						// swallow empty lines and shift error messages.
+						res = eval(';' + code);
+					} catch (e) {
+						handle(e);
+					}
+				} else {
+					res = eval(code);
 				}
+/*#*/ } else { // !options.environment == 'browser'
 				res = eval(code);
+/*#*/ } // !options.environment == 'browser'
 				// Only look for tool handlers if something resembling their
 				// name is contained in the code.
 				if (/on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)) {
