@@ -147,10 +147,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			}, {
 				onFrame: {
 					install: function() {
-						this._project.view._animateItem(this, true);
+						this._animateItem(true);
 					},
 					uninstall: function() {
-						this._project.view._animateItem(this, false);
+						this._animateItem(false);
 					}
 				},
 
@@ -158,6 +158,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				onLoad: {}
 			}
 		);
+	},
+
+	_animateItem: function(animate) {
+		this._project.view._animateItem(this, animate);
 	},
 
 	_serialize: function(options, dictionary) {
@@ -1020,7 +1024,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	_setProject: function(project) {
 		if (this._project != project) {
+			var hasOnFrame = this.responds('frame');
+			if (hasOnFrame)
+				this._animateItem(false);
 			this._project = project;
+			if (hasOnFrame)
+				this._animateItem(true);
 			if (this._children) {
 				for (var i = 0, l = this._children.length; i < l; i++) {
 					this._children[i]._setProject(project);
@@ -1914,6 +1923,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				this._removeNamed();
 			if (this._index != null)
 				Base.splice(this._parent._children, null, this._index, 1);
+			if (this.responds('frame'))
+				this._animateItem(false);
 			// Notify parent of changed hierarchy
 			if (notify)
 				this._parent._changed(/*#=*/ Change.HIERARCHY);

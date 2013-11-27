@@ -108,7 +108,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	/**
-	 * Removes this view from and frees the associated element.
+	 * Removes this view from the project and frees the associated element.
 	 */
 	remove: function() {
 		if (!this._project)
