@@ -77,12 +77,12 @@ var Callback = {
 		if (!handlers)
 			return false;
 		var args = [].slice.call(arguments, 1);
-		Base.each(handlers, function(func) {
+		for (var i in handlers) {
 			// When the handler function returns false, prevent the default
-			// behaviour of the event by calling stop() on it
-			if (func.apply(this, args) === false && event && event.stop)
+			// behaviour of the event by calling stop() on it.
+			if (handlers[i].apply(this, args) === false && event && event.stop)
 				event.stop();
-		}, this);
+		}
 		return true;
 	},
 
