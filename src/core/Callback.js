@@ -78,13 +78,14 @@ var Callback = {
 			return false;
 		var args = [].slice.call(arguments, 1),
 			PaperScript = paper.PaperScript,
-			handleException = PaperScript && PaperScript.handleException;
+			handleException = PaperScript && PaperScript.handleException,
+			that = this;
 
 		function callHandlers() {
 			for (var i in handlers) {
 				// When the handler function returns false, prevent the default
 				// behaviour of the event by calling stop() on it.
-				if (handlers[i].apply(this, args) === false
+				if (handlers[i].apply(that, args) === false
 						&& event && event.stop)
 					event.stop();
 			}
