@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.9.13",
+  "version": "0.9.14",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "homepage": "http://paperjs.org",
   "repository": "git://github.com/paperjs/paper.js",

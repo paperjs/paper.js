@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.13 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.14 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Nov 26 17:33:03 2013 +0100
+ * Date: Thu Nov 28 18:03:41 2013 +0100
  *
  ***
  *
@@ -630,11 +630,28 @@ var Callback = {
 		var handlers = this._handlers && this._handlers[type];
 		if (!handlers)
 			return false;
-		var args = [].slice.call(arguments, 1);
-		Base.each(handlers, function(func) {
-			if (func.apply(this, args) === false && event && event.stop)
-				event.stop();
-		}, this);
+		var args = [].slice.call(arguments, 1),
+			PaperScript = paper.PaperScript,
+			handleException = PaperScript && PaperScript.handleException,
+			that = this;
+
+		function callHandlers() {
+			for (var i in handlers) {
+				if (handlers[i].apply(that, args) === false
+						&& event && event.stop)
+					event.stop();
+			}
+		}
+
+		if (handleException) {
+			try {
+				callHandlers();
+			} catch (e) {
+				handleException(e);
+			}
+		} else {
+			callHandlers();
+		}
 		return true;
 	},
 
@@ -705,7 +722,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: '0.9.13',
+	version: '0.9.14',
 
 	getView: function() {
 		return this.project && this.project.view;
@@ -1172,9 +1189,9 @@ var Point = Base.extend({
 
 	getAngleInRadians: function() {
 		if (arguments[0] === undefined) {
-			if (this._angle == null)
-				this._angle = Math.atan2(this.y, this.x);
-			return this._angle;
+			return this.isZero()
+					? this._angle || 0
+					: this._angle = Math.atan2(this.y, this.x);
 		} else {
 			var point = Point.read(arguments),
 				div = this.getLength() * point.getLength();
@@ -1298,10 +1315,10 @@ var LinkedPoint = Point.extend({
 		this._setter = setter;
 	},
 
-	set: function(x, y, dontNotify) {
+	set: function(x, y, _dontNotify) {
 		this._x = x;
 		this._y = y;
-		if (!dontNotify)
+		if (!_dontNotify)
 			this._owner[this._setter](this);
 		return this;
 	},
@@ -1459,10 +1476,10 @@ var LinkedSize = Size.extend({
 		this._setter = setter;
 	},
 
-	set: function(width, height, dontNotify) {
+	set: function(width, height, _dontNotify) {
 		this._width = width;
 		this._height = height;
-		if (!dontNotify)
+		if (!_dontNotify)
 			this._owner[this._setter](this);
 		return this;
 	},
@@ -1815,12 +1832,12 @@ var LinkedRectangle = Rectangle.extend({
 		this._setter = setter;
 	},
 
-	set: function(x, y, width, height, dontNotify) {
+	set: function(x, y, width, height, _dontNotify) {
 		this._x = x;
 		this._y = y;
 		this._width = width;
 		this._height = height;
-		if (!dontNotify)
+		if (!_dontNotify)
 			this._owner[this._setter](this);
 		return this;
 	}
@@ -1892,18 +1909,25 @@ var Matrix = Base.extend({
 			throw new Error('Unsupported matrix parameters');
 	},
 
-	set: function(a, c, b, d, tx, ty) {
+	set: function(a, c, b, d, tx, ty, _dontNotify) {
 		this._a = a;
 		this._c = c;
 		this._b = b;
 		this._d = d;
 		this._tx = tx;
 		this._ty = ty;
+		if (!_dontNotify)
+			this._changed();
 		return this;
 	},
 
 	_serialize: function(options) {
 		return Base.serialize(this.getValues(), options);
+	},
+
+	_changed: function() {
+		if (this._owner)
+			this._owner._changed(5);
 	},
 
 	clone: function() {
@@ -1929,6 +1953,7 @@ var Matrix = Base.extend({
 	reset: function() {
 		this._a = this._d = 1;
 		this._c = this._b = this._tx = this._ty = 0;
+		this._changed();
 		return this;
 	},
 
@@ -1943,6 +1968,7 @@ var Matrix = Base.extend({
 		this._d *= scale.y;
 		if (center)
 			this.translate(center.negate());
+		this._changed();
 		return this;
 	},
 
@@ -1952,6 +1978,7 @@ var Matrix = Base.extend({
 			y = point.y;
 		this._tx += x * this._a + y * this._b;
 		this._ty += x * this._c + y * this._d;
+		this._changed();
 		return this;
 	},
 
@@ -1974,6 +2001,7 @@ var Matrix = Base.extend({
 		this._d = -sin * c + cos * d;
 		this._tx += tx * a + ty * b;
 		this._ty += tx * c + ty * d;
+		this._changed();
 		return this;
 	},
 
@@ -1990,6 +2018,7 @@ var Matrix = Base.extend({
 		this._d += point.x * c;
 		if (center)
 			this.translate(center.negate());
+		this._changed();
 		return this;
 	},
 
@@ -2004,6 +2033,7 @@ var Matrix = Base.extend({
 		this._d = mx._b * c + mx._d * d;
 		this._tx += mx._tx * a + mx._ty * b;
 		this._ty += mx._tx * c + mx._ty * d;
+		this._changed();
 		return this;
 	},
 
@@ -2020,12 +2050,13 @@ var Matrix = Base.extend({
 		this._d = mx._c * b + mx._d * d;
 		this._tx = mx._a * tx + mx._b * ty + mx._tx;
 		this._ty = mx._c * tx + mx._d * ty + mx._ty;
+		this._changed();
 		return this;
 	},
 
 	isIdentity: function() {
-		return this._a == 1 && this._c == 0 && this._b == 0 && this._d == 1
-				&& this._tx == 0 && this._ty == 0;
+		return this._a === 1 && this._c === 0 && this._b === 0 && this._d === 1
+				&& this._tx === 0 && this._ty === 0;
 	},
 
 	isInvertible: function() {
@@ -2042,7 +2073,7 @@ var Matrix = Base.extend({
 			: this._transformCoordinates(src, srcOffset, dst, dstOffset, count);
 	},
 
-	_transformPoint: function(point, dest, dontNotify) {
+	_transformPoint: function(point, dest, _dontNotify) {
 		var x = point.x,
 			y = point.y;
 		if (!dest)
@@ -2050,7 +2081,7 @@ var Matrix = Base.extend({
 		return dest.set(
 			x * this._a + y * this._b + this._tx,
 			x * this._c + y * this._d + this._ty,
-			dontNotify
+			_dontNotify
 		);
 	},
 
@@ -2076,7 +2107,7 @@ var Matrix = Base.extend({
 		return this._transformCoordinates(coords, 0, coords, 0, 4);
 	},
 
-	_transformBounds: function(bounds, dest, dontNotify) {
+	_transformBounds: function(bounds, dest, _dontNotify) {
 		var coords = this._transformCorners(bounds),
 			min = coords.slice(0, 2),
 			max = coords.slice();
@@ -2091,7 +2122,7 @@ var Matrix = Base.extend({
 		if (!dest)
 			dest = new Rectangle();
 		return dest.set(min[0], min[1], max[0] - min[0], max[1] - min[1],
-				dontNotify);
+				_dontNotify);
 	},
 
 	inverseTransform: function() {
@@ -2105,7 +2136,7 @@ var Matrix = Base.extend({
 				? det : null;
 	},
 
-	_inverseTransform: function(point, dest, dontNotify) {
+	_inverseTransform: function(point, dest, _dontNotify) {
 		var det = this._getDeterminant();
 		if (!det)
 			return null;
@@ -2116,7 +2147,7 @@ var Matrix = Base.extend({
 		return dest.set(
 			(x * this._d - y * this._b) / det,
 			(y * this._a - x * this._c) / det,
-			dontNotify
+			_dontNotify
 		);
 	},
 
@@ -2161,12 +2192,34 @@ var Matrix = Base.extend({
 		return new Point(this._tx, this._ty);
 	},
 
+	setTranslation: function() {
+		var point = Point.read(arguments);
+		this._tx = point.x;
+		this._ty = point.y;
+		this._changed();
+	},
+
 	getScaling: function() {
 		return (this.decompose() || {}).scaling;
 	},
 
+	setScaling: function() {
+		var scaling = this.getScaling();
+		if (scaling != null) {
+			var scale = Point.read(arguments);
+			(this._owner || this).scale(
+					scale.x / scaling.x, scale.y / scaling.y);
+		}
+	},
+
 	getRotation: function() {
 		return (this.decompose() || {}).rotation;
+	},
+
+	setRotation: function(angle) {
+		var rotation = this.getRotation();
+		if (rotation != null)
+			(this._owner || this).rotate(angle - rotation);
 	},
 
 	inverted: function() {
@@ -2202,6 +2255,7 @@ var Matrix = Base.extend({
 		};
 		this['set' + name] = function(value) {
 			this[prop] = value;
+			this._changed();
 		};
 	}, {});
 });
@@ -2608,9 +2662,10 @@ var Item = Base.extend(Callback, {
 			}
 		}
 		this._style = new Style(this._project._currentStyle, this);
-		this._matrix = new Matrix();
+		var matrix = this._matrix = new Matrix();
 		if (point)
-			this._matrix.translate(point);
+			matrix.translate(point);
+		matrix._owner = this;
 		return props ? this._set(props, { insert: true }) : true;
 	},
 
@@ -2663,16 +2718,20 @@ var Item = Base.extend(Callback, {
 			}, {
 				onFrame: {
 					install: function() {
-						this._project.view._animateItem(this, true);
+						this._animateItem(true);
 					},
 					uninstall: function() {
-						this._project.view._animateItem(this, false);
+						this._animateItem(false);
 					}
 				},
 
 				onLoad: {}
 			}
 		);
+	},
+
+	_animateItem: function(animate) {
+		this._project.view._animateItem(this, animate);
 	},
 
 	_serialize: function(options, dictionary) {
@@ -2894,36 +2953,6 @@ var Item = Base.extend(Callback, {
 
 	setPosition: function() {
 		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
-	},
-
-	getMatrix: function() {
-		return this._matrix;
-	},
-
-	setMatrix: function(matrix) {
-		this._matrix.initialize(matrix);
-		if (this._transformContent)
-			this.applyMatrix(true);
-		this._changed(5);
-	},
-
-	getGlobalMatrix: function() {
-		return this._drawCount === this._project._drawCount
-				&& this._globalMatrix || null;
-	},
-
-	globalToLocal: function() {
-		var matrix = this.getGlobalMatrix();
-		return matrix && matrix._transformPoint(Point.read(arguments));
-	},
-
-	localToGlobal: function() {
-		var matrix = this.getGlobalMatrix();
-		return matrix && matrix._inverseTransform(Point.read(arguments));
-	},
-
-	isEmpty: function() {
-		return !this._children || this._children.length == 0;
 	}
 }, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	function(name) {
@@ -3020,13 +3049,44 @@ var Item = Base.extend(Callback, {
 	}
 
 }), {
+	getMatrix: function() {
+		return this._matrix;
+	},
+
+	setMatrix: function(matrix) {
+		this._matrix.initialize(matrix);
+		if (this._transformContent)
+			this.applyMatrix(true);
+		this._changed(5);
+	},
+
+	getGlobalMatrix: function() {
+		return this._drawCount === this._project._drawCount
+				&& this._globalMatrix || null;
+	},
+
+	getTransformContent: function() {
+		return this._transformContent;
+	},
+
+	setTransformContent: function(transform) {
+		this._transformContent = transform;
+		if (transform)
+			this.applyMatrix();
+	},
+
 	getProject: function() {
 		return this._project;
 	},
 
 	_setProject: function(project) {
 		if (this._project != project) {
+			var hasOnFrame = this.responds('frame');
+			if (hasOnFrame)
+				this._animateItem(false);
 			this._project = project;
+			if (hasOnFrame)
+				this._animateItem(true);
 			if (this._children) {
 				for (var i = 0, l = this._children.length; i < l; i++) {
 					this._children[i]._setProject(project);
@@ -3413,6 +3473,8 @@ var Item = Base.extend(Callback, {
 				this._removeNamed();
 			if (this._index != null)
 				Base.splice(this._parent._children, null, this._index, 1);
+			if (this.responds('frame'))
+				this._animateItem(false);
 			if (notify)
 				this._parent._changed(7);
 			this._parent = null;
@@ -3447,6 +3509,10 @@ var Item = Base.extend(Callback, {
 				this._children[i]._index = i;
 			this._changed(7);
 		}
+	},
+
+	isEmpty: function() {
+		return !this._children || this._children.length == 0;
 	},
 
 	isEditable: function() {
@@ -3596,6 +3662,16 @@ var Item = Base.extend(Callback, {
 		}
 		if (!_dontNotify)
 			this._changed(5);
+	},
+
+	globalToLocal: function() {
+		var matrix = this.getGlobalMatrix();
+		return matrix && matrix._transformPoint(Point.read(arguments));
+	},
+
+	localToGlobal: function() {
+		var matrix = this.getGlobalMatrix();
+		return matrix && matrix._inverseTransform(Point.read(arguments));
 	},
 
 	fitBounds: function(rectangle, fill) {
@@ -3773,16 +3849,6 @@ var Group = Item.extend({
 		return this._clipItem = null;
 	},
 
-	getTransformContent: function() {
-		return this._transformContent;
-	},
-
-	setTransformContent: function(transform) {
-		this._transformContent = transform;
-		if (transform)
-			this.applyMatrix();
-	},
-
 	isClipped: function() {
 		return !!this._getClipItem();
 	},
@@ -3933,6 +3999,7 @@ var Shape = Item.extend({
 			if (radius === this._radius)
 				return;
 			var size = radius * 2;
+			this._radius = radius;
 			this._size.set(size, size);
 		} else {
 			radius = Size.read(arguments);
@@ -6832,7 +6899,7 @@ var Path = PathItem.extend({
 				}
 			}
 		}
-		return !loc && options.fill && this.hasFill() && this.contains(point)
+		return !loc && options.fill && this.hasFill() && this._contains(point)
 				? new HitResult('fill', this)
 				: loc
 					? new HitResult('stroke', this, { location: loc })
@@ -9583,7 +9650,7 @@ var View = Base.extend(Callback, {
 		View._views.push(this);
 		View._viewsById[this._id] = this;
 		this._viewSize = size;
-		this._matrix = new Matrix();
+		(this._matrix = new Matrix())._owner = this;
 		this._zoom = 1;
 		if (!View._focused)
 			View._focused = this;
@@ -9611,10 +9678,9 @@ var View = Base.extend(Callback, {
 	_events: {
 		onFrame: {
 			install: function() {
-				if (!this._requested) {
-					this._animate = true;
+				this._animate = true;
+				if (!this._requested)
 					this._requestFrame();
-				}
 			},
 
 			uninstall: function() {
@@ -9631,6 +9697,7 @@ var View = Base.extend(Callback, {
 
 	_requestFrame: function() {
 		var that = this;
+		this._requested = true;
 		DomEvent.requestAnimationFrame(function() {
 			that._requested = false;
 			if (!that._animate)
@@ -9638,7 +9705,6 @@ var View = Base.extend(Callback, {
 			that._requestFrame();
 			that._handleFrame();
 		}, this._element);
-		this._requested = true;
 	},
 
 	_handleFrame: function() {
@@ -9695,6 +9761,11 @@ var View = Base.extend(Callback, {
 		} else {
 			this.draw();
 		}
+	},
+
+	_changed: function(flags) {
+		if (flags & 1)
+			this._project._needsRedraw = true;
 	},
 
 	_transform: function(matrix) {
@@ -10148,7 +10219,7 @@ var Key = new function() {
 				if ((name = Base.camelize(key)) in modifiers)
 					modifiers[name] = true;
 				charCodeMap[code] = 0;
-				handleKey(true, code, null, event);
+				handleKey(true, code, code, event);
 			} else {
 				downCode = code;
 			}
