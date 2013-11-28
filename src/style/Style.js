@@ -108,7 +108,7 @@ var Style = Base.extend(new function() {
 		fields = {
 			_defaults: defaults,
 			// Override default fillColor for text items
-			_textDefaults: Base.merge(defaults, {
+			_textDefaults: new Base(defaults, {
 				fillColor: new Color() // black
 			})
 		};

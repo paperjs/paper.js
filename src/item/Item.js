@@ -30,7 +30,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		 */
 		extend: function extend(src) {
 			if (src._serializeFields)
-				src._serializeFields = Base.merge(
+				src._serializeFields = new Base(
 						this.prototype._serializeFields, src._serializeFields);
 			var res = extend.base.apply(this, arguments),
 				proto = res.prototype,
@@ -1375,8 +1375,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			matrix = new Matrix().scale(scale).translate(topLeft.negate());
 		ctx.save();
 		matrix.applyToContext(ctx);
-		// See Project#draw() for an explanation of Base.merge()
-		this.draw(ctx, Base.merge({ transforms: [matrix] }));
+		// See Project#draw() for an explanation of new Base()
+		this.draw(ctx, new Base({ transforms: [matrix] }));
 		ctx.restore();
 		var raster = new Raster({
 			canvas: canvas,

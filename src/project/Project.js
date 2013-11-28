@@ -425,9 +425,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		this._drawCount++;
 		ctx.save();
 		matrix.applyToContext(ctx);
-		// Use Base.merge() so we can use param.extend() to easily override
+		// Use new Base() so we can use param.extend() to easily override
 		// values
-		var param = Base.merge({
+		var param = new Base({
 			offset: new Point(0, 0),
 			ratio: ratio,
 			// A stack of concatenated matrices, to keep track of the current

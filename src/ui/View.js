@@ -193,8 +193,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 			delta = this._before ? now - this._before : 0;
 		this._before = now;
 		this._handlingFrame = true;
-		// Use Base.merge to convert into a Base object, for #toString()
-		this.fire('frame', Base.merge({
+		// Use new Base() to convert into a Base object, for #toString()
+		this.fire('frame', new Base({
 			// Time elapsed since last redraw in seconds:
 			delta: delta,
 			// Time since first call of frame() in seconds:
@@ -233,7 +233,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	_handleFrameItems: function(event) {
 		for (var i in this._frameItems) {
 			var entry = this._frameItems[i];
-			entry.item.fire('frame', Base.merge(event, {
+			entry.item.fire('frame', new Base(event, {
 				// Time since first call of frame() in seconds:
 				time: entry.time += event.delta,
 				count: entry.count++

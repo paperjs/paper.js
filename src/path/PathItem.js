@@ -194,7 +194,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		// To compare with native canvas approach:
 		var ctx = CanvasProvider.getContext(1, 1);
 		// Abuse clip = true to get a shape for ctx.isPointInPath().
-		this._draw(ctx, Base.merge({ clip: true, transforms: [new Matrix()] }));
+		this._draw(ctx, new Base({ clip: true, transforms: [new Matrix()] }));
 		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
 		CanvasProvider.release(ctx);
 		return res;

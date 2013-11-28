@@ -227,7 +227,7 @@ CanvasView.inject(new function() {
 	return {
 		// DOCS: CanvasView#exportFrames(param);
 		exportFrames: function(param) {
-			param = Base.merge({
+			param = new Base({
 				fps: 30,
 				prefix: 'frame-',
 				amount: 1
@@ -270,8 +270,8 @@ CanvasView.inject(new function() {
 						}
 					}
 				});
-				// Use Base.merge to convert into a Base object, for #toString()
-				view.fire('frame', Base.merge({
+				// Use new Base() to convert into a Base object, for #toString()
+				view.fire('frame', new Base({
 					delta: frameDuration,
 					time: frameDuration * count,
 					count: count

@@ -61,7 +61,7 @@ var Layer = Group.extend(/** @lends Layer# */{
 	 */
 	initialize: function Layer(arg) {
 		var props = Base.isPlainObject(arg)
-				? Base.merge(arg) // merge so we can add insert = false
+				? new Base(arg) // clone so we can add insert = false
 				: { children: Array.isArray(arg) ? arg : arguments },
 			insert = props.insert;
 		// Call the group constructor but don't insert yet!

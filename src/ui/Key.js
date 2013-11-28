@@ -42,8 +42,8 @@ var Key = new function() {
 		224: 'command'  // Gecko command button
 	},
 
-	// Use Base.merge to convert into a Base object, for #toString()
-	modifiers = Base.merge({
+	// Use new Base() to convert into a Base object, for #toString()
+	modifiers = new Base({
 		shift: false,
 		control: false,
 		option: false,

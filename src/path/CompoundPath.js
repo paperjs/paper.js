@@ -197,7 +197,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		// Do not test children for fill, since a compound path forms one shape.
 		// options.compoundChildren allows to specifically do so, see below.
 		var res = _hitTest.base.call(this, point,
-				Base.merge(options, { fill: false }));
+				new Base(options, { fill: false }));
 		if (!res) {
 			// If asked to query all children seperately, perform the same loop
 			// as Item#hitTest() now on the compound children.

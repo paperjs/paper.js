@@ -22,16 +22,6 @@ Base.inject(/** @lends Base# */{
 	generics: true,
 
 	/**
-	 * General purpose clone function that delegates cloning to the constructor
-	 * that receives the object to be cloned as the first argument.
-	 * Note: #clone() needs to be overridden in any class that requires other
-	 * cloning behavior.
-	 */
-	clone: function() {
-		return new this.constructor(this);
-	},
-
-	/**
 	 * Renders base objects to strings in object literal notation.
 	 */
 	toString: function() {
@@ -510,20 +500,6 @@ Base.inject(/** @lends Base# */{
 					list[i]._index = i;
 				return removed;
 			}
-		},
-
-		/**
-		 * Merge all passed plain objects into a newly creted Base object.
-		 */
-		merge: function() {
-			var res = new Base();
-			for (var i = 0, l = arguments.length; i < l; i++) {
-				var obj = arguments[i];
-				for (var j in obj)
-					if (obj.hasOwnProperty(j))
-						res[j] = obj[j];
-			}
-			return res;
 		},
 
 		/**

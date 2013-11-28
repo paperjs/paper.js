@@ -15,7 +15,7 @@
 // PaperScope, and create the initial paper object, all in one statement:
 /*#*/ if (options.environment == 'browser') {
 
-paper = new (PaperScope.inject(Base.merge(Base.exports, {
+paper = new (PaperScope.inject(new Base(Base.exports, {
 	// Mark fields as enumeralbe so PaperScope.inject can pick them up
 	enumerable: true,
 	Base: Base,
@@ -35,7 +35,7 @@ if (typeof define === 'function' && define.amd)
 
 /*#*/ } else if (options.environment == 'node') {
 
-paper = new (PaperScope.inject(Base.merge(Base.exports, {
+paper = new (PaperScope.inject(new Base(Base.exports, {
 	// Mark fields as enumeralbe so PaperScope.inject can pick them up
 	enumerable: true,
 	Base: Base,
