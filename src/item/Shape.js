@@ -110,6 +110,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 			if (radius === this._radius)
 				return;
 			var size = radius * 2;
+			this._radius = radius;
 			this._size.set(size, size);
 		} else {
 			radius = Size.read(arguments);
