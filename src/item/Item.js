@@ -1313,6 +1313,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		// Use Matrix#initialize to easily copy over values.
 		copy._matrix.initialize(this._matrix);
+		// Copy over _data as well.
+		copy._data = this._data ? Base.clone(this._data) : null;
 		// Copy over the selection state, use setSelected so the item
 		// is also added to Project#selectedItems if it is selected.
 		copy.setSelected(this._selected);

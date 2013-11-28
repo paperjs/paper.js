@@ -760,6 +760,8 @@ var Color = Base.extend(new function() {
 		 *
 		 * @return {Color} a copy of the color object
 		 */
+		// NOTE: There is no need to actually implement this, since it's the
+		// same as Base#clone()
 
 		/**
 		 * {@grouptitle String Representations}
