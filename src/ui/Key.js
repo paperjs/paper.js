@@ -93,7 +93,7 @@ var Key = new function() {
 					modifiers[name] = true;
 				// No char code for special keys, but mark as pressed
 				charCodeMap[code] = 0;
-				handleKey(true, code, null, event);
+				handleKey(true, code, code, event);
 				// Do not set downCode as we handled it already. Space would
 				// be handled twice otherwise, once here, once in keypress.
 			} else {
