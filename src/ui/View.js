@@ -160,8 +160,10 @@ var View = Base.extend(Callback, /** @lends View# */{
 			}
 		},
 
-		onResize: {}
-	},
+        onResize: {},
+        onZoom: {},
+        onScroll: {}
+    },
 
 	// These are default values for event related properties on the prototype. 
 	// Writing item._count++ does not change the defaults, it creates / updates
@@ -375,6 +377,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		this._transform(new Matrix().scale(zoom / this._zoom,
 			this.getCenter()));
 		this._zoom = zoom;
+        this.fire('zoom', zoom);
 	},
 
 	/**
@@ -394,6 +397,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 */
 	scrollBy: function(/* point */) {
 		this._transform(new Matrix().translate(Point.read(arguments).negate()));
+        this.fire('scroll', Point.read(arguments).negate());
 	},
 
 	/**
