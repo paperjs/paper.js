@@ -173,7 +173,6 @@ var View = Base.extend(Callback, /** @lends View# */{
 	_requestFrame: function() {
 /*#*/ if (options.environment == 'browser') {
 		var that = this;
-		this._requested = true;
 		DomEvent.requestAnimationFrame(function() {
 			that._requested = false;
 			// Do we need to stop due to a call to the frame event's uninstall()
@@ -183,6 +182,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 			that._requestFrame();
 			that._handleFrame();
 		}, this._element);
+		this._requested = true;
 /*#*/ } // options.environment == 'browser'
 	},
 
