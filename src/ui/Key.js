@@ -15,11 +15,9 @@
  * @namespace
  */
 var Key = new function() {
-	// TODO: Make sure the keys are called the same as in Scriptographer
-	// Missing: tab, cancel, clear, page-down, page-up, comma, minus, period,
-	// slash, etc etc etc.
+	// TODO: cancel, clear, page-down, page-up, comma, minus, period, slash, ...
 
-	var keys = {
+	var specialKeys = {
 		8: 'backspace',
 		9: 'tab',
 		13: 'enter',
@@ -40,6 +38,13 @@ var Key = new function() {
 		91: 'command',
 		93: 'command', // WebKit right command button
 		224: 'command'  // Gecko command button
+	},
+
+	// Mark the special skeys that still can be interpreted as chars too
+	specialChars = {
+		9: true, // tab
+		13: true, // enter
+		32: true // space
 	},
 
 	// Use new Base() to convert into a Base object, for #toString()
@@ -63,13 +68,29 @@ var Key = new function() {
 	downCode; // The last keyCode from keydown
 
 	function handleKey(down, keyCode, charCode, event) {
-		var character = String.fromCharCode(charCode),
-			key = keys[keyCode] || character.toLowerCase(),
+		var character = charCode ? String.fromCharCode(charCode) : '',
+			specialKey = specialKeys[keyCode],
+			key = specialKey || character.toLowerCase(),
 			type = down ? 'keydown' : 'keyup',
 			view = View._focused,
 			scope = view && view.isVisible() && view._scope,
-			tool = scope && scope._tool;
-		keyMap[key] = down;
+			tool = scope && scope._tool,
+			name;
+		// Detect modifiers and mark them as pressed / released
+		if (specialKey && (name = Base.camelize(specialKey)) in modifiers)
+			modifiers[name] = down;
+		// Use delete instead of setting to false, so keyMap only contains keys
+		// that are currently down, and can easily be emurated over, e.g. in the
+		// window blur event.
+		if (down) {
+			keyMap[key] = true;
+			// Link the keyCode from keydown with the charCode form keypress,
+			// so keyup can retrieve the charCode again.
+			charCodeMap[keyCode] = charCode;
+		} else {
+			delete keyMap[key];
+			delete charCodeMap[keyCode];
+		}
 		if (tool && tool.responds(type)) {
 			// Update global reference to this scope.
 			paper = scope;
@@ -86,14 +107,10 @@ var Key = new function() {
 			// If the keyCode is in keys, it needs to be handled by keydown and
 			// not in keypress after (arrows for example wont be triggering
 			// a keypress, but space would).
-			var key = keys[code], name;
-			if (key) {
-				// Detect modifiers and mark them as pressed
-				if ((name = Base.camelize(key)) in modifiers)
-					modifiers[name] = true;
-				// No char code for special keys, but mark as pressed
-				charCodeMap[code] = 0;
-				handleKey(true, code, code, event);
+			if (code in specialKeys) {
+				// No char code for special keys (except the ones listed in
+				// specialChars), but mark as pressed by setting to 0.
+				handleKey(true, code, code in specialChars ? code : 0, event);
 				// Do not set downCode as we handled it already. Space would
 				// be handled twice otherwise, once here, once in keypress.
 			} else {
@@ -103,25 +120,15 @@ var Key = new function() {
 
 		keypress: function(event) {
 			if (downCode != null) {
-				var code = event.which || event.keyCode;
-				// Link the downCode from keydown with the code form keypress,
-				// so keyup can retrieve that code again.
-				charCodeMap[downCode] = code;
-				handleKey(true, downCode, code, event);
+				handleKey(true, downCode, event.which || event.keyCode, event);
 				downCode = null;
 			}
 		},
 
 		keyup: function(event) {
-			var code = event.which || event.keyCode,
-				key = keys[code], name;
-			// Detect modifiers and mark them as released
-			if (key && (name = Base.camelize(key)) in modifiers)
-				modifiers[name] = false;
-			if (charCodeMap[code] != null) {
+			var code = event.which || event.keyCode;
+			if (code in charCodeMap)
 				handleKey(false, code, charCodeMap[code], event);
-				delete charCodeMap[code];
-			}
 		}
 	});
 
