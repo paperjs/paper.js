@@ -1980,6 +1980,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return removed;
 	},
 
+	// DOCS Item#clear()
 	clear: '#removeChildren',
 
 	/**

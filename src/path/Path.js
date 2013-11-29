@@ -707,6 +707,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return removed;
 	},
 
+	// DOCS Path#clear()
 	clear: '#removeSegments',
 
 	/**
