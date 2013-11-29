@@ -14,7 +14,7 @@
 // These are also used for building, but some values are overridden
 // (e.g. version, stats). 
 
-var options = {
+var __options = {
 	parser: 'acorn',
 	version: 'dev',
 	environment: 'browser',

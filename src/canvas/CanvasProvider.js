@@ -32,12 +32,12 @@ var CanvasProvider = {
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
 		} else {
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 			canvas = document.createElement('canvas');
-/*#*/ } else { // options.environment != 'browser'
+/*#*/ } else { // __options.environment != 'browser'
 			canvas = new Canvas(width, height);
 			init = false; // It's already initialized through constructor.
-/*#*/ } // options.environment != 'browser'
+/*#*/ } // __options.environment != 'browser'
 		}
 		var ctx = canvas.getContext('2d');
 		// If they are not the same size, we don't need to clear them

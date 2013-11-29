@@ -1,5 +1,5 @@
 /*!
- * Paper.js v*#=* options.version - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v*#=* __options.version - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: *#=* options.date
+ * Date: *#=* __options.date
  *
  ***
  *
@@ -36,13 +36,13 @@ var paper = new function(undefined) {
 // Inline Bootstrap core (the Base class) inside the paper scope first:
 /*#*/ include('../bower_components/straps/straps.js', { exports: false });
 
-/*#*/ if (options.stats) {
+/*#*/ if (__options.stats) {
 /*#*/ include('../bower_components/stats.js/build/stats.min.js');
-/*#*/ } // options.stats
+/*#*/ } // __options.stats
 
-/*#*/ if (options.version == 'dev') {
+/*#*/ if (__options.version == 'dev') {
 /*#*/ include('constants.js');
-/*#*/ } // options.version == 'dev'
+/*#*/ } // __options.version == 'dev'
 
 /*#*/ include('core/Base.js');
 /*#*/ include('core/Callback.js');
@@ -93,50 +93,50 @@ var paper = new function(undefined) {
 /*#*/ include('style/GradientStop.js');
 /*#*/ include('style/Style.js');
 
-/*#*/ if (options.environment == 'node') {
+/*#*/ if (__options.environment == 'node') {
 /*#*/ include('dom/node.js');
-/*#*/ } // options.environment == 'node'
+/*#*/ } // __options.environment == 'node'
 /*#*/ include('dom/DomElement.js');
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 // DomEvent doesn't make sense outside of the browser (yet)
 /*#*/ include('dom/DomEvent.js');
-/*#*/ } // options.environment == 'browser'
+/*#*/ } // __options.environment == 'browser'
 
 /*#*/ include('ui/View.js');
 /*#*/ include('ui/CanvasView.js');
 
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 /*#*/ include('ui/Event.js');
 /*#*/ include('ui/KeyEvent.js');
 /*#*/ include('ui/Key.js');
 /*#*/ include('ui/MouseEvent.js');
 
-/*#*/ if (options.palette) {
+/*#*/ if (__options.palette) {
 /*#*/ include('ui/Palette.js');
 /*#*/ include('ui/Component.js');
-/*#*/ } // options.palette
+/*#*/ } // __options.palette
 
 /*#*/ include('tool/ToolEvent.js');
 /*#*/ include('tool/Tool.js');
 
 // Http is used both for PaperScript and SVGImport
-/*#*/ if (options.paperscript || options.svg) {
+/*#*/ if (__options.paperscript || __options.svg) {
 /*#*/ include('net/Http.js');
-/*#*/ } // options.paperscript || options.svg
-/*#*/ } // options.environment == 'browser'
+/*#*/ } // __options.paperscript || __options.svg
+/*#*/ } // __options.environment == 'browser'
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');
-/*#*/ if (options.version == 'dev') {
+/*#*/ if (__options.version == 'dev') {
 /*#*/ include('canvas/ProxyContext.js');
-/*#*/ } // options.environment == 'browser'
+/*#*/ } // __options.environment == 'browser'
 
-/*#*/ if (options.svg) {
+/*#*/ if (__options.svg) {
 /*#*/ include('svg/SVGStyles.js');
 /*#*/ include('svg/SVGNamespaces.js');
 /*#*/ include('svg/SVGExport.js');
 /*#*/ include('svg/SVGImport.js');
-/*#*/ } // options.svg
+/*#*/ } // __options.svg
 
 /*#*/ include('export.js');
 return paper;
@@ -144,6 +144,6 @@ return paper;
 
 // include PaperScript separately outside the main paper scope, due to its use
 // of with(). This also simplifies making its inclusion optional.
-/*#*/ if (options.paperscript) {
+/*#*/ if (__options.paperscript) {
 /*#*/ include('core/PaperScript.js');
-/*#*/ } // options.paperscript
+/*#*/ } // __options.paperscript

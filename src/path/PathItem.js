@@ -190,7 +190,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	_contains: function(point) {
 		// NOTE: point is reverse transformed by _matrix, so we don't need to 
 		// apply here.
-/*#*/ if (options.nativeContains) {
+/*#*/ if (__options.nativeContains) {
 		// To compare with native canvas approach:
 		var ctx = CanvasProvider.getContext(1, 1);
 		// Abuse clip = true to get a shape for ctx.isPointInPath().
@@ -198,10 +198,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
 		CanvasProvider.release(ctx);
 		return res;
-/*#*/ } else { // !options.nativeContains
+/*#*/ } else { // !__options.nativeContains
 		var winding = this._getWinding(point);
 		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
-/*#*/ } // !options.nativeContains
+/*#*/ } // !__options.nativeContains
 	}
 
 	/**

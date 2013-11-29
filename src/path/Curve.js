@@ -1137,7 +1137,7 @@ new function() { // Scope for methods that require numerical integration
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
 			range1, range2, recursion) {
-/*#*/ if (options.fatline) {
+/*#*/ if (__options.fatline) {
 		// NOTE: range1 and range1 are only used for recusion
 		recursion = (recursion || 0) + 1;
 		// Avoid endless recursion.
@@ -1225,7 +1225,7 @@ new function() { // Scope for methods that require numerical integration
 				break;
 			}
 		}
-/*#*/ } else { // !options.fatline
+/*#*/ } else { // !__options.fatline
 		var bounds1 = Curve.getBounds(v1),
 			bounds2 = Curve.getBounds(v2);
 		if (bounds1.touches(bounds2)) {
@@ -1252,10 +1252,10 @@ new function() { // Scope for methods that require numerical integration
 			}
 		}
 		return locations;
-/*#*/ } // !options.fatline
+/*#*/ } // !__options.fatline
 	}
 
-/*#*/ if (options.fatline) {
+/*#*/ if (__options.fatline) {
 	/**
 	 * Clip curve V2 with fat-line of v1
 	 * @param {Array} v1 section of the first curve, for which we will make a
@@ -1417,7 +1417,7 @@ new function() { // Scope for methods that require numerical integration
 				// correct order where line [ p1, p3 ] is part of the hull.
 				: [ p0, p1, p2, p3 ];
 	}
-/*#*/ } // options.fatline
+/*#*/ } // __options.fatline
 
 	/**
 	 * Intersections between curve and line becomes rather simple here mostly
