@@ -531,9 +531,20 @@ new function() {
 
 		if (isRoot) {
 			if (typeof source === 'string' && !/^.*</.test(source)) {
-				// Check if the string does not represent SVG data, in which case
-				// it must be a url of a SVG to be loaded.
-				return Http.request('get', source, onLoadCallback);
+/*#*/ if (__options.environment == 'browser') {
+				// First see if we're meant to import an element with the given
+				// id.
+				node = document.getElementById(source);
+				// Check if the string does not represent SVG data, in which
+				// case it must be a url of a SVG to be loaded.
+				if (node) {
+					source = null;
+				} else {
+					return Http.request('get', source, onLoadCallback);
+				}
+/*#*/ } else if (__options.environment == 'node') {
+			// TODO: Implement!
+/*#*/ } // __options.environment == 'node'
 			} else if (typeof File !== 'undefined' && source instanceof File) {
 				// Load local file through FileReader
 				var reader = new FileReader();
