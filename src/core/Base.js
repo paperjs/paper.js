@@ -445,7 +445,7 @@ Base.inject(/** @lends Base# */{
 					function(type, args) {
 						// If a target is provided and its of the right type,
 						// import right into it.
-						var obj = target.constructor === type
+						var obj = target && target.constructor === type
 								? target
 								: Base.create(type.prototype),
 							isTarget = obj === target;
