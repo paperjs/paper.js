@@ -363,7 +363,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				// Mark script as loaded now.
 				script.setAttribute('data-paper-ignore', true);
 			}
-		}, this, true); // Pass true for asArray to handle HTMLCollection
+		}, this);
 	}
 
 	// Catch cases where paper.js is loaded after the browser event has already
