@@ -319,7 +319,8 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 						size: view.size,
 						delta: new Point()
 					});
-					view.setOnFrame(onFrame);
+					if (onFrame)
+						view.setOnFrame(onFrame);
 					// Automatically draw view at the end.
 					view.draw();
 				}
