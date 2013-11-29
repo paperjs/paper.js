@@ -209,8 +209,12 @@ new function() {
 				var size = getSize(node, 'width', 'height');
 				this.setSize(size);
 				// Since x and y start from the top left of an image, add
-				// half of its size:
-				this.translate(getPoint(node, 'x', 'y').add(size.divide(2)));
+				// half of its size. We also need to take the raster's matrix
+				// into account, which will be defined by the time the load
+				// event is called.
+				var center = this._matrix._transformPoint(
+						getPoint(node, 'x', 'y').add(size.divide(2)));
+				this.translate(center);
 			});
 			return raster;
 		},
