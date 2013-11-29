@@ -132,6 +132,14 @@ var Key = new function() {
 		}
 	});
 
+	DomEvent.add(window, {
+		blur: function(event) {
+			// Fire key-up events for all currently pressed keys.
+			for (var code in keyMap)
+				handleKey(false, code, charCodeMap[code], event);
+		}
+	});
+
 	return /** @lends Key */{
 		modifiers: modifiers,
 
