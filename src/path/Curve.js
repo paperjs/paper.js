@@ -704,16 +704,14 @@ statics: {
 		function getOrientation(v) {
 			var y0 = v[1],
 				y1 = v[7],
-				dir = 1;
-			if (y0 > y1) {
-				var tmp = y0;
-				y0 = y1;
-				y1 = tmp;
-			    dir = -1;
-			}
-			if (y < y0 || y > y1)
-			    dir = 0;
-			return dir;
+				dir = y0 <= y1 ? 1 : -1;
+			// Bounds check: Reverse y0 and y1 if direction is -1, and exclude
+			// end points of curves / lines (y1), to not count corners / joints
+			// twice.
+			return dir === 1 && (y < y0 || y >= y1)
+					|| dir === -1 && (y <= y1 || y > y0)
+					? 0
+					: dir;
 		}
 
 		if (Curve.isLinear(v)) {
