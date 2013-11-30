@@ -282,17 +282,8 @@ Path.inject({ statics: new function() {
 		 * });
 		 */
 		Ellipse: function(/* rectangle */) {
-			var center,
-				radius;
-			if (Base.hasNamed(arguments, 'radius')) {
-				center = Point.readNamed(arguments, 'center');
-				radius = Size.readNamed(arguments, 'radius');
-			} else {
-				var rect = Rectangle.readNamed(arguments, 'rectangle');
-				center = rect.getCenter(true);
-				radius = rect.getSize(true).divide(2);
-			}
-			return createEllipse(center, radius, arguments);
+			var ellipse = Shape._readEllipse(arguments);
+			return createEllipse(ellipse.center, ellipse.radius, arguments);
 		},
 
 		/**

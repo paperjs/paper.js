@@ -55,6 +55,12 @@ test('Creating Colors', function() {
 	compareColors(new Color('#ff0000'), new Color(1, 0, 0),
 			'Color from hex code');
 
+	compareColors(new Color('rgb(255, 0, 0)'), new Color(1, 0, 0),
+			'Color from RGB code');
+
+	compareColors(new Color('rgba(255, 0, 0, 0.5)'), new Color(1, 0, 0, 0.5),
+			'Color from RGBA code');
+
 	compareColors(new Color({ red: 1, green: 0, blue: 1}),
 			new Color(1, 0, 1), 'Color from rgb object literal');
 

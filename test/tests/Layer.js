@@ -54,8 +54,11 @@ test('previousSibling / nextSibling', function() {
 test('insertAbove / insertBelow', function() {
 	var project = paper.project;
 	var firstLayer = project.activeLayer;
+	firstLayer.name = 'first';
 	var secondLayer = new Layer();
+	secondLayer.name = 'second';
 	var thirdLayer = new Layer();
+	thirdLayer.name = 'third';
 
 	thirdLayer.insertBelow(firstLayer);
 	equals(function() {

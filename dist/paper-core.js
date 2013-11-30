@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.9 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.14 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jul 21 16:44:30 2013 -0700
+ * Date: Thu Nov 28 18:03:41 2013 +0100
  *
  ***
  *
@@ -30,7 +30,7 @@
  *
  */
 
-var paper = new function() {
+var paper = new function(undefined) {
 
 var Base = new function() {
 	var hidden = /^(statics|generics|preserve|enumerable|prototype|toString|valueOf)$/,
@@ -105,7 +105,8 @@ var Base = new function() {
 				if (isFunc && beans && val.length === 0
 						&& (bean = name.match(/^(get|is)(([A-Z])(.*))$/)))
 					beans.push([ bean[3].toLowerCase() + bean[4], bean[2] ]);
-				if (!res || isFunc || !res.get)
+				if (!res || isFunc || !res.get || typeof res.get !== 'function'
+						|| res.get.length !== 0)
 					res = { value: res, writable: true };
 				if ((describe(dest, name)
 						|| { configurable: true }).configurable) {
@@ -128,15 +129,14 @@ var Base = new function() {
 					field(name, null, true, generics);
 			field('toString');
 			field('valueOf');
-			for (var i = 0, l = beans && beans.length; i < l; i++)
-				try {
-					var bean = beans[i],
-						part = bean[1];
-					field(bean[0], {
-						get: dest['get' + part] || dest['is' + part],
-						set: dest['set' + part]
-					}, true);
-				} catch (e) {}
+			for (var i = 0, l = beans.length; i < l; i++) {
+				var bean = beans[i],
+					part = bean[1];
+				field(bean[0], {
+					get: dest['get' + part] || dest['is' + part],
+					set: dest['set' + part]
+				}, true);
+			}
 		}
 		return dest;
 	}
@@ -213,21 +213,14 @@ var Base = new function() {
 		statics: {
 			each: each,
 			clone: clone,
+			create: create,
 			define: define,
 			describe: describe,
-
-			create: function(ctor) {
-				return create(ctor.prototype);
-			},
 
 			isPlainObject: function(obj) {
 				var ctor = obj != null && obj.constructor;
 				return ctor && (ctor === Object || ctor === Base
 						|| ctor.name === 'Object');
-			},
-
-			check: function(obj) {
-				return !!(obj || obj === 0);
 			},
 
 			pick: function() {
@@ -277,10 +270,15 @@ Base.inject({
 
 	_set: function(props, exclude) {
 		if (props && Base.isPlainObject(props)) {
-			for (var key in props)
-				if (props.hasOwnProperty(key) && key in this
-						&& (!exclude || !exclude[key]))
-					this[key] = props[key];
+			var orig = props._filtering || props;
+			for (var key in orig) {
+				if (key in this && orig.hasOwnProperty(key)
+						&& (!exclude || !exclude[key])) {
+					var value = props[key];
+					if (value !== undefined)
+						this[key] = value;
+				}
+			}
 			return true;
 		}
 	},
@@ -300,7 +298,7 @@ Base.inject({
 		equals: function(obj1, obj2) {
 			function checkKeys(o1, o2) {
 				for (var i in o1)
-					if (o1.hasOwnProperty(i) && typeof o2[i] === 'undefined')
+					if (o1.hasOwnProperty(i) && !o2.hasOwnProperty(i))
 						return false;
 				return true;
 			}
@@ -351,7 +349,7 @@ Base.inject({
 					list._index = index + 1;
 				return obj && options && options.clone ? obj.clone() : obj;
 			}
-			obj = Base.create(this);
+			obj = Base.create(this.prototype);
 			if (readIndex)
 				obj.__read = true;
 			if (options)
@@ -384,9 +382,17 @@ Base.inject({
 		},
 
 		readNamed: function(list, name, start, length, options) {
-			var value = this.getNamed(list, name);
-			return this.read(value != null ? [value] : list, start, length,
-					options);
+			var value = this.getNamed(list, name),
+				hasObject = value !== undefined;
+			if (hasObject) {
+				var filtered = list._filtered;
+				if (!filtered) {
+					filtered = list._filtered = Base.create(list[0]);
+					filtered._filtering = list[0];
+				}
+				filtered[name] = undefined;
+			}
+			return this.read(hasObject ? [value] : list, start, length, options);
 		},
 
 		getNamed: function(list, name) {
@@ -394,7 +400,7 @@ Base.inject({
 			if (list._hasObject === undefined)
 				list._hasObject = list.length === 1 && Base.isPlainObject(arg);
 			if (list._hasObject)
-				return name ? arg[name] : arg;
+				return name ? arg[name] : list._filtered || arg;
 		},
 
 		hasNamed: function(list, name) {
@@ -460,31 +466,35 @@ Base.inject({
 					: res;
 		},
 
-		deserialize: function(obj, data) {
-			var res = obj;
-			data = data || {};
-			if (Array.isArray(obj)) {
-				var type = obj[0],
+		deserialize: function(json, create, _data) {
+			var res = json;
+			_data = _data || {};
+			if (Array.isArray(json)) {
+				var type = json[0],
 					isDictionary = type === 'dictionary';
 				if (!isDictionary) {
-					if (data.dictionary && obj.length == 1 && /^#/.test(type))
-						return data.dictionary[type];
+					if (_data.dictionary && json.length == 1 && /^#/.test(type))
+						return _data.dictionary[type];
 					type = Base.exports[type];
 				}
 				res = [];
-				for (var i = type ? 1 : 0, l = obj.length; i < l; i++)
-					res.push(Base.deserialize(obj[i], data));
+				for (var i = type ? 1 : 0, l = json.length; i < l; i++)
+					res.push(Base.deserialize(json[i], create, _data));
 				if (isDictionary) {
-					data.dictionary = res[0];
+					_data.dictionary = res[0];
 				} else if (type) {
 					var args = res;
-					res = Base.create(type);
-					type.apply(res, args);
+					if (create) {
+						res = create(type, args);
+					} else {
+						res = Base.create(type.prototype);
+						type.apply(res, args);
+					}
 				}
-			} else if (Base.isPlainObject(obj)) {
+			} else if (Base.isPlainObject(json)) {
 				res = {};
-				for (var key in obj)
-					res[key] = Base.deserialize(obj[key], data);
+				for (var key in json)
+					res[key] = Base.deserialize(json[key], create, _data);
 			}
 			return res;
 		},
@@ -493,9 +503,25 @@ Base.inject({
 			return JSON.stringify(Base.serialize(obj, options));
 		},
 
-		importJSON: function(json) {
+		importJSON: function(json, target) {
 			return Base.deserialize(
-					typeof json === 'string' ? JSON.parse(json) : json);
+					typeof json === 'string' ? JSON.parse(json) : json,
+					function(type, args) {
+						var obj = target.constructor === type
+								? target
+								: Base.create(type.prototype),
+							isTarget = obj === target;
+						if (args.length === 1 && obj instanceof Item
+								&& (!(obj instanceof Layer) || isTarget)) {
+							var arg = args[0];
+							if (Base.isPlainObject(arg))
+								arg.insert = false;
+						}
+						type.apply(obj, args);
+						if (isTarget)
+							target = null;
+						return obj;
+					});
 		},
 
 		splice: function(list, items, index, remove) {
@@ -523,11 +549,14 @@ Base.inject({
 		},
 
 		merge: function() {
-			return Base.each(arguments, function(hash) {
-				Base.each(hash, function(value, key) {
-					this[key] = value;
-				}, this);
-			}, new Base(), true); 
+			var res = new Base();
+			for (var i = 0, l = arguments.length; i < l; i++) {
+				var obj = arguments[i];
+				for (var j in obj)
+					if (obj.hasOwnProperty(j))
+						res[j] = obj[j];
+			}
+			return res;
 		},
 
 		capitalize: function(str) {
@@ -601,11 +630,28 @@ var Callback = {
 		var handlers = this._handlers && this._handlers[type];
 		if (!handlers)
 			return false;
-		var args = [].slice.call(arguments, 1);
-		Base.each(handlers, function(func) {
-			if (func.apply(this, args) === false && event && event.stop)
-				event.stop();
-		}, this);
+		var args = [].slice.call(arguments, 1),
+			PaperScript = paper.PaperScript,
+			handleException = PaperScript && PaperScript.handleException,
+			that = this;
+
+		function callHandlers() {
+			for (var i in handlers) {
+				if (handlers[i].apply(that, args) === false
+						&& event && event.stop)
+					event.stop();
+			}
+		}
+
+		if (handleException) {
+			try {
+				callHandlers();
+			} catch (e) {
+				handleException(e);
+			}
+		} else {
+			callHandlers();
+		}
 		return true;
 	},
 
@@ -676,7 +722,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: '0.9.9',
+	version: '0.9.14',
 
 	getView: function() {
 		return this.project && this.project.view;
@@ -686,6 +732,10 @@ var PaperScope = Base.extend({
 		if (!this._tool)
 			this._tool = new Tool();
 		return this._tool;
+	},
+
+	getPaper: function() {
+		return this;
 	},
 
 	evaluate: function(code) {
@@ -705,7 +755,7 @@ var PaperScope = Base.extend({
 			});
 		});
 		for (var key in this) {
-			if (!/^(version|_id)/.test(key) && !(key in scope))
+			if (!/^(version|_id)/.test(key))
 				scope[key] = this[key];
 		}
 	},
@@ -771,7 +821,7 @@ var PaperScopeItem = Base.extend(Callback, {
 		if (!this._scope)
 			return false;
 		var prev = this._scope[this._reference];
-		if (prev && prev != this)
+		if (prev && prev !== this)
 			prev.fire('deactivate');
 		this._scope[this._reference] = this;
 		this.fire('activate', prev);
@@ -818,7 +868,7 @@ var Formatter = Base.extend({
 	}
 });
 
-Formatter.instance = new Formatter(5);
+Formatter.instance = new Formatter();
 
 var Numerical = new function() {
 
@@ -870,7 +920,7 @@ var Numerical = new function() {
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
 		isZero: function(val) {
-			return abs(val) <= this.EPSILON;
+			return abs(val) <= Numerical.EPSILON;
 		},
 
 		integrate: function(f, a, b, n) {
@@ -905,31 +955,48 @@ var Numerical = new function() {
 			}
 		},
 
-		solveQuadratic: function(a, b, c, roots) {
+		solveQuadratic: function(a, b, c, roots, min, max) {
+			var unbound = min === undefined,
+				count = 0;
+
+			function add(root) {
+				if (unbound || root >= min && root <= max)
+					roots[count++] = root;
+				return count;
+			}
+
 			var epsilon = this.EPSILON;
 			if (abs(a) < epsilon) {
-				if (abs(b) >= epsilon) {
-					roots[0] = -c / b;
-					return 1;
-				}
+				if (abs(b) >= epsilon)
+					return add(-c / b);
 				return abs(c) < epsilon ? -1 : 0; 
 			}
-			var q = b * b - 4 * a * c;
-			if (q < 0)
-				return 0; 
-			q = sqrt(q);
-			a *= 2; 
-			var n = 0;
-			roots[n++] = (-b - q) / a;
-			if (q > 0)
-				roots[n++] = (-b + q) / a;
-			return n; 
+			var p = b / (2 * a);
+			var q = c / a;
+			var p2 = p * p;
+			if (p2 < q - epsilon)
+				return 0;
+			var s = p2 > q ? sqrt(p2 - q) : 0;
+			add (s - p);
+			if (s > 0)
+				add(-s - p);
+			return count;
 		},
 
-		solveCubic: function(a, b, c, d, roots) {
+		solveCubic: function(a, b, c, d, roots, min, max) {
 			var epsilon = this.EPSILON;
 			if (abs(a) < epsilon)
-				return Numerical.solveQuadratic(b, c, d, roots);
+				return Numerical.solveQuadratic(b, c, d, roots, min, max);
+
+			var unbound = min === undefined,
+				count = 0;
+
+			function add(root) {
+				if (unbound || root >= min && root <= max)
+					roots[count++] = root;
+				return count;
+			}
+
 			b /= a;
 			c /= a;
 			d /= a;
@@ -940,29 +1007,24 @@ var Numerical = new function() {
 				D = q * q - ppp;
 			b /= 3;
 			if (abs(D) < epsilon) {
-				if (abs(q) < epsilon) { 
-					roots[0] = - b;
-					return 1;
-				} 
+				if (abs(q) < epsilon) 
+					return add(-b);
 				var sqp = sqrt(p),
 					snq = q > 0 ? 1 : -1;
-				roots[0] = -snq * 2 * sqp - b;
-				roots[1] = snq * sqp - b;
-				return 2;
+				add(-snq * 2 * sqp - b);
+				return add(snq * sqp - b);
 			}
 			if (D < 0) { 
 				var sqp = sqrt(p),
 					phi = Math.acos(q / (sqp * sqp * sqp)) / 3,
 					t = -2 * sqp,
 					o = 2 * PI / 3;
-				roots[0] = t * cos(phi) - b;
-				roots[1] = t * cos(phi + o) - b;
-				roots[2] = t * cos(phi - o) - b;
-				return 3;
+				add(t * cos(phi) - b);
+				add(t * cos(phi + o) - b);
+				return add(t * cos(phi - o) - b);
 			}
 			var A = (q > 0 ? -1 : 1) * pow(abs(q) + sqrt(D), 1 / 3);
-			roots[0] = A + p / A - b;
-			return 1;
+			return add(A + p / A - b);
 		}
 	};
 };
@@ -1031,8 +1093,7 @@ var Point = Base.extend({
 
 	_serialize: function(options) {
 		var f = options.formatter;
-		return [f.number(this.x),
-				f.number(this.y)];
+		return [f.number(this.x), f.number(this.y)];
 	},
 
 	add: function(point) {
@@ -1128,9 +1189,9 @@ var Point = Base.extend({
 
 	getAngleInRadians: function() {
 		if (arguments[0] === undefined) {
-			if (this._angle == null)
-				this._angle = Math.atan2(this.y, this.x);
-			return this._angle;
+			return this.isZero()
+					? this._angle || 0
+					: this._angle = Math.atan2(this.y, this.x);
 		} else {
 			var point = Point.read(arguments),
 				div = this.getLength() * point.getLength();
@@ -1254,10 +1315,10 @@ var LinkedPoint = Point.extend({
 		this._setter = setter;
 	},
 
-	set: function(x, y, dontNotify) {
+	set: function(x, y, _dontNotify) {
 		this._x = x;
 		this._y = y;
-		if (!dontNotify)
+		if (!_dontNotify)
 			this._owner[this._setter](this);
 		return this;
 	},
@@ -1415,10 +1476,10 @@ var LinkedSize = Size.extend({
 		this._setter = setter;
 	},
 
-	set: function(width, height, dontNotify) {
+	set: function(width, height, _dontNotify) {
 		this._width = width;
 		this._height = height;
-		if (!dontNotify)
+		if (!_dontNotify)
 			this._owner[this._setter](this);
 		return this;
 	},
@@ -1522,7 +1583,7 @@ var Rectangle = Base.extend({
 			rect = Rectangle.read(arguments);
 		return rect === this
 				|| rect && this.x === rect.x && this.y === rect.y
-					&& this.width === rect.width && this.height=== rect.height
+					&& this.width === rect.width && this.height === rect.height
 				|| false;
 	},
 
@@ -1771,12 +1832,12 @@ var LinkedRectangle = Rectangle.extend({
 		this._setter = setter;
 	},
 
-	set: function(x, y, width, height, dontNotify) {
+	set: function(x, y, width, height, _dontNotify) {
 		this._x = x;
 		this._y = y;
 		this._width = width;
 		this._height = height;
-		if (!dontNotify)
+		if (!_dontNotify)
 			this._owner[this._setter](this);
 		return this;
 	}
@@ -1829,9 +1890,9 @@ var Matrix = Base.extend({
 	initialize: function Matrix(arg) {
 		var count = arguments.length,
 			ok = true;
-		if (count == 6) {
+		if (count === 6) {
 			this.set.apply(this, arguments);
-		} else if (count == 1) {
+		} else if (count === 1) {
 			if (arg instanceof Matrix) {
 				this.set(arg._a, arg._c, arg._b, arg._d, arg._tx, arg._ty);
 			} else if (Array.isArray(arg)) {
@@ -1839,7 +1900,7 @@ var Matrix = Base.extend({
 			} else {
 				ok = false;
 			}
-		} else if (count == 0) {
+		} else if (count === 0) {
 			this.reset();
 		} else {
 			ok = false;
@@ -1848,18 +1909,25 @@ var Matrix = Base.extend({
 			throw new Error('Unsupported matrix parameters');
 	},
 
-	set: function(a, c, b, d, tx, ty) {
+	set: function(a, c, b, d, tx, ty, _dontNotify) {
 		this._a = a;
 		this._c = c;
 		this._b = b;
 		this._d = d;
 		this._tx = tx;
 		this._ty = ty;
+		if (!_dontNotify)
+			this._changed();
 		return this;
 	},
 
 	_serialize: function(options) {
 		return Base.serialize(this.getValues(), options);
+	},
+
+	_changed: function() {
+		if (this._owner)
+			this._owner._changed(5);
 	},
 
 	clone: function() {
@@ -1868,9 +1936,9 @@ var Matrix = Base.extend({
 	},
 
 	equals: function(mx) {
-		return mx === this || mx && this._a == mx._a && this._b == mx._b
-				&& this._c == mx._c && this._d == mx._d && this._tx == mx._tx
-				&& this._ty == mx._ty
+		return mx === this || mx && this._a === mx._a && this._b === mx._b
+				&& this._c === mx._c && this._d === mx._d
+				&& this._tx === mx._tx && this._ty === mx._ty
 				|| false;
 	},
 
@@ -1885,6 +1953,7 @@ var Matrix = Base.extend({
 	reset: function() {
 		this._a = this._d = 1;
 		this._c = this._b = this._tx = this._ty = 0;
+		this._changed();
 		return this;
 	},
 
@@ -1899,6 +1968,7 @@ var Matrix = Base.extend({
 		this._d *= scale.y;
 		if (center)
 			this.translate(center.negate());
+		this._changed();
 		return this;
 	},
 
@@ -1908,6 +1978,7 @@ var Matrix = Base.extend({
 			y = point.y;
 		this._tx += x * this._a + y * this._b;
 		this._ty += x * this._c + y * this._d;
+		this._changed();
 		return this;
 	},
 
@@ -1930,6 +2001,7 @@ var Matrix = Base.extend({
 		this._d = -sin * c + cos * d;
 		this._tx += tx * a + ty * b;
 		this._ty += tx * c + ty * d;
+		this._changed();
 		return this;
 	},
 
@@ -1946,20 +2018,8 @@ var Matrix = Base.extend({
 		this._d += point.x * c;
 		if (center)
 			this.translate(center.negate());
+		this._changed();
 		return this;
-	},
-
-	isIdentity: function() {
-		return this._a == 1 && this._c == 0 && this._b == 0 && this._d == 1
-				&& this._tx == 0 && this._ty == 0;
-	},
-
-	isInvertible: function() {
-		return !!this._getDeterminant();
-	},
-
-	isSingular: function() {
-		return !this._getDeterminant();
 	},
 
 	concatenate: function(mx) {
@@ -1973,6 +2033,7 @@ var Matrix = Base.extend({
 		this._d = mx._b * c + mx._d * d;
 		this._tx += mx._tx * a + mx._ty * b;
 		this._ty += mx._tx * c + mx._ty * d;
+		this._changed();
 		return this;
 	},
 
@@ -1989,16 +2050,30 @@ var Matrix = Base.extend({
 		this._d = mx._c * b + mx._d * d;
 		this._tx = mx._a * tx + mx._b * ty + mx._tx;
 		this._ty = mx._c * tx + mx._d * ty + mx._ty;
+		this._changed();
 		return this;
 	},
 
-	transform: function( src, srcOff, dst, dstOff, numPts) {
-		return arguments.length < 5
-			? this._transformPoint(Point.read(arguments))
-			: this._transformCoordinates(src, srcOff, dst, dstOff, numPts);
+	isIdentity: function() {
+		return this._a === 1 && this._c === 0 && this._b === 0 && this._d === 1
+				&& this._tx === 0 && this._ty === 0;
 	},
 
-	_transformPoint: function(point, dest, dontNotify) {
+	isInvertible: function() {
+		return !!this._getDeterminant();
+	},
+
+	isSingular: function() {
+		return !this._getDeterminant();
+	},
+
+	transform: function( src, srcOffset, dst, dstOffset, count) {
+		return arguments.length < 5
+			? this._transformPoint(Point.read(arguments))
+			: this._transformCoordinates(src, srcOffset, dst, dstOffset, count);
+	},
+
+	_transformPoint: function(point, dest, _dontNotify) {
 		var x = point.x,
 			y = point.y;
 		if (!dest)
@@ -2006,14 +2081,15 @@ var Matrix = Base.extend({
 		return dest.set(
 			x * this._a + y * this._b + this._tx,
 			x * this._c + y * this._d + this._ty,
-			dontNotify
+			_dontNotify
 		);
 	},
 
-	_transformCoordinates: function(src, srcOff, dst, dstOff, numPts) {
-		var i = srcOff, j = dstOff,
-			srcEnd = srcOff + 2 * numPts;
-		while (i < srcEnd) {
+	_transformCoordinates: function(src, srcOffset, dst, dstOffset, count) {
+		var i = srcOffset,
+			j = dstOffset,
+			max = i + 2 * count;
+		while (i < max) {
 			var x = src[i++],
 				y = src[i++];
 			dst[j++] = x * this._a + y * this._b + this._tx;
@@ -2031,7 +2107,7 @@ var Matrix = Base.extend({
 		return this._transformCoordinates(coords, 0, coords, 0, 4);
 	},
 
-	_transformBounds: function(bounds, dest, dontNotify) {
+	_transformBounds: function(bounds, dest, _dontNotify) {
 		var coords = this._transformCorners(bounds),
 			min = coords.slice(0, 2),
 			max = coords.slice();
@@ -2046,7 +2122,7 @@ var Matrix = Base.extend({
 		if (!dest)
 			dest = new Rectangle();
 		return dest.set(min[0], min[1], max[0] - min[0], max[1] - min[1],
-				dontNotify);
+				_dontNotify);
 	},
 
 	inverseTransform: function() {
@@ -2060,7 +2136,7 @@ var Matrix = Base.extend({
 				? det : null;
 	},
 
-	_inverseTransform: function(point, dest, dontNotify) {
+	_inverseTransform: function(point, dest, _dontNotify) {
 		var det = this._getDeterminant();
 		if (!det)
 			return null;
@@ -2071,7 +2147,7 @@ var Matrix = Base.extend({
 		return dest.set(
 			(x * this._d - y * this._b) / det,
 			(y * this._a - x * this._c) / det,
-			dontNotify
+			_dontNotify
 		);
 	},
 
@@ -2116,12 +2192,34 @@ var Matrix = Base.extend({
 		return new Point(this._tx, this._ty);
 	},
 
+	setTranslation: function() {
+		var point = Point.read(arguments);
+		this._tx = point.x;
+		this._ty = point.y;
+		this._changed();
+	},
+
 	getScaling: function() {
 		return (this.decompose() || {}).scaling;
 	},
 
+	setScaling: function() {
+		var scaling = this.getScaling();
+		if (scaling != null) {
+			var scale = Point.read(arguments);
+			(this._owner || this).scale(
+					scale.x / scaling.x, scale.y / scaling.y);
+		}
+	},
+
 	getRotation: function() {
 		return (this.decompose() || {}).rotation;
+	},
+
+	setRotation: function(angle) {
+		var rotation = this.getRotation();
+		if (rotation != null)
+			(this._owner || this).rotate(angle - rotation);
 	},
 
 	inverted: function() {
@@ -2157,6 +2255,7 @@ var Matrix = Base.extend({
 		};
 		this['set' + name] = function(value) {
 			this[prop] = value;
+			this._changed();
 		};
 	}, {});
 });
@@ -2301,6 +2400,11 @@ var Project = PaperScopeItem.extend({
 		this.symbols = [];
 	},
 
+	isEmpty: function() {
+		return this.layers.length <= 1
+			&& (!this.activeLayer || this.activeLayer.isEmpty());
+	},
+
 	remove: function remove() {
 		if (!remove.base.call(this))
 			return false;
@@ -2321,36 +2425,54 @@ var Project = PaperScopeItem.extend({
 		return this._index;
 	},
 
+	addChild: function(child) {
+		if (child instanceof Layer) {
+			Base.splice(this.layers, [child]);
+			if (!this.activeLayer)
+				this.activeLayer = child;
+		} else if (child instanceof Item) {
+			(this.activeLayer
+				|| this.addChild(new Layer({ insert: false }))).addChild(child);
+		} else {
+			child = null;
+		}
+		return child;
+	},
+
 	getSelectedItems: function() {
 		var items = [];
 		for (var id in this._selectedItems) {
 			var item = this._selectedItems[id];
-			if (item._drawCount === this._drawCount)
+			if (item.isInserted())
 				items.push(item);
 		}
 		return items;
 	},
 
 	_updateSelection: function(item) {
+		var id = item._id,
+			selectedItems = this._selectedItems;
 		if (item._selected) {
-			this._selectedItemCount++;
-			this._selectedItems[item._id] = item;
-			if (item.isInserted())
-				item._drawCount = this._drawCount;
-		} else {
+			if (selectedItems[id] !== item) {
+				this._selectedItemCount++;
+				selectedItems[id] = item;
+			}
+		} else if (selectedItems[id] === item) {
 			this._selectedItemCount--;
-			delete this._selectedItems[item._id];
+			delete selectedItems[id];
 		}
 	},
 
 	selectAll: function() {
-		for (var i = 0, l = this.layers.length; i < l; i++)
-			this.layers[i].setSelected(true);
+		var layers = this.layers;
+		for (var i = 0, l = layers.length; i < l; i++)
+			layers[i].setFullySelected(true);
 	},
 
 	deselectAll: function() {
-		for (var i in this._selectedItems)
-			this._selectedItems[i].setSelected(false);
+		var selectedItems = this._selectedItems;
+		for (var i in selectedItems)
+			selectedItems[i].setFullySelected(false);
 	},
 
 	hitTest: function(point, options) {
@@ -2361,20 +2483,47 @@ var Project = PaperScopeItem.extend({
 			if (res) return res;
 		}
 		return null;
-	},
+	}
+}, new function() {
+	function getItems(project, match, list) {
+		var layers = project.layers,
+			items = list && [];
+		for (var i = 0, l = layers.length; i < l; i++) {
+			var res = layers[i][list ? 'getItems' : 'getItem'](match);
+			if (list) {
+				items.push.apply(items, res);
+			} else if (res)
+				return res;
+		}
+		return list ? items : null;
+	}
+
+	return {
+		getItems: function(match) {
+			return getItems(this, match, true);
+		},
+
+		getItem: function(match) {
+			return getItems(this, match, false);
+		}
+	};
+}, {
 
 	importJSON: function(json) {
 		this.activate();
-		return Base.importJSON(json);
+		var layer = this.activeLayer;
+		return Base.importJSON(json, layer && layer.isEmpty() && layer);
 	},
 
-	draw: function(ctx, matrix) {
+	draw: function(ctx, matrix, ratio) {
 		this._drawCount++;
 		ctx.save();
 		matrix.applyToContext(ctx);
 		var param = Base.merge({
 			offset: new Point(0, 0),
-			transforms: [matrix]
+			ratio: ratio,
+			transforms: [matrix],
+			trackTransforms: true
 		});
 		for (var i = 0, l = this.layers.length; i < l; i++)
 			this.layers[i].draw(ctx, param);
@@ -2494,6 +2643,7 @@ var Item = Base.extend(Callback, {
 		blendMode: 'normal',
 		opacity: 1,
 		guide: false,
+		selected: false,
 		clipMask: false,
 		data: {}
 	},
@@ -2504,18 +2654,18 @@ var Item = Base.extend(Callback, {
 	_initialize: function(props, point) {
 		this._id = Item._id = (Item._id || 0) + 1;
 		if (!this._project) {
-			var project = paper.project,
-				layer = project.activeLayer;
-			if (layer && !(props && props.insert === false)) {
-				layer.addChild(this);
-			} else {
+			var project = paper.project;
+			if (props && props.insert === false) {
 				this._setProject(project);
+			} else {
+				(project.activeLayer || new Layer()).addChild(this);
 			}
 		}
 		this._style = new Style(this._project._currentStyle, this);
-		this._matrix = new Matrix();
+		var matrix = this._matrix = new Matrix();
 		if (point)
-			this._matrix.translate(point);
+			matrix.translate(point);
+		matrix._owner = this;
 		return props ? this._set(props, { insert: true }) : true;
 	},
 
@@ -2568,16 +2718,20 @@ var Item = Base.extend(Callback, {
 			}, {
 				onFrame: {
 					install: function() {
-						this._project.view._animateItem(this, true);
+						this._animateItem(true);
 					},
 					uninstall: function() {
-						this._project.view._animateItem(this, false);
+						this._animateItem(false);
 					}
 				},
 
 				onLoad: {}
 			}
 		);
+	},
+
+	_animateItem: function(animate) {
+		this._project.view._animateItem(this, animate);
 	},
 
 	_serialize: function(options, dictionary) {
@@ -2587,9 +2741,11 @@ var Item = Base.extend(Callback, {
 		function serialize(fields) {
 			for (var key in fields) {
 				var value = that[key];
-				if (!Base.equals(value, fields[key]))
+				if (!Base.equals(value, key === 'leading'
+						? fields.fontSize * 1.2 : fields[key])) {
 					props[key] = Base.serialize(value, options,
 							key !== 'data', dictionary);
+				}
 			}
 		}
 
@@ -2603,6 +2759,7 @@ var Item = Base.extend(Callback, {
 		var parent = this._parent,
 			project = this._project,
 			symbol = this._parentSymbol;
+		this._drawCount = null;
 		if (flags & 4) {
 			delete this._bounds;
 			delete this._position;
@@ -2654,7 +2811,10 @@ var Item = Base.extend(Callback, {
 	setName: function(name, unique) {
 
 		if (this._name)
-			this._removeFromNamed();
+			this._removeNamed();
+		if (name === (+name) + '')
+			throw new Error(
+					'Names consisting only of numbers are not supported.');
 		if (name && this._parent) {
 			var children = this._parent._children,
 				namedChildren = this._parent._namedChildren,
@@ -2678,12 +2838,15 @@ var Item = Base.extend(Callback, {
 	},
 
 	hasFill: function() {
-		return !!this.getStyle().getFillColor();
+		return this.getStyle().hasFill();
 	},
 
 	hasStroke: function() {
-		var style = this.getStyle();
-		return !!style.getStrokeColor() && style.getStrokeWidth() > 0;
+		return this.getStyle().hasStroke();
+	},
+
+	hasShadow: function() {
+		return this.getStyle().hasShadow();
 	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	function(name) {
@@ -2790,19 +2953,6 @@ var Item = Base.extend(Callback, {
 
 	setPosition: function() {
 		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
-	},
-
-	getMatrix: function() {
-		return this._matrix;
-	},
-
-	setMatrix: function(matrix) {
-		this._matrix.initialize(matrix);
-		this._changed(5);
-	},
-
-	isEmpty: function() {
-		return this._children.length == 0;
 	}
 }, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	function(name) {
@@ -2899,13 +3049,44 @@ var Item = Base.extend(Callback, {
 	}
 
 }), {
+	getMatrix: function() {
+		return this._matrix;
+	},
+
+	setMatrix: function(matrix) {
+		this._matrix.initialize(matrix);
+		if (this._transformContent)
+			this.applyMatrix(true);
+		this._changed(5);
+	},
+
+	getGlobalMatrix: function() {
+		return this._drawCount === this._project._drawCount
+				&& this._globalMatrix || null;
+	},
+
+	getTransformContent: function() {
+		return this._transformContent;
+	},
+
+	setTransformContent: function(transform) {
+		this._transformContent = transform;
+		if (transform)
+			this.applyMatrix();
+	},
+
 	getProject: function() {
 		return this._project;
 	},
 
 	_setProject: function(project) {
 		if (this._project != project) {
+			var hasOnFrame = this.responds('frame');
+			if (hasOnFrame)
+				this._animateItem(false);
 			this._project = project;
+			if (hasOnFrame)
+				this._animateItem(true);
 			if (this._children) {
 				for (var i = 0, l = this._children.length; i < l; i++) {
 					this._children[i]._setProject(project);
@@ -2965,6 +3146,24 @@ var Item = Base.extend(Callback, {
 		return this._parent ? this._parent.isInserted() : false;
 	},
 
+	equals: function(item) {
+		return item === this || item && this._class === item._class
+				&& this._style.equals(item._style) 
+				&& this._matrix.equals(item._matrix)
+				&& this._locked === item._locked
+				&& this._visible === item._visible
+				&& this._blendMode === item._blendMode
+				&& this._opacity === item._opacity
+				&& this._clipMask === item._clipMask
+				&& this._guide === item._guide
+				&& this._equals(item)
+				|| false;
+	},
+
+	_equals: function(item) {
+		return Base.equals(this._children, item._children);
+	},
+
 	clone: function(insert) {
 		return this._clone(new this.constructor({ insert: false }), insert);
 	},
@@ -2992,13 +3191,7 @@ var Item = Base.extend(Callback, {
 	},
 
 	copyTo: function(itemOrProject) {
-		var copy = this.clone();
-		if (itemOrProject.layers) {
-			itemOrProject.activeLayer.addChild(copy);
-		} else {
-			itemOrProject.addChild(copy);
-		}
-		return copy;
+		return itemOrProject.addChild(this.clone(false));
 	},
 
 	rasterize: function(resolution) {
@@ -3013,9 +3206,13 @@ var Item = Base.extend(Callback, {
 		ctx.save();
 		matrix.applyToContext(ctx);
 		this.draw(ctx, Base.merge({ transforms: [matrix] }));
-		var raster = new Raster(canvas);
-		raster.setPosition(topLeft.add(size.divide(2)));
 		ctx.restore();
+		var raster = new Raster({
+			canvas: canvas,
+			insert: false
+		});
+		raster.setPosition(topLeft.add(size.divide(2)));
+		raster.insertAbove(this);
 		return raster;
 	},
 
@@ -3043,7 +3240,7 @@ var Item = Base.extend(Callback, {
 			return null;
 
 		if (!this._children && !this.getRoughBounds()
-				.expand(options.tolerance)._containsPoint(point))
+				.expand(2 * options.tolerance)._containsPoint(point))
 			return null;
 		point = this._matrix._inverseTransform(point);
 
@@ -3081,17 +3278,91 @@ var Item = Base.extend(Callback, {
 	},
 
 	_hitTest: function(point, options) {
-		if (this._children) {
-			for (var i = this._children.length - 1, res; i >= 0; i--)
-				if (res = this._children[i].hitTest(point, options))
+		var children = this._children;
+		if (children) {
+			for (var i = children.length - 1, res; i >= 0; i--)
+				if (res = children[i].hitTest(point, options))
 					return res;
 		} else if (options.fill && this.hasFill() && this._contains(point)) {
 			return new HitResult('fill', this);
 		}
 	},
 
+	matches: function(match) {
+		function matchObject(obj1, obj2) {
+			for (var i in obj1) {
+				if (obj1.hasOwnProperty(i)) {
+					var val1 = obj1[i],
+						val2 = obj2[i];
+					if (Base.isPlainObject(val1) && Base.isPlainObject(val2)) {
+						if (!matchObject(val1, val2))
+							return false;
+					} else if (!Base.equals(val1, val2)) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		for (var key in match) {
+			if (match.hasOwnProperty(key)) {
+				var value = this[key],
+					compare = match[key];
+				if (compare instanceof RegExp) {
+					if (!compare.test(value))
+						return false;
+				} else if (typeof compare === 'function') {
+					if (!compare(value))
+						return false;
+				} else if (Base.isPlainObject(compare)) {
+					if (!matchObject(compare, value))
+						return false;
+				} else if (!Base.equals(value, compare)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+}, new function() {
+	function getItems(item, match, list) {
+		var children = item._children,
+			items = list && [];
+		for (var i = 0, l = children && children.length; i < l; i++) {
+			var child = children[i];
+			if (child.matches(match)) {
+				if (list) {
+					items.push(child);
+				} else {
+					return child;
+				}
+			}
+			var res = getItems(child, match, list);
+			if (list) {
+				items.push.apply(items, res);
+			} else if (res) {
+				return res;
+			}
+		}
+		return list ? items : null;
+	}
+
+	return {
+		getItems: function(match) {
+			return getItems(this, match, true);
+		},
+
+		getItem: function(match) {
+			return getItems(this, match, false);
+		}
+	};
+}, {
+
 	importJSON: function(json) {
-		return this.addChild(Base.importJSON(json));
+		var res = Base.importJSON(json, this);
+		return res !== this
+				? this.addChild(res)
+				: res;
 	},
 
 	addChild: function(item, _preserve) {
@@ -3168,7 +3439,17 @@ var Item = Base.extend(Callback, {
 
 	moveBelow: '#insertBelow',
 
-	_removeFromNamed: function() {
+	reduce: function() {
+		if (this._children && this._children.length === 1) {
+			var child = this._children[0];
+			child.insertAbove(this);
+			this.remove();
+			return child;
+		}
+		return this;
+	},
+
+	_removeNamed: function() {
 		var children = this._parent._children,
 			namedChildren = this._parent._namedChildren,
 			name = this._name,
@@ -3189,9 +3470,11 @@ var Item = Base.extend(Callback, {
 	_remove: function(notify) {
 		if (this._parent) {
 			if (this._name)
-				this._removeFromNamed();
+				this._removeNamed();
 			if (this._index != null)
 				Base.splice(this._parent._children, null, this._index, 1);
+			if (this.responds('frame'))
+				this._animateItem(false);
 			if (notify)
 				this._parent._changed(7);
 			this._parent = null;
@@ -3217,6 +3500,8 @@ var Item = Base.extend(Callback, {
 		return removed;
 	},
 
+	clear: '#removeChildren',
+
 	reverseChildren: function() {
 		if (this._children) {
 			this._children.reverse();
@@ -3224,6 +3509,10 @@ var Item = Base.extend(Callback, {
 				this._children[i]._index = i;
 			this._changed(7);
 		}
+	},
+
+	isEmpty: function() {
+		return !this._children || this._children.length == 0;
 	},
 
 	isEditable: function() {
@@ -3375,6 +3664,16 @@ var Item = Base.extend(Callback, {
 			this._changed(5);
 	},
 
+	globalToLocal: function() {
+		var matrix = this.getGlobalMatrix();
+		return matrix && matrix._transformPoint(Point.read(arguments));
+	},
+
+	localToGlobal: function() {
+		var matrix = this.getGlobalMatrix();
+		return matrix && matrix._inverseTransform(Point.read(arguments));
+	},
+
 	fitBounds: function(rectangle, fill) {
 		rectangle = Rectangle.read(arguments);
 		var bounds = this.getBounds(),
@@ -3391,43 +3690,49 @@ var Item = Base.extend(Callback, {
 
 	_setStyles: function(ctx) {
 		var style = this._style,
-			width = style.getStrokeWidth(),
-			join = style.getStrokeJoin(),
-			cap = style.getStrokeCap(),
-			limit = style.getMiterLimit(),
 			fillColor = style.getFillColor(),
 			strokeColor = style.getStrokeColor(),
 			shadowColor = style.getShadowColor();
-		if (width != null)
-			ctx.lineWidth = width;
-		if (join)
-			ctx.lineJoin = join;
-		if (cap)
-			ctx.lineCap = cap;
-		if (limit)
-			ctx.miterLimit = limit;
 		if (fillColor)
 			ctx.fillStyle = fillColor.toCanvasStyle(ctx);
 		if (strokeColor) {
-			ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
-			var dashArray = style.getDashArray(),
-				dashOffset = style.getDashOffset();
-			if (paper.support.nativeDash && dashArray && dashArray.length) {
-				if ('setLineDash' in ctx) {
-					ctx.setLineDash(dashArray);
-					ctx.lineDashOffset = dashOffset;
-				} else {
-					ctx.mozDash = dashArray;
-					ctx.mozDashOffset = dashOffset;
+			var strokeWidth = style.getStrokeWidth();
+			if (strokeWidth > 0) {
+				ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
+				ctx.lineWidth = strokeWidth;
+				var strokeJoin = style.getStrokeJoin(),
+					strokeCap = style.getStrokeCap(),
+					miterLimit = style.getMiterLimit();
+				if (strokeJoin)
+					ctx.lineJoin = strokeJoin;
+				if (strokeCap)
+					ctx.lineCap = strokeCap;
+				if (miterLimit)
+					ctx.miterLimit = miterLimit;
+				if (paper.support.nativeDash) {
+					var dashArray = style.getDashArray(),
+						dashOffset = style.getDashOffset();
+					if (dashArray && dashArray.length) {
+						if ('setLineDash' in ctx) {
+							ctx.setLineDash(dashArray);
+							ctx.lineDashOffset = dashOffset;
+						} else {
+							ctx.mozDash = dashArray;
+							ctx.mozDashOffset = dashOffset;
+						}
+					}
 				}
 			}
 		}
 		if (shadowColor) {
-			ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
-			ctx.shadowBlur = style.getShadowBlur();
-			var offset = this.getShadowOffset();
-			ctx.shadowOffsetX = offset.x;
-			ctx.shadowOffsetY = offset.y;
+			var shadowBlur = style.getShadowBlur();
+			if (shadowBlur > 0) {
+				ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
+				ctx.shadowBlur = shadowBlur;
+				var offset = this.getShadowOffset();
+				ctx.shadowOffsetX = offset.x;
+				ctx.shadowOffsetY = offset.y;
+			}
 		}
 	},
 
@@ -3435,10 +3740,12 @@ var Item = Base.extend(Callback, {
 		if (!this._visible || this._opacity === 0)
 			return;
 		this._drawCount = this._project._drawCount;
-		var transforms = param.transforms,
+		var trackTransforms = param.trackTransforms,
+			transforms = param.transforms,
 			parentMatrix = transforms[transforms.length - 1],
 			globalMatrix = parentMatrix.clone().concatenate(this._matrix);
-		transforms.push(this._globalMatrix = globalMatrix);
+		if (trackTransforms)
+			transforms.push(this._globalMatrix = globalMatrix);
 		var blendMode = this._blendMode,
 			opacity = this._opacity,
 			normalBlend = blendMode === 'normal',
@@ -3455,7 +3762,7 @@ var Item = Base.extend(Callback, {
 			itemOffset = param.offset = bounds.getTopLeft().floor();
 			mainCtx = ctx;
 			ctx = CanvasProvider.getContext(
-					bounds.getSize().ceil().add(new Size(1, 1)));
+					bounds.getSize().ceil().add(new Size(1, 1)), param.ratio);
 		}
 		ctx.save();
 		if (direct) {
@@ -3470,12 +3777,13 @@ var Item = Base.extend(Callback, {
 			param.clipItem.draw(ctx, param.extend({ clip: true }));
 		this._draw(ctx, param);
 		ctx.restore();
-		transforms.pop();
+		if (trackTransforms)
+			transforms.pop();
 		if (param.clip)
 			ctx.clip();
 		if (!direct) {
 			BlendMode.process(blendMode, ctx, mainCtx, opacity,
-					itemOffset.subtract(prevOffset));
+					itemOffset.subtract(prevOffset).multiply(param.ratio));
 			CanvasProvider.release(ctx);
 			param.offset = prevOffset;
 		}
@@ -3541,16 +3849,6 @@ var Group = Item.extend({
 		return this._clipItem = null;
 	},
 
-	getTransformContent: function() {
-		return this._transformContent;
-	},
-
-	setTransformContent: function(transform) {
-		this._transformContent = transform;
-		if (transform)
-			this.applyMatrix();
-	},
-
 	isClipped: function() {
 		return !!this._getClipItem();
 	},
@@ -3577,11 +3875,17 @@ var Group = Item.extend({
 var Layer = Group.extend({
 	_class: 'Layer',
 
-	initialize: function Layer() {
-		this._project = paper.project;
-		this._index = this._project.layers.push(this) - 1;
-		Group.apply(this, arguments);
-		this.activate();
+	initialize: function Layer(arg) {
+		var props = Base.isPlainObject(arg)
+				? Base.merge(arg) 
+				: { children: Array.isArray(arg) ? arg : arguments },
+			insert = props.insert;
+		props.insert = false;
+		Group.call(this, props);
+		if (insert || insert === undefined) {
+			this._project.addChild(this);
+			this.activate();
+		}
 	},
 
 	_remove: function _remove(notify) {
@@ -3617,7 +3921,8 @@ var Layer = Group.extend({
 	},
 
 	_insert: function _insert(above, item, _preserve) {
-		if (item instanceof Layer && !item._parent && this._remove(true)) {
+		if (item instanceof Layer && !item._parent) {
+			this._remove(true);
 			Base.splice(item._project.layers, [this],
 					item._index + (above ? 1 : 0), 0);
 			this._setProject(item._project);
@@ -3630,11 +3935,30 @@ var Layer = Group.extend({
 var Shape = Item.extend({
 	_class: 'Shape',
 	_transformContent: false,
+	_boundsSelected: true,
 
-	initialize: function Shape(type, point, size, props) {
-		this._initialize(props, point);
-		this._type = type;
+	initialize: function Shape(shape, center, size, radius, props) {
+		this._shape = shape;
 		this._size = size;
+		this._radius = radius;
+		this._initialize(props, center);
+	},
+
+	_equals: function(item) {
+		return this._shape === item._shape
+			&& this._size.equals(item._size)
+			&& Base.equals(this._radius, item._radius);
+	},
+
+	clone: function(insert) {
+		return this._clone(new Shape(this._shape, this.getPosition(true),
+				this._size.clone(),
+				this._radius.clone ? this._radius.clone() : this._radius,
+				{ insert: false }), insert);
+	},
+
+	getShape: function() {
+		return this._shape;
 	},
 
 	getSize: function() {
@@ -3643,58 +3967,128 @@ var Shape = Item.extend({
 	},
 
 	setSize: function() {
-		var size = Size.read(arguments);
+		var shape = this._shape,
+			size = Size.read(arguments);
 		if (!this._size.equals(size)) {
-			this._size.set(size.width, size.height);
+			var width = size.width,
+				height = size.height;
+			if (shape === 'rectangle') {
+				var radius = Size.min(this._radius, size.divide(2));
+				this._radius.set(radius.width, radius.height);
+			} else if (shape === 'circle') {
+				width = height = (width + height) / 2;
+				this._radius = width / 2;
+			} else if (shape === 'ellipse') {
+				this._radius.set(width / 2, height / 2);
+			}
+			this._size.set(width, height);
 			this._changed(5);
 		}
 	},
 
 	getRadius: function() {
-		var size = this._size;
-		return (size.width + size.height) / 4;
+		var rad = this._radius;
+		return this._shape === 'circle'
+				? rad
+				: new LinkedSize(rad.width, rad.height, this, 'setRadius');
 	},
 
 	setRadius: function(radius) {
-		var size = radius * 2;
-		this.setSize(size, size);
+		var shape = this._shape;
+		if (shape === 'circle') {
+			if (radius === this._radius)
+				return;
+			var size = radius * 2;
+			this._radius = radius;
+			this._size.set(size, size);
+		} else {
+			radius = Size.read(arguments);
+			if (this._radius.equals(radius))
+				return;
+			this._radius.set(radius.width, radius.height);
+			if (shape === 'rectangle') {
+				var size = Size.max(this._size, radius.multiply(2));
+				this._size.set(size.width, size.height);
+			} else if (shape === 'ellipse') {
+				this._size.set(radius.width * 2, radius.height * 2);
+			}
+		}
+		this._changed(5);
+	},
+
+	isEmpty: function() {
+		return false;
+	},
+
+	toPath: function(insert) {
+		var path = new Path[Base.capitalize(this._shape)]({
+			center: new Point(),
+			size: this._size,
+			radius: this._radius,
+			insert: false
+		});
+		path.setStyle(this._style);
+		path.transform(this._matrix);
+		if (insert || insert === undefined)
+			path.insertAbove(this);
+		return path;
 	},
 
 	_draw: function(ctx, param) {
 		var style = this._style,
-			size = this._size,
-			width = size.width,
-			height = size.height,
-			fillColor = style.getFillColor(),
-			strokeColor = style.getStrokeColor();
-		if (fillColor || strokeColor || param.clip) {
+			hasFill = style.hasFill(),
+			hasStroke = style.hasStroke(),
+			clip = param.clip;
+		if (hasFill || hasStroke || clip) {
+			var radius = this._radius,
+				shape = this._shape;
 			ctx.beginPath();
-			switch (this._type) {
-			case 'rect':
-				ctx.rect(-width / 2, -height / 2, width, height);
-				break;
-			case 'circle':
-				ctx.arc(0, 0, (width + height) / 4, 0, Math.PI * 2, true);
-				break;
-			case 'ellipse':
-				var mx = width / 2,
-					my = height / 2,
-					kappa = Numerical.KAPPA,
-					cx = mx * kappa,
-					cy = my * kappa;
-				ctx.moveTo(-mx, 0);
-				ctx.bezierCurveTo(-mx, -cy, -cx, -my, 0, -my);
-				ctx.bezierCurveTo(cx, -my, mx, -cy, mx, 0);
-				ctx.bezierCurveTo(mx, cy, cx, my, 0, my);
-				ctx.bezierCurveTo(-cx, my, -mx, cy, -mx, 0);
-				break;
+			if (shape === 'circle') {
+				ctx.arc(0, 0, radius, 0, Math.PI * 2, true);
+			} else {
+				var rx = radius.width,
+					ry = radius.height,
+					kappa = Numerical.KAPPA;
+				if (shape === 'ellipse') {
+					var	cx = rx * kappa,
+						cy = ry * kappa;
+					ctx.moveTo(-rx, 0);
+					ctx.bezierCurveTo(-rx, -cy, -cx, -ry, 0, -ry);
+					ctx.bezierCurveTo(cx, -ry, rx, -cy, rx, 0);
+					ctx.bezierCurveTo(rx, cy, cx, ry, 0, ry);
+					ctx.bezierCurveTo(-cx, ry, -rx, cy, -rx, 0);
+				} else { 
+					var size = this._size,
+						width = size.width,
+						height = size.height;
+					if (rx === 0 && ry === 0) {
+						ctx.rect(-width / 2, -height / 2, width, height);
+					} else {
+						kappa = 1 - kappa;
+						var x = width / 2,
+							y = height / 2,
+							cx = rx * kappa,
+							cy = ry * kappa;
+						ctx.moveTo(-x, -y + ry);
+						ctx.bezierCurveTo(-x, -y + cy, -x + cx, -y, -x + rx, -y);
+						ctx.lineTo(x - rx, -y);
+						ctx.bezierCurveTo(x - cx, -y, x, -y + cy, x, -y + ry);
+						ctx.lineTo(x, y - ry);
+						ctx.bezierCurveTo(x, y - cy, x - cx, y, x - rx, y);
+						ctx.lineTo(-x + rx, y);
+						ctx.bezierCurveTo(-x + cx, y, -x, y - cy, -x, y - ry);
+					}
+				}
 			}
+			ctx.closePath();
 		}
-		if (!param.clip && (fillColor || strokeColor)) {
+		if (!clip && (hasFill || hasStroke)) {
 			this._setStyles(ctx);
-			if (fillColor)
-				ctx.fill();
-			if (strokeColor)
+			if (hasFill) {
+				ctx.fill(style.getWindingRule());
+				ctx.shadowColor = 'rgba(0,0,0,0)';
+			}
+			if (hasStroke)
 				ctx.stroke();
 		}
 	},
@@ -3708,79 +4102,123 @@ var Shape = Item.extend({
 		if (getter !== 'getBounds' && this.hasStroke())
 			rect = rect.expand(this.getStrokeWidth());
 		return matrix ? matrix._transformBounds(rect) : rect;
-	},
-
-	_contains: function _contains(point) {
-		switch (this._type) {
-		case 'rect':
-			return _contains.base.call(this, point);
-		case 'circle':
-		case 'ellipse':
-			return point.divide(this._size).getLength() <= 0.5;
-		}
-	},
-
-	_hitTest: function _hitTest(point) {
-		if (this.hasStroke()) {
-			var type = this._type,
-				strokeWidth = this.getStrokeWidth();
-			switch (type) {
-			case 'rect':
-				var rect = new Rectangle(this._size).setCenter(0, 0),
-					outer = rect.expand(strokeWidth),
-					inner = rect.expand(-strokeWidth);
-				if (outer._containsPoint(point) && !inner._containsPoint(point))
-					return new HitResult('stroke', this);
-				break;
-			case 'circle':
-			case 'ellipse':
-				var size = this._size,
-					width = size.width,
-					height = size.height,
-					radius;
-				if (type === 'ellipse') {
-					var angle = point.getAngleInRadians(),
-						x = width * Math.sin(angle),
-						y = height * Math.cos(angle);
-					radius = width * height / (2 * Math.sqrt(x * x + y * y));
-				} else {
-					radius = (width + height) / 4;
-				}
-				if (2 * Math.abs(point.getLength() - radius) <= strokeWidth)
-					return new HitResult('stroke', this);
-				break;
-			}
-		}
-		return _hitTest.base.apply(this, arguments);
-	},
-
-	statics: new function() {
-		function createShape(type, point, size, args) {
-			return new Shape(type, point, size, Base.getNamed(args));
-		}
-
-		return {
-			Circle: function() {
-				var center = Point.readNamed(arguments, 'center'),
-					radius = Base.readNamed(arguments, 'radius');
-				return createShape('circle', center, new Size(radius * 2),
-						arguments);
-			},
-
-			Rectangle: function() {
-				var rect = Rectangle.readNamed(arguments, 'rectangle');
-				return createShape('rect', rect.getCenter(true),
-						rect.getSize(true), arguments);
-			},
-
-			Ellipse: function() {
-				var rect = Rectangle.readNamed(arguments, 'rectangle');
-				return createShape('ellipse', rect.getCenter(true),
-						rect.getSize(true), arguments);
-			}
-		};
 	}
-});
+},
+new function() { 
+
+	function getCornerCenter(that, point, expand) {
+		var radius = that._radius;
+		if (!radius.isZero()) {
+			var halfSize = that._size.divide(2);
+			for (var i = 0; i < 4; i++) {
+				var dir = new Point(i & 1 ? 1 : -1, i > 1 ? 1 : -1),
+					corner = dir.multiply(halfSize),
+					center = corner.subtract(dir.multiply(radius)),
+					rect = new Rectangle(corner, center);
+				if ((expand ? rect.expand(expand) : rect).contains(point))
+					return center;
+			}
+		}
+	}
+
+	function getEllipseRadius(point, radius) {
+		var angle = point.getAngleInRadians(),
+			width = radius.width * 2,
+			height = radius.height * 2,
+			x = width * Math.sin(angle),
+			y = height * Math.cos(angle);
+		return width * height / (2 * Math.sqrt(x * x + y * y));
+	}
+
+	return {
+		_contains: function _contains(point) {
+			if (this._shape === 'rectangle') {
+				var center = getCornerCenter(this, point);
+				return center
+						? point.subtract(center).divide(this._radius)
+							.getLength() <= 1
+						: _contains.base.call(this, point);
+			} else {
+				return point.divide(this.size).getLength() <= 0.5;
+			}
+		},
+
+		_hitTest: function _hitTest(point, options) {
+			var hit = false;
+			if (this.hasStroke()) {
+				var shape = this._shape,
+					radius = this._radius,
+					strokeWidth = this.getStrokeWidth() + 2 * options.tolerance;
+				if (shape === 'rectangle') {
+					var center = getCornerCenter(this, point, strokeWidth);
+					if (center) {
+						var pt = point.subtract(center);
+						hit = 2 * Math.abs(pt.getLength()
+								- getEllipseRadius(pt, radius)) <= strokeWidth;
+					} else {
+						var rect = new Rectangle(this._size).setCenter(0, 0),
+							outer = rect.expand(strokeWidth),
+							inner = rect.expand(-strokeWidth);
+						hit = outer._containsPoint(point)
+								&& !inner._containsPoint(point);
+					}
+				} else {
+					if (shape === 'ellipse')
+						radius = getEllipseRadius(point, radius);
+					hit = 2 * Math.abs(point.getLength() - radius)
+							<= strokeWidth;
+				}
+			}
+			return hit
+					? new HitResult('stroke', this)
+					: _hitTest.base.apply(this, arguments);
+		}
+	};
+}, {
+
+statics: new function() {
+	function createShape(shape, point, size, radius, args) {
+		return new Shape(shape, point, size, radius, Base.getNamed(args));
+	}
+
+	return {
+		Circle: function() {
+			var center = Point.readNamed(arguments, 'center'),
+				radius = Base.readNamed(arguments, 'radius');
+			return createShape('circle', center, new Size(radius * 2), radius,
+					arguments);
+		},
+
+		Rectangle: function() {
+			var rect = Rectangle.readNamed(arguments, 'rectangle'),
+				radius = Size.min(Size.readNamed(arguments, 'radius'),
+						rect.getSize(true).divide(2));
+			return createShape('rectangle', rect.getCenter(true),
+					rect.getSize(true), radius, arguments);
+		},
+
+		Ellipse: function() {
+			var ellipse = Shape._readEllipse(arguments);
+				radius = ellipse.radius;
+			return createShape('ellipse', ellipse.center, radius.multiply(2),
+					radius, arguments);
+		},
+
+		_readEllipse: function(args) {
+			var center,
+				radius;
+			if (Base.hasNamed(args, 'radius')) {
+				center = Point.readNamed(args, 'center');
+				radius = Size.readNamed(args, 'radius');
+			} else {
+				var rect = Rectangle.readNamed(args, 'rectangle');
+				center = rect.getCenter(true);
+				radius = rect.getSize(true).divide(2);
+			}
+			return { center: center, radius: radius };
+		}
+	};
+}});
 
 var Raster = Item.extend({
 	_class: 'Raster',
@@ -3794,9 +4232,7 @@ var Raster = Item.extend({
 	initialize: function Raster(object, position) {
 		if (!this._initialize(object,
 				position !== undefined && Point.read(arguments, 1))) {
-			if (object.getContext) {
-				this.setCanvas(object);
-			} else if (typeof object === 'string') {
+			if (typeof object === 'string') {
 				this.setSource(object);
 			} else {
 				this.setImage(object);
@@ -3804,6 +4240,10 @@ var Raster = Item.extend({
 		}
 		if (!this._size)
 			this._size = new Size();
+	},
+
+	_equals: function(item) {
+		return this.getSource() === item.getSource();
 	},
 
 	clone: function(insert) {
@@ -3857,18 +4297,25 @@ var Raster = Item.extend({
 		);
 	},
 
-	getContext: function() {
-		if (!this._context)
-			this._context = this.getCanvas().getContext('2d');
-		if (arguments[0]) {
-			this._image = null;
-			this._changed(129);
-		}
-		return this._context;
+	getImage: function() {
+		return this._image;
 	},
 
-	setContext: function(context) {
-		this._context = context;
+	setImage: function(image) {
+		if (this._canvas)
+			CanvasProvider.release(this._canvas);
+		if (image.getContext) {
+			this._image = null;
+			this._canvas = image;
+		} else {
+			this._image = image;
+			this._canvas = null;
+		}
+		this._size = new Size(
+				image.naturalWidth || image.width,
+				image.naturalHeight || image.height);
+		this._context = null;
+		this._changed(5 | 129);
 	},
 
 	getCanvas: function() {
@@ -3885,28 +4332,20 @@ var Raster = Item.extend({
 		return this._canvas;
 	},
 
-	setCanvas: function(canvas) {
-		if (this._canvas)
-			CanvasProvider.release(this._canvas);
-		this._canvas = canvas;
-		this._size = new Size(canvas.width, canvas.height);
-		this._image = null;
-		this._context = null;
-		this._changed(5 | 129);
+	setCanvas: '#setImage',
+
+	getContext: function() {
+		if (!this._context)
+			this._context = this.getCanvas().getContext('2d');
+		if (arguments[0]) {
+			this._image = null;
+			this._changed(129);
+		}
+		return this._context;
 	},
 
-	getImage: function() {
-		return this._image;
-	},
-
-	setImage: function(image) {
-		if (this._canvas)
-			CanvasProvider.release(this._canvas);
-		this._image = image;
-		this._size = new Size(image.width, image.height);
-		this._canvas = null;
-		this._context = null;
-		this._changed(5);
+	setContext: function(context) {
+		this._context = context;
 	},
 
 	getSource: function() {
@@ -3918,21 +4357,25 @@ var Raster = Item.extend({
 			image = document.getElementById(src) || new Image();
 
 		function loaded() {
+			var view = that._project.view;
+			if (view)
+				paper = view._scope;
 			that.fire('load');
-			if (that._project.view)
-				that._project.view.draw(true);
+			if (view)
+				view.draw(true);
 		}
 
-		if (image.width && image.height) {
+		if (image.naturalWidth && image.naturalHeight) {
 			setTimeout(loaded, 0);
-		} else if (!image.src) {
+		} else {
 			DomEvent.add(image, {
 				load: function() {
 					that.setImage(image);
 					loaded();
 				}
 			});
-			image.src = src;
+			if (!image.src)
+				image.src = src;
 		}
 		this.setImage(image);
 	},
@@ -3941,12 +4384,24 @@ var Raster = Item.extend({
 		return this._canvas || this._image;
 	},
 
-	getSubImage: function(rect) {
+	getSubCanvas: function(rect) {
 		rect = Rectangle.read(arguments);
 		var ctx = CanvasProvider.getContext(rect.getSize());
 		ctx.drawImage(this.getCanvas(), rect.x, rect.y,
 				rect.width, rect.height, 0, 0, rect.width, rect.height);
 		return ctx.canvas;
+	},
+
+	getSubRaster: function(rect) {
+		rect = Rectangle.read(arguments);
+		var raster = new Raster({
+			canvas: this.getSubCanvas(rect),
+			insert: false
+		});
+		raster.translate(rect.getCenter().subtract(this.getSize().divide(2)));
+		raster._matrix.preConcatenate(this._matrix);
+		raster.insertAbove(this);
+		return raster;
 	},
 
 	toDataURL: function() {
@@ -4100,6 +4555,10 @@ var PlacedSymbol = Item.extend({
 			this.setSymbol(arg0 instanceof Symbol ? arg0 : new Symbol(arg0));
 	},
 
+	_equals: function(item) {
+		return this._symbol === item._symbol;
+	},
+
 	getSymbol: function() {
 		return this._symbol;
 	},
@@ -4186,22 +4645,20 @@ var Segment = Base.extend({
 			} else {
 				point = arg0;
 			}
-		} else if (count < 6) {
-			if (count == 2 && arg1.x === undefined) {
-				point = [ arg0, arg1 ];
-			} else {
-				point = arg0;
-				handleIn = arg1;
-				handleOut = arg2;
-			}
-		} else if (count === 6) {
-			point = [ arg0, arg1 ];
-			handleIn = [ arg2, arg3 ];
-			handleOut = [ arg4, arg5 ];
+		} else if (count === 2 && typeof arg0 === 'number') {
+			point = arguments;
+		} else if (count <= 3) {
+			point = arg0;
+			handleIn = arg1;
+			handleOut = arg2;
+		} else { 
+			point = arg0 !== undefined ? [ arg0, arg1 ] : null;
+			handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
+			handleOut = arg4 !== undefined ? [ arg4, arg5 ] : null;
 		}
-		this._point = new SegmentPoint(point, this);
-		this._handleIn = new SegmentPoint(handleIn, this);
-		this._handleOut = new SegmentPoint(handleOut, this);
+		new SegmentPoint(point, this, '_point');
+		new SegmentPoint(handleIn, this, '_handleIn');
+		new SegmentPoint(handleOut, this, '_handleOut');
 	},
 
 	_serialize: function(options) {
@@ -4261,6 +4718,42 @@ var Segment = Base.extend({
 		this._handleOut.set(0, 0);
 	},
 
+	isColinear: function(segment) {
+		var next1 = this.getNext(),
+			next2 = segment.getNext();
+		return this._handleOut.isZero() && next1._handleIn.isZero()
+				&& segment._handleOut.isZero() && next2._handleIn.isZero()
+				&& next1._point.subtract(this._point).isColinear(
+					next2._point.subtract(segment._point));
+	},
+
+	isOrthogonal: function() {
+		var prev = this.getPrevious(),
+			next = this.getNext();
+		return prev._handleOut.isZero() && this._handleIn.isZero()
+			&& this._handleOut.isZero() && next._handleIn.isZero()
+			&& this._point.subtract(prev._point).isOrthogonal(
+					next._point.subtract(this._point));
+	},
+
+	isArc: function() {
+		var next = this.getNext(),
+			handle1 = this._handleOut,
+			handle2 = next._handleIn,
+			kappa = Numerical.KAPPA;
+		if (handle1.isOrthogonal(handle2)) {
+			var from = this._point,
+				to = next._point,
+				corner = new Line(from, handle1, true).intersect(
+						new Line(to, handle2, true), true);
+			return corner && Numerical.isZero(handle1.getLength() /
+					corner.subtract(from).getLength() - kappa)
+				&& Numerical.isZero(handle2.getLength() /
+					corner.subtract(to).getLength() - kappa);
+		}
+		return false;
+	},
+
 	_isSelected: function(point) {
 		var state = this._selectionState;
 		return point == this._point ? !!(state & 4)
@@ -4278,7 +4771,7 @@ var Segment = Base.extend({
 				!!(state & 1),
 				!!(state & 2)
 			];
-		if (point == this._point) {
+		if (point === this._point) {
 			if (selected) {
 				selection[1] = selection[2] = false;
 			} else {
@@ -4291,7 +4784,7 @@ var Segment = Base.extend({
 			}
 			selection[0] = selected;
 		} else {
-			var index = point == this._handleIn ? 1 : 2;
+			var index = point === this._handleIn ? 1 : 2;
 			if (selection[index] != selected) {
 				if (selected)
 					selection[0] = false;
@@ -4364,7 +4857,7 @@ var Segment = Base.extend({
 	},
 
 	equals: function(segment) {
-		return segment === this || segment
+		return segment === this || segment && this._class === segment._class
 				&& this._point.equals(segment._point)
 				&& this._handleIn.equals(segment._handleIn)
 				&& this._handleOut.equals(segment._handleOut)
@@ -4431,7 +4924,7 @@ var Segment = Base.extend({
 });
 
 var SegmentPoint = Point.extend({
-	initialize: function SegmentPoint(point, owner) {
+	initialize: function SegmentPoint(point, owner, key) {
 		var x, y, selected;
 		if (!point) {
 			x = y = 0;
@@ -4448,6 +4941,7 @@ var SegmentPoint = Point.extend({
 		this._x = x;
 		this._y = y;
 		this._owner = owner;
+		owner[key] = this;
 		if (selected)
 			this.setSelected(true);
 	},
@@ -4457,6 +4951,15 @@ var SegmentPoint = Point.extend({
 		this._y = y;
 		this._owner._changed(this);
 		return this;
+	},
+
+	_serialize: function(options) {
+		var f = options.formatter,
+			x = f.number(this._x),
+			y = f.number(this._y);
+		return this.isSelected()
+				? { x: x, y: y, selected: true }
+				: [x, y];
 	},
 
 	getX: function() {
@@ -4792,7 +5295,7 @@ statics: {
 		];
 	},
 
-	solveCubic: function (v, coord, val, roots) {
+	solveCubic: function (v, coord, val, roots, min, max) {
 		var p1 = v[coord],
 			c1 = v[coord + 2],
 			c2 = v[coord + 4],
@@ -4800,7 +5303,7 @@ statics: {
 			c = 3 * (c1 - p1),
 			b = 3 * (c2 - c1) - c,
 			a = p2 - p1 - c - b;
-		return Numerical.solveCubic(a, b, c, p1 - val, roots);
+		return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
 	},
 
 	getParameterOf: function(v, x, y) {
@@ -4841,7 +5344,9 @@ statics: {
 	},
 
 	isLinear: function(v) {
-		return v[0] === v[2] && v[1] === v[3] && v[4] === v[6] && v[5] === v[7];
+		var isZero = Numerical.isZero;
+		return isZero(v[0] - v[2]) && isZero(v[1] - v[3])
+				&& isZero(v[4] - v[6]) && isZero(v[5] - v[7]);
 	},
 
 	isFlatEnough: function(v, tolerance) {
@@ -4880,44 +5385,6 @@ statics: {
 		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 
-	_getCrossings: function(v, prev, x, y, roots) {
-		var count = Curve.solveCubic(v, 1, y, roots),
-			crossings = 0,
-			tolerance = 0.00001,
-			abs = Math.abs;
-
-		function changesOrientation(tangent) {
-			return Curve.evaluate(prev, 1, 1).y
-					* tangent.y > 0;
-		}
-
-		if (count === -1) {
-			roots[0] = Curve.getParameterOf(v, x, y);
-			count = roots[0] !== null ? 1 : 0;
-		}
-		for (var i = 0; i < count; i++) {
-			var t = roots[i];
-			if (t > -tolerance && t < 1 - tolerance) {
-				var pt = Curve.evaluate(v, t, 0);
-				if (x < pt.x + tolerance) {
-					var tan = Curve.evaluate(v, t, 1);
-					if (abs(pt.x - x) < tolerance) {
-						var angle = tan.getAngle();
-						if (angle > -180 && angle < 0
-							&& (t > tolerance || changesOrientation(tan)))
-								continue;
-					} else  {
-						if (abs(tan.y) < tolerance
-							|| t < tolerance && !changesOrientation(tan))
-								continue;
-					}
-					crossings++;
-				}
-			}
-		}
-		return crossings;
-	},
-
 	_addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
 		function add(value, padding) {
 			var left = value - padding,
@@ -4944,6 +5411,87 @@ statics: {
 					+ t * t * t * v3,
 					padding);
 		}
+	},
+
+	_getWinding: function(v, x, y, roots1, roots2) {
+		var tolerance = 0.00001,
+			abs = Math.abs;
+
+		function getOrientation(v) {
+			var y0 = v[1],
+				y1 = v[7],
+				dir = 1;
+			if (y0 > y1) {
+				var tmp = y0;
+				y0 = y1;
+				y1 = tmp;
+			    dir = -1;
+			}
+			if (y < y0 || y > y1)
+			    dir = 0;
+			return dir;
+		}
+
+		if (Curve.isLinear(v)) {
+			var dir = getOrientation(v);
+			if (!dir)
+				return 0;
+			var cross = (v[6] - v[0]) * (y - v[1]) - (v[7] - v[1]) * (x - v[0]);
+			return (cross < -tolerance ? -1 : 1) == dir ? 0 : dir;
+		}
+
+		var y0 = v[1],
+			y1 = v[3],
+			y2 = v[5],
+			y3 = v[7];
+		var a = 3 * (y1 - y2) - y0 + y3,
+			b = 2 * (y0 + y2) - 4 * y1,
+			c = y1 - y0;
+		var count = Numerical.solveQuadratic(a, b, c, roots1, tolerance,
+				1 - tolerance),
+			part, 
+			rest = v, 
+			t1 = roots1[0], 
+			winding = 0;
+		for (var i = 0; i <= count; i++) {
+			if (i === count) {
+				part = rest;
+			} else {
+				var curves = Curve.subdivide(rest, t1);
+				part = curves[0];
+				rest = curves[1];
+				t1 = roots1[i];
+				t1 = (roots1[i + 1] - t1) / (1 - t1);
+			}
+			if (i > 0)
+				part[3] = part[1]; 
+			if (i < count)
+				part[5] = rest[1]; 
+			var dir = getOrientation(part);
+			if (!dir)
+			    continue;
+			var t2,
+				px;
+			if (Curve.solveCubic(part, 1, y, roots2, -tolerance, 1 + -tolerance)
+					=== 1) {
+				t2 = roots2[0];
+				px = Curve.evaluate(part, t2, 0).x;
+			} else {
+				var mid = (part[1] + part[7]) / 2;
+				t2 = y < mid && dir > 0 ? 0 : 1;
+				if (t2 === 1 && y == part[7])
+					continue;
+				px = t2 === 0 ? part[0] : part[6];
+			}
+			var flat = abs(Curve.evaluate(part, t2, 1).y) < tolerance;
+			if (x >= px + (flat ? -tolerance : tolerance * dir)
+					&& !(flat && (abs(t2) < tolerance && x != part[0]
+						|| abs(t2 - 1) < tolerance && x != part[6]))) {
+				winding += flat && abs(t2 - (dir > 0 ? 1 : 0)) < tolerance
+						? -dir : dir;
+			}
+		}
+		return winding;
 	}
 }}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	function(name) {
@@ -5068,7 +5616,9 @@ new function() {
 				a = 0;
 			if (b === undefined)
 				b = 1;
-			if (v[0] == v[2] && v[1] == v[3] && v[6] == v[4] && v[7] == v[5]) {
+			var isZero = Numerical.isZero;
+			if (isZero(v[0] - v[2]) && isZero(v[1] - v[3])
+					&& isZero(v[6] - v[4]) && isZero(v[7] - v[5])) {
 				var dx = v[6] - v[0], 
 					dy = v[7] - v[1]; 
 				return (b - a) * Math.sqrt(dx * dx + dy * dy);
@@ -5277,34 +5827,35 @@ new function() {
 		var flip = Curve.isLinear(v1),
 			vc = flip ? v2 : v1,
 			vl = flip ? v1 : v2,
-			l1x = vl[0], l1y = vl[1],
-			l2x = vl[6], l2y = vl[7],
-			lvx = l2x - l1x,
-			lvy = l2y - l1y,
-			angle = Math.atan2(-lvy, lvx),
+			lx1 = vl[0], ly1 = vl[1],
+			lx2 = vl[6], ly2 = vl[7],
+			ldx = lx2 - lx1,
+			ldy = ly2 - ly1,
+			angle = Math.atan2(-ldy, ldx),
 			sin = Math.sin(angle),
 			cos = Math.cos(angle),
-			rl2x = lvx * cos - lvy * sin,
-			vcr = [];
-
+			rlx2 = ldx * cos - ldy * sin,
+			rvl = [0, 0, 0, 0, rlx2, 0, rlx2, 0],
+			rvc = [];
 		for(var i = 0; i < 8; i += 2) {
-			var x = vc[i] - l1x,
-				y = vc[i + 1] - l1y;
-			vcr.push(
+			var x = vc[i] - lx1,
+				y = vc[i + 1] - ly1;
+			rvc.push(
 				x * cos - y * sin,
 				y * cos + x * sin);
 		}
 		var roots = [],
-			count = Curve.solveCubic(vcr, 1, 0, roots);
+			count = Curve.solveCubic(rvc, 1, 0, roots, 0, 1);
 		for (var i = 0; i < count; i++) {
-			var t = roots[i];
-			if (t >= 0 && t <= 1) {
-				var point = Curve.evaluate(vcr, t, 0);
-				if (point.x  >= 0 && point.x <= rl2x)
-					addLocation(locations,
-							flip ? curve2 : curve1,
-							t, Curve.evaluate(vc, t, 0),
-							flip ? curve1 : curve2);
+			var tc = roots[i],
+				x = Curve.evaluate(rvc, tc, 0).x;
+			if (x >= 0 && x <= rlx2) {
+				var tl = Curve.getParameterOf(rvl, x, 0),
+					t1 = flip ? tl : tc,
+					t2 = flip ? tc : tl;
+				addLocation(locations,
+						curve1, t1, Curve.evaluate(v1, t1, 0),
+						curve2, t2, Curve.evaluate(v2, t2, 0));
 			}
 		}
 	}
@@ -5496,46 +6047,44 @@ var PathItem = Item.extend({
 
 	setPathData: function(data) {
 
-		var parts = data.match(/[a-z][^a-z]*/ig),
+		var parts = data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/ig),
 			coords,
 			relative = false,
 			control,
 			current = new Point(); 
 
-		function getCoord(index, coord, update) {
+		function getCoord(index, coord, isCurrent) {
 			var val = parseFloat(coords[index]);
 			if (relative)
 				val += current[coord];
-			if (update)
+			if (isCurrent)
 				current[coord] = val;
 			return val;
 		}
 
-		function getPoint(index, update) {
+		function getPoint(index, isCurrent) {
 			return new Point(
-				getCoord(index, 'x', update),
-				getCoord(index + 1, 'y', update)
+				getCoord(index, 'x', isCurrent),
+				getCoord(index + 1, 'y', isCurrent)
 			);
 		}
 
-		if (this._type === 'path')
-			this.removeSegments();
-		else
-			this.removeChildren();
+		this.clear();
 
 		for (var i = 0, l = parts.length; i < l; i++) {
 			var part = parts[i],
 				cmd = part[0],
 				lower = cmd.toLowerCase();
-			coords = part.slice(1).trim().split(/[\s,]+|(?=[+-])/);
+			coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
+			var length = coords && coords.length;
 			relative = cmd === lower;
-			var length = coords.length;
 			switch (lower) {
 			case 'm':
 			case 'l':
 				for (var j = 0; j < length; j += 2)
 					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
 							getPoint(j, true));
+				control = current;
 				break;
 			case 'h':
 			case 'v':
@@ -5544,6 +6093,7 @@ var PathItem = Item.extend({
 					getCoord(j, coord, true);
 					this.lineTo(current);
 				}
+				control = current;
 				break;
 			case 'c':
 				for (var j = 0; j < length; j += 6) {
@@ -5586,6 +6136,11 @@ var PathItem = Item.extend({
 
 	_canComposite: function() {
 		return !(this.hasFill() && this.hasStroke());
+	},
+
+	_contains: function(point) {
+		var winding = this._getWinding(point);
+		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
 	}
 
 });
@@ -5612,6 +6167,10 @@ var Path = PathItem.extend({
 		this._initialize(!segments && arg);
 	},
 
+	_equals: function(item) {
+		return Base.equals(this._segments, item._segments);
+	},
+
 	clone: function(insert) {
 		var copy = this._clone(new Path({
 			segments: this._segments,
@@ -5629,9 +6188,8 @@ var Path = PathItem.extend({
 			delete this._length;
 			delete this._clockwise;
 			if (this._curves) {
-				for (var i = 0, l = this._curves.length; i < l; i++) {
+				for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed(5);
-				}
 			}
 		} else if (flags & 8) {
 			delete this._bounds;
@@ -5643,10 +6201,13 @@ var Path = PathItem.extend({
 	},
 
 	setSegments: function(segments) {
-		this._selectedSegmentState = 0;
+		var fullySelected = this.isFullySelected();
 		this._segments.length = 0;
+		this._selectedSegmentState = 0;
 		delete this._curves;
 		this._add(Segment.readAll(segments));
+		if (fullySelected)
+			this.setFullySelected(true);
 	},
 
 	getFirstSegment: function() {
@@ -5755,16 +6316,13 @@ var Path = PathItem.extend({
 			curves = this._curves,
 			amount = segs.length,
 			append = index == null,
-			index = append ? segments.length : index,
-			fullySelected = this.isFullySelected();
+			index = append ? segments.length : index;
 		for (var i = 0; i < amount; i++) {
 			var segment = segs[i];
 			if (segment._path)
 				segment = segs[i] = segment.clone();
 			segment._path = this;
 			segment._index = index + i;
-			if (fullySelected)
-				segment._selectionState = 4;
 			if (segment._selectionState)
 				this._updateSelection(segment, 0, segment._selectionState);
 		}
@@ -5879,9 +6437,12 @@ var Path = PathItem.extend({
 		return removed;
 	},
 
+	clear: '#removeSegments',
+
 	isFullySelected: function() {
-		return this._selected && this._selectedSegmentState
-				== this._segments.length * 4;
+		var length = this._segments.length;
+		return this._selected && length > 0 && this._selectedSegmentState
+				=== length * 4;
 	},
 
 	setFullySelected: function(selected) {
@@ -6032,10 +6593,6 @@ var Path = PathItem.extend({
 		return false;
 	},
 
-	reduce: function() {
-		return this;
-	},
-
 	getLength: function() {
 		if (this._length == null) {
 			var curves = this.getCurves();
@@ -6139,52 +6696,123 @@ var Path = PathItem.extend({
 				? parent : this)._style;
 	},
 
-	_contains: function(point) {
+	toShape: function(insert) {
+		if (!this._closed)
+			return null;
+
+		var segments = this._segments,
+			type,
+			size,
+			radius,
+			topCenter;
+
+		function isColinear(i, j) {
+			return segments[i].isColinear(segments[j]);
+		}
+
+		function isOrthogonal(i) {
+			return segments[i].isOrthogonal();
+		}
+
+		function isArc(i) {
+			return segments[i].isArc();
+		}
+
+		function getDistance(i, j) {
+			return segments[i]._point.getDistance(segments[j]._point);
+		}
+
+		if (this.isPolygon() && segments.length === 4
+				&& isColinear(0, 2) && isColinear(1, 3) && isOrthogonal(1)) {
+			type = Shape.Rectangle;
+			size = new Size(getDistance(0, 3), getDistance(0, 1));
+			topCenter = segments[1]._point.add(segments[2]._point).divide(2);
+		} else if (segments.length === 8 && isArc(0) && isArc(2) && isArc(4)
+				&& isArc(6) && isColinear(1, 5) && isColinear(3, 7)) {
+			type = Shape.Rectangle;
+			size = new Size(getDistance(1, 6), getDistance(0, 3));
+			radius = size.subtract(new Size(getDistance(0, 7),
+					getDistance(1, 2))).divide(2);
+			topCenter = segments[3]._point.add(segments[4]._point).divide(2);
+		} else if (segments.length === 4
+				&& isArc(0) && isArc(1) && isArc(2) && isArc(3)) {
+			if (Numerical.isZero(getDistance(0, 2) - getDistance(1, 3))) {
+				type = Shape.Circle;
+				radius = getDistance(0, 2) / 2;
+			} else {
+				type = Shape.Ellipse;
+				radius = new Size(getDistance(2, 0) / 2, getDistance(3, 1) / 2);
+			}
+			topCenter = segments[1]._point;
+		}
+
+		if (type) {
+			var center = this.getPosition(true),
+				shape = new type({
+					center: center,
+					size: size,
+					radius: radius,
+					insert: false
+				});
+			shape.rotate(topCenter.subtract(center).getAngle() + 90);
+			shape.setStyle(this._style);
+			if (insert || insert === undefined)
+				shape.insertAbove(this);
+			return shape;
+		}
+		return null;
+	},
+
+	_getWinding: function(point) {
 		var closed = this._closed;
 		if (!closed && !this.hasFill()
 				|| !this._getBounds('getRoughBounds')._containsPoint(point))
-			return false;
+			return 0;
 		var curves = this.getCurves(),
 			segments = this._segments,
-			crossings = 0,
-			roots = new Array(3),
+			winding = 0,
+			roots1 = [],
+			roots2 = [],
 			last = (closed
 					? curves[curves.length - 1]
 					: new Curve(segments[segments.length - 1]._point,
-						segments[0]._point)).getValues(),
-			previous = last;
+						segments[0]._point)).getValues();
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var vals = curves[i].getValues(),
 				x = vals[0],
 				y = vals[1];
 			if (!(x === vals[2] && y === vals[3] && x === vals[4]
 					&& y === vals[5] && x === vals[6] && y === vals[7])) {
-				crossings += Curve._getCrossings(vals, previous,
-						point.x, point.y, roots);
-				previous = vals;
+				winding += Curve._getWinding(vals, point.x, point.y,
+						roots1, roots2);
 			}
 		}
 		if (!closed) {
-			crossings += Curve._getCrossings(last, previous, point.x, point.y,
-					roots);
+			winding += Curve._getWinding(last, point.x, point.y,
+					roots1, roots2);
 		}
-		return (crossings & 1) === 1;
+		return winding;
 	},
 
 	_hitTest: function(point, options) {
 		var style = this.getStyle(),
 			segments = this._segments,
 			closed = this._closed,
-			tolerance = options.tolerance || 0,
+			tolerance = options.tolerance,
 			radius = 0, join, cap, miterLimit,
 			that = this,
 			area, loc, res;
 
-		if (options.stroke && style.getStrokeColor()) {
-			join = style.getStrokeJoin();
-			cap = style.getStrokeCap();
-			radius = style.getStrokeWidth() / 2 + tolerance;
-			miterLimit = radius * style.getMiterLimit();
+		if (options.stroke) {
+			radius = style.getStrokeWidth() / 2;
+			if (radius > 0) {
+				join = style.getStrokeJoin();
+				cap = style.getStrokeCap();
+				miterLimit = radius * style.getMiterLimit();
+			} else {
+				join = cap = 'round';
+			}
+			radius += tolerance;
 		}
 
 		function checkPoint(seg, pt, name) {
@@ -6212,16 +6840,13 @@ var Path = PathItem.extend({
 
 		function isInArea(point) {
 			var length = area.length,
-				previous = getAreaCurve(length - 1),
-				roots = new Array(3),
-				crossings = 0;
-			for (var i = 0; i < length; i++) {
-				var curve = getAreaCurve(i);
-				crossings += Curve._getCrossings(curve, previous,
-						point.x, point.y, roots);
-				previous = curve;
-			}
-			return (crossings & 1) === 1;
+				roots1 = [],
+				roots2 = [],
+				winding = 0;
+			for (var i = 0; i < length; i++)
+				winding += Curve._getWinding(getAreaCurve(i), point.x, point.y,
+						roots1, roots2);
+			return !!winding;
 		}
 
 		function checkSegmentStroke(segment) {
@@ -6274,7 +6899,7 @@ var Path = PathItem.extend({
 				}
 			}
 		}
-		return !loc && options.fill && this.hasFill() && this.contains(point)
+		return !loc && options.fill && this.hasFill() && this._contains(point)
 				? new HitResult('fill', this)
 				: loc
 					? new HitResult('stroke', this, { location: loc })
@@ -6391,32 +7016,44 @@ var Path = PathItem.extend({
 				ctx.beginPath();
 
 			var style = this.getStyle(),
-				fillColor = style.getFillColor(),
-				strokeColor = style.getStrokeColor(),
+				hasFill = style.hasFill(),
+				hasStroke = style.hasStroke(),
 				dashArray = style.getDashArray(),
-				drawDash = !paper.support.nativeDash && strokeColor
+				dashLength = !paper.support.nativeDash && hasStroke
 						&& dashArray && dashArray.length;
 
-			if (fillColor || strokeColor && !drawDash || compound || clip)
-				drawSegments(ctx, this);
+			function getOffset(i) {
+				return dashArray[((i % dashLength) + dashLength) % dashLength];
+			}
 
+			if (hasFill || hasStroke && !dashLength || compound || clip)
+				drawSegments(ctx, this);
 			if (this._closed)
 				ctx.closePath();
 
-			if (!clip && !compound && (fillColor || strokeColor)) {
+			if (!clip && !compound && (hasFill || hasStroke)) {
 				this._setStyles(ctx);
-				if (fillColor)
-					ctx.fill();
-				if (strokeColor) {
-					if (drawDash) {
+				if (hasFill) {
+					ctx.fill(style.getWindingRule());
+					ctx.shadowColor = 'rgba(0,0,0,0)';
+				}
+				if (hasStroke) {
+					if (dashLength) {
 						ctx.beginPath();
 						var flattener = new PathFlattener(this),
-							from = style.getDashOffset(), to,
+							length = flattener.length,
+							from = -style.getDashOffset(), to,
 							i = 0;
-						while (from < flattener.length) {
-							to = from + dashArray[(i++) % dashArray.length];
-							flattener.drawPart(ctx, from, to);
-							from = to + dashArray[(i++) % dashArray.length];
+						from = from % length;
+						while (from > 0) {
+							from -= getOffset(i--) + getOffset(i--);
+						}
+						while (from < length) {
+							to = from + getOffset(i++);
+							if (from > 0 || to > 0)
+								flattener.drawPart(ctx,
+										Math.max(from, 0), Math.max(to, 0));
+							from = to + getOffset(i++);
 						}
 					}
 					ctx.stroke();
@@ -6455,22 +7092,19 @@ var Path = PathItem.extend({
 		smooth: function() {
 			var segments = this._segments,
 				size = segments.length,
+				closed = this._closed,
 				n = size,
-				overlap;
-
+				overlap = 0;
 			if (size <= 2)
 				return;
-
-			if (this._closed) {
+			if (closed) {
 				overlap = Math.min(size, 4);
 				n += Math.min(size, overlap) * 2;
-			} else {
-				overlap = 0;
 			}
 			var knots = [];
 			for (var i = 0; i < size; i++)
 				knots[i + overlap] = segments[i]._point;
-			if (this._closed) {
+			if (closed) {
 				for (var i = 0; i < overlap; i++) {
 					knots[i] = segments[i + size - overlap]._point;
 					knots[i + size + overlap] = segments[i]._point;
@@ -6492,7 +7126,7 @@ var Path = PathItem.extend({
 			rhs[n - 1] = 3 * knots[n - 1]._y;
 			var y = getFirstControlPoints(rhs);
 
-			if (this._closed) {
+			if (closed) {
 				for (var i = 0, j = size; i < overlap; i++, j++) {
 					var f1 = i / overlap,
 						f2 = 1 - f1,
@@ -6513,17 +7147,16 @@ var Path = PathItem.extend({
 				if (i < n) {
 					segment.setHandleOut(
 							new Point(x[i], y[i]).subtract(segment._point));
-					if (i < n - 1)
-						handleIn = new Point(
+					handleIn = i < n - 1
+							? new Point(
 								2 * knots[i + 1]._x - x[i + 1],
-								2 * knots[i + 1]._y - y[i + 1]);
-					else
-						handleIn = new Point(
+								2 * knots[i + 1]._y - y[i + 1])
+							: new Point(
 								(knots[n]._x + x[n - 1]) / 2,
 								(knots[n]._y + y[n - 1]) / 2);
 				}
 			}
-			if (this._closed && handleIn) {
+			if (closed && handleIn) {
 				var segment = this._segments[0];
 				segment.setHandleIn(handleIn.subtract(segment._point));
 			}
@@ -6556,16 +7189,16 @@ var Path = PathItem.extend({
 		cubicCurveTo: function() {
 			var handle1 = Point.read(arguments),
 				handle2 = Point.read(arguments),
-				to = Point.read(arguments);
-			var current = getCurrentSegment(this);
+				to = Point.read(arguments),
+				current = getCurrentSegment(this);
 			current.setHandleOut(handle1.subtract(current._point));
 			this._add([ new Segment(to, handle2.subtract(to)) ]);
 		},
 
 		quadraticCurveTo: function() {
 			var handle = Point.read(arguments),
-				to = Point.read(arguments);
-			var current = getCurrentSegment(this)._point;
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
 			this.cubicCurveTo(
 				handle.add(current.subtract(handle).multiply(1 / 3)),
 				handle.add(to.subtract(handle).multiply(1 / 3)),
@@ -6587,20 +7220,18 @@ var Path = PathItem.extend({
 			this.quadraticCurveTo(handle, to);
 		},
 
-		arcTo: function(to, clockwise ) {
+		arcTo: function() {
 			var current = getCurrentSegment(this),
 				from = current._point,
 				through,
-				point = Point.read(arguments),
-				next = Base.pick(Base.peek(arguments), true);
-			if (typeof next === 'boolean') {
-				to = point;
-				clockwise = next;
+				to = Point.read(arguments),
+				clockwise = Base.pick(Base.peek(arguments), true);
+			if (typeof clockwise === 'boolean') {
 				var middle = from.add(to).divide(2),
 				through = middle.add(middle.subtract(from).rotate(
 						clockwise ? -90 : 90));
 			} else {
-				through = point;
+				through = to;
 				to = Point.read(arguments);
 			}
 			var l1 = new Line(from.add(through).divide(2),
@@ -6613,7 +7244,7 @@ var Path = PathItem.extend({
 			if (!center) {
 				if (!throughSide)
 					return this.lineTo(to);
-				throw new Error("Cannot put an arc through the given points: "
+				throw new Error('Cannot put an arc through the given points: '
 					+ [from, through, to]);
 			}
 			var vector = from.subtract(center),
@@ -6644,25 +7275,45 @@ var Path = PathItem.extend({
 			this._add(segments);
 		},
 
-		lineBy: function(vector) {
-			vector = Point.read(arguments);
-			var current = getCurrentSegment(this);
-			this.lineTo(current._point.add(vector));
+		lineBy: function() {
+			var to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.lineTo(current.add(to));
 		},
 
-		curveBy: function(throughVector, toVector, parameter) {
-			throughVector = Point.read(throughVector);
-			toVector = Point.read(toVector);
-			var current = getCurrentSegment(this)._point;
-			this.curveTo(current.add(throughVector), current.add(toVector),
-					parameter);
+		curveBy: function() {
+			var through = Point.read(arguments),
+				to = Point.read(arguments),
+				parameter = Base.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.curveTo(current.add(through), current.add(to), parameter);
 		},
 
-		arcBy: function(throughVector, toVector) {
-			throughVector = Point.read(throughVector);
-			toVector = Point.read(toVector);
-			var current = getCurrentSegment(this)._point;
-			this.arcTo(current.add(throughVector), current.add(toVector));
+		cubicCurveBy: function() {
+			var handle1 = Point.read(arguments),
+				handle2 = Point.read(arguments),
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.cubicCurveTo(current.add(handle1), current.add(handle2),
+					current.add(to));
+		},
+
+		quadraticCurveBy: function() {
+			var handle = Point.read(arguments),
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.quadraticCurveTo(current.add(handle), current.add(to));
+		},
+
+		arcBy: function() {
+			var current = getCurrentSegment(this)._point,
+				point = current.add(Point.read(arguments)),
+				clockwise = Base.pick(Base.peek(arguments), true);
+			if (typeof clockwise === 'boolean') {
+				this.arcTo(point, clockwise);
+			} else {
+				this.arcTo(point, current.add(Point.read(arguments)));
+			}
 		},
 
 		closePath: function() {
@@ -6684,27 +7335,12 @@ var Path = PathItem.extend({
 
 statics: {
 	isClockwise: function(segments) {
-		var sum = 0,
-			xPre, yPre,
-			add = false;
-		function edge(x, y) {
-			if (add)
-				sum += (xPre - x) * (y + yPre);
-			xPre = x;
-			yPre = y;
-			add = true;
-		}
+		var sum = 0;
 		for (var i = 0, l = segments.length; i < l; i++) {
-			var seg1 = segments[i],
-				seg2 = segments[i + 1 < l ? i + 1 : 0],
-				point1 = seg1._point,
-				handle1 = seg1._handleOut,
-				handle2 = seg2._handleIn,
-				point2 = seg2._point;
-			edge(point1._x, point1._y);
-			edge(point1._x + handle1._x, point1._y + handle1._y);
-			edge(point2._x + handle2._x, point2._y + handle2._y);
-			edge(point2._x, point2._y);
+			var v = Curve.getValues(
+					segments[i], segments[i + 1 < l ? i + 1 : 0]);
+			for (var j = 2; j < 8; j += 2)
+				sum += (v[j - 2] - v[j]) * (v[j + 1] + v[j - 1]);
 		}
 		return sum > 0;
 	},
@@ -6760,7 +7396,7 @@ statics: {
 					Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
 		}
 
-		if (!style.getStrokeColor() || !style.getStrokeWidth())
+		if (!style.hasStroke())
 			return Path.getBounds(segments, closed, style, matrix);
 		var length = segments.length - (closed ? 0 : 1),
 			radius = style.getStrokeWidth() / 2,
@@ -6887,7 +7523,9 @@ statics: {
 	getRoughBounds: function(segments, closed, style, matrix) {
 		var strokeWidth = style.getStrokeColor() ? style.getStrokeWidth() : 0,
 			joinWidth = strokeWidth;
-		if (strokeWidth > 0) {
+		if (strokeWidth === 0) {
+			strokeWidth = 0.00001;
+		} else {
 			if (style.getStrokeJoin() === 'miter')
 				joinWidth = strokeWidth * style.getMiterLimit();
 			if (style.getStrokeCap() === 'square')
@@ -6900,73 +7538,28 @@ statics: {
 
 Path.inject({ statics: new function() {
 
-	function createPath(args) {
-		return new Path(Base.getNamed(args));
-	}
+	var kappa = Numerical.KAPPA,
+		ellipseSegments = [
+			new Segment([-1, 0], [0, kappa ], [0, -kappa]),
+			new Segment([0, -1], [-kappa, 0], [kappa, 0 ]),
+			new Segment([1, 0], [0, -kappa], [0, kappa ]),
+			new Segment([0, 1], [kappa, 0 ], [-kappa, 0])
+		];
 
-	function createRectangle() {
-		var rect = Rectangle.readNamed(arguments, 'rectangle'),
-			radius = Size.readNamed(arguments, 'radius', 0, 0,
-					{ readNull: true }),
-			bl = rect.getBottomLeft(true),
-			tl = rect.getTopLeft(true),
-			tr = rect.getTopRight(true),
-			br = rect.getBottomRight(true),
-			path = createPath(arguments);
-		if (!radius || radius.isZero()) {
-			path._add([
-				new Segment(bl),
-				new Segment(tl),
-				new Segment(tr),
-				new Segment(br)
-			]);
-		} else {
-			radius = Size.min(radius, rect.getSize(true).divide(2));
-			var h = radius.multiply(kappa * 2); 
-			path._add([
-				new Segment(bl.add(radius.width, 0), null, [-h.width, 0]),
-				new Segment(bl.subtract(0, radius.height), [0, h.height], null),
-
-				new Segment(tl.add(0, radius.height), null, [0, -h.height]),
-				new Segment(tl.add(radius.width, 0), [-h.width, 0], null),
-
-				new Segment(tr.subtract(radius.width, 0), null, [h.width, 0]),
-				new Segment(tr.add(0, radius.height), [0, -h.height], null),
-
-				new Segment(br.subtract(0, radius.height), null, [0, h.height]),
-				new Segment(br.subtract(radius.width, 0), [h.width, 0], null)
-			]);
-		}
-		path._closed = true;
-		return path;
-	}
-
-	var kappa = Numerical.KAPPA / 2;
-
-	var ellipseSegments = [
-		new Segment([0, 0.5], [0, kappa ], [0, -kappa]),
-		new Segment([0.5, 0], [-kappa, 0], [kappa, 0 ]),
-		new Segment([1, 0.5], [0, -kappa], [0, kappa ]),
-		new Segment([0.5, 1], [kappa, 0 ], [-kappa, 0])
-	];
-
-	function createEllipse() {
-		var rect = Rectangle.readNamed(arguments, 'rectangle'),
-			path = createPath(arguments),
-			point = rect.getPoint(true),
-			size = rect.getSize(true),
+	function createEllipse(center, radius, args) {
+		var path = new Path(),
 			segments = new Array(4);
 		for (var i = 0; i < 4; i++) {
 			var segment = ellipseSegments[i];
 			segments[i] = new Segment(
-				segment._point.multiply(size).add(point),
-				segment._handleIn.multiply(size),
-				segment._handleOut.multiply(size)
+				segment._point.multiply(radius).add(center),
+				segment._handleIn.multiply(radius),
+				segment._handleOut.multiply(radius)
 			);
 		}
 		path._add(segments);
 		path._closed = true;
-		return path;
+		return path.set(Base.getNamed(args));
 	}
 
 	return {
@@ -6980,34 +7573,70 @@ Path.inject({ statics: new function() {
 		Circle: function() {
 			var center = Point.readNamed(arguments, 'center'),
 				radius = Base.readNamed(arguments, 'radius');
-			return createEllipse(new Rectangle(center.subtract(radius),
-					new Size(radius * 2, radius * 2)))
-					.set(Base.getNamed(arguments));
+			return createEllipse(center, new Size(radius), arguments);
 		},
 
-		Rectangle: createRectangle,
+		Rectangle: function() {
+			var rect = Rectangle.readNamed(arguments, 'rectangle'),
+				radius = Size.readNamed(arguments, 'radius', 0, 0,
+						{ readNull: true }),
+				bl = rect.getBottomLeft(true),
+				tl = rect.getTopLeft(true),
+				tr = rect.getTopRight(true),
+				br = rect.getBottomRight(true);
+				path = new Path();
+			if (!radius || radius.isZero()) {
+				path._add([
+					new Segment(bl),
+					new Segment(tl),
+					new Segment(tr),
+					new Segment(br)
+				]);
+			} else {
+				radius = Size.min(radius, rect.getSize(true).divide(2));
+				var rx = radius.width,
+					ry = radius.height,
+					hx = rx * kappa,
+					hy = ry * kappa;
+				path._add([
+					new Segment(bl.add(rx, 0), null, [-hx, 0]),
+					new Segment(bl.subtract(0, ry), [0, hy]),
+					new Segment(tl.add(0, ry), null, [0, -hy]),
+					new Segment(tl.add(rx, 0), [-hx, 0], null),
+					new Segment(tr.subtract(rx, 0), null, [hx, 0]),
+					new Segment(tr.add(0, ry), [0, -hy], null),
+					new Segment(br.subtract(0, ry), null, [0, hy]),
+					new Segment(br.subtract(rx, 0), [hx, 0])
+				]);
+			}
+			path._closed = true;
+			return path.set(Base.getNamed(arguments));
+		},
 
-		RoundRectangle: createRectangle,
+		RoundRectangle: '#Rectangle',
 
-		Ellipse: createEllipse,
+		Ellipse: function() {
+			var ellipse = Shape._readEllipse(arguments);
+			return createEllipse(ellipse.center, ellipse.radius, arguments);
+		},
 
-		Oval: createEllipse,
+		Oval: '#Ellipse',
 
 		Arc: function() {
 			var from = Point.readNamed(arguments, 'from'),
 				through = Point.readNamed(arguments, 'through'),
 				to = Point.readNamed(arguments, 'to'),
-				path = createPath(arguments);
+				path = new Path();
 			path.moveTo(from);
 			path.arcTo(through, to);
-			return path;
+			return path.set(Base.getNamed(arguments));
 		},
 
 		RegularPolygon: function() {
 			var center = Point.readNamed(arguments, 'center'),
 				sides = Base.readNamed(arguments, 'sides'),
 				radius = Base.readNamed(arguments, 'radius'),
-				path = createPath(arguments),
+				path = new Path(),
 				step = 360 / sides,
 				three = !(sides % 3),
 				vector = new Point(0, three ? -radius : radius),
@@ -7019,7 +7648,7 @@ Path.inject({ statics: new function() {
 			}
 			path._add(segments);
 			path._closed = true;
-			return path;
+			return path.set(Base.getNamed(arguments));
 		},
 
 		Star: function() {
@@ -7027,7 +7656,7 @@ Path.inject({ statics: new function() {
 				points = Base.readNamed(arguments, 'points') * 2,
 				radius1 = Base.readNamed(arguments, 'radius1'),
 				radius2 = Base.readNamed(arguments, 'radius2'),
-				path = createPath(arguments),
+				path = new Path(),
 				step = 360 / points,
 				vector = new Point(0, -1),
 				segments = new Array(points);
@@ -7037,7 +7666,7 @@ Path.inject({ statics: new function() {
 			}
 			path._add(segments);
 			path._closed = true;
-			return path;
+			return path.set(Base.getNamed(arguments));
 		}
 	};
 }});
@@ -7063,16 +7692,6 @@ var CompoundPath = PathItem.extend({
 				item.setClockwise(item._index === 0);
 		}
 		return items;
-	},
-
-	reduce: function() {
-		if (this._children.length == 1) {
-			var child = this._children[0];
-			child.insertAbove(this);
-			this.remove();
-			return child;
-		}
-		return this;
 	},
 
 	reverse: function() {
@@ -7140,40 +7759,48 @@ var CompoundPath = PathItem.extend({
 		return paths.join(' ');
 	},
 
-	_contains: function(point) {
-		var children = [];
-		for (var i = 0, l = this._children.length; i < l; i++) {
-			var child = this._children[i];
-			if (child.contains(point))
-				children.push(child);
-		}
-		return (children.length & 1) == 1 && children;
+	_getWinding: function(point) {
+		var children =  this._children,
+			winding = 0;
+		for (var i = 0, l = children.length; i < l; i++)
+			winding += children[i]._getWinding(point);
+		return winding;
 	},
 
-	_hitTest: function _hitTest(point, options) {
+	_hitTest : function _hitTest(point, options) {
 		var res = _hitTest.base.call(this, point,
 				Base.merge(options, { fill: false }));
-		if (!res && options.fill && this.hasFill()) {
-			res = this._contains(point);
-			res = res ? new HitResult('fill', res[0]) : null;
-		}
+		if (!res) {
+			if (options.compoundChildren) {
+				var children =  this._children;
+				for (var i = children.length - 1; i >= 0 && !res; i--)
+					res = children[i]._hitTest(point, options);
+			} else if (options.fill && this.hasFill()
+					&& this._contains(point)) {
+				res = new HitResult('fill', this);
+			}
+		} 
 		return res;
 	},
 
 	_draw: function(ctx, param) {
-		var children = this._children,
-			style = this._style;
+		var children = this._children;
 		if (children.length === 0)
 			return;
+
 		ctx.beginPath();
 		param = param.extend({ compound: true });
 		for (var i = 0, l = children.length; i < l; i++)
 			children[i].draw(ctx, param);
+
 		if (!param.clip) {
 			this._setStyles(ctx);
-			if (style.getFillColor())
-				ctx.fill();
-			if (style.getStrokeColor())
+			var style = this._style;
+			if (style.hasFill()) {
+				ctx.fill(style.getWindingRule());
+				ctx.shadowColor = 'rgba(0,0,0,0)';
+			}
+			if (style.hasStroke())
 				ctx.stroke();
 		}
 	}
@@ -7201,13 +7828,15 @@ var CompoundPath = PathItem.extend({
 		}
 	};
 
-	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
-			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
-		fields[key] = function() {
-			var path = getCurrentPath(this);
-			path[key].apply(path, arguments);
-		};
-	});
+	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo', 'arcTo',
+			'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy', 'arcBy'],
+			function(key) {
+				fields[key] = function() {
+					var path = getCurrentPath(this);
+					path[key].apply(path, arguments);
+				};
+			}
+	);
 
 	return fields;
 });
@@ -7515,6 +8144,7 @@ PathItem.inject(new function() {
 			if (others)
 				others.push(other);
 			segment._intersection = other;
+			loc._segment = segment;
 		}
 		return others;
 	}
@@ -7549,10 +8179,12 @@ PathItem.inject(new function() {
 			path2Clockwise = path2.isClockwise(),
 			intersections = path1.getIntersections(path2);
 		splitPath(splitPath(intersections, true));
-		if (subtract) {
+		if (!path1Clockwise)
+			path1.reverse();
+		if (!(subtract ^ path2Clockwise))
 			path2.reverse();
-			path2Clockwise = !path2Clockwise;
-		}
+		path1Clockwise = true;
+		path2Clockwise = !subtract;
 		var paths = []
 				.concat(path1._children || [path1])
 				.concat(path2._children || [path2]),
@@ -7679,6 +8311,10 @@ var TextItem = Item.extend({
 		this._initialize(hasProps && arg, !hasProps && Point.read(arguments));
 	},
 
+	_equals: function(item) {
+		return this._content === item._content;
+	},
+
 	_clone: function _clone(copy) {
 		copy.setContent(this._content);
 		return _clone.base.call(this, copy);
@@ -7732,14 +8368,19 @@ var PointText = TextItem.extend({
 		this._setStyles(ctx);
 		var style = this._style,
 			lines = this._lines,
-			leading = style.getLeading();
+			leading = style.getLeading(),
+			shadowColor = ctx.shadowColor;
+
 		ctx.font = style.getFontStyle();
 		ctx.textAlign = style.getJustification();
 		for (var i = 0, l = lines.length; i < l; i++) {
+			ctx.shadowColor = shadowColor;
 			var line = lines[i];
-			if (style.getFillColor())
+			if (style.hasFill()) {
 				ctx.fillText(line, 0, 0);
-			if (style.getStrokeColor())
+				ctx.shadowColor = 'rgba(0,0,0,0)';
+			}
+			if (style.hasStroke())
 				ctx.strokeText(line, 0, 0);
 			ctx.translate(0, leading);
 		}
@@ -7781,41 +8422,46 @@ var Color = Base.extend(new function() {
 		gradient: ['gradient', 'origin', 'destination', 'highlight']
 	};
 
-	var componentParsers = {}, 
+	var componentParsers = {},
 		colorCache = {},
 		colorCtx;
 
-	function nameToRGB(name) {
-		var cached = colorCache[name];
-		if (!cached) {
-			if (!colorCtx) {
-				colorCtx = CanvasProvider.getContext(1, 1);
-				colorCtx.globalCompositeOperation = 'copy';
-			}
-			colorCtx.fillStyle = 'rgba(0,0,0,0)';
-			colorCtx.fillStyle = name;
-			colorCtx.fillRect(0, 0, 1, 1);
-			var data = colorCtx.getImageData(0, 0, 1, 1).data;
-			cached = colorCache[name] = [
-				data[0] / 255,
-				data[1] / 255,
-				data[2] / 255
-			];
-		}
-		return cached.slice();
-	}
-
-	function hexToRGB(string) {
-		var hex = string.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
-		if (hex.length >= 4) {
-			var components = [0, 0, 0];
+	function fromCSS(string) {
+		var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
+			components;
+		if (match) {
+			components = [0, 0, 0];
 			for (var i = 0; i < 3; i++) {
-				var value = hex[i + 1];
+				var value = match[i + 1];
 				components[i] = parseInt(value.length == 1
 						? value + value : value, 16) / 255;
 			}
-			return components;
+		} else if (match = string.match(/^rgba?\((.*)\)$/)) {
+			components = match[1].split(',');
+			for (var i = 0, l = components.length; i < l; i++) {
+				var value = parseFloat(components[i]);
+				components[i] = i < 3 ? value / 255 : value;
+			}
+		} else {
+			var cached = colorCache[string];
+			if (!cached) {
+				if (!colorCtx) {
+					colorCtx = CanvasProvider.getContext(1, 1);
+					colorCtx.globalCompositeOperation = 'copy';
+				}
+				colorCtx.fillStyle = 'rgba(0,0,0,0)';
+				colorCtx.fillStyle = string;
+				colorCtx.fillRect(0, 0, 1, 1);
+				var data = colorCtx.getImageData(0, 0, 1, 1).data;
+				cached = colorCache[string] = [
+					data[0] / 255,
+					data[1] / 255,
+					data[2] / 255				
+				];
+			}
+			components = cached.slice();
 		}
+		return components;
 	}
 
 	var hsbIndices = [
@@ -8027,10 +8673,12 @@ var Color = Base.extend(new function() {
 					if (values.length > length)
 						values = slice.call(values, 0, length);
 				} else if (argType === 'string') {
-					components = arg.match(/^#[0-9a-f]{3,6}$/i)
-							? hexToRGB(arg)
-							: nameToRGB(arg);
 					type = 'rgb';
+					components = fromCSS(arg);
+					if (components.length === 4) {
+						alpha = components[3];
+						components.length--;
+					}
 				} else if (argType === 'object') {
 					if (arg.constructor === Color) {
 						type = arg._type;
@@ -8117,7 +8765,7 @@ var Color = Base.extend(new function() {
 		},
 
 		clone: function() {
-			return new Color(this._type, this._components.slice(), this._alpha);
+			return new Color(this);
 		},
 
 		_convert: function(type) {
@@ -8168,7 +8816,8 @@ var Color = Base.extend(new function() {
 		equals: function(color) {
 			if (Base.isPlainValue(color))
 				color = Color.read(arguments);
-			return color === this || color && this._type === color._type
+			return color === this || color && this._class === color._class
+					&& this._type === color._type
 					&& this._alpha === color._alpha
 					&& Base.equals(this._components, color._components)
 					|| false;
@@ -8190,9 +8839,9 @@ var Color = Base.extend(new function() {
 			return '{ ' + parts.join(', ') + ' }';
 		},
 
-		toCSS: function(noAlpha) {
+		toCSS: function(hex) {
 			var components = this._convert('rgb'),
-				alpha = noAlpha || this._alpha == null ? 1 : this._alpha;
+				alpha = hex || this._alpha == null ? 1 : this._alpha;
 			components = [
 				Math.round(components[0] * 255),
 				Math.round(components[1] * 255),
@@ -8200,8 +8849,12 @@ var Color = Base.extend(new function() {
 			];
 			if (alpha < 1)
 				components.push(alpha);
-			return (components.length == 4 ? 'rgba(' : 'rgb(')
-					+ components.join(',') + ')';
+			return hex
+					? '#' + ((1 << 24) + (components[0] << 16)
+						+ (components[1] << 8)
+						+ components[2]).toString(16).slice(1)
+					: (components.length == 4 ? 'rgba(' : 'rgb(')
+						+ components.join(',') + ')';
 		},
 
 		toCanvasStyle: function(ctx) {
@@ -8406,8 +9059,10 @@ var Gradient = Base.extend({
 	},
 
 	equals: function(gradient) {
-		if (gradient && gradient.constructor == this.constructor
-				&& this._stops.length == gradient._stops.length) {
+		if (gradient === this)
+			return true;
+		if (gradient &&  this._class === gradient._class
+				&& this._stops.length === gradient._stops.length) {
 			for (var i = 0, l = this._stops.length; i < l; i++) {
 				if (!this._stops[i].equals(gradient._stops[i]))
 					return false;
@@ -8476,7 +9131,7 @@ var GradientStop = Base.extend({
 	},
 
 	equals: function(stop) {
-		return stop === this || stop instanceof GradientStop
+		return stop === this || stop && this._class === stop._class
 				&& this._color.equals(stop._color)
 				&& this._rampPoint == stop._rampPoint
 				|| false;
@@ -8493,6 +9148,7 @@ var Style = Base.extend(new function() {
 		miterLimit: 10,
 		dashOffset: 0,
 		dashArray: [],
+		windingRule: 'nonzero',
 		shadowColor: undefined,
 		shadowBlur: 0,
 		shadowOffset: new Point(),
@@ -8541,8 +9197,11 @@ var Style = Base.extend(new function() {
 					if (isColor) {
 						if (old)
 							delete old._owner;
-						if (value && value.constructor === Color)
+						if (value && value.constructor === Color) {
+							if (value._owner)
+								value = value.clone();
 							value._owner = this._item;
+						}
 					}
 					this._values[key] = value;
 					if (this._item)
@@ -8618,6 +9277,24 @@ var Style = Base.extend(new function() {
 		}
 	},
 
+	equals: function(style) {
+		return style === this || style && this._class === style._class
+				&& Base.equals(this._values, style._values)
+				|| false;
+	},
+
+	hasFill: function() {
+		return !!this.getFillColor();
+	},
+
+	hasStroke: function() {
+		return !!this.getStrokeColor() && this.getStrokeWidth() > 0;
+	},
+
+	hasShadow: function() {
+		return !!this.getShadowColor() && this.getShadowBlur() > 0;
+	},
+
 	getLeading: function getLeading() {
 		var leading = getLeading.base.call(this);
 		return leading != null ? leading : this.getFontSize() * 1.2;
@@ -8625,8 +9302,7 @@ var Style = Base.extend(new function() {
 
 	getFontStyle: function() {
 		var size = this.getFontSize();
-		return (/[a-z]/i.test(size) ? size + ' ' : size + 'px ')
-				+ this.getFont();
+		return size + (/[a-z]/i.test(size + '') ? ' ' : 'px ') + this.getFont();
 	}
 
 });
@@ -8706,7 +9382,8 @@ var DomElement = new function() {
 		},
 
 		getStyles: function(el) {
-			var view = el && el.ownerDocument.defaultView;
+			var doc = el && el.nodeType !== 9 ? el.ownerDocument : el,
+				view = doc && doc.defaultView;
 			return view && view.getComputedStyle(el, '');
 		},
 
@@ -8795,6 +9472,15 @@ var DomElement = new function() {
 		isInView: function(el) {
 			return !this.isInvisible(el) && this.getViewportBounds(el).intersects(
 					this.getBounds(el, true));
+		},
+
+		getPrefixValue: function(el, name) {
+			var value = el[name],
+				prefixes = ['webkit', 'moz', 'ms', 'o'],
+				suffix = name[0].toUpperCase() + name.substring(1);
+			for (var i = 0; i < 4 && value == null; i++)
+				value = el[prefixes[i] + suffix];
+			return value;
 		}
 	};
 };
@@ -8868,18 +9554,10 @@ var DomEvent = {
 };
 
 DomEvent.requestAnimationFrame = new function() {
-	var part = 'equestAnimationFrame',
-		request = window['r' + part] || window['webkitR' + part]
-			|| window['mozR' + part] || window['oR' + part]
-			|| window['msR' + part];
-	if (request) {
-		request(function(time) {
-			if (time == null)
-				request = null;
-		});
-	}
-
-	var callbacks = [],
+	var nativeRequest = DomElement.getPrefixValue(window,
+			'requestAnimationFrame'),
+		requested = false,
+		callbacks = [],
 		focused = true,
 		timer;
 
@@ -8892,24 +9570,36 @@ DomEvent.requestAnimationFrame = new function() {
 		}
 	});
 
-	return function(callback, element) {
-		if (request)
-			return request(callback, element);
-		callbacks.push([callback, element]);
-		if (timer)
-			return;
-		timer = setInterval(function() {
-			for (var i = callbacks.length - 1; i >= 0; i--) {
-				var entry = callbacks[i],
-					func = entry[0],
-					el = entry[1];
-				if (!el || (PaperScope.getAttribute(el, 'keepalive') == 'true'
-						|| focused) && DomElement.isInView(el)) {
-					callbacks.splice(i, 1);
-					func(Date.now());
-				}
+	function handleCallbacks() {
+		for (var i = callbacks.length - 1; i >= 0; i--) {
+			var entry = callbacks[i],
+				func = entry[0],
+				el = entry[1];
+			if (!el || (PaperScope.getAttribute(el, 'keepalive') == 'true'
+					|| focused) && DomElement.isInView(el)) {
+				callbacks.splice(i, 1);
+				func();
 			}
-		}, 1000 / 60);
+		}
+		if (nativeRequest) {
+			if (callbacks.length) {
+				nativeRequest(handleCallbacks);
+			} else {
+				requested = false;
+			}
+		}
+	}
+
+	return function(callback, element) {
+		callbacks.push([callback, element]);
+		if (nativeRequest) {
+			if (!requested) {
+				nativeRequest(handleCallbacks);
+				requested = true;
+			}
+		} else if (!timer) {
+			timer = setInterval(handleCallbacks, 1000 / 60);
+		}
 	};
 };
 
@@ -8940,13 +9630,12 @@ var View = Base.extend(Callback, {
 			};
 			DomEvent.add(window, this._windowHandlers);
 		} else {
-			size = new Size(parseInt(element.getAttribute('width'), 10),
-						parseInt(element.getAttribute('height'), 10));
-			if (size.isNaN())
-				size = DomElement.getSize(element);
+			size = DomElement.getSize(element);
+			if (size.isNaN() || size.isZero())
+				size = new Size(parseInt(element.getAttribute('width'), 10),
+							parseInt(element.getAttribute('height'), 10));
 		}
-		element.width = size.width;
-		element.height = size.height;
+		this._setViewSize(size);
 		if (PaperScope.hasAttribute(element, 'stats')
 				&& typeof Stats !== 'undefined') {
 			this._stats = new Stats();
@@ -8960,9 +9649,8 @@ var View = Base.extend(Callback, {
 		}
 		View._views.push(this);
 		View._viewsById[this._id] = this;
-		this._viewSize = new LinkedSize(size.width, size.height,
-				this, 'setViewSize');
-		this._matrix = new Matrix();
+		this._viewSize = size;
+		(this._matrix = new Matrix())._owner = this;
 		this._zoom = 1;
 		if (!View._focused)
 			View._focused = this;
@@ -8990,10 +9678,9 @@ var View = Base.extend(Callback, {
 	_events: {
 		onFrame: {
 			install: function() {
-				if (!this._requested) {
-					this._animate = true;
+				this._animate = true;
+				if (!this._requested)
 					this._requestFrame();
-				}
 			},
 
 			uninstall: function() {
@@ -9010,6 +9697,7 @@ var View = Base.extend(Callback, {
 
 	_requestFrame: function() {
 		var that = this;
+		this._requested = true;
 		DomEvent.requestAnimationFrame(function() {
 			that._requested = false;
 			if (!that._animate)
@@ -9017,7 +9705,6 @@ var View = Base.extend(Callback, {
 			that._requestFrame();
 			that._handleFrame();
 		}, this._element);
-		this._requested = true;
 	},
 
 	_handleFrame: function() {
@@ -9076,10 +9763,14 @@ var View = Base.extend(Callback, {
 		}
 	},
 
+	_changed: function(flags) {
+		if (flags & 1)
+			this._project._needsRedraw = true;
+	},
+
 	_transform: function(matrix) {
 		this._matrix.concatenate(matrix);
 		this._bounds = null;
-		this._inverse = null;
 		this._redraw();
 	},
 
@@ -9088,7 +9779,8 @@ var View = Base.extend(Callback, {
 	},
 
 	getViewSize: function() {
-		return this._viewSize;
+		var size = this._viewSize;
+		return new LinkedSize(size.width, size.height, this, 'setViewSize');
 	},
 
 	setViewSize: function(size) {
@@ -9096,9 +9788,8 @@ var View = Base.extend(Callback, {
 		var delta = size.subtract(this._viewSize);
 		if (delta.isZero())
 			return;
-		this._element.width = size.width;
-		this._element.height = size.height;
-		this._viewSize.set(size.width, size.height, true);
+		this._viewSize.set(size.width, size.height);
+		this._setViewSize(size);
 		this._bounds = null; 
 		this.fire('resize', {
 			size: size,
@@ -9107,9 +9798,15 @@ var View = Base.extend(Callback, {
 		this._redraw();
 	},
 
+	_setViewSize: function(size) {
+		var element = this._element;
+		element.width = size.width;
+		element.height = size.height;
+	},
+
 	getBounds: function() {
 		if (!this._bounds)
-			this._bounds = this._getInverse()._transformBounds(
+			this._bounds = this._matrix.inverted()._transformBounds(
 					new Rectangle(new Point(), this._viewSize));
 		return this._bounds;
 	},
@@ -9150,14 +9847,8 @@ var View = Base.extend(Callback, {
 	},
 
 	viewToProject: function() {
-		return this._getInverse()._transformPoint(Point.read(arguments));
+		return this._matrix._inverseTransform(Point.read(arguments));
 	},
-
-	_getInverse: function() {
-		if (!this._inverse)
-			this._inverse = this._matrix.inverted();
-		return this._inverse;
-	}
 
 }, {
 	statics: {
@@ -9284,14 +9975,38 @@ var CanvasView = View.extend({
 
 	initialize: function CanvasView(canvas) {
 		if (!(canvas instanceof HTMLCanvasElement)) {
-			var size = Size.read(arguments, 1);
+			var size = Size.read(arguments);
 			if (size.isZero())
-				size = new Size(1024, 768);
+				throw new Error(
+						'Cannot create CanvasView with the provided argument: '
+						+ canvas);
 			canvas = CanvasProvider.getCanvas(size);
 		}
 		this._context = canvas.getContext('2d');
 		this._eventCounters = {};
+		this._ratio = 1;
+		if (PaperScope.getAttribute(canvas, 'hidpi') !== 'off') {
+			var deviceRatio = window.devicePixelRatio || 1,
+				backingStoreRatio = DomElement.getPrefixValue(this._context,
+						'backingStorePixelRatio') || 1;
+			this._ratio = deviceRatio / backingStoreRatio;
+		}
 		View.call(this, canvas);
+	},
+
+	_setViewSize: function(size) {
+		var width = size.width,
+			height = size.height,
+			ratio = this._ratio,
+			element = this._element,
+			style = element.style;
+		element.width = width * ratio;
+		element.height = height * ratio;
+		if (ratio !== 1) {
+			style.width = width + 'px';
+			style.height = height + 'px';
+			this._context.scale(ratio, ratio);
+		}
 	},
 
 	draw: function(checkRedraw) {
@@ -9299,8 +10014,8 @@ var CanvasView = View.extend({
 			return false;
 		var ctx = this._context,
 			size = this._viewSize;
-		ctx.clearRect(0, 0, size._width + 1, size._height + 1);
-		this._project.draw(ctx, this._matrix);
+		ctx.clearRect(0, 0, size.width + 1, size.height + 1);
+		this._project.draw(ctx, this._matrix, this._ratio);
 		this._project._needsRedraw = false;
 		return true;
 	}
@@ -9489,6 +10204,7 @@ var Key = new function() {
 			tool = scope && scope._tool;
 		keyMap[key] = down;
 		if (tool && tool.responds(type)) {
+			paper = scope;
 			tool.fire(type, new KeyEvent(down, key, character, event));
 			if (view)
 				view.draw(true);
@@ -9503,7 +10219,7 @@ var Key = new function() {
 				if ((name = Base.camelize(key)) in modifiers)
 					modifiers[name] = true;
 				charCodeMap[code] = 0;
-				handleKey(true, code, null, event);
+				handleKey(true, code, code, event);
 			} else {
 				downCode = code;
 			}
@@ -9557,217 +10273,6 @@ var MouseEvent = Event.extend({
 				+ (this.delta ? ', delta: ' + this.delta : '')
 				+ ', modifiers: ' + this.getModifiers()
 				+ ' }';
-	}
-});
-
- Base.extend(Callback, {
-	_class: 'Palette',
-	_events: [ 'onChange' ],
-
-	initialize: function Palette(title, components, values) {
-		var parent = DomElement.find('.palettejs-panel')
-			|| DomElement.find('body').appendChild(
-				DomElement.create('div', { 'class': 'palettejs-panel' }));
-		this._element = parent.appendChild(
-			DomElement.create('table', { 'class': 'palettejs-pane' })),
-		this._title = title;
-		if (!values)
-			values = {};
-		for (var name in (this._components = components)) {
-			var component = components[name];
-			if (!(component instanceof Component)) {
-				if (component.value == null)
-					component.value = values[name];
-				component.name = name;
-				component = components[name] = new Component(component);
-			}
-			this._element.appendChild(component._element);
-			component._palette = this;
-			if (values[name] === undefined)
-				values[name] = component.value;
-		}
-		this._values = Base.each(values, function(value, name) {
-			var component = components[name];
-			if (component) {
-				Base.define(values, name, {
-					enumerable: true,
-					configurable: true,
-					get: function() {
-						return component._value;
-					},
-					set: function(val) {
-						component.setValue(val);
-					}
-				});
-			}
-		});
-		if (window.paper)
-			paper.palettes.push(this);
-	},
-
-	reset: function() {
-		for (var i in this._components)
-			this._components[i].reset();
-	},
-
-	remove: function() {
-		DomElement.remove(this._element);
-	}
-});
-
-var Component = Base.extend(Callback, {
-	_class: 'Component',
-	_events: [ 'onChange', 'onClick' ],
-
-	_types: {
-		'boolean': {
-			type: 'checkbox',
-			value: 'checked'
-		},
-
-		string: {
-			type: 'text'
-		},
-
-		number: {
-			type: 'number',
-			number: true
-		},
-
-		button: {
-			type: 'button'
-		},
-
-		text: {
-			tag: 'div',
-			value: 'text'
-		},
-
-		slider: {
-			type: 'range',
-			number: true
-		},
-
-		list: {
-			tag: 'select',
-
-			options: function() {
-				DomElement.removeChildren(this._inputItem);
-				DomElement.create(Base.each(this._options, function(option) {
-					this.push('option', { value: option, text: option });
-				}, []), this._inputItem);
-			}
-		}
-	},
-
-	initialize: function Component(obj) {
-		this._type = obj.type in this._types
-			? obj.type
-			: 'options' in obj
-				? 'list'
-				: 'onClick' in obj
-					? 'button'
-					: typeof obj.value;
-		this._info = this._types[this._type] || { type: this._type };
-		var that = this,
-			fireChange = false;
-		this._inputItem = DomElement.create(this._info.tag || 'input', {
-			type: this._info.type,
-			events: {
-				change: function() {
-					that.setValue(
-						DomElement.get(this, that._info.value || 'value'));
-					if (fireChange) {
-						that._palette.fire('change', that, that.name, that._value);
-						that.fire('change', that._value);
-					}
-				},
-				click: function() {
-					that.fire('click');
-				}
-			}
-		});
-		this._element = DomElement.create('tr', [
-			this._labelItem = DomElement.create('td'),
-			'td', [this._inputItem]
-		]);
-		Base.each(obj, function(value, key) {
-			this[key] = value;
-		}, this);
-		this._defaultValue = this._value;
-		fireChange = true;
-	},
-
-	getType: function() {
-		return this._type;
-	},
-
-	getLabel: function() {
-		return this._label;
-	},
-
-	setLabel: function(label) {
-		this._label = label;
-		DomElement.set(this._labelItem, 'text', label + ':');
-	},
-
-	getOptions: function() {
-		return this._options;
-	},
-
-	setOptions: function(options) {
-		this._options = options;
-		if (this._info.options)
-			this._info.options.call(this);
-	},
-
-	getValue: function() {
-		return this._value;
-	},
-
-	setValue: function(value) {
-		var key = this._info.value || 'value';
-		DomElement.set(this._inputItem, key, value);
-		value = DomElement.get(this._inputItem, key);
-		this._value = this._info.number ? parseFloat(value, 10) : value;
-	},
-
-	getRange: function() {
-		return [parseFloat(DomElement.get(this._inputItem, 'min')),
-				parseFloat(DomElement.get(this._inputItem, 'max'))];
-	},
-
-	setRange: function(min, max) {
-		var range = Array.isArray(min) ? min : [min, max];
-		DomElement.set(this._inputItem, { min: range[0], max: range[1] });
-	},
-
-	getMin: function() {
-		return this.getRange()[0];
-	},
-
-	setMin: function(min) {
-		this.setRange(min, this.getMax());
-	},
-
-	getMax: function() {
-		return this.getRange()[1];
-	},
-
-	setMax: function(max) {
-		this.setRange(this.getMin(), max);
-	},
-
-	getStep: function() {
-		return parseFloat(DomElement.get(this._inputItem, 'step'));
-	},
-
-	setStep: function(step) {
-		DomElement.set(this._inputItem, 'step', step);
-	},
-
-	reset: function() {
-		this.setValue(this._defaultValue);
 	}
 });
 
@@ -10022,28 +10527,61 @@ var Tool = PaperScopeItem.extend({
 
 });
 
+var Http = {
+	request: function(method, url, callback) {
+		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
+					'Microsoft.XMLHTTP');
+		xhr.open(method.toUpperCase(), url, true);
+		if ('overrideMimeType' in xhr)
+			xhr.overrideMimeType('text/plain');
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4) {
+				var status = xhr.status;
+				if (status === 0 || status === 200) {
+					callback.call(xhr, xhr.responseText);
+				} else {
+					throw new Error('Could not load ' + url + ' (Error '
+							+ status + ')');
+				}
+			}
+		};
+		return xhr.send(null);
+	}
+};
+
 var CanvasProvider = {
 	canvases: [],
 
-	getCanvas: function(width, height) {
-		var size = height === undefined ? width : new Size(width, height),
-			canvas,
+	getCanvas: function(width, height, ratio) {
+		var canvas,
 			init = true;
+		if (typeof width === 'object') {
+			ratio = height;
+			height = width.height;
+			width = width.width;
+		}
+		if (!ratio) {
+			ratio = 1;
+		} else if (ratio !== 1) {
+			width *= ratio;
+			height *= ratio;
+		}
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
 		} else {
 			canvas = document.createElement('canvas');
-
 		}
 		var ctx = canvas.getContext('2d');
-		ctx.save();
-		if (canvas.width === size.width && canvas.height === size.height) {
+		if (canvas.width === width && canvas.height === height) {
 			if (init)
-				ctx.clearRect(0, 0, size.width + 1, size.height + 1);
+				ctx.clearRect(0, 0, width + 1, height + 1);
 		} else {
-			canvas.width = size.width;
-			canvas.height = size.height;
+			canvas.width = width;
+			canvas.height = height;
 		}
+		ctx.save();
+		if (ratio !== 1)
+			ctx.scale(ratio, ratio);
 		return canvas;
 	},
 
@@ -10366,19 +10904,15 @@ new function() {
 			document.createElementNS('http://www.w3.org/2000/svg', tag), attrs);
 	}
 
-	function getDistance(segments, index1, index2) {
-		return segments[index1]._point.getDistance(segments[index2]._point);
-	}
-
-	function getTransform(item, coordinates) {
+	function getTransform(item, coordinates, center) {
 		var matrix = item._matrix,
 			trans = matrix.getTranslation(),
 			attrs = {};
 		if (coordinates) {
 			matrix = matrix.shiftless();
 			var point = matrix._inverseTransform(trans);
-			attrs.x = point.x;
-			attrs.y = point.y;
+			attrs[center ? 'cx' : 'x'] = point.x;
+			attrs[center ? 'cy' : 'y'] = point.y;
 			trans = null;
 		}
 		if (matrix.isIdentity())
@@ -10401,80 +10935,13 @@ new function() {
 		return attrs;
 	}
 
-	function determineAngle(path, segments, type, center) {
-		var topCenter = type === 'rect'
-				? segments[1]._point.add(segments[2]._point).divide(2)
-				: type === 'roundrect'
-				? segments[3]._point.add(segments[4]._point).divide(2)
-				: type === 'circle' || type === 'ellipse'
-				? segments[1]._point
-				: null;
-		var angle = topCenter && topCenter.subtract(center).getAngle() + 90;
-		return Numerical.isZero(angle || 0) ? 0 : angle;
-	}
-
-	function determineType(path, segments) {
-		function isColinear(i, j) {
-			var seg1 = segments[i],
-				seg2 = seg1.getNext(),
-				seg3 = segments[j],
-				seg4 = seg3.getNext();
-			return seg1._handleOut.isZero() && seg2._handleIn.isZero()
-					&& seg3._handleOut.isZero() && seg4._handleIn.isZero()
-					&& seg2._point.subtract(seg1._point).isColinear(
-						seg4._point.subtract(seg3._point));
-		}
-
-		function isArc(i) {
-			var segment = segments[i],
-				next = segment.getNext(),
-				handle1 = segment._handleOut,
-				handle2 = next._handleIn,
-				kappa = Numerical.KAPPA;
-			if (handle1.isOrthogonal(handle2)) {
-				var from = segment._point,
-					to = next._point,
-					corner = new Line(from, handle1, true).intersect(
-							new Line(to, handle2, true), true);
-				return corner && Numerical.isZero(handle1.getLength() /
-						corner.subtract(from).getLength() - kappa)
-					&& Numerical.isZero(handle2.getLength() /
-						corner.subtract(to).getLength() - kappa);
-			}
-		}
-
-		if (path.isPolygon()) {
-			return  segments.length === 4 && path._closed
-					&& isColinear(0, 2) && isColinear(1, 3)
-					? 'rect'
-					: segments.length === 0
-						? 'empty'
-						: segments.length >= 3
-							? path._closed ? 'polygon' : 'polyline'
-							: 'line';
-		} else if (path._closed) {
-			if (segments.length === 8
-					&& isArc(0) && isArc(2) && isArc(4) && isArc(6)
-					&& isColinear(1, 5) && isColinear(3, 7)) {
-				return 'roundrect';
-			} else if (segments.length === 4
-					&& isArc(0) && isArc(1) && isArc(2) && isArc(3)) {
-				return Numerical.isZero(getDistance(segments, 0, 2)
-						- getDistance(segments, 1, 3))
-						? 'circle'
-						: 'ellipse';
-			} 
-		}
-		return 'path';
-	}
-
-	function exportGroup(item) {
+	function exportGroup(item, options) {
 		var attrs = getTransform(item),
 			children = item._children;
 		var node = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
-			var childNode = exportSVG(child);
+			var childNode = exportSVG(child, options);
 			if (childNode) {
 				if (child.isClipMask()) {
 					var clip = createElement('clipPath');
@@ -10502,93 +10969,70 @@ new function() {
 		return createElement('image', attrs);
 	}
 
-	function exportPath(item) {
+	function exportPath(item, options) {
+		if (options.matchShapes) {
+			var shape = item.toShape(false);
+			if (shape)
+				return exportShape(shape, options);
+		}
 		var segments = item._segments,
-			center = item.getPosition(true),
-			type = determineType(item, segments),
-			angle = determineAngle(item, segments, type, center),
+			type,
 			attrs;
-		switch (type) {
-		case 'empty':
+		if (segments.length === 0)
 			return null;
-		case 'path':
+		if (item.isPolygon()) {
+			if (segments.length >= 3) {
+				type = item._closed ? 'polygon' : 'polyline';
+				var parts = [];
+				for(i = 0, l = segments.length; i < l; i++)
+					parts.push(formatter.point(segments[i]._point));
+				attrs = {
+					points: parts.join(' ')
+				};
+			} else {
+				type = 'line';
+				var first = segments[0]._point,
+					last = segments[segments.length - 1]._point;
+				attrs = {
+					x1: first.x,
+					y1: first.y,
+					x2: last.x,
+					y2: last.y
+				};
+			}
+		} else {
+			type = 'path';
 			var data = item.getPathData();
 			attrs = data && { d: data };
-			break;
-		case 'polyline':
-		case 'polygon':
-			var parts = [];
-			for(i = 0, l = segments.length; i < l; i++)
-				parts.push(formatter.point(segments[i]._point));
-			attrs = {
-				points: parts.join(' ')
-			};
-			break;
-		case 'rect':
-			var width = getDistance(segments, 0, 3),
-				height = getDistance(segments, 0, 1),
-				point = segments[1]._point.rotate(-angle, center);
-			attrs = {
-				x: point.x,
-				y: point.y,
-				width: width,
-				height: height
-			};
-			break;
-		case 'roundrect':
-			type = 'rect';
-			var width = getDistance(segments, 1, 6),
-				height = getDistance(segments, 0, 3),
-				rx = (width - getDistance(segments, 0, 7)) / 2,
-				ry = (height - getDistance(segments, 1, 2)) / 2,
-				left = segments[3]._point, 
-				right = segments[4]._point, 
-				point = left.subtract(right.subtract(left).normalize(rx))
-						.rotate(-angle, center);
-			attrs = {
-				x: point.x,
-				y: point.y,
-				width: width,
-				height: height,
-				rx: rx,
-				ry: ry
-			};
-			break;
-		case'line':
-			var first = segments[0]._point,
-				last = segments[segments.length - 1]._point;
-			attrs = {
-				x1: first.x,
-				y1: first.y,
-				x2: last.x,
-				y2: last.y
-			};
-			break;
-		case 'circle':
-			var radius = getDistance(segments, 0, 2) / 2;
-			attrs = {
-				cx: center.x,
-				cy: center.y,
-				r: radius
-			};
-			break;
-		case 'ellipse':
-			var rx = getDistance(segments, 2, 0) / 2,
-				ry = getDistance(segments, 3, 1) / 2;
-			attrs = {
-				cx: center.x,
-				cy: center.y,
-				rx: rx,
-				ry: ry
-			};
-			break;
-		}
-		if (angle) {
-			attrs.transform = 'rotate(' + formatter.number(angle) + ','
-					+ formatter.point(center) + ')';
-			item._gradientMatrix = new Matrix().rotate(-angle, center);
 		}
 		return createElement(type, attrs);
+	}
+
+	function exportShape(item) {
+		var shape = item._shape,
+			radius = item._radius,
+			attrs = getTransform(item, true, shape !== 'rectangle');
+		if (shape === 'rectangle') {
+			shape = 'rect'; 
+			var size = item._size,
+				width = size.width,
+				height = size.height;
+			attrs.x -= width / 2;
+			attrs.y -= height / 2;
+			attrs.width = width;
+			attrs.height = height;
+			if (radius.isZero())
+				radius = null;
+		}
+		if (radius) {
+			if (shape === 'circle') {
+				attrs.r = radius;
+			} else {
+				attrs.rx = radius.width;
+				attrs.ry = radius.height;
+			}
+		}
+		return createElement(shape, attrs);
 	}
 
 	function exportCompoundPath(item) {
@@ -10599,17 +11043,17 @@ new function() {
 		return createElement('path', attrs);
 	}
 
-	function exportPlacedSymbol(item) {
+	function exportPlacedSymbol(item, options) {
 		var attrs = getTransform(item, true),
 			symbol = item.getSymbol(),
-			symbolNode = getDefinition(symbol, 'symbol');
+			symbolNode = getDefinition(symbol, 'symbol'),
 			definition = symbol.getDefinition(),
 			bounds = definition.getBounds();
 		if (!symbolNode) {
 			symbolNode = createElement('symbol', {
 				viewBox: formatter.rectangle(bounds)
 			});
-			symbolNode.appendChild(exportSVG(definition));
+			symbolNode.appendChild(exportSVG(definition, options));
 			setDefinition(symbol, symbolNode, 'symbol');
 		}
 		attrs.href = '#' + symbolNode.id;
@@ -10620,14 +11064,13 @@ new function() {
 		return createElement('use', attrs);
 	}
 
-	function exportGradient(color, item) {
+	function exportGradient(color) {
 		var gradientNode = getDefinition(color, 'color');
 		if (!gradientNode) {
 			var gradient = color.getGradient(),
 				radial = gradient._radial,
-				matrix = item._gradientMatrix,
-				origin = color.getOrigin().transform(matrix),
-				destination = color.getDestination().transform(matrix),
+				origin = color.getOrigin().transform(),
+				destination = color.getDestination().transform(),
 				attrs;
 			if (radial) {
 				attrs = {
@@ -10637,7 +11080,7 @@ new function() {
 				};
 				var highlight = color.getHighlight();
 				if (highlight) {
-					highlight = highlight.transform(matrix);
+					highlight = highlight.transform();
 					attrs.fx = highlight.x;
 					attrs.fy = highlight.y;
 				}
@@ -10681,6 +11124,7 @@ new function() {
 		layer: exportGroup,
 		raster: exportRaster,
 		path: exportPath,
+		shape: exportShape,
 		'compound-path': exportCompoundPath,
 		'placed-symbol': exportPlacedSymbol,
 		'point-text': exportText
@@ -10725,7 +11169,6 @@ new function() {
 		if (item._visibility != null && !item._visibility)
 			attrs.visibility = 'hidden';
 
-		delete item._gradientMatrix; 
 		return setAttributes(node, attrs);
 	}
 
@@ -10745,50 +11188,53 @@ new function() {
 	}
 
 	function exportDefinitions(node, options) {
-		if (!definitions)
-			return node;
-		var svg = node.nodeName.toLowerCase() === 'svg' && node,
+		var svg = node,
 			defs = null;
-		for (var i in definitions.svgs) {
-			if (!defs) {
-				if (!svg) {
-					svg = createElement('svg');
-					svg.appendChild(node);
+		if (definitions) {
+			svg = node.nodeName.toLowerCase() === 'svg' && node;
+			for (var i in definitions.svgs) {
+				if (!defs) {
+					if (!svg) {
+						svg = createElement('svg');
+						svg.appendChild(node);
+					}
+					defs = svg.insertBefore(createElement('defs'),
+							svg.firstChild);
 				}
-				defs = svg.insertBefore(createElement('defs'), svg.firstChild);
+				defs.appendChild(definitions.svgs[i]);
 			}
-			defs.appendChild(definitions.svgs[i]);
+			definitions = null;
 		}
-		definitions = null;
-		return options && options.asString
+		return options.asString
 				? new XMLSerializer().serializeToString(svg)
 				: svg;
 	}
 
-	function exportSVG(item) {
+	function exportSVG(item, options) {
 		var exporter = exporters[item._type],
-			node = exporter && exporter(item, item._type);
+			node = exporter && exporter(item, options);
 		if (node && item._data)
 			node.setAttribute('data-paper-data', JSON.stringify(item._data));
 		return node && applyStyle(item, node);
 	}
 
 	function setOptions(options) {
-		formatter = options && options.precision
-				? new Formatter(options.precision)
-				: Formatter.instance;
+		if (!options)
+			options = {};
+		formatter = new Formatter(options.precision);
+		return options;
 	}
 
 	Item.inject({
 		exportSVG: function(options) {
-			setOptions(options);
-			return exportDefinitions(exportSVG(this), options);
+			options = setOptions(options);
+			return exportDefinitions(exportSVG(this, options), options);
 		}
 	});
 
 	Project.inject({
 		exportSVG: function(options) {
-			setOptions(options);
+			options = setOptions(options);
 			var layers = this.layers,
 				size = this.view.getSize(),
 				node = createElement('svg', {
@@ -10801,7 +11247,7 @@ new function() {
 					'xmlns:xlink': 'http://www.w3.org/1999/xlink'
 				});
 			for (var i = 0, l = layers.length; i < l; i++)
-				node.appendChild(exportSVG(layers[i]));
+				node.appendChild(exportSVG(layers[i], options));
 			return exportDefinitions(node, options);
 		}
 	});
@@ -10830,15 +11276,15 @@ new function() {
 	function getPoint(node, x, y, allowNull) {
 		x = getValue(node, x, false, allowNull);
 		y = getValue(node, y, false, allowNull);
-		return allowNull && x == null && y == null ? null
-				: new Point(x || 0, y || 0);
+		return allowNull && (x == null || y == null) ? null
+				: new Point(x, y);
 	}
 
 	function getSize(node, w, h, allowNull) {
 		w = getValue(node, w, false, allowNull);
 		h = getValue(node, h, false, allowNull);
-		return allowNull && w == null && h == null ? null
-				: new Size(w || 0, h || 0);
+		return allowNull && (w == null || h == null) ? null
+				: new Size(w, h);
 	}
 
 	function convertValue(value, type, lookup) {
@@ -10855,35 +11301,31 @@ new function() {
 								: value;
 	}
 
-	function importGroup(node, type) {
+	function importGroup(node, type, isRoot, options) {
 		var nodes = node.childNodes,
-			clip = type === 'clippath',
-			item = clip ? new CompoundPath() : new Group(),
+			isClip = type === 'clippath',
+			item = new Group(),
 			project = item._project,
 			currentStyle = project._currentStyle,
 			children = [];
-		if (!clip) {
+		if (!isClip) {
 			item._transformContent = false;
-			item = applyAttributes(item, node);
+			item = applyAttributes(item, node, isRoot);
 			project._currentStyle = item._style.clone();
 		}
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var childNode = nodes[i],
 				child;
-			if (childNode.nodeType == 1 && (child = importSVG(childNode))) {
-				if (clip && child instanceof CompoundPath) {
-					children.push.apply(children, child.removeChildren());
-					child.remove();
-				} else if (!(child instanceof Symbol)) {
-					children.push(child);
-				}
-			}
+			if (childNode.nodeType === 1
+					&& (child = importSVG(childNode, false, options))
+					&& !(child instanceof Symbol))
+				children.push(child);
 		}
 		item.addChildren(children);
-		if (clip)
-			item = applyAttributes(item.reduce(), node);
+		if (isClip)
+			item = applyAttributes(item.reduce(), node, isRoot);
 		project._currentStyle = currentStyle;
-		if (clip || type === 'defs') {
+		if (isClip || type === 'defs') {
 			item.remove();
 			item = null;
 		}
@@ -10915,7 +11357,7 @@ new function() {
 			stops = [];
 		for (var i = 0, l = nodes.length; i < l; i++) {
 			var child = nodes[i];
-			if (child.nodeType == 1)
+			if (child.nodeType === 1)
 				stops.push(applyAttributes(new GradientStop(), child));
 		}
 		var isRadial = type === 'radialgradient',
@@ -10935,6 +11377,23 @@ new function() {
 	}
 
 	var importers = {
+		'#document': function (node, type, isRoot, options) {
+			var nodes = node.childNodes;
+			for (var i = 0, l = nodes.length; i < l; i++) {
+				var child = nodes[i];
+				if (child.nodeType === 1) {
+					var next = child.nextSibling;
+					document.body.appendChild(child);
+					var item = importSVG(child, isRoot, options);
+					if (next) {
+						node.insertBefore(child, next);
+					} else {
+						node.appendChild(child);
+					}
+					return item;
+				}
+			}
+		},
 		g: importGroup,
 		svg: importGroup,
 		clippath: importGroup,
@@ -10954,8 +11413,8 @@ new function() {
 			return raster;
 		},
 
-		symbol: function(node, type) {
-			return new Symbol(importGroup(node, type), true);
+		symbol: function(node, type, isRoot, options) {
+			return new Symbol(importGroup(node, type, isRoot, options), true);
 		},
 
 		defs: importGroup,
@@ -10972,22 +11431,22 @@ new function() {
 		},
 
 		circle: function(node) {
-			return new Path.Circle(getPoint(node, 'cx', 'cy'),
+			return new Shape.Circle(getPoint(node, 'cx', 'cy'),
 					getValue(node, 'r'));
 		},
 
 		ellipse: function(node) {
-			var center = getPoint(node, 'cx', 'cy'),
-				radius = getSize(node, 'rx', 'ry');
-			return new Path.Ellipse(new Rectangle(center.subtract(radius),
-					center.add(radius)));
+			return new Shape.Ellipse({
+				center: getPoint(node, 'cx', 'cy'),
+				radius: getSize(node, 'rx', 'ry')
+			});
 		},
 
 		rect: function(node) {
 			var point = getPoint(node, 'x', 'y'),
 				size = getSize(node, 'width', 'height'),
 				radius = getSize(node, 'rx', 'ry');
-			return new Path.Rectangle(new Rectangle(point, size), radius);
+			return new Shape.Rectangle(new Rectangle(point, size), radius);
 		},
 
 		line: function(node) {
@@ -10996,8 +11455,8 @@ new function() {
 		},
 
 		text: function(node) {
-			var text = new PointText(getPoint(node, 'x', 'y', false)
-					.add(getPoint(node, 'dx', 'dy', false)));
+			var text = new PointText(getPoint(node, 'x', 'y')
+					.add(getPoint(node, 'dx', 'dy')));
 			text.setContent(node.textContent.trim() || '');
 			return text;
 		}
@@ -11018,7 +11477,7 @@ new function() {
 			switch (command) {
 			case 'matrix':
 				matrix.concatenate(
-						new Matrix(v[0], v[2], v[1], v[3], v[4], v[5]));
+						new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
 				break;
 			case 'rotate':
 				matrix.rotate(v[0], v[1], v[2]);
@@ -11049,8 +11508,13 @@ new function() {
 
 	var attributes = Base.merge(Base.each(SVGStyles, function(entry) {
 		this[entry.attribute] = function(item, value) {
-			item[entry.set](
-					convertValue(value, entry.type, entry.fromSVG));
+			item[entry.set](convertValue(value, entry.type, entry.fromSVG));
+			if (entry.type === 'color' && item instanceof Shape) {
+				var color = item[entry.get]();
+				if (color)
+					color.transform(new Matrix().translate(
+							item.getPosition(true).negate()));
+			}
 		};
 	}, {}), {
 		id: function(item, value) {
@@ -11112,7 +11576,7 @@ new function() {
 				var clip = getAttribute(node, 'overflow', styles) != 'visible',
 					group = item._definition;
 				if (clip && !rect.contains(group.getBounds())) {
-					clip = new Path.Rectangle(rect).transform(group._matrix);
+					clip = new Shape.Rectangle(rect).transform(group._matrix);
 					clip.setClipMask(true);
 					group.addChild(clip);
 				}
@@ -11136,10 +11600,10 @@ new function() {
 					: value;
 	}
 
-	function applyAttributes(item, node) {
+	function applyAttributes(item, node, isRoot) {
 		var styles = {
 			node: DomElement.getStyles(node) || {},
-			parent: DomElement.getStyles(node.parentNode) || {}
+			parent: !isRoot && DomElement.getStyles(node.parentNode) || {}
 		};
 		Base.each(attributes, function(apply, name) {
 			var value = getAttribute(node, name, styles);
@@ -11155,32 +11619,73 @@ new function() {
 		return match && definitions[match[1]];
 	}
 
-	function importSVG(node, clearDefs) {
-		if (typeof node === 'string')
-			node = new DOMParser().parseFromString(node, 'image/svg+xml');
+	function importSVG(source, isRoot, options) {
+		if (!source)
+			return null;
+		if (!options) {
+			options = {};
+		} else if (typeof options === 'function') {
+			options = { onLoad: options };
+		}
+
+		var node = source,
+			scope = paper;
+
+		function onLoadCallback(svg) {
+			paper = scope;
+			var item = importSVG(svg, isRoot, options),
+				onLoad = options.onLoad,
+				view = scope.project && scope.project.view;
+			if (onLoad)
+				onLoad.call(this, item);
+			view.draw(true);
+		}
+
+		if (isRoot) {
+			if (typeof source === 'string' && !/^.*</.test(source)) {
+				return Http.request('get', source, onLoadCallback);
+			} else if (typeof File !== 'undefined' && source instanceof File) {
+				var reader = new FileReader();
+				reader.onload = function() {
+					onLoadCallback(reader.result);
+				};
+				return reader.readAsText(source);
+			}
+		}
+
+		if (typeof source === 'string')
+			node = new DOMParser().parseFromString(source, 'image/svg+xml');
+		if (!node.nodeName)
+			throw new Error('Unsupported SVG source: ' + source);
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
-			item = importer && importer(node, type),
-			data = node.getAttribute('data-paper-data');
-		if (item && !(item instanceof Group))
-			item = applyAttributes(item, node);
-		if (item && data)
-			item._data = JSON.parse(data);
-		if (clearDefs)
+			item = importer && importer(node, type, isRoot, options) || null,
+			data = node.getAttribute && node.getAttribute('data-paper-data');
+		if (item) {
+			if (!(item instanceof Group))
+				item = applyAttributes(item, node, isRoot);
+			if (options.expandShapes && item instanceof Shape) {
+				item.remove();
+				item = item.toPath();
+			}
+			if (data)
+				item._data = JSON.parse(data);
+		}
+		if (isRoot)
 			definitions = {};
 		return item;
 	}
 
 	Item.inject({
-		importSVG: function(node) {
-			return this.addChild(importSVG(node, true));
+		importSVG: function(node, options) {
+			return this.addChild(importSVG(node, true, options));
 		}
 	});
 
 	Project.inject({
-		importSVG: function(node) {
+		importSVG: function(node, options) {
 			this.activate();
-			return importSVG(node, true);
+			return importSVG(node, true, options);
 		}
 	});
 };
@@ -11191,11 +11696,12 @@ paper = new (PaperScope.inject(Base.merge(Base.exports, {
 	Numerical: Numerical,
 	DomElement: DomElement,
 	DomEvent: DomEvent,
+	Http: Http,
 	Key: Key
 })))();
 
 if (typeof define === 'function' && define.amd)
-	define(paper);
+	define('paper', paper);
 
 return paper;
 };

@@ -39,7 +39,7 @@ with (paper) {
 
 	rect.rotate(45).scale(0.7);
 
-	var svg = new XMLSerializer().serializeToString(project.exportSVG());
+	var svg = project.exportSVG({ asString: true });
 	console.log(svg);
 
 	fs.writeFile(path.resolve(__dirname, 'out.svg'),svg, function (err) {

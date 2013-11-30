@@ -291,7 +291,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	},
 
 	setSource: function(src) {
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 		var that = this,
 			// src can be an URL or a DOM ID to load the image from
 			image = document.getElementById(src) || new Image();
@@ -324,7 +324,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 				image.src = src;
 		}
 		this.setImage(image);
-/*#*/ } else if (options.environment == 'node') {
+/*#*/ } else if (__options.environment == 'node') {
 		var image = new Image();
 		// If we're running on the server and it's a string,
 		// check if it is a data URL
@@ -338,7 +338,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			image.src = fs.readFileSync(src);
 		}
 		this.setImage(image);
-/*#*/ } // options.environment == 'node'
+/*#*/ } // __options.environment == 'node'
 	},
 
 	// DOCS: document Raster#getElement
@@ -392,7 +392,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	toDataURL: function() {
 		// See if the linked image is base64 encoded already, if so reuse it,
 		// otherwise try using canvas.toDataURL()
-/*#*/ if (options.environment == 'node') {
+/*#*/ if (__options.environment == 'node') {
 		if (this._data)
 			return this._data;
 /*#*/ } else {
@@ -463,9 +463,9 @@ var Raster = Item.extend(/** @lends Raster# */{
 				.translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(ctx);
 		// If a path was passed, draw it as a clipping mask:
-		// See Project#draw() for an explanation of Base.merge()
+		// See Project#draw() for an explanation of new Base()
 		if (path)
-			path.draw(ctx, Base.merge({ clip: true, transforms: [matrix] }));
+			path.draw(ctx, new Base({ clip: true, transforms: [matrix] }));
 		// Now draw the image clipped into it.
 		this._matrix.applyToContext(ctx);
 		ctx.drawImage(this.getElement(),

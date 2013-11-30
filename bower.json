@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.9.9",
+  "version": "0.9.14",
   "main": "dist/paper.js",
   "ignore": [
     "build",
@@ -14,7 +14,7 @@
     "test"
   ],
   "devDependencies": {
-    "straps": "~1.2.0",
+    "straps": "~1.3.1",
     "acorn": "git://github.com/paperjs/acorn#0.3.2",
     "esprima": "~1.0.3",
     "stats.js": "r11"

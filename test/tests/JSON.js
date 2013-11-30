@@ -16,7 +16,6 @@ function testExportImportJSON(project) {
 	// Use higher precision than in comparissons, for bounds
 	var json = project.exportJSON({ precision: 8 });
 	var project2 = new Project();
-	project2.clear();
 	project2.importJSON(json);
 	compareProjects(project2, project);
 }

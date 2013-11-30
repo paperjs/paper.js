@@ -531,9 +531,6 @@ var Point = Base.extend(/** @lends Point# */{
 	/**
 	 * The vector's angle in degrees, measured from the x-axis to the vector.
 	 *
-	 * The angle is unsigned, no information about rotational direction is
-	 * given.
-	 *
 	 * @name Point#getAngle
 	 * @bean
 	 * @type Number
@@ -544,6 +541,10 @@ var Point = Base.extend(/** @lends Point# */{
 	},
 
 	setAngle: function(angle) {
+		// We store a reference to _angle internally so we still preserve it
+		// when the vector's length is set to zero, and then anything else.
+		// Note that we cannot rely on it if x and y are something else than 0,
+		// since updating x / y does not automatically change _angle!
 		angle = this._angle = angle * Math.PI / 180;
 		if (!this.isZero()) {
 			var length = this.getLength();
@@ -569,9 +570,6 @@ var Point = Base.extend(/** @lends Point# */{
 	/**
 	 * The vector's angle in radians, measured from the x-axis to the vector.
 	 *
-	 * The angle is unsigned, no information about rotational direction is
-	 * given.
-	 *
 	 * @name Point#getAngleInRadians
 	 * @bean
 	 * @type Number
@@ -579,9 +577,13 @@ var Point = Base.extend(/** @lends Point# */{
 	getAngleInRadians: function(/* point */) {
 		// Hide parameters from Bootstrap so it injects bean too
 		if (arguments[0] === undefined) {
-			if (this._angle == null)
-				this._angle = Math.atan2(this.y, this.x);
-			return this._angle;
+			return this.isZero()
+					// Return the preseved angle in case the vector has no
+					// length, and update the internal _angle in case the
+					// vector has a length. See #setAngle() for more
+					// explanations.
+					? this._angle || 0
+					: this._angle = Math.atan2(this.y, this.x);
 		} else {
 			var point = Point.read(arguments),
 				div = this.getLength() * point.getLength();
@@ -938,10 +940,10 @@ var LinkedPoint = Point.extend({
 		this._setter = setter;
 	},
 
-	set: function(x, y, dontNotify) {
+	set: function(x, y, _dontNotify) {
 		this._x = x;
 		this._y = y;
-		if (!dontNotify)
+		if (!_dontNotify)
 			this._owner[this._setter](this);
 		return this;
 	},

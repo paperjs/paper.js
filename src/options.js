@@ -14,7 +14,7 @@
 // These are also used for building, but some values are overridden
 // (e.g. version, stats). 
 
-var options = {
+var __options = {
 	parser: 'acorn',
 	version: 'dev',
 	environment: 'browser',
@@ -22,6 +22,7 @@ var options = {
 	svg: true,
 	fatline: true,
 	paperscript: true,
+	palette: true,
 	nativeContains: false,
 	debug: false
 };

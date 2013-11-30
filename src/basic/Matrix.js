@@ -83,18 +83,25 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Number} ty the translateY coordinate of the transform
 	 * @return {Matrix} this affine transform
 	 */
-	set: function(a, c, b, d, tx, ty) {
+	set: function(a, c, b, d, tx, ty, _dontNotify) {
 		this._a = a;
 		this._c = c;
 		this._b = b;
 		this._d = d;
 		this._tx = tx;
 		this._ty = ty;
+		if (!_dontNotify)
+			this._changed();
 		return this;
 	},
 
 	_serialize: function(options) {
 		return Base.serialize(this.getValues(), options);
+	},
+
+	_changed: function() {
+		if (this._owner)
+			this._owner._changed(/*#=*/ Change.GEOMETRY);
 	},
 
 	/**
@@ -136,6 +143,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	reset: function() {
 		this._a = this._d = 1;
 		this._c = this._b = this._tx = this._ty = 0;
+		this._changed();
 		return this;
 	},
 
@@ -171,6 +179,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		this._d *= scale.y;
 		if (center)
 			this.translate(center.negate());
+		this._changed();
 		return this;
 	},
 
@@ -197,6 +206,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 			y = point.y;
 		this._tx += x * this._a + y * this._b;
 		this._ty += x * this._c + y * this._d;
+		this._changed();
 		return this;
 	},
 
@@ -241,6 +251,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		this._d = -sin * c + cos * d;
 		this._tx += tx * a + ty * b;
 		this._ty += tx * c + ty * d;
+		this._changed();
 		return this;
 	},
 
@@ -278,6 +289,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		this._d += point.x * c;
 		if (center)
 			this.translate(center.negate());
+		this._changed();
 		return this;
 	},
 
@@ -298,6 +310,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		this._d = mx._b * c + mx._d * d;
 		this._tx += mx._tx * a + mx._ty * b;
 		this._ty += mx._tx * c + mx._ty * d;
+		this._changed();
 		return this;
 	},
 
@@ -320,6 +333,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		this._d = mx._c * b + mx._d * d;
 		this._tx = mx._a * tx + mx._b * ty + mx._tx;
 		this._ty = mx._c * tx + mx._d * ty + mx._ty;
+		this._changed();
 		return this;
 	},
 
@@ -327,8 +341,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Boolean} whether this transform is the identity transform
 	 */
 	isIdentity: function() {
-		return this._a == 1 && this._c == 0 && this._b == 0 && this._d == 1
-				&& this._tx == 0 && this._ty == 0;
+		return this._a === 1 && this._c === 0 && this._b === 0 && this._d === 1
+				&& this._tx === 0 && this._ty === 0;
 	},
 
 	/**
@@ -367,26 +381,26 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @function
 	 * @param {Number[]} src the array containing the source points
 	 *        as x, y value pairs
-	 * @param {Number} srcOff the offset to the first point to be transformed
+	 * @param {Number} srcOffset the offset to the first point to be transformed
 	 * @param {Number[]} dst the array into which to store the transformed
 	 *        point pairs
-	 * @param {Number} dstOff the offset of the location of the first
+	 * @param {Number} dstOffset the offset of the location of the first
 	 *        transformed point in the destination array
-	 * @param {Number} numPts the number of points to tranform
+	 * @param {Number} count the number of points to tranform
 	 * @return {Number[]} the dst array, containing the transformed coordinates.
 	 */
-	transform: function(/* point | */ src, srcOff, dst, dstOff, numPts) {
+	transform: function(/* point | */ src, srcOffset, dst, dstOffset, count) {
 		return arguments.length < 5
 			// TODO: Check for rectangle and use _tranformBounds?
 			? this._transformPoint(Point.read(arguments))
-			: this._transformCoordinates(src, srcOff, dst, dstOff, numPts);
+			: this._transformCoordinates(src, srcOffset, dst, dstOffset, count);
 	},
 
 	/**
 	 * A faster version of transform that only takes one point and does not
 	 * attempt to convert it.
 	 */
-	_transformPoint: function(point, dest, dontNotify) {
+	_transformPoint: function(point, dest, _dontNotify) {
 		var x = point.x,
 			y = point.y;
 		if (!dest)
@@ -394,14 +408,15 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		return dest.set(
 			x * this._a + y * this._b + this._tx,
 			x * this._c + y * this._d + this._ty,
-			dontNotify
+			_dontNotify
 		);
 	},
 
-	_transformCoordinates: function(src, srcOff, dst, dstOff, numPts) {
-		var i = srcOff, j = dstOff,
-			srcEnd = srcOff + 2 * numPts;
-		while (i < srcEnd) {
+	_transformCoordinates: function(src, srcOffset, dst, dstOffset, count) {
+		var i = srcOffset,
+			j = dstOffset,
+			max = i + 2 * count;
+		while (i < max) {
 			var x = src[i++],
 				y = src[i++];
 			dst[j++] = x * this._a + y * this._b + this._tx;
@@ -424,7 +439,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * point and finding the new bounding box to these points. This is not
 	 * really the transformed reactangle!
 	 */
-	_transformBounds: function(bounds, dest, dontNotify) {
+	_transformBounds: function(bounds, dest, _dontNotify) {
 		var coords = this._transformCorners(bounds),
 			min = coords.slice(0, 2),
 			max = coords.slice();
@@ -439,7 +454,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		if (!dest)
 			dest = new Rectangle();
 		return dest.set(min[0], min[1], max[0] - min[0], max[1] - min[1],
-				dontNotify);
+				_dontNotify);
 	},
 
 	/**
@@ -462,7 +477,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 				? det : null;
 	},
 
-	_inverseTransform: function(point, dest, dontNotify) {
+	_inverseTransform: function(point, dest, _dontNotify) {
 		var det = this._getDeterminant();
 		if (!det)
 			return null;
@@ -473,7 +488,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		return dest.set(
 			(x * this._d - y * this._b) / det,
 			(y * this._a - x * this._c) / det,
-			dontNotify
+			_dontNotify
 		);
 	},
 
@@ -590,6 +605,13 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		return new Point(this._tx, this._ty);
 	},
 
+	setTranslation: function(/* point */) {
+		var point = Point.read(arguments);
+		this._tx = point.x;
+		this._ty = point.y;
+		this._changed();
+	},
+
 	/**
 	 * The scaling values of the matrix, if it can be decomposed.
 	 *
@@ -601,6 +623,15 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		return (this.decompose() || {}).scaling;
 	},
 
+	setScaling: function(/* scale */) {
+		var scaling = this.getScaling();
+		if (scaling != null) {
+			var scale = Point.read(arguments);
+			(this._owner || this).scale(
+					scale.x / scaling.x, scale.y / scaling.y);
+		}
+	},
+
 	/**
 	 * The rotation angle of the matrix, if it can be decomposed.
 	 *
@@ -610,6 +641,12 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	getRotation: function() {
 		return (this.decompose() || {}).rotation;
+	},
+
+	setRotation: function(angle) {
+		var rotation = this.getRotation();
+		if (rotation != null)
+			(this._owner || this).rotate(angle - rotation);
 	},
 
 	/**
@@ -658,6 +695,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		};
 		this['set' + name] = function(value) {
 			this[prop] = value;
+			this._changed();
 		};
 	}, {});
 });

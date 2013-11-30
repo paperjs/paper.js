@@ -15,34 +15,45 @@
 var CanvasProvider = {
 	canvases: [],
 
-	getCanvas: function(width, height) {
-		var size = height === undefined ? width : new Size(width, height),
-			canvas,
+	getCanvas: function(width, height, ratio) {
+		var canvas,
 			init = true;
+		if (typeof width === 'object') {
+			ratio = height;
+			height = width.height;
+			width = width.width;
+		}
+		if (!ratio) {
+			ratio = 1;
+		} else if (ratio !== 1) {
+			width *= ratio;
+			height *= ratio;
+		}
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
 		} else {
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 			canvas = document.createElement('canvas');
-/*#*/ } else { // !options.environment == 'browser'
-			canvas = new Canvas(size.width, size.height);
+/*#*/ } else { // __options.environment != 'browser'
+			canvas = new Canvas(width, height);
 			init = false; // It's already initialized through constructor.
-/*#*/ } // !options.environment == 'browser'
-
+/*#*/ } // __options.environment != 'browser'
 		}
 		var ctx = canvas.getContext('2d');
-		// We save on retrieval and restore on release.
-		ctx.save();
 		// If they are not the same size, we don't need to clear them
 		// using clearRect and visa versa.
-		if (canvas.width === size.width && canvas.height === size.height) {
+		if (canvas.width === width && canvas.height === height) {
 			// +1 is needed on some browsers to really clear the borders
 			if (init)
-				ctx.clearRect(0, 0, size.width + 1, size.height + 1);
+				ctx.clearRect(0, 0, width + 1, height + 1);
 		} else {
-			canvas.width = size.width;
-			canvas.height = size.height;
+			canvas.width = width;
+			canvas.height = height;
 		}
+		// We save on retrieval and restore on release.
+		ctx.save();
+		if (ratio !== 1)
+			ctx.scale(ratio, ratio);
 		return canvas;
 	},
 

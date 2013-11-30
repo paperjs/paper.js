@@ -197,7 +197,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		// Do not test children for fill, since a compound path forms one shape.
 		// options.compoundChildren allows to specifically do so, see below.
 		var res = _hitTest.base.call(this, point,
-				Base.merge(options, { fill: false }));
+				new Base(options, { fill: false }));
 		if (!res) {
 			// If asked to query all children seperately, perform the same loop
 			// as Item#hitTest() now on the compound children.
@@ -218,15 +218,19 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		// Return early if the compound path doesn't have any children:
 		if (children.length === 0)
 			return;
+
 		ctx.beginPath();
 		param = param.extend({ compound: true });
 		for (var i = 0, l = children.length; i < l; i++)
 			children[i].draw(ctx, param);
+
 		if (!param.clip) {
 			this._setStyles(ctx);
 			var style = this._style;
-			if (style.hasFill())
+			if (style.hasFill()) {
 				ctx.fill(style.getWindingRule());
+				ctx.shadowColor = 'rgba(0,0,0,0)';
+			}
 			if (style.hasStroke())
 				ctx.stroke();
 		}
@@ -263,13 +267,15 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	};
 
 	// Redirect all other drawing commands to the current path
-	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
-			'arcTo', 'lineBy', 'curveBy', 'arcBy'], function(key) {
-		fields[key] = function() {
-			var path = getCurrentPath(this);
-			path[key].apply(path, arguments);
-		};
-	});
+	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo', 'arcTo',
+			'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy', 'arcBy'],
+			function(key) {
+				fields[key] = function() {
+					var path = getCurrentPath(this);
+					path[key].apply(path, arguments);
+				};
+			}
+	);
 
 	return fields;
 });

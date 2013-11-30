@@ -27,7 +27,7 @@
 				type: 'boolean',
 				label: 'A Checkbox',
 				onChange: function(value) {
-					values.list = 'Two';
+					values.list = value ? 'Two' : 'One';
 				}
 			},
 			list: {
@@ -44,6 +44,7 @@
 				label: 'A Button',
 				value: 'Click Me!',
 				onClick: function() {
+					console.log('Resetting');
 					palette.reset();
 					values.text = 'You clicked!';
 				}
@@ -58,7 +59,7 @@
 		};
 		var palette = new Palette('Values', components, values);
 		palette.onChange = function(component, name, value) {
-			console.log(component, name + ' = ' + value);
+			console.log(name + ' = ' + value, component);
 		}
 		values.number = 10;
 		values.string = 'Woop woop';

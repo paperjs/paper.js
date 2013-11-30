@@ -15,6 +15,7 @@
  * Paper.js DOM to a SVG DOM.
  */
 new function() {
+	// TODO: Consider moving formatter into options object, and pass it along.
 	var formatter;
 
 	function setAttributes(node, attrs) {
@@ -76,13 +77,13 @@ new function() {
 		return attrs;
 	}
 
-	function exportGroup(item) {
+	function exportGroup(item, options) {
 		var attrs = getTransform(item),
 			children = item._children;
 		var node = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
-			var childNode = exportSVG(child);
+			var childNode = exportSVG(child, options);
 			if (childNode) {
 				if (child.isClipMask()) {
 					var clip = createElement('clipPath');
@@ -111,7 +112,12 @@ new function() {
 		return createElement('image', attrs);
 	}
 
-	function exportPath(item) {
+	function exportPath(item, options) {
+		if (options.matchShapes) {
+			var shape = item.toShape(false);
+			if (shape)
+				return exportShape(shape, options);
+		}
 		var segments = item._segments,
 			type,
 			attrs;
@@ -147,7 +153,6 @@ new function() {
 
 	function exportShape(item) {
 		var shape = item._shape,
-			center = item.getPosition(true),
 			radius = item._radius,
 			attrs = getTransform(item, true, shape !== 'rectangle');
 		if (shape === 'rectangle') {
@@ -181,7 +186,7 @@ new function() {
 		return createElement('path', attrs);
 	}
 
-	function exportPlacedSymbol(item) {
+	function exportPlacedSymbol(item, options) {
 		var attrs = getTransform(item, true),
 			symbol = item.getSymbol(),
 			symbolNode = getDefinition(symbol, 'symbol'),
@@ -191,7 +196,7 @@ new function() {
 			symbolNode = createElement('symbol', {
 				viewBox: formatter.rectangle(bounds)
 			});
-			symbolNode.appendChild(exportSVG(definition));
+			symbolNode.appendChild(exportSVG(definition, options));
 			setDefinition(symbol, symbolNode, 'symbol');
 		}
 		attrs.href = '#' + symbolNode.id;
@@ -202,7 +207,7 @@ new function() {
 		return createElement('use', attrs);
 	}
 
-	function exportGradient(color, item) {
+	function exportGradient(color) {
 		// NOTE: As long as the fillTransform attribute is not implemented,
 		// we need to create a separate gradient object for each gradient,
 		// even when they share the same gradient defintion.
@@ -343,36 +348,38 @@ new function() {
 	}
 
 	function exportDefinitions(node, options) {
-		if (!definitions)
-			return node;
-		// We can only use svg nodes as defintion containers. Have the loop
-		// produce one if it's a single item of another type (when calling
-		// #exportSVG() on an item rather than a whole project)
-		// jsdom in Node.js uses uppercase values for nodeName...
-		var svg = node.nodeName.toLowerCase() === 'svg' && node,
+		var svg = node,
 			defs = null;
-		for (var i in definitions.svgs) {
-			// This code is inside the loop so we only create a container if we
-			// actually have svgs.
-			if (!defs) {
-				if (!svg) {
-					svg = createElement('svg');
-					svg.appendChild(node);
+		if (definitions) {
+			// We can only use svg nodes as defintion containers. Have the loop
+			// produce one if it's a single item of another type (when calling
+			// #exportSVG() on an item rather than a whole project)
+			// jsdom in Node.js uses uppercase values for nodeName...
+			svg = node.nodeName.toLowerCase() === 'svg' && node;
+			for (var i in definitions.svgs) {
+				// This code is inside the loop so we only create a container if
+				// we actually have svgs.
+				if (!defs) {
+					if (!svg) {
+						svg = createElement('svg');
+						svg.appendChild(node);
+					}
+					defs = svg.insertBefore(createElement('defs'),
+							svg.firstChild);
 				}
-				defs = svg.insertBefore(createElement('defs'), svg.firstChild);
+				defs.appendChild(definitions.svgs[i]);
 			}
-			defs.appendChild(definitions.svgs[i]);
+			// Clear definitions at the end of export
+			definitions = null;
 		}
-		// Clear definitions at the end of export
-		definitions = null;
 		return options.asString
 				? new XMLSerializer().serializeToString(svg)
 				: svg;
 	}
 
-	function exportSVG(item) {
+	function exportSVG(item, options) {
 		var exporter = exporters[item._type],
-			node = exporter && exporter(item, item._type);
+			node = exporter && exporter(item, options);
 		if (node && item._data)
 			node.setAttribute('data-paper-data', JSON.stringify(item._data));
 		return node && applyStyle(item, node);
@@ -388,7 +395,7 @@ new function() {
 	Item.inject({
 		exportSVG: function(options) {
 			options = setOptions(options);
-			return exportDefinitions(exportSVG(this), options);
+			return exportDefinitions(exportSVG(this, options), options);
 		}
 	});
 
@@ -407,7 +414,7 @@ new function() {
 					'xmlns:xlink': 'http://www.w3.org/1999/xlink'
 				});
 			for (var i = 0, l = layers.length; i < l; i++)
-				node.appendChild(exportSVG(layers[i]));
+				node.appendChild(exportSVG(layers[i], options));
 			return exportDefinitions(node, options);
 		}
 	});

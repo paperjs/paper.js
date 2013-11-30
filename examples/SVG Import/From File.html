@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Import From File</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas">
+		var file = document.getElementById('file');
+		file.addEventListener('change', function (event) {
+			var files = event.target.files;
+			for (var i = 0; i < files.length; i++) {
+				var file = files[i];
+				if (file.type.match('svg')) {
+					project.importSVG(file, function(item) {
+						console.log(item);
+					});
+				}
+			}
+		});
+	</script>
+</head>
+<body>
+	<form>
+	<input type="file" id="file">
+	</form>
+	<canvas id="canvas" width="1000" height="1000"></canvas>
+</body>
+</html>

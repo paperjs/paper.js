@@ -704,16 +704,14 @@ statics: {
 		function getOrientation(v) {
 			var y0 = v[1],
 				y1 = v[7],
-				dir = 1;
-			if (y0 > y1) {
-				var tmp = y0;
-				y0 = y1;
-				y1 = tmp;
-			    dir = -1;
-			}
-			if (y < y0 || y > y1)
-			    dir = 0;
-			return dir;
+				dir = y0 <= y1 ? 1 : -1;
+			// Bounds check: Reverse y0 and y1 if direction is -1, and exclude
+			// end points of curves / lines (y1), to not count corners / joints
+			// twice.
+			return dir === 1 && (y < y0 || y >= y1)
+					|| dir === -1 && (y <= y1 || y > y0)
+					? 0
+					: dir;
 		}
 
 		if (Curve.isLinear(v)) {
@@ -1137,7 +1135,7 @@ new function() { // Scope for methods that require numerical integration
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
 			range1, range2, recursion) {
-/*#*/ if (options.fatline) {
+/*#*/ if (__options.fatline) {
 		// NOTE: range1 and range1 are only used for recusion
 		recursion = (recursion || 0) + 1;
 		// Avoid endless recursion.
@@ -1221,7 +1219,7 @@ new function() { // Scope for methods that require numerical integration
 				break;
 			}
 		}
-/*#*/ } else { // !options.fatline
+/*#*/ } else { // !__options.fatline
 		var bounds1 = Curve.getBounds(v1),
 			bounds2 = Curve.getBounds(v2);
 		if (bounds1.touches(bounds2)) {
@@ -1248,10 +1246,10 @@ new function() { // Scope for methods that require numerical integration
 			}
 		}
 		return locations;
-/*#*/ } // !options.fatline
+/*#*/ } // !__options.fatline
 	}
 
-/*#*/ if (options.fatline) {
+/*#*/ if (__options.fatline) {
 	/**
 	 * Clip curve V2 with fat-line of v1
 	 * @param {Array} v1 section of the first curve, for which we will make a
@@ -1413,7 +1411,7 @@ new function() { // Scope for methods that require numerical integration
 				// correct order where line [ p1, p3 ] is part of the hull.
 				: [ p0, p1, p2, p3 ];
 	}
-/*#*/ } // options.fatline
+/*#*/ } // __options.fatline
 
 	/**
 	 * Intersections between curve and line becomes rather simple here mostly
@@ -1427,18 +1425,18 @@ new function() { // Scope for methods that require numerical integration
 			vl = flip ? v1 : v2,
 			lx1 = vl[0], ly1 = vl[1],
 			lx2 = vl[6], ly2 = vl[7],
-			// Rotate both curve and line around l1 so that line is on x axis
+			// Rotate both curve and line around l1 so that line is on x axis.
 			ldx = lx2 - lx1,
 			ldy = ly2 - ly1,
-			// Angle with x axis (1, 0)
+			// Calculate angle to the x-axis (1, 0).
 			angle = Math.atan2(-ldy, ldx),
 			sin = Math.sin(angle),
 			cos = Math.cos(angle),
 			// (rlx1, rly1) = (0, 0)
 			rlx2 = ldx * cos - ldy * sin,
-			// The curve values for the rotated line
+			// The curve values for the rotated line.
 			rvl = [0, 0, 0, 0, rlx2, 0, rlx2, 0],
-			// Now calculate the rotated curve
+			// Calculate the curve values of the rotated curve.
 			rvc = [];
 		for(var i = 0; i < 8; i += 2) {
 			var x = vc[i] - lx1,
@@ -1457,7 +1455,7 @@ new function() { // Scope for methods that require numerical integration
 			// We do have a point on the infinite line. Check if it falls on
 			// the line *segment*.
 			if (x >= 0 && x <= rlx2) {
-				// Find the parameter of the intersection on the rotated line 
+				// Find the parameter of the intersection on the rotated line. 
 				var tl = Curve.getParameterOf(rvl, x, 0),
 					t1 = flip ? tl : tc,
 					t2 = flip ? tc : tl;

@@ -125,24 +125,6 @@ var Group = Item.extend(/** @lends Group# */{
 	},
 
 	/**
-	 * Specifies whether the group applies transformations directly to its
-	 * children, or whether they are to be stored in its {@link Item#matrix}
-	 *
-	 * @type Boolean
-	 * @default true
-	 * @bean
-	 */
-	getTransformContent: function() {
-		return this._transformContent;
-	},
-
-	setTransformContent: function(transform) {
-		this._transformContent = transform;
-		if (transform)
-			this.applyMatrix();
-	},
-
-	/**
 	 * Specifies whether the group item is to be clipped.
 	 * When setting to {@code true}, the first child in the group is
 	 * automatically defined as the clipping mask.

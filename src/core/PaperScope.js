@@ -77,7 +77,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 	 *
 	 * @type String
 	 */
-	version: '/*#=*/ options.version',
+	version: '/*#=*/ __options.version',
 
 	/**
 	 * The currently active project.
@@ -111,6 +111,18 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		if (!this._tool)
 			this._tool = new Tool();
 		return this._tool;
+	},
+
+	/**
+	 * A reference to the local scope. This is required, so `paper` will always
+	 * refer to the local scope, even when calling into it from another scope.
+	 * `paper.activate();` will have to be called in such a situation.
+	 * @type PaperScript
+	 * @private
+	 * @bean
+	 */
+	getPaper: function() {
+		return this;
 	},
 
 	/**

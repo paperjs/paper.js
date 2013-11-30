@@ -29,7 +29,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		this._project = paper.project;
 		this._element = element;
 		var size;
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 		// Generate an id for this view / element if it does not have one
 		this._id = element.getAttribute('id');
 		if (this._id == null)
@@ -59,23 +59,24 @@ var View = Base.extend(Callback, /** @lends View# */{
 			};
 			DomEvent.add(window, this._windowHandlers);
 		} else {
+			// Try visible size first, since that will help handling previously
+			// scaled canvases (e.g. when dealing with ratio)
+			size = DomElement.getSize(element);
 			// If the element is invisible, we cannot directly access
 			// element.width / height, because they would appear 0.
-			// Reading the attributes still works.
-			size = new Size(parseInt(element.getAttribute('width'), 10),
-						parseInt(element.getAttribute('height'), 10));
-			// If no size was specified on the canvas, read it from CSS
-			if (size.isNaN())
-				size = DomElement.getSize(element);
+			// Reading the attributes should still work.
+			if (size.isNaN() || size.isZero())
+				size = new Size(parseInt(element.getAttribute('width'), 10),
+							parseInt(element.getAttribute('height'), 10));
 		}
 		// Set canvas size even if we just deterined the size from it, since
 		// it might have been set to a % size, in which case it would use some
 		// default internal size (300x150 on WebKit) and scale up the pixels.
-		element.width = size.width;
-		element.height = size.height;
+		// We also need this call here for HiDPI support.
+		this._setViewSize(size);
 		// TODO: Test this on IE:
 		if (PaperScope.hasAttribute(element, 'stats')
-				&& typeof Stats === 'object') {
+				&& typeof Stats !== 'undefined') {
 			this._stats = new Stats();
 			// Align top-left to the element
 			var stats = this._stats.domElement,
@@ -86,18 +87,17 @@ var View = Base.extend(Callback, /** @lends View# */{
 			style.top = offset.y + 'px';
 			document.body.appendChild(stats);
 		}
-/*#*/ } else if (options.environment == 'node') {
+/*#*/ } else if (__options.environment == 'node') {
 		// Generate an id for this view
 		this._id = 'view-' + View._id++;
 		size = new Size(element.width, element.height);
-/*#*/ } // options.environment == 'node'
+/*#*/ } // __options.environment == 'node'
 		// Keep track of views internally
 		View._views.push(this);
 		// Link this id to our view
 		View._viewsById[this._id] = this;
-		this._viewSize = new LinkedSize(size.width, size.height,
-				this, 'setViewSize');
-		this._matrix = new Matrix();
+		this._viewSize = size;
+		(this._matrix = new Matrix())._owner = this;
 		this._zoom = 1;
 		// Make sure the first view is focused for keyboard input straight away
 		if (!View._focused)
@@ -108,7 +108,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	/**
-	 * Removes this view from and frees the associated element.
+	 * Removes this view from the project and frees the associated element.
 	 */
 	remove: function() {
 		if (!this._project)
@@ -122,11 +122,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 		// Unlink from project
 		if (this._project.view == this)
 			this._project.view = null;
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._element, this._viewHandlers);
 		DomEvent.remove(window, this._windowHandlers);
-/*#*/ } // options.environment == 'browser'
+/*#*/ } // __options.environment == 'browser'
 		this._element = this._project = null;
 		// Removing all onFrame handlers makes the onFrame handler stop
 		// automatically through its uninstall method.
@@ -146,14 +146,13 @@ var View = Base.extend(Callback, /** @lends View# */{
 		 */
 		onFrame: {
 			install: function() {
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
+				this._animate = true;
 				// Request a frame handler straight away to initialize the
 				// sequence of onFrame calls.
-				if (!this._requested) {
-					this._animate = true;
+				if (!this._requested)
 					this._requestFrame();
-				}
-/*#*/ } // options.environment == 'browser'
+/*#*/ } // __options.environment == 'browser'
 			},
 
 			uninstall: function() {
@@ -172,7 +171,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	_count: 0,
 
 	_requestFrame: function() {
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 		var that = this;
 		DomEvent.requestAnimationFrame(function() {
 			that._requested = false;
@@ -184,7 +183,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 			that._handleFrame();
 		}, this._element);
 		this._requested = true;
-/*#*/ } // options.environment == 'browser'
+/*#*/ } // __options.environment == 'browser'
 	},
 
 	_handleFrame: function() {
@@ -194,8 +193,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 			delta = this._before ? now - this._before : 0;
 		this._before = now;
 		this._handlingFrame = true;
-		// Use Base.merge to convert into a Base object, for #toString()
-		this.fire('frame', Base.merge({
+		// Use new Base() to convert into a Base object, for #toString()
+		this.fire('frame', new Base({
 			// Time elapsed since last redraw in seconds:
 			delta: delta,
 			// Time since first call of frame() in seconds:
@@ -234,7 +233,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	_handleFrameItems: function(event) {
 		for (var i in this._frameItems) {
 			var entry = this._frameItems[i];
-			entry.item.fire('frame', Base.merge(event, {
+			entry.item.fire('frame', new Base(event, {
 				// Time since first call of frame() in seconds:
 				time: entry.time += event.delta,
 				count: entry.count++
@@ -254,6 +253,17 @@ var View = Base.extend(Callback, /** @lends View# */{
 			// Otherwise simply redraw the view now
 			this.draw();
 		}
+	},
+
+	/**
+	 * Private notifier that is called whenever a change occurs in this view.
+	 * Used only by Matrix for now.
+	 *
+	 * @param {ChangeFlag} flags describes what exactly has changed.
+	 */
+	_changed: function(flags) {
+		if (flags & /*#=*/ ChangeFlag.APPEARANCE)
+			this._project._needsRedraw = true;
 	},
 
 	_transform: function(matrix) {
@@ -281,7 +291,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * @bean
 	 */
 	getViewSize: function() {
-		return this._viewSize;
+		var size = this._viewSize;
+		return new LinkedSize(size.width, size.height, this, 'setViewSize');
 	},
 
 	setViewSize: function(size) {
@@ -289,10 +300,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		var delta = size.subtract(this._viewSize);
 		if (delta.isZero())
 			return;
-		this._element.width = size.width;
-		this._element.height = size.height;
-		// Update _viewSize but don't notify of change.
-		this._viewSize.set(size.width, size.height, true);
+		this._viewSize.set(size.width, size.height);
+		this._setViewSize(size);
 		this._bounds = null; // Force recalculation
 		// Call onResize handler on any size change
 		this.fire('resize', {
@@ -300,6 +309,15 @@ var View = Base.extend(Callback, /** @lends View# */{
 			delta: delta
 		});
 		this._redraw();
+	},
+
+	/**
+	 * Private method, overriden in CanvasView for HiDPI support.
+	 */
+	_setViewSize: function(size) {
+		var element = this._element;
+		element.width = size.width;
+		element.height = size.height;
 	},
 
 	/**
@@ -460,7 +478,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * 
 	 * Attach an event handler to the view.
 	 *
-	 * @name View#on
+	 * @name View#attach
+	 * @alias View#on
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Function} function The function to be called when the event
@@ -482,7 +501,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	/**
 	 * Attach one or more event handlers to the view.
 	 *
-	 * @name View#on^2
+	 * @name View#attach
+	 * @alias View#on
 	 * @function
 	 * @param {Object} param an object literal containing one or more of the
 	 * following properties: {@code frame, resize}.
@@ -505,6 +525,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * Detach an event handler from the view.
 	 *
 	 * @name View#detach
+	 * @alias View#off
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Function} function The function to be detached
@@ -533,7 +554,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	/**
 	 * Detach one or more event handlers from the view.
 	 *
-	 * @name View#detach^2
+	 * @name View#detach
+	 * @alias View#off
 	 * @function
 	 * @param {Object} param an object literal containing one or more of the
 	 * following properties: {@code frame, resize}
@@ -543,6 +565,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * Fire an event on the view.
 	 *
 	 * @name View#fire
+	 * @alias View#trigger
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Object} event an object literal containing properties describing
@@ -565,10 +588,10 @@ var View = Base.extend(Callback, /** @lends View# */{
 		_id: 0,
 
 		create: function(element) {
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 			if (typeof element === 'string')
 				element = document.getElementById(element);
-/*#*/ } // options.environment == 'browser'
+/*#*/ } // __options.environment == 'browser'
 			// Factory to provide the right View subclass for a given element.
 			// Produces only CanvasViews for now:
 			return new CanvasView(element);
@@ -576,7 +599,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	}
 }, new function() {
 	// Injection scope for mouse events on the browser
-/*#*/ if (options.environment == 'browser') {
+/*#*/ if (__options.environment == 'browser') {
 	var tool,
 		prevFocus,
 		tempFocus,
@@ -709,5 +732,5 @@ var View = Base.extend(Callback, /** @lends View# */{
 			updateFocus: updateFocus
 		}
 	};
-/*#*/ } // options.environment == 'browser'
+/*#*/ } // __options.environment == 'browser'
 });

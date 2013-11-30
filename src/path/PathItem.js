@@ -85,49 +85,48 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		// This is a very compact SVG Path Data parser that works both for Path
 		// and CompoundPath.
 
-		var parts = data.match(/[a-z][^a-z]*/ig),
+		// First split the path data into parts of command-coordinates pairs
+		// Commands are any of these characters: mzlhvcsqta
+		var parts = data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/ig),
 			coords,
 			relative = false,
 			control,
 			current = new Point(); // the current position
 
-		function getCoord(index, coord, update) {
+		function getCoord(index, coord, isCurrent) {
 			var val = parseFloat(coords[index]);
 			if (relative)
 				val += current[coord];
-			if (update)
+			if (isCurrent)
 				current[coord] = val;
 			return val;
 		}
 
-		function getPoint(index, update) {
+		function getPoint(index, isCurrent) {
 			return new Point(
-				getCoord(index, 'x', update),
-				getCoord(index + 1, 'y', update)
+				getCoord(index, 'x', isCurrent),
+				getCoord(index + 1, 'y', isCurrent)
 			);
 		}
 
 		// First clear the previous content
-		if (this._type === 'path')
-			this.removeSegments();
-		else
-			this.removeChildren();
+		this.clear();
 
 		for (var i = 0, l = parts.length; i < l; i++) {
 			var part = parts[i],
 				cmd = part[0],
 				lower = cmd.toLowerCase();
-			// Split at white-space, commas but also before signs.
-			// Use positive lookahead to include signs.
-			coords = part.slice(1).trim().split(/[\s,]+|(?=[+-])/);
+			// Match all coordinate values
+			coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
+			var length = coords && coords.length;
 			relative = cmd === lower;
-			var length = coords.length;
 			switch (lower) {
 			case 'm':
 			case 'l':
 				for (var j = 0; j < length; j += 2)
 					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
 							getPoint(j, true));
+				control = current;
 				break;
 			case 'h':
 			case 'v':
@@ -136,6 +135,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					getCoord(j, coord, true);
 					this.lineTo(current);
 				}
+				control = current;
 				break;
 			case 'c':
 				for (var j = 0; j < length; j += 6) {
@@ -146,7 +146,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				}
 				break;
 			case 's':
-				// Shorthand cubic bezierCurveTo, absolute
+				// Smooth cubicCurveTo
 				for (var j = 0; j < length; j += 4) {
 					this.cubicCurveTo(
 							// Calculate reflection of previous control points
@@ -163,6 +163,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				}
 				break;
 			case 't':
+				// Smooth quadraticCurveTo
 				for (var j = 0; j < length; j += 2) {
 					this.quadraticCurveTo(
 							// Calculate reflection of previous control points
@@ -189,18 +190,18 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	_contains: function(point) {
 		// NOTE: point is reverse transformed by _matrix, so we don't need to 
 		// apply here.
-/*#*/ if (options.nativeContains) {
+/*#*/ if (__options.nativeContains) {
 		// To compare with native canvas approach:
 		var ctx = CanvasProvider.getContext(1, 1);
 		// Abuse clip = true to get a shape for ctx.isPointInPath().
-		this._draw(ctx, Base.merge({ clip: true, transforms: [new Matrix()] }));
+		this._draw(ctx, new Base({ clip: true, transforms: [new Matrix()] }));
 		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
 		CanvasProvider.release(ctx);
 		return res;
-/*#*/ } else { // !options.nativeContains
+/*#*/ } else { // !__options.nativeContains
 		var winding = this._getWinding(point);
 		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
-/*#*/ } // !options.nativeContains
+/*#*/ } // !__options.nativeContains
 	}
 
 	/**
@@ -457,7 +458,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *
 	 * @name PathItem#moveBy
 	 * @function
-	 * @param {Point} vector
+	 * @param {Point} to
 	 */
 
 	/**
@@ -465,8 +466,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *
 	 * @name PathItem#lineBy
 	 * @function
-	 * @param {Point} vector The vector which is added to the position of the
-	 *        last segment of the path, to become the new segment.
+	 * @param {Point} to the vector which is added to the position of the last
+	 * segment of the path, to get to the position of the new segment.
 	 *
 	 * @example {@paperscript}
 	 * var path = new Path();
@@ -514,16 +515,41 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	/**
 	 * @name PathItem#curveBy
 	 * @function
-	 * @param {Point} throughVector
-	 * @param {Point} toVector
+	 * @param {Point} through
+	 * @param {Point} to
 	 * @param {Number} [parameter=0.5]
 	 */
 
-	// DOCS: Document Path#arcBy()
+	// DOCS: Document Path#cubicCurveBy()
+	/**
+	 * @name PathItem#cubicCurveBy
+	 * @function
+	 * @param {Point} handle1
+	 * @param {Point} handle2
+	 * @param {Point} to
+	 */
+
+	// DOCS: Document Path#quadraticCurveBy()
+	/**
+	 * @name PathItem#quadraticCurveBy
+	 * @function
+	 * @param {Point} handle
+	 * @param {Point} to
+	 */
+
+	// DOCS: Document Path#arcBy(through, to)
 	/**
 	 * @name PathItem#arcBy
 	 * @function
-	 * @param {Point} throughVector
-	 * @param {Point} toVector
+	 * @param {Point} through
+	 * @param {Point} to
+	 */
+
+	// DOCS: Document Path#arcBy(to, clockwise)
+	/**
+	 * @name PathItem#arcBy
+	 * @function
+	 * @param {Point} to
+	 * @param {Boolean} [clockwise=true]
 	 */
 });

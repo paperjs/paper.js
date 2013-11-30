@@ -27,8 +27,10 @@
 				path.add(offset + vector);
 			}
 			path.smooth();
-			var placedSymbol = new PlacedSymbol(path);
-			layer.insertChild(0, placedSymbol);
+			layer.insertChild(0, new Group({
+				children: [path],
+				transformContent: false
+			}));
 		}
 
 		function onFrame(event) {
@@ -46,6 +48,6 @@
 	</script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+	<canvas id="canvas" resize stats hidpi="off"></canvas>
 </body>
 </html>

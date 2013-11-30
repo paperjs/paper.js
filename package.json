@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.9.9",
+  "version": "0.9.14",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "homepage": "http://paperjs.org",
   "repository": "git://github.com/paperjs/paper.js",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "uglify-js": "~2.3.6",
-    "prepro": "~0.7.2",
+    "prepro": "~0.8.0",
     "grunt": "~0.4.1",
     "grunt-contrib-uglify": "~0.2.2"
   },

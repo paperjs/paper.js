@@ -124,7 +124,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
 		var stops = [];
 		for (var i = 0, l = this._stops.length; i < l; i++)
 			stops[i] = this._stops[i].clone();
-		return new this.constructor(stops);
+		return new Gradient(stops);
 	},
 
 	/**

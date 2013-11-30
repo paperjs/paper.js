@@ -30,10 +30,10 @@ DATE=$(git log -1 --pretty=format:%ad)
 VERSION=$(node -e "
 	process.stdout.write(require('../package.json').version)
 ")
-# Load and evaluate the options from options.js, and convert it an escaped json:
+# Load and evaluate the __options from options.js, and convert it escaped json:
 OPTIONS=$(printf '%q' $(node -e "
 	eval(require('fs').readFileSync('../src/options.js', 'utf8'));
-	process.stdout.write(JSON.stringify(options));
+	process.stdout.write(JSON.stringify(__options));
 "))
 # Build the prepo.js command out of it, passing on version and date as defines:
 COMMAND="../node_modules/.bin/prepro -o $OPTIONS -o '{ \"version\": \"$VERSION\", \"date\": \"$DATE\", \"stats\": false }' $3 $2"

@@ -120,9 +120,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 			delete this._clockwise;
 			// Curves are no longer valid
 			if (this._curves) {
-				for (var i = 0, l = this._curves.length; i < l; i++) {
+				for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed(/*#=*/ Change.GEOMETRY);
-				}
 			}
 		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
@@ -635,6 +634,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * Removes all segments from the path's {@link #segments} array.
 	 *
 	 * @name Path#removeSegments
+	 * @alias Path#clear
 	 * @function
 	 * @return {Segment[]} an array containing the removed segments
 	 */
@@ -706,6 +706,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 		this._changed(/*#=*/ Change.GEOMETRY);
 		return removed;
 	},
+
+	// DOCS Path#clear()
+	clear: '#removeSegments',
 
 	/**
 	 * Specifies whether an path is selected and will also return {@code true}
@@ -1731,7 +1734,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		var style = this.getStyle(),
 			segments = this._segments,
 			closed = this._closed,
-			tolerance = options.tolerance || 0,
+			tolerance = options.tolerance,
 			radius = 0, join, cap, miterLimit,
 			that = this,
 			area, loc, res;
@@ -1859,7 +1862,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
 		// stroke.
-		return !loc && options.fill && this.hasFill() && this.contains(point)
+		return !loc && options.fill && this.hasFill() && this._contains(point)
 				? new HitResult('fill', this)
 				: loc
 					// TODO: Do we need to transform loc back to the coordinate
@@ -2012,11 +2015,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 				return dashArray[((i % dashLength) + dashLength) % dashLength];
 			}
 
-			// Prepare the canvas path if we have any situation that requires it
-			// to be defined.
+			// Prepare the canvas path if we have any situation that
+			// requires it to be defined.
 			if (hasFill || hasStroke && !dashLength || compound || clip)
 				drawSegments(ctx, this);
-
 			if (this._closed)
 				ctx.closePath();
 
@@ -2024,12 +2026,20 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
 				this._setStyles(ctx);
-				if (hasFill)
+				if (hasFill) {
 					ctx.fill(style.getWindingRule());
+					// If shadowColor is defined, clear it after fill, so it
+					// won't be applied to both fill and stroke. If the path is
+					// only stroked, we don't have to clear it.
+					ctx.shadowColor = 'rgba(0,0,0,0)';
+				}
 				if (hasStroke) {
 					if (dashLength) {
 						// We cannot use the path created by drawSegments above
 						// Use CurveFlatteners to draw dashed paths:
+						// NOTE: We don't cache this path in another currentPath
+						// since browsers that support currentPath also support
+						// native dashes.
 						ctx.beginPath();
 						var flattener = new PathFlattener(this),
 							length = flattener.length,
@@ -2103,25 +2113,22 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// well, so it is preferred.
 			var segments = this._segments,
 				size = segments.length,
+				closed = this._closed,
 				n = size,
 				// Add overlapping ends for averaging handles in closed paths
-				overlap;
-
+				overlap = 0;
 			if (size <= 2)
 				return;
-
-			if (this._closed) {
+			if (closed) {
 				// Overlap up to 4 points since averaging beziers affect the 4
 				// neighboring points
 				overlap = Math.min(size, 4);
 				n += Math.min(size, overlap) * 2;
-			} else {
-				overlap = 0;
 			}
 			var knots = [];
 			for (var i = 0; i < size; i++)
 				knots[i + overlap] = segments[i]._point;
-			if (this._closed) {
+			if (closed) {
 				// If we're averaging, add the 4 last points again at the
 				// beginning, and the 4 first ones at the end.
 				for (var i = 0; i < overlap; i++) {
@@ -2151,7 +2158,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// Get first control points Y-values
 			var y = getFirstControlPoints(rhs);
 
-			if (this._closed) {
+			if (closed) {
 				// Do the actual averaging simply by linearly fading between the
 				// overlapping values.
 				for (var i = 0, j = size; i < overlap; i++, j++) {
@@ -2177,17 +2184,16 @@ var Path = PathItem.extend(/** @lends Path# */{
 				if (i < n) {
 					segment.setHandleOut(
 							new Point(x[i], y[i]).subtract(segment._point));
-					if (i < n - 1)
-						handleIn = new Point(
+					handleIn = i < n - 1
+							? new Point(
 								2 * knots[i + 1]._x - x[i + 1],
-								2 * knots[i + 1]._y - y[i + 1]);
-					else
-						handleIn = new Point(
+								2 * knots[i + 1]._y - y[i + 1])
+							: new Point(
 								(knots[n]._x + x[n - 1]) / 2,
 								(knots[n]._y + y[n - 1]) / 2);
 				}
 			}
-			if (this._closed && handleIn) {
+			if (closed && handleIn) {
 				var segment = this._segments[0];
 				segment.setHandleIn(handleIn.subtract(segment._point));
 			}
@@ -2233,9 +2239,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 		cubicCurveTo: function(/* handle1, handle2, to */) {
 			var handle1 = Point.read(arguments),
 				handle2 = Point.read(arguments),
-				to = Point.read(arguments);
-			// First modify the current segment:
-			var current = getCurrentSegment(this);
+				to = Point.read(arguments),
+				// First modify the current segment:
+				current = getCurrentSegment(this);
 			// Convert to relative values:
 			current.setHandleOut(handle1.subtract(current._point));
 			// And add the new segment, with handleIn set to c2
@@ -2244,13 +2250,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 		quadraticCurveTo: function(/* handle, to */) {
 			var handle = Point.read(arguments),
-				to = Point.read(arguments);
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
 			// This is exact:
 			// If we have the three quad points: A E D,
 			// and the cubic is A B C D,
 			// B = E + 1/3 (A - E)
 			// C = E + 1/3 (D - E)
-			var current = getCurrentSegment(this)._point;
 			this.cubicCurveTo(
 				handle.add(current.subtract(handle).multiply(1 / 3)),
 				handle.add(to.subtract(handle).multiply(1 / 3)),
@@ -2274,25 +2280,23 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this.quadraticCurveTo(handle, to);
 		},
 
-		arcTo: function(to, clockwise /* | through, to */) {
+		arcTo: function(/* to, clockwise | through, to */) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
 				from = current._point,
 				through,
-				point = Point.read(arguments),
+				to = Point.read(arguments),
 				// Peek at next value to see if it's clockwise,
 				// with true as default value.
-				next = Base.pick(Base.peek(arguments), true);
-			if (typeof next === 'boolean') {
+				clockwise = Base.pick(Base.peek(arguments), true);
+			if (typeof clockwise === 'boolean') {
 				// arcTo(to, clockwise)
-				to = point;
-				clockwise = next;
 				var middle = from.add(to).divide(2),
 				through = middle.add(middle.subtract(from).rotate(
 						clockwise ? -90 : 90));
 			} else {
 				// arcTo(through, to)
-				through = point;
+				through = to;
 				to = Point.read(arguments);
 			}
 			// Construct the two perpendicular middle lines to (from, through)
@@ -2354,25 +2358,47 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this._add(segments);
 		},
 
-		lineBy: function(vector) {
-			vector = Point.read(arguments);
-			var current = getCurrentSegment(this);
-			this.lineTo(current._point.add(vector));
+		lineBy: function(/* to */) {
+			var to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.lineTo(current.add(to));
 		},
 
-		curveBy: function(throughVector, toVector, parameter) {
-			throughVector = Point.read(throughVector);
-			toVector = Point.read(toVector);
-			var current = getCurrentSegment(this)._point;
-			this.curveTo(current.add(throughVector), current.add(toVector),
-					parameter);
+		curveBy: function(/* through, to, parameter */) {
+			var through = Point.read(arguments),
+				to = Point.read(arguments),
+				parameter = Base.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.curveTo(current.add(through), current.add(to), parameter);
 		},
 
-		arcBy: function(throughVector, toVector) {
-			throughVector = Point.read(throughVector);
-			toVector = Point.read(toVector);
-			var current = getCurrentSegment(this)._point;
-			this.arcTo(current.add(throughVector), current.add(toVector));
+		cubicCurveBy: function(/* handle1, handle2, to */) {
+			var handle1 = Point.read(arguments),
+				handle2 = Point.read(arguments),
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.cubicCurveTo(current.add(handle1), current.add(handle2),
+					current.add(to));
+		},
+
+		quadraticCurveBy: function(/* handle, to */) {
+			var handle = Point.read(arguments),
+				to = Point.read(arguments),
+				current = getCurrentSegment(this)._point;
+			this.quadraticCurveTo(current.add(handle), current.add(to));
+		},
+
+		arcBy: function(/* to, clockwise | through, to */) {
+			var current = getCurrentSegment(this)._point,
+				point = current.add(Point.read(arguments)),
+				// Peek at next value to see if it's clockwise, with true as
+				// default value.
+				clockwise = Base.pick(Base.peek(arguments), true);
+			if (typeof clockwise === 'boolean') {
+				this.arcTo(point, clockwise);
+			} else {
+				this.arcTo(point, current.add(Point.read(arguments)));
+			}
 		},
 
 		closePath: function() {

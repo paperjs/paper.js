@@ -108,7 +108,7 @@ var Style = Base.extend(new function() {
 		fields = {
 			_defaults: defaults,
 			// Override default fillColor for text items
-			_textDefaults: Base.merge(defaults, {
+			_textDefaults: new Base(defaults, {
 				fillColor: new Color() // black
 			})
 		};
@@ -142,8 +142,14 @@ var Style = Base.extend(new function() {
 					if (isColor) {
 						if (old)
 							delete old._owner;
-						if (value && value.constructor === Color)
+						if (value && value.constructor === Color) {
+							// Clone color if it already has an owner.
+							// NOTE: If value is not a Color, it is only
+							// converted and cloned in the getter further down.
+							if (value._owner)
+								value = value.clone();
 							value._owner = this._item;
+						}
 					}
 					// Note: We do not convert the values to Colors in the 
 					// setter. This only happens once the getter is called.
@@ -250,6 +256,11 @@ var Style = Base.extend(new function() {
 	// DOCS: Style#hasStroke()
 	hasStroke: function() {
 		return !!this.getStrokeColor() && this.getStrokeWidth() > 0;
+	},
+
+	// DOCS: Style#hasShadow()
+	hasShadow: function() {
+		return !!this.getShadowColor() && this.getShadowBlur() > 0;
 	},
 
 	// Overrides
