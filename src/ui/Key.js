@@ -76,19 +76,19 @@ var Key = new function() {
 			scope = view && view.isVisible() && view._scope,
 			tool = scope && scope._tool,
 			name;
+		keyMap[key] = down;
 		// Detect modifiers and mark them as pressed / released
 		if (specialKey && (name = Base.camelize(specialKey)) in modifiers)
 			modifiers[name] = down;
-		// Use delete instead of setting to false, so keyMap only contains keys
-		// that are currently down, and can easily be emurated over, e.g. in the
+		// Link the keyCode from keydown with the charCode form keypress,
+		// so keyup can retrieve the charCode again.
+		// Use delete instead of setting to null, so charCodeMap only contains
+		// keyCodes that are currently pressed, allowing the use of `keyCode in
+		// charCodeMap` checks and enumeration over pressed keys, e.g. in the
 		// window blur event.
 		if (down) {
-			keyMap[key] = true;
-			// Link the keyCode from keydown with the charCode form keypress,
-			// so keyup can retrieve the charCode again.
 			charCodeMap[keyCode] = charCode;
 		} else {
-			delete keyMap[key];
 			delete charCodeMap[keyCode];
 		}
 		if (tool && tool.responds(type)) {
@@ -135,7 +135,7 @@ var Key = new function() {
 	DomEvent.add(window, {
 		blur: function(event) {
 			// Fire key-up events for all currently pressed keys.
-			for (var code in keyMap)
+			for (var code in charCodeMap)
 				handleKey(false, code, charCodeMap[code], event);
 		}
 	});
