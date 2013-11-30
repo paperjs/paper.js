@@ -1884,6 +1884,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (this._children && this._children.length === 1) {
 			var child = this._children[0];
 			child.insertAbove(this);
+			child.setStyle(this._style);
 			this.remove();
 			return child;
 		}
