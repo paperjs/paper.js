@@ -345,8 +345,9 @@ var Curve = Base.extend(/** @lends Curve# */{
 	// TODO: Rename to divideAt()?
 	divide: function(offset, isParameter) {
 		var parameter = this._getParameter(offset, isParameter),
-			res = null, tolerance = Numerical.TOLERANCE;
-		if (parameter > tolerance && parameter < 1-tolerance) {
+			tolerance = /*#=*/ Numerical.TOLERANCE,
+			res = null;
+		if (parameter > tolerance && parameter < 1 - tolerance) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
 				isLinear = this.isLinear(),
 				left = parts[0],
@@ -1493,18 +1494,18 @@ new function() { // Scope for methods that require numerical integration
 		// CurveLocation objects.
 		getIntersections: function(v1, v2, curve1, curve2, locations) {
 			var linear1 = Curve.isLinear(v1),
-				linear2 = Curve.isLinear(v2);
-			// Handle a special case where if both curves start or end at the same point
-			// The same endpoint case will be handled after we calculate other
-			// intersections within the curve
-			var c1p1 = curve1.segment1.point,
-				c1p2 = curve1.segment2.point,
-				c2p1 = curve2.segment1.point,
-				c2p2 = curve2.segment2.point,
-				tolerance = Numerical.TOLERANCE;
-			if(c1p1.isClose(c2p1, tolerance))
+				linear2 = Curve.isLinear(v2),
+				c1p1 = curve1.getPoint1(),
+				c1p2 = curve1.getPoint2(),
+				c2p1 = curve2.getPoint1(),
+				c2p2 = curve2.getPoint2(),
+				tolerance = /*#=*/ Numerical.TOLERANCE;
+			// Handle a special case where if both curves start or end at the
+			// same point, the same end-point case will be handled after we
+			// calculate other intersections within the curve.
+			if (c1p1.isClose(c2p1, tolerance))
 				addLocation(locations, curve1, 0, c1p1, curve2, 0, c1p1);
-			if(c1p1.isClose(c2p2, tolerance))
+			if (c1p1.isClose(c2p2, tolerance))
 				addLocation(locations, curve1, 0, c1p1, curve2, 1, c1p1);
 			// Determine the correct intersection method based on values of
 			// linear1 & 2:
@@ -1513,11 +1514,11 @@ new function() { // Scope for methods that require numerical integration
 				: linear1 || linear2
 					? addCurveLineIntersections
 					: addCurveIntersections)(v1, v2, curve1, curve2, locations);
-			// Handle the spacial case where curve1's endpoint overlap with curve2's
-			// segments
-			if(c1p2.isClose(c2p1, tolerance))
+			// Handle the special case where curve1's end-point overlap with
+			// curve2's points.
+			if (c1p2.isClose(c2p1, tolerance))
 				addLocation(locations, curve1, 1, c1p2, curve2, 0, c1p2);
-			if(c1p2.isClose(c2p2, tolerance))
+			if (c1p2.isClose(c2p2, tolerance))
 				addLocation(locations, curve1, 1, c1p2, curve2, 1, c1p2);
 			return locations;
 		}
