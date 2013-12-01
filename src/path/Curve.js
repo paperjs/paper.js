@@ -483,11 +483,11 @@ statics: {
 				// 3: curvature, 1st derivative & 2nd derivative
 				// Prevent tangents and normals of length 0:
 				// http://stackoverflow.com/questions/10506868/
-				var tMin = /*#=*/ Numerical.TOLERANCE;
-				if (t < tMin && c1x == p1x && c1y == p1y
-						|| t > 1 - tMin && c2x == p2x && c2y == p2y) {
-					x = c2x - c1x;
-					y = c2y - c1y;
+				var tolerance = /*#=*/ Numerical.TOLERANCE;
+				if (t < tolerance && c1x === p1x && c1y === p1y
+						|| t > 1 - tolerance && c2x === p2x && c2y === p2y) {
+					x = p2x - p1x;
+					y = p2y - p1y;
 				} else {
 					// Simply use the derivation of the bezier function for both
 					// the x and y coordinates:
@@ -688,7 +688,7 @@ statics: {
 		}
 	},
 
-	_getWinding: function(v, x, y, roots1, roots2) {
+	_getWinding: function(v, prev, x, y, roots1, roots2) {
 		// Implementation of the crossing number algorithm:
 		// http://en.wikipedia.org/wiki/Point_in_polygon
 		// Solve the y-axis cubic polynomial for y and count all solutions
@@ -701,22 +701,22 @@ statics: {
 		// which is why we need to split them at y extrema, see below.
 		// Returns 0 if the curve is outside the boundaries and is not to be
 		// considered.
-		function getOrientation(v) {
+		function getDirection(v) {
 			var y0 = v[1],
 				y1 = v[7],
-				dir = y0 <= y1 ? 1 : -1;
-			// Bounds check: Reverse y0 and y1 if direction is -1, and exclude
-			// end points of curves / lines (y1), to not count corners / joints
-			// twice.
-			return dir === 1 && (y < y0 || y >= y1)
-					|| dir === -1 && (y <= y1 || y > y0)
+				dir = y0 > y1 ? -1 : 1;
+			// Bounds check: Reverse y0 and y1 if direction is -1.
+			// Include end points, so we can handle them depending on different
+			// edge cases.
+			return dir === 1 && (y < y0 || y > y1)
+					|| dir === -1 && (y < y1 || y > y0)
 					? 0
 					: dir;
 		}
 
 		if (Curve.isLinear(v)) {
 			// Special simplified case for handling lines.
-			var dir = getOrientation(v);
+			var dir = getDirection(v);
 			if (!dir)
 				return 0;
 			var cross = (v[6] - v[0]) * (y - v[1]) - (v[7] - v[1]) * (x - v[0]);
@@ -759,7 +759,7 @@ statics: {
 				part[3] = part[1]; // curve2.handle1.y = curve2.point1.y;
 			if (i < count)
 				part[5] = rest[1]; // curve1.handle2.y = curve2.point1.y;
-			var dir = getOrientation(part);
+			var dir = getDirection(part);
 			if (!dir)
 			    continue;
 			// Adjust start and end range depending on if curve was flipped.
@@ -787,8 +787,14 @@ statics: {
 				px = t2 === 0 ? part[0] : part[6];
 			}
 			// See if we're touching a horizontal stationary point by looking at
-			// the tanget's y coordinate.
-			var flat = abs(Curve.evaluate(part, t2, 1).y) < tolerance;
+			// the tanget's y coordinate. There are two cases 0:
+			// A) The slope is 0, meaning we're touching a stationary
+			//    point inside the curve.
+			// B) t2 == 0 and the slope changes between the current and the
+			//    previous curve.
+			var slope = Curve.evaluate(part, t2, 1).y,
+				stationary = abs(slope) < tolerance || t2 < tolerance
+						&& Curve.evaluate(prev, 1, 1).y * slope < 0;
 			// Calculate compare tolerance based on curve orientation (dir), to
 			// add a bit of tolerance when considering points lying on the curve
 			// as inside. But if we're touching a horizontal stationary point,
@@ -796,18 +802,23 @@ statics: {
 			// side-ways in tolerance based on orientation. This is needed e.g.
 			// when touching the bottom tip of a circle.
 			// Pass 1 for Curve.evaluate() type to calculate tangent
-			if (x >= px + (flat ? -tolerance : tolerance * dir)
+			if (x >= px + (stationary ? -tolerance : tolerance * dir)
 					// When touching a stationary point, only count it if we're
 					// actuall on it.
-					&& !(flat && (abs(t2) < tolerance && x != part[0]
-						|| abs(t2 - 1) < tolerance && x != part[6]))) {
+					&& !(stationary && (abs(t2) < tolerance
+							&& abs(x - part[0]) > tolerance
+						|| abs(t2 - 1) < tolerance
+							&& abs(x - part[6]) > tolerance))) {
 				// If this is a horizontal stationary point, and we're at the
 				// end of the curve (or at the beginning of a curve with
 				// negative direction, as we're not actually flipping them),
 				// flip dir, as the curve is about to change orientation.
-				winding += flat && abs(t2 - (dir > 0 ? 1 : 0)) < tolerance
+				winding += stationary && abs(t2 - (dir > 0 ? 1 : 0)) < tolerance
 						? -dir : dir;
 			}
+			// Point the previous curve to the newly split part, so stationary
+			// points are correctly detected. 
+			prev = part;
 		}
 		return winding;
 	}
