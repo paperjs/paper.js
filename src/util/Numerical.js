@@ -127,21 +127,19 @@ var Numerical = new function() {
 		 * a*x^2 + b*x + c = 0
 		 */
 		solveQuadratic: function(a, b, c, roots, min, max) {
-			var unbound = min === undefined,
+			var epsilon = Numerical.EPSILON,
+				unbound = min === undefined,
+				minE = min - epsilon,
+				maxE = max + epsilon,
 				count = 0;
 
 			function add(root) {
-				if (unbound || root >= minE && root <= maxE){
-					root = root < min ? min : (root > max ? max : root);
-					roots[count++] = root;
-				}
+				if (unbound || root > minE && root < maxE)
+					roots[count++] = root < min ? min : root > max ? max : root;
 				return count;
 			}
 
 			// Code ported over and adapted from Uintah library (MIT license).
-			var epsilon = this.EPSILON,
-				minE = unbound ? undefined : min - epsilon,
-				maxE = unbound ? undefined : max + epsilon;
 			// If a is 0, equation is actually linear, return 0 or 1 easy roots.
 			if (abs(a) < epsilon) {
 				if (abs(b) >= epsilon)
@@ -169,21 +167,19 @@ var Numerical = new function() {
 		 * a*x^3 + b*x^2 + c*x + d = 0
 		 */
 		solveCubic: function(a, b, c, d, roots, min, max) {
-			var epsilon = this.EPSILON;
+			var epsilon = Numerical.EPSILON;
 			// If a is 0, equation is actually quadratic.
 			if (abs(a) < epsilon)
 				return Numerical.solveQuadratic(b, c, d, roots, min, max);
 
 			var unbound = min === undefined,
-				minE = unbound ? undefined : min - epsilon,
-				maxE = unbound ? undefined : max + epsilon,
+				minE = min - epsilon,
+				maxE = max + epsilon,
 				count = 0;
 
 			function add(root) {
-				if (unbound || root >= minE && root <= maxE){
-					root = root < min ? min : (root > max ? max : root);
-					roots[count++] = root;
-				}
+				if (unbound || root > minE && root < maxE)
+					roots[count++] = root < min ? min : root > max ? max : root;
 				return count;
 			}
 
