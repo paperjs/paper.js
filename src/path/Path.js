@@ -1711,20 +1711,22 @@ var Path = PathItem.extend(/** @lends Path# */{
 					// Create a straight closing line for open paths, just like
 					// how filling open paths works.
 					: new Curve(segments[segments.length - 1]._point,
-						segments[0]._point)).getValues();
+						segments[0]._point)).getValues(),
+			previous = last;
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var vals = curves[i].getValues(),
-				x = vals[0],
-				y = vals[1];
+			var curve = curves[i].getValues(),
+				x = curve[0],
+				y = curve[1];
 			// Filter out curves with 0-length (all 4 points in the same place):
-			if (!(x === vals[2] && y === vals[3] && x === vals[4]
-					&& y === vals[5] && x === vals[6] && y === vals[7])) {
-				winding += Curve._getWinding(vals, point.x, point.y,
+			if (!(x === curve[2] && y === curve[3] && x === curve[4]
+					&& y === curve[5] && x === curve[6] && y === curve[7])) {
+				winding += Curve._getWinding(curve, previous, point.x, point.y,
 						roots1, roots2);
+				previous = curve;
 			}
 		}
 		if (!closed) {
-			winding += Curve._getWinding(last, point.x, point.y,
+			winding += Curve._getWinding(last, previous, point.x, point.y,
 					roots1, roots2);
 		}
 		return winding;
@@ -1784,12 +1786,16 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 		function isInArea(point) {
 			var length = area.length,
+				previous = getAreaCurve(length - 1),
 				roots1 = [],
 				roots2 = [],
 				winding = 0;
-			for (var i = 0; i < length; i++)
-				winding += Curve._getWinding(getAreaCurve(i), point.x, point.y,
+			for (var i = 0; i < length; i++) {
+				var curve = getAreaCurve(i);
+				winding += Curve._getWinding(curve, previous, point.x, point.y,
 						roots1, roots2);
+				previous = curve;
+			}
 			return !!winding;
 		}
 
