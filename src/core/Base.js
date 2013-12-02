@@ -18,9 +18,6 @@
 // Extend Base with utility functions used across the library. Also set
 // this.Base on the injection scope, since straps.js ommits that.
 Base.inject(/** @lends Base# */{
-	// Have generics versions of #clone() and #toString():
-	generics: true,
-
 	/**
 	 * Renders base objects to strings in object literal notation.
 	 */
