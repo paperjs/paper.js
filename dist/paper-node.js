@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.14 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.15 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Nov 28 18:03:41 2013 +0100
+ * Date: Sun Dec 1 23:54:52 2013 +0100
  *
  ***
  *
@@ -34,11 +34,9 @@ var paper = new function(undefined) {
 
 var Base = new function() {
 	var hidden = /^(statics|generics|preserve|enumerable|prototype|toString|valueOf)$/,
-		toString = Object.prototype.toString,
-		proto = Array.prototype,
-		slice = proto.slice,
+		slice = [].slice,
 
-		forEach = proto.forEach || function(iter, bind) {
+		forEach = [].forEach || function(iter, bind) {
 			for (var i = 0, l = this.length; i < l; i++)
 				iter.call(bind, this[i], i, this);
 		},
@@ -47,10 +45,6 @@ var Base = new function() {
 			for (var i in this)
 				if (this.hasOwnProperty(i))
 					iter.call(bind, this[i], i, this);
-		},
-
-		isArray = Array.isArray = Array.isArray || function(obj) {
-			return toString.call(obj) === '[object Array]';
 		},
 
 		create = Object.create || function(proto) {
@@ -141,25 +135,30 @@ var Base = new function() {
 		return dest;
 	}
 
-	function each(obj, iter, bind, asArray) {
-		try {
-			if (obj)
-				(asArray || typeof asArray === 'undefined' && isArray(obj)
-					? forEach : forIn).call(obj, iter, bind = bind || obj);
-		} catch (e) {
-			if (e !== Base.stop)
-				throw e;
-		}
+	function each(obj, iter, bind) {
+		if (obj)
+			('length' in obj && !obj.getLength
+					&& typeof obj.length === 'number'
+				? forEach
+				: forIn).call(obj, iter, bind = bind || obj);
 		return bind;
 	}
 
-	function clone(obj) {
-		return each(obj, function(val, i) {
-			this[i] = val;
-		}, new obj.constructor());
+	function copy(dest, source) {
+		for (var i in source)
+			if (source.hasOwnProperty(i))
+				dest[i] = source[i];
+		return dest;
 	}
 
-	return inject(function Base() {}, {
+	function clone(obj) {
+		return copy(new obj.constructor(), obj);
+	}
+
+	return inject(function Base() {
+		for (var i = 0, l = arguments.length; i < l; i++)
+			copy(this, arguments[i]);
+	}, {
 		inject: function(src) {
 			if (src) {
 				var proto = this.prototype,
@@ -207,15 +206,19 @@ var Base = new function() {
 		},
 
 		clone: function() {
-			return clone(this);
+			return new this.constructor(this);
 		},
 
 		statics: {
 			each: each,
-			clone: clone,
 			create: create,
 			define: define,
 			describe: describe,
+			copy: copy,
+
+			clone: function(obj) {
+				return copy(new obj.constructor(), obj);
+			},
 
 			isPlainObject: function(obj) {
 				var ctor = obj != null && obj.constructor;
@@ -228,9 +231,7 @@ var Base = new function() {
 					if (arguments[i] !== undefined)
 						return arguments[i];
 				return null;
-			},
-
-			stop: {}
+			}
 		}
 	});
 };
@@ -240,10 +241,6 @@ if (typeof module !== 'undefined')
 
 Base.inject({
 	generics: true,
-
-	clone: function() {
-		return new this.constructor(this);
-	},
 
 	toString: function() {
 		return this._id != null
@@ -507,7 +504,7 @@ Base.inject({
 			return Base.deserialize(
 					typeof json === 'string' ? JSON.parse(json) : json,
 					function(type, args) {
-						var obj = target.constructor === type
+						var obj = target && target.constructor === type
 								? target
 								: Base.create(type.prototype),
 							isTarget = obj === target;
@@ -546,17 +543,6 @@ Base.inject({
 					list[i]._index = i;
 				return removed;
 			}
-		},
-
-		merge: function() {
-			var res = new Base();
-			for (var i = 0, l = arguments.length; i < l; i++) {
-				var obj = arguments[i];
-				for (var j in obj)
-					if (obj.hasOwnProperty(j))
-						res[j] = obj[j];
-			}
-			return res;
 		},
 
 		capitalize: function(str) {
@@ -722,7 +708,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: '0.9.14',
+	version: '0.9.15',
 
 	getView: function() {
 		return this.project && this.project.view;
@@ -956,16 +942,18 @@ var Numerical = new function() {
 		},
 
 		solveQuadratic: function(a, b, c, roots, min, max) {
-			var unbound = min === undefined,
+			var epsilon = Numerical.EPSILON,
+				unbound = min === undefined,
+				minE = min - epsilon,
+				maxE = max + epsilon,
 				count = 0;
 
 			function add(root) {
-				if (unbound || root >= min && root <= max)
-					roots[count++] = root;
+				if (unbound || root > minE && root < maxE)
+					roots[count++] = root < min ? min : root > max ? max : root;
 				return count;
 			}
 
-			var epsilon = this.EPSILON;
 			if (abs(a) < epsilon) {
 				if (abs(b) >= epsilon)
 					return add(-c / b);
@@ -984,16 +972,18 @@ var Numerical = new function() {
 		},
 
 		solveCubic: function(a, b, c, d, roots, min, max) {
-			var epsilon = this.EPSILON;
+			var epsilon = Numerical.EPSILON;
 			if (abs(a) < epsilon)
 				return Numerical.solveQuadratic(b, c, d, roots, min, max);
 
 			var unbound = min === undefined,
+				minE = min - epsilon,
+				maxE = max + epsilon,
 				count = 0;
 
 			function add(root) {
-				if (unbound || root >= min && root <= max)
-					roots[count++] = root;
+				if (unbound || root > minE && root < maxE)
+					roots[count++] = root < min ? min : root > max ? max : root;
 				return count;
 			}
 
@@ -2519,7 +2509,7 @@ var Project = PaperScopeItem.extend({
 		this._drawCount++;
 		ctx.save();
 		matrix.applyToContext(ctx);
-		var param = Base.merge({
+		var param = new Base({
 			offset: new Point(0, 0),
 			ratio: ratio,
 			transforms: [matrix],
@@ -2621,7 +2611,7 @@ var Item = Base.extend(Callback, {
 	statics: {
 		extend: function extend(src) {
 			if (src._serializeFields)
-				src._serializeFields = Base.merge(
+				src._serializeFields = new Base(
 						this.prototype._serializeFields, src._serializeFields);
 			var res = extend.base.apply(this, arguments),
 				proto = res.prototype,
@@ -3184,6 +3174,7 @@ var Item = Base.extend(Callback, {
 				copy[key] = this[key];
 		}
 		copy._matrix.initialize(this._matrix);
+		copy._data = this._data ? Base.clone(this._data) : null;
 		copy.setSelected(this._selected);
 		if (this._name)
 			copy.setName(this._name, true);
@@ -3205,7 +3196,7 @@ var Item = Base.extend(Callback, {
 			matrix = new Matrix().scale(scale).translate(topLeft.negate());
 		ctx.save();
 		matrix.applyToContext(ctx);
-		this.draw(ctx, Base.merge({ transforms: [matrix] }));
+		this.draw(ctx, new Base({ transforms: [matrix] }));
 		ctx.restore();
 		var raster = new Raster({
 			canvas: canvas,
@@ -3443,6 +3434,7 @@ var Item = Base.extend(Callback, {
 		if (this._children && this._children.length === 1) {
 			var child = this._children[0];
 			child.insertAbove(this);
+			child.setStyle(this._style);
 			this.remove();
 			return child;
 		}
@@ -3877,7 +3869,7 @@ var Layer = Group.extend({
 
 	initialize: function Layer(arg) {
 		var props = Base.isPlainObject(arg)
-				? Base.merge(arg) 
+				? new Base(arg) 
 				: { children: Array.isArray(arg) ? arg : arguments },
 			insert = props.insert;
 		props.insert = false;
@@ -4426,7 +4418,7 @@ var Raster = Item.extend({
 				.translate(-bounds.x, -bounds.y);
 		matrix.applyToContext(ctx);
 		if (path)
-			path.draw(ctx, Base.merge({ clip: true, transforms: [matrix] }));
+			path.draw(ctx, new Base({ clip: true, transforms: [matrix] }));
 		this._matrix.applyToContext(ctx);
 		ctx.drawImage(this.getElement(),
 				-this._size.width / 2, -this._size.height / 2);
@@ -4593,7 +4585,7 @@ var HitResult = Base.extend({
 
 	statics: {
 		getOptions: function(options) {
-			return options && options._merged ? options : Base.merge({
+			return options && options._merged ? options : new Base({
 				type: null,
 				tolerance: paper.project.options.hitTolerance || 2,
 				fill: !options,
@@ -5145,8 +5137,9 @@ var Curve = Base.extend({
 
 	divide: function(offset, isParameter) {
 		var parameter = this._getParameter(offset, isParameter),
+			tolerance = 0.00001,
 			res = null;
-		if (parameter > 0 && parameter < 1) {
+		if (parameter > tolerance && parameter < 1 - tolerance) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
 				isLinear = this.isLinear(),
 				left = parts[0],
@@ -5237,11 +5230,11 @@ statics: {
 				x = ((ax * t + bx) * t + cx) * t + p1x;
 				y = ((ay * t + by) * t + cy) * t + p1y;
 			} else {
-				var tMin = 0.00001;
-				if (t < tMin && c1x == p1x && c1y == p1y
-						|| t > 1 - tMin && c2x == p2x && c2y == p2y) {
-					x = c2x - c1x;
-					y = c2y - c1y;
+				var tolerance = 0.00001;
+				if (t < tolerance && c1x === p1x && c1y === p1y
+						|| t > 1 - tolerance && c2x === p2x && c2y === p2y) {
+					x = p2x - p1x;
+					y = p2y - p1y;
 				} else {
 					x = (3 * ax * t + 2 * bx) * t + cx;
 					y = (3 * ay * t + 2 * by) * t + cy;
@@ -5394,27 +5387,22 @@ statics: {
 		}
 	},
 
-	_getWinding: function(v, x, y, roots1, roots2) {
+	_getWinding: function(v, prev, x, y, roots1, roots2) {
 		var tolerance = 0.00001,
 			abs = Math.abs;
 
-		function getOrientation(v) {
+		function getDirection(v) {
 			var y0 = v[1],
 				y1 = v[7],
-				dir = 1;
-			if (y0 > y1) {
-				var tmp = y0;
-				y0 = y1;
-				y1 = tmp;
-			    dir = -1;
-			}
-			if (y < y0 || y > y1)
-			    dir = 0;
-			return dir;
+				dir = y0 > y1 ? -1 : 1;
+			return dir === 1 && (y < y0 || y > y1)
+					|| dir === -1 && (y < y1 || y > y0)
+					? 0
+					: dir;
 		}
 
 		if (Curve.isLinear(v)) {
-			var dir = getOrientation(v);
+			var dir = getDirection(v);
 			if (!dir)
 				return 0;
 			var cross = (v[6] - v[0]) * (y - v[1]) - (v[7] - v[1]) * (x - v[0]);
@@ -5448,7 +5436,7 @@ statics: {
 				part[3] = part[1]; 
 			if (i < count)
 				part[5] = rest[1]; 
-			var dir = getOrientation(part);
+			var dir = getDirection(part);
 			if (!dir)
 			    continue;
 			var t2,
@@ -5464,13 +5452,18 @@ statics: {
 					continue;
 				px = t2 === 0 ? part[0] : part[6];
 			}
-			var flat = abs(Curve.evaluate(part, t2, 1).y) < tolerance;
-			if (x >= px + (flat ? -tolerance : tolerance * dir)
-					&& !(flat && (abs(t2) < tolerance && x != part[0]
-						|| abs(t2 - 1) < tolerance && x != part[6]))) {
-				winding += flat && abs(t2 - (dir > 0 ? 1 : 0)) < tolerance
+			var slope = Curve.evaluate(part, t2, 1).y,
+				stationary = abs(slope) < tolerance || t2 < tolerance
+						&& Curve.evaluate(prev, 1, 1).y * slope < 0;
+			if (x >= px + (stationary ? -tolerance : tolerance * dir)
+					&& !(stationary && (abs(t2) < tolerance
+							&& abs(x - part[0]) > tolerance
+						|| abs(t2 - 1) < tolerance
+							&& abs(x - part[6]) > tolerance))) {
+				winding += stationary && abs(t2 - (dir > 0 ? 1 : 0)) < tolerance
 						? -dir : dir;
 			}
+			prev = part;
 		}
 		return winding;
 	}
@@ -5639,8 +5632,8 @@ new function() {
 	function addLocation(locations, curve1, t1, point1, curve2, t2, point2) {
 		var first = locations[0],
 			last = locations[locations.length - 1];
-		if ((!first || !point1.equals(first._point))
-				&& (!last || !point1.equals(last._point)))
+		if ((!first || !point1.isClose(first._point, Numerical.EPSILON))
+				&& (!last || !point1.isClose(last._point, Numerical.EPSILON)))
 			locations.push(
 					new CurveLocation(curve1, t1, point1, curve2, t2, point2));
 	}
@@ -5852,12 +5845,25 @@ new function() {
 	return { statics: {
 		getIntersections: function(v1, v2, curve1, curve2, locations) {
 			var linear1 = Curve.isLinear(v1),
-				linear2 = Curve.isLinear(v2);
+				linear2 = Curve.isLinear(v2),
+				c1p1 = curve1.getPoint1(),
+				c1p2 = curve1.getPoint2(),
+				c2p1 = curve2.getPoint1(),
+				c2p2 = curve2.getPoint2(),
+				tolerance = 0.00001;
+			if (c1p1.isClose(c2p1, tolerance))
+				addLocation(locations, curve1, 0, c1p1, curve2, 0, c1p1);
+			if (c1p1.isClose(c2p2, tolerance))
+				addLocation(locations, curve1, 0, c1p1, curve2, 1, c1p1);
 			(linear1 && linear2
 				? addLineIntersection
 				: linear1 || linear2
 					? addCurveLineIntersections
 					: addCurveIntersections)(v1, v2, curve1, curve2, locations);
+			if (c1p2.isClose(c2p1, tolerance))
+				addLocation(locations, curve1, 1, c1p2, curve2, 0, c1p2);
+			if (c1p2.isClose(c2p2, tolerance))
+				addLocation(locations, curve1, 1, c1p2, curve2, 1, c1p2);
 			return locations;
 		}
 	}};
@@ -6757,19 +6763,21 @@ var Path = PathItem.extend({
 			last = (closed
 					? curves[curves.length - 1]
 					: new Curve(segments[segments.length - 1]._point,
-						segments[0]._point)).getValues();
+						segments[0]._point)).getValues(),
+			previous = last;
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var vals = curves[i].getValues(),
-				x = vals[0],
-				y = vals[1];
-			if (!(x === vals[2] && y === vals[3] && x === vals[4]
-					&& y === vals[5] && x === vals[6] && y === vals[7])) {
-				winding += Curve._getWinding(vals, point.x, point.y,
+			var curve = curves[i].getValues(),
+				x = curve[0],
+				y = curve[1];
+			if (!(x === curve[2] && y === curve[3] && x === curve[4]
+					&& y === curve[5] && x === curve[6] && y === curve[7])) {
+				winding += Curve._getWinding(curve, previous, point.x, point.y,
 						roots1, roots2);
+				previous = curve;
 			}
 		}
 		if (!closed) {
-			winding += Curve._getWinding(last, point.x, point.y,
+			winding += Curve._getWinding(last, previous, point.x, point.y,
 					roots1, roots2);
 		}
 		return winding;
@@ -6821,12 +6829,16 @@ var Path = PathItem.extend({
 
 		function isInArea(point) {
 			var length = area.length,
+				previous = getAreaCurve(length - 1),
 				roots1 = [],
 				roots2 = [],
 				winding = 0;
-			for (var i = 0; i < length; i++)
-				winding += Curve._getWinding(getAreaCurve(i), point.x, point.y,
+			for (var i = 0; i < length; i++) {
+				var curve = getAreaCurve(i);
+				winding += Curve._getWinding(curve, previous, point.x, point.y,
 						roots1, roots2);
+				previous = curve;
+			}
 			return !!winding;
 		}
 
@@ -7750,7 +7762,7 @@ var CompoundPath = PathItem.extend({
 
 	_hitTest : function _hitTest(point, options) {
 		var res = _hitTest.base.call(this, point,
-				Base.merge(options, { fill: false }));
+				new Base(options, { fill: false }));
 		if (!res) {
 			if (options.compoundChildren) {
 				var children =  this._children;
@@ -8132,11 +8144,17 @@ PathItem.inject(new function() {
 
 	function reorientPath(path) {
 		if (path instanceof CompoundPath) {
-			var children = path._children,
+			var children = path.removeChildren(),
 				length = children.length,
 				bounds = new Array(length),
 				counters = new Array(length),
-				clockwise = children[0].isClockwise();
+				clockwise;
+			children.sort(function(a, b){
+				var b1 = a.getBounds(), b2 = b.getBounds();
+				return b1._width * b1._height < b2._width * b2._height;
+			});
+			path.addChildren(children);
+			clockwise = children[0].isClockwise();
 			for (var i = 0; i < length; i++) {
 				bounds[i] = children[i].getBounds();
 				counters[i] = 0;
@@ -8745,10 +8763,6 @@ var Color = Base.extend(new function() {
 				this._owner._changed(17);
 		},
 
-		clone: function() {
-			return new Color(this);
-		},
-
 		_convert: function(type) {
 			var converter;
 			return this._type === type
@@ -9005,7 +9019,7 @@ var Gradient = Base.extend({
 		var stops = [];
 		for (var i = 0, l = this._stops.length; i < l; i++)
 			stops[i] = this._stops[i].clone();
-		return new this.constructor(stops);
+		return new Gradient(stops);
 	},
 
 	getStops: function() {
@@ -9154,7 +9168,7 @@ var Style = Base.extend(new function() {
 	var item = {},
 		fields = {
 			_defaults: defaults,
-			_textDefaults: Base.merge(defaults, {
+			_textDefaults: new Base(defaults, {
 				fillColor: new Color() 
 			})
 		};
@@ -9564,7 +9578,7 @@ var View = Base.extend(Callback, {
 			delta = this._before ? now - this._before : 0;
 		this._before = now;
 		this._handlingFrame = true;
-		this.fire('frame', Base.merge({
+		this.fire('frame', new Base({
 			delta: delta,
 			time: this._time += delta,
 			count: this._count++
@@ -9596,7 +9610,7 @@ var View = Base.extend(Callback, {
 	_handleFrameItems: function(event) {
 		for (var i in this._frameItems) {
 			var entry = this._frameItems[i];
-			entry.item.fire('frame', Base.merge(event, {
+			entry.item.fire('frame', new Base(event, {
 				time: entry.time += event.delta,
 				count: entry.count++
 			}));
@@ -9862,7 +9876,7 @@ CanvasView.inject(new function() {
 
 	return {
 		exportFrames: function(param) {
-			param = Base.merge({
+			param = new Base({
 				fps: 30,
 				prefix: 'frame-',
 				amount: 1
@@ -9902,7 +9916,7 @@ CanvasView.inject(new function() {
 						}
 					}
 				});
-				view.fire('frame', Base.merge({
+				view.fire('frame', new Base({
 					delta: frameDuration,
 					time: frameDuration * count,
 					count: count
@@ -10784,7 +10798,9 @@ new function() {
 			raster.attach('load', function() {
 				var size = getSize(node, 'width', 'height');
 				this.setSize(size);
-				this.translate(getPoint(node, 'x', 'y').add(size.divide(2)));
+				var center = this._matrix._transformPoint(
+						getPoint(node, 'x', 'y').add(size.divide(2)));
+				this.translate(center);
 			});
 			return raster;
 		},
@@ -10882,7 +10898,7 @@ new function() {
 			color.setAlpha(parseFloat(value));
 	}
 
-	var attributes = Base.merge(Base.each(SVGStyles, function(entry) {
+	var attributes = Base.each(SVGStyles, function(entry) {
 		this[entry.attribute] = function(item, value) {
 			item[entry.set](convertValue(value, entry.type, entry.fromSVG));
 			if (entry.type === 'color' && item instanceof Shape) {
@@ -10892,7 +10908,7 @@ new function() {
 							item.getPosition(true).negate()));
 			}
 		};
-	}, {}), {
+	}, {
 		id: function(item, value) {
 			definitions[value] = item;
 			if (item.setName)
@@ -11019,7 +11035,6 @@ new function() {
 
 		if (isRoot) {
 			if (typeof source === 'string' && !/^.*</.test(source)) {
-				return Http.request('get', source, onLoadCallback);
 			} else if (typeof File !== 'undefined' && source instanceof File) {
 				var reader = new FileReader();
 				reader.onload = function() {
@@ -11066,7 +11081,7 @@ new function() {
 	});
 };
 
-paper = new (PaperScope.inject(Base.merge(Base.exports, {
+paper = new (PaperScope.inject(new Base(Base.exports, {
 	enumerable: true,
 	Base: Base,
 	Numerical: Numerical,
@@ -11258,7 +11273,8 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 						size: view.size,
 						delta: new Point()
 					});
-					view.setOnFrame(onFrame);
+					if (onFrame)
+						view.setOnFrame(onFrame);
 					view.draw();
 				}
 			}).call(scope);
