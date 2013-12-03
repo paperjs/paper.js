@@ -470,11 +470,21 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @type Point
 	 */
 
+	 /**
+	  * The area of the rectangle in square points.
+	  *
+	  * @type Number
+	  * @bean
+	  */
+	getArea: function() {
+		return this.width * this.height;
+	},
+
 	/**
 	 * @return {Boolean} {@true the rectangle is empty}
 	 */
 	isEmpty: function() {
-		return this.width == 0 || this.height == 0;
+		return this.width === 0 || this.height === 0;
 	},
 
 	/**
