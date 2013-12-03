@@ -18,11 +18,10 @@
 var jsdom = require('jsdom'),
 	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml,
 	// Node Canvas library: https://github.com/learnboost/node-canvas
-	Canvas = require('canvas');
-
-// Expose global browser variables and create a document and a window using
-// jsdom, e.g. for import/exportSVG()
-var document = jsdom.jsdom('<html><body></body></html>'),
+	Canvas = require('canvas'),
+	// Expose global browser variables and create a document and a window using
+	// jsdom, e.g. for import/exportSVG()
+	document = jsdom.jsdom('<html><body></body></html>'),
 	window = document.createWindow(),
 	navigator = window.navigator,
 	HTMLCanvasElement = Canvas,

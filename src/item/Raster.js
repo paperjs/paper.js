@@ -291,19 +291,22 @@ var Raster = Item.extend(/** @lends Raster# */{
 	},
 
 	setSource: function(src) {
-/*#*/ if (__options.environment == 'browser') {
 		var that = this,
-			// src can be an URL or a DOM ID to load the image from
-			image = document.getElementById(src) || new Image();
+			image;
 
 		function loaded() {
 			var view = that._project.view;
 			if (view)
 				paper = view._scope;
+			that.setImage(image);
 			that.fire('load');
 			if (view)
 				view.draw(true);
 		}
+
+/*#*/ if (__options.environment == 'browser') {
+			// src can be an URL or a DOM ID to load the image from
+			image = document.getElementById(src) || new Image();
 
 		// IE has naturalWidth / Height defined, but width / height set to 0
 		// when the image is invisible in the document.
@@ -314,10 +317,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		} else {
 			// Trigger the onLoad event on the image once it's loaded
 			DomEvent.add(image, {
-				load: function() {
-					that.setImage(image);
-					loaded();
-				}
+				load: loaded
 			});
 			// A new image created above? Set the source now.
 			if (!image.src)
@@ -325,17 +325,37 @@ var Raster = Item.extend(/** @lends Raster# */{
 		}
 		this.setImage(image);
 /*#*/ } else if (__options.environment == 'node') {
-		var image = new Image();
+		image = new Image();
 		// If we're running on the server and it's a string,
 		// check if it is a data URL
 		if (/^data:/.test(src)) {
 			// Preserve the data in this._data since canvas-node eats it.
 			// TODO: Fix canvas-node instead
 			image.src = this._data = src;
+			// Fire load event delayed, so behavior is the same as when it's 
+			// actually loaded and we give the code time to install event
+			setTimeout(loaded, 0);
+		} else if (/^https?:\/\//.test(src)) {
+			// Load it from remote location:
+			require('request').get({
+				url: src,
+				encoding: null // So the response data is a Buffer
+			}, function (err, response, data) {
+				if (err)
+					throw err;
+				if (response.statusCode == 200) {
+					image.src = this._data = data;
+					loaded();
+				}
+			});
 		} else {
 			// Load it from disk:
-			// TODO: load images async, calling setImage once loaded as above.
-			image.src = fs.readFileSync(src);
+			require('fs').readFile(src, function (err, data) {
+				if (err)
+					throw err;
+				image.src = this._data = data;
+				loaded();
+			});
 		}
 		this.setImage(image);
 /*#*/ } // __options.environment == 'node'
@@ -393,8 +413,11 @@ var Raster = Item.extend(/** @lends Raster# */{
 		// See if the linked image is base64 encoded already, if so reuse it,
 		// otherwise try using canvas.toDataURL()
 /*#*/ if (__options.environment == 'node') {
-		if (this._data)
+		if (this._data) {
+			if (this._data instanceof Buffer)
+				this._data = this._data.toString('base64');
 			return this._data;
+		}
 /*#*/ } else {
 		var src = this._image && this._image.src;
 		if (/^data:/.test(src))
