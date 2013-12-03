@@ -666,15 +666,18 @@ var View = Base.extend(Callback, /** @lends View# */{
 		if (!(view = view || View._focused))
 			return;
 		var point = event && viewToProject(view, event);
-		if (view._onMouseMove)
-			view._onMouseMove(event, point);
-		if (tool = view._scope._tool) {
-			// If there's no onMouseDrag, fire onMouseMove while dragging too.
-			if (tool._onHandleEvent(dragging && tool.responds('mousedrag')
-					? 'mousedrag' : 'mousemove', point, event))
-				DomEvent.stop(event);
+		if (dragging || new Rectangle(new Point(),
+				view.getViewSize()).contains(point)) {
+			if (view._onMouseMove)
+				view._onMouseMove(event, point);
+			if (tool = view._scope._tool) {
+				// If there's no onMouseDrag, fire onMouseMove while dragging.
+				if (tool._onHandleEvent(dragging && tool.responds('mousedrag')
+						? 'mousedrag' : 'mousemove', point, event))
+					DomEvent.stop(event);
+			}
+			view.draw(true);
 		}
-		view.draw(true);
 	}
 
 	function mouseup(event) {
