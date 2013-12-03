@@ -83,7 +83,7 @@ PathItem.inject(new function() {
 				clockwise;
 			children.sort(function(a, b){
 				var b1 = a.getBounds(), b2 = b.getBounds();
-				return b1._width * b1._height < b2._width * b2._height;
+				return b2._width * b2._height - b1._width * b1._height;
 			});
 			path.addChildren(children);
 			clockwise = children[0].isClockwise();
