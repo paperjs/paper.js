@@ -69,6 +69,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_initialize: function(props, point) {
 		// Define this Item's unique id.
 		this._id = Item._id = (Item._id || 0) + 1;
+		// Handle matrix before everything else, to avoid issues with
+		// #addChild() calling _changed() and accessing _matrix already.
+		var matrix = this._matrix = new Matrix();
+		if (point)
+			matrix.translate(point);
+		matrix._owner = this;
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project) {
@@ -83,10 +89,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		}
 		this._style = new Style(this._project._currentStyle, this);
-		var matrix = this._matrix = new Matrix();
-		if (point)
-			matrix.translate(point);
-		matrix._owner = this;
 		return props ? this._set(props, { insert: true }) : true;
 	},
 
