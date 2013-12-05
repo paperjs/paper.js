@@ -44,18 +44,18 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 
 	var binaryOperators = {
 		// The hidden math functions are to be injected specifically, see below.
-		'+': '_add',
-		'-': '_subtract',
-		'*': '_multiply',
-		'/': '_divide',
-		'%': '_modulo',
+		'+': '__add',
+		'-': '__subtract',
+		'*': '__multiply',
+		'/': '__divide',
+		'%': '__modulo',
 		// Use the real equals.
 		'==': 'equals',
 		'!=': 'equals'
 	};
 
 	var unaryOperators = {
-		'-': '_negate',
+		'-': '__negate',
 		'+': null
 	};
 
@@ -63,7 +63,9 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 	var fields = Base.each(
 		['add', 'subtract', 'multiply', 'divide', 'modulo', 'negate'],
 		function(name) {
-			this['_' + name] = '#' + name;
+			// Create an alias for ach math function to be injected into the
+			// classes using Straps.js' #inject() 
+			this['__' + name] = '#' + name;
 		}, 
 		{}
 	);
