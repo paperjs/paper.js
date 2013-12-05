@@ -60,7 +60,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			style.height = height + 'px';
 			// Now scale the context to counter the fact that we've manually
 			// scaled our canvas element.
-			cxt.scale(ratio, ratio);
+			ctx.scale(ratio, ratio);
 		}
 		View.call(this, canvas);
 	},
