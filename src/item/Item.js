@@ -3237,8 +3237,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			parentMatrix = transforms[transforms.length - 1],
 			globalMatrix = parentMatrix.clone().concatenate(this._matrix);
 		// If this item is not invertible, do not draw it, since it would cause
-		// empty ctx.currentPath and mess up caching. It might also generally be
-		// a good idea to not draw in such cirucmstances.
+		// empty ctx.currentPath and mess up caching. It appears to also be a
+		// good idea generally to not draw in such cirucmstances, e.g. SVG
+		// handles it the same way.
 		if (!globalMatrix.isInvertible())
 			return;
 		// Only keep track of transformation if told so. See Project#draw()
