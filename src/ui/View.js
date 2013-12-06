@@ -637,10 +637,9 @@ var View = Base.extend(Callback, /** @lends View# */{
 		dragging = true;
 		// Always first call the view's mouse handlers, as required by
 		// CanvasView, and then handle the active tool, if any.
-		if (view._onMouseDown)
-			view._onMouseDown(event, point);
+		view._handleEvent('mousedown', point, event);
 		if (tool = view._scope._tool)
-			tool._onHandleEvent('mousedown', point, event);
+			tool._handleEvent('mousedown', point, event);
 		// In the end we always call draw(), but pass checkRedraw = true, so we
 		// only redraw the view if anything has changed in the above calls.
 		view.draw(true);
@@ -668,13 +667,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 		var point = event && viewToProject(view, event);
 		if (dragging || new Rectangle(new Point(),
 				view.getViewSize()).contains(point)) {
-			if (view._onMouseMove)
-				view._onMouseMove(event, point);
+			view._handleEvent('mousemove', point, event);
 			if (tool = view._scope._tool) {
 				// If there's no onMouseDrag, fire onMouseMove while dragging.
-				if (tool._onHandleEvent(dragging && tool.responds('mousedrag')
-						? 'mousedrag' : 'mousemove', point, event))
-					DomEvent.stop(event);
+				tool._handleEvent(dragging && tool.responds('mousedrag')
+						? 'mousedrag' : 'mousemove', point, event);
 			}
 			view.draw(true);
 		}
@@ -687,11 +684,9 @@ var View = Base.extend(Callback, /** @lends View# */{
 		var point = viewToProject(view, event);
 		curPoint = null;
 		dragging = false;
-		if (view._onMouseUp)
-			view._onMouseUp(event, point);
-		// Cancel DOM-event if it was handled by our tool
-		if (tool && tool._onHandleEvent('mouseup', point, event))
-			DomEvent.stop(event);
+		view._handleEvent('mouseup', point, event);
+		if (tool)
+			tool._handleEvent('mouseup', point, event);
 		view.draw(true);
 	}
 
@@ -699,7 +694,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		// Only stop this even if we're dragging already, since otherwise no
 		// text whatsoever can be selected on the page.
 		if (dragging)
-			DomEvent.stop(event);
+			event.preventDefault();
 	}
 
 	// mousemove and mouseup events need to be installed on document, not the
@@ -726,6 +721,9 @@ var View = Base.extend(Callback, /** @lends View# */{
 			touchstart: mousedown,
 			selectstart: selectstart
 		},
+
+		// To be defined in subclasses
+		_handleEvent: function(/* type, point, event */) {},
 
 		statics: {
 			/**

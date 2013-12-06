@@ -350,7 +350,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 				&& this.fire(type, new ToolEvent(this, type, event));
 	},
 
-	_onHandleEvent: function(type, point, event) {
+	_handleEvent: function(type, point, event) {
 		// Update global reference to this scope.
 		paper = this._scope;
 		// Now handle event callbacks
@@ -401,7 +401,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 			}
 			break;
 		}
-		// Return if a callback was called or not.
+		// Prevent default if mouse event was handled.
+		if (called)
+			event.preventDefault();
 		return called;
 	}
 	/**

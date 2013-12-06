@@ -86,8 +86,10 @@ var Callback = {
 				// When the handler function returns false, prevent the default
 				// behaviour and stop propagation of the event by calling stop()
 				if (handlers[i].apply(that, args) === false
-						&& event && event.stop)
+						&& event && event.stop) {
 					event.stop();
+					break;
+				}
 			}
 		}
 		// See PaperScript.handleException for an explanation of the following.
@@ -135,9 +137,7 @@ var Callback = {
 						types[type] = isString ? {} : entry;
 						// Create getters and setters for the property
 						// with the on*-name name:
-						// Use '__' as there are some _onMouse* functions
-						// already, e.g.g on View.
-						name = '__' + name;
+						name = '_' + name;
 						src['get' + part] = function() {
 							return this[name];
 						};

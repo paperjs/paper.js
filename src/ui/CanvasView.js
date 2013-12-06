@@ -108,11 +108,12 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		doubleClick,
 		clickTime;
 
-	// Returns false if event was stopped, true otherwise, whether handler was
+	// Returns true if event was stopped, false otherwise, whether handler was
 	// called or not!
-	function callEvent(type, event, point, target, lastPoint, bubble) {
+	function callEvent(type, event, point, target, lastPoint) {
 		var item = target,
 			mouseEvent;
+		// Bubble up the DOM and find a parent that responds to this event.
 		while (item) {
 			if (item.responds(type)) {
 				// Create an reuse the event object if we're bubbling
@@ -120,91 +121,102 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 					mouseEvent = new MouseEvent(type, event, point, target,
 							// Calculate delta if lastPoint was passed
 							lastPoint ? point.subtract(lastPoint) : null);
-				if (item.fire(type, mouseEvent)
-						&& (!bubble || mouseEvent._stopped))
-					return false;
+				if (item.fire(type, mouseEvent) && mouseEvent.isStopped) {
+					// Call preventDefault() on native event if mouse event was
+					// handled here.
+					event.preventDefault();
+					return true;
+				}
 			}
 			item = item.getParent();
 		}
-		return true;
+		return false;
 	}
 
-	function handleEvent(view, type, event, point, lastPoint) {
-		if (view._eventCounters[type]) {
-			var project = view._project,
+	return {
+		/**
+		 * Returns true if event was stopped, false otherwise, whether handler
+		 * was called or not!
+		 */
+		_handleEvent: function(type, point, event) {
+			// Drop out if we don't have any event handlers for this type
+			if (!this._eventCounters[type])
+				return;
+			// Run the hit-test first
+			var project = this._project,
 				hit = project.hitTest(point, {
 					tolerance: project.options.hitTolerance || 0,
 					fill: true,
 					stroke: true
 				}),
-				item = hit && hit.item;
-			if (item) {
-				// If this is a mousemove event and we change the overItem,
-				// reset lastPoint to point so delta is (0, 0)
-				if (type === 'mousemove' && item != overItem)
-					lastPoint = point;
-				// If we have a downItem with a mousedrag event, do not send
-				// mousemove events to any item while we're dragging.
-				// TODO: Do we also need to lock mousenter / mouseleave in the
-				// same way?
-				if (type !== 'mousemove' || !hasDrag)
-					callEvent(type, event, point, item, lastPoint);
-				return item;
-			}
-		}
-	}
-
-	return {
-		_onMouseDown: function(event, point) {
-			var item = handleEvent(this, 'mousedown', event, point);
-			// See if we're clicking again on the same item, within the
-			// double-click time. Firefox uses 300ms as the max time difference:
-			doubleClick = lastItem == item && (Date.now() - clickTime < 300);
-			downItem = lastItem = item;
-			downPoint = lastPoint = overPoint = point;
-			hasDrag = downItem && downItem.responds('mousedrag');
-		},
-
-		_onMouseUp: function(event, point) {
-			// TODO: Check 
-			var item = handleEvent(this, 'mouseup', event, point);
-			if (hasDrag) {
-				// If the point has changed since the last mousedrag event, send
-				// another one
-				if (lastPoint && !lastPoint.equals(point))
-					callEvent('mousedrag', event, point, downItem, lastPoint);
-				// If we had a mousedrag event locking mousemove events and are
-				// over another item, send it a mousemove event now.
-				// Use point as overPoint, so delta is (0, 0) since this will
-				// be the first mousemove event for this item.
-				if (item != downItem) {
-					overPoint = point;
-					callEvent('mousemove', event, point, item, overPoint);
+				item = hit && hit.item,
+				stopped = false;
+			// Now handle the mouse events
+			switch (type) {
+			case 'mousedown':
+				stopped = callEvent(type, event, point, item);
+				// See if we're clicking again on the same item, within the
+				// double-click time. Firefox uses 300ms as the max time
+				// difference:
+				doubleClick = lastItem == item && (Date.now() - clickTime < 300);
+				downItem = lastItem = item;
+				downPoint = lastPoint = overPoint = point;
+				hasDrag = downItem && downItem.responds('mousedrag');
+				break;
+			case 'mouseup':
+				// stopping mousup events does not prevent mousedrag / mousemove
+				// hanlding here, but it does click / doubleclick
+				stopped = callEvent(type, event, point, item, downPoint);
+				if (hasDrag) {
+					// If the point has changed since the last mousedrag event,
+					// send another one
+					if (lastPoint && !lastPoint.equals(point))
+						callEvent('mousedrag', event, point, downItem,
+								lastPoint);
+					// If we end up over another item, send it a mousemove event
+					// now. Use point as overPoint, so delta is (0, 0) since
+					// this will be the first mousemove event for this item.
+					if (item !== downItem) {
+						overPoint = point;
+						callEvent('mousemove', event, point, item, overPoint);
+					}
 				}
+				if (!stopped && item === downItem) {
+					clickTime = Date.now();
+					callEvent(doubleClick && downItem.responds('doubleclick')
+							? 'doubleclick' : 'click', event, downPoint, item);
+					doubleClick = false;
+				}
+				downItem = null;
+				hasDrag = false;
+				break;
+			case 'mousemove':
+				// Allow both mousedrag and mousemove events to stop mousemove
+				// events from reaching tools.
+				if (hasDrag)
+					stopped = callEvent('mousedrag', event, point, downItem,
+							lastPoint);
+				// TODO: Consider implementing this again? "If we have a
+				// mousedrag event, do not send mousemove events to any
+				// item while we're dragging."
+				// For now, we let other items receive mousemove events even
+				// during a drag event.
+				// If we change the overItem, reset overPoint to point so
+				// delta is (0, 0)
+				if (!stopped) {
+					if (item !== overItem)
+						overPoint = point;
+					stopped = callEvent(type, event, point, item, overPoint);
+				}
+				lastPoint = overPoint = point;
+				if (item !== overItem) {
+					callEvent('mouseleave', event, point, overItem);
+					overItem = item;
+					callEvent('mouseenter', event, point, item);
+				}
+				break;
 			}
-			if (item === downItem) {
-				clickTime = Date.now();
-				if (!doubleClick
-						// callEvent returns false if event is stopped.
-						|| callEvent('doubleclick', event, downPoint, item))
-					callEvent('click', event, downPoint, item);
-				doubleClick = false;
-			}
-			downItem = null;
-			hasDrag = false;
-		},
-
-		_onMouseMove: function(event, point) {
-			// Call the mousedrag event first if an item was clicked earlier
-			if (downItem)
-				callEvent('mousedrag', event, point, downItem, lastPoint);
-			var item = handleEvent(this, 'mousemove', event, point, overPoint);
-			lastPoint = overPoint = point;
-			if (item !== overItem) {
-				callEvent('mouseleave', event, point, overItem);
-				overItem = item;
-				callEvent('mouseenter', event, point, item);
-			}
+			return stopped;
 		}
 	};
 });

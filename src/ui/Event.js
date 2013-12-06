@@ -21,14 +21,17 @@ var Event = Base.extend(/** @lends Event# */{
 		this.event = event;
 	},
 
+	isPrevented: false,
+	isStopped: false,
+
 	preventDefault: function() {
-		this._prevented = true;
-		DomEvent.preventDefault(this.event);
+		this.isPrevented = true;
+		this.event.preventDefault();
 	},
 
 	stopPropagation: function() {
-		this._stopped = true;
-		DomEvent.stopPropagation(this.event);
+		this.isStopped = true;
+		this.event.stopPropagation();
 	},
 
 	stop: function() {
