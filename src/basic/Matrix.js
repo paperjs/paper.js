@@ -43,12 +43,12 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	/**
 	 * Creates a 2D affine transform.
 	 *
-	 * @param {Number} a the scaleX coordinate of the transform
-	 * @param {Number} c the shearY coordinate of the transform
-	 * @param {Number} b the shearX coordinate of the transform
-	 * @param {Number} d the scaleY coordinate of the transform
-	 * @param {Number} tx the translateX coordinate of the transform
-	 * @param {Number} ty the translateY coordinate of the transform
+	 * @param {Number} a the a property of the transform
+	 * @param {Number} c the c property of the transform
+	 * @param {Number} b the b property of the transform
+	 * @param {Number} d the d property of the transform
+	 * @param {Number} tx the tx property of the transform
+	 * @param {Number} ty the ty property of the transform
 	 */
 	initialize: function Matrix(arg) {
 		var count = arguments.length,
@@ -75,12 +75,12 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	/**
 	 * Sets this transform to the matrix specified by the 6 values.
 	 *
-	 * @param {Number} a the scaleX coordinate of the transform
-	 * @param {Number} c the shearY coordinate of the transform
-	 * @param {Number} b the shearX coordinate of the transform
-	 * @param {Number} d the scaleY coordinate of the transform
-	 * @param {Number} tx the translateX coordinate of the transform
-	 * @param {Number} ty the translateY coordinate of the transform
+	 * @param {Number} a the a property of the transform
+	 * @param {Number} c the c property of the transform
+	 * @param {Number} b the b property of the transform
+	 * @param {Number} d the d property of the transform
+	 * @param {Number} tx the tx property of the transform
+	 * @param {Number} ty the ty property of the transform
 	 * @return {Matrix} this affine transform
 	 */
 	set: function(a, c, b, d, tx, ty, _dontNotify) {
@@ -542,44 +542,46 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * The scaling factor in the x-direction ({@code a}).
+	 * The value at position (0, 0) in the transformation matrix.
 	 *
-	 * @name Matrix#scaleX
+	 * @name Matrix#a
 	 * @type Number
 	 */
 
 	/**
-	 * The scaling factor in the y-direction ({@code d}).
+	 * The value at position (1, 0) in the transformation matrix.
 	 *
-	 * @name Matrix#scaleY
+	 * @name Matrix#c
 	 * @type Number
 	 */
 
 	/**
-	 * The shear factor in the x-direction ({@code b}).
+	 * The value at position (0, 1) in the transformation matrix.
 	 *
-	 * @name Matrix#shearX
+	 * @name Matrix#b
 	 * @type Number
 	 */
 
 	/**
-	 * The shear factor in the y-direction ({@code c}).
+	 * The value at position (1, 1) in the transformation matrix.
 	 *
-	 * @name Matrix#shearY
+	 * @name Matrix#d
 	 * @type Number
 	 */
 
 	/**
-	 * The translation in the x-direction ({@code tx}).
+	 * The value at position (2, 0) in the transformation matrix, corresponding
+	 * to the translation in the x-direction.
 	 *
-	 * @name Matrix#translateX
+	 * @name Matrix#tx
 	 * @type Number
 	 */
 
 	/**
-	 * The translation in the y-direction ({@code ty}).
+	 * The value at position (2, 1) in the transformation matrix, corresponding
+	 * to the translation in the y-direction.
 	 *
-	 * @name Matrix#translateY
+	 * @name Matrix#ty
 	 * @type Number
 	 */
 
@@ -595,7 +597,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * The translation values of the matrix.
+	 * The translation of the matrix as a vector.
 	 *
 	 * @type Point
 	 * @bean
@@ -617,7 +619,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 *
 	 * @type Point
 	 * @bean
-	 * @see Matrix#decompose()
+	 * @see #decompose()
 	 */
 	getScaling: function() {
 		return (this.decompose() || {}).scaling;
@@ -637,7 +639,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 *
 	 * @type Number
 	 * @bean
-	 * @see Matrix#decompose()
+	 * @see #decompose()
 	 */
 	getRotation: function() {
 		return (this.decompose() || {}).rotation;
@@ -681,19 +683,14 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		ctx.transform(this._a, this._c, this._b, this._d, this._tx, this._ty);
 	}
 }, new function() {
-	return Base.each({
-		scaleX: '_a',
-		scaleY: '_d',
-		translateX: '_tx',
-		translateY: '_ty',
-		shearX: '_b',
-		shearY: '_c'
-	}, function(prop, name) {
-		name = Base.capitalize(name);
-		this['get' + name] = function() {
+	// Create getters and setters for all internal attributes.
+	return Base.each(['a', 'c', 'b', 'd', 'tx', 'ty'], function(name) {
+		var part = Base.capitalize(name),
+			prop = '_' + name;
+		this['get' + part] = function() {
 			return this[prop];
 		};
-		this['set' + name] = function(value) {
+		this['set' + part] = function(value) {
 			this[prop] = value;
 			this._changed();
 		};
