@@ -47,7 +47,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * path.strokeColor = 'black';
 	 */
 	/**
-	 * Creates a new path item and places it at the top of the active layer.
+	 * Creates a new path item from an object description and places it at the
+	 * top of the active layer.
 	 *
 	 * @name Path#initialize
 	 * @param {Object} object an object literal containing properties to
@@ -70,6 +71,20 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * 	selected: true
 	 * });
 	 */
+	/**
+	 * Creates a new path item from SVG path-data and places it at the top of
+	 * the active layer.
+	 *
+	 * @name Path#initialize
+	 * @param {String} pathData the SVG path-data that describes the geometry
+	 * of this path.
+	 * @return {Path} the newly created path
+	 *
+	 * @example {@paperscript}
+	 * var pathData = 'M100,50c0,27.614-22.386,50-50,50S0,77.614,0,50S22.386,0,50,0S100,22.386,100,50';
+	 * var path = new Path(pathData);
+	 * path.fillColor = 'red';
+	 */
 	initialize: function Path(arg) {
 		this._closed = false;
 		this._segments = [];
@@ -86,12 +101,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 				: arguments
 			// See if it behaves like a segment or a point, but filter out
 			// rectangles, as accepted by some Path.Constructor constructors.
-			: arg && (arg.point !== undefined && arg.size === undefined
-					|| arg.x !== undefined)
+			: arg && (arg.size === undefined && (arg.x !== undefined
+					|| arg.point !== undefined))
 				? arguments
 				: null;
 		// Always call setSegments() to initialize a few related variables.
 		this.setSegments(segments || []);
+		if (!segments && typeof arg === 'string') {
+			this.setPathData(arg);
+			// Erase for _initialize() call below.
+			arg = null;
+		}
 		// Only pass on arg as props if it wasn't consumed for segments already.
 		this._initialize(!segments && arg);
 	},

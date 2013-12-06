@@ -49,12 +49,56 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	 * // Move the inner circle 5pt to the right:
 	 * compoundPath.children[1].position.x += 5;
 	 */
+	/**
+	 * Creates a new compound path item from an object description and places it
+	 * at the top of the active layer.
+	 *
+	 * @name CompoundPath#initialize
+	 * @param {Object} object an object literal containing properties to
+	 * be set on the path
+	 * @return {CompoundPath} the newly created path
+	 *
+	 * @example {@paperscript}
+	 * var path = new CompoundPath({
+	 * 	children: [
+	 * 		new Path.Circle({
+	 * 			center: new Point(50, 50),
+	 * 			radius: 30
+	 * 		}),
+	 * 		new Path.Circle({
+	 * 			center: new Point(50, 50),
+	 * 			radius: 10
+	 * 		})
+	 * 	],
+	 * 	fillColor: 'black',
+	 * 	selected: true
+	 * });
+	 */
+	/**
+	 * Creates a new compound path item from SVG path-data and places it at the
+	 * top of the active layer.
+	 *
+	 * @name CompoundPath#initialize
+	 * @param {String} pathData the SVG path-data that describes the geometry
+	 * of this path.
+	 * @return {CompoundPath} the newly created path
+	 *
+	 * @example {@paperscript}
+	 * var pathData = 'M20,50c0,-16.56854 13.43146,-30 30,-30c16.56854,0 30,13.43146 30,30c0,16.56854 -13.43146,30 -30,30c-16.56854,0 -30,-13.43146 -30,-30z M50,60c5.52285,0 10,-4.47715 10,-10c0,-5.52285 -4.47715,-10 -10,-10c-5.52285,0 -10,4.47715 -10,10c0,5.52285 4.47715,10 10,10z';
+	 * var path = new CompoundPath(pathData);
+	 * path.fillColor = 'black';
+	 */
 	initialize: function CompoundPath(arg) {
 		// CompoundPath has children and supports named children.
 		this._children = [];
 		this._namedChildren = {};
-		if (!this._initialize(arg))
-			this.addChildren(Array.isArray(arg) ? arg : arguments);
+		if (!this._initialize(arg)) {
+			if (typeof arg === 'string') {
+				this.setPathData(arg);
+			} else {
+				this.addChildren(Array.isArray(arg) ? arg : arguments);
+			}
+		}
 	},
 
 	_changed: function _changed(flags) {
