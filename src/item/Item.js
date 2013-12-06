@@ -3236,6 +3236,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			transforms = param.transforms,
 			parentMatrix = transforms[transforms.length - 1],
 			globalMatrix = parentMatrix.clone().concatenate(this._matrix);
+		// If this item is not invertible, do not draw it, since it would cause
+		// empty ctx.currentPath and mess up caching. It might also generally be
+		// a good idea to not draw in such cirucmstances.
+		if (!globalMatrix.isInvertible())
+			return;
 		// Only keep track of transformation if told so. See Project#draw()
 		if (trackTransforms)
 			transforms.push(this._globalMatrix = globalMatrix);

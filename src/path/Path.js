@@ -115,6 +115,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
+			// Delete cached native Path
+			delete (this._compound ? this._parent : this)._currentPath;
 			delete this._length;
 			// Clockwise state becomes undefined as soon as geometry changes.
 			delete this._clockwise;
@@ -2003,7 +2005,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	return {
 		_draw: function(ctx, param) {
 			var clip = param.clip,
-				compound = param.compound;
+				// Also mark this Path as _compound so _changed() knows about it
+				compound = this._compound = param.compound;
 			if (!compound)
 				ctx.beginPath();
 
@@ -2021,12 +2024,18 @@ var Path = PathItem.extend(/** @lends Path# */{
 				return dashArray[((i % dashLength) + dashLength) % dashLength];
 			}
 
-			// Prepare the canvas path if we have any situation that
-			// requires it to be defined.
-			if (hasFill || hasStroke && !dashLength || compound || clip)
+			if (this._currentPath) {
+				ctx.currentPath = this._currentPath;
+			} else if (hasFill || hasStroke && !dashLength || compound || clip){
+				// Prepare the canvas path if we have any situation that
+				// requires it to be defined.
 				drawSegments(ctx, this);
-			if (this._closed)
-				ctx.closePath();
+				if (this._closed)
+					ctx.closePath();
+				// CompoundPath collects its own _currentPath
+				if (!compound)
+					this._currentPath = ctx.currentPath;
+			}
 
 			if (!clip && !compound && (hasFill || hasStroke)) {
 				// If the path is part of a compound path or doesn't have a fill
