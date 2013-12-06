@@ -862,6 +862,42 @@ var Color = Base.extend(new function() {
 		},
 
 		/**
+		 * {@grouptitle RGB Components}
+		 *
+		 * The amount of red in the color as a value between {@code 0} and
+		 * {@code 1}.
+		 *
+		 * @name Color#red
+		 * @property
+		 * @type Number
+		 *
+		 * @example {@paperscript}
+		 * // Changing the amount of red in a color:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 * circle.fillColor = 'blue';
+		 *
+		 * // Blue + red = purple:
+		 * circle.fillColor.red = 1;
+		 */
+		/**
+		 * The amount of green in the color as a value between {@code 0} and
+		 * {@code 1}.
+		 *
+		 * @name Color#green
+		 * @property
+		 * @type Number
+		 *
+		 * @example {@paperscript}
+		 * // Changing the amount of green in a color:
+		 * var circle = new Path.Circle(new Point(80, 50), 30);
+		 *
+		 * // First we set the fill color to red:
+		 * circle.fillColor = 'red';
+		 *
+		 * // Red + green = yellow:
+		 * circle.fillColor.green = 1;
+		 */
+		/**
 		 * The amount of blue in the color as a value between {@code 0} and
 		 * {@code 1}.
 		 *
@@ -919,7 +955,6 @@ var Color = Base.extend(new function() {
 		 *	path.fillColor.hue += 0.5;
 		 * }
 		 */
-
 		/**
 		 * The saturation of the color as a value between {@code 0} and {@code 1}.
 		 *
@@ -927,7 +962,6 @@ var Color = Base.extend(new function() {
 		 * @property
 		 * @type Number
 		 */
-
 		/**
 		 * The brightness of the color as a value between {@code 0} and {@code 1}.
 		 *
@@ -940,6 +974,7 @@ var Color = Base.extend(new function() {
 		 * {@grouptitle HSL Components}
 		 *
 		 * The lightness of the color as a value between {@code 0} and {@code 1}.
+		 * All other components are shared with HSB.
 		 *
 		 * @name Color#lightness
 		 * @property
@@ -1242,42 +1277,6 @@ var Color = Base.extend(new function() {
 		 * var color2 = new Color(0.5, 0, 0.5);
 		 * var result = color1 / color2;
 		 * console.log(result); // { red: 0, blue: 0, green: 1 }
-		 */
-		/**
-		 * {@grouptitle RGB Components}
-		 *
-		 * The amount of red in the color as a value between {@code 0} and
-		 * {@code 1}.
-		 *
-		 * @name Color#red
-		 * @property
-		 * @type Number
-		 *
-		 * @example {@paperscript}
-		 * // Changing the amount of red in a color:
-		 * var circle = new Path.Circle(new Point(80, 50), 30);
-		 * circle.fillColor = 'blue';
-		 *
-		 * // Blue + red = purple:
-		 * circle.fillColor.red = 1;
-		 */
-		/**
-		 * The amount of green in the color as a value between {@code 0} and
-		 * {@code 1}.
-		 *
-		 * @name Color#green
-		 * @property
-		 * @type Number
-		 *
-		 * @example {@paperscript}
-		 * // Changing the amount of green in a color:
-		 * var circle = new Path.Circle(new Point(80, 50), 30);
-		 *
-		 * // First we set the fill color to red:
-		 * circle.fillColor = 'red';
-		 *
-		 * // Red + green = yellow:
-		 * circle.fillColor.green = 1;
 		 */
 	});
 });
