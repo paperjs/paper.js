@@ -105,31 +105,42 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		lastItem,
 		overItem,
 		hasDrag,
-		doubleClick,
+		dblClick,
 		clickTime;
 
 	// Returns true if event was stopped, false otherwise, whether handler was
 	// called or not!
-	function callEvent(type, event, point, target, lastPoint) {
+	function callEvent(view, type, event, point, target, lastPoint) {
 		var item = target,
 			mouseEvent;
-		// Bubble up the DOM and find a parent that responds to this event.
-		while (item) {
-			if (item.responds(type)) {
-				// Create an reuse the event object if we're bubbling
-				if (!mouseEvent)
+
+		function call(obj) {
+			if (obj.responds(type)) {
+				// Only produce the event object if we really need it, and then
+				// reuse it if we're bubbling.
+				if (!mouseEvent) {
 					mouseEvent = new MouseEvent(type, event, point, target,
 							// Calculate delta if lastPoint was passed
 							lastPoint ? point.subtract(lastPoint) : null);
-				if (item.fire(type, mouseEvent) && mouseEvent.isStopped) {
+				}
+				if (obj.fire(type, mouseEvent) && mouseEvent.isStopped) {
 					// Call preventDefault() on native event if mouse event was
 					// handled here.
 					event.preventDefault();
 					return true;
 				}
 			}
+		}
+
+		// Bubble up the DOM and find a parent that responds to this event.
+		while (item) {
+			if (call(item))
+				return true;
 			item = item.getParent();
 		}
+		// Also call event handler on view, if installed.
+		if (call(view))
+			return true;
 		return false;
 	}
 
@@ -154,11 +165,11 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			// Now handle the mouse events
 			switch (type) {
 			case 'mousedown':
-				stopped = callEvent(type, event, point, item);
+				stopped = callEvent(this, type, event, point, item);
 				// See if we're clicking again on the same item, within the
 				// double-click time. Firefox uses 300ms as the max time
 				// difference:
-				doubleClick = lastItem == item && (Date.now() - clickTime < 300);
+				dblClick = lastItem == item && (Date.now() - clickTime < 300);
 				downItem = lastItem = item;
 				downPoint = lastPoint = overPoint = point;
 				hasDrag = downItem && downItem.responds('mousedrag');
@@ -166,26 +177,27 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			case 'mouseup':
 				// stopping mousup events does not prevent mousedrag / mousemove
 				// hanlding here, but it does click / doubleclick
-				stopped = callEvent(type, event, point, item, downPoint);
+				stopped = callEvent(this, type, event, point, item, downPoint);
 				if (hasDrag) {
 					// If the point has changed since the last mousedrag event,
 					// send another one
 					if (lastPoint && !lastPoint.equals(point))
-						callEvent('mousedrag', event, point, downItem,
+						callEvent(this, 'mousedrag', event, point, downItem,
 								lastPoint);
 					// If we end up over another item, send it a mousemove event
 					// now. Use point as overPoint, so delta is (0, 0) since
 					// this will be the first mousemove event for this item.
 					if (item !== downItem) {
 						overPoint = point;
-						callEvent('mousemove', event, point, item, overPoint);
+						callEvent(this, 'mousemove', event, point, item,
+								overPoint);
 					}
 				}
-				if (!stopped && item === downItem) {
+				if (!stopped && item && item === downItem) {
 					clickTime = Date.now();
-					callEvent(doubleClick && downItem.responds('doubleclick')
+					callEvent(this, dblClick && downItem.responds('doubleclick')
 							? 'doubleclick' : 'click', event, downPoint, item);
-					doubleClick = false;
+					dblClick = false;
 				}
 				downItem = null;
 				hasDrag = false;
@@ -194,8 +206,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 				// Allow both mousedrag and mousemove events to stop mousemove
 				// events from reaching tools.
 				if (hasDrag)
-					stopped = callEvent('mousedrag', event, point, downItem,
-							lastPoint);
+					stopped = callEvent(this, 'mousedrag', event, point,
+							downItem, lastPoint);
 				// TODO: Consider implementing this again? "If we have a
 				// mousedrag event, do not send mousemove events to any
 				// item while we're dragging."
@@ -206,13 +218,14 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 				if (!stopped) {
 					if (item !== overItem)
 						overPoint = point;
-					stopped = callEvent(type, event, point, item, overPoint);
+					stopped = callEvent(this, type, event, point, item,
+							overPoint);
 				}
 				lastPoint = overPoint = point;
 				if (item !== overItem) {
-					callEvent('mouseleave', event, point, overItem);
+					callEvent(this, 'mouseleave', event, point, overItem);
 					overItem = item;
-					callEvent('mouseenter', event, point, item);
+					callEvent(this, 'mouseenter', event, point, item);
 				}
 				break;
 			}
