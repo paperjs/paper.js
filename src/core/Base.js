@@ -381,7 +381,8 @@ Base.inject(/** @lends Base# */{
 		 * first
 		 */
 		deserialize: function(json, create, _data) {
-			var res = json;
+			var res = json,
+				isRoot = !_data;
 			// A _data side-car to deserialize that can hold any kind of
 			// 'global' data across a deserialization. It's currently only used
 			// to hold dictionary definitions.
@@ -415,7 +416,7 @@ Base.inject(/** @lends Base# */{
 					// creation. This is used in #importJSON() to pass
 					// on insert = false to all items except layers.
 					if (create) {
-						res = create(type, args);
+						res = create(type, args, isRoot);
 					} else {
 						res = Base.create(type.prototype);
 						type.apply(res, args);
@@ -439,7 +440,7 @@ Base.inject(/** @lends Base# */{
 					typeof json === 'string' ? JSON.parse(json) : json,
 					// Provide our own create function to handle target and
 					// insertion
-					function(type, args) {
+					function(type, args, isRoot) {
 						// If a target is provided and its of the right type,
 						// import right into it.
 						var obj = target && target.constructor === type
@@ -450,7 +451,7 @@ Base.inject(/** @lends Base# */{
 						// we want these to be created on the fly in the active
 						// project into which we're importing (except for if
 						// it's a preexisting target layer).
-						if (args.length === 1 && obj instanceof Item
+						if (!isRoot && args.length === 1 && obj instanceof Item
 								&& (!(obj instanceof Layer) || isTarget)) {
 							var arg = args[0];
 							if (Base.isPlainObject(arg))
