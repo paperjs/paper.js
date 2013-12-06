@@ -10,11 +10,12 @@
 	var count = 150;
 
 	// Create a symbol, which we will use to place instances of later:
-	var path = new Path.Circle(new Point(0, 0), 5);
-	path.style = {
+	var path = new Path.Circle({
+		center: new Point(0, 0),
+		radius: 5,
 		fillColor: 'white',
 		strokeColor: 'black'
-	};
+	});
 
 	var symbol = new Symbol(path);
 
@@ -23,11 +24,11 @@
 		// The center position is a random point in the view:
 		var center = Point.random() * view.size;
 		var placed = symbol.place(center);
-		placed.scale(i / count);
-		placed.data = {};
+		var scale = (i + 1) / count;
+		placed.scale(scale);
 		placed.data.vector = new Point({
 			angle: Math.random() * 360,
-			length : (i / count) * Math.random() / 5
+			length : scale * Math.random() / 5
 		});
 	}
 
