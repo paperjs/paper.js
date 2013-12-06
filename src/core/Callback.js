@@ -84,13 +84,12 @@ var Callback = {
 		function callHandlers() {
 			for (var i in handlers) {
 				// When the handler function returns false, prevent the default
-				// behaviour of the event by calling stop() on it.
+				// behaviour and stop propagation of the event by calling stop()
 				if (handlers[i].apply(that, args) === false
 						&& event && event.stop)
 					event.stop();
 			}
 		}
-
 		// See PaperScript.handleException for an explanation of the following.
 		// Firefox is to blame for the necessity of this... 
 		if (handleException) {
@@ -136,16 +135,19 @@ var Callback = {
 						types[type] = isString ? {} : entry;
 						// Create getters and setters for the property
 						// with the on*-name name:
-						name = '_' + name;
+						// Use '__' as there are some _onMouse* functions
+						// already, e.g.g on View.
+						name = '__' + name;
 						src['get' + part] = function() {
 							return this[name];
 						};
 						src['set' + part] = function(func) {
-							if (func) {
+							// Detach the previous event, if there was one.
+							var prev = this[name];
+							if (prev)
+								this.detach(type, prev);
+							if (func)
 								this.attach(type, func);
-							} else if (this[name]) {
-								this.detach(type, this[name]);
-							}
 							this[name] = func;
 						};
 					});
