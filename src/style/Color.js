@@ -652,7 +652,7 @@ var Color = Base.extend(new function() {
 		},
 
 		/**
-		 * @return {Number[]} the converted components as an array.
+		 * @return {Number[]} the converted components as an array
 		 */
 		_convert: function(type) {
 			var converter;
@@ -666,6 +666,13 @@ var Color = Base.extend(new function() {
 									this._components));
 		},
 
+		/**
+		 * Converts the color another type.
+		 *
+		 * @param {String('rgb', 'gray', 'hsb', 'hsl')} type the color type to
+		 * convert to.
+		 * @return {Color} the converted color as a new instance
+		 */
 		convert: function(type) {
 			return new Color(type, this._convert(type), this._alpha);
 		},
@@ -673,7 +680,7 @@ var Color = Base.extend(new function() {
 		/**
 		 * The type of the color as a string.
 		 *
-		 * @type String('rgb', 'hsb', 'gray')
+		 * @type String('rgb', 'gray', 'hsb', 'hsl')
 		 * @bean
 		 *
 		 * @example
@@ -690,6 +697,13 @@ var Color = Base.extend(new function() {
 			this._type = type;
 		},
 
+		/**
+		 * The color components that define the color, including the alpha value
+		 * if defined.
+		 *
+		 * @type Number[]
+		 * @bean
+		 */
 		getComponents: function() {
 			var components = this._components.slice();
 			if (this._alpha != null)
@@ -786,9 +800,9 @@ var Color = Base.extend(new function() {
 		/**
 		 * Returns the color as a CSS string.
 		 *
-		 * @param {Boolean} hex wether to return the color in hex-representation
-		 * or as a CSS rgb / rgba string.
-		 * @return {String} a css string representation of the color.
+		 * @param {Boolean} hex wether to return the color in hexadecial
+		 * representation or as a CSS RGB / RGBA string.
+		 * @return {String} a CSS string representation of the color.
 		 */
 		toCSS: function(hex) {
 			// TODO: Support HSL / HSLA CSS3 colors directly, without conversion
@@ -812,7 +826,7 @@ var Color = Base.extend(new function() {
 		toCanvasStyle: function(ctx) {
 			if (this._canvasStyle)
 				return this._canvasStyle;
-			// Normal colors are simply represented by their css string.
+			// Normal colors are simply represented by their CSS string.
 			if (this._type !== 'gradient')
 				return this._canvasStyle = this.toCSS();
 			// Gradient code form here onwards
