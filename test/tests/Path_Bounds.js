@@ -74,6 +74,14 @@ test('path.strokeBounds on path without stroke', function() {
 	compareRectangles(path.strokeBounds, { x: 121, y: 275.068, width: 149.49305, height: 145.87682 });
 });
 
+test('path.strokeBounds on path with single segment and stroke color', function() {
+	var path = new Path([
+		new Segment(new Point(121, 334), new Point(-19, 38), new Point(30.7666015625, -61.53369140625))
+	]);
+	path.style.strokeColor = 'black';
+	compareRectangles(path.strokeBounds, { x: 121, y: 334, width: 0, height: 0 });
+});
+
 test('path.bounds & path.strokeBounds with stroke styles', function() {
 	function makePath() {
 		var path = new Path();
