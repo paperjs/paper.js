@@ -148,6 +148,33 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
+	 * Concatenates this transform with a translate transformation.
+	 *
+	 * @name Matrix#translate
+	 * @function
+	 * @param {Point} point the vector to translate by
+	 * @return {Matrix} this affine transform
+	 */
+	/**
+	 * Concatenates this transform with a translate transformation.
+	 *
+	 * @name Matrix#translate
+	 * @function
+	 * @param {Number} dx the distance to translate in the x direction
+	 * @param {Number} dy the distance to translate in the y direction
+	 * @return {Matrix} this affine transform
+	 */
+	translate: function(/* point */) {
+		var point = Point.read(arguments),
+			x = point.x,
+			y = point.y;
+		this._tx += x * this._a + y * this._b;
+		this._ty += x * this._c + y * this._d;
+		this._changed();
+		return this;
+	},
+
+	/**
 	 * Concatenates this transform with a scaling transformation.
 	 *
 	 * @name Matrix#scale
@@ -184,33 +211,6 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * Concatenates this transform with a translate transformation.
-	 *
-	 * @name Matrix#translate
-	 * @function
-	 * @param {Point} point the vector to translate by
-	 * @return {Matrix} this affine transform
-	 */
-	/**
-	 * Concatenates this transform with a translate transformation.
-	 *
-	 * @name Matrix#translate
-	 * @function
-	 * @param {Number} dx the distance to translate in the x direction
-	 * @param {Number} dy the distance to translate in the y direction
-	 * @return {Matrix} this affine transform
-	 */
-	translate: function(point) {
-		point = Point.read(arguments);
-		var x = point.x,
-			y = point.y;
-		this._tx += x * this._a + y * this._b;
-		this._ty += x * this._c + y * this._d;
-		this._changed();
-		return this;
-	},
-
-	/**
 	 * Concatenates this transform with a rotation transformation around an
 	 * anchor point.
 	 *
@@ -233,7 +233,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	rotate: function(angle, center) {
 		center = Point.read(arguments, 1);
-		angle = angle * Math.PI / 180;
+		angle *= Math.PI / 180;
 		// Concatenate rotation matrix into this one
 		var x = center.x,
 			y = center.y,
@@ -260,7 +260,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 *
 	 * @name Matrix#shear
 	 * @function
-	 * @param {Point} point the shear factor in x and y direction
+	 * @param {Point} shear the shear factor in x and y direction
 	 * @param {Point} [center] the center for the shear transformation
 	 * @return {Matrix} this affine transform
 	 */
@@ -274,19 +274,19 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Point} [center] the center for the shear transformation
 	 * @return {Matrix} this affine transform
 	 */
-	shear: function(/* point, center */) {
+	shear: function(/* shear, center */) {
 		// Do not modify point, center, since that would arguments of which
 		// we're reading from!
-		var point = Point.read(arguments),
+		var shear = Point.read(arguments),
 			center = Point.read(arguments, 0, 0, { readNull: true });
 		if (center)
 			this.translate(center);
 		var a = this._a,
 			c = this._c;
-		this._a += point.y * this._b;
-		this._c += point.y * this._d;
-		this._b += point.x * a;
-		this._d += point.x * c;
+		this._a += shear.y * this._b;
+		this._c += shear.y * this._d;
+		this._b += shear.x * a;
+		this._d += shear.x * c;
 		if (center)
 			this.translate(center.negate());
 		this._changed();
