@@ -2673,10 +2673,10 @@ statics: {
 		var point = segment._point,
 			loc = segment.getLocation(),
 			normal;
-        if (!loc) {
-            return;
-        }
-        normal = loc.getNormal().normalize(radius);
+		if (!loc) {
+			return;
+		}
+		normal = loc.getNormal().normalize(radius);
 		if (area) {
 			addPoint(point.subtract(normal));
 			addPoint(point.add(normal));
