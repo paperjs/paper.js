@@ -92,17 +92,21 @@ test('set angle & length', function() {
 });
 
 test('getDirectedAngle(point)', function() {
-	var angle = new Point(10, 10).getDirectedAngle(new Point(1, 0));
-	equals(angle, -45);
+	equals(function() {
+		return new Point(10, 10).getDirectedAngle(new Point(1, 0));
+	}, -45);
 
-	var angle = new Point(-10, 10).getDirectedAngle(new Point(1, 0));
-	equals(angle, -135);
+	equals(function() {
+		return new Point(-10, 10).getDirectedAngle(new Point(1, 0));
+	}, -135);
 
-	var angle = new Point(-10, -10).getDirectedAngle(new Point(1, 0));
-	equals(angle, 135);
+	equals(function() {
+		return new Point(-10, -10).getDirectedAngle(new Point(1, 0));
+	}, 135);
 
-	var angle = new Point(10, -10).getDirectedAngle(new Point(1, 0));
-	equals(angle, 45);
+	equals(function() {
+		return new Point(10, -10).getDirectedAngle(new Point(1, 0));
+	}, 45);
 });
 
 test('equals()', function() {
