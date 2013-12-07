@@ -759,7 +759,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	getPosition: function(/* dontLink */) {
 		// Cache position value.
 		// Pass true for dontLink in getCenter(), so receive back a normal point
-		var position = this._position;
+		var position = this._position,
+			ctor = arguments[0] ? Point : LinkedPoint;
+		// Do not cache LinkedPoints directly, since we would not be able to
+		// use them to calculate the difference in #setPosition, as when it is
+		// modified, it would hold new values already and only then cause the
+		// calling of #setPosition.
 		if (!position) {
 			// If a registration point is provided, use it to determine position
 			// base don the matrix. Otherwise use the center of the bounds.
@@ -768,12 +773,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					? this._matrix._transformPoint(registration)
 					: this.getBounds().getCenter(true);
 		}
-		// Do not cache LinkedPoints directly, since we would not be able to
-		// use them to calculate the difference in #setPosition, as when it is
-		// modified, it would hold new values already and only then cause the
-		// calling of #setPosition.
-		return new (arguments[0] ? Point : LinkedPoint)(
-				position.x, position.y, this, 'setPosition');
+		return new ctor(position.x, position.y, this, 'setPosition');
 	},
 
 	setPosition: function(/* point */) {
@@ -786,11 +786,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_registration: null,
 
 	getRegistration: function(/* dontLink */) {
-		var registration = this._registration;
-		return registration
-				? new (arguments[0] ? Point : LinkedPoint)(
-						registration.x, registration.y, this, 'setRegistration')
-				: null;
+		var reg = this._registration;
+		if (reg) {
+			var ctor = arguments[0] ? Point : LinkedPoint;
+			reg = new ctor(reg.x, reg.y, this, 'setRegistration');
+		}
+		return reg;
 	},
 
 	setRegistration: function(/* point */) {
