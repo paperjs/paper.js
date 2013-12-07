@@ -91,6 +91,14 @@ test('set angle & length', function() {
 	comparePoints(point2, point1);
 });
 
+test('getting angle after x / y change', function() {
+	var vector = new Point(1, 0);
+	equals(vector.angle, 0, 'angle before x / y change');
+	vector.x = 0;
+	vector.y = 1;
+	equals(vector.angle, 90, 'angle after x / y change');
+});
+
 test('getDirectedAngle(point)', function() {
 	equals(function() {
 		return new Point(10, 10).getDirectedAngle(new Point(1, 0));
