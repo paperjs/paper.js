@@ -294,6 +294,34 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
+	 * Concatenates this transform with a skew transformation.
+	 *
+	 * @name Matrix#skew
+	 * @function
+	 * @param {Point} skew the skew angles in x and y direction in degrees
+	 * @param {Point} [center] the center for the skew transformation
+	 * @return {Matrix} this affine transform
+	 */
+	/**
+	 * Concatenates this transform with a skew transformation.
+	 *
+	 * @name Matrix#skew
+	 * @function
+	 * @param {Number} hor the horizontal skew angle in degrees
+	 * @param {Number} ver the vertical skew angle in degrees
+	 * @param {Point} [center] the center for the skew transformation
+	 * @return {Matrix} this affine transform
+	 */
+	skew: function(/* skew, center */) {
+		var skew = Point.read(arguments),
+			center = Point.read(arguments, 0, 0, { readNull: true }),
+			toRadians = Math.PI / 180,
+			shear = new Point(Math.tan(skew.x * toRadians),
+				Math.tan(skew.y * toRadians));
+		return this.shear(shear, center);
+	},
+
+	/**
 	 * Concatenates an affine transform to this transform.
 	 *
 	 * @param {Matrix} mx the transform to concatenate
