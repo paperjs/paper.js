@@ -2018,7 +2018,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		for (var i = 0; i < length; i++)
 			drawSegment(i);
 		// Close path by drawing first segment again
-		if (path._closed && length > 1)
+		if (path._closed)
 			drawSegment(0);
 	}
 
