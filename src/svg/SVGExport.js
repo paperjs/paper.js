@@ -66,10 +66,10 @@ new function() {
 				scale = decomposed.scaling;
 			if (trans && !trans.isZero())
 				parts.push('translate(' + formatter.point(trans) + ')');
-			if (!Numerical.isZero(scale.x - 1) || !Numerical.isZero(scale.y - 1))
-				parts.push('scale(' + formatter.point(scale) +')');
 			if (angle)
 				parts.push('rotate(' + formatter.number(angle) + ')');
+			if (!Numerical.isZero(scale.x - 1) || !Numerical.isZero(scale.y - 1))
+				parts.push('scale(' + formatter.point(scale) +')');
 			attrs.transform = parts.join(' ');
 		} else {
 			attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
