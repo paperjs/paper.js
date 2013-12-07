@@ -2624,7 +2624,7 @@ statics: {
 			addJoin(segments[i], join);
 		if (closed) {
 			addJoin(segments[0], join);
-		} else {
+		} else if (length > 0) {
 			addCap(segments[0], cap);
 			addCap(segments[segments.length - 1], cap);
 		}
@@ -2672,11 +2672,7 @@ statics: {
 		// Calculate the corner points of butt and square caps
 		var point = segment._point,
 			loc = segment.getLocation(),
-			normal;
-		if (!loc) {
-			return;
-		}
-		normal = loc.getNormal().normalize(radius);
+			normal = loc.getNormal().normalize(radius);
 		if (area) {
 			addPoint(point.subtract(normal));
 			addPoint(point.add(normal));
