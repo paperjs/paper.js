@@ -2361,10 +2361,76 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Color
 	 */
 
-	// DOCS: Document the different arguments that this function can receive.
 	/**
 	 * {@grouptitle Transform Functions}
 	 *
+	 * Translates (moves) the item by the given offset point.
+	 *
+	 * @param {Point} delta the offset to translate the item by
+	 */
+	translate: function(/* delta */) {
+		var mx = new Matrix();
+		return this.transform(mx.translate.apply(mx, arguments));
+	},
+
+	/**
+	 * Rotates the item by a given angle around the given point.
+	 *
+	 * Angles are oriented clockwise and measured in degrees.
+	 *
+	 * @param {Number} angle the rotation angle
+	 * @param {Point} [center={@link Item#position}]
+	 * @see Matrix#rotate
+	 *
+	 * @example {@paperscript}
+	 * // Rotating an item:
+	 *
+	 * // Create a rectangle shaped path with its top left
+	 * // point at {x: 80, y: 25} and a size of {width: 50, height: 50}:
+	 * var path = new Path.Rectangle(new Point(80, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+     *
+	 * // Rotate the path by 30 degrees:
+	 * path.rotate(30);
+	 *
+	 * @example {@paperscript height=200}
+	 * // Rotating an item around a specific point:
+	 *
+	 * // Create a rectangle shaped path with its top left
+	 * // point at {x: 175, y: 50} and a size of {width: 100, height: 100}:
+	 * var topLeft = new Point(175, 50);
+	 * var size = new Size(100, 100);
+	 * var path = new Path.Rectangle(topLeft, size);
+	 * path.fillColor = 'black';
+	 *
+	 * // Draw a circle shaped path in the center of the view,
+	 * // to show the rotation point:
+	 * var circle = new Path.Circle({
+	 * 	center: view.center,
+	 * 	radius: 5,
+	 * 	fillColor: 'white'
+	 * });
+	 *
+	 * // Each frame rotate the path 3 degrees around the center point
+	 * // of the view:
+	 * function onFrame(event) {
+	 * 	path.rotate(3, view.center);
+	 * }
+	 */
+	rotate: function(angle, center) {
+		return this.transform(new Matrix().rotate(angle,
+				center || this.getPosition(true)));
+	}
+}, Base.each(['scale', 'shear', 'skew'], function(name) {
+	this[name] = function() {
+		// See Matrix#scale for explanation of this:
+		var point = Point.read(arguments),
+			center = Point.read(arguments, 0, 0, { readNull: true });
+		return this.transform(new Matrix()[name](point,
+				center || this.getPosition(true)));
+	};
+}, /** @lends Item# */{
+	/**
 	 * Scales the item by the given value from its center point, or optionally
 	 * from a supplied point.
 	 *
@@ -2425,74 +2491,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Scale the path horizontally by 300%
 	 * circle.scale(3, 1);
 	 */
-	scale: function(hor, ver /* | scale */, center) {
-		// See Matrix#scale for explanation of this:
-		if (arguments.length < 2 || typeof ver === 'object') {
-			center = ver;
-			ver = hor;
-		}
-		return this.transform(new Matrix().scale(hor, ver,
-				center || this.getPosition(true)));
-	},
-
-	/**
-	 * Translates (moves) the item by the given offset point.
-	 *
-	 * @param {Point} delta the offset to translate the item by
-	 */
-	translate: function(/* delta */) {
-		var mx = new Matrix();
-		return this.transform(mx.translate.apply(mx, arguments));
-	},
-
-	/**
-	 * Rotates the item by a given angle around the given point.
-	 *
-	 * Angles are oriented clockwise and measured in degrees.
-	 *
-	 * @param {Number} angle the rotation angle
-	 * @param {Point} [center={@link Item#position}]
-	 * @see Matrix#rotate
-	 *
-	 * @example {@paperscript}
-	 * // Rotating an item:
-	 *
-	 * // Create a rectangle shaped path with its top left
-	 * // point at {x: 80, y: 25} and a size of {width: 50, height: 50}:
-	 * var path = new Path.Rectangle(new Point(80, 25), new Size(50, 50));
-	 * path.fillColor = 'black';
-     *
-	 * // Rotate the path by 30 degrees:
-	 * path.rotate(30);
-	 *
-	 * @example {@paperscript height=200}
-	 * // Rotating an item around a specific point:
-	 *
-	 * // Create a rectangle shaped path with its top left
-	 * // point at {x: 175, y: 50} and a size of {width: 100, height: 100}:
-	 * var topLeft = new Point(175, 50);
-	 * var size = new Size(100, 100);
-	 * var path = new Path.Rectangle(topLeft, size);
-	 * path.fillColor = 'black';
-	 *
-	 * // Draw a circle shaped path in the center of the view,
-	 * // to show the rotation point:
-	 * var circle = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 5,
-	 * 	fillColor: 'white'
-	 * });
-	 *
-	 * // Each frame rotate the path 3 degrees around the center point
-	 * // of the view:
-	 * function onFrame(event) {
-	 * 	path.rotate(3, view.center);
-	 * }
-	 */
-	rotate: function(angle, center) {
-		return this.transform(new Matrix().rotate(angle,
-				center || this.getPosition(true)));
-	},
 
 	// TODO: Add test for item shearing, as it might be behaving oddly.
 	/**
@@ -2501,7 +2499,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @name Item#shear
 	 * @function
-	 * @param {Point} point
+	 * @param {Point} shear the horziontal and vertical shear factors as a point
 	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#shear
 	 */
@@ -2511,21 +2509,34 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @name Item#shear
 	 * @function
-	 * @param {Number} hor the horizontal shear factor.
-	 * @param {Number} ver the vertical shear factor.
+	 * @param {Number} hor the horizontal shear factor
+	 * @param {Number} ver the vertical shear factor
 	 * @param {Point} [center={@link Item#position}]
 	 * @see Matrix#shear
 	 */
-	shear: function(hor, ver, center) {
-		// See Matrix#scale for explanation of this:
-		if (arguments.length < 2 || typeof ver === 'object') {
-			center = ver;
-			ver = hor;
-		}
-		return this.transform(new Matrix().shear(hor, ver,
-				center || this.getPosition(true)));
-	},
 
+	/**
+	 * Skews the item by the given angles from its center point, or optionally
+	 * by a supplied point.
+	 *
+	 * @name Item#skew
+	 * @function
+	 * @param {Point} skew  the horziontal and vertical skew angles in degrees
+	 * @param {Point} [center={@link Item#position}]
+	 * @see Matrix#shear
+	 */
+	/**
+	 * Skews the item by the given angles from its center point, or optionally
+	 * by a supplied point.
+	 *
+	 * @name Item#skew
+	 * @function
+	 * @param {Number} hor the horizontal skew angle in degrees
+	 * @param {Number} ver the vertical sskew angle in degrees
+	 * @param {Point} [center={@link Item#position}]
+	 * @see Matrix#shear
+	 */
+}), /** @lends Item# */{
 	/**
 	 * Transform the item.
 	 *
