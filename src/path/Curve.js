@@ -1391,48 +1391,44 @@ new function() { // Scope for methods that require numerical integration
 			// Find signed distance of p1 and p2 from line [ p0, p3 ]
 			getSignedDistance = Line.getSignedDistance,
 			dist1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
-			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2);
+			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2), hull;
 		// Check if p1 and p2 are on the same side of the line [ p0, p3 ]
 		if (dist1 * dist2 < 0) {
 			// p1 and p2 lie on different sides of [ p0, p3 ]. The hull is a
 			// quadrilateral and line [ p0, p3 ] is NOT part of the hull so we
 			// are pretty much done here.
-			// return [ p0, p1, p3, p2 ];
-			return dist1 < 0
-					// the top part includes p2
-					? [[p0, p2, p3], [p0, p1, p3]]
-					// the top part includes p1
-					: [[p0, p1, p3], [p0, p2, p3]];
-		}
-		// p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
-		// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
-		// hull. Check if the hull is a triangle or a quadrilateral.
-		var pmax, cross;
-		if (Math.abs(dist1) > Math.abs(dist2)) {
-			pmax = p1;
-			// apex is dq3 and the other apex point is dq0 vector
-			// dqapex->dqapex2 or base vector which is already part of the hull.
-			// cross = (vqa1a2X * vqa1MinY - vqa1a2Y * vqa1MinX)
-			//		* (vqa1MaxX * vqa1MinY - vqa1MaxY * vqa1MinX)
-			cross = (dq3 - dq2 - (dq3 - dq0) / 3)
-					* (2 * (dq3 - dq2) - dq3 + dq1) / 3;
+			// The top part includes p1, 
+			// we will reverse it later if that is not the case
+			hull = [[p0, p1, p3], [p0, p2, p3]];
 		} else {
-			pmax = p2;
-			// apex is dq0 in this case, and the other apex point is dq3 vector
-			// dqapex->dqapex2 or base vector which is already part of the hull.
-			cross = (dq1 - dq0 + (dq0 - dq3) / 3)
-					* (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
+			// p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
+			// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
+			// hull. Check if the hull is a triangle or a quadrilateral.
+			var pmax, cross;
+			if (Math.abs(dist1) > Math.abs(dist2)) {
+				pmax = p1;
+				// apex is dq3 and the other apex point is dq0 vector
+				// dqapex->dqapex2 or base vector which is already part of the hull.
+				cross = (dq3 - dq2 - (dq3 - dq0) / 3)
+						* (2 * (dq3 - dq2) - dq3 + dq1) / 3;
+			} else {
+				pmax = p2;
+				// apex is dq0 in this case, and the other apex point is dq3 vector
+				// dqapex->dqapex2 or base vector which is already part of the hull.
+				cross = (dq1 - dq0 + (dq0 - dq3) / 3)
+						* (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
+			}
+			// Compare cross products of these vectors to determine if the point is
+			// in the triangle [ p3, pmax, p0 ], or if it is a quadrilateral.
+			hull = cross < 0
+					// p2 is inside the triangle, hull is a triangle.
+					? [[p0, pmax, p3], [p0, p3]]
+					// Convexhull is a quadrilateral and we need all lines in the
+					// correct order where line [ p0, p3 ] is part of the hull.
+					: [[p0, p1, p2, p3],  [p0, p3]];
 		}
-		// Compare cross products of these vectors to determine if the point is
-		// in the triangle [ p3, pmax, p0 ], or if it is a quadrilateral.
-		return cross < 0
-				// p2 is inside the triangle, hull is a triangle.
-				// ? [p0, pmax, p3]
-				? (dist1 < 0 ? [[p0, p3], [p0, pmax, p3]] : [[p0, pmax, p3], [p0, p3]])
-				// Convexhull is a quadrilateral and we need all lines in the
-				// correct order where line [ p0, p3 ] is part of the hull.
-				// : [ p0, p1, p2, p3 ];
-				: (dist1 < 0 ? [[p0, p3],  [p0, p1, p2, p3]] : [[p0, p1, p2, p3],  [p0, p3]]);
+
+		return (dist1 < 0)? hull.reverse() : hull;
 	}
 
 	/**
