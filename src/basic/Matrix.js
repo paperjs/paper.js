@@ -522,9 +522,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 
 	/**
 	 * Attempts to decompose the affine transformation described by this matrix
-	 * into {@code translation}, {@code scaling}, {@code rotation} and
-	 * {@code shearing}, and returns an object with these properties if it
-	 * succeeded, {@code null} otherwise.
+	 * into {@code scaling}, {@code rotation} and {@code shearing}, and returns
+	 * an object with these properties if it succeeded, {@code null} otherwise.
 	 *
 	 * @return {Object} the decomposed matrix, or {@code null} if decomposition
 	 * is not possible.
@@ -562,7 +561,6 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		}
 
 		return {
-			translation: this.getTranslation(),
 			scaling: new Point(scaleX, scaleY),
 			rotation: -Math.atan2(b, a) * 180 / Math.PI,
 			shearing: shear
@@ -635,15 +633,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @bean
 	 */
 	getTranslation: function() {
-		// No decomposition is required to extract translation, so treat this
+		// No decomposition is required to extract translation.
 		return new Point(this._tx, this._ty);
-	},
-
-	setTranslation: function(/* point */) {
-		var point = Point.read(arguments);
-		this._tx = point.x;
-		this._ty = point.y;
-		this._changed();
 	},
 
 	/**
@@ -657,15 +648,6 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		return (this.decompose() || {}).scaling;
 	},
 
-	setScaling: function(/* scale */) {
-		var scaling = this.getScaling();
-		if (scaling != null) {
-			var scale = Point.read(arguments);
-			(this._owner || this).scale(
-					scale.x / scaling.x, scale.y / scaling.y);
-		}
-	},
-
 	/**
 	 * The rotation angle of the matrix, if it can be decomposed.
 	 *
@@ -675,12 +657,6 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	getRotation: function() {
 		return (this.decompose() || {}).rotation;
-	},
-
-	setRotation: function(angle) {
-		var rotation = this.getRotation();
-		if (rotation != null)
-			(this._owner || this).rotate(angle - rotation);
 	},
 
 	/**

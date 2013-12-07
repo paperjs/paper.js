@@ -963,6 +963,39 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 }), /** @lends Item# */{
 	/**
+	 * The current scaling of the item, as described by its {@link #matrix}.
+	 *
+	 * @type Point
+	 * @bean
+	 */
+	getScaling: function() {
+		return this._matrix.getScaling();
+	},
+
+	setScaling: function(/* scale */) {
+		var scaling = this.getScaling();
+		if (scaling != null) {
+			var scale = Point.read(arguments);
+			this.scale(scale.x / scaling.x, scale.y / scaling.y);
+		}
+	},
+
+	/**
+	 * The current rotation of the item, as described by its {@link #matrix}.
+	 *
+	 * @type Number
+	 * @bean
+	 */
+	getRotation: function() {
+		return this._matrix.getRotation();
+	},
+
+	setRotation: function(rotation) {
+		if (rotation != null)
+			this.rotate(rotation - this.getRotation());
+	},
+
+	/**
 	 * The item's transformation matrix, defining position and dimensions in
 	 * relation to its parent item in which it is contained.
 	 *
@@ -997,7 +1030,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	/**
 	 * Specifies whether the group applies transformations directly to its
-	 * children, or whether they are to be stored in its {@link Item#matrix}
+	 * children, or whether they are to be stored in its {@link #matrix}
 	 *
 	 * @type Boolean
 	 * @default true
