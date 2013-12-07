@@ -570,44 +570,48 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * The value at position (0, 0) in the transformation matrix.
+	 * The value that affects the transformation along the x axis when scaling
+	 * or rotating, positioned at (0, 0) in the transformation matrix.
 	 *
 	 * @name Matrix#a
 	 * @type Number
 	 */
 
 	/**
-	 * The value at position (1, 0) in the transformation matrix.
+	 * The value that affects the transformation along the y axis when rotating
+	 * or skewing, positioned at (1, 0) in the transformation matrix.
 	 *
 	 * @name Matrix#c
 	 * @type Number
 	 */
 
 	/**
-	 * The value at position (0, 1) in the transformation matrix.
+	 * The value that affects the transformation along the x axis when rotating
+	 * or skewing, positioned at (0, 1) in the transformation matrix.
 	 *
 	 * @name Matrix#b
 	 * @type Number
 	 */
 
 	/**
-	 * The value at position (1, 1) in the transformation matrix.
+	 * The value that affects the transformation along the y axis when scaling
+	 * or rotating, positioned at (1, 1) in the transformation matrix.
 	 *
 	 * @name Matrix#d
 	 * @type Number
 	 */
 
 	/**
-	 * The value at position (2, 0) in the transformation matrix, corresponding
-	 * to the translation in the x-direction.
+	 * The distance by which to translate along the x axis, positioned at (2, 0)
+	 * in the transformation matrix.
 	 *
 	 * @name Matrix#tx
 	 * @type Number
 	 */
 
 	/**
-	 * The value at position (2, 1) in the transformation matrix, corresponding
-	 * to the translation in the y-direction.
+	 * The distance by which to translate along the y axis, positioned at (2, 1)
+	 * in the transformation matrix.
 	 *
 	 * @name Matrix#ty
 	 * @type Number
