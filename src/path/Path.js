@@ -2609,14 +2609,10 @@ statics: {
 		}
 
 		function addCap(segment, cap) {
-			switch (cap) {
-			case 'round':
+			if (cap === 'round') {
 				addJoin(segment, cap);
-				break;
-			case 'butt':
-			case 'square':
+			} else {
 				Path._addSquareCap(segment, cap, radius, add); 
-				break;
 			}
 		}
 
