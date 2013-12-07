@@ -48,6 +48,17 @@ test('group.bounds when group contains empty group', function() {
 	compareRectangles(group.bounds, { x: 75, y: 75, width: 100, height: 100 }, 'group.bounds with empty group');
 });
 
+test('group.bounds and position after children were modified', function() {
+	var group = new Group();
+	var rectangle = new Path.Rectangle(new Point(100, 100), new Point(200, 200));
+	group.addChild(rectangle);
+	compareRectangles(group.bounds, { x: 100, y: 100, width: 100, height: 100 }, 'group.bounds before change');
+	comparePoints(group.position, { x: 150, y: 150 }, 'group.position before change');
+	rectangle.firstSegment.point = [0, 0];
+	compareRectangles(group.bounds, { x: 0, y: 0, width: 200, height: 200 }, 'group.bounds after change');
+	comparePoints(group.position, { x: 100, y: 100 }, 'group.position after change');
+});
+
 test('path.bounds when contained in a transformed group', function() {
 	var path = new Path([10, 10], [60, 60]);
 	var group = new Group([path]);
