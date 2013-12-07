@@ -2672,7 +2672,11 @@ statics: {
 		// Calculate the corner points of butt and square caps
 		var point = segment._point,
 			loc = segment.getLocation(),
-			normal = loc.getNormal().normalize(radius);
+			normal;
+        if (!loc) {
+            return;
+        }
+        normal = loc.getNormal().normalize(radius);
 		if (area) {
 			addPoint(point.subtract(normal));
 			addPoint(point.add(normal));
