@@ -332,8 +332,9 @@ new function() {
 				matrix.scale(v);
 				break;
 			case 'skewX':
+				matrix.skew(v[0], 0);
 			case 'skewY':
-				matrix.skew(isX ? v[0] : 0, isX ? 0 : v[0]);
+				matrix.skew(0, v[0]);
 				break;
 			}
 		}
