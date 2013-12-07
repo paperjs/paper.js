@@ -1378,6 +1378,10 @@ new function() { // Scope for methods that require numerical integration
 	 * di(t), [dq0, dq1, dq2, dq3] respectively. In other words our CVs for the
 	 * curve are already sorted in the X axis in the increasing order.
 	 * Calculating convex-hull is much easier than a set of arbitrary points.
+	 *
+	 * The convex-hull is returned as two parts [TOP, BOTTOM]:
+	 *		part that lies above the 'median' (line connecting end points of the curve)
+	 * 		and part that lies below the median.
 	 */
 	function getConvexHull(dq0, dq1, dq2, dq3) {
 		var p0 = [ 0, dq0 ],
@@ -1393,7 +1397,12 @@ new function() { // Scope for methods that require numerical integration
 			// p1 and p2 lie on different sides of [ p0, p3 ]. The hull is a
 			// quadrilateral and line [ p0, p3 ] is NOT part of the hull so we
 			// are pretty much done here.
-			return [ p0, p1, p3, p2 ];
+			// return [ p0, p1, p3, p2 ];
+			return dist1 < 0
+					// the top part includes p2
+					? [[p0, p2, p3], [p0, p1, p3]]
+					// the top part includes p1
+					: [[p0, p1, p3], [p0, p2, p3]];
 		}
 		// p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
 		// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
@@ -1418,10 +1427,18 @@ new function() { // Scope for methods that require numerical integration
 		// in the triangle [ p3, pmax, p0 ], or if it is a quadrilateral.
 		return cross < 0
 				// p2 is inside the triangle, hull is a triangle.
-				? [ p0, pmax, p3 ]
+				// ? [p0, pmax, p3]
+				? (dist1 < 0 ? [[p0, p3], [p0, pmax, p3]] : [[p0, pmax, p3], [p0, p3]])
 				// Convexhull is a quadrilateral and we need all lines in the
-				// correct order where line [ p1, p3 ] is part of the hull.
-				: [ p0, p1, p2, p3 ];
+				// correct order where line [ p0, p3 ] is part of the hull.
+				// : [ p0, p1, p2, p3 ];
+				: (dist1 < 0 ? [[p0, p3],  [p0, p1, p2, p3]] : [[p0, p1, p2, p3],  [p0, p3]]);
+	}
+
+	/**
+	 * Clips the convex-hull and returns [tmin, tmax] for the curve contained
+	 */
+	function clipConvexHull (hull, dmin, dmax) {
 	}
 /*#*/ } // __options.fatline
 
@@ -1521,6 +1538,8 @@ new function() { // Scope for methods that require numerical integration
 			if (c1p2.isClose(c2p2, tolerance))
 				addLocation(locations, curve1, 1, c1p2, curve2, 1, c1p2);
 			return locations;
-		}
+		},
+
+		getConvexHull: getConvexHull
 	}};
 });
