@@ -333,6 +333,7 @@ new function() {
 				break;
 			case 'skewX':
 				matrix.skew(v[0], 0);
+				break;
 			case 'skewY':
 				matrix.skew(0, v[0]);
 				break;
