@@ -864,10 +864,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					i < l; i++) {
 				var item = list[i];
 				delete item._bounds;
+				// Delete position as well, since it's depending on bounds.
+				delete item._position;
 				// We need to recursively call _clearBoundsCache, because if the
 				// cache for this item's children is not valid anymore, that
 				// propagates up the DOM tree.
-				if (item != this && item._boundsCache)
+				if (item !== this && item._boundsCache)
 					item._clearBoundsCache();
 			}
 			delete this._boundsCache;
