@@ -67,14 +67,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		var locations = [],
 			curves1 = this.getCurves(),
 			curves2 = path.getCurves(),
-			matrix1 = this._matrix,
-			matrix2 = path._matrix,
+			matrix1 = this._matrix.orNullIfIdentity(),
+			matrix2 = path._matrix.orNullIfIdentity(),
 			length2 = curves2.length,
 			values2 = [];
-		if (matrix1.isIdentity())
-			matrix1 = null;
-		if (matrix2.isIdentity())
-			matrix2 = null;
 		for (var i = 0; i < length2; i++)
 			values2[i] = curves2[i].getValues(matrix2);
 		for (var i = 0, l = curves1.length; i < l; i++) {

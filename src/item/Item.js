@@ -829,7 +829,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// See if we can cache these bounds. We only cache the bounds
 		// transformed with the internally stored _matrix, (the default if no
 		// matrix is passed).
-		var _matrix = this._matrix,
+		matrix = matrix && matrix.orNullIfIdentity();
+		var _matrix = this._matrix.orNullIfIdentity(),
 			cache = (!matrix || matrix.equals(_matrix)) && getter;
 		// Set up a boundsCache structure that keeps track of items that keep
 		// cached bounds that depend on this item. We store this in our parent,
@@ -862,9 +863,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// If the result of concatinating the passed matrix with our internal
 		// one is an identity transformation, set it to null for faster
 		// processing
-		if (_matrix.isIdentity())
-			_matrix = null;
-		matrix = !matrix || matrix.isIdentity()
+		matrix = !matrix
 				? _matrix
 				: _matrix
 					? matrix.clone().concatenate(_matrix)
