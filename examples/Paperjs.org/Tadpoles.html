@@ -43,22 +43,22 @@
 					shortSegments = this.shortPath.segments;
 				var speed = this.vector.length;
 				var pieceLength = 5 + speed * 0.3;
-				var point = this.position.clone();
+				var point = this.position;
 				segments[0].point = shortSegments[0].point = point;
 				// Chain goes the other way than the movement
 				var lastVector = -this.vector;
 				for (var i = 1; i < this.amount; i++) {
 					var vector = segments[i].point - point;
-					var sideways = lastVector.rotate(90);
 					this.count += speed * 15;
-					sideways.length = Math.sin((this.count + i * 3) * 0.003);
-					lastVector.length = pieceLength;
-					point += lastVector + sideways;
+					var wave = Math.sin((this.count + i * 3) * 0.003);
+					var sway = lastVector.rotate(90).normalize(wave);
+					point += lastVector.normalize(pieceLength) + sway;
 					segments[i].point = point;
 					if (i < 3)
 						shortSegments[i].point = point;
 					lastVector = vector;
 				}
+				// this.path.smooth();
 			},
 
 			createItems: function() {
