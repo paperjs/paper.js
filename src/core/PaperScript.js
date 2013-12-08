@@ -323,8 +323,8 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 					});
 					if (onFrame)
 						view.setOnFrame(onFrame);
-					// Automatically draw view at the end.
-					view.draw();
+					// Automatically update view at the end.
+					view.update();
 				}
 			}).call(scope);
 		}

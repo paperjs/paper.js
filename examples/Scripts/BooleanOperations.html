@@ -276,7 +276,7 @@
 		// console.timeEnd('unite');
 		// // nup.style = booleanStyle;
 
-		// view.draw();
+		// view.update();
 	}
 
 	var booleanStyle = {
@@ -309,7 +309,7 @@
 			var boolPathU = _p1U.unite(_p2U);
 			console.timeEnd('Union');
 			boolPathU.style = booleanStyle;
-			view.draw();
+			view.update();
 		}
 
 		if (operations.intersection) {
@@ -320,7 +320,7 @@
 			var boolPathI = _p1I.intersect(_p2I);
 			console.timeEnd('Intersection');
 			boolPathI.style = booleanStyle;
-			view.draw();
+			view.update();
 		}
 
 		if (operations.subtraction) {
@@ -331,7 +331,7 @@
 			var boolPathS = _p1S.subtract(_p2S);
 			console.timeEnd('Subtraction');
 			boolPathS.style = booleanStyle;
-			view.draw();
+			view.update();
 		}
 
 		if (operations.exclusion) {
@@ -342,7 +342,7 @@
 			var boolPathE = _p1E.exclude(_p2E);
 			console.timeEnd('Exclusion');
 			boolPathE.style = booleanStyle;
-			view.draw();
+			view.update();
 		}
 
 		if (operations.division) {
@@ -354,7 +354,7 @@
 			console.timeEnd('Division');
 			disperse(boolPathD);
 			boolPathD.style = booleanStyle;
-			view.draw();
+			view.update();
 		}
 	}
 

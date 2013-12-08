@@ -231,7 +231,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		if (project) {
 			if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
-				project._needsRedraw = true;
+				project._needsUpdate = true;
 			}
 			// Have project keep track of changed items so they can be iterated.
 			// This can be used for example to update the SVG tree. Needs to be

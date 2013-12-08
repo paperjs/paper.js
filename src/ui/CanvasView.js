@@ -78,12 +78,12 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	},
 
 	/**
-	 * Draws the view.
+	 * Updates the view if there are changes.
 	 *
 	 * @function
 	 */
-	draw: function(checkRedraw) {
-		if (checkRedraw && !this._project._needsRedraw)
+	update: function() {
+		if (!this._project._needsUpdate)
 			return false;
 		// Initial tests conclude that clearing the canvas using clearRect
 		// is always faster than setting canvas.width = canvas.width
@@ -92,7 +92,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			size = this._viewSize;
 		ctx.clearRect(0, 0, size.width + 1, size.height + 1);
 		this._project.draw(ctx, this._matrix, this._ratio);
-		this._project._needsRedraw = false;
+		this._project._needsUpdate = false;
 		return true;
 	}
 }, new function() { // Item based mouse handling:

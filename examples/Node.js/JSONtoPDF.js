@@ -9,7 +9,7 @@ with (paper) {
 		if (err)
 			throw err; 
 		project.importJSON(data);
-		view.draw();
+		view.update();
 		fs.writeFile(path.resolve(__dirname, 'out.pdf'), canvas.toBuffer(), function (err) {
 			if (err)
 				throw err;

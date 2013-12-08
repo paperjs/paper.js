@@ -530,7 +530,7 @@ new function() {
 				view = scope.project && scope.project.view;
 			if (onLoad)
 				onLoad.call(this, item);
-			view.draw(true);
+			view.update();
 		}
 
 		if (isRoot) {
