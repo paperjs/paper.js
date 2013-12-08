@@ -1323,107 +1323,81 @@ new function() { // Scope for methods that require numerical integration
 	 * @param {Array} v2 section of the second curve; we will clip this curve
 	 * with the fat-line of v1
 	 * @param {Array} range2 the parameter range of v2
-	 * @return {Number} 0: no Intersection, 1: one intersection, -1: more than
-	 * one ntersection
+	 * @return {Number} 0: no Intersection, 1: one or more intersection
 	 */
-	function clipFatLine(v1, v2, range2) {
-		// P = first curve, Q = second curve
-		var p0x = v1[0], p0y = v1[1], p1x = v1[2], p1y = v1[3],
-			p2x = v1[4], p2y = v1[5], p3x = v1[6], p3y = v1[7],
-			q0x = v2[0], q0y = v2[1], q1x = v2[2], q1y = v2[3],
-			q2x = v2[4], q2y = v2[5], q3x = v2[6], q3y = v2[7],
+	function clipFatLine(v1, v2, tRangeV2) {
+		function clipCHull(hull_top, hull_bottom, dmin, dmax) {
+			var tProxy, tVal = null, i, li, px, py, qx, qy;
+			for (i = 0, li = hull_bottom.length-1; i < li; i++) {
+				py = hull_bottom[i][1];
+				qy = hull_bottom[i+1][1];
+				if (py < qy)
+					tProxy = null;
+				else if (qy <= dmax) {
+					px = hull_bottom[i][0];
+					qx = hull_bottom[i+1][0];
+					tProxy = px + (dmax  - py) * (qx - px) / (qy - py);
+				} else
+					// Try the next chain
+					continue;
+				// We got a proxy-t;
+				break;
+			}
+			if (hull_top[0][1] <= dmax)
+				tProxy = hull_top[0][0];
+			for (i = 0, li = hull_top.length-1; i < li; i++) {
+				py = hull_top[i][1];
+				qy = hull_top[i+1][1];
+				if (py >= dmin)
+					tVal = tProxy;
+				else if (py > qy)
+					tVal = null;
+				else if (qy >= dmin) {
+					px = hull_top[i][0];
+					qx = hull_top[i+1][0];
+					tVal = px + (dmin  - py) * (qx - px) / (qy - py);
+				} else
+					continue;
+				break;
+			}
+			return tVal;
+		}
+		// Let P be the first curve and Q be the second
+		var p0x = v1[0], p0y = v1[1], p3x = v1[6], p3y = v1[7],
 			getSignedDistance = Line.getSignedDistance,
 			// Calculate the fat-line L for P is the baseline l and two
 			// offsets which completely encloses the curve P.
-			d1 = getSignedDistance(p0x, p0y, p3x, p3y, p1x, p1y) || 0,
-			d2 = getSignedDistance(p0x, p0y, p3x, p3y, p2x, p2y) || 0,
+			d1 = getSignedDistance(p0x, p0y, p3x, p3y, v1[2], v1[3]) || 0,
+			d2 = getSignedDistance(p0x, p0y, p3x, p3y, v1[4], v1[5]) || 0,
 			factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
 			dmin = factor * Math.min(0, d1, d2),
 			dmax = factor * Math.max(0, d1, d2),
 			// Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
 			// distance of Q from the baseline l of the fat-line, ti is equally
 			// spaced in [0, 1]
-			dq0 = getSignedDistance(p0x, p0y, p3x, p3y, q0x, q0y),
-			dq1 = getSignedDistance(p0x, p0y, p3x, p3y, q1x, q1y),
-			dq2 = getSignedDistance(p0x, p0y, p3x, p3y, q2x, q2y),
-			dq3 = getSignedDistance(p0x, p0y, p3x, p3y, q3x, q3y);
-		// Find the minimum and maximum distances from l, this is useful for
-		// checking whether the curves intersect with each other or not.
-		// If the fatlines don't overlap, we have no intersections!
-		if (dmin > Math.max(dq0, dq1, dq2, dq3)
-				|| dmax < Math.min(dq0, dq1, dq2, dq3))
-			return 0;
+			dq0 = getSignedDistance(p0x, p0y, p3x, p3y, v2[0], v2[1]),
+			dq1 = getSignedDistance(p0x, p0y, p3x, p3y, v2[2], v2[3]),
+			dq2 = getSignedDistance(p0x, p0y, p3x, p3y, v2[4], v2[5]),
+			dq3 = getSignedDistance(p0x, p0y, p3x, p3y, v2[6], v2[7]);
+		// Get the top and bottom parts of the convex-hull
 		var hull = getConvexHull(dq0, dq1, dq2, dq3),
-			swap;
-		if (dq3 < dq0) {
-			swap = dmin;
-			dmin = dmax;
-			dmax = swap;
-		}
-		// Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
-		// Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
-		// for the coorresponding t values (tmin, tmax): Portions of curve v2
-		// before tmin and after tmax can safely be clipped away.
-		var tmaxdmin = -Infinity,
-			tmin = Infinity,
-			tmax = -Infinity;
-		for (var i = 0, l = hull.length; i < l; i++) {
-			var p1 = hull[i],
-				p2 = hull[(i + 1) % l];
-			if (p2[1] < p1[1]) {
-				swap = p2;
-				p2 = p1;
-				p1 = swap;
-			}
-			var	x1 = p1[0],
-				y1 = p1[1],
-				x2 = p2[0],
-				y2 = p2[1];
-			// We know that (x2 - x1) is never 0
-			var inv = (y2 - y1) / (x2 - x1);
-			if (dmin >= y1 && dmin <= y2) {
-				var ixdx = x1 + (dmin - y1) / inv;
-				if (ixdx < tmin)
-					tmin = ixdx;
-				if (ixdx > tmaxdmin)
-					tmaxdmin = ixdx;
-			}
-			if (dmax >= y1 && dmax <= y2) {
-				var ixdx = x1 + (dmax - y1) / inv;
-				if (ixdx > tmax)
-					tmax = ixdx;
-				if (ixdx < tmin)
-					tmin = 0;
-			}
-		}
-		// Return the parameter values for v2 for which we can be sure that the
-		// intersection with v1 lies within.
-		if (tmin !== Infinity && tmax !== -Infinity) {
-			var min = Math.min(dmin, dmax),
-				max = Math.max(dmin, dmax);
-			if (dq3 > min && dq3 < max)
-				tmax = 1;
-			if (dq0 > min && dq0 < max)
-				tmin = 0;
-			if (tmaxdmin > tmax)
-				tmax = 1;
-			// tmin and tmax are within the range (0, 1). We need to project it
-			// to the original parameter range for v2.
-			var v2tmin = range2[0],
-				tdiff = range2[1] - v2tmin;
-			range2[0] = v2tmin + tmin * tdiff;
-			range2[1] = v2tmin + tmax * tdiff;
-			// If the new parameter range fails to converge by atleast 20% of
-			// the original range, possibly we have multiple intersections.
-			// We need to subdivide one of the curves.
-			if ((tdiff - (range2[1] - range2[0])) / tdiff >= 0.2)
-				return 1;
-		}
-		// TODO: Try checking with a perpendicular fatline to see if the curves
-		// overlap if it is any faster than this
-		if (Curve.getBounds(v1).touches(Curve.getBounds(v2)))
-			return -1;
-		return 0;
+			top = hull[0], bottom = hull[1], tmin, tmax;
+
+		tmin = clipCHull(top, bottom, dmin, dmax);
+		top.reverse();
+		bottom.reverse();
+		tmax = clipCHull(top, bottom, dmin, dmax);
+		// No intersections if one of the tvalues are null
+		if(tmin == null || tmax == null)
+			return 0;
+		// tmin and tmax are within the range (0, 1). We need to project it
+		// to the original parameter range for v2.
+		var v2tmin = tRangeV2[0],
+				tdiff = tRangeV2[1] - v2tmin;
+			tRangeV2[0] = v2tmin + tmin * tdiff;
+			tRangeV2[1] = v2tmin + tmax * tdiff;
+
+		return 1;
 	}
 
 	/**
@@ -1533,7 +1507,6 @@ new function() { // Scope for methods that require numerical integration
 		top.reverse();
 		bottom.reverse();
 		tmax = clipCHull(top, bottom, dmin, dmax);
-
 		return [tmin, tmax];
 	}
 /*#*/ } // __options.fatline
