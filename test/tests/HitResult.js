@@ -619,4 +619,21 @@ test('Hit testing guides.', function() {
 	}, true);
 });
 
+test('Hit testing fill with tolerance', function() {
+	var path = new Path.Rectangle({
+	    from: [50, 50],
+	    to: [200, 200],
+	    fillColor: 'red'
+	});
+
+	equals(function() {
+		var tolerance = 10;
+		var result = paper.project.hitTest(path.bounds.bottomRight.add(tolerance / Math.sqrt(2)), {
+			tolerance: tolerance,
+			fill: true
+		});
+		return result && result.item === path;
+	}, true);
+});
+
 // TODO: project.hitTest(point, {type: AnItemType});
