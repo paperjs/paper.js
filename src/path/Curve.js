@@ -1145,8 +1145,9 @@ new function() { // Scope for methods that require numerical integration
 					new CurveLocation(curve1, t1, point1, curve2, t2, point2));
 	}
 
-	function addCurveIntersections(v1, v2, curve1, curve2, locations,
+	function addCurveIntersections_old(v1, v2, curve1, curve2, locations,
 			range1, range2, recursion) {
+
 /*#*/ if (__options.fatline) {
 		// NOTE: range1 and range1 are only used for recusion
 		recursion = (recursion || 0) + 1;
@@ -1259,6 +1260,59 @@ new function() { // Scope for methods that require numerical integration
 		}
 		return locations;
 /*#*/ } // !__options.fatline
+	}
+
+	function addCurveIntersections(v1, v2, curve1, curve2, locations,
+			tmin, tmax, umin, umax, oldTdiff, reverse, recursion) {
+		// Let P be the first curve and Q be the second
+		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
+			getSignedDistance = Line.getSignedDistance,
+			// Calculate the fat-line L for P is the baseline l and two
+			// offsets which completely encloses the curve P.
+			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
+			d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]) || 0,
+			factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
+			dmin = factor * Math.min(0, d1, d2),
+			dmax = factor * Math.max(0, d1, d2),
+			// Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
+			// distance of Q from the baseline l of the fat-line, ti is equally
+			// spaced in [0, 1]
+			dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
+			dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
+			dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
+			dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]);
+		// Get the top and bottom parts of the convex-hull
+		var hull = getConvexHull(dp0, dp1, dp2, dp3),
+			top = hull[0], bottom = hull[1], clip_tmin, clip_tmax;
+		// Clip the convexhull
+		clip_tmin = clipCHull(top, bottom, dmin, dmax);
+		top.reverse();
+		bottom.reverse();
+		clip_tmax = clipCHull(top, bottom, dmin, dmax);
+		// No intersections if one of the tvalues are null
+		if(clip_tmin == null || clip_tmax == null)
+			return false;
+		// Clip P with the fatline for Q
+		var v1New = Curve.getPart(v1, clip_tmin, clip_tmax),
+			tDiff = clip_tmax - clip_tmin,
+			// tmin and tmax are within the range (0, 1). We need to project it
+			// to the original parameter range for v2.
+			tminNew = tmax * clip_tmin + tmin * (1 - clip_tmin),
+			tmaxNew = tmax * clip_tmax + tmin * (1 - clip_tmax);
+		// Check if we need to subdivide the curves
+		if (oldTdiff > 0.8 && tDiff > 0.8)
+			if (new_tmax - new_tmin > umax - umin) {
+
+			} else {
+
+			}
+		else if (Math.max(umax - umin, new_tmax - new_tmin) < Numerical.TOLERANCE)
+			if (reverse){
+
+			} else {
+
+			}
+		else // Iterate
 	}
 
 /*#*/ if (__options.fatline) {
