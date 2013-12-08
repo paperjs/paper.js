@@ -2726,6 +2726,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		if (!_dontNotify)
 			this._changed(/*#=*/ Change.GEOMETRY);
+		return this;
 	},
 
 	/**
