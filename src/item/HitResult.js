@@ -27,6 +27,7 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 		// properties.
 		// This allows the definition of getters too, e.g. for 'pixel'.
 		if (values) {
+			// Make enumerable so toString() works.
 			values.enumerable = true;
 			this.inject(values);
 		}

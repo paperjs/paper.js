@@ -207,8 +207,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var parent = this._parent,
 			project = this._project,
 			symbol = this._parentSymbol;
-		// Reset _drawCount on each change.
-		this._drawCount = null;
+		// Reset _updateCount on each change.
+		this._updateCount = null;
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			// Clear cached bounds and position whenever geometry changes
 			delete this._bounds;
@@ -1068,10 +1068,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 */
 	getGlobalMatrix: function() {
-		// TODO: if drawCount is out of sync, we still need to walk up the chain
-		// and concatenate the matrices.
-		return this._drawCount === this._project._drawCount
+		var matrix = this._updateCount === this._project._updateCount
 				&& this._globalMatrix || null;
+		// If _updateCount is out of sync or no _globalMatrix was calculated
+		// when rendering, iteratively calculate it now.
+		if (!matrix) {
+			matrix = this._globalMatrix = item._matrix.clone();
+			if (this._parent)
+				matrix.concatenate(this._parent.getGlobalMatrix());
+		}
+		return matrix;
 	},
 
 	/**
@@ -2719,7 +2725,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	globalToLocal: function(/* point */) {
 		var matrix = this.getGlobalMatrix();
-		return matrix && matrix._transformPoint(Point.read(arguments));
+		return matrix && matrix._inverseTransform(Point.read(arguments));
 	},
 
 	/**
@@ -2731,7 +2737,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	localToGlobal: function(/* point */) {
 		var matrix = this.getGlobalMatrix();
-		return matrix && matrix._inverseTransform(Point.read(arguments));
+		return matrix && matrix._transformPoint(Point.read(arguments));
 	},
 
 	/**
@@ -3321,10 +3327,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	draw: function(ctx, param) {
 		if (!this._visible || this._opacity === 0)
 			return;
-		// Each time the project gets drawn, it's _drawCount is increased.
-		// Keep the _drawCount of drawn items in sync, so we have an easy
+		// Each time the project gets drawn, it's _updateCount is increased.
+		// Keep the _updateCount of drawn items in sync, so we have an easy
 		// way to know for which selected items we need to draw selection info.
-		this._drawCount = this._project._drawCount;
+		this._updateCount = this._project._updateCount;
 		// Keep calculating the current global matrix, by keeping a history
 		// and pushing / popping as we go along.
 		var trackTransforms = param.trackTransforms,
