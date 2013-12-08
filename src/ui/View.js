@@ -114,7 +114,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		if (!this._project)
 			return false;
 		// Clear focus if removed view had it
-		if (View._focused == this)
+		if (View._focused === this)
 			View._focused = null;
 		// Remove view from internal structures
 		View._views.splice(View._views.indexOf(this), 1);
@@ -671,36 +671,54 @@ var View = Base.extend(Callback, /** @lends View# */{
 		view.update();
 	}
 
+	function handleMouseMove(view, point, event) {
+		view._handleEvent('mousemove', point, event);
+		var tool = view._scope._tool;
+		if (tool) {
+			// If there's no onMouseDrag, fire onMouseMove while dragging.
+			tool._handleEvent(dragging && tool.responds('mousedrag')
+					? 'mousedrag' : 'mousemove', point, event);
+		}
+		view.update();
+		return tool;
+	}
+
 	function mousemove(event) {
-		var view;
+		var view = View._focused;
 		if (!dragging) {
 			// See if we can get the view from the current event target, and
 			// handle the mouse move over it.
-			view = getView(event);
-			if (view) {
+			var target = getView(event);
+			if (target) {
 				// Temporarily focus this view without making it sticky, so
 				// Key events are handled too during the mouse over
-				prevFocus = View._focused;
-				View._focused = tempFocus = view;
-			} else if (tempFocus && tempFocus == View._focused) {
+				// If we switch view, fire one last mousemove in the old view,
+				// to give items the change to receive a mouseleave, etc.
+				if (view !== target)
+					handleMouseMove(view, viewToProject(view, event), event);
+				prevFocus = view;
+				view = View._focused = tempFocus = target;
+			} else if (tempFocus && tempFocus === view) {
 				// Clear temporary focus again and update it.
-				View._focused = prevFocus;
+				view = View._focused = prevFocus;
 				updateFocus();
 			}
 		}
-		if (!(view = view || View._focused))
-			return;
-		var point = event && viewToProject(view, event);
-		if (dragging || new Rectangle(new Point(),
-				view.getViewSize()).contains(point)) {
-			view._handleEvent('mousemove', point, event);
-			if (tool = view._scope._tool) {
-				// If there's no onMouseDrag, fire onMouseMove while dragging.
-				tool._handleEvent(dragging && tool.responds('mousedrag')
-						? 'mousedrag' : 'mousemove', point, event);
-			}
-			view.update();
+		if (view) {
+			var point = viewToProject(view, event);
+			if (dragging || new Rectangle(new Point(),
+					view.getViewSize()).contains(point))
+				tool = handleMouseMove(view, point, event);
 		}
+	}
+
+	function mouseout(event) {
+		// When the moues leaves the document, fire one last mousemove event,
+		// to give items the change to receive a mouseleave, etc.
+		var view = View._focused,
+			target = DomEvent.getRelatedTarget(event);
+		if (view && (!target || target.nodeName === 'HTML'))
+			handleMouseMove(view, viewToProject(view, event), event);
 	}
 
 	function mouseup(event) {
@@ -730,6 +748,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 
 	DomEvent.add(document, {
 		mousemove: mousemove,
+		mouseout: mouseout,
 		mouseup: mouseup,
 		touchmove: mousemove,
 		touchend: mouseup,
