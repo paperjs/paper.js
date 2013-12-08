@@ -128,9 +128,10 @@ var View = Base.extend(Callback, /** @lends View# */{
 		DomEvent.remove(window, this._windowHandlers);
 /*#*/ } // __options.environment == 'browser'
 		this._element = this._project = null;
-		// Removing all onFrame handlers makes the onFrame handler stop
-		// automatically through its uninstall method.
+		// Remove all onFrame handlers.
+		// TODO: Shouldn't we remove all handlers, automatically
 		this.detach('frame');
+		this._animate = false;
 		this._frameItems = {};
 		return true;
 	},
@@ -146,17 +147,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 		 */
 		onFrame: {
 			install: function() {
-/*#*/ if (__options.environment == 'browser') {
-				this._animate = true;
-				// Request a frame handler straight away to initialize the
-				// sequence of onFrame calls.
-				if (!this._requested)
-					this._requestFrame();
-/*#*/ } // __options.environment == 'browser'
+				this.play();
 			},
 
 			uninstall: function() {
-				this._animate = false;
+				this.pause();
 			}
 		},
 
@@ -397,7 +392,31 @@ var View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	/**
-	 * Updates the view if there are changes.
+	 * Makes all animation play by adding the view to the request animation
+	 * loop.
+	 */
+	play: function() {
+		this._animate = true;
+/*#*/ if (__options.environment == 'browser') {
+		// Request a frame handler straight away to initialize the
+		// sequence of onFrame calls.
+		if (!this._requested)
+			this._requestFrame();
+/*#*/ } // __options.environment == 'browser'
+	},
+
+	/**
+	 * Makes all animation pause by removing the view to the request animation
+	 * loop.
+	 */
+	pause: function() {
+		this._animate = false;
+	},
+
+	/**
+	 * Updates the view if there are changes. Note that when using built-in
+	 * event hanlders for interaction, animation and load events, this method is
+	 * invoked for you automatically at the end.
 	 *
 	 * @name View#update
 	 * @function
