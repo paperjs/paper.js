@@ -1264,6 +1264,9 @@ new function() { // Scope for methods that require numerical integration
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
 			tmin, tmax, umin, umax, oldTdiff, reverse, recursion) {
+		// Avoid endless recursion.
+		if (recursion > 20)
+			return;
 		// Let P be the first curve and Q be the second
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
@@ -1289,7 +1292,7 @@ new function() { // Scope for methods that require numerical integration
 		top.reverse();
 		bottom.reverse();
 		clip_tmax = clipCHull(top, bottom, dmin, dmax);
-		// No intersections if one of the tvalues are null
+		// No intersections if one of the tvalues are null or 'undefined'
 		if(clip_tmin == null || clip_tmax == null)
 			return false;
 		// Clip P with the fatline for Q
@@ -1301,18 +1304,21 @@ new function() { // Scope for methods that require numerical integration
 			tmaxNew = tmax * clip_tmax + tmin * (1 - clip_tmax);
 		// Check if we need to subdivide the curves
 		if (oldTdiff > 0.8 && tDiff > 0.8)
-			if (new_tmax - new_tmin > umax - umin) {
+			if (tmaxNew - tminNew > umax - umin) {
 
 			} else {
 
 			}
-		else if (Math.max(umax - umin, new_tmax - new_tmin) < Numerical.TOLERANCE)
+		else if (Math.max(umax - umin, tmaxNew - tminNew) < Numerical.TOLERANCE)
+			// We have isolated the intersection with sufficient precision
 			if (reverse){
 
 			} else {
 
 			}
 		else // Iterate
+			addCurveIntersections(v2, v1, curve2, curve1, locations,
+					umin, umax, tminNew, tmaxNew, tDiff, !reverse, recursion);
 	}
 
 /*#*/ if (__options.fatline) {
