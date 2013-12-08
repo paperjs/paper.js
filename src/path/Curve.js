@@ -229,18 +229,23 @@ var Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	/**
-	 * Specifies whether the handles of the curve are selected.
+	 * Specifies whether the points and handles of the curve are selected.
 	 *
 	 * @type Boolean
 	 * @bean
 	 */
 	isSelected: function() {
-		return this.getHandle1().isSelected() && this.getHandle2().isSelected();
+		return this.getPoint1().isSelected()
+				&& this.getHandle2().isSelected()
+				&& this.getHandle2().isSelected()
+				&& this.getPoint2().isSelected();
 	},
 
 	setSelected: function(selected) {
+		this.getPoint1().setSelected(selected);
 		this.getHandle1().setSelected(selected);
 		this.getHandle2().setSelected(selected);
+		this.getPoint2().setSelected(selected);
 	},
 
 	getValues: function() {

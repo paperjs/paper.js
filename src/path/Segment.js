@@ -295,62 +295,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 		return false;
 	},
 
-	_isSelected: function(point) {
-		var state = this._selectionState;
-		return point == this._point ? !!(state & /*#=*/ SelectionState.POINT)
-			: point == this._handleIn ? !!(state & /*#=*/ SelectionState.HANDLE_IN)
-			: point == this._handleOut ? !!(state & /*#=*/ SelectionState.HANDLE_OUT)
-			: false;
-	},
-
-	_setSelected: function(point, selected) {
-		var path = this._path,
-			selected = !!selected, // convert to boolean
-			state = this._selectionState || 0,
-			// For performance reasons use array indices to access the various
-			// selection states: 0 = point, 1 = handleIn, 2 = handleOut
-			selection = [
-				!!(state & /*#=*/ SelectionState.POINT),
-				!!(state & /*#=*/ SelectionState.HANDLE_IN),
-				!!(state & /*#=*/ SelectionState.HANDLE_OUT)
-			];
-		if (point === this._point) {
-			if (selected) {
-				// We're selecting point, deselect the handles
-				selection[1] = selection[2] = false;
-			} else {
-				var previous = this.getPrevious(),
-					next = this.getNext();
-				// When deselecting a point, the handles get selected instead
-				// depending on the selection state of their neighbors.
-				selection[1] = previous && (previous._point.isSelected()
-						|| previous._handleOut.isSelected());
-				selection[2] = next && (next._point.isSelected()
-						|| next._handleIn.isSelected());
-			}
-			selection[0] = selected;
-		} else {
-			var index = point === this._handleIn ? 1 : 2;
-			if (selection[index] != selected) {
-				// When selecting handles, the point get deselected.
-				if (selected)
-					selection[0] = false;
-				selection[index] = selected;
-			}
-		}
-		this._selectionState = (selection[0] ? /*#=*/ SelectionState.POINT : 0)
-				| (selection[1] ? /*#=*/ SelectionState.HANDLE_IN : 0)
-				| (selection[2] ? /*#=*/ SelectionState.HANDLE_OUT : 0);
-		// If the selection state of the segment has changed, we need to let
-		// it's path know and possibly add or remove it from
-		// project._selectedItems
-		if (path && state != this._selectionState) {
-			path._updateSelection(this, state, this._selectionState);
-			// Let path know that we changed something and the view should be
-			// redrawn
-			path._changed(/*#=*/ Change.ATTRIBUTE);
-		}
-	},
+	_selectionState: 0,
 
 	/**
 	 * Specifies whether the {@link #point} of the segment is selected.
@@ -365,12 +310,40 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 * // Select the third segment point:
 	 * path.segments[2].selected = true;
 	 */
-	isSelected: function() {
-		return this._isSelected(this._point);
+	isSelected: function(/* point */) {
+		var point = arguments[0], // Hidden, only used in SegmentPoint
+			state = this._selectionState;
+		return !point ? !!(state & /*#=*/ SelectionState.SEGMENT)
+			: point === this._point ? !!(state & /*#=*/ SelectionState.POINT)
+			: point === this._handleIn ? !!(state & /*#=*/ SelectionState.HANDLE_IN)
+			: point === this._handleOut ? !!(state & /*#=*/ SelectionState.HANDLE_OUT)
+			: false;
 	},
 
-	setSelected: function(selected) {
-		this._setSelected(this._point, selected);
+	setSelected: function(selected /*, point */) {
+		var point = arguments[1]; // Hidden, only used in SegmentPoint
+			path = this._path,
+			selected = !!selected, // convert to boolean
+			state = this._selectionState,
+			flag = !point ? /*#=*/ SelectionState.SEGMENT
+					: point === this._point ? /*#=*/ SelectionState.POINT
+					: point === this._handleIn ? /*#=*/ SelectionState.HANDLE_IN
+					: point === this._handleOut ? /*#=*/ SelectionState.HANDLE_OUT
+					: 0;
+		if (selected) {
+			state |= flag;
+		} else {
+			state &= ~flag;
+		}
+		// If the selection state of the segment has changed, we need to let
+		// it's path know and possibly add or remove it from
+		// project._selectedItems
+		if (path && state !== this._selectionState) {
+			path._updateSelection(this, this._selectionState, state);
+			// Let path know that we changed something and the view should be
+			// redrawn
+			path._changed(/*#=*/ Change.ATTRIBUTE);
+		}
 	},
 
 	/**

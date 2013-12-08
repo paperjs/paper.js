@@ -811,7 +811,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	isFullySelected: function() {
 		var length = this._segments.length;
 		return this._selected && length > 0 && this._selectedSegmentState
-				=== length * /*#=*/ SelectionState.POINT;
+				=== length * /*#=*/ SelectionState.SEGMENT;
 	},
 
 	setFullySelected: function(selected) {
@@ -833,10 +833,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_selectSegments: function(selected) {
 		var length = this._segments.length;
 		this._selectedSegmentState = selected
-				? length * /*#=*/ SelectionState.POINT : 0;
+				? length * /*#=*/ SelectionState.SEGMENT : 0;
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
-					? /*#=*/ SelectionState.POINT : 0;
+					? /*#=*/ SelectionState.SEGMENT : 0;
 	},
 
 	_updateSelection: function(segment, oldState, newState) {
@@ -1939,12 +1939,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 			var segment = segments[i];
 			segment._transformCoordinates(matrix, coords, false);
 			var state = segment._selectionState,
-				selected = state & /*#=*/ SelectionState.POINT,
 				pX = coords[0],
 				pY = coords[1];
-			if (selected || (state & /*#=*/ SelectionState.HANDLE_IN))
+			if (state & /*#=*/ SelectionState.HANDLE_IN)
 				drawHandle(2);
-			if (selected || (state & /*#=*/ SelectionState.HANDLE_OUT))
+			if (state & /*#=*/ SelectionState.HANDLE_OUT)
 				drawHandle(4);
 			// Draw a rectangle at segment.point:
 			ctx.save();
@@ -1953,7 +1952,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			ctx.fill();
 			// If the point is not selected, draw a white square that is 1 px
 			// smaller on all sides:
-			if (!selected) {
+			if (!(state & /*#=*/ SelectionState.POINT)) {
 				ctx.beginPath();
 				ctx.rect(pX - half + 1, pY - half + 1, size - 2, size - 2);
 				ctx.fillStyle = '#ffffff';

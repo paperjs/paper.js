@@ -85,10 +85,10 @@ var SegmentPoint = Point.extend({
 	},
 
 	setSelected: function(selected) {
-		this._owner._setSelected(this, selected);
+		this._owner.setSelected(selected, this);
 	},
 
 	isSelected: function() {
-		return this._owner._isSelected(this);
+		return this._owner.isSelected(this);
 	}
 });
