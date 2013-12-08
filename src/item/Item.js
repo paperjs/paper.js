@@ -3318,9 +3318,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 	},
 
-	// TODO: Implement View into the drawing.
-	// TODO: Optimize temporary canvas drawing to ignore parts that are
-	// outside of the visible view.
 	draw: function(ctx, param) {
 		if (!this._visible || this._opacity === 0)
 			return;

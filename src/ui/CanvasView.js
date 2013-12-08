@@ -80,7 +80,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	/**
 	 * Draws the view.
 	 *
-	 * @name View#draw
 	 * @function
 	 */
 	draw: function(checkRedraw) {
@@ -305,7 +304,7 @@ CanvasView.inject(new function() {
 			}
 		},
 
-		// DOCS: View#exportImage(path, callback);
+		// DOCS: CanvasView#exportImage(path, callback);
 		exportImage: function(path, callback) {
 			this.draw();
 			var out = fs.createWriteStream(path),
