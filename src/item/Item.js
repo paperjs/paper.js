@@ -1109,20 +1109,33 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return this._project;
 	},
 
-	_setProject: function(project) {
-		if (this._project != project) {
-			var hasOnFrame = this.responds('frame');
-			if (hasOnFrame)
-				this._animateItem(false);
+	_setProject: function(project, installEvents) {
+		if (this._project !== project) {
+			// Uninstall events before switching project, then install them
+			// again.
+			if (this._project)
+				this._installEvents(false);
 			this._project = project;
-			if (hasOnFrame)
-				this._animateItem(true);
-			if (this._children) {
-				for (var i = 0, l = this._children.length; i < l; i++) {
-					this._children[i]._setProject(project);
-				}
-			}
+			var children = this._children;
+			for (var i = 0, l = children && children.length; i < l; i++)
+				children[i]._setProject(project);
+			// We need to call _installEvents(true) again, but merge it with
+			// handling of installEvents argument below.
+			installEvents = true;
 		}
+		if (installEvents)
+			this._installEvents(true);
+	},
+
+	/**
+	 * Overrides Callback#_installEvents to also call _installEvents on all
+	 * children.
+	 */
+	_installEvents: function _installEvents(install) {
+		_installEvents.base.call(this, install);
+		var children = this._children;
+		for (var i = 0, l = children && children.length; i < l; i++)
+			children[i]._installEvents(install);
 	},
 
 	/**
@@ -1862,7 +1875,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			for (var i = 0, l = items.length; i < l; i++) {
 				var item = items[i];
 				item._parent = this;
-				item._setProject(this._project);
+				item._setProject(this._project, true);
 				// Setting the name again makes sure all name lookup structures
 				// are kept in sync.
 				if (item._name)
@@ -2016,8 +2029,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				this._removeNamed();
 			if (this._index != null)
 				Base.splice(this._parent._children, null, this._index, 1);
-			if (this.responds('frame'))
-				this._animateItem(false);
+			this._installEvents(false);
 			// Notify parent of changed hierarchy
 			if (notify)
 				this._parent._changed(/*#=*/ Change.HIERARCHY);
