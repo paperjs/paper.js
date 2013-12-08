@@ -22,7 +22,8 @@ var SVGStyles = Base.each({
 	dashArray: ['stroke-dasharray', 'array'],
 	dashOffset: ['stroke-dashoffset', 'number'],
 	// Text
-	font: ['font-family', 'string'],
+	fontFamily: ['font-family', 'string'],
+	fontWeight: ['font-weight', 'string'],
 	fontSize: ['font-size', 'number'],
 	justification: ['text-anchor', 'lookup', {
 		left: 'start',

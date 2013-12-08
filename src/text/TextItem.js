@@ -99,6 +99,62 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	},
 
 	/**
+	 * {@grouptitle Character Style}
+	 *
+	 * The font-family to be used in text content.
+	 *
+	 * @name Style#fontFamily
+	 * @default 'sans-serif'
+	 * @type String
+	 */
+
+	/**
+	 *
+	 * The font-weight to be used in text content.
+	 *
+	 * @name Style#fontWeight
+	 * @default 'normal'
+	 * @type String
+	 */
+
+	/**
+	 * The font size of text content, as {@Number} in pixels, or as {@String}
+	 * with optional units {@code 'px'}, {@code 'pt'} and {@code 'em'}.
+	 *
+	 * @name Style#fontSize
+	 * @default 10
+	 * @type Number|String
+	 */
+
+	/**
+	 *
+	 * The font-family to be used in text content, as one {@String}.
+	 * @deprecated use {@link #fontFamily} instead.
+	 *
+	 * @name Style#font
+	 * @default 'sans-serif'
+	 * @type String
+	 */
+
+	/**
+	 * The text leading of text content.
+	 *
+	 * @name Style#leading
+	 * @default fontSize * 1.2
+	 * @type Number|String
+	 */
+
+	/**
+	 * {@grouptitle Paragraph Style}
+	 *
+	 * The justification of text paragraphs.
+	 *
+	 * @name Style#justification
+	 * @default 'left'
+	 * @type String('left', 'right', 'center')
+	 */
+
+	/**
 	 * @private
 	 * @deprecated use {@link #getStyle()} instead.
 	 */

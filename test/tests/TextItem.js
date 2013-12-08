@@ -14,7 +14,8 @@ module('TextItem');
 
 test('PointText', function() {
 	var text = new PointText({
-		font: 'Arial',
+		fontFamily: 'Arial',
+		fontWeight: 'Regular',
 		fontSize: 14,
 		point: [100, 100],
 		content: 'Hello World!'
