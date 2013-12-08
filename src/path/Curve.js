@@ -248,8 +248,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 		this.getPoint2().setSelected(selected);
 	},
 
-	getValues: function() {
-		return Curve.getValues(this._segment1, this._segment2);
+	getValues: function(matrix) {
+		return Curve.getValues(this._segment1, this._segment2, matrix);
 	},
 
 	getPoints: function() {
@@ -446,17 +446,20 @@ var Curve = Base.extend(/** @lends Curve# */{
 
 // Mess with indentation in order to get more line-space below...
 statics: {
-	getValues: function(segment1, segment2) {
+	getValues: function(segment1, segment2, matrix) {
 		var p1 = segment1._point,
 			h1 = segment1._handleOut,
 			h2 = segment2._handleIn,
-			p2 = segment2._point;
-		return [
-			p1._x, p1._y,
-			p1._x + h1._x, p1._y + h1._y,
-			p2._x + h2._x, p2._y + h2._y,
-			p2._x, p2._y
-		];
+			p2 = segment2._point,
+			values = [
+				p1._x, p1._y,
+				p1._x + h1._x, p1._y + h1._y,
+				p2._x + h2._x, p2._y + h2._y,
+				p2._x, p2._y
+			];
+		if (matrix)
+			matrix._transformCoordinates(values, 0, values, 0, 6);
+		return values;
 	},
 
 	evaluate: function(v, t, type) {
