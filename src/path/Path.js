@@ -1755,16 +1755,20 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	_hitTest: function(point, options) {
-		var style = this.getStyle(),
+		var that = this,
+			style = this.getStyle(),
 			segments = this._segments,
 			closed = this._closed,
 			tolerance = options.tolerance,
-			radius = 0, join, cap, miterLimit,
-			that = this,
-			area, loc, res;
-
-		if (options.stroke) {
-			radius = style.getStrokeWidth() / 2;
+			join, cap, miterLimit,
+			area, loc, res,
+			hasStroke = options.stroke && style.hasStroke(),
+			hasFill = options.fill && style.hasFill(),
+			radius = hasStroke ? style.getStrokeWidth() / 2
+					// Set radius to 0 so when we're hit-testing, the tolerance
+					// is used for fill too, through stroke functionality.
+					: hasFill ? 0 : null;
+		if (radius != null) {
 			if (radius > 0) {
 				join = style.getStrokeJoin();
 				cap = style.getStrokeCap();
@@ -1889,12 +1893,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 		}
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
-		// stroke.
-		return !loc && options.fill && this.hasFill() && this._contains(point)
+		// stroke. If we have a loc and no stroke then it's a result for fill.
+		return !loc && hasFill && this._contains(point) || loc && !hasStroke
 				? new HitResult('fill', this)
 				: loc
-					// TODO: Do we need to transform loc back to the coordinate
-					// system of the DOM level on which the inquiry was started?
 					? new HitResult('stroke', this, { location: loc })
 					: null;
 	}
