@@ -244,24 +244,13 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		return winding;
 	},
 
-	_hitTest : function _hitTest(point, options) {
-		// Do not test children for fill, since a compound path forms one shape.
-		// options.compoundChildren allows to specifically do so, see below.
-		var res = _hitTest.base.call(this, point,
-				new Base(options, { fill: false }));
-		if (!res) {
-			// If asked to query all children seperately, perform the same loop
-			// as Item#hitTest() now on the compound children.
-			if (options.compoundChildren) {
-				var children =  this._children;
-				for (var i = children.length - 1; i >= 0 && !res; i--)
-					res = children[i]._hitTest(point, options);
-			} else if (options.fill && this.hasFill()
-					&& this._contains(point)) {
-				res = new HitResult('fill', this);
-			}
-		} 
-		return res;
+	_getChildHitTestOptions: function(options) {
+		// If we're not specifically asked to returns paths through
+		// options.type == 'path' do not test children for fill, since a
+		// compound path forms one shape.
+		return options.type === 'path'
+				? options
+				: new Base(options, { fill: false });
 	},
 
 	_draw: function(ctx, param) {

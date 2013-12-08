@@ -121,12 +121,12 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 	},
 
 	_hitTest: function(point, options, matrix) {
-		var result = this._symbol._definition._hitTest(point, options, matrix);
+		var res = this._symbol._definition._hitTest(point, options, matrix);
 		// TODO: When the symbol's definition is a path, should hitResult
 		// contain information like HitResult#curve?
-		if (result)
-			result.item = this;
-		return result;
+		if (res)
+			res.item = this;
+		return res;
 	},
 
 	_draw: function(ctx, param) {

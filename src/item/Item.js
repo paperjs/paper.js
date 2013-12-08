@@ -292,8 +292,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * The type of the item as a string.
 	 *
-	 * @type String('group', 'layer', 'path', 'compound-path', 'raster',
-	 * 'placed-symbol', 'point-text')
+	 * @type String('group', 'layer', 'path', 'compound-path', 'shape',
+	 * 'raster', 'placed-symbol', 'point-text')
 	 * @bean
 	 */
 	getType: function() {
@@ -1532,7 +1532,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * in points. Can also be controlled through
 	 * {@link Project#options}{@code .hitTolerance}.
 	 * <b>options.type:</b> Only hit test again a certain item
-	 * type: {@link PathItem}, {@link Raster}, {@link TextItem}, etc.
+	 * type: {String('group', 'layer', 'path', 'compound-path', 'shape',
+	 * 'raster', 'placed-symbol', 'point-text')}, etc.
 	 * <b>options.fill:</b> {@code Boolean} – hit test the fill of items.
 	 * <b>options.stroke:</b> {@code Boolean} – hit test the curves of path
 	 * items, taking into account stroke width.
@@ -1574,9 +1575,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Transform point to local coordinates but use untransformed point
 		// for bounds check above.
 		point = this._matrix._inverseTransform(point);
-
-		var that = this,
+		// Filter for type, guides and selected items if that's required.
+		var checkSelf = !(options.guides && !this._guide
+				|| options.selected && !this._selected
+				|| options.type && this._type !== options.type),
+			that = this,
 			res;
+
 		function checkBounds(type, part) {
 			var pt = bounds['get' + part]();
 			// TODO: We need to transform the point back to the coordinate
@@ -1586,9 +1591,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 						{ name: Base.hyphenate(part), point: pt });
 		}
 
-		if ((options.center || options.bounds) &&
-				// Ignore top level layers:
-				!(this instanceof Layer && !this._parent)) {
+		// Ignore top level layers by checking for _parent:
+		if (checkSelf && (options.center || options.bounds) && this._parent) {
 			// Don't get the transformed bounds, check against transformed
 			// points instead
 			var bounds = this._getBounds('getBounds');
@@ -1605,30 +1609,29 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		}
 
-		// TODO: Support option.type even for things like CompoundPath where
-		// children are matched but the parent is returned.
-
-		// Filter for guides or selected items if that's required
-		if ((res || (res = this._children || !(options.guides && !this._guide
-				|| options.selected && !this._selected)
-					? this._hitTest(point, options) : null))
-				&& res.point) {
-			// Transform the point back to the outer coordinate system.
-			res.point = that._matrix.transform(res.point);
+		var children = !res && this._children;
+		if (children) {
+			var opts = this._getChildHitTestOptions(options);
+			// Loop backwards, so items that get drawn last are tested first
+			for (var i = children.length - 1; i >= 0 && !res; i--)
+				res = children[i].hitTest(point, opts);
 		}
+		if (!res && checkSelf)
+			res = this._hitTest(point, options);
+		// Transform the point back to the outer coordinate system.
+		if (res && res.point)
+			res.point = that._matrix.transform(res.point);
 		return res;
 	},
 
+	_getChildHitTestOptions: function(options) {
+		return options;
+	},
+
 	_hitTest: function(point, options) {
-		var children = this._children;
-		if (children) {
-			// Loop backwards, so items that get drawn last are tested first
-			for (var i = children.length - 1, res; i >= 0; i--)
-				if (res = children[i].hitTest(point, options))
-					return res;
-		} else if (options.fill && this.hasFill() && this._contains(point)) {
+		// The default implementation honly handles 'fill' through #_contains()
+		if (options.fill && this.hasFill() && this._contains(point))
 			return new HitResult('fill', this);
-		}
 	},
 
 	// DOCS: Item#matches
