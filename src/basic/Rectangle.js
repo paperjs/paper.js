@@ -740,26 +740,29 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	/**
-	 * Expands the rectangle by the specified amount in both horizontal and
+	 * Expands the rectangle by the specified amount in horizontal and
 	 * vertical directions.
 	 *
 	 * @name Rectangle#expand
 	 * @function
-	 * @param {Number} amount
+	 * @param {Number|Size|Point} amount the amount to expand the rectangle in
+	 * both directions
 	 */
 	/**
-	 * Expands the rectangle in horizontal direction by the specified
-	 * {@code hor} amount and in vertical direction by the specified {@code ver}
-	 * amount.
+	 * Expands the rectangle by the specified amounts in horizontal and
+	 * vertical directions.
 	 *
 	 * @name Rectangle#expand
 	 * @function
-	 * @param {Number} hor
-	 * @param {Number} ver
+	 * @param {Number} hor the amount to expand the rectangle in horizontal
+	 * direction
+	 * @param {Number} ver the amount to expand the rectangle in horizontal
+	 * direction
 	 */
-	expand: function(hor, ver) {
-		if (ver === undefined)
-			ver = hor;
+	expand: function(/* amount */) {
+		var amount = Size.read(arguments),
+			hor = amount.width,
+			ver = amount.height;
 		return new Rectangle(this.x - hor / 2, this.y - ver / 2,
 				this.width + hor, this.height + ver);
 	},
