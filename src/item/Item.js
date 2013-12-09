@@ -2668,7 +2668,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.
 		var decomp = bounds && matrix.decompose();
-		if (decomp && !decomp.shearing && decomp.angle % 90 === 0) {
+		if (decomp && !decomp.shearing && decomp.rotation % 90 === 0) {
 			// Transform the old bound by looping through all the cached bounds
 			// in _bounds and transform each.
 			for (var key in bounds) {
