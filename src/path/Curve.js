@@ -1545,9 +1545,5 @@ new function() { // Scope for methods that require numerical integration
 				addLocation(locations, curve1, 1, c1p2, curve2, 1, c1p2);
 			return locations;
 		},
-
-		getConvexHull: getConvexHull,
-
-		clipConvexHull: clipConvexHull
 	}};
 });
