@@ -204,9 +204,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
-		var parent = this._parent,
-			project = this._project,
-			symbol = this._parentSymbol;
+		var symbol = this._parentSymbol,
+			cacheParent = this._parent || symbol,
+			project = this._project;
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			// Clear cached bounds and position whenever geometry changes
 			delete this._bounds;
@@ -214,19 +214,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			delete this._decomposed;
 			delete this._globalMatrix;
 		}
-		if (parent && (flags
+		if (cacheParent && (flags
 				& (/*#=*/ ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STROKE))) {
 			// Clear cached bounds of all items that this item contributes to.
 			// We call this on the parent, since the information is cached on
 			// the parent, see getBounds().
-			parent._clearBoundsCache();
+			Item._clearBoundsCache(cacheParent);
 		}
 		if (flags & /*#=*/ ChangeFlag.HIERARCHY) {
 			// Clear cached bounds of all items that this item contributes to.
 			// We don't call this on the parent, since we're already the parent
 			// of the child that modified the hierarchy (that's where these
 			// HIERARCHY notifications go)
-			this._clearBoundsCache();
+			Item._clearBoundsCache(this);
 		}
 		if (project) {
 			if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
@@ -821,89 +821,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 /** @lends Item# */{
 	/**
-	 * Private method that deals with the calling of _getBounds, recursive
-	 * matrix concatenation and handles all the complicated caching mechanisms.
-	 */
-	_getCachedBounds: function(getter, matrix, cacheItem) {
-		// See if we can cache these bounds. We only cache the bounds
-		// transformed with the internally stored _matrix, (the default if no
-		// matrix is passed).
-		matrix = matrix && matrix.orNullIfIdentity();
-		var _matrix = this._matrix.orNullIfIdentity(),
-			cache = (!matrix || matrix.equals(_matrix)) && getter;
-		// Set up a boundsCache structure that keeps track of items that keep
-		// cached bounds that depend on this item. We store this in our parent,
-		// for multiple reasons:
-		// The parent receives HIERARCHY change notifications for when its
-		// children are added or removed and can thus clear the cache, and we
-		// save a lot of memory, e.g. when grouping 100 items and asking the
-		// group for its bounds. If stored on the children, we would have 100
-		// times the same structure.
-		// Note: This needs to happen before returning cached values, since even
-		// then, _boundsCache needs to be kept up-to-date.
-		if (cacheItem && this._parent) {
-			// Set-up the parent's boundsCache structure if it does not
-			// exist yet and add the cacheItem to it.
-			var id = cacheItem._id,
-				ref = this._parent._boundsCache
-					= this._parent._boundsCache || {
-				// Use both a hashtable for ids and an array for the list,
-				// so we can keep track of items that were added already
-				ids: {},
-				list: []
-			};
-			if (!ref.ids[id]) {
-				ref.list.push(cacheItem);
-				ref.ids[id] = cacheItem;
-			}
-		}
-		if (cache && this._bounds && this._bounds[cache])
-			return this._bounds[cache].clone();
-		// If the result of concatinating the passed matrix with our internal
-		// one is an identity transformation, set it to null for faster
-		// processing
-		matrix = !matrix
-				? _matrix
-				: _matrix
-					? matrix.clone().concatenate(_matrix)
-					: matrix;
-		// If we're caching bounds on this item, pass it on as cacheItem, so the
-		// children can setup the _boundsCache structures for it.
-		var bounds = this._getBounds(getter, matrix, cache ? this : cacheItem);
-		// If we can cache the result, update the _bounds cache structure
-		// before returning
-		if (cache) {
-			if (!this._bounds)
-				this._bounds = {};
-			this._bounds[cache] = bounds.clone();
-		}
-		return bounds;
-	},
-
-	/**
-	 * Clears cached bounds of all items that the children of this item are
-	 * contributing to. See #_getCachedBounds() for an explanation why this
-	 * information is stored on parents, not the children themselves.
-	 */
-	_clearBoundsCache: function() {
-		if (this._boundsCache) {
-			for (var i = 0, list = this._boundsCache.list, l = list.length;
-					i < l; i++) {
-				var item = list[i];
-				delete item._bounds;
-				// Delete position as well, since it's depending on bounds.
-				delete item._position;
-				// We need to recursively call _clearBoundsCache, because if the
-				// cache for this item's children is not valid anymore, that
-				// propagates up the DOM tree.
-				if (item !== this && item._boundsCache)
-					item._clearBoundsCache();
-			}
-			delete this._boundsCache;
-		}
-	},
-
-	/**
 	 * Protected method used in all the bounds getters. It loops through all the
 	 * children, gets their bounds and finds the bounds around all of them.
 	 * Subclasses override it to define calculations for the various required
@@ -956,6 +873,93 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		matrix.translate(-center.x, -center.y);
 		// Now execute the transformation
 		this.transform(matrix);
+	},
+
+	/**
+	 * Private method that deals with the calling of _getBounds, recursive
+	 * matrix concatenation and handles all the complicated caching mechanisms.
+	 */
+	_getCachedBounds: function(getter, matrix, cacheItem) {
+		// See if we can cache these bounds. We only cache the bounds
+		// transformed with the internally stored _matrix, (the default if no
+		// matrix is passed).
+		matrix = matrix && matrix.orNullIfIdentity();
+		var _matrix = this._matrix.orNullIfIdentity(),
+			cache = (!matrix || matrix.equals(_matrix)) && getter;
+		// Set up a boundsCache structure that keeps track of items that keep
+		// cached bounds that depend on this item. We store this in our parent,
+		// for multiple reasons:
+		// The parent receives HIERARCHY change notifications for when its
+		// children are added or removed and can thus clear the cache, and we
+		// save a lot of memory, e.g. when grouping 100 items and asking the
+		// group for its bounds. If stored on the children, we would have 100
+		// times the same structure.
+		// Note: This needs to happen before returning cached values, since even
+		// then, _boundsCache needs to be kept up-to-date.
+		var cacheParent = this._parent || this._parentSymbol;
+		if (cacheItem && cacheParent) {
+			// Set-up the parent's boundsCache structure if it does not
+			// exist yet and add the cacheItem to it.
+			var id = cacheItem._id,
+				ref = cacheParent._boundsCache
+					= cacheParent._boundsCache || {
+				// Use both a hashtable for ids and an array for the list,
+				// so we can keep track of items that were added already
+				ids: {},
+				list: []
+			};
+			if (!ref.ids[id]) {
+				ref.list.push(cacheItem);
+				ref.ids[id] = cacheItem;
+			}
+		}
+		if (cache && this._bounds && this._bounds[cache])
+			return this._bounds[cache].clone();
+		// If the result of concatinating the passed matrix with our internal
+		// one is an identity transformation, set it to null for faster
+		// processing
+		matrix = !matrix
+				? _matrix
+				: _matrix
+					? matrix.clone().concatenate(_matrix)
+					: matrix;
+		// If we're caching bounds on this item, pass it on as cacheItem, so the
+		// children can setup the _boundsCache structures for it.
+		var bounds = this._getBounds(getter, matrix, cache ? this : cacheItem);
+		// If we can cache the result, update the _bounds cache structure
+		// before returning
+		if (cache) {
+			if (!this._bounds)
+				this._bounds = {};
+			this._bounds[cache] = bounds.clone();
+		}
+		return bounds;
+	},
+
+	statics: {
+		/**
+		 * Clears cached bounds of all items that the children of this item are
+		 * contributing to. See #_getCachedBounds() for an explanation why this
+		 * information is stored on parents, not the children themselves.
+		 */
+		_clearBoundsCache: function(item) {
+			// This is defined as a static method so Symbol can used it too.
+			if (item._boundsCache) {
+				for (var i = 0, list = item._boundsCache.list, l = list.length;
+						i < l; i++) {
+					var child = list[i];
+					delete child._bounds;
+					// Delete position as well, since it's depending on bounds.
+					delete child._position;
+					// We need to recursively call _clearBoundsCache, because if
+					// the cache for this child's children is not valid anymore,
+					// that propagates up the DOM tree.
+					if (child !== item && child._boundsCache)
+						child._clearBoundsCache();
+				}
+				delete item._boundsCache;
+			}
+		}
 	}
 
 	/**
