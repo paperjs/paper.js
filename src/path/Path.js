@@ -1626,8 +1626,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	getStyle: function() {
 		// If this path is part of a CompoundPath, use the paren't style instead
 		var parent = this._parent;
-		return (parent && parent._type === 'compound-path'
-				? parent : this)._style;
+		return (parent && parent instanceof CompoundPath ? parent : this)._style;
 	},
 
 	// DOCS: toShape

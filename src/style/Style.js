@@ -175,7 +175,7 @@ var Style = Base.extend(new function() {
 			// they all have the same style.
 			// If true is passed for dontMerge, don't merge children styles
 			if (!children || children.length === 0 || arguments[0]
-					|| this._item._type === 'compound-path') {
+					|| this._item instanceof CompoundPath) {
 				var value = this._values[key];
 				if (value === undefined) {
 					value = this._defaults[key];
