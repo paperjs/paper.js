@@ -462,11 +462,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 					if (item._drawSelected)
 						item._drawSelected(ctx, mx);
 					if (item._boundsSelected) {
-						// We need to call the internal _getBounds, to get non-
-						// transformed bounds.
-						// TODO: Implement caching for these too?
 						var coords = mx._transformCorners(
-								item._getBounds('getBounds'));
+								item.getInternalBounds());
 						// Now draw a rectangle that connects the transformed
 						// bounds corners, and draw the corners.
 						ctx.beginPath();

@@ -1716,6 +1716,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 		if (!closed && !this.hasFill()
 				// We need to call the internal _getBounds, to get non-
 				// transformed bounds.
+				// TODO: Implement caching for internal rough bounds and switch
+				// hit-testing code to using this too.
 				|| !this._getBounds('getRoughBounds')._containsPoint(point))
 			return 0;
 		// Use the crossing number algorithm, by counting the crossings of the

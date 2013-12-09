@@ -798,22 +798,26 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// No need for _changed() since the only thing this affects is _position
 		delete this._position;
 	}
-}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
-	function(name) {
+}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds',
+		'getRoughBounds', 'getInternalBounds'],
+	function(key) {
 		// Produce getters for bounds properties. These handle caching, matrices
 		// and redirect the call to the private _getBounds, which can be
 		// overridden by subclasses, see below.
-		this[name] = function(/* matrix */) {
+		var internal = key === 'getInternalBounds';
+		this[key] = function(/* matrix */) {
 			var getter = this._boundsGetter,
 				// Allow subclasses to override _boundsGetter if they use
 				// the same calculations for multiple type of bounds.
-				// The default is name:
-				bounds = this._getCachedBounds(typeof getter == 'string'
-						? getter : getter && getter[name] || name, arguments[0]);
+				// The default is key:
+				bounds = this._getCachedBounds(!internal
+						&& (typeof getter === 'string'
+							? getter : getter && getter[key])
+						|| key, arguments[0], null, internal);
 			// If we're returning 'bounds', create a LinkedRectangle that uses
 			// the setBounds() setter to update the Item whenever the bounds are
 			// changed:
-			return name === 'getBounds'
+			return key === 'getBounds'
 					? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
 							bounds.height, this, 'setBounds') 
 					: bounds;
@@ -879,12 +883,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Private method that deals with the calling of _getBounds, recursive
 	 * matrix concatenation and handles all the complicated caching mechanisms.
 	 */
-	_getCachedBounds: function(getter, matrix, cacheItem) {
+	_getCachedBounds: function(getter, matrix, cacheItem, internal) {
 		// See if we can cache these bounds. We only cache the bounds
 		// transformed with the internally stored _matrix, (the default if no
 		// matrix is passed).
 		matrix = matrix && matrix.orNullIfIdentity();
-		var _matrix = this._matrix.orNullIfIdentity(),
+		var _matrix = internal ? null : this._matrix.orNullIfIdentity(),
 			cache = (!matrix || matrix.equals(_matrix)) && getter;
 		// Set up a boundsCache structure that keeps track of items that keep
 		// cached bounds that depend on this item. We store this in our parent,
@@ -925,13 +929,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					: matrix;
 		// If we're caching bounds on this item, pass it on as cacheItem, so the
 		// children can setup the _boundsCache structures for it.
-		var bounds = this._getBounds(getter, matrix, cache ? this : cacheItem);
+		var bounds = this._getBounds(getter === 'getInternalBounds'
+				? 'getBounds' : getter, matrix, cache ? this : cacheItem);
 		// If we can cache the result, update the _bounds cache structure
 		// before returning
 		if (cache) {
 			if (!this._bounds)
 				this._bounds = {};
-			this._bounds[cache] = bounds.clone();
+			var cached = this._bounds[cache] = bounds.clone();
+			// Mark as internal, so Item#transform() won't transform it!
+			cached._internal = internal;
 		}
 		return bounds;
 	},
@@ -1542,11 +1549,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		// We only implement it here for items with rectangular content,
 		// for anything else we need to override #contains()
-		// TODO: There currently is no caching for the results of direct calls
-		// to this._getBounds('getBounds') (without the application of the
-		// internal matrix). Performance improvements could be achieved if
-		// these were cached too. See #_getCachedBounds().
-		return point.isInside(this._getBounds('getBounds'));
+		return point.isInside(this.getInternalBounds());
 	},
 
 	/**
@@ -1622,7 +1625,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (checkSelf && (options.center || options.bounds) && this._parent) {
 			// Don't get the transformed bounds, check against transformed
 			// points instead
-			var bounds = this._getBounds('getBounds');
+			var bounds = this.getInternalBounds();
 			if (options.center)
 				res = checkBounds('center', 'Center');
 			if (!res && options.bounds) {
@@ -2677,7 +2680,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// in _bounds and transform each.
 			for (var key in bounds) {
 				var rect = bounds[key];
-				matrix._transformBounds(rect, rect);
+				// See _getCachedBounds for an explanation of this:
+				if (!rect._internal)
+					matrix._transformBounds(rect, rect);
 			}
 			// If we have cached bounds, update _position again as its 
 			// center. We need to take into account _boundsGetter here too, in 

@@ -20,8 +20,8 @@ test('PointText', function() {
 		content: 'Hello World!'
 	});
 	equals(text.fillColor, { red: 0, green: 0, blue: 0 }, 'text.fillColor should be black by default');
-	equals(text.point, { x: 100, y: 100 });
-	equals(text.bounds, { x: 100, y: 87.4, width: 55, height: 16.8 });
+	comparePoints(text.point, { x: 100, y: 100 });
+	compareRectangles(text.bounds, { x: 100, y: 87.4, width: 77, height: 16.8 });
 	equals(function() {
 		return text.hitTest(text.bounds.center) != null;
 	}, true);
