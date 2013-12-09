@@ -1145,125 +1145,10 @@ new function() { // Scope for methods that require numerical integration
 					new CurveLocation(curve1, t1, point1, curve2, t2, point2));
 	}
 
-	function addCurveIntersections_old(v1, v2, curve1, curve2, locations,
-			range1, range2, recursion) {
-
-/*#*/ if (__options.fatline) {
-		// NOTE: range1 and range1 are only used for recusion
-		recursion = (recursion || 0) + 1;
-		// Avoid endless recursion.
-		// Perhaps we should fall back to a more expensive method after this,
-		// but so far endless recursion happens only when there is no real
-		// intersection and the infinite fatline continue to intersect with the
-		// other curve outside its bounds!
-		if (recursion > 20)
-			return;
-		// Set up the parameter ranges.
-		range1 = range1 || [ 0, 1 ];
-		range2 = range2 || [ 0, 1 ];
-		// Get the clipped parts from the original curve, to avoid cumulative
-		// errors
-		var part1 = Curve.getPart(v1, range1[0], range1[1]),
-			part2 = Curve.getPart(v2, range2[0], range2[1]),
-			iteration = 0;
-		// Loop until both parameter range converge. We have to handle the
-		// degenerate case seperately, where fat-line clipping can become
-		// numerically unstable when one of the curves has converged to a point
-		// and the other hasn't.
-		while (iteration++ < 20) {
-			// First we clip v2 with v1's fat-line
-			var range,
-				intersects1 = clipFatLine(part1, part2, range = range2.slice()),
-				intersects2 = 0;
-			// Stop if there are no possible intersections
-			if (intersects1 === 0)
-				break;
-			if (intersects1 > 0) {
-				// Get the clipped parts from the original v2, to avoid
-				// cumulative errors
-				range2 = range;
-				part2 = Curve.getPart(v2, range2[0], range2[1]);
-				// Next we clip v1 with nuv2's fat-line
-				intersects2 = clipFatLine(part2, part1, range = range1.slice());
-				// Stop if there are no possible intersections
-				if (intersects2 === 0)
-					break;
-				if (intersects1 > 0) {
-					// Get the clipped parts from the original v2, to avoid
-					// cumulative errors
-					range1 = range;
-					part1 = Curve.getPart(v1, range1[0], range1[1]);
-				}
-			}
-			// Get the clipped parts from the original v1
-			// Check if there could be multiple intersections
-			if (intersects1 < 0 || intersects2 < 0) {
-				// Subdivide the curve which has converged the least from the
-				// original range [0,1], which would be the curve with the
-				// largest parameter range after clipping
-				if (range1[1] - range1[0] > range2[1] - range2[0]) {
-					// subdivide v1 and recurse
-					var t = (range1[0] + range1[1]) / 2;
-					addCurveIntersections(v1, v2, curve1, curve2, locations,
-							[ range1[0], t ], range2, recursion);
-					addCurveIntersections(v1, v2, curve1, curve2, locations,
-							[ t, range1[1] ], range2, recursion);
-					break;
-				} else {
-					// subdivide v2 and recurse
-					var t = (range2[0] + range2[1]) / 2;
-					addCurveIntersections(v1, v2, curve1, curve2, locations,
-							range1, [ range2[0], t ], recursion);
-					addCurveIntersections(v1, v2, curve1, curve2, locations,
-							range1, [ t, range2[1] ], recursion);
-					break;
-				}
-			}
-			// We need to bailout of clipping and try a numerically stable
-			// method if both of the parameter ranges have converged reasonably
-			// well (according to Numerical.TOLERANCE).
-			if (Math.abs(range1[1] - range1[0]) <= /*#=*/ Numerical.TOLERANCE &&
-				Math.abs(range2[1] - range2[0]) <= /*#=*/ Numerical.TOLERANCE) {
-				var t1 = (range1[0] + range1[1]) / 2,
-					t2 = (range2[0] + range2[1]) / 2;
-				addLocation(locations,
-						curve1, t1, Curve.evaluate(v1, t1, 0),
-						curve2, t2, Curve.evaluate(v2, t2, 0));
-				break;
-			}
-		}
-/*#*/ } else { // !__options.fatline
-		var bounds1 = Curve.getBounds(v1),
-			bounds2 = Curve.getBounds(v2);
-		if (bounds1.touches(bounds2)) {
-			// See if both curves are flat enough to be treated as lines, either
-			// because they have no control points at all, or are "flat enough"
-			// If the curve was flat in a previous iteration, we don't need to
-			// recalculate since it does not need further subdivision then.
-			if ((Curve.isLinear(v1)
-					|| Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE))
-				&& (Curve.isLinear(v2)
-					|| Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE))) {
-				// See if the parametric equations of the lines interesct.
-				addLineIntersection(v1, v2, curve1, curve2, locations);
-			} else {
-				// Subdivide both curves, and see if they intersect.
-				// If one of the curves is flat already, no further subdivion
-				// is required.
-				var v1s = Curve.subdivide(v1),
-					v2s = Curve.subdivide(v2);
-				for (var i = 0; i < 2; i++)
-					for (var j = 0; j < 2; j++)
-						Curve.getIntersections(v1s[i], v2s[j], curve1, curve2,
-								locations);
-			}
-		}
-		return locations;
-/*#*/ } // !__options.fatline
-	}
-
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
 			tmin, tmax, umin, umax, oldTdiff, reverse, recursion) {
+
+/*#*/ if (__options.fatline) {
 		if(recursion === undefined){
 			recursion |= 0;
 			tmin = tmin || 0; tmax = tmax || 1;
@@ -1343,6 +1228,36 @@ new function() { // Scope for methods that require numerical integration
 		else // Iterate
 			addCurveIntersections(v2, v1New, curve2, curve1, locations,
 					umin, umax, tminNew, tmaxNew, tDiff, !reverse, recursion);
+
+/*#*/ } else { // !__options.fatline
+		// Subdivision method
+		var bounds1 = Curve.getBounds(v1),
+			bounds2 = Curve.getBounds(v2);
+		if (bounds1.touches(bounds2)) {
+			// See if both curves are flat enough to be treated as lines, either
+			// because they have no control points at all, or are "flat enough"
+			// If the curve was flat in a previous iteration, we don't need to
+			// recalculate since it does not need further subdivision then.
+			if ((Curve.isLinear(v1)
+					|| Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE))
+				&& (Curve.isLinear(v2)
+					|| Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE))) {
+				// See if the parametric equations of the lines interesct.
+				addLineIntersection(v1, v2, curve1, curve2, locations);
+			} else {
+				// Subdivide both curves, and see if they intersect.
+				// If one of the curves is flat already, no further subdivion
+				// is required.
+				var v1s = Curve.subdivide(v1),
+					v2s = Curve.subdivide(v2);
+				for (var i = 0; i < 2; i++)
+					for (var j = 0; j < 2; j++)
+						Curve.getIntersections(v1s[i], v2s[j], curve1, curve2,
+								locations);
+			}
+		}
+		return locations;
+/*#*/ } // !__options.fatline
 	}
 
 /*#*/ if (__options.fatline) {
