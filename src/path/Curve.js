@@ -1176,24 +1176,32 @@ new function() { // Scope for methods that require numerical integration
 			dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
 			dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
 			dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]);
-		// Get the top and bottom parts of the convex-hull
-		var hull = getConvexHull(dp0, dp1, dp2, dp3),
-			top = hull[0], bottom = hull[1], clip_tmin, clip_tmax;
-		// Clip the convexhull with dmin and dmax
-		clip_tmin = clipConvexHull(top, bottom, dmin, dmax);
-		top.reverse();
-		bottom.reverse();
-		clip_tmax = clipConvexHull(top, bottom, dmin, dmax);
-		// No intersections if one of the tvalues are null or 'undefined'
-		if(clip_tmin == null || clip_tmax == null)
-			return false;
-		// Clip P with the fatline for Q
-		var v1New = Curve.getPart(v1, clip_tmin, clip_tmax),
-			tDiff = clip_tmax - clip_tmin,
-			// tmin and tmax are within the range (0, 1). We need to project it
-			// to the original parameter range for v2.
-			tminNew = tmax * clip_tmin + tmin * (1 - clip_tmin),
-			tmaxNew = tmax * clip_tmax + tmin * (1 - clip_tmax);
+
+		if(q0x === q3x){
+			// fatline of Q has converged to a point. The clipping is not reliable.
+			// Return the value we have even though we will miss the precision.
+			var tminNew = (tmax + tmin) / 2, tmaxNew = tminNew,
+				tDiff = 0;
+		} else {
+			// Get the top and bottom parts of the convex-hull
+			var hull = getConvexHull(dp0, dp1, dp2, dp3),
+				top = hull[0], bottom = hull[1], clip_tmin, clip_tmax;
+			// Clip the convexhull with dmin and dmax
+			clip_tmin = clipConvexHull(top, bottom, dmin, dmax);
+			top.reverse();
+			bottom.reverse();
+			clip_tmax = clipConvexHull(top, bottom, dmin, dmax);
+			// No intersections if one of the tvalues are null or 'undefined'
+			if(clip_tmin == null || clip_tmax == null)
+				return false;
+			// Clip P with the fatline for Q
+			var v1New = Curve.getPart(v1, clip_tmin, clip_tmax),
+				tDiff = clip_tmax - clip_tmin,
+				// tmin and tmax are within the range (0, 1). We need to project it
+				// to the original parameter range for v2.
+				tminNew = tmax * clip_tmin + tmin * (1 - clip_tmin),
+				tmaxNew = tmax * clip_tmax + tmin * (1 - clip_tmax);
+		}
 		// Check if we need to subdivide the curves
 		if (oldTdiff > 0.8 && tDiff > 0.8)
 			// Subdivide the curve which has converged the least.
