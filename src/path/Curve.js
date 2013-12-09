@@ -1264,13 +1264,20 @@ new function() { // Scope for methods that require numerical integration
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
 			tmin, tmax, umin, umax, oldTdiff, reverse, recursion) {
+		if(recursion === undefined){
+			recursion |= 0;
+			tmin = tmin || 0; tmax = tmax || 1;
+			umin = umin || 0; umax = umax || 1;
+			oldTdiff = oldTdiff || 1;
+			reverse = false;
+		}
 		// Avoid endless recursion.
 		if (recursion > 20)
 			return;
 		// Let P be the first curve and Q be the second
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
-			// Calculate the fat-line L for P is the baseline l and two
+			// Calculate the fat-line L for Q is the baseline l and two
 			// offsets which completely encloses the curve P.
 			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
 			d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]) || 0,
@@ -1278,7 +1285,7 @@ new function() { // Scope for methods that require numerical integration
 			dmin = factor * Math.min(0, d1, d2),
 			dmax = factor * Math.max(0, d1, d2),
 			// Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
-			// distance of Q from the baseline l of the fat-line, ti is equally
+			// distance of P from the baseline l of the fat-line, ti is equally
 			// spaced in [0, 1]
 			dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
 			dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
@@ -1287,11 +1294,11 @@ new function() { // Scope for methods that require numerical integration
 		// Get the top and bottom parts of the convex-hull
 		var hull = getConvexHull(dp0, dp1, dp2, dp3),
 			top = hull[0], bottom = hull[1], clip_tmin, clip_tmax;
-		// Clip the convexhull
-		clip_tmin = clipCHull(top, bottom, dmin, dmax);
+		// Clip the convexhull with dmin and dmax
+		clip_tmin = clipConvexHull(top, bottom, dmin, dmax);
 		top.reverse();
 		bottom.reverse();
-		clip_tmax = clipCHull(top, bottom, dmin, dmax);
+		clip_tmax = clipConvexHull(top, bottom, dmin, dmax);
 		// No intersections if one of the tvalues are null or 'undefined'
 		if(clip_tmin == null || clip_tmax == null)
 			return false;
