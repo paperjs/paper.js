@@ -114,7 +114,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	 *
 	 * @name Style#fontWeight
 	 * @default 'normal'
-	 * @type String
+	 * @type String|Number
 	 */
 
 	/**

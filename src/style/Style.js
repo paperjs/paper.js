@@ -38,7 +38,7 @@
  * text.content = 'Hello world.';
  * text.style = {
  * 	fontFamily: 'Courier New',
- * 	fontWeight: 'Bold',
+ * 	fontWeight: 'bold',
  * 	fontSize: 20,
  * 	fillColor: 'red',
  * 	justification: 'center'
@@ -544,7 +544,7 @@ var Style = Base.extend(new function() {
 	 *
 	 * @name Style#fontWeight
 	 * @default 'normal'
-	 * @type String
+	 * @type String|Number
 	 */
 
 	/**
