@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Symbols</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas1">
+		var ellipse = new Shape.Ellipse({
+			from: [10, 10],
+			to: [200, 100],
+			fillColor: 'red'
+		});
+
+		var circle = new Shape.Circle({
+			center: [50, 150],
+			radius: 25,
+			fillColor: 'blue'
+		});
+
+		var rectangle = new Shape.Rectangle({
+			from: [25, 200],
+			to: [100, 225],
+			fillColor: 'green'
+		});
+		rectangle.rotate(30);
+
+		window._json = project.exportJSON();
+		console.log(window._json);
+	</script>
+	<script type="text/paperscript" canvas="canvas2">
+		project.importJSON(window._json);
+	</script>
+</head>
+<body>
+	<canvas id="canvas1" width="500" height="500"></canvas>
+	<canvas id="canvas2" width="500" height="500"></canvas>
+</body>
+</html>

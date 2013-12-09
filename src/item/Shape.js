@@ -21,14 +21,14 @@ var Shape = Item.extend(/** @lends Shape# */{
 	_class: 'Shape',
 	_transformContent: false,
 	_boundsSelected: true,
+	_serializeFields: {
+		shape: null,
+		size: null,
+		radius: null
+	},
 
-	// TODO: serialization
-
-	initialize: function Shape(shape, center, size, radius, props) {
-		this._shape = shape;
-		this._size = size;
-		this._radius = radius;
-		this._initialize(props, center);
+	initialize: function Shape(props) {
+		this._initialize(props);
 	},
 
 	_equals: function(item) {
@@ -39,10 +39,12 @@ var Shape = Item.extend(/** @lends Shape# */{
 	},
 
 	clone: function(insert) {
-		return this._clone(new Shape(this._shape, this.getPosition(true),
-				this._size.clone(),
-				this._radius.clone ? this._radius.clone() : this._radius,
-				{ insert: false }), insert);
+		return this._clone(new Shape({
+			shape: this._shape,
+			size: this._size,
+			radius: this._radius,
+			insert: false
+		}), insert);
 	},
 
 	/**
@@ -53,6 +55,10 @@ var Shape = Item.extend(/** @lends Shape# */{
 	 */
 	getShape: function() {
 		return this._shape;
+	},
+
+	setShape: function(shape) {
+		this._shape = shape;
 	},
 
 	/**
@@ -67,10 +73,13 @@ var Shape = Item.extend(/** @lends Shape# */{
 	},
 
 	setSize: function(/* size */) {
-		var shape = this._shape,
-			size = Size.read(arguments);
-		if (!this._size.equals(size)) {
-			var width = size.width,
+		var size = Size.read(arguments);
+		if (!this._size) {
+			// First time, e.g. whean reading from JSON...
+			this._size = size.clone();
+		} else if (!this._size.equals(size)) {
+			var shape = this._shape,
+				width = size.width,
 				height = size.height;
 			if (shape === 'rectangle') {
 				// Shrink radius accordingly
@@ -114,15 +123,20 @@ var Shape = Item.extend(/** @lends Shape# */{
 			this._size.set(size, size);
 		} else {
 			radius = Size.read(arguments);
-			if (this._radius.equals(radius))
-				return;
-			this._radius.set(radius.width, radius.height);
-			if (shape === 'rectangle') {
-				// Grow size accordingly
-				var size = Size.max(this._size, radius.multiply(2));
-				this._size.set(size.width, size.height);
-			} else if (shape === 'ellipse') {
-				this._size.set(radius.width * 2, radius.height * 2);
+			if (!this._radius) {
+				// First time, e.g. whean reading from JSON...
+				this._radius = radius.clone();
+			} else {
+				if (this._radius.equals(radius))
+					return;
+				this._radius.set(radius.width, radius.height);
+				if (shape === 'rectangle') {
+					// Grow size accordingly
+					var size = Size.max(this._size, radius.multiply(2));
+					this._size.set(size.width, size.height);
+				} else if (shape === 'ellipse') {
+					this._size.set(radius.width * 2, radius.height * 2);
+				}
 			}
 		}
 		this._changed(/*#=*/ Change.GEOMETRY);
@@ -310,7 +324,11 @@ new function() { // Scope for _contains() and _hitTest() code.
 // Mess with indentation in order to get more line-space below:
 statics: new function() {
 	function createShape(shape, point, size, radius, args) {
-		return new Shape(shape, point, size, radius, Base.getNamed(args));
+		var item = new Shape(Base.getNamed(args));
+		item._shape = shape;
+		item._size = size;
+		item._radius = radius;
+		return item.translate(point);
 	}
 
 	return /** @lends Shape */{
