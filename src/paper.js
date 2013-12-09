@@ -98,8 +98,8 @@ var paper = new function(undefined) {
 /*#*/ } // options.environment == 'node'
 /*#*/ include('dom/DomElement.js');
 /*#*/ if (options.environment == 'browser') {
-// DomEvent and DomSceneObject do not make sense outside of the browser (yet)
-/*#*/ include('dom/DomSceneObject.js');
+// DomEvent and HTMLItem do not make sense outside of the browser (yet)
+/*#*/ include('dom/HTMLItem.js');
 /*#*/ include('dom/DomEvent.js');
 /*#*/ } // options.environment == 'browser'
 

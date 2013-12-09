@@ -11,43 +11,43 @@
  */
 
 /**
- * @name DomSceneObject
- * @namespace
- * @private
+ * @name HTMLItem
+ * @class The HTMLItem item represents an DOM node sticked to Paper.js project coordinates.
+ * @extends Item
  */
 
-var DomSceneObject = Base.extend(Callback, {
+var HTMLItem = Item.extend(/** @lends HTMLItem# */{
     statics: {
-        allDomSceneObjects: [],
+        allHTMLItems: [],
         updateCoords: function () {
-            for (var i = 0; i < DomSceneObject.allDomSceneObjects.length; i++) {
-                var newCoords = DomSceneObject.allDomSceneObjects[i].canvasToDom(DomSceneObject.allDomSceneObjects[i].x, DomSceneObject.allDomSceneObjects[i].y);
-                DomSceneObject.allDomSceneObjects[i].node.style.left = newCoords.x + 'px';
-                DomSceneObject.allDomSceneObjects[i].node.style.top = newCoords.y + 'px';
+            for (var i = 0; i < HTMLItem.allHTMLItems.length; i++) {
+                var newCoords = HTMLItem.allHTMLItems[i].canvasToDom(HTMLItem.allHTMLItems[i].x, HTMLItem.allHTMLItems[i].y);
+                HTMLItem.allHTMLItems[i].node.style.left = newCoords.x + 'px';
+                HTMLItem.allHTMLItems[i].node.style.top = newCoords.y + 'px';
             }
         }
     },
-
-    _class: 'DomSceneObject',
+    //_boundsGetter: 'getBounds',
+    _class: 'HTMLItem',
     _serializeFields: {
     },
 
-    initialize: function Item(x, y) {
+    initialize: function HTMLItem(x, y) {
         if (x instanceof Object === true) {
             y = x.y;
             x = x.x;
         }
 
-        this._id = Item._id = (Item._id || 0) + 1;
+        this._id = HTMLItem._id = (HTMLItem._id || 0) + 1;
         if (!this._project) {
             var project = paper.project,
                 layer = project.activeLayer;
             this._setProject(project);
         }
 
-        if (DomSceneObject.allDomSceneObjects.length === 0) {
-            this._project.view.on('zoom', DomSceneObject.updateCoords);
-            this._project.view.on('scroll', DomSceneObject.updateCoords);
+        if (HTMLItem.allHTMLItems.length === 0) {
+            this._project.view.on('zoom', HTMLItem.updateCoords);
+            this._project.view.on('scroll', HTMLItem.updateCoords);
         }
 
         this.x = x || 0;
@@ -58,7 +58,7 @@ var DomSceneObject = Base.extend(Callback, {
         var coord = this.canvasToDom(x, y);
         this.node.style.left = coord.x + 'px';
         this.node.style.top = coord.y + 'px';
-        DomSceneObject.allDomSceneObjects.push(this);
+        HTMLItem.allHTMLItems.push(this);
         this._project.view._element.parentNode.style.position = 'relative';
         this._project.view._element.parentNode.style.padding = '0';
         this._project.view._element.parentNode.style.margin = '0';
@@ -71,15 +71,15 @@ var DomSceneObject = Base.extend(Callback, {
         this.node.appendChild(node);
     },
     remove: function () {
-        for (var i = 0; i < DomSceneObject.allDomSceneObjects.length; i++) {
-            if (DomSceneObject.allDomSceneObjects[i] === this) {
-                DomSceneObject.allDomSceneObjects.splice(i, i + 1);
+        for (var i = 0; i < HTMLItem.allHTMLItems.length; i++) {
+            if (HTMLItem.allHTMLItems[i] === this) {
+                HTMLItem.allHTMLItems.splice(i, i + 1);
             }
         }
         this._project.view._element.parentNode.removeChild(this.node);
-        if (DomSceneObject.allDomSceneObjects.length === 0) {
-            this._project.view.detach('zoom', DomSceneObject.updateCoords);
-            this._project.view.detach('fire', DomSceneObject.updateCoords);
+        if (HTMLItem.allHTMLItems.length === 0) {
+            this._project.view.detach('zoom', HTMLItem.updateCoords);
+            this._project.view.detach('fire', HTMLItem.updateCoords);
         }
     },
     canvasToDom: function (x, y) {
@@ -102,6 +102,10 @@ var DomSceneObject = Base.extend(Callback, {
             }
         }
     },
+    /*_getBounds: function(getter, matrix) {
+        var rect = new Rectangle(this._size).setCenter(0, 0);
+        return matrix ? matrix._transformBounds(rect) : rect;
+    },*/
     getId: function () {
         return this._id;
     },
@@ -129,5 +133,4 @@ var DomSceneObject = Base.extend(Callback, {
         this._name = name || undefined;
         this._changed(32);
     }
-
 });
