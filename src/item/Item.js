@@ -1100,7 +1100,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (matrix && matrix._updateVersion !== updateVersion)
 			matrix = null;
 		if (!matrix) {
-			matrix = this._globalMatrix = item._matrix.clone();
+			matrix = this._globalMatrix = this._matrix.clone();
 			if (this._parent)
 				matrix.concatenate(this._parent.getGlobalMatrix());
 			matrix._updateVersion = updateVersion;
