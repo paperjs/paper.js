@@ -207,13 +207,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var parent = this._parent,
 			project = this._project,
 			symbol = this._parentSymbol;
-		// Reset _updateCount on each change.
-		this._updateCount = null;
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			// Clear cached bounds and position whenever geometry changes
 			delete this._bounds;
 			delete this._position;
 			delete this._decomposed;
+			delete this._globalMatrix;
 		}
 		if (parent && (flags
 				& (/*#=*/ ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STROKE))) {
@@ -1071,14 +1070,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 */
 	getGlobalMatrix: function() {
-		var matrix = this._updateCount === this._project._updateCount
-				&& this._globalMatrix || null;
-		// If _updateCount is out of sync or no _globalMatrix was calculated
-		// when rendering, iteratively calculate it now.
+		var matrix = this._globalMatrix,
+			updateVersion = this._project._updateVersion;
+		// If _globalMatrix is out of sync, recalculate it now
+		if (matrix && matrix._updateVersion !== updateVersion)
+			matrix = null;
 		if (!matrix) {
 			matrix = this._globalMatrix = item._matrix.clone();
 			if (this._parent)
 				matrix.concatenate(this._parent.getGlobalMatrix());
+			matrix._updateVersion = updateVersion;
 		}
 		return matrix;
 	},
@@ -3343,10 +3344,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	draw: function(ctx, param) {
 		if (!this._visible || this._opacity === 0)
 			return;
-		// Each time the project gets drawn, it's _updateCount is increased.
-		// Keep the _updateCount of drawn items in sync, so we have an easy
+		// Each time the project gets drawn, it's _updateVersion is increased.
+		// Keep the _updateVersion of drawn items in sync, so we have an easy
 		// way to know for which selected items we need to draw selection info.
-		this._updateCount = this._project._updateCount;
+		var updateVersion = this._updateVersion = this._project._updateVersion;
 		// Keep calculating the current global matrix, by keeping a history
 		// and pushing / popping as we go along.
 		var trackTransforms = param.trackTransforms,
@@ -3360,8 +3361,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (!globalMatrix.isInvertible())
 			return;
 		// Only keep track of transformation if told so. See Project#draw()
-		if (trackTransforms)
+		if (trackTransforms) {
 			transforms.push(this._globalMatrix = globalMatrix);
+			// We also keep the cached _globalMatrix versioned.
+			globalMatrix._updateVersion = updateVersion;
+		}
+
 		// If the item has a blendMode or is defining an opacity, draw it on
 		// a temporary canvas first and composite the canvas afterwards.
 		// Paths with an opacity < 1 that both define a fillColor

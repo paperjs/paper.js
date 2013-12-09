@@ -59,8 +59,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			this.view = view instanceof View ? view : View.create(view);
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
-		// See Item#draw() for an explanation of _updateCount
-		this._updateCount = 0;
+		// See Item#draw() for an explanation of _updateVersion
+		this._updateVersion = 0;
 		// Change tracking, not in use for now. Activate once required:
 		// this._changes = [];
 		// this._changesById = {};
@@ -421,9 +421,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 
 	draw: function(ctx, matrix, ratio) {
-		// Increase the _updateCount before the draw-loop. After that, items
-		// that are visible will have their _updateCount set to the new value.
-		this._updateCount++;
+		// Increase the _updateVersion before the draw-loop. After that, items
+		// that are visible will have their _updateVersion set to the new value.
+		this._updateVersion++;
 		ctx.save();
 		matrix.applyToContext(ctx);
 		// Use new Base() so we can use param.extend() to easily override
@@ -450,7 +450,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.strokeWidth = 1;
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id];
-				if (item._updateCount === this._updateCount
+				if (item._updateVersion === this._updateVersion
 						&& (item._drawSelected || item._boundsSelected)) {
 					// Allow definition of selected color on a per item and per
 					// layer level, with a fallback to #009dec
@@ -464,7 +464,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 					if (item._boundsSelected) {
 						// We need to call the internal _getBounds, to get non-
 						// transformed bounds.
-						// TODO: Implement caching for these too!
+						// TODO: Implement caching for these too?
 						var coords = mx._transformCorners(
 								item._getBounds('getBounds'));
 						// Now draw a rectangle that connects the transformed

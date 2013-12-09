@@ -421,7 +421,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * @name View#update
 	 * @function
 	 */
-	// update: function(checkUpdate) {
+	// update: function() {
 	// },
 
 	/**
