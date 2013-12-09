@@ -1410,50 +1410,41 @@ new function() { // Scope for methods that require numerical integration
 	/**
 	 * Clips the convex-hull and returns [tmin, tmax] for the curve contained
 	 */
-	function clipConvexHull(hull, dmin, dmax) {
-		function clipCHull(hull_top, hull_bottom, dmin, dmax) {
-			var tProxy, tVal = null, i, li, px, py, qx, qy;
-			for (i = 0, li = hull_bottom.length-1; i < li; i++) {
-				py = hull_bottom[i][1];
-				qy = hull_bottom[i+1][1];
-				if (py < qy)
-					tProxy = null;
-				else if (qy <= dmax) {
-					px = hull_bottom[i][0];
-					qx = hull_bottom[i+1][0];
-					tProxy = px + (dmax  - py) * (qx - px) / (qy - py);
-				} else
-					// Try the next chain
-					continue;
-				// We got a proxy-t;
-				break;
-			}
-			if (hull_top[0][1] <= dmax)
-				tProxy = hull_top[0][0];
-			for (i = 0, li = hull_top.length-1; i < li; i++) {
-				py = hull_top[i][1];
-				qy = hull_top[i+1][1];
-				if (py >= dmin)
-					tVal = tProxy;
-				else if (py > qy)
-					tVal = null;
-				else if (qy >= dmin) {
-					px = hull_top[i][0];
-					qx = hull_top[i+1][0];
-					tVal = px + (dmin  - py) * (qx - px) / (qy - py);
-				} else
-					continue;
-				break;
-			}
-			return tVal;
+	function clipConvexHull(hull_top, hull_bottom, dmin, dmax) {
+		var tProxy, tVal = null, i, li, px, py, qx, qy;
+		for (i = 0, li = hull_bottom.length-1; i < li; i++) {
+			py = hull_bottom[i][1];
+			qy = hull_bottom[i+1][1];
+			if (py < qy)
+				tProxy = null;
+			else if (qy <= dmax) {
+				px = hull_bottom[i][0];
+				qx = hull_bottom[i+1][0];
+				tProxy = px + (dmax  - py) * (qx - px) / (qy - py);
+			} else
+				// Try the next chain
+				continue;
+			// We got a proxy-t;
+			break;
 		}
-
-		var tmin, tmax, top = hull[0], bottom = hull[1];
-		tmin = clipCHull(top, bottom, dmin, dmax);
-		top.reverse();
-		bottom.reverse();
-		tmax = clipCHull(top, bottom, dmin, dmax);
-		return [tmin, tmax];
+		if (hull_top[0][1] <= dmax)
+			tProxy = hull_top[0][0];
+		for (i = 0, li = hull_top.length-1; i < li; i++) {
+			py = hull_top[i][1];
+			qy = hull_top[i+1][1];
+			if (py >= dmin)
+				tVal = tProxy;
+			else if (py > qy)
+				tVal = null;
+			else if (qy >= dmin) {
+				px = hull_top[i][0];
+				qx = hull_top[i+1][0];
+				tVal = px + (dmin  - py) * (qx - px) / (qy - py);
+			} else
+				continue;
+			break;
+		}
+		return tVal;
 	}
 /*#*/ } // __options.fatline
 
