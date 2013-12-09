@@ -325,6 +325,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 			path = this._path,
 			selected = !!selected, // convert to boolean
 			state = this._selectionState,
+			oldState = state,
 			flag = !point ? /*#=*/ SelectionState.SEGMENT
 					: point === this._point ? /*#=*/ SelectionState.POINT
 					: point === this._handleIn ? /*#=*/ SelectionState.HANDLE_IN
@@ -335,11 +336,15 @@ var Segment = Base.extend(/** @lends Segment# */{
 		} else {
 			state &= ~flag;
 		}
+		// Set the selectio state even if path is not defined yet, to allow
+		// selected segments to be inserted into paths and make JSON
+		// deserialization work.  
+		this._selectionState = state;
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from
 		// project._selectedItems
-		if (path && state !== this._selectionState) {
-			path._updateSelection(this, this._selectionState, state);
+		if (path && state !== oldState) {
+			path._updateSelection(this, oldState, state);
 			// Let path know that we changed something and the view should be
 			// redrawn
 			path._changed(/*#=*/ Change.ATTRIBUTE);
