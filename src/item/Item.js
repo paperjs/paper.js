@@ -47,6 +47,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	// Exceptions are Raster, PlacedSymbol, Clip and Shape.
 	_transformContent: true,
 	_boundsSelected: false,
+	_selectChildren: false,
 	// Provide information about fields to be serialized, with their defaults
 	// that can be ommited.
 	_serializeFields: {
@@ -569,9 +570,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_guide: false,
 
 	/**
-	 * Specifies whether an item is selected and will also return {@code true}
-	 * if the item is partially selected (groups with some selected or partially
-	 * selected paths).
+	 * Specifies whether the item is selected. This will also return
+	 * {@code true} for {@link Group} items if they are partially selected, e.g.
+	 * groups containing selected or partially selected paths.
 	 *
 	 * Paper.js draws the visual outlines of selected items on top of your
 	 * project. This can be useful for debugging, as it allows you to see the
@@ -583,6 +584,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @bean
 	 * @see Project#selectedItems
 	 * @see Segment#selected
+	 * @see Curve#selected
 	 * @see Point#selected
 	 *
 	 * @example {@paperscript}
@@ -594,7 +596,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * path.selected = true; // Select the path
 	 */
 	isSelected: function() {
-		if (this._children) {
+		if (this._selectChildren) {
 			for (var i = 0, l = this._children.length; i < l; i++)
 				if (this._children[i].isSelected())
 					return true;
@@ -602,14 +604,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return this._selected;
 	},
 
-	setSelected: function(selected /*, noChildren */) {
+	setSelected: function(selected, noChildren) {
 		// Don't recursively call #setSelected() if it was called with
 		// noChildren set to true, see #setFullySelected().
-		if (this._children && !arguments[1]) {
+		if (!noChildren && this._selectChildren) {
 			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i].setSelected(selected);
 		}
-		if ((selected = !!selected) != this._selected) {
+		if ((selected = !!selected) ^ this._selected) {
 			this._selected = selected;
 			this._project._updateSelection(this);
 			this._changed(/*#=*/ Change.ATTRIBUTE);

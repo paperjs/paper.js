@@ -24,6 +24,7 @@
  */
 var Layer = Group.extend(/** @lends Layer# */{
 	_class: 'Layer',
+	_selectChildren: false,
 
 	// DOCS: improve constructor code example.
 	/**
