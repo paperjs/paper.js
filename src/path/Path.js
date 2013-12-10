@@ -2532,55 +2532,12 @@ statics: {
 	 * @private
 	 */
 	getStrokeBounds: function(segments, closed, style, matrix) {
-		/**
-		 * Returns the horizontal and vertical padding that a transformed round
-		 * stroke adds to the bounding box, by calculating the dimensions of a
-		 * rotated ellipse.
-		 */
-		function getPenPadding(radius, matrix) {
-			if (!matrix)
-				return [radius, radius];
-			// If a matrix is provided, we need to rotate the stroke circle
-			// and calculate the bounding box of the resulting rotated elipse:
-			// Get rotated hor and ver vectors, and determine rotation angle
-			// and elipse values from them:
-			var mx = matrix.shiftless(),
-				hor = mx.transform(new Point(radius, 0)),
-				ver = mx.transform(new Point(0, radius)),
-				phi = hor.getAngleInRadians(),
-				a = hor.getLength(),
-				b = ver.getLength();
-			// Formula for rotated ellipses:
-			// x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-			// y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-			// Derivates (by Wolfram Alpha):
-			// derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-			// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
-			// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-			// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
-			// This can be simplified to:
-			// tan(t) = -b * tan(phi) / a // x
-			// tan(t) =  b * cot(phi) / a // y
-			// Solving for t gives:
-			// t = pi * n - arctan(b * tan(phi) / a) // x
-			// t = pi * n + arctan(b * cot(phi) / a)
-			//   = pi * n + arctan(b / tan(phi) / a) // y
-			var sin = Math.sin(phi),
-				cos = Math.cos(phi),
-				tan = Math.tan(phi),
-				tx = -Math.atan(b * tan / a),
-				ty = Math.atan(b / (tan * a));
-			// Due to symetry, we don't need to cycle through pi * n solutions:
-			return [Math.abs(a * Math.cos(tx) * cos - b * Math.sin(tx) * sin),
-					Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
-		}
-
 		// TODO: Find a way to reuse 'bounds' cache instead?
 		if (!style.hasStroke())
 			return Path.getBounds(segments, closed, style, matrix);
 		var length = segments.length - (closed ? 0 : 1),
 			radius = style.getStrokeWidth() / 2,
-			padding = getPenPadding(radius, matrix),
+			padding = Path._getPenPadding(radius, matrix),
 			bounds = Path.getBounds(segments, closed, style, matrix, padding),
 			join = style.getStrokeJoin(),
 			cap = style.getStrokeCap(),
@@ -2623,6 +2580,49 @@ statics: {
 			addCap(segments[segments.length - 1], cap);
 		}
 		return bounds;
+	},
+
+	/**
+	 * Returns the horizontal and vertical padding that a transformed round
+	 * stroke adds to the bounding box, by calculating the dimensions of a
+	 * rotated ellipse.
+	 */
+	_getPenPadding: function(radius, matrix) {
+		if (!matrix)
+			return [radius, radius];
+		// If a matrix is provided, we need to rotate the stroke circle
+		// and calculate the bounding box of the resulting rotated elipse:
+		// Get rotated hor and ver vectors, and determine rotation angle
+		// and elipse values from them:
+		var mx = matrix.shiftless(),
+			hor = mx.transform(new Point(radius, 0)),
+			ver = mx.transform(new Point(0, radius)),
+			phi = hor.getAngleInRadians(),
+			a = hor.getLength(),
+			b = ver.getLength();
+		// Formula for rotated ellipses:
+		// x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+		// y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+		// Derivates (by Wolfram Alpha):
+		// derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
+		// dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
+		// derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
+		// dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
+		// This can be simplified to:
+		// tan(t) = -b * tan(phi) / a // x
+		// tan(t) =  b * cot(phi) / a // y
+		// Solving for t gives:
+		// t = pi * n - arctan(b * tan(phi) / a) // x
+		// t = pi * n + arctan(b * cot(phi) / a)
+		//   = pi * n + arctan(b / tan(phi) / a) // y
+		var sin = Math.sin(phi),
+			cos = Math.cos(phi),
+			tan = Math.tan(phi),
+			tx = -Math.atan(b * tan / a),
+			ty = Math.atan(b / (tan * a));
+		// Due to symetry, we don't need to cycle through pi * n solutions:
+		return [Math.abs(a * Math.cos(tx) * cos - b * Math.sin(tx) * sin),
+				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
 	},
 
 	_addSquareJoin: function(segment, join, radius, miterLimit, addPoint, area) {
@@ -2694,20 +2694,20 @@ statics: {
 			x2 = -x1,
 			y1 = x1,
 			y2 = x2;
-		strokePadding = strokePadding / 2 || 0;
-		joinPadding = joinPadding / 2 || 0;
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i];
 			segment._transformCoordinates(matrix, coords, false);
 			for (var j = 0; j < 6; j += 2) {
 				// Use different padding for points or handles
 				var padding = j == 0 ? joinPadding : strokePadding,
+					paddingX = padding ? padding[0] : 0,
+					paddingY = padding ? padding[1] : 0,
 					x = coords[j],
 					y = coords[j + 1],
-					xn = x - padding,
-					xx = x + padding,
-					yn = y - padding,
-					yx = y + padding;
+					xn = x - paddingX,
+					xx = x + paddingX,
+					yn = y - paddingY,
+					yx = y + paddingY;
 				if (xn < x1) x1 = xn;
 				if (xx > x2) x2 = xx;
 				if (yn < y1) y1 = yn;
@@ -2727,17 +2727,16 @@ statics: {
 		// Delegate to handleBounds, but pass on radius values for stroke and
 		// joins. Hanlde miter joins specially, by passing the largets radius
 		// possible.
-		var strokeWidth = style.getStrokeColor() ? style.getStrokeWidth() : 0,
-			joinWidth = strokeWidth;
-		if (strokeWidth === 0) {
-			strokeWidth = /*#=*/ Numerical.TOLERANCE;
-		} else {
+		var strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
+			joinRadius = strokeRadius;
+		if (strokeRadius > 0) {
 			if (style.getStrokeJoin() === 'miter')
-				joinWidth = strokeWidth * style.getMiterLimit();
+				joinRadius = strokeRadius * style.getMiterLimit();
 			if (style.getStrokeCap() === 'square')
-				joinWidth = Math.max(joinWidth, strokeWidth * Math.sqrt(2));
+				joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
 		}
 		return Path.getHandleBounds(segments, closed, style, matrix,
-				strokeWidth, joinWidth);
+				Path._getPenPadding(strokeRadius, matrix),
+				Path._getPenPadding(joinRadius, matrix));
 	}
 }});
