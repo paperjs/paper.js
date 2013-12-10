@@ -431,9 +431,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		var param = new Base({
 			offset: new Point(0, 0),
 			ratio: ratio,
-			// A stack of concatenated matrices, to keep track of the current
-			// global matrix, since Canvas is not able tell us (yet).
-			transforms: [matrix],
 			// Tell the drawing routine that we want to track nested matrices
 			// in param.transforms, and that we want it to set _globalMatrix
 			// as used below. Item#rasterize() and Raster#getAverageColor() do
@@ -458,7 +455,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 							|| item.getLayer().getSelectedColor();
 					ctx.strokeStyle = ctx.fillStyle = color
 							? color.toCanvasStyle(ctx) : '#009dec';
-					var mx = item._globalMatrix;
+					var mx = item._globalMatrix.clone().preConcatenate(matrix);
 					if (item._drawSelected)
 						item._drawSelected(ctx, mx);
 					if (item._boundsSelected) {

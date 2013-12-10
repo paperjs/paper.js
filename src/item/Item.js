@@ -1106,7 +1106,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (!matrix) {
 			matrix = this._globalMatrix = this._matrix.clone();
 			if (this._parent)
-				matrix.concatenate(this._parent.getGlobalMatrix());
+				matrix.preConcatenate(this._parent.getGlobalMatrix());
 			matrix._updateVersion = updateVersion;
 		}
 		return matrix;
@@ -3391,9 +3391,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Keep calculating the current global matrix, by keeping a history
 		// and pushing / popping as we go along.
 		var trackTransforms = param.trackTransforms,
-			transforms = param.transforms,
+			// If transforms does not exist, set it up with the identity matrix
+			transforms = param.transforms = param.transforms || [new Matrix()],
+			matrix = this._matrix,
 			parentMatrix = transforms[transforms.length - 1],
-			globalMatrix = parentMatrix.clone().concatenate(this._matrix);
+			globalMatrix = parentMatrix.clone().concatenate(matrix);
 		// If this item is not invertible, do not draw it, since it would cause
 		// empty ctx.currentPath and mess up caching. It appears to also be a
 		// good idea generally to not draw in such cirucmstances, e.g. SVG
@@ -3402,6 +3404,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			return;
 		// Only keep track of transformation if told so. See Project#draw()
 		if (trackTransforms) {
+			if (!transforms)
+				transforms = param.transforms = [];
 			transforms.push(this._globalMatrix = globalMatrix);
 			// We also keep the cached _globalMatrix versioned.
 			globalMatrix._updateVersion = updateVersion;
@@ -3457,7 +3461,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			ctx.translate(-itemOffset.x, -itemOffset.y);
 		}
 		// Apply globalMatrix when drawing into temporary canvas.
-		(direct ? this._matrix : globalMatrix).applyToContext(ctx);
+		(direct ? matrix : globalMatrix).applyToContext(ctx);
 		// If we're drawing into a separate canvas and a clipItem is defined for
 		// the current rendering loop, we need to draw the clip item again.
 		if (!direct && param.clipItem)
