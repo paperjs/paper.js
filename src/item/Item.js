@@ -2697,8 +2697,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// in _bounds and transform each.
 			for (var key in bounds) {
 				var rect = bounds[key];
-				// See _getCachedBounds for an explanation of this:
-				if (!rect._internal)
+				// If these are internal bounds, only transform them if this
+				// item transforming its content.
+				if (this._transformContent || !rect._internal)
 					matrix._transformBounds(rect, rect);
 			}
 			// If we have cached bounds, update _position again as its 
