@@ -69,8 +69,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	_initialize: function(props, point) {
-		// Define this Item's unique id.
-		this._id = Item._id = (Item._id || 0) + 1;
+		// Define this Item's unique id. But allow the creation of internally
+		// used paths with no ids.
+		var internal = props && props._internal === true;
+		if (!internal)
+			this._id = Item._id = (Item._id || 0) + 1;
 		// Handle matrix before everything else, to avoid issues with
 		// #addChild() calling _changed() and accessing _matrix already.
 		var matrix = this._matrix = new Matrix();
@@ -81,8 +84,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project) {
 			var project = paper.project;
-			// Do not insert into DOM if props.insert is false.
-			if (props && props.insert === false) {
+			// Do not insert into DOM if it's an internal path or
+			// props.insert is false.
+			if (internal || props && props.insert === false) {
 				this._setProject(project);
 			} else {
 				// Create a new layer if there is no active one. This will
