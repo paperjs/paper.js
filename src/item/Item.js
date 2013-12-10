@@ -71,7 +71,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_initialize: function(props, point) {
 		// Define this Item's unique id. But allow the creation of internally
 		// used paths with no ids.
-		var internal = props && props._internal === true;
+		var internal = props && props.internal === true;
 		if (!internal)
 			this._id = Item._id = (Item._id || 0) + 1;
 		// Handle matrix before everything else, to avoid issues with
@@ -1619,18 +1619,22 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var matrix = this._matrix,
 			parentTotalMatrix = options._totalMatrix,
 			// Keep the accumulated matrices up to this item in options, so we
-			// can keep calculating the correct _padding values.
+			// can keep calculating the correct _tolerancePadding values.
 			totalMatrix = options._totalMatrix = parentTotalMatrix.clone()
 				.concatenate(matrix),
 			// Calculate the transformed padding as 2D size that describes the
-			// transformed tolerance circle / ellipse. 
-			padding = options._padding = new Size(Path._getPenPadding(1,
-					totalMatrix.inverted())).multiply(options.tolerance);
+			// transformed tolerance circle / ellipse. Make sure it's never 0
+			// since we're using it for division.
+			tolerancePadding = options._tolerancePadding = new Size(
+						Path._getPenPadding(1, totalMatrix.inverted())
+					).multiply(
+						Math.max(options.tolerance, /*#=*/ Numerical.TOLERANCE)
+					);
 		// Transform point to local coordinates.
 		point = matrix._inverseTransform(point);
 
 		if (!this._children && !this.getInternalRoughBounds()
-				.expand(padding.multiply(2))._containsPoint(point))
+				.expand(tolerancePadding.multiply(2))._containsPoint(point))
 			return null;
 		// Filter for type, guides and selected items if that's required.
 		var checkSelf = !(options.guides && !this._guide
@@ -1643,7 +1647,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			var pt = bounds['get' + part]();
 			// Since there are transformations, we cannot simply use a numerical
 			// tolerance value. Instead, we divide by a padding size, see above.
-			if (point.subtract(pt).divide(padding).length <= 1)
+			if (point.subtract(pt).divide(tolerancePadding).length <= 1)
 				return new HitResult(type, that,
 						{ name: Base.hyphenate(part), point: pt });
 		}

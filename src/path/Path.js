@@ -1758,7 +1758,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 			closed = this._closed,
 			// transformed tolerance padding, see Item#hitTest. We will add
 			// stroke padding on top if stroke is defined.
-			padding = options._padding,
+			tolerancePadding = options._tolerancePadding,
+			strokePadding = tolerancePadding,
 			join, cap, miterLimit,
 			area, loc, res,
 			hasStroke = options.stroke && style.hasStroke(),
@@ -1773,7 +1774,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				cap = style.getStrokeCap();
 				miterLimit = radius * style.getMiterLimit();
 				// Add the stroke radius to tolerance padding.
-				padding = padding.add(new Size(radius, radius));
+				strokePadding = tolerancePadding.add(new Point(radius, radius));
 			} else {
 				join = cap = 'round';
 			}
@@ -1782,12 +1783,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// locations to extend the fill area by tolerance.
 		}
 
-		function isCloseEnough(pt) {
+		function isCloseEnough(pt, padding) {
 			return point.subtract(pt).divide(padding).length <= 1;
 		}
 
 		function checkPoint(seg, pt, name) {
-			if (isCloseEnough(pt))
+			if (isCloseEnough(pt), strokePadding)
 				return new HitResult(name, that, { segment: seg, point: pt });
 		}
 
@@ -1804,37 +1805,16 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// Code to check stroke join / cap areas
 
 		function addAreaPoint(point) {
-			area.push(point);
-		}
-
-		// In order to be able to reuse crossings counting code, we describe
-		// each line as a curve values array.
-		function getAreaCurve(index) {
-			var p1 = area[index],
-				p2 = area[(index + 1) % area.length];
-			return [p1.x, p1.y, p1.x, p1.y, p2.x, p2.y, p2.x ,p2.y];
-		}
-
-		function isInArea(point) {
-			var length = area.length,
-				previous = getAreaCurve(length - 1),
-				roots1 = [],
-				roots2 = [],
-				winding = 0;
-			for (var i = 0; i < length; i++) {
-				var curve = getAreaCurve(i);
-				winding += Curve._getWinding(curve, previous, point.x, point.y,
-						roots1, roots2);
-				previous = curve;
-			}
-			return !!winding;
+			area.add(point);
 		}
 
 		function checkSegmentStroke(segment) {
 			// Handle joins / caps that are not round specificelly, by
 			// hit-testing their polygon areas.
 			if (join !== 'round' || cap !== 'round') {
-				area = [];
+				// Create an 'internal' path without id and outside the DOM
+				// to run the hit-test on it.
+				area = new Path({ internal: true, closed: true });
 				if (closed || segment._index > 0
 						&& segment._index < segments.length - 1) {
 					// It's a join. See that it's not a round one (one of
@@ -1848,11 +1828,18 @@ var Path = PathItem.extend(/** @lends Path# */{
 					Path._addSquareCap(segment, cap, radius, addAreaPoint, true);
 				}
 				// See if the above produced an area to check for
-				if (area.length > 0)
-					return isInArea(point);
+				if (!area.isEmpty()) {
+					// Also use stroke check with tolerancePadding if the point
+					// is not inside the area itself, to use test caps and joins
+					// with same tolerance.
+					var loc;
+					return area.contains(point)
+						|| (loc = area.getNearestLocation(point))
+							&& isCloseEnough(loc.getPoint(), tolerancePadding);
+				}
 			}
 			// Fallback scenario is a round join / cap.
-			return isCloseEnough(segment._point);
+			return isCloseEnough(segment._point, strokePadding);
 		}
 
 		// If we're asked to query for segments, ends or handles, do all that
@@ -1878,7 +1865,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				if (parameter === 0 || parameter === 1) {
 					if (!checkSegmentStroke(loc.getSegment()))
 						loc = null;
-				} else  if (!isCloseEnough(loc.getPoint())) {
+				} else  if (!isCloseEnough(loc.getPoint(), strokePadding)) {
 					loc = null;
 				}
 			}
@@ -1894,15 +1881,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 					}
 				}
 			}
-		}
-		if (loc) {
-			var circle = new Path.Ellipse({
-				center: loc.getPoint(),
-				radius: padding,
-				strokeColor: 'green',
-				guide: true
-			});
-			circle.transform(that.globalMatrix);
 		}
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
