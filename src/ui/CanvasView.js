@@ -103,7 +103,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		downItem,
 		lastItem,
 		overItem,
-		hasDrag,
+		dragItem,
 		dblClick,
 		clickTime;
 
@@ -171,22 +171,26 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 				dblClick = lastItem == item && (Date.now() - clickTime < 300);
 				downItem = lastItem = item;
 				downPoint = lastPoint = overPoint = point;
-				hasDrag = downItem && downItem.responds('mousedrag');
+				dragItem = downItem;
+				// Find the first item pu the chain that responds to drag.
+				// NOTE: Drag event don't bubble
+				while (dragItem && !dragItem.responds('mousedrag'))
+					dragItem = dragItem._parent;
 				break;
 			case 'mouseup':
 				// stopping mousup events does not prevent mousedrag / mousemove
 				// hanlding here, but it does click / doubleclick
 				stopped = callEvent(this, type, event, point, item, downPoint);
-				if (hasDrag) {
+				if (dragItem) {
 					// If the point has changed since the last mousedrag event,
 					// send another one
 					if (lastPoint && !lastPoint.equals(point))
-						callEvent(this, 'mousedrag', event, point, downItem,
+						callEvent(this, 'mousedrag', event, point, dragItem,
 								lastPoint);
 					// If we end up over another item, send it a mousemove event
 					// now. Use point as overPoint, so delta is (0, 0) since
 					// this will be the first mousemove event for this item.
-					if (item !== downItem) {
+					if (item !== dragItem) {
 						overPoint = point;
 						callEvent(this, 'mousemove', event, point, item,
 								overPoint);
@@ -198,15 +202,14 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 							? 'doubleclick' : 'click', event, downPoint, item);
 					dblClick = false;
 				}
-				downItem = null;
-				hasDrag = false;
+				downItem = dragItem = null;
 				break;
 			case 'mousemove':
 				// Allow both mousedrag and mousemove events to stop mousemove
 				// events from reaching tools.
-				if (hasDrag)
+				if (dragItem)
 					stopped = callEvent(this, 'mousedrag', event, point,
-							downItem, lastPoint);
+							dragItem, lastPoint);
 				// TODO: Consider implementing this again? "If we have a
 				// mousedrag event, do not send mousemove events to any
 				// item while we're dragging."
