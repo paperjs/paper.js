@@ -103,7 +103,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	 *
 	 * The font-family to be used in text content.
 	 *
-	 * @name Style#fontFamily
+	 * @name TextItem#fontFamily
 	 * @default 'sans-serif'
 	 * @type String
 	 */
@@ -112,7 +112,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	 *
 	 * The font-weight to be used in text content.
 	 *
-	 * @name Style#fontWeight
+	 * @name TextItem#fontWeight
 	 * @default 'normal'
 	 * @type String|Number
 	 */
@@ -121,7 +121,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	 * The font size of text content, as {@Number} in pixels, or as {@String}
 	 * with optional units {@code 'px'}, {@code 'pt'} and {@code 'em'}.
 	 *
-	 * @name Style#fontSize
+	 * @name TextItem#fontSize
 	 * @default 10
 	 * @type Number|String
 	 */
@@ -131,7 +131,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	 * The font-family to be used in text content, as one {@String}.
 	 * @deprecated use {@link #fontFamily} instead.
 	 *
-	 * @name Style#font
+	 * @name TextItem#font
 	 * @default 'sans-serif'
 	 * @type String
 	 */
@@ -139,7 +139,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	/**
 	 * The text leading of text content.
 	 *
-	 * @name Style#leading
+	 * @name TextItem#leading
 	 * @default fontSize * 1.2
 	 * @type Number|String
 	 */
@@ -149,7 +149,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	 *
 	 * The justification of text paragraphs.
 	 *
-	 * @name Style#justification
+	 * @name TextItem#justification
 	 * @default 'left'
 	 * @type String('left', 'right', 'center')
 	 */
