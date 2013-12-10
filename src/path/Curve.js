@@ -1177,7 +1177,7 @@ new function() { // Scope for methods that require numerical integration
 			dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
 			dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]);
 
-		if(q0x === q3x){
+		if(q0x === q3x && umax-umin <= Numerical.EPSILON && recursion > 3){
 			// fatline of Q has converged to a point. The clipping is not reliable.
 			// Return the value we have even though we will miss the precision.
 			var tminNew = (tmax + tmin) / 2, tmaxNew = tminNew,
@@ -1235,7 +1235,7 @@ new function() { // Scope for methods that require numerical integration
 			}
 		else // Iterate
 			addCurveIntersections(v2, v1New, curve2, curve1, locations,
-					umin, umax, tminNew, tmaxNew, tDiff, !reverse, recursion);
+					umin, umax, tminNew, tmaxNew, tDiff, !reverse, recursion+1);
 
 /*#*/ } else { // !__options.fatline
 		// Subdivision method
