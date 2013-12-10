@@ -1609,7 +1609,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	hitTest: function(point, options) {
 		point = Point.read(arguments);
 		options = HitResult.getOptions(Base.read(arguments));
-
 		if (this._locked || !this._visible || this._guide && !options.guides)
 			return null;
 
@@ -1620,8 +1619,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			parentTotalMatrix = options._totalMatrix,
 			// Keep the accumulated matrices up to this item in options, so we
 			// can keep calculating the correct _tolerancePadding values.
-			totalMatrix = options._totalMatrix = parentTotalMatrix.clone()
-				.concatenate(matrix),
+			totalMatrix = options._totalMatrix = parentTotalMatrix
+					? parentTotalMatrix.clone().concatenate(matrix)
+					// If this is the first one in the recursion, factor in the
+					// zoom of the view and the globalMatrix of the item.
+					: this._project.view._matrix.clone().concatenate(
+						this.getGlobalMatrix()),
 			// Calculate the transformed padding as 2D size that describes the
 			// transformed tolerance circle / ellipse. Make sure it's never 0
 			// since we're using it for division.

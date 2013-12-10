@@ -455,7 +455,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 							|| item.getLayer().getSelectedColor();
 					ctx.strokeStyle = ctx.fillStyle = color
 							? color.toCanvasStyle(ctx) : '#009dec';
-					var mx = item._globalMatrix.clone().preConcatenate(matrix);
+					var mx = matrix.clone().concatenate(item._globalMatrix);
 					if (item._drawSelected)
 						item._drawSelected(ctx, mx);
 					if (item._boundsSelected) {
