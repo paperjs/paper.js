@@ -480,58 +480,61 @@ test('Check hit testing of items that come after a transformed group.', function
 	var delta = new Point(250, 0);
 
 	var path1 = new Path.Circle(point1, 20);
+	path1.name = 'path1';
 	var path2 = new Path.Circle(point2, 20);
+	path2.name = 'path2';
 
 	var group = new Group(path2);
+	group.name = 'group';
 
 	var hitResult = paper.project.hitTest(point1);
 	equals(function() {
-		return hitResult && hitResult.item == path1;
-	}, true, 'Hit testing project for point1 should give us path1.');
+		return hitResult && hitResult.item;
+	}, path1, 'Hit testing project for point1 should give us path1.');
 
 	hitResult = paper.project.hitTest(point2);
 	equals(function() {
-		return hitResult && hitResult.item == path2;
-	}, true, 'Hit testing project for point2 should give us path2.');
+		return hitResult && hitResult.item;
+	}, path2, 'Hit testing project for point2 should give us path2.');
 
 	hitResult = paper.project.hitTest(point2);
 	equals(function() {
-		return hitResult && hitResult.item == path2;
-	}, true, 'Hit testing project for point2 should give us path2.');
+		return hitResult && hitResult.item;
+	}, path2, 'Hit testing project for point2 should give us path2.');
 
 	group.translate(delta)
 
 	hitResult = paper.project.hitTest(point1);
 	equals(function() {
-		return hitResult && hitResult.item == path1;
-	}, true, 'After translating group, hit testing project for point1 should give us path1.');
+		return hitResult && hitResult.item;
+	}, path1, 'After translating group, hit testing project for point1 should give us path1.');
 
 	hitResult = paper.project.hitTest(point2.add(delta));
 	equals(function() {
-		return hitResult && hitResult.item == path2;
-	}, true, 'After translating group, hit testing project for point2 + delta should give us path2.');
+		return hitResult && hitResult.item;
+	}, path2, 'After translating group, hit testing project for point2 + delta should give us path2.');
 
 	hitResult = path1.hitTest(point1);
 	equals(function() {
-		return hitResult && hitResult.item == path1;
-	}, true, 'After translating group, hit testing path1 for point1 should give us path1.');
+		return hitResult && hitResult.item;
+	}, path1, 'After translating group, hit testing path1 for point1 should give us path1.');
 
 	group.moveBelow(path1);
 
 	hitResult = paper.project.hitTest(point1);
 	equals(function() {
-		return hitResult && hitResult.item == path1;
-	}, true, 'After moving group before path1, hit testing project for point1 should give us path1.');
+		return hitResult && hitResult.item;
+	}, path1, 'After moving group before path1, hit testing project for point1 should give us path1.');
 
 	hitResult = paper.project.hitTest(point2.add(delta));
 	equals(function() {
-		return hitResult && hitResult.item == path2;
-	}, true, 'After moving group before path1, hit testing project for point2 + delta should give us path2.');
+		return hitResult && hitResult.item;
+	}, path2, 'After moving group before path1, hit testing project for point2 + delta should give us path2.');
 
 	hitResult = path1.hitTest(point1);
 	equals(function() {
-		return hitResult && hitResult.item == path1;
-	}, true, 'After moving group before path1, hit testing path1 for point1 should give us path1.');
+		return hitResult && hitResult.item;
+	}, path1, 'After moving group before path1, hit testing path1 for point1 should give us path1.');
 });
 
 test('Check hit testing of placed symbols.', function() {

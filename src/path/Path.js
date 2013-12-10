@@ -1756,7 +1756,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 			style = this.getStyle(),
 			segments = this._segments,
 			closed = this._closed,
-			tolerance = options.tolerance,
+			// transformed tolerance padding, see Item#hitTest. We will add
+			// stroke padding on top if stroke is defined.
+			padding = options._padding,
 			join, cap, miterLimit,
 			area, loc, res,
 			hasStroke = options.stroke && style.hasStroke(),
@@ -1770,16 +1772,22 @@ var Path = PathItem.extend(/** @lends Path# */{
 				join = style.getStrokeJoin();
 				cap = style.getStrokeCap();
 				miterLimit = radius * style.getMiterLimit();
+				// Add the stroke radius to tolerance padding.
+				padding = padding.add(new Size(radius, radius));
 			} else {
 				join = cap = 'round';
 			}
-			// Add some tolerance, so even when no stroke is set, will match for
-			// stroke locations.
-			radius += tolerance;
+			// Using tolerance padding for fill tests will also work if there is
+			// no stroke, in which case radius = 0 and we will test for stroke
+			// locations to extend the fill area by tolerance.
+		}
+
+		function isCloseEnough(pt) {
+			return point.subtract(pt).divide(padding).length <= 1;
 		}
 
 		function checkPoint(seg, pt, name) {
-			if (point.getDistance(pt) < tolerance)
+			if (isCloseEnough(pt))
 				return new HitResult(name, that, { segment: seg, point: pt });
 		}
 
@@ -1843,9 +1851,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 				if (area.length > 0)
 					return isInArea(point);
 			}
-			// Fallback scenario is a round join / cap, but make sure we
-			// didn't check for areas already.
-			return point.getDistance(segment._point) <= radius;
+			// Fallback scenario is a round join / cap.
+			return isCloseEnough(segment._point);
 		}
 
 		// If we're asked to query for segments, ends or handles, do all that
@@ -1861,7 +1868,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			}
 		}
 		// If we're querying for stroke, perform that before fill
-		if (radius > 0) {
+		if (radius != null) {
 			loc = this.getNearestLocation(point);
 			if (loc) {
 				// Now see if we're on a segment, and if so, check for its
@@ -1871,7 +1878,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				if (parameter === 0 || parameter === 1) {
 					if (!checkSegmentStroke(loc.getSegment()))
 						loc = null;
-				} else  if (loc._distance > radius) {
+				} else  if (!isCloseEnough(loc.getPoint())) {
 					loc = null;
 				}
 			}
@@ -1887,6 +1894,15 @@ var Path = PathItem.extend(/** @lends Path# */{
 					}
 				}
 			}
+		}
+		if (loc) {
+			var circle = new Path.Ellipse({
+				center: loc.getPoint(),
+				radius: padding,
+				strokeColor: 'green',
+				guide: true
+			});
+			circle.transform(that.globalMatrix);
 		}
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching

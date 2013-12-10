@@ -135,6 +135,9 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 				guides: false,
 				// Only hit selected objects
 				selected: false,
+				// Used to calculate total concatenated matrices, to determine
+				// correcet tolerance padding.
+				_totalMatrix: new Matrix(),
 				// Mark as merged
 				_merged: true
 			}, options);

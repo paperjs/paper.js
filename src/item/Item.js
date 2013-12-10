@@ -1616,12 +1616,22 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Check if the point is withing roughBounds + tolerance, but only if
 		// this item does not have children, since we'd have to travel up the
 		// chain already to determine the rough bounds.
-		if (!this._children && !this.getRoughBounds()
-				.expand(2 * options.tolerance)._containsPoint(point))
+		var matrix = this._matrix,
+			parentTotalMatrix = options._totalMatrix,
+			// Keep the accumulated matrices up to this item in options, so we
+			// can keep calculating the correct _padding values.
+			totalMatrix = options._totalMatrix = parentTotalMatrix.clone()
+				.concatenate(matrix),
+			// Calculate the transformed padding as 2D size that describes the
+			// transformed tolerance circle / ellipse. 
+			padding = options._padding = new Size(Path._getPenPadding(1,
+					totalMatrix.inverted())).multiply(options.tolerance);
+		// Transform point to local coordinates.
+		point = matrix._inverseTransform(point);
+
+		if (!this._children && !this.getInternalRoughBounds()
+				.expand(padding.multiply(2))._containsPoint(point))
 			return null;
-		// Transform point to local coordinates but use untransformed point
-		// for bounds check above.
-		point = this._matrix._inverseTransform(point);
 		// Filter for type, guides and selected items if that's required.
 		var checkSelf = !(options.guides && !this._guide
 				|| options.selected && !this._selected
@@ -1631,9 +1641,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 		function checkBounds(type, part) {
 			var pt = bounds['get' + part]();
-			// TODO: We need to transform the point back to the coordinate
-			// system of the DOM level on which the inquiry was started!
-			if (point.getDistance(pt) < options.tolerance)
+			// Since there are transformations, we cannot simply use a numerical
+			// tolerance value. Instead, we divide by a padding size, see above.
+			if (point.subtract(pt).divide(padding).length <= 1)
 				return new HitResult(type, that,
 						{ name: Base.hyphenate(part), point: pt });
 		}
@@ -1667,11 +1677,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			res = this._hitTest(point, options);
 		// Transform the point back to the outer coordinate system.
 		if (res && res.point)
-			res.point = that._matrix.transform(res.point);
+			res.point = matrix.transform(res.point);
+		// Restore totalMatrix for next child.
+		options._totalMatrix = parentTotalMatrix;
 		return res;
 	},
 
 	_getChildHitTestOptions: function(options) {
+		// This is overriden in CompoundPath, for treatment of type === 'path'.
 		return options;
 	},
 
