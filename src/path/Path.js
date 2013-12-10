@@ -1788,7 +1788,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		}
 
 		function checkPoint(seg, pt, name) {
-			if (isCloseEnough(pt), strokePadding)
+			if (isCloseEnough(pt, strokePadding))
 				return new HitResult(name, that, { segment: seg, point: pt });
 		}
 
