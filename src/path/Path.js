@@ -1787,19 +1787,28 @@ var Path = PathItem.extend(/** @lends Path# */{
 			return point.subtract(pt).divide(padding).length <= 1;
 		}
 
-		function checkPoint(seg, pt, name) {
-			if (isCloseEnough(pt, strokePadding))
-				return new HitResult(name, that, { segment: seg, point: pt });
+		function checkSegmentPoint(seg, pt, name) {
+			if (!options.selected || pt.isSelected()) {
+				var anchor = seg._point;
+				if (pt !== anchor)
+					pt = pt.add(anchor);
+				if (isCloseEnough(pt, strokePadding)) {
+					return new HitResult(name, that, {
+						segment: seg,
+						point: pt
+					});
+				}
+			}
 		}
 
 		function checkSegmentPoints(seg, ends) {
-			var pt = seg._point;
 			// Note, when checking for ends, we don't also check for handles,
 			// since this will happen afterwards in a separate loop, see below.
-			return (ends || options.segments) && checkPoint(seg, pt, 'segment')
+			return (ends || options.segments)
+				&& checkSegmentPoint(seg, seg._point, 'segment')
 				|| (!ends && options.handles) && (
-					checkPoint(seg, pt.add(seg._handleIn), 'handle-in') ||
-					checkPoint(seg, pt.add(seg._handleOut), 'handle-out'));
+					checkSegmentPoint(seg, seg._handleIn, 'handle-in') ||
+					checkSegmentPoint(seg, seg._handleOut, 'handle-out'));
 		}
 
 		// Code to check stroke join / cap areas
@@ -1849,10 +1858,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 					|| checkSegmentPoints(segments[segments.length - 1], true))
 				return res;
 		} else if (options.segments || options.handles) {
-			for (var i = 0, l = segments.length; i < l; i++) {
+			for (var i = 0, l = segments.length; i < l; i++)
 				if (res = checkSegmentPoints(segments[i]))
 					return res;
-			}
 		}
 		// If we're querying for stroke, perform that before fill
 		if (radius != null) {
