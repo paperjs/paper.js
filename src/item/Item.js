@@ -803,7 +803,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		this._anchor = Point.read(arguments);
 		// No need for _changed() since the only thing this affects is _position
 		delete this._position;
-	}
+	},
+
+	// TODO: Keep these around for a bit since it was introduced on the mailing
+	// list, then remove in a while.
+	getRegistration: '#getAnchor',
+	setRegistration: '#setAnchor'
 }, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds',
 		'getRoughBounds', 'getInternalBounds', 'getInternalRoughBounds'],
 	function(key) {
