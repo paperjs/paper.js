@@ -2585,9 +2585,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * 	path.rotate(3, view.center);
 	 * }
 	 */
-	rotate: function(angle, center) {
+	rotate: function(angle /*, center */) {
 		return this.transform(new Matrix().rotate(angle,
-				center || this.getPosition(true)));
+				Point.read(arguments, 1, 0, { readNull: true })
+					|| this.getPosition(true)));
 	}
 }, Base.each(['scale', 'shear', 'skew'], function(name) {
 	this[name] = function() {
