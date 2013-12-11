@@ -171,7 +171,9 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 				dblClick = lastItem == item && (Date.now() - clickTime < 300);
 				downItem = lastItem = item;
 				downPoint = lastPoint = overPoint = point;
-				dragItem = downItem;
+				// Only start dragging if none of the mosedown events have
+				// stopped propagation.
+				dragItem = !stopped && item;
 				// Find the first item pu the chain that responds to drag.
 				// NOTE: Drag event don't bubble
 				while (dragItem && !dragItem.responds('mousedrag'))
