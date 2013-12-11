@@ -726,8 +726,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * {@grouptitle Position and Bounding Boxes}
 	 *
-	 * The item's position within the project. This is the
-	 * {@link Rectangle#center} of the item's {@link #bounds} rectangle.
+	 * The item's position within the parent item's coordinate system. By
+	 * default, this is the {@link Rectangle#center} of the item's
+	 * {@link #bounds} rectangle.
 	 *
 	 * @type Point
 	 * @bean
@@ -788,8 +789,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
 	},
 
-	_anchor: null,
-
+	/**
+	 * The item's anchor point specified in the item coordinate system, defining
+	 * the reference point for {@link #position}, as well as the pivot point for
+	 * all transformations. By default, it is set to {@code null}, meaning the
+	 * {@link Rectangle#center} of the item's {@link #bounds} rectangle is used
+	 * as the anchor.
+	 *
+	 * @type Point
+	 * @bean
+	 * @default null
+	 *
+	 * @example {@paperscript}
+	 */
 	getAnchor: function(/* dontLink */) {
 		var anchor = this._anchor;
 		if (anchor) {
@@ -804,6 +816,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// No need for _changed() since the only thing this affects is _position
 		delete this._position;
 	},
+
+	_anchor: null,
 
 	// TODO: Keep these around for a bit since it was introduced on the mailing
 	// list, then remove in a while.
