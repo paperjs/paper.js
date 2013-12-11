@@ -1044,7 +1044,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * The current rotation of the item, as described by its {@link #matrix}.
+	 * The current rotation angle of the item, as described by its
+	 * {@link #matrix}.
 	 *
 	 * @type Number
 	 * @bean
@@ -1067,7 +1068,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * The current scaling of the item, as described by its {@link #matrix}.
+	 * The current scale factor of the item, as described by its
+	 * {@link #matrix}.
 	 *
 	 * @type Point
 	 * @bean

@@ -132,13 +132,15 @@ function compareStyles(style, style2, checkIdentity) {
 			if (checkIdentity) {
 				equals(function() {
 					return style[key] !== style2[key];
-				}, true, 'The ' + key + ' should not point to the same color object:');
+				}, true, 'The ' + key
+						+ ' should not point to the same color object:');
 			}
 			if (style[key] instanceof Color) {
 				if (style[key].type === 'gradient' && checkIdentity) {
 					equals(function() {
 						return style[key].gradient === style2[key].gradient;
-					}, true, 'The ' + key + '.gradient should point to the same object:');
+					}, true, 'The ' + key 
+							+ '.gradient should point to the same object:');
 				}
 				compareColors(style[key], style2[key],
 						'Compare Style#' + key);
@@ -397,5 +399,7 @@ function compareProjects(project, project2) {
 // SVG
 
 function createSVG(xml) {
-	return new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg">' + xml + '</svg>', 'application/xml');
+	return new DOMParser().parseFromString(
+		'<svg xmlns="http://www.w3.org/2000/svg">' + xml + '</svg>',
+		'application/xml');
 }

@@ -130,7 +130,8 @@ Base.inject(/** @lends Base# */{
 				if (!checkKeys(obj1, obj2) || !checkKeys(obj2, obj1))
 					return false;
 				for (var i in obj1) {
-					if (obj1.hasOwnProperty(i) && !Base.equals(obj1[i], obj2[i]))
+					if (obj1.hasOwnProperty(i)
+							&& !Base.equals(obj1[i], obj2[i]))
 						return false;
 				}
 				return true;
@@ -147,13 +148,13 @@ Base.inject(/** @lends Base# */{
 		 * This is used in argument conversion, e.g. by all basic types (Point,
 		 * Size, Rectangle) and also higher classes such as Color and Segment.
 		 * @param {Array} list the list to read from, either an arguments object
-		 *        or a normal array.
+		 * or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {Number} length the amount of elements that can be read
-		 * @param {Object} options {@code options.readNull} controls whether null
-		 *        is returned or converted. {@code options.clone} controls
-		 *        whether passed objects should be cloned if they are already
-		 *        provided in the required type
+		 * @param {Object} options {@code options.readNull} controls whether
+		 * null is returned or converted. {@code options.clone} controls whether
+		 * passed objects should be cloned if they are already provided in the 
+		 * required type
 		 */
 		read: function(list, start, length, options) {
 			// See if it's called directly on Base, and if so, read value and
@@ -201,7 +202,7 @@ Base.inject(/** @lends Base# */{
 		 * Allows peeking ahead in reading of values and objects from arguments
 		 * list through Base.read().
 		 * @param {Array} list the list to read from, either an arguments object
-		 *        or a normal array.
+		 * or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
 		 */
 		peek: function(list, start) {
@@ -212,12 +213,12 @@ Base.inject(/** @lends Base# */{
 		 * Reads all readable arguments from the list, handling nested arrays
 		 * seperately.
 		 * @param {Array} list the list to read from, either an arguments object
-		 *        or a normal array.
+		 * or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
-		 * @param {Object} options {@code options.readNull} controls whether null
-		 *        is returned or converted. {@code options.clone} controls
-		 *        whether passed objects should be cloned if they are already
-		 *        provided in the required type
+		 * @param {Object} options {@code options.readNull} controls whether
+		 * null is returned or converted. {@code options.clone} controls whether
+		 * passed objects should be cloned if they are already provided in the
+		 * required type
 		 */
 		readAll: function(list, start, options) {
 			var res = [], entry;
@@ -237,7 +238,7 @@ Base.inject(/** @lends Base# */{
 		 * unnamed arguments through Base.read(). In use for example for the
 		 * various Path.Constructors.
 		 * @param {Array} list the list to read from, either an arguments object
-		 *        or a normal array.
+		 * or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {String} name the property name to read from.
 		 */
