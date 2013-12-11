@@ -18,7 +18,6 @@
 
 	var amount = 8;
 	var step = view.size.width / (amount + 1);
-	var scale = view.size.height / 1.5;
 	var flip = false;
 
 	for (var i = 0; i <= amount; i++) {
@@ -41,15 +40,15 @@
 	}
 
 	function onKeyDown(event) {
-		if (event.key === 'space') {
+		if (event.key === 'space')
 			group.fullySelected = !group.fullySelected;
-		}
 	}
 
 	var audio, source, analyserL, analyserR, freqByteData;
 
 	view.onFrame = function() {
 		var step = view.size.width / (amount + 1);
+		var scale = view.size.height / 1.5;
 		analyserL.getByteFrequencyData(freqByteData);
 		var leftBands = getEqualizerBands(freqByteData, true);
 		analyserR.getByteFrequencyData(freqByteData);
@@ -133,7 +132,7 @@
 		}
 		return bands;
 	}
-	</script>
+</script>
 </head>
 <body>
 	<canvas id="canvas" resize></canvas>
