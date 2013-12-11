@@ -1896,7 +1896,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return !loc && hasFill && this._contains(point) || loc && !hasStroke
 				? new HitResult('fill', this)
 				: loc
-					? new HitResult('stroke', this, { location: loc })
+					? new HitResult('stroke', this, {
+						location: loc,
+						// It's fine performance wise to call getPoint() again
+						// since it was already called before.
+						point: loc.getPoint()
+					})
 					: null;
 	}
 
