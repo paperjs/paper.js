@@ -32,7 +32,7 @@
 		strokeWidth: 30,
 		strokeJoin: 'round',
 		strokeCap: 'butt',
-		registration: leftPath.position,
+		anchor: leftPath.position,
 		position: view.center
 	});
 
@@ -60,7 +60,7 @@
 		}
 		leftPath.smooth();
 		rightPath.smooth();
-		group.registration = [leftPath.position.x, 0];
+		group.anchor = [leftPath.position.x, 0];
 		group.position = view.center;
 	}
 

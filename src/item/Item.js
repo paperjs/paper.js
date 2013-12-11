@@ -53,7 +53,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_serializeFields: {
 		name: null,
 		matrix: new Matrix(),
-		registration: null,
+		anchor: null,
 		locked: false,
 		visible: true,
 		blendMode: 'normal',
@@ -771,11 +771,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// modified, it would hold new values already and only then cause the
 		// calling of #setPosition.
 		if (!position) {
-			// If a registration point is provided, use it to determine position
-			// base don the matrix. Otherwise use the center of the bounds.
-			var registration = this._registration;
-			position = this._position = registration
-					? this._matrix._transformPoint(registration)
+			// If an anchor point is provided, use it to determine position
+			// based on the matrix. Otherwise use the center of the bounds.
+			var anchor = this._anchor;
+			position = this._position = anchor
+					? this._matrix._transformPoint(anchor)
 					: this.getBounds().getCenter(true);
 		}
 		return new ctor(position.x, position.y, this, 'setPosition');
@@ -788,19 +788,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
 	},
 
-	_registration: null,
+	_anchor: null,
 
-	getRegistration: function(/* dontLink */) {
-		var reg = this._registration;
-		if (reg) {
+	getAnchor: function(/* dontLink */) {
+		var anchor = this._anchor;
+		if (anchor) {
 			var ctor = arguments[0] ? Point : LinkedPoint;
-			reg = new ctor(reg.x, reg.y, this, 'setRegistration');
+			anchor = new ctor(anchor.x, anchor.y, this, 'setAnchor');
 		}
-		return reg;
+		return anchor;
 	},
 
-	setRegistration: function(/* point */) {
-		this._registration = Point.read(arguments);
+	setAnchor: function(/* point */) {
+		this._anchor = Point.read(arguments);
 		// No need for _changed() since the only thing this affects is _position
 		delete this._position;
 	}
@@ -2758,15 +2758,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var matrix = this._matrix;
 		if (this._applyMatrix(matrix, true)) {
 			// When the matrix could be applied, we also need to transform
-			// color styles (only gradients so far) and registration point:
-			var registration = this._registration,
+			// color styles (only gradients so far) and anchor point:
+			var anchor = this._anchor,
 				style = this._style,
 				// pass true for dontMerge so we don't recursively transform
 				// styles on groups' children.
 				fillColor = style.getFillColor(true),
 				strokeColor = style.getStrokeColor(true);
-			if (registration)
-				registration.transform(matrix);
+			if (anchor)
+				anchor.transform(matrix);
 			if (fillColor)
 				fillColor.transform(matrix);
 			if (strokeColor)
