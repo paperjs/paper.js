@@ -1298,7 +1298,8 @@ new function() { // Scope for methods that require numerical integration
 			// Find signed distance of p1 and p2 from line [ p0, p3 ]
 			getSignedDistance = Line.getSignedDistance,
 			dist1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
-			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2), hull;
+			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2),
+			hull, flip = false;
 		// Check if p1 and p2 are on the same side of the line [ p0, p3 ]
 		if (dist1 * dist2 < 0) {
 			// p1 and p2 lie on different sides of [ p0, p3 ]. The hull is a
@@ -1307,11 +1308,14 @@ new function() { // Scope for methods that require numerical integration
 			// The top part includes p1, 
 			// we will reverse it later if that is not the case
 			hull = [[p0, p1, p3], [p0, p2, p3]];
+			flip = dist1 < 0;
 		} else {
 			// p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
 			// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
 			// hull. Check if the hull is a triangle or a quadrilateral.
-			var pmax, cross;
+			// Also, if atleast one of the distances for p1 or p2,
+			// from line [p0, p3] is zero then hull must at most have 3 vertices.
+			var pmax, cross = 0, distZero = (dist1 === 0) || (dist2 === 0);
 			if (Math.abs(dist1) > Math.abs(dist2)) {
 				pmax = p1;
 				// apex is dq3 and the other apex point is dq0 vector
@@ -1327,15 +1331,17 @@ new function() { // Scope for methods that require numerical integration
 			}
 			// Compare cross products of these vectors to determine if the point is
 			// in the triangle [ p3, pmax, p0 ], or if it is a quadrilateral.
-			hull = cross < 0
+			hull = (cross < 0 || distZero) ?
 					// p2 is inside the triangle, hull is a triangle.
-					? [[p0, pmax, p3], [p0, p3]]
+					[[p0, pmax, p3], [p0, p3]] :
 					// Convexhull is a quadrilateral and we need all lines in the
 					// correct order where line [ p0, p3 ] is part of the hull.
-					: [[p0, p1, p2, p3],  [p0, p3]];
+					[[p0, p1, p2, p3],  [p0, p3]];
+
+			flip = dist1 ? (dist1 < 0) : (dist2 < 0);
 		}
 
-		return (dist1 < 0)? hull.reverse() : hull;
+		return flip ? hull.reverse() : hull;
 	}
 
 	/**
@@ -1456,5 +1462,8 @@ new function() { // Scope for methods that require numerical integration
 					: addCurveIntersections)(v1, v2, curve1, curve2, locations);
 			return locations;
 		},
+
+		getConvexHull : getConvexHull,
+		clipConvexHull: clipConvexHull
 	}};
 });
