@@ -1156,7 +1156,7 @@ new function() { // Scope for methods that require numerical integration
 			oldTdiff = oldTdiff || 1;
 			reverse = false;
 		}
-		// Avoid endless recursion.
+		// Avoid deeper recursion.
 		if (recursion > 20)
 			return;
 		// Let P be the first curve and Q be the second
@@ -1440,32 +1440,12 @@ new function() { // Scope for methods that require numerical integration
 		// CurveLocation objects.
 		getIntersections: function(v1, v2, curve1, curve2, locations) {
 			var linear1 = Curve.isLinear(v1),
-				linear2 = Curve.isLinear(v2),
-				c1p1 = curve1.getPoint1(),
-				c1p2 = curve1.getPoint2(),
-				c2p1 = curve2.getPoint1(),
-				c2p2 = curve2.getPoint2(),
-				tolerance = /*#=*/ Numerical.TOLERANCE;
-			// Handle a special case where if both curves start or end at the
-			// same point, the same end-point case will be handled after we
-			// calculate other intersections within the curve.
-			if (c1p1.isClose(c2p1, tolerance))
-				addLocation(locations, curve1, 0, c1p1, curve2, 0, c1p1);
-			if (c1p1.isClose(c2p2, tolerance))
-				addLocation(locations, curve1, 0, c1p1, curve2, 1, c1p1);
-			// Determine the correct intersection method based on values of
-			// linear1 & 2:
+				linear2 = Curve.isLinear(v2);
 			(linear1 && linear2
 				? addLineIntersection
 				: linear1 || linear2
 					? addCurveLineIntersections
 					: addCurveIntersections)(v1, v2, curve1, curve2, locations);
-			// Handle the special case where curve1's end-point overlap with
-			// curve2's points.
-			if (c1p2.isClose(c2p1, tolerance))
-				addLocation(locations, curve1, 1, c1p2, curve2, 0, c1p2);
-			if (c1p2.isClose(c2p2, tolerance))
-				addLocation(locations, curve1, 1, c1p2, curve2, 1, c1p2);
 			return locations;
 		},
 	}};
