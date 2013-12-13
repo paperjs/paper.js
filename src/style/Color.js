@@ -717,6 +717,7 @@ var Color = Base.extend(new function() {
 		 *
 		 * @type Number
 		 * @bean
+		 * @default 1
 		 *
 		 * @example {@paperscript}
 		 * // A filled path with a half transparent stroke:

@@ -37,6 +37,8 @@
  * var text = new PointText(view.center);
  * text.content = 'Hello world.';
  * text.style = {
+ * 	fontFamily: 'Courier New',
+ * 	fontWeight: 'bold',
  * 	fontSize: 20,
  * 	fillColor: 'red',
  * 	justification: 'center'
@@ -86,8 +88,10 @@ var Style = Base.extend(new function() {
 		// Selection
 		selectedColor: undefined,
 		// Characters
-		font: 'sans-serif',
+		fontFamily: 'sans-serif',
+		fontWeight: 'normal',
 		fontSize: 12,
+		font: 'sans-serif', // deprecated, links to fontFamily
 		leading: null,
 		// Paragraphs
 		justification: 'left'
@@ -98,8 +102,10 @@ var Style = Base.extend(new function() {
 		strokeCap: /*#=*/ Change.STROKE,
 		strokeJoin: /*#=*/ Change.STROKE,
 		miterLimit: /*#=*/ Change.STROKE,
-		font: /*#=*/ Change.GEOMETRY,
+		fontFamily: /*#=*/ Change.GEOMETRY,
+		fontWeight: /*#=*/ Change.GEOMETRY,
 		fontSize: /*#=*/ Change.GEOMETRY,
+		font: /*#=*/ Change.GEOMETRY, // deprecated, links to fontFamily
 		leading: /*#=*/ Change.GEOMETRY,
 		justification: /*#=*/ Change.GEOMETRY
 	};
@@ -169,7 +175,7 @@ var Style = Base.extend(new function() {
 			// they all have the same style.
 			// If true is passed for dontMerge, don't merge children styles
 			if (!children || children.length === 0 || arguments[0]
-					|| this._item._type === 'compound-path') {
+					|| this._item instanceof CompoundPath) {
 				var value = this._values[key];
 				if (value === undefined) {
 					value = this._defaults[key];
@@ -265,12 +271,6 @@ var Style = Base.extend(new function() {
 
 	// Overrides
 
-	getLeading: function getLeading() {
-		// Override leading to return fontSize * 1.2 by default.
-		var leading = getLeading.base.call(this);
-		return leading != null ? leading : this.getFontSize() * 1.2;
-	},
-
 	getFontStyle: function() {
 		var size = this.getFontSize();
 		// To prevent an obscure iOS 7 crash, we have to convert the size to a
@@ -278,7 +278,27 @@ var Style = Base.extend(new function() {
 		// This nonsensical statement would also prevent the bug, prooving that
 		// the issue is not the regular expression itself, but something deeper
 		// down in the optimizer: if (size === 0) size = 0;
-		return size + (/[a-z]/i.test(size + '') ? ' ' : 'px ') + this.getFont();
+		return this.getFontWeight()
+				+ ' ' + size + (/[a-z]/i.test(size + '') ? ' ' : 'px ')
+				+ this.getFontFamily();
+	},
+
+	/**
+	 * @private
+	 * @deprecated use {@link #getFontFamily()} instead.
+	 */
+	getFont: '#getFontFamily',
+
+	/**
+	 * @private
+	 * @deprecated use {@link #setFontFamily(font)} instead.
+	 */
+	setFont: '#setFontFamily',
+
+	getLeading: function getLeading() {
+		// Override leading to return fontSize * 1.2 by default.
+		var leading = getLeading.base.call(this);
+		return leading != null ? leading : this.getFontSize() * 1.2;
 	}
 
 	// DOCS: why isn't the example code showing up?
@@ -511,11 +531,20 @@ var Style = Base.extend(new function() {
 	/**
 	 * {@grouptitle Character Style}
 	 *
-	 * The font to be used in text content.
+	 * The font-family to be used in text content.
 	 *
-	 * @name Style#font
+	 * @name Style#fontFamily
 	 * @default 'sans-serif'
 	 * @type String
+	 */
+
+	/**
+	 *
+	 * The font-weight to be used in text content.
+	 *
+	 * @name Style#fontWeight
+	 * @default 'normal'
+	 * @type String|Number
 	 */
 
 	/**
@@ -525,6 +554,16 @@ var Style = Base.extend(new function() {
 	 * @name Style#fontSize
 	 * @default 10
 	 * @type Number|String
+	 */
+
+	/**
+	 *
+	 * The font-family to be used in text content, as one {@String}.
+	 * @deprecated use {@link #fontFamily} instead.
+	 *
+	 * @name Style#font
+	 * @default 'sans-serif'
+	 * @type String
 	 */
 
 	/**

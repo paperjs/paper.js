@@ -24,6 +24,9 @@
  */
 var Layer = Group.extend(/** @lends Layer# */{
 	_class: 'Layer',
+	// Turn on again for now, since examples depend on it.
+	// TODO: Discus with @puckey and come to a conclusion
+	// _selectChildren: false,
 
 	// DOCS: improve constructor code example.
 	/**
@@ -86,9 +89,10 @@ var Layer = Group.extend(/** @lends Layer# */{
 				this._project.activeLayer = this.getNextSibling()
 						|| this.getPreviousSibling();
 			Base.splice(this._project.layers, null, this._index, 1);
+			this._installEvents(false);
 			// Tell project we need a redraw. This is similar to _changed()
 			// mechanism.
-			this._project._needsRedraw = true;
+			this._project._needsUpdate = true;
 			return true;
 		}
 		return false;
@@ -130,7 +134,7 @@ var Layer = Group.extend(/** @lends Layer# */{
 			this._remove(true);
 			Base.splice(item._project.layers, [this],
 					item._index + (above ? 1 : 0), 0);
-			this._setProject(item._project);
+			this._setProject(item._project, true);
 			return this;
 		}
 		return _insert.base.call(this, above, item, _preserve);

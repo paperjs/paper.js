@@ -114,7 +114,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		if (!this._project)
 			return false;
 		// Clear focus if removed view had it
-		if (View._focused == this)
+		if (View._focused === this)
 			View._focused = null;
 		// Remove view from internal structures
 		View._views.splice(View._views.indexOf(this), 1);
@@ -128,9 +128,10 @@ var View = Base.extend(Callback, /** @lends View# */{
 		DomEvent.remove(window, this._windowHandlers);
 /*#*/ } // __options.environment == 'browser'
 		this._element = this._project = null;
-		// Removing all onFrame handlers makes the onFrame handler stop
-		// automatically through its uninstall method.
+		// Remove all onFrame handlers.
+		// TODO: Shouldn't we remove all handlers, automatically
 		this.detach('frame');
+		this._animate = false;
 		this._frameItems = {};
 		return true;
 	},
@@ -146,17 +147,11 @@ var View = Base.extend(Callback, /** @lends View# */{
 		 */
 		onFrame: {
 			install: function() {
-/*#*/ if (__options.environment == 'browser') {
-				this._animate = true;
-				// Request a frame handler straight away to initialize the
-				// sequence of onFrame calls.
-				if (!this._requested)
-					this._requestFrame();
-/*#*/ } // __options.environment == 'browser'
+				this.play();
 			},
 
 			uninstall: function() {
-				this._animate = false;
+				this.pause();
 			}
 		},
 
@@ -205,8 +200,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		if (this._stats)
 			this._stats.update();
 		this._handlingFrame = false;
-		// Automatically draw view on each frame.
-		this.draw(true);
+		// Automatically update view on each frame.
+		this.update();
 	},
 
 	_animateItem: function(item, animate) {
@@ -241,8 +236,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		}
 	},
 
-	_redraw: function() {
-		this._project._needsRedraw = true;
+	_update: function() {
+		this._project._needsUpdate = true;
 		if (this._handlingFrame)
 			return;
 		if (this._animate) {
@@ -250,8 +245,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 			// requesting another animation frame.
 			this._handleFrame();
 		} else {
-			// Otherwise simply redraw the view now
-			this.draw();
+			// Otherwise simply update the view now
+			this.update();
 		}
 	},
 
@@ -263,14 +258,14 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 */
 	_changed: function(flags) {
 		if (flags & /*#=*/ ChangeFlag.APPEARANCE)
-			this._project._needsRedraw = true;
+			this._project._needsUpdate = true;
 	},
 
 	_transform: function(matrix) {
 		this._matrix.concatenate(matrix);
 		// Force recalculation of these values next time they are requested.
 		this._bounds = null;
-		this._redraw();
+		this._update();
 	},
 
 	/**
@@ -308,7 +303,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 			size: size,
 			delta: delta
 		});
-		this._redraw();
+		this._update();
 	},
 
 	/**
@@ -397,15 +392,46 @@ var View = Base.extend(Callback, /** @lends View# */{
 	},
 
 	/**
-	 * Draws the view.
+	 * Makes all animation play by adding the view to the request animation
+	 * loop.
+	 */
+	play: function() {
+		this._animate = true;
+/*#*/ if (__options.environment == 'browser') {
+		// Request a frame handler straight away to initialize the
+		// sequence of onFrame calls.
+		if (!this._requested)
+			this._requestFrame();
+/*#*/ } // __options.environment == 'browser'
+	},
+
+	/**
+	 * Makes all animation pause by removing the view to the request animation
+	 * loop.
+	 */
+	pause: function() {
+		this._animate = false;
+	},
+
+	/**
+	 * Updates the view if there are changes. Note that when using built-in
+	 * event hanlders for interaction, animation and load events, this method is
+	 * invoked for you automatically at the end.
 	 *
-	 * @name View#draw
+	 * @name View#update
 	 * @function
 	 */
-	/*
-	draw: function(checkRedraw) {
+	// update: function() {
+	// },
+
+	/**
+	 * Updates the view if there are changes.
+	 *
+	 * @deprecated use {@link #update()} instead.
+	 */
+	draw: function() {
+		this.update();
 	},
-	*/
 
 	// TODO: getInvalidBounds
 	// TODO: invalidate(rect)
@@ -640,41 +666,59 @@ var View = Base.extend(Callback, /** @lends View# */{
 		view._handleEvent('mousedown', point, event);
 		if (tool = view._scope._tool)
 			tool._handleEvent('mousedown', point, event);
-		// In the end we always call draw(), but pass checkRedraw = true, so we
-		// only redraw the view if anything has changed in the above calls.
-		view.draw(true);
+		// In the end we always call update(), which only updates the view if
+		// anything has changed in the above calls.
+		view.update();
+	}
+
+	function handleMouseMove(view, point, event) {
+		view._handleEvent('mousemove', point, event);
+		var tool = view._scope._tool;
+		if (tool) {
+			// If there's no onMouseDrag, fire onMouseMove while dragging.
+			tool._handleEvent(dragging && tool.responds('mousedrag')
+					? 'mousedrag' : 'mousemove', point, event);
+		}
+		view.update();
+		return tool;
 	}
 
 	function mousemove(event) {
-		var view;
+		var view = View._focused;
 		if (!dragging) {
 			// See if we can get the view from the current event target, and
 			// handle the mouse move over it.
-			view = getView(event);
-			if (view) {
+			var target = getView(event);
+			if (target) {
 				// Temporarily focus this view without making it sticky, so
 				// Key events are handled too during the mouse over
-				prevFocus = View._focused;
-				View._focused = tempFocus = view;
-			} else if (tempFocus && tempFocus == View._focused) {
+				// If we switch view, fire one last mousemove in the old view,
+				// to give items the change to receive a mouseleave, etc.
+				if (view !== target)
+					handleMouseMove(view, viewToProject(view, event), event);
+				prevFocus = view;
+				view = View._focused = tempFocus = target;
+			} else if (tempFocus && tempFocus === view) {
 				// Clear temporary focus again and update it.
-				View._focused = prevFocus;
+				view = View._focused = prevFocus;
 				updateFocus();
 			}
 		}
-		if (!(view = view || View._focused))
-			return;
-		var point = event && viewToProject(view, event);
-		if (dragging || new Rectangle(new Point(),
-				view.getViewSize()).contains(point)) {
-			view._handleEvent('mousemove', point, event);
-			if (tool = view._scope._tool) {
-				// If there's no onMouseDrag, fire onMouseMove while dragging.
-				tool._handleEvent(dragging && tool.responds('mousedrag')
-						? 'mousedrag' : 'mousemove', point, event);
-			}
-			view.draw(true);
+		if (view) {
+			var point = viewToProject(view, event);
+			if (dragging || new Rectangle(new Point(),
+					view.getViewSize()).contains(point))
+				tool = handleMouseMove(view, point, event);
 		}
+	}
+
+	function mouseout(event) {
+		// When the moues leaves the document, fire one last mousemove event,
+		// to give items the change to receive a mouseleave, etc.
+		var view = View._focused,
+			target = DomEvent.getRelatedTarget(event);
+		if (view && (!target || target.nodeName === 'HTML'))
+			handleMouseMove(view, viewToProject(view, event), event);
 	}
 
 	function mouseup(event) {
@@ -687,7 +731,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		view._handleEvent('mouseup', point, event);
 		if (tool)
 			tool._handleEvent('mouseup', point, event);
-		view.draw(true);
+		view.update();
 	}
 
 	function selectstart(event) {
@@ -704,6 +748,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 
 	DomEvent.add(document, {
 		mousemove: mousemove,
+		mouseout: mouseout,
 		mouseup: mouseup,
 		touchmove: mousemove,
 		touchend: mouseup,

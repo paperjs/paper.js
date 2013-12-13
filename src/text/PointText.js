@@ -49,6 +49,8 @@ var PointText = TextItem.extend(/** @lends PointText# */{
 	 * 	point: [50, 50],
 	 * 	content: 'The contents of the point text',
 	 * 	fillColor: 'black',
+	 * 	fontFamily: 'Courier New',
+	 * 	fontWeight: 'bold',
 	 * 	fontSize: 25
 	 * });
 	 */

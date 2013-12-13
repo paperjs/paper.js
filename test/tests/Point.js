@@ -13,45 +13,45 @@
 module('Point');
 test('new Point(10, 20)', function() {
 	var point = new Point(10, 20);
-	equals(point.toString(), '{ x: 10, y: 20 }');
+	comparePoints(point, { x: 10, y: 20 });
 });
 
 test('new Point([10, 20])', function() {
 	var point = new Point([10, 20]);
-	equals(point.toString(), '{ x: 10, y: 20 }');
+	comparePoints(point, { x: 10, y: 20 });
 });
 
 test('new Point({x: 10, y: 20})', function() {
 	var point = new Point({x: 10, y: 20});
-	equals(point.toString(), '{ x: 10, y: 20 }');
+	comparePoints(point, { x: 10, y: 20 });
 });
 
 test('new Point(new Size(10, 20))', function() {
 	var point = new Point(new Size(10, 20));
-	equals(point.toString(), '{ x: 10, y: 20 }');
+	comparePoints(point, { x: 10, y: 20 });
 });
 
 test('new Point({ width: 10, height: 20})', function() {
 	var point = new Point({width: 10, height: 20});
-	equals(point.toString(), '{ x: 10, y: 20 }');
+	comparePoints(point, { x: 10, y: 20 });
 });
 
 test('new Point({ angle: 45, length: 20})', function() {
-	var point = new Point({angle: 40, length: 20});
-	equals(point.toString(), '{ x: 15.32089, y: 12.85575 }');
+	var point = new Point({ angle: 40, length: 20 });
+	comparePoints(point, new Point(15.32089, 12.85575));
 });
 
 module('Point vector operations');
 
 test('normalize(length)', function() {
-	var point = new Point(0, 10).normalize(20)
-	equals(point.toString(), '{ x: 0, y: 20 }');
+	var point = new Point(0, 10).normalize(20);
+	comparePoints(point, { x: 0, y: 20 });
 });
 
 test('set length', function() {
 	var point = new Point(0, 10);
 	point.length = 20;
-	equals(point.toString(), '{ x: 0, y: 20 }');
+	comparePoints(point, { x: 0, y: 20 });
 });
 
 test('get angle', function() {
@@ -66,13 +66,17 @@ test('getAngle(point)', function() {
 
 test('rotate(degrees)', function() {
 	var point = new Point(100, 50).rotate(90);
-	equals(point.toString(), '{ x: -50, y: 100 }');
+	comparePoints(point, { x: -50, y: 100 });
 });
 
 test('set angle', function() {
 	var point = new Point(10, 20);
 	point.angle = 92;
     equals(point.angle, 92);
+	comparePoints(point, new Point({
+		angle: 92,
+		length: Math.sqrt(10 * 10 + 20 * 20)
+	}));
 });
 
 test('set angle & length', function() {
@@ -87,18 +91,30 @@ test('set angle & length', function() {
 	comparePoints(point2, point1);
 });
 
+test('getting angle after x / y change', function() {
+	var vector = new Point(1, 0);
+	equals(vector.angle, 0, 'angle before x / y change');
+	vector.x = 0;
+	vector.y = 1;
+	equals(vector.angle, 90, 'angle after x / y change');
+});
+
 test('getDirectedAngle(point)', function() {
-	var angle = new Point(10, 10).getDirectedAngle(new Point(1, 0));
-	equals(angle, -45);
+	equals(function() {
+		return new Point(10, 10).getDirectedAngle(new Point(1, 0));
+	}, -45);
 
-	var angle = new Point(-10, 10).getDirectedAngle(new Point(1, 0));
-	equals(angle, -135);
+	equals(function() {
+		return new Point(-10, 10).getDirectedAngle(new Point(1, 0));
+	}, -135);
 
-	var angle = new Point(-10, -10).getDirectedAngle(new Point(1, 0));
-	equals(angle, 135);
+	equals(function() {
+		return new Point(-10, -10).getDirectedAngle(new Point(1, 0));
+	}, 135);
 
-	var angle = new Point(10, -10).getDirectedAngle(new Point(1, 0));
-	equals(angle, 45);
+	equals(function() {
+		return new Point(10, -10).getDirectedAngle(new Point(1, 0));
+	}, 45);
 });
 
 test('equals()', function() {

@@ -66,8 +66,6 @@ var Symbol = Base.extend(/** @lends Symbol# */{
 		this.project.symbols.push(this);
 		if (item)
 			this.setDefinition(item, dontCenter);
-		// Hash to keep track of placed instances
-		this._instances = {};
 	},
 
 	_serialize: function(options, dictionary) {
@@ -95,11 +93,16 @@ var Symbol = Base.extend(/** @lends Symbol# */{
 	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
-		// Notify all PlacedSymbols of the change in our definition, so they
-		// can clear cached bounds.
-		Base.each(this._instances, function(item) {
-			item._changed(flags);
-		});
+		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
+			// Clear cached bounds of all items that this item contributes to.
+			// We don't call this on the parent, since we're already the parent
+			// of the child that modified the hierarchy (that's where these
+			// HIERARCHY notifications go)
+			Item._clearBoundsCache(this);
+		}
+		if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
+			this.project._needsUpdate = true;
+		}
 	},
 
 	/**

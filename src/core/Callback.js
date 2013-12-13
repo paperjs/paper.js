@@ -115,6 +115,19 @@ var Callback = {
 	off: '#detach',
 	trigger: '#fire',
 
+	_installEvents: function(install) {
+		var handlers = this._handlers,
+			key = install ? 'install' : 'uninstall';
+		for (var type in handlers) {
+			if (handlers[type].length > 0) {
+				var entry = this._eventTypes[type],
+					func = entry[key];
+				if (func)
+					func.call(this, type);
+			}
+		}
+	},
+
 	statics: {
 		// Override inject() so that sub-classes automatically add the accessors
 		// for the event handler functions (e.g. #onMouseDown) for each property

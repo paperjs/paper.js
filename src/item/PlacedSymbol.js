@@ -94,12 +94,8 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 	},
 
 	setSymbol: function(symbol) {
-		// Remove from previous symbol's instances
-		if (this._symbol)
-			delete this._symbol._instances[this._id];
 		this._symbol = symbol;
-		// Add to the new one's
-		symbol._instances[this._id] = this;
+		this._changed(/*#=*/ Change.GEOMETRY);
 	},
 
 	clone: function(insert) {
@@ -113,20 +109,19 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 		return this._symbol._definition.isEmpty();
 	},
 
-	_getBounds: function(getter, matrix) {
+	_getBounds: function(getter, matrix, cacheItem) {
 		// Redirect the call to the symbol definition to calculate the bounds
-		// TODO: Implement bounds caching through passing on of cacheItem, so
-		// that Symbol#_changed() notification become unnecessary!
-		return this.symbol._definition._getCachedBounds(getter, matrix);
+		return this.symbol._definition._getCachedBounds(getter, matrix,
+				cacheItem);
 	},
 
 	_hitTest: function(point, options, matrix) {
-		var result = this._symbol._definition._hitTest(point, options, matrix);
+		var res = this._symbol._definition._hitTest(point, options, matrix);
 		// TODO: When the symbol's definition is a path, should hitResult
 		// contain information like HitResult#curve?
-		if (result)
-			result.item = this;
-		return result;
+		if (res)
+			res.item = this;
+		return res;
 	},
 
 	_draw: function(ctx, param) {

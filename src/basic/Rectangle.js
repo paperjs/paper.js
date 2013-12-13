@@ -237,8 +237,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @bean
 	 */
 	getPoint: function(/* dontLink */) {
-		return new (arguments[0] ? Point : LinkedPoint)
-				(this.x, this.y, this, 'setPoint');
+		var ctor = arguments[0] ? Point : LinkedPoint;
+		return new ctor(this.x, this.y, this, 'setPoint');
 	},
 
 	setPoint: function(point) {
@@ -255,8 +255,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @bean
 	 */
 	getSize: function(/* dontLink */) {
-		return new (arguments[0] ? Size : LinkedSize)
-				(this.width, this.height, this, 'setSize');
+		var ctor = arguments[0] ? Size : LinkedSize;
+		return new ctor(this.width, this.height, this, 'setSize');
 	},
 
 	setSize: function(size) {
@@ -401,8 +401,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @bean
 	 */
 	getCenter: function(/* dontLink */) {
-		return new (arguments[0] ? Point : LinkedPoint)
-				(this.getCenterX(), this.getCenterY(), this, 'setCenter');
+		var ctor = arguments[0] ? Point : LinkedPoint;
+		return new ctor(this.getCenterX(), this.getCenterY(), this, 'setCenter');
 	},
 
 	setCenter: function(point) {
@@ -740,26 +740,29 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	/**
-	 * Expands the rectangle by the specified amount in both horizontal and
+	 * Expands the rectangle by the specified amount in horizontal and
 	 * vertical directions.
 	 *
 	 * @name Rectangle#expand
 	 * @function
-	 * @param {Number} amount
+	 * @param {Number|Size|Point} amount the amount to expand the rectangle in
+	 * both directions
 	 */
 	/**
-	 * Expands the rectangle in horizontal direction by the specified
-	 * {@code hor} amount and in vertical direction by the specified {@code ver}
-	 * amount.
+	 * Expands the rectangle by the specified amounts in horizontal and
+	 * vertical directions.
 	 *
 	 * @name Rectangle#expand
 	 * @function
-	 * @param {Number} hor
-	 * @param {Number} ver
+	 * @param {Number} hor the amount to expand the rectangle in horizontal
+	 * direction
+	 * @param {Number} ver the amount to expand the rectangle in horizontal
+	 * direction
 	 */
-	expand: function(hor, ver) {
-		if (ver === undefined)
-			ver = hor;
+	expand: function(/* amount */) {
+		var amount = Size.read(arguments),
+			hor = amount.width,
+			ver = amount.height;
 		return new Rectangle(this.x - hor / 2, this.y - ver / 2,
 				this.width + hor, this.height + ver);
 	},
@@ -809,8 +812,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 				get = 'get' + part,
 				set = 'set' + part;
 			this[get] = function(/* dontLink */) {
-				return new (arguments[0] ? Point : LinkedPoint)
-						(this[getX](), this[getY](), this, set);
+				var ctor = arguments[0] ? Point : LinkedPoint;
+				return new ctor(this[getX](), this[getY](), this, set);
 			};
 			this[set] = function(point) {
 				point = Point.read(arguments);

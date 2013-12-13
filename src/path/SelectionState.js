@@ -10,12 +10,12 @@
  * All rights reserved.
  */
 
-// These values are ordered so that SelectionState.POINT has the highest value.
-// As Path#_selectedSegmentState is the addition of all segment's states, and is
-// used to see if all segments are fully selected, meaning they are set to
-// SelectionState.POINT.
+ // Path#_selectedSegmentState is the addition of all segment's states, and is
+ // compared with SelectionState.SEGMENT, the combination of all SelectionStates
+ // to see if all segments are fully selected.
 var SelectionState = {
 	HANDLE_IN: 1,
 	HANDLE_OUT: 2,
-	POINT: 4
+	POINT: 4,
+	SEGMENT: 7 // HANDLE_IN | HANDLE_OUT | POINT
 };

@@ -373,6 +373,10 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 				&& this._tx === 0 && this._ty === 0;
 	},
 
+	orNullIfIdentity: function() {
+		return this.isIdentity() ? null : this;
+	},
+
 	/**
 	 * Returns whether the transform is invertible. A transform is not
 	 * invertible if the determinant is 0 or any value is non-finite or NaN.

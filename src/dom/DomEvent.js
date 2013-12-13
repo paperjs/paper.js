@@ -42,6 +42,10 @@ var DomEvent = {
 		return event.target || event.srcElement;
 	},
 
+	getRelatedTarget: function(event) {
+		return event.relatedTarget || event.toElement;
+	},
+
 	getOffset: function(event, target) {
 		// Remove target offsets from page coordinates
 		return DomEvent.getPoint(event).subtract(DomElement.getOffset(

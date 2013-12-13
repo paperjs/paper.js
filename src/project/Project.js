@@ -59,8 +59,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			this.view = view instanceof View ? view : View.create(view);
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
-		// See Item#draw() for an explanation of _drawCount
-		this._drawCount = 0;
+		// See Item#draw() for an explanation of _updateVersion
+		this._updateVersion = 0;
 		// Change tracking, not in use for now. Activate once required:
 		// this._changes = [];
 		// this._changesById = {};
@@ -263,7 +263,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * in points, can also be controlled through
 	 * {@link Project#options}{@code .hitTolerance}.
 	 * <b>options.type:</b> Only hit test again a certain item
-	 * type: {@link PathItem}, {@link Raster}, {@link TextItem}, etc.
+	 * type: {String('group', 'layer', 'path', 'compound-path', 'shape',
+	 * 'raster', 'placed-symbol', 'point-text')}, etc.
 	 * <b>options.fill:</b> {@code Boolean} – hit test the fill of items.
 	 * <b>options.stroke:</b> {@code Boolean} – hit test the curves of path
 	 * items, taking into account stroke width.
@@ -420,9 +421,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 
 	draw: function(ctx, matrix, ratio) {
-		// Increase the drawCount before the draw-loop. After that, items that
-		// are visible will have their drawCount set to the new value.
-		this._drawCount++;
+		// Increase the _updateVersion before the draw-loop. After that, items
+		// that are visible will have their _updateVersion set to the new value.
+		this._updateVersion++;
 		ctx.save();
 		matrix.applyToContext(ctx);
 		// Use new Base() so we can use param.extend() to easily override
@@ -430,9 +431,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		var param = new Base({
 			offset: new Point(0, 0),
 			ratio: ratio,
-			// A stack of concatenated matrices, to keep track of the current
-			// global matrix, since Canvas is not able tell us (yet).
-			transforms: [matrix],
 			// Tell the drawing routine that we want to track nested matrices
 			// in param.transforms, and that we want it to set _globalMatrix
 			// as used below. Item#rasterize() and Raster#getAverageColor() do
@@ -449,7 +447,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.strokeWidth = 1;
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id];
-				if (item._drawCount === this._drawCount
+				if (item._updateVersion === this._updateVersion
 						&& (item._drawSelected || item._boundsSelected)) {
 					// Allow definition of selected color on a per item and per
 					// layer level, with a fallback to #009dec
@@ -457,15 +455,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 							|| item.getLayer().getSelectedColor();
 					ctx.strokeStyle = ctx.fillStyle = color
 							? color.toCanvasStyle(ctx) : '#009dec';
-					var mx = item._globalMatrix;
+					var mx = matrix.clone().concatenate(item._globalMatrix);
 					if (item._drawSelected)
 						item._drawSelected(ctx, mx);
 					if (item._boundsSelected) {
-						// We need to call the internal _getBounds, to get non-
-						// transformed bounds.
-						// TODO: Implement caching for these too!
 						var coords = mx._transformCorners(
-								item._getBounds('getBounds'));
+								item.getInternalBounds());
 						// Now draw a rectangle that connects the transformed
 						// bounds corners, and draw the corners.
 						ctx.beginPath();

@@ -97,7 +97,7 @@ var Key = new function() {
 			// Call the onKeyDown or onKeyUp handler if present
 			tool.fire(type, new KeyEvent(down, key, character, event));
 			if (view)
-				view.draw(true);
+				view.update();
 		}
 	}
 

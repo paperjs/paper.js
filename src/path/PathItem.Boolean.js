@@ -107,8 +107,9 @@ PathItem.inject(new function() {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
-		path1 = reorientPath(path1.clone(false));
-		path2 = reorientPath(path2.clone(false));
+		// Also apply matrices to both paths in case they were transformed.
+		path1 = reorientPath(path1.clone(false).applyMatrix());
+		path2 = reorientPath(path2.clone(false).applyMatrix());
 		var path1Clockwise = path1.isClockwise(),
 			path2Clockwise = path2.isClockwise(),
 			// Calculate all the intersections

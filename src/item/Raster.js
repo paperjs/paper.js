@@ -301,7 +301,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			that.setImage(image);
 			that.fire('load');
 			if (view)
-				view.draw(true);
+				view.update();
 		}
 
 /*#*/ if (__options.environment == 'browser') {
