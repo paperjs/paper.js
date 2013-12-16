@@ -1246,7 +1246,8 @@ new function() { // Scope for methods that require numerical integration
 /*#*/ } else { // !__options.fatline
 		// Subdivision method
 		var bounds1 = Curve.getBounds(v1),
-			bounds2 = Curve.getBounds(v2);
+			bounds2 = Curve.getBounds(v2),
+			tolerance = /*#=*/ Numerical.TOLERANCE;
 		if (bounds1.touches(bounds2)) {
 			// See if both curves are flat enough to be treated as lines, either
 			// because they have no control points at all, or are "flat enough"
