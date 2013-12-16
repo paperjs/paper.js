@@ -1167,8 +1167,8 @@ new function() { // Scope for methods that require numerical integration
 			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
 			d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]) || 0,
 			factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
-			dmin = factor * Math.min(0, d1, d2),
-			dmax = factor * Math.max(0, d1, d2),
+			dMin = factor * Math.min(0, d1, d2),
+			dMax = factor * Math.max(0, d1, d2),
 			// Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
 			// distance of P from the baseline l of the fat-line, ti is equally
 			// spaced in [0, 1]
@@ -1190,11 +1190,11 @@ new function() { // Scope for methods that require numerical integration
 				top = hull[0],
 				bottom = hull[1],
 				tMinClip, tMaxClip;
-			// Clip the convexhull with dmin and dmax
-			tMinClip = clipConvexHull(top, bottom, dmin, dmax);
+			// Clip the convexhull with dMin and dMax
+			tMinClip = clipConvexHull(top, bottom, dMin, dMax);
 			top.reverse();
 			bottom.reverse();
-			tMaxClip = clipConvexHull(top, bottom, dmin, dmax);
+			tMaxClip = clipConvexHull(top, bottom, dMin, dMax);
 			// No intersections if one of the tvalues are null or 'undefined'
 			if (tMinClip == null || tMaxClip == null)
 				return false;
@@ -1344,7 +1344,7 @@ new function() { // Scope for methods that require numerical integration
 	/**
 	 * Clips the convex-hull and returns [tMin, tMax] for the curve contained
 	 */
-	function clipConvexHull(hullTop, hullBottom, dmin, dmax) {
+	function clipConvexHull(hullTop, hullBottom, dMin, dMax) {
 		var tProxy,
 			tVal = null,
 			px, py,
@@ -1354,10 +1354,10 @@ new function() { // Scope for methods that require numerical integration
 			qy = hullBottom[i + 1][1];
 			if (py < qy) {
 				tProxy = null;
-			} else if (qy <= dmax) {
+			} else if (qy <= dMax) {
 				px = hullBottom[i][0];
 				qx = hullBottom[i + 1][0];
-				tProxy = px + (dmax  - py) * (qx - px) / (qy - py);
+				tProxy = px + (dMax  - py) * (qx - px) / (qy - py);
 			} else {
 				// Try the next chain
 				continue;
@@ -1365,19 +1365,19 @@ new function() { // Scope for methods that require numerical integration
 			// We got a proxy-t;
 			break;
 		}
-		if (hullTop[0][1] <= dmax)
+		if (hullTop[0][1] <= dMax)
 			tProxy = hullTop[0][0];
 		for (var i = 0, l = hullTop.length - 1; i < l; i++) {
 			py = hullTop[i][1];
 			qy = hullTop[i + 1][1];
-			if (py >= dmin) {
+			if (py >= dMin) {
 				tVal = tProxy;
 			} else if (py > qy) {
 				tVal = null;
-			} else if (qy >= dmin) {
+			} else if (qy >= dMin) {
 				px = hullTop[i][0];
 				qx = hullTop[i + 1][0];
-				tVal = px + (dmin  - py) * (qx - px) / (qy - py);
+				tVal = px + (dMin  - py) * (qx - px) / (qy - py);
 			} else {
 				continue;
 			}
