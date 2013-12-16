@@ -128,7 +128,7 @@ var BlendMode = new function() {
 		},
 
 		// if (Cb == 1) B(Cb, Cs) = 1
-		// else if(Cs == 0) B(Cb, Cs) = 0
+		// else if (Cs == 0) B(Cb, Cs) = 0
 		// else B(Cb, Cs) = 1 - min(1, (1 - Cb) / Cs)
 		'color-burn': function() {
 			dr = br === 255 ? 255 : sr === 0 ? 0 : max(0, 255 - (255 - br) * 255 / sr);
