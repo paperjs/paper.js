@@ -279,7 +279,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	set: function(props) {
 		if (props)
-			this._set(props);
+			this._set(props, { insert: true });
 		return this;
 	},
 
