@@ -1467,9 +1467,6 @@ new function() { // Scope for methods that require numerical integration
 						// tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
 						0, 1, 0, 1, 1, false, 0);
 			return locations;
-		},
-
-		getConvexHull : getConvexHull,
-		clipConvexHull: clipConvexHull
+		}
 	}};
 });
