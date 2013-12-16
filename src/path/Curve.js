@@ -1226,15 +1226,13 @@ new function() { // Scope for methods that require numerical integration
 			}
 		} else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
 			// We have isolated the intersection with sufficient precision
+			var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
+				t2 = uMin + (uMax - uMin) / 2;
 			if (reverse) {
-				var t1 = uMin + (uMax - uMin) / 2,
-					t2 = tMinNew + (tMaxNew - tMinNew) / 2;
 				addLocation(locations,
-						curve2, t1, Curve.evaluate(v2, t1, 0),
-						curve1, t2, Curve.evaluate(v1, t2, 0));
+						curve2, t2, Curve.evaluate(v2, t2, 0),
+						curve1, t1, Curve.evaluate(v1, t1, 0));
 			} else {
-				var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
-					t2 = uMin + (uMax - uMin) / 2;
 				addLocation(locations,
 						curve1, t1, Curve.evaluate(v1, t1, 0),
 						curve2, t2, Curve.evaluate(v2, t2, 0));
