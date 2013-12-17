@@ -201,11 +201,12 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @return {Boolean} {@true if the rectangles are equal}
 	 */
 	equals: function(rect) {
-		if (Base.isPlainValue(rect))
-			rect = Rectangle.read(arguments);
-		return rect === this
-				|| rect && this.x === rect.x && this.y === rect.y
-					&& this.width === rect.width && this.height === rect.height
+		var rt = Base.isPlainValue(rect)
+				? Rectangle.read(arguments)
+				: rect;
+		return rt === this
+				|| rt && this.x === rt.x && this.y === rt.y
+					&& this.width === rt.width && this.height === rt.height
 				|| false;
 	},
 
@@ -241,8 +242,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 		return new ctor(this.x, this.y, this, 'setPoint');
 	},
 
-	setPoint: function(point) {
-		point = Point.read(arguments);
+	setPoint: function(/* point */) {
+		var point = Point.read(arguments);
 		this.x = point.x;
 		this.y = point.y;
 	},
@@ -259,8 +260,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 		return new ctor(this.width, this.height, this, 'setSize');
 	},
 
-	setSize: function(size) {
-		size = Size.read(arguments);
+	setSize: function(/* size */) {
+		var size = Size.read(arguments);
 		// Keep track of how dimensions were specified through this._fix*
 		// attributes.
 		// _fixX / Y can either be 0 (l), 0.5 (center) or 1 (r), and is used as
@@ -405,8 +406,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 		return new ctor(this.getCenterX(), this.getCenterY(), this, 'setCenter');
 	},
 
-	setCenter: function(point) {
-		point = Point.read(arguments);
+	setCenter: function(/* point */) {
+		var point = Point.read(arguments);
 		this.setCenterX(point.x);
 		this.setCenterY(point.y);
 		// A special setter where we allow chaining, because it comes in handy
@@ -633,16 +634,16 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * 	}
 	 * }
 	 */
-	intersects: function(rect) {
-		rect = Rectangle.read(arguments);
+	intersects: function(/* rect */) {
+		var rect = Rectangle.read(arguments);
 		return rect.x + rect.width > this.x
 				&& rect.y + rect.height > this.y
 				&& rect.x < this.x + this.width
 				&& rect.y < this.y + this.height;
 	},
 
-	touches: function(rect) {
-		rect = Rectangle.read(arguments);
+	touches: function(/* rect */) {
+		var rect = Rectangle.read(arguments);
 		return rect.x + rect.width >= this.x
 				&& rect.y + rect.height >= this.y
 				&& rect.x <= this.x + this.width
@@ -690,9 +691,9 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * var intersectionPath = new Path.Rectangle(intersected);
 	 * intersectionPath.fillColor = 'red';
 	 */
-	intersect: function(rect) {
-		rect = Rectangle.read(arguments);
-		var x1 = Math.max(this.x, rect.x),
+	intersect: function(/* rect */) {
+		var rect = Rectangle.read(arguments),
+			x1 = Math.max(this.x, rect.x),
 			y1 = Math.max(this.y, rect.y),
 			x2 = Math.min(this.x + this.width, rect.x + rect.width),
 			y2 = Math.min(this.y + this.height, rect.y + rect.height);
@@ -707,9 +708,9 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @return {Rectangle} the smallest rectangle containing both the specified
 	 *                     rectangle and this rectangle.
 	 */
-	unite: function(rect) {
-		rect = Rectangle.read(arguments);
-		var x1 = Math.min(this.x, rect.x),
+	unite: function(/* rect */) {
+		var rect = Rectangle.read(arguments),
+			x1 = Math.min(this.x, rect.x),
 			y1 = Math.min(this.y, rect.y),
 			x2 = Math.max(this.x + this.width, rect.x + rect.width),
 			y2 = Math.max(this.y + this.height, rect.y + rect.height);
@@ -730,8 +731,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 *
 	 * @param {Point} point
 	 */
-	include: function(point) {
-		point = Point.read(arguments);
+	include: function(/* point */) {
+		var point = Point.read(arguments);
 		var x1 = Math.min(this.x, point.x),
 			y1 = Math.min(this.y, point.y),
 			x2 = Math.max(this.x + this.width, point.x),
@@ -815,8 +816,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 				var ctor = arguments[0] ? Point : LinkedPoint;
 				return new ctor(this[getX](), this[getY](), this, set);
 			};
-			this[set] = function(point) {
-				point = Point.read(arguments);
+			this[set] = function(/* point */) {
+				var point = Point.read(arguments);
 				this[setX](point.x);
 				this[setY](point.y);
 			};

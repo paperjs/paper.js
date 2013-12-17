@@ -231,11 +231,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @param {Number} y the y coordinate of the anchor point
 	 * @return {Matrix} this affine transform
 	 */
-	rotate: function(angle, center) {
-		center = Point.read(arguments, 1);
+	rotate: function(angle /*, center */) {
 		angle *= Math.PI / 180;
-		// Concatenate rotation matrix into this one
-		var x = center.x,
+		var center = Point.read(arguments, 1),
+			// Concatenate rotation matrix into this one
+			x = center.x,
 			y = center.y,
 			cos = Math.cos(angle),
 			sin = Math.sin(angle),

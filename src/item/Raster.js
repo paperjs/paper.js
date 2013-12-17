@@ -375,9 +375,9 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 *
 	 * @return {Canvas} the sub image as a Canvas object
 	 */
-	getSubCanvas: function(rect) {
-		rect = Rectangle.read(arguments);
-		var ctx = CanvasProvider.getContext(rect.getSize());
+	getSubCanvas: function(rect) { // TODO: Fix argument assignment!
+		var rect = Rectangle.read(arguments),
+			ctx = CanvasProvider.getContext(rect.getSize());
 		ctx.drawImage(this.getCanvas(), rect.x, rect.y,
 				rect.width, rect.height, 0, 0, rect.width, rect.height);
 		return ctx.canvas;
@@ -392,9 +392,9 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 *
 	 * @return {Raster} the sub raster as a newly created raster item
 	 */
-	getSubRaster: function(rect) {
-		rect = Rectangle.read(arguments);
-		var raster = new Raster({
+	getSubRaster: function(rect) { // TODO: Fix argument assignment!
+		var rect = Rectangle.read(arguments),
+			raster = new Raster({
 			canvas: this.getSubCanvas(rect),
 			insert: false
 		});
@@ -434,8 +434,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @param {Point} point the offset of the image as a point in pixel
 	 * coordinates
 	 */
-	drawImage: function(image, point) {
-		point = Point.read(arguments, 1);
+	drawImage: function(image /*, point */) {
+		var point = Point.read(arguments, 1);
 		this.getContext(true).drawImage(image, point.x, point.y);
 	},
 
@@ -531,8 +531,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @param point the offset of the pixel as a point in pixel coordinates
 	 * @return {Color} the color of the pixel
 	 */
-	getPixel: function(point) {
-		point = Point.read(arguments);
+	getPixel: function(point) { // TODO: Fix argument assignment!
+		var point = Point.read(arguments);
 		var data = this.getContext().getImageData(point.x, point.y, 1, 1).data;
 		// Alpha is separate now:
 		return new Color('rgb', [data[0] / 255, data[1] / 255, data[2] / 255],
@@ -577,8 +577,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @param {Size} size
 	 * @return {ImageData}
 	 */
-	createImageData: function(size) {
-		size = Size.read(arguments);
+	createImageData: function(/* size */) {
+		var size = Size.read(arguments);
 		return this.getContext().createImageData(size.width, size.height);
 	},
 
@@ -587,8 +587,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @param {Rectangle} rect
 	 * @return {ImageData}
 	 */
-	getImageData: function(rect) {
-		rect = Rectangle.read(arguments);
+	getImageData: function(rect) { // TODO: Fix argument assignment!
+		var rect = Rectangle.read(arguments);
 		if (rect.isEmpty())
 			rect = new Rectangle(this._size);
 		return this.getContext().getImageData(rect.x, rect.y,
@@ -601,8 +601,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @param {Point} point
 	 * @return {ImageData}
 	 */
-	setImageData: function(data, point) {
-		point = Point.read(arguments, 1);
+	setImageData: function(data /*, point */) {
+		var point = Point.read(arguments, 1);
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 

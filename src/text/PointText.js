@@ -75,8 +75,8 @@ var PointText = TextItem.extend(/** @lends PointText# */{
 		return new LinkedPoint(point.x, point.y, this, 'setPoint');
 	},
 
-	setPoint: function(point) {
-		point = Point.read(arguments);
+	setPoint: function(/* point */) {
+		var point = Point.read(arguments);
 		this.translate(point.subtract(this._matrix.getTranslation()));
 	},
 

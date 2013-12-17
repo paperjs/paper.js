@@ -111,8 +111,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 		return this._segment1._point;
 	},
 
-	setPoint1: function(point) {
-		point = Point.read(arguments);
+	setPoint1: function(/* point */) {
+		var point = Point.read(arguments);
 		this._segment1._point.set(point.x, point.y);
 	},
 
@@ -126,8 +126,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 		return this._segment2._point;
 	},
 
-	setPoint2: function(point) {
-		point = Point.read(arguments);
+	setPoint2: function(/* point */) {
+		var point = Point.read(arguments);
 		this._segment2._point.set(point.x, point.y);
 	},
 
@@ -141,8 +141,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 		return this._segment1._handleOut;
 	},
 
-	setHandle1: function(point) {
-		point = Point.read(arguments);
+	setHandle1: function(/* point */) {
+		var point = Point.read(arguments);
 		this._segment1._handleOut.set(point.x, point.y);
 	},
 
@@ -156,8 +156,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 		return this._segment2._handleIn;
 	},
 
-	setHandle2: function(point) {
-		point = Point.read(arguments);
+	setHandle2: function(/* point */) {
+		var point = Point.read(arguments);
 		this._segment2._handleIn.set(point.x, point.y);
 	},
 
@@ -923,8 +923,8 @@ statics: {
 	 * @param {Point} point the point on the curve.
 	 * @return {Number} the curve time parameter of the specified point.
 	 */
-	getParameterOf: function(point) {
-		point = Point.read(arguments);
+	getParameterOf: function(point) { // TODO: Fix argument assignment!
+		var point = Point.read(arguments);
 		return Curve.getParameterOf(this.getValues(), point.x, point.y);
 	},
 
@@ -949,17 +949,17 @@ statics: {
 	 * @param {Point} point the point on the curve.
 	 * @return {CurveLocation} the curve location of the specified point.
 	 */
-	getLocationOf: function(point) {
+	getLocationOf: function(point) { // TODO: Fix argument assignment!
 		// We need to use point to avoid minification issues and prevent method
 		// from turning into a bean (by removal of the point argument).
-		point = Point.read(arguments);
-		var t = this.getParameterOf(point);
+		var point = Point.read(arguments),
+			t = this.getParameterOf(point);
 		return t != null ? new CurveLocation(this, t) : null;
 	},
 
-	getNearestLocation: function(point) {
-		point = Point.read(arguments);
-		var values = this.getValues(),
+	getNearestLocation: function(point) { // TODO: Fix argument assignment!
+		var point = Point.read(arguments),
+			values = this.getValues(),
 			count = 100,
 			minDist = Infinity,
 			minT = 0;
@@ -993,7 +993,7 @@ statics: {
 	getNearestPoint: function(point) {
 		// We need to use point to avoid minification issues and prevent method
 		// from turning into a bean (by removal of the point argument).
-		point = Point.read(arguments);
+		var point = Point.read(arguments);
 		return this.getNearestLocation(point).getPoint();
 	}
 

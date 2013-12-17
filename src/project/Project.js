@@ -290,11 +290,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * information about what exactly was hit or {@code null} if nothing was
 	 * hit
 	 */
-	hitTest: function(point, options) {
+	hitTest: function(/* point, options */) {
 		// We don't need to do this here, but it speeds up things since we won't
 		// repeatetly convert in Item#hitTest() then.
-		point = Point.read(arguments);
-		options = HitResult.getOptions(Base.read(arguments));
+		var point = Point.read(arguments),
+			options = HitResult.getOptions(Base.read(arguments));
 		// Loop backwards, so layers that get drawn last are tested first
 		for (var i = this.layers.length - 1; i >= 0; i--) {
 			var res = this.layers[i].hitTest(point, options);

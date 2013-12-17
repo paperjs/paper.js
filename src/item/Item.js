@@ -891,9 +891,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				: new Rectangle();
 	},
 
-	setBounds: function(rect) {
-		rect = Rectangle.read(arguments);
-		var bounds = this.getBounds(),
+	setBounds: function(/* rect */) {
+		var rect = Rectangle.read(arguments),
+			bounds = this.getBounds(),
 			matrix = new Matrix(),
 			center = rect.getCenter();
 		// Read this from bottom to top:

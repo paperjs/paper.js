@@ -290,9 +290,9 @@ var View = Base.extend(Callback, /** @lends View# */{
 		return new LinkedSize(size.width, size.height, this, 'setViewSize');
 	},
 
-	setViewSize: function(size) {
-		size = Size.read(arguments);
-		var delta = size.subtract(this._viewSize);
+	setViewSize: function(/* size */) {
+		var size = Size.read(arguments),
+			delta = size.subtract(this._viewSize);
 		if (delta.isZero())
 			return;
 		this._viewSize.set(size.width, size.height);

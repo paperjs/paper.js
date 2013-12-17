@@ -270,8 +270,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var result = point1 + point2;
 	 * console.log(result); // {x: 15, y: 30}
 	 */
-	add: function(point) {
-		point = Point.read(arguments);
+	add: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x + point.x, this.y + point.y);
 	},
 
@@ -308,8 +308,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var result = firstPoint - secondPoint;
 	 * console.log(result); // {x: 5, y: 15}
 	 */
-	subtract: function(point) {
-		point = Point.read(arguments);
+	subtract: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x - point.x, this.y - point.y);
 	},
 
@@ -346,8 +346,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var result = firstPoint * secondPoint;
 	 * console.log(result); // {x: 20, y: 20}
 	 */
-	multiply: function(point) {
-		point = Point.read(arguments);
+	multiply: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x * point.x, this.y * point.y);
 	},
 
@@ -384,8 +384,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var result = firstPoint / secondPoint;
 	 * console.log(result); // {x: 4, y: 2}
 	 */
-	divide: function(point) {
-		point = Point.read(arguments);
+	divide: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x / point.x, this.y / point.y);
 	},
 
@@ -419,8 +419,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var point = new Point(12, 6);
 	 * console.log(point % new Point(5, 2)); // {x: 2, y: 0}
 	 */
-	modulo: function(point) {
-		point = Point.read(arguments);
+	modulo: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x % point.x, this.y % point.y);
 	},
 
@@ -449,9 +449,10 @@ var Point = Base.extend(/** @lends Point# */{
 	 *        remain squared, or its square root should be calculated.
 	 * @return {Number}
 	 */
-	getDistance: function(point, squared) {
-		point = Point.read(arguments);
-		var x = point.x - this.x,
+	getDistance: function(/* point, squared */) {
+		var point = Point.read(arguments),
+			squared = Base.read(arguments),
+			x = point.x - this.x,
 			y = point.y - this.y,
 			d = x * x + y * y;
 		return squared ? d : Math.sqrt(d);
@@ -537,7 +538,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 */
 	getAngle: function(/* point */) {
 		// Hide parameters from Bootstrap so it injects bean too
-		return this.getAngleInRadians(arguments[0]) * 180 / Math.PI;
+		return this.getAngleInRadians.apply(this, arguments) * 180 / Math.PI;
 	},
 
 	setAngle: function(angle) {
@@ -640,8 +641,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @return {Number} the angle between the two vectors
 	 */
-	getDirectedAngle: function(point) {
-		point = Point.read(arguments);
+	getDirectedAngle: function(/* point */) {
+		var point = Point.read(arguments);
 		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
 	},
 
@@ -741,8 +742,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @returns {Number} the dot product of the two points
 	 */
-	dot: function(point) {
-		point = Point.read(arguments);
+	dot: function(/* point */) {
+		var point = Point.read(arguments);
 		return this.x * point.x + this.y * point.y;
 	},
 
@@ -752,8 +753,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @returns {Number} the cross product of the two points
 	 */
-	cross: function(point) {
-		point = Point.read(arguments);
+	cross: function(/* point */) {
+		var point = Point.read(arguments);
 		return this.x * point.y - this.y * point.x;
 	},
 
@@ -764,8 +765,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @returns {Point} the projection of the point on another point
 	 */
-	project: function(point) {
-		point = Point.read(arguments);
+	project: function(/* point */) {
+		var point = Point.read(arguments);
 		if (point.isZero()) {
 			return new Point(0, 0);
 		} else {

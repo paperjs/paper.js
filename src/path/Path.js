@@ -1307,9 +1307,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @param {Point} point the point on the path.
 	 * @return {CurveLocation} the curve location of the specified point.
 	 */
-	getLocationOf: function(point) {
-		point = Point.read(arguments);
-		var curves = this.getCurves();
+	getLocationOf: function(point) { // TODO: Fix argument assignment!
+		var point = Point.read(arguments),
+			curves = this.getCurves();
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var loc = curves[i].getLocationOf(point);
 			if (loc)
@@ -1567,9 +1567,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @return {CurveLocation} the location on the path that's the closest to
 	 * the specified point
 	 */
-	getNearestLocation: function(point) {
-		point = Point.read(arguments);
-		var curves = this.getCurves(),
+	getNearestLocation: function(point) { // TODO: Fix argument assignment!
+		var point = Point.read(arguments),
+			curves = this.getCurves(),
 			minDist = Infinity,
 			minLoc = null;
 		for (var i = 0, l = curves.length; i < l; i++) {
@@ -1614,10 +1614,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * 	circle.position = nearestPoint;
 	 * }
 	 */
-	getNearestPoint: function(point) {
+	getNearestPoint: function(point) { // TODO: Fix argument assignment!
 		// We need to use point to avoid minification issues and prevent method
 		// from turning into a bean (by removal of the point argument).
-		point = Point.read(arguments);
+		var point = Point.read(arguments);
 		return this.getNearestLocation(point).getPoint();
 	},
 

@@ -764,12 +764,13 @@ var Color = Base.extend(new function() {
 		 * @return {Boolean} {@true if the colors are the same}
 		 */
 		equals: function(color) {
-			if (Base.isPlainValue(color))
-				color = Color.read(arguments);
-			return color === this || color && this._class === color._class
-					&& this._type === color._type
-					&& this._alpha === color._alpha
-					&& Base.equals(this._components, color._components)
+			var col = Base.isPlainValue(color)
+					? Color.read(arguments)
+					: color;
+			return col === this || col && this._class === col._class
+					&& this._type === col._type
+					&& this._alpha === col._alpha
+					&& Base.equals(this._components, col._components)
 					|| false;
 		},
 
@@ -1151,8 +1152,8 @@ var Color = Base.extend(new function() {
 		// so the are not clamped yet.
 		var options = { dontParse: /^(multiply|divide)$/.test(name) };
 
-		this[name] = function(color) {
-			color = Color.read(arguments, 0, 0, options);
+		this[name] = function(/* color */) {
+			var color = Color.read(arguments, 0, 0, options);
 			var type = this._type,
 				properties = this._properties,
 				components1 = this._components,

@@ -218,8 +218,8 @@ var Size = Base.extend(/** @lends Size# */{
 	 * var result = size1 + size2;
 	 * console.log(result); // {width: 15, height: 30}
 	 */
-	add: function(size) {
-		size = Size.read(arguments);
+	add: function(/* size */) {
+		var size = Size.read(arguments);
 		return new Size(this.width + size.width, this.height + size.height);
 	},
 
@@ -255,8 +255,8 @@ var Size = Base.extend(/** @lends Size# */{
 	 * var result = firstSize - secondSize;
 	 * console.log(result); // {width: 5, height: 15}
 	 */
-	subtract: function(size) {
-		size = Size.read(arguments);
+	subtract: function(/* size */) {
+		var size = Size.read(arguments);
 		return new Size(this.width - size.width, this.height - size.height);
 	},
 
@@ -291,8 +291,8 @@ var Size = Base.extend(/** @lends Size# */{
 	 * var result = firstSize * secondSize;
 	 * console.log(result); // {width: 20, height: 20}
 	 */
-	multiply: function(size) {
-		size = Size.read(arguments);
+	multiply: function(/* size */) {
+		var size = Size.read(arguments);
 		return new Size(this.width * size.width, this.height * size.height);
 	},
 
@@ -327,8 +327,8 @@ var Size = Base.extend(/** @lends Size# */{
 	 * var result = firstSize / secondSize;
 	 * console.log(result); // {width: 4, height: 2}
 	 */
-	divide: function(size) {
-		size = Size.read(arguments);
+	divide: function(/* size */) {
+		var size = Size.read(arguments);
 		return new Size(this.width / size.width, this.height / size.height);
 	},
 
@@ -362,8 +362,8 @@ var Size = Base.extend(/** @lends Size# */{
 	 * var size = new Size(12, 6);
 	 * console.log(size % new Size(5, 2)); // {width: 2, height: 0}
 	 */
-	modulo: function(size) {
-		size = Size.read(arguments);
+	modulo: function(/* size */) {
+		var size = Size.read(arguments);
 		return new Size(this.width % size.width, this.height % size.height);
 	},
 

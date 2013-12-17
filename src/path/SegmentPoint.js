@@ -24,14 +24,17 @@ var SegmentPoint = Point.extend({
 			x = y = 0;
 		} else if ((x = point[0]) !== undefined) { // Array-like
 			y = point[1];
-		} else {
+		} else { 
+			// So we don't have to modify the point argument which causes
+			// deoptimization:
+			var pt = point;
 			// If not Point-like already, read Point from arguments
-			if ((x = point.x) === undefined) {
-				point = Point.read(arguments);
-				x = point.x;
+			if ((x = pt.x) === undefined) {
+				pt = Point.read(arguments);
+				x = pt.x;
 			}
-			y = point.y;
-			selected = point.selected;
+			y = pt.y;
+			selected = pt.selected;
 		}
 		this._x = x;
 		this._y = y;
