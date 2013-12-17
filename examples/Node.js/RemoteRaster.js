@@ -15,7 +15,7 @@ raster.onLoad = function() {
     out = fs.createWriteStream(__dirname + '/canvas.png');
     stream = canvas.pngStream();
 
-    stream.on('data', function(chunk){
+    stream.on('data', function(chunk) {
         out.write(chunk);
     });
 
