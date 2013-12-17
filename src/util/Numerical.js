@@ -60,6 +60,21 @@ var Numerical = new function() {
 		TOLERANCE = 10e-6,
 		EPSILON = 10e-12;
 
+	// Sets up min and max values for roots and returns a add() function that
+	// handles bounds checks and itself retuns the amount of added roots.
+	function setupRoots(roots, min, max) {
+		var unbound = min === undefined,
+			minE = min - EPSILON,
+			maxE = max + EPSILON,
+			count = 0;
+		// Returns a function that adds roots with checks
+		return function(root) {
+			if (unbound || root > minE && root < maxE)
+				roots[count++] = root < min ? min : root > max ? max : root;
+			return count;
+		};
+	}
+
 	return {
 		TOLERANCE: TOLERANCE,
 		// Precision when comparing against 0
@@ -129,16 +144,7 @@ var Numerical = new function() {
 		 * a*x^2 + b*x + c = 0
 		 */
 		solveQuadratic: function(a, b, c, roots, min, max) {
-			var unbound = min === undefined,
-				minE = min - EPSILON,
-				maxE = max + EPSILON,
-				count = 0;
-
-			function add(root) {
-				if (unbound || root > minE && root < maxE)
-					roots[count++] = root < min ? min : root > max ? max : root;
-				return count;
-			}
+			var add = setupRoots(roots, min, max);
 
 			// Code ported over and adapted from Uintah library (MIT license).
 			// If a is 0, equation is actually linear, return 0 or 1 easy roots.
@@ -154,10 +160,10 @@ var Numerical = new function() {
 			var p2 = p * p;
 			if (p2 < q - EPSILON)
 				return 0;
-			var s = p2 > q ? sqrt(p2 - q) : 0;
-			add (s - p);
+			var s = p2 > q ? sqrt(p2 - q) : 0,
+				count = add(s - p);
 			if (s > 0)
-				add(-s - p);
+				count = add(-s - p);
 			return count;
 		},
 
@@ -172,24 +178,14 @@ var Numerical = new function() {
 			if (abs(a) < EPSILON)
 				return Numerical.solveQuadratic(b, c, d, roots, min, max);
 
-			var unbound = min === undefined,
-				minE = min - EPSILON,
-				maxE = max + EPSILON,
-				count = 0;
-
-			function add(root) {
-				if (unbound || root > minE && root < maxE)
-					roots[count++] = root < min ? min : root > max ? max : root;
-				return count;
-			}
-
 			// Code ported over and adapted from Uintah library (MIT license).
 			// Normalize to form: x^3 + b x^2 + c x + d = 0:
 			b /= a;
 			c /= a;
 			d /= a;
-			// Compute discriminants
-			var bb = b * b,
+			var add = setupRoots(roots, min, max),
+				// Compute discriminants
+				bb = b * b,
 				p = (bb - 3 * c) / 9,
 				q = (2 * bb * b - 9 * b * c + 27 * d) / 54,
 				// Use Cardano's formula
