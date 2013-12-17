@@ -98,8 +98,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 
 	_changed: function() {
 		// Clear cached values.
-		delete this._length;
-		delete this._bounds;
+		this._length = this._bounds = undefined;
 	},
 
 	/**

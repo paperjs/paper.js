@@ -106,7 +106,7 @@ var Group = Item.extend(/** @lends Group# */{
 		}
 		if (flags & (/*#=*/ ChangeFlag.HIERARCHY | /*#=*/ ChangeFlag.CLIPPING)) {
 			// Clear cached clip item whenever hierarchy changes
-			delete this._clipItem;
+			this._clipItem = undefined;
 		}
 	},
 

@@ -880,7 +880,7 @@ var LinkedRectangle = Rectangle.extend({
 				// afterwards here, only once per change.
 				this._dontNotify = true;
 				proto[name].apply(this, arguments);
-				delete this._dontNotify;
+				this._dontNotify = false;
 				this._owner[this._setter](this);
 			};
 		}, /** @lends Rectangle# */{

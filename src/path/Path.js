@@ -135,11 +135,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
-			// Delete cached native Path
-			delete (this._compound ? this._parent : this)._currentPath;
-			delete this._length;
+			// Clear cached native Path
+			(this._compound ? this._parent : this)._currentPath = undefined;
 			// Clockwise state becomes undefined as soon as geometry changes.
-			delete this._clockwise;
+			this._length = this._clockwise = undefined;
 			// Curves are no longer valid
 			if (this._curves) {
 				for (var i = 0, l = this._curves.length; i < l; i++)
@@ -148,7 +147,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
 			// affected by stroke: _bounds.bounds and _bounds.handleBounds
-			delete this._bounds;
+			this._bounds = undefined;
 		}
 	},
 
@@ -167,7 +166,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		this._segments.length = 0;
 		this._selectedSegmentState = 0;
 		// Calculate new curves next time we call getCurves()
-		delete this._curves;
+		this._curves = undefined;
 		this._add(Segment.readAll(segments));
 		if (fullySelected)
 			this.setFullySelected(true);
@@ -701,8 +700,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (segment._selectionState)
 				this._updateSelection(segment, segment._selectionState, 0);
 			// Clear the indices and path references of the removed segments
-			delete segment._index;
-			delete segment._path;
+			segment._index = segment._path = null;
 		}
 		// Adjust the indices of the segments above.
 		for (var i = from, l = segments.length; i < l; i++)
@@ -1144,7 +1142,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			segment._index = i;
 		}
 		// Clear curves since it all has changed.
-		delete this._curves;
+		this._curves = null;
 		// Flip clockwise state if it's defined
 		if (this._clockwise !== undefined)
 			this._clockwise = !this._clockwise;

@@ -147,7 +147,7 @@ var Style = Base.extend(new function() {
 				if (old != value) {
 					if (isColor) {
 						if (old)
-							delete old._owner;
+							old._owner = undefined;
 						if (value && value.constructor === Color) {
 							// Clone color if it already has an owner.
 							// NOTE: If value is not a Color, it is only

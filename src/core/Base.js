@@ -191,9 +191,9 @@ Base.inject(/** @lends Base# */{
 				// Have arguments.__read point to the amount of args read in the
 				// last read() call
 				list.__read = obj.__read;
-				delete obj.__read;
+				obj.__read = undefined;
 				if (options)
-					delete obj.__options;
+					obj.__options = undefined;
 			}
 			return obj;
 		},
@@ -491,9 +491,9 @@ Base.inject(/** @lends Base# */{
 				if (items)
 					args.push.apply(args, items);
 				var removed = list.splice.apply(list, args);
-				// Delete the indices of the removed items
+				// Erase the indices of the removed items
 				for (var i = 0, l = removed.length; i < l; i++)
-					delete removed[i]._index;
+					removed[i]._index = undefined;
 				// Adjust the indices of the items above.
 				for (var i = index + amount, l = list.length; i < l; i++)
 					list[i]._index = i;

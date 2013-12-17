@@ -113,7 +113,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
 		if (index != -1) {
 			this._owners.splice(index, 1);
 			if (this._owners.length === 0)
-				delete this._owners;
+				this._owners = undefined;
 		}
 	},
 
@@ -142,7 +142,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
 		// this gradient as their owner.
 		if (this.stops) {
 			for (var i = 0, l = this._stops.length; i < l; i++)
-				delete this._stops[i]._owner;
+				this._stops[i]._owner = undefined;
 		}
 		if (stops.length < 2)
 			throw new Error(

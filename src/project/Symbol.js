@@ -121,7 +121,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
 			item = item.clone();
 		// Remove previous definition's reference to this symbol
 		if (this._definition)
-			delete this._definition._parentSymbol;
+			this._definition._parentSymbol = null;
 		this._definition = item;
 		// Remove item from DOM, as it's embedded in Symbol now.
 		item.remove();

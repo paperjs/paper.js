@@ -103,9 +103,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
-		// Delete cached native Path
+		// Clear cached native Path
 		if (flags & (/*#=*/ ChangeFlag.HIERARCHY | /*#=*/ ChangeFlag.GEOMETRY))
-			delete this._currentPath;
+			this._currentPath = undefined;
 	},
 
 	insertChildren: function insertChildren(index, items, _preserve) {
