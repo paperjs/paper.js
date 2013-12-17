@@ -558,11 +558,10 @@ statics: {
 	getParameterOf: function(v, x, y) {
 		// Handle beginnings and end seperately, as they are not detected
 		// sometimes.
-		if (Math.abs(v[0] - x) < /*#=*/ Numerical.TOLERANCE
-				&& Math.abs(v[1] - y) < /*#=*/ Numerical.TOLERANCE)
+		var tolerance = /*#=*/ Numerical.TOLERANCE;
+		if (Math.abs(v[0] - x) < tolerance && Math.abs(v[1] - y) < tolerance)
 			return 0;
-		if (Math.abs(v[6] - x) < /*#=*/ Numerical.TOLERANCE
-				&& Math.abs(v[7] - y) < /*#=*/ Numerical.TOLERANCE)
+		if (Math.abs(v[6] - x) < tolerance && Math.abs(v[7] - y) < tolerance)
 			return 1;
 		var txs = [],
 			tys = [],
@@ -582,7 +581,7 @@ statics: {
 						if (sx == -1) tx = ty;
 						else if (sy == -1) ty = tx;
 						// Use average if we're within tolerance
-						if (Math.abs(tx - ty) < /*#=*/ Numerical.TOLERANCE)
+						if (Math.abs(tx - ty) < tolerance)
 							return (tx + ty) * 0.5;
 					}
 				}
@@ -963,7 +962,6 @@ statics: {
 		point = Point.read(arguments);
 		var values = this.getValues(),
 			count = 100,
-			tolerance = Numerical.TOLERANCE,
 			minDist = Infinity,
 			minT = 0;
 
@@ -984,7 +982,7 @@ statics: {
 
 		// Now iteratively refine solution until we reach desired precision.
 		var step = 1 / (count * 2);
-		while (step > tolerance) {
+		while (step > /*#=*/ Numerical.TOLERANCE) {
 			if (!refine(minT - step) && !refine(minT + step))
 				step /= 2;
 		}
@@ -1146,111 +1144,115 @@ new function() { // Scope for methods that require numerical integration
 	function addLocation(locations, curve1, t1, point1, curve2, t2, point2) {
 		// Avoid duplicates when hitting segments (closed paths too)
 		var first = locations[0],
-			last = locations[locations.length - 1];
-		if ((!first || !point1.isClose(first._point, Numerical.EPSILON))
-				&& (!last || !point1.isClose(last._point, Numerical.EPSILON)))
+			last = locations[locations.length - 1],
+			epsilon = /*#=*/ Numerical.EPSILON;
+		if ((!first || !point1.isClose(first._point, epsilon))
+				&& (!last || !point1.isClose(last._point, epsilon)))
 			locations.push(
 					new CurveLocation(curve1, t1, point1, curve2, t2, point2));
 	}
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
-			range1, range2, recursion) {
+			tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
 /*#*/ if (__options.fatline) {
-		// NOTE: range1 and range1 are only used for recusion
-		recursion = (recursion || 0) + 1;
-		// Avoid endless recursion.
-		// Perhaps we should fall back to a more expensive method after this,
-		// but so far endless recursion happens only when there is no real
-		// intersection and the infinite fatline continue to intersect with the
-		// other curve outside its bounds!
+		// Avoid deeper recursion.
 		if (recursion > 20)
 			return;
-		// Set up the parameter ranges.
-		range1 = range1 || [ 0, 1 ];
-		range2 = range2 || [ 0, 1 ];
-		// Get the clipped parts from the original curve, to avoid cumulative
-		// errors
-		var part1 = Curve.getPart(v1, range1[0], range1[1]),
-			part2 = Curve.getPart(v2, range2[0], range2[1]),
-			iteration = 0;
-		// Loop until both parameter range converge. We have to handle the
-		// degenerate case seperately, where fat-line clipping can become
-		// numerically unstable when one of the curves has converged to a point
-		// and the other hasn't.
-		while (iteration++ < 20) {
-			// First we clip v2 with v1's fat-line
-			var range,
-				intersects1 = clipFatLine(part1, part2, range = range2.slice()),
-				intersects2 = 0;
-			// Stop if there are no possible intersections
-			if (intersects1 === 0)
-				break;
-			if (intersects1 > 0) {
-				// Get the clipped parts from the original v2, to avoid
-				// cumulative errors
-				range2 = range;
-				part2 = Curve.getPart(v2, range2[0], range2[1]);
-				// Next we clip v1 with nuv2's fat-line
-				intersects2 = clipFatLine(part2, part1, range = range1.slice());
-				// Stop if there are no possible intersections
-				if (intersects2 === 0)
-					break;
-				if (intersects1 > 0) {
-					// Get the clipped parts from the original v2, to avoid
-					// cumulative errors
-					range1 = range;
-					part1 = Curve.getPart(v1, range1[0], range1[1]);
-				}
+		// Let P be the first curve and Q be the second
+		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
+			tolerance = /*#=*/ Numerical.TOLERANCE,
+			getSignedDistance = Line.getSignedDistance,
+			// Calculate the fat-line L for Q is the baseline l and two
+			// offsets which completely encloses the curve P.
+			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
+			d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]) || 0,
+			factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
+			dMin = factor * Math.min(0, d1, d2),
+			dMax = factor * Math.max(0, d1, d2),
+			// Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
+			// distance of P from the baseline l of the fat-line, ti is equally
+			// spaced in [0, 1]
+			dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
+			dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
+			dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
+			dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
+			tMinNew, tMaxNew, tDiff;
+		if (q0x === q3x && uMax - uMin <= Numerical.EPSILON && recursion > 3) {
+			// The fatline of Q has converged to a point, the clipping is not
+			// reliable. Return the value we have even though we will miss the
+			// precision.
+			tMinNew = (tMax + tMin) / 2;
+			tMaxNew = tMinNew;
+			tDiff = 0;
+		} else {
+			// Get the top and bottom parts of the convex-hull
+			var hull = getConvexHull(dp0, dp1, dp2, dp3),
+				top = hull[0],
+				bottom = hull[1],
+				tMinClip, tMaxClip;
+			// Clip the convexhull with dMin and dMax
+			tMinClip = clipConvexHull(top, bottom, dMin, dMax);
+			top.reverse();
+			bottom.reverse();
+			tMaxClip = clipConvexHull(top, bottom, dMin, dMax);
+			// No intersections if one of the tvalues are null or 'undefined'
+			if (tMinClip == null || tMaxClip == null)
+				return false;
+			// Clip P with the fatline for Q
+			v1 = Curve.getPart(v1, tMinClip, tMaxClip);
+			tDiff = tMaxClip - tMinClip;
+			// tMin and tMax are within the range (0, 1). We need to project it
+			// to the original parameter range for v2.
+			tMinNew = tMax * tMinClip + tMin * (1 - tMinClip);
+			tMaxNew = tMax * tMaxClip + tMin * (1 - tMaxClip);
+		}
+		// Check if we need to subdivide the curves
+		if (oldTDiff > 0.8 && tDiff > 0.8) {
+			// Subdivide the curve which has converged the least.
+			if (tMaxNew - tMinNew > uMax - uMin) {
+				var parts = Curve.subdivide(v1, 0.5),
+					t = tMinNew + (tMaxNew - tMinNew) / 2;
+				addCurveIntersections(v2, parts[0], curve2, curve1, locations,
+					uMin, uMax, tMinNew, t, tDiff, !reverse, ++recursion);
+				addCurveIntersections(v2, parts[1], curve2, curve1, locations,
+					uMin, uMax, t, tMaxNew, tDiff, !reverse, recursion);
+			} else {
+				var parts = Curve.subdivide(v2, 0.5),
+					t = uMin + (uMax - uMin) / 2;
+				addCurveIntersections(parts[0], v1, curve2, curve1, locations,
+					uMin, t, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
+				addCurveIntersections(parts[1], v1, curve2, curve1, locations,
+					t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
 			}
-			// Get the clipped parts from the original v1
-			// Check if there could be multiple intersections
-			if (intersects1 < 0 || intersects2 < 0) {
-				// Subdivide the curve which has converged the least from the
-				// original range [0,1], which would be the curve with the
-				// largest parameter range after clipping
-				if (range1[1] - range1[0] > range2[1] - range2[0]) {
-					// subdivide v1 and recurse
-					var t = (range1[0] + range1[1]) / 2;
-					addCurveIntersections(v1, v2, curve1, curve2, locations,
-							[ range1[0], t ], range2, recursion);
-					addCurveIntersections(v1, v2, curve1, curve2, locations,
-							[ t, range1[1] ], range2, recursion);
-					break;
-				} else {
-					// subdivide v2 and recurse
-					var t = (range2[0] + range2[1]) / 2;
-					addCurveIntersections(v1, v2, curve1, curve2, locations,
-							range1, [ range2[0], t ], recursion);
-					addCurveIntersections(v1, v2, curve1, curve2, locations,
-							range1, [ t, range2[1] ], recursion);
-					break;
-				}
-			}
-			// We need to bailout of clipping and try a numerically stable
-			// method if both of the parameter ranges have converged reasonably
-			// well (according to Numerical.TOLERANCE).
-			if (Math.abs(range1[1] - range1[0]) <= /*#=*/ Numerical.TOLERANCE &&
-				Math.abs(range2[1] - range2[0]) <= /*#=*/ Numerical.TOLERANCE) {
-				var t1 = (range1[0] + range1[1]) / 2,
-					t2 = (range2[0] + range2[1]) / 2;
+		} else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
+			// We have isolated the intersection with sufficient precision
+			var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
+				t2 = uMin + (uMax - uMin) / 2;
+			if (reverse) {
+				addLocation(locations,
+						curve2, t2, Curve.evaluate(v2, t2, 0),
+						curve1, t1, Curve.evaluate(v1, t1, 0));
+			} else {
 				addLocation(locations,
 						curve1, t1, Curve.evaluate(v1, t1, 0),
 						curve2, t2, Curve.evaluate(v2, t2, 0));
-				break;
 			}
+		} else { // Iterate
+			addCurveIntersections(v2, v1, curve2, curve1, locations,
+					uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
 		}
 /*#*/ } else { // !__options.fatline
+		// Subdivision method
 		var bounds1 = Curve.getBounds(v1),
-			bounds2 = Curve.getBounds(v2);
+			bounds2 = Curve.getBounds(v2),
+			tolerance = /*#=*/ Numerical.TOLERANCE;
 		if (bounds1.touches(bounds2)) {
 			// See if both curves are flat enough to be treated as lines, either
 			// because they have no control points at all, or are "flat enough"
 			// If the curve was flat in a previous iteration, we don't need to
 			// recalculate since it does not need further subdivision then.
-			if ((Curve.isLinear(v1)
-					|| Curve.isFlatEnough(v1, /*#=*/ Numerical.TOLERANCE))
-				&& (Curve.isLinear(v2)
-					|| Curve.isFlatEnough(v2, /*#=*/ Numerical.TOLERANCE))) {
+			if ((Curve.isLinear(v1) || Curve.isFlatEnough(v1, tolerance))
+				&& (Curve.isLinear(v2) || Curve.isFlatEnough(v2, tolerance))) {
 				// See if the parametric equations of the lines interesct.
 				addLineIntersection(v1, v2, curve1, curve2, locations);
 			} else {
@@ -1271,121 +1273,18 @@ new function() { // Scope for methods that require numerical integration
 
 /*#*/ if (__options.fatline) {
 	/**
-	 * Clip curve V2 with fat-line of v1
-	 * @param {Array} v1 section of the first curve, for which we will make a
-	 * fat-line
-	 * @param {Array} v2 section of the second curve; we will clip this curve
-	 * with the fat-line of v1
-	 * @param {Array} range2 the parameter range of v2
-	 * @return {Number} 0: no Intersection, 1: one intersection, -1: more than
-	 * one ntersection
-	 */
-	function clipFatLine(v1, v2, range2) {
-		// P = first curve, Q = second curve
-		var p0x = v1[0], p0y = v1[1], p1x = v1[2], p1y = v1[3],
-			p2x = v1[4], p2y = v1[5], p3x = v1[6], p3y = v1[7],
-			q0x = v2[0], q0y = v2[1], q1x = v2[2], q1y = v2[3],
-			q2x = v2[4], q2y = v2[5], q3x = v2[6], q3y = v2[7],
-			getSignedDistance = Line.getSignedDistance,
-			// Calculate the fat-line L for P is the baseline l and two
-			// offsets which completely encloses the curve P.
-			d1 = getSignedDistance(p0x, p0y, p3x, p3y, p1x, p1y) || 0,
-			d2 = getSignedDistance(p0x, p0y, p3x, p3y, p2x, p2y) || 0,
-			factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
-			dmin = factor * Math.min(0, d1, d2),
-			dmax = factor * Math.max(0, d1, d2),
-			// Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
-			// distance of Q from the baseline l of the fat-line, ti is equally
-			// spaced in [0, 1]
-			dq0 = getSignedDistance(p0x, p0y, p3x, p3y, q0x, q0y),
-			dq1 = getSignedDistance(p0x, p0y, p3x, p3y, q1x, q1y),
-			dq2 = getSignedDistance(p0x, p0y, p3x, p3y, q2x, q2y),
-			dq3 = getSignedDistance(p0x, p0y, p3x, p3y, q3x, q3y);
-		// Find the minimum and maximum distances from l, this is useful for
-		// checking whether the curves intersect with each other or not.
-		// If the fatlines don't overlap, we have no intersections!
-		if (dmin > Math.max(dq0, dq1, dq2, dq3)
-				|| dmax < Math.min(dq0, dq1, dq2, dq3))
-			return 0;
-		var hull = getConvexHull(dq0, dq1, dq2, dq3),
-			swap;
-		if (dq3 < dq0) {
-			swap = dmin;
-			dmin = dmax;
-			dmax = swap;
-		}
-		// Calculate the convex hull for non-parametric bezier curve D(ti, di(t))
-		// Now we clip the convex hulls for D(ti, di(t)) with dmin and dmax
-		// for the coorresponding t values (tmin, tmax): Portions of curve v2
-		// before tmin and after tmax can safely be clipped away.
-		var tmaxdmin = -Infinity,
-			tmin = Infinity,
-			tmax = -Infinity;
-		for (var i = 0, l = hull.length; i < l; i++) {
-			var p1 = hull[i],
-				p2 = hull[(i + 1) % l];
-			if (p2[1] < p1[1]) {
-				swap = p2;
-				p2 = p1;
-				p1 = swap;
-			}
-			var	x1 = p1[0],
-				y1 = p1[1],
-				x2 = p2[0],
-				y2 = p2[1];
-			// We know that (x2 - x1) is never 0
-			var inv = (y2 - y1) / (x2 - x1);
-			if (dmin >= y1 && dmin <= y2) {
-				var ixdx = x1 + (dmin - y1) / inv;
-				if (ixdx < tmin)
-					tmin = ixdx;
-				if (ixdx > tmaxdmin)
-					tmaxdmin = ixdx;
-			}
-			if (dmax >= y1 && dmax <= y2) {
-				var ixdx = x1 + (dmax - y1) / inv;
-				if (ixdx > tmax)
-					tmax = ixdx;
-				if (ixdx < tmin)
-					tmin = 0;
-			}
-		}
-		// Return the parameter values for v2 for which we can be sure that the
-		// intersection with v1 lies within.
-		if (tmin !== Infinity && tmax !== -Infinity) {
-			var min = Math.min(dmin, dmax),
-				max = Math.max(dmin, dmax);
-			if (dq3 > min && dq3 < max)
-				tmax = 1;
-			if (dq0 > min && dq0 < max)
-				tmin = 0;
-			if (tmaxdmin > tmax)
-				tmax = 1;
-			// tmin and tmax are within the range (0, 1). We need to project it
-			// to the original parameter range for v2.
-			var v2tmin = range2[0],
-				tdiff = range2[1] - v2tmin;
-			range2[0] = v2tmin + tmin * tdiff;
-			range2[1] = v2tmin + tmax * tdiff;
-			// If the new parameter range fails to converge by atleast 20% of
-			// the original range, possibly we have multiple intersections.
-			// We need to subdivide one of the curves.
-			if ((tdiff - (range2[1] - range2[0])) / tdiff >= 0.2)
-				return 1;
-		}
-		// TODO: Try checking with a perpendicular fatline to see if the curves
-		// overlap if it is any faster than this
-		if (Curve.getBounds(v1).touches(Curve.getBounds(v2)))
-			return -1;
-		return 0;
-	}
-
-	/**
 	 * Calculate the convex hull for the non-paramertic bezier curve D(ti, di(t))
 	 * The ti is equally spaced across [0..1] — [0, 1/3, 2/3, 1] for
 	 * di(t), [dq0, dq1, dq2, dq3] respectively. In other words our CVs for the
 	 * curve are already sorted in the X axis in the increasing order.
 	 * Calculating convex-hull is much easier than a set of arbitrary points.
+	 *
+	 * The convex-hull is returned as two parts [TOP, BOTTOM]:
+	 * (both are in a coordinate space where y increases upwards with origin at
+	 * bottom-left)
+	 * TOP: The part that lies above the 'median' (line connecting end points of
+	 * the curve)
+	 * BOTTOM: The part that lies below the median.
 	 */
 	function getConvexHull(dq0, dq1, dq2, dq3) {
 		var p0 = [ 0, dq0 ],
@@ -1395,41 +1294,96 @@ new function() { // Scope for methods that require numerical integration
 			// Find signed distance of p1 and p2 from line [ p0, p3 ]
 			getSignedDistance = Line.getSignedDistance,
 			dist1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
-			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2);
+			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2),
+			flip = false,
+			hull;
 		// Check if p1 and p2 are on the same side of the line [ p0, p3 ]
 		if (dist1 * dist2 < 0) {
 			// p1 and p2 lie on different sides of [ p0, p3 ]. The hull is a
 			// quadrilateral and line [ p0, p3 ] is NOT part of the hull so we
 			// are pretty much done here.
-			return [ p0, p1, p3, p2 ];
-		}
-		// p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
-		// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
-		// hull. Check if the hull is a triangle or a quadrilateral.
-		var pmax, cross;
-		if (Math.abs(dist1) > Math.abs(dist2)) {
-			pmax = p1;
-			// apex is dq3 and the other apex point is dq0 vector
-			// dqapex->dqapex2 or base vector which is already part of the hull.
-			// cross = (vqa1a2X * vqa1MinY - vqa1a2Y * vqa1MinX)
-			//		* (vqa1MaxX * vqa1MinY - vqa1MaxY * vqa1MinX)
-			cross = (dq3 - dq2 - (dq3 - dq0) / 3)
-					* (2 * (dq3 - dq2) - dq3 + dq1) / 3;
+			// The top part includes p1, 
+			// we will reverse it later if that is not the case
+			hull = [[p0, p1, p3], [p0, p2, p3]];
+			flip = dist1 < 0;
 		} else {
-			pmax = p2;
-			// apex is dq0 in this case, and the other apex point is dq3 vector
-			// dqapex->dqapex2 or base vector which is already part of the hull.
-			cross = (dq1 - dq0 + (dq0 - dq3) / 3)
-					* (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
+			// p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
+			// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
+			// hull. Check if the hull is a triangle or a quadrilateral.
+			// Also, if atleast one of the distances for p1 or p2, from line
+			// [p0, p3] is zero then hull must at most have 3 vertices.
+			var pmax, cross = 0,
+				distZero = dist1 === 0 || dist2 === 0;
+			if (Math.abs(dist1) > Math.abs(dist2)) {
+				pmax = p1;
+				// apex is dq3 and the other apex point is dq0 vector dqapex ->
+				// dqapex2 or base vector which is already part of the hull.
+				cross = (dq3 - dq2 - (dq3 - dq0) / 3)
+						* (2 * (dq3 - dq2) - dq3 + dq1) / 3;
+			} else {
+				pmax = p2;
+				// apex is dq0 in this case, and the other apex point is dq3
+				// vector dqapex -> dqapex2 or base vector which is already part
+				// of the hull.
+				cross = (dq1 - dq0 + (dq0 - dq3) / 3)
+						* (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
+			}
+			// Compare cross products of these vectors to determine if the point
+			// is in the triangle [ p3, pmax, p0 ], or if it is a quadrilateral.
+			hull = cross < 0 || distZero
+					// p2 is inside the triangle, hull is a triangle.
+					? [[p0, pmax, p3], [p0, p3]]
+					// Convex hull is a quadrilateral and we need all lines in
+					// correct order where line [ p0, p3 ] is part of the hull.
+					: [[p0, p1, p2, p3], [p0, p3]];
+			flip = dist1 ? dist1 < 0 : dist2 < 0;
 		}
-		// Compare cross products of these vectors to determine if the point is
-		// in the triangle [ p3, pmax, p0 ], or if it is a quadrilateral.
-		return cross < 0
-				// p2 is inside the triangle, hull is a triangle.
-				? [ p0, pmax, p3 ]
-				// Convexhull is a quadrilateral and we need all lines in the
-				// correct order where line [ p1, p3 ] is part of the hull.
-				: [ p0, p1, p2, p3 ];
+		return flip ? hull.reverse() : hull;
+	}
+
+	/**
+	 * Clips the convex-hull and returns [tMin, tMax] for the curve contained
+	 */
+	function clipConvexHull(hullTop, hullBottom, dMin, dMax) {
+		var tProxy,
+			tVal = null,
+			px, py,
+			qx, qy;
+		for (var i = 0, l = hullBottom.length - 1; i < l; i++) {
+			py = hullBottom[i][1];
+			qy = hullBottom[i + 1][1];
+			if (py < qy) {
+				tProxy = null;
+			} else if (qy <= dMax) {
+				px = hullBottom[i][0];
+				qx = hullBottom[i + 1][0];
+				tProxy = px + (dMax  - py) * (qx - px) / (qy - py);
+			} else {
+				// Try the next chain
+				continue;
+			}
+			// We got a proxy-t;
+			break;
+		}
+		if (hullTop[0][1] <= dMax)
+			tProxy = hullTop[0][0];
+		for (var i = 0, l = hullTop.length - 1; i < l; i++) {
+			py = hullTop[i][1];
+			qy = hullTop[i + 1][1];
+			if (py >= dMin) {
+				tVal = tProxy;
+			} else if (py > qy) {
+				tVal = null;
+			} else if (qy >= dMin) {
+				px = hullTop[i][0];
+				qx = hullTop[i + 1][0];
+				tVal = px + (dMin  - py) * (qx - px) / (qy - py);
+			} else {
+				continue;
+			}
+			break;
+		}
+		return tVal;
 	}
 /*#*/ } // __options.fatline
 
@@ -1502,32 +1456,16 @@ new function() { // Scope for methods that require numerical integration
 		// CurveLocation objects.
 		getIntersections: function(v1, v2, curve1, curve2, locations) {
 			var linear1 = Curve.isLinear(v1),
-				linear2 = Curve.isLinear(v2),
-				c1p1 = curve1.getPoint1(),
-				c1p2 = curve1.getPoint2(),
-				c2p1 = curve2.getPoint1(),
-				c2p2 = curve2.getPoint2(),
-				tolerance = /*#=*/ Numerical.TOLERANCE;
-			// Handle a special case where if both curves start or end at the
-			// same point, the same end-point case will be handled after we
-			// calculate other intersections within the curve.
-			if (c1p1.isClose(c2p1, tolerance))
-				addLocation(locations, curve1, 0, c1p1, curve2, 0, c1p1);
-			if (c1p1.isClose(c2p2, tolerance))
-				addLocation(locations, curve1, 0, c1p1, curve2, 1, c1p1);
-			// Determine the correct intersection method based on values of
-			// linear1 & 2:
+				linear2 = Curve.isLinear(v2);
 			(linear1 && linear2
 				? addLineIntersection
 				: linear1 || linear2
 					? addCurveLineIntersections
-					: addCurveIntersections)(v1, v2, curve1, curve2, locations);
-			// Handle the special case where curve1's end-point overlap with
-			// curve2's points.
-			if (c1p2.isClose(c2p1, tolerance))
-				addLocation(locations, curve1, 1, c1p2, curve2, 0, c1p2);
-			if (c1p2.isClose(c2p2, tolerance))
-				addLocation(locations, curve1, 1, c1p2, curve2, 1, c1p2);
+					: addCurveIntersections)(v1, v2, curve1, curve2, locations,
+						// Define the defaults for these parameters of
+						// addCurveIntersections():
+						// tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
+						0, 1, 0, 1, 1, false, 0);
 			return locations;
 		}
 	}};

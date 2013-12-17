@@ -254,7 +254,7 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 			res;
 		// Define variables for potential handlers, so eval() calls below to
 		// fetch their values do not require try-catch around them.
-		// Use with(){} in order to make the scope the current 'global' scope
+ 		// Use with() {} in order to make the scope the current 'global' scope
 		// instead of window.
 		with (scope) {
 			// Within this, use a function scope, so local variables to not try
