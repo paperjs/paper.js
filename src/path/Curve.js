@@ -1444,10 +1444,13 @@ new function() { // Scope for methods that require numerical integration
 		var point = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
 				v2[0], v2[1], v2[6], v2[7]);
-		// Passing null for parameter leads to lazy determination of parameter
-		// values in CurveLocation#getParameter() only once they are requested.
-		if (point)
-			addLocation(locations, curve1, null, point, curve2);
+		if (point){
+			// We need to return the parameters for the intersection,
+			// since they will be used for sorting
+            var t1 = Curve.getParameterOf(v1, point.x, point.y),
+                t2 = Curve.getParameterOf(v2, point.x, point.y);
+            addLocation(locations, curve1, t1, point, curve2, t2, point);
+        }
 	}
 
 	return { statics: /** @lends Curve */{
