@@ -53,7 +53,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_serializeFields: {
 		name: null,
 		matrix: new Matrix(),
-		anchor: null,
+		pivot: null,
 		locked: false,
 		visible: true,
 		blendMode: 'normal',
@@ -279,7 +279,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	set: function(props) {
 		if (props)
-			this._set(props);
+			this._set(props, { insert: true });
 		return this;
 	},
 
@@ -772,11 +772,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// modified, it would hold new values already and only then cause the
 		// calling of #setPosition.
 		if (!position) {
-			// If an anchor point is provided, use it to determine position
+			// If an pivot point is provided, use it to determine position
 			// based on the matrix. Otherwise use the center of the bounds.
-			var anchor = this._anchor;
-			position = this._position = anchor
-					? this._matrix._transformPoint(anchor)
+			var pivot = this._pivot;
+			position = this._position = pivot
+					? this._matrix._transformPoint(pivot)
 					: this.getBounds().getCenter(true);
 		}
 		return new ctor(position.x, position.y, this, 'setPosition');
@@ -790,11 +790,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * The item's anchor point specified in the item coordinate system, defining
-	 * the reference point for {@link #position}, as well as the pivot point for
-	 * all transformations. By default, it is set to {@code null}, meaning the
-	 * {@link Rectangle#center} of the item's {@link #bounds} rectangle is used
-	 * as the anchor.
+	 * The item's pivot point specified in the item coordinate system, defining
+	 * the point around which all transformations are hinging. This is also the
+	 * reference point for {@link #position}. By default, it is set to
+	 * {@code null}, meaning the {@link Rectangle#center} of the item's
+	 * {@link #bounds} rectangle is used as pivot.
 	 *
 	 * @type Point
 	 * @bean
@@ -802,22 +802,22 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @example {@paperscript}
 	 */
-	getAnchor: function(/* dontLink */) {
-		var anchor = this._anchor;
-		if (anchor) {
+	getPivot: function(/* dontLink */) {
+		var pivot = this._pivot;
+		if (pivot) {
 			var ctor = arguments[0] ? Point : LinkedPoint;
-			anchor = new ctor(anchor.x, anchor.y, this, 'setAnchor');
+			pivot = new ctor(pivot.x, pivot.y, this, 'setAnchor');
 		}
-		return anchor;
+		return pivot;
 	},
 
-	setAnchor: function(/* point */) {
-		this._anchor = Point.read(arguments);
+	setPivot: function(/* point */) {
+		this._pivot = Point.read(arguments);
 		// No need for _changed() since the only thing this affects is _position
 		delete this._position;
 	},
 
-	_anchor: null,
+	_pivot: null,
 
 	// TODO: Keep these around for a bit since it was introduced on the mailing
 	// list, then remove in a while.
@@ -2781,15 +2781,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var matrix = this._matrix;
 		if (this._applyMatrix(matrix, true)) {
 			// When the matrix could be applied, we also need to transform
-			// color styles (only gradients so far) and anchor point:
-			var anchor = this._anchor,
+			// color styles (only gradients so far) and pivot point:
+			var pivot = this._pivot,
 				style = this._style,
 				// pass true for dontMerge so we don't recursively transform
 				// styles on groups' children.
 				fillColor = style.getFillColor(true),
 				strokeColor = style.getStrokeColor(true);
-			if (anchor)
-				anchor.transform(matrix);
+			if (pivot)
+				pivot.transform(matrix);
 			if (fillColor)
 				fillColor.transform(matrix);
 			if (strokeColor)

@@ -365,8 +365,8 @@ var Color = Base.extend(new function() {
 		 * {@code destination: Point} — the destination point of the gradient
 		 * {@code stops: Array of GradientStop} — the gradient stops describing
 		 * the gradient, as an alternative to providing a gradient object<br>
-		 * {@code radial: Boolean} — controls whether the gradient is radial, as
-		 * an alternative to providing a gradient object<br>
+		 * {@code radial: Boolean} — controls whether the gradient is radial,
+		 * as an alternative to providing a gradient object<br>
 		 *
 		 * @name Color#initialize
 		 * @param {Object} object an object describing the components and 
@@ -454,13 +454,18 @@ var Color = Base.extend(new function() {
 		 * // Create a circle shaped path at the center of the view
 		 * // with a radius of 80:
 		 * var path = new Path.Circle({
-		 *	center: view.center,
-		 *	radius: 80
+		 * 	center: view.center,
+		 * 	radius: 80
 		 * });
 		 *
 		 * // The stops array: yellow mixes with red between 0 and 15%,
 		 * // 15% to 30% is pure red, red mixes with black between 30% to 100%:
-		 * var stops = [['yellow', 0], ['red', 0.15], ['red', 0.3], ['black', 0.9]];
+		 * var stops = [
+		 * 	['yellow', 0],
+		 * 	['red', 0.15],
+		 * 	['red', 0.3],
+		 * 	['black', 0.9]
+		 * ];
 		 *
 		 * // Create a radial gradient using the color stops array:
 		 * var gradient = new Gradient(stops, true);
@@ -971,14 +976,16 @@ var Color = Base.extend(new function() {
 		 * }
 		 */
 		/**
-		 * The saturation of the color as a value between {@code 0} and {@code 1}.
+		 * The saturation of the color as a value between {@code 0} and
+		 * {@code 1}.
 		 *
 		 * @name Color#saturation
 		 * @property
 		 * @type Number
 		 */
 		/**
-		 * The brightness of the color as a value between {@code 0} and {@code 1}.
+		 * The brightness of the color as a value between {@code 0} and
+		 * {@code 1}.
 		 *
 		 * @name Color#brightness
 		 * @property
@@ -988,8 +995,9 @@ var Color = Base.extend(new function() {
 		/**
 		 * {@grouptitle HSL Components}
 		 *
-		 * The lightness of the color as a value between {@code 0} and {@code 1}.
-		 * All other components are shared with HSB.
+		 * The lightness of the color as a value between {@code 0} and
+		 * {@code 1}.
+		 * Note that all other components are shared with HSB.
 		 *
 		 * @name Color#lightness
 		 * @property
@@ -1043,8 +1051,8 @@ var Color = Base.extend(new function() {
 		 * @type Point
 		 *
 		 * @example {@paperscript height=300}
-		 * // Move the destination point of the gradient, by moving your mouse over
-		 * // the view below:
+		 * // Move the destination point of the gradient, by moving your mouse
+		 * // over the view below:
 		 *
 		 * // Create a circle shaped path at the center of the view,
 		 * // using 40% of the height of the view as its radius
@@ -1167,7 +1175,8 @@ var Color = Base.extend(new function() {
 		 * @function
 		 * @operator
 		 * @param {Number} number the number to add
-		 * @return {Color} the addition of the color and the value as a new color
+		 * @return {Color} the addition of the color and the value as a new
+		 * color
 		 *
 		 * @example
 		 * var color = new Color(0.5, 1, 1);

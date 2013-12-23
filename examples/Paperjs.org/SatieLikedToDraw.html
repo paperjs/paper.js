@@ -31,7 +31,7 @@
 		strokeWidth: 30,
 		strokeJoin: 'round',
 		strokeCap: 'butt',
-		anchor: leftPath.position,
+		pivot: leftPath.position,
 		position: view.center
 	});
 
@@ -59,7 +59,7 @@
 		}
 		leftPath.smooth();
 		rightPath.smooth();
-		group.anchor = [leftPath.position.x, 0];
+		group.pivot = [leftPath.position.x, 0];
 		group.position = view.center;
 	}
 
