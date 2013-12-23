@@ -348,13 +348,13 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 * @return {Curve} the second part of the divided curve
 	 */
 	// TODO: Rename to divideAt()?
-	divide: function(offset, isParameter) {
+	divide: function(offset, isParameter, ignoreLinear) {
 		var parameter = this._getParameter(offset, isParameter),
 			tolerance = /*#=*/ Numerical.TOLERANCE,
 			res = null;
 		if (parameter > tolerance && parameter < 1 - tolerance) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
-				isLinear = this.isLinear(),
+				isLinear = ignoreLinear ? false : this.isLinear(),
 				left = parts[0],
 				right = parts[1];
 
