@@ -1465,7 +1465,7 @@ new function() { // Scope for methods that require numerical integration
 						// Define the defaults for these parameters of
 						// addCurveIntersections():
 						// tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
-						0, 1, 0, 1, 1, false, 0);
+						0, 1, 0, 1, 0, false, 0);
 			return locations;
 		}
 	}};
