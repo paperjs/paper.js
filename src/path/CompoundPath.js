@@ -187,7 +187,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		var children = this._children,
 			curves = [];
 		for (var i = 0, l = children.length; i < l; i++)
-			curves = curves.concat(children[i].getCurves());
+			curves.push.apply(curves, children[i].getCurves());
 		return curves;
 	},
 
