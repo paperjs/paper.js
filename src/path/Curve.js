@@ -1447,10 +1447,10 @@ new function() { // Scope for methods that require numerical integration
 		if (point){
 			// We need to return the parameters for the intersection,
 			// since they will be used for sorting
-            var t1 = Curve.getParameterOf(v1, point.x, point.y),
-                t2 = Curve.getParameterOf(v2, point.x, point.y);
-            addLocation(locations, curve1, t1, point, curve2, t2, point);
-        }
+			var t1 = Curve.getParameterOf(v1, point.x, point.y),
+				t2 = Curve.getParameterOf(v2, point.x, point.y);
+			addLocation(locations, curve1, t1, point, curve2, t2, point);
+		}
 	}
 
 	return { statics: /** @lends Curve */{
