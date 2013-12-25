@@ -190,6 +190,67 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		return !(this.hasFill() && this.hasStroke());
 	},
 
+	/**
+	 * Returns the winding contribution of the given point with respect to this
+	 * PathItem.
+	 */
+	_getWinding: function(point, isHorizontal) {
+		var v,
+			curves = this._getMonotoneCurves(),
+			tolerance = /*#=*/ Numerical.TOLERANCE;
+		var i, li, t, x0, ty, wind,
+			tolMin = -tolerance,
+			tolMax = 1 + -tolerance,
+			xAfter = point.x + tolerance,
+			xBefore = point.x - tolerance,
+			tMin = tolMin,
+			tMax = tolerance,
+			tVal = 0,
+			y = point.y,
+			winding = 0,
+			roots = [];
+		// Adjustment for horizontal curve. Here, we will miss to count
+		// atleast one intercept since we only account for y intercepts
+		// on other curves excluding the end point of those curves.
+		if (isHorizontal){
+			tolMin = tolerance; 
+			tolMax = 1 + tolerance;
+			tMin = 1 - tolerance;
+			tMax = tolMax;
+			tVal = 1;
+		}
+		// DEBUG:
+		var check = point.x === 217.32504322936848 &&  point.y === 354.67997242479777;
+		// Find the winding number for right hand side of the curve,
+		// inclusive of the curve itself, while tracing along its direction.
+		for (i = 0, li = curves.length; i < li; i++) {
+			v = curves[i];
+			if (Curve.solveCubic(v, 1, y, roots, tolMin, tolMax) === 1) {
+				t = roots[0];
+				if ( t >= tMin && t <= tMax)
+					t = tVal;
+				x0 = Curve.evaluate(v, t, 0).x;
+				ty = Curve.evaluate(v, t, 1).y;
+				// DEBUG:
+				// wind = v[8];
+				// if (check && (x0 >= xAfter || (x0 >= xBefore && wind > 0))){
+				// 	hilightCrv(v);
+				//  	markPoint(Curve.evaluate(v, 0.5, 0), t.toFixed(1), null, 0.01);
+				// 	// markPoint(new paper.Point(x0, y), t.toFixed(1), null, 0.001);
+				// 	console.log(t.toFixed(1), ty, v[8]);
+				// }
+
+				wind = v[8];
+				if (x0 >= xAfter){
+					winding += wind;
+				} else if (x0 >= xBefore && wind > 0) {
+					winding += wind;
+				}
+			}
+		}
+		return Math.abs(winding);
+	},
+
 	_contains: function(point) {
 		// NOTE: point is reverse transformed by _matrix, so we don't need to 
 		// apply here.
