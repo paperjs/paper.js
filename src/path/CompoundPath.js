@@ -236,13 +236,26 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		return paths.join(' ');
 	},
 
-	_getWinding: function(point) {
+	/**
+	 * Private method that returns all the curves in this CompoundPath, which
+	 * are monotonically decreasing or increasing in the 'y' direction.
+	 * Used by PathItem#_getWinding method.
+	 */
+	_getMonotoneCurves: function() {
 		var children =  this._children,
-			winding = 0;
+			monoCurves = [];
 		for (var i = 0, l = children.length; i < l; i++)
-			winding += children[i]._getWinding(point);
-		return winding;
+			monoCurves.push.apply(monoCurves, children[i]._getMonotoneCurves());
+		return monoCurves;
 	},
+
+	// _getWinding: function(point) {
+	// 	var children =  this._children,
+	// 		winding = 0;
+	// 	for (var i = 0, l = children.length; i < l; i++)
+	// 		winding += children[i]._getWinding(point);
+	// 	return winding;
+	// },
 
 	_getChildHitTestOptions: function(options) {
 		// If we're not specifically asked to returns paths through
