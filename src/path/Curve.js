@@ -444,6 +444,26 @@ var Curve = Base.extend(/** @lends Curve# */{
 		return '{ ' + parts.join(', ') + ' }';
 	},
 
+	/**
+	 * Returns the winding contribution of this curve, to the parent path or
+	 * CompoundPath it is part of.
+	 */
+	_getWinding: function() {
+		var path = this.getPath();
+		if (!path)
+			// If this curve is not part of a path,
+			// the 'insideness' contribution of this curve is undefined.
+			return null;
+		var v = this.getValues(),
+			point = Curve.evaluate(v, 0.5, 0),
+			xDirection = path.isClockwise() ? v[0] > v[6] : v[0] < v[6],
+			isHorizontal = this.isLinear() && xDirection &&
+					Math.abs(v[1]-v[7]) < /*#=*/ Numerical.TOLERANCE;
+		// Call the parent's _getWinding method
+		return (path._parent instanceof CompoundPath ? path._parent
+					: path)._getWinding(point, isHorizontal);
+	},
+
 // Mess with indentation in order to get more line-space below...
 statics: {
 	getValues: function(segment1, segment2, matrix) {
@@ -694,141 +714,6 @@ statics: {
 					+ t * t * t * v3,
 					padding);
 		}
-	},
-
-	_getWinding: function(v, prev, x, y, roots1, roots2) {
-		// Implementation of the crossing number algorithm:
-		// http://en.wikipedia.org/wiki/Point_in_polygon
-		// Solve the y-axis cubic polynomial for y and count all solutions
-		// to the right of x as crossings.
-		var tolerance = /*#=*/ Numerical.TOLERANCE,
-			abs = Math.abs;
-
-		// Looks at the curve's start and end y coordinates to determine
-		// orientation. This only makes sense for curves with clear orientation,
-		// which is why we need to split them at y extrema, see below.
-		// Returns 0 if the curve is outside the boundaries and is not to be
-		// considered.
-		function getDirection(v) {
-			var y0 = v[1],
-				y1 = v[7],
-				dir = y0 > y1 ? -1 : 1;
-			// Bounds check: Reverse y0 and y1 if direction is -1.
-			// Include end points, so we can handle them depending on different
-			// edge cases.
-			return dir === 1 && (y < y0 || y > y1)
-					|| dir === -1 && (y < y1 || y > y0)
-					? 0
-					: dir;
-		}
-
-		if (Curve.isLinear(v)) {
-			// Special simplified case for handling lines.
-			var dir = getDirection(v);
-			if (!dir)
-				return 0;
-			var cross = (v[6] - v[0]) * (y - v[1]) - (v[7] - v[1]) * (x - v[0]);
-			return (cross < -tolerance ? -1 : 1) == dir ? 0 : dir;
-		}
-
-		// Handle bezier curves. We need to chop them into smaller curves with
-		// defined orientation, by solving the derrivative curve for Y extrema.
-		var y0 = v[1],
-			y1 = v[3],
-			y2 = v[5],
-			y3 = v[7];
-		// Split the curve at y extrema, to get bezier curves with clear
-		// orientation: Calculate the derivative and find its roots.
-		var a = 3 * (y1 - y2) - y0 + y3,
-			b = 2 * (y0 + y2) - 4 * y1,
-			c = y1 - y0;
-		// Keep then range to 0 .. 1 (excluding) in the search for y extrema
-		var count = Numerical.solveQuadratic(a, b, c, roots1, tolerance,
-				1 - tolerance),
-			part, // The part of the curve that's chopped off.
-			rest = v, // The part that's left to be chopped.
-			t1 = roots1[0], // The first root
-			winding = 0;
-		for (var i = 0; i <= count; i++) {
-			if (i === count) {
-				part = rest;
-			} else {
-				// Divide the curve at t1.
-				var curves = Curve.subdivide(rest, t1);
-				part = curves[0];
-				rest = curves[1];
-				t1 = roots1[i];
-				// TODO: Watch for divide by 0
-				// Now renormalize t1 to the range of the next iteration.
-				t1 = (roots1[i + 1] - t1) / (1 - t1);
-			}
-			// Make sure that the connecting y extrema are flat
-			if (i > 0)
-				part[3] = part[1]; // curve2.handle1.y = curve2.point1.y;
-			if (i < count)
-				part[5] = rest[1]; // curve1.handle2.y = curve2.point1.y;
-			var dir = getDirection(part);
-			if (!dir)
-			    continue;
-			// Adjust start and end range depending on if curve was flipped.
-			// In normal orientation we exclude the end point since it's also
-			// the start point of the next curve. If flipped, we have to exclude
-			// the end point instead.
-			var t2,
-				px;
-			// Since we've split at y extrema, there can only be 0, 1, or
-			// infinite solutions now.
-			if (Curve.solveCubic(part, 1, y, roots2, -tolerance, 1 + -tolerance)
-					=== 1) {
-				t2 = roots2[0];
-				px = Curve.evaluate(part, t2, 0).x;
-			} else {
-				var mid = (part[1] + part[7]) / 2;
-				// Pick t2 based on the direction of the curve. If y < mid,
-				// choose the beginning (which is the end of a curve with
-				// negative orientation, as we're not actually flipping curves).
-				t2 = y < mid && dir > 0 ? 0 : 1;
-				// Filter out the end point, as it'll be the start point of the
-				// next curve.
-				if (t2 === 1 && y == part[7])
-					continue;
-				px = t2 === 0 ? part[0] : part[6];
-			}
-			// See if we're touching a horizontal stationary point by looking at
-			// the tanget's y coordinate. There are two cases 0:
-			// A) The slope is 0, meaning we're touching a stationary
-			//    point inside the curve.
-			// B) t2 == 0 and the slope changes between the current and the
-			//    previous curve.
-			var slope = Curve.evaluate(part, t2, 1).y,
-				stationary = abs(slope) < tolerance || t2 < tolerance
-						&& Curve.evaluate(prev, 1, 1).y * slope < 0;
-			// Calculate compare tolerance based on curve orientation (dir), to
-			// add a bit of tolerance when considering points lying on the curve
-			// as inside. But if we're touching a horizontal stationary point,
-			// set compare tolerance to -tolerance, since we don't want to step
-			// side-ways in tolerance based on orientation. This is needed e.g.
-			// when touching the bottom tip of a circle.
-			// Pass 1 for Curve.evaluate() type to calculate tangent
-			if (x >= px + (stationary ? -tolerance : tolerance * dir)
-					// When touching a stationary point, only count it if we're
-					// actuall on it.
-					&& !(stationary && (abs(t2) < tolerance
-							&& abs(x - part[0]) > tolerance
-						|| abs(t2 - 1) < tolerance
-							&& abs(x - part[6]) > tolerance))) {
-				// If this is a horizontal stationary point, and we're at the
-				// end of the curve (or at the beginning of a curve with
-				// negative direction, as we're not actually flipping them),
-				// flip dir, as the curve is about to change orientation.
-				winding += stationary && abs(t2 - (dir > 0 ? 1 : 0)) < tolerance
-						? -dir : dir;
-			}
-			// Point the previous curve to the newly split part, so stationary
-			// points are correctly detected. 
-			prev = part;
-		}
-		return winding;
 	}
 }}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
