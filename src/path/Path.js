@@ -1720,7 +1720,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 		var monoCurves = this._monotoneCurves,
 			// TODO: replace instances with constants ( /*#=*/ ?)
 			INCREASING = 1,
-			DECREASING = -1;
+			DECREASING = -1,
+			HORIZONTAL = 0;
 		if (!monoCurves) {
 			// Insert curve values into a cached array
 			// Always avoid horizontal curves
@@ -1728,7 +1729,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				var y0 = v[1], y1 = v[7];
 				dir = dir || INCREASING;
 				if (y0 === y1) {
-					return;
+					dir = HORIZONTAL;
 				} else if (y0 > y1) {
 					dir = DECREASING;
 				}
@@ -1771,14 +1772,14 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// Insert curves that are monotonic in y direction into a cached array 
 			monoCurves = this._monotoneCurves = [];
 			var curves = this.getCurves(),
-				crv, vals, i, li;
+				crv, vals, i, li,
+				segments = this._segments;
 			// If the path is not closed, we should join the end points
 			// with a straight line, just like how filling open paths works.
-			if (!this._closed) {
+			if (!this._closed && segments.length > 1) {
 		   //  	if (!this.hasFill()
 					// || !this.getInternalRoughBounds()._containsPoint(point))
 					// return 0;
-				var segments = this._segments;
 				curves.push(new Curve(segments[segments.length - 1]._point,
 						segments[0]._point).getValues());
 			}
@@ -1792,7 +1793,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 					if (y0 > y1) {
 						insertCurves(vals, DECREASING);
 					} else if (y0 == y1 && y0 == vals[3] && y0 == vals[5]) {
-						continue;
+						insertValues(vals, HORIZONTAL);
 					} else {
 						insertCurves(vals, INCREASING);
 					}
