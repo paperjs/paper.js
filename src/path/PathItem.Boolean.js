@@ -222,6 +222,8 @@ PathItem.inject(new function() {
 	// at intersections.
 	return /** @lends Path# */{
 		/**
+		 * {@grouptitle Boolean Path Operations}
+		 *
 		 * Merges the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
 		 * 
