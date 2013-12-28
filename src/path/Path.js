@@ -152,6 +152,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 		}
 	},
 
+	getStyle: function() {
+		// If this path is part of a CompoundPath, use the paren't style instead
+		var parent = this._parent;
+		return (parent instanceof CompoundPath ? parent : this)._style;
+	},
+
 	/**
 	 * The segments contained within the path.
 	 *
@@ -1621,12 +1627,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// from turning into a bean (by removal of the point argument).
 		point = Point.read(arguments);
 		return this.getNearestLocation(point).getPoint();
-	},
-
-	getStyle: function() {
-		// If this path is part of a CompoundPath, use the paren't style instead
-		var parent = this._parent;
-		return (parent && parent instanceof CompoundPath ? parent : this)._style;
 	},
 
 	// DOCS: toShape
