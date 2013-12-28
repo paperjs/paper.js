@@ -775,6 +775,7 @@ var Color = Base.extend(new function() {
 
 		/**
 		 * @name Color#clone
+		 * @function
 		 *
 		 * Returns a copy of the color object.
 		 *
