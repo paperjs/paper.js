@@ -31,7 +31,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * of {@link CurveLocation} objects. {@link CompoundPath} items are also
 	 * supported.
 	 *
-	 * @param {PathItem} path the other item to find the intersections to.
+	 * @name PathItem#getIntersections(path, sorted)
+	 * @function
+	 *
+	 * @param {PathItem} path the other item to find the intersections with
+	 * @param {Boolean} [sorted=true] controls wether to sort the results by
+	 * offset
 	 * @return {CurveLocation[]} the locations of all intersection between the
 	 * paths
 	 * @example {@paperscript}
@@ -59,7 +64,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * 	}
 	 * }
 	 */
-	getIntersections: function(path) {
+	getIntersections: function(path, sorted) {
 		// First check the bounds of the two paths. If they don't intersect,
 		// we don't need to iterate through their curves.
 		if (!this.getBounds().touches(path.getBounds()))
@@ -80,6 +85,24 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			for (var j = 0; j < length2; j++)
 				Curve.getIntersections(values1, values2[j], curve1, curves2[j],
 						locations);
+		}
+		if (sorted || sorted === undefined) {
+			// Now sort the results into the right sequence.
+			// TODO: Share this code with PathItem.Boolean.js, potentially by
+			// using the new BinHeap class that's in preparation.
+			locations.sort(function(loc1, loc2) {
+				var path1 = loc1.getPath(),
+					path2 = loc2.getPath();
+				return path1 === path2
+						// We can add parameter (0 <= t <= 1) to index (integer)
+						// to compare both at the same time
+						? (loc1.getIndex() + loc1.getParameter())
+							- (loc2.getIndex() + loc2.getParameter())
+						// Sort by path index to group all locations on the same
+						// path in the sequnence that they are encountered
+						// within compound paths.
+						: path1._index - path2._index;
+			});
 		}
 		return locations;
 	},
