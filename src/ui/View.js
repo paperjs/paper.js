@@ -447,7 +447,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 
 	viewToProject: function(/* point */) {
 		return this._matrix._inverseTransform(Point.read(arguments));
-	},
+	}
 
 	/**
 	 * {@grouptitle Event Handlers}
