@@ -211,7 +211,7 @@ Base.inject(/** @lends Base# */{
 
 		/**
 		 * Reads all readable arguments from the list, handling nested arrays
-		 * seperately.
+		 * separately.
 		 * @param {Array} list the list to read from, either an arguments object
 		 * or a normal array.
 		 * @param {Number} start the index at which to start reading in the list

@@ -10,6 +10,11 @@
  * All rights reserved.
  */
 
+/**
+ * @name PathFlattener
+ * @class
+ * @private
+ */
 var PathFlattener = Base.extend({
 	initialize: function(path) {
 		this.curves = []; // The curve values as returned by getValues()

@@ -556,7 +556,7 @@ statics: {
 	},
 
 	getParameterOf: function(v, x, y) {
-		// Handle beginnings and end seperately, as they are not detected
+		// Handle beginnings and end separately, as they are not detected
 		// sometimes.
 		var tolerance = /*#=*/ Numerical.TOLERANCE;
 		if (Math.abs(v[0] - x) < tolerance && Math.abs(v[1] - y) < tolerance)
@@ -675,7 +675,7 @@ statics: {
 			c = v1 - v0,
 			count = Numerical.solveQuadratic(a, b, c, roots),
 			// Add some tolerance for good roots, as t = 0 / 1 are added
-			// seperately anyhow, and we don't want joins to be added with
+			// separately anyhow, and we don't want joins to be added with
 			// radiuses in getStrokeBounds()
 			tMin = /*#=*/ Numerical.TOLERANCE,
 			tMax = 1 - tMin;

@@ -143,7 +143,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		return false;
 	}
 
-	return {
+	return /** @lends CanvasView# */{
 		/**
 		 * Returns true if event was stopped, false otherwise, whether handler
 		 * was called or not!

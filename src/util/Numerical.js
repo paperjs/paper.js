@@ -10,6 +10,11 @@
  * All rights reserved.
  */
 
+/**
+ * @name Numerical
+ * @namespace
+ * @private
+ */
 var Numerical = new function() {
 
 	// Lookup tables for abscissas and weights with values for n = 2 .. 16.
@@ -75,7 +80,7 @@ var Numerical = new function() {
 		};
 	}
 
-	return {
+	return /** @lends Numerical */{
 		TOLERANCE: TOLERANCE,
 		// Precision when comparing against 0
 		EPSILON: EPSILON,

@@ -15,7 +15,7 @@
  * @namespace
  * @private
  */
-var DomEvent = {
+var DomEvent = /** @lends DomEvent */{
 	add: function(el, events) {
 		for (var type in events)
 			el.addEventListener(type, events[type], false);

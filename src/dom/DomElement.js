@@ -46,7 +46,7 @@ var DomElement = new function() {
 		return res;
 	}
 
-	return {
+	return /** @lends DomElement */{
 		create: function(nodes, parent) {
 			var isArray = Array.isArray(nodes),
 				res = create(isArray ? nodes : arguments, isArray ? parent : null);

@@ -15,6 +15,11 @@
 // from "Graphics Gems", Academic Press, 1990
 // Modifications and optimisations of original algorithm by Juerg Lehni.
 
+/**
+ * @name PathFitter
+ * @class
+ * @private
+ */
 var PathFitter = Base.extend({
 	initialize: function(path, error) {
 		this.points = [];
