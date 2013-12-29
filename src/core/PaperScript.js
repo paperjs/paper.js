@@ -404,15 +404,21 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 		path = require('path');
 
 	require.extensions['.pjs'] = function(module, uri) {
-		var source = compile(fs.readFileSync(uri, 'utf8')),
-			scope = new PaperScope();
-		scope.__filename = uri;
-		scope.__dirname = path.dirname(uri);
-		// Expose core methods and values
-		scope.require = require;
-		scope.console = console;
-		execute(source, scope);
-		module.exports = scope;
+		// Requiring a PaperScript on Node.js returns an initialize method which
+		// needs to receive a Canvas object when called and returns the
+		// PaperScope.
+		module.exports = function(canvas) {
+			var source = compile(fs.readFileSync(uri, 'utf8')),
+				scope = new PaperScope();
+			scope.setup(canvas);
+			scope.__filename = uri;
+			scope.__dirname = path.dirname(uri);
+			// Expose core methods and values
+			scope.require = require;
+			scope.console = console;
+			execute(source, scope);
+			return scope;
+		};
 	};
 
 /*#*/ } // __options.environment == 'node'
