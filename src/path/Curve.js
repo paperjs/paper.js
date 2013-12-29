@@ -447,6 +447,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * Returns the winding contribution of this curve, to the parent path or
 	 * CompoundPath it is part of.
+	 * 
+	 * DEBUG: Note: This method is inlined in PathItem#computeBoolean
 	 */
 	_getWinding: function() {
 		var path = this.getPath();
@@ -456,12 +458,17 @@ var Curve = Base.extend(/** @lends Curve# */{
 			return null;
 		var v = this.getValues(),
 			point = Curve.evaluate(v, 0.5, 0),
-			xDirection = path.isClockwise() ? v[0] > v[6] : v[0] < v[6],
-			isHorizontal = this.isLinear() && xDirection &&
-					Math.abs(v[1]-v[7]) < /*#=*/ Numerical.TOLERANCE;
+			// Since we are using curves monotonic in Y direction, horizontal
+			// curves may report wrong winding contribution. See 
+			// PathItem#_getWinding for details on how we resolve this issue.
+			tolerance = /*#=*/ Numerical.TOLERANCE,
+			vDiff = Math.abs(v[1] - v[7]),
+			linear = Curve.isLinear(v) || Curve.isFlatEnough(v, tolerance),
+			horizontal = (linear && vDiff < tolerance) ||
+						(Curve.getLength(v) < 1 && vDiff < 0.01);
 		// Call the parent's _getWinding method
 		return (path._parent instanceof CompoundPath ? path._parent
-					: path)._getWinding(point, isHorizontal);
+					: path)._getWinding(point, horizontal);
 	},
 
 // Mess with indentation in order to get more line-space below...
