@@ -513,6 +513,104 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		// check && console.log(intercepts);
 		return Math.max(abs(windLeft), abs(windRight));
 	},
+
+	/**
+	 * Private method to trace closed contours from a set of segments according 
+	 * to a set of constraints —winding contribution and a custom operator.
+	 * 
+	 * @param  {Array} segments Array of 'seed' segments for tracing closed
+	 *                          contours.
+	 * @param  {Function} operator A function. It must take one argument, which
+	 *                             is the winding number contribution of a 
+	 *                             curve, and should return a boolean value 
+	 *                             indicating whether the curve should be 
+	 *                             included in the final contour or not.
+	 * @return {Array}          Array of contours traced.
+	 */
+	_tracePaths: function(segments, operator) {
+		var seg, nextSeg, startSeg, startSegIx, i, len, ixOther, j, prev,
+			ixOtherSeg, c1, c2, c3,
+			wind, w1, w3, s1, s3, path, nextHandleIn,
+			paths = [],
+			lenTolerance = 1;
+		for (i = 0, len = segments.length; i < len; i++) {
+			startSeg = seg = segments[i];
+			if (seg._visited || !operator(seg._winding))
+				continue;
+			// Initialise a new path chain with the seed segment.
+			path = new paper.Path();
+				//DEBUG: ------------------------------------------------------
+				// path.style = styleHi;
+
+			wind = seg._winding;
+			ixOther = seg._intersection;
+			startSegIx = ixOther ? ixOther._segment : null;
+			// Set the correct handles for this segment
+			prev = seg.getPrevious();
+			if (ixOther && prev && prev._visited)
+				seg._handleIn = new paper.Point(0, 0);
+			do {
+				nextHandleIn = nextHandleIn || seg._handleIn;
+				path.add(new paper.Segment(seg._point, nextHandleIn,
+						seg._handleOut));
+				nextHandleIn = null;
+				seg._visited = true;
+					//DEBUG:---------------------------------------------------
+					// paper.view.draw();
+
+				seg = (seg._nextPathSegment ? seg._nextPathSegment :
+						seg).getNext();
+				// This segments's _intersection property holds a reference to
+				// the intersection on the other curve.
+				ixOther = seg._intersection;
+				if (ixOther && (ixOtherSeg = ixOther._segment) &&
+						ixOtherSeg !== startSeg) {
+					c1 = seg.getCurve();
+					c2 = c1.getPrevious();
+					c3 = ixOtherSeg.getCurve();
+					// c2 is the entry point in the direction we are 
+					// traversing the graph; sort c1 and c3 curves based on c2.
+					w1 = c1._segment1._winding;
+					w3 = c3._segment1._winding;
+					nextSeg = null;
+					s1 = c1.getSegment1();
+					s3 = c3.getSegment1();
+					if (wind === w1 && !s1._visited) {
+						nextSeg = s1;
+					} else if (wind === w3 && !s3._visited) {
+						nextSeg = s3;
+					}
+					if (nextSeg)
+						nextHandleIn = seg._handleIn;
+					seg = nextSeg || seg;
+					seg._winding = wind;
+				}
+			} while(seg && seg !== startSeg && seg !== startSegIx &&
+					!seg._visited && operator(seg._winding));
+			// Finish with closing the paths if necessary, correctly
+			// linking up curves etc.
+			if (seg && (seg == startSeg || seg == startSegIx)){
+				if (path.segments.length === 1) {
+					// This is still a valid path, in case of self-Intersections
+					path.add(new paper.Segment(seg._point, seg._handleIn, null));
+				} else {
+					path.firstSegment.setHandleIn((seg == startSegIx)?
+							startSegIx._handleIn : startSeg._handleIn);
+				}
+			}
+			path.setClosed(true);
+			// Add the path to the result
+			// Try to avoid stray segments and incomplete paths.
+			if (path.segments.length > 2 || (path.segments.length === 2 &&
+					(!path.getCurves()[0].isLinear() ||
+					!path.getCurves()[1].isLinear()))) {
+				paths.push(path);
+			} else {
+				path.remove();
+			}
+		}
+		return paths;
+	}
 	}
 
 	/**
