@@ -1718,6 +1718,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 */
 	_getMonotoneCurves: function() {
 		var monoCurves = this._monotoneCurves,
+			lastCurve,
 			// TODO: replace instances with constants ( /*#=*/ ?)
 			INCREASING = 1,
 			DECREASING = -1,
@@ -1733,7 +1734,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 				} else if (y0 > y1) {
 					dir = DECREASING;
 				}
+				// Add a reference to subsequent curves
 				v.push(dir);
+				if (lastCurve) {
+					v[9] = lastCurve;
+					lastCurve[10] = v;
+				}
+				lastCurve = v;
 				monoCurves.push(v);
 			}
 			// Handle bezier curves. We need to chop them into smaller curves 
@@ -1785,7 +1792,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 			}
 			for (i = 0, li = curves.length; i < li; i++) {
 				crv = curves[i];
+				// Filter out curves of zero length
 				vals = crv.getValues();
+				if (Curve.getLength(vals) === 0)
+					continue;
+				// Handle linear and cubic curves seperately
 				if (crv.isLinear()) {
 					insertValues(vals);
 				} else {
@@ -1799,6 +1810,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 					}
 				}
 			}
+			// Link, first and last curves
+			lastCurve = monoCurves[monoCurves.length - 1];
+			monoCurves[0][9] = lastCurve;
+			lastCurve.push(monoCurves[0]);
 		}
 		return monoCurves;
 	},
