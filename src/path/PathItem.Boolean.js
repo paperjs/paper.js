@@ -249,27 +249,10 @@ PathItem.inject(new function() {
 		return result.reduce();
 	}
 
-	function testOnCurve(path, point) {
-		var curves = path.getCurves(),
-			bounds = path.getBounds();
-		if (bounds.contains(point)) {
-			for (var i = 0, l = curves.length; i < l; i++) {
-				var curve = curves[i];
-				if (curve.getBounds().contains(point)
-						&& curve.getParameterOf(point))
-					return true;
-			}
-		}
-		return false;
-	}
-
-	// Boolean operators are binary operator functions of the form:
-	// function(isPath1, isInPath1, isInPath2)
-	//
-	// Operators return true if a segment in the operands is to be discarded.
-	// They are called for each segment in the graph after all the intersections
-	// between the operands are calculated and curves in the operands were split
-	// at intersections.
+	// Boolean operators return true if a curve with the given winding 
+	// contribution contributes to the final result or not. They are called
+	// for each curve in the graph after curves in the operands are
+	// split at intersections.
 	return /** @lends Path# */{
 		/**
 		 * Merges the geometry of the specified path from this path's
