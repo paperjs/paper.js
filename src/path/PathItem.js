@@ -283,6 +283,87 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		var winding = this._getWinding(point);
 		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
 /*#*/ } // !__options.nativeContains
+	},
+
+	statics: {
+	/**
+	 * Private method for splitting a PathItem at the given intersections.
+	 * The routine works for both self intersections and intersections 
+	 * between PathItems.
+	 * @param  {Array} intersections Array of CurveLocation objects
+	 */
+	_splitPath: function(intersections) {
+		function compare(loc1, loc2) {
+			var path1 = loc1.getPath(),
+				path2 = loc2.getPath();
+			return path1 === path2
+					// We can add parameter (0 <= t <= 1) to index 
+					// (a integer) to compare both at the same time
+					? (loc1.getIndex() + loc1.getParameter())
+							- (loc2.getIndex() + loc2.getParameter())
+					// Sort by path id to group all locations on the same path.
+					: path1._id - path2._id;
+		}
+
+		var loc, i, j, node1, node2, t, segment,
+			path1, isLinear, crv, crvNew,
+			newSegments = [],
+			tolerance = /*#=*/ Numerical.EPSILON;
+		// Make a binary heap of all intersections
+		for (i = intersections.length - 1; i >= 0; i--) {
+			loc = intersections[i];
+			intersections.push(loc.getIntersection());
+		}
+		intersections.sort(compare);
+		for (i = intersections.length - 1; i >= 0; i--) {
+			node1 = intersections[i];
+			path1 = node1.getPath();
+			// Check if we are splitting same curve multiple times
+			if (node2 && node2.getPath() === path1 &&
+					node2._curve === node1._curve) {
+				// Use the result of last split and interpolate the parameter.
+				crv = crvNew;
+				t = node1._parameter / node2._parameter;
+			} else {
+				crv = node1._curve;
+				t = node1._parameter;
+				isLinear = crv.isLinear();
+				newSegments.length = 0;
+			}
+			// Split the curve at t, while ignoring linearity of curves
+			if ((crvNew = crv.divide(t, true, true)) === null){
+				if (t >= 1-tolerance) {
+					segment = crv._segment2;
+				} else if (t <= tolerance) {
+					segment = crv._segment1;
+				} else {
+					// Determine the closest segment by comparing curve lengths
+					segment = crv.getLength(0, t) < crv.getLength(t, 1)
+							? crv._segment1 : crv._segment2;
+				}
+				crvNew = crv;
+			} else {
+				segment = crvNew.getSegment1();
+				crvNew = crvNew.getPrevious();
+			}
+			// Link the new segment with the intersection on the other curve
+			segment._intersection = node1.getIntersection();
+			node1._segment = segment;
+			node2 = node1;
+			// Reset linear segments if they were part of a linear curve 
+			// and if we are done with the entire curve.
+			newSegments.push(segment);
+			loc = intersections[i - 1];
+			if (!(loc && loc.getPath() === path1 &&
+					loc._curve === node1._curve) && isLinear)
+				for (j = newSegments.length-1; j >= 0; j--) {
+					segment = newSegments[j];
+					segment._handleOut.set(0, 0);
+					segment._handleIn.set(0, 0);
+				}
+		}
+	},
+
 	/**
 	 * Private static method that returns the winding contribution of the 
 	 * given point with respect to a given set of monotone curves
