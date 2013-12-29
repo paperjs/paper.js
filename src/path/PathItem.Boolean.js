@@ -261,11 +261,11 @@ PathItem.inject(new function() {
 		 * @param {PathItem} path the path to unite with
 		 * @return {PathItem} the resulting path item
 		 */
-		unite: function(path) {
+		unite: function(path, ret) {
+			if (!path)
+				return this;
 			return computeBoolean(this, path,
-					function(isPath1, isInPath1, isInPath2) {
-						return isInPath1 || isInPath2;
-					});
+					function(w) { return w === 1 || w === 0; }, false, false, ret);
 		},
 
 		/**
@@ -275,11 +275,11 @@ PathItem.inject(new function() {
 		 * @param {PathItem} path the path to intersect with
 		 * @return {PathItem} the resulting path item
 		 */
-		intersect: function(path) {
+		intersect: function(path, ret) {
+			if (!path)
+				return this;
 			return computeBoolean(this, path,
-					function(isPath1, isInPath1, isInPath2) {
-						return !(isInPath1 || isInPath2);
-					});
+					function(w) { return w === 2; }, false, false, ret);
 		},
 
 		/**
@@ -290,15 +290,12 @@ PathItem.inject(new function() {
 		 * @return {PathItem} the resulting path item
 		 */
 		subtract: function(path) {
+			if (!path)
+				return this;
 			return computeBoolean(this, path,
-					function(isPath1, isInPath1, isInPath2) {
-						return isPath1 && isInPath2 || !isPath1 && !isInPath1;
-					}, true);
+					function(w) { return w === 1; }, true, true);
 		},
 
-		// Compound boolean operators combine the basic boolean operations such
-		// as union, intersection, subtract etc. 
-		// TODO: cache the split objects and find a way to properly clone them!
 		/**
 		 * Excludes the intersection of the geometry of the specified path with
 		 * this path's geometry and returns the result as a new group item.
@@ -307,9 +304,14 @@ PathItem.inject(new function() {
 		 * @return {Group} the resulting group item
 		 */
 		exclude: function(path) {
-			return new Group([this.subtract(path), path.subtract(this)]);
+			if (!path)
+				return this;
+			return computeBoolean(this, path,
+					function(w) { return w === 1 || w === 0; }, true, false);
 		},
 
+		// Compound boolean operators combine the basic boolean operations such
+		// as union, intersection, subtract etc.
 		/**
 		 * Splits the geometry of this path along the geometry of the specified
 		 * path returns the result as a new group item.
@@ -318,6 +320,8 @@ PathItem.inject(new function() {
 		 * @return {Group} the resulting group item
 		 */
 		divide: function(path) {
+			if (!path)
+				return this;
 			return new Group([this.subtract(path), this.intersect(path)]);
 		}
 	};
