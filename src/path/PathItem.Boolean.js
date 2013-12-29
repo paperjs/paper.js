@@ -32,38 +32,6 @@
  */
 
 PathItem.inject(new function() {
-
-	function splitPath(intersections, collectOthers) {
-		// Sort intersections by paths ids, curve index and parameter, so we
-		// can loop through all intersections, divide paths and never need to
-		// readjust indices.
-		intersections.sort(function(loc1, loc2) {
-			var path1 = loc1.getPath(),
-				path2 = loc2.getPath();
-			return path1 === path2
-					// We can add parameter (0 <= t <= 1) to index (a integer)
-					// to compare both at the same time
-					? (loc1.getIndex() + loc1.getParameter())
-						- (loc2.getIndex() + loc2.getParameter())
-					// Sort by path id to group all locations on the same path.
-					: path1._id - path2._id;
-		});
-		var others = collectOthers && [];
-		for (var i = intersections.length - 1; i >= 0; i--) {
-			var loc = intersections[i],
-				other = loc.getIntersection(),
-				curve = loc.divide(),
-				// When the curve doesn't need to be divided since t = 0, 1,
-				// #divide() returns null and we can use the existing segment.
-				segment = curve && curve.getSegment1() || loc.getSegment();
-			if (others)
-				others.push(other);
-			segment._intersection = other;
-			loc._segment = segment;
-		}
-		return others;
-	}
-
 	/**
 	 * To deal with a HTML5 canvas requirement where CompoundPaths' child
 	 * contours has to be of different winding direction for correctly filling
