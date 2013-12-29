@@ -84,6 +84,68 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		return locations;
 	},
 
+	getSelfIntersections: function(){
+		var locations = [],
+			locs = [],
+			curves = this.getCurves(),
+			length = curves.length - 1,
+			matrix = this._matrix.orNullIfIdentity(),
+			values = [],
+			curve1, values1, parts, i, j, k, ix, from, to, param, v1, v2,
+			EPSILON =  /*#=*/ Numerical.EPSILON,
+			EPSILON1s = 1-EPSILON;
+		for (i = 0; i <= length; i++)
+			values[i] = curves[i].getValues(matrix);
+		for (i = 0; i <= length; i++) {
+			curve1 = curves[i];
+			values1 = values[i];
+			// First check for self-intersections within the same curve
+			from = curve1.getSegment1();
+			to = curve1.getSegment2();
+			v1 = from._handleOut;
+			v2 = to._handleIn;
+			// Check if extended handles of endpoints of this curve intersects
+			// each other. We cannot have a self intersection within this curve
+			// if they don't intersect due to convex-hull property.
+			ix = new paper.Line(from._point.subtract(v1), v1.multiply(2), true)
+					.intersect(new paper.Line(to._point.subtract(v2),
+						v2.multiply(2), true), false);
+			if (ix){
+				parts = paper.Curve.subdivide(values1);
+				locs.length = 0;
+				Curve.getIntersections(parts[0], parts[1], curve1, curve1, locs);
+				for (j = locs.length - 1; j >= 0; j--) {
+					ix = locs[0];
+					if (ix._parameter <= EPSILON1s) {
+						ix._parameter = ix._parameter * 0.5;
+						ix._parameter2 = 0.5 + ix._parameter2 * 0.5;
+						break;
+					}
+				}
+				if (j >= 0)
+					locations.push(ix);
+			}
+			// Check for intersections with other curves
+			for (j = i + 1; j <= length; j++){
+				// Avoid end point intersections on consecutive curves
+				if (j === i + 1 || (j === length && i === 0)) {
+					locs.length = 0;
+					Curve.getIntersections(values1, values[j], curve1,
+							curves[j], locs);
+					for (k = locs.length - 1; k >= 0; k--) {
+						param = locs[k].getParameter();
+						if (param < EPSILON1s && param > EPSILON)
+							locations.push(locs[k]);
+					}
+				} else {
+					paper.Curve.getIntersections(values1, values[j], curve1,
+							curves[j], locations);
+				}
+			}
+		}
+		return locations;
+	},
+
 	setPathData: function(data) {
 		// This is a very compact SVG Path Data parser that works both for Path
 		// and CompoundPath.
