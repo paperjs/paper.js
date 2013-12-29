@@ -45,8 +45,10 @@ PathItem.inject(new function() {
 					// to compare both at the same time
 					? (loc1.getIndex() + loc1.getParameter())
 						- (loc2.getIndex() + loc2.getParameter())
-					// Sort by path id to group all locations on the same path.
-					: path1._id - path2._id;
+					// Sort by path index to group all locations on the same
+					// path in the sequnence that they are encountered within
+					// compound paths.
+					: path1._index - path2._index;
 		});
 		var others = collectOthers && [];
 		for (var i = intersections.length - 1; i >= 0; i--) {
@@ -222,6 +224,8 @@ PathItem.inject(new function() {
 	// at intersections.
 	return /** @lends Path# */{
 		/**
+		 * {@grouptitle Boolean Path Operations}
+		 *
 		 * Merges the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
 		 * 

@@ -468,11 +468,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @bean
 	 */
 	getLength: function() {
-		// Supports a hidden parameter 'squared', which controls whether the
-		// squared length should be returned. Hide it so it produces a bean
-		// property called #length.
-		var length = this.x * this.x + this.y * this.y;
-		return arguments.length && arguments[0] ? length : Math.sqrt(length);
+		return Math.sqrt(this.x * this.x + this.y * this.y);
 	},
 
 	setLength: function(length) {

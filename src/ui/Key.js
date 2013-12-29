@@ -74,7 +74,7 @@ var Key = new function() {
 			type = down ? 'keydown' : 'keyup',
 			view = View._focused,
 			scope = view && view.isVisible() && view._scope,
-			tool = scope && scope._tool,
+			tool = scope && scope.tool,
 			name;
 		keyMap[key] = down;
 		// Detect modifiers and mark them as pressed / released

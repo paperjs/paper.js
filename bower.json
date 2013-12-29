@@ -14,7 +14,7 @@
     "test"
   ],
   "devDependencies": {
-    "straps": "~1.4.1",
+    "straps": "~1.4.2",
     "acorn": "git://github.com/paperjs/acorn#0.3.2",
     "esprima": "~1.0.3",
     "stats.js": "r11"

@@ -447,7 +447,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 
 	viewToProject: function(/* point */) {
 		return this._matrix._inverseTransform(Point.read(arguments));
-	},
+	}
 
 	/**
 	 * {@grouptitle Event Handlers}
@@ -664,7 +664,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		// Always first call the view's mouse handlers, as required by
 		// CanvasView, and then handle the active tool, if any.
 		view._handleEvent('mousedown', point, event);
-		if (tool = view._scope._tool)
+		if (tool = view._scope.tool)
 			tool._handleEvent('mousedown', point, event);
 		// In the end we always call update(), which only updates the view if
 		// anything has changed in the above calls.
@@ -673,7 +673,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 
 	function handleMouseMove(view, point, event) {
 		view._handleEvent('mousemove', point, event);
-		var tool = view._scope._tool;
+		var tool = view._scope.tool;
 		if (tool) {
 			// If there's no onMouseDrag, fire onMouseMove while dragging.
 			tool._handleEvent(dragging && tool.responds('mousedrag')
