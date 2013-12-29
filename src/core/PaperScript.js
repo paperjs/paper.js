@@ -14,19 +14,10 @@
  * @name PaperScript
  * @namespace
  */
-// Note that due to the use of with(), PaperScript gets compiled outside the
-// main paper scope, and is added to the PaperScope class. This allows for
-// better minification and the future use of strict mode once it makes sense
-// in terms of performance.
-paper.PaperScope.prototype.PaperScript = (function(root) {
-	var Base = paper.Base,
-		PaperScope = paper.PaperScope,
-		// For local reference, for now only when setting lineNumberBase on
-		// Firefox.
-		PaperScript,
-		// Locally turn of exports and define for inlined acorn / esprima.
-		// Just declaring the local vars is enough, as they will be undefined.
-		exports, define,
+var PaperScript = Base.exports.PaperScript = (function(root) {
+	// Locally turn of exports and define for inlined acorn / esprima.
+	// Just declaring the local vars is enough, as they will be undefined.
+	var exports, define,
 		// The scope into which the library is loaded.
 		scope = this;
 /*#*/ if (__options.version == 'dev') {
@@ -69,9 +60,9 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		}, 
 		{}
 	);
-	paper.Point.inject(fields);
-	paper.Size.inject(fields);
-	paper.Color.inject(fields);
+	Point.inject(fields);
+	Size.inject(fields);
+	Color.inject(fields);
 
 	// Use very short name for the binary operator (_$_) as well as the
 	// unary operator ($_), as operations will be replaced with then.
@@ -238,97 +229,117 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 	}
 
 	/**
-	 * Evaluates parsed PaperScript code in the passed {@link PaperScope}
-	 * object. It also installs handlers automatically for us.
+	 * Executes the parsed PaperScript code in a compiled function that receives
+	 * all properties of the passed {@link PaperScope} as arguments, to emulate
+	 * a global scope with unaffected performance. It also installs global view
+	 * and tool handlers automatically for you.
 	 *
-	 * @name PaperScript.evaluate
+	 * @name PaperScript.execute
 	 * @function
 	 * @param {String} code The PaperScript code
-	 * @param {PaperScript} scope The scope in which the code is executed
-	 * @return {Object} the result of the code evaluation
+	 * @param {PaperScript} scope The scope for which the code is executed
 	 */
-	function evaluate(code, scope) {
+	function execute(code, scope) {
 		// Set currently active scope.
 		paper = scope;
-		var view = scope.project && scope.project.view,
+		var view = scope.getView(),
+			// Only create a tool object if something resembling a tool handler
+			// definition is contained in the code.
+			tool = /\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
+					? new Tool()
+					: null,
+			toolHandlers = tool ? tool._events : [],
+			// Compile a list of all handlers that can be defined globally
+			// inside the PaperScript. These are passed on to the function as
+			// undefined arguments, so that their name exists, rather than
+			// injecting a code line that defines them as variables.
+			// They are exported again at the end of the function.
+			handlers = ['onFrame', 'onResize'].concat(toolHandlers),
 			res;
-		// Define variables for potential handlers, so eval() calls below to
-		// fetch their values do not require try-catch around them.
- 		// Use with() {} in order to make the scope the current 'global' scope
-		// instead of window.
-		with (scope) {
-			// Within this, use a function scope, so local variables to not try
-			// and set themselves on the scope object.
-			(function() {
-				var onActivate, onDeactivate, onEditOptions,
-					onMouseDown, onMouseUp, onMouseDrag, onMouseMove,
-					onKeyDown, onKeyUp, onFrame, onResize;
-				code = compile(code);
-/*#*/ if (__options.environment == 'browser') {
-				if (root.InstallTrigger) { // Firefox
-					// On Firefox, all error numbers inside evaled code are
-					// relative to the line where the eval happened. Totally
-					// silly, but that's how it is. So we're calculating the
-					// base of lineNumbers, to remove it again from reported
-					// errors. Luckily, Firefox is the only browser where we can
-					// define the lineNumber for exceptions.
-					var handle = PaperScript.handleException;
-					if (!handle) {
-						handle = PaperScript.handleException = function(e) {
-							throw e.lineNumber >= lineNumber
-									? new Error(e.message, e.fileName,
-										e.lineNumber - lineNumber)
-									: e;
-						}
-						// We're using a crazy hack to detect wether the library
-						// is minified or not: By generating a second error on
-						// the 2nd line and using the difference in line numbers
-						// to calculate the offset to the eval, it works in both
-						// casees.
-						var lineNumber = new Error().lineNumber;
-						lineNumber += (new Error().lineNumber - lineNumber) * 3;
-					}
-					try {
-						// Add a semi-colon at the start so Firefox doesn't
-						// swallow empty lines and shift error messages.
-						res = eval(';' + code);
-					} catch (e) {
-						handle(e);
-					}
-				} else {
-					res = eval(code);
-				}
-/*#*/ } else { // !__options.environment == 'browser'
-				res = eval(code);
-/*#*/ } // !__options.environment == 'browser'
-				// Only look for tool handlers if something resembling their
-				// name is contained in the code.
-				if (/on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)) {
-					Base.each(paper.Tool.prototype._events, function(key) {
-						var value = eval(key);
-						if (value) {
-							// Use the getTool accessor that handles auto tool
-							// creation for us:
-							scope.getTool()[key] = value;
-						}
-					});
-				}
-				if (view) {
-					view.setOnResize(onResize);
-					// Fire resize event directly, so any user
-					// defined resize handlers are called.
-					view.fire('resize', {
-						size: view.size,
-						delta: new Point()
-					});
-					if (onFrame)
-						view.setOnFrame(onFrame);
-					// Automatically update view at the end.
-					view.update();
-				}
-			}).call(scope);
+		code = compile(code);
+		// compile a list of paramter names for all variables that need to
+		// appear as globals inside the script. At the same time, also collect
+		// their values, so we can pass them on as arguments in the function
+		// call. 
+		var params = ['_$_', '$_', 'view', 'tool'],
+			args = [_$_, $_ , view, tool];
+		// Look through all enumerable properties on the scope and expose these
+		// too as pseudo-globals.
+		for (var key in scope) {
+			if (!/^_/.test(key)) {
+				params.push(key);
+				args.push(scope[key]);
+			}
 		}
-		return res;
+		// Finally define the handler variable names as parameters and compose
+		// the string describing the properties for the returned object at the
+		// end of the code execution, so we can retrieve their values from the
+		// function call.
+		handlers = Base.each(handlers, function(key) {
+			params.push(key);
+			this.push(key + ': ' + key);
+		}, []).join(', ');
+		// We need an additional line that returns the handlers in one object.
+		code += '\nreturn { ' + handlers + ' };';
+/*#*/ if (__options.environment == 'browser') {
+		if (root.InstallTrigger) { // Firefox
+			// Add a semi-colon at the start so Firefox doesn't swallow empty
+			// lines and shift error messages.
+			code = ';' + code;
+			// On Firefox, all error numbers inside evaled code are relative to
+			// the line where the eval happened. Totally silly, but that's how
+			// it is. So we're calculating the base of lineNumbers, to remove it
+			// again from reported errors. Luckily, Firefox is the only browser
+			// where we can define the lineNumber for exceptions.
+			var handle = PaperScript.handleException;
+			if (!handle) {
+				handle = PaperScript.handleException = function(e) {
+					throw e.lineNumber >= lineNumber
+							? new Error(e.message, e.fileName,
+								e.lineNumber - lineNumber)
+							: e;
+				};
+				// We're using a crazy hack to detect wether the library is
+				// minified or not: By generating a second error on the 2nd line
+				// and using the difference in line numbers to calculate the
+				// offset to the eval, it works in both casees.
+				var lineNumber = new Error().lineNumber;
+				lineNumber += (new Error().lineNumber - lineNumber) * 3;
+			}
+			try {
+				res = new Function(params, code).apply(scope, args);
+				// NOTE: in order for the calculation of the above lineNumber
+				// offset to work, we cannot add any statements before the above
+				// line of code, nor can we put it into a separate function.
+			} catch (e) {
+				handle(e);
+			}
+		} else {
+			res = new Function(params, code).apply(scope, args);
+		}
+/*#*/ } else { // !__options.environment == 'browser'
+			res = new Function(params, code).apply(scope, args);
+/*#*/ } // !__options.environment == 'browser'
+		// Now install the 'global' tool and view handlers, and we're done!
+		Base.each(toolHandlers, function(key) {
+			var value = res[key];
+			if (value)
+				tool[key] = value;
+		});
+		if (view) {
+			if (res.onResize)
+				view.setOnResize(res.onResize);
+			// Fire resize event directly, so any user
+			// defined resize handlers are called.
+			view.fire('resize', {
+				size: view.size,
+				delta: new Point()
+			});
+			if (res.onFrame)
+				view.setOnFrame(res.onFrame);
+			// Automatically update view at the end.
+			view.update();
+		}
 	}
 
 /*#*/ if (__options.environment == 'browser') {
@@ -356,12 +367,12 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 				if (src) {
 					// If we're loading from a source, request that first and
 					// then run later.
-					paper.Http.request('get', src, function(code) {
-						evaluate(code, scope);
+					Http.request('get', src, function(code) {
+						execute(code, scope);
 					});
 				} else {
 					// We can simply get the code form the script tag.
-					evaluate(script.innerHTML, scope);
+					execute(script.innerHTML, scope);
 				}
 				// Mark script as loaded now.
 				script.setAttribute('data-paper-ignore', true);
@@ -375,12 +386,12 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		// Handle it asynchronously
 		setTimeout(load);
 	} else {
-		paper.DomEvent.add(window, { load: load });
+		DomEvent.add(window, { load: load });
 	}
 
-	return PaperScript = {
+	return {
 		compile: compile,
-		evaluate: evaluate,
+		execute: execute,
 		load: load,
 		lineNumberBase: 0
 	};
@@ -400,15 +411,15 @@ paper.PaperScope.prototype.PaperScript = (function(root) {
 		// Expose core methods and values
 		scope.require = require;
 		scope.console = console;
-		evaluate(source, scope);
+		execute(source, scope);
 		module.exports = scope;
 	};
 
 /*#*/ } // __options.environment == 'node'
 
-	return PaperScript = {
+	return {
 		compile: compile,
-		evaluate: evaluate
+		execute: execute
 	};
 
 /*#*/ } // !__options.environment == 'browser'

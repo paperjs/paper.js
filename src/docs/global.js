@@ -10,16 +10,19 @@
  * All rights reserved.
  */
 
-/** @scope _global_ */ {
-
-// DOCS: Find a way to put this description into _global_
-
-/**
- * In a PaperScript context, the global scope is populated with all
- * fields of the currently active {@link PaperScope} object. In a JavaScript
- * context, it only contains the {@link #paper} reference to the currently
- * active {@link PaperScope} object, which also exposes all Paper classes.
- */
+ /**
+  * @name _global_
+  * @namespace
+  *
+  * When code is executed as PaperScript, the script's scope is populated with
+  * all fields of the currently active {@link PaperScope} object, which within
+  * the script appear to be global.
+  *
+  * In a JavaScript context, only the {@link paper} variable is added to the
+  * global scope, referencing the currently active {@link PaperScope} object,
+  * through which all properties and Paper.js classes can be accessed.
+  */
+/** @scope _global_ */{
 
 /**
  * A reference to the currently active {@link PaperScope} object.
@@ -32,40 +35,58 @@
 // DOCS: This does not work: @borrows PaperScope#version as _global_#version,
 // so we're repeating documentation here form PaperScope:
 /**
- * {@grouptitle Global PaperScope Properties (for PaperScript)}
+ * {@grouptitle Global PaperScript Properties}
  *
- * The currently active project.
+ * The project for which the PaperScript is executed.
+ *
+ * Note that when working with mulitple projects, this does not necessarily
+ * reflect the currently active project. For this, use
+ * {@link PaperScope#project} instead.
+ *
  * @name project
  * @type Project
  */
 
 /**
  * The list of all open projects within the current Paper.js context.
+ *
  * @name projects
  * @type Project[]
  */
 
 /**
- * The reference to the active project's view.
+ * The reference to the project's view.
+ *
+ * Note that when working with mulitple projects, this does not necessarily
+ * reflect the view of the currently active project. For this, use
+ * {@link PaperScope#view} instead.
+ *
  * @name view
  * @type View
  */
 
 /**
- * The reference to the active tool.
+ * The reference to the tool object which is automatically created when global
+ * tool event handlers are defined.
+ *
+ * Note that when working with mulitple tools, this does not necessarily
+ * reflect the currently active tool. For this, use {@link PaperScope#tool}
+ * instead.
+ *
  * @name tool
  * @type Tool
  */
 
 /**
  * The list of available tools.
+ *
  * @name tools
  * @type Tool[]
  */
 
 /**
- * {@grouptitle View Event Handlers (for PaperScript)}
- * A reference to the {@link View#onFrame} handler function.
+ * {@grouptitle PaperScript View Event Handlers}
+ * A global reference to the {@link View#onFrame} handler function.
  *
  * @name onFrame
  * @property
@@ -81,7 +102,7 @@
  */
 
 /**
- * {@grouptitle Mouse Event Handlers (for PaperScript)}
+ * {@grouptitle PaperScript Tool Event Handlers}
  * A reference to the {@link Tool#onMouseDown} handler function.
  * @name onMouseDown
  * @property

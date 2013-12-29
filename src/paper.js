@@ -138,12 +138,10 @@ var paper = new function(undefined) {
 /*#*/ include('svg/SVGImport.js');
 /*#*/ } // __options.svg
 
-/*#*/ include('export.js');
-return paper;
-};
-
-// include PaperScript separately outside the main paper scope, due to its use
-// of with(). This also simplifies making its inclusion optional.
 /*#*/ if (__options.paperscript) {
 /*#*/ include('core/PaperScript.js');
 /*#*/ } // __options.paperscript
+
+/*#*/ include('export.js');
+return paper;
+};
