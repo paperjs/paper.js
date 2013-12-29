@@ -60,7 +60,7 @@ PathItem.inject(new function() {
 			}
 			for (var i = 0; i < length; i++) {
 				for (var j = 1; j < length; j++) {
-					if (i !== j && bounds[i].contains(bounds[j]))
+					if (i !== j && bounds[i].intersects(bounds[j]))
 						counters[j]++;
 				}
 				// Omit the first child
