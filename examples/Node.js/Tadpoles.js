@@ -1,5 +1,5 @@
 var paper = require('paper');
-var scope = require('./Tadpoles.pjs')(new paper.Canvas(1024, 768));
+var scope = require('./Tadpoles.pjs')(new paper.Size(1024, 768));
 
 scope.view.exportFrames({
 	amount: 400,
