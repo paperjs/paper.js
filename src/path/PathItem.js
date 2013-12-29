@@ -255,62 +255,17 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	/**
 	 * Returns the winding contribution of the given point with respect to this
 	 * PathItem.
+	 *
+	 * @param  {Object} point          Point to determine the winding direction 
+	 *                                 about.
+	 * @param  {Boolean} horizontal    Boolean value indicating if we need to
+	 *                                 consider this point as part of a 
+	 *                                 horizontal curve.
+	 * @return {Number}                Winding number.
 	 */
-	_getWinding: function(point, isHorizontal) {
-		var v,
-			curves = this._getMonotoneCurves(),
-			tolerance = /*#=*/ Numerical.TOLERANCE;
-		var i, li, t, x0, ty, wind,
-			tolMin = -tolerance,
-			tolMax = 1 + -tolerance,
-			xAfter = point.x + tolerance,
-			xBefore = point.x - tolerance,
-			tMin = tolMin,
-			tMax = tolerance,
-			tVal = 0,
-			y = point.y,
-			winding = 0,
-			roots = [];
-		// Adjustment for horizontal curve. Here, we will miss to count
-		// atleast one intercept since we only account for y intercepts
-		// on other curves excluding the end point of those curves.
-		if (isHorizontal){
-			tolMin = tolerance; 
-			tolMax = 1 + tolerance;
-			tMin = 1 - tolerance;
-			tMax = tolMax;
-			tVal = 1;
-		}
-		// DEBUG:
-		var check = point.x === 217.32504322936848 &&  point.y === 354.67997242479777;
-		// Find the winding number for right hand side of the curve,
-		// inclusive of the curve itself, while tracing along its direction.
-		for (i = 0, li = curves.length; i < li; i++) {
-			v = curves[i];
-			if (Curve.solveCubic(v, 1, y, roots, tolMin, tolMax) === 1) {
-				t = roots[0];
-				if ( t >= tMin && t <= tMax)
-					t = tVal;
-				x0 = Curve.evaluate(v, t, 0).x;
-				ty = Curve.evaluate(v, t, 1).y;
-				// DEBUG:
-				// wind = v[8];
-				// if (check && (x0 >= xAfter || (x0 >= xBefore && wind > 0))){
-				// 	hilightCrv(v);
-				//  	markPoint(Curve.evaluate(v, 0.5, 0), t.toFixed(1), null, 0.01);
-				// 	// markPoint(new paper.Point(x0, y), t.toFixed(1), null, 0.001);
-				// 	console.log(t.toFixed(1), ty, v[8]);
-				// }
-
-				wind = v[8];
-				if (x0 >= xAfter){
-					winding += wind;
-				} else if (x0 >= xBefore && wind > 0) {
-					winding += wind;
-				}
-			}
-		}
-		return Math.abs(winding);
+	_getWinding: function(point, horizontal) {
+		var curves = this._getMonotoneCurves();
+		return PathItem._getWindingNumber(point, curves, horizontal);
 	},
 
 	_contains: function(point) {
@@ -328,6 +283,155 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		var winding = this._getWinding(point);
 		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
 /*#*/ } // !__options.nativeContains
+	/**
+	 * Private static method that returns the winding contribution of the 
+	 * given point with respect to a given set of monotone curves
+	 * 
+	 */
+	_getWindingNumber: function(point, curves, horizontal) {
+		function getTangent(v, t) {
+			var tan, sign, i;
+			sign = t === 0 ? 2 : (t === 1 ? -2 : 0);
+			if (sign !== 0) {
+				i = sign > 0 ? 0 : 6;
+				if (Curve.isLinear(v)) {
+					// Return slope from this point that follows the direction
+					// of the line
+					sign *= 3;
+					tan = new Point(v[i+sign] - v[i], v[i+sign+1] - v[i+1]);
+				} else {
+					// Return the first or last handle
+					tan = new Point(v[i+sign] - v[i], v[i+sign+1] - v[i+1]);
+				}
+			} else {
+				tan = Curve.evaluate(v, t, 1);
+			}
+			return tan;
+		}
+
+		var i, j, li, t, x0, y0, wind, v, slope, stationary,
+			tolerance = /*#=*/ Numerical.TOLERANCE,
+			x = point.x,
+			y = point.y,
+			xAfter = x + tolerance,
+			xBefore = x - tolerance,
+			windLeft = 0,
+			windRight = 0,
+			roots = [],
+			abs = Math.abs;
+
+			// DEBUG:--------------------------------------------------
+			// var check = point.equals([258.2966200492805, 258.54834923463017]);
+			// var check = window.__checkPoint && point.equals(window.__checkPoint);
+			// if (check) {
+			// 	window.__windLine && window.__windLine.remove();
+			// 	window.__windLine = new paper.Path.Line(point.add([-1000, 0]), point.add([1000, 0]));
+			// 	window.__windLine.style = style3;
+			// 	paper.view.draw();
+			// }
+			// DEBUG:-------------------------------------------------
+
+		// Absolutely horizontal curves may return wrong results, since
+		// the curves are monotonic in y direction and this is an
+		// indeterminate state.
+		if (horizontal) {
+			var yTop = -Infinity,
+				yBot = Infinity;
+			// Find the closest yIntercepts in the same vertical line
+			for (i = 0, li = curves.length-1; i <= li; i++) {
+				v = curves[i];
+				if (Curve.solveCubic(v, 0, x, roots, 0, 1) > 0) {
+					for (j = roots.length - 1; j >= 0; j--) {
+						t = roots[j];
+						y0 = Curve.evaluate(v, t, 0).y;
+
+							// DEBUG: ------------------------------------------------
+							// if (check)
+							// 	markPoint(new Point(x, y0), null, null, 0.5);
+							// DEBUG: ------------------------------------------------
+							// 
+						if (y0 > y+tolerance && y0 < yBot) {
+							yBot = y0;
+						} else if (y0 < y-tolerance && y0 > yTop) {
+							yTop = y0;
+						}
+					}
+				}
+			}
+			// yTop = yTop === -Infinity ? y : yTop;
+			// yBot = yBot === Infinity ? y : yBot;
+				// DEBUG: ------------------------------------------------
+				// var p1 = new Point(x, yTop);
+				// drawSlopes(point, new Point(x, yTop).subtract(point));
+				// drawSlopes(point, new Point(x, yBot).subtract(point));
+				// DEBUG: ------------------------------------------------
+			// Shift the point lying on the horizontal curves by
+			// half of closest top and bottom intercepts.
+			yTop = (yTop + y) / 2;
+			yBot = (yBot + y) / 2;
+				// DEBUG: ------------------------------------------------
+				// markPoint(new Point(x, yTop), null, null, 0.5);
+				// markPoint(new Point(x, yBot), null, null, 0.5);
+				// DEBUG: ------------------------------------------------
+			windLeft = yTop > -Infinity
+					? PathItem._getWindingNumber(new Point(x, yTop), curves)
+					: 0;
+			windRight = yBot < Infinity
+					? PathItem._getWindingNumber(new Point(x, yBot), curves)
+					: 0;
+			return Math.max(windLeft, windRight);
+		}
+		// Find the winding number for right hand side of the curve,
+		// inclusive of the curve itself, while tracing along its ±x direction.
+		for (i = 0, li = curves.length-1; i <= li; i++) {
+			v = curves[i];
+			if (Curve.solveCubic(v, 1, y, roots, -tolerance, 1 + -tolerance) === 1) {
+				t = roots[0];
+				if ( t >= -tolerance && t <= tolerance)
+					t = 0;
+				x0 = Curve.evaluate(v, t, 0).x;
+				slope = getTangent(v, t).y;
+				stationary = !Curve.isLinear(v) && abs(slope) < tolerance;
+				// Take care of cases where the curve and the preceeding
+				// curve merely touches the ray towards ±x direction, but
+				// proceeds to the same side of the ray. This essentially is
+				// not a crossing.
+				if (t === 0){
+					// The previous curve's reference is stored at index:9,
+					// see Path#_getMonotoneCurves for details.
+					var v2 = v[9];
+					if (abs(v2[6] - v[0]) < tolerance && abs(v2[7] - v[1]) < tolerance){
+						var slope2 = getTangent(v2, 1).y;
+						if(slope * slope2 > 0)
+							stationary = true;
+					}
+				}
+
+					// DEBUG:-----------------------
+					// wind = v[8];
+					// if (check && (x0 >= xAfter || x0 <= xBefore)){
+						// if(slope2 && v2) {
+						// 	drawSlopes(new paper.Point(x0, y), getTangent(v, t));
+						// 	drawSlopes(new paper.Point(v2[6], v2[7]), getTangent(v2, 1));
+						// }
+						// hilightCrv(v);
+					 // 	markPoint(new paper.Point(x0, y), wind, null, 0.01);
+					 	// markPoint(Curve.evaluate(v, 0.5, 0), stationary, null, 0.01);
+						// console.log(t, x0, wind, stationary);
+					// }
+					// DEBUG: ----------------
+
+				wind = v[8];
+				if (x0 <= xBefore && !stationary)
+					windLeft += wind;
+				if (x0 >= xAfter && !stationary)
+					windRight += wind;
+			}
+		}
+		// check && console.log(windLeft, windRight);
+		// check && console.log(intercepts);
+		return Math.max(abs(windLeft), abs(windRight));
+	},
 	}
 
 	/**
