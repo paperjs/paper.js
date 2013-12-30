@@ -40,7 +40,7 @@ Base.inject(/** @lends Base# */{
 	/**
 	 * Serializes this object to a JSON string.
 	 *
-	 * @param {Object} [options={ precision: 5 }]
+	 * @param {Object} [options={ asString: true, precision: 5 }]
 	 */
 	exportJSON: function(options) {
 		return Base.exportJSON(this, options);
@@ -433,7 +433,10 @@ Base.inject(/** @lends Base# */{
 		},
 
 		exportJSON: function(obj, options) {
-			return JSON.stringify(Base.serialize(obj, options));
+			var json = Base.serialize(obj, options);
+			return options && options.asString === false
+					? json
+					: JSON.stringify(json);
 		},
 
 		importJSON: function(json, target) {
