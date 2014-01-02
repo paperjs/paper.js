@@ -72,6 +72,7 @@ Then install the Paper.js module:
 If you want to contribute to the project you will have to [make a fork](http://help.github.com/forking/). Then do this:
 
 	git clone --recursive git@github.com:yourusername/paper.js.git
+	cd paper.js
 	git remote add upstream git://github.com/paperjs/paper.js.git
 
 ### Refreshing Your Clone
@@ -168,7 +169,8 @@ As mentioned earlier in this article, we prefer that you send a [*pull request*]
 
 3. This is important: Create a so-called *topic branch*: `git checkout -tb name-of-my-patch` where "name-of-my-patch" is a short but descriptive name of the patch you're about to create. Don't worry about the perfect name though -- you can change this name at any time later on.
 
-4. Hack! Make your changes, additions, etc and commit them.
+4. Hack! Make your changes, additions, etc., commit them then push them to your github fork: `git push origin name-of-my-patch`
+
 
 5. Send a pull request to the upstream repository's owner by visiting your repository's site at github (i.e. https://github.com/yourusername/paper.js) and press the "Pull Request" button. Here's a good guide on pull requests: <http://help.github.com/pull-requests/>
 
