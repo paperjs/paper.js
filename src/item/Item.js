@@ -2721,6 +2721,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
 	//        'lines'. Default: ['objects', 'children']
 	transform: function(matrix /*, applyMatrix */) {
+		// Bail out immediatelly if there is nothing to do
+		if (matrix.isIdentity())
+			return this;
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
 		var bounds = this._bounds,
