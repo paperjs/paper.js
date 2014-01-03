@@ -102,16 +102,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 
 	/**
 	 * The reference to the active tool.
+	 * @name PaperScope#tool
 	 * @type Tool
-	 * @bean
 	 */
-	getTool: function() {
-		// If no tool exists yet but one is requested, produce it now on the fly
-		// so it can be used in PaperScript.
-		if (!this._tool)
-			this._tool = new Tool();
-		return this._tool;
-	},
 
 	/**
 	 * The list of available tools.
@@ -131,10 +124,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		return this;
 	},
 
-	evaluate: function(code) {
-		var res = paper.PaperScript.evaluate(code, this);
+	execute: function(code) {
+		paper.PaperScript.execute(code, this);
 		View.updateFocus();
-		return res;
 	},
 
 	/**
@@ -166,10 +158,10 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		// Copy over all fields from this scope to the destination.
 		// Do not use Base.each, since we also want to enumerate over
 		// fields on PaperScope.prototype, e.g. all classes
-		for (var key in this) {
-			if (!/^(version|_id)/.test(key))
+		for (var key in this)
+			// Exclude all 'hidden' fields
+			if (!/^_/.test(key))
 				scope[key] = this[key];
-		}
 	},
 
 	/**
@@ -228,14 +220,14 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 			_id: 0,
 
 			/**
-			 * Retrieves a PaperScope object with the given id or associated with
-			 * the passed canvas element.
+			 * Retrieves a PaperScope object with the given id or associated
+			 * with the passed canvas element.
 			 *
 			 * @param id
 			 */
 			get: function(id) {
 				// If a script tag is passed, get the id from it.
-				if (typeof id === 'object')
+				if (id && id.getAttribute)
 					id = id.getAttribute('id');
 				return this._scopes[id] || null;
 			},
