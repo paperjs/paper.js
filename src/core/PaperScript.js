@@ -34,7 +34,7 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 	// Operators to overload
 
 	var binaryOperators = {
-		// The hidden math functions are to be injected specifically, see below.
+		// The hidden math methods are to be injected specifically, see below.
 		'+': '__add',
 		'-': '__subtract',
 		'*': '__multiply',
@@ -50,11 +50,11 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 		'+': null
 	};
 
-	// Inject underscored math functions as aliases to Point, Size and Color.
+	// Inject underscored math methods as aliases to Point, Size and Color.
 	var fields = Base.each(
 		['add', 'subtract', 'multiply', 'divide', 'modulo', 'negate'],
 		function(name) {
-			// Create an alias for ach math function to be injected into the
+			// Create an alias for each math method to be injected into the
 			// classes using Straps.js' #inject() 
 			this['__' + name] = '#' + name;
 		}, 
