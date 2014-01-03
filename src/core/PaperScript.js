@@ -109,13 +109,12 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 	 */
 	function compile(code) {
 		// Use Acorn or Esprima to translate the code into an AST structure
-		// which is then walked and parsed for operators to overload.
-		// Instead of modifying the AST and converting back to code, we directly
-		// change the source code based on the parser's range information, so we
-		// can preserve line-numbers in syntax errors and remove the need for
-		// Escodegen.
+		// which is then walked and parsed for operators to overload. Instead of
+		// modifying the AST and translating it back to code, we directly change 
+		// the source code based on the parser's range information, to preserve
+		// line-numbers in syntax errors and remove the need for Escodegen.
 
-		// Tracks code insertions so we can add their differences to the
+		// Track code insertions so their differences can be added to the
 		// original offsets.
 		var insertions = [];
 
@@ -143,8 +142,8 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 		// information up-to-date.
 		function replaceCode(node, str) {
 			var start = getOffset(node.range[0]),
-				end = getOffset(node.range[1]);
-			var insert = 0;
+				end = getOffset(node.range[1]),
+				insert = 0;
 			// Sort insertions by their offset, so getOffest() can do its thing
 			for (var i = insertions.length - 1; i >= 0; i--) {
 				if (start > insertions[i][0]) {
