@@ -48,12 +48,9 @@ Also, whenever you would like to update the modules, you will need to execute:
 
 	sudo apt-get install libcairo2-dev
 
-For Debian/Ubuntu you might also need these additional packages if you don't usually build from c++ sources:
+You might also need these additional packages if you don't usually build from c++ sources:
 
-	build-essential
-	libssl-dev
-	libjpeg8-dev
-	libgif-dev
+	sudo apt-get install build-essential libssl-dev libjpeg8-dev libgif-dev 
 
 **After cairo has been installed:**
 
