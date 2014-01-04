@@ -26,11 +26,11 @@ With Bower installed, simply type this command in your project folder:
 
 Upon execution, you will find a `paper` folder inside the project's `component` folder. For more information on Bower and to learn about its features for dependence tracking, see <http://bower.io/>.
 
-## Installing Paper.js for Node.js
+## Installing Paper.js for Node.js through NPM
 
-Similarly you can use NPM to install Paper.js for Node.js. But before doing so, you need the Cairo Graphics library installed, see <http://cairographics.org/>.
+You can also use NPM to install Paper.js for Node.js. But before doing so, you need the Cairo Graphics library installed, see <http://cairographics.org/>.
 
-**For OSX:**
+**Installing Cairo on OSX:**
 
 The easiest way to install Cairo is install Homebrew <http://mxcl.github.io/homebrew/> then issue the command:
 
@@ -44,7 +44,7 @@ Also, whenever you would like to update the modules, you will need to execute:
 
 	PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm update
 
-**For Debian/Ubuntu Linux:**
+**Installing Cairo on Debian/Ubuntu Linux:**
 
 	sudo apt-get install libcairo2-dev
 
@@ -52,9 +52,9 @@ You might also need these additional packages if you don't usually build from c+
 
 	sudo apt-get install build-essential libssl-dev libjpeg8-dev libgif-dev 
 
-**After cairo has been installed:**
+**Ater Cairo has been installed:**
 
-Then install the Paper.js module:
+You should now be able to install the Paper.js module from NPM:
 
 	npm install paper
 
