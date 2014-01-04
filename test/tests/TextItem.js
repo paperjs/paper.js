@@ -19,7 +19,7 @@ test('PointText', function() {
 		point: [100, 100],
 		content: 'Hello World!'
 	});
-	equals(text.fillColor, { red: 0, green: 0, blue: 0 }, 'text.fillColor should be black by default');
+	compareColors(text.fillColor, new Color(0, 0, 0), 'text.fillColor should be black by default');
 	comparePoints(text.point, { x: 100, y: 100 });
 	compareRectangles(text.bounds, { x: 100, y: 87.4, width: 77, height: 16.8 });
 	equals(function() {

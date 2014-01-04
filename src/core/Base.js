@@ -179,9 +179,6 @@ Base.inject(/** @lends Base# */{
 			obj = Base.create(this.prototype);
 			if (readIndex)
 				obj.__read = true;
-			// If options were provided, pass them on to the constructed object
-			if (options)
-				obj.__options = options;
 			obj = obj.initialize.apply(obj, index > 0 || length < list.length
 				? Array.prototype.slice.call(list, index, index + length)
 				: list) || obj;
@@ -191,8 +188,6 @@ Base.inject(/** @lends Base# */{
 				// last read() call
 				list.__read = obj.__read;
 				delete obj.__read;
-				if (options)
-					delete obj.__options;
 			}
 			return obj;
 		},
