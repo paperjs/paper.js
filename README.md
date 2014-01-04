@@ -14,7 +14,11 @@ You can download prebuilt packages from <http://paperjs.org/download/>.
 
 As of July 2013, the recommended way to install and maintain Paper.js is through Bower for browsers, and through NPM for Node.js.
 
-See <http://madebyhoundstooth.com/blog/install-node-with-homebrew-on-os-x/> for a tutorial explaining how to install Node.js, NPM and Bower on OSX.
+For OSX see <http://madebyhoundstooth.com/blog/install-node-with-homebrew-on-os-x/> for a tutorial explaining how to install Node.js, NPM and Bower.
+
+For Linux see <http://nodejs.org/download/> to locate 32-bit and 64-bit nodejs binaries as well as sources. It is recommended that you download directly from the nodejs site; the version available via many OS-supplied package managers is out-of-date and doesn't work with many of the packages paper uses. NPM is now included with the nodejs distribution. Once nodejs (with npm) has been installed you can install bower using the following command:
+
+	npm install -g bower
 
 With Bower installed, simply type this command in your project folder:
 
@@ -22,25 +26,40 @@ With Bower installed, simply type this command in your project folder:
 
 Upon execution, you will find a `paper` folder inside the project's `component` folder. For more information on Bower and to learn about its features for dependence tracking, see <http://bower.io/>.
 
-## Installing for Node.js
+## Installing Paper.js for Node.js
 
 Similarly you can use NPM to install Paper.js for Node.js. But before doing so, you need the Cairo Graphics library installed, see <http://cairographics.org/>.
 
-The easiest way to install Cairo on OSX is through Homebrew <http://mxcl.github.io/homebrew/>.
+**For OSX:**
+
+The easiest way to install Cairo is install Homebrew <http://mxcl.github.io/homebrew/> then issue the command:
 
 	brew install cairo
 
-Once Homebrew has installed this for you, you can then install the Paper.js module:
-
-	npm install paper
-
 Note that currently there is an issue on OSX with Cairo. If the above causes errors, the following will most likely fix it:
 
-	PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm install paper
+	PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm insetall paper
 
 Also, whenever you would like to update the modules, you will need to execute:
 
 	PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm update
+
+**For Debian/Ubuntu Linux:**
+
+	sudo apt-get install libcairo2-dev
+
+For Debian/Ubuntu you might also need these additional packages if you don't usually build from c++ sources:
+
+	build-essential
+	libssl-dev
+	libjpeg8-dev
+	libgif-dev
+
+**After cairo has been installed:**
+
+Then install the Paper.js module:
+
+	npm install paper
 
 ## Development
 
@@ -53,11 +72,12 @@ Also, whenever you would like to update the modules, you will need to execute:
 If you want to contribute to the project you will have to [make a fork](http://help.github.com/forking/). Then do this:
 
 	git clone --recursive git@github.com:yourusername/paper.js.git
+	cd paper.js
 	git remote add upstream git://github.com/paperjs/paper.js.git
 
 ### Refreshing Your Clone
 
-To fetch changes from origin, run
+To fetch changes from origin (your fork), run
 
 	git fetch origin
 
@@ -73,10 +93,14 @@ To update the `jsdoc-toolkit` submodule inside the `build` folder, used to gener
 
 Paper.js has a couple of dependencies as Bower and NPM modules. See <http://madebyhoundstooth.com/blog/install-node-with-homebrew-on-os-x/> for a tutorial explaining how to install Node.js, NPM and Bower on OSX.
 
-In order to be able to build Paper.js, these dependencies need to be installed first after checking out the repository:
+In order to be able to build Paper.js, after checking out the repository, paper has dependencies that need to be installed. Install them by issuing the following commands from the paper.js directory:
 
 	npm install
 	bower install
+
+You might find that the npm command fails attempting to fetch packages needed for dependencies due to using https (the default protocol to access the npm registry). If that is the case you can switch to using http for registry access with the following command:
+
+	npm config set registry http://registry.npmjs.org/
 
 Next you need to create minified versions of some of these dependencies. This is handled by the `minify-components.sh` script inside the `build` folder:
 
@@ -145,7 +169,8 @@ As mentioned earlier in this article, we prefer that you send a [*pull request*]
 
 3. This is important: Create a so-called *topic branch*: `git checkout -tb name-of-my-patch` where "name-of-my-patch" is a short but descriptive name of the patch you're about to create. Don't worry about the perfect name though -- you can change this name at any time later on.
 
-4. Hack! Make your changes, additions, etc and commit them.
+4. Hack! Make your changes, additions, etc., commit them then push them to your github fork: `git push origin name-of-my-patch`
+
 
 5. Send a pull request to the upstream repository's owner by visiting your repository's site at github (i.e. https://github.com/yourusername/paper.js) and press the "Pull Request" button. Here's a good guide on pull requests: <http://help.github.com/pull-requests/>
 
