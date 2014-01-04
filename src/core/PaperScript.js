@@ -239,7 +239,7 @@ var PaperScript = Base.exports.PaperScript = (function() {
 		var view = scope.getView(),
 			// Only create a tool object if something resembling a tool handler
 			// definition is contained in the code.
-			tool = /\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
+			tool = /\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/.test(code)
 					? new Tool()
 					: null,
 			toolHandlers = tool ? tool._events : [],
@@ -270,11 +270,16 @@ var PaperScript = Base.exports.PaperScript = (function() {
 		// end of the code execution, so we can retrieve their values from the
 		// function call.
 		handlers = Base.each(handlers, function(key) {
-			params.push(key);
-			this.push(key + ': ' + key);
+			// Check for each handler explicitely and only return them if they
+			// seem to exist.
+			if (new RegExp('\\s+' + key + '\\b').test(code)) {
+				params.push(key);
+				this.push(key + ': ' + key);
+			}
 		}, []).join(', ');
 		// We need an additional line that returns the handlers in one object.
-		code += '\nreturn { ' + handlers + ' };';
+		if (handlers)
+			code += '\nreturn { ' + handlers + ' };';
 /*#*/ if (__options.environment == 'browser') {
 		if (window.InstallTrigger || window.chrome) { // Firefox and Chrome
 			// On Firefox, all error numbers inside dynamically compiled code
@@ -301,7 +306,7 @@ var PaperScript = Base.exports.PaperScript = (function() {
 /*#*/ } else { // !__options.environment == 'browser'
 		func = Function(params, code);
 /*#*/ } // !__options.environment == 'browser'
-		var res = func.apply(scope, args);
+		var res = func.apply(scope, args) || {};
 		// Now install the 'global' tool and view handlers, and we're done!
 		Base.each(toolHandlers, function(key) {
 			var value = res[key];
