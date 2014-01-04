@@ -248,23 +248,28 @@ var PaperScript = Base.exports.PaperScript = (function() {
 			// undefined arguments, so that their name exists, rather than
 			// injecting a code line that defines them as variables.
 			// They are exported again at the end of the function.
-			handlers = ['onFrame', 'onResize'].concat(toolHandlers);
-		code = compile(code);
-		// compile a list of paramter names for all variables that need to
-		// appear as globals inside the script. At the same time, also collect
-		// their values, so we can pass them on as arguments in the function
-		// call. 
-		var params = ['_$_', '$_', 'view', 'tool'],
-			args = [_$_, $_ , view, tool],
+			handlers = ['onFrame', 'onResize'].concat(toolHandlers),
+			// compile a list of paramter names for all variables that need to
+			// appear as globals inside the script. At the same time, also
+			// collect their values, so we can pass them on as arguments in the
+			// function call. 
+			params = [],
+			args = [],
 			func;
-		// Look through all enumerable properties on the scope and expose these
-		// too as pseudo-globals.
-		for (var key in scope) {
-			if (!/^_/.test(key)) {
-				params.push(key);
-				args.push(scope[key]);
+		code = compile(code);
+		function expose(scope, hidden) {
+			// Look through all enumerable properties on the scope and expose
+			// these too as pseudo-globals, but only if they seem to be in use.
+			for (var key in scope) {
+				if ((hidden || !/^_/.test(key)) && new RegExp(
+						'\\b' + key.replace(/\$/g, '\\$') + '\\b').test(code)) {
+					params.push(key);
+					args.push(scope[key]);
+				}
 			}
 		}
+		expose({ _$_: _$_, $_: $_, view: view, tool: tool }, true);
+		expose(scope);
 		// Finally define the handler variable names as parameters and compose
 		// the string describing the properties for the returned object at the
 		// end of the code execution, so we can retrieve their values from the
