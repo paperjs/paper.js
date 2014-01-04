@@ -706,8 +706,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		}
 		if (view) {
 			var point = viewToProject(view, event);
-			if (dragging || new Rectangle(new Point(),
-					view.getViewSize()).contains(point))
+			if (dragging || view.getBounds().contains(point))
 				tool = handleMouseMove(view, point, event);
 		}
 	}
